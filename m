@@ -1,44 +1,103 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH] Increase in idle power with schedutil
-Date: Thu, 19 May 2016 16:30:31 +0200
-Message-ID: <CAJZ5v0h+vb1+9urzfOWsCKy8eziVGpVvSiB84i7nwbktOS+EaA@mail.gmail.com>
-References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-	<CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
-	<20160519114029.GW3193@twins.programming.kicks-ass.net>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: [cpufreq-4.7] New schedutil governor in combination with intel_pstate/x86
+Date: Thu, 19 May 2016 16:50:10 +0200
+Message-ID: <CA+icZUVq5wGwM2kyLo3cnRxN7kH9F_h+fzVeELJx7ytZR60M-g@mail.gmail.com>
+References: <CA+icZUV0Mxu+fvrmpJmnDjLmxpSd83hDM5od0_1kw4gEm5aaEw@mail.gmail.com>
+	<573B4C2A.4010205@intel.com>
+	<CA+icZUVXffgzNBAMHUdzHzX3pSDm8j=Uq3CAK8zVqsdT0UunNw@mail.gmail.com>
+	<573BA6C6.901@intel.com>
+	<CA+icZUVotMFEXSJ1BNY72zQfB-L-PJbyR_31LK8Obje7YjNJsA@mail.gmail.com>
+	<CAJZ5v0htU2WyqwNBcfSG1+AH9iB4LDd_tH1GN604rCyrahwbyw@mail.gmail.com>
+	<CA+icZUXV3mz9Yr05o5zHLOcXwYRWydtXZOuLnE10Zy3RwzOHUg@mail.gmail.com>
+	<CAJZ5v0g1-KT5Jnh2BYOd66GkkvyTkUe0JNJ5_fxQa4wNvr9fAQ@mail.gmail.com>
+	<CA+icZUU3wJ7PFiYgr2DW_Q4vak13TNhzw8AySkFFkuTigZk16g@mail.gmail.com>
+	<CAJZ5v0iMfT6WPx_ighZ7WTRjTo=qz9EjYmxBoc_YNCLVL3JOZw@mail.gmail.com>
+	<CA+icZUWJhEVp4GwHQsMTeLLPqbZw7de8vfwtgm2=r6wbiStMFw@mail.gmail.com>
+	<CAJZ5v0izrrssFwjtNTVAhHVywcfL9OzdiTPnSOPEFXWCGuxR3A@mail.gmail.com>
+	<CAJZ5v0hWDKmd=8U-EHMMCYV3_8NgwKxbXs6sQL0Hiu3ghMW6Dw@mail.gmail.com>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f46.google.com ([74.125.82.46]:35539 "EHLO
-	mail-wm0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754103AbcESOad (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 10:30:33 -0400
-In-Reply-To: <20160519114029.GW3193@twins.programming.kicks-ass.net>
+Received: from mail-vk0-f65.google.com ([209.85.213.65]:35911 "EHLO
+	mail-vk0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754103AbcESOuL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 10:50:11 -0400
+Received: by mail-vk0-f65.google.com with SMTP id c189so12188496vkb.3
+        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 07:50:11 -0700 (PDT)
+In-Reply-To: <CAJZ5v0hWDKmd=8U-EHMMCYV3_8NgwKxbXs6sQL0Hiu3ghMW6Dw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, Steve Muckle <steve.muckle@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu, May 19, 2016 at 1:40 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Wed, May 18, 2016 at 11:11:51PM +0200, Rafael J. Wysocki wrote:
->> On Wed, May 18, 2016 at 2:53 PM, Shilpasri G Bhat
->> <shilpa.bhat@linux.vnet.ibm.com> wrote:
->> > This patch adds driver callback for fast_switch and below observations
->> > on schedutil governor are done with this patch.
->> >
->> > In POWER8 there is a regression observed with schedutil compared to
->> > ondemand. With schedutil the frequency is not ramping down and is
->> > mostly stuck at max frequency during idle . This is because of the
->> > watchdog timer, an RT task which is fired every 4 seconds which
->> > results in requesting max frequency.
+On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Thu, May 19, 2016 at 4:04 PM, Rafael J. Wysocki <rafael@kernel.org>
+> wrote:
+>> On Thu, May 19, 2016 at 3:54 PM, Sedat Dilek <sedat.dilek@gmail.com>
+>> wrote:
+>>> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>> On Thu, May 19, 2016 at 3:41 PM, Sedat Dilek <sedat.dilek@gmail.com>
+>>>> wrote:
+>>>>> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>>>> On Thu, May 19, 2016 at 2:10 PM, Sedat Dilek <sedat.dilek@gmail.com>
+>>>>>> wrote:
+>>>>>>> On 5/19/16, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>>>>>>> On Thu, May 19, 2016 at 1:04 PM, Sedat Dilek
+>>>>>>>> <sedat.dilek@gmail.com>
+>>>>>>>> wrote:
+>>>>
+>>>> [cut]
+>>>>
+>>>>>
+>>>>> With these changes...
+>>>>>
+>>>>> $ ./scripts/diffconfig /boot/config-4.6.0-4-iniza-small
+>>>>> /boot/config-4.6.0-5-iniza-small
+>>>>>  CPU_FREQ_STAT y -> m
+>>>>>  X86_ACPI_CPUFREQ y -> m
+>>>>>  X86_POWERNOW_K8 y -> m
+>>>>>
+>>>>> ...I still see "Fast frequency switching not enabled"...
+>>>>>
+>>>>> $ sudo modprobe -r -v acpi_cpufreq
+>>>>> [sudo] password for wearefam:
+>>>>> rmmod acpi_cpufreq
+>>>>> $ sudo modprobe -r -v cpufreq_stats
+>>>>> rmmod cpufreq_stats
+>>>>>
+>>>>> $ sudo modprobe -v cpufreq_stats
+>>>>> insmod
+>>>>> /lib/modules/4.6.0-5-iniza-small/kernel/drivers/cpufreq/cpufreq_stats.ko
+>>>>
+>>>> Skip the above modprobe. :-)
+>>>>
+>>>
+>>> If I do not insmod cpufreq_stats (only insmod acpi_cpufreq) then I do
+>>> not see anything with "cpu fast switching" in my logs.
+>>> ( I double-checked to have schedutil as running cpufreq-governor. )
 >>
->> Well, yes, that would be problematic.
->>
+>> That means it has been enabled.
 >
-> Right; we need to come up with something for RT tasks;
+> Actually, you can check if it has been enabled by looking and the
+> wakeups statistics from powertop.
+>
+> Without fast switching you'll see kWork with sugov_work under
+> "Description" somewhere close to the top of the list.
+>
 
-I think we need the hints thing for that to be able to distinguish
-between RT and the rest.
+The software-repos for Ubuntu/precise lists me a PowerTOP version 1.97.
+Not sure if this version has all bits to show me cpu fast switching
+(short: c-f-s).
 
-Also in this particular case it looks like an RT task is the only task
-that wakes up often enough and we don't drop the frequency when going
-idle.  Do we need a hook somewhere in the idle path?
+IOW, it is a bit uncool to see it "not enabled" in my logs.
+I would expect also to see the successful initialization/availibility
+in my logs.
+
+Does turbostats (shipped with the kernel-sources) support c-f-s?
+
+- Sedat -
+
+[1] list PowerTOP v2.8
+
+[1] https://01.org/powertop
