@@ -1,81 +1,65 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] Force cppc_cpufreq to report values in KHz to fix
- user space reporting
-Date: Thu, 19 May 2016 15:46:19 +0530
-Message-ID: <20160519101619.GJ32001@vireshk-i7>
-References: <1463614882-26101-1-git-send-email-ahs3@redhat.com>
+From: Hongbo Zhang <hongbo.zhang@nxp.com>
+Subject: RE: [PSCI DISCUSS] How to implement standby and suspend-to-ram by
+ PSCI
+Date: Thu, 19 May 2016 10:27:41 +0000
+Message-ID: <AM3PR04MB0805D7F5375413C154DFB981844A0@AM3PR04MB0805.eurprd04.prod.outlook.com>
+References: <DB3PR04MB0812DAA98F71C30E8A8832E3847D0@DB3PR04MB0812.eurprd04.prod.outlook.com>
+	 <572C9BF2.9010004@arm.com>
+	 <DB3PR04MB08125A628F5034749F8109D884730@DB3PR04MB0812.eurprd04.prod.outlook.com>
+ <1463486036.19237.9.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1463614882-26101-1-git-send-email-ahs3@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Al Stone <ahs3@redhat.com>
-Cc: ashwin.chaugule@linaro.org, rjw@rjwysocki.net, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-db5eur01on0049.outbound.protection.outlook.com ([104.47.2.49]:61849
+	"EHLO EUR01-DB5-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753562AbcESK1o (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 19 May 2016 06:27:44 -0400
+In-Reply-To: <1463486036.19237.9.camel@suse.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Marc Zyngier <marc.zyngier@arm.com>, Jan Kiszka <jan.kiszka@siemens.com>, Mark Rutland <mark.rutland@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Hans de Goede <hdegoede@redhat.com>, Frank Li <Frank.Li@freescale.com>, Peng Fan <Peng.Fan@freescale.com>, Tom Warren <twarren@nvidia.com>, Vincent Guittot <vincent.guittot@linaro.org>, "jszhang@marvell.com" <jszhang@marvell.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 18-05-16, 17:41, Al Stone wrote:
-> When CPPC is being used by ACPI on arm64, user space tools such as
-> cpupower report CPU frequency values from sysfs that are incorrect.
-> 
-> What the driver was doing was reporting the values given by ACPI tables
-> in whatever scale was used to provide them.  However, the ACPI spec
-> defines the CPPC values as unitless abstract numbers.  Internal kernel
-> structures such as struct perf_cap, in contrast, expect these values
-> to be in KHz.  When these struct values get reported via sysfs, the
-> user space tools also assume they are in KHz, causing them to report
-> incorrect values (for example, reporting a CPU frequency of 1MHz when
-> it should be 1.8GHz).
-> 
-> While the investigation for a long term fix proceeds (several options
-> are being explored, some of which may require spec changes or other
-> much more invasive fixes), this patch forces the values read by CPPC
-> to be read in KHz, regardless of what they actually represent.
-> 
-> The downside is that this approach has some assumptions:
-> 
->    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
->    value for a processor is set to a non-zero value.
-> 
->    (2) It assumes that all processors run at the same speed, or that
->    the CPPC values have all been scaled to reflect relative speed.
->    This patch retrieves the first CPU Max Frequency from a type 4 DMI
->    record that it can find.  This may not be an issue, however, as a
->    sampling of DMI data on x86 and arm64 indicates there is often only
->    one such record regardless.  Since CPPC is relatively new, it is
->    unclear if the ACPI ASL will always be written to reflect any sort
->    of relative performance of processors of differing speeds.
-> 
->    (3) It assumes that performance and frequency both scale linearly.
-> 
-> For arm64 servers, this may be sufficient, but it does rely on
-> firmware values being set correctly.  Hence, other approaches are
-> also being considered.
-> 
-> This has been tested on three arm64 servers, with and without DMI, with
-> and without CPPC support.
-> 
-> Changes for v3:
->     -- Added clarifying commentary re short-term vs long-term fix (Alexey
->        Klimov)
->     -- Added range checking code to ensure proper arithmetic occurs,
->        especially no division by zero (Alexey Klimov)
-> 
-> Changes for v2:
->     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
->        not SELECT DMI (found by build daemon)
-> 
-> Signed-off-by: Al Stone <ahs3@redhat.com>
-> ---
->  drivers/acpi/cppc_acpi.c    | 96 ++++++++++++++++++++++++++++++++++++++++++---
->  drivers/cpufreq/Kconfig.arm |  1 +
->  2 files changed, 92 insertions(+), 5 deletions(-)
-
-I can't keep it unread in my Inbox forever and so I am replying here
-to mark it read :)
-
-I don't have enough knowledge of this stuff and so I leave it for
-Ashwin and Rafael to do it. :)
-
--- 
-viresh
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogT2xpdmVyIE5ldWt1bSBb
+bWFpbHRvOm9uZXVrdW1Ac3VzZS5jb21dDQo+IFNlbnQ6IFR1ZXNkYXksIE1heSAxNywgMjAxNiA3
+OjU0IFBNDQo+IFRvOiBIb25nYm8gWmhhbmcgPGhvbmdiby56aGFuZ0BueHAuY29tPg0KPiBDYzog
+U3VkZWVwIEhvbGxhIDxzdWRlZXAuaG9sbGFAYXJtLmNvbT47IGxpbnV4LXBtQHZnZXIua2VybmVs
+Lm9yZzsNCj4gTG9yZW56byBQaWVyYWxpc2kgPGxvcmVuem8ucGllcmFsaXNpQGFybS5jb20+OyBN
+YXJjIFp5bmdpZXINCj4gPG1hcmMuenluZ2llckBhcm0uY29tPjsgSmFuIEtpc3prYSA8amFuLmtp
+c3prYUBzaWVtZW5zLmNvbT47IE1hcmsNCj4gUnV0bGFuZCA8bWFyay5ydXRsYW5kQGFybS5jb20+
+OyBEYW5pZWwgTGV6Y2Fubw0KPiA8ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZz47IENoZW4tWXUg
+VHNhaSA8d2Vuc0Bjc2llLm9yZz47IEhhbnMgZGUgR29lZGUNCj4gPGhkZWdvZWRlQHJlZGhhdC5j
+b20+OyBGcmFuayBMaSA8RnJhbmsuTGlAZnJlZXNjYWxlLmNvbT47IFBlbmcgRmFuDQo+IDxQZW5n
+LkZhbkBmcmVlc2NhbGUuY29tPjsgVG9tIFdhcnJlbiA8dHdhcnJlbkBudmlkaWEuY29tPjsgVmlu
+Y2VudA0KPiBHdWl0dG90IDx2aW5jZW50Lmd1aXR0b3RAbGluYXJvLm9yZz47IGpzemhhbmdAbWFy
+dmVsbC5jb207IGxpbnV4LWFybS0NCj4ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcNCj4gU3Vi
+amVjdDogUmU6IFtQU0NJIERJU0NVU1NdIEhvdyB0byBpbXBsZW1lbnQgc3RhbmRieSBhbmQgc3Vz
+cGVuZC10by1yYW0gYnkNCj4gUFNDSQ0KPiANCj4gT24gVGh1LCAyMDE2LTA1LTEyIGF0IDA5OjQy
+ICswMDAwLCBIb25nYm8gWmhhbmcgd3JvdGU6DQo+ID4gT24gb3VyIHBsYXRmb3JtIHdlIGhhdmUg
+c29tZSBzaGFsbG93IHN0YXRlcyB3aGljaCBtYXBzIHRvIGNwdWlkbGUNCj4gPiB3ZWxsLA0KPiA+
+IGFuZCB3ZSBoYXZlIHR3byBtb3JlIGRlZXBlciBzdGF0ZXM6DQo+ID4NCj4gPiBTbGVlcCBzdGF0
+ZToNCj4gPiBBbGwgY29yZXMgYXJlIGluIFdGSSBzdGF0ZSwNCj4gPiBDb3JlIGNsdXN0ZXIgaXMg
+aW4gc3RhbmRieSBzdGF0ZSwgZS5nLiBMMiBjYWNoZSBpcyBmbHVzaGVkIHRoZW4gc3RvcHMNCj4g
+PiBzbm9vcGluZywNCj4gPiBPbmx5IHRob3NlIG1vZHVsZXMgd2hpY2ggYXJlIHJlcXVpcmVkIHRv
+IHdha2UgdXAgdGhlIGRldmljZSBzdGlsbCBoYXZlDQo+ID4gYQ0KPiA+IHJ1bm5pbmcgY2xvY2ss
+IG90aGVyIGRldmljZSBtb2R1bGVzIGluIGNoaXAgYXJlIGNsb2NrIGdhdGVkLg0KPiA+DQo+ID4g
+RGVlcCBzbGVlcCBzdGF0ZToNCj4gPiBBUk0gY29yZXMgYW5kIEREUiBjb250cm9sbGVyIGFyZSBz
+d2l0Y2hlZCBvZmYsDQo+ID4gRERSIGlzIGluIHNlbGYtcmVmcmVzaCBtb2RlLA0KPiA+IFZERCBw
+b3dlciB0byBvZmYgZG9tYWluIElQcyBhcmUgcmVtb3ZlZCwgT25seSB0aGUgYmxvY2tzIG5lZWRl
+ZCB0bw0KPiA+IGRldGVjdCB3YWtlIHVwIGFuZCBzZXF1ZW5jZSB0aGUgY2hpcCBvdXQgb2YgZGVl
+cCBzbGVlcCBhcmUgb24uDQo+IA0KPiBGb3IgdGhlIHBtIG1vZHVsZSBvZiB0aGUgY29yZSBrZXJu
+ZWwgYSBsb3cgcG93ZXIgc3RhdGUgaXMgYSBzbGVlcA0KPiBzdGF0ZSBpZiBldmVuIG9uZSBvZiB0
+aHJlZSBjb25kaXRpb25zIGlzIG1ldDoNCj4gDQo+IGEpIGEgZGV2aWNlIHRoYXQgY2FuIGJlIHVz
+ZWQgZm9yIGlucHV0IGlzIG5vdCBhIHNvdXJjZSBvZiB3YWtlIHVwcw0KPiBiKSB0YXNrcyBuZWVk
+IHRvIGJlIGZyb3plbiB0byBlbnRlciBpdA0KPiBjKSB0aGUgZGlzcGxheSBnb2VzIG9mZiwgd2hp
+bGUgaXQgc2hvdWxkIGJlIG9uDQo+IA0KPiBHZW5lcmFsbHkgcnVudGltZSBQTSBpcyBiZXR0ZXIg
+aWYgeW91IGNhbiBnZXQgdGhlIHNhbWUgcmVzdWx0cy4NCj4gR29pbmcgdG8gYSBzeXN0ZW0gc2xl
+ZXAgc3RhdGUgaXMgYSBuZWNlc3NhcnkgZXZpbC4NCj4gDQo+IAlSZWdhcmRzDQo+IAkJT2xpdmVy
+DQo+IA0KQXMgSSBqdXN0IGV4cGxhaW5lZCBpbiBwcmV2aW91cyByZXBseSwgbWFueSBkZXZpY2Vz
+IGluIG91ciBTb2MgY2Fubm90IGJlIHBoeXNpY2FsbHkgY2xvY2sgb3IgcG93ZXIgZ2F0ZWQsIGFs
+bCB0aGUgbm9uLXdha2V1cCBkZXZpY2VzIGNhbiBvbmx5IGJlIGdhdGVkIG9mZiBhdCBzYW1lIHRp
+bWUgYnkgYSBQTSBtb2R1bGUsIHNvIHJ1bnRpbWUgUE0gZG9lc24ndCBmaXQgZm9yIHVzIHdlbGwu
+DQoNClRoYW5rcyBmb3IgeW91ciBhZHZpY2UuIA0K
