@@ -1,54 +1,32 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+From: "Andrew F. Davis" <afd@ti.com>
 Subject: Re: Should 9aafabc7fece be reverted?
-Date: Thu, 19 May 2016 17:44:07 +0200
-Message-ID: <201605191744.07228@pali>
-References: <573C9F45.5090109@ti.com> <20160519091719.GL29844@pali> <573DDDE6.7070408@ti.com>
+Date: Thu, 19 May 2016 10:48:29 -0500
+Message-ID: <573DE04D.9050101@ti.com>
+References: <573C9F45.5090109@ti.com> <20160519091719.GL29844@pali>
+ <573DDDE6.7070408@ti.com> <201605191744.07228@pali>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart5839116.WSLPxctESh";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f52.google.com ([74.125.82.52]:38148 "EHLO
-	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754994AbcESPoL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 11:44:11 -0400
-Received: by mail-wm0-f52.google.com with SMTP id n129so42106739wmn.1
-        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 08:44:10 -0700 (PDT)
-In-Reply-To: <573DDDE6.7070408@ti.com>
+Received: from arroyo.ext.ti.com ([198.47.19.12]:33351 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754959AbcESPtA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 19 May 2016 11:49:00 -0400
+In-Reply-To: <201605191744.07228@pali>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
+To: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>
 Cc: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 
---nextPart5839116.WSLPxctESh
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On 05/19/2016 10:44 AM, Pali Roh=C3=A1r wrote:
+> On Thursday 19 May 2016 17:38:14 Andrew F. Davis wrote:
+>> P.S. The code is still a bit strange, I'll probably go grab one of
+>> the N900s from our test farm and make sure my future cleanups don't
+>> break this, but are we sure the *name* of a driver is an ABI?
+>=20
+> It is not name of driver, but directory name of sysfs path where devi=
+ce=20
+> is exported...
+>=20
 
-On Thursday 19 May 2016 17:38:14 Andrew F. Davis wrote:
-> P.S. The code is still a bit strange, I'll probably go grab one of
-> the N900s from our test farm and make sure my future cleanups don't
-> break this, but are we sure the *name* of a driver is an ABI?
-
-It is not name of driver, but directory name of sysfs path where device=20
-is exported...
-
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart5839116.WSLPxctESh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlc930cACgkQi/DJPQPkQ1JRKACdE4DuT8Gjz5zNfxWdXNyLcl7O
-mZIAoKYysplxNPs7f+ByckRKQVEDyeSV
-=c5Zv
------END PGP SIGNATURE-----
-
---nextPart5839116.WSLPxctESh--
+Which is named after the drivers name, so the same question remains. :/
