@@ -1,44 +1,50 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: Rescanning is broken with runtime PM for PCIe ports
-Date: Thu, 19 May 2016 10:42:31 +0300
-Message-ID: <20160519074231.GJ2043@lahna.fi.intel.com>
-References: <20160518171401.GC1222@al>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH] power_suply: isp1704_charger: Fix isp1704_write()
+ definition
+Date: Thu, 19 May 2016 11:13:04 +0200
+Message-ID: <20160519091304.GK29844@pali>
+References: <1451646209-11618-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+ <201601011226.21552@pali>
+ <201601092342.30608@pali>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:45146 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752550AbcESHmg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 19 May 2016 03:42:36 -0400
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160518171401.GC1222@al>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <201601092342.30608@pali>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, sre@kernel.org
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Wu <peter@lekensteyn.nl>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, May 18, 2016 at 07:14:01PM +0200, Peter Wu wrote:
-> Hi,
-> 
-> While testing the pci/pm tree from Bjorn with HEAD being 0195d2813547
-> ("PCI: Add runtime PM support for PCIe ports"), I have noticed that
-> detaching and rescanning is broken.
-> 
-> When a bridgr is in D3 state, it cannot discover children. Reproducer:
-> 
->     echo > /sys/bus/pci/devices/0000:01:00.0/remove 1
->     # wait for the PCIe port to enter D3cold
->     echo > /sys/bus/pci/devices/0000:00:01.0/rescan 1
->     # Workaround to get the device back
->     echo > /sys/bus/pci/devices/0000:00:01.0/power/control on
->     echo > /sys/bus/pci/devices/0000:00:01.0/rescan 1
-> 
-> lspci:
-> 
->     00:01.0 PCI bridge [0604]: Intel Corporation Skylake PCIe Controller (x16) [8086:1901] (rev 07)
->     01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GM204M [GeForce GTX 965M] [10de:13d9] (rev a1)
-> 
-> Probably needs a pm_runtime_{get,put}_sync in pci_rescan_bus and
-> pci_rescan_bus_bridge_resize.
+On Saturday 09 January 2016 23:42:30 Pali Roh=C3=A1r wrote:
+> On Friday 01 January 2016 12:26:21 Pali Roh=C3=A1r wrote:
+> > On Friday 01 January 2016 12:03:29 Ivaylo Dimitrov wrote:
+> > > All calls to isp1704_write() are using parameter sequence of
+> > > isp1704_write(isp, reg, val) but the function is defined as
+> > > isp1704_write(isp, val, reg). Fix isp1704_write function definiti=
+on
+> > > so that the driver to be functional.
+> > >=20
+> > > Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+> >=20
+> > Reviewed-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+> >=20
+> > This problem is there since inclusion of driver itself. No idea why
+> > that driver could work... I remember that it detected correctly typ=
+e
+> > of charger.
+> >=20
+> > I will test this patch on real N900 HW in one or two weeks to check
+> > how it behave after patching...
+>=20
+> Tested-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+>=20
+> Please send this patch to all stable kernels.
 
-Thanks for reporting. Let me investigate this a bit.
+Hi! I still think that this patch should go to stable kernels. Because
+without it driver does not work... Will somebody send it to stable?
+
+--=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
