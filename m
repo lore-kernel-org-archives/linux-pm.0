@@ -1,38 +1,72 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH] ARM: shmobile: pm-rmobile: Postpone call to
- pm_genpd_init()
-Date: Fri, 20 May 2016 13:24:37 +0900
-Message-ID: <20160520042437.GG25184@verge.net.au>
-References: <1462350466-20466-1-git-send-email-geert+renesas@glider.be>
- <CAPDyKFp=wB7aEtQ8R=p7NLQ+jbouACMazgdXLNXF7U0s+eoJQg@mail.gmail.com>
- <20160510000133.GA4530@verge.net.au>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: Add set_emul_temp hook
+Date: Fri, 20 May 2016 11:28:40 +0530
+Message-ID: <573EA790.8020006@ti.com>
+References: <1462880530-13935-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:34307 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751199AbcETEYj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 00:24:39 -0400
-Content-Disposition: inline
-In-Reply-To: <20160510000133.GA4530@verge.net.au>
+Received: from comal.ext.ti.com ([198.47.26.152]:42745 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754422AbcETF6q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 20 May 2016 01:58:46 -0400
+In-Reply-To: <1462880530-13935-1-git-send-email-j-keerthy@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On Tue, May 10, 2016 at 09:01:35AM +0900, Simon Horman wrote:
-> On Mon, May 09, 2016 at 09:51:05AM +0200, Ulf Hansson wrote:
-> > On 4 May 2016 at 10:27, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> > > All local setup of the generic_pm_domain structure should have been
-> > > completed before calling pm_genpd_init().
-> > >
-> > > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > 
-> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> 
-> Hi Geert,
-> 
-> I have it in mind to queue this up for v4.8.
-> Please let me know if you have other ideas.
 
-I have queued this up for v4.8.
+
+On Tuesday 10 May 2016 05:12 PM, Keerthy wrote:
+> Setting the emulation temperature helps reproduce critical
+> temperature scenarios without risking the actual hardware at
+> extreme temperatures. Adding __ti_thermal_set_emul_temp as
+> the set_emul_temp hook.
+
+A gentle ping on this.
+
+>
+> Signed-off-by: Keerthy <j-keerthy@ti.com>
+> ---
+>
+> Tested the emulation temperature feature on DRA72-EVM.
+>
+>   drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 15 +++++++++++++++
+>   1 file changed, 15 insertions(+)
+>
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> index b213a12..e6f7025 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> @@ -278,6 +278,20 @@ static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
+>   	return 0;
+>   }
+>
+> +static int __ti_thermal_set_emul_temp(void *p, int temp)
+> +{
+> +	struct ti_thermal_data *data = p;
+> +	struct thermal_zone_device *tz;
+> +
+> +	tz = data->ti_thermal;
+> +
+> +	mutex_lock(&tz->lock);
+> +	tz->emul_temperature = temp;
+> +	mutex_unlock(&tz->lock);
+> +
+> +	return 0;
+> +}
+> +
+>   /* Get critical temperature callback functions for thermal zone */
+>   static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
+>   				    int *temp)
+> @@ -289,6 +303,7 @@ static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
+>   static const struct thermal_zone_of_device_ops ti_of_thermal_ops = {
+>   	.get_temp = __ti_thermal_get_temp,
+>   	.get_trend = __ti_thermal_get_trend,
+> +	.set_emul_temp = __ti_thermal_set_emul_temp,
+>   };
+>
+>   static struct thermal_zone_device_ops ti_thermal_ops = {
+>
