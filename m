@@ -1,120 +1,80 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
-Date: Fri, 20 May 2016 09:15:17 +0200
-Message-ID: <20160520071517.GB14191@gmail.com>
-References: <573DF82D.50006@deltatee.com>
+From: Hongbo Zhang <hongbo.zhang@nxp.com>
+Subject: RE: [PSCI DISCUSS] How to implement standby and suspend-to-ram by PSCI
+Date: Fri, 20 May 2016 08:23:36 +0000
+Message-ID: <DB3PR04MB0812AAD69AEE789DB577C2D2844B0@DB3PR04MB0812.eurprd04.prod.outlook.com>
+References: <DB3PR04MB0812DAA98F71C30E8A8832E3847D0@DB3PR04MB0812.eurprd04.prod.outlook.com>
+ <572C9BF2.9010004@arm.com>
+ <DB3PR04MB08125A628F5034749F8109D884730@DB3PR04MB0812.eurprd04.prod.outlook.com>
+ <1463486036.19237.9.camel@suse.com>
+ <AM3PR04MB0805D7F5375413C154DFB981844A0@AM3PR04MB0805.eurprd04.prod.outlook.com>
+ <1463659261.14323.3.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:34144 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754331AbcETHPY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 03:15:24 -0400
-Content-Disposition: inline
-In-Reply-To: <573DF82D.50006@deltatee.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1463659261.14323.3.camel@suse.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Oliver Neukum <oneukum@suse.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "jszhang@marvell.com" <jszhang@marvell.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Frank Li <Frank.Li@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Marc Zyngier <marc.zyngier@arm.com>, Jan Kiszka <jan.kiszka@siemens.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Peng Fan <Peng.Fan@freescale.com>, Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>, Tom Warren <twarren@nvidia.com>, Sudeep Holla <sudeep.holla@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Logan Gunthorpe <logang@deltatee.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>, Kees Cook <keescook@chromium.org>, Ingo Molnar <mingo@redhat.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
 
-* Logan Gunthorpe <logang@deltatee.com> wrote:
 
-> Hi,
+> -----Original Message-----
+> From: Oliver Neukum [mailto:oneukum@suse.com]
+> Sent: Thursday, May 19, 2016 8:01 PM
+> To: Hongbo Zhang <hongbo.zhang@nxp.com>
+> Cc: Sudeep Holla <sudeep.holla@arm.com>; linux-pm@vger.kernel.org;
+> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>; Marc Zyngier
+> <marc.zyngier@arm.com>; Jan Kiszka <jan.kiszka@siemens.com>; Mark
+> Rutland <mark.rutland@arm.com>; Daniel Lezcano
+> <daniel.lezcano@linaro.org>; Chen-Yu Tsai <wens@csie.org>; Hans de Goede
+> <hdegoede@redhat.com>; Frank Li <Frank.Li@freescale.com>; Peng Fan
+> <Peng.Fan@freescale.com>; Tom Warren <twarren@nvidia.com>; Vincent
+> Guittot <vincent.guittot@linaro.org>; jszhang@marvell.com; linux-arm-
+> kernel@lists.infradead.org
+> Subject: Re: [PSCI DISCUSS] How to implement standby and suspend-to-ram by
+> PSCI
 > 
-> I have been working on a bug that causes my laptop to freeze during
-> resume from hibernation. I did a bisect to find the offending commit:
+> On Thu, 2016-05-19 at 10:27 +0000, Hongbo Zhang wrote:
+> > > For the pm module of the core kernel a low power state is a sleep
+> > > state if even one of three conditions is met:
+> > >
+> > > a) a device that can be used for input is not a source of wake ups
+> > > b) tasks need to be frozen to enter it
+> > > c) the display goes off, while it should be on
+> > >
+> > > Generally runtime PM is better if you can get the same results.
+> > > Going to a system sleep state is a necessary evil.
 > 
-> [ab76f7b4ab] x86/mm: Set NX on gap between __ex_table and rodata
 > 
-> There is more information in the bugzilla report [1] that
-> I've been working on but I will summarize things below.
+> > As I just explained in previous reply, many devices in our Soc cannot
+> > be physically clock or power gated, all the non-wakeup devices can
+> > only be gated off at same time by a PM module, so runtime PM doesn't
+> > fit for us well.
 > 
-> I've experienced intermittent but reproducible freezes when resuming
-> from hibernation since about kernel version 3.19. The freeze was
-> significantly more reproducible when a few applications were loaded
-> before hibernation and would largely not happen if hibernated
-> immediately after booting to a desktop. I did some tracing work to find
-> that the kernel gets as far as the resume_image call in
-> swsusp_arch_resume and I could not find any response from the image
-> kernel when I hit the bug. I also did testing that seemed to rule out
-> this being caused by a problematic driver.
+> You are looking for a contradiction where none is to be found. We have
+> PM domains which allow you to model common clocks and gates. You simply
+> use the driver core and it will use the common gate when every device is
+> idle. Obviously this is also true when the system is suspended. But not
+> necessarily only when the system is suspended.
 > 
-> I did a successful bisect between 3.18 and 3.19 which found a bug in
-> commit f5b2831d6 that was then later fixed by commit 55696b1f66 in 4.4.
-> Then, I did a second bisect with a ported version of the fix to the
-> first bug and found commit ab76f7b4ab in 4.3 to also break hibernation
-> with what appears to be the exact same symptoms. Reverting that commit
-> in recent kernels up to and including 4.6 fixes the issue and restores
-> reliable hibernation. However, it's not at all clear to me why that
-> commit would cause this issue or how to fix the issue without reverting.
+> 	Regards
+> 		Oliver
+> 
 
-I've attached that commit below and also Cc:-ed a few more people who might have 
-an idea about why this regressed. Worst-case we'll have to revert it.
+Understand.
+Well, currently our situation is that we've already implemented our sleep/deep sleep mode (mapping to kernel terms standby/suspend to ram), and now while transferring to PSCI we meet such a problem.
+If runtime PM is used, many device driver's developers have to be involved to offer their runtime callbacks, a lot of efforts needed in whole system level. But yes, runtime PM has its own advantages, will consider to apply it in the coming SOCs.
+Thanks for advice.
 
-Thanks,
-
-	Ingo
-
-=================>
->From ab76f7b4ab2397ffdd2f1eb07c55697d19991d10 Mon Sep 17 00:00:00 2001
-From: Stephen Smalley <sds@tycho.nsa.gov>
-Date: Thu, 1 Oct 2015 09:04:22 -0400
-Subject: [PATCH] x86/mm: Set NX on gap between __ex_table and rodata
-
-Unused space between the end of __ex_table and the start of
-rodata can be left W+x in the kernel page tables.  Extend the
-setting of the NX bit to cover this gap by starting from
-text_end rather than rodata_start.
-
-  Before:
-  ---[ High Kernel Mapping ]---
-  0xffffffff80000000-0xffffffff81000000          16M                               pmd
-  0xffffffff81000000-0xffffffff81600000           6M     ro         PSE     GLB x  pmd
-  0xffffffff81600000-0xffffffff81754000        1360K     ro                 GLB x  pte
-  0xffffffff81754000-0xffffffff81800000         688K     RW                 GLB x  pte
-  0xffffffff81800000-0xffffffff81a00000           2M     ro         PSE     GLB NX pmd
-  0xffffffff81a00000-0xffffffff81b3b000        1260K     ro                 GLB NX pte
-  0xffffffff81b3b000-0xffffffff82000000        4884K     RW                 GLB NX pte
-  0xffffffff82000000-0xffffffff82200000           2M     RW         PSE     GLB NX pmd
-  0xffffffff82200000-0xffffffffa0000000         478M                               pmd
-
-  After:
-  ---[ High Kernel Mapping ]---
-  0xffffffff80000000-0xffffffff81000000          16M                               pmd
-  0xffffffff81000000-0xffffffff81600000           6M     ro         PSE     GLB x  pmd
-  0xffffffff81600000-0xffffffff81754000        1360K     ro                 GLB x  pte
-  0xffffffff81754000-0xffffffff81800000         688K     RW                 GLB NX pte
-  0xffffffff81800000-0xffffffff81a00000           2M     ro         PSE     GLB NX pmd
-  0xffffffff81a00000-0xffffffff81b3b000        1260K     ro                 GLB NX pte
-  0xffffffff81b3b000-0xffffffff82000000        4884K     RW                 GLB NX pte
-  0xffffffff82000000-0xffffffff82200000           2M     RW         PSE     GLB NX pmd
-  0xffffffff82200000-0xffffffffa0000000         478M                               pmd
-
-Signed-off-by: Stephen Smalley <sds@tycho.nsa.gov>
-Acked-by: Kees Cook <keescook@chromium.org>
-Cc: <stable@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Link: http://lkml.kernel.org/r/1443704662-3138-1-git-send-email-sds@tycho.nsa.gov
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
----
- arch/x86/mm/init_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 30564e2752d3..df48430c279b 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1132,7 +1132,7 @@ void mark_rodata_ro(void)
- 	 * has been zapped already via cleanup_highmem().
- 	 */
- 	all_end = roundup((unsigned long)_brk_end, PMD_SIZE);
--	set_memory_nx(rodata_start, (all_end - rodata_start) >> PAGE_SHIFT);
-+	set_memory_nx(text_end, (all_end - text_end) >> PAGE_SHIFT);
- 
- 	rodata_test();
- 
+Hongbo Zhang @ NXP
