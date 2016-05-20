@@ -1,106 +1,167 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Crash after 'reboot' due to 9be4fd2c7723a
-Date: Fri, 20 May 2016 23:20:59 +0200
-Message-ID: <4080948.V5DMHR9bsk@vostro.rjw.lan>
-References: <CAOMZO5A62LgnyT0sQw5N-xeHaD0nSGTjAFxUx=_6OpUm02robA@mail.gmail.com> <CAOMZO5D_-3St-jqzMLzFHRn3dXXoSZGn4APSK4F63qCP3X=FfA@mail.gmail.com>
+Subject: Re: [PATCH] PM / sleep: fix unbalanced pm runtime disable in __device_suspend_late()
+Date: Fri, 20 May 2016 23:26:51 +0200
+Message-ID: <1910982.6Hh19bFu2s@vostro.rjw.lan>
+References: <1463162628-16976-1-git-send-email-grygorii.strashko@ti.com> <4160153.ggAvdOZIvP@vostro.rjw.lan> <573F396F.3060803@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58839 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751560AbcETVRZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 17:17:25 -0400
-In-Reply-To: <CAOMZO5D_-3St-jqzMLzFHRn3dXXoSZGn4APSK4F63qCP3X=FfA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <573F396F.3060803@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ping Bai <ping.bai@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Russell King <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Friday, May 20, 2016 03:32:43 PM Fabio Estevam wrote:
-> On Fri, May 20, 2016 at 3:05 PM, Fabio Estevam <festevam@gmail.com> wrote:
-> > Rafael,
-> >
-> > Running the 'reboot' command works fine on a 4.5 kernel running on a
-> > mx6ul platform (ARM single core SoC), but it crashes on 4.6.
-> >
-> > Running bisect I got 9be4fd2c7723a3057b0b39676 ("cpufreq: governor:
-> > Replace timers with utilization update callbacks") as the first bad
-> > commit.
-> >
-> > Below is the output crash log.
-> >
-> > Not sure if this issue is related to the problem reported by Guenter here:
-> > http://lkml.iu.edu/hypermail/linux/kernel/1602.1/06075.html
-> >
-> > Any ideas?
+On Friday, May 20, 2016 07:21:03 PM Grygorii Strashko wrote:
+> On 05/20/2016 03:18 PM, Rafael J. Wysocki wrote:
+> > On Thursday, May 19, 2016 08:11:34 PM Grygorii Strashko wrote:
+> >> On 05/19/2016 04:38 PM, Rafael J. Wysocki wrote:
+> >>> On Fri, May 13, 2016 at 8:03 PM, Grygorii Strashko
+> >>> <grygorii.strashko@ti.com> wrote:
+> >>>> The PM runtime will be left disabled for the device if its .suspend_late()
+> >>>> callback fails and async suspend is not allowed for this device. In
+> >>>> this case device will not be added in dpm_late_early_list and
+> >>>> dpm_resume_early() will ignore this device, as result PM runtime will
+> >>>> be disabled for it forever (side effect: after 8 subsequent failures
+> >>>> for the same device the PM runtime will be reenabled due to
+> >>>> disable_depth overflow).
+> >>>>
+> >>>> Hence, re-enable PM runtime in __device_suspend_late() if
+> >>>> .suspend_late() callback fails and async suspend is not allowed for
+> >>>> this device.
+> >>>>
+> >>>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> >>>> ---
+> >>>>    drivers/base/power/main.c | 7 +++++--
+> >>>>    1 file changed, 5 insertions(+), 2 deletions(-)
+> >>>>
+> >>>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> >>>> index 6e7c3cc..9b266e5 100644
+> >>>> --- a/drivers/base/power/main.c
+> >>>> +++ b/drivers/base/power/main.c
+> >>>> @@ -1207,10 +1207,13 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+> >>>>           }
+> >>>>
+> >>>>           error = dpm_run_callback(callback, dev, state, info);
+> >>>> -       if (!error)
+> >>>> +       if (!error) {
+> >>>>                   dev->power.is_late_suspended = true;
+> >>>> -       else
+> >>>> +       } else {
+> >> 		Point [1]
+> >>>>                   async_error = error;
+> >>>> +               if (!is_async(dev))
+> >>>
+> >>> Why is the is_async() check necessary here?
+> >> 			
+> >> A: deviceX is suspended *async* and reached point [1], in this case:
+> >> - deviceX has been added in dpm_late_early_list already
+> >> - dpm_suspend_late() will detect async_error and call dpm_resume_early()
+> >> - dpm_resume_early() will call device_resume_early() for deviceX
+> >> - device_resume_early() will re-enable PM runtime
+> >> {
+> >> ...
+> >> 	if (!dev->power.is_late_suspended)
+> >> 		goto Out;
+> >>
+> >> 	...
+> >>   Out:
+> >> 	TRACE_RESUME(error);
+> >>
+> >> 	pm_runtime_enable(dev);
+> >> ^^^^^^^^^^^^
+> >> 	complete_all(&dev->power.completion);
+> >> 	return error;
+> >> }	
+> >> 	
+> >>
+> >> B: deviceX is suspended *sync* and reached point [1], in this case:
+> >> - deviceX has not been added in dpm_late_early_list yet
+> >> - dpm_suspend_late() will detect sync_error and call dpm_resume_early()
+> >> - dpm_resume_early() will ignore deviceX
+> >>
+> >> if i'll not check for !is_async(dev) then pm_runtime_enable(dev)
+> >> will be called twice for deviceX with this patch.
+> > 
+> > OK, thanks!
+> > 
+> > So to me, the problem is that we handle failures in that code inconsistently
+> > depending on whether or not async suspend/resume is enabled for the device.
+> > 
+> > I'd rather make it consistent than add extra checks to it, so the patch below
+> > is how I would fix this.
+> > 
+> > ---
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Subject: [PATCH] PM / sleep: Handle failures in device_suspend_late() consistently
+> > 
+> > Grygorii Strashko reports:
+> > 
+> >   The PM runtime will be left disabled for the device if its
+> >   .suspend_late() callback fails and async suspend is not allowed
+> >   for this device. In this case device will not be added in
+> >   dpm_late_early_list and dpm_resume_early() will ignore this
+> >   device, as result PM runtime will be disabled for it forever
+> >   (side effect: after 8 subsequent failures for the same device
+> >   the PM runtime will be reenabled due to disable_depth overflow).
+> > 
+> > To fix this problem, add devices to dpm_late_early_list regardless
+> > of whether or not device_suspend_late() returns errors for them.
+> > 
+> > That will ensure failures in there to be handled consistently for
+> > all devices regardless of their async suspend/resume status.
+> > 
+> > Reported-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >   drivers/base/power/main.c |    5 +++--
+> >   1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux-pm/drivers/base/power/main.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/base/power/main.c
+> > +++ linux-pm/drivers/base/power/main.c
+> > @@ -1267,14 +1267,15 @@ int dpm_suspend_late(pm_message_t state)
+> >   		error = device_suspend_late(dev);
+> >   
+> >   		mutex_lock(&dpm_list_mtx);
+> > +		if (!list_empty(&dev->power.entry))
+> > +			list_move(&dev->power.entry, &dpm_late_early_list);
+> > +
+> >   		if (error) {
+> >   			pm_dev_err(dev, state, " late", error);
+> >   			dpm_save_failed_dev(dev_name(dev));
+> >   			put_device(dev);
+> >   			break;
+> >   		}
+> > -		if (!list_empty(&dev->power.entry))
+> > -			list_move(&dev->power.entry, &dpm_late_early_list);
+> >   		put_device(dev);
+> >   
+> >   		if (async_error)
+> > 
 > 
-> If I rebuilt a kernel with SMP=n then the reboot command works as expected.
+> Yep, it works too.
+> Tested-by: Grygorii Strashko <grygorii.strashko@ti.com>
 
-Does it work if you boot with maxcpus=1 or nosmp in the kernel command line?
+OK, thanks!
 
-Also, please try if the appended patch makes any difference.
+Applied.
 
----
- drivers/base/core.c       |    3 +++
- drivers/cpufreq/cpufreq.c |   11 -----------
- 2 files changed, 3 insertions(+), 11 deletions(-)
+> By the way, there is third option:)
 
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -27,7 +27,6 @@
- #include <linux/mutex.h>
- #include <linux/slab.h>
- #include <linux/suspend.h>
--#include <linux/syscore_ops.h>
- #include <linux/tick.h>
- #include <trace/events/power.h>
- 
-@@ -2556,14 +2555,6 @@ int cpufreq_unregister_driver(struct cpu
- }
- EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
- 
--/*
-- * Stop cpufreq at shutdown to make sure it isn't holding any locks
-- * or mutexes when secondary CPUs are halted.
-- */
--static struct syscore_ops cpufreq_syscore_ops = {
--	.shutdown = cpufreq_suspend,
--};
--
- struct kobject *cpufreq_global_kobject;
- EXPORT_SYMBOL(cpufreq_global_kobject);
- 
-@@ -2575,8 +2566,6 @@ static int __init cpufreq_core_init(void
- 	cpufreq_global_kobject = kobject_create_and_add("cpufreq", &cpu_subsys.dev_root->kobj);
- 	BUG_ON(!cpufreq_global_kobject);
- 
--	register_syscore_ops(&cpufreq_syscore_ops);
--
- 	return 0;
- }
- core_initcall(cpufreq_core_init);
-Index: linux-pm/drivers/base/core.c
-===================================================================
---- linux-pm.orig/drivers/base/core.c
-+++ linux-pm/drivers/base/core.c
-@@ -10,6 +10,7 @@
-  *
-  */
- 
-+#include <linux/cpufreq.h>
- #include <linux/device.h>
- #include <linux/err.h>
- #include <linux/fwnode.h>
-@@ -2042,6 +2043,8 @@ void device_shutdown(void)
- {
- 	struct device *dev, *parent;
- 
-+	cpufreq_suspend();
-+
- 	spin_lock(&devices_kset->list_lock);
- 	/*
- 	 * Walk the devices list backward, shutting down each in turn.
+Well, that at least would require a comment explaining what's going on.
 
+> +++ b/drivers/base/power/main.c
+> @@ -1211,8 +1211,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+>                 dev->power.is_late_suspended = true;
+>         } else {
+>                 async_error = error;
+> -               if (!is_async(dev))
+> -                       pm_runtime_enable(dev);
+> +               error = 0;
+>         }
+
+Thanks,
+Rafael
