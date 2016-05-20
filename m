@@ -1,78 +1,65 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH] Increase in idle power with schedutil
-Date: Fri, 20 May 2016 17:53:41 +0530
-Message-ID: <201605201223.u4KCNWfU007250@mx0a-001b2d01.pphosted.com>
-References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com> <20160519114029.GW3193@twins.programming.kicks-ass.net>
+From: Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
+Date: Fri, 20 May 2016 09:56:53 -0400
+Message-ID: <7b865a03-484f-2d10-aa3e-d9c0d04caecb@tycho.nsa.gov>
+References: <573DF82D.50006@deltatee.com> <20160520071517.GB14191@gmail.com>
+ <CAJZ5v0gbv4CHmb1KfFgb=VKDNY32d=nzQ776_zVPC+X68h4d-w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:44046 "EHLO
-	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752892AbcETNLo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 09:11:44 -0400
-Received: from pps.filterd (m0075420.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u4KCNWfU007250
-	for <linux-pm@vger.kernel.org>; Fri, 20 May 2016 08:23:57 -0400
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
-	by mx0a-001b2d01.pphosted.com with ESMTP id 231m7rkwms-1
-	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 20 May 2016 08:23:56 -0400
-Received: from localhost
-	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-	Fri, 20 May 2016 17:53:52 +0530
-In-Reply-To: <20160519114029.GW3193@twins.programming.kicks-ass.net>
+Received: from smtp.nsa.gov ([8.44.101.8]:10876 "EHLO emsm-gh1-uea10.nsa.gov"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752075AbcETOHJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 20 May 2016 10:07:09 -0400
+In-Reply-To: <CAJZ5v0gbv4CHmb1KfFgb=VKDNY32d=nzQ776_zVPC+X68h4d-w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, Steve Muckle <steve.muckle@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>
+Cc: Logan Gunthorpe <logang@deltatee.com>, Kees Cook <keescook@chromium.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
-Hi,
-
-On 05/19/2016 05:10 PM, Peter Zijlstra wrote:
-> On Wed, May 18, 2016 at 11:11:51PM +0200, Rafael J. Wysocki wrote:
->> On Wed, May 18, 2016 at 2:53 PM, Shilpasri G Bhat
->> <shilpa.bhat@linux.vnet.ibm.com> wrote:
->>> This patch adds driver callback for fast_switch and below observations
->>> on schedutil governor are done with this patch.
+On 05/20/2016 07:34 AM, Rafael J. Wysocki wrote:
+> On Fri, May 20, 2016 at 9:15 AM, Ingo Molnar <mingo@kernel.org> wrote:
+>>
+>> * Logan Gunthorpe <logang@deltatee.com> wrote:
+>>
+>>> Hi,
 >>>
->>> In POWER8 there is a regression observed with schedutil compared to
->>> ondemand. With schedutil the frequency is not ramping down and is
->>> mostly stuck at max frequency during idle . This is because of the
->>> watchdog timer, an RT task which is fired every 4 seconds which
->>> results in requesting max frequency.
+>>> I have been working on a bug that causes my laptop to freeze during
+>>> resume from hibernation. I did a bisect to find the offending commit:
+>>>
+>>> [ab76f7b4ab] x86/mm: Set NX on gap between __ex_table and rodata
+>>>
+>>> There is more information in the bugzilla report [1] that
+>>> I've been working on but I will summarize things below.
+>>>
+>>> I've experienced intermittent but reproducible freezes when resuming
+>>> from hibernation since about kernel version 3.19. The freeze was
+>>> significantly more reproducible when a few applications were loaded
+>>> before hibernation and would largely not happen if hibernated
+>>> immediately after booting to a desktop. I did some tracing work to find
+>>> that the kernel gets as far as the resume_image call in
+>>> swsusp_arch_resume and I could not find any response from the image
+>>> kernel when I hit the bug. I also did testing that seemed to rule out
+>>> this being caused by a problematic driver.
+>>>
+>>> I did a successful bisect between 3.18 and 3.19 which found a bug in
+>>> commit f5b2831d6 that was then later fixed by commit 55696b1f66 in 4.4.
+>>> Then, I did a second bisect with a ported version of the fix to the
+>>> first bug and found commit ab76f7b4ab in 4.3 to also break hibernation
+>>> with what appears to be the exact same symptoms. Reverting that commit
+>>> in recent kernels up to and including 4.6 fixes the issue and restores
+>>> reliable hibernation. However, it's not at all clear to me why that
+>>> commit would cause this issue or how to fix the issue without reverting.
 >>
->> Well, yes, that would be problematic.
->>
+>> I've attached that commit below and also Cc:-ed a few more people who might have
+>> an idea about why this regressed. Worst-case we'll have to revert it.
 > 
-> Right; we need to come up with something for RT tasks; but what happens
-> if you disable the watchdog? This should be entirely doable and might
-> give a better comparison.
-> 
+> Without looking deep into mm, my theory would be that after this patch
+> the final jump from the boot kernel to the image kernel's trampoline
+> code during resume may crash the kernel if the trampoline page turns
+> out to be NX in the boot kernel (it has to be executable in both the
+> boot and the image kernels).
 
-Below are the comparisons by disabling watchdog.
-Both schedutil and ondemand have a similar ramp-down trend. And in both the
-cases I can see that frequency of the cpu is not reduced in deterministic
-fashion. In a observation window of 30 seconds after running a workload I can
-see that the frequency is not ramped down on some cpus in the system and are
-idling at max frequency.
-
-Below are the sample trace showcasing the frequency request when the cpu enters
-idle with schedutil.
-<...>-3528  7650.011010: cpu_frequency: state=4322000 cpu_id=120
-<...>-3528  7650.027540: sched_switch: prev_comm=ppc64_cpu prev_state=x ==>
-			next_comm=swapper/120
-<idle>-0    7650.035017: cpu_frequency: state=4322000 cpu_id=120
-<idle>-0    7729.683536: cpu_frequency: state=4322000 cpu_id=120
-<idle>-0    7729.683552: sched_switch: prev_comm=swapper/120 prev_state=R ==>
-			next_comm=kworker/120:1
-kworker/120  7729.683565: sched_switch: prev_comm=kworker/120:1 prev_state=S ==>
-			 next_comm=swapper/120
-
-However ondemand governor(with watchdog enabled) benefits from the noise created
-by watchdog timer and is able to brig down the frequency.
-
-Thanks and Regards,
-Shilpa
-
+So, pardon my ignorance, but where is this trampoline page placed in
+kernel memory?
