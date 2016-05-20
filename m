@@ -1,77 +1,115 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/2] cpufreq: Upstream Android's Interactive governor
-Date: Fri, 20 May 2016 12:09:35 +0530
-Message-ID: <cover.1463723328.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rostedt@goodmis.org, mingo@redhat.com, peterz@infradead.org, mike@android.com, toddpoynor@google.com, linux-kernel@vger.kernel.org, kandoiruchi@google.com, juri.lelli@arm.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: Move gov_attr_* macros to cpufreq.h
+Date: Fri, 20 May 2016 12:09:36 +0530
+Message-ID: <ebf41116d27a807e9344dbb0ab8836828fa0dc20.1463723328.git.viresh.kumar@linaro.org>
+References: <cover.1463723328.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:36515 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754826AbcETGkP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 02:40:15 -0400
+Received: by mail-pa0-f42.google.com with SMTP id bt5so36572483pac.3
+        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 23:40:15 -0700 (PDT)
+In-Reply-To: <cover.1463723328.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1463723328.git.viresh.kumar@linaro.org>
+References: <cover.1463723328.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rostedt@goodmis.org, mike@android.com, toddpoynor@google.com, linux-kernel@vger.kernel.org, kandoiruchi@google.com, juri.lelli@arm.com, steve.muckle@linaro.org, vincent.guittot@linaro.org
 
-Hi Rafael et. al.,
+These macros can be reused by governors which don't use the common
+governor code present in cpufreq_governor.c and should be moved to the
+relevant header.
 
-We had some discussions [1] last week on the PM mailing about
-upstreaming the cpufreq governor most widely used on Andoid Mobile
-phones and tablets: Interactive governor. People (including Rafael)
-mostly agreed that we better get it upstreamed and here is an attempt to
-upstream most of it (idle notifiers aren't included in this series).
+Now that they are getting moved to the right header file, reuse them in
+schedutil governor as well (that required rename of show/store
+routines).
 
-I picked the latest code spread over 70-80 patches from [2].  The
-unmodified code, based over mainline is pushed [4] for reference.
+Also create gov_attr_wo() macro for write-only sysfs files, this will be
+used by Interactive governor in a later patch.
 
-I have updated the governor to align it with the current practices
-followed with mainline governors, like using utilization hooks from the
-scheduler and handling kobject (for governor's sysfs directory) in a
-race free manner. And of course this included general cleanup of the
-governor as well. This version is pushed here [3] for testing.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq_governor.h |  8 --------
+ include/linux/cpufreq.h            | 12 ++++++++++++
+ kernel/sched/cpufreq_schedutil.c   |  8 ++++----
+ 3 files changed, 16 insertions(+), 12 deletions(-)
 
-The Android version of interactive governor also uses idle EXIT
-notifiers, but that code isn't part of this series and will be sent
-separately later. For people interested in looking at that, those are 3
-minor patches on top of this series and are pushed here [5].
-
-I haven't changed the core logic of the governor intentionally, as that
-rather requires more in-depth knowledge of the use case for which the
-optimizations have been done. So, we should do any such thing later on
-with new patches, so that people can find things easily.
-
-I also haven't tried to change the userspace interface as that may have
-broken the userspace that already exists and uses this governor.
-
-This has been lightly tested on my Exynos board (dual ARM A15), where
-the governor gets inserted/removed multiple times, the sysfs files are
-all functional. The frequency gets changed with load, etc.
-
-This series is based of pm/bleeding-edge branch + few patches from
-Rafael [6] & [7] and few minor cleanups from me [8].
-
---
-viresh
-
-[1] http://marc.info/?l=linux-pm&m=146301864519072
-[2] https://android.googlesource.com/kernel/common remotes/android/android-4.4
-[3] git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/interactive
-[4] git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/interactive-orig
-[5] git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/intearctive-idle-notifier
-[6] http://marc.info/?l=linux-kernel&m=146318036229244
-[7] http://marc.info/?l=linux-kernel&m=146360498820804
-[8] http://marc.info/?l=linux-pm&m=146357434108299
-
-Viresh Kumar (2):
-  cpufreq: Move gov_attr_* macros to cpufreq.h
-  cpufreq: Add android's 'interactive' governor
-
- Documentation/cpu-freq/governors.txt       |   86 ++
- drivers/cpufreq/Kconfig                    |   27 +
- drivers/cpufreq/Makefile                   |    1 +
- drivers/cpufreq/cpufreq_governor.h         |    8 -
- drivers/cpufreq/cpufreq_interactive.c      | 1371 ++++++++++++++++++++++++++++
- include/linux/cpufreq.h                    |   12 +
- include/trace/events/cpufreq_interactive.h |  112 +++
- kernel/sched/cpufreq_schedutil.c           |    8 +-
- 8 files changed, 1613 insertions(+), 12 deletions(-)
- create mode 100644 drivers/cpufreq/cpufreq_interactive.c
- create mode 100644 include/trace/events/cpufreq_interactive.h
-
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index ef1037e9c92b..3196ed9c1c0a 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -70,14 +70,6 @@ static ssize_t show_##file_name						\
+ 	return sprintf(buf, "%u\n", dbs_data->file_name);		\
+ }
+ 
+-#define gov_attr_ro(_name)						\
+-static struct governor_attr _name =					\
+-__ATTR(_name, 0444, show_##_name, NULL)
+-
+-#define gov_attr_rw(_name)						\
+-static struct governor_attr _name =					\
+-__ATTR(_name, 0644, show_##_name, store_##_name)
+-
+ /* Common to all CPUs of a policy */
+ struct policy_dbs_info {
+ 	struct cpufreq_policy *policy;
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index fbd696edf5bd..533490cd046d 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -504,6 +504,18 @@ struct gov_attr_set {
+ 	int usage_count;
+ };
+ 
++#define gov_attr_ro(_name)						\
++static struct governor_attr _name =					\
++__ATTR(_name, 0444, show_##_name, NULL)
++
++#define gov_attr_wo(_name)						\
++static struct governor_attr _name =					\
++__ATTR(_name, 0200, NULL, store_##_name)
++
++#define gov_attr_rw(_name)						\
++static struct governor_attr _name =					\
++__ATTR(_name, 0644, show_##_name, store_##_name)
++
+ /* sysfs ops for cpufreq governors */
+ extern const struct sysfs_ops governor_sysfs_ops;
+ 
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 758efd7f3abe..cc77ce18e52c 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -243,15 +243,15 @@ static inline struct sugov_tunables *to_sugov_tunables(struct gov_attr_set *attr
+ 	return container_of(attr_set, struct sugov_tunables, attr_set);
+ }
+ 
+-static ssize_t rate_limit_us_show(struct gov_attr_set *attr_set, char *buf)
++static ssize_t show_rate_limit_us(struct gov_attr_set *attr_set, char *buf)
+ {
+ 	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
+ 
+ 	return sprintf(buf, "%u\n", tunables->rate_limit_us);
+ }
+ 
+-static ssize_t rate_limit_us_store(struct gov_attr_set *attr_set, const char *buf,
+-				   size_t count)
++static ssize_t store_rate_limit_us(struct gov_attr_set *attr_set,
++				   const char *buf, size_t count)
+ {
+ 	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
+ 	struct sugov_policy *sg_policy;
+@@ -268,7 +268,7 @@ static ssize_t rate_limit_us_store(struct gov_attr_set *attr_set, const char *bu
+ 	return count;
+ }
+ 
+-static struct governor_attr rate_limit_us = __ATTR_RW(rate_limit_us);
++gov_attr_rw(rate_limit_us);
+ 
+ static struct attribute *sugov_attributes[] = {
+ 	&rate_limit_us.attr,
 -- 
 2.7.1.410.g6faf27b
+
