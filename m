@@ -1,42 +1,34 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: Fabio Estevam <festevam@gmail.com>
 Subject: Re: [PATCH] cpufreq: imx6: Fix the secondary_sel_clk clock string
-Date: Fri, 20 May 2016 08:33:57 +0530
-Message-ID: <20160520030357.GA12608@vireshk-i7>
+Date: Fri, 20 May 2016 00:09:21 -0300
+Message-ID: <CAOMZO5BjUP8JSKb9ZPYSUd7uTML3Q4vF4-PPGrQMEaZ-C45Oow@mail.gmail.com>
 References: <1463713188-6896-1-git-send-email-festevam@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:36203 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753553AbcETDEA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 23:04:00 -0400
-Received: by mail-pa0-f47.google.com with SMTP id bt5so34832267pac.3
-        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 20:04:00 -0700 (PDT)
-Content-Disposition: inline
+Received: from mail-io0-f180.google.com ([209.85.223.180]:35904 "EHLO
+	mail-io0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753403AbcETDJW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 May 2016 23:09:22 -0400
 In-Reply-To: <1463713188-6896-1-git-send-email-festevam@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: rafael.j.wysocki@intel.com, ping.bai@nxp.com, shawnguo@kernel.org, kernel@pengutronix.de, linux-pm@vger.kernel.org, Fabio Estevam <fabio.estevam@nxp.com>, stable@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Ping Bai <ping.bai@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, stable <stable@vger.kernel.org>
 
-On 19-05-16, 23:59, Fabio Estevam wrote:
+On Thu, May 19, 2016 at 11:59 PM, Fabio Estevam <festevam@gmail.com> wrote:
 > From: Fabio Estevam <fabio.estevam@nxp.com>
-> 
+>
 > Commit a35fc5a33b62a6 ("cpufreq: imx: update the clock switch flow to
 > support imx6ul") introduced the 'secondary_sel_clk' clock, which is
-> specific for the i.mx6ul case, but used the wrong clock string inside 
+> specific for the i.mx6ul case, but used the wrong clock string inside
 > the clk_get() function.
-> 
+>
 > Use the correct clock string: "secondary_sel_clk".
-> 
-> This fixes a kernel crash after running the 'reboot' command on a
-> mx6ul.
-> 
-> Fixes: a35fc5a33b62a6 ("cpufreq: imx: update the clock switch flow to support imx6ul")
-> Cc: <stable@vger.kernel.org> # 4.4.x
-> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Sorry, the  'secondary_sel' name is the one define in imx6ul.dtsi.
 
--- 
-viresh
+This patch 'fixed' the issue because it did not register cpufreq for mx6ul.
+
+We still need to provide a proper fix for cpufreq on mx6ul. Please
+discard this patch.
