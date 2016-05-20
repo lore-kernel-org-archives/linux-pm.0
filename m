@@ -1,55 +1,63 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/2] cpufreq: Upstream Android's Interactive governor
-Date: Fri, 20 May 2016 13:26:53 +0200
-Message-ID: <CAJZ5v0hW1yYD7FhOaK5Hkj7956jtQThzqY=OmCr38q_zDCjmog@mail.gmail.com>
-References: <cover.1463723328.git.viresh.kumar@linaro.org>
+Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
+Date: Fri, 20 May 2016 13:34:27 +0200
+Message-ID: <CAJZ5v0gbv4CHmb1KfFgb=VKDNY32d=nzQ776_zVPC+X68h4d-w@mail.gmail.com>
+References: <573DF82D.50006@deltatee.com>
+	<20160520071517.GB14191@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1463723328.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, mike@android.com, toddpoynor@google.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kandoiruchi@google.com, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:33649 "EHLO
+	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755318AbcETLe3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 07:34:29 -0400
+In-Reply-To: <20160520071517.GB14191@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Logan Gunthorpe <logang@deltatee.com>, Stephen Smalley <sds@tycho.nsa.gov>, Kees Cook <keescook@chromium.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
-On Fri, May 20, 2016 at 8:39 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Hi Rafael et. al.,
+On Fri, May 20, 2016 at 9:15 AM, Ingo Molnar <mingo@kernel.org> wrote:
 >
-> We had some discussions [1] last week on the PM mailing about
-> upstreaming the cpufreq governor most widely used on Andoid Mobile
-> phones and tablets: Interactive governor. People (including Rafael)
-> mostly agreed that we better get it upstreamed and here is an attempt to
-> upstream most of it (idle notifiers aren't included in this series).
+> * Logan Gunthorpe <logang@deltatee.com> wrote:
 >
-> I picked the latest code spread over 70-80 patches from [2].  The
-> unmodified code, based over mainline is pushed [4] for reference.
+>> Hi,
+>>
+>> I have been working on a bug that causes my laptop to freeze during
+>> resume from hibernation. I did a bisect to find the offending commit:
+>>
+>> [ab76f7b4ab] x86/mm: Set NX on gap between __ex_table and rodata
+>>
+>> There is more information in the bugzilla report [1] that
+>> I've been working on but I will summarize things below.
+>>
+>> I've experienced intermittent but reproducible freezes when resuming
+>> from hibernation since about kernel version 3.19. The freeze was
+>> significantly more reproducible when a few applications were loaded
+>> before hibernation and would largely not happen if hibernated
+>> immediately after booting to a desktop. I did some tracing work to find
+>> that the kernel gets as far as the resume_image call in
+>> swsusp_arch_resume and I could not find any response from the image
+>> kernel when I hit the bug. I also did testing that seemed to rule out
+>> this being caused by a problematic driver.
+>>
+>> I did a successful bisect between 3.18 and 3.19 which found a bug in
+>> commit f5b2831d6 that was then later fixed by commit 55696b1f66 in 4.4.
+>> Then, I did a second bisect with a ported version of the fix to the
+>> first bug and found commit ab76f7b4ab in 4.3 to also break hibernation
+>> with what appears to be the exact same symptoms. Reverting that commit
+>> in recent kernels up to and including 4.6 fixes the issue and restores
+>> reliable hibernation. However, it's not at all clear to me why that
+>> commit would cause this issue or how to fix the issue without reverting.
 >
-> I have updated the governor to align it with the current practices
-> followed with mainline governors, like using utilization hooks from the
-> scheduler and handling kobject (for governor's sysfs directory) in a
-> race free manner. And of course this included general cleanup of the
-> governor as well. This version is pushed here [3] for testing.
->
-> The Android version of interactive governor also uses idle EXIT
-> notifiers, but that code isn't part of this series and will be sent
-> separately later. For people interested in looking at that, those are 3
-> minor patches on top of this series and are pushed here [5].
->
-> I haven't changed the core logic of the governor intentionally, as that
-> rather requires more in-depth knowledge of the use case for which the
-> optimizations have been done. So, we should do any such thing later on
-> with new patches, so that people can find things easily.
->
-> I also haven't tried to change the userspace interface as that may have
-> broken the userspace that already exists and uses this governor.
->
-> This has been lightly tested on my Exynos board (dual ARM A15), where
-> the governor gets inserted/removed multiple times, the sysfs files are
-> all functional. The frequency gets changed with load, etc.
->
-> This series is based of pm/bleeding-edge branch + few patches from
-> Rafael [6] & [7] and few minor cleanups from me [8].
+> I've attached that commit below and also Cc:-ed a few more people who might have
+> an idea about why this regressed. Worst-case we'll have to revert it.
 
-OK, thanks!
+Without looking deep into mm, my theory would be that after this patch
+the final jump from the boot kernel to the image kernel's trampoline
+code during resume may crash the kernel if the trampoline page turns
+out to be NX in the boot kernel (it has to be executable in both the
+boot and the image kernels).
 
-This may take some time to review, though.
+Thanks,
+Rafael
