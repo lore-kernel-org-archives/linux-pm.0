@@ -1,85 +1,55 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: Should 9aafabc7fece be reverted?
-Date: Fri, 20 May 2016 12:35:05 +0200
-Message-ID: <20160520103505.GW29844@pali>
-References: <573C9F45.5090109@ti.com>
- <201605191806.50809@pali>
- <573DE5A2.7070900@ti.com>
- <201605191818.20237@pali>
- <573DEDFF.8060305@ti.com>
- <20160520093432.GC4580@amd>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/2] cpufreq: Upstream Android's Interactive governor
+Date: Fri, 20 May 2016 13:26:53 +0200
+Message-ID: <CAJZ5v0hW1yYD7FhOaK5Hkj7956jtQThzqY=OmCr38q_zDCjmog@mail.gmail.com>
+References: <cover.1463723328.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f46.google.com ([74.125.82.46]:35043 "EHLO
-	mail-wm0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932424AbcETKfJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 06:35:09 -0400
-Received: by mail-wm0-f46.google.com with SMTP id w143so23283845wmw.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 May 2016 03:35:08 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160520093432.GC4580@amd>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1463723328.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, mike@android.com, toddpoynor@google.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kandoiruchi@google.com, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Andrew F. Davis" <afd@ti.com>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
-On Friday 20 May 2016 11:34:32 Pavel Machek wrote:
-> Hi!
->=20
-> > > I think it is insane to starts generating random numbers for IDR.=
-=2E. Hard=20
-> > > to decide what happen if such situation occur...
-> > >=20
-> >=20
-> > That's kind of what I'm looking for though, if the userspace break =
-is
-> > caused by software relying on the battery to be named "bq27200-0", =
-then
-> > nothing short of hard-coding this exact name will 100% safely fix t=
-he
-> > N900 userspace software. And so using IDR and hoping it gives 0 is =
-just
-> > a hacky work-around way of just naming the device "bq27200-0".
->=20
-> BTW proposals how to fix that userspace would be welcome.
->=20
-> We have three "power supplies", but userspace does not know how they
-> are connecting, resulting in strange results. For now, I have
-> hardware-specific layer in userspace.
->=20
-> https://gitlab.com/tui/tui/blob/master/ofone/hardware.py
->=20
-> Kernel does not really give me other choice.
+On Fri, May 20, 2016 at 8:39 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Hi Rafael et. al.,
+>
+> We had some discussions [1] last week on the PM mailing about
+> upstreaming the cpufreq governor most widely used on Andoid Mobile
+> phones and tablets: Interactive governor. People (including Rafael)
+> mostly agreed that we better get it upstreamed and here is an attempt to
+> upstream most of it (idle notifiers aren't included in this series).
+>
+> I picked the latest code spread over 70-80 patches from [2].  The
+> unmodified code, based over mainline is pushed [4] for reference.
+>
+> I have updated the governor to align it with the current practices
+> followed with mainline governors, like using utilization hooks from the
+> scheduler and handling kobject (for governor's sysfs directory) in a
+> race free manner. And of course this included general cleanup of the
+> governor as well. This version is pushed here [3] for testing.
+>
+> The Android version of interactive governor also uses idle EXIT
+> notifiers, but that code isn't part of this series and will be sent
+> separately later. For people interested in looking at that, those are 3
+> minor patches on top of this series and are pushed here [5].
+>
+> I haven't changed the core logic of the governor intentionally, as that
+> rather requires more in-depth knowledge of the use case for which the
+> optimizations have been done. So, we should do any such thing later on
+> with new patches, so that people can find things easily.
+>
+> I also haven't tried to change the userspace interface as that may have
+> broken the userspace that already exists and uses this governor.
+>
+> This has been lightly tested on my Exynos board (dual ARM A15), where
+> the governor gets inserted/removed multiple times, the sysfs files are
+> all functional. The frequency gets changed with load, etc.
+>
+> This series is based of pm/bleeding-edge branch + few patches from
+> Rafael [6] & [7] and few minor cleanups from me [8].
 
-I have in my mind idea of "merged" power supply devices.
+OK, thanks!
 
-=46or Nokia N900 we have:
-* bq27200 monitoring chip
-* bq24150a charging chip
-* isp1707 usb phy chargin chip (wallcharger detection + enable gpio)
-* rx51_battery driver (export ADC values from battery pins: temperature=
- + design capacity)
-
-And each part export own power supply device in /sys/class/power_supply=
-/
-So there are 4 power supply devices!
-
-In ideal world kernel should provide into userspace just two devices:
-* power supply charger device (merged values from isp1707 and bq24150a)
-* power supply battery device (merged values from rx51_battery and bq27=
-200)
-
-Problem is that e.g. design capacity value provide both drivers. But
-bq27xxx just return constant and incorrect value from bq eeprom. Correc=
-t
-design capacity return only rx51_battery (which read it via ADC, third
-battery pin).
-
-That should fix detection and discovery problem. On Nokia N900 there is
-just one battery and one charger device.
-
---=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+This may take some time to review, though.
