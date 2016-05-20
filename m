@@ -1,8 +1,8 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH 5/5] cpufreq: schedutil: do not update rate limit ts when
  freq is unchanged
-Date: Fri, 20 May 2016 13:54:37 +0200
-Message-ID: <CAJZ5v0gF69bjuoKYoGsjuV4ABtqTCR1JwF=hyw9Nv6NHUzDw0g@mail.gmail.com>
+Date: Fri, 20 May 2016 13:59:26 +0200
+Message-ID: <CAJZ5v0jdECqO7nc=k-EyQb1=Odn65aXLEvyia-O7j2RwNPQysQ@mail.gmail.com>
 References: <1462828814-32530-1-git-send-email-smuckle@linaro.org>
 	<1462828814-32530-6-git-send-email-smuckle@linaro.org>
 	<CAJZ5v0iwz3d6dxY-sUxbU8q1EzcO0gKX1pp-rDb8Www46Fg1uw@mail.gmail.com>
@@ -14,53 +14,58 @@ References: <1462828814-32530-1-git-send-email-smuckle@linaro.org>
 	<20160520004056.GE15383@graphite.smuckle.net>
 	<CAJZ5v0gHYXsYrb5xGKZzFNP=QRvmah5uVDUAxjd1bFij2XznuA@mail.gmail.com>
 	<CAJZ5v0i5Ly1KyjmSC59jVTSxaShURgi=OAsn0nK3FTjFEz7NYg@mail.gmail.com>
+	<CAJZ5v0gF69bjuoKYoGsjuV4ABtqTCR1JwF=hyw9Nv6NHUzDw0g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0i5Ly1KyjmSC59jVTSxaShURgi=OAsn0nK3FTjFEz7NYg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0gF69bjuoKYoGsjuV4ABtqTCR1JwF=hyw9Nv6NHUzDw0g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Steve Muckle <steve.muckle@linaro.org>
 Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, May 20, 2016 at 1:39 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, May 20, 2016 at 2:46 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Fri, May 20, 2016 at 2:40 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
->>> On Fri, May 20, 2016 at 02:37:17AM +0200, Rafael J. Wysocki wrote:
->>>> Also I think that it would be good to avoid walking the frequency
->>>> table twice in case we end up wanting to update the frequency after
->>>> all.  With the [4/5] we'd do it once in get_next_freq() and then once
->>>> more in cpufreq_driver_fast_switch(), for example, and walking the
->>>> frequency table may be more expensive that doing the switch in the
->>>> first place.
+On Fri, May 20, 2016 at 1:54 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Fri, May 20, 2016 at 1:39 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Fri, May 20, 2016 at 2:46 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>> On Fri, May 20, 2016 at 2:40 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
+>>>> On Fri, May 20, 2016 at 02:37:17AM +0200, Rafael J. Wysocki wrote:
+>>>>> Also I think that it would be good to avoid walking the frequency
+>>>>> table twice in case we end up wanting to update the frequency after
+>>>>> all.  With the [4/5] we'd do it once in get_next_freq() and then once
+>>>>> more in cpufreq_driver_fast_switch(), for example, and walking the
+>>>>> frequency table may be more expensive that doing the switch in the
+>>>>> first place.
+>>>>
+>>>> If a driver API is added to return the platform frequency associated
+>>>> with a target frequency, what do you think about requiring the
+>>>> fast_switch API to take a target-supported frequency?
 >>>
->>> If a driver API is added to return the platform frequency associated
->>> with a target frequency, what do you think about requiring the
->>> fast_switch API to take a target-supported frequency?
+>>> That doesn't help much, because it generally would need to find a
+>>> table entry corresponding to it anyway, to find the actual command
+>>> value to write to a register, for example.
+>>>
+>>> But the driver could be smart and cache the value returned from the
+>>> new callback along with the command value associated with it.  If
+>>> invoked with that particular frequency, it would use the cached
+>>> command.  Otherwise, it would walk the table.
 >>
->> That doesn't help much, because it generally would need to find a
->> table entry corresponding to it anyway, to find the actual command
->> value to write to a register, for example.
+>> It also makes sense to save both the "raw" value computed by
+>> get_next_freq() and the corresponding "driver" value, because if the
+>> current "raw" value is equal to the previous "raw" value, it shouldn't
+>> be necessary to walk the frequency table at all (as the previous
+>> "driver" value would then be equal to the current "driver" value too).
 >>
->> But the driver could be smart and cache the value returned from the
->> new callback along with the command value associated with it.  If
->> invoked with that particular frequency, it would use the cached
->> command.  Otherwise, it would walk the table.
+>> So maybe the "driver" value should only be checked after the "raw"
+>> value check in sugov_update_commit() or equivalent?
 >
-> It also makes sense to save both the "raw" value computed by
-> get_next_freq() and the corresponding "driver" value, because if the
-> current "raw" value is equal to the previous "raw" value, it shouldn't
-> be necessary to walk the frequency table at all (as the previous
-> "driver" value would then be equal to the current "driver" value too).
+> Moreover, you need to be careful about policy->min/max changes,
+> because both cpufreq_driver_fast_switch() and
+> __cpufreq_driver_target() clamp the target frequency between those and
+> if they change in the meantime, you may end up having to use a
+> different frequency at the driver level even if you get the same "raw"
+> value as last time.
 >
-> So maybe the "driver" value should only be checked after the "raw"
-> value check in sugov_update_commit() or equivalent?
+> It looks like we don't do the right thing here in the current code even ...
 
-Moreover, you need to be careful about policy->min/max changes,
-because both cpufreq_driver_fast_switch() and
-__cpufreq_driver_target() clamp the target frequency between those and
-if they change in the meantime, you may end up having to use a
-different frequency at the driver level even if you get the same "raw"
-value as last time.
-
-It looks like we don't do the right thing here in the current code even ...
+Scratch that, sorry.  We'll get the "limits" notification and the
+need_freq_update thing will cause next_freq to become zero then.
