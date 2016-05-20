@@ -1,71 +1,158 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 5/5] cpufreq: schedutil: do not update rate limit ts when
- freq is unchanged
-Date: Fri, 20 May 2016 13:59:26 +0200
-Message-ID: <CAJZ5v0jdECqO7nc=k-EyQb1=Odn65aXLEvyia-O7j2RwNPQysQ@mail.gmail.com>
-References: <1462828814-32530-1-git-send-email-smuckle@linaro.org>
-	<1462828814-32530-6-git-send-email-smuckle@linaro.org>
-	<CAJZ5v0iwz3d6dxY-sUxbU8q1EzcO0gKX1pp-rDb8Www46Fg1uw@mail.gmail.com>
-	<20160519194635.GG17223@graphite.smuckle.net>
-	<CAJZ5v0gF07sox1+84eLeYPK6Ksj26s7iKU6zc=+pMOQimwUYog@mail.gmail.com>
-	<20160519233408.GC15383@graphite.smuckle.net>
-	<CAJZ5v0gL0xe7P7jZ=EZtFaSzE5n3ECa+tnTf0R2Th7xrB=9PgA@mail.gmail.com>
-	<CAJZ5v0i0AGZVEYgJzDRVJHqCjAGDXhCeQ4gJBn77z_5cCh2Mqg@mail.gmail.com>
-	<20160520004056.GE15383@graphite.smuckle.net>
-	<CAJZ5v0gHYXsYrb5xGKZzFNP=QRvmah5uVDUAxjd1bFij2XznuA@mail.gmail.com>
-	<CAJZ5v0i5Ly1KyjmSC59jVTSxaShURgi=OAsn0nK3FTjFEz7NYg@mail.gmail.com>
-	<CAJZ5v0gF69bjuoKYoGsjuV4ABtqTCR1JwF=hyw9Nv6NHUzDw0g@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] cpufreq: stats: Walk online CPUs with CPU offline/online locked
+Date: Fri, 20 May 2016 14:13:26 +0200
+Message-ID: <3805651.Y4agxXsfkM@vostro.rjw.lan>
+References: <19792191.esL3UuyORb@vostro.rjw.lan> <2278154.xyiFOocWfq@vostro.rjw.lan> <20160520022247.GS32001@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gF69bjuoKYoGsjuV4ABtqTCR1JwF=hyw9Nv6NHUzDw0g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54172 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755666AbcETMJy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 08:09:54 -0400
+In-Reply-To: <20160520022247.GS32001@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Fri, May 20, 2016 at 1:54 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, May 20, 2016 at 1:39 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Fri, May 20, 2016 at 2:46 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> On Fri, May 20, 2016 at 2:40 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
->>>> On Fri, May 20, 2016 at 02:37:17AM +0200, Rafael J. Wysocki wrote:
->>>>> Also I think that it would be good to avoid walking the frequency
->>>>> table twice in case we end up wanting to update the frequency after
->>>>> all.  With the [4/5] we'd do it once in get_next_freq() and then once
->>>>> more in cpufreq_driver_fast_switch(), for example, and walking the
->>>>> frequency table may be more expensive that doing the switch in the
->>>>> first place.
->>>>
->>>> If a driver API is added to return the platform frequency associated
->>>> with a target frequency, what do you think about requiring the
->>>> fast_switch API to take a target-supported frequency?
->>>
->>> That doesn't help much, because it generally would need to find a
->>> table entry corresponding to it anyway, to find the actual command
->>> value to write to a register, for example.
->>>
->>> But the driver could be smart and cache the value returned from the
->>> new callback along with the command value associated with it.  If
->>> invoked with that particular frequency, it would use the cached
->>> command.  Otherwise, it would walk the table.
->>
->> It also makes sense to save both the "raw" value computed by
->> get_next_freq() and the corresponding "driver" value, because if the
->> current "raw" value is equal to the previous "raw" value, it shouldn't
->> be necessary to walk the frequency table at all (as the previous
->> "driver" value would then be equal to the current "driver" value too).
->>
->> So maybe the "driver" value should only be checked after the "raw"
->> value check in sugov_update_commit() or equivalent?
->
-> Moreover, you need to be careful about policy->min/max changes,
-> because both cpufreq_driver_fast_switch() and
-> __cpufreq_driver_target() clamp the target frequency between those and
-> if they change in the meantime, you may end up having to use a
-> different frequency at the driver level even if you get the same "raw"
-> value as last time.
->
-> It looks like we don't do the right thing here in the current code even ...
+On Friday, May 20, 2016 07:52:47 AM Viresh Kumar wrote:
+> On 20-05-16, 03:41, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Loops over online CPUs in cpufreq_stats_init() and cpufreq_stats_exit()
+> > should be carried out with CPU offline/online locked or races are
+> > possible otherwise, so make that happen.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> > 
+> > v1 -> v2: On a second thought, add the policy notifier in cpufreq_stats_init()
+> >   with CPU offline/online locked too.
+> > 
+> > ---
+> >  drivers/cpufreq/cpufreq_stats.c |   16 +++++++++++++---
+> >  1 file changed, 13 insertions(+), 3 deletions(-)
+> > 
+> > Index: linux-pm/drivers/cpufreq/cpufreq_stats.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/cpufreq/cpufreq_stats.c
+> > +++ linux-pm/drivers/cpufreq/cpufreq_stats.c
+> > @@ -317,10 +317,13 @@ static int __init cpufreq_stats_init(voi
+> >  	unsigned int cpu;
+> >  
+> >  	spin_lock_init(&cpufreq_stats_lock);
+> > +
+> > +	get_online_cpus();
+> > +
+> >  	ret = cpufreq_register_notifier(&notifier_policy_block,
+> >  				CPUFREQ_POLICY_NOTIFIER);
+> 
+> Why is this required to be protected ?
 
-Scratch that, sorry.  We'll get the "limits" notification and the
-need_freq_update thing will cause next_freq to become zero then.
+Last night I thought I saw a scenario in which that notifier could run
+in parallel with the loop below even with get_online_cpus() between them,
+but I don't see it right now.
+
+Maybe I should not look at stuff late in the night ...
+
+> >  	if (ret)
+> > -		return ret;
+> > +		goto out;
+> >  
+> >  	for_each_online_cpu(cpu)
+> >  		cpufreq_stats_create_table(cpu);
+> > @@ -332,21 +335,28 @@ static int __init cpufreq_stats_init(voi
+> >  				CPUFREQ_POLICY_NOTIFIER);
+> >  		for_each_online_cpu(cpu)
+> >  			cpufreq_stats_free_table(cpu);
+> 
+> Maybe we can make this for_each_possible_cpu() then, and so getting a
+> policy will fail for CPUs which aren't online.
+> 
+> And we wouldn't need to use get_online_cpus() then ?
+
+That could be done, but then there would be nothing to prevent the
+policy notifier from running in parallel with the loop.
+
+Something like the patch below should do the trick, though.
+
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] cpufreq: stats: Fix race conditions on init and cleanup
+
+Loops over online CPUs in cpufreq_stats_init() and cpufreq_stats_exit()
+are not carried out with CPU offline/online locked, so races are
+possible with respect to policy initialization and cleanup.
+
+To prevent that from happening, change the loops to walk all possible
+CPUs, as cpufreq_stats_create_table() and cpufreq_stats_free_table()
+handle the case when there's no policy for the given CPU cleanly,
+but also use policy->rwsem in there to prevent those routines
+from racing with the policy notifier.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq_stats.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/cpufreq_stats.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq_stats.c
++++ linux-pm/drivers/cpufreq/cpufreq_stats.c
+@@ -154,7 +154,9 @@ static void cpufreq_stats_free_table(uns
+ 	if (!policy)
+ 		return;
+ 
++	down_write(&policy->rwsem);
+ 	__cpufreq_stats_free_table(policy);
++	up_write(&policy->rwsem);
+ 
+ 	cpufreq_cpu_put(policy);
+ }
+@@ -238,7 +240,9 @@ static void cpufreq_stats_create_table(u
+ 	if (likely(!policy))
+ 		return;
+ 
++	down_write(&policy->rwsem);
+ 	__cpufreq_stats_create_table(policy);
++	up_write(&policy->rwsem);
+ 
+ 	cpufreq_cpu_put(policy);
+ }
+@@ -322,7 +326,7 @@ static int __init cpufreq_stats_init(voi
+ 	if (ret)
+ 		return ret;
+ 
+-	for_each_online_cpu(cpu)
++	for_each_possible_cpu(cpu)
+ 		cpufreq_stats_create_table(cpu);
+ 
+ 	ret = cpufreq_register_notifier(&notifier_trans_block,
+@@ -330,12 +334,11 @@ static int __init cpufreq_stats_init(voi
+ 	if (ret) {
+ 		cpufreq_unregister_notifier(&notifier_policy_block,
+ 				CPUFREQ_POLICY_NOTIFIER);
+-		for_each_online_cpu(cpu)
++		for_each_possible_cpu(cpu)
+ 			cpufreq_stats_free_table(cpu);
+-		return ret;
+ 	}
+ 
+-	return 0;
++	return ret;
+ }
+ static void __exit cpufreq_stats_exit(void)
+ {
+@@ -345,7 +348,8 @@ static void __exit cpufreq_stats_exit(vo
+ 			CPUFREQ_POLICY_NOTIFIER);
+ 	cpufreq_unregister_notifier(&notifier_trans_block,
+ 			CPUFREQ_TRANSITION_NOTIFIER);
+-	for_each_online_cpu(cpu)
++
++	for_each_possible_cpu(cpu)
+ 		cpufreq_stats_free_table(cpu);
+ }
+ 
+
