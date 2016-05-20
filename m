@@ -1,157 +1,37 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: stats: Walk online CPUs with CPU offline/online locked
-Date: Fri, 20 May 2016 23:33:13 +0200
-Message-ID: <5580598.s7imtWPVt5@vostro.rjw.lan>
-References: <19792191.esL3UuyORb@vostro.rjw.lan> <20160520022247.GS32001@vireshk-i7> <3805651.Y4agxXsfkM@vostro.rjw.lan>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: Crash after 'reboot' due to 9be4fd2c7723a
+Date: Fri, 20 May 2016 18:37:38 -0300
+Message-ID: <CAOMZO5Di3s36=B_52g=S+sWjpdNQ2GozDjeT=3n0B5jNM9z8tA@mail.gmail.com>
+References: <CAOMZO5A62LgnyT0sQw5N-xeHaD0nSGTjAFxUx=_6OpUm02robA@mail.gmail.com>
+	<CAOMZO5D_-3St-jqzMLzFHRn3dXXoSZGn4APSK4F63qCP3X=FfA@mail.gmail.com>
+	<4080948.V5DMHR9bsk@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46856 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751009AbcETV3i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 17:29:38 -0400
-In-Reply-To: <3805651.Y4agxXsfkM@vostro.rjw.lan>
+Received: from mail-io0-f182.google.com ([209.85.223.182]:34150 "EHLO
+	mail-io0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751280AbcETVhj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 17:37:39 -0400
+Received: by mail-io0-f182.google.com with SMTP id 190so160040979iow.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 May 2016 14:37:38 -0700 (PDT)
+In-Reply-To: <4080948.V5DMHR9bsk@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ping Bai <ping.bai@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Russell King <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Friday, May 20, 2016 02:13:26 PM Rafael J. Wysocki wrote:
-> On Friday, May 20, 2016 07:52:47 AM Viresh Kumar wrote:
-> > On 20-05-16, 03:41, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > 
-> > > Loops over online CPUs in cpufreq_stats_init() and cpufreq_stats_exit()
-> > > should be carried out with CPU offline/online locked or races are
-> > > possible otherwise, so make that happen.
-> > > 
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > ---
-> > > 
-> > > v1 -> v2: On a second thought, add the policy notifier in cpufreq_stats_init()
-> > >   with CPU offline/online locked too.
-> > > 
-> > > ---
-> > >  drivers/cpufreq/cpufreq_stats.c |   16 +++++++++++++---
-> > >  1 file changed, 13 insertions(+), 3 deletions(-)
-> > > 
-> > > Index: linux-pm/drivers/cpufreq/cpufreq_stats.c
-> > > ===================================================================
-> > > --- linux-pm.orig/drivers/cpufreq/cpufreq_stats.c
-> > > +++ linux-pm/drivers/cpufreq/cpufreq_stats.c
-> > > @@ -317,10 +317,13 @@ static int __init cpufreq_stats_init(voi
-> > >  	unsigned int cpu;
-> > >  
-> > >  	spin_lock_init(&cpufreq_stats_lock);
-> > > +
-> > > +	get_online_cpus();
-> > > +
-> > >  	ret = cpufreq_register_notifier(&notifier_policy_block,
-> > >  				CPUFREQ_POLICY_NOTIFIER);
-> > 
-> > Why is this required to be protected ?
-> 
-> Last night I thought I saw a scenario in which that notifier could run
-> in parallel with the loop below even with get_online_cpus() between them,
-> but I don't see it right now.
-> 
-> Maybe I should not look at stuff late in the night ...
-> 
-> > >  	if (ret)
-> > > -		return ret;
-> > > +		goto out;
-> > >  
-> > >  	for_each_online_cpu(cpu)
-> > >  		cpufreq_stats_create_table(cpu);
-> > > @@ -332,21 +335,28 @@ static int __init cpufreq_stats_init(voi
-> > >  				CPUFREQ_POLICY_NOTIFIER);
-> > >  		for_each_online_cpu(cpu)
-> > >  			cpufreq_stats_free_table(cpu);
-> > 
-> > Maybe we can make this for_each_possible_cpu() then, and so getting a
-> > policy will fail for CPUs which aren't online.
-> > 
-> > And we wouldn't need to use get_online_cpus() then ?
-> 
-> That could be done, but then there would be nothing to prevent the
-> policy notifier from running in parallel with the loop.
-> 
-> Something like the patch below should do the trick, though.
+Hi Rafael,
 
-The policy rwsem is really only needed in cpufreq_stats_create_table(), because
-the policy notifier is gone when _free_table() runs, so another version of the
-patch goes below.
+On Fri, May 20, 2016 at 6:20 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] cpufreq: stats: Fix race conditions on init and cleanup
+>> If I rebuilt a kernel with SMP=n then the reboot command works as expected.
+>
+> Does it work if you boot with maxcpus=1 or nosmp in the kernel command line?
 
-Loops over online CPUs in cpufreq_stats_init() and cpufreq_stats_exit()
-are not carried out with CPU offline/online locked, so races are
-possible with respect to policy initialization and cleanup.
+No, it does not help.
 
-To prevent that from happening, change the loops to walk all possible
-CPUs, as cpufreq_stats_create_table() and cpufreq_stats_free_table()
-handle the case when there's no policy for the given CPU cleanly, but
-also use policy->rwsem in cpufreq_stats_create_table() to prevent it
-from racing with the policy notifier.
+> Also, please try if the appended patch makes any difference.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq_stats.c |   16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq_stats.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_stats.c
-+++ linux-pm/drivers/cpufreq/cpufreq_stats.c
-@@ -238,7 +238,13 @@ static void cpufreq_stats_create_table(u
- 	if (likely(!policy))
- 		return;
- 
-+	/*
-+	 * The policy notifier may run in parallel with this code, so use the
-+	 * policy rwsem to avoid racing with it.
-+	 */
-+	down_write(&policy->rwsem);
- 	__cpufreq_stats_create_table(policy);
-+	up_write(&policy->rwsem);
- 
- 	cpufreq_cpu_put(policy);
- }
-@@ -322,7 +328,7 @@ static int __init cpufreq_stats_init(voi
- 	if (ret)
- 		return ret;
- 
--	for_each_online_cpu(cpu)
-+	for_each_possible_cpu(cpu)
- 		cpufreq_stats_create_table(cpu);
- 
- 	ret = cpufreq_register_notifier(&notifier_trans_block,
-@@ -330,12 +336,11 @@ static int __init cpufreq_stats_init(voi
- 	if (ret) {
- 		cpufreq_unregister_notifier(&notifier_policy_block,
- 				CPUFREQ_POLICY_NOTIFIER);
--		for_each_online_cpu(cpu)
-+		for_each_possible_cpu(cpu)
- 			cpufreq_stats_free_table(cpu);
--		return ret;
- 	}
- 
--	return 0;
-+	return ret;
- }
- static void __exit cpufreq_stats_exit(void)
- {
-@@ -345,7 +350,8 @@ static void __exit cpufreq_stats_exit(vo
- 			CPUFREQ_POLICY_NOTIFIER);
- 	cpufreq_unregister_notifier(&notifier_trans_block,
- 			CPUFREQ_TRANSITION_NOTIFIER);
--	for_each_online_cpu(cpu)
-+
-+	for_each_possible_cpu(cpu)
- 		cpufreq_stats_free_table(cpu);
- }
- 
-
+I tried it, and the console shows "Requesting system reboot" and stays
+there forever. No more messages after that and the system does not
+reboot.
