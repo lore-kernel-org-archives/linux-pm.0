@@ -1,65 +1,166 @@
-From: Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
-Date: Fri, 20 May 2016 09:56:53 -0400
-Message-ID: <7b865a03-484f-2d10-aa3e-d9c0d04caecb@tycho.nsa.gov>
-References: <573DF82D.50006@deltatee.com> <20160520071517.GB14191@gmail.com>
- <CAJZ5v0gbv4CHmb1KfFgb=VKDNY32d=nzQ776_zVPC+X68h4d-w@mail.gmail.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH] PM / sleep: fix unbalanced pm runtime disable in
+ __device_suspend_late()
+Date: Fri, 20 May 2016 19:21:03 +0300
+Message-ID: <573F396F.3060803@ti.com>
+References: <1463162628-16976-1-git-send-email-grygorii.strashko@ti.com>
+ <CAJZ5v0ja-poNq0J+giAJJb+pPFyGg1a7rUcUfFyhcn9qPnaieQ@mail.gmail.com>
+ <573DF3C6.7080503@ti.com> <4160153.ggAvdOZIvP@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nsa.gov ([8.44.101.8]:10876 "EHLO emsm-gh1-uea10.nsa.gov"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752075AbcETOHJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 20 May 2016 10:07:09 -0400
-In-Reply-To: <CAJZ5v0gbv4CHmb1KfFgb=VKDNY32d=nzQ776_zVPC+X68h4d-w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4160153.ggAvdOZIvP@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>
-Cc: Logan Gunthorpe <logang@deltatee.com>, Kees Cook <keescook@chromium.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
-On 05/20/2016 07:34 AM, Rafael J. Wysocki wrote:
-> On Fri, May 20, 2016 at 9:15 AM, Ingo Molnar <mingo@kernel.org> wrote:
+On 05/20/2016 03:18 PM, Rafael J. Wysocki wrote:
+> On Thursday, May 19, 2016 08:11:34 PM Grygorii Strashko wrote:
+>> On 05/19/2016 04:38 PM, Rafael J. Wysocki wrote:
+>>> On Fri, May 13, 2016 at 8:03 PM, Grygorii Strashko
+>>> <grygorii.strashko@ti.com> wrote:
+>>>> The PM runtime will be left disabled for the device if its .suspend_late()
+>>>> callback fails and async suspend is not allowed for this device. In
+>>>> this case device will not be added in dpm_late_early_list and
+>>>> dpm_resume_early() will ignore this device, as result PM runtime will
+>>>> be disabled for it forever (side effect: after 8 subsequent failures
+>>>> for the same device the PM runtime will be reenabled due to
+>>>> disable_depth overflow).
+>>>>
+>>>> Hence, re-enable PM runtime in __device_suspend_late() if
+>>>> .suspend_late() callback fails and async suspend is not allowed for
+>>>> this device.
+>>>>
+>>>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+>>>> ---
+>>>>    drivers/base/power/main.c | 7 +++++--
+>>>>    1 file changed, 5 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>>>> index 6e7c3cc..9b266e5 100644
+>>>> --- a/drivers/base/power/main.c
+>>>> +++ b/drivers/base/power/main.c
+>>>> @@ -1207,10 +1207,13 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+>>>>           }
+>>>>
+>>>>           error = dpm_run_callback(callback, dev, state, info);
+>>>> -       if (!error)
+>>>> +       if (!error) {
+>>>>                   dev->power.is_late_suspended = true;
+>>>> -       else
+>>>> +       } else {
+>> 		Point [1]
+>>>>                   async_error = error;
+>>>> +               if (!is_async(dev))
+>>>
+>>> Why is the is_async() check necessary here?
+>> 			
+>> A: deviceX is suspended *async* and reached point [1], in this case:
+>> - deviceX has been added in dpm_late_early_list already
+>> - dpm_suspend_late() will detect async_error and call dpm_resume_early()
+>> - dpm_resume_early() will call device_resume_early() for deviceX
+>> - device_resume_early() will re-enable PM runtime
+>> {
+>> ...
+>> 	if (!dev->power.is_late_suspended)
+>> 		goto Out;
 >>
->> * Logan Gunthorpe <logang@deltatee.com> wrote:
+>> 	...
+>>   Out:
+>> 	TRACE_RESUME(error);
 >>
->>> Hi,
->>>
->>> I have been working on a bug that causes my laptop to freeze during
->>> resume from hibernation. I did a bisect to find the offending commit:
->>>
->>> [ab76f7b4ab] x86/mm: Set NX on gap between __ex_table and rodata
->>>
->>> There is more information in the bugzilla report [1] that
->>> I've been working on but I will summarize things below.
->>>
->>> I've experienced intermittent but reproducible freezes when resuming
->>> from hibernation since about kernel version 3.19. The freeze was
->>> significantly more reproducible when a few applications were loaded
->>> before hibernation and would largely not happen if hibernated
->>> immediately after booting to a desktop. I did some tracing work to find
->>> that the kernel gets as far as the resume_image call in
->>> swsusp_arch_resume and I could not find any response from the image
->>> kernel when I hit the bug. I also did testing that seemed to rule out
->>> this being caused by a problematic driver.
->>>
->>> I did a successful bisect between 3.18 and 3.19 which found a bug in
->>> commit f5b2831d6 that was then later fixed by commit 55696b1f66 in 4.4.
->>> Then, I did a second bisect with a ported version of the fix to the
->>> first bug and found commit ab76f7b4ab in 4.3 to also break hibernation
->>> with what appears to be the exact same symptoms. Reverting that commit
->>> in recent kernels up to and including 4.6 fixes the issue and restores
->>> reliable hibernation. However, it's not at all clear to me why that
->>> commit would cause this issue or how to fix the issue without reverting.
+>> 	pm_runtime_enable(dev);
+>> ^^^^^^^^^^^^
+>> 	complete_all(&dev->power.completion);
+>> 	return error;
+>> }	
+>> 	
 >>
->> I've attached that commit below and also Cc:-ed a few more people who might have
->> an idea about why this regressed. Worst-case we'll have to revert it.
+>> B: deviceX is suspended *sync* and reached point [1], in this case:
+>> - deviceX has not been added in dpm_late_early_list yet
+>> - dpm_suspend_late() will detect sync_error and call dpm_resume_early()
+>> - dpm_resume_early() will ignore deviceX
+>>
+>> if i'll not check for !is_async(dev) then pm_runtime_enable(dev)
+>> will be called twice for deviceX with this patch.
 > 
-> Without looking deep into mm, my theory would be that after this patch
-> the final jump from the boot kernel to the image kernel's trampoline
-> code during resume may crash the kernel if the trampoline page turns
-> out to be NX in the boot kernel (it has to be executable in both the
-> boot and the image kernels).
+> OK, thanks!
+> 
+> So to me, the problem is that we handle failures in that code inconsistently
+> depending on whether or not async suspend/resume is enabled for the device.
+> 
+> I'd rather make it consistent than add extra checks to it, so the patch below
+> is how I would fix this.
+> 
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH] PM / sleep: Handle failures in device_suspend_late() consistently
+> 
+> Grygorii Strashko reports:
+> 
+>   The PM runtime will be left disabled for the device if its
+>   .suspend_late() callback fails and async suspend is not allowed
+>   for this device. In this case device will not be added in
+>   dpm_late_early_list and dpm_resume_early() will ignore this
+>   device, as result PM runtime will be disabled for it forever
+>   (side effect: after 8 subsequent failures for the same device
+>   the PM runtime will be reenabled due to disable_depth overflow).
+> 
+> To fix this problem, add devices to dpm_late_early_list regardless
+> of whether or not device_suspend_late() returns errors for them.
+> 
+> That will ensure failures in there to be handled consistently for
+> all devices regardless of their async suspend/resume status.
+> 
+> Reported-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>   drivers/base/power/main.c |    5 +++--
+>   1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -1267,14 +1267,15 @@ int dpm_suspend_late(pm_message_t state)
+>   		error = device_suspend_late(dev);
+>   
+>   		mutex_lock(&dpm_list_mtx);
+> +		if (!list_empty(&dev->power.entry))
+> +			list_move(&dev->power.entry, &dpm_late_early_list);
+> +
+>   		if (error) {
+>   			pm_dev_err(dev, state, " late", error);
+>   			dpm_save_failed_dev(dev_name(dev));
+>   			put_device(dev);
+>   			break;
+>   		}
+> -		if (!list_empty(&dev->power.entry))
+> -			list_move(&dev->power.entry, &dpm_late_early_list);
+>   		put_device(dev);
+>   
+>   		if (async_error)
+> 
 
-So, pardon my ignorance, but where is this trampoline page placed in
-kernel memory?
+Yep, it works too.
+Tested-by: Grygorii Strashko <grygorii.strashko@ti.com>
+
+By the way, there is third option:)
+
++++ b/drivers/base/power/main.c
+@@ -1211,8 +1211,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+                dev->power.is_late_suspended = true;
+        } else {
+                async_error = error;
+-               if (!is_async(dev))
+-                       pm_runtime_enable(dev);
++               error = 0;
+        }
+
+
+
+-- 
+regards,
+-grygorii
