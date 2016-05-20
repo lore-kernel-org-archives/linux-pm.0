@@ -1,80 +1,54 @@
-From: Hongbo Zhang <hongbo.zhang@nxp.com>
-Subject: RE: [PSCI DISCUSS] How to implement standby and suspend-to-ram by PSCI
-Date: Fri, 20 May 2016 08:23:36 +0000
-Message-ID: <DB3PR04MB0812AAD69AEE789DB577C2D2844B0@DB3PR04MB0812.eurprd04.prod.outlook.com>
-References: <DB3PR04MB0812DAA98F71C30E8A8832E3847D0@DB3PR04MB0812.eurprd04.prod.outlook.com>
- <572C9BF2.9010004@arm.com>
- <DB3PR04MB08125A628F5034749F8109D884730@DB3PR04MB0812.eurprd04.prod.outlook.com>
- <1463486036.19237.9.camel@suse.com>
- <AM3PR04MB0805D7F5375413C154DFB981844A0@AM3PR04MB0805.eurprd04.prod.outlook.com>
- <1463659261.14323.3.camel@suse.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1463659261.14323.3.camel@suse.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, "jszhang@marvell.com" <jszhang@marvell.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Frank Li <Frank.Li@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Marc Zyngier <marc.zyngier@arm.com>, Jan Kiszka <jan.kiszka@siemens.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Peng Fan <Peng.Fan@freescale.com>, Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>, Tom Warren <twarren@nvidia.com>, Sudeep Holla <sudeep.holla@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v11 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
+Date: Fri, 20 May 2016 16:38:08 +0800
+Message-ID: <cover.1463732873.git.baolin.wang@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f171.google.com ([209.85.192.171]:36699 "EHLO
+	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932925AbcETIib (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 04:38:31 -0400
+Received: by mail-pf0-f171.google.com with SMTP id c189so40477100pfb.3
+        for <linux-pm@vger.kernel.org>; Fri, 20 May 2016 01:38:31 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: robh@kernel.org, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 
+Currently the Linux kernel does not provide any standard integration of this
+feature that integrates the USB subsystem with the system power regulation
+provided by PMICs meaning that either vendors must add this in their kernels
+or USB gadget devices based on Linux (such as mobile phones) may not behave
+as they should. Thus provide a standard framework for doing this in kernel.
 
+Now introduce one user with wm831x_power to support and test the usb charger,
+which is pending testing. Moreover there may be other potential users will use
+it in future.
 
-> -----Original Message-----
-> From: Oliver Neukum [mailto:oneukum@suse.com]
-> Sent: Thursday, May 19, 2016 8:01 PM
-> To: Hongbo Zhang <hongbo.zhang@nxp.com>
-> Cc: Sudeep Holla <sudeep.holla@arm.com>; linux-pm@vger.kernel.org;
-> Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>; Marc Zyngier
-> <marc.zyngier@arm.com>; Jan Kiszka <jan.kiszka@siemens.com>; Mark
-> Rutland <mark.rutland@arm.com>; Daniel Lezcano
-> <daniel.lezcano@linaro.org>; Chen-Yu Tsai <wens@csie.org>; Hans de Goede
-> <hdegoede@redhat.com>; Frank Li <Frank.Li@freescale.com>; Peng Fan
-> <Peng.Fan@freescale.com>; Tom Warren <twarren@nvidia.com>; Vincent
-> Guittot <vincent.guittot@linaro.org>; jszhang@marvell.com; linux-arm-
-> kernel@lists.infradead.org
-> Subject: Re: [PSCI DISCUSS] How to implement standby and suspend-to-ram by
-> PSCI
-> 
-> On Thu, 2016-05-19 at 10:27 +0000, Hongbo Zhang wrote:
-> > > For the pm module of the core kernel a low power state is a sleep
-> > > state if even one of three conditions is met:
-> > >
-> > > a) a device that can be used for input is not a source of wake ups
-> > > b) tasks need to be frozen to enter it
-> > > c) the display goes off, while it should be on
-> > >
-> > > Generally runtime PM is better if you can get the same results.
-> > > Going to a system sleep state is a necessary evil.
-> 
-> 
-> > As I just explained in previous reply, many devices in our Soc cannot
-> > be physically clock or power gated, all the non-wakeup devices can
-> > only be gated off at same time by a PM module, so runtime PM doesn't
-> > fit for us well.
-> 
-> You are looking for a contradiction where none is to be found. We have
-> PM domains which allow you to model common clocks and gates. You simply
-> use the driver core and it will use the common gate when every device is
-> idle. Obviously this is also true when the system is suspended. But not
-> necessarily only when the system is suspended.
-> 
-> 	Regards
-> 		Oliver
-> 
+Changes since v10:
+ - Introduce usb_charger_get_state() function to check charger state.
+ - Remove the mutex lock in usb_charger_set_cur_limit_by_type() function
+ in case will be issued in atomic context.
 
-Understand.
-Well, currently our situation is that we've already implemented our sleep/deep sleep mode (mapping to kernel terms standby/suspend to ram), and now while transferring to PSCI we meet such a problem.
-If runtime PM is used, many device driver's developers have to be involved to offer their runtime callbacks, a lot of efforts needed in whole system level. But yes, runtime PM has its own advantages, will consider to apply it in the coming SOCs.
-Thanks for advice.
+Baolin Wang (4):
+  gadget: Introduce the usb charger framework
+  gadget: Support for the usb charger framework
+  gadget: Integrate with the usb gadget supporting for usb charger
+  power: wm831x_power: Support USB charger current limit management
 
-Hongbo Zhang @ NXP
+ drivers/power/wm831x_power.c      |   69 ++++
+ drivers/usb/gadget/Kconfig        |    7 +
+ drivers/usb/gadget/udc/Makefile   |    1 +
+ drivers/usb/gadget/udc/charger.c  |  807 +++++++++++++++++++++++++++++++++++++
+ drivers/usb/gadget/udc/udc-core.c |   11 +
+ include/linux/mfd/wm831x/pdata.h  |    3 +
+ include/linux/usb/charger.h       |  191 +++++++++
+ include/linux/usb/gadget.h        |   11 +
+ include/uapi/linux/usb/charger.h  |   31 ++
+ 9 files changed, 1131 insertions(+)
+ create mode 100644 drivers/usb/gadget/udc/charger.c
+ create mode 100644 include/linux/usb/charger.h
+ create mode 100644 include/uapi/linux/usb/charger.h
+
+-- 
+1.7.9.5
+
