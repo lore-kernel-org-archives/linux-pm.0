@@ -1,72 +1,59 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH] thermal: ti-soc-thermal: Add set_emul_temp hook
-Date: Fri, 20 May 2016 11:28:40 +0530
-Message-ID: <573EA790.8020006@ti.com>
-References: <1462880530-13935-1-git-send-email-j-keerthy@ti.com>
+From: Pramod Gurav <pramod.gurav@linaro.org>
+Subject: Re: [PATCH 0/5] Qualcomm Suspend to Idle Support
+Date: Fri, 20 May 2016 11:39:33 +0530
+Message-ID: <CANYu_0u7Q-iTDB17mmfByPULXgzqjnSQ1w_7qUg-ms9OBkdmGw@mail.gmail.com>
+References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:42745 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754422AbcETF6q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 20 May 2016 01:58:46 -0400
-In-Reply-To: <1462880530-13935-1-git-send-email-j-keerthy@ti.com>
+Received: from mail-yw0-f177.google.com ([209.85.161.177]:34602 "EHLO
+	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753020AbcETGJe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 02:09:34 -0400
+Received: by mail-yw0-f177.google.com with SMTP id j74so100324776ywg.1
+        for <linux-pm@vger.kernel.org>; Thu, 19 May 2016 23:09:34 -0700 (PDT)
+In-Reply-To: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, nm@ti.com
+To: Andy Gross <andy.gross@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stanimir Varbanov <stanimir.varbanov@linaro.org>
 
+On 19 May 2016 at 10:30, Andy Gross <andy.gross@linaro.org> wrote:
+> This set of patches adds suspend to idle support for the Qualcomm APQ8084
+> and MSM8916 platforms.  The patches add a minimal set of suspend ops and
+> init functions to properly configure the enter_freeze function.
+>
+> This patch set is based on the work done in the following:
+> [RFC v3 00/12] PM: SoC idle support using PM domains
+> http://comments.gmane.org/gmane.linux.ports.arm.msm/17966
+>
+> The relevant prerequisites are the PSCI enablement DT patches.  PSCI based
+> firmware is also required for the MSM8916 to work properly.
+>
+> Andy Gross (5):
+>   soc: qcom: Add suspend to idle support
+>   arm: defconfig: Add Qualcomm Suspend options
+>   arm64: dts: msm8916: Add spc compat tag
 
+Tested this series on DB410C. So for these three patches:
 
-On Tuesday 10 May 2016 05:12 PM, Keerthy wrote:
-> Setting the emulation temperature helps reproduce critical
-> temperature scenarios without risking the actual hardware at
-> extreme temperatures. Adding __ti_thermal_set_emul_temp as
-> the set_emul_temp hook.
+Tested-by: Pramod Gurav <pramod.gurav@linaro.org>
 
-A gentle ping on this.
-
+>   ARM: dts: qcom: Remove size elements from pmic reg
+>   ARM: dts: qcom: pma8084: Add pwrkey entry
 >
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> ---
+>  arch/arm/boot/dts/qcom-pma8084.dtsi   | 20 ++++++---
+>  arch/arm64/boot/dts/qcom/msm8916.dtsi |  2 +-
+>  arch/arm64/configs/defconfig          |  2 +
+>  drivers/soc/qcom/Makefile             |  1 +
+>  drivers/soc/qcom/suspend.c            | 77 +++++++++++++++++++++++++++++++++++
+>  5 files changed, 95 insertions(+), 7 deletions(-)
+>  create mode 100644 drivers/soc/qcom/suspend.c
 >
-> Tested the emulation temperature feature on DRA72-EVM.
+> --
+> 1.9.1
 >
->   drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 15 +++++++++++++++
->   1 file changed, 15 insertions(+)
->
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> index b213a12..e6f7025 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> @@ -278,6 +278,20 @@ static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
->   	return 0;
->   }
->
-> +static int __ti_thermal_set_emul_temp(void *p, int temp)
-> +{
-> +	struct ti_thermal_data *data = p;
-> +	struct thermal_zone_device *tz;
-> +
-> +	tz = data->ti_thermal;
-> +
-> +	mutex_lock(&tz->lock);
-> +	tz->emul_temperature = temp;
-> +	mutex_unlock(&tz->lock);
-> +
-> +	return 0;
-> +}
-> +
->   /* Get critical temperature callback functions for thermal zone */
->   static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
->   				    int *temp)
-> @@ -289,6 +303,7 @@ static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
->   static const struct thermal_zone_of_device_ops ti_of_thermal_ops = {
->   	.get_temp = __ti_thermal_get_temp,
->   	.get_trend = __ti_thermal_get_trend,
-> +	.set_emul_temp = __ti_thermal_set_emul_temp,
->   };
->
->   static struct thermal_zone_device_ops ti_thermal_ops = {
->
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
