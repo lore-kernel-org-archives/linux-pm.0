@@ -1,65 +1,62 @@
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 Subject: Re: [RFC PATCH] Increase in idle power with schedutil
 Date: Fri, 20 May 2016 17:53:41 +0530
-Message-ID: <573F01CD.6030107@linux.vnet.ibm.com>
-References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
- <20160519114029.GW3193@twins.programming.kicks-ass.net>
+Message-ID: <201605201223.u4KCNaTI025072@mx0a-001b2d01.pphosted.com>
+References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com> <20160519114029.GW3193@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20160519114029.GW3193@twins.programming.kicks-ass.net>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, shreyas@linux.vnet.ibm.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org, Steve Muckle <steve.muckle@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, akshay.adiga@linux.vnet.ibm.com
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, Steve Muckle <steve.muckle@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpPbiAwNS8xOS8yMDE2IDA1OjEwIFBNLCBQZXRlciBaaWpsc3RyYSB3cm90ZToKPiBPbiBX
-ZWQsIE1heSAxOCwgMjAxNiBhdCAxMToxMTo1MVBNICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3
-cm90ZToKPj4gT24gV2VkLCBNYXkgMTgsIDIwMTYgYXQgMjo1MyBQTSwgU2hpbHBhc3JpIEcgQmhh
-dAo+PiA8c2hpbHBhLmJoYXRAbGludXgudm5ldC5pYm0uY29tPiB3cm90ZToKPj4+IFRoaXMgcGF0
-Y2ggYWRkcyBkcml2ZXIgY2FsbGJhY2sgZm9yIGZhc3Rfc3dpdGNoIGFuZCBiZWxvdyBvYnNlcnZh
-dGlvbnMKPj4+IG9uIHNjaGVkdXRpbCBnb3Zlcm5vciBhcmUgZG9uZSB3aXRoIHRoaXMgcGF0Y2gu
-Cj4+Pgo+Pj4gSW4gUE9XRVI4IHRoZXJlIGlzIGEgcmVncmVzc2lvbiBvYnNlcnZlZCB3aXRoIHNj
-aGVkdXRpbCBjb21wYXJlZCB0bwo+Pj4gb25kZW1hbmQuIFdpdGggc2NoZWR1dGlsIHRoZSBmcmVx
-dWVuY3kgaXMgbm90IHJhbXBpbmcgZG93biBhbmQgaXMKPj4+IG1vc3RseSBzdHVjayBhdCBtYXgg
-ZnJlcXVlbmN5IGR1cmluZyBpZGxlIC4gVGhpcyBpcyBiZWNhdXNlIG9mIHRoZQo+Pj4gd2F0Y2hk
-b2cgdGltZXIsIGFuIFJUIHRhc2sgd2hpY2ggaXMgZmlyZWQgZXZlcnkgNCBzZWNvbmRzIHdoaWNo
-Cj4+PiByZXN1bHRzIGluIHJlcXVlc3RpbmcgbWF4IGZyZXF1ZW5jeS4KPj4KPj4gV2VsbCwgeWVz
-LCB0aGF0IHdvdWxkIGJlIHByb2JsZW1hdGljLgo+Pgo+IAo+IFJpZ2h0OyB3ZSBuZWVkIHRvIGNv
-bWUgdXAgd2l0aCBzb21ldGhpbmcgZm9yIFJUIHRhc2tzOyBidXQgd2hhdCBoYXBwZW5zCj4gaWYg
-eW91IGRpc2FibGUgdGhlIHdhdGNoZG9nPyBUaGlzIHNob3VsZCBiZSBlbnRpcmVseSBkb2FibGUg
-YW5kIG1pZ2h0Cj4gZ2l2ZSBhIGJldHRlciBjb21wYXJpc29uLgo+IAoKQmVsb3cgYXJlIHRoZSBj
-b21wYXJpc29ucyBieSBkaXNhYmxpbmcgd2F0Y2hkb2cuCkJvdGggc2NoZWR1dGlsIGFuZCBvbmRl
-bWFuZCBoYXZlIGEgc2ltaWxhciByYW1wLWRvd24gdHJlbmQuIEFuZCBpbiBib3RoIHRoZQpjYXNl
-cyBJIGNhbiBzZWUgdGhhdCBmcmVxdWVuY3kgb2YgdGhlIGNwdSBpcyBub3QgcmVkdWNlZCBpbiBk
-ZXRlcm1pbmlzdGljCmZhc2hpb24uIEluIGEgb2JzZXJ2YXRpb24gd2luZG93IG9mIDMwIHNlY29u
-ZHMgYWZ0ZXIgcnVubmluZyBhIHdvcmtsb2FkIEkgY2FuCnNlZSB0aGF0IHRoZSBmcmVxdWVuY3kg
-aXMgbm90IHJhbXBlZCBkb3duIG9uIHNvbWUgY3B1cyBpbiB0aGUgc3lzdGVtIGFuZCBhcmUKaWRs
-aW5nIGF0IG1heCBmcmVxdWVuY3kuCgpCZWxvdyBhcmUgdGhlIHNhbXBsZSB0cmFjZSBzaG93Y2Fz
-aW5nIHRoZSBmcmVxdWVuY3kgcmVxdWVzdCB3aGVuIHRoZSBjcHUgZW50ZXJzCmlkbGUgd2l0aCBz
-Y2hlZHV0aWwuCjwuLi4+LTM1MjggIDc2NTAuMDExMDEwOiBjcHVfZnJlcXVlbmN5OiBzdGF0ZT00
-MzIyMDAwIGNwdV9pZD0xMjAKPC4uLj4tMzUyOCAgNzY1MC4wMjc1NDA6IHNjaGVkX3N3aXRjaDog
-cHJldl9jb21tPXBwYzY0X2NwdSBwcmV2X3N0YXRlPXggPT0+CgkJCW5leHRfY29tbT1zd2FwcGVy
-LzEyMAo8aWRsZT4tMCAgICA3NjUwLjAzNTAxNzogY3B1X2ZyZXF1ZW5jeTogc3RhdGU9NDMyMjAw
-MCBjcHVfaWQ9MTIwCjxpZGxlPi0wICAgIDc3MjkuNjgzNTM2OiBjcHVfZnJlcXVlbmN5OiBzdGF0
-ZT00MzIyMDAwIGNwdV9pZD0xMjAKPGlkbGU+LTAgICAgNzcyOS42ODM1NTI6IHNjaGVkX3N3aXRj
-aDogcHJldl9jb21tPXN3YXBwZXIvMTIwIHByZXZfc3RhdGU9UiA9PT4KCQkJbmV4dF9jb21tPWt3
-b3JrZXIvMTIwOjEKa3dvcmtlci8xMjAgIDc3MjkuNjgzNTY1OiBzY2hlZF9zd2l0Y2g6IHByZXZf
-Y29tbT1rd29ya2VyLzEyMDoxIHByZXZfc3RhdGU9UyA9PT4KCQkJIG5leHRfY29tbT1zd2FwcGVy
-LzEyMAoKSG93ZXZlciBvbmRlbWFuZCBnb3Zlcm5vcih3aXRoIHdhdGNoZG9nIGVuYWJsZWQpIGJl
-bmVmaXRzIGZyb20gdGhlIG5vaXNlIGNyZWF0ZWQKYnkgd2F0Y2hkb2cgdGltZXIgYW5kIGlzIGFi
-bGUgdG8gYnJpZyBkb3duIHRoZSBmcmVxdWVuY3kuCgpUaGFua3MgYW5kIFJlZ2FyZHMsClNoaWxw
-YQoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXhw
-cGMtZGV2IG1haWxpbmcgbGlzdApMaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZwpodHRwczov
-L2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2
+Hi,
+
+On 05/19/2016 05:10 PM, Peter Zijlstra wrote:
+> On Wed, May 18, 2016 at 11:11:51PM +0200, Rafael J. Wysocki wrote:
+>> On Wed, May 18, 2016 at 2:53 PM, Shilpasri G Bhat
+>> <shilpa.bhat@linux.vnet.ibm.com> wrote:
+>>> This patch adds driver callback for fast_switch and below observations
+>>> on schedutil governor are done with this patch.
+>>>
+>>> In POWER8 there is a regression observed with schedutil compared to
+>>> ondemand. With schedutil the frequency is not ramping down and is
+>>> mostly stuck at max frequency during idle . This is because of the
+>>> watchdog timer, an RT task which is fired every 4 seconds which
+>>> results in requesting max frequency.
+>>
+>> Well, yes, that would be problematic.
+>>
+> 
+> Right; we need to come up with something for RT tasks; but what happens
+> if you disable the watchdog? This should be entirely doable and might
+> give a better comparison.
+> 
+
+Below are the comparisons by disabling watchdog.
+Both schedutil and ondemand have a similar ramp-down trend. And in both the
+cases I can see that frequency of the cpu is not reduced in deterministic
+fashion. In a observation window of 30 seconds after running a workload I can
+see that the frequency is not ramped down on some cpus in the system and are
+idling at max frequency.
+
+Below are the sample trace showcasing the frequency request when the cpu enters
+idle with schedutil.
+<...>-3528  7650.011010: cpu_frequency: state=4322000 cpu_id=120
+<...>-3528  7650.027540: sched_switch: prev_comm=ppc64_cpu prev_state=x ==>
+			next_comm=swapper/120
+<idle>-0    7650.035017: cpu_frequency: state=4322000 cpu_id=120
+<idle>-0    7729.683536: cpu_frequency: state=4322000 cpu_id=120
+<idle>-0    7729.683552: sched_switch: prev_comm=swapper/120 prev_state=R ==>
+			next_comm=kworker/120:1
+kworker/120  7729.683565: sched_switch: prev_comm=kworker/120:1 prev_state=S ==>
+			 next_comm=swapper/120
+
+However ondemand governor(with watchdog enabled) benefits from the noise created
+by watchdog timer and is able to brig down the frequency.
+
+Thanks and Regards,
+Shilpa
