@@ -1,166 +1,150 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH] PM / sleep: fix unbalanced pm runtime disable in
- __device_suspend_late()
-Date: Fri, 20 May 2016 19:21:03 +0300
-Message-ID: <573F396F.3060803@ti.com>
-References: <1463162628-16976-1-git-send-email-grygorii.strashko@ti.com>
- <CAJZ5v0ja-poNq0J+giAJJb+pPFyGg1a7rUcUfFyhcn9qPnaieQ@mail.gmail.com>
- <573DF3C6.7080503@ti.com> <4160153.ggAvdOZIvP@vostro.rjw.lan>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Crash after 'reboot' due to 9be4fd2c7723a
+Date: Fri, 20 May 2016 15:05:55 -0300
+Message-ID: <CAOMZO5A62LgnyT0sQw5N-xeHaD0nSGTjAFxUx=_6OpUm02robA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4160153.ggAvdOZIvP@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f182.google.com ([209.85.223.182]:35676 "EHLO
+	mail-io0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbcETSF4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 14:05:56 -0400
+Received: by mail-io0-f182.google.com with SMTP id p64so63446769ioi.2
+        for <linux-pm@vger.kernel.org>; Fri, 20 May 2016 11:05:55 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ping Bai <ping.bai@nxp.com>, Guenter Roeck <linux@roeck-us.net>
 
-On 05/20/2016 03:18 PM, Rafael J. Wysocki wrote:
-> On Thursday, May 19, 2016 08:11:34 PM Grygorii Strashko wrote:
->> On 05/19/2016 04:38 PM, Rafael J. Wysocki wrote:
->>> On Fri, May 13, 2016 at 8:03 PM, Grygorii Strashko
->>> <grygorii.strashko@ti.com> wrote:
->>>> The PM runtime will be left disabled for the device if its .suspend_late()
->>>> callback fails and async suspend is not allowed for this device. In
->>>> this case device will not be added in dpm_late_early_list and
->>>> dpm_resume_early() will ignore this device, as result PM runtime will
->>>> be disabled for it forever (side effect: after 8 subsequent failures
->>>> for the same device the PM runtime will be reenabled due to
->>>> disable_depth overflow).
->>>>
->>>> Hence, re-enable PM runtime in __device_suspend_late() if
->>>> .suspend_late() callback fails and async suspend is not allowed for
->>>> this device.
->>>>
->>>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
->>>> ---
->>>>    drivers/base/power/main.c | 7 +++++--
->>>>    1 file changed, 5 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
->>>> index 6e7c3cc..9b266e5 100644
->>>> --- a/drivers/base/power/main.c
->>>> +++ b/drivers/base/power/main.c
->>>> @@ -1207,10 +1207,13 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
->>>>           }
->>>>
->>>>           error = dpm_run_callback(callback, dev, state, info);
->>>> -       if (!error)
->>>> +       if (!error) {
->>>>                   dev->power.is_late_suspended = true;
->>>> -       else
->>>> +       } else {
->> 		Point [1]
->>>>                   async_error = error;
->>>> +               if (!is_async(dev))
->>>
->>> Why is the is_async() check necessary here?
->> 			
->> A: deviceX is suspended *async* and reached point [1], in this case:
->> - deviceX has been added in dpm_late_early_list already
->> - dpm_suspend_late() will detect async_error and call dpm_resume_early()
->> - dpm_resume_early() will call device_resume_early() for deviceX
->> - device_resume_early() will re-enable PM runtime
->> {
->> ...
->> 	if (!dev->power.is_late_suspended)
->> 		goto Out;
->>
->> 	...
->>   Out:
->> 	TRACE_RESUME(error);
->>
->> 	pm_runtime_enable(dev);
->> ^^^^^^^^^^^^
->> 	complete_all(&dev->power.completion);
->> 	return error;
->> }	
->> 	
->>
->> B: deviceX is suspended *sync* and reached point [1], in this case:
->> - deviceX has not been added in dpm_late_early_list yet
->> - dpm_suspend_late() will detect sync_error and call dpm_resume_early()
->> - dpm_resume_early() will ignore deviceX
->>
->> if i'll not check for !is_async(dev) then pm_runtime_enable(dev)
->> will be called twice for deviceX with this patch.
-> 
-> OK, thanks!
-> 
-> So to me, the problem is that we handle failures in that code inconsistently
-> depending on whether or not async suspend/resume is enabled for the device.
-> 
-> I'd rather make it consistent than add extra checks to it, so the patch below
-> is how I would fix this.
-> 
-> ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] PM / sleep: Handle failures in device_suspend_late() consistently
-> 
-> Grygorii Strashko reports:
-> 
->   The PM runtime will be left disabled for the device if its
->   .suspend_late() callback fails and async suspend is not allowed
->   for this device. In this case device will not be added in
->   dpm_late_early_list and dpm_resume_early() will ignore this
->   device, as result PM runtime will be disabled for it forever
->   (side effect: after 8 subsequent failures for the same device
->   the PM runtime will be reenabled due to disable_depth overflow).
-> 
-> To fix this problem, add devices to dpm_late_early_list regardless
-> of whether or not device_suspend_late() returns errors for them.
-> 
-> That will ensure failures in there to be handled consistently for
-> all devices regardless of their async suspend/resume status.
-> 
-> Reported-by: Grygorii Strashko <grygorii.strashko@ti.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->   drivers/base/power/main.c |    5 +++--
->   1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-pm/drivers/base/power/main.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/main.c
-> +++ linux-pm/drivers/base/power/main.c
-> @@ -1267,14 +1267,15 @@ int dpm_suspend_late(pm_message_t state)
->   		error = device_suspend_late(dev);
->   
->   		mutex_lock(&dpm_list_mtx);
-> +		if (!list_empty(&dev->power.entry))
-> +			list_move(&dev->power.entry, &dpm_late_early_list);
-> +
->   		if (error) {
->   			pm_dev_err(dev, state, " late", error);
->   			dpm_save_failed_dev(dev_name(dev));
->   			put_device(dev);
->   			break;
->   		}
-> -		if (!list_empty(&dev->power.entry))
-> -			list_move(&dev->power.entry, &dpm_late_early_list);
->   		put_device(dev);
->   
->   		if (async_error)
-> 
+Rafael,
 
-Yep, it works too.
-Tested-by: Grygorii Strashko <grygorii.strashko@ti.com>
+Running the 'reboot' command works fine on a 4.5 kernel running on a
+mx6ul platform (ARM single core SoC), but it crashes on 4.6.
 
-By the way, there is third option:)
+Running bisect I got 9be4fd2c7723a3057b0b39676 ("cpufreq: governor:
+Replace timers with utilization update callbacks") as the first bad
+commit.
 
-+++ b/drivers/base/power/main.c
-@@ -1211,8 +1211,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
-                dev->power.is_late_suspended = true;
-        } else {
-                async_error = error;
--               if (!is_async(dev))
--                       pm_runtime_enable(dev);
-+               error = 0;
-        }
+Below is the output crash log.
+
+Not sure if this issue is related to the problem reported by Guenter here:
+http://lkml.iu.edu/hypermail/linux/kernel/1602.1/06075.html
+
+Any ideas?
+
+Thanks,
+
+Fabio Estevam
 
 
-
--- 
-regards,
--grygorii
+[ 3857.373588] INFO: rcu_sched detected stalls on CPUs/tasks:
+[ 3857.379155]  (detected by 0, t=2602 jiffies, g=1880, c=1879, q=29)
+[ 3857.385406] All QSes seen, last rcu_sched kthread activity 2602
+(355736-353134), jiffies_till_next_fqs=1, root ->qsmask 0x0
+[ 3857.396562] init            R running      0   864      1 0x00000002
+[ 3857.402999] Backtrace:
+[ 3857.405532] [<c010b6e8>] (dump_backtrace) from [<c010b884>]
+(show_stack+0x18/0x1c)
+[ 3857.413125]  r6:c0d6c6d6 r5:00000001 r4:ddd9c800 r3:00000000
+[ 3857.418941] [<c010b86c>] (show_stack) from [<c014fc3c>]
+(sched_show_task+0x124/0x234)
+[ 3857.426820] [<c014fb18>] (sched_show_task) from [<c0185e24>]
+(rcu_check_callbacks+0x844/0x894)
+[ 3857.435452]  r6:c0c76b40 r5:c0d14b80 r4:debd0b40
+[ 3857.440189] [<c01855e0>] (rcu_check_callbacks) from [<c018884c>]
+(update_process_times+0x38/0x64)
+[ 3857.449081]  r10:c0d21e1c r9:debcdd10 r8:c019a230 r7:dde7bd50
+r6:debce048 r5:00000000
+[ 3857.457067]  r4:ddd9c800
+[ 3857.459665] [<c0188814>] (update_process_times) from [<c019a174>]
+(tick_sched_handle+0x50/0x54)
+[ 3857.468386]  r5:00000382 r4:1c92d15d
+[ 3857.472048] [<c019a124>] (tick_sched_handle) from [<c019a290>]
+(tick_sched_timer+0x60/0xa8)
+[ 3857.480443] [<c019a230>] (tick_sched_timer) from [<c018915c>]
+(__hrtimer_run_queues+0xc0/0x1c8)
+[ 3857.489162]  r7:debcdd80 r6:debcdd00 r5:debcdd8c r4:debce048
+[ 3857.494969] [<c018909c>] (__hrtimer_run_queues) from [<c018998c>]
+(hrtimer_interrupt+0xc8/0x22c)
+[ 3857.503774]  r10:debcddd8 r9:debcddb8 r8:debcddf8 r7:debcdd00
+r6:debcdd40 r5:00000003
+[ 3857.511758]  r4:ffffffff
+[ 3857.514354] [<c01898c4>] (hrtimer_interrupt) from [<c067d994>]
+(mxc_timer_interrupt+0x3c/0x44)
+[ 3857.522985]  r10:c0d6c710 r9:e0805000 r8:de41d000 r7:00000010
+r6:00000000 r5:00000000
+[ 3857.530969]  r4:de402440
+[ 3857.533568] [<c067d958>] (mxc_timer_interrupt) from [<c0177acc>]
+(handle_irq_event_percpu+0x64/0x168)
+[ 3857.542809]  r4:de402500 r3:c067d958
+[ 3857.546482] [<c0177a68>] (handle_irq_event_percpu) from
+[<c0177c10>] (handle_irq_event+0x40/0x64)
+[ 3857.555374]  r10:de406000 r9:e0805000 r8:00000001 r7:00000000
+r6:c0d10330 r5:de41d060
+[ 3857.563358]  r4:de41d000
+[ 3857.565956] [<c0177bd0>] (handle_irq_event) from [<c017b120>]
+(handle_fasteoi_irq+0xd4/0x1ac)
+[ 3857.574502]  r6:c0d10330 r5:de41d060 r4:de41d000 r3:00000000
+[ 3857.580305] [<c017b04c>] (handle_fasteoi_irq) from [<c017726c>]
+(generic_handle_irq+0x20/0x30)
+[ 3857.588937]  r7:00000000 r6:c0c746ec r5:c0d02b10 r4:00000010
+[ 3857.594743] [<c017724c>] (generic_handle_irq) from [<c01773b0>]
+(__handle_domain_irq+0x6c/0xe4)
+[ 3857.603485] [<c0177344>] (__handle_domain_irq) from [<c01015d8>]
+(gic_handle_irq+0x4c/0x9c)
+[ 3857.611857]  r10:000003eb r8:c0d22000 r7:c0d02c58 r6:dde7bd50
+r5:e080400c r4:e0804000
+[ 3857.619858] [<c010158c>] (gic_handle_irq) from [<c010c4b8>]
+(__irq_svc+0x58/0x78)
+[ 3857.627367] Exception stack(0xdde7bd50 to 0xdde7bd98)
+[ 3857.632450] bd40:                                     ddce911c
+00000001 00000000 00000003
+[ 3857.640664] bd60: ddce911c c0d02a48 ddcea000 ddce90c0 c0108044
+dde7a000 00000000 dde7bdb4
+[ 3857.648875] bd80: dde7bdb8 dde7bda0 c064ad44 c01b247c 20000013 ffffffff
+[ 3857.655509]  r10:00000000 r9:dde7a000 r8:c0108044 r7:dde7bd84
+r6:ffffffff r5:20000013
+[ 3857.663494]  r4:c01b247c r3:ddd9c800
+[ 3857.667167] [<c01b2448>] (irq_work_sync) from [<c064ad44>]
+(cpufreq_governor_dbs+0x170/0x580)
+[ 3857.675713]  r4:00000004 r3:00000001
+[ 3857.679384] [<c064abd4>] (cpufreq_governor_dbs) from [<c06480e4>]
+(cpufreq_governor+0x64/0x120)
+[ 3857.688103]  r10:00000000 r9:dde7a000 r8:c0108044 r7:c1556f80
+r6:00000002 r5:ddcea000
+[ 3857.696088]  r4:c0d4c5dc
+[ 3857.698684] [<c0648080>] (cpufreq_governor) from [<c06493c4>]
+(cpufreq_suspend+0x70/0x128)
+[ 3857.706967]  r6:c0d4c328 r5:ddcea0dc r4:ddcea000 r3:ddd9c800
+[ 3857.712777] [<c0649354>] (cpufreq_suspend) from [<c04da71c>]
+(syscore_shutdown+0x4c/0x80)
+[ 3857.720976]  r8:c0108044 r7:00000000 r6:c0d6e020 r5:c0d315a8
+r4:c0d4c2fc r3:00000000
+[ 3857.728895] [<c04da6d0>] (syscore_shutdown) from [<c0147aa8>]
+(kernel_restart+0x1c/0x58)
+[ 3857.737007]  r6:c0d13074 r5:4321fedc r4:00000000 r3:de434900
+[ 3857.742805] [<c0147a8c>] (kernel_restart) from [<c0147cc4>]
+(SyS_reboot+0x18c/0x1e4)
+[ 3857.750569]  r4:01234567 r3:01234567
+[ 3857.754234] [<c0147b38>] (SyS_reboot) from [<c0107ea0>]
+(ret_fast_syscall+0x0/0x1c)
+[ 3857.761910]  r7:00000058 r6:00000000 r5:00000000 r4:00000000
+[ 3857.767707] rcu_sched kthread starved for 2602 jiffies! g1880 c1879
+f0x2 RCU_GP_WAIT_FQS(3) ->state=0x0
+[ 3857.777123] rcu_sched       R running      0     7      2 0x00000000
+[ 3857.783558] Backtrace:
+[ 3857.786076] [<c08f488c>] (__schedule) from [<c08f50d8>] (schedule+0x3c/0xa0)
+[ 3857.793148]  r10:00000001 r9:00000003 r8:c0d02100 r7:0005636f
+r6:debcd4c0 r5:debcd4c0
+[ 3857.801133]  r4:de487e9c
+[ 3857.803728] [<c08f509c>] (schedule) from [<c08f941c>]
+(schedule_timeout+0x138/0x1cc)
+[ 3857.811509] [<c08f92e4>] (schedule_timeout) from [<c0184bf0>]
+(rcu_gp_kthread+0x3b0/0x894)
+[ 3857.819794]  r8:00000000 r7:000002b8 r6:00000001 r5:c0d14e10 r4:c0d14b80
+[ 3857.826667] [<c0184840>] (rcu_gp_kthread) from [<c0144e7c>]
+(kthread+0xd8/0xf4)
+[ 3857.833997]  r7:c0184840
+[ 3857.836593] [<c0144da4>] (kthread) from [<c0107f30>]
+(ret_from_fork+0x14/0x24)
+[ 3857.843836]  r7:00000000 r6:00000000 r5:c0144da4 r4:de435040
