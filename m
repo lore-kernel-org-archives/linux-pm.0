@@ -1,145 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / sleep: fix unbalanced pm runtime disable in __device_suspend_late()
-Date: Fri, 20 May 2016 14:18:10 +0200
-Message-ID: <4160153.ggAvdOZIvP@vostro.rjw.lan>
-References: <1463162628-16976-1-git-send-email-grygorii.strashko@ti.com> <CAJZ5v0ja-poNq0J+giAJJb+pPFyGg1a7rUcUfFyhcn9qPnaieQ@mail.gmail.com> <573DF3C6.7080503@ti.com>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH] Increase in idle power with schedutil
+Date: Fri, 20 May 2016 17:53:41 +0530
+Message-ID: <573F01CD.6030107@linux.vnet.ibm.com>
+References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
+ <20160519114029.GW3193@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55293 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755291AbcETMOg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 08:14:36 -0400
-In-Reply-To: <573DF3C6.7080503@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <20160519114029.GW3193@twins.programming.kicks-ass.net>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, shreyas@linux.vnet.ibm.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org, Steve Muckle <steve.muckle@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, akshay.adiga@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thursday, May 19, 2016 08:11:34 PM Grygorii Strashko wrote:
-> On 05/19/2016 04:38 PM, Rafael J. Wysocki wrote:
-> > On Fri, May 13, 2016 at 8:03 PM, Grygorii Strashko
-> > <grygorii.strashko@ti.com> wrote:
-> >> The PM runtime will be left disabled for the device if its .suspend_late()
-> >> callback fails and async suspend is not allowed for this device. In
-> >> this case device will not be added in dpm_late_early_list and
-> >> dpm_resume_early() will ignore this device, as result PM runtime will
-> >> be disabled for it forever (side effect: after 8 subsequent failures
-> >> for the same device the PM runtime will be reenabled due to
-> >> disable_depth overflow).
-> >>
-> >> Hence, re-enable PM runtime in __device_suspend_late() if
-> >> .suspend_late() callback fails and async suspend is not allowed for
-> >> this device.
-> >>
-> >> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
-> >> ---
-> >>   drivers/base/power/main.c | 7 +++++--
-> >>   1 file changed, 5 insertions(+), 2 deletions(-)
-> >>
-> >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> >> index 6e7c3cc..9b266e5 100644
-> >> --- a/drivers/base/power/main.c
-> >> +++ b/drivers/base/power/main.c
-> >> @@ -1207,10 +1207,13 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
-> >>          }
-> >>
-> >>          error = dpm_run_callback(callback, dev, state, info);
-> >> -       if (!error)
-> >> +       if (!error) {
-> >>                  dev->power.is_late_suspended = true;
-> >> -       else
-> >> +       } else {
-> 		Point [1]
-> >>                  async_error = error;
-> >> +               if (!is_async(dev))
-> > 
-> > Why is the is_async() check necessary here?
-> 			
-> A: deviceX is suspended *async* and reached point [1], in this case:
-> - deviceX has been added in dpm_late_early_list already
-> - dpm_suspend_late() will detect async_error and call dpm_resume_early()
-> - dpm_resume_early() will call device_resume_early() for deviceX
-> - device_resume_early() will re-enable PM runtime
-> {
-> ...
-> 	if (!dev->power.is_late_suspended)
-> 		goto Out;
-> 
-> 	...
->  Out:
-> 	TRACE_RESUME(error);
-> 
-> 	pm_runtime_enable(dev);
-> ^^^^^^^^^^^^
-> 	complete_all(&dev->power.completion);
-> 	return error;
-> }	
-> 	
-> 
-> B: deviceX is suspended *sync* and reached point [1], in this case:
-> - deviceX has not been added in dpm_late_early_list yet
-> - dpm_suspend_late() will detect sync_error and call dpm_resume_early()
-> - dpm_resume_early() will ignore deviceX
-> 
-> if i'll not check for !is_async(dev) then pm_runtime_enable(dev)
-> will be called twice for deviceX with this patch.
-
-OK, thanks!
-
-So to me, the problem is that we handle failures in that code inconsistently
-depending on whether or not async suspend/resume is enabled for the device.
-
-I'd rather make it consistent than add extra checks to it, so the patch below
-is how I would fix this.
-
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] PM / sleep: Handle failures in device_suspend_late() consistently
-
-Grygorii Strashko reports:
-
- The PM runtime will be left disabled for the device if its
- .suspend_late() callback fails and async suspend is not allowed
- for this device. In this case device will not be added in
- dpm_late_early_list and dpm_resume_early() will ignore this
- device, as result PM runtime will be disabled for it forever
- (side effect: after 8 subsequent failures for the same device
- the PM runtime will be reenabled due to disable_depth overflow).
-
-To fix this problem, add devices to dpm_late_early_list regardless
-of whether or not device_suspend_late() returns errors for them.
-
-That will ensure failures in there to be handled consistently for
-all devices regardless of their async suspend/resume status.
-
-Reported-by: Grygorii Strashko <grygorii.strashko@ti.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/main.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -1267,14 +1267,15 @@ int dpm_suspend_late(pm_message_t state)
- 		error = device_suspend_late(dev);
- 
- 		mutex_lock(&dpm_list_mtx);
-+		if (!list_empty(&dev->power.entry))
-+			list_move(&dev->power.entry, &dpm_late_early_list);
-+
- 		if (error) {
- 			pm_dev_err(dev, state, " late", error);
- 			dpm_save_failed_dev(dev_name(dev));
- 			put_device(dev);
- 			break;
- 		}
--		if (!list_empty(&dev->power.entry))
--			list_move(&dev->power.entry, &dpm_late_early_list);
- 		put_device(dev);
- 
- 		if (async_error)
-
+SGksCgpPbiAwNS8xOS8yMDE2IDA1OjEwIFBNLCBQZXRlciBaaWpsc3RyYSB3cm90ZToKPiBPbiBX
+ZWQsIE1heSAxOCwgMjAxNiBhdCAxMToxMTo1MVBNICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3
+cm90ZToKPj4gT24gV2VkLCBNYXkgMTgsIDIwMTYgYXQgMjo1MyBQTSwgU2hpbHBhc3JpIEcgQmhh
+dAo+PiA8c2hpbHBhLmJoYXRAbGludXgudm5ldC5pYm0uY29tPiB3cm90ZToKPj4+IFRoaXMgcGF0
+Y2ggYWRkcyBkcml2ZXIgY2FsbGJhY2sgZm9yIGZhc3Rfc3dpdGNoIGFuZCBiZWxvdyBvYnNlcnZh
+dGlvbnMKPj4+IG9uIHNjaGVkdXRpbCBnb3Zlcm5vciBhcmUgZG9uZSB3aXRoIHRoaXMgcGF0Y2gu
+Cj4+Pgo+Pj4gSW4gUE9XRVI4IHRoZXJlIGlzIGEgcmVncmVzc2lvbiBvYnNlcnZlZCB3aXRoIHNj
+aGVkdXRpbCBjb21wYXJlZCB0bwo+Pj4gb25kZW1hbmQuIFdpdGggc2NoZWR1dGlsIHRoZSBmcmVx
+dWVuY3kgaXMgbm90IHJhbXBpbmcgZG93biBhbmQgaXMKPj4+IG1vc3RseSBzdHVjayBhdCBtYXgg
+ZnJlcXVlbmN5IGR1cmluZyBpZGxlIC4gVGhpcyBpcyBiZWNhdXNlIG9mIHRoZQo+Pj4gd2F0Y2hk
+b2cgdGltZXIsIGFuIFJUIHRhc2sgd2hpY2ggaXMgZmlyZWQgZXZlcnkgNCBzZWNvbmRzIHdoaWNo
+Cj4+PiByZXN1bHRzIGluIHJlcXVlc3RpbmcgbWF4IGZyZXF1ZW5jeS4KPj4KPj4gV2VsbCwgeWVz
+LCB0aGF0IHdvdWxkIGJlIHByb2JsZW1hdGljLgo+Pgo+IAo+IFJpZ2h0OyB3ZSBuZWVkIHRvIGNv
+bWUgdXAgd2l0aCBzb21ldGhpbmcgZm9yIFJUIHRhc2tzOyBidXQgd2hhdCBoYXBwZW5zCj4gaWYg
+eW91IGRpc2FibGUgdGhlIHdhdGNoZG9nPyBUaGlzIHNob3VsZCBiZSBlbnRpcmVseSBkb2FibGUg
+YW5kIG1pZ2h0Cj4gZ2l2ZSBhIGJldHRlciBjb21wYXJpc29uLgo+IAoKQmVsb3cgYXJlIHRoZSBj
+b21wYXJpc29ucyBieSBkaXNhYmxpbmcgd2F0Y2hkb2cuCkJvdGggc2NoZWR1dGlsIGFuZCBvbmRl
+bWFuZCBoYXZlIGEgc2ltaWxhciByYW1wLWRvd24gdHJlbmQuIEFuZCBpbiBib3RoIHRoZQpjYXNl
+cyBJIGNhbiBzZWUgdGhhdCBmcmVxdWVuY3kgb2YgdGhlIGNwdSBpcyBub3QgcmVkdWNlZCBpbiBk
+ZXRlcm1pbmlzdGljCmZhc2hpb24uIEluIGEgb2JzZXJ2YXRpb24gd2luZG93IG9mIDMwIHNlY29u
+ZHMgYWZ0ZXIgcnVubmluZyBhIHdvcmtsb2FkIEkgY2FuCnNlZSB0aGF0IHRoZSBmcmVxdWVuY3kg
+aXMgbm90IHJhbXBlZCBkb3duIG9uIHNvbWUgY3B1cyBpbiB0aGUgc3lzdGVtIGFuZCBhcmUKaWRs
+aW5nIGF0IG1heCBmcmVxdWVuY3kuCgpCZWxvdyBhcmUgdGhlIHNhbXBsZSB0cmFjZSBzaG93Y2Fz
+aW5nIHRoZSBmcmVxdWVuY3kgcmVxdWVzdCB3aGVuIHRoZSBjcHUgZW50ZXJzCmlkbGUgd2l0aCBz
+Y2hlZHV0aWwuCjwuLi4+LTM1MjggIDc2NTAuMDExMDEwOiBjcHVfZnJlcXVlbmN5OiBzdGF0ZT00
+MzIyMDAwIGNwdV9pZD0xMjAKPC4uLj4tMzUyOCAgNzY1MC4wMjc1NDA6IHNjaGVkX3N3aXRjaDog
+cHJldl9jb21tPXBwYzY0X2NwdSBwcmV2X3N0YXRlPXggPT0+CgkJCW5leHRfY29tbT1zd2FwcGVy
+LzEyMAo8aWRsZT4tMCAgICA3NjUwLjAzNTAxNzogY3B1X2ZyZXF1ZW5jeTogc3RhdGU9NDMyMjAw
+MCBjcHVfaWQ9MTIwCjxpZGxlPi0wICAgIDc3MjkuNjgzNTM2OiBjcHVfZnJlcXVlbmN5OiBzdGF0
+ZT00MzIyMDAwIGNwdV9pZD0xMjAKPGlkbGU+LTAgICAgNzcyOS42ODM1NTI6IHNjaGVkX3N3aXRj
+aDogcHJldl9jb21tPXN3YXBwZXIvMTIwIHByZXZfc3RhdGU9UiA9PT4KCQkJbmV4dF9jb21tPWt3
+b3JrZXIvMTIwOjEKa3dvcmtlci8xMjAgIDc3MjkuNjgzNTY1OiBzY2hlZF9zd2l0Y2g6IHByZXZf
+Y29tbT1rd29ya2VyLzEyMDoxIHByZXZfc3RhdGU9UyA9PT4KCQkJIG5leHRfY29tbT1zd2FwcGVy
+LzEyMAoKSG93ZXZlciBvbmRlbWFuZCBnb3Zlcm5vcih3aXRoIHdhdGNoZG9nIGVuYWJsZWQpIGJl
+bmVmaXRzIGZyb20gdGhlIG5vaXNlIGNyZWF0ZWQKYnkgd2F0Y2hkb2cgdGltZXIgYW5kIGlzIGFi
+bGUgdG8gYnJpZyBkb3duIHRoZSBmcmVxdWVuY3kuCgpUaGFua3MgYW5kIFJlZ2FyZHMsClNoaWxw
+YQoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXhw
+cGMtZGV2IG1haWxpbmcgbGlzdApMaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZwpodHRwczov
+L2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhwcGMtZGV2
