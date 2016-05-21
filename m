@@ -1,52 +1,33 @@
 From: Fabio Estevam <festevam@gmail.com>
 Subject: Re: Crash after 'reboot' due to 9be4fd2c7723a
-Date: Fri, 20 May 2016 22:19:09 -0300
-Message-ID: <CAOMZO5BBXmXAJayo8YpX4eV-_rTtAoDvjf91CUhWnLV8A0mx0g@mail.gmail.com>
+Date: Fri, 20 May 2016 22:22:19 -0300
+Message-ID: <CAOMZO5DjgXuYiuOrUdbap3x2PVyUXbp2V1VGnU=2THRSM8Hfow@mail.gmail.com>
 References: <CAOMZO5A62LgnyT0sQw5N-xeHaD0nSGTjAFxUx=_6OpUm02robA@mail.gmail.com>
- <CAJZ5v0hX1dZ+79-KCyumf57o02WKivxcRLJ1Zi8akrqu_2CZEQ@mail.gmail.com>
- <CAOMZO5CD08cX0yDBZTdFV+iwgr__fjSaaWvgjimotr5L1yrbaQ@mail.gmail.com>
- <2148724.oQlEHos3jS@vostro.rjw.lan>
+	<CAJZ5v0hX1dZ+79-KCyumf57o02WKivxcRLJ1Zi8akrqu_2CZEQ@mail.gmail.com>
+	<CAOMZO5CD08cX0yDBZTdFV+iwgr__fjSaaWvgjimotr5L1yrbaQ@mail.gmail.com>
+	<2148724.oQlEHos3jS@vostro.rjw.lan>
+	<CAOMZO5BBXmXAJayo8YpX4eV-_rTtAoDvjf91CUhWnLV8A0mx0g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <2148724.oQlEHos3jS@vostro.rjw.lan>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Russell King <linux@arm.linux.org.uk>, Ping Bai <ping.bai@nxp.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Guenter Roeck <linux@roeck-us.net>, Sascha Hauer <kernel@pengutronix.de>, "Rafael J. Wysocki" <rafael@kernel.org>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f174.google.com ([209.85.223.174]:35498 "EHLO
+	mail-io0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751691AbcEUBWU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 May 2016 21:22:20 -0400
+Received: by mail-io0-f174.google.com with SMTP id p64so71133069ioi.2
+        for <linux-pm@vger.kernel.org>; Fri, 20 May 2016 18:22:20 -0700 (PDT)
+In-Reply-To: <CAOMZO5BBXmXAJayo8YpX4eV-_rTtAoDvjf91CUhWnLV8A0mx0g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ping Bai <ping.bai@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Russell King <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>
 
-Hi Rafael,
+On Fri, May 20, 2016 at 10:19 PM, Fabio Estevam <festevam@gmail.com> wrote:
 
-On Fri, May 20, 2016 at 9:56 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-
-> If I'm not mistaken, the patch below should allow irq_work to make forward
-> progress for you, so please check if it makes any difference.
-....
-
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-> @@ -362,6 +362,7 @@ static struct policy_dbs_info *alloc_pol
->         mutex_init(&policy_dbs->timer_mutex);
->         atomic_set(&policy_dbs->work_count, 0);
->         init_irq_work(&policy_dbs->irq_work, dbs_irq_work);
-> +       policy_dbs->irq_work.flags = IRQ_WORK_LAZY;
->         INIT_WORK(&policy_dbs->work, dbs_work_handler);
+> Running a 4.6 kernel with this patch applied allows me to reboot the
+> system, thanks.
 >
->         /* Set policy_dbs for all CPUs, online+offline */
+> 'echo performance >
+> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor' works fine now.
 
-Running a 4.6 kernel with this patch applied allows me to reboot the
-system, thanks.
-
-'echo performance >
-/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor' works fine now.
+and as a bonus point suspend/resume works fine now too :-)
