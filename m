@@ -1,78 +1,41 @@
-From: "Peter Feuerer" <peter@piie.net>
-Subject: Re: [PATCH] thermal: check validity get_trip_hyst function
- pointer in bang-bang governor
-Date: Sun, 22 May 2016 09:40:01 +0000
-Message-ID: <c1da2ef76896167929f6420bf1aff850@mail.piie.net>
-References: <1462960147-9175-1-git-send-email-michele.digiorgio@arm.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH] Increase in idle power with schedutil
+Date: Sun, 22 May 2016 12:39:12 +0200
+Message-ID: <20160522103912.GN3193@twins.programming.kicks-ass.net>
+References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
+ <20160519114029.GW3193@twins.programming.kicks-ass.net>
+ <201605201223.u4KCNWn9028105@mx0a-001b2d01.pphosted.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from piie.net ([80.82.223.85]:36324 "EHLO piie.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752065AbcEVJqH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 May 2016 05:46:07 -0400
-In-Reply-To: <1462960147-9175-1-git-send-email-michele.digiorgio@arm.com>
+Received: from bombadil.infradead.org ([198.137.202.9]:40711 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752227AbcEVKjT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 May 2016 06:39:19 -0400
+Content-Disposition: inline
+In-Reply-To: <201605201223.u4KCNWn9028105@mx0a-001b2d01.pphosted.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michele Di Giorgio <michele.digiorgio@arm.com>, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, Steve Muckle <steve.muckle@linaro.org>
 
-Hi,
+On Fri, May 20, 2016 at 05:53:41PM +0530, Shilpasri G Bhat wrote:
+> 
+> Below are the comparisons by disabling watchdog.
+> Both schedutil and ondemand have a similar ramp-down trend. And in both the
+> cases I can see that frequency of the cpu is not reduced in deterministic
+> fashion. In a observation window of 30 seconds after running a workload I can
+> see that the frequency is not ramped down on some cpus in the system and are
+> idling at max frequency.
 
-14. Mai 2016 13:47 Uhr, "Michele Di Giorgio" <michele.digiorgio@arm.com> schrieb:
-> Bang-bang thermal governor uses trip point hysteresis to make decisions.
-> Hysteresis is a required property in the device tree for trip points, but it is
-> an optional thermal zone device operation. Hence, we need to check whether the
-> function pointer is valid or not.
-> 
-> If it is not available, we assume the hysteresis to be zero. Consequently, a
-> highly varying temperature will make the governor continuosly switch a cooling
-> device ON and OFF.
-> 
-> CC: Zhang Rui <rui.zhang@intel.com>
-> CC: Eduardo Valentin <edubezval@gmail.com>
-> CC: Peter Feuerer <peter@piie.net>
-> Signed-off-by: Michele Di Giorgio <michele.digiorgio@arm.com>
+So does it actually matter what the frequency is when you idle? Isn't
+the whole thing clock gated anyway?
 
-Acked-by: Peter Feuerer <peter@piie.net>
+Because this seems to generate contradictory requirements, on the one
+hand we want to stay idle as long as possible while on the other hand
+you seem to want to clock down while idle, which requires not being
+idle.
 
-Thanks.
-
--- 
-kind regards,
---peter;
-
-
-> ---
-> Using trip_hyst == 0 makes the governor work sensibly but may cause oscillations
-> of the control signals of a cooling device. An alternative to this could be to
-> fail the registration of the thermal governor.
-> 
-> Another way would be to set the default value of the hysteresis to x% of the
-> trip temperature, to make the governor less sensitive to highly varying inputs.
-> 
-> drivers/thermal/gov_bang_bang.c | 8 +++++++-
-> 1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
-> index 39d1519..bb118a1 100644
-> --- a/drivers/thermal/gov_bang_bang.c
-> +++ b/drivers/thermal/gov_bang_bang.c
-> @@ -29,7 +29,13 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
-> struct thermal_instance *instance;
-> 
-> tz->ops->get_trip_temp(tz, trip, &trip_temp);
-> - tz->ops->get_trip_hyst(tz, trip, &trip_hyst);
-> +
-> + if (!tz->ops->get_trip_hyst) {
-> + pr_warn_once("Undefined get_trip_hyst for thermal zone %s - "
-> + "running with default hysteresis zero\n", tz->type);
-> + trip_hyst = 0;
-> + } else
-> + tz->ops->get_trip_hyst(tz, trip, &trip_hyst);
-> 
-> dev_dbg(&tz->device, "Trip%d[temp=%d]:temp=%d:hyst=%d\n",
-> trip, trip_temp, tz->temperature,
-> -- 
-> 1.9.1
+If it matters; should not your idle state muck explicitly set/restore
+frequency?
