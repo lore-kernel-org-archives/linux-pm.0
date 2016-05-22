@@ -1,81 +1,176 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH 3/5] sched: cpufreq: call cpufreq hook from remote CPUs
-Date: Sat, 21 May 2016 12:46:06 -0700
-Message-ID: <20160521194606.GG15383@graphite.smuckle.net>
-References: <1462828814-32530-1-git-send-email-smuckle@linaro.org>
- <1462828814-32530-4-git-send-email-smuckle@linaro.org>
- <CAJZ5v0iWfc=cNaCVuQ9QLK0FMLy1i5zEVcZSutOAK=+1OxaRtg@mail.gmail.com>
- <CAJZ5v0i-9QhNt1o_MN9_kEut6vs53-nwkM44dYq8hnuxynn4eQ@mail.gmail.com>
- <20160519191916.GE17223@graphite.smuckle.net>
- <CAJZ5v0hu=6sp=p+jYXfesSC20ZfKcGL6f5fTpvC+RX1uAEbn=A@mail.gmail.com>
- <20160519230419.GB15383@graphite.smuckle.net>
+From: Andrew Savchenko <bircoph@gmail.com>
+Subject: Re: [Suspend-devel] [BUG] 3.7-rc regression bisected: s2disk fails
+ to resume image: Processes could not be frozen, cannot continue resuming
+Date: Sun, 22 May 2016 11:47:22 +0300
+Message-ID: <20160522114722.e7bd390bd299486dc6aaf55c@gmail.com>
+References: <20130812234415.7db639bb0d664e56b6ab2ab2@gmail.com>
+	<20130918191607.GO13318@ZenIV.linux.org.uk>
+	<20130924002111.GB31569@amd.pavel.ucw.cz>
+	<2906897.X51K0zWBHo@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA512";
+ boundary="Signature=_Sun__22_May_2016_11_47_23_+0300_jrrzJv/lBK=1rTfX"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:34944 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751086AbcEUTqL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 May 2016 15:46:11 -0400
-Received: by mail-pa0-f49.google.com with SMTP id tb2so32739747pac.2
-        for <linux-pm@vger.kernel.org>; Sat, 21 May 2016 12:46:10 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160519230419.GB15383@graphite.smuckle.net>
+Received: from mail-lb0-f194.google.com ([209.85.217.194]:33786 "EHLO
+	mail-lb0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751689AbcEVIrq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 May 2016 04:47:46 -0400
+In-Reply-To: <2906897.X51K0zWBHo@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>, Al Viro <viro@zeniv.linux.org.uk>
+Cc: suspend-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Peter, Ingo,
+--Signature=_Sun__22_May_2016_11_47_23_+0300_jrrzJv/lBK=1rTfX
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Sun__22_May_2016_11_47_22_+0300_/d2yKodA7V0/Z=DU"
 
-On Thu, May 19, 2016 at 04:04:19PM -0700, Steve Muckle wrote:
-> On Thu, May 19, 2016 at 11:06:14PM +0200, Rafael J. Wysocki wrote:
-> > > In the case of a remote update the hook has to run (or not) after it is
-> > > known whether preemption will occur so we don't do needless work or
-> > > IPIs. If the policy CPUs aren't known in the scheduler then the early
-> > > hook will always need to be called along with an indication that it is
-> > > the early hook being called. If it turns out to be a remote update it
-> > > could then be deferred to the later hook, which would only be called
-> > > when a remote update has been deferred and preemption has not occurred.
-> > >
-> > > This means two hook inovcations for a remote non-preempting wakeup
-> > > though instead of one.  Perhaps this is a good middle ground on code
-> > > churn vs. optimization though.
-> > 
-> > I would think so.
-> 
-> Ok, I will pursue this approach.
 
-I'd like to get your opinion here before proceeding further...
+--Multipart=_Sun__22_May_2016_11_47_22_+0300_/d2yKodA7V0/Z=DU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-To catch you up and summarize, I'm trying to implement support for
-calling the scheduler cpufreq callback during remote wakeups.  Currently
-the scheduler cpufreq callback is only called when the target CPU is the
-current CPU. If a remote wakeup does not result in preemption, the CPU
-frequency may currently not be adjusted appropriately for up to a tick,
-when we are guaranteed to call the hook again.
+Hi,
 
-Invoking schedutil promptly for the target CPU in this situation means
-sending an IPI if the current CPU is not in the target CPU's frequency
-domain. This is because often a cpufreq driver must run on a CPU within
-the frequency domain it is bound to.  But the catch is that we should
-not do this and incur the overhead of an IPI if preemption will occur,
-as in that case the scheduler (and schedutil) will run soon on the
-target CPU anyway, potentially as a result of the scheduler sending its
-own IPI.
+On Thu, 17 Oct 2013 23:35:12 +0200 Rafael J. Wysocki wrote:
+> Sorry for the huge delay.
+>=20
+> On Tuesday, September 24, 2013 02:21:11 AM Pavel Machek wrote:
+> > Hi!
+> >=20
+> > > > And from suspend_ioctls.h:
+> > > > #define SNAPSHOT_IOC_MAGIC      '3'
+> > > > #define SNAPSHOT_FREEZE                 _IO(SNAPSHOT_IOC_MAGIC, 1)
+> > > >=20
+> > > > My mistake, should be '3' instead of 3.
+> > >=20
+> > > OK...  The thing to test, then, is what does __usermodehelper_disable=
+()
+> > > return to freeze_processes().  If that's where this -EAGAIN comes fro=
+m,
+> > > we at least have a plausible theory re what's going on.
+> > >=20
+> > > freeze_processes() uses __usermodehelper_disable() to stop any new us=
+erland
+> > > processes spawned by UMH (modprobe, etc.) and waits for ones it might=
+ be
+> > > waiting for to complete.  Then it does try_to_freeze_tasks(), which
+> > > freezes remaining userland, carefully skipping the current thread.
+> > > However, it misses the possibility that current thread might have been
+> > > spawned by something that had been launched by UMH, with UMH waiting
+> > > for it.  Which is the case of everything spawned by linuxrc.
+> > >=20
+> > > I'd try something like diff below, but I'm *NOT* familiar with swsusp=
+ at
+> > > all; it's not for mainline until ACKed by swsusp folks.
+> > >=20
+> > > diff --git a/kernel/kmod.c b/kernel/kmod.c
+> > > index fb32636..d968882 100644
+> > > --- a/kernel/kmod.c
+> > > +++ b/kernel/kmod.c
+> > > @@ -571,7 +571,8 @@ int call_usermodehelper_exec(struct subprocess_in=
+fo *sub_info, int wait)
+> > >  	DECLARE_COMPLETION_ONSTACK(done);
+> > >  	int retval =3D 0;
+> > > =20
+> > > -	helper_lock();
+> > > +	if (!(current->flags & PF_FREEZER_SKIP))
+> > > +		helper_lock();
+> > >  	if (!khelper_wq || usermodehelper_disabled) {
+> > >  		retval =3D -EBUSY;
+> > >  		goto out;
+> > > @@ -611,7 +612,8 @@ wait_done:
+> > >  out:
+> > >  	call_usermodehelper_freeinfo(sub_info);
+> > >  unlock:
+> > > -	helper_unlock();
+> > > +	if (!(current->flags & PF_FREEZER_SKIP))
+> > > +		helper_unlock();
+> > >  	return retval;
+> > >  }
+> > >  EXPORT_SYMBOL(call_usermodehelper_exec);
+> >=20
+> > PF_FREEZER_SKIP flag is manipulated at about 1000 places, so I'm not
+> > sure this will nest correctly.
+>=20
+> This is not exactly correct unless 1000 is about 50.  And none of them le=
+ads to
+> call_usermodehelper_exec() as far as I can say.
+>=20
+> > They seem to be in form of=20
+> >=20
+> > |=3D FREEZER_SKIP
+> > schedule()
+> > &=3D ~FREEZER_SKIP
+> >=20
+> > so this should be safe, but...
+>=20
+> I think the patch is correct, so
+>=20
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>=20
+> Thanks!
+=20
+The problem is still here with 4.6.0 kernel. Patch is updated to
+reflect code base changes while retaining original logics. Works
+fine for me here (4.6.0, x86, Atom N270, EeePC 1000H).
 
-I figured this unnecessary overhead would be unacceptable and so have
-been working on an approach to avoid it. Unfortunately the current hooks
-happen before the preemption decision is made. My current implementation
-sets a flag if schedutil sees a remote wakeup and then bails. There's a
-test to call the hook again at the end of check_preempt_curr() if the flag
-is set.  The flag is cleared by resched_curr() as that means preemption
-will happen on the target CPU. The flag currently lives at the end of
-the rq struct. I could move it into the update_util_data hook structure
-or elsewhere, but that would mean accessing another per-cpu item in
-hot scheduler paths.
+Best regards,
+Andrew Savchenko
 
-Thoughts? Note the current implementation described above differs a bit
-from the last posting in this thread, per discussion with Rafael.
+--Multipart=_Sun__22_May_2016_11_47_22_+0300_/d2yKodA7V0/Z=DU
+Content-Type: text/x-diff;
+ name="linuxrc-usermodhelper_disable-4.6.0.patch"
+Content-Disposition: attachment;
+ filename="linuxrc-usermodhelper_disable-4.6.0.patch"
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
-Steve
+--- linux-4.6.0/kernel/kmod.c.orig	2016-05-16 01:43:13.000000000 +0300
++++ linux-4.6.0/kernel/kmod.c	2016-05-22 09:49:12.654159691 +0300
+@@ -561,7 +561,8 @@
+ 		call_usermodehelper_freeinfo(sub_info);
+ 		return -EINVAL;
+ 	}
+-	helper_lock();
++	if (!(current->flags & PF_FREEZER_SKIP))
++		helper_lock();
+ 	if (usermodehelper_disabled) {
+ 		retval =3D -EBUSY;
+ 		goto out;
+@@ -595,7 +596,8 @@
+ out:
+ 	call_usermodehelper_freeinfo(sub_info);
+ unlock:
+-	helper_unlock();
++	if (!(current->flags & PF_FREEZER_SKIP))
++		helper_unlock();
+ 	return retval;
+ }
+ EXPORT_SYMBOL(call_usermodehelper_exec);
+
+--Multipart=_Sun__22_May_2016_11_47_22_+0300_/d2yKodA7V0/Z=DU--
+
+--Signature=_Sun__22_May_2016_11_47_23_+0300_jrrzJv/lBK=1rTfX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCgAGBQJXQXIbAAoJEPZTWjO6HuSNGGoP/iuACM9Ytu6HaghFL7/l6M/e
+SGnNl+yGorWhrNB3zqcdk6gZ3XH0F7xqklHkPO6WpCwWbljXcgAP3twSSApLhqrM
+ZQC3Y5aFykGZuGkwOaKmK59+6hOydntcADmmcogV1HshO4UF6ilGCaPFVRHs2PiV
+2nP9jFJjUD46o45vaYnVr1y+ii3gWjNTrVD2q/hG3RfHmbuFSS/YcD1OY7pidF3a
+ogboE4fRab3gYH/16njF5GXlZC0sUsHbonPEwQ0SyC2yDM2AM6Q8b/DIJALs0MkO
+1EXdWj4jjUXc5D2l1uNSTJM1rnoBQoFPGGNZ/Ti8OEMaELrVfwZyTNxgAVl0kgWG
+2+ts9E3QWYf6qSeQCjAvZ/dSCLl7/oamOD+J3ubFHxBACuqs/GtlOJs7j+rMW9vZ
+q4ByfAtAQzAyAY2Dxe+BG0qYlAPrDtuL7S3Esrjcr0Wd0WBjNAwUys8Qb0qQuPTC
+3PVVJij8ffJ/c2XA1Mqf5CWHJ/50473f5UNvaNjSG4bolF2zaECE0JexDQ+2LtCO
+fc7vHS7NiOjmU9PRZojiKXgMxezBPBHhpiQRH4RyZV8C+Z4/hg2rdI0ytkIEEvhr
+HPLJ04OphQ6Oqn1SkMt38cT24P8LZq0rwjzxy5PhE2UL3yZKs9QzeCrjnDQ/cpgM
+vwGaI6G7PrA2zejp41sa
+=mnIK
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__22_May_2016_11_47_23_+0300_jrrzJv/lBK=1rTfX--
