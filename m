@@ -1,60 +1,54 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [RFC PATCH] Increase in idle power with schedutil
-Date: Sun, 22 May 2016 13:42:52 -0700
-Message-ID: <20160522204252.GH15383@graphite.smuckle.net>
-References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
- <20160519114029.GW3193@twins.programming.kicks-ass.net>
- <201605201223.u4KCNWn9028105@mx0a-001b2d01.pphosted.com>
- <20160522103912.GN3193@twins.programming.kicks-ass.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 12/54] MAINTAINERS: Add file patterns for cpufreq device
+ tree bindings
+Date: Mon, 23 May 2016 08:02:27 +0530
+Message-ID: <20160523023227.GD2850@vireshk-i7>
+References: <1463907991-7916-1-git-send-email-geert@linux-m68k.org>
+ <1463907991-7916-13-git-send-email-geert@linux-m68k.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:36565 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562AbcEVUm5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 May 2016 16:42:57 -0400
-Received: by mail-pa0-f48.google.com with SMTP id bt5so55303646pac.3
-        for <linux-pm@vger.kernel.org>; Sun, 22 May 2016 13:42:57 -0700 (PDT)
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:34715 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752639AbcEWCcb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 May 2016 22:32:31 -0400
+Received: by mail-pf0-f180.google.com with SMTP id y69so59540009pfb.1
+        for <linux-pm@vger.kernel.org>; Sun, 22 May 2016 19:32:30 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20160522103912.GN3193@twins.programming.kicks-ass.net>
+In-Reply-To: <1463907991-7916-13-git-send-email-geert@linux-m68k.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, Steve Muckle <steve.muckle@linaro.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On Sun, May 22, 2016 at 12:39:12PM +0200, Peter Zijlstra wrote:
-> On Fri, May 20, 2016 at 05:53:41PM +0530, Shilpasri G Bhat wrote:
-> > 
-> > Below are the comparisons by disabling watchdog.
-> > Both schedutil and ondemand have a similar ramp-down trend. And in both the
-> > cases I can see that frequency of the cpu is not reduced in deterministic
-> > fashion. In a observation window of 30 seconds after running a workload I can
-> > see that the frequency is not ramped down on some cpus in the system and are
-> > idling at max frequency.
+On 22-05-16, 11:05, Geert Uytterhoeven wrote:
+> Submitters of device tree binding documentation may forget to CC
+> the subsystem maintainer if this is missing.
 > 
-> So does it actually matter what the frequency is when you idle? Isn't
-> the whole thing clock gated anyway?
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> ---
+> Please apply this patch directly if you want to be involved in device
+> tree binding documentation for your subsystem.
+> ---
+>  MAINTAINERS | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> Because this seems to generate contradictory requirements, on the one
-> hand we want to stay idle as long as possible while on the other hand
-> you seem to want to clock down while idle, which requires not being
-> idle.
-> 
-> If it matters; should not your idle state muck explicitly set/restore
-> frequency?
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 4c9f31233670e9dd..b241c14d9ab57e2a 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3213,6 +3213,7 @@ L:	linux-pm@vger.kernel.org
+>  S:	Maintained
+>  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+>  T:	git git://git.linaro.org/people/vireshk/linux.git (For ARM Updates)
+> +F:	Documentation/devicetree/bindings/cpufreq/
+>  F:	drivers/cpufreq/
+>  F:	include/linux/cpufreq.h
 
-AFAIK this is very platform dependent. Some will waste more power than
-others when a CPU idles above fmin due to things like resource (bus
-bandwidth, shared cache freq etc) voting.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-It is also true that there is power spent going to fmin (and then
-perhaps restoring the frequency when idle ends) which will be in part a
-function of how slow the frequency change operation is on that platform.
-
-I think Daniel Lezcano (added) was exploring the idea of having cpuidle
-drivers take the expected idle duration and potentially communicate to
-cpufreq to reduce the frequency depending on a platform-specific
-cost/benefit analysis.
-
-
+-- 
+viresh
