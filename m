@@ -1,157 +1,86 @@
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH v3 8/9] cpuidle/powernv: Add support for POWER ISA v3 idle states
-Date: Mon, 23 May 2016 20:48:41 +0530
-Message-ID: <1464016722-7488-9-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1464016722-7488-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1464016722-7488-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: Should 9aafabc7fece be reverted?
+Date: Mon, 23 May 2016 10:55:49 -0500
+Message-ID: <57432805.6000108@ti.com>
+References: <573C9F45.5090109@ti.com> <201605191806.50809@pali>
+ <573DE5A2.7070900@ti.com> <201605191818.20237@pali> <573DEDFF.8060305@ti.com>
+ <20160520092927.GB4580@amd>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([198.47.19.11]:33853 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752021AbcEWP4Y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 May 2016 11:56:24 -0400
+In-Reply-To: <20160520092927.GB4580@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
-POWER ISA v3 defines a new idle processor core mechanism. In summary,
- a) new instruction named stop is added.
- b) new per thread SPR named PSSCR is added which controls the behavior
-	of stop instruction.
+On 05/20/2016 04:29 AM, Pavel Machek wrote:
+> Hi!
+> 
+>>>>>>> No, it is not driver name, but device name. That is different.
+>>>>>>
+>>>>>> My bad, that's what I meant, device names should be dynamic,
+>>>>>> right? Relying on them being static in software would then be
+>>>>>> buggy (like relying on eth0 being the right NIC everytime)?
+>>>>>>
+>>>>>> I'm not familiar with the N900 software, but IDR can give out
+>>>>>> different numbers and may not always give the first battery #0 (it
+>>>>>> does now but is that a guarantee in IDR?) and if not then what is
+>>>>>> the userspace response to this changing?
+>>>>>
+>>>>> In case N900 would have more bq27xxx batteries, then yes. But N900
+>>>>> has exactly *one* bq27200 battery, so there is no IDR problem.
+>>>>
+>>>> Right, but if IDR returns 42 instead of 0 would this then break its
+>>>> userspace software?
+>>>
+>>> I think it is insane to starts generating random numbers for IDR... Hard 
+>>> to decide what happen if such situation occur...
+>>>
+>>
+>> That's kind of what I'm looking for though, if the userspace break is
+>> caused by software relying on the battery to be named "bq27200-0", then
+>> nothing short of hard-coding this exact name will 100% safely fix the
+>> N900 userspace software. And so using IDR and hoping it gives 0 is just
+>> a hacky work-around way of just naming the device "bq27200-0".
+> 
+> N900 userspace is not intended to be portable. (And actually current
+> kernel support does not allow writing portable userspace for a
+> phone. It presents _3_ power supplies to userspace. How is userspace
+> expected to deal with that?) 
+> 
+> And if you ever name the single battery bq27200-42 or bq27200-1337,
+> you'll have a flock of angry penguins at your doorstep.
+> 
 
-Supported idle states and value to be written to PSSCR register to enter
-any idle state is exposed via ibm,cpu-idle-state-names and
-ibm,cpu-idle-state-psscr respectively. To enter an idle state,
-platform provided power_stop() needs to be invoked with the appropriate
-PSSCR value.
+haha, wouldn't want that.
 
-This patch adds support for this new mechanism in cpuidle powernv driver.
+That's what I'm trying to prevent here. Right now n900 userspace looks
+for "bq27200-0" and *only* that, but the 0 does not necessarily mean it
+is the first battery, it doesn't mean anything, we could have it mean
+the first bq27x battery if we keep a count, right now we though we
+depend on IDR behavior, which does not make any order guarantee.
 
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Paul Mackerras <paulus@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-powernv.c | 57 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 56 insertions(+), 1 deletion(-)
+Really we are abusing IDR, which is meant to return a unique ID that we
+can use to fetch an associated pointer, but we don't do that, we are
+just using it as a number generator, and that number needs to be zero.
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index e12dc30..efe5221 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -21,6 +21,7 @@
- #include <asm/runlatch.h>
- 
- #define MAX_POWERNV_IDLE_STATES	8
-+#define MAX_IDLE_STATE_NAME_LEN	10
- 
- struct cpuidle_driver powernv_idle_driver = {
- 	.name             = "powernv_idle",
-@@ -29,9 +30,11 @@ struct cpuidle_driver powernv_idle_driver = {
- 
- static int max_idle_state;
- static struct cpuidle_state *cpuidle_state_table;
-+
-+static u64 stop_psscr_table[MAX_POWERNV_IDLE_STATES];
-+
- static u64 snooze_timeout;
- static bool snooze_timeout_en;
--
- static int snooze_loop(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			int index)
-@@ -139,6 +142,15 @@ static struct notifier_block setup_hotplug_notifier = {
- 	.notifier_call = powernv_cpuidle_add_cpu_notifier,
- };
- 
-+static int stop_loop(struct cpuidle_device *dev,
-+			struct cpuidle_driver *drv,
-+			int index)
-+{
-+	ppc64_runlatch_off();
-+	power_stop(stop_psscr_table[index]);
-+	ppc64_runlatch_on();
-+	return index;
-+}
- /*
-  * powernv_cpuidle_driver_init()
-  */
-@@ -169,6 +181,8 @@ static int powernv_add_idle_states(void)
- 	int nr_idle_states = 1; /* Snooze */
- 	int dt_idle_states;
- 	u32 *latency_ns, *residency_ns, *flags;
-+	u64 *psscr_val = NULL;
-+	const char *names[MAX_POWERNV_IDLE_STATES];
- 	int i, rc;
- 
- 	/* Currently we have snooze statically defined */
-@@ -201,6 +215,23 @@ static int powernv_add_idle_states(void)
- 		goto out_free_latency;
- 	}
- 
-+	rc = of_property_read_string_array(power_mgt,
-+		"ibm,cpu-idle-state-names", names, dt_idle_states);
-+	if (rc < -1) {
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-names in DT\n");
-+		goto out_free_latency;
-+	}
-+
-+	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+		psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
-+					GFP_KERNEL);
-+		rc = of_property_read_u64_array(power_mgt,
-+			"ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states);
-+		if (rc < -1) {
-+			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
-+			goto out_free_psscr;
-+		}
-+	}
- 	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
- 	rc = of_property_read_u32_array(power_mgt,
- 		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
-@@ -218,6 +249,16 @@ static int powernv_add_idle_states(void)
- 			powernv_states[nr_idle_states].flags = 0;
- 			powernv_states[nr_idle_states].target_residency = 100;
- 			powernv_states[nr_idle_states].enter = &nap_loop;
-+		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
-+				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
-+			strncpy(powernv_states[nr_idle_states].name,
-+				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-+			strncpy(powernv_states[nr_idle_states].desc,
-+				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-+			powernv_states[nr_idle_states].flags = 0;
-+
-+			powernv_states[nr_idle_states].enter = &stop_loop;
-+			stop_psscr_table[nr_idle_states] = psscr_val[i];
- 		}
- 
- 		/*
-@@ -233,6 +274,18 @@ static int powernv_add_idle_states(void)
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
- 			powernv_states[nr_idle_states].target_residency = 300000;
- 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
-+		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
-+				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
-+
-+			strncpy(powernv_states[nr_idle_states].name,
-+				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-+			strncpy(powernv_states[nr_idle_states].desc,
-+				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-+
-+			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
-+
-+			powernv_states[nr_idle_states].enter = &stop_loop;
-+			stop_psscr_table[nr_idle_states] = psscr_val[i];
- 		}
- #endif
- 		powernv_states[nr_idle_states].exit_latency =
-@@ -247,6 +300,8 @@ static int powernv_add_idle_states(void)
- 	}
- 
- 	kfree(residency_ns);
-+out_free_psscr:
-+	kfree(psscr_val);
- out_free_latency:
- 	kfree(latency_ns);
- out_free_flags:
--- 
-2.4.11
+Looking at the code you posted it looks like "n900-battery" was renamed
+to "rx51-battery", I think this would be the correct fix here for the
+bq27x batteries, there is only one of each so just dropping the "-0" and
+looking for "bq27200" should fix all this.
+
+Or we could always call the battery "bq27200-0" and not use IDR to
+generate the number zero for us :)
+
+Thanks,
+Andrew
+
+> Best regards,
+> 									Pavel
+> 
