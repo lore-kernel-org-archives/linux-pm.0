@@ -1,93 +1,157 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: stats: Walk online CPUs with CPU
- offline/online locked
-Date: Mon, 23 May 2016 20:49:10 +0530
-Message-ID: <20160523151910.GC17585@vireshk-i7>
-References: <19792191.esL3UuyORb@vostro.rjw.lan>
- <5580598.s7imtWPVt5@vostro.rjw.lan>
- <20160523035703.GF2850@vireshk-i7>
- <3351136.myUMJKBnm0@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v3 8/9] cpuidle/powernv: Add support for POWER ISA v3 idle states
+Date: Mon, 23 May 2016 20:48:41 +0530
+Message-ID: <1464016722-7488-9-git-send-email-shreyas@linux.vnet.ibm.com>
+References: <1464016722-7488-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3351136.myUMJKBnm0@vostro.rjw.lan>
+In-Reply-To: <1464016722-7488-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 23-05-16, 15:40, Rafael J. Wysocki wrote:
-> On Monday, May 23, 2016 09:27:03 AM Viresh Kumar wrote:
-> > On 20-05-16, 23:33, Rafael J. Wysocki wrote:
-> > > The policy rwsem is really only needed in cpufreq_stats_create_table(), because
-> > > the policy notifier is gone when _free_table() runs, so another version of the
-> > > patch goes below.
-> > 
-> > Right. I saw that while reading your previous version but didn't reply
-> > because I wanted to do a more careful review.
-> > 
-> > The first issue I have here is that the _init and _exit routines in
-> > cpufreq-stats aren't opposite of each other. Which shouldn't be the
-> > case.
-> 
-> I'm not sure what you mean here.
+POWER ISA v3 defines a new idle processor core mechanism. In summary,
+ a) new instruction named stop is added.
+ b) new per thread SPR named PSSCR is added which controls the behavior
+	of stop instruction.
 
-Sorry about that. I meant that exit() should look opposite of init() ideally,
-whereas if you look at current code, both are (un)registering the
-POLICY_NOTIFIER at the top.
+Supported idle states and value to be written to PSSCR register to enter
+any idle state is exposed via ibm,cpu-idle-state-names and
+ibm,cpu-idle-state-psscr respectively. To enter an idle state,
+platform provided power_stop() needs to be invoked with the appropriate
+PSSCR value.
 
-> > I am still trying to understand why we will ever have a race here. We
-> > might have it, but I just want to know how.
-> > 
-> > This is what we do in on addition of a policy:
-> > - send the CREATE notifier
-> > - Add policy to the list
-> > 
-> > So, the notifiers are guaranteed to complete before the policy is
-> > present in the list.
-> > 
-> > CPU 0                                   CPU 1
-> > notifier                                cpufreq_stats_init()
-> > CREATE-POLICY X                         cpufreq_stats_create_table()
-> > __cpufreq_stats_create_table()          cpufreq_cpu_get()
-> > 
-> > AFAICT, whatever may happen, __cpufreq_stats_create_table() will *not*
-> > get called in parallel for the same policy.
-> > 
-> > If __cpufreq_stats_create_table() is in progress on CPU0, CPU 1 will
-> > not find the policy with cpufreq_cpu_get(). And if cpufreq_cpu_get()
-> > finds a policy, the notifier would already have completed.
-> > 
-> > What do you say ?
+This patch adds support for this new mechanism in cpuidle powernv driver.
 
-Until now I thought you are trying to prevent the race where
-__cpufreq_stats_create_table() gets called in parallel for the same policy. So,
-above explains that it can't happen for sure.
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-powernv.c | 57 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 56 insertions(+), 1 deletion(-)
 
-> Say cpufreq_stats_init() runs in parallel with a CPU online (say someone
-> loads the cpufreq_stats module and a CPU goes online at the same time,
-> not likely to happen, but still possible).
-
-Of course, that will be a design problem if it ever happens. I agree.
-
-> Then, the notifier may get invoked when the loop is in progress and because the
-> CPU is added to policy->cpus (and the CPU's per-CPU pointer is set to it) before
-> invoking the notifier, cpufreq_stats_init() may get the policy pointer for a
-> policy that hasn't been initialized completely yet and then run in parallel with
-> the notifier for that policy.
-
-If the policy isn't initialized fully before its added to the list, then that's
-a problem in cpufreq.c I would say.
-
-But, I don't see a problem here. The policy's kobject, etc gets initialized
-fully before its added to the list or the notifier is sent for CREATE_POLICY.
-Just that the governor isn't set properly, nothing else.
-
-And if you think about it the other way round, we are sending the CREATE_POLICY
-notifier right at that point where we add it to the list, and the cpufreq-stats
-layer is expected to work on the policy right from that call. So, it is fully
-initialized from the perspective of the stats layer. Nothing should go wrong.
-
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index e12dc30..efe5221 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -21,6 +21,7 @@
+ #include <asm/runlatch.h>
+ 
+ #define MAX_POWERNV_IDLE_STATES	8
++#define MAX_IDLE_STATE_NAME_LEN	10
+ 
+ struct cpuidle_driver powernv_idle_driver = {
+ 	.name             = "powernv_idle",
+@@ -29,9 +30,11 @@ struct cpuidle_driver powernv_idle_driver = {
+ 
+ static int max_idle_state;
+ static struct cpuidle_state *cpuidle_state_table;
++
++static u64 stop_psscr_table[MAX_POWERNV_IDLE_STATES];
++
+ static u64 snooze_timeout;
+ static bool snooze_timeout_en;
+-
+ static int snooze_loop(struct cpuidle_device *dev,
+ 			struct cpuidle_driver *drv,
+ 			int index)
+@@ -139,6 +142,15 @@ static struct notifier_block setup_hotplug_notifier = {
+ 	.notifier_call = powernv_cpuidle_add_cpu_notifier,
+ };
+ 
++static int stop_loop(struct cpuidle_device *dev,
++			struct cpuidle_driver *drv,
++			int index)
++{
++	ppc64_runlatch_off();
++	power_stop(stop_psscr_table[index]);
++	ppc64_runlatch_on();
++	return index;
++}
+ /*
+  * powernv_cpuidle_driver_init()
+  */
+@@ -169,6 +181,8 @@ static int powernv_add_idle_states(void)
+ 	int nr_idle_states = 1; /* Snooze */
+ 	int dt_idle_states;
+ 	u32 *latency_ns, *residency_ns, *flags;
++	u64 *psscr_val = NULL;
++	const char *names[MAX_POWERNV_IDLE_STATES];
+ 	int i, rc;
+ 
+ 	/* Currently we have snooze statically defined */
+@@ -201,6 +215,23 @@ static int powernv_add_idle_states(void)
+ 		goto out_free_latency;
+ 	}
+ 
++	rc = of_property_read_string_array(power_mgt,
++		"ibm,cpu-idle-state-names", names, dt_idle_states);
++	if (rc < -1) {
++		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-names in DT\n");
++		goto out_free_latency;
++	}
++
++	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
++		psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
++					GFP_KERNEL);
++		rc = of_property_read_u64_array(power_mgt,
++			"ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states);
++		if (rc < -1) {
++			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
++			goto out_free_psscr;
++		}
++	}
+ 	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
+ 	rc = of_property_read_u32_array(power_mgt,
+ 		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
+@@ -218,6 +249,16 @@ static int powernv_add_idle_states(void)
+ 			powernv_states[nr_idle_states].flags = 0;
+ 			powernv_states[nr_idle_states].target_residency = 100;
+ 			powernv_states[nr_idle_states].enter = &nap_loop;
++		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
++				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
++			strncpy(powernv_states[nr_idle_states].name,
++				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
++			strncpy(powernv_states[nr_idle_states].desc,
++				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
++			powernv_states[nr_idle_states].flags = 0;
++
++			powernv_states[nr_idle_states].enter = &stop_loop;
++			stop_psscr_table[nr_idle_states] = psscr_val[i];
+ 		}
+ 
+ 		/*
+@@ -233,6 +274,18 @@ static int powernv_add_idle_states(void)
+ 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+ 			powernv_states[nr_idle_states].target_residency = 300000;
+ 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
++		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
++				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
++
++			strncpy(powernv_states[nr_idle_states].name,
++				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
++			strncpy(powernv_states[nr_idle_states].desc,
++				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
++
++			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
++
++			powernv_states[nr_idle_states].enter = &stop_loop;
++			stop_psscr_table[nr_idle_states] = psscr_val[i];
+ 		}
+ #endif
+ 		powernv_states[nr_idle_states].exit_latency =
+@@ -247,6 +300,8 @@ static int powernv_add_idle_states(void)
+ 	}
+ 
+ 	kfree(residency_ns);
++out_free_psscr:
++	kfree(psscr_val);
+ out_free_latency:
+ 	kfree(latency_ns);
+ out_free_flags:
 -- 
-viresh
+2.4.11
