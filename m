@@ -1,64 +1,104 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] spi: let SPI masters ignore their children for PM
-Date: Mon, 23 May 2016 14:10:29 +0100
-Message-ID: <20160523131029.GU8206@sirena.org.uk>
-References: <1460375463-15557-1-git-send-email-linus.walleij@linaro.org>
- <CACRpkdZPNwnhDHDVD3=Mm0iYqCavH0Oemu7qZ4bRM3AfWbH38A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] cpufreq: stats: Walk online CPUs with CPU offline/online locked
+Date: Mon, 23 May 2016 15:40:41 +0200
+Message-ID: <3351136.myUMJKBnm0@vostro.rjw.lan>
+References: <19792191.esL3UuyORb@vostro.rjw.lan> <5580598.s7imtWPVt5@vostro.rjw.lan> <20160523035703.GF2850@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="B0+HW0pjZ+2jqF7e"
-Return-path: <linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CACRpkdZPNwnhDHDVD3=Mm0iYqCavH0Oemu7qZ4bRM3AfWbH38A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160523035703.GF2850@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Monday, May 23, 2016 09:27:03 AM Viresh Kumar wrote:
+> On 20-05-16, 23:33, Rafael J. Wysocki wrote:
+> > The policy rwsem is really only needed in cpufreq_stats_create_table(), because
+> > the policy notifier is gone when _free_table() runs, so another version of the
+> > patch goes below.
+> 
+> Right. I saw that while reading your previous version but didn't reply
+> because I wanted to do a more careful review.
+> 
+> The first issue I have here is that the _init and _exit routines in
+> cpufreq-stats aren't opposite of each other. Which shouldn't be the
+> case.
 
---B0+HW0pjZ+2jqF7e
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I'm not sure what you mean here.
 
-On Mon, May 23, 2016 at 02:56:29PM +0200, Linus Walleij wrote:
+> > ---
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Subject: [PATCH] cpufreq: stats: Fix race conditions on init and cleanup
+> > 
+> > Loops over online CPUs in cpufreq_stats_init() and cpufreq_stats_exit()
+> > are not carried out with CPU offline/online locked, so races are
+> > possible with respect to policy initialization and cleanup.
+> > 
+> > To prevent that from happening, change the loops to walk all possible
+> > CPUs, as cpufreq_stats_create_table() and cpufreq_stats_free_table()
+> > handle the case when there's no policy for the given CPU cleanly, but
+> > also use policy->rwsem in cpufreq_stats_create_table() to prevent it
+> > from racing with the policy notifier.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/cpufreq/cpufreq_stats.c |   16 +++++++++++-----
+> >  1 file changed, 11 insertions(+), 5 deletions(-)
+> > 
+> > Index: linux-pm/drivers/cpufreq/cpufreq_stats.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/cpufreq/cpufreq_stats.c
+> > +++ linux-pm/drivers/cpufreq/cpufreq_stats.c
+> > @@ -238,7 +238,13 @@ static void cpufreq_stats_create_table(u
+> >  	if (likely(!policy))
+> >  		return;
+> >  
+> > +	/*
+> > +	 * The policy notifier may run in parallel with this code, so use the
+> > +	 * policy rwsem to avoid racing with it.
+> > +	 */
+> > +	down_write(&policy->rwsem);
+> >  	__cpufreq_stats_create_table(policy);
+> > +	up_write(&policy->rwsem);
+> 
+> I am still trying to understand why we will ever have a race here. We
+> might have it, but I just want to know how.
+> 
+> This is what we do in on addition of a policy:
+> - send the CREATE notifier
+> - Add policy to the list
+> 
+> So, the notifiers are guaranteed to complete before the policy is
+> present in the list.
+> 
+> CPU 0                                   CPU 1
+> notifier                                cpufreq_stats_init()
+> CREATE-POLICY X                         cpufreq_stats_create_table()
+> __cpufreq_stats_create_table()          cpufreq_cpu_get()
+> 
+> AFAICT, whatever may happen, __cpufreq_stats_create_table() will *not*
+> get called in parallel for the same policy.
+> 
+> If __cpufreq_stats_create_table() is in progress on CPU0, CPU 1 will
+> not find the policy with cpufreq_cpu_get(). And if cpufreq_cpu_get()
+> finds a policy, the notifier would already have completed.
+> 
+> What do you say ?
 
-> Mark did this slip through the cracks or is there some
-> problem with it?
+Say cpufreq_stats_init() runs in parallel with a CPU online (say someone
+loads the cpufreq_stats module and a CPU goes online at the same time,
+not likely to happen, but still possible).
 
-Please don't send content free pings and please allow a reasonable time
-for review.  People get busy, go on holiday, attend conferences and so=20
-on so unless there is some reason for urgency (like critical bug fixes)
-please allow at least a couple of weeks for review.  If there have been
-review comments then people may be waiting for those to be addressed.
-Sending content free pings just adds to the mail volume (if they are
-seen at all) and if something has gone wrong you'll have to resend the
-patches anyway.
+Then, the notifier may get invoked when the loop is in progress and because the
+CPU is added to policy->cpus (and the CPU's per-CPU pointer is set to it) before
+invoking the notifier, cpufreq_stats_init() may get the policy pointer for a
+policy that hasn't been initialized completely yet and then run in parallel with
+the notifier for that policy.
 
-> The corresponding patch to I2C is applied in commit
-> 04f59143b571 "i2c: let I2C masters ignore their children for PM"
->=20
-> Tell me if I should resend it.
+At least I don't see anything to prevent that from happening, maybe I'm overlooking
+something.
 
-It's in my git...
-
---B0+HW0pjZ+2jqF7e
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXQwFEAAoJECTWi3JdVIfQbjgH/0+7OHOfdxqPJ0AAoBQ6at4o
-o+qzjLN++kRmlEaxWaoGMTltSvnhuVY7zZkYhBwS5DrVVM63safr2EB3YIVpaWzw
-G5EqUAkGB3Jsvbe+anbtDCWa5iB/NIjqezsQO6ObfQ93u0jI1j9WkHvB421Cu8Oi
-+wtoaqG7IY31lUZXjWpVWiDwEP9ppjrDkM5a0JfOfOl59Fc67ydFOsa/QX9uGM9w
-vXfW1Jrd9Bmcw+fKnOS2dpPCDuB+aAVGPpu6rCqsJX4qenzjCzh0EelcddwPaSf+
-Bcc8l0m7YKsnEZh0+Cr1vZwe75RyLcvXRYruw/+xmDHbmCIAzkNtfWsPPeIB4Z8=
-=wv5b
------END PGP SIGNATURE-----
-
---B0+HW0pjZ+2jqF7e--
---
-To unsubscribe from this list: send the line "unsubscribe linux-spi" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
