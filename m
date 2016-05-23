@@ -1,117 +1,59 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
-Date: Mon, 23 May 2016 16:50:15 -0500
-Message-ID: <20160523215015.GA31479@localhost>
-References: <20160519231234.GB1785@al>
- <1463991648-85051-1-git-send-email-mika.westerberg@linux.intel.com>
- <20160523200042.GB24375@localhost>
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Subject: Re: Crash after 'reboot' due to 9be4fd2c7723a
+Date: Mon, 23 May 2016 23:05:14 +0100
+Message-ID: <20160523220514.GB19428@n2100.arm.linux.org.uk>
+References: <CAOMZO5A62LgnyT0sQw5N-xeHaD0nSGTjAFxUx=_6OpUm02robA@mail.gmail.com>
+ <CAJZ5v0hX1dZ+79-KCyumf57o02WKivxcRLJ1Zi8akrqu_2CZEQ@mail.gmail.com>
+ <CAOMZO5CD08cX0yDBZTdFV+iwgr__fjSaaWvgjimotr5L1yrbaQ@mail.gmail.com>
+ <2148724.oQlEHos3jS@vostro.rjw.lan>
+ <20160523182807.GY19428@n2100.arm.linux.org.uk>
+ <CAJZ5v0ipPVsZmu+RVfrPChA7banMGFNsfMt=if0V3XfVdstRNQ@mail.gmail.com>
+ <CAJZ5v0j0VbyHNT_ZmThsdQfRWzf7SG65A8-bPxoAUxZJgR96og@mail.gmail.com>
+ <CAOMZO5Cbue9L2JGA0kv7nTZ=78oKDhNu6WLRUmcsSuLHscDVUQ@mail.gmail.com>
+ <20160523210738.GZ19428@n2100.arm.linux.org.uk>
+ <CAOMZO5DjjgNk+uHyH7Avvfrt_TNPaZ+SUtHzON5fPU=25_gKOg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:56500 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752633AbcEWVuU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 23 May 2016 17:50:20 -0400
+Received: from pandora.armlinux.org.uk ([78.32.30.218]:55272 "EHLO
+	pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751423AbcEWWFd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 18:05:33 -0400
 Content-Disposition: inline
-In-Reply-To: <20160523200042.GB24375@localhost>
+In-Reply-To: <CAOMZO5DjjgNk+uHyH7Avvfrt_TNPaZ+SUtHzON5fPU=25_gKOg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
+To: Fabio Estevam <festevam@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ping Bai <ping.bai@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>
 
-[+cc Valdis, Dave]
-
-On Mon, May 23, 2016 at 03:00:42PM -0500, Bjorn Helgaas wrote:
-> On Mon, May 23, 2016 at 11:20:48AM +0300, Mika Westerberg wrote:
-> > When a PCI device is removed through sysfs interface the upstream bridge
-> > (PCIe port) can be runtime suspended if it was the last device on that bus.
-> > Now, if the bridge is in D3 we cannot find devices below the bridge
-> > anymore. For example following fails to find the removed device again:
-> > 
-> >    # echo 1 > /sys/bus/pci/devices/0000:00:01.0/0000:01:00.0/remove
-> >    # echo 1 > /sys/bus/pci/devices/0000:00:01.0/rescan
-> > 
-> > Where 0000:00:01.0 is the bridge device.
-> > 
-> > In order to be able to rescan devices below the bridge add
-> > pm_runtime_get_sync()/pm_runtime_put() calls to pci_scan_bridge(). This
-> > should keep bridges powered on while their children devices are being
-> > scanned.
-> > 
-> > Reported-by: Peter Wu <peter@lekensteyn.nl>
-> > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+On Mon, May 23, 2016 at 06:38:31PM -0300, Fabio Estevam wrote:
+> On Mon, May 23, 2016 at 6:07 PM, Russell King - ARM Linux
+> <linux@armlinux.org.uk> wrote:
 > 
-> This looks like basically the same idea as "ACPI / hotplug / PCI:
-> Runtime resume bridge before rescan".
+> > Read the code again.  There's three states:
+> >
+> > 1. CONFIG_SMP=n - it always returns false.
+> > 2. CONFIG_SMP=y, CONFIG_SMP_ON_UP=n - it always returns true.  Such a
+> >    kernel can _only_ be run on SMP capable systems.
+> > 3. CONFIG_SMP=y, CONFIG_SMP_ON_UP=y - it returns depending on whether
+> >    we detect that the CPU is SMP capable.
 > 
-> The hotplug_event() path modified by that patch eventually calls
-> pci_scan_bridge():
-> 
->   hotplug_event
->     enable_slot
->       pci_scan_bridge
-> 
-> so this patch looks a little more general.  Does it make "ACPI /
-> hotplug / PCI: Runtime resume bridge before rescan" unnecessary?  
-> Can I just replace that patch with this one?
+> Yes, I meant that on imx6ul we have option 2 above with imx_v6_v7_defconfig.
 
-I speculatively replaced "ACPI / hotplug / PCI: Runtime resume bridge
-before rescan" with this one and pushed the result to
+I don't think so, unless you specifically turn off CONFIG_SMP_ON_UP.
+It defaults to 'y', so imx_v6_v7_defconfig should result in this being
+'y'.
 
-  https://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/log/?h=pci/pm
+> Also tested option 3 and is_smp() returns true as well.
 
-Please take a look, test it, and let me know if I need to add the ACPI
-patch back.
+So that means the MPIDR register is telling the kernel...
 
-This branch also includes the fix for the lockdep splat reported by
-Valdis.  This is what I hope to get into v4.7-rc1.
+* The boot CPU has multiprocessor extensions.
+* The boot CPU is not part of a uniprocessor system.
 
-> > ---
-> >  drivers/pci/probe.c | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
-> > 
-> > diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> > index 8004f67c57ec..15e77c92311e 100644
-> > --- a/drivers/pci/probe.c
-> > +++ b/drivers/pci/probe.c
-> > @@ -16,6 +16,7 @@
-> >  #include <linux/aer.h>
-> >  #include <linux/acpi.h>
-> >  #include <linux/irqdomain.h>
-> > +#include <linux/pm_runtime.h>
-> >  #include "pci.h"
-> >  
-> >  #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
-> > @@ -832,6 +833,12 @@ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max, int pass)
-> >  	u8 primary, secondary, subordinate;
-> >  	int broken = 0;
-> >  
-> > +	/*
-> > +	 * Make sure the bridge is powered on to be able to access config
-> > +	 * space of devices below it.
-> > +	 */
-> > +	pm_runtime_get_sync(&dev->dev);
-> > +
-> >  	pci_read_config_dword(dev, PCI_PRIMARY_BUS, &buses);
-> >  	primary = buses & 0xFF;
-> >  	secondary = (buses >> 8) & 0xFF;
-> > @@ -1012,6 +1019,8 @@ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max, int pass)
-> >  out:
-> >  	pci_write_config_word(dev, PCI_BRIDGE_CONTROL, bctl);
-> >  
-> > +	pm_runtime_put(&dev->dev);
-> > +
-> >  	return max;
-> >  }
-> >  EXPORT_SYMBOL(pci_scan_bridge);
-> > -- 
-> > 2.8.1
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I will try to see why GIC on this SoC cannot work in SMP.
+
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
