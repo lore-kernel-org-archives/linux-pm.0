@@ -1,86 +1,74 @@
-From: Caesar Wang <caesar.upstream@gmail.com>
-Subject: Re: [PATCH v2 0/5] Thermal: Support for hardware-tracked trip points
-Date: Mon, 23 May 2016 15:32:39 +0800
-Message-ID: <5742B217.4080405@gmail.com>
-References: <1462268013-14992-1-git-send-email-wxt@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: [PATCH] PCI: Power on bridges before scanning new devices
+Date: Mon, 23 May 2016 11:20:48 +0300
+Message-ID: <1463991648-85051-1-git-send-email-mika.westerberg@linux.intel.com>
+References: <20160519231234.GB1785@al>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f66.google.com ([209.85.220.66]:36002 "EHLO
-	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752914AbcEWHdE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 03:33:04 -0400
-In-Reply-To: <1462268013-14992-1-git-send-email-wxt@rock-chips.com>
+Received: from mga11.intel.com ([192.55.52.93]:44523 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753028AbcEWIUw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 May 2016 04:20:52 -0400
+In-Reply-To: <20160519231234.GB1785@al>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>
-Cc: Caesar Wang <wxt@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>, smbarber@google.com, Durgadoss R <durgadoss.r@intel.com>, Jonathan Corbet <corbet@lwn.net>, linux-rockchip@lists.infradead.org, briannorris@google.com, Andy Champ <andycham@amazon.com>, huangtao@rock-chips.com, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, Javi Merino <javi.merino@arm.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Ni Wade <wni@nvidia.com>, Keerthy <j-keerthy@ti.com>, dmitry.torokhov@gmail.com, dianders@chromium.org, Leo Yan <leo.yan@linaro.org>, cf@rock-chips.com
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hello Eduardo & 'Zhang Rui'
+When a PCI device is removed through sysfs interface the upstream bridge
+(PCIe port) can be runtime suspended if it was the last device on that bus.
+Now, if the bridge is in D3 we cannot find devices below the bridge
+anymore. For example following fails to find the removed device again:
 
-Do we have the chance to merge this series patches for next kernel?
-I had picked them up in my github, and tested for a period of time with=
-=20
-rockchip inside kernel.
+   # echo 1 > /sys/bus/pci/devices/0000:00:01.0/0000:01:00.0/remove
+   # echo 1 > /sys/bus/pci/devices/0000:00:01.0/rescan
 
-Let me know if someone have some suggestions or against opinios.
-Thanks,
+Where 0000:00:01.0 is the bridge device.
 
--Caesar
-On 2016=E5=B9=B405=E6=9C=8803=E6=97=A5 17:33, Caesar Wang wrote:
-> The history patches come from Mikko and Sascha.
-> http://thread.gmane.org/gmane.linux.power-management.general/59451
->
-> Now, I pick them up to continue upstream.
-> Nevermind!
->
-> This series history patches:
-> v1: https://lkml.org/lkml/2016/4/24/227
->
-> This series adds support for hardware trip points. It picks up earlie=
-r
-> work from Mikko Perttunen. Mikko implemented hardware trip points as =
-part
-> of the device tree support. It was suggested back then to move the
-> functionality to the thermal core instead of putting more code into t=
-he
-> device tree support. This series does exactly that.
->
-> This series patches rebase the conflicts.
-> Note that the hardware-tracked trip points are very well tested curre=
-ntly.
->
-> Verified and tested on https://github.com/Caesar-github/rockchip/tree=
-/wip/fixes-thermal-0503
-> That's based on linux-kernel 20160502.
-> .Linux version 4.6.0-rc6-next-20160502-08922-g860ed34 (wxt@nb)
->
->
-> Changes in v2:
-> - update the sysfs-api.txt for set_trips
-> - add the commit in patch[v2 2/5].
-> - Update the commit for patch[v2 4/5].
->
-> Caesar Wang (1):
->    thermal: rockchip: add the set_trips function
->
-> Sascha Hauer (4):
->    thermal: Add support for hardware-tracked trip points
->    thermal: of: implement .set_trips for device tree thermal zones
->    thermal: streamline get_trend callbacks
->    thermal: bang-bang governor: act on lower trip boundary
->
->   Documentation/thermal/sysfs-api.txt                |  7 +++
->   drivers/thermal/gov_bang_bang.c                    |  2 +-
->   drivers/thermal/of-thermal.c                       | 23 +++++-----
->   drivers/thermal/rockchip_thermal.c                 | 39 +++++++++++=
-+++++
->   drivers/thermal/thermal_core.c                     | 52 +++++++++++=
-+++++++++++
->   drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 ++++-------
->   include/linux/thermal.h                            |  9 +++-
->   7 files changed, 128 insertions(+), 29 deletions(-)
->
+In order to be able to rescan devices below the bridge add
+pm_runtime_get_sync()/pm_runtime_put() calls to pci_scan_bridge(). This
+should keep bridges powered on while their children devices are being
+scanned.
+
+Reported-by: Peter Wu <peter@lekensteyn.nl>
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+---
+ drivers/pci/probe.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 8004f67c57ec..15e77c92311e 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -16,6 +16,7 @@
+ #include <linux/aer.h>
+ #include <linux/acpi.h>
+ #include <linux/irqdomain.h>
++#include <linux/pm_runtime.h>
+ #include "pci.h"
+ 
+ #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
+@@ -832,6 +833,12 @@ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max, int pass)
+ 	u8 primary, secondary, subordinate;
+ 	int broken = 0;
+ 
++	/*
++	 * Make sure the bridge is powered on to be able to access config
++	 * space of devices below it.
++	 */
++	pm_runtime_get_sync(&dev->dev);
++
+ 	pci_read_config_dword(dev, PCI_PRIMARY_BUS, &buses);
+ 	primary = buses & 0xFF;
+ 	secondary = (buses >> 8) & 0xFF;
+@@ -1012,6 +1019,8 @@ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max, int pass)
+ out:
+ 	pci_write_config_word(dev, PCI_BRIDGE_CONTROL, bctl);
+ 
++	pm_runtime_put(&dev->dev);
++
+ 	return max;
+ }
+ EXPORT_SYMBOL(pci_scan_bridge);
+-- 
+2.8.1
 
