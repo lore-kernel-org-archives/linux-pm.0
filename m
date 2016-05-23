@@ -1,33 +1,46 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH] Increase in idle power with schedutil
-Date: Mon, 23 May 2016 11:24:51 +0200
-Message-ID: <20160523092451.GF15728@worktop.ger.corp.intel.com>
-References: <1463576020-18597-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <CAJZ5v0jv+fD-ZKjLBepL9Fkn1JFROO3nGHX_3-=PuzGSAALB5g@mail.gmail.com>
- <20160519114029.GW3193@twins.programming.kicks-ass.net>
- <201605201223.u4KCNWn9028105@mx0a-001b2d01.pphosted.com>
- <20160522103912.GN3193@twins.programming.kicks-ass.net>
- <20160522204252.GH15383@graphite.smuckle.net>
- <20160523090004.GA21186@red-moon>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH] spi: let SPI masters ignore their children for PM
+Date: Mon, 23 May 2016 14:56:29 +0200
+Message-ID: <CACRpkdZPNwnhDHDVD3=Mm0iYqCavH0Oemu7qZ4bRM3AfWbH38A@mail.gmail.com>
+References: <1460375463-15557-1-git-send-email-linus.walleij@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:41717 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbcEWJZG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 05:25:06 -0400
-Content-Disposition: inline
-In-Reply-To: <20160523090004.GA21186@red-moon>
+Received: from mail-oi0-f43.google.com ([209.85.218.43]:35656 "EHLO
+	mail-oi0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753903AbcEWM4a (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 08:56:30 -0400
+Received: by mail-oi0-f43.google.com with SMTP id x19so275517036oix.2
+        for <linux-pm@vger.kernel.org>; Mon, 23 May 2016 05:56:30 -0700 (PDT)
+In-Reply-To: <1460375463-15557-1-git-send-email-linus.walleij@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, shreyas@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
+To: Mark Brown <broonie@kernel.org>, "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, May 23, 2016 at 10:00:04AM +0100, Lorenzo Pieralisi wrote:
-> It is also related to static leakage power that depends on the operating
-> voltage (ie higher operating frequencies require higher voltage) so in a
-> way scaling frequency before going idle may not be effective if voltage
-> does not scale too in turn.
+On Mon, Apr 11, 2016 at 1:51 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
 
-Sure, but the platform drivers 'know' all this and can make the right
-decision.
+> Let all SPI masters ignore their children: when it comes
+> to power management: SPI children have no business doing
+> keeping their parents awake: they are completely autonomous
+> devices that just use their parent to talk, and the latter
+> usecase must be power managed by the host itself on a
+> per-message basis.
+>
+> Cc: Wolfram Sang <wsa@the-dreams.de>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+
+Mark did this slip through the cracks or is there some
+problem with it?
+
+The corresponding patch to I2C is applied in commit
+04f59143b571 "i2c: let I2C masters ignore their children for PM"
+
+Tell me if I should resend it.
+
+Yours,
+Linus Walleij
