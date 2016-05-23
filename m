@@ -1,46 +1,64 @@
-From: Linus Walleij <linus.walleij@linaro.org>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 Subject: Re: [PATCH] spi: let SPI masters ignore their children for PM
-Date: Mon, 23 May 2016 14:56:29 +0200
-Message-ID: <CACRpkdZPNwnhDHDVD3=Mm0iYqCavH0Oemu7qZ4bRM3AfWbH38A@mail.gmail.com>
+Date: Mon, 23 May 2016 14:10:29 +0100
+Message-ID: <20160523131029.GU8206@sirena.org.uk>
 References: <1460375463-15557-1-git-send-email-linus.walleij@linaro.org>
+ <CACRpkdZPNwnhDHDVD3=Mm0iYqCavH0Oemu7qZ4bRM3AfWbH38A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f43.google.com ([209.85.218.43]:35656 "EHLO
-	mail-oi0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753903AbcEWM4a (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 08:56:30 -0400
-Received: by mail-oi0-f43.google.com with SMTP id x19so275517036oix.2
-        for <linux-pm@vger.kernel.org>; Mon, 23 May 2016 05:56:30 -0700 (PDT)
-In-Reply-To: <1460375463-15557-1-git-send-email-linus.walleij@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="B0+HW0pjZ+2jqF7e"
+Return-path: <linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CACRpkdZPNwnhDHDVD3=Mm0iYqCavH0Oemu7qZ4bRM3AfWbH38A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-spi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>, "linux-spi@vger.kernel.org" <linux-spi@vger.kernel.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, Apr 11, 2016 at 1:51 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
 
-> Let all SPI masters ignore their children: when it comes
-> to power management: SPI children have no business doing
-> keeping their parents awake: they are completely autonomous
-> devices that just use their parent to talk, and the latter
-> usecase must be power managed by the host itself on a
-> per-message basis.
->
-> Cc: Wolfram Sang <wsa@the-dreams.de>
-> Cc: Mark Brown <broonie@kernel.org>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+--B0+HW0pjZ+2jqF7e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Mark did this slip through the cracks or is there some
-problem with it?
+On Mon, May 23, 2016 at 02:56:29PM +0200, Linus Walleij wrote:
 
-The corresponding patch to I2C is applied in commit
-04f59143b571 "i2c: let I2C masters ignore their children for PM"
+> Mark did this slip through the cracks or is there some
+> problem with it?
 
-Tell me if I should resend it.
+Please don't send content free pings and please allow a reasonable time
+for review.  People get busy, go on holiday, attend conferences and so=20
+on so unless there is some reason for urgency (like critical bug fixes)
+please allow at least a couple of weeks for review.  If there have been
+review comments then people may be waiting for those to be addressed.
+Sending content free pings just adds to the mail volume (if they are
+seen at all) and if something has gone wrong you'll have to resend the
+patches anyway.
 
-Yours,
-Linus Walleij
+> The corresponding patch to I2C is applied in commit
+> 04f59143b571 "i2c: let I2C masters ignore their children for PM"
+>=20
+> Tell me if I should resend it.
+
+It's in my git...
+
+--B0+HW0pjZ+2jqF7e
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJXQwFEAAoJECTWi3JdVIfQbjgH/0+7OHOfdxqPJ0AAoBQ6at4o
+o+qzjLN++kRmlEaxWaoGMTltSvnhuVY7zZkYhBwS5DrVVM63safr2EB3YIVpaWzw
+G5EqUAkGB3Jsvbe+anbtDCWa5iB/NIjqezsQO6ObfQ93u0jI1j9WkHvB421Cu8Oi
++wtoaqG7IY31lUZXjWpVWiDwEP9ppjrDkM5a0JfOfOl59Fc67ydFOsa/QX9uGM9w
+vXfW1Jrd9Bmcw+fKnOS2dpPCDuB+aAVGPpu6rCqsJX4qenzjCzh0EelcddwPaSf+
+Bcc8l0m7YKsnEZh0+Cr1vZwe75RyLcvXRYruw/+xmDHbmCIAzkNtfWsPPeIB4Z8=
+=wv5b
+-----END PGP SIGNATURE-----
+
+--B0+HW0pjZ+2jqF7e--
+--
+To unsubscribe from this list: send the line "unsubscribe linux-spi" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
