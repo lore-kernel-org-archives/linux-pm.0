@@ -1,20 +1,20 @@
 From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH 3/4] PM / Domains: Allow runtime PM during system PM phases
-Date: Mon, 23 May 2016 16:06:37 -0700
-Message-ID: <m2zirgidc2.fsf@baylibre.com>
+Subject: Re: [PATCH 4/4] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
+Date: Mon, 23 May 2016 16:15:07 -0700
+Message-ID: <m2iny4icxw.fsf@baylibre.com>
 References: <1463485296-22742-1-git-send-email-ulf.hansson@linaro.org>
-	<1463485296-22742-4-git-send-email-ulf.hansson@linaro.org>
+	<1463485296-22742-5-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:33738 "EHLO
-	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbcEWXGk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 19:06:40 -0400
-Received: by mail-pf0-f171.google.com with SMTP id b124so31076pfb.0
-        for <linux-pm@vger.kernel.org>; Mon, 23 May 2016 16:06:40 -0700 (PDT)
-In-Reply-To: <1463485296-22742-4-git-send-email-ulf.hansson@linaro.org> (Ulf
-	Hansson's message of "Tue, 17 May 2016 13:41:35 +0200")
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:32829 "EHLO
+	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751423AbcEWXPK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 19:15:10 -0400
+Received: by mail-pf0-f181.google.com with SMTP id b124so91786pfb.0
+        for <linux-pm@vger.kernel.org>; Mon, 23 May 2016 16:15:09 -0700 (PDT)
+In-Reply-To: <1463485296-22742-5-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Tue, 17 May 2016 13:41:36 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
@@ -22,64 +22,66 @@ Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown
 
 Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-> The PM core disables runtime PM at __device_suspend_late() before it calls
-> a system PM "late" callback for the device. When resuming the device,
-> after the corresponding "early" callback has been invoked, it re-enables
-> runtime PM.
+> When the pm_runtime_force_suspend|resume() helpers were invented, we still
+> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
 >
-> By changing genpd to conform to this behaviour, the device no longer have
-> to be unconditionally runtime resumed from genpd's ->prepare() callback. In
-> most cases that avoids unnecessary operations.
-
-...avoids the unnecessary, and energy-wasting operaions of runtime
-resuming devices that have nothing to do, only to runtime suspend them
-shortly after.
-
-> As runtime PM then isn't disabled/enabled by genpd, the subsystem/driver
-> can rely on the generic behaviour from PM core. Consequentially runtime PM
-> is allowed in more phases of system PM than before.
-
-OK.  I like this change a lot, but it the changelog doesn't go into
-describing how this gets around the problems that were being worked
-around by having genpd disable runtime PM in the first place.  This
-changelog should describe how this appraoch deals with those problems,
-or why they don't exist anymore.
-
-> Although, because of this change and due to that genpd powers on the PM
-> domain unconditionally in the system PM resume "noirq" phase, it could
-> potentially cause a PM domain to stay powered on even if it's unused after
-> the system has resumed. To avoid this, let's schedule a power off work
-> when genpd's system PM ->complete() callback has been invoked for the last
-> device in the PM domain.
-
-OK.
-
-> Another issue that arises due to this change in genpd, concerns those
-> platforms/PM domains that makes use of genpd's device ->stop|start()
-> callbacks. In these scenarios, the corresponding subsystem/driver needs to
-> invoke pm_runtime_force_suspend() from a system PM suspend callback to
-> allow genpd's ->runtime_suspend() to be invoked for an active device, else
-> genpd can't "stop" a device that is "started".
+> To make sure these helpers worked for all combinations and without
+> introducing too much of complexity, the device was always resumed in
+> pm_runtime_force_resume().
 >
-> The subsystem/driver also needs to invoke pm_runtime_force_resume()
-> in a system PM resume callback, to restore the runtime PM state for the
-> device and to re-enable runtime PM.
+> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
+> unset, we needed to resume the device as the subsystem/driver couldn't
+> rely on using runtime PM to do it.
 >
-> Currently not all involved subsystem/drivers makes use of
-> pm_runtime_force_suspend|resume() accordingly. Therefore, let's invoke
-> pm_runtime_force_suspend|resume() from genpd's "noirq" system PM
-> callbacks, in cases when the ->stop|start() callbacks are being used.
+> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
+> removed this combination, of using CONFIG_PM_SLEEP without the earlier
+> CONFIG_PM_RUNTIME.
 >
-> In this way, devices are "stoped" during suspend and "started" during
-> resume, even in those cases when the subsystem/driver don't call
-> pm_runtime_force_suspend|resume() themselves.
+> For this reason we can now rely on the subsystem/driver to use runtime PM
+> to resume the device, instead of forcing that to be done in all cases. In
+> other words, let's defer this to a later point when it's actually needed.
 
-IMO, this last part might be better dealt with as a separate patch, so
-it's clear which parts are for the main genpd change, and which parts
-fixup the fallout.
+s/this/the runtime resume/
 
-On a related note, are there many genpd drivers using dev_ops->start and
-->stop out there?  A quick grep didn't find anything other than the
-pm_clk stuff.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/base/power/runtime.c | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index 09e4eb1..1db7b46 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -1509,6 +1509,17 @@ int pm_runtime_force_resume(struct device *dev)
+>  	if (!pm_runtime_status_suspended(dev))
+>  		goto out;
+>  
+> +	/*
+> +	 * The PM core increases the runtime PM usage count in the system PM
+> +	 * prepare phase. If the count is greather than 1 at this point, someone
+
+s/greather/greater/
+
+> +	 * else has also increased it. In that case, invoke the runtime resume
+> +	 * callback for the device as that is likely what is expected. In other
+
+Instead of "someone else..."
+
+...a real user (such as a driver or subsystem) has also increased it,
+indicating that the device was active (RPM_ACTIVE) when system suspend
+was invoked.  Since the device was active on suspend, it's expected to
+be used on resume as well, so invoke runtime resume for that device
+ensuring that it is RPM_ACTIVE during system resume.
 
 Kevin
+
+> +	 * case we trust the subsystem/driver to runtime resume the device when
+> +	 * it's actually needed.
+> +	 */
+> +	if (atomic_read(&dev->power.usage_count) < 2)
+> +		goto out;
+> +
+>  	ret = pm_runtime_set_active(dev);
+>  	if (ret)
+>  		goto out;
