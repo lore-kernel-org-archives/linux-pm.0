@@ -1,27 +1,41 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 0/2] Misc RAPL updates
-Date: Mon, 23 May 2016 09:45:41 -0700
-Message-ID: <1464021943-14915-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:28025 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbcEWQrP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 23 May 2016 12:47:15 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 2/2] powercap/rapl: reduce warning level
+Date: Mon, 23 May 2016 09:45:43 -0700
+Message-ID: <1464021943-14915-3-git-send-email-jacob.jun.pan@linux.intel.com>
+References: <1464021943-14915-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1464021943-14915-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Prarit Bhargava <prarit@redhat.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-A couple of small updates to support Skylake server and make it less
-noisy on KVM.
+Since RAPL interface is not architectual, its enumeration depends on poking
+MSRs instead of using CPUID method.
 
-Jacob Pan (2):
-  powercap/rapl: add support for skx
-  powercap/rapl: reduce warning level
+In KVM guest, RAPL driver probe will fail and emit the following message
+for every CPU: no valid rapl domains found in package
 
- drivers/powercap/intel_rapl.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+This patch limit the warning to debug only. Still return ENODEV so that RAPL
+does not run on KVM guest.
 
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ drivers/powercap/intel_rapl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index a417e68..b0a2dc4 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -1324,7 +1324,7 @@ static int rapl_detect_domains(struct rapl_package *rp, int cpu)
+ 	}
+ 	rp->nr_domains = bitmap_weight(&rp->domain_map,	RAPL_DOMAIN_MAX);
+ 	if (!rp->nr_domains) {
+-		pr_err("no valid rapl domains found in package %d\n", rp->id);
++		pr_debug("no valid rapl domains found in package %d\n", rp->id);
+ 		ret = -ENODEV;
+ 		goto done;
+ 	}
 -- 
 1.9.1
-
