@@ -1,7 +1,7 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 2/2] powercap/rapl: reduce warning level
-Date: Mon, 23 May 2016 09:45:43 -0700
-Message-ID: <1464021943-14915-3-git-send-email-jacob.jun.pan@linux.intel.com>
+Subject: [PATCH 1/2] powercap/rapl: add support for skx
+Date: Mon, 23 May 2016 09:45:42 -0700
+Message-ID: <1464021943-14915-2-git-send-email-jacob.jun.pan@linux.intel.com>
 References: <1464021943-14915-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464021943-14915-1-git-send-email-jacob.jun.pan@linux.intel.com>
@@ -10,32 +10,24 @@ To: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.
 Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Prarit Bhargava <prarit@redhat.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Since RAPL interface is not architectual, its enumeration depends on poking
-MSRs instead of using CPUID method.
-
-In KVM guest, RAPL driver probe will fail and emit the following message
-for every CPU: no valid rapl domains found in package
-
-This patch limit the warning to debug only. Still return ENODEV so that RAPL
-does not run on KVM guest.
+SKX RAPL interface is similar to HSX/BDX.
 
 Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 ---
- drivers/powercap/intel_rapl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/powercap/intel_rapl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
 diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index a417e68..b0a2dc4 100644
+index 470bb62..a417e68 100644
 --- a/drivers/powercap/intel_rapl.c
 +++ b/drivers/powercap/intel_rapl.c
-@@ -1324,7 +1324,7 @@ static int rapl_detect_domains(struct rapl_package *rp, int cpu)
- 	}
- 	rp->nr_domains = bitmap_weight(&rp->domain_map,	RAPL_DOMAIN_MAX);
- 	if (!rp->nr_domains) {
--		pr_err("no valid rapl domains found in package %d\n", rp->id);
-+		pr_debug("no valid rapl domains found in package %d\n", rp->id);
- 		ret = -ENODEV;
- 		goto done;
- 	}
+@@ -1096,6 +1096,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+ 	RAPL_CPU(0x4E, rapl_defaults_core),/* Skylake */
+ 	RAPL_CPU(0x4C, rapl_defaults_cht),/* Braswell/Cherryview */
+ 	RAPL_CPU(0x4A, rapl_defaults_tng),/* Tangier */
++	RAPL_CPU(0x55, rapl_defaults_hsw_server),/* Skylake server */
+ 	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
+ 	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
+ 	RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
 -- 
 1.9.1
