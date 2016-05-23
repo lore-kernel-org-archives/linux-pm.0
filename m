@@ -1,45 +1,86 @@
-From: Lothar =?UTF-8?B?V2HDn21hbm4=?= <LW@KARO-electronics.de>
-Subject: Re: [PATCH 0015/1529] Fix typo
-Date: Mon, 23 May 2016 09:03:01 +0200
-Message-ID: <20160523090301.3cdbd523@ipc1.ka-ro>
-References: <20160521113722.32053-1-andrea.gelmini@gelma.net>
+From: Caesar Wang <caesar.upstream@gmail.com>
+Subject: Re: [PATCH v2 0/5] Thermal: Support for hardware-tracked trip points
+Date: Mon, 23 May 2016 15:32:39 +0800
+Message-ID: <5742B217.4080405@gmail.com>
+References: <1462268013-14992-1-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160521113722.32053-1-andrea.gelmini@gelma.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Andrea Gelmini <andrea.gelmini@gelma.net>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, linux-samsung-soc@vger.kernel.org, trivial@kernel.org, pawel.moll@arm.com, linux-pm@vger.kernel.org, devicetree@hellion.org.uk, cw00.choi@samsung.com, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, kgene@kernel.org, galak@codeaurora.org, dt@kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:36002 "EHLO
+	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752914AbcEWHdE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 03:33:04 -0400
+In-Reply-To: <1462268013-14992-1-git-send-email-wxt@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>
+Cc: Caesar Wang <wxt@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>, smbarber@google.com, Durgadoss R <durgadoss.r@intel.com>, Jonathan Corbet <corbet@lwn.net>, linux-rockchip@lists.infradead.org, briannorris@google.com, Andy Champ <andycham@amazon.com>, huangtao@rock-chips.com, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, Javi Merino <javi.merino@arm.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Ni Wade <wni@nvidia.com>, Keerthy <j-keerthy@ti.com>, dmitry.torokhov@gmail.com, dianders@chromium.org, Leo Yan <leo.yan@linaro.org>, cf@rock-chips.com
 
-SGksCgpPbiBTYXQsIDIxIE1heSAyMDE2IDEzOjM3OjIyICswMjAwIEFuZHJlYSBHZWxtaW5pIHdy
-b3RlOgo+IFNpZ25lZC1vZmYtYnk6IEFuZHJlYSBHZWxtaW5pIDxhbmRyZWEuZ2VsbWluaUBnZWxt
-YS5uZXQ+Cj4gLS0tCj4gIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kZXZmcmVx
-L2V2ZW50L2V4eW5vcy1wcG11LnR4dCB8IDIgKy0KPiAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0
-aW9uKCspLCAxIGRlbGV0aW9uKC0pCj4gCj4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2
-aWNldHJlZS9iaW5kaW5ncy9kZXZmcmVxL2V2ZW50L2V4eW5vcy1wcG11LnR4dCBiL0RvY3VtZW50
-YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kZXZmcmVxL2V2ZW50L2V4eW5vcy1wcG11LnR4dAo+
-IGluZGV4IDNlMzZjMWQuLjYxNjQyOGEgMTAwNjQ0Cj4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUudHh0Cj4gKysrIGIvRG9j
-dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUu
-dHh0Cj4gQEAgLTgsNyArOCw3IEBAIHVzZSB0byBhbmFseXplIHN5c3RlbSBwZXJmb3JtYW5jZSwg
-dG8gbWFrZSBiZWhhdmlvcnMgdmlzaWJsZSBhbmQgdG8gY291bnQKPiAgdXNhZ2VzIG9mIGVhY2gg
-SVAgKERNQywgQ1BVLCBSSUdIVEJVUywgTEVGVEJVUywgQ0FNIGludGVyZmFjZSwgTENELCBHM0Qs
-IE1GQykuCj4gIFRoZSBFeHlub3MgUFBNVSBkcml2ZXIgdXNlcyB0aGUgZGV2ZnJlcS1ldmVudCBj
-bGFzcyB0byBwcm92aWRlIGV2ZW50IGRhdGEKPiAgdG8gdmFyaW91cyBkZXZmcmVxIGRldmljZXMu
-IFRoZSBkZXZmcmVxIGRldmljZXMgd291bGQgdXNlIHRoZSBldmVudCBkYXRhIHdoZW4KPiAtZGVy
-dGVybWluZyB0aGUgY3VycmVudCBzdGF0ZSBvZiBlYWNoIElQLgo+ICtkZXRlcm1pbmcgdGhlIGN1
-cnJlbnQgc3RhdGUgb2YgZWFjaCBJUC4KPiAgCnMvZGV0ZXJtaW5nL2RldGVybWluZS8KCgpMb3Ro
-YXIgV2HDn21hbm4KCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMu
-aW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZv
-L2xpbnV4LWFybS1rZXJuZWwK
+Hello Eduardo & 'Zhang Rui'
+
+Do we have the chance to merge this series patches for next kernel?
+I had picked them up in my github, and tested for a period of time with=
+=20
+rockchip inside kernel.
+
+Let me know if someone have some suggestions or against opinios.
+Thanks,
+
+-Caesar
+On 2016=E5=B9=B405=E6=9C=8803=E6=97=A5 17:33, Caesar Wang wrote:
+> The history patches come from Mikko and Sascha.
+> http://thread.gmane.org/gmane.linux.power-management.general/59451
+>
+> Now, I pick them up to continue upstream.
+> Nevermind!
+>
+> This series history patches:
+> v1: https://lkml.org/lkml/2016/4/24/227
+>
+> This series adds support for hardware trip points. It picks up earlie=
+r
+> work from Mikko Perttunen. Mikko implemented hardware trip points as =
+part
+> of the device tree support. It was suggested back then to move the
+> functionality to the thermal core instead of putting more code into t=
+he
+> device tree support. This series does exactly that.
+>
+> This series patches rebase the conflicts.
+> Note that the hardware-tracked trip points are very well tested curre=
+ntly.
+>
+> Verified and tested on https://github.com/Caesar-github/rockchip/tree=
+/wip/fixes-thermal-0503
+> That's based on linux-kernel 20160502.
+> .Linux version 4.6.0-rc6-next-20160502-08922-g860ed34 (wxt@nb)
+>
+>
+> Changes in v2:
+> - update the sysfs-api.txt for set_trips
+> - add the commit in patch[v2 2/5].
+> - Update the commit for patch[v2 4/5].
+>
+> Caesar Wang (1):
+>    thermal: rockchip: add the set_trips function
+>
+> Sascha Hauer (4):
+>    thermal: Add support for hardware-tracked trip points
+>    thermal: of: implement .set_trips for device tree thermal zones
+>    thermal: streamline get_trend callbacks
+>    thermal: bang-bang governor: act on lower trip boundary
+>
+>   Documentation/thermal/sysfs-api.txt                |  7 +++
+>   drivers/thermal/gov_bang_bang.c                    |  2 +-
+>   drivers/thermal/of-thermal.c                       | 23 +++++-----
+>   drivers/thermal/rockchip_thermal.c                 | 39 +++++++++++=
++++++
+>   drivers/thermal/thermal_core.c                     | 52 +++++++++++=
++++++++++++
+>   drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 ++++-------
+>   include/linux/thermal.h                            |  9 +++-
+>   7 files changed, 128 insertions(+), 29 deletions(-)
+>
+
