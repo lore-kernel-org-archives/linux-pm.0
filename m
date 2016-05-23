@@ -1,68 +1,41 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Subject: Re: Crash after 'reboot' due to 9be4fd2c7723a
-Date: Mon, 23 May 2016 22:11:14 +0100
-Message-ID: <20160523211114.GA19428@n2100.arm.linux.org.uk>
-References: <CAOMZO5A62LgnyT0sQw5N-xeHaD0nSGTjAFxUx=_6OpUm02robA@mail.gmail.com>
- <CAJZ5v0hX1dZ+79-KCyumf57o02WKivxcRLJ1Zi8akrqu_2CZEQ@mail.gmail.com>
- <CAOMZO5CD08cX0yDBZTdFV+iwgr__fjSaaWvgjimotr5L1yrbaQ@mail.gmail.com>
- <2148724.oQlEHos3jS@vostro.rjw.lan>
- <20160523182807.GY19428@n2100.arm.linux.org.uk>
- <CAJZ5v0ipPVsZmu+RVfrPChA7banMGFNsfMt=if0V3XfVdstRNQ@mail.gmail.com>
- <CAJZ5v0j0VbyHNT_ZmThsdQfRWzf7SG65A8-bPxoAUxZJgR96og@mail.gmail.com>
- <CAOMZO5Cbue9L2JGA0kv7nTZ=78oKDhNu6WLRUmcsSuLHscDVUQ@mail.gmail.com>
- <CAJZ5v0jO++9d7bpXAg9Zs5GOPPZvg6E+OY3avDmNdor8EDxn4w@mail.gmail.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH 1/4] PM / Domains: Remove redundant call to pm_request_idle() in genpd
+Date: Mon, 23 May 2016 14:25:43 -0700
+Message-ID: <m2h9domppk.fsf@baylibre.com>
+References: <1463485296-22742-1-git-send-email-ulf.hansson@linaro.org>
+	<1463485296-22742-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.armlinux.org.uk ([78.32.30.218]:55182 "EHLO
-	pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbcEWVL1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 17:11:27 -0400
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jO++9d7bpXAg9Zs5GOPPZvg6E+OY3avDmNdor8EDxn4w@mail.gmail.com>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:33669 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751929AbcEWVZq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 17:25:46 -0400
+Received: by mail-pa0-f46.google.com with SMTP id xk12so65906414pac.0
+        for <linux-pm@vger.kernel.org>; Mon, 23 May 2016 14:25:45 -0700 (PDT)
+In-Reply-To: <1463485296-22742-2-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Tue, 17 May 2016 13:41:33 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Fabio Estevam <festevam@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ping Bai <ping.bai@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-On Mon, May 23, 2016 at 11:03:01PM +0200, Rafael J. Wysocki wrote:
-> On Mon, May 23, 2016 at 10:59 PM, Fabio Estevam <festevam@gmail.com> wrote:
-> > On ARM we have:
-> >
-> > static inline bool arch_irq_work_has_interrupt(void)
-> > {
-> >     return is_smp();
-> > }
-> >
-> > and then:
-> >
-> > static inline bool is_smp(void)
-> > {
-> > #ifndef CONFIG_SMP
-> >     return false;
-> > #elif defined(CONFIG_SMP_ON_UP)
-> >     extern unsigned int smp_on_up;
-> >     return !!smp_on_up;
-> > #else
-> >     return true;
-> > #endif
-> > }
-> >
-> > So if CONFIG_SMP=y,  is_smp() returns 1.
-> >
-> > As I mentioned before, the reboot problem does not happen with CONFIG_SMP=n.
-> 
-> First, why don't the other ARM UP platforms have this problem when SMP
-> kernels are run on them?
-> 
-> Second, quite evidently, the platform says "I can raise interrupts for
-> IRQ works", but then it doesn't do that.  That doesn't seem
-> particularly consistent to me ...
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-Maybe someone has implemented a SoC which has a CPU capable of SMP
-but the GIC isn't...  I'm just guessing again.
+> The PM core increases the runtime PM usage count at the system PM prepare
+> phase. Later when the system has resumed and the ->complete() callback has
+> been invoked, it drops the usage count. In this way, it intentionally
+> prevents runtime PM suspend for the device throughout this period.
+>
+> For this reason, let's remove the call to pm_request_idle() from within
+> genpd's ->complete() calllback as it's redundant.
 
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+It's not obvious from this description why the pm_request_idle() is
+redundant based just on usage count.
+
+IIUC, I think what you mean is that it's redundant because
+device_complete() does a pm_runtime_put(), which, in addition to
+decrementing the usage count, will do the equivalent of
+pm_request_idle()?
+
+Kevin
