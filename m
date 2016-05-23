@@ -1,33 +1,36 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 1/2] powercap/rapl: add support for skx
-Date: Mon, 23 May 2016 09:45:42 -0700
-Message-ID: <1464021943-14915-2-git-send-email-jacob.jun.pan@linux.intel.com>
-References: <1464021943-14915-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1464021943-14915-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Prarit Bhargava <prarit@redhat.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: Crash after 'reboot' due to 9be4fd2c7723a
+Date: Mon, 23 May 2016 14:13:29 -0300
+Message-ID: <CAOMZO5Cry5WNnMZ+WYRJNt0i8WHBXViZwijWHaYeJ=GACaWcLA@mail.gmail.com>
+References: <CAOMZO5A62LgnyT0sQw5N-xeHaD0nSGTjAFxUx=_6OpUm02robA@mail.gmail.com>
+	<CAJZ5v0hX1dZ+79-KCyumf57o02WKivxcRLJ1Zi8akrqu_2CZEQ@mail.gmail.com>
+	<CAOMZO5CD08cX0yDBZTdFV+iwgr__fjSaaWvgjimotr5L1yrbaQ@mail.gmail.com>
+	<2148724.oQlEHos3jS@vostro.rjw.lan>
+	<CAOMZO5BBXmXAJayo8YpX4eV-_rTtAoDvjf91CUhWnLV8A0mx0g@mail.gmail.com>
+	<CAOMZO5DjgXuYiuOrUdbap3x2PVyUXbp2V1VGnU=2THRSM8Hfow@mail.gmail.com>
+	<CAJZ5v0i3h9Jepcxq5xZd1juCWxgOhT1-NBhV9zUXGz4A_j=XeA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f175.google.com ([209.85.213.175]:37937 "EHLO
+	mail-ig0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789AbcEWRNb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 May 2016 13:13:31 -0400
+Received: by mail-ig0-f175.google.com with SMTP id fh2so26418287igd.1
+        for <linux-pm@vger.kernel.org>; Mon, 23 May 2016 10:13:30 -0700 (PDT)
+In-Reply-To: <CAJZ5v0i3h9Jepcxq5xZd1juCWxgOhT1-NBhV9zUXGz4A_j=XeA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sascha Hauer <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ping Bai <ping.bai@nxp.com>, Guenter Roeck <linux@roeck-us.net>, Russell King <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Peter Zijlstra <peterz@infradead.org>
 
-SKX RAPL interface is similar to HSX/BDX.
+On Fri, May 20, 2016 at 10:31 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/powercap/intel_rapl.c | 1 +
- 1 file changed, 1 insertion(+)
+> The patch is just a workaround for a problem in the arch code showing
+> up on your platform, though.
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 470bb62..a417e68 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -1096,6 +1096,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
- 	RAPL_CPU(0x4E, rapl_defaults_core),/* Skylake */
- 	RAPL_CPU(0x4C, rapl_defaults_cht),/* Braswell/Cherryview */
- 	RAPL_CPU(0x4A, rapl_defaults_tng),/* Tangier */
-+	RAPL_CPU(0x55, rapl_defaults_hsw_server),/* Skylake server */
- 	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
- 	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
- 	RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
--- 
-1.9.1
+Not sure where the problem in the arch code is located though.
+
+Ping, Shawn, Sascha, any ideas?
+
+Thanks
