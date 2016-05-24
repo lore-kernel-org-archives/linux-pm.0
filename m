@@ -1,82 +1,102 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: Enforce _PPC limits
-Date: Tue, 24 May 2016 15:11:45 -0700
-Message-ID: <1464127905.4603.11.camel@linux.intel.com>
-References: <21572dff-ea5d-c0f3-6f48-66c9d38eda65@hpe.com>
+From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+Subject: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
+	runtime PM
+Date: Wed, 25 May 2016 00:53:01 +0200
+Message-ID: <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:64588 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751280AbcEXWM1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 24 May 2016 18:12:27 -0400
-In-Reply-To: <21572dff-ea5d-c0f3-6f48-66c9d38eda65@hpe.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <1464130381-4797-1-git-send-email-peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Cc: Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Linda Knippers <linda.knippers@hpe.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Linda,
-
-On Tue, 2016-05-24 at 16:37 -0400, Linda Knippers wrote:
-> Hi Srinivas,
->=20
-> I have a couple of questions about this patch set.
-> http://comments.gmane.org/gmane.linux.power-management.general/75263
->=20
-> Sorry I'm a bit late to the party but I've just booted 4.6 on my
-> system
-> and noticed some things.
->=20
-> My first question is about enabling the feature by default on
-> enterprise
-> and performance servers.=C2=A0=C2=A0Is there any way to disable it on=
- these
-> servers?
-> I didn't see a way.=C2=A0=C2=A0I'm always nervous when something star=
-ts looking
-> at
-> a table that perhaps wasn't used before or introduces a new behavior
-> that
-> might be unexpected.=C2=A0=C2=A0Having a way out or not making it the=
- default
-> for a
-> while would be nice.
-If you were using acpi-cpufreq ever , this would have been active
-anyway.
-This was requested by some server vendors to turn on by default as they
-want to be able to use node manager to control and don't want to have
-any kernel command line addition.
-
-Don't you want to be able to use _PPC to control. If you don't use _PPC
-then this will not be effective.
-You can turn off from kernel command line=C2=A0processor.ignore_ppc=3D1
-
->=20
-> My second question is about the 48 instances I got of this when I
-> booted my
-> 2 socket, 48-CPU box:
->=20
-> > intel_pstate: _PPC limits will be enforced
-> I suppose in theory I could have limits for some CPUs and not others
-> but
-> even in that case, the message isn't helpful.=C2=A0=C2=A0I think it s=
-hould be
-> made
-> useful or go away, or at least only be printed once.
->=20
-Agree, I will downgrade the message to pr_debug.
-
-Thanks,
-Srinivas
->=C2=A0
-> Thanks,
->=20
-> -- ljk
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-in=
-fo.html
+U2luY2UgIlBDSTogQWRkIHJ1bnRpbWUgUE0gc3VwcG9ydCBmb3IgUENJZSBwb3J0cyIsIHRoZSBw
+YXJlbnQgUENJZSBwb3J0CmNhbiBiZSBydW50aW1lLXN1c3BlbmRlZCB3aGljaCBkaXNhYmxlcyBw
+b3dlciByZXNvdXJjZXMgdmlhIEFDUEkuIFRoaXMKaXMgaW5jb21wYXRpYmxlIHdpdGggRFNNLCBy
+ZXN1bHRpbmcgaW4gYSBHUFUgZGV2aWNlIHdoaWNoIGlzIHN0aWxsIGluIEQzCmFuZCBsb2NrcyB1
+cCB0aGUga2VybmVsIG9uIHJlc3VtZS4KCk1pcnJvciB0aGUgYmVoYXZpb3Igb2YgV2luZG93cyA4
+IGFuZCBuZXdlclsxXSAoYXMgb2JzZXJ2ZWQgdmlhIGFuIEFNTGkKZGVidWdnZXIgdHJhY2UpIGFu
+ZCBzdG9wIHVzaW5nIHRoZSBEU00gZnVuY3Rpb25zIGZvciBEM2NvbGQgd2hlbiBwb3dlcgpyZXNv
+dXJjZXMgYXJlIGF2YWlsYWJsZSBvbiB0aGUgcGFyZW50IFBDSWUgcG9ydC4KCiBbMV06IGh0dHBz
+Oi8vbXNkbi5taWNyb3NvZnQuY29tL3dpbmRvd3MvaGFyZHdhcmUvZHJpdmVycy9icmluZ3VwL2Zp
+cm13YXJlLXJlcXVpcmVtZW50cy1mb3ItZDNjb2xkCgpTaWduZWQtb2ZmLWJ5OiBQZXRlciBXdSA8
+cGV0ZXJAbGVrZW5zdGV5bi5ubD4KLS0tCiBkcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1
+X2FjcGkuYyB8IDM0ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0tLS0KIDEgZmlsZSBj
+aGFuZ2VkLCAzMCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5jIGIvZHJpdmVycy9ncHUvZHJtL25v
+dXZlYXUvbm91dmVhdV9hY3BpLmMKaW5kZXggZGY5ZjczZS4uZTQ2OWRmNyAxMDA2NDQKLS0tIGEv
+ZHJpdmVycy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9hY3BpLmMKKysrIGIvZHJpdmVycy9ncHUv
+ZHJtL25vdXZlYXUvbm91dmVhdV9hY3BpLmMKQEAgLTQ2LDYgKzQ2LDcgQEAgc3RhdGljIHN0cnVj
+dCBub3V2ZWF1X2RzbV9wcml2IHsKIAlib29sIGRzbV9kZXRlY3RlZDsKIAlib29sIG9wdGltdXNf
+ZGV0ZWN0ZWQ7CiAJYm9vbCBvcHRpbXVzX2ZsYWdzX2RldGVjdGVkOworCWJvb2wgb3B0aW11c19z
+a2lwX2RzbTsKIAlhY3BpX2hhbmRsZSBkaGFuZGxlOwogCWFjcGlfaGFuZGxlIHJvbV9oYW5kbGU7
+CiB9IG5vdXZlYXVfZHNtX3ByaXY7CkBAIC0yMTIsOCArMjEzLDI2IEBAIHN0YXRpYyBjb25zdCBz
+dHJ1Y3QgdmdhX3N3aXRjaGVyb29faGFuZGxlciBub3V2ZWF1X2RzbV9oYW5kbGVyID0gewogCS5n
+ZXRfY2xpZW50X2lkID0gbm91dmVhdV9kc21fZ2V0X2NsaWVudF9pZCwKIH07CiAKKy8qIEZpcm13
+YXJlIHN1cHBvcnRpbmcgV2luZG93cyA4IG9yIGxhdGVyIGRvIG5vdCB1c2UgX0RTTSB0byBwdXQg
+dGhlIGRldmljZSBpbnRvCisgKiBEM2NvbGQsIHRoZXkgaW5zdGVhZCByZWx5IG9uIGRpc2FibGlu
+ZyBwb3dlciByZXNvdXJjZXMgb24gdGhlIHBhcmVudC4gKi8KK3N0YXRpYyBib29sIG5vdXZlYXVf
+cHIzX3ByZXNlbnQoc3RydWN0IHBjaV9kZXYgKnBkZXYpCit7CisJc3RydWN0IHBjaV9kZXYgKnBh
+cmVudF9wZGV2ID0gcGNpX3Vwc3RyZWFtX2JyaWRnZShwZGV2KTsKKwlzdHJ1Y3QgYWNwaV9kZXZp
+Y2UgKmFkOworCisJaWYgKCFwYXJlbnRfcGRldikKKwkJcmV0dXJuIGZhbHNlOworCisJYWQgPSBB
+Q1BJX0NPTVBBTklPTigmcGFyZW50X3BkZXYtPmRldik7CisJaWYgKCFhZCkKKwkJcmV0dXJuIGZh
+bHNlOworCisJcmV0dXJuIGFkLT5wb3dlci5mbGFncy5wb3dlcl9yZXNvdXJjZXM7Cit9CisKIHN0
+YXRpYyB2b2lkIG5vdXZlYXVfZHNtX3BjaV9wcm9iZShzdHJ1Y3QgcGNpX2RldiAqcGRldiwgYm9v
+bCAqaGFzX211eCwKLQkJCQkgIGJvb2wgKmhhc19vcHQsIGJvb2wgKmhhc19vcHRfZmxhZ3MpCisJ
+CQkJICBib29sICpoYXNfb3B0LCBib29sICpoYXNfb3B0X2ZsYWdzLAorCQkJCSAgYm9vbCAqaGFz
+X3Bvd2VyX3Jlc291cmNlcykKIHsKIAlhY3BpX2hhbmRsZSBkaGFuZGxlOwogCWJvb2wgc3VwcG9y
+dHNfbXV4OwpAQCAtMjM4LDYgKzI1Nyw3IEBAIHN0YXRpYyB2b2lkIG5vdXZlYXVfZHNtX3BjaV9w
+cm9iZShzdHJ1Y3QgcGNpX2RldiAqcGRldiwgYm9vbCAqaGFzX211eCwKIAkqaGFzX211eCA9IHN1
+cHBvcnRzX211eDsKIAkqaGFzX29wdCA9ICEhb3B0aW11c19mdW5jczsKIAkqaGFzX29wdF9mbGFn
+cyA9IG9wdGltdXNfZnVuY3MgJiAoMSA8PCBOT1VWRUFVX0RTTV9PUFRJTVVTX0ZMQUdTKTsKKwkq
+aGFzX3Bvd2VyX3Jlc291cmNlcyA9IGZhbHNlOwogCiAJaWYgKG9wdGltdXNfZnVuY3MpIHsKIAkJ
+dWludDMyX3QgcmVzdWx0OwpAQCAtMjQ3LDYgKzI2Nyw4IEBAIHN0YXRpYyB2b2lkIG5vdXZlYXVf
+ZHNtX3BjaV9wcm9iZShzdHJ1Y3QgcGNpX2RldiAqcGRldiwgYm9vbCAqaGFzX211eCwKIAkJCSAo
+cmVzdWx0ICYgT1BUSU1VU19FTkFCTEVEKSA/ICJlbmFibGVkIiA6ICJkaXNhYmxlZCIsCiAJCQkg
+KHJlc3VsdCAmIE9QVElNVVNfRFlOQU1JQ19QV1JfQ0FQKSA/ICJkeW5hbWljIHBvd2VyLCAiIDog
+IiIsCiAJCQkgKHJlc3VsdCAmIE9QVElNVVNfSERBX0NPREVDX01BU0spID8gImhkYSBiaW9zIGNv
+ZGVjIHN1cHBvcnRlZCIgOiAiIik7CisKKwkJKmhhc19wb3dlcl9yZXNvdXJjZXMgPSBub3V2ZWF1
+X3ByM19wcmVzZW50KHBkZXYpOwogCX0KIH0KIApAQCAtMjU4LDYgKzI4MCw3IEBAIHN0YXRpYyBi
+b29sIG5vdXZlYXVfZHNtX2RldGVjdCh2b2lkKQogCWJvb2wgaGFzX211eCA9IGZhbHNlOwogCWJv
+b2wgaGFzX29wdGltdXMgPSBmYWxzZTsKIAlib29sIGhhc19vcHRpbXVzX2ZsYWdzID0gZmFsc2U7
+CisJYm9vbCBoYXNfcG93ZXJfcmVzb3VyY2VzID0gZmFsc2U7CiAJaW50IHZnYV9jb3VudCA9IDA7
+CiAJYm9vbCBndWlkX3ZhbGlkOwogCWJvb2wgcmV0ID0gZmFsc2U7CkBAIC0yNzMsMTQgKzI5Niwx
+NCBAQCBzdGF0aWMgYm9vbCBub3V2ZWF1X2RzbV9kZXRlY3Qodm9pZCkKIAkJdmdhX2NvdW50Kys7
+CiAKIAkJbm91dmVhdV9kc21fcGNpX3Byb2JlKHBkZXYsICZoYXNfbXV4LCAmaGFzX29wdGltdXMs
+Ci0JCQkJICAgICAgJmhhc19vcHRpbXVzX2ZsYWdzKTsKKwkJCQkgICAgICAmaGFzX29wdGltdXNf
+ZmxhZ3MsICZoYXNfcG93ZXJfcmVzb3VyY2VzKTsKIAl9CiAKIAl3aGlsZSAoKHBkZXYgPSBwY2lf
+Z2V0X2NsYXNzKFBDSV9DTEFTU19ESVNQTEFZXzNEIDw8IDgsIHBkZXYpKSAhPSBOVUxMKSB7CiAJ
+CXZnYV9jb3VudCsrOwogCiAJCW5vdXZlYXVfZHNtX3BjaV9wcm9iZShwZGV2LCAmaGFzX211eCwg
+Jmhhc19vcHRpbXVzLAotCQkJCSAgICAgICZoYXNfb3B0aW11c19mbGFncyk7CisJCQkJICAgICAg
+Jmhhc19vcHRpbXVzX2ZsYWdzLCAmaGFzX3Bvd2VyX3Jlc291cmNlcyk7CiAJfQogCiAJLyogZmlu
+ZCB0aGUgb3B0aW11cyBEU00gb3IgdGhlIG9sZCB2MSBEU00gKi8KQEAgLTI4OSw4ICszMTIsMTEg
+QEAgc3RhdGljIGJvb2wgbm91dmVhdV9kc21fZGV0ZWN0KHZvaWQpCiAJCQkmYnVmZmVyKTsKIAkJ
+cHJpbnRrKEtFUk5fSU5GTyAiVkdBIHN3aXRjaGVyb286IGRldGVjdGVkIE9wdGltdXMgRFNNIG1l
+dGhvZCAlcyBoYW5kbGVcbiIsCiAJCQlhY3BpX21ldGhvZF9uYW1lKTsKKwkJaWYgKGhhc19wb3dl
+cl9yZXNvdXJjZXMpCisJCQlwcl9pbmZvKCJub3V2ZWF1OiBkZXRlY3RlZCBQUiBzdXBwb3J0LCB3
+aWxsIG5vdCB1c2UgRFNNXG4iKTsKIAkJbm91dmVhdV9kc21fcHJpdi5vcHRpbXVzX2RldGVjdGVk
+ID0gdHJ1ZTsKIAkJbm91dmVhdV9kc21fcHJpdi5vcHRpbXVzX2ZsYWdzX2RldGVjdGVkID0gaGFz
+X29wdGltdXNfZmxhZ3M7CisJCW5vdXZlYXVfZHNtX3ByaXYub3B0aW11c19za2lwX2RzbSA9IGhh
+c19wb3dlcl9yZXNvdXJjZXM7CiAJCXJldCA9IHRydWU7CiAJfSBlbHNlIGlmICh2Z2FfY291bnQg
+PT0gMiAmJiBoYXNfbXV4ICYmIGd1aWRfdmFsaWQpIHsKIAkJYWNwaV9nZXRfbmFtZShub3V2ZWF1
+X2RzbV9wcml2LmRoYW5kbGUsIEFDUElfRlVMTF9QQVRITkFNRSwKQEAgLTMyMCw3ICszNDYsNyBA
+QCB2b2lkIG5vdXZlYXVfcmVnaXN0ZXJfZHNtX2hhbmRsZXIodm9pZCkKIHZvaWQgbm91dmVhdV9z
+d2l0Y2hlcm9vX29wdGltdXNfZHNtKHZvaWQpCiB7CiAJdTMyIHJlc3VsdCA9IDA7Ci0JaWYgKCFu
+b3V2ZWF1X2RzbV9wcml2Lm9wdGltdXNfZGV0ZWN0ZWQpCisJaWYgKCFub3V2ZWF1X2RzbV9wcml2
+Lm9wdGltdXNfZGV0ZWN0ZWQgfHwgbm91dmVhdV9kc21fcHJpdi5vcHRpbXVzX3NraXBfZHNtKQog
+CQlyZXR1cm47CiAKIAlpZiAobm91dmVhdV9kc21fcHJpdi5vcHRpbXVzX2ZsYWdzX2RldGVjdGVk
+KQotLSAKMi44LjIKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0
+dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
