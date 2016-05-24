@@ -1,32 +1,35 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v2 2/5] thermal: of: implement .set_trips for device tree
- thermal zones
-Date: Tue, 24 May 2016 14:01:39 +0100
-Message-ID: <20160524130139.GB8979@e104805>
+Subject: Re: [PATCH v2 4/5] thermal: bang-bang governor: act on lower trip
+ boundary
+Date: Tue, 24 May 2016 14:06:10 +0100
+Message-ID: <20160524130610.GC8979@e104805>
 References: <1462268013-14992-1-git-send-email-wxt@rock-chips.com>
- <1462268013-14992-3-git-send-email-wxt@rock-chips.com>
+ <1462268013-14992-5-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:57315 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:57367 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752235AbcEXNBo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 24 May 2016 09:01:44 -0400
+	id S1756061AbcEXNGP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 24 May 2016 09:06:15 -0400
 Content-Disposition: inline
-In-Reply-To: <1462268013-14992-3-git-send-email-wxt@rock-chips.com>
+In-Reply-To: <1462268013-14992-5-git-send-email-wxt@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Caesar Wang <wxt@rock-chips.com>
-Cc: edubezval@gmail.com, Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, cf@rock-chips.com, huangtao@rock-chips.com, dmitry.torokhov@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: edubezval@gmail.com, Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, cf@rock-chips.com, huangtao@rock-chips.com, dmitry.torokhov@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Feuerer <peter@piie.net>
 
-On Tue, May 03, 2016 at 05:33:30PM +0800, Caesar Wang wrote:
+Ccing Peter Feuerer, author of the bang bang governor.
+
+On Tue, May 03, 2016 at 05:33:32PM +0800, Caesar Wang wrote:
 > From: Sascha Hauer <s.hauer@pengutronix.de>
 > 
-> This patch implemnets .set_trips for device tree thermal zones.
-> As the hardware-tracked trip points is supported by thermal core patch[0].
-> 
-> patch[0]
-> "thermal: Add support for hardware-tracked trip points".
+> With interrupt driven thermal zones we pass the lower and upper
+> temperature on which shall be acted, so in the governor we have to act on
+> the exact lower temperature to be consistent. Otherwise an interrupt maybe
+> generated on the exact lower temperature, but the bang bang governor does
+> not react since The polling driven zones have to be one step cooler before
+> the governor reacts.
 > 
 > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 > Signed-off-by: Caesar Wang <wxt@rock-chips.com>
@@ -37,76 +40,29 @@ On Tue, May 03, 2016 at 05:33:30PM +0800, Caesar Wang wrote:
 > ---
 > 
 > Changes in v2:
-> - add the commit in patch[v2 2/5].
+> - Update the commit for patch[v2 4/5].
 > 
->  drivers/thermal/of-thermal.c | 12 ++++++++++++
->  include/linux/thermal.h      |  4 ++++
->  2 files changed, 16 insertions(+)
+>  drivers/thermal/gov_bang_bang.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index b8e509c..8722e63 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -101,6 +101,17 @@ static int of_thermal_get_temp(struct thermal_zone_device *tz,
->  	return data->ops->get_temp(data->sensor_data, temp);
->  }
+> diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
+> index 70836c5..9d1dfea 100644
+> --- a/drivers/thermal/gov_bang_bang.c
+> +++ b/drivers/thermal/gov_bang_bang.c
+> @@ -59,7 +59,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>  		if (instance->target == 0 && tz->temperature >= trip_temp)
+>  			instance->target = 1;
+>  		else if (instance->target == 1 &&
+> -				tz->temperature < trip_temp - trip_hyst)
+> +				tz->temperature <= trip_temp - trip_hyst)
+>  			instance->target = 0;
 >  
-> +static int of_thermal_set_trips(struct thermal_zone_device *tz,
-> +				int low, int high)
-> +{
-> +	struct __thermal_zone *data = tz->devdata;
-> +
-> +	if (!data->ops || !data->ops->set_trips)
-> +		return -EINVAL;
-> +
-> +	return data->ops->set_trips(data->sensor_data, low, high);
-> +}
-> +
->  /**
->   * of_thermal_get_ntrips - function to export number of available trip
->   *			   points.
-> @@ -427,6 +438,7 @@ thermal_zone_of_add_sensor(struct device_node *zone,
->  
->  	tzd->ops->get_temp = of_thermal_get_temp;
->  	tzd->ops->get_trend = of_thermal_get_trend;
-> +	tzd->ops->set_trips = of_thermal_set_trips;
-
-Why not do it only if ops->set_trips is set?  Something like
-
-	if (ops->set_trips)
-		tzd->ops->set_trips = of_thermal_set_trips;
-
-Otherwise, the thermal zone core will calculate the window for all
-device tree thermal zones, even if they haven't set the optional
-set_trips pointer.
-
-Cheers,
-Javi
-
->  	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
->  	mutex_unlock(&tzd->lock);
->  
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index e258359..09053eb 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -336,12 +336,16 @@ struct thermal_genl_event {
->   *
->   * Optional:
->   * @get_trend: a pointer to a function that reads the sensor temperature trend.
-> + * @set_trips: a pointer to a function that sets a temperature window. When
-> + *	       this window is left the driver must inform the thermal core via
-> + *	       thermal_zone_device_update.
->   * @set_emul_temp: a pointer to a function that sets sensor emulated
->   *		   temperature.
->   */
->  struct thermal_zone_of_device_ops {
->  	int (*get_temp)(void *, int *);
->  	int (*get_trend)(void *, long *);
-> +	int (*set_trips)(void *, int, int);
->  	int (*set_emul_temp)(void *, int);
->  	int (*set_trip_temp)(void *, int, int);
->  };
+>  		dev_dbg(&instance->cdev->device, "target=%d\n",
 > -- 
 > 1.9.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
