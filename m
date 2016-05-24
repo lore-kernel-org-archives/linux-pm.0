@@ -1,78 +1,136 @@
-From: "Peter Feuerer" <peter@piie.net>
-Subject: Re: [PATCH v2 4/5] thermal: bang-bang governor: act on lower trip
- boundary
-Date: Tue, 24 May 2016 13:11:59 +0000
-Message-ID: <16fa68c03a68c215e3b464a03ba57b16@mail.piie.net>
-References: <20160524130610.GC8979@e104805>
- <1462268013-14992-1-git-send-email-wxt@rock-chips.com>
- <1462268013-14992-5-git-send-email-wxt@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v4 00/10] powerpc/powernv/cpuidle: Add support for POWER ISA v3 idle states
+Date: Tue, 24 May 2016 18:45:04 +0530
+Message-ID: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from piie.net ([80.82.223.85]:41639 "EHLO piie.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751941AbcEXNL7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2016 09:11:59 -0400
-In-Reply-To: <20160524130610.GC8979@e104805>
+Received: from e17.ny.us.ibm.com ([129.33.205.207]:55357 "EHLO
+	e17.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752980AbcEXNP1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2016 09:15:27 -0400
+Received: from localhost
+	by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
+	Tue, 24 May 2016 09:15:26 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, Caesar Wang <wxt@rock-chips.com>
-Cc: edubezval@gmail.com, Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, cf@rock-chips.com, huangtao@rock-chips.com, dmitry.torokhov@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
-Hi,
+POWER ISA v3 defines a new idle processor core mechanism. In summary,
+ a) new instruction named stop is added. This instruction replaces
+	instructions like nap, sleep, rvwinkle.
+ b) new per thread SPR named PSSCR is added which controls the behavior
+	of stop instruction. 
+		
+PSSCR has following key fields
+	Bits 0:3  - Power-Saving Level Status. This field indicates the
+	lowest power-saving state the thread entered since stop
+	instruction was last executed.
+		
+	Bit 42 - Enable State Loss                          
+	0 - No state is lost irrespective of other fields  
+	1 - Allows state loss
+		
+	Bits 44:47 - Power-Saving Level Limit      
+	This limits the power-saving level that can be entered into.
+		
+	Bits 60:63 - Requested Level              
+	Used to specify which power-saving level must be entered on
+	executing stop instruction
+		
+Stop idle states and their properties like name, latency, target
+residency, psscr value are exposed via device tree.
 
-24. Mai 2016 15:06 Uhr, "Javi Merino" <javi.merino@arm.com> schrieb:
-> Ccing Peter Feuerer, author of the bang bang governor.
+This patch series adds support for this new mechanism.
 
-thanks, will take care today in the evening.
+Patches 1-7 are cleanups and code movement.
+Patch 8 adds platform specific support for stop and psscr handling.
+Patch 9 adds cpuidle driver support.
+Patch 10 makes offlined cpu use deepest stop state.
 
---peter;
+Changes in v4
+=============
+ - Added a patch to use PNV_THREAD_WINKLE macro while requesting for winkle
+ - Moved power7_powersave_common rename to more appropriate patch
+ - renaming power7_enter_nap_mode to pnv_enter_arch207_idle_mode
+ - Added PSSCR layout to Patch 7's commit message
+ - Improved / Fixed comments
+ - Fixed whitespace error in paca.h
+ - Using MAX_POSSIBLE_STOP_STATE macro instead of hardcoding 0xF has
+   max possible stop state
+
+Changes in v3
+=============
+ - Rebased on powerpc-next
+ - Dropping patch 1 since we are not adding a new file for P9 idle support
+ - Improved comments in multiple places
+ - Moved GET_PACA from power7_restore_hyp_resource to System Reset
+ - Instead of moving few functions from idle_power7 to idle_power_common,
+   renaming idle_power7.S to idle_power_common.S
+ - Moved HSTATE_HWTHREAD_STATE updation to power_powersave_common
+ - Dropped earlier patch 5 which moved few macros from idle_power_common to
+   asm/cpuidle.h. 
+ - Added a patch to rename reusable power7_* idle functions to pnv_*
+ - Added new patch that creates abstraction for saving SPRs before
+   entering deep idle states
+ - Instead of introducing new file idle_power_stop.S, P9 idle support
+   is added to idle_power_common.S using CPU_FTR sections.
+ - Fixed r4 reg clobbering in power_stop0
+
+Changes in v2
+=============
+ - Rebased on v4.6-rc6
+ - Using CPU_FTR_ARCH_300 bit instead of CPU_FTR_STOP_INST
+
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 
 
-> 
-> On Tue, May 03, 2016 at 05:33:32PM +0800, Caesar Wang wrote:
-> 
->> From: Sascha Hauer <s.hauer@pengutronix.de>
->> 
->> With interrupt driven thermal zones we pass the lower and upper
->> temperature on which shall be acted, so in the governor we have to act on
->> the exact lower temperature to be consistent. Otherwise an interrupt maybe
->> generated on the exact lower temperature, but the bang bang governor does
->> not react since The polling driven zones have to be one step cooler before
->> the governor reacts.
->> 
->> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
->> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Eduardo Valentin <edubezval@gmail.com>
->> Cc: linux-pm@vger.kernel.org
->> 
->> ---
->> 
->> Changes in v2:
->> - Update the commit for patch[v2 4/5].
->> 
->> drivers/thermal/gov_bang_bang.c | 2 +-
->> 1 file changed, 1 insertion(+), 1 deletion(-)
->> 
->> diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
->> index 70836c5..9d1dfea 100644
->> --- a/drivers/thermal/gov_bang_bang.c
->> +++ b/drivers/thermal/gov_bang_bang.c
->> @@ -59,7 +59,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
->> if (instance->target == 0 && tz->temperature >= trip_temp)
->> instance->target = 1;
->> else if (instance->target == 1 &&
->> - tz->temperature < trip_temp - trip_hyst)
->> + tz->temperature <= trip_temp - trip_hyst)
->> instance->target = 0;
->> 
->> dev_dbg(&instance->cdev->device, "target=%d\n",
->> --
->> 1.9.1
->> 
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at http://vger.kernel.org/majordomo-info.html
+
+Shreyas B. Prabhu (10):
+  powerpc/powernv: Use PNV_THREAD_WINKLE macro while requesting for
+    winkle
+  powerpc/kvm: make hypervisor state restore a function
+  powerpc/powernv: Rename idle_power7.S to idle_power_common.S
+  powerpc/powernv: Rename reusable idle functions to hardware agnostic
+    names
+  powerpc/powernv: Make pnv_powersave_common more generic
+  powerpc/powernv: abstraction for saving SPRs before entering deep idle
+    states
+  powerpc/powernv: set power_save func after the idle states are
+    initialized
+  powerpc/powernv: Add platform support for stop instruction
+  cpuidle/powernv: Add support for POWER ISA v3 idle states
+  powerpc/powernv: Use deepest stop state when cpu is offlined
+
+ arch/powerpc/include/asm/cpuidle.h        |   2 +
+ arch/powerpc/include/asm/kvm_book3s_asm.h |   2 +-
+ arch/powerpc/include/asm/machdep.h        |   1 +
+ arch/powerpc/include/asm/opal-api.h       |  11 +-
+ arch/powerpc/include/asm/paca.h           |   2 +
+ arch/powerpc/include/asm/ppc-opcode.h     |   4 +
+ arch/powerpc/include/asm/processor.h      |   1 +
+ arch/powerpc/include/asm/reg.h            |  11 +
+ arch/powerpc/kernel/Makefile              |   2 +-
+ arch/powerpc/kernel/asm-offsets.c         |   2 +
+ arch/powerpc/kernel/exceptions-64s.S      |  30 +-
+ arch/powerpc/kernel/idle_power7.S         | 515 -----------------------
+ arch/powerpc/kernel/idle_power_common.S   | 662 ++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |   4 +-
+ arch/powerpc/platforms/powernv/idle.c     |  98 ++++-
+ arch/powerpc/platforms/powernv/powernv.h  |   1 +
+ arch/powerpc/platforms/powernv/setup.c    |   2 +-
+ arch/powerpc/platforms/powernv/smp.c      |   4 +-
+ drivers/cpuidle/cpuidle-powernv.c         |  57 ++-
+ 19 files changed, 850 insertions(+), 561 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/idle_power7.S
+ create mode 100644 arch/powerpc/kernel/idle_power_common.S
+
+-- 
+2.4.11
+
