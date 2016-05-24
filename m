@@ -1,88 +1,54 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 4/4] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
-Date: Tue, 24 May 2016 08:51:27 +0200
-Message-ID: <CAPDyKFpEe-muf9i+SZ0-yJADsXzRroyzducfMzDRb16_hJ1x6A@mail.gmail.com>
-References: <1463485296-22742-1-git-send-email-ulf.hansson@linaro.org>
-	<1463485296-22742-5-git-send-email-ulf.hansson@linaro.org>
-	<m2iny4icxw.fsf@baylibre.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 8/9] cpuidle/powernv: Add support for POWER ISA v3
+ idle states
+Date: Tue, 24 May 2016 16:07:51 +0530
+Message-ID: <20160524103751.GF12860@in.ibm.com>
+References: <1464016722-7488-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1464016722-7488-9-git-send-email-shreyas@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f52.google.com ([74.125.82.52]:36994 "EHLO
-	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751477AbcEXGv2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2016 02:51:28 -0400
-Received: by mail-wm0-f52.google.com with SMTP id z87so10859496wmh.0
-        for <linux-pm@vger.kernel.org>; Mon, 23 May 2016 23:51:28 -0700 (PDT)
-In-Reply-To: <m2iny4icxw.fsf@baylibre.com>
+Received: from e33.co.us.ibm.com ([32.97.110.151]:48405 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753005AbcEXKiL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2016 06:38:11 -0400
+Received: from localhost
+	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+	Tue, 24 May 2016 04:38:10 -0600
+Content-Disposition: inline
+In-Reply-To: <1464016722-7488-9-git-send-email-shreyas@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
-On 24 May 2016 at 01:15, Kevin Hilman <khilman@baylibre.com> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
->
->> When the pm_runtime_force_suspend|resume() helpers were invented, we still
->> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
->>
->> To make sure these helpers worked for all combinations and without
->> introducing too much of complexity, the device was always resumed in
->> pm_runtime_force_resume().
->>
->> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
->> unset, we needed to resume the device as the subsystem/driver couldn't
->> rely on using runtime PM to do it.
->>
->> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
->> removed this combination, of using CONFIG_PM_SLEEP without the earlier
->> CONFIG_PM_RUNTIME.
->>
->> For this reason we can now rely on the subsystem/driver to use runtime PM
->> to resume the device, instead of forcing that to be done in all cases. In
->> other words, let's defer this to a later point when it's actually needed.
->
-> s/this/the runtime resume/
->
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>  drivers/base/power/runtime.c | 11 +++++++++++
->>  1 file changed, 11 insertions(+)
->>
->> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
->> index 09e4eb1..1db7b46 100644
->> --- a/drivers/base/power/runtime.c
->> +++ b/drivers/base/power/runtime.c
->> @@ -1509,6 +1509,17 @@ int pm_runtime_force_resume(struct device *dev)
->>       if (!pm_runtime_status_suspended(dev))
->>               goto out;
->>
->> +     /*
->> +      * The PM core increases the runtime PM usage count in the system PM
->> +      * prepare phase. If the count is greather than 1 at this point, someone
->
-> s/greather/greater/
->
->> +      * else has also increased it. In that case, invoke the runtime resume
->> +      * callback for the device as that is likely what is expected. In other
->
-> Instead of "someone else..."
->
-> ...a real user (such as a driver or subsystem) has also increased it,
-> indicating that the device was active (RPM_ACTIVE) when system suspend
-> was invoked.  Since the device was active on suspend, it's expected to
-> be used on resume as well, so invoke runtime resume for that device
-> ensuring that it is RPM_ACTIVE during system resume.
+On Mon, May 23, 2016 at 08:48:41PM +0530, Shreyas B. Prabhu wrote:
+> POWER ISA v3 defines a new idle processor core mechanism. In summary,
+>  a) new instruction named stop is added.
+>  b) new per thread SPR named PSSCR is added which controls the behavior
+> 	of stop instruction.
+> 
+> Supported idle states and value to be written to PSSCR register to enter
+> any idle state is exposed via ibm,cpu-idle-state-names and
+> ibm,cpu-idle-state-psscr respectively. To enter an idle state,
+> platform provided power_stop() needs to be invoked with the appropriate
+> PSSCR value.
+> 
+> This patch adds support for this new mechanism in cpuidle powernv driver.
+> 
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Paul Mackerras <paulus@ozlabs.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 
-"someone else" also takes user space, child devices, etc into account.
-There are just quite many cases when the usage count could be
-increased and I didn't want to be too specific about them.
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 
-Although, if you insists that this improves the understanding, I will
-update the comment.
+--
+Thanks and Regards
+gautham.
 
-[...]
-
-Kind regards
-Uffe
