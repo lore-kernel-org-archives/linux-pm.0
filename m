@@ -1,7 +1,7 @@
-From: Lukas Wunner <lukas@wunner.de>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
 Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
-Date: Tue, 24 May 2016 14:52:19 +0200
-Message-ID: <20160524125219.GA5538@wunner.de>
+Date: Tue, 24 May 2016 15:53:23 +0300
+Message-ID: <20160524125323.GE1789@lahna.fi.intel.com>
 References: <20160519231234.GB1785@al>
  <1463991648-85051-1-git-send-email-mika.westerberg@linux.intel.com>
  <20160523200042.GB24375@localhost>
@@ -10,18 +10,16 @@ References: <20160519231234.GB1785@al>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.hostsharing.net ([176.9.242.54]:40080 "EHLO
-	mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754873AbcEXMs7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2016 08:48:59 -0400
+Received: from mga01.intel.com ([192.55.52.88]:62443 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751865AbcEXMxa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 24 May 2016 08:53:30 -0400
 Content-Disposition: inline
 In-Reply-To: <20160524122357.GA20453@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
-
-Hi Bjorn,
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 
 On Tue, May 24, 2016 at 07:23:57AM -0500, Bjorn Helgaas wrote:
 > On Mon, May 23, 2016 at 04:50:15PM -0500, Bjorn Helgaas wrote:
@@ -79,82 +77,47 @@ On Tue, May 24, 2016 at 07:23:57AM -0500, Bjorn Helgaas wrote:
 >   af81f0fa638b PCI: Power on bridges before scanning new devices
 >   9741a01c9f55 PCI: Put PCIe ports into D3 during suspend
 >   b3a63ff7baf1 PCI: Don't clear d3cold_allowed for PCIe ports
-> 
+
+Looks good to me. I've also tested those here and seems to work fine.
+
 > I dropped "ACPI / hotplug / PCI: Runtime resume bridge before rescan"
 > on the assumption that "PCI: Power on bridges before scanning new
 > devices" is sufficient to cover both the ACPI and the generic PCi
 > rescan cases, but I'd like some reassurance about that.
-> 
-> Lukas, you tested that acpiphp patch.  Would you be able to verify
-> that your test case still works even with that patch replaced by the
-> generic one?
 
-I only have a Mac and Macs don't use ACPI-based hotplug, only native
-pciehp hotplug. So unfortunately I can't say anything about whether
-the ACPI patch is still needed. For Dave Airlie's use case the patch
-seems not to be needed, he wants to suspend root ports to which a GPU
-is attached, so I guess he doesn't care much about hotplug. The patch
-could therefore be pulled by Linus separately, if it turns that it's
-still needed.
+I agree with your reasoning that the patch should not be needed anymore.
+However, I have the machine which needed that patch at home so I'm not
+able to test it now. I'll do that later today when I get back home.
 
-Thanks,
+One thing I noticed, though. When a bridge is transitioned to D0 we only
+wait for 10ms which is requirement for PCI functions. However, PCI PM
+specification 1.2 (chapter 4.2) requires that for buses to transition
+from B2 to B0 we need to wait minimum of 50ms before accessing a
+function on that bus.
 
-Lukas
+We even have PCI_PM_BUS_WAIT defined in include/linux/pci.h but it is
+not used anywhere. Maybe it was not needed originally because we never
+powered down bridges anyway but now when we do, I think it is good idea
+to do what the spec requires.
 
-> 
-> FWIW, my pci/pm branch with these updates is included in
-> next-20160524.
-> 
-> > > > ---
-> > > >  drivers/pci/probe.c | 9 +++++++++
-> > > >  1 file changed, 9 insertions(+)
-> > > > 
-> > > > diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> > > > index 8004f67c57ec..15e77c92311e 100644
-> > > > --- a/drivers/pci/probe.c
-> > > > +++ b/drivers/pci/probe.c
-> > > > @@ -16,6 +16,7 @@
-> > > >  #include <linux/aer.h>
-> > > >  #include <linux/acpi.h>
-> > > >  #include <linux/irqdomain.h>
-> > > > +#include <linux/pm_runtime.h>
-> > > >  #include "pci.h"
-> > > >  
-> > > >  #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
-> > > > @@ -832,6 +833,12 @@ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max, int pass)
-> > > >  	u8 primary, secondary, subordinate;
-> > > >  	int broken = 0;
-> > > >  
-> > > > +	/*
-> > > > +	 * Make sure the bridge is powered on to be able to access config
-> > > > +	 * space of devices below it.
-> > > > +	 */
-> > > > +	pm_runtime_get_sync(&dev->dev);
-> > > > +
-> > > >  	pci_read_config_dword(dev, PCI_PRIMARY_BUS, &buses);
-> > > >  	primary = buses & 0xFF;
-> > > >  	secondary = (buses >> 8) & 0xFF;
-> > > > @@ -1012,6 +1019,8 @@ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max, int pass)
-> > > >  out:
-> > > >  	pci_write_config_word(dev, PCI_BRIDGE_CONTROL, bctl);
-> > > >  
-> > > > +	pm_runtime_put(&dev->dev);
-> > > > +
-> > > >  	return max;
-> > > >  }
-> > > >  EXPORT_SYMBOL(pci_scan_bridge);
-> > > > -- 
-> > > > 2.8.1
-> > > > 
-> > > > --
-> > > > To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> > > > the body of a message to majordomo@vger.kernel.org
-> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+What do you think? We could add a separate patch doing something like
+below to make sure the spec is followed.
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index e785dc260e72..b3b794caa380 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2361,7 +2361,12 @@ void pci_pm_init(struct pci_dev *dev)
+ 	}
+ 
+ 	dev->pm_cap = pm;
+-	dev->d3_delay = PCI_PM_D3_WAIT;
++	/*
++	 * PCI PM 1.2 specification requires minimum of 50ms before any
++	 * function on the bus is accessed after the bus is transitioned
++	 * from B2 to B0.
++	 */
++	dev->d3_delay = pci_is_bridge(dev) ? PCI_PM_BUS_WAIT : PCI_PM_D3_WAIT;
+ 	dev->d3cold_delay = PCI_PM_D3COLD_WAIT;
+ 	dev->bridge_d3 = pci_bridge_d3_possible(dev);
+ 	dev->d3cold_allowed = true;
