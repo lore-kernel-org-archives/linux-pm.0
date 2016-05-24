@@ -1,61 +1,38 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH] power_suply: isp1704_charger: Fix isp1704_write()
- definition
-Date: Tue, 24 May 2016 17:32:06 +0200
-Message-ID: <20160524153206.GU29844@pali>
-References: <1451646209-11618-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
- <201601011226.21552@pali>
- <201601092342.30608@pali>
- <20160519091304.GK29844@pali>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH][v7] x86, suspend: Save/restore extra MSR registers for suspend
+Date: Tue, 24 May 2016 12:09:56 -0400
+Message-ID: <CAJvTdKn9XyutRAk4Hf5tarQVkCQ4QQL3wtM5RHYfsMg8P3mhnA@mail.gmail.com>
+References: <c9abdcbc173dd2f57e8990e304376f19287e92ba.1448382971.git.yu.c.chen@intel.com>
+	<20151126090940.GA30403@gmail.com>
+	<36DF59CE26D8EE47B0655C516E9CE64028677FF5@shsmsx102.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:35128 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754806AbcEXPcJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2016 11:32:09 -0400
-Content-Disposition: inline
-In-Reply-To: <20160519091304.GK29844@pali>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE64028677FF5@shsmsx102.ccr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: Ingo Molnar <mingo@kernel.org>, "mingo@redhat.com" <mingo@redhat.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "pavel@ucw.cz" <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, "luto@kernel.org" <luto@kernel.org>, "bp@suse.de" <bp@suse.de>, "linux@horizon.com" <linux@horizon.com>, "Kaszewski, Marcin" <marcin.kaszewski@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, sre@kernel.org
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 
-On Thursday 19 May 2016 11:13:04 Pali Roh=C3=A1r wrote:
-> On Saturday 09 January 2016 23:42:30 Pali Roh=C3=A1r wrote:
-> > On Friday 01 January 2016 12:26:21 Pali Roh=C3=A1r wrote:
-> > > On Friday 01 January 2016 12:03:29 Ivaylo Dimitrov wrote:
-> > > > All calls to isp1704_write() are using parameter sequence of
-> > > > isp1704_write(isp, reg, val) but the function is defined as
-> > > > isp1704_write(isp, val, reg). Fix isp1704_write function defini=
-tion
-> > > > so that the driver to be functional.
-> > > >=20
-> > > > Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
-> > >=20
-> > > Reviewed-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> > >=20
-> > > This problem is there since inclusion of driver itself. No idea w=
-hy
-> > > that driver could work... I remember that it detected correctly t=
-ype
-> > > of charger.
-> > >=20
-> > > I will test this patch on real N900 HW in one or two weeks to che=
-ck
-> > > how it behave after patching...
-> >=20
-> > Tested-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> >=20
-> > Please send this patch to all stable kernels.
->=20
-> Hi! I still think that this patch should go to stable kernels. Becaus=
-e
-> without it driver does not work... Will somebody send it to stable?
++mjg59, who may be seeing this issue on a skylake laptop
 
-So no objections, I sent it to stable@vger.kernel.org.
+Chen-yu,
 
---=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+Great debugging, but I think there is a more general fix possible than
+this DMI quirk.
+
+I agree that in this example, a grantley server, it seems the BIOS is
+erroneously
+returning a bogus value of MSR_IA32_THERM_CONTROL on resume from S3.
+
+But another scenario is also possible.  Consider a laptop that is resuming HOT
+and the BIOS correctly enables throttling.  If this code were invoked, it would
+restore the COLD setting.
+
+Instead, it seems to me that the ACPI processor driver should upon .resume
+check if throttling should be enabled or not, and proceed accordingly.
+That would always do the "right thing", and would not need a DMI list.
+Does that make sense?
+
+thanks,
+Len Brown, Intel Open Source Technology Center
