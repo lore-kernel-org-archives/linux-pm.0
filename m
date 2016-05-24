@@ -1,123 +1,201 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
-Date: Tue, 24 May 2016 15:53:23 +0300
-Message-ID: <20160524125323.GE1789@lahna.fi.intel.com>
-References: <20160519231234.GB1785@al>
- <1463991648-85051-1-git-send-email-mika.westerberg@linux.intel.com>
- <20160523200042.GB24375@localhost>
- <20160523215015.GA31479@localhost>
- <20160524122357.GA20453@localhost>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v2 1/5] thermal: Add support for hardware-tracked trip
+ points
+Date: Tue, 24 May 2016 13:57:42 +0100
+Message-ID: <20160524125741.GA8979@e104805>
+References: <1462268013-14992-1-git-send-email-wxt@rock-chips.com>
+ <1462268013-14992-2-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:62443 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865AbcEXMxa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 24 May 2016 08:53:30 -0400
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160524122357.GA20453@localhost>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1462268013-14992-2-git-send-email-wxt@rock-chips.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: edubezval@gmail.com, Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, cf@rock-chips.com, huangtao@rock-chips.com, dmitry.torokhov@gmail.com, Sascha Hauer <s.hauer@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Laxman Dewangan <ldewangan@nvidia.com>, Durgadoss R <durgadoss.r@intel.com>, Leo Yan <leo.yan@linaro.org>, Ni Wade <wni@nvidia.com>, Andy Champ <andycham@amazon.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 
-On Tue, May 24, 2016 at 07:23:57AM -0500, Bjorn Helgaas wrote:
-> On Mon, May 23, 2016 at 04:50:15PM -0500, Bjorn Helgaas wrote:
-> > [+cc Valdis, Dave]
-> > 
-> > On Mon, May 23, 2016 at 03:00:42PM -0500, Bjorn Helgaas wrote:
-> > > On Mon, May 23, 2016 at 11:20:48AM +0300, Mika Westerberg wrote:
-> > > > When a PCI device is removed through sysfs interface the upstream bridge
-> > > > (PCIe port) can be runtime suspended if it was the last device on that bus.
-> > > > Now, if the bridge is in D3 we cannot find devices below the bridge
-> > > > anymore. For example following fails to find the removed device again:
-> > > > 
-> > > >    # echo 1 > /sys/bus/pci/devices/0000:00:01.0/0000:01:00.0/remove
-> > > >    # echo 1 > /sys/bus/pci/devices/0000:00:01.0/rescan
-> > > > 
-> > > > Where 0000:00:01.0 is the bridge device.
-> > > > 
-> > > > In order to be able to rescan devices below the bridge add
-> > > > pm_runtime_get_sync()/pm_runtime_put() calls to pci_scan_bridge(). This
-> > > > should keep bridges powered on while their children devices are being
-> > > > scanned.
-> > > > 
-> > > > Reported-by: Peter Wu <peter@lekensteyn.nl>
-> > > > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> > > 
-> > > This looks like basically the same idea as "ACPI / hotplug / PCI:
-> > > Runtime resume bridge before rescan".
-> > > 
-> > > The hotplug_event() path modified by that patch eventually calls
-> > > pci_scan_bridge():
-> > > 
-> > >   hotplug_event
-> > >     enable_slot
-> > >       pci_scan_bridge
-> > > 
-> > > so this patch looks a little more general.  Does it make "ACPI /
-> > > hotplug / PCI: Runtime resume bridge before rescan" unnecessary?  
-> > > Can I just replace that patch with this one?
-> > 
-> > I speculatively replaced "ACPI / hotplug / PCI: Runtime resume bridge
-> > before rescan" with this one and pushed the result to
-> > 
-> >   https://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/log/?h=pci/pm
-> > 
-> > Please take a look, test it, and let me know if I need to add the ACPI
-> > patch back.
-> > 
-> > This branch also includes the fix for the lockdep splat reported by
-> > Valdis.  This is what I hope to get into v4.7-rc1.
+On Tue, May 03, 2016 at 05:33:29PM +0800, Caesar Wang wrote:
+> From: Sascha Hauer <s.hauer@pengutronix.de>
 > 
-> Ping?  I'd like to ask Linus to pull this pci/pm branch before v4.7-rc1.
-> It currently has these changes:
+> This adds support for hardware-tracked trip points to the device tree
+> thermal sensor framework.
 > 
->   8b71f5652eea PCI: Add runtime PM support for PCIe ports
->   af81f0fa638b PCI: Power on bridges before scanning new devices
->   9741a01c9f55 PCI: Put PCIe ports into D3 during suspend
->   b3a63ff7baf1 PCI: Don't clear d3cold_allowed for PCIe ports
+> The framework supports an arbitrary number of trip points. Whenever
+> the current temperature is updated, the trip points immediately
+> below and above the current temperature are found. A .set_trips
+> callback is then called with the temperatures. If there is no trip
+> point above or below the current temperature, the passed trip
+> temperature will be -INT_MAX or INT_MAX respectively. In this callback,
+> the driver should program the hardware such that it is notified
+> when either of these trip points are triggered. When a trip point
+> is triggered, the driver should call `thermal_zone_device_update'
+> for the respective thermal zone. This will cause the trip points
+> to be updated again.
+> 
+> If .set_trips is not implemented, the framework behaves as before.
+> 
+> This patch is based on an earlier version from Mikko Perttunen
+> <mikko.perttunen@kapsi.fi>
+> 
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: linux-pm@vger.kernel.org
+> 
+> ---
+> 
+> Changes in v2:
+> - update the sysfs-api.txt for set_trips
+> 
+>  Documentation/thermal/sysfs-api.txt |  7 +++++
+>  drivers/thermal/thermal_core.c      | 52 +++++++++++++++++++++++++++++++++++++
+>  include/linux/thermal.h             |  3 +++
+>  3 files changed, 62 insertions(+)
+> 
+> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+> index efc3f3d..75d8838 100644
+> --- a/Documentation/thermal/sysfs-api.txt
+> +++ b/Documentation/thermal/sysfs-api.txt
+> @@ -49,6 +49,9 @@ temperature) and throttle appropriate devices.
+>  	.bind: bind the thermal zone device with a thermal cooling device.
+>  	.unbind: unbind the thermal zone device with a thermal cooling device.
+>  	.get_temp: get the current temperature of the thermal zone.
+> +	.set_trips: set the trip points window. Whenever the current temperature
+> +		    is updated, the trip points immediately below and above the
+> +		    current temperature are found.
+>  	.get_mode: get the current mode (enabled/disabled) of the thermal zone.
+>  	    - "enabled" means the kernel thermal management is enabled.
+>  	    - "disabled" will prevent kernel thermal driver action upon trip points
+> @@ -95,6 +98,10 @@ temperature) and throttle appropriate devices.
+>  			get_temp:	a pointer to a function that reads the
+>  					sensor temperature. This is mandatory
+>  					callback provided by sensor driver.
+> +			set_trips:      a pointer to a function that sets a
+> +					temperature window. When this window is
+> +					left the driver must inform the thermal
+> +					core via thermal_zone_device_update.
+>  			get_trend: 	a pointer to a function that reads the
+>  					sensor temperature trend.
+>  			set_emul_temp:	a pointer to a function that sets
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 5133cd1..e5bfbd3 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -520,6 +520,51 @@ exit:
+>  }
+>  EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
+>  
+> +static void thermal_zone_set_trips(struct thermal_zone_device *tz)
+> +{
+> +	int low = -INT_MAX;
+> +	int high = INT_MAX;
+> +	int trip_temp, hysteresis;
+> +	int temp = tz->temperature;
+> +	int i, ret;
+> +
+> +	if (!tz->ops->set_trips)
+> +		return;
+> +
+> +	for (i = 0; i < tz->trips; i++) {
+> +		int trip_low;
+> +
+> +		tz->ops->get_trip_temp(tz, i, &trip_temp);
+> +		tz->ops->get_trip_hyst(tz, i, &hysteresis);
+> +
+> +		trip_low = trip_temp - hysteresis;
+> +
+> +		if (trip_low < temp && trip_low > low)
+> +			low = trip_low;
+> +
+> +		if (trip_temp > temp && trip_temp < high)
+> +			high = trip_temp;
+> +	}
+> +
+> +	/* No need to change trip points */
+> +	if (tz->prev_low_trip == low && tz->prev_high_trip == high)
+> +		return;
+> +
+> +	tz->prev_low_trip = low;
+> +	tz->prev_high_trip = high;
+> +
+> +	dev_dbg(&tz->device, "new temperature boundaries: %d < x < %d\n",
+> +			low, high);
+> +
+> +	/*
+> +	 * Set a temperature window. When this window is left the driver
+> +	 * must inform the thermal core via thermal_zone_device_update.
+> +	 */
+> +	ret = tz->ops->set_trips(tz, low, high);
+> +	if (ret)
+> +		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
 
-Looks good to me. I've also tested those here and seems to work fine.
+This function can be called at the same time from multiple places so
+it should be reentrant.  I think you should call mutex_lock(tz->lock)
+before "if (tz->prev_low_trip == low && ..." and unlock it here.
 
-> I dropped "ACPI / hotplug / PCI: Runtime resume bridge before rescan"
-> on the assumption that "PCI: Power on bridges before scanning new
-> devices" is sufficient to cover both the ACPI and the generic PCi
-> rescan cases, but I'd like some reassurance about that.
+> +}
+> +
+>  static void update_temperature(struct thermal_zone_device *tz)
+>  {
+>  	int temp, ret;
+> @@ -569,6 +614,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+>  
+>  	update_temperature(tz);
+>  
+> +	thermal_zone_set_trips(tz);
+> +
+>  	for (count = 0; count < tz->trips; count++)
+>  		handle_thermal_trip(tz, count);
+>  }
+> @@ -754,6 +801,9 @@ trip_point_hyst_store(struct device *dev, struct device_attribute *attr,
+>  	 */
+>  	ret = tz->ops->set_trip_hyst(tz, trip, temperature);
+>  
+> +	if (!ret)
+> +		thermal_zone_set_trips(tz);
+> +
 
-I agree with your reasoning that the patch should not be needed anymore.
-However, I have the machine which needed that patch at home so I'm not
-able to test it now. I'll do that later today when I get back home.
+You should add a similar call to thermal_zone_set_trips() in trip_point_temp_store()
 
-One thing I noticed, though. When a bridge is transitioned to D0 we only
-wait for 10ms which is requirement for PCI functions. However, PCI PM
-specification 1.2 (chapter 4.2) requires that for buses to transition
-from B2 to B0 we need to wait minimum of 50ms before accessing a
-function on that bus.
+>  	return ret ? ret : count;
+>  }
+>  
+> @@ -1843,6 +1893,8 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>  	tz->trips = trips;
+>  	tz->passive_delay = passive_delay;
+>  	tz->polling_delay = polling_delay;
+> +	tz->prev_low_trip = INT_MAX;
+> +	tz->prev_high_trip = -INT_MAX;
+>  	/* A new thermal zone needs to be updated anyway. */
+>  	atomic_set(&tz->need_update, 1);
+>  
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index e45abe7..e258359 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -98,6 +98,7 @@ struct thermal_zone_device_ops {
+>  	int (*unbind) (struct thermal_zone_device *,
+>  		       struct thermal_cooling_device *);
+>  	int (*get_temp) (struct thermal_zone_device *, int *);
+> +	int (*set_trips) (struct thermal_zone_device *, int, int);
+>  	int (*get_mode) (struct thermal_zone_device *,
+>  			 enum thermal_device_mode *);
+>  	int (*set_mode) (struct thermal_zone_device *,
+> @@ -199,6 +200,8 @@ struct thermal_zone_device {
+>  	int last_temperature;
+>  	int emul_temperature;
+>  	int passive;
+> +	int prev_low_trip;
+> +	int prev_high_trip;
 
-We even have PCI_PM_BUS_WAIT defined in include/linux/pci.h but it is
-not used anywhere. Maybe it was not needed originally because we never
-powered down bridges anyway but now when we do, I think it is good idea
-to do what the spec requires.
+Please document these fields in the kerneldoc comment before struct
+thermal_zone_device.
 
-What do you think? We could add a separate patch doing something like
-below to make sure the spec is followed.
+>  	unsigned int forced_passive;
+>  	atomic_t need_update;
+>  	struct thermal_zone_device_ops *ops;
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index e785dc260e72..b3b794caa380 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -2361,7 +2361,12 @@ void pci_pm_init(struct pci_dev *dev)
- 	}
- 
- 	dev->pm_cap = pm;
--	dev->d3_delay = PCI_PM_D3_WAIT;
-+	/*
-+	 * PCI PM 1.2 specification requires minimum of 50ms before any
-+	 * function on the bus is accessed after the bus is transitioned
-+	 * from B2 to B0.
-+	 */
-+	dev->d3_delay = pci_is_bridge(dev) ? PCI_PM_BUS_WAIT : PCI_PM_D3_WAIT;
- 	dev->d3cold_delay = PCI_PM_D3COLD_WAIT;
- 	dev->bridge_d3 = pci_bridge_d3_possible(dev);
- 	dev->d3cold_allowed = true;
+Cheers,
+Javi
