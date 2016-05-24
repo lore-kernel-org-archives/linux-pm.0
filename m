@@ -1,61 +1,61 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
-Date: Tue, 24 May 2016 17:06:51 +0200
-Message-ID: <20160524150651.GA5605@wunner.de>
-References: <20160519231234.GB1785@al>
- <1463991648-85051-1-git-send-email-mika.westerberg@linux.intel.com>
- <20160523200042.GB24375@localhost>
- <20160523215015.GA31479@localhost>
- <20160524122357.GA20453@localhost>
- <20160524125323.GE1789@lahna.fi.intel.com>
- <20160524142744.GA1553@al>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH] power_suply: isp1704_charger: Fix isp1704_write()
+ definition
+Date: Tue, 24 May 2016 17:32:06 +0200
+Message-ID: <20160524153206.GU29844@pali>
+References: <1451646209-11618-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
+ <201601011226.21552@pali>
+ <201601092342.30608@pali>
+ <20160519091304.GK29844@pali>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:43096 "EHLO
-	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755621AbcEXPD3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2016 11:03:29 -0400
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:35128 "EHLO
+	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754806AbcEXPcJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2016 11:32:09 -0400
 Content-Disposition: inline
-In-Reply-To: <20160524142744.GA1553@al>
+In-Reply-To: <20160519091304.GK29844@pali>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Wu <peter@lekensteyn.nl>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
+To: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, sre@kernel.org
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
 
-Hi Peter,
+On Thursday 19 May 2016 11:13:04 Pali Roh=C3=A1r wrote:
+> On Saturday 09 January 2016 23:42:30 Pali Roh=C3=A1r wrote:
+> > On Friday 01 January 2016 12:26:21 Pali Roh=C3=A1r wrote:
+> > > On Friday 01 January 2016 12:03:29 Ivaylo Dimitrov wrote:
+> > > > All calls to isp1704_write() are using parameter sequence of
+> > > > isp1704_write(isp, reg, val) but the function is defined as
+> > > > isp1704_write(isp, val, reg). Fix isp1704_write function defini=
+tion
+> > > > so that the driver to be functional.
+> > > >=20
+> > > > Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+> > >=20
+> > > Reviewed-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+> > >=20
+> > > This problem is there since inclusion of driver itself. No idea w=
+hy
+> > > that driver could work... I remember that it detected correctly t=
+ype
+> > > of charger.
+> > >=20
+> > > I will test this patch on real N900 HW in one or two weeks to che=
+ck
+> > > how it behave after patching...
+> >=20
+> > Tested-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+> >=20
+> > Please send this patch to all stable kernels.
+>=20
+> Hi! I still think that this patch should go to stable kernels. Becaus=
+e
+> without it driver does not work... Will somebody send it to stable?
 
-On Tue, May 24, 2016 at 04:27:44PM +0200, Peter Wu wrote:
-> @@ -246,6 +247,28 @@ static int nouveau_dsm_pci_probe(struct pci_dev *pdev)
->  	return retval;
->  }
->  
-> +/* Windows 8/8.1/10 do not use DSM to put the device in D3cold state,
-> + * instead it disables power resources on the parent PCIe port device. */
-> +static bool nouveau_check_pr3(struct pci_dev *dis_dev)
-> +{
-> +	acpi_handle parent_handle;
-> +	struct acpi_device *ad = NULL;
-> +
-> +	if (ACPI_FAILURE(acpi_get_parent(nouveau_dsm_priv.dhandle,
-> +					 &parent_handle))) {
-> +		pr_warn("Failed to obtain the parent device\n");
-> +		return false;
-> +	}
-> +
-> +	acpi_bus_get_device(parent_handle, &ad);
-> +	if (!ad) {
-> +		pr_warn("Failed to obtain an ACPI device for handle\n");
-> +		return false;
-> +	}
-> +
-> +	return ad->power.flags.power_resources;
-> +}
-> +
+So no objections, I sent it to stable@vger.kernel.org.
 
-This can be shortened significantly by using pci_upstream_bridge()
-and ACPI_HANDLE().
-
-Best regards,
-
-Lukas
+--=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
