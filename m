@@ -1,47 +1,89 @@
-From: Chen Yu <yu.chen.surf@gmail.com>
-Subject: Re: [PATCH][v7] x86, suspend: Save/restore extra MSR registers for suspend
-Date: Wed, 25 May 2016 13:02:30 +0800
-Message-ID: <CADjb_WR+ZtBf4x=JkdGhfbBNDGL=eskQp8-FADCSAzHkDLPd8w@mail.gmail.com>
-References: <c9abdcbc173dd2f57e8990e304376f19287e92ba.1448382971.git.yu.c.chen@intel.com>
-	<20151126090940.GA30403@gmail.com>
-	<36DF59CE26D8EE47B0655C516E9CE64028677FF5@shsmsx102.ccr.corp.intel.com>
-	<CAJvTdKn9XyutRAk4Hf5tarQVkCQ4QQL3wtM5RHYfsMg8P3mhnA@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [Nouveau] [PATCH 0/4] nouveau fixes for RPM/Optimus-related hangs
+Date: Wed, 25 May 2016 11:08:15 +0200
+Message-ID: <128b3153-9f27-fdff-084a-a792942e3eaf@redhat.com>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJvTdKn9XyutRAk4Hf5tarQVkCQ4QQL3wtM5RHYfsMg8P3mhnA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, George Spelvin <linux@horizon.com>, "Kaszewski, Marcin" <marcin.kaszewski@intel.com>, Matthew Garrett <mjg59@srcf.ucam.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Chen Yu <yu.c.chen@intel.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:40629 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753088AbcEYJIW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 May 2016 05:08:22 -0400
+In-Reply-To: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Wu <peter@lekensteyn.nl>, nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org
+Cc: Dave Airlie <airlied@redhat.com>, linux-pm@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org
 
-Hi Len,
+Hi,
 
-On Wed, May 25, 2016 at 12:09 AM, Len Brown <lenb@kernel.org> wrote:
-> +mjg59, who may be seeing this issue on a skylake laptop
+On 25-05-16 00:52, Peter Wu wrote:
+> Hi,
 >
-> Chen-yu,
+> Here are two patches to fix an issue reported on kernel bugzilla (infinite loop
+> due to unchecked function) and a more important fix to fix hanging Optimus
+> machines when runtime PM is enabled (with pm/pci patches).
 >
-> Great debugging, but I think there is a more general fix possible than
-> this DMI quirk.
+> An older (obsolete) patch for the first issue was tested by the reporter:
+> https://bugzilla.kernel.org/show_bug.cgi?id=104791#c11
+> (it is replaced by "check for function 0x1B before using it").
 >
-> I agree that in this example, a grantley server, it seems the BIOS is
-> erroneously
-> returning a bogus value of MSR_IA32_THERM_CONTROL on resume from S3.
+> The second issue will occur when:
+>  - A modern Optimus laptop is in use (designed for Windows 8 or newer).
+>  - nouveau runtime PM is enabled (1 or the default -1).
+>  - The patch "PCI: Add runtime PM support for PCIe ports" from Mika is pulled
+>    into v4.7 (or v4.8[1]?) via the pci/pm branch,
+>    https://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/commit/?h=pci/pm&id=8b71f5652eeac561acf883da01ab4810f763ee42
+> (see also the discussion for "[PATCH] PCI: Power on bridges before scanning new
+> devices" at http://article.gmane.org/gmane.linux.power-management.general/76411)
 >
-> But another scenario is also possible.  Consider a laptop that is resuming HOT
-> and the BIOS correctly enables throttling.  If this code were invoked, it would
-> restore the COLD setting.
+> The first two patches are just refactoring to reduce code duplication (and
+> scratch an itch) and make the following patches possible. The next two patches
+> fix the problems reported above.
 >
-> Instead, it seems to me that the ACPI processor driver should upon .resume
-> check if throttling should be enabled or not, and proceed accordingly.
-> That would always do the "right thing", and would not need a DMI list.
-> Does that make sense?
-I agree, to let the related drivers customize their restoring process
-would be more robust,
-and we can not only take care of boot CPU but also nonboot CPUs in this way.
-I think we can add something like acpi_processor_reevaluate_tstate in the resume
-hook,I'll make a double check.
+> I intend to get these patches in 4.7 (or the first version where pci/pm gets
+> merged) to avoid a lockup when runpm is enabled. Note:
+>  - If the fourth patch is merged before/without Mika's PCIe port patch, then
+>    those modern Optimus machines above will not be put into D3cold.
+>  - If the fourth patch is not merged (or merged after Mika's patch), then under
+>    the above conditions the affected machine can lock up.
+>  - The three other patches are unrelated to this issue and can safely be merged.
+>
+> Tested with:
+>  - Linux v4.6 + pci/pm + these four patches
+>  - Hardware: Clevo P651RA with acpi_osi="!Windows 2015" (the latter is a
+>    workaround for another PCIe issue).
+>  - Card is asleep, woke up with lspci, waited a bit and retried/suspended:
+>    - # lspci -xxxxnnvvvv >/dev/null; sleep 5
+>    - # lspci -xxxxnnvvvv >/dev/null; sleep 5; systemctl suspend
+>    - # lspci -xxxxnnvvvv >/dev/null; systemctl suspend
 
-thanks,
-Yu
+Series looks good to me:
+
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+
+Regards,
+
+Hans
+
+
+
+
+
+>
+> Kind regards,
+> Peter
+>
+>  [1]: https://lkml.kernel.org/r/20160524211309.GH1789@lahna.fi.intel.com
+>
+> Peter Wu (4):
+>   drm/nouveau/acpi: ensure matching ACPI handle and supported functions
+>   drm/nouveau/acpi: return supported DSM functions
+>   drm/nouveau/acpi: check for function 0x1B before using it
+>   drm/nouveau/acpi: fix lockup with PCIe runtime PM
+>
+>  drivers/gpu/drm/nouveau/nouveau_acpi.c | 100 +++++++++++++++++++++------------
+>  1 file changed, 63 insertions(+), 37 deletions(-)
+>
