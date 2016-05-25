@@ -1,49 +1,36 @@
 From: Caesar Wang <caesar.upstream@gmail.com>
-Subject: Re: [PATCH v2 1/5] thermal: Add support for hardware-tracked trip
- points
-Date: Wed, 25 May 2016 11:27:24 +0800
-Message-ID: <57451B9C.7070705@gmail.com>
-References: <1462268013-14992-1-git-send-email-wxt@rock-chips.com> <1462268013-14992-2-git-send-email-wxt@rock-chips.com> <20160524125741.GA8979@e104805>
+Subject: Re: [PATCH v2 2/5] thermal: of: implement .set_trips for device tree
+ thermal zones
+Date: Wed, 25 May 2016 11:28:58 +0800
+Message-ID: <57451BFA.4090404@gmail.com>
+References: <1462268013-14992-1-git-send-email-wxt@rock-chips.com> <1462268013-14992-3-git-send-email-wxt@rock-chips.com> <20160524130139.GB8979@e104805>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20160524125741.GA8979@e104805>
-Sender: linux-doc-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Caesar Wang <wxt@rock-chips.com>, huangtao@rock-chips.com, Jonathan Corbet <corbet@lwn.net>, Ni Wade <wni@nvidia.com>, Durgadoss R <durgadoss.r@intel.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, dmitry.torokhov@gmail.com, linux-doc@vger.kernel.org, dianders@chromium.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, Laxman Dewangan <ldewangan@nvidia.com>, smbarber@google.com, Leo Yan <leo.yan@linaro.org>, cf@rock-chips.com, briannorris@google.com, Zhang Rui <rui.zhang@intel.com>, Andy Champ <andycham@amazon.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f65.google.com ([209.85.220.65]:33837 "EHLO
+	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751759AbcEYD3F (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2016 23:29:05 -0400
+In-Reply-To: <20160524130139.GB8979@e104805>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Caesar Wang <wxt@rock-chips.com>, huangtao@rock-chips.com, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, dmitry.torokhov@gmail.com, dianders@chromium.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, smbarber@google.com, cf@rock-chips.com, briannorris@google.com, Zhang Rui <rui.zhang@intel.com>
 
 Hi Javi,
 
-Thanks your reviewing.
-
-On 2016=E5=B9=B405=E6=9C=8824=E6=97=A5 20:57, Javi Merino wrote:
-> On Tue, May 03, 2016 at 05:33:29PM +0800, Caesar Wang wrote:
+On 2016=E5=B9=B405=E6=9C=8824=E6=97=A5 21:01, Javi Merino wrote:
+> On Tue, May 03, 2016 at 05:33:30PM +0800, Caesar Wang wrote:
 >> From: Sascha Hauer <s.hauer@pengutronix.de>
 >>
->> This adds support for hardware-tracked trip points to the device tre=
-e
->> thermal sensor framework.
+>> This patch implemnets .set_trips for device tree thermal zones.
+>> As the hardware-tracked trip points is supported by thermal core pat=
+ch[0].
 >>
->> The framework supports an arbitrary number of trip points. Whenever
->> the current temperature is updated, the trip points immediately
->> below and above the current temperature are found. A .set_trips
->> callback is then called with the temperatures. If there is no trip
->> point above or below the current temperature, the passed trip
->> temperature will be -INT_MAX or INT_MAX respectively. In this callba=
-ck,
->> the driver should program the hardware such that it is notified
->> when either of these trip points are triggered. When a trip point
->> is triggered, the driver should call `thermal_zone_device_update'
->> for the respective thermal zone. This will cause the trip points
->> to be updated again.
->>
->> If .set_trips is not implemented, the framework behaves as before.
->>
->> This patch is based on an earlier version from Mikko Perttunen
->> <mikko.perttunen@kapsi.fi>
+>> patch[0]
+>> "thermal: Add support for hardware-tracked trip points".
 >>
 >> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 >> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
@@ -54,124 +41,89 @@ ck,
 >> ---
 >>
 >> Changes in v2:
->> - update the sysfs-api.txt for set_trips
+>> - add the commit in patch[v2 2/5].
 >>
->>   Documentation/thermal/sysfs-api.txt |  7 +++++
->>   drivers/thermal/thermal_core.c      | 52 +++++++++++++++++++++++++=
-++++++++++++
->>   include/linux/thermal.h             |  3 +++
->>   3 files changed, 62 insertions(+)
-<cut..>
->> +	/*
->> +	 * Set a temperature window. When this window is left the driver
->> +	 * must inform the thermal core via thermal_zone_device_update.
->> +	 */
->> +	ret =3D tz->ops->set_trips(tz, low, high);
->> +	if (ret)
->> +		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
-> This function can be called at the same time from multiple places so
-> it should be reentrant.  I think you should call mutex_lock(tz->lock)
-> before "if (tz->prev_low_trip =3D=3D low && ..." and unlock it here.
-
-Sound reasonable, fixes it in next version.
-
+>>   drivers/thermal/of-thermal.c | 12 ++++++++++++
+>>   include/linux/thermal.h      |  4 ++++
+>>   2 files changed, 16 insertions(+)
+>>
+>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-therm=
+al.c
+>> index b8e509c..8722e63 100644
+>> --- a/drivers/thermal/of-thermal.c
+>> +++ b/drivers/thermal/of-thermal.c
+>> @@ -101,6 +101,17 @@ static int of_thermal_get_temp(struct thermal_z=
+one_device *tz,
+>>   	return data->ops->get_temp(data->sensor_data, temp);
+>>   }
+>>  =20
+>> +static int of_thermal_set_trips(struct thermal_zone_device *tz,
+>> +				int low, int high)
+>> +{
+>> +	struct __thermal_zone *data =3D tz->devdata;
+>> +
+>> +	if (!data->ops || !data->ops->set_trips)
+>> +		return -EINVAL;
+>> +
+>> +	return data->ops->set_trips(data->sensor_data, low, high);
 >> +}
 >> +
->>   static void update_temperature(struct thermal_zone_device *tz)
->>   {
->>   	int temp, ret;
->> @@ -569,6 +614,8 @@ void thermal_zone_device_update(struct thermal_z=
-one_device *tz)
+>>   /**
+>>    * of_thermal_get_ntrips - function to export number of available =
+trip
+>>    *			   points.
+>> @@ -427,6 +438,7 @@ thermal_zone_of_add_sensor(struct device_node *z=
+one,
 >>  =20
->>   	update_temperature(tz);
->>  =20
->> +	thermal_zone_set_trips(tz);
->> +
->>   	for (count =3D 0; count < tz->trips; count++)
->>   		handle_thermal_trip(tz, count);
->>   }
->> @@ -754,6 +801,9 @@ trip_point_hyst_store(struct device *dev, struct=
- device_attribute *attr,
->>   	 */
->>   	ret =3D tz->ops->set_trip_hyst(tz, trip, temperature);
->>  =20
->> +	if (!ret)
->> +		thermal_zone_set_trips(tz);
->> +
-> You should add a similar call to thermal_zone_set_trips() in trip_poi=
-nt_temp_store()
+>>   	tzd->ops->get_temp =3D of_thermal_get_temp;
+>>   	tzd->ops->get_trend =3D of_thermal_get_trend;
+>> +	tzd->ops->set_trips =3D of_thermal_set_trips;
+> Why not do it only if ops->set_trips is set?  Something like
+>
+> 	if (ops->set_trips)
+> 		tzd->ops->set_trips =3D of_thermal_set_trips;
+>
+> Otherwise, the thermal zone core will calculate the window for all
+> device tree thermal zones, even if they haven't set the optional
+> set_trips pointer.
 
-No, this patch has been done.
+Hmm, agree it in here.
+fixes in next version.
 
-if you see the linux next kernel.
-72f3ada UPSTREAM: thermal: trip_point_temp_store() calls=20
-thermal_zone_device_update()
-
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -733,8 +733,12 @@ trip_point_temp_store(struct device *dev, struct=20
-device_attribute *attr,
-return -EINVAL;
-
-ret =3D tz->ops->set_trip_temp(tz, trip, temperature);
-+ if (ret)
-+ return ret;
-
-- return ret ? ret : count;
-+ thermal_zone_device_update(tz);
-+
-+ return count;
-}
-
-So the "thermal_zone_set_trips(tz)" have been set in=20
-thermal_zone_device_update.
-
->>   	return ret ? ret : count;
->>   }
->>  =20
->> @@ -1843,6 +1893,8 @@ struct thermal_zone_device *thermal_zone_devic=
-e_register(const char *type,
->>   	tz->trips =3D trips;
->>   	tz->passive_delay =3D passive_delay;
->>   	tz->polling_delay =3D polling_delay;
->> +	tz->prev_low_trip =3D INT_MAX;
->> +	tz->prev_high_trip =3D -INT_MAX;
->>   	/* A new thermal zone needs to be updated anyway. */
->>   	atomic_set(&tz->need_update, 1);
->>  =20
->> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->> index e45abe7..e258359 100644
->> --- a/include/linux/thermal.h
->> +++ b/include/linux/thermal.h
->> @@ -98,6 +98,7 @@ struct thermal_zone_device_ops {
->>   	int (*unbind) (struct thermal_zone_device *,
->>   		       struct thermal_cooling_device *);
->>   	int (*get_temp) (struct thermal_zone_device *, int *);
->> +	int (*set_trips) (struct thermal_zone_device *, int, int);
->>   	int (*get_mode) (struct thermal_zone_device *,
->>   			 enum thermal_device_mode *);
->>   	int (*set_mode) (struct thermal_zone_device *,
->> @@ -199,6 +200,8 @@ struct thermal_zone_device {
->>   	int last_temperature;
->>   	int emul_temperature;
->>   	int passive;
->> +	int prev_low_trip;
->> +	int prev_high_trip;
-> Please document these fields in the kerneldoc comment before struct
-> thermal_zone_device.
-
-Okay, done.
-
-Thanks!
-
--
-Caesar
->>   	unsigned int forced_passive;
->>   	atomic_t need_update;
->>   	struct thermal_zone_device_ops *ops;
 > Cheers,
 > Javi
 >
+>>   	tzd->ops->set_emul_temp =3D of_thermal_set_emul_temp;
+>>   	mutex_unlock(&tzd->lock);
+>>  =20
+>> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+>> index e258359..09053eb 100644
+>> --- a/include/linux/thermal.h
+>> +++ b/include/linux/thermal.h
+>> @@ -336,12 +336,16 @@ struct thermal_genl_event {
+>>    *
+>>    * Optional:
+>>    * @get_trend: a pointer to a function that reads the sensor tempe=
+rature trend.
+>> + * @set_trips: a pointer to a function that sets a temperature wind=
+ow. When
+>> + *	       this window is left the driver must inform the thermal co=
+re via
+>> + *	       thermal_zone_device_update.
+>>    * @set_emul_temp: a pointer to a function that sets sensor emulat=
+ed
+>>    *		   temperature.
+>>    */
+>>   struct thermal_zone_of_device_ops {
+>>   	int (*get_temp)(void *, int *);
+>>   	int (*get_trend)(void *, long *);
+>> +	int (*set_trips)(void *, int, int);
+>>   	int (*set_emul_temp)(void *, int);
+>>   	int (*set_trip_temp)(void *, int, int);
+>>   };
+>> --=20
+>> 1.9.1
+>>
 > _______________________________________________
 > Linux-rockchip mailing list
 > Linux-rockchip@lists.infradead.org
