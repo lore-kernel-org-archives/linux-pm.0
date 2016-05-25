@@ -1,76 +1,52 @@
 From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe runtime PM
-Date: Wed, 25 May 2016 16:55:35 +0300
-Message-ID: <20160525135535.GN1789@lahna.fi.intel.com>
-References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
- <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH] PCI: Wait for 50ms after bridge is powered up
+Date: Wed, 25 May 2016 18:04:56 +0300
+Message-ID: <1464188696-25782-1-git-send-email-mika.westerberg@linux.intel.com>
+References: <20160524162833.GA30762@localhost>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:27100 "EHLO mga02.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:20164 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750840AbcEYNzm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 25 May 2016 09:55:42 -0400
-Content-Disposition: inline
-In-Reply-To: <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+	id S1753537AbcEYPFJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 May 2016 11:05:09 -0400
+In-Reply-To: <20160524162833.GA30762@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Wu <peter@lekensteyn.nl>
-Cc: nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On Wed, May 25, 2016 at 12:53:01AM +0200, Peter Wu wrote:
-> Since "PCI: Add runtime PM support for PCIe ports", the parent PCIe port
-> can be runtime-suspended which disables power resources via ACPI. This
-> is incompatible with DSM, resulting in a GPU device which is still in D3
-> and locks up the kernel on resume.
-> 
-> Mirror the behavior of Windows 8 and newer[1] (as observed via an AMLi
-> debugger trace) and stop using the DSM functions for D3cold when power
-> resources are available on the parent PCIe port.
-> 
->  [1]: https://msdn.microsoft.com/windows/hardware/drivers/bringup/firmware-requirements-for-d3cold
-> 
-> Signed-off-by: Peter Wu <peter@lekensteyn.nl>
-> ---
->  drivers/gpu/drm/nouveau/nouveau_acpi.c | 34 ++++++++++++++++++++++++++++++----
->  1 file changed, 30 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/nouveau/nouveau_acpi.c b/drivers/gpu/drm/nouveau/nouveau_acpi.c
-> index df9f73e..e469df7 100644
-> --- a/drivers/gpu/drm/nouveau/nouveau_acpi.c
-> +++ b/drivers/gpu/drm/nouveau/nouveau_acpi.c
-> @@ -46,6 +46,7 @@ static struct nouveau_dsm_priv {
->  	bool dsm_detected;
->  	bool optimus_detected;
->  	bool optimus_flags_detected;
-> +	bool optimus_skip_dsm;
->  	acpi_handle dhandle;
->  	acpi_handle rom_handle;
->  } nouveau_dsm_priv;
-> @@ -212,8 +213,26 @@ static const struct vga_switcheroo_handler nouveau_dsm_handler = {
->  	.get_client_id = nouveau_dsm_get_client_id,
->  };
->  
-> +/* Firmware supporting Windows 8 or later do not use _DSM to put the device into
-> + * D3cold, they instead rely on disabling power resources on the parent. */
-> +static bool nouveau_pr3_present(struct pci_dev *pdev)
-> +{
-> +	struct pci_dev *parent_pdev = pci_upstream_bridge(pdev);
-> +	struct acpi_device *ad;
+The PCI PM 1.2 specification requires minimum of 50ms before function on a
+bus is accessed after the bus is transitioned from B2 to B0. Now that we
+actually power down bridges we should make sure the specification is
+followed accordingly.
 
-Nit: please call this adev instead of ad.
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+---
+Hi Bjorn,
 
-> +
-> +	if (!parent_pdev)
-> +		return false;
-> +
-> +	ad = ACPI_COMPANION(&parent_pdev->dev);
-> +	if (!ad)
-> +		return false;
-> +
-> +	return ad->power.flags.power_resources;
+Since this is only needed when bridges are powered down, I think it makes
+sense to put this to your pci/pm branch.
 
-Is this sufficient to tell if the parent device has _PR3? I thought it
-returns true if it has power resources in general, not necessarily _PR3.
+ drivers/pci/pci.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Otherwise this looks okay to me.
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index e785dc260e72..e645a3d4f2e0 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2361,7 +2361,12 @@ void pci_pm_init(struct pci_dev *dev)
+ 	}
+ 
+ 	dev->pm_cap = pm;
+-	dev->d3_delay = PCI_PM_D3_WAIT;
++	/*
++	 * PCI PM 1.2 specification requires minimum of 50ms before any
++	 * function on the bus is accessed after the bus is transitioned
++	 * from B2 to B0.
++	 */
++	dev->d3_delay = pci_is_bridge(dev) ? PCI_PM_BUS_WAIT : PCI_PM_D3_WAIT;
+ 	dev->d3cold_delay = PCI_PM_D3COLD_WAIT;
+ 	dev->bridge_d3 = pci_bridge_d3_possible(dev);
+ 	dev->d3cold_allowed = true;
+-- 
+2.8.1
+
