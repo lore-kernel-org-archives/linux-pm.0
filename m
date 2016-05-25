@@ -1,50 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
-Date: Wed, 25 May 2016 22:45:48 +0200
-Message-ID: <2037523.0hP3Oc7Pg6@vostro.rjw.lan>
-References: <20160519231234.GB1785@al> <20160524211309.GH1789@lahna.fi.intel.com> <20160525131948.GL1789@lahna.fi.intel.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v6 00/20] kthread: Use kthread worker API more widely
+Date: Wed, 25 May 2016 16:42:04 -0400
+Message-ID: <CAOS58YP101zopOfTSUYNRN4Jk3Ts_47+DFXVam0KGbr8OtaF4g@mail.gmail.com>
+References: <1460646879-617-1-git-send-email-pmladek@suse.com>
+	<20160422183040.GW7822@mtj.duckdns.org>
+	<20160511105224.GE2749@pathway.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <20160525131948.GL1789@lahna.fi.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20160511105224.GE2749@pathway.suse.cz>
+Sender: owner-linux-mm@kvack.org
+To: Petr Mladek <pmladek@suse.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett <josh@joshtriplett.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@suse.de>, Michal Hocko <mhocko@suse.cz>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Vlastimil Babka <vbabka@suse.cz>, Linux API <linux-api@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-watchdog@vger.kernel.org, Corey Minyard <minyard@acm.org>, openipmi-developer@lists.sourceforge.net, Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock <hal.rosenstock@gmail.com>linux-
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, May 25, 2016 04:19:48 PM Mika Westerberg wrote:
-> On Wed, May 25, 2016 at 12:13:09AM +0300, Mika Westerberg wrote:
-> > On Tue, May 24, 2016 at 03:53:23PM +0300, Mika Westerberg wrote:
-> > > > I dropped "ACPI / hotplug / PCI: Runtime resume bridge before rescan"
-> > > > on the assumption that "PCI: Power on bridges before scanning new
-> > > > devices" is sufficient to cover both the ACPI and the generic PCi
-> > > > rescan cases, but I'd like some reassurance about that.
-> > > 
-> > > I agree with your reasoning that the patch should not be needed anymore.
-> > > However, I have the machine which needed that patch at home so I'm not
-> > > able to test it now. I'll do that later today when I get back home.
-> > 
-> > I tried now on my Lenovo Yoga 900 laptop and unfortunately "PCI: Power
-> > on bridges before scanning new devices" seems not to be enough. This
-> > machine has SD-card reader connected to one PCIe port and once I unload
-> > the sdhci-pci driver and enable runtime PM for the device, next system
-> > suspend/resume cycle loses the SD-card reader PCI device.
-> > 
-> > I will investigate more tomorrow -- it is getting late here.
-> 
-> I think I found reason for the issue.
-> 
-> When the laptop resumes it will send ACPI BUS_CHECK event for the two
-> PCIe root ports. This ends up in acpiphp_check_bridge() where it goes
-> through all slots in that bridge checking if the devices are still
-> present. This happens before we call pci_scan_bridge() for the bridge
-> itself.
-> 
-> Since the bridge is in D3 config space of the device behind it is not
-> available and we determine that the device is not there anymore.
-> 
-> It looks like we either need that ACPI hotplug patch or alternatively we
-> could add pm_runtime_get/put() in acpiphp_check_bridge().
+On Wed, May 11, 2016 at 6:52 AM, Petr Mladek <pmladek@suse.com> wrote:
+> Tejun, may I add your ack for some of the patches, please?
+> Or do you want to wait for the resend?
 
-Have you tried the latter?
+When you repost, I'll explicitly ack the patches.
+
+Thanks!
+
+-- 
+tejun
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
