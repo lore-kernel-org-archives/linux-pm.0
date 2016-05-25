@@ -1,89 +1,86 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [Nouveau] [PATCH 0/4] nouveau fixes for RPM/Optimus-related hangs
-Date: Wed, 25 May 2016 11:08:15 +0200
-Message-ID: <128b3153-9f27-fdff-084a-a792942e3eaf@redhat.com>
-References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] i2c: nomadik: move runtime suspend of hw to _noirq
+Date: Wed, 25 May 2016 12:09:20 +0200
+Message-ID: <CAPDyKFpvwQkqS9TRCj+JCOro-fdbkPKrXr6V7eEeSJLMah61Ng@mail.gmail.com>
+References: <1464008356-21162-1-git-send-email-linus.walleij@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:40629 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753088AbcEYJIW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 25 May 2016 05:08:22 -0400
-In-Reply-To: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1464008356-21162-1-git-send-email-linus.walleij@linaro.org>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Wu <peter@lekensteyn.nl>, nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org
-Cc: Dave Airlie <airlied@redhat.com>, linux-pm@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org
 
-Hi,
++ linux-pm, Rafael, Kevin
 
-On 25-05-16 00:52, Peter Wu wrote:
-> Hi,
->
-> Here are two patches to fix an issue reported on kernel bugzilla (infinite loop
-> due to unchecked function) and a more important fix to fix hanging Optimus
-> machines when runtime PM is enabled (with pm/pci patches).
->
-> An older (obsolete) patch for the first issue was tested by the reporter:
-> https://bugzilla.kernel.org/show_bug.cgi?id=104791#c11
-> (it is replaced by "check for function 0x1B before using it").
->
-> The second issue will occur when:
->  - A modern Optimus laptop is in use (designed for Windows 8 or newer).
->  - nouveau runtime PM is enabled (1 or the default -1).
->  - The patch "PCI: Add runtime PM support for PCIe ports" from Mika is pulled
->    into v4.7 (or v4.8[1]?) via the pci/pm branch,
->    https://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/commit/?h=pci/pm&id=8b71f5652eeac561acf883da01ab4810f763ee42
-> (see also the discussion for "[PATCH] PCI: Power on bridges before scanning new
-> devices" at http://article.gmane.org/gmane.linux.power-management.general/76411)
->
-> The first two patches are just refactoring to reduce code duplication (and
-> scratch an itch) and make the following patches possible. The next two patches
-> fix the problems reported above.
->
-> I intend to get these patches in 4.7 (or the first version where pci/pm gets
-> merged) to avoid a lockup when runpm is enabled. Note:
->  - If the fourth patch is merged before/without Mika's PCIe port patch, then
->    those modern Optimus machines above will not be put into D3cold.
->  - If the fourth patch is not merged (or merged after Mika's patch), then under
->    the above conditions the affected machine can lock up.
->  - The three other patches are unrelated to this issue and can safely be merged.
->
-> Tested with:
->  - Linux v4.6 + pci/pm + these four patches
->  - Hardware: Clevo P651RA with acpi_osi="!Windows 2015" (the latter is a
->    workaround for another PCIe issue).
->  - Card is asleep, woke up with lspci, waited a bit and retried/suspended:
->    - # lspci -xxxxnnvvvv >/dev/null; sleep 5
->    - # lspci -xxxxnnvvvv >/dev/null; sleep 5; systemctl suspend
->    - # lspci -xxxxnnvvvv >/dev/null; systemctl suspend
+On 23 May 2016 at 14:59, Linus Walleij <linus.walleij@linaro.org> wrote:
+> The runtime suspend of the hardware (declocking and pin control
+> resting) needs to happen in the *_noirq callbacks after all
+> hardware interrupts are disabled and we know there will be no
+> more I2C traffic in the system.
 
-Series looks good to me:
+As you need this change, it means some other device requires the I2C
+device to be runtime resumed, while a *_late callback tries to suspend
+the other device. Right!?
 
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Can you tell which these devices are?
 
-Regards,
+Moving the suspend operations to the *_noirq callbacks could improve
+the situation, but unfortunate it's comes with a limitation.
+That's because runtime PM has been disabled (by genpd or the PM core)
+before the *_late callbacks is invoked, which means the I2C device
+needs to be runtime resumed in an earlier phase to make it
+operational.
 
-Hans
+This is indeed a generic problem, as we don't have a way to describe
+these kind of dependences between devices. In other words, we need to
+control the order of how devices becomes suspended/resumed. If that
+could be done, we could likely avoid runtime resuming devices
+unnecessarily.
 
-
-
-
+Kind regards
+Uffe
 
 >
-> Kind regards,
-> Peter
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+> ---
+>  drivers/i2c/busses/i2c-nomadik.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 >
->  [1]: https://lkml.kernel.org/r/20160524211309.GH1789@lahna.fi.intel.com
+> diff --git a/drivers/i2c/busses/i2c-nomadik.c b/drivers/i2c/busses/i2c-nomadik.c
+> index bcd17e8cbcb4..c96a3e331bed 100644
+> --- a/drivers/i2c/busses/i2c-nomadik.c
+> +++ b/drivers/i2c/busses/i2c-nomadik.c
+> @@ -877,7 +877,7 @@ static irqreturn_t i2c_irq_handler(int irq, void *arg)
+>  }
 >
-> Peter Wu (4):
->   drm/nouveau/acpi: ensure matching ACPI handle and supported functions
->   drm/nouveau/acpi: return supported DSM functions
->   drm/nouveau/acpi: check for function 0x1B before using it
->   drm/nouveau/acpi: fix lockup with PCIe runtime PM
+>  #ifdef CONFIG_PM_SLEEP
+> -static int nmk_i2c_suspend_late(struct device *dev)
+> +static int nmk_i2c_suspend_noirq(struct device *dev)
+>  {
+>         int ret;
 >
->  drivers/gpu/drm/nouveau/nouveau_acpi.c | 100 +++++++++++++++++++++------------
->  1 file changed, 63 insertions(+), 37 deletions(-)
+> @@ -889,7 +889,7 @@ static int nmk_i2c_suspend_late(struct device *dev)
+>         return 0;
+>  }
+>
+> -static int nmk_i2c_resume_early(struct device *dev)
+> +static int nmk_i2c_resume_noirq(struct device *dev)
+>  {
+>         return pm_runtime_force_resume(dev);
+>  }
+> @@ -931,7 +931,8 @@ static int nmk_i2c_runtime_resume(struct device *dev)
+>  #endif
+>
+>  static const struct dev_pm_ops nmk_i2c_pm = {
+> -       SET_LATE_SYSTEM_SLEEP_PM_OPS(nmk_i2c_suspend_late, nmk_i2c_resume_early)
+> +       SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(nmk_i2c_suspend_noirq,
+> +                                     nmk_i2c_resume_noirq)
+>         SET_RUNTIME_PM_OPS(nmk_i2c_runtime_suspend,
+>                         nmk_i2c_runtime_resume,
+>                         NULL)
+> --
+> 2.4.11
 >
