@@ -1,50 +1,50 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: stats: Walk online CPUs with CPU offline/online locked
-Date: Wed, 25 May 2016 02:00:25 +0200
-Message-ID: <1494288.rDJLbL32aZ@vostro.rjw.lan>
-References: <19792191.esL3UuyORb@vostro.rjw.lan> <2500818.MtOb9b1ZsB@vostro.rjw.lan> <20160524121717.GY17585@vireshk-i7>
+Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
+Date: Wed, 25 May 2016 02:03:06 +0200
+Message-ID: <2974632.08s74OSxep@vostro.rjw.lan>
+References: <20160519231234.GB1785@al> <20160524125323.GE1789@lahna.fi.intel.com> <20160524211309.GH1789@lahna.fi.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160524121717.GY17585@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:43883 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754471AbcEXX70 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 May 2016 19:59:26 -0400
+In-Reply-To: <20160524211309.GH1789@lahna.fi.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 
-On Tuesday, May 24, 2016 05:47:17 PM Viresh Kumar wrote:
-> On 24-05-16, 14:13, Rafael J. Wysocki wrote:
-> > I don't really get it why you don't like get/put_online_cpus() so much.
+On Wednesday, May 25, 2016 12:13:09 AM Mika Westerberg wrote:
+> On Tue, May 24, 2016 at 03:53:23PM +0300, Mika Westerberg wrote:
+> > > I dropped "ACPI / hotplug / PCI: Runtime resume bridge before rescan"
+> > > on the assumption that "PCI: Power on bridges before scanning new
+> > > devices" is sufficient to cover both the ACPI and the generic PCi
+> > > rescan cases, but I'd like some reassurance about that.
+> > 
+> > I agree with your reasoning that the patch should not be needed anymore.
+> > However, I have the machine which needed that patch at home so I'm not
+> > able to test it now. I'll do that later today when I get back home.
 > 
-> Not that I don't like them, I just wanted to see if its possible to
-> work without any additional locking.
+> I tried now on my Lenovo Yoga 900 laptop and unfortunately "PCI: Power
+> on bridges before scanning new devices" seems not to be enough. This
+> machine has SD-card reader connected to one PCIe port and once I unload
+> the sdhci-pci driver and enable runtime PM for the device, next system
+> suspend/resume cycle loses the SD-card reader PCI device.
 > 
-> Anyway, so the first version of your patch did the get_online_cpus()
-> around a bigger section of the code instead of just the
-> for_each_online_cpu() loop. Should we change that?
+> I will investigate more tomorrow -- it is getting late here.
+> 
+> Anyway, maybe it is safer to postpone this series for v4.8 to give it
+> more testing time in -next.
 
-It did that, because locking around the loop alone wouldn't close the
-races I'm concerned about.
+Agreed.
 
-That said, those same races are possible when the cpufreq driver is
-loaded along with the cpufreq_stats module or is unloaded along with
-that module.  Again, if ether a CPU goes online or the cpufreq driver
-is loaded during cpufreq_stats_init(), the new CPU *or* a new policy
-may be missed by it.  Similarly, if either a CPU goes offline or
-the cpufreq driver is unloaded during cpufreq_stats_exit(), that
-CPU or a policy that has just gone away may be missed by it.
-
-The CPU "hotplug" locking is not sufficient to close the races related
-to the cpufreq driver load/unload, so an alternative approach is needed.
-IMO, however, changing the way the notifiers work is not the way to go
-here, because the problem is specific to the stats module.  Unless there
-are other users of the notifiers with the same problem, it should be
-addressed in the stats code.
-
-The stats code looks all pants to me now, TBH, and the way it uses notifiers
-(both policy notifiers and transition notifiers) is questionable at the very
-least.  It looks like it would just be better to redesign it from scratch.
+I don't see a compelling enough reason to rush these changes into 4.7
+and it looks like there are gaps in our understanding of the issues
+involved.
 
 Thanks,
 Rafael
+
