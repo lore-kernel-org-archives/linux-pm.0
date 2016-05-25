@@ -1,32 +1,64 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v6 00/20] kthread: Use kthread worker API more widely
-Date: Wed, 25 May 2016 16:42:04 -0400
-Message-ID: <CAOS58YP101zopOfTSUYNRN4Jk3Ts_47+DFXVam0KGbr8OtaF4g@mail.gmail.com>
-References: <1460646879-617-1-git-send-email-pmladek@suse.com>
-	<20160422183040.GW7822@mtj.duckdns.org>
-	<20160511105224.GE2749@pathway.suse.cz>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PCI: Wait for 50ms after bridge is powered up
+Date: Wed, 25 May 2016 22:44:14 +0200
+Message-ID: <CAJZ5v0gsgnPsMTMZFeZP5Y+bhjrwwm5qMk6JSPOssj_8HhLbSg@mail.gmail.com>
+References: <20160524162833.GA30762@localhost>
+	<1464188696-25782-1-git-send-email-mika.westerberg@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20160511105224.GE2749@pathway.suse.cz>
-Sender: owner-linux-mm@kvack.org
-To: Petr Mladek <pmladek@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett <josh@joshtriplett.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@suse.de>, Michal Hocko <mhocko@suse.cz>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Vlastimil Babka <vbabka@suse.cz>, Linux API <linux-api@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-watchdog@vger.kernel.org, Corey Minyard <minyard@acm.org>, openipmi-developer@lists.sourceforge.net, Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock <hal.rosenstock@gmail.com>linux-
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:36661 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751110AbcEYUoQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2016 16:44:16 -0400
+In-Reply-To: <1464188696-25782-1-git-send-email-mika.westerberg@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 
-On Wed, May 11, 2016 at 6:52 AM, Petr Mladek <pmladek@suse.com> wrote:
-> Tejun, may I add your ack for some of the patches, please?
-> Or do you want to wait for the resend?
+On Wed, May 25, 2016 at 5:04 PM, Mika Westerberg
+<mika.westerberg@linux.intel.com> wrote:
+> The PCI PM 1.2 specification requires minimum of 50ms before function on a
+> bus is accessed after the bus is transitioned from B2 to B0. Now that we
+> actually power down bridges we should make sure the specification is
+> followed accordingly.
+>
+> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-When you repost, I'll explicitly ack the patches.
+ACK
 
-Thanks!
-
--- 
-tejun
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> ---
+> Hi Bjorn,
+>
+> Since this is only needed when bridges are powered down, I think it makes
+> sense to put this to your pci/pm branch.
+>
+>  drivers/pci/pci.c | 7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index e785dc260e72..e645a3d4f2e0 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -2361,7 +2361,12 @@ void pci_pm_init(struct pci_dev *dev)
+>         }
+>
+>         dev->pm_cap = pm;
+> -       dev->d3_delay = PCI_PM_D3_WAIT;
+> +       /*
+> +        * PCI PM 1.2 specification requires minimum of 50ms before any
+> +        * function on the bus is accessed after the bus is transitioned
+> +        * from B2 to B0.
+> +        */
+> +       dev->d3_delay = pci_is_bridge(dev) ? PCI_PM_BUS_WAIT : PCI_PM_D3_WAIT;
+>         dev->d3cold_delay = PCI_PM_D3COLD_WAIT;
+>         dev->bridge_d3 = pci_bridge_d3_possible(dev);
+>         dev->d3cold_allowed = true;
+> --
+> 2.8.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
