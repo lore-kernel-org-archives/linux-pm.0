@@ -1,101 +1,147 @@
-From: Linda Knippers <linda.knippers@hpe.com>
-Subject: Re: Enforce _PPC limits
-Date: Wed, 25 May 2016 12:36:04 -0400
-Message-ID: <cef22f9e-d60e-2065-e8a6-74c43e9b78f7@hpe.com>
-References: <21572dff-ea5d-c0f3-6f48-66c9d38eda65@hpe.com>
- <1464127905.4603.11.camel@linux.intel.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v3 1/5] thermal: Add support for hardware-tracked trip
+ points
+Date: Wed, 25 May 2016 17:42:58 +0100
+Message-ID: <20160525164258.GA11807@e104805>
+References: <1464148069-26254-1-git-send-email-wxt@rock-chips.com>
+ <1464148069-26254-2-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from g2t4622.austin.hp.com ([15.73.212.79]:53879 "EHLO
-	g2t4622.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755294AbcEYQgH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2016 12:36:07 -0400
-In-Reply-To: <1464127905.4603.11.camel@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1464148069-26254-2-git-send-email-wxt@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, cf@rock-chips.com, huangtao@rock-chips.com, dmitry.torokhov@gmail.com, peter@piie.net, Sascha Hauer <s.hauer@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Jonathan Corbet <corbet@lwn.net>, Laxman Dewangan <ldewangan@nvidia.com>, Leo Yan <leo.yan@linaro.org>, Ni Wade <wni@nvidia.com>, Andy Champ <andycham@amazon.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Srinivas,
+Hi Caesar,
 
-On 5/24/2016 6:11 PM, Srinivas Pandruvada wrote:
-> Hi Linda,
+On Wed, May 25, 2016 at 11:47:45AM +0800, Caesar Wang wrote:
+> From: Sascha Hauer <s.hauer@pengutronix.de>
 > 
-> On Tue, 2016-05-24 at 16:37 -0400, Linda Knippers wrote:
->> Hi Srinivas,
->>
->> I have a couple of questions about this patch set.
->> http://comments.gmane.org/gmane.linux.power-management.general/75263
->>
->> Sorry I'm a bit late to the party but I've just booted 4.6 on my
->> system and noticed some things.
->>
->> My first question is about enabling the feature by default on
->> enterprise and performance servers.  Is there any way to disable it on these
->> servers?  I didn't see a way.  I'm always nervous when something starts looking
->> at a table that perhaps wasn't used before or introduces a new behavior
->> that might be unexpected.  Having a way out or not making it the default
->> for a while would be nice.
-
-> If you were using acpi-cpufreq ever , this would have been active
-> anyway.
-
-In that case we're probably ok with the tables.
-
-> This was requested by some server vendors to turn on by default as they
-> want to be able to use node manager to control and don't want to have
-> any kernel command line addition.
-
-I can understand the desire to avoid more knobs.
-
-> Don't you want to be able to use _PPC to control. If you don't use _PPC
-> then this will not be effective.
-> You can turn off from kernel command line processor.ignore_ppc=1
-
-I guess I've lost track of what intel_pstate is doing these days.  When it
-first came out, it totally disregarded ACPI information, which is why code
-was added to not load the driver on some platforms that are doing their
-own power management.  The rationale for not using ACPI was that ACPI
-couldn't express all the information necessary to describe the hardware
-capabilities.
-
-Now it is using ACPI information for some things, but not all things?
-Perhaps intel_pstate.txt could be updated to clarify that?  Depending
-on what the future is for intel_pstate and ACPI, I'm wondering if that
-vendor-specific code is no longer needed.
-
-This might be a nit but I'm also confused about whether it's really
-enforcing _PPC limits or _PSS.  Are you actually limiting based on
-the _PPC value?
-
->>
->> My second question is about the 48 instances I got of this when I
->> booted my
->> 2 socket, 48-CPU box:
->>
->>> intel_pstate: _PPC limits will be enforced
->> I suppose in theory I could have limits for some CPUs and not others
->> but
->> even in that case, the message isn't helpful.  I think it should be
->> made
->> useful or go away, or at least only be printed once.
->>
-> Agree, I will downgrade the message to pr_debug.
-
-Thanks.
-
--- ljk
+> This adds support for hardware-tracked trip points to the device tree
+> thermal sensor framework.
 > 
-> Thanks,
-> Srinivas
->>  
->> Thanks,
->>
->> -- ljk
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm"
->> in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> The framework supports an arbitrary number of trip points. Whenever
+> the current temperature is updated, the trip points immediately
+> below and above the current temperature are found. A .set_trips
+> callback is then called with the temperatures. If there is no trip
+> point above or below the current temperature, the passed trip
+> temperature will be -INT_MAX or INT_MAX respectively. In this callback,
+> the driver should program the hardware such that it is notified
+> when either of these trip points are triggered. When a trip point
+> is triggered, the driver should call `thermal_zone_device_update'
+> for the respective thermal zone. This will cause the trip points
+> to be updated again.
+> 
+> If .set_trips is not implemented, the framework behaves as before.
+> 
+> This patch is based on an earlier version from Mikko Perttunen
+> <mikko.perttunen@kapsi.fi>
+> 
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: linux-pm@vger.kernel.org
+> 
+> ---
+> 
+> Changes in v3:
+> - as Javi comments on https://patchwork.kernel.org/patch/9001281/.
+> - add the lock for preventing the called from multi placce
+> - add the note for pre_low/high_trip.
+> 
+> Changes in v2:
+> - update the sysfs-api.txt for set_trips.
+> 
+>  Documentation/thermal/sysfs-api.txt |  7 +++++
+>  drivers/thermal/thermal_core.c      | 52 +++++++++++++++++++++++++++++++++++++
+>  include/linux/thermal.h             |  7 +++++
+>  3 files changed, 66 insertions(+)
+> 
+> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+> index efc3f3d..75d8838 100644
+> --- a/Documentation/thermal/sysfs-api.txt
+> +++ b/Documentation/thermal/sysfs-api.txt
+> @@ -49,6 +49,9 @@ temperature) and throttle appropriate devices.
+>  	.bind: bind the thermal zone device with a thermal cooling device.
+>  	.unbind: unbind the thermal zone device with a thermal cooling device.
+>  	.get_temp: get the current temperature of the thermal zone.
+> +	.set_trips: set the trip points window. Whenever the current temperature
+> +		    is updated, the trip points immediately below and above the
+> +		    current temperature are found.
+>  	.get_mode: get the current mode (enabled/disabled) of the thermal zone.
+>  	    - "enabled" means the kernel thermal management is enabled.
+>  	    - "disabled" will prevent kernel thermal driver action upon trip points
+> @@ -95,6 +98,10 @@ temperature) and throttle appropriate devices.
+>  			get_temp:	a pointer to a function that reads the
+>  					sensor temperature. This is mandatory
+>  					callback provided by sensor driver.
+> +			set_trips:      a pointer to a function that sets a
+> +					temperature window. When this window is
+> +					left the driver must inform the thermal
+> +					core via thermal_zone_device_update.
+>  			get_trend: 	a pointer to a function that reads the
+>  					sensor temperature trend.
+>  			set_emul_temp:	a pointer to a function that sets
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 5133cd1..e5bfbd3 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -520,6 +520,51 @@ exit:
+>  }
+>  EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
+>  
+> +static void thermal_zone_set_trips(struct thermal_zone_device *tz)
+> +{
+> +	int low = -INT_MAX;
+> +	int high = INT_MAX;
+> +	int trip_temp, hysteresis;
+> +	int temp = tz->temperature;
+> +	int i, ret;
+> +
+> +	if (!tz->ops->set_trips)
+> +		return;
+> +
+> +	for (i = 0; i < tz->trips; i++) {
+> +		int trip_low;
+> +
+> +		tz->ops->get_trip_temp(tz, i, &trip_temp);
+> +		tz->ops->get_trip_hyst(tz, i, &hysteresis);
+> +
+> +		trip_low = trip_temp - hysteresis;
+> +
+> +		if (trip_low < temp && trip_low > low)
+> +			low = trip_low;
+> +
+> +		if (trip_temp > temp && trip_temp < high)
+> +			high = trip_temp;
+> +	}
+> +
+> +	/* No need to change trip points */
+> +	if (tz->prev_low_trip == low && tz->prev_high_trip == high)
+> +		return;
+> +
+> +	tz->prev_low_trip = low;
+> +	tz->prev_high_trip = high;
+> +
+> +	dev_dbg(&tz->device, "new temperature boundaries: %d < x < %d\n",
+> +			low, high);
+> +
+> +	/*
+> +	 * Set a temperature window. When this window is left the driver
+> +	 * must inform the thermal core via thermal_zone_device_update.
+> +	 */
+> +	ret = tz->ops->set_trips(tz, low, high);
+> +	if (ret)
+> +		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
+
+In the v2 review
+(http://article.gmane.org/gmane.linux.documentation/38442) you agreed
+to add locking but you haven't done it.  Maybe you sent the wrong
+version?
+
+Cheers,
+Javi
