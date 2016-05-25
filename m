@@ -1,65 +1,57 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] i2c: nomadik: move runtime suspend of hw to _noirq
-Date: Wed, 25 May 2016 14:53:51 +0200
-Message-ID: <CACRpkdbFvRKpzY82qWpt6CNLEe8GfgaSOJPaebaanOWbT7mC9Q@mail.gmail.com>
-References: <1464008356-21162-1-git-send-email-linus.walleij@linaro.org>
-	<CAPDyKFpvwQkqS9TRCj+JCOro-fdbkPKrXr6V7eEeSJLMah61Ng@mail.gmail.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
+Date: Wed, 25 May 2016 16:19:48 +0300
+Message-ID: <20160525131948.GL1789@lahna.fi.intel.com>
+References: <20160519231234.GB1785@al>
+ <1463991648-85051-1-git-send-email-mika.westerberg@linux.intel.com>
+ <20160523200042.GB24375@localhost>
+ <20160523215015.GA31479@localhost>
+ <20160524122357.GA20453@localhost>
+ <20160524125323.GE1789@lahna.fi.intel.com>
+ <20160524211309.GH1789@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:33022 "EHLO
-	mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752644AbcEYMxw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2016 08:53:52 -0400
-Received: by mail-oi0-f46.google.com with SMTP id k23so76374882oih.0
-        for <linux-pm@vger.kernel.org>; Wed, 25 May 2016 05:53:52 -0700 (PDT)
-In-Reply-To: <CAPDyKFpvwQkqS9TRCj+JCOro-fdbkPKrXr6V7eEeSJLMah61Ng@mail.gmail.com>
+Received: from mga11.intel.com ([192.55.52.93]:41622 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752057AbcEYNTy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 May 2016 09:19:54 -0400
+Content-Disposition: inline
+In-Reply-To: <20160524211309.GH1789@lahna.fi.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 
-On Wed, May 25, 2016 at 12:09 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 23 May 2016 at 14:59, Linus Walleij <linus.walleij@linaro.org> wrote:
->> The runtime suspend of the hardware (declocking and pin control
->> resting) needs to happen in the *_noirq callbacks after all
->> hardware interrupts are disabled and we know there will be no
->> more I2C traffic in the system.
->
-> As you need this change, it means some other device requires the I2C
-> device to be runtime resumed, while a *_late callback tries to suspend
-> the other device. Right!?
+On Wed, May 25, 2016 at 12:13:09AM +0300, Mika Westerberg wrote:
+> On Tue, May 24, 2016 at 03:53:23PM +0300, Mika Westerberg wrote:
+> > > I dropped "ACPI / hotplug / PCI: Runtime resume bridge before rescan"
+> > > on the assumption that "PCI: Power on bridges before scanning new
+> > > devices" is sufficient to cover both the ACPI and the generic PCi
+> > > rescan cases, but I'd like some reassurance about that.
+> > 
+> > I agree with your reasoning that the patch should not be needed anymore.
+> > However, I have the machine which needed that patch at home so I'm not
+> > able to test it now. I'll do that later today when I get back home.
+> 
+> I tried now on my Lenovo Yoga 900 laptop and unfortunately "PCI: Power
+> on bridges before scanning new devices" seems not to be enough. This
+> machine has SD-card reader connected to one PCIe port and once I unload
+> the sdhci-pci driver and enable runtime PM for the device, next system
+> suspend/resume cycle loses the SD-card reader PCI device.
+> 
+> I will investigate more tomorrow -- it is getting late here.
 
-Yep.
+I think I found reason for the issue.
 
-> Can you tell which these devices are?
+When the laptop resumes it will send ACPI BUS_CHECK event for the two
+PCIe root ports. This ends up in acpiphp_check_bridge() where it goes
+through all slots in that bridge checking if the devices are still
+present. This happens before we call pci_scan_bridge() for the bridge
+itself.
 
-Those I have seen colliding in suspend/resume cycles:
-drivers/leds/leds-lp5521.c
-drivers/iio/light/bh1780.c
-(note that I have fixes pending for the bh1780 driver)
+Since the bridge is in D3 config space of the device behind it is not
+available and we determine that the device is not there anymore.
 
-> Moving the suspend operations to the *_noirq callbacks could improve
-> the situation, but unfortunate it's comes with a limitation.
-> That's because runtime PM has been disabled (by genpd or the PM core)
-> before the *_late callbacks is invoked, which means the I2C device
-> needs to be runtime resumed in an earlier phase to make it
-> operational.
-
-Hm uncertain what you mean here, but happy to test.
-The macro SET_NOIRQ_SYSTEM_SLEEP_PM_OPS makes
-you think the hooks should be paired up and has this nice
-symmetry, do you mean I should not do this but keep
-the resume hook where SET_LATE_SYSTEM_SLEEP_PM_OPS()
-puts it?
-
-> This is indeed a generic problem, as we don't have a way to describe
-> these kind of dependences between devices. In other words, we need to
-> control the order of how devices becomes suspended/resumed. If that
-> could be done, we could likely avoid runtime resuming devices
-> unnecessarily.
-
-Correct, keep me in the loop and I can test some patches.
-
-Yours,
-Linus Walleij
+It looks like we either need that ACPI hotplug patch or alternatively we
+could add pm_runtime_get/put() in acpiphp_check_bridge().
