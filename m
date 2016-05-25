@@ -1,86 +1,78 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] i2c: nomadik: move runtime suspend of hw to _noirq
-Date: Wed, 25 May 2016 12:09:20 +0200
-Message-ID: <CAPDyKFpvwQkqS9TRCj+JCOro-fdbkPKrXr6V7eEeSJLMah61Ng@mail.gmail.com>
-References: <1464008356-21162-1-git-send-email-linus.walleij@linaro.org>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
+Date: Wed, 25 May 2016 14:16:26 +0200
+Message-ID: <20160525121626.GA6339@wunner.de>
+References: <20160519231234.GB1785@al>
+ <1463991648-85051-1-git-send-email-mika.westerberg@linux.intel.com>
+ <20160523200042.GB24375@localhost>
+ <20160523215015.GA31479@localhost>
+ <20160524122357.GA20453@localhost>
+ <20160524125323.GE1789@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1464008356-21162-1-git-send-email-linus.walleij@linaro.org>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:42143 "EHLO
+	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751015AbcEYMNC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2016 08:13:02 -0400
+Content-Disposition: inline
+In-Reply-To: <20160524125323.GE1789@lahna.fi.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 
-+ linux-pm, Rafael, Kevin
+Hi Mika,
 
-On 23 May 2016 at 14:59, Linus Walleij <linus.walleij@linaro.org> wrote:
-> The runtime suspend of the hardware (declocking and pin control
-> resting) needs to happen in the *_noirq callbacks after all
-> hardware interrupts are disabled and we know there will be no
-> more I2C traffic in the system.
+On Tue, May 24, 2016 at 03:53:23PM +0300, Mika Westerberg wrote:
+> One thing I noticed, though. When a bridge is transitioned to D0 we only
+> wait for 10ms which is requirement for PCI functions. However, PCI PM
+> specification 1.2 (chapter 4.2) requires that for buses to transition
+> from B2 to B0 we need to wait minimum of 50ms before accessing a
+> function on that bus.
+> 
+> We even have PCI_PM_BUS_WAIT defined in include/linux/pci.h but it is
+> not used anywhere. Maybe it was not needed originally because we never
+> powered down bridges anyway but now when we do, I think it is good idea
+> to do what the spec requires.
 
-As you need this change, it means some other device requires the I2C
-device to be runtime resumed, while a *_late callback tries to suspend
-the other device. Right!?
+The macro was introduced with
 
-Can you tell which these devices are?
+    commit aa8c6c93747f7b55fa11e1624fec8ca33763a805
+    Author: Rafael J. Wysocki <rjw@sisk.pl>
+    Date:   Fri Jan 16 21:54:43 2009 +0100
+    PCI PM: Restore standard config registers of all devices early
 
-Moving the suspend operations to the *_noirq callbacks could improve
-the situation, but unfortunate it's comes with a limitation.
-That's because runtime PM has been disabled (by genpd or the PM core)
-before the *_late callbacks is invoked, which means the I2C device
-needs to be runtime resumed in an earlier phase to make it
-operational.
+but the only usage of it was removed with
 
-This is indeed a generic problem, as we don't have a way to describe
-these kind of dependences between devices. In other words, we need to
-control the order of how devices becomes suspended/resumed. If that
-could be done, we could likely avoid runtime resuming devices
-unnecessarily.
+    commit 476e7faefc43f106a90b5c96166c59b75de19d30
+    Author: Rafael J. Wysocki <rjw@sisk.pl>
+    Date:   Thu Jan 22 23:39:57 2009 +0100
+    PCI PM: Do not wait for buses in B2 or B3 during resume
 
-Kind regards
-Uffe
+Best regards,
+
+Lukas
 
 >
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
->  drivers/i2c/busses/i2c-nomadik.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/i2c/busses/i2c-nomadik.c b/drivers/i2c/busses/i2c-nomadik.c
-> index bcd17e8cbcb4..c96a3e331bed 100644
-> --- a/drivers/i2c/busses/i2c-nomadik.c
-> +++ b/drivers/i2c/busses/i2c-nomadik.c
-> @@ -877,7 +877,7 @@ static irqreturn_t i2c_irq_handler(int irq, void *arg)
->  }
->
->  #ifdef CONFIG_PM_SLEEP
-> -static int nmk_i2c_suspend_late(struct device *dev)
-> +static int nmk_i2c_suspend_noirq(struct device *dev)
->  {
->         int ret;
->
-> @@ -889,7 +889,7 @@ static int nmk_i2c_suspend_late(struct device *dev)
->         return 0;
->  }
->
-> -static int nmk_i2c_resume_early(struct device *dev)
-> +static int nmk_i2c_resume_noirq(struct device *dev)
->  {
->         return pm_runtime_force_resume(dev);
->  }
-> @@ -931,7 +931,8 @@ static int nmk_i2c_runtime_resume(struct device *dev)
->  #endif
->
->  static const struct dev_pm_ops nmk_i2c_pm = {
-> -       SET_LATE_SYSTEM_SLEEP_PM_OPS(nmk_i2c_suspend_late, nmk_i2c_resume_early)
-> +       SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(nmk_i2c_suspend_noirq,
-> +                                     nmk_i2c_resume_noirq)
->         SET_RUNTIME_PM_OPS(nmk_i2c_runtime_suspend,
->                         nmk_i2c_runtime_resume,
->                         NULL)
-> --
-> 2.4.11
->
+> What do you think? We could add a separate patch doing something like
+> below to make sure the spec is followed.
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index e785dc260e72..b3b794caa380 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -2361,7 +2361,12 @@ void pci_pm_init(struct pci_dev *dev)
+>  	}
+>  
+>  	dev->pm_cap = pm;
+> -	dev->d3_delay = PCI_PM_D3_WAIT;
+> +	/*
+> +	 * PCI PM 1.2 specification requires minimum of 50ms before any
+> +	 * function on the bus is accessed after the bus is transitioned
+> +	 * from B2 to B0.
+> +	 */
+> +	dev->d3_delay = pci_is_bridge(dev) ? PCI_PM_BUS_WAIT : PCI_PM_D3_WAIT;
+>  	dev->d3cold_delay = PCI_PM_D3COLD_WAIT;
+>  	dev->bridge_d3 = pci_bridge_d3_possible(dev);
+>  	dev->d3cold_allowed = true;
