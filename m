@@ -1,52 +1,72 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH] PCI: Wait for 50ms after bridge is powered up
-Date: Wed, 25 May 2016 18:04:56 +0300
-Message-ID: <1464188696-25782-1-git-send-email-mika.westerberg@linux.intel.com>
-References: <20160524162833.GA30762@localhost>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [patch] PM / devfreq: exynos-nocp: Checking for IS_ERR instead
+ of NULL
+Date: Wed, 25 May 2016 17:11:33 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1605251710500.3644@hadrien>
+References: <20160518103707.GA9436@mwanda> <57459BD4.1030201@samsung.com>
+Mime-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-158073515-1464189096=:3644"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:20164 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753537AbcEYPFJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 25 May 2016 11:05:09 -0400
-In-Reply-To: <20160524162833.GA30762@localhost>
+Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:32187
+	"EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752375AbcEYPLi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2016 11:11:38 -0400
+In-Reply-To: <57459BD4.1030201@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Dan Carpenter <dan.carpenter@oracle.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-The PCI PM 1.2 specification requires minimum of 50ms before function on a
-bus is accessed after the bus is transitioned from B2 to B0. Now that we
-actually power down bridges we should make sure the specification is
-followed accordingly.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
----
-Hi Bjorn,
+--8323329-158073515-1464189096=:3644
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-Since this is only needed when bridges are powered down, I think it makes
-sense to put this to your pci/pm branch.
 
- drivers/pci/pci.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index e785dc260e72..e645a3d4f2e0 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -2361,7 +2361,12 @@ void pci_pm_init(struct pci_dev *dev)
- 	}
- 
- 	dev->pm_cap = pm;
--	dev->d3_delay = PCI_PM_D3_WAIT;
-+	/*
-+	 * PCI PM 1.2 specification requires minimum of 50ms before any
-+	 * function on the bus is accessed after the bus is transitioned
-+	 * from B2 to B0.
-+	 */
-+	dev->d3_delay = pci_is_bridge(dev) ? PCI_PM_BUS_WAIT : PCI_PM_D3_WAIT;
- 	dev->d3cold_delay = PCI_PM_D3COLD_WAIT;
- 	dev->bridge_d3 = pci_bridge_d3_possible(dev);
- 	dev->d3cold_allowed = true;
--- 
-2.8.1
+On Wed, 25 May 2016, Chanwoo Choi wrote:
 
+> On 2016년 05월 18일 19:37, Dan Carpenter wrote:
+> > The platform_get_resource() function returns NULL on error, it never
+> > returns error pointers.
+> >
+> > Fixes: 0179a913875a ('PM / devfreq: event: Add new Exynos NoC probe driver')
+> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> >
+> > diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
+> > index 6b6a5f3..03b35d5 100644
+> > --- a/drivers/devfreq/event/exynos-nocp.c
+> > +++ b/drivers/devfreq/event/exynos-nocp.c
+> > @@ -220,8 +220,8 @@ static int exynos_nocp_parse_dt(struct platform_device *pdev,
+> >
+> >  	/* Maps the memory mapped IO to control nocp register */
+> >  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > -	if (IS_ERR(res))
+> > -		return PTR_ERR(res);
+> > +	if (!res)
+> > +		return -ENXIO;
+> >
+> >  	base = devm_ioremap_resource(dev, res);
+> >  	if (IS_ERR(base))
+>
+> Looks good to me.
+
+I believe that there is no need for the test at all.
+devm_ioremap_resource should make the test.
+
+julia
+
+>
+> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>
+> Thanks,
+> Chanwoo Choi
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+--8323329-158073515-1464189096=:3644--
