@@ -1,63 +1,40 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
-Date: Wed, 25 May 2016 16:25:30 +0300
-Message-ID: <20160525132530.GM1789@lahna.fi.intel.com>
-References: <20160519231234.GB1785@al>
- <1463991648-85051-1-git-send-email-mika.westerberg@linux.intel.com>
- <20160523200042.GB24375@localhost>
- <20160523215015.GA31479@localhost>
- <20160524122357.GA20453@localhost>
- <20160524125323.GE1789@lahna.fi.intel.com>
- <20160525121626.GA6339@wunner.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Peter Robinson <pbrobinson@gmail.com>
+Subject: [PATCH v2] thermal: imx: depend on imx SoC arch
+Date: Wed, 25 May 2016 14:45:50 +0100
+Message-ID: <1464183950-7035-1-git-send-email-pbrobinson@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:12489 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751305AbcEYN0F (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 25 May 2016 09:26:05 -0400
-Content-Disposition: inline
-In-Reply-To: <20160525121626.GA6339@wunner.de>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:33585 "EHLO
+	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753039AbcEYNqC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2016 09:46:02 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Peter Robinson <pbrobinson@gmail.com>
 
-On Wed, May 25, 2016 at 02:16:26PM +0200, Lukas Wunner wrote:
-> Hi Mika,
-> 
-> On Tue, May 24, 2016 at 03:53:23PM +0300, Mika Westerberg wrote:
-> > One thing I noticed, though. When a bridge is transitioned to D0 we only
-> > wait for 10ms which is requirement for PCI functions. However, PCI PM
-> > specification 1.2 (chapter 4.2) requires that for buses to transition
-> > from B2 to B0 we need to wait minimum of 50ms before accessing a
-> > function on that bus.
-> > 
-> > We even have PCI_PM_BUS_WAIT defined in include/linux/pci.h but it is
-> > not used anywhere. Maybe it was not needed originally because we never
-> > powered down bridges anyway but now when we do, I think it is good idea
-> > to do what the spec requires.
-> 
-> The macro was introduced with
-> 
->     commit aa8c6c93747f7b55fa11e1624fec8ca33763a805
->     Author: Rafael J. Wysocki <rjw@sisk.pl>
->     Date:   Fri Jan 16 21:54:43 2009 +0100
->     PCI PM: Restore standard config registers of all devices early
-> 
-> but the only usage of it was removed with
-> 
->     commit 476e7faefc43f106a90b5c96166c59b75de19d30
->     Author: Rafael J. Wysocki <rjw@sisk.pl>
->     Date:   Thu Jan 22 23:39:57 2009 +0100
->     PCI PM: Do not wait for buses in B2 or B3 during resume
-> 
+Not much use unless the SoC is selected so depend on the ARCH_MXC
+and COMPILE_TEST like all the other thermal drivers.
 
-Thanks for looking that up.
+v2: drop extraneous OF
 
-If I understand correctly it was removed because we do not expect BIOS
-to put buses to B2/B3 so we do not need to wait the extra 50ms before
-accessing the device.
+Signed-off-by: Peter Robinson <pbrobinson@gmail.com>
+---
+ drivers/thermal/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-However, now that we do that in the OS (and also during runtime), I
-think we need to take that into account again.
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 3c3dc4a..d297338 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -186,7 +186,7 @@ config HISI_THERMAL
+ 
+ config IMX_THERMAL
+ 	tristate "Temperature sensor driver for Freescale i.MX SoCs"
+-	depends on CPU_THERMAL
++	depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
+ 	depends on MFD_SYSCON
+ 	depends on OF
+ 	help
+-- 
+2.7.4
+
