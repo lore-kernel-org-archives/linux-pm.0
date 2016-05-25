@@ -1,64 +1,78 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PCI: Wait for 50ms after bridge is powered up
-Date: Wed, 25 May 2016 22:44:14 +0200
-Message-ID: <CAJZ5v0gsgnPsMTMZFeZP5Y+bhjrwwm5qMk6JSPOssj_8HhLbSg@mail.gmail.com>
-References: <20160524162833.GA30762@localhost>
-	<1464188696-25782-1-git-send-email-mika.westerberg@linux.intel.com>
+Subject: [GIT PULL] More power management updates for v4.7-rc1
+Date: Wed, 25 May 2016 22:49:21 +0200
+Message-ID: <CAJZ5v0h93mB2fKdRmp3eSMq-QhcJzJaQNcoJvBcYp4N4BVQ5FQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:36661 "EHLO
-	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbcEYUoQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2016 16:44:16 -0400
-In-Reply-To: <1464188696-25782-1-git-send-email-mika.westerberg@linux.intel.com>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:33654 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbcEYUtX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 May 2016 16:49:23 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, May 25, 2016 at 5:04 PM, Mika Westerberg
-<mika.westerberg@linux.intel.com> wrote:
-> The PCI PM 1.2 specification requires minimum of 50ms before function on a
-> bus is accessed after the bus is transitioned from B2 to B0. Now that we
-> actually power down bridges we should make sure the specification is
-> followed accordingly.
->
-> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Hi Linus,
 
-ACK
+Please pull from
 
-> ---
-> Hi Bjorn,
->
-> Since this is only needed when bridges are powered down, I think it makes
-> sense to put this to your pci/pm branch.
->
->  drivers/pci/pci.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index e785dc260e72..e645a3d4f2e0 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -2361,7 +2361,12 @@ void pci_pm_init(struct pci_dev *dev)
->         }
->
->         dev->pm_cap = pm;
-> -       dev->d3_delay = PCI_PM_D3_WAIT;
-> +       /*
-> +        * PCI PM 1.2 specification requires minimum of 50ms before any
-> +        * function on the bus is accessed after the bus is transitioned
-> +        * from B2 to B0.
-> +        */
-> +       dev->d3_delay = pci_is_bridge(dev) ? PCI_PM_BUS_WAIT : PCI_PM_D3_WAIT;
->         dev->d3cold_delay = PCI_PM_D3COLD_WAIT;
->         dev->bridge_d3 = pci_bridge_d3_possible(dev);
->         dev->d3cold_allowed = true;
-> --
-> 2.8.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.7-rc1-more
+
+to receive more power management updates for v4.7-rc1 with top-most
+commit 4c2628cd7580bc4f4a4994925cf366185ecc37a5
+
+ Merge branches 'pm-cpufreq', 'pm-cpuidle' and 'pm-core'
+
+on top of commit d57d39431924d1628ac9b93a2de7f806fc80680a
+
+ Merge tag 'pm-4.7-rc1' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+
+These are two stable-candidate fixes (PM core, cpuidle) and a bunch
+of cpufreq cleanups.
+
+Specifics:
+
+ - Stable-candidate cpuidle fix to make it check the right variable
+   when deciding whether or not to enable interrupts on the local CPU
+   so as to avoid enabling iterrupts too early in some cases if the
+   system has both coupled and per-core idle states (Daniel Lezcano).
+
+ - Stable-candidate PM core fix to make it handle failures at the
+   "late suspend" stage of device suspend consistently for all
+   devices regardless of whether or not async suspend/resume is
+   enabled for them (Rafael Wysocki).
+
+ - Cleanups in the cpufreq core, the schedutil governor and the
+   intel_pstate driver (Rafael Wysocki, Pankaj Gupta, Viresh Kumar).
+
+Thanks!
+
+---------------
+
+Daniel Lezcano (1):
+      cpuidle: Fix cpuidle_state_is_coupled() argument in cpuidle_enter()
+
+Pankaj Gupta (1):
+      cpufreq: simplified goto out in cpufreq_register_driver()
+
+Rafael J. Wysocki (4):
+      intel_pstate: Simplify conditional in intel_pstate_set_policy()
+      cpufreq: governor: CPUFREQ_GOV_POLICY_EXIT never fails
+      cpufreq: governor: CPUFREQ_GOV_STOP never fails
+      PM / sleep: Handle failures in device_suspend_late() consistently
+
+Viresh Kumar (1):
+      cpufreq: schedutil: Improve prints messages with pr_fmt
+
+---------------
+
+ drivers/base/power/main.c        |  5 ++-
+ drivers/cpufreq/cpufreq.c        | 84 +++++++++++++---------------------------
+ drivers/cpufreq/intel_pstate.c   | 11 +++---
+ drivers/cpuidle/cpuidle.c        |  2 +-
+ kernel/sched/cpufreq_schedutil.c |  4 +-
+ 5 files changed, 39 insertions(+), 67 deletions(-)
