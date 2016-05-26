@@ -1,44 +1,52 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [patch v2] PM / devfreq: exynos-nocp: Remove incorrect IS_ERR()
- check
-Date: Thu, 26 May 2016 20:01:01 +0900
-Message-ID: <5746D76D.9060802@samsung.com>
-References: <CGME20160526064612epcas1p4cb0d45fa11deafea51fa84974132afed@epcas1p4.samsung.com>
- <20160526064541.GA6680@mwanda> <5746AFE3.6030606@samsung.com>
- <20160526100238.GN11011@mwanda> <5746CCE3.5010701@samsung.com>
- <20160526105135.GC10957@mwanda> <5746D6A8.2030400@samsung.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] PCI: Wait for 50ms after bridge is powered up
+Date: Thu, 26 May 2016 14:03:08 +0300
+Message-ID: <20160526110308.GX1789@lahna.fi.intel.com>
+References: <20160524162833.GA30762@localhost>
+ <1464188696-25782-1-git-send-email-mika.westerberg@linux.intel.com>
+ <20160526101006.GA6744@wunner.de>
+ <20160526102520.GV1789@lahna.fi.intel.com>
+ <20160526104557.GA6816@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:38656 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbcEZLBE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2016 07:01:04 -0400
-In-reply-to: <5746D6A8.2030400@samsung.com>
+Received: from mga02.intel.com ([134.134.136.20]:5496 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753354AbcEZLDN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 26 May 2016 07:03:13 -0400
+Content-Disposition: inline
+In-Reply-To: <20160526104557.GA6816@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Julia Lawall <julia.lawall@lip6.fr>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>, Andreas Noever <andreas.noever@gmail.com>
 
-On 2016=EB=85=84 05=EC=9B=94 26=EC=9D=BC 19:57, Chanwoo Choi wrote:
-> On 2016=EB=85=84 05=EC=9B=94 26=EC=9D=BC 19:51, Dan Carpenter wrote:
->> Signed-off-by is like signing a legal document to say that you haven=
-'t
->> stolen any of the code from SCO Unix.  Please don't put sign for oth=
-er
->> people.
->=20
-> You're right. I'm forcing to put the Sign-off. It is just example.
->=20
-> But, I still think that patch description including the engineer's na=
-me is not appropriate
-> to give the credit someone.
->=20
+On Thu, May 26, 2016 at 12:45:57PM +0200, Lukas Wunner wrote:
+> > The PCI PM specification version 1.2 says this in chapter 4.2 (page 37):
+> > 
+> >   There is a minimum time requirement of 50 ms which must be provided by
+> >   system software between when the bus is switched from B2 to B0 and
+> >   when a function on the bus is accessed to allow time for the clock to
+> >   start up and the bus to settle.
+> 
+> But why do we wait 50 ms when *suspending*, i.e. going from B0 to B2?
 
-Also, If Julia review this patch, you just can add the reviewed-by tag.
-I think that it is enough.
+I guess because PCI requires delays of 10ms for both directions D0 <->
+D3hot (see pci_raw_set_power_state()).
 
-Thanks,
-Chanwoo Choi
+> (Assuming B2 is the state when the bridge goes to D3hot, which I'm not
+> sure of. The spec says that the bus state may optionally be B3 if the
+> bridge is in D3hot.)
 
+B3 is the state where the bus goes when it's power is removed so I would
+expect that to require also the 50ms even though the spec does not
+explicitly say so.
+
+> > Not sure how much of that still applies to modern hardware.
+> 
+> Could you ask hardware engineers at Intel what the bus state is on
+> modern chipsets (say, ILK or newer) and Thunderbolt ports to clarify
+> this?
+
+I can try but it is not always easy to find the right person in company
+as big as Intel.
