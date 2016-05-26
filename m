@@ -1,115 +1,233 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [PATCH v2 2/3] cpufreq: acpi-cpufreq: add resolve_freq callback
-Date: Wed, 25 May 2016 19:53:00 -0700
-Message-ID: <1464231181-30741-3-git-send-email-smuckle@linaro.org>
-References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: Re: [PATCH v3 1/5] thermal: Add support for hardware-tracked trip
+ points
+Date: Thu, 26 May 2016 12:17:20 +0800
+Message-ID: <574678D0.1080301@rock-chips.com>
+References: <1464148069-26254-1-git-send-email-wxt@rock-chips.com> <1464148069-26254-2-git-send-email-wxt@rock-chips.com> <20160525164258.GA11807@e104805> <5746449A.7070803@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <5746449A.7070803@rock-chips.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: huangtao@rock-chips.com, Jonathan Corbet <corbet@lwn.net>, Ni Wade <wni@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, dmitry.torokhov@gmail.com, peter@piie.net, dianders@chromium.org, linux-doc@vger.kernel.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, Laxman Dewangan <ldewangan@nvidia.com>, smbarber@google.com, Leo Yan <leo.yan@linaro.org>, cf@rock-chips.com, briannorris@google.com, Zhang Rui <rui.zhang@intel.com>, Andy Champ <andycham@amazon.com>
 List-Id: linux-pm@vger.kernel.org
 
-Support the new resolve_freq cpufreq callback which resolves a target
-frequency to a driver-supported frequency without actually setting it.
 
-The target frequency and resolved frequency table entry are cached so
-that a subsequent fast_switch operation may avoid the frequency table
-walk assuming the requested target frequency is the same.
+On 2016=E5=B9=B405=E6=9C=8826=E6=97=A5 08:34, Caesar Wang wrote:
+>
+> On 2016=E5=B9=B405=E6=9C=8826=E6=97=A5 00:42, Javi Merino wrote:
+>> Hi Caesar,
+>>
+>> On Wed, May 25, 2016 at 11:47:45AM +0800, Caesar Wang wrote:
+>>> From: Sascha Hauer <s.hauer@pengutronix.de>
+>>>
+>>> This adds support for hardware-tracked trip points to the device tr=
+ee
+>>> thermal sensor framework.
+>>>
+>>> The framework supports an arbitrary number of trip points. Whenever
+>>> the current temperature is updated, the trip points immediately
+>>> below and above the current temperature are found. A .set_trips
+>>> callback is then called with the temperatures. If there is no trip
+>>> point above or below the current temperature, the passed trip
+>>> temperature will be -INT_MAX or INT_MAX respectively. In this callb=
+ack,
+>>> the driver should program the hardware such that it is notified
+>>> when either of these trip points are triggered. When a trip point
+>>> is triggered, the driver should call `thermal_zone_device_update'
+>>> for the respective thermal zone. This will cause the trip points
+>>> to be updated again.
+>>>
+>>> If .set_trips is not implemented, the framework behaves as before.
+>>>
+>>> This patch is based on an earlier version from Mikko Perttunen
+>>> <mikko.perttunen@kapsi.fi>
+>>>
+>>> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+>>> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+>>> Cc: Zhang Rui <rui.zhang@intel.com>
+>>> Cc: Eduardo Valentin <edubezval@gmail.com>
+>>> Cc: linux-pm@vger.kernel.org
+>>>
+>>> ---
+>>>
+>>> Changes in v3:
+>>> - as Javi comments on https://patchwork.kernel.org/patch/9001281/.
+>>> - add the lock for preventing the called from multi placce
+>>> - add the note for pre_low/high_trip.
+>>>
+>>> Changes in v2:
+>>> - update the sysfs-api.txt for set_trips.
+>>>
+>>>   Documentation/thermal/sysfs-api.txt |  7 +++++
+>>>   drivers/thermal/thermal_core.c      | 52=20
+>>> +++++++++++++++++++++++++++++++++++++
+>>>   include/linux/thermal.h             |  7 +++++
+>>>   3 files changed, 66 insertions(+)
+>>>
+>>> diff --git a/Documentation/thermal/sysfs-api.txt=20
+>>> b/Documentation/thermal/sysfs-api.txt
+>>> index efc3f3d..75d8838 100644
+>>> --- a/Documentation/thermal/sysfs-api.txt
+>>> +++ b/Documentation/thermal/sysfs-api.txt
+>>> @@ -49,6 +49,9 @@ temperature) and throttle appropriate devices.
+>>>       .bind: bind the thermal zone device with a thermal cooling=20
+>>> device.
+>>>       .unbind: unbind the thermal zone device with a thermal coolin=
+g=20
+>>> device.
+>>>       .get_temp: get the current temperature of the thermal zone.
+>>> +    .set_trips: set the trip points window. Whenever the current=20
+>>> temperature
+>>> +            is updated, the trip points immediately below and abov=
+e=20
+>>> the
+>>> +            current temperature are found.
+>>>       .get_mode: get the current mode (enabled/disabled) of the=20
+>>> thermal zone.
+>>>           - "enabled" means the kernel thermal management is enable=
+d.
+>>>           - "disabled" will prevent kernel thermal driver action=20
+>>> upon trip points
+>>> @@ -95,6 +98,10 @@ temperature) and throttle appropriate devices.
+>>>               get_temp:    a pointer to a function that reads the
+>>>                       sensor temperature. This is mandatory
+>>>                       callback provided by sensor driver.
+>>> +            set_trips:      a pointer to a function that sets a
+>>> +                    temperature window. When this window is
+>>> +                    left the driver must inform the thermal
+>>> +                    core via thermal_zone_device_update.
+>>>               get_trend:     a pointer to a function that reads the
+>>>                       sensor temperature trend.
+>>>               set_emul_temp:    a pointer to a function that sets
+>>> diff --git a/drivers/thermal/thermal_core.c=20
+>>> b/drivers/thermal/thermal_core.c
+>>> index 5133cd1..e5bfbd3 100644
+>>> --- a/drivers/thermal/thermal_core.c
+>>> +++ b/drivers/thermal/thermal_core.c
+>>> @@ -520,6 +520,51 @@ exit:
+>>>   }
+>>>   EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
+>>>   +static void thermal_zone_set_trips(struct thermal_zone_device *t=
+z)
+>>> +{
+>>> +    int low =3D -INT_MAX;
+>>> +    int high =3D INT_MAX;
+>>> +    int trip_temp, hysteresis;
+>>> +    int temp =3D tz->temperature;
+>>> +    int i, ret;
+>>> +
+>>> +    if (!tz->ops->set_trips)
+>>> +        return;
+>>> +
+>>> +    for (i =3D 0; i < tz->trips; i++) {
+>>> +        int trip_low;
+>>> +
+>>> +        tz->ops->get_trip_temp(tz, i, &trip_temp);
+>>> +        tz->ops->get_trip_hyst(tz, i, &hysteresis);
+>>> +
+>>> +        trip_low =3D trip_temp - hysteresis;
+>>> +
+>>> +        if (trip_low < temp && trip_low > low)
+>>> +            low =3D trip_low;
+>>> +
+>>> +        if (trip_temp > temp && trip_temp < high)
+>>> +            high =3D trip_temp;
+>>> +    }
+>>> +
+>>> +    /* No need to change trip points */
+>>> +    if (tz->prev_low_trip =3D=3D low && tz->prev_high_trip =3D=3D =
+high)
+>>> +        return;
+>>> +
+>>> +    tz->prev_low_trip =3D low;
+>>> +    tz->prev_high_trip =3D high;
+>>> +
+>>> +    dev_dbg(&tz->device, "new temperature boundaries: %d < x < %d\=
+n",
+>>> +            low, high);
+>>> +
+>>> +    /*
+>>> +     * Set a temperature window. When this window is left the driv=
+er
+>>> +     * must inform the thermal core via thermal_zone_device_update=
+=2E
+>>> +     */
+>>> +    ret =3D tz->ops->set_trips(tz, low, high);
+>>> +    if (ret)
+>>> +        dev_err(&tz->device, "Failed to set trips: %d\n", ret);
+>> In the v2 review
+>> (http://article.gmane.org/gmane.linux.documentation/38442) you agree=
+d
+>> to add locking but you haven't done it.  Maybe you sent the wrong
+>> version?
+>
+> My god!
+> Yep, I remember to change it. Somehow why ...
+>
+> Thanks Javi for looking over it.
+>
+> Hoping the next version is the final version.:-)
+>
 
-Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Steve Muckle <smuckle@linaro.org>
----
- drivers/cpufreq/acpi-cpufreq.c | 56 ++++++++++++++++++++++++++++++++----------
- 1 file changed, 43 insertions(+), 13 deletions(-)
+If add the lock, there is a deadlock for board,  maybe I will keep to=20
+stay with this version.
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 7f38fb55f223..d87962eda1ed 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -66,6 +66,8 @@ enum {
- 
- struct acpi_cpufreq_data {
- 	struct cpufreq_frequency_table *freq_table;
-+	unsigned int cached_lookup_freq;
-+	struct cpufreq_frequency_table *cached_lookup_entry;
- 	unsigned int resume;
- 	unsigned int cpu_feature;
- 	unsigned int acpi_perf_cpu;
-@@ -458,26 +460,53 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
- 	return result;
- }
- 
--unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
--				      unsigned int target_freq)
-+/*
-+ * Find the closest frequency above target_freq.
-+ *
-+ * The table is sorted in the reverse order with respect to the
-+ * frequency and all of the entries are valid (see the initialization).
-+ */
-+static inline struct cpufreq_frequency_table
-+*lookup_freq(struct cpufreq_frequency_table *table, unsigned int target_freq)
- {
--	struct acpi_cpufreq_data *data = policy->driver_data;
--	struct acpi_processor_performance *perf;
--	struct cpufreq_frequency_table *entry;
--	unsigned int next_perf_state, next_freq, freq;
-+	struct cpufreq_frequency_table *entry = table;
-+	unsigned int freq;
- 
--	/*
--	 * Find the closest frequency above target_freq.
--	 *
--	 * The table is sorted in the reverse order with respect to the
--	 * frequency and all of the entries are valid (see the initialization).
--	 */
--	entry = data->freq_table;
- 	do {
- 		entry++;
- 		freq = entry->frequency;
- 	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
- 	entry--;
-+
-+	return entry;
-+}
-+
-+unsigned int acpi_cpufreq_resolve_freq(struct cpufreq_policy *policy,
-+				       unsigned int target_freq)
-+{
-+	struct acpi_cpufreq_data *data = policy->driver_data;
-+	struct cpufreq_frequency_table *entry;
-+
-+	data->cached_lookup_freq = target_freq;
-+	entry = lookup_freq(data->freq_table, target_freq);
-+	data->cached_lookup_entry = entry;
-+
-+	return entry->frequency;
-+}
-+
-+unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
-+				      unsigned int target_freq)
-+{
-+	struct acpi_cpufreq_data *data = policy->driver_data;
-+	struct acpi_processor_performance *perf;
-+	struct cpufreq_frequency_table *entry;
-+	unsigned int next_perf_state, next_freq;
-+
-+	if (data->cached_lookup_entry &&
-+	    data->cached_lookup_freq == target_freq)
-+		entry = data->cached_lookup_entry;
-+	else
-+		entry = lookup_freq(data->freq_table, target_freq);
- 	next_freq = entry->frequency;
- 	next_perf_state = entry->driver_data;
- 
-@@ -918,6 +947,7 @@ static struct cpufreq_driver acpi_cpufreq_driver = {
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= acpi_cpufreq_target,
- 	.fast_switch	= acpi_cpufreq_fast_switch,
-+	.resolve_freq	= acpi_cpufreq_resolve_freq,
- 	.bios_limit	= acpi_processor_get_bios_limit,
- 	.init		= acpi_cpufreq_cpu_init,
- 	.exit		= acpi_cpufreq_cpu_exit,
--- 
-2.4.10
+   2.895038] [ INFO: possible recursive locking detected ]
+[    2.900459] 4.4.4 #56 Not tainted
+[    2.903774] ---------------------------------------------
+[    2.909171] swapper/0/1 is trying to acquire lock:
+[    2.913974]  (&tz->lock){+.+.+.}, at: [<ffffffc00069b428>]=20
+handle_thermal_trip+0x230/0x304
+[    2.922336]
+[    2.922336] but task is already holding lock:
+[    2.928166]  (&tz->lock){+.+.+.}, at: [<ffffffc000699194>]=20
+thermal_zone_set_trips+0xd8/0x180
+[    2.936670]
+[    2.936670] other info that might help us debug this:
+[    2.943199]  Possible unsafe locking scenario:
+[    2.943199]
+[    2.949117]        CPU0
+[    2.951565]        ----
+[    2.954012]   lock(&tz->lock);
+[    2.957098]   lock(&tz->lock);
+[    2.960176]
+[    2.960176]  *** DEADLOCK ***
+[    2.960176]
+[    2.966098]  May be due to missing lock nesting notation
+[    2.966098]
+[    2.972885] 3 locks held by swapper/0/1:
+[    2.976809]  #0:  (&dev->mutex){......}, at: [<ffffffc0005920b0>]=20
+__driver_attach+0x40/0xa8
+[    2.985243]  #1:  (&dev->mutex){......}, at: [<ffffffc0005920d8>]=20
+__driver_attach+0x68/0xa8
+[    2.993671]  #2:  (&tz->lock){+.+.+.}, at: [<ffffffc000699194>]=20
+thermal_zone_set_trips+0xd8/0x180
+=2E..
+
+
+
+
+
+
+
+> -Caesar
+>
+>>
+>> Cheers,
+>> Javi
+>>
+>> _______________________________________________
+>> Linux-rockchip mailing list
+>> Linux-rockchip@lists.infradead.org
+>> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+>
+>
+
+--=20
+caesar wang | software engineer | wxt@rock-chip.com
+
+
