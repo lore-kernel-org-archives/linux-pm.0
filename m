@@ -1,71 +1,152 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: Re: [patch] PM / devfreq: exynos-nocp: Checking for IS_ERR instead
- of NULL
-Date: Thu, 26 May 2016 09:39:07 +0300
-Message-ID: <20160526063907.GM11011@mwanda>
-References: <20160518103707.GA9436@mwanda>
- <57459BD4.1030201@samsung.com>
- <alpine.DEB.2.10.1605251710500.3644@hadrien>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 2/3] cpufreq: acpi-cpufreq: add resolve_freq callback
+Date: Thu, 26 May 2016 12:13:41 +0530
+Message-ID: <20160526064341.GV17585@vireshk-i7>
+References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
+ <1464231181-30741-3-git-send-email-smuckle@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <kernel-janitors-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f171.google.com ([209.85.192.171]:33510 "EHLO
+	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752945AbcEZGno (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2016 02:43:44 -0400
+Received: by mail-pf0-f171.google.com with SMTP id b124so27882312pfb.0
+        for <linux-pm@vger.kernel.org>; Wed, 25 May 2016 23:43:44 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.10.1605251710500.3644@hadrien>
-Sender: kernel-janitors-owner@vger.kernel.org
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org
+In-Reply-To: <1464231181-30741-3-git-send-email-smuckle@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On Wed, May 25, 2016 at 05:11:33PM +0200, Julia Lawall wrote:
->=20
->=20
-> On Wed, 25 May 2016, Chanwoo Choi wrote:
->=20
-> > On 2016=EB=85=84 05=EC=9B=94 18=EC=9D=BC 19:37, Dan Carpenter wrote=
-:
-> > > The platform_get_resource() function returns NULL on error, it ne=
-ver
-> > > returns error pointers.
-> > >
-> > > Fixes: 0179a913875a ('PM / devfreq: event: Add new Exynos NoC pro=
-be driver')
-> > > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> > >
-> > > diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfre=
-q/event/exynos-nocp.c
-> > > index 6b6a5f3..03b35d5 100644
-> > > --- a/drivers/devfreq/event/exynos-nocp.c
-> > > +++ b/drivers/devfreq/event/exynos-nocp.c
-> > > @@ -220,8 +220,8 @@ static int exynos_nocp_parse_dt(struct platfo=
-rm_device *pdev,
-> > >
-> > >  	/* Maps the memory mapped IO to control nocp register */
-> > >  	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> > > -	if (IS_ERR(res))
-> > > -		return PTR_ERR(res);
-> > > +	if (!res)
-> > > +		return -ENXIO;
-> > >
-> > >  	base =3D devm_ioremap_resource(dev, res);
-> > >  	if (IS_ERR(base))
-> >
-> > Looks good to me.
->=20
-> I believe that there is no need for the test at all.
-> devm_ioremap_resource should make the test.
+On 25-05-16, 19:53, Steve Muckle wrote:
+> Support the new resolve_freq cpufreq callback which resolves a target
+> frequency to a driver-supported frequency without actually setting it.
 
-True.  The static checker warning here is just that "res" isn't an erro=
-r
-pointer, not that we dereference it.
+And here is the first abuser of this API as I was talking about in the
+earlier patch :)
 
-I'll resend.
+But, I know why you are doing it and I think we can do it differently.
 
-regards,
-dan carpenter
+So, lets assume that the ->resolve_freq() callback will ONLY be
+provided by the drivers which also provide a ->target() callback.
 
---
-To unsubscribe from this list: send the line "unsubscribe kernel-janito=
-rs" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+i.e. not by acpi-cpufreq at least.
+
+> The target frequency and resolved frequency table entry are cached so
+> that a subsequent fast_switch operation may avoid the frequency table
+> walk assuming the requested target frequency is the same.
+> 
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Steve Muckle <smuckle@linaro.org>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c | 56 ++++++++++++++++++++++++++++++++----------
+>  1 file changed, 43 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index 7f38fb55f223..d87962eda1ed 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -66,6 +66,8 @@ enum {
+>  
+>  struct acpi_cpufreq_data {
+>  	struct cpufreq_frequency_table *freq_table;
+> +	unsigned int cached_lookup_freq;
+> +	struct cpufreq_frequency_table *cached_lookup_entry;
+
+This could have been an integer value 'Index', which could have been
+used together with the freq-table to get the freq we wanted.
+
+And, then we can move these two fields into the cpufreq_policy
+structure and make them part of the first patch itself.
+
+>  	unsigned int resume;
+>  	unsigned int cpu_feature;
+>  	unsigned int acpi_perf_cpu;
+> @@ -458,26 +460,53 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+>  	return result;
+>  }
+>  
+> -unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+> -				      unsigned int target_freq)
+> +/*
+> + * Find the closest frequency above target_freq.
+> + *
+> + * The table is sorted in the reverse order with respect to the
+> + * frequency and all of the entries are valid (see the initialization).
+> + */
+> +static inline struct cpufreq_frequency_table
+> +*lookup_freq(struct cpufreq_frequency_table *table, unsigned int target_freq)
+>  {
+> -	struct acpi_cpufreq_data *data = policy->driver_data;
+> -	struct acpi_processor_performance *perf;
+> -	struct cpufreq_frequency_table *entry;
+> -	unsigned int next_perf_state, next_freq, freq;
+> +	struct cpufreq_frequency_table *entry = table;
+> +	unsigned int freq;
+>  
+> -	/*
+> -	 * Find the closest frequency above target_freq.
+> -	 *
+> -	 * The table is sorted in the reverse order with respect to the
+> -	 * frequency and all of the entries are valid (see the initialization).
+> -	 */
+> -	entry = data->freq_table;
+>  	do {
+>  		entry++;
+>  		freq = entry->frequency;
+>  	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
+>  	entry--;
+> +
+> +	return entry;
+> +}
+> +
+> +unsigned int acpi_cpufreq_resolve_freq(struct cpufreq_policy *policy,
+> +				       unsigned int target_freq)
+> +{
+> +	struct acpi_cpufreq_data *data = policy->driver_data;
+> +	struct cpufreq_frequency_table *entry;
+> +
+> +	data->cached_lookup_freq = target_freq;
+> +	entry = lookup_freq(data->freq_table, target_freq);
+> +	data->cached_lookup_entry = entry;
+> +
+> +	return entry->frequency;
+> +}
+> +
+
+And then we could remove this callback from acpi-cpufreq.
+
+> +unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+> +				      unsigned int target_freq)
+> +{
+> +	struct acpi_cpufreq_data *data = policy->driver_data;
+> +	struct acpi_processor_performance *perf;
+> +	struct cpufreq_frequency_table *entry;
+> +	unsigned int next_perf_state, next_freq;
+> +
+> +	if (data->cached_lookup_entry &&
+> +	    data->cached_lookup_freq == target_freq)
+> +		entry = data->cached_lookup_entry;
+> +	else
+> +		entry = lookup_freq(data->freq_table, target_freq);
+
+And a static inline callback in cpufreq.h to get this entry.
+
+>  	next_freq = entry->frequency;
+>  	next_perf_state = entry->driver_data;
+>  
+> @@ -918,6 +947,7 @@ static struct cpufreq_driver acpi_cpufreq_driver = {
+>  	.verify		= cpufreq_generic_frequency_table_verify,
+>  	.target_index	= acpi_cpufreq_target,
+>  	.fast_switch	= acpi_cpufreq_fast_switch,
+> +	.resolve_freq	= acpi_cpufreq_resolve_freq,
+>  	.bios_limit	= acpi_processor_get_bios_limit,
+>  	.init		= acpi_cpufreq_cpu_init,
+>  	.exit		= acpi_cpufreq_cpu_exit,
+
+Sounds reasonable ?
+
+-- 
+viresh
