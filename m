@@ -1,178 +1,164 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: Re: [PATCH v3 1/5] thermal: Add support for hardware-tracked trip
- points
-Date: Thu, 26 May 2016 08:34:34 +0800
-Message-ID: <5746449A.7070803@rock-chips.com>
-References: <1464148069-26254-1-git-send-email-wxt@rock-chips.com> <1464148069-26254-2-git-send-email-wxt@rock-chips.com> <20160525164258.GA11807@e104805>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.7-rc1
+Date: Thu, 26 May 2016 02:31:02 +0000
+Message-ID: <1464229863.26336.13.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160525164258.GA11807@e104805>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Caesar Wang <wxt@rock-chips.com>, huangtao@rock-chips.com, Jonathan Corbet <corbet@lwn.net>, Ni Wade <wni@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, dmitry.torokhov@gmail.com, peter@piie.net, dianders@chromium.org, linux-doc@vger.kernel.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, Laxman Dewangan <ldewangan@nvidia.com>, smbarber@google.com, Leo Yan <leo.yan@linaro.org>, cf@rock-chips.com, briannorris@google.com, Zhang Rui <rui.zhang@intel.com>, Andy Champ <andycham@amazon.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:16419 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752436AbcEZCbJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 May 2016 22:31:09 -0400
+Content-Language: en-US
+Content-ID: <C79E780816CACD45B9143E68431A7993@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-
-On 2016=E5=B9=B405=E6=9C=8826=E6=97=A5 00:42, Javi Merino wrote:
-> Hi Caesar,
->
-> On Wed, May 25, 2016 at 11:47:45AM +0800, Caesar Wang wrote:
->> From: Sascha Hauer <s.hauer@pengutronix.de>
->>
->> This adds support for hardware-tracked trip points to the device tre=
-e
->> thermal sensor framework.
->>
->> The framework supports an arbitrary number of trip points. Whenever
->> the current temperature is updated, the trip points immediately
->> below and above the current temperature are found. A .set_trips
->> callback is then called with the temperatures. If there is no trip
->> point above or below the current temperature, the passed trip
->> temperature will be -INT_MAX or INT_MAX respectively. In this callba=
-ck,
->> the driver should program the hardware such that it is notified
->> when either of these trip points are triggered. When a trip point
->> is triggered, the driver should call `thermal_zone_device_update'
->> for the respective thermal zone. This will cause the trip points
->> to be updated again.
->>
->> If .set_trips is not implemented, the framework behaves as before.
->>
->> This patch is based on an earlier version from Mikko Perttunen
->> <mikko.perttunen@kapsi.fi>
->>
->> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
->> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Eduardo Valentin <edubezval@gmail.com>
->> Cc: linux-pm@vger.kernel.org
->>
->> ---
->>
->> Changes in v3:
->> - as Javi comments on https://patchwork.kernel.org/patch/9001281/.
->> - add the lock for preventing the called from multi placce
->> - add the note for pre_low/high_trip.
->>
->> Changes in v2:
->> - update the sysfs-api.txt for set_trips.
->>
->>   Documentation/thermal/sysfs-api.txt |  7 +++++
->>   drivers/thermal/thermal_core.c      | 52 +++++++++++++++++++++++++=
-++++++++++++
->>   include/linux/thermal.h             |  7 +++++
->>   3 files changed, 66 insertions(+)
->>
->> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/the=
-rmal/sysfs-api.txt
->> index efc3f3d..75d8838 100644
->> --- a/Documentation/thermal/sysfs-api.txt
->> +++ b/Documentation/thermal/sysfs-api.txt
->> @@ -49,6 +49,9 @@ temperature) and throttle appropriate devices.
->>   	.bind: bind the thermal zone device with a thermal cooling device=
-=2E
->>   	.unbind: unbind the thermal zone device with a thermal cooling de=
-vice.
->>   	.get_temp: get the current temperature of the thermal zone.
->> +	.set_trips: set the trip points window. Whenever the current tempe=
-rature
->> +		    is updated, the trip points immediately below and above the
->> +		    current temperature are found.
->>   	.get_mode: get the current mode (enabled/disabled) of the thermal=
- zone.
->>   	    - "enabled" means the kernel thermal management is enabled.
->>   	    - "disabled" will prevent kernel thermal driver action upon t=
-rip points
->> @@ -95,6 +98,10 @@ temperature) and throttle appropriate devices.
->>   			get_temp:	a pointer to a function that reads the
->>   					sensor temperature. This is mandatory
->>   					callback provided by sensor driver.
->> +			set_trips:      a pointer to a function that sets a
->> +					temperature window. When this window is
->> +					left the driver must inform the thermal
->> +					core via thermal_zone_device_update.
->>   			get_trend: 	a pointer to a function that reads the
->>   					sensor temperature trend.
->>   			set_emul_temp:	a pointer to a function that sets
->> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/therma=
-l_core.c
->> index 5133cd1..e5bfbd3 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -520,6 +520,51 @@ exit:
->>   }
->>   EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
->>  =20
->> +static void thermal_zone_set_trips(struct thermal_zone_device *tz)
->> +{
->> +	int low =3D -INT_MAX;
->> +	int high =3D INT_MAX;
->> +	int trip_temp, hysteresis;
->> +	int temp =3D tz->temperature;
->> +	int i, ret;
->> +
->> +	if (!tz->ops->set_trips)
->> +		return;
->> +
->> +	for (i =3D 0; i < tz->trips; i++) {
->> +		int trip_low;
->> +
->> +		tz->ops->get_trip_temp(tz, i, &trip_temp);
->> +		tz->ops->get_trip_hyst(tz, i, &hysteresis);
->> +
->> +		trip_low =3D trip_temp - hysteresis;
->> +
->> +		if (trip_low < temp && trip_low > low)
->> +			low =3D trip_low;
->> +
->> +		if (trip_temp > temp && trip_temp < high)
->> +			high =3D trip_temp;
->> +	}
->> +
->> +	/* No need to change trip points */
->> +	if (tz->prev_low_trip =3D=3D low && tz->prev_high_trip =3D=3D high=
-)
->> +		return;
->> +
->> +	tz->prev_low_trip =3D low;
->> +	tz->prev_high_trip =3D high;
->> +
->> +	dev_dbg(&tz->device, "new temperature boundaries: %d < x < %d\n",
->> +			low, high);
->> +
->> +	/*
->> +	 * Set a temperature window. When this window is left the driver
->> +	 * must inform the thermal core via thermal_zone_device_update.
->> +	 */
->> +	ret =3D tz->ops->set_trips(tz, low, high);
->> +	if (ret)
->> +		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
-> In the v2 review
-> (http://article.gmane.org/gmane.linux.documentation/38442) you agreed
-> to add locking but you haven't done it.  Maybe you sent the wrong
-> version?
-
-My god!
-Yep, I remember to change it. Somehow why ...
-
-Thanks Javi for looking over it.
-
-Hoping the next version is the final version.:-)
-
--Caesar
-
->
-> Cheers,
-> Javi
->
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
-
-
---=20
-caesar wang | software engineer | wxt@rock-chip.com
+DQpIaSwgTGludXMsDQoNClBsZWFzZSBwdWxsIGZyb20NCiAgZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcv
+cHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L3J6aGFuZy9saW51eC5naXQgbmV4dA0KDQp0byByZWNl
+aXZlIHRoZSBsYXRlc3QgVGhlcm1hbCBNYW5hZ2VtZW50IHVwZGF0ZXMgZm9yIHY0LjctcmMxIHdp
+dGgNCnRvcC1tb3N0IGNvbW1pdCA4OGFjOTkwNjNlNmUzOGJmOTU3N2U3NWYwZDY1ZGQwMmUyMzI2
+ZDU4Og0KDQogIE1lcmdlIGJyYW5jaGVzICd0aGVybWFsLWNvcmUnLCAndGhlcm1hbC1pbnRlbCcg
+YW5kICd0aGVybWFsLXNvYycgaW50bw0KbmV4dCAoMjAxNi0wNS0xOCAxNTozNzowOCArMDgwMCkN
+Cg0Kb24gdG9wIG9mIGNvbW1pdCAwNDk3NGRmODA0OWZjNDI0MGQyMjc1OWE5MWUwMzUwODJjY2Qx
+OGI0Og0KDQogIExpbnV4IDQuNi1yYzYgKDIwMTYtMDUtMDEgMTU6NTI6MzEgLTA3MDApDQoNCg0K
+U3BlY2lmaWNzOg0KLSBJbnRyb2R1Y2UgZ2VuZXJpYyBBREMgdGhlcm1hbCBkcml2ZXIsIGJhc2Vk
+IG9uIE9GIHRoZXJtYWwuIEZyb206DQpMYXhtYW4gRGV3YW5nYW4uDQotIEludHJvZHVjZSBuZXcg
+dGhlcm1hbCBkcml2ZXIgZm9yIFRhbmdvIGNoaXBzLiBGcm9tOiBNYXJjIEdvbnphbGV6Lg0KLSBS
+b2NrY2hpcCBkcml2ZXIgc3VwcG9ydCBmb3IgUkszMzk5LCBSSzMzNjYsIGFuZCBzb21lIGZpeGVz
+LiBGcm9tOg0KQ2Flc2FyIFdhbmcsIEVsYWluZSBaaGFuZyBhbmQgU2hhd24gTGluLg0KLSBBZGQg
+Q1BVIHBvd2VyIGNvb2xpbmcgbW9kZWwgdG8gTWVkaWF0ZWsgdGhlcm1hbCBkcml2ZXIuIEZyb206
+IERhd2VpDQpDaGllbi4NCi0gV2lkZXIgdXNhZ2Ugb2YgZGV2X3RoZXJtYWxfem9uZV9vZl9zZW5z
+b3JfcmVnaXN0ZXIuIEZyb206IEVkdWFyZG8NClZhbGVudGluLg0KLSBUSSB0aGVybWFsIGRyaXZl
+ciBnYWluZWQgYSBuZXcgbWFpbnRhaW5lciAoS2VlcnRoeSkuDQotIEVuYWJsZWQgcG93ZXJjbGFt
+cCBkcml2ZXIgYnkgY2hlY2tpbmcgQ1BVIGZlYXR1cmUgYW5kIHBhY2thZ2UgY3N0YXRlDQpjb3Vu
+dGVyIGluc3RlYWQgb2YgQ1BVIHdoaXRlbGlzdC4gRnJvbTogSmFjb2IgUGFuLg0KLSBWYXJpb3Vz
+IGZpeGVzIG9uIHRoZXJtYWwgZ292ZXJub3IsIE9GIHRoZXJtYWwsIFRlZ3JhLCBhbmQgUkNBUi4N
+Cg0KdGhhbmtzLA0KcnVpDQoNCg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KDQpBbmR5IENoYW1wICgxKToNCiAgICAgIHRo
+ZXJtYWw6IFN5bnRhY3RpYyBhbmQgZmFjdHVhbCBlcnJvcnMgaW4gdGhlIEFQSSBkb2N1bWVudA0K
+DQpBcm5kIEJlcmdtYW5uICgxKToNCiAgICAgIHRoZXJtYWw6IHRlZ3JhOiBtYXJrIFBNIGZ1bmN0
+aW9ucyBfX21heWJlX3VudXNlZA0KDQpDYWVzYXIgV2FuZyAoNSk6DQogICAgICB0aGVybWFsOiBy
+b2NrY2hpcDogZml4ZXMgdGhlIGNvZGVfdG9fdGVtcCBmb3IgdHNhZGMgZHJpdmVyDQogICAgICB0
+aGVybWFsOiByb2NrY2hpcDogdXBkYXRlIHRoZSB0c2FkYyB0YWJsZSBmb3IgcmszMzk5DQogICAg
+ICB0aGVybWFsOiByb2NrY2hpcDogaGFuZGxlIHRoZSBwb3dlciBzZXF1ZW5jZSBmb3IgdHNhZGMg
+Y29udHJvbGxlcg0KICAgICAgdGhlcm1hbDogcm9ja2NoaXA6IGFkZCB0aGUgbm90ZXMgZm9yIGJl
+dHRlciByZWFkaW5nDQogICAgICB0aGVybWFsOiByb2NrY2hpcDogdXNlIHRoZSB1c2xlZXBfcmFu
+Z2UgaW5zdGVhZCBvZiB1ZGVsYXkNCg0KRGF3ZWkgQ2hpZW4gKDEpOg0KICAgICAgdGhlcm1hbDog
+bWVkaWF0ZWs6IEFkZCBjcHUgZHluYW1pYyBwb3dlciBjb29saW5nIG1vZGVsLg0KDQpFZHVhcmRv
+IFZhbGVudGluICgxMik6DQogICAgICBod21vbjogY29udmVydCBsbTc1IHRvIHVzZSBkZXZtX3Ro
+ZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXINCiAgICAgIGh3bW9uOiBjb252ZXJ0IG50Y190
+aGVybWlzdG9yIHRvIHVzZQ0KZGV2bV90aGVybWFsX3pvbmVfb2Zfc2Vuc29yX3JlZ2lzdGVyDQog
+ICAgICBod21vbjogY29udmVydCB0bXAxMDIgdG8gdXNlIGRldm1fdGhlcm1hbF96b25lX29mX3Nl
+bnNvcl9yZWdpc3Rlcg0KICAgICAgaHdtb246IGNvbnZlcnQgc2NwaS1od21vbiB0byB1c2UNCmRl
+dm1fdGhlcm1hbF96b25lX29mX3NlbnNvcl9yZWdpc3Rlcg0KICAgICAgaW5wdXQ6IGNvbnZlcnQg
+c3VuNGktdHMgdG8gdXNlDQpkZXZtX3RoZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXINCiAg
+ICAgIHRoZXJtYWw6IGNvbnZlcnQgaGlzaV90aGVybWFsIHRvIHVzZQ0KZGV2bV90aGVybWFsX3pv
+bmVfb2Zfc2Vuc29yX3JlZ2lzdGVyDQogICAgICB0aGVybWFsOiBjb252ZXJ0IG10a190aGVybWFs
+IHRvIHVzZQ0KZGV2bV90aGVybWFsX3pvbmVfb2Zfc2Vuc29yX3JlZ2lzdGVyDQogICAgICB0aGVy
+bWFsOiBjb252ZXJ0IHFjb20tc3BtaSB0byB1c2UNCmRldm1fdGhlcm1hbF96b25lX29mX3NlbnNv
+cl9yZWdpc3Rlcg0KICAgICAgdGhlcm1hbDogY29udmVydCByY2FyX3RoZXJtYWwgdG8gdXNlDQpk
+ZXZtX3RoZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXINCiAgICAgIHRoZXJtYWw6IGNvbnZl
+cnQgcm9ja2NoaXBfdGhlcm1hbCB0byB1c2UNCmRldm1fdGhlcm1hbF96b25lX29mX3NlbnNvcl9y
+ZWdpc3Rlcg0KICAgICAgdGhlcm1hbDogY29udmVydCB0ZWdyYV90aGVybWFsIHRvIHVzZQ0KZGV2
+bV90aGVybWFsX3pvbmVfb2Zfc2Vuc29yX3JlZ2lzdGVyDQogICAgICB0aGVybWFsOiBjb252ZXJ0
+IHRpLXRoZXJtYWwgdG8gdXNlDQpkZXZtX3RoZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXIN
+Cg0KRWxhaW5lIFpoYW5nICgxKToNCiAgICAgIHRoZXJtYWw6IHJvY2tjaGlwOiBTdXBwb3J0IFJL
+MzM2NiBTb0NzIGluIHRoZSB0aGVybWFsIGRyaXZlcg0KDQpKYWNvYiBQYW4gKDEpOg0KICAgICAg
+dGhlcm1hbC9wb3dlcmNsYW1wOiByZW1vdmUgY3B1IHdoaXRlbGlzdA0KDQpLZWVydGh5ICgxKToN
+CiAgICAgIE1BSU5UQUlORVJTOiB0aS1zb2MtdGhlcm1hbDogYWRkIGEgY28tbWFpbnRhaW5lciBh
+bmQgdXBkYXRlIHRoZQ0KZW50cnkNCg0KTGF4bWFuIERld2FuZ2FuICgyKToNCiAgICAgIHRoZXJt
+YWw6IGdlbmVyaWMtYWRjOiBBZGQgRFQgYmluZGluZyBmb3IgQURDIGJhc2VkIHRoZXJtYWwgc2Vu
+c29yDQogICAgICB0aGVybWFsOiBnZW5lcmljLWFkYzogQWRkIEFEQyBiYXNlZCB0aGVybWFsIHNl
+bnNvciBkcml2ZXINCg0KTGVvIFlhbiAoMik6DQogICAgICB0aGVybWFsOiBoaXNpbGljb246IHN1
+cHBvcnQgdG8gdXNlIGFueSBzZW5zb3INCiAgICAgIHRoZXJtYWw6IGhpc2lsaWNvbjogZml4IElS
+USBpbWJhbGFuY2UgZW5hYmxpbmcNCg0KTWFyYyBHb256YWxleiAoMik6DQogICAgICB0aGVybWFs
+OiBhZGQgdGVtcGVyYXR1cmUgc2Vuc29yIHN1cHBvcnQgZm9yIHRhbmdvIFNvQw0KICAgICAgdGhl
+cm1hbDogdGFuZ286IGluaXRpYWxpemUgVEVNUFNJX0NGRw0KDQpNaWNoZWxlIERpIEdpb3JnaW8g
+KDEpOg0KICAgICAgdGhlcm1hbDogY2hlY2sgdmFsaWRpdHkgZ2V0X3RyaXBfaHlzdCBmdW5jdGlv
+biBwb2ludGVyIGluDQpiYW5nLWJhbmcgZ292ZXJub3INCg0KUmljaGFyZCBDb2NocmFuICgxKToN
+CiAgICAgIHRoZXJtYWw6IHg4Nl9wa2dfdGVtcDogSGFuZGxlIHRoZSBGUk9aRU4gaG90IHBsdWcg
+bm90aWZpZXINCmFjdGlvbnMuDQoNClNoYXduIExpbiAoMSk6DQogICAgICB0aGVybWFsOiByb2Nr
+Y2hpcDogZGlzYWJsZSB0aGVybWFsLT5jbGsgaW4gZXJyIGNhc2UNCg0KU2ltb24gSG9ybWFuICgx
+KToNCiAgICAgIHRoZXJtYWw6IHJjYXI6IFJlbW92ZSBiaW5kaW5nIGRvY3MgZm9yIHI4YTc3OTQN
+Cg0KU3Jpbml2YXMgUGFuZHJ1dmFkYSAoMSk6DQogICAgICB0aGVybWFsOiBpbnQzNDB4OiBwcm9j
+ZXNzb3JfdGhlcm1hbDogc3VwcG9ydCBhY3BpIG5vdGlmaWNhdGlvbg0KDQpVbGlzZXMgQnJpbmRp
+cyAoMSk6DQogICAgICB0aGVybWFsOiBvZjogZml4IGNsZWFudXAgd2hlbiBidWlsZGluZyBhIHRo
+ZXJtYWwgem9uZQ0KDQpXZWkgTmkgKDE0KToNCiAgICAgIHRoZXJtYWw6IHRlZ3JhOiBtb3ZlIHRl
+Z3JhIHRoZXJtYWwgZmlsZXMgaW50byB0ZWdyYSBkaXJlY3RvcnkNCiAgICAgIHRoZXJtYWw6IHRl
+Z3JhOiBjb21iaW5lIHNlbnNvciBncm91cC1yZWxhdGVkIGRhdGENCiAgICAgIHRoZXJtYWw6IHRl
+Z3JhOiBnZXQgcmlkIG9mIFBESVYvSE9UU1BPVCBoYWNrDQogICAgICB0aGVybWFsOiB0ZWdyYTog
+c3BsaXQgdGVncmFfc29jdGhlcm0gZHJpdmVyDQogICAgICB0aGVybWFsOiB0ZWdyYTogYWRkIFRl
+Z3JhMjEwIHNwZWNpZmljIFNPQ19USEVSTSBkcml2ZXINCiAgICAgIHRoZXJtYWw6IHRlZ3JhOiBh
+ZGQgYSBkZWJ1Z2ZzIHRvIHNob3cgcmVnaXN0ZXJzDQogICAgICB0aGVybWFsOiBvZi10aGVybWFs
+OiBhbGxvdyBzZXR0aW5nIHRyaXBfdGVtcCBvbiBoYXJkd2FyZQ0KICAgICAgb2Y6IGFkZCBub3Rl
+cyBvZiBjcml0aWNhbCB0cmlwcyBmb3Igc29jdGhlcm0NCiAgICAgIHRoZXJtYWw6IHRlZ3JhOiBh
+ZGQgdGhlcm10cmlwIGZ1bmN0aW9uDQogICAgICB0aGVybWFsOiB0ZWdyYTogaGFuZGxlIGNsb2Nr
+cyBpbiBvbmUgZnVuY3Rpb24NCiAgICAgIHRoZXJtYWw6IHRlZ3JhOiBoYW5kbGUgSFcgaW5pdGlh
+bGl6YXRpb24gaW4gb25lIGZ1bmNvdGlvbg0KICAgICAgdGhlcm1hbDogdGVncmE6IGFkZCBQTSBz
+dXBwb3J0DQogICAgICB0aGVybWFsOiB0ZWdyYTogZml4IHN0YXRpYyBjaGVja2VyIHdhcm5pbmcN
+CiAgICAgIHRoZXJtYWw6IHRlZ3JhOiBhZGQgVGVncmExMzIgc3BlY2lmaWMgU09DX1RIRVJNIGRy
+aXZlcg0KDQpaaGFuZyBSdWkgKDEpOg0KICAgICAgTWVyZ2UgYnJhbmNoZXMgJ3RoZXJtYWwtY29y
+ZScsICd0aGVybWFsLWludGVsJyBhbmQgJ3RoZXJtYWwtc29jJw0KaW50byBuZXh0DQoNCmtidWls
+ZCB0ZXN0IHJvYm90ICgxKToNCiAgICAgIHRoZXJtYWw6IGZpeCBwdHJfcmV0LmNvY2NpIHdhcm5p
+bmdzDQoNCiAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3JjYXItdGhlcm1hbC50eHQg
+ICB8ICAgMSAtDQogLi4uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC90YW5nby10aGVybWFs
+LnR4dCAgfCAgMTcgKw0KIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvdGVncmEtc29j
+dGhlcm0udHh0IHwgIDEyICsNCiAuLi4vYmluZGluZ3MvdGhlcm1hbC90aGVybWFsLWdlbmVyaWMt
+YWRjLnR4dCAgICAgICB8ICA4OSArKysNCiBEb2N1bWVudGF0aW9uL3RoZXJtYWwvc3lzZnMtYXBp
+LnR4dCAgICAgICAgICAgICAgICB8ICA0NCArLQ0KIE1BSU5UQUlORVJTICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAxICsNCiBkcml2ZXJzL2NwdWZyZXEvbXQ4MTcz
+LWNwdWZyZXEuYyAgICAgICAgICAgICAgICAgICB8ICAxMSArLQ0KIGRyaXZlcnMvaHdtb24vbG03
+NS5jICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDEwICstDQogZHJpdmVycy9od21v
+bi9udGNfdGhlcm1pc3Rvci5jICAgICAgICAgICAgICAgICAgICAgfCAgMTIgKy0NCiBkcml2ZXJz
+L2h3bW9uL3NjcGktaHdtb24uYyAgICAgICAgICAgICAgICAgICAgICAgICB8ICA0OCArLQ0KIGRy
+aXZlcnMvaHdtb24vdG1wMTAyLmMgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICA4ICst
+DQogZHJpdmVycy9pbnB1dC90b3VjaHNjcmVlbi9zdW40aS10cy5jICAgICAgICAgICAgICAgfCAg
+IDkgKy0NCiBkcml2ZXJzL3RoZXJtYWwvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICB8ICAzMSArLQ0KIGRyaXZlcnMvdGhlcm1hbC9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIHwgICA0ICstDQogZHJpdmVycy90aGVybWFsL2dvdl9iYW5nX2JhbmcuYyAgICAgICAg
+ICAgICAgICAgICAgfCAgIDggKy0NCiBkcml2ZXJzL3RoZXJtYWwvaGlzaV90aGVybWFsLmMgICAg
+ICAgICAgICAgICAgICAgICB8ICA0NSArLQ0KIC4uLi9pbnQzNDB4X3RoZXJtYWwvcHJvY2Vzc29y
+X3RoZXJtYWxfZGV2aWNlLmMgICAgIHwgMTA4ICsrKy0NCiBkcml2ZXJzL3RoZXJtYWwvaW50ZWxf
+cG93ZXJjbGFtcC5jICAgICAgICAgICAgICAgICB8ICA0NyArLQ0KIGRyaXZlcnMvdGhlcm1hbC9t
+dGtfdGhlcm1hbC5jICAgICAgICAgICAgICAgICAgICAgIHwgIDEyICstDQogZHJpdmVycy90aGVy
+bWFsL29mLXRoZXJtYWwuYyAgICAgICAgICAgICAgICAgICAgICAgfCAgMTAgKy0NCiBkcml2ZXJz
+L3RoZXJtYWwvcWNvbS1zcG1pLXRlbXAtYWxhcm0uYyAgICAgICAgICAgICB8ICAgMyArLQ0KIGRy
+aXZlcnMvdGhlcm1hbC9yY2FyX3RoZXJtYWwuYyAgICAgICAgICAgICAgICAgICAgIHwgICAyICst
+DQogZHJpdmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYyAgICAgICAgICAgICAgICAgfCAy
+ODAgKysrKysrLS0tDQogZHJpdmVycy90aGVybWFsL3RhbmdvX3RoZXJtYWwuYyAgICAgICAgICAg
+ICAgICAgICAgfCAxMDkgKysrKw0KIGRyaXZlcnMvdGhlcm1hbC90ZWdyYS9LY29uZmlnICAgICAg
+ICAgICAgICAgICAgICAgIHwgIDEzICsNCiBkcml2ZXJzL3RoZXJtYWwvdGVncmEvTWFrZWZpbGUg
+ICAgICAgICAgICAgICAgICAgICB8ICAgNiArDQogZHJpdmVycy90aGVybWFsL3RlZ3JhL3NvY3Ro
+ZXJtLWZ1c2UuYyAgICAgICAgICAgICAgfCAxNjkgKysrKysNCiBkcml2ZXJzL3RoZXJtYWwvdGVn
+cmEvc29jdGhlcm0uYyAgICAgICAgICAgICAgICAgICB8IDY4NQ0KKysrKysrKysrKysrKysrKysr
+KysrDQogZHJpdmVycy90aGVybWFsL3RlZ3JhL3NvY3RoZXJtLmggICAgICAgICAgICAgICAgICAg
+fCAxMjcgKysrKw0KIGRyaXZlcnMvdGhlcm1hbC90ZWdyYS90ZWdyYTEyNC1zb2N0aGVybS5jICAg
+ICAgICAgIHwgMTk2ICsrKysrKw0KIGRyaXZlcnMvdGhlcm1hbC90ZWdyYS90ZWdyYTEzMi1zb2N0
+aGVybS5jICAgICAgICAgIHwgMTk2ICsrKysrKw0KIGRyaXZlcnMvdGhlcm1hbC90ZWdyYS90ZWdy
+YTIxMC1zb2N0aGVybS5jICAgICAgICAgIHwgMTk3ICsrKysrKw0KIGRyaXZlcnMvdGhlcm1hbC90
+ZWdyYV9zb2N0aGVybS5jICAgICAgICAgICAgICAgICAgIHwgNDc2IC0tLS0tLS0tLS0tLS0tDQog
+ZHJpdmVycy90aGVybWFsL3RoZXJtYWwtZ2VuZXJpYy1hZGMuYyAgICAgICAgICAgICAgfCAxODIg
+KysrKysrDQogZHJpdmVycy90aGVybWFsL3RpLXNvYy10aGVybWFsL3RpLXRoZXJtYWwtY29tbW9u
+LmMgfCAgIDUgKy0NCiBkcml2ZXJzL3RoZXJtYWwveDg2X3BrZ190ZW1wX3RoZXJtYWwuYyAgICAg
+ICAgICAgICB8ICAgMiArLQ0KIGluY2x1ZGUvZHQtYmluZGluZ3MvdGhlcm1hbC90ZWdyYTEyNC1z
+b2N0aGVybS5oICAgIHwgICAxICsNCiBpbmNsdWRlL2xpbnV4L3RoZXJtYWwuaCAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICB8ICAgMSArDQogMzggZmlsZXMgY2hhbmdlZCwgMjQxNCBpbnNlcnRp
+b25zKCspLCA3NjMgZGVsZXRpb25zKC0pDQogY3JlYXRlIG1vZGUgMTAwNjQ0DQpEb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC90YW5nby10aGVybWFsLnR4dA0KIGNyZWF0
+ZSBtb2RlIDEwMDY0NA0KRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwv
+dGhlcm1hbC1nZW5lcmljLWFkYy50eHQNCiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy90aGVy
+bWFsL3RhbmdvX3RoZXJtYWwuYw0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3RoZXJtYWwv
+dGVncmEvS2NvbmZpZw0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3RoZXJtYWwvdGVncmEv
+TWFrZWZpbGUNCiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy90aGVybWFsL3RlZ3JhL3NvY3Ro
+ZXJtLWZ1c2UuYw0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3RoZXJtYWwvdGVncmEvc29j
+dGhlcm0uYw0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3RoZXJtYWwvdGVncmEvc29jdGhl
+cm0uaA0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3RoZXJtYWwvdGVncmEvdGVncmExMjQt
+c29jdGhlcm0uYw0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3RoZXJtYWwvdGVncmEvdGVn
+cmExMzItc29jdGhlcm0uYw0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3RoZXJtYWwvdGVn
+cmEvdGVncmEyMTAtc29jdGhlcm0uYw0KIGRlbGV0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3RoZXJt
+YWwvdGVncmFfc29jdGhlcm0uYw0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3RoZXJtYWwv
+dGhlcm1hbC1nZW5lcmljLWFkYy5jDQoNCg==
