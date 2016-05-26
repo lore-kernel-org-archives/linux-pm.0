@@ -1,52 +1,47 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PCI: Wait for 50ms after bridge is powered up
-Date: Thu, 26 May 2016 14:03:08 +0300
-Message-ID: <20160526110308.GX1789@lahna.fi.intel.com>
-References: <20160524162833.GA30762@localhost>
- <1464188696-25782-1-git-send-email-mika.westerberg@linux.intel.com>
- <20160526101006.GA6744@wunner.de>
- <20160526102520.GV1789@lahna.fi.intel.com>
- <20160526104557.GA6816@wunner.de>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [patch v2] PM / devfreq: exynos-nocp: Remove incorrect IS_ERR()
+ check
+Date: Thu, 26 May 2016 13:13:00 +0200 (CEST)
+Message-ID: <alpine.DEB.2.10.1605261312400.3786@hadrien>
+References: <20160526064541.GA6680@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:5496 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753354AbcEZLDN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 26 May 2016 07:03:13 -0400
-Content-Disposition: inline
-In-Reply-To: <20160526104557.GA6816@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20160526064541.GA6680@mwanda>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, Julia Lawall <julia.lawall@lip6.fr>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>, Andreas Noever <andreas.noever@gmail.com>
 
-On Thu, May 26, 2016 at 12:45:57PM +0200, Lukas Wunner wrote:
-> > The PCI PM specification version 1.2 says this in chapter 4.2 (page 37):
-> > 
-> >   There is a minimum time requirement of 50 ms which must be provided by
-> >   system software between when the bus is switched from B2 to B0 and
-> >   when a function on the bus is accessed to allow time for the clock to
-> >   start up and the bus to settle.
-> 
-> But why do we wait 50 ms when *suspending*, i.e. going from B0 to B2?
+Reviewed-by: Julia Lawall <julia.lawall@lip6.fr>
 
-I guess because PCI requires delays of 10ms for both directions D0 <->
-D3hot (see pci_raw_set_power_state()).
+On Thu, 26 May 2016, Dan Carpenter wrote:
 
-> (Assuming B2 is the state when the bridge goes to D3hot, which I'm not
-> sure of. The spec says that the bus state may optionally be B3 if the
-> bridge is in D3hot.)
-
-B3 is the state where the bus goes when it's power is removed so I would
-expect that to require also the 50ms even though the spec does not
-explicitly say so.
-
-> > Not sure how much of that still applies to modern hardware.
-> 
-> Could you ask hardware engineers at Intel what the bus state is on
-> modern chipsets (say, ILK or newer) and Thunderbolt ports to clarify
-> this?
-
-I can try but it is not always easy to find the right person in company
-as big as Intel.
+> Smatch complains because platform_get_resource() returns NULL on error
+> and not an error pointer so the check is wrong.  Julia Lawall pointed
+> out that normally we don't check these, because devm_ioremap_resource()
+> has a check for NULL.
+>
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> ---
+> v2: just remove the check
+>
+> diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
+> index 6b6a5f3..a584140 100644
+> --- a/drivers/devfreq/event/exynos-nocp.c
+> +++ b/drivers/devfreq/event/exynos-nocp.c
+> @@ -220,9 +220,6 @@ static int exynos_nocp_parse_dt(struct platform_device *pdev,
+>
+>  	/* Maps the memory mapped IO to control nocp register */
+>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	if (IS_ERR(res))
+> -		return PTR_ERR(res);
+> -
+>  	base = devm_ioremap_resource(dev, res);
+>  	if (IS_ERR(base))
+>  		return PTR_ERR(base);
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
