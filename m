@@ -1,233 +1,62 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: Re: [PATCH v3 1/5] thermal: Add support for hardware-tracked trip
- points
-Date: Thu, 26 May 2016 12:17:20 +0800
-Message-ID: <574678D0.1080301@rock-chips.com>
-References: <1464148069-26254-1-git-send-email-wxt@rock-chips.com> <1464148069-26254-2-git-send-email-wxt@rock-chips.com> <20160525164258.GA11807@e104805> <5746449A.7070803@rock-chips.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: stats: Make the stats code non-modular
+Date: Thu, 26 May 2016 10:29:45 +0530
+Message-ID: <20160526045945.GO17585@vireshk-i7>
+References: <1482863.aVJEuqdboc@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <5746449A.7070803@rock-chips.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: huangtao@rock-chips.com, Jonathan Corbet <corbet@lwn.net>, Ni Wade <wni@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, dmitry.torokhov@gmail.com, peter@piie.net, dianders@chromium.org, linux-doc@vger.kernel.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, Laxman Dewangan <ldewangan@nvidia.com>, smbarber@google.com, Leo Yan <leo.yan@linaro.org>, cf@rock-chips.com, briannorris@google.com, Zhang Rui <rui.zhang@intel.com>, Andy Champ <andycham@amazon.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:34434 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752262AbcEZE7t (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 May 2016 00:59:49 -0400
+Received: by mail-pa0-f54.google.com with SMTP id qo8so25910532pab.1
+        for <linux-pm@vger.kernel.org>; Wed, 25 May 2016 21:59:48 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1482863.aVJEuqdboc@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
+On 26-05-16, 00:23, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The modularity of cpufreq_stats is quite problematic.
+> 
+> First off, the usage of policy notifiers for the initialization
+> and cleanup in the cpufreq_stats module is inherently racy with
+> respect to CPU offline/online and the initialization and cleanup
+> of the cpufreq driver.
+> 
+> Second, fast frequency switching (used by the schedutil governor)
+> cannot be enabled if any transition notifiers are registered, so
+> if the cpufreq_stats module (that registers a transition notifier
+> for updating transition statistics) is loaded, the schedutil governor
+> cannot use fast frequency switching.
+> 
+> On the other hand, allowing cpufreq_stats to be built as a module
+> doesn't really add much value.  Arguably, there's not much reason
+> for that code to be modular at all.
+> 
+> For the above reasons, make the cpufreq stats code non-modular,
+> modify the core to invoke functions provided by that code directly
+> and drop the notifiers from it.
+> 
+> While at it, clean up Kconfig help for the CPU_FREQ_STAT and
+> CPU_FREQ_STAT_DETAILS options.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/Kconfig         |   13 +--
+>  drivers/cpufreq/cpufreq.c       |    4 +
+>  drivers/cpufreq/cpufreq_stats.c |  146 +++-------------------------------------
+>  include/linux/cpufreq.h         |   12 +++
+>  4 files changed, 34 insertions(+), 141 deletions(-)
 
-On 2016=E5=B9=B405=E6=9C=8826=E6=97=A5 08:34, Caesar Wang wrote:
->
-> On 2016=E5=B9=B405=E6=9C=8826=E6=97=A5 00:42, Javi Merino wrote:
->> Hi Caesar,
->>
->> On Wed, May 25, 2016 at 11:47:45AM +0800, Caesar Wang wrote:
->>> From: Sascha Hauer <s.hauer@pengutronix.de>
->>>
->>> This adds support for hardware-tracked trip points to the device tr=
-ee
->>> thermal sensor framework.
->>>
->>> The framework supports an arbitrary number of trip points. Whenever
->>> the current temperature is updated, the trip points immediately
->>> below and above the current temperature are found. A .set_trips
->>> callback is then called with the temperatures. If there is no trip
->>> point above or below the current temperature, the passed trip
->>> temperature will be -INT_MAX or INT_MAX respectively. In this callb=
-ack,
->>> the driver should program the hardware such that it is notified
->>> when either of these trip points are triggered. When a trip point
->>> is triggered, the driver should call `thermal_zone_device_update'
->>> for the respective thermal zone. This will cause the trip points
->>> to be updated again.
->>>
->>> If .set_trips is not implemented, the framework behaves as before.
->>>
->>> This patch is based on an earlier version from Mikko Perttunen
->>> <mikko.perttunen@kapsi.fi>
->>>
->>> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
->>> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
->>> Cc: Zhang Rui <rui.zhang@intel.com>
->>> Cc: Eduardo Valentin <edubezval@gmail.com>
->>> Cc: linux-pm@vger.kernel.org
->>>
->>> ---
->>>
->>> Changes in v3:
->>> - as Javi comments on https://patchwork.kernel.org/patch/9001281/.
->>> - add the lock for preventing the called from multi placce
->>> - add the note for pre_low/high_trip.
->>>
->>> Changes in v2:
->>> - update the sysfs-api.txt for set_trips.
->>>
->>>   Documentation/thermal/sysfs-api.txt |  7 +++++
->>>   drivers/thermal/thermal_core.c      | 52=20
->>> +++++++++++++++++++++++++++++++++++++
->>>   include/linux/thermal.h             |  7 +++++
->>>   3 files changed, 66 insertions(+)
->>>
->>> diff --git a/Documentation/thermal/sysfs-api.txt=20
->>> b/Documentation/thermal/sysfs-api.txt
->>> index efc3f3d..75d8838 100644
->>> --- a/Documentation/thermal/sysfs-api.txt
->>> +++ b/Documentation/thermal/sysfs-api.txt
->>> @@ -49,6 +49,9 @@ temperature) and throttle appropriate devices.
->>>       .bind: bind the thermal zone device with a thermal cooling=20
->>> device.
->>>       .unbind: unbind the thermal zone device with a thermal coolin=
-g=20
->>> device.
->>>       .get_temp: get the current temperature of the thermal zone.
->>> +    .set_trips: set the trip points window. Whenever the current=20
->>> temperature
->>> +            is updated, the trip points immediately below and abov=
-e=20
->>> the
->>> +            current temperature are found.
->>>       .get_mode: get the current mode (enabled/disabled) of the=20
->>> thermal zone.
->>>           - "enabled" means the kernel thermal management is enable=
-d.
->>>           - "disabled" will prevent kernel thermal driver action=20
->>> upon trip points
->>> @@ -95,6 +98,10 @@ temperature) and throttle appropriate devices.
->>>               get_temp:    a pointer to a function that reads the
->>>                       sensor temperature. This is mandatory
->>>                       callback provided by sensor driver.
->>> +            set_trips:      a pointer to a function that sets a
->>> +                    temperature window. When this window is
->>> +                    left the driver must inform the thermal
->>> +                    core via thermal_zone_device_update.
->>>               get_trend:     a pointer to a function that reads the
->>>                       sensor temperature trend.
->>>               set_emul_temp:    a pointer to a function that sets
->>> diff --git a/drivers/thermal/thermal_core.c=20
->>> b/drivers/thermal/thermal_core.c
->>> index 5133cd1..e5bfbd3 100644
->>> --- a/drivers/thermal/thermal_core.c
->>> +++ b/drivers/thermal/thermal_core.c
->>> @@ -520,6 +520,51 @@ exit:
->>>   }
->>>   EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
->>>   +static void thermal_zone_set_trips(struct thermal_zone_device *t=
-z)
->>> +{
->>> +    int low =3D -INT_MAX;
->>> +    int high =3D INT_MAX;
->>> +    int trip_temp, hysteresis;
->>> +    int temp =3D tz->temperature;
->>> +    int i, ret;
->>> +
->>> +    if (!tz->ops->set_trips)
->>> +        return;
->>> +
->>> +    for (i =3D 0; i < tz->trips; i++) {
->>> +        int trip_low;
->>> +
->>> +        tz->ops->get_trip_temp(tz, i, &trip_temp);
->>> +        tz->ops->get_trip_hyst(tz, i, &hysteresis);
->>> +
->>> +        trip_low =3D trip_temp - hysteresis;
->>> +
->>> +        if (trip_low < temp && trip_low > low)
->>> +            low =3D trip_low;
->>> +
->>> +        if (trip_temp > temp && trip_temp < high)
->>> +            high =3D trip_temp;
->>> +    }
->>> +
->>> +    /* No need to change trip points */
->>> +    if (tz->prev_low_trip =3D=3D low && tz->prev_high_trip =3D=3D =
-high)
->>> +        return;
->>> +
->>> +    tz->prev_low_trip =3D low;
->>> +    tz->prev_high_trip =3D high;
->>> +
->>> +    dev_dbg(&tz->device, "new temperature boundaries: %d < x < %d\=
-n",
->>> +            low, high);
->>> +
->>> +    /*
->>> +     * Set a temperature window. When this window is left the driv=
-er
->>> +     * must inform the thermal core via thermal_zone_device_update=
-=2E
->>> +     */
->>> +    ret =3D tz->ops->set_trips(tz, low, high);
->>> +    if (ret)
->>> +        dev_err(&tz->device, "Failed to set trips: %d\n", ret);
->> In the v2 review
->> (http://article.gmane.org/gmane.linux.documentation/38442) you agree=
-d
->> to add locking but you haven't done it.  Maybe you sent the wrong
->> version?
->
-> My god!
-> Yep, I remember to change it. Somehow why ...
->
-> Thanks Javi for looking over it.
->
-> Hoping the next version is the final version.:-)
->
+Looks far better now :)
 
-If add the lock, there is a deadlock for board,  maybe I will keep to=20
-stay with this version.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-   2.895038] [ INFO: possible recursive locking detected ]
-[    2.900459] 4.4.4 #56 Not tainted
-[    2.903774] ---------------------------------------------
-[    2.909171] swapper/0/1 is trying to acquire lock:
-[    2.913974]  (&tz->lock){+.+.+.}, at: [<ffffffc00069b428>]=20
-handle_thermal_trip+0x230/0x304
-[    2.922336]
-[    2.922336] but task is already holding lock:
-[    2.928166]  (&tz->lock){+.+.+.}, at: [<ffffffc000699194>]=20
-thermal_zone_set_trips+0xd8/0x180
-[    2.936670]
-[    2.936670] other info that might help us debug this:
-[    2.943199]  Possible unsafe locking scenario:
-[    2.943199]
-[    2.949117]        CPU0
-[    2.951565]        ----
-[    2.954012]   lock(&tz->lock);
-[    2.957098]   lock(&tz->lock);
-[    2.960176]
-[    2.960176]  *** DEADLOCK ***
-[    2.960176]
-[    2.966098]  May be due to missing lock nesting notation
-[    2.966098]
-[    2.972885] 3 locks held by swapper/0/1:
-[    2.976809]  #0:  (&dev->mutex){......}, at: [<ffffffc0005920b0>]=20
-__driver_attach+0x40/0xa8
-[    2.985243]  #1:  (&dev->mutex){......}, at: [<ffffffc0005920d8>]=20
-__driver_attach+0x68/0xa8
-[    2.993671]  #2:  (&tz->lock){+.+.+.}, at: [<ffffffc000699194>]=20
-thermal_zone_set_trips+0xd8/0x180
-=2E..
-
-
-
-
-
-
-
-> -Caesar
->
->>
->> Cheers,
->> Javi
->>
->> _______________________________________________
->> Linux-rockchip mailing list
->> Linux-rockchip@lists.infradead.org
->> http://lists.infradead.org/mailman/listinfo/linux-rockchip
->
->
-
---=20
-caesar wang | software engineer | wxt@rock-chip.com
-
-
+-- 
+viresh
