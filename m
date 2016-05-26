@@ -1,108 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 1/3] cpufreq: add resolve_freq driver callback
-Date: Thu, 26 May 2016 11:55:14 +0530
-Message-ID: <20160526062514.GU17585@vireshk-i7>
-References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
- <1464231181-30741-2-git-send-email-smuckle@linaro.org>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: Re: [patch] PM / devfreq: exynos-nocp: Checking for IS_ERR instead
+ of NULL
+Date: Thu, 26 May 2016 09:39:07 +0300
+Message-ID: <20160526063907.GM11011@mwanda>
+References: <20160518103707.GA9436@mwanda>
+ <57459BD4.1030201@samsung.com>
+ <alpine.DEB.2.10.1605251710500.3644@hadrien>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <kernel-janitors-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1464231181-30741-2-git-send-email-smuckle@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+In-Reply-To: <alpine.DEB.2.10.1605251710500.3644@hadrien>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 25-05-16, 19:52, Steve Muckle wrote:
-> Cpufreq governors may need to know what a particular target frequency
-> maps to in the driver without necessarily wanting to set the frequency.
-> Support this operation via a new cpufreq API,
-> cpufreq_driver_resolve_freq().
-> 
-> The above API will call a new cpufreq driver callback, resolve_freq(),
-> if it has been registered by the driver. If that callback has not been
-> registered and a frequency table is available then the frequency table
-> is walked using cpufreq_frequency_table_target().
-> 
-> UINT_MAX is returned if no driver callback or frequency table is
-> available.
+On Wed, May 25, 2016 at 05:11:33PM +0200, Julia Lawall wrote:
+>=20
+>=20
+> On Wed, 25 May 2016, Chanwoo Choi wrote:
+>=20
+> > On 2016=EB=85=84 05=EC=9B=94 18=EC=9D=BC 19:37, Dan Carpenter wrote=
+:
+> > > The platform_get_resource() function returns NULL on error, it ne=
+ver
+> > > returns error pointers.
+> > >
+> > > Fixes: 0179a913875a ('PM / devfreq: event: Add new Exynos NoC pro=
+be driver')
+> > > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> > >
+> > > diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfre=
+q/event/exynos-nocp.c
+> > > index 6b6a5f3..03b35d5 100644
+> > > --- a/drivers/devfreq/event/exynos-nocp.c
+> > > +++ b/drivers/devfreq/event/exynos-nocp.c
+> > > @@ -220,8 +220,8 @@ static int exynos_nocp_parse_dt(struct platfo=
+rm_device *pdev,
+> > >
+> > >  	/* Maps the memory mapped IO to control nocp register */
+> > >  	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> > > -	if (IS_ERR(res))
+> > > -		return PTR_ERR(res);
+> > > +	if (!res)
+> > > +		return -ENXIO;
+> > >
+> > >  	base =3D devm_ioremap_resource(dev, res);
+> > >  	if (IS_ERR(base))
+> >
+> > Looks good to me.
+>=20
+> I believe that there is no need for the test at all.
+> devm_ioremap_resource should make the test.
 
-Why should we return UINT_MAX here? We should return target_freq, no ?
+True.  The static checker warning here is just that "res" isn't an erro=
+r
+pointer, not that we dereference it.
 
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Steve Muckle <smuckle@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 25 +++++++++++++++++++++++++
->  include/linux/cpufreq.h   | 11 +++++++++++
->  2 files changed, 36 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 77d77a4e3b74..3b44f4bdc071 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1849,6 +1849,31 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
->  
-> +unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
-> +					 unsigned int target_freq)
-> +{
-> +	struct cpufreq_frequency_table *freq_table;
-> +	int index, retval;
-> +
-> +	clamp_val(target_freq, policy->min, policy->max);
-> +
-> +	if (cpufreq_driver->resolve_freq)
-> +		return cpufreq_driver->resolve_freq(policy, target_freq);
-> +
-> +	freq_table = cpufreq_frequency_get_table(policy->cpu);
+I'll resend.
 
-I have sent a separate patch to provide a light weight alternative to
-this. If that gets accepted, we can switch over to using it.
+regards,
+dan carpenter
 
-> +	if (!freq_table)
-> +		return UINT_MAX;
-> +
-> +	retval = cpufreq_frequency_table_target(policy, freq_table,
-> +						target_freq, CPUFREQ_RELATION_L,
-> +						&index);
-> +	if (retval)
-> +		return UINT_MAX;
-> +
-> +	return freq_table[index].frequency;
-> +}
-> +EXPORT_SYMBOL_GPL(cpufreq_driver_resolve_freq);
-> +
->  /* Must set freqs->new to intermediate frequency */
->  static int __target_intermediate(struct cpufreq_policy *policy,
->  				 struct cpufreq_freqs *freqs, int index)
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 4e81e08db752..675f17f98e75 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -271,6 +271,13 @@ struct cpufreq_driver {
->  	int		(*target_intermediate)(struct cpufreq_policy *policy,
->  					       unsigned int index);
->  
-> +	/*
-> +	 * Return the driver-supported frequency that a particular target
-> +	 * frequency maps to (does not set the new frequency).
-> +	 */
-> +	unsigned int	(*resolve_freq)(struct cpufreq_policy *policy,
-> +					unsigned int target_freq);
-
-We have 3 categories of cpufreq-drivers today:
-1. setpolicy drivers: They don't use the cpufreq governors we are
-   working on.
-2. non-setpolicy drivers:
-  A. with ->target_index() callback, these will always provide a
-     freq-table.
-  B. with ->target() callback, ONLY these should be allowed to provide
-     the ->resolve_freq() callback and no one else.
-
-And so I would suggest adding an additional check in
-cpufreq_register_driver() to catch incorrect usage of this callback.
-
--- 
-viresh
+--
+To unsubscribe from this list: send the line "unsubscribe kernel-janito=
+rs" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
