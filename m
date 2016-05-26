@@ -1,58 +1,87 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
-Date: Thu, 26 May 2016 11:16:43 +0300
-Message-ID: <20160526081643.GQ1789@lahna.fi.intel.com>
-References: <20160519231234.GB1785@al>
- <20160524211309.GH1789@lahna.fi.intel.com>
- <20160525131948.GL1789@lahna.fi.intel.com>
- <2037523.0hP3Oc7Pg6@vostro.rjw.lan>
+From: Wei Ni <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH v5 00/11] Add HW throttle for Tegra soctherm
+Date: Thu, 26 May 2016 17:42:21 +0800
+Message-ID: <5746C4FD.9070909@nvidia.com>
+References: <1462962026-19653-1-git-send-email-wni@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2037523.0hP3Oc7Pg6@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1462962026-19653-1-git-send-email-wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+Cc: MLongnecker-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, mikko.perttunen-/1wQRMveznE@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, May 25, 2016 at 10:45:48PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, May 25, 2016 04:19:48 PM Mika Westerberg wrote:
-> > On Wed, May 25, 2016 at 12:13:09AM +0300, Mika Westerberg wrote:
-> > > On Tue, May 24, 2016 at 03:53:23PM +0300, Mika Westerberg wrote:
-> > > > > I dropped "ACPI / hotplug / PCI: Runtime resume bridge before rescan"
-> > > > > on the assumption that "PCI: Power on bridges before scanning new
-> > > > > devices" is sufficient to cover both the ACPI and the generic PCi
-> > > > > rescan cases, but I'd like some reassurance about that.
-> > > > 
-> > > > I agree with your reasoning that the patch should not be needed anymore.
-> > > > However, I have the machine which needed that patch at home so I'm not
-> > > > able to test it now. I'll do that later today when I get back home.
-> > > 
-> > > I tried now on my Lenovo Yoga 900 laptop and unfortunately "PCI: Power
-> > > on bridges before scanning new devices" seems not to be enough. This
-> > > machine has SD-card reader connected to one PCIe port and once I unload
-> > > the sdhci-pci driver and enable runtime PM for the device, next system
-> > > suspend/resume cycle loses the SD-card reader PCI device.
-> > > 
-> > > I will investigate more tomorrow -- it is getting late here.
-> > 
-> > I think I found reason for the issue.
-> > 
-> > When the laptop resumes it will send ACPI BUS_CHECK event for the two
-> > PCIe root ports. This ends up in acpiphp_check_bridge() where it goes
-> > through all slots in that bridge checking if the devices are still
-> > present. This happens before we call pci_scan_bridge() for the bridge
-> > itself.
-> > 
-> > Since the bridge is in D3 config space of the device behind it is not
-> > available and we determine that the device is not there anymore.
-> > 
-> > It looks like we either need that ACPI hotplug patch or alternatively we
-> > could add pm_runtime_get/put() in acpiphp_check_bridge().
-> 
-> Have you tried the latter?
+Hi,
+Does there have any comments on this series?
+Let me know if someone has suggestions.
 
-Indeed I tried and it worked fine. I can make formal patch doing that
-which then replaces the current ACPI hotplug patch, if that is the
-preferred way.
+Thanks.
+Wei.
+
+On 05/11/2016 06:20 PM, Wei Ni wrote:
+> This series add following functions for Tegra soctherm:
+> 1. add HW throttle function.
+> 2. enable soctherm node for Tegra124, Tegra132, Tegra210, and
+> set "critical", "hot" trips for them.
+> 
+> Main changes from v4:
+> 1. drop the "nvidia" prefix from the node name, per Rob's comments.
+> 
+> Main changes from v3:
+> 1. change some properties'name and descriptions, per Rob's comments.
+> 2. change the corresponding driver codes.
+> 
+> Main changes from v2:
+> 1. improve the of-binding, per Eduardo's comments, and
+> change the corresponding driver codes.
+> 2. move two setting critical trip patches in this series,
+> 3. fix some bugs in dts changes.
+> 
+> Main changes from v1:
+> 1. use readl/writel instead of __raw_readl/__raw_writel.
+> 2. rebase on the linux-next.
+> 
+> The v1 series is in:
+> https://lkml.org/lkml/2016/3/31/230
+> 
+> The v2 series is in:
+> https://lkml.org/lkml/2016/4/26/1577
+> 
+> The v3 series is in:
+> https://lkml.org/lkml/2016/5/3/274
+> 
+> The v4 series is in:
+> https://lkml.org/lkml/2016/5/9/45
+> 
+> Wei Ni (11):
+>   of: Add bindings of hw throttle for Tegra soctherm
+>   thermal: tegra: add hw-throttle function
+>   thermal: tegra: add hw-throttle for Tegra132
+>   arm: tegra: set critical trips for Tegra124
+>   arm: tegra: set hot trips for Tegra124
+>   arm64: tegra: use tegra132-soctherm for Tegra132
+>   arm64: tegra: set critical trips for Tegra132
+>   arm64: tegra: set hot trips for Tegra132
+>   arm64: tegra: add soctherm node for Tegra210
+>   arm64: tegra: set critical trips for Tegra210
+>   arm64: tegra: set hot trips for Tegra210
+> 
+>  .../bindings/thermal/nvidia,tegra124-soctherm.txt  | 121 ++-
+>  arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  18 +-
+>  arch/arm/boot/dts/tegra124.dtsi                    |  83 +-
+>  arch/arm64/boot/dts/nvidia/tegra132.dtsi           | 119 ++-
+>  arch/arm64/boot/dts/nvidia/tegra210.dtsi           | 127 ++++
+>  drivers/thermal/tegra/soctherm.c                   | 842 ++++++++++++++++++++-
+>  drivers/thermal/tegra/soctherm.h                   |  10 +
+>  drivers/thermal/tegra/tegra124-soctherm.c          |  18 +
+>  drivers/thermal/tegra/tegra132-soctherm.c          |  18 +
+>  drivers/thermal/tegra/tegra210-soctherm.c          |  18 +
+>  include/dt-bindings/thermal/tegra124-soctherm.h    |   5 +
+>  11 files changed, 1344 insertions(+), 35 deletions(-)
+> 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
