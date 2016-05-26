@@ -1,57 +1,58 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [patch v2] PM / devfreq: exynos-nocp: Remove incorrect IS_ERR()
- check
-Date: Thu, 26 May 2016 17:12:19 +0900
-Message-ID: <5746AFE3.6030606@samsung.com>
-References: <CGME20160526064612epcas1p4cb0d45fa11deafea51fa84974132afed@epcas1p4.samsung.com>
- <20160526064541.GA6680@mwanda>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
+Date: Thu, 26 May 2016 11:16:43 +0300
+Message-ID: <20160526081643.GQ1789@lahna.fi.intel.com>
+References: <20160519231234.GB1785@al>
+ <20160524211309.GH1789@lahna.fi.intel.com>
+ <20160525131948.GL1789@lahna.fi.intel.com>
+ <2037523.0hP3Oc7Pg6@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <20160526064541.GA6680@mwanda>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>, Julia Lawall <julia.lawall@lip6.fr>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2037523.0hP3Oc7Pg6@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Dan,
+On Wed, May 25, 2016 at 10:45:48PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, May 25, 2016 04:19:48 PM Mika Westerberg wrote:
+> > On Wed, May 25, 2016 at 12:13:09AM +0300, Mika Westerberg wrote:
+> > > On Tue, May 24, 2016 at 03:53:23PM +0300, Mika Westerberg wrote:
+> > > > > I dropped "ACPI / hotplug / PCI: Runtime resume bridge before rescan"
+> > > > > on the assumption that "PCI: Power on bridges before scanning new
+> > > > > devices" is sufficient to cover both the ACPI and the generic PCi
+> > > > > rescan cases, but I'd like some reassurance about that.
+> > > > 
+> > > > I agree with your reasoning that the patch should not be needed anymore.
+> > > > However, I have the machine which needed that patch at home so I'm not
+> > > > able to test it now. I'll do that later today when I get back home.
+> > > 
+> > > I tried now on my Lenovo Yoga 900 laptop and unfortunately "PCI: Power
+> > > on bridges before scanning new devices" seems not to be enough. This
+> > > machine has SD-card reader connected to one PCIe port and once I unload
+> > > the sdhci-pci driver and enable runtime PM for the device, next system
+> > > suspend/resume cycle loses the SD-card reader PCI device.
+> > > 
+> > > I will investigate more tomorrow -- it is getting late here.
+> > 
+> > I think I found reason for the issue.
+> > 
+> > When the laptop resumes it will send ACPI BUS_CHECK event for the two
+> > PCIe root ports. This ends up in acpiphp_check_bridge() where it goes
+> > through all slots in that bridge checking if the devices are still
+> > present. This happens before we call pci_scan_bridge() for the bridge
+> > itself.
+> > 
+> > Since the bridge is in D3 config space of the device behind it is not
+> > available and we determine that the device is not there anymore.
+> > 
+> > It looks like we either need that ACPI hotplug patch or alternatively we
+> > could add pm_runtime_get/put() in acpiphp_check_bridge().
+> 
+> Have you tried the latter?
 
-On 2016=EB=85=84 05=EC=9B=94 26=EC=9D=BC 15:45, Dan Carpenter wrote:
-> Smatch complains because platform_get_resource() returns NULL on erro=
-r
-> and not an error pointer so the check is wrong.  Julia Lawall pointed
-> out that normally we don't check these, because devm_ioremap_resource=
-()
-> has a check for NULL.
->=20
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
-> v2: just remove the check
->=20
-> diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/ev=
-ent/exynos-nocp.c
-> index 6b6a5f3..a584140 100644
-> --- a/drivers/devfreq/event/exynos-nocp.c
-> +++ b/drivers/devfreq/event/exynos-nocp.c
-> @@ -220,9 +220,6 @@ static int exynos_nocp_parse_dt(struct platform_d=
-evice *pdev,
-> =20
->  	/* Maps the memory mapped IO to control nocp register */
->  	res =3D platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (IS_ERR(res))
-> -		return PTR_ERR(res);
-> -
->  	base =3D devm_ioremap_resource(dev, res);
->  	if (IS_ERR(base))
->  		return PTR_ERR(base);
-
-
-I don't recommend that you mention the name of engineer on patch descri=
-ption
-directly. Except for this comment, looks good to me.
-
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-
-Thanks,
-Chanwoo Choi
+Indeed I tried and it worked fine. I can make formal patch doing that
+which then replaces the current ACPI hotplug patch, if that is the
+preferred way.
