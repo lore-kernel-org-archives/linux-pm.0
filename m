@@ -1,47 +1,28 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
+From: Dan Carpenter <dan.carpenter@oracle.com>
 Subject: Re: [patch v2] PM / devfreq: exynos-nocp: Remove incorrect IS_ERR()
  check
-Date: Thu, 26 May 2016 13:13:00 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1605261312400.3786@hadrien>
-References: <20160526064541.GA6680@mwanda>
+Date: Thu, 26 May 2016 14:56:29 +0300
+Message-ID: <20160526115629.GD10957@mwanda>
+References: <CGME20160526064612epcas1p4cb0d45fa11deafea51fa84974132afed@epcas1p4.samsung.com>
+ <20160526064541.GA6680@mwanda>
+ <5746AFE3.6030606@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20160526064541.GA6680@mwanda>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Julia Lawall <julia.lawall@lip6.fr>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5746AFE3.6030606@samsung.com>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Julia Lawall <julia.lawall@lip6.fr>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Reviewed-by: Julia Lawall <julia.lawall@lip6.fr>
+On Thu, May 26, 2016 at 05:12:19PM +0900, Chanwoo Choi wrote:
+> I don't recommend that you mention the name of engineer on patch description
+> directly.
 
-On Thu, 26 May 2016, Dan Carpenter wrote:
+This really is normal.  I've been mentioned over 100 times in commit
+messages like 7051924f771 (xillybus: Move out of staging).
 
-> Smatch complains because platform_get_resource() returns NULL on error
-> and not an error pointer so the check is wrong.  Julia Lawall pointed
-> out that normally we don't check these, because devm_ioremap_resource()
-> has a check for NULL.
->
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
-> v2: just remove the check
->
-> diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
-> index 6b6a5f3..a584140 100644
-> --- a/drivers/devfreq/event/exynos-nocp.c
-> +++ b/drivers/devfreq/event/exynos-nocp.c
-> @@ -220,9 +220,6 @@ static int exynos_nocp_parse_dt(struct platform_device *pdev,
->
->  	/* Maps the memory mapped IO to control nocp register */
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -	if (IS_ERR(res))
-> -		return PTR_ERR(res);
-> -
->  	base = devm_ioremap_resource(dev, res);
->  	if (IS_ERR(base))
->  		return PTR_ERR(base);
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+regards,
+dan carpenter
+
