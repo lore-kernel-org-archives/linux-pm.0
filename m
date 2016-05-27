@@ -1,131 +1,249 @@
-From: Emil Velikov <emil.l.velikov@gmail.com>
-Subject: Re: [Nouveau] [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
- runtime PM
-Date: Fri, 27 May 2016 14:01:39 +0100
-Message-ID: <CACvgo514AB=rkRGWrwmPHTX=hhEF8Jhzdg1hQkX1_C4A_zYkzg@mail.gmail.com>
-References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
-	<1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Subject: Re: Re: [PATCH 1/3] power: axp20x_usb: Add support for
+ usb power-supply on axp22x pmics
+Date: Fri, 27 May 2016 15:59:23 +0200
+Message-ID: <c918e934-17f5-b393-5bee-ac04f838781e@redhat.com>
+References: <1463248289-16456-1-git-send-email-hdegoede@redhat.com>
+ <CAGb2v67N7R5U_+dZ4ZO+VuGKo6wbVALnrMq3=Ceec8J122LiDA@mail.gmail.com>
+Reply-To: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:35486 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbcE0NBl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 May 2016 09:01:41 -0400
-In-Reply-To: <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Return-path: <linux-sunxi+bncBDRZXY4CYYORBRNFUG5AKGQE22SJARI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <CAGb2v67N7R5U_+dZ4ZO+VuGKo6wbVALnrMq3=Ceec8J122LiDA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Wu <peter@lekensteyn.nl>
-Cc: ML nouveau <nouveau@lists.freedesktop.org>, ML dri-devel <dri-devel@lists.freedesktop.org>, Dave Airlie <airlied@redhat.com>, linux-pm@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org
 
-Hi Peter,
+Hi,
 
-On 24 May 2016 at 23:53, Peter Wu <peter@lekensteyn.nl> wrote:
-> Since "PCI: Add runtime PM support for PCIe ports", the parent PCIe port
-> can be runtime-suspended which disables power resources via ACPI. This
-> is incompatible with DSM, resulting in a GPU device which is still in D3
-> and locks up the kernel on resume.
+On 16-05-16 09:07, Chen-Yu Tsai wrote:
+> Hi,
 >
-> Mirror the behavior of Windows 8 and newer[1] (as observed via an AMLi
-> debugger trace) and stop using the DSM functions for D3cold when power
-> resources are available on the parent PCIe port.
+> On Sun, May 15, 2016 at 1:51 AM, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org> wrote:
+>> The usb power-supply on the axp22x pmics is mostly identical to the
+>> one on the axp20x pmics. One significant difference is that it cannot
+>> measure / monitor the usb voltage / current.
+>>
+>> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+>> ---
+>>  drivers/power/axp20x_usb_power.c | 99 +++++++++++++++++++++++++++++++---------
+>>  1 file changed, 77 insertions(+), 22 deletions(-)
+>>
+>> diff --git a/drivers/power/axp20x_usb_power.c b/drivers/power/axp20x_usb_power.c
+>> index 421a90b..b3c1d8e 100644
+>> --- a/drivers/power/axp20x_usb_power.c
+>> +++ b/drivers/power/axp20x_usb_power.c
+>> @@ -42,6 +42,7 @@
+>>  #define AXP20X_VBUS_MON_VBUS_VALID     BIT(3)
+>>
+>>  struct axp20x_usb_power {
+>> +       struct axp20x_dev *axp20x;
+>>         struct regmap *regmap;
+>>         struct power_supply *supply;
+>>  };
+>> @@ -85,7 +86,15 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+>>
+>>                 switch (v & AXP20X_VBUS_CLIMIT_MASK) {
+>>                 case AXP20X_VBUC_CLIMIT_100mA:
+>> -                       val->intval = 100000;
+>> +                       switch (power->axp20x->variant) {
+>> +                       case AXP202_ID:
+>> +                       case AXP209_ID:
+>> +                               val->intval = 100000;
+>> +                               break;
+>> +                       default:
+>> +                               val->intval = -1; /* No 100mA limit */
+>> +                               break;
+>> +                       }
 >
->  [1]: https://msdn.microsoft.com/windows/hardware/drivers/bringup/firmware-requirements-for-d3cold
->
-> Signed-off-by: Peter Wu <peter@lekensteyn.nl>
-> ---
->  drivers/gpu/drm/nouveau/nouveau_acpi.c | 34 ++++++++++++++++++++++++++++++----
->  1 file changed, 30 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/gpu/drm/nouveau/nouveau_acpi.c b/drivers/gpu/drm/nouveau/nouveau_acpi.c
-> index df9f73e..e469df7 100644
-> --- a/drivers/gpu/drm/nouveau/nouveau_acpi.c
-> +++ b/drivers/gpu/drm/nouveau/nouveau_acpi.c
-> @@ -46,6 +46,7 @@ static struct nouveau_dsm_priv {
->         bool dsm_detected;
->         bool optimus_detected;
->         bool optimus_flags_detected;
-> +       bool optimus_skip_dsm;
->         acpi_handle dhandle;
->         acpi_handle rom_handle;
->  } nouveau_dsm_priv;
-> @@ -212,8 +213,26 @@ static const struct vga_switcheroo_handler nouveau_dsm_handler = {
->         .get_client_id = nouveau_dsm_get_client_id,
->  };
->
-> +/* Firmware supporting Windows 8 or later do not use _DSM to put the device into
-> + * D3cold, they instead rely on disabling power resources on the parent. */
-> +static bool nouveau_pr3_present(struct pci_dev *pdev)
-> +{
-> +       struct pci_dev *parent_pdev = pci_upstream_bridge(pdev);
-> +       struct acpi_device *ad;
-> +
-> +       if (!parent_pdev)
-> +               return false;
-> +
-> +       ad = ACPI_COMPANION(&parent_pdev->dev);
-> +       if (!ad)
-> +               return false;
-> +
-> +       return ad->power.flags.power_resources;
-> +}
-> +
->  static void nouveau_dsm_pci_probe(struct pci_dev *pdev, bool *has_mux,
-> -                                 bool *has_opt, bool *has_opt_flags)
-> +                                 bool *has_opt, bool *has_opt_flags,
-> +                                 bool *has_power_resources)
->  {
->         acpi_handle dhandle;
->         bool supports_mux;
-> @@ -238,6 +257,7 @@ static void nouveau_dsm_pci_probe(struct pci_dev *pdev, bool *has_mux,
->         *has_mux = supports_mux;
->         *has_opt = !!optimus_funcs;
->         *has_opt_flags = optimus_funcs & (1 << NOUVEAU_DSM_OPTIMUS_FLAGS);
-> +       *has_power_resources = false;
->
->         if (optimus_funcs) {
->                 uint32_t result;
-> @@ -247,6 +267,8 @@ static void nouveau_dsm_pci_probe(struct pci_dev *pdev, bool *has_mux,
->                          (result & OPTIMUS_ENABLED) ? "enabled" : "disabled",
->                          (result & OPTIMUS_DYNAMIC_PWR_CAP) ? "dynamic power, " : "",
->                          (result & OPTIMUS_HDA_CODEC_MASK) ? "hda bios codec supported" : "");
-> +
-> +               *has_power_resources = nouveau_pr3_present(pdev);
->         }
->  }
->
-> @@ -258,6 +280,7 @@ static bool nouveau_dsm_detect(void)
->         bool has_mux = false;
->         bool has_optimus = false;
->         bool has_optimus_flags = false;
-> +       bool has_power_resources = false;
->         int vga_count = 0;
->         bool guid_valid;
->         bool ret = false;
-> @@ -273,14 +296,14 @@ static bool nouveau_dsm_detect(void)
->                 vga_count++;
->
->                 nouveau_dsm_pci_probe(pdev, &has_mux, &has_optimus,
-> -                                     &has_optimus_flags);
-> +                                     &has_optimus_flags, &has_power_resources);
->         }
->
->         while ((pdev = pci_get_class(PCI_CLASS_DISPLAY_3D << 8, pdev)) != NULL) {
->                 vga_count++;
->
->                 nouveau_dsm_pci_probe(pdev, &has_mux, &has_optimus,
-> -                                     &has_optimus_flags);
-> +                                     &has_optimus_flags, &has_power_resources);
->         }
->
-This and earlier patch break things in a subtle way.
+> Given this hardware actually has DT bindings, I'd prefer matching against the
+> compatible string, and keeping the variant part in axp20x_usb_power. You could
+> still use the AXPXXX_ID constants, but just the ones used in the bindings. This
+> could potentially make adding support for newer PMICs easier by only needing a
+> compatible DT entry.
 
-Namely: upon the second (and any later) call into the
-nouveau_dsm_pci_probe() function, the had_foo flags are reset. Thus
-only the specifics of the _final_ device are being used (at a later
-stage). IMHO one should change that to "_any_ device", which will
-match the original code and the actual intent further down in the
-file.
+Fixed for v2 of this patch-set.
+
+>>                         break;
+>>                 case AXP20X_VBUC_CLIMIT_500mA:
+>>                         val->intval = 500000;
+>> @@ -122,16 +131,23 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+>>                         break;
+>>                 }
+>>
+>> -               ret = regmap_read(power->regmap, AXP20X_USB_OTG_STATUS, &v);
+>> -               if (ret)
+>> -                       return ret;
+>> +               val->intval = POWER_SUPPLY_HEALTH_GOOD;
+>>
+>> -               if (!(v & AXP20X_USB_STATUS_VBUS_VALID)) {
+>> -                       val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
+>> +               switch (power->axp20x->variant) {
+>> +               case AXP202_ID:
+>> +               case AXP209_ID:
+>> +                       ret = regmap_read(power->regmap,
+>> +                                         AXP20X_USB_OTG_STATUS, &v);
+>> +                       if (ret)
+>> +                               return ret;
+>> +
+>> +                       if (!(v & AXP20X_USB_STATUS_VBUS_VALID))
+>> +                               val->intval =
+>> +                                       POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
+>> +                       break;
+>> +               default:
+>
+> It seems like you'd return only POWER_SUPPLY_HEALTH_GOOD for AXP22x, even if
+> VBUS is actually disconnected.
+
+No, the following sits just above the code in the patch context above:
+
+         case POWER_SUPPLY_PROP_HEALTH:
+                 if (!(input & AXP20X_PWR_STATUS_VBUS_PRESENT)) {
+                         val->intval = POWER_SUPPLY_HEALTH_UNKNOWN;
+                         break;
+                 }
+
+Actually the break from above is part of the context, but the relevant
+bits are missing.
+
+
+
+>
+>>                         break;
+>>                 }
+>> -
+>> -               val->intval = POWER_SUPPLY_HEALTH_GOOD;
+>>                 break;
+>>         case POWER_SUPPLY_PROP_PRESENT:
+>>                 val->intval = !!(input & AXP20X_PWR_STATUS_VBUS_PRESENT);
+>> @@ -156,6 +172,14 @@ static enum power_supply_property axp20x_usb_power_properties[] = {
+>>         POWER_SUPPLY_PROP_CURRENT_NOW,
+>>  };
+>>
+>> +static enum power_supply_property axp22x_usb_power_properties[] = {
+>> +       POWER_SUPPLY_PROP_HEALTH,
+>> +       POWER_SUPPLY_PROP_PRESENT,
+>> +       POWER_SUPPLY_PROP_ONLINE,
+>> +       POWER_SUPPLY_PROP_VOLTAGE_MIN,
+>> +       POWER_SUPPLY_PROP_CURRENT_MAX,
+>> +};
+>> +
+>>  static const struct power_supply_desc axp20x_usb_power_desc = {
+>>         .name = "axp20x-usb",
+>>         .type = POWER_SUPPLY_TYPE_USB,
+>> @@ -164,13 +188,25 @@ static const struct power_supply_desc axp20x_usb_power_desc = {
+>>         .get_property = axp20x_usb_power_get_property,
+>>  };
+>>
+>> +static const struct power_supply_desc axp22x_usb_power_desc = {
+>> +       .name = "axp20x-usb",
+>> +       .type = POWER_SUPPLY_TYPE_USB,
+>> +       .properties = axp22x_usb_power_properties,
+>> +       .num_properties = ARRAY_SIZE(axp22x_usb_power_properties),
+>> +       .get_property = axp20x_usb_power_get_property,
+>> +};
+>> +
+>>  static int axp20x_usb_power_probe(struct platform_device *pdev)
+>>  {
+>>         struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
+>>         struct power_supply_config psy_cfg = {};
+>>         struct axp20x_usb_power *power;
+>> -       static const char * const irq_names[] = { "VBUS_PLUGIN",
+>> -               "VBUS_REMOVAL", "VBUS_VALID", "VBUS_NOT_VALID" };
+>> +       static const char * const axp20x_irq_names[] = { "VBUS_PLUGIN",
+>> +               "VBUS_REMOVAL", "VBUS_VALID", "VBUS_NOT_VALID", NULL };
+>> +       static const char * const axp22x_irq_names[] = {
+>> +               "VBUS_PLUGIN", "VBUS_REMOVAL", NULL };
+>> +       static const char * const *irq_names;
+>> +       const struct power_supply_desc *usb_power_desc;
+>>         int i, irq, ret;
+>>
+>>         if (!of_device_is_available(pdev->dev.of_node))
+>> @@ -185,31 +221,50 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+>>         if (!power)
+>>                 return -ENOMEM;
+>>
+>> +       power->axp20x = axp20x;
+>>         power->regmap = axp20x->regmap;
+>>
+>> -       /* Enable vbus valid checking */
+>> -       ret = regmap_update_bits(power->regmap, AXP20X_VBUS_MON,
+>> -                   AXP20X_VBUS_MON_VBUS_VALID, AXP20X_VBUS_MON_VBUS_VALID);
+>> -       if (ret)
+>> -               return ret;
+>> +       switch (power->axp20x->variant) {
+>> +       case AXP202_ID:
+>> +       case AXP209_ID:
+>> +               /* Enable vbus valid checking */
+>> +               ret = regmap_update_bits(power->regmap, AXP20X_VBUS_MON,
+>> +                                        AXP20X_VBUS_MON_VBUS_VALID,
+>> +                                        AXP20X_VBUS_MON_VBUS_VALID);
+>> +               if (ret)
+>> +                       return ret;
+>>
+>> -       /* Enable vbus voltage and current measurement */
+>> -       ret = regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
+>> +               /* Enable vbus voltage and current measurement */
+>> +               ret = regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
+>>                         AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT,
+>>                         AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT);
+>> -       if (ret)
+>> -               return ret;
+>> +               if (ret)
+>> +                       return ret;
+>> +
+>> +               usb_power_desc = &axp20x_usb_power_desc;
+>> +               irq_names = axp20x_irq_names;
+>> +               break;
+>> +       case AXP221_ID:
+>> +       case AXP223_ID:
+>> +               usb_power_desc = &axp22x_usb_power_desc;
+>> +               irq_names = axp22x_irq_names;
+>> +               break;
+>> +       default:
+>> +               dev_err(&pdev->dev, "Unsupported AXP variant: %ld\n",
+>> +                       axp20x->variant);
+>> +               return -EINVAL;
+>> +       }
+>
+> As mentioned above, I'd prefer using the compatible string.
+
+Fixed for v2.
 
 Regards,
-Emil
+
+Hans
+
+
+
+>
+> Regards
+> ChenYu
+>
+>>
+>>         psy_cfg.of_node = pdev->dev.of_node;
+>>         psy_cfg.drv_data = power;
+>>
+>> -       power->supply = devm_power_supply_register(&pdev->dev,
+>> -                                       &axp20x_usb_power_desc, &psy_cfg);
+>> +       power->supply = devm_power_supply_register(&pdev->dev, usb_power_desc,
+>> +                                                  &psy_cfg);
+>>         if (IS_ERR(power->supply))
+>>                 return PTR_ERR(power->supply);
+>>
+>>         /* Request irqs after registering, as irqs may trigger immediately */
+>> -       for (i = 0; i < ARRAY_SIZE(irq_names); i++) {
+>> +       for (i = 0; irq_names[i]; i++) {
+>>                 irq = platform_get_irq_byname(pdev, irq_names[i]);
+>>                 if (irq < 0) {
+>>                         dev_warn(&pdev->dev, "No IRQ for %s: %d\n",
+>> --
+>> 2.7.4
+>>
