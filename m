@@ -1,249 +1,134 @@
-From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Subject: Re: Re: [PATCH 1/3] power: axp20x_usb: Add support for
- usb power-supply on axp22x pmics
-Date: Fri, 27 May 2016 15:59:23 +0200
-Message-ID: <c918e934-17f5-b393-5bee-ac04f838781e@redhat.com>
-References: <1463248289-16456-1-git-send-email-hdegoede@redhat.com>
- <CAGb2v67N7R5U_+dZ4ZO+VuGKo6wbVALnrMq3=Ceec8J122LiDA@mail.gmail.com>
-Reply-To: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
+From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
+ runtime PM
+Date: Fri, 27 May 2016 23:31:23 +0200
+Message-ID: <20160527213123.GB1777@al>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+ <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+ <CACvgo514AB=rkRGWrwmPHTX=hhEF8Jhzdg1hQkX1_C4A_zYkzg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Return-path: <linux-sunxi+bncBDRZXY4CYYORBRNFUG5AKGQE22SJARI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <CAGb2v67N7R5U_+dZ4ZO+VuGKo6wbVALnrMq3=Ceec8J122LiDA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CACvgo514AB=rkRGWrwmPHTX=hhEF8Jhzdg1hQkX1_C4A_zYkzg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Emil Velikov <emil.l.velikov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ML nouveau <nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, ML dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On 16-05-16 09:07, Chen-Yu Tsai wrote:
-> Hi,
->
-> On Sun, May 15, 2016 at 1:51 AM, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org> wrote:
->> The usb power-supply on the axp22x pmics is mostly identical to the
->> one on the axp20x pmics. One significant difference is that it cannot
->> measure / monitor the usb voltage / current.
->>
->> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
->> ---
->>  drivers/power/axp20x_usb_power.c | 99 +++++++++++++++++++++++++++++++---------
->>  1 file changed, 77 insertions(+), 22 deletions(-)
->>
->> diff --git a/drivers/power/axp20x_usb_power.c b/drivers/power/axp20x_usb_power.c
->> index 421a90b..b3c1d8e 100644
->> --- a/drivers/power/axp20x_usb_power.c
->> +++ b/drivers/power/axp20x_usb_power.c
->> @@ -42,6 +42,7 @@
->>  #define AXP20X_VBUS_MON_VBUS_VALID     BIT(3)
->>
->>  struct axp20x_usb_power {
->> +       struct axp20x_dev *axp20x;
->>         struct regmap *regmap;
->>         struct power_supply *supply;
->>  };
->> @@ -85,7 +86,15 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
->>
->>                 switch (v & AXP20X_VBUS_CLIMIT_MASK) {
->>                 case AXP20X_VBUC_CLIMIT_100mA:
->> -                       val->intval = 100000;
->> +                       switch (power->axp20x->variant) {
->> +                       case AXP202_ID:
->> +                       case AXP209_ID:
->> +                               val->intval = 100000;
->> +                               break;
->> +                       default:
->> +                               val->intval = -1; /* No 100mA limit */
->> +                               break;
->> +                       }
->
-> Given this hardware actually has DT bindings, I'd prefer matching against the
-> compatible string, and keeping the variant part in axp20x_usb_power. You could
-> still use the AXPXXX_ID constants, but just the ones used in the bindings. This
-> could potentially make adding support for newer PMICs easier by only needing a
-> compatible DT entry.
-
-Fixed for v2 of this patch-set.
-
->>                         break;
->>                 case AXP20X_VBUC_CLIMIT_500mA:
->>                         val->intval = 500000;
->> @@ -122,16 +131,23 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
->>                         break;
->>                 }
->>
->> -               ret = regmap_read(power->regmap, AXP20X_USB_OTG_STATUS, &v);
->> -               if (ret)
->> -                       return ret;
->> +               val->intval = POWER_SUPPLY_HEALTH_GOOD;
->>
->> -               if (!(v & AXP20X_USB_STATUS_VBUS_VALID)) {
->> -                       val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
->> +               switch (power->axp20x->variant) {
->> +               case AXP202_ID:
->> +               case AXP209_ID:
->> +                       ret = regmap_read(power->regmap,
->> +                                         AXP20X_USB_OTG_STATUS, &v);
->> +                       if (ret)
->> +                               return ret;
->> +
->> +                       if (!(v & AXP20X_USB_STATUS_VBUS_VALID))
->> +                               val->intval =
->> +                                       POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
->> +                       break;
->> +               default:
->
-> It seems like you'd return only POWER_SUPPLY_HEALTH_GOOD for AXP22x, even if
-> VBUS is actually disconnected.
-
-No, the following sits just above the code in the patch context above:
-
-         case POWER_SUPPLY_PROP_HEALTH:
-                 if (!(input & AXP20X_PWR_STATUS_VBUS_PRESENT)) {
-                         val->intval = POWER_SUPPLY_HEALTH_UNKNOWN;
-                         break;
-                 }
-
-Actually the break from above is part of the context, but the relevant
-bits are missing.
-
-
-
->
->>                         break;
->>                 }
->> -
->> -               val->intval = POWER_SUPPLY_HEALTH_GOOD;
->>                 break;
->>         case POWER_SUPPLY_PROP_PRESENT:
->>                 val->intval = !!(input & AXP20X_PWR_STATUS_VBUS_PRESENT);
->> @@ -156,6 +172,14 @@ static enum power_supply_property axp20x_usb_power_properties[] = {
->>         POWER_SUPPLY_PROP_CURRENT_NOW,
->>  };
->>
->> +static enum power_supply_property axp22x_usb_power_properties[] = {
->> +       POWER_SUPPLY_PROP_HEALTH,
->> +       POWER_SUPPLY_PROP_PRESENT,
->> +       POWER_SUPPLY_PROP_ONLINE,
->> +       POWER_SUPPLY_PROP_VOLTAGE_MIN,
->> +       POWER_SUPPLY_PROP_CURRENT_MAX,
->> +};
->> +
->>  static const struct power_supply_desc axp20x_usb_power_desc = {
->>         .name = "axp20x-usb",
->>         .type = POWER_SUPPLY_TYPE_USB,
->> @@ -164,13 +188,25 @@ static const struct power_supply_desc axp20x_usb_power_desc = {
->>         .get_property = axp20x_usb_power_get_property,
->>  };
->>
->> +static const struct power_supply_desc axp22x_usb_power_desc = {
->> +       .name = "axp20x-usb",
->> +       .type = POWER_SUPPLY_TYPE_USB,
->> +       .properties = axp22x_usb_power_properties,
->> +       .num_properties = ARRAY_SIZE(axp22x_usb_power_properties),
->> +       .get_property = axp20x_usb_power_get_property,
->> +};
->> +
->>  static int axp20x_usb_power_probe(struct platform_device *pdev)
->>  {
->>         struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
->>         struct power_supply_config psy_cfg = {};
->>         struct axp20x_usb_power *power;
->> -       static const char * const irq_names[] = { "VBUS_PLUGIN",
->> -               "VBUS_REMOVAL", "VBUS_VALID", "VBUS_NOT_VALID" };
->> +       static const char * const axp20x_irq_names[] = { "VBUS_PLUGIN",
->> +               "VBUS_REMOVAL", "VBUS_VALID", "VBUS_NOT_VALID", NULL };
->> +       static const char * const axp22x_irq_names[] = {
->> +               "VBUS_PLUGIN", "VBUS_REMOVAL", NULL };
->> +       static const char * const *irq_names;
->> +       const struct power_supply_desc *usb_power_desc;
->>         int i, irq, ret;
->>
->>         if (!of_device_is_available(pdev->dev.of_node))
->> @@ -185,31 +221,50 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
->>         if (!power)
->>                 return -ENOMEM;
->>
->> +       power->axp20x = axp20x;
->>         power->regmap = axp20x->regmap;
->>
->> -       /* Enable vbus valid checking */
->> -       ret = regmap_update_bits(power->regmap, AXP20X_VBUS_MON,
->> -                   AXP20X_VBUS_MON_VBUS_VALID, AXP20X_VBUS_MON_VBUS_VALID);
->> -       if (ret)
->> -               return ret;
->> +       switch (power->axp20x->variant) {
->> +       case AXP202_ID:
->> +       case AXP209_ID:
->> +               /* Enable vbus valid checking */
->> +               ret = regmap_update_bits(power->regmap, AXP20X_VBUS_MON,
->> +                                        AXP20X_VBUS_MON_VBUS_VALID,
->> +                                        AXP20X_VBUS_MON_VBUS_VALID);
->> +               if (ret)
->> +                       return ret;
->>
->> -       /* Enable vbus voltage and current measurement */
->> -       ret = regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
->> +               /* Enable vbus voltage and current measurement */
->> +               ret = regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
->>                         AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT,
->>                         AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT);
->> -       if (ret)
->> -               return ret;
->> +               if (ret)
->> +                       return ret;
->> +
->> +               usb_power_desc = &axp20x_usb_power_desc;
->> +               irq_names = axp20x_irq_names;
->> +               break;
->> +       case AXP221_ID:
->> +       case AXP223_ID:
->> +               usb_power_desc = &axp22x_usb_power_desc;
->> +               irq_names = axp22x_irq_names;
->> +               break;
->> +       default:
->> +               dev_err(&pdev->dev, "Unsupported AXP variant: %ld\n",
->> +                       axp20x->variant);
->> +               return -EINVAL;
->> +       }
->
-> As mentioned above, I'd prefer using the compatible string.
-
-Fixed for v2.
-
-Regards,
-
-Hans
-
-
-
->
-> Regards
-> ChenYu
->
->>
->>         psy_cfg.of_node = pdev->dev.of_node;
->>         psy_cfg.drv_data = power;
->>
->> -       power->supply = devm_power_supply_register(&pdev->dev,
->> -                                       &axp20x_usb_power_desc, &psy_cfg);
->> +       power->supply = devm_power_supply_register(&pdev->dev, usb_power_desc,
->> +                                                  &psy_cfg);
->>         if (IS_ERR(power->supply))
->>                 return PTR_ERR(power->supply);
->>
->>         /* Request irqs after registering, as irqs may trigger immediately */
->> -       for (i = 0; i < ARRAY_SIZE(irq_names); i++) {
->> +       for (i = 0; irq_names[i]; i++) {
->>                 irq = platform_get_irq_byname(pdev, irq_names[i]);
->>                 if (irq < 0) {
->>                         dev_warn(&pdev->dev, "No IRQ for %s: %d\n",
->> --
->> 2.7.4
->>
+T24gRnJpLCBNYXkgMjcsIDIwMTYgYXQgMDI6MDE6MzlQTSArMDEwMCwgRW1pbCBWZWxpa292IHdy
+b3RlOgo+IEhpIFBldGVyLAo+IAo+IE9uIDI0IE1heSAyMDE2IGF0IDIzOjUzLCBQZXRlciBXdSA8
+cGV0ZXJAbGVrZW5zdGV5bi5ubD4gd3JvdGU6Cj4gPiBTaW5jZSAiUENJOiBBZGQgcnVudGltZSBQ
+TSBzdXBwb3J0IGZvciBQQ0llIHBvcnRzIiwgdGhlIHBhcmVudCBQQ0llIHBvcnQKPiA+IGNhbiBi
+ZSBydW50aW1lLXN1c3BlbmRlZCB3aGljaCBkaXNhYmxlcyBwb3dlciByZXNvdXJjZXMgdmlhIEFD
+UEkuIFRoaXMKPiA+IGlzIGluY29tcGF0aWJsZSB3aXRoIERTTSwgcmVzdWx0aW5nIGluIGEgR1BV
+IGRldmljZSB3aGljaCBpcyBzdGlsbCBpbiBEMwo+ID4gYW5kIGxvY2tzIHVwIHRoZSBrZXJuZWwg
+b24gcmVzdW1lLgo+ID4KPiA+IE1pcnJvciB0aGUgYmVoYXZpb3Igb2YgV2luZG93cyA4IGFuZCBu
+ZXdlclsxXSAoYXMgb2JzZXJ2ZWQgdmlhIGFuIEFNTGkKPiA+IGRlYnVnZ2VyIHRyYWNlKSBhbmQg
+c3RvcCB1c2luZyB0aGUgRFNNIGZ1bmN0aW9ucyBmb3IgRDNjb2xkIHdoZW4gcG93ZXIKPiA+IHJl
+c291cmNlcyBhcmUgYXZhaWxhYmxlIG9uIHRoZSBwYXJlbnQgUENJZSBwb3J0Lgo+ID4KPiA+ICBb
+MV06IGh0dHBzOi8vbXNkbi5taWNyb3NvZnQuY29tL3dpbmRvd3MvaGFyZHdhcmUvZHJpdmVycy9i
+cmluZ3VwL2Zpcm13YXJlLXJlcXVpcmVtZW50cy1mb3ItZDNjb2xkCj4gPgo+ID4gU2lnbmVkLW9m
+Zi1ieTogUGV0ZXIgV3UgPHBldGVyQGxla2Vuc3RleW4ubmw+Cj4gPiAtLS0KPiA+ICBkcml2ZXJz
+L2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGkuYyB8IDM0ICsrKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKy0tLS0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgMzAgaW5zZXJ0aW9ucygrKSwgNCBk
+ZWxldGlvbnMoLSkKPiA+Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL25vdXZlYXUv
+bm91dmVhdV9hY3BpLmMgYi9kcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGkuYwo+
+ID4gaW5kZXggZGY5ZjczZS4uZTQ2OWRmNyAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvZ3B1L2Ry
+bS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5jCj4gPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vbm91dmVh
+dS9ub3V2ZWF1X2FjcGkuYwo+ID4gQEAgLTQ2LDYgKzQ2LDcgQEAgc3RhdGljIHN0cnVjdCBub3V2
+ZWF1X2RzbV9wcml2IHsKPiA+ICAgICAgICAgYm9vbCBkc21fZGV0ZWN0ZWQ7Cj4gPiAgICAgICAg
+IGJvb2wgb3B0aW11c19kZXRlY3RlZDsKPiA+ICAgICAgICAgYm9vbCBvcHRpbXVzX2ZsYWdzX2Rl
+dGVjdGVkOwo+ID4gKyAgICAgICBib29sIG9wdGltdXNfc2tpcF9kc207Cj4gPiAgICAgICAgIGFj
+cGlfaGFuZGxlIGRoYW5kbGU7Cj4gPiAgICAgICAgIGFjcGlfaGFuZGxlIHJvbV9oYW5kbGU7Cj4g
+PiAgfSBub3V2ZWF1X2RzbV9wcml2Owo+ID4gQEAgLTIxMiw4ICsyMTMsMjYgQEAgc3RhdGljIGNv
+bnN0IHN0cnVjdCB2Z2Ffc3dpdGNoZXJvb19oYW5kbGVyIG5vdXZlYXVfZHNtX2hhbmRsZXIgPSB7
+Cj4gPiAgICAgICAgIC5nZXRfY2xpZW50X2lkID0gbm91dmVhdV9kc21fZ2V0X2NsaWVudF9pZCwK
+PiA+ICB9Owo+ID4KPiA+ICsvKiBGaXJtd2FyZSBzdXBwb3J0aW5nIFdpbmRvd3MgOCBvciBsYXRl
+ciBkbyBub3QgdXNlIF9EU00gdG8gcHV0IHRoZSBkZXZpY2UgaW50bwo+ID4gKyAqIEQzY29sZCwg
+dGhleSBpbnN0ZWFkIHJlbHkgb24gZGlzYWJsaW5nIHBvd2VyIHJlc291cmNlcyBvbiB0aGUgcGFy
+ZW50LiAqLwo+ID4gK3N0YXRpYyBib29sIG5vdXZlYXVfcHIzX3ByZXNlbnQoc3RydWN0IHBjaV9k
+ZXYgKnBkZXYpCj4gPiArewo+ID4gKyAgICAgICBzdHJ1Y3QgcGNpX2RldiAqcGFyZW50X3BkZXYg
+PSBwY2lfdXBzdHJlYW1fYnJpZGdlKHBkZXYpOwo+ID4gKyAgICAgICBzdHJ1Y3QgYWNwaV9kZXZp
+Y2UgKmFkOwo+ID4gKwo+ID4gKyAgICAgICBpZiAoIXBhcmVudF9wZGV2KQo+ID4gKyAgICAgICAg
+ICAgICAgIHJldHVybiBmYWxzZTsKPiA+ICsKPiA+ICsgICAgICAgYWQgPSBBQ1BJX0NPTVBBTklP
+TigmcGFyZW50X3BkZXYtPmRldik7Cj4gPiArICAgICAgIGlmICghYWQpCj4gPiArICAgICAgICAg
+ICAgICAgcmV0dXJuIGZhbHNlOwo+ID4gKwo+ID4gKyAgICAgICByZXR1cm4gYWQtPnBvd2VyLmZs
+YWdzLnBvd2VyX3Jlc291cmNlczsKPiA+ICt9Cj4gPiArCj4gPiAgc3RhdGljIHZvaWQgbm91dmVh
+dV9kc21fcGNpX3Byb2JlKHN0cnVjdCBwY2lfZGV2ICpwZGV2LCBib29sICpoYXNfbXV4LAo+ID4g
+LSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGJvb2wgKmhhc19vcHQsIGJvb2wgKmhh
+c19vcHRfZmxhZ3MpCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYm9vbCAq
+aGFzX29wdCwgYm9vbCAqaGFzX29wdF9mbGFncywKPiA+ICsgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICBib29sICpoYXNfcG93ZXJfcmVzb3VyY2VzKQo+ID4gIHsKPiA+ICAgICAgICAg
+YWNwaV9oYW5kbGUgZGhhbmRsZTsKPiA+ICAgICAgICAgYm9vbCBzdXBwb3J0c19tdXg7Cj4gPiBA
+QCAtMjM4LDYgKzI1Nyw3IEBAIHN0YXRpYyB2b2lkIG5vdXZlYXVfZHNtX3BjaV9wcm9iZShzdHJ1
+Y3QgcGNpX2RldiAqcGRldiwgYm9vbCAqaGFzX211eCwKPiA+ICAgICAgICAgKmhhc19tdXggPSBz
+dXBwb3J0c19tdXg7Cj4gPiAgICAgICAgICpoYXNfb3B0ID0gISFvcHRpbXVzX2Z1bmNzOwo+ID4g
+ICAgICAgICAqaGFzX29wdF9mbGFncyA9IG9wdGltdXNfZnVuY3MgJiAoMSA8PCBOT1VWRUFVX0RT
+TV9PUFRJTVVTX0ZMQUdTKTsKPiA+ICsgICAgICAgKmhhc19wb3dlcl9yZXNvdXJjZXMgPSBmYWxz
+ZTsKPiA+Cj4gPiAgICAgICAgIGlmIChvcHRpbXVzX2Z1bmNzKSB7Cj4gPiAgICAgICAgICAgICAg
+ICAgdWludDMyX3QgcmVzdWx0Owo+ID4gQEAgLTI0Nyw2ICsyNjcsOCBAQCBzdGF0aWMgdm9pZCBu
+b3V2ZWF1X2RzbV9wY2lfcHJvYmUoc3RydWN0IHBjaV9kZXYgKnBkZXYsIGJvb2wgKmhhc19tdXgs
+Cj4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgKHJlc3VsdCAmIE9QVElNVVNfRU5BQkxFRCkg
+PyAiZW5hYmxlZCIgOiAiZGlzYWJsZWQiLAo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgIChy
+ZXN1bHQgJiBPUFRJTVVTX0RZTkFNSUNfUFdSX0NBUCkgPyAiZHluYW1pYyBwb3dlciwgIiA6ICIi
+LAo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgIChyZXN1bHQgJiBPUFRJTVVTX0hEQV9DT0RF
+Q19NQVNLKSA/ICJoZGEgYmlvcyBjb2RlYyBzdXBwb3J0ZWQiIDogIiIpOwo+ID4gKwo+ID4gKyAg
+ICAgICAgICAgICAgICpoYXNfcG93ZXJfcmVzb3VyY2VzID0gbm91dmVhdV9wcjNfcHJlc2VudChw
+ZGV2KTsKPiA+ICAgICAgICAgfQo+ID4gIH0KPiA+Cj4gPiBAQCAtMjU4LDYgKzI4MCw3IEBAIHN0
+YXRpYyBib29sIG5vdXZlYXVfZHNtX2RldGVjdCh2b2lkKQo+ID4gICAgICAgICBib29sIGhhc19t
+dXggPSBmYWxzZTsKPiA+ICAgICAgICAgYm9vbCBoYXNfb3B0aW11cyA9IGZhbHNlOwo+ID4gICAg
+ICAgICBib29sIGhhc19vcHRpbXVzX2ZsYWdzID0gZmFsc2U7Cj4gPiArICAgICAgIGJvb2wgaGFz
+X3Bvd2VyX3Jlc291cmNlcyA9IGZhbHNlOwo+ID4gICAgICAgICBpbnQgdmdhX2NvdW50ID0gMDsK
+PiA+ICAgICAgICAgYm9vbCBndWlkX3ZhbGlkOwo+ID4gICAgICAgICBib29sIHJldCA9IGZhbHNl
+Owo+ID4gQEAgLTI3MywxNCArMjk2LDE0IEBAIHN0YXRpYyBib29sIG5vdXZlYXVfZHNtX2RldGVj
+dCh2b2lkKQo+ID4gICAgICAgICAgICAgICAgIHZnYV9jb3VudCsrOwo+ID4KPiA+ICAgICAgICAg
+ICAgICAgICBub3V2ZWF1X2RzbV9wY2lfcHJvYmUocGRldiwgJmhhc19tdXgsICZoYXNfb3B0aW11
+cywKPiA+IC0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJmhhc19vcHRpbXVz
+X2ZsYWdzKTsKPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJmhhc19v
+cHRpbXVzX2ZsYWdzLCAmaGFzX3Bvd2VyX3Jlc291cmNlcyk7Cj4gPiAgICAgICAgIH0KPiA+Cj4g
+PiAgICAgICAgIHdoaWxlICgocGRldiA9IHBjaV9nZXRfY2xhc3MoUENJX0NMQVNTX0RJU1BMQVlf
+M0QgPDwgOCwgcGRldikpICE9IE5VTEwpIHsKPiA+ICAgICAgICAgICAgICAgICB2Z2FfY291bnQr
+KzsKPiA+Cj4gPiAgICAgICAgICAgICAgICAgbm91dmVhdV9kc21fcGNpX3Byb2JlKHBkZXYsICZo
+YXNfbXV4LCAmaGFzX29wdGltdXMsCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICZoYXNfb3B0aW11c19mbGFncyk7Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICZoYXNfb3B0aW11c19mbGFncywgJmhhc19wb3dlcl9yZXNvdXJjZXMpOwo+
+ID4gICAgICAgICB9Cj4gPgo+IFRoaXMgYW5kIGVhcmxpZXIgcGF0Y2ggYnJlYWsgdGhpbmdzIGlu
+IGEgc3VidGxlIHdheS4KPiAKPiBOYW1lbHk6IHVwb24gdGhlIHNlY29uZCAoYW5kIGFueSBsYXRl
+cikgY2FsbCBpbnRvIHRoZQo+IG5vdXZlYXVfZHNtX3BjaV9wcm9iZSgpIGZ1bmN0aW9uLCB0aGUg
+aGFkX2ZvbyBmbGFncyBhcmUgcmVzZXQuIFRodXMKPiBvbmx5IHRoZSBzcGVjaWZpY3Mgb2YgdGhl
+IF9maW5hbF8gZGV2aWNlIGFyZSBiZWluZyB1c2VkIChhdCBhIGxhdGVyCj4gc3RhZ2UpLiBJTUhP
+IG9uZSBzaG91bGQgY2hhbmdlIHRoYXQgdG8gIl9hbnlfIGRldmljZSIsIHdoaWNoIHdpbGwKPiBt
+YXRjaCB0aGUgb3JpZ2luYWwgY29kZSBhbmQgdGhlIGFjdHVhbCBpbnRlbnQgZnVydGhlciBkb3du
+IGluIHRoZQo+IGZpbGUuCgpUaGUgZmxhZ3MgYXJlIG9ubHkgcmVzZXQgaWYgYW55IG9mIHRoZSBN
+VVggb3IgT3B0aW11cyBoYW5kbGVzIGFyZSBmb3VuZC4KSWYgYm90aCBhcmUgbWlzc2luZywgdGhl
+IGZsYWdzIGFyZSBub3Qgb3ZlcnJpZGRlbi4gVGhpcyBpcyBmcm9tIHBhdGNoIDE6CgorICAgICAg
+IC8qIERvZXMgbm90IGxvb2sgbGlrZSBhIE52aWRpYSBkZXZpY2UuICovCisgICAgICAgaWYgKCFz
+dXBwb3J0c19tdXggJiYgIXN1cHBvcnRzX29wdCkKKyAgICAgICAgICAgICAgIHJldHVybjsKClRo
+ZSByZWFzb24gd2h5IGxhdGVyIGNhbGxzIG92ZXJyaWRlIGVhcmx5IG9uZXMgaXMgYmVjYXVzZSBz
+b21lIE9wdGltdXMKbGFwdG9wcyBoYXZlIHRoZSBfRFNNIG1ldGhvZCBvbiBib3RoIHRoZSBJbnRl
+bCBHUFUgKDAwOjAyLjApIGFuZCB0aGUKTnZpZGlhIG9uZSAoMDE6MDAuMCkuCgpUaGUgcHJldmlv
+dXMgZGV0ZWN0aW9uIG1ldGhvZCB3b3VsZCBmYWlsIGluIHRoaXMgc2NlbmFyaW86CiAxLiBPbmUg
+ZGV2aWNlIHJlcG9ydHMgc3VwcG9ydCBmb3IgWCBhbmQgWSAoaGFzX3ggPSAxLCBoYXNfeSA9IDEp
+LiBXcml0ZQogICAgQUNQSSBoYW5kbGUgQSB0byBub3V2ZWF1X2RzbV9wcml2LmRoYW5kbGUuCiAy
+LiBBbm90aGVyIGRldmljZSByZXBvcnRzIHN1cHBvcnQgZm9yIFggb25seSAoaGFzX3ggPSAxKS4g
+V3JpdGUKICAgIEFDUEkgaGFuZGxlIEIgdG8gbm91dmVhdV9kc21fcHJpdi5kaGFuZGxlLgogMy4g
+RW5kIHJlc3VsdDogaGFzX3ggPSAxLCBoYXNfeSA9IDEsIGRoYW5kbGUgPSBCLiBCdXQgQUNQSSBo
+YW5kbGUgQgogICAgZG9lcyBub3QgcmVhbGx5IHN1cHBvcnQgWSEKVGhpcyBpcyB0aGVvcmV0aWNh
+bCBzaW5jZSBJIGRvbid0IHRoaW5rIHRoYXQgc3VjaCBmaXJtd2FyZSBvY2N1cnMgaW4KcHJhY3Rp
+Y2UsIGJ1dCB0aGVuIGltbyBpdCB3b3VsZCBiZSBiZXR0ZXIgdG8gZW5mb3JjZSBpbiBjb2RlIHRo
+YXQgdGhlCmNhc2UgY2Fubm90IG9jY3VyIChhcyBpcyBkb25lIGluIHBhdGNoIDEpLiBVbmxlc3Mg
+dGhlIE1VWCBEU00gaGFzIHNvbWUKbWFnaWMgSSBhbSBub3QgYXdhcmUgb2YuCi0tIApLaW5kIHJl
+Z2FyZHMsClBldGVyIFd1Cmh0dHBzOi8vbGVrZW5zdGV5bi5ubApfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1
+QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWls
+bWFuL2xpc3RpbmZvL25vdXZlYXUK
