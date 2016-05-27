@@ -1,96 +1,127 @@
-From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
-	runtime PM
-Date: Fri, 27 May 2016 13:10:37 +0200
-Message-ID: <20160527111037.GA1436@al>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [Nouveau] [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
+ runtime PM
+Date: Fri, 27 May 2016 13:55:14 +0200
+Message-ID: <d329650d-c0b9-c40d-a647-f9de09b7b848@redhat.com>
 References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
  <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
- <20160525135535.GN1789@lahna.fi.intel.com>
+ <20160525135535.GN1789@lahna.fi.intel.com> <20160527111037.GA1436@al>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160525135535.GN1789-3PARRvDOhMZrdx17CPfAsdBPR1lH4CV8@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:35279 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751450AbcE0LzV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 27 May 2016 07:55:21 -0400
+In-Reply-To: <20160527111037.GA1436@al>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Wu <peter@lekensteyn.nl>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, dri-devel@lists.freedesktop.org, Bjorn Helgaas <helgaas@kernel.org>, nouveau@lists.freedesktop.org, Dave Airlie <airlied@redhat.com>
 
-T24gV2VkLCBNYXkgMjUsIDIwMTYgYXQgMDQ6NTU6MzVQTSArMDMwMCwgTWlrYSBXZXN0ZXJiZXJn
-IHdyb3RlOgo+IE9uIFdlZCwgTWF5IDI1LCAyMDE2IGF0IDEyOjUzOjAxQU0gKzAyMDAsIFBldGVy
-IFd1IHdyb3RlOgo+ID4gU2luY2UgIlBDSTogQWRkIHJ1bnRpbWUgUE0gc3VwcG9ydCBmb3IgUENJ
-ZSBwb3J0cyIsIHRoZSBwYXJlbnQgUENJZSBwb3J0Cj4gPiBjYW4gYmUgcnVudGltZS1zdXNwZW5k
-ZWQgd2hpY2ggZGlzYWJsZXMgcG93ZXIgcmVzb3VyY2VzIHZpYSBBQ1BJLiBUaGlzCj4gPiBpcyBp
-bmNvbXBhdGlibGUgd2l0aCBEU00sIHJlc3VsdGluZyBpbiBhIEdQVSBkZXZpY2Ugd2hpY2ggaXMg
-c3RpbGwgaW4gRDMKPiA+IGFuZCBsb2NrcyB1cCB0aGUga2VybmVsIG9uIHJlc3VtZS4KPiA+IAo+
-ID4gTWlycm9yIHRoZSBiZWhhdmlvciBvZiBXaW5kb3dzIDggYW5kIG5ld2VyWzFdIChhcyBvYnNl
-cnZlZCB2aWEgYW4gQU1MaQo+ID4gZGVidWdnZXIgdHJhY2UpIGFuZCBzdG9wIHVzaW5nIHRoZSBE
-U00gZnVuY3Rpb25zIGZvciBEM2NvbGQgd2hlbiBwb3dlcgo+ID4gcmVzb3VyY2VzIGFyZSBhdmFp
-bGFibGUgb24gdGhlIHBhcmVudCBQQ0llIHBvcnQuCj4gPiAKPiA+ICBbMV06IGh0dHBzOi8vbXNk
-bi5taWNyb3NvZnQuY29tL3dpbmRvd3MvaGFyZHdhcmUvZHJpdmVycy9icmluZ3VwL2Zpcm13YXJl
-LXJlcXVpcmVtZW50cy1mb3ItZDNjb2xkCj4gPiAKPiA+IFNpZ25lZC1vZmYtYnk6IFBldGVyIFd1
-IDxwZXRlckBsZWtlbnN0ZXluLm5sPgo+ID4gLS0tCj4gPiAgZHJpdmVycy9ncHUvZHJtL25vdXZl
-YXUvbm91dmVhdV9hY3BpLmMgfCAzNCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0t
-Cj4gPiAgMSBmaWxlIGNoYW5nZWQsIDMwIGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0pCj4g
-PiAKPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGku
-YyBiL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5jCj4gPiBpbmRleCBkZjlm
-NzNlLi5lNDY5ZGY3IDEwMDY0NAo+ID4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL25vdXZlYXUvbm91
-dmVhdV9hY3BpLmMKPiA+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfYWNw
-aS5jCj4gPiBAQCAtNDYsNiArNDYsNyBAQCBzdGF0aWMgc3RydWN0IG5vdXZlYXVfZHNtX3ByaXYg
-ewo+ID4gIAlib29sIGRzbV9kZXRlY3RlZDsKPiA+ICAJYm9vbCBvcHRpbXVzX2RldGVjdGVkOwo+
-ID4gIAlib29sIG9wdGltdXNfZmxhZ3NfZGV0ZWN0ZWQ7Cj4gPiArCWJvb2wgb3B0aW11c19za2lw
-X2RzbTsKPiA+ICAJYWNwaV9oYW5kbGUgZGhhbmRsZTsKPiA+ICAJYWNwaV9oYW5kbGUgcm9tX2hh
-bmRsZTsKPiA+ICB9IG5vdXZlYXVfZHNtX3ByaXY7Cj4gPiBAQCAtMjEyLDggKzIxMywyNiBAQCBz
-dGF0aWMgY29uc3Qgc3RydWN0IHZnYV9zd2l0Y2hlcm9vX2hhbmRsZXIgbm91dmVhdV9kc21faGFu
-ZGxlciA9IHsKPiA+ICAJLmdldF9jbGllbnRfaWQgPSBub3V2ZWF1X2RzbV9nZXRfY2xpZW50X2lk
-LAo+ID4gIH07Cj4gPiAgCj4gPiArLyogRmlybXdhcmUgc3VwcG9ydGluZyBXaW5kb3dzIDggb3Ig
-bGF0ZXIgZG8gbm90IHVzZSBfRFNNIHRvIHB1dCB0aGUgZGV2aWNlIGludG8KPiA+ICsgKiBEM2Nv
-bGQsIHRoZXkgaW5zdGVhZCByZWx5IG9uIGRpc2FibGluZyBwb3dlciByZXNvdXJjZXMgb24gdGhl
-IHBhcmVudC4gKi8KPiA+ICtzdGF0aWMgYm9vbCBub3V2ZWF1X3ByM19wcmVzZW50KHN0cnVjdCBw
-Y2lfZGV2ICpwZGV2KQo+ID4gK3sKPiA+ICsJc3RydWN0IHBjaV9kZXYgKnBhcmVudF9wZGV2ID0g
-cGNpX3Vwc3RyZWFtX2JyaWRnZShwZGV2KTsKPiA+ICsJc3RydWN0IGFjcGlfZGV2aWNlICphZDsK
-PiAKPiBOaXQ6IHBsZWFzZSBjYWxsIHRoaXMgYWRldiBpbnN0ZWFkIG9mIGFkLgoKV2lsbCBkby4K
-Cj4gPiArCj4gPiArCWlmICghcGFyZW50X3BkZXYpCj4gPiArCQlyZXR1cm4gZmFsc2U7Cj4gPiAr
-Cj4gPiArCWFkID0gQUNQSV9DT01QQU5JT04oJnBhcmVudF9wZGV2LT5kZXYpOwo+ID4gKwlpZiAo
-IWFkKQo+ID4gKwkJcmV0dXJuIGZhbHNlOwo+ID4gKwo+ID4gKwlyZXR1cm4gYWQtPnBvd2VyLmZs
-YWdzLnBvd2VyX3Jlc291cmNlczsKPiAKPiBJcyB0aGlzIHN1ZmZpY2llbnQgdG8gdGVsbCBpZiB0
-aGUgcGFyZW50IGRldmljZSBoYXMgX1BSMz8gSSB0aG91Z2h0IGl0Cj4gcmV0dXJucyB0cnVlIGlm
-IGl0IGhhcyBwb3dlciByZXNvdXJjZXMgaW4gZ2VuZXJhbCwgbm90IG5lY2Vzc2FyaWx5IF9QUjMu
-Cj4gCj4gT3RoZXJ3aXNlIHRoaXMgbG9va3Mgb2theSB0byBtZS4KCkl0IGlzIGluZGVlZCBzZXQg
-d2hlbmV2ZXIgdGhlcmUgaXMgYW55IF9QUnggbWV0aG9kLiBJIHdvbmRlciBpZiBpdCBpcwphcHBy
-b3ByaWF0ZSB0byBhY2Nlc3MgZmllbGRzIGRpcmVjdGx5IGxpa2UgdGhpcywgcGVyaGFwcyB0aGlz
-IHdvdWxkIGJlCm1vcmUgYWNjdXJhdGUgKGJhc2VkIG9uIGRldmljZV9wbS5jKToKCiAgICAvKiBD
-aGVjayB3aGV0aGVyIHRoZSBfUFIzIG1ldGhvZCBpcyBhdmFpbGFibGUuICovCiAgICByZXR1cm4g
-YWRldi0+cG93ZXIuc3RhdGVzW0FDUElfU1RBVEVfRDNfQ09MRF0uZmxhZ3MudmFsaWQ7CgpJIGFt
-IGFsc28gY29uc2lkZXJpbmcgYWRkaW5nIGEgY2hlY2sgaW4gY2FzZSB0aGUgcGNpZXBvcnQgZHJp
-dmVyIGRvZXMKbm90IHN1cHBvcnQgRDNjb2xkIHZpYSBydW50aW1lIFBNLCB3aGF0IGRvIHlvdSB0
-aGluayBvZiB0aGlzPwoKICAgIGlmICghcGFyZW50X3BkZXYpCiAgICAgICAgcmV0dXJuIGZhbHNl
-OwogICAgLyogSWYgdGhlIFBDSWUgcG9ydCBkb2VzIG5vdCBzdXBwb3J0IEQzY29sZCB2aWEgcnVu
-dGltZSBQTSwgYWxsb3cgYQogICAgICogZmFsbGJhY2sgdG8gdGhlIE9wdGltdXMgRFNNIG1ldGhv
-ZCB0byBwdXQgdGhlIGRldmljZSBpbiBEM2NvbGQuICovCiAgICBpZiAocGFyZW50X3BkZXYtPm5v
-X2QzY29sZCkKICAgICAgICByZXR1cm4gZmFsc2U7CgpUaGlzIGlzIG5lZWRlZCB0byBhdm9pZCB0
-aGUgcmVncmVzc2lvbiByZXBvcnRlZCBpbiB0aGUgY292ZXIgbGV0dGVyLCBidXQKYWxzbyBhbGxv
-d3MgcHJlLTIwMTUgc3lzdGVtcyB0byAoc3RpbGwpIGhhdmUgdGhlIEQzY29sZCBwb3NzaWJpbGl0
-eS4KCgpPdXQgb2YgY3VyaW9zaXR5IEkgbG9va2VkIHVwIGFuIHByZS0yMDE1IGxhcHRvcCAoZm91
-bmQgQWNlciBWNS01NzNHLAphcHBhcmVudGx5IGZyb20gTm92ZW1iZXIgMjAxMywgV2luZG93cyA4
-LjEpIGFuZCBleHRyYWN0ZWQgdGhlIEFDUEkKdGFibGVzIGZyb20gdGhlIEJJT1MgaW1hZ2VzLiBC
-SU9TIDIuMjggKDIwMTQvMDUvMTMpIGludHJvZHVjZXMgc3VwcG9ydApmb3IgcG93ZXIgcmVzb3Vy
-Y2VzIG9uIHRoZSBwYXJlbnQgZGV2aWNlYShcX1NCLlBDSTAuUEVHMC5fUFIzIGFuZCBhCnJlbGF0
-ZWQgTlZQMyBkZXZpY2UpIHdoZW4gX09TSSgiV2luZG93cyAyMDEzIikgaXMgdHJ1ZS4gKFRoaXMg
-aXMgYWRkZWQKYXMgYWx0ZXJuYXRpdmUgZm9yIHRoZSBvbGQgRFNNIGludGVyZmFjZS4pCgpNYXli
-ZSAyMDE0IGlzIGFsc28gYW4gYXBwcm9wcmlhdGUgY3V0b2ZmIGRhdGU/IEkgd29uZGVyIGlmIGl0
-IGlzCmZlYXNpYmxlIHRvIGRldGVjdCBmaXJtd2FyZSB1c2Ugb2YgX09TSSgiV2luZG93cyAyMDEz
-IikgYW5kIHVzZSB0aGF0Cmluc3RlYWQgb2YgdGhlIEJJT1MgeWVhci4KLS0gCktpbmQgcmVnYXJk
-cywKUGV0ZXIgV3UKaHR0cHM6Ly9sZWtlbnN0ZXluLm5sCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4v
-bGlzdGluZm8vbm91dmVhdQo=
+Hi,
+
+On 27-05-16 13:10, Peter Wu wrote:
+> On Wed, May 25, 2016 at 04:55:35PM +0300, Mika Westerberg wrote:
+>> On Wed, May 25, 2016 at 12:53:01AM +0200, Peter Wu wrote:
+>>> Since "PCI: Add runtime PM support for PCIe ports", the parent PCIe port
+>>> can be runtime-suspended which disables power resources via ACPI. This
+>>> is incompatible with DSM, resulting in a GPU device which is still in D3
+>>> and locks up the kernel on resume.
+>>>
+>>> Mirror the behavior of Windows 8 and newer[1] (as observed via an AMLi
+>>> debugger trace) and stop using the DSM functions for D3cold when power
+>>> resources are available on the parent PCIe port.
+>>>
+>>>  [1]: https://msdn.microsoft.com/windows/hardware/drivers/bringup/firmware-requirements-for-d3cold
+>>>
+>>> Signed-off-by: Peter Wu <peter@lekensteyn.nl>
+>>> ---
+>>>  drivers/gpu/drm/nouveau/nouveau_acpi.c | 34 ++++++++++++++++++++++++++++++----
+>>>  1 file changed, 30 insertions(+), 4 deletions(-)
+>>>
+>>> diff --git a/drivers/gpu/drm/nouveau/nouveau_acpi.c b/drivers/gpu/drm/nouveau/nouveau_acpi.c
+>>> index df9f73e..e469df7 100644
+>>> --- a/drivers/gpu/drm/nouveau/nouveau_acpi.c
+>>> +++ b/drivers/gpu/drm/nouveau/nouveau_acpi.c
+>>> @@ -46,6 +46,7 @@ static struct nouveau_dsm_priv {
+>>>  	bool dsm_detected;
+>>>  	bool optimus_detected;
+>>>  	bool optimus_flags_detected;
+>>> +	bool optimus_skip_dsm;
+>>>  	acpi_handle dhandle;
+>>>  	acpi_handle rom_handle;
+>>>  } nouveau_dsm_priv;
+>>> @@ -212,8 +213,26 @@ static const struct vga_switcheroo_handler nouveau_dsm_handler = {
+>>>  	.get_client_id = nouveau_dsm_get_client_id,
+>>>  };
+>>>
+>>> +/* Firmware supporting Windows 8 or later do not use _DSM to put the device into
+>>> + * D3cold, they instead rely on disabling power resources on the parent. */
+>>> +static bool nouveau_pr3_present(struct pci_dev *pdev)
+>>> +{
+>>> +	struct pci_dev *parent_pdev = pci_upstream_bridge(pdev);
+>>> +	struct acpi_device *ad;
+>>
+>> Nit: please call this adev instead of ad.
+>
+> Will do.
+>
+>>> +
+>>> +	if (!parent_pdev)
+>>> +		return false;
+>>> +
+>>> +	ad = ACPI_COMPANION(&parent_pdev->dev);
+>>> +	if (!ad)
+>>> +		return false;
+>>> +
+>>> +	return ad->power.flags.power_resources;
+>>
+>> Is this sufficient to tell if the parent device has _PR3? I thought it
+>> returns true if it has power resources in general, not necessarily _PR3.
+>>
+>> Otherwise this looks okay to me.
+>
+> It is indeed set whenever there is any _PRx method. I wonder if it is
+> appropriate to access fields directly like this, perhaps this would be
+> more accurate (based on device_pm.c):
+>
+>     /* Check whether the _PR3 method is available. */
+>     return adev->power.states[ACPI_STATE_D3_COLD].flags.valid;
+>
+> I am also considering adding a check in case the pcieport driver does
+> not support D3cold via runtime PM, what do you think of this?
+>
+>     if (!parent_pdev)
+>         return false;
+>     /* If the PCIe port does not support D3cold via runtime PM, allow a
+>      * fallback to the Optimus DSM method to put the device in D3cold. */
+>     if (parent_pdev->no_d3cold)
+>         return false;
+>
+> This is needed to avoid the regression reported in the cover letter, but
+> also allows pre-2015 systems to (still) have the D3cold possibility.
+>
+>
+> Out of curiosity I looked up an pre-2015 laptop (found Acer V5-573G,
+> apparently from November 2013, Windows 8.1) and extracted the ACPI
+> tables from the BIOS images. BIOS 2.28 (2014/05/13) introduces support
+> for power resources on the parent devicea(\_SB.PCI0.PEG0._PR3 and a
+> related NVP3 device) when _OSI("Windows 2013") is true. (This is added
+> as alternative for the old DSM interface.)
+>
+> Maybe 2014 is also an appropriate cutoff date? I wonder if it is
+> feasible to detect firmware use of _OSI("Windows 2013") and use that
+> instead of the BIOS year.
+
+It is definitely possible to check if the firmware uses _OSI("Windows 2013")
+we do something similar to check for windows-8 ready laptops in the backlight
+code, see acpi_osi_is_win8() in drivers/acpi/osl.c, or if you actually
+want to test for Windows 8 or newer, just use acpi_osi_is_win8()  :)
+
+Regards,
+
+Hans
+
+
