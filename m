@@ -1,134 +1,111 @@
-From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
- runtime PM
-Date: Fri, 27 May 2016 23:31:23 +0200
-Message-ID: <20160527213123.GB1777@al>
-References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
- <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
- <CACvgo514AB=rkRGWrwmPHTX=hhEF8Jhzdg1hQkX1_C4A_zYkzg@mail.gmail.com>
+From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC v2 00/13] usb/mmc/power: Fix USB/LAN when TFTP booting
+Date: Sat, 28 May 2016 11:36:13 +0800
+Message-ID: <20160528033613.GA3291@shlinux2>
+References: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
+ <20160505224240.GA31429@rob-hp-laptop>
+ <CAPDyKFqpoi03Egfuvd8qJXnn_+FBgPXAb7S4UvkxVs8BA+zwnA@mail.gmail.com>
+ <20160509181829.GA19687@rob-hp-laptop>
+ <CAPDyKFq2=mqujFjvJSYxg2nVmK=OrBKLtFfb-ErNJO3Zr_LMVw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <CACvgo514AB=rkRGWrwmPHTX=hhEF8Jhzdg1hQkX1_C4A_zYkzg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Emil Velikov <emil.l.velikov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ML nouveau <nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, ML dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+In-Reply-To: <CAPDyKFq2=mqujFjvJSYxg2nVmK=OrBKLtFfb-ErNJO3Zr_LMVw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-samsung-soc <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-mmc <linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBNYXkgMjcsIDIwMTYgYXQgMDI6MDE6MzlQTSArMDEwMCwgRW1pbCBWZWxpa292IHdy
-b3RlOgo+IEhpIFBldGVyLAo+IAo+IE9uIDI0IE1heSAyMDE2IGF0IDIzOjUzLCBQZXRlciBXdSA8
-cGV0ZXJAbGVrZW5zdGV5bi5ubD4gd3JvdGU6Cj4gPiBTaW5jZSAiUENJOiBBZGQgcnVudGltZSBQ
-TSBzdXBwb3J0IGZvciBQQ0llIHBvcnRzIiwgdGhlIHBhcmVudCBQQ0llIHBvcnQKPiA+IGNhbiBi
-ZSBydW50aW1lLXN1c3BlbmRlZCB3aGljaCBkaXNhYmxlcyBwb3dlciByZXNvdXJjZXMgdmlhIEFD
-UEkuIFRoaXMKPiA+IGlzIGluY29tcGF0aWJsZSB3aXRoIERTTSwgcmVzdWx0aW5nIGluIGEgR1BV
-IGRldmljZSB3aGljaCBpcyBzdGlsbCBpbiBEMwo+ID4gYW5kIGxvY2tzIHVwIHRoZSBrZXJuZWwg
-b24gcmVzdW1lLgo+ID4KPiA+IE1pcnJvciB0aGUgYmVoYXZpb3Igb2YgV2luZG93cyA4IGFuZCBu
-ZXdlclsxXSAoYXMgb2JzZXJ2ZWQgdmlhIGFuIEFNTGkKPiA+IGRlYnVnZ2VyIHRyYWNlKSBhbmQg
-c3RvcCB1c2luZyB0aGUgRFNNIGZ1bmN0aW9ucyBmb3IgRDNjb2xkIHdoZW4gcG93ZXIKPiA+IHJl
-c291cmNlcyBhcmUgYXZhaWxhYmxlIG9uIHRoZSBwYXJlbnQgUENJZSBwb3J0Lgo+ID4KPiA+ICBb
-MV06IGh0dHBzOi8vbXNkbi5taWNyb3NvZnQuY29tL3dpbmRvd3MvaGFyZHdhcmUvZHJpdmVycy9i
-cmluZ3VwL2Zpcm13YXJlLXJlcXVpcmVtZW50cy1mb3ItZDNjb2xkCj4gPgo+ID4gU2lnbmVkLW9m
-Zi1ieTogUGV0ZXIgV3UgPHBldGVyQGxla2Vuc3RleW4ubmw+Cj4gPiAtLS0KPiA+ICBkcml2ZXJz
-L2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGkuYyB8IDM0ICsrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKy0tLS0KPiA+ICAxIGZpbGUgY2hhbmdlZCwgMzAgaW5zZXJ0aW9ucygrKSwgNCBk
-ZWxldGlvbnMoLSkKPiA+Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL25vdXZlYXUv
-bm91dmVhdV9hY3BpLmMgYi9kcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGkuYwo+
-ID4gaW5kZXggZGY5ZjczZS4uZTQ2OWRmNyAxMDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvZ3B1L2Ry
-bS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5jCj4gPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vbm91dmVh
-dS9ub3V2ZWF1X2FjcGkuYwo+ID4gQEAgLTQ2LDYgKzQ2LDcgQEAgc3RhdGljIHN0cnVjdCBub3V2
-ZWF1X2RzbV9wcml2IHsKPiA+ICAgICAgICAgYm9vbCBkc21fZGV0ZWN0ZWQ7Cj4gPiAgICAgICAg
-IGJvb2wgb3B0aW11c19kZXRlY3RlZDsKPiA+ICAgICAgICAgYm9vbCBvcHRpbXVzX2ZsYWdzX2Rl
-dGVjdGVkOwo+ID4gKyAgICAgICBib29sIG9wdGltdXNfc2tpcF9kc207Cj4gPiAgICAgICAgIGFj
-cGlfaGFuZGxlIGRoYW5kbGU7Cj4gPiAgICAgICAgIGFjcGlfaGFuZGxlIHJvbV9oYW5kbGU7Cj4g
-PiAgfSBub3V2ZWF1X2RzbV9wcml2Owo+ID4gQEAgLTIxMiw4ICsyMTMsMjYgQEAgc3RhdGljIGNv
-bnN0IHN0cnVjdCB2Z2Ffc3dpdGNoZXJvb19oYW5kbGVyIG5vdXZlYXVfZHNtX2hhbmRsZXIgPSB7
-Cj4gPiAgICAgICAgIC5nZXRfY2xpZW50X2lkID0gbm91dmVhdV9kc21fZ2V0X2NsaWVudF9pZCwK
-PiA+ICB9Owo+ID4KPiA+ICsvKiBGaXJtd2FyZSBzdXBwb3J0aW5nIFdpbmRvd3MgOCBvciBsYXRl
-ciBkbyBub3QgdXNlIF9EU00gdG8gcHV0IHRoZSBkZXZpY2UgaW50bwo+ID4gKyAqIEQzY29sZCwg
-dGhleSBpbnN0ZWFkIHJlbHkgb24gZGlzYWJsaW5nIHBvd2VyIHJlc291cmNlcyBvbiB0aGUgcGFy
-ZW50LiAqLwo+ID4gK3N0YXRpYyBib29sIG5vdXZlYXVfcHIzX3ByZXNlbnQoc3RydWN0IHBjaV9k
-ZXYgKnBkZXYpCj4gPiArewo+ID4gKyAgICAgICBzdHJ1Y3QgcGNpX2RldiAqcGFyZW50X3BkZXYg
-PSBwY2lfdXBzdHJlYW1fYnJpZGdlKHBkZXYpOwo+ID4gKyAgICAgICBzdHJ1Y3QgYWNwaV9kZXZp
-Y2UgKmFkOwo+ID4gKwo+ID4gKyAgICAgICBpZiAoIXBhcmVudF9wZGV2KQo+ID4gKyAgICAgICAg
-ICAgICAgIHJldHVybiBmYWxzZTsKPiA+ICsKPiA+ICsgICAgICAgYWQgPSBBQ1BJX0NPTVBBTklP
-TigmcGFyZW50X3BkZXYtPmRldik7Cj4gPiArICAgICAgIGlmICghYWQpCj4gPiArICAgICAgICAg
-ICAgICAgcmV0dXJuIGZhbHNlOwo+ID4gKwo+ID4gKyAgICAgICByZXR1cm4gYWQtPnBvd2VyLmZs
-YWdzLnBvd2VyX3Jlc291cmNlczsKPiA+ICt9Cj4gPiArCj4gPiAgc3RhdGljIHZvaWQgbm91dmVh
-dV9kc21fcGNpX3Byb2JlKHN0cnVjdCBwY2lfZGV2ICpwZGV2LCBib29sICpoYXNfbXV4LAo+ID4g
-LSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIGJvb2wgKmhhc19vcHQsIGJvb2wgKmhh
-c19vcHRfZmxhZ3MpCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgYm9vbCAq
-aGFzX29wdCwgYm9vbCAqaGFzX29wdF9mbGFncywKPiA+ICsgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICBib29sICpoYXNfcG93ZXJfcmVzb3VyY2VzKQo+ID4gIHsKPiA+ICAgICAgICAg
-YWNwaV9oYW5kbGUgZGhhbmRsZTsKPiA+ICAgICAgICAgYm9vbCBzdXBwb3J0c19tdXg7Cj4gPiBA
-QCAtMjM4LDYgKzI1Nyw3IEBAIHN0YXRpYyB2b2lkIG5vdXZlYXVfZHNtX3BjaV9wcm9iZShzdHJ1
-Y3QgcGNpX2RldiAqcGRldiwgYm9vbCAqaGFzX211eCwKPiA+ICAgICAgICAgKmhhc19tdXggPSBz
-dXBwb3J0c19tdXg7Cj4gPiAgICAgICAgICpoYXNfb3B0ID0gISFvcHRpbXVzX2Z1bmNzOwo+ID4g
-ICAgICAgICAqaGFzX29wdF9mbGFncyA9IG9wdGltdXNfZnVuY3MgJiAoMSA8PCBOT1VWRUFVX0RT
-TV9PUFRJTVVTX0ZMQUdTKTsKPiA+ICsgICAgICAgKmhhc19wb3dlcl9yZXNvdXJjZXMgPSBmYWxz
-ZTsKPiA+Cj4gPiAgICAgICAgIGlmIChvcHRpbXVzX2Z1bmNzKSB7Cj4gPiAgICAgICAgICAgICAg
-ICAgdWludDMyX3QgcmVzdWx0Owo+ID4gQEAgLTI0Nyw2ICsyNjcsOCBAQCBzdGF0aWMgdm9pZCBu
-b3V2ZWF1X2RzbV9wY2lfcHJvYmUoc3RydWN0IHBjaV9kZXYgKnBkZXYsIGJvb2wgKmhhc19tdXgs
-Cj4gPiAgICAgICAgICAgICAgICAgICAgICAgICAgKHJlc3VsdCAmIE9QVElNVVNfRU5BQkxFRCkg
-PyAiZW5hYmxlZCIgOiAiZGlzYWJsZWQiLAo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgIChy
-ZXN1bHQgJiBPUFRJTVVTX0RZTkFNSUNfUFdSX0NBUCkgPyAiZHluYW1pYyBwb3dlciwgIiA6ICIi
-LAo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgIChyZXN1bHQgJiBPUFRJTVVTX0hEQV9DT0RF
-Q19NQVNLKSA/ICJoZGEgYmlvcyBjb2RlYyBzdXBwb3J0ZWQiIDogIiIpOwo+ID4gKwo+ID4gKyAg
-ICAgICAgICAgICAgICpoYXNfcG93ZXJfcmVzb3VyY2VzID0gbm91dmVhdV9wcjNfcHJlc2VudChw
-ZGV2KTsKPiA+ICAgICAgICAgfQo+ID4gIH0KPiA+Cj4gPiBAQCAtMjU4LDYgKzI4MCw3IEBAIHN0
-YXRpYyBib29sIG5vdXZlYXVfZHNtX2RldGVjdCh2b2lkKQo+ID4gICAgICAgICBib29sIGhhc19t
-dXggPSBmYWxzZTsKPiA+ICAgICAgICAgYm9vbCBoYXNfb3B0aW11cyA9IGZhbHNlOwo+ID4gICAg
-ICAgICBib29sIGhhc19vcHRpbXVzX2ZsYWdzID0gZmFsc2U7Cj4gPiArICAgICAgIGJvb2wgaGFz
-X3Bvd2VyX3Jlc291cmNlcyA9IGZhbHNlOwo+ID4gICAgICAgICBpbnQgdmdhX2NvdW50ID0gMDsK
-PiA+ICAgICAgICAgYm9vbCBndWlkX3ZhbGlkOwo+ID4gICAgICAgICBib29sIHJldCA9IGZhbHNl
-Owo+ID4gQEAgLTI3MywxNCArMjk2LDE0IEBAIHN0YXRpYyBib29sIG5vdXZlYXVfZHNtX2RldGVj
-dCh2b2lkKQo+ID4gICAgICAgICAgICAgICAgIHZnYV9jb3VudCsrOwo+ID4KPiA+ICAgICAgICAg
-ICAgICAgICBub3V2ZWF1X2RzbV9wY2lfcHJvYmUocGRldiwgJmhhc19tdXgsICZoYXNfb3B0aW11
-cywKPiA+IC0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJmhhc19vcHRpbXVz
-X2ZsYWdzKTsKPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJmhhc19v
-cHRpbXVzX2ZsYWdzLCAmaGFzX3Bvd2VyX3Jlc291cmNlcyk7Cj4gPiAgICAgICAgIH0KPiA+Cj4g
-PiAgICAgICAgIHdoaWxlICgocGRldiA9IHBjaV9nZXRfY2xhc3MoUENJX0NMQVNTX0RJU1BMQVlf
-M0QgPDwgOCwgcGRldikpICE9IE5VTEwpIHsKPiA+ICAgICAgICAgICAgICAgICB2Z2FfY291bnQr
-KzsKPiA+Cj4gPiAgICAgICAgICAgICAgICAgbm91dmVhdV9kc21fcGNpX3Byb2JlKHBkZXYsICZo
-YXNfbXV4LCAmaGFzX29wdGltdXMsCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICZoYXNfb3B0aW11c19mbGFncyk7Cj4gPiArICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICZoYXNfb3B0aW11c19mbGFncywgJmhhc19wb3dlcl9yZXNvdXJjZXMpOwo+
-ID4gICAgICAgICB9Cj4gPgo+IFRoaXMgYW5kIGVhcmxpZXIgcGF0Y2ggYnJlYWsgdGhpbmdzIGlu
-IGEgc3VidGxlIHdheS4KPiAKPiBOYW1lbHk6IHVwb24gdGhlIHNlY29uZCAoYW5kIGFueSBsYXRl
-cikgY2FsbCBpbnRvIHRoZQo+IG5vdXZlYXVfZHNtX3BjaV9wcm9iZSgpIGZ1bmN0aW9uLCB0aGUg
-aGFkX2ZvbyBmbGFncyBhcmUgcmVzZXQuIFRodXMKPiBvbmx5IHRoZSBzcGVjaWZpY3Mgb2YgdGhl
-IF9maW5hbF8gZGV2aWNlIGFyZSBiZWluZyB1c2VkIChhdCBhIGxhdGVyCj4gc3RhZ2UpLiBJTUhP
-IG9uZSBzaG91bGQgY2hhbmdlIHRoYXQgdG8gIl9hbnlfIGRldmljZSIsIHdoaWNoIHdpbGwKPiBt
-YXRjaCB0aGUgb3JpZ2luYWwgY29kZSBhbmQgdGhlIGFjdHVhbCBpbnRlbnQgZnVydGhlciBkb3du
-IGluIHRoZQo+IGZpbGUuCgpUaGUgZmxhZ3MgYXJlIG9ubHkgcmVzZXQgaWYgYW55IG9mIHRoZSBN
-VVggb3IgT3B0aW11cyBoYW5kbGVzIGFyZSBmb3VuZC4KSWYgYm90aCBhcmUgbWlzc2luZywgdGhl
-IGZsYWdzIGFyZSBub3Qgb3ZlcnJpZGRlbi4gVGhpcyBpcyBmcm9tIHBhdGNoIDE6CgorICAgICAg
-IC8qIERvZXMgbm90IGxvb2sgbGlrZSBhIE52aWRpYSBkZXZpY2UuICovCisgICAgICAgaWYgKCFz
-dXBwb3J0c19tdXggJiYgIXN1cHBvcnRzX29wdCkKKyAgICAgICAgICAgICAgIHJldHVybjsKClRo
-ZSByZWFzb24gd2h5IGxhdGVyIGNhbGxzIG92ZXJyaWRlIGVhcmx5IG9uZXMgaXMgYmVjYXVzZSBz
-b21lIE9wdGltdXMKbGFwdG9wcyBoYXZlIHRoZSBfRFNNIG1ldGhvZCBvbiBib3RoIHRoZSBJbnRl
-bCBHUFUgKDAwOjAyLjApIGFuZCB0aGUKTnZpZGlhIG9uZSAoMDE6MDAuMCkuCgpUaGUgcHJldmlv
-dXMgZGV0ZWN0aW9uIG1ldGhvZCB3b3VsZCBmYWlsIGluIHRoaXMgc2NlbmFyaW86CiAxLiBPbmUg
-ZGV2aWNlIHJlcG9ydHMgc3VwcG9ydCBmb3IgWCBhbmQgWSAoaGFzX3ggPSAxLCBoYXNfeSA9IDEp
-LiBXcml0ZQogICAgQUNQSSBoYW5kbGUgQSB0byBub3V2ZWF1X2RzbV9wcml2LmRoYW5kbGUuCiAy
-LiBBbm90aGVyIGRldmljZSByZXBvcnRzIHN1cHBvcnQgZm9yIFggb25seSAoaGFzX3ggPSAxKS4g
-V3JpdGUKICAgIEFDUEkgaGFuZGxlIEIgdG8gbm91dmVhdV9kc21fcHJpdi5kaGFuZGxlLgogMy4g
-RW5kIHJlc3VsdDogaGFzX3ggPSAxLCBoYXNfeSA9IDEsIGRoYW5kbGUgPSBCLiBCdXQgQUNQSSBo
-YW5kbGUgQgogICAgZG9lcyBub3QgcmVhbGx5IHN1cHBvcnQgWSEKVGhpcyBpcyB0aGVvcmV0aWNh
-bCBzaW5jZSBJIGRvbid0IHRoaW5rIHRoYXQgc3VjaCBmaXJtd2FyZSBvY2N1cnMgaW4KcHJhY3Rp
-Y2UsIGJ1dCB0aGVuIGltbyBpdCB3b3VsZCBiZSBiZXR0ZXIgdG8gZW5mb3JjZSBpbiBjb2RlIHRo
-YXQgdGhlCmNhc2UgY2Fubm90IG9jY3VyIChhcyBpcyBkb25lIGluIHBhdGNoIDEpLiBVbmxlc3Mg
-dGhlIE1VWCBEU00gaGFzIHNvbWUKbWFnaWMgSSBhbSBub3QgYXdhcmUgb2YuCi0tIApLaW5kIHJl
-Z2FyZHMsClBldGVyIFd1Cmh0dHBzOi8vbGVrZW5zdGV5bi5ubApfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1
-QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL25vdXZlYXUK
+On Tue, May 10, 2016 at 01:02:08PM +0200, Ulf Hansson wrote:
+> + Arnd
+> 
+> [...]
+> 
+> >> >> Solution
+> >> >> ========
+> >> >> This is very similar to the MMC pwrseq behavior so the idea is to:
+> >> >> 1. Move MMC pwrseq drivers to generic place,
+> >> >
+> >> > You can do that, but I'm going to NAK any use of pwrseq bindings outside
+> >> > of MMC. I think it is the wrong way to do things. The DT should describe
+> >>
+> >> Huh, I didn't know that was your view of the mmc pwrseq bindings. Why
+> >> didn't you NAK them before?
+> >
+> > Unfortunately, either I missed it or it was a time I couldn't spend much
+> > time on reviews.
+> 
+> Okay, I guess it's common issue among maintainers. The problem with DT
+> is that it gets really hard to be fixed up later. :-)
+> 
+> >
+> >> > the devices. If they happen to be "simple" then the core can walk the
+> >> > tree and do any setup. For example, look for "reset-gpios" and toggle
+> >> > that GPIO. There is no need for a special node.
+> >> >
+> >> >> 2. Extend the pwrseq-simple with regulator toggling,
+> >> >> 3. Add support to USB hub and port core for pwrseq,
+> >> >
+> >> > We discussed this for USB already[1] and is why we defined how to add
+> >> > USB child devices. The idea is not to add pwrseq to that.
+> >>
+> >> I am not familiar with the USB discussion.
+> >>
+> >> Still, let me give you some more background to the mmc pwrseq. The
+> >> idea from the mmc pwrseq bindings comes from the power-domain DT
+> >> bindings, as I thought these things were a bit related.
+> >> In both cases they are not directly a property of the device, but more
+> >> describing a HW dependency to allow the device to work.
+> >
+> > I could see this as a board level power domain. However the difference
+> > is we are not generally exposing internal SOC details the same way as
+> > board level components. Perhaps we could extend power domains to board
+> > level, but that is not what was done here.
+> >
+> >> One could probably use a child node instead of a phandle, but that
+> >> wasn't chosen back then. Of course you are the DT expert, but could
+> >> you perhaps tell me why a child node is better for cases like this?
+> >
+> > If there is a control path hierarchy, then we try to model that in DT
+> > with child nodes. In cases of SDIO and USB, there is a clear hierarchy.
+> > Ignoring the discovery ordering problem, we already have defined ways to
+> > describe GPIO connections, regulators, etc. to devices. Describing those
+> > things separately from the device to solve a particular issue that is
+> > really a kernel limitation is what I don't like.
+> 
+> Okay, I see.
+> 
+> To move forward in trying to make mmc pwrseq a generic pwrseq, could
+> we perhaps allow both cases?
+> 
+> In the mmc case, there are already deployed bindings so we need to
+> cope with these by using the phandle option, but for USB etc we could
+> force the child node option.
+> As long as we agree that we keep using a compatible string for the
+> child node as well, both options should be able to co-exist and we
+> should probably be able to managed them both from a common pwrseq
+> driver framework.
+> 
+> Although, I do remember from an older conversations around some of
+> mine submission for the mmc pwrseq code, that some people (maybe
+> Arnd?) wasn't keen on adding a new framework for this. Perhaps that
+> has changed?
+> 
+
+All, how we move on for this?
+
+1. Using a generic driver to manage both mmc and USB (and further
+subsystem), USB and further subsystem do not use pwrseq node in dts.
+2. USB creates the similar driver under drivers/usb for its own use. 
+
+Which one do you prefer, thanks.
+
+-- 
+
+Best Regards,
+Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
