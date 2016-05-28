@@ -1,63 +1,66 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
-Date: Sat, 28 May 2016 14:21:11 +0200
-Message-ID: <9162683.GfsX7n9xoz@vostro.rjw.lan>
-References: <20160519231234.GB1785@al> <2037523.0hP3Oc7Pg6@vostro.rjw.lan> <20160526081643.GQ1789@lahna.fi.intel.com>
+From: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
+ runtime PM
+Date: Sat, 28 May 2016 14:27:01 +0200
+Message-ID: <20160528122701.GA11464@wunner.de>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+ <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+ <CACvgo514AB=rkRGWrwmPHTX=hhEF8Jhzdg1hQkX1_C4A_zYkzg@mail.gmail.com>
+ <20160527213123.GB1777@al>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55217 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751715AbcE1MR1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 28 May 2016 08:17:27 -0400
-In-Reply-To: <20160526081643.GQ1789@lahna.fi.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20160527213123.GB1777@al>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ML nouveau <nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Emil Velikov <emil.l.velikov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, ML dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 
-On Thursday, May 26, 2016 11:16:43 AM Mika Westerberg wrote:
-> On Wed, May 25, 2016 at 10:45:48PM +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, May 25, 2016 04:19:48 PM Mika Westerberg wrote:
-> > > On Wed, May 25, 2016 at 12:13:09AM +0300, Mika Westerberg wrote:
-> > > > On Tue, May 24, 2016 at 03:53:23PM +0300, Mika Westerberg wrote:
-> > > > > > I dropped "ACPI / hotplug / PCI: Runtime resume bridge before rescan"
-> > > > > > on the assumption that "PCI: Power on bridges before scanning new
-> > > > > > devices" is sufficient to cover both the ACPI and the generic PCi
-> > > > > > rescan cases, but I'd like some reassurance about that.
-> > > > > 
-> > > > > I agree with your reasoning that the patch should not be needed anymore.
-> > > > > However, I have the machine which needed that patch at home so I'm not
-> > > > > able to test it now. I'll do that later today when I get back home.
-> > > > 
-> > > > I tried now on my Lenovo Yoga 900 laptop and unfortunately "PCI: Power
-> > > > on bridges before scanning new devices" seems not to be enough. This
-> > > > machine has SD-card reader connected to one PCIe port and once I unload
-> > > > the sdhci-pci driver and enable runtime PM for the device, next system
-> > > > suspend/resume cycle loses the SD-card reader PCI device.
-> > > > 
-> > > > I will investigate more tomorrow -- it is getting late here.
-> > > 
-> > > I think I found reason for the issue.
-> > > 
-> > > When the laptop resumes it will send ACPI BUS_CHECK event for the two
-> > > PCIe root ports. This ends up in acpiphp_check_bridge() where it goes
-> > > through all slots in that bridge checking if the devices are still
-> > > present. This happens before we call pci_scan_bridge() for the bridge
-> > > itself.
-> > > 
-> > > Since the bridge is in D3 config space of the device behind it is not
-> > > available and we determine that the device is not there anymore.
-> > > 
-> > > It looks like we either need that ACPI hotplug patch or alternatively we
-> > > could add pm_runtime_get/put() in acpiphp_check_bridge().
-> > 
-> > Have you tried the latter?
-> 
-> Indeed I tried and it worked fine. I can make formal patch doing that
-> which then replaces the current ACPI hotplug patch, if that is the
-> preferred way.
-
-It is somewhat cleaner, so I'd prefer it.
-
+SGkgUGV0ZXIsCgpPbiBGcmksIE1heSAyNywgMjAxNiBhdCAxMTozMToyM1BNICswMjAwLCBQZXRl
+ciBXdSB3cm90ZToKPiBPbiBGcmksIE1heSAyNywgMjAxNiBhdCAwMjowMTozOVBNICswMTAwLCBF
+bWlsIFZlbGlrb3Ygd3JvdGU6Cj4gPiBPbiAyNCBNYXkgMjAxNiBhdCAyMzo1MywgUGV0ZXIgV3Ug
+PHBldGVyQGxla2Vuc3RleW4ubmw+IHdyb3RlOgpbc25pcF0KPiA+ID4gQEAgLTI3MywxNCArMjk2
+LDE0IEBAIHN0YXRpYyBib29sIG5vdXZlYXVfZHNtX2RldGVjdCh2b2lkKQo+ID4gPiAgICAgICAg
+ICAgICAgICAgdmdhX2NvdW50Kys7Cj4gPiA+Cj4gPiA+ICAgICAgICAgICAgICAgICBub3V2ZWF1
+X2RzbV9wY2lfcHJvYmUocGRldiwgJmhhc19tdXgsICZoYXNfb3B0aW11cywKPiA+ID4gLSAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAmaGFzX29wdGltdXNfZmxhZ3MpOwo+ID4g
+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICZoYXNfb3B0aW11c19mbGFn
+cywgJmhhc19wb3dlcl9yZXNvdXJjZXMpOwo+ID4gPiAgICAgICAgIH0KPiA+ID4KPiA+ID4gICAg
+ICAgICB3aGlsZSAoKHBkZXYgPSBwY2lfZ2V0X2NsYXNzKFBDSV9DTEFTU19ESVNQTEFZXzNEIDw8
+IDgsIHBkZXYpKSAhPSBOVUxMKSB7Cj4gPiA+ICAgICAgICAgICAgICAgICB2Z2FfY291bnQrKzsK
+PiA+ID4KPiA+ID4gICAgICAgICAgICAgICAgIG5vdXZlYXVfZHNtX3BjaV9wcm9iZShwZGV2LCAm
+aGFzX211eCwgJmhhc19vcHRpbXVzLAo+ID4gPiAtICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICZoYXNfb3B0aW11c19mbGFncyk7Cj4gPiA+ICsgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgJmhhc19vcHRpbXVzX2ZsYWdzLCAmaGFzX3Bvd2VyX3Jlc291cmNl
+cyk7Cj4gPiA+ICAgICAgICAgfQo+ID4gPgo+ID4gVGhpcyBhbmQgZWFybGllciBwYXRjaCBicmVh
+ayB0aGluZ3MgaW4gYSBzdWJ0bGUgd2F5Lgo+ID4gCj4gPiBOYW1lbHk6IHVwb24gdGhlIHNlY29u
+ZCAoYW5kIGFueSBsYXRlcikgY2FsbCBpbnRvIHRoZQo+ID4gbm91dmVhdV9kc21fcGNpX3Byb2Jl
+KCkgZnVuY3Rpb24sIHRoZSBoYWRfZm9vIGZsYWdzIGFyZSByZXNldC4gVGh1cwo+ID4gb25seSB0
+aGUgc3BlY2lmaWNzIG9mIHRoZSBfZmluYWxfIGRldmljZSBhcmUgYmVpbmcgdXNlZCAoYXQgYSBs
+YXRlcgo+ID4gc3RhZ2UpLiBJTUhPIG9uZSBzaG91bGQgY2hhbmdlIHRoYXQgdG8gIl9hbnlfIGRl
+dmljZSIsIHdoaWNoIHdpbGwKPiA+IG1hdGNoIHRoZSBvcmlnaW5hbCBjb2RlIGFuZCB0aGUgYWN0
+dWFsIGludGVudCBmdXJ0aGVyIGRvd24gaW4gdGhlCj4gPiBmaWxlLgo+IAo+IFRoZSBmbGFncyBh
+cmUgb25seSByZXNldCBpZiBhbnkgb2YgdGhlIE1VWCBvciBPcHRpbXVzIGhhbmRsZXMgYXJlIGZv
+dW5kLgo+IElmIGJvdGggYXJlIG1pc3NpbmcsIHRoZSBmbGFncyBhcmUgbm90IG92ZXJyaWRkZW4u
+IFRoaXMgaXMgZnJvbSBwYXRjaCAxOgo+IAo+ICsgICAgICAgLyogRG9lcyBub3QgbG9vayBsaWtl
+IGEgTnZpZGlhIGRldmljZS4gKi8KPiArICAgICAgIGlmICghc3VwcG9ydHNfbXV4ICYmICFzdXBw
+b3J0c19vcHQpCj4gKyAgICAgICAgICAgICAgIHJldHVybjsKPiAKPiBUaGUgcmVhc29uIHdoeSBs
+YXRlciBjYWxscyBvdmVycmlkZSBlYXJseSBvbmVzIGlzIGJlY2F1c2Ugc29tZSBPcHRpbXVzCj4g
+bGFwdG9wcyBoYXZlIHRoZSBfRFNNIG1ldGhvZCBvbiBib3RoIHRoZSBJbnRlbCBHUFUgKDAwOjAy
+LjApIGFuZCB0aGUKPiBOdmlkaWEgb25lICgwMTowMC4wKS4KClNvdW5kcyBsaWtlIHlvdSBtYXkg
+d2FudCB0byBjaGVjayBmb3IgcGRldi0+dmVuZG9yID09IFBDSV9WRU5ET1JfSURfTlZJRElBCm9y
+IGV4cG9ydCBwY2lfZ2V0X2Rldl9ieV9pZCgpIGFuZCB1c2UgdGhhdCB0byBtYXRjaCBmb3IgY2xh
+c3MgYW5kIHZlbmRvci4KCkJlc3QgcmVnYXJkcywKCkx1a2FzCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVA
+bGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxt
+YW4vbGlzdGluZm8vbm91dmVhdQo=
