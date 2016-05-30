@@ -1,130 +1,221 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 3/3] cpufreq: schedutil: map raw required frequency to
- driver frequency
-Date: Mon, 30 May 2016 16:25:25 +0200
-Message-ID: <CAJZ5v0hwohZh_Pubt5pc2NoiMWrSDkcfjkbcFuugPkRTwKhejQ@mail.gmail.com>
-References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
-	<1464231181-30741-4-git-send-email-smuckle@linaro.org>
-	<20160526071629.GW17585@vireshk-i7>
-	<CAJZ5v0gxfRBeQTyHACVtRpon50N_t3qytrFPT4ga2zwPhVYYdw@mail.gmail.com>
-	<20160530101830.GE30066@vireshk-i7>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v4 09/10] cpuidle/powernv: Add support for POWER ISA v3
+ idle states
+Date: Mon, 30 May 2016 16:26:44 +0200
+Message-ID: <574C4DA4.4050100@linaro.org>
+References: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1464095714-48772-10-git-send-email-shreyas@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160530101830.GE30066@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f41.google.com ([74.125.82.41]:36525 "EHLO
+	mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754969AbcE3O0r (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 10:26:47 -0400
+Received: by mail-wm0-f41.google.com with SMTP id n129so89286801wmn.1
+        for <linux-pm@vger.kernel.org>; Mon, 30 May 2016 07:26:46 -0700 (PDT)
+In-Reply-To: <1464095714-48772-10-git-send-email-shreyas@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-On Mon, May 30, 2016 at 12:18 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 29-05-16, 02:40, Rafael J. Wysocki wrote:
->> I can't really parse the above question, so I'm not going to try to
->> answer it. :-)
+On 05/24/2016 03:15 PM, Shreyas B. Prabhu wrote:
+> POWER ISA v3 defines a new idle processor core mechanism. In summary,
+>   a) new instruction named stop is added.
+>   b) new per thread SPR named PSSCR is added which controls the behav=
+ior
+> 	of stop instruction.
 >
-> Sorry about that :(
+> Supported idle states and value to be written to PSSCR register to en=
+ter
+> any idle state is exposed via ibm,cpu-idle-state-names and
+> ibm,cpu-idle-state-psscr respectively. To enter an idle state,
+> platform provided power_stop() needs to be invoked with the appropria=
+te
+> PSSCR value.
 >
-> IOW, I think that we should make this change into the sched-governor (I will
-> send a patch separately if you agree to this):
+> This patch adds support for this new mechanism in cpuidle powernv dri=
+ver.
+>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Paul Mackerras <paulus@ozlabs.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+> ---
+>   - No changes since v1
+>
+>   drivers/cpuidle/cpuidle-powernv.c | 57 ++++++++++++++++++++++++++++=
+++++++++++-
+>   1 file changed, 56 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpui=
+dle-powernv.c
+> index e12dc30..efe5221 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -21,6 +21,7 @@
+>   #include <asm/runlatch.h>
+>
+>   #define MAX_POWERNV_IDLE_STATES	8
+> +#define MAX_IDLE_STATE_NAME_LEN	10
 
-I don't.
+Why not reuse cpuidle constants even if they are slightly different ?
 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 14c4aa25cc45..5934b14aa21c 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -66,11 +66,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->
->         if (unlikely(sg_policy->need_freq_update)) {
->                 sg_policy->need_freq_update = false;
-> -               /*
-> -                * This happens when limits change, so forget the previous
-> -                * next_freq value and force an update.
-> -                */
-> -               sg_policy->next_freq = UINT_MAX;
->                 return true;
->         }
->
-> And here is my reasoning behind this.
->
-> Can you show me any case, where the above code (as present in mainline
-> today) leads to a freq-change? I couldn't find any.
->
-> Let me demonstrate.
->
-> Following only talks about the fast-switch path, the other path is
-> same as well.
->
-> Suppose this is the current range of frequencies supported by a
-> driver: 200, 400, 600, 800, 1000 (in MHz).
->
-> And policy->cur = next_freq = 400 MHz.
->
-> A.) Suppose that we change policy->min to 400 MHz from userspace.
->     -> sugov_limits()
->        This will find everything in order and simply set
->        need_freq_update, without updating the frequency.
->
->     On next util-callback, we will forcefully return true from
->     sugov_should_update_freq() and reach sugov_update_commit().
->
->     We calculate next_freq and that comes to 400 MHz again (that's the
->     case we are trying to target with the above code).
->
->     With the current code, we will forcefully end up calling
->     cpufreq_driver_fast_switch().
->
->     Because the new and current frequencies are same,
->     cpufreq_driver->fast_switch() will simply return.
->
->     NOTE: I also think that cpufreq_driver_fast_switch() should have a
->     check like (policy->cur == target_freq). I will add that too, in
->     case you agree.
->
->     So, forcefully updating next_freq to UINT_MAX will end up wasting
->     some cycles, but wouldn't do any useful stuff.
+#define CPUIDLE_STATE_MAX       10
+#define CPUIDLE_NAME_LEN        16
 
-It will, but there's no way to distinguish this case from B in the
-governor with the current min/max synchronization mechanism.  That is,
-it only knows that something has changed, but checking what exactly
-has changed would be racy.
-
-> B.) Suppose that we change policy->min to 600 MHz from userspace.
->     -> sugov_limits()
->        This will find that policy->cur is less than 600 and will set
->        that to 600 MHz by calling __cpufreq_driver_target(). We will
->        also set need_freq_update.
+>   struct cpuidle_driver powernv_idle_driver =3D {
+>   	.name             =3D "powernv_idle",
+> @@ -29,9 +30,11 @@ struct cpuidle_driver powernv_idle_driver =3D {
 >
->        Note that next_freq and policy->cur are not in sync anymore and
->        perhaps this is the most important case for the above code.
-
-It is.
-
-Moreover, please note that __cpufreq_driver_target() is only called in
-sugov_limits() when policy->fast_switch_enabled is unset.
-
->     On next util-callback, we will forcefully return true from
->     sugov_should_update_freq() and reach sugov_update_commit().
+>   static int max_idle_state;
+>   static struct cpuidle_state *cpuidle_state_table;
+> +
+> +static u64 stop_psscr_table[MAX_POWERNV_IDLE_STATES];
+> +
+>   static u64 snooze_timeout;
+>   static bool snooze_timeout_en;
+> -
+>   static int snooze_loop(struct cpuidle_device *dev,
+>   			struct cpuidle_driver *drv,
+>   			int index)
+> @@ -139,6 +142,15 @@ static struct notifier_block setup_hotplug_notif=
+ier =3D {
+>   	.notifier_call =3D powernv_cpuidle_add_cpu_notifier,
+>   };
 >
->     We calculate next_freq and lets say that comes to 400 MHz again
->     (as that's the case we are trying to target with the above code).
+> +static int stop_loop(struct cpuidle_device *dev,
+> +			struct cpuidle_driver *drv,
+> +			int index)
+> +{
+> +	ppc64_runlatch_off();
+> +	power_stop(stop_psscr_table[index]);
+> +	ppc64_runlatch_on();
+> +	return index;
+> +}
+>   /*
+>    * powernv_cpuidle_driver_init()
+>    */
+> @@ -169,6 +181,8 @@ static int powernv_add_idle_states(void)
+>   	int nr_idle_states =3D 1; /* Snooze */
+>   	int dt_idle_states;
+>   	u32 *latency_ns, *residency_ns, *flags;
+> +	u64 *psscr_val =3D NULL;
+> +	const char *names[MAX_POWERNV_IDLE_STATES];
+>   	int i, rc;
 >
->     With the current code, we will forcefully end up calling
->     cpufreq_driver_fast_switch().
+>   	/* Currently we have snooze statically defined */
+> @@ -201,6 +215,23 @@ static int powernv_add_idle_states(void)
+>   		goto out_free_latency;
+>   	}
 >
->     Because next_freq() is not part of the new range, we will clamp it
->     and set it to 600 MHz eventually. Again, next and current
->     frequencies are same, cpufreq_driver->fast_switch() will simply
->     return.
+> +	rc =3D of_property_read_string_array(power_mgt,
+> +		"ibm,cpu-idle-state-names", names, dt_idle_states);
+> +	if (rc < -1) {
 
-Not really (as per the above).
+Why < -1 ?
 
-And even in the !fast_switch_enabled case, if next_freq stays at 400
-MHz (which is different from policy->cur), it may lead to suboptimal
-decisions going forward (eg. if it goes to 600 MHz next time and the
-governor will think that the frequency has changed, although in fact
-it hasn't).
+> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-names in DT\=
+n");
+> +		goto out_free_latency;
+> +	}
+> +
+> +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
 
-I guess the !fast_switch_enabled case might be optimized by comparing
-next_freq with policy->cur at one point, but next_freq should be
-updated regardless IMO.
+Isn't weird to mix cpu feature and DT bindings check ?
+
+> +		psscr_val =3D kcalloc(dt_idle_states, sizeof(*psscr_val),
+> +					GFP_KERNEL);
+> +		rc =3D of_property_read_u64_array(power_mgt,
+> +			"ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states);
+
+[cc'ed Lorenzo and Rob ]
+
+I don't see the documentation for the binding. Wouldn't make sense to=20
+add the value per idle state instead of an index based array ?
+
+> +		if (rc < -1) {
+> +			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT=
+\n");
+> +			goto out_free_psscr;
+> +		}
+> +	}
+>   	residency_ns =3D kzalloc(sizeof(*residency_ns) * dt_idle_states, G=
+=46P_KERNEL);
+>   	rc =3D of_property_read_u32_array(power_mgt,
+>   		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
+> @@ -218,6 +249,16 @@ static int powernv_add_idle_states(void)
+>   			powernv_states[nr_idle_states].flags =3D 0;
+>   			powernv_states[nr_idle_states].target_residency =3D 100;
+>   			powernv_states[nr_idle_states].enter =3D &nap_loop;
+> +		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+> +				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> +			strncpy(powernv_states[nr_idle_states].name,
+> +				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
+
+Why cast names[] to (char *) while strncpy is waiting for const char *,=
+=20
+the initial type of names[] ?
+
+> +			strncpy(powernv_states[nr_idle_states].desc,
+> +				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
+> +			powernv_states[nr_idle_states].flags =3D 0;
+
+No target_residency specified ?
+
+> +
+> +			powernv_states[nr_idle_states].enter =3D &stop_loop;
+
+s/&stop_loop/stop_loop/
+
+> +			stop_psscr_table[nr_idle_states] =3D psscr_val[i];
+>   		}
+>
+>   		/*
+> @@ -233,6 +274,18 @@ static int powernv_add_idle_states(void)
+>   			powernv_states[nr_idle_states].flags =3D CPUIDLE_FLAG_TIMER_STOP=
+;
+>   			powernv_states[nr_idle_states].target_residency =3D 300000;
+>   			powernv_states[nr_idle_states].enter =3D &fastsleep_loop;
+> +		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
+> +				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> +
+> +			strncpy(powernv_states[nr_idle_states].name,
+> +				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
+> +			strncpy(powernv_states[nr_idle_states].desc,
+> +				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
+> +
+> +			powernv_states[nr_idle_states].flags =3D CPUIDLE_FLAG_TIMER_STOP;
+> +
+> +			powernv_states[nr_idle_states].enter =3D &stop_loop;
+> +			stop_psscr_table[nr_idle_states] =3D psscr_val[i];
+>   		}
+>   #endif
+>   		powernv_states[nr_idle_states].exit_latency =3D
+> @@ -247,6 +300,8 @@ static int powernv_add_idle_states(void)
+>   	}
+>
+>   	kfree(residency_ns);
+> +out_free_psscr:
+> +	kfree(psscr_val);
+>   out_free_latency:
+>   	kfree(latency_ns);
+>   out_free_flags:
+>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
