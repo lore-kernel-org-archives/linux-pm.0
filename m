@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv3 30/48] thermal: core: move __unbind() helper to where it is used
-Date: Mon, 30 May 2016 15:16:06 -0700
-Message-ID: <1464646584-14322-31-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv3 29/48] thermal: core: small style fix on __unbind() helper
+Date: Mon, 30 May 2016 15:16:05 -0700
+Message-ID: <1464646584-14322-30-git-send-email-edubezval@gmail.com>
 References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
@@ -10,53 +10,28 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Simply moving the helper to closer where it is actually used.
+Simply aligning to parenthesis.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ drivers/thermal/thermal_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 261cc16..75b7854 100644
+index e77e6d1..261cc16 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -319,16 +319,6 @@ static void __bind(struct thermal_zone_device *tz, int mask,
- 	}
+@@ -320,7 +320,7 @@ static void __bind(struct thermal_zone_device *tz, int mask,
  }
  
--static void __unbind(struct thermal_zone_device *tz, int mask,
--		     struct thermal_cooling_device *cdev)
--{
--	int i;
--
--	for (i = 0; i < tz->trips; i++)
--		if (mask & (1 << i))
--			thermal_zone_unbind_cooling_device(tz, i, cdev);
--}
--
- static void bind_cdev(struct thermal_cooling_device *cdev)
- {
- 	int i, ret;
-@@ -1013,6 +1003,16 @@ thermal_of_cooling_device_register(struct device_node *np,
- }
- EXPORT_SYMBOL_GPL(thermal_of_cooling_device_register);
- 
-+static void __unbind(struct thermal_zone_device *tz, int mask,
+ static void __unbind(struct thermal_zone_device *tz, int mask,
+-			struct thermal_cooling_device *cdev)
 +		     struct thermal_cooling_device *cdev)
-+{
-+	int i;
-+
-+	for (i = 0; i < tz->trips; i++)
-+		if (mask & (1 << i))
-+			thermal_zone_unbind_cooling_device(tz, i, cdev);
-+}
-+
- /**
-  * thermal_cooling_device_unregister - removes the registered thermal cooling device
-  * @cdev:	the thermal cooling device to remove.
+ {
+ 	int i;
+ 
 -- 
 2.1.4
