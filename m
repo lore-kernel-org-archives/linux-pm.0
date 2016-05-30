@@ -1,101 +1,96 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv3 17/48] thermal: core: split policy_store
-Date: Mon, 30 May 2016 15:15:53 -0700
-Message-ID: <1464646584-14322-18-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv3 28/48] thermal: core: move idr handling to device management section
+Date: Mon, 30 May 2016 15:16:04 -0700
+Message-ID: <1464646584-14322-29-git-send-email-edubezval@gmail.com>
 References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:35510 "EHLO
+	mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423576AbcE3WRY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 18:17:24 -0400
 In-Reply-To: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
-Similarly to passive_store, policy_store now is split
-between thermal core data structure handling and sysfs handling.
+Given that idr is only used to get id for thermal devices
+(zones and cooling), makes sense to move the code closer.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 37 ++++++++++++++++++++++++-------------
- drivers/thermal/thermal_core.h |  1 +
- 2 files changed, 25 insertions(+), 13 deletions(-)
+ drivers/thermal/thermal_core.c | 48 +++++++++++++++++++++---------------------
+ 1 file changed, 24 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 5f5a87e..078b260 100644
+index 16d43ee..e77e6d1 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -700,6 +700,28 @@ void thermal_zone_device_unbind_exception(struct thermal_zone_device *tz,
- 	mutex_unlock(&thermal_list_lock);
+@@ -286,30 +286,6 @@ static void thermal_unregister_governors(void)
+ 	thermal_gov_power_allocator_unregister();
  }
  
-+int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
-+				   char *policy)
+-static int get_idr(struct idr *idr, struct mutex *lock, int *id)
+-{
+-	int ret;
+-
+-	if (lock)
+-		mutex_lock(lock);
+-	ret = idr_alloc(idr, NULL, 0, 0, GFP_KERNEL);
+-	if (lock)
+-		mutex_unlock(lock);
+-	if (unlikely(ret < 0))
+-		return ret;
+-	*id = ret;
+-	return 0;
+-}
+-
+-static void release_idr(struct idr *idr, struct mutex *lock, int id)
+-{
+-	if (lock)
+-		mutex_lock(lock);
+-	idr_remove(idr, id);
+-	if (lock)
+-		mutex_unlock(lock);
+-}
+-
+ static void print_bind_err_msg(struct thermal_zone_device *tz,
+ 			struct thermal_cooling_device *cdev, int ret)
+ {
+@@ -692,6 +668,30 @@ void thermal_zone_device_unbind_exception(struct thermal_zone_device *tz,
+ 
+ /* Device management */
+ 
++static int get_idr(struct idr *idr, struct mutex *lock, int *id)
 +{
-+	struct thermal_governor *gov;
-+	int ret = -EINVAL;
++	int ret;
 +
-+	mutex_lock(&thermal_governor_lock);
-+	mutex_lock(&tz->lock);
-+
-+	gov = __find_governor(strim(policy));
-+	if (!gov)
-+		goto exit;
-+
-+	ret = thermal_set_governor(tz, gov);
-+
-+exit:
-+	mutex_unlock(&tz->lock);
-+	mutex_unlock(&thermal_governor_lock);
-+
-+	return ret;
++	if (lock)
++		mutex_lock(lock);
++	ret = idr_alloc(idr, NULL, 0, 0, GFP_KERNEL);
++	if (lock)
++		mutex_unlock(lock);
++	if (unlikely(ret < 0))
++		return ret;
++	*id = ret;
++	return 0;
 +}
 +
- /* sys I/F for thermal zone */
- 
- #define to_thermal_zone(_dev) \
-@@ -941,27 +963,16 @@ static ssize_t
- policy_store(struct device *dev, struct device_attribute *attr,
- 		    const char *buf, size_t count)
- {
--	int ret = -EINVAL;
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
--	struct thermal_governor *gov;
- 	char name[THERMAL_NAME_LENGTH];
-+	int ret;
- 
- 	snprintf(name, sizeof(name), "%s", buf);
- 
--	mutex_lock(&thermal_governor_lock);
--	mutex_lock(&tz->lock);
--
--	gov = __find_governor(strim(name));
--	if (!gov)
--		goto exit;
--
--	ret = thermal_set_governor(tz, gov);
-+	ret = thermal_zone_device_set_policy(tz, name);
- 	if (!ret)
- 		ret = count;
- 
--exit:
--	mutex_unlock(&tz->lock);
--	mutex_unlock(&thermal_governor_lock);
- 	return ret;
- }
- 
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index a765c75..db65d3b 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -60,6 +60,7 @@ void thermal_zone_device_rebind_exception(struct thermal_zone_device *,
- 					  const char *, size_t);
- void thermal_zone_device_unbind_exception(struct thermal_zone_device *,
- 					  const char *, size_t);
-+int thermal_zone_device_set_policy(struct thermal_zone_device *, char *);
- 
- #ifdef CONFIG_THERMAL_GOV_STEP_WISE
- int thermal_gov_step_wise_register(void);
++static void release_idr(struct idr *idr, struct mutex *lock, int id)
++{
++	if (lock)
++		mutex_lock(lock);
++	idr_remove(idr, id);
++	if (lock)
++		mutex_unlock(lock);
++}
++
+ /**
+  * thermal_zone_bind_cooling_device() - bind a cooling device to a thermal zone
+  * @tz:		pointer to struct thermal_zone_device
 -- 
 2.1.4
+
