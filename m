@@ -1,96 +1,41 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 06/40] thermal: core: move mode attribute to tz->device.groups
-Date: Mon, 30 May 2016 14:27:25 -0700
-Message-ID: <1464643679-2733-7-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 10/40] thermal: core: remove useless empty line
+Date: Mon, 30 May 2016 14:27:29 -0700
+Message-ID: <1464643679-2733-11-git-send-email-edubezval@gmail.com>
 References: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f68.google.com ([209.85.220.68]:35467 "EHLO
+	mail-pa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422878AbcE3V2e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 17:28:34 -0400
 In-Reply-To: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
-Moving mode attribute to tz->device.groups requires the implementation
-of a .is_visible() callback. The condition returned by .is_visible() of
-the mode attribute group is kept the same, we allow the attribute to be
-visible only if ops->get_mode() is set by the thermal driver.
+Fix style problem on create_trip_attrs();
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 35 +++++++++++++++++++++++++++--------
- 1 file changed, 27 insertions(+), 8 deletions(-)
+ drivers/thermal/thermal_core.c | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 1398c9d..e65c9b8 100644
+index d6595b1..e04e443 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1006,6 +1006,7 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
- static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
- 
-+/* These attributes are unconditionally added to a thermal zone */
- static struct attribute *thermal_zone_dev_attrs[] = {
- 	&dev_attr_type.attr,
- 	&dev_attr_temp.attr,
-@@ -1028,8 +1029,34 @@ static struct attribute_group thermal_zone_attribute_group = {
- 	.attrs = thermal_zone_dev_attrs,
- };
- 
-+/* We expose mode only if .get_mode is present */
-+static struct attribute *thermal_zone_mode_attrs[] = {
-+	&dev_attr_mode.attr,
-+};
-+
-+static umode_t thermal_zone_mode_is_visible(struct kobject *kobj,
-+					    struct attribute *attr,
-+					    int attrno)
-+{
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct thermal_zone_device *tz;
-+
-+	tz = container_of(dev, struct thermal_zone_device, device);
-+
-+	if (tz->ops->get_mode)
-+		return attr->mode;
-+
-+	return 0;
-+}
-+
-+static struct attribute_group thermal_zone_mode_attribute_group = {
-+	.attrs = thermal_zone_mode_attrs,
-+	.is_visible = thermal_zone_mode_is_visible,
-+};
-+
- static const struct attribute_group *thermal_zone_attribute_groups[] = {
- 	&thermal_zone_attribute_group,
-+	&thermal_zone_mode_attribute_group,
- 	NULL
- };
- 
-@@ -1868,12 +1895,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+@@ -1764,7 +1764,6 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
+ 		}
  	}
  
- 	/* sys I/F */
--	if (ops->get_mode) {
--		result = device_create_file(&tz->device, &dev_attr_mode);
--		if (result)
--			goto unregister;
--	}
 -
- 	result = create_trip_attrs(tz, mask);
- 	if (result)
- 		goto unregister;
-@@ -1990,8 +2011,6 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 
- 	thermal_zone_device_set_polling(tz, 0);
- 
--	if (tz->ops->get_mode)
--		device_remove_file(&tz->device, &dev_attr_mode);
- 	remove_trip_attrs(tz);
- 	thermal_set_governor(tz, NULL);
- 
+ 	for (indx = 0; indx < tz->trips; indx++) {
+ 		/* create trip type attribute */
+ 		snprintf(tz->trip_type_attrs[indx].name, THERMAL_NAME_LENGTH,
 -- 
 2.1.4
+
