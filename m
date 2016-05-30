@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv3 14/48] thermal: core: move trips attributes to tz->device.groups
-Date: Mon, 30 May 2016 15:15:50 -0700
-Message-ID: <1464646584-14322-15-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv3 17/48] thermal: core: split policy_store
+Date: Mon, 30 May 2016 15:15:53 -0700
+Message-ID: <1464646584-14322-18-git-send-email-edubezval@gmail.com>
 References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
@@ -10,196 +10,92 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Finally, move the last thermal zone sysfs attributes to
-tz->device.groups: trips attributes. This requires adding a
-attribute_group to thermal_zone_device, creating it dynamically, and
-then setting all trips attributes in it. The trips attribute is then
-added to the tz->device.groups.
-
-As the removal of all attributes are handled by device core, the device
-remove calls are not needed anymore.
+Similarly to passive_store, policy_store now is split
+between thermal core data structure handling and sysfs handling.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 76 +++++++++++++++++++++---------------------
- include/linux/thermal.h        |  2 ++
- 2 files changed, 40 insertions(+), 38 deletions(-)
+ drivers/thermal/thermal_core.c | 37 ++++++++++++++++++++++++-------------
+ drivers/thermal/thermal_core.h |  1 +
+ 2 files changed, 25 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 7a30863..0156a6b 100644
+index 5f5a87e..078b260 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1185,8 +1185,9 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
-  */
- static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- {
--	int indx;
- 	int size = sizeof(struct thermal_attr) * tz->trips;
-+	struct attribute **attrs;
-+	int indx;
- 
- 	tz->trip_type_attrs = kzalloc(size, GFP_KERNEL);
- 	if (!tz->trip_type_attrs)
-@@ -1207,6 +1208,15 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- 		}
- 	}
- 
-+	attrs = kzalloc(sizeof(*attrs) * tz->trips * 3, GFP_KERNEL);
-+	if (!attrs) {
-+		kfree(tz->trip_type_attrs);
-+		kfree(tz->trip_temp_attrs);
-+		if (tz->ops->get_trip_hyst)
-+			kfree(tz->trip_hyst_attrs);
-+		return -ENOMEM;
-+	}
-+
- 	for (indx = 0; indx < tz->trips; indx++) {
- 		/* create trip type attribute */
- 		snprintf(tz->trip_type_attrs[indx].name, THERMAL_NAME_LENGTH,
-@@ -1217,9 +1227,7 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- 						tz->trip_type_attrs[indx].name;
- 		tz->trip_type_attrs[indx].attr.attr.mode = S_IRUGO;
- 		tz->trip_type_attrs[indx].attr.show = trip_point_type_show;
--
--		device_create_file(&tz->device,
--				   &tz->trip_type_attrs[indx].attr);
-+		attrs[indx] = &tz->trip_type_attrs[indx].attr.attr;
- 
- 		/* create trip temp attribute */
- 		snprintf(tz->trip_temp_attrs[indx].name, THERMAL_NAME_LENGTH,
-@@ -1236,9 +1244,7 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- 			tz->trip_temp_attrs[indx].attr.store =
- 							trip_point_temp_store;
- 		}
--
--		device_create_file(&tz->device,
--				   &tz->trip_temp_attrs[indx].attr);
-+		attrs[indx + tz->trips] = &tz->trip_type_attrs[indx].attr.attr;
- 
- 		/* create Optional trip hyst attribute */
- 		if (!tz->ops->get_trip_hyst)
-@@ -1256,45 +1262,37 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- 			tz->trip_hyst_attrs[indx].attr.store =
- 					trip_point_hyst_store;
- 		}
--
--		device_create_file(&tz->device,
--				   &tz->trip_hyst_attrs[indx].attr);
-+		attrs[indx + tz->trips * 2] =
-+					&tz->trip_type_attrs[indx].attr.attr;
- 	}
--	return 0;
--}
- 
--static void remove_trip_attrs(struct thermal_zone_device *tz)
--{
--	int indx;
-+	tz->trips_attribute_group.attrs = attrs;
- 
--	for (indx = 0; indx < tz->trips; indx++) {
--		device_remove_file(&tz->device,
--				   &tz->trip_type_attrs[indx].attr);
--		device_remove_file(&tz->device,
--				   &tz->trip_temp_attrs[indx].attr);
--		if (tz->ops->get_trip_hyst)
--			device_remove_file(&tz->device,
--					   &tz->trip_hyst_attrs[indx].attr);
--	}
--	kfree(tz->trip_type_attrs);
--	kfree(tz->trip_temp_attrs);
--	kfree(tz->trip_hyst_attrs);
-+	return 0;
+@@ -700,6 +700,28 @@ void thermal_zone_device_unbind_exception(struct thermal_zone_device *tz,
+ 	mutex_unlock(&thermal_list_lock);
  }
  
--static int thermal_zone_create_device_groups(struct thermal_zone_device *tz)
-+static int thermal_zone_create_device_groups(struct thermal_zone_device *tz,
-+					     int mask)
++int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
++				   char *policy)
++{
++	struct thermal_governor *gov;
++	int ret = -EINVAL;
++
++	mutex_lock(&thermal_governor_lock);
++	mutex_lock(&tz->lock);
++
++	gov = __find_governor(strim(policy));
++	if (!gov)
++		goto exit;
++
++	ret = thermal_set_governor(tz, gov);
++
++exit:
++	mutex_unlock(&tz->lock);
++	mutex_unlock(&thermal_governor_lock);
++
++	return ret;
++}
++
+ /* sys I/F for thermal zone */
+ 
+ #define to_thermal_zone(_dev) \
+@@ -941,27 +963,16 @@ static ssize_t
+ policy_store(struct device *dev, struct device_attribute *attr,
+ 		    const char *buf, size_t count)
  {
- 	const struct attribute_group **groups;
--	int i, size;
-+	int i, size, result;
-+
-+	result = create_trip_attrs(tz, mask);
-+	if (result)
-+		return result;
+-	int ret = -EINVAL;
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+-	struct thermal_governor *gov;
+ 	char name[THERMAL_NAME_LENGTH];
++	int ret;
  
--	size = ARRAY_SIZE(thermal_zone_attribute_groups) + 1;
-+	/* we need one extra for trips and the NULL to terminate the array */
-+	size = ARRAY_SIZE(thermal_zone_attribute_groups) + 2;
- 	/* This also takes care of API requirement to be NULL terminated */
- 	groups = kcalloc(size, sizeof(*groups), GFP_KERNEL);
- 	if (!groups)
- 		return -ENOMEM;
+ 	snprintf(name, sizeof(name), "%s", buf);
  
--	for (i = 0; i < size - 1; i++)
-+	for (i = 0; i < size - 2; i++)
- 		groups[i] = thermal_zone_attribute_groups[i];
- 
-+	groups[size - 2] = &tz->trips_attribute_group;
-+
- 	tz->device.groups = groups;
- 
- 	return 0;
-@@ -1931,8 +1929,12 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	tz->passive_delay = passive_delay;
- 	tz->polling_delay = polling_delay;
- 
-+	/* sys I/F */
- 	/* Add nodes that are always present via .groups */
--	thermal_zone_create_device_groups(tz);
-+	result = thermal_zone_create_device_groups(tz, mask);
-+	if (result)
-+		goto unregister;
-+
- 	/* A new thermal zone needs to be updated anyway. */
- 	atomic_set(&tz->need_update, 1);
- 
-@@ -1944,11 +1946,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 		return ERR_PTR(result);
- 	}
- 
--	/* sys I/F */
--	result = create_trip_attrs(tz, mask);
--	if (result)
--		goto unregister;
+-	mutex_lock(&thermal_governor_lock);
+-	mutex_lock(&tz->lock);
 -
- 	for (count = 0; count < trips; count++) {
- 		if (tz->ops->get_trip_type(tz, count, &trip_type))
- 			set_bit(count, &tz->trips_disabled);
-@@ -2053,7 +2050,10 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+-	gov = __find_governor(strim(name));
+-	if (!gov)
+-		goto exit;
+-
+-	ret = thermal_set_governor(tz, gov);
++	ret = thermal_zone_device_set_policy(tz, name);
+ 	if (!ret)
+ 		ret = count;
  
- 	thermal_zone_device_set_polling(tz, 0);
+-exit:
+-	mutex_unlock(&tz->lock);
+-	mutex_unlock(&thermal_governor_lock);
+ 	return ret;
+ }
  
--	remove_trip_attrs(tz);
-+	kfree(tz->trip_type_attrs);
-+	kfree(tz->trip_temp_attrs);
-+	kfree(tz->trip_hyst_attrs);
-+	kfree(tz->trips_attribute_group.attrs);
- 	thermal_set_governor(tz, NULL);
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index a765c75..db65d3b 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -60,6 +60,7 @@ void thermal_zone_device_rebind_exception(struct thermal_zone_device *,
+ 					  const char *, size_t);
+ void thermal_zone_device_unbind_exception(struct thermal_zone_device *,
+ 					  const char *, size_t);
++int thermal_zone_device_set_policy(struct thermal_zone_device *, char *);
  
- 	thermal_remove_hwmon_sysfs(tz);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index e45abe7..fa2c2be 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -28,6 +28,7 @@
- #include <linux/of.h>
- #include <linux/idr.h>
- #include <linux/device.h>
-+#include <linux/sysfs.h>
- #include <linux/workqueue.h>
- #include <uapi/linux/thermal.h>
- 
-@@ -187,6 +188,7 @@ struct thermal_zone_device {
- 	int id;
- 	char type[THERMAL_NAME_LENGTH];
- 	struct device device;
-+	struct attribute_group trips_attribute_group;
- 	struct thermal_attr *trip_temp_attrs;
- 	struct thermal_attr *trip_type_attrs;
- 	struct thermal_attr *trip_hyst_attrs;
+ #ifdef CONFIG_THERMAL_GOV_STEP_WISE
+ int thermal_gov_step_wise_register(void);
 -- 
 2.1.4
