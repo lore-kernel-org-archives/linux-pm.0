@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv3 48/48] thermal: sysfs: use kcalloc() instead of kzalloc()
-Date: Mon, 30 May 2016 15:16:24 -0700
-Message-ID: <1464646584-14322-49-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv3 45/48] thermal: core: remove style warnings and checks
+Date: Mon, 30 May 2016 15:16:21 -0700
+Message-ID: <1464646584-14322-46-git-send-email-edubezval@gmail.com>
 References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
@@ -10,59 +10,76 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Simplify size computation by using kcalloc() for
-allocating memory for arrays.
+Removing several style issues in thermal code code.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_sysfs.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/thermal/thermal_core.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index 10c8fe4..d208071 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -502,22 +502,25 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
-  */
- static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- {
--	int size = sizeof(struct thermal_attr) * tz->trips;
- 	struct attribute **attrs;
- 	int indx;
- 
--	tz->trip_type_attrs = kzalloc(size, GFP_KERNEL);
-+	tz->trip_type_attrs = kcalloc(tz->trips, sizeof(*tz->trip_type_attrs),
-+				      GFP_KERNEL);
- 	if (!tz->trip_type_attrs)
- 		return -ENOMEM;
- 
--	tz->trip_temp_attrs = kzalloc(size, GFP_KERNEL);
-+	tz->trip_temp_attrs = kcalloc(tz->trips, sizeof(*tz->trip_temp_attrs),
-+				      GFP_KERNEL);
- 	if (!tz->trip_temp_attrs) {
- 		kfree(tz->trip_type_attrs);
- 		return -ENOMEM;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index a6fbbda..3957768 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -711,10 +711,10 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 	mutex_lock(&tz->lock);
+ 	mutex_lock(&cdev->lock);
+ 	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
+-	    if (pos->tz == tz && pos->trip == trip && pos->cdev == cdev) {
+-		result = -EEXIST;
+-		break;
+-	}
++		if (pos->tz == tz && pos->trip == trip && pos->cdev == cdev) {
++			result = -EEXIST;
++			break;
++		}
+ 	if (!result) {
+ 		list_add_tail(&dev->tz_node, &tz->thermal_instances);
+ 		list_add_tail(&dev->cdev_node, &cdev->thermal_instances);
+@@ -794,8 +794,8 @@ static void thermal_release(struct device *dev)
+ 		     sizeof("thermal_zone") - 1)) {
+ 		tz = to_thermal_zone(dev);
+ 		kfree(tz);
+-	} else if(!strncmp(dev_name(dev), "cooling_device",
+-			   sizeof("cooling_device") - 1)){
++	} else if (!strncmp(dev_name(dev), "cooling_device",
++			    sizeof("cooling_device") - 1)) {
+ 		cdev = to_cooling_device(dev);
+ 		kfree(cdev);
  	}
+@@ -1028,8 +1028,8 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
  
- 	if (tz->ops->get_trip_hyst) {
--		tz->trip_hyst_attrs = kzalloc(size, GFP_KERNEL);
-+		tz->trip_hyst_attrs = kcalloc(tz->trips,
-+					      sizeof(*tz->trip_hyst_attrs),
-+					      GFP_KERNEL);
- 		if (!tz->trip_hyst_attrs) {
- 			kfree(tz->trip_type_attrs);
- 			kfree(tz->trip_temp_attrs);
-@@ -525,7 +528,7 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- 		}
- 	}
+ 	mutex_lock(&thermal_list_lock);
+ 	list_for_each_entry(pos, &thermal_cdev_list, node)
+-	    if (pos == cdev)
+-		break;
++		if (pos == cdev)
++			break;
+ 	if (pos != cdev) {
+ 		/* thermal cooling device not found */
+ 		mutex_unlock(&thermal_list_lock);
+@@ -1233,7 +1233,7 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+ 	/* Bind cooling devices for this zone */
+ 	bind_tz(tz);
  
--	attrs = kzalloc(sizeof(*attrs) * tz->trips * 3, GFP_KERNEL);
-+	attrs = kcalloc(tz->trips * 3, sizeof(*attrs), GFP_KERNEL);
- 	if (!attrs) {
- 		kfree(tz->trip_type_attrs);
- 		kfree(tz->trip_temp_attrs);
+-	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
++	INIT_DELAYED_WORK(&tz->poll_queue, thermal_zone_device_check);
+ 
+ 	thermal_zone_device_reset(tz);
+ 	/* Update the new thermal zone and mark it as already updated. */
+@@ -1267,8 +1267,8 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 
+ 	mutex_lock(&thermal_list_lock);
+ 	list_for_each_entry(pos, &thermal_tz_list, node)
+-	    if (pos == tz)
+-		break;
++		if (pos == tz)
++			break;
+ 	if (pos != tz) {
+ 		/* thermal zone device not found */
+ 		mutex_unlock(&thermal_list_lock);
 -- 
 2.1.4
