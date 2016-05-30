@@ -1,189 +1,100 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
- calls to hotplugged cpu")]
-Date: Mon, 30 May 2016 22:43:51 +0200
-Message-ID: <CAJZ5v0in8YwMBgLd6=KgGVc-f2yVvutOJG_u05OKLK7_EzN0yQ@mail.gmail.com>
-References: <20160511101920.GZ4329@intel.com>
-	<57332171.8070403@linutronix.de>
-	<20160511122116.GA4329@intel.com>
-	<20160511084445.00030b49@gandalf.local.home>
-	<20160511133406.GC4329@intel.com>
-	<20160516193910.GL4329@intel.com>
-	<573BA5E2.5040506@intel.com>
-	<20160518072424.GU4329@intel.com>
-	<20160526183207.GX4329@intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCHv2 00/40]
+Date: Mon, 30 May 2016 14:27:19 -0700
+Message-ID: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-arch-owner@vger.kernel.org>
-In-Reply-To: <20160526183207.GX4329@intel.com>
-Sender: linux-arch-owner@vger.kernel.org
-To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, May 26, 2016 at 8:32 PM, Ville Syrj=C3=A4l=C3=A4
-<ville.syrjala@linux.intel.com> wrote:
-> On Wed, May 18, 2016 at 10:24:24AM +0300, Ville Syrj=C3=A4l=C3=A4 wro=
-te:
->> On Wed, May 18, 2016 at 01:14:42AM +0200, Rafael J. Wysocki wrote:
->> > On 5/16/2016 9:39 PM, Ville Syrj=C3=A4l=C3=A4 wrote:
->> > > On Wed, May 11, 2016 at 04:34:06PM +0300, Ville Syrj=C3=A4l=C3=A4=
- wrote:
->> > >> On Wed, May 11, 2016 at 08:44:45AM -0400, Steven Rostedt wrote:
->> > >>> On Wed, 11 May 2016 15:21:16 +0300
->> > >>> Ville Syrj=C3=A4l=C3=A4 <ville.syrjala@linux.intel.com> wrote:
->> > >>>
->> > >>>> Yeah can't get anything from the machine at that point. netco=
-nsole
->> > >>>> didn't help either, and no serial on this machine. And IIRC I=
-'ve
->> > >>>> tried ramoops on this thing in the past but unfortunately the=
- memory
->> > >>>> got cleared on reboot.
->> > >>>>
->> > >>> Can you look at the documentation in the kernel code at
->> > >>>
->> > >>> Documentation/power/basic-pm-debugging.txt And follow the proc=
-edures
->> > >>> for testing suspend to RAM (although it requires mostly runnin=
-g the
->> > >>> same tests as for hibernation suspending).
->> > >>>
->> > >>> You can also use the tool s2ram for this as well.
->> > >>>
->> > >>> See Documentation/power/s2ram.txt
->> > >>>
->> > >>> Perhaps this can give us a bit more light onto the problem.
->> > >>>
->> > >>> Basically the above does partial suspend and resume, and can p=
-inpoint
->> > >>> problem areas down to a more select location.
->> > >> All the pm_test modes work fine. The only difference between th=
-em was
->> > >> that 'platform' required me to manually wake up the machine (hi=
-tting a
->> > >> key was sufficient), whereas the others woke up without help.
->> > >>
->> > >> pm_trace gave me
->> > >> [    1.306633]   Magic number: 0:185:178
->> > >> [    1.322880]   hash matches ../drivers/base/power/main.c:1070
->> > >> [    1.339270] acpi device:0e: hash matches
->> > >> [    1.355414]  platform: hash matches
->> > >>
->> > >> which is the TRACE_SUSPEND in __device_suspend_noirq(), so no h=
-elp
->> > >> there.
->> > >>
->> > >> I guess I could try to sprinkle more TRACE_RESUMEs around into =
-some
->> > >> early resume code. If anyone has good ideas where to put them i=
-t
->> > >> might speed things up a bit.
->> > > So I did a bunch of that and found that it gets stuck somewhere
->> > > around executing the _WAK method:
->> > > platform_resume_noirq
->> > >   acpi_pm_finish
->> > >    acpi_leave_sleep_state
->> > >     acpi_hw_sleep_dispatch
->> > >      acpi_hw_legacy_wake
->> > >       acpi_hw_execute_sleep_method
->> > >        acpi_evaluate_object
->> > >         acpi_ns_evaluate
->> > >          acpi_ps_execute_method
->> > >           acpi_ps_parse_aml
->> > >
->> > > It also seesm that adding a few TRACE_RESUME()s or an msleep() r=
-ight
->> > > after enable_nonboot_cpus() can avoid the hang, sometimes.
->> > >
->> > > I've attached the DSDT in case anyone is interested in looking a=
-t it.
->> > >
->> >
->> > What if you comment out the execution of _WAK (line 318 of
->> > drivers/acpi/acpica/hwsleep.c in 4.6)?  Does that make any differe=
-nce?
->>
->> Indeed it does. Tried with acpi_idle and intel_idle, and both appear=
- to
->> resume just fine with that hack.
->>
->> -       acpi_hw_execute_sleep_method(METHOD_PATHNAME__WAK, sleep_sta=
-te);
->> +       //acpi_hw_execute_sleep_method(METHOD_PATHNAME__WAK, sleep_s=
-tate);
->> +       printk(KERN_CRIT "skipping _WAK\n");
->
-> Continuing with my detective work a bit, I decided to hack the DSDT a
-> bit to see if I can narrow the it down further, and looks like I foun=
-d
-> it on the first guess. The following change stops it from hanging.
->
-> @ -5056,7 +5056,7 @@
->          If (LEqual (Arg0, 0x03))
->          {
->              Store (0x01, \SPNF)
-> -           TRAP (0x46)
-> +           //TRAP (0x46)
->              P8XH (0x00, 0x03)
->          }
->
-> So what does that do? Let's see:
->
->     OperationRegion (IO_T, SystemIO, 0x0800, 0x10)
->     Field (IO_T, ByteAcc, NoLock, Preserve)
->     {
->         Offset (0x08),
->         TRP0,   8
->     }
->
->     OperationRegion (GNVS, SystemMemory, 0x3F5E0C7C, 0x0200)
->     Field (GNVS, AnyAcc, Lock, Preserve)
->     {
->         OSYS,   16,
->         SMIF,   8,
->     ...
->
->     Method (TRAP, 1, Serialized)
->     {
->         Store (Arg0, SMIF) /* \SMIF */
->         Store (0x00, TRP0) /* \TRP0 */
->         Return (SMIF) /* \SMIF */
->     }
->
-> and a dump of the IOTR registers shows:
->
-> 0x1e80: 0x0000fe01
-> 0x1e84: 0x00020001
-> 0x1e98: 0x000c0801
-> 0x1e9c: 0x000200f0
->
-> which seems to be telling me that ports 0x800-0x80f and
-> 0xfe00-0xfe03 would trigger an SMI.
+Folks,
 
-Well, the name of the method kind of suggests that it triggers an SMM t=
-rap. :-)
+This is V2 of a patch series to improve thermal core. The idea
+here is to reorganize the code and improve the way we
+handle sysfs entries.
 
-> So the next question is how do the idle drivers and cpu hotplug
-> fit into this picture. Do we need to force the second HT into
-> a specific C state before the SMI or something?
+The change in behavior is that now, thermal zones with empty
+.type will not be allowed to be registered. Also, the way
+we handle scanf's return code is now checking for
+number of successful inputs.
 
-Or you can ask why exactly someone put that SMM trap into _WAK.
+After this series, thermal core is split into the following files:
+- thermal_sysfs.c: contains the functions handling the sysfs nodes
+- thermal_helpers.c: groups functions that do not need to touch thermal
+core internal data structures, such as internal lists, and list locks.
+- thermal_core.c: functions to handle the lifecycle of the subsystem,
+its governors, cooling devices, thermal zone devices, and their
+interactions.
 
-Apparently, it was regarded as necessary or no one would have
-bothered.  The only reason I can see why it might be regarded as
-necessary was that Windows did something Linux doesn't do on that
-platform, or, which to me is far more interesting, that Windows didn't
-do something actually done by Linux.
+I don't expect any impact on userspace.
 
-My theory would be that Windows didn't reinitialize the second HT
-properly during resume and the trap was added to let SMM do that.  If
-that's the case, the trap may trigger by the time the second HT
-already executes code in Linux and then it will mess up with it and
-crash.
+Please give your inputs.
 
-Now, what do idles states have to do with that?  IIRC, Windows puts
-nonboot CPUs into idle states before suspend, so the SMM code
-triggered by the trap may make assumptions about the CPU being in such
-a state or similar.
+V1->V2:
+- Removed all checkpatch issues in the existing code that was
+moved/changed.
+
+Rui, it would be great if you could review these earlier. I will be
+sending two extra patch series on top of this one.
+
+BR,
+
+Eduardo Valentin (40):
+  thermal: core: prevent zones with no types to be registered
+  thermal: core: group thermal_zone DEVICE_ATTR's declarations
+  thermal: core: group device_create_file() calls that are always
+    created
+  thermal: core: use dev.groups to manage always present tz attributes
+  thermal: core: move emul_temp creation to tz->device.groups
+  thermal: core: move mode attribute to tz->device.groups
+  thermal: core: move passive attr to tz->device.groups
+  thermal: core: improve power actor documentation
+  thermal: core: move power actor code out of sysfs I/F section
+  thermal: core: remove useless empty line
+  thermal: core: fix style on remove_trip_attrs()
+  thermal: core: move the trip attrs to the tz sysfs I/F section
+  thermal: core: create tz->device.groups dynamically
+  thermal: core: move trips attributes to tz->device.groups
+  thermal: core: remove unnecessary device_remove() calls
+  thermal: core: split passive_store
+  thermal: core: split policy_store
+  thermal: core: split available_policies_show()
+  thermal: core: move to_thermal_zone() macro to header file
+  thermal: core: treat correctly the return value of *scanf calls
+  thermal: core: match parenthesis on code alignment
+  thermal: core: move thermal_zone sysfs to thermal_sysfs.c
+  thermal: core: move to_cooling_device macro to header file
+  thermal: core: move cooling device sysfs to thermal_sysfs.c
+  thermal: core: remove a couple of style issues on helpers
+  thermal: core: introduce thermal_helpers.c
+  thermal: core: group functions related to governor handling
+  thermal: core: move idr handling to device management section
+  thermal: core: small style fix on __unbind() helper
+  thermal: core: move __unbind() helper to where it is used
+  thermal: core: move bind_cdev() to where it is used
+  thermal: core: move bind_tz() to where it is used
+  thermal: core: fix couple of style issues on __bind() helper
+  thermal: core: move __bind() to where it is used
+  thermal: core: add inline to print_bind_err_msg()
+  thermal: core: move notify to the zone update section
+  thermal: core: add a comment describing the main update loop
+  thermal: core: add a comment describing the power actor section
+  thermal: core: add a comment describing the device management section
+  thermal: sysfs: remove symbols of emul_temp when config is disabled
+
+ drivers/thermal/Makefile          |    3 +-
+ drivers/thermal/thermal_core.c    | 1279 ++++++++-----------------------------
+ drivers/thermal/thermal_core.h    |   26 +
+ drivers/thermal/thermal_helpers.c |  144 +++++
+ drivers/thermal/thermal_sysfs.c   |  749 ++++++++++++++++++++++
+ include/linux/thermal.h           |    2 +
+ 6 files changed, 1194 insertions(+), 1009 deletions(-)
+ create mode 100644 drivers/thermal/thermal_helpers.c
+ create mode 100644 drivers/thermal/thermal_sysfs.c
+
+-- 
+2.1.4
