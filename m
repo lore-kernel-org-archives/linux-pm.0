@@ -1,145 +1,46 @@
-From: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
-	runtime PM
-Date: Mon, 30 May 2016 16:09:09 +0300
-Message-ID: <20160530130909.GA1743@lahna.fi.intel.com>
-References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
- <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
- <20160525135535.GN1789@lahna.fi.intel.com>
- <20160527111037.GA1436@al>
- <20160530095709.GK1789@lahna.fi.intel.com>
- <20160530122010.GB1149@al>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: stats: Make the stats code non-modular
+Date: Mon, 30 May 2016 15:43:12 +0200
+Message-ID: <CAJZ5v0jq10Sza7H3659U9c4aja8qc3pwbEk4=NxhPfAO3fYCqA@mail.gmail.com>
+References: <1482863.aVJEuqdboc@vostro.rjw.lan>
+	<20160526045945.GO17585@vireshk-i7>
+	<5665576.VhylybbIm6@vostro.rjw.lan>
+	<20160530045348.GA26787@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160530122010.GB1149@al>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:35810 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754249AbcE3NnO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 09:43:14 -0400
+In-Reply-To: <20160530045348.GA26787@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-T24gTW9uLCBNYXkgMzAsIDIwMTYgYXQgMDI6MjA6MTBQTSArMDIwMCwgUGV0ZXIgV3Ugd3JvdGU6
-Cj4gT24gTW9uLCBNYXkgMzAsIDIwMTYgYXQgMTI6NTc6MDlQTSArMDMwMCwgTWlrYSBXZXN0ZXJi
-ZXJnIHdyb3RlOgo+ID4gK1JhZmFlbAo+ID4gCj4gPiBPbiBGcmksIE1heSAyNywgMjAxNiBhdCAw
-MToxMDozN1BNICswMjAwLCBQZXRlciBXdSB3cm90ZToKPiA+ID4gT24gV2VkLCBNYXkgMjUsIDIw
-MTYgYXQgMDQ6NTU6MzVQTSArMDMwMCwgTWlrYSBXZXN0ZXJiZXJnIHdyb3RlOgo+ID4gPiA+IE9u
-IFdlZCwgTWF5IDI1LCAyMDE2IGF0IDEyOjUzOjAxQU0gKzAyMDAsIFBldGVyIFd1IHdyb3RlOgo+
-ID4gPiA+ID4gU2luY2UgIlBDSTogQWRkIHJ1bnRpbWUgUE0gc3VwcG9ydCBmb3IgUENJZSBwb3J0
-cyIsIHRoZSBwYXJlbnQgUENJZSBwb3J0Cj4gPiA+ID4gPiBjYW4gYmUgcnVudGltZS1zdXNwZW5k
-ZWQgd2hpY2ggZGlzYWJsZXMgcG93ZXIgcmVzb3VyY2VzIHZpYSBBQ1BJLiBUaGlzCj4gPiA+ID4g
-PiBpcyBpbmNvbXBhdGlibGUgd2l0aCBEU00sIHJlc3VsdGluZyBpbiBhIEdQVSBkZXZpY2Ugd2hp
-Y2ggaXMgc3RpbGwgaW4gRDMKPiA+ID4gPiA+IGFuZCBsb2NrcyB1cCB0aGUga2VybmVsIG9uIHJl
-c3VtZS4KPiA+ID4gPiA+IAo+ID4gPiA+ID4gTWlycm9yIHRoZSBiZWhhdmlvciBvZiBXaW5kb3dz
-IDggYW5kIG5ld2VyWzFdIChhcyBvYnNlcnZlZCB2aWEgYW4gQU1MaQo+ID4gPiA+ID4gZGVidWdn
-ZXIgdHJhY2UpIGFuZCBzdG9wIHVzaW5nIHRoZSBEU00gZnVuY3Rpb25zIGZvciBEM2NvbGQgd2hl
-biBwb3dlcgo+ID4gPiA+ID4gcmVzb3VyY2VzIGFyZSBhdmFpbGFibGUgb24gdGhlIHBhcmVudCBQ
-Q0llIHBvcnQuCj4gPiA+ID4gPiAKPiA+ID4gPiA+ICBbMV06IGh0dHBzOi8vbXNkbi5taWNyb3Nv
-ZnQuY29tL3dpbmRvd3MvaGFyZHdhcmUvZHJpdmVycy9icmluZ3VwL2Zpcm13YXJlLXJlcXVpcmVt
-ZW50cy1mb3ItZDNjb2xkCj4gPiA+ID4gPiAKPiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IFBldGVy
-IFd1IDxwZXRlckBsZWtlbnN0ZXluLm5sPgo+ID4gPiA+ID4gLS0tCj4gPiA+ID4gPiAgZHJpdmVy
-cy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9hY3BpLmMgfCAzNCArKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKystLS0tCj4gPiA+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDMwIGluc2VydGlvbnMo
-KyksIDQgZGVsZXRpb25zKC0pCj4gPiA+ID4gPiAKPiA+ID4gPiA+IGRpZmYgLS1naXQgYS9kcml2
-ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGkuYyBiL2RyaXZlcnMvZ3B1L2RybS9ub3V2
-ZWF1L25vdXZlYXVfYWNwaS5jCj4gPiA+ID4gPiBpbmRleCBkZjlmNzNlLi5lNDY5ZGY3IDEwMDY0
-NAo+ID4gPiA+ID4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9hY3BpLmMK
-PiA+ID4gPiA+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5jCj4g
-PiA+ID4gPiBAQCAtNDYsNiArNDYsNyBAQCBzdGF0aWMgc3RydWN0IG5vdXZlYXVfZHNtX3ByaXYg
-ewo+ID4gPiA+ID4gIAlib29sIGRzbV9kZXRlY3RlZDsKPiA+ID4gPiA+ICAJYm9vbCBvcHRpbXVz
-X2RldGVjdGVkOwo+ID4gPiA+ID4gIAlib29sIG9wdGltdXNfZmxhZ3NfZGV0ZWN0ZWQ7Cj4gPiA+
-ID4gPiArCWJvb2wgb3B0aW11c19za2lwX2RzbTsKPiA+ID4gPiA+ICAJYWNwaV9oYW5kbGUgZGhh
-bmRsZTsKPiA+ID4gPiA+ICAJYWNwaV9oYW5kbGUgcm9tX2hhbmRsZTsKPiA+ID4gPiA+ICB9IG5v
-dXZlYXVfZHNtX3ByaXY7Cj4gPiA+ID4gPiBAQCAtMjEyLDggKzIxMywyNiBAQCBzdGF0aWMgY29u
-c3Qgc3RydWN0IHZnYV9zd2l0Y2hlcm9vX2hhbmRsZXIgbm91dmVhdV9kc21faGFuZGxlciA9IHsK
-PiA+ID4gPiA+ICAJLmdldF9jbGllbnRfaWQgPSBub3V2ZWF1X2RzbV9nZXRfY2xpZW50X2lkLAo+
-ID4gPiA+ID4gIH07Cj4gPiA+ID4gPiAgCj4gPiA+ID4gPiArLyogRmlybXdhcmUgc3VwcG9ydGlu
-ZyBXaW5kb3dzIDggb3IgbGF0ZXIgZG8gbm90IHVzZSBfRFNNIHRvIHB1dCB0aGUgZGV2aWNlIGlu
-dG8KPiA+ID4gPiA+ICsgKiBEM2NvbGQsIHRoZXkgaW5zdGVhZCByZWx5IG9uIGRpc2FibGluZyBw
-b3dlciByZXNvdXJjZXMgb24gdGhlIHBhcmVudC4gKi8KPiA+ID4gPiA+ICtzdGF0aWMgYm9vbCBu
-b3V2ZWF1X3ByM19wcmVzZW50KHN0cnVjdCBwY2lfZGV2ICpwZGV2KQo+ID4gPiA+ID4gK3sKPiA+
-ID4gPiA+ICsJc3RydWN0IHBjaV9kZXYgKnBhcmVudF9wZGV2ID0gcGNpX3Vwc3RyZWFtX2JyaWRn
-ZShwZGV2KTsKPiA+ID4gPiA+ICsJc3RydWN0IGFjcGlfZGV2aWNlICphZDsKPiA+ID4gPiAKPiA+
-ID4gPiBOaXQ6IHBsZWFzZSBjYWxsIHRoaXMgYWRldiBpbnN0ZWFkIG9mIGFkLgo+ID4gPiAKPiA+
-ID4gV2lsbCBkby4KPiA+ID4gCj4gPiA+ID4gPiArCj4gPiA+ID4gPiArCWlmICghcGFyZW50X3Bk
-ZXYpCj4gPiA+ID4gPiArCQlyZXR1cm4gZmFsc2U7Cj4gPiA+ID4gPiArCj4gPiA+ID4gPiArCWFk
-ID0gQUNQSV9DT01QQU5JT04oJnBhcmVudF9wZGV2LT5kZXYpOwo+ID4gPiA+ID4gKwlpZiAoIWFk
-KQo+ID4gPiA+ID4gKwkJcmV0dXJuIGZhbHNlOwo+ID4gPiA+ID4gKwo+ID4gPiA+ID4gKwlyZXR1
-cm4gYWQtPnBvd2VyLmZsYWdzLnBvd2VyX3Jlc291cmNlczsKPiA+ID4gPiAKPiA+ID4gPiBJcyB0
-aGlzIHN1ZmZpY2llbnQgdG8gdGVsbCBpZiB0aGUgcGFyZW50IGRldmljZSBoYXMgX1BSMz8gSSB0
-aG91Z2h0IGl0Cj4gPiA+ID4gcmV0dXJucyB0cnVlIGlmIGl0IGhhcyBwb3dlciByZXNvdXJjZXMg
-aW4gZ2VuZXJhbCwgbm90IG5lY2Vzc2FyaWx5IF9QUjMuCj4gPiA+ID4gCj4gPiA+ID4gT3RoZXJ3
-aXNlIHRoaXMgbG9va3Mgb2theSB0byBtZS4KPiA+ID4gCj4gPiA+IEl0IGlzIGluZGVlZCBzZXQg
-d2hlbmV2ZXIgdGhlcmUgaXMgYW55IF9QUnggbWV0aG9kLiBJIHdvbmRlciBpZiBpdCBpcwo+ID4g
-PiBhcHByb3ByaWF0ZSB0byBhY2Nlc3MgZmllbGRzIGRpcmVjdGx5IGxpa2UgdGhpcywgcGVyaGFw
-cyB0aGlzIHdvdWxkIGJlCj4gPiA+IG1vcmUgYWNjdXJhdGUgKGJhc2VkIG9uIGRldmljZV9wbS5j
-KToKPiA+ID4gCj4gPiA+ICAgICAvKiBDaGVjayB3aGV0aGVyIHRoZSBfUFIzIG1ldGhvZCBpcyBh
-dmFpbGFibGUuICovCj4gPiA+ICAgICByZXR1cm4gYWRldi0+cG93ZXIuc3RhdGVzW0FDUElfU1RB
-VEVfRDNfQ09MRF0uZmxhZ3MudmFsaWQ7Cj4gPiA+IAo+ID4gPiBJIGFtIGFsc28gY29uc2lkZXJp
-bmcgYWRkaW5nIGEgY2hlY2sgaW4gY2FzZSB0aGUgcGNpZXBvcnQgZHJpdmVyIGRvZXMKPiA+ID4g
-bm90IHN1cHBvcnQgRDNjb2xkIHZpYSBydW50aW1lIFBNLCB3aGF0IGRvIHlvdSB0aGluayBvZiB0
-aGlzPwo+ID4gPiAKPiA+ID4gICAgIGlmICghcGFyZW50X3BkZXYpCj4gPiA+ICAgICAgICAgcmV0
-dXJuIGZhbHNlOwo+ID4gPiAgICAgLyogSWYgdGhlIFBDSWUgcG9ydCBkb2VzIG5vdCBzdXBwb3J0
-IEQzY29sZCB2aWEgcnVudGltZSBQTSwgYWxsb3cgYQo+ID4gPiAgICAgICogZmFsbGJhY2sgdG8g
-dGhlIE9wdGltdXMgRFNNIG1ldGhvZCB0byBwdXQgdGhlIGRldmljZSBpbiBEM2NvbGQuICovCj4g
-PiA+ICAgICBpZiAocGFyZW50X3BkZXYtPm5vX2QzY29sZCkKPiA+ID4gICAgICAgICByZXR1cm4g
-ZmFsc2U7Cj4gPiA+IAo+ID4gPiBUaGlzIGlzIG5lZWRlZCB0byBhdm9pZCB0aGUgcmVncmVzc2lv
-biByZXBvcnRlZCBpbiB0aGUgY292ZXIgbGV0dGVyLCBidXQKPiA+ID4gYWxzbyBhbGxvd3MgcHJl
-LTIwMTUgc3lzdGVtcyB0byAoc3RpbGwpIGhhdmUgdGhlIEQzY29sZCBwb3NzaWJpbGl0eS4KPiA+
-IAo+ID4gVGhlIF9EU00gbWV0aG9kIHdpdGggMCBhcyBpbmRleCBwYXJhbWV0ZXIgc2hvdWxkIHJl
-dHVybiBhIGJpdCBmaWVsZAo+ID4gdGVsbGluZyB3aGljaCBmdW5jdGlvbnMgYXJlIHN1cHBvcnRl
-ZC4gU2FuZSBCSU9TIGRpc2FibGVzIHRoYXQKPiA+IHBhcnRpY3VsYXIgZnVuY3Rpb24gaWYgaXQg
-ZGV0ZWN0cyBXaW5kb3dzIDggYW5kIG5ld2VyLiBIYXZlIHlvdSBjaGVja2VkCj4gPiBpZiB0aGF0
-J3MgdGhlIGNhc2U/Cj4gPiAKPiA+IFRoZW4geW91IGNhbiBjYWxsIF9EU00gb25seSBpZiBpdCBp
-cyBzdXBwb3J0ZWQgYW5kIG90aGVyd2lzZSBleHBlY3QgdGhlCj4gPiBwYXJlbnQgZGV2aWNlJ3Mg
-cG93ZXIgcmVzb3VyY2VzIHRvIHR1cm4gb2ZmIHBvd2VyIHdoZW4gcnVudGltZQo+ID4gc3VzcGVu
-ZGVkLgo+IAo+IFRoZSBfRFNNIG1ldGhvZHMgKGZvciB0aGUgTnZpZGlhIGRldmljZSkgYXJlIG9m
-dGVuIHN0aWxsIGluY2x1ZGVkIGFuZAo+IGZ1bmN0aW9ucyBhcmUgcmVwb3J0ZWQgYXMgc3VwcG9y
-dGVkLiBJIGd1ZXNzIHRoYXQgdmVuZG9ycyBqdXN0IGNoZWNrCj4gd2hldGhlciBpdCBpcyB3b3Jr
-aW5nIGFuZCBkbyBub3QgYm90aGVyIHJlbW92aW5nIGxlZ2FjeSBmdW5jdGlvbnMuIFRoZQo+IEFj
-ZXIgY2FzZSBiZWxvdyBzZWVtcyBleGNlcHRpb25hbC4KPiAKPiBJIHN1Z2dlc3RlZCB0aGUgbm9f
-ZDNjb2xkIGNoZWNrIHN1Y2ggdGhhdCBEU00gY2FuIHN0aWxsIGJlIGNhbGxlZCBldmVuCj4gdGhv
-dWdoIHRoZSBydW50aW1lIFBNIG9uIHRoZSBQQ0llIHBvcnQgZG9lcyBub3RoaW5nLgoKU29tZWhv
-dyBpdCBkb2VzIG5vdCBmZWVsIHJpZ2h0IHRvIHBva2UgcGFyZW50IGRldmljZSdzIGZpZWxkcyBk
-aXJlY3RseS4KCldoYXQgaWYgeW91IGp1c3QgY2hlY2sgaWYgaXQgaGFzIHRoZSBtZXRob2QgbGlr
-ZToKCglib29sIG5vX2RzbSA9IGFjcGlfaGFzX21ldGhvZChwYXJlbnRfYWRldi0+aGFuZGxlLCAi
-X1BSMyIpOwoKVGhhdCBzaG91bGQgZm9sbG93IHdoYXQgV2luZG93cyBpcyBkb2luZy4KCj4gPiA+
-IE91dCBvZiBjdXJpb3NpdHkgSSBsb29rZWQgdXAgYW4gcHJlLTIwMTUgbGFwdG9wIChmb3VuZCBB
-Y2VyIFY1LTU3M0csCj4gPiA+IGFwcGFyZW50bHkgZnJvbSBOb3ZlbWJlciAyMDEzLCBXaW5kb3dz
-IDguMSkgYW5kIGV4dHJhY3RlZCB0aGUgQUNQSQo+ID4gPiB0YWJsZXMgZnJvbSB0aGUgQklPUyBp
-bWFnZXMuIEJJT1MgMi4yOCAoMjAxNC8wNS8xMykgaW50cm9kdWNlcyBzdXBwb3J0Cj4gPiA+IGZv
-ciBwb3dlciByZXNvdXJjZXMgb24gdGhlIHBhcmVudCBkZXZpY2VhKFxfU0IuUENJMC5QRUcwLl9Q
-UjMgYW5kIGEKPiA+ID4gcmVsYXRlZCBOVlAzIGRldmljZSkgd2hlbiBfT1NJKCJXaW5kb3dzIDIw
-MTMiKSBpcyB0cnVlLiAoVGhpcyBpcyBhZGRlZAo+ID4gPiBhcyBhbHRlcm5hdGl2ZSBmb3IgdGhl
-IG9sZCBEU00gaW50ZXJmYWNlLikKPiA+ID4gCj4gPiA+IE1heWJlIDIwMTQgaXMgYWxzbyBhbiBh
-cHByb3ByaWF0ZSBjdXRvZmYgZGF0ZT8gSSB3b25kZXIgaWYgaXQgaXMKPiA+ID4gZmVhc2libGUg
-dG8gZGV0ZWN0IGZpcm13YXJlIHVzZSBvZiBfT1NJKCJXaW5kb3dzIDIwMTMiKSBhbmQgdXNlIHRo
-YXQKPiA+ID4gaW5zdGVhZCBvZiB0aGUgQklPUyB5ZWFyLgo+ID4gCj4gPiBVc2luZyBCSU9TIHll
-YXIgd29ya3MgZXZlbiBpZiB0aGVyZSBpcyBubyBBQ1BJIGF2YWlsYWJsZS4KPiAKPiBJIHRob3Vn
-aHQgdGhhdCB5b3UgbmVlZCBzdXBwb3J0IGZyb20gQUNQSSB0byBwdXQgYSBkZXZpY2UgaW4gRDNj
-b2xkPwoKSXQgaXMgbm90IGp1c3QgYWJvdXQgRDNjb2xkIGJ1dCBEMyBpbiBnZW5lcmFsICh3aGlj
-aCBpbmNsdWRlcyBhbHNvCkQzaG90KS4gWWVzLCB5b3UgbmVlZCBwbGF0Zm9ybSBzdXBwb3J0IHRv
-IHB1dCB0aGUgZGV2aWNlIGludG8gRDNjb2xkLgoKPiA+IFdoYXQgY29tZXMgdG8gdGhlIGN1dG9m
-ZiBkYXRlLCBJIGRpc2N1c3NlZCB3aXRoIFJhZmFlbCBhbmQgaXQgd2FzCj4gPiBkZWNpZGVkIHRo
-YXQgd2UgdXNlIHRoZSBzYW1lIHllYXIgV2luZG93cyAxMCB3YXMgcmVsZWFzZWQgdG8gYmUgb24g
-dGhlCj4gPiBzYWZlIHNpZGUuIFJlYWRpbmcgdGhlIGxpbmtzIHlvdSBwcm92aWRlZCBoZXJlOgo+
-ID4gCj4gPiBodHRwczovL21zZG4ubWljcm9zb2Z0LmNvbS9maS1maS93aW5kb3dzL2hhcmR3YXJl
-L2RyaXZlcnMvYnJpbmd1cC9kZXZpY2UtcG93ZXItbWFuYWdlbWVudAo+ID4gaHR0cHM6Ly9tc2Ru
-Lm1pY3Jvc29mdC5jb20vZW4tdXMvbGlicmFyeS93aW5kb3dzL2hhcmR3YXJlL2hoOTY3NzA5KHY9
-dnMuODUpLmFzcHgKPiA+IAo+ID4gaXQgc2VlbXMgdGhhdCBmcm9tIFdpbmRvd3MgOCB0aGV5IHN0
-YXJ0ZWQgdHJhbnNpdGlvbmluZyBkZXZpY2VzIGludG8KPiA+IEQzY29sZCBkdXJpbmcgcnVudGlt
-ZSBhcyB3ZWxsLgo+IAo+IE15IGltcHJlc3Npb24gZnJvbSB0aGUgQUNQSSB0YWJsZXMgSSBoYXZl
-IHNlZW4gc28gZmFyIGlzIHRoYXQgcG93ZXIKPiByZXNvdXJjZXMgc3VwcG9ydCBpcyBlbmFibGVk
-IGZvciBXaW5kb3dzIDIwMTIgKFdpbjgpIG9yIG5ld2VyLgpfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxp
-c3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFu
-L2xpc3RpbmZvL25vdXZlYXUK
+On Mon, May 30, 2016 at 6:53 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 28-05-16, 15:15, Rafael J. Wysocki wrote:
+>> It does, but there's a problem.
+>>
+>> If fast frequency switching is in use, the stats attributes just sit there
+>> full of zeros (because the stats are not updated then) which is confusing.
+>>
+>> Of course, the ultimate solution here would be to make the stats actually
+>> work with fast frequency switching, but that requires some major surgery of
+>> the stats code, so for now I'd like to simply make those attributes return
+>> nothing if fast frequency switching is enabled for the policy (returning
+>> -EBUSY from there, which would have been cleaner, unfortunately breaks
+>> powertop).
+>
+> What's stopping us from doing that? Sorry I don't remember that well :(
+>
+> I mean, why can't we call cpufreq_stats_record_transition() somehow via that
+> code ?
+
+Because it does things that aren't allowed to be done from the
+scheduler paths (using the non-raw spinlock in the first place).
+
+It also isn't efficient enough.  For example, the fast switch path in
+schedutil for non-shared policies is lockless and it would be a shame
+to add a lock to it just for the stats.
