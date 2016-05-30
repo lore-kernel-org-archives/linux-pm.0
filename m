@@ -1,299 +1,116 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [RESEND PATCH v3 2/2] PM / Domains: Remove redundant wrapper functions for system PM
-Date: Mon, 30 May 2016 11:43:08 +0200
-Message-ID: <1464601388-26693-3-git-send-email-ulf.hansson@linaro.org>
-References: <1464601388-26693-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f42.google.com ([209.85.215.42]:36716 "EHLO
-	mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754307AbcE3JnW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 05:43:22 -0400
-Received: by mail-lf0-f42.google.com with SMTP id b73so47444821lfb.3
-        for <linux-pm@vger.kernel.org>; Mon, 30 May 2016 02:43:21 -0700 (PDT)
-In-Reply-To: <1464601388-26693-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
+	runtime PM
+Date: Mon, 30 May 2016 12:57:09 +0300
+Message-ID: <20160530095709.GK1789@lahna.fi.intel.com>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+ <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+ <20160525135535.GN1789@lahna.fi.intel.com>
+ <20160527111037.GA1436@al>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20160527111037.GA1436@al>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, David Airlie <airlied@linux.ie>, Alex Deucher <alexander.deucher@amd.com>, Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>, dri-devel@lists.freedesktop.org, =?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>
 
-Due to the previous changes to genpd, which removed the suspend_power_off
-flag, several of the system PM callbacks is no longer doing any additional
-checks but only invoking a corresponding pm_generic_* helper function.
-
-To clean up the code let's remove these wrapper functions as they have
-become redundant. Instead assign the system PM callbacks directly to
-the pm_generic_*() helper function.
-
-While changing this, it became clear that some of the current system PM
-callbacks in genpd, invokes the wrong callback at the driver level. For
-example, genpd's ->restore() callback invokes pm_generic_resume(), while
-it should be pm_generic_restore(). Let's fix this as well.
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-
-Changes in v3:
-	- None.
-
-Changes in v2:
-        - Updated changelog.
-
----
- drivers/base/power/domain.c | 203 +++-----------------------------------------
- 1 file changed, 12 insertions(+), 191 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index a608f52..658eb1b 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -768,48 +768,6 @@ static int pm_genpd_prepare(struct device *dev)
- }
- 
- /**
-- * pm_genpd_suspend - Suspend a device belonging to an I/O PM domain.
-- * @dev: Device to suspend.
-- *
-- * Suspend a device under the assumption that its pm_domain field points to the
-- * domain member of an object of type struct generic_pm_domain representing
-- * a PM domain consisting of I/O devices.
-- */
--static int pm_genpd_suspend(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_suspend(dev);
--}
--
--/**
-- * pm_genpd_suspend_late - Late suspend of a device from an I/O PM domain.
-- * @dev: Device to suspend.
-- *
-- * Carry out a late suspend of a device under the assumption that its
-- * pm_domain field points to the domain member of an object of type
-- * struct generic_pm_domain representing a PM domain consisting of I/O devices.
-- */
--static int pm_genpd_suspend_late(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_suspend_late(dev);
--}
--
--/**
-  * pm_genpd_suspend_noirq - Completion of suspend of device in an I/O PM domain.
-  * @dev: Device to suspend.
-  *
-@@ -873,92 +831,6 @@ static int pm_genpd_resume_noirq(struct device *dev)
- }
- 
- /**
-- * pm_genpd_resume_early - Early resume of a device in an I/O PM domain.
-- * @dev: Device to resume.
-- *
-- * Carry out an early resume of a device under the assumption that its
-- * pm_domain field points to the domain member of an object of type
-- * struct generic_pm_domain representing a power domain consisting of I/O
-- * devices.
-- */
--static int pm_genpd_resume_early(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_resume_early(dev);
--}
--
--/**
-- * pm_genpd_resume - Resume of device in an I/O PM domain.
-- * @dev: Device to resume.
-- *
-- * Resume a device under the assumption that its pm_domain field points to the
-- * domain member of an object of type struct generic_pm_domain representing
-- * a power domain consisting of I/O devices.
-- */
--static int pm_genpd_resume(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_resume(dev);
--}
--
--/**
-- * pm_genpd_freeze - Freezing a device in an I/O PM domain.
-- * @dev: Device to freeze.
-- *
-- * Freeze a device under the assumption that its pm_domain field points to the
-- * domain member of an object of type struct generic_pm_domain representing
-- * a power domain consisting of I/O devices.
-- */
--static int pm_genpd_freeze(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_freeze(dev);
--}
--
--/**
-- * pm_genpd_freeze_late - Late freeze of a device in an I/O PM domain.
-- * @dev: Device to freeze.
-- *
-- * Carry out a late freeze of a device under the assumption that its
-- * pm_domain field points to the domain member of an object of type
-- * struct generic_pm_domain representing a power domain consisting of I/O
-- * devices.
-- */
--static int pm_genpd_freeze_late(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_freeze_late(dev);
--}
--
--/**
-  * pm_genpd_freeze_noirq - Completion of freezing a device in an I/O PM domain.
-  * @dev: Device to freeze.
-  *
-@@ -1001,49 +873,6 @@ static int pm_genpd_thaw_noirq(struct device *dev)
- }
- 
- /**
-- * pm_genpd_thaw_early - Early thaw of device in an I/O PM domain.
-- * @dev: Device to thaw.
-- *
-- * Carry out an early thaw of a device under the assumption that its
-- * pm_domain field points to the domain member of an object of type
-- * struct generic_pm_domain representing a power domain consisting of I/O
-- * devices.
-- */
--static int pm_genpd_thaw_early(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_thaw_early(dev);
--}
--
--/**
-- * pm_genpd_thaw - Thaw a device belonging to an I/O power domain.
-- * @dev: Device to thaw.
-- *
-- * Thaw a device under the assumption that its pm_domain field points to the
-- * domain member of an object of type struct generic_pm_domain representing
-- * a power domain consisting of I/O devices.
-- */
--static int pm_genpd_thaw(struct device *dev)
--{
--	struct generic_pm_domain *genpd;
--
--	dev_dbg(dev, "%s()\n", __func__);
--
--	genpd = dev_to_genpd(dev);
--	if (IS_ERR(genpd))
--		return -EINVAL;
--
--	return pm_generic_thaw(dev);
--}
--
--/**
-  * pm_genpd_restore_noirq - Start of restore of device in an I/O PM domain.
-  * @dev: Device to resume.
-  *
-@@ -1151,18 +980,10 @@ EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
- #else /* !CONFIG_PM_SLEEP */
- 
- #define pm_genpd_prepare		NULL
--#define pm_genpd_suspend		NULL
--#define pm_genpd_suspend_late		NULL
- #define pm_genpd_suspend_noirq		NULL
--#define pm_genpd_resume_early		NULL
- #define pm_genpd_resume_noirq		NULL
--#define pm_genpd_resume			NULL
--#define pm_genpd_freeze			NULL
--#define pm_genpd_freeze_late		NULL
- #define pm_genpd_freeze_noirq		NULL
--#define pm_genpd_thaw_early		NULL
- #define pm_genpd_thaw_noirq		NULL
--#define pm_genpd_thaw			NULL
- #define pm_genpd_restore_noirq		NULL
- #define pm_genpd_complete		NULL
- 
-@@ -1454,24 +1275,24 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	genpd->domain.ops.runtime_suspend = genpd_runtime_suspend;
- 	genpd->domain.ops.runtime_resume = genpd_runtime_resume;
- 	genpd->domain.ops.prepare = pm_genpd_prepare;
--	genpd->domain.ops.suspend = pm_genpd_suspend;
--	genpd->domain.ops.suspend_late = pm_genpd_suspend_late;
-+	genpd->domain.ops.suspend = pm_generic_suspend;
-+	genpd->domain.ops.suspend_late = pm_generic_suspend_late;
- 	genpd->domain.ops.suspend_noirq = pm_genpd_suspend_noirq;
- 	genpd->domain.ops.resume_noirq = pm_genpd_resume_noirq;
--	genpd->domain.ops.resume_early = pm_genpd_resume_early;
--	genpd->domain.ops.resume = pm_genpd_resume;
--	genpd->domain.ops.freeze = pm_genpd_freeze;
--	genpd->domain.ops.freeze_late = pm_genpd_freeze_late;
-+	genpd->domain.ops.resume_early = pm_generic_resume_early;
-+	genpd->domain.ops.resume = pm_generic_resume;
-+	genpd->domain.ops.freeze = pm_generic_freeze;
-+	genpd->domain.ops.freeze_late = pm_generic_freeze_late;
- 	genpd->domain.ops.freeze_noirq = pm_genpd_freeze_noirq;
- 	genpd->domain.ops.thaw_noirq = pm_genpd_thaw_noirq;
--	genpd->domain.ops.thaw_early = pm_genpd_thaw_early;
--	genpd->domain.ops.thaw = pm_genpd_thaw;
--	genpd->domain.ops.poweroff = pm_genpd_suspend;
--	genpd->domain.ops.poweroff_late = pm_genpd_suspend_late;
-+	genpd->domain.ops.thaw_early = pm_generic_thaw_early;
-+	genpd->domain.ops.thaw = pm_generic_thaw;
-+	genpd->domain.ops.poweroff = pm_generic_poweroff;
-+	genpd->domain.ops.poweroff_late = pm_generic_poweroff_late;
- 	genpd->domain.ops.poweroff_noirq = pm_genpd_suspend_noirq;
- 	genpd->domain.ops.restore_noirq = pm_genpd_restore_noirq;
--	genpd->domain.ops.restore_early = pm_genpd_resume_early;
--	genpd->domain.ops.restore = pm_genpd_resume;
-+	genpd->domain.ops.restore_early = pm_generic_restore_early;
-+	genpd->domain.ops.restore = pm_generic_restore;
- 	genpd->domain.ops.complete = pm_genpd_complete;
- 
- 	if (genpd->flags & GENPD_FLAG_PM_CLK) {
--- 
-1.9.1
-
+K1JhZmFlbAoKT24gRnJpLCBNYXkgMjcsIDIwMTYgYXQgMDE6MTA6MzdQTSArMDIwMCwgUGV0ZXIg
+V3Ugd3JvdGU6Cj4gT24gV2VkLCBNYXkgMjUsIDIwMTYgYXQgMDQ6NTU6MzVQTSArMDMwMCwgTWlr
+YSBXZXN0ZXJiZXJnIHdyb3RlOgo+ID4gT24gV2VkLCBNYXkgMjUsIDIwMTYgYXQgMTI6NTM6MDFB
+TSArMDIwMCwgUGV0ZXIgV3Ugd3JvdGU6Cj4gPiA+IFNpbmNlICJQQ0k6IEFkZCBydW50aW1lIFBN
+IHN1cHBvcnQgZm9yIFBDSWUgcG9ydHMiLCB0aGUgcGFyZW50IFBDSWUgcG9ydAo+ID4gPiBjYW4g
+YmUgcnVudGltZS1zdXNwZW5kZWQgd2hpY2ggZGlzYWJsZXMgcG93ZXIgcmVzb3VyY2VzIHZpYSBB
+Q1BJLiBUaGlzCj4gPiA+IGlzIGluY29tcGF0aWJsZSB3aXRoIERTTSwgcmVzdWx0aW5nIGluIGEg
+R1BVIGRldmljZSB3aGljaCBpcyBzdGlsbCBpbiBEMwo+ID4gPiBhbmQgbG9ja3MgdXAgdGhlIGtl
+cm5lbCBvbiByZXN1bWUuCj4gPiA+IAo+ID4gPiBNaXJyb3IgdGhlIGJlaGF2aW9yIG9mIFdpbmRv
+d3MgOCBhbmQgbmV3ZXJbMV0gKGFzIG9ic2VydmVkIHZpYSBhbiBBTUxpCj4gPiA+IGRlYnVnZ2Vy
+IHRyYWNlKSBhbmQgc3RvcCB1c2luZyB0aGUgRFNNIGZ1bmN0aW9ucyBmb3IgRDNjb2xkIHdoZW4g
+cG93ZXIKPiA+ID4gcmVzb3VyY2VzIGFyZSBhdmFpbGFibGUgb24gdGhlIHBhcmVudCBQQ0llIHBv
+cnQuCj4gPiA+IAo+ID4gPiAgWzFdOiBodHRwczovL21zZG4ubWljcm9zb2Z0LmNvbS93aW5kb3dz
+L2hhcmR3YXJlL2RyaXZlcnMvYnJpbmd1cC9maXJtd2FyZS1yZXF1aXJlbWVudHMtZm9yLWQzY29s
+ZAo+ID4gPiAKPiA+ID4gU2lnbmVkLW9mZi1ieTogUGV0ZXIgV3UgPHBldGVyQGxla2Vuc3RleW4u
+bmw+Cj4gPiA+IC0tLQo+ID4gPiAgZHJpdmVycy9ncHUvZHJtL25vdXZlYXUvbm91dmVhdV9hY3Bp
+LmMgfCAzNCArKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0tCj4gPiA+ICAxIGZpbGUg
+Y2hhbmdlZCwgMzAgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkKPiA+ID4gCj4gPiA+IGRp
+ZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGkuYyBiL2RyaXZl
+cnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5jCj4gPiA+IGluZGV4IGRmOWY3M2UuLmU0
+NjlkZjcgMTAwNjQ0Cj4gPiA+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVf
+YWNwaS5jCj4gPiA+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5j
+Cj4gPiA+IEBAIC00Niw2ICs0Niw3IEBAIHN0YXRpYyBzdHJ1Y3Qgbm91dmVhdV9kc21fcHJpdiB7
+Cj4gPiA+ICAJYm9vbCBkc21fZGV0ZWN0ZWQ7Cj4gPiA+ICAJYm9vbCBvcHRpbXVzX2RldGVjdGVk
+Owo+ID4gPiAgCWJvb2wgb3B0aW11c19mbGFnc19kZXRlY3RlZDsKPiA+ID4gKwlib29sIG9wdGlt
+dXNfc2tpcF9kc207Cj4gPiA+ICAJYWNwaV9oYW5kbGUgZGhhbmRsZTsKPiA+ID4gIAlhY3BpX2hh
+bmRsZSByb21faGFuZGxlOwo+ID4gPiAgfSBub3V2ZWF1X2RzbV9wcml2Owo+ID4gPiBAQCAtMjEy
+LDggKzIxMywyNiBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IHZnYV9zd2l0Y2hlcm9vX2hhbmRsZXIg
+bm91dmVhdV9kc21faGFuZGxlciA9IHsKPiA+ID4gIAkuZ2V0X2NsaWVudF9pZCA9IG5vdXZlYXVf
+ZHNtX2dldF9jbGllbnRfaWQsCj4gPiA+ICB9Owo+ID4gPiAgCj4gPiA+ICsvKiBGaXJtd2FyZSBz
+dXBwb3J0aW5nIFdpbmRvd3MgOCBvciBsYXRlciBkbyBub3QgdXNlIF9EU00gdG8gcHV0IHRoZSBk
+ZXZpY2UgaW50bwo+ID4gPiArICogRDNjb2xkLCB0aGV5IGluc3RlYWQgcmVseSBvbiBkaXNhYmxp
+bmcgcG93ZXIgcmVzb3VyY2VzIG9uIHRoZSBwYXJlbnQuICovCj4gPiA+ICtzdGF0aWMgYm9vbCBu
+b3V2ZWF1X3ByM19wcmVzZW50KHN0cnVjdCBwY2lfZGV2ICpwZGV2KQo+ID4gPiArewo+ID4gPiAr
+CXN0cnVjdCBwY2lfZGV2ICpwYXJlbnRfcGRldiA9IHBjaV91cHN0cmVhbV9icmlkZ2UocGRldik7
+Cj4gPiA+ICsJc3RydWN0IGFjcGlfZGV2aWNlICphZDsKPiA+IAo+ID4gTml0OiBwbGVhc2UgY2Fs
+bCB0aGlzIGFkZXYgaW5zdGVhZCBvZiBhZC4KPiAKPiBXaWxsIGRvLgo+IAo+ID4gPiArCj4gPiA+
+ICsJaWYgKCFwYXJlbnRfcGRldikKPiA+ID4gKwkJcmV0dXJuIGZhbHNlOwo+ID4gPiArCj4gPiA+
+ICsJYWQgPSBBQ1BJX0NPTVBBTklPTigmcGFyZW50X3BkZXYtPmRldik7Cj4gPiA+ICsJaWYgKCFh
+ZCkKPiA+ID4gKwkJcmV0dXJuIGZhbHNlOwo+ID4gPiArCj4gPiA+ICsJcmV0dXJuIGFkLT5wb3dl
+ci5mbGFncy5wb3dlcl9yZXNvdXJjZXM7Cj4gPiAKPiA+IElzIHRoaXMgc3VmZmljaWVudCB0byB0
+ZWxsIGlmIHRoZSBwYXJlbnQgZGV2aWNlIGhhcyBfUFIzPyBJIHRob3VnaHQgaXQKPiA+IHJldHVy
+bnMgdHJ1ZSBpZiBpdCBoYXMgcG93ZXIgcmVzb3VyY2VzIGluIGdlbmVyYWwsIG5vdCBuZWNlc3Nh
+cmlseSBfUFIzLgo+ID4gCj4gPiBPdGhlcndpc2UgdGhpcyBsb29rcyBva2F5IHRvIG1lLgo+IAo+
+IEl0IGlzIGluZGVlZCBzZXQgd2hlbmV2ZXIgdGhlcmUgaXMgYW55IF9QUnggbWV0aG9kLiBJIHdv
+bmRlciBpZiBpdCBpcwo+IGFwcHJvcHJpYXRlIHRvIGFjY2VzcyBmaWVsZHMgZGlyZWN0bHkgbGlr
+ZSB0aGlzLCBwZXJoYXBzIHRoaXMgd291bGQgYmUKPiBtb3JlIGFjY3VyYXRlIChiYXNlZCBvbiBk
+ZXZpY2VfcG0uYyk6Cj4gCj4gICAgIC8qIENoZWNrIHdoZXRoZXIgdGhlIF9QUjMgbWV0aG9kIGlz
+IGF2YWlsYWJsZS4gKi8KPiAgICAgcmV0dXJuIGFkZXYtPnBvd2VyLnN0YXRlc1tBQ1BJX1NUQVRF
+X0QzX0NPTERdLmZsYWdzLnZhbGlkOwo+IAo+IEkgYW0gYWxzbyBjb25zaWRlcmluZyBhZGRpbmcg
+YSBjaGVjayBpbiBjYXNlIHRoZSBwY2llcG9ydCBkcml2ZXIgZG9lcwo+IG5vdCBzdXBwb3J0IEQz
+Y29sZCB2aWEgcnVudGltZSBQTSwgd2hhdCBkbyB5b3UgdGhpbmsgb2YgdGhpcz8KPiAKPiAgICAg
+aWYgKCFwYXJlbnRfcGRldikKPiAgICAgICAgIHJldHVybiBmYWxzZTsKPiAgICAgLyogSWYgdGhl
+IFBDSWUgcG9ydCBkb2VzIG5vdCBzdXBwb3J0IEQzY29sZCB2aWEgcnVudGltZSBQTSwgYWxsb3cg
+YQo+ICAgICAgKiBmYWxsYmFjayB0byB0aGUgT3B0aW11cyBEU00gbWV0aG9kIHRvIHB1dCB0aGUg
+ZGV2aWNlIGluIEQzY29sZC4gKi8KPiAgICAgaWYgKHBhcmVudF9wZGV2LT5ub19kM2NvbGQpCj4g
+ICAgICAgICByZXR1cm4gZmFsc2U7Cj4gCj4gVGhpcyBpcyBuZWVkZWQgdG8gYXZvaWQgdGhlIHJl
+Z3Jlc3Npb24gcmVwb3J0ZWQgaW4gdGhlIGNvdmVyIGxldHRlciwgYnV0Cj4gYWxzbyBhbGxvd3Mg
+cHJlLTIwMTUgc3lzdGVtcyB0byAoc3RpbGwpIGhhdmUgdGhlIEQzY29sZCBwb3NzaWJpbGl0eS4K
+ClRoZSBfRFNNIG1ldGhvZCB3aXRoIDAgYXMgaW5kZXggcGFyYW1ldGVyIHNob3VsZCByZXR1cm4g
+YSBiaXQgZmllbGQKdGVsbGluZyB3aGljaCBmdW5jdGlvbnMgYXJlIHN1cHBvcnRlZC4gU2FuZSBC
+SU9TIGRpc2FibGVzIHRoYXQKcGFydGljdWxhciBmdW5jdGlvbiBpZiBpdCBkZXRlY3RzIFdpbmRv
+d3MgOCBhbmQgbmV3ZXIuIEhhdmUgeW91IGNoZWNrZWQKaWYgdGhhdCdzIHRoZSBjYXNlPwoKVGhl
+biB5b3UgY2FuIGNhbGwgX0RTTSBvbmx5IGlmIGl0IGlzIHN1cHBvcnRlZCBhbmQgb3RoZXJ3aXNl
+IGV4cGVjdCB0aGUKcGFyZW50IGRldmljZSdzIHBvd2VyIHJlc291cmNlcyB0byB0dXJuIG9mZiBw
+b3dlciB3aGVuIHJ1bnRpbWUKc3VzcGVuZGVkLgoKPiBPdXQgb2YgY3VyaW9zaXR5IEkgbG9va2Vk
+IHVwIGFuIHByZS0yMDE1IGxhcHRvcCAoZm91bmQgQWNlciBWNS01NzNHLAo+IGFwcGFyZW50bHkg
+ZnJvbSBOb3ZlbWJlciAyMDEzLCBXaW5kb3dzIDguMSkgYW5kIGV4dHJhY3RlZCB0aGUgQUNQSQo+
+IHRhYmxlcyBmcm9tIHRoZSBCSU9TIGltYWdlcy4gQklPUyAyLjI4ICgyMDE0LzA1LzEzKSBpbnRy
+b2R1Y2VzIHN1cHBvcnQKPiBmb3IgcG93ZXIgcmVzb3VyY2VzIG9uIHRoZSBwYXJlbnQgZGV2aWNl
+YShcX1NCLlBDSTAuUEVHMC5fUFIzIGFuZCBhCj4gcmVsYXRlZCBOVlAzIGRldmljZSkgd2hlbiBf
+T1NJKCJXaW5kb3dzIDIwMTMiKSBpcyB0cnVlLiAoVGhpcyBpcyBhZGRlZAo+IGFzIGFsdGVybmF0
+aXZlIGZvciB0aGUgb2xkIERTTSBpbnRlcmZhY2UuKQo+IAo+IE1heWJlIDIwMTQgaXMgYWxzbyBh
+biBhcHByb3ByaWF0ZSBjdXRvZmYgZGF0ZT8gSSB3b25kZXIgaWYgaXQgaXMKPiBmZWFzaWJsZSB0
+byBkZXRlY3QgZmlybXdhcmUgdXNlIG9mIF9PU0koIldpbmRvd3MgMjAxMyIpIGFuZCB1c2UgdGhh
+dAo+IGluc3RlYWQgb2YgdGhlIEJJT1MgeWVhci4KClVzaW5nIEJJT1MgeWVhciB3b3JrcyBldmVu
+IGlmIHRoZXJlIGlzIG5vIEFDUEkgYXZhaWxhYmxlLgoKV2hhdCBjb21lcyB0byB0aGUgY3V0b2Zm
+IGRhdGUsIEkgZGlzY3Vzc2VkIHdpdGggUmFmYWVsIGFuZCBpdCB3YXMKZGVjaWRlZCB0aGF0IHdl
+IHVzZSB0aGUgc2FtZSB5ZWFyIFdpbmRvd3MgMTAgd2FzIHJlbGVhc2VkIHRvIGJlIG9uIHRoZQpz
+YWZlIHNpZGUuIFJlYWRpbmcgdGhlIGxpbmtzIHlvdSBwcm92aWRlZCBoZXJlOgoKaHR0cHM6Ly9t
+c2RuLm1pY3Jvc29mdC5jb20vZmktZmkvd2luZG93cy9oYXJkd2FyZS9kcml2ZXJzL2JyaW5ndXAv
+ZGV2aWNlLXBvd2VyLW1hbmFnZW1lbnQKaHR0cHM6Ly9tc2RuLm1pY3Jvc29mdC5jb20vZW4tdXMv
+bGlicmFyeS93aW5kb3dzL2hhcmR3YXJlL2hoOTY3NzA5KHY9dnMuODUpLmFzcHgKCml0IHNlZW1z
+IHRoYXQgZnJvbSBXaW5kb3dzIDggdGhleSBzdGFydGVkIHRyYW5zaXRpb25pbmcgZGV2aWNlcyBp
+bnRvCkQzY29sZCBkdXJpbmcgcnVudGltZSBhcyB3ZWxsLgpfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxp
+c3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFu
+L2xpc3RpbmZvL25vdXZlYXUK
