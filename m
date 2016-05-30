@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv3 27/48] thermal: core: group functions related to governor handling
-Date: Mon, 30 May 2016 15:16:03 -0700
-Message-ID: <1464646584-14322-28-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv3 23/48] thermal: core: move to_cooling_device macro to header file
+Date: Mon, 30 May 2016 15:15:59 -0700
+Message-ID: <1464646584-14322-24-git-send-email-edubezval@gmail.com>
 References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
@@ -10,201 +10,45 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Organize thermal core code to group the functions
-handling with governor manipulation in one single section.
+Make the to_cooling_device() macro available across
+files in thermal core.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 153 +++++++++++++++++++++--------------------
- 1 file changed, 80 insertions(+), 73 deletions(-)
+ drivers/thermal/thermal_core.c | 3 ---
+ drivers/thermal/thermal_core.h | 3 +++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 1629613..16d43ee 100644
+index 9778ce5..a81faef 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -64,6 +64,13 @@ static atomic_t in_suspend;
- 
- static struct thermal_governor *def_governor;
- 
-+/*
-+ * Governor section: set of functions to handle thermal governors
-+ *
-+ * Functions to help in the life cycle of thermal governors within
-+ * the thermal core and by the thermal governor code.
-+ */
-+
- static struct thermal_governor *__find_governor(const char *name)
- {
- 	struct thermal_governor *pos;
-@@ -206,6 +213,79 @@ exit:
- 	return;
+@@ -742,9 +742,6 @@ int thermal_build_list_of_policies(char *buf)
  }
  
-+int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
-+				   char *policy)
-+{
-+	struct thermal_governor *gov;
-+	int ret = -EINVAL;
-+
-+	mutex_lock(&thermal_governor_lock);
-+	mutex_lock(&tz->lock);
-+
-+	gov = __find_governor(strim(policy));
-+	if (!gov)
-+		goto exit;
-+
-+	ret = thermal_set_governor(tz, gov);
-+
-+exit:
-+	mutex_unlock(&tz->lock);
-+	mutex_unlock(&thermal_governor_lock);
-+
-+	return ret;
-+}
-+
-+int thermal_build_list_of_policies(char *buf)
-+{
-+	struct thermal_governor *pos;
-+	ssize_t count = 0;
-+	ssize_t size = PAGE_SIZE;
-+
-+	mutex_lock(&thermal_governor_lock);
-+
-+	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
-+		size = PAGE_SIZE - count;
-+		count += scnprintf(buf + count, size, "%s ", pos->name);
-+	}
-+	count += scnprintf(buf + count, size, "\n");
-+
-+	mutex_unlock(&thermal_governor_lock);
-+
-+	return count;
-+}
-+
-+static int __init thermal_register_governors(void)
-+{
-+	int result;
-+
-+	result = thermal_gov_step_wise_register();
-+	if (result)
-+		return result;
-+
-+	result = thermal_gov_fair_share_register();
-+	if (result)
-+		return result;
-+
-+	result = thermal_gov_bang_bang_register();
-+	if (result)
-+		return result;
-+
-+	result = thermal_gov_user_space_register();
-+	if (result)
-+		return result;
-+
-+	return thermal_gov_power_allocator_register();
-+}
-+
-+static void thermal_unregister_governors(void)
-+{
-+	thermal_gov_step_wise_unregister();
-+	thermal_gov_fair_share_unregister();
-+	thermal_gov_bang_bang_unregister();
-+	thermal_gov_user_space_unregister();
-+	thermal_gov_power_allocator_unregister();
-+}
-+
- static int get_idr(struct idr *idr, struct mutex *lock, int *id)
- {
- 	int ret;
-@@ -610,47 +690,6 @@ void thermal_zone_device_unbind_exception(struct thermal_zone_device *tz,
- 	mutex_unlock(&thermal_list_lock);
- }
+ /* sys I/F for cooling device */
+-#define to_cooling_device(_dev)	\
+-	container_of(_dev, struct thermal_cooling_device, device)
+-
+ static ssize_t
+ thermal_cooling_device_type_show(struct device *dev,
+ 				 struct device_attribute *attr, char *buf)
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index bd88693..5619243 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -57,6 +57,9 @@ struct thermal_instance {
+ #define to_thermal_zone(_dev) \
+ 	container_of(_dev, struct thermal_zone_device, device)
  
--int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
--				   char *policy)
--{
--	struct thermal_governor *gov;
--	int ret = -EINVAL;
--
--	mutex_lock(&thermal_governor_lock);
--	mutex_lock(&tz->lock);
--
--	gov = __find_governor(strim(policy));
--	if (!gov)
--		goto exit;
--
--	ret = thermal_set_governor(tz, gov);
--
--exit:
--	mutex_unlock(&tz->lock);
--	mutex_unlock(&thermal_governor_lock);
--
--	return ret;
--}
--
--int thermal_build_list_of_policies(char *buf)
--{
--	struct thermal_governor *pos;
--	ssize_t count = 0;
--	ssize_t size = PAGE_SIZE;
--
--	mutex_lock(&thermal_governor_lock);
--
--	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
--		size = PAGE_SIZE - count;
--		count += scnprintf(buf + count, size, "%s ", pos->name);
--	}
--	count += scnprintf(buf + count, size, "\n");
--
--	mutex_unlock(&thermal_governor_lock);
--
--	return count;
--}
--
- /* Device management */
- 
- /**
-@@ -1386,38 +1425,6 @@ static inline int genetlink_init(void) { return 0; }
- static inline void genetlink_exit(void) {}
- #endif /* !CONFIG_NET */
- 
--static int __init thermal_register_governors(void)
--{
--	int result;
--
--	result = thermal_gov_step_wise_register();
--	if (result)
--		return result;
--
--	result = thermal_gov_fair_share_register();
--	if (result)
--		return result;
--
--	result = thermal_gov_bang_bang_register();
--	if (result)
--		return result;
--
--	result = thermal_gov_user_space_register();
--	if (result)
--		return result;
--
--	return thermal_gov_power_allocator_register();
--}
--
--static void thermal_unregister_governors(void)
--{
--	thermal_gov_step_wise_unregister();
--	thermal_gov_fair_share_unregister();
--	thermal_gov_bang_bang_unregister();
--	thermal_gov_user_space_unregister();
--	thermal_gov_power_allocator_unregister();
--}
--
- static int thermal_pm_notify(struct notifier_block *nb,
- 				unsigned long mode, void *_unused)
- {
++#define to_cooling_device(_dev)	\
++	container_of(_dev, struct thermal_cooling_device, device)
++
+ int thermal_register_governor(struct thermal_governor *);
+ void thermal_unregister_governor(struct thermal_governor *);
+ void thermal_zone_device_rebind_exception(struct thermal_zone_device *,
 -- 
 2.1.4
