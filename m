@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 19/40] thermal: core: move to_thermal_zone() macro to header file
-Date: Mon, 30 May 2016 14:27:38 -0700
-Message-ID: <1464643679-2733-20-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 31/40] thermal: core: move bind_cdev() to where it is used
+Date: Mon, 30 May 2016 14:27:50 -0700
+Message-ID: <1464643679-2733-32-git-send-email-edubezval@gmail.com>
 References: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
@@ -10,45 +10,109 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Simply making this macro available to other thermal core
-files.
+Moving the helper to closer where it is used.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 3 ---
- drivers/thermal/thermal_core.h | 3 +++
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/thermal/thermal_core.c | 76 +++++++++++++++++++++---------------------
+ 1 file changed, 38 insertions(+), 38 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index d3f7124..cfa74e6 100644
+index 75b7854..e0ebf9f 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -743,9 +743,6 @@ int thermal_build_list_of_policies(char *buf)
+@@ -319,44 +319,6 @@ static void __bind(struct thermal_zone_device *tz, int mask,
+ 	}
+ }
  
- /* sys I/F for thermal zone */
- 
--#define to_thermal_zone(_dev) \
--	container_of(_dev, struct thermal_zone_device, device)
+-static void bind_cdev(struct thermal_cooling_device *cdev)
+-{
+-	int i, ret;
+-	const struct thermal_zone_params *tzp;
+-	struct thermal_zone_device *pos = NULL;
 -
- static ssize_t
- type_show(struct device *dev, struct device_attribute *attr, char *buf)
+-	mutex_lock(&thermal_list_lock);
+-
+-	list_for_each_entry(pos, &thermal_tz_list, node) {
+-		if (!pos->tzp && !pos->ops->bind)
+-			continue;
+-
+-		if (pos->ops->bind) {
+-			ret = pos->ops->bind(pos, cdev);
+-			if (ret)
+-				print_bind_err_msg(pos, cdev, ret);
+-			continue;
+-		}
+-
+-		tzp = pos->tzp;
+-		if (!tzp || !tzp->tbp)
+-			continue;
+-
+-		for (i = 0; i < tzp->num_tbps; i++) {
+-			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
+-				continue;
+-			if (tzp->tbp[i].match(pos, cdev))
+-				continue;
+-			tzp->tbp[i].cdev = cdev;
+-			__bind(pos, tzp->tbp[i].trip_mask, cdev,
+-			       tzp->tbp[i].binding_limits,
+-			       tzp->tbp[i].weight);
+-		}
+-	}
+-
+-	mutex_unlock(&thermal_list_lock);
+-}
+-
+ static void bind_tz(struct thermal_zone_device *tz)
  {
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 8994d2a..097abee 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -54,6 +54,9 @@ struct thermal_instance {
- 	unsigned int weight; /* The weight of the cooling device */
+ 	int i, ret;
+@@ -882,6 +844,44 @@ static struct class thermal_class = {
+ 	.dev_release = thermal_release,
  };
  
-+#define to_thermal_zone(_dev) \
-+	container_of(_dev, struct thermal_zone_device, device)
++static void bind_cdev(struct thermal_cooling_device *cdev)
++{
++	int i, ret;
++	const struct thermal_zone_params *tzp;
++	struct thermal_zone_device *pos = NULL;
 +
- int thermal_register_governor(struct thermal_governor *);
- void thermal_unregister_governor(struct thermal_governor *);
- void thermal_zone_device_rebind_exception(struct thermal_zone_device *,
++	mutex_lock(&thermal_list_lock);
++
++	list_for_each_entry(pos, &thermal_tz_list, node) {
++		if (!pos->tzp && !pos->ops->bind)
++			continue;
++
++		if (pos->ops->bind) {
++			ret = pos->ops->bind(pos, cdev);
++			if (ret)
++				print_bind_err_msg(pos, cdev, ret);
++			continue;
++		}
++
++		tzp = pos->tzp;
++		if (!tzp || !tzp->tbp)
++			continue;
++
++		for (i = 0; i < tzp->num_tbps; i++) {
++			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
++				continue;
++			if (tzp->tbp[i].match(pos, cdev))
++				continue;
++			tzp->tbp[i].cdev = cdev;
++			__bind(pos, tzp->tbp[i].trip_mask, cdev,
++			       tzp->tbp[i].binding_limits,
++			       tzp->tbp[i].weight);
++		}
++	}
++
++	mutex_unlock(&thermal_list_lock);
++}
++
+ /**
+  * __thermal_cooling_device_register() - register a new thermal cooling device
+  * @np:		a pointer to a device tree node.
 -- 
 2.1.4
