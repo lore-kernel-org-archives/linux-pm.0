@@ -1,221 +1,29 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4 09/10] cpuidle/powernv: Add support for POWER ISA v3
- idle states
-Date: Mon, 30 May 2016 16:26:44 +0200
-Message-ID: <574C4DA4.4050100@linaro.org>
-References: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1464095714-48772-10-git-send-email-shreyas@linux.vnet.ibm.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] PCI: Wait for 50ms after bridge is powered up
+Date: Mon, 30 May 2016 17:44:45 +0300
+Message-ID: <20160530144445.GC1743@lahna.fi.intel.com>
+References: <20160524162833.GA30762@localhost>
+ <20160526104557.GA6816@wunner.de>
+ <20160526110308.GX1789@lahna.fi.intel.com>
+ <1576190.gfFb6HhZV6@vostro.rjw.lan>
+ <20160530093326.GH1789@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f41.google.com ([74.125.82.41]:36525 "EHLO
-	mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754969AbcE3O0r (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 10:26:47 -0400
-Received: by mail-wm0-f41.google.com with SMTP id n129so89286801wmn.1
-        for <linux-pm@vger.kernel.org>; Mon, 30 May 2016 07:26:46 -0700 (PDT)
-In-Reply-To: <1464095714-48772-10-git-send-email-shreyas@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160530093326.GH1789@lahna.fi.intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-On 05/24/2016 03:15 PM, Shreyas B. Prabhu wrote:
-> POWER ISA v3 defines a new idle processor core mechanism. In summary,
->   a) new instruction named stop is added.
->   b) new per thread SPR named PSSCR is added which controls the behav=
-ior
-> 	of stop instruction.
->
-> Supported idle states and value to be written to PSSCR register to en=
-ter
-> any idle state is exposed via ibm,cpu-idle-state-names and
-> ibm,cpu-idle-state-psscr respectively. To enter an idle state,
-> platform provided power_stop() needs to be invoked with the appropria=
-te
-> PSSCR value.
->
-> This patch adds support for this new mechanism in cpuidle powernv dri=
-ver.
->
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Paul Mackerras <paulus@ozlabs.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> ---
->   - No changes since v1
->
->   drivers/cpuidle/cpuidle-powernv.c | 57 ++++++++++++++++++++++++++++=
-++++++++++-
->   1 file changed, 56 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpui=
-dle-powernv.c
-> index e12dc30..efe5221 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -21,6 +21,7 @@
->   #include <asm/runlatch.h>
->
->   #define MAX_POWERNV_IDLE_STATES	8
-> +#define MAX_IDLE_STATE_NAME_LEN	10
+On Mon, May 30, 2016 at 12:33:26PM +0300, Mika Westerberg wrote:
+> I also learned that both of these can be shortened with following
+> mechanisms:
+> 
+>  - PCIe readines notifications (6.23 in PCIe spec 3.1a)
+>  - ACPI _DSM method returning readines durations from  (4.6.9 in PCI
+>    firmware spec 3.2).
 
-Why not reuse cpuidle constants even if they are slightly different ?
-
-#define CPUIDLE_STATE_MAX       10
-#define CPUIDLE_NAME_LEN        16
-
->   struct cpuidle_driver powernv_idle_driver =3D {
->   	.name             =3D "powernv_idle",
-> @@ -29,9 +30,11 @@ struct cpuidle_driver powernv_idle_driver =3D {
->
->   static int max_idle_state;
->   static struct cpuidle_state *cpuidle_state_table;
-> +
-> +static u64 stop_psscr_table[MAX_POWERNV_IDLE_STATES];
-> +
->   static u64 snooze_timeout;
->   static bool snooze_timeout_en;
-> -
->   static int snooze_loop(struct cpuidle_device *dev,
->   			struct cpuidle_driver *drv,
->   			int index)
-> @@ -139,6 +142,15 @@ static struct notifier_block setup_hotplug_notif=
-ier =3D {
->   	.notifier_call =3D powernv_cpuidle_add_cpu_notifier,
->   };
->
-> +static int stop_loop(struct cpuidle_device *dev,
-> +			struct cpuidle_driver *drv,
-> +			int index)
-> +{
-> +	ppc64_runlatch_off();
-> +	power_stop(stop_psscr_table[index]);
-> +	ppc64_runlatch_on();
-> +	return index;
-> +}
->   /*
->    * powernv_cpuidle_driver_init()
->    */
-> @@ -169,6 +181,8 @@ static int powernv_add_idle_states(void)
->   	int nr_idle_states =3D 1; /* Snooze */
->   	int dt_idle_states;
->   	u32 *latency_ns, *residency_ns, *flags;
-> +	u64 *psscr_val =3D NULL;
-> +	const char *names[MAX_POWERNV_IDLE_STATES];
->   	int i, rc;
->
->   	/* Currently we have snooze statically defined */
-> @@ -201,6 +215,23 @@ static int powernv_add_idle_states(void)
->   		goto out_free_latency;
->   	}
->
-> +	rc =3D of_property_read_string_array(power_mgt,
-> +		"ibm,cpu-idle-state-names", names, dt_idle_states);
-> +	if (rc < -1) {
-
-Why < -1 ?
-
-> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-names in DT\=
-n");
-> +		goto out_free_latency;
-> +	}
-> +
-> +	if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-
-Isn't weird to mix cpu feature and DT bindings check ?
-
-> +		psscr_val =3D kcalloc(dt_idle_states, sizeof(*psscr_val),
-> +					GFP_KERNEL);
-> +		rc =3D of_property_read_u64_array(power_mgt,
-> +			"ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states);
-
-[cc'ed Lorenzo and Rob ]
-
-I don't see the documentation for the binding. Wouldn't make sense to=20
-add the value per idle state instead of an index based array ?
-
-> +		if (rc < -1) {
-> +			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT=
-\n");
-> +			goto out_free_psscr;
-> +		}
-> +	}
->   	residency_ns =3D kzalloc(sizeof(*residency_ns) * dt_idle_states, G=
-=46P_KERNEL);
->   	rc =3D of_property_read_u32_array(power_mgt,
->   		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
-> @@ -218,6 +249,16 @@ static int powernv_add_idle_states(void)
->   			powernv_states[nr_idle_states].flags =3D 0;
->   			powernv_states[nr_idle_states].target_residency =3D 100;
->   			powernv_states[nr_idle_states].enter =3D &nap_loop;
-> +		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
-> +				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
-> +			strncpy(powernv_states[nr_idle_states].name,
-> +				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-
-Why cast names[] to (char *) while strncpy is waiting for const char *,=
-=20
-the initial type of names[] ?
-
-> +			strncpy(powernv_states[nr_idle_states].desc,
-> +				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-> +			powernv_states[nr_idle_states].flags =3D 0;
-
-No target_residency specified ?
-
-> +
-> +			powernv_states[nr_idle_states].enter =3D &stop_loop;
-
-s/&stop_loop/stop_loop/
-
-> +			stop_psscr_table[nr_idle_states] =3D psscr_val[i];
->   		}
->
->   		/*
-> @@ -233,6 +274,18 @@ static int powernv_add_idle_states(void)
->   			powernv_states[nr_idle_states].flags =3D CPUIDLE_FLAG_TIMER_STOP=
-;
->   			powernv_states[nr_idle_states].target_residency =3D 300000;
->   			powernv_states[nr_idle_states].enter =3D &fastsleep_loop;
-> +		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
-> +				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
-> +
-> +			strncpy(powernv_states[nr_idle_states].name,
-> +				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-> +			strncpy(powernv_states[nr_idle_states].desc,
-> +				(char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-> +
-> +			powernv_states[nr_idle_states].flags =3D CPUIDLE_FLAG_TIMER_STOP;
-> +
-> +			powernv_states[nr_idle_states].enter =3D &stop_loop;
-> +			stop_psscr_table[nr_idle_states] =3D psscr_val[i];
->   		}
->   #endif
->   		powernv_states[nr_idle_states].exit_latency =3D
-> @@ -247,6 +300,8 @@ static int powernv_add_idle_states(void)
->   	}
->
->   	kfree(residency_ns);
-> +out_free_psscr:
-> +	kfree(psscr_val);
->   out_free_latency:
->   	kfree(latency_ns);
->   out_free_flags:
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+BTW, looks like the latter is already implemented in
+pci_acpi_optimize_delay().
