@@ -1,74 +1,68 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2 5/5] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
-Date: Mon, 30 May 2016 11:33:15 +0200
-Message-ID: <1464600795-26307-6-git-send-email-ulf.hansson@linaro.org>
-References: <1464600795-26307-1-git-send-email-ulf.hansson@linaro.org>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] PCI: Power on bridges before scanning new devices
+Date: Mon, 30 May 2016 12:35:11 +0300
+Message-ID: <20160530093511.GI1789@lahna.fi.intel.com>
+References: <20160519231234.GB1785@al>
+ <2037523.0hP3Oc7Pg6@vostro.rjw.lan>
+ <20160526081643.GQ1789@lahna.fi.intel.com>
+ <9162683.GfsX7n9xoz@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f53.google.com ([209.85.215.53]:34651 "EHLO
-	mail-lf0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932219AbcE3Jdc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 05:33:32 -0400
-Received: by mail-lf0-f53.google.com with SMTP id k98so69928199lfi.1
-        for <linux-pm@vger.kernel.org>; Mon, 30 May 2016 02:33:32 -0700 (PDT)
-In-Reply-To: <1464600795-26307-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mga11.intel.com ([192.55.52.93]:46611 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932632AbcE3JfQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 30 May 2016 05:35:16 -0400
+Content-Disposition: inline
+In-Reply-To: <9162683.GfsX7n9xoz@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Peter Wu <peter@lekensteyn.nl>, Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 
-When the pm_runtime_force_suspend|resume() helpers were invented, we still
-had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
+On Sat, May 28, 2016 at 02:21:11PM +0200, Rafael J. Wysocki wrote:
+> On Thursday, May 26, 2016 11:16:43 AM Mika Westerberg wrote:
+> > On Wed, May 25, 2016 at 10:45:48PM +0200, Rafael J. Wysocki wrote:
+> > > On Wednesday, May 25, 2016 04:19:48 PM Mika Westerberg wrote:
+> > > > On Wed, May 25, 2016 at 12:13:09AM +0300, Mika Westerberg wrote:
+> > > > > On Tue, May 24, 2016 at 03:53:23PM +0300, Mika Westerberg wrote:
+> > > > > > > I dropped "ACPI / hotplug / PCI: Runtime resume bridge before rescan"
+> > > > > > > on the assumption that "PCI: Power on bridges before scanning new
+> > > > > > > devices" is sufficient to cover both the ACPI and the generic PCi
+> > > > > > > rescan cases, but I'd like some reassurance about that.
+> > > > > > 
+> > > > > > I agree with your reasoning that the patch should not be needed anymore.
+> > > > > > However, I have the machine which needed that patch at home so I'm not
+> > > > > > able to test it now. I'll do that later today when I get back home.
+> > > > > 
+> > > > > I tried now on my Lenovo Yoga 900 laptop and unfortunately "PCI: Power
+> > > > > on bridges before scanning new devices" seems not to be enough. This
+> > > > > machine has SD-card reader connected to one PCIe port and once I unload
+> > > > > the sdhci-pci driver and enable runtime PM for the device, next system
+> > > > > suspend/resume cycle loses the SD-card reader PCI device.
+> > > > > 
+> > > > > I will investigate more tomorrow -- it is getting late here.
+> > > > 
+> > > > I think I found reason for the issue.
+> > > > 
+> > > > When the laptop resumes it will send ACPI BUS_CHECK event for the two
+> > > > PCIe root ports. This ends up in acpiphp_check_bridge() where it goes
+> > > > through all slots in that bridge checking if the devices are still
+> > > > present. This happens before we call pci_scan_bridge() for the bridge
+> > > > itself.
+> > > > 
+> > > > Since the bridge is in D3 config space of the device behind it is not
+> > > > available and we determine that the device is not there anymore.
+> > > > 
+> > > > It looks like we either need that ACPI hotplug patch or alternatively we
+> > > > could add pm_runtime_get/put() in acpiphp_check_bridge().
+> > > 
+> > > Have you tried the latter?
+> > 
+> > Indeed I tried and it worked fine. I can make formal patch doing that
+> > which then replaces the current ACPI hotplug patch, if that is the
+> > preferred way.
+> 
+> It is somewhat cleaner, so I'd prefer it.
 
-To make sure these helpers worked for all combinations and without
-introducing too much of complexity, the device was always resumed in
-pm_runtime_force_resume().
-
-More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
-unset, we needed to resume the device as the subsystem/driver couldn't
-rely on using runtime PM to do it.
-
-As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
-removed this combination, of using CONFIG_PM_SLEEP without the earlier
-CONFIG_PM_RUNTIME.
-
-For this reason we can now rely on the subsystem/driver to use runtime PM
-to resume the device, instead of forcing that to be done in all cases. In
-other words, let's defer the runtime resume to a later point when it's
-actually needed.
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-
-Changes in v2:
-	- Updated changelog.
-	- Updated comment in the code.
-
----
- drivers/base/power/runtime.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 09e4eb1..81731a2 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1509,6 +1509,17 @@ int pm_runtime_force_resume(struct device *dev)
- 	if (!pm_runtime_status_suspended(dev))
- 		goto out;
- 
-+	/*
-+	 * The PM core increases the runtime PM usage count in the system PM
-+	 * prepare phase. If the count is greater than 1 at this point, a real
-+	 * user (such as a subsystem, driver, userspace, etc.) has also
-+	 * increased it, indicating that the device was used when system suspend
-+	 * was invoked. In this case, the device is expected to be used on
-+	 * system resume as well, so invoke the ->runtime_resume() callback.
-+	 */
-+	if (atomic_read(&dev->power.usage_count) < 2)
-+		goto out;
-+
- 	ret = pm_runtime_set_active(dev);
- 	if (ret)
- 		goto out;
--- 
-1.9.1
-
+Okay, I'm going to submit an updated version of that patch then.
