@@ -1,79 +1,67 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 0/3]  soc: renesas: rcar-sysc: Add support for R-Car M3-W power areas
-Date: Mon, 30 May 2016 19:05:08 +0200
-Message-ID: <1464627911-8126-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <damm+renesas@opensource.se>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 3/3] cpufreq: schedutil: map raw required frequency to
+ driver frequency
+Date: Mon, 30 May 2016 21:08:14 +0200
+Message-ID: <CAJZ5v0io0vxbeOw_LNivm=jZfpENf91-o1BySvkeqrRXXDHDbw@mail.gmail.com>
+References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
+	<1464231181-30741-4-git-send-email-smuckle@linaro.org>
+	<20160526071629.GW17585@vireshk-i7>
+	<CAJZ5v0gxfRBeQTyHACVtRpon50N_t3qytrFPT4ga2zwPhVYYdw@mail.gmail.com>
+	<20160530101830.GE30066@vireshk-i7>
+	<CAJZ5v0hwohZh_Pubt5pc2NoiMWrSDkcfjkbcFuugPkRTwKhejQ@mail.gmail.com>
+	<20160530153233.GA9463@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:36754 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161631AbcE3TIQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 15:08:16 -0400
+In-Reply-To: <20160530153233.GA9463@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-	Hi Simon, Magnus,
+On Mon, May 30, 2016 at 5:32 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> I clearly missed the !policy->fast_switch_enabled check in sugov_limit() and so
+> the confusion.
+>
+> On 30-05-16, 16:25, Rafael J. Wysocki wrote:
+>> On Mon, May 30, 2016 at 12:18 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > Suppose this is the current range of frequencies supported by a
+>> > driver: 200, 400, 600, 800, 1000 (in MHz).
 
-This patch series adds support for the power areas exposed by the System
-Controller on the Renesas R-Car M3-W SoC. This is a prerequisite for
-enabling devices (e.g. VSP and FCP) that reside in power areas.
+[cut]
 
-/sys/kernel/debug/pm_genpd/pm_genpd_summary output:
+> I am not sure how harmful it can be, but we are returning from sugov_limits()
+> without making sure that policy->cur is in valid range currently. I also know
+> that you left it out because of the possible races with the util handler.
+>
+> But this is something that is fundamentally broken for now.
 
-    domain                          status          slaves
-	/device                                             runtime status
-    ----------------------------------------------------------------------
-    clock-controller                on              
-    a3ir                            off-0           
-    3dg-b                           off-0           
-    3dg-a                           off-0           3dg-b
-    a2vc1                           off-0           
-    a2vc0                           off-0           
-    a3vc                            off-0           a2vc0, a2vc1
-    cr7                             off-0           
-    ca53-cpu3                       on              
-    ca53-cpu2                       on              
-    ca53-cpu1                       on              
-    ca53-cpu0                       on              
-    ca53-scu                        on              ca53-cpu0, ca53-cpu1, ca53-cpu2, ca53-cpu3
-    ca57-cpu1                       on              
-    ca57-cpu0                       on              
-    ca57-scu                        on              ca57-cpu0, ca57-cpu1
-    always-on                       on              ca57-scu, ca53-scu, cr7, a3vc, 3dg-a, a3ir
-	/devices/platform/soc/e6e88000.serial               active
+To be clear, this is your opinion that I disagree with.
 
-Changes compared to v1:
-  - Add Acked-by.
+> The user writes updates the policy->max/min, we return the call to the user thinks that it has
+> successfully written to the file and everything is aligned. But we may be
+> running at an frequency from invalid range. Yes, that will happen very soon, but
+> its broken.
 
-For your convenience, I've pushed this series to the
-topic/r8a7796-sysc-v2 branch of
-https://git.kernel.org/cgit/linux/kernel/git/geert/renesas-drivers.git.
-This has been tested on r8a7796/salvator-x, and the code (minus the
-acks, i.e. v1), has been part of renesas-drivers since 2016-05-10.
+Does it really matter that the call may return before the new limit
+takes effect?  I don't think so.
 
-Thanks!
+Moreover, if the limit is updated cross-CPU (ie. the CPU running the
+call is not the one whose limit is updated) and the target CPU is
+idle, waking it up just in order to make sure that the frequency limit
+took effect is not particularly smart.
 
-Geert Uytterhoeven (3):
-  soc: renesas: rcar-sysc: Document r8a7796 support
-  soc: renesas: Add r8a7796 SYSC PM Domain Binding Definitions
-  soc: renesas: rcar-sysc: Add support for R-Car M3-W power areas
+What really matters is how soon the limit can take effect and that in
+both "fast switch" and "traditional" cases is about the same time, so
+I don't see anything problematic here.
 
- .../bindings/power/renesas,rcar-sysc.txt           |  1 +
- drivers/soc/renesas/Makefile                       |  1 +
- drivers/soc/renesas/r8a7796-sysc.c                 | 48 ++++++++++++++++++++++
- drivers/soc/renesas/rcar-sysc.c                    |  3 ++
- drivers/soc/renesas/rcar-sysc.h                    |  1 +
- include/dt-bindings/power/r8a7796-sysc.h           | 36 ++++++++++++++++
- 6 files changed, 90 insertions(+)
- create mode 100644 drivers/soc/renesas/r8a7796-sysc.c
- create mode 100644 include/dt-bindings/power/r8a7796-sysc.h
+Actually, making sugov_limits() wait for the limit to take effect
+would be a matter of adding three lines of code to it, but that would
+change a relatively lightweight call into a really heavyweight one, so
+I didn't add them, because I didn't see a point in doing that.
 
--- 
-1.9.1
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I still don't see a point in doing that for that matter.
