@@ -1,89 +1,173 @@
-From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
-	runtime PM
-Date: Mon, 30 May 2016 18:13:51 +0200
-Message-ID: <20160530161351.GA1355@al>
-References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
- <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
- <20160525135535.GN1789@lahna.fi.intel.com>
- <20160527111037.GA1436@al>
- <20160530095709.GK1789@lahna.fi.intel.com>
- <20160530122010.GB1149@al>
- <20160530130909.GA1743@lahna.fi.intel.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH v2 2/3] cpufreq: acpi-cpufreq: add resolve_freq callback
+Date: Mon, 30 May 2016 09:20:27 -0700
+Message-ID: <20160530162027.GF9864@graphite.smuckle.net>
+References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
+ <1464231181-30741-3-git-send-email-smuckle@linaro.org>
+ <20160526064341.GV17585@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:33514 "EHLO
+	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161220AbcE3QUb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 12:20:31 -0400
+Received: by mail-pf0-f182.google.com with SMTP id b124so65831554pfb.0
+        for <linux-pm@vger.kernel.org>; Mon, 30 May 2016 09:20:31 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20160530130909.GA1743-3PARRvDOhMZrdx17CPfAsdBPR1lH4CV8@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+In-Reply-To: <20160526064341.GV17585@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-T24gTW9uLCBNYXkgMzAsIDIwMTYgYXQgMDQ6MDk6MDlQTSArMDMwMCwgTWlrYSBXZXN0ZXJiZXJn
-IHdyb3RlOgouLi4KPiA+ID4gPiA+ID4gKwo+ID4gPiA+ID4gPiArCWlmICghcGFyZW50X3BkZXYp
-Cj4gPiA+ID4gPiA+ICsJCXJldHVybiBmYWxzZTsKPiA+ID4gPiA+ID4gKwo+ID4gPiA+ID4gPiAr
-CWFkID0gQUNQSV9DT01QQU5JT04oJnBhcmVudF9wZGV2LT5kZXYpOwo+ID4gPiA+ID4gPiArCWlm
-ICghYWQpCj4gPiA+ID4gPiA+ICsJCXJldHVybiBmYWxzZTsKPiA+ID4gPiA+ID4gKwo+ID4gPiA+
-ID4gPiArCXJldHVybiBhZC0+cG93ZXIuZmxhZ3MucG93ZXJfcmVzb3VyY2VzOwo+ID4gPiA+ID4g
-Cj4gPiA+ID4gPiBJcyB0aGlzIHN1ZmZpY2llbnQgdG8gdGVsbCBpZiB0aGUgcGFyZW50IGRldmlj
-ZSBoYXMgX1BSMz8gSSB0aG91Z2h0IGl0Cj4gPiA+ID4gPiByZXR1cm5zIHRydWUgaWYgaXQgaGFz
-IHBvd2VyIHJlc291cmNlcyBpbiBnZW5lcmFsLCBub3QgbmVjZXNzYXJpbHkgX1BSMy4KPiA+ID4g
-PiA+IAo+ID4gPiA+ID4gT3RoZXJ3aXNlIHRoaXMgbG9va3Mgb2theSB0byBtZS4KPiA+ID4gPiAK
-PiA+ID4gPiBJdCBpcyBpbmRlZWQgc2V0IHdoZW5ldmVyIHRoZXJlIGlzIGFueSBfUFJ4IG1ldGhv
-ZC4gSSB3b25kZXIgaWYgaXQgaXMKPiA+ID4gPiBhcHByb3ByaWF0ZSB0byBhY2Nlc3MgZmllbGRz
-IGRpcmVjdGx5IGxpa2UgdGhpcywgcGVyaGFwcyB0aGlzIHdvdWxkIGJlCj4gPiA+ID4gbW9yZSBh
-Y2N1cmF0ZSAoYmFzZWQgb24gZGV2aWNlX3BtLmMpOgo+ID4gPiA+IAo+ID4gPiA+ICAgICAvKiBD
-aGVjayB3aGV0aGVyIHRoZSBfUFIzIG1ldGhvZCBpcyBhdmFpbGFibGUuICovCj4gPiA+ID4gICAg
-IHJldHVybiBhZGV2LT5wb3dlci5zdGF0ZXNbQUNQSV9TVEFURV9EM19DT0xEXS5mbGFncy52YWxp
-ZDsKPiA+ID4gPiAKPiA+ID4gPiBJIGFtIGFsc28gY29uc2lkZXJpbmcgYWRkaW5nIGEgY2hlY2sg
-aW4gY2FzZSB0aGUgcGNpZXBvcnQgZHJpdmVyIGRvZXMKPiA+ID4gPiBub3Qgc3VwcG9ydCBEM2Nv
-bGQgdmlhIHJ1bnRpbWUgUE0sIHdoYXQgZG8geW91IHRoaW5rIG9mIHRoaXM/Cj4gPiA+ID4gCj4g
-PiA+ID4gICAgIGlmICghcGFyZW50X3BkZXYpCj4gPiA+ID4gICAgICAgICByZXR1cm4gZmFsc2U7
-Cj4gPiA+ID4gICAgIC8qIElmIHRoZSBQQ0llIHBvcnQgZG9lcyBub3Qgc3VwcG9ydCBEM2NvbGQg
-dmlhIHJ1bnRpbWUgUE0sIGFsbG93IGEKPiA+ID4gPiAgICAgICogZmFsbGJhY2sgdG8gdGhlIE9w
-dGltdXMgRFNNIG1ldGhvZCB0byBwdXQgdGhlIGRldmljZSBpbiBEM2NvbGQuICovCj4gPiA+ID4g
-ICAgIGlmIChwYXJlbnRfcGRldi0+bm9fZDNjb2xkKQo+ID4gPiA+ICAgICAgICAgcmV0dXJuIGZh
-bHNlOwo+ID4gPiA+IAo+ID4gPiA+IFRoaXMgaXMgbmVlZGVkIHRvIGF2b2lkIHRoZSByZWdyZXNz
-aW9uIHJlcG9ydGVkIGluIHRoZSBjb3ZlciBsZXR0ZXIsIGJ1dAo+ID4gPiA+IGFsc28gYWxsb3dz
-IHByZS0yMDE1IHN5c3RlbXMgdG8gKHN0aWxsKSBoYXZlIHRoZSBEM2NvbGQgcG9zc2liaWxpdHku
-Cj4gPiA+IAo+ID4gPiBUaGUgX0RTTSBtZXRob2Qgd2l0aCAwIGFzIGluZGV4IHBhcmFtZXRlciBz
-aG91bGQgcmV0dXJuIGEgYml0IGZpZWxkCj4gPiA+IHRlbGxpbmcgd2hpY2ggZnVuY3Rpb25zIGFy
-ZSBzdXBwb3J0ZWQuIFNhbmUgQklPUyBkaXNhYmxlcyB0aGF0Cj4gPiA+IHBhcnRpY3VsYXIgZnVu
-Y3Rpb24gaWYgaXQgZGV0ZWN0cyBXaW5kb3dzIDggYW5kIG5ld2VyLiBIYXZlIHlvdSBjaGVja2Vk
-Cj4gPiA+IGlmIHRoYXQncyB0aGUgY2FzZT8KPiA+ID4gCj4gPiA+IFRoZW4geW91IGNhbiBjYWxs
-IF9EU00gb25seSBpZiBpdCBpcyBzdXBwb3J0ZWQgYW5kIG90aGVyd2lzZSBleHBlY3QgdGhlCj4g
-PiA+IHBhcmVudCBkZXZpY2UncyBwb3dlciByZXNvdXJjZXMgdG8gdHVybiBvZmYgcG93ZXIgd2hl
-biBydW50aW1lCj4gPiA+IHN1c3BlbmRlZC4KPiA+IAo+ID4gVGhlIF9EU00gbWV0aG9kcyAoZm9y
-IHRoZSBOdmlkaWEgZGV2aWNlKSBhcmUgb2Z0ZW4gc3RpbGwgaW5jbHVkZWQgYW5kCj4gPiBmdW5j
-dGlvbnMgYXJlIHJlcG9ydGVkIGFzIHN1cHBvcnRlZC4gSSBndWVzcyB0aGF0IHZlbmRvcnMganVz
-dCBjaGVjawo+ID4gd2hldGhlciBpdCBpcyB3b3JraW5nIGFuZCBkbyBub3QgYm90aGVyIHJlbW92
-aW5nIGxlZ2FjeSBmdW5jdGlvbnMuIFRoZQo+ID4gQWNlciBjYXNlIGJlbG93IHNlZW1zIGV4Y2Vw
-dGlvbmFsLgo+ID4gCj4gPiBJIHN1Z2dlc3RlZCB0aGUgbm9fZDNjb2xkIGNoZWNrIHN1Y2ggdGhh
-dCBEU00gY2FuIHN0aWxsIGJlIGNhbGxlZCBldmVuCj4gPiB0aG91Z2ggdGhlIHJ1bnRpbWUgUE0g
-b24gdGhlIFBDSWUgcG9ydCBkb2VzIG5vdGhpbmcuCj4gCj4gU29tZWhvdyBpdCBkb2VzIG5vdCBm
-ZWVsIHJpZ2h0IHRvIHBva2UgcGFyZW50IGRldmljZSdzIGZpZWxkcyBkaXJlY3RseS4KPiAKPiBX
-aGF0IGlmIHlvdSBqdXN0IGNoZWNrIGlmIGl0IGhhcyB0aGUgbWV0aG9kIGxpa2U6Cj4gCj4gCWJv
-b2wgbm9fZHNtID0gYWNwaV9oYXNfbWV0aG9kKHBhcmVudF9hZGV2LT5oYW5kbGUsICJfUFIzIik7
-Cj4gCj4gVGhhdCBzaG91bGQgZm9sbG93IHdoYXQgV2luZG93cyBpcyBkb2luZy4KCkNoZWNraW5n
-IGZvciBfUFIzIHdhcyB0aGUgaW50ZW50aW9uLCBidXQgaXQgc2VlbXMgdGhhdCB0aGUgQUNQSSBj
-b3JlCmRvZXMgbm90IHJlYWxseSBzdG9yZSBpdCBzb21ld2hlcmUuIFlvdXIgY2hlY2sgc2hvdWxk
-IGJlIHNpbXBsZSBlbm91Z2gsCkknbGwgdXNlIHRoYXQgaW4gdGhlIG5leHQgdmVyc2lvbi4KCkRv
-IHlvdSBoYXZlIGFueSBzdWdnZXN0aW9ucyBmb3IgdGhlIGNhc2Ugd2hlcmUgdGhlIHBjaWVwb3J0
-IGRyaXZlcgpyZWZ1c2VzIHRvIHB1dCB0aGUgYnJpZGdlIGluIEQzIChiZWNhdXNlIHRoZSBCSU9T
-IGlzIHRvbyBvbGQpPyBJbiB0aGF0CmNhc2UgdGhlIG5vdXZlYXUgZHJpdmVyIG5lZWRzIHRvIGZh
-bGxiYWNrIHRvIHRoZSBEU00gbWV0aG9kIChidXQgbm90CndoZW4gcnVudGltZSBQTSBpcyBkZWxp
-YmVyYXRlbHkgZGlzYWJsZWQgYnkgd3JpdGluZyBjb250cm9sPW9uKS4KLS0gCktpbmQgcmVnYXJk
-cywKUGV0ZXIgV3UKaHR0cHM6Ly9sZWtlbnN0ZXluLm5sCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlz
-dHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4v
-bGlzdGluZm8vbm91dmVhdQo=
+On Thu, May 26, 2016 at 12:13:41PM +0530, Viresh Kumar wrote:
+> On 25-05-16, 19:53, Steve Muckle wrote:
+> > Support the new resolve_freq cpufreq callback which resolves a target
+> > frequency to a driver-supported frequency without actually setting it.
+> 
+> And here is the first abuser of this API as I was talking about in the
+> earlier patch :)
+> 
+> But, I know why you are doing it and I think we can do it differently.
+> 
+> So, lets assume that the ->resolve_freq() callback will ONLY be
+> provided by the drivers which also provide a ->target() callback.
+> 
+> i.e. not by acpi-cpufreq at least.
+> 
+> > The target frequency and resolved frequency table entry are cached so
+> > that a subsequent fast_switch operation may avoid the frequency table
+> > walk assuming the requested target frequency is the same.
+> > 
+> > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Signed-off-by: Steve Muckle <smuckle@linaro.org>
+> > ---
+> >  drivers/cpufreq/acpi-cpufreq.c | 56 ++++++++++++++++++++++++++++++++----------
+> >  1 file changed, 43 insertions(+), 13 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> > index 7f38fb55f223..d87962eda1ed 100644
+> > --- a/drivers/cpufreq/acpi-cpufreq.c
+> > +++ b/drivers/cpufreq/acpi-cpufreq.c
+> > @@ -66,6 +66,8 @@ enum {
+> >  
+> >  struct acpi_cpufreq_data {
+> >  	struct cpufreq_frequency_table *freq_table;
+> > +	unsigned int cached_lookup_freq;
+> > +	struct cpufreq_frequency_table *cached_lookup_entry;
+> 
+> This could have been an integer value 'Index', which could have been
+> used together with the freq-table to get the freq we wanted.
+> 
+> And, then we can move these two fields into the cpufreq_policy
+> structure and make them part of the first patch itself.
+> 
+> >  	unsigned int resume;
+> >  	unsigned int cpu_feature;
+> >  	unsigned int acpi_perf_cpu;
+> > @@ -458,26 +460,53 @@ static int acpi_cpufreq_target(struct cpufreq_policy *policy,
+> >  	return result;
+> >  }
+> >  
+> > -unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+> > -				      unsigned int target_freq)
+> > +/*
+> > + * Find the closest frequency above target_freq.
+> > + *
+> > + * The table is sorted in the reverse order with respect to the
+> > + * frequency and all of the entries are valid (see the initialization).
+> > + */
+> > +static inline struct cpufreq_frequency_table
+> > +*lookup_freq(struct cpufreq_frequency_table *table, unsigned int target_freq)
+> >  {
+> > -	struct acpi_cpufreq_data *data = policy->driver_data;
+> > -	struct acpi_processor_performance *perf;
+> > -	struct cpufreq_frequency_table *entry;
+> > -	unsigned int next_perf_state, next_freq, freq;
+> > +	struct cpufreq_frequency_table *entry = table;
+> > +	unsigned int freq;
+> >  
+> > -	/*
+> > -	 * Find the closest frequency above target_freq.
+> > -	 *
+> > -	 * The table is sorted in the reverse order with respect to the
+> > -	 * frequency and all of the entries are valid (see the initialization).
+> > -	 */
+> > -	entry = data->freq_table;
+> >  	do {
+> >  		entry++;
+> >  		freq = entry->frequency;
+> >  	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
+> >  	entry--;
+> > +
+> > +	return entry;
+> > +}
+> > +
+> > +unsigned int acpi_cpufreq_resolve_freq(struct cpufreq_policy *policy,
+> > +				       unsigned int target_freq)
+> > +{
+> > +	struct acpi_cpufreq_data *data = policy->driver_data;
+> > +	struct cpufreq_frequency_table *entry;
+> > +
+> > +	data->cached_lookup_freq = target_freq;
+> > +	entry = lookup_freq(data->freq_table, target_freq);
+> > +	data->cached_lookup_entry = entry;
+> > +
+> > +	return entry->frequency;
+> > +}
+> > +
+> 
+> And then we could remove this callback from acpi-cpufreq.
+> 
+> > +unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+> > +				      unsigned int target_freq)
+> > +{
+> > +	struct acpi_cpufreq_data *data = policy->driver_data;
+> > +	struct acpi_processor_performance *perf;
+> > +	struct cpufreq_frequency_table *entry;
+> > +	unsigned int next_perf_state, next_freq;
+> > +
+> > +	if (data->cached_lookup_entry &&
+> > +	    data->cached_lookup_freq == target_freq)
+> > +		entry = data->cached_lookup_entry;
+> > +	else
+> > +		entry = lookup_freq(data->freq_table, target_freq);
+> 
+> And a static inline callback in cpufreq.h to get this entry.
+> 
+> >  	next_freq = entry->frequency;
+> >  	next_perf_state = entry->driver_data;
+> >  
+> > @@ -918,6 +947,7 @@ static struct cpufreq_driver acpi_cpufreq_driver = {
+> >  	.verify		= cpufreq_generic_frequency_table_verify,
+> >  	.target_index	= acpi_cpufreq_target,
+> >  	.fast_switch	= acpi_cpufreq_fast_switch,
+> > +	.resolve_freq	= acpi_cpufreq_resolve_freq,
+> >  	.bios_limit	= acpi_processor_get_bios_limit,
+> >  	.init		= acpi_cpufreq_cpu_init,
+> >  	.exit		= acpi_cpufreq_cpu_exit,
+> 
+> Sounds reasonable ?
+
+A couple concerns... One is that if we do the lookup in
+cpufreq_driver_resolve_freq() for drivers which implement target_index()
+then it means using cpufreq_frequency_table_target() there.  This is a
+heavier weight function that can't take advantage of driver-specific
+knowledge that the freq table is sorted a particular way. So for
+acpi-cpufreq we'd now be having to walk the whole table for every
+fast_switch.
+
+Another is that it'll be a a bit odd that the logic used to lookup the
+driver frequency will be different in the cached and uncached
+fast_switch cases. In the cached case it will have been determined by
+code in cpufreq_driver_resolve_freq() whereas in the uncached case it
+will be logic in the driver, in its fast_switch routine.
+
+I think at least the first issue would need to be solved to use this
+approach as it would impact performance for every fast_switch call.
+
+(Thanks for the review btw!)
+
+thanks,
+Steve
