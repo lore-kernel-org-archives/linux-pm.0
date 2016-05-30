@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 12/40] thermal: core: move the trip attrs to the tz sysfs I/F section
-Date: Mon, 30 May 2016 14:27:31 -0700
-Message-ID: <1464643679-2733-13-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 09/40] thermal: core: move power actor code out of sysfs I/F section
+Date: Mon, 30 May 2016 14:27:28 -0700
+Message-ID: <1464643679-2733-10-git-send-email-edubezval@gmail.com>
 References: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
@@ -10,250 +10,197 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Code reorganization to keep all the sysfs I/F of a thermal zone in the
-same section.
+Simply reorganize code to keep only functions of sysfs interface
+of thermal zone device together. Therefore, move the power actor code
+out of the sysfs I/F section.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 216 ++++++++++++++++++++---------------------
- 1 file changed, 108 insertions(+), 108 deletions(-)
+ drivers/thermal/thermal_core.c | 162 ++++++++++++++++++++---------------------
+ 1 file changed, 81 insertions(+), 81 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index bd6b144..8f1a16e 100644
+index 12427cc..d6595b1 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1173,6 +1173,114 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
- 	NULL
- };
+@@ -582,6 +582,87 @@ static void thermal_zone_device_check(struct work_struct *work)
+ 	thermal_zone_device_update(tz);
+ }
  
 +/**
-+ * create_trip_attrs() - create attributes for trip points
-+ * @tz:		the thermal zone device
-+ * @mask:	Writeable trip point bitmap.
++ * power_actor_get_max_power() - get the maximum power that a cdev can consume
++ * @cdev:	pointer to &thermal_cooling_device
++ * @tz:		a valid thermal zone device pointer
++ * @max_power:	pointer in which to store the maximum power
 + *
-+ * helper function to instantiate sysfs entries for every trip
-+ * point and its properties of a struct thermal_zone_device.
++ * Calculate the maximum power consumption in milliwats that the
++ * cooling device can currently consume and store it in @max_power.
 + *
-+ * Return: 0 on success, the proper error value otherwise.
++ * Return: 0 on success, -EINVAL if @cdev doesn't support the
++ * power_actor API or -E* on other error.
 + */
-+static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
++int power_actor_get_max_power(struct thermal_cooling_device *cdev,
++			      struct thermal_zone_device *tz, u32 *max_power)
 +{
-+	int indx;
-+	int size = sizeof(struct thermal_attr) * tz->trips;
++	if (!cdev_is_power_actor(cdev))
++		return -EINVAL;
 +
-+	tz->trip_type_attrs = kzalloc(size, GFP_KERNEL);
-+	if (!tz->trip_type_attrs)
-+		return -ENOMEM;
++	return cdev->ops->state2power(cdev, tz, 0, max_power);
++}
 +
-+	tz->trip_temp_attrs = kzalloc(size, GFP_KERNEL);
-+	if (!tz->trip_temp_attrs) {
-+		kfree(tz->trip_type_attrs);
-+		return -ENOMEM;
-+	}
++/**
++ * power_actor_get_min_power() - get the mainimum power that a cdev can consume
++ * @cdev:	pointer to &thermal_cooling_device
++ * @tz:		a valid thermal zone device pointer
++ * @min_power:	pointer in which to store the minimum power
++ *
++ * Calculate the minimum power consumption in milliwatts that the
++ * cooling device can currently consume and store it in @min_power.
++ *
++ * Return: 0 on success, -EINVAL if @cdev doesn't support the
++ * power_actor API or -E* on other error.
++ */
++int power_actor_get_min_power(struct thermal_cooling_device *cdev,
++			      struct thermal_zone_device *tz, u32 *min_power)
++{
++	unsigned long max_state;
++	int ret;
 +
-+	if (tz->ops->get_trip_hyst) {
-+		tz->trip_hyst_attrs = kzalloc(size, GFP_KERNEL);
-+		if (!tz->trip_hyst_attrs) {
-+			kfree(tz->trip_type_attrs);
-+			kfree(tz->trip_temp_attrs);
-+			return -ENOMEM;
-+		}
-+	}
++	if (!cdev_is_power_actor(cdev))
++		return -EINVAL;
 +
-+	for (indx = 0; indx < tz->trips; indx++) {
-+		/* create trip type attribute */
-+		snprintf(tz->trip_type_attrs[indx].name, THERMAL_NAME_LENGTH,
-+			 "trip_point_%d_type", indx);
++	ret = cdev->ops->get_max_state(cdev, &max_state);
++	if (ret)
++		return ret;
 +
-+		sysfs_attr_init(&tz->trip_type_attrs[indx].attr.attr);
-+		tz->trip_type_attrs[indx].attr.attr.name =
-+						tz->trip_type_attrs[indx].name;
-+		tz->trip_type_attrs[indx].attr.attr.mode = S_IRUGO;
-+		tz->trip_type_attrs[indx].attr.show = trip_point_type_show;
++	return cdev->ops->state2power(cdev, tz, max_state, min_power);
++}
 +
-+		device_create_file(&tz->device,
-+				   &tz->trip_type_attrs[indx].attr);
++/**
++ * power_actor_set_power() - limit the maximum power a cooling device consumes
++ * @cdev:	pointer to &thermal_cooling_device
++ * @instance:	thermal instance to update
++ * @power:	the power in milliwatts
++ *
++ * Set the cooling device to consume at most @power milliwatts. The limit is
++ * expected to be a cap at the maximum power consumption.
++ *
++ * Return: 0 on success, -EINVAL if the cooling device does not
++ * implement the power actor API or -E* for other failures.
++ */
++int power_actor_set_power(struct thermal_cooling_device *cdev,
++			  struct thermal_instance *instance, u32 power)
++{
++	unsigned long state;
++	int ret;
 +
-+		/* create trip temp attribute */
-+		snprintf(tz->trip_temp_attrs[indx].name, THERMAL_NAME_LENGTH,
-+			 "trip_point_%d_temp", indx);
++	if (!cdev_is_power_actor(cdev))
++		return -EINVAL;
 +
-+		sysfs_attr_init(&tz->trip_temp_attrs[indx].attr.attr);
-+		tz->trip_temp_attrs[indx].attr.attr.name =
-+						tz->trip_temp_attrs[indx].name;
-+		tz->trip_temp_attrs[indx].attr.attr.mode = S_IRUGO;
-+		tz->trip_temp_attrs[indx].attr.show = trip_point_temp_show;
-+		if (IS_ENABLED(CONFIG_THERMAL_WRITABLE_TRIPS) &&
-+		    mask & (1 << indx)) {
-+			tz->trip_temp_attrs[indx].attr.attr.mode |= S_IWUSR;
-+			tz->trip_temp_attrs[indx].attr.store =
-+							trip_point_temp_store;
-+		}
++	ret = cdev->ops->power2state(cdev, instance->tz, power, &state);
++	if (ret)
++		return ret;
 +
-+		device_create_file(&tz->device,
-+				   &tz->trip_temp_attrs[indx].attr);
++	instance->target = state;
++	cdev->updated = false;
++	thermal_cdev_update(cdev);
 +
-+		/* create Optional trip hyst attribute */
-+		if (!tz->ops->get_trip_hyst)
-+			continue;
-+		snprintf(tz->trip_hyst_attrs[indx].name, THERMAL_NAME_LENGTH,
-+			 "trip_point_%d_hyst", indx);
-+
-+		sysfs_attr_init(&tz->trip_hyst_attrs[indx].attr.attr);
-+		tz->trip_hyst_attrs[indx].attr.attr.name =
-+					tz->trip_hyst_attrs[indx].name;
-+		tz->trip_hyst_attrs[indx].attr.attr.mode = S_IRUGO;
-+		tz->trip_hyst_attrs[indx].attr.show = trip_point_hyst_show;
-+		if (tz->ops->set_trip_hyst) {
-+			tz->trip_hyst_attrs[indx].attr.attr.mode |= S_IWUSR;
-+			tz->trip_hyst_attrs[indx].attr.store =
-+					trip_point_hyst_store;
-+		}
-+
-+		device_create_file(&tz->device,
-+				   &tz->trip_hyst_attrs[indx].attr);
-+	}
 +	return 0;
 +}
 +
-+static void remove_trip_attrs(struct thermal_zone_device *tz)
-+{
-+	int indx;
-+
-+	for (indx = 0; indx < tz->trips; indx++) {
-+		device_remove_file(&tz->device,
-+				   &tz->trip_type_attrs[indx].attr);
-+		device_remove_file(&tz->device,
-+				   &tz->trip_temp_attrs[indx].attr);
-+		if (tz->ops->get_trip_hyst)
-+			device_remove_file(&tz->device,
-+					   &tz->trip_hyst_attrs[indx].attr);
-+	}
-+	kfree(tz->trip_type_attrs);
-+	kfree(tz->trip_temp_attrs);
-+	kfree(tz->trip_hyst_attrs);
-+}
-+
- /* sys I/F for cooling device */
- #define to_cooling_device(_dev)	\
- 	container_of(_dev, struct thermal_cooling_device, device)
-@@ -1731,114 +1839,6 @@ void thermal_notify_framework(struct thermal_zone_device *tz, int trip)
- EXPORT_SYMBOL_GPL(thermal_notify_framework);
+ /* sys I/F for thermal zone */
  
- /**
-- * create_trip_attrs() - create attributes for trip points
-- * @tz:		the thermal zone device
-- * @mask:	Writeable trip point bitmap.
+ #define to_thermal_zone(_dev) \
+@@ -1092,87 +1173,6 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
+ 	NULL
+ };
+ 
+-/**
+- * power_actor_get_max_power() - get the maximum power that a cdev can consume
+- * @cdev:	pointer to &thermal_cooling_device
+- * @tz:		a valid thermal zone device pointer
+- * @max_power:	pointer in which to store the maximum power
 - *
-- * helper function to instantiate sysfs entries for every trip
-- * point and its properties of a struct thermal_zone_device.
+- * Calculate the maximum power consumption in milliwats that the
+- * cooling device can currently consume and store it in @max_power.
 - *
-- * Return: 0 on success, the proper error value otherwise.
+- * Return: 0 on success, -EINVAL if @cdev doesn't support the
+- * power_actor API or -E* on other error.
 - */
--static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
+-int power_actor_get_max_power(struct thermal_cooling_device *cdev,
+-			      struct thermal_zone_device *tz, u32 *max_power)
 -{
--	int indx;
--	int size = sizeof(struct thermal_attr) * tz->trips;
+-	if (!cdev_is_power_actor(cdev))
+-		return -EINVAL;
 -
--	tz->trip_type_attrs = kzalloc(size, GFP_KERNEL);
--	if (!tz->trip_type_attrs)
--		return -ENOMEM;
--
--	tz->trip_temp_attrs = kzalloc(size, GFP_KERNEL);
--	if (!tz->trip_temp_attrs) {
--		kfree(tz->trip_type_attrs);
--		return -ENOMEM;
--	}
--
--	if (tz->ops->get_trip_hyst) {
--		tz->trip_hyst_attrs = kzalloc(size, GFP_KERNEL);
--		if (!tz->trip_hyst_attrs) {
--			kfree(tz->trip_type_attrs);
--			kfree(tz->trip_temp_attrs);
--			return -ENOMEM;
--		}
--	}
--
--	for (indx = 0; indx < tz->trips; indx++) {
--		/* create trip type attribute */
--		snprintf(tz->trip_type_attrs[indx].name, THERMAL_NAME_LENGTH,
--			 "trip_point_%d_type", indx);
--
--		sysfs_attr_init(&tz->trip_type_attrs[indx].attr.attr);
--		tz->trip_type_attrs[indx].attr.attr.name =
--						tz->trip_type_attrs[indx].name;
--		tz->trip_type_attrs[indx].attr.attr.mode = S_IRUGO;
--		tz->trip_type_attrs[indx].attr.show = trip_point_type_show;
--
--		device_create_file(&tz->device,
--				   &tz->trip_type_attrs[indx].attr);
--
--		/* create trip temp attribute */
--		snprintf(tz->trip_temp_attrs[indx].name, THERMAL_NAME_LENGTH,
--			 "trip_point_%d_temp", indx);
--
--		sysfs_attr_init(&tz->trip_temp_attrs[indx].attr.attr);
--		tz->trip_temp_attrs[indx].attr.attr.name =
--						tz->trip_temp_attrs[indx].name;
--		tz->trip_temp_attrs[indx].attr.attr.mode = S_IRUGO;
--		tz->trip_temp_attrs[indx].attr.show = trip_point_temp_show;
--		if (IS_ENABLED(CONFIG_THERMAL_WRITABLE_TRIPS) &&
--		    mask & (1 << indx)) {
--			tz->trip_temp_attrs[indx].attr.attr.mode |= S_IWUSR;
--			tz->trip_temp_attrs[indx].attr.store =
--							trip_point_temp_store;
--		}
--
--		device_create_file(&tz->device,
--				   &tz->trip_temp_attrs[indx].attr);
--
--		/* create Optional trip hyst attribute */
--		if (!tz->ops->get_trip_hyst)
--			continue;
--		snprintf(tz->trip_hyst_attrs[indx].name, THERMAL_NAME_LENGTH,
--			 "trip_point_%d_hyst", indx);
--
--		sysfs_attr_init(&tz->trip_hyst_attrs[indx].attr.attr);
--		tz->trip_hyst_attrs[indx].attr.attr.name =
--					tz->trip_hyst_attrs[indx].name;
--		tz->trip_hyst_attrs[indx].attr.attr.mode = S_IRUGO;
--		tz->trip_hyst_attrs[indx].attr.show = trip_point_hyst_show;
--		if (tz->ops->set_trip_hyst) {
--			tz->trip_hyst_attrs[indx].attr.attr.mode |= S_IWUSR;
--			tz->trip_hyst_attrs[indx].attr.store =
--					trip_point_hyst_store;
--		}
--
--		device_create_file(&tz->device,
--				   &tz->trip_hyst_attrs[indx].attr);
--	}
--	return 0;
--}
--
--static void remove_trip_attrs(struct thermal_zone_device *tz)
--{
--	int indx;
--
--	for (indx = 0; indx < tz->trips; indx++) {
--		device_remove_file(&tz->device,
--				   &tz->trip_type_attrs[indx].attr);
--		device_remove_file(&tz->device,
--				   &tz->trip_temp_attrs[indx].attr);
--		if (tz->ops->get_trip_hyst)
--			device_remove_file(&tz->device,
--					   &tz->trip_hyst_attrs[indx].attr);
--	}
--	kfree(tz->trip_type_attrs);
--	kfree(tz->trip_temp_attrs);
--	kfree(tz->trip_hyst_attrs);
+-	return cdev->ops->state2power(cdev, tz, 0, max_power);
 -}
 -
 -/**
-  * thermal_zone_device_register() - register a new thermal zone device
-  * @type:	the thermal zone device type
-  * @trips:	the number of trip points the thermal zone support
+- * power_actor_get_min_power() - get the mainimum power that a cdev can consume
+- * @cdev:	pointer to &thermal_cooling_device
+- * @tz:		a valid thermal zone device pointer
+- * @min_power:	pointer in which to store the minimum power
+- *
+- * Calculate the minimum power consumption in milliwatts that the
+- * cooling device can currently consume and store it in @min_power.
+- *
+- * Return: 0 on success, -EINVAL if @cdev doesn't support the
+- * power_actor API or -E* on other error.
+- */
+-int power_actor_get_min_power(struct thermal_cooling_device *cdev,
+-			      struct thermal_zone_device *tz, u32 *min_power)
+-{
+-	unsigned long max_state;
+-	int ret;
+-
+-	if (!cdev_is_power_actor(cdev))
+-		return -EINVAL;
+-
+-	ret = cdev->ops->get_max_state(cdev, &max_state);
+-	if (ret)
+-		return ret;
+-
+-	return cdev->ops->state2power(cdev, tz, max_state, min_power);
+-}
+-
+-/**
+- * power_actor_set_power() - limit the maximum power a cooling device consumes
+- * @cdev:	pointer to &thermal_cooling_device
+- * @instance:	thermal instance to update
+- * @power:	the power in milliwatts
+- *
+- * Set the cooling device to consume at most @power milliwatts. The limit is
+- * expected to be a cap at the maximum power consumption.
+- *
+- * Return: 0 on success, -EINVAL if the cooling device does not
+- * implement the power actor API or -E* for other failures.
+- */
+-int power_actor_set_power(struct thermal_cooling_device *cdev,
+-			  struct thermal_instance *instance, u32 power)
+-{
+-	unsigned long state;
+-	int ret;
+-
+-	if (!cdev_is_power_actor(cdev))
+-		return -EINVAL;
+-
+-	ret = cdev->ops->power2state(cdev, instance->tz, power, &state);
+-	if (ret)
+-		return ret;
+-
+-	instance->target = state;
+-	cdev->updated = false;
+-	thermal_cdev_update(cdev);
+-
+-	return 0;
+-}
+-
+ /* sys I/F for cooling device */
+ #define to_cooling_device(_dev)	\
+ 	container_of(_dev, struct thermal_cooling_device, device)
 -- 
 2.1.4
