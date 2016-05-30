@@ -1,114 +1,170 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 3/3] cpufreq: schedutil: map raw required frequency to
- driver frequency
-Date: Mon, 30 May 2016 15:48:30 +0530
-Message-ID: <20160530101830.GE30066@vireshk-i7>
-References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
- <1464231181-30741-4-git-send-email-smuckle@linaro.org>
- <20160526071629.GW17585@vireshk-i7>
- <CAJZ5v0gxfRBeQTyHACVtRpon50N_t3qytrFPT4ga2zwPhVYYdw@mail.gmail.com>
+From: Emil Velikov <emil.l.velikov@gmail.com>
+Subject: Re: [Nouveau] [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
+ runtime PM
+Date: Mon, 30 May 2016 11:48:34 +0100
+Message-ID: <CACvgo50db1KEuH3yZ75K-MtCeKAsQKXJbQQxiXm+82qkjZsvDA@mail.gmail.com>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+	<1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+	<CACvgo514AB=rkRGWrwmPHTX=hhEF8Jhzdg1hQkX1_C4A_zYkzg@mail.gmail.com>
+	<20160527213123.GB1777@al>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gxfRBeQTyHACVtRpon50N_t3qytrFPT4ga2zwPhVYYdw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160527213123.GB1777@al>
+Sender: linux-pci-owner@vger.kernel.org
+To: Peter Wu <peter@lekensteyn.nl>
+Cc: ML nouveau <nouveau@lists.freedesktop.org>, ML dri-devel <dri-devel@lists.freedesktop.org>, Dave Airlie <airlied@redhat.com>, linux-pm@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 29-05-16, 02:40, Rafael J. Wysocki wrote:
-> I can't really parse the above question, so I'm not going to try to
-> answer it. :-)
+On 27 May 2016 at 22:31, Peter Wu <peter@lekensteyn.nl> wrote:
+> On Fri, May 27, 2016 at 02:01:39PM +0100, Emil Velikov wrote:
+>> Hi Peter,
+>>
+>> On 24 May 2016 at 23:53, Peter Wu <peter@lekensteyn.nl> wrote:
+>> > Since "PCI: Add runtime PM support for PCIe ports", the parent PCIe port
+>> > can be runtime-suspended which disables power resources via ACPI. This
+>> > is incompatible with DSM, resulting in a GPU device which is still in D3
+>> > and locks up the kernel on resume.
+>> >
+>> > Mirror the behavior of Windows 8 and newer[1] (as observed via an AMLi
+>> > debugger trace) and stop using the DSM functions for D3cold when power
+>> > resources are available on the parent PCIe port.
+>> >
+>> >  [1]: https://msdn.microsoft.com/windows/hardware/drivers/bringup/firmware-requirements-for-d3cold
+>> >
+>> > Signed-off-by: Peter Wu <peter@lekensteyn.nl>
+>> > ---
+>> >  drivers/gpu/drm/nouveau/nouveau_acpi.c | 34 ++++++++++++++++++++++++++++++----
+>> >  1 file changed, 30 insertions(+), 4 deletions(-)
+>> >
+>> > diff --git a/drivers/gpu/drm/nouveau/nouveau_acpi.c b/drivers/gpu/drm/nouveau/nouveau_acpi.c
+>> > index df9f73e..e469df7 100644
+>> > --- a/drivers/gpu/drm/nouveau/nouveau_acpi.c
+>> > +++ b/drivers/gpu/drm/nouveau/nouveau_acpi.c
+>> > @@ -46,6 +46,7 @@ static struct nouveau_dsm_priv {
+>> >         bool dsm_detected;
+>> >         bool optimus_detected;
+>> >         bool optimus_flags_detected;
+>> > +       bool optimus_skip_dsm;
+>> >         acpi_handle dhandle;
+>> >         acpi_handle rom_handle;
+>> >  } nouveau_dsm_priv;
+>> > @@ -212,8 +213,26 @@ static const struct vga_switcheroo_handler nouveau_dsm_handler = {
+>> >         .get_client_id = nouveau_dsm_get_client_id,
+>> >  };
+>> >
+>> > +/* Firmware supporting Windows 8 or later do not use _DSM to put the device into
+>> > + * D3cold, they instead rely on disabling power resources on the parent. */
+>> > +static bool nouveau_pr3_present(struct pci_dev *pdev)
+>> > +{
+>> > +       struct pci_dev *parent_pdev = pci_upstream_bridge(pdev);
+>> > +       struct acpi_device *ad;
+>> > +
+>> > +       if (!parent_pdev)
+>> > +               return false;
+>> > +
+>> > +       ad = ACPI_COMPANION(&parent_pdev->dev);
+>> > +       if (!ad)
+>> > +               return false;
+>> > +
+>> > +       return ad->power.flags.power_resources;
+>> > +}
+>> > +
+>> >  static void nouveau_dsm_pci_probe(struct pci_dev *pdev, bool *has_mux,
+>> > -                                 bool *has_opt, bool *has_opt_flags)
+>> > +                                 bool *has_opt, bool *has_opt_flags,
+>> > +                                 bool *has_power_resources)
+>> >  {
+>> >         acpi_handle dhandle;
+>> >         bool supports_mux;
+>> > @@ -238,6 +257,7 @@ static void nouveau_dsm_pci_probe(struct pci_dev *pdev, bool *has_mux,
+>> >         *has_mux = supports_mux;
+>> >         *has_opt = !!optimus_funcs;
+>> >         *has_opt_flags = optimus_funcs & (1 << NOUVEAU_DSM_OPTIMUS_FLAGS);
+>> > +       *has_power_resources = false;
+>> >
+>> >         if (optimus_funcs) {
+>> >                 uint32_t result;
+>> > @@ -247,6 +267,8 @@ static void nouveau_dsm_pci_probe(struct pci_dev *pdev, bool *has_mux,
+>> >                          (result & OPTIMUS_ENABLED) ? "enabled" : "disabled",
+>> >                          (result & OPTIMUS_DYNAMIC_PWR_CAP) ? "dynamic power, " : "",
+>> >                          (result & OPTIMUS_HDA_CODEC_MASK) ? "hda bios codec supported" : "");
+>> > +
+>> > +               *has_power_resources = nouveau_pr3_present(pdev);
+>> >         }
+>> >  }
+>> >
+>> > @@ -258,6 +280,7 @@ static bool nouveau_dsm_detect(void)
+>> >         bool has_mux = false;
+>> >         bool has_optimus = false;
+>> >         bool has_optimus_flags = false;
+>> > +       bool has_power_resources = false;
+>> >         int vga_count = 0;
+>> >         bool guid_valid;
+>> >         bool ret = false;
+>> > @@ -273,14 +296,14 @@ static bool nouveau_dsm_detect(void)
+>> >                 vga_count++;
+>> >
+>> >                 nouveau_dsm_pci_probe(pdev, &has_mux, &has_optimus,
+>> > -                                     &has_optimus_flags);
+>> > +                                     &has_optimus_flags, &has_power_resources);
+>> >         }
+>> >
+>> >         while ((pdev = pci_get_class(PCI_CLASS_DISPLAY_3D << 8, pdev)) != NULL) {
+>> >                 vga_count++;
+>> >
+>> >                 nouveau_dsm_pci_probe(pdev, &has_mux, &has_optimus,
+>> > -                                     &has_optimus_flags);
+>> > +                                     &has_optimus_flags, &has_power_resources);
+>> >         }
+>> >
+>> This and earlier patch break things in a subtle way.
+>>
+>> Namely: upon the second (and any later) call into the
+>> nouveau_dsm_pci_probe() function, the had_foo flags are reset. Thus
+>> only the specifics of the _final_ device are being used (at a later
+>> stage). IMHO one should change that to "_any_ device", which will
+>> match the original code and the actual intent further down in the
+>> file.
+>
+> The flags are only reset if any of the MUX or Optimus handles are found.
+> If both are missing, the flags are not overridden. This is from patch 1:
+>
+> +       /* Does not look like a Nvidia device. */
+> +       if (!supports_mux && !supports_opt)
+> +               return;
+>
+This is precisely what I'm saying, and I think it's wrong/strange. If
+you've detected that device A support_{X,Y}, you'll reset the
+support_{X,Y} flag anyway if device B is present... (continues further
+down)
 
-Sorry about that :(
+> The reason why later calls override early ones is because some Optimus
+> laptops have the _DSM method on both the Intel GPU (00:02.0) and the
+> Nvidia one (01:00.0).
+>
+I agree with Lukas idea that one could/should be checking for nvidia
+devices (perhaps in nouveau_dsm_pci_probe() or just before calling it
+?).
 
-IOW, I think that we should make this change into the sched-governor (I will
-send a patch separately if you agree to this):
+> The previous detection method would fail in this scenario:
+>  1. One device reports support for X and Y (has_x = 1, has_y = 1). Write
+>     ACPI handle A to nouveau_dsm_priv.dhandle.
+>  2. Another device reports support for X only (has_x = 1). Write
+>     ACPI handle B to nouveau_dsm_priv.dhandle.
+>  3. End result: has_x = 1, has_y = 1, dhandle = B. But ACPI handle B
+>     does not really support Y!
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 14c4aa25cc45..5934b14aa21c 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -66,11 +66,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
- 
-        if (unlikely(sg_policy->need_freq_update)) {
-                sg_policy->need_freq_update = false;
--               /*
--                * This happens when limits change, so forget the previous
--                * next_freq value and force an update.
--                */
--               sg_policy->next_freq = UINT_MAX;
-                return true;
-        }
+...  so to avoid the above case and preserve the original ideas ('do
+not discard earlier device caps' and 'Optimus takes precedence over
+DSM v1') one could do the following:
 
-And here is my reasoning behind this.
+ - decouple the "feature check" and "set the dhandle"
+ - pick the 'ideal' one based on the feature set provided. if multiple
+pick one based on $insert_heuristics
+ - set the dhandle
 
-Can you show me any case, where the above code (as present in mainline
-today) leads to a freq-change? I couldn't find any.
+What do you think ?
 
-Let me demonstrate.
-
-Following only talks about the fast-switch path, the other path is
-same as well.
-
-Suppose this is the current range of frequencies supported by a
-driver: 200, 400, 600, 800, 1000 (in MHz).
-
-And policy->cur = next_freq = 400 MHz.
-
-A.) Suppose that we change policy->min to 400 MHz from userspace.
-    -> sugov_limits()
-       This will find everything in order and simply set
-       need_freq_update, without updating the frequency.
-
-    On next util-callback, we will forcefully return true from
-    sugov_should_update_freq() and reach sugov_update_commit().
-
-    We calculate next_freq and that comes to 400 MHz again (that's the
-    case we are trying to target with the above code).
-
-    With the current code, we will forcefully end up calling
-    cpufreq_driver_fast_switch().
-
-    Because the new and current frequencies are same,
-    cpufreq_driver->fast_switch() will simply return.
-
-    NOTE: I also think that cpufreq_driver_fast_switch() should have a
-    check like (policy->cur == target_freq). I will add that too, in
-    case you agree.
-
-    So, forcefully updating next_freq to UINT_MAX will end up wasting
-    some cycles, but wouldn't do any useful stuff.
-
-B.) Suppose that we change policy->min to 600 MHz from userspace.
-    -> sugov_limits()
-       This will find that policy->cur is less than 600 and will set
-       that to 600 MHz by calling __cpufreq_driver_target(). We will
-       also set need_freq_update.
-
-       Note that next_freq and policy->cur are not in sync anymore and
-       perhaps this is the most important case for the above code.
-
-    On next util-callback, we will forcefully return true from
-    sugov_should_update_freq() and reach sugov_update_commit().
-
-    We calculate next_freq and lets say that comes to 400 MHz again
-    (as that's the case we are trying to target with the above code).
-
-    With the current code, we will forcefully end up calling
-    cpufreq_driver_fast_switch().
-
-    Because next_freq() is not part of the new range, we will clamp it
-    and set it to 600 MHz eventually. Again, next and current
-    frequencies are same, cpufreq_driver->fast_switch() will simply
-    return.
-
-    So, forcefully updating next_freq to UINT_MAX will end up wasting
-    some cycles here as well, but would do any useful stuff.
-
-
-What am I missing ?
-
--- 
-viresh
+Regards,
+Emil
