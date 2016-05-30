@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv3 05/48] thermal: core: move emul_temp creation to tz->device.groups
-Date: Mon, 30 May 2016 15:15:41 -0700
-Message-ID: <1464646584-14322-6-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv3 02/48] thermal: core: group thermal_zone DEVICE_ATTR's declarations
+Date: Mon, 30 May 2016 15:15:38 -0700
+Message-ID: <1464646584-14322-3-git-send-email-edubezval@gmail.com>
 References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
@@ -10,56 +10,68 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-emul_temp creation is dependent on a compile time
-condition. Moving to tz->device.groups.
+Simply reorganize the code to have all DEVICE_ATTR's
+in one point in the file.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ drivers/thermal/thermal_core.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 926442e..1398c9d 100644
+index 6359c05..956e7e1 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -996,6 +996,7 @@ create_s32_tzp_attr(offset);
-  */
- static DEVICE_ATTR(type, 0444, type_show, NULL);
- static DEVICE_ATTR(temp, 0444, temp_show, NULL);
-+static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
- static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
- static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
- static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
-@@ -1004,11 +1005,13 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
- /* These thermal zone device attributes are created based on conditions */
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
- static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+@@ -917,7 +917,6 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
+ 
+ 	return ret ? ret : count;
+ }
 -static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
  
- static struct attribute *thermal_zone_dev_attrs[] = {
- 	&dev_attr_type.attr,
- 	&dev_attr_temp.attr,
-+#if (IS_ENABLED(CONFIG_THERMAL_EMULATION))
-+	&dev_attr_emul_temp.attr,
-+#endif
- 	&dev_attr_policy.attr,
- 	&dev_attr_available_policies.attr,
- 	&dev_attr_sustainable_power.attr,
-@@ -1893,12 +1896,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 			goto unregister;
- 	}
+ static ssize_t
+ sustainable_power_show(struct device *dev, struct device_attribute *devattr,
+@@ -948,8 +947,6 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
  
--	if (IS_ENABLED(CONFIG_THERMAL_EMULATION)) {
--		result = device_create_file(&tz->device, &dev_attr_emul_temp);
--		if (result)
--			goto unregister;
--	}
+ 	return count;
+ }
+-static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
+-		sustainable_power_store);
+ 
+ #define create_s32_tzp_attr(name)					\
+ 	static ssize_t							\
+@@ -992,6 +989,16 @@ create_s32_tzp_attr(slope);
+ create_s32_tzp_attr(offset);
+ #undef create_s32_tzp_attr
+ 
++static DEVICE_ATTR(type, 0444, type_show, NULL);
++static DEVICE_ATTR(temp, 0444, temp_show, NULL);
++static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
++static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
++static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
++static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
++static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
++static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
++		   sustainable_power_store);
++
+ static struct device_attribute *dev_tzp_attrs[] = {
+ 	&dev_attr_sustainable_power,
+ 	&dev_attr_k_po,
+@@ -1099,13 +1106,6 @@ int power_actor_set_power(struct thermal_cooling_device *cdev,
+ 	return 0;
+ }
+ 
+-static DEVICE_ATTR(type, 0444, type_show, NULL);
+-static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+-static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+-static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+-static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
+-static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
 -
- 	/* Update 'this' zone's governor information */
- 	mutex_lock(&thermal_governor_lock);
- 
+ /* sys I/F for cooling device */
+ #define to_cooling_device(_dev)	\
+ 	container_of(_dev, struct thermal_cooling_device, device)
 -- 
 2.1.4
