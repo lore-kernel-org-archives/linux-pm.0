@@ -1,52 +1,73 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 37/40] thermal: core: add a comment describing the main update loop
-Date: Mon, 30 May 2016 14:27:56 -0700
-Message-ID: <1464643679-2733-38-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 40/40] thermal: sysfs: remove symbols of emul_temp when config is disabled
+Date: Mon, 30 May 2016 14:27:59 -0700
+Message-ID: <1464643679-2733-41-git-send-email-edubezval@gmail.com>
 References: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f68.google.com ([209.85.220.68]:35802 "EHLO
-	mail-pa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423457AbcE3V30 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 17:29:26 -0400
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-Simply marking the main update loop section and adding a
-comment describing it.
+Remove the following warning:
+In file included from drivers/thermal/thermal_sysfs.c:19:0:
+include/linux/device.h:575:26: warning: =E2=80=98dev_attr_emul_temp=E2=80=
+=99 defined but not used [-Wunused-variable]
+  struct device_attribute dev_attr_##_name =3D __ATTR(_name, _mode, _sh=
+ow, _store)
+                          ^
+drivers/thermal/thermal_sysfs.c:395:8: note: in expansion of macro =E2=80=
+=98DEVICE_ATTR=E2=80=99
+
+when emul temp is disabled at Kconfig.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/thermal/thermal_sysfs.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6dbb86f..063fb15 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -286,6 +286,17 @@ static void thermal_unregister_governors(void)
- 	thermal_gov_power_allocator_unregister();
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_=
+sysfs.c
+index 111ec71..10c8fe4 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -289,6 +289,7 @@ available_policies_show(struct device *dev, struct =
+device_attribute *devattr,
+ 	return thermal_build_list_of_policies(buf);
  }
- 
-+/*
-+ * Zone update section: main control loop applied to each zone while monitoring
-+ *
-+ * in polling mode. The monitoring is done using a workqueue.
-+ * Same update may be done on a zone by calling thermal_zone_device_update().
-+ *
-+ * An update means:
-+ * - Non-critical trips will invoke the governor responsible for that zone;
-+ * - Hot trips will produce a notification to userspace;
-+ * - Critical trip point will cause a system shutdown.
-+ */
- static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
- 					    int delay)
- {
--- 
+=20
++#if (IS_ENABLED(CONFIG_THERMAL_EMULATION))
+ static ssize_t
+ emul_temp_store(struct device *dev, struct device_attribute *attr,
+ 		const char *buf, size_t count)
+@@ -313,6 +314,8 @@ emul_temp_store(struct device *dev, struct device_a=
+ttribute *attr,
+=20
+ 	return ret ? ret : count;
+ }
++static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
++#endif
+=20
+ static ssize_t
+ sustainable_power_show(struct device *dev, struct device_attribute *de=
+vattr,
+@@ -392,7 +395,6 @@ create_s32_tzp_attr(offset);
+  */
+ static DEVICE_ATTR(type, 0444, type_show, NULL);
+ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+-static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+ static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_stor=
+e);
+ static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_sho=
+w, NULL);
+ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_p=
+ower_show,
+--=20
 2.1.4
-
