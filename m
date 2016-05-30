@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv3 31/48] thermal: core: move bind_cdev() to where it is used
-Date: Mon, 30 May 2016 15:16:07 -0700
-Message-ID: <1464646584-14322-32-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv3 34/48] thermal: core: move __bind() to where it is used
+Date: Mon, 30 May 2016 15:16:10 -0700
+Message-ID: <1464646584-14322-35-git-send-email-edubezval@gmail.com>
 References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
@@ -17,102 +17,92 @@ Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 76 +++++++++++++++++++++---------------------
- 1 file changed, 38 insertions(+), 38 deletions(-)
+ drivers/thermal/thermal_core.c | 66 +++++++++++++++++++++---------------------
+ 1 file changed, 33 insertions(+), 33 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 75b7854..e0ebf9f 100644
+index 59fe92d..460220c 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -319,44 +319,6 @@ static void __bind(struct thermal_zone_device *tz, int mask,
- 	}
+@@ -286,39 +286,6 @@ static void thermal_unregister_governors(void)
+ 	thermal_gov_power_allocator_unregister();
  }
  
--static void bind_cdev(struct thermal_cooling_device *cdev)
+-static void print_bind_err_msg(struct thermal_zone_device *tz,
+-			       struct thermal_cooling_device *cdev, int ret)
 -{
--	int i, ret;
--	const struct thermal_zone_params *tzp;
--	struct thermal_zone_device *pos = NULL;
--
--	mutex_lock(&thermal_list_lock);
--
--	list_for_each_entry(pos, &thermal_tz_list, node) {
--		if (!pos->tzp && !pos->ops->bind)
--			continue;
--
--		if (pos->ops->bind) {
--			ret = pos->ops->bind(pos, cdev);
--			if (ret)
--				print_bind_err_msg(pos, cdev, ret);
--			continue;
--		}
--
--		tzp = pos->tzp;
--		if (!tzp || !tzp->tbp)
--			continue;
--
--		for (i = 0; i < tzp->num_tbps; i++) {
--			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
--				continue;
--			if (tzp->tbp[i].match(pos, cdev))
--				continue;
--			tzp->tbp[i].cdev = cdev;
--			__bind(pos, tzp->tbp[i].trip_mask, cdev,
--			       tzp->tbp[i].binding_limits,
--			       tzp->tbp[i].weight);
--		}
--	}
--
--	mutex_unlock(&thermal_list_lock);
+-	dev_err(&tz->device, "binding zone %s with cdev %s failed:%d\n",
+-		tz->type, cdev->type, ret);
 -}
 -
- static void bind_tz(struct thermal_zone_device *tz)
+-static void __bind(struct thermal_zone_device *tz, int mask,
+-		   struct thermal_cooling_device *cdev,
+-		   unsigned long *limits,
+-		   unsigned int weight)
+-{
+-	int i, ret;
+-
+-	for (i = 0; i < tz->trips; i++) {
+-		if (mask & (1 << i)) {
+-			unsigned long upper, lower;
+-
+-			upper = THERMAL_NO_LIMIT;
+-			lower = THERMAL_NO_LIMIT;
+-			if (limits) {
+-				lower = limits[i * 2];
+-				upper = limits[i * 2 + 1];
+-			}
+-			ret = thermal_zone_bind_cooling_device(tz, i, cdev,
+-							       upper, lower,
+-							       weight);
+-			if (ret)
+-				print_bind_err_msg(tz, cdev, ret);
+-		}
+-	}
+-}
+-
+ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
+ 					    int delay)
  {
- 	int i, ret;
-@@ -882,6 +844,44 @@ static struct class thermal_class = {
+@@ -804,6 +771,39 @@ static struct class thermal_class = {
  	.dev_release = thermal_release,
  };
  
-+static void bind_cdev(struct thermal_cooling_device *cdev)
++static void print_bind_err_msg(struct thermal_zone_device *tz,
++			       struct thermal_cooling_device *cdev, int ret)
 +{
-+	int i, ret;
-+	const struct thermal_zone_params *tzp;
-+	struct thermal_zone_device *pos = NULL;
-+
-+	mutex_lock(&thermal_list_lock);
-+
-+	list_for_each_entry(pos, &thermal_tz_list, node) {
-+		if (!pos->tzp && !pos->ops->bind)
-+			continue;
-+
-+		if (pos->ops->bind) {
-+			ret = pos->ops->bind(pos, cdev);
-+			if (ret)
-+				print_bind_err_msg(pos, cdev, ret);
-+			continue;
-+		}
-+
-+		tzp = pos->tzp;
-+		if (!tzp || !tzp->tbp)
-+			continue;
-+
-+		for (i = 0; i < tzp->num_tbps; i++) {
-+			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
-+				continue;
-+			if (tzp->tbp[i].match(pos, cdev))
-+				continue;
-+			tzp->tbp[i].cdev = cdev;
-+			__bind(pos, tzp->tbp[i].trip_mask, cdev,
-+			       tzp->tbp[i].binding_limits,
-+			       tzp->tbp[i].weight);
-+		}
-+	}
-+
-+	mutex_unlock(&thermal_list_lock);
++	dev_err(&tz->device, "binding zone %s with cdev %s failed:%d\n",
++		tz->type, cdev->type, ret);
 +}
 +
- /**
-  * __thermal_cooling_device_register() - register a new thermal cooling device
-  * @np:		a pointer to a device tree node.
++static void __bind(struct thermal_zone_device *tz, int mask,
++		   struct thermal_cooling_device *cdev,
++		   unsigned long *limits,
++		   unsigned int weight)
++{
++	int i, ret;
++
++	for (i = 0; i < tz->trips; i++) {
++		if (mask & (1 << i)) {
++			unsigned long upper, lower;
++
++			upper = THERMAL_NO_LIMIT;
++			lower = THERMAL_NO_LIMIT;
++			if (limits) {
++				lower = limits[i * 2];
++				upper = limits[i * 2 + 1];
++			}
++			ret = thermal_zone_bind_cooling_device(tz, i, cdev,
++							       upper, lower,
++							       weight);
++			if (ret)
++				print_bind_err_msg(tz, cdev, ret);
++		}
++	}
++}
++
+ static void bind_cdev(struct thermal_cooling_device *cdev)
+ {
+ 	int i, ret;
 -- 
 2.1.4
