@@ -1,53 +1,43 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 39/40] thermal: core: add a comment describing the device management section
-Date: Mon, 30 May 2016 14:27:58 -0700
-Message-ID: <1464643679-2733-40-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 38/40] thermal: core: add a comment describing the power actor section
+Date: Mon, 30 May 2016 14:27:57 -0700
+Message-ID: <1464643679-2733-39-git-send-email-edubezval@gmail.com>
 References: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33008 "EHLO
-	mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423402AbcE3V3Y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 17:29:24 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-comment describing the section with function to handle
-registration, unregistration, binding, and unbinding of
-thermal devices.
+Simply marking the power actor section and adding a
+comment describing it.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/thermal/thermal_core.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 5ce6504..98176aa 100644
+index 063fb15..5ce6504 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -581,8 +581,15 @@ void thermal_zone_device_unbind_exception(struct thermal_zone_device *tz,
- 	mutex_unlock(&thermal_list_lock);
+@@ -456,6 +456,13 @@ static void thermal_zone_device_check(struct work_struct *work)
+ 	thermal_zone_device_update(tz);
  }
  
--/* Device management */
--
 +/*
-+ * Device management section: cooling devices, zones devices, and binding
++ * Power actor section: interface to power actors to estimate power
 + *
-+ * Set of functions provided by the thermal core for:
-+ * - cooling devices lifecycle: registration, unregistration,
-+ *				binding, and unbinding.
-+ * - thermal zone devices lifecycle: registration, unregistration,
-+ *				     binding, and unbinding.
++ * Set of functions used to interact to cooling devices that know
++ * how to estimate their devices power consumption.
 + */
- static int get_idr(struct idr *idr, struct mutex *lock, int *id)
- {
- 	int ret;
++
+ /**
+  * power_actor_get_max_power() - get the maximum power that a cdev can consume
+  * @cdev:	pointer to &thermal_cooling_device
 -- 
 2.1.4
-
