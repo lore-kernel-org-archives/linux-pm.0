@@ -1,48 +1,49 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2 0/5] PM / Domains / Runtime: Optimize device system PM when using genpd
-Date: Mon, 30 May 2016 11:33:10 +0200
-Message-ID: <1464600795-26307-1-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v2 2/5] PM / Runtime: Prevent re-resuming devices in pm_runtime_force_resume()
+Date: Mon, 30 May 2016 11:33:12 +0200
+Message-ID: <1464600795-26307-3-git-send-email-ulf.hansson@linaro.org>
+References: <1464600795-26307-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f53.google.com ([209.85.215.53]:36262 "EHLO
-	mail-lf0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754307AbcE3JdY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 05:33:24 -0400
-Received: by mail-lf0-f53.google.com with SMTP id b73so47338647lfb.3
-        for <linux-pm@vger.kernel.org>; Mon, 30 May 2016 02:33:23 -0700 (PDT)
+Received: from mail-lf0-f42.google.com ([209.85.215.42]:36277 "EHLO
+	mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754307AbcE3Jd1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 05:33:27 -0400
+Received: by mail-lf0-f42.google.com with SMTP id b73so47339293lfb.3
+        for <linux-pm@vger.kernel.org>; Mon, 30 May 2016 02:33:27 -0700 (PDT)
+In-Reply-To: <1464600795-26307-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
 Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-The main goal of this series is to avoid unnecessary operations of devices
-during the system PM suspend/resume path, especially when using genpd.
+If the runtime PM status of the device isn't RPM_SUSPENDED, prevent the
+pm_runtime_force_resume() to call the ->runtime_resume() callback for the
+device, as it's not the expected behaviour from the subsystem/driver.
 
-For example, we want to avoid to have genpd to unconditionally runtime resume
-devices in the system PM prepare phase. That also means that in most cases a
-runtime suspended device can remain in such state, during the system PM suspend
-sequence.
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
 
-Moreover, we don't want to unconditionally wake up all devices during the system
-PM resume sequence, but instead defer that to be done when devices are actually
-going to be used.
+Changes in v2:
+	- Updated changelog.
 
-Note, this series is based upon another posted series (not queued) for genpd:
-[PATCH v3 0/2] PM / Domains: Second step in improving system PM code in genpd
-http://www.spinics.net/lists/dri-devel/msg107207.html
+---
+ drivers/base/power/runtime.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Ulf Hansson (5):
-  PM / Domains: Remove redundant call to pm_request_idle() in genpd
-  PM / Runtime: Prevent re-resuming devices in pm_runtime_force_resume()
-  PM / Domains: Allow runtime PM during system PM phases
-  PM / Domains: Stop/start devices during system PM suspend/resume in
-    genpd
-  PM / Runtime: Defer resuming of the device in
-    pm_runtime_force_resume()
-
- drivers/base/power/domain.c  | 56 ++++++++++++++++++++++++--------------------
- drivers/base/power/runtime.c | 14 +++++++++++
- 2 files changed, 44 insertions(+), 26 deletions(-)
-
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index b746904..09e4eb1 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1506,6 +1506,9 @@ int pm_runtime_force_resume(struct device *dev)
+ 		goto out;
+ 	}
+ 
++	if (!pm_runtime_status_suspended(dev))
++		goto out;
++
+ 	ret = pm_runtime_set_active(dev);
+ 	if (ret)
+ 		goto out;
 -- 
 1.9.1
 
