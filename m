@@ -1,33 +1,89 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 20/31] thermal: core: introduce thermal_helpers.c
-Date: Mon, 30 May 2016 09:05:09 -0700
-Message-ID: <20160530160507.GA4751@localhost.localdomain>
-References: <1462341765-13268-1-git-send-email-edubezval@gmail.com>
- <1462341765-13268-21-git-send-email-edubezval@gmail.com>
- <1463491216.29980.36.camel@rzhang1-mobl4>
- <20160517144044.GB14550@localhost.localdomain>
+From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
+	runtime PM
+Date: Mon, 30 May 2016 18:13:51 +0200
+Message-ID: <20160530161351.GA1355@al>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+ <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+ <20160525135535.GN1789@lahna.fi.intel.com>
+ <20160527111037.GA1436@al>
+ <20160530095709.GK1789@lahna.fi.intel.com>
+ <20160530122010.GB1149@al>
+ <20160530130909.GA1743@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:33506 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161564AbcE3QFO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 12:05:14 -0400
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20160517144044.GB14550@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160530130909.GA1743-3PARRvDOhMZrdx17CPfAsdBPR1lH4CV8@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, May 17, 2016 at 07:40:45AM -0700, Eduardo Valentin wrote:
-> > 
-> > Please remove these spaces.
-> > BTW, there are also some warnings in the other patches, please fix the
-> > checkpatch warnings/errors.
-
-All the checkpatch complaints in this series are due to existing
-problems. As you can see, these are present on patches that are moving
-code (as most of this series are). But I can of course fix the errors
-before moving the code. Will include the fixes in the next version.
-
+T24gTW9uLCBNYXkgMzAsIDIwMTYgYXQgMDQ6MDk6MDlQTSArMDMwMCwgTWlrYSBXZXN0ZXJiZXJn
+IHdyb3RlOgouLi4KPiA+ID4gPiA+ID4gKwo+ID4gPiA+ID4gPiArCWlmICghcGFyZW50X3BkZXYp
+Cj4gPiA+ID4gPiA+ICsJCXJldHVybiBmYWxzZTsKPiA+ID4gPiA+ID4gKwo+ID4gPiA+ID4gPiAr
+CWFkID0gQUNQSV9DT01QQU5JT04oJnBhcmVudF9wZGV2LT5kZXYpOwo+ID4gPiA+ID4gPiArCWlm
+ICghYWQpCj4gPiA+ID4gPiA+ICsJCXJldHVybiBmYWxzZTsKPiA+ID4gPiA+ID4gKwo+ID4gPiA+
+ID4gPiArCXJldHVybiBhZC0+cG93ZXIuZmxhZ3MucG93ZXJfcmVzb3VyY2VzOwo+ID4gPiA+ID4g
+Cj4gPiA+ID4gPiBJcyB0aGlzIHN1ZmZpY2llbnQgdG8gdGVsbCBpZiB0aGUgcGFyZW50IGRldmlj
+ZSBoYXMgX1BSMz8gSSB0aG91Z2h0IGl0Cj4gPiA+ID4gPiByZXR1cm5zIHRydWUgaWYgaXQgaGFz
+IHBvd2VyIHJlc291cmNlcyBpbiBnZW5lcmFsLCBub3QgbmVjZXNzYXJpbHkgX1BSMy4KPiA+ID4g
+PiA+IAo+ID4gPiA+ID4gT3RoZXJ3aXNlIHRoaXMgbG9va3Mgb2theSB0byBtZS4KPiA+ID4gPiAK
+PiA+ID4gPiBJdCBpcyBpbmRlZWQgc2V0IHdoZW5ldmVyIHRoZXJlIGlzIGFueSBfUFJ4IG1ldGhv
+ZC4gSSB3b25kZXIgaWYgaXQgaXMKPiA+ID4gPiBhcHByb3ByaWF0ZSB0byBhY2Nlc3MgZmllbGRz
+IGRpcmVjdGx5IGxpa2UgdGhpcywgcGVyaGFwcyB0aGlzIHdvdWxkIGJlCj4gPiA+ID4gbW9yZSBh
+Y2N1cmF0ZSAoYmFzZWQgb24gZGV2aWNlX3BtLmMpOgo+ID4gPiA+IAo+ID4gPiA+ICAgICAvKiBD
+aGVjayB3aGV0aGVyIHRoZSBfUFIzIG1ldGhvZCBpcyBhdmFpbGFibGUuICovCj4gPiA+ID4gICAg
+IHJldHVybiBhZGV2LT5wb3dlci5zdGF0ZXNbQUNQSV9TVEFURV9EM19DT0xEXS5mbGFncy52YWxp
+ZDsKPiA+ID4gPiAKPiA+ID4gPiBJIGFtIGFsc28gY29uc2lkZXJpbmcgYWRkaW5nIGEgY2hlY2sg
+aW4gY2FzZSB0aGUgcGNpZXBvcnQgZHJpdmVyIGRvZXMKPiA+ID4gPiBub3Qgc3VwcG9ydCBEM2Nv
+bGQgdmlhIHJ1bnRpbWUgUE0sIHdoYXQgZG8geW91IHRoaW5rIG9mIHRoaXM/Cj4gPiA+ID4gCj4g
+PiA+ID4gICAgIGlmICghcGFyZW50X3BkZXYpCj4gPiA+ID4gICAgICAgICByZXR1cm4gZmFsc2U7
+Cj4gPiA+ID4gICAgIC8qIElmIHRoZSBQQ0llIHBvcnQgZG9lcyBub3Qgc3VwcG9ydCBEM2NvbGQg
+dmlhIHJ1bnRpbWUgUE0sIGFsbG93IGEKPiA+ID4gPiAgICAgICogZmFsbGJhY2sgdG8gdGhlIE9w
+dGltdXMgRFNNIG1ldGhvZCB0byBwdXQgdGhlIGRldmljZSBpbiBEM2NvbGQuICovCj4gPiA+ID4g
+ICAgIGlmIChwYXJlbnRfcGRldi0+bm9fZDNjb2xkKQo+ID4gPiA+ICAgICAgICAgcmV0dXJuIGZh
+bHNlOwo+ID4gPiA+IAo+ID4gPiA+IFRoaXMgaXMgbmVlZGVkIHRvIGF2b2lkIHRoZSByZWdyZXNz
+aW9uIHJlcG9ydGVkIGluIHRoZSBjb3ZlciBsZXR0ZXIsIGJ1dAo+ID4gPiA+IGFsc28gYWxsb3dz
+IHByZS0yMDE1IHN5c3RlbXMgdG8gKHN0aWxsKSBoYXZlIHRoZSBEM2NvbGQgcG9zc2liaWxpdHku
+Cj4gPiA+IAo+ID4gPiBUaGUgX0RTTSBtZXRob2Qgd2l0aCAwIGFzIGluZGV4IHBhcmFtZXRlciBz
+aG91bGQgcmV0dXJuIGEgYml0IGZpZWxkCj4gPiA+IHRlbGxpbmcgd2hpY2ggZnVuY3Rpb25zIGFy
+ZSBzdXBwb3J0ZWQuIFNhbmUgQklPUyBkaXNhYmxlcyB0aGF0Cj4gPiA+IHBhcnRpY3VsYXIgZnVu
+Y3Rpb24gaWYgaXQgZGV0ZWN0cyBXaW5kb3dzIDggYW5kIG5ld2VyLiBIYXZlIHlvdSBjaGVja2Vk
+Cj4gPiA+IGlmIHRoYXQncyB0aGUgY2FzZT8KPiA+ID4gCj4gPiA+IFRoZW4geW91IGNhbiBjYWxs
+IF9EU00gb25seSBpZiBpdCBpcyBzdXBwb3J0ZWQgYW5kIG90aGVyd2lzZSBleHBlY3QgdGhlCj4g
+PiA+IHBhcmVudCBkZXZpY2UncyBwb3dlciByZXNvdXJjZXMgdG8gdHVybiBvZmYgcG93ZXIgd2hl
+biBydW50aW1lCj4gPiA+IHN1c3BlbmRlZC4KPiA+IAo+ID4gVGhlIF9EU00gbWV0aG9kcyAoZm9y
+IHRoZSBOdmlkaWEgZGV2aWNlKSBhcmUgb2Z0ZW4gc3RpbGwgaW5jbHVkZWQgYW5kCj4gPiBmdW5j
+dGlvbnMgYXJlIHJlcG9ydGVkIGFzIHN1cHBvcnRlZC4gSSBndWVzcyB0aGF0IHZlbmRvcnMganVz
+dCBjaGVjawo+ID4gd2hldGhlciBpdCBpcyB3b3JraW5nIGFuZCBkbyBub3QgYm90aGVyIHJlbW92
+aW5nIGxlZ2FjeSBmdW5jdGlvbnMuIFRoZQo+ID4gQWNlciBjYXNlIGJlbG93IHNlZW1zIGV4Y2Vw
+dGlvbmFsLgo+ID4gCj4gPiBJIHN1Z2dlc3RlZCB0aGUgbm9fZDNjb2xkIGNoZWNrIHN1Y2ggdGhh
+dCBEU00gY2FuIHN0aWxsIGJlIGNhbGxlZCBldmVuCj4gPiB0aG91Z2ggdGhlIHJ1bnRpbWUgUE0g
+b24gdGhlIFBDSWUgcG9ydCBkb2VzIG5vdGhpbmcuCj4gCj4gU29tZWhvdyBpdCBkb2VzIG5vdCBm
+ZWVsIHJpZ2h0IHRvIHBva2UgcGFyZW50IGRldmljZSdzIGZpZWxkcyBkaXJlY3RseS4KPiAKPiBX
+aGF0IGlmIHlvdSBqdXN0IGNoZWNrIGlmIGl0IGhhcyB0aGUgbWV0aG9kIGxpa2U6Cj4gCj4gCWJv
+b2wgbm9fZHNtID0gYWNwaV9oYXNfbWV0aG9kKHBhcmVudF9hZGV2LT5oYW5kbGUsICJfUFIzIik7
+Cj4gCj4gVGhhdCBzaG91bGQgZm9sbG93IHdoYXQgV2luZG93cyBpcyBkb2luZy4KCkNoZWNraW5n
+IGZvciBfUFIzIHdhcyB0aGUgaW50ZW50aW9uLCBidXQgaXQgc2VlbXMgdGhhdCB0aGUgQUNQSSBj
+b3JlCmRvZXMgbm90IHJlYWxseSBzdG9yZSBpdCBzb21ld2hlcmUuIFlvdXIgY2hlY2sgc2hvdWxk
+IGJlIHNpbXBsZSBlbm91Z2gsCkknbGwgdXNlIHRoYXQgaW4gdGhlIG5leHQgdmVyc2lvbi4KCkRv
+IHlvdSBoYXZlIGFueSBzdWdnZXN0aW9ucyBmb3IgdGhlIGNhc2Ugd2hlcmUgdGhlIHBjaWVwb3J0
+IGRyaXZlcgpyZWZ1c2VzIHRvIHB1dCB0aGUgYnJpZGdlIGluIEQzIChiZWNhdXNlIHRoZSBCSU9T
+IGlzIHRvbyBvbGQpPyBJbiB0aGF0CmNhc2UgdGhlIG5vdXZlYXUgZHJpdmVyIG5lZWRzIHRvIGZh
+bGxiYWNrIHRvIHRoZSBEU00gbWV0aG9kIChidXQgbm90CndoZW4gcnVudGltZSBQTSBpcyBkZWxp
+YmVyYXRlbHkgZGlzYWJsZWQgYnkgd3JpdGluZyBjb250cm9sPW9uKS4KLS0gCktpbmQgcmVnYXJk
+cywKUGV0ZXIgV3UKaHR0cHM6Ly9sZWtlbnN0ZXluLm5sCl9fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4v
+bGlzdGluZm8vbm91dmVhdQo=
