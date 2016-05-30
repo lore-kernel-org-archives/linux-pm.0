@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 27/40] thermal: core: group functions related to governor handling
-Date: Mon, 30 May 2016 14:27:46 -0700
-Message-ID: <1464643679-2733-28-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 26/40] thermal: core: introduce thermal_helpers.c
+Date: Mon, 30 May 2016 14:27:45 -0700
+Message-ID: <1464643679-2733-27-git-send-email-edubezval@gmail.com>
 References: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464643679-2733-1-git-send-email-edubezval@gmail.com>
@@ -10,201 +10,327 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Organize thermal core code to group the functions
-handling with governor manipulation in one single section.
+Here we have a simple code organization. This patch moves
+functions that do not need to handle thermal core internal
+data structure to thermal_helpers.c file.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 153 +++++++++++++++++++++--------------------
- 1 file changed, 80 insertions(+), 73 deletions(-)
+ drivers/thermal/Makefile          |   3 +-
+ drivers/thermal/thermal_core.c    | 118 -------------------------------
+ drivers/thermal/thermal_helpers.c | 144 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 146 insertions(+), 119 deletions(-)
+ create mode 100644 drivers/thermal/thermal_helpers.c
 
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 95ccb75..cded802 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -3,7 +3,8 @@
+ #
+ 
+ obj-$(CONFIG_THERMAL)		+= thermal_sys.o
+-thermal_sys-y			+= thermal_core.o thermal_sysfs.o
++thermal_sys-y			+= thermal_core.o thermal_sysfs.o \
++					thermal_helpers.o
+ 
+ # interface to/from other layers providing sensors
+ thermal_sys-$(CONFIG_THERMAL_HWMON)		+= thermal_hwmon.o
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 1629613..16d43ee 100644
+index 37d29f3..1629613 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -64,6 +64,13 @@ static atomic_t in_suspend;
- 
- static struct thermal_governor *def_governor;
- 
-+/*
-+ * Governor section: set of functions to handle thermal governors
-+ *
-+ * Functions to help in the life cycle of thermal governors within
-+ * the thermal core and by the thermal governor code.
-+ */
-+
- static struct thermal_governor *__find_governor(const char *name)
- {
- 	struct thermal_governor *pos;
-@@ -206,6 +213,79 @@ exit:
- 	return;
+@@ -230,48 +230,6 @@ static void release_idr(struct idr *idr, struct mutex *lock, int id)
+ 		mutex_unlock(lock);
  }
  
-+int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
-+				   char *policy)
-+{
-+	struct thermal_governor *gov;
-+	int ret = -EINVAL;
-+
-+	mutex_lock(&thermal_governor_lock);
-+	mutex_lock(&tz->lock);
-+
-+	gov = __find_governor(strim(policy));
-+	if (!gov)
-+		goto exit;
-+
-+	ret = thermal_set_governor(tz, gov);
-+
-+exit:
-+	mutex_unlock(&tz->lock);
-+	mutex_unlock(&thermal_governor_lock);
-+
-+	return ret;
-+}
-+
-+int thermal_build_list_of_policies(char *buf)
-+{
-+	struct thermal_governor *pos;
-+	ssize_t count = 0;
-+	ssize_t size = PAGE_SIZE;
-+
-+	mutex_lock(&thermal_governor_lock);
-+
-+	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
-+		size = PAGE_SIZE - count;
-+		count += scnprintf(buf + count, size, "%s ", pos->name);
-+	}
-+	count += scnprintf(buf + count, size, "\n");
-+
-+	mutex_unlock(&thermal_governor_lock);
-+
-+	return count;
-+}
-+
-+static int __init thermal_register_governors(void)
-+{
-+	int result;
-+
-+	result = thermal_gov_step_wise_register();
-+	if (result)
-+		return result;
-+
-+	result = thermal_gov_fair_share_register();
-+	if (result)
-+		return result;
-+
-+	result = thermal_gov_bang_bang_register();
-+	if (result)
-+		return result;
-+
-+	result = thermal_gov_user_space_register();
-+	if (result)
-+		return result;
-+
-+	return thermal_gov_power_allocator_register();
-+}
-+
-+static void thermal_unregister_governors(void)
-+{
-+	thermal_gov_step_wise_unregister();
-+	thermal_gov_fair_share_unregister();
-+	thermal_gov_bang_bang_unregister();
-+	thermal_gov_user_space_unregister();
-+	thermal_gov_power_allocator_unregister();
-+}
-+
- static int get_idr(struct idr *idr, struct mutex *lock, int *id)
- {
- 	int ret;
-@@ -610,47 +690,6 @@ void thermal_zone_device_unbind_exception(struct thermal_zone_device *tz,
- 	mutex_unlock(&thermal_list_lock);
- }
- 
--int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
--				   char *policy)
+-int get_tz_trend(struct thermal_zone_device *tz, int trip)
 -{
--	struct thermal_governor *gov;
--	int ret = -EINVAL;
+-	enum thermal_trend trend;
 -
--	mutex_lock(&thermal_governor_lock);
+-	if (tz->emul_temperature || !tz->ops->get_trend ||
+-	    tz->ops->get_trend(tz, trip, &trend)) {
+-		if (tz->temperature > tz->last_temperature)
+-			trend = THERMAL_TREND_RAISING;
+-		else if (tz->temperature < tz->last_temperature)
+-			trend = THERMAL_TREND_DROPPING;
+-		else
+-			trend = THERMAL_TREND_STABLE;
+-	}
+-
+-	return trend;
+-}
+-EXPORT_SYMBOL(get_tz_trend);
+-
+-struct thermal_instance *
+-get_thermal_instance(struct thermal_zone_device *tz,
+-		     struct thermal_cooling_device *cdev, int trip)
+-{
+-	struct thermal_instance *pos = NULL;
+-	struct thermal_instance *target_instance = NULL;
+-
 -	mutex_lock(&tz->lock);
+-	mutex_lock(&cdev->lock);
 -
--	gov = __find_governor(strim(policy));
--	if (!gov)
+-	list_for_each_entry(pos, &tz->thermal_instances, tz_node) {
+-		if (pos->tz == tz && pos->trip == trip && pos->cdev == cdev) {
+-			target_instance = pos;
+-			break;
+-		}
+-	}
+-
+-	mutex_unlock(&cdev->lock);
+-	mutex_unlock(&tz->lock);
+-
+-	return target_instance;
+-}
+-EXPORT_SYMBOL(get_thermal_instance);
+-
+ static void print_bind_err_msg(struct thermal_zone_device *tz,
+ 			struct thermal_cooling_device *cdev, int ret)
+ {
+@@ -472,55 +430,6 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+ 	monitor_thermal_zone(tz);
+ }
+ 
+-/**
+- * thermal_zone_get_temp() - returns the temperature of a thermal zone
+- * @tz: a valid pointer to a struct thermal_zone_device
+- * @temp: a valid pointer to where to store the resulting temperature.
+- *
+- * When a valid thermal zone reference is passed, it will fetch its
+- * temperature and fill @temp.
+- *
+- * Return: On success returns 0, an error code otherwise
+- */
+-int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+-{
+-	int ret = -EINVAL;
+-	int count;
+-	int crit_temp = INT_MAX;
+-	enum thermal_trip_type type;
+-
+-	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
 -		goto exit;
 -
--	ret = thermal_set_governor(tz, gov);
+-	mutex_lock(&tz->lock);
 -
--exit:
+-	ret = tz->ops->get_temp(tz, temp);
+-
+-	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
+-		for (count = 0; count < tz->trips; count++) {
+-			ret = tz->ops->get_trip_type(tz, count, &type);
+-			if (!ret && type == THERMAL_TRIP_CRITICAL) {
+-				ret = tz->ops->get_trip_temp(tz, count,
+-						&crit_temp);
+-				break;
+-			}
+-		}
+-
+-		/*
+-		 * Only allow emulating a temperature when the real temperature
+-		 * is below the critical temperature so that the emulation code
+-		 * cannot hide critical conditions.
+-		 */
+-		if (!ret && *temp < crit_temp)
+-			*temp = tz->emul_temperature;
+-	}
+-
 -	mutex_unlock(&tz->lock);
--	mutex_unlock(&thermal_governor_lock);
--
+-exit:
 -	return ret;
 -}
+-EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
 -
--int thermal_build_list_of_policies(char *buf)
--{
--	struct thermal_governor *pos;
--	ssize_t count = 0;
--	ssize_t size = PAGE_SIZE;
--
--	mutex_lock(&thermal_governor_lock);
--
--	list_for_each_entry(pos, &thermal_governor_list, governor_list) {
--		size = PAGE_SIZE - count;
--		count += scnprintf(buf + count, size, "%s ", pos->name);
--	}
--	count += scnprintf(buf + count, size, "\n");
--
--	mutex_unlock(&thermal_governor_lock);
--
--	return count;
--}
--
- /* Device management */
- 
- /**
-@@ -1386,38 +1425,6 @@ static inline int genetlink_init(void) { return 0; }
- static inline void genetlink_exit(void) {}
- #endif /* !CONFIG_NET */
- 
--static int __init thermal_register_governors(void)
--{
--	int result;
--
--	result = thermal_gov_step_wise_register();
--	if (result)
--		return result;
--
--	result = thermal_gov_fair_share_register();
--	if (result)
--		return result;
--
--	result = thermal_gov_bang_bang_register();
--	if (result)
--		return result;
--
--	result = thermal_gov_user_space_register();
--	if (result)
--		return result;
--
--	return thermal_gov_power_allocator_register();
--}
--
--static void thermal_unregister_governors(void)
--{
--	thermal_gov_step_wise_unregister();
--	thermal_gov_fair_share_unregister();
--	thermal_gov_bang_bang_unregister();
--	thermal_gov_user_space_unregister();
--	thermal_gov_power_allocator_unregister();
--}
--
- static int thermal_pm_notify(struct notifier_block *nb,
- 				unsigned long mode, void *_unused)
+ static void update_temperature(struct thermal_zone_device *tz)
  {
+ 	int temp, ret;
+@@ -1120,33 +1029,6 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+ }
+ EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
+ 
+-void thermal_cdev_update(struct thermal_cooling_device *cdev)
+-{
+-	struct thermal_instance *instance;
+-	unsigned long target = 0;
+-
+-	/* cooling device is updated*/
+-	if (cdev->updated)
+-		return;
+-
+-	mutex_lock(&cdev->lock);
+-	/* Make sure cdev enters the deepest cooling state */
+-	list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) {
+-		dev_dbg(&cdev->device, "zone%d->target=%lu\n",
+-			instance->tz->id, instance->target);
+-		if (instance->target == THERMAL_NO_TARGET)
+-			continue;
+-		if (instance->target > target)
+-			target = instance->target;
+-	}
+-	mutex_unlock(&cdev->lock);
+-	cdev->ops->set_cur_state(cdev, target);
+-	cdev->updated = true;
+-	trace_cdev_update(cdev, target);
+-	dev_dbg(&cdev->device, "set to state %lu\n", target);
+-}
+-EXPORT_SYMBOL(thermal_cdev_update);
+-
+ /**
+  * thermal_notify_framework - Sensor drivers use this API to notify framework
+  * @tz:		thermal zone device
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+new file mode 100644
+index 0000000..5e1c160
+--- /dev/null
++++ b/drivers/thermal/thermal_helpers.c
+@@ -0,0 +1,144 @@
++/*
++ *  thermal_helpers.c - helper functions to handle thermal devices
++ *
++ *  Copyright (C) 2016 Eduardo Valentin <edubezval@gmail.com>
++ *
++ *  Highly based on original thermal_core.c
++ *  Copyright (C) 2008 Intel Corp
++ *  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
++ *  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/sysfs.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++
++#include <trace/events/thermal.h>
++
++#include "thermal_core.h"
++
++int get_tz_trend(struct thermal_zone_device *tz, int trip)
++{
++	enum thermal_trend trend;
++
++	if (tz->emul_temperature || !tz->ops->get_trend ||
++	    tz->ops->get_trend(tz, trip, &trend)) {
++		if (tz->temperature > tz->last_temperature)
++			trend = THERMAL_TREND_RAISING;
++		else if (tz->temperature < tz->last_temperature)
++			trend = THERMAL_TREND_DROPPING;
++		else
++			trend = THERMAL_TREND_STABLE;
++	}
++
++	return trend;
++}
++EXPORT_SYMBOL(get_tz_trend);
++
++struct thermal_instance *
++get_thermal_instance(struct thermal_zone_device *tz,
++		     struct thermal_cooling_device *cdev, int trip)
++{
++	struct thermal_instance *pos = NULL;
++	struct thermal_instance *target_instance = NULL;
++
++	mutex_lock(&tz->lock);
++	mutex_lock(&cdev->lock);
++
++	list_for_each_entry(pos, &tz->thermal_instances, tz_node) {
++		if (pos->tz == tz && pos->trip == trip && pos->cdev == cdev) {
++			target_instance = pos;
++			break;
++		}
++	}
++
++	mutex_unlock(&cdev->lock);
++	mutex_unlock(&tz->lock);
++
++	return target_instance;
++}
++EXPORT_SYMBOL(get_thermal_instance);
++
++/**
++ * thermal_zone_get_temp() - returns the temperature of a thermal zone
++ * @tz: a valid pointer to a struct thermal_zone_device
++ * @temp: a valid pointer to where to store the resulting temperature.
++ *
++ * When a valid thermal zone reference is passed, it will fetch its
++ * temperature and fill @temp.
++ *
++ * Return: On success returns 0, an error code otherwise
++ */
++int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
++{
++	int ret = -EINVAL;
++	int count;
++	int crit_temp = INT_MAX;
++	enum thermal_trip_type type;
++
++	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
++		goto exit;
++
++	mutex_lock(&tz->lock);
++
++	ret = tz->ops->get_temp(tz, temp);
++
++	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
++		for (count = 0; count < tz->trips; count++) {
++			ret = tz->ops->get_trip_type(tz, count, &type);
++			if (!ret && type == THERMAL_TRIP_CRITICAL) {
++				ret = tz->ops->get_trip_temp(tz, count,
++						&crit_temp);
++				break;
++			}
++		}
++
++		/*
++		 * Only allow emulating a temperature when the real temperature
++		 * is below the critical temperature so that the emulation code
++		 * cannot hide critical conditions.
++		 */
++		if (!ret && *temp < crit_temp)
++			*temp = tz->emul_temperature;
++	}
++
++	mutex_unlock(&tz->lock);
++exit:
++	return ret;
++}
++EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
++
++void thermal_cdev_update(struct thermal_cooling_device *cdev)
++{
++	struct thermal_instance *instance;
++	unsigned long target = 0;
++
++	/* cooling device is updated*/
++	if (cdev->updated)
++		return;
++
++	mutex_lock(&cdev->lock);
++	/* Make sure cdev enters the deepest cooling state */
++	list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) {
++		dev_dbg(&cdev->device, "zone%d->target=%lu\n",
++			instance->tz->id, instance->target);
++		if (instance->target == THERMAL_NO_TARGET)
++			continue;
++		if (instance->target > target)
++			target = instance->target;
++	}
++	mutex_unlock(&cdev->lock);
++	cdev->ops->set_cur_state(cdev, target);
++	cdev->updated = true;
++	trace_cdev_update(cdev, target);
++	dev_dbg(&cdev->device, "set to state %lu\n", target);
++}
++EXPORT_SYMBOL(thermal_cdev_update);
 -- 
 2.1.4
