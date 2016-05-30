@@ -1,11 +1,8 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv3 40/48] thermal: sysfs: remove symbols of emul_temp when config is disabled
-Date: Mon, 30 May 2016 15:16:16 -0700
-Message-ID: <1464646584-14322-41-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv3 48/48] thermal: sysfs: use kcalloc() instead of kzalloc()
+Date: Mon, 30 May 2016 15:16:24 -0700
+Message-ID: <1464646584-14322-49-git-send-email-edubezval@gmail.com>
 References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -13,61 +10,59 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Remove the following warning:
-In file included from drivers/thermal/thermal_sysfs.c:19:0:
-include/linux/device.h:575:26: warning: =E2=80=98dev_attr_emul_temp=E2=80=
-=99 defined but not used [-Wunused-variable]
-  struct device_attribute dev_attr_##_name =3D __ATTR(_name, _mode, _sh=
-ow, _store)
-                          ^
-drivers/thermal/thermal_sysfs.c:395:8: note: in expansion of macro =E2=80=
-=98DEVICE_ATTR=E2=80=99
-
-when emul temp is disabled at Kconfig.
+Simplify size computation by using kcalloc() for
+allocating memory for arrays.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_sysfs.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/thermal/thermal_sysfs.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_=
-sysfs.c
-index 111ec71..10c8fe4 100644
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index 10c8fe4..d208071 100644
 --- a/drivers/thermal/thermal_sysfs.c
 +++ b/drivers/thermal/thermal_sysfs.c
-@@ -289,6 +289,7 @@ available_policies_show(struct device *dev, struct =
-device_attribute *devattr,
- 	return thermal_build_list_of_policies(buf);
- }
-=20
-+#if (IS_ENABLED(CONFIG_THERMAL_EMULATION))
- static ssize_t
- emul_temp_store(struct device *dev, struct device_attribute *attr,
- 		const char *buf, size_t count)
-@@ -313,6 +314,8 @@ emul_temp_store(struct device *dev, struct device_a=
-ttribute *attr,
-=20
- 	return ret ? ret : count;
- }
-+static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
-+#endif
-=20
- static ssize_t
- sustainable_power_show(struct device *dev, struct device_attribute *de=
-vattr,
-@@ -392,7 +395,6 @@ create_s32_tzp_attr(offset);
+@@ -502,22 +502,25 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
   */
- static DEVICE_ATTR(type, 0444, type_show, NULL);
- static DEVICE_ATTR(temp, 0444, temp_show, NULL);
--static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
- static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_stor=
-e);
- static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_sho=
-w, NULL);
- static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_p=
-ower_show,
---=20
+ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
+ {
+-	int size = sizeof(struct thermal_attr) * tz->trips;
+ 	struct attribute **attrs;
+ 	int indx;
+ 
+-	tz->trip_type_attrs = kzalloc(size, GFP_KERNEL);
++	tz->trip_type_attrs = kcalloc(tz->trips, sizeof(*tz->trip_type_attrs),
++				      GFP_KERNEL);
+ 	if (!tz->trip_type_attrs)
+ 		return -ENOMEM;
+ 
+-	tz->trip_temp_attrs = kzalloc(size, GFP_KERNEL);
++	tz->trip_temp_attrs = kcalloc(tz->trips, sizeof(*tz->trip_temp_attrs),
++				      GFP_KERNEL);
+ 	if (!tz->trip_temp_attrs) {
+ 		kfree(tz->trip_type_attrs);
+ 		return -ENOMEM;
+ 	}
+ 
+ 	if (tz->ops->get_trip_hyst) {
+-		tz->trip_hyst_attrs = kzalloc(size, GFP_KERNEL);
++		tz->trip_hyst_attrs = kcalloc(tz->trips,
++					      sizeof(*tz->trip_hyst_attrs),
++					      GFP_KERNEL);
+ 		if (!tz->trip_hyst_attrs) {
+ 			kfree(tz->trip_type_attrs);
+ 			kfree(tz->trip_temp_attrs);
+@@ -525,7 +528,7 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
+ 		}
+ 	}
+ 
+-	attrs = kzalloc(sizeof(*attrs) * tz->trips * 3, GFP_KERNEL);
++	attrs = kcalloc(tz->trips * 3, sizeof(*attrs), GFP_KERNEL);
+ 	if (!attrs) {
+ 		kfree(tz->trip_type_attrs);
+ 		kfree(tz->trip_temp_attrs);
+-- 
 2.1.4
