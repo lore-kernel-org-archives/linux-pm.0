@@ -1,59 +1,35 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH] cpufreq: Fix incorrect usage of clamp_val()
-Date: Tue, 31 May 2016 11:23:08 -0700
-Message-ID: <20160531182308.GJ9864@graphite.smuckle.net>
-References: <a5c21ebe773d364b49bc5df9c4f69ff2eb181dbb.1464693539.git.viresh.kumar@linaro.org>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: [PATCH 1/3] power_supply: bq27xxx_battery: Fix copy/paste error in header comment
+Date: Tue, 31 May 2016 13:44:58 -0500
+Message-ID: <20160531184500.10871-1-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:36644 "EHLO
-	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751616AbcEaSXM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 14:23:12 -0400
-Received: by mail-pf0-f173.google.com with SMTP id f144so64187250pfa.3
-        for <linux-pm@vger.kernel.org>; Tue, 31 May 2016 11:23:12 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <a5c21ebe773d364b49bc5df9c4f69ff2eb181dbb.1464693539.git.viresh.kumar@linaro.org>
+Received: from arroyo.ext.ti.com ([198.47.19.12]:45882 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751083AbcEaSpF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 31 May 2016 14:45:05 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
+To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>
 
-On Tue, May 31, 2016 at 04:49:42PM +0530, Viresh Kumar wrote:
-> clamp_val() doesn't change anything by itself, rather it returns the
-> clamped value.
-> 
-> Fix it.
-> 
-> Fixes: 0ac587b32f49 ("cpufreq: Use clamp_val() in __cpufreq_driver_target()")
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> Hi Rafael,
-> 
-> Please merge this with the offending commit if you are fine with rebase,
-> else apply this one as well.
-> 
-> Sorry for blindly copying code.
-> 
->  drivers/cpufreq/cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index d0c02a7eec0f..c6a14ba239a2 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1927,7 +1927,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
->  		return -ENODEV;
->  
->  	/* Make sure that target_freq is within supported range */
-> -	clamp_val(target_freq, policy->min, policy->max);
-> +	target_freq = clamp_val(target_freq, policy->min, policy->max);
->  
->  	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
->  		 policy->cpu, target_freq, relation, old_target_freq);
+Signed-off-by: Andrew F. Davis <afd@ti.com>
+---
+ drivers/power/bq27xxx_battery_i2c.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-As mentioned in the other thread cpufreq_driver_fast_switch() has this
-problem as well, might as well fix it in this patch also.
+diff --git a/drivers/power/bq27xxx_battery_i2c.c b/drivers/power/bq27xxx_battery_i2c.c
+index b8f8d3a..85d4ea2 100644
+--- a/drivers/power/bq27xxx_battery_i2c.c
++++ b/drivers/power/bq27xxx_battery_i2c.c
+@@ -1,5 +1,5 @@
+ /*
+- * SCI Reset driver for Keystone based devices
++ * BQ27xxx battery monitor I2C driver
+  *
+  * Copyright (C) 2015 Texas Instruments Incorporated - http://www.ti.com/
+  *	Andrew F. Davis <afd@ti.com>
+-- 
+2.8.3
 
-thanks,
-Steve
