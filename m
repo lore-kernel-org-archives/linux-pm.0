@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 15/15] thermal: sysfs: add comments describing locking strategy
-Date: Mon, 30 May 2016 23:31:36 -0700
-Message-ID: <1464676296-5610-16-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 10/15] thermal: sysfs: lock tz when access tzp properties
+Date: Mon, 30 May 2016 23:31:31 -0700
+Message-ID: <1464676296-5610-11-git-send-email-edubezval@gmail.com>
 References: <1464676296-5610-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464676296-5610-1-git-send-email-edubezval@gmail.com>
@@ -10,63 +10,53 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The locking strategy of sysfs entries in thermal subsystem
-is to hold a lock to serialize access to struct thermal_zone_device
-and struct thermal_cooling_device data. Besides, the respective
-locks will also be held if calls to ops need to be done to fetch
-data or to trigger driver actions.
-
-The exception of the locking strategy are functions called
-during initialization of cdev and tz.
+Lock tz when in user facing sysfs handlers to expose
+tzp properties. This includes changing the macro
+create_s32_tzp_attr(), which is used  in the
+tzp properties:
+k_po, k_pu, k_i, k_d, integral_cutoff, slope, offset.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_sysfs.c | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ drivers/thermal/thermal_sysfs.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index 31314be..743df50 100644
+index 5b08d64..86a77cd 100644
 --- a/drivers/thermal/thermal_sysfs.c
 +++ b/drivers/thermal/thermal_sysfs.c
-@@ -23,7 +23,14 @@
- 
- #include "thermal_core.h"
- 
--/* sys I/F for thermal zone */
-+/*
-+ * sys I/F for thermal zone
-+ *
-+ * Note on locking. The sysfs interface will always first
-+ * lock the zone to serialize data access and ops calls.
-+ * All calls to thermal_core and thermal_helpers are assumed
-+ * to handle locking properly.
-+ */
- 
- static ssize_t
- type_show(struct device *dev, struct device_attribute *attr, char *buf)
-@@ -555,6 +562,9 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
-  * helper function to instantiate sysfs entries for every trip
-  * point and its properties of a struct thermal_zone_device.
-  *
-+ * This function is assumed to be called only during probe,
-+ * and therefore no locking in the thermal zone device is done.
-+ *
-  * Return: 0 on success, the proper error value otherwise.
-  */
- static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
-@@ -770,6 +780,10 @@ static const struct attribute_group *cooling_device_attr_groups[] = {
- 	NULL,
- };
- 
-+/*
-+ * Assumed to be called at the creation of the cooling device
-+ * and for this reason, no locking is done
-+ */
- void thermal_cooling_device_setup_sysfs(struct thermal_cooling_device *cdev)
- {
- 	cdev->device.groups = cooling_device_attr_groups;
+@@ -398,11 +398,16 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
+ 		char *buf)						\
+ 	{								\
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);		\
++	int value;							\
+ 									\
+-	if (tz->tzp)							\
+-		return sprintf(buf, "%d\n", tz->tzp->name);		\
+-	else								\
++	if (!tz->tzp)							\
+ 		return -EIO;						\
++									\
++	mutex_lock(&tz->lock);						\
++	value = tz->tzp->name;						\
++	mutex_unlock(&tz->lock);					\
++									\
++	return sprintf(buf, "%d\n", value);				\
+ 	}								\
+ 									\
+ 	static ssize_t							\
+@@ -418,7 +423,9 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
+ 		if (kstrtos32(buf, 10, &value))				\
+ 			return -EINVAL;					\
+ 									\
++		mutex_lock(&tz->lock);					\
+ 		tz->tzp->name = value;					\
++		mutex_unlock(&tz->lock);				\
+ 									\
+ 		return count;						\
+ 	}								\
 -- 
 2.1.4
