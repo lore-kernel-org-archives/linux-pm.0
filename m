@@ -2,218 +2,141 @@ From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 Subject: Re: [PATCH v4 09/10] cpuidle/powernv: Add support for POWER ISA v3
  idle states
 Date: Tue, 31 May 2016 19:20:04 +0530
-Message-ID: <201605311351.u4VDn6W2015318@mx0a-001b2d01.pphosted.com>
-References: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com> <1464095714-48772-10-git-send-email-shreyas@linux.vnet.ibm.com> <574C4DA4.4050100@linaro.org>
+Message-ID: <201605311351.u4VDmxNG010501@mx0a-001b2d01.pphosted.com>
+References: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1464095714-48772-10-git-send-email-shreyas@linux.vnet.ibm.com>
+ <574C4DA4.4050100@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:24734 "EHLO
-	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753034AbcEaNvP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 09:51:15 -0400
-Received: from pps.filterd (m0075771.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u4VDn6W2015318
-	for <linux-pm@vger.kernel.org>; Tue, 31 May 2016 09:51:15 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
-	by mx0a-001b2d01.pphosted.com with ESMTP id 2395tstqa8-1
-	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Tue, 31 May 2016 09:51:14 -0400
-Received: from localhost
-	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Tue, 31 May 2016 23:51:11 +1000
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 In-Reply-To: <574C4DA4.4050100@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, maddy@linux.vnet.ibm.com, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linuxppc-dev@lists.ozlabs.org
+List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
-
-On 05/30/2016 07:56 PM, Daniel Lezcano wrote:
-> On 05/24/2016 03:15 PM, Shreyas B. Prabhu wrote:
->> POWER ISA v3 defines a new idle processor core mechanism. In summary,
->>   a) new instruction named stop is added.
->>   b) new per thread SPR named PSSCR is added which controls the behavior
->>     of stop instruction.
->>
->> Supported idle states and value to be written to PSSCR register to enter
->> any idle state is exposed via ibm,cpu-idle-state-names and
->> ibm,cpu-idle-state-psscr respectively. To enter an idle state,
->> platform provided power_stop() needs to be invoked with the appropriate
->> PSSCR value.
->>
->> This patch adds support for this new mechanism in cpuidle powernv driver.
->>
->> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->> Cc: linux-pm@vger.kernel.org
->> Cc: Michael Ellerman <mpe@ellerman.id.au>
->> Cc: Paul Mackerras <paulus@ozlabs.org>
->> Cc: linuxppc-dev@lists.ozlabs.org
->> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
->> ---
->>   - No changes since v1
->>
->>   drivers/cpuidle/cpuidle-powernv.c | 57
->> ++++++++++++++++++++++++++++++++++++++-
->>   1 file changed, 56 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpuidle/cpuidle-powernv.c
->> b/drivers/cpuidle/cpuidle-powernv.c
->> index e12dc30..efe5221 100644
->> --- a/drivers/cpuidle/cpuidle-powernv.c
->> +++ b/drivers/cpuidle/cpuidle-powernv.c
->> @@ -21,6 +21,7 @@
->>   #include <asm/runlatch.h>
->>
->>   #define MAX_POWERNV_IDLE_STATES    8
->> +#define MAX_IDLE_STATE_NAME_LEN    10
-> 
-> Why not reuse cpuidle constants even if they are slightly different ?
-> 
-> #define CPUIDLE_STATE_MAX       10
-> #define CPUIDLE_NAME_LEN        16
-> 
-
-I'll reuse the them.
-
->>   struct cpuidle_driver powernv_idle_driver = {
->>       .name             = "powernv_idle",
->> @@ -29,9 +30,11 @@ struct cpuidle_driver powernv_idle_driver = {
->>
->>   static int max_idle_state;
->>   static struct cpuidle_state *cpuidle_state_table;
->> +
->> +static u64 stop_psscr_table[MAX_POWERNV_IDLE_STATES];
->> +
->>   static u64 snooze_timeout;
->>   static bool snooze_timeout_en;
->> -
->>   static int snooze_loop(struct cpuidle_device *dev,
->>               struct cpuidle_driver *drv,
->>               int index)
->> @@ -139,6 +142,15 @@ static struct notifier_block
->> setup_hotplug_notifier = {
->>       .notifier_call = powernv_cpuidle_add_cpu_notifier,
->>   };
->>
->> +static int stop_loop(struct cpuidle_device *dev,
->> +            struct cpuidle_driver *drv,
->> +            int index)
->> +{
->> +    ppc64_runlatch_off();
->> +    power_stop(stop_psscr_table[index]);
->> +    ppc64_runlatch_on();
->> +    return index;
->> +}
->>   /*
->>    * powernv_cpuidle_driver_init()
->>    */
->> @@ -169,6 +181,8 @@ static int powernv_add_idle_states(void)
->>       int nr_idle_states = 1; /* Snooze */
->>       int dt_idle_states;
->>       u32 *latency_ns, *residency_ns, *flags;
->> +    u64 *psscr_val = NULL;
->> +    const char *names[MAX_POWERNV_IDLE_STATES];
->>       int i, rc;
->>
->>       /* Currently we have snooze statically defined */
->> @@ -201,6 +215,23 @@ static int powernv_add_idle_states(void)
->>           goto out_free_latency;
->>       }
->>
->> +    rc = of_property_read_string_array(power_mgt,
->> +        "ibm,cpu-idle-state-names", names, dt_idle_states);
->> +    if (rc < -1) {
-> 
-> Why < -1 ?
->
-
-Oversight. I'll fix this.
-
->> +        pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-names
->> in DT\n");
->> +        goto out_free_latency;
->> +    }
->> +
->> +    if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-> 
-> Isn't weird to mix cpu feature and DT bindings check ?
-> 
-
-Hmm. I'll add a compatible node in DT to avoid mixing cpu_has_feature
-check and DT bindings.
-
->> +        psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
->> +                    GFP_KERNEL);
->> +        rc = of_property_read_u64_array(power_mgt,
->> +            "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states);
-> 
-> [cc'ed Lorenzo and Rob ]
-> 
-> I don't see the documentation for the binding. Wouldn't make sense to
-> add the value per idle state instead of an index based array ?
-> 
-Existing hardware (POWER7 and POWER8) has been using following dt nodes
-which are arrays-
-ibm,cpu-idle-state-names
-ibm,cpu-idle-state-latencies-ns
-ibm,cpu-idle-state-flags
-ibm,cpu-idle-state-residency-ns
-I extended this design and added ibm,cpu-idle-state-psscr to convey the
-extra information needed for POWER ISA v3.
-
-Down the line it'll probably make better sense to expose these values
-per idle state rather than arrays of individual properties. But I'd like
-to hold off on making that design change yet and wait for more design
-inputs from the platform side.
-
->> +        if (rc < -1) {
->> +            pr_warn("cpuidle-powernv: missing
->> ibm,cpu-idle-states-psscr in DT\n");
->> +            goto out_free_psscr;
->> +        }
->> +    }
->>       residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states,
->> GFP_KERNEL);
->>       rc = of_property_read_u32_array(power_mgt,
->>           "ibm,cpu-idle-state-residency-ns", residency_ns,
->> dt_idle_states);
->> @@ -218,6 +249,16 @@ static int powernv_add_idle_states(void)
->>               powernv_states[nr_idle_states].flags = 0;
->>               powernv_states[nr_idle_states].target_residency = 100;
->>               powernv_states[nr_idle_states].enter = &nap_loop;
->> +        } else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
->> +                !(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
->> +            strncpy(powernv_states[nr_idle_states].name,
->> +                (char *)names[i], MAX_IDLE_STATE_NAME_LEN);
-> 
-> Why cast names[] to (char *) while strncpy is waiting for const char *,
-> the initial type of names[] ?
->
-Oversight. Embarrassing one at that. I'll fix it.
-
->> +            strncpy(powernv_states[nr_idle_states].desc,
->> +                (char *)names[i], MAX_IDLE_STATE_NAME_LEN);
->> +            powernv_states[nr_idle_states].flags = 0;
-> 
-> No target_residency specified ?
-> 
-
-target_residency and latency are already specified in the existing code
-outside this if-else block. There is no change in interpreting those nodes.
-
->> +
->> +            powernv_states[nr_idle_states].enter = &stop_loop;
-> 
-> s/&stop_loop/stop_loop/
-
-I'll make the change.
-
-Thanks a lot for the review.
-
--Shreyas
-
+SGkgRGFuaWVsLAoKT24gMDUvMzAvMjAxNiAwNzo1NiBQTSwgRGFuaWVsIExlemNhbm8gd3JvdGU6
+Cj4gT24gMDUvMjQvMjAxNiAwMzoxNSBQTSwgU2hyZXlhcyBCLiBQcmFiaHUgd3JvdGU6Cj4+IFBP
+V0VSIElTQSB2MyBkZWZpbmVzIGEgbmV3IGlkbGUgcHJvY2Vzc29yIGNvcmUgbWVjaGFuaXNtLiBJ
+biBzdW1tYXJ5LAo+PiAgIGEpIG5ldyBpbnN0cnVjdGlvbiBuYW1lZCBzdG9wIGlzIGFkZGVkLgo+
+PiAgIGIpIG5ldyBwZXIgdGhyZWFkIFNQUiBuYW1lZCBQU1NDUiBpcyBhZGRlZCB3aGljaCBjb250
+cm9scyB0aGUgYmVoYXZpb3IKPj4gICAgIG9mIHN0b3AgaW5zdHJ1Y3Rpb24uCj4+Cj4+IFN1cHBv
+cnRlZCBpZGxlIHN0YXRlcyBhbmQgdmFsdWUgdG8gYmUgd3JpdHRlbiB0byBQU1NDUiByZWdpc3Rl
+ciB0byBlbnRlcgo+PiBhbnkgaWRsZSBzdGF0ZSBpcyBleHBvc2VkIHZpYSBpYm0sY3B1LWlkbGUt
+c3RhdGUtbmFtZXMgYW5kCj4+IGlibSxjcHUtaWRsZS1zdGF0ZS1wc3NjciByZXNwZWN0aXZlbHku
+IFRvIGVudGVyIGFuIGlkbGUgc3RhdGUsCj4+IHBsYXRmb3JtIHByb3ZpZGVkIHBvd2VyX3N0b3Ao
+KSBuZWVkcyB0byBiZSBpbnZva2VkIHdpdGggdGhlIGFwcHJvcHJpYXRlCj4+IFBTU0NSIHZhbHVl
+Lgo+Pgo+PiBUaGlzIHBhdGNoIGFkZHMgc3VwcG9ydCBmb3IgdGhpcyBuZXcgbWVjaGFuaXNtIGlu
+IGNwdWlkbGUgcG93ZXJudiBkcml2ZXIuCj4+Cj4+IENjOiBSYWZhZWwgSi4gV3lzb2NraSA8cmFm
+YWVsLmoud3lzb2NraUBpbnRlbC5jb20+Cj4+IENjOiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxl
+emNhbm9AbGluYXJvLm9yZz4KPj4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZwo+PiBDYzog
+TWljaGFlbCBFbGxlcm1hbiA8bXBlQGVsbGVybWFuLmlkLmF1Pgo+PiBDYzogUGF1bCBNYWNrZXJy
+YXMgPHBhdWx1c0BvemxhYnMub3JnPgo+PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5v
+cmcKPj4gUmV2aWV3ZWQtYnk6IEdhdXRoYW0gUi4gU2hlbm95IDxlZ29AbGludXgudm5ldC5pYm0u
+Y29tPgo+PiBTaWduZWQtb2ZmLWJ5OiBTaHJleWFzIEIuIFByYWJodSA8c2hyZXlhc0BsaW51eC52
+bmV0LmlibS5jb20+Cj4+IC0tLQo+PiAgIC0gTm8gY2hhbmdlcyBzaW5jZSB2MQo+Pgo+PiAgIGRy
+aXZlcnMvY3B1aWRsZS9jcHVpZGxlLXBvd2VybnYuYyB8IDU3Cj4+ICsrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrLQo+PiAgIDEgZmlsZSBjaGFuZ2VkLCA1NiBpbnNlcnRpb25z
+KCspLCAxIGRlbGV0aW9uKC0pCj4+Cj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2NwdWlkbGUvY3B1
+aWRsZS1wb3dlcm52LmMKPj4gYi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS1wb3dlcm52LmMKPj4g
+aW5kZXggZTEyZGMzMC4uZWZlNTIyMSAxMDA2NDQKPj4gLS0tIGEvZHJpdmVycy9jcHVpZGxlL2Nw
+dWlkbGUtcG93ZXJudi5jCj4+ICsrKyBiL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLXBvd2VybnYu
+Ywo+PiBAQCAtMjEsNiArMjEsNyBAQAo+PiAgICNpbmNsdWRlIDxhc20vcnVubGF0Y2guaD4KPj4K
+Pj4gICAjZGVmaW5lIE1BWF9QT1dFUk5WX0lETEVfU1RBVEVTICAgIDgKPj4gKyNkZWZpbmUgTUFY
+X0lETEVfU1RBVEVfTkFNRV9MRU4gICAgMTAKPiAKPiBXaHkgbm90IHJldXNlIGNwdWlkbGUgY29u
+c3RhbnRzIGV2ZW4gaWYgdGhleSBhcmUgc2xpZ2h0bHkgZGlmZmVyZW50ID8KPiAKPiAjZGVmaW5l
+IENQVUlETEVfU1RBVEVfTUFYICAgICAgIDEwCj4gI2RlZmluZSBDUFVJRExFX05BTUVfTEVOICAg
+ICAgICAxNgo+IAoKSSdsbCByZXVzZSB0aGUgdGhlbS4KCj4+ICAgc3RydWN0IGNwdWlkbGVfZHJp
+dmVyIHBvd2VybnZfaWRsZV9kcml2ZXIgPSB7Cj4+ICAgICAgIC5uYW1lICAgICAgICAgICAgID0g
+InBvd2VybnZfaWRsZSIsCj4+IEBAIC0yOSw5ICszMCwxMSBAQCBzdHJ1Y3QgY3B1aWRsZV9kcml2
+ZXIgcG93ZXJudl9pZGxlX2RyaXZlciA9IHsKPj4KPj4gICBzdGF0aWMgaW50IG1heF9pZGxlX3N0
+YXRlOwo+PiAgIHN0YXRpYyBzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSAqY3B1aWRsZV9zdGF0ZV90YWJs
+ZTsKPj4gKwo+PiArc3RhdGljIHU2NCBzdG9wX3Bzc2NyX3RhYmxlW01BWF9QT1dFUk5WX0lETEVf
+U1RBVEVTXTsKPj4gKwo+PiAgIHN0YXRpYyB1NjQgc25vb3plX3RpbWVvdXQ7Cj4+ICAgc3RhdGlj
+IGJvb2wgc25vb3plX3RpbWVvdXRfZW47Cj4+IC0KPj4gICBzdGF0aWMgaW50IHNub296ZV9sb29w
+KHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2LAo+PiAgICAgICAgICAgICAgIHN0cnVjdCBjcHVp
+ZGxlX2RyaXZlciAqZHJ2LAo+PiAgICAgICAgICAgICAgIGludCBpbmRleCkKPj4gQEAgLTEzOSw2
+ICsxNDIsMTUgQEAgc3RhdGljIHN0cnVjdCBub3RpZmllcl9ibG9jawo+PiBzZXR1cF9ob3RwbHVn
+X25vdGlmaWVyID0gewo+PiAgICAgICAubm90aWZpZXJfY2FsbCA9IHBvd2VybnZfY3B1aWRsZV9h
+ZGRfY3B1X25vdGlmaWVyLAo+PiAgIH07Cj4+Cj4+ICtzdGF0aWMgaW50IHN0b3BfbG9vcChzdHJ1
+Y3QgY3B1aWRsZV9kZXZpY2UgKmRldiwKPj4gKyAgICAgICAgICAgIHN0cnVjdCBjcHVpZGxlX2Ry
+aXZlciAqZHJ2LAo+PiArICAgICAgICAgICAgaW50IGluZGV4KQo+PiArewo+PiArICAgIHBwYzY0
+X3J1bmxhdGNoX29mZigpOwo+PiArICAgIHBvd2VyX3N0b3Aoc3RvcF9wc3Njcl90YWJsZVtpbmRl
+eF0pOwo+PiArICAgIHBwYzY0X3J1bmxhdGNoX29uKCk7Cj4+ICsgICAgcmV0dXJuIGluZGV4Owo+
+PiArfQo+PiAgIC8qCj4+ICAgICogcG93ZXJudl9jcHVpZGxlX2RyaXZlcl9pbml0KCkKPj4gICAg
+Ki8KPj4gQEAgLTE2OSw2ICsxODEsOCBAQCBzdGF0aWMgaW50IHBvd2VybnZfYWRkX2lkbGVfc3Rh
+dGVzKHZvaWQpCj4+ICAgICAgIGludCBucl9pZGxlX3N0YXRlcyA9IDE7IC8qIFNub296ZSAqLwo+
+PiAgICAgICBpbnQgZHRfaWRsZV9zdGF0ZXM7Cj4+ICAgICAgIHUzMiAqbGF0ZW5jeV9ucywgKnJl
+c2lkZW5jeV9ucywgKmZsYWdzOwo+PiArICAgIHU2NCAqcHNzY3JfdmFsID0gTlVMTDsKPj4gKyAg
+ICBjb25zdCBjaGFyICpuYW1lc1tNQVhfUE9XRVJOVl9JRExFX1NUQVRFU107Cj4+ICAgICAgIGlu
+dCBpLCByYzsKPj4KPj4gICAgICAgLyogQ3VycmVudGx5IHdlIGhhdmUgc25vb3plIHN0YXRpY2Fs
+bHkgZGVmaW5lZCAqLwo+PiBAQCAtMjAxLDYgKzIxNSwyMyBAQCBzdGF0aWMgaW50IHBvd2VybnZf
+YWRkX2lkbGVfc3RhdGVzKHZvaWQpCj4+ICAgICAgICAgICBnb3RvIG91dF9mcmVlX2xhdGVuY3k7
+Cj4+ICAgICAgIH0KPj4KPj4gKyAgICByYyA9IG9mX3Byb3BlcnR5X3JlYWRfc3RyaW5nX2FycmF5
+KHBvd2VyX21ndCwKPj4gKyAgICAgICAgImlibSxjcHUtaWRsZS1zdGF0ZS1uYW1lcyIsIG5hbWVz
+LCBkdF9pZGxlX3N0YXRlcyk7Cj4+ICsgICAgaWYgKHJjIDwgLTEpIHsKPiAKPiBXaHkgPCAtMSA/
+Cj4KCk92ZXJzaWdodC4gSSdsbCBmaXggdGhpcy4KCj4+ICsgICAgICAgIHByX3dhcm4oImNwdWlk
+bGUtcG93ZXJudjogbWlzc2luZyBpYm0sY3B1LWlkbGUtc3RhdGVzLW5hbWVzCj4+IGluIERUXG4i
+KTsKPj4gKyAgICAgICAgZ290byBvdXRfZnJlZV9sYXRlbmN5Owo+PiArICAgIH0KPj4gKwo+PiAr
+ICAgIGlmIChjcHVfaGFzX2ZlYXR1cmUoQ1BVX0ZUUl9BUkNIXzMwMCkpIHsKPiAKPiBJc24ndCB3
+ZWlyZCB0byBtaXggY3B1IGZlYXR1cmUgYW5kIERUIGJpbmRpbmdzIGNoZWNrID8KPiAKCkhtbS4g
+SSdsbCBhZGQgYSBjb21wYXRpYmxlIG5vZGUgaW4gRFQgdG8gYXZvaWQgbWl4aW5nIGNwdV9oYXNf
+ZmVhdHVyZQpjaGVjayBhbmQgRFQgYmluZGluZ3MuCgo+PiArICAgICAgICBwc3Njcl92YWwgPSBr
+Y2FsbG9jKGR0X2lkbGVfc3RhdGVzLCBzaXplb2YoKnBzc2NyX3ZhbCksCj4+ICsgICAgICAgICAg
+ICAgICAgICAgIEdGUF9LRVJORUwpOwo+PiArICAgICAgICByYyA9IG9mX3Byb3BlcnR5X3JlYWRf
+dTY0X2FycmF5KHBvd2VyX21ndCwKPj4gKyAgICAgICAgICAgICJpYm0sY3B1LWlkbGUtc3RhdGUt
+cHNzY3IiLCBwc3Njcl92YWwsIGR0X2lkbGVfc3RhdGVzKTsKPiAKPiBbY2MnZWQgTG9yZW56byBh
+bmQgUm9iIF0KPiAKPiBJIGRvbid0IHNlZSB0aGUgZG9jdW1lbnRhdGlvbiBmb3IgdGhlIGJpbmRp
+bmcuIFdvdWxkbid0IG1ha2Ugc2Vuc2UgdG8KPiBhZGQgdGhlIHZhbHVlIHBlciBpZGxlIHN0YXRl
+IGluc3RlYWQgb2YgYW4gaW5kZXggYmFzZWQgYXJyYXkgPwo+IApFeGlzdGluZyBoYXJkd2FyZSAo
+UE9XRVI3IGFuZCBQT1dFUjgpIGhhcyBiZWVuIHVzaW5nIGZvbGxvd2luZyBkdCBub2Rlcwp3aGlj
+aCBhcmUgYXJyYXlzLQppYm0sY3B1LWlkbGUtc3RhdGUtbmFtZXMKaWJtLGNwdS1pZGxlLXN0YXRl
+LWxhdGVuY2llcy1ucwppYm0sY3B1LWlkbGUtc3RhdGUtZmxhZ3MKaWJtLGNwdS1pZGxlLXN0YXRl
+LXJlc2lkZW5jeS1ucwpJIGV4dGVuZGVkIHRoaXMgZGVzaWduIGFuZCBhZGRlZCBpYm0sY3B1LWlk
+bGUtc3RhdGUtcHNzY3IgdG8gY29udmV5IHRoZQpleHRyYSBpbmZvcm1hdGlvbiBuZWVkZWQgZm9y
+IFBPV0VSIElTQSB2My4KCkRvd24gdGhlIGxpbmUgaXQnbGwgcHJvYmFibHkgbWFrZSBiZXR0ZXIg
+c2Vuc2UgdG8gZXhwb3NlIHRoZXNlIHZhbHVlcwpwZXIgaWRsZSBzdGF0ZSByYXRoZXIgdGhhbiBh
+cnJheXMgb2YgaW5kaXZpZHVhbCBwcm9wZXJ0aWVzLiBCdXQgSSdkIGxpa2UKdG8gaG9sZCBvZmYg
+b24gbWFraW5nIHRoYXQgZGVzaWduIGNoYW5nZSB5ZXQgYW5kIHdhaXQgZm9yIG1vcmUgZGVzaWdu
+CmlucHV0cyBmcm9tIHRoZSBwbGF0Zm9ybSBzaWRlLgoKPj4gKyAgICAgICAgaWYgKHJjIDwgLTEp
+IHsKPj4gKyAgICAgICAgICAgIHByX3dhcm4oImNwdWlkbGUtcG93ZXJudjogbWlzc2luZwo+PiBp
+Ym0sY3B1LWlkbGUtc3RhdGVzLXBzc2NyIGluIERUXG4iKTsKPj4gKyAgICAgICAgICAgIGdvdG8g
+b3V0X2ZyZWVfcHNzY3I7Cj4+ICsgICAgICAgIH0KPj4gKyAgICB9Cj4+ICAgICAgIHJlc2lkZW5j
+eV9ucyA9IGt6YWxsb2Moc2l6ZW9mKCpyZXNpZGVuY3lfbnMpICogZHRfaWRsZV9zdGF0ZXMsCj4+
+IEdGUF9LRVJORUwpOwo+PiAgICAgICByYyA9IG9mX3Byb3BlcnR5X3JlYWRfdTMyX2FycmF5KHBv
+d2VyX21ndCwKPj4gICAgICAgICAgICJpYm0sY3B1LWlkbGUtc3RhdGUtcmVzaWRlbmN5LW5zIiwg
+cmVzaWRlbmN5X25zLAo+PiBkdF9pZGxlX3N0YXRlcyk7Cj4+IEBAIC0yMTgsNiArMjQ5LDE2IEBA
+IHN0YXRpYyBpbnQgcG93ZXJudl9hZGRfaWRsZV9zdGF0ZXModm9pZCkKPj4gICAgICAgICAgICAg
+ICBwb3dlcm52X3N0YXRlc1tucl9pZGxlX3N0YXRlc10uZmxhZ3MgPSAwOwo+PiAgICAgICAgICAg
+ICAgIHBvd2VybnZfc3RhdGVzW25yX2lkbGVfc3RhdGVzXS50YXJnZXRfcmVzaWRlbmN5ID0gMTAw
+Owo+PiAgICAgICAgICAgICAgIHBvd2VybnZfc3RhdGVzW25yX2lkbGVfc3RhdGVzXS5lbnRlciA9
+ICZuYXBfbG9vcDsKPj4gKyAgICAgICAgfSBlbHNlIGlmICgoZmxhZ3NbaV0gJiBPUEFMX1BNX1NU
+T1BfSU5TVF9GQVNUKSAmJgo+PiArICAgICAgICAgICAgICAgICEoZmxhZ3NbaV0gJiBPUEFMX1BN
+X1RJTUVCQVNFX1NUT1ApKSB7Cj4+ICsgICAgICAgICAgICBzdHJuY3B5KHBvd2VybnZfc3RhdGVz
+W25yX2lkbGVfc3RhdGVzXS5uYW1lLAo+PiArICAgICAgICAgICAgICAgIChjaGFyICopbmFtZXNb
+aV0sIE1BWF9JRExFX1NUQVRFX05BTUVfTEVOKTsKPiAKPiBXaHkgY2FzdCBuYW1lc1tdIHRvIChj
+aGFyICopIHdoaWxlIHN0cm5jcHkgaXMgd2FpdGluZyBmb3IgY29uc3QgY2hhciAqLAo+IHRoZSBp
+bml0aWFsIHR5cGUgb2YgbmFtZXNbXSA/Cj4KT3ZlcnNpZ2h0LiBFbWJhcnJhc3Npbmcgb25lIGF0
+IHRoYXQuIEknbGwgZml4IGl0LgoKPj4gKyAgICAgICAgICAgIHN0cm5jcHkocG93ZXJudl9zdGF0
+ZXNbbnJfaWRsZV9zdGF0ZXNdLmRlc2MsCj4+ICsgICAgICAgICAgICAgICAgKGNoYXIgKiluYW1l
+c1tpXSwgTUFYX0lETEVfU1RBVEVfTkFNRV9MRU4pOwo+PiArICAgICAgICAgICAgcG93ZXJudl9z
+dGF0ZXNbbnJfaWRsZV9zdGF0ZXNdLmZsYWdzID0gMDsKPiAKPiBObyB0YXJnZXRfcmVzaWRlbmN5
+IHNwZWNpZmllZCA/Cj4gCgp0YXJnZXRfcmVzaWRlbmN5IGFuZCBsYXRlbmN5IGFyZSBhbHJlYWR5
+IHNwZWNpZmllZCBpbiB0aGUgZXhpc3RpbmcgY29kZQpvdXRzaWRlIHRoaXMgaWYtZWxzZSBibG9j
+ay4gVGhlcmUgaXMgbm8gY2hhbmdlIGluIGludGVycHJldGluZyB0aG9zZSBub2Rlcy4KCj4+ICsK
+Pj4gKyAgICAgICAgICAgIHBvd2VybnZfc3RhdGVzW25yX2lkbGVfc3RhdGVzXS5lbnRlciA9ICZz
+dG9wX2xvb3A7Cj4gCj4gcy8mc3RvcF9sb29wL3N0b3BfbG9vcC8KCkknbGwgbWFrZSB0aGUgY2hh
+bmdlLgoKVGhhbmtzIGEgbG90IGZvciB0aGUgcmV2aWV3LgoKLVNocmV5YXMKCl9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5n
+IGxpc3QKTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMu
+b3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldg==
