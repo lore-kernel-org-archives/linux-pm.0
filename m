@@ -1,68 +1,63 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv4 48/48] thermal: sysfs: use kcalloc() instead of kzalloc()
-Date: Mon, 30 May 2016 23:18:55 -0700
-Message-ID: <1464675535-2433-49-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv4 47/48] thermal: core: use kzalloc(sizeof(*ptr),...)
+Date: Mon, 30 May 2016 23:18:54 -0700
+Message-ID: <1464675535-2433-48-git-send-email-edubezval@gmail.com>
 References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:36757 "EHLO
+	mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756001AbcEaGUv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 02:20:51 -0400
 In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
-Simplify size computation by using kcalloc() for
-allocating memory for arrays.
+As a safety check, this patch changes thermal
+core to check for pointer content size, instead of type size,
+while allocating memory.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_sysfs.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/thermal/thermal_core.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index ca4b83a..4136b71 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -505,22 +505,25 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
-  */
- static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- {
--	int size = sizeof(struct thermal_attr) * tz->trips;
- 	struct attribute **attrs;
- 	int indx;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index b3fa47e..792aab7 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -667,8 +667,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 	if (lower > upper || upper > max_state)
+ 		return -EINVAL;
  
--	tz->trip_type_attrs = kzalloc(size, GFP_KERNEL);
-+	tz->trip_type_attrs = kcalloc(tz->trips, sizeof(*tz->trip_type_attrs),
-+				      GFP_KERNEL);
- 	if (!tz->trip_type_attrs)
+-	dev =
+-	    kzalloc(sizeof(struct thermal_instance), GFP_KERNEL);
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+ 	if (!dev)
  		return -ENOMEM;
+ 	dev->tz = tz;
+@@ -910,7 +909,7 @@ __thermal_cooling_device_register(struct device_node *np,
+ 	    !ops->set_cur_state)
+ 		return ERR_PTR(-EINVAL);
  
--	tz->trip_temp_attrs = kzalloc(size, GFP_KERNEL);
-+	tz->trip_temp_attrs = kcalloc(tz->trips, sizeof(*tz->trip_temp_attrs),
-+				      GFP_KERNEL);
- 	if (!tz->trip_temp_attrs) {
- 		kfree(tz->trip_type_attrs);
- 		return -ENOMEM;
- 	}
+-	cdev = kzalloc(sizeof(struct thermal_cooling_device), GFP_KERNEL);
++	cdev = kzalloc(sizeof(*cdev), GFP_KERNEL);
+ 	if (!cdev)
+ 		return ERR_PTR(-ENOMEM);
  
- 	if (tz->ops->get_trip_hyst) {
--		tz->trip_hyst_attrs = kzalloc(size, GFP_KERNEL);
-+		tz->trip_hyst_attrs = kcalloc(tz->trips,
-+					      sizeof(*tz->trip_hyst_attrs),
-+					      GFP_KERNEL);
- 		if (!tz->trip_hyst_attrs) {
- 			kfree(tz->trip_type_attrs);
- 			kfree(tz->trip_temp_attrs);
-@@ -528,7 +531,7 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
- 		}
- 	}
+@@ -1155,7 +1154,7 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+ 	if (trips > 0 && (!ops->get_trip_type || !ops->get_trip_temp))
+ 		return ERR_PTR(-EINVAL);
  
--	attrs = kzalloc(sizeof(*attrs) * tz->trips * 3 + 1, GFP_KERNEL);
-+	attrs = kcalloc(tz->trips * 3 + 1, sizeof(*attrs), GFP_KERNEL);
- 	if (!attrs) {
- 		kfree(tz->trip_type_attrs);
- 		kfree(tz->trip_temp_attrs);
+-	tz = kzalloc(sizeof(struct thermal_zone_device), GFP_KERNEL);
++	tz = kzalloc(sizeof(*tz), GFP_KERNEL);
+ 	if (!tz)
+ 		return ERR_PTR(-ENOMEM);
+ 
 -- 
 2.1.4
+
