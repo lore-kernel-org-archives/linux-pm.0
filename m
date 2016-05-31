@@ -1,51 +1,55 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 0/2] arm64: dts: r8a7796: Add SYSC PM Domains
-Date: Tue, 31 May 2016 11:08:43 +0200
-Message-ID: <1464685726-21611-1-git-send-email-geert+renesas@glider.be>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v3 0/2] extcon: Remove the deprecated extcon functions
+Date: Tue, 31 May 2016 18:34:38 +0900
+Message-ID: <1464687280-8155-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from albert.telenet-ops.be ([195.130.137.90]:49938 "EHLO
-	albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756873AbcEaJIo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 05:08:44 -0400
+Received: from mailout3.samsung.com ([203.254.224.33]:37766 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756846AbcEaJep (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 05:34:45 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <damm+renesas@opensource.se>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, wens@csie.org
+Cc: myungjoo.ham@samsung.com, cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-	Hi Simon, Magnus,
+This patch-set removes the deprecated notifier API of extcon framework and
+then use the new extcon API[2] with the unique id[1] to indicate the each
+external connector. Alter deprecated API as following:
+- extcon_register_interest() -> extcon_register_notifier()
+- extcon_unregister_interest() -> extcon_unregister_notifier()
+- extcon_set_cable_state() -> extcon_set_cable_state_()
+- extcon_get_cable_state() -> extcon_get_cable_state_()
 
-This patch series adds support for the power areas exposed by the System
-Controller on the Renesas R-Car M3-W SoC to the DTS.
+And, extcon alters the name of USB charger connector in patch[3] as following:
+- EXTCON_CHG_USB_SDP /* Standard Downstream Port */
+- EXTCON_CHG_USB_DCP /* Dedicated Charging Port */
+- EXTCON_CHG_USB_CDP /* Charging Downstream Port */
+- EXTCON_CHG_USB_ACA /* Accessory Charger Adapter */
 
-This series is against Simon's "[PATCH v3 0/3] arm64: Add Renesas
-R8A7796 SoC support".  It has a build and runtime dependency on my series
-"[PATCH v2 0/3] soc: renesas: rcar-sysc: Add support for R-Car M3-W power
-areas".
+[1] Commit 2a9de9c0f08d61
+- ("extcon: Use the unique id for external connector instead of string)
+[2] Commit 046050f6e623e4
+- ("extcon: Update the prototype of extcon_register_notifier() with enum extcon
+[3] Commit 11eecf910bd81d
+- ("extcon: Modify the id and name of external connector")
 
-For your convenience, I've pushed this series to the
-topic/r8a7796-sysc-dt-v1 branch of
-https://git.kernel.org/cgit/linux/kernel/git/geert/renesas-drivers.git.
-This has been tested on r8a7796/salvator-x.
+Changes from v2:
+- Drop the patch related to drivers/power/charger-manager.c.
+- Remain the deprecatd function definition to prevent the build break
+  of charger-manager.c driver.
 
-Thanks!
+Changes from v1:
+- Fix the typo (EXTCON_CHG_USB_SDP -> EXTCON_CHG_USB_CDP) on axp288_charger.c
 
-Geert Uytterhoeven (2):
-  arm64: dts: r8a7796: Add SYSC PM Domains
-  arm64: dts: r8a7796: Use SYSC "always-on" PM Domain
+Chanwoo Choi (2):
+  power: axp288_charger: Replace deprecatd API of extcon
+  extcon: Remove the deprecated extcon functions
 
- arch/arm64/boot/dts/renesas/r8a7796.dtsi | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ drivers/extcon/extcon.c        | 201 +++++------------------------------------
+ drivers/power/axp288_charger.c |  77 +++++++++++-----
+ include/linux/extcon.h         |  80 +++++-----------
+ 3 files changed, 100 insertions(+), 258 deletions(-)
 
 -- 
 1.9.1
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
