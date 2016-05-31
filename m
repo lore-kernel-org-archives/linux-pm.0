@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv4 25/48] thermal: core: remove a couple of style issues on helpers
-Date: Mon, 30 May 2016 23:18:32 -0700
-Message-ID: <1464675535-2433-26-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv4 19/48] thermal: core: move to_thermal_zone() macro to header file
+Date: Mon, 30 May 2016 23:18:26 -0700
+Message-ID: <1464675535-2433-20-git-send-email-edubezval@gmail.com>
 References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
@@ -10,50 +10,45 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Reorganizing the code of helper functions to improve
-readability and style, as recommended by checkpatch.pl.
+Simply making this macro available to other thermal core
+files.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/thermal/thermal_core.c | 3 ---
+ drivers/thermal/thermal_core.h | 3 +++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 4c4f1b4..37d29f3 100644
+index da1c4b1..71fb762 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -248,8 +248,9 @@ int get_tz_trend(struct thermal_zone_device *tz, int trip)
- }
- EXPORT_SYMBOL(get_tz_trend);
+@@ -743,9 +743,6 @@ int thermal_build_list_of_policies(char *buf)
  
--struct thermal_instance *get_thermal_instance(struct thermal_zone_device *tz,
--			struct thermal_cooling_device *cdev, int trip)
-+struct thermal_instance *
-+get_thermal_instance(struct thermal_zone_device *tz,
-+		     struct thermal_cooling_device *cdev, int trip)
+ /* sys I/F for thermal zone */
+ 
+-#define to_thermal_zone(_dev) \
+-	container_of(_dev, struct thermal_zone_device, device)
+-
+ static ssize_t
+ type_show(struct device *dev, struct device_attribute *attr, char *buf)
  {
- 	struct thermal_instance *pos = NULL;
- 	struct thermal_instance *target_instance = NULL;
-@@ -513,7 +514,7 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
- 		if (!ret && *temp < crit_temp)
- 			*temp = tz->emul_temperature;
- 	}
-- 
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 8994d2a..097abee 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -54,6 +54,9 @@ struct thermal_instance {
+ 	unsigned int weight; /* The weight of the cooling device */
+ };
+ 
++#define to_thermal_zone(_dev) \
++	container_of(_dev, struct thermal_zone_device, device)
 +
- 	mutex_unlock(&tz->lock);
- exit:
- 	return ret;
-@@ -1132,7 +1133,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- 	/* Make sure cdev enters the deepest cooling state */
- 	list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) {
- 		dev_dbg(&cdev->device, "zone%d->target=%lu\n",
--				instance->tz->id, instance->target);
-+			instance->tz->id, instance->target);
- 		if (instance->target == THERMAL_NO_TARGET)
- 			continue;
- 		if (instance->target > target)
+ int thermal_register_governor(struct thermal_governor *);
+ void thermal_unregister_governor(struct thermal_governor *);
+ void thermal_zone_device_rebind_exception(struct thermal_zone_device *,
 -- 
 2.1.4
