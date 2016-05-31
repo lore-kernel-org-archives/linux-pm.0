@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv4 30/48] thermal: core: move __unbind() helper to where it is used
-Date: Mon, 30 May 2016 23:18:37 -0700
-Message-ID: <1464675535-2433-31-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv4 37/48] thermal: core: add a comment describing the main update loop
+Date: Mon, 30 May 2016 23:18:44 -0700
+Message-ID: <1464675535-2433-38-git-send-email-edubezval@gmail.com>
 References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
@@ -10,53 +10,38 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Simply moving the helper to closer where it is actually used.
+Simply marking the main update loop section and adding a
+comment describing it.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ drivers/thermal/thermal_core.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 261cc16..75b7854 100644
+index 6dbb86f..063fb15 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -319,16 +319,6 @@ static void __bind(struct thermal_zone_device *tz, int mask,
- 	}
+@@ -286,6 +286,17 @@ static void thermal_unregister_governors(void)
+ 	thermal_gov_power_allocator_unregister();
  }
  
--static void __unbind(struct thermal_zone_device *tz, int mask,
--		     struct thermal_cooling_device *cdev)
--{
--	int i;
--
--	for (i = 0; i < tz->trips; i++)
--		if (mask & (1 << i))
--			thermal_zone_unbind_cooling_device(tz, i, cdev);
--}
--
- static void bind_cdev(struct thermal_cooling_device *cdev)
++/*
++ * Zone update section: main control loop applied to each zone while monitoring
++ *
++ * in polling mode. The monitoring is done using a workqueue.
++ * Same update may be done on a zone by calling thermal_zone_device_update().
++ *
++ * An update means:
++ * - Non-critical trips will invoke the governor responsible for that zone;
++ * - Hot trips will produce a notification to userspace;
++ * - Critical trip point will cause a system shutdown.
++ */
+ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
+ 					    int delay)
  {
- 	int i, ret;
-@@ -1013,6 +1003,16 @@ thermal_of_cooling_device_register(struct device_node *np,
- }
- EXPORT_SYMBOL_GPL(thermal_of_cooling_device_register);
- 
-+static void __unbind(struct thermal_zone_device *tz, int mask,
-+		     struct thermal_cooling_device *cdev)
-+{
-+	int i;
-+
-+	for (i = 0; i < tz->trips; i++)
-+		if (mask & (1 << i))
-+			thermal_zone_unbind_cooling_device(tz, i, cdev);
-+}
-+
- /**
-  * thermal_cooling_device_unregister - removes the registered thermal cooling device
-  * @cdev:	the thermal cooling device to remove.
 -- 
 2.1.4
