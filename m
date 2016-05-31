@@ -1,49 +1,55 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 1/3] cpufreq: add resolve_freq driver callback
-Date: Tue, 31 May 2016 11:00:11 +0530
-Message-ID: <20160531053011.GD9463@vireshk-i7>
-References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
- <1464231181-30741-2-git-send-email-smuckle@linaro.org>
- <20160526062514.GU17585@vireshk-i7>
- <20160530153115.GE9864@graphite.smuckle.net>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCHv3 00/48] thermal: reorganizing thermal core
+Date: Mon, 30 May 2016 23:13:47 -0700
+Message-ID: <20160531061344.GA2111@localhost.localdomain>
+References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
+ <574D11E8.3070703@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:33415 "EHLO
-	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbcEaFaP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 01:30:15 -0400
-Received: by mail-pf0-f176.google.com with SMTP id b124so70628667pfb.0
-        for <linux-pm@vger.kernel.org>; Mon, 30 May 2016 22:30:14 -0700 (PDT)
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:34669 "EHLO
+	mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbcEaGNw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 02:13:52 -0400
 Content-Disposition: inline
-In-Reply-To: <20160530153115.GE9864@graphite.smuckle.net>
+In-Reply-To: <574D11E8.3070703@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+To: Keerthy <a0393675@ti.com>
+Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 30-05-16, 08:31, Steve Muckle wrote:
-> My goal here was to have the system operate in this case in a manner
-> that is obviously not optimized (running at fmax), so the platform owner
-> realizes that the cpufreq driver doesn't fully support the schedutil
-> governor.
+On Tue, May 31, 2016 at 09:54:08AM +0530, Keerthy wrote:
+> Hi Eduardo,
 > 
-> I was originally going to just return an error code but that also means
-> having to check for it which would be nice to avoid if possible on this
-> fast path.
+> On Tuesday 31 May 2016 03:45 AM, Eduardo Valentin wrote:
+> >Folks,
+> >
+> >This is V3 of a patch series to improve thermal core. The idea
+> >here is to reorganize the code and improve the way we
+> >handle sysfs entries.
+> >
+> >The change in behavior is that now, thermal zones with empty
+> >.type will not be allowed to be registered. Also, the way
+> >we handle scanf's return code is now checking for
+> >number of successful inputs.
+> >
+> >After this series, thermal core is split into the following files:
+> >- thermal_sysfs.c: contains the functions handling the sysfs nodes
+> >- thermal_helpers.c: groups functions that do not need to touch thermal
+> >core internal data structures, such as internal lists, and list locks.
+> >- thermal_core.c: functions to handle the lifecycle of the subsystem,
+> >its governors, cooling devices, thermal zone devices, and their
+> >interactions.
+> >
+> >I don't expect any impact on userspace.
+> >
+> 
+> I applied the whole 48 patch series on top of mainline kernel.
+> 
+> I see boot crash when i have thermal modules built in kernel for dra7/dra72
+> boards.
+> 
+> dra7 bootlog: http://pastebin.ubuntu.com/16859184/
 
-Okay, I get what you are saying.
+I will be sending a v4 soon. I will also push to a branch.
 
-But all we are doing here is to make things fast by not sending IPIs,
-etc. That should *not* lead to a behavior where the frequency stays at
-MAX all the time even if the driver doesn't provide this callback or
-the freq-table.
-
-If we just return the target_freq in this case instead of UINT_MAX,
-the platform may eventually have some unnecessary IPIs, wakeups, etc,
-but its frequency will still be switched properly.
-
-Wouldn't that be a better choice ?
-
--- 
-viresh
