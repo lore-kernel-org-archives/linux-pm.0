@@ -1,44 +1,57 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 12/15] thermal: sysfs: lock cdev while accessing max_state
-Date: Mon, 30 May 2016 23:31:33 -0700
-Message-ID: <1464676296-5610-13-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 09/15] thermal: sysfs: lock tz when access sustainable power properties
+Date: Mon, 30 May 2016 23:31:30 -0700
+Message-ID: <1464676296-5610-10-git-send-email-edubezval@gmail.com>
 References: <1464676296-5610-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f68.google.com ([209.85.220.68]:36108 "EHLO
-	mail-pa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1162133AbcEaGc3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 02:32:29 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464676296-5610-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-Serialized calls to cdev->ops in user facing
-sysfs handler thermal_cooling_device_max_state_show().
+Lock tz when in user facing sysfs handlers to expose
+sustainable power properties. This includes:
+sustainable_power_show()
+sustainable_power_store()
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_sysfs.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/thermal/thermal_sysfs.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index 044090a..3eaa081 100644
+index 32ffadf..5b08d64 100644
 --- a/drivers/thermal/thermal_sysfs.c
 +++ b/drivers/thermal/thermal_sysfs.c
-@@ -699,7 +699,9 @@ thermal_cooling_device_max_state_show(struct device *dev,
- 	unsigned long state;
- 	int ret;
+@@ -360,9 +360,14 @@ sustainable_power_show(struct device *dev, struct device_attribute *devattr,
+ 		       char *buf)
+ {
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
++	unsigned int sustainable_power;
++
++	mutex_lock(&tz->lock);
++	sustainable_power = tz->tzp->sustainable_power;
++	mutex_unlock(&tz->lock);
  
-+	mutex_lock(&cdev->lock);
- 	ret = cdev->ops->get_max_state(cdev, &state);
-+	mutex_unlock(&cdev->lock);
- 	if (ret)
- 		return ret;
- 	return sprintf(buf, "%ld\n", state);
+ 	if (tz->tzp)
+-		return sprintf(buf, "%u\n", tz->tzp->sustainable_power);
++		return sprintf(buf, "%u\n", sustainable_power);
+ 	else
+ 		return -EIO;
+ }
+@@ -380,7 +385,9 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
+ 	if (kstrtou32(buf, 10, &sustainable_power))
+ 		return -EINVAL;
+ 
++	mutex_lock(&tz->lock);
+ 	tz->tzp->sustainable_power = sustainable_power;
++	mutex_unlock(&tz->lock);
+ 
+ 	return count;
+ }
 -- 
 2.1.4
-
