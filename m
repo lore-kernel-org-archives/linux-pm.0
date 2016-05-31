@@ -1,48 +1,65 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 01/15] thermal: sysfs: lock tz in type_show
-Date: Mon, 30 May 2016 23:31:22 -0700
-Message-ID: <1464676296-5610-2-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 02/15] thermal: sysfs: lock tz while on access to mode properties
+Date: Mon, 30 May 2016 23:31:23 -0700
+Message-ID: <1464676296-5610-3-git-send-email-edubezval@gmail.com>
 References: <1464676296-5610-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:35610 "EHLO
-	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755525AbcEaGby (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 02:31:54 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464676296-5610-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-Avoid race while accessing tz->type.
+Serialized calls to tz.ops in user facing
+sysfs handler mode_show()  and mode_store().
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_sysfs.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/thermal/thermal_sysfs.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index 4136b71..ee983ca 100644
+index ee983ca..1db2406 100644
 --- a/drivers/thermal/thermal_sysfs.c
 +++ b/drivers/thermal/thermal_sysfs.c
-@@ -29,8 +29,13 @@ static ssize_t
- type_show(struct device *dev, struct device_attribute *attr, char *buf)
+@@ -62,7 +62,9 @@ mode_show(struct device *dev, struct device_attribute *attr, char *buf)
+ 	if (!tz->ops->get_mode)
+ 		return -EPERM;
+ 
++	mutex_lock(&tz->lock);
+ 	result = tz->ops->get_mode(tz, &mode);
++	mutex_unlock(&tz->lock);
+ 	if (result)
+ 		return result;
+ 
+@@ -75,17 +77,22 @@ mode_store(struct device *dev, struct device_attribute *attr,
+ 	   const char *buf, size_t count)
  {
  	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	char *type;
++	enum thermal_device_mode mode = THERMAL_DEVICE_DISABLED;
+ 	int result;
  
--	return sprintf(buf, "%s\n", tz->type);
-+	mutex_lock(&tz->lock);
-+	type = tz->type;
-+	mutex_unlock(&tz->lock);
+ 	if (!tz->ops->set_mode)
+ 		return -EPERM;
+ 
+ 	if (!strncmp(buf, "enabled", sizeof("enabled") - 1))
+-		result = tz->ops->set_mode(tz, THERMAL_DEVICE_ENABLED);
++		mode = THERMAL_DEVICE_ENABLED;
+ 	else if (!strncmp(buf, "disabled", sizeof("disabled") - 1))
+-		result = tz->ops->set_mode(tz, THERMAL_DEVICE_DISABLED);
++		mode = THERMAL_DEVICE_DISABLED;
+ 	else
+-		result = -EINVAL;
++		return -EINVAL;
 +
-+	return sprintf(buf, "%s\n", type);
- }
++	mutex_lock(&tz->lock);
++	result = tz->ops->set_mode(tz, mode);
++	mutex_unlock(&tz->lock);
  
- static ssize_t
+ 	if (result)
+ 		return result;
 -- 
 2.1.4
-
