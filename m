@@ -1,50 +1,63 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: Fix incorrect usage of clamp_val()
-Date: Tue, 31 May 2016 16:49:42 +0530
-Message-ID: <a5c21ebe773d364b49bc5df9c4f69ff2eb181dbb.1464693539.git.viresh.kumar@linaro.org>
+Subject: [PATCH 0/2] cpufreq: Use sorted frequency tables
+Date: Tue, 31 May 2016 17:06:01 +0530
+Message-ID: <cover.1464694144.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:35435 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbcEaLTt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 07:19:49 -0400
-Received: by mail-pa0-f43.google.com with SMTP id fy7so54063980pac.2
-        for <linux-pm@vger.kernel.org>; Tue, 31 May 2016 04:19:49 -0700 (PDT)
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:35522 "EHLO
+	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbcEaLgI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 07:36:08 -0400
+Received: by mail-pf0-f182.google.com with SMTP id g64so74095745pfb.2
+        for <linux-pm@vger.kernel.org>; Tue, 31 May 2016 04:36:07 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, smuckle@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-clamp_val() doesn't change anything by itself, rather it returns the
-clamped value.
+Hi Guys,
 
-Fix it.
+This work in inspired by some of the concerns raised by Steve in one of
+his patchset.
 
-Fixes: 0ac587b32f49 ("cpufreq: Use clamp_val() in __cpufreq_driver_target()")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Hi Rafael,
+Currently, the cpufreq drivers aren't required to provide a sorted list
+of frequencies to the cpufreq-core and so traversing that list match a
+target frequency is very inefficient.
 
-Please merge this with the offending commit if you are fine with rebase,
-else apply this one as well.
+This is not bearable by, for example, the fast-switch path of schedutil
+governor and so we have moved the traversing logic local to the
+acpi-cpufreq driver for now. That is better handled in the core, but it
+has to be efficient.
 
-Sorry for blindly copying code.
+OTOH, even for traditional governors without a fast-switch path, it
+would be much better to be able to traverse this table quickly.
 
- drivers/cpufreq/cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The ideal solution would be to keep a single freq-table in struct
+cpufreq_policy, that will be sorted as well. But there are few
+dependencies due to which it can't be done today (Hint: cpufreq drivers
+are abusing the 'index' passed to them, to refer to multiple arrays).
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index d0c02a7eec0f..c6a14ba239a2 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1927,7 +1927,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 		return -ENODEV;
- 
- 	/* Make sure that target_freq is within supported range */
--	clamp_val(target_freq, policy->min, policy->max);
-+	target_freq = clamp_val(target_freq, policy->min, policy->max);
- 
- 	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
- 		 policy->cpu, target_freq, relation, old_target_freq);
+And so for now, lets create a separate table local to the cpufreq-core
+only.
+
+To use that, another API cpufreq_find_target_index() is created as well
+and few users are migrated to it.
+
+Lightly tested on Exynos board, frequencies were getting selected as
+expected.
+
+--
+viresh
+
+Viresh Kumar (2):
+  cpufreq: Store sorted frequency table
+  cpufreq: Implement cpufreq_find_target_index() to traverse sorted list
+
+ drivers/cpufreq/acpi-cpufreq.c |  18 ++--
+ drivers/cpufreq/cpufreq.c      |  48 ++++++-----
+ drivers/cpufreq/freq_table.c   | 191 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/cpufreq.h        |   7 ++
+ 4 files changed, 231 insertions(+), 33 deletions(-)
+
 -- 
 2.7.1.410.g6faf27b
 
