@@ -1,138 +1,131 @@
-From: Wanpeng Li <kernellwp@gmail.com>
-Subject: Re: [PATCH v2 3/3] cpufreq: schedutil: map raw required frequency to
- driver frequency
-Date: Tue, 31 May 2016 09:49:30 +0800
-Message-ID: <CANRm+CxFuTrr_-uqgwAdotR3_1+9eiCWuHDN0vbhmmKCKVbVxw@mail.gmail.com>
-References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
-	<1464231181-30741-4-git-send-email-smuckle@linaro.org>
-	<20160526071629.GW17585@vireshk-i7>
-	<CAJZ5v0gxfRBeQTyHACVtRpon50N_t3qytrFPT4ga2zwPhVYYdw@mail.gmail.com>
-	<20160530101830.GE30066@vireshk-i7>
-	<CAJZ5v0hwohZh_Pubt5pc2NoiMWrSDkcfjkbcFuugPkRTwKhejQ@mail.gmail.com>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCHv3 00/48] thermal: reorganizing thermal core
+Date: Tue, 31 May 2016 09:54:08 +0530
+Message-ID: <574D11E8.3070703@ti.com>
+References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f194.google.com ([209.85.161.194]:34760 "EHLO
-	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161746AbcEaBtb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 21:49:31 -0400
-In-Reply-To: <CAJZ5v0hwohZh_Pubt5pc2NoiMWrSDkcfjkbcFuugPkRTwKhejQ@mail.gmail.com>
+Received: from comal.ext.ti.com ([198.47.26.152]:60399 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750749AbcEaEYN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 31 May 2016 00:24:13 -0400
+In-Reply-To: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+To: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-2016-05-30 22:25 GMT+08:00 Rafael J. Wysocki <rafael@kernel.org>:
-> On Mon, May 30, 2016 at 12:18 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 29-05-16, 02:40, Rafael J. Wysocki wrote:
->>> I can't really parse the above question, so I'm not going to try to
->>> answer it. :-)
->>
->> Sorry about that :(
->>
->> IOW, I think that we should make this change into the sched-governor (I will
->> send a patch separately if you agree to this):
->
-> I don't.
->
->> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
->> index 14c4aa25cc45..5934b14aa21c 100644
->> --- a/kernel/sched/cpufreq_schedutil.c
->> +++ b/kernel/sched/cpufreq_schedutil.c
->> @@ -66,11 +66,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->>
->>         if (unlikely(sg_policy->need_freq_update)) {
->>                 sg_policy->need_freq_update = false;
->> -               /*
->> -                * This happens when limits change, so forget the previous
->> -                * next_freq value and force an update.
->> -                */
->> -               sg_policy->next_freq = UINT_MAX;
->>                 return true;
->>         }
->>
->> And here is my reasoning behind this.
->>
->> Can you show me any case, where the above code (as present in mainline
->> today) leads to a freq-change? I couldn't find any.
->>
->> Let me demonstrate.
->>
->> Following only talks about the fast-switch path, the other path is
->> same as well.
->>
->> Suppose this is the current range of frequencies supported by a
->> driver: 200, 400, 600, 800, 1000 (in MHz).
->>
->> And policy->cur = next_freq = 400 MHz.
->>
->> A.) Suppose that we change policy->min to 400 MHz from userspace.
->>     -> sugov_limits()
->>        This will find everything in order and simply set
->>        need_freq_update, without updating the frequency.
->>
->>     On next util-callback, we will forcefully return true from
->>     sugov_should_update_freq() and reach sugov_update_commit().
->>
->>     We calculate next_freq and that comes to 400 MHz again (that's the
->>     case we are trying to target with the above code).
->>
->>     With the current code, we will forcefully end up calling
->>     cpufreq_driver_fast_switch().
->>
->>     Because the new and current frequencies are same,
->>     cpufreq_driver->fast_switch() will simply return.
->>
->>     NOTE: I also think that cpufreq_driver_fast_switch() should have a
->>     check like (policy->cur == target_freq). I will add that too, in
->>     case you agree.
->>
->>     So, forcefully updating next_freq to UINT_MAX will end up wasting
->>     some cycles, but wouldn't do any useful stuff.
->
-> It will, but there's no way to distinguish this case from B in the
-> governor with the current min/max synchronization mechanism.  That is,
-> it only knows that something has changed, but checking what exactly
-> has changed would be racy.
->
->> B.) Suppose that we change policy->min to 600 MHz from userspace.
->>     -> sugov_limits()
->>        This will find that policy->cur is less than 600 and will set
->>        that to 600 MHz by calling __cpufreq_driver_target(). We will
->>        also set need_freq_update.
->>
->>        Note that next_freq and policy->cur are not in sync anymore and
->>        perhaps this is the most important case for the above code.
->
-> It is.
->
-> Moreover, please note that __cpufreq_driver_target() is only called in
-> sugov_limits() when policy->fast_switch_enabled is unset.
->
->>     On next util-callback, we will forcefully return true from
->>     sugov_should_update_freq() and reach sugov_update_commit().
->>
->>     We calculate next_freq and lets say that comes to 400 MHz again
->>     (as that's the case we are trying to target with the above code).
->>
->>     With the current code, we will forcefully end up calling
->>     cpufreq_driver_fast_switch().
->>
->>     Because next_freq() is not part of the new range, we will clamp it
->>     and set it to 600 MHz eventually. Again, next and current
->>     frequencies are same, cpufreq_driver->fast_switch() will simply
->>     return.
->
-> Not really (as per the above).
->
-> And even in the !fast_switch_enabled case, if next_freq stays at 400
-> MHz (which is different from policy->cur), it may lead to suboptimal
-> decisions going forward (eg. if it goes to 600 MHz next time and the
-> governor will think that the frequency has changed, although in fact
-> it hasn't).
+Hi Eduardo,
 
-Does set next_freq = UNIT_MAX has same effect as next_freq stays at
-400MHz since both means that frequency has changed?
+On Tuesday 31 May 2016 03:45 AM, Eduardo Valentin wrote:
+> Folks,
+>
+> This is V3 of a patch series to improve thermal core. The idea
+> here is to reorganize the code and improve the way we
+> handle sysfs entries.
+>
+> The change in behavior is that now, thermal zones with empty
+> .type will not be allowed to be registered. Also, the way
+> we handle scanf's return code is now checking for
+> number of successful inputs.
+>
+> After this series, thermal core is split into the following files:
+> - thermal_sysfs.c: contains the functions handling the sysfs nodes
+> - thermal_helpers.c: groups functions that do not need to touch thermal
+> core internal data structures, such as internal lists, and list locks.
+> - thermal_core.c: functions to handle the lifecycle of the subsystem,
+> its governors, cooling devices, thermal zone devices, and their
+> interactions.
+>
+> I don't expect any impact on userspace.
+>
+
+I applied the whole 48 patch series on top of mainline kernel.
+
+I see boot crash when i have thermal modules built in kernel for 
+dra7/dra72 boards.
+
+dra7 bootlog: http://pastebin.ubuntu.com/16859184/
 
 Regards,
-Wanpeng Li
+Keerthy
+
+> Please give your inputs.
+>
+> V2->V3:
+> - Included 8 extra patches to remove style issues on
+> (new) thermal core.
+>
+> V1->V2:
+> - Removed all checkpatch issues in the existing code that was
+> moved/changed.
+>
+> Rui, it would be great if you could review these earlier. I will be
+> sending two extra patch series on top of this one.
+>
+> BR,
+>
+> Eduardo Valentin (48):
+>    thermal: core: prevent zones with no types to be registered
+>    thermal: core: group thermal_zone DEVICE_ATTR's declarations
+>    thermal: core: group device_create_file() calls that are always
+>      created
+>    thermal: core: use dev.groups to manage always present tz attributes
+>    thermal: core: move emul_temp creation to tz->device.groups
+>    thermal: core: move mode attribute to tz->device.groups
+>    thermal: core: move passive attr to tz->device.groups
+>    thermal: core: improve power actor documentation
+>    thermal: core: move power actor code out of sysfs I/F section
+>    thermal: core: remove useless empty line
+>    thermal: core: fix style on remove_trip_attrs()
+>    thermal: core: move the trip attrs to the tz sysfs I/F section
+>    thermal: core: create tz->device.groups dynamically
+>    thermal: core: move trips attributes to tz->device.groups
+>    thermal: core: remove unnecessary device_remove() calls
+>    thermal: core: split passive_store
+>    thermal: core: split policy_store
+>    thermal: core: split available_policies_show()
+>    thermal: core: move to_thermal_zone() macro to header file
+>    thermal: core: treat correctly the return value of *scanf calls
+>    thermal: core: match parenthesis on code alignment
+>    thermal: core: move thermal_zone sysfs to thermal_sysfs.c
+>    thermal: core: move to_cooling_device macro to header file
+>    thermal: core: move cooling device sysfs to thermal_sysfs.c
+>    thermal: core: remove a couple of style issues on helpers
+>    thermal: core: introduce thermal_helpers.c
+>    thermal: core: group functions related to governor handling
+>    thermal: core: move idr handling to device management section
+>    thermal: core: small style fix on __unbind() helper
+>    thermal: core: move __unbind() helper to where it is used
+>    thermal: core: move bind_cdev() to where it is used
+>    thermal: core: move bind_tz() to where it is used
+>    thermal: core: fix couple of style issues on __bind() helper
+>    thermal: core: move __bind() to where it is used
+>    thermal: core: add inline to print_bind_err_msg()
+>    thermal: core: move notify to the zone update section
+>    thermal: core: add a comment describing the main update loop
+>    thermal: core: add a comment describing the power actor section
+>    thermal: core: add a comment describing the device management section
+>    thermal: sysfs: remove symbols of emul_temp when config is disabled
+>    thermal: core: remove FSF address in the GPL notice
+>    thermal: core: small style fix when checking for __find_governor()
+>    thermal: core: standardize line breaking alignment
+>    thermal: core: remove void function return statements
+>    thermal: core: remove style warnings and checks
+>    thermal: core: improve kerneldoc entry of
+>      thermal_cooling_device_unregister
+>    thermal: core: use kzalloc(sizeof(*ptr),...)
+>    thermal: sysfs: use kcalloc() instead of kzalloc()
+>
+>   drivers/thermal/Makefile          |    3 +-
+>   drivers/thermal/thermal_core.c    | 1363 +++++++++----------------------------
+>   drivers/thermal/thermal_core.h    |   26 +
+>   drivers/thermal/thermal_helpers.c |  144 ++++
+>   drivers/thermal/thermal_sysfs.c   |  752 ++++++++++++++++++++
+>   include/linux/thermal.h           |    2 +
+>   6 files changed, 1234 insertions(+), 1056 deletions(-)
+>   create mode 100644 drivers/thermal/thermal_helpers.c
+>   create mode 100644 drivers/thermal/thermal_sysfs.c
+>
