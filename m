@@ -1,47 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/3] cpufreq: acpi-cpufreq: add resolve_freq callback
-Date: Tue, 31 May 2016 17:08:15 +0530
-Message-ID: <20160531113815.GG9463@vireshk-i7>
-References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
- <1464231181-30741-3-git-send-email-smuckle@linaro.org>
- <20160526064341.GV17585@vireshk-i7>
- <20160530162027.GF9864@graphite.smuckle.net>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [RFC v2 00/13] usb/mmc/power: Fix USB/LAN when TFTP booting
+Date: Tue, 31 May 2016 13:54:31 +0200
+Message-ID: <574D7B77.4000606@samsung.com>
+References: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
+ <20160505224240.GA31429@rob-hp-laptop>
+ <CAPDyKFqpoi03Egfuvd8qJXnn_+FBgPXAb7S4UvkxVs8BA+zwnA@mail.gmail.com>
+ <20160509181829.GA19687@rob-hp-laptop>
+ <CAPDyKFq2=mqujFjvJSYxg2nVmK=OrBKLtFfb-ErNJO3Zr_LMVw@mail.gmail.com>
+ <20160528033613.GA3291@shlinux2> <20160531005808.GA7913@shlinux2>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160530162027.GF9864@graphite.smuckle.net>
+In-reply-to: <20160531005808.GA7913@shlinux2>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+To: Peter Chen <hzpeterchen@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rob Herring <robh@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, hverkuil@xs4all.nl, tjakobi@math.uni-bielefeld.de, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 30-05-16, 09:20, Steve Muckle wrote:
-> A couple concerns... One is that if we do the lookup in
-> cpufreq_driver_resolve_freq() for drivers which implement target_index()
-> then it means using cpufreq_frequency_table_target() there.  This is a
-> heavier weight function that can't take advantage of driver-specific
-> knowledge that the freq table is sorted a particular way.
+On 05/31/2016 02:58 AM, Peter Chen wrote:
+> On Sat, May 28, 2016 at 11:36:13AM +0800, Peter Chen wrote:
+>> All, how we move on for this?
+>>
+>> 1. Using a generic driver to manage both mmc and USB (and further
+>> subsystem), USB and further subsystem do not use pwrseq node in dts.
+>> 2. USB creates the similar driver under drivers/usb for its own use. 
+>>
+>> Which one do you prefer, thanks.
+>>
+> 
+> Hi Krzysztof Kozlowski,
+> 
+> I think option 1 may be better according to Rob and Ulf's comment.
 
-I completely agree.
+Hi,
 
-> So for
-> acpi-cpufreq we'd now be having to walk the whole table for every
-> fast_switch.
+I like the option #1 as well. The generic driver should rely and parse
+existing bindings like 'reset-gpios'. Still additional property (e.g.
+"do-the-power-sequence") seems needed as we do not want to play with all
+reset-gpios in DTB.
 
-I have just tried to address that with following set:
+> Would you like going on your patch set? You can work on generic pwrseq
+> driver, I will do USB stuffs based on generic pwrseq driver?
 
-[PATCH 0/2] cpufreq: Use sorted frequency tables
+Great, that sounds good! I'll start the work.
 
-Lets see what Rafael has to say about that.
-
-> Another is that it'll be a a bit odd that the logic used to lookup the
-> driver frequency will be different in the cached and uncached
-> fast_switch cases. In the cached case it will have been determined by
-> code in cpufreq_driver_resolve_freq() whereas in the uncached case it
-> will be logic in the driver, in its fast_switch routine.
-
-We can make both of them refer the above code then. Lets see.
-
--- 
-viresh
+Best regards,
+Krzysztof
