@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv4 13/48] thermal: core: create tz->device.groups dynamically
-Date: Mon, 30 May 2016 23:18:20 -0700
-Message-ID: <1464675535-2433-14-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv4 20/48] thermal: core: treat correctly the return value of *scanf calls
+Date: Mon, 30 May 2016 23:18:27 -0700
+Message-ID: <1464675535-2433-21-git-send-email-edubezval@gmail.com>
 References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
@@ -10,75 +10,87 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-This is a patch to allow adding groups created dynamically. For now we
-create only the existing group. However, this is a preparation to allow
-creating trip groups, which are determined only when the number of trips
-are known at runtime.
+This patch checks the return value of all calls to *scanf.
+The check is to simply match the number of expect inputs.
+
+The current code does not do any recovery in case the
+number of treated inputs are different than the expected.
+Therefore, keeping the same behavior.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 25 ++++++++++++++++++++++---
- 1 file changed, 22 insertions(+), 3 deletions(-)
+ drivers/thermal/thermal_core.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index ab03dfc..ba4f7a9 100644
+index 71fb762..9545e15 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1173,7 +1173,7 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
- 	&thermal_zone_attribute_group,
- 	&thermal_zone_mode_attribute_group,
- 	&thermal_zone_passive_attribute_group,
--	NULL
-+	/* This is not NULL terminated as we create the group dynamically */
- };
+@@ -817,7 +817,7 @@ trip_point_type_show(struct device *dev, struct device_attribute *attr,
+ 	if (!tz->ops->get_trip_type)
+ 		return -EPERM;
  
- /**
-@@ -1284,6 +1284,25 @@ static void remove_trip_attrs(struct thermal_zone_device *tz)
- 	kfree(tz->trip_hyst_attrs);
- }
+-	if (!sscanf(attr->attr.name, "trip_point_%d_type", &trip))
++	if (sscanf(attr->attr.name, "trip_point_%d_type", &trip) != 1)
+ 		return -EINVAL;
  
-+static int thermal_zone_create_device_groups(struct thermal_zone_device *tz)
-+{
-+	const struct attribute_group **groups;
-+	int i, size;
-+
-+	size = ARRAY_SIZE(thermal_zone_attribute_groups) + 1;
-+	/* This also takes care of API requirement to be NULL terminated */
-+	groups = kcalloc(size, sizeof(*groups), GFP_KERNEL);
-+	if (!groups)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < size - 1; i++)
-+		groups[i] = thermal_zone_attribute_groups[i];
-+
-+	tz->device.groups = groups;
-+
-+	return 0;
-+}
-+
- /* sys I/F for cooling device */
- #define to_cooling_device(_dev)	\
- 	container_of(_dev, struct thermal_cooling_device, device)
-@@ -1916,7 +1935,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 	tz->polling_delay = polling_delay;
+ 	result = tz->ops->get_trip_type(tz, trip, &type);
+@@ -849,7 +849,7 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+ 	if (!tz->ops->set_trip_temp)
+ 		return -EPERM;
  
- 	/* Add nodes that are always present via .groups */
--	tz->device.groups = thermal_zone_attribute_groups;
-+	thermal_zone_create_device_groups(tz);
- 	/* A new thermal zone needs to be updated anyway. */
- 	atomic_set(&tz->need_update, 1);
+-	if (!sscanf(attr->attr.name, "trip_point_%d_temp", &trip))
++	if (sscanf(attr->attr.name, "trip_point_%d_temp", &trip) != 1)
+ 		return -EINVAL;
  
-@@ -2045,7 +2064,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	idr_destroy(&tz->idr);
- 	mutex_destroy(&tz->lock);
- 	device_unregister(&tz->device);
--	return;
-+	kfree(tz->device.groups);
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
+ 	if (kstrtoint(buf, 10, &temperature))
+@@ -875,7 +875,7 @@ trip_point_temp_show(struct device *dev, struct device_attribute *attr,
+ 	if (!tz->ops->get_trip_temp)
+ 		return -EPERM;
  
+-	if (!sscanf(attr->attr.name, "trip_point_%d_temp", &trip))
++	if (sscanf(attr->attr.name, "trip_point_%d_temp", &trip) != 1)
+ 		return -EINVAL;
+ 
+ 	ret = tz->ops->get_trip_temp(tz, trip, &temperature);
+@@ -897,7 +897,7 @@ trip_point_hyst_store(struct device *dev, struct device_attribute *attr,
+ 	if (!tz->ops->set_trip_hyst)
+ 		return -EPERM;
+ 
+-	if (!sscanf(attr->attr.name, "trip_point_%d_hyst", &trip))
++	if (sscanf(attr->attr.name, "trip_point_%d_hyst", &trip) != 1)
+ 		return -EINVAL;
+ 
+ 	if (kstrtoint(buf, 10, &temperature))
+@@ -924,7 +924,7 @@ trip_point_hyst_show(struct device *dev, struct device_attribute *attr,
+ 	if (!tz->ops->get_trip_hyst)
+ 		return -EPERM;
+ 
+-	if (!sscanf(attr->attr.name, "trip_point_%d_hyst", &trip))
++	if (sscanf(attr->attr.name, "trip_point_%d_hyst", &trip) != 1)
+ 		return -EINVAL;
+ 
+ 	ret = tz->ops->get_trip_hyst(tz, trip, &temperature);
+@@ -939,7 +939,7 @@ passive_store(struct device *dev, struct device_attribute *attr,
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+ 	int state;
+ 
+-	if (!sscanf(buf, "%d\n", &state))
++	if (sscanf(buf, "%d\n", &state) != 1)
+ 		return -EINVAL;
+ 
+ 	/* sanity check: values below 1000 millicelcius don't make sense
+@@ -1385,7 +1385,7 @@ thermal_cooling_device_cur_state_store(struct device *dev,
+ 	unsigned long state;
+ 	int result;
+ 
+-	if (!sscanf(buf, "%ld\n", &state))
++	if (sscanf(buf, "%ld\n", &state) != 1)
+ 		return -EINVAL;
+ 
+ 	if ((long)state < 0)
 -- 
 2.1.4
