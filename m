@@ -1,124 +1,78 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv4 00/48] thermal: reorganizing thermal core
-Date: Mon, 30 May 2016 23:18:07 -0700
-Message-ID: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Subject: [PATCHv4 01/48] thermal: core: prevent zones with no types to be registered
+Date: Mon, 30 May 2016 23:18:08 -0700
+Message-ID: <1464675535-2433-2-git-send-email-edubezval@gmail.com>
+References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34438 "EHLO
-	mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751778AbcEaGTA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 02:19:00 -0400
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:35824 "EHLO
+	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754118AbcEaGTC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 02:19:02 -0400
+In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Folks,
+There are APIs that rely on tz->type. This patch
+prevent thermal zones without it to be registered.
 
-This is V4 of a patch series to improve thermal core. The idea
-here is to reorganize the code and improve the way we
-handle sysfs entries.
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+---
+ drivers/thermal/thermal_core.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-The change in behavior is that now, thermal zones with empty
-.type will not be allowed to be registered. Also, the way
-we handle scanf's return code is now checking for
-number of successful inputs.
-
-After this series, thermal core is split into the following files:
-- thermal_sysfs.c: contains the functions handling the sysfs nodes
-- thermal_helpers.c: groups functions that do not need to touch thermal
-core internal data structures, such as internal lists, and list locks.
-- thermal_core.c: functions to handle the lifecycle of the subsystem,
-its governors, cooling devices, thermal zone devices, and their
-interactions.
-
-I don't expect any impact on userspace.
-
-Please give your inputs.
-
-For your consideration, I am also adding this to this branch:
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal sysfs_rework
-
-V3->V4:
-- Fixes on a couple of sysfs entries as reported in the mailing list.
-
-V2->V3:
-- Included 8 extra patches to remove style issues on
-(new) thermal core.
-
-V1->V2:
-- Removed all checkpatch issues in the existing code that was
-moved/changed.
-
-Rui, it would be great if you could review these earlier. I will be
-sending two extra patch series on top of this one.
-
-
-
-Eduardo Valentin (48):
-  thermal: core: prevent zones with no types to be registered
-  thermal: core: group thermal_zone DEVICE_ATTR's declarations
-  thermal: core: group device_create_file() calls that are always
-    created
-  thermal: core: use dev.groups to manage always present tz attributes
-  thermal: core: move emul_temp creation to tz->device.groups
-  thermal: core: move mode attribute to tz->device.groups
-  thermal: core: move passive attr to tz->device.groups
-  thermal: core: improve power actor documentation
-  thermal: core: move power actor code out of sysfs I/F section
-  thermal: core: remove useless empty line
-  thermal: core: fix style on remove_trip_attrs()
-  thermal: core: move the trip attrs to the tz sysfs I/F section
-  thermal: core: create tz->device.groups dynamically
-  thermal: core: move trips attributes to tz->device.groups
-  thermal: core: remove unnecessary device_remove() calls
-  thermal: core: split passive_store
-  thermal: core: split policy_store
-  thermal: core: split available_policies_show()
-  thermal: core: move to_thermal_zone() macro to header file
-  thermal: core: treat correctly the return value of *scanf calls
-  thermal: core: match parenthesis on code alignment
-  thermal: core: move thermal_zone sysfs to thermal_sysfs.c
-  thermal: core: move to_cooling_device macro to header file
-  thermal: core: move cooling device sysfs to thermal_sysfs.c
-  thermal: core: remove a couple of style issues on helpers
-  thermal: core: introduce thermal_helpers.c
-  thermal: core: group functions related to governor handling
-  thermal: core: move idr handling to device management section
-  thermal: core: small style fix on __unbind() helper
-  thermal: core: move __unbind() helper to where it is used
-  thermal: core: move bind_cdev() to where it is used
-  thermal: core: move bind_tz() to where it is used
-  thermal: core: fix couple of style issues on __bind() helper
-  thermal: core: move __bind() to where it is used
-  thermal: core: add inline to print_bind_err_msg()
-  thermal: core: move notify to the zone update section
-  thermal: core: add a comment describing the main update loop
-  thermal: core: add a comment describing the power actor section
-  thermal: core: add a comment describing the device management section
-  thermal: sysfs: remove symbols of emul_temp when config is disabled
-  thermal: core: remove FSF address in the GPL notice
-  thermal: core: small style fix when checking for __find_governor()
-  thermal: core: standardize line breaking alignment
-  thermal: core: remove void function return statements
-  thermal: core: remove style warnings and checks
-  thermal: core: improve kerneldoc entry of
-    thermal_cooling_device_unregister
-  thermal: core: use kzalloc(sizeof(*ptr),...)
-  thermal: sysfs: use kcalloc() instead of kzalloc()
-
- drivers/thermal/Makefile          |    3 +-
- drivers/thermal/thermal_core.c    | 1363 +++++++++----------------------------
- drivers/thermal/thermal_core.h    |   26 +
- drivers/thermal/thermal_helpers.c |  144 ++++
- drivers/thermal/thermal_sysfs.c   |  756 ++++++++++++++++++++
- include/linux/thermal.h           |    2 +
- 6 files changed, 1238 insertions(+), 1056 deletions(-)
- create mode 100644 drivers/thermal/thermal_helpers.c
- create mode 100644 drivers/thermal/thermal_sysfs.c
-
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 5133cd1..6359c05 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1810,6 +1810,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	int passive = 0;
+ 	struct thermal_governor *governor;
+ 
++	if (!type || strlen(type) == 0)
++		return ERR_PTR(-EINVAL);
++
+ 	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+ 		return ERR_PTR(-EINVAL);
+ 
+@@ -1835,7 +1838,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 		return ERR_PTR(result);
+ 	}
+ 
+-	strlcpy(tz->type, type ? : "", sizeof(tz->type));
++	strlcpy(tz->type, type, sizeof(tz->type));
+ 	tz->ops = ops;
+ 	tz->tzp = tzp;
+ 	tz->device.class = &thermal_class;
+@@ -1855,11 +1858,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	}
+ 
+ 	/* sys I/F */
+-	if (type) {
+-		result = device_create_file(&tz->device, &dev_attr_type);
+-		if (result)
+-			goto unregister;
+-	}
++	result = device_create_file(&tz->device, &dev_attr_type);
++	if (result)
++		goto unregister;
+ 
+ 	result = device_create_file(&tz->device, &dev_attr_temp);
+ 	if (result)
+@@ -2008,8 +2009,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 
+ 	thermal_zone_device_set_polling(tz, 0);
+ 
+-	if (tz->type[0])
+-		device_remove_file(&tz->device, &dev_attr_type);
++	device_remove_file(&tz->device, &dev_attr_type);
+ 	device_remove_file(&tz->device, &dev_attr_temp);
+ 	if (tz->ops->get_mode)
+ 		device_remove_file(&tz->device, &dev_attr_mode);
 -- 
 2.1.4
 
