@@ -1,29 +1,28 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: stats: Make the stats code non-modular
-Date: Tue, 31 May 2016 22:47:18 +0200
-Message-ID: <2881201.0GRyZLBx91@vostro.rjw.lan>
-References: <1482863.aVJEuqdboc@vostro.rjw.lan> <5665576.VhylybbIm6@vostro.rjw.lan> <20160531104434.GE9463@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160531104434.GE9463@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH 0/2] Powercap RAPL update for Denverton
+Date: Tue, 31 May 2016 13:41:28 -0700
+Message-ID: <1464727290-5400-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:56441 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751375AbcEaUt0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 31 May 2016 16:49:26 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On Tuesday, May 31, 2016 04:14:34 PM Viresh Kumar wrote:
-> On 28-05-16, 15:15, Rafael J. Wysocki wrote:
-> > -static int __init cpufreq_stats_init(void)
-> > -{
-> > -	int ret;
-> > -	unsigned int cpu;
-> > -
-> > -	spin_lock_init(&cpufreq_stats_lock);
-> 
-> My bad for ignoring this, but the spin lock is left uninitialized now
+A few MSRs are missing from Denverton RAPL interface which makes domain
+detection fail prematurely. The patchset adds flexibility to the detection
+logic such that it will support what functionality remains available.
 
-That's embarrassing.
+Jacob Pan (2):
+  powercap/rapl: handle missing msrs
+  powercap/rapl: add support for denverton
 
-Should be fixed now, thanks!
+ drivers/powercap/intel_rapl.c | 104 ++++++++++++++++++++++++++++++++----------
+ 1 file changed, 80 insertions(+), 24 deletions(-)
+
+-- 
+1.9.1
+
