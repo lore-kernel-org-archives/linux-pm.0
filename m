@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 07/15] thermal: sysfs: lock tz while on policy properties
-Date: Mon, 30 May 2016 23:31:28 -0700
-Message-ID: <1464676296-5610-8-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 04/15] thermal: sysfs: lock tz while on trip_point_temp properties
+Date: Mon, 30 May 2016 23:31:25 -0700
+Message-ID: <1464676296-5610-5-git-send-email-edubezval@gmail.com>
 References: <1464676296-5610-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464676296-5610-1-git-send-email-edubezval@gmail.com>
@@ -11,37 +11,39 @@ Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ed
 List-Id: linux-pm@vger.kernel.org
 
 Serialized calls to tz.ops in user facing
-sysfs handler policy_show().
-policy_store() is already locked by
-the thermal core.
+sysfs handler trip_point_temp_show() and trip_point_temp_store().
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_sysfs.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/thermal/thermal_sysfs.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index dcaeb17..234eb18 100644
+index b69036e..32f410f 100644
 --- a/drivers/thermal/thermal_sysfs.c
 +++ b/drivers/thermal/thermal_sysfs.c
-@@ -311,8 +311,14 @@ static ssize_t
- policy_show(struct device *dev, struct device_attribute *devattr, char *buf)
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
-+	char *name;
+@@ -151,7 +151,9 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+ 	if (kstrtoint(buf, 10, &temperature))
+ 		return -EINVAL;
  
--	return sprintf(buf, "%s\n", tz->governor->name);
-+	/* locking the zone because governor->name does not change */
 +	mutex_lock(&tz->lock);
-+	name = tz->governor->name;
+ 	ret = tz->ops->set_trip_temp(tz, trip, temperature);
 +	mutex_unlock(&tz->lock);
-+
-+	return sprintf(buf, "%s\n", name);
- }
+ 	if (ret)
+ 		return ret;
  
- static ssize_t
+@@ -174,7 +176,9 @@ trip_point_temp_show(struct device *dev, struct device_attribute *attr,
+ 	if (sscanf(attr->attr.name, "trip_point_%d_temp", &trip) != 1)
+ 		return -EINVAL;
+ 
++	mutex_lock(&tz->lock);
+ 	ret = tz->ops->get_trip_temp(tz, trip, &temperature);
++	mutex_unlock(&tz->lock);
+ 
+ 	if (ret)
+ 		return ret;
 -- 
 2.1.4
