@@ -1,77 +1,116 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv3 02/48] thermal: core: group thermal_zone DEVICE_ATTR's declarations
-Date: Mon, 30 May 2016 15:15:38 -0700
-Message-ID: <1464646584-14322-3-git-send-email-edubezval@gmail.com>
-References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [RFC v2 00/13] usb/mmc/power: Fix USB/LAN when TFTP booting
+Date: Tue, 31 May 2016 08:58:08 +0800
+Message-ID: <20160531005808.GA7913@shlinux2>
+References: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
+ <20160505224240.GA31429@rob-hp-laptop>
+ <CAPDyKFqpoi03Egfuvd8qJXnn_+FBgPXAb7S4UvkxVs8BA+zwnA@mail.gmail.com>
+ <20160509181829.GA19687@rob-hp-laptop>
+ <CAPDyKFq2=mqujFjvJSYxg2nVmK=OrBKLtFfb-ErNJO3Zr_LMVw@mail.gmail.com>
+ <20160528033613.GA3291@shlinux2>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-mmc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160528033613.GA3291@shlinux2>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, hverkuil@xs4all.nl, tjakobi@math.uni-bielefeld.de, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: linux-pm@vger.kernel.org
 
-Simply reorganize the code to have all DEVICE_ATTR's
-in one point in the file.
+On Sat, May 28, 2016 at 11:36:13AM +0800, Peter Chen wrote:
+> On Tue, May 10, 2016 at 01:02:08PM +0200, Ulf Hansson wrote:
+> > + Arnd
+> > 
+> > [...]
+> > 
+> > >> >> Solution
+> > >> >> ========
+> > >> >> This is very similar to the MMC pwrseq behavior so the idea is to:
+> > >> >> 1. Move MMC pwrseq drivers to generic place,
+> > >> >
+> > >> > You can do that, but I'm going to NAK any use of pwrseq bindings outside
+> > >> > of MMC. I think it is the wrong way to do things. The DT should describe
+> > >>
+> > >> Huh, I didn't know that was your view of the mmc pwrseq bindings. Why
+> > >> didn't you NAK them before?
+> > >
+> > > Unfortunately, either I missed it or it was a time I couldn't spend much
+> > > time on reviews.
+> > 
+> > Okay, I guess it's common issue among maintainers. The problem with DT
+> > is that it gets really hard to be fixed up later. :-)
+> > 
+> > >
+> > >> > the devices. If they happen to be "simple" then the core can walk the
+> > >> > tree and do any setup. For example, look for "reset-gpios" and toggle
+> > >> > that GPIO. There is no need for a special node.
+> > >> >
+> > >> >> 2. Extend the pwrseq-simple with regulator toggling,
+> > >> >> 3. Add support to USB hub and port core for pwrseq,
+> > >> >
+> > >> > We discussed this for USB already[1] and is why we defined how to add
+> > >> > USB child devices. The idea is not to add pwrseq to that.
+> > >>
+> > >> I am not familiar with the USB discussion.
+> > >>
+> > >> Still, let me give you some more background to the mmc pwrseq. The
+> > >> idea from the mmc pwrseq bindings comes from the power-domain DT
+> > >> bindings, as I thought these things were a bit related.
+> > >> In both cases they are not directly a property of the device, but more
+> > >> describing a HW dependency to allow the device to work.
+> > >
+> > > I could see this as a board level power domain. However the difference
+> > > is we are not generally exposing internal SOC details the same way as
+> > > board level components. Perhaps we could extend power domains to board
+> > > level, but that is not what was done here.
+> > >
+> > >> One could probably use a child node instead of a phandle, but that
+> > >> wasn't chosen back then. Of course you are the DT expert, but could
+> > >> you perhaps tell me why a child node is better for cases like this?
+> > >
+> > > If there is a control path hierarchy, then we try to model that in DT
+> > > with child nodes. In cases of SDIO and USB, there is a clear hierarchy.
+> > > Ignoring the discovery ordering problem, we already have defined ways to
+> > > describe GPIO connections, regulators, etc. to devices. Describing those
+> > > things separately from the device to solve a particular issue that is
+> > > really a kernel limitation is what I don't like.
+> > 
+> > Okay, I see.
+> > 
+> > To move forward in trying to make mmc pwrseq a generic pwrseq, could
+> > we perhaps allow both cases?
+> > 
+> > In the mmc case, there are already deployed bindings so we need to
+> > cope with these by using the phandle option, but for USB etc we could
+> > force the child node option.
+> > As long as we agree that we keep using a compatible string for the
+> > child node as well, both options should be able to co-exist and we
+> > should probably be able to managed them both from a common pwrseq
+> > driver framework.
+> > 
+> > Although, I do remember from an older conversations around some of
+> > mine submission for the mmc pwrseq code, that some people (maybe
+> > Arnd?) wasn't keen on adding a new framework for this. Perhaps that
+> > has changed?
+> > 
+> 
+> All, how we move on for this?
+> 
+> 1. Using a generic driver to manage both mmc and USB (and further
+> subsystem), USB and further subsystem do not use pwrseq node in dts.
+> 2. USB creates the similar driver under drivers/usb for its own use. 
+> 
+> Which one do you prefer, thanks.
+> 
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
----
- drivers/thermal/thermal_core.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+Hi Krzysztof Kozlowski,
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6359c05..956e7e1 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -917,7 +917,6 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
- 
- 	return ret ? ret : count;
- }
--static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
- 
- static ssize_t
- sustainable_power_show(struct device *dev, struct device_attribute *devattr,
-@@ -948,8 +947,6 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
- 
- 	return count;
- }
--static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
--		sustainable_power_store);
- 
- #define create_s32_tzp_attr(name)					\
- 	static ssize_t							\
-@@ -992,6 +989,16 @@ create_s32_tzp_attr(slope);
- create_s32_tzp_attr(offset);
- #undef create_s32_tzp_attr
- 
-+static DEVICE_ATTR(type, 0444, type_show, NULL);
-+static DEVICE_ATTR(temp, 0444, temp_show, NULL);
-+static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
-+static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
-+static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
-+static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
-+static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
-+static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
-+		   sustainable_power_store);
-+
- static struct device_attribute *dev_tzp_attrs[] = {
- 	&dev_attr_sustainable_power,
- 	&dev_attr_k_po,
-@@ -1099,13 +1106,6 @@ int power_actor_set_power(struct thermal_cooling_device *cdev,
- 	return 0;
- }
- 
--static DEVICE_ATTR(type, 0444, type_show, NULL);
--static DEVICE_ATTR(temp, 0444, temp_show, NULL);
--static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
--static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
--static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
--static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
--
- /* sys I/F for cooling device */
- #define to_cooling_device(_dev)	\
- 	container_of(_dev, struct thermal_cooling_device, device)
+I think option 1 may be better according to Rob and Ulf's comment.
+Would you like going on your patch set? You can work on generic pwrseq
+driver, I will do USB stuffs based on generic pwrseq driver?
+
 -- 
-2.1.4
+
+Best Regards,
+Peter Chen
