@@ -1,196 +1,406 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v3 1/2] power: axp288_charger: Replace deprecatd API of extcon
-Date: Tue, 31 May 2016 18:34:39 +0900
-Message-ID: <1464687280-8155-2-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v3 2/2] extcon: Remove the deprecated extcon functions
+Date: Tue, 31 May 2016 18:34:40 +0900
+Message-ID: <1464687280-8155-3-git-send-email-cw00.choi@samsung.com>
 References: <1464687280-8155-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:37281 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756904AbcEaJeq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 05:34:46 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1464687280-8155-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, wens@csie.org
 Cc: myungjoo.ham@samsung.com, cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-This patch removes the deprecated notifier API of extcon framework and then use
-the new extcon API[2] with the unique id[1] to indicate the each external
-connector. Alter deprecated API as following:
-- extcon_register_interest() -> extcon_register_notifier()
-- extcon_unregister_interest() -> extcon_unregister_notifier()
-- extcon_get_cable_state() -> extcon_get_cable_state_()
+This patch removes the deprecated extcon functions using string type
+to identify the type of external connector. The Commit 2a9de9c0f08d61
+("extcon: Use the unique id for external connector instead of string)
+uses the unique id to separate the type of external connector instead of
+string name.
+- extcon_register_interest()
+- extcon_unregister_interest()
+- extcon_set_cable_state()
+- extcon_get_cable_state()
 
-And, extcon alters the name of USB charger connector in patch[3] as following:
-- EXTCON_CHG_USB_SDP /* Standard Downstream Port */
-- EXTCON_CHG_USB_DCP /* Dedicated Charging Port */
-- EXTCON_CHG_USB_CDP /* Charging Downstream Port */
-- EXTCON_CHG_USB_ACA /* Accessory Charger Adapter */
+And, extcon_register_interest() finds the first extcon device to include the
+requested external connector from extcon client device and then register the
+notifier if extcon device argument is NULL. Instead, extcon_register_notifier()
+supports this feature.
 
-[1] Commit 2a9de9c0f08d61
-- ("extcon: Use the unique id for external connector instead of string)
-[2] Commit 046050f6e623e4
-- ("extcon: Update the prototype of extcon_register_notifier() with enum extcon
-[3] Commit 11eecf910bd81d
-- ("extcon: Modify the id and name of external connector")
+But, this patch remains the deprecatd function definition to prevent
+the build break.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/power/axp288_charger.c | 77 +++++++++++++++++++++++++++++-------------
- 1 file changed, 53 insertions(+), 24 deletions(-)
+ drivers/extcon/extcon.c | 201 ++++++------------------------------------------
+ include/linux/extcon.h  |  80 ++++++-------------
+ 2 files changed, 47 insertions(+), 234 deletions(-)
 
-diff --git a/drivers/power/axp288_charger.c b/drivers/power/axp288_charger.c
-index e4d569f57acc..4030eeb7cf65 100644
---- a/drivers/power/axp288_charger.c
-+++ b/drivers/power/axp288_charger.c
-@@ -129,10 +129,6 @@
- 
- #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
- 
--#define AXP288_EXTCON_SLOW_CHARGER		"SLOW-CHARGER"
--#define AXP288_EXTCON_DOWNSTREAM_CHARGER	"CHARGE-DOWNSTREAM"
--#define AXP288_EXTCON_FAST_CHARGER		"FAST-CHARGER"
--
- enum {
- 	VBUS_OV_IRQ = 0,
- 	CHARGE_DONE_IRQ,
-@@ -158,7 +154,7 @@ struct axp288_chrg_info {
- 	/* OTG/Host mode */
- 	struct {
- 		struct work_struct work;
--		struct extcon_specific_cable_nb cable;
-+		struct extcon_dev *cable;
- 		struct notifier_block id_nb;
- 		bool id_short;
- 	} otg;
-@@ -586,17 +582,15 @@ static void axp288_charger_extcon_evt_worker(struct work_struct *work)
- 	bool old_connected = info->cable.connected;
- 
- 	/* Determine cable/charger type */
--	if (extcon_get_cable_state(edev, AXP288_EXTCON_SLOW_CHARGER) > 0) {
-+	if (extcon_get_cable_state_(edev, EXTCON_CHG_USB_SDP) > 0) {
- 		dev_dbg(&info->pdev->dev, "USB SDP charger  is connected");
- 		info->cable.connected = true;
- 		info->cable.chg_type = POWER_SUPPLY_TYPE_USB;
--	} else if (extcon_get_cable_state(edev,
--				AXP288_EXTCON_DOWNSTREAM_CHARGER) > 0) {
-+	} else if (extcon_get_cable_state_(edev, EXTCON_CHG_USB_CDP) > 0) {
- 		dev_dbg(&info->pdev->dev, "USB CDP charger is connected");
- 		info->cable.connected = true;
- 		info->cable.chg_type = POWER_SUPPLY_TYPE_USB_CDP;
--	} else if (extcon_get_cable_state(edev,
--					AXP288_EXTCON_FAST_CHARGER) > 0) {
-+	} else if (extcon_get_cable_state_(edev, EXTCON_CHG_USB_DCP) > 0) {
- 		dev_dbg(&info->pdev->dev, "USB DCP charger is connected");
- 		info->cable.connected = true;
- 		info->cable.chg_type = POWER_SUPPLY_TYPE_USB_DCP;
-@@ -692,8 +686,8 @@ static int axp288_charger_handle_otg_evt(struct notifier_block *nb,
- {
- 	struct axp288_chrg_info *info =
- 	    container_of(nb, struct axp288_chrg_info, otg.id_nb);
--	struct extcon_dev *edev = param;
--	int usb_host = extcon_get_cable_state(edev, "USB-Host");
-+	struct extcon_dev *edev = info->otg.cable;
-+	int usb_host = extcon_get_cable_state_(edev, EXTCON_USB_HOST);
- 
- 	dev_dbg(&info->pdev->dev, "external connector USB-Host is %s\n",
- 				usb_host ? "attached" : "detached");
-@@ -848,10 +842,33 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	/* Register for extcon notification */
- 	INIT_WORK(&info->cable.work, axp288_charger_extcon_evt_worker);
- 	info->cable.nb.notifier_call = axp288_charger_handle_cable_evt;
--	ret = extcon_register_notifier(info->cable.edev, EXTCON_NONE, &info->cable.nb);
-+	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
-+					&info->cable.nb);
-+	if (ret) {
-+		dev_err(&info->pdev->dev,
-+			"failed to register extcon notifier for SDP %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
-+					&info->cable.nb);
-+	if (ret) {
-+		dev_err(&info->pdev->dev,
-+			"failed to register extcon notifier for CDP %d\n", ret);
-+		extcon_unregister_notifier(info->cable.edev,
-+				EXTCON_CHG_USB_SDP, &info->cable.nb);
-+		return ret;
-+	}
-+
-+	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
-+					&info->cable.nb);
- 	if (ret) {
- 		dev_err(&info->pdev->dev,
--			"failed to register extcon notifier %d\n", ret);
-+			"failed to register extcon notifier for DCP %d\n", ret);
-+		extcon_unregister_notifier(info->cable.edev,
-+				EXTCON_CHG_USB_SDP, &info->cable.nb);
-+		extcon_unregister_notifier(info->cable.edev,
-+				EXTCON_CHG_USB_CDP, &info->cable.nb);
- 		return ret;
- 	}
- 
-@@ -871,14 +888,14 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	/* Register for OTG notification */
- 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
- 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
--	ret = extcon_register_interest(&info->otg.cable, NULL, "USB-Host",
-+	ret = extcon_register_notifier(info->otg.cable, EXTCON_USB_HOST,
- 				       &info->otg.id_nb);
- 	if (ret)
- 		dev_warn(&pdev->dev, "failed to register otg notifier\n");
- 
--	if (info->otg.cable.edev)
--		info->otg.id_short = extcon_get_cable_state(
--					info->otg.cable.edev, "USB-Host");
-+	if (info->otg.cable)
-+		info->otg.id_short = extcon_get_cable_state_(
-+					info->otg.cable, EXTCON_USB_HOST);
- 
- 	/* Register charger interrupts */
- 	for (i = 0; i < CHRG_INTR_END; i++) {
-@@ -905,11 +922,17 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	return 0;
- 
- intr_reg_failed:
--	if (info->otg.cable.edev)
--		extcon_unregister_interest(&info->otg.cable);
-+	if (info->otg.cable)
-+		extcon_unregister_notifier(info->otg.cable, EXTCON_USB_HOST,
-+					&info->otg.id_nb);
- 	power_supply_unregister(info->psy_usb);
- psy_reg_failed:
--	extcon_unregister_notifier(info->cable.edev, EXTCON_NONE, &info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
-+					&info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
-+					&info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
-+					&info->cable.nb);
- 	return ret;
+diff --git a/drivers/extcon/extcon.c b/drivers/extcon/extcon.c
+index 21a123cadf78..4fef9ab4b148 100644
+--- a/drivers/extcon/extcon.c
++++ b/drivers/extcon/extcon.c
+@@ -127,38 +127,6 @@ static int find_cable_index_by_id(struct extcon_dev *edev, const unsigned int id
+ 	return -EINVAL;
  }
  
-@@ -917,10 +940,16 @@ static int axp288_charger_remove(struct platform_device *pdev)
+-static int find_cable_id_by_name(struct extcon_dev *edev, const char *name)
+-{
+-	int id = -EINVAL;
+-	int i = 0;
+-
+-	/* Find the id of extcon cable */
+-	while (extcon_name[i]) {
+-		if (!strncmp(extcon_name[i], name, CABLE_NAME_MAX)) {
+-			id = i;
+-			break;
+-		}
+-		i++;
+-	}
+-
+-	return id;
+-}
+-
+-static int find_cable_index_by_name(struct extcon_dev *edev, const char *name)
+-{
+-	int id;
+-
+-	if (edev->max_supported == 0)
+-		return -EINVAL;
+-
+-	/* Find the the number of extcon cable */
+-	id = find_cable_id_by_name(edev, name);
+-	if (id < 0)
+-		return id;
+-
+-	return find_cable_index_by_id(edev, id);
+-}
+-
+ static bool is_extcon_changed(u32 prev, u32 new, int idx, bool *attached)
  {
- 	struct axp288_chrg_info *info =  dev_get_drvdata(&pdev->dev);
+ 	if (((prev >> idx) & 0x1) != ((new >> idx) & 0x1)) {
+@@ -374,25 +342,6 @@ int extcon_get_cable_state_(struct extcon_dev *edev, const unsigned int id)
+ EXPORT_SYMBOL_GPL(extcon_get_cable_state_);
  
--	if (info->otg.cable.edev)
--		extcon_unregister_interest(&info->otg.cable);
-+	if (info->otg.cable)
-+		extcon_unregister_notifier(info->otg.cable, EXTCON_USB_HOST,
-+					&info->otg.id_nb);
+ /**
+- * extcon_get_cable_state() - Get the status of a specific cable.
+- * @edev:	the extcon device that has the cable.
+- * @cable_name:	cable name.
+- *
+- * Note that this is slower than extcon_get_cable_state_.
+- */
+-int extcon_get_cable_state(struct extcon_dev *edev, const char *cable_name)
+-{
+-	int id;
+-
+-	id = find_cable_id_by_name(edev, cable_name);
+-	if (id < 0)
+-		return id;
+-
+-	return extcon_get_cable_state_(edev, id);
+-}
+-EXPORT_SYMBOL_GPL(extcon_get_cable_state);
+-
+-/**
+  * extcon_set_cable_state_() - Set the status of a specific cable.
+  * @edev:		the extcon device that has the cable.
+  * @id:			the unique id of each external connector
+@@ -422,28 +371,6 @@ int extcon_set_cable_state_(struct extcon_dev *edev, unsigned int id,
+ EXPORT_SYMBOL_GPL(extcon_set_cable_state_);
  
--	extcon_unregister_notifier(info->cable.edev, EXTCON_NONE, &info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
-+					&info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
-+					&info->cable.nb);
-+	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
-+					&info->cable.nb);
- 	power_supply_unregister(info->psy_usb);
+ /**
+- * extcon_set_cable_state() - Set the status of a specific cable.
+- * @edev:		the extcon device that has the cable.
+- * @cable_name:		cable name.
+- * @cable_state:	the new cable status. The default semantics is
+- *			true: attached / false: detached.
+- *
+- * Note that this is slower than extcon_set_cable_state_.
+- */
+-int extcon_set_cable_state(struct extcon_dev *edev,
+-			const char *cable_name, bool cable_state)
+-{
+-	int id;
+-
+-	id = find_cable_id_by_name(edev, cable_name);
+-	if (id < 0)
+-		return id;
+-
+-	return extcon_set_cable_state_(edev, id, cable_state);
+-}
+-EXPORT_SYMBOL_GPL(extcon_set_cable_state);
+-
+-/**
+  * extcon_get_extcon_dev() - Get the extcon device instance from the name
+  * @extcon_name:	The extcon name provided with extcon_dev_register()
+  */
+@@ -467,105 +394,6 @@ out:
+ EXPORT_SYMBOL_GPL(extcon_get_extcon_dev);
  
+ /**
+- * extcon_register_interest() - Register a notifier for a state change of a
+- *				specific cable, not an entier set of cables of a
+- *				extcon device.
+- * @obj:		an empty extcon_specific_cable_nb object to be returned.
+- * @extcon_name:	the name of extcon device.
+- *			if NULL, extcon_register_interest will register
+- *			every cable with the target cable_name given.
+- * @cable_name:		the target cable name.
+- * @nb:			the notifier block to get notified.
+- *
+- * Provide an empty extcon_specific_cable_nb. extcon_register_interest() sets
+- * the struct for you.
+- *
+- * extcon_register_interest is a helper function for those who want to get
+- * notification for a single specific cable's status change. If a user wants
+- * to get notification for any changes of all cables of a extcon device,
+- * he/she should use the general extcon_register_notifier().
+- *
+- * Note that the second parameter given to the callback of nb (val) is
+- * "old_state", not the current state. The current state can be retrieved
+- * by looking at the third pameter (edev pointer)'s state value.
+- */
+-int extcon_register_interest(struct extcon_specific_cable_nb *obj,
+-			     const char *extcon_name, const char *cable_name,
+-			     struct notifier_block *nb)
+-{
+-	unsigned long flags;
+-	int ret;
+-
+-	if (!obj || !cable_name || !nb)
+-		return -EINVAL;
+-
+-	if (extcon_name) {
+-		obj->edev = extcon_get_extcon_dev(extcon_name);
+-		if (!obj->edev)
+-			return -ENODEV;
+-
+-		obj->cable_index = find_cable_index_by_name(obj->edev,
+-							cable_name);
+-		if (obj->cable_index < 0)
+-			return obj->cable_index;
+-
+-		obj->user_nb = nb;
+-
+-		spin_lock_irqsave(&obj->edev->lock, flags);
+-		ret = raw_notifier_chain_register(
+-					&obj->edev->nh[obj->cable_index],
+-					obj->user_nb);
+-		spin_unlock_irqrestore(&obj->edev->lock, flags);
+-	} else {
+-		struct class_dev_iter iter;
+-		struct extcon_dev *extd;
+-		struct device *dev;
+-
+-		if (!extcon_class)
+-			return -ENODEV;
+-		class_dev_iter_init(&iter, extcon_class, NULL, NULL);
+-		while ((dev = class_dev_iter_next(&iter))) {
+-			extd = dev_get_drvdata(dev);
+-
+-			if (find_cable_index_by_name(extd, cable_name) < 0)
+-				continue;
+-
+-			class_dev_iter_exit(&iter);
+-			return extcon_register_interest(obj, extd->name,
+-						cable_name, nb);
+-		}
+-
+-		ret = -ENODEV;
+-	}
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(extcon_register_interest);
+-
+-/**
+- * extcon_unregister_interest() - Unregister the notifier registered by
+- *				  extcon_register_interest().
+- * @obj:	the extcon_specific_cable_nb object returned by
+- *		extcon_register_interest().
+- */
+-int extcon_unregister_interest(struct extcon_specific_cable_nb *obj)
+-{
+-	unsigned long flags;
+-	int ret;
+-
+-	if (!obj)
+-		return -EINVAL;
+-
+-	spin_lock_irqsave(&obj->edev->lock, flags);
+-	ret = raw_notifier_chain_unregister(
+-			&obj->edev->nh[obj->cable_index], obj->user_nb);
+-	spin_unlock_irqrestore(&obj->edev->lock, flags);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(extcon_unregister_interest);
+-
+-/**
+  * extcon_register_notifier() - Register a notifiee to get notified by
+  *				any attach status changes from the extcon.
+  * @edev:	the extcon device that has the external connecotr.
+@@ -582,14 +410,33 @@ int extcon_register_notifier(struct extcon_dev *edev, unsigned int id,
+ 	unsigned long flags;
+ 	int ret, idx;
+ 
+-	if (!edev || !nb)
++	if (!nb)
+ 		return -EINVAL;
+ 
+-	idx = find_cable_index_by_id(edev, id);
++	if (edev) {
++		idx = find_cable_index_by_id(edev, id);
+ 
+-	spin_lock_irqsave(&edev->lock, flags);
+-	ret = raw_notifier_chain_register(&edev->nh[idx], nb);
+-	spin_unlock_irqrestore(&edev->lock, flags);
++		spin_lock_irqsave(&edev->lock, flags);
++		ret = raw_notifier_chain_register(&edev->nh[idx], nb);
++		spin_unlock_irqrestore(&edev->lock, flags);
++	} else {
++		struct extcon_dev *extd;
++
++		mutex_lock(&extcon_dev_list_lock);
++		list_for_each_entry(extd, &extcon_dev_list, entry) {
++			idx = find_cable_index_by_id(extd, id);
++			if (idx >= 0)
++				break;
++		}
++		mutex_unlock(&extcon_dev_list_lock);
++
++		if (idx >= 0) {
++			edev = extd;
++			return extcon_register_notifier(extd, id, nb);
++		} else {
++			ret = -ENODEV;
++		}
++	}
+ 
+ 	return ret;
+ }
+diff --git a/include/linux/extcon.h b/include/linux/extcon.h
+index 7abf674c388c..cec5c543afc6 100644
+--- a/include/linux/extcon.h
++++ b/include/linux/extcon.h
+@@ -146,22 +146,6 @@ struct extcon_cable {
+ 	struct attribute *attrs[3]; /* to be fed to attr_g.attrs */
+ };
+ 
+-/**
+- * struct extcon_specific_cable_nb - An internal data for
+- *				     extcon_register_interest().
+- * @user_nb:		user provided notifier block for events from
+- *			a specific cable.
+- * @cable_index:	the target cable.
+- * @edev:		the target extcon device.
+- * @previous_value:	the saved previous event value.
+- */
+-struct extcon_specific_cable_nb {
+-	struct notifier_block *user_nb;
+-	int cable_index;
+-	struct extcon_dev *edev;
+-	unsigned long previous_value;
+-};
+-
+ #if IS_ENABLED(CONFIG_EXTCON)
+ 
+ /*
+@@ -207,23 +191,6 @@ extern int extcon_get_cable_state_(struct extcon_dev *edev, unsigned int id);
+ extern int extcon_set_cable_state_(struct extcon_dev *edev, unsigned int id,
+ 				   bool cable_state);
+ 
+-extern int extcon_get_cable_state(struct extcon_dev *edev,
+-				  const char *cable_name);
+-extern int extcon_set_cable_state(struct extcon_dev *edev,
+-				  const char *cable_name, bool cable_state);
+-
+-/*
+- * Following APIs are for notifiees (those who want to be notified)
+- * to register a callback for events from a specific cable of the extcon.
+- * Notifiees are the connected device drivers wanting to get notified by
+- * a specific external port of a connection device.
+- */
+-extern int extcon_register_interest(struct extcon_specific_cable_nb *obj,
+-				    const char *extcon_name,
+-				    const char *cable_name,
+-				    struct notifier_block *nb);
+-extern int extcon_unregister_interest(struct extcon_specific_cable_nb *nb);
+-
+ /*
+  * Following APIs are to monitor every action of a notifier.
+  * Registrar gets notified for every external port of a connection device.
+@@ -246,6 +213,7 @@ extern struct extcon_dev *extcon_get_edev_by_phandle(struct device *dev,
+ /* Following API to get information of extcon device */
+ extern const char *extcon_get_edev_name(struct extcon_dev *edev);
+ 
++
+ #else /* CONFIG_EXTCON */
+ static inline int extcon_dev_register(struct extcon_dev *edev)
+ {
+@@ -306,18 +274,6 @@ static inline int extcon_set_cable_state_(struct extcon_dev *edev,
  	return 0;
+ }
+ 
+-static inline int extcon_get_cable_state(struct extcon_dev *edev,
+-			const char *cable_name)
+-{
+-	return 0;
+-}
+-
+-static inline int extcon_set_cable_state(struct extcon_dev *edev,
+-			const char *cable_name, int state)
+-{
+-	return 0;
+-}
+-
+ static inline struct extcon_dev *extcon_get_extcon_dev(const char *extcon_name)
+ {
+ 	return NULL;
+@@ -337,24 +293,34 @@ static inline int extcon_unregister_notifier(struct extcon_dev *edev,
+ 	return 0;
+ }
+ 
+-static inline int extcon_register_interest(struct extcon_specific_cable_nb *obj,
+-					   const char *extcon_name,
+-					   const char *cable_name,
+-					   struct notifier_block *nb)
++static inline struct extcon_dev *extcon_get_edev_by_phandle(struct device *dev,
++							    int index)
+ {
+-	return 0;
++	return ERR_PTR(-ENODEV);
+ }
++#endif /* CONFIG_EXTCON */
+ 
+-static inline int extcon_unregister_interest(struct extcon_specific_cable_nb
+-						    *obj)
++/*
++ * Following structure and API are deprecated. EXTCON remains the function
++ * definition to prevent the build break.
++ */
++struct extcon_specific_cable_nb {
++       struct notifier_block *user_nb;
++       int cable_index;
++       struct extcon_dev *edev;
++       unsigned long previous_value;
++};
++
++static inline int extcon_register_interest(struct extcon_specific_cable_nb *obj,
++			const char *extcon_name, const char *cable_name,
++			struct notifier_block *nb)
+ {
+-	return 0;
++	return -EINVAL;
+ }
+ 
+-static inline struct extcon_dev *extcon_get_edev_by_phandle(struct device *dev,
+-							    int index)
++static inline int extcon_unregister_interest(struct extcon_specific_cable_nb
++						    *obj)
+ {
+-	return ERR_PTR(-ENODEV);
++	return -EINVAL;
+ }
+-#endif /* CONFIG_EXTCON */
+ #endif /* __LINUX_EXTCON_H__ */
 -- 
 1.9.1
-
