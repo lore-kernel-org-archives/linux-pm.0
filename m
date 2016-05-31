@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv4 44/48] thermal: core: remove void function return statements
-Date: Mon, 30 May 2016 23:18:51 -0700
-Message-ID: <1464675535-2433-45-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv4 41/48] thermal: core: remove FSF address in the GPL notice
+Date: Mon, 30 May 2016 23:18:48 -0700
+Message-ID: <1464675535-2433-42-git-send-email-edubezval@gmail.com>
 References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
@@ -10,35 +10,43 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Simply removing useless returns of void functions.
+Simplify the GPL notice by removing the FSF address.
+No need to track FSF location in this file.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/thermal/thermal_core.c | 13 -------------
+ 1 file changed, 13 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 3f1082d..6e248bb 100644
+index 98176aa..f653090 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -202,7 +202,6 @@ void thermal_unregister_governor(struct thermal_governor *governor)
- 	list_del(&governor->governor_list);
- exit:
- 	mutex_unlock(&thermal_governor_lock);
--	return;
- }
+@@ -5,22 +5,9 @@
+  *  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
+  *  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
+  *
+- *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- *
+  *  This program is free software; you can redistribute it and/or modify
+  *  it under the terms of the GNU General Public License as published by
+  *  the Free Software Foundation; version 2 of the License.
+- *
+- *  This program is distributed in the hope that it will be useful, but
+- *  WITHOUT ANY WARRANTY; without even the implied warranty of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- *  General Public License for more details.
+- *
+- *  You should have received a copy of the GNU General Public License along
+- *  with this program; if not, write to the Free Software Foundation, Inc.,
+- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  */
  
- int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
-@@ -1061,7 +1060,6 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- 
- 	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
- 	device_unregister(&cdev->device);
--	return;
- }
- EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
- 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 -- 
 2.1.4
