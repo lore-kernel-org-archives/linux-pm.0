@@ -1,55 +1,203 @@
-From: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
- runtime PM
-Date: Tue, 31 May 2016 14:20:26 +0200
-Message-ID: <20160531122026.GA14129@wunner.de>
-References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
- <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
- <20160525135535.GN1789@lahna.fi.intel.com>
- <20160527111037.GA1436@al>
- <20160530095709.GK1789@lahna.fi.intel.com>
- <20160530122010.GB1149@al>
- <20160530130909.GA1743@lahna.fi.intel.com>
- <20160530161351.GA1355@al>
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 09/10] cpuidle/powernv: Add support for POWER ISA v3
+ idle states
+Date: Tue, 31 May 2016 19:20:04 +0530
+Message-ID: <201605311351.u4VDmxq0010504@mx0a-001b2d01.pphosted.com>
+References: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com> <1464095714-48772-10-git-send-email-shreyas@linux.vnet.ibm.com> <574C4DA4.4050100@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160530161351.GA1355@al>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <574C4DA4.4050100@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-T24gTW9uLCBNYXkgMzAsIDIwMTYgYXQgMDY6MTM6NTFQTSArMDIwMCwgUGV0ZXIgV3Ugd3JvdGU6
-Cj4gRG8geW91IGhhdmUgYW55IHN1Z2dlc3Rpb25zIGZvciB0aGUgY2FzZSB3aGVyZSB0aGUgcGNp
-ZXBvcnQgZHJpdmVyCj4gcmVmdXNlcyB0byBwdXQgdGhlIGJyaWRnZSBpbiBEMyAoYmVjYXVzZSB0
-aGUgQklPUyBpcyB0b28gb2xkKT8gSW4gdGhhdAo+IGNhc2UgdGhlIG5vdXZlYXUgZHJpdmVyIG5l
-ZWRzIHRvIGZhbGxiYWNrIHRvIHRoZSBEU00gbWV0aG9kIChidXQgbm90Cj4gd2hlbiBydW50aW1l
-IFBNIGlzIGRlbGliZXJhdGVseSBkaXNhYmxlZCBieSB3cml0aW5nIGNvbnRyb2w9b24pLgoKVGhl
-IEJJT1MgY3V0LW9mZiBkYXRlIGlzIG1lYW50IHRvIGF2b2lkIGlzc3VlcyB3aGVuIHN1c3BlbmRp
-bmcgcG9ydHMKb24gb2xkZXIgY2hpcHNldHMuIEhvd2V2ZXIgaWYgdGhlIHBvcnQgaXMgdXNlZCBm
-b3IgYW4gT3B0aW11cyBHUFUKYW5kIHdlIGNhbiBjbGVhcmx5IGlkZW50aWZ5IHRoYXQsIGFuZCB0
-aGVyZSdzIGEgX1BSMyBtZXRob2QgcHJvdmlkZWQsCml0J3MgcHJvYmFibHkgc2FmZSB0byBzYXkg
-dGhhdCB0aGUgcG9ydCBpcyAqaW50ZW5kZWQqIHRvIGJlIHN1c3BlbmRlZC4KClNvIHlvdSBtYXkg
-d2FudCB0byBjb25zaWRlciBhbWVuZGluZyBwY2lfYnJpZGdlX2QzX3Bvc3NpYmxlKCkgdG8KYWxs
-b3cgRDMgZm9yIHN1Y2ggcG9ydHMgcmVnYXJkbGVzcyBvZiB0aGUgQklPUyBkYXRlLCBhcyBJJ3Zl
-IGRvbmUKZm9yIFRodW5kZXJib2x0IGluIHRoaXMgY29tbWl0OgpodHRwczovL2dpdGh1Yi5jb20v
-bDFrL2xpbnV4L2NvbW1pdC8zY2I4NTQ5Y2Q0ZTUKCk5vdCBzdXJlIGhvdyB0byB1bmlxdWVseSBp
-ZGVudGlmeSBzdWNoIHBvcnRzIHRob3VnaC4gUGVyaGFwcyBjaGVjawppZiB0aGVyZSdzIGEgZGV2
-aWNlIGluIHNsb3QgMCBiZWxvdyB0aGUgcG9ydCB3aGljaCBoYXMKCShwZGV2LT5jbGFzcyA+PiAx
-NikgPT0gUENJX0JBU0VfQ0xBU1NfRElTUExBWSAmJgoJKHBkZXYtPnZlbmRvciA9PSBQQ0lfVkVO
-RE9SX0lEX05WSURJQSB8fAoJIHBkZXYtPnZlbmRvciA9PSBQQ0lfVkVORE9SX0lEX0FUSSkKCkJl
-c3QgcmVnYXJkcywKCkx1a2FzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fCk5vdXZlYXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Au
-b3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVh
-dQo=
+Hi Daniel,
+
+On 05/30/2016 07:56 PM, Daniel Lezcano wrote:
+> On 05/24/2016 03:15 PM, Shreyas B. Prabhu wrote:
+>> POWER ISA v3 defines a new idle processor core mechanism. In summary,
+>>   a) new instruction named stop is added.
+>>   b) new per thread SPR named PSSCR is added which controls the behavior
+>>     of stop instruction.
+>>
+>> Supported idle states and value to be written to PSSCR register to enter
+>> any idle state is exposed via ibm,cpu-idle-state-names and
+>> ibm,cpu-idle-state-psscr respectively. To enter an idle state,
+>> platform provided power_stop() needs to be invoked with the appropriate
+>> PSSCR value.
+>>
+>> This patch adds support for this new mechanism in cpuidle powernv driver.
+>>
+>> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Cc: linux-pm@vger.kernel.org
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Paul Mackerras <paulus@ozlabs.org>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+>> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+>> ---
+>>   - No changes since v1
+>>
+>>   drivers/cpuidle/cpuidle-powernv.c | 57
+>> ++++++++++++++++++++++++++++++++++++++-
+>>   1 file changed, 56 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-powernv.c
+>> b/drivers/cpuidle/cpuidle-powernv.c
+>> index e12dc30..efe5221 100644
+>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>> @@ -21,6 +21,7 @@
+>>   #include <asm/runlatch.h>
+>>
+>>   #define MAX_POWERNV_IDLE_STATES    8
+>> +#define MAX_IDLE_STATE_NAME_LEN    10
+> 
+> Why not reuse cpuidle constants even if they are slightly different ?
+> 
+> #define CPUIDLE_STATE_MAX       10
+> #define CPUIDLE_NAME_LEN        16
+> 
+
+I'll reuse the them.
+
+>>   struct cpuidle_driver powernv_idle_driver = {
+>>       .name             = "powernv_idle",
+>> @@ -29,9 +30,11 @@ struct cpuidle_driver powernv_idle_driver = {
+>>
+>>   static int max_idle_state;
+>>   static struct cpuidle_state *cpuidle_state_table;
+>> +
+>> +static u64 stop_psscr_table[MAX_POWERNV_IDLE_STATES];
+>> +
+>>   static u64 snooze_timeout;
+>>   static bool snooze_timeout_en;
+>> -
+>>   static int snooze_loop(struct cpuidle_device *dev,
+>>               struct cpuidle_driver *drv,
+>>               int index)
+>> @@ -139,6 +142,15 @@ static struct notifier_block
+>> setup_hotplug_notifier = {
+>>       .notifier_call = powernv_cpuidle_add_cpu_notifier,
+>>   };
+>>
+>> +static int stop_loop(struct cpuidle_device *dev,
+>> +            struct cpuidle_driver *drv,
+>> +            int index)
+>> +{
+>> +    ppc64_runlatch_off();
+>> +    power_stop(stop_psscr_table[index]);
+>> +    ppc64_runlatch_on();
+>> +    return index;
+>> +}
+>>   /*
+>>    * powernv_cpuidle_driver_init()
+>>    */
+>> @@ -169,6 +181,8 @@ static int powernv_add_idle_states(void)
+>>       int nr_idle_states = 1; /* Snooze */
+>>       int dt_idle_states;
+>>       u32 *latency_ns, *residency_ns, *flags;
+>> +    u64 *psscr_val = NULL;
+>> +    const char *names[MAX_POWERNV_IDLE_STATES];
+>>       int i, rc;
+>>
+>>       /* Currently we have snooze statically defined */
+>> @@ -201,6 +215,23 @@ static int powernv_add_idle_states(void)
+>>           goto out_free_latency;
+>>       }
+>>
+>> +    rc = of_property_read_string_array(power_mgt,
+>> +        "ibm,cpu-idle-state-names", names, dt_idle_states);
+>> +    if (rc < -1) {
+> 
+> Why < -1 ?
+>
+
+Oversight. I'll fix this.
+
+>> +        pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-names
+>> in DT\n");
+>> +        goto out_free_latency;
+>> +    }
+>> +
+>> +    if (cpu_has_feature(CPU_FTR_ARCH_300)) {
+> 
+> Isn't weird to mix cpu feature and DT bindings check ?
+> 
+
+Hmm. I'll add a compatible node in DT to avoid mixing cpu_has_feature
+check and DT bindings.
+
+>> +        psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
+>> +                    GFP_KERNEL);
+>> +        rc = of_property_read_u64_array(power_mgt,
+>> +            "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states);
+> 
+> [cc'ed Lorenzo and Rob ]
+> 
+> I don't see the documentation for the binding. Wouldn't make sense to
+> add the value per idle state instead of an index based array ?
+> 
+Existing hardware (POWER7 and POWER8) has been using following dt nodes
+which are arrays-
+ibm,cpu-idle-state-names
+ibm,cpu-idle-state-latencies-ns
+ibm,cpu-idle-state-flags
+ibm,cpu-idle-state-residency-ns
+I extended this design and added ibm,cpu-idle-state-psscr to convey the
+extra information needed for POWER ISA v3.
+
+Down the line it'll probably make better sense to expose these values
+per idle state rather than arrays of individual properties. But I'd like
+to hold off on making that design change yet and wait for more design
+inputs from the platform side.
+
+>> +        if (rc < -1) {
+>> +            pr_warn("cpuidle-powernv: missing
+>> ibm,cpu-idle-states-psscr in DT\n");
+>> +            goto out_free_psscr;
+>> +        }
+>> +    }
+>>       residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states,
+>> GFP_KERNEL);
+>>       rc = of_property_read_u32_array(power_mgt,
+>>           "ibm,cpu-idle-state-residency-ns", residency_ns,
+>> dt_idle_states);
+>> @@ -218,6 +249,16 @@ static int powernv_add_idle_states(void)
+>>               powernv_states[nr_idle_states].flags = 0;
+>>               powernv_states[nr_idle_states].target_residency = 100;
+>>               powernv_states[nr_idle_states].enter = &nap_loop;
+>> +        } else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+>> +                !(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+>> +            strncpy(powernv_states[nr_idle_states].name,
+>> +                (char *)names[i], MAX_IDLE_STATE_NAME_LEN);
+> 
+> Why cast names[] to (char *) while strncpy is waiting for const char *,
+> the initial type of names[] ?
+>
+Oversight. Embarrassing one at that. I'll fix it.
+
+>> +            strncpy(powernv_states[nr_idle_states].desc,
+>> +                (char *)names[i], MAX_IDLE_STATE_NAME_LEN);
+>> +            powernv_states[nr_idle_states].flags = 0;
+> 
+> No target_residency specified ?
+> 
+
+target_residency and latency are already specified in the existing code
+outside this if-else block. There is no change in interpreting those nodes.
+
+>> +
+>> +            powernv_states[nr_idle_states].enter = &stop_loop;
+> 
+> s/&stop_loop/stop_loop/
+
+I'll make the change.
+
+Thanks a lot for the review.
+
+-Shreyas
