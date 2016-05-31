@@ -1,136 +1,41 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCHv4 00/48] thermal: reorganizing thermal core
-Date: Tue, 31 May 2016 15:12:15 +0530
-Message-ID: <574D5C77.30506@ti.com>
-References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: [PATCH] devfreq: fix initialization of current frequency in last status
+Date: Tue, 31 May 2016 11:25:09 +0100
+Message-ID: <1464690309-27809-1-git-send-email-lukasz.luba@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([198.47.19.12]:55723 "EHLO arroyo.ext.ti.com"
+Received: from foss.arm.com ([217.140.101.70]:57732 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756877AbcEaJmU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 31 May 2016 05:42:20 -0400
-In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
+	id S1750696AbcEaK1R (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 31 May 2016 06:27:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, javi.merino@arm.com, Lukasz Luba <lukasz.luba@arm.com>
 
+Some systems need current frequency from last_status for calculation
+but it is zeroed during initialization. When the device starts there is
+no history, but we can assume that the last frequency was the
+same as the initial frequency (which is also used in 'previous_freq').
+The log shows the result of this misinterpreted value.
+[    2.042847] ... Failed to get voltage for frequency 0: -34
 
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ drivers/devfreq/devfreq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-On Tuesday 31 May 2016 11:48 AM, Eduardo Valentin wrote:
-> Folks,
->
-> This is V4 of a patch series to improve thermal core. The idea
-> here is to reorganize the code and improve the way we
-> handle sysfs entries.
->
-> The change in behavior is that now, thermal zones with empty
-> .type will not be allowed to be registered. Also, the way
-> we handle scanf's return code is now checking for
-> number of successful inputs.
->
-> After this series, thermal core is split into the following files:
-> - thermal_sysfs.c: contains the functions handling the sysfs nodes
-> - thermal_helpers.c: groups functions that do not need to touch thermal
-> core internal data structures, such as internal lists, and list locks.
-> - thermal_core.c: functions to handle the lifecycle of the subsystem,
-> its governors, cooling devices, thermal zone devices, and their
-> interactions.
->
-> I don't expect any impact on userspace.
->
-> Please give your inputs.
->
-> For your consideration, I am also adding this to this branch:
->    git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal sysfs_rework
->
-> V3->V4:
-> - Fixes on a couple of sysfs entries as reported in the mailing list.
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 984c5e9..a3f2c3b 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -515,6 +515,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	devfreq->profile = profile;
+ 	strncpy(devfreq->governor_name, governor_name, DEVFREQ_NAME_LEN);
+ 	devfreq->previous_freq = profile->initial_freq;
++	devfreq->last_status.current_frequency = profile->initial_freq;
+ 	devfreq->data = data;
+ 	devfreq->nb.notifier_call = devfreq_notifier_call;
+ 
+-- 
+1.9.1
 
-Boots fine on DRA7, DRA72, Beagle-x15. Checked all the temperatures of 
-various zones and tested emul_temp using:
-
-https://lkml.org/lkml/2016/5/10/346
-
-For DRA7/DRA72 and Beagle-x15.
-
-Tested-by: Keerthy <j-keerthy@ti.com>
-
->
-> V2->V3:
-> - Included 8 extra patches to remove style issues on
-> (new) thermal core.
->
-> V1->V2:
-> - Removed all checkpatch issues in the existing code that was
-> moved/changed.
->
-> Rui, it would be great if you could review these earlier. I will be
-> sending two extra patch series on top of this one.
->
->
->
-> Eduardo Valentin (48):
->    thermal: core: prevent zones with no types to be registered
->    thermal: core: group thermal_zone DEVICE_ATTR's declarations
->    thermal: core: group device_create_file() calls that are always
->      created
->    thermal: core: use dev.groups to manage always present tz attributes
->    thermal: core: move emul_temp creation to tz->device.groups
->    thermal: core: move mode attribute to tz->device.groups
->    thermal: core: move passive attr to tz->device.groups
->    thermal: core: improve power actor documentation
->    thermal: core: move power actor code out of sysfs I/F section
->    thermal: core: remove useless empty line
->    thermal: core: fix style on remove_trip_attrs()
->    thermal: core: move the trip attrs to the tz sysfs I/F section
->    thermal: core: create tz->device.groups dynamically
->    thermal: core: move trips attributes to tz->device.groups
->    thermal: core: remove unnecessary device_remove() calls
->    thermal: core: split passive_store
->    thermal: core: split policy_store
->    thermal: core: split available_policies_show()
->    thermal: core: move to_thermal_zone() macro to header file
->    thermal: core: treat correctly the return value of *scanf calls
->    thermal: core: match parenthesis on code alignment
->    thermal: core: move thermal_zone sysfs to thermal_sysfs.c
->    thermal: core: move to_cooling_device macro to header file
->    thermal: core: move cooling device sysfs to thermal_sysfs.c
->    thermal: core: remove a couple of style issues on helpers
->    thermal: core: introduce thermal_helpers.c
->    thermal: core: group functions related to governor handling
->    thermal: core: move idr handling to device management section
->    thermal: core: small style fix on __unbind() helper
->    thermal: core: move __unbind() helper to where it is used
->    thermal: core: move bind_cdev() to where it is used
->    thermal: core: move bind_tz() to where it is used
->    thermal: core: fix couple of style issues on __bind() helper
->    thermal: core: move __bind() to where it is used
->    thermal: core: add inline to print_bind_err_msg()
->    thermal: core: move notify to the zone update section
->    thermal: core: add a comment describing the main update loop
->    thermal: core: add a comment describing the power actor section
->    thermal: core: add a comment describing the device management section
->    thermal: sysfs: remove symbols of emul_temp when config is disabled
->    thermal: core: remove FSF address in the GPL notice
->    thermal: core: small style fix when checking for __find_governor()
->    thermal: core: standardize line breaking alignment
->    thermal: core: remove void function return statements
->    thermal: core: remove style warnings and checks
->    thermal: core: improve kerneldoc entry of
->      thermal_cooling_device_unregister
->    thermal: core: use kzalloc(sizeof(*ptr),...)
->    thermal: sysfs: use kcalloc() instead of kzalloc()
->
->   drivers/thermal/Makefile          |    3 +-
->   drivers/thermal/thermal_core.c    | 1363 +++++++++----------------------------
->   drivers/thermal/thermal_core.h    |   26 +
->   drivers/thermal/thermal_helpers.c |  144 ++++
->   drivers/thermal/thermal_sysfs.c   |  756 ++++++++++++++++++++
->   include/linux/thermal.h           |    2 +
->   6 files changed, 1238 insertions(+), 1056 deletions(-)
->   create mode 100644 drivers/thermal/thermal_helpers.c
->   create mode 100644 drivers/thermal/thermal_sysfs.c
->
