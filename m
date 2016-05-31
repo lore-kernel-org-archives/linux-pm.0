@@ -1,31 +1,41 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 3/3] cpufreq: schedutil: map raw required frequency to
- driver frequency
-Date: Tue, 31 May 2016 11:02:51 +0200
-Message-ID: <20160531090251.GJ3193@twins.programming.kicks-ass.net>
-References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
- <1464231181-30741-4-git-send-email-smuckle@linaro.org>
- <20160526071629.GW17585@vireshk-i7>
- <CAJZ5v0gxfRBeQTyHACVtRpon50N_t3qytrFPT4ga2zwPhVYYdw@mail.gmail.com>
- <20160530101830.GE30066@vireshk-i7>
- <CAJZ5v0hwohZh_Pubt5pc2NoiMWrSDkcfjkbcFuugPkRTwKhejQ@mail.gmail.com>
- <20160530153233.GA9463@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:48021 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756701AbcEaJC5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 05:02:57 -0400
-Content-Disposition: inline
-In-Reply-To: <20160530153233.GA9463@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Subject: [PATCH 2/2] arm64: dts: r8a7796: Use SYSC "always-on" PM Domain
+Date: Tue, 31 May 2016 11:08:45 +0200
+Message-ID: <1464685726-21611-3-git-send-email-geert+renesas@glider.be>
+References: <1464685726-21611-1-git-send-email-geert+renesas@glider.be>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1464685726-21611-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Simon Horman <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <damm+renesas-yzvPICuk2ACczHhG9Qg4qA@public.gmane.org>
+Cc: Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On Mon, May 30, 2016 at 09:02:33PM +0530, Viresh Kumar wrote:
-> But this is something that is fundamentally broken for now. The user writes
-> updates the policy->max/min, we return the call to the user thinks that it has
+Hook up all devices that are part of the CPG/MSSR Clock Domain to the
+SYSC "always-on" PM Domain, for a more consistent device-power-area
+description in DT.
 
-IMO the presence of these user min/max files is the broken part.
+Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+---
+ arch/arm64/boot/dts/renesas/r8a7796.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/renesas/r8a7796.dtsi b/arch/arm64/boot/dts/renesas/r8a7796.dtsi
+index 85f0843ddd874378..fab61eddede3818c 100644
+--- a/arch/arm64/boot/dts/renesas/r8a7796.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a7796.dtsi
+@@ -122,7 +122,7 @@
+ 				 <&cpg CPG_CORE R8A7796_CLK_S3D1>,
+ 				 <&scif_clk>;
+ 			clock-names = "fck", "brg_int", "scif_clk";
+-			power-domains = <&cpg>;
++			power-domains = <&sysc R8A7796_PD_ALWAYS_ON>;
+ 			status = "disabled";
+ 		};
+ 	};
+-- 
+1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
