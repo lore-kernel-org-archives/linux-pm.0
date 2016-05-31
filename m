@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv4 34/48] thermal: core: move __bind() to where it is used
-Date: Mon, 30 May 2016 23:18:41 -0700
-Message-ID: <1464675535-2433-35-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv4 30/48] thermal: core: move __unbind() helper to where it is used
+Date: Mon, 30 May 2016 23:18:37 -0700
+Message-ID: <1464675535-2433-31-git-send-email-edubezval@gmail.com>
 References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
@@ -10,99 +10,53 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Moving the helper to closer where it is used.
+Simply moving the helper to closer where it is actually used.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 66 +++++++++++++++++++++---------------------
- 1 file changed, 33 insertions(+), 33 deletions(-)
+ drivers/thermal/thermal_core.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 59fe92d..460220c 100644
+index 261cc16..75b7854 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -286,39 +286,6 @@ static void thermal_unregister_governors(void)
- 	thermal_gov_power_allocator_unregister();
+@@ -319,16 +319,6 @@ static void __bind(struct thermal_zone_device *tz, int mask,
+ 	}
  }
  
--static void print_bind_err_msg(struct thermal_zone_device *tz,
--			       struct thermal_cooling_device *cdev, int ret)
+-static void __unbind(struct thermal_zone_device *tz, int mask,
+-		     struct thermal_cooling_device *cdev)
 -{
--	dev_err(&tz->device, "binding zone %s with cdev %s failed:%d\n",
--		tz->type, cdev->type, ret);
+-	int i;
+-
+-	for (i = 0; i < tz->trips; i++)
+-		if (mask & (1 << i))
+-			thermal_zone_unbind_cooling_device(tz, i, cdev);
 -}
 -
--static void __bind(struct thermal_zone_device *tz, int mask,
--		   struct thermal_cooling_device *cdev,
--		   unsigned long *limits,
--		   unsigned int weight)
--{
--	int i, ret;
--
--	for (i = 0; i < tz->trips; i++) {
--		if (mask & (1 << i)) {
--			unsigned long upper, lower;
--
--			upper = THERMAL_NO_LIMIT;
--			lower = THERMAL_NO_LIMIT;
--			if (limits) {
--				lower = limits[i * 2];
--				upper = limits[i * 2 + 1];
--			}
--			ret = thermal_zone_bind_cooling_device(tz, i, cdev,
--							       upper, lower,
--							       weight);
--			if (ret)
--				print_bind_err_msg(tz, cdev, ret);
--		}
--	}
--}
--
- static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
- 					    int delay)
- {
-@@ -804,6 +771,39 @@ static struct class thermal_class = {
- 	.dev_release = thermal_release,
- };
- 
-+static void print_bind_err_msg(struct thermal_zone_device *tz,
-+			       struct thermal_cooling_device *cdev, int ret)
-+{
-+	dev_err(&tz->device, "binding zone %s with cdev %s failed:%d\n",
-+		tz->type, cdev->type, ret);
-+}
-+
-+static void __bind(struct thermal_zone_device *tz, int mask,
-+		   struct thermal_cooling_device *cdev,
-+		   unsigned long *limits,
-+		   unsigned int weight)
-+{
-+	int i, ret;
-+
-+	for (i = 0; i < tz->trips; i++) {
-+		if (mask & (1 << i)) {
-+			unsigned long upper, lower;
-+
-+			upper = THERMAL_NO_LIMIT;
-+			lower = THERMAL_NO_LIMIT;
-+			if (limits) {
-+				lower = limits[i * 2];
-+				upper = limits[i * 2 + 1];
-+			}
-+			ret = thermal_zone_bind_cooling_device(tz, i, cdev,
-+							       upper, lower,
-+							       weight);
-+			if (ret)
-+				print_bind_err_msg(tz, cdev, ret);
-+		}
-+	}
-+}
-+
  static void bind_cdev(struct thermal_cooling_device *cdev)
  {
  	int i, ret;
+@@ -1013,6 +1003,16 @@ thermal_of_cooling_device_register(struct device_node *np,
+ }
+ EXPORT_SYMBOL_GPL(thermal_of_cooling_device_register);
+ 
++static void __unbind(struct thermal_zone_device *tz, int mask,
++		     struct thermal_cooling_device *cdev)
++{
++	int i;
++
++	for (i = 0; i < tz->trips; i++)
++		if (mask & (1 << i))
++			thermal_zone_unbind_cooling_device(tz, i, cdev);
++}
++
+ /**
+  * thermal_cooling_device_unregister - removes the registered thermal cooling device
+  * @cdev:	the thermal cooling device to remove.
 -- 
 2.1.4
