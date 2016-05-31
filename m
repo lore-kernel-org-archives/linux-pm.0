@@ -1,99 +1,50 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH] PCI: Wait for 50ms after bridge is powered up
-Date: Tue, 31 May 2016 12:40:51 +0200
-Message-ID: <20160531104051.GA13958@wunner.de>
-References: <20160524162833.GA30762@localhost>
- <20160526104557.GA6816@wunner.de>
- <20160526110308.GX1789@lahna.fi.intel.com>
- <1576190.gfFb6HhZV6@vostro.rjw.lan>
- <20160530093326.GH1789@lahna.fi.intel.com>
- <20160530144445.GC1743@lahna.fi.intel.com>
- <CAMxnaaXhapETZYMVe6EUoBGaMtxL_fP+uzc30SQpM+6EqPF3CQ@mail.gmail.com>
- <20160531083349.GG1743@lahna.fi.intel.com>
- <20160531085805.GI1743@lahna.fi.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: stats: Make the stats code non-modular
+Date: Tue, 31 May 2016 16:14:34 +0530
+Message-ID: <20160531104434.GE9463@vireshk-i7>
+References: <1482863.aVJEuqdboc@vostro.rjw.lan>
+ <20160526045945.GO17585@vireshk-i7>
+ <5665576.VhylybbIm6@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.hostsharing.net ([176.9.242.54]:59658 "EHLO
-	mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753080AbcEaKhS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 06:37:18 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160531085805.GI1743@lahna.fi.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <5665576.VhylybbIm6@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 
-On Tue, May 31, 2016 at 11:58:05AM +0300, Mika Westerberg wrote:
-> To summarize the next steps. I will send new version of the
-> PCI PM patches with following changes.
-> 
->   - Drop this 50ms patch, we should have the PCIe 100ms delay already
->     covered.
-> 
->   - Increase runtime PM autosuspend time from 10ms to 500ms (or whatever
->     is the prefered default).
+On 28-05-16, 15:15, Rafael J. Wysocki wrote:
+> -static int __init cpufreq_stats_init(void)
+> -{
+> -	int ret;
+> -	unsigned int cpu;
+> -
+> -	spin_lock_init(&cpufreq_stats_lock);
 
-I did some tests, turns out the autosuspend delay need not be increased
-to prevent the Thunderbolt hotplug ports from suspending between
-"enabling device" and loading the pciehp driver, however the following
-is needed:
+My bad for ignoring this, but the spin lock is left uninitialized now
+and this is what I get:
 
-diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-index 7860ab3..1d1fb1c 100644
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -238,6 +238,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
- 		pm_runtime_set_autosuspend_delay(&dev->dev, 10);
- 		pm_runtime_use_autosuspend(&dev->dev);
- 		pm_runtime_put_autosuspend(&dev->dev);
-+		pm_runtime_mark_last_busy(&dev->dev);
- 		pm_runtime_allow(&dev->dev);
- 	}
- 
+[    3.335732] BUG: spinlock bad magic on CPU#0, kworker/0:0/4
+[    3.339847]  lock: cpufreq_stats_lock+0x0/0x10, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
+[    3.348789] CPU: 0 PID: 4 Comm: kworker/0:0 Tainted: G        W       4.7.0-rc1-00046-g6ce5bc9b2166-dirty #148
+[    3.358754] Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
+[    3.364831] Workqueue: events dbs_work_handler
+[    3.369259] [<c010e1ac>] (unwind_backtrace) from [<c010af38>] (show_stack+0x10/0x14)
+[    3.376987] [<c010af38>] (show_stack) from [<c03248dc>] (dump_stack+0x88/0x9c)
+[    3.384191] [<c03248dc>] (dump_stack) from [<c0159b6c>] (do_raw_spin_lock+0x1ac/0x1b0)
+[    3.392089] [<c0159b6c>] (do_raw_spin_lock) from [<c0510b40>] (cpufreq_stats_update+0x24/0x60)
+[    3.400682] [<c0510b40>] (cpufreq_stats_update) from [<c0511030>] (cpufreq_stats_record_transition+0x6c/0x9c)
+[    3.410581] [<c0511030>] (cpufreq_stats_record_transition) from [<c050d4dc>] (cpufreq_notify_transition+0x94/0x13c)
+[    3.420995] [<c050d4dc>] (cpufreq_notify_transition) from [<c050d6b8>] (cpufreq_freq_transition_end+0x24/0x90)
+[    3.430975] [<c050d6b8>] (cpufreq_freq_transition_end) from [<c050e954>] (__cpufreq_driver_target+0x124/0x264)
+[    3.440957] [<c050e954>] (__cpufreq_driver_target) from [<c051159c>] (od_dbs_timer+0x9c/0x168)
+[    3.449550] [<c051159c>] (od_dbs_timer) from [<c0512060>] (dbs_work_handler+0x2c/0x60)
+[    3.457449] [<c0512060>] (dbs_work_handler) from [<c0130f68>] (process_one_work+0x124/0x338)
+[    3.465867] [<c0130f68>] (process_one_work) from [<c01311b4>] (worker_thread+0x38/0x4d4)
+[    3.473943] [<c01311b4>] (worker_thread) from [<c0136490>] (kthread+0xdc/0xf4)
+[    3.481145] [<c0136490>] (kthread) from [<c0107978>] (ret_from_fork+0x14/0x3c)
 
-With this small change things look much better (with the 10 ms delay
-we have now):
-
-[    2.353643] pcieport 0000:06:03.0: enabling device (0000 -> 0002)
-[    2.353789] pcieport 0000:06:03.0: rpm_idle
-[    2.353825] pcieport 0000:06:04.0: enabling device (0000 -> 0003)
-[    2.353855] pcieport 0000:06:03.0: rpm_idle
-[    2.353994] pcieport 0000:06:04.0: rpm_idle
-[    2.354017] pcieport 0000:06:04.0: rpm_idle
-[    2.354042] pcieport 0000:06:05.0: enabling device (0000 -> 0003)
-[    2.354186] pcieport 0000:06:05.0: rpm_idle
-[    2.354213] pcieport 0000:06:06.0: enabling device (0000 -> 0002)
-[    2.354362] pcieport 0000:06:06.0: rpm_idle
-[    2.354407] pci_hotplug: PCI Hot Plug PCI Core version: 0.5
-[    2.354441] pciehp 0000:06:03.0:pcie204: Slot #3 AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+ Surprise+ Interlock- NoCompl- LLActRep+
-[    2.354524] pciehp 0000:06:03.0:pcie204: service driver pciehp loaded
-[    2.354533] pciehp 0000:06:04.0:pcie204: Slot #4 AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+ Surprise+ Interlock- NoCompl- LLActRep+
-[    2.354609] pciehp 0000:06:04.0:pcie204: service driver pciehp loaded
-[    2.354617] pciehp 0000:06:05.0:pcie204: Slot #5 AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+ Surprise+ Interlock- NoCompl- LLActRep+
-[    2.354690] pciehp 0000:06:05.0:pcie204: service driver pciehp loaded
-[    2.354698] pciehp 0000:06:06.0:pcie204: Slot #6 AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+ Surprise+ Interlock- NoCompl- LLActRep+
-[    2.354772] pciehp 0000:06:06.0:pcie204: service driver pciehp loaded
-[    2.354777] pciehp: PCI Express Hot Plug Controller Driver version: 0.4
-[    2.354827] intel_idle: MWAIT substates: 0x21120
-[    2.354829] intel_idle: v0.4.1 model 0x3A
-[    2.355122] intel_idle: lapic_timer_reliable_states 0xffffffff
-[    2.355152] GHES: HEST is not enabled!
-[    2.355216] pcieport 0000:06:05.0: rpm_idle
-[    2.355235] pcieport 0000:06:06.0: rpm_idle
-[    2.355238] Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
-[    2.355277] pcieport 0000:06:03.0: rpm_idle
-[    2.355301] pcieport 0000:06:04.0: rpm_idle
-[    2.355659] Linux agpgart interface v0.103
-[    2.355739] AMD IOMMUv2 driver by Joerg Roedel <jroedel@suse.de>
-[    2.355764] AMD IOMMUv2 functionality not available on this system
-[    2.356396] i8042: PNP: No PS/2 controller found. Probing ports directly.
-[    2.364794] pcieport 0000:06:06.0: rpm_suspend
-[    2.366112] pcieport 0000:06:05.0: rpm_suspend
-[    2.367402] pcieport 0000:06:04.0: rpm_suspend
-[    2.368671] pcieport 0000:06:03.0: rpm_suspend
-
-Thanks,
-
-Lukas
+-- 
+viresh
