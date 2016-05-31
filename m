@@ -1,294 +1,330 @@
 From: "Andrew F. Davis" <afd@ti.com>
-Subject: [PATCH 2/3] power_supply: bq27xxx_battery: Index register numbers by enum
-Date: Tue, 31 May 2016 13:44:59 -0500
-Message-ID: <20160531184500.10871-2-afd@ti.com>
+Subject: [PATCH 3/3] power_supply: bq27xxx_battery: Group register mappings into one table
+Date: Tue, 31 May 2016 13:45:00 -0500
+Message-ID: <20160531184500.10871-3-afd@ti.com>
 References: <20160531184500.10871-1-afd@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:57961 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756022AbcEaSpI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 14:45:08 -0400
 In-Reply-To: <20160531184500.10871-1-afd@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>
-List-Id: linux-pm@vger.kernel.org
 
-Currently we use tables to map from register function to register number,
-these tables assume the enum used to describe the register function
-and index the register number is ordered to match the enum order. Index
-the register numbers by the enum instead. This also removes the need
-to comment each value with its function.
+Currently for each device with a unique register map we have a named
+array that we then merge into a multidimensional array. Skip this
+middle step and apply the register arrays directly to the multi-array.
 
 Signed-off-by: Andrew F. Davis <afd@ti.com>
 ---
- drivers/power/bq27xxx_battery.c | 238 ++++++++++++++++++++--------------------
- 1 file changed, 119 insertions(+), 119 deletions(-)
+ drivers/power/bq27xxx_battery.c | 281 +++++++++++++++++++---------------------
+ 1 file changed, 134 insertions(+), 147 deletions(-)
 
 diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
-index 45f6ebf..01737fa 100644
+index 01737fa..c954e6d 100644
 --- a/drivers/power/bq27xxx_battery.c
 +++ b/drivers/power/bq27xxx_battery.c
-@@ -104,143 +104,143 @@ enum bq27xxx_reg_index {
+@@ -82,6 +82,7 @@
+  *
+  * These are indexes into a device's register mapping array.
+  */
++
+ enum bq27xxx_reg_index {
+ 	BQ27XXX_REG_CTRL = 0,	/* Control */
+ 	BQ27XXX_REG_TEMP,	/* Temperature */
+@@ -103,154 +104,140 @@ enum bq27xxx_reg_index {
+ };
  
  /* Register mappings */
- static u8 bq27000_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	INVALID_REG_ADDR,	/* INT TEMP - NA*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	0x18,	/* TTF		*/
--	0x1c,	/* TTES		*/
--	0x26,	/* TTECP	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	0x22,	/* AE		*/
--	0x0b,	/* SOC(RSOC)	*/
--	0x76,	/* DCAP(ILMD)	*/
--	0x24,	/* AP		*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = 0x18,
-+	[BQ27XXX_REG_TTES] = 0x1c,
-+	[BQ27XXX_REG_TTECP] = 0x26,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = 0x22,
-+	[BQ27XXX_REG_SOC] = 0x0b,
-+	[BQ27XXX_REG_DCAP] = 0x76,
-+	[BQ27XXX_REG_AP] = 0x24,
- };
- 
- static u8 bq27010_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	INVALID_REG_ADDR,	/* INT TEMP - NA*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	0x18,	/* TTF		*/
--	0x1c,	/* TTES		*/
--	0x26,	/* TTECP	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x0b,	/* SOC(RSOC)	*/
--	0x76,	/* DCAP(ILMD)	*/
--	INVALID_REG_ADDR,	/* AP - NA	*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = 0x18,
-+	[BQ27XXX_REG_TTES] = 0x1c,
-+	[BQ27XXX_REG_TTECP] = 0x26,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x0b,
-+	[BQ27XXX_REG_DCAP] = 0x76,
-+	[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
- };
- 
- static u8 bq27500_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	0x28,	/* INT TEMP	*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	INVALID_REG_ADDR,	/* TTF - NA	*/
--	0x1a,	/* TTES		*/
--	INVALID_REG_ADDR,	/* TTECP - NA	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x2c,	/* SOC(RSOC)	*/
--	0x3c,	/* DCAP(ILMD)	*/
--	INVALID_REG_ADDR,	/* AP - NA	*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = 0x28,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTES] = 0x1a,
-+	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x2c,
-+	[BQ27XXX_REG_DCAP] = 0x3c,
-+	[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
- };
- 
- static u8 bq27530_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	0x32,	/* INT TEMP	*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	INVALID_REG_ADDR,	/* TTF - NA	*/
--	INVALID_REG_ADDR,	/* TTES - NA	*/
--	INVALID_REG_ADDR,	/* TTECP - NA	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x2c,	/* SOC(RSOC)	*/
--	INVALID_REG_ADDR,	/* DCAP - NA	*/
--	0x24,	/* AP		*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = 0x32,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x2c,
-+	[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_AP] = 0x24,
- };
- 
- static u8 bq27541_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	0x28,	/* INT TEMP	*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	INVALID_REG_ADDR,	/* TTF - NA	*/
--	INVALID_REG_ADDR,	/* TTES - NA	*/
--	INVALID_REG_ADDR,	/* TTECP - NA	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x2c,	/* SOC(RSOC)	*/
--	0x3c,	/* DCAP		*/
--	0x24,	/* AP		*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = 0x28,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x2c,
-+	[BQ27XXX_REG_DCAP] = 0x3c,
-+	[BQ27XXX_REG_AP] = 0x24,
- };
- 
- static u8 bq27545_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	0x28,	/* INT TEMP	*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	INVALID_REG_ADDR,	/* TTF - NA	*/
--	INVALID_REG_ADDR,	/* TTES - NA	*/
--	INVALID_REG_ADDR,	/* TTECP - NA	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x2c,	/* SOC(RSOC)	*/
--	INVALID_REG_ADDR,	/* DCAP - NA */
--	0x24,	/* AP		*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = 0x28,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x2c,
-+	[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_AP] = 0x24,
- };
- 
- static u8 bq27421_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x02,	/* TEMP		*/
--	0x1e,	/* INT TEMP	*/
--	0x04,	/* VOLT		*/
--	0x10,	/* AVG CURR	*/
--	0x06,	/* FLAGS	*/
--	INVALID_REG_ADDR,	/* TTE - NA	*/
--	INVALID_REG_ADDR,	/* TTF - NA	*/
--	INVALID_REG_ADDR,	/* TTES - NA	*/
--	INVALID_REG_ADDR,	/* TTECP - NA	*/
--	0x08,	/* NAC		*/
--	0x0e,	/* FCC		*/
--	INVALID_REG_ADDR,	/* CYCT - NA	*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x1c,	/* SOC		*/
--	0x3c,	/* DCAP		*/
--	0x18,	/* AP		*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x02,
-+	[BQ27XXX_REG_INT_TEMP] = 0x1e,
-+	[BQ27XXX_REG_VOLT] = 0x04,
-+	[BQ27XXX_REG_AI] = 0x10,
-+	[BQ27XXX_REG_FLAGS] = 0x06,
-+	[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_NAC] = 0x08,
-+	[BQ27XXX_REG_FCC] = 0x0e,
-+	[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x1c,
-+	[BQ27XXX_REG_DCAP] = 0x3c,
-+	[BQ27XXX_REG_AP] = 0x18,
- };
- 
+-static u8 bq27000_regs[] = {
+-	[BQ27XXX_REG_CTRL] = 0x00,
+-	[BQ27XXX_REG_TEMP] = 0x06,
+-	[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_VOLT] = 0x08,
+-	[BQ27XXX_REG_AI] = 0x14,
+-	[BQ27XXX_REG_FLAGS] = 0x0a,
+-	[BQ27XXX_REG_TTE] = 0x16,
+-	[BQ27XXX_REG_TTF] = 0x18,
+-	[BQ27XXX_REG_TTES] = 0x1c,
+-	[BQ27XXX_REG_TTECP] = 0x26,
+-	[BQ27XXX_REG_NAC] = 0x0c,
+-	[BQ27XXX_REG_FCC] = 0x12,
+-	[BQ27XXX_REG_CYCT] = 0x2a,
+-	[BQ27XXX_REG_AE] = 0x22,
+-	[BQ27XXX_REG_SOC] = 0x0b,
+-	[BQ27XXX_REG_DCAP] = 0x76,
+-	[BQ27XXX_REG_AP] = 0x24,
+-};
+-
+-static u8 bq27010_regs[] = {
+-	[BQ27XXX_REG_CTRL] = 0x00,
+-	[BQ27XXX_REG_TEMP] = 0x06,
+-	[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_VOLT] = 0x08,
+-	[BQ27XXX_REG_AI] = 0x14,
+-	[BQ27XXX_REG_FLAGS] = 0x0a,
+-	[BQ27XXX_REG_TTE] = 0x16,
+-	[BQ27XXX_REG_TTF] = 0x18,
+-	[BQ27XXX_REG_TTES] = 0x1c,
+-	[BQ27XXX_REG_TTECP] = 0x26,
+-	[BQ27XXX_REG_NAC] = 0x0c,
+-	[BQ27XXX_REG_FCC] = 0x12,
+-	[BQ27XXX_REG_CYCT] = 0x2a,
+-	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_SOC] = 0x0b,
+-	[BQ27XXX_REG_DCAP] = 0x76,
+-	[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
+-};
+-
+-static u8 bq27500_regs[] = {
+-	[BQ27XXX_REG_CTRL] = 0x00,
+-	[BQ27XXX_REG_TEMP] = 0x06,
+-	[BQ27XXX_REG_INT_TEMP] = 0x28,
+-	[BQ27XXX_REG_VOLT] = 0x08,
+-	[BQ27XXX_REG_AI] = 0x14,
+-	[BQ27XXX_REG_FLAGS] = 0x0a,
+-	[BQ27XXX_REG_TTE] = 0x16,
+-	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_TTES] = 0x1a,
+-	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_NAC] = 0x0c,
+-	[BQ27XXX_REG_FCC] = 0x12,
+-	[BQ27XXX_REG_CYCT] = 0x2a,
+-	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_SOC] = 0x2c,
+-	[BQ27XXX_REG_DCAP] = 0x3c,
+-	[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
+-};
+-
+-static u8 bq27530_regs[] = {
+-	[BQ27XXX_REG_CTRL] = 0x00,
+-	[BQ27XXX_REG_TEMP] = 0x06,
+-	[BQ27XXX_REG_INT_TEMP] = 0x32,
+-	[BQ27XXX_REG_VOLT] = 0x08,
+-	[BQ27XXX_REG_AI] = 0x14,
+-	[BQ27XXX_REG_FLAGS] = 0x0a,
+-	[BQ27XXX_REG_TTE] = 0x16,
+-	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_NAC] = 0x0c,
+-	[BQ27XXX_REG_FCC] = 0x12,
+-	[BQ27XXX_REG_CYCT] = 0x2a,
+-	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_SOC] = 0x2c,
+-	[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_AP] = 0x24,
+-};
+-
+-static u8 bq27541_regs[] = {
+-	[BQ27XXX_REG_CTRL] = 0x00,
+-	[BQ27XXX_REG_TEMP] = 0x06,
+-	[BQ27XXX_REG_INT_TEMP] = 0x28,
+-	[BQ27XXX_REG_VOLT] = 0x08,
+-	[BQ27XXX_REG_AI] = 0x14,
+-	[BQ27XXX_REG_FLAGS] = 0x0a,
+-	[BQ27XXX_REG_TTE] = 0x16,
+-	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_NAC] = 0x0c,
+-	[BQ27XXX_REG_FCC] = 0x12,
+-	[BQ27XXX_REG_CYCT] = 0x2a,
+-	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_SOC] = 0x2c,
+-	[BQ27XXX_REG_DCAP] = 0x3c,
+-	[BQ27XXX_REG_AP] = 0x24,
+-};
+-
+-static u8 bq27545_regs[] = {
+-	[BQ27XXX_REG_CTRL] = 0x00,
+-	[BQ27XXX_REG_TEMP] = 0x06,
+-	[BQ27XXX_REG_INT_TEMP] = 0x28,
+-	[BQ27XXX_REG_VOLT] = 0x08,
+-	[BQ27XXX_REG_AI] = 0x14,
+-	[BQ27XXX_REG_FLAGS] = 0x0a,
+-	[BQ27XXX_REG_TTE] = 0x16,
+-	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_NAC] = 0x0c,
+-	[BQ27XXX_REG_FCC] = 0x12,
+-	[BQ27XXX_REG_CYCT] = 0x2a,
+-	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_SOC] = 0x2c,
+-	[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_AP] = 0x24,
+-};
+-
+-static u8 bq27421_regs[] = {
+-	[BQ27XXX_REG_CTRL] = 0x00,
+-	[BQ27XXX_REG_TEMP] = 0x02,
+-	[BQ27XXX_REG_INT_TEMP] = 0x1e,
+-	[BQ27XXX_REG_VOLT] = 0x04,
+-	[BQ27XXX_REG_AI] = 0x10,
+-	[BQ27XXX_REG_FLAGS] = 0x06,
+-	[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_NAC] = 0x08,
+-	[BQ27XXX_REG_FCC] = 0x0e,
+-	[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+-	[BQ27XXX_REG_SOC] = 0x1c,
+-	[BQ27XXX_REG_DCAP] = 0x3c,
+-	[BQ27XXX_REG_AP] = 0x18,
+-};
+-
  static u8 *bq27xxx_regs[] = {
+-	[BQ27000] = bq27000_regs,
+-	[BQ27010] = bq27010_regs,
+-	[BQ27500] = bq27500_regs,
+-	[BQ27530] = bq27530_regs,
+-	[BQ27541] = bq27541_regs,
+-	[BQ27545] = bq27545_regs,
+-	[BQ27421] = bq27421_regs,
++	[BQ27000] = {
++		[BQ27XXX_REG_CTRL] = 0x00,
++		[BQ27XXX_REG_TEMP] = 0x06,
++		[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_VOLT] = 0x08,
++		[BQ27XXX_REG_AI] = 0x14,
++		[BQ27XXX_REG_FLAGS] = 0x0a,
++		[BQ27XXX_REG_TTE] = 0x16,
++		[BQ27XXX_REG_TTF] = 0x18,
++		[BQ27XXX_REG_TTES] = 0x1c,
++		[BQ27XXX_REG_TTECP] = 0x26,
++		[BQ27XXX_REG_NAC] = 0x0c,
++		[BQ27XXX_REG_FCC] = 0x12,
++		[BQ27XXX_REG_CYCT] = 0x2a,
++		[BQ27XXX_REG_AE] = 0x22,
++		[BQ27XXX_REG_SOC] = 0x0b,
++		[BQ27XXX_REG_DCAP] = 0x76,
++		[BQ27XXX_REG_AP] = 0x24,
++	},
++	[BQ27010] = {
++		[BQ27XXX_REG_CTRL] = 0x00,
++		[BQ27XXX_REG_TEMP] = 0x06,
++		[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_VOLT] = 0x08,
++		[BQ27XXX_REG_AI] = 0x14,
++		[BQ27XXX_REG_FLAGS] = 0x0a,
++		[BQ27XXX_REG_TTE] = 0x16,
++		[BQ27XXX_REG_TTF] = 0x18,
++		[BQ27XXX_REG_TTES] = 0x1c,
++		[BQ27XXX_REG_TTECP] = 0x26,
++		[BQ27XXX_REG_NAC] = 0x0c,
++		[BQ27XXX_REG_FCC] = 0x12,
++		[BQ27XXX_REG_CYCT] = 0x2a,
++		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_SOC] = 0x0b,
++		[BQ27XXX_REG_DCAP] = 0x76,
++		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
++	},
++	[BQ27500] = {
++		[BQ27XXX_REG_CTRL] = 0x00,
++		[BQ27XXX_REG_TEMP] = 0x06,
++		[BQ27XXX_REG_INT_TEMP] = 0x28,
++		[BQ27XXX_REG_VOLT] = 0x08,
++		[BQ27XXX_REG_AI] = 0x14,
++		[BQ27XXX_REG_FLAGS] = 0x0a,
++		[BQ27XXX_REG_TTE] = 0x16,
++		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTES] = 0x1a,
++		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_NAC] = 0x0c,
++		[BQ27XXX_REG_FCC] = 0x12,
++		[BQ27XXX_REG_CYCT] = 0x2a,
++		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_SOC] = 0x2c,
++		[BQ27XXX_REG_DCAP] = 0x3c,
++		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
++	},
++	[BQ27530] = {
++		[BQ27XXX_REG_CTRL] = 0x00,
++		[BQ27XXX_REG_TEMP] = 0x06,
++		[BQ27XXX_REG_INT_TEMP] = 0x32,
++		[BQ27XXX_REG_VOLT] = 0x08,
++		[BQ27XXX_REG_AI] = 0x14,
++		[BQ27XXX_REG_FLAGS] = 0x0a,
++		[BQ27XXX_REG_TTE] = 0x16,
++		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_NAC] = 0x0c,
++		[BQ27XXX_REG_FCC] = 0x12,
++		[BQ27XXX_REG_CYCT] = 0x2a,
++		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_SOC] = 0x2c,
++		[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_AP] = 0x24,
++	},
++	[BQ27541] = {
++		[BQ27XXX_REG_CTRL] = 0x00,
++		[BQ27XXX_REG_TEMP] = 0x06,
++		[BQ27XXX_REG_INT_TEMP] = 0x28,
++		[BQ27XXX_REG_VOLT] = 0x08,
++		[BQ27XXX_REG_AI] = 0x14,
++		[BQ27XXX_REG_FLAGS] = 0x0a,
++		[BQ27XXX_REG_TTE] = 0x16,
++		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_NAC] = 0x0c,
++		[BQ27XXX_REG_FCC] = 0x12,
++		[BQ27XXX_REG_CYCT] = 0x2a,
++		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_SOC] = 0x2c,
++		[BQ27XXX_REG_DCAP] = 0x3c,
++		[BQ27XXX_REG_AP] = 0x24,
++	},
++	[BQ27545] = {
++		[BQ27XXX_REG_CTRL] = 0x00,
++		[BQ27XXX_REG_TEMP] = 0x06,
++		[BQ27XXX_REG_INT_TEMP] = 0x28,
++		[BQ27XXX_REG_VOLT] = 0x08,
++		[BQ27XXX_REG_AI] = 0x14,
++		[BQ27XXX_REG_FLAGS] = 0x0a,
++		[BQ27XXX_REG_TTE] = 0x16,
++		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_NAC] = 0x0c,
++		[BQ27XXX_REG_FCC] = 0x12,
++		[BQ27XXX_REG_CYCT] = 0x2a,
++		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_SOC] = 0x2c,
++		[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_AP] = 0x24,
++	},
++	[BQ27421] = {
++		[BQ27XXX_REG_CTRL] = 0x00,
++		[BQ27XXX_REG_TEMP] = 0x02,
++		[BQ27XXX_REG_INT_TEMP] = 0x1e,
++		[BQ27XXX_REG_VOLT] = 0x04,
++		[BQ27XXX_REG_AI] = 0x10,
++		[BQ27XXX_REG_FLAGS] = 0x06,
++		[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_NAC] = 0x08,
++		[BQ27XXX_REG_FCC] = 0x0e,
++		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_SOC] = 0x1c,
++		[BQ27XXX_REG_DCAP] = 0x3c,
++		[BQ27XXX_REG_AP] = 0x18,
++	},
+ };
+ 
+ static enum power_supply_property bq27000_battery_props[] = {
 -- 
 2.8.3
+
