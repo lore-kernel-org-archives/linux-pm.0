@@ -1,55 +1,124 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCHv3 00/48] thermal: reorganizing thermal core
-Date: Mon, 30 May 2016 23:13:47 -0700
-Message-ID: <20160531061344.GA2111@localhost.localdomain>
-References: <1464646584-14322-1-git-send-email-edubezval@gmail.com>
- <574D11E8.3070703@ti.com>
+Subject: [PATCHv4 00/48] thermal: reorganizing thermal core
+Date: Mon, 30 May 2016 23:18:07 -0700
+Message-ID: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:34669 "EHLO
-	mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750907AbcEaGNw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 02:13:52 -0400
-Content-Disposition: inline
-In-Reply-To: <574D11E8.3070703@ti.com>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:34438 "EHLO
+	mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751778AbcEaGTA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 02:19:00 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Keerthy <a0393675@ti.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On Tue, May 31, 2016 at 09:54:08AM +0530, Keerthy wrote:
-> Hi Eduardo,
-> 
-> On Tuesday 31 May 2016 03:45 AM, Eduardo Valentin wrote:
-> >Folks,
-> >
-> >This is V3 of a patch series to improve thermal core. The idea
-> >here is to reorganize the code and improve the way we
-> >handle sysfs entries.
-> >
-> >The change in behavior is that now, thermal zones with empty
-> >.type will not be allowed to be registered. Also, the way
-> >we handle scanf's return code is now checking for
-> >number of successful inputs.
-> >
-> >After this series, thermal core is split into the following files:
-> >- thermal_sysfs.c: contains the functions handling the sysfs nodes
-> >- thermal_helpers.c: groups functions that do not need to touch thermal
-> >core internal data structures, such as internal lists, and list locks.
-> >- thermal_core.c: functions to handle the lifecycle of the subsystem,
-> >its governors, cooling devices, thermal zone devices, and their
-> >interactions.
-> >
-> >I don't expect any impact on userspace.
-> >
-> 
-> I applied the whole 48 patch series on top of mainline kernel.
-> 
-> I see boot crash when i have thermal modules built in kernel for dra7/dra72
-> boards.
-> 
-> dra7 bootlog: http://pastebin.ubuntu.com/16859184/
+Folks,
 
-I will be sending a v4 soon. I will also push to a branch.
+This is V4 of a patch series to improve thermal core. The idea
+here is to reorganize the code and improve the way we
+handle sysfs entries.
+
+The change in behavior is that now, thermal zones with empty
+.type will not be allowed to be registered. Also, the way
+we handle scanf's return code is now checking for
+number of successful inputs.
+
+After this series, thermal core is split into the following files:
+- thermal_sysfs.c: contains the functions handling the sysfs nodes
+- thermal_helpers.c: groups functions that do not need to touch thermal
+core internal data structures, such as internal lists, and list locks.
+- thermal_core.c: functions to handle the lifecycle of the subsystem,
+its governors, cooling devices, thermal zone devices, and their
+interactions.
+
+I don't expect any impact on userspace.
+
+Please give your inputs.
+
+For your consideration, I am also adding this to this branch:
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal sysfs_rework
+
+V3->V4:
+- Fixes on a couple of sysfs entries as reported in the mailing list.
+
+V2->V3:
+- Included 8 extra patches to remove style issues on
+(new) thermal core.
+
+V1->V2:
+- Removed all checkpatch issues in the existing code that was
+moved/changed.
+
+Rui, it would be great if you could review these earlier. I will be
+sending two extra patch series on top of this one.
+
+
+
+Eduardo Valentin (48):
+  thermal: core: prevent zones with no types to be registered
+  thermal: core: group thermal_zone DEVICE_ATTR's declarations
+  thermal: core: group device_create_file() calls that are always
+    created
+  thermal: core: use dev.groups to manage always present tz attributes
+  thermal: core: move emul_temp creation to tz->device.groups
+  thermal: core: move mode attribute to tz->device.groups
+  thermal: core: move passive attr to tz->device.groups
+  thermal: core: improve power actor documentation
+  thermal: core: move power actor code out of sysfs I/F section
+  thermal: core: remove useless empty line
+  thermal: core: fix style on remove_trip_attrs()
+  thermal: core: move the trip attrs to the tz sysfs I/F section
+  thermal: core: create tz->device.groups dynamically
+  thermal: core: move trips attributes to tz->device.groups
+  thermal: core: remove unnecessary device_remove() calls
+  thermal: core: split passive_store
+  thermal: core: split policy_store
+  thermal: core: split available_policies_show()
+  thermal: core: move to_thermal_zone() macro to header file
+  thermal: core: treat correctly the return value of *scanf calls
+  thermal: core: match parenthesis on code alignment
+  thermal: core: move thermal_zone sysfs to thermal_sysfs.c
+  thermal: core: move to_cooling_device macro to header file
+  thermal: core: move cooling device sysfs to thermal_sysfs.c
+  thermal: core: remove a couple of style issues on helpers
+  thermal: core: introduce thermal_helpers.c
+  thermal: core: group functions related to governor handling
+  thermal: core: move idr handling to device management section
+  thermal: core: small style fix on __unbind() helper
+  thermal: core: move __unbind() helper to where it is used
+  thermal: core: move bind_cdev() to where it is used
+  thermal: core: move bind_tz() to where it is used
+  thermal: core: fix couple of style issues on __bind() helper
+  thermal: core: move __bind() to where it is used
+  thermal: core: add inline to print_bind_err_msg()
+  thermal: core: move notify to the zone update section
+  thermal: core: add a comment describing the main update loop
+  thermal: core: add a comment describing the power actor section
+  thermal: core: add a comment describing the device management section
+  thermal: sysfs: remove symbols of emul_temp when config is disabled
+  thermal: core: remove FSF address in the GPL notice
+  thermal: core: small style fix when checking for __find_governor()
+  thermal: core: standardize line breaking alignment
+  thermal: core: remove void function return statements
+  thermal: core: remove style warnings and checks
+  thermal: core: improve kerneldoc entry of
+    thermal_cooling_device_unregister
+  thermal: core: use kzalloc(sizeof(*ptr),...)
+  thermal: sysfs: use kcalloc() instead of kzalloc()
+
+ drivers/thermal/Makefile          |    3 +-
+ drivers/thermal/thermal_core.c    | 1363 +++++++++----------------------------
+ drivers/thermal/thermal_core.h    |   26 +
+ drivers/thermal/thermal_helpers.c |  144 ++++
+ drivers/thermal/thermal_sysfs.c   |  756 ++++++++++++++++++++
+ include/linux/thermal.h           |    2 +
+ 6 files changed, 1238 insertions(+), 1056 deletions(-)
+ create mode 100644 drivers/thermal/thermal_helpers.c
+ create mode 100644 drivers/thermal/thermal_sysfs.c
+
+-- 
+2.1.4
 
