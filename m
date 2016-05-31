@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv4 46/48] thermal: core: improve kerneldoc entry of thermal_cooling_device_unregister
-Date: Mon, 30 May 2016 23:18:53 -0700
-Message-ID: <1464675535-2433-47-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv4 48/48] thermal: sysfs: use kcalloc() instead of kzalloc()
+Date: Mon, 30 May 2016 23:18:55 -0700
+Message-ID: <1464675535-2433-49-git-send-email-edubezval@gmail.com>
 References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
@@ -10,34 +10,59 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Improve description and keep 80 columns limit.
+Simplify size computation by using kcalloc() for
+allocating memory for arrays.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/thermal/thermal_sysfs.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 3957768..b3fa47e 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1010,11 +1010,11 @@ static void __unbind(struct thermal_zone_device *tz, int mask,
- }
- 
- /**
-- * thermal_cooling_device_unregister - removes the registered thermal cooling device
-+ * thermal_cooling_device_unregister - removes a thermal cooling device
-  * @cdev:	the thermal cooling device to remove.
-  *
-- * thermal_cooling_device_unregister() must be called when the device is no
-- * longer needed.
-+ * thermal_cooling_device_unregister() must be called when a registered
-+ * thermal cooling device is no longer needed.
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index ca4b83a..4136b71 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -505,22 +505,25 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
   */
- void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
  {
+-	int size = sizeof(struct thermal_attr) * tz->trips;
+ 	struct attribute **attrs;
+ 	int indx;
+ 
+-	tz->trip_type_attrs = kzalloc(size, GFP_KERNEL);
++	tz->trip_type_attrs = kcalloc(tz->trips, sizeof(*tz->trip_type_attrs),
++				      GFP_KERNEL);
+ 	if (!tz->trip_type_attrs)
+ 		return -ENOMEM;
+ 
+-	tz->trip_temp_attrs = kzalloc(size, GFP_KERNEL);
++	tz->trip_temp_attrs = kcalloc(tz->trips, sizeof(*tz->trip_temp_attrs),
++				      GFP_KERNEL);
+ 	if (!tz->trip_temp_attrs) {
+ 		kfree(tz->trip_type_attrs);
+ 		return -ENOMEM;
+ 	}
+ 
+ 	if (tz->ops->get_trip_hyst) {
+-		tz->trip_hyst_attrs = kzalloc(size, GFP_KERNEL);
++		tz->trip_hyst_attrs = kcalloc(tz->trips,
++					      sizeof(*tz->trip_hyst_attrs),
++					      GFP_KERNEL);
+ 		if (!tz->trip_hyst_attrs) {
+ 			kfree(tz->trip_type_attrs);
+ 			kfree(tz->trip_temp_attrs);
+@@ -528,7 +531,7 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
+ 		}
+ 	}
+ 
+-	attrs = kzalloc(sizeof(*attrs) * tz->trips * 3 + 1, GFP_KERNEL);
++	attrs = kcalloc(tz->trips * 3 + 1, sizeof(*attrs), GFP_KERNEL);
+ 	if (!attrs) {
+ 		kfree(tz->trip_type_attrs);
+ 		kfree(tz->trip_temp_attrs);
 -- 
 2.1.4
