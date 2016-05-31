@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: Implement cpufreq_find_target_index() to traverse sorted list
-Date: Tue, 31 May 2016 17:06:03 +0530
-Message-ID: <dbb027770709f856b61db270a6f045fe74da8612.1464694144.git.viresh.kumar@linaro.org>
+Subject: [PATCH 1/2] cpufreq: Store sorted frequency table
+Date: Tue, 31 May 2016 17:06:02 +0530
+Message-ID: <d2137fb768df7893be94d3c8c7495e93645b7b9c.1464694144.git.viresh.kumar@linaro.org>
 References: <cover.1464694144.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:35539 "EHLO
-	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750852AbcEaLgO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 07:36:14 -0400
-Received: by mail-pf0-f179.google.com with SMTP id g64so74096581pfb.2
-        for <linux-pm@vger.kernel.org>; Tue, 31 May 2016 04:36:14 -0700 (PDT)
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:35530 "EHLO
+	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750852AbcEaLgL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 07:36:11 -0400
+Received: by mail-pf0-f182.google.com with SMTP id g64so74096170pfb.2
+        for <linux-pm@vger.kernel.org>; Tue, 31 May 2016 04:36:10 -0700 (PDT)
 In-Reply-To: <cover.1464694144.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1464694144.git.viresh.kumar@linaro.org>
 References: <cover.1464694144.git.viresh.kumar@linaro.org>
@@ -18,284 +18,183 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, smuckle@linaro.org
 
-cpufreq core keeps another table of sorted frequencies and that can be
-used to find a match quickly, instead of relying on
-cpufreq_frequency_table_target() which will be very inefficient
-comparatively.
+The drivers aren't required to provide a sorted frequency table today,
+and its not optimal to work on an unsorted freq table.
 
-The new routine(s) traverse the table of sorted frequencies and return
-an index into the policy->freq_table which is used everywhere else in
-the code.
+To simplify and improve code performance, create a frequency table
+within core and keep it sorted in ascending order.
 
-Few important users of cpufreq_frequency_table_target() are also
-migrated to use it.
-
-Tested on Exynos board with both ondemand schedutil governor and
-confirmed with help of various print messages that we are eventually
-switching to the desired frequency based on a target frequency.
-
-Note that migrating all other users of cpufreq_frequency_table_target()
-will require some cleanups first and so that will be done separately.
+Note that this should eventually replace policy->freq_table itself,
+which isn't done currently as few drivers will break due to that.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/acpi-cpufreq.c |  18 +++---
- drivers/cpufreq/cpufreq.c      |  25 +++------
- drivers/cpufreq/freq_table.c   | 124 +++++++++++++++++++++++++++++++++++++++++
- include/linux/cpufreq.h        |   4 ++
- 4 files changed, 145 insertions(+), 26 deletions(-)
+ drivers/cpufreq/cpufreq.c    | 23 ++++++++++-----
+ drivers/cpufreq/freq_table.c | 67 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/cpufreq.h      |  3 ++
+ 3 files changed, 86 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 32a15052f363..0b47a4ed7130 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -468,20 +468,18 @@ unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
- 	struct acpi_cpufreq_data *data = policy->driver_data;
- 	struct acpi_processor_performance *perf;
- 	struct cpufreq_frequency_table *entry;
--	unsigned int next_perf_state, next_freq, freq;
-+	unsigned int next_perf_state, next_freq, index;
-+	int ret;
- 
- 	/*
- 	 * Find the closest frequency above target_freq.
--	 *
--	 * The table is sorted in the reverse order with respect to the
--	 * frequency and all of the entries are valid (see the initialization).
- 	 */
--	entry = policy->freq_table;
--	do {
--		entry++;
--		freq = entry->frequency;
--	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
--	entry--;
-+	ret = cpufreq_find_target_index(policy, target_freq, CPUFREQ_RELATION_L,
-+					&index);
-+	if (WARN_ON(ret))
-+		return 0;
-+
-+	entry = &policy->freq_table[index];
- 	next_freq = entry->frequency;
- 	next_perf_state = entry->driver_data;
- 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index a6bdb55350f4..712a4564c59b 100644
+index c6a14ba239a2..a6bdb55350f4 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1870,14 +1870,17 @@ static int __target_intermediate(struct cpufreq_policy *policy,
- 	return ret;
+@@ -1146,6 +1146,16 @@ static void cpufreq_policy_free(struct cpufreq_policy *policy, bool notify)
+ 	kfree(policy);
  }
  
--static int __target_index(struct cpufreq_policy *policy,
--			  struct cpufreq_frequency_table *freq_table, int index)
-+static int __target_index(struct cpufreq_policy *policy, int index)
- {
- 	struct cpufreq_freqs freqs = {.old = policy->cur, .flags = 0};
-+	unsigned int new_freq = policy->freq_table[index].frequency;
- 	unsigned int intermediate_freq = 0;
- 	int retval = -EINVAL;
- 	bool notify;
- 
-+	if (new_freq == policy->cur)
-+		return 0;
++static void cpufreq_policy_exit(struct cpufreq_policy *policy)
++{
++	if (!cpufreq_driver->exit)
++		return;
 +
- 	notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
- 	if (notify) {
- 		/* Handle switching to intermediate frequency */
-@@ -1892,7 +1895,7 @@ static int __target_index(struct cpufreq_policy *policy,
- 				freqs.old = freqs.new;
- 		}
- 
--		freqs.new = freq_table[index].frequency;
-+		freqs.new = new_freq;
- 		pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
- 			 __func__, policy->cpu, freqs.old, freqs.new);
- 
-@@ -1929,7 +1932,6 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			    unsigned int relation)
++	cpufreq_driver->exit(policy);
++	free_sorted_freq_table(policy);
++	policy->freq_table = NULL;
++}
++
+ static int cpufreq_online(unsigned int cpu)
  {
- 	unsigned int old_target_freq = target_freq;
--	struct cpufreq_frequency_table *freq_table;
- 	int index, retval;
- 
- 	if (cpufreq_disabled())
-@@ -1959,23 +1961,14 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 	if (!cpufreq_driver->target_index)
- 		return -EINVAL;
- 
--	freq_table = cpufreq_frequency_get_table(policy->cpu);
--	if (unlikely(!freq_table)) {
--		pr_err("%s: Unable to find freq_table\n", __func__);
--		return -EINVAL;
--	}
--
--	retval = cpufreq_frequency_table_target(policy, freq_table, target_freq,
--						relation, &index);
-+	retval = cpufreq_find_target_index(policy, target_freq, relation,
-+					   &index);
- 	if (unlikely(retval)) {
- 		pr_err("%s: Unable to find matching freq\n", __func__);
- 		return retval;
+ 	struct cpufreq_policy *policy;
+@@ -1187,6 +1197,10 @@ static int cpufreq_online(unsigned int cpu)
+ 		goto out_free_policy;
  	}
  
--	if (freq_table[index].frequency == policy->cur)
--		return 0;
--
--	return __target_index(policy, freq_table, index);
-+	return __target_index(policy, index);
- }
- EXPORT_SYMBOL_GPL(__cpufreq_driver_target);
++	ret = create_sorted_freq_table(policy);
++	if (ret)
++		goto out_exit_policy;
++
+ 	down_write(&policy->rwsem);
  
+ 	if (new_policy) {
+@@ -1300,9 +1314,7 @@ static int cpufreq_online(unsigned int cpu)
+ 
+ out_exit_policy:
+ 	up_write(&policy->rwsem);
+-
+-	if (cpufreq_driver->exit)
+-		cpufreq_driver->exit(policy);
++	cpufreq_policy_exit(policy);
+ out_free_policy:
+ 	cpufreq_policy_free(policy, !new_policy);
+ 	return ret;
+@@ -1387,10 +1399,7 @@ static void cpufreq_offline(unsigned int cpu)
+ 	 * since this is a core component, and is essential for the
+ 	 * subsequent light-weight ->init() to succeed.
+ 	 */
+-	if (cpufreq_driver->exit) {
+-		cpufreq_driver->exit(policy);
+-		policy->freq_table = NULL;
+-	}
++	cpufreq_policy_exit(policy);
+ 
+ unlock:
+ 	up_write(&policy->rwsem);
 diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index ba97912973c4..5217d93f1ab8 100644
+index 4e5c5dbfed7a..ba97912973c4 100644
 --- a/drivers/cpufreq/freq_table.c
 +++ b/drivers/cpufreq/freq_table.c
-@@ -116,6 +116,130 @@ int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy)
- }
- EXPORT_SYMBOL_GPL(cpufreq_generic_frequency_table_verify);
+@@ -13,6 +13,7 @@
  
-+static int cpufreq_find_target_index_l(struct cpufreq_policy *policy,
-+				       unsigned int target_freq)
+ #include <linux/cpufreq.h>
+ #include <linux/module.h>
++#include <linux/slab.h>
+ 
+ /*********************************************************************
+  *                     FREQUENCY TABLE HELPERS                       *
+@@ -298,6 +299,72 @@ struct freq_attr *cpufreq_generic_attr[] = {
+ };
+ EXPORT_SYMBOL_GPL(cpufreq_generic_attr);
+ 
++static int next_larger(struct cpufreq_policy *policy, unsigned int freq,
++		       struct cpufreq_frequency_table *table)
 +{
-+	struct cpufreq_frequency_table *pos, *best = NULL;
-+	unsigned int freq;
++	struct cpufreq_frequency_table *pos;
++	unsigned int next_freq = ~0;
++	int index = -EINVAL;
 +
-+	cpufreq_for_each_valid_entry(pos, policy->sorted_freq_table) {
-+		freq = pos->frequency;
-+
-+		if ((freq < policy->min) || (freq > policy->max))
++	cpufreq_for_each_valid_entry(pos, table) {
++		if (pos->frequency <= freq)
 +			continue;
 +
-+		if (freq >= target_freq)
-+			return pos->driver_data;
-+
-+		best = pos;
++		if (next_freq > pos->frequency) {
++			next_freq = pos->frequency;
++			index = pos - table;
++		}
 +	}
 +
-+	if (best)
-+		return best->driver_data;
-+
-+	return -EINVAL;
++	return index;
 +}
 +
-+static int cpufreq_find_target_index_h(struct cpufreq_policy *policy,
-+				       unsigned int target_freq)
++void free_sorted_freq_table(struct cpufreq_policy *policy)
 +{
-+	struct cpufreq_frequency_table *pos, *best = NULL;
-+	unsigned int freq;
-+
-+	cpufreq_for_each_valid_entry(pos, policy->sorted_freq_table) {
-+		freq = pos->frequency;
-+
-+		if ((freq < policy->min) || (freq > policy->max))
-+			continue;
-+
-+		if (freq == target_freq)
-+			return pos->driver_data;
-+
-+		if (freq < target_freq) {
-+			best = pos;
-+			continue;
-+		}
-+
-+		/* No freq found below target_freq */
-+		if (!best)
-+			best = pos;
-+		break;
-+	}
-+
-+	if (best)
-+		return best->driver_data;
-+
-+	return -EINVAL;
++	kfree(policy->sorted_freq_table);
++	policy->sorted_freq_table = NULL;
 +}
 +
-+static int cpufreq_find_target_index_c(struct cpufreq_policy *policy,
-+				       unsigned int target_freq)
++int create_sorted_freq_table(struct cpufreq_policy *policy)
 +{
-+	struct cpufreq_frequency_table *pos, *best = NULL;
-+	unsigned int freq;
++	struct cpufreq_frequency_table *pos, *new_table;
++	unsigned int freq, index, i, count = 0;
++	struct cpufreq_frequency_table *table = policy->freq_table;
 +
-+	cpufreq_for_each_valid_entry(pos, policy->sorted_freq_table) {
-+		freq = pos->frequency;
++	if (!table)
++		return 0;
 +
-+		if ((freq < policy->min) || (freq > policy->max))
-+			continue;
++	cpufreq_for_each_valid_entry(pos, table)
++		count++;
 +
-+		if (freq == target_freq)
-+			return pos->driver_data;
++	/* Extra entry for CPUFREQ_TABLE_END */
++	count++;
 +
-+		if (freq < target_freq) {
-+			best = pos;
-+			continue;
-+		}
++	new_table = kmalloc_array(count, sizeof(*new_table), GFP_KERNEL);
++	if (!new_table)
++		return -ENOMEM;
 +
-+		/* No freq found below target_freq */
-+		if (!best) {
-+			best = pos;
++	for (i = 0, freq = 0; i < count - 1; i++) {
++		index = next_larger(policy, freq, table);
++		if (index == -EINVAL)
 +			break;
-+		}
 +
-+		/* Choose the closest freq */
-+		if (target_freq - best->frequency > freq - target_freq)
-+			best = pos;
++		/*
++		 * driver_data of the sorted table points to the index of the
++		 * unsorted table.
++		 */
++		new_table[i].driver_data = index;
++		new_table[i].frequency = table[index].frequency;
 +
-+		break;
++		freq = table[index].frequency;
 +	}
 +
-+	if (best)
-+		return best->driver_data;
++	new_table[i].frequency = CPUFREQ_TABLE_END;
++	policy->sorted_freq_table = new_table;
 +
-+	return -EINVAL;
-+}
-+
-+int cpufreq_find_target_index(struct cpufreq_policy *policy,
-+			      unsigned int target_freq, unsigned int relation,
-+			      unsigned int *index)
-+{
-+	int new_index;
-+
-+	switch (relation) {
-+	case CPUFREQ_RELATION_L:
-+		new_index = cpufreq_find_target_index_l(policy, target_freq);
-+		break;
-+	case CPUFREQ_RELATION_H:
-+		new_index = cpufreq_find_target_index_h(policy, target_freq);
-+		break;
-+	case CPUFREQ_RELATION_C:
-+		new_index = cpufreq_find_target_index_c(policy, target_freq);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (new_index == -EINVAL)
-+		return new_index;
-+
-+	*index = new_index;
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(cpufreq_find_target_index);
 +
-+/* Deprecated */
- int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 				   struct cpufreq_frequency_table *table,
- 				   unsigned int target_freq,
+ int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
+ 				      struct cpufreq_frequency_table *table)
+ {
 diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 08cf508948dd..03e88fb3d2c0 100644
+index 7ed93c310c08..08cf508948dd 100644
 --- a/include/linux/cpufreq.h
 +++ b/include/linux/cpufreq.h
-@@ -600,6 +600,10 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
- 				   struct cpufreq_frequency_table *table);
- int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy);
+@@ -87,6 +87,7 @@ struct cpufreq_policy {
  
-+int cpufreq_find_target_index(struct cpufreq_policy *policy,
-+			      unsigned int target_freq, unsigned int relation,
-+			      unsigned int *index);
-+/* Deprecated */
- int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 				   struct cpufreq_frequency_table *table,
- 				   unsigned int target_freq,
+ 	struct cpufreq_user_policy user_policy;
+ 	struct cpufreq_frequency_table	*freq_table;
++	struct cpufreq_frequency_table	*sorted_freq_table;
+ 
+ 	struct list_head        policy_list;
+ 	struct kobject		kobj;
+@@ -592,6 +593,8 @@ static inline void dev_pm_opp_free_cpufreq_table(struct device *dev,
+ 
+ int cpufreq_frequency_table_cpuinfo(struct cpufreq_policy *policy,
+ 				    struct cpufreq_frequency_table *table);
++int create_sorted_freq_table(struct cpufreq_policy *policy);
++void free_sorted_freq_table(struct cpufreq_policy *policy);
+ 
+ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
+ 				   struct cpufreq_frequency_table *table);
 -- 
 2.7.1.410.g6faf27b
 
