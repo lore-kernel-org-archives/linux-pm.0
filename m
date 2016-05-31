@@ -1,116 +1,138 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [RFC v2 00/13] usb/mmc/power: Fix USB/LAN when TFTP booting
-Date: Tue, 31 May 2016 08:58:08 +0800
-Message-ID: <20160531005808.GA7913@shlinux2>
-References: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
- <20160505224240.GA31429@rob-hp-laptop>
- <CAPDyKFqpoi03Egfuvd8qJXnn_+FBgPXAb7S4UvkxVs8BA+zwnA@mail.gmail.com>
- <20160509181829.GA19687@rob-hp-laptop>
- <CAPDyKFq2=mqujFjvJSYxg2nVmK=OrBKLtFfb-ErNJO3Zr_LMVw@mail.gmail.com>
- <20160528033613.GA3291@shlinux2>
+From: Wanpeng Li <kernellwp@gmail.com>
+Subject: Re: [PATCH v2 3/3] cpufreq: schedutil: map raw required frequency to
+ driver frequency
+Date: Tue, 31 May 2016 09:49:30 +0800
+Message-ID: <CANRm+CxFuTrr_-uqgwAdotR3_1+9eiCWuHDN0vbhmmKCKVbVxw@mail.gmail.com>
+References: <1464231181-30741-1-git-send-email-smuckle@linaro.org>
+	<1464231181-30741-4-git-send-email-smuckle@linaro.org>
+	<20160526071629.GW17585@vireshk-i7>
+	<CAJZ5v0gxfRBeQTyHACVtRpon50N_t3qytrFPT4ga2zwPhVYYdw@mail.gmail.com>
+	<20160530101830.GE30066@vireshk-i7>
+	<CAJZ5v0hwohZh_Pubt5pc2NoiMWrSDkcfjkbcFuugPkRTwKhejQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-mmc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160528033613.GA3291@shlinux2>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, hverkuil@xs4all.nl, tjakobi@math.uni-bielefeld.de, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f194.google.com ([209.85.161.194]:34760 "EHLO
+	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161746AbcEaBtb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 May 2016 21:49:31 -0400
+In-Reply-To: <CAJZ5v0hwohZh_Pubt5pc2NoiMWrSDkcfjkbcFuugPkRTwKhejQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On Sat, May 28, 2016 at 11:36:13AM +0800, Peter Chen wrote:
-> On Tue, May 10, 2016 at 01:02:08PM +0200, Ulf Hansson wrote:
-> > + Arnd
-> > 
-> > [...]
-> > 
-> > >> >> Solution
-> > >> >> ========
-> > >> >> This is very similar to the MMC pwrseq behavior so the idea is to:
-> > >> >> 1. Move MMC pwrseq drivers to generic place,
-> > >> >
-> > >> > You can do that, but I'm going to NAK any use of pwrseq bindings outside
-> > >> > of MMC. I think it is the wrong way to do things. The DT should describe
-> > >>
-> > >> Huh, I didn't know that was your view of the mmc pwrseq bindings. Why
-> > >> didn't you NAK them before?
-> > >
-> > > Unfortunately, either I missed it or it was a time I couldn't spend much
-> > > time on reviews.
-> > 
-> > Okay, I guess it's common issue among maintainers. The problem with DT
-> > is that it gets really hard to be fixed up later. :-)
-> > 
-> > >
-> > >> > the devices. If they happen to be "simple" then the core can walk the
-> > >> > tree and do any setup. For example, look for "reset-gpios" and toggle
-> > >> > that GPIO. There is no need for a special node.
-> > >> >
-> > >> >> 2. Extend the pwrseq-simple with regulator toggling,
-> > >> >> 3. Add support to USB hub and port core for pwrseq,
-> > >> >
-> > >> > We discussed this for USB already[1] and is why we defined how to add
-> > >> > USB child devices. The idea is not to add pwrseq to that.
-> > >>
-> > >> I am not familiar with the USB discussion.
-> > >>
-> > >> Still, let me give you some more background to the mmc pwrseq. The
-> > >> idea from the mmc pwrseq bindings comes from the power-domain DT
-> > >> bindings, as I thought these things were a bit related.
-> > >> In both cases they are not directly a property of the device, but more
-> > >> describing a HW dependency to allow the device to work.
-> > >
-> > > I could see this as a board level power domain. However the difference
-> > > is we are not generally exposing internal SOC details the same way as
-> > > board level components. Perhaps we could extend power domains to board
-> > > level, but that is not what was done here.
-> > >
-> > >> One could probably use a child node instead of a phandle, but that
-> > >> wasn't chosen back then. Of course you are the DT expert, but could
-> > >> you perhaps tell me why a child node is better for cases like this?
-> > >
-> > > If there is a control path hierarchy, then we try to model that in DT
-> > > with child nodes. In cases of SDIO and USB, there is a clear hierarchy.
-> > > Ignoring the discovery ordering problem, we already have defined ways to
-> > > describe GPIO connections, regulators, etc. to devices. Describing those
-> > > things separately from the device to solve a particular issue that is
-> > > really a kernel limitation is what I don't like.
-> > 
-> > Okay, I see.
-> > 
-> > To move forward in trying to make mmc pwrseq a generic pwrseq, could
-> > we perhaps allow both cases?
-> > 
-> > In the mmc case, there are already deployed bindings so we need to
-> > cope with these by using the phandle option, but for USB etc we could
-> > force the child node option.
-> > As long as we agree that we keep using a compatible string for the
-> > child node as well, both options should be able to co-exist and we
-> > should probably be able to managed them both from a common pwrseq
-> > driver framework.
-> > 
-> > Although, I do remember from an older conversations around some of
-> > mine submission for the mmc pwrseq code, that some people (maybe
-> > Arnd?) wasn't keen on adding a new framework for this. Perhaps that
-> > has changed?
-> > 
-> 
-> All, how we move on for this?
-> 
-> 1. Using a generic driver to manage both mmc and USB (and further
-> subsystem), USB and further subsystem do not use pwrseq node in dts.
-> 2. USB creates the similar driver under drivers/usb for its own use. 
-> 
-> Which one do you prefer, thanks.
-> 
+2016-05-30 22:25 GMT+08:00 Rafael J. Wysocki <rafael@kernel.org>:
+> On Mon, May 30, 2016 at 12:18 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 29-05-16, 02:40, Rafael J. Wysocki wrote:
+>>> I can't really parse the above question, so I'm not going to try to
+>>> answer it. :-)
+>>
+>> Sorry about that :(
+>>
+>> IOW, I think that we should make this change into the sched-governor (I will
+>> send a patch separately if you agree to this):
+>
+> I don't.
+>
+>> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+>> index 14c4aa25cc45..5934b14aa21c 100644
+>> --- a/kernel/sched/cpufreq_schedutil.c
+>> +++ b/kernel/sched/cpufreq_schedutil.c
+>> @@ -66,11 +66,6 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+>>
+>>         if (unlikely(sg_policy->need_freq_update)) {
+>>                 sg_policy->need_freq_update = false;
+>> -               /*
+>> -                * This happens when limits change, so forget the previous
+>> -                * next_freq value and force an update.
+>> -                */
+>> -               sg_policy->next_freq = UINT_MAX;
+>>                 return true;
+>>         }
+>>
+>> And here is my reasoning behind this.
+>>
+>> Can you show me any case, where the above code (as present in mainline
+>> today) leads to a freq-change? I couldn't find any.
+>>
+>> Let me demonstrate.
+>>
+>> Following only talks about the fast-switch path, the other path is
+>> same as well.
+>>
+>> Suppose this is the current range of frequencies supported by a
+>> driver: 200, 400, 600, 800, 1000 (in MHz).
+>>
+>> And policy->cur = next_freq = 400 MHz.
+>>
+>> A.) Suppose that we change policy->min to 400 MHz from userspace.
+>>     -> sugov_limits()
+>>        This will find everything in order and simply set
+>>        need_freq_update, without updating the frequency.
+>>
+>>     On next util-callback, we will forcefully return true from
+>>     sugov_should_update_freq() and reach sugov_update_commit().
+>>
+>>     We calculate next_freq and that comes to 400 MHz again (that's the
+>>     case we are trying to target with the above code).
+>>
+>>     With the current code, we will forcefully end up calling
+>>     cpufreq_driver_fast_switch().
+>>
+>>     Because the new and current frequencies are same,
+>>     cpufreq_driver->fast_switch() will simply return.
+>>
+>>     NOTE: I also think that cpufreq_driver_fast_switch() should have a
+>>     check like (policy->cur == target_freq). I will add that too, in
+>>     case you agree.
+>>
+>>     So, forcefully updating next_freq to UINT_MAX will end up wasting
+>>     some cycles, but wouldn't do any useful stuff.
+>
+> It will, but there's no way to distinguish this case from B in the
+> governor with the current min/max synchronization mechanism.  That is,
+> it only knows that something has changed, but checking what exactly
+> has changed would be racy.
+>
+>> B.) Suppose that we change policy->min to 600 MHz from userspace.
+>>     -> sugov_limits()
+>>        This will find that policy->cur is less than 600 and will set
+>>        that to 600 MHz by calling __cpufreq_driver_target(). We will
+>>        also set need_freq_update.
+>>
+>>        Note that next_freq and policy->cur are not in sync anymore and
+>>        perhaps this is the most important case for the above code.
+>
+> It is.
+>
+> Moreover, please note that __cpufreq_driver_target() is only called in
+> sugov_limits() when policy->fast_switch_enabled is unset.
+>
+>>     On next util-callback, we will forcefully return true from
+>>     sugov_should_update_freq() and reach sugov_update_commit().
+>>
+>>     We calculate next_freq and lets say that comes to 400 MHz again
+>>     (as that's the case we are trying to target with the above code).
+>>
+>>     With the current code, we will forcefully end up calling
+>>     cpufreq_driver_fast_switch().
+>>
+>>     Because next_freq() is not part of the new range, we will clamp it
+>>     and set it to 600 MHz eventually. Again, next and current
+>>     frequencies are same, cpufreq_driver->fast_switch() will simply
+>>     return.
+>
+> Not really (as per the above).
+>
+> And even in the !fast_switch_enabled case, if next_freq stays at 400
+> MHz (which is different from policy->cur), it may lead to suboptimal
+> decisions going forward (eg. if it goes to 600 MHz next time and the
+> governor will think that the frequency has changed, although in fact
+> it hasn't).
 
-Hi Krzysztof Kozlowski,
+Does set next_freq = UNIT_MAX has same effect as next_freq stays at
+400MHz since both means that frequency has changed?
 
-I think option 1 may be better according to Rob and Ulf's comment.
-Would you like going on your patch set? You can work on generic pwrseq
-driver, I will do USB stuffs based on generic pwrseq driver?
-
--- 
-
-Best Regards,
-Peter Chen
+Regards,
+Wanpeng Li
