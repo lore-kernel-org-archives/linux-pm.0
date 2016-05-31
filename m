@@ -1,57 +1,103 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PCI: Wait for 50ms after bridge is powered up
-Date: Tue, 31 May 2016 13:47:14 +0300
-Message-ID: <20160531104714.GL1743@lahna.fi.intel.com>
-References: <20160524162833.GA30762@localhost>
- <20160526104557.GA6816@wunner.de>
- <20160526110308.GX1789@lahna.fi.intel.com>
- <1576190.gfFb6HhZV6@vostro.rjw.lan>
- <20160530093326.GH1789@lahna.fi.intel.com>
- <20160530144445.GC1743@lahna.fi.intel.com>
- <CAMxnaaXhapETZYMVe6EUoBGaMtxL_fP+uzc30SQpM+6EqPF3CQ@mail.gmail.com>
- <20160531083349.GG1743@lahna.fi.intel.com>
- <20160531085805.GI1743@lahna.fi.intel.com>
- <20160531104051.GA13958@wunner.de>
+From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
+	runtime PM
+Date: Tue, 31 May 2016 13:02:31 +0200
+Message-ID: <20160531110231.GB1308@al>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+ <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+ <20160525135535.GN1789@lahna.fi.intel.com>
+ <20160527111037.GA1436@al>
+ <20160530095709.GK1789@lahna.fi.intel.com>
+ <20160530122010.GB1149@al>
+ <20160530130909.GA1743@lahna.fi.intel.com>
+ <20160530161351.GA1355@al>
+ <20160531084356.GH1743@lahna.fi.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20160531104051.GA13958@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
+In-Reply-To: <20160531084356.GH1743-3PARRvDOhMZrdx17CPfAsdBPR1lH4CV8@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 31, 2016 at 12:40:51PM +0200, Lukas Wunner wrote:
-> On Tue, May 31, 2016 at 11:58:05AM +0300, Mika Westerberg wrote:
-> > To summarize the next steps. I will send new version of the
-> > PCI PM patches with following changes.
-> > 
-> >   - Drop this 50ms patch, we should have the PCIe 100ms delay already
-> >     covered.
-> > 
-> >   - Increase runtime PM autosuspend time from 10ms to 500ms (or whatever
-> >     is the prefered default).
-> 
-> I did some tests, turns out the autosuspend delay need not be increased
-> to prevent the Thunderbolt hotplug ports from suspending between
-> "enabling device" and loading the pciehp driver, however the following
-> is needed:
-> 
-> diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-> index 7860ab3..1d1fb1c 100644
-> --- a/drivers/pci/pcie/portdrv_pci.c
-> +++ b/drivers/pci/pcie/portdrv_pci.c
-> @@ -238,6 +238,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
->  		pm_runtime_set_autosuspend_delay(&dev->dev, 10);
->  		pm_runtime_use_autosuspend(&dev->dev);
->  		pm_runtime_put_autosuspend(&dev->dev);
-> +		pm_runtime_mark_last_busy(&dev->dev);
->  		pm_runtime_allow(&dev->dev);
->  	}
-
-I still prefer increasing the autosuspend delay. The above looks hackish
-and does not work if it takes more than 10ms to get to the tbt driver
-probe.
-
-Did you try if it also works with 500ms delay?
+T24gVHVlLCBNYXkgMzEsIDIwMTYgYXQgMTE6NDM6NTZBTSArMDMwMCwgTWlrYSBXZXN0ZXJiZXJn
+IHdyb3RlOgo+IE9uIE1vbiwgTWF5IDMwLCAyMDE2IGF0IDA2OjEzOjUxUE0gKzAyMDAsIFBldGVy
+IFd1IHdyb3RlOgo+ID4gRG8geW91IGhhdmUgYW55IHN1Z2dlc3Rpb25zIGZvciB0aGUgY2FzZSB3
+aGVyZSB0aGUgcGNpZXBvcnQgZHJpdmVyCj4gPiByZWZ1c2VzIHRvIHB1dCB0aGUgYnJpZGdlIGlu
+IEQzIChiZWNhdXNlIHRoZSBCSU9TIGlzIHRvbyBvbGQpPyBJbiB0aGF0Cj4gPiBjYXNlIHRoZSBu
+b3V2ZWF1IGRyaXZlciBuZWVkcyB0byBmYWxsYmFjayB0byB0aGUgRFNNIG1ldGhvZCAoYnV0IG5v
+dAo+ID4gd2hlbiBydW50aW1lIFBNIGlzIGRlbGliZXJhdGVseSBkaXNhYmxlZCBieSB3cml0aW5n
+IGNvbnRyb2w9b24pLgo+IAo+IERvIHlvdSBrbm93IHdoYXQgV2luZG93cyBkb2VzIHRoZW4/IEkg
+dGhpbmsgd2Ugc2hvdWxkIGRvIHRoZSBzYW1lIGlmCj4gcG9zc2libGUuCgpJZiB0aGUgQklPUyBp
+cyB0b28gb2xkLCB0aGVuIGl0IHByb2JhYmx5IGRvZXMgbm90IGhhdmUgX1BSMyBvYmplY3RzIG5v
+cgpjYWxscyB0byBfT1NJKCJXaW5kb3dzIDIwMTMiKS4gU2VlIGJlbG93LgoKPiBJZiB1c2VyIGhh
+cyBkaXNhYmxlZCBydW50aW1lIFBNIGZyb20gdGhlIHJvb3QgcG9ydCBkZWxpYmVyYXRlbHksIHRo
+ZXJlCj4gbWlnaHQgYmUgZ29vZCByZWFzb24gdG8gZG8gc28uIFdoeSB3ZSB3YW50IHRvIGZhbGxi
+YWNrIHRvIHNvbWV0aGluZyB0aGF0Cj4gY291bGQgY2F1c2UgcHJvYmxlbXM/IEkgbWVhbiBfRFNN
+IG9uIHN1Y2ggc3lzdGVtcyBpcyBwcm9iYWJseSBub3QgdGhhdAo+IG11Y2ggdGVzdGVkIGJlY2F1
+c2UgZXZlcnlib2R5IHJ1bnMgV2luZG93cyA4KyBhbmQgdXNpbmcgc3RhbmRhcmQgQUNQSQo+IHBv
+d2VyIHJlc291cmNlcy4KCkkgYWdyZWUgdGhhdCB3aGVuIHJ1bnRpbWUgUE0gb24gdGhlIHJvb3Qg
+cG9ydCBpcyBkaXNhYmxlZCAoY29udHJvbD1vbiksCnRoZW4gdGhlcmUgc2hvdWxkIGJlIG5vIGZh
+bGxiYWNrIHRvIERTTS4gRm9yIGRldmljZXMgd2l0aG91dCBfUFIzIGl0IGlzCmNsZWFyIHRoYXQg
+RFNNIHdpbGwgYWx3YXlzIGJlIHVzZWQgKGlmIGF2YWlsYWJsZSkuCgpJbiBvdGhlciBjYXNlcyAo
+d2hlcmUgX1BSMyBpcyBhdmFpbGFibGUpIHdlIGNhbiBkaXN0aW5ndWlzaDoKIC0gcHJlLVdpbmRv
+d3MgOCBtYWNoaW5lcy4gSSBoYXZlIG5ldmVyIHNlZW4gdGhpcyBjb21iaW5hdGlvbi4gRmlybXdh
+cmUKICAgd3JpdGVycyBzZWVtcyB0byBwcmVmZXIgc3RpY2tpbmcgdG8gcmVmZXJlbmNlIGNvZGUg
+d2hpY2ggZGlkIG5vdCB1c2UKICAgcG93ZXIgcmVzb3VyY2VzIGJlZm9yZS4KIC0gTWFjaGluZXMg
+dGFyZ2V0aW5nIFdpbmRvd3MgOCBvciBuZXdlci4gKE5vdGUgdGhhdCB0aGVyZSBleGlzdAogICBt
+YWNoaW5lcyB3aXRoIFdpbmRvd3MgOCBzdXBwb3J0IHRoYXQgZG8gbm90IGhhdmUgX1BSMywgRFNN
+IGlzIHVzZWQgaW4KICAgdGhhdCBjYXNlLikKCklmIFdpbmRvd3MgNyBpcyBydW5uaW5nIG9uIGEg
+V2luZG93cyA4IG1hY2hpbmUsIFBSMyB3aWxsIG5vdCBiZSB1c2VkCmFueXdheS4gSWYgdGhlIExp
+bnV4IGtlcm5lbCBjbGFpbXMgc3VwcG9ydCBmb3IgV2luZG93cyA4LCBidXQgZG9lcyBub3QKdXNl
+IFBSMywgdGhlbiB3ZSBhcmUgcHJvYmFibHkgYXBwcm9hY2hpbmcgYW4gdW50ZXN0ZWQgYXJlYS4g
+U28gZmFyCmZpcm13YXJlIHNlZW1zIGZpbmUgd2l0aCB1c2luZyAqb25seSogRFNNICpvciogUFIz
+LCBidXQgYXQgbGVhc3QgbXkKbGFwdG9wIGdldHMgY29uZnVzZWQgd2hlbiB5b3UgdXNlIGJvdGgg
+YXQgdGhlIHNhbWUgdGltZS4KClRoZSBsYXR0ZXIgaGFwcGVucyBvbiBwY2kvcG0gKDhiNzFmNTY1
+KSB3aXRob3V0IG90aGVyIHBhdGNoZXM6CgogMS4gbm91dmVhdSBpbnZva2VzIF9EU00gYW5kIF9Q
+UzMsIGRldmljZSBpcyBwdXQgaW4gRDNjb2xkLgogMi4gcGNpZXBvcnQgZHJpdmVyIGNhbGxzIFBH
+MDAuX09GRiAoUEcwMCBpcyByZXR1cm5lZCBieSBfUFIzKS4KIDMuIFdha2UgdXAgTnZpZGlhIGRl
+dmljZSAoZS5nLiBieSBwb3dlcj1vbikuCiA0LiBUaGlzIHdpbGwgdHJpZ2dlciBQRzAwLl9PTiAo
+dmlhIHBjaWVwb3J0KSBhbmQgX1BTMCAodmlhIG5vdXZlYXUpLgogNS4gTnZpZGlhIGNhcmQgaXMg
+bm90IHJlYWxseSByZWFkeSAob2JzZXJ2ZWQgdmlhICJyZXN0b3JpbmcgY29uZmlnCiAgICBzcGFj
+ZSBhdCBvZmZzZXQgLi4uICh3YXMgMHhmZmZmZmZmZiwgd3JpdGluZyAuLi4pIiwgYSBzb2Z0IGxv
+Y2t1cAogICAgYW5kIFJDVSBzdGFsbCBhZnRlciB0aGF0IHJlcXVpcmluZyBhIHJlYm9vdCB0byBy
+ZWNvdmVyKS4KCm5vdXZlYXUgY291bGQgYmUgcGF0Y2hlZCBub3QgdG8gaW52b2tlIERTTSB3aGVu
+IFBSMyBpcyBkZXRlY3RlZAoocHJvcG9zYWwgaXMgcmVhZHkpIGJ1dCB3aWxsIGtlZXAgdGhlIGRl
+dmljZSBwb3dlcmVkIG9uIGluIHRoZXNlIGNhc2VzOgogLSBub3V2ZWF1IGlzIHBhdGNoZWQsIGJ1
+dCBwY2kvcG0gcGF0Y2hlcyBhcmUgbm90LgogLSBQUjMgaXMgc3VwcG9ydGVkIGJ1dCBkdWUgdG8g
+dGhlIGN1dG9mZiBkYXRlICgyMDE1KSBpdCBpcyBub3QgdXNlZC4KIC0gQm9vdCBvcHRpb24gcGNp
+ZV9wb3J0X3BtPW9mZi4KIC0gcnVudGltZSBQTSBpcyBkaXNhYmxlZCBmb3IgcGNpZXBvcnQgKHNo
+b3VsZCBiZSBmaW5lKS4KCgpUaGVyZSBpcyBhIHdlYWx0aCBvZiBhY3BpZHVtcHMgb24gTGF1bmNo
+cGFkIGJ1ZyA3NTI1NDIKKGh0dHBzOi8vYnVncy5sYXVuY2hwYWQubmV0L2J1Z3MvNzUyNTQyKS4g
+U2VhcmNoIGZvciBleGFtcGxlIGZvcgpjb21tZW50cyBpbiBlYXJseSAyMDE1IG9yIGJlZm9yZSwg
+dGhvc2Ugd2lsbCBsaWtlbHkgYmUgbWFjaGluZSBmcm9tIDIwMTQKb3IgYmVmb3JlLgoKSW50ZXJl
+c3RpbmcgdG8gc2VlIGlzIHRoZSBfUFIzIG1ldGhvZCBvZiBhIEhQIEVudnkgVFMgMTUgKDExLzIw
+LzIwMTQpOgoKICAgIE1ldGhvZCAoX1BSMywgMCwgTm90U2VyaWFsaXplZCkgewogICAgICAgIElm
+IChcX09TSSAoIldpbmRvd3MgMjAxMyIpKSB7CiAgICAgICAgICAgIFJldHVybiAoUGFja2FnZSAo
+MHgwMSkgewogICAgICAgICAgICAgICAgXE5WUDMKICAgICAgICAgICAgfSkKICAgICAgICB9IEVs
+c2UgewogICAgICAgICAgICBSZXR1cm4gKFBhY2thZ2UgKDB4MDApIHt9KQogICAgICAgIH0KICAg
+IH0KCihOb3RlIGZvciBzZWxmOiBqdXN0IGNoZWNraW5nIGZvciB0aGUgX1BSMyBoYW5kbGUgaW4g
+dGhlIG5vdXZlYXUgcGF0Y2gKaXMgYXBwYXJlbnRseSBub3Qgc3VmZmljaWVudCwgaXQgbXVzdCBy
+ZWFsbHkgYmUgZXZhbHVhdGVkLikKCk90aGVyIG1hY2hpbmVzIHdpdGggX1BSMzoKIC0gRGVsbCBJ
+bnNwaXJvbiAzNTQzICgxMS8wNC8yMDE0KSwgY29tbWVudCA3NTcuCiAtIERlbGwgWFBTIDE1IDk1
+MzAgKDAzLzI4LzIwMTQpLCBjb21tZW50IDcxMS4KIC0gTm92YXRlY2ggMTUuNiBOU1BJUkUgTGFw
+dG9wICgwMS8yMC8yMDE0KSwgY29tbWVudCA2OTUuCiAtIExlbm92byBUaGlua1BhZCBUNDQwcCAo
+MTAvMjcvMjAxMyksIGNvbW1lbnQgNjU5LgoKVGhlcmUgd2VyZSBtYW55IG1vZGVscyBmcm9tIDIw
+MTMgd2l0aG91dCBfUFIzIG1ldGhvZCBidXQgc3RpbGwgY2hlY2tpbmcKZm9yIF9PU0koIldpbmRv
+d3MgMjAxMyIpLiBNYXliZSBzb21lIGhldXJpc3RpY3MgYmFzZWQgb24gX1BSMyB3b3VsZCBiZQpt
+b3JlIGhlbHBmdWwgdGhhbiBqdXN0IGEgY3V0b2ZmIGRhdGU/Ci0tIApLaW5kIHJlZ2FyZHMsClBl
+dGVyIFd1Cmh0dHBzOi8vbGVrZW5zdGV5bi5ubApfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZy
+ZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
+bmZvL25vdXZlYXUK
