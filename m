@@ -1,78 +1,83 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv4 40/48] thermal: sysfs: remove symbols of emul_temp when config is disabled
-Date: Mon, 30 May 2016 23:18:47 -0700
-Message-ID: <1464675535-2433-41-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv4 36/48] thermal: core: move notify to the zone update section
+Date: Mon, 30 May 2016 23:18:43 -0700
+Message-ID: <1464675535-2433-37-git-send-email-edubezval@gmail.com>
 References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f68.google.com ([209.85.220.68]:36754 "EHLO
-	mail-pa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755924AbcEaGUl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 02:20:41 -0400
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:35697 "EHLO
+	mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbcEaGUa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 02:20:30 -0400
 In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
 
-Remove the following warning:
-In file included from drivers/thermal/thermal_sysfs.c:19:0:
-include/linux/device.h:575:26: warning: =E2=80=98dev_attr_emul_temp=E2=80=
-=99 defined but not used [-Wunused-variable]
-  struct device_attribute dev_attr_##_name =3D __ATTR(_name, _mode, _sh=
-ow, _store)
-                          ^
-drivers/thermal/thermal_sysfs.c:395:8: note: in expansion of macro =E2=80=
-=98DEVICE_ATTR=E2=80=99
-
-when emul temp is disabled at Kconfig.
+moving the helper function to closer to similar functions.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_sysfs.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/thermal/thermal_core.c | 36 ++++++++++++++++++------------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_=
-sysfs.c
-index 24a0c97..ca4b83a 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -289,6 +289,7 @@ available_policies_show(struct device *dev, struct =
-device_attribute *devattr,
- 	return thermal_build_list_of_policies(buf);
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index c1908c4..6dbb86f 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -419,6 +419,24 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
  }
-=20
-+#if (IS_ENABLED(CONFIG_THERMAL_EMULATION))
- static ssize_t
- emul_temp_store(struct device *dev, struct device_attribute *attr,
- 		const char *buf, size_t count)
-@@ -313,6 +314,8 @@ emul_temp_store(struct device *dev, struct device_a=
-ttribute *attr,
-=20
- 	return ret ? ret : count;
+ EXPORT_SYMBOL_GPL(thermal_zone_device_update);
+ 
++/**
++ * thermal_notify_framework - Sensor drivers use this API to notify framework
++ * @tz:		thermal zone device
++ * @trip:	indicates which trip point has been crossed
++ *
++ * This function handles the trip events from sensor drivers. It starts
++ * throttling the cooling devices according to the policy configured.
++ * For CRITICAL and HOT trip points, this notifies the respective drivers,
++ * and does actual throttling for other trip points i.e ACTIVE and PASSIVE.
++ * The throttling policy is based on the configured platform data; if no
++ * platform data is provided, this uses the step_wise throttling policy.
++ */
++void thermal_notify_framework(struct thermal_zone_device *tz, int trip)
++{
++	handle_thermal_trip(tz, trip);
++}
++EXPORT_SYMBOL_GPL(thermal_notify_framework);
++
+ static void thermal_zone_device_check(struct work_struct *work)
+ {
+ 	struct thermal_zone_device *tz = container_of(work, struct
+@@ -1029,24 +1047,6 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
  }
-+static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
-+#endif
-=20
- static ssize_t
- sustainable_power_show(struct device *dev, struct device_attribute *de=
-vattr,
-@@ -392,7 +395,6 @@ create_s32_tzp_attr(offset);
-  */
- static DEVICE_ATTR(type, 0444, type_show, NULL);
- static DEVICE_ATTR(temp, 0444, temp_show, NULL);
--static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
- static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_stor=
-e);
- static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_sho=
-w, NULL);
- static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_p=
-ower_show,
---=20
+ EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
+ 
+-/**
+- * thermal_notify_framework - Sensor drivers use this API to notify framework
+- * @tz:		thermal zone device
+- * @trip:	indicates which trip point has been crossed
+- *
+- * This function handles the trip events from sensor drivers. It starts
+- * throttling the cooling devices according to the policy configured.
+- * For CRITICAL and HOT trip points, this notifies the respective drivers,
+- * and does actual throttling for other trip points i.e ACTIVE and PASSIVE.
+- * The throttling policy is based on the configured platform data; if no
+- * platform data is provided, this uses the step_wise throttling policy.
+- */
+-void thermal_notify_framework(struct thermal_zone_device *tz, int trip)
+-{
+-	handle_thermal_trip(tz, trip);
+-}
+-EXPORT_SYMBOL_GPL(thermal_notify_framework);
+-
+ static void bind_tz(struct thermal_zone_device *tz)
+ {
+ 	int i, ret;
+-- 
 2.1.4
 
