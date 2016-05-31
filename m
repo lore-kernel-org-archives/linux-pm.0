@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv4 37/48] thermal: core: add a comment describing the main update loop
-Date: Mon, 30 May 2016 23:18:44 -0700
-Message-ID: <1464675535-2433-38-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv4 38/48] thermal: core: add a comment describing the power actor section
+Date: Mon, 30 May 2016 23:18:45 -0700
+Message-ID: <1464675535-2433-39-git-send-email-edubezval@gmail.com>
 References: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1464675535-2433-1-git-send-email-edubezval@gmail.com>
@@ -10,7 +10,7 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Simply marking the main update loop section and adding a
+Simply marking the power actor section and adding a
 comment describing it.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
@@ -18,30 +18,26 @@ Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/thermal/thermal_core.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 6dbb86f..063fb15 100644
+index 063fb15..5ce6504 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -286,6 +286,17 @@ static void thermal_unregister_governors(void)
- 	thermal_gov_power_allocator_unregister();
+@@ -456,6 +456,13 @@ static void thermal_zone_device_check(struct work_struct *work)
+ 	thermal_zone_device_update(tz);
  }
  
 +/*
-+ * Zone update section: main control loop applied to each zone while monitoring
++ * Power actor section: interface to power actors to estimate power
 + *
-+ * in polling mode. The monitoring is done using a workqueue.
-+ * Same update may be done on a zone by calling thermal_zone_device_update().
-+ *
-+ * An update means:
-+ * - Non-critical trips will invoke the governor responsible for that zone;
-+ * - Hot trips will produce a notification to userspace;
-+ * - Critical trip point will cause a system shutdown.
++ * Set of functions used to interact to cooling devices that know
++ * how to estimate their devices power consumption.
 + */
- static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
- 					    int delay)
- {
++
+ /**
+  * power_actor_get_max_power() - get the maximum power that a cdev can consume
+  * @cdev:	pointer to &thermal_cooling_device
 -- 
 2.1.4
