@@ -2,17 +2,32 @@ From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 Subject: Re: [PATCH v4 09/10] cpuidle/powernv: Add support for POWER ISA v3
  idle states
 Date: Tue, 31 May 2016 19:20:04 +0530
-Message-ID: <201605311351.u4VDmxq0010504@mx0a-001b2d01.pphosted.com>
+Message-ID: <201605311351.u4VDn6W2015318@mx0a-001b2d01.pphosted.com>
 References: <1464095714-48772-1-git-send-email-shreyas@linux.vnet.ibm.com> <1464095714-48772-10-git-send-email-shreyas@linux.vnet.ibm.com> <574C4DA4.4050100@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:24734 "EHLO
+	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753034AbcEaNvP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 09:51:15 -0400
+Received: from pps.filterd (m0075771.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u4VDn6W2015318
+	for <linux-pm@vger.kernel.org>; Tue, 31 May 2016 09:51:15 -0400
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+	by mx0a-001b2d01.pphosted.com with ESMTP id 2395tstqa8-1
+	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Tue, 31 May 2016 09:51:14 -0400
+Received: from localhost
+	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
+	Tue, 31 May 2016 23:51:11 +1000
 In-Reply-To: <574C4DA4.4050100@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>, mpe@ellerman.id.au
 Cc: linuxppc-dev@lists.ozlabs.org, paulus@ozlabs.org, linux-kernel@vger.kernel.org, mikey@neuling.org, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
-List-Id: linux-pm@vger.kernel.org
 
 Hi Daniel,
 
@@ -201,3 +216,4 @@ I'll make the change.
 Thanks a lot for the review.
 
 -Shreyas
+
