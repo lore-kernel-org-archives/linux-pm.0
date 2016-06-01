@@ -1,95 +1,167 @@
 From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PCI: Wait for 50ms after bridge is powered up
-Date: Wed, 1 Jun 2016 12:11:45 +0300
-Message-ID: <20160601091145.GP1743@lahna.fi.intel.com>
-References: <20160526110308.GX1789@lahna.fi.intel.com>
- <1576190.gfFb6HhZV6@vostro.rjw.lan>
- <20160530093326.GH1789@lahna.fi.intel.com>
- <20160530144445.GC1743@lahna.fi.intel.com>
- <CAMxnaaXhapETZYMVe6EUoBGaMtxL_fP+uzc30SQpM+6EqPF3CQ@mail.gmail.com>
- <20160531083349.GG1743@lahna.fi.intel.com>
- <20160531085805.GI1743@lahna.fi.intel.com>
- <20160531104051.GA13958@wunner.de>
- <20160531104714.GL1743@lahna.fi.intel.com>
- <20160531110757.GB14008@wunner.de>
+Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe runtime PM
+Date: Wed, 1 Jun 2016 12:28:47 +0300
+Message-ID: <20160601092847.GQ1743@lahna.fi.intel.com>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+ <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+ <20160525135535.GN1789@lahna.fi.intel.com>
+ <20160527111037.GA1436@al>
+ <20160530095709.GK1789@lahna.fi.intel.com>
+ <20160530122010.GB1149@al>
+ <20160530130909.GA1743@lahna.fi.intel.com>
+ <20160530161351.GA1355@al>
+ <20160531084356.GH1743@lahna.fi.intel.com>
+ <20160531110231.GB1308@al>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:11296 "EHLO mga03.intel.com"
+Received: from mga04.intel.com ([192.55.52.120]:17860 "EHLO mga04.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751412AbcFAJLv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 1 Jun 2016 05:11:51 -0400
+	id S1757924AbcFAJ27 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 Jun 2016 05:28:59 -0400
 Content-Disposition: inline
-In-Reply-To: <20160531110757.GB14008@wunner.de>
+In-Reply-To: <20160531110231.GB1308@al>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
+To: Peter Wu <peter@lekensteyn.nl>
+Cc: nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Tue, May 31, 2016 at 01:07:57PM +0200, Lukas Wunner wrote:
-> On Tue, May 31, 2016 at 01:47:14PM +0300, Mika Westerberg wrote:
-> > On Tue, May 31, 2016 at 12:40:51PM +0200, Lukas Wunner wrote:
-> > > On Tue, May 31, 2016 at 11:58:05AM +0300, Mika Westerberg wrote:
-> > > > To summarize the next steps. I will send new version of the
-> > > > PCI PM patches with following changes.
-> > > > 
-> > > >   - Drop this 50ms patch, we should have the PCIe 100ms delay already
-> > > >     covered.
-> > > > 
-> > > >   - Increase runtime PM autosuspend time from 10ms to 500ms (or whatever
-> > > >     is the prefered default).
-> > > 
-> > > I did some tests, turns out the autosuspend delay need not be increased
-> > > to prevent the Thunderbolt hotplug ports from suspending between
-> > > "enabling device" and loading the pciehp driver, however the following
-> > > is needed:
-> > > 
-> > > diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-> > > index 7860ab3..1d1fb1c 100644
-> > > --- a/drivers/pci/pcie/portdrv_pci.c
-> > > +++ b/drivers/pci/pcie/portdrv_pci.c
-> > > @@ -238,6 +238,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
-> > >  		pm_runtime_set_autosuspend_delay(&dev->dev, 10);
-> > >  		pm_runtime_use_autosuspend(&dev->dev);
-> > >  		pm_runtime_put_autosuspend(&dev->dev);
-> > > +		pm_runtime_mark_last_busy(&dev->dev);
-> > >  		pm_runtime_allow(&dev->dev);
-> > >  	}
-> > 
-> > I still prefer increasing the autosuspend delay. The above looks hackish
-> > and does not work if it takes more than 10ms to get to the tbt driver
-> > probe.
-> > 
-> > Did you try if it also works with 500ms delay?
-> 
-> I tried 150 ms and it didn't work. The pm_runtime_mark_last_busy()
-> is needed no matter how much you increase the autosuspend delay.
-> This isn't hackish. :-) The issue is that pm_runtime_mark_last_busy()
-> has never been called so far, so dev->power.last_busy == 0.
+On Tue, May 31, 2016 at 01:02:31PM +0200, Peter Wu wrote:
+> On Tue, May 31, 2016 at 11:43:56AM +0300, Mika Westerberg wrote:
+> > On Mon, May 30, 2016 at 06:13:51PM +0200, Peter Wu wrote:
+> > > Do you have any suggestions for the case where the pcieport drive=
+r
+> > > refuses to put the bridge in D3 (because the BIOS is too old)? In=
+ that
+> > > case the nouveau driver needs to fallback to the DSM method (but =
+not
+> > > when runtime PM is deliberately disabled by writing control=3Don)=
+=2E
+> >=20
+> > Do you know what Windows does then? I think we should do the same i=
+f
+> > possible.
+>=20
+> If the BIOS is too old, then it probably does not have _PR3 objects n=
+or
+> calls to _OSI("Windows 2013"). See below.
+>=20
+> > If user has disabled runtime PM from the root port deliberately, th=
+ere
+> > might be good reason to do so. Why we want to fallback to something=
+ that
+> > could cause problems? I mean _DSM on such systems is probably not t=
+hat
+> > much tested because everybody runs Windows 8+ and using standard AC=
+PI
+> > power resources.
+>=20
+> I agree that when runtime PM on the root port is disabled (control=3D=
+on),
+> then there should be no fallback to DSM. For devices without _PR3 it =
+is
+> clear that DSM will always be used (if available).
+>=20
+> In other cases (where _PR3 is available) we can distinguish:
+>  - pre-Windows 8 machines. I have never seen this combination. Firmwa=
+re
+>    writers seems to prefer sticking to reference code which did not u=
+se
+>    power resources before.
+>  - Machines targeting Windows 8 or newer. (Note that there exist
+>    machines with Windows 8 support that do not have _PR3, DSM is used=
+ in
+>    that case.)
+>=20
+> If Windows 7 is running on a Windows 8 machine, PR3 will not be used
+> anyway. If the Linux kernel claims support for Windows 8, but does no=
+t
+> use PR3, then we are probably approaching an untested area. So far
+> firmware seems fine with using *only* DSM *or* PR3, but at least my
+> laptop gets confused when you use both at the same time.
+>=20
+> The latter happens on pci/pm (8b71f565) without other patches:
+>=20
+>  1. nouveau invokes _DSM and _PS3, device is put in D3cold.
+>  2. pcieport driver calls PG00._OFF (PG00 is returned by _PR3).
+>  3. Wake up Nvidia device (e.g. by power=3Don).
+>  4. This will trigger PG00._ON (via pcieport) and _PS0 (via nouveau).
+>  5. Nvidia card is not really ready (observed via "restoring config
+>     space at offset ... (was 0xffffffff, writing ...)", a soft lockup
+>     and RCU stall after that requiring a reboot to recover).
+>=20
+> nouveau could be patched not to invoke DSM when PR3 is detected
+> (proposal is ready) but will keep the device powered on in these case=
+s:
+>  - nouveau is patched, but pci/pm patches are not.
+>  - PR3 is supported but due to the cutoff date (2015) it is not used.
+>  - Boot option pcie_port_pm=3Doff.
+>  - runtime PM is disabled for pcieport (should be fine).
 
-Yes, it looks like it is really needed. I somehow remembered that
-pm_runtime_set_autosuspend_delay() sets that automatically. So I take
-back my hackish comment ;-)
+Since using only _DSM has been the only method to power down the card
+currently in=C5=84Linux (even if the root port has had _PR3), and it ha=
+s been
+working fine, why not stick with that when _DSM is supported?
 
-> The PM core thinks that the device can suspend right away because it's
-> last been busy more than 2 seconds ago.
+In other words, something like this:
 
-Right.
+	nouveau_dsm_pci_probe()
+	{
+		...
+		if (retval & (NOUVEAU_DSM_HAS_OPT | NOUVEAU_DSM_HAS_MUX)) {
+			/*
+			 * We have custom _DSM method to power down the card so
+			 * prevent the PCI core from transitioning the
+			 * card into D3cold.
+			 */
+			pci_d3cold_disable(pdev);
+		}
+	}
 
-> One could argue though if pm_runtime_mark_last_busy() should come
-> before pm_runtime_put_autosuspend(). Usually it should, but in this
-> case it doesn't matter because pm_runtime_allow() hasn't been called
-> yet and the PCI core initializes devices to pm_runtime_forbid().
+(Not sure about those flags above, though).
 
-I'm going to change the code to look like following (pm_runtime_mark_last_busy()
-gets called before pm_runtime_put_autosuspend() even if not strictly needed):
+Yes, it does not follow Windows 8+ but if it works... ;-)
 
-	pm_runtime_set_autosuspend_delay(&dev->dev, 100);
-	pm_runtime_use_autosuspend(&dev->dev);
-	pm_runtime_mark_last_busy(&dev->dev);
-	pm_runtime_put_autosuspend(&dev->dev);
-	pm_runtime_allow(&dev->dev);
+> There is a wealth of acpidumps on Launchpad bug 752542
+> (https://bugs.launchpad.net/bugs/752542). Search for example for
+> comments in early 2015 or before, those will likely be machine from 2=
+014
+> or before.
+>=20
+> Interesting to see is the _PR3 method of a HP Envy TS 15 (11/20/2014)=
+:
+>=20
+>     Method (_PR3, 0, NotSerialized) {
+>         If (\_OSI ("Windows 2013")) {
+>             Return (Package (0x01) {
+>                 \NVP3
+>             })
+>         } Else {
+>             Return (Package (0x00) {})
+>         }
+>     }
+>=20
+> (Note for self: just checking for the _PR3 handle in the nouveau patc=
+h
+> is apparently not sufficient, it must really be evaluated.)
+>=20
+> Other machines with _PR3:
+>  - Dell Inspiron 3543 (11/04/2014), comment 757.
+>  - Dell XPS 15 9530 (03/28/2014), comment 711.
+>  - Novatech 15.6 NSPIRE Laptop (01/20/2014), comment 695.
+>  - Lenovo ThinkPad T440p (10/27/2013), comment 659.
+>=20
+> There were many models from 2013 without _PR3 method but still checki=
+ng
+> for _OSI("Windows 2013"). Maybe some heuristics based on _PR3 would b=
+e
+> more helpful than just a cutoff date?
 
-Note I'm still increasing default autosuspend delay from 10ms to 100ms.
-
-Does the above work for you?
+You mean for allowing bridge_d3? I don't think checking _PR3 helps us i=
+n
+any way. We can put PCIe port into D3hot just fine without any help fro=
+m
+ACPI. Only thing that matters here is that we should be able to do that
+safely without causing problems to hardware which does not support it
+properly.
