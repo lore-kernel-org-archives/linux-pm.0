@@ -1,44 +1,70 @@
-From: Stephen Boyd <stephen.boyd@linaro.org>
-Subject: Re: [PATCH v3 09/12] EXAMPLE CODE: usb: port: Parse pwrseq phandle from
- Device Tree
-Date: Wed, 01 Jun 2016 11:16:34 -0700
-Message-ID: <146480499491.3686.4996610748316511864@sboyd-linaro>
-References: <1464768141-25420-1-git-send-email-k.kozlowski@samsung.com>
- <1464768141-25420-10-git-send-email-k.kozlowski@samsung.com>
- <146477144362.1485.3331887341591876278@sboyd-linaro>
- <20160601120520.GB16740@shlinux2>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH 0/2] cpufreq: Use sorted frequency tables
+Date: Wed, 1 Jun 2016 12:23:21 -0700
+Message-ID: <20160601192321.GO9864@graphite.smuckle.net>
+References: <cover.1464694144.git.viresh.kumar@linaro.org>
+ <CAJZ5v0ig61Q+EDjjcyHef5e9B4dKY+BhF802uV61w-G5CdRQvA@mail.gmail.com>
+ <20160601010856.GM9864@graphite.smuckle.net>
+ <20160601104612.GM3725@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <20160601120520.GB16740@shlinux2>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:34183 "EHLO
+	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbcFATXZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 15:23:25 -0400
+Received: by mail-pf0-f172.google.com with SMTP id 62so20649633pfd.1
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2016 12:23:25 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20160601104612.GM3725@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Quoting Peter Chen (2016-06-01 05:05:20)
-> On Wed, Jun 01, 2016 at 01:57:23AM -0700, Stephen Boyd wrote:
-> > Quoting Krzysztof Kozlowski (2016-06-01 01:02:18)
-> > > Parse usb-pwrseq property from Device Tree to get the phandle to pwrseq
-> > > device.  The pwrseq device will be used by USB hub to cycle the power
-> > > before activating ports.
-> > > 
-> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > 
-> > Drive by review comment.
-> > 
-> > I was hoping this would help me with a problem I'm having where I have a
-> > hub (smsc4604) that needs to be taken out of reset before my HSIC
-> > controller sends a USB reset to it, but it seems this is more about
-> > doing some sort of power on sequence after enumeration?
-> > 
+On Wed, Jun 01, 2016 at 04:16:12PM +0530, Viresh Kumar wrote:
+> On 31-05-16, 18:08, Steve Muckle wrote:
+> > Checking the table type
 > 
-> No, you may need to do reset before enumeration, the general purpose of
-> reset is eliminate unstable hardware state, and let the controller find
-> the device.
-> 
-> Try to do it at bootloader to see if it works for you.
-> 
+> I hope you are talking about my patch here and in that case its not
+> table-type, but relation-type.
 
-Sorry the bootloader doesn't do this so that doesn't work for me.
+I was referring to Rafael's comment about having the core check how the
+table was sorted and process it accordingly. It doesn't apply to the
+approach in your patches.
+
+> 
+> > and performing the associated lookup seems
+> > workable to me though it adds a bit of complexity.
+> > 
+> > Also what about leaving it as is?
+> 
+> So, your series kind of just triggered this thing, but freq matching
+> should always be really fast. And I feel that we should attempt to
+> making it fast.
+
+I agree with that goal.
+
+> 
+> > I didn't fully catch the concern with
+> > abuse in the series I posted, and it pushes this complexity of dealing
+> > with the freq table efficiently down into the driver, which is best
+> > suited for that IMO.
+> 
+> Not really. Its a single driver today, it will be 20 drivers tomorrow.
+> We really want to do such common stuff in core whenever it is
+> possible.
+> 
+> > Another thought is that it'd be nice to eventually reduce
+> > cpufreq_driver_{fast_switch,resolve_freq} into simple inline functions
+> > so that we could jump to the driver directly from schedutil, eliminating
+> > a function call.
+> 
+> That's kind of orthogonal to this :)
+
+Handling freq table walking exclusively in cpufreq core will add to the
+size of stuff to be inlined in schedutil to avoid extra function calls.	
+
+thanks,
+Steve
+
