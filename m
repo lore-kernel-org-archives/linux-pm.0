@@ -1,146 +1,80 @@
-From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
-	runtime PM
-Date: Wed, 1 Jun 2016 19:21:44 +0200
-Message-ID: <20160601172144.GB1947@al>
-References: <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [Nouveau] [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
+ runtime PM
+Date: Wed, 1 Jun 2016 19:40:43 +0200
+Message-ID: <20160601174043.GA15433@wunner.de>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+ <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
  <20160525135535.GN1789@lahna.fi.intel.com>
  <20160527111037.GA1436@al>
  <20160530095709.GK1789@lahna.fi.intel.com>
  <20160530122010.GB1149@al>
  <20160530130909.GA1743@lahna.fi.intel.com>
  <20160530161351.GA1355@al>
- <20160531084356.GH1743@lahna.fi.intel.com>
- <20160531110231.GB1308@al>
- <20160601092847.GQ1743@lahna.fi.intel.com>
+ <20160531122026.GA14129@wunner.de>
+ <20160601165151.GA1947@al>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.hostsharing.net ([176.9.242.54]:54760 "EHLO
+	mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbcFARhI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 13:37:08 -0400
 Content-Disposition: inline
-In-Reply-To: <20160601092847.GQ1743-3PARRvDOhMZrdx17CPfAsdBPR1lH4CV8@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+In-Reply-To: <20160601165151.GA1947@al>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Wu <peter@lekensteyn.nl>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, dri-devel@lists.freedesktop.org, Bjorn Helgaas <helgaas@kernel.org>, nouveau@lists.freedesktop.org, Dave Airlie <airlied@redhat.com>
 
-T24gV2VkLCBKdW4gMDEsIDIwMTYgYXQgMTI6Mjg6NDdQTSArMDMwMCwgTWlrYSBXZXN0ZXJiZXJn
-IHdyb3RlOgo+IE9uIFR1ZSwgTWF5IDMxLCAyMDE2IGF0IDAxOjAyOjMxUE0gKzAyMDAsIFBldGVy
-IFd1IHdyb3RlOgo+ID4gT24gVHVlLCBNYXkgMzEsIDIwMTYgYXQgMTE6NDM6NTZBTSArMDMwMCwg
-TWlrYSBXZXN0ZXJiZXJnIHdyb3RlOgo+ID4gPiBPbiBNb24sIE1heSAzMCwgMjAxNiBhdCAwNjox
-Mzo1MVBNICswMjAwLCBQZXRlciBXdSB3cm90ZToKPiA+ID4gPiBEbyB5b3UgaGF2ZSBhbnkgc3Vn
-Z2VzdGlvbnMgZm9yIHRoZSBjYXNlIHdoZXJlIHRoZSBwY2llcG9ydCBkcml2ZXIKPiA+ID4gPiBy
-ZWZ1c2VzIHRvIHB1dCB0aGUgYnJpZGdlIGluIEQzIChiZWNhdXNlIHRoZSBCSU9TIGlzIHRvbyBv
-bGQpPyBJbiB0aGF0Cj4gPiA+ID4gY2FzZSB0aGUgbm91dmVhdSBkcml2ZXIgbmVlZHMgdG8gZmFs
-bGJhY2sgdG8gdGhlIERTTSBtZXRob2QgKGJ1dCBub3QKPiA+ID4gPiB3aGVuIHJ1bnRpbWUgUE0g
-aXMgZGVsaWJlcmF0ZWx5IGRpc2FibGVkIGJ5IHdyaXRpbmcgY29udHJvbD1vbikuCj4gPiA+IAo+
-ID4gPiBEbyB5b3Uga25vdyB3aGF0IFdpbmRvd3MgZG9lcyB0aGVuPyBJIHRoaW5rIHdlIHNob3Vs
-ZCBkbyB0aGUgc2FtZSBpZgo+ID4gPiBwb3NzaWJsZS4KPiA+IAo+ID4gSWYgdGhlIEJJT1MgaXMg
-dG9vIG9sZCwgdGhlbiBpdCBwcm9iYWJseSBkb2VzIG5vdCBoYXZlIF9QUjMgb2JqZWN0cyBub3IK
-PiA+IGNhbGxzIHRvIF9PU0koIldpbmRvd3MgMjAxMyIpLiBTZWUgYmVsb3cuCj4gPiAKPiA+ID4g
-SWYgdXNlciBoYXMgZGlzYWJsZWQgcnVudGltZSBQTSBmcm9tIHRoZSByb290IHBvcnQgZGVsaWJl
-cmF0ZWx5LCB0aGVyZQo+ID4gPiBtaWdodCBiZSBnb29kIHJlYXNvbiB0byBkbyBzby4gV2h5IHdl
-IHdhbnQgdG8gZmFsbGJhY2sgdG8gc29tZXRoaW5nIHRoYXQKPiA+ID4gY291bGQgY2F1c2UgcHJv
-YmxlbXM/IEkgbWVhbiBfRFNNIG9uIHN1Y2ggc3lzdGVtcyBpcyBwcm9iYWJseSBub3QgdGhhdAo+
-ID4gPiBtdWNoIHRlc3RlZCBiZWNhdXNlIGV2ZXJ5Ym9keSBydW5zIFdpbmRvd3MgOCsgYW5kIHVz
-aW5nIHN0YW5kYXJkIEFDUEkKPiA+ID4gcG93ZXIgcmVzb3VyY2VzLgo+ID4gCj4gPiBJIGFncmVl
-IHRoYXQgd2hlbiBydW50aW1lIFBNIG9uIHRoZSByb290IHBvcnQgaXMgZGlzYWJsZWQgKGNvbnRy
-b2w9b24pLAo+ID4gdGhlbiB0aGVyZSBzaG91bGQgYmUgbm8gZmFsbGJhY2sgdG8gRFNNLiBGb3Ig
-ZGV2aWNlcyB3aXRob3V0IF9QUjMgaXQgaXMKPiA+IGNsZWFyIHRoYXQgRFNNIHdpbGwgYWx3YXlz
-IGJlIHVzZWQgKGlmIGF2YWlsYWJsZSkuCj4gPiAKPiA+IEluIG90aGVyIGNhc2VzICh3aGVyZSBf
-UFIzIGlzIGF2YWlsYWJsZSkgd2UgY2FuIGRpc3Rpbmd1aXNoOgo+ID4gIC0gcHJlLVdpbmRvd3Mg
-OCBtYWNoaW5lcy4gSSBoYXZlIG5ldmVyIHNlZW4gdGhpcyBjb21iaW5hdGlvbi4gRmlybXdhcmUK
-PiA+ICAgIHdyaXRlcnMgc2VlbXMgdG8gcHJlZmVyIHN0aWNraW5nIHRvIHJlZmVyZW5jZSBjb2Rl
-IHdoaWNoIGRpZCBub3QgdXNlCj4gPiAgICBwb3dlciByZXNvdXJjZXMgYmVmb3JlLgo+ID4gIC0g
-TWFjaGluZXMgdGFyZ2V0aW5nIFdpbmRvd3MgOCBvciBuZXdlci4gKE5vdGUgdGhhdCB0aGVyZSBl
-eGlzdAo+ID4gICAgbWFjaGluZXMgd2l0aCBXaW5kb3dzIDggc3VwcG9ydCB0aGF0IGRvIG5vdCBo
-YXZlIF9QUjMsIERTTSBpcyB1c2VkIGluCj4gPiAgICB0aGF0IGNhc2UuKQo+ID4gCj4gPiBJZiBX
-aW5kb3dzIDcgaXMgcnVubmluZyBvbiBhIFdpbmRvd3MgOCBtYWNoaW5lLCBQUjMgd2lsbCBub3Qg
-YmUgdXNlZAo+ID4gYW55d2F5LiBJZiB0aGUgTGludXgga2VybmVsIGNsYWltcyBzdXBwb3J0IGZv
-ciBXaW5kb3dzIDgsIGJ1dCBkb2VzIG5vdAo+ID4gdXNlIFBSMywgdGhlbiB3ZSBhcmUgcHJvYmFi
-bHkgYXBwcm9hY2hpbmcgYW4gdW50ZXN0ZWQgYXJlYS4gU28gZmFyCj4gPiBmaXJtd2FyZSBzZWVt
-cyBmaW5lIHdpdGggdXNpbmcgKm9ubHkqIERTTSAqb3IqIFBSMywgYnV0IGF0IGxlYXN0IG15Cj4g
-PiBsYXB0b3AgZ2V0cyBjb25mdXNlZCB3aGVuIHlvdSB1c2UgYm90aCBhdCB0aGUgc2FtZSB0aW1l
-Lgo+ID4gCj4gPiBUaGUgbGF0dGVyIGhhcHBlbnMgb24gcGNpL3BtICg4YjcxZjU2NSkgd2l0aG91
-dCBvdGhlciBwYXRjaGVzOgo+ID4gCj4gPiAgMS4gbm91dmVhdSBpbnZva2VzIF9EU00gYW5kIF9Q
-UzMsIGRldmljZSBpcyBwdXQgaW4gRDNjb2xkLgo+ID4gIDIuIHBjaWVwb3J0IGRyaXZlciBjYWxs
-cyBQRzAwLl9PRkYgKFBHMDAgaXMgcmV0dXJuZWQgYnkgX1BSMykuCj4gPiAgMy4gV2FrZSB1cCBO
-dmlkaWEgZGV2aWNlIChlLmcuIGJ5IHBvd2VyPW9uKS4KPiA+ICA0LiBUaGlzIHdpbGwgdHJpZ2dl
-ciBQRzAwLl9PTiAodmlhIHBjaWVwb3J0KSBhbmQgX1BTMCAodmlhIG5vdXZlYXUpLgo+ID4gIDUu
-IE52aWRpYSBjYXJkIGlzIG5vdCByZWFsbHkgcmVhZHkgKG9ic2VydmVkIHZpYSAicmVzdG9yaW5n
-IGNvbmZpZwo+ID4gICAgIHNwYWNlIGF0IG9mZnNldCAuLi4gKHdhcyAweGZmZmZmZmZmLCB3cml0
-aW5nIC4uLikiLCBhIHNvZnQgbG9ja3VwCj4gPiAgICAgYW5kIFJDVSBzdGFsbCBhZnRlciB0aGF0
-IHJlcXVpcmluZyBhIHJlYm9vdCB0byByZWNvdmVyKS4KPiA+IAo+ID4gbm91dmVhdSBjb3VsZCBi
-ZSBwYXRjaGVkIG5vdCB0byBpbnZva2UgRFNNIHdoZW4gUFIzIGlzIGRldGVjdGVkCj4gPiAocHJv
-cG9zYWwgaXMgcmVhZHkpIGJ1dCB3aWxsIGtlZXAgdGhlIGRldmljZSBwb3dlcmVkIG9uIGluIHRo
-ZXNlIGNhc2VzOgo+ID4gIC0gbm91dmVhdSBpcyBwYXRjaGVkLCBidXQgcGNpL3BtIHBhdGNoZXMg
-YXJlIG5vdC4KPiA+ICAtIFBSMyBpcyBzdXBwb3J0ZWQgYnV0IGR1ZSB0byB0aGUgY3V0b2ZmIGRh
-dGUgKDIwMTUpIGl0IGlzIG5vdCB1c2VkLgo+ID4gIC0gQm9vdCBvcHRpb24gcGNpZV9wb3J0X3Bt
-PW9mZi4KPiA+ICAtIHJ1bnRpbWUgUE0gaXMgZGlzYWJsZWQgZm9yIHBjaWVwb3J0IChzaG91bGQg
-YmUgZmluZSkuCj4gCj4gU2luY2UgdXNpbmcgb25seSBfRFNNIGhhcyBiZWVuIHRoZSBvbmx5IG1l
-dGhvZCB0byBwb3dlciBkb3duIHRoZSBjYXJkCj4gY3VycmVudGx5IGluxYRMaW51eCAoZXZlbiBp
-ZiB0aGUgcm9vdCBwb3J0IGhhcyBoYWQgX1BSMyksIGFuZCBpdCBoYXMgYmVlbgo+IHdvcmtpbmcg
-ZmluZSwgd2h5IG5vdCBzdGljayB3aXRoIHRoYXQgd2hlbiBfRFNNIGlzIHN1cHBvcnRlZD8KCk1h
-eWJlIGl0IGlzIG5vdCByZWFsbHkgd29ya2luZywgcGVvcGxlIGhhdmUgYmVlbiByZXBvcnRpbmcg
-bWVtb3J5CmNvcnJ1cHRpb25bMV0gZm9yIGV4YW1wbGUgb24gY2VydGFpbiBMZW5vdm8gbW9kZWxz
-IHRoYXQgd2FzIGdvbmUgYWZ0ZXIKaGFja2luZyB0aGUgYmJzd2l0Y2ggbW9kdWxlIHRvIGRpc2Fi
-bGUgdGhlIHJvb3QgcG9ydDoKCmh0dHBzOi8vYnVncy5mcmVlZGVza3RvcC5vcmcvc2hvd19idWcu
-Y2dpP2lkPTc4NTMwCmh0dHBzOi8vZ2l0aHViLmNvbS9CdW1ibGViZWUtUHJvamVjdC9iYnN3aXRj
-aC9pc3N1ZXMvNzgKaHR0cHM6Ly9naXRodWIuY29tL0J1bWJsZWJlZS1Qcm9qZWN0L2Jic3dpdGNo
-L2lzc3Vlcy8xMTUKCkknbGwgdHJ5IHRvIHNvbGljaXQgc29tZSBmZWVkYmFjayBmcm9tIHRoZSBh
-ZmZlY3RlZCBwZW9wbGUgb24gdGhlc2UKcGF0Y2ggc2VyaWVzLCB3aGV0aGVyIGl0IHNvbHZlcyB0
-aGVpciBtZW1vcnkgY29ycnVwdGlvbiBpc3N1ZS4KCkRhdmUgYWxzbyBzYWlkICJUaGlzIGZpeGVz
-IEdQVSBhdXRvIHBvd2VyZG93biBvbiB0aGUgTGVub3ZvIFc1NDEsIiB3aGVuCmhlIGFkZGVkIFBS
-MyBzdXBwb3J0IGluIGh0dHBzOi8vcGF0Y2h3b3JrLmZyZWVkZXNrdG9wLm9yZy9wYXRjaC83NjMx
-My8KU28gYXBwYXJlbnRseSBpdCBkaWQgbm90IHdvcmsgd2l0aCBqdXN0IERTTS4KCj4gSW4gb3Ro
-ZXIgd29yZHMsIHNvbWV0aGluZyBsaWtlIHRoaXM6Cj4gCj4gCW5vdXZlYXVfZHNtX3BjaV9wcm9i
-ZSgpCj4gCXsKPiAJCS4uLgo+IAkJaWYgKHJldHZhbCAmIChOT1VWRUFVX0RTTV9IQVNfT1BUIHwg
-Tk9VVkVBVV9EU01fSEFTX01VWCkpIHsKPiAJCQkvKgo+IAkJCSAqIFdlIGhhdmUgY3VzdG9tIF9E
-U00gbWV0aG9kIHRvIHBvd2VyIGRvd24gdGhlIGNhcmQgc28KPiAJCQkgKiBwcmV2ZW50IHRoZSBQ
-Q0kgY29yZSBmcm9tIHRyYW5zaXRpb25pbmcgdGhlCj4gCQkJICogY2FyZCBpbnRvIEQzY29sZC4K
-PiAJCQkgKi8KPiAJCQlwY2lfZDNjb2xkX2Rpc2FibGUocGRldik7Cj4gCQl9Cj4gCX0KPiAKPiAo
-Tm90IHN1cmUgYWJvdXQgdGhvc2UgZmxhZ3MgYWJvdmUsIHRob3VnaCkuCj4gCj4gWWVzLCBpdCBk
-b2VzIG5vdCBmb2xsb3cgV2luZG93cyA4KyBidXQgaWYgaXQgd29ya3MuLi4gOy0pCj4gCj4gPiBU
-aGVyZSBpcyBhIHdlYWx0aCBvZiBhY3BpZHVtcHMgb24gTGF1bmNocGFkIGJ1ZyA3NTI1NDIKPiA+
-IChodHRwczovL2J1Z3MubGF1bmNocGFkLm5ldC9idWdzLzc1MjU0MikuIFNlYXJjaCBmb3IgZXhh
-bXBsZSBmb3IKPiA+IGNvbW1lbnRzIGluIGVhcmx5IDIwMTUgb3IgYmVmb3JlLCB0aG9zZSB3aWxs
-IGxpa2VseSBiZSBtYWNoaW5lIGZyb20gMjAxNAo+ID4gb3IgYmVmb3JlLgo+ID4gCj4gPiBJbnRl
-cmVzdGluZyB0byBzZWUgaXMgdGhlIF9QUjMgbWV0aG9kIG9mIGEgSFAgRW52eSBUUyAxNSAoMTEv
-MjAvMjAxNCk6Cj4gPiAKPiA+ICAgICBNZXRob2QgKF9QUjMsIDAsIE5vdFNlcmlhbGl6ZWQpIHsK
-PiA+ICAgICAgICAgSWYgKFxfT1NJICgiV2luZG93cyAyMDEzIikpIHsKPiA+ICAgICAgICAgICAg
-IFJldHVybiAoUGFja2FnZSAoMHgwMSkgewo+ID4gICAgICAgICAgICAgICAgIFxOVlAzCj4gPiAg
-ICAgICAgICAgICB9KQo+ID4gICAgICAgICB9IEVsc2Ugewo+ID4gICAgICAgICAgICAgUmV0dXJu
-IChQYWNrYWdlICgweDAwKSB7fSkKPiA+ICAgICAgICAgfQo+ID4gICAgIH0KPiA+IAo+ID4gKE5v
-dGUgZm9yIHNlbGY6IGp1c3QgY2hlY2tpbmcgZm9yIHRoZSBfUFIzIGhhbmRsZSBpbiB0aGUgbm91
-dmVhdSBwYXRjaAo+ID4gaXMgYXBwYXJlbnRseSBub3Qgc3VmZmljaWVudCwgaXQgbXVzdCByZWFs
-bHkgYmUgZXZhbHVhdGVkLikKPiA+IAo+ID4gT3RoZXIgbWFjaGluZXMgd2l0aCBfUFIzOgo+ID4g
-IC0gRGVsbCBJbnNwaXJvbiAzNTQzICgxMS8wNC8yMDE0KSwgY29tbWVudCA3NTcuCj4gPiAgLSBE
-ZWxsIFhQUyAxNSA5NTMwICgwMy8yOC8yMDE0KSwgY29tbWVudCA3MTEuCj4gPiAgLSBOb3ZhdGVj
-aCAxNS42IE5TUElSRSBMYXB0b3AgKDAxLzIwLzIwMTQpLCBjb21tZW50IDY5NS4KPiA+ICAtIExl
-bm92byBUaGlua1BhZCBUNDQwcCAoMTAvMjcvMjAxMyksIGNvbW1lbnQgNjU5Lgo+ID4gCj4gPiBU
-aGVyZSB3ZXJlIG1hbnkgbW9kZWxzIGZyb20gMjAxMyB3aXRob3V0IF9QUjMgbWV0aG9kIGJ1dCBz
-dGlsbCBjaGVja2luZwo+ID4gZm9yIF9PU0koIldpbmRvd3MgMjAxMyIpLiBNYXliZSBzb21lIGhl
-dXJpc3RpY3MgYmFzZWQgb24gX1BSMyB3b3VsZCBiZQo+ID4gbW9yZSBoZWxwZnVsIHRoYW4ganVz
-dCBhIGN1dG9mZiBkYXRlPwo+IAo+IFlvdSBtZWFuIGZvciBhbGxvd2luZyBicmlkZ2VfZDM/IEkg
-ZG9uJ3QgdGhpbmsgY2hlY2tpbmcgX1BSMyBoZWxwcyB1cyBpbgo+IGFueSB3YXkuIFdlIGNhbiBw
-dXQgUENJZSBwb3J0IGludG8gRDNob3QganVzdCBmaW5lIHdpdGhvdXQgYW55IGhlbHAgZnJvbQo+
-IEFDUEkuIE9ubHkgdGhpbmcgdGhhdCBtYXR0ZXJzIGhlcmUgaXMgdGhhdCB3ZSBzaG91bGQgYmUg
-YWJsZSB0byBkbyB0aGF0Cj4gc2FmZWx5IHdpdGhvdXQgY2F1c2luZyBwcm9ibGVtcyB0byBoYXJk
-d2FyZSB3aGljaCBkb2VzIG5vdCBzdXBwb3J0IGl0Cj4gcHJvcGVybHkuCgpDdXJyZW50bHkgYnJp
-ZGdlX2QzIHdpbGwgYWx3YXlzIGJlIGZhbHNlIHdoZW4gcGNpX2JyaWRnZV9kM19wb3NzaWJsZQpm
-YWlscyAodGhhdCBpcywgb24gQklPU2VzIG9sZGVyIHRoYW4gMjAxNSkuIFRoZSBpZGVhIGlzIHRv
-IGFkZCBhbgphZGRpdGlvbmFsIHdoaXRlbGlzdCBjb25kaXRpb24gd2hlbiBfUFIzIGV4aXN0cyBh
-bmQgX09TSSgiV2luZG93cyAyMDEzIikKaXMgcmVxdWVzdGVkIGluIEFDUEkuIFRoaXMgc2hvdWxk
-IGhlbHAgbW9kZXJuIE52aWRpYSBPcHRpbXVzIGxhcHRvcHMKd2hpY2ggcmVseSBvbiBBQ1BJIHRv
-IHNhdmUgcG93ZXIuCi0tIApLaW5kIHJlZ2FyZHMsClBldGVyIFd1Cmh0dHBzOi8vbGVrZW5zdGV5
-bi5ubApfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2
-ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xp
-c3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
+On Wed, Jun 01, 2016 at 06:51:51PM +0200, Peter Wu wrote:
+> On Tue, May 31, 2016 at 02:20:26PM +0200, Lukas Wunner wrote:
+> > On Mon, May 30, 2016 at 06:13:51PM +0200, Peter Wu wrote:
+> > > Do you have any suggestions for the case where the pcieport driver
+> > > refuses to put the bridge in D3 (because the BIOS is too old)? In that
+> > > case the nouveau driver needs to fallback to the DSM method (but not
+> > > when runtime PM is deliberately disabled by writing control=on).
+> > 
+> > The BIOS cut-off date is meant to avoid issues when suspending ports
+> > on older chipsets. However if the port is used for an Optimus GPU
+> > and we can clearly identify that, and there's a _PR3 method provided,
+> > it's probably safe to say that the port is *intended* to be suspended.
+> > 
+> > So you may want to consider amending pci_bridge_d3_possible() to
+> > allow D3 for such ports regardless of the BIOS date, as I've done
+> > for Thunderbolt in this commit:
+> > https://github.com/l1k/linux/commit/3cb8549cd4e5
+> 
+> Then we have heuristics based on BIOS year, on whether it is TB or not,
+> and next to it whether it is an Optimus laptop? Maybe the PCI core needs
+> to export a function that allows drivers to override the detection if
+> this becomes more common.
+
+Well I consider the TB and Optimus whitelisting as a stop-gap until
+the BIOS date is lowered. Rafael wrote:
+
+    Some time around when machines with Windows 10 started to ship should be
+    relatively safe.
+    I guess we can just pick a reasonable date in the initial patch and then
+    try to move it back to the past subsequently and see if that breaks things
+    for anyone.
+
+Source: http://permalink.gmane.org/gmane.linux.power-management.general/75133
+
+> 
+> > Not sure how to uniquely identify such ports though. Perhaps check
+> > if there's a device in slot 0 below the port which has
+> > 	(pdev->class >> 16) == PCI_BASE_CLASS_DISPLAY &&
+> > 	(pdev->vendor == PCI_VENDOR_ID_NVIDIA ||
+> > 	 pdev->vendor == PCI_VENDOR_ID_ATI)
+> 
+> Seems fragile, there are desktop setups satisfying this match.
+
+Of course, I didn't mean this to be used as is, you'd have to augment
+this with checks e.g. for presence of _PR3 and (if possible) Optimus,
+but I'm not familiar enough with Optimus to write down working code
+for it, I'm only familiar with apple-gmux switching.
+
+Best regards,
+
+Lukas
