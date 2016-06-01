@@ -1,91 +1,124 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 7/8] cpufreq: Drop 'freq_table' argument of __target_index()
-Date: Wed,  1 Jun 2016 16:04:21 +0530
-Message-ID: <ad30141b8e71e987b3d708137e8819d6dabc2c00.1464776797.git.viresh.kumar@linaro.org>
+Subject: [PATCH 5/8] cpufreq: ondemand: Don't keep a copy of freq_table pointer
+Date: Wed,  1 Jun 2016 16:04:19 +0530
+Message-ID: <1ef08ff66c0b04612827899798f5bdd2f7445a4c.1464776797.git.viresh.kumar@linaro.org>
 References: <cover.1464776797.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:33162 "EHLO
+	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757904AbcFAKey (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 06:34:54 -0400
+Received: by mail-pf0-f175.google.com with SMTP id b124so12963644pfb.0
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2016 03:34:53 -0700 (PDT)
 In-Reply-To: <cover.1464776797.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1464776797.git.viresh.kumar@linaro.org>
 References: <cover.1464776797.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-It is already present as part of the policy and so no need to pass it
-from the caller. Also, 'freq_table' is guaranteed to be valid in this
-function and so no need to check it.
+There is absolutely no need to keep a copy to the freq-table in 'struct
+od_policy_dbs_info'. Use policy->freq_table instead.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 21 +++++++--------------
- 1 file changed, 7 insertions(+), 14 deletions(-)
+ drivers/cpufreq/amd_freq_sensitivity.c |  7 +++----
+ drivers/cpufreq/cpufreq_ondemand.c     | 22 +++++++++++-----------
+ drivers/cpufreq/cpufreq_ondemand.h     |  1 -
+ 3 files changed, 14 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index a28144697128..1685e930770f 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1852,14 +1852,17 @@ static int __target_intermediate(struct cpufreq_policy *policy,
- 	return ret;
- }
+diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
+index 404360cad25c..bc86816693a8 100644
+--- a/drivers/cpufreq/amd_freq_sensitivity.c
++++ b/drivers/cpufreq/amd_freq_sensitivity.c
+@@ -48,9 +48,8 @@ static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+ 	struct dbs_data *od_data = policy_dbs->dbs_data;
+ 	struct od_dbs_tuners *od_tuners = od_data->tuners;
+-	struct od_policy_dbs_info *od_info = to_dbs_info(policy_dbs);
  
--static int __target_index(struct cpufreq_policy *policy,
--			  struct cpufreq_frequency_table *freq_table, int index)
-+static int __target_index(struct cpufreq_policy *policy, int index)
- {
- 	struct cpufreq_freqs freqs = {.old = policy->cur, .flags = 0};
- 	unsigned int intermediate_freq = 0;
-+	unsigned int newfreq = policy->freq_table[index].frequency;
- 	int retval = -EINVAL;
- 	bool notify;
+-	if (!od_info->freq_table)
++	if (!policy->freq_table)
+ 		return freq_next;
  
-+	if (newfreq == policy->cur)
-+		return 0;
-+
- 	notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
- 	if (notify) {
- 		/* Handle switching to intermediate frequency */
-@@ -1874,7 +1877,7 @@ static int __target_index(struct cpufreq_policy *policy,
- 				freqs.old = freqs.new;
+ 	rdmsr_on_cpu(policy->cpu, MSR_AMD64_FREQ_SENSITIVITY_ACTUAL,
+@@ -93,9 +92,9 @@ static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
+ 			unsigned int index;
+ 
+ 			cpufreq_frequency_table_target(policy,
+-				od_info->freq_table, policy->cur - 1,
++				policy->freq_table, policy->cur - 1,
+ 				CPUFREQ_RELATION_H, &index);
+-			freq_next = od_info->freq_table[index].frequency;
++			freq_next = policy->freq_table[index].frequency;
  		}
  
--		freqs.new = freq_table[index].frequency;
-+		freqs.new = newfreq;
- 		pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
- 			 __func__, policy->cpu, freqs.old, freqs.new);
+ 		data->freq_prev = freq_next;
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 4d2fe2710c5d..528353f204fd 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -71,28 +71,29 @@ static unsigned int generic_powersave_bias_target(struct cpufreq_policy *policy,
+ 	struct od_policy_dbs_info *dbs_info = to_dbs_info(policy_dbs);
+ 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
+ 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
++	struct cpufreq_frequency_table *freq_table = policy->freq_table;
  
-@@ -1911,7 +1914,6 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			    unsigned int relation)
- {
- 	unsigned int old_target_freq = target_freq;
--	struct cpufreq_frequency_table *freq_table;
- 	int index, retval;
- 
- 	if (cpufreq_disabled())
-@@ -1941,12 +1943,6 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 	if (!cpufreq_driver->target_index)
- 		return -EINVAL;
- 
--	freq_table = policy->freq_table;
--	if (unlikely(!freq_table)) {
--		pr_err("%s: Unable to find freq_table\n", __func__);
--		return -EINVAL;
--	}
--
- 	retval = cpufreq_frequency_table_target(policy, target_freq, relation,
- 						&index);
- 	if (unlikely(retval)) {
-@@ -1954,10 +1950,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 		return retval;
+-	if (!dbs_info->freq_table) {
++	if (!freq_table) {
+ 		dbs_info->freq_lo = 0;
+ 		dbs_info->freq_lo_delay_us = 0;
+ 		return freq_next;
  	}
  
--	if (freq_table[index].frequency == policy->cur)
--		return 0;
--
--	return __target_index(policy, freq_table, index);
-+	return __target_index(policy, index);
- }
- EXPORT_SYMBOL_GPL(__cpufreq_driver_target);
+-	cpufreq_frequency_table_target(policy, dbs_info->freq_table, freq_next,
+-			relation, &index);
+-	freq_req = dbs_info->freq_table[index].frequency;
++	cpufreq_frequency_table_target(policy, freq_table, freq_next, relation,
++				       &index);
++	freq_req = freq_table[index].frequency;
+ 	freq_reduc = freq_req * od_tuners->powersave_bias / 1000;
+ 	freq_avg = freq_req - freq_reduc;
  
+ 	/* Find freq bounds for freq_avg in freq_table */
+ 	index = 0;
+-	cpufreq_frequency_table_target(policy, dbs_info->freq_table, freq_avg,
+-			CPUFREQ_RELATION_H, &index);
+-	freq_lo = dbs_info->freq_table[index].frequency;
++	cpufreq_frequency_table_target(policy, freq_table, freq_avg,
++				       CPUFREQ_RELATION_H, &index);
++	freq_lo = freq_table[index].frequency;
+ 	index = 0;
+-	cpufreq_frequency_table_target(policy, dbs_info->freq_table, freq_avg,
+-			CPUFREQ_RELATION_L, &index);
+-	freq_hi = dbs_info->freq_table[index].frequency;
++	cpufreq_frequency_table_target(policy, freq_table, freq_avg,
++				       CPUFREQ_RELATION_L, &index);
++	freq_hi = freq_table[index].frequency;
+ 
+ 	/* Find out how long we have to be in hi and lo freqs */
+ 	if (freq_hi == freq_lo) {
+@@ -113,7 +114,6 @@ static void ondemand_powersave_bias_init(struct cpufreq_policy *policy)
+ {
+ 	struct od_policy_dbs_info *dbs_info = to_dbs_info(policy->governor_data);
+ 
+-	dbs_info->freq_table = policy->freq_table;
+ 	dbs_info->freq_lo = 0;
+ }
+ 
+diff --git a/drivers/cpufreq/cpufreq_ondemand.h b/drivers/cpufreq/cpufreq_ondemand.h
+index f0121db3cd9e..640ea4e97106 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.h
++++ b/drivers/cpufreq/cpufreq_ondemand.h
+@@ -13,7 +13,6 @@
+ 
+ struct od_policy_dbs_info {
+ 	struct policy_dbs_info policy_dbs;
+-	struct cpufreq_frequency_table *freq_table;
+ 	unsigned int freq_lo;
+ 	unsigned int freq_lo_delay_us;
+ 	unsigned int freq_hi_delay_us;
 -- 
 2.7.1.410.g6faf27b
+
