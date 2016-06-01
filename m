@@ -1,196 +1,91 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 6/8] cpufreq: Drop freq-table param to cpufreq_frequency_table_target()
-Date: Wed,  1 Jun 2016 16:04:20 +0530
-Message-ID: <e45b29e20c43e14f00efdbf3cc8d58b31be2a31d.1464776797.git.viresh.kumar@linaro.org>
+Subject: [PATCH 7/8] cpufreq: Drop 'freq_table' argument of __target_index()
+Date: Wed,  1 Jun 2016 16:04:21 +0530
+Message-ID: <ad30141b8e71e987b3d708137e8819d6dabc2c00.1464776797.git.viresh.kumar@linaro.org>
 References: <cover.1464776797.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1464776797.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1464776797.git.viresh.kumar@linaro.org>
 References: <cover.1464776797.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The policy already has this pointer set, use it instead.
+It is already present as part of the policy and so no need to pass it
+from the caller. Also, 'freq_table' is guaranteed to be valid in this
+function and so no need to check it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/cpu-freq/cpu-drivers.txt |  1 -
- drivers/cpufreq/amd_freq_sensitivity.c |  3 +--
- drivers/cpufreq/cpufreq.c              |  4 ++--
- drivers/cpufreq/cpufreq_ondemand.c     | 11 +++++------
- drivers/cpufreq/freq_table.c           |  2 +-
- drivers/cpufreq/powernv-cpufreq.c      |  3 +--
- drivers/cpufreq/s3c24xx-cpufreq.c      | 11 +++++------
- drivers/cpufreq/s5pv210-cpufreq.c      |  3 +--
- include/linux/cpufreq.h                |  1 -
- 9 files changed, 16 insertions(+), 23 deletions(-)
+ drivers/cpufreq/cpufreq.c | 21 +++++++--------------
+ 1 file changed, 7 insertions(+), 14 deletions(-)
 
-diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-index decbb8cb5573..74e812f0719c 100644
---- a/Documentation/cpu-freq/cpu-drivers.txt
-+++ b/Documentation/cpu-freq/cpu-drivers.txt
-@@ -244,7 +244,6 @@ policy->max, and all other criteria are met. This is helpful for the
- ->verify call.
- 
- int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
--                                   struct cpufreq_frequency_table *table,
-                                    unsigned int target_freq,
-                                    unsigned int relation,
-                                    unsigned int *index);
-diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
-index bc86816693a8..3bea1bb791a9 100644
---- a/drivers/cpufreq/amd_freq_sensitivity.c
-+++ b/drivers/cpufreq/amd_freq_sensitivity.c
-@@ -92,8 +92,7 @@ static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
- 			unsigned int index;
- 
- 			cpufreq_frequency_table_target(policy,
--				policy->freq_table, policy->cur - 1,
--				CPUFREQ_RELATION_H, &index);
-+				policy->cur - 1, CPUFREQ_RELATION_H, &index);
- 			freq_next = policy->freq_table[index].frequency;
- 		}
- 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index cc252eecc45a..a28144697128 100644
+index a28144697128..1685e930770f 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -1947,8 +1947,8 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 		return -EINVAL;
- 	}
+@@ -1852,14 +1852,17 @@ static int __target_intermediate(struct cpufreq_policy *policy,
+ 	return ret;
+ }
  
--	retval = cpufreq_frequency_table_target(policy, freq_table, target_freq,
--						relation, &index);
-+	retval = cpufreq_frequency_table_target(policy, target_freq, relation,
-+						&index);
- 	if (unlikely(retval)) {
- 		pr_err("%s: Unable to find matching freq\n", __func__);
- 		return retval;
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 528353f204fd..2ee476f5a2bd 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -79,20 +79,19 @@ static unsigned int generic_powersave_bias_target(struct cpufreq_policy *policy,
- 		return freq_next;
- 	}
+-static int __target_index(struct cpufreq_policy *policy,
+-			  struct cpufreq_frequency_table *freq_table, int index)
++static int __target_index(struct cpufreq_policy *policy, int index)
+ {
+ 	struct cpufreq_freqs freqs = {.old = policy->cur, .flags = 0};
+ 	unsigned int intermediate_freq = 0;
++	unsigned int newfreq = policy->freq_table[index].frequency;
+ 	int retval = -EINVAL;
+ 	bool notify;
  
--	cpufreq_frequency_table_target(policy, freq_table, freq_next, relation,
--				       &index);
-+	cpufreq_frequency_table_target(policy, freq_next, relation, &index);
- 	freq_req = freq_table[index].frequency;
- 	freq_reduc = freq_req * od_tuners->powersave_bias / 1000;
- 	freq_avg = freq_req - freq_reduc;
- 
- 	/* Find freq bounds for freq_avg in freq_table */
- 	index = 0;
--	cpufreq_frequency_table_target(policy, freq_table, freq_avg,
--				       CPUFREQ_RELATION_H, &index);
-+	cpufreq_frequency_table_target(policy, freq_avg, CPUFREQ_RELATION_H,
-+				       &index);
- 	freq_lo = freq_table[index].frequency;
- 	index = 0;
--	cpufreq_frequency_table_target(policy, freq_table, freq_avg,
--				       CPUFREQ_RELATION_L, &index);
-+	cpufreq_frequency_table_target(policy, freq_avg, CPUFREQ_RELATION_L,
-+				       &index);
- 	freq_hi = freq_table[index].frequency;
- 
- 	/* Find out how long we have to be in hi and lo freqs */
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index f52b5473b1f4..f145b64649ef 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -114,7 +114,6 @@ int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy)
- EXPORT_SYMBOL_GPL(cpufreq_generic_frequency_table_verify);
- 
- int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
--				   struct cpufreq_frequency_table *table,
- 				   unsigned int target_freq,
- 				   unsigned int relation,
- 				   unsigned int *index)
-@@ -128,6 +127,7 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 		.frequency = 0,
- 	};
- 	struct cpufreq_frequency_table *pos;
-+	struct cpufreq_frequency_table *table = policy->freq_table;
- 	unsigned int freq, diff, i = 0;
- 
- 	pr_debug("request for target %u kHz (relation: %u) for cpu %u\n",
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 96bb4acd366e..4d5799f5270f 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -762,8 +762,7 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
- 		if (!policy)
- 			continue;
- 
--		cpufreq_frequency_table_target(policy, policy->freq_table,
--					       policy->cur,
-+		cpufreq_frequency_table_target(policy, policy->cur,
- 					       CPUFREQ_RELATION_C, &index);
- 		powernv_cpufreq_target_index(policy, index);
- 		cpumask_andnot(&mask, &mask, policy->cpus);
-diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-index 4567c3cab095..05a9737278f3 100644
---- a/drivers/cpufreq/s3c24xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-@@ -293,9 +293,8 @@ static int s3c_cpufreq_target(struct cpufreq_policy *policy,
- 		     __func__, policy, target_freq, relation);
- 
- 	if (ftab) {
--		if (cpufreq_frequency_table_target(policy, ftab,
--						   target_freq, relation,
--						   &index)) {
-+		if (cpufreq_frequency_table_target(policy, target_freq,
-+						   relation, &index)) {
- 			s3c_freq_dbg("%s: table failed\n", __func__);
- 			return -EINVAL;
++	if (newfreq == policy->cur)
++		return 0;
++
+ 	notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
+ 	if (notify) {
+ 		/* Handle switching to intermediate frequency */
+@@ -1874,7 +1877,7 @@ static int __target_index(struct cpufreq_policy *policy,
+ 				freqs.old = freqs.new;
  		}
-@@ -323,14 +322,14 @@ static int s3c_cpufreq_target(struct cpufreq_policy *policy,
- 		tmp_policy.min = policy->min * 1000;
- 		tmp_policy.max = policy->max * 1000;
- 		tmp_policy.cpu = policy->cpu;
-+		tmp_policy.freq_table = pll_reg;
  
- 		/* cpufreq_frequency_table_target uses a pointer to 'index'
- 		 * which is the number of the table entry, not the value of
- 		 * the table entry's index field. */
+-		freqs.new = freq_table[index].frequency;
++		freqs.new = newfreq;
+ 		pr_debug("%s: cpu: %d, oldfreq: %u, new freq: %u\n",
+ 			 __func__, policy->cpu, freqs.old, freqs.new);
  
--		ret = cpufreq_frequency_table_target(&tmp_policy, pll_reg,
--						     target_freq, relation,
--						     &index);
-+		ret = cpufreq_frequency_table_target(&tmp_policy, target_freq,
-+						     relation, &index);
+@@ -1911,7 +1914,6 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+ 			    unsigned int relation)
+ {
+ 	unsigned int old_target_freq = target_freq;
+-	struct cpufreq_frequency_table *freq_table;
+ 	int index, retval;
  
- 		if (ret < 0) {
- 			pr_err("%s: no PLL available\n", __func__);
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index 06d85917b6d5..6b0cfc3b8c46 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -246,8 +246,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
- 	new_freq = s5pv210_freq_table[index].frequency;
+ 	if (cpufreq_disabled())
+@@ -1941,12 +1943,6 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+ 	if (!cpufreq_driver->target_index)
+ 		return -EINVAL;
  
- 	/* Finding current running level index */
--	if (cpufreq_frequency_table_target(policy, s5pv210_freq_table,
--					   old_freq, CPUFREQ_RELATION_H,
-+	if (cpufreq_frequency_table_target(policy, old_freq, CPUFREQ_RELATION_H,
- 					   &priv_index)) {
- 		ret = -EINVAL;
- 		goto exit;
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 1342cbc0f25e..bdd7f0c035ae 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -598,7 +598,6 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
- int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy);
+-	freq_table = policy->freq_table;
+-	if (unlikely(!freq_table)) {
+-		pr_err("%s: Unable to find freq_table\n", __func__);
+-		return -EINVAL;
+-	}
+-
+ 	retval = cpufreq_frequency_table_target(policy, target_freq, relation,
+ 						&index);
+ 	if (unlikely(retval)) {
+@@ -1954,10 +1950,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+ 		return retval;
+ 	}
  
- int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
--				   struct cpufreq_frequency_table *table,
- 				   unsigned int target_freq,
- 				   unsigned int relation,
- 				   unsigned int *index);
+-	if (freq_table[index].frequency == policy->cur)
+-		return 0;
+-
+-	return __target_index(policy, freq_table, index);
++	return __target_index(policy, index);
+ }
+ EXPORT_SYMBOL_GPL(__cpufreq_driver_target);
+ 
 -- 
 2.7.1.410.g6faf27b
