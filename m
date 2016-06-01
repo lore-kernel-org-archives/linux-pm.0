@@ -1,43 +1,54 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH] PCI: Wait for 50ms after bridge is powered up
-Date: Wed, 1 Jun 2016 13:42:35 +0200
-Message-ID: <20160601114235.GA15191@wunner.de>
-References: <1576190.gfFb6HhZV6@vostro.rjw.lan>
- <20160530093326.GH1789@lahna.fi.intel.com>
- <20160530144445.GC1743@lahna.fi.intel.com>
- <CAMxnaaXhapETZYMVe6EUoBGaMtxL_fP+uzc30SQpM+6EqPF3CQ@mail.gmail.com>
- <20160531083349.GG1743@lahna.fi.intel.com>
- <20160531085805.GI1743@lahna.fi.intel.com>
- <20160531104051.GA13958@wunner.de>
- <20160531104714.GL1743@lahna.fi.intel.com>
- <20160531110757.GB14008@wunner.de>
- <20160601091145.GP1743@lahna.fi.intel.com>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: fix improper order during
+ initialization
+Date: Wed, 1 Jun 2016 14:31:35 +0100
+Message-ID: <574EE3B7.1060302@arm.com>
+References: <1464690722-27996-1-git-send-email-lukasz.luba@arm.com>
+ <20160601111034.GO3725@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160601091145.GP1743@lahna.fi.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:37879 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753240AbcFANbj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 Jun 2016 09:31:39 -0400
+In-Reply-To: <20160601111034.GO3725@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, javi.merino@arm.com, amit.kachhap@gmail.com, rui.zhang@intel.com
 
-On Wed, Jun 01, 2016 at 12:11:45PM +0300, Mika Westerberg wrote:
-> I'm going to change the code to look like following (pm_runtime_mark_last_busy()
-> gets called before pm_runtime_put_autosuspend() even if not strictly needed):
-> 
-> 	pm_runtime_set_autosuspend_delay(&dev->dev, 100);
-> 	pm_runtime_use_autosuspend(&dev->dev);
-> 	pm_runtime_mark_last_busy(&dev->dev);
-> 	pm_runtime_put_autosuspend(&dev->dev);
-> 	pm_runtime_allow(&dev->dev);
-> 
-> Note I'm still increasing default autosuspend delay from 10ms to 100ms.
-> 
-> Does the above work for you?
 
-Yes, tested it and couldn't spot any issues.
+
+On 01/06/16 12:10, Viresh Kumar wrote:
+> On 31-05-16, 11:32, Lukasz Luba wrote:
+>> The freq_table array is not populated before calling
+>> thermal_of_cooling_register. The code which populates the freq table was
+>> introduced in commit f6859014.
+>> This should be done before registering new thermal cooling device.
+>> The log shows effects of this wrong decision.
+>> [    2.172614] cpu cpu1: Failed to get voltage for frequency 1984518656000: -34
+>> [    2.220863] cpu cpu0: Failed to get voltage for frequency 1984524416000: -34
+>>
+>
+> You should have added this as well:
+>
+> Cc: 4.19+ <stable@vger.kernel.org> # 4.19+
+
+You mean 3.19+
+Cc: <stable@vger.kernel.org> # 3.19+
+
+> Fixes: f6859014c7e7 ("thermal: cpu_cooling: Store frequencies in descending order")
+>
+>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+>> ---
+>>   drivers/thermal/cpu_cooling.c | 16 ++++++++--------
+>>   1 file changed, 8 insertions(+), 8 deletions(-)
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+Eduardo can you pick these tags when you merge it?
 
 Thanks,
-
-Lukas
+Lukasz
