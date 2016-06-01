@@ -1,77 +1,95 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: cpu_cooling: fix improper order during
- initialization
-Date: Wed, 1 Jun 2016 09:36:55 +0100
-Message-ID: <20160601083655.GC2898@e104805>
-References: <1464690722-27996-1-git-send-email-lukasz.luba@arm.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH] PCI: Wait for 50ms after bridge is powered up
+Date: Wed, 1 Jun 2016 12:11:45 +0300
+Message-ID: <20160601091145.GP1743@lahna.fi.intel.com>
+References: <20160526110308.GX1789@lahna.fi.intel.com>
+ <1576190.gfFb6HhZV6@vostro.rjw.lan>
+ <20160530093326.GH1789@lahna.fi.intel.com>
+ <20160530144445.GC1743@lahna.fi.intel.com>
+ <CAMxnaaXhapETZYMVe6EUoBGaMtxL_fP+uzc30SQpM+6EqPF3CQ@mail.gmail.com>
+ <20160531083349.GG1743@lahna.fi.intel.com>
+ <20160531085805.GI1743@lahna.fi.intel.com>
+ <20160531104051.GA13958@wunner.de>
+ <20160531104714.GL1743@lahna.fi.intel.com>
+ <20160531110757.GB14008@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:35752 "EHLO foss.arm.com"
+Received: from mga03.intel.com ([134.134.136.65]:11296 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757945AbcFAIg7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 1 Jun 2016 04:36:59 -0400
+	id S1751412AbcFAJLv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 Jun 2016 05:11:51 -0400
 Content-Disposition: inline
-In-Reply-To: <1464690722-27996-1-git-send-email-lukasz.luba@arm.com>
+In-Reply-To: <20160531110757.GB14008@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-pm@vger.kernel.org, amit.kachhap@gmail.com, viresh.kumar@linaro.org, rui.zhang@intel.com, edubezval@gmail.com
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <helgaas@kernel.org>, Peter Wu <peter@lekensteyn.nl>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Valdis Kletnieks <valdis.kletnieks@vt.edu>, Dave Airlie <airlied@gmail.com>
 
-On Tue, May 31, 2016 at 11:32:02AM +0100, Lukasz Luba wrote:
-> The freq_table array is not populated before calling
-> thermal_of_cooling_register. The code which populates the freq table was
-> introduced in commit f6859014.
-> This should be done before registering new thermal cooling device.
-> The log shows effects of this wrong decision.
-> [    2.172614] cpu cpu1: Failed to get voltage for frequency 1984518656000: -34
-> [    2.220863] cpu cpu0: Failed to get voltage for frequency 1984524416000: -34
+On Tue, May 31, 2016 at 01:07:57PM +0200, Lukas Wunner wrote:
+> On Tue, May 31, 2016 at 01:47:14PM +0300, Mika Westerberg wrote:
+> > On Tue, May 31, 2016 at 12:40:51PM +0200, Lukas Wunner wrote:
+> > > On Tue, May 31, 2016 at 11:58:05AM +0300, Mika Westerberg wrote:
+> > > > To summarize the next steps. I will send new version of the
+> > > > PCI PM patches with following changes.
+> > > > 
+> > > >   - Drop this 50ms patch, we should have the PCIe 100ms delay already
+> > > >     covered.
+> > > > 
+> > > >   - Increase runtime PM autosuspend time from 10ms to 500ms (or whatever
+> > > >     is the prefered default).
+> > > 
+> > > I did some tests, turns out the autosuspend delay need not be increased
+> > > to prevent the Thunderbolt hotplug ports from suspending between
+> > > "enabling device" and loading the pciehp driver, however the following
+> > > is needed:
+> > > 
+> > > diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+> > > index 7860ab3..1d1fb1c 100644
+> > > --- a/drivers/pci/pcie/portdrv_pci.c
+> > > +++ b/drivers/pci/pcie/portdrv_pci.c
+> > > @@ -238,6 +238,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+> > >  		pm_runtime_set_autosuspend_delay(&dev->dev, 10);
+> > >  		pm_runtime_use_autosuspend(&dev->dev);
+> > >  		pm_runtime_put_autosuspend(&dev->dev);
+> > > +		pm_runtime_mark_last_busy(&dev->dev);
+> > >  		pm_runtime_allow(&dev->dev);
+> > >  	}
+> > 
+> > I still prefer increasing the autosuspend delay. The above looks hackish
+> > and does not work if it takes more than 10ms to get to the tbt driver
+> > probe.
+> > 
+> > Did you try if it also works with 500ms delay?
 > 
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> I tried 150 ms and it didn't work. The pm_runtime_mark_last_busy()
+> is needed no matter how much you increase the autosuspend delay.
+> This isn't hackish. :-) The issue is that pm_runtime_mark_last_busy()
+> has never been called so far, so dev->power.last_busy == 0.
 
-Yes, the cooling device should only be registered after all its fields
-have been populated.
+Yes, it looks like it is really needed. I somehow remembered that
+pm_runtime_set_autosuspend_delay() sets that automatically. So I take
+back my hackish comment ;-)
 
-Acked-by: Javi Merino <javi.merino@arm.com>
+> The PM core thinks that the device can suspend right away because it's
+> last been busy more than 2 seconds ago.
 
-> ---
->  drivers/thermal/cpu_cooling.c | 16 ++++++++--------
->  1 file changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 6ceac4f..5b4b47e 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -857,14 +857,6 @@ __cpufreq_cooling_register(struct device_node *np,
->  		goto free_power_table;
->  	}
->  
-> -	snprintf(dev_name, sizeof(dev_name), "thermal-cpufreq-%d",
-> -		 cpufreq_dev->id);
-> -
-> -	cool_dev = thermal_of_cooling_device_register(np, dev_name, cpufreq_dev,
-> -						      &cpufreq_cooling_ops);
-> -	if (IS_ERR(cool_dev))
-> -		goto remove_idr;
-> -
->  	/* Fill freq-table in descending order of frequencies */
->  	for (i = 0, freq = -1; i <= cpufreq_dev->max_level; i++) {
->  		freq = find_next_max(table, freq);
-> @@ -877,6 +869,14 @@ __cpufreq_cooling_register(struct device_node *np,
->  			pr_debug("%s: freq:%u KHz\n", __func__, freq);
->  	}
->  
-> +	snprintf(dev_name, sizeof(dev_name), "thermal-cpufreq-%d",
-> +		 cpufreq_dev->id);
-> +
-> +	cool_dev = thermal_of_cooling_device_register(np, dev_name, cpufreq_dev,
-> +						      &cpufreq_cooling_ops);
-> +	if (IS_ERR(cool_dev))
-> +		goto remove_idr;
-> +
->  	cpufreq_dev->clipped_freq = cpufreq_dev->freq_table[0];
->  	cpufreq_dev->cool_dev = cool_dev;
->  
-> -- 
-> 1.9.1
-> 
+Right.
+
+> One could argue though if pm_runtime_mark_last_busy() should come
+> before pm_runtime_put_autosuspend(). Usually it should, but in this
+> case it doesn't matter because pm_runtime_allow() hasn't been called
+> yet and the PCI core initializes devices to pm_runtime_forbid().
+
+I'm going to change the code to look like following (pm_runtime_mark_last_busy()
+gets called before pm_runtime_put_autosuspend() even if not strictly needed):
+
+	pm_runtime_set_autosuspend_delay(&dev->dev, 100);
+	pm_runtime_use_autosuspend(&dev->dev);
+	pm_runtime_mark_last_busy(&dev->dev);
+	pm_runtime_put_autosuspend(&dev->dev);
+	pm_runtime_allow(&dev->dev);
+
+Note I'm still increasing default autosuspend delay from 10ms to 100ms.
+
+Does the above work for you?
