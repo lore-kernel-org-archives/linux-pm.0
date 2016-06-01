@@ -1,48 +1,62 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/8] cpufreq: cleanups and reorganization
-Date: Wed, 01 Jun 2016 18:47:54 +0200
-Message-ID: <2443928.vz0jCToKqk@vostro.rjw.lan>
-References: <cover.1464776797.git.viresh.kumar@linaro.org>
+From: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
+ runtime PM
+Date: Wed, 1 Jun 2016 18:51:51 +0200
+Message-ID: <20160601165151.GA1947@al>
+References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
+ <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
+ <20160525135535.GN1789@lahna.fi.intel.com>
+ <20160527111037.GA1436@al>
+ <20160530095709.GK1789@lahna.fi.intel.com>
+ <20160530122010.GB1149@al>
+ <20160530130909.GA1743@lahna.fi.intel.com>
+ <20160530161351.GA1355@al> <20160531122026.GA14129@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42131 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932830AbcFAQoD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 12:44:03 -0400
-In-Reply-To: <cover.1464776797.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20160531122026.GA14129-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-On Wednesday, June 01, 2016 04:04:14 PM Viresh Kumar wrote:
-> Hi Rafael,
-> 
-> This cleans up cpufreq core and few platform drivers a bit. Its mostly
-> around cleaning up the usage of cpufreq_frequency_table_target(), which
-> will be optimized in a later series.
-> 
-> This is just preparatory cleanup for that.
-> 
-> Also note that the 4th patch was sent earlier as well in a different
-> form and this is V3 of that.
-> 
-> Viresh Kumar (8):
->   ARM: s3c24xx: Sort cpufreq tables
->   cpufreq: s3c24xx: Remove useless checks
->   cpufreq: powerenv: Fix memory leak
->   cpufreq: Remove cpufreq_frequency_get_table()
->   cpufreq: ondemand: Don't keep a copy of freq_table pointer
->   cpufreq: Drop freq-table param to cpufreq_frequency_table_target()
->   cpufreq: Drop 'freq_table' argument of __target_index()
->   cpufreq: Return index from cpufreq_frequency_table_target()
-
-All of this makes sense to me, so I'm going to apply it.
-
-BTW, if you CC the Linaro list, please also CC the LKML.
-
-Thanks,
-Rafael
-
+T24gVHVlLCBNYXkgMzEsIDIwMTYgYXQgMDI6MjA6MjZQTSArMDIwMCwgTHVrYXMgV3VubmVyIHdy
+b3RlOgo+IE9uIE1vbiwgTWF5IDMwLCAyMDE2IGF0IDA2OjEzOjUxUE0gKzAyMDAsIFBldGVyIFd1
+IHdyb3RlOgo+ID4gRG8geW91IGhhdmUgYW55IHN1Z2dlc3Rpb25zIGZvciB0aGUgY2FzZSB3aGVy
+ZSB0aGUgcGNpZXBvcnQgZHJpdmVyCj4gPiByZWZ1c2VzIHRvIHB1dCB0aGUgYnJpZGdlIGluIEQz
+IChiZWNhdXNlIHRoZSBCSU9TIGlzIHRvbyBvbGQpPyBJbiB0aGF0Cj4gPiBjYXNlIHRoZSBub3V2
+ZWF1IGRyaXZlciBuZWVkcyB0byBmYWxsYmFjayB0byB0aGUgRFNNIG1ldGhvZCAoYnV0IG5vdAo+
+ID4gd2hlbiBydW50aW1lIFBNIGlzIGRlbGliZXJhdGVseSBkaXNhYmxlZCBieSB3cml0aW5nIGNv
+bnRyb2w9b24pLgo+IAo+IFRoZSBCSU9TIGN1dC1vZmYgZGF0ZSBpcyBtZWFudCB0byBhdm9pZCBp
+c3N1ZXMgd2hlbiBzdXNwZW5kaW5nIHBvcnRzCj4gb24gb2xkZXIgY2hpcHNldHMuIEhvd2V2ZXIg
+aWYgdGhlIHBvcnQgaXMgdXNlZCBmb3IgYW4gT3B0aW11cyBHUFUKPiBhbmQgd2UgY2FuIGNsZWFy
+bHkgaWRlbnRpZnkgdGhhdCwgYW5kIHRoZXJlJ3MgYSBfUFIzIG1ldGhvZCBwcm92aWRlZCwKPiBp
+dCdzIHByb2JhYmx5IHNhZmUgdG8gc2F5IHRoYXQgdGhlIHBvcnQgaXMgKmludGVuZGVkKiB0byBi
+ZSBzdXNwZW5kZWQuCj4gCj4gU28geW91IG1heSB3YW50IHRvIGNvbnNpZGVyIGFtZW5kaW5nIHBj
+aV9icmlkZ2VfZDNfcG9zc2libGUoKSB0bwo+IGFsbG93IEQzIGZvciBzdWNoIHBvcnRzIHJlZ2Fy
+ZGxlc3Mgb2YgdGhlIEJJT1MgZGF0ZSwgYXMgSSd2ZSBkb25lCj4gZm9yIFRodW5kZXJib2x0IGlu
+IHRoaXMgY29tbWl0Ogo+IGh0dHBzOi8vZ2l0aHViLmNvbS9sMWsvbGludXgvY29tbWl0LzNjYjg1
+NDljZDRlNQoKVGhlbiB3ZSBoYXZlIGhldXJpc3RpY3MgYmFzZWQgb24gQklPUyB5ZWFyLCBvbiB3
+aGV0aGVyIGl0IGlzIFRCIG9yIG5vdCwKYW5kIG5leHQgdG8gaXQgd2hldGhlciBpdCBpcyBhbiBP
+cHRpbXVzIGxhcHRvcD8gTWF5YmUgdGhlIFBDSSBjb3JlIG5lZWRzCnRvIGV4cG9ydCBhIGZ1bmN0
+aW9uIHRoYXQgYWxsb3dzIGRyaXZlcnMgdG8gb3ZlcnJpZGUgdGhlIGRldGVjdGlvbiBpZgp0aGlz
+IGJlY29tZXMgbW9yZSBjb21tb24uCgo+IE5vdCBzdXJlIGhvdyB0byB1bmlxdWVseSBpZGVudGlm
+eSBzdWNoIHBvcnRzIHRob3VnaC4gUGVyaGFwcyBjaGVjawo+IGlmIHRoZXJlJ3MgYSBkZXZpY2Ug
+aW4gc2xvdCAwIGJlbG93IHRoZSBwb3J0IHdoaWNoIGhhcwo+IAkocGRldi0+Y2xhc3MgPj4gMTYp
+ID09IFBDSV9CQVNFX0NMQVNTX0RJU1BMQVkgJiYKPiAJKHBkZXYtPnZlbmRvciA9PSBQQ0lfVkVO
+RE9SX0lEX05WSURJQSB8fAo+IAkgcGRldi0+dmVuZG9yID09IFBDSV9WRU5ET1JfSURfQVRJKQoK
+U2VlbXMgZnJhZ2lsZSwgdGhlcmUgYXJlIGRlc2t0b3Agc2V0dXBzIHNhdGlzZnlpbmcgdGhpcyBt
+YXRjaC4KLS0gCktpbmQgcmVnYXJkcywKUGV0ZXIgV3UKaHR0cHM6Ly9sZWtlbnN0ZXluLm5sCl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZlYXUgbWFp
+bGluZyBsaXN0Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJl
+ZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
