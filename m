@@ -1,57 +1,74 @@
-From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v7 5/6] rtc: max8997: Check for ERRNO of regmap_irq_get_virq()
-Date: Wed, 01 Jun 2016 11:54:00 +0200
-Message-ID: <1464774841-1439-5-git-send-email-k.kozlowski@samsung.com>
-References: <1464774841-1439-1-git-send-email-k.kozlowski@samsung.com>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH] devfreq: fix initialization of current frequency in last status
+Date: Wed, 1 Jun 2016 19:23:52 +0900
+Message-ID: <CAJ0PZbTFSP1MA4t9-4-+YyvcEXWUaqpw=RndM6A4H6U0pSAmKg@mail.gmail.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <rtc-linux+bncBDKZNNNLXAHBBVXBXK5AKGQE7IZOJII-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-reply-to: <1464774841-1439-1-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-In-reply-to: <1464773339-756-1-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-References: <1464773339-756-1-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Cc: r.baldyga-anjuHVi6/WSaMJb+Lgu22Q@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:33951 "EHLO
+	mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbcFAKYI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 06:24:08 -0400
+Received: by mail-oi0-f67.google.com with SMTP id r64so2859109oie.1
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2016 03:24:07 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: Lukasz Luba <lukasz.luba@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>
 
-The regmap_irq_get_virq() can return zero or negative ERRNO, so it is
-insufficient to check only for non-zero value.
+On Wed, Jun 1, 2016 at 5:30 PM, Javi Merino <javi.merino@arm.com> wrote:
+> On Tue, May 31, 2016 at 11:25:09AM +0100, Lukasz Luba wrote:
+>> Some systems need current frequency from last_status for calculation
+>> but it is zeroed during initialization. When the device starts there is
+>> no history, but we can assume that the last frequency was the
+>> same as the initial frequency (which is also used in 'previous_freq').
+>> The log shows the result of this misinterpreted value.
+>> [    2.042847] ... Failed to get voltage for frequency 0: -34
+>>
+>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+>
+> Looks good to me,
+>
+> Reviewed-by: Javi Merino <javi.merino@arm.com>
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Acked-by: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
----
- drivers/rtc/rtc-max8997.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-diff --git a/drivers/rtc/rtc-max8997.c b/drivers/rtc/rtc-max8997.c
-index 4998aee0f07f..1a06e17ebe9b 100644
---- a/drivers/rtc/rtc-max8997.c
-+++ b/drivers/rtc/rtc-max8997.c
-@@ -497,7 +497,7 @@ static int max8997_rtc_probe(struct platform_device *pdev)
- 	}
- 
- 	virq = regmap_irq_get_virq(max8997->irq_data, MAX8997_PMICIRQ_RTCA1);
--	if (!virq) {
-+	if (virq <= 0) {
- 		dev_err(&pdev->dev, "Failed to create mapping alarm IRQ\n");
- 		ret = -ENXIO;
- 		goto err_out;
+This is going to be sent for rcX along with other fixes.
+
+
+Anyway, I don't see a device driver that has the issue you've mentioned.
+Could you please tell me which device driver is having this issue?
+
+
+
+>
+>> ---
+>>  drivers/devfreq/devfreq.c | 1 +
+>>  1 file changed, 1 insertion(+)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index 984c5e9..a3f2c3b 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
+>> @@ -515,6 +515,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>>       devfreq->profile = profile;
+>>       strncpy(devfreq->governor_name, governor_name, DEVFREQ_NAME_LEN);
+>>       devfreq->previous_freq = profile->initial_freq;
+>> +     devfreq->last_status.current_frequency = profile->initial_freq;
+>>       devfreq->data = data;
+>>       devfreq->nb.notifier_call = devfreq_notifier_call;
+>>
+>> --
+>> 1.9.1
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
 -- 
-1.9.1
-
--- 
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
---- 
-You received this message because you are subscribed to the Google Groups "rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+MyungJoo Ham, Ph.D.
+Frontier CS Lab, S/W Center, Samsung Electronics
