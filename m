@@ -1,80 +1,76 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [Nouveau] [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe
- runtime PM
-Date: Wed, 1 Jun 2016 19:40:43 +0200
-Message-ID: <20160601174043.GA15433@wunner.de>
-References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
- <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
- <20160525135535.GN1789@lahna.fi.intel.com>
- <20160527111037.GA1436@al>
- <20160530095709.GK1789@lahna.fi.intel.com>
- <20160530122010.GB1149@al>
- <20160530130909.GA1743@lahna.fi.intel.com>
- <20160530161351.GA1355@al>
- <20160531122026.GA14129@wunner.de>
- <20160601165151.GA1947@al>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: [PATCH] sched, cpuidle: Do not access cpuidle_devices when !CONFIG_CPU_IDLE
+Date: Wed,  1 Jun 2016 18:52:16 +0100
+Message-ID: <1464803536-19929-1-git-send-email-catalin.marinas@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.hostsharing.net ([176.9.242.54]:54760 "EHLO
-	mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752901AbcFARhI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 13:37:08 -0400
-Content-Disposition: inline
-In-Reply-To: <20160601165151.GA1947@al>
+Received: from foss.arm.com ([217.140.101.70]:39330 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751130AbcFARwX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 Jun 2016 13:52:23 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Wu <peter@lekensteyn.nl>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, dri-devel@lists.freedesktop.org, Bjorn Helgaas <helgaas@kernel.org>, nouveau@lists.freedesktop.org, Dave Airlie <airlied@redhat.com>
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Andrey Ryabinin <aryabinin@virtuozzo.com>
 
-On Wed, Jun 01, 2016 at 06:51:51PM +0200, Peter Wu wrote:
-> On Tue, May 31, 2016 at 02:20:26PM +0200, Lukas Wunner wrote:
-> > On Mon, May 30, 2016 at 06:13:51PM +0200, Peter Wu wrote:
-> > > Do you have any suggestions for the case where the pcieport driver
-> > > refuses to put the bridge in D3 (because the BIOS is too old)? In that
-> > > case the nouveau driver needs to fallback to the DSM method (but not
-> > > when runtime PM is deliberately disabled by writing control=on).
-> > 
-> > The BIOS cut-off date is meant to avoid issues when suspending ports
-> > on older chipsets. However if the port is used for an Optimus GPU
-> > and we can clearly identify that, and there's a _PR3 method provided,
-> > it's probably safe to say that the port is *intended* to be suspended.
-> > 
-> > So you may want to consider amending pci_bridge_d3_possible() to
-> > allow D3 for such ports regardless of the BIOS date, as I've done
-> > for Thunderbolt in this commit:
-> > https://github.com/l1k/linux/commit/3cb8549cd4e5
-> 
-> Then we have heuristics based on BIOS year, on whether it is TB or not,
-> and next to it whether it is an Optimus laptop? Maybe the PCI core needs
-> to export a function that allows drivers to override the detection if
-> this becomes more common.
+The cpuidle_devices per-CPU variable is only defined when CPU_IDLE is
+enabled. Commit c8cc7d4de7a4 ("sched/idle: Reorganize the idle loop")
+removed the #ifdef CONFIG_CPU_IDLE around cpuidle_idle_call() with the
+compiler optimising away __this_cpu_read(cpuidle_devices). However, with
+CONFIG_UBSAN && !CONFIG_CPU_IDLE, this optimisation no longer happens
+and the kernel fails to link since cpuidle_devices is not defined.
 
-Well I consider the TB and Optimus whitelisting as a stop-gap until
-the BIOS date is lowered. Rafael wrote:
+This patch introduces an accessor function for the current CPU cpuidle
+device (returning NULL when !CONFIG_CPU_IDLE) and uses it in
+cpuidle_idle_call().
 
-    Some time around when machines with Windows 10 started to ship should be
-    relatively safe.
-    I guess we can just pick a reasonable date in the initial patch and then
-    try to move it back to the past subsequently and see if that breaks things
-    for anyone.
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+---
 
-Source: http://permalink.gmane.org/gmane.linux.power-management.general/75133
+This fixes a build failure on arm64 with UBSAN && !CPU_IDLE and gcc
+5.3.1 (probably other compiler versions would behave in the same way).
 
-> 
-> > Not sure how to uniquely identify such ports though. Perhaps check
-> > if there's a device in slot 0 below the port which has
-> > 	(pdev->class >> 16) == PCI_BASE_CLASS_DISPLAY &&
-> > 	(pdev->vendor == PCI_VENDOR_ID_NVIDIA ||
-> > 	 pdev->vendor == PCI_VENDOR_ID_ATI)
-> 
-> Seems fragile, there are desktop setups satisfying this match.
+I tried to keep close to the existing coding style in cpuidle.h.
 
-Of course, I didn't mean this to be used as is, you'd have to augment
-this with checks e.g. for presence of _PR3 and (if possible) Optimus,
-but I'm not familiar enough with Optimus to write down working code
-for it, I'm only familiar with apple-gmux switching.
+ include/linux/cpuidle.h | 3 +++
+ kernel/sched/idle.c     | 2 +-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-Best regards,
-
-Lukas
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 786ad32631a6..07b83d32f66c 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -152,6 +152,8 @@ extern void cpuidle_disable_device(struct cpuidle_device *dev);
+ extern int cpuidle_play_dead(void);
+ 
+ extern struct cpuidle_driver *cpuidle_get_cpu_driver(struct cpuidle_device *dev);
++static inline struct cpuidle_device *cpuidle_get_device(void)
++{return __this_cpu_read(cpuidle_devices); }
+ #else
+ static inline void disable_cpuidle(void) { }
+ static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
+@@ -187,6 +189,7 @@ static inline void cpuidle_disable_device(struct cpuidle_device *dev) { }
+ static inline int cpuidle_play_dead(void) {return -ENODEV; }
+ static inline struct cpuidle_driver *cpuidle_get_cpu_driver(
+ 	struct cpuidle_device *dev) {return NULL; }
++static inline struct cpuidle_device *cpuidle_get_device(void) {return NULL; }
+ #endif
+ 
+ #if defined(CONFIG_CPU_IDLE) && defined(CONFIG_SUSPEND)
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index bd12c6c714ec..c5aeedf4e93a 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -127,7 +127,7 @@ static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+  */
+ static void cpuidle_idle_call(void)
+ {
+-	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
++	struct cpuidle_device *dev = cpuidle_get_device();
+ 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+ 	int next_state, entered_state;
+ 
