@@ -1,167 +1,71 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH 4/4] drm/nouveau/acpi: fix lockup with PCIe runtime PM
-Date: Wed, 1 Jun 2016 12:28:47 +0300
-Message-ID: <20160601092847.GQ1743@lahna.fi.intel.com>
-References: <1464130381-4797-1-git-send-email-peter@lekensteyn.nl>
- <1464130381-4797-5-git-send-email-peter@lekensteyn.nl>
- <20160525135535.GN1789@lahna.fi.intel.com>
- <20160527111037.GA1436@al>
- <20160530095709.GK1789@lahna.fi.intel.com>
- <20160530122010.GB1149@al>
- <20160530130909.GA1743@lahna.fi.intel.com>
- <20160530161351.GA1355@al>
- <20160531084356.GH1743@lahna.fi.intel.com>
- <20160531110231.GB1308@al>
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v7 0/6] mfd: (multiple trees): max8997: Add regmap
+Date: Wed, 01 Jun 2016 11:28:53 +0200
+Message-ID: <1464773339-756-1-git-send-email-k.kozlowski@samsung.com>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:17860 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757924AbcFAJ27 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 1 Jun 2016 05:28:59 -0400
-Content-Disposition: inline
-In-Reply-To: <20160531110231.GB1308@al>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <rtc-linux+bncBDKZNNNLXAHBB2GVXK5AKGQEJGMMJAQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Wu <peter@lekensteyn.nl>
-Cc: nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Dave Airlie <airlied@redhat.com>, Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Tue, May 31, 2016 at 01:02:31PM +0200, Peter Wu wrote:
-> On Tue, May 31, 2016 at 11:43:56AM +0300, Mika Westerberg wrote:
-> > On Mon, May 30, 2016 at 06:13:51PM +0200, Peter Wu wrote:
-> > > Do you have any suggestions for the case where the pcieport drive=
-r
-> > > refuses to put the bridge in D3 (because the BIOS is too old)? In=
- that
-> > > case the nouveau driver needs to fallback to the DSM method (but =
-not
-> > > when runtime PM is deliberately disabled by writing control=3Don)=
-=2E
-> >=20
-> > Do you know what Windows does then? I think we should do the same i=
-f
-> > possible.
->=20
-> If the BIOS is too old, then it probably does not have _PR3 objects n=
-or
-> calls to _OSI("Windows 2013"). See below.
->=20
-> > If user has disabled runtime PM from the root port deliberately, th=
-ere
-> > might be good reason to do so. Why we want to fallback to something=
- that
-> > could cause problems? I mean _DSM on such systems is probably not t=
-hat
-> > much tested because everybody runs Windows 8+ and using standard AC=
-PI
-> > power resources.
->=20
-> I agree that when runtime PM on the root port is disabled (control=3D=
-on),
-> then there should be no fallback to DSM. For devices without _PR3 it =
-is
-> clear that DSM will always be used (if available).
->=20
-> In other cases (where _PR3 is available) we can distinguish:
->  - pre-Windows 8 machines. I have never seen this combination. Firmwa=
-re
->    writers seems to prefer sticking to reference code which did not u=
-se
->    power resources before.
->  - Machines targeting Windows 8 or newer. (Note that there exist
->    machines with Windows 8 support that do not have _PR3, DSM is used=
- in
->    that case.)
->=20
-> If Windows 7 is running on a Windows 8 machine, PR3 will not be used
-> anyway. If the Linux kernel claims support for Windows 8, but does no=
-t
-> use PR3, then we are probably approaching an untested area. So far
-> firmware seems fine with using *only* DSM *or* PR3, but at least my
-> laptop gets confused when you use both at the same time.
->=20
-> The latter happens on pci/pm (8b71f565) without other patches:
->=20
->  1. nouveau invokes _DSM and _PS3, device is put in D3cold.
->  2. pcieport driver calls PG00._OFF (PG00 is returned by _PR3).
->  3. Wake up Nvidia device (e.g. by power=3Don).
->  4. This will trigger PG00._ON (via pcieport) and _PS0 (via nouveau).
->  5. Nvidia card is not really ready (observed via "restoring config
->     space at offset ... (was 0xffffffff, writing ...)", a soft lockup
->     and RCU stall after that requiring a reboot to recover).
->=20
-> nouveau could be patched not to invoke DSM when PR3 is detected
-> (proposal is ready) but will keep the device powered on in these case=
-s:
->  - nouveau is patched, but pci/pm patches are not.
->  - PR3 is supported but due to the cutoff date (2015) it is not used.
->  - Boot option pcie_port_pm=3Doff.
->  - runtime PM is disabled for pcieport (should be fine).
+Hi,
 
-Since using only _DSM has been the only method to power down the card
-currently in=C5=84Linux (even if the root port has had _PR3), and it ha=
-s been
-working fine, why not stick with that when _DSM is supported?
 
-In other words, something like this:
+I'm pushing old Robert's work. I miss only ack from regulator subsystem.
+Mark, could you take a look at patch 1/6?
 
-	nouveau_dsm_pci_probe()
-	{
-		...
-		if (retval & (NOUVEAU_DSM_HAS_OPT | NOUVEAU_DSM_HAS_MUX)) {
-			/*
-			 * We have custom _DSM method to power down the card so
-			 * prevent the PCI core from transitioning the
-			 * card into D3cold.
-			 */
-			pci_d3cold_disable(pdev);
-		}
-	}
+Changes since v6
+================
+1. Add some acks.
+2. Remove patches already applied.
 
-(Not sure about those flags above, though).
 
-Yes, it does not follow Windows 8+ but if it works... ;-)
+Best regards,
+Krzysztof
 
-> There is a wealth of acpidumps on Launchpad bug 752542
-> (https://bugs.launchpad.net/bugs/752542). Search for example for
-> comments in early 2015 or before, those will likely be machine from 2=
-014
-> or before.
->=20
-> Interesting to see is the _PR3 method of a HP Envy TS 15 (11/20/2014)=
-:
->=20
->     Method (_PR3, 0, NotSerialized) {
->         If (\_OSI ("Windows 2013")) {
->             Return (Package (0x01) {
->                 \NVP3
->             })
->         } Else {
->             Return (Package (0x00) {})
->         }
->     }
->=20
-> (Note for self: just checking for the _PR3 handle in the nouveau patc=
-h
-> is apparently not sufficient, it must really be evaluated.)
->=20
-> Other machines with _PR3:
->  - Dell Inspiron 3543 (11/04/2014), comment 757.
->  - Dell XPS 15 9530 (03/28/2014), comment 711.
->  - Novatech 15.6 NSPIRE Laptop (01/20/2014), comment 695.
->  - Lenovo ThinkPad T440p (10/27/2013), comment 659.
->=20
-> There were many models from 2013 without _PR3 method but still checki=
-ng
-> for _OSI("Windows 2013"). Maybe some heuristics based on _PR3 would b=
-e
-> more helpful than just a cutoff date?
 
-You mean for allowing bridge_d3? I don't think checking _PR3 helps us i=
-n
-any way. We can put PCIe port into D3hot just fine without any help fro=
-m
-ACPI. Only thing that matters here is that we should be able to do that
-safely without causing problems to hardware which does not support it
-properly.
+Krzysztof Kozlowski (3):
+  extcon: max8997: Fix handling error code of regmap_irq_get_virq()
+  rtc: max8997: Check for ERRNO of regmap_irq_get_virq()
+  extcon: max8997: Fix inconsistent indenting
+
+Robert Baldyga (3):
+  mfd: max8997: Use regmap to access registers
+  mfd: max8997: handle IRQs using regmap
+  mfd: max8997: Change irq names to upper case
+
+ drivers/extcon/extcon-max8997.c       |  72 +++----
+ drivers/input/misc/max8997_haptic.c   |  34 +--
+ drivers/leds/leds-max8997.c           |  13 +-
+ drivers/mfd/Kconfig                   |   3 +-
+ drivers/mfd/Makefile                  |   2 +-
+ drivers/mfd/max8997-irq.c             | 383 ----------------------------------
+ drivers/mfd/max8997.c                 | 245 +++++++++++++++-------
+ drivers/power/max8997_charger.c       |  33 +--
+ drivers/regulator/max8997-regulator.c |  87 ++++----
+ drivers/rtc/rtc-max8997.c             |  60 +++---
+ include/linux/mfd/max8997-private.h   |  82 ++++++--
+ 11 files changed, 385 insertions(+), 629 deletions(-)
+ delete mode 100644 drivers/mfd/max8997-irq.c
+
+-- 
+1.9.1
+
+-- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
