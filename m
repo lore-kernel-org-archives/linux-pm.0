@@ -1,58 +1,58 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [patch v2] PM / devfreq: exynos-nocp: Remove incorrect IS_ERR() check
-Date: Wed, 1 Jun 2016 19:25:14 +0900
-Message-ID: <CAJ0PZbR4j+8dRpOsvEtdsu2Z7hoXN1UOD70qoJ5q3oMG4X+yDw@mail.gmail.com>
-References: <alpine.DEB.2.10.1605251710500.3644@hadrien> <20160526064541.GA6680@mwanda>
-Reply-To: myungjoo.ham@gmail.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/8] cpufreq: cleanups and reorganization
+Date: Wed,  1 Jun 2016 16:04:14 +0530
+Message-ID: <cover.1464776797.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:33194 "EHLO
-	mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751433AbcFAKZ3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 06:25:29 -0400
-In-Reply-To: <20160526064541.GA6680@mwanda>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:35534 "EHLO
+	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750697AbcFAKec (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 06:34:32 -0400
+Received: by mail-pf0-f175.google.com with SMTP id g64so12931890pfb.2
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2016 03:34:31 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Julia Lawall <julia.lawall@lip6.fr>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thu, May 26, 2016 at 3:45 PM, Dan Carpenter <dan.carpenter@oracle.com> wrote:
-> Smatch complains because platform_get_resource() returns NULL on error
-> and not an error pointer so the check is wrong.  Julia Lawall pointed
-> out that normally we don't check these, because devm_ioremap_resource()
-> has a check for NULL.
->
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Hi Rafael,
 
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+This cleans up cpufreq core and few platform drivers a bit. Its mostly
+around cleaning up the usage of cpufreq_frequency_table_target(), which
+will be optimized in a later series.
 
-Queued in fixes branch to be sent with other fixes for RCx.
+This is just preparatory cleanup for that.
 
-> ---
-> v2: just remove the check
->
-> diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
-> index 6b6a5f3..a584140 100644
-> --- a/drivers/devfreq/event/exynos-nocp.c
-> +++ b/drivers/devfreq/event/exynos-nocp.c
-> @@ -220,9 +220,6 @@ static int exynos_nocp_parse_dt(struct platform_device *pdev,
->
->         /* Maps the memory mapped IO to control nocp register */
->         res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -       if (IS_ERR(res))
-> -               return PTR_ERR(res);
-> -
->         base = devm_ioremap_resource(dev, res);
->         if (IS_ERR(base))
->                 return PTR_ERR(base);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Also note that the 4th patch was sent earlier as well in a different
+form and this is V3 of that.
 
+Viresh Kumar (8):
+  ARM: s3c24xx: Sort cpufreq tables
+  cpufreq: s3c24xx: Remove useless checks
+  cpufreq: powerenv: Fix memory leak
+  cpufreq: Remove cpufreq_frequency_get_table()
+  cpufreq: ondemand: Don't keep a copy of freq_table pointer
+  cpufreq: Drop freq-table param to cpufreq_frequency_table_target()
+  cpufreq: Drop 'freq_table' argument of __target_index()
+  cpufreq: Return index from cpufreq_frequency_table_target()
 
+ Documentation/cpu-freq/cpu-drivers.txt       |  8 ++--
+ arch/arm/mach-s3c24xx/pll-s3c2410.c          |  3 +-
+ arch/arm/mach-s3c24xx/pll-s3c2440-12000000.c |  1 +
+ arch/arm/mach-s3c24xx/pll-s3c2440-16934400.c |  1 +
+ drivers/cpufreq/amd_freq_sensitivity.c       | 10 ++---
+ drivers/cpufreq/cpufreq.c                    | 66 ++++++++++------------------
+ drivers/cpufreq/cpufreq_ondemand.c           | 25 +++++------
+ drivers/cpufreq/cpufreq_ondemand.h           |  1 -
+ drivers/cpufreq/cpufreq_stats.c              |  3 +-
+ drivers/cpufreq/freq_table.c                 | 35 +++++++--------
+ drivers/cpufreq/powernv-cpufreq.c            | 18 ++++----
+ drivers/cpufreq/ppc_cbe_cpufreq_pmi.c        |  3 +-
+ drivers/cpufreq/s3c24xx-cpufreq.c            | 33 +++-----------
+ drivers/cpufreq/s5pv210-cpufreq.c            |  8 +---
+ drivers/thermal/cpu_cooling.c                | 22 +++++++---
+ include/linux/cpufreq.h                      |  6 +--
+ 16 files changed, 100 insertions(+), 143 deletions(-)
 
 -- 
-MyungJoo Ham, Ph.D.
-Frontier CS Lab, S/W Center, Samsung Electronics
+2.7.1.410.g6faf27b
+
