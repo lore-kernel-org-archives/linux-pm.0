@@ -1,57 +1,53 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/2] powercap/rapl: add support for denverton
-Date: Wed, 1 Jun 2016 08:57:27 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1606010857080.3629@nanos>
-References: <1464727290-5400-1-git-send-email-jacob.jun.pan@linux.intel.com> <1464727290-5400-3-git-send-email-jacob.jun.pan@linux.intel.com> <574E0DF2.2010408@intel.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] devfreq: fix initialization of current frequency in last
+ status
+Date: Wed, 1 Jun 2016 09:30:27 +0100
+Message-ID: <20160601083027.GB2898@e104805>
+References: <1464690309-27809-1-git-send-email-lukasz.luba@arm.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:35665 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757281AbcFAG7W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 02:59:22 -0400
-In-Reply-To: <574E0DF2.2010408@intel.com>
+Received: from foss.arm.com ([217.140.101.70]:35697 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751488AbcFAIaa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 Jun 2016 04:30:30 -0400
+Content-Disposition: inline
+In-Reply-To: <1464690309-27809-1-git-send-email-lukasz.luba@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Hansen <dave.hansen@intel.com>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, the arch/x86 maintainers <x86@kernel.org>
+To: Lukasz Luba <lukasz.luba@arm.com>
+Cc: linux-pm@vger.kernel.org, myungjoo.ham@samsung.com, kyungmin.park@samsung.com
 
-On Tue, 31 May 2016, Dave Hansen wrote:
-> On 05/31/2016 01:41 PM, Jacob Pan wrote:
-> > --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -1137,6 +1137,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
-> >  	RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights Landing */
-> >  	RAPL_CPU(0x8E, rapl_defaults_core),/* Kabylake */
-> >  	RAPL_CPU(0x9E, rapl_defaults_core),/* Kabylake */
-> > +	RAPL_CPU(0x5F, rapl_defaults_core),/* Denverton micro server */
-> >  	{}
-> >  };
+On Tue, May 31, 2016 at 11:25:09AM +0100, Lukasz Luba wrote:
+> Some systems need current frequency from last_status for calculation
+> but it is zeroed during initialization. When the device starts there is
+> no history, but we can assume that the last frequency was the
+> same as the initial frequency (which is also used in 'previous_freq').
+> The log shows the result of this misinterpreted value.
+> [    2.042847] ... Failed to get voltage for frequency 0: -34
 > 
-> Not to derail this individual patch... but do we really want to continue
-> open-coding CPU model/family combos all over arch/x86?
-> 
-> For instance, arch/x86/events/intel/core.c has:
-> 
-> >         case 142: /* 14nm Kabylake Mobile */
-> >         case 158: /* 14nm Kabylake Desktop */
-> >         case 78: /* 14nm Skylake Mobile */
-> >         case 94: /* 14nm Skylake Desktop */
-> >         case 85: /* 14nm Skylake Server */
-> 
-> Which duplicates the two Kabylake family numbers from the RAPL_CPU()
-> context above (just in decimal instead of hex).
-> 
-> Should we just start sticking these things in a header like:
-> 
-> #define X86_INTEL_FAMILY_KABYLAKE1 	0x8E
-> #define X86_INTEL_FAMILY_KABYLAKE2	0x9E
-> #define X86_INTEL_FAMILY_DENVERTON 	0x5F
-> 
-> So we have this:
-> 
-> 	RAPL_CPU(X86_INTEL_FAMILY_DENVERTON, rapl_defaults_core),
-> 
-> instead of having to explain our magic number in a comment.
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 
-Yes please. 
+Looks good to me,
+
+Reviewed-by: Javi Merino <javi.merino@arm.com>
+
+> ---
+>  drivers/devfreq/devfreq.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 984c5e9..a3f2c3b 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -515,6 +515,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>  	devfreq->profile = profile;
+>  	strncpy(devfreq->governor_name, governor_name, DEVFREQ_NAME_LEN);
+>  	devfreq->previous_freq = profile->initial_freq;
+> +	devfreq->last_status.current_frequency = profile->initial_freq;
+>  	devfreq->data = data;
+>  	devfreq->nb.notifier_call = devfreq_notifier_call;
+>  
+> -- 
+> 1.9.1
+> 
