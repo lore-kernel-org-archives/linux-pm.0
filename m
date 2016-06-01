@@ -1,67 +1,40 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH v2] thermal: ti-soc-thermal: Add set_emul_temp hook
-Date: Wed, 1 Jun 2016 09:29:10 +0530
-Message-ID: <1464753550-2529-1-git-send-email-j-keerthy@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: Don't use cpufreq_frequency_get_table() if
+ 'policy' is available
+Date: Wed, 1 Jun 2016 11:30:42 +0530
+Message-ID: <20160601060042.GH3725@vireshk-i7>
+References: <1983189261737014b1f83e5b455d9d76e3288748.1464745869.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:51844 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757005AbcFAD7b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 31 May 2016 23:59:31 -0400
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:36334 "EHLO
+	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757189AbcFAGAq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 02:00:46 -0400
+Received: by mail-pf0-f172.google.com with SMTP id f144so8245180pfa.3
+        for <linux-pm@vger.kernel.org>; Tue, 31 May 2016 23:00:46 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1983189261737014b1f83e5b455d9d76e3288748.1464745869.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: t-kristo@ti.com, j-keerthy@ti.com, nm@ti.com, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org
 
-Setting the emulation temperature helps reproduce critical
-temperature scenarios without risking the actual hardware at
-extreme temperatures. Adding __ti_thermal_set_emul_temp as
-the set_emul_temp hook.
+On 01-06-16, 07:23, Viresh Kumar wrote:
+> Most of the callers of cpufreq_frequency_get_table() already have the
+> pointer to a valid 'policy' structure and they don't really need to go
+> through the per-cpu variable first and then a check to validate the
+> frequency, in order to find the freq-table for the policy.
+> 
+> Directly use the policy->freq_table field instead.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> V2: Instead of adding a new routine, use policy->freq_table directly as
+> there already are a lot of users who are doing it directly anyway.
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
----
+Discard this one as well. More cleanup is possible, will send it
+again.
 
-Changes in v2:
-
-  * Rebased on top of:
-git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal sysfs_locking
-
-Tested on DRA7/DRA72 baords.
-
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 15c0a9a..8d069ee 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -278,6 +278,17 @@ static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
- 	return 0;
- }
- 
-+static int __ti_thermal_set_emul_temp(void *p, int temp)
-+{
-+	struct ti_thermal_data *data = p;
-+	struct thermal_zone_device *tz;
-+
-+	tz = data->ti_thermal;
-+	tz->emul_temperature = temp;
-+
-+	return 0;
-+}
-+
- /* Get critical temperature callback functions for thermal zone */
- static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
- 				    int *temp)
-@@ -289,6 +300,7 @@ static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
- static const struct thermal_zone_of_device_ops ti_of_thermal_ops = {
- 	.get_temp = __ti_thermal_get_temp,
- 	.get_trend = __ti_thermal_get_trend,
-+	.set_emul_temp = __ti_thermal_set_emul_temp,
- };
- 
- static struct thermal_zone_device_ops ti_thermal_ops = {
 -- 
-1.9.1
-
+viresh
