@@ -1,39 +1,49 @@
 From: Dave Hansen <dave@sr71.net>
-Subject: [PATCH 20/20] x86, powercap, rapl: add Skylake Server model number
-Date: Wed, 01 Jun 2016 17:12:25 -0700
-Message-ID: <20160602001225.6F281D8E@viggo.jf.intel.com>
+Subject: [PATCH 18/20] x86, thermal: clean up and fix cpu model detection for intel_soc_dts_thermal
+Date: Wed, 01 Jun 2016 17:12:22 -0700
+Message-ID: <20160602001222.9971AA84@viggo.jf.intel.com>
 References: <20160602001157.D8BE59D7@viggo.jf.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20160602001157.D8BE59D7@viggo.jf.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: x86@kernel.org, Dave Hansen <dave@sr71.net>, dave.hansen@linux.intel.com, jacob.jun.pan@linux.intel.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Cc: x86@kernel.org, Dave Hansen <dave@sr71.net>, dave.hansen@linux.intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
 From: Dave Hansen <dave.hansen@linux.intel.com>
 
-SKX uses similar RAPL interface as Broadwell server according to
-Jacob Pan.
+The X86_FAMILY_ANY in here is bogus.  "BYT" and model 0x37 are
+family-6 only.  Simplify the code while we are in here.
 
 Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net> 
-Cc: linux-pm@vger.kernel.org 
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org
 ---
 
- b/drivers/powercap/intel_rapl.c |    1 +
- 1 file changed, 1 insertion(+)
+ b/drivers/thermal/intel_soc_dts_thermal.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff -puN drivers/powercap/intel_rapl.c~x86-intel-familites-powercap-rapl-add-skx drivers/powercap/intel_rapl.c
---- a/drivers/powercap/intel_rapl.c~x86-intel-familites-powercap-rapl-add-skx	2016-06-01 15:45:11.070258232 -0700
-+++ b/drivers/powercap/intel_rapl.c	2016-06-01 15:45:11.075258460 -0700
-@@ -1114,6 +1114,7 @@ static const struct x86_cpu_id rapl_ids[
+diff -puN drivers/thermal/intel_soc_dts_thermal.c~buggy-intel_soc_dts_thermal drivers/thermal/intel_soc_dts_thermal.c
+--- a/drivers/thermal/intel_soc_dts_thermal.c~buggy-intel_soc_dts_thermal	2016-06-01 15:45:10.235220153 -0700
++++ b/drivers/thermal/intel_soc_dts_thermal.c	2016-06-01 15:45:10.239220335 -0700
+@@ -18,6 +18,7 @@
+ #include <linux/module.h>
+ #include <linux/interrupt.h>
+ #include <asm/cpu_device_id.h>
++#include <asm/intel-family.h>
+ #include "intel_soc_dts_iosf.h"
  
- 	RAPL_CPU(INTEL_FAM6_MODEL_SKYLAKE_DESKTOP,	rapl_defaults_core),
- 	RAPL_CPU(INTEL_FAM6_MODEL_SKYLAKE_MOBILE,	rapl_defaults_core),
-+	RAPL_CPU(INTEL_FAM6_MODEL_SKYLAKE_X,		rapl_defaults_hsw_server),
- 	RAPL_CPU(INTEL_FAM6_MODEL_KABYLAKE_MOBILE,	rapl_defaults_core),
- 	RAPL_CPU(INTEL_FAM6_MODEL_KABYLAKE_DESKTOP,	rapl_defaults_core),
+ #define CRITICAL_OFFSET_FROM_TJ_MAX	5000
+@@ -42,7 +43,8 @@ static irqreturn_t soc_irq_thread_fn(int
+ }
  
+ static const struct x86_cpu_id soc_thermal_ids[] = {
+-	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, 0x37, 0, BYT_SOC_DTS_APIC_IRQ},
++	{ X86_VENDOR_INTEL, 6, INTEL_FAM6_MODEL_ATOM_SILVERMONT1,
++		0, BYT_SOC_DTS_APIC_IRQ},
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, soc_thermal_ids);
 _
