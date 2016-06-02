@@ -1,59 +1,154 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 4/5] ACPI / hotplug / PCI: Runtime resume bridge before rescan
-Date: Thu, 2 Jun 2016 14:27:32 +0200
-Message-ID: <CAJZ5v0ipjr-DJZrsg2RU=xAqnSV2qyub7-4hY2XeTHcSJj-ULA@mail.gmail.com>
-References: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
-	<1464855435-32960-5-git-send-email-mika.westerberg@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v5 00/11]  powerpc/powernv/cpuidle: Add support for POWER ISA v3 idle states
+Date: Thu,  2 Jun 2016 07:38:50 -0500
+Message-ID: <1464871141-11568-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:34940 "EHLO
-	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753229AbcFBM1e (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 08:27:34 -0400
-In-Reply-To: <1464855435-32960-5-git-send-email-mika.westerberg@linux.intel.com>
+Received: from e19.ny.us.ibm.com ([129.33.205.209]:41375 "EHLO
+	e19.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752849AbcFBMjK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 08:39:10 -0400
+Received: from localhost
+	by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
+	Thu, 2 Jun 2016 08:39:09 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Peter Wu <peter@lekensteyn.nl>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: mpe@ellerman.id.au
+Cc: paulus@ozlabs.org, mikey@neuling.org, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-On Thu, Jun 2, 2016 at 10:17 AM, Mika Westerberg
-<mika.westerberg@linux.intel.com> wrote:
-> If a PCI bridge (or PCIe port) that is runtime suspended gets an ACPI
-> hotplug event, such as BUS_CHECK we need to make sure it is resumed before
-> devices below the bridge are re-scanned. Otherwise the devices behind the
-> port are not accessible and will be treated as hot-unplugged.
->
-> To fix this, resume PCI bridges from runtime suspend while rescanning.
->
-> Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+POWER ISA v3 defines a new idle processor core mechanism. In summary,
+ a) new instruction named stop is added. This instruction replaces
+	instructions like nap, sleep, rvwinkle.
+ b) new per thread SPR named PSSCR is added which controls the behavior
+	of stop instruction. 
+		
+PSSCR has following key fields
+	Bits 0:3  - Power-Saving Level Status. This field indicates the
+	lowest power-saving state the thread entered since stop
+	instruction was last executed.
+		
+	Bit 42 - Enable State Loss                          
+	0 - No state is lost irrespective of other fields  
+	1 - Allows state loss
+		
+	Bits 44:47 - Power-Saving Level Limit      
+	This limits the power-saving level that can be entered into.
+		
+	Bits 60:63 - Requested Level              
+	Used to specify which power-saving level must be entered on
+	executing stop instruction
+		
+Stop idle states and their properties like name, latency, target
+residency, psscr value are exposed via device tree.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+This patch series adds support for this new mechanism.
 
-> ---
->  drivers/pci/hotplug/acpiphp_glue.c | 4 ++++
->  1 file changed, 4 insertions(+)
->
-> diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-> index fa49f9143b80..6a33ddcfa20b 100644
-> --- a/drivers/pci/hotplug/acpiphp_glue.c
-> +++ b/drivers/pci/hotplug/acpiphp_glue.c
-> @@ -675,6 +675,8 @@ static void acpiphp_check_bridge(struct acpiphp_bridge *bridge)
->         if (bridge->is_going_away)
->                 return;
->
-> +       pm_runtime_get_sync(&bridge->pci_dev->dev);
-> +
->         list_for_each_entry(slot, &bridge->slots, node) {
->                 struct pci_bus *bus = slot->bus;
->                 struct pci_dev *dev, *tmp;
-> @@ -694,6 +696,8 @@ static void acpiphp_check_bridge(struct acpiphp_bridge *bridge)
->                         disable_slot(slot);
->                 }
->         }
-> +
-> +       pm_runtime_put(&bridge->pci_dev->dev);
->  }
->
->  /*
-> --
+Patches 1-7 are cleanups and code movement.
+Patch 8 adds platform specific support for stop and psscr handling.
+Patch 9 is a minor cleanup in cpuidle driver.
+Patch 10 adds cpuidle driver support.
+Patch 11 makes offlined cpu use deepest stop state.
+
+Note: Documentation for the device tree bindings is posted here-
+http://patchwork.ozlabs.org/patch/629125/
+
+
+Changes in v5
+=============
+ - Use generic cpuidle constant CPUIDLE_NAME_LEN
+ - Fix return code handling for of_property_read_string_array
+ - Use DT flags to determine if are using stop instruction, instead of
+   cpu_has_feature
+ - Removed uncessary cast with names
+ - &stop_loop -> stop_loop
+ - Added POWERNV_THRESHOLD_LATENCY_NS to filter out idle states with high latency
+
+Changes in v4
+=============
+ - Added a patch to use PNV_THREAD_WINKLE macro while requesting for winkle
+ - Moved power7_powersave_common rename to more appropriate patch
+ - renaming power7_enter_nap_mode to pnv_enter_arch207_idle_mode
+ - Added PSSCR layout to Patch 7's commit message
+ - Improved / Fixed comments
+ - Fixed whitespace error in paca.h
+ - Using MAX_POSSIBLE_STOP_STATE macro instead of hardcoding 0xF has
+   max possible stop state
+
+Changes in v3
+=============
+ - Rebased on powerpc-next
+ - Dropping patch 1 since we are not adding a new file for P9 idle support
+ - Improved comments in multiple places
+ - Moved GET_PACA from power7_restore_hyp_resource to System Reset
+ - Instead of moving few functions from idle_power7 to idle_power_common,
+   renaming idle_power7.S to idle_power_common.S
+ - Moved HSTATE_HWTHREAD_STATE updation to power_powersave_common
+ - Dropped earlier patch 5 which moved few macros from idle_power_common to
+   asm/cpuidle.h. 
+ - Added a patch to rename reusable power7_* idle functions to pnv_*
+ - Added new patch that creates abstraction for saving SPRs before
+   entering deep idle states
+ - Instead of introducing new file idle_power_stop.S, P9 idle support
+   is added to idle_power_common.S using CPU_FTR sections.
+ - Fixed r4 reg clobbering in power_stop0
+
+Changes in v2
+=============
+ - Rebased on v4.6-rc6
+ - Using CPU_FTR_ARCH_300 bit instead of CPU_FTR_STOP_INST
+
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+
+
+Shreyas B. Prabhu (11):
+  powerpc/powernv: Use PNV_THREAD_WINKLE macro while requesting for
+    winkle
+  powerpc/kvm: make hypervisor state restore a function
+  powerpc/powernv: Rename idle_power7.S to idle_power_common.S
+  powerpc/powernv: Rename reusable idle functions to hardware agnostic
+    names
+  powerpc/powernv: Make pnv_powersave_common more generic
+  powerpc/powernv: abstraction for saving SPRs before entering deep idle
+    states
+  powerpc/powernv: set power_save func after the idle states are
+    initialized
+  powerpc/powernv: Add platform support for stop instruction
+  cpuidle/powernv: Use CPUIDLE_STATE_MAX instead of
+    MAX_POWERNV_IDLE_STATES
+  cpuidle/powernv: Add support for POWER ISA v3 idle states
+  powerpc/powernv: Use deepest stop state when cpu is offlined
+
+ arch/powerpc/include/asm/cpuidle.h        |   2 +
+ arch/powerpc/include/asm/kvm_book3s_asm.h |   2 +-
+ arch/powerpc/include/asm/machdep.h        |   1 +
+ arch/powerpc/include/asm/opal-api.h       |  11 +-
+ arch/powerpc/include/asm/paca.h           |   2 +
+ arch/powerpc/include/asm/ppc-opcode.h     |   4 +
+ arch/powerpc/include/asm/processor.h      |   1 +
+ arch/powerpc/include/asm/reg.h            |  11 +
+ arch/powerpc/kernel/Makefile              |   2 +-
+ arch/powerpc/kernel/asm-offsets.c         |   2 +
+ arch/powerpc/kernel/exceptions-64s.S      |  30 +-
+ arch/powerpc/kernel/idle_power7.S         | 515 -----------------------
+ arch/powerpc/kernel/idle_power_common.S   | 662 ++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |   4 +-
+ arch/powerpc/platforms/powernv/idle.c     |  98 ++++-
+ arch/powerpc/platforms/powernv/powernv.h  |   1 +
+ arch/powerpc/platforms/powernv/setup.c    |   2 +-
+ arch/powerpc/platforms/powernv/smp.c      |   4 +-
+ drivers/cpuidle/cpuidle-powernv.c         |  66 ++-
+ 19 files changed, 857 insertions(+), 563 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/idle_power7.S
+ create mode 100644 arch/powerpc/kernel/idle_power_common.S
+
+-- 
+2.1.4
+
