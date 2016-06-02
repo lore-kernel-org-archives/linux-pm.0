@@ -1,37 +1,50 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH V2 2/6] cpufreq: Remove cpufreq_frequency_get_table()
-Date: Thu, 2 Jun 2016 19:02:50 +0100
-Message-ID: <20160602180250.GC2966@e104805>
-References: <cover.1464876229.git.viresh.kumar@linaro.org>
- <13d43ddfe208a9b387fe0fd247de069ba0332308.1464876229.git.viresh.kumar@linaro.org>
- <20160602145903.GA2966@e104805>
- <CAKohponBAEZMhiVPNKqbY3nHAT9uB=7rK=SvVaf4jfgMPPft9w@mail.gmail.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH V2 2/2] cpufreq: Optimize cpufreq_frequency_table_target()
+Date: Thu, 2 Jun 2016 11:28:35 -0700
+Message-ID: <20160602182835.GC14579@graphite.smuckle.net>
+References: <cover.1464777376.git.viresh.kumar@linaro.org>
+ <120ed8a873b6df2ccc9406eeec8f8f74e5f9b0d5.1464777376.git.viresh.kumar@linaro.org>
+ <20160601194615.GQ9864@graphite.smuckle.net>
+ <20160602012904.GV3725@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:47116 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932324AbcFBSCz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 Jun 2016 14:02:55 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKohponBAEZMhiVPNKqbY3nHAT9uB=7rK=SvVaf4jfgMPPft9w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <20160602012904.GV3725@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 02, 2016 at 09:06:26PM +0530, Viresh Kumar wrote:
-> On 2 June 2016 at 20:29, Javi Merino <javi.merino@arm.com> wrote:
-> > In 5a31d594a973 ("cpufreq: Allow freq_table to be obtained for offline
-> > CPUs") you did the opposite: don't use cpufreq_cpu_get_raw() because
-> > it won't give you the policy of a cpu that is offline.  Now you are
-> > arguing that we should go back to cpufreq_cpu_get() which implicitly
-> > calls cpufreq_cpu_get_raw().  Won't we hit the same issue that
-> > 5a31d594a973 was trying to prevent: that we can't get a freq_table for
-> > a cpu that is offline?
+On Thu, Jun 02, 2016 at 06:59:04AM +0530, Viresh Kumar wrote:
+> On 01-06-16, 12:46, Steve Muckle wrote:
+> > >  	/*
+> > >  	 * Find the closest frequency above target_freq.
+> > > -	 *
+> > > -	 * The table is sorted in the reverse order with respect to the
+> > > -	 * frequency and all of the entries are valid (see the initialization).
+> > >  	 */
+> > > -	entry = policy->freq_table;
+> > > -	do {
+> > > -		entry++;
+> > > -		freq = entry->frequency;
+> > > -	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
+> > > -	entry--;
+> > > +	index = cpufreq_frequency_table_target(policy, target_freq,
+> > > +					       CPUFREQ_RELATION_L);
+> > 
+> > This adds a function call to the fast path...
 > 
-> Yes, that should be fixed. Thanks for letting me know about it :)
+> I understand that, but I am not sure how far should we go to avoid
+> that. Open coding routines to save on that isn't a good idea surely.
+> 
+> I have at least kept this routine in cpufreq.h to avoid a call, but
+> eventually we will have at least a call somewhere within it. :(
 
-Ok, that was my only nit.  Other than that, it looks good to me.  For cpu_cooling.c 
+Shouldn't we be able to avoid extra function calls through the use of
+macros/inlines? Otherwise this is making things slower for schedutil
+than it is today. 
 
-Acked-by: Javi Merino <javi.merino@arm.com>
+Actually cpufreq_driver_resolve_freq() shouldn't require any calls from
+schedutil when a freq_table is available - the whole thing could be run
+inline.
