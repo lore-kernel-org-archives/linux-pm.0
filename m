@@ -1,88 +1,169 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 00/11] cpufreq: Keep policy->freq_table sorted
-Date: Thu, 2 Jun 2016 22:35:21 +0200
-Message-ID: <CAJZ5v0h23n7k66fRdmARXStOYFVTpVSQQVa1bN3YixehG=eD4w@mail.gmail.com>
-References: <cover.1464876460.git.viresh.kumar@linaro.org>
-	<CAJZ5v0hF5vk_KPCu0xrRA3mzRBGqW4wtPODkCRk47_n5h_y7jw@mail.gmail.com>
-	<CAKohpokG3P4PmmGVD7PcEMramLUv5yrhPY4MkEif3QH0e7EySA@mail.gmail.com>
+From: Steve Barber <smbarber@google.com>
+Subject: Re: [RESEND PATCH v4 5/5] thermal: rockchip: add the set_trips function
+Date: Thu, 2 Jun 2016 13:31:14 -0700
+Message-ID: <CADR9n4_LQxJtnEW79xzJy13U9S19FmFpy4Kq4WZm658z2GPA0g@mail.gmail.com>
+References: <1464338208-8105-1-git-send-email-wxt@rock-chips.com> <1464338208-8105-6-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:35748 "EHLO
-	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932593AbcFBUfX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 16:35:23 -0400
-In-Reply-To: <CAKohpokG3P4PmmGVD7PcEMramLUv5yrhPY4MkEif3QH0e7EySA@mail.gmail.com>
+Received: from mail-vk0-f44.google.com ([209.85.213.44]:33155 "EHLO
+	mail-vk0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932233AbcFBUbg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 16:31:36 -0400
+Received: by mail-vk0-f44.google.com with SMTP id r140so87606000vkf.0
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jun 2016 13:31:35 -0700 (PDT)
+In-Reply-To: <1464338208-8105-6-git-send-email-wxt@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Steven Miao <realmz6@gmail.com>
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@google.com>, linux-rockchip@lists.infradead.org, Eddie Cai <cf@rock-chips.com>, Tao Huang <huangtao@rock-chips.com>, dmitry.torokhov@gmail.com, javi.merino@arm.com, peter@piie.net, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On Thu, Jun 2, 2016 at 5:42 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 2 June 2016 at 20:38, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Thu, Jun 2, 2016 at 4:19 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> Hi Rafael,
->>>
->>> This series fixes all cpufreq drivers that provide a 'target_index'
->>> callback or in other words, which provide a freq-table to cpufreq core,
->>> to make sure they *only* use the 'index' argument to ->target_index()
->>> with the policy->freq_table.
->>>
->>> This change allows us to remove the (duplicate) sorted-freq-table, which
->>> was added by following series:
->>>
->>> [PATCH V2 0/2] cpufreq: Use sorted frequency tables
->>
->> Which I'm not going to apply.
->>
->> If this series depended on that one, please rework it.
+On Fri, May 27, 2016 at 1:36 AM, Caesar Wang <wxt@rock-chips.com> wrote:
+> Whenever the current temperature is updated, the trip points immediately
+> below and above the current temperature are found. A sensor driver
+> callback `set_trips' is then called with the temperatures.
+> Lastly, The sensor will trigger the hardware high temperature interrupts
+> to increase the sampleing rate and throttle frequency to limit the
+> temperature rising When performing passive cooling.
 >
-> Hi Rafael,
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: linux-pm@vger.kernel.org
 >
-> The first 9 patches can be applied without any dependency
-> on the earlier series, but not the last two.
+> ---
 >
-> The target of this series is to make freq-table lookup faster
-> and so most of its patches would make sense only if we
-> are trying to solve that problem. Otherwise they may not
-> be required at all.
+> Changes in v4: None
+> Changes in v3: None
+> Changes in v2: None
+>
+>  drivers/thermal/rockchip_thermal.c | 39 ++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 39 insertions(+)
+>
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index 86a1ab0..39e2eec 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -96,6 +96,7 @@ struct chip_tsadc_table {
+>   * @initialize: SoC special initialize tsadc controller method
+>   * @irq_ack: clear the interrupt
+>   * @get_temp: get the temperature
+> + * @set_alarm_temp: set the high temperature interrupt
+>   * @set_tshut_temp: set the hardware-controlled shutdown temperature
+>   * @set_tshut_mode: set the hardware-controlled shutdown mode
+>   * @table: the chip-specific conversion table
+> @@ -119,6 +120,8 @@ struct rockchip_tsadc_chip {
+>         /* Per-sensor methods */
+>         int (*get_temp)(struct chip_tsadc_table table,
+>                         int chn, void __iomem *reg, int *temp);
+> +       void (*set_alarm_temp)(struct chip_tsadc_table table,
+> +                              int chn, void __iomem *reg, int temp);
+>         void (*set_tshut_temp)(struct chip_tsadc_table table,
+>                                int chn, void __iomem *reg, int temp);
+>         void (*set_tshut_mode)(int chn, void __iomem *reg, enum tshut_mode m);
+> @@ -183,6 +186,7 @@ struct rockchip_thermal_data {
+>  #define TSADCV2_INT_EN                         0x08
+>  #define TSADCV2_INT_PD                         0x0c
+>  #define TSADCV2_DATA(chn)                      (0x20 + (chn) * 0x04)
+> +#define TSADCV2_COMP_INT(chn)                  (0x30 + (chn) * 0x04)
+>  #define TSADCV2_COMP_SHUT(chn)                 (0x40 + (chn) * 0x04)
+>  #define TSADCV2_HIGHT_INT_DEBOUNCE             0x60
+>  #define TSADCV2_HIGHT_TSHUT_DEBOUNCE           0x64
+> @@ -628,6 +632,20 @@ static int rk_tsadcv2_get_temp(struct chip_tsadc_table table,
+>         return rk_tsadcv2_code_to_temp(table, val, temp);
+>  }
+>
+> +static void rk_tsadcv2_alarm_temp(struct chip_tsadc_table table,
+> +                                 int chn, void __iomem *regs, int temp)
+> +{
+> +       u32 alarm_value, int_en;
+> +
+> +       alarm_value = rk_tsadcv2_temp_to_code(table, temp);
+> +       writel_relaxed(alarm_value & table.data_mask,
+> +                      regs + TSADCV2_COMP_INT(chn));
+> +
+> +       int_en = readl_relaxed(regs + TSADCV2_INT_EN);
+> +       int_en |= TSADCV2_INT_SRC_EN(chn);
+> +       writel_relaxed(int_en, regs + TSADCV2_INT_EN);
+> +}
+> +
+>  static void rk_tsadcv2_tshut_temp(struct chip_tsadc_table table,
+>                                   int chn, void __iomem *regs, int temp)
+>  {
+> @@ -670,6 +688,7 @@ static const struct rockchip_tsadc_chip rk3228_tsadc_data = {
+>         .irq_ack = rk_tsadcv3_irq_ack,
+>         .control = rk_tsadcv3_control,
+>         .get_temp = rk_tsadcv2_get_temp,
+> +       .set_alarm_temp = rk_tsadcv2_alarm_temp,
+>         .set_tshut_temp = rk_tsadcv2_tshut_temp,
+>         .set_tshut_mode = rk_tsadcv2_tshut_mode,
+>
+> @@ -694,6 +713,7 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
+>         .irq_ack = rk_tsadcv2_irq_ack,
+>         .control = rk_tsadcv2_control,
+>         .get_temp = rk_tsadcv2_get_temp,
+> +       .set_alarm_temp = rk_tsadcv2_alarm_temp,
+>         .set_tshut_temp = rk_tsadcv2_tshut_temp,
+>         .set_tshut_mode = rk_tsadcv2_tshut_mode,
+>
+> @@ -718,6 +738,7 @@ static const struct rockchip_tsadc_chip rk3366_tsadc_data = {
+>         .irq_ack = rk_tsadcv3_irq_ack,
+>         .control = rk_tsadcv3_control,
+>         .get_temp = rk_tsadcv2_get_temp,
+> +       .set_alarm_temp = rk_tsadcv2_alarm_temp,
+>         .set_tshut_temp = rk_tsadcv2_tshut_temp,
+>         .set_tshut_mode = rk_tsadcv2_tshut_mode,
+>
+> @@ -742,6 +763,7 @@ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
+>         .irq_ack = rk_tsadcv2_irq_ack,
+>         .control = rk_tsadcv2_control,
+>         .get_temp = rk_tsadcv2_get_temp,
+> +       .set_alarm_temp = rk_tsadcv2_alarm_temp,
+>         .set_tshut_temp = rk_tsadcv2_tshut_temp,
+>         .set_tshut_mode = rk_tsadcv2_tshut_mode,
+>
+> @@ -766,6 +788,7 @@ static const struct rockchip_tsadc_chip rk3399_tsadc_data = {
+>         .irq_ack = rk_tsadcv3_irq_ack,
+>         .control = rk_tsadcv3_control,
+>         .get_temp = rk_tsadcv2_get_temp,
+> +       .set_alarm_temp = rk_tsadcv2_alarm_temp,
+>         .set_tshut_temp = rk_tsadcv2_tshut_temp,
+>         .set_tshut_mode = rk_tsadcv2_tshut_mode,
+>
+> @@ -826,6 +849,21 @@ static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
+>         return IRQ_HANDLED;
+>  }
+>
+> +static int rockchip_thermal_set_trips(void *_sensor, int low, int high)
+> +{
+> +       struct rockchip_thermal_sensor *sensor = _sensor;
+> +       struct rockchip_thermal_data *thermal = sensor->thermal;
+> +       const struct rockchip_tsadc_chip *tsadc = thermal->chip;
+> +
+> +       dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %d, high %d\n",
+> +               __func__, sensor->id, low, high);
+> +
+> +       tsadc->set_alarm_temp(tsadc->table,
+> +                             sensor->id, thermal->regs, high);
+> +
+> +       return 0;
+> +}
+> +
+>  static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
+>  {
+>         struct rockchip_thermal_sensor *sensor = _sensor;
+> @@ -843,6 +881,7 @@ static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
+>
+>  static const struct thermal_zone_of_device_ops rockchip_of_thermal_ops = {
+>         .get_temp = rockchip_thermal_get_temp,
+> +       .set_trips = rockchip_thermal_set_trips,
+>  };
+>
+>  static int rockchip_configure_from_dt(struct device *dev,
+> --
+> 1.9.1
+>
 
-Well, in that case I'm not sure about them.
+Tested-by: Stephen Barber <smbarber@chromium.org>
 
-> I hope that you will be replying to the earlier series [1] as well,
-> to convey the concerns you have with it.
-
-Oh, that's very simple: I don't see a reason to apply that series.
-
-Quoting from this very cover letter "This change allows us to remove
-the (duplicate) sorted-freq-table, which
-was added by following series:", so why to add it in the first place?
-
-Besides, there already is a number of tables (per policy which in some
-important cases pretty much means per CPU) in cpufreq that contain
-more-or-less the same information.  For example, if acpi-cpufreq is in
-use, the ACPI layer has a table coming from _PSS, the driver creates
-freq_table to pass to the core and there is an additional one for the
-stats.  And your series adds one more just so it is ordered.  Come on.
-
-If you want to clean that up, fine, but please don't do that in a
-hurry.  Let's talk about it a bit more without sending any more
-patches in that area for the time being.
-
-At this point, I'm lost in the patches you've been sending for the
-last couple of days.  I don't know what depends on what, what will be
-updated and so on and quite frankly I don't really have the time to
-figure that out.  Overall, the most recent burst of activity regarding
-the sorting of frequency tables hasn't been very helpful from my
-perspective.
-
-If you have cleanups that look obvious and don't interfere with
-anything already posted by Steve, please send them *again* in one
-ordered series and let everybody know whom you would like to apply
-them etc.
-
-And now I'm going to look at the Steve's patches again and start over
-from there.
-
-Thanks,
-Rafael
+Steve
