@@ -1,59 +1,69 @@
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-Subject: Re: [PATCH v7 1/6] mfd: max8997: Use regmap to access registers
-Date: Thu, 02 Jun 2016 09:08:54 +0200
-Message-ID: <574FDB86.2070107@samsung.com>
-References: <1464773339-756-1-git-send-email-k.kozlowski@samsung.com>
- <1464774841-1439-1-git-send-email-k.kozlowski@samsung.com>
- <574EC8EE.5000509@samsung.com> <574FB967.7090201@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <574FB967.7090201@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Kukjin Kim <kgene@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, r.baldyga@hackerion.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: [PATCH v6 3/5] PCI: Power on bridges before scanning new devices
+Date: Thu,  2 Jun 2016 11:17:13 +0300
+Message-ID: <1464855435-32960-4-git-send-email-mika.westerberg@linux.intel.com>
+References: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Peter Wu <peter@lekensteyn.nl>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/02/2016 06:43 AM, Krzysztof Kozlowski wrote:
-> On 06/01/2016 01:37 PM, Jacek Anaszewski wrote:
->> Hi Krzysztof,
->>
->> One thing drew my attention while reviewing this again:
->> max8997_led_brightness_set() can sleep, but the brightness_set
->> op it is assigned to must not sleep. At the time when this driver was
->> merged we were delegating brightness setting to workqueues task
->> in LED class drivers that can sleep during this call.
->> This must have been overlooked, which is even more likely, taking into
->> account that the initial patch doesn't have LED maintainer's ack.
->>
->> The non-sleeping requirement is motivated by the fact that brightness
->> can be set from softirq context, e.g. when timer trigger is enabled.
->>
->> Currently LED class drivers don't have to use workqueue on their own,
->> but are required to use brightness_set_blocking op instead of
->> brightness_set if they can sleep while setting brightness.
->>
->> Apart of that, I think that operations in max8997_led_brightness_set()
->> should be protected with mutex to assure leaving the device in
->> a consistent state in case of concurrent calls.
->>
->> I am aware that this is out of this patch scope, but I'd be grateful
->> if you could apply those changes and test them on hardware if you have
->> an access to.
->
-> The problem you mention existed before the patch. It was using sleeping
-> primitives (mutex) before adding regmap so I understand you don't have
-> anything against this patch, right?
+When a PCI device is removed through sysfs interface the upstream bridge
+(PCIe port) can be runtime suspended if it was the last device on that bus.
+Now, if the bridge is in D3 we cannot find devices below the bridge
+anymore.  For example following fails to find the removed device again:
 
-Right, I just wanted to indicate the problem. The patch itself is ok.
+  # echo 1 > /sys/bus/pci/devices/0000:00:01.0/0000:01:00.0/remove
+  # echo 1 > /sys/bus/pci/devices/0000:00:01.0/rescan
 
-> I can fix the issue but it will be a little bit trickier because I don't
-> have the hardware. Other guys in the team tested the patchset for me so
-> I rely on them in that matter. Anyway I'll work on it.
+Where 0000:00:01.0 is the bridge device.
 
-Ack.
+In order to be able to rescan devices below the bridge add
+pm_runtime_get_sync()/pm_runtime_put() calls to pci_scan_bridge().  This
+should keep bridges powered on while their children devices are being
+scanned.
 
+Reported-by: Peter Wu <peter@lekensteyn.nl>
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+---
+ drivers/pci/probe.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 8e3ef720997d..11a802daf242 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -16,6 +16,7 @@
+ #include <linux/aer.h>
+ #include <linux/acpi.h>
+ #include <linux/irqdomain.h>
++#include <linux/pm_runtime.h>
+ #include "pci.h"
+ 
+ #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
+@@ -832,6 +833,12 @@ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max, int pass)
+ 	u8 primary, secondary, subordinate;
+ 	int broken = 0;
+ 
++	/*
++	 * Make sure the bridge is powered on to be able to access config
++	 * space of devices below it.
++	 */
++	pm_runtime_get_sync(&dev->dev);
++
+ 	pci_read_config_dword(dev, PCI_PRIMARY_BUS, &buses);
+ 	primary = buses & 0xFF;
+ 	secondary = (buses >> 8) & 0xFF;
+@@ -1012,6 +1019,8 @@ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max, int pass)
+ out:
+ 	pci_write_config_word(dev, PCI_BRIDGE_CONTROL, bctl);
+ 
++	pm_runtime_put(&dev->dev);
++
+ 	return max;
+ }
+ EXPORT_SYMBOL(pci_scan_bridge);
 -- 
-Best regards,
-Jacek Anaszewski
+2.8.1
