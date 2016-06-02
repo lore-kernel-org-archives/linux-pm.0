@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 06/11] cpufreq: exynos: Use 'index' only to index into policy->freq_table
-Date: Thu,  2 Jun 2016 19:49:06 +0530
-Message-ID: <110d79013778c722a0196af48023ff21aef45726.1464876460.git.viresh.kumar@linaro.org>
+Subject: [PATCH 04/11] cpufreq: blackfin: Use 'index' only to index into policy->freq_table
+Date: Thu,  2 Jun 2016 19:49:04 +0530
+Message-ID: <0c0eeeb6f48488bb7459f08a0819280f991e785f.1464876460.git.viresh.kumar@linaro.org>
 References: <cover.1464876460.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1464876460.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1464876460.git.viresh.kumar@linaro.org>
 References: <cover.1464876460.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Steven Miao <realmz6@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Shawn Guo <shawn.guo@freescale.com>
 List-Id: linux-pm@vger.kernel.org
 
 Later patches would make changes in cpufreq core, after which
@@ -20,46 +20,56 @@ To prepare for that, use policy->freq_table[index].driver_data for other
 driver specific usage of 'index'. The 'driver_data' fields are already
 set properly by the driver.
 
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Steven Miao <realmz6@gmail.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/exynos5440-cpufreq.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/cpufreq/blackfin-cpufreq.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index 085f07d31ef0..6138cbb7594e 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -210,7 +210,7 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
+diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
+index 1650c213f465..101daa851c81 100644
+--- a/drivers/cpufreq/blackfin-cpufreq.c
++++ b/drivers/cpufreq/blackfin-cpufreq.c
+@@ -135,6 +135,7 @@ static int bfin_target(struct cpufreq_policy *policy, unsigned int index)
+ 	static unsigned long lpj_ref;
+ 	static unsigned int  lpj_ref_freq;
+ 	unsigned int old_freq, new_freq;
++	int dpm_index;
+ 	int ret = 0;
  
- static int exynos_target(struct cpufreq_policy *policy, unsigned int index)
- {
--	unsigned int tmp;
-+	unsigned int tmp, rindex;
- 	int i;
- 
- 	mutex_lock(&cpufreq_lock);
-@@ -218,13 +218,19 @@ static int exynos_target(struct cpufreq_policy *policy, unsigned int index)
- 	freqs.old = policy->cur;
- 	freqs.new = policy->freq_table[index].frequency;
+ #if defined(CONFIG_CYCLES_CLOCKSOURCE)
+@@ -144,8 +145,14 @@ static int bfin_target(struct cpufreq_policy *policy, unsigned int index)
+ 	old_freq = bfin_getfreq_khz(0);
+ 	new_freq = policy->freq_table[index].frequency;
  
 +	/*
 +	 * policy->freq_table may be sorted differently, get the index value we
 +	 * are concerned about.
 +	 */
-+	rindex = policy->freq_table[index].driver_data;
++	dpm_index = policy->freq_table[index].driver_data;
 +
- 	cpufreq_freq_transition_begin(policy, &freqs);
- 
- 	/* Set the target frequency in all C0_3_PSTATE register */
- 	for_each_cpu(i, policy->cpus) {
- 		tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
- 		tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
--		tmp |= (index << C0_3_PSTATE_NEW_SHIFT);
-+		tmp |= (rindex << C0_3_PSTATE_NEW_SHIFT);
- 
- 		__raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
+ #ifndef CONFIG_BF60x
+-	plldiv = (bfin_read_PLL_DIV() & SSEL) | dpm_state_table[index].csel;
++	plldiv = (bfin_read_PLL_DIV() & SSEL) | dpm_state_table[dpm_index].csel;
+ 	bfin_write_PLL_DIV(plldiv);
+ #else
+ 	ret = cpu_set_cclk(policy->cpu, new_freq * 1000);
+@@ -154,13 +161,13 @@ static int bfin_target(struct cpufreq_policy *policy, unsigned int index)
+ 		return ret;
  	}
+ #endif
+-	on_each_cpu(bfin_adjust_core_timer, &index, 1);
++	on_each_cpu(bfin_adjust_core_timer, &dpm_index, 1);
+ #if defined(CONFIG_CYCLES_CLOCKSOURCE)
+ 	cycles = get_cycles();
+ 	SSYNC();
+ 	cycles += 10; /* ~10 cycles we lose after get_cycles() */
+-	__bfin_cycles_off += (cycles << __bfin_cycles_mod) - (cycles << index);
+-	__bfin_cycles_mod = index;
++	__bfin_cycles_off += (cycles << __bfin_cycles_mod) - (cycles << dpm_index);
++	__bfin_cycles_mod = dpm_index;
+ #endif
+ 	if (!lpj_ref_freq) {
+ 		lpj_ref = loops_per_jiffy;
 -- 
 2.7.1.410.g6faf27b
