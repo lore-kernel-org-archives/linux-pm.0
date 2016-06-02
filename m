@@ -1,61 +1,53 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: [PATCH 01/20] x86, intel: Introduce macros for Intel family
- numbers
-Date: Thu, 2 Jun 2016 14:45:57 -0700
-Message-ID: <20160602214557.GB1975@f23x64.localdomain>
-References: <20160602001157.D8BE59D7@viggo.jf.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] Revert "cpufreq: intel_pstate: Enable PPC enforcement for servers"
+Date: Fri, 03 Jun 2016 00:00:31 +0200
+Message-ID: <2942391.Y8jFCPZgiC@vostro.rjw.lan>
+References: <1464828117-6534-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160602001157.D8BE59D7@viggo.jf.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Dave Hansen <dave@sr71.net>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, dave.hansen@linux.intel.com, adrian.hunter@intel.com, ak@linux.intel.com, luto@kernel.org, bp@alien8.de, dougthompson@xmission.com, edubezval@gmail.com, hpa@zytor.com, mingo@redhat.com, jacob.jun.pan@linux.intel.com, kan.liang@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, mchehab@osg.samsung.com, peterz@infradead.org, platform-driver-x86@vger.kernel.org, rafael.j.wysocki@intel.com, rajneesh.bhardwaj@intel.com, souvik.k.chakravarty@intel.com, srinivas.pandruvada@linux.intel.com, eranian@google.com, tglx@linutronix.de, tony.luck@intel.com, ulf.hansson@linaro.org, viresh.kumar@linaro.org, vishwanath.somayaji@intel.com, zheng.z.yan@intel.com, rui.zhang@intel.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:65147 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932826AbcFBV4j (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 17:56:39 -0400
+In-Reply-To: <1464828117-6534-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: linux-pm@vger.kernel.org
 
-On Wed, Jun 01, 2016 at 05:11:57PM -0700, Dave Hansen wrote:
+On Wednesday, June 01, 2016 05:41:57 PM Srinivas Pandruvada wrote:
+> This change reverts
+> 'commit 2b3ec7650584 ("cpufreq: intel_pstate: Enable PPC enforcement for
+> servers")'
 > 
-> From: Dave Hansen <dave.hansen@linux.intel.com>
+> Intel P State uses max P-State as the max turbo P-State. This max P-State
+> can be limited by ACPI _PSS table entry 0. After
+> 'commit 9522a2ff9cde ("cpufreq: intel_pstate: Enforce _PPC limits")''
+> the _PSS table entry[0] will be used to cap max performance for
+> enterprise and performance server by default.
 > 
-> If you are cc'd on this code, please check _your_ code vs. the
-> model list in "intel-family.h".  Please make sure you have all
-> the models listed that you intend to.
+> Even though this is correct processing, but when the performance results
+> are compared with the version before the above commit, then obviously the
+> results will be worse, if the _PSS table entry 0 is not the max turbo
+> P-State.
 > 
-> Problem:
+> So to minimize impact on performance, this revert will disable the default
+> enforcement of ACPI _PSS and ACPI _PPC. So this feature can only only be
+> explicitly activated by kernel command line
+> intel_pstate=support_acpi_ppc
 > 
-> We have a boatload of open-coded family-6 model numbers.  Half of
-> them have these model numbers in hex and the other half in
-> decimal.  This makes grepping for them tons of fun, if you were
-> to try.
-> 
-> Solution:
-> 
-> Consolidate all the magic numbers.  Put all the definitions in
-> one header.
-> 
-> The names here are closely derived from the comments describing
-> the models from arch/x86/events/intel/core.c.  We could easily
-> make them shorter by doing things like s/SANDYBRIDGE/SNB/, but
-> they seemed fine even with the longer versions to me.
-> 
-> Do not take any of these names too literally, like "DESKTOP"
-> or "MOBILE".  These are all colloquial names and not precise
-> descriptions of everywhere a given model will show up.
-> 
-> Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-> Cc: Adrian Hunter <adrian.hunter@intel.com>
-> Cc: Andi Kleen <ak@linux.intel.com>
-> Cc: Andy Lutomirski <luto@kernel.org>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Cc: Darren Hart <dvhart@infradead.org>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-For platform/drivers/x86:
+Thanks for the revert, but I'm wondering if we can explore one more option.
 
-Magic number to macro mapping verified.
+Namely, if _PSS doesn't contain the turbo state, but we know the turbo range is
+there from the CPU, we can still use it and interpret _PPC for the max state as
+a permission to go into the turbo range.
 
-Acked-by: Darren Hart <dvhart@linux.intel.com>
+What do you think?
 
--- 
-Darren Hart
-Intel Open Source Technology Center
+Thanks,
+Rafael
+
