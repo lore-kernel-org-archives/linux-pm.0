@@ -1,47 +1,88 @@
-From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 5/5] intel_idle: Add S0ix validation
-Date: Thu, 2 Jun 2016 20:53:38 +0100
-Message-ID: <20160602205338.4a16760a@lxorguk.ukuu.org.uk>
-References: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
-	<1464842009-21789-6-git-send-email-dbasehore@chromium.org>
-	<20160602092505.GQ3206@twins.programming.kicks-ass.net>
-	<20160602142318.2c9d2111@lxorguk.ukuu.org.uk>
-	<CAGAzgspC49xNXPsV-WCT-xqVJGfNGeHkhYYLfZSTfBtjddVm8A@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 00/11] cpufreq: Keep policy->freq_table sorted
+Date: Thu, 2 Jun 2016 22:35:21 +0200
+Message-ID: <CAJZ5v0h23n7k66fRdmARXStOYFVTpVSQQVa1bN3YixehG=eD4w@mail.gmail.com>
+References: <cover.1464876460.git.viresh.kumar@linaro.org>
+	<CAJZ5v0hF5vk_KPCu0xrRA3mzRBGqW4wtPODkCRk47_n5h_y7jw@mail.gmail.com>
+	<CAKohpokG3P4PmmGVD7PcEMramLUv5yrhPY4MkEif3QH0e7EySA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:35640 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbcFBTyQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 15:54:16 -0400
-In-Reply-To: <CAGAzgspC49xNXPsV-WCT-xqVJGfNGeHkhYYLfZSTfBtjddVm8A@mail.gmail.com>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:35748 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932593AbcFBUfX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 16:35:23 -0400
+In-Reply-To: <CAKohpokG3P4PmmGVD7PcEMramLUv5yrhPY4MkEif3QH0e7EySA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "dbasehore ." <dbasehore@chromium.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Steven Miao <realmz6@gmail.com>
 
-> How would this spuriously trigger during boot? This code is only run
-> during freeze. If there's some issue with not entering S0ix before a
-> module or firmware is loaded, it's better to not use suspend to idle
-> until those are in place.
+On Thu, Jun 2, 2016 at 5:42 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 2 June 2016 at 20:38, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Thu, Jun 2, 2016 at 4:19 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> Hi Rafael,
+>>>
+>>> This series fixes all cpufreq drivers that provide a 'target_index'
+>>> callback or in other words, which provide a freq-table to cpufreq core,
+>>> to make sure they *only* use the 'index' argument to ->target_index()
+>>> with the policy->freq_table.
+>>>
+>>> This change allows us to remove the (duplicate) sorted-freq-table, which
+>>> was added by following series:
+>>>
+>>> [PATCH V2 0/2] cpufreq: Use sorted frequency tables
+>>
+>> Which I'm not going to apply.
+>>
+>> If this series depended on that one, please rework it.
+>
+> Hi Rafael,
+>
+> The first 9 patches can be applied without any dependency
+> on the earlier series, but not the last two.
+>
+> The target of this series is to make freq-table lookup faster
+> and so most of its patches would make sense only if we
+> are trying to solve that problem. Otherwise they may not
+> be required at all.
 
-Ok yes you are correct it's not likely to trigger during boot (although
-if you close the lid during boot...)
+Well, in that case I'm not sure about them.
 
-> I'm not familiar with the ISH driver. How does it prevent entry into
-> S0ix? I would argue that you don't want to use suspend to idle on a
-> Skylake system that can't enter S0ix and instead use suspend to RAM.
+> I hope that you will be replying to the earlier series [1] as well,
+> to convey the concerns you have with it.
 
-Several IP blocks on the systems do their own power management if present
-and enabled by the firmware. If they do not have drivers loaded then you
-will not be able to enter some power states. Thus you'll now get warnings
-if you try to freeze such a system and those warnings are not themselves
-terribly helpful to a user.
+Oh, that's very simple: I don't see a reason to apply that series.
 
-It's a good debug feature, but it doesn't belong anywhere but debug menus
-and off by default. If you want to ship it enabled in ChromeOS for
-product fine, but I don't think it belongs on for everywhere and
-everything.
+Quoting from this very cover letter "This change allows us to remove
+the (duplicate) sorted-freq-table, which
+was added by following series:", so why to add it in the first place?
 
-Alan
+Besides, there already is a number of tables (per policy which in some
+important cases pretty much means per CPU) in cpufreq that contain
+more-or-less the same information.  For example, if acpi-cpufreq is in
+use, the ACPI layer has a table coming from _PSS, the driver creates
+freq_table to pass to the core and there is an additional one for the
+stats.  And your series adds one more just so it is ordered.  Come on.
+
+If you want to clean that up, fine, but please don't do that in a
+hurry.  Let's talk about it a bit more without sending any more
+patches in that area for the time being.
+
+At this point, I'm lost in the patches you've been sending for the
+last couple of days.  I don't know what depends on what, what will be
+updated and so on and quite frankly I don't really have the time to
+figure that out.  Overall, the most recent burst of activity regarding
+the sorting of frequency tables hasn't been very helpful from my
+perspective.
+
+If you have cleanups that look obvious and don't interfere with
+anything already posted by Steve, please send them *again* in one
+ordered series and let everybody know whom you would like to apply
+them etc.
+
+And now I'm going to look at the Steve's patches again and start over
+from there.
+
+Thanks,
+Rafael
