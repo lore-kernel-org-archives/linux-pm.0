@@ -1,92 +1,86 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] Revert "cpufreq: intel_pstate: Enable PPC enforcement for servers"
-Date: Wed,  1 Jun 2016 17:41:57 -0700
-Message-ID: <1464828117-6534-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/2] cpufreq: Use sorted frequency tables
+Date: Thu, 2 Jun 2016 06:55:46 +0530
+Message-ID: <20160602012546.GU3725@vireshk-i7>
+References: <cover.1464694144.git.viresh.kumar@linaro.org>
+ <CAJZ5v0ig61Q+EDjjcyHef5e9B4dKY+BhF802uV61w-G5CdRQvA@mail.gmail.com>
+ <20160601104243.GL3725@vireshk-i7>
+ <73262725.a4M1UCMWse@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:34679 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751451AbcFBAkn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 1 Jun 2016 20:40:43 -0400
+Received: from mail-pf0-f171.google.com ([209.85.192.171]:33107 "EHLO
+	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751665AbcFBBZu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 21:25:50 -0400
+Received: by mail-pf0-f171.google.com with SMTP id b124so24462872pfb.0
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2016 18:25:50 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <73262725.a4M1UCMWse@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Steve Muckle <smuckle@linaro.org>
 
-This change reverts
-'commit 2b3ec7650584 ("cpufreq: intel_pstate: Enable PPC enforcement for
-servers")'
+On 01-06-16, 18:37, Rafael J. Wysocki wrote:
+> On Wednesday, June 01, 2016 04:12:43 PM Viresh Kumar wrote:
+> > On 01-06-16, 00:50, Rafael J. Wysocki wrote:
+> > > I'm not particularly liking this due to the possible confusion that
+> > > may result from it.
+> > 
+> > I have gotten rid of most of it now in V2.
+> > 
+> > > Perhaps we can require drivers implementing ->fast_switch to sort
+> > > their frequency tables to start with?
+> > 
+> > I wasn't *only* concerned about the fast-switch case, but the case of
+> > normal governors that we use today. After all that's what everybody is
+> > using right now.
+> 
+> Sure, but the "to start with" part of my question was essential.
 
-Intel P State uses max P-State as the max turbo P-State. This max P-State
-can be limited by ACPI _PSS table entry 0. After
-'commit 9522a2ff9cde ("cpufreq: intel_pstate: Enforce _PPC limits")''
-the _PSS table entry[0] will be used to cap max performance for
-enterprise and performance server by default.
+We can make that a requirement, but I am not sure if that will help us
+much. I want to use the same routines for the target_index() callbacks
+and the fast_switch() ones.
 
-Even though this is correct processing, but when the performance results
-are compared with the version before the above commit, then obviously the
-results will be worse, if the _PSS table entry 0 is not the max turbo
-P-State.
+And that's what I have done in V2 of this series.
 
-So to minimize impact on performance, this revert will disable the default
-enforcement of ACPI _PSS and ACPI _PPC. So this feature can only only be
-explicitly activated by kernel command line
-intel_pstate=support_acpi_ppc
+> The ordering didn't matter before, so drivers may do silly things related
+> to it
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- Documentation/kernel-parameters.txt |  5 +----
- drivers/cpufreq/intel_pstate.c      | 15 +--------------
- 2 files changed, 2 insertions(+), 18 deletions(-)
+Yes they do and that's why I couldn't get rid of policy->freq_table
+for now. Though I have plans to sort that out.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 82b42c9..b7c3a56 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1683,10 +1683,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			Only load intel_pstate on systems which support
- 			hardware P state control (HWP) if available.
- 		support_acpi_ppc
--			Enforce ACPI _PPC performance limits. If the Fixed ACPI
--			Description Table, specifies preferred power management
--			profile as "Enterprise Server" or "Performance Server",
--			then this feature is turned on by default.
-+			Enforce ACPI _PPC performance limits.
- 
- 	intremap=	[X86-64, Intel-IOMMU]
- 			on	enable Interrupt Remapping (default)
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 3a9c432..518537c 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -362,16 +362,6 @@ static struct perf_limits *limits = &powersave_limits;
- #endif
- 
- #ifdef CONFIG_ACPI
--
--static bool intel_pstate_get_ppc_enable_status(void)
--{
--	if (acpi_gbl_FADT.preferred_profile == PM_ENTERPRISE_SERVER ||
--	    acpi_gbl_FADT.preferred_profile == PM_PERFORMANCE_SERVER)
--		return true;
--
--	return acpi_ppc;
--}
--
- /*
-  * The max target pstate ratio is a 8 bit value in both PLATFORM_INFO MSR and
-  * in TURBO_RATIO_LIMIT MSR, which pstate driver stores in max_pstate and
-@@ -395,10 +385,7 @@ static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
- 	int ret;
- 	int i;
- 
--	if (hwp_active)
--		return;
--
--	if (!intel_pstate_get_ppc_enable_status())
-+	if (!acpi_ppc || hwp_active)
- 		return;
- 
- 	cpu = all_cpu_data[policy->cpu];
+> and those may break if we try to change the rules wholesale.
+
+Yes. But the V2 of this series isn't making any such change. Just that
+we are keeping a backup sorted table (which drivers wouldn't know
+about) to find the right match. We will still keep passing the index
+to their *unsorted* tables in target_index() for example.
+
+> In turn, if the (prospective) ->fast_switch users are required to clean up
+> their stuff while working on implementig it, we could avoid that breakage,
+> or at least some of it.
+
+I understand your point of view, but I think V2 is sorting all that
+out without breaking anything at all.
+
+> > > Or maybe make the core check
+> > > whether or not the table is sorted
+> > 
+> > Platforms are already broken for this, and so wouldn't be possible to
+> > check for existing governors.
+> 
+> I really don't know what you wanted to say here.
+
+Oh, I was saying that existing drivers of course don't guarantee that
+today, and if we want to make the search fast for existing governors,
+we wouldn't be able to do it for all.
+
+> Anyway, I agree that using one ordering would be cleaner, but I'm sort of
+> concerned about how painful the switch-over may be to the users.
+
+They wouldn't notice at all. V2 handles that properly.
+
 -- 
-2.5.5
-
+viresh
