@@ -1,43 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 2/2] cpufreq: Optimize cpufreq_frequency_table_target()
-Date: Thu, 2 Jun 2016 06:59:04 +0530
-Message-ID: <20160602012904.GV3725@vireshk-i7>
-References: <cover.1464777376.git.viresh.kumar@linaro.org>
- <120ed8a873b6df2ccc9406eeec8f8f74e5f9b0d5.1464777376.git.viresh.kumar@linaro.org>
- <20160601194615.GQ9864@graphite.smuckle.net>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v3 09/12] EXAMPLE CODE: usb: port: Parse pwrseq phandle
+ from Device Tree
+Date: Thu, 2 Jun 2016 09:24:19 +0800
+Message-ID: <20160602012419.GA7953@shlinux2>
+References: <1464768141-25420-1-git-send-email-k.kozlowski@samsung.com>
+ <1464768141-25420-10-git-send-email-k.kozlowski@samsung.com>
+ <146477144362.1485.3331887341591876278@sboyd-linaro>
+ <20160601120520.GB16740@shlinux2>
+ <146480499491.3686.4996610748316511864@sboyd-linaro>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:35031 "EHLO
+	mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752007AbcFBB3y (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 21:29:54 -0400
 Content-Disposition: inline
-In-Reply-To: <20160601194615.GQ9864@graphite.smuckle.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+In-Reply-To: <146480499491.3686.4996610748316511864@sboyd-linaro>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <stephen.boyd@linaro.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 
-On 01-06-16, 12:46, Steve Muckle wrote:
-> >  	/*
-> >  	 * Find the closest frequency above target_freq.
-> > -	 *
-> > -	 * The table is sorted in the reverse order with respect to the
-> > -	 * frequency and all of the entries are valid (see the initialization).
-> >  	 */
-> > -	entry = policy->freq_table;
-> > -	do {
-> > -		entry++;
-> > -		freq = entry->frequency;
-> > -	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
-> > -	entry--;
-> > +	index = cpufreq_frequency_table_target(policy, target_freq,
-> > +					       CPUFREQ_RELATION_L);
+On Wed, Jun 01, 2016 at 11:16:34AM -0700, Stephen Boyd wrote:
+> Quoting Peter Chen (2016-06-01 05:05:20)
+> > On Wed, Jun 01, 2016 at 01:57:23AM -0700, Stephen Boyd wrote:
+> > > Quoting Krzysztof Kozlowski (2016-06-01 01:02:18)
+> > > > Parse usb-pwrseq property from Device Tree to get the phandle to pwrseq
+> > > > device.  The pwrseq device will be used by USB hub to cycle the power
+> > > > before activating ports.
+> > > > 
+> > > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > > 
+> > > Drive by review comment.
+> > > 
+> > > I was hoping this would help me with a problem I'm having where I have a
+> > > hub (smsc4604) that needs to be taken out of reset before my HSIC
+> > > controller sends a USB reset to it, but it seems this is more about
+> > > doing some sort of power on sequence after enumeration?
+> > > 
+> > 
+> > No, you may need to do reset before enumeration, the general purpose of
+> > reset is eliminate unstable hardware state, and let the controller find
+> > the device.
+> > 
+> > Try to do it at bootloader to see if it works for you.
+> > 
 > 
-> This adds a function call to the fast path...
+> Sorry the bootloader doesn't do this so that doesn't work for me.
 
-I understand that, but I am not sure how far should we go to avoid
-that. Open coding routines to save on that isn't a good idea surely.
-
-I have at least kept this routine in cpufreq.h to avoid a call, but
-eventually we will have at least a call somewhere within it. :(
+I mean try to see if the HUB can work if you reset it at bootloader.
+If it works, it means you need to do reset before enumeration, and you
+don't need to do anything after enumeration.
 
 -- 
-viresh
+
+Best Regards,
+Peter Chen
