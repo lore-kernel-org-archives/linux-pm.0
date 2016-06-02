@@ -1,91 +1,65 @@
-From: James Morse <james.morse@arm.com>
-Subject: [PATCH 3/5] PM / Hibernate: Allow architectures to specify the hibernate/resume CPU
-Date: Thu,  2 Jun 2016 15:10:55 +0100
-Message-ID: <1464876657-6692-4-git-send-email-james.morse@arm.com>
-References: <1464876657-6692-1-git-send-email-james.morse@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:45226 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932126AbcFBONO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 Jun 2016 10:13:14 -0400
-In-Reply-To: <1464876657-6692-1-git-send-email-james.morse@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 06/11] cpufreq: exynos: Use 'index' only to index into policy->freq_table
+Date: Thu,  2 Jun 2016 19:49:06 +0530
+Message-ID: <110d79013778c722a0196af48023ff21aef45726.1464876460.git.viresh.kumar@linaro.org>
+References: <cover.1464876460.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1464876460.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1464876460.git.viresh.kumar@linaro.org>
+References: <cover.1464876460.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, James Morse <james.morse@arm.com>, linux-pm@vger.kernel.org
 
-On arm64 the cpu with logical id 0 is assumed to be the boot CPU. If a
-user hotplugs this CPU out, then uses kexec to boot a new kernel, the new
-kernel will assign logical id 0 to a different physical CPU.
-This breaks hibernate as hibernate and resume will be attempted on different
-CPUs.
+Later patches would make changes in cpufreq core, after which
+policy->freq_table may be reordered by cpufreq core and it wouldn't be
+safe anymore to use 'index' for any other local arrays.
 
-Define a weak symbol arch_hibernation_disable_cpus(), which defaults to
-calling disable_nonboot_cpus). Architectures that allow CPU 0 to be
-hotplugged can use this to control which CPU is used for hibernate/resume.
+To prepare for that, use policy->freq_table[index].driver_data for other
+driver specific usage of 'index'. The 'driver_data' fields are already
+set properly by the driver.
 
-Signed-off-by: James Morse <james.morse@arm.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-I would have preferred a macro, but there is no hibernate-relevant header
-file that all arch's have. arm, arm64 and x86 have a suspend.h, but powerpc
-doesn't.
+ drivers/cpufreq/exynos5440-cpufreq.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-If this approach is acceptable, this patch should go with 4&5 via the arm64
-tree.
-
- kernel/power/hibernate.c | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index fca9254280ee..0e668a3207ec 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -70,6 +70,16 @@ bool hibernation_available(void)
- }
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index 085f07d31ef0..6138cbb7594e 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -210,7 +210,7 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
  
- /**
-+ * arch_hibernation_disable_cpus - Allow architectures to direct which CPU
-+ * is used for suspend or resume.
-+ * @suspend: True during hibernate, false for resume.
-+ */
-+int __weak arch_hibernation_disable_cpus(__maybe_unused bool suspend)
-+{
-+	return disable_nonboot_cpus();
-+}
+ static int exynos_target(struct cpufreq_policy *policy, unsigned int index)
+ {
+-	unsigned int tmp;
++	unsigned int tmp, rindex;
+ 	int i;
+ 
+ 	mutex_lock(&cpufreq_lock);
+@@ -218,13 +218,19 @@ static int exynos_target(struct cpufreq_policy *policy, unsigned int index)
+ 	freqs.old = policy->cur;
+ 	freqs.new = policy->freq_table[index].frequency;
+ 
++	/*
++	 * policy->freq_table may be sorted differently, get the index value we
++	 * are concerned about.
++	 */
++	rindex = policy->freq_table[index].driver_data;
 +
-+/**
-  * hibernation_set_ops - Set the global hibernate operations.
-  * @ops: Hibernation operations to use in subsequent hibernation transitions.
-  */
-@@ -279,7 +289,7 @@ static int create_image(int platform_mode)
- 	if (error || hibernation_test(TEST_PLATFORM))
- 		goto Platform_finish;
+ 	cpufreq_freq_transition_begin(policy, &freqs);
  
--	error = disable_nonboot_cpus();
-+	error = arch_hibernation_disable_cpus(true);
- 	if (error || hibernation_test(TEST_CPUS))
- 		goto Enable_cpus;
+ 	/* Set the target frequency in all C0_3_PSTATE register */
+ 	for_each_cpu(i, policy->cpus) {
+ 		tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
+ 		tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
+-		tmp |= (index << C0_3_PSTATE_NEW_SHIFT);
++		tmp |= (rindex << C0_3_PSTATE_NEW_SHIFT);
  
-@@ -433,7 +443,7 @@ static int resume_target_kernel(bool platform_mode)
- 	if (error)
- 		goto Cleanup;
- 
--	error = disable_nonboot_cpus();
-+	error = arch_hibernation_disable_cpus(false);
- 	if (error)
- 		goto Enable_cpus;
- 
-@@ -551,7 +561,7 @@ int hibernation_platform_enter(void)
- 	if (error)
- 		goto Platform_finish;
- 
--	error = disable_nonboot_cpus();
-+	error = arch_hibernation_disable_cpus(true);
- 	if (error)
- 		goto Enable_cpus;
- 
+ 		__raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
+ 	}
 -- 
-2.8.0.rc3
-
+2.7.1.410.g6faf27b
