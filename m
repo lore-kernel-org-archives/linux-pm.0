@@ -1,76 +1,59 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 3/5] PCI: Power on bridges before scanning new devices
-Date: Thu, 2 Jun 2016 14:26:57 +0200
-Message-ID: <CAJZ5v0g95d1RFdzKYFhwrYeYC8X5VB-xzr=dpcnkVmY2YcJZ4A@mail.gmail.com>
+Subject: Re: [PATCH v6 4/5] ACPI / hotplug / PCI: Runtime resume bridge before rescan
+Date: Thu, 2 Jun 2016 14:27:32 +0200
+Message-ID: <CAJZ5v0ipjr-DJZrsg2RU=xAqnSV2qyub7-4hY2XeTHcSJj-ULA@mail.gmail.com>
 References: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
-	<1464855435-32960-4-git-send-email-mika.westerberg@linux.intel.com>
+	<1464855435-32960-5-git-send-email-mika.westerberg@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1464855435-32960-4-git-send-email-mika.westerberg@linux.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:34940 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753229AbcFBM1e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 08:27:34 -0400
+In-Reply-To: <1464855435-32960-5-git-send-email-mika.westerberg@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Mika Westerberg <mika.westerberg@linux.intel.com>
 Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Peter Wu <peter@lekensteyn.nl>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, Linux PCI <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
 On Thu, Jun 2, 2016 at 10:17 AM, Mika Westerberg
 <mika.westerberg@linux.intel.com> wrote:
-> When a PCI device is removed through sysfs interface the upstream bridge
-> (PCIe port) can be runtime suspended if it was the last device on that bus.
-> Now, if the bridge is in D3 we cannot find devices below the bridge
-> anymore.  For example following fails to find the removed device again:
+> If a PCI bridge (or PCIe port) that is runtime suspended gets an ACPI
+> hotplug event, such as BUS_CHECK we need to make sure it is resumed before
+> devices below the bridge are re-scanned. Otherwise the devices behind the
+> port are not accessible and will be treated as hot-unplugged.
 >
->   # echo 1 > /sys/bus/pci/devices/0000:00:01.0/0000:01:00.0/remove
->   # echo 1 > /sys/bus/pci/devices/0000:00:01.0/rescan
+> To fix this, resume PCI bridges from runtime suspend while rescanning.
 >
-> Where 0000:00:01.0 is the bridge device.
->
-> In order to be able to rescan devices below the bridge add
-> pm_runtime_get_sync()/pm_runtime_put() calls to pci_scan_bridge().  This
-> should keep bridges powered on while their children devices are being
-> scanned.
->
-> Reported-by: Peter Wu <peter@lekensteyn.nl>
 > Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 
 Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
 > ---
->  drivers/pci/probe.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
+>  drivers/pci/hotplug/acpiphp_glue.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 >
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 8e3ef720997d..11a802daf242 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -16,6 +16,7 @@
->  #include <linux/aer.h>
->  #include <linux/acpi.h>
->  #include <linux/irqdomain.h>
-> +#include <linux/pm_runtime.h>
->  #include "pci.h"
+> diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+> index fa49f9143b80..6a33ddcfa20b 100644
+> --- a/drivers/pci/hotplug/acpiphp_glue.c
+> +++ b/drivers/pci/hotplug/acpiphp_glue.c
+> @@ -675,6 +675,8 @@ static void acpiphp_check_bridge(struct acpiphp_bridge *bridge)
+>         if (bridge->is_going_away)
+>                 return;
 >
->  #define CARDBUS_LATENCY_TIMER  176     /* secondary latency timer */
-> @@ -832,6 +833,12 @@ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max, int pass)
->         u8 primary, secondary, subordinate;
->         int broken = 0;
->
-> +       /*
-> +        * Make sure the bridge is powered on to be able to access config
-> +        * space of devices below it.
-> +        */
-> +       pm_runtime_get_sync(&dev->dev);
+> +       pm_runtime_get_sync(&bridge->pci_dev->dev);
 > +
->         pci_read_config_dword(dev, PCI_PRIMARY_BUS, &buses);
->         primary = buses & 0xFF;
->         secondary = (buses >> 8) & 0xFF;
-> @@ -1012,6 +1019,8 @@ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max, int pass)
->  out:
->         pci_write_config_word(dev, PCI_BRIDGE_CONTROL, bctl);
->
-> +       pm_runtime_put(&dev->dev);
+>         list_for_each_entry(slot, &bridge->slots, node) {
+>                 struct pci_bus *bus = slot->bus;
+>                 struct pci_dev *dev, *tmp;
+> @@ -694,6 +696,8 @@ static void acpiphp_check_bridge(struct acpiphp_bridge *bridge)
+>                         disable_slot(slot);
+>                 }
+>         }
 > +
->         return max;
+> +       pm_runtime_put(&bridge->pci_dev->dev);
 >  }
->  EXPORT_SYMBOL(pci_scan_bridge);
+>
+>  /*
 > --
