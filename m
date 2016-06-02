@@ -1,158 +1,419 @@
 From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH v6 0/5] PCI: Add support for suspending (including runtime) of PCIe ports
-Date: Thu,  2 Jun 2016 11:17:10 +0300
-Message-ID: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
+Subject: [PATCH v6 2/5] PCI: Put PCIe ports into D3 during suspend
+Date: Thu,  2 Jun 2016 11:17:12 +0300
+Message-ID: <1464855435-32960-3-git-send-email-mika.westerberg@linux.intel.com>
+References: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:15286 "EHLO mga01.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:32768 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751963AbcFBIR0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 Jun 2016 04:17:26 -0400
+	id S1753025AbcFBIR1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 2 Jun 2016 04:17:27 -0400
+In-Reply-To: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Peter Wu <peter@lekensteyn.nl>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-Current Linux PCI core does not do any kind of power management to PCIe
-ports. This means that we waste energy and consume laptop battery even if
-the port has nothing connected to. These patches aim to change that to the
-right direction.
+Currently the Linux PCI core does not touch power state of PCI bridges and
+PCIe ports when system suspend is entered.  Leaving them in D0 consumes
+power unnecessarily and may prevent the CPU from entering deeper C-states.
 
-Previous versions of the patches can be found below:
+With recent PCIe hardware we can power down the ports to save power given
+that we take into account few restrictions:
 
-  v1: http://www.spinics.net/lists/linux-pci/msg49313.html
-  v2: http://www.spinics.net/lists/linux-pci/msg50167.html
-  v3: http://www.spinics.net/lists/linux-pci/msg50345.html
-  v4: http://www.spinics.net/lists/linux-pci/msg50665.html
-  v5: http://www.spinics.net/lists/linux-pci/msg50803.html
+  - The PCIe port hardware is recent enough, starting from 2015.
 
-This assumes that recent (starting from 2015) PCIe ports are capable of
-transition to D3hot/D3cold. We add a new flag to struct pci_dev 'bridge_d3'
-that is set whenever the PCI core thinks the port can be put to D3. The
-check in pci_pm_suspend_noirq() is then extended to cover devices where
-'bridge_d3' is set.
+  - Devices connected to PCIe ports are effectively in D3cold once the port
+    is transitioned to D3 (the config space is not accessible anymore and
+    the link may be powered down).
 
-We then add two new functions pci_bridge_d3_device_changed/removed(). These
-are used to set and clear 'bridge_d3' whenever there is a change in device
-power management policy (or if the device is removed). For example when
-userspace forbids the device to enter D3cold pci_bridge_d3_device_changed()
-will clear 'bridge_d3' of the upstream bridge.
+  - Devices behind the PCIe port need to be allowed to transition to D3cold
+    and back.  There is a way both drivers and userspace can forbid this.
 
-For all PCI ports where 'bridge_d3' is set we also enable and unblock
-runtime PM automatically. Only exception is when the PCIe port claims to
-support hotplug. More information about that is in the changelog of
-patch [5/5].
+  - If the device behind the PCIe port is capable of waking the system it
+    needs to be able to do so from D3cold.
 
-Since this also touches xhci, I'm adding Mathias and Greg to check if the
-change looks reasonable.
+This patch adds a new flag to struct pci_device called 'bridge_d3'.  This
+flag is set and cleared by the PCI core whenever there is a change in power
+management state of any of the devices behind the PCIe port.  When system
+later on is suspended we only need to check this flag and if it is true
+transition the port to D3 otherwise we leave it in D0.
 
-Bjorn, if you are fine with these patches, it would be nice to get these to
-linux-next for better testing coverage.
+Also provide override mechanism via command line parameter
+"pcie_port_pm=[off|force]" that can be used to disable or enable the
+feature regardless of the BIOS manufacturing date.
 
-Changes to v5:
-
-  - Add patch "PCI: Power on bridges before scanning new devices" to make
-    sure rescanning using sysfs still works.
-
-  - Change patch "ACPI / hotplug / PCI: Runtime resume bridge before
-    rescan" to runtime resume in acpiphp_check_bridge() instead of
-    hotplug_event().
-
-  - Change runtime PM autosuspend delay from 10ms to 100ms.
-
-  - Call pm_runtime_mark_last_busy() to make sure we do not runtime suspend
-    the port immediatly.
-
-Changes to v4:
-
-  - Use "Put PCIe ports into D3" instead of "move" in subject and comments.
-
-  - Add new helper function pci_power_manageable() and use it to check if
-    the port can be suspended instead of open-coding it everytime.
-
-  - Changed pci_dev_check_d3cold() to follow what Rafael suggested.
-
-  - Dropped call to pm_runtime_mark_last_busy() in pcie_port_runtime_resume()
-    as PM core does that automatically when the function returns 0.
-
-  - Added ACKs from Rafael.
-
-Changes to v3:
-
-  - Make 'no_d3cold' persist for pci_dev. Once this is set through
-    pci_d3cold_enable/disable(), it will persist unless changed again using
-    the same functions. Those also handle setting and clearing 'bridge_d3'
-    as necessary.
-
-  - Add kernel command line parameter "pcie_port_pm=off|force" that can
-    be used to forcibly disable/enable the feature.
-
-  - Use runtime PM autosuspend instead of scheduling runtime suspend
-    manually
-
-  - Allow runtime PM always except when we are dealing with a hotplug
-    bridge. Actual checking whether the port can be suspended is done in
-    ->idle() and ->runtime_suspend() hooks based on 'bridge_d3'.
-
-Changes to v2:
-
-  - Renamed and split pci_enable_d3cold() into two functions
-    pci_d3cold_enable()/disable().
-
-  - Renamed pci_bridge_pm_update() into two functions
-    pci_bridge_d3_device_changed() and pci_bridge_d3_device_removed() that
-    should match better what they are doing.
-
-  - Propagate ->bridge_d3 change to upstream bridges in
-    pci_bridge_d3_update().
-
-  - Removed pci_can_suspend() in favor of doing ->bridge_d3 check directly
-    in pci_pm_suspend_noirq().
-
-  - Extend runtime PM enabling for ports that are using native PCIe
-    hotplug.
-
-  - Call pm_runtime_no_callbacks() for PCIe port service devices (the are
-    handled by the parent device).
-
-Changes to v1:
-
-  - Dropped patch [2/6] as there is no need to use that function from other
-    files anymore.
-
-  - Dropped patches [5-6/6] in favor of using cut-off date.
-
-  - Updated changelog of [1/4] to mention where in the PCI core PCI bridge
-    and PCIe ports are skipped from being power managed.
-
-  - Instead of checking at suspend time if it is possible to transition the
-    port to D3, do it whenever power management status of a device (below a
-    port) is changed or when it is added or removed to the bus.
-
-  - Added patch [3/4] to runtime resume a bridge when ACPI hotplug event is
-    received.
-
-Mika Westerberg (5):
-  PCI: Don't clear d3cold_allowed for PCIe ports
-  PCI: Put PCIe ports into D3 during suspend
-  PCI: Power on bridges before scanning new devices
-  ACPI / hotplug / PCI: Runtime resume bridge before rescan
-  PCI: Add runtime PM support for PCIe ports
-
+Tested-by: Lukas Wunner <lukas@wunner.de>
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
  Documentation/kernel-parameters.txt |   4 +
  drivers/pci/bus.c                   |   1 +
- drivers/pci/hotplug/acpiphp_glue.c  |   4 +
  drivers/pci/pci-driver.c            |   5 +-
  drivers/pci/pci-sysfs.c             |   5 ++
  drivers/pci/pci.c                   | 175 ++++++++++++++++++++++++++++++++++++
  drivers/pci/pci.h                   |  11 +++
- drivers/pci/pcie/portdrv_core.c     |   3 +
- drivers/pci/pcie/portdrv_pci.c      |  52 ++++++++++-
- drivers/pci/probe.c                 |   9 ++
  drivers/pci/remove.c                |   2 +
  drivers/usb/host/xhci-pci.c         |   2 +-
  include/linux/pci.h                 |   3 +
- 13 files changed, 268 insertions(+), 8 deletions(-)
+ 9 files changed, 203 insertions(+), 5 deletions(-)
 
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 82b42c958d1c..86edee4cedd4 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -3047,6 +3047,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 		compat	Treat PCIe ports as PCI-to-PCI bridges, disable the PCIe
+ 			ports driver.
+ 
++	pcie_port_pm=	[PCIE] PCIe port power management handling:
++		off	Disable power management of all PCIe ports
++		force	Forcibly enable power management of all PCIe ports
++
+ 	pcie_pme=	[PCIE,PM] Native PCIe PME signaling options:
+ 		nomsi	Do not use MSI for native PCIe PME signaling (this makes
+ 			all PCIe root ports use INTx for all services).
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+index dd7cdbee8029..28731360b457 100644
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -291,6 +291,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+ 	pci_fixup_device(pci_fixup_final, dev);
+ 	pci_create_sysfs_dev_files(dev);
+ 	pci_proc_attach_device(dev);
++	pci_bridge_d3_device_changed(dev);
+ 
+ 	dev->match_driver = true;
+ 	retval = device_attach(&dev->dev);
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index d7ffd66814bb..e39a67c8ef39 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -777,7 +777,7 @@ static int pci_pm_suspend_noirq(struct device *dev)
+ 
+ 	if (!pci_dev->state_saved) {
+ 		pci_save_state(pci_dev);
+-		if (!pci_has_subordinate(pci_dev))
++		if (pci_power_manageable(pci_dev))
+ 			pci_prepare_to_sleep(pci_dev);
+ 	}
+ 
+@@ -1144,7 +1144,6 @@ static int pci_pm_runtime_suspend(struct device *dev)
+ 		return -ENOSYS;
+ 
+ 	pci_dev->state_saved = false;
+-	pci_dev->no_d3cold = false;
+ 	error = pm->runtime_suspend(dev);
+ 	if (error) {
+ 		/*
+@@ -1161,8 +1160,6 @@ static int pci_pm_runtime_suspend(struct device *dev)
+ 
+ 		return error;
+ 	}
+-	if (!pci_dev->d3cold_allowed)
+-		pci_dev->no_d3cold = true;
+ 
+ 	pci_fixup_device(pci_fixup_suspend, pci_dev);
+ 
+diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+index d319a9ca9b7b..bcd10c795284 100644
+--- a/drivers/pci/pci-sysfs.c
++++ b/drivers/pci/pci-sysfs.c
+@@ -406,6 +406,11 @@ static ssize_t d3cold_allowed_store(struct device *dev,
+ 		return -EINVAL;
+ 
+ 	pdev->d3cold_allowed = !!val;
++	if (pdev->d3cold_allowed)
++		pci_d3cold_enable(pdev);
++	else
++		pci_d3cold_disable(pdev);
++
+ 	pm_runtime_resume(dev);
+ 
+ 	return count;
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index c8b4dbdd1bdd..9ff7183e25a2 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/delay.h>
++#include <linux/dmi.h>
+ #include <linux/init.h>
+ #include <linux/of.h>
+ #include <linux/of_pci.h>
+@@ -101,6 +102,21 @@ unsigned int pcibios_max_latency = 255;
+ /* If set, the PCIe ARI capability will not be used. */
+ static bool pcie_ari_disabled;
+ 
++/* Disable bridge_d3 for all PCIe ports */
++static bool pci_bridge_d3_disable;
++/* Force bridge_d3 for all PCIe ports */
++static bool pci_bridge_d3_force;
++
++static int __init pcie_port_pm_setup(char *str)
++{
++	if (!strcmp(str, "off"))
++		pci_bridge_d3_disable = true;
++	else if (!strcmp(str, "force"))
++		pci_bridge_d3_force = true;
++	return 1;
++}
++__setup("pcie_port_pm=", pcie_port_pm_setup);
++
+ /**
+  * pci_bus_max_busnr - returns maximum PCI bus number of given bus' children
+  * @bus: pointer to PCI bus structure to search
+@@ -2156,6 +2172,164 @@ void pci_config_pm_runtime_put(struct pci_dev *pdev)
+ }
+ 
+ /**
++ * pci_bridge_d3_possible - Is it possible to put the bridge into D3
++ * @bridge: Bridge to check
++ *
++ * This function checks if it is possible to move the bridge to D3.
++ * Currently we only allow D3 for recent enough PCIe ports.
++ */
++static bool pci_bridge_d3_possible(struct pci_dev *bridge)
++{
++	unsigned int year;
++
++	if (!pci_is_pcie(bridge))
++		return false;
++
++	switch (pci_pcie_type(bridge)) {
++	case PCI_EXP_TYPE_ROOT_PORT:
++	case PCI_EXP_TYPE_UPSTREAM:
++	case PCI_EXP_TYPE_DOWNSTREAM:
++		if (pci_bridge_d3_disable)
++			return false;
++		if (pci_bridge_d3_force)
++			return true;
++
++		/*
++		 * It should be safe to put PCIe ports from 2015 or newer
++		 * to D3.
++		 */
++		if (dmi_get_date(DMI_BIOS_DATE, &year, NULL, NULL) &&
++		    year >= 2015) {
++			return true;
++		}
++		break;
++	}
++
++	return false;
++}
++
++static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
++{
++	bool *d3cold_ok = data;
++	bool no_d3cold;
++
++	/*
++	 * The device needs to be allowed to go D3cold and if it is wake
++	 * capable to do so from D3cold.
++	 */
++	no_d3cold = dev->no_d3cold || !dev->d3cold_allowed ||
++		(device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold)) ||
++		!pci_power_manageable(dev);
++
++	*d3cold_ok = !no_d3cold;
++
++	return no_d3cold;
++}
++
++/*
++ * pci_bridge_d3_update - Update bridge D3 capabilities
++ * @dev: PCI device which is changed
++ * @remove: Is the device being removed
++ *
++ * Update upstream bridge PM capabilities accordingly depending on if the
++ * device PM configuration was changed or the device is being removed.  The
++ * change is also propagated upstream.
++ */
++static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
++{
++	struct pci_dev *bridge;
++	bool d3cold_ok = true;
++
++	bridge = pci_upstream_bridge(dev);
++	if (!bridge || !pci_bridge_d3_possible(bridge))
++		return;
++
++	pci_dev_get(bridge);
++	/*
++	 * If the device is removed we do not care about its D3cold
++	 * capabilities.
++	 */
++	if (!remove)
++		pci_dev_check_d3cold(dev, &d3cold_ok);
++
++	if (d3cold_ok) {
++		/*
++		 * We need to go through all children to find out if all of
++		 * them can still go to D3cold.
++		 */
++		pci_walk_bus(bridge->subordinate, pci_dev_check_d3cold,
++			     &d3cold_ok);
++	}
++
++	if (bridge->bridge_d3 != d3cold_ok) {
++		bridge->bridge_d3 = d3cold_ok;
++		/* Propagate change to upstream bridges */
++		pci_bridge_d3_update(bridge, false);
++	}
++
++	pci_dev_put(bridge);
++}
++
++/**
++ * pci_bridge_d3_device_changed - Update bridge D3 capabilities on change
++ * @dev: PCI device that was changed
++ *
++ * If a device is added or its PM configuration, such as is it allowed to
++ * enter D3cold, is changed this function updates upstream bridge PM
++ * capabilities accordingly.
++ */
++void pci_bridge_d3_device_changed(struct pci_dev *dev)
++{
++	pci_bridge_d3_update(dev, false);
++}
++
++/**
++ * pci_bridge_d3_device_removed - Update bridge D3 capabilities on remove
++ * @dev: PCI device being removed
++ *
++ * Function updates upstream bridge PM capabilities based on other devices
++ * still left on the bus.
++ */
++void pci_bridge_d3_device_removed(struct pci_dev *dev)
++{
++	pci_bridge_d3_update(dev, true);
++}
++
++/**
++ * pci_d3cold_enable - Enable D3cold for device
++ * @dev: PCI device to handle
++ *
++ * This function can be used in drivers to enable D3cold from the device
++ * they handle.  It also updates upstream PCI bridge PM capabilities
++ * accordingly.
++ */
++void pci_d3cold_enable(struct pci_dev *dev)
++{
++	if (dev->no_d3cold) {
++		dev->no_d3cold = false;
++		pci_bridge_d3_device_changed(dev);
++	}
++}
++EXPORT_SYMBOL_GPL(pci_d3cold_enable);
++
++/**
++ * pci_d3cold_disable - Disable D3cold for device
++ * @dev: PCI device to handle
++ *
++ * This function can be used in drivers to disable D3cold from the device
++ * they handle.  It also updates upstream PCI bridge PM capabilities
++ * accordingly.
++ */
++void pci_d3cold_disable(struct pci_dev *dev)
++{
++	if (!dev->no_d3cold) {
++		dev->no_d3cold = true;
++		pci_bridge_d3_device_changed(dev);
++	}
++}
++EXPORT_SYMBOL_GPL(pci_d3cold_disable);
++
++/**
+  * pci_pm_init - Initialize PM functions of given PCI device
+  * @dev: PCI device to handle.
+  */
+@@ -2189,6 +2363,7 @@ void pci_pm_init(struct pci_dev *dev)
+ 	dev->pm_cap = pm;
+ 	dev->d3_delay = PCI_PM_D3_WAIT;
+ 	dev->d3cold_delay = PCI_PM_D3COLD_WAIT;
++	dev->bridge_d3 = pci_bridge_d3_possible(dev);
+ 	dev->d3cold_allowed = true;
+ 
+ 	dev->d1_support = false;
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index a814bbb80fcb..9730c474b016 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -82,6 +82,8 @@ void pci_pm_init(struct pci_dev *dev);
+ void pci_ea_init(struct pci_dev *dev);
+ void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+ void pci_free_cap_save_buffers(struct pci_dev *dev);
++void pci_bridge_d3_device_changed(struct pci_dev *dev);
++void pci_bridge_d3_device_removed(struct pci_dev *dev);
+ 
+ static inline void pci_wakeup_event(struct pci_dev *dev)
+ {
+@@ -94,6 +96,15 @@ static inline bool pci_has_subordinate(struct pci_dev *pci_dev)
+ 	return !!(pci_dev->subordinate);
+ }
+ 
++static inline bool pci_power_manageable(struct pci_dev *pci_dev)
++{
++	/*
++	 * Currently we allow normal PCI devices and PCI bridges transition
++	 * into D3 if their bridge_d3 is set.
++	 */
++	return !pci_has_subordinate(pci_dev) || pci_dev->bridge_d3;
++}
++
+ struct pci_vpd_ops {
+ 	ssize_t (*read)(struct pci_dev *dev, loff_t pos, size_t count, void *buf);
+ 	ssize_t (*write)(struct pci_dev *dev, loff_t pos, size_t count, const void *buf);
+diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+index 8982026637d5..d1ef7acf6930 100644
+--- a/drivers/pci/remove.c
++++ b/drivers/pci/remove.c
+@@ -96,6 +96,8 @@ static void pci_remove_bus_device(struct pci_dev *dev)
+ 		dev->subordinate = NULL;
+ 	}
+ 
++	pci_bridge_d3_device_removed(dev);
++
+ 	pci_destroy_dev(dev);
+ }
+ 
+diff --git a/drivers/usb/host/xhci-pci.c b/drivers/usb/host/xhci-pci.c
+index 48672fac7ff3..ac352fe391f4 100644
+--- a/drivers/usb/host/xhci-pci.c
++++ b/drivers/usb/host/xhci-pci.c
+@@ -382,7 +382,7 @@ static int xhci_pci_suspend(struct usb_hcd *hcd, bool do_wakeup)
+ 	 * need to have the registers polled during D3, so avoid D3cold.
+ 	 */
+ 	if (xhci->quirks & XHCI_COMP_MODE_QUIRK)
+-		pdev->no_d3cold = true;
++		pci_d3cold_disable(pdev);
+ 
+ 	if (xhci->quirks & XHCI_PME_STUCK_QUIRK)
+ 		xhci_pme_quirk(hcd);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index b67e4df20801..6a27454d2abd 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -294,6 +294,7 @@ struct pci_dev {
+ 	unsigned int	d2_support:1;	/* Low power state D2 is supported */
+ 	unsigned int	no_d1d2:1;	/* D1 and D2 are forbidden */
+ 	unsigned int	no_d3cold:1;	/* D3cold is forbidden */
++	unsigned int	bridge_d3:1;	/* Allow D3 for bridge */
+ 	unsigned int	d3cold_allowed:1;	/* D3cold is allowed by user */
+ 	unsigned int	mmio_always_on:1;	/* disallow turning off io/mem
+ 						   decoding during bar sizing */
+@@ -1083,6 +1084,8 @@ int pci_back_from_sleep(struct pci_dev *dev);
+ bool pci_dev_run_wake(struct pci_dev *dev);
+ bool pci_check_pme_status(struct pci_dev *dev);
+ void pci_pme_wakeup_bus(struct pci_bus *bus);
++void pci_d3cold_enable(struct pci_dev *dev);
++void pci_d3cold_disable(struct pci_dev *dev);
+ 
+ static inline int pci_enable_wake(struct pci_dev *dev, pci_power_t state,
+ 				  bool enable)
 -- 
 2.8.1
 
