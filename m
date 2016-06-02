@@ -1,293 +1,162 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 6/6] cpufreq: Return index from cpufreq_frequency_table_target()
-Date: Thu,  2 Jun 2016 19:35:00 +0530
-Message-ID: <f866c115657545fba82aabcaadf54280a8419764.1464876229.git.viresh.kumar@linaro.org>
-References: <cover.1464876229.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1464876229.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1464876229.git.viresh.kumar@linaro.org>
-References: <cover.1464876229.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+From: James Morse <james.morse@arm.com>
+Subject: [PATCH 0/5] arm64: hibernate: Fix DEBUG_PAGEALLOC and hibernate on non-boot cpu
+Date: Thu,  2 Jun 2016 15:10:52 +0100
+Message-ID: <1464876657-6692-1-git-send-email-james.morse@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:45210 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932126AbcFBOND (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 2 Jun 2016 10:13:03 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, James Morse <james.morse@arm.com>, linux-pm@vger.kernel.org
 
-This routine can't fail unless the frequency table is invalid and
-doesn't contain any valid entries.
+Hi all,
 
-Make it return the index and WARN() in case it is used for an invalid
-table.
+These patches improve the hibernate support for v4.8.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- Documentation/cpu-freq/cpu-drivers.txt |  7 +++----
- drivers/cpufreq/amd_freq_sensitivity.c |  4 ++--
- drivers/cpufreq/cpufreq.c              |  9 ++-------
- drivers/cpufreq/cpufreq_ondemand.c     | 14 ++++++--------
- drivers/cpufreq/freq_table.c           | 24 +++++++++++++-----------
- drivers/cpufreq/powernv-cpufreq.c      |  4 ++--
- drivers/cpufreq/s3c24xx-cpufreq.c      | 26 ++++++--------------------
- drivers/cpufreq/s5pv210-cpufreq.c      |  7 ++-----
- include/linux/cpufreq.h                |  3 +--
- 9 files changed, 37 insertions(+), 61 deletions(-)
+Patches 1&2 fix the hibernate problem with DEBUG_PAGEALLOC reported by Will.
+This also addresses the outstanding comment from Catalin [0] regarding cleaning
+of the whole kernel to the PoC. Now we clean just the sections grouped by
+'TEXT_TEXT'.
 
-diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.txt
-index 74e812f0719c..772b94fde264 100644
---- a/Documentation/cpu-freq/cpu-drivers.txt
-+++ b/Documentation/cpu-freq/cpu-drivers.txt
-@@ -245,12 +245,11 @@ policy->max, and all other criteria are met. This is helpful for the
- 
- int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
-                                    unsigned int target_freq,
--                                   unsigned int relation,
--                                   unsigned int *index);
-+                                   unsigned int relation);
- 
- is the corresponding frequency table helper for the ->target
--stage. Just pass the values to this function, and the unsigned int
--index returns the number of the frequency table entry which contains
-+stage. Just pass the values to this function, and this function
-+returns the number of the frequency table entry which contains
- the frequency the CPU shall be set to.
- 
- The following macros can be used as iterators over cpufreq_frequency_table:
-diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
-index 3bea1bb791a9..6d5dc04c3a37 100644
---- a/drivers/cpufreq/amd_freq_sensitivity.c
-+++ b/drivers/cpufreq/amd_freq_sensitivity.c
-@@ -91,8 +91,8 @@ static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
- 		else {
- 			unsigned int index;
- 
--			cpufreq_frequency_table_target(policy,
--				policy->cur - 1, CPUFREQ_RELATION_H, &index);
-+			index = cpufreq_frequency_table_target(policy,
-+				policy->cur - 1, CPUFREQ_RELATION_H);
- 			freq_next = policy->freq_table[index].frequency;
- 		}
- 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 30f05dd5c872..9ae58a18ccb9 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1914,7 +1914,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			    unsigned int relation)
- {
- 	unsigned int old_target_freq = target_freq;
--	int index, retval;
-+	int index;
- 
- 	if (cpufreq_disabled())
- 		return -ENODEV;
-@@ -1943,12 +1943,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 	if (!cpufreq_driver->target_index)
- 		return -EINVAL;
- 
--	retval = cpufreq_frequency_table_target(policy, target_freq, relation,
--						&index);
--	if (unlikely(retval)) {
--		pr_err("%s: Unable to find matching freq\n", __func__);
--		return retval;
--	}
-+	index = cpufreq_frequency_table_target(policy, target_freq, relation);
- 
- 	return __target_index(policy, index);
- }
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 2ee476f5a2bd..0c93cd9dee99 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -65,7 +65,7 @@ static unsigned int generic_powersave_bias_target(struct cpufreq_policy *policy,
- {
- 	unsigned int freq_req, freq_reduc, freq_avg;
- 	unsigned int freq_hi, freq_lo;
--	unsigned int index = 0;
-+	unsigned int index;
- 	unsigned int delay_hi_us;
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 	struct od_policy_dbs_info *dbs_info = to_dbs_info(policy_dbs);
-@@ -79,19 +79,17 @@ static unsigned int generic_powersave_bias_target(struct cpufreq_policy *policy,
- 		return freq_next;
- 	}
- 
--	cpufreq_frequency_table_target(policy, freq_next, relation, &index);
-+	index = cpufreq_frequency_table_target(policy, freq_next, relation);
- 	freq_req = freq_table[index].frequency;
- 	freq_reduc = freq_req * od_tuners->powersave_bias / 1000;
- 	freq_avg = freq_req - freq_reduc;
- 
- 	/* Find freq bounds for freq_avg in freq_table */
--	index = 0;
--	cpufreq_frequency_table_target(policy, freq_avg, CPUFREQ_RELATION_H,
--				       &index);
-+	index = cpufreq_frequency_table_target(policy, freq_avg,
-+					       CPUFREQ_RELATION_H);
- 	freq_lo = freq_table[index].frequency;
--	index = 0;
--	cpufreq_frequency_table_target(policy, freq_avg, CPUFREQ_RELATION_L,
--				       &index);
-+	index = cpufreq_frequency_table_target(policy, freq_avg,
-+					       CPUFREQ_RELATION_L);
- 	freq_hi = freq_table[index].frequency;
- 
- 	/* Find out how long we have to be in hi and lo freqs */
-diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
-index f145b64649ef..eac8bcbdaad1 100644
---- a/drivers/cpufreq/freq_table.c
-+++ b/drivers/cpufreq/freq_table.c
-@@ -114,9 +114,8 @@ int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy)
- EXPORT_SYMBOL_GPL(cpufreq_generic_frequency_table_verify);
- 
- int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
--				   unsigned int target_freq,
--				   unsigned int relation,
--				   unsigned int *index)
-+				    unsigned int target_freq,
-+				    unsigned int relation)
- {
- 	struct cpufreq_frequency_table optimal = {
- 		.driver_data = ~0,
-@@ -129,6 +128,7 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 	struct cpufreq_frequency_table *pos;
- 	struct cpufreq_frequency_table *table = policy->freq_table;
- 	unsigned int freq, diff, i = 0;
-+	int index;
- 
- 	pr_debug("request for target %u kHz (relation: %u) for cpu %u\n",
- 					target_freq, relation, policy->cpu);
-@@ -192,16 +192,18 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 		}
- 	}
- 	if (optimal.driver_data > i) {
--		if (suboptimal.driver_data > i)
--			return -EINVAL;
--		*index = suboptimal.driver_data;
--	} else
--		*index = optimal.driver_data;
-+		if (suboptimal.driver_data > i) {
-+			WARN(1, "Invalid frequency table: %d\n", policy->cpu);
-+			return 0;
-+		}
- 
--	pr_debug("target index is %u, freq is:%u kHz\n", *index,
--		 table[*index].frequency);
-+		index = suboptimal.driver_data;
-+	} else
-+		index = optimal.driver_data;
- 
--	return 0;
-+	pr_debug("target index is %u, freq is:%u kHz\n", index,
-+		 table[index].frequency);
-+	return index;
- }
- EXPORT_SYMBOL_GPL(cpufreq_frequency_table_target);
- 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index bf267c2dfe20..b29c5c20c3a1 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -760,8 +760,8 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
- 		struct cpufreq_policy policy;
- 
- 		cpufreq_get_policy(&policy, cpu);
--		cpufreq_frequency_table_target(&policy, policy.cur,
--					       CPUFREQ_RELATION_C, &index);
-+		index = cpufreq_frequency_table_target(&policy, policy.cur,
-+					       CPUFREQ_RELATION_C);
- 		powernv_cpufreq_target_index(&policy, index);
- 		cpumask_andnot(&mask, &mask, policy.cpus);
- 	}
-diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
-index 05a9737278f3..7b596fa38ad2 100644
---- a/drivers/cpufreq/s3c24xx-cpufreq.c
-+++ b/drivers/cpufreq/s3c24xx-cpufreq.c
-@@ -293,11 +293,8 @@ static int s3c_cpufreq_target(struct cpufreq_policy *policy,
- 		     __func__, policy, target_freq, relation);
- 
- 	if (ftab) {
--		if (cpufreq_frequency_table_target(policy, target_freq,
--						   relation, &index)) {
--			s3c_freq_dbg("%s: table failed\n", __func__);
--			return -EINVAL;
--		}
-+		index = cpufreq_frequency_table_target(policy, target_freq,
-+						       relation);
- 
- 		s3c_freq_dbg("%s: adjust %d to entry %d (%u)\n", __func__,
- 			     target_freq, index, ftab[index].frequency);
-@@ -314,7 +311,6 @@ static int s3c_cpufreq_target(struct cpufreq_policy *policy,
- 		pll = NULL;
- 	} else {
- 		struct cpufreq_policy tmp_policy;
--		int ret;
- 
- 		/* we keep the cpu pll table in Hz, to ensure we get an
- 		 * accurate value for the PLL output. */
-@@ -324,18 +320,12 @@ static int s3c_cpufreq_target(struct cpufreq_policy *policy,
- 		tmp_policy.cpu = policy->cpu;
- 		tmp_policy.freq_table = pll_reg;
- 
--		/* cpufreq_frequency_table_target uses a pointer to 'index'
--		 * which is the number of the table entry, not the value of
-+		/* cpufreq_frequency_table_target returns the index
-+		 * of the table entry, not the value of
- 		 * the table entry's index field. */
- 
--		ret = cpufreq_frequency_table_target(&tmp_policy, target_freq,
--						     relation, &index);
--
--		if (ret < 0) {
--			pr_err("%s: no PLL available\n", __func__);
--			goto err_notpossible;
--		}
--
-+		index = cpufreq_frequency_table_target(&tmp_policy, target_freq,
-+						       relation);
- 		pll = pll_reg + index;
- 
- 		s3c_freq_dbg("%s: target %u => %u\n",
-@@ -345,10 +335,6 @@ static int s3c_cpufreq_target(struct cpufreq_policy *policy,
- 	}
- 
- 	return s3c_cpufreq_settarget(policy, target_freq, pll);
--
-- err_notpossible:
--	pr_err("no compatible settings for %d\n", target_freq);
--	return -EINVAL;
- }
- 
- struct clk *s3c_cpufreq_clk_get(struct device *dev, const char *name)
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index 6b0cfc3b8c46..4f4e9df9b7fc 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -246,11 +246,8 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
- 	new_freq = s5pv210_freq_table[index].frequency;
- 
- 	/* Finding current running level index */
--	if (cpufreq_frequency_table_target(policy, old_freq, CPUFREQ_RELATION_H,
--					   &priv_index)) {
--		ret = -EINVAL;
--		goto exit;
--	}
-+	priv_index = cpufreq_frequency_table_target(policy, old_freq,
-+						    CPUFREQ_RELATION_H);
- 
- 	arm_volt = dvs_conf[index].arm_volt;
- 	int_volt = dvs_conf[index].int_volt;
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index bdd7f0c035ae..c378776628b4 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -599,8 +599,7 @@ int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy);
- 
- int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
- 				   unsigned int target_freq,
--				   unsigned int relation,
--				   unsigned int *index);
-+				   unsigned int relation);
- int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
- 		unsigned int freq);
- 
+Patch one adds sections.h to avoid duplicate definitions of
+__hyp_idmap_text_start. (it looks like kprobes will duplicate this too [1)
+
+The rest of the patches fix hibernate/resume on any CPU as discussed on the
+list[2]. Suzuki's maxcpus improvements mean the CPU we hibernated on may be
+offline during boot, and kexec will allow the CPUs logical order to be shuffled.
+Log output below[3], suspend happens on cpu0, with mpidr 0x103. For
+resume, cpu5 is brought up as it has mpidr 0x103, and cpu0 is taken down.
+After resume, /proc/cpuinfo shows only the original cpu0.
+
+
+[0] http://www.spinics.net/lists/arm-kernel/msg499305.html
+[1] http://www.spinics.net/lists/arm-kernel/msg506451.html
+[2] http://www.spinics.net/lists/arm-kernel/msg499036.html
+[3] hotplug cpu0, kexec, hibernate, resume
+-------------------------%<-------------------------
+root@ubuntu:~# echo disk > /sys/power/state
+PM: Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.007 seconds) done.
+PM: Preallocating image memory... done (allocated 10112 pages)
+PM: Allocated 647168 kbytes in 2.69 seconds (240.58 MB/s)
+Freezing remaining freezable tasks ... (elapsed 0.005 seconds) done.
+PM: freeze of devices complete after 27.013 msecs
+PM: late freeze of devices complete after 20.624 msecs
+PM: noirq freeze of devices complete after 22.211 msecs
+Disabling non-boot CPUs ...
+PM: Creating hibernation image:
+PM: Need to copy 10103 pages
+PM: Hibernation image created (10103 pages copied)
+PM: noirq thaw of devices complete after 22.350 msecs
+PM: early thaw of devices complete after 23.680 msecs
+PM: thaw of devices complete after 98.331 msecs
+hibernate: Suspending on cpu 0 [mpidr:0x103]
+PM: Using 1 thread(s) for compression.
+PM: Compressing and saving image data (10105 pages)...
+PM: Image saving progress:   0%
+atkbd serio0: keyboard reset failed on 1c060000.kmi
+atkbd serio1: keyboard reset failed on 1c070000.kmi
+PM: Image saving progress:  10%
+PM: Image saving progress:  20%
+PM: Image saving progress:  30%
+PM: Image saving progress:  40%
+PM: Image saving progress:  50%
+PM: Image saving progress:  60%
+PM: Image saving progress:  70%
+PM: Image saving progress:  80%
+PM: Image saving progress:  90%
+PM: Image saving progress: 100%
+PM: Image saving done.
+PM: Wrote 646720 kbytes in 93.08 seconds (6.94 MB/s)
+PM: S|
+reboot: Power down
+
+[ ... ]
+
+Freezing user space processes ... (elapsed 0.000 seconds) done.
+PM: Using 1 thread(s) for decompression.
+PM: Loading and decompressing image data (10105 pages)...
+hibernate: Suspended on cpu 5 [mpidr:0x103]
+hibernate: Suspended on a CPU that is offline! Brining CPU up.
+Detected VIPT I-cache on CPU5
+CPU5: Booted secondary processor [410fd033]
+random: nonblocking pool is initialized
+PM: Image loading progress:   0%
+PM: Image loading progress:  10%
+PM: Image loading progress:  20%
+PM: Image loading progress:  30%
+PM: Image loading progress:  40%
+PM: Image loading progress:  50%
+PM: Image loading progress:  60%
+PM: Image loading progress:  70%
+PM: Image loading progress:  80%
+PM: Image loading progress:  90%
+PM: Image loading progress: 100%
+PM: Image loading done.
+PM: Read 646720 kbytes in 30.47 seconds (21.22 MB/s)
+PM: quiesce of devices complete after 32.958 msecs
+PM: late quiesce of devices complete after 11.574 msecs
+PM: noirq quiesce of devices complete after 24.918 msecs
+hibernate: Disabling secondary CPUs ...
+IRQ1 no longer affine to CPU0
+IRQ6 no longer affine to CPU0
+IRQ28 no longer affine to CPU0
+IRQ29 no longer affine to CPU0
+IRQ32 no longer affine to CPU0
+IRQ34 no longer affine to CPU0
+IRQ35 no longer affine to CPU0
+IRQ37 no longer affine to CPU0
+IRQ41 no longer affine to CPU0
+IRQ48 no longer affine to CPU0
+CPU0: shutdown
+
+psci: CPU0 killed.
+PM: noirq restore of devices complete after 27.419 msecs
+PM: early restore of devices complete after 23.554 msecs
+PM: restore of devices complete after 113.188 msecs
+Restarting tasks ... done.
+root@ubuntu:~# atkbd serio0: keyboard reset failed on 1c060000.kmi
+atkbd serio1: keyboard reset failed on 1c070000.kmi
+root@ubuntu:~# cat /proc/cpuinfo
+processor       : 0
+BogoMIPS        : 100.00
+Features        : fp asimd evtstrm aes pmull sha1 sha2 crc32
+CPU implementer : 0x41
+CPU architecture: 8
+CPU variant     : 0x0
+CPU part        : 0xd03
+CPU revision    : 3
+
+root@ubuntu:~#
+-------------------------%<-------------------------
+
+James Morse (5):
+  arm64: Add markers around .text section and create sections.h
+  arm64: hibernate: Support DEBUG_PAGEALLOC
+  PM / Hibernate: Allow architectures to specify the hibernate/resume
+    CPU
+  arm64: hibernate: Identify the CPU to resume on by its MPIDR
+  Revert "arm64: hibernate: Refuse to hibernate if the boot cpu is
+    offline"
+
+ arch/arm64/Kconfig                |   1 -
+ arch/arm64/include/asm/Kbuild     |   1 -
+ arch/arm64/include/asm/sections.h |  29 ++++++++
+ arch/arm64/include/asm/suspend.h  |   1 +
+ arch/arm64/include/asm/traps.h    |   3 +-
+ arch/arm64/include/asm/virt.h     |   5 +-
+ arch/arm64/kernel/alternative.c   |   7 +-
+ arch/arm64/kernel/hibernate.c     | 137 ++++++++++++++++++++++++++++----------
+ arch/arm64/kernel/vmlinux.lds.S   |   2 +
+ arch/arm64/kvm/reset.c            |   3 +-
+ arch/arm64/mm/pageattr.c          |  40 ++++++++++-
+ kernel/power/hibernate.c          |  16 ++++-
+ 12 files changed, 191 insertions(+), 54 deletions(-)
+ create mode 100644 arch/arm64/include/asm/sections.h
+
 -- 
-2.7.1.410.g6faf27b
+2.8.0.rc3
+
