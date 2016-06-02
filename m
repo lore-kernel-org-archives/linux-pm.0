@@ -1,59 +1,40 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v3 09/12] EXAMPLE CODE: usb: port: Parse pwrseq phandle
- from Device Tree
-Date: Thu, 2 Jun 2016 09:24:19 +0800
-Message-ID: <20160602012419.GA7953@shlinux2>
-References: <1464768141-25420-1-git-send-email-k.kozlowski@samsung.com>
- <1464768141-25420-10-git-send-email-k.kozlowski@samsung.com>
- <146477144362.1485.3331887341591876278@sboyd-linaro>
- <20160601120520.GB16740@shlinux2>
- <146480499491.3686.4996610748316511864@sboyd-linaro>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:35031 "EHLO
-	mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752007AbcFBB3y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jun 2016 21:29:54 -0400
-Content-Disposition: inline
-In-Reply-To: <146480499491.3686.4996610748316511864@sboyd-linaro>
-Sender: linux-pm-owner@vger.kernel.org
+From: dbasehore@chromium.org
+Subject: [PATCH 1/5] x86: stub out pmc function
+Date: Wed,  1 Jun 2016 21:33:25 -0700
+Message-ID: <1464842009-21789-2-git-send-email-dbasehore@chromium.org>
+References: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: dbasehore@chromium.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <stephen.boyd@linaro.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Kukjin Kim <kgene@kernel.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
 
-On Wed, Jun 01, 2016 at 11:16:34AM -0700, Stephen Boyd wrote:
-> Quoting Peter Chen (2016-06-01 05:05:20)
-> > On Wed, Jun 01, 2016 at 01:57:23AM -0700, Stephen Boyd wrote:
-> > > Quoting Krzysztof Kozlowski (2016-06-01 01:02:18)
-> > > > Parse usb-pwrseq property from Device Tree to get the phandle to pwrseq
-> > > > device.  The pwrseq device will be used by USB hub to cycle the power
-> > > > before activating ports.
-> > > > 
-> > > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > > 
-> > > Drive by review comment.
-> > > 
-> > > I was hoping this would help me with a problem I'm having where I have a
-> > > hub (smsc4604) that needs to be taken out of reset before my HSIC
-> > > controller sends a USB reset to it, but it seems this is more about
-> > > doing some sort of power on sequence after enumeration?
-> > > 
-> > 
-> > No, you may need to do reset before enumeration, the general purpose of
-> > reset is eliminate unstable hardware state, and let the controller find
-> > the device.
-> > 
-> > Try to do it at bootloader to see if it works for you.
-> > 
-> 
-> Sorry the bootloader doesn't do this so that doesn't work for me.
+From: Derek Basehore <dbasehore@chromium.org>
 
-I mean try to see if the HUB can work if you reset it at bootloader.
-If it works, it means you need to do reset before enumeration, and you
-don't need to do anything after enumeration.
+This creates an inline function of intel_pmc_slp_s0_counter_read for
+!CONFIG_INTEL_PMC_CORE.
 
+Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+---
+ arch/x86/include/asm/pmc_core.h | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/include/asm/pmc_core.h b/arch/x86/include/asm/pmc_core.h
+index d4855f1..786e526 100644
+--- a/arch/x86/include/asm/pmc_core.h
++++ b/arch/x86/include/asm/pmc_core.h
+@@ -22,6 +22,10 @@
+ #define _ASM_PMC_CORE_H
+ 
+ /* API to read SLP_S0_RESIDENCY counter */
+-int intel_pmc_slp_s0_counter_read(u32 *data);
++#ifdef CONFIG_INTEL_PMC_CORE
++extern int intel_pmc_slp_s0_counter_read(u32 *data);
++#else
++static inline int intel_pmc_slp_s0_counter_read(u32 *data) { return -ENOSYS; }
++#endif
+ 
+ #endif /* _ASM_PMC_CORE_H */
 -- 
-
-Best Regards,
-Peter Chen
+2.8.0.rc3.226.g39d4020
