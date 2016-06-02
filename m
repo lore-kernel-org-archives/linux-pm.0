@@ -1,54 +1,36 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH] thermal: of-thermal: Fix setting of set_emul_temp hook
-Date: Thu, 2 Jun 2016 14:24:50 +0530
-Message-ID: <1464857690-23330-1-git-send-email-j-keerthy@ti.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 5/5] intel_idle: Add S0ix validation
+Date: Thu, 2 Jun 2016 11:25:05 +0200
+Message-ID: <20160602092505.GQ3206@twins.programming.kicks-ass.net>
+References: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
+ <1464842009-21789-6-git-send-email-dbasehore@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1464842009-21789-6-git-send-email-dbasehore@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: j-keerthy@ti.com, nm@ti.com, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: dbasehore@chromium.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, tglx@linutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-Currently thermal zone set_emul_temp is set unconditionally
-with of_thermal_set_emul_temp function. Set this only if the
-set_emul_temp hook is provided for thermal_zone_of_device_ops.
+On Wed, Jun 01, 2016 at 09:33:29PM -0700, dbasehore@chromium.org wrote:
+> +/*
+> + * Default chosen to have <= 1% power increase while allowing fast detection of
+> + * SLP S0 entry errors. Waking up 10 times a second shows ~30% increase in
+> + * system power on Skylake Y. Waking up once every 10 seconds is
+> + * indistinguishable from not waking up at all (as ~0.3% power increase would
+> + * be). Any reasonable power increases above this will not be visible to the
+> + * user.
+> + */
+> +#define DEFAULT_SLP_S0_SECONDS 10
 
-This fixes emul_temp failures on platforms for which set_emul_temp
-hook is not populated.
+So I don't think anybody waits for 10 seconds to see if suspend worked.
+After 10 seconds its in the bag and I'm out the door.
 
-Fixes: "184a4bf623f (thermal: of: Extend current
-	of-thermal.c code to allow setting emulated temp)"
-Suggested-by: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Keerthy <j-keerthy@ti.com>
----
- drivers/thermal/of-thermal.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+Then what?
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index b8e509c..93d8ce0 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -181,9 +181,6 @@ static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
- {
- 	struct __thermal_zone *data = tz->devdata;
- 
--	if (!data->ops || !data->ops->set_emul_temp)
--		return -EINVAL;
--
- 	return data->ops->set_emul_temp(data->sensor_data, temp);
- }
- 
-@@ -427,7 +424,9 @@ thermal_zone_of_add_sensor(struct device_node *zone,
- 
- 	tzd->ops->get_temp = of_thermal_get_temp;
- 	tzd->ops->get_trend = of_thermal_get_trend;
--	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
-+	if (ops->set_emul_temp)
-+		tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
-+
- 	mutex_unlock(&tzd->lock);
- 
- 	return tzd;
--- 
-1.9.1
+
+Why can't you fire a single timer after 0.5 seconds to see if you hit
+C10 and leave it at that? What's the point any further wakeup, if you
+know you hit C10, you're good continue on.
