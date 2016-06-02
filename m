@@ -1,159 +1,54 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH v6 5/5] PCI: Add runtime PM support for PCIe ports
-Date: Thu,  2 Jun 2016 11:17:15 +0300
-Message-ID: <1464855435-32960-6-git-send-email-mika.westerberg@linux.intel.com>
-References: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:25710 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932088AbcFBIRZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 Jun 2016 04:17:25 -0400
-In-Reply-To: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH] thermal: of-thermal: Fix setting of set_emul_temp hook
+Date: Thu, 2 Jun 2016 14:24:50 +0530
+Message-ID: <1464857690-23330-1-git-send-email-j-keerthy@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: j-keerthy@ti.com, nm@ti.com, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Peter Wu <peter@lekensteyn.nl>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-Add back runtime PM support for PCIe ports that was removed in
-commit fe9a743a2601 ("PCI/PM: Drop unused runtime PM support code for PCIe
-ports").
+Currently thermal zone set_emul_temp is set unconditionally
+with of_thermal_set_emul_temp function. Set this only if the
+set_emul_temp hook is provided for thermal_zone_of_device_ops.
 
-First of all we cannot enable it automatically for all ports since there
-has been problems previously as can be seen in [1].  In summary suspended
-PCIe ports were not able to deal with ACPI-based hotplug reliably.  One
-reason why this might happen is the fact that when a PCIe port is powered
-down, config space access to the devices behind the port is not possible.
-If the BIOS hotplug SMI handler assumes the port is always in D0 it will
-not be able to find the hotplugged devices.  To be on the safe side only
-enable runtime PM if the port does not claim to support hotplug.
+This fixes emul_temp failures on platforms for which set_emul_temp
+hook is not populated.
 
-For PCIe ports not using hotplug, we enable and allow runtime PM
-automatically.  Since 'bridge_d3' can be changed any time we check this in
-driver ->runtime_idle() and ->runtime_suspend() and only allow runtime
-suspend if the flag is still set.  Use autosuspend with default of 100ms
-idle time to prevent the port from repeatedly suspending and resuming on
-continuous configuration space access of devices behind the port.
-
-The actual power transition to D3 and back is handled in the PCI core.
-
-Idea to automatically unblock (allow) runtime PM for PCIe ports came from
-Dave Airlie.
-
-[1] https://bugzilla.kernel.org/show_bug.cgi?id=53811
-
-This includes a fix for lockdep issue reported by Valdis Kletnieks.
-
-Tested-by: Lukas Wunner <lukas@wunner.de>
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
-Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Fixes: "184a4bf623f (thermal: of: Extend current
+	of-thermal.c code to allow setting emulated temp)"
+Suggested-by: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Keerthy <j-keerthy@ti.com>
 ---
- drivers/pci/pcie/portdrv_core.c |  3 +++
- drivers/pci/pcie/portdrv_pci.c  | 51 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 54 insertions(+)
+ drivers/thermal/of-thermal.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
-index 32d4d0a3d20e..e9270b4026f3 100644
---- a/drivers/pci/pcie/portdrv_core.c
-+++ b/drivers/pci/pcie/portdrv_core.c
-@@ -11,6 +11,7 @@
- #include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/pm.h>
-+#include <linux/pm_runtime.h>
- #include <linux/string.h>
- #include <linux/slab.h>
- #include <linux/pcieport_if.h>
-@@ -342,6 +343,8 @@ static int pcie_device_init(struct pci_dev *pdev, int service, int irq)
- 		return retval;
- 	}
- 
-+	pm_runtime_no_callbacks(device);
-+
- 	return 0;
- }
- 
-diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-index 6c6bb03392ea..70d7ad8c6d17 100644
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -93,6 +93,26 @@ static int pcie_port_resume_noirq(struct device *dev)
- 	return 0;
- }
- 
-+static int pcie_port_runtime_suspend(struct device *dev)
-+{
-+	return to_pci_dev(dev)->bridge_d3 ? 0 : -EBUSY;
-+}
-+
-+static int pcie_port_runtime_resume(struct device *dev)
-+{
-+	return 0;
-+}
-+
-+static int pcie_port_runtime_idle(struct device *dev)
-+{
-+	/*
-+	 * Assume the PCI core has set bridge_d3 whenever it thinks the port
-+	 * should be good to go to D3.  Everything else, including moving
-+	 * the port to D3, is handled by the PCI core.
-+	 */
-+	return to_pci_dev(dev)->bridge_d3 ? 0 : -EBUSY;
-+}
-+
- static const struct dev_pm_ops pcie_portdrv_pm_ops = {
- 	.suspend	= pcie_port_device_suspend,
- 	.resume		= pcie_port_device_resume,
-@@ -101,6 +121,9 @@ static const struct dev_pm_ops pcie_portdrv_pm_ops = {
- 	.poweroff	= pcie_port_device_suspend,
- 	.restore	= pcie_port_device_resume,
- 	.resume_noirq	= pcie_port_resume_noirq,
-+	.runtime_suspend = pcie_port_runtime_suspend,
-+	.runtime_resume	= pcie_port_runtime_resume,
-+	.runtime_idle	= pcie_port_runtime_idle,
- };
- 
- #define PCIE_PORTDRV_PM_OPS	(&pcie_portdrv_pm_ops)
-@@ -134,11 +157,39 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
- 		return status;
- 
- 	pci_save_state(dev);
-+
-+	/*
-+	 * Prevent runtime PM if the port is advertising support for PCIe
-+	 * hotplug.  Otherwise the BIOS hotplug SMI code might not be able
-+	 * to enumerate devices behind this port properly (the port is
-+	 * powered down preventing all config space accesses to the
-+	 * subordinate devices).  We can't be sure for native PCIe hotplug
-+	 * either so prevent that as well.
-+	 */
-+	if (!dev->is_hotplug_bridge) {
-+		/*
-+		 * Keep the port resumed 100ms to make sure things like
-+		 * config space accesses from userspace (lspci) will not
-+		 * cause the port to repeatedly suspend and resume.
-+		 */
-+		pm_runtime_set_autosuspend_delay(&dev->dev, 100);
-+		pm_runtime_use_autosuspend(&dev->dev);
-+		pm_runtime_mark_last_busy(&dev->dev);
-+		pm_runtime_put_autosuspend(&dev->dev);
-+		pm_runtime_allow(&dev->dev);
-+	}
-+
- 	return 0;
- }
- 
- static void pcie_portdrv_remove(struct pci_dev *dev)
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index b8e509c..93d8ce0 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -181,9 +181,6 @@ static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
  {
-+	if (!dev->is_hotplug_bridge) {
-+		pm_runtime_forbid(&dev->dev);
-+		pm_runtime_get_noresume(&dev->dev);
-+		pm_runtime_dont_use_autosuspend(&dev->dev);
-+	}
-+
- 	pcie_port_device_remove(dev);
+ 	struct __thermal_zone *data = tz->devdata;
+ 
+-	if (!data->ops || !data->ops->set_emul_temp)
+-		return -EINVAL;
+-
+ 	return data->ops->set_emul_temp(data->sensor_data, temp);
  }
  
+@@ -427,7 +424,9 @@ thermal_zone_of_add_sensor(struct device_node *zone,
+ 
+ 	tzd->ops->get_temp = of_thermal_get_temp;
+ 	tzd->ops->get_trend = of_thermal_get_trend;
+-	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
++	if (ops->set_emul_temp)
++		tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
++
+ 	mutex_unlock(&tzd->lock);
+ 
+ 	return tzd;
 -- 
-2.8.1
-
+1.9.1
