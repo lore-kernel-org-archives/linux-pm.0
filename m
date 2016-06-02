@@ -1,92 +1,53 @@
-From: dbasehore@chromium.org
-Subject: [PATCH 3/5] x86, apic: Add timed freeze support
-Date: Wed,  1 Jun 2016 21:33:27 -0700
-Message-ID: <1464842009-21789-4-git-send-email-dbasehore@chromium.org>
-References: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:33542 "EHLO
-	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbcFBEdf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 00:33:35 -0400
-Received: by mail-pf0-f170.google.com with SMTP id b124so26319367pfb.0
-        for <linux-pm@vger.kernel.org>; Wed, 01 Jun 2016 21:33:35 -0700 (PDT)
-In-Reply-To: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v7 1/6] mfd: max8997: Use regmap to access registers
+Date: Thu, 02 Jun 2016 06:43:19 +0200
+Message-ID: <574FB967.7090201@samsung.com>
+References: <1464773339-756-1-git-send-email-k.kozlowski@samsung.com>
+ <1464774841-1439-1-git-send-email-k.kozlowski@samsung.com>
+ <574EC8EE.5000509@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-reply-to: <574EC8EE.5000509@samsung.com>
+Sender: linux-leds-owner@vger.kernel.org
+To: Jacek Anaszewski <j.anaszewski@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, r.baldyga@hackerion.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: dbasehore@chromium.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, tglx@linutronix.de
 
-From: Derek Basehore <dbasehore@chromium.org>
+On 06/01/2016 01:37 PM, Jacek Anaszewski wrote:
+> Hi Krzysztof,
+> 
+> One thing drew my attention while reviewing this again:
+> max8997_led_brightness_set() can sleep, but the brightness_set
+> op it is assigned to must not sleep. At the time when this driver was
+> merged we were delegating brightness setting to workqueues task
+> in LED class drivers that can sleep during this call.
+> This must have been overlooked, which is even more likely, taking into
+> account that the initial patch doesn't have LED maintainer's ack.
+> 
+> The non-sleeping requirement is motivated by the fact that brightness
+> can be set from softirq context, e.g. when timer trigger is enabled.
+> 
+> Currently LED class drivers don't have to use workqueue on their own,
+> but are required to use brightness_set_blocking op instead of
+> brightness_set if they can sleep while setting brightness.
+> 
+> Apart of that, I think that operations in max8997_led_brightness_set()
+> should be protected with mutex to assure leaving the device in
+> a consistent state in case of concurrent calls.
+> 
+> I am aware that this is out of this patch scope, but I'd be grateful
+> if you could apply those changes and test them on hardware if you have
+> an access to.
 
-This adds support to the clock event devices created by apic to use
-timed freeze. The apic is able to run a timer during freeze with near
-izero impact on modern CPUs such as skylake. This will allow S0ix,
-suspend-to-idle, to be validated on Intel CPUs that support it.
+The problem you mention existed before the patch. It was using sleeping
+primitives (mutex) before adding regmap so I understand you don't have
+anything against this patch, right?
 
-This is needed because bugs with power settings on the SoC can prevent
-S0ix entry. There is also no way to check this before idling all of
-the CPUs.
+I can fix the issue but it will be a little bit trickier because I don't
+have the hardware. Other guys in the team tested the patchset for me so
+I rely on them in that matter. Anyway I'll work on it.
 
-Signed-off-by: Derek Basehore <dbasehore@chromium.org>
----
- arch/x86/kernel/apic/apic.c | 25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
-
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index 60078a6..f0c5f92 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -475,6 +475,26 @@ static int lapic_next_deadline(unsigned long delta,
- 	return 0;
- }
- 
-+static bool lapic_event_expired(struct clock_event_device *evt)
-+{
-+	u32 cct;
-+
-+	cct = apic_read(APIC_TMCCT);
-+	return cct == 0;
-+}
-+
-+static bool lapic_deadline_expired(struct clock_event_device *evt)
-+{
-+	u64 msr;
-+
-+	/*
-+	 * When the timer interrupt is triggered, the register is cleared, so a
-+	 * non-zero value indicates a pending timer event.
-+	 */
-+	rdmsrl(MSR_IA32_TSC_DEADLINE, msr);
-+	return msr == 0;
-+}
-+
- static int lapic_timer_shutdown(struct clock_event_device *evt)
- {
- 	unsigned int v;
-@@ -529,12 +549,14 @@ static struct clock_event_device lapic_clockevent = {
- 	.name			= "lapic",
- 	.features		= CLOCK_EVT_FEAT_PERIODIC |
- 				  CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_C3STOP
--				  | CLOCK_EVT_FEAT_DUMMY,
-+				  | CLOCK_EVT_FEAT_DUMMY |
-+				  CLOCK_EVT_FEAT_FREEZE,
- 	.shift			= 32,
- 	.set_state_shutdown	= lapic_timer_shutdown,
- 	.set_state_periodic	= lapic_timer_set_periodic,
- 	.set_state_oneshot	= lapic_timer_set_oneshot,
- 	.set_next_event		= lapic_next_event,
-+	.event_expired		= lapic_event_expired,
- 	.broadcast		= lapic_timer_broadcast,
- 	.rating			= 100,
- 	.irq			= -1,
-@@ -562,6 +584,7 @@ static void setup_APIC_timer(void)
- 		levt->features &= ~(CLOCK_EVT_FEAT_PERIODIC |
- 				    CLOCK_EVT_FEAT_DUMMY);
- 		levt->set_next_event = lapic_next_deadline;
-+		levt->event_expired = lapic_deadline_expired;
- 		clockevents_config_and_register(levt,
- 						(tsc_khz / TSC_DIVISOR) * 1000,
- 						0xF, ~0UL);
--- 
-2.8.0.rc3.226.g39d4020
-
+Best regards,
+Krzysztof
