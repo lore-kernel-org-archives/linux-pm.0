@@ -1,177 +1,92 @@
-From: Dave Hansen <dave@sr71.net>
-Subject: [PATCH 04/20] x86, intel_idle: use Intel family macros for intel_idle
-Date: Wed, 01 Jun 2016 17:12:03 -0700
-Message-ID: <20160602001203.177FD5D9@viggo.jf.intel.com>
-References: <20160602001157.D8BE59D7@viggo.jf.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160602001157.D8BE59D7@viggo.jf.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: x86@kernel.org, Dave Hansen <dave@sr71.net>, dave.hansen@linux.intel.com, lenb@kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] Revert "cpufreq: intel_pstate: Enable PPC enforcement for servers"
+Date: Wed,  1 Jun 2016 17:41:57 -0700
+Message-ID: <1464828117-6534-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:34679 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751451AbcFBAkn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 1 Jun 2016 20:40:43 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
+This change reverts
+'commit 2b3ec7650584 ("cpufreq: intel_pstate: Enable PPC enforcement for
+servers")'
 
-From: Dave Hansen <dave.hansen@linux.intel.com>
+Intel P State uses max P-State as the max turbo P-State. This max P-State
+can be limited by ACPI _PSS table entry 0. After
+'commit 9522a2ff9cde ("cpufreq: intel_pstate: Enforce _PPC limits")''
+the _PSS table entry[0] will be used to cap max performance for
+enterprise and performance server by default.
 
-Use the new INTEL_FAM6_MODEL_* macros for intel_idle.c.  Also fix
-up some of the macros to be consistent with how some of the
-intel_idle code refers to the model.
+Even though this is correct processing, but when the performance results
+are compared with the version before the above commit, then obviously the
+results will be worse, if the _PSS table entry 0 is not the max turbo
+P-State.
 
-There's on oddity here: model 0x1F is uniquely referred to here
-and nowhere else that I could find.  0x1E/0x1F are just spelled
-out as "Intel Core i7 and i5 Processors" in the SDM or as "Intel
-processors based on the Nehalem, Westmere microarchitectures" in
-the RDPMC section.  Comments between tables 19-19 and 19-20 in
-the SDM seem to point to 0x1F being some kind of Westmere, so
-let's call it "WESTMERE2".
+So to minimize impact on performance, this revert will disable the default
+enforcement of ACPI _PSS and ACPI _PPC. So this feature can only only be
+explicitly activated by kernel command line
+intel_pstate=support_acpi_ppc
 
-Signed-off-by: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
+ Documentation/kernel-parameters.txt |  5 +----
+ drivers/cpufreq/intel_pstate.c      | 15 +--------------
+ 2 files changed, 2 insertions(+), 18 deletions(-)
 
- b/arch/x86/include/asm/intel-family.h |   10 +++-
- b/drivers/idle/intel_idle.c           |   71 +++++++++++++++++-----------------
- 2 files changed, 43 insertions(+), 38 deletions(-)
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 82b42c9..b7c3a56 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1683,10 +1683,7 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 			Only load intel_pstate on systems which support
+ 			hardware P state control (HWP) if available.
+ 		support_acpi_ppc
+-			Enforce ACPI _PPC performance limits. If the Fixed ACPI
+-			Description Table, specifies preferred power management
+-			profile as "Enterprise Server" or "Performance Server",
+-			then this feature is turned on by default.
++			Enforce ACPI _PPC performance limits.
+ 
+ 	intremap=	[X86-64, Intel-IOMMU]
+ 			on	enable Interrupt Remapping (default)
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 3a9c432..518537c 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -362,16 +362,6 @@ static struct perf_limits *limits = &powersave_limits;
+ #endif
+ 
+ #ifdef CONFIG_ACPI
+-
+-static bool intel_pstate_get_ppc_enable_status(void)
+-{
+-	if (acpi_gbl_FADT.preferred_profile == PM_ENTERPRISE_SERVER ||
+-	    acpi_gbl_FADT.preferred_profile == PM_PERFORMANCE_SERVER)
+-		return true;
+-
+-	return acpi_ppc;
+-}
+-
+ /*
+  * The max target pstate ratio is a 8 bit value in both PLATFORM_INFO MSR and
+  * in TURBO_RATIO_LIMIT MSR, which pstate driver stores in max_pstate and
+@@ -395,10 +385,7 @@ static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
+ 	int ret;
+ 	int i;
+ 
+-	if (hwp_active)
+-		return;
+-
+-	if (!intel_pstate_get_ppc_enable_status())
++	if (!acpi_ppc || hwp_active)
+ 		return;
+ 
+ 	cpu = all_cpu_data[policy->cpu];
+-- 
+2.5.5
 
-diff -puN arch/x86/include/asm/intel-family.h~x86-intel-familites-intelidle arch/x86/include/asm/intel-family.h
---- a/arch/x86/include/asm/intel-family.h~x86-intel-familites-intelidle	2016-06-01 15:45:04.180944067 -0700
-+++ b/arch/x86/include/asm/intel-family.h	2016-06-01 15:45:04.187944386 -0700
-@@ -6,6 +6,9 @@
-  *
-  * The "_X" parts are generally the EP and EX Xeons, or the
-  * "Extreme" ones, like Broadwell-E.
-+ *
-+ * Things ending in "2" are usually because we have no better
-+ * name for them.  There's no processor called "WESTMERE2".
-  */
- 
- #define INTEL_FAM6_MODEL_CORE_YONAH		0x0E
-@@ -17,12 +20,13 @@
- #define INTEL_FAM6_MODEL_NEHALEM_EP		0x1A
- #define INTEL_FAM6_MODEL_NEHALEM_EX		0x2E
- #define INTEL_FAM6_MODEL_WESTMERE		0x25
-+#define INTEL_FAM6_MODEL_WESTMERE2		0x1F
- #define INTEL_FAM6_MODEL_WESTMERE_EP		0x2C
- #define INTEL_FAM6_MODEL_WESTMERE_EX		0x2F
- #define INTEL_FAM6_MODEL_SANDYBRIDGE		0x2A
- #define INTEL_FAM6_MODEL_SANDYBRIDGE_X		0x2D
- #define INTEL_FAM6_MODEL_IVYBRIDGE		0x3A
--#define INTEL_FAM6_MODEL_IVYBRIDGE_X		0x3E
-+#define INTEL_FAM6_MODEL_IVYBRIDGE_X		0x3E /* aka. Ivy Town / IVT */
- #define INTEL_FAM6_MODEL_HASWELL_CORE		0x3C
- #define INTEL_FAM6_MODEL_HASWELL_X		0x3F
- #define INTEL_FAM6_MODEL_HASWELL_ULT		0x45
-@@ -44,9 +48,9 @@
- #define INTEL_FAM6_MODEL_ATOM_PENWELL		0x27
- #define INTEL_FAM6_MODEL_ATOM_CLOVERVIEW	0x35
- #define INTEL_FAM6_MODEL_ATOM_CEDARVIEW		0x36
--#define INTEL_FAM6_MODEL_ATOM_SILVERMONT1	0x37
-+#define INTEL_FAM6_MODEL_ATOM_SILVERMONT1	0x37 /* BayTrail/BYT */
- #define INTEL_FAM6_MODEL_ATOM_SILVERMONT2	0x4D /* Avaton/Rangely */
--#define INTEL_FAM6_MODEL_ATOM_AIRMONT		0x4C
-+#define INTEL_FAM6_MODEL_ATOM_AIRMONT		0x4C /* CherryTrail */
- #define INTEL_FAM6_MODEL_ATOM_GOLDMONT		0x5C
- #define INTEL_FAM6_MODEL_ATOM_DENVERTON		0x5F /* Goldmont Microserver */
- 
-diff -puN drivers/idle/intel_idle.c~x86-intel-familites-intelidle drivers/idle/intel_idle.c
---- a/drivers/idle/intel_idle.c~x86-intel-familites-intelidle	2016-06-01 15:45:04.182944158 -0700
-+++ b/drivers/idle/intel_idle.c	2016-06-01 15:45:04.189944477 -0700
-@@ -62,6 +62,7 @@
- #include <linux/cpu.h>
- #include <linux/module.h>
- #include <asm/cpu_device_id.h>
-+#include <asm/intel-family.h>
- #include <asm/mwait.h>
- #include <asm/msr.h>
- 
-@@ -1020,38 +1021,38 @@ static const struct idle_cpu idle_cpu_bx
- 	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
- 
- static const struct x86_cpu_id intel_idle_ids[] __initconst = {
--	ICPU(0x1a, idle_cpu_nehalem),
--	ICPU(0x1e, idle_cpu_nehalem),
--	ICPU(0x1f, idle_cpu_nehalem),
--	ICPU(0x25, idle_cpu_nehalem),
--	ICPU(0x2c, idle_cpu_nehalem),
--	ICPU(0x2e, idle_cpu_nehalem),
--	ICPU(0x1c, idle_cpu_atom),
--	ICPU(0x26, idle_cpu_lincroft),
--	ICPU(0x2f, idle_cpu_nehalem),
--	ICPU(0x2a, idle_cpu_snb),
--	ICPU(0x2d, idle_cpu_snb),
--	ICPU(0x36, idle_cpu_atom),
--	ICPU(0x37, idle_cpu_byt),
--	ICPU(0x4c, idle_cpu_cht),
--	ICPU(0x3a, idle_cpu_ivb),
--	ICPU(0x3e, idle_cpu_ivt),
--	ICPU(0x3c, idle_cpu_hsw),
--	ICPU(0x3f, idle_cpu_hsw),
--	ICPU(0x45, idle_cpu_hsw),
--	ICPU(0x46, idle_cpu_hsw),
--	ICPU(0x4d, idle_cpu_avn),
--	ICPU(0x3d, idle_cpu_bdw),
--	ICPU(0x47, idle_cpu_bdw),
--	ICPU(0x4f, idle_cpu_bdw),
--	ICPU(0x56, idle_cpu_bdw),
--	ICPU(0x4e, idle_cpu_skl),
--	ICPU(0x5e, idle_cpu_skl),
--	ICPU(0x8e, idle_cpu_skl),
--	ICPU(0x9e, idle_cpu_skl),
--	ICPU(0x55, idle_cpu_skx),
--	ICPU(0x57, idle_cpu_knl),
--	ICPU(0x5c, idle_cpu_bxt),
-+	ICPU(INTEL_FAM6_MODEL_NEHALEM_EP,	idle_cpu_nehalem),
-+	ICPU(INTEL_FAM6_MODEL_NEHALEM,		idle_cpu_nehalem),
-+	ICPU(INTEL_FAM6_MODEL_WESTMERE2,	idle_cpu_nehalem),
-+	ICPU(INTEL_FAM6_MODEL_WESTMERE,		idle_cpu_nehalem),
-+	ICPU(INTEL_FAM6_MODEL_WESTMERE_EP,	idle_cpu_nehalem),
-+	ICPU(INTEL_FAM6_MODEL_NEHALEM_EX,	idle_cpu_nehalem),
-+	ICPU(INTEL_FAM6_MODEL_ATOM_PINEVIEW,	idle_cpu_atom),
-+	ICPU(INTEL_FAM6_MODEL_ATOM_LINCROFT,	idle_cpu_lincroft),
-+	ICPU(INTEL_FAM6_MODEL_WESTMERE_EX,	idle_cpu_nehalem),
-+	ICPU(INTEL_FAM6_MODEL_SANDYBRIDGE,	idle_cpu_snb),
-+	ICPU(INTEL_FAM6_MODEL_SANDYBRIDGE_X,	idle_cpu_snb),
-+	ICPU(INTEL_FAM6_MODEL_ATOM_CEDARVIEW,	idle_cpu_atom),
-+	ICPU(INTEL_FAM6_MODEL_ATOM_SILVERMONT1,	idle_cpu_byt),
-+	ICPU(INTEL_FAM6_MODEL_ATOM_AIRMONT,	idle_cpu_cht),
-+	ICPU(INTEL_FAM6_MODEL_IVYBRIDGE,	idle_cpu_ivb),
-+	ICPU(INTEL_FAM6_MODEL_IVYBRIDGE_X,	idle_cpu_ivt),
-+	ICPU(INTEL_FAM6_MODEL_HASWELL_CORE,	idle_cpu_hsw),
-+	ICPU(INTEL_FAM6_MODEL_HASWELL_X,	idle_cpu_hsw),
-+	ICPU(INTEL_FAM6_MODEL_HASWELL_ULT,	idle_cpu_hsw),
-+	ICPU(INTEL_FAM6_MODEL_HASWELL_GT3E,	idle_cpu_hsw),
-+	ICPU(INTEL_FAM6_MODEL_ATOM_SILVERMONT2,	idle_cpu_avn),
-+	ICPU(INTEL_FAM6_MODEL_BROADWELL_CORE_M,	idle_cpu_bdw),
-+	ICPU(INTEL_FAM6_MODEL_BROADWELL_GT3E,	idle_cpu_bdw),
-+	ICPU(INTEL_FAM6_MODEL_BROADWELL_X,	idle_cpu_bdw),
-+	ICPU(INTEL_FAM6_MODEL_BROADWELL_XEON_D,	idle_cpu_bdw),
-+	ICPU(INTEL_FAM6_MODEL_SKYLAKE_MOBILE,	idle_cpu_skl),
-+	ICPU(INTEL_FAM6_MODEL_SKYLAKE_DESKTOP,	idle_cpu_skl),
-+	ICPU(INTEL_FAM6_MODEL_KABYLAKE_MOBILE,	idle_cpu_skl),
-+	ICPU(INTEL_FAM6_MODEL_KABYLAKE_DESKTOP,	idle_cpu_skl),
-+	ICPU(INTEL_FAM6_MODEL_SKYLAKE_X,	idle_cpu_skx),
-+	ICPU(INTEL_FAM6_MODEL_XEON_PHI_KNL,	idle_cpu_knl),
-+	ICPU(INTEL_FAM6_MODEL_ATOM_GOLDMONT,	idle_cpu_bxt),
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_idle_ids);
-@@ -1261,13 +1262,13 @@ static void intel_idle_state_table_updat
- {
- 	switch (boot_cpu_data.x86_model) {
- 
--	case 0x3e: /* IVT */
-+	case INTEL_FAM6_MODEL_IVYBRIDGE_X:
- 		ivt_idle_state_table_update();
- 		break;
--	case 0x5c: /* BXT */
-+	case INTEL_FAM6_MODEL_ATOM_GOLDMONT:
- 		bxt_idle_state_table_update();
- 		break;
--	case 0x5e: /* SKL-H */
-+	case INTEL_FAM6_MODEL_SKYLAKE_DESKTOP:
- 		sklh_idle_state_table_update();
- 		break;
- 	}
-_
