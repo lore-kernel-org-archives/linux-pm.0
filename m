@@ -1,48 +1,50 @@
 From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: [PATCH v6 4/5] ACPI / hotplug / PCI: Runtime resume bridge before rescan
-Date: Thu,  2 Jun 2016 11:17:14 +0300
-Message-ID: <1464855435-32960-5-git-send-email-mika.westerberg@linux.intel.com>
+Subject: [PATCH v6 1/5] PCI: Don't clear d3cold_allowed for PCIe ports
+Date: Thu,  2 Jun 2016 11:17:11 +0300
+Message-ID: <1464855435-32960-2-git-send-email-mika.westerberg@linux.intel.com>
 References: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:32768 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753018AbcFBIRa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 2 Jun 2016 04:17:30 -0400
 In-Reply-To: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, Andreas Noever <andreas.noever@gmail.com>, Peter Wu <peter@lekensteyn.nl>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-If a PCI bridge (or PCIe port) that is runtime suspended gets an ACPI
-hotplug event, such as BUS_CHECK we need to make sure it is resumed before
-devices below the bridge are re-scanned. Otherwise the devices behind the
-port are not accessible and will be treated as hot-unplugged.
+The PCI core skips bridges and ports when the system is suspended.  The PCI
+core checks return value of pci_has_subordinate() in pci_pm_suspend_noirq()
+to skip all devices where it is non-zero (which means PCI bridges and PCIe
+ports).
 
-To fix this, resume PCI bridges from runtime suspend while rescanning.
+Since PCIe ports are never suspended in the first place, there is no need
+to set d3cold_allowed for them.
 
+Tested-by: Lukas Wunner <lukas@wunner.de>
 Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/pci/hotplug/acpiphp_glue.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/pci/pcie/portdrv_pci.c | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index fa49f9143b80..6a33ddcfa20b 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -675,6 +675,8 @@ static void acpiphp_check_bridge(struct acpiphp_bridge *bridge)
- 	if (bridge->is_going_away)
- 		return;
+diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+index be35da2e105e..6c6bb03392ea 100644
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -134,11 +134,6 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+ 		return status;
  
-+	pm_runtime_get_sync(&bridge->pci_dev->dev);
-+
- 	list_for_each_entry(slot, &bridge->slots, node) {
- 		struct pci_bus *bus = slot->bus;
- 		struct pci_dev *dev, *tmp;
-@@ -694,6 +696,8 @@ static void acpiphp_check_bridge(struct acpiphp_bridge *bridge)
- 			disable_slot(slot);
- 		}
- 	}
-+
-+	pm_runtime_put(&bridge->pci_dev->dev);
+ 	pci_save_state(dev);
+-	/*
+-	 * D3cold may not work properly on some PCIe port, so disable
+-	 * it by default.
+-	 */
+-	dev->d3cold_allowed = false;
+ 	return 0;
  }
  
- /*
 -- 
 2.8.1
+
