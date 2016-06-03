@@ -1,74 +1,67 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [RESEND v2] power: reset: keystone: Enable COMPILE_TEST
-Date: Fri, 3 Jun 2016 04:13:39 +0200
-Message-ID: <20160603021339.GC8921@earth>
-References: <1459298988-20530-1-git-send-email-k.kozlowski@samsung.com>
- <20160415142752.GC24087@earth>
- <CAJKOXPdACNfhYj8cbrU6sUU+R7vSe+TOsRCPizhvu753KjavoA@mail.gmail.com>
+Subject: Re: [PATCH v2 1/6] power: Introduce Broadcom kona reset driver
+Date: Fri, 3 Jun 2016 04:38:53 +0200
+Message-ID: <20160603023853.GD8921@earth>
+References: <1463002582-6875-1-git-send-email-chris.brand@broadcom.com>
+ <1463002582-6875-2-git-send-email-chris.brand@broadcom.com>
+ <57409633.8060605@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="4ZLFUWh1odzi/v6L"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:33703 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751125AbcFCCNo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 2 Jun 2016 22:13:44 -0400
+	protocol="application/pgp-signature"; boundary="Ycz6tD7Th1CMF4v7"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJKOXPdACNfhYj8cbrU6sUU+R7vSe+TOsRCPizhvu753KjavoA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <57409633.8060605@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Chris Brand <chris.brand@broadcom.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---4ZLFUWh1odzi/v6L
-Content-Type: text/plain; charset=us-ascii
+--Ycz6tD7Th1CMF4v7
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Florian,
 
-On Mon, May 23, 2016 at 08:12:31AM +0200, Krzysztof Kozlowski wrote:
-> On Fri, Apr 15, 2016 at 4:27 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> > Hi,
-> >
-> > On Wed, Mar 30, 2016 at 09:49:48AM +0900, Krzysztof Kozlowski wrote:
-> >> Enable the COMPILE_TEST to get build coverage, except on platforms
-> >> !HAS_IOMEM (required by selected MFD_SYSCON).
-> >>
-> >> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> >
-> > Thanks, queued.
->=20
-> Hey,
->=20
-> I can't find this patch in your recent pull request. What happened?
+On Sat, May 21, 2016 at 10:09:07AM -0700, Florian Fainelli wrote:
+> Le 11/05/2016 14:36, Chris Brand a =E9crit :
+> > This driver supports reset on both BCM21664 and BCM23550.
+> > Code is being moved from arch/arm/mach-bcm/board_bcm21664.c
+> >=20
+> > Signed-off-by: Chris Brand <chris.brand@broadcom.com>
 
-Sorry, I noticed, that I forgot to push it to -next and didn't want
-to include untested patches in the pull request. It's the first
-patch being queued for 4.8.
+> Sebastian, Dmitry, I know we are in the merge window, let me know if you
+> would want me to take this patch and the 5 others in the next arm-soc
+> pull request, or if you prefer to take this one in your own tree.
+
+Feel free to queue it via arm-soc with
+
+Acked-By: Sebastian Reichel <sre@kernel.org>
+
+If I didn't overlook it, it's missing DT documentation, though.
 
 -- Sebastian
 
---4ZLFUWh1odzi/v6L
+--Ycz6tD7Th1CMF4v7
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJXUOfRAAoJENju1/PIO/qajm4QAKBkwlzR9uYzK+Tc4njcfJ1X
-KIyIJQFxfr2Er2pTnhNK1dd3HYKrezIieT2mfKlT5RFsl/mcCtjnDYubc08+WQUF
-fq09tv3s+uR30d51ksXcl7xwHSF+RKvREbRC3Dn8wriHEGlb707jbvbpTKbJZY3f
-cJA2v9wOHc5nysHkmL1e2RNS926h4vM6KFyCgv38Kb+KVu+cC3y2mk03zPBaItAy
-lWKdeIhJ/xpBXe65CMraxgfL4F09waOYUgtOAnrDZFTqY9uvR5o+3HwZr3nBgvG5
-4MIpNu9DbhD5ilAIdL/vkJ/eB5xgEelL20cw61Gms6qf54dFcMDYpWKT2OjEFL4E
-J/M7ZWOWTOelvrBJFjdfGJRqzrYPzIiIVb1+BFWB0GyhoWZ+APHcoeEkzRXl7TzT
-K6vCCsJMMstjZOah5yJWPhFpWSg1JZ9HBGZWT1xxdiCKMTbxQGPmTreM6Fl2CzxO
-xx97SRvoGUoC83maNdfvHLts9VRN3C1PVcIr0qE/2Pjh53QkSwy11O+CCNz3pNL+
-X+t/BU/BL4/ETk4OZZjIIRhLUSOamYQmjj7rdE5hneCZhYRL6a0ulENq5/54fWh7
-m9RZbmx7UKhBTJyDgX8Bj19A+MVIE5vEWbUX/YvTLKnfE8waPhZiMReFuxMCj5Rv
-d5Dejg0BAsrTxE4kp86F
-=UJeL
+iQIcBAEBCgAGBQJXUO26AAoJENju1/PIO/qaZPcP/2gZa+TYc7gQxES7TDUsNnLU
+OKTIRQPXId7lzwIZG3LaBrMvjfsavxMEtohGV+Ccj7i1xYImr8RogrRGsAVDi4OL
+1/jx/WezJGgqoyfXS8V9PM99qcHZjvW4lijZwpw5EVUy4TjcIaRI3IrhNUrlxS8V
+Pc6dm3/Rwf6WgbVGpQrD/wF48hIL9FVBbmNSLKKBA3/9OiiVW9v5vmcDvAvmY+UD
+H42nCBIr5aEGdXoZHjvuQ3LY+GOUBNqASL2HqYbn6+Wfr60a3anBvZTaJP0PJUrs
+IJ0Rg3WWZqVA8X/lOVoKyNAwL+TRFm+km7q5qtDzk4TD3YSqBIT1TSy4kfsmPRGd
+b/vdvO4ARs4en9Z3g1doHBU8Ttmouw5WExEuruU34L5rzk0xXOGxBTn+/CZnEgl2
+MhlMaAcE2iBQRT+kbooOhp3CzFI+/BIQyAwYUYLNGOX4w2TKC+YaABs2rrzNqHK6
+Edmc/iCsxN+ZFF7GWwX663q+D85JtiaOUuw0jqltMZsO+ReQJHSgbP4UMKYOSHBF
+zmLtzBzXrIL1DGV41ruHt4u9343SboKczaHU1UK/gISH+ezfMptp6pa9i7RFDAmV
+M5r5GSxBTQ8bwDjN00xdTK2KwWQpp8VMovRfHdvUDiR6BEVF/aWNbgMucNBy+BSB
+uK2rEyMu90Ak7qplRqRB
+=+JU8
 -----END PGP SIGNATURE-----
 
---4ZLFUWh1odzi/v6L--
+--Ycz6tD7Th1CMF4v7--
