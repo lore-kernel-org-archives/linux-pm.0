@@ -1,117 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 4/8] cpufreq: ondemand: Don't keep a copy of freq_table pointer
-Date: Fri,  3 Jun 2016 10:58:48 +0530
-Message-ID: <c7a82406e798ed62662a26f6d38f751b42b13c10.1464931080.git.viresh.kumar@linaro.org>
-References: <cover.1464931080.git.viresh.kumar@linaro.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [RESEND v2] power: reset: keystone: Enable COMPILE_TEST
+Date: Fri, 03 Jun 2016 08:59:48 +0200
+Message-ID: <57512AE4.2090203@samsung.com>
+References: <1459298988-20530-1-git-send-email-k.kozlowski@samsung.com>
+ <20160415142752.GC24087@earth>
+ <CAJKOXPdACNfhYj8cbrU6sUU+R7vSe+TOsRCPizhvu753KjavoA@mail.gmail.com>
+ <20160603021339.GC8921@earth>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1464931080.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1464931080.git.viresh.kumar@linaro.org>
-References: <cover.1464931080.git.viresh.kumar@linaro.org>
+In-reply-to: <20160603021339.GC8921@earth>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There is absolutely no need to keep a copy to the freq-table in 'struct
-od_policy_dbs_info'. Use policy->freq_table instead.
+On 06/03/2016 04:13 AM, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Mon, May 23, 2016 at 08:12:31AM +0200, Krzysztof Kozlowski wrote:
+>> On Fri, Apr 15, 2016 at 4:27 PM, Sebastian Reichel <sre@kernel.org> wrote:
+>>> Hi,
+>>>
+>>> On Wed, Mar 30, 2016 at 09:49:48AM +0900, Krzysztof Kozlowski wrote:
+>>>> Enable the COMPILE_TEST to get build coverage, except on platforms
+>>>> !HAS_IOMEM (required by selected MFD_SYSCON).
+>>>>
+>>>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>>>
+>>> Thanks, queued.
+>>
+>> Hey,
+>>
+>> I can't find this patch in your recent pull request. What happened?
+> 
+> Sorry, I noticed, that I forgot to push it to -next and didn't want
+> to include untested patches in the pull request. It's the first
+> patch being queued for 4.8.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/amd_freq_sensitivity.c |  7 +++----
- drivers/cpufreq/cpufreq_ondemand.c     | 22 +++++++++++-----------
- drivers/cpufreq/cpufreq_ondemand.h     |  1 -
- 3 files changed, 14 insertions(+), 16 deletions(-)
+OK, no problem. Thanks for letting me know.
 
-diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
-index 404360cad25c..bc86816693a8 100644
---- a/drivers/cpufreq/amd_freq_sensitivity.c
-+++ b/drivers/cpufreq/amd_freq_sensitivity.c
-@@ -48,9 +48,8 @@ static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 	struct dbs_data *od_data = policy_dbs->dbs_data;
- 	struct od_dbs_tuners *od_tuners = od_data->tuners;
--	struct od_policy_dbs_info *od_info = to_dbs_info(policy_dbs);
- 
--	if (!od_info->freq_table)
-+	if (!policy->freq_table)
- 		return freq_next;
- 
- 	rdmsr_on_cpu(policy->cpu, MSR_AMD64_FREQ_SENSITIVITY_ACTUAL,
-@@ -93,9 +92,9 @@ static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
- 			unsigned int index;
- 
- 			cpufreq_frequency_table_target(policy,
--				od_info->freq_table, policy->cur - 1,
-+				policy->freq_table, policy->cur - 1,
- 				CPUFREQ_RELATION_H, &index);
--			freq_next = od_info->freq_table[index].frequency;
-+			freq_next = policy->freq_table[index].frequency;
- 		}
- 
- 		data->freq_prev = freq_next;
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 4d2fe2710c5d..528353f204fd 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -71,28 +71,29 @@ static unsigned int generic_powersave_bias_target(struct cpufreq_policy *policy,
- 	struct od_policy_dbs_info *dbs_info = to_dbs_info(policy_dbs);
- 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
- 	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
-+	struct cpufreq_frequency_table *freq_table = policy->freq_table;
- 
--	if (!dbs_info->freq_table) {
-+	if (!freq_table) {
- 		dbs_info->freq_lo = 0;
- 		dbs_info->freq_lo_delay_us = 0;
- 		return freq_next;
- 	}
- 
--	cpufreq_frequency_table_target(policy, dbs_info->freq_table, freq_next,
--			relation, &index);
--	freq_req = dbs_info->freq_table[index].frequency;
-+	cpufreq_frequency_table_target(policy, freq_table, freq_next, relation,
-+				       &index);
-+	freq_req = freq_table[index].frequency;
- 	freq_reduc = freq_req * od_tuners->powersave_bias / 1000;
- 	freq_avg = freq_req - freq_reduc;
- 
- 	/* Find freq bounds for freq_avg in freq_table */
- 	index = 0;
--	cpufreq_frequency_table_target(policy, dbs_info->freq_table, freq_avg,
--			CPUFREQ_RELATION_H, &index);
--	freq_lo = dbs_info->freq_table[index].frequency;
-+	cpufreq_frequency_table_target(policy, freq_table, freq_avg,
-+				       CPUFREQ_RELATION_H, &index);
-+	freq_lo = freq_table[index].frequency;
- 	index = 0;
--	cpufreq_frequency_table_target(policy, dbs_info->freq_table, freq_avg,
--			CPUFREQ_RELATION_L, &index);
--	freq_hi = dbs_info->freq_table[index].frequency;
-+	cpufreq_frequency_table_target(policy, freq_table, freq_avg,
-+				       CPUFREQ_RELATION_L, &index);
-+	freq_hi = freq_table[index].frequency;
- 
- 	/* Find out how long we have to be in hi and lo freqs */
- 	if (freq_hi == freq_lo) {
-@@ -113,7 +114,6 @@ static void ondemand_powersave_bias_init(struct cpufreq_policy *policy)
- {
- 	struct od_policy_dbs_info *dbs_info = to_dbs_info(policy->governor_data);
- 
--	dbs_info->freq_table = policy->freq_table;
- 	dbs_info->freq_lo = 0;
- }
- 
-diff --git a/drivers/cpufreq/cpufreq_ondemand.h b/drivers/cpufreq/cpufreq_ondemand.h
-index f0121db3cd9e..640ea4e97106 100644
---- a/drivers/cpufreq/cpufreq_ondemand.h
-+++ b/drivers/cpufreq/cpufreq_ondemand.h
-@@ -13,7 +13,6 @@
- 
- struct od_policy_dbs_info {
- 	struct policy_dbs_info policy_dbs;
--	struct cpufreq_frequency_table *freq_table;
- 	unsigned int freq_lo;
- 	unsigned int freq_lo_delay_us;
- 	unsigned int freq_hi_delay_us;
--- 
-2.7.1.410.g6faf27b
+Best regards,
+Krzysztof
