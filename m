@@ -1,34 +1,25 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 01/20] [v2] x86, intel: Introduce macros for Intel family numbers
-Date: Fri, 03 Jun 2016 02:38:59 +0200
-Message-ID: <3618590.bN2s1CDUs5@vostro.rjw.lan>
-References: <20160603001927.F2A7D828@viggo.jf.intel.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH v2 3/4] mfd: axp20x: Add axp20x-usb-power-supply for
+ axp22x pmics
+Date: Fri, 3 Jun 2016 09:20:22 +0800
+Message-ID: <CAGb2v66YHwerDyf=-Arz3e17dKT5TSBmWfLGXE0oGc7TKPO+Yw@mail.gmail.com>
+References: <1464887936-17020-1-git-send-email-hdegoede@redhat.com> <1464887936-17020-3-git-send-email-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <20160603001927.F2A7D828@viggo.jf.intel.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Dave Hansen <dave@sr71.net>
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org, jacob.jun.pan@intel.com, dave.hansen@linux.intel.com, adrian.hunter@intel.com, ak@linux.intel.com, luto@kernel.org, bp@alien8.de, dvhart@infradead.org, dougthompson@xmission.com, edubezval@gmail.com, hpa@zytor.com, mingo@redhat.com, jacob.jun.pan@linux.intel.com, kan.liang@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, mchehab@osg.samsung.com, peterz@infradead.org, platform-driver-x86@vger.kernel.org, rafael.j.wysocki@intel.com, rajneesh.bhardwaj@intel.com, souvik.k.chakravarty@intel.com, srinivas.pandruvada@linux.intel.com, eranian@google.com, tglx@linutronix.de, tony.luck@intel.com, ulf.hansson@linaro.org, viresh.kumar@linaro.org, vishwanath.somayaji@intel.com, rui.zhang@intel.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:42274 "EHLO
+	smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbcFCBUs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 21:20:48 -0400
+In-Reply-To: <1464887936-17020-3-git-send-email-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vger.kernel.org>
 
-On Thursday, June 02, 2016 05:19:27 PM Dave Hansen wrote:
-> 
-> Changes from v1:
->  * added acks from a few folks
->  * Took the redundant "MODEL_" out of the macro names (Suggested
->    by Borislav Petkov and acked by others)
-> 
-> From: Dave Hansen <dave.hansen@linux.intel.com>
-> 
-> If you are cc'd on this code, please check _your_ code vs. the
-> model list in "intel-family.h".  Please make sure you have all
-> the models listed that you intend to.
-> 
-> Also, rather than trickling these in via all the various
-> maintainers, should these just get pulled in to the x86 tree in
-> one go?
+On Fri, Jun 3, 2016 at 1:18 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Add axp20x-usb-power-supply for axp22x pmics.
+>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-Yes, please.
-
+Acked-by: Chen-Yu Tsai <wens@csie.org>
