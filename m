@@ -1,75 +1,64 @@
-From: Rhyland Klein <rklein@nvidia.com>
-Subject: [PATCH] power_supply: power_supply_read_temp only if use_cnt > 0
-Date: Fri, 3 Jun 2016 16:30:50 -0400
-Message-ID: <1464985850-12365-1-git-send-email-rklein@nvidia.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [GIT PULL] Power management fixes for v4.7-rc2
+Date: Fri, 03 Jun 2016 23:50:13 +0200
+Message-ID: <2755572.OUiMVQx5tM@vostro.rjw.lan>
+References: <CAJZ5v0jCH7akpQDmKrXmBSFZNsit1REA5XPcSm4bx6Q1aJxmiQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:13453 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964790AbcFCUcF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2016 16:32:05 -0400
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41687 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751544AbcFCVqT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2016 17:46:19 -0400
+In-Reply-To: <CAJZ5v0jCH7akpQDmKrXmBSFZNsit1REA5XPcSm4bx6Q1aJxmiQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rhyland Klein <rklein@nvidia.com>
+To: Linux PM list <linux-pm@vger.kernel.org>
 
-Add check to power_supply_read_temp() to only use the power_supply
-get_property() callback if the use_cnt is > 0. The use_cnt will
-be incremented at the end of __power_supply_register, so this will
-block to case where get_property can be called before the supply
-is fully registered. This fixes the issue show in the stack below:
+Forgot to send a CC of this to linux-pm, sorry about that.
 
-[    1.452598] power_supply_read_temp+0x78/0x80
-[    1.458680] thermal_zone_get_temp+0x5c/0x11c
-[    1.464765] thermal_zone_device_update+0x34/0xb4
-[    1.471195] thermal_zone_device_register+0x87c/0x8cc
-[    1.477974] __power_supply_register+0x364/0x424
-[    1.484317] power_supply_register_no_ws+0x10/0x18
-[    1.490833] bq27xxx_battery_setup+0x10c/0x164
-[    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
-[    1.503435] i2c_device_probe+0x174/0x240
-[    1.509172] driver_probe_device+0x1fc/0x29c
-[    1.515167] __driver_attach+0xa4/0xa8
-[    1.520643] bus_for_each_dev+0x58/0x98
-[    1.526204] driver_attach+0x20/0x28
-[    1.531505] bus_add_driver+0x1c8/0x22c
-[    1.537067] driver_register+0x68/0x108
-[    1.542630] i2c_register_driver+0x38/0x7c
-[    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
-[    1.555321] do_one_initcall+0x38/0x12c
-[    1.560886] kernel_init_freeable+0x148/0x1ec
-[    1.566972] kernel_init+0x10/0xfc
-[    1.572101] ret_from_fork+0x10/0x40
-
-Signed-off-by: Rhyland Klein <rklein@nvidia.com>
----
- drivers/power/power_supply_core.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index 456987c88baa..070fec621d66 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -561,11 +561,16 @@ static int power_supply_read_temp(struct thermal_zone_device *tzd,
- {
- 	struct power_supply *psy;
- 	union power_supply_propval val;
--	int ret;
-+	int ret = 0;
- 
- 	WARN_ON(tzd == NULL);
-+
- 	psy = tzd->devdata;
--	ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
-+	WARN_ON(atomic_read(&psy->use_cnt) == 0);
-+
-+	if (atomic_read(&psy->use_cnt) > 0)
-+		ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP,
-+					      &val);
- 
- 	/* Convert tenths of degree Celsius to milli degree Celsius. */
- 	if (!ret)
--- 
-1.9.1
+On Friday, June 03, 2016 11:39:04 PM you wrote:
+> Hi Linus,
+> 
+> Please pull from
+> 
+>  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+>  pm-4.7-rc2
+> 
+> to receive power management fixes for v4.7-rc2 with top-most commit
+> 8cd8cbd4906126951f1bd6ab8a28ee57f0dc1efc
+> 
+>  Merge branch 'pm-cpufreq-fixes'
+> 
+> on top of commit 1a695a905c18548062509178b98bc91e67510864
+> 
+>  Linux 4.7-rc1
+> 
+> Two fixes for problems introduced recently in the cpufreq core
+> and the intel_pstate driver.
+> 
+> Specifics:
+> 
+>  - Fix a silly mistake related to the clamp_val() usage in
+>    a function added by a recent commit (Rafael Wysocki).
+> 
+>  - Reduce the log level of an annoying message added to intel_pstate
+>    during the recent merge window (Srinivas Pandruvada).
+> 
+> Thanks!
+> 
+> ---------------
+> 
+> Rafael J. Wysocki (1):
+>       cpufreq: Fix clamp_val() usage in cpufreq_driver_fast_switch()
+> 
+> Srinivas Pandruvada (1):
+>       cpufreq: intel_pstate: Downgrade print level for _PPC
+> 
+> ---------------
+> 
+>  drivers/cpufreq/cpufreq.c      | 2 +-
+>  drivers/cpufreq/intel_pstate.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
