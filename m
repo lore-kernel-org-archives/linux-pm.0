@@ -1,79 +1,150 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH] devfreq_cooling: pass a pointer to devfreq in the power model callbacks
-Date: Fri,  3 Jun 2016 10:25:31 +0100
-Message-ID: <1464945931-5200-1-git-send-email-javi.merino@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50792 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752366AbcFCJ0E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 3 Jun 2016 05:26:04 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] leds: handle suspend/resume in heartbeat trigger
+Date: Fri, 3 Jun 2016 11:32:13 +0200
+Message-ID: <CAPDyKFp3DnGp2MRQOSOpRHhuD5_2MiA2Wge01W6B43YHpQ8S8Q@mail.gmail.com>
+References: <1464874906-13120-1-git-send-email-linus.walleij@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <1464874906-13120-1-git-send-email-linus.walleij@linaro.org>
+Sender: linux-leds-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Jacek Anaszewski <j.anaszewski@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, lukasz.luba@arm.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-When the devfreq cooling device was designed, it was an oversight not to
-pass a pointer to the struct devfreq as the first parameters of the
-callbacks.  The design patterns of the kernel suggest it for a good
-reason.
+On 2 June 2016 at 15:41, Linus Walleij <linus.walleij@linaro.org> wrote:
+> The following phenomena was observed: when suspending the
+> system, sometimes the heartbeat LED was left on, glowing and
+> wasting power while the rest of the system is asleep, also
+> disturbing power dissapation measures on the odd suspend
+> cycle when it's left on.
+>
+> Clearly this is not how we want the heartbeat trigger to
+> work: it should turn off and leave the LED off during
+> system suspend.
 
-By passing a pointer to struct devfreq, the driver can register one
-function that works with multiple devices.  With the current
-implementation, a driver that can work with multiple devices has to
-create multiple copies of the same function with different parameters so
-that each devfreq_cooling_device can use the appropriate one.  By
-passing a pointer to struct devfreq, the driver can identify which
-device it's referring to.
+Agree!
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Reviewed-by: Punit Agrawal <punit.agrawal@arm.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
- drivers/thermal/devfreq_cooling.c | 5 +++--
- include/linux/devfreq_cooling.h   | 6 ++++--
- 2 files changed, 7 insertions(+), 4 deletions(-)
+>
+> This removes the heartbeat trigger when preparing suspend and
+> restores it during resume. The trigger code will make sure all
+> LEDs are left in OFF state after removing the trigger, and
+> will re-enable the trigger on all LEDs after resuming.
 
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index 01f0015f80dc..c549d83a0c7d 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -238,7 +238,7 @@ get_static_power(struct devfreq_cooling_device *dfc, unsigned long freq)
- 		return 0;
- 	}
- 
--	return dfc->power_ops->get_static_power(voltage);
-+	return dfc->power_ops->get_static_power(df, voltage);
- }
- 
- /**
-@@ -262,7 +262,8 @@ get_dynamic_power(struct devfreq_cooling_device *dfc, unsigned long freq,
- 	struct devfreq_cooling_power *dfc_power = dfc->power_ops;
- 
- 	if (dfc_power->get_dynamic_power)
--		return dfc_power->get_dynamic_power(freq, voltage);
-+		return dfc_power->get_dynamic_power(dfc->devfreq, freq,
-+						    voltage);
- 
- 	freq_mhz = freq / 1000000;
- 	power = (u64)dfc_power->dyn_power_coeff * freq_mhz * voltage * voltage;
-diff --git a/include/linux/devfreq_cooling.h b/include/linux/devfreq_cooling.h
-index 7adf6cc4b305..959714e93e5b 100644
---- a/include/linux/devfreq_cooling.h
-+++ b/include/linux/devfreq_cooling.h
-@@ -37,8 +37,10 @@
-  *			@dyn_power_coeff * frequency * voltage^2
-  */
- struct devfreq_cooling_power {
--	unsigned long (*get_static_power)(unsigned long voltage);
--	unsigned long (*get_dynamic_power)(unsigned long freq,
-+	unsigned long (*get_static_power)(struct devfreq *devfreq,
-+					  unsigned long voltage);
-+	unsigned long (*get_dynamic_power)(struct devfreq *devfreq,
-+					   unsigned long freq,
- 					   unsigned long voltage);
- 	unsigned long dyn_power_coeff;
- };
--- 
-1.9.1
+I believe most other led-trigger types that should also be "suspended"
+in the similar fashion as the heartbeat. Perhaps not all, but least
+some more (timer, cpu, etc).
 
+I looked at the cpu trigger, which currently registers a syscore_ops
+to deal with suspend/resume. That means the trigger being suspended
+far later in system PM suspend phase, and I wonder if that is really
+necessary!?
+Does people really care about the cpu trigger being active that late
+in the system PM suspend phase!?
+
+More importantly, I think it could be problematic to allow it that
+late in system PM phase, at least for for those ARM SoC I have been
+working on which might use an i2c transfer to control the led.
+
+Okay, my point is, perhaps we should do this in a more generic manner
+and manage the suspend/resume of triggers in
+drivers/leds/led-triggers.c?
+
+If we need the suspend/resume trigger to be optional, we can add that
+as a configuration flag in struct led_trigger, to inform the
+led-triggers.c about the wanted behaviour. In that way, each
+led-trigger type don't have to register their own set of pm_notifiers.
+
+Some core comments below...
+
+>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+> ---
+>  drivers/leds/trigger/ledtrig-heartbeat.c | 27 +++++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
+>
+> diff --git a/drivers/leds/trigger/ledtrig-heartbeat.c b/drivers/leds/trigger/ledtrig-heartbeat.c
+> index 410c39c62dc7..c80e91152b6b 100644
+> --- a/drivers/leds/trigger/ledtrig-heartbeat.c
+> +++ b/drivers/leds/trigger/ledtrig-heartbeat.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/sched.h>
+>  #include <linux/leds.h>
+>  #include <linux/reboot.h>
+> +#include <linux/suspend.h>
+>  #include "../leds.h"
+>
+>  static int panic_heartbeats;
+> @@ -154,6 +155,26 @@ static struct led_trigger heartbeat_led_trigger = {
+>         .deactivate = heartbeat_trig_deactivate,
+>  };
+>
+> +static int heartbeat_pm_notifier(struct notifier_block *nb,
+> +                                unsigned long pm_event, void *unused)
+> +{
+> +       int rc;
+> +
+> +       switch (pm_event) {
+> +       case PM_SUSPEND_PREPARE:
+
+I think you should add:
+case PM_HIBERNATION_PREPARE:
+case PM_RESTORE_PREPARE:
+
+> +               led_trigger_unregister(&heartbeat_led_trigger);
+> +               break;
+> +       case PM_POST_SUSPEND:
+
+I think you should add:
+case PM_POST_HIBERNATION:
+case PM_POST_RESTORE:
+
+> +               rc = led_trigger_register(&heartbeat_led_trigger);
+> +               if (rc)
+> +                       pr_err("could not re-register heartbeat trigger\n");
+> +               break;
+> +       default:
+> +               break;
+> +       }
+> +       return NOTIFY_DONE;
+> +}
+> +
+>  static int heartbeat_reboot_notifier(struct notifier_block *nb,
+>                                      unsigned long code, void *unused)
+>  {
+> @@ -168,6 +189,10 @@ static int heartbeat_panic_notifier(struct notifier_block *nb,
+>         return NOTIFY_DONE;
+>  }
+>
+> +static struct notifier_block heartbeat_pm_nb = {
+> +       .notifier_call = heartbeat_pm_notifier,
+> +};
+> +
+>  static struct notifier_block heartbeat_reboot_nb = {
+>         .notifier_call = heartbeat_reboot_notifier,
+>  };
+> @@ -184,12 +209,14 @@ static int __init heartbeat_trig_init(void)
+>                 atomic_notifier_chain_register(&panic_notifier_list,
+>                                                &heartbeat_panic_nb);
+>                 register_reboot_notifier(&heartbeat_reboot_nb);
+> +               register_pm_notifier(&heartbeat_pm_nb);
+>         }
+>         return rc;
+>  }
+>
+>  static void __exit heartbeat_trig_exit(void)
+>  {
+> +       unregister_pm_notifier(&heartbeat_pm_nb);
+>         unregister_reboot_notifier(&heartbeat_reboot_nb);
+>         atomic_notifier_chain_unregister(&panic_notifier_list,
+>                                          &heartbeat_panic_nb);
+> --
+> 2.4.11
+>
+
+Besides my upper comments, this looks like a good approach!
+
+Kind regards
+Uffe
