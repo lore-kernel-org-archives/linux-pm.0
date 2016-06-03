@@ -1,165 +1,67 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH v2 4/4] regulator: axp20x: Add support for the (external)
- drivebus regulator
-Date: Fri, 3 Jun 2016 09:38:26 +0800
-Message-ID: <CAGb2v67qsJ+U71UJj=HTTbgsQZgK1YEVNhyw5Q6XV+n38NpK0Q@mail.gmail.com>
-References: <1464887936-17020-1-git-send-email-hdegoede@redhat.com> <1464887936-17020-4-git-send-email-hdegoede@redhat.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 00/11] cpufreq: Keep policy->freq_table sorted
+Date: Fri, 03 Jun 2016 03:43:11 +0200
+Message-ID: <2735911.VQvHH3XKf9@vostro.rjw.lan>
+References: <cover.1464876460.git.viresh.kumar@linaro.org> <CAJZ5v0h23n7k66fRdmARXStOYFVTpVSQQVa1bN3YixehG=eD4w@mail.gmail.com> <20160603000134.GS3725@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:43086 "EHLO
-	smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbcFCBiw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 21:38:52 -0400
-In-Reply-To: <1464887936-17020-4-git-send-email-hdegoede@redhat.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41581 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750926AbcFCBjT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 21:39:19 -0400
+In-Reply-To: <20160603000134.GS3725@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Steven Miao <realmz6@gmail.com>, Steve Muckle <steve.muckle@linaro.org>
 
-Hi,
+On Friday, June 03, 2016 05:31:34 AM Viresh Kumar wrote:
+> On 02-06-16, 22:35, Rafael J. Wysocki wrote:
+> > Quoting from this very cover letter "This change allows us to remove
+> > the (duplicate) sorted-freq-table, which
+> > was added by following series:", so why to add it in the first place?
+> 
+> Okay, that's fine.
+> 
+> > Besides, there already is a number of tables (per policy which in some
+> > important cases pretty much means per CPU) in cpufreq that contain
+> > more-or-less the same information.  For example, if acpi-cpufreq is in
+> > use, the ACPI layer has a table coming from _PSS, the driver creates
+> > freq_table to pass to the core and there is an additional one for the
+> > stats.  And your series adds one more just so it is ordered.  Come on.
+> 
+> Of course.
+> 
+> > If you want to clean that up, fine, but please don't do that in a
+> > hurry.  Let's talk about it a bit more without sending any more
+> > patches in that area for the time being.
+> 
+> Okay, I will send all the fixes that you can apply cleanly now in a
+> separate set.
 
-On Fri, Jun 3, 2016 at 1:18 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> The axp20x pmics have 2 power inputs, one called ACIN which is intended
-> for to be supplied via a powerbarrel on the board and one called VBUS
-> which is intended to be supplied via an otg connector.
->
-> In the VBUS case the pmic needs to know if the board is supplying power
-> to the otg connector, because then it should not take any power from
-> its VBUS pin. The axp209 pmic has a N_VBUSEN input pin via which the
-> board can signal to the pmic whether the board is supplying power to the
-> otg connector or not.
->
-> On the axp221/axp223 this pin can alternatively be used as an output
-> which controls an external regulator which (optionally) supplies
-> power to the otg connector from the board. When the pin is used as
-> output it is called DRIVEVBUS in the datasheet.
->
-> This commit adds support for the DRIVEVBUS pin as an extra pmic
-> controlled regulator. Since this is optional a new x-powers,drivebus dt
-> property is added. When this is present the misc-control register is
-> written to change the N_VBUSEN input pin to DRIVEVBUS output pin mode and
-> the extra drivebus regulator is registered with the regulator subsystem.
->
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
-> Changes in v2:
-> -Rename the dt property to drive-vbus-en
-> -s/drivebus/drivevbus/
-> -Add a line describing the drivevbus regulator to the table in
->  Documentation/devicetree/bindings/mfd/axp20x.txt
-> -Set supply_name to drivevbus-supply
-> ---
->  Documentation/devicetree/bindings/mfd/axp20x.txt |  6 +++++
->  drivers/regulator/axp20x-regulator.c             | 30 ++++++++++++++++++++++++
->  2 files changed, 36 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/mfd/axp20x.txt b/Documentation/devicetree/bindings/mfd/axp20x.txt
-> index d20b103..6aca4fe 100644
-> --- a/Documentation/devicetree/bindings/mfd/axp20x.txt
-> +++ b/Documentation/devicetree/bindings/mfd/axp20x.txt
-> @@ -22,6 +22,11 @@ Optional properties:
->                       AXP152/20X: range:  750-1875, Default: 1.5 MHz
->                       AXP22X/80X: range: 1800-4050, Default: 3   MHz
->
-> +- x-powers,drive-vbus-en: axp221 / axp223 only boolean, set this when the
-> +                  N_VBUSEN pin is used as an output pin to control an external
-> +                  regulator to drive the OTG VBus, rather then as an input pin
-> +                  which signals whether the board is driving OTG VBus or not.
+Thanks!
 
-Git complains about space indentation here.
+> So, yeah, I get your overall concern. What about this:
+> - A single patchset to make sure the current policy->freq_table is
+>   always sorted in Ascending order of frequencies.
 
-> +
->  - <input>-supply: a phandle to the regulator supply node. May be omitted if
->                   inputs are unregulated, such as using the IPSOUT output
->                   from the PMIC.
-> @@ -79,6 +84,7 @@ ELDO3         : LDO           : eldoin-supply         : shared supply
->  LDO_IO0                : LDO           : ips-supply            : GPIO 0
->  LDO_IO1                : LDO           : ips-supply            : GPIO 1
->  RTC_LDO                : LDO           : ips-supply            : always on
-> +DRIVEVBUS      : Enable output : drivevbus-supply      : external regulator
->
->  AXP809 regulators, type, and corresponding input supply names:
->
-> diff --git a/drivers/regulator/axp20x-regulator.c b/drivers/regulator/axp20x-regulator.c
-> index 728be64..3f1bba4 100644
-> --- a/drivers/regulator/axp20x-regulator.c
-> +++ b/drivers/regulator/axp20x-regulator.c
-> @@ -36,6 +36,8 @@
->
->  #define AXP20X_FREQ_DCDC_MASK          0x0f
->
-> +#define AXP22X_MISC_N_VBUSEN_FUNC      BIT(4)
-> +
->  #define AXP_DESC_IO(_family, _id, _match, _supply, _min, _max, _step, _vreg,   \
->                     _vmask, _ereg, _emask, _enable_val, _disable_val)           \
->         [_family##_##_id] = {                                                   \
-> @@ -230,6 +232,18 @@ static const struct regulator_desc axp22x_regulators[] = {
->         AXP_DESC_FIXED(AXP22X, RTC_LDO, "rtc_ldo", "ips", 3000),
->  };
->
-> +static const struct regulator_desc axp22x_drivevbus_regulator = {
-> +       .name           = "drivevbus",
-> +       .supply_name    = "drivevbus-supply",
+Be careful here.  acpi-cpufreq sorts the table in the descending order
+and at least acpi_cpufreq_fast_switch() assumes that.
 
-The "-supply" suffix is added by the regulator core upon lookup. No need
-to add it here. I assume the regulator core won't get confused over a
-supply name that's the same as the regulator requesting it.
+> - And this sorting will be done per policy only when the policy is
+>   first created.
+> - Which would eventually mean merging this series with the [v2 0/2]
+>   one.
+> 
+> Will that work ?
 
+Well, it may. :-)
 
-Otherwise,
+I would like you to talk to Steve and agree on the approach, including which
+changes to make first, though.  You are both from Linaro after all ...
 
-Acked-by: Chen-Yu Tsai <wens@csie.org>
+Thanks,
+Rafael
 
-> +       .of_match       = of_match_ptr("drivevbus"),
-> +       .regulators_node = of_match_ptr("regulators"),
-> +       .type           = REGULATOR_VOLTAGE,
-> +       .owner          = THIS_MODULE,
-> +       .enable_reg     = AXP20X_VBUS_IPSOUT_MGMT,
-> +       .enable_mask    = BIT(2),
-> +       .ops            = &axp20x_ops_sw,
-> +};
-> +
->  static const struct regulator_linear_range axp809_dcdc4_ranges[] = {
->         REGULATOR_LINEAR_RANGE(600000, 0x0, 0x2f, 20000),
->         REGULATOR_LINEAR_RANGE(1800000, 0x30, 0x38, 100000),
-> @@ -411,6 +425,7 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
->         u32 workmode;
->         const char *dcdc1_name = axp22x_regulators[AXP22X_DCDC1].name;
->         const char *dcdc5_name = axp22x_regulators[AXP22X_DCDC5].name;
-> +       bool drivevbus = false;
->
->         switch (axp20x->variant) {
->         case AXP202_ID:
-> @@ -422,6 +437,8 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
->         case AXP223_ID:
->                 regulators = axp22x_regulators;
->                 nregulators = AXP22X_REG_ID_MAX;
-> +               drivevbus = of_property_read_bool(pdev->dev.parent->of_node,
-> +                                                 "x-powers,drive-vbus-en");
->                 break;
->         case AXP809_ID:
->                 regulators = axp809_regulators;
-> @@ -500,6 +517,19 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
->                                                 &dcdc5_name);
->         }
->
-> +       if (drivevbus) {
-> +               /* Change N_VBUSEN sense pin to DRIVEVBUS output pin */
-> +               regmap_update_bits(axp20x->regmap, AXP20X_OVER_TMP,
-> +                                  AXP22X_MISC_N_VBUSEN_FUNC, 0);
-> +               rdev = devm_regulator_register(&pdev->dev,
-> +                                              &axp22x_drivevbus_regulator,
-> +                                              &config);
-> +               if (IS_ERR(rdev)) {
-> +                       dev_err(&pdev->dev, "Failed to register drivevbus\n");
-> +                       return PTR_ERR(rdev);
-> +               }
-> +       }
-> +
->         return 0;
->  }
->
-> --
-> 2.7.4
->
