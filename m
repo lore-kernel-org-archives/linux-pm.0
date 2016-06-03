@@ -1,8 +1,7 @@
 From: Jia Hongtao <hongtao.jia@nxp.com>
-Subject: [PATCH 2/7] powerpc/mpc85xx: Update TMU device tree node for
- T1040/T1042
-Date: Fri, 3 Jun 2016 14:57:34 +0800
-Message-ID: <1464937059-19349-2-git-send-email-hongtao.jia@nxp.com>
+Subject: [PATCH 5/7] arm64:dt:ls1043a: Add TMU device tree support for LS1043A
+Date: Fri, 3 Jun 2016 14:57:37 +0800
+Message-ID: <1464937059-19349-5-git-send-email-hongtao.jia@nxp.com>
 References: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,35 +21,143 @@ To: edubezval@gmail.com, rui.zhang@intel.com, robh+dt@kernel.org, galak@codeauro
 Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hongtao.jia@nxp.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-SoC compatible string and endianness property are added according to the
-new bindings.
+Also add nodes and properties for thermal management support.
 
 Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
 ---
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts |  2 +-
+ arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts |  2 +-
+ arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi    | 78 +++++++++++++++++++++++
+ 3 files changed, 80 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-index 507649e..089eb56 100644
---- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-@@ -526,7 +526,7 @@
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts b/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts
+index 9d3e9fe..fa447b6 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts
+@@ -45,7 +45,7 @@
+  */
  
- 				       0x00030000 0x00000012
- 				       0x00030001 0x0000001d>;
--		#thermal-sensor-cells = <0>;
-+		#thermal-sensor-cells = <1>;
- 	};
+ /dts-v1/;
+-/include/ "fsl-ls1043a.dtsi"
++#include "fsl-ls1043a.dtsi"
  
- 	thermal-zones {
-@@ -534,7 +534,7 @@
- 			polling-delay-passive = <1000>;
- 			polling-delay = <5000>;
+ / {
+ 	model = "LS1043A QDS Board";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts
+index f895fc0..6015d88 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts
+@@ -45,7 +45,7 @@
+  */
  
--			thermal-sensors = <&tmu>;
-+			thermal-sensors = <&tmu 2>;
+ /dts-v1/;
+-/include/ "fsl-ls1043a.dtsi"
++#include "fsl-ls1043a.dtsi"
  
- 			trips {
- 				cpu_alert: cpu-alert {
+ / {
+ 	model = "LS1043A RDB Board";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
+index de0323b..4004273 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
+@@ -44,6 +44,8 @@
+  *     OTHER DEALINGS IN THE SOFTWARE.
+  */
+ 
++#include <dt-bindings/thermal/thermal.h>
++
+ / {
+ 	compatible = "fsl,ls1043a";
+ 	interrupt-parent = <&gic>;
+@@ -65,6 +67,7 @@
+ 			compatible = "arm,cortex-a53";
+ 			reg = <0x0 0x0>;
+ 			clocks = <&clockgen 1 0>;
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		cpu1: cpu@1 {
+@@ -196,6 +199,81 @@
+ 			bus-width = <4>;
+ 		};
+ 
++		tmu: tmu@1f00000 {
++			compatible = "fsl,qoriq-tmu";
++			reg = <0x0 0x1f00000 0x0 0x10000>;
++			interrupts = <0 33 0x4>;
++			fsl,tmu-range = <0xb0000 0x9002a 0x6004c 0x30062>;
++			fsl,tmu-calibration = <0x00000000 0x00000026
++					       0x00000001 0x0000002d
++					       0x00000002 0x00000032
++					       0x00000003 0x00000039
++					       0x00000004 0x0000003f
++					       0x00000005 0x00000046
++					       0x00000006 0x0000004d
++					       0x00000007 0x00000054
++					       0x00000008 0x0000005a
++					       0x00000009 0x00000061
++					       0x0000000a 0x0000006a
++					       0x0000000b 0x00000071
++
++					       0x00010000 0x00000025
++					       0x00010001 0x0000002c
++					       0x00010002 0x00000035
++					       0x00010003 0x0000003d
++					       0x00010004 0x00000045
++					       0x00010005 0x0000004e
++					       0x00010006 0x00000057
++					       0x00010007 0x00000061
++					       0x00010008 0x0000006b
++					       0x00010009 0x00000076
++
++					       0x00020000 0x00000029
++					       0x00020001 0x00000033
++					       0x00020002 0x0000003d
++					       0x00020003 0x00000049
++					       0x00020004 0x00000056
++					       0x00020005 0x00000061
++					       0x00020006 0x0000006d
++
++					       0x00030000 0x00000021
++					       0x00030001 0x0000002a
++					       0x00030002 0x0000003c
++					       0x00030003 0x0000004e>;
++			#thermal-sensor-cells = <1>;
++		};
++
++		thermal-zones {
++			cpu_thermal: cpu-thermal {
++				polling-delay-passive = <1000>;
++				polling-delay = <5000>;
++
++				thermal-sensors = <&tmu 3>;
++
++				trips {
++					cpu_alert: cpu-alert {
++						temperature = <85000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
++					cpu_crit: cpu-crit {
++						temperature = <95000>;
++						hysteresis = <2000>;
++						type = "critical";
++					};
++				};
++
++				cooling-maps {
++					map0 {
++						trip = <&cpu_alert>;
++						cooling-device =
++							<&cpu0 THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++					};
++				};
++			};
++		};
++
+ 		dspi0: dspi@2100000 {
+ 			compatible = "fsl,ls1043a-dspi", "fsl,ls1021a-v1.0-dspi";
+ 			#address-cells = <1>;
 -- 
 2.1.0.27.g96db324
