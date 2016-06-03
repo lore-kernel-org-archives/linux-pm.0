@@ -1,64 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [GIT PULL] Power management fixes for v4.7-rc2
-Date: Fri, 03 Jun 2016 23:50:13 +0200
-Message-ID: <2755572.OUiMVQx5tM@vostro.rjw.lan>
-References: <CAJZ5v0jCH7akpQDmKrXmBSFZNsit1REA5XPcSm4bx6Q1aJxmiQ@mail.gmail.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
+ ascending order
+Date: Fri, 3 Jun 2016 16:48:54 -0700
+Message-ID: <20160603234854.GF14579@graphite.smuckle.net>
+References: <cover.1464960877.git.viresh.kumar@linaro.org>
+ <e155257e7f76c3dc71f9347e0433fb1e4d9a3358.1464960877.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41687 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751544AbcFCVqT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2016 17:46:19 -0400
-In-Reply-To: <CAJZ5v0jCH7akpQDmKrXmBSFZNsit1REA5XPcSm4bx6Q1aJxmiQ@mail.gmail.com>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:32906 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750726AbcFCXtF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2016 19:49:05 -0400
+Received: by mail-pa0-f45.google.com with SMTP id ec8so12512289pac.0
+        for <linux-pm@vger.kernel.org>; Fri, 03 Jun 2016 16:49:04 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <e155257e7f76c3dc71f9347e0433fb1e4d9a3358.1464960877.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org, linuxppc-dev@lists.ozlabs.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
 
-Forgot to send a CC of this to linux-pm, sorry about that.
+On Fri, Jun 03, 2016 at 07:05:14PM +0530, Viresh Kumar wrote:
+...
+> @@ -468,20 +469,15 @@ unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+>  	struct acpi_cpufreq_data *data = policy->driver_data;
+>  	struct acpi_processor_performance *perf;
+>  	struct cpufreq_frequency_table *entry;
+> -	unsigned int next_perf_state, next_freq, freq;
+> +	unsigned int next_perf_state, next_freq, index;
+>  
+>  	/*
+>  	 * Find the closest frequency above target_freq.
+> -	 *
+> -	 * The table is sorted in the reverse order with respect to the
+> -	 * frequency and all of the entries are valid (see the initialization).
+>  	 */
+> -	entry = policy->freq_table;
+> -	do {
+> -		entry++;
+> -		freq = entry->frequency;
+> -	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
+> -	entry--;
+> +	index = cpufreq_frequency_table_target(policy, target_freq,
+> +					       CPUFREQ_RELATION_L);
 
-On Friday, June 03, 2016 11:39:04 PM you wrote:
-> Hi Linus,
-> 
-> Please pull from
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
->  pm-4.7-rc2
-> 
-> to receive power management fixes for v4.7-rc2 with top-most commit
-> 8cd8cbd4906126951f1bd6ab8a28ee57f0dc1efc
-> 
->  Merge branch 'pm-cpufreq-fixes'
-> 
-> on top of commit 1a695a905c18548062509178b98bc91e67510864
-> 
->  Linux 4.7-rc1
-> 
-> Two fixes for problems introduced recently in the cpufreq core
-> and the intel_pstate driver.
-> 
-> Specifics:
-> 
->  - Fix a silly mistake related to the clamp_val() usage in
->    a function added by a recent commit (Rafael Wysocki).
-> 
->  - Reduce the log level of an annoying message added to intel_pstate
->    during the recent merge window (Srinivas Pandruvada).
-> 
-> Thanks!
-> 
-> ---------------
-> 
-> Rafael J. Wysocki (1):
->       cpufreq: Fix clamp_val() usage in cpufreq_driver_fast_switch()
-> 
-> Srinivas Pandruvada (1):
->       cpufreq: intel_pstate: Downgrade print level for _PPC
-> 
-> ---------------
-> 
->  drivers/cpufreq/cpufreq.c      | 2 +-
->  drivers/cpufreq/intel_pstate.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+Can we call cpufreq_find_index_l directly here? Seems like we could
+phase out cpufreq_frequency_table_target() for the most part and call
+the helpers directly. It would avoid some code bloat, an unnecessary
+switch statement and an error check for an invalid frequency table which
+seems unnecessary for every frequency table lookup.
 
+thanks,
+Steve
