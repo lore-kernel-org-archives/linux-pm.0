@@ -1,7 +1,7 @@
 From: Jia Hongtao <hongtao.jia@nxp.com>
-Subject: [PATCH 5/7] arm64:dt:ls1043a: Add TMU device tree support for LS1043A
-Date: Fri, 3 Jun 2016 14:57:37 +0800
-Message-ID: <1464937059-19349-5-git-send-email-hongtao.jia@nxp.com>
+Subject: [PATCH 6/7] arm64:dt:ls2080a: Add TMU device tree support for LS2080A
+Date: Fri, 3 Jun 2016 14:57:38 +0800
+Message-ID: <1464937059-19349-6-git-send-email-hongtao.jia@nxp.com>
 References: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -25,41 +25,55 @@ Also add nodes and properties for thermal management support.
 
 Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
 ---
- arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts |  2 +-
- arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts |  2 +-
- arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi    | 78 +++++++++++++++++++++++
- 3 files changed, 80 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts  |   2 +-
+ arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts  |   2 +-
+ arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts |   2 +-
+ arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi     | 116 +++++++++++++++++++--
+ 4 files changed, 111 insertions(+), 11 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts b/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts
-index 9d3e9fe..fa447b6 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a-qds.dts
-@@ -45,7 +45,7 @@
-  */
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts b/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts
+index e8801fa..18e99f4 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a-qds.dts
+@@ -46,7 +46,7 @@
  
  /dts-v1/;
--/include/ "fsl-ls1043a.dtsi"
-+#include "fsl-ls1043a.dtsi"
+ 
+-/include/ "fsl-ls2080a.dtsi"
++#include "fsl-ls2080a.dtsi"
  
  / {
- 	model = "LS1043A QDS Board";
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts
-index f895fc0..6015d88 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a-rdb.dts
-@@ -45,7 +45,7 @@
-  */
+ 	model = "Freescale Layerscape 2080a QDS Board";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts b/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts
+index e127f0b..f1c8115 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a-rdb.dts
+@@ -46,7 +46,7 @@
  
  /dts-v1/;
--/include/ "fsl-ls1043a.dtsi"
-+#include "fsl-ls1043a.dtsi"
+ 
+-/include/ "fsl-ls2080a.dtsi"
++#include "fsl-ls2080a.dtsi"
  
  / {
- 	model = "LS1043A RDB Board";
-diff --git a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
-index de0323b..4004273 100644
---- a/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
-+++ b/arch/arm64/boot/dts/freescale/fsl-ls1043a.dtsi
+ 	model = "Freescale Layerscape 2080a RDB Board";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts b/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts
+index 505d038..290604b 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts
++++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a-simu.dts
+@@ -46,7 +46,7 @@
+ 
+ /dts-v1/;
+ 
+-/include/ "fsl-ls2080a.dtsi"
++#include "fsl-ls2080a.dtsi"
+ 
+ / {
+ 	model = "Freescale Layerscape 2080a software Simulator model";
+diff --git a/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi b/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
+index 3187c82..5cc27df 100644
+--- a/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
++++ b/arch/arm64/boot/dts/freescale/fsl-ls2080a.dtsi
 @@ -44,6 +44,8 @@
   *     OTHER DEALINGS IN THE SOFTWARE.
   */
@@ -67,24 +81,85 @@ index de0323b..4004273 100644
 +#include <dt-bindings/thermal/thermal.h>
 +
  / {
- 	compatible = "fsl,ls1043a";
+ 	compatible = "fsl,ls2080a";
  	interrupt-parent = <&gic>;
-@@ -65,6 +67,7 @@
- 			compatible = "arm,cortex-a53";
+@@ -62,56 +64,60 @@
+ 		 */
+ 
+ 		/* We have 4 clusters having 2 Cortex-A57 cores each */
+-		cpu@0 {
++		cpu0: cpu@0 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57";
  			reg = <0x0 0x0>;
  			clocks = <&clockgen 1 0>;
 +			#cooling-cells = <2>;
  		};
  
- 		cpu1: cpu@1 {
-@@ -196,6 +199,81 @@
- 			bus-width = <4>;
+-		cpu@1 {
++		cpu1: cpu@1 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57";
+ 			reg = <0x0 0x1>;
+ 			clocks = <&clockgen 1 0>;
  		};
  
-+		tmu: tmu@1f00000 {
+-		cpu@100 {
++		cpu2: cpu@100 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57";
+ 			reg = <0x0 0x100>;
+ 			clocks = <&clockgen 1 1>;
++			#cooling-cells = <2>;
+ 		};
+ 
+-		cpu@101 {
++		cpu3: cpu@101 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57";
+ 			reg = <0x0 0x101>;
+ 			clocks = <&clockgen 1 1>;
+ 		};
+ 
+-		cpu@200 {
++		cpu4: cpu@200 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57";
+ 			reg = <0x0 0x200>;
+ 			clocks = <&clockgen 1 2>;
++			#cooling-cells = <2>;
+ 		};
+ 
+-		cpu@201 {
++		cpu5: cpu@201 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57";
+ 			reg = <0x0 0x201>;
+ 			clocks = <&clockgen 1 2>;
+ 		};
+ 
+-		cpu@300 {
++		cpu6: cpu@300 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57";
+ 			reg = <0x0 0x300>;
+ 			clocks = <&clockgen 1 3>;
++			#cooling-cells = <2>;
+ 		};
+ 
+-		cpu@301 {
++		cpu7: cpu@301 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a57";
+ 			reg = <0x0 0x301>;
+@@ -191,6 +197,100 @@
+ 			clocks = <&sysclk>;
+ 		};
+ 
++		tmu: tmu@1f80000 {
 +			compatible = "fsl,qoriq-tmu";
-+			reg = <0x0 0x1f00000 0x0 0x10000>;
-+			interrupts = <0 33 0x4>;
++			reg = <0x0 0x1f80000 0x0 0x10000>;
++			interrupts = <0 23 0x4>;
 +			fsl,tmu-range = <0xb0000 0x9002a 0x6004c 0x30062>;
 +			fsl,tmu-calibration = <0x00000000 0x00000026
 +					       0x00000001 0x0000002d
@@ -122,6 +197,7 @@ index de0323b..4004273 100644
 +					       0x00030001 0x0000002a
 +					       0x00030002 0x0000003c
 +					       0x00030003 0x0000004e>;
++			little-endian;
 +			#thermal-sensor-cells = <1>;
 +		};
 +
@@ -130,16 +206,16 @@ index de0323b..4004273 100644
 +				polling-delay-passive = <1000>;
 +				polling-delay = <5000>;
 +
-+				thermal-sensors = <&tmu 3>;
++				thermal-sensors = <&tmu 4>;
 +
 +				trips {
 +					cpu_alert: cpu-alert {
-+						temperature = <85000>;
++						temperature = <75000>;
 +						hysteresis = <2000>;
 +						type = "passive";
 +					};
 +					cpu_crit: cpu-crit {
-+						temperature = <95000>;
++						temperature = <85000>;
 +						hysteresis = <2000>;
 +						type = "critical";
 +					};
@@ -152,12 +228,30 @@ index de0323b..4004273 100644
 +							<&cpu0 THERMAL_NO_LIMIT
 +							THERMAL_NO_LIMIT>;
 +					};
++					map1 {
++						trip = <&cpu_alert>;
++						cooling-device =
++							<&cpu2 THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++					};
++					map2 {
++						trip = <&cpu_alert>;
++						cooling-device =
++							<&cpu4 THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++					};
++					map3 {
++						trip = <&cpu_alert>;
++						cooling-device =
++							<&cpu6 THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++					};
 +				};
 +			};
 +		};
 +
- 		dspi0: dspi@2100000 {
- 			compatible = "fsl,ls1043a-dspi", "fsl,ls1021a-v1.0-dspi";
- 			#address-cells = <1>;
+ 		serial0: serial@21c0500 {
+ 			compatible = "fsl,ns16550", "ns16550a";
+ 			reg = <0x0 0x21c0500 0x0 0x100>;
 -- 
 2.1.0.27.g96db324
