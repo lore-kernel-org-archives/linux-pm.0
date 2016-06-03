@@ -1,275 +1,182 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 9/9] cpufreq: drivers: Free frequency tables after being used
-Date: Fri,  3 Jun 2016 19:05:15 +0530
-Message-ID: <feba34c6ee8ddc639507f569b737c1b525c7f139.1464960877.git.viresh.kumar@linaro.org>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34055 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1422692AbcFCNgA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2016 09:36:00 -0400
-Received: by mail-pa0-f53.google.com with SMTP id bz2so14806011pad.1
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jun 2016 06:35:59 -0700 (PDT)
-In-Reply-To: <cover.1464960877.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1464960877.git.viresh.kumar@linaro.org>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v2 4/4] regulator: axp20x: Add support for the (external)
+ drivebus regulator
+Date: Fri, 3 Jun 2016 18:59:33 +0200
+Message-ID: <22e0130a-1f95-a177-f2c3-793493707296@redhat.com>
+References: <1464887936-17020-1-git-send-email-hdegoede@redhat.com>
+ <1464887936-17020-4-git-send-email-hdegoede@redhat.com>
+ <CAGb2v67qsJ+U71UJj=HTTbgsQZgK1YEVNhyw5Q6XV+n38NpK0Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAGb2v67qsJ+U71UJj=HTTbgsQZgK1YEVNhyw5Q6XV+n38NpK0Q@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: devicetree <devicetree@vger.kernel.org>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Keguang Zhang <keguang.zhang@gmail.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org, linux-mips@linux-mips.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
 
-The cpufreq core doesn't use these tables anymore after
-cpufreq_table_validate_and_show() has returned.  And so these can be
-freed early.
+Hi,
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/acpi-cpufreq.c      |  7 +++----
- drivers/cpufreq/at32ap-cpufreq.c    |  6 +++---
- drivers/cpufreq/cpufreq-dt.c        |  9 ++++-----
- drivers/cpufreq/e_powersaver.c      | 24 ++++++++++++++----------
- drivers/cpufreq/ia64-acpi-cpufreq.c |  7 +++----
- drivers/cpufreq/loongson1-cpufreq.c | 10 +---------
- 6 files changed, 28 insertions(+), 35 deletions(-)
+On 03-06-16 03:38, Chen-Yu Tsai wrote:
+> Hi,
+>
+> On Fri, Jun 3, 2016 at 1:18 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> The axp20x pmics have 2 power inputs, one called ACIN which is intended
+>> for to be supplied via a powerbarrel on the board and one called VBUS
+>> which is intended to be supplied via an otg connector.
+>>
+>> In the VBUS case the pmic needs to know if the board is supplying power
+>> to the otg connector, because then it should not take any power from
+>> its VBUS pin. The axp209 pmic has a N_VBUSEN input pin via which the
+>> board can signal to the pmic whether the board is supplying power to the
+>> otg connector or not.
+>>
+>> On the axp221/axp223 this pin can alternatively be used as an output
+>> which controls an external regulator which (optionally) supplies
+>> power to the otg connector from the board. When the pin is used as
+>> output it is called DRIVEVBUS in the datasheet.
+>>
+>> This commit adds support for the DRIVEVBUS pin as an extra pmic
+>> controlled regulator. Since this is optional a new x-powers,drivebus dt
+>> property is added. When this is present the misc-control register is
+>> written to change the N_VBUSEN input pin to DRIVEVBUS output pin mode and
+>> the extra drivebus regulator is registered with the regulator subsystem.
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> ---
+>> Changes in v2:
+>> -Rename the dt property to drive-vbus-en
+>> -s/drivebus/drivevbus/
+>> -Add a line describing the drivevbus regulator to the table in
+>>  Documentation/devicetree/bindings/mfd/axp20x.txt
+>> -Set supply_name to drivevbus-supply
+>> ---
+>>  Documentation/devicetree/bindings/mfd/axp20x.txt |  6 +++++
+>>  drivers/regulator/axp20x-regulator.c             | 30 ++++++++++++++++++++++++
+>>  2 files changed, 36 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/mfd/axp20x.txt b/Documentation/devicetree/bindings/mfd/axp20x.txt
+>> index d20b103..6aca4fe 100644
+>> --- a/Documentation/devicetree/bindings/mfd/axp20x.txt
+>> +++ b/Documentation/devicetree/bindings/mfd/axp20x.txt
+>> @@ -22,6 +22,11 @@ Optional properties:
+>>                       AXP152/20X: range:  750-1875, Default: 1.5 MHz
+>>                       AXP22X/80X: range: 1800-4050, Default: 3   MHz
+>>
+>> +- x-powers,drive-vbus-en: axp221 / axp223 only boolean, set this when the
+>> +                  N_VBUSEN pin is used as an output pin to control an external
+>> +                  regulator to drive the OTG VBus, rather then as an input pin
+>> +                  which signals whether the board is driving OTG VBus or not.
+>
+> Git complains about space indentation here.
+>
+>> +
+>>  - <input>-supply: a phandle to the regulator supply node. May be omitted if
+>>                   inputs are unregulated, such as using the IPSOUT output
+>>                   from the PMIC.
+>> @@ -79,6 +84,7 @@ ELDO3         : LDO           : eldoin-supply         : shared supply
+>>  LDO_IO0                : LDO           : ips-supply            : GPIO 0
+>>  LDO_IO1                : LDO           : ips-supply            : GPIO 1
+>>  RTC_LDO                : LDO           : ips-supply            : always on
+>> +DRIVEVBUS      : Enable output : drivevbus-supply      : external regulator
+>>
+>>  AXP809 regulators, type, and corresponding input supply names:
+>>
+>> diff --git a/drivers/regulator/axp20x-regulator.c b/drivers/regulator/axp20x-regulator.c
+>> index 728be64..3f1bba4 100644
+>> --- a/drivers/regulator/axp20x-regulator.c
+>> +++ b/drivers/regulator/axp20x-regulator.c
+>> @@ -36,6 +36,8 @@
+>>
+>>  #define AXP20X_FREQ_DCDC_MASK          0x0f
+>>
+>> +#define AXP22X_MISC_N_VBUSEN_FUNC      BIT(4)
+>> +
+>>  #define AXP_DESC_IO(_family, _id, _match, _supply, _min, _max, _step, _vreg,   \
+>>                     _vmask, _ereg, _emask, _enable_val, _disable_val)           \
+>>         [_family##_##_id] = {                                                   \
+>> @@ -230,6 +232,18 @@ static const struct regulator_desc axp22x_regulators[] = {
+>>         AXP_DESC_FIXED(AXP22X, RTC_LDO, "rtc_ldo", "ips", 3000),
+>>  };
+>>
+>> +static const struct regulator_desc axp22x_drivevbus_regulator = {
+>> +       .name           = "drivevbus",
+>> +       .supply_name    = "drivevbus-supply",
+>
+> The "-supply" suffix is added by the regulator core upon lookup. No need
+> to add it here. I assume the regulator core won't get confused over a
+> supply name that's the same as the regulator requesting it.
+>
+>
+> Otherwise,
+>
+> Acked-by: Chen-Yu Tsai <wens@csie.org>
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 364b86119f3f..2e36677e5b36 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -815,8 +815,10 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	perf->state = 0;
- 
- 	result = cpufreq_table_validate_and_show(policy, freq_table);
-+	kfree(freq_table);
-+
- 	if (result)
--		goto err_freqfree;
-+		goto err_unreg;
- 
- 	if (perf->states[0].core_frequency * 1000 != policy->cpuinfo.max_freq)
- 		pr_warn(FW_WARN "P-state 0 is not max freq\n");
-@@ -860,8 +862,6 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	return result;
- 
--err_freqfree:
--	kfree(freq_table);
- err_unreg:
- 	acpi_processor_unregister_performance(cpu);
- err_free_mask:
-@@ -883,7 +883,6 @@ static int acpi_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- 	policy->driver_data = NULL;
- 	acpi_processor_unregister_performance(data->acpi_perf_cpu);
- 	free_cpumask_var(data->freqdomain_cpus);
--	kfree(policy->freq_table);
- 	kfree(data);
- 
- 	return 0;
-diff --git a/drivers/cpufreq/at32ap-cpufreq.c b/drivers/cpufreq/at32ap-cpufreq.c
-index 9231b1efb70d..c9751572ac8b 100644
---- a/drivers/cpufreq/at32ap-cpufreq.c
-+++ b/drivers/cpufreq/at32ap-cpufreq.c
-@@ -21,8 +21,6 @@
- #include <linux/export.h>
- #include <linux/slab.h>
- 
--static struct cpufreq_frequency_table *freq_table;
--
- static unsigned int	ref_freq;
- static unsigned long	loops_per_jiffy_ref;
- 
-@@ -51,6 +49,7 @@ static int at32_set_target(struct cpufreq_policy *policy, unsigned int index)
- 
- static int at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- {
-+	struct cpufreq_frequency_table *freq_table;
- 	unsigned int frequency, rate, min_freq;
- 	struct clk *cpuclk;
- 	int retval, steps, i;
-@@ -99,12 +98,13 @@ static int at32_cpufreq_driver_init(struct cpufreq_policy *policy)
- 	freq_table[steps - 1].frequency = CPUFREQ_TABLE_END;
- 
- 	retval = cpufreq_table_validate_and_show(policy, freq_table);
-+	kfree(freq_table);
-+
- 	if (!retval) {
- 		printk("cpufreq: AT32AP CPU frequency driver\n");
- 		return 0;
- 	}
- 
--	kfree(freq_table);
- out_err_put_clk:
- 	clk_put(cpuclk);
- out_err:
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 3957de801ae8..d46741b69c59 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -253,10 +253,12 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	rcu_read_unlock();
- 
- 	ret = cpufreq_table_validate_and_show(policy, freq_table);
-+	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
-+
- 	if (ret) {
- 		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
- 			ret);
--		goto out_free_cpufreq_table;
-+		goto out_free_priv;
- 	}
- 
- 	/* Support turbo/boost mode */
-@@ -264,7 +266,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		/* This gets disabled by core on driver unregister */
- 		ret = cpufreq_enable_boost_support();
- 		if (ret)
--			goto out_free_cpufreq_table;
-+			goto out_free_priv;
- 		cpufreq_dt_attr[1] = &cpufreq_freq_attr_scaling_boost_freqs;
- 	}
- 
-@@ -276,8 +278,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 
- 	return 0;
- 
--out_free_cpufreq_table:
--	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
- out_free_priv:
- 	kfree(priv);
- out_free_opp:
-@@ -295,7 +295,6 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
- 	struct private_data *priv = policy->driver_data;
- 
- 	cpufreq_cooling_unregister(priv->cdev);
--	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
- 	dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
- 	if (priv->reg_name)
- 		dev_pm_opp_put_regulator(priv->cpu_dev);
-diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
-index a284bddfb067..6c6090492889 100644
---- a/drivers/cpufreq/e_powersaver.c
-+++ b/drivers/cpufreq/e_powersaver.c
-@@ -38,7 +38,6 @@ struct eps_cpu_data {
- #if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
- 	u32 bios_limit;
- #endif
--	struct cpufreq_frequency_table freq_table[];
- };
- 
- static struct eps_cpu_data *eps_cpu[NR_CPUS];
-@@ -324,11 +323,17 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
- 		states = 2;
- 
- 	/* Allocate private data and frequency table for current cpu */
--	centaur = kzalloc(sizeof(*centaur)
--		    + (states + 1) * sizeof(struct cpufreq_frequency_table),
--		    GFP_KERNEL);
-+	centaur = kzalloc(sizeof(*centaur), GFP_KERNEL);
- 	if (!centaur)
- 		return -ENOMEM;
-+
-+	f_table = kzalloc((states + 1) * sizeof(struct cpufreq_frequency_table),
-+			  GFP_KERNEL);
-+	if (!f_table) {
-+		kfree(centaur);
-+		return -ENOMEM;
-+	}
-+
- 	eps_cpu[0] = centaur;
- 
- 	/* Copy basic values */
-@@ -338,7 +343,6 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
- #endif
- 
- 	/* Fill frequency and MSR value table */
--	f_table = &centaur->freq_table[0];
- 	if (brand != EPS_BRAND_C7M) {
- 		f_table[0].frequency = fsb * min_multiplier;
- 		f_table[0].driver_data = (min_multiplier << 8) | min_voltage;
-@@ -360,13 +364,13 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
- 
- 	policy->cpuinfo.transition_latency = 140000; /* 844mV -> 700mV in ns */
- 
--	ret = cpufreq_table_validate_and_show(policy, &centaur->freq_table[0]);
--	if (ret) {
-+	ret = cpufreq_table_validate_and_show(policy, f_table);
-+	if (ret)
- 		kfree(centaur);
--		return ret;
--	}
- 
--	return 0;
-+	kfree(f_table);
-+
-+	return ret;
- }
- 
- static int eps_cpu_exit(struct cpufreq_policy *policy)
-diff --git a/drivers/cpufreq/ia64-acpi-cpufreq.c b/drivers/cpufreq/ia64-acpi-cpufreq.c
-index cc8bb1e5ac50..10e3bfac84d5 100644
---- a/drivers/cpufreq/ia64-acpi-cpufreq.c
-+++ b/drivers/cpufreq/ia64-acpi-cpufreq.c
-@@ -292,8 +292,10 @@ acpi_cpufreq_cpu_init (
- 	}
- 
- 	result = cpufreq_table_validate_and_show(policy, freq_table);
-+	kfree(freq_table);
-+
- 	if (result) {
--		goto err_freqfree;
-+		goto err_unreg;
- 	}
- 
- 	/* notify BIOS that we exist */
-@@ -317,8 +319,6 @@ acpi_cpufreq_cpu_init (
- 
- 	return (result);
- 
-- err_freqfree:
--	kfree(freq_table);
-  err_unreg:
- 	acpi_processor_unregister_performance(cpu);
-  err_free:
-@@ -340,7 +340,6 @@ acpi_cpufreq_cpu_exit (
- 	if (data) {
- 		acpi_io_data[policy->cpu] = NULL;
- 		acpi_processor_unregister_performance(policy->cpu);
--		kfree(policy->freq_table);
- 		kfree(data);
- 	}
- 
-diff --git a/drivers/cpufreq/loongson1-cpufreq.c b/drivers/cpufreq/loongson1-cpufreq.c
-index be89416e2358..2d35d3cc2ad8 100644
---- a/drivers/cpufreq/loongson1-cpufreq.c
-+++ b/drivers/cpufreq/loongson1-cpufreq.c
-@@ -103,18 +103,11 @@ static int ls1x_cpufreq_init(struct cpufreq_policy *policy)
- 
- 	policy->clk = cpufreq->clk;
- 	ret = cpufreq_generic_init(policy, freq_tbl, 0);
--	if (ret)
--		kfree(freq_tbl);
-+	kfree(freq_tbl);
- 
- 	return ret;
- }
- 
--static int ls1x_cpufreq_exit(struct cpufreq_policy *policy)
--{
--	kfree(policy->freq_table);
--	return 0;
--}
--
- static struct cpufreq_driver ls1x_cpufreq_driver = {
- 	.name		= "cpufreq-ls1x",
- 	.flags		= CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-@@ -122,7 +115,6 @@ static struct cpufreq_driver ls1x_cpufreq_driver = {
- 	.target_index	= ls1x_cpufreq_target,
- 	.get		= cpufreq_generic_get,
- 	.init		= ls1x_cpufreq_init,
--	.exit		= ls1x_cpufreq_exit,
- 	.attr		= cpufreq_generic_attr,
- };
- 
--- 
-2.7.1.410.g6faf27b
+Thanks, I'll send a v3 with both issues fixed.
 
+Regards,
+
+Hans
+
+>
+>> +       .of_match       = of_match_ptr("drivevbus"),
+>> +       .regulators_node = of_match_ptr("regulators"),
+>> +       .type           = REGULATOR_VOLTAGE,
+>> +       .owner          = THIS_MODULE,
+>> +       .enable_reg     = AXP20X_VBUS_IPSOUT_MGMT,
+>> +       .enable_mask    = BIT(2),
+>> +       .ops            = &axp20x_ops_sw,
+>> +};
+>> +
+>>  static const struct regulator_linear_range axp809_dcdc4_ranges[] = {
+>>         REGULATOR_LINEAR_RANGE(600000, 0x0, 0x2f, 20000),
+>>         REGULATOR_LINEAR_RANGE(1800000, 0x30, 0x38, 100000),
+>> @@ -411,6 +425,7 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
+>>         u32 workmode;
+>>         const char *dcdc1_name = axp22x_regulators[AXP22X_DCDC1].name;
+>>         const char *dcdc5_name = axp22x_regulators[AXP22X_DCDC5].name;
+>> +       bool drivevbus = false;
+>>
+>>         switch (axp20x->variant) {
+>>         case AXP202_ID:
+>> @@ -422,6 +437,8 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
+>>         case AXP223_ID:
+>>                 regulators = axp22x_regulators;
+>>                 nregulators = AXP22X_REG_ID_MAX;
+>> +               drivevbus = of_property_read_bool(pdev->dev.parent->of_node,
+>> +                                                 "x-powers,drive-vbus-en");
+>>                 break;
+>>         case AXP809_ID:
+>>                 regulators = axp809_regulators;
+>> @@ -500,6 +517,19 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
+>>                                                 &dcdc5_name);
+>>         }
+>>
+>> +       if (drivevbus) {
+>> +               /* Change N_VBUSEN sense pin to DRIVEVBUS output pin */
+>> +               regmap_update_bits(axp20x->regmap, AXP20X_OVER_TMP,
+>> +                                  AXP22X_MISC_N_VBUSEN_FUNC, 0);
+>> +               rdev = devm_regulator_register(&pdev->dev,
+>> +                                              &axp22x_drivevbus_regulator,
+>> +                                              &config);
+>> +               if (IS_ERR(rdev)) {
+>> +                       dev_err(&pdev->dev, "Failed to register drivevbus\n");
+>> +                       return PTR_ERR(rdev);
+>> +               }
+>> +       }
+>> +
+>>         return 0;
+>>  }
+>>
+>> --
+>> 2.7.4
+>>
