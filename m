@@ -1,182 +1,75 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v2 4/4] regulator: axp20x: Add support for the (external)
- drivebus regulator
-Date: Fri, 3 Jun 2016 18:59:33 +0200
-Message-ID: <22e0130a-1f95-a177-f2c3-793493707296@redhat.com>
-References: <1464887936-17020-1-git-send-email-hdegoede@redhat.com>
- <1464887936-17020-4-git-send-email-hdegoede@redhat.com>
- <CAGb2v67qsJ+U71UJj=HTTbgsQZgK1YEVNhyw5Q6XV+n38NpK0Q@mail.gmail.com>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: [PATCH] power_supply: power_supply_read_temp only if use_cnt > 0
+Date: Fri, 3 Jun 2016 16:30:50 -0400
+Message-ID: <1464985850-12365-1-git-send-email-rklein@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAGb2v67qsJ+U71UJj=HTTbgsQZgK1YEVNhyw5Q6XV+n38NpK0Q@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: devicetree <devicetree@vger.kernel.org>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:13453 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964790AbcFCUcF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2016 16:32:05 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rhyland Klein <rklein@nvidia.com>
 
-Hi,
+Add check to power_supply_read_temp() to only use the power_supply
+get_property() callback if the use_cnt is > 0. The use_cnt will
+be incremented at the end of __power_supply_register, so this will
+block to case where get_property can be called before the supply
+is fully registered. This fixes the issue show in the stack below:
 
-On 03-06-16 03:38, Chen-Yu Tsai wrote:
-> Hi,
->
-> On Fri, Jun 3, 2016 at 1:18 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->> The axp20x pmics have 2 power inputs, one called ACIN which is intended
->> for to be supplied via a powerbarrel on the board and one called VBUS
->> which is intended to be supplied via an otg connector.
->>
->> In the VBUS case the pmic needs to know if the board is supplying power
->> to the otg connector, because then it should not take any power from
->> its VBUS pin. The axp209 pmic has a N_VBUSEN input pin via which the
->> board can signal to the pmic whether the board is supplying power to the
->> otg connector or not.
->>
->> On the axp221/axp223 this pin can alternatively be used as an output
->> which controls an external regulator which (optionally) supplies
->> power to the otg connector from the board. When the pin is used as
->> output it is called DRIVEVBUS in the datasheet.
->>
->> This commit adds support for the DRIVEVBUS pin as an extra pmic
->> controlled regulator. Since this is optional a new x-powers,drivebus dt
->> property is added. When this is present the misc-control register is
->> written to change the N_VBUSEN input pin to DRIVEVBUS output pin mode and
->> the extra drivebus regulator is registered with the regulator subsystem.
->>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> ---
->> Changes in v2:
->> -Rename the dt property to drive-vbus-en
->> -s/drivebus/drivevbus/
->> -Add a line describing the drivevbus regulator to the table in
->>  Documentation/devicetree/bindings/mfd/axp20x.txt
->> -Set supply_name to drivevbus-supply
->> ---
->>  Documentation/devicetree/bindings/mfd/axp20x.txt |  6 +++++
->>  drivers/regulator/axp20x-regulator.c             | 30 ++++++++++++++++++++++++
->>  2 files changed, 36 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/mfd/axp20x.txt b/Documentation/devicetree/bindings/mfd/axp20x.txt
->> index d20b103..6aca4fe 100644
->> --- a/Documentation/devicetree/bindings/mfd/axp20x.txt
->> +++ b/Documentation/devicetree/bindings/mfd/axp20x.txt
->> @@ -22,6 +22,11 @@ Optional properties:
->>                       AXP152/20X: range:  750-1875, Default: 1.5 MHz
->>                       AXP22X/80X: range: 1800-4050, Default: 3   MHz
->>
->> +- x-powers,drive-vbus-en: axp221 / axp223 only boolean, set this when the
->> +                  N_VBUSEN pin is used as an output pin to control an external
->> +                  regulator to drive the OTG VBus, rather then as an input pin
->> +                  which signals whether the board is driving OTG VBus or not.
->
-> Git complains about space indentation here.
->
->> +
->>  - <input>-supply: a phandle to the regulator supply node. May be omitted if
->>                   inputs are unregulated, such as using the IPSOUT output
->>                   from the PMIC.
->> @@ -79,6 +84,7 @@ ELDO3         : LDO           : eldoin-supply         : shared supply
->>  LDO_IO0                : LDO           : ips-supply            : GPIO 0
->>  LDO_IO1                : LDO           : ips-supply            : GPIO 1
->>  RTC_LDO                : LDO           : ips-supply            : always on
->> +DRIVEVBUS      : Enable output : drivevbus-supply      : external regulator
->>
->>  AXP809 regulators, type, and corresponding input supply names:
->>
->> diff --git a/drivers/regulator/axp20x-regulator.c b/drivers/regulator/axp20x-regulator.c
->> index 728be64..3f1bba4 100644
->> --- a/drivers/regulator/axp20x-regulator.c
->> +++ b/drivers/regulator/axp20x-regulator.c
->> @@ -36,6 +36,8 @@
->>
->>  #define AXP20X_FREQ_DCDC_MASK          0x0f
->>
->> +#define AXP22X_MISC_N_VBUSEN_FUNC      BIT(4)
->> +
->>  #define AXP_DESC_IO(_family, _id, _match, _supply, _min, _max, _step, _vreg,   \
->>                     _vmask, _ereg, _emask, _enable_val, _disable_val)           \
->>         [_family##_##_id] = {                                                   \
->> @@ -230,6 +232,18 @@ static const struct regulator_desc axp22x_regulators[] = {
->>         AXP_DESC_FIXED(AXP22X, RTC_LDO, "rtc_ldo", "ips", 3000),
->>  };
->>
->> +static const struct regulator_desc axp22x_drivevbus_regulator = {
->> +       .name           = "drivevbus",
->> +       .supply_name    = "drivevbus-supply",
->
-> The "-supply" suffix is added by the regulator core upon lookup. No need
-> to add it here. I assume the regulator core won't get confused over a
-> supply name that's the same as the regulator requesting it.
->
->
-> Otherwise,
->
-> Acked-by: Chen-Yu Tsai <wens@csie.org>
+[    1.452598] power_supply_read_temp+0x78/0x80
+[    1.458680] thermal_zone_get_temp+0x5c/0x11c
+[    1.464765] thermal_zone_device_update+0x34/0xb4
+[    1.471195] thermal_zone_device_register+0x87c/0x8cc
+[    1.477974] __power_supply_register+0x364/0x424
+[    1.484317] power_supply_register_no_ws+0x10/0x18
+[    1.490833] bq27xxx_battery_setup+0x10c/0x164
+[    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
+[    1.503435] i2c_device_probe+0x174/0x240
+[    1.509172] driver_probe_device+0x1fc/0x29c
+[    1.515167] __driver_attach+0xa4/0xa8
+[    1.520643] bus_for_each_dev+0x58/0x98
+[    1.526204] driver_attach+0x20/0x28
+[    1.531505] bus_add_driver+0x1c8/0x22c
+[    1.537067] driver_register+0x68/0x108
+[    1.542630] i2c_register_driver+0x38/0x7c
+[    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
+[    1.555321] do_one_initcall+0x38/0x12c
+[    1.560886] kernel_init_freeable+0x148/0x1ec
+[    1.566972] kernel_init+0x10/0xfc
+[    1.572101] ret_from_fork+0x10/0x40
 
-Thanks, I'll send a v3 with both issues fixed.
+Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+---
+ drivers/power/power_supply_core.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-Regards,
+diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+index 456987c88baa..070fec621d66 100644
+--- a/drivers/power/power_supply_core.c
++++ b/drivers/power/power_supply_core.c
+@@ -561,11 +561,16 @@ static int power_supply_read_temp(struct thermal_zone_device *tzd,
+ {
+ 	struct power_supply *psy;
+ 	union power_supply_propval val;
+-	int ret;
++	int ret = 0;
+ 
+ 	WARN_ON(tzd == NULL);
++
+ 	psy = tzd->devdata;
+-	ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
++	WARN_ON(atomic_read(&psy->use_cnt) == 0);
++
++	if (atomic_read(&psy->use_cnt) > 0)
++		ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP,
++					      &val);
+ 
+ 	/* Convert tenths of degree Celsius to milli degree Celsius. */
+ 	if (!ret)
+-- 
+1.9.1
 
-Hans
-
->
->> +       .of_match       = of_match_ptr("drivevbus"),
->> +       .regulators_node = of_match_ptr("regulators"),
->> +       .type           = REGULATOR_VOLTAGE,
->> +       .owner          = THIS_MODULE,
->> +       .enable_reg     = AXP20X_VBUS_IPSOUT_MGMT,
->> +       .enable_mask    = BIT(2),
->> +       .ops            = &axp20x_ops_sw,
->> +};
->> +
->>  static const struct regulator_linear_range axp809_dcdc4_ranges[] = {
->>         REGULATOR_LINEAR_RANGE(600000, 0x0, 0x2f, 20000),
->>         REGULATOR_LINEAR_RANGE(1800000, 0x30, 0x38, 100000),
->> @@ -411,6 +425,7 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
->>         u32 workmode;
->>         const char *dcdc1_name = axp22x_regulators[AXP22X_DCDC1].name;
->>         const char *dcdc5_name = axp22x_regulators[AXP22X_DCDC5].name;
->> +       bool drivevbus = false;
->>
->>         switch (axp20x->variant) {
->>         case AXP202_ID:
->> @@ -422,6 +437,8 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
->>         case AXP223_ID:
->>                 regulators = axp22x_regulators;
->>                 nregulators = AXP22X_REG_ID_MAX;
->> +               drivevbus = of_property_read_bool(pdev->dev.parent->of_node,
->> +                                                 "x-powers,drive-vbus-en");
->>                 break;
->>         case AXP809_ID:
->>                 regulators = axp809_regulators;
->> @@ -500,6 +517,19 @@ static int axp20x_regulator_probe(struct platform_device *pdev)
->>                                                 &dcdc5_name);
->>         }
->>
->> +       if (drivevbus) {
->> +               /* Change N_VBUSEN sense pin to DRIVEVBUS output pin */
->> +               regmap_update_bits(axp20x->regmap, AXP20X_OVER_TMP,
->> +                                  AXP22X_MISC_N_VBUSEN_FUNC, 0);
->> +               rdev = devm_regulator_register(&pdev->dev,
->> +                                              &axp22x_drivevbus_regulator,
->> +                                              &config);
->> +               if (IS_ERR(rdev)) {
->> +                       dev_err(&pdev->dev, "Failed to register drivevbus\n");
->> +                       return PTR_ERR(rdev);
->> +               }
->> +       }
->> +
->>         return 0;
->>  }
->>
->> --
->> 2.7.4
->>
