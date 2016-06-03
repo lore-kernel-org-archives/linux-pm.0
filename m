@@ -1,54 +1,38 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/11] cpufreq: Keep policy->freq_table sorted
-Date: Fri, 3 Jun 2016 08:41:36 +0530
-Message-ID: <20160603031136.GA23467@vireshk-i7>
-References: <cover.1464876460.git.viresh.kumar@linaro.org>
- <CAJZ5v0h23n7k66fRdmARXStOYFVTpVSQQVa1bN3YixehG=eD4w@mail.gmail.com>
- <20160603000134.GS3725@vireshk-i7>
- <2735911.VQvHH3XKf9@vostro.rjw.lan>
+Subject: Re: [PATCH V2 2/2] cpufreq: Optimize cpufreq_frequency_table_target()
+Date: Fri, 3 Jun 2016 08:46:01 +0530
+Message-ID: <20160603031601.GB23467@vireshk-i7>
+References: <cover.1464777376.git.viresh.kumar@linaro.org>
+ <120ed8a873b6df2ccc9406eeec8f8f74e5f9b0d5.1464777376.git.viresh.kumar@linaro.org>
+ <20160601194615.GQ9864@graphite.smuckle.net>
+ <20160602012904.GV3725@vireshk-i7>
+ <20160602182835.GC14579@graphite.smuckle.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:34143 "EHLO
-	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbcFCDLl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 23:11:41 -0400
-Received: by mail-pf0-f176.google.com with SMTP id 62so38646152pfd.1
-        for <linux-pm@vger.kernel.org>; Thu, 02 Jun 2016 20:11:40 -0700 (PDT)
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:36107 "EHLO
+	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750916AbcFCDQF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 23:16:05 -0400
+Received: by mail-pf0-f181.google.com with SMTP id f144so38680373pfa.3
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jun 2016 20:16:04 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <2735911.VQvHH3XKf9@vostro.rjw.lan>
+In-Reply-To: <20160602182835.GC14579@graphite.smuckle.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Steven Miao <realmz6@gmail.com>, Steve Muckle <steve.muckle@linaro.org>
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
 
-On 03-06-16, 03:43, Rafael J. Wysocki wrote:
-> On Friday, June 03, 2016 05:31:34 AM Viresh Kumar wrote:
-> > So, yeah, I get your overall concern. What about this:
-> > - A single patchset to make sure the current policy->freq_table is
-> >   always sorted in Ascending order of frequencies.
+On 02-06-16, 11:28, Steve Muckle wrote:
+> Shouldn't we be able to avoid extra function calls through the use of
+> macros/inlines? Otherwise this is making things slower for schedutil
+> than it is today. 
 > 
-> Be careful here.  acpi-cpufreq sorts the table in the descending order
-> and at least acpi_cpufreq_fast_switch() assumes that.
+> Actually cpufreq_driver_resolve_freq() shouldn't require any calls from
+> schedutil when a freq_table is available - the whole thing could be run
+> inline.
 
-Yeah, it was already fixed in [V2 0/2] series. Thanks.
-
-> > - And this sorting will be done per policy only when the policy is
-> >   first created.
-> > - Which would eventually mean merging this series with the [v2 0/2]
-> >   one.
-> > 
-> > Will that work ?
-> 
-> Well, it may. :-)
-> 
-> I would like you to talk to Steve and agree on the approach, including which
-> changes to make first, though.  You are both from Linaro after all ...
-
-Sure, we can get that done and I am not particular here on whose patches should
-get in first. The outcome should be same whatever order we follow :)
-
-Thanks.
+I will see what I can do on that. Thanks.
 
 -- 
 viresh
