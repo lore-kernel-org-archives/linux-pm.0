@@ -1,69 +1,57 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 2/6] cpufreq: Remove cpufreq_frequency_get_table()
-Date: Fri, 3 Jun 2016 10:41:45 +0530
-Message-ID: <20160603051145.GK16176@vireshk-i7>
-References: <cover.1464876229.git.viresh.kumar@linaro.org>
- <13d43ddfe208a9b387fe0fd247de069ba0332308.1464876229.git.viresh.kumar@linaro.org>
- <20160602145903.GA2966@e104805>
- <CAKohponBAEZMhiVPNKqbY3nHAT9uB=7rK=SvVaf4jfgMPPft9w@mail.gmail.com>
- <20160602180250.GC2966@e104805>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH V3 0/8] cpufreq: cleanups and reorganization
+Date: Fri,  3 Jun 2016 10:58:44 +0530
+Message-ID: <cover.1464931080.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:34902 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750726AbcFCFLt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2016 01:11:49 -0400
-Received: by mail-pa0-f49.google.com with SMTP id xk1so11232232pac.2
-        for <linux-pm@vger.kernel.org>; Thu, 02 Jun 2016 22:11:49 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160602180250.GC2966@e104805>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:36530 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbcFCF3D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2016 01:29:03 -0400
+Received: by mail-pa0-f43.google.com with SMTP id te7so7991198pab.3
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jun 2016 22:29:02 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 02-06-16, 19:02, Javi Merino wrote:
-> On Thu, Jun 02, 2016 at 09:06:26PM +0530, Viresh Kumar wrote:
-> > On 2 June 2016 at 20:29, Javi Merino <javi.merino@arm.com> wrote:
-> > > In 5a31d594a973 ("cpufreq: Allow freq_table to be obtained for offline
-> > > CPUs") you did the opposite: don't use cpufreq_cpu_get_raw() because
-> > > it won't give you the policy of a cpu that is offline.  Now you are
-> > > arguing that we should go back to cpufreq_cpu_get() which implicitly
-> > > calls cpufreq_cpu_get_raw().  Won't we hit the same issue that
-> > > 5a31d594a973 was trying to prevent: that we can't get a freq_table for
-> > > a cpu that is offline?
-> > 
-> > Yes, that should be fixed. Thanks for letting me know about it :)
-> 
-> Ok, that was my only nit.  Other than that, it looks good to me.  For cpu_cooling.c 
-> 
-> Acked-by: Javi Merino <javi.merino@arm.com>
+Hi Rafael,
 
-Thanks, I will be adding this to the original patch.
+This cleans up cpufreq core and few platform drivers a bit. Its mostly
+around cleaning up the usage of cpufreq_frequency_table_target(), which
+will be optimized in a separate series.
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 63f760869651..4d678cfc81b1 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -792,10 +792,12 @@ __cpufreq_cooling_register(struct device_node *np,
-        struct cpufreq_cooling_device *cpufreq_dev;
-        char dev_name[THERMAL_NAME_LENGTH];
-        struct cpufreq_frequency_table *pos, *table;
-+       struct cpumask temp_mask;
-        unsigned int freq, i, num_cpus;
-        int ret;
- 
--       policy = cpufreq_cpu_get(cpumask_first(clip_cpus));
-+       cpumask_and(&temp_mask, clip_cpus, cpu_online_mask);
-+       policy = cpufreq_cpu_get(cpumask_first(&temp_mask));
-        if (!policy) {
-                pr_debug("%s: CPUFreq policy not found\n", __func__);
-                return ERR_PTR(-EPROBE_DEFER);
+V2->V3:
+- Fixed an issue with cpu_cooling.c (Javi)
+- Included 2 new patches from the other cleanup series.
+- Added Acked-by: from Javi for cpu_cooling.c
 
+Viresh Kumar (8):
+  ARM: davinci: Sort frequency table
+  cpufreq: s3c24xx: Remove useless checks
+  cpufreq: Remove cpufreq_frequency_get_table()
+  cpufreq: ondemand: Don't keep a copy of freq_table pointer
+  cpufreq: Drop freq-table param to cpufreq_frequency_table_target()
+  cpufreq: Drop 'freq_table' argument of __target_index()
+  cpufreq: Return index from cpufreq_frequency_table_target()
+  cpufreq: davinci: Reuse cpufreq_generic_frequency_table_verify()
 
-This will also make this problem clear, otherwise it was just hidden in the
-function call which was really easy to miss, as I missed it as well :(
+ Documentation/cpu-freq/cpu-drivers.txt |  8 ++---
+ arch/arm/mach-davinci/da850.c          | 16 +++++----
+ drivers/cpufreq/amd_freq_sensitivity.c | 10 +++---
+ drivers/cpufreq/cpufreq.c              | 66 ++++++++++++----------------------
+ drivers/cpufreq/cpufreq_ondemand.c     | 25 ++++++-------
+ drivers/cpufreq/cpufreq_ondemand.h     |  1 -
+ drivers/cpufreq/cpufreq_stats.c        |  3 +-
+ drivers/cpufreq/davinci-cpufreq.c      | 22 +-----------
+ drivers/cpufreq/freq_table.c           | 35 +++++++++---------
+ drivers/cpufreq/powernv-cpufreq.c      |  5 ++-
+ drivers/cpufreq/ppc_cbe_cpufreq_pmi.c  |  3 +-
+ drivers/cpufreq/s3c24xx-cpufreq.c      | 33 ++++-------------
+ drivers/cpufreq/s5pv210-cpufreq.c      |  8 ++---
+ drivers/thermal/cpu_cooling.c          | 24 ++++++++++---
+ include/linux/cpufreq.h                |  6 +---
+ 15 files changed, 100 insertions(+), 165 deletions(-)
 
 -- 
-viresh
+2.7.1.410.g6faf27b
+
