@@ -1,67 +1,54 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 1/6] power: Introduce Broadcom kona reset driver
-Date: Fri, 3 Jun 2016 04:38:53 +0200
-Message-ID: <20160603023853.GD8921@earth>
-References: <1463002582-6875-1-git-send-email-chris.brand@broadcom.com>
- <1463002582-6875-2-git-send-email-chris.brand@broadcom.com>
- <57409633.8060605@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 00/11] cpufreq: Keep policy->freq_table sorted
+Date: Fri, 3 Jun 2016 08:41:36 +0530
+Message-ID: <20160603031136.GA23467@vireshk-i7>
+References: <cover.1464876460.git.viresh.kumar@linaro.org>
+ <CAJZ5v0h23n7k66fRdmARXStOYFVTpVSQQVa1bN3YixehG=eD4w@mail.gmail.com>
+ <20160603000134.GS3725@vireshk-i7>
+ <2735911.VQvHH3XKf9@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Ycz6tD7Th1CMF4v7"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:34143 "EHLO
+	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbcFCDLl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jun 2016 23:11:41 -0400
+Received: by mail-pf0-f176.google.com with SMTP id 62so38646152pfd.1
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jun 2016 20:11:40 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <57409633.8060605@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Chris Brand <chris.brand@broadcom.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
+In-Reply-To: <2735911.VQvHH3XKf9@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Kevin Hilman <khilman@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Sekhar Nori <nsekhar@ti.com>, Steven Miao <realmz6@gmail.com>, Steve Muckle <steve.muckle@linaro.org>
 
+On 03-06-16, 03:43, Rafael J. Wysocki wrote:
+> On Friday, June 03, 2016 05:31:34 AM Viresh Kumar wrote:
+> > So, yeah, I get your overall concern. What about this:
+> > - A single patchset to make sure the current policy->freq_table is
+> >   always sorted in Ascending order of frequencies.
+> 
+> Be careful here.  acpi-cpufreq sorts the table in the descending order
+> and at least acpi_cpufreq_fast_switch() assumes that.
 
---Ycz6tD7Th1CMF4v7
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yeah, it was already fixed in [V2 0/2] series. Thanks.
 
-Hi Florian,
+> > - And this sorting will be done per policy only when the policy is
+> >   first created.
+> > - Which would eventually mean merging this series with the [v2 0/2]
+> >   one.
+> > 
+> > Will that work ?
+> 
+> Well, it may. :-)
+> 
+> I would like you to talk to Steve and agree on the approach, including which
+> changes to make first, though.  You are both from Linaro after all ...
 
-On Sat, May 21, 2016 at 10:09:07AM -0700, Florian Fainelli wrote:
-> Le 11/05/2016 14:36, Chris Brand a =E9crit :
-> > This driver supports reset on both BCM21664 and BCM23550.
-> > Code is being moved from arch/arm/mach-bcm/board_bcm21664.c
-> >=20
-> > Signed-off-by: Chris Brand <chris.brand@broadcom.com>
+Sure, we can get that done and I am not particular here on whose patches should
+get in first. The outcome should be same whatever order we follow :)
 
-> Sebastian, Dmitry, I know we are in the merge window, let me know if you
-> would want me to take this patch and the 5 others in the next arm-soc
-> pull request, or if you prefer to take this one in your own tree.
+Thanks.
 
-Feel free to queue it via arm-soc with
-
-Acked-By: Sebastian Reichel <sre@kernel.org>
-
-If I didn't overlook it, it's missing DT documentation, though.
-
--- Sebastian
-
---Ycz6tD7Th1CMF4v7
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJXUO26AAoJENju1/PIO/qaZPcP/2gZa+TYc7gQxES7TDUsNnLU
-OKTIRQPXId7lzwIZG3LaBrMvjfsavxMEtohGV+Ccj7i1xYImr8RogrRGsAVDi4OL
-1/jx/WezJGgqoyfXS8V9PM99qcHZjvW4lijZwpw5EVUy4TjcIaRI3IrhNUrlxS8V
-Pc6dm3/Rwf6WgbVGpQrD/wF48hIL9FVBbmNSLKKBA3/9OiiVW9v5vmcDvAvmY+UD
-H42nCBIr5aEGdXoZHjvuQ3LY+GOUBNqASL2HqYbn6+Wfr60a3anBvZTaJP0PJUrs
-IJ0Rg3WWZqVA8X/lOVoKyNAwL+TRFm+km7q5qtDzk4TD3YSqBIT1TSy4kfsmPRGd
-b/vdvO4ARs4en9Z3g1doHBU8Ttmouw5WExEuruU34L5rzk0xXOGxBTn+/CZnEgl2
-MhlMaAcE2iBQRT+kbooOhp3CzFI+/BIQyAwYUYLNGOX4w2TKC+YaABs2rrzNqHK6
-Edmc/iCsxN+ZFF7GWwX663q+D85JtiaOUuw0jqltMZsO+ReQJHSgbP4UMKYOSHBF
-zmLtzBzXrIL1DGV41ruHt4u9343SboKczaHU1UK/gISH+ezfMptp6pa9i7RFDAmV
-M5r5GSxBTQ8bwDjN00xdTK2KwWQpp8VMovRfHdvUDiR6BEVF/aWNbgMucNBy+BSB
-uK2rEyMu90Ak7qplRqRB
-=+JU8
------END PGP SIGNATURE-----
-
---Ycz6tD7Th1CMF4v7--
+-- 
+viresh
