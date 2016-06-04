@@ -1,55 +1,47 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
- ascending order
-Date: Fri, 3 Jun 2016 16:48:54 -0700
-Message-ID: <20160603234854.GF14579@graphite.smuckle.net>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
- <e155257e7f76c3dc71f9347e0433fb1e4d9a3358.1464960877.git.viresh.kumar@linaro.org>
+From: Alan <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 5/5] intel_idle: Add S0ix validation
+Date: Sat, 4 Jun 2016 13:22:13 +0100
+Message-ID: <20160604132213.18eb7d82@lxorguk.ukuu.orguk>
+References: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
+	<1464842009-21789-6-git-send-email-dbasehore@chromium.org>
+	<20160602092505.GQ3206@twins.programming.kicks-ass.net>
+	<20160602142318.2c9d2111@lxorguk.ukuu.org.uk>
+	<CAGAzgspC49xNXPsV-WCT-xqVJGfNGeHkhYYLfZSTfBtjddVm8A@mail.gmail.com>
+	<20160602205338.4a16760a@lxorguk.ukuu.org.uk>
+	<CAGAzgsrgH5-v2u8kfmxzGKzTqGV1nqp+Yo4E7y96yrretKTkXA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:32906 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750726AbcFCXtF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jun 2016 19:49:05 -0400
-Received: by mail-pa0-f45.google.com with SMTP id ec8so12512289pac.0
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jun 2016 16:49:04 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <e155257e7f76c3dc71f9347e0433fb1e4d9a3358.1464960877.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAGAzgsrgH5-v2u8kfmxzGKzTqGV1nqp+Yo4E7y96yrretKTkXA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "dbasehore ." <dbasehore@chromium.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org, linuxppc-dev@lists.ozlabs.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
 
-On Fri, Jun 03, 2016 at 07:05:14PM +0530, Viresh Kumar wrote:
-...
-> @@ -468,20 +469,15 @@ unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
->  	struct acpi_cpufreq_data *data = policy->driver_data;
->  	struct acpi_processor_performance *perf;
->  	struct cpufreq_frequency_table *entry;
-> -	unsigned int next_perf_state, next_freq, freq;
-> +	unsigned int next_perf_state, next_freq, index;
->  
->  	/*
->  	 * Find the closest frequency above target_freq.
-> -	 *
-> -	 * The table is sorted in the reverse order with respect to the
-> -	 * frequency and all of the entries are valid (see the initialization).
->  	 */
-> -	entry = policy->freq_table;
-> -	do {
-> -		entry++;
-> -		freq = entry->frequency;
-> -	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
-> -	entry--;
-> +	index = cpufreq_frequency_table_target(policy, target_freq,
-> +					       CPUFREQ_RELATION_L);
+> I would expect those IP blocks to do nothing and not block lower power
+> states if the firmware is not loaded. If that is not the case, I think
+> that should be fixed such that those lower power states are at least
+> available during suspend (if not during runtime). If your Skylake+
+> system is not entering S0ix during freeze, I consider that a bug that
+> needs to be addressed.
 
-Can we call cpufreq_find_index_l directly here? Seems like we could
-phase out cpufreq_frequency_table_target() for the most part and call
-the helpers directly. It would avoid some code bloat, an unnecessary
-switch statement and an error check for an invalid frequency table which
-seems unnecessary for every frequency table lookup.
+You would assume wrongly. Several parts of the system do their own
+power management so if present need to have a driver loaded. Graphics
+is the example everyone is familiar with but ADSP audio and ISH are two
+others.
 
-thanks,
-Steve
+> configs, that's their decision. As I said, this does nothing in the
+> !CONFIG_INTEL_PMC_CORE case, but if a finer level config is warranted,
+> I can add that.
+
+IMHO it belongs as a config item because it has a power cost, and you
+can't turn it off without enabling debugfs when it's compiled in.
+
+> I would prefer if others used this more, since there would be better
+> debug coverage and I would have to fix fewer bugs.
+
+I'd be more concerned about getting 10,000 emails bisecting the warning
+to your commit 8)
+
+Alan
