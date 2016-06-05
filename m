@@ -1,62 +1,56 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v6 0/5] PCI: Add support for suspending (including
- runtime) of PCIe ports
-Date: Sun, 5 Jun 2016 01:27:18 +0200
-Message-ID: <20160604232718.GA17088@wunner.de>
-References: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:51480 "EHLO
-	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750829AbcFDXXk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 4 Jun 2016 19:23:40 -0400
-Content-Disposition: inline
-In-Reply-To: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH] mfd: axp20x: Add a 500ms delay at the end of axp20x_power_off
+Date: Sun,  5 Jun 2016 15:50:48 +0200
+Message-ID: <1465134648-27113-1-git-send-email-hdegoede@redhat.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, Peter Wu <peter@lekensteyn.nl>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, Jun 02, 2016 at 11:17:10AM +0300, Mika Westerberg wrote:
-> Bjorn, if you are fine with these patches, it would be nice to get these to
-> linux-next for better testing coverage.
-> 
-> Changes to v5:
-> 
->   - Add patch "PCI: Power on bridges before scanning new devices" to make
->     sure rescanning using sysfs still works.
-> 
->   - Change patch "ACPI / hotplug / PCI: Runtime resume bridge before
->     rescan" to runtime resume in acpiphp_check_bridge() instead of
->     hotplug_event().
-> 
->   - Change runtime PM autosuspend delay from 10ms to 100ms.
-> 
->   - Call pm_runtime_mark_last_busy() to make sure we do not runtime suspend
->     the port immediately.
+The kernel expects the power_off function to not return, and if it does
+it panics. At a slight delay after the i2c write which turns off power
+through the pmic, to give capacitors etc. some time to drain.
 
-I've applied v6 of this series to my local tree and tested it with
-my Thunderbolt runtime pm patches. Everything seems to still work
-fine, so my Tested-by is upheld.
+Without this the kernel lives on long enough after the poweroff to
+print the following on the serial console on my Mele A1000G quad:
 
-I've also compared this version with the previous one in my tree and
-reviewed the changes. I only found a punctuation and spacing change
-that Bjorn had made and that isn't included in the commit message of
-patch [4/5]:
+[  248.583588] reboot: Power down
+[  248.600490] Kernel pa
 
-< hotplug event such as BUS_CHECK, we need to make sure it is resumed before
-< devices below the bridge are re-scanned.  Otherwise the devices behind the
+With the delay the start of printing "Kernel panic" is gone.
+
+Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 ---
-> hotplug event, such as BUS_CHECK we need to make sure it is resumed before
-> devices below the bridge are re-scanned. Otherwise the devices behind the
+ drivers/mfd/axp20x.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-And this line in the commit message of patch [5/5] suddenly has > 72
-chars now:
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 6364dab..fd80b09 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -17,6 +17,7 @@
+  */
+ 
+ #include <linux/err.h>
++#include <linux/delay.h>
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+@@ -677,6 +678,9 @@ static void axp20x_power_off(void)
+ 
+ 	regmap_write(axp20x_pm_power_off->regmap, AXP20X_OFF_CTRL,
+ 		     AXP20X_OFF);
++
++	/* Give capacitors etc. time to drain to avoid kernel panic msg. */
++	msleep(500);
+ }
+ 
+ int axp20x_match_device(struct axp20x_dev *axp20x)
+-- 
+2.7.4
 
-> Add back runtime PM support for PCIe ports that was removed in
-> commit fe9a743a2601 ("PCI/PM: Drop unused runtime PM support code for PCIe
-
-Thanks,
-
-Lukas
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
