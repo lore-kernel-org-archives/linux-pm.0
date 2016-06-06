@@ -1,42 +1,31 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH V3 4/9] cpufreq: exynos: Use 'index' only to index into
- policy->freq_table
-Date: Mon, 06 Jun 2016 09:07:48 +0200
-Message-ID: <57552144.10300@samsung.com>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
- <e6621408b2a7748d6b984eb6c97d8ee13be96ad5.1464960877.git.viresh.kumar@linaro.org>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: New Contributor
+Date: Mon, 6 Jun 2016 10:40:06 +0200
+Message-ID: <575536E6.1050807@free.fr>
+References: <ee830e2c-b2a4-7ea7-8869-23fb1dbc0da9@lapa.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:22358 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751112AbcFFHHw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 03:07:52 -0400
-In-reply-to: <e6621408b2a7748d6b984eb6c97d8ee13be96ad5.1464960877.git.viresh.kumar@linaro.org>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:1643 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752578AbcFFIkO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 6 Jun 2016 04:40:14 -0400
+In-Reply-To: <ee830e2c-b2a4-7ea7-8869-23fb1dbc0da9@lapa.com.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
+To: chris@lapa.com.au
+Cc: linux-pm@vger.kernel.org
 
-On 06/03/2016 03:35 PM, Viresh Kumar wrote:
-> Later patches would make changes in cpufreq core, after which
-> policy->freq_table may be reordered by cpufreq core and it wouldn't be
-> safe anymore to use 'index' for any other local arrays.
-> 
-> To prepare for that, use policy->freq_table[index].driver_data for other
-> driver specific usage of 'index'. The 'driver_data' fields are already
-> set properly by the driver.
-> 
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/exynos5440-cpufreq.c | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
+On 06/06/2016 06:09, Chris Lapa wrote:
 
-Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> I'm new to contributing to the kernel and am just wondering what the
+> correct etiquette is for having my patches reviewed/accepted.
 
-Best regards,
-Krzysztof
+This document provides some guidelines:
+https://www.kernel.org/doc/Documentation/SubmittingPatches
 
+The MAINTAINERS file is useful to figure out *who* to send patches to:
+https://www.kernel.org/doc/linux/MAINTAINERS
+
+Regards.
