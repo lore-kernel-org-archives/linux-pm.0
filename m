@@ -1,31 +1,69 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: New Contributor
-Date: Mon, 6 Jun 2016 10:40:06 +0200
-Message-ID: <575536E6.1050807@free.fr>
-References: <ee830e2c-b2a4-7ea7-8869-23fb1dbc0da9@lapa.com.au>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v6 0/5] PCI: Add support for suspending (including
+ runtime) of PCIe ports
+Date: Mon, 6 Jun 2016 12:43:47 +0300
+Message-ID: <20160606094347.GS1743@lahna.fi.intel.com>
+References: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
+ <20160604232718.GA17088@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:1643 "EHLO smtp2-g21.free.fr"
+Received: from mga03.intel.com ([134.134.136.65]:38538 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752578AbcFFIkO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 6 Jun 2016 04:40:14 -0400
-In-Reply-To: <ee830e2c-b2a4-7ea7-8869-23fb1dbc0da9@lapa.com.au>
+	id S1751120AbcFFJnx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 6 Jun 2016 05:43:53 -0400
+Content-Disposition: inline
+In-Reply-To: <20160604232718.GA17088@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: chris@lapa.com.au
-Cc: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, Peter Wu <peter@lekensteyn.nl>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 06/06/2016 06:09, Chris Lapa wrote:
+On Sun, Jun 05, 2016 at 01:27:18AM +0200, Lukas Wunner wrote:
+> On Thu, Jun 02, 2016 at 11:17:10AM +0300, Mika Westerberg wrote:
+> > Bjorn, if you are fine with these patches, it would be nice to get these to
+> > linux-next for better testing coverage.
+> > 
+> > Changes to v5:
+> > 
+> >   - Add patch "PCI: Power on bridges before scanning new devices" to make
+> >     sure rescanning using sysfs still works.
+> > 
+> >   - Change patch "ACPI / hotplug / PCI: Runtime resume bridge before
+> >     rescan" to runtime resume in acpiphp_check_bridge() instead of
+> >     hotplug_event().
+> > 
+> >   - Change runtime PM autosuspend delay from 10ms to 100ms.
+> > 
+> >   - Call pm_runtime_mark_last_busy() to make sure we do not runtime suspend
+> >     the port immediately.
+> 
+> I've applied v6 of this series to my local tree and tested it with
+> my Thunderbolt runtime pm patches. Everything seems to still work
+> fine, so my Tested-by is upheld.
 
-> I'm new to contributing to the kernel and am just wondering what the
-> correct etiquette is for having my patches reviewed/accepted.
+Great, thanks!
 
-This document provides some guidelines:
-https://www.kernel.org/doc/Documentation/SubmittingPatches
+> I've also compared this version with the previous one in my tree and
+> reviewed the changes. I only found a punctuation and spacing change
+> that Bjorn had made and that isn't included in the commit message of
+> patch [4/5]:
+> 
+> < hotplug event such as BUS_CHECK, we need to make sure it is resumed before
+> < devices below the bridge are re-scanned.  Otherwise the devices behind the
+> ---
+> > hotplug event, such as BUS_CHECK we need to make sure it is resumed before
+> > devices below the bridge are re-scanned. Otherwise the devices behind the
 
-The MAINTAINERS file is useful to figure out *who* to send patches to:
-https://www.kernel.org/doc/linux/MAINTAINERS
+Hmm, the patch is calling pm_runtime_get_sync()/pm_runtime_put() in
+acpiphp_check_bridge() now instead of in hotplug_event() like it was in
+the previous version.
 
-Regards.
+> And this line in the commit message of patch [5/5] suddenly has > 72
+> chars now:
+> 
+> > Add back runtime PM support for PCIe ports that was removed in
+> > commit fe9a743a2601 ("PCI/PM: Drop unused runtime PM support code for PCIe
+
+Yes, I changed it because checkpatch.pl wants to have commit <COMMIT> in
+the same line apparently.
