@@ -1,45 +1,64 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 0/2] arm64: dts: r8a7796: Add SYSC PM Domains
-Date: Mon, 6 Jun 2016 10:53:02 +0900
-Message-ID: <20160606015301.GB2317@verge.net.au>
-References: <1464685726-21611-1-git-send-email-geert+renesas@glider.be>
- <20160606013359.GE4859@verge.net.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:52746 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752074AbcFFBxE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jun 2016 21:53:04 -0400
-Content-Disposition: inline
-In-Reply-To: <20160606013359.GE4859@verge.net.au>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V4 1/8] ARM: davinci: Sort frequency table
+Date: Mon,  6 Jun 2016 09:14:54 +0530
+Message-ID: <3a395ec9a3cfec21f227a1ad92df237b1dda9f2d.1465184522.git.viresh.kumar@linaro.org>
+References: <f9a03695c321b9c0628c6ae0136adfe004f358ad.1464931080.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <f9a03695c321b9c0628c6ae0136adfe004f358ad.1464931080.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Magnus Damm <damm+renesas@opensource.se>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Mon, Jun 06, 2016 at 10:33:59AM +0900, Simon Horman wrote:
-> On Tue, May 31, 2016 at 11:08:43AM +0200, Geert Uytterhoeven wrote:
-> > 	Hi Simon, Magnus,
-> > 
-> > This patch series adds support for the power areas exposed by the System
-> > Controller on the Renesas R-Car M3-W SoC to the DTS.
-> > 
-> > This series is against Simon's "[PATCH v3 0/3] arm64: Add Renesas
-> > R8A7796 SoC support".  It has a build and runtime dependency on my series
-> > "[PATCH v2 0/3] soc: renesas: rcar-sysc: Add support for R-Car M3-W power
-> > areas".
-> > 
-> > For your convenience, I've pushed this series to the
-> > topic/r8a7796-sysc-dt-v1 branch of
-> > https://git.kernel.org/cgit/linux/kernel/git/geert/renesas-drivers.git.
-> > This has been tested on r8a7796/salvator-x.
-> 
-> Thanks, I have tentatively queued this up.
+This is required for some of the changes in cpufreq core. There was only
+one function dependent on the order of the table, that is fixed as well.
 
-Bother, I spoke to soon.
+Cc: Sekhar Nori <nsekhar@ti.com>
+Cc: Kevin Hilman <khilman@kernel.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V3->V4:
+- Fixed an error reported by buildbot, by removing '&' before
+  usage of da850_freq_table.
 
-There is a compile-time dependency on 8a7796-cpg-mssr.h in the basic
-support for r8a7796 which this series depends on.  So "[PATCH 0/4] clk:
-renesas: cpg-mssr: Add support for R-Car M3-W" needs to be present. I have
-deferred these patches pending that. 
+ arch/arm/mach-davinci/da850.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm/mach-davinci/da850.c b/arch/arm/mach-davinci/da850.c
+index 239886299968..a706df3367ee 100644
+--- a/arch/arm/mach-davinci/da850.c
++++ b/arch/arm/mach-davinci/da850.c
+@@ -1004,13 +1004,14 @@ static const struct da850_opp da850_opp_96 = {
+ 		.frequency = freq * 1000, \
+ 	}
+ 
++/* Table sorted in ascending order of frequencies */
+ static struct cpufreq_frequency_table da850_freq_table[] = {
+-	OPP(456),
+-	OPP(408),
+-	OPP(372),
+-	OPP(300),
+-	OPP(200),
+ 	OPP(96),
++	OPP(200),
++	OPP(300),
++	OPP(372),
++	OPP(408),
++	OPP(456),
+ 	{
+ 		.driver_data		= 0,
+ 		.frequency	= CPUFREQ_TABLE_END,
+@@ -1076,8 +1077,9 @@ int da850_register_cpufreq(char *async_clk)
+ 		clk_add_alias("async", da850_cpufreq_device.name,
+ 							async_clk, NULL);
+ 	for (i = 0; i < ARRAY_SIZE(da850_freq_table); i++) {
+-		if (da850_freq_table[i].frequency <= da850_max_speed) {
+-			cpufreq_info.freq_table = &da850_freq_table[i];
++		if (da850_freq_table[i].frequency > da850_max_speed) {
++			da850_freq_table[i].driver_data = 0;
++			da850_freq_table[i].frequency = CPUFREQ_TABLE_END;
+ 			break;
+ 		}
+ 	}
+-- 
+2.7.1.410.g6faf27b
