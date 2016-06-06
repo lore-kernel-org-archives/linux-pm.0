@@ -1,89 +1,43 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: fix race condition when updating cooling device
-Date: Mon, 6 Jun 2016 13:51:14 +0100
-Message-ID: <20160606125113.GC2897@e104805>
-References: <1464877531-2161-1-git-send-email-michele.digiorgio@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
+ ascending order
+Date: Mon, 6 Jun 2016 14:57:47 +0200
+Message-ID: <CAJZ5v0hR+XM3KM1Q9c9_kK8n3QbkNzCr7V73m09-nP8KBKq=3Q@mail.gmail.com>
+References: <cover.1464960877.git.viresh.kumar@linaro.org> <20160603234854.GF14579@graphite.smuckle.net>
+ <20160606035231.GZ16176@vireshk-i7> <1649758.V7uyzAJShK@vostro.rjw.lan> <CAKohponw8wjFTXA+JyH0A2yXwtF4DxPSVCLcji4=yYV14OC3fw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:36296 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751182AbcFFMvR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 6 Jun 2016 08:51:17 -0400
-Content-Disposition: inline
-In-Reply-To: <1464877531-2161-1-git-send-email-michele.digiorgio@arm.com>
+Received: from mail-wm0-f49.google.com ([74.125.82.49]:36451 "EHLO
+	mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbcFFM5u (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 08:57:50 -0400
+In-Reply-To: <CAKohponw8wjFTXA+JyH0A2yXwtF4DxPSVCLcji4=yYV14OC3fw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michele Di Giorgio <michele.digiorgio@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Peter Feuerer <peter@piie.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
 
-On Thu, Jun 02, 2016 at 03:25:31PM +0100, Michele Di Giorgio wrote:
-> When multiple thermal zones are bound to the same cooling device, multiple
-> kernel threads may want to update the cooling device state by calling
-> thermal_cdev_update(). Having cdev not protected by a mutex can lead to a race
-> condition. Consider the following situation with two kernel threads k1 and k2:
-> 
-> 	    Thread k1				Thread k2
->                                     ||
->                                     ||  call thermal_cdev_update()
->                                     ||      ...
->                                     ||      set_cur_state(cdev, target);
->     call power_actor_set_power()    ||
->         ...                         ||
->         instance->target = state;   ||
->         cdev->updated = false;      ||
->                                     ||      cdev->updated = true;
->                                     ||      // completes execution
->     call thermal_cdev_update()      ||
->         // cdev->updated == true    ||
->         return;                     ||
->                                     \/
->                                     time
-> 
-> k2 has already looped through the thermal instances looking for the deepest
-> cooling device state and is preempted right before setting cdev->updated to
-> true. Now, k1 runs, modifies the thermal instance state and sets cdev->updated
-> to false. Then, k1 is preempted and k2 continues the execution by setting
-> cdev->updated to true, therefore preventing k1 from performing the update.
-> Notice that this is not an issue if k2 looks at the instance->target modified by
-> k1 "after" it is assigned by k1. In fact, in this case the update will happen
-> anyway and k1 can safely return immediately from thermal_cdev_update().
-> 
-> This may lead to a situation where a thermal governor never updates the cooling
-> device. For example, this is the case for the step_wise governor: when calling
-> the function thermal_zone_trip_update(), the governor may always get a new state
-> equal to the old one (which, however, wasn't notified to the cooling device) and
-> will therefore skip the update.
-> 
-> CC: Zhang Rui <rui.zhang@intel.com>
-> CC: Eduardo Valentin <edubezval@gmail.com>
-> CC: Peter Feuerer <peter@piie.net>
-> Reported-by: Toby Huang <toby.huang@arm.com>
-> Signed-off-by: Michele Di Giorgio <michele.digiorgio@arm.com>
-> ---
-> Protecting only the assignment of cdev->updated with mutexes may look
-> suspicious, but it is necessary to guarantee synchronization and avoiding the
-> situation described in the commit message.
-> 
-> There are other two possible solutions.
-> 
-> Moving the cdev->lock mutex outside thermal_cdev_update() and protect both the
-> assignment and the function. This would work, but will probably cause many
-> issues when updating all the modules that use thermal_cdev_update().
-> 
-> The other solution is to make cdev->updated an atomic_t, change the if
-> condition to an atomic_cmpxchg and extend the critical section to include the
-> call to cdev->ops->set_cur_state().
+On Mon, Jun 6, 2016 at 2:24 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 6 June 2016 at 17:40, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Monday, June 06, 2016 09:22:31 AM Viresh Kumar wrote:
+>
+>>> I agree with that, though that requires larger changes across multiple
+>>> sites.
+>>
+>> What changes and where?
+>
+> s/larger/some :)
+>
+> So we can change all the callers of cpufreq_frequency_table_target(),
 
-True.  In any case, the mutex needs to cover set_cur_state() in
-thermal_cdev_update().  This fixes the race condition, so I'm happy
-with it.
+But why?
 
-Reviewed-by: Javi Merino <javi.merino@arm.com>
+It just works as a static inline wrapper around cpufreq_find_index_l()
+for the code in question after this patch, doesn't it?
 
->  drivers/thermal/fair_share.c      |  2 ++
->  drivers/thermal/gov_bang_bang.c   |  2 ++
->  drivers/thermal/power_allocator.c |  2 ++
->  drivers/thermal/step_wise.c       |  2 ++
->  drivers/thermal/thermal_core.c    | 10 +++++++---
->  5 files changed, 15 insertions(+), 3 deletions(-)
+So if the caller knows it will always ask for RELATION_L, why bother
+with using the wrapper?
+
+Also I'm wondering about the cpufreq_for_each_valid_entry() used all
+over.  Can't the things be arranged so all of the entries are valid?
