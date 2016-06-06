@@ -1,37 +1,77 @@
 From: Rhyland Klein <rklein@nvidia.com>
-Subject: [RESEND PATCH] thermal: helpers: Check return value of get_temp
-Date: Mon, 6 Jun 2016 12:53:39 -0400
-Message-ID: <1465232019-12441-1-git-send-email-rklein@nvidia.com>
+Subject: [PATCH] power_supply: power_supply_read_temp only if use_cnt > 0
+Date: Mon, 6 Jun 2016 12:55:40 -0400
+Message-ID: <1465232140-12530-1-git-send-email-rklein@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rhyland Klein <rklein@nvidia.com>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rhyland Klein <rklein@nvidia.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Check the return value of get_temp, which can fail. If it does, then
-unlock and return the error code.
+Add check to power_supply_read_temp() to only use the power_supply
+get_property() callback if the use_cnt is > 0. The use_cnt will
+be incremented at the end of __power_supply_register, so this will
+block to case where get_property can be called before the supply
+is fully registered. This fixes the issue show in the stack below:
 
+[    1.452598] power_supply_read_temp+0x78/0x80
+[    1.458680] thermal_zone_get_temp+0x5c/0x11c
+[    1.464765] thermal_zone_device_update+0x34/0xb4
+[    1.471195] thermal_zone_device_register+0x87c/0x8cc
+[    1.477974] __power_supply_register+0x364/0x424
+[    1.484317] power_supply_register_no_ws+0x10/0x18
+[    1.490833] bq27xxx_battery_setup+0x10c/0x164
+[    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
+[    1.503435] i2c_device_probe+0x174/0x240
+[    1.509172] driver_probe_device+0x1fc/0x29c
+[    1.515167] __driver_attach+0xa4/0xa8
+[    1.520643] bus_for_each_dev+0x58/0x98
+[    1.526204] driver_attach+0x20/0x28
+[    1.531505] bus_add_driver+0x1c8/0x22c
+[    1.537067] driver_register+0x68/0x108
+[    1.542630] i2c_register_driver+0x38/0x7c
+[    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
+[    1.555321] do_one_initcall+0x38/0x12c
+[    1.560886] kernel_init_freeable+0x148/0x1ec
+[    1.566972] kernel_init+0x10/0xfc
+[    1.572101] ret_from_fork+0x10/0x40
+
+Cc: stable@vger.kernel.org
 Signed-off-by: Rhyland Klein <rklein@nvidia.com>
 ---
- drivers/thermal/thermal_helpers.c | 4 ++++
- 1 file changed, 4 insertions(+)
+v2:
+ - Added cc stable
+ - changed return to -EAGAIN in case of use_cnt < 1
+ - Removed WARNING
+ - return value check added in additional patch:
+  "thermal: helpers: Check return value of get_temp"
 
-diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-index 5e1c160944c9..dc260749f8d6 100644
---- a/drivers/thermal/thermal_helpers.c
-+++ b/drivers/thermal/thermal_helpers.c
-@@ -90,6 +90,10 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
- 	mutex_lock(&tz->lock);
+ drivers/power/power_supply_core.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+index 456987c88baa..bbd80631f31e 100644
+--- a/drivers/power/power_supply_core.c
++++ b/drivers/power/power_supply_core.c
+@@ -561,11 +561,15 @@ static int power_supply_read_temp(struct thermal_zone_device *tzd,
+ {
+ 	struct power_supply *psy;
+ 	union power_supply_propval val;
+-	int ret;
++	int ret = -EAGAIN;
  
- 	ret = tz->ops->get_temp(tz, temp);
-+	if (!ret) {
-+		mutex_unlock(&tz->lock);
-+		goto exit;
-+	}
+ 	WARN_ON(tzd == NULL);
++
+ 	psy = tzd->devdata;
+-	ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
++
++	if (atomic_read(&psy->use_cnt) > 0)
++		ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP,
++					      &val);
  
- 	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
- 		for (count = 0; count < tz->trips; count++) {
+ 	/* Convert tenths of degree Celsius to milli degree Celsius. */
+ 	if (!ret)
 -- 
 1.9.1
