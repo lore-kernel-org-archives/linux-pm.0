@@ -1,74 +1,89 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v5 1/5] thermal: Add support for hardware-tracked trip
- points
-Date: Mon, 6 Jun 2016 13:47:00 +0100
-Message-ID: <20160606124700.GB2897@e104805>
-References: <1465213489-14898-1-git-send-email-wxt@rock-chips.com>
- <1465213489-14898-2-git-send-email-wxt@rock-chips.com>
+Subject: Re: [PATCH] thermal: fix race condition when updating cooling device
+Date: Mon, 6 Jun 2016 13:51:14 +0100
+Message-ID: <20160606125113.GC2897@e104805>
+References: <1464877531-2161-1-git-send-email-michele.digiorgio@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:36296 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751182AbcFFMvR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 6 Jun 2016 08:51:17 -0400
 Content-Disposition: inline
-In-Reply-To: <1465213489-14898-2-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, cf@rock-chips.com, huangtao@rock-chips.com, dmitry.torokhov@gmail.com, peter@piie.net, Sascha Hauer <s.hauer@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Jonathan Corbet <corbet@lwn.net>, Andy Champ <andycham@amazon.com>, Laxman Dewangan <ldewangan@nvidia.com>, Durgadoss R <durgadoss.r@intel.com>, Ni Wade <wni@nvidia.com>, Leo Yan <leo.yan@linaro.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1464877531-2161-1-git-send-email-michele.digiorgio@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michele Di Giorgio <michele.digiorgio@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Peter Feuerer <peter@piie.net>
 
-On Mon, Jun 06, 2016 at 07:44:45PM +0800, Caesar Wang wrote:
-> From: Sascha Hauer <s.hauer@pengutronix.de>
+On Thu, Jun 02, 2016 at 03:25:31PM +0100, Michele Di Giorgio wrote:
+> When multiple thermal zones are bound to the same cooling device, multiple
+> kernel threads may want to update the cooling device state by calling
+> thermal_cdev_update(). Having cdev not protected by a mutex can lead to a race
+> condition. Consider the following situation with two kernel threads k1 and k2:
 > 
-> This adds support for hardware-tracked trip points to the device tree
-> thermal sensor framework.
+> 	    Thread k1				Thread k2
+>                                     ||
+>                                     ||  call thermal_cdev_update()
+>                                     ||      ...
+>                                     ||      set_cur_state(cdev, target);
+>     call power_actor_set_power()    ||
+>         ...                         ||
+>         instance->target = state;   ||
+>         cdev->updated = false;      ||
+>                                     ||      cdev->updated = true;
+>                                     ||      // completes execution
+>     call thermal_cdev_update()      ||
+>         // cdev->updated == true    ||
+>         return;                     ||
+>                                     \/
+>                                     time
 > 
-> The framework supports an arbitrary number of trip points. Whenever
-> the current temperature is updated, the trip points immediately
-> below and above the current temperature are found. A .set_trips
-> callback is then called with the temperatures. If there is no trip
-> point above or below the current temperature, the passed trip
-> temperature will be -INT_MAX or INT_MAX respectively. In this callback,
-> the driver should program the hardware such that it is notified
-> when either of these trip points are triggered. When a trip point
-> is triggered, the driver should call `thermal_zone_device_update'
-> for the respective thermal zone. This will cause the trip points
-> to be updated again.
+> k2 has already looped through the thermal instances looking for the deepest
+> cooling device state and is preempted right before setting cdev->updated to
+> true. Now, k1 runs, modifies the thermal instance state and sets cdev->updated
+> to false. Then, k1 is preempted and k2 continues the execution by setting
+> cdev->updated to true, therefore preventing k1 from performing the update.
+> Notice that this is not an issue if k2 looks at the instance->target modified by
+> k1 "after" it is assigned by k1. In fact, in this case the update will happen
+> anyway and k1 can safely return immediately from thermal_cdev_update().
 > 
-> If .set_trips is not implemented, the framework behaves as before.
+> This may lead to a situation where a thermal governor never updates the cooling
+> device. For example, this is the case for the step_wise governor: when calling
+> the function thermal_zone_trip_update(), the governor may always get a new state
+> equal to the old one (which, however, wasn't notified to the cooling device) and
+> will therefore skip the update.
 > 
-> This patch is based on an earlier version from Mikko Perttunen
-> <mikko.perttunen@kapsi.fi>
-> 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: linux-pm@vger.kernel.org
-> 
+> CC: Zhang Rui <rui.zhang@intel.com>
+> CC: Eduardo Valentin <edubezval@gmail.com>
+> CC: Peter Feuerer <peter@piie.net>
+> Reported-by: Toby Huang <toby.huang@arm.com>
+> Signed-off-by: Michele Di Giorgio <michele.digiorgio@arm.com>
 > ---
+> Protecting only the assignment of cdev->updated with mutexes may look
+> suspicious, but it is necessary to guarantee synchronization and avoiding the
+> situation described in the commit message.
 > 
-> Changes in v5:
-> - add the lock for thermal_zone_set_trips function.
+> There are other two possible solutions.
+> 
+> Moving the cdev->lock mutex outside thermal_cdev_update() and protect both the
+> assignment and the function. This would work, but will probably cause many
+> issues when updating all the modules that use thermal_cdev_update().
+> 
+> The other solution is to make cdev->updated an atomic_t, change the if
+> condition to an atomic_cmpxchg and extend the critical section to include the
+> call to cdev->ops->set_cur_state().
 
-Looks good to me!
+True.  In any case, the mutex needs to cover set_cur_state() in
+thermal_cdev_update().  This fixes the race condition, so I'm happy
+with it.
 
 Reviewed-by: Javi Merino <javi.merino@arm.com>
 
-> - change based on next kernel.
-> 
-> Changes in v4:
-> - Missing the lock added in v3.
-> 
-> Changes in v3:
-> - as Javi comments on https://patchwork.kernel.org/patch/9001281/.
-> - add the lock for preventing the called from multi placce
-> - add the note for pre_low/high_trip.
-> 
-> Changes in v2:
-> - update the sysfs-api.txt for set_trips.
-> 
->  Documentation/thermal/sysfs-api.txt |  7 +++++
->  drivers/thermal/thermal_core.c      | 54 +++++++++++++++++++++++++++++++++++++
->  drivers/thermal/thermal_sysfs.c     |  3 +++
->  include/linux/thermal.h             | 10 +++++++
->  4 files changed, 74 insertions(+)
-> 
+>  drivers/thermal/fair_share.c      |  2 ++
+>  drivers/thermal/gov_bang_bang.c   |  2 ++
+>  drivers/thermal/power_allocator.c |  2 ++
+>  drivers/thermal/step_wise.c       |  2 ++
+>  drivers/thermal/thermal_core.c    | 10 +++++++---
+>  5 files changed, 15 insertions(+), 3 deletions(-)
