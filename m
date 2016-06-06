@@ -1,59 +1,99 @@
-From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH 5/5] intel_idle: Add S0ix validation
-Date: Mon, 6 Jun 2016 14:39:11 -0700
-Message-ID: <CAGAzgspi2-h055gusybZcgOD=_C9NLwd9gk7Pnj4T=Fbx3A9Fw@mail.gmail.com>
-References: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
- <1464842009-21789-6-git-send-email-dbasehore@chromium.org>
- <20160602092505.GQ3206@twins.programming.kicks-ass.net> <20160602142318.2c9d2111@lxorguk.ukuu.org.uk>
- <CAGAzgspC49xNXPsV-WCT-xqVJGfNGeHkhYYLfZSTfBtjddVm8A@mail.gmail.com>
- <20160602205338.4a16760a@lxorguk.ukuu.org.uk> <CAGAzgsrgH5-v2u8kfmxzGKzTqGV1nqp+Yo4E7y96yrretKTkXA@mail.gmail.com>
- <20160604132213.18eb7d82@lxorguk.ukuu.orguk>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
+ ascending order
+Date: Mon, 6 Jun 2016 23:56:13 +0200
+Message-ID: <CAJZ5v0hG9X_zoHHFBiiZnn5x0rMfukF4RpFMxr73r3C0VzrUHw@mail.gmail.com>
+References: <cover.1464960877.git.viresh.kumar@linaro.org> <20160603234854.GF14579@graphite.smuckle.net>
+ <20160606035231.GZ16176@vireshk-i7> <1649758.V7uyzAJShK@vostro.rjw.lan>
+ <CAKohponw8wjFTXA+JyH0A2yXwtF4DxPSVCLcji4=yYV14OC3fw@mail.gmail.com>
+ <CAJZ5v0hR+XM3KM1Q9c9_kK8n3QbkNzCr7V73m09-nP8KBKq=3Q@mail.gmail.com> <CAKohpoms8AquTkv9ZB0w390eS2WcB2PeeNLVo4UUcwPNskwsBg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160604132213.18eb7d82@lxorguk.ukuu.orguk>
+In-Reply-To: <CAKohpoms8AquTkv9ZB0w390eS2WcB2PeeNLVo4UUcwPNskwsBg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan <gnomes@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Steven Miao <realmz6@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jun 4, 2016 at 5:22 AM, Alan <gnomes@lxorguk.ukuu.org.uk> wrote:
->> I would expect those IP blocks to do nothing and not block lower power
->> states if the firmware is not loaded. If that is not the case, I think
->> that should be fixed such that those lower power states are at least
->> available during suspend (if not during runtime). If your Skylake+
->> system is not entering S0ix during freeze, I consider that a bug that
->> needs to be addressed.
+On Mon, Jun 6, 2016 at 6:25 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 6 June 2016 at 18:27, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Mon, Jun 6, 2016 at 2:24 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On 6 June 2016 at 17:40, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>>> On Monday, June 06, 2016 09:22:31 AM Viresh Kumar wrote:
+>>>
+>>>>> I agree with that, though that requires larger changes across multiple
+>>>>> sites.
+>>>>
+>>>> What changes and where?
+>>>
+>>> s/larger/some :)
+>>>
+>>> So we can change all the callers of cpufreq_frequency_table_target(),
+>>
+>> But why?
+>>
+>> It just works as a static inline wrapper around cpufreq_find_index_l()
+>> for the code in question after this patch, doesn't it?
+>>
+>> So if the caller knows it will always ask for RELATION_L, why bother
+>> with using the wrapper?
 >
-> You would assume wrongly. Several parts of the system do their own
-> power management so if present need to have a driver loaded. Graphics
-> is the example everyone is familiar with but ADSP audio and ISH are two
-> others.
+> Sorry, I got a bit confused. Are you saying that we should do that change
+> right in the patch?
+>
+> Because I am also saying that yes, there is no point calling the wrapper.
 
-Okay, I remember running into this with the display actually.
+OK
 
->
->> configs, that's their decision. As I said, this does nothing in the
->> !CONFIG_INTEL_PMC_CORE case, but if a finer level config is warranted,
->> I can add that.
->
-> IMHO it belongs as a config item because it has a power cost, and you
-> can't turn it off without enabling debugfs when it's compiled in.
->
+> I can update this patch to make direct calls to the relation specific routines
+> if you want.
 
-It could also be default off. It's not a lot of code being added, so
-it could just be part of the Intel Idle driver.
+I'm not sure if I like this patch at all in the first place.
 
-After thinking about it, I plan on moving to exponential back off for
-the freeze time (1, 10, 100, 1000 seconds). This way, the power impact
-won't be measurable, yet it will still catch errors. There will just
-be a sysfs entry added to the cpuidle node to enable/disable the
-feature. The feature will be turned off by default.
+>> Also I'm wondering about the cpufreq_for_each_valid_entry() used all
+>> over.  Can't the things be arranged so all of the entries are valid?
+>
+> Yeah, there would be multiple opportunities available to optimize code
+> after this series is in. The policy->table after this series is all sorted
+> properly and all the entries are valid as well.
+>
+> But surely that should be done in a separate series
 
->> I would prefer if others used this more, since there would be better
->> debug coverage and I would have to fix fewer bugs.
->
-> I'd be more concerned about getting 10,000 emails bisecting the warning
-> to your commit 8)
->
-> Alan
+So I'm reading this as "I will add overhead to that code now, but I
+can remove it later" which makes me go "What?!" right away.
+
+Moreover, you seem to be saying something like "all of the entries are
+valid now, but I'm using cpufreq_for_each_valid_entry() to walk freq
+tables anyway, so that I can get rid of it in a future patch" which
+makes me go "What?!" again.
+
+Since you are adding new code, you can write it so it doesn't do
+unnecessary checks from the start.
+
+While at it, the "if ((freq < policy->min) || (freq > policy->max))"
+checks in cpufreq_find_index_l() and cpufreq_find_index_h() don't look
+good to me, because they very well may cause those function to return
+-EINVAL even when there's a valid table and that may cause
+acpi_cpufreq_fast_switch() to do bad things.
+
+Also, if you are going to return an index, why don't you iterate over
+indexes and avoid using pointer subtractions to compute the return
+value?
+
+With that, cpufreq_find_index_l() would look like
+
+static inline int cpufreq_find_index_l(struct cpufreq_policy *policy,
+                       unsigned int target_freq)
+{
+    struct cpufreq_frequency_table *table = policy->freq_table;
+    int i;
+
+    for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++)
+        if (table[i].frequency >= target_freq)
+            return i;
+
+    return i > 0 ? --i : 0;
+}
+
+and that can go into cpufreq.h IMO (ie. no need for the new header file).
