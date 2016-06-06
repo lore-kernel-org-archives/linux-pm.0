@@ -1,29 +1,42 @@
-From: Chris Brand <chris.brand@broadcom.com>
-Subject: Re: [PATCH v2 1/6] power: Introduce Broadcom kona reset driver
-Date: Mon, 6 Jun 2016 09:42:03 -0700
-Message-ID: <CAMsMSK8ZX=nmJs9d2txRsk2gLa0duy3Qpp805ztYzow=OiTB8w@mail.gmail.com>
-References: <1463002582-6875-1-git-send-email-chris.brand@broadcom.com>
-	<1463002582-6875-2-git-send-email-chris.brand@broadcom.com>
-	<57409633.8060605@gmail.com>
-	<20160603023853.GD8921@earth>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: [PATCH 1/2] thermal: helpers: Check return value of get_temp
+Date: Mon, 6 Jun 2016 12:50:23 -0400
+Message-ID: <1465231823-12384-1-git-send-email-rklein@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160603023853.GD8921@earth>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Florian Fainelli <f.fainelli@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, linux-arm-kernel@lists.infradead.org, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:14055 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbcFFQv7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 12:51:59 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rhyland Klein <rklein@nvidia.com>
 
-On Thu, Jun 2, 2016 at 7:38 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> Feel free to queue it via arm-soc with
->
-> Acked-By: Sebastian Reichel <sre@kernel.org>
->
-> If I didn't overlook it, it's missing DT documentation, though.
+Check the return value of get_temp, which can fail. If it does, then
+unlock and return the error code.
 
-Thanks, Sebastian. Because this is effectively a move of code from
-arch/arm rather than new code, there's already dt documentation in
-Documentation/devicetree/bindings/reset/brcm,bcm21664-resetmgr.txt
+Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+---
+ drivers/thermal/thermal_helpers.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Chris
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+index 5e1c160944c9..dc260749f8d6 100644
+--- a/drivers/thermal/thermal_helpers.c
++++ b/drivers/thermal/thermal_helpers.c
+@@ -90,6 +90,10 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ 	mutex_lock(&tz->lock);
+ 
+ 	ret = tz->ops->get_temp(tz, temp);
++	if (!ret) {
++		mutex_unlock(&tz->lock);
++		goto exit;
++	}
+ 
+ 	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
+ 		for (count = 0; count < tz->trips; count++) {
+-- 
+1.9.1
+
