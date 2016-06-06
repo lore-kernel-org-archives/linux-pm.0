@@ -1,14 +1,18 @@
 From: Rhyland Klein <rklein@nvidia.com>
-Subject: [PATCH] power_supply: power_supply_read_temp only if use_cnt > 0
-Date: Mon, 6 Jun 2016 12:55:40 -0400
-Message-ID: <1465232140-12530-1-git-send-email-rklein@nvidia.com>
+Subject: [RESEND PATCH v2] power_supply: power_supply_read_temp only if use_cnt > 0
+Date: Mon, 6 Jun 2016 12:56:56 -0400
+Message-ID: <1465232216-12625-1-git-send-email-rklein@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:15297 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751217AbcFFQ6S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 12:58:18 -0400
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rhyland Klein <rklein@nvidia.com>, stable@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
 Add check to power_supply_read_temp() to only use the power_supply
 get_property() callback if the use_cnt is > 0. The use_cnt will
@@ -75,3 +79,4 @@ index 456987c88baa..bbd80631f31e 100644
  	if (!ret)
 -- 
 1.9.1
+
