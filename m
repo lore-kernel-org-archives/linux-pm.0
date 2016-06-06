@@ -1,61 +1,50 @@
-From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Subject: Re: [PATCH] power: Add support for LTC1760 Dual Smart Battery
- System Manager
-Date: Mon, 06 Jun 2016 21:26:14 +0200
-Message-ID: <1465241174.23646.4.camel@amnesix>
-References: <1465160129.17905.24.camel@amnesix>
-	 <5860b17d-8958-4292-59ab-68dfd1efff4d@axentia.se>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH][RFC] x86, hotplug: Use zero page for monitor when
+ resuming from hibernation
+Date: Mon, 6 Jun 2016 14:05:06 -0700
+Message-ID: <743a8e5b-abe2-3bc1-bc03-71157b42c9ca@zytor.com>
+References: <1465222749-8388-1-git-send-email-yu.c.chen@intel.com>
+ <20160606142506.GE30909@twins.programming.kicks-ass.net>
+ <36DF59CE26D8EE47B0655C516E9CE6402876CB97@shsmsx102.ccr.corp.intel.com>
+ <20160606164033.GD30154@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <5860b17d-8958-4292-59ab-68dfd1efff4d@axentia.se>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>
-Cc: linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, Phil Reid <preid@electromag.com.au>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from terminus.zytor.com ([198.137.202.10]:46452 "EHLO mail.zytor.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751473AbcFFVHG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 6 Jun 2016 17:07:06 -0400
+In-Reply-To: <20160606164033.GD30154@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Zhu Guihua <zhugh.fnst@cn.fujitsu.com>, Juergen Gross <jgross@suse.com>
 
-Hi,
+On 06/06/16 09:40, Peter Zijlstra wrote:
+> On Mon, Jun 06, 2016 at 03:59:06PM +0000, Chen, Yu C wrote:
+> 
+>>>> +	if (hibernation_in_resume())
+>>>> +		mwait_ptr = empty_zero_page;
+>>>> +	else
+>>>> +		mwait_ptr = &current_thread_info()->flags;
+>>>
+>>> Why is this conditional? Is there any case in which the zero page is not also
+>>> correct?
+>> I'm thinking of avoid unnecessary wakeup for normal CPU offline,  for example, 
+>> if one  driver uses  the zero page and access it.
+> 
+> Writing to the zero page would be a major fail.
+> 
 
-Am Montag, den 06.06.2016, 12:16 +0200 schrieb Peter Rosin:
-> Hi!
-> 
-> On 2016-06-05 22:55, Karl-Heinz Schneider wrote:
-> > This driver adds support for the LTC1760 Dual Smart Battery System
-> > Manager.
-> > The LTC1760 is an I2C device listening at address 0x0a and is capable of
-> > communicating up to two I2C smart battery devices. Both smart battery
-> > devices are listening at address 0x0b, so the LTC1760 muliplexes between
-> > them. The driver makes use of the I2C-Mux framework to allow smart
-> > batteries to be bound via device tree, i.e. the sbs-battery driver.
-> > 
-> > Via sysfs interface the online state and charge type are presented where
-> > the charge type can also be changed between the default value "trickle"
-> > and
-> > "fast".
-> > 
-> > Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-> > ---
-> > Path generated against v4.7-rc1
-> 
-> This patch has two fundamental problems. First, the patch is whitespace-
-> damaged (your mailer probably destroyed it). Please fix that. Second, and
-> more serious, the patch has not even been compile-tested when applied on
-> top of v4.7-rc1.
-Sorry mixed things up in the makefile. Was happy the compiler didn't
-complain about anything...
-> 
-> The i2c-muxing code saw an update in 4.6 and this driver needs adjustment.
-> As a hint, I suspect that you can make this mux "mux-locked" and avoid
-> the dead-lock workaround in ltc1760_write_select_bat_reg().
-Difficult to test for me, since I'm forced to use an old 3.14 Kernel for
-the target device (SECO imx6 board).
-> 
-> I didn't look further than this.
-> 
-> Cheers,
-> Peter
-Tanks for review and sorry for noise in this case. Will fix the issues.
+One implementation of MWAIT is for the waiting processor to claim the
+line in an exclusive state, which would be highly undesirable for the
+zero page.  I don't actually know if this is done by any real
+implementation, however.
 
-Greetings
+Either way, the problem at hand seems limited to post-hibernation, as
+for regular CPU offline the page tables will be fully populated, so it
+seems like it should not be an issue.
+
+	-hpa
 
