@@ -1,56 +1,55 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][RFC] x86, hotplug: Use zero page for monitor when
- resuming from hibernation
-Date: Mon, 6 Jun 2016 15:59:06 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402876CB97@shsmsx102.ccr.corp.intel.com>
-References: <1465222749-8388-1-git-send-email-yu.c.chen@intel.com>
- <20160606142506.GE30909@twins.programming.kicks-ass.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
+ ascending order
+Date: Mon, 6 Jun 2016 21:55:34 +0530
+Message-ID: <CAKohpoms8AquTkv9ZB0w390eS2WcB2PeeNLVo4UUcwPNskwsBg@mail.gmail.com>
+References: <cover.1464960877.git.viresh.kumar@linaro.org> <20160603234854.GF14579@graphite.smuckle.net>
+ <20160606035231.GZ16176@vireshk-i7> <1649758.V7uyzAJShK@vostro.rjw.lan>
+ <CAKohponw8wjFTXA+JyH0A2yXwtF4DxPSVCLcji4=yYV14OC3fw@mail.gmail.com> <CAJZ5v0hR+XM3KM1Q9c9_kK8n3QbkNzCr7V73m09-nP8KBKq=3Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160606142506.GE30909@twins.programming.kicks-ass.net>
-Content-Language: en-US
+In-Reply-To: <CAJZ5v0hR+XM3KM1Q9c9_kK8n3QbkNzCr7V73m09-nP8KBKq=3Q@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "Brown, Len" <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Zhu Guihua <zhugh.fnst@cn.fujitsu.com>, Juergen Gross <jgross@suse.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Peter,
+On 6 June 2016 at 18:27, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Mon, Jun 6, 2016 at 2:24 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 6 June 2016 at 17:40, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> On Monday, June 06, 2016 09:22:31 AM Viresh Kumar wrote:
+>>
+>>>> I agree with that, though that requires larger changes across multiple
+>>>> sites.
+>>>
+>>> What changes and where?
+>>
+>> s/larger/some :)
+>>
+>> So we can change all the callers of cpufreq_frequency_table_target(),
+>
+> But why?
+>
+> It just works as a static inline wrapper around cpufreq_find_index_l()
+> for the code in question after this patch, doesn't it?
+>
+> So if the caller knows it will always ask for RELATION_L, why bother
+> with using the wrapper?
 
-> -----Original Message-----
-> From: Peter Zijlstra [mailto:peterz@infradead.org]
-> Sent: Monday, June 06, 2016 10:25 PM
-> To: Chen, Yu C
-> Cc: x86@kernel.org; linux-kernel@vger.kernel.org; Thomas Gleixner; Ingo
-> Molnar; H . Peter Anvin; linux-pm@vger.kernel.org; Rafael J . Wysocki; Pavel
-> Machek; Brown, Len; Borislav Petkov; Zhu Guihua; Juergen Gross
-> Subject: Re: [PATCH][RFC] x86, hotplug: Use zero page for monitor when
-> resuming from hibernation
-> 
-> On Mon, Jun 06, 2016 at 10:19:09PM +0800, Chen Yu wrote:
-> > @@ -1595,8 +1596,21 @@ static inline void mwait_play_dead(void)
-> >  	 * This should be a memory location in a cache line which is
-> >  	 * unlikely to be touched by other processors.  The actual
-> >  	 * content is immaterial as it is not actually modified in any way.
-> > +	 *
-> > +	 * However in hibernation resume process, this address could be
-> > +	 * touched by BSP when restoring page frames, if the page table
-> > +	 * for this address is not coherent across hibernation(due to
-> > +	 * inconsistence of e820 memory map), access from APs might
-> > +	 * cause exception. So change the mwait address to zero page,
-> > +	 * which is located in .bss, in this way we can avoid illegal
-> > +	 * access from APs because page table for kernel mapping
-> > +	 * of text/data/bss should keeps unchanged according to
-> > +	 * hibernation semantic.
-> >  	 */
-> > -	mwait_ptr = &current_thread_info()->flags;
-> > +	if (hibernation_in_resume())
-> > +		mwait_ptr = empty_zero_page;
-> > +	else
-> > +		mwait_ptr = &current_thread_info()->flags;
-> 
-> Why is this conditional? Is there any case in which the zero page is not also
-> correct?
-I'm thinking of avoid unnecessary wakeup for normal CPU offline,  for example, 
-if one  driver uses  the zero page and access it.
+Sorry, I got a bit confused. Are you saying that we should do that change
+right in the patch?
+
+Because I am also saying that yes, there is no point calling the wrapper.
+
+I can update this patch to make direct calls to the relation specific routines
+if you want.
+
+> Also I'm wondering about the cpufreq_for_each_valid_entry() used all
+> over.  Can't the things be arranged so all of the entries are valid?
+
+Yeah, there would be multiple opportunities available to optimize code
+after this series is in. The policy->table after this series is all sorted
+properly and all the entries are valid as well.
+
+But surely that should be done in a separate series
