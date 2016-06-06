@@ -1,54 +1,49 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / clk: export symbols for existing pm_clk_<...> API
- fcns
-Date: Mon, 6 Jun 2016 12:16:47 +0200
-Message-ID: <20160606101647.GA22028@amd>
-References: <1465149495-22961-1-git-send-email-paul.gortmaker@windriver.com>
+From: Peter Rosin <peda@axentia.se>
+Subject: Re: [PATCH] power: Add support for LTC1760 Dual Smart Battery System
+ Manager
+Date: Mon, 6 Jun 2016 12:16:32 +0200
+Message-ID: <5860b17d-8958-4292-59ab-68dfd1efff4d@axentia.se>
+References: <1465160129.17905.24.camel@amnesix>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:32843 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbcFFKQv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 06:16:51 -0400
-Content-Disposition: inline
-In-Reply-To: <1465149495-22961-1-git-send-email-paul.gortmaker@windriver.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1465160129.17905.24.camel@amnesix>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org
 
-On Sun 2016-06-05 13:58:15, Paul Gortmaker wrote:
-> While trying to convert a DMA driver from bool to tristate, we
-> encountered the following:
-> 
-> ERROR: "pm_clk_add_clk" [drivers/dma/tegra210-adma.ko] undefined!
-> ERROR: "pm_clk_create" [drivers/dma/tegra210-adma.ko] undefined!
-> ERROR: "pm_clk_destroy" [drivers/dma/tegra210-adma.ko] undefined!
-> ERROR: "pm_clk_suspend" [drivers/dma/tegra210-adma.ko] undefined!
-> ERROR: "pm_clk_resume" [drivers/dma/tegra210-adma.ko] undefined!
-> 
-> Since in principle there is nothing preventing these functions
-> from being used in modular code as well as builtin, we add the
-> export of them.  We expand the scope to also include:
-> 
->    pm_clk_add
->    of_pm_clk_add_clks
->    pm_clk_remove
->    pm_clk_remove_clk
->    pm_clk_init
->    pm_clk_runtime_suspend
->    pm_clk_runtime_resume
->    pm_clk_add_notifier
-> 
-> ...since these functions are also non-static and presumably form
-> part of the existing API used by other drivers that may become
-> modular in the future.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Hi!
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+On 2016-06-05 22:55, Karl-Heinz Schneider wrote:
+> This driver adds support for the LTC1760 Dual Smart Battery System
+> Manager.
+> The LTC1760 is an I2C device listening at address 0x0a and is capable of
+> communicating up to two I2C smart battery devices. Both smart battery
+> devices are listening at address 0x0b, so the LTC1760 muliplexes between
+> them. The driver makes use of the I2C-Mux framework to allow smart
+> batteries to be bound via device tree, i.e. the sbs-battery driver.
+> 
+> Via sysfs interface the online state and charge type are presented where
+> the charge type can also be changed between the default value "trickle"
+> and
+> "fast".
+> 
+> Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+> ---
+> Path generated against v4.7-rc1
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+This patch has two fundamental problems. First, the patch is whitespace-
+damaged (your mailer probably destroyed it). Please fix that. Second, and
+more serious, the patch has not even been compile-tested when applied on
+top of v4.7-rc1.
+
+The i2c-muxing code saw an update in 4.6 and this driver needs adjustment.
+As a hint, I suspect that you can make this mux "mux-locked" and avoid
+the dead-lock workaround in ltc1760_write_select_bat_reg().
+
+I didn't look further than this.
+
+Cheers,
+Peter
