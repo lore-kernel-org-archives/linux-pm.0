@@ -1,69 +1,36 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [RFC PATCH 0/8] PM / Domains: Add support for removing PM domains
-Date: Mon, 6 Jun 2016 14:19:56 +0100
-Message-ID: <5755787C.2050807@nvidia.com>
-References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFq3hNARzjSOoP+-NmcgfSWzG6GDmh7qVX6yx6QPgN9Arw@mail.gmail.com>
- <56F925D9.3080703@nvidia.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 1/4] power: axp20x_usb: Add support for usb
+ power-supply on axp22x pmics
+Date: Mon, 6 Jun 2016 08:26:38 -0500
+Message-ID: <20160606132638.GA17368@rob-hp-laptop>
+References: <1464887936-17020-1-git-send-email-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <56F925D9.3080703-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f47.google.com ([209.85.218.47]:36751 "EHLO
+	mail-oi0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbcFFN0k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 09:26:40 -0400
+Content-Disposition: inline
+In-Reply-To: <1464887936-17020-1-git-send-email-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>
 
-Hi Ulf,
-
-On 28/03/16 13:38, Jon Hunter wrote:
-> Hi Uffe,
+On Thu, Jun 02, 2016 at 07:18:53PM +0200, Hans de Goede wrote:
+> The usb power-supply on the axp22x pmics is mostly identical to the
+> one on the axp20x pmics. One significant difference is that it cannot
+> measure / monitor the usb voltage / current.
 > 
-> On 04/03/16 12:33, Ulf Hansson wrote:
->> On 4 March 2016 at 12:23, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>> In order to safely remove PM domains there are a few changes that need to be
->>> made to ensure that no one is holding an external reference to a PM domain
->>> after it has been removed. One solution, implemented here, solves this by
->>> eliminating external references to PM domain. Another alternative would be
->>> to employ some reference counting for the PM domains, however, I did not see
->>> a good reason for allowing external references in the first place (as always
->>> there could be something that I have over-looked!).
->>>
->>> Jon Hunter (8):
->>>   PM / Domains: Add new helper functions for device-tree
->>>   ARM: EXYNOS: Remove calls to of_genpd_get_from_provider()
->>>   staging: board: Remove calls to of_genpd_get_from_provider()
->>>   PM / Domains: Don't expose generic_pm_domain structure
->>>   PM / Domains: Verify the PM domain is present when adding a provider
->>>   PM / Domains: Remove a provider by referencing the data pointer
->>>   PM / Domains: Prepare for adding support to remove PM domains
->>>   PM / Domains: Add support for removing PM domains
->>>
->>>  arch/arm/mach-exynos/pm_domains.c |  23 +--
->>>  drivers/base/power/domain.c       | 324 +++++++++++++++++++++++++++++++++++---
->>>  drivers/staging/board/board.c     |   9 +-
->>>  include/linux/pm_domain.h         |  55 ++++---
->>>  4 files changed, 348 insertions(+), 63 deletions(-)
->>>
->>> --
->>> 2.1.4
->>>
->>
->> Jon, thanks for posting this!
->> My initial impressions is the I like the ideas for where you moves this.
->>
->> I will review it in more details as soon as I can (travelling next week).
-> 
-> Just wanted to see if you have had chance to look at this yet? Not urgent.
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Changes in v2:
+> -Use compatible instead of axp20x->variant to detect pmic type
+> ---
+>  .../bindings/power_supply/axp20x_usb_power.txt     |  3 +-
 
-Any feedback on this?
+Acked-by: Rob Herring <robh@kernel.org>
 
-FYI, patch #2 does not apply cleanly on the latest -next but the others
-should.
-
-Cheers
-Jon
-
--- 
-nvpublic
+>  drivers/power/axp20x_usb_power.c                   | 92 ++++++++++++++++------
+>  2 files changed, 71 insertions(+), 24 deletions(-)
