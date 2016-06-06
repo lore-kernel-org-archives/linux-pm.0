@@ -1,61 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
- ascending order
-Date: Mon, 6 Jun 2016 09:22:31 +0530
-Message-ID: <20160606035231.GZ16176@vireshk-i7>
+Subject: Re: [PATCH V3 6/9] cpufreq: imx: Use 'index' only to index into
+ policy->freq_table
+Date: Mon, 6 Jun 2016 09:28:17 +0530
+Message-ID: <20160606035817.GA16176@vireshk-i7>
 References: <cover.1464960877.git.viresh.kumar@linaro.org>
- <e155257e7f76c3dc71f9347e0433fb1e4d9a3358.1464960877.git.viresh.kumar@linaro.org>
- <20160603234854.GF14579@graphite.smuckle.net>
+ <5be64daa9fc2967351f7e5949b814d866264598e.1464960877.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:34726 "EHLO
-	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752611AbcFFDwf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 5 Jun 2016 23:52:35 -0400
-Received: by mail-pf0-f170.google.com with SMTP id 62so62441901pfd.1
-        for <linux-pm@vger.kernel.org>; Sun, 05 Jun 2016 20:52:35 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160603234854.GF14579@graphite.smuckle.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <5be64daa9fc2967351f7e5949b814d866264598e.1464960877.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Shawn Guo <shawnguo@kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Steven Miao <realmz6@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
 
-On 03-06-16, 16:48, Steve Muckle wrote:
-> On Fri, Jun 03, 2016 at 07:05:14PM +0530, Viresh Kumar wrote:
-> ...
-> > @@ -468,20 +469,15 @@ unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
-> >  	struct acpi_cpufreq_data *data = policy->driver_data;
-> >  	struct acpi_processor_performance *perf;
-> >  	struct cpufreq_frequency_table *entry;
-> > -	unsigned int next_perf_state, next_freq, freq;
-> > +	unsigned int next_perf_state, next_freq, index;
-> >  
-> >  	/*
-> >  	 * Find the closest frequency above target_freq.
-> > -	 *
-> > -	 * The table is sorted in the reverse order with respect to the
-> > -	 * frequency and all of the entries are valid (see the initialization).
-> >  	 */
-> > -	entry = policy->freq_table;
-> > -	do {
-> > -		entry++;
-> > -		freq = entry->frequency;
-> > -	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
-> > -	entry--;
-> > +	index = cpufreq_frequency_table_target(policy, target_freq,
-> > +					       CPUFREQ_RELATION_L);
+On 03-06-16, 19:05, Viresh Kumar wrote:
+> Later patches would make changes in cpufreq core, after which
+> policy->freq_table may be reordered by cpufreq core and it wouldn't be
+> safe anymore to use 'index' for any other local arrays.
 > 
-> Can we call cpufreq_find_index_l directly here? Seems like we could
-> phase out cpufreq_frequency_table_target() for the most part and call
-> the helpers directly. It would avoid some code bloat, an unnecessary
-> switch statement and an error check for an invalid frequency table which
-> seems unnecessary for every frequency table lookup.
+> To prepare for that, use policy->freq_table[index].driver_data for other
+> driver specific usage of 'index'. The 'driver_data' fields are already
+> set properly by the driver.
+> 
+> Cc: Shawn Guo <shawn.guo@freescale.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 13 ++++++++++---
+>  1 file changed, 10 insertions(+), 3 deletions(-)
 
-I agree with that, though that requires larger changes across multiple
-sites. I hope it will be fine if I do it in a separate patch on top of
-all this. Right ?
+Fixing Shawn's id.
 
 -- 
 viresh
