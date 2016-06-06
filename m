@@ -1,34 +1,42 @@
-From: Chris Lapa <chris@lapa.com.au>
-Subject: New Contributor
-Date: Mon, 6 Jun 2016 14:09:14 +1000
-Message-ID: <ee830e2c-b2a4-7ea7-8869-23fb1dbc0da9@lapa.com.au>
-Reply-To: chris@lapa.com.au
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH V3 4/9] cpufreq: exynos: Use 'index' only to index into
+ policy->freq_table
+Date: Mon, 06 Jun 2016 09:07:48 +0200
+Message-ID: <57552144.10300@samsung.com>
+References: <cover.1464960877.git.viresh.kumar@linaro.org>
+ <e6621408b2a7748d6b984eb6c97d8ee13be96ad5.1464960877.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f66.google.com ([209.85.220.66]:34700 "EHLO
-	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752745AbcFFEJT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 00:09:19 -0400
-Received: by mail-pa0-f66.google.com with SMTP id ug1so815632pab.1
-        for <linux-pm@vger.kernel.org>; Sun, 05 Jun 2016 21:09:18 -0700 (PDT)
-Received: from Chriss-Mac-Pro.office.cpd (163.164.70.115.static.exetel.com.au. [115.70.164.163])
-        by smtp.googlemail.com with ESMTPSA id s124sm23386414pfb.63.2016.06.05.21.09.17
-        for <linux-pm@vger.kernel.org>
-        (version=TLSv1/SSLv3 cipher=OTHER);
-        Sun, 05 Jun 2016 21:09:18 -0700 (PDT)
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:22358 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751112AbcFFHHw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 03:07:52 -0400
+In-reply-to: <e6621408b2a7748d6b984eb6c97d8ee13be96ad5.1464960877.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
 
-Hi,
+On 06/03/2016 03:35 PM, Viresh Kumar wrote:
+> Later patches would make changes in cpufreq core, after which
+> policy->freq_table may be reordered by cpufreq core and it wouldn't be
+> safe anymore to use 'index' for any other local arrays.
+> 
+> To prepare for that, use policy->freq_table[index].driver_data for other
+> driver specific usage of 'index'. The 'driver_data' fields are already
+> set properly by the driver.
+> 
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/exynos5440-cpufreq.c | 10 ++++++++--
+>  1 file changed, 8 insertions(+), 2 deletions(-)
 
-I'm new to contributing to the kernel and am just wondering what the 
-correct etiquette is for having my patches reviewed/accepted.
+Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-I have already sent in a small patch series for the max8903 battery 
-charger (http://marc.info/?l=linux-pm&m=146484997909503&w=2).
+Best regards,
+Krzysztof
 
-Thanks,
-Chris Lapa
