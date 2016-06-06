@@ -1,49 +1,161 @@
-From: Peter Rosin <peda@axentia.se>
-Subject: Re: [PATCH] power: Add support for LTC1760 Dual Smart Battery System
- Manager
-Date: Mon, 6 Jun 2016 12:16:32 +0200
-Message-ID: <5860b17d-8958-4292-59ab-68dfd1efff4d@axentia.se>
-References: <1465160129.17905.24.camel@amnesix>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1465160129.17905.24.camel@amnesix>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: Phil Reid <preid@electromag.com.au>
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH v5 0/5] Thermal: Support for hardware-tracked trip points
+Date: Mon,  6 Jun 2016 19:44:44 +0800
+Message-ID: <1465213489-14898-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:35762 "EHLO
+	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbcFFLpG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 07:45:06 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, linux-pm@vger.kernel.org
+Cc: Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, briannorris@google.com, smbarber@google.com, linux-rockchip@lists.infradead.org, cf@rock-chips.com, huangtao@rock-chips.com, dmitry.torokhov@gmail.com, javi.merino@arm.com, peter@piie.net, Caesar Wang <wxt@rock-chips.com>, linux-arm-kernel@lists.infradead.org, Keerthy <j-keerthy@ti.com>, linux-doc@vger.kernel.org, Ni Wade <wni@nvidia.com>, Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, Durgadoss R <durgadoss.r@intel.com>, Andy Champ <andycham@amazon.com>, Leo Yan <leo.yan@linaro.org>, Laxman Dewangan <ldewangan@nvidia.com>, Zhang Rui <rui.zhang@intel.com>, linux-omap@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>
 
-Hi!
+Thank you all for providing inputs and comments on previous versions of
+this patchset.
+Especially thanks to the (Mikko,Sascha,Eduardo,Javi,Steve....).
 
-On 2016-06-05 22:55, Karl-Heinz Schneider wrote:
-> This driver adds support for the LTC1760 Dual Smart Battery System
-> Manager.
-> The LTC1760 is an I2C device listening at address 0x0a and is capable of
-> communicating up to two I2C smart battery devices. Both smart battery
-> devices are listening at address 0x0b, so the LTC1760 muliplexes between
-> them. The driver makes use of the I2C-Mux framework to allow smart
-> batteries to be bound via device tree, i.e. the sbs-battery driver.
-> 
-> Via sysfs interface the online state and charge type are presented where
-> the charge type can also be changed between the default value "trickle"
-> and
-> "fast".
-> 
-> Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-> ---
-> Path generated against v4.7-rc1
+The history patches come from Mikko and Sascha.
+    http://thread.gmane.org/gmane.linux.power-management.general/59451
 
-This patch has two fundamental problems. First, the patch is whitespace-
-damaged (your mailer probably destroyed it). Please fix that. Second, and
-more serious, the patch has not even been compile-tested when applied on
-top of v4.7-rc1.
+Now, I pick them up to continue upstream.
+Nevermind!
 
-The i2c-muxing code saw an update in 4.6 and this driver needs adjustment.
-As a hint, I suspect that you can make this mux "mux-locked" and avoid
-the dead-lock workaround in ltc1760_write_select_bat_reg().
+This series history patches:
+v4: https://lkml.org/lkml/2016/5/27/122
+v3: https://lkml.org/lkml/2016/5/24/797
+v2: https://lkml.org/lkml/2016/5/3/220
+v1: https://lkml.org/lkml/2016/4/24/227
 
-I didn't look further than this.
+This series adds support for hardware trip points. It picks up earlier
+work from Mikko Perttunen. Mikko implemented hardware trip points as part
+of the device tree support. It was suggested back then to move the
+functionality to the thermal core instead of putting more code into the
+device tree support. This series does exactly that.
 
-Cheers,
-Peter
+This series patches rebase the conflicts with the lastest next kernel.
+Note that the hardware-tracked trip points are very well tested currently.
+
+Verified and tested on https://github.com/Caesar-github/rockchip/tree/wip/fixes-thermal-0606
+That's based on the next kernel (4.7-rc2).
+localhost / # cat /proc/version
+Linux version 4.7.0-rc2-next-20160606-02546-g534926d (wxt@nb)
+---
+There are five pathes in this series.
+thermal: Add support for hardware-tracked trip point
+thermal: of: implement .set_trips for device tree thermal zones
+thermal: streamline get_trend callbacks
+thermal: bang-bang governor: act on lower trip boundary
+thermal: rockchip: add the set_trips function
+
+Note: the hardware-tracked trip points that the similar patches were verified
+on ChromoeOs platform.
+e.g.:
+https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.14
+https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.18
+https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-4.4
+---
+
+Anyway, I take the lastest thermal change to test from next kernel,
+
+Tested on RK3399 SoCs on https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-4.4
+And
+Tested on RK3288 SoCs with chromebook on next kernel.
+localhost / # while true; do grep "" /sys/class/thermal/thermal_zone[0-1]/temp; sleep .5; done
+/sys/class/thermal/thermal_zone1/temp:45454
+/sys/class/thermal/thermal_zone2/temp:44090
+/sys/class/thermal/thermal_zone1/temp:44545
+/sys/class/thermal/thermal_zone2/temp:44545
+/sys/class/thermal/thermal_zone1/temp:45454
+/sys/class/thermal/thermal_zone2/temp:44545
+/sys/class/thermal/thermal_zone1/temp:45000
+...
+Then add the loading,
+localhost / # md5sum /dev/zero &
+[3] 8354
+..
+The Set trips trigger the hardware-tracked points.
+
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 68461, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 2 - temp: 64166, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 75000
+rockchip-thermal ff280000.tsadc: sensor 2 - temp: 66153, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 70000
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 68076, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 2 - temp: 65384, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 75000
+rockchip-thermal ff280000.tsadc: sensor 2 - temp: 65384, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 70000
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70833, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 75000
+rockchip-thermal ff280000.tsadc: sensor 2 - temp: 66153, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 70000
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70416, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 75000
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 70000
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 75000
+..
+---
+Anyway, the series patches are verified on rockchip platform.
+
+Thanks someone are reviewing and testing for it.
+
+-Caesar
+
+
+Changes in v5:
+- add the lock for thermal_zone_set_trips function.
+- change based on next kernel.
+- add the tested by Steve.
+
+Changes in v4:
+- Missing the lock added in v3.
+- as the Javi comments, %s/implemnets/implements.
+
+Changes in v3:
+- as Javi comments on https://patchwork.kernel.org/patch/9001281/.
+- add the lock for preventing the called from multi placce
+- add the note for pre_low/high_trip.
+- as the Javi comments on https://patchwork.kernel.org/patch/9001311/.
+- add the select if they set the option for devicetree.
+- Add the peter's ACK.
+
+Changes in v2:
+- update the sysfs-api.txt for set_trips.
+- add the commit in patch[v2 2/5].
+- Update the commit for patch[v2 4/5].
+
+Caesar Wang (1):
+  thermal: rockchip: add the set_trips function
+
+Sascha Hauer (4):
+  thermal: Add support for hardware-tracked trip points
+  thermal: of: implement .set_trips for device tree thermal zones
+  thermal: streamline get_trend callbacks
+  thermal: bang-bang governor: act on lower trip boundary
+
+ Documentation/thermal/sysfs-api.txt                |  7 +++
+ drivers/thermal/gov_bang_bang.c                    |  2 +-
+ drivers/thermal/of-thermal.c                       | 30 ++++++++----
+ drivers/thermal/rockchip_thermal.c                 | 39 ++++++++++++++++
+ drivers/thermal/thermal_core.c                     | 54 ++++++++++++++++++++++
+ drivers/thermal/thermal_sysfs.c                    |  3 ++
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 ++++------
+ include/linux/thermal.h                            | 16 ++++++-
+ 8 files changed, 147 insertions(+), 29 deletions(-)
+
+-- 
+1.9.1
+
