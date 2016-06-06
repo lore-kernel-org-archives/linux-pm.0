@@ -1,69 +1,54 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH v6 0/5] PCI: Add support for suspending (including
- runtime) of PCIe ports
-Date: Mon, 6 Jun 2016 12:43:47 +0300
-Message-ID: <20160606094347.GS1743@lahna.fi.intel.com>
-References: <1464855435-32960-1-git-send-email-mika.westerberg@linux.intel.com>
- <20160604232718.GA17088@wunner.de>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] PM / clk: export symbols for existing pm_clk_<...> API
+ fcns
+Date: Mon, 6 Jun 2016 12:16:47 +0200
+Message-ID: <20160606101647.GA22028@amd>
+References: <1465149495-22961-1-git-send-email-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:38538 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbcFFJnx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 6 Jun 2016 05:43:53 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:32843 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbcFFKQv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 06:16:51 -0400
 Content-Disposition: inline
-In-Reply-To: <20160604232718.GA17088@wunner.de>
+In-Reply-To: <1465149495-22961-1-git-send-email-paul.gortmaker@windriver.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, Peter Wu <peter@lekensteyn.nl>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org
 
-On Sun, Jun 05, 2016 at 01:27:18AM +0200, Lukas Wunner wrote:
-> On Thu, Jun 02, 2016 at 11:17:10AM +0300, Mika Westerberg wrote:
-> > Bjorn, if you are fine with these patches, it would be nice to get these to
-> > linux-next for better testing coverage.
-> > 
-> > Changes to v5:
-> > 
-> >   - Add patch "PCI: Power on bridges before scanning new devices" to make
-> >     sure rescanning using sysfs still works.
-> > 
-> >   - Change patch "ACPI / hotplug / PCI: Runtime resume bridge before
-> >     rescan" to runtime resume in acpiphp_check_bridge() instead of
-> >     hotplug_event().
-> > 
-> >   - Change runtime PM autosuspend delay from 10ms to 100ms.
-> > 
-> >   - Call pm_runtime_mark_last_busy() to make sure we do not runtime suspend
-> >     the port immediately.
+On Sun 2016-06-05 13:58:15, Paul Gortmaker wrote:
+> While trying to convert a DMA driver from bool to tristate, we
+> encountered the following:
 > 
-> I've applied v6 of this series to my local tree and tested it with
-> my Thunderbolt runtime pm patches. Everything seems to still work
-> fine, so my Tested-by is upheld.
-
-Great, thanks!
-
-> I've also compared this version with the previous one in my tree and
-> reviewed the changes. I only found a punctuation and spacing change
-> that Bjorn had made and that isn't included in the commit message of
-> patch [4/5]:
+> ERROR: "pm_clk_add_clk" [drivers/dma/tegra210-adma.ko] undefined!
+> ERROR: "pm_clk_create" [drivers/dma/tegra210-adma.ko] undefined!
+> ERROR: "pm_clk_destroy" [drivers/dma/tegra210-adma.ko] undefined!
+> ERROR: "pm_clk_suspend" [drivers/dma/tegra210-adma.ko] undefined!
+> ERROR: "pm_clk_resume" [drivers/dma/tegra210-adma.ko] undefined!
 > 
-> < hotplug event such as BUS_CHECK, we need to make sure it is resumed before
-> < devices below the bridge are re-scanned.  Otherwise the devices behind the
-> ---
-> > hotplug event, such as BUS_CHECK we need to make sure it is resumed before
-> > devices below the bridge are re-scanned. Otherwise the devices behind the
-
-Hmm, the patch is calling pm_runtime_get_sync()/pm_runtime_put() in
-acpiphp_check_bridge() now instead of in hotplug_event() like it was in
-the previous version.
-
-> And this line in the commit message of patch [5/5] suddenly has > 72
-> chars now:
+> Since in principle there is nothing preventing these functions
+> from being used in modular code as well as builtin, we add the
+> export of them.  We expand the scope to also include:
 > 
-> > Add back runtime PM support for PCIe ports that was removed in
-> > commit fe9a743a2601 ("PCI/PM: Drop unused runtime PM support code for PCIe
+>    pm_clk_add
+>    of_pm_clk_add_clks
+>    pm_clk_remove
+>    pm_clk_remove_clk
+>    pm_clk_init
+>    pm_clk_runtime_suspend
+>    pm_clk_runtime_resume
+>    pm_clk_add_notifier
+> 
+> ...since these functions are also non-static and presumably form
+> part of the existing API used by other drivers that may become
+> modular in the future.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-Yes, I changed it because checkpatch.pl wants to have commit <COMMIT> in
-the same line apparently.
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
