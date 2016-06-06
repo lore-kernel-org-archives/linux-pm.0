@@ -1,36 +1,34 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 6/9] cpufreq: imx: Use 'index' only to index into
- policy->freq_table
-Date: Mon, 6 Jun 2016 09:28:17 +0530
-Message-ID: <20160606035817.GA16176@vireshk-i7>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
- <5be64daa9fc2967351f7e5949b814d866264598e.1464960877.git.viresh.kumar@linaro.org>
+From: Chris Lapa <chris@lapa.com.au>
+Subject: New Contributor
+Date: Mon, 6 Jun 2016 14:09:14 +1000
+Message-ID: <ee830e2c-b2a4-7ea7-8869-23fb1dbc0da9@lapa.com.au>
+Reply-To: chris@lapa.com.au
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5be64daa9fc2967351f7e5949b814d866264598e.1464960877.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Shawn Guo <shawnguo@kernel.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Steven Miao <realmz6@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:34700 "EHLO
+	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752745AbcFFEJT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 00:09:19 -0400
+Received: by mail-pa0-f66.google.com with SMTP id ug1so815632pab.1
+        for <linux-pm@vger.kernel.org>; Sun, 05 Jun 2016 21:09:18 -0700 (PDT)
+Received: from Chriss-Mac-Pro.office.cpd (163.164.70.115.static.exetel.com.au. [115.70.164.163])
+        by smtp.googlemail.com with ESMTPSA id s124sm23386414pfb.63.2016.06.05.21.09.17
+        for <linux-pm@vger.kernel.org>
+        (version=TLSv1/SSLv3 cipher=OTHER);
+        Sun, 05 Jun 2016 21:09:18 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 03-06-16, 19:05, Viresh Kumar wrote:
-> Later patches would make changes in cpufreq core, after which
-> policy->freq_table may be reordered by cpufreq core and it wouldn't be
-> safe anymore to use 'index' for any other local arrays.
-> 
-> To prepare for that, use policy->freq_table[index].driver_data for other
-> driver specific usage of 'index'. The 'driver_data' fields are already
-> set properly by the driver.
-> 
-> Cc: Shawn Guo <shawn.guo@freescale.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 13 ++++++++++---
->  1 file changed, 10 insertions(+), 3 deletions(-)
+Hi,
 
-Fixing Shawn's id.
+I'm new to contributing to the kernel and am just wondering what the 
+correct etiquette is for having my patches reviewed/accepted.
 
--- 
-viresh
+I have already sent in a small patch series for the max8903 battery 
+charger (http://marc.info/?l=linux-pm&m=146484997909503&w=2).
+
+Thanks,
+Chris Lapa
