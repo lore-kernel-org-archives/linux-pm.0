@@ -1,126 +1,96 @@
-From: Laxman Dewangan <ldewangan@nvidia.com>
-Subject: Re: [PATCH V3 1/2] thermal: max77620: Add DT binding doc for thermal
- driver
-Date: Tue, 7 Jun 2016 12:08:23 +0530
-Message-ID: <57566BDF.3090100@nvidia.com>
-References: <1465213467-23518-1-git-send-email-ldewangan@nvidia.com> <575645B8.5090709@ti.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [RESEND PATCH v2] power_supply: power_supply_read_temp only if
+ use_cnt > 0
+Date: Tue, 07 Jun 2016 09:23:00 +0200
+Message-ID: <57567654.5060503@samsung.com>
+References: <1465232216-12625-1-git-send-email-rklein@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:4609 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753464AbcFGGvL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 02:51:11 -0400
-In-Reply-To: <575645B8.5090709@ti.com>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:39450 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbcFGHXF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 03:23:05 -0400
+In-reply-to: <1465232216-12625-1-git-send-email-rklein@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Keerthy <a0393675@ti.com>, edubezval@gmail.com, rui.zhang@intel.com, robh+dt@kernel.org
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rhyland Klein <rklein@nvidia.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, stable@vger.kernel.org
+
+On 06/06/2016 06:56 PM, Rhyland Klein wrote:
+> Add check to power_supply_read_temp() to only use the power_supply
+> get_property() callback if the use_cnt is > 0. The use_cnt will
+> be incremented at the end of __power_supply_register, so this will
+> block to case where get_property can be called before the supply
+> is fully registered. This fixes the issue show in the stack below:
+> 
+> [    1.452598] power_supply_read_temp+0x78/0x80
+> [    1.458680] thermal_zone_get_temp+0x5c/0x11c
+> [    1.464765] thermal_zone_device_update+0x34/0xb4
+> [    1.471195] thermal_zone_device_register+0x87c/0x8cc
+> [    1.477974] __power_supply_register+0x364/0x424
+> [    1.484317] power_supply_register_no_ws+0x10/0x18
+> [    1.490833] bq27xxx_battery_setup+0x10c/0x164
+> [    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
+> [    1.503435] i2c_device_probe+0x174/0x240
+> [    1.509172] driver_probe_device+0x1fc/0x29c
+> [    1.515167] __driver_attach+0xa4/0xa8
+> [    1.520643] bus_for_each_dev+0x58/0x98
+> [    1.526204] driver_attach+0x20/0x28
+> [    1.531505] bus_add_driver+0x1c8/0x22c
+> [    1.537067] driver_register+0x68/0x108
+> [    1.542630] i2c_register_driver+0x38/0x7c
+> [    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
+> [    1.555321] do_one_initcall+0x38/0x12c
+> [    1.560886] kernel_init_freeable+0x148/0x1ec
+> [    1.566972] kernel_init+0x10/0xfc
+> [    1.572101] ret_from_fork+0x10/0x40
+> 
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+
+And maybe:
+Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
 
 
-On Tuesday 07 June 2016 09:25 AM, Keerthy wrote:
->
->
-> On Monday 06 June 2016 05:14 PM, Laxman Dewangan wrote:
->> Maxim Semiconductor MAX77620 supports alarm interrupts when
->> its die temperature crosses 120C and 140C. These threshold
->> temperatures are not configurable.
->>
->> Add DT binding document to details out the DT property related
->> to MAX77620 thermal functionality.
->>
->> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
->> ---
->>   .../bindings/thermal/thermal-max77620.txt          | 64 
->> ++++++++++++++++++++++
->>   1 file changed, 64 insertions(+)
->>   create mode 100644 
->> Documentation/devicetree/bindings/thermal/thermal-max77620.txt
->>
->> diff --git 
->> a/Documentation/devicetree/bindings/thermal/thermal-max77620.txt 
->> b/Documentation/devicetree/bindings/thermal/thermal-max77620.txt
->> new file mode 100644
->> index 0000000..5a500d5
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/thermal/thermal-max77620.txt
->> @@ -0,0 +1,64 @@
->> +Thermal driver for MAX77620 Power management IC from Maxim 
->> Semiconductor.
->> +
->> +Maxim Semiconductor MAX77620 supports alarm interrupts when its
->> +die temperature crosses 120C and 140C. These threshold temperatures
->> +are not configurable. Device does not provide the real temperature
->> +of die other than just indicating whether temperature is above or
->> +below threshold level.
->> +
->> +Required properties:
->> +-------------------
->> +#thermal-sensor-cells:    Please refer 
->> <devicetree/bindings/thermal/thermal.txt>
->> +            for more details.
->> +            The value must be 0.
->> +
->> +For more details, please refer generic thermal DT binding document
->> +<devicetree/bindings/thermal/thermal.txt>.
->> +
->> +Please refer <devicetree/bindings/mfd/max77620.txt> for mfd DT binding
->> +document for the MAX77620.
->> +
->> +Example:
->> +--------
->> +#include <dt-bindings/mfd/max77620.h>
->> +#include <dt-bindings/thermal/thermal.h>
->> +...
->> +
->> +i2c@7000d000 {
->> +    spmic: max77620@3c {
->> +        compatible = "maxim,max77620";
->> +        :::::
->> +        #thermal-sensor-cells = <0>;
->> +        :::
->> +    };
->> +};
->> +
->> +cool_dev: cool-dev {
->> +    compatible = "cooling-dev";
->> +    #cooling-cells = <2>;
->> +};
->> +
->> +thermal-zones {
->> +    PMIC-Die {
->> +        polling-delay = <0>;
->> +        polling-delay-passive = <0>;
->> +        thermal-sensors = <&spmic>;
->> +
->> +        trips {
->> +            die_temp_thresh: hot-die {
->> +                temperature = <120000>;
->> +                type = "active";
->> +                hysteresis = <0>;
->> +            };
->> +        };
->
-> What about 140C? Isn't that a critical trip point?
+> ---
+> v2:
+>  - Added cc stable
+>  - changed return to -EAGAIN in case of use_cnt < 1
+>  - Removed WARNING
+>  - return value check added in additional patch:
+>   "thermal: helpers: Check return value of get_temp"
+> 
+>  drivers/power/power_supply_core.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+> index 456987c88baa..bbd80631f31e 100644
+> --- a/drivers/power/power_supply_core.c
+> +++ b/drivers/power/power_supply_core.c
+> @@ -561,11 +561,15 @@ static int power_supply_read_temp(struct thermal_zone_device *tzd,
+>  {
+>  	struct power_supply *psy;
+>  	union power_supply_propval val;
+> -	int ret;
+> +	int ret = -EAGAIN;
+>  
+>  	WARN_ON(tzd == NULL);
+> +
+>  	psy = tzd->devdata;
+> -	ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
+> +
+> +	if (atomic_read(&psy->use_cnt) > 0)
+> +		ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP,
+> +					      &val);
 
-Yes, it is there and it can be populated/extended on the same way and 
-handled.
+How about using just power_supply_get_property() and convert return
+value to EAGAIN?
 
-This is just an example.
+Anyway probably such check should be present also on other
+get_property() calls, like thermal cooling path.
 
-
->
->> +
->> +        cooling-maps {
->> +            map0 {
->> +                trip = <&die_temp_thresh>;
->> +                cooling-device = <&cool_dev THERMAL_NO_LIMIT
->> +                          THERMAL_NO_LIMIT>;
->> +                contribution = <100>;
->> +            };
->> +        };
->> +    };
->> +};
->>
+Best regards,
+Krzysztof
 
