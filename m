@@ -1,61 +1,65 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v2] cpu/hotplug: handle unbalanced hotplug
- enable/disable
-Date: Tue, 7 Jun 2016 08:34:12 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1606070832440.28031@nanos>
-References: <1465279021-3299-1-git-send-email-lianwei.wang@gmail.com>
+From: Laxman Dewangan <ldewangan@nvidia.com>
+Subject: Re: [PATCH V3 2/2] thermal: max77620: Add thermal driver for reporting
+ junction temp
+Date: Tue, 7 Jun 2016 12:05:27 +0530
+Message-ID: <57566B2F.3020706@nvidia.com>
+References: <1465213467-23518-1-git-send-email-ldewangan@nvidia.com> <1465213467-23518-2-git-send-email-ldewangan@nvidia.com> <5756441A.7030705@ti.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:36946 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751031AbcFGGgQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 02:36:16 -0400
-In-Reply-To: <1465279021-3299-1-git-send-email-lianwei.wang@gmail.com>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:15977 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752426AbcFGGsQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 02:48:16 -0400
+In-Reply-To: <5756441A.7030705@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lianwei Wang <lianwei.wang@gmail.com>
-Cc: peterz@infradead.org, oleg@redhat.com, mingo@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Keerthy <a0393675@ti.com>, edubezval@gmail.com, rui.zhang@intel.com, robh+dt@kernel.org
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 6 Jun 2016, Lianwei Wang wrote:
-> Currently it just print a warning message but did not
-> reset cpu_hotplug_disabled when the enable/disable is
-> unbalanced. The unbalanced enable/disable will lead
-> the cpu hotplug work abnormally.
-> 
-> Do nothing if an unablanced hotplug enable detected.
-> 
-> Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
-> ---
->  kernel/cpu.c | 21 +++++++++++++++++----
->  1 file changed, 17 insertions(+), 4 deletions(-)
-> 
-> diff --git a/kernel/cpu.c b/kernel/cpu.c
-> index 3e3f6e49eabb..8011b1e40523 100644
-> --- a/kernel/cpu.c
-> +++ b/kernel/cpu.c
-> @@ -245,6 +245,19 @@ void cpu_hotplug_done(void)
->  	cpuhp_lock_release();
->  }
->  
-> +static void _cpu_hotplug_disable(void)
 
-What's the purpose of this function?
+On Tuesday 07 June 2016 09:18 AM, Keerthy wrote:
+> Hi Laxman,
+>
+> On Monday 06 June 2016 05:14 PM, Laxman Dewangan wrote:
+>> Maxim Semiconductor Max77620 supports alarm interrupts when
+>> its die temperature crosses 120C and 140C. These threshold
+>> temperatures are not configurable.
+>>
+>> Add thermal driver to register PMIC die temperature as thermal
+>> zone sensor and capture the die temperature warning interrupts
+>> to notifying the client.
+>
+> Couple of minor comments.
+>
+>> +      Support for die junction temperature warning alarm for Maxim
+>> +      Semiconductor PMIC MAX77620 device. Device generates two alarm
+>> +      interrupts when PMIC die temperature cross the threshold of
+>> +      120 degC and 140 degC.
+>
+> So what are the actions taken for 120C and 140C trips?
+> What cooling device is used?
+>
 
-> +{
-> +	cpu_hotplug_disabled++;
-> +}
-> +
-> +static void _cpu_hotplug_enable(void)
+The PMIC die temp increases because of higher load on the rails. The 
+higher load (more current from rail) is due to if CPU are running on 
+higher frequency,
 
-Double underscores please
+The information is used by the thermal monitoring and throttling system 
+and when it sees higher temp on the PMIC die:
+- It can reduce the frequency of the CPU or something like this as part 
+of thermal throttling.
+- If device supports fan then it can increase speed of fans or turn on fan.
 
-> +{
-> +	if (WARN(!cpu_hotplug_disabled, "Unbalanced cpu hotplug enable\n"))
-> +		return;
 
-And this want's to be a WARN_ONCE()
+>>
+>> +};
+>> +
+>
+> This does not give the absolute temperature. So some comments would be 
+> really helpful for this function.
+>
 
-Thanks,
+OK, will add on next rev of patch.
 
-	tglx
