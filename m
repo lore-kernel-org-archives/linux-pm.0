@@ -1,36 +1,136 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/5] Add suspend-to-idle validation for Intel SoCs
-Date: Tue, 7 Jun 2016 09:46:33 +0200
-Message-ID: <20160607074632.GA13858@amd>
-References: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH V3 1/2] thermal: max77620: Add DT binding doc for thermal
+ driver
+Date: Tue, 7 Jun 2016 13:17:20 +0530
+Message-ID: <57567C08.8060200@ti.com>
+References: <1465213467-23518-1-git-send-email-ldewangan@nvidia.com>
+ <575645B8.5090709@ti.com> <57566BDF.3090100@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
+In-Reply-To: <57566BDF.3090100@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: dbasehore@chromium.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, tglx@linutronix.de
+To: Laxman Dewangan <ldewangan@nvidia.com>, edubezval@gmail.com, rui.zhang@intel.com, robh+dt@kernel.org
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 2016-06-01 21:33:24, dbasehore@chromium.org wrote:
-> From: Derek Basehore <dbasehore@chromium.org>
-> 
-> This patch set adds support for catching errors when entering freeze
-> on Intel Skylake SoCs. Support for this can be added to newer SoCs in
-> later patches.
-> 
-> Verification is done by waking up the CPU once every X (default 10)
-> seconds to check the residency of S0ix. This can't be verified before
-> attempting to enter S0ix through mwait, so we have to repeatedly
-> verify entry into that state. Successfully entering S0ix is no
-> guarantee that it will be entered on the next attempt, so we have to
-> schedule another check. This has a minimal power impact of <1% of the
-> total system power on our systems.
 
-Dunno. Should this be protected with something like CONFIG_TEST_SLEEP?
-People probably don't want this for production...
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Tuesday 07 June 2016 12:08 PM, Laxman Dewangan wrote:
+>
+> On Tuesday 07 June 2016 09:25 AM, Keerthy wrote:
+>>
+>>
+>> On Monday 06 June 2016 05:14 PM, Laxman Dewangan wrote:
+>>> Maxim Semiconductor MAX77620 supports alarm interrupts when
+>>> its die temperature crosses 120C and 140C. These threshold
+>>> temperatures are not configurable.
+>>>
+>>> Add DT binding document to details out the DT property related
+>>> to MAX77620 thermal functionality.
+>>>
+>>> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
+>>> ---
+>>>   .../bindings/thermal/thermal-max77620.txt          | 64
+>>> ++++++++++++++++++++++
+>>>   1 file changed, 64 insertions(+)
+>>>   create mode 100644
+>>> Documentation/devicetree/bindings/thermal/thermal-max77620.txt
+>>>
+>>> diff --git
+>>> a/Documentation/devicetree/bindings/thermal/thermal-max77620.txt
+>>> b/Documentation/devicetree/bindings/thermal/thermal-max77620.txt
+>>> new file mode 100644
+>>> index 0000000..5a500d5
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/thermal/thermal-max77620.txt
+>>> @@ -0,0 +1,64 @@
+>>> +Thermal driver for MAX77620 Power management IC from Maxim
+>>> Semiconductor.
+>>> +
+>>> +Maxim Semiconductor MAX77620 supports alarm interrupts when its
+>>> +die temperature crosses 120C and 140C. These threshold temperatures
+>>> +are not configurable. Device does not provide the real temperature
+>>> +of die other than just indicating whether temperature is above or
+>>> +below threshold level.
+>>> +
+>>> +Required properties:
+>>> +-------------------
+>>> +#thermal-sensor-cells:    Please refer
+>>> <devicetree/bindings/thermal/thermal.txt>
+>>> +            for more details.
+>>> +            The value must be 0.
+>>> +
+>>> +For more details, please refer generic thermal DT binding document
+>>> +<devicetree/bindings/thermal/thermal.txt>.
+>>> +
+>>> +Please refer <devicetree/bindings/mfd/max77620.txt> for mfd DT binding
+>>> +document for the MAX77620.
+>>> +
+>>> +Example:
+>>> +--------
+>>> +#include <dt-bindings/mfd/max77620.h>
+>>> +#include <dt-bindings/thermal/thermal.h>
+>>> +...
+>>> +
+>>> +i2c@7000d000 {
+>>> +    spmic: max77620@3c {
+>>> +        compatible = "maxim,max77620";
+>>> +        :::::
+>>> +        #thermal-sensor-cells = <0>;
+>>> +        :::
+>>> +    };
+>>> +};
+>>> +
+>>> +cool_dev: cool-dev {
+>>> +    compatible = "cooling-dev";
+>>> +    #cooling-cells = <2>;
+>>> +};
+>>> +
+>>> +thermal-zones {
+>>> +    PMIC-Die {
+>>> +        polling-delay = <0>;
+>>> +        polling-delay-passive = <0>;
+>>> +        thermal-sensors = <&spmic>;
+>>> +
+>>> +        trips {
+>>> +            die_temp_thresh: hot-die {
+>>> +                temperature = <120000>;
+>>> +                type = "active";
+>>> +                hysteresis = <0>;
+>>> +            };
+>>> +        };
+>>
+>> What about 140C? Isn't that a critical trip point?
+>
+> Yes, it is there and it can be populated/extended on the same way and
+> handled.
+>
+> This is just an example.
+
+Yes i understand that. My question was more w.r.t different types of 
+critical points. As i can see 120C is an active trip point.
+
+140C will be a critical trip point and system will have to be shutdown 
+right? IMHO you can add that to the example as well since its pretty 
+different than the above active trip point.
+
+- Keerthy
+
+>
+>
+>>
+>>> +
+>>> +        cooling-maps {
+>>> +            map0 {
+>>> +                trip = <&die_temp_thresh>;
+>>> +                cooling-device = <&cool_dev THERMAL_NO_LIMIT
+>>> +                          THERMAL_NO_LIMIT>;
+>>> +                contribution = <100>;
+>>> +            };
+>>> +        };
+>>> +    };
+>>> +};
+>>>
+>
