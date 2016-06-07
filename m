@@ -1,80 +1,81 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: Re: [PATCH][RFC] x86, hotplug: Use zero page for monitor when
- resuming from hibernation
-Date: Tue, 7 Jun 2016 16:44:24 +0800
-Message-ID: <57568968.2090100@intel.com>
-References: <1465222749-8388-1-git-send-email-yu.c.chen@intel.com>
- <20160607080307.GB13858@amd>
+From: Mason <slash.tmp@free.fr>
+Subject: Platform-specific suspend/resume code in drivers
+Date: Tue, 7 Jun 2016 10:56:40 +0200
+Message-ID: <57568C48.709@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160607080307.GB13858@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Peter Zijlstra <peterz@infradead.org>, Zhu Guihua <zhugh.fnst@cn.fujitsu.com>, Juergen Gross <jgross@suse.com>, "Zheng, Lv" <lv.zheng@intel.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:45358 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753806AbcFGI5I (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jun 2016 04:57:08 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@ucw.cz>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Sebastian Frias <sf84@laposte.net>, Mark Rutland <mark.rutland@arm.com>
 
-Hi Pavel,
+Hello everyone,
 
-On 2016=E5=B9=B406=E6=9C=8807=E6=97=A5 16:03, Pavel Machek wrote:
-> On Mon 2016-06-06 22:19:09, Chen Yu wrote:
->> Stress test from Varun Koyyalagunta reports that, the
->> nonboot CPU would hang occasionally, when resuming from
->> hibernation. Further investigation shows that, the precise
->> phase when nonboot CPU hangs, is the time when the nonboot
->> CPU been woken up incorrectly, and tries to monitor the
->> mwait_ptr for the second time, then an exception is
->> triggered due to illegal vaddr access, say, something like,
->> 'Unable to handler kernel address of 0xffff8800ba800010...'
->>
->> One of the possible scenarios for this issue is illustrated below,
->> when the boot CPU tries to resume from hibernation:
->> 1. puts the nonboot CPUs offline, so the nonboot CPUs are monitoring
->>     at the address of the task_struct.flags.
->> 2. boot CPU copies pages to their original address, which includes
->>     task_struct.flags, thus wakes up one of the nonboot CPUs.
->> 3. nonboot CPU tries to monitor the task_struct.flags again, but sin=
-ce
->>     the page table for task_struct.flags has been overwritten by
->>     boot CPU, and there is probably a changed across hibernation
->>     (because of inconsistence of e820 memory map), an exception is
->>     triggered.
-> If memory map changes between suspend and resume, there'll be fun. If
-> that's suspected, should we attach md5 sum of e820 to the hibernation
-> image?
-Actually what I described  in the  scenario might be not so accurate,
-it might not be related to inconsistence of e820 map,
-because there is no guarantee that boot kernel and resume kernel
-have the same memory layout(page table).
+I want to implement system-wide suspend-to-RAM on my platform
+(an ARM Cortex A9 based SoC).
 
-I've re-checked the logs from reporter, it seems that, the fault
-access is caused by accessing a page without PRESENT flag,
-and the pte entry for this vaddr is zero:
+I'm hoping some of you can clear some of my confusion :-(
 
-    // DATA ADDRESS TRANSLATION, virtual address =3D 0xFFFF8800BA803E88
-    //   DATA TABLE WALK, virtual address =3D 0xFFFF8800BA803E88
-    pml4read   0x0001C12880    0x01FD2067; // pgd
-    pdptread   0x0001FD2010    0x9BEBF063; // pud
-    pderead    0x009BEBFEA0    0x2D9D9063; // pmd
-    pteread    0x002D9D9018    0x00000000; // pte
+AFAIU, what happens to the hardware in the suspended state is
+very board/platform specific. The SoC may stop some clocks;
+it may even cut the power to some parts of the chip.
 
-The last line above is a pte entry located at physical address 0x2d9d90=
-18,
-with value zero, thus access to this vaddr results in a page-not-presen=
-t exception.
+AFAIU, once power is cut, the value of internal and visible
+registers (called "state" or "context" IIUC) is lost.
+
+Therefore, each driver is supposed to either
+
+1) save context on suspend & restore it on resume, or
+2) re-initialize the device on resume (if context is unimportant)
+
+Is that correct?
+
+(Note: Kevin Hilman mentioned using a feature called "regmap" to
+help in saving/restoring context.)
+
+Documentation/power/devices.txt mentions putting such save/restore
+code in suspend_late/resume_early callbacks. Is that the preferred
+solution today?
+
+Should these routines be guarded by #ifdef CONFIG_PM or #ifdef CONFIG_SUSPEND ?
+
+Another point of confusion for me is this: drivers are supposed to
+be shared among platforms, right? So my platform-specific suspend
+code should be enabled only if my platform is detected at run-time?
+
+So this means I need to add in the probe function, for every driver
+my platform uses:
+
+  if (platform == MY_PLATFORM) {
+    ops.suspend = my_suspend;
+    ops.resume  = my_resume;
+  }
+
+Is that correct?
 
 
-Since some of the pud/pde/pte are allocated dynamically during bootup
-(kernel_physical_mapping_init),
-it is possible that, when the boot cpu writes to this vaddr,
-the page table(especially for pud/pmd/pte) for this vaddr
-are not the same as it is before hibernation,  thus an exception would =
-be
-triggered due to incorrect page table, even e820 is consistent.
+While I'm listing the points I don't understand... It seems Linux
+handles suspend/resume "transparently". I mean the CPU calls all
+the functions leading to the suspend action, then when the system
+comes back online, it continues at the next instruction, as if
+nothing had happened. So the stack and registers need to be exactly
+in the same state.
 
-I'm doing more test to verify this.
+But on my system, the firmware expects a return address for *where*
+to return on resume. Should I pass it the next instruction pointer?
+The address of the resume function?
 
-thanks,
-Yu
+I see arch/arm/kernel/psci_smp.c seems to have the same notion.
+=> drivers/firmware/psci.c
+
+References:
+arch/arm/kernel/suspend.c
+kernel/power/suspend.c
+
+Regards.
