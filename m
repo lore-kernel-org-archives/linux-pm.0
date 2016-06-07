@@ -1,73 +1,93 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 1/6] power: Introduce Broadcom kona reset driver
-Date: Tue, 7 Jun 2016 03:50:17 +0200
-Message-ID: <20160607015017.GA25073@earth>
-References: <1463002582-6875-1-git-send-email-chris.brand@broadcom.com>
- <1463002582-6875-2-git-send-email-chris.brand@broadcom.com>
- <57409633.8060605@gmail.com>
- <20160603023853.GD8921@earth>
- <CAMsMSK8ZX=nmJs9d2txRsk2gLa0duy3Qpp805ztYzow=OiTB8w@mail.gmail.com>
+From: Hongtao Jia <hongtao.jia@nxp.com>
+Subject: =?gb2312?B?tPC4tDogW1BBVENIIDEvN10gZHQtYmluZGluZ3M6IFVwZGF0ZSBRb3JJUSBU?=
+ =?gb2312?Q?MU_thermal_bindings?=
+Date: Tue, 7 Jun 2016 02:26:51 +0000
+Message-ID: <AM4PR0401MB1843CB326ACB958AA8FE64F8EB5D0@AM4PR0401MB1843.eurprd04.prod.outlook.com>
+References: <1464937059-19349-1-git-send-email-hongtao.jia@nxp.com>
+ <20160606134708.GA27357@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:57385 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751294AbcFGBuW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 6 Jun 2016 21:50:22 -0400
-Content-Disposition: inline
-In-Reply-To: <CAMsMSK8ZX=nmJs9d2txRsk2gLa0duy3Qpp805ztYzow=OiTB8w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20160606134708.GA27357@rob-hp-laptop>
+Content-Language: zh-CN
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robh@kernel.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Scott Wood <scott.wood@nxp.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "galak@codeaurora.org" <galak@codeaurora.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chris Brand <chris.brand@broadcom.com>
-Cc: Florian Fainelli <f.fainelli@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, linux-arm-kernel@lists.infradead.org, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
 
-
---Dxnq1zWXvFF0Q93v
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Mon, Jun 06, 2016 at 09:42:03AM -0700, Chris Brand wrote:
-> On Thu, Jun 2, 2016 at 7:38 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> > Feel free to queue it via arm-soc with
-> >
-> > Acked-By: Sebastian Reichel <sre@kernel.org>
-> >
-> > If I didn't overlook it, it's missing DT documentation, though.
->=20
-> Thanks, Sebastian. Because this is effectively a move of code from
-> arch/arm rather than new code, there's already dt documentation in
-> Documentation/devicetree/bindings/reset/brcm,bcm21664-resetmgr.txt
-
-Ok. That directory is usually used for periphal reset controller.
-Board/System reset controllers are usually documented in
-=2E../bindings/power/reset (following kernel strucuture
-[drivers/reset and drivers/power/reset]).
-
--- Sebastian
-
---Dxnq1zWXvFF0Q93v
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJXVihWAAoJENju1/PIO/qaanIQAKnOe1A/p6OwhjMii4vw+1bR
-n8LrJHJ2wWjI0yylc0t46f643685updep5UhcfXTk8FaZnGnQtJGc49selG75YQs
-Y7RoOeOkvb1utwvMA1MzwjRHKiInv4WvpBnbEhftEzpaK7fEScFFJV+x1idF5JjN
-wHEx1IcCTEZGFbHzIphhghyjq0yPrkemsp/3+spZcwiNFinsR9g5MTf+x8cbwFQm
-MaWxnRhMwaTqdiigIFtRMSrDrI/HlQlkVgGh6h2L8tzwub6bjp11sqDsiE7UgfAB
-69gZvUNtu6qLcznJ6jkAlfNAv0fELIafVur7hDaqwB2mxukjfJAGFyL/X+92KvFI
-+KvUQyZVOLFvoCplXvUn9m1IrjplTDWjacRcBceTu7DQI/UT/uczGzHc80YB3/mq
-UtvKUPcNipZS4oo/Px+XUEi2euAy1IdvGrnIpu+1E5Lcdyny3P9jWn+G/pd3geNS
-N5FCzc+AJAmAerSb4N5D5ejdswe8Ws+wz/JqnziiWkIJxX94hNRRP34/tvAMS82a
-4ptXl8K0UVpNmL8b1CyS61COdfvfGs6/bDHkHkVSlgJM6QMckdi/YEhWf4Ymhgji
-6P0dCVlUla+L5L+0vzn3SyzcpJoAd9Ie4y6nLBvAfU1cGC1OHqlbHP41jnJXXEKZ
-lh3hKbg0xFatKVsd4jMD
-=PScD
------END PGP SIGNATURE-----
-
---Dxnq1zWXvFF0Q93v--
+DQo+IC0tLS0t08q8/tStvP4tLS0tLQ0KPiC3orz+yMs6IFJvYiBIZXJyaW5nIFttYWlsdG86cm9i
+aEBrZXJuZWwub3JnXQ0KPiC3osvNyrG85DogTW9uZGF5LCBKdW5lIDA2LCAyMDE2IDk6NDcgUE0N
+Cj4gytW8/sjLOiBIb25ndGFvIEppYSA8aG9uZ3Rhby5qaWFAbnhwLmNvbT4NCj4gs63LzTogZWR1
+YmV6dmFsQGdtYWlsLmNvbTsgcnVpLnpoYW5nQGludGVsLmNvbTsgZ2FsYWtAY29kZWF1cm9yYS5v
+cmc7DQo+IFNjb3R0IFdvb2QgPHNjb3R0Lndvb2RAbnhwLmNvbT47IHNoYXduZ3VvQGtlcm5lbC5v
+cmc7DQo+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5v
+cmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMu
+b3psYWJzLm9yZzsgbGludXgtYXJtLQ0KPiBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZw0KPiDW
+98ziOiBSZTogW1BBVENIIDEvN10gZHQtYmluZGluZ3M6IFVwZGF0ZSBRb3JJUSBUTVUgdGhlcm1h
+bCBiaW5kaW5ncw0KPiANCj4gT24gRnJpLCBKdW4gMDMsIDIwMTYgYXQgMDI6NTc6MzNQTSArMDgw
+MCwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4gRm9yIGRpZmZlcmVudCB0eXBlcyBvZiBTb0MgdGhl
+IHNlbnNvciBpZCBhbmQgZW5kaWFubmVzcyBtYXkgdmFyeS4NCj4gPiAiI3RoZXJtYWwtc2Vuc29y
+LWNlbGxzIiBpcyB1c2VkIHRvIHByb3ZpZGUgc2Vuc29yIGlkIGluZm9ybWF0aW9uLg0KPiA+ICJs
+aXR0bGUtZW5kaWFuIiBwcm9wZXJ0eSBpcyB0byB0ZWxsIHRoZSBlbmRpYW5uZXNzIG9mIFRNVS4N
+Cj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEppYSBIb25ndGFvIDxob25ndGFvLmppYUBueHAuY29t
+Pg0KPiA+IC0tLQ0KPiA+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3FvcmlxLXRo
+ZXJtYWwudHh0ICAgICB8IDE5ICsrKysrKysrKysrKystLS0NCj4gLS0tDQo+ID4gIDEgZmlsZSBj
+aGFuZ2VkLCAxMyBpbnNlcnRpb25zKCspLCA2IGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gZGlmZiAt
+LWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3FvcmlxLXRo
+ZXJtYWwudHh0DQo+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwv
+cW9yaXEtdGhlcm1hbC50eHQNCj4gPiBpbmRleCA2NjIyM2Q1Li44ZWVlZjgwIDEwMDY0NA0KPiA+
+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3FvcmlxLXRo
+ZXJtYWwudHh0DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Ro
+ZXJtYWwvcW9yaXEtdGhlcm1hbC50eHQNCj4gPiBAQCAtMSwyMiArMSwyOCBAQA0KPiA+ICAqIFRo
+ZXJtYWwgTW9uaXRvcmluZyBVbml0IChUTVUpIG9uIEZyZWVzY2FsZSBRb3JJUSBTb0NzDQo+ID4N
+Cj4gPiAgUmVxdWlyZWQgcHJvcGVydGllczoNCj4gPiAtLSBjb21wYXRpYmxlIDogTXVzdCBpbmNs
+dWRlICJmc2wscW9yaXEtdG11Ii4gVGhlIHZlcnNpb24gb2YgdGhlIGRldmljZSBpcw0KPiA+ICst
+IGNvbXBhdGlibGU6IE11c3QgaW5jbHVkZSAiZnNsLHFvcmlxLXRtdSIuIFRoZSB2ZXJzaW9uIG9m
+IHRoZSBkZXZpY2UgaXMNCj4gDQo+IFBsZWFzZSBzcGxpdCBmdW5jdGlvbmFsIGNoYW5nZXMgZnJv
+bSBmb3JtYXR0aW5nIGNoYW5nZXMuIFRoaXMgb25lIHNlZW1zDQo+IHByZXR0eSBwb2ludGxlc3Mu
+DQoNCkkgd2lsbCByZW1vdmUgZm9ybWF0dGluZyBjaGFuZ2VzIGluIHRoZSBuZXh0IHZlcnNpb24u
+DQpUaGFua3MuDQoNCj4gDQo+ID4gIAlkZXRlcm1pbmVkIGJ5IHRoZSBUTVUgSVAgQmxvY2sgUmV2
+aXNpb24gUmVnaXN0ZXIgKElQQlJSMCkgYXQNCj4gPiAgCW9mZnNldCAweDBCRjguDQo+ID4gLQlU
+YWJsZSBvZiBjb3JyZXNwb25kZW5jZXMgYmV0d2VlbiBJUEJSUjAgdmFsdWVzIGFuZCBleGFtcGxl
+ICBjaGlwczoNCj4gPiArCVRhYmxlIG9mIGNvcnJlc3BvbmRlbmNlcyBiZXR3ZWVuIElQQlJSMCB2
+YWx1ZXMgYW5kIGV4YW1wbGUgY2hpcHM6DQo+ID4gIAkJVmFsdWUgICAgICAgICAgIERldmljZQ0K
+PiA+ICAJCS0tLS0tLS0tLS0gICAgICAtLS0tLQ0KPiA+ICAJCTB4MDE5MDAxMDIgICAgICBUMTA0
+MA0KPiA+IC0tIHJlZyA6IEFkZHJlc3MgcmFuZ2Ugb2YgVE1VIHJlZ2lzdGVycy4NCj4gPiAtLSBp
+bnRlcnJ1cHRzIDogQ29udGFpbnMgdGhlIGludGVycnVwdCBmb3IgVE1VLg0KPiA+IC0tIGZzbCx0
+bXUtcmFuZ2UgOiBUaGUgdmFsdWVzIHRvIGJlIHByb2dyYW1tZWQgaW50byBUVFJuQ1IsIGFzIHNw
+ZWNpZmllZCBieQ0KPiA+ICstIHJlZzogQWRkcmVzcyByYW5nZSBvZiBUTVUgcmVnaXN0ZXJzLg0K
+PiA+ICstIGludGVycnVwdHM6IENvbnRhaW5zIHRoZSBpbnRlcnJ1cHQgZm9yIFRNVS4NCj4gPiAr
+LSBmc2wsdG11LXJhbmdlOiBUaGUgdmFsdWVzIHRvIGJlIHByb2dyYW1tZWQgaW50byBUVFJuQ1Is
+IGFzIHNwZWNpZmllZCBieQ0KPiA+ICAJdGhlIFNvQyByZWZlcmVuY2UgbWFudWFsLiBUaGUgZmly
+c3QgY2VsbCBpcyBUVFIwQ1IsIHRoZSBzZWNvbmQgaXMNCj4gPiAgCVRUUjFDUiwgZXRjLg0KPiA+
+IC0tIGZzbCx0bXUtY2FsaWJyYXRpb24gOiBBIGxpc3Qgb2YgY2VsbCBwYWlycyBjb250YWluaW5n
+IHRlbXBlcmF0dXJlDQo+ID4gKy0gZnNsLHRtdS1jYWxpYnJhdGlvbjogQSBsaXN0IG9mIGNlbGwg
+cGFpcnMgY29udGFpbmluZyB0ZW1wZXJhdHVyZQ0KPiA+ICAJY2FsaWJyYXRpb24gZGF0YSwgYXMg
+c3BlY2lmaWVkIGJ5IHRoZSBTb0MgcmVmZXJlbmNlIG1hbnVhbC4NCj4gPiAgCVRoZSBmaXJzdCBj
+ZWxsIG9mIGVhY2ggcGFpciBpcyB0aGUgdmFsdWUgdG8gYmUgd3JpdHRlbiB0byBUVENGR1IsDQo+
+ID4gIAlhbmQgdGhlIHNlY29uZCBpcyB0aGUgdmFsdWUgdG8gYmUgd3JpdHRlbiB0byBUU0NGR1Iu
+DQo+ID4gKy0gI3RoZXJtYWwtc2Vuc29yLWNlbGxzOiBNdXN0IGJlIDEuIFRoZSBzZW5zb3Igc3Bl
+Y2lmaWVyIGlzIHRoZSBtb25pdG9yaW5nDQo+ID4gKwlzaXRlIElELCBhbmQgcmVwcmVzZW50cyB0
+aGUgIm4iIGluIFRSSVRTUm4gYW5kIFRSQVRTUm4uDQo+ID4gKw0KPiA+ICtPcHRpb25hbCBwcm9w
+ZXJ0eToNCj4gPiArLSBsaXR0bGUtZW5kaWFuOiBJZiBwcmVzZW50LCB0aGUgVE1VIHJlZ2lzdGVy
+cyBhcmUgbGl0dGxlIGVuZGlhbi4gIElmIGFic2VudCwNCj4gPiArCXRoZSBkZWZhdWx0IGlzIGJp
+ZyBlbmRpYW4uDQo+ID4NCj4gPiAgRXhhbXBsZToNCj4gPg0KPiA+IEBAIC02MCw0ICs2Niw1IEBA
+IHRtdUBmMDAwMCB7DQo+ID4NCj4gPiAgCQkJICAgICAgIDB4MDAwMzAwMDAgMHgwMDAwMDAxMg0K
+PiA+ICAJCQkgICAgICAgMHgwMDAzMDAwMSAweDAwMDAwMDFkPjsNCj4gPiArCSN0aGVybWFsLXNl
+bnNvci1jZWxscyA9IDwxPjsNCj4gPiAgfTsNCj4gPiAtLQ0KPiA+IDIuMS4wLjI3Lmc5NmRiMzI0
+DQo+ID4NCj4gPg0KPiA+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fDQo+ID4gbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QNCj4gPiBsaW51eC1hcm0t
+a2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcNCj4gPiBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9y
+Zy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwNCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0
+CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
+ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
