@@ -1,29 +1,30 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3 9/9] cpufreq: drivers: Free frequency tables after
- being used
-Date: Tue, 7 Jun 2016 00:45:26 +0200
-Message-ID: <CAJZ5v0jFQmK77DB3w0KhM3JLPKbLsJhGqhcUmF7Bc3wuY_ANTQ@mail.gmail.com>
-References: <cover.1464960877.git.viresh.kumar@linaro.org> <feba34c6ee8ddc639507f569b737c1b525c7f139.1464960877.git.viresh.kumar@linaro.org>
+From: Dan Jacobson <jidanni@jidanni.org>
+Subject: Re: pause to allow user to read final screen before poweroff
+Date: Tue, 07 Jun 2016 08:50:00 +0800
+Message-ID: <87twh5zutj.fsf@jidanni.org>
+References: <bug-112111-12294@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <feba34c6ee8ddc639507f569b737c1b525c7f139.1464960877.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Keguang Zhang <keguang.zhang@gmail.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, linux-mips@linux-mips.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Shawn Guo <shawn.guo@freescale.com>, Steven Miao <realmz6@gmail.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hapkido.dreamhost.com ([66.33.216.122]:49314 "EHLO
+	hapkido.dreamhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750956AbcFGAuG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jun 2016 20:50:06 -0400
+Received: from homiemail-a37.g.dreamhost.com (homie.mail.dreamhost.com [208.97.132.208])
+	by hapkido.dreamhost.com (Postfix) with ESMTP id F0EF78779C
+	for <linux-pm@vger.kernel.org>; Mon,  6 Jun 2016 17:50:05 -0700 (PDT)
+Received: from homiemail-a37.g.dreamhost.com (localhost [127.0.0.1])
+	by homiemail-a37.g.dreamhost.com (Postfix) with ESMTP id C6070208069
+	for <linux-pm@vger.kernel.org>; Mon,  6 Jun 2016 17:50:03 -0700 (PDT)
+Received: from jidanni.org (122-118-144-16.dynamic.hinet.net [122.118.144.16])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	(Authenticated sender: jidanni@jidanni.org)
+	by homiemail-a37.g.dreamhost.com (Postfix) with ESMTPSA id 88ADE208063
+	for <linux-pm@vger.kernel.org>; Mon,  6 Jun 2016 17:50:03 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Fri, Jun 3, 2016 at 3:35 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> The cpufreq core doesn't use these tables anymore after
-> cpufreq_table_validate_and_show() has returned.  And so these can be
-> freed early.
-
-That doesn't look particularly efficient.
-
-The driver has to allocate memory first and populate it and then the
-core needs to allocate more memory again to store the same information
-in it, but perhaps in a different order and then the driver can free
-the memory allocated before right away.  It looks like there's one
-excessive memory allocation here, so maybe the core can simply sort
-the frequency table in place and overwrite the invalid entries in the
-process?
+OK I can use
+# systemctl halt
