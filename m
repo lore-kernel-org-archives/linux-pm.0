@@ -1,91 +1,42 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 3/3] firmware: scpi: add device power domain support using
- genpd
-Date: Tue, 7 Jun 2016 14:29:44 +0100
-Message-ID: <5756CC48.8050001@arm.com>
-References: <1465228439-13457-1-git-send-email-sudeep.holla@arm.com>
- <1465228439-13457-4-git-send-email-sudeep.holla@arm.com>
- <1465305537.2833.28.camel@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: mvebu: fix integer to pointer cast
+Date: Tue, 7 Jun 2016 19:10:17 +0530
+Message-ID: <CAKohpon_euKo0Wu8fwU34EUxgBQBrL5TtbuYdvUdNt0ebK+rkA@mail.gmail.com>
+References: <1465299013-32369-1-git-send-email-ben.dooks@codethink.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1465305537.2833.28.camel@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, Mathieu Poirier <mathieu.poirier@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f175.google.com ([209.85.216.175]:34764 "EHLO
+	mail-qt0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932542AbcFGNkT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 09:40:19 -0400
+Received: by mail-qt0-f175.google.com with SMTP id q45so21689992qtq.1
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jun 2016 06:40:19 -0700 (PDT)
+In-Reply-To: <1465299013-32369-1-git-send-email-ben.dooks@codethink.co.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ben Dooks <ben.dooks@codethink.co.uk>
+Cc: linux-kernel@lists.codethink.co.uk, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-
-
-On 07/06/16 14:18, Jon Medhurst (Tixy) wrote:
-> On Mon, 2016-06-06 at 16:53 +0100, Sudeep Holla wrote:
->> This patch hooks up the support for device power domain provided by
->> SCPI using the Linux generic power domain infrastructure.
->>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Kevin Hilman <khilman@kernel.org>
->> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>   drivers/firmware/Kconfig   |   8 +++
->>   drivers/firmware/Makefile  |   1 +
->>   drivers/firmware/scpi_pd.c | 152 +++++++++++++++++++++++++++++++++++++++++++++
->>   3 files changed, 161 insertions(+)
->>   create mode 100644 drivers/firmware/scpi_pd.c
->>
->> Hi,
->>
->> Since most of the power controller drivers are place in drivers/soc/<soc_name>,
->> I am not sure where to put this SCPI power domain code as it can be used
->> on multiple SoC. I have placed it in drivers/firmware temporarily for
->> review. Please suggest the most apt place to put this driver.
->>
->> Regards,
->> Sudeep
->>
->> diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
->> index 41abdc54815e..80c963c60f13 100644
->> --- a/drivers/firmware/Kconfig
->> +++ b/drivers/firmware/Kconfig
->> @@ -27,6 +27,14 @@ config ARM_SCPI_PROTOCOL
->>   	  This protocol library provides interface for all the client drivers
->>   	  making use of the features offered by the SCP.
->>
->> +config ARM_SCPI_POWER_DOMAIN
->> +	tristate "SCPI power domain driver"
->> +	depends on (ARM_SCPI_PROTOCOL && PM) || COMPILE_TEST
->> +	select PM_GENERIC_DOMAINS_OF
+On 7 June 2016 at 17:00, Ben Dooks <ben.dooks@codethink.co.uk> wrote:
+> Fix the use of 0 instead of NULL to clk_get() call. This stops the
+> following warning:
 >
-
-Actually I had something like below before and changed it before posting.
-
-config ARM_SCPI_POWER_DOMAIN
-	tristate "SCPI power domain driver"
-	depends on ARM_SCPI_PROTOCOL || COMPILE_TEST
-	select PM_GENERIC_DOMAINS if PM
-	select PM_GENERIC_DOMAINS_OF if PM
-
-The idea was to allow compilation of this even if PM was disabled.
-
-
-> That select doesn't work for me and gives:
+> drivers/cpufreq/mvebu-cpufreq.c:73:40: warning: Using plain integer as NULL pointer
 >
-> warning: (ARM_SCPI_POWER_DOMAIN) selects PM_GENERIC_DOMAINS_OF which has unmet direct dependencies (PM_GENERIC_DOMAINS && OF)
->
-> Followed by link errors due to missing symbols.
->
-> I think you need to select PM_GENERIC_DOMAINS as well.
+> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+> ---
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Gregory Clement <gregory.clement@free-electrons.com>
+> Cc: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@lists.codethink.co.uk
+> ---
+>  drivers/cpufreq/mvebu-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-I agree, that's exactly what I had before.
-
-> Or perhaps just instead of, as PM_GENERIC_DOMAINS_OF defaults 'y' and isn't user
-> selectable. From kernel/power/Kconfig ...
->
-
-Makes sense, I am fine with that too.
-
--- 
-Regards,
-Sudeep
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
