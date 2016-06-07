@@ -1,105 +1,108 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: Platform-specific suspend/resume code in drivers
-Date: Tue, 7 Jun 2016 11:06:50 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1606071055010.1604-100000@iolanthe.rowland.org>
-References: <57568C48.709@free.fr>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: Re: [RESEND PATCH v2] power_supply: power_supply_read_temp only if
+ use_cnt > 0
+Date: Tue, 7 Jun 2016 12:45:49 -0400
+Message-ID: <409802ee-74bb-b068-d5ac-85a86e0b9310@nvidia.com>
+References: <1465232216-12625-1-git-send-email-rklein@nvidia.com>
+ <57567654.5060503@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:34308 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932411AbcFGPGv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 11:06:51 -0400
-In-Reply-To: <57568C48.709@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <57567654.5060503@samsung.com>
+Sender: stable-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@ucw.cz>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Sebastian Frias <sf84@laposte.net>, Mark Rutland <mark.rutland@arm.com>
 
-On Tue, 7 Jun 2016, Mason wrote:
-
-> Hello everyone,
+On 6/7/2016 3:23 AM, Krzysztof Kozlowski wrote:
+> On 06/06/2016 06:56 PM, Rhyland Klein wrote:
+>> Add check to power_supply_read_temp() to only use the power_supply
+>> get_property() callback if the use_cnt is > 0. The use_cnt will
+>> be incremented at the end of __power_supply_register, so this will
+>> block to case where get_property can be called before the supply
+>> is fully registered. This fixes the issue show in the stack below:
+>>
+>> [    1.452598] power_supply_read_temp+0x78/0x80
+>> [    1.458680] thermal_zone_get_temp+0x5c/0x11c
+>> [    1.464765] thermal_zone_device_update+0x34/0xb4
+>> [    1.471195] thermal_zone_device_register+0x87c/0x8cc
+>> [    1.477974] __power_supply_register+0x364/0x424
+>> [    1.484317] power_supply_register_no_ws+0x10/0x18
+>> [    1.490833] bq27xxx_battery_setup+0x10c/0x164
+>> [    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
+>> [    1.503435] i2c_device_probe+0x174/0x240
+>> [    1.509172] driver_probe_device+0x1fc/0x29c
+>> [    1.515167] __driver_attach+0xa4/0xa8
+>> [    1.520643] bus_for_each_dev+0x58/0x98
+>> [    1.526204] driver_attach+0x20/0x28
+>> [    1.531505] bus_add_driver+0x1c8/0x22c
+>> [    1.537067] driver_register+0x68/0x108
+>> [    1.542630] i2c_register_driver+0x38/0x7c
+>> [    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
+>> [    1.555321] do_one_initcall+0x38/0x12c
+>> [    1.560886] kernel_init_freeable+0x148/0x1ec
+>> [    1.566972] kernel_init+0x10/0xfc
+>> [    1.572101] ret_from_fork+0x10/0x40
+>>
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
 > 
-> I want to implement system-wide suspend-to-RAM on my platform
-> (an ARM Cortex A9 based SoC).
+> And maybe:
+> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+
+Sure, I wasn't sure which commit this should *fix*, but that makes sense.
+
 > 
-> I'm hoping some of you can clear some of my confusion :-(
 > 
-> AFAIU, what happens to the hardware in the suspended state is
-> very board/platform specific. The SoC may stop some clocks;
-> it may even cut the power to some parts of the chip.
+>> ---
+>> v2:
+>>  - Added cc stable
+>>  - changed return to -EAGAIN in case of use_cnt < 1
+>>  - Removed WARNING
+>>  - return value check added in additional patch:
+>>   "thermal: helpers: Check return value of get_temp"
+>>
+>>  drivers/power/power_supply_core.c | 8 ++++++--
+>>  1 file changed, 6 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+>> index 456987c88baa..bbd80631f31e 100644
+>> --- a/drivers/power/power_supply_core.c
+>> +++ b/drivers/power/power_supply_core.c
+>> @@ -561,11 +561,15 @@ static int power_supply_read_temp(struct thermal_zone_device *tzd,
+>>  {
+>>  	struct power_supply *psy;
+>>  	union power_supply_propval val;
+>> -	int ret;
+>> +	int ret = -EAGAIN;
+>>  
+>>  	WARN_ON(tzd == NULL);
+>> +
+>>  	psy = tzd->devdata;
+>> -	ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
+>> +
+>> +	if (atomic_read(&psy->use_cnt) > 0)
+>> +		ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP,
+>> +					      &val);
 > 
-> AFAIU, once power is cut, the value of internal and visible
-> registers (called "state" or "context" IIUC) is lost.
+> How about using just power_supply_get_property() and convert return
+> value to EAGAIN?
+
+I like that. I'll swap it over to use that.
+
 > 
-> Therefore, each driver is supposed to either
+> Anyway probably such check should be present also on other
+> get_property() calls, like thermal cooling path.
+
+I'll look around and see what else I can find.
+
 > 
-> 1) save context on suspend & restore it on resume, or
-> 2) re-initialize the device on resume (if context is unimportant)
+> Best regards,
+> Krzysztof
 > 
-> Is that correct?
 
-Yes.
+-rhyland
 
-> (Note: Kevin Hilman mentioned using a feature called "regmap" to
-> help in saving/restoring context.)
-> 
-> Documentation/power/devices.txt mentions putting such save/restore
-> code in suspend_late/resume_early callbacks. Is that the preferred
-> solution today?
-
-It depends on the device's requirements.  If you require interrupts to
-be enabled while you do the save/restore then you can't use
-suspend_late/resume_early; you have to use suspend/resume.
-
-> Should these routines be guarded by #ifdef CONFIG_PM or #ifdef CONFIG_SUSPEND ?
-
-CONFIG_SUSPEND.
-
-> Another point of confusion for me is this: drivers are supposed to
-> be shared among platforms, right? So my platform-specific suspend
-> code should be enabled only if my platform is detected at run-time?
-
-Is your device platform-specific?  If it is then the driver is also
-platform-specific, and so no part of the driver will be called at
-runtime unless your platform is detected.
-
-If the device isn't platform-specific then the driver has to work on a 
-bunch of different platforms.  It should be written to be 
-platform-independent as much as possible.
-
-> So this means I need to add in the probe function, for every driver
-> my platform uses:
-> 
->   if (platform == MY_PLATFORM) {
->     ops.suspend = my_suspend;
->     ops.resume  = my_resume;
->   }
-> 
-> Is that correct?
-
-No.  For one thing, you only have to worry about the 
-platform-independent drivers -- you know that the platform-specific 
-ones won't get used unless your platform is present.
-
-For another, the driver should be written in a way that doesn't require
-this sort of code.  The ops pointer (not any of the structure's members
--- a pointer to the structure) should be set by the platform-dependent
-part of the driver that handles initialization.
-
-> While I'm listing the points I don't understand... It seems Linux
-> handles suspend/resume "transparently". I mean the CPU calls all
-> the functions leading to the suspend action, then when the system
-> comes back online, it continues at the next instruction, as if
-> nothing had happened. So the stack and registers need to be exactly
-> in the same state.
-> 
-> But on my system, the firmware expects a return address for *where*
-> to return on resume. Should I pass it the next instruction pointer?
-> The address of the resume function?
-
-You should pass it the address of a function you write, one that will 
-clean things up and jump into the normal system resume code.
-
-Alan Stern
-
+-- 
+nvpublic
