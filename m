@@ -1,81 +1,91 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Platform-specific suspend/resume code in drivers
-Date: Tue, 7 Jun 2016 10:56:40 +0200
-Message-ID: <57568C48.709@free.fr>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH 02/15] thermal: sysfs: lock tz while on access to mode
+ properties
+Date: Tue, 7 Jun 2016 14:38:24 +0530
+Message-ID: <57568F08.2070307@ti.com>
+References: <1464676296-5610-1-git-send-email-edubezval@gmail.com>
+ <1464676296-5610-3-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:45358 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753806AbcFGI5I (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jun 2016 04:57:08 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:48596 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221AbcFGJI3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 05:08:29 -0400
+In-Reply-To: <1464676296-5610-3-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@ucw.cz>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Sebastian Frias <sf84@laposte.net>, Mark Rutland <mark.rutland@arm.com>
+To: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Hello everyone,
+Hi Eduardo,
 
-I want to implement system-wide suspend-to-RAM on my platform
-(an ARM Cortex A9 based SoC).
+On Tuesday 31 May 2016 12:01 PM, Eduardo Valentin wrote:
+> Serialized calls to tz.ops in user facing
+> sysfs handler mode_show()  and mode_store().
 
-I'm hoping some of you can clear some of my confusion :-(
+This seems to be causing a deadlock at boot time during the ending 
+stages of boot:
 
-AFAIU, what happens to the hardware in the suspended state is
-very board/platform specific. The SoC may stop some clocks;
-it may even cut the power to some parts of the chip.
+http://pastebin.ubuntu.com/17085291/
 
-AFAIU, once power is cut, the value of internal and visible
-registers (called "state" or "context" IIUC) is lost.
+It took a while to git bisect on linux-next.
 
-Therefore, each driver is supposed to either
+Seems like you introduced new locking at the sysfs layer which causes 
+this deadlock as the underlying code again tries to acquire the same 
+tz->lock.
 
-1) save context on suspend & restore it on resume, or
-2) re-initialize the device on resume (if context is unimportant)
+Regards,
+Keerthy
 
-Is that correct?
-
-(Note: Kevin Hilman mentioned using a feature called "regmap" to
-help in saving/restoring context.)
-
-Documentation/power/devices.txt mentions putting such save/restore
-code in suspend_late/resume_early callbacks. Is that the preferred
-solution today?
-
-Should these routines be guarded by #ifdef CONFIG_PM or #ifdef CONFIG_SUSPEND ?
-
-Another point of confusion for me is this: drivers are supposed to
-be shared among platforms, right? So my platform-specific suspend
-code should be enabled only if my platform is detected at run-time?
-
-So this means I need to add in the probe function, for every driver
-my platform uses:
-
-  if (platform == MY_PLATFORM) {
-    ops.suspend = my_suspend;
-    ops.resume  = my_resume;
-  }
-
-Is that correct?
-
-
-While I'm listing the points I don't understand... It seems Linux
-handles suspend/resume "transparently". I mean the CPU calls all
-the functions leading to the suspend action, then when the system
-comes back online, it continues at the next instruction, as if
-nothing had happened. So the stack and registers need to be exactly
-in the same state.
-
-But on my system, the firmware expects a return address for *where*
-to return on resume. Should I pass it the next instruction pointer?
-The address of the resume function?
-
-I see arch/arm/kernel/psci_smp.c seems to have the same notion.
-=> drivers/firmware/psci.c
-
-References:
-arch/arm/kernel/suspend.c
-kernel/power/suspend.c
-
-Regards.
+>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> ---
+>   drivers/thermal/thermal_sysfs.c | 13 ++++++++++---
+>   1 file changed, 10 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+> index ee983ca..1db2406 100644
+> --- a/drivers/thermal/thermal_sysfs.c
+> +++ b/drivers/thermal/thermal_sysfs.c
+> @@ -62,7 +62,9 @@ mode_show(struct device *dev, struct device_attribute *attr, char *buf)
+>   	if (!tz->ops->get_mode)
+>   		return -EPERM;
+>
+> +	mutex_lock(&tz->lock);
+>   	result = tz->ops->get_mode(tz, &mode);
+> +	mutex_unlock(&tz->lock);
+>   	if (result)
+>   		return result;
+>
+> @@ -75,17 +77,22 @@ mode_store(struct device *dev, struct device_attribute *attr,
+>   	   const char *buf, size_t count)
+>   {
+>   	struct thermal_zone_device *tz = to_thermal_zone(dev);
+> +	enum thermal_device_mode mode = THERMAL_DEVICE_DISABLED;
+>   	int result;
+>
+>   	if (!tz->ops->set_mode)
+>   		return -EPERM;
+>
+>   	if (!strncmp(buf, "enabled", sizeof("enabled") - 1))
+> -		result = tz->ops->set_mode(tz, THERMAL_DEVICE_ENABLED);
+> +		mode = THERMAL_DEVICE_ENABLED;
+>   	else if (!strncmp(buf, "disabled", sizeof("disabled") - 1))
+> -		result = tz->ops->set_mode(tz, THERMAL_DEVICE_DISABLED);
+> +		mode = THERMAL_DEVICE_DISABLED;
+>   	else
+> -		result = -EINVAL;
+> +		return -EINVAL;
+> +
+> +	mutex_lock(&tz->lock);
+> +	result = tz->ops->set_mode(tz, mode);
+> +	mutex_unlock(&tz->lock);
+>
+>   	if (result)
+>   		return result;
+>
