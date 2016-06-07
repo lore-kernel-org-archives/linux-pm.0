@@ -1,136 +1,49 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH V3 1/2] thermal: max77620: Add DT binding doc for thermal
- driver
-Date: Tue, 7 Jun 2016 13:17:20 +0530
-Message-ID: <57567C08.8060200@ti.com>
-References: <1465213467-23518-1-git-send-email-ldewangan@nvidia.com>
- <575645B8.5090709@ti.com> <57566BDF.3090100@nvidia.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH][RFC] x86, hotplug: Use zero page for monitor when
+ resuming from hibernation
+Date: Tue, 7 Jun 2016 10:03:07 +0200
+Message-ID: <20160607080307.GB13858@amd>
+References: <1465222749-8388-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <57566BDF.3090100@nvidia.com>
+Content-Disposition: inline
+In-Reply-To: <1465222749-8388-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Laxman Dewangan <ldewangan@nvidia.com>, edubezval@gmail.com, rui.zhang@intel.com, robh+dt@kernel.org
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Borislav Petkov <bp@suse.de>, Peter Zijlstra <peterz@infradead.org>, Zhu Guihua <zhugh.fnst@cn.fujitsu.com>, Juergen Gross <jgross@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Mon 2016-06-06 22:19:09, Chen Yu wrote:
+> Stress test from Varun Koyyalagunta reports that, the
+> nonboot CPU would hang occasionally, when resuming from
+> hibernation. Further investigation shows that, the precise
+> phase when nonboot CPU hangs, is the time when the nonboot
+> CPU been woken up incorrectly, and tries to monitor the
+> mwait_ptr for the second time, then an exception is
+> triggered due to illegal vaddr access, say, something like,
+> 'Unable to handler kernel address of 0xffff8800ba800010...'
+> 
+> One of the possible scenarios for this issue is illustrated below,
+> when the boot CPU tries to resume from hibernation:
+> 1. puts the nonboot CPUs offline, so the nonboot CPUs are monitoring
+>    at the address of the task_struct.flags.
+> 2. boot CPU copies pages to their original address, which includes
+>    task_struct.flags, thus wakes up one of the nonboot CPUs.
+> 3. nonboot CPU tries to monitor the task_struct.flags again, but since
+>    the page table for task_struct.flags has been overwritten by
+>    boot CPU, and there is probably a changed across hibernation
+>    (because of inconsistence of e820 memory map), an exception is
+>    triggered.
 
+If memory map changes between suspend and resume, there'll be fun. If
+that's suspected, should we attach md5 sum of e820 to the hibernation
+image?
 
-On Tuesday 07 June 2016 12:08 PM, Laxman Dewangan wrote:
->
-> On Tuesday 07 June 2016 09:25 AM, Keerthy wrote:
->>
->>
->> On Monday 06 June 2016 05:14 PM, Laxman Dewangan wrote:
->>> Maxim Semiconductor MAX77620 supports alarm interrupts when
->>> its die temperature crosses 120C and 140C. These threshold
->>> temperatures are not configurable.
->>>
->>> Add DT binding document to details out the DT property related
->>> to MAX77620 thermal functionality.
->>>
->>> Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
->>> ---
->>>   .../bindings/thermal/thermal-max77620.txt          | 64
->>> ++++++++++++++++++++++
->>>   1 file changed, 64 insertions(+)
->>>   create mode 100644
->>> Documentation/devicetree/bindings/thermal/thermal-max77620.txt
->>>
->>> diff --git
->>> a/Documentation/devicetree/bindings/thermal/thermal-max77620.txt
->>> b/Documentation/devicetree/bindings/thermal/thermal-max77620.txt
->>> new file mode 100644
->>> index 0000000..5a500d5
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/thermal/thermal-max77620.txt
->>> @@ -0,0 +1,64 @@
->>> +Thermal driver for MAX77620 Power management IC from Maxim
->>> Semiconductor.
->>> +
->>> +Maxim Semiconductor MAX77620 supports alarm interrupts when its
->>> +die temperature crosses 120C and 140C. These threshold temperatures
->>> +are not configurable. Device does not provide the real temperature
->>> +of die other than just indicating whether temperature is above or
->>> +below threshold level.
->>> +
->>> +Required properties:
->>> +-------------------
->>> +#thermal-sensor-cells:    Please refer
->>> <devicetree/bindings/thermal/thermal.txt>
->>> +            for more details.
->>> +            The value must be 0.
->>> +
->>> +For more details, please refer generic thermal DT binding document
->>> +<devicetree/bindings/thermal/thermal.txt>.
->>> +
->>> +Please refer <devicetree/bindings/mfd/max77620.txt> for mfd DT binding
->>> +document for the MAX77620.
->>> +
->>> +Example:
->>> +--------
->>> +#include <dt-bindings/mfd/max77620.h>
->>> +#include <dt-bindings/thermal/thermal.h>
->>> +...
->>> +
->>> +i2c@7000d000 {
->>> +    spmic: max77620@3c {
->>> +        compatible = "maxim,max77620";
->>> +        :::::
->>> +        #thermal-sensor-cells = <0>;
->>> +        :::
->>> +    };
->>> +};
->>> +
->>> +cool_dev: cool-dev {
->>> +    compatible = "cooling-dev";
->>> +    #cooling-cells = <2>;
->>> +};
->>> +
->>> +thermal-zones {
->>> +    PMIC-Die {
->>> +        polling-delay = <0>;
->>> +        polling-delay-passive = <0>;
->>> +        thermal-sensors = <&spmic>;
->>> +
->>> +        trips {
->>> +            die_temp_thresh: hot-die {
->>> +                temperature = <120000>;
->>> +                type = "active";
->>> +                hysteresis = <0>;
->>> +            };
->>> +        };
->>
->> What about 140C? Isn't that a critical trip point?
->
-> Yes, it is there and it can be populated/extended on the same way and
-> handled.
->
-> This is just an example.
+I doubt mwait fix is enough to catch everything in that case...
 
-Yes i understand that. My question was more w.r.t different types of 
-critical points. As i can see 120C is an active trip point.
-
-140C will be a critical trip point and system will have to be shutdown 
-right? IMHO you can add that to the example as well since its pretty 
-different than the above active trip point.
-
-- Keerthy
-
->
->
->>
->>> +
->>> +        cooling-maps {
->>> +            map0 {
->>> +                trip = <&die_temp_thresh>;
->>> +                cooling-device = <&cool_dev THERMAL_NO_LIMIT
->>> +                          THERMAL_NO_LIMIT>;
->>> +                contribution = <100>;
->>> +            };
->>> +        };
->>> +    };
->>> +};
->>>
->
+Best regards,
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
