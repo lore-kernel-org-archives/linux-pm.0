@@ -1,52 +1,110 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
- ascending order
-Date: Tue, 7 Jun 2016 09:58:07 +0530
-Message-ID: <20160607042807.GC21466@vireshk-i7>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
- <20160603234854.GF14579@graphite.smuckle.net>
- <20160606035231.GZ16176@vireshk-i7>
- <1649758.V7uyzAJShK@vostro.rjw.lan>
- <CAKohponw8wjFTXA+JyH0A2yXwtF4DxPSVCLcji4=yYV14OC3fw@mail.gmail.com>
- <CAJZ5v0hR+XM3KM1Q9c9_kK8n3QbkNzCr7V73m09-nP8KBKq=3Q@mail.gmail.com>
- <CAKohpoms8AquTkv9ZB0w390eS2WcB2PeeNLVo4UUcwPNskwsBg@mail.gmail.com>
- <CAJZ5v0hG9X_zoHHFBiiZnn5x0rMfukF4RpFMxr73r3C0VzrUHw@mail.gmail.com>
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: Re: [PATCH] cpu/hotplug: handle unbalanced hotplug enable/disable
+Date: Mon, 6 Jun 2016 22:38:38 -0700
+Message-ID: <CAJFUiJhG_ijoPXocCH4noRiNFRhnweGFCG7m9UN+2F8kEn88pg@mail.gmail.com>
+References: <1461214567-3356-1-git-send-email-lianwei.wang@gmail.com>
+ <20160421105042.GI3408@twins.programming.kicks-ass.net> <CAJFUiJih1YMast1S2z4_sfVaLwsPpHyRrS9tAhwTket2KbRDxA@mail.gmail.com>
+ <alpine.DEB.2.11.1604221834430.3941@nanos> <CAJFUiJg61i16JdC4LiQOXmD9Rrg8VDf7BEWs124dFTkbd4Rg-g@mail.gmail.com>
+ <alpine.DEB.2.11.1604251018090.3941@nanos> <CAJFUiJjSvzv65sHApE5Gcp9oWA-j5j7JLb6b0=1eETrA4uQLkQ@mail.gmail.com>
+ <alpine.DEB.2.11.1604271216400.3941@nanos> <CAJFUiJir_zvQDXub=1zwPKJoZm_AnWNpGXuSUiCeHAEwEEUCMQ@mail.gmail.com>
+ <alpine.DEB.2.11.1604280813570.3941@nanos> <CAJFUiJgUDSYE+6MG3riVyFjhhqckeY_3nEqer52tkUOy_yBeOw@mail.gmail.com>
+ <alpine.DEB.2.11.1604290240560.3718@nanos> <CAJFUiJgSDwtpXWPcGu704=5tggOntmyfk=muOtDLRcSUJQc8Rg@mail.gmail.com>
+ <alpine.DEB.2.11.1605021007310.3692@nanos> <CAJFUiJizA=ZxXh5BNj-eL6xsVrNEbTnd0Z5yePPDxAR8YjGibw@mail.gmail.com>
+ <alpine.DEB.2.11.1605051404290.3540@nanos> <CAJFUiJhryV7vHAofFSCc8iEL2FgYQ-qt8xzW3vPj9EQ3di-51g@mail.gmail.com>
+ <alpine.DEB.2.11.1605060908350.3540@nanos> <CAJFUiJgE9tA3hKt=5=-gY85m7j4gTyHTmxASTFeJ1WG3Naz9wA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hG9X_zoHHFBiiZnn5x0rMfukF4RpFMxr73r3C0VzrUHw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Steven Miao <realmz6@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:32817 "EHLO
+	mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbcFGFi7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 01:38:59 -0400
+In-Reply-To: <CAJFUiJgE9tA3hKt=5=-gY85m7j4gTyHTmxASTFeJ1WG3Naz9wA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On 06-06-16, 23:56, Rafael J. Wysocki wrote:
-> Since you are adding new code, you can write it so it doesn't do
-> unnecessary checks from the start.
+On Thu, May 12, 2016 at 1:06 AM, Lianwei Wang <lianwei.wang@gmail.com> wrote:
+> I have come up a patch to make the pm notifier called symmetrically
+> and currently being tested. I will send it out after pass the test.
+>
+> On Fri, May 6, 2016 at 12:18 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>> On Fri, 6 May 2016, Lianwei Wang wrote:
+>>> On Thu, May 5, 2016 at 5:13 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>>> > Can you eventually come up with a coherent explanation of the problem down to
+>>> > the root cause or are we going to play this "move the workaround one step
+>>> > down" game for another 10 rounds?
+>>> >
+>>> Do you agree that any driver can abort the suspend process by
+>>> returning an error or NOTIFY_BAD if it is not ready to suspend?
+>>> I have explain it and I also copied the example code that abort
+>>> suspend by returning an error or NOTIFY_BAD in the pm notifier
+>>> callback function.
+>>
+>> I don't need copied example code which does not tell me what the real problem
+>> is.
+>>
+>>> The cpu_hotplug_disable and cpu_hotplug_enable are called in one of
+>>> the PM notifier callback. And they are called from two difference
+>>> place.
+>>> Below is how it happened:
+>>>   pm_suspend
+>>>     |--enter_state
+>>>         |--suspend_prepare
+>>>             |--pm_notifier_call_chain(PM_SUSPEND_PREPARE)
+>>>             |    |--call_back_1
+>>>             |    |--call_back_..
+>>>             |    |--call_back_n ===> return NOTIFY_BAD to abort call chain and
+>>>             |    |                                suspend process here
+>>>             |    |--cpu_hotplug_pm_callback()
+>>>             |    |   |--cpu_hotplug_disable  =====> remember it is not
+>>> called yet
+>>>             |    |--call_back_..
+>>>             |
+>>>             |--pm_notifier_call_chain(PM_POST_SUSPEND)
+>>>             |    |--call_back_1
+>>>             |    |--call_back_..
+>>>             |    |--call_back_n
+>>>             |    |--cpu_hotplug_pm_callback()
+>>>             |    |   |--cpu_hotplug_enable  =====> Here it is unbalanced called
+>>>             |    |--call_back_..
+>>>             |
+>>> So, keep in mind that for pm notifier call chain, the
+>>> PM_SUSPEND_PREPARE notifier and PM_POST_SUSPEND notifier is not always
+>>> paired called. Sometimes for a driver's pm notifier callback, the
+>>> PM_POST_SUSPEND is called without PM_SUSPEND_PREPARE.
+>>
+>> So that is the real problem: cpu_hotplug_pm_callback(PM_POST_SUSPEND) can be
+>> called w/o a previous call to cpu_hotplug_pm_callback(PM_SUSPEND_PREPARE).
+>>
+>>> > It cannot prevent any unbalanced calls. It mitigates the issue, but that's a
+>>> > different problem.
+>>> It did not migrate the issue. It give a warning message to log the
+>>> unbalanced issue and it also make sure the cpu hotplug continue to
+>>> work well even someone do an unbalanced call. It is a good checking as
+>>> the enable_irq/disable_irq do. There are some other unbalanced
+>>> checking in kernel too. All make sure the kernel has a better
+>>> stability.
+>>
+>> I'm not opposed to do that and I said so several times. But I said as well,
+>> that we do not add this without fixing the problem which made you write that
+>> patch in the first place.
+>>
+>> So we have a proper explanation for the real problem now, but we have no
+>> fix.
+>>
+>> And again: Your patch is NOT a fix. Simply because it will emit a warning
+>> everytime the above happens. And that's wrong because the abort is a
+>> legitimate scenario.
+>>
+>> So please come up with a sensible fix for the suspend abort issue and then we
+>> can add the balance check/fixup to the hotplug_disable/enable() code.
+>>
+>> Thanks,
+>>
+>>         tglx
+>>
+>>
 
-Hmm, I will do all that in this series only now.
-
-> While at it, the "if ((freq < policy->min) || (freq > policy->max))"
-> checks in cpufreq_find_index_l() and cpufreq_find_index_h() don't look
-> good to me, because they very well may cause those function to return
-> -EINVAL even when there's a valid table and that may cause
-> acpi_cpufreq_fast_switch() to do bad things.
-
-Hmm. So, the checks are for sure required here, otherwise we may end up
-returning a frequency which we aren't allowed to. Also note that 'freq' here
-isn't the target-freq, but the entry in the freq-table.
-
-This routine should be returning a valid freq within the ranges specified by
-policy->min/max.
-
-Also note that these routines shall *never* return -EINVAL, otherwise it is
-mostly a bug we are hitting.
-
-We have enough checks in place to make sure that there is at least one valid
-entry in the freq-table which is >= policy->min and <= policy->max.
-
-I will take care of rest of the comments though. Thanks.
-
--- 
-viresh
+I think this is the best solution to fix this unbalanced issue for now.
