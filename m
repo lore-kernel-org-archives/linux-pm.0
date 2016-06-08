@@ -1,86 +1,154 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 1/6] power: Introduce Broadcom kona reset driver
-Date: Wed, 8 Jun 2016 06:59:19 +0200
-Message-ID: <20160608045919.GA28205@earth>
-References: <1463002582-6875-1-git-send-email-chris.brand@broadcom.com>
- <1463002582-6875-2-git-send-email-chris.brand@broadcom.com>
- <57409633.8060605@gmail.com>
- <20160603023853.GD8921@earth>
- <CAMsMSK8ZX=nmJs9d2txRsk2gLa0duy3Qpp805ztYzow=OiTB8w@mail.gmail.com>
- <20160607015017.GA25073@earth>
- <CAMsMSK9X2ME=nyBhD4q8MvdYrqe7h+SmVstD++1OfBn-uvuSHA@mail.gmail.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v3] power_supply: power_supply_read_temp only if use_cnt > 0
+Date: Wed, 08 Jun 2016 08:35:25 +0200
+Message-ID: <5757BCAD.4060101@samsung.com>
+References: <1465331163-16884-1-git-send-email-rklein@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:59946 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932224AbcFHE7Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 8 Jun 2016 00:59:25 -0400
-Content-Disposition: inline
-In-Reply-To: <CAMsMSK9X2ME=nyBhD4q8MvdYrqe7h+SmVstD++1OfBn-uvuSHA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <stable-owner@vger.kernel.org>
+In-reply-to: <1465331163-16884-1-git-send-email-rklein@nvidia.com>
+Sender: stable-owner@vger.kernel.org
+To: Rhyland Klein <rklein@nvidia.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chris Brand <chris.brand@broadcom.com>
-Cc: Florian Fainelli <f.fainelli@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, linux-arm-kernel@lists.infradead.org, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
 
+On 06/07/2016 10:26 PM, Rhyland Klein wrote:
+> Change power_supply_read_temp() to use power_supply_get_property()
+> so that it will check the use_cnt and ensure it is > 0. The use_cnt
+> will be incremented at the end of __power_supply_register, so this
+> will block to case where get_property can be called before the supply
+> is fully registered. This fixes the issue show in the stack below:
+> 
+> [    1.452598] power_supply_read_temp+0x78/0x80
+> [    1.458680] thermal_zone_get_temp+0x5c/0x11c
+> [    1.464765] thermal_zone_device_update+0x34/0xb4
+> [    1.471195] thermal_zone_device_register+0x87c/0x8cc
+> [    1.477974] __power_supply_register+0x364/0x424
+> [    1.484317] power_supply_register_no_ws+0x10/0x18
+> [    1.490833] bq27xxx_battery_setup+0x10c/0x164
+> [    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
+> [    1.503435] i2c_device_probe+0x174/0x240
+> [    1.509172] driver_probe_device+0x1fc/0x29c
+> [    1.515167] __driver_attach+0xa4/0xa8
+> [    1.520643] bus_for_each_dev+0x58/0x98
+> [    1.526204] driver_attach+0x20/0x28
+> [    1.531505] bus_add_driver+0x1c8/0x22c
+> [    1.537067] driver_register+0x68/0x108
+> [    1.542630] i2c_register_driver+0x38/0x7c
+> [    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
+> [    1.555321] do_one_initcall+0x38/0x12c
+> [    1.560886] kernel_init_freeable+0x148/0x1ec
+> [    1.566972] kernel_init+0x10/0xfc
+> [    1.572101] ret_from_fork+0x10/0x40
+> 
+> Also make the same change to ps_get_max_charge_cntl_limit() and
+> ps_get_cur_chrage_cntl_limit() to be safe. Lastly, change the return
+> value of power_supply_get_property() to -EAGAIN from -ENODEV if
+> use_cnt <= 0.
+> 
+> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+> ---
+> v3:
+>  - Changed calls to ->get_property() to use common
+>    power_supply_get_property()
+>  - reworded description, added "Fixes" line
+>  - Changed return value of power_supply_get_property() to -EAGAIN
+> 
+> v2:
+>  - Added cc stable
+>  - changed return to -EAGAIN in case of use_cnt < 1
+>  - Removed WARNING
+>  - return value check added in additional patch:
+>    https://lkml.org/lkml/2016/6/6/706
+> 
+>  drivers/power/power_supply_core.c | 26 ++++++++++++++++----------
+>  1 file changed, 16 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+> index 456987c88baa..cccc630bd68e 100644
+> --- a/drivers/power/power_supply_core.c
+> +++ b/drivers/power/power_supply_core.c
+> @@ -492,7 +492,7 @@ int power_supply_get_property(struct power_supply *psy,
+>  			    union power_supply_propval *val)
+>  {
+>  	if (atomic_read(&psy->use_cnt) <= 0)
+> -		return -ENODEV;
+> +		return -EAGAIN;
 
---T4sUOijqQbZv57TR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Wait, no. I was thinking of changing the return value in
+power_supply_read_temp() if we really want EAGAIN:
+ret = power_supply_get_property(...);
+if (ret)
+	return -EAGAIN;
 
-Hi,
+On the other hand, here both return values look correct... the call can
+be executed too early (not very common) or too late after unbinding the
+driver (also kind of specific).
 
-On Tue, Jun 07, 2016 at 12:40:41PM -0700, Chris Brand wrote:
-> On Mon, Jun 6, 2016 at 6:50 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> > Hi,
-> >
-> > On Mon, Jun 06, 2016 at 09:42:03AM -0700, Chris Brand wrote:
-> >> On Thu, Jun 2, 2016 at 7:38 PM, Sebastian Reichel <sre@kernel.org> wro=
-te:
-> >> > Feel free to queue it via arm-soc with
-> >> >
-> >> > Acked-By: Sebastian Reichel <sre@kernel.org>
-> >> >
-> >> > If I didn't overlook it, it's missing DT documentation, though.
-> >>
-> >> Thanks, Sebastian. Because this is effectively a move of code from
-> >> arch/arm rather than new code, there's already dt documentation in
-> >> Documentation/devicetree/bindings/reset/brcm,bcm21664-resetmgr.txt
-> >
-> > Ok. That directory is usually used for periphal reset controller.
-> > Board/System reset controllers are usually documented in
-> > .../bindings/power/reset (following kernel strucuture
-> > [drivers/reset and drivers/power/reset]).
-> >
-> > -- Sebastian
->=20
-> Would you like me to send a separate patch to move that file ?
+>  
+>  	return psy->desc->get_property(psy, psp, val);
+>  }
+> @@ -564,12 +564,14 @@ static int power_supply_read_temp(struct thermal_zone_device *tzd,
+>  	int ret;
+>  
+>  	WARN_ON(tzd == NULL);
+> +
+>  	psy = tzd->devdata;
+> -	ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
+> +	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
+> +	if (!ret)
+> +		return ret;
 
-That would nice, thanks!
+I think you wanted reverse:
+	if (ret)
 
--- Sebastian
+>  
+>  	/* Convert tenths of degree Celsius to milli degree Celsius. */
+> -	if (!ret)
+> -		*temp = val.intval * 100;
+> +	*temp = val.intval * 100;
+>  
+>  	return ret;
+>  }
+> @@ -612,10 +614,12 @@ static int ps_get_max_charge_cntl_limit(struct thermal_cooling_device *tcd,
+>  	int ret;
+>  
+>  	psy = tcd->devdata;
+> -	ret = psy->desc->get_property(psy,
+> -		POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX, &val);
+> +	ret = power_supply_get_property(psy,
+> +			POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX, &val);
+>  	if (!ret)
+> -		*state = val.intval;
+> +		return ret;
 
---T4sUOijqQbZv57TR
-Content-Type: application/pgp-signature; name="signature.asc"
+Wait, again - why are you inverting the logic of 'ret'?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+BR,
+Krzysztof
 
-iQIcBAEBCgAGBQJXV6YkAAoJENju1/PIO/qa36AP/iGzBYlG9IuGGWLKf3x62XOe
-DfQLTQq28tN1d+/b/BPPMD2podIhCMzRG7dum1rXnu6QveXJFVUQya61myW8f+Pm
-iYx/1XRrEfFHAearAtNCcQYiW3Qiv4Sxv6HOCKR3uumO4nVVSOkLA740J7VCq6FD
-9vd90tmCPXXvJ5qWrfRntT91bVz5k2e8Fn7tO0q//TZ4AhMJ740Mynem8DAkpPdH
-AGBnYPDD2QkhrO8UVvp5CxoJxxq4R08OcfzKoP+WNzeqJee9n5e4SoLJU8AMFzRZ
-sG7j7BGG14+v6ZgjpRnbLkd6N18h7F+eAtwZUtBHC5aFKiqIGKd8TUfNhh/Tspnk
-x5r9GkKm7kw7N27gQTLaiUydmpbjoe4A/TDEPfBN1RdLdLkFDRuRYlWB0LvaRXEE
-54Xce+fEMBKtbcYAGSzVBCxAs09NxSi59aq5r1rZfY/8Y9+yRZ5QLUugys9QlQK9
-NOKhN/x+DcqbAo0+LJQ/to+FG6HpotslozJ4u25S2Di6QFmHNWBTy9zHN32/aWpo
-jrxlYvYcr0KT5xxU4TUSJBmXXzRaKyZItI1spTetq+Ws9K9gjK7iJL7dANVT01mL
-VD6pbKKFmxf4CBsBQTCYQ9TortAkB+dZ7y6F7yKCCy5v49j5N+u4fyGiLQqgFZvA
-gKmH4iTZ3vqlirqxWSXG
-=KnyX
------END PGP SIGNATURE-----
-
---T4sUOijqQbZv57TR--
+> +
+> +	*state = val.intval;
+>  
+>  	return ret;
+>  }
+> @@ -628,10 +632,12 @@ static int ps_get_cur_chrage_cntl_limit(struct thermal_cooling_device *tcd,
+>  	int ret;
+>  
+>  	psy = tcd->devdata;
+> -	ret = psy->desc->get_property(psy,
+> -		POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT, &val);
+> +	ret = power_supply_get_property(psy,
+> +			POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT, &val);
+>  	if (!ret)
+> -		*state = val.intval;
+> +		return ret;
+> +
+> +	*state = val.intval;
+>  
+>  	return ret;
+>  }
+> 
