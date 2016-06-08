@@ -1,73 +1,71 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH] mfd: axp20x: Add a 500ms delay at the end of
- axp20x_power_off
-Date: Wed, 8 Jun 2016 16:42:06 +0100
-Message-ID: <20160608154206.GA14888@dell>
-References: <1465134648-27113-1-git-send-email-hdegoede@redhat.com>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: Platform-specific suspend/resume code in drivers
+Date: Wed, 8 Jun 2016 18:26:30 +0200
+Message-ID: <57584736.7020201@free.fr>
+References: <Pine.LNX.4.44L0.1606071055010.1604-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1465134648-27113-1-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:64346 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757635AbcFHQ1A (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 8 Jun 2016 12:27:00 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1606071055010.1604-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@ucw.cz>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Sebastian Frias <sf84@laposte.net>, Mark Rutland <mark.rutland@arm.com>
 
-On Sun, 05 Jun 2016, Hans de Goede wrote:
+On 07/06/2016 17:06, Alan Stern wrote:
 
-> The kernel expects the power_off function to not return, and if it do=
-es
-> it panics. At a slight delay after the i2c write which turns off powe=
-r
-> through the pmic, to give capacitors etc. some time to drain.
->=20
-> Without this the kernel lives on long enough after the poweroff to
-> print the following on the serial console on my Mele A1000G quad:
->=20
-> [  248.583588] reboot: Power down
-> [  248.600490] Kernel pa
->=20
-> With the delay the start of printing "Kernel panic" is gone.
->=20
-> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-> ---
->  drivers/mfd/axp20x.c | 4 ++++
->  1 file changed, 4 insertions(+)
+> On Tue, 7 Jun 2016, Mason wrote:
+>
+>> Another point of confusion for me is this: drivers are supposed to
+>> be shared among platforms, right? So my platform-specific suspend
+>> code should be enabled only if my platform is detected at run-time?
+> 
+> Is your device platform-specific?  If it is then the driver is also
+> platform-specific, and so no part of the driver will be called at
+> runtime unless your platform is detected.
 
-Applied, thanks.
+Specifically, my platform uses
+drivers/net/ethernet/aurora/nb8800.c  => 3 entries in of_match_table.
+drivers/tty/serial/8250/8250_core.c (CONFIG_SERIAL_8250_RT288X variant)
 
-> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> index 6364dab..fd80b09 100644
-> --- a/drivers/mfd/axp20x.c
-> +++ b/drivers/mfd/axp20x.c
-> @@ -17,6 +17,7 @@
->   */
-> =20
->  #include <linux/err.h>
-> +#include <linux/delay.h>
->  #include <linux/interrupt.h>
->  #include <linux/kernel.h>
->  #include <linux/module.h>
-> @@ -677,6 +678,9 @@ static void axp20x_power_off(void)
-> =20
->  	regmap_write(axp20x_pm_power_off->regmap, AXP20X_OFF_CTRL,
->  		     AXP20X_OFF);
-> +
-> +	/* Give capacitors etc. time to drain to avoid kernel panic msg. */
-> +	msleep(500);
->  }
-> =20
->  int axp20x_match_device(struct axp20x_dev *axp20x)
+and also the XHCI USB3 driver, and AHCI SATA driver, wouldn't I need to
+save the context for these too?
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> If the device isn't platform-specific then the driver has to work on a 
+> bunch of different platforms.  It should be written to be 
+> platform-independent as much as possible.
+> 
+>> So this means I need to add in the probe function, for every driver
+>> my platform uses:
+>>
+>>   if (platform == MY_PLATFORM) {
+>>     ops.suspend = my_suspend;
+>>     ops.resume  = my_resume;
+>>   }
+>>
+>> Is that correct?
+> 
+> No.  For one thing, you only have to worry about the 
+> platform-independent drivers -- you know that the platform-specific 
+> ones won't get used unless your platform is present.
+
+I guess the thermal driver is platform-specific, but most devices
+are third-party IP blocks, so there is a "common" driver upstream.
+But I would need a platform-specific suspend/resume sequence,
+just for my platform.
+
+> For another, the driver should be written in a way that doesn't require
+> this sort of code.  The ops pointer (not any of the structure's members
+> -- a pointer to the structure) should be set by the platform-dependent
+> part of the driver that handles initialization.
+
+I don't understand. If my platform loses context on suspend, then
+I must save/restore it. But this wasteful operation should not be
+imposed on other platforms.
+
+Regards.
