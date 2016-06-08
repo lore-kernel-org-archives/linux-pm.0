@@ -1,183 +1,83 @@
-From: Keerthy <a0393675-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v5.1 3/5] thermal: streamline get_trend callbacks
-Date: Wed, 8 Jun 2016 09:09:56 +0530
-Message-ID: <5757938C.3080706@ti.com>
-References: <1465213489-14898-1-git-send-email-wxt@rock-chips.com>
- <1465304499-14284-1-git-send-email-wxt@rock-chips.com>
- <57579355.9000701@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
+ ascending order
+Date: Wed, 8 Jun 2016 09:18:15 +0530
+Message-ID: <20160608034815.GA20114@vireshk-i7>
+References: <cover.1464960877.git.viresh.kumar@linaro.org>
+ <CAJZ5v0hG9X_zoHHFBiiZnn5x0rMfukF4RpFMxr73r3C0VzrUHw@mail.gmail.com>
+ <20160607042807.GC21466@vireshk-i7>
+ <3409903.LrptLTtVZr@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <57579355.9000701-l0cyMroinI0@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, javi.merino-5wv7dgnIgG8@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, j-keerthy-l0cyMroinI0@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, peter-p08lbbvQ7EI@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, smbarber-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, briannorris-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:33264 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbcFHDsT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 23:48:19 -0400
+Received: by mail-pa0-f47.google.com with SMTP id ec8so46347380pac.0
+        for <linux-pm@vger.kernel.org>; Tue, 07 Jun 2016 20:48:19 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <3409903.LrptLTtVZr@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Steven Miao <realmz6@gmail.com>
 
+On 08-06-16, 02:38, Rafael J. Wysocki wrote:
+> On Tuesday, June 07, 2016 09:58:07 AM Viresh Kumar wrote:
+> > On 06-06-16, 23:56, Rafael J. Wysocki wrote:
+> > > Since you are adding new code, you can write it so it doesn't do
+> > > unnecessary checks from the start.
+> > 
+> > Hmm, I will do all that in this series only now.
+> > 
+> > > While at it, the "if ((freq < policy->min) || (freq > policy->max))"
+> > > checks in cpufreq_find_index_l() and cpufreq_find_index_h() don't look
+> > > good to me, because they very well may cause those function to return
+> > > -EINVAL even when there's a valid table and that may cause
+> > > acpi_cpufreq_fast_switch() to do bad things.
+> > 
+> > Hmm. So, the checks are for sure required here, otherwise we may end up
+> > returning a frequency which we aren't allowed to. Also note that 'freq' here
+> > isn't the target-freq, but the entry in the freq-table.
+> > 
+> > This routine should be returning a valid freq within the ranges specified by
+> > policy->min/max.
+> 
+> Which in principle may not be possible if the range doesn't include any
+> frequency in the table, eg. min == max and between the table entries.
 
+By within ranges I meant, policy->min <= freq <= policy->max, and that's how all
+our checks are. So even if the table will have a single valid frequency, we will
+return that only.
 
-On Wednesday 08 June 2016 09:09 AM, Keerthy wrote:
->
->
-> On Tuesday 07 June 2016 06:31 PM, Caesar Wang wrote:
->> From: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
->>
->> The .get_trend callback in struct thermal_zone_device_ops has
->> the prototype:
->>          int (*get_trend) (struct thermal_zone_device *, int,
->>                            enum thermal_trend *);
->> whereas the .get_trend callback in struct thermal_zone_of_device_ops
->> has:
->>          int (*get_trend)(void *, long *);
->>
->> Streamline both prototypes and add the trip argument to the OF callback
->> aswell and use enum thermal_trend * instead of an integer pointer.
->>
->> While the OF prototype may be the better one, this should be decided at
->> framework level and not on OF level.
->>
->> Signed-off-by: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
->> Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
->> Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
->> Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
->> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> Reviewed-by: Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>
->>
->> ---
->>
->> Changes in v5.1:
->> - As the Keerthy comments, change the get_trend for of_thermal.c
->> - Add the Kee's Reviewed-by, I can remove it if you object it.
->
-> Looks go to me.
+> However, the CPU has to run at *some* frequency, even if there's none in the
+> min/max range.
 
-I meant LGTM.
+I completely agree. But the error will be fired only if there is no frequency
+within ranges we can switch to. And that's a bug somewhere else then.
 
->
->> - I'm assumed that the Eduardo will apply it. I can do it if Eduardo
->> wants
->>    me to resend them.
->>
->> Changes in v5: None
->> Changes in v4: None
->> Changes in v3: None
->> Changes in v2: None
->>
->>   drivers/thermal/of-thermal.c                       | 16 +-------------
->>   drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25
->> +++++++---------------
->>   include/linux/thermal.h                            |  2 +-
->>   3 files changed, 10 insertions(+), 33 deletions(-)
->>
->> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->> index 2d2a06f..20822ab 100644
->> --- a/drivers/thermal/of-thermal.c
->> +++ b/drivers/thermal/of-thermal.c
->> @@ -202,25 +202,11 @@ static int of_thermal_get_trend(struct
->> thermal_zone_device *tz, int trip,
->>                   enum thermal_trend *trend)
->>   {
->>       struct __thermal_zone *data = tz->devdata;
->> -    long dev_trend;
->> -    int r;
->>
->>       if (!data->ops->get_trend)
->>           return -EINVAL;
->>
->> -    r = data->ops->get_trend(data->sensor_data, &dev_trend);
->> -    if (r)
->> -        return r;
->> -
->> -    /* TODO: These intervals might have some thresholds, but in core
->> code */
->> -    if (dev_trend > 0)
->> -        *trend = THERMAL_TREND_RAISING;
->> -    else if (dev_trend < 0)
->> -        *trend = THERMAL_TREND_DROPPING;
->> -    else
->> -        *trend = THERMAL_TREND_STABLE;
->> -
->> -    return 0;
->> +    return data->ops->get_trend(data->sensor_data, trip, trend);
->>   }
->>
->>   static int of_thermal_bind(struct thermal_zone_device *thermal,
->> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->> b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->> index 15c0a9a..4a6757c 100644
->> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
->> @@ -239,7 +239,7 @@ static int ti_thermal_get_trip_temp(struct
->> thermal_zone_device *thermal,
->>       return 0;
->>   }
->>
->> -static int __ti_thermal_get_trend(void *p, long *trend)
->> +static int __ti_thermal_get_trend(void *p, int trip, enum
->> thermal_trend *trend)
->>   {
->>       struct ti_thermal_data *data = p;
->>       struct ti_bandgap *bgp;
->> @@ -252,22 +252,6 @@ static int __ti_thermal_get_trend(void *p, long
->> *trend)
->>       if (ret)
->>           return ret;
->>
->> -    *trend = tr;
->> -
->> -    return 0;
->> -}
->> -
->> -/* Get the temperature trend callback functions for thermal zone */
->> -static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
->> -                int trip, enum thermal_trend *trend)
->> -{
->> -    int ret;
->> -    long tr;
->> -
->> -    ret = __ti_thermal_get_trend(thermal->devdata, &tr);
->> -    if (ret)
->> -        return ret;
->> -
->>       if (tr > 0)
->>           *trend = THERMAL_TREND_RAISING;
->>       else if (tr < 0)
->> @@ -278,6 +262,13 @@ static int ti_thermal_get_trend(struct
->> thermal_zone_device *thermal,
->>       return 0;
->>   }
->>
->> +/* Get the temperature trend callback functions for thermal zone */
->> +static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
->> +                int trip, enum thermal_trend *trend)
->> +{
->> +    return __ti_thermal_get_trend(thermal->devdata, trip, trend);
->> +}
->> +
->>   /* Get critical temperature callback functions for thermal zone */
->>   static int ti_thermal_get_crit_temp(struct thermal_zone_device
->> *thermal,
->>                       int *temp)
->> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->> index 2440b8d..d3ce3a5 100644
->> --- a/include/linux/thermal.h
->> +++ b/include/linux/thermal.h
->> @@ -352,7 +352,7 @@ struct thermal_genl_event {
->>    */
->>   struct thermal_zone_of_device_ops {
->>       int (*get_temp)(void *, int *);
->> -    int (*get_trend)(void *, long *);
->> +    int (*get_trend)(void *, int, enum thermal_trend *);
->>       int (*set_trips)(void *, int, int);
->>       int (*set_emul_temp)(void *, int);
->>       int (*set_trip_temp)(void *, int, int);
->>
+> And if we are sure that there is at least one valid frequency between min
+> and max, please note that target_freq has already been clamped between them,
+
+Yeah, its already clamped by the freq-change helpers in cpufreq core, but others
+may not be doing it properly.
+
+> > Also note that these routines shall *never* return -EINVAL, otherwise it is
+> > mostly a bug we are hitting.
+> 
+> So make them explicitly return a valid frequency every time.
+
+I thought about return Index 0 on such errors, will that be fine ? Anyway the
+new patches have added a WARN() for such cases.
+
+> > We have enough checks in place to make sure that there is at least one valid
+> > entry in the freq-table which is >= policy->min and <= policy->max.
+> 
+> That assuming that the driver will always do the right thing in its ->verify
+> callback.
+
+Yeah.
+
+-- 
+viresh
