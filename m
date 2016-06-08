@@ -1,39 +1,65 @@
-From: Ben Dooks <ben.dooks@codethink.co.uk>
-Subject: Re: [PATCH] cpufreq: mvebu: fix integer to pointer cast
-Date: Wed, 8 Jun 2016 09:59:26 +0100
-Message-ID: <d3c117ea-2dce-63a2-7888-31ee8320a3dd@codethink.co.uk>
-References: <1465299013-32369-1-git-send-email-ben.dooks@codethink.co.uk>
- <5757CF9B.3080402@free.fr>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v1 1/1] PCI / PM: check all fields in
+ pci_set_platform_pm()
+Date: Wed, 08 Jun 2016 12:04:06 +0300
+Message-ID: <1465376646.1767.114.camel@linux.intel.com>
+References: <1465223133-73532-1-git-send-email-andriy.shevchenko@linux.intel.com>
+	 <2053744.vokaYxPbf2@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ducie-dc1.codethink.co.uk ([185.25.241.215]:59544 "EHLO
-	ducie-dc1.codethink.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932551AbcFHI7c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2016 04:59:32 -0400
-In-Reply-To: <5757CF9B.3080402@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <2053744.vokaYxPbf2@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@lists.codethink.co.uk, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 08/06/16 08:56, Mason wrote:
-> On 07/06/2016 13:30, Ben Dooks wrote:
-> 
->> Fix the use of 0 instead of NULL to clk_get() call. This stops the
->> following warning:
->>
->> drivers/cpufreq/mvebu-cpufreq.c:73:40: warning: Using plain integer as NULL pointer
-> 
-> May I ask which compiler/version produced that diagnostic?
+On Wed, 2016-06-08 at 02:17 +0200, Rafael J. Wysocki wrote:
+> On Monday, June 06, 2016 05:25:33 PM Andy Shevchenko wrote:
+> > When assign new PCI platform PM operations check for all mandatory
+> > fields to
+> > prevent NULL pointer dereference.
+> >=20
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+>=20
+> OK in principle, but what's the motivation?
 
-I was running with "make C=2 bzImage" for ARM multi_v7_config
+I didn't investigate the guts of the core code, but I'm about to add ne=
+w
+module which will use these facilities. Since the module is slightly
+based on existing code for older kernels I noticed those new callbacks.
+To prevent potential NULL pointer dereference.
 
-$ sparse --version
-v0.5.0
 
+> > ---
+> > =C2=A0drivers/pci/pci.c | 4 ++--
+> > =C2=A01 file changed, 2 insertions(+), 2 deletions(-)
+> >=20
+> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > index c8b4dbd..badbddc 100644
+> > --- a/drivers/pci/pci.c
+> > +++ b/drivers/pci/pci.c
+> > @@ -530,8 +530,8 @@ static const struct pci_platform_pm_ops
+> > *pci_platform_pm;
+> > =C2=A0
+> > =C2=A0int pci_set_platform_pm(const struct pci_platform_pm_ops *ops=
+)
+> > =C2=A0{
+> > -	if (!ops->is_manageable || !ops->set_state || !ops-
+> > >choose_state
+> > -	=C2=A0=C2=A0=C2=A0=C2=A0|| !ops->sleep_wake)
+> > +	if (!ops->is_manageable || !ops->set_state || !ops-
+> > >choose_state ||
+> > +	=C2=A0=C2=A0=C2=A0=C2=A0!ops->sleep_wake || !ops->run_wake || !op=
+s-
+> > >need_resume)
+> > =C2=A0		return -EINVAL;
+> > =C2=A0	pci_platform_pm =3D ops;
+> > =C2=A0	return 0;
+> >=20
+>=20
 
--- 
-Ben Dooks				http://www.codethink.co.uk/
-Senior Engineer				Codethink - Providing Genius
+--=20
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
