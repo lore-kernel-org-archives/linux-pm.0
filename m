@@ -1,44 +1,51 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: [PATCH] cpufreq: mvebu: fix integer to pointer cast
-Date: Wed, 8 Jun 2016 09:56:11 +0200
-Message-ID: <5757CF9B.3080402@free.fr>
-References: <1465299013-32369-1-git-send-email-ben.dooks@codethink.co.uk>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH] leds: handle suspend/resume in heartbeat trigger
+Date: Wed, 8 Jun 2016 10:28:38 +0200
+Message-ID: <CACRpkdZSAy=MzmBY6kMn7AQ1=N2unjgBVLPPXd34GjWGvRkPaA@mail.gmail.com>
+References: <1464874906-13120-1-git-send-email-linus.walleij@linaro.org> <CAPDyKFp3DnGp2MRQOSOpRHhuD5_2MiA2Wge01W6B43YHpQ8S8Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:51011 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932859AbcFHH4b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 8 Jun 2016 03:56:31 -0400
-In-Reply-To: <1465299013-32369-1-git-send-email-ben.dooks@codethink.co.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFp3DnGp2MRQOSOpRHhuD5_2MiA2Wge01W6B43YHpQ8S8Q@mail.gmail.com>
+Sender: linux-leds-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Jacek Anaszewski <j.anaszewski@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ben Dooks <ben.dooks@codethink.co.uk>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@lists.codethink.co.uk, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 07/06/2016 13:30, Ben Dooks wrote:
+On Fri, Jun 3, 2016 at 11:32 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 
-> Fix the use of 0 instead of NULL to clk_get() call. This stops the
-> following warning:
-> 
-> drivers/cpufreq/mvebu-cpufreq.c:73:40: warning: Using plain integer as NULL pointer
+> I believe most other led-trigger types that should also be "suspended"
+> in the similar fashion as the heartbeat. Perhaps not all, but least
+> some more (timer, cpu, etc).
 
-May I ask which compiler/version produced that diagnostic?
+I'm uncertain about those ... I guess they need separate patches
+at least.
 
+> Okay, my point is, perhaps we should do this in a more generic manner
+> and manage the suspend/resume of triggers in
+> drivers/leds/led-triggers.c?
 
-> -		clk = clk_get(cpu_dev, 0);
-> +		clk = clk_get(cpu_dev, NULL);
+That must be done by someone familar with that code I'm afraid.
+I'm not sure, the other triggers have their own special hooks (like
+the CPU trigger hooking into the CPU suspend/resume ops) so
+I'm worried about breaking them.
 
-Quoting C99 6.3.2.3 Pointers clause 3
+>> +       switch (pm_event) {
+>> +       case PM_SUSPEND_PREPARE:
+>
+> I think you should add:
+> case PM_HIBERNATION_PREPARE:
+> case PM_RESTORE_PREPARE:
+>
+>> +               led_trigger_unregister(&heartbeat_led_trigger);
+>> +               break;
+>> +       case PM_POST_SUSPEND:
+>
+> I think you should add:
+> case PM_POST_HIBERNATION:
+> case PM_POST_RESTORE:
 
-> An integer constant expression with the value 0, or such an expression cast to type
-> void *, is called a null pointer constant. If a null pointer constant is converted to a
-> pointer type, the resulting pointer, called a null pointer, is guaranteed to compare unequal
-> to a pointer to any object or function.
+Fixing this and resending.
 
-In fact, some implementations merely #define NULL 0
-(which, admittedly, creates problems when NULL is used as a parameter
-to variadic functions)
-
-Regards.
+Yours,
+Linus Walleij
