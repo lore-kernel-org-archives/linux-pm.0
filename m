@@ -1,83 +1,86 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 8/9] cpufreq: Keep policy->freq_table sorted in
- ascending order
-Date: Wed, 8 Jun 2016 09:18:15 +0530
-Message-ID: <20160608034815.GA20114@vireshk-i7>
-References: <cover.1464960877.git.viresh.kumar@linaro.org>
- <CAJZ5v0hG9X_zoHHFBiiZnn5x0rMfukF4RpFMxr73r3C0VzrUHw@mail.gmail.com>
- <20160607042807.GC21466@vireshk-i7>
- <3409903.LrptLTtVZr@vostro.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/6] power: Introduce Broadcom kona reset driver
+Date: Wed, 8 Jun 2016 06:59:19 +0200
+Message-ID: <20160608045919.GA28205@earth>
+References: <1463002582-6875-1-git-send-email-chris.brand@broadcom.com>
+ <1463002582-6875-2-git-send-email-chris.brand@broadcom.com>
+ <57409633.8060605@gmail.com>
+ <20160603023853.GD8921@earth>
+ <CAMsMSK8ZX=nmJs9d2txRsk2gLa0duy3Qpp805ztYzow=OiTB8w@mail.gmail.com>
+ <20160607015017.GA25073@earth>
+ <CAMsMSK9X2ME=nyBhD4q8MvdYrqe7h+SmVstD++1OfBn-uvuSHA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:33264 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbcFHDsT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 23:48:19 -0400
-Received: by mail-pa0-f47.google.com with SMTP id ec8so46347380pac.0
-        for <linux-pm@vger.kernel.org>; Tue, 07 Jun 2016 20:48:19 -0700 (PDT)
+Received: from mail.kernel.org ([198.145.29.136]:59946 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932224AbcFHE7Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 8 Jun 2016 00:59:25 -0400
 Content-Disposition: inline
-In-Reply-To: <3409903.LrptLTtVZr@vostro.rjw.lan>
+In-Reply-To: <CAMsMSK9X2ME=nyBhD4q8MvdYrqe7h+SmVstD++1OfBn-uvuSHA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Steven Miao <realmz6@gmail.com>
+To: Chris Brand <chris.brand@broadcom.com>
+Cc: Florian Fainelli <f.fainelli@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, linux-arm-kernel@lists.infradead.org, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
 
-On 08-06-16, 02:38, Rafael J. Wysocki wrote:
-> On Tuesday, June 07, 2016 09:58:07 AM Viresh Kumar wrote:
-> > On 06-06-16, 23:56, Rafael J. Wysocki wrote:
-> > > Since you are adding new code, you can write it so it doesn't do
-> > > unnecessary checks from the start.
-> > 
-> > Hmm, I will do all that in this series only now.
-> > 
-> > > While at it, the "if ((freq < policy->min) || (freq > policy->max))"
-> > > checks in cpufreq_find_index_l() and cpufreq_find_index_h() don't look
-> > > good to me, because they very well may cause those function to return
-> > > -EINVAL even when there's a valid table and that may cause
-> > > acpi_cpufreq_fast_switch() to do bad things.
-> > 
-> > Hmm. So, the checks are for sure required here, otherwise we may end up
-> > returning a frequency which we aren't allowed to. Also note that 'freq' here
-> > isn't the target-freq, but the entry in the freq-table.
-> > 
-> > This routine should be returning a valid freq within the ranges specified by
-> > policy->min/max.
-> 
-> Which in principle may not be possible if the range doesn't include any
-> frequency in the table, eg. min == max and between the table entries.
 
-By within ranges I meant, policy->min <= freq <= policy->max, and that's how all
-our checks are. So even if the table will have a single valid frequency, we will
-return that only.
+--T4sUOijqQbZv57TR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> However, the CPU has to run at *some* frequency, even if there's none in the
-> min/max range.
+Hi,
 
-I completely agree. But the error will be fired only if there is no frequency
-within ranges we can switch to. And that's a bug somewhere else then.
+On Tue, Jun 07, 2016 at 12:40:41PM -0700, Chris Brand wrote:
+> On Mon, Jun 6, 2016 at 6:50 PM, Sebastian Reichel <sre@kernel.org> wrote:
+> > Hi,
+> >
+> > On Mon, Jun 06, 2016 at 09:42:03AM -0700, Chris Brand wrote:
+> >> On Thu, Jun 2, 2016 at 7:38 PM, Sebastian Reichel <sre@kernel.org> wro=
+te:
+> >> > Feel free to queue it via arm-soc with
+> >> >
+> >> > Acked-By: Sebastian Reichel <sre@kernel.org>
+> >> >
+> >> > If I didn't overlook it, it's missing DT documentation, though.
+> >>
+> >> Thanks, Sebastian. Because this is effectively a move of code from
+> >> arch/arm rather than new code, there's already dt documentation in
+> >> Documentation/devicetree/bindings/reset/brcm,bcm21664-resetmgr.txt
+> >
+> > Ok. That directory is usually used for periphal reset controller.
+> > Board/System reset controllers are usually documented in
+> > .../bindings/power/reset (following kernel strucuture
+> > [drivers/reset and drivers/power/reset]).
+> >
+> > -- Sebastian
+>=20
+> Would you like me to send a separate patch to move that file ?
 
-> And if we are sure that there is at least one valid frequency between min
-> and max, please note that target_freq has already been clamped between them,
+That would nice, thanks!
 
-Yeah, its already clamped by the freq-change helpers in cpufreq core, but others
-may not be doing it properly.
+-- Sebastian
 
-> > Also note that these routines shall *never* return -EINVAL, otherwise it is
-> > mostly a bug we are hitting.
-> 
-> So make them explicitly return a valid frequency every time.
+--T4sUOijqQbZv57TR
+Content-Type: application/pgp-signature; name="signature.asc"
 
-I thought about return Index 0 on such errors, will that be fine ? Anyway the
-new patches have added a WARN() for such cases.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-> > We have enough checks in place to make sure that there is at least one valid
-> > entry in the freq-table which is >= policy->min and <= policy->max.
-> 
-> That assuming that the driver will always do the right thing in its ->verify
-> callback.
+iQIcBAEBCgAGBQJXV6YkAAoJENju1/PIO/qa36AP/iGzBYlG9IuGGWLKf3x62XOe
+DfQLTQq28tN1d+/b/BPPMD2podIhCMzRG7dum1rXnu6QveXJFVUQya61myW8f+Pm
+iYx/1XRrEfFHAearAtNCcQYiW3Qiv4Sxv6HOCKR3uumO4nVVSOkLA740J7VCq6FD
+9vd90tmCPXXvJ5qWrfRntT91bVz5k2e8Fn7tO0q//TZ4AhMJ740Mynem8DAkpPdH
+AGBnYPDD2QkhrO8UVvp5CxoJxxq4R08OcfzKoP+WNzeqJee9n5e4SoLJU8AMFzRZ
+sG7j7BGG14+v6ZgjpRnbLkd6N18h7F+eAtwZUtBHC5aFKiqIGKd8TUfNhh/Tspnk
+x5r9GkKm7kw7N27gQTLaiUydmpbjoe4A/TDEPfBN1RdLdLkFDRuRYlWB0LvaRXEE
+54Xce+fEMBKtbcYAGSzVBCxAs09NxSi59aq5r1rZfY/8Y9+yRZ5QLUugys9QlQK9
+NOKhN/x+DcqbAo0+LJQ/to+FG6HpotslozJ4u25S2Di6QFmHNWBTy9zHN32/aWpo
+jrxlYvYcr0KT5xxU4TUSJBmXXzRaKyZItI1spTetq+Ws9K9gjK7iJL7dANVT01mL
+VD6pbKKFmxf4CBsBQTCYQ9TortAkB+dZ7y6F7yKCCy5v49j5N+u4fyGiLQqgFZvA
+gKmH4iTZ3vqlirqxWSXG
+=KnyX
+-----END PGP SIGNATURE-----
 
-Yeah.
-
--- 
-viresh
+--T4sUOijqQbZv57TR--
