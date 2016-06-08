@@ -1,79 +1,157 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [GIT PULL arm] Use _rcuidle tracepoints to allow tracing from
- idle
-Date: Wed, 8 Jun 2016 08:16:04 -0700
-Message-ID: <20160608151604.GA4104@linux.vnet.ibm.com>
-References: <20160526162606.GA20023@linux.vnet.ibm.com>
- <20160526162727.GA21784@linux.vnet.ibm.com>
- <20160608133350.GA18357@gmail.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: Re: [PATCH v3] power_supply: power_supply_read_temp only if use_cnt >
+ 0
+Date: Wed, 8 Jun 2016 11:26:26 -0400
+Message-ID: <d5767cde-3275-36d7-08b8-335d7c4c8e3b@nvidia.com>
+References: <1465331163-16884-1-git-send-email-rklein@nvidia.com>
+ <5757BCAD.4060101@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160608133350.GA18357@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Russell King <linux@armlinux.org.uk>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux@roeck-us.net, tony@atomide.com, linux@arm.linux.org.uk, rostedt@goodmis.org, rjw@rjwysocki.net, pavel@ucw.cz, mturquette@baylibre.com, sboyd@codeaurora.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:5968 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757481AbcFHP0i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2016 11:26:38 -0400
+In-Reply-To: <5757BCAD.4060101@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, stable@vger.kernel.org
 
-On Wed, Jun 08, 2016 at 03:33:50PM +0200, Ingo Molnar wrote:
+On 6/8/2016 2:35 AM, Krzysztof Kozlowski wrote:
+> On 06/07/2016 10:26 PM, Rhyland Klein wrote:
+>> Change power_supply_read_temp() to use power_supply_get_property()
+>> so that it will check the use_cnt and ensure it is > 0. The use_cnt
+>> will be incremented at the end of __power_supply_register, so this
+>> will block to case where get_property can be called before the supply
+>> is fully registered. This fixes the issue show in the stack below:
+>>
+>> [    1.452598] power_supply_read_temp+0x78/0x80
+>> [    1.458680] thermal_zone_get_temp+0x5c/0x11c
+>> [    1.464765] thermal_zone_device_update+0x34/0xb4
+>> [    1.471195] thermal_zone_device_register+0x87c/0x8cc
+>> [    1.477974] __power_supply_register+0x364/0x424
+>> [    1.484317] power_supply_register_no_ws+0x10/0x18
+>> [    1.490833] bq27xxx_battery_setup+0x10c/0x164
+>> [    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
+>> [    1.503435] i2c_device_probe+0x174/0x240
+>> [    1.509172] driver_probe_device+0x1fc/0x29c
+>> [    1.515167] __driver_attach+0xa4/0xa8
+>> [    1.520643] bus_for_each_dev+0x58/0x98
+>> [    1.526204] driver_attach+0x20/0x28
+>> [    1.531505] bus_add_driver+0x1c8/0x22c
+>> [    1.537067] driver_register+0x68/0x108
+>> [    1.542630] i2c_register_driver+0x38/0x7c
+>> [    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
+>> [    1.555321] do_one_initcall+0x38/0x12c
+>> [    1.560886] kernel_init_freeable+0x148/0x1ec
+>> [    1.566972] kernel_init+0x10/0xfc
+>> [    1.572101] ret_from_fork+0x10/0x40
+>>
+>> Also make the same change to ps_get_max_charge_cntl_limit() and
+>> ps_get_cur_chrage_cntl_limit() to be safe. Lastly, change the return
+>> value of power_supply_get_property() to -EAGAIN from -ENODEV if
+>> use_cnt <= 0.
+>>
+>> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+>> ---
+>> v3:
+>>  - Changed calls to ->get_property() to use common
+>>    power_supply_get_property()
+>>  - reworded description, added "Fixes" line
+>>  - Changed return value of power_supply_get_property() to -EAGAIN
+>>
+>> v2:
+>>  - Added cc stable
+>>  - changed return to -EAGAIN in case of use_cnt < 1
+>>  - Removed WARNING
+>>  - return value check added in additional patch:
+>>    https://lkml.org/lkml/2016/6/6/706
+>>
+>>  drivers/power/power_supply_core.c | 26 ++++++++++++++++----------
+>>  1 file changed, 16 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+>> index 456987c88baa..cccc630bd68e 100644
+>> --- a/drivers/power/power_supply_core.c
+>> +++ b/drivers/power/power_supply_core.c
+>> @@ -492,7 +492,7 @@ int power_supply_get_property(struct power_supply *psy,
+>>  			    union power_supply_propval *val)
+>>  {
+>>  	if (atomic_read(&psy->use_cnt) <= 0)
+>> -		return -ENODEV;
+>> +		return -EAGAIN;
 > 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> Wait, no. I was thinking of changing the return value in
+> power_supply_read_temp() if we really want EAGAIN:
+> ret = power_supply_get_property(...);
+> if (ret)
+> 	return -EAGAIN;
 > 
-> > On Thu, May 26, 2016 at 09:26:06AM -0700, Paul E. McKenney wrote:
-> > > Hello, Ingo,
-> > > 
-> > > This series changes a number of event tracepoints to their _rcuidle() form
-> > > to allow use from idle without lockdep-RCU complaints, a straightforward
-> > > modification that has been successfully applied many times.  These splats
-> > > were found in testing by Guenter Roeck and Tony Lindgren, who have
-> > > both successfully tested the full series.  Tony asked that I carry these
-> > > in -rcu:
-> > > 
-> > > 	http://lkml.kernel.org/g/20160426213630.GV5995@atomide.com
-> > > 
-> > > These have been posted to LKML, CCing relevant maintainers, who have
-> > > not objected to the proposed changes:
-> > > 
-> > > 	http://lkml.kernel.org/g/20160516184844.GA20144@linux.vnet.ibm.com
-> > > 
-> > > These maintainers are also CCed on this pull request.
-> > > 
-> > > They have also been subjected to 0day Test Robot and -next testing.
-> > 
-> > And this time actually including the pull request...  :-/
-> > 
-> > 							Thanx, Paul
-> > 
-> > These changes are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git for-mingo
-> > 
-> > for you to fetch changes up to e7c38dda94b23965a3eb46ef4656bb8cb921933d:
-> > 
-> >   arm: Use _rcuidle suffix to allow clk_core_enable() to used from idle (2016-05-18 11:55:29 -0700)
-> > 
-> > ----------------------------------------------------------------
-> > Paul E. McKenney (6):
-> >       arm: Use _rcuidle tracepoint to allow use from idle
-> >       arm: Use _rcuidle for suspend/resume tracepoints
-> >       arm: Add _rcuidle tracepoints to allow clk_core_disable() use from idle
-> >       arm: Add _rcuidle suffix to allow rpm_idle() use from idle
-> >       arm: Add _rcuidle suffix to allow rpm_resume() to be called from idle
-> >       arm: Use _rcuidle suffix to allow clk_core_enable() to used from idle
-> > 
-> >  arch/arm/kernel/smp.c             |  2 +-
-> >  arch/arm/mach-omap2/powerdomain.c |  9 +++++----
-> >  drivers/base/power/runtime.c      | 14 +++++++-------
-> >  drivers/clk/clk.c                 |  8 ++++----
-> >  4 files changed, 17 insertions(+), 16 deletions(-)
-> 
-> Just wondering, wouldn't it be better for Russell to pull/apply, as it appears to 
-> be a mostly ARM patch-set?
+> On the other hand, here both return values look correct... the call can
+> be executed too early (not very common) or too late after unbinding the
+> driver (also kind of specific).
 
-Fair enough -- I can always repost the patches to their respective
-maintainers if you are in any way uncomfortable taking them.  The patches
-do not depend on each other.
+I did have it that way, but it seemed a little weird to me, since both
+situations use the same condition (use_cnt <= 0) to trigger. I don't
+think we can differentiate, unless I missed something, so I'm not sure
+if it makes sense to override the return value after calling
+power_supply_get_property() or not.
 
-							Thanx, Paul
+If I overrode the return value in get_temp, then assuming it was called
+after unbinding, it would return the wrong thing (-EAGAIN). If we want
+to support both EAGAIN and ENODEV, then maybe we need to use some
+additional check to know which to return from power_supply_get_property().
+
+> 
+>>  
+>>  	return psy->desc->get_property(psy, psp, val);
+>>  }
+>> @@ -564,12 +564,14 @@ static int power_supply_read_temp(struct thermal_zone_device *tzd,
+>>  	int ret;
+>>  
+>>  	WARN_ON(tzd == NULL);
+>> +
+>>  	psy = tzd->devdata;
+>> -	ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
+>> +	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
+>> +	if (!ret)
+>> +		return ret;
+> 
+> I think you wanted reverse:
+> 	if (ret)
+> 
+
+Indeed.
+
+>>  
+>>  	/* Convert tenths of degree Celsius to milli degree Celsius. */
+>> -	if (!ret)
+>> -		*temp = val.intval * 100;
+>> +	*temp = val.intval * 100;
+>>  
+>>  	return ret;
+>>  }
+>> @@ -612,10 +614,12 @@ static int ps_get_max_charge_cntl_limit(struct thermal_cooling_device *tcd,
+>>  	int ret;
+>>  
+>>  	psy = tcd->devdata;
+>> -	ret = psy->desc->get_property(psy,
+>> -		POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX, &val);
+>> +	ret = power_supply_get_property(psy,
+>> +			POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX, &val);
+>>  	if (!ret)
+>> -		*state = val.intval;
+>> +		return ret;
+> 
+> Wait, again - why are you inverting the logic of 'ret'?a
+> 
+
+copy/paste error repeated... <sigh>
+
+-rhyland
+-- 
+nvpublic
