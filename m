@@ -1,34 +1,53 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC][PATCH 2/5] driver core: Functional dependencies tracking support
-Date: Wed, 8 Jun 2016 20:12:34 +0200
-Message-ID: <CAJZ5v0ipDXrgx3=cFuxzofkXLMzErETuqSSnf8ugo5jnB0ynNA@mail.gmail.com>
-References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <2576341.476ZsjkPgF@vostro.rjw.lan>
- <1816598.SuJvGrVRJK@vostro.rjw.lan> <20160608124844.GH7510@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160608124844.GH7510@sirena.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
+From: Ben Dooks <ben.dooks@codethink.co.uk>
+Subject: [PATCH] power: vexpress: make dev_attr_active static
+Date: Wed,  8 Jun 2016 19:26:31 +0100
+Message-ID: <1465410391-29475-1-git-send-email-ben.dooks@codethink.co.uk>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 82-70-136-246.dsl.in-addr.zen.co.uk ([82.70.136.246]:53764 "EHLO
+	rainbowdash.ducie.codethink.co.uk" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1161461AbcFHS0l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2016 14:26:41 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@lists.codethink.co.uk
+Cc: Ben Dooks <ben.dooks@codethink.co.uk>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wed, Jun 8, 2016 at 2:48 PM, Mark Brown <broonie@kernel.org> wrote:
-> On Thu, Jan 14, 2016 at 02:54:17AM +0100, Rafael J. Wysocki wrote:
->
->> + * A side effect of the link creation is re-ordering of dpm_list and the
->> + * devices_kset list by moving the consumer device and all devices depending
->> + * on it to the ends of those lists.
->
-> How does this work in the scenario where a device instantiates a child
-> device then uses services that child provides to complete the
-> initializiation?  We do have that scenario currently for on chip
-> regulators to allow external regulators to be used.
+The dev_attr_active is not exported or defined to be used
+outside the driver, so make it static to avoid the following
+warning:
 
-I'm not sure I understand the question correctly, but it that is the
-parent and a child, we don't need an extra link entity to represent
-that dependency, as parent-child dependencies are taken by the current
-code into account already.
+drivers/power/reset/vexpress-poweroff.c:77:1: warning: symbol 'dev_attr_active' was not declared. Should it be static?
 
-This series was supposed to help with dependencies that aren't of the
-parent-child type.
+Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+---
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+---
+ drivers/power/reset/vexpress-poweroff.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/reset/vexpress-poweroff.c b/drivers/power/reset/vexpress-poweroff.c
+index 6a9bf70..102f95a 100644
+--- a/drivers/power/reset/vexpress-poweroff.c
++++ b/drivers/power/reset/vexpress-poweroff.c
+@@ -74,8 +74,8 @@ static ssize_t vexpress_reset_active_store(struct device *dev,
+ 	return err ? err : count;
+ }
+ 
+-DEVICE_ATTR(active, S_IRUGO | S_IWUSR, vexpress_reset_active_show,
+-		vexpress_reset_active_store);
++static DEVICE_ATTR(active, S_IRUGO | S_IWUSR, vexpress_reset_active_show,
++		   vexpress_reset_active_store);
+ 
+ 
+ enum vexpress_reset_func { FUNC_RESET, FUNC_SHUTDOWN, FUNC_REBOOT };
+-- 
+2.8.1
+
