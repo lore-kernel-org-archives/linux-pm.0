@@ -1,84 +1,166 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] cpufreq: intel_pstate: Fix set_policy interface for no_turbo
-Date: Wed, 8 Jun 2016 03:24:32 +0200
-Message-ID: <CAJZ5v0iUvAxH6kJYuKO0Ty7WiHtTPMUSOoMYFsLR26evvu_jCQ@mail.gmail.com>
-References: <1465346333-3104-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1465346333-3104-2-git-send-email-srinivas.pandruvada@linux.intel.com>
- <CAJZ5v0g+9HAhfcdB30J16OugfbyvmS7eQokB9V0UCOjBuLDW-A@mail.gmail.com> <CAJZ5v0gWgiur3J4kkCd4SNATke+7Qbxk14EJkmoXQm0kvaQuqA@mail.gmail.com>
+From: Keerthy <a0393675-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v5.1 3/5] thermal: streamline get_trend callbacks
+Date: Wed, 8 Jun 2016 09:09:01 +0530
+Message-ID: <57579355.9000701@ti.com>
+References: <1465213489-14898-1-git-send-email-wxt@rock-chips.com>
+ <1465304499-14284-1-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:36239 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986AbcFHBYf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 21:24:35 -0400
-Received: by mail-wm0-f65.google.com with SMTP id m124so27023086wme.3
-        for <linux-pm@vger.kernel.org>; Tue, 07 Jun 2016 18:24:34 -0700 (PDT)
-In-Reply-To: <CAJZ5v0gWgiur3J4kkCd4SNATke+7Qbxk14EJkmoXQm0kvaQuqA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1465304499-14284-1-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, javi.merino-5wv7dgnIgG8@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, j-keerthy-l0cyMroinI0@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, peter-p08lbbvQ7EI@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, smbarber-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, briannorris-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Jun 8, 2016 at 3:10 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Wed, Jun 8, 2016 at 3:06 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Wed, Jun 8, 2016 at 2:38 AM, Srinivas Pandruvada
->> <srinivas.pandruvada@linux.intel.com> wrote:
->>> When turbo is disabled, the set_policy interface is broken.
->>> For example, when turbo is disabled and
->>> cpuinfo.max = 2900000 (full max turbo frequency)
->>> Setting the limits results in frequency less than settings:
->>> Set 1000000 KHz results in 0700000 KHz
->>> Set 1500000 KHz results in 1100000 KHz
->>> Set 2000000 KHz results in  1500000 KHz
->>>
->>> This is because limits->max_perf fraction is calculated using max
->>> turbo frequency as the reference, but when the max P-State is
->>> capped in the function intel_pstate_get_min_max, the reference
->>> is not the max turbo P-State. This results in reducing max
->>> P-State.
->>>
->>> One option is to always use max turbo as reference for calculating
->>> limits. But this will not be correct. By definition the intel_pstate
->>> sysfs limits, shows percentage of available performance. So when
->>> BIOS has disabled turbo, the available performance is max non turbo.
->>> So the max_perf_pct should still show 100%.
->>>
->>> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
->>> ---
->>>  drivers/cpufreq/intel_pstate.c | 10 ++++++++--
->>>  1 file changed, 8 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->>> index 724b905..2116666 100644
->>> --- a/drivers/cpufreq/intel_pstate.c
->>> +++ b/drivers/cpufreq/intel_pstate.c
->>> @@ -1561,8 +1561,14 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
->>>
->>>         /* cpuinfo and default policy values */
->>>         policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu->pstate.scaling;
->>> -       policy->cpuinfo.max_freq =
->>> -               cpu->pstate.turbo_pstate * cpu->pstate.scaling;
->>> +       update_turbo_state();
->>> +       if (limits->turbo_disabled)
->>> +               policy->cpuinfo.max_freq =
->>> +                       cpu->pstate.max_pstate * cpu->pstate.scaling;
->>> +       else
->>> +               policy->cpuinfo.max_freq =
->>> +                       cpu->pstate.turbo_pstate * cpu->pstate.scaling;
->>> +
->>>         intel_pstate_init_acpi_perf_limits(policy);
->>>         policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
->>>         cpumask_set_cpu(policy->cpu, policy->cpus);
->>> --
->>
->> BTW, I would write this slightly differently.  What about:
->>
->> policy->cpuinfo.max_freq = limits->turbo_disabled ?
->> cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
->> policy->cpuinfo.max_freq *= cpu->pstate.scaling;
+
+
+On Tuesday 07 June 2016 06:31 PM, Caesar Wang wrote:
+> From: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 >
-> But of course without GMail-induced whitespace breakage.
+> The .get_trend callback in struct thermal_zone_device_ops has
+> the prototype:
+>          int (*get_trend) (struct thermal_zone_device *, int,
+>                            enum thermal_trend *);
+> whereas the .get_trend callback in struct thermal_zone_of_device_ops
+> has:
+>          int (*get_trend)(void *, long *);
+>
+> Streamline both prototypes and add the trip argument to the OF callback
+> aswell and use enum thermal_trend * instead of an integer pointer.
+>
+> While the OF prototype may be the better one, this should be decided at
+> framework level and not on OF level.
+>
+> Signed-off-by: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+> Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+> Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Reviewed-by: Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>
+>
+> ---
+>
+> Changes in v5.1:
+> - As the Keerthy comments, change the get_trend for of_thermal.c
+> - Add the Kee's Reviewed-by, I can remove it if you object it.
 
-So I went on and changed it this way before applying.  Please check
-the result in bleeding-edge.
+Looks go to me.
+
+> - I'm assumed that the Eduardo will apply it. I can do it if Eduardo wants
+>    me to resend them.
+>
+> Changes in v5: None
+> Changes in v4: None
+> Changes in v3: None
+> Changes in v2: None
+>
+>   drivers/thermal/of-thermal.c                       | 16 +-------------
+>   drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 +++++++---------------
+>   include/linux/thermal.h                            |  2 +-
+>   3 files changed, 10 insertions(+), 33 deletions(-)
+>
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index 2d2a06f..20822ab 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -202,25 +202,11 @@ static int of_thermal_get_trend(struct thermal_zone_device *tz, int trip,
+>   				enum thermal_trend *trend)
+>   {
+>   	struct __thermal_zone *data = tz->devdata;
+> -	long dev_trend;
+> -	int r;
+>
+>   	if (!data->ops->get_trend)
+>   		return -EINVAL;
+>
+> -	r = data->ops->get_trend(data->sensor_data, &dev_trend);
+> -	if (r)
+> -		return r;
+> -
+> -	/* TODO: These intervals might have some thresholds, but in core code */
+> -	if (dev_trend > 0)
+> -		*trend = THERMAL_TREND_RAISING;
+> -	else if (dev_trend < 0)
+> -		*trend = THERMAL_TREND_DROPPING;
+> -	else
+> -		*trend = THERMAL_TREND_STABLE;
+> -
+> -	return 0;
+> +	return data->ops->get_trend(data->sensor_data, trip, trend);
+>   }
+>
+>   static int of_thermal_bind(struct thermal_zone_device *thermal,
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> index 15c0a9a..4a6757c 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> @@ -239,7 +239,7 @@ static int ti_thermal_get_trip_temp(struct thermal_zone_device *thermal,
+>   	return 0;
+>   }
+>
+> -static int __ti_thermal_get_trend(void *p, long *trend)
+> +static int __ti_thermal_get_trend(void *p, int trip, enum thermal_trend *trend)
+>   {
+>   	struct ti_thermal_data *data = p;
+>   	struct ti_bandgap *bgp;
+> @@ -252,22 +252,6 @@ static int __ti_thermal_get_trend(void *p, long *trend)
+>   	if (ret)
+>   		return ret;
+>
+> -	*trend = tr;
+> -
+> -	return 0;
+> -}
+> -
+> -/* Get the temperature trend callback functions for thermal zone */
+> -static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
+> -				int trip, enum thermal_trend *trend)
+> -{
+> -	int ret;
+> -	long tr;
+> -
+> -	ret = __ti_thermal_get_trend(thermal->devdata, &tr);
+> -	if (ret)
+> -		return ret;
+> -
+>   	if (tr > 0)
+>   		*trend = THERMAL_TREND_RAISING;
+>   	else if (tr < 0)
+> @@ -278,6 +262,13 @@ static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
+>   	return 0;
+>   }
+>
+> +/* Get the temperature trend callback functions for thermal zone */
+> +static int ti_thermal_get_trend(struct thermal_zone_device *thermal,
+> +				int trip, enum thermal_trend *trend)
+> +{
+> +	return __ti_thermal_get_trend(thermal->devdata, trip, trend);
+> +}
+> +
+>   /* Get critical temperature callback functions for thermal zone */
+>   static int ti_thermal_get_crit_temp(struct thermal_zone_device *thermal,
+>   				    int *temp)
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 2440b8d..d3ce3a5 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -352,7 +352,7 @@ struct thermal_genl_event {
+>    */
+>   struct thermal_zone_of_device_ops {
+>   	int (*get_temp)(void *, int *);
+> -	int (*get_trend)(void *, long *);
+> +	int (*get_trend)(void *, int, enum thermal_trend *);
+>   	int (*set_trips)(void *, int, int);
+>   	int (*set_emul_temp)(void *, int);
+>   	int (*set_trip_temp)(void *, int, int);
+>
