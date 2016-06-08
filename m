@@ -1,65 +1,121 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v1 1/1] PCI / PM: check all fields in
- pci_set_platform_pm()
-Date: Wed, 08 Jun 2016 12:04:06 +0300
-Message-ID: <1465376646.1767.114.camel@linux.intel.com>
-References: <1465223133-73532-1-git-send-email-andriy.shevchenko@linux.intel.com>
-	 <2053744.vokaYxPbf2@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] leds: handle suspend/resume in heartbeat trigger
+Date: Wed, 8 Jun 2016 11:09:24 +0200
+Message-ID: <CAPDyKFp5Kph01r3omDa-4=qhH2Bb8GzLik8rear7yV_MjPu5eg@mail.gmail.com>
+References: <1465374588-8453-1-git-send-email-linus.walleij@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <2053744.vokaYxPbf2@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pm@vger.kernel.org
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <1465374588-8453-1-git-send-email-linus.walleij@linaro.org>
+Sender: linux-leds-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Jacek Anaszewski <j.anaszewski@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2016-06-08 at 02:17 +0200, Rafael J. Wysocki wrote:
-> On Monday, June 06, 2016 05:25:33 PM Andy Shevchenko wrote:
-> > When assign new PCI platform PM operations check for all mandatory
-> > fields to
-> > prevent NULL pointer dereference.
-> >=20
-> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
->=20
-> OK in principle, but what's the motivation?
+On 8 June 2016 at 10:29, Linus Walleij <linus.walleij@linaro.org> wrote:
+> The following phenomena was observed: when suspending the
+> system, sometimes the heartbeat LED was left on, glowing and
+> wasting power while the rest of the system is asleep, also
+> disturbing power dissapation measures on the odd suspend
+> cycle when it's left on.
+>
+> Clearly this is not how we want the heartbeat trigger to
+> work: it should turn off and leave the LED off during
+> system suspend.
+>
+> This removes the heartbeat trigger when preparing suspend and
+> restores it during resume. The trigger code will make sure all
+> LEDs are left in OFF state after removing the trigger, and
+> will re-enable the trigger on all LEDs after resuming.
+>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 
-I didn't investigate the guts of the core code, but I'm about to add ne=
-w
-module which will use these facilities. Since the module is slightly
-based on existing code for older kernels I noticed those new callbacks.
-To prevent potential NULL pointer dereference.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
+Kind regards
+Uffe
 
-> > ---
-> > =C2=A0drivers/pci/pci.c | 4 ++--
-> > =C2=A01 file changed, 2 insertions(+), 2 deletions(-)
-> >=20
-> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> > index c8b4dbd..badbddc 100644
-> > --- a/drivers/pci/pci.c
-> > +++ b/drivers/pci/pci.c
-> > @@ -530,8 +530,8 @@ static const struct pci_platform_pm_ops
-> > *pci_platform_pm;
-> > =C2=A0
-> > =C2=A0int pci_set_platform_pm(const struct pci_platform_pm_ops *ops=
-)
-> > =C2=A0{
-> > -	if (!ops->is_manageable || !ops->set_state || !ops-
-> > >choose_state
-> > -	=C2=A0=C2=A0=C2=A0=C2=A0|| !ops->sleep_wake)
-> > +	if (!ops->is_manageable || !ops->set_state || !ops-
-> > >choose_state ||
-> > +	=C2=A0=C2=A0=C2=A0=C2=A0!ops->sleep_wake || !ops->run_wake || !op=
-s-
-> > >need_resume)
-> > =C2=A0		return -EINVAL;
-> > =C2=A0	pci_platform_pm =3D ops;
-> > =C2=A0	return 0;
-> >=20
->=20
-
---=20
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+> ---
+> ChangeLog v1->v2:
+> - Also register/unregister the trigger on PM_RESTORE and
+>   PM_HIBERNATION notifications.
+> - Jacek if you already applied v1 please apply this instead,
+>   or tell me and I can make an incremental patch.
+> ---
+>  drivers/leds/trigger/ledtrig-heartbeat.c | 31 +++++++++++++++++++++++++++++++
+>  1 file changed, 31 insertions(+)
+>
+> diff --git a/drivers/leds/trigger/ledtrig-heartbeat.c b/drivers/leds/trigger/ledtrig-heartbeat.c
+> index 410c39c62dc7..c9f386213e9e 100644
+> --- a/drivers/leds/trigger/ledtrig-heartbeat.c
+> +++ b/drivers/leds/trigger/ledtrig-heartbeat.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/sched.h>
+>  #include <linux/leds.h>
+>  #include <linux/reboot.h>
+> +#include <linux/suspend.h>
+>  #include "../leds.h"
+>
+>  static int panic_heartbeats;
+> @@ -154,6 +155,30 @@ static struct led_trigger heartbeat_led_trigger = {
+>         .deactivate = heartbeat_trig_deactivate,
+>  };
+>
+> +static int heartbeat_pm_notifier(struct notifier_block *nb,
+> +                                unsigned long pm_event, void *unused)
+> +{
+> +       int rc;
+> +
+> +       switch (pm_event) {
+> +       case PM_SUSPEND_PREPARE:
+> +       case PM_HIBERNATION_PREPARE:
+> +       case PM_RESTORE_PREPARE:
+> +               led_trigger_unregister(&heartbeat_led_trigger);
+> +               break;
+> +       case PM_POST_SUSPEND:
+> +       case PM_POST_HIBERNATION:
+> +       case PM_POST_RESTORE:
+> +               rc = led_trigger_register(&heartbeat_led_trigger);
+> +               if (rc)
+> +                       pr_err("could not re-register heartbeat trigger\n");
+> +               break;
+> +       default:
+> +               break;
+> +       }
+> +       return NOTIFY_DONE;
+> +}
+> +
+>  static int heartbeat_reboot_notifier(struct notifier_block *nb,
+>                                      unsigned long code, void *unused)
+>  {
+> @@ -168,6 +193,10 @@ static int heartbeat_panic_notifier(struct notifier_block *nb,
+>         return NOTIFY_DONE;
+>  }
+>
+> +static struct notifier_block heartbeat_pm_nb = {
+> +       .notifier_call = heartbeat_pm_notifier,
+> +};
+> +
+>  static struct notifier_block heartbeat_reboot_nb = {
+>         .notifier_call = heartbeat_reboot_notifier,
+>  };
+> @@ -184,12 +213,14 @@ static int __init heartbeat_trig_init(void)
+>                 atomic_notifier_chain_register(&panic_notifier_list,
+>                                                &heartbeat_panic_nb);
+>                 register_reboot_notifier(&heartbeat_reboot_nb);
+> +               register_pm_notifier(&heartbeat_pm_nb);
+>         }
+>         return rc;
+>  }
+>
+>  static void __exit heartbeat_trig_exit(void)
+>  {
+> +       unregister_pm_notifier(&heartbeat_pm_nb);
+>         unregister_reboot_notifier(&heartbeat_reboot_nb);
+>         atomic_notifier_chain_unregister(&panic_notifier_list,
+>                                          &heartbeat_panic_nb);
+> --
+> 2.4.11
+>
