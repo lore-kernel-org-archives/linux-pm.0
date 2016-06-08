@@ -1,159 +1,64 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Platform-specific suspend/resume code in drivers
-Date: Wed, 8 Jun 2016 23:26:24 +0200
-Message-ID: <57588D80.4010502@free.fr>
-References: <Pine.LNX.4.44L0.1606081340050.2191-100000@iolanthe.rowland.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFC][PATCH 2/5] driver core: Functional dependencies tracking
+ support
+Date: Wed, 8 Jun 2016 23:24:02 +0100
+Message-ID: <20160608222402.GQ7510@sirena.org.uk>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan>
+ <2576341.476ZsjkPgF@vostro.rjw.lan>
+ <1816598.SuJvGrVRJK@vostro.rjw.lan>
+ <20160608124844.GH7510@sirena.org.uk>
+ <CAJZ5v0ipDXrgx3=cFuxzofkXLMzErETuqSSnf8ugo5jnB0ynNA@mail.gmail.com>
+ <20160608183535.GP7510@sirena.org.uk>
+ <CAJZ5v0hmkX53N519oATHMx7V2uUbiZYWcQ=Fvc1TW__Kw2nbhA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="fTD7sGci972winw4"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp4-g21.free.fr ([212.27.42.4]:54814 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751477AbcFHV05 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 8 Jun 2016 17:26:57 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1606081340050.2191-100000@iolanthe.rowland.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:51594 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422636AbcFHWYa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2016 18:24:30 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hmkX53N519oATHMx7V2uUbiZYWcQ=Fvc1TW__Kw2nbhA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@ucw.cz>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Sebastian Frias <sf84@laposte.net>, Mark Rutland <mark.rutland@arm.com>
-
-On 08/06/2016 19:45, Alan Stern wrote:
-
-> On Wed, 8 Jun 2016, Mason wrote:
-> 
->> On 07/06/2016 17:06, Alan Stern wrote:
->>
->>> On Tue, 7 Jun 2016, Mason wrote:
->>>
->>>> Another point of confusion for me is this: drivers are supposed to
->>>> be shared among platforms, right? So my platform-specific suspend
->>>> code should be enabled only if my platform is detected at run-time?
->>>
->>> Is your device platform-specific?  If it is then the driver is also
->>> platform-specific, and so no part of the driver will be called at
->>> runtime unless your platform is detected.
->>
->> Specifically, my platform uses
->> drivers/net/ethernet/aurora/nb8800.c  => 3 entries in of_match_table.
->> drivers/tty/serial/8250/8250_core.c (CONFIG_SERIAL_8250_RT288X variant)
->>
->> and also the XHCI USB3 driver, and AHCI SATA driver, wouldn't I need to
->> save the context for these too?
-> 
-> Those drivers should already take care of their own contexts.  Is 
-> there anything platform-specific you need to do in addition?
-
-Take the eth driver, for example:
-
-  http://lxr.free-electrons.com/source/drivers/net/ethernet/aurora/nb8800.c
-
-It doesn't have any suspend/resume callbacks.
-
-Would that make the suspend request fail?
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
 
-> Consider xHCI as an example case -- what more does it need?
+--fTD7sGci972winw4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Lemme see...
+On Wed, Jun 08, 2016 at 10:48:23PM +0200, Rafael J. Wysocki wrote:
+> On Wed, Jun 8, 2016 at 8:35 PM, Mark Brown <broonie@kernel.org> wrote:
 
-http://lxr.free-electrons.com/source/drivers/usb/host/xhci-plat.c
+> > A parent (especially a MFD) may create a child to fulfil a role that
+> > could also be filled by a non-parent device, if that happens then
+> > depending on what ends up creating these links (it's not 100% clear from
+> > this series) it's likely that the link creation will also end up
+> > registering a dependency unless we do something special.  Now I think
+> > about it this does depend on how we create the children though, it's
+> > less likely to be an issue if the dependencies are created by firmware
+> > code.
 
-#ifdef CONFIG_PM_SLEEP
-static int xhci_plat_suspend(struct device *dev)
-{
-	struct usb_hcd	*hcd = dev_get_drvdata(dev);
-	struct xhci_hcd	*xhci = hcd_to_xhci(hcd);
+> If that's a non-child device, I would expect it to exist beforehand
 
-	/*
-	 * xhci_suspend() needs `do_wakeup` to know whether host is allowed
-	 * to do wakeup during suspend. Since xhci_plat_suspend is currently
-	 * only designed for system suspend, device_may_wakeup() is enough
-	 * to dertermine whether host is allowed to do wakeup. Need to
-	 * reconsider this when xhci_plat_suspend enlarges its scope, e.g.,
-	 * also applies to runtime suspend.
-	 */
-	return xhci_suspend(xhci, device_may_wakeup(dev));
-}
+No, it's an actual child.
 
-static int xhci_plat_resume(struct device *dev)
-{
-	struct usb_hcd	*hcd = dev_get_drvdata(dev);
-	struct xhci_hcd	*xhci = hcd_to_xhci(hcd);
+--fTD7sGci972winw4
+Content-Type: application/pgp-signature; name="signature.asc"
 
-	return xhci_resume(xhci, 0);
-}
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-static const struct dev_pm_ops xhci_plat_pm_ops = {
-	SET_SYSTEM_SLEEP_PM_OPS(xhci_plat_suspend, xhci_plat_resume)
-};
-#define DEV_PM_OPS	(&xhci_plat_pm_ops)
+iQEcBAEBCAAGBQJXWJsAAAoJECTWi3JdVIfQ8bgH/1HZg7hwOBXyYUJOZ4+eOSL6
+P3CV86Og7IuUcrHJ0JQBXL5uJmb000hgbFKv9AGhw4HLHyivn5iAU1SOgEMt2D4g
+wPXSxYytGNGU9a2Q6i+2a/I0AAsLwIKSzAtvmRbTjVVbtMyfbmTUeyKE6+JFhzz7
+z6q+iEEnb7OMmPlgDUbalKn6/lh1mnnqym/+52hLMfSgGRa/8fbhO2juRcj9GP9i
+WgGTffpP9VFLBIKBPcBJAUdqeq/Cw/IXB29tYqygCeW4u1Jf/oqGTCV6k9g6tyao
+n79y4JyHQAGw0miYDcmr2IrknRjCOF6SC2CFiOXGdgq2z86dObec/Am/xHgEs6E=
+=Q9u4
+-----END PGP SIGNATURE-----
 
-
-(Side note: they guarded the code with CONFIG_PM_SLEEP, rather
-than CONFIG_SUSPEND. Why?)
-
-Looking at xhci_suspend, it does call xhci_save_registers()
-so perhaps this specific driver already saves the context
-required to resume correctly after a full power-down.
-
->>> If the device isn't platform-specific then the driver has to work on a 
->>> bunch of different platforms.  It should be written to be 
->>> platform-independent as much as possible.
->>>
->>>> So this means I need to add in the probe function, for every driver
->>>> my platform uses:
->>>>
->>>>   if (platform == MY_PLATFORM) {
->>>>     ops.suspend = my_suspend;
->>>>     ops.resume  = my_resume;
->>>>   }
->>>>
->>>> Is that correct?
->>>
->>> No.  For one thing, you only have to worry about the 
->>> platform-independent drivers -- you know that the platform-specific 
->>> ones won't get used unless your platform is present.
->>
->> I guess the thermal driver is platform-specific, but most devices
->> are third-party IP blocks, so there is a "common" driver upstream.
->> But I would need a platform-specific suspend/resume sequence,
->> just for my platform.
-> 
-> Why?  What sort of platform-specific things do you need to do?
-
-Save the value of the MMIO registers which will be lost when the
-chip is powered down.
-
-
->>> For another, the driver should be written in a way that doesn't require
->>> this sort of code.  The ops pointer (not any of the structure's members
->>> -- a pointer to the structure) should be set by the platform-dependent
->>> part of the driver that handles initialization.
->>
->> I don't understand. If my platform loses context on suspend, then
->> I must save/restore it. But this wasteful operation should not be
->> imposed on other platforms.
-> 
-> More details, please.
-
-I'm confused. I must have misunderstood something fundamental, and my
-explanations come out wrong. Let me try again.
-
-On this SoC (as most SoCs) device registers are mapped into memory.
-When this system is suspended, it was decided that we would
-1) put the RAM in self-refresh mode
-2) power everything down, but the RAM
-
-So the contents of RAM are preserved, but the contents of the device
-registers will be lost. (And this context loss is platform specific;
-other SoCs may decide to keep some devices powered.) Anyway, when
-the chip is powered back up, some/most device registers need to be
-restored to their pre-suspend value.
-
-For example, the reset value for a CTRL register might default to
-DISABLE_DEVICE, but obviously the probe function would have toggled
-that to ENABLE_DEVICE.
-
-Am I not making sense?
-
-Regards.
+--fTD7sGci972winw4--
