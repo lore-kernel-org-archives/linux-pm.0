@@ -1,61 +1,78 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC][PATCH 3/5] PM core: Make async suspend/resume of devices
- use device links
-Date: Wed, 8 Jun 2016 13:59:06 +0100
-Message-ID: <20160608125906.GI7510@sirena.org.uk>
-References: <1623682.7KVblAB3KQ@vostro.rjw.lan>
- <2576341.476ZsjkPgF@vostro.rjw.lan>
- <2464004.VfRsJaNrp3@vostro.rjw.lan>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [GIT PULL arm] Use _rcuidle tracepoints to allow tracing from
+ idle
+Date: Wed, 8 Jun 2016 15:33:50 +0200
+Message-ID: <20160608133350.GA18357@gmail.com>
+References: <20160526162606.GA20023@linux.vnet.ibm.com>
+ <20160526162727.GA21784@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="McTFpSeH7KqpdXA3"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:50448 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755990AbcFHM7P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2016 08:59:15 -0400
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:33568 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161648AbcFHNdz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2016 09:33:55 -0400
 Content-Disposition: inline
-In-Reply-To: <2464004.VfRsJaNrp3@vostro.rjw.lan>
+In-Reply-To: <20160526162727.GA21784@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Russell King <linux@armlinux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux@roeck-us.net, tony@atomide.com, linux@arm.linux.org.uk, rostedt@goodmis.org, rjw@rjwysocki.net, pavel@ucw.cz, mturquette@baylibre.com, sboyd@codeaurora.org
 
 
---McTFpSeH7KqpdXA3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 
-On Thu, Jan 14, 2016 at 02:55:25AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> Make the device suspend/resume part of the core system
-> suspend/resume code use device links to ensure that supplier
-> and consumer devices will be suspended and resumed in the right
-> order in case of async suspend/resume.
->=20
-> The idea, roughly, is to use dpm_wait() to wait for all consumers
-> before a supplier device suspend and to wait for all suppliers
-> before a consumer device resume.
+> On Thu, May 26, 2016 at 09:26:06AM -0700, Paul E. McKenney wrote:
+> > Hello, Ingo,
+> > 
+> > This series changes a number of event tracepoints to their _rcuidle() form
+> > to allow use from idle without lockdep-RCU complaints, a straightforward
+> > modification that has been successfully applied many times.  These splats
+> > were found in testing by Guenter Roeck and Tony Lindgren, who have
+> > both successfully tested the full series.  Tony asked that I carry these
+> > in -rcu:
+> > 
+> > 	http://lkml.kernel.org/g/20160426213630.GV5995@atomide.com
+> > 
+> > These have been posted to LKML, CCing relevant maintainers, who have
+> > not objected to the proposed changes:
+> > 
+> > 	http://lkml.kernel.org/g/20160516184844.GA20144@linux.vnet.ibm.com
+> > 
+> > These maintainers are also CCed on this pull request.
+> > 
+> > They have also been subjected to 0day Test Robot and -next testing.
+> 
+> And this time actually including the pull request...  :-/
+> 
+> 							Thanx, Paul
+> 
+> These changes are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git for-mingo
+> 
+> for you to fetch changes up to e7c38dda94b23965a3eb46ef4656bb8cb921933d:
+> 
+>   arm: Use _rcuidle suffix to allow clk_core_enable() to used from idle (2016-05-18 11:55:29 -0700)
+> 
+> ----------------------------------------------------------------
+> Paul E. McKenney (6):
+>       arm: Use _rcuidle tracepoint to allow use from idle
+>       arm: Use _rcuidle for suspend/resume tracepoints
+>       arm: Add _rcuidle tracepoints to allow clk_core_disable() use from idle
+>       arm: Add _rcuidle suffix to allow rpm_idle() use from idle
+>       arm: Add _rcuidle suffix to allow rpm_resume() to be called from idle
+>       arm: Use _rcuidle suffix to allow clk_core_enable() to used from idle
+> 
+>  arch/arm/kernel/smp.c             |  2 +-
+>  arch/arm/mach-omap2/powerdomain.c |  9 +++++----
+>  drivers/base/power/runtime.c      | 14 +++++++-------
+>  drivers/clk/clk.c                 |  8 ++++----
+>  4 files changed, 17 insertions(+), 16 deletions(-)
 
-Same question with parents using their child - I'm thinking that perhaps
-we can arrange for the struct device of the parent to get used and
-ignore the child device outside of the MFD.
+Just wondering, wouldn't it be better for Russell to pull/apply, as it appears to 
+be a mostly ARM patch-set?
 
---McTFpSeH7KqpdXA3
-Content-Type: application/pgp-signature; name="signature.asc"
+Thanks,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXWBaZAAoJECTWi3JdVIfQEGYH/j6MFFPQyPLBOnQriO67Efak
-iawGRQBaBIRCwB8UYjLRpOJkpZCPNDdTBKjsdHkDrMR7E+mGXNtuCD6uiKKT6kh/
-csQZY8KU1x/xZLN+2o8lxHp7M7RAkVE8Jys4ktrS0kwLBb+X/8FR6HSZgC7f7c7I
-1yL7CWckgH4qNI7WdaJhjlW9qQ09uVh6ydv2mzMdS8AJXiMMcR4je0WerU2HtTvF
-hJ0mYQ4rAS1lot6IcHyNFic+ki1MGhmepdbX+b8e37DqistcRbu2bQjq19fbzJCM
-iQnNImo0dMyCi143M3e9aLZ5mvOteI+I2D332CN35WbxmbC84xa8WX48XSezgBk=
-=xbpo
------END PGP SIGNATURE-----
-
---McTFpSeH7KqpdXA3--
+	Ingo
