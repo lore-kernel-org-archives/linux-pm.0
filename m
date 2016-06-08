@@ -1,45 +1,48 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v1 1/1] PCI / PM: enforce type casting for pci_power_t
-Date: Wed, 08 Jun 2016 02:16:58 +0200
-Message-ID: <1652791.MK3RD42PLf@vostro.rjw.lan>
-References: <1465321713-146178-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH v1 1/1] PCI / PM: check all fields in pci_set_platform_pm()
+Date: Wed, 08 Jun 2016 02:17:42 +0200
+Message-ID: <2053744.vokaYxPbf2@vostro.rjw.lan>
+References: <1465223133-73532-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1465321713-146178-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-pci-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47736 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753659AbcFHANm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jun 2016 20:13:42 -0400
+In-Reply-To: <1465223133-73532-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 07, 2016 08:48:33 PM Andy Shevchenko wrote:
-> When cast pci_power_t type of variables a static analizer tool complains on
-> that.
-> 
-> 	include/linux/pci.h:119:37: warning: cast from restricted pci_power_t
-> 
-> Enforce type casting to make static analizer happy.
+On Monday, June 06, 2016 05:25:33 PM Andy Shevchenko wrote:
+> When assign new PCI platform PM operations check for all mandatory fields to
+> prevent NULL pointer dereference.
 > 
 > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-ACK
+OK in principle, but what's the motivation?
 
 > ---
->  include/linux/pci.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/pci/pci.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index b67e4df..8d74834 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -116,7 +116,7 @@ extern const char *pci_power_names[];
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index c8b4dbd..badbddc 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -530,8 +530,8 @@ static const struct pci_platform_pm_ops *pci_platform_pm;
 >  
->  static inline const char *pci_power_name(pci_power_t state)
+>  int pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
 >  {
-> -	return pci_power_names[1 + (int) state];
-> +	return pci_power_names[1 + (__force int) state];
->  }
->  
->  #define PCI_PM_D2_DELAY		200
+> -	if (!ops->is_manageable || !ops->set_state || !ops->choose_state
+> -	    || !ops->sleep_wake)
+> +	if (!ops->is_manageable || !ops->set_state || !ops->choose_state ||
+> +	    !ops->sleep_wake || !ops->run_wake || !ops->need_resume)
+>  		return -EINVAL;
+>  	pci_platform_pm = ops;
+>  	return 0;
 > 
+
