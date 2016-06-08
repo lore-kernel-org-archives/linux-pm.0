@@ -1,71 +1,165 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Platform-specific suspend/resume code in drivers
-Date: Wed, 8 Jun 2016 18:26:30 +0200
-Message-ID: <57584736.7020201@free.fr>
-References: <Pine.LNX.4.44L0.1606071055010.1604-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v6 00/11]  powerpc/powernv/cpuidle: Add support for POWER ISA v3 idle states
+Date: Wed,  8 Jun 2016 11:54:20 -0500
+Message-ID: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:64346 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757635AbcFHQ1A (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 8 Jun 2016 12:27:00 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1606071055010.1604-100000@iolanthe.rowland.org>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:55550 "EHLO
+	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753404AbcFHQzB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2016 12:55:01 -0400
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u58GsX2M136390
+	for <linux-pm@vger.kernel.org>; Wed, 8 Jun 2016 12:55:00 -0400
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+	by mx0a-001b2d01.pphosted.com with ESMTP id 23e9m3x6e2-1
+	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 08 Jun 2016 12:55:00 -0400
+Received: from localhost
+	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
+	Wed, 8 Jun 2016 10:54:58 -0600
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@ucw.cz>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Sebastian Frias <sf84@laposte.net>, Mark Rutland <mark.rutland@arm.com>
+To: mpe@ellerman.id.au
+Cc: benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 
-On 07/06/2016 17:06, Alan Stern wrote:
+POWER ISA v3 defines a new idle processor core mechanism. In summary,
+ a) new instruction named stop is added. This instruction replaces
+	instructions like nap, sleep, rvwinkle.
+ b) new per thread SPR named PSSCR is added which controls the behavior
+	of stop instruction. 
+		
+PSSCR has following key fields
+	Bits 0:3  - Power-Saving Level Status. This field indicates the
+	lowest power-saving state the thread entered since stop
+	instruction was last executed.
+		
+	Bit 42 - Enable State Loss                          
+	0 - No state is lost irrespective of other fields  
+	1 - Allows state loss
+		
+	Bits 44:47 - Power-Saving Level Limit      
+	This limits the power-saving level that can be entered into.
+		
+	Bits 60:63 - Requested Level              
+	Used to specify which power-saving level must be entered on
+	executing stop instruction
+		
+Stop idle states and their properties like name, latency, target
+residency, psscr value are exposed via device tree.
 
-> On Tue, 7 Jun 2016, Mason wrote:
->
->> Another point of confusion for me is this: drivers are supposed to
->> be shared among platforms, right? So my platform-specific suspend
->> code should be enabled only if my platform is detected at run-time?
-> 
-> Is your device platform-specific?  If it is then the driver is also
-> platform-specific, and so no part of the driver will be called at
-> runtime unless your platform is detected.
+This patch series adds support for this new mechanism.
 
-Specifically, my platform uses
-drivers/net/ethernet/aurora/nb8800.c  => 3 entries in of_match_table.
-drivers/tty/serial/8250/8250_core.c (CONFIG_SERIAL_8250_RT288X variant)
+Patches 1-7 are cleanups and code movement.
+Patch 8 adds platform specific support for stop and psscr handling.
+Patch 9 is a minor cleanup in cpuidle driver.
+Patch 10 adds cpuidle driver support.
+Patch 11 makes offlined cpu use deepest stop state.
 
-and also the XHCI USB3 driver, and AHCI SATA driver, wouldn't I need to
-save the context for these too?
+Note: Documentation for the device tree bindings is posted here-
+http://patchwork.ozlabs.org/patch/629125/
 
-> If the device isn't platform-specific then the driver has to work on a 
-> bunch of different platforms.  It should be written to be 
-> platform-independent as much as possible.
-> 
->> So this means I need to add in the probe function, for every driver
->> my platform uses:
->>
->>   if (platform == MY_PLATFORM) {
->>     ops.suspend = my_suspend;
->>     ops.resume  = my_resume;
->>   }
->>
->> Is that correct?
-> 
-> No.  For one thing, you only have to worry about the 
-> platform-independent drivers -- you know that the platform-specific 
-> ones won't get used unless your platform is present.
 
-I guess the thermal driver is platform-specific, but most devices
-are third-party IP blocks, so there is a "common" driver upstream.
-But I would need a platform-specific suspend/resume sequence,
-just for my platform.
+Changes in v6
+=============
+ - Restore new POWER ISA v3 SPRS when waking up from deep idle
 
-> For another, the driver should be written in a way that doesn't require
-> this sort of code.  The ops pointer (not any of the structure's members
-> -- a pointer to the structure) should be set by the platform-dependent
-> part of the driver that handles initialization.
+Changes in v5
+=============
+ - Use generic cpuidle constant CPUIDLE_NAME_LEN
+ - Fix return code handling for of_property_read_string_array
+ - Use DT flags to determine if are using stop instruction, instead of
+   cpu_has_feature
+ - Removed uncessary cast with names
+ - &stop_loop -> stop_loop
+ - Added POWERNV_THRESHOLD_LATENCY_NS to filter out idle states with high latency
 
-I don't understand. If my platform loses context on suspend, then
-I must save/restore it. But this wasteful operation should not be
-imposed on other platforms.
+Changes in v4
+=============
+ - Added a patch to use PNV_THREAD_WINKLE macro while requesting for winkle
+ - Moved power7_powersave_common rename to more appropriate patch
+ - renaming power7_enter_nap_mode to pnv_enter_arch207_idle_mode
+ - Added PSSCR layout to Patch 7's commit message
+ - Improved / Fixed comments
+ - Fixed whitespace error in paca.h
+ - Using MAX_POSSIBLE_STOP_STATE macro instead of hardcoding 0xF has
+   max possible stop state
 
-Regards.
+Changes in v3
+=============
+ - Rebased on powerpc-next
+ - Dropping patch 1 since we are not adding a new file for P9 idle support
+ - Improved comments in multiple places
+ - Moved GET_PACA from power7_restore_hyp_resource to System Reset
+ - Instead of moving few functions from idle_power7 to idle_power_common,
+   renaming idle_power7.S to idle_power_common.S
+ - Moved HSTATE_HWTHREAD_STATE updation to power_powersave_common
+ - Dropped earlier patch 5 which moved few macros from idle_power_common to
+   asm/cpuidle.h. 
+ - Added a patch to rename reusable power7_* idle functions to pnv_*
+ - Added new patch that creates abstraction for saving SPRs before
+   entering deep idle states
+ - Instead of introducing new file idle_power_stop.S, P9 idle support
+   is added to idle_power_common.S using CPU_FTR sections.
+ - Fixed r4 reg clobbering in power_stop0
+
+Changes in v2
+=============
+ - Rebased on v4.6-rc6
+ - Using CPU_FTR_ARCH_300 bit instead of CPU_FTR_STOP_INST
+
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+
+Shreyas B. Prabhu (11):
+  powerpc/powernv: Use PNV_THREAD_WINKLE macro while requesting for
+    winkle
+  powerpc/kvm: make hypervisor state restore a function
+  powerpc/powernv: Rename idle_power7.S to idle_power_common.S
+  powerpc/powernv: Rename reusable idle functions to hardware agnostic
+    names
+  powerpc/powernv: Make pnv_powersave_common more generic
+  powerpc/powernv: abstraction for saving SPRs before entering deep idle
+    states
+  powerpc/powernv: set power_save func after the idle states are
+    initialized
+  powerpc/powernv: Add platform support for stop instruction
+  cpuidle/powernv: Use CPUIDLE_STATE_MAX instead of
+    MAX_POWERNV_IDLE_STATES
+  cpuidle/powernv: Add support for POWER ISA v3 idle states
+  powerpc/powernv: Use deepest stop state when cpu is offlined
+
+ arch/powerpc/include/asm/cpuidle.h        |   2 +
+ arch/powerpc/include/asm/kvm_book3s_asm.h |   2 +-
+ arch/powerpc/include/asm/machdep.h        |   1 +
+ arch/powerpc/include/asm/opal-api.h       |  11 +-
+ arch/powerpc/include/asm/paca.h           |   2 +
+ arch/powerpc/include/asm/ppc-opcode.h     |   4 +
+ arch/powerpc/include/asm/processor.h      |   1 +
+ arch/powerpc/include/asm/reg.h            |  14 +
+ arch/powerpc/kernel/Makefile              |   2 +-
+ arch/powerpc/kernel/asm-offsets.c         |   2 +
+ arch/powerpc/kernel/exceptions-64s.S      |  30 +-
+ arch/powerpc/kernel/idle_power7.S         | 515 ----------------------
+ arch/powerpc/kernel/idle_power_common.S   | 682 ++++++++++++++++++++++++++++++
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |   4 +-
+ arch/powerpc/platforms/powernv/idle.c     |  98 ++++-
+ arch/powerpc/platforms/powernv/powernv.h  |   1 +
+ arch/powerpc/platforms/powernv/setup.c    |   2 +-
+ arch/powerpc/platforms/powernv/smp.c      |   4 +-
+ drivers/cpuidle/cpuidle-powernv.c         |  73 +++-
+ 19 files changed, 887 insertions(+), 563 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/idle_power7.S
+ create mode 100644 arch/powerpc/kernel/idle_power_common.S
+
+-- 
+2.1.4
+
