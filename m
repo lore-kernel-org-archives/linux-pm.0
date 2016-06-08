@@ -1,122 +1,61 @@
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-Subject: Re: [PATCH v2] leds: handle suspend/resume in heartbeat trigger
-Date: Wed, 08 Jun 2016 11:54:52 +0200
-Message-ID: <5757EB6C.10603@samsung.com>
-References: <1465374588-8453-1-git-send-email-linus.walleij@linaro.org>
+From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH 0/3] Exynos IOMMU: proper runtime pm support
+Date: Wed, 08 Jun 2016 12:25:53 +0200
+Message-ID: <1465381556-2230-1-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-leds-owner@vger.kernel.org>
-In-reply-to: <1465374588-8453-1-git-send-email-linus.walleij@linaro.org>
-Sender: linux-leds-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Hello,
 
-Thanks for the improved version.
-Replaced the old one on linux-leds.git, for-next branch.
+This patch series finally implements proper runtime pm support in Exynos
+IOMMU driver. This has been achieved by adding runtime pm notifiers,
+which lets SYSMMU controller to follow it's master device (the device
+which actually performs DMA transaction) runtime pm. The main idea
+behind this solution is an observation that any DMA activity from master
+device can be done only when master device is active, thus when master
+device is suspended SYSMMU controller device can also be suspended.
 
-Best regards,
-Jacek Anaszewski
+This patchset finally solves the situation that power domains are always
+enabled, because all SYSMMU controllers (which belongs to those domains)
+are permanently active (because existing driver was simplified and kept
+SYSMMU device active all the time after initialization).
 
-On 06/08/2016 10:29 AM, Linus Walleij wrote:
-> The following phenomena was observed: when suspending the
-> system, sometimes the heartbeat LED was left on, glowing and
-> wasting power while the rest of the system is asleep, also
-> disturbing power dissapation measures on the odd suspend
-> cycle when it's left on.
->
-> Clearly this is not how we want the heartbeat trigger to
-> work: it should turn off and leave the LED off during
-> system suspend.
->
-> This removes the heartbeat trigger when preparing suspend and
-> restores it during resume. The trigger code will make sure all
-> LEDs are left in OFF state after removing the trigger, and
-> will re-enable the trigger on all LEDs after resuming.
->
-> Cc: linux-pm@vger.kernel.org
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-> ---
-> ChangeLog v1->v2:
-> - Also register/unregister the trigger on PM_RESTORE and
->    PM_HIBERNATION notifications.
-> - Jacek if you already applied v1 please apply this instead,
->    or tell me and I can make an incremental patch.
-> ---
->   drivers/leds/trigger/ledtrig-heartbeat.c | 31 +++++++++++++++++++++++++++++++
->   1 file changed, 31 insertions(+)
->
-> diff --git a/drivers/leds/trigger/ledtrig-heartbeat.c b/drivers/leds/trigger/ledtrig-heartbeat.c
-> index 410c39c62dc7..c9f386213e9e 100644
-> --- a/drivers/leds/trigger/ledtrig-heartbeat.c
-> +++ b/drivers/leds/trigger/ledtrig-heartbeat.c
-> @@ -19,6 +19,7 @@
->   #include <linux/sched.h>
->   #include <linux/leds.h>
->   #include <linux/reboot.h>
-> +#include <linux/suspend.h>
->   #include "../leds.h"
->
->   static int panic_heartbeats;
-> @@ -154,6 +155,30 @@ static struct led_trigger heartbeat_led_trigger = {
->   	.deactivate = heartbeat_trig_deactivate,
->   };
->
-> +static int heartbeat_pm_notifier(struct notifier_block *nb,
-> +				 unsigned long pm_event, void *unused)
-> +{
-> +	int rc;
-> +
-> +	switch (pm_event) {
-> +	case PM_SUSPEND_PREPARE:
-> +	case PM_HIBERNATION_PREPARE:
-> +	case PM_RESTORE_PREPARE:
-> +		led_trigger_unregister(&heartbeat_led_trigger);
-> +		break;
-> +	case PM_POST_SUSPEND:
-> +	case PM_POST_HIBERNATION:
-> +	case PM_POST_RESTORE:
-> +		rc = led_trigger_register(&heartbeat_led_trigger);
-> +		if (rc)
-> +			pr_err("could not re-register heartbeat trigger\n");
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +	return NOTIFY_DONE;
-> +}
-> +
->   static int heartbeat_reboot_notifier(struct notifier_block *nb,
->   				     unsigned long code, void *unused)
->   {
-> @@ -168,6 +193,10 @@ static int heartbeat_panic_notifier(struct notifier_block *nb,
->   	return NOTIFY_DONE;
->   }
->
-> +static struct notifier_block heartbeat_pm_nb = {
-> +	.notifier_call = heartbeat_pm_notifier,
-> +};
-> +
->   static struct notifier_block heartbeat_reboot_nb = {
->   	.notifier_call = heartbeat_reboot_notifier,
->   };
-> @@ -184,12 +213,14 @@ static int __init heartbeat_trig_init(void)
->   		atomic_notifier_chain_register(&panic_notifier_list,
->   					       &heartbeat_panic_nb);
->   		register_reboot_notifier(&heartbeat_reboot_nb);
-> +		register_pm_notifier(&heartbeat_pm_nb);
->   	}
->   	return rc;
->   }
->
->   static void __exit heartbeat_trig_exit(void)
->   {
-> +	unregister_pm_notifier(&heartbeat_pm_nb);
->   	unregister_reboot_notifier(&heartbeat_reboot_nb);
->   	atomic_notifier_chain_unregister(&panic_notifier_list,
->   					 &heartbeat_panic_nb);
->
+This patchset requires my previous changes to Exynos IOMMU driver
+submitted in the "Exynos IOMMU: improve clock management" thread:
+http://www.spinics.net/lists/arm-kernel/msg505695.html  
+
+Best regards
+Marek Szyprowski
+Samsung R&D Institute Poland
+
+Krzysztof Kozlowski (1):
+  PM / Runtime: Add notifiers for device runtime PM events
+
+Marek Szyprowski (2):
+  iommu/exynos: Remove excessive, useless debug
+  iommu/exynos: Add proper runtime pm support
+
+ drivers/base/power/generic_ops.c |   9 ++
+ drivers/base/power/power.h       |   6 ++
+ drivers/base/power/runtime.c     |  34 ++++++-
+ drivers/iommu/exynos-iommu.c     | 214 ++++++++++++++++++---------------------
+ include/linux/pm.h               |   2 +
+ include/linux/pm_runtime.h       |  51 ++++++++++
+ 6 files changed, 201 insertions(+), 115 deletions(-)
+
+-- 
+1.9.2
