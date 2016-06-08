@@ -1,58 +1,65 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 1/2] cpufreq: intel_pstate: Move limits->max_perf to correct position
-Date: Tue,  7 Jun 2016 17:38:52 -0700
-Message-ID: <1465346333-3104-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 2/2] cpufreq: intel_pstate: Fix set_policy interface for no_turbo
+Date: Tue,  7 Jun 2016 17:38:53 -0700
+Message-ID: <1465346333-3104-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1465346333-3104-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga01.intel.com ([192.55.52.88]:30193 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754008AbcFHAhR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 7 Jun 2016 20:37:17 -0400
+	id S1754008AbcFHAhS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 7 Jun 2016 20:37:18 -0400
+In-Reply-To: <1465346333-3104-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net
 Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-The limits->max_perf is rounded_up but immediately overwritten by
-another assignment to limits->max_perf. Move it to correct
-position.
-While here also added a pr_debug call in set_policy to aid in
-debugging.
+When turbo is disabled, the set_policy interface is broken.
+For example, when turbo is disabled and
+cpuinfo.max = 2900000 (full max turbo frequency)
+Setting the limits results in frequency less than settings:
+Set 1000000 KHz results in 0700000 KHz
+Set 1500000 KHz results in 1100000 KHz
+Set 2000000 KHz results in  1500000 KHz
 
-Fixes: 785ee2788141 "cpufreq: intel_pstate: Fix limits->max_perf rounding error"
+This is because limits->max_perf fraction is calculated using max
+turbo frequency as the reference, but when the max P-State is
+capped in the function intel_pstate_get_min_max, the reference
+is not the max turbo P-State. This results in reducing max
+P-State.
+
+One option is to always use max turbo as reference for calculating
+limits. But this will not be correct. By definition the intel_pstate
+sysfs limits, shows percentage of available performance. So when
+BIOS has disabled turbo, the available performance is max non turbo.
+So the max_perf_pct should still show 100%.
+
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/cpufreq/intel_pstate.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 0d159b5..724b905 100644
+index 724b905..2116666 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -1460,6 +1460,9 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+@@ -1561,8 +1561,14 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
  
- 	intel_pstate_clear_update_util_hook(policy->cpu);
- 
-+	pr_debug("set_policy cpuinfo.max %u policy->max %u\n",
-+		 policy->cpuinfo.max_freq, policy->max);
+ 	/* cpuinfo and default policy values */
+ 	policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu->pstate.scaling;
+-	policy->cpuinfo.max_freq =
+-		cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++	update_turbo_state();
++	if (limits->turbo_disabled)
++		policy->cpuinfo.max_freq =
++			cpu->pstate.max_pstate * cpu->pstate.scaling;
++	else
++		policy->cpuinfo.max_freq =
++			cpu->pstate.turbo_pstate * cpu->pstate.scaling;
 +
- 	cpu = all_cpu_data[0];
- 	if (cpu->pstate.max_pstate_physical > cpu->pstate.max_pstate &&
- 	    policy->max < policy->cpuinfo.max_freq &&
-@@ -1495,13 +1498,13 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 				   limits->max_sysfs_pct);
- 	limits->max_perf_pct = max(limits->min_policy_pct,
- 				   limits->max_perf_pct);
--	limits->max_perf = round_up(limits->max_perf, FRAC_BITS);
- 
- 	/* Make sure min_perf_pct <= max_perf_pct */
- 	limits->min_perf_pct = min(limits->max_perf_pct, limits->min_perf_pct);
- 
- 	limits->min_perf = div_fp(limits->min_perf_pct, 100);
- 	limits->max_perf = div_fp(limits->max_perf_pct, 100);
-+	limits->max_perf = round_up(limits->max_perf, FRAC_BITS);
- 
-  out:
- 	intel_pstate_set_update_util_hook(policy->cpu);
+ 	intel_pstate_init_acpi_perf_limits(policy);
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 	cpumask_set_cpu(policy->cpu, policy->cpus);
 -- 
 2.5.0
 
