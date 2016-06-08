@@ -1,47 +1,68 @@
-From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH 2/3] iommu/exynos: Remove excessive, useless debug
-Date: Wed, 08 Jun 2016 12:25:55 +0200
-Message-ID: <1465381556-2230-3-git-send-email-m.szyprowski@samsung.com>
-References: <1465381556-2230-1-git-send-email-m.szyprowski@samsung.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 01/20] [v2] x86, intel: Introduce macros for Intel family
+ numbers
+Date: Wed, 8 Jun 2016 13:01:47 +0200
+Message-ID: <20160608110147.GA32077@gmail.com>
+References: <20160603001927.F2A7D828@viggo.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-reply-to: <1465381556-2230-1-git-send-email-m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160603001927.F2A7D828@viggo.jf.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dave Hansen <dave@sr71.net>
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org, jacob.jun.pan@intel.com, dave.hansen@linux.intel.com, adrian.hunter@intel.com, ak@linux.intel.com, luto@kernel.org, bp@alien8.de, dvhart@infradead.org, dougthompson@xmission.com, edubezval@gmail.com, hpa@zytor.com, mingo@redhat.com, jacob.jun.pan@linux.intel.com, kan.liang@intel.com, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-edac@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, mchehab@osg.samsung.com, peterz@infradead.org, platform-driver-x86@vger.kernel.org, rafael.j.wysocki@intel.com, rajneesh.bhardwaj@intel.com, souvik.k.chakravarty@intel.com, srinivas.pandruvada@linux.intel.com, eranian@google.com, tglx@linutronix.de, tony.luck@intel.com, ulf.hansson@linaro.org, viresh.kumar@linaro.org, vishwanath.somayaji@intel.com, rui.zhang@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Remove excessive, useless debug about skipping TLB invalidation, which
-is a normal situation when more aggressive power management is enabled.
 
-Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
----
- drivers/iommu/exynos-iommu.c | 3 ---
- 1 file changed, 3 deletions(-)
+* Dave Hansen <dave@sr71.net> wrote:
 
-diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
-index 633e6d023c0d..9d1a14f88891 100644
---- a/drivers/iommu/exynos-iommu.c
-+++ b/drivers/iommu/exynos-iommu.c
-@@ -574,9 +574,6 @@ static void sysmmu_tlb_invalidate_entry(struct sysmmu_drvdata *data,
- 			sysmmu_unblock(data);
- 		}
- 		clk_disable(data->clk_master);
--	} else {
--		dev_dbg(data->master,
--			"disabled. Skipping TLB invalidation @ %#x\n", iova);
- 	}
- 	spin_unlock_irqrestore(&data->lock, flags);
- }
--- 
-1.9.2
+> 
+> Changes from v1:
+>  * added acks from a few folks
+>  * Took the redundant "MODEL_" out of the macro names (Suggested
+>    by Borislav Petkov and acked by others)
+> 
+> From: Dave Hansen <dave.hansen@linux.intel.com>
+> 
+> If you are cc'd on this code, please check _your_ code vs. the
+> model list in "intel-family.h".  Please make sure you have all
+> the models listed that you intend to.
+> 
+> Also, rather than trickling these in via all the various
+> maintainers, should these just get pulled in to the x86 tree in
+> one go?
+> 
+> Problem:
+> 
+> We have a boatload of open-coded family-6 model numbers.  Half of
+> them have these model numbers in hex and the other half in
+> decimal.  This makes grepping for them tons of fun, if you were
+> to try.
+> 
+> Solution:
+> 
+> Consolidate all the magic numbers.  Put all the definitions in
+> one header.
+> 
+> The names here are closely derived from the comments describing
+> the models from arch/x86/events/intel/core.c.  We could easily
+> make them shorter by doing things like s/SANDYBRIDGE/SNB/, but
+> they seemed fine even with the longer versions to me.
+> 
+> Do not take any of these names too literally, like "DESKTOP"
+> or "MOBILE".  These are all colloquial names and not precise
+> descriptions of everywhere a given model will show up.
+> 
+> These have all been compile-tested.  I also made a stab at
+> dumping .o files and looking for unexpected deltas when I was
+> just replacing magic numbers with equivalent macros.
+
+So I've picked up this series and restructured it: I've created a single patch 
+that creates intel-family.h and have put it into x86/urgent. This eliminated 
+dependencies and allowed some of the patches to be queued in their natural trees, 
+in particular the 7 perf patches.
+
+Thanks,
+
+	Ingo
