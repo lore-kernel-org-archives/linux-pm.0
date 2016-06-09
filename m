@@ -1,130 +1,66 @@
-From: Rhyland Klein <rklein@nvidia.com>
-Subject: Re: [PATCH v3] power_supply: power_supply_read_temp only if use_cnt >
- 0
-Date: Thu, 9 Jun 2016 11:31:37 -0400
-Message-ID: <9ff350fd-3ccc-088e-8392-d575a64aaefd@nvidia.com>
-References: <1465331163-16884-1-git-send-email-rklein@nvidia.com>
- <5757BCAD.4060101@samsung.com>
- <d5767cde-3275-36d7-08b8-335d7c4c8e3b@nvidia.com>
- <57593F65.2070900@samsung.com>
+From: Phil Reid <preid@electromag.com.au>
+Subject: Re: RFI: devm_power_supply_register and sys/class name
+Date: Thu, 9 Jun 2016 23:45:37 +0800
+Message-ID: <122dc217-0257-1f76-3db8-e4d90d7bedae@electromag.com.au>
+References: <44d06e13-714a-c91a-6d7c-1aaa83758e7f@electromag.com.au>
+ <CAJKOXPdJ=9gKs=HrmaxxbRMSw6Q6PqZJ-RFuUQ=YSmJKUfy9Sg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:18220 "EHLO
-	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932116AbcFIPbt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2016 11:31:49 -0400
-In-Reply-To: <57593F65.2070900@samsung.com>
+Received: from anchovy1.45ru.net.au ([203.30.46.145]:53376 "EHLO
+	anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751344AbcFIPpm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2016 11:45:42 -0400
+In-Reply-To: <CAJKOXPdJ=9gKs=HrmaxxbRMSw6Q6PqZJ-RFuUQ=YSmJKUfy9Sg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, stable@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: linux-pm@vger.kernel.org
 
-On 6/9/2016 6:05 AM, Krzysztof Kozlowski wrote:
-> On 06/08/2016 05:26 PM, Rhyland Klein wrote:
->> On 6/8/2016 2:35 AM, Krzysztof Kozlowski wrote:
->>> On 06/07/2016 10:26 PM, Rhyland Klein wrote:
->>>> Change power_supply_read_temp() to use power_supply_get_property()
->>>> so that it will check the use_cnt and ensure it is > 0. The use_cnt
->>>> will be incremented at the end of __power_supply_register, so this
->>>> will block to case where get_property can be called before the supply
->>>> is fully registered. This fixes the issue show in the stack below:
->>>>
->>>> [    1.452598] power_supply_read_temp+0x78/0x80
->>>> [    1.458680] thermal_zone_get_temp+0x5c/0x11c
->>>> [    1.464765] thermal_zone_device_update+0x34/0xb4
->>>> [    1.471195] thermal_zone_device_register+0x87c/0x8cc
->>>> [    1.477974] __power_supply_register+0x364/0x424
->>>> [    1.484317] power_supply_register_no_ws+0x10/0x18
->>>> [    1.490833] bq27xxx_battery_setup+0x10c/0x164
->>>> [    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
->>>> [    1.503435] i2c_device_probe+0x174/0x240
->>>> [    1.509172] driver_probe_device+0x1fc/0x29c
->>>> [    1.515167] __driver_attach+0xa4/0xa8
->>>> [    1.520643] bus_for_each_dev+0x58/0x98
->>>> [    1.526204] driver_attach+0x20/0x28
->>>> [    1.531505] bus_add_driver+0x1c8/0x22c
->>>> [    1.537067] driver_register+0x68/0x108
->>>> [    1.542630] i2c_register_driver+0x38/0x7c
->>>> [    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
->>>> [    1.555321] do_one_initcall+0x38/0x12c
->>>> [    1.560886] kernel_init_freeable+0x148/0x1ec
->>>> [    1.566972] kernel_init+0x10/0xfc
->>>> [    1.572101] ret_from_fork+0x10/0x40
->>>>
->>>> Also make the same change to ps_get_max_charge_cntl_limit() and
->>>> ps_get_cur_chrage_cntl_limit() to be safe. Lastly, change the return
->>>> value of power_supply_get_property() to -EAGAIN from -ENODEV if
->>>> use_cnt <= 0.
->>>>
->>>> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
->>>> Cc: stable@vger.kernel.org
->>>> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
->>>> ---
->>>> v3:
->>>>  - Changed calls to ->get_property() to use common
->>>>    power_supply_get_property()
->>>>  - reworded description, added "Fixes" line
->>>>  - Changed return value of power_supply_get_property() to -EAGAIN
->>>>
->>>> v2:
->>>>  - Added cc stable
->>>>  - changed return to -EAGAIN in case of use_cnt < 1
->>>>  - Removed WARNING
->>>>  - return value check added in additional patch:
->>>>    https://lkml.org/lkml/2016/6/6/706
->>>>
->>>>  drivers/power/power_supply_core.c | 26 ++++++++++++++++----------
->>>>  1 file changed, 16 insertions(+), 10 deletions(-)
->>>>
->>>> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
->>>> index 456987c88baa..cccc630bd68e 100644
->>>> --- a/drivers/power/power_supply_core.c
->>>> +++ b/drivers/power/power_supply_core.c
->>>> @@ -492,7 +492,7 @@ int power_supply_get_property(struct power_supply *psy,
->>>>  			    union power_supply_propval *val)
->>>>  {
->>>>  	if (atomic_read(&psy->use_cnt) <= 0)
->>>> -		return -ENODEV;
->>>> +		return -EAGAIN;
->>>
->>> Wait, no. I was thinking of changing the return value in
->>> power_supply_read_temp() if we really want EAGAIN:
->>> ret = power_supply_get_property(...);
->>> if (ret)
->>> 	return -EAGAIN;
->>>
->>> On the other hand, here both return values look correct... the call can
->>> be executed too early (not very common) or too late after unbinding the
->>> driver (also kind of specific).
+On 9/06/2016 18:22, Krzysztof Kozlowski wrote:
+> On Thu, Jun 9, 2016 at 11:39 AM, Phil Reid <preid@electromag.com.au> wrote:
+>> G'day All,
 >>
->> I did have it that way, but it seemed a little weird to me, since both
->> situations use the same condition (use_cnt <= 0) to trigger. I don't
->> think we can differentiate, unless I missed something, so I'm not sure
->> if it makes sense to override the return value after calling
->> power_supply_get_property() or not.
+>> I'm implementing a driver for a sbs manager chip (ltc1760) and running into
+>> a problem.
+>> This is a dual smart battery charger ic.
 >>
->> If I overrode the return value in get_temp, then assuming it was called
->> after unbinding, it would return the wrong thing (-EAGAIN). If we want
->> to support both EAGAIN and ENODEV, then maybe we need to use some
->> additional check to know which to return from power_supply_get_property().
-> 
-> Right, currently it is not possible to differentiate these two cases.
-> After quick look, I think the difference with EAGAIN would be only in
-> error message printed or not. It is not critical so maybe keep it with
-> ENODEV?
+>> Our hard has two of these connected via a i2c / smbus mux.
+>>
+>> One registering the second device with devm_power_supply_register  I am
+>> getting a warning
+>> in regards duplicate sysfs entries.
+>> The first device creates this entry
+>> /sys/class/power_supply/sbs-manager/
+>>
+>> The second device also creates the same entry.
+>>
+>> This name appears to come from power_supply_desc .name field.
+>>
+>> Which needs to exists for the lifetime of the driver.
+>> So I'm assuming I need to allocate local memory for this struct in the
+>> driver and set a unique name.
+>>
+>> Is this the correct way to go or should devm_power_supply_register be made
+>> more
+>> flexible to ensure unique names?
+>
+> Hi,
+>
+> You need to provide one power_supply_desc per power supply instance.
+> So in your case - you need two of them (with different names). Look at
+> other drivers doing this.
+>
 
-I'm ok with that. Sebastian, are you ok with that? If so, I'll post a v4
-without the -EAGAIN change.
+G'day Krzysztof,
 
--rhyland
-
-> 
-> Best regards,
-> Krzysztof
-> 
+The driver I was following max8998_charger.c used a static struct power_supply_desc.
+So I wasn't 100% sure.
+Thanks for clarifying.
 
 
 -- 
-nvpublic
+Regards
+Phil Reid
+
