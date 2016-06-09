@@ -1,76 +1,42 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [RFC v4 01/14] regulator: of: Add helper for getting all supplies
-Date: Thu, 09 Jun 2016 13:42:02 +0200
-Message-ID: <5759560A.70107@samsung.com>
-References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
- <1465465471-28740-2-git-send-email-k.kozlowski@samsung.com>
- <20160609102925.GS7510@sirena.org.uk>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: governor: Drop gov_cancel_work()
+Date: Thu, 9 Jun 2016 14:21:33 +0200
+Message-ID: <CAJZ5v0i5Tf+KsLRSO7A0PanPjG1XenzLpZopfOAYH-3cLbjTbg@mail.gmail.com>
+References: <31871585.32WEDJA5Kj@vostro.rjw.lan> <20160609032100.GB9356@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-reply-to: <20160609102925.GS7510@sirena.org.uk>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hdegoede@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Heiko Stuebner <heiko@sntech.de>, linux-mmc@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, hzpeterchen@gmail.com, Bartlomiej
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:36560 "EHLO
+	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbcFIMVf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2016 08:21:35 -0400
+In-Reply-To: <20160609032100.GB9356@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 06/09/2016 12:29 PM, Mark Brown wrote:
-> On Thu, Jun 09, 2016 at 11:44:18AM +0200, Krzysztof Kozlowski wrote:
->> Few drivers have a need of getting regulator supplies without knowing
->> their names:
->> 1. The Simple Framebuffer driver works on setup provided by bootloader
->>    (outside of scope of kernel);
->> 2. Generic power sequence driver may be attached to any device node.
+On Thu, Jun 9, 2016 at 5:21 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 09-06-16, 01:45, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >>
->> Add a Device Tree helper for parsing "-supply" properties and returning
->> allocated bulk regulator consumers.
-> 
-> I'm still very concerned that this is just an invitation to people to
-> write half baked regulator consumers and half baked DTs to go along with
-> it, making it a standard API that doesn't have big red flags on it that
-> will flag up when "normal" drivers use it is not good.  Right now this
-> just looks like a standard API and people are going to just start using
-> it.  If we are going to do this perhaps we need a separate header or
-> something to help flag this up.
+>> There's no reason for gov_cancel_work() to exist at all, as it only
+>> has one caller and the only thing done by that caller is to invoke
+>> gov_cancel_work().
+>>
+>> Accordingly, drop gov_cancel_work() and move its contents to the
+>> caller.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>  drivers/cpufreq/cpufreq_governor.c |   19 +++++++------------
+>>  1 file changed, 7 insertions(+), 12 deletions(-)
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-No problem, I can move it to a special header.  Actually, if you dislike
-this as an API, it does not have to be in header at all.  I can just
-duplicate the simplefb code.
+Thanks!
 
-> In the case of power sequences I'd expect the sequences to perform
-> operations on named supplies - the core shouldn't know what the supplies
-> are but the thing specifying the sequence should.
+> I am wondering what happened to your other patches around the governor callbacks
+> and why weren't they applied yet :)
 
-Hm, so maybe passing names like:
-
-usb3503@08 {
-	reset-gpios = <&gpx3 5 GPIO_ACTIVE_HIGH>;
-	initial-mode = <1>;
-	vdd-supply = <&buck8_reg>;
-	foo-supply = <&buck9_reg>;
-
-        power-sequence;
-	power-sequence-supplies = "vdd", "foo";
-};
-
-but this is getting against initial idea of not adding any
-power-sequence properties.
-
-> 
->>  drivers/regulator/of_regulator.c       | 86 ++++++++++++++++++++++++++++++++++
->>  include/linux/regulator/of_regulator.h | 13 +++++
->>  2 files changed, 99 insertions(+)
-> 
-> The external interface shouldn't be DT specific, the Intel people are
-> busy importing all of DT into ACPI so they'll doubtless want an ACPI
-> version.
-
-Sure, I'll add it if this approach is acceptable.  At this moment this
-is not necessary to show my idea so I prefer to avoid doing work which
-might be discarded very fast by review.
-
-Thanks for feedback!
-
-Best regards,
-Krzysztof
+They are in linux-next now, aren't they?
