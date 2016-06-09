@@ -1,126 +1,66 @@
-From: Rhyland Klein <rklein@nvidia.com>
-Subject: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt > 0
-Date: Thu, 9 Jun 2016 17:28:39 -0400
-Message-ID: <1465507719-819-1-git-send-email-rklein@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rhyland Klein <rklein@nvidia.com>, stable@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Broxton support
+Date: Thu,  9 Jun 2016 15:34:41 -0700
+Message-ID: <1465511681-6571-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:52878 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751119AbcFIWdI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 9 Jun 2016 18:33:08 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Change power_supply_read_temp() to use power_supply_get_property()
-so that it will check the use_cnt and ensure it is > 0. The use_cnt
-will be incremented at the end of __power_supply_register, so this
-will block to case where get_property can be called before the supply
-is fully registered. This fixes the issue show in the stack below:
+Added Broxton cpu model number. Broxton requires core_params to get
+performance limits via MSRs, but it is an Atom platform, which requires
+more power optimized algorithm. So the P state selection will use similar
+algorithm as other Atom platforms.
 
-[    1.452598] power_supply_read_temp+0x78/0x80
-[    1.458680] thermal_zone_get_temp+0x5c/0x11c
-[    1.464765] thermal_zone_device_update+0x34/0xb4
-[    1.471195] thermal_zone_device_register+0x87c/0x8cc
-[    1.477974] __power_supply_register+0x364/0x424
-[    1.484317] power_supply_register_no_ws+0x10/0x18
-[    1.490833] bq27xxx_battery_setup+0x10c/0x164
-[    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
-[    1.503435] i2c_device_probe+0x174/0x240
-[    1.509172] driver_probe_device+0x1fc/0x29c
-[    1.515167] __driver_attach+0xa4/0xa8
-[    1.520643] bus_for_each_dev+0x58/0x98
-[    1.526204] driver_attach+0x20/0x28
-[    1.531505] bus_add_driver+0x1c8/0x22c
-[    1.537067] driver_register+0x68/0x108
-[    1.542630] i2c_register_driver+0x38/0x7c
-[    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
-[    1.555321] do_one_initcall+0x38/0x12c
-[    1.560886] kernel_init_freeable+0x148/0x1ec
-[    1.566972] kernel_init+0x10/0xfc
-[    1.572101] ret_from_fork+0x10/0x40
-
-Also make the same change to ps_get_max_charge_cntl_limit() and
-ps_get_cur_chrage_cntl_limit() to be safe. Lastly, change the return
-value of power_supply_get_property() to -EAGAIN from -ENODEV if
-use_cnt <= 0.
-
-Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
-Cc: stable@vger.kernel.org
-Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
-v4:
- - Fixed return check conditions
- - Removed change to power_supply_get_property return code
- - removed whitespace change
+ drivers/cpufreq/intel_pstate.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-v3:
- - Changed calls to ->get_property() to use common
-   power_supply_get_property()
- - reworded description, added "Fixes" line
- - Changed return value of power_supply_get_property() to -EAGAIN
-
-v2:
- - Added cc stable
- - changed return to -EAGAIN in case of use_cnt < 1
- - Removed WARNING
- - return value check added in additional patch:
-   https://patchwork.kernel.org/patch/9158805/
-
- drivers/power/power_supply_core.c | 27 ++++++++++++++++-----------
- 1 file changed, 16 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index 456987c88baa..b13cd074c52a 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -565,11 +565,12 @@ static int power_supply_read_temp(struct thermal_zone_device *tzd,
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index e1b7a5e..8a0e405 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1110,6 +1110,26 @@ static struct cpu_defaults knl_params = {
+ 	},
+ };
  
- 	WARN_ON(tzd == NULL);
- 	psy = tzd->devdata;
--	ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
-+	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
-+	if (ret)
-+		return ret;
- 
- 	/* Convert tenths of degree Celsius to milli degree Celsius. */
--	if (!ret)
--		*temp = val.intval * 100;
-+	*temp = val.intval * 100;
- 
- 	return ret;
- }
-@@ -612,10 +613,12 @@ static int ps_get_max_charge_cntl_limit(struct thermal_cooling_device *tcd,
- 	int ret;
- 
- 	psy = tcd->devdata;
--	ret = psy->desc->get_property(psy,
--		POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX, &val);
--	if (!ret)
--		*state = val.intval;
-+	ret = power_supply_get_property(psy,
-+			POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX, &val);
-+	if (ret)
-+		return ret;
++static struct cpu_defaults bxt_params = {
++	.pid_policy = {
++		.sample_rate_ms = 10,
++		.deadband = 0,
++		.setpoint = 60,
++		.p_gain_pct = 14,
++		.d_gain_pct = 0,
++		.i_gain_pct = 4,
++	},
++	.funcs = {
++		.get_max = core_get_max_pstate,
++		.get_max_physical = core_get_max_pstate_physical,
++		.get_min = core_get_min_pstate,
++		.get_turbo = core_get_turbo_pstate,
++		.get_scaling = core_get_scaling,
++		.get_val = core_get_val,
++		.get_target_pstate = get_target_pstate_use_cpu_load,
++	},
++};
 +
-+	*state = val.intval;
- 
- 	return ret;
- }
-@@ -628,10 +631,12 @@ static int ps_get_cur_chrage_cntl_limit(struct thermal_cooling_device *tcd,
- 	int ret;
- 
- 	psy = tcd->devdata;
--	ret = psy->desc->get_property(psy,
--		POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT, &val);
--	if (!ret)
--		*state = val.intval;
-+	ret = power_supply_get_property(psy,
-+			POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT, &val);
-+	if (ret)
-+		return ret;
-+
-+	*state = val.intval;
- 
- 	return ret;
- }
+ static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
+ {
+ 	int max_perf = cpu->pstate.turbo_pstate;
+@@ -1370,6 +1390,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+ 	ICPU(INTEL_FAM6_SKYLAKE_DESKTOP,	core_params),
+ 	ICPU(INTEL_FAM6_BROADWELL_XEON_D,	core_params),
+ 	ICPU(INTEL_FAM6_XEON_PHI_KNL,		knl_params),
++	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		bxt_params),
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
 -- 
-1.9.1
+2.5.5
+
