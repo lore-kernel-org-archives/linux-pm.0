@@ -1,14 +1,16 @@
 From: dbasehore@chromium.org
-Subject: [PATCH v2 0/5] Add suspend-to-idle validation for Intel SoCs
-Date: Wed,  8 Jun 2016 17:43:32 -0700
-Message-ID: <1465433017-13602-1-git-send-email-dbasehore@chromium.org>
+Subject: [PATCH v2 1/5] x86: stub out pmc function
+Date: Wed,  8 Jun 2016 17:43:33 -0700
+Message-ID: <1465433017-13602-2-git-send-email-dbasehore@chromium.org>
+References: <1465433017-13602-1-git-send-email-dbasehore@chromium.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:33174 "EHLO
-	mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751675AbcFIAnp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2016 20:43:45 -0400
-Received: by mail-pf0-f169.google.com with SMTP id y124so7599146pfy.0
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:34698 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753540AbcFIAnq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2016 20:43:46 -0400
+Received: by mail-pa0-f51.google.com with SMTP id bz2so7236589pad.1
         for <linux-pm@vger.kernel.org>; Wed, 08 Jun 2016 17:43:45 -0700 (PDT)
+In-Reply-To: <1465433017-13602-1-git-send-email-dbasehore@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
@@ -16,49 +18,30 @@ Cc: dbasehore@chromium.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, pavel@u
 
 From: Derek Basehore <dbasehore@chromium.org>
 
-This patch set adds support for catching errors when entering freeze
-on Intel Skylake SoCs. Support for this can be added to newer SoCs in
-later patches.
+This creates an inline function of intel_pmc_slp_s0_counter_read for
+!CONFIG_INTEL_PMC_CORE.
 
-Verification is done by waking up the CPU up to 1000 seconds later
-based on base 10 exponential backoff from 1 second to check the
-residency of S0ix. This can't be verified before attempting to enter
-S0ix through mwait, so we have to repeatedly verify entry into that
-state. Successfully entering S0ix is no guarantee that it will be
-entered on the next attempt, so we have to schedule another check.
-This has a minimal average power impact of ~3uW on Skylake systems.
-This leaves plenty of room for additional overhead based on changes
-to the system.
+Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+---
+ arch/x86/include/asm/pmc_core.h | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-This relies on the recently added patch "platform/x86: Add PMC Driver
-for Intel Core SoC"
-
-Changes for v2:
-- Moved to exponential backoff for the freeze duration with a max of
-  1000 seconds
-- Changed to make the feature default off
-- Add module parameter for enabling/disabling the feature instead of
-  a debugfs entry
-
-Derek Basehore (5):
-  x86: stub out pmc function
-  clockevents: Add timed freeze
-  x86, apic: Add timed freeze support
-  freeze: Add error reporting
-  intel_idle: Add S0ix validation
-
- arch/x86/include/asm/pmc_core.h |   6 +-
- arch/x86/kernel/apic/apic.c     |  25 ++++++-
- drivers/acpi/processor_idle.c   |  10 ++-
- drivers/cpuidle/cpuidle.c       |  31 ++++++--
- drivers/idle/intel_idle.c       | 161 +++++++++++++++++++++++++++++++++++++---
- include/linux/clockchips.h      |  10 +++
- include/linux/cpuidle.h         |  10 ++-
- include/linux/suspend.h         |  10 +++
- kernel/power/suspend.c          |  11 ++-
- kernel/time/clockevents.c       | 117 +++++++++++++++++++++++++++++
- 10 files changed, 361 insertions(+), 30 deletions(-)
-
+diff --git a/arch/x86/include/asm/pmc_core.h b/arch/x86/include/asm/pmc_core.h
+index d4855f1..786e526 100644
+--- a/arch/x86/include/asm/pmc_core.h
++++ b/arch/x86/include/asm/pmc_core.h
+@@ -22,6 +22,10 @@
+ #define _ASM_PMC_CORE_H
+ 
+ /* API to read SLP_S0_RESIDENCY counter */
+-int intel_pmc_slp_s0_counter_read(u32 *data);
++#ifdef CONFIG_INTEL_PMC_CORE
++extern int intel_pmc_slp_s0_counter_read(u32 *data);
++#else
++static inline int intel_pmc_slp_s0_counter_read(u32 *data) { return -ENOSYS; }
++#endif
+ 
+ #endif /* _ASM_PMC_CORE_H */
 -- 
 2.8.0.rc3.226.g39d4020
 
