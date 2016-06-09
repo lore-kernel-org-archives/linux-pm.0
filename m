@@ -1,61 +1,140 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC v4 01/14] regulator: of: Add helper for getting all supplies
-Date: Thu, 9 Jun 2016 16:57:46 +0100
-Message-ID: <20160609155746.GZ7510@sirena.org.uk>
-References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
- <1465465471-28740-2-git-send-email-k.kozlowski@samsung.com>
- <20160609102925.GS7510@sirena.org.uk>
- <CAJZ5v0hiyyOhU7AjOEjFHjTKhT+pqWZheUG77c6u2HV9dNQ0Gg@mail.gmail.com>
+From: Andy Gross <andy.gross@linaro.org>
+Subject: Re: [PATCH 1/5] soc: qcom: Add suspend to idle support
+Date: Thu, 9 Jun 2016 13:09:02 -0500
+Message-ID: <20160609180902.GJ13357@hector.attlocal.net>
+References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
+ <1463634020-17252-2-git-send-email-andy.gross@linaro.org>
+ <CAPDyKFrAGVPkc=ycm-cQg6Y5NLx_d4xGeg8SaSiB-K5sxtv76A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="OCeUrMLoh2ht7f6S"
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hiyyOhU7AjOEjFHjTKhT+pqWZheUG77c6u2HV9dNQ0Gg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>linu
+In-Reply-To: <CAPDyKFrAGVPkc=ycm-cQg6Y5NLx_d4xGeg8SaSiB-K5sxtv76A@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, stanimir.varbanov@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Thu, Jun 09, 2016 at 09:39:34AM +0200, Ulf Hansson wrote:
+> + Daniel
+> 
+> On 19 May 2016 at 07:00, Andy Gross <andy.gross@linaro.org> wrote:
+> > This patch adds suspend to idle support for Qualcomm processors.  While
+> > suspend to memory will be a valid state, there won't be any special
+> > handling or power savings over the suspend to idle.
+> >
+> > Signed-off-by: Andy Gross <andy.gross@linaro.org>
+> > ---
+> >  drivers/soc/qcom/Makefile  |  1 +
+> >  drivers/soc/qcom/suspend.c | 77 ++++++++++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 78 insertions(+)
+> >  create mode 100644 drivers/soc/qcom/suspend.c
+> >
+> > diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
+> > index fdd664e..7c479d3 100644
+> > --- a/drivers/soc/qcom/Makefile
+> > +++ b/drivers/soc/qcom/Makefile
+> > @@ -7,3 +7,4 @@ obj-$(CONFIG_QCOM_SMEM_STATE) += smem_state.o
+> >  obj-$(CONFIG_QCOM_SMP2P)       += smp2p.o
+> >  obj-$(CONFIG_QCOM_SMSM)        += smsm.o
+> >  obj-$(CONFIG_QCOM_WCNSS_CTRL) += wcnss_ctrl.o
+> > +obj-$(CONFIG_SUSPEND)  +=      suspend.o
+> > diff --git a/drivers/soc/qcom/suspend.c b/drivers/soc/qcom/suspend.c
+> > new file mode 100644
+> > index 0000000..7d3f2dd
+> > --- /dev/null
+> > +++ b/drivers/soc/qcom/suspend.c
+> > @@ -0,0 +1,77 @@
+> > +/*
+> > + * (C) Copyright 2016 Linaro Ltd.
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > + * modify it under the terms of the GNU General Public License
+> > + * as published by the Free Software Foundation; version 2
+> > + * of the License.
+> > + */
+> > +#include <linux/module.h>
+> > +#include <linux/of.h>
+> > +#include <linux/cpuidle.h>
+> > +#include <linux/suspend.h>
+> > +
+> > +
+> > +static void qcom_pm_enter_freeze(struct cpuidle_device *dev,
+> > +       struct cpuidle_driver *drv,
+> > +       int index)
+> > +{
+> > +       drv->states[index].enter(dev, drv, index);
+> > +}
+> > +
+> > +static const struct of_device_id qcom_idle_state_match[] = {
+> > +       { .compatible = "qcom,idle-state-spc", },
+> > +       { },
+> > +};
+> > +
+> > +static const struct platform_suspend_ops qcom_suspend_ops = {
+> > +       .valid          = suspend_valid_only_mem,
+> > +};
+> > +
+> > +static int __init qcom_pm_init(void)
+> > +{
+> > +       struct cpuidle_device *cpu_dev;
+> > +       struct cpuidle_driver *cpu_drv;
+> > +       int state_count;
+> > +       struct device_node *state_np, *cpu_np;
+> > +       const struct of_device_id *match;
+> > +       int i;
+> > +
+> > +       /* configure CPU enter_freeze if applicable */
+> > +       for_each_present_cpu(i) {
+> > +               cpu_np = of_get_cpu_node(i, NULL);
+> > +               cpu_dev = per_cpu_ptr(cpuidle_devices, i);
+> > +               cpu_drv = cpuidle_get_cpu_driver(cpu_dev);
+> > +
+> > +               if (!cpu_dev || !cpu_drv) {
+> > +                       of_node_put(cpu_np);
+> > +                       return -EPROBE_DEFER;
+> 
+> This isn't a driver, so returning -EPROBE_DEFER doesn't make sense.
 
---OCeUrMLoh2ht7f6S
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Right.  It's not like it'll get retried.
 
-On Thu, Jun 09, 2016 at 02:50:26PM +0200, Rafael J. Wysocki wrote:
-> On Thu, Jun 9, 2016 at 12:29 PM, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> > +               }
+> > +
+> > +               state_count = 0;
+> > +               state_np = of_parse_phandle(cpu_np, "cpu-idle-states",
+> > +                                                 state_count);
+> > +
+> > +               while (state_np) {
+> > +                       match = of_match_node(qcom_idle_state_match,
+> > +                                             state_np);
+> > +
+> > +                       state_count++;
+> > +                       if (match)
+> > +                               cpu_drv->states[state_count].enter_freeze =
+> > +                                               &qcom_pm_enter_freeze;
+> > +                       of_node_put(state_np);
+> > +
+> > +                       state_np = of_parse_phandle(cpu_np, "cpu-idle-states",
+> > +                                                   state_count);
+> > +               }
+> > +
+> > +               of_node_put(cpu_np);
+> > +       }
+> > +
+> > +       suspend_set_ops(&qcom_suspend_ops);
+> 
+> I don't think this will work!
+> 
+> When building a multi defconfig for ARM, you might overwrite the
+> suspend_ops (there's only one set) as here you don't know that it's
+> actually the QCOM platform that is running, right!?
+> 
+> Perhaps this code actually belongs closer to the cpuidle driver?
 
-> > The external interface shouldn't be DT specific, the Intel people are
-> > busy importing all of DT into ACPI
+Hmmmm, I might have to get creative.  I originally had a DT entry for the pm,
+but that doesn't make sense as this is purely a software construct.  The db410c
+uses the arm cpuidle driver so I can't really hook it in there.  I'll have to
+come up with something else.
 
-> Well, not really.
 
-> If you are referring to the pinctrl proposal discussed recently, that
-> was a proposal from one group at Intel and AFAICS it has been
-> abandoned.
-
-Well, it was that, it was the device properties stuff in general and the
-overlays stuff - plus just the fact that with the Minnowboard style use
-case people have and the desire to use ACPI it seems like that's going
-to be something you need.
-
---OCeUrMLoh2ht7f6S
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXWZH5AAoJECTWi3JdVIfQvS4H/i9Q+NK3qFJ20x5n4tnU3Kqb
-R5CadVol9AxuB5DmzVxduAAdc4YGDBs+cxJXQVJ0kjNNETE0V/5g6AhHf1frJe5c
-yctigVuTXIeHXHQOS1NfpmjVKQwIFMJ5xvHy+XRAcAeNlmkKEGR+Ayma3sFk3XY7
-MfUWd7652D2mejDNXLp6V3UhgfDX8u5qMuYazGor98EVDaiidh4k1AqK7LyfMQQm
-5f8El3h6+LOCHyxPBF+hopBJwoKg1FLoYiXzBWAzbXajTmpBkQdXLa0QaoKYu/2j
-vzrTjqjb2zvvbvQbEnDz4ZjXcrfK2Aa2qjfrohDSp+hO4uqtnU1URD/19EfObuA=
-=tIVl
------END PGP SIGNATURE-----
-
---OCeUrMLoh2ht7f6S--
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Andy
