@@ -1,70 +1,85 @@
-From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: [RFC PATCH] power/cpuidle: enhance the precision of state select
-Date: Thu,  9 Jun 2016 11:08:40 +0800
-Message-ID: <1465441720-5527-1-git-send-email-zhaoyang.huang@spreadtrum.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:34856 "EHLO
-	mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933858AbcFIDJs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jun 2016 23:09:48 -0400
-Received: by mail-pf0-f169.google.com with SMTP id c2so8690696pfa.2
-        for <linux-pm@vger.kernel.org>; Wed, 08 Jun 2016 20:09:48 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: dbasehore@chromium.org
+Subject: [PATCH v3 3/5] x86, apic: Add timed freeze support
+Date: Wed,  8 Jun 2016 20:08:56 -0700
+Message-ID: <1465441738-7972-4-git-send-email-dbasehore@chromium.org>
+References: <1465441738-7972-1-git-send-email-dbasehore@chromium.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1465441738-7972-1-git-send-email-dbasehore@chromium.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: dbasehore@chromium.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, tglx@linutronix.de, gnomes@lxorguk.ukuu.org.uk, peterz@infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, zhaoyang.huang@spreadtrum.com
 
-In previous version, cpu_pm_enter is invoked after the governor
-select the state, which cause the executing time of cpu_pm_enter
-is included in the idle time. Moving it before the state selection.
+From: Derek Basehore <dbasehore@chromium.org>
 
-Signed-off-by: Zhaoyang Huang <zhaoyang.huang@spreadtrum.com>
+This adds support to the clock event devices created by apic to use
+timed freeze. The apic is able to run a timer during freeze with near
+izero impact on modern CPUs such as skylake. This will allow S0ix,
+suspend-to-idle, to be validated on Intel CPUs that support it.
+
+This is needed because bugs with power settings on the SoC can prevent
+S0ix entry. There is also no way to check this before idling all of
+the CPUs.
+
+Signed-off-by: Derek Basehore <dbasehore@chromium.org>
 ---
- kernel/sched/idle.c |   18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ arch/x86/kernel/apic/apic.c | 25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index bd12c6c..929da2e 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -5,6 +5,7 @@
- #include <linux/cpu.h>
- #include <linux/cpuidle.h>
- #include <linux/cpuhotplug.h>
-+#include <linux/cpu_pm.h>
- #include <linux/tick.h>
- #include <linux/mm.h>
- #include <linux/stackprotector.h>
-@@ -130,6 +131,7 @@ static void cpuidle_idle_call(void)
- 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
- 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
- 	int next_state, entered_state;
-+	int ret;
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 60078a6..f0c5f92 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -475,6 +475,26 @@ static int lapic_next_deadline(unsigned long delta,
+ 	return 0;
+ }
  
- 	/*
- 	 * Check if the idle task must be rescheduled. If it is the
-@@ -174,12 +176,16 @@ static void cpuidle_idle_call(void)
- 		/*
- 		 * Ask the cpuidle framework to choose a convenient idle state.
- 		 */
--		next_state = cpuidle_select(drv, dev);
--		entered_state = call_cpuidle(drv, dev, next_state);
--		/*
--		 * Give the governor an opportunity to reflect on the outcome
--		 */
--		cpuidle_reflect(dev, entered_state);
-+		ret = cpu_pm_enter();
-+		if (!ret) {
-+			next_state = cpuidle_select(drv, dev);
-+			entered_state = call_cpuidle(drv, dev, next_state);
-+			cpu_pm_exit();
-+			/*
-+			 * Give the governor an opportunity to reflect on the outcome
-+			 */
-+			cpuidle_reflect(dev, entered_state);
-+		}
- 	}
- 
- exit_idle:
++static bool lapic_event_expired(struct clock_event_device *evt)
++{
++	u32 cct;
++
++	cct = apic_read(APIC_TMCCT);
++	return cct == 0;
++}
++
++static bool lapic_deadline_expired(struct clock_event_device *evt)
++{
++	u64 msr;
++
++	/*
++	 * When the timer interrupt is triggered, the register is cleared, so a
++	 * non-zero value indicates a pending timer event.
++	 */
++	rdmsrl(MSR_IA32_TSC_DEADLINE, msr);
++	return msr == 0;
++}
++
+ static int lapic_timer_shutdown(struct clock_event_device *evt)
+ {
+ 	unsigned int v;
+@@ -529,12 +549,14 @@ static struct clock_event_device lapic_clockevent = {
+ 	.name			= "lapic",
+ 	.features		= CLOCK_EVT_FEAT_PERIODIC |
+ 				  CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_C3STOP
+-				  | CLOCK_EVT_FEAT_DUMMY,
++				  | CLOCK_EVT_FEAT_DUMMY |
++				  CLOCK_EVT_FEAT_FREEZE,
+ 	.shift			= 32,
+ 	.set_state_shutdown	= lapic_timer_shutdown,
+ 	.set_state_periodic	= lapic_timer_set_periodic,
+ 	.set_state_oneshot	= lapic_timer_set_oneshot,
+ 	.set_next_event		= lapic_next_event,
++	.event_expired		= lapic_event_expired,
+ 	.broadcast		= lapic_timer_broadcast,
+ 	.rating			= 100,
+ 	.irq			= -1,
+@@ -562,6 +584,7 @@ static void setup_APIC_timer(void)
+ 		levt->features &= ~(CLOCK_EVT_FEAT_PERIODIC |
+ 				    CLOCK_EVT_FEAT_DUMMY);
+ 		levt->set_next_event = lapic_next_deadline;
++		levt->event_expired = lapic_deadline_expired;
+ 		clockevents_config_and_register(levt,
+ 						(tsc_khz / TSC_DIVISOR) * 1000,
+ 						0xF, ~0UL);
 -- 
-1.7.9.5
-
+2.8.0.rc3.226.g39d4020
