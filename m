@@ -1,50 +1,47 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] cpufreq: mvebu: fix integer to pointer cast
-Date: Thu, 09 Jun 2016 09:07:08 +0200
-Message-ID: <32804824.nq0AOIbNnC@wuerfel>
-References: <1465299013-32369-1-git-send-email-ben.dooks@codethink.co.uk> <5757CF9B.3080402@free.fr> <d3c117ea-2dce-63a2-7888-31ee8320a3dd@codethink.co.uk>
+From: Sumit Singh <sumsingh@nvidia.com>
+Subject: Need help : Way to disable runtime PM with system suspend enabled
+Date: Thu, 9 Jun 2016 07:23:47 +0000
+Message-ID: <57277a9454784b2c911a2c90fd1bea3e@bgmail103.nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.134]:49808 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751672AbcFIHGZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2016 03:06:25 -0400
-In-Reply-To: <d3c117ea-2dce-63a2-7888-31ee8320a3dd@codethink.co.uk>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:17343 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423277AbcFIHX5 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2016 03:23:57 -0400
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Ben Dooks <ben.dooks@codethink.co.uk>, Mason <slash.tmp@free.fr>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@lists.codethink.co.uk, linux-pm@vger.kernel.org
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prashant Gaikwad <pgaikwad@nvidia.com>, Bharat Nihalani <bnihalani@nvidia.com>
 
-On Wednesday, June 8, 2016 9:59:26 AM CEST Ben Dooks wrote:
-> On 08/06/16 08:56, Mason wrote:
-> > On 07/06/2016 13:30, Ben Dooks wrote:
-> > 
-> >> Fix the use of 0 instead of NULL to clk_get() call. This stops the
-> >> following warning:
-> >>
-> >> drivers/cpufreq/mvebu-cpufreq.c:73:40: warning: Using plain integer as NULL pointer
-> > 
-> > May I ask which compiler/version produced that diagnostic?
-> 
-> I was running with "make C=2 bzImage" for ARM multi_v7_config
-> 
-> $ sparse --version
-> v0.5.0
-> 
+Hi Rafael,
 
-I believe gcc-6 will also produce a similar warning when building with
-'make W=1'. I've started looking into moving some of the warnings from
-W=1 level to default, which can probably be done with relatively little
-effort for many warnings.
+I have a requirement related to runtime PM and system suspend, and need your help for it. Below is the requirement, and the approach I followed:
 
-I see that you are making very good progress at eliminating the
--Wmissing-declarations warnings, which are also at W=1 level. Do
-you have an estimate of how many there are? Do you plan to do them
-all, or just the ones for some subsystems? I've stayed away from
-this one for now since there are lots of such warnings, but it
-seems particularly worthwhile.
+I want to disable runtime-PM for all the devices, but want to keep system suspend enabled. More precisely, I don't want devices to runtime suspend or even clock-gated when device is idle.
+I want them always to be in full power state. Currently, devices are using runtime PM to get powered at boot time.
 
-	Arnd
+I have a requirement where power supply is not a constraint, but system's responsiveness is of critical importance. With runtime-PM enabled, it will incur some delay for the device to come out of runtime suspend state whenever a request comes for it.
+I want to avoid that delay. This is the reason I want to disable runtime PM. System suspend should be working fine.
 
+As upstream has closely integrated runtime PM and system suspend, and also got rid of CONFIG_PM_RUNTIME, so now it is not possible to just disable CONFIG_PM_RUNTIME to disable runtime PM. I tried below two approaches to meet the requirement:
+
+1.)    The devices that use PM Domains, I set governor as always-on governor, so that devices won't runtime suspend. But, it does not prevent devices from clock-gating. This approach is applicable only for the devices which use PM Domains.
+2.)    The devices that don't use PM Domains, I tried making changes in individual drivers. For each device, in the probe function, once device is powered-on, I disable runtime PM using runtime PM APIs, so that device won't entertain any
+runtime requests. This way device will be always on.
+
+-  With first approach, devices did not runtime suspend, but were clock-gated. This approach is not applicable to the devices, which don't use PM Domain. System suspend is working fine.
+-  With second approach, devices were not runtime suspended, and were always powered-on. But I had to make changes in each of the driver files. As each of the devices are using runtime PM in different ways, so it was not possible to create a common API which will suit all the devices.
+
+Could you please help me with a cleaner way so that devices don't runtime-suspend (not even clock-gate), and system suspend should be working?
+
+Thanks
+Sumit Singh
+-----------------------------------------------------------------------------------
+This email message is for the sole use of the intended recipient(s) and may contain
+confidential information.  Any unauthorized review, use, disclosure or distribution
+is prohibited.  If you are not the intended recipient, please contact the sender by
+reply email and destroy all copies of the original message.
+-----------------------------------------------------------------------------------
