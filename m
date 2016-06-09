@@ -1,66 +1,243 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Broxton support
-Date: Thu,  9 Jun 2016 15:34:41 -0700
-Message-ID: <1465511681-6571-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v4 2/5] clockevents: Add timed freeze
+Date: Fri, 10 Jun 2016 00:43:01 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1606100001180.28031@nanos>
+References: <1465506139-25981-1-git-send-email-dbasehore@chromium.org> <1465506139-25981-3-git-send-email-dbasehore@chromium.org>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:52878 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751119AbcFIWdI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 9 Jun 2016 18:33:08 -0400
+Received: from www.linutronix.de ([62.245.132.108]:56527 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbcFIWpB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2016 18:45:01 -0400
+In-Reply-To: <1465506139-25981-3-git-send-email-dbasehore@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: dbasehore@chromium.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gnomes@lxorguk.ukuu.org.uk, peterz@infradead.org
 
-Added Broxton cpu model number. Broxton requires core_params to get
-performance limits via MSRs, but it is an Atom platform, which requires
-more power optimized algorithm. So the P state selection will use similar
-algorithm as other Atom platforms.
+On Thu, 9 Jun 2016, dbasehore@chromium.org wrote:
+>  
+> +/*
+> + * Clockevent device may run during freeze
+> + */
+> +# define CLOCK_EVT_FEAT_FREEZE		0x000100
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+This is a bad name and a horrible comment. The device does not freeze. It is
+able to run during suspend. 
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index e1b7a5e..8a0e405 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1110,6 +1110,26 @@ static struct cpu_defaults knl_params = {
- 	},
- };
- 
-+static struct cpu_defaults bxt_params = {
-+	.pid_policy = {
-+		.sample_rate_ms = 10,
-+		.deadband = 0,
-+		.setpoint = 60,
-+		.p_gain_pct = 14,
-+		.d_gain_pct = 0,
-+		.i_gain_pct = 4,
-+	},
-+	.funcs = {
-+		.get_max = core_get_max_pstate,
-+		.get_max_physical = core_get_max_pstate_physical,
-+		.get_min = core_get_min_pstate,
-+		.get_turbo = core_get_turbo_pstate,
-+		.get_scaling = core_get_scaling,
-+		.get_val = core_get_val,
-+		.get_target_pstate = get_target_pstate_use_cpu_load,
-+	},
-+};
-+
- static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
- {
- 	int max_perf = cpu->pstate.turbo_pstate;
-@@ -1370,6 +1390,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
- 	ICPU(INTEL_FAM6_SKYLAKE_DESKTOP,	core_params),
- 	ICPU(INTEL_FAM6_BROADWELL_XEON_D,	core_params),
- 	ICPU(INTEL_FAM6_XEON_PHI_KNL,		knl_params),
-+	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		bxt_params),
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
--- 
-2.5.5
+Hint: We have CLOCK_SOURCE_SUSPEND_NONSTOP which is self explanatory.
 
+>  /**
+>   * struct clock_event_device - clock event device descriptor
+>   * @event_handler:	Assigned by the framework to be called by the low
+>   *			level handler of the event source
+>   * @set_next_event:	set next event function using a clocksource delta
+>   * @set_next_ktime:	set next event function using a direct ktime value
+> + * @event_pending:	check if the programmed event is still pending. Used
+> + *			for freeze events when timekeeping is suspended and
+> + *			irqs are disabled.
+>   * @next_event:		local storage for the next event in oneshot mode
+>   * @max_delta_ns:	maximum delta value in ns
+>   * @min_delta_ns:	minimum delta value in ns
+> @@ -100,7 +108,9 @@ struct clock_event_device {
+>  	void			(*event_handler)(struct clock_event_device *);
+>  	int			(*set_next_event)(unsigned long evt, struct clock_event_device *);
+>  	int			(*set_next_ktime)(ktime_t expires, struct clock_event_device *);
+> +	bool			(*event_expired)(struct clock_event_device *);
+>  	ktime_t			next_event;
+> +	bool			freeze_event_programmed;
+
+I really don't like that flag. Why do you need it at all?
+
+>  	u64			max_delta_ns;
+>  	u64			min_delta_ns;
+  
+> +static int clockevents_program_freeze_event(struct clock_event_device *dev,
+> +					    ktime_t delta)
+> +{
+> +	int64_t delta_ns = ktime_to_ns(delta);
+
+Why int? Please use u64 and spare all the silly type casts you have in your
+code.
+
+> +	unsigned long long clc;
+
+What's wrong with u64?
+
+> +	int ret;
+> +
+> +	if (delta_ns > (int64_t) dev->max_delta_ns) {
+> +		printk_deferred(KERN_WARNING
+> +				"Freeze event time longer than max delta\n");
+> +		delta_ns = (int64_t) dev->max_delta_ns;
+
+What's the point of this? Tell the caller that it does not work and be done
+with it. -ERANGE or something like that.
+
+> +	}
+
+> +	clockevents_tick_resume(dev);
+> +	clockevents_switch_state(dev, CLOCK_EVT_STATE_ONESHOT);
+> +	delta_ns = max_t(int64_t, delta_ns, dev->min_delta_ns);
+
+You're comparing signed and insigned. Use u64 and max()... Also you really
+should tell the caller, that providing a timeout that small is silly.
+
+> +	clc = ((unsigned long long) delta_ns * dev->mult) >> dev->shift;
+
+Sigh.
+
+> +	ret = dev->set_next_event((unsigned long) clc, dev);
+> +	if (ret < 0) {
+> +		printk_deferred(KERN_WARNING
+> +				"Failed to program freeze event\n");
+> +		clockevents_shutdown(dev);
+> +	} else {
+> +		dev->freeze_event_programmed = true;
+
+I'm still not seing why you need that flag.
+
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +static bool clockevents_freeze_event_expired(struct clock_event_device *dev)
+> +{
+> +	if (dev->freeze_event_programmed)
+> +		return dev->event_expired(dev);
+
+So this will oops from deep inside suspend when the clock event does not have
+the callback ....
+
+> +	return false;
+> +}
+> +
+> +static void clockevents_cleanup_freeze_event(struct clock_event_device *dev)
+> +{
+> +	if (!(dev->features & CLOCK_EVT_FEAT_FREEZE))
+> +		return;
+
+What's that check for? This is only called from the code below in a section
+which cannot be reached when the flag is not set.
+
+> +	clockevents_shutdown(dev);
+
+You can open code this line at the call site because that's all you need.
+
+> +	dev->freeze_event_programmed = false;
+> +}
+
+> +/**
+> + * timed_freeze - Enter freeze on a CPU for a timed duration
+> + * @ops:	Pointers for enter freeze and callback functions.
+> + * @data:	Pointer to pass arguments to the function pointers.
+> + * @delta:	Time to freeze for. If this amount of time passes in freeze, the
+> + *		callback in ops will be called.
+> + *
+> + * Returns the value from ops->enter_freeze or ops->callback on success, -EERROR
+> + * otherwise. If an error is encountered while setting up the clock event,
+> + * freeze with still be entered, but it will not be timed nor will the callback
+> + * function be run.
+
+That logic makes no sense at all.
+
+> +int timed_freeze(struct timed_freeze_ops *ops, void *data, ktime_t delta)
+> +{
+> +	int cpu = smp_processor_id();
+> +	struct tick_device *td = tick_get_device(cpu);
+> +	struct clock_event_device *dev;
+> +	int ret;
+> +
+> +	if (!ops || !ops->enter_freeze) {
+> +		printk_deferred(KERN_ERR
+> +				"[%s] called with invalid ops\n", __func__);
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (!td || !td->evtdev ||
+
+td is always valid, because it's a pointer to a per cpu variable.
+
+> +	    !(td->evtdev->features & CLOCK_EVT_FEAT_FREEZE)) {
+> +		printk_deferred(KERN_WARNING
+> +				"[%s] called with invalid clock event device\n",
+
+The function is not called with an invalid clock event device. There is either
+no clock event device or the device does not support this.
+
+> +				__func__);
+> +		ret = -ENOSYS;
+> +		goto freeze_no_check;
+> +	}
+> +
+> +	dev = td->evtdev;
+> +	if (!clockevent_state_shutdown(dev)) {
+> +		printk_deferred(KERN_WARNING
+> +				"[%s] called while clock event device in use\n",
+> +				__func__);
+> +		ret = -EBUSY;
+> +		goto freeze_no_check;
+> +	}
+> +
+> +	ret = clockevents_program_freeze_event(dev, delta);
+> +	if (ret < 0)
+> +		goto freeze_no_check;
+> +
+> +	ret = ops->enter_freeze(data);
+> +	if (ret < 0)
+> +		goto out;
+> +
+> +	if (ops->callback && clockevents_freeze_event_expired(dev))
+> +		ret = ops->callback(data);
+
+This callback thing is just wrong here. If that fails then how is the call
+site supposed to figure out where the error came from? From your printks?
+
+The correct way to do this is:
+
+int tick_set_frozen_event(ktime_t delta)
+{
+    	if (....)
+		return -EINVAL;
+	if (....)
+		return -ENOSYS;
+
+	return program_event(dev, delta);
+}
+
+and:
+
+int tick_clear_frozen_event()
+{
+	ret = event_expired(dev);
+	clockevents_shutdown(dev);
+	return ret;
+}
+
+So no ops, nothing nada.
+
+And at the call site you do:
+
+    ret = tick_set_frozen_event(delta);
+    if (ret)
+		goto deal_with_ret;
+
+    ret = freeze();
+    if (ret) {
+       	     tick_clear_frozen_event();
+	     goto deal_with_freeze_abort;
+    }
+    
+    ret = tick_clear_frozen_event();
+
+    do_something_sensible(ret);
+
+That's actually understandable and debugable code.
+
+Thanks,
+
+	tglx
+
+    
