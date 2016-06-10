@@ -1,67 +1,229 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [RFC v4 01/14] regulator: of: Add helper for getting all supplies
-Date: Fri, 10 Jun 2016 12:30:56 -0500
-Message-ID: <20160610173056.GA16503@rob-hp-laptop>
-References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
- <1465465471-28740-2-git-send-email-k.kozlowski@samsung.com>
- <20160609102925.GS7510@sirena.org.uk>
- <5759560A.70107@samsung.com>
+From: Kees Cook <keescook@chromium.org>
+Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
+Date: Fri, 10 Jun 2016 11:09:22 -0700
+Message-ID: <CAGXu5jK15P5CAQd09NzG31YMPEKJGXbhXiYDQ2sRC=WBhAFTrA@mail.gmail.com>
+References: <573DF82D.50006@deltatee.com> <20160520071517.GB14191@gmail.com>
+ <CAJZ5v0gbv4CHmb1KfFgb=VKDNY32d=nzQ776_zVPC+X68h4d-w@mail.gmail.com>
+ <7b865a03-484f-2d10-aa3e-d9c0d04caecb@tycho.nsa.gov> <CAJZ5v0gWxVwJ4aNEKtnCnY-GvFACaAjFDJNH__2YeAco-f1kRQ@mail.gmail.com>
+ <CAGXu5jJ+hRAVNfa=xWd9c9On5vC6k+kZKkaXGSXS5WfjTK2QcA@mail.gmail.com>
+ <CAGXu5jK=YRbrzON7yRFC4wpjziOH6RHUnZ9nUHqj4vdayi=fCw@mail.gmail.com>
+ <573FC081.20006@deltatee.com> <CAGXu5jLAzWPSCT0Be182a+i0Y7yb_BriwrdzNshK7xPc8Ts_zA@mail.gmail.com>
+ <575A3E95.5090100@deltatee.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:34612 "EHLO
-	mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbcFJRa6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 13:30:58 -0400
-Content-Disposition: inline
-In-Reply-To: <5759560A.70107@samsung.com>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:37286 "EHLO
+	mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932212AbcFJSJZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 14:09:25 -0400
+Received: by mail-wm0-f54.google.com with SMTP id k204so2693603wmk.0
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2016 11:09:25 -0700 (PDT)
+In-Reply-To: <575A3E95.5090100@deltatee.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Mark Brown <broonie@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hdegoede@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Heiko Stuebner <heiko@sntech.de>, linux-mmc@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, hzpeterchen@gmail.com, Bartlomiej
+To: Logan Gunthorpe <logang@deltatee.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
-On Thu, Jun 09, 2016 at 01:42:02PM +0200, Krzysztof Kozlowski wrote:
-> On 06/09/2016 12:29 PM, Mark Brown wrote:
-> > On Thu, Jun 09, 2016 at 11:44:18AM +0200, Krzysztof Kozlowski wrote:
-> >> Few drivers have a need of getting regulator supplies without knowing
-> >> their names:
-> >> 1. The Simple Framebuffer driver works on setup provided by bootloader
-> >>    (outside of scope of kernel);
-> >> 2. Generic power sequence driver may be attached to any device node.
-> >>
-> >> Add a Device Tree helper for parsing "-supply" properties and returning
-> >> allocated bulk regulator consumers.
-> > 
-> > I'm still very concerned that this is just an invitation to people to
-> > write half baked regulator consumers and half baked DTs to go along with
-> > it, making it a standard API that doesn't have big red flags on it that
-> > will flag up when "normal" drivers use it is not good.  Right now this
-> > just looks like a standard API and people are going to just start using
-> > it.  If we are going to do this perhaps we need a separate header or
-> > something to help flag this up.
-> 
-> No problem, I can move it to a special header.  Actually, if you dislike
-> this as an API, it does not have to be in header at all.  I can just
-> duplicate the simplefb code.
-> 
-> > In the case of power sequences I'd expect the sequences to perform
-> > operations on named supplies - the core shouldn't know what the supplies
-> > are but the thing specifying the sequence should.
-> 
-> Hm, so maybe passing names like:
-> 
-> usb3503@08 {
-> 	reset-gpios = <&gpx3 5 GPIO_ACTIVE_HIGH>;
-> 	initial-mode = <1>;
-> 	vdd-supply = <&buck8_reg>;
-> 	foo-supply = <&buck9_reg>;
-> 
->         power-sequence;
-> 	power-sequence-supplies = "vdd", "foo";
+On Thu, Jun 9, 2016 at 9:14 PM, Logan Gunthorpe <logang@deltatee.com> wrote:
+> Hey,
+>
+> I've still be trying to figure this out as I have time.
+>
+> I tried printing a couple restore addresses and nothing I can find seems
+> anywhere near the rodata/ex_table boundary.
+>
+> I tried with the (badly formatted) below and got the following. Nothing too
+> surprising. I've attached a kallsyms that matches the kernel for reference.
+>
+> restore_code: ffff880157c3b000
+> jump_addr: ffffffff81446be0
+>
+>
+> diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+> index 009947d..6efedb7 100644
+> --- a/arch/x86/power/hibernate_64.c
+> +++ b/arch/x86/power/hibernate_64.c
+> @@ -92,6 +92,9 @@ int swsusp_arch_resume(void)
+>         memcpy(relocated_restore_code, &core_restore_code,
+>                &restore_registers - &core_restore_code);
+>
+> +       pr_info("restore_code: %p\n", relocated_restore_code);
+> +       pr_info("jump_addr: %lx\n", restore_jump_address);
+> +
 
-This alone would be fine as it is just one property, but then what's 
-next? power-sequence-delay, power-sequence-clocks, etc. What if you 
-need to express ordering relationship of supplies, clocks, gpios? We end 
-up with a scripting language in DT and we don't want to have that.
+Also interesting would be the "relocated_restore_code" address, as
+well as a dump of /sys/kernel/debug/kernel_page_tables (from
+CONFIG_X86_PTDUMP).
 
-Rob
+I'm baffled by the problem, but the best I can understand is the the
+relocated_restore_code range isn't executable (which should be visible
+from finding it in /sys/kernel/debug/kernel_page_tables), but I don't
+see how to solve that since my original patch didn't work.
+
+Rafael, is this something you have time to look at quickly?
+
+-Kees
+
+>         restore_image();
+>         return 0;
+>  }
+>
+>
+> Thanks,
+>
+> Logan
+>
+>
+>
+> On 21/05/16 10:39 AM, Kees Cook wrote:
+>>
+>> On Fri, May 20, 2016 at 6:57 PM, Logan Gunthorpe <logang@deltatee.com>
+>> wrote:
+>>>
+>>> On 20/05/16 04:16 PM, Kees Cook wrote:
+>>>>
+>>>>
+>>>> On Fri, May 20, 2016 at 2:59 PM, Kees Cook <keescook@chromium.org>
+>>>> wrote:
+>>>>>
+>>>>>
+>>>>> On Fri, May 20, 2016 at 2:46 PM, Rafael J. Wysocki <rafael@kernel.org>
+>>>>> wrote:
+>>>>>>
+>>>>>>
+>>>>>> On Fri, May 20, 2016 at 3:56 PM, Stephen Smalley <sds@tycho.nsa.gov>
+>>>>>> wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>> On 05/20/2016 07:34 AM, Rafael J. Wysocki wrote:
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> On Fri, May 20, 2016 at 9:15 AM, Ingo Molnar <mingo@kernel.org>
+>>>>>>>> wrote:
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> * Logan Gunthorpe <logang@deltatee.com> wrote:
+>>>>>>>>>
+>>>>>>>>>> Hi,
+>>>>>>>>>>
+>>>>>>>>>> I have been working on a bug that causes my laptop to freeze
+>>>>>>>>>> during
+>>>>>>>>>> resume from hibernation. I did a bisect to find the offending
+>>>>>>>>>> commit:
+>>>>>>>>>>
+>>>>>>>>>> [ab76f7b4ab] x86/mm: Set NX on gap between __ex_table and rodata
+>>>>>>>>>>
+>>>>>>>>>> There is more information in the bugzilla report [1] that
+>>>>>>>>>> I've been working on but I will summarize things below.
+>>>>>>>>>>
+>>>>>>>>>> I've experienced intermittent but reproducible freezes when
+>>>>>>>>>> resuming
+>>>>>>>>>> from hibernation since about kernel version 3.19. The freeze was
+>>>>>>>>>> significantly more reproducible when a few applications were
+>>>>>>>>>> loaded
+>>>>>>>>>> before hibernation and would largely not happen if hibernated
+>>>>>>>>>> immediately after booting to a desktop. I did some tracing work to
+>>>>>>>>>> find
+>>>>>>>>>> that the kernel gets as far as the resume_image call in
+>>>>>>>>>> swsusp_arch_resume and I could not find any response from the
+>>>>>>>>>> image
+>>>>>>>>>> kernel when I hit the bug. I also did testing that seemed to rule
+>>>>>>>>>> out
+>>>>>>>>>> this being caused by a problematic driver.
+>>>>>>>>>>
+>>>>>>>>>> I did a successful bisect between 3.18 and 3.19 which found a bug
+>>>>>>>>>> in
+>>>>>>>>>> commit f5b2831d6 that was then later fixed by commit 55696b1f66 in
+>>>>>>>>>> 4.4.
+>>>>>>>>>> Then, I did a second bisect with a ported version of the fix to
+>>>>>>>>>> the
+>>>>>>>>>> first bug and found commit ab76f7b4ab in 4.3 to also break
+>>>>>>>>>> hibernation
+>>>>>>>>>> with what appears to be the exact same symptoms. Reverting that
+>>>>>>>>>> commit
+>>>>>>>>>> in recent kernels up to and including 4.6 fixes the issue and
+>>>>>>>>>> restores
+>>>>>>>>>> reliable hibernation. However, it's not at all clear to me why
+>>>>>>>>>> that
+>>>>>>>>>> commit would cause this issue or how to fix the issue without
+>>>>>>>>>> reverting.
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> I've attached that commit below and also Cc:-ed a few more people
+>>>>>>>>> who
+>>>>>>>>> might have
+>>>>>>>>> an idea about why this regressed. Worst-case we'll have to revert
+>>>>>>>>> it.
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> Without looking deep into mm, my theory would be that after this
+>>>>>>>> patch
+>>>>>>>> the final jump from the boot kernel to the image kernel's trampoline
+>>>>>>>> code during resume may crash the kernel if the trampoline page turns
+>>>>>>>> out to be NX in the boot kernel (it has to be executable in both the
+>>>>>>>> boot and the image kernels).
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> So, pardon my ignorance, but where is this trampoline page placed in
+>>>>>>> kernel memory?
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> On 32-bit its location has to be the same in both the boot and the
+>>>>>> image kernels and that's within kernel text in both cases, so that
+>>>>>> shouldn't be a problem.
+>>>>>>
+>>>>>> On 64-bit its location depends on the image kernel and specifically on
+>>>>>> the location of the restore_registers routine in it.  The (virtual)
+>>>>>> address of that routine is stored in the restore_jump_address
+>>>>>> variable, so the page containing it (the trampoline page) can be found
+>>>>>> with the help of that.
+>>>>>>
+>>>>>> swsusp_arch_resume() sets up a temporary kernel mapping to finalize
+>>>>>> the image restoration and that page must not be NX in that mapping for
+>>>>>> things to work.
+>>>>>
+>>>>>
+>>>>>
+>>>>> It looks like nothing in the swsusp_arch_resume() -> get_safe_page()
+>>>>> -> get_image_page() path sets the page executable...
+>>>>>
+>>>>> Untested, but I wonder if this work work in swsusp_arch_resume()
+>>>>> before the memcpy?
+>>>>
+>>>>
+>>>>
+>>>> I can't type today, it seems. It should read "... if this would work
+>>>> ..."
+>>>>
+>>>> If you can test this and it works for you, I'll send a proper patch...
+>>>> :P
+>>>>
+>>>> -Kees
+>>>>
+>>>
+>>> Hi Kees,
+>>>
+>>> Thanks. I tried the patch but it only resulted in a kernel warning and
+>>> freeze. I've attached a photo showing as much of the messages as I could
+>>> get.
+>>>
+>>> Logan
+>>
+>>
+>> Ah, dang, ok, thanks for trying it. I'll let Rafael try to figure this one
+>> out.
+>>
+>> -Kees
+>>
+>
+
+
+
+-- 
+Kees Cook
+Chrome OS & Brillo Security
