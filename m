@@ -1,43 +1,74 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Linux panics when suspend cannot offline the secondary cores
-Date: Fri, 10 Jun 2016 23:37:42 +0200
-Message-ID: <575B3326.1050500@free.fr>
-References: <575ADFAC.4090009@free.fr> <2026483.61HqCp9Eli@vostro.rjw.lan>
+From: Andy Gross <andy.gross@linaro.org>
+Subject: Re: [PATCH 3/5] arm64: dts: msm8916: Add spc compat tag
+Date: Fri, 10 Jun 2016 16:52:45 -0500
+Message-ID: <CAPBZ5QfzDG9AQbZoZ44x0N4T4gZTdeEgvuxr1+aq-zO4ZrsMHg@mail.gmail.com>
+References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
+ <1463634020-17252-4-git-send-email-andy.gross@linaro.org>
+ <20160610154857.GA6430@leverpostej>
+ <20160610161234.GO13357@hector.attlocal.net>
+ <20160610162555.GB6430@leverpostej>
+ <20160610164721.GP13357@hector.attlocal.net>
+ <20160610211636.GA38979@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp4-g21.free.fr ([212.27.42.4]:48718 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753274AbcFJViF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Jun 2016 17:38:05 -0400
-In-Reply-To: <2026483.61HqCp9Eli@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20160610211636.GA38979@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Sebastian Frias <sf84@laposte.net>
 
-On 10/06/2016 23:35, Rafael J. Wysocki wrote:
-              ^^^^^
-
-Your clock is 5 minutes ahead ;-)
-
-> On Friday, June 10, 2016 05:41:32 PM Mason wrote:
->
->> I'm playing with S3 Suspend-to-RAM, and I noticed that Linux is really
->> unhappy when the suspend framework fails to offline secondary cores.
+On 10 June 2016 at 16:16, Lina Iyer <lina.iyer@linaro.org> wrote:
+> On Fri, Jun 10 2016 at 10:47 -0600, Andy Gross wrote:
 >>
->> Is this expected/by design, or could it fail more gracefully?
->> (It could also be something missing in my platform's code.)
-> 
-> This looks like a CPU offline bug to me which is more general than just
-> system suspend.
+>> On Fri, Jun 10, 2016 at 05:25:55PM +0100, Mark Rutland wrote:
+>>>
+>>> On Fri, Jun 10, 2016 at 11:12:34AM -0500, Andy Gross wrote:
+>>> > On Fri, Jun 10, 2016 at 04:48:57PM +0100, Mark Rutland wrote:
+>>> > > [+ Lorenzo]
+>>> > >
+>>> > > On Thu, May 19, 2016 at 12:00:18AM -0500, Andy Gross wrote:
+>
+> <...>
+>>>
+>>>
+>>> > I chose to do this outside of the arm cpuidle driver because I didn't
+>>> > want to
+>>> > add any more DT information aside from the compatible, and I needed a
+>>> > separate
+>>> > place for the Qualcomm specific suspend code.
+>>>
+>>> Which suspend code is Qualcomm-specific? There shouldn't be anything on
+>>> the PSCI side, so I can only imagine that device management is left.
+>>> What am I missing?
+>>
+>>
+>
+>> Qualcomm won't be supporting the psci suspend feature and will be doing
+>> their
+>> own thing.  As such, they need their own suspend ops.  In addition, we
+>> have
+>> platforms that don't use psci (32 bit).
+>>
+> Andy, which PSCI suspend feature are you referring to, here? On 8916, we
+> do support CPU_SUSPEND in PSCI.
+>
+> You don't want to call SYSTEM_SUSPEND, as it requires the other CPUs to
+> be CPU_OFF (hotplugged off) before the last core calls this PSCI
+> function.
 
-You may be right, I will try just off-lining cpu1.
-Suspend may be a red herring.
+I was referring to the SYSTEM_SUSPEND psci feature.  It was my
+understanding that wouldn't be supported on the Qualcomm platforms.
 
-By the way, I know my implementation of tango_cpu_die
-is incorrect, I was testing the failure mode.
+Regards,
 
-Regards.
-
+Andy
