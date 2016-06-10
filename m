@@ -1,160 +1,80 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/5] soc: qcom: Add suspend to idle support
-Date: Fri, 10 Jun 2016 10:47:35 +0200
-Message-ID: <CAPDyKFp=qR=5q5O5RmtG0SQUma9BdgUrvGL9GyxdrpgiH24TeQ@mail.gmail.com>
-References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
- <1463634020-17252-2-git-send-email-andy.gross@linaro.org> <CAPDyKFrAGVPkc=ycm-cQg6Y5NLx_d4xGeg8SaSiB-K5sxtv76A@mail.gmail.com>
- <20160609180902.GJ13357@hector.attlocal.net>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt > 0
+Date: Fri, 10 Jun 2016 11:43:24 +0200
+Message-ID: <575A8BBC.7040306@samsung.com>
+References: <1465507719-819-1-git-send-email-rklein@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f52.google.com ([74.125.82.52]:36994 "EHLO
-	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbcFJIri (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 04:47:38 -0400
-Received: by mail-wm0-f52.google.com with SMTP id k204so92405275wmk.0
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2016 01:47:37 -0700 (PDT)
-In-Reply-To: <20160609180902.GJ13357@hector.attlocal.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1465507719-819-1-git-send-email-rklein@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rhyland Klein <rklein@nvidia.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Gross <andy.gross@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 9 June 2016 at 20:09, Andy Gross <andy.gross@linaro.org> wrote:
-> On Thu, Jun 09, 2016 at 09:39:34AM +0200, Ulf Hansson wrote:
->> + Daniel
->>
->> On 19 May 2016 at 07:00, Andy Gross <andy.gross@linaro.org> wrote:
->> > This patch adds suspend to idle support for Qualcomm processors.  While
->> > suspend to memory will be a valid state, there won't be any special
->> > handling or power savings over the suspend to idle.
->> >
->> > Signed-off-by: Andy Gross <andy.gross@linaro.org>
->> > ---
->> >  drivers/soc/qcom/Makefile  |  1 +
->> >  drivers/soc/qcom/suspend.c | 77 ++++++++++++++++++++++++++++++++++++++++++++++
->> >  2 files changed, 78 insertions(+)
->> >  create mode 100644 drivers/soc/qcom/suspend.c
->> >
->> > diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
->> > index fdd664e..7c479d3 100644
->> > --- a/drivers/soc/qcom/Makefile
->> > +++ b/drivers/soc/qcom/Makefile
->> > @@ -7,3 +7,4 @@ obj-$(CONFIG_QCOM_SMEM_STATE) += smem_state.o
->> >  obj-$(CONFIG_QCOM_SMP2P)       += smp2p.o
->> >  obj-$(CONFIG_QCOM_SMSM)        += smsm.o
->> >  obj-$(CONFIG_QCOM_WCNSS_CTRL) += wcnss_ctrl.o
->> > +obj-$(CONFIG_SUSPEND)  +=      suspend.o
->> > diff --git a/drivers/soc/qcom/suspend.c b/drivers/soc/qcom/suspend.c
->> > new file mode 100644
->> > index 0000000..7d3f2dd
->> > --- /dev/null
->> > +++ b/drivers/soc/qcom/suspend.c
->> > @@ -0,0 +1,77 @@
->> > +/*
->> > + * (C) Copyright 2016 Linaro Ltd.
->> > + *
->> > + * This program is free software; you can redistribute it and/or
->> > + * modify it under the terms of the GNU General Public License
->> > + * as published by the Free Software Foundation; version 2
->> > + * of the License.
->> > + */
->> > +#include <linux/module.h>
->> > +#include <linux/of.h>
->> > +#include <linux/cpuidle.h>
->> > +#include <linux/suspend.h>
->> > +
->> > +
->> > +static void qcom_pm_enter_freeze(struct cpuidle_device *dev,
->> > +       struct cpuidle_driver *drv,
->> > +       int index)
->> > +{
->> > +       drv->states[index].enter(dev, drv, index);
->> > +}
->> > +
->> > +static const struct of_device_id qcom_idle_state_match[] = {
->> > +       { .compatible = "qcom,idle-state-spc", },
->> > +       { },
->> > +};
->> > +
->> > +static const struct platform_suspend_ops qcom_suspend_ops = {
->> > +       .valid          = suspend_valid_only_mem,
->> > +};
->> > +
->> > +static int __init qcom_pm_init(void)
->> > +{
->> > +       struct cpuidle_device *cpu_dev;
->> > +       struct cpuidle_driver *cpu_drv;
->> > +       int state_count;
->> > +       struct device_node *state_np, *cpu_np;
->> > +       const struct of_device_id *match;
->> > +       int i;
->> > +
->> > +       /* configure CPU enter_freeze if applicable */
->> > +       for_each_present_cpu(i) {
->> > +               cpu_np = of_get_cpu_node(i, NULL);
->> > +               cpu_dev = per_cpu_ptr(cpuidle_devices, i);
->> > +               cpu_drv = cpuidle_get_cpu_driver(cpu_dev);
->> > +
->> > +               if (!cpu_dev || !cpu_drv) {
->> > +                       of_node_put(cpu_np);
->> > +                       return -EPROBE_DEFER;
->>
->> This isn't a driver, so returning -EPROBE_DEFER doesn't make sense.
->
-> Right.  It's not like it'll get retried.
->
->> > +               }
->> > +
->> > +               state_count = 0;
->> > +               state_np = of_parse_phandle(cpu_np, "cpu-idle-states",
->> > +                                                 state_count);
->> > +
->> > +               while (state_np) {
->> > +                       match = of_match_node(qcom_idle_state_match,
->> > +                                             state_np);
->> > +
->> > +                       state_count++;
->> > +                       if (match)
->> > +                               cpu_drv->states[state_count].enter_freeze =
->> > +                                               &qcom_pm_enter_freeze;
->> > +                       of_node_put(state_np);
->> > +
->> > +                       state_np = of_parse_phandle(cpu_np, "cpu-idle-states",
->> > +                                                   state_count);
->> > +               }
->> > +
->> > +               of_node_put(cpu_np);
->> > +       }
->> > +
->> > +       suspend_set_ops(&qcom_suspend_ops);
->>
->> I don't think this will work!
->>
->> When building a multi defconfig for ARM, you might overwrite the
->> suspend_ops (there's only one set) as here you don't know that it's
->> actually the QCOM platform that is running, right!?
->>
->> Perhaps this code actually belongs closer to the cpuidle driver?
->
-> Hmmmm, I might have to get creative.  I originally had a DT entry for the pm,
-> but that doesn't make sense as this is purely a software construct.  The db410c
-> uses the arm cpuidle driver so I can't really hook it in there.  I'll have to
-> come up with something else.
+On 06/09/2016 11:28 PM, Rhyland Klein wrote:
+> Change power_supply_read_temp() to use power_supply_get_property()
+> so that it will check the use_cnt and ensure it is > 0. The use_cnt
+> will be incremented at the end of __power_supply_register, so this
+> will block to case where get_property can be called before the supply
+> is fully registered. This fixes the issue show in the stack below:
+> 
+> [    1.452598] power_supply_read_temp+0x78/0x80
+> [    1.458680] thermal_zone_get_temp+0x5c/0x11c
+> [    1.464765] thermal_zone_device_update+0x34/0xb4
+> [    1.471195] thermal_zone_device_register+0x87c/0x8cc
+> [    1.477974] __power_supply_register+0x364/0x424
+> [    1.484317] power_supply_register_no_ws+0x10/0x18
+> [    1.490833] bq27xxx_battery_setup+0x10c/0x164
+> [    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
+> [    1.503435] i2c_device_probe+0x174/0x240
+> [    1.509172] driver_probe_device+0x1fc/0x29c
+> [    1.515167] __driver_attach+0xa4/0xa8
+> [    1.520643] bus_for_each_dev+0x58/0x98
+> [    1.526204] driver_attach+0x20/0x28
+> [    1.531505] bus_add_driver+0x1c8/0x22c
+> [    1.537067] driver_register+0x68/0x108
+> [    1.542630] i2c_register_driver+0x38/0x7c
+> [    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
+> [    1.555321] do_one_initcall+0x38/0x12c
+> [    1.560886] kernel_init_freeable+0x148/0x1ec
+> [    1.566972] kernel_init+0x10/0xfc
+> [    1.572101] ret_from_fork+0x10/0x40
+> 
+> Also make the same change to ps_get_max_charge_cntl_limit() and
+> ps_get_cur_chrage_cntl_limit() to be safe. Lastly, change the return
+> value of power_supply_get_property() to -EAGAIN from -ENODEV if
+> use_cnt <= 0.
+> 
+> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+> ---
+> v4:
+>  - Fixed return check conditions
+>  - Removed change to power_supply_get_property return code
+>  - removed whitespace change
+> 
+> v3:
+>  - Changed calls to ->get_property() to use common
+>    power_supply_get_property()
+>  - reworded description, added "Fixes" line
+>  - Changed return value of power_supply_get_property() to -EAGAIN
+> 
+> v2:
+>  - Added cc stable
+>  - changed return to -EAGAIN in case of use_cnt < 1
+>  - Removed WARNING
+>  - return value check added in additional patch:
+>    https://patchwork.kernel.org/patch/9158805/
+> 
+>  drivers/power/power_supply_core.c | 27 ++++++++++++++++-----------
+>  1 file changed, 16 insertions(+), 11 deletions(-)
 
-I did a little research.
+Looks okay:
 
-I think you should be able to use the struct cpuidle_ops->init()
-callback. This is being invoked when the arm cpuidle driver is
-initialized.
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-arm_idle_init()
-  ->arm_cpuidle_init()
-     ->cpuidle_ops->init()
-
-In the QCOM case, it's the spm driver that registers these cpuidle_ops
-(drivers/soc/qcom/spm.c). If you fold in the code from $subject patch
-in qcom_cpuidle_init(), that should work I think.
-
-Kind regards
-Uffe
+Best regards,
+Krzysztof
