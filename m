@@ -1,221 +1,160 @@
-From: Lianwei Wang <lianwei.wang@gmail.com>
-Subject: [PATCH v1] PM / sleep: make pm notifier called symmetrically
-Date: Thu,  9 Jun 2016 23:47:32 -0700
-Message-ID: <1465541252-12565-1-git-send-email-lianwei.wang@gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/5] soc: qcom: Add suspend to idle support
+Date: Fri, 10 Jun 2016 10:47:35 +0200
+Message-ID: <CAPDyKFp=qR=5q5O5RmtG0SQUma9BdgUrvGL9GyxdrpgiH24TeQ@mail.gmail.com>
+References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
+ <1463634020-17252-2-git-send-email-andy.gross@linaro.org> <CAPDyKFrAGVPkc=ycm-cQg6Y5NLx_d4xGeg8SaSiB-K5sxtv76A@mail.gmail.com>
+ <20160609180902.GJ13357@hector.attlocal.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:34551 "EHLO
-	mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900AbcFJGrl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 02:47:41 -0400
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:36994 "EHLO
+	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751251AbcFJIri (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 04:47:38 -0400
+Received: by mail-wm0-f52.google.com with SMTP id k204so92405275wmk.0
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2016 01:47:37 -0700 (PDT)
+In-Reply-To: <20160609180902.GJ13357@hector.attlocal.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tglx@linutronix.de, rjw@rjwysocki.net, peterz@infradead.org, mingo@kernel.org, oleg@redhat.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Lianwei Wang <lianwei.wang@gmail.com>
+To: Andy Gross <andy.gross@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-This makes pm notifier PREPARE/POST symmetrical: if PREPARE
-fails, we will only undo what ever happened on PREPARE.
+On 9 June 2016 at 20:09, Andy Gross <andy.gross@linaro.org> wrote:
+> On Thu, Jun 09, 2016 at 09:39:34AM +0200, Ulf Hansson wrote:
+>> + Daniel
+>>
+>> On 19 May 2016 at 07:00, Andy Gross <andy.gross@linaro.org> wrote:
+>> > This patch adds suspend to idle support for Qualcomm processors.  While
+>> > suspend to memory will be a valid state, there won't be any special
+>> > handling or power savings over the suspend to idle.
+>> >
+>> > Signed-off-by: Andy Gross <andy.gross@linaro.org>
+>> > ---
+>> >  drivers/soc/qcom/Makefile  |  1 +
+>> >  drivers/soc/qcom/suspend.c | 77 ++++++++++++++++++++++++++++++++++++++++++++++
+>> >  2 files changed, 78 insertions(+)
+>> >  create mode 100644 drivers/soc/qcom/suspend.c
+>> >
+>> > diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
+>> > index fdd664e..7c479d3 100644
+>> > --- a/drivers/soc/qcom/Makefile
+>> > +++ b/drivers/soc/qcom/Makefile
+>> > @@ -7,3 +7,4 @@ obj-$(CONFIG_QCOM_SMEM_STATE) += smem_state.o
+>> >  obj-$(CONFIG_QCOM_SMP2P)       += smp2p.o
+>> >  obj-$(CONFIG_QCOM_SMSM)        += smsm.o
+>> >  obj-$(CONFIG_QCOM_WCNSS_CTRL) += wcnss_ctrl.o
+>> > +obj-$(CONFIG_SUSPEND)  +=      suspend.o
+>> > diff --git a/drivers/soc/qcom/suspend.c b/drivers/soc/qcom/suspend.c
+>> > new file mode 100644
+>> > index 0000000..7d3f2dd
+>> > --- /dev/null
+>> > +++ b/drivers/soc/qcom/suspend.c
+>> > @@ -0,0 +1,77 @@
+>> > +/*
+>> > + * (C) Copyright 2016 Linaro Ltd.
+>> > + *
+>> > + * This program is free software; you can redistribute it and/or
+>> > + * modify it under the terms of the GNU General Public License
+>> > + * as published by the Free Software Foundation; version 2
+>> > + * of the License.
+>> > + */
+>> > +#include <linux/module.h>
+>> > +#include <linux/of.h>
+>> > +#include <linux/cpuidle.h>
+>> > +#include <linux/suspend.h>
+>> > +
+>> > +
+>> > +static void qcom_pm_enter_freeze(struct cpuidle_device *dev,
+>> > +       struct cpuidle_driver *drv,
+>> > +       int index)
+>> > +{
+>> > +       drv->states[index].enter(dev, drv, index);
+>> > +}
+>> > +
+>> > +static const struct of_device_id qcom_idle_state_match[] = {
+>> > +       { .compatible = "qcom,idle-state-spc", },
+>> > +       { },
+>> > +};
+>> > +
+>> > +static const struct platform_suspend_ops qcom_suspend_ops = {
+>> > +       .valid          = suspend_valid_only_mem,
+>> > +};
+>> > +
+>> > +static int __init qcom_pm_init(void)
+>> > +{
+>> > +       struct cpuidle_device *cpu_dev;
+>> > +       struct cpuidle_driver *cpu_drv;
+>> > +       int state_count;
+>> > +       struct device_node *state_np, *cpu_np;
+>> > +       const struct of_device_id *match;
+>> > +       int i;
+>> > +
+>> > +       /* configure CPU enter_freeze if applicable */
+>> > +       for_each_present_cpu(i) {
+>> > +               cpu_np = of_get_cpu_node(i, NULL);
+>> > +               cpu_dev = per_cpu_ptr(cpuidle_devices, i);
+>> > +               cpu_drv = cpuidle_get_cpu_driver(cpu_dev);
+>> > +
+>> > +               if (!cpu_dev || !cpu_drv) {
+>> > +                       of_node_put(cpu_np);
+>> > +                       return -EPROBE_DEFER;
+>>
+>> This isn't a driver, so returning -EPROBE_DEFER doesn't make sense.
+>
+> Right.  It's not like it'll get retried.
+>
+>> > +               }
+>> > +
+>> > +               state_count = 0;
+>> > +               state_np = of_parse_phandle(cpu_np, "cpu-idle-states",
+>> > +                                                 state_count);
+>> > +
+>> > +               while (state_np) {
+>> > +                       match = of_match_node(qcom_idle_state_match,
+>> > +                                             state_np);
+>> > +
+>> > +                       state_count++;
+>> > +                       if (match)
+>> > +                               cpu_drv->states[state_count].enter_freeze =
+>> > +                                               &qcom_pm_enter_freeze;
+>> > +                       of_node_put(state_np);
+>> > +
+>> > +                       state_np = of_parse_phandle(cpu_np, "cpu-idle-states",
+>> > +                                                   state_count);
+>> > +               }
+>> > +
+>> > +               of_node_put(cpu_np);
+>> > +       }
+>> > +
+>> > +       suspend_set_ops(&qcom_suspend_ops);
+>>
+>> I don't think this will work!
+>>
+>> When building a multi defconfig for ARM, you might overwrite the
+>> suspend_ops (there's only one set) as here you don't know that it's
+>> actually the QCOM platform that is running, right!?
+>>
+>> Perhaps this code actually belongs closer to the cpuidle driver?
+>
+> Hmmmm, I might have to get creative.  I originally had a DT entry for the pm,
+> but that doesn't make sense as this is purely a software construct.  The db410c
+> uses the arm cpuidle driver so I can't really hook it in there.  I'll have to
+> come up with something else.
 
-It fixes the unbalanced cpu hotplug enable in cpu pm notifier.
+I did a little research.
 
-Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
----
- kernel/power/hibernate.c | 20 ++++++++++++--------
- kernel/power/main.c      | 11 +++++++++--
- kernel/power/power.h     |  2 ++
- kernel/power/suspend.c   | 10 ++++++----
- kernel/power/user.c      | 18 ++++++++++++------
- 5 files changed, 41 insertions(+), 20 deletions(-)
+I think you should be able to use the struct cpuidle_ops->init()
+callback. This is being invoked when the arm cpuidle driver is
+initialized.
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index fca9254280ee..126e24caa82e 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -647,7 +647,7 @@ static void power_down(void)
-  */
- int hibernate(void)
- {
--	int error;
-+	int error, nr_calls = 0;
- 
- 	if (!hibernation_available()) {
- 		pr_debug("PM: Hibernation not available.\n");
-@@ -662,9 +662,11 @@ int hibernate(void)
- 	}
- 
- 	pm_prepare_console();
--	error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
--	if (error)
-+	error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE, -1, &nr_calls);
-+	if (error) {
-+		nr_calls--;
- 		goto Exit;
-+	}
- 
- 	printk(KERN_INFO "PM: Syncing filesystems ... ");
- 	sys_sync();
-@@ -714,7 +716,7 @@ int hibernate(void)
- 	/* Don't bother checking whether freezer_test_done is true */
- 	freezer_test_done = false;
-  Exit:
--	pm_notifier_call_chain(PM_POST_HIBERNATION);
-+	__pm_notifier_call_chain(PM_POST_HIBERNATION, nr_calls, NULL);
- 	pm_restore_console();
- 	atomic_inc(&snapshot_device_available);
-  Unlock:
-@@ -740,7 +742,7 @@ int hibernate(void)
-  */
- static int software_resume(void)
- {
--	int error;
-+	int error, nr_calls = 0;
- 	unsigned int flags;
- 
- 	/*
-@@ -827,9 +829,11 @@ static int software_resume(void)
- 	}
- 
- 	pm_prepare_console();
--	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
--	if (error)
-+	error = __pm_notifier_call_chain(PM_RESTORE_PREPARE, -1, &nr_calls);
-+	if (error) {
-+		nr_calls--;
- 		goto Close_Finish;
-+	}
- 
- 	pr_debug("PM: Preparing processes for restore.\n");
- 	error = freeze_processes();
-@@ -855,7 +859,7 @@ static int software_resume(void)
- 	unlock_device_hotplug();
- 	thaw_processes();
-  Finish:
--	pm_notifier_call_chain(PM_POST_RESTORE);
-+	__pm_notifier_call_chain(PM_POST_RESTORE, nr_calls, NULL);
- 	pm_restore_console();
- 	atomic_inc(&snapshot_device_available);
- 	/* For success case, the suspend path will release the lock */
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 27946975eff0..577a5dec5b35 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -38,12 +38,19 @@ int unregister_pm_notifier(struct notifier_block *nb)
- }
- EXPORT_SYMBOL_GPL(unregister_pm_notifier);
- 
--int pm_notifier_call_chain(unsigned long val)
-+int __pm_notifier_call_chain(unsigned long val, int nr_to_call, int *nr_calls)
- {
--	int ret = blocking_notifier_call_chain(&pm_chain_head, val, NULL);
-+	int ret;
-+
-+	ret =  __blocking_notifier_call_chain(&pm_chain_head, val, NULL,
-+						nr_to_call, nr_calls);
- 
- 	return notifier_to_errno(ret);
- }
-+int pm_notifier_call_chain(unsigned long val)
-+{
-+	return __pm_notifier_call_chain(val, -1, NULL);
-+}
- 
- /* If set, devices may be suspended and resumed asynchronously. */
- int pm_async_enabled = 1;
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index efe1b3b17c88..51f02ecaf125 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -200,6 +200,8 @@ static inline void suspend_test_finish(const char *label) {}
- 
- #ifdef CONFIG_PM_SLEEP
- /* kernel/power/main.c */
-+extern int __pm_notifier_call_chain(unsigned long val, int nr_to_call,
-+				    int *nr_calls);
- extern int pm_notifier_call_chain(unsigned long val);
- #endif
- 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 5b70d64b871e..0acab9d7f96f 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -266,16 +266,18 @@ static int suspend_test(int level)
-  */
- static int suspend_prepare(suspend_state_t state)
- {
--	int error;
-+	int error, nr_calls = 0;
- 
- 	if (!sleep_state_supported(state))
- 		return -EPERM;
- 
- 	pm_prepare_console();
- 
--	error = pm_notifier_call_chain(PM_SUSPEND_PREPARE);
--	if (error)
-+	error = __pm_notifier_call_chain(PM_SUSPEND_PREPARE, -1, &nr_calls);
-+	if (error) {
-+		nr_calls--;
- 		goto Finish;
-+	}
- 
- 	trace_suspend_resume(TPS("freeze_processes"), 0, true);
- 	error = suspend_freeze_processes();
-@@ -286,7 +288,7 @@ static int suspend_prepare(suspend_state_t state)
- 	suspend_stats.failed_freeze++;
- 	dpm_save_failed_step(SUSPEND_FREEZE);
-  Finish:
--	pm_notifier_call_chain(PM_POST_SUSPEND);
-+	__pm_notifier_call_chain(PM_POST_SUSPEND, nr_calls, NULL);
- 	pm_restore_console();
- 	return error;
- }
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 526e8911460a..14ad11dd7eb7 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -47,7 +47,7 @@ atomic_t snapshot_device_available = ATOMIC_INIT(1);
- static int snapshot_open(struct inode *inode, struct file *filp)
- {
- 	struct snapshot_data *data;
--	int error;
-+	int error, nr_calls = 0;
- 
- 	if (!hibernation_available())
- 		return -EPERM;
-@@ -74,9 +74,11 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
- 		data->mode = O_RDONLY;
- 		data->free_bitmaps = false;
--		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
-+		error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE,
-+							-1, &nr_calls);
- 		if (error)
--			pm_notifier_call_chain(PM_POST_HIBERNATION);
-+			__pm_notifier_call_chain(PM_POST_HIBERNATION,
-+							--nr_calls, NULL);
- 	} else {
- 		/*
- 		 * Resuming.  We may need to wait for the image device to
-@@ -86,13 +88,17 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 
- 		data->swap = -1;
- 		data->mode = O_WRONLY;
--		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
-+		error = __pm_notifier_call_chain(PM_RESTORE_PREPARE,
-+							-1, &nr_calls);
- 		if (!error) {
- 			error = create_basic_memory_bitmaps();
- 			data->free_bitmaps = !error;
--		}
-+		} else
-+			nr_calls--;
-+
- 		if (error)
--			pm_notifier_call_chain(PM_POST_RESTORE);
-+			__pm_notifier_call_chain(PM_POST_RESTORE,
-+							nr_calls, NULL);
- 	}
- 	if (error)
- 		atomic_inc(&snapshot_device_available);
--- 
-1.9.1
+arm_idle_init()
+  ->arm_cpuidle_init()
+     ->cpuidle_ops->init()
 
+In the QCOM case, it's the spm driver that registers these cpuidle_ops
+(drivers/soc/qcom/spm.c). If you fold in the code from $subject patch
+in qcom_cpuidle_init(), that should work I think.
+
+Kind regards
+Uffe
