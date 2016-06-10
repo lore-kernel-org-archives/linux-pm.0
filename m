@@ -1,35 +1,66 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: RE: Need help : Way to disable runtime PM with system suspend enabled
-Date: Fri, 10 Jun 2016 10:58:12 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1606101043360.1615-100000@iolanthe.rowland.org>
-References: <d5f4566ed9f84a0e8840402bbac6b780@bgmail103.nvidia.com>
+From: Andy Gross <andy.gross@linaro.org>
+Subject: Re: [PATCH 1/5] soc: qcom: Add suspend to idle support
+Date: Fri, 10 Jun 2016 10:26:15 -0500
+Message-ID: <20160610152615.GN13357@hector.attlocal.net>
+References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
+ <1463634020-17252-2-git-send-email-andy.gross@linaro.org>
+ <CAPDyKFrAGVPkc=ycm-cQg6Y5NLx_d4xGeg8SaSiB-K5sxtv76A@mail.gmail.com>
+ <20160609180902.GJ13357@hector.attlocal.net>
+ <CAPDyKFp=qR=5q5O5RmtG0SQUma9BdgUrvGL9GyxdrpgiH24TeQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:38760 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752101AbcFJO6T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 10:58:19 -0400
-In-Reply-To: <d5f4566ed9f84a0e8840402bbac6b780@bgmail103.nvidia.com>
+Received: from mail-oi0-f42.google.com ([209.85.218.42]:36157 "EHLO
+	mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932114AbcFJP0S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 11:26:18 -0400
+Received: by mail-oi0-f42.google.com with SMTP id p204so117214014oih.3
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2016 08:26:18 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFp=qR=5q5O5RmtG0SQUma9BdgUrvGL9GyxdrpgiH24TeQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sumit Singh <sumsingh@nvidia.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prashant Gaikwad <pgaikwad@nvidia.com>, Bharat Nihalani <bnihalani@nvidia.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On Fri, 10 Jun 2016, Sumit Singh wrote:
+On Fri, Jun 10, 2016 at 10:47:35AM +0200, Ulf Hansson wrote:
 
-> Thanks Rafael for the suggestion. I will try with that.
-> Using pm_runtime_forbid() API, we can do that. Could you please suggest a proper location for using this API, so that it is applicable to all the devices?
+<snip>
 
-If you want to change the kernel, you can change the definition of 
-pm_runtime_allow() in drivers/base/power/runtime.c.  Just have the 
-routine return immediately.  You should also change pm_runtime_init() 
-by adding a call to pm_runtime_forbid(dev) at the end.
+> >>
+> >> I don't think this will work!
+> >>
+> >> When building a multi defconfig for ARM, you might overwrite the
+> >> suspend_ops (there's only one set) as here you don't know that it's
+> >> actually the QCOM platform that is running, right!?
+> >>
+> >> Perhaps this code actually belongs closer to the cpuidle driver?
+> >
+> > Hmmmm, I might have to get creative.  I originally had a DT entry for the pm,
+> > but that doesn't make sense as this is purely a software construct.  The db410c
+> > uses the arm cpuidle driver so I can't really hook it in there.  I'll have to
+> > come up with something else.
+> 
+> I did a little research.
+> 
+> I think you should be able to use the struct cpuidle_ops->init()
+> callback. This is being invoked when the arm cpuidle driver is
+> initialized.
+> 
+> arm_idle_init()
+>   ->arm_cpuidle_init()
+>      ->cpuidle_ops->init()
 
-If you want to change userspace, you can add a udev rule that writes 
-"on" to the power/control file for each new device.  But the user could 
-override this later on, so it wouldn't be as safe as changing the 
-kernel.
+Ah I'll see if I can get that to work.  Thanks for the pointer.
 
-Alan Stern
+> 
+> In the QCOM case, it's the spm driver that registers these cpuidle_ops
+> (drivers/soc/qcom/spm.c). If you fold in the code from $subject patch
+> in qcom_cpuidle_init(), that should work I think.
 
+Only for the 32 bit processor case.  The SPM is not used for the 64 bit procs.
+
+
+Regards,
+
+Andy
