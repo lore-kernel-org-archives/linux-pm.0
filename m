@@ -1,41 +1,37 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 1/2] max8903: adds support for initiation via device tree.
-Date: Fri, 10 Jun 2016 12:23:46 +0200
-Message-ID: <575A9532.6080005@samsung.com>
-References: <1464849897-21527-1-git-send-email-chris@lapa.com.au>
- <1464849897-21527-2-git-send-email-chris@lapa.com.au>
- <CAJKOXPdNZbY6=sUbu2Q+pR-PwAD92H5jm5JzmwnBdCbvk3F6KQ@mail.gmail.com>
- <98c757cd-d1b4-1599-ebb3-2a9cc3fc478d@lapa.com.au>
- <575A5A88.3070404@samsung.com>
+From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH 0/8] ARM: dts: Add operating-points-v2 tables for TI
+ platforms
+Date: Fri, 10 Jun 2016 04:04:14 -0700
+Message-ID: <20160610110414.GX22406@atomide.com>
+References: <cover.1463606963.git.d-gerlach@ti.com>
+ <20160519044744.GE32001@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <575A5A88.3070404@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: chris@lapa.com.au
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20160519044744.GE32001@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Yegor Yefremov <yegorslists-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 06/10/2016 08:13 AM, Krzysztof Kozlowski wrote:
-> On 06/10/2016 07:35 AM, Chris Lapa wrote:
->> Hi Krzysztof,
->>
->> Thanks for the review. I'm working on those changes now.
->>
->> However just so I know for the future. Why no error checking on
->> devm_kzalloc() result? Looking through the source for devm_kzalloc() it
->> looks like NULL isn't caught anywhere else.
+* Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> [160518 21:49]:
+> On 18-05-16, 18:36, Dave Gerlach wrote:
+> > Hi,
+> > This series adds operating-points-v2 tables for am335x, am437x, dra7xx,
+> > and am57xx based platforms along with some support patches so that we
+> > can enable more OPPs for the CPU on these platforms.
+> > 
+> > These patches rely on the ti-cpufreq series sent here [1] and provide
+> > opp-supported-hw data for each OPP so that only the appropriate OPPs
+> > for a specific piece of silicon get enabled.
 > 
-> Error checking is necessary. Just do not print the error message. The
-> kernel core will print one with full back trace.
-> 
-> if (charger == NULL)
-> 	return -ENOMEM;
+> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-... and while at it just convert it to simpler:
-if (!charger)
-	return -ENOMEM;
+Applying all the dts changes into omap-for-v4.8/dt thanks.
 
-BR,
-Krzysztof
+Tony
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
