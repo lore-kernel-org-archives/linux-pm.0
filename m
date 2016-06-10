@@ -1,37 +1,151 @@
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 0/8] ARM: dts: Add operating-points-v2 tables for TI
- platforms
-Date: Fri, 10 Jun 2016 04:04:14 -0700
-Message-ID: <20160610110414.GX22406@atomide.com>
-References: <cover.1463606963.git.d-gerlach@ti.com>
- <20160519044744.GE32001@vireshk-i7>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: Platform-specific suspend/resume code in drivers
+Date: Fri, 10 Jun 2016 13:03:47 +0200
+Message-ID: <575A9E93.4090508@free.fr>
+References: <Pine.LNX.4.44L0.1606091054140.1697-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160519044744.GE32001@vireshk-i7>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Yegor Yefremov <yegorslists-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:12736 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932331AbcFJLEY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 10 Jun 2016 07:04:24 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1606091054140.1697-100000@iolanthe.rowland.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@ucw.cz>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Sebastian Frias <sf84@laposte.net>, Mark Rutland <mark.rutland@arm.com>
 
-* Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> [160518 21:49]:
-> On 18-05-16, 18:36, Dave Gerlach wrote:
-> > Hi,
-> > This series adds operating-points-v2 tables for am335x, am437x, dra7xx,
-> > and am57xx based platforms along with some support patches so that we
-> > can enable more OPPs for the CPU on these platforms.
-> > 
-> > These patches rely on the ti-cpufreq series sent here [1] and provide
-> > opp-supported-hw data for each OPP so that only the appropriate OPPs
-> > for a specific piece of silicon get enabled.
+On 09/06/2016 17:05, Alan Stern wrote:
+
+> On Wed, 8 Jun 2016, Mason wrote:
 > 
-> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> On 08/06/2016 19:45, Alan Stern wrote:
+>>
+>>> On Wed, 8 Jun 2016, Mason wrote:
+>>>
+>>>> On 07/06/2016 17:06, Alan Stern wrote:
+>>>>
+>>>>> On Tue, 7 Jun 2016, Mason wrote:
+>>>>>
+>>>>>> Another point of confusion for me is this: drivers are supposed to
+>>>>>> be shared among platforms, right? So my platform-specific suspend
+>>>>>> code should be enabled only if my platform is detected at run-time?
+>>>>>
+>>>>> Is your device platform-specific?  If it is then the driver is also
+>>>>> platform-specific, and so no part of the driver will be called at
+>>>>> runtime unless your platform is detected.
+>>>>
+>>>> Specifically, my platform uses
+>>>> drivers/net/ethernet/aurora/nb8800.c  => 3 entries in of_match_table.
+>>>> drivers/tty/serial/8250/8250_core.c (CONFIG_SERIAL_8250_RT288X variant)
+>>>>
+>>>> and also the XHCI USB3 driver, and AHCI SATA driver, wouldn't I need to
+>>>> save the context for these too?
+>>>
+>>> Those drivers should already take care of their own contexts.  Is 
+>>> there anything platform-specific you need to do in addition?
+>>
+>> Take the eth driver, for example:
+>>
+>>   http://lxr.free-electrons.com/source/drivers/net/ethernet/aurora/nb8800.c
+>>
+>> It doesn't have any suspend/resume callbacks.
+>>
+>> Would that make the suspend request fail?
+> 
+> There are plenty of drivers that don't have suspend/resume callbacks.
+> (Fewer than there used to be, fortunately.)  They don't make suspend
+> fail; rather, the PM core just skips over them when carrying out a
+> suspend.
+> 
+> Of course, if a driver needs suspend support but doesn't include it,
+> then it's quite likely the driver will not work properly after the
+> system has been resumed.  But that's not a platform-specific issue.
+> 
+>> (Side note: they guarded the code with CONFIG_PM_SLEEP, rather
+>> than CONFIG_SUSPEND. Why?)
+> 
+> CONFIG_PM_SLEEP covers both suspend (AKA suspend-to-ram) and 
+> hibernation (AKA suspend-to-disk).
 
-Applying all the dts changes into omap-for-v4.8/dt thanks.
+Thanks for pointing that out.
 
-Tony
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+>>>>> If the device isn't platform-specific then the driver has to work on a 
+>>>>> bunch of different platforms.  It should be written to be 
+>>>>> platform-independent as much as possible.
+>>>>>
+>>>>>> So this means I need to add in the probe function, for every driver
+>>>>>> my platform uses:
+>>>>>>
+>>>>>>   if (platform == MY_PLATFORM) {
+>>>>>>     ops.suspend = my_suspend;
+>>>>>>     ops.resume  = my_resume;
+>>>>>>   }
+>>>>>>
+>>>>>> Is that correct?
+>>>>>
+>>>>> No.  For one thing, you only have to worry about the 
+>>>>> platform-independent drivers -- you know that the platform-specific 
+>>>>> ones won't get used unless your platform is present.
+>>>>
+>>>> I guess the thermal driver is platform-specific, but most devices
+>>>> are third-party IP blocks, so there is a "common" driver upstream.
+>>>> But I would need a platform-specific suspend/resume sequence,
+>>>> just for my platform.
+>>>
+>>> Why?  What sort of platform-specific things do you need to do?
+>>
+>> Save the value of the MMIO registers which will be lost when the
+>> chip is powered down.
+> 
+> How did these registers get set in the first place?  Wherever the code 
+> is that sets them up initially, that's where these registers should be 
+> reinitialized following a resume.  If they were set up by 
+> platform-specific code then they should be reinitialized by 
+> platform-specific code.
+
+Consider two SoCs, SoCA and SocB.
+
+They both have the same device D, which exposes 16 registers to interact
+with the hardware.
+
+When SoCA is suspended, it stops D's clock, but keeps D powered on,
+preserving the 16 registers. Thus when SoCA resumes, it finds the
+16 registers in the same state as before suspending.
+
+When SoCB is suspended, it powers D down. When SoCB resumes, the
+16 registers contain garbage/random values. Therefore, in the case
+of SoCB, the suspend routine should save the values of the registers
+to RAM (which is preserved by "contract") and restore them on resume.
+
+However, this save/restore operation is unnecessary on SoCA.
+
+Should the save/restore operation be added unconditionally to the
+driver, even if some SoCs do not need it?
+
+In other words, do we consider the performance penalty from saving
+and restoring device registers small enough that it should be done
+systematically, even if some SoCs do not require it?
+
+Some device tree nodes have a property called "always-on" which is
+documented as "If present, the block is powered through an always-on
+power domain, therefore it never loses context."
+
+In that case, I suppose the driver's suspend/resume routine should:
+
+suspend:
+if (always-on is not present) {
+    save device registers to RAM;
+}
+
+resume:
+if (always-on is not present) {
+    restore device registers from RAM;
+}
+
+Do you disagree?
+
+Regards.
