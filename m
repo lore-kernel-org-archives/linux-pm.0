@@ -1,115 +1,77 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Subject: [PATCH] cpupower: Use conventional shared library versioning
-Date: Fri, 10 Jun 2016 02:05:54 +0100
-Message-ID: <20160610010554.GR7555@decadent.org.uk>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 3/3] power_supply: bq27xxx_battery: Group register
+ mappings into one table
+Date: Fri, 10 Jun 2016 03:29:34 +0200
+Message-ID: <20160610012934.GA5848@earth>
+References: <20160531184500.10871-1-afd@ti.com>
+ <20160531184500.10871-3-afd@ti.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="p11K2BJEgMZL61bg"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:44444 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751119AbcFJBF7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2016 21:05:59 -0400
+	protocol="application/pgp-signature"; boundary="6c2NcOVqGQ03X4Wi"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160531184500.10871-3-afd@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.com>
-Cc: linux-pm@vger.kernel.org
 
 
---p11K2BJEgMZL61bg
-Content-Type: text/plain; charset=us-ascii
+--6c2NcOVqGQ03X4Wi
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-The current choice of variable names is rather confusing.  LIB_MIN is
-used for the soname version, which would normally be the *major* part
-of the version.
+Hi,
 
-- Rename LIB_MAJ (the full version) to LIB_VER and LIB_MIN (the soname
-  version) to LIB_SONAME_VER
-- Define LIB_SONAME_VER to be the first component of LIB_VER
-- Bump the full version to 1.0.0, since the soname version is currently 1
+On Tue, May 31, 2016 at 01:45:00PM -0500, Andrew F. Davis wrote:
+> Currently for each device with a unique register map we have a named
+> array that we then merge into a multidimensional array. Skip this
+> middle step and apply the register arrays directly to the multi-array.
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
- tools/power/cpupower/Makefile | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+I applied the first two patches, but the third (this one) does not
+compile for me:
 
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index 0b85f5915ce8..1ef6cdfd3f4a 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -63,8 +63,8 @@ DESTDIR ?=3D
- # and _should_ modify the PACKAGE_BUGREPORT definition
-=20
- VERSION=3D			$(shell ./utils/version-gen.sh)
--LIB_MAJ=3D			0.0.1
--LIB_MIN=3D			1
-+LIB_VER=3D			1.0.0
-+LIB_SONAME_VER=3D			$(word 1,$(subst ., ,$(LIB_VER)))
-=20
- PACKAGE =3D			cpupower
- PACKAGE_BUGREPORT =3D		linux-pm@vger.kernel.org
-@@ -201,14 +201,14 @@ $(OUTPUT)lib/%.o: $(LIB_SRC) $(LIB_HEADERS)
- 	$(ECHO) "  CC      " $@
- 	$(QUIET) $(CC) $(CFLAGS) -fPIC -o $@ -c lib/$*.c
-=20
--$(OUTPUT)libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
-+$(OUTPUT)libcpupower.so.$(LIB_VER): $(LIB_OBJS)
- 	$(ECHO) "  LD      " $@
- 	$(QUIET) $(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ \
--		-Wl,-soname,libcpupower.so.$(LIB_MIN) $(LIB_OBJS)
-+		-Wl,-soname,libcpupower.so.$(LIB_SONAME_VER) $(LIB_OBJS)
- 	@ln -sf $(@F) $(OUTPUT)libcpupower.so
--	@ln -sf $(@F) $(OUTPUT)libcpupower.so.$(LIB_MIN)
-+	@ln -sf $(@F) $(OUTPUT)libcpupower.so.$(LIB_SONAME_VER)
-=20
--libcpupower: $(OUTPUT)libcpupower.so.$(LIB_MAJ)
-+libcpupower: $(OUTPUT)libcpupower.so.$(LIB_VER)
-=20
- # Let all .o files depend on its .c file and all headers
- # Might be worth to put this into utils/Makefile at some point of time
-@@ -218,7 +218,7 @@ $(OUTPUT)%.o: %.c
- 	$(ECHO) "  CC      " $@
- 	$(QUIET) $(CC) $(CFLAGS) -I./lib -I ./utils -o $@ -c $*.c
-=20
--$(OUTPUT)cpupower: $(UTIL_OBJS) $(OUTPUT)libcpupower.so.$(LIB_MAJ)
-+$(OUTPUT)cpupower: $(UTIL_OBJS) $(OUTPUT)libcpupower.so.$(LIB_VER)
- 	$(ECHO) "  CC      " $@
- ifeq ($(strip $(STATIC)),true)
- 	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) $(UTIL_OBJS) -lrt -lpci -L$(OUTPUT) -=
-o $@
-@@ -251,7 +251,7 @@ update-po: $(OUTPUT)po/$(PACKAGE).pot
- 		fi; \
- 	done;
-=20
--compile-bench: $(OUTPUT)libcpupower.so.$(LIB_MAJ)
-+compile-bench: $(OUTPUT)libcpupower.so.$(LIB_VER)
- 	@V=3D$(V) confdir=3D$(confdir) $(MAKE) -C bench O=3D$(OUTPUT)
-=20
- # we compile into subdirectories. if the target directory is not the
+  CC [M]  drivers/power/bq27xxx_battery.o
+drivers/power/bq27xxx_battery.c:108:2: warning: braces around scalar initia=
+lizer
+  [BQ27000] =3D {
+  ^
+drivers/power/bq27xxx_battery.c:108:2: note: (near initialization for =E2=
+=80=98bq27xxx_regs[1]=E2=80=99)
+drivers/power/bq27xxx_battery.c:109:4: error: array index in non-array init=
+ializer
+   [BQ27XXX_REG_CTRL] =3D 0x00,
+    ^
+drivers/power/bq27xxx_battery.c:109:4: note: (near initialization for =E2=
+=80=98bq27xxx_regs[1]=E2=80=99)
+drivers/power/bq27xxx_battery.c:110:4: error: array index in non-array init=
+ializer
+   [BQ27XXX_REG_TEMP] =3D 0x06,
+    ^
+=2E..
 
---p11K2BJEgMZL61bg
+-- Sebastian
+
+--6c2NcOVqGQ03X4Wi
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIVAwUBV1oScee/yOyVhhEJAQpVWA/9ERcLlN1uxMdB15l0dW8+vJSWYx5MFIwR
-p8en+1wIS9PzlmryyFBJnU2tUTEbzHOFkvwojimb/BbGU2/GPdfZbZJDUcghFz9B
-jF/AT7t9mx014bW4ZMVlJOOHvsAC8ZPmQckcDUkTWRzv1ppBekKhgmMrEV8UM6kR
-3YqSW53GikyNXn/3XoObs+okSYxx6nCICGtRDT9ZuUy1yRsgj5MEKwW8ODEQwOp7
-qKMhs9Fb0DG8pPMiw7Uvuz8fQfEMdmwjrGn3i0DKL/ZWfXgyKo5KJYems2Fv8QhC
-z7rBYe2ZuI60fjhKH0ijENJAo3VtLhv57qvwTig1MkMYvByRBHXsCMsSqdwtzQjs
-JHhPA5Y+Wz5BGkpG9imndFMf/RWaBXxyCvA9GjL8k9UrPUChZdDnODH3CcuL9z0A
-b1JmUkp5OY14jMK8m8ZFNC7g9UW7WW28eVF9T13//Y/hFHyNvLTukXPN1rNgXRtP
-tDym7KAw2/CQOEA3k7YkHuF9HhCC7g4KFzwdK3tG6+FYT0aqJtgtPS96+Q0s85Nq
-8V4v4pQ4Rfp8OvS5Dn70SNE3upUnKtnksGS5ZW5ghEEe+c9n/VV1lQb+bNvIjl+S
-VvSKyS0gc2nq2TFkqtJfNOYqL0NYPKbtuJYN14wb7YOxutqGc5MjBFAqUSFWGfiz
-DQMufh7MrmM=
-=Og8g
+iQIcBAEBCgAGBQJXWhfuAAoJENju1/PIO/qaHgAP/3GHbIxEXw07gkkUMdI8rFik
+TjJrUE0HUMLFOWOz2JWLTtlAkkbAEjGMBPqNshmT/M/mVT96ekzacFn3JEmqVrlf
+9AvcolDCvz2TfxUucF1TNKCv+hDZ5QFNX/GAFF5pMoOgLsJpLzl26/x/Xs4PNyY9
+cDY9K1zM5lY6YSJteN+1lKk1eIro8ssXDRZhLLekPUxBeybcJU/cOjVuD7PE7ZpM
+Sue3hznMPgHE7gsQcavQa+U1UnhchZ4s7l7S9/zzxqZFS4IUl6LcVSOx/9JEX8EA
+T8+VvxkszNNWUfSJXgAE1C5JUouACM0AyxFrCTtiSObkHsxmF5TI3da15acYMV1l
+Fc+H4KUhe9EIm/QnZExI0zImmLJ2r9TGpD3zdXKF1TaX0biW0A+Emf/CqsHeGfGE
+h49B6dA/BfJXxUPG6PZ1g6B+gQT9OXF9CGDpJwBpdIO8IV+lP09wwpvFldH8HVwN
+j6DFvbn1zaxsxx/1XPooaYPhh3ANFyoyACP/P1E65470jtKpaHx8Ry+9YDCfo54f
+QitKLgkyoMz9vsJVeGmylPRUpj4Bm9GyNtD1uwaqH0V5kzGyc/1Mcb595HWEytZz
+bPBakIW5tAcRgoEy4Mxc3VdAF5dfvssy66AwttwHbgAjyj3voEqMIb5Kp+3FF4ms
+bIQ+YPJGN42R5sBc+aHN
+=s/Nq
 -----END PGP SIGNATURE-----
 
---p11K2BJEgMZL61bg--
+--6c2NcOVqGQ03X4Wi--
