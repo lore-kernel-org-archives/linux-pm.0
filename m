@@ -1,36 +1,65 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 1/2] max8903: adds support for initiation via device tree.
-Date: Fri, 10 Jun 2016 08:13:28 +0200
-Message-ID: <575A5A88.3070404@samsung.com>
-References: <1464849897-21527-1-git-send-email-chris@lapa.com.au>
- <1464849897-21527-2-git-send-email-chris@lapa.com.au>
- <CAJKOXPdNZbY6=sUbu2Q+pR-PwAD92H5jm5JzmwnBdCbvk3F6KQ@mail.gmail.com>
- <98c757cd-d1b4-1599-ebb3-2a9cc3fc478d@lapa.com.au>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH] thermal: of-thermal: Fix setting of set_emul_temp hook
+Date: Fri, 10 Jun 2016 11:57:28 +0530
+Message-ID: <575A5DD0.4080208@ti.com>
+References: <1464857690-23330-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <98c757cd-d1b4-1599-ebb3-2a9cc3fc478d@lapa.com.au>
+In-Reply-To: <1464857690-23330-1-git-send-email-j-keerthy@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: chris@lapa.com.au
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com, rui.zhang@intel.com
+Cc: nm@ti.com, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/10/2016 07:35 AM, Chris Lapa wrote:
-> Hi Krzysztof,
-> 
-> Thanks for the review. I'm working on those changes now.
-> 
-> However just so I know for the future. Why no error checking on
-> devm_kzalloc() result? Looking through the source for devm_kzalloc() it
-> looks like NULL isn't caught anywhere else.
-
-Error checking is necessary. Just do not print the error message. The
-kernel core will print one with full back trace.
-
-if (charger == NULL)
-	return -ENOMEM;
 
 
-Best regards,
-Krzysztof
+On Thursday 02 June 2016 02:24 PM, Keerthy wrote:
+> Currently thermal zone set_emul_temp is set unconditionally
+> with of_thermal_set_emul_temp function. Set this only if the
+> set_emul_temp hook is provided for thermal_zone_of_device_ops.
+>
+> This fixes emul_temp failures on platforms for which set_emul_temp
+> hook is not populated.
+
+Eduardo,
+
+A gentle ping on this patch.
+
+
+>
+> Fixes: "184a4bf623f (thermal: of: Extend current
+> 	of-thermal.c code to allow setting emulated temp)"
+> Suggested-by: Eduardo Valentin <edubezval@gmail.com>
+> Signed-off-by: Keerthy <j-keerthy@ti.com>
+> ---
+>   drivers/thermal/of-thermal.c | 7 +++----
+>   1 file changed, 3 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index b8e509c..93d8ce0 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -181,9 +181,6 @@ static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
+>   {
+>   	struct __thermal_zone *data = tz->devdata;
+>
+> -	if (!data->ops || !data->ops->set_emul_temp)
+> -		return -EINVAL;
+> -
+>   	return data->ops->set_emul_temp(data->sensor_data, temp);
+>   }
+>
+> @@ -427,7 +424,9 @@ thermal_zone_of_add_sensor(struct device_node *zone,
+>
+>   	tzd->ops->get_temp = of_thermal_get_temp;
+>   	tzd->ops->get_trend = of_thermal_get_trend;
+> -	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
+> +	if (ops->set_emul_temp)
+> +		tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
+> +
+>   	mutex_unlock(&tzd->lock);
+>
+>   	return tzd;
+>
