@@ -1,267 +1,127 @@
-From: Chris Lapa <chris@lapa.com.au>
-Subject: Re: [PATCH 1/2] max8903: adds support for initiation via device tree.
-Date: Fri, 10 Jun 2016 15:35:44 +1000
-Message-ID: <98c757cd-d1b4-1599-ebb3-2a9cc3fc478d@lapa.com.au>
-References: <1464849897-21527-1-git-send-email-chris@lapa.com.au>
- <1464849897-21527-2-git-send-email-chris@lapa.com.au>
- <CAJKOXPdNZbY6=sUbu2Q+pR-PwAD92H5jm5JzmwnBdCbvk3F6KQ@mail.gmail.com>
-Reply-To: chris@lapa.com.au
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH v6 00/11] qcom: Add support for TSENS driver
+Date: Fri, 10 Jun 2016 11:32:32 +0530
+Message-ID: <575A57F8.6060004@codeaurora.org>
+References: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:33524 "EHLO
-	mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbcFJFft (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 01:35:49 -0400
-Received: by mail-pf0-f194.google.com with SMTP id c74so4327100pfb.0
-        for <linux-pm@vger.kernel.org>; Thu, 09 Jun 2016 22:35:49 -0700 (PDT)
-In-Reply-To: <CAJKOXPdNZbY6=sUbu2Q+pR-PwAD92H5jm5JzmwnBdCbvk3F6KQ@mail.gmail.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:40531 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932241AbcFJGCk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 02:02:40 -0400
+In-Reply-To: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: edubezval@gmail.com, andy.gross@linaro.org
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
 
-Hi Krzysztof,
+Eduardo,
 
-Thanks for the review. I'm working on those changes now.
+On 05/05/2016 02:21 PM, Rajendra Nayak wrote:
+> Current set of patches apply on 4.6-rc6. Fixes for the nvmem apis
+> are now posted [1] and queued in -next [2]
+> Patches [1-6] will need to be merged via thermal tree/Eduardo.
 
-However just so I know for the future. Why no error checking on 
-devm_kzalloc() result? Looking through the source for devm_kzalloc() it 
-looks like NULL isn't caught anywhere else.
+Any plans to pull these in for 4.8?
 
-Thanks,
-Chris
+regards,
+Rajendra
 
-On 9/06/2016 8:35 PM, Krzysztof Kozlowski wrote:
-> Hi,
->
-> Thanks for your contribution. Few comments below:
->
-> On Thu, Jun 2, 2016 at 8:44 AM,  <chris@lapa.com.au> wrote:
->> From: Chris Lapa <chris@lapa.com.au>
->>
->> This commit also adds requesting gpio's via devm_gpio_request() to ensure
->> the gpio is available for usage by the driver.
->>
->> Signed-off-by: Chris Lapa <chris@lapa.com.au>
->> ---
->>  .../devicetree/bindings/power/max8903-charger.txt  |  28 ++
->>  drivers/power/max8903_charger.c                    | 281 ++++++++++++++++-----
->>  2 files changed, 250 insertions(+), 59 deletions(-)
->>  create mode 100644 Documentation/devicetree/bindings/power/max8903-charger.txt
->
-> Please put the bindings documentation in separate, first patch.
->
->>
->> diff --git a/Documentation/devicetree/bindings/power/max8903-charger.txt b/Documentation/devicetree/bindings/power/max8903-charger.txt
->> new file mode 100644
->> index 0000000..7207731
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/max8903-charger.txt
->> @@ -0,0 +1,28 @@
->> +Maxim Semiconductor MAX8903 Battery Charger bindings
->> +
->> +Required properties:
->> +- compatible: "max8903-charger" for MAX8903 Battery Charger
->
-> Needs a 'maxim,' prefix.
->
->> +- dc_valid:
->> +       - dok: DC power OK pin
->> +- usb_valid:
->> +       - uok: USB power OK pin
->
-> I don't understand the explanation of them - dok/uok. What do you want
-> to say here?
->
->> +
->> +Optional properties:
->> +- cen: Charge enable pin
->> +- chg: Charger status pin
->> +- flt: Fault pin
->> +- dcm: Current limit mode setting (DC or USB)
->> +- usus: USB suspend pin
->
-> Each gpio should be suffixed with '-gpios' (see
-> Documentation/devicetree/bindings/gpio/gpio.txt).
->
->> +
->> +
->> +Example:
->> +
->> +       max8903-charger {
->> +               compatible = "max8903-charger";
->> +               dok = <&gpio2 3 GPIO_ACTIVE_LOW>;
->> +               flt = <&gpio2 2 GPIO_ACTIVE_LOW>;
->> +               chg = <&gpio3 15 GPIO_ACTIVE_LOW>;
->> +               cen = <&gpio2 5 GPIO_ACTIVE_LOW>;
->> +               dc_valid;
->> +               status = "okay";
->> +       };
->> diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
->> index 17876ca..1989c10 100644
->> --- a/drivers/power/max8903_charger.c
->> +++ b/drivers/power/max8903_charger.c
->> @@ -23,13 +23,16 @@
->>  #include <linux/gpio.h>
->>  #include <linux/interrupt.h>
->>  #include <linux/module.h>
->> +#include <linux/of.h>
->> +#include <linux/of_device.h>
->> +#include <linux/of_gpio.h>
->>  #include <linux/slab.h>
->>  #include <linux/power_supply.h>
->>  #include <linux/platform_device.h>
->>  #include <linux/power/max8903_charger.h>
->>
->>  struct max8903_data {
->> -       struct max8903_pdata pdata;
->> +       struct max8903_pdata *pdata;
->>         struct device *dev;
->>         struct power_supply *psy;
->>         struct power_supply_desc psy_desc;
->> @@ -53,8 +56,8 @@ static int max8903_get_property(struct power_supply *psy,
->>         switch (psp) {
->>         case POWER_SUPPLY_PROP_STATUS:
->>                 val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
->> -               if (data->pdata.chg) {
->> -                       if (gpio_get_value(data->pdata.chg) == 0)
->> +               if (data->pdata->chg) {
->> +                       if (gpio_get_value(data->pdata->chg) == 0)
->>                                 val->intval = POWER_SUPPLY_STATUS_CHARGING;
->>                         else if (data->usb_in || data->ta_in)
->>                                 val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
->> @@ -75,13 +78,14 @@ static int max8903_get_property(struct power_supply *psy,
->>         default:
->>                 return -EINVAL;
->>         }
->> +
->>         return 0;
->>  }
->>
->>  static irqreturn_t max8903_dcin(int irq, void *_data)
->>  {
->>         struct max8903_data *data = _data;
->> -       struct max8903_pdata *pdata = &data->pdata;
->> +       struct max8903_pdata *pdata = data->pdata;
->>         bool ta_in;
->>         enum power_supply_type old_type;
->>
->> @@ -122,7 +126,7 @@ static irqreturn_t max8903_dcin(int irq, void *_data)
->>  static irqreturn_t max8903_usbin(int irq, void *_data)
->>  {
->>         struct max8903_data *data = _data;
->> -       struct max8903_pdata *pdata = &data->pdata;
->> +       struct max8903_pdata *pdata = data->pdata;
->>         bool usb_in;
->>         enum power_supply_type old_type;
->>
->> @@ -161,7 +165,7 @@ static irqreturn_t max8903_usbin(int irq, void *_data)
->>  static irqreturn_t max8903_fault(int irq, void *_data)
->>  {
->>         struct max8903_data *data = _data;
->> -       struct max8903_pdata *pdata = &data->pdata;
->> +       struct max8903_pdata *pdata = data->pdata;
->>         bool fault;
->>
->>         fault = gpio_get_value(pdata->flt) ? false : true;
->> @@ -179,34 +183,135 @@ static irqreturn_t max8903_fault(int irq, void *_data)
->>         return IRQ_HANDLED;
->>  }
->>
->> +static struct max8903_pdata *max8903_parse_dt_data(
->> +               struct device *dev)
->> +{
->> +       struct device_node *of_node = dev->of_node;
->> +       struct max8903_pdata *pdata = NULL;
->> +
->> +       if (!of_node) {
->> +               return pdata;
->> +       }
->
-> Run a scripts/checkpatch.pl. In general the {} are not needed for
-> single statements.
->
->> +
->> +       pdata = devm_kzalloc(dev, sizeof(struct max8903_pdata),
->> +                               GFP_KERNEL);
->> +       if (!pdata) {
->> +               return pdata;
->
-> ditto
->
->> +       }
->> +
->> +       if (of_get_property(of_node, "dc_valid", NULL)) {
->> +               pdata->dc_valid = true;
->> +       }
->> +
->> +       if (of_get_property(of_node, "usb_valid", NULL)) {
->> +               pdata->usb_valid = true;
->> +       }
->> +
->> +       pdata->cen = of_get_named_gpio(of_node, "cen", 0);
->> +       if (!gpio_is_valid(pdata->cen)) {
->> +               pdata->cen = 0;
->> +       }
->> +
->> +       pdata->chg = of_get_named_gpio(of_node, "chg", 0);
->> +       if (!gpio_is_valid(pdata->chg)) {
->> +               pdata->chg = 0;
->> +       }
->> +
->> +       pdata->flt = of_get_named_gpio(of_node, "flt", 0);
->> +       if (!gpio_is_valid(pdata->flt)) {
->> +               pdata->flt = 0;
->> +       }
->> +
->> +       pdata->usus = of_get_named_gpio(of_node, "usus", 0);
->> +       if (!gpio_is_valid(pdata->usus)) {
->> +               pdata->usus = 0;
->> +       }
->> +
->> +       pdata->dcm = of_get_named_gpio(of_node, "dcm", 0);
->> +       if (!gpio_is_valid(pdata->dcm)) {
->> +               pdata->dcm = 0;
->> +       }
->> +
->> +       pdata->dok = of_get_named_gpio(of_node, "dok", 0);
->> +       if (!gpio_is_valid(pdata->dok)) {
->> +               pdata->dok = 0;
->> +       }
->> +
->> +       pdata->uok = of_get_named_gpio(of_node, "uok", 0);
->> +       if (!gpio_is_valid(pdata->uok)) {
->> +               pdata->uok = 0;
->> +       }
->> +
->> +       return pdata;
->> +}
->> +
->>  static int max8903_probe(struct platform_device *pdev)
->>  {
->> -       struct max8903_data *data;
->> +       struct max8903_data *charger;
->>         struct device *dev = &pdev->dev;
->> -       struct max8903_pdata *pdata = pdev->dev.platform_data;
->>         struct power_supply_config psy_cfg = {};
->>         int ret = 0;
->>         int gpio;
->>         int ta_in = 0;
->>         int usb_in = 0;
->>
->> -       data = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
->> -       if (data == NULL) {
->> +       charger = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
->> +       if (charger == NULL) {
->>                 dev_err(dev, "Cannot allocate memory.\n");
->
-> In a separate patch - you can get rid of error message.
->
-> I didn't perform a thorough review. First fix some easy ones. :)
->
-> Best regards,
-> Krzysztof
->
+> Patches [7-11] will need to go via qcom-msm tree/Andy.
+> 
+> Changes since v5:
+> * Minor review fixes from Eduardo
+> 
+> Changes since v4:
+> * dropped qcom,tsens-slopes binding, used coefficients instead
+> * dropped qcom,sensor-id binding
+> * Added support for msm8996 family
+> * Other minor review fixes from v4
+> 
+> Changes since v3:
+> * Dropped 'clk: qcom: create virtual child device for TSENS' which
+> is picked up by Stephen
+> * Updated GCC bindings with optional TSENS properties
+> 
+> Changes since v2:
+> * Minor review fixes from Stephen/Punit and rebase on 4.3-rc4
+> 
+> Changes since v1:
+> * Created virtual tsens device from gcc driver for 8960,
+> with DT having a single node for gcc and tsens
+> * Minor fixes with rebasing on 4.3-rc1
+> 
+> Changes since RFC:
+> * Added support for 8916 and 8084
+> * Based off the latest nvmem framework patches [1]
+> * Minor review fixes for comments mostly from Lina
+> 
+> This is an attempt to have a single TSENS driver for
+> the different versions of the TSENS IP that exist, on
+> different qcom msm/apq SoCs'
+> Support is added for msm8916, msm8960, msm8974 and msm8996 families.
+> 
+> A lot of the work is based of original code from Stephen Boyd
+> and Siddartha Mohanadoss. I have also picked some of what
+> Narendran Rajan did in his attempt to upstream the support
+> for 8960 family. I could not keep the original authorship on
+> any of the patches because I ended up moving the code around
+> quite a bit in an effort to have a single driver for the
+> various devices. I would be glad to change the authorship
+> for any of the patches if needed.
+> 
+> [1] https://lkml.org/lkml/2016/4/24/103
+> [2] git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git char-misc-next
+> 
+> Rajendra Nayak (11):
+>   thermal: qcom: tsens: Add a skeletal TSENS drivers
+>   thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
+>   thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
+>   thermal: core: export apis to get slope and offset
+>   thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
+>   thermal: qcom: tsens-8996: Add support for 8996 family of SoCs
+>   arm: dts: msm8974: Add thermal zones, tsens and qfprom nodes
+>   arm: dts: apq8064: Add thermal zones, tsens and qfprom nodes
+>   arm: dts: apq8084: Add thermal zones, tsens and qfprom nodes
+>   arm64: dts: msm8916: Add thermal zones, tsens and qfprom nodes
+>   arm64: dts: msm8996: Add thermal zones, tsens and qfprom nodes
+> 
+>  .../devicetree/bindings/clock/qcom,gcc.txt         |  18 ++
+>  .../devicetree/bindings/thermal/qcom-tsens.txt     |  21 ++
+>  Documentation/thermal/sysfs-api.txt                |  12 +
+>  arch/arm/boot/dts/qcom-apq8064.dtsi                | 103 ++++++++
+>  arch/arm/boot/dts/qcom-apq8084.dtsi                | 103 ++++++++
+>  arch/arm/boot/dts/qcom-msm8974.dtsi                | 103 ++++++++
+>  arch/arm64/boot/dts/qcom/msm8916.dtsi              |  64 +++++
+>  arch/arm64/boot/dts/qcom/msm8996.dtsi              |  92 +++++++
+>  drivers/thermal/Kconfig                            |   5 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/qcom/Kconfig                       |  11 +
+>  drivers/thermal/qcom/Makefile                      |   2 +
+>  drivers/thermal/qcom/tsens-8916.c                  | 113 ++++++++
+>  drivers/thermal/qcom/tsens-8960.c                  | 292 +++++++++++++++++++++
+>  drivers/thermal/qcom/tsens-8974.c                  | 244 +++++++++++++++++
+>  drivers/thermal/qcom/tsens-8996.c                  |  84 ++++++
+>  drivers/thermal/qcom/tsens-common.c                | 141 ++++++++++
+>  drivers/thermal/qcom/tsens.c                       | 200 ++++++++++++++
+>  drivers/thermal/qcom/tsens.h                       |  92 +++++++
+>  drivers/thermal/thermal_core.c                     |  30 +++
+>  include/linux/thermal.h                            |   8 +
+>  21 files changed, 1739 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+>  create mode 100644 drivers/thermal/qcom/Kconfig
+>  create mode 100644 drivers/thermal/qcom/Makefile
+>  create mode 100644 drivers/thermal/qcom/tsens-8916.c
+>  create mode 100644 drivers/thermal/qcom/tsens-8960.c
+>  create mode 100644 drivers/thermal/qcom/tsens-8974.c
+>  create mode 100644 drivers/thermal/qcom/tsens-8996.c
+>  create mode 100644 drivers/thermal/qcom/tsens-common.c
+>  create mode 100644 drivers/thermal/qcom/tsens.c
+>  create mode 100644 drivers/thermal/qcom/tsens.h
+> 
 
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
