@@ -1,20 +1,20 @@
 From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH 4/5] ARM: dts: qcom: Remove size elements from pmic reg
-Date: Fri, 10 Jun 2016 13:26:12 -0700
-Message-ID: <20160610202612.GP1256@tuxbot>
+Subject: Re: [PATCH 5/5] ARM: dts: qcom: pma8084: Add pwrkey entry
+Date: Fri, 10 Jun 2016 13:29:14 -0700
+Message-ID: <20160610202914.GQ1256@tuxbot>
 References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
- <1463634020-17252-5-git-send-email-andy.gross@linaro.org>
+ <1463634020-17252-6-git-send-email-andy.gross@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:35025 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932090AbcFJU0h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 16:26:37 -0400
-Received: by mail-pa0-f46.google.com with SMTP id hl6so26675774pac.2
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2016 13:26:37 -0700 (PDT)
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:34809 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbcFJU3S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 16:29:18 -0400
+Received: by mail-pa0-f52.google.com with SMTP id bz2so26696014pad.1
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2016 13:29:18 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1463634020-17252-5-git-send-email-andy.gross@linaro.org>
+In-Reply-To: <1463634020-17252-6-git-send-email-andy.gross@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Andy Gross <andy.gross@linaro.org>
@@ -22,70 +22,35 @@ Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, stanimir.varbanov@l
 
 On Wed 18 May 22:00 PDT 2016, Andy Gross wrote:
 
-> The #size-cells for the pmics are 0, but we specify a size in the
-> reg property so that MPP and GPIO modules can figure out how many
-> pins there are. Now that we've done that by counting irqs, we can
-> remove the size elements in the reg properties and be DT
-> compliant.
+> This patch adds the power key device tree node.
 > 
 > Signed-off-by: Andy Gross <andy.gross@linaro.org>
 
 Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 
 > ---
->  arch/arm/boot/dts/qcom-pma8084.dtsi | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+>  arch/arm/boot/dts/qcom-pma8084.dtsi | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 > 
 > diff --git a/arch/arm/boot/dts/qcom-pma8084.dtsi b/arch/arm/boot/dts/qcom-pma8084.dtsi
-> index 4e9bd3f..ea7fce3 100644
+> index ea7fce3..82d2580 100644
 > --- a/arch/arm/boot/dts/qcom-pma8084.dtsi
 > +++ b/arch/arm/boot/dts/qcom-pma8084.dtsi
-> @@ -12,15 +12,15 @@
->  
->  		rtc@6000 {
->  			compatible = "qcom,pm8941-rtc";
-> -			reg = <0x6000 0x100>,
-> -			      <0x6100 0x100>;
-> +			reg = <0x6000>,
-> +			      <0x6100>;
->  			reg-names = "rtc", "alarm";
+> @@ -18,6 +18,14 @@
 >  			interrupts = <0x0 0x61 0x1 IRQ_TYPE_EDGE_RISING>;
 >  		};
 >  
+> +		pwrkey@800 {
+> +			compatible = "qcom,pm8941-pwrkey";
+> +			reg = <0x800>;
+> +			interrupts = <0x0 0x8 0 IRQ_TYPE_EDGE_BOTH>;
+> +			debounce = <15625>;
+> +			bias-pull-up;
+> +		};
+> +
 >  		pma8084_gpios: gpios@c000 {
 >  			compatible = "qcom,pma8084-gpio", "qcom,spmi-gpio";
-> -			reg = <0xc000 0x1600>;
-> +			reg = <0xc000>;
->  			gpio-controller;
->  			#gpio-cells = <2>;
->  			interrupts = <0 0xc0 0 IRQ_TYPE_NONE>,
-> @@ -49,7 +49,7 @@
->  
->  		pma8084_mpps: mpps@a000 {
->  			compatible = "qcom,pma8084-mpp", "qcom,spmi-mpp";
-> -			reg = <0xa000 0x800>;
-> +			reg = <0xa000>;
->  			gpio-controller;
->  			#gpio-cells = <2>;
->  			interrupts = <0 0xa0 0 IRQ_TYPE_NONE>,
-> @@ -64,7 +64,7 @@
->  
->  		pma8084_temp: temp-alarm@2400 {
->  			compatible = "qcom,spmi-temp-alarm";
-> -			reg = <0x2400 0x100>;
-> +			reg = <0x2400>;
->  			interrupts = <0 0x24 0 IRQ_TYPE_EDGE_RISING>;
->  			#thermal-sensor-cells = <0>;
->  			io-channels = <&pma8084_vadc VADC_DIE_TEMP>;
-> @@ -73,7 +73,7 @@
->  
->  		pma8084_vadc: vadc@3100 {
->  			compatible = "qcom,spmi-vadc";
-> -			reg = <0x3100 0x100>;
-> +			reg = <0x3100>;
->  			interrupts = <0x0 0x31 0x0 IRQ_TYPE_EDGE_RISING>;
->  			#address-cells = <1>;
->  			#size-cells = <0>;
+>  			reg = <0xc000>;
 > -- 
 > 1.9.1
 > 
