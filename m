@@ -1,71 +1,34 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Logan Gunthorpe <logang@deltatee.com>
 Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
-Date: Sat, 11 Jun 2016 00:29:59 +0200
-Message-ID: <6452365.7hjtWaBW7Y@vostro.rjw.lan>
-References: <573DF82D.50006@deltatee.com> <CAGXu5jK15P5CAQd09NzG31YMPEKJGXbhXiYDQ2sRC=WBhAFTrA@mail.gmail.com> <34107887.ATgOLutrT1@vostro.rjw.lan>
+Date: Fri, 10 Jun 2016 16:28:01 -0600
+Message-ID: <575B3EF1.3060507@deltatee.com>
+References: <573DF82D.50006@deltatee.com>
+ <CAGXu5jK15P5CAQd09NzG31YMPEKJGXbhXiYDQ2sRC=WBhAFTrA@mail.gmail.com>
+ <34107887.ATgOLutrT1@vostro.rjw.lan> <6452365.7hjtWaBW7Y@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59268 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932558AbcFJWZ6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 18:25:58 -0400
-In-Reply-To: <34107887.ATgOLutrT1@vostro.rjw.lan>
+Received: from ale.deltatee.com ([207.54.116.67]:55799 "EHLO ale.deltatee.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751724AbcFJW2R (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 10 Jun 2016 18:28:17 -0400
+In-Reply-To: <6452365.7hjtWaBW7Y@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Logan Gunthorpe <logang@deltatee.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kees Cook <keescook@chromium.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
-On Friday, June 10, 2016 11:27:29 PM Rafael J. Wysocki wrote:
-> On Friday, June 10, 2016 11:09:22 AM Kees Cook wrote:
-> > On Thu, Jun 9, 2016 at 9:14 PM, Logan Gunthorpe <logang@deltatee.com> wrote:
-> > > Hey,
-> > >
-> > > I've still be trying to figure this out as I have time.
-> > >
-> > > I tried printing a couple restore addresses and nothing I can find seems
-> > > anywhere near the rodata/ex_table boundary.
-> > >
-> > > I tried with the (badly formatted) below and got the following. Nothing too
-> > > surprising. I've attached a kallsyms that matches the kernel for reference.
-> > >
-> > > restore_code: ffff880157c3b000
-> > > jump_addr: ffffffff81446be0
-> > >
-> > >
-> > > diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-> > > index 009947d..6efedb7 100644
-> > > --- a/arch/x86/power/hibernate_64.c
-> > > +++ b/arch/x86/power/hibernate_64.c
-> > > @@ -92,6 +92,9 @@ int swsusp_arch_resume(void)
-> > >         memcpy(relocated_restore_code, &core_restore_code,
-> > >                &restore_registers - &core_restore_code);
-> > >
-> > > +       pr_info("restore_code: %p\n", relocated_restore_code);
-> > > +       pr_info("jump_addr: %lx\n", restore_jump_address);
-> > > +
-> > 
-> > Also interesting would be the "relocated_restore_code" address, as
-> > well as a dump of /sys/kernel/debug/kernel_page_tables (from
-> > CONFIG_X86_PTDUMP).
-> > 
-> > I'm baffled by the problem, but the best I can understand is the the
-> > relocated_restore_code range isn't executable (which should be visible
-> > from finding it in /sys/kernel/debug/kernel_page_tables), but I don't
-> > see how to solve that since my original patch didn't work.
-> > 
-> > Rafael, is this something you have time to look at quickly?
+
+
+On 10/06/16 04:29 PM, Rafael J. Wysocki wrote:
+> OK, I have a theory, but I need a bit of help.
 > 
-> Well, not really, but I'll do my best to look at it in the next few days.
+> This may be a dumb question, but I don't quite remember the answer readily.
+> 
+> Given a physical address, how do I get the corresponding virtual one under
+> the kernel identity mapping?
 
-OK, I have a theory, but I need a bit of help.
+Is that not just 'phys_to_virt(x)'??
 
-This may be a dumb question, but I don't quite remember the answer readily.
-
-Given a physical address, how do I get the corresponding virtual one under
-the kernel identity mapping?
-
-Thanks,
-Rafael
-
+Logan
