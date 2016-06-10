@@ -1,7 +1,7 @@
-From: Mark Rutland <mark.rutland@arm.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Subject: Re: [PATCH 3/5] arm64: dts: msm8916: Add spc compat tag
-Date: Fri, 10 Jun 2016 17:25:55 +0100
-Message-ID: <20160610162555.GB6430@leverpostej>
+Date: Fri, 10 Jun 2016 17:31:53 +0100
+Message-ID: <20160610163153.GA23743@red-moon>
 References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
  <1463634020-17252-4-git-send-email-andy.gross@linaro.org>
  <20160610154857.GA6430@leverpostej>
@@ -9,16 +9,16 @@ References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39523 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:39563 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932248AbcFJQ0Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Jun 2016 12:26:16 -0400
+	id S933440AbcFJQb1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 10 Jun 2016 12:31:27 -0400
 Content-Disposition: inline
 In-Reply-To: <20160610161234.GO13357@hector.attlocal.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Andy Gross <andy.gross@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, stanimir.varbanov@linaro.org, lorenzo.pieralisi@arm.com
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, stanimir.varbanov@linaro.org
 
 On Fri, Jun 10, 2016 at 11:12:34AM -0500, Andy Gross wrote:
 > On Fri, Jun 10, 2016 at 04:48:57PM +0100, Mark Rutland wrote:
@@ -58,34 +58,33 @@ On Fri, Jun 10, 2016 at 11:12:34AM -0500, Andy Gross wrote:
 > > Surely we should be able to use the idle code in a generic fashion to
 > > driver suspend-to-idle?
 > 
-> We need a way to identify specific idle states that support suspend-to-idle.  In
-> addition, when we have identified the states, we may have to configure the
-> enter_freeze() function.
-
-Could you elaborate on what you mean by a state supporting
-suspend-to-idle? It was my understanding that any idle state should
-function for suspend-to-idle (and the choice of state is potentially
-subjective).
-
-> I chose to do this outside of the arm cpuidle driver because I didn't want to
-> add any more DT information aside from the compatible, and I needed a separate
-> place for the Qualcomm specific suspend code. 
-
-Which suspend code is Qualcomm-specific? There shouldn't be anything on
-the PSCI side, so I can only imagine that device management is left.
-What am I missing?
-
-> With the compatible, this makes
-> my 32 and 64 bit processor suspend code identical, as we have our own cpuidle
-> driver for the 32 bit procs.
+> We need a way to identify specific idle states that support
+> suspend-to-idle.  In addition, when we have identified the states, we
+> may have to configure the enter_freeze() function.
 > 
-> An alternative would be to add some facilities to communicate this to the arm
-> cpuidle driver and configure the enter_freeze() function at some later point.
+> I chose to do this outside of the arm cpuidle driver because I didn't
+> want to add any more DT information aside from the compatible, and I
+> needed a separate place for the Qualcomm specific suspend code.  With
+> the compatible, this makes my 32 and 64 bit processor suspend code
+> identical, as we have our own cpuidle driver for the 32 bit procs.
+> 
+> An alternative would be to add some facilities to communicate this to
+> the arm cpuidle driver and configure the enter_freeze() function at
+> some later point.
 
-I would prefer that suspend-to-idle using PSCI occurred via the generic
-PSCI and cpuidle code. I am happy to extend that code if there is
-something lacking, and I would prefer to not have platform-specific
-hooks.
+(1) enter_freeze() hooks are not strictly necessary to enable
+    suspend-to-idle (they are if we want the tick to be frozen
+    on suspend-to-idle, which is different)
+(2) If I understand your code correctly you have to set the suspend
+    ops hook to make sure suspend-to-idle is enabled. This is a core
+    code issue rather than anything else, given that suspend-to-idle
+    (hey it is based on CPUidle !) does NOT rely on suspend ops to
+    function.
+
+So the gist is: as far as I am concerned you do not need any of this
+code to enable (yes you need PSCI idle states but no
+qcom,idle-state-spc compatible string whatsoever) suspend-to-idle
+on ARM64 on top of PSCI, let me know what I am missing.
 
 Thanks,
-Mark.
+Lorenzo
