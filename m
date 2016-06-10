@@ -1,53 +1,76 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 0/8] ARM: dts: Add operating-points-v2 tables for TI
- platforms
-Date: Fri, 10 Jun 2016 09:50:08 -0500
-Message-ID: <575AD3A0.1050203@ti.com>
-References: <cover.1463606963.git.d-gerlach@ti.com>
- <20160519044744.GE32001@vireshk-i7> <20160610110414.GX22406@atomide.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v2 3/4] mfd: axp20x: Add axp20x-usb-power-supply for
+ axp22x pmics
+Date: Fri, 10 Jun 2016 15:56:22 +0100
+Message-ID: <20160610145622.GB7351@dell>
+References: <1464887936-17020-1-git-send-email-hdegoede@redhat.com>
+ <1464887936-17020-3-git-send-email-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([198.47.19.11]:42233 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932082AbcFJOuk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Jun 2016 10:50:40 -0400
-In-Reply-To: <20160610110414.GX22406@atomide.com>
+Received: from mail-wm0-f49.google.com ([74.125.82.49]:34830 "EHLO
+	mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751951AbcFJOzr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 10:55:47 -0400
+Received: by mail-wm0-f49.google.com with SMTP id v199so152275668wmv.0
+        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2016 07:55:46 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1464887936-17020-3-git-send-email-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dave Gerlach <d-gerlach@ti.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Yegor Yefremov <yegorslists@googlemail.com>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>
 
-On 06/10/2016 06:04 AM, Tony Lindgren wrote:
-> * Viresh Kumar <viresh.kumar@linaro.org> [160518 21:49]:
->> On 18-05-16, 18:36, Dave Gerlach wrote:
->>> Hi,
->>> This series adds operating-points-v2 tables for am335x, am437x, dra7xx,
->>> and am57xx based platforms along with some support patches so that we
->>> can enable more OPPs for the CPU on these platforms.
->>>
->>> These patches rely on the ti-cpufreq series sent here [1] and provide
->>> opp-supported-hw data for each OPP so that only the appropriate OPPs
->>> for a specific piece of silicon get enabled.
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Applying all the dts changes into omap-for-v4.8/dt thanks.
-> 
-> Tony
-> 
-Viresh, are we ready with the cpufreq series?
+On Thu, 02 Jun 2016, Hans de Goede wrote:
 
-https://patchwork.kernel.org/patch/9122961/
-https://patchwork.kernel.org/patch/9122921/
+> Add axp20x-usb-power-supply for axp22x pmics.
+>=20
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Changes in v2:
+> -Change compatible string for axp22x usb-power-supply cell to match v=
+2 of:
+>  "power: axp20x_usb: Add support for usb power-supply on axp22x pmics=
+"
+> ---
+>  drivers/mfd/axp20x.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
 
-Also current series: https://patchwork.kernel.org/patch/9123071/
-Seems to have comments pending.
+Applied, thanks.
 
-Dave is on vacation for another week or so, doubt he can respond in
-time -> Should we wait on this series till we get the cpufreq support in?
+> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> index ca04361..6364dab 100644
+> --- a/drivers/mfd/axp20x.c
+> +++ b/drivers/mfd/axp20x.c
+> @@ -160,6 +160,11 @@ static struct resource axp20x_usb_power_supply_r=
+esources[] =3D {
+>  	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_NOT_VALID, "VBUS_NOT_VALID"),
+>  };
+> =20
+> +static struct resource axp22x_usb_power_supply_resources[] =3D {
+> +	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
+> +	DEFINE_RES_IRQ_NAMED(AXP22X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
+> +};
+> +
+>  static struct resource axp22x_pek_resources[] =3D {
+>  	{
+>  		.name   =3D "PEK_DBR",
+> @@ -527,6 +532,11 @@ static struct mfd_cell axp22x_cells[] =3D {
+>  		.resources		=3D axp22x_pek_resources,
+>  	}, {
+>  		.name			=3D "axp20x-regulator",
+> +	}, {
+> +		.name		=3D "axp20x-usb-power-supply",
+> +		.of_compatible	=3D "x-powers,axp221-usb-power-supply",
+> +		.num_resources	=3D ARRAY_SIZE(axp22x_usb_power_supply_resources),
+> +		.resources	=3D axp22x_usb_power_supply_resources,
+>  	},
+>  };
+> =20
 
--- 
-Regards,
-Nishanth Menon
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
