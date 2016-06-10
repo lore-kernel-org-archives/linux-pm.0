@@ -1,65 +1,66 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH] thermal: of-thermal: Fix setting of set_emul_temp hook
-Date: Fri, 10 Jun 2016 11:57:28 +0530
-Message-ID: <575A5DD0.4080208@ti.com>
-References: <1464857690-23330-1-git-send-email-j-keerthy@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1464857690-23330-1-git-send-email-j-keerthy@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com, rui.zhang@intel.com
-Cc: nm@ti.com, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: [PATCH v3] cpu/hotplug: handle unbalanced hotplug enable/disable
+Date: Thu,  9 Jun 2016 23:43:28 -0700
+Message-ID: <1465541008-12476-1-git-send-email-lianwei.wang@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:33411 "EHLO
+	mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbcFJGnj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 02:43:39 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: tglx@linutronix.de, peterz@infradead.org, oleg@redhat.com, mingo@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Lianwei Wang <lianwei.wang@gmail.com>
 
+Currently it just print a warning message but did not
+reset cpu_hotplug_disabled when the enable/disable is
+unbalanced. The unbalanced enable/disable will lead
+the cpu hotplug work abnormally.
 
+Do nothing if an unablanced hotplug enable detected.
 
-On Thursday 02 June 2016 02:24 PM, Keerthy wrote:
-> Currently thermal zone set_emul_temp is set unconditionally
-> with of_thermal_set_emul_temp function. Set this only if the
-> set_emul_temp hook is provided for thermal_zone_of_device_ops.
->
-> This fixes emul_temp failures on platforms for which set_emul_temp
-> hook is not populated.
+Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
+---
+ kernel/cpu.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-Eduardo,
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 3e3f6e49eabb..5e26a3c64934 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -245,6 +245,14 @@ void cpu_hotplug_done(void)
+ 	cpuhp_lock_release();
+ }
+ 
++static void __cpu_hotplug_enable(void)
++{
++	if (WARN_ONCE(!cpu_hotplug_disabled, "Unbalanced cpu hotplug enable\n"))
++		return;
++
++	cpu_hotplug_disabled--;
++}
++
+ /*
+  * Wait for currently running CPU hotplug operations to complete (if any) and
+  * disable future CPU hotplug (from sysfs). The 'cpu_add_remove_lock' protects
+@@ -263,7 +271,7 @@ EXPORT_SYMBOL_GPL(cpu_hotplug_disable);
+ void cpu_hotplug_enable(void)
+ {
+ 	cpu_maps_update_begin();
+-	WARN_ON(--cpu_hotplug_disabled < 0);
++	__cpu_hotplug_enable();
+ 	cpu_maps_update_done();
+ }
+ EXPORT_SYMBOL_GPL(cpu_hotplug_enable);
+@@ -1091,7 +1099,7 @@ void enable_nonboot_cpus(void)
+ 
+ 	/* Allow everyone to use the CPU hotplug again */
+ 	cpu_maps_update_begin();
+-	WARN_ON(--cpu_hotplug_disabled < 0);
++	__cpu_hotplug_enable();
+ 	if (cpumask_empty(frozen_cpus))
+ 		goto out;
+ 
+-- 
+1.9.1
 
-A gentle ping on this patch.
-
-
->
-> Fixes: "184a4bf623f (thermal: of: Extend current
-> 	of-thermal.c code to allow setting emulated temp)"
-> Suggested-by: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> ---
->   drivers/thermal/of-thermal.c | 7 +++----
->   1 file changed, 3 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index b8e509c..93d8ce0 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -181,9 +181,6 @@ static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
->   {
->   	struct __thermal_zone *data = tz->devdata;
->
-> -	if (!data->ops || !data->ops->set_emul_temp)
-> -		return -EINVAL;
-> -
->   	return data->ops->set_emul_temp(data->sensor_data, temp);
->   }
->
-> @@ -427,7 +424,9 @@ thermal_zone_of_add_sensor(struct device_node *zone,
->
->   	tzd->ops->get_temp = of_thermal_get_temp;
->   	tzd->ops->get_trend = of_thermal_get_trend;
-> -	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
-> +	if (ops->set_emul_temp)
-> +		tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
-> +
->   	mutex_unlock(&tzd->lock);
->
->   	return tzd;
->
