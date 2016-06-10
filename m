@@ -1,85 +1,41 @@
-From: Sumit Singh <sumsingh@nvidia.com>
-Subject: RE: Need help : Way to disable runtime PM with system suspend enabled
-Date: Fri, 10 Jun 2016 09:54:10 +0000
-Message-ID: <d5f4566ed9f84a0e8840402bbac6b780@bgmail103.nvidia.com>
-References: <57277a9454784b2c911a2c90fd1bea3e@bgmail103.nvidia.com>
- <CAJZ5v0jGmgKZscGcq1XRrSW8Lo5-71-VAG4fa+HBO6GVP29=8g@mail.gmail.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH 1/2] max8903: adds support for initiation via device tree.
+Date: Fri, 10 Jun 2016 12:23:46 +0200
+Message-ID: <575A9532.6080005@samsung.com>
+References: <1464849897-21527-1-git-send-email-chris@lapa.com.au>
+ <1464849897-21527-2-git-send-email-chris@lapa.com.au>
+ <CAJKOXPdNZbY6=sUbu2Q+pR-PwAD92H5jm5JzmwnBdCbvk3F6KQ@mail.gmail.com>
+ <98c757cd-d1b4-1599-ebb3-2a9cc3fc478d@lapa.com.au>
+ <575A5A88.3070404@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:10601 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751957AbcFJJyQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 05:54:16 -0400
-In-Reply-To: <CAJZ5v0jGmgKZscGcq1XRrSW8Lo5-71-VAG4fa+HBO6GVP29=8g@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <575A5A88.3070404@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: chris@lapa.com.au
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prashant Gaikwad <pgaikwad@nvidia.com>, Bharat Nihalani <bnihalani@nvidia.com>
 
-VGhhbmtzIFJhZmFlbCBmb3IgdGhlIHN1Z2dlc3Rpb24uIEkgd2lsbCB0cnkgd2l0aCB0aGF0Lg0K
-VXNpbmcgcG1fcnVudGltZV9mb3JiaWQoKSBBUEksIHdlIGNhbiBkbyB0aGF0LiBDb3VsZCB5b3Ug
-cGxlYXNlIHN1Z2dlc3QgYSBwcm9wZXIgbG9jYXRpb24gZm9yIHVzaW5nIHRoaXMgQVBJLCBzbyB0
-aGF0IGl0IGlzIGFwcGxpY2FibGUgdG8gYWxsIHRoZSBkZXZpY2VzPw0KDQpUaGFua3MNClN1bWl0
-IFNpbmdoDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiByand5c29ja2lAZ21h
-aWwuY29tIFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mIFJhZmFlbCBK
-LiBXeXNvY2tpDQpTZW50OiBUaHVyc2RheSwgSnVuZSAwOSwgMjAxNiA2OjE3IFBNDQpUbzogU3Vt
-aXQgU2luZ2gNCkNjOiByandAcmp3eXNvY2tpLm5ldDsgbGludXgtcG1Admdlci5rZXJuZWwub3Jn
-OyBQcmFzaGFudCBHYWlrd2FkOyBCaGFyYXQgTmloYWxhbmkNClN1YmplY3Q6IFJlOiBOZWVkIGhl
-bHAgOiBXYXkgdG8gZGlzYWJsZSBydW50aW1lIFBNIHdpdGggc3lzdGVtIHN1c3BlbmQgZW5hYmxl
-ZA0KDQpPbiBUaHUsIEp1biA5LCAyMDE2IGF0IDk6MjMgQU0sIFN1bWl0IFNpbmdoIDxzdW1zaW5n
-aEBudmlkaWEuY29tPiB3cm90ZToNCj4gSGkgUmFmYWVsLA0KDQpIaSwNCg0KPiBJIGhhdmUgYSBy
-ZXF1aXJlbWVudCByZWxhdGVkIHRvIHJ1bnRpbWUgUE0gYW5kIHN5c3RlbSBzdXNwZW5kLCBhbmQg
-bmVlZCB5b3VyIGhlbHAgZm9yIGl0LiBCZWxvdyBpcyB0aGUgcmVxdWlyZW1lbnQsIGFuZCB0aGUg
-YXBwcm9hY2ggSSBmb2xsb3dlZDoNCj4NCj4gSSB3YW50IHRvIGRpc2FibGUgcnVudGltZS1QTSBm
-b3IgYWxsIHRoZSBkZXZpY2VzLCBidXQgd2FudCB0byBrZWVwIHN5c3RlbSBzdXNwZW5kIGVuYWJs
-ZWQuIE1vcmUgcHJlY2lzZWx5LCBJIGRvbid0IHdhbnQgZGV2aWNlcyB0byBydW50aW1lIHN1c3Bl
-bmQgb3IgZXZlbiBjbG9jay1nYXRlZCB3aGVuIGRldmljZSBpcyBpZGxlLg0KPiBJIHdhbnQgdGhl
-bSBhbHdheXMgdG8gYmUgaW4gZnVsbCBwb3dlciBzdGF0ZS4gQ3VycmVudGx5LCBkZXZpY2VzIGFy
-ZSB1c2luZyBydW50aW1lIFBNIHRvIGdldCBwb3dlcmVkIGF0IGJvb3QgdGltZS4NCj4NCj4gSSBo
-YXZlIGEgcmVxdWlyZW1lbnQgd2hlcmUgcG93ZXIgc3VwcGx5IGlzIG5vdCBhIGNvbnN0cmFpbnQs
-IGJ1dCBzeXN0ZW0ncyByZXNwb25zaXZlbmVzcyBpcyBvZiBjcml0aWNhbCBpbXBvcnRhbmNlLiBX
-aXRoIHJ1bnRpbWUtUE0gZW5hYmxlZCwgaXQgd2lsbCBpbmN1ciBzb21lIGRlbGF5IGZvciB0aGUg
-ZGV2aWNlIHRvIGNvbWUgb3V0IG9mIHJ1bnRpbWUgc3VzcGVuZCBzdGF0ZSB3aGVuZXZlciBhIHJl
-cXVlc3QgY29tZXMgZm9yIGl0Lg0KPiBJIHdhbnQgdG8gYXZvaWQgdGhhdCBkZWxheS4gVGhpcyBp
-cyB0aGUgcmVhc29uIEkgd2FudCB0byBkaXNhYmxlIHJ1bnRpbWUgUE0uIFN5c3RlbSBzdXNwZW5k
-IHNob3VsZCBiZSB3b3JraW5nIGZpbmUuDQo+DQo+IEFzIHVwc3RyZWFtIGhhcyBjbG9zZWx5IGlu
-dGVncmF0ZWQgcnVudGltZSBQTSBhbmQgc3lzdGVtIHN1c3BlbmQsIGFuZCBhbHNvIGdvdCByaWQg
-b2YgQ09ORklHX1BNX1JVTlRJTUUsIHNvIG5vdyBpdCBpcyBub3QgcG9zc2libGUgdG8ganVzdCBk
-aXNhYmxlIENPTkZJR19QTV9SVU5USU1FIHRvIGRpc2FibGUgcnVudGltZSBQTS4gSSB0cmllZCBi
-ZWxvdyB0d28gYXBwcm9hY2hlcyB0byBtZWV0IHRoZSByZXF1aXJlbWVudDoNCj4NCj4gMS4pICAg
-IFRoZSBkZXZpY2VzIHRoYXQgdXNlIFBNIERvbWFpbnMsIEkgc2V0IGdvdmVybm9yIGFzIGFsd2F5
-cy1vbiBnb3Zlcm5vciwgc28gdGhhdCBkZXZpY2VzIHdvbid0IHJ1bnRpbWUgc3VzcGVuZC4gQnV0
-LCBpdCBkb2VzIG5vdCBwcmV2ZW50IGRldmljZXMgZnJvbSBjbG9jay1nYXRpbmcuIFRoaXMgYXBw
-cm9hY2ggaXMgYXBwbGljYWJsZSBvbmx5IGZvciB0aGUgZGV2aWNlcyB3aGljaCB1c2UgUE0gRG9t
-YWlucy4NCj4gMi4pICAgIFRoZSBkZXZpY2VzIHRoYXQgZG9uJ3QgdXNlIFBNIERvbWFpbnMsIEkg
-dHJpZWQgbWFraW5nIGNoYW5nZXMgaW4gaW5kaXZpZHVhbCBkcml2ZXJzLiBGb3IgZWFjaCBkZXZp
-Y2UsIGluIHRoZSBwcm9iZSBmdW5jdGlvbiwgb25jZSBkZXZpY2UgaXMgcG93ZXJlZC1vbiwgSSBk
-aXNhYmxlIHJ1bnRpbWUgUE0gdXNpbmcgcnVudGltZSBQTSBBUElzLCBzbyB0aGF0IGRldmljZSB3
-b24ndCBlbnRlcnRhaW4gYW55DQo+IHJ1bnRpbWUgcmVxdWVzdHMuIFRoaXMgd2F5IGRldmljZSB3
-aWxsIGJlIGFsd2F5cyBvbi4NCj4NCj4gLSAgV2l0aCBmaXJzdCBhcHByb2FjaCwgZGV2aWNlcyBk
-aWQgbm90IHJ1bnRpbWUgc3VzcGVuZCwgYnV0IHdlcmUgY2xvY2stZ2F0ZWQuIFRoaXMgYXBwcm9h
-Y2ggaXMgbm90IGFwcGxpY2FibGUgdG8gdGhlIGRldmljZXMsIHdoaWNoIGRvbid0IHVzZSBQTSBE
-b21haW4uIFN5c3RlbSBzdXNwZW5kIGlzIHdvcmtpbmcgZmluZS4NCj4gLSAgV2l0aCBzZWNvbmQg
-YXBwcm9hY2gsIGRldmljZXMgd2VyZSBub3QgcnVudGltZSBzdXNwZW5kZWQsIGFuZCB3ZXJlIGFs
-d2F5cyBwb3dlcmVkLW9uLiBCdXQgSSBoYWQgdG8gbWFrZSBjaGFuZ2VzIGluIGVhY2ggb2YgdGhl
-IGRyaXZlciBmaWxlcy4gQXMgZWFjaCBvZiB0aGUgZGV2aWNlcyBhcmUgdXNpbmcgcnVudGltZSBQ
-TSBpbiBkaWZmZXJlbnQgd2F5cywgc28gaXQgd2FzIG5vdCBwb3NzaWJsZSB0byBjcmVhdGUgYSBj
-b21tb24gQVBJIHdoaWNoIHdpbGwgc3VpdCBhbGwgdGhlIGRldmljZXMuDQo+DQo+IENvdWxkIHlv
-dSBwbGVhc2UgaGVscCBtZSB3aXRoIGEgY2xlYW5lciB3YXkgc28gdGhhdCBkZXZpY2VzIGRvbid0
-IHJ1bnRpbWUtc3VzcGVuZCAobm90IGV2ZW4gY2xvY2stZ2F0ZSksIGFuZCBzeXN0ZW0gc3VzcGVu
-ZCBzaG91bGQgYmUgd29ya2luZz8NCg0KV2VsbCwgZWFjaCBkZXZpY2UgaGFzIHRoZSAiY29udHJv
-bCIgYXR0cmlidXRlIGluIHN5c2ZzIHRoYXQgY2FuIGJlIHVzZWQgdG8gbWFrZSB0aGUgZGV2aWNl
-IHN0YXkgaW4gdGhlIGFjdGl2ZSBtZXRhc3RhdGUgYWxsIHRoZSB0aW1lLg0KV2h5IGRvbid0IHlv
-dSB1c2UgaXQ/DQoNClRoYW5rcywNClJhZmFlbA0KDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LQ0KVGhpcyBlbWFpbCBtZXNzYWdlIGlzIGZvciB0aGUgc29sZSB1c2Ugb2YgdGhlIGludGVuZGVk
-IHJlY2lwaWVudChzKSBhbmQgbWF5IGNvbnRhaW4NCmNvbmZpZGVudGlhbCBpbmZvcm1hdGlvbi4g
-IEFueSB1bmF1dGhvcml6ZWQgcmV2aWV3LCB1c2UsIGRpc2Nsb3N1cmUgb3IgZGlzdHJpYnV0aW9u
-DQppcyBwcm9oaWJpdGVkLiAgSWYgeW91IGFyZSBub3QgdGhlIGludGVuZGVkIHJlY2lwaWVudCwg
-cGxlYXNlIGNvbnRhY3QgdGhlIHNlbmRlciBieQ0KcmVwbHkgZW1haWwgYW5kIGRlc3Ryb3kgYWxs
-IGNvcGllcyBvZiB0aGUgb3JpZ2luYWwgbWVzc2FnZS4NCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tDQo=
+On 06/10/2016 08:13 AM, Krzysztof Kozlowski wrote:
+> On 06/10/2016 07:35 AM, Chris Lapa wrote:
+>> Hi Krzysztof,
+>>
+>> Thanks for the review. I'm working on those changes now.
+>>
+>> However just so I know for the future. Why no error checking on
+>> devm_kzalloc() result? Looking through the source for devm_kzalloc() it
+>> looks like NULL isn't caught anywhere else.
+> 
+> Error checking is necessary. Just do not print the error message. The
+> kernel core will print one with full back trace.
+> 
+> if (charger == NULL)
+> 	return -ENOMEM;
+
+... and while at it just convert it to simpler:
+if (!charger)
+	return -ENOMEM;
+
+BR,
+Krzysztof
