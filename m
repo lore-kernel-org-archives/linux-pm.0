@@ -1,215 +1,115 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: conservative: Do not use transition notifications
-Date: Fri, 10 Jun 2016 03:00:37 +0200
-Message-ID: <2899343.d3UcWvo4TA@vostro.rjw.lan>
+From: Ben Hutchings <ben@decadent.org.uk>
+Subject: [PATCH] cpupower: Use conventional shared library versioning
+Date: Fri, 10 Jun 2016 02:05:54 +0100
+Message-ID: <20160610010554.GR7555@decadent.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="p11K2BJEgMZL61bg"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54647 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751315AbcFJA4g (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2016 20:56:36 -0400
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:44444 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751119AbcFJBF7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jun 2016 21:05:59 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Thomas Renninger <trenn@suse.com>
+Cc: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The conservative governor registers a transition notifier so it
-can update its internal requested_freq value if it falls out of the
-policy->min...policy->max range, but that's not the most
-straightforward way to achieve that.
+--p11K2BJEgMZL61bg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-To do it in a more straightforward way, first make sure that
-cs_dbs_timer() will only set frequencies between min and max.
+The current choice of variable names is rather confusing.  LIB_MIN is
+used for the soname version, which would normally be the *major* part
+of the version.
 
-With that, note that requested_freq will always fall between min
-and max unless either policy->min or policy->max changes and the
-governor's ->limits() callback will be invoked then.
+- Rename LIB_MAJ (the full version) to LIB_VER and LIB_MIN (the soname
+  version) to LIB_SONAME_VER
+- Define LIB_SONAME_VER to be the first component of LIB_VER
+- Bump the full version to 1.0.0, since the soname version is currently 1
 
-Using this observation, add a ->limits callback pointer to
-struct dbs_governor, make cpufreq_dbs_governor_limits() invoke
-that callback if present, implement that callback in the conservative
-governor to update requested_freq if needed and drop the transition
-notifier from it, which also makes it possible to drop the
-struct cs_governor definition from there and simplify the code
-accordingly.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
- drivers/cpufreq/cpufreq_conservative.c |   85 +++++++--------------------------
- drivers/cpufreq/cpufreq_governor.c     |    4 +
- drivers/cpufreq/cpufreq_governor.h     |    1 
- 3 files changed, 25 insertions(+), 65 deletions(-)
+ tools/power/cpupower/Makefile | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-+++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-@@ -106,7 +106,8 @@ static unsigned int cs_dbs_timer(struct
- 			goto out;
- 
- 		freq_target = get_freq_target(cs_tuners, policy);
--		if (dbs_info->requested_freq > freq_target)
-+		if (dbs_info->requested_freq > freq_target
-+		    && dbs_info->requested_freq - freq_target > policy->min)
- 			dbs_info->requested_freq -= freq_target;
- 		else
- 			dbs_info->requested_freq = policy->min;
-@@ -119,13 +120,6 @@ static unsigned int cs_dbs_timer(struct
- 	return dbs_data->sampling_rate;
- }
- 
--static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
--				void *data);
--
--static struct notifier_block cs_cpufreq_notifier_block = {
--	.notifier_call = dbs_cpufreq_notifier,
--};
--
- /************************** sysfs interface ************************/
- 
- static ssize_t store_sampling_down_factor(struct gov_attr_set *attr_set,
-@@ -254,13 +248,6 @@ static struct attribute *cs_attributes[]
- 
- /************************** sysfs end ************************/
- 
--struct cs_governor {
--	struct dbs_governor dbs_gov;
--	unsigned int usage_count;
--};
--
--static struct cs_governor cs_gov;
--
- static struct policy_dbs_info *cs_alloc(void)
- {
- 	struct cs_policy_dbs_info *dbs_info;
-@@ -294,25 +281,11 @@ static int cs_init(struct dbs_data *dbs_
- 	dbs_data->min_sampling_rate = MIN_SAMPLING_RATE_RATIO *
- 		jiffies_to_usecs(10);
- 
--	/*
--	 * This function and cs_exit() are only called under gov_dbs_data_mutex
--	 * which is global, so the cs_gov.usage_count accesses are guaranteed
--	 * to be serialized.
--	 */
--	if (!cs_gov.usage_count++)
--		cpufreq_register_notifier(&cs_cpufreq_notifier_block,
--					  CPUFREQ_TRANSITION_NOTIFIER);
--
- 	return 0;
- }
- 
- static void cs_exit(struct dbs_data *dbs_data)
- {
--	/* Protected by gov_dbs_data_mutex - see the comment in cs_init(). */
--	if (!--cs_gov.usage_count)
--		cpufreq_unregister_notifier(&cs_cpufreq_notifier_block,
--					    CPUFREQ_TRANSITION_NOTIFIER);
--
- 	kfree(dbs_data->tuners);
- }
- 
-@@ -324,47 +297,29 @@ static void cs_start(struct cpufreq_poli
- 	dbs_info->requested_freq = policy->cur;
- }
- 
--static struct cs_governor cs_gov = {
--	.dbs_gov = {
--		.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
--		.kobj_type = { .default_attrs = cs_attributes },
--		.gov_dbs_timer = cs_dbs_timer,
--		.alloc = cs_alloc,
--		.free = cs_free,
--		.init = cs_init,
--		.exit = cs_exit,
--		.start = cs_start,
--	},
--};
--
--#define CPU_FREQ_GOV_CONSERVATIVE	(&cs_gov.dbs_gov.gov)
--
--static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
--				void *data)
-+static void cs_limits(struct cpufreq_policy *policy)
- {
--	struct cpufreq_freqs *freq = data;
--	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(freq->cpu);
--	struct cs_policy_dbs_info *dbs_info;
--
--	if (!policy)
--		return 0;
--
--	/* policy isn't governed by conservative governor */
--	if (policy->governor != CPU_FREQ_GOV_CONSERVATIVE)
--		return 0;
-+	struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy->governor_data);
- 
--	dbs_info = to_dbs_info(policy->governor_data);
--	/*
--	 * we only care if our internally tracked freq moves outside the 'valid'
--	 * ranges of frequency available to us otherwise we do not change it
--	*/
- 	if (dbs_info->requested_freq > policy->max
--			|| dbs_info->requested_freq < policy->min)
--		dbs_info->requested_freq = freq->new;
--
--	return 0;
-+	    || dbs_info->requested_freq < policy->min)
-+		dbs_info->requested_freq = policy->cur;
- }
- 
-+static struct dbs_governor cs_governor = {
-+	.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
-+	.kobj_type = { .default_attrs = cs_attributes },
-+	.gov_dbs_timer = cs_dbs_timer,
-+	.alloc = cs_alloc,
-+	.free = cs_free,
-+	.init = cs_init,
-+	.exit = cs_exit,
-+	.start = cs_start,
-+	.limits = cs_limits,
-+};
-+
-+#define CPU_FREQ_GOV_CONSERVATIVE	(&cs_governor.gov)
-+
- static int __init cpufreq_gov_dbs_init(void)
- {
- 	return cpufreq_register_governor(CPU_FREQ_GOV_CONSERVATIVE);
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -545,6 +545,7 @@ EXPORT_SYMBOL_GPL(cpufreq_dbs_governor_s
- 
- void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
- {
-+	struct dbs_governor *gov = dbs_governor_of(policy);
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 
- 	mutex_lock(&policy_dbs->timer_mutex);
-@@ -554,6 +555,9 @@ void cpufreq_dbs_governor_limits(struct
- 	else if (policy->min > policy->cur)
- 		__cpufreq_driver_target(policy, policy->min, CPUFREQ_RELATION_L);
- 
-+	if (gov->limits)
-+		gov->limits(policy);
-+
- 	gov_update_sample_delay(policy_dbs, 0);
- 
- 	mutex_unlock(&policy_dbs->timer_mutex);
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-@@ -141,6 +141,7 @@ struct dbs_governor {
- 	int (*init)(struct dbs_data *dbs_data);
- 	void (*exit)(struct dbs_data *dbs_data);
- 	void (*start)(struct cpufreq_policy *policy);
-+	void (*limits)(struct cpufreq_policy *policy);
- };
- 
- static inline struct dbs_governor *dbs_governor_of(struct cpufreq_policy *policy)
+diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
+index 0b85f5915ce8..1ef6cdfd3f4a 100644
+--- a/tools/power/cpupower/Makefile
++++ b/tools/power/cpupower/Makefile
+@@ -63,8 +63,8 @@ DESTDIR ?=3D
+ # and _should_ modify the PACKAGE_BUGREPORT definition
+=20
+ VERSION=3D			$(shell ./utils/version-gen.sh)
+-LIB_MAJ=3D			0.0.1
+-LIB_MIN=3D			1
++LIB_VER=3D			1.0.0
++LIB_SONAME_VER=3D			$(word 1,$(subst ., ,$(LIB_VER)))
+=20
+ PACKAGE =3D			cpupower
+ PACKAGE_BUGREPORT =3D		linux-pm@vger.kernel.org
+@@ -201,14 +201,14 @@ $(OUTPUT)lib/%.o: $(LIB_SRC) $(LIB_HEADERS)
+ 	$(ECHO) "  CC      " $@
+ 	$(QUIET) $(CC) $(CFLAGS) -fPIC -o $@ -c lib/$*.c
+=20
+-$(OUTPUT)libcpupower.so.$(LIB_MAJ): $(LIB_OBJS)
++$(OUTPUT)libcpupower.so.$(LIB_VER): $(LIB_OBJS)
+ 	$(ECHO) "  LD      " $@
+ 	$(QUIET) $(CC) -shared $(CFLAGS) $(LDFLAGS) -o $@ \
+-		-Wl,-soname,libcpupower.so.$(LIB_MIN) $(LIB_OBJS)
++		-Wl,-soname,libcpupower.so.$(LIB_SONAME_VER) $(LIB_OBJS)
+ 	@ln -sf $(@F) $(OUTPUT)libcpupower.so
+-	@ln -sf $(@F) $(OUTPUT)libcpupower.so.$(LIB_MIN)
++	@ln -sf $(@F) $(OUTPUT)libcpupower.so.$(LIB_SONAME_VER)
+=20
+-libcpupower: $(OUTPUT)libcpupower.so.$(LIB_MAJ)
++libcpupower: $(OUTPUT)libcpupower.so.$(LIB_VER)
+=20
+ # Let all .o files depend on its .c file and all headers
+ # Might be worth to put this into utils/Makefile at some point of time
+@@ -218,7 +218,7 @@ $(OUTPUT)%.o: %.c
+ 	$(ECHO) "  CC      " $@
+ 	$(QUIET) $(CC) $(CFLAGS) -I./lib -I ./utils -o $@ -c $*.c
+=20
+-$(OUTPUT)cpupower: $(UTIL_OBJS) $(OUTPUT)libcpupower.so.$(LIB_MAJ)
++$(OUTPUT)cpupower: $(UTIL_OBJS) $(OUTPUT)libcpupower.so.$(LIB_VER)
+ 	$(ECHO) "  CC      " $@
+ ifeq ($(strip $(STATIC)),true)
+ 	$(QUIET) $(CC) $(CFLAGS) $(LDFLAGS) $(UTIL_OBJS) -lrt -lpci -L$(OUTPUT) -=
+o $@
+@@ -251,7 +251,7 @@ update-po: $(OUTPUT)po/$(PACKAGE).pot
+ 		fi; \
+ 	done;
+=20
+-compile-bench: $(OUTPUT)libcpupower.so.$(LIB_MAJ)
++compile-bench: $(OUTPUT)libcpupower.so.$(LIB_VER)
+ 	@V=3D$(V) confdir=3D$(confdir) $(MAKE) -C bench O=3D$(OUTPUT)
+=20
+ # we compile into subdirectories. if the target directory is not the
 
+--p11K2BJEgMZL61bg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIVAwUBV1oScee/yOyVhhEJAQpVWA/9ERcLlN1uxMdB15l0dW8+vJSWYx5MFIwR
+p8en+1wIS9PzlmryyFBJnU2tUTEbzHOFkvwojimb/BbGU2/GPdfZbZJDUcghFz9B
+jF/AT7t9mx014bW4ZMVlJOOHvsAC8ZPmQckcDUkTWRzv1ppBekKhgmMrEV8UM6kR
+3YqSW53GikyNXn/3XoObs+okSYxx6nCICGtRDT9ZuUy1yRsgj5MEKwW8ODEQwOp7
+qKMhs9Fb0DG8pPMiw7Uvuz8fQfEMdmwjrGn3i0DKL/ZWfXgyKo5KJYems2Fv8QhC
+z7rBYe2ZuI60fjhKH0ijENJAo3VtLhv57qvwTig1MkMYvByRBHXsCMsSqdwtzQjs
+JHhPA5Y+Wz5BGkpG9imndFMf/RWaBXxyCvA9GjL8k9UrPUChZdDnODH3CcuL9z0A
+b1JmUkp5OY14jMK8m8ZFNC7g9UW7WW28eVF9T13//Y/hFHyNvLTukXPN1rNgXRtP
+tDym7KAw2/CQOEA3k7YkHuF9HhCC7g4KFzwdK3tG6+FYT0aqJtgtPS96+Q0s85Nq
+8V4v4pQ4Rfp8OvS5Dn70SNE3upUnKtnksGS5ZW5ghEEe+c9n/VV1lQb+bNvIjl+S
+VvSKyS0gc2nq2TFkqtJfNOYqL0NYPKbtuJYN14wb7YOxutqGc5MjBFAqUSFWGfiz
+DQMufh7MrmM=
+=Og8g
+-----END PGP SIGNATURE-----
+
+--p11K2BJEgMZL61bg--
