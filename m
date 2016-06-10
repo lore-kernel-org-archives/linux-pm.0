@@ -1,61 +1,77 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH 5/5] ARM: dts: qcom: pma8084: Add pwrkey entry
-Date: Fri, 10 Jun 2016 13:29:14 -0700
-Message-ID: <20160610202914.GQ1256@tuxbot>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 3/5] arm64: dts: msm8916: Add spc compat tag
+Date: Fri, 10 Jun 2016 21:59:48 +0100
+Message-ID: <20160610205948.GD24178@red-moon>
 References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
- <1463634020-17252-6-git-send-email-andy.gross@linaro.org>
+ <1463634020-17252-4-git-send-email-andy.gross@linaro.org>
+ <20160610154857.GA6430@leverpostej>
+ <20160610161234.GO13357@hector.attlocal.net>
+ <20160610163153.GA23743@red-moon>
+ <20160610165248.GQ13357@hector.attlocal.net>
+ <20160610170656.GA23854@red-moon>
+ <20160610172716.GR13357@hector.attlocal.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:34809 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752096AbcFJU3S (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 16:29:18 -0400
-Received: by mail-pa0-f52.google.com with SMTP id bz2so26696014pad.1
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2016 13:29:18 -0700 (PDT)
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1463634020-17252-6-git-send-email-andy.gross@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <20160610172716.GR13357@hector.attlocal.net>
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Andy Gross <andy.gross@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, stanimir.varbanov@linaro.org, linux-arm-kernel@lists.infradead.org
+Cc: Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, stanimir.varbanov@linaro.org
+List-Id: linux-pm@vger.kernel.org
 
-On Wed 18 May 22:00 PDT 2016, Andy Gross wrote:
+On Fri, Jun 10, 2016 at 12:27:16PM -0500, Andy Gross wrote:
+> On Fri, Jun 10, 2016 at 06:06:56PM +0100, Lorenzo Pieralisi wrote:
+> > On Fri, Jun 10, 2016 at 11:52:48AM -0500, Andy Gross wrote:
+> > 
+> > [...]
+> > 
+> > > > (1) enter_freeze() hooks are not strictly necessary to enable
+> > > >     suspend-to-idle (they are if we want the tick to be frozen
+> > > >     on suspend-to-idle, which is different)
+> > > 
+> > > I'd think that you'd want the tick frozen.  Even if you are going to
+> > > just call the deepest freezable idle state in your freeze_function,
+> > > you don't want to keep getting woken up as this costs some power usage
+> > 
+> > As I said, that's a separate issue from these bindings.
+> 
+> I kind of see that coupled with the determination that a idle state
+> supports freeze.  Or are you wanting to have something else that
+> decides whether or not to configure the enter_freeze?
 
-> This patch adds the power key device tree node.
-> 
-> Signed-off-by: Andy Gross <andy.gross@linaro.org>
+All PSCI based idle state support freeze, as long as most of the
+other idle routines for ARM 32-bit, I do not even think we should
+bother with defining DT bindings for it.
 
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+[...]
 
-> ---
->  arch/arm/boot/dts/qcom-pma8084.dtsi | 8 ++++++++
->  1 file changed, 8 insertions(+)
+> > For 64-bit you do not have to have add any facility.
+> > 
+> > 1) we should change core code to make PM_SUSPEND_FREEZE independent
+> >    of suspend_set_ops()
 > 
-> diff --git a/arch/arm/boot/dts/qcom-pma8084.dtsi b/arch/arm/boot/dts/qcom-pma8084.dtsi
-> index ea7fce3..82d2580 100644
-> --- a/arch/arm/boot/dts/qcom-pma8084.dtsi
-> +++ b/arch/arm/boot/dts/qcom-pma8084.dtsi
-> @@ -18,6 +18,14 @@
->  			interrupts = <0x0 0x61 0x1 IRQ_TYPE_EDGE_RISING>;
->  		};
->  
-> +		pwrkey@800 {
-> +			compatible = "qcom,pm8941-pwrkey";
-> +			reg = <0x800>;
-> +			interrupts = <0x0 0x8 0 IRQ_TYPE_EDGE_BOTH>;
-> +			debounce = <15625>;
-> +			bias-pull-up;
-> +		};
-> +
->  		pma8084_gpios: gpios@c000 {
->  			compatible = "qcom,pma8084-gpio", "qcom,spmi-gpio";
->  			reg = <0xc000>;
-> -- 
-> 1.9.1
+> So then, if cpuidle is active and you have idle states supporting
+> freeze, then you can always implicitly freeze the system.  This would
+> infer then that the system will always indicate it can do freeze.  I
+> am good with that.
 > 
+> For now, we can get away with just implementing the changes you are
+> suggesting.
+
+Cracking.
+
+> > 2) we should define which idle states are freezable (99% of them are
+> >    minus coupled idle states), through generic bindings
 > 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> This would be in the form of a DT property?  And given this property
+> then we'd just assign a enter_freeze() function that calls the enter()
+> for that state.  Or would we have something else that we need to key
+> off of to decide to configure the enter_freeze?
+
+See above, I will give it more thought. I take an action to change
+core code as per discussion above.
+
+Thanks for raising the point.
+
+Lorenzo
