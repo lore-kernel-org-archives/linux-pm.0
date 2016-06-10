@@ -1,80 +1,85 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt > 0
-Date: Fri, 10 Jun 2016 11:43:24 +0200
-Message-ID: <575A8BBC.7040306@samsung.com>
-References: <1465507719-819-1-git-send-email-rklein@nvidia.com>
+From: Sumit Singh <sumsingh@nvidia.com>
+Subject: RE: Need help : Way to disable runtime PM with system suspend enabled
+Date: Fri, 10 Jun 2016 09:54:10 +0000
+Message-ID: <d5f4566ed9f84a0e8840402bbac6b780@bgmail103.nvidia.com>
+References: <57277a9454784b2c911a2c90fd1bea3e@bgmail103.nvidia.com>
+ <CAJZ5v0jGmgKZscGcq1XRrSW8Lo5-71-VAG4fa+HBO6GVP29=8g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1465507719-819-1-git-send-email-rklein@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rhyland Klein <rklein@nvidia.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, stable@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:10601 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751957AbcFJJyQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 05:54:16 -0400
+In-Reply-To: <CAJZ5v0jGmgKZscGcq1XRrSW8Lo5-71-VAG4fa+HBO6GVP29=8g@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prashant Gaikwad <pgaikwad@nvidia.com>, Bharat Nihalani <bnihalani@nvidia.com>
 
-On 06/09/2016 11:28 PM, Rhyland Klein wrote:
-> Change power_supply_read_temp() to use power_supply_get_property()
-> so that it will check the use_cnt and ensure it is > 0. The use_cnt
-> will be incremented at the end of __power_supply_register, so this
-> will block to case where get_property can be called before the supply
-> is fully registered. This fixes the issue show in the stack below:
-> 
-> [    1.452598] power_supply_read_temp+0x78/0x80
-> [    1.458680] thermal_zone_get_temp+0x5c/0x11c
-> [    1.464765] thermal_zone_device_update+0x34/0xb4
-> [    1.471195] thermal_zone_device_register+0x87c/0x8cc
-> [    1.477974] __power_supply_register+0x364/0x424
-> [    1.484317] power_supply_register_no_ws+0x10/0x18
-> [    1.490833] bq27xxx_battery_setup+0x10c/0x164
-> [    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
-> [    1.503435] i2c_device_probe+0x174/0x240
-> [    1.509172] driver_probe_device+0x1fc/0x29c
-> [    1.515167] __driver_attach+0xa4/0xa8
-> [    1.520643] bus_for_each_dev+0x58/0x98
-> [    1.526204] driver_attach+0x20/0x28
-> [    1.531505] bus_add_driver+0x1c8/0x22c
-> [    1.537067] driver_register+0x68/0x108
-> [    1.542630] i2c_register_driver+0x38/0x7c
-> [    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
-> [    1.555321] do_one_initcall+0x38/0x12c
-> [    1.560886] kernel_init_freeable+0x148/0x1ec
-> [    1.566972] kernel_init+0x10/0xfc
-> [    1.572101] ret_from_fork+0x10/0x40
-> 
-> Also make the same change to ps_get_max_charge_cntl_limit() and
-> ps_get_cur_chrage_cntl_limit() to be safe. Lastly, change the return
-> value of power_supply_get_property() to -EAGAIN from -ENODEV if
-> use_cnt <= 0.
-> 
-> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
-> ---
-> v4:
->  - Fixed return check conditions
->  - Removed change to power_supply_get_property return code
->  - removed whitespace change
-> 
-> v3:
->  - Changed calls to ->get_property() to use common
->    power_supply_get_property()
->  - reworded description, added "Fixes" line
->  - Changed return value of power_supply_get_property() to -EAGAIN
-> 
-> v2:
->  - Added cc stable
->  - changed return to -EAGAIN in case of use_cnt < 1
->  - Removed WARNING
->  - return value check added in additional patch:
->    https://patchwork.kernel.org/patch/9158805/
-> 
->  drivers/power/power_supply_core.c | 27 ++++++++++++++++-----------
->  1 file changed, 16 insertions(+), 11 deletions(-)
-
-Looks okay:
-
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-
-Best regards,
-Krzysztof
+VGhhbmtzIFJhZmFlbCBmb3IgdGhlIHN1Z2dlc3Rpb24uIEkgd2lsbCB0cnkgd2l0aCB0aGF0Lg0K
+VXNpbmcgcG1fcnVudGltZV9mb3JiaWQoKSBBUEksIHdlIGNhbiBkbyB0aGF0LiBDb3VsZCB5b3Ug
+cGxlYXNlIHN1Z2dlc3QgYSBwcm9wZXIgbG9jYXRpb24gZm9yIHVzaW5nIHRoaXMgQVBJLCBzbyB0
+aGF0IGl0IGlzIGFwcGxpY2FibGUgdG8gYWxsIHRoZSBkZXZpY2VzPw0KDQpUaGFua3MNClN1bWl0
+IFNpbmdoDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiByand5c29ja2lAZ21h
+aWwuY29tIFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mIFJhZmFlbCBK
+LiBXeXNvY2tpDQpTZW50OiBUaHVyc2RheSwgSnVuZSAwOSwgMjAxNiA2OjE3IFBNDQpUbzogU3Vt
+aXQgU2luZ2gNCkNjOiByandAcmp3eXNvY2tpLm5ldDsgbGludXgtcG1Admdlci5rZXJuZWwub3Jn
+OyBQcmFzaGFudCBHYWlrd2FkOyBCaGFyYXQgTmloYWxhbmkNClN1YmplY3Q6IFJlOiBOZWVkIGhl
+bHAgOiBXYXkgdG8gZGlzYWJsZSBydW50aW1lIFBNIHdpdGggc3lzdGVtIHN1c3BlbmQgZW5hYmxl
+ZA0KDQpPbiBUaHUsIEp1biA5LCAyMDE2IGF0IDk6MjMgQU0sIFN1bWl0IFNpbmdoIDxzdW1zaW5n
+aEBudmlkaWEuY29tPiB3cm90ZToNCj4gSGkgUmFmYWVsLA0KDQpIaSwNCg0KPiBJIGhhdmUgYSBy
+ZXF1aXJlbWVudCByZWxhdGVkIHRvIHJ1bnRpbWUgUE0gYW5kIHN5c3RlbSBzdXNwZW5kLCBhbmQg
+bmVlZCB5b3VyIGhlbHAgZm9yIGl0LiBCZWxvdyBpcyB0aGUgcmVxdWlyZW1lbnQsIGFuZCB0aGUg
+YXBwcm9hY2ggSSBmb2xsb3dlZDoNCj4NCj4gSSB3YW50IHRvIGRpc2FibGUgcnVudGltZS1QTSBm
+b3IgYWxsIHRoZSBkZXZpY2VzLCBidXQgd2FudCB0byBrZWVwIHN5c3RlbSBzdXNwZW5kIGVuYWJs
+ZWQuIE1vcmUgcHJlY2lzZWx5LCBJIGRvbid0IHdhbnQgZGV2aWNlcyB0byBydW50aW1lIHN1c3Bl
+bmQgb3IgZXZlbiBjbG9jay1nYXRlZCB3aGVuIGRldmljZSBpcyBpZGxlLg0KPiBJIHdhbnQgdGhl
+bSBhbHdheXMgdG8gYmUgaW4gZnVsbCBwb3dlciBzdGF0ZS4gQ3VycmVudGx5LCBkZXZpY2VzIGFy
+ZSB1c2luZyBydW50aW1lIFBNIHRvIGdldCBwb3dlcmVkIGF0IGJvb3QgdGltZS4NCj4NCj4gSSBo
+YXZlIGEgcmVxdWlyZW1lbnQgd2hlcmUgcG93ZXIgc3VwcGx5IGlzIG5vdCBhIGNvbnN0cmFpbnQs
+IGJ1dCBzeXN0ZW0ncyByZXNwb25zaXZlbmVzcyBpcyBvZiBjcml0aWNhbCBpbXBvcnRhbmNlLiBX
+aXRoIHJ1bnRpbWUtUE0gZW5hYmxlZCwgaXQgd2lsbCBpbmN1ciBzb21lIGRlbGF5IGZvciB0aGUg
+ZGV2aWNlIHRvIGNvbWUgb3V0IG9mIHJ1bnRpbWUgc3VzcGVuZCBzdGF0ZSB3aGVuZXZlciBhIHJl
+cXVlc3QgY29tZXMgZm9yIGl0Lg0KPiBJIHdhbnQgdG8gYXZvaWQgdGhhdCBkZWxheS4gVGhpcyBp
+cyB0aGUgcmVhc29uIEkgd2FudCB0byBkaXNhYmxlIHJ1bnRpbWUgUE0uIFN5c3RlbSBzdXNwZW5k
+IHNob3VsZCBiZSB3b3JraW5nIGZpbmUuDQo+DQo+IEFzIHVwc3RyZWFtIGhhcyBjbG9zZWx5IGlu
+dGVncmF0ZWQgcnVudGltZSBQTSBhbmQgc3lzdGVtIHN1c3BlbmQsIGFuZCBhbHNvIGdvdCByaWQg
+b2YgQ09ORklHX1BNX1JVTlRJTUUsIHNvIG5vdyBpdCBpcyBub3QgcG9zc2libGUgdG8ganVzdCBk
+aXNhYmxlIENPTkZJR19QTV9SVU5USU1FIHRvIGRpc2FibGUgcnVudGltZSBQTS4gSSB0cmllZCBi
+ZWxvdyB0d28gYXBwcm9hY2hlcyB0byBtZWV0IHRoZSByZXF1aXJlbWVudDoNCj4NCj4gMS4pICAg
+IFRoZSBkZXZpY2VzIHRoYXQgdXNlIFBNIERvbWFpbnMsIEkgc2V0IGdvdmVybm9yIGFzIGFsd2F5
+cy1vbiBnb3Zlcm5vciwgc28gdGhhdCBkZXZpY2VzIHdvbid0IHJ1bnRpbWUgc3VzcGVuZC4gQnV0
+LCBpdCBkb2VzIG5vdCBwcmV2ZW50IGRldmljZXMgZnJvbSBjbG9jay1nYXRpbmcuIFRoaXMgYXBw
+cm9hY2ggaXMgYXBwbGljYWJsZSBvbmx5IGZvciB0aGUgZGV2aWNlcyB3aGljaCB1c2UgUE0gRG9t
+YWlucy4NCj4gMi4pICAgIFRoZSBkZXZpY2VzIHRoYXQgZG9uJ3QgdXNlIFBNIERvbWFpbnMsIEkg
+dHJpZWQgbWFraW5nIGNoYW5nZXMgaW4gaW5kaXZpZHVhbCBkcml2ZXJzLiBGb3IgZWFjaCBkZXZp
+Y2UsIGluIHRoZSBwcm9iZSBmdW5jdGlvbiwgb25jZSBkZXZpY2UgaXMgcG93ZXJlZC1vbiwgSSBk
+aXNhYmxlIHJ1bnRpbWUgUE0gdXNpbmcgcnVudGltZSBQTSBBUElzLCBzbyB0aGF0IGRldmljZSB3
+b24ndCBlbnRlcnRhaW4gYW55DQo+IHJ1bnRpbWUgcmVxdWVzdHMuIFRoaXMgd2F5IGRldmljZSB3
+aWxsIGJlIGFsd2F5cyBvbi4NCj4NCj4gLSAgV2l0aCBmaXJzdCBhcHByb2FjaCwgZGV2aWNlcyBk
+aWQgbm90IHJ1bnRpbWUgc3VzcGVuZCwgYnV0IHdlcmUgY2xvY2stZ2F0ZWQuIFRoaXMgYXBwcm9h
+Y2ggaXMgbm90IGFwcGxpY2FibGUgdG8gdGhlIGRldmljZXMsIHdoaWNoIGRvbid0IHVzZSBQTSBE
+b21haW4uIFN5c3RlbSBzdXNwZW5kIGlzIHdvcmtpbmcgZmluZS4NCj4gLSAgV2l0aCBzZWNvbmQg
+YXBwcm9hY2gsIGRldmljZXMgd2VyZSBub3QgcnVudGltZSBzdXNwZW5kZWQsIGFuZCB3ZXJlIGFs
+d2F5cyBwb3dlcmVkLW9uLiBCdXQgSSBoYWQgdG8gbWFrZSBjaGFuZ2VzIGluIGVhY2ggb2YgdGhl
+IGRyaXZlciBmaWxlcy4gQXMgZWFjaCBvZiB0aGUgZGV2aWNlcyBhcmUgdXNpbmcgcnVudGltZSBQ
+TSBpbiBkaWZmZXJlbnQgd2F5cywgc28gaXQgd2FzIG5vdCBwb3NzaWJsZSB0byBjcmVhdGUgYSBj
+b21tb24gQVBJIHdoaWNoIHdpbGwgc3VpdCBhbGwgdGhlIGRldmljZXMuDQo+DQo+IENvdWxkIHlv
+dSBwbGVhc2UgaGVscCBtZSB3aXRoIGEgY2xlYW5lciB3YXkgc28gdGhhdCBkZXZpY2VzIGRvbid0
+IHJ1bnRpbWUtc3VzcGVuZCAobm90IGV2ZW4gY2xvY2stZ2F0ZSksIGFuZCBzeXN0ZW0gc3VzcGVu
+ZCBzaG91bGQgYmUgd29ya2luZz8NCg0KV2VsbCwgZWFjaCBkZXZpY2UgaGFzIHRoZSAiY29udHJv
+bCIgYXR0cmlidXRlIGluIHN5c2ZzIHRoYXQgY2FuIGJlIHVzZWQgdG8gbWFrZSB0aGUgZGV2aWNl
+IHN0YXkgaW4gdGhlIGFjdGl2ZSBtZXRhc3RhdGUgYWxsIHRoZSB0aW1lLg0KV2h5IGRvbid0IHlv
+dSB1c2UgaXQ/DQoNClRoYW5rcywNClJhZmFlbA0KDQotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LQ0KVGhpcyBlbWFpbCBtZXNzYWdlIGlzIGZvciB0aGUgc29sZSB1c2Ugb2YgdGhlIGludGVuZGVk
+IHJlY2lwaWVudChzKSBhbmQgbWF5IGNvbnRhaW4NCmNvbmZpZGVudGlhbCBpbmZvcm1hdGlvbi4g
+IEFueSB1bmF1dGhvcml6ZWQgcmV2aWV3LCB1c2UsIGRpc2Nsb3N1cmUgb3IgZGlzdHJpYnV0aW9u
+DQppcyBwcm9oaWJpdGVkLiAgSWYgeW91IGFyZSBub3QgdGhlIGludGVuZGVkIHJlY2lwaWVudCwg
+cGxlYXNlIGNvbnRhY3QgdGhlIHNlbmRlciBieQ0KcmVwbHkgZW1haWwgYW5kIGRlc3Ryb3kgYWxs
+IGNvcGllcyBvZiB0aGUgb3JpZ2luYWwgbWVzc2FnZS4NCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tDQo=
