@@ -1,122 +1,71 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
-Date: Sat, 11 Jun 2016 00:11:40 +0200
-Message-ID: <1777411.NAm5Oheu61@vostro.rjw.lan>
-References: <573DF82D.50006@deltatee.com> <CAJZ5v0gWxVwJ4aNEKtnCnY-GvFACaAjFDJNH__2YeAco-f1kRQ@mail.gmail.com> <CAGXu5jJ+hRAVNfa=xWd9c9On5vC6k+kZKkaXGSXS5WfjTK2QcA@mail.gmail.com>
+Date: Sat, 11 Jun 2016 00:29:59 +0200
+Message-ID: <6452365.7hjtWaBW7Y@vostro.rjw.lan>
+References: <573DF82D.50006@deltatee.com> <CAGXu5jK15P5CAQd09NzG31YMPEKJGXbhXiYDQ2sRC=WBhAFTrA@mail.gmail.com> <34107887.ATgOLutrT1@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGXu5jJ+hRAVNfa=xWd9c9On5vC6k+kZKkaXGSXS5WfjTK2QcA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Logan Gunthorpe <logang@deltatee.com>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59268 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932558AbcFJWZ6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 18:25:58 -0400
+In-Reply-To: <34107887.ATgOLutrT1@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>
+Cc: Logan Gunthorpe <logang@deltatee.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
-On Friday, May 20, 2016 02:59:30 PM Kees Cook wrote:
-> On Fri, May 20, 2016 at 2:46 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Fri, May 20, 2016 at 3:56 PM, Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> >> On 05/20/2016 07:34 AM, Rafael J. Wysocki wrote:
-> >>> On Fri, May 20, 2016 at 9:15 AM, Ingo Molnar <mingo@kernel.org> wrote:
-> >>>>
-> >>>> * Logan Gunthorpe <logang@deltatee.com> wrote:
-> >>>>
-> >>>>> Hi,
-> >>>>>
-> >>>>> I have been working on a bug that causes my laptop to freeze during
-> >>>>> resume from hibernation. I did a bisect to find the offending commit:
-> >>>>>
-> >>>>> [ab76f7b4ab] x86/mm: Set NX on gap between __ex_table and rodata
-> >>>>>
-> >>>>> There is more information in the bugzilla report [1] that
-> >>>>> I've been working on but I will summarize things below.
-> >>>>>
-> >>>>> I've experienced intermittent but reproducible freezes when resuming
-> >>>>> from hibernation since about kernel version 3.19. The freeze was
-> >>>>> significantly more reproducible when a few applications were loaded
-> >>>>> before hibernation and would largely not happen if hibernated
-> >>>>> immediately after booting to a desktop. I did some tracing work to find
-> >>>>> that the kernel gets as far as the resume_image call in
-> >>>>> swsusp_arch_resume and I could not find any response from the image
-> >>>>> kernel when I hit the bug. I also did testing that seemed to rule out
-> >>>>> this being caused by a problematic driver.
-> >>>>>
-> >>>>> I did a successful bisect between 3.18 and 3.19 which found a bug in
-> >>>>> commit f5b2831d6 that was then later fixed by commit 55696b1f66 in 4.4.
-> >>>>> Then, I did a second bisect with a ported version of the fix to the
-> >>>>> first bug and found commit ab76f7b4ab in 4.3 to also break hibernation
-> >>>>> with what appears to be the exact same symptoms. Reverting that commit
-> >>>>> in recent kernels up to and including 4.6 fixes the issue and restores
-> >>>>> reliable hibernation. However, it's not at all clear to me why that
-> >>>>> commit would cause this issue or how to fix the issue without reverting.
-> >>>>
-> >>>> I've attached that commit below and also Cc:-ed a few more people who might have
-> >>>> an idea about why this regressed. Worst-case we'll have to revert it.
-> >>>
-> >>> Without looking deep into mm, my theory would be that after this patch
-> >>> the final jump from the boot kernel to the image kernel's trampoline
-> >>> code during resume may crash the kernel if the trampoline page turns
-> >>> out to be NX in the boot kernel (it has to be executable in both the
-> >>> boot and the image kernels).
-> >>
-> >> So, pardon my ignorance, but where is this trampoline page placed in
-> >> kernel memory?
-> >
-> > On 32-bit its location has to be the same in both the boot and the
-> > image kernels and that's within kernel text in both cases, so that
-> > shouldn't be a problem.
-> >
-> > On 64-bit its location depends on the image kernel and specifically on
-> > the location of the restore_registers routine in it.  The (virtual)
-> > address of that routine is stored in the restore_jump_address
-> > variable, so the page containing it (the trampoline page) can be found
-> > with the help of that.
-> >
-> > swsusp_arch_resume() sets up a temporary kernel mapping to finalize
-> > the image restoration and that page must not be NX in that mapping for
-> > things to work.
+On Friday, June 10, 2016 11:27:29 PM Rafael J. Wysocki wrote:
+> On Friday, June 10, 2016 11:09:22 AM Kees Cook wrote:
+> > On Thu, Jun 9, 2016 at 9:14 PM, Logan Gunthorpe <logang@deltatee.com> wrote:
+> > > Hey,
+> > >
+> > > I've still be trying to figure this out as I have time.
+> > >
+> > > I tried printing a couple restore addresses and nothing I can find seems
+> > > anywhere near the rodata/ex_table boundary.
+> > >
+> > > I tried with the (badly formatted) below and got the following. Nothing too
+> > > surprising. I've attached a kallsyms that matches the kernel for reference.
+> > >
+> > > restore_code: ffff880157c3b000
+> > > jump_addr: ffffffff81446be0
+> > >
+> > >
+> > > diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+> > > index 009947d..6efedb7 100644
+> > > --- a/arch/x86/power/hibernate_64.c
+> > > +++ b/arch/x86/power/hibernate_64.c
+> > > @@ -92,6 +92,9 @@ int swsusp_arch_resume(void)
+> > >         memcpy(relocated_restore_code, &core_restore_code,
+> > >                &restore_registers - &core_restore_code);
+> > >
+> > > +       pr_info("restore_code: %p\n", relocated_restore_code);
+> > > +       pr_info("jump_addr: %lx\n", restore_jump_address);
+> > > +
+> > 
+> > Also interesting would be the "relocated_restore_code" address, as
+> > well as a dump of /sys/kernel/debug/kernel_page_tables (from
+> > CONFIG_X86_PTDUMP).
+> > 
+> > I'm baffled by the problem, but the best I can understand is the the
+> > relocated_restore_code range isn't executable (which should be visible
+> > from finding it in /sys/kernel/debug/kernel_page_tables), but I don't
+> > see how to solve that since my original patch didn't work.
+> > 
+> > Rafael, is this something you have time to look at quickly?
 > 
-> It looks like nothing in the swsusp_arch_resume() -> get_safe_page()
-> -> get_image_page() path sets the page executable...
-> 
-> Untested, but I wonder if this work work in swsusp_arch_resume()
-> before the memcpy?
-> 
-> (apologies for any gmail-based whitespace mangling...)
-> 
-> diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-> index 009947d419a6..c2f3ecc45bd4 100644
-> --- a/arch/x86/power/hibernate_64.c
-> +++ b/arch/x86/power/hibernate_64.c
-> @@ -12,6 +12,7 @@
->  #include <linux/smp.h>
->  #include <linux/suspend.h>
-> 
-> +#include <asm/cacheflush.h>
->  #include <asm/init.h>
->  #include <asm/proto.h>
->  #include <asm/page.h>
-> @@ -89,6 +90,7 @@ int swsusp_arch_resume(void)
->         relocated_restore_code = (void *)get_safe_page(GFP_ATOMIC);
->         if (!relocated_restore_code)
->                 return -ENOMEM;
-> +       set_memory_x((unsigned long)relocated_restore_code, 1);
->         memcpy(relocated_restore_code, &core_restore_code,
->                &restore_registers - &core_restore_code);
-> 
-> 
+> Well, not really, but I'll do my best to look at it in the next few days.
 
-We may not be on the right track with this I'm afraid.
+OK, I have a theory, but I need a bit of help.
 
-When the temporary kernel mapping is set up in swsusp_arch_resume(), it passes
-__PAGE_KERNEL_LARGE_EXEC as pmd_flag in the x86_mapping_info, so all memory
-should be executable after we switch to that which happens right at the
-beginning of restore_image().
+This may be a dumb question, but I don't quite remember the answer readily.
 
-So restore_image() and the code it jumps to should be fine from the
-executability perspective (including the final jump to restore_jump_address).
-
-Or am I missingy anything?
+Given a physical address, how do I get the corresponding virtual one under
+the kernel identity mapping?
 
 Thanks,
 Rafael
+
