@@ -1,151 +1,130 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Platform-specific suspend/resume code in drivers
-Date: Fri, 10 Jun 2016 13:03:47 +0200
-Message-ID: <575A9E93.4090508@free.fr>
-References: <Pine.LNX.4.44L0.1606091054140.1697-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:12736 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932331AbcFJLEY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Jun 2016 07:04:24 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1606091054140.1697-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chris Lapa <chris@lapa.com.au>
+Subject: [PATCH v2 3/4] max8903: cleans up confusing relationship between dc_valid, dok and dcm.
+Date: Fri, 10 Jun 2016 22:32:49 +1000
+Message-ID: <1465561970-18377-4-git-send-email-chris@lapa.com.au>
+References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
+ <1465561970-18377-1-git-send-email-chris@lapa.com.au>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1465561970-18377-1-git-send-email-chris@lapa.com.au>
+Sender: linux-kernel-owner@vger.kernel.org
+To: k.kozlowski@samsung.com
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chris Lapa <chris@lapa.com.au>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Pavel Machek <pavel@ucw.cz>, Arnd Bergmann <arnd@arndb.de>, Mans Rullgard <mans@mansr.com>, Sebastian Frias <sf84@laposte.net>, Mark Rutland <mark.rutland@arm.com>
 
-On 09/06/2016 17:05, Alan Stern wrote:
+From: Chris Lapa <chris@lapa.com.au>
 
-> On Wed, 8 Jun 2016, Mason wrote:
-> 
->> On 08/06/2016 19:45, Alan Stern wrote:
->>
->>> On Wed, 8 Jun 2016, Mason wrote:
->>>
->>>> On 07/06/2016 17:06, Alan Stern wrote:
->>>>
->>>>> On Tue, 7 Jun 2016, Mason wrote:
->>>>>
->>>>>> Another point of confusion for me is this: drivers are supposed to
->>>>>> be shared among platforms, right? So my platform-specific suspend
->>>>>> code should be enabled only if my platform is detected at run-time?
->>>>>
->>>>> Is your device platform-specific?  If it is then the driver is also
->>>>> platform-specific, and so no part of the driver will be called at
->>>>> runtime unless your platform is detected.
->>>>
->>>> Specifically, my platform uses
->>>> drivers/net/ethernet/aurora/nb8800.c  => 3 entries in of_match_table.
->>>> drivers/tty/serial/8250/8250_core.c (CONFIG_SERIAL_8250_RT288X variant)
->>>>
->>>> and also the XHCI USB3 driver, and AHCI SATA driver, wouldn't I need to
->>>> save the context for these too?
->>>
->>> Those drivers should already take care of their own contexts.  Is 
->>> there anything platform-specific you need to do in addition?
->>
->> Take the eth driver, for example:
->>
->>   http://lxr.free-electrons.com/source/drivers/net/ethernet/aurora/nb8800.c
->>
->> It doesn't have any suspend/resume callbacks.
->>
->> Would that make the suspend request fail?
-> 
-> There are plenty of drivers that don't have suspend/resume callbacks.
-> (Fewer than there used to be, fortunately.)  They don't make suspend
-> fail; rather, the PM core just skips over them when carrying out a
-> suspend.
-> 
-> Of course, if a driver needs suspend support but doesn't include it,
-> then it's quite likely the driver will not work properly after the
-> system has been resumed.  But that's not a platform-specific issue.
-> 
->> (Side note: they guarded the code with CONFIG_PM_SLEEP, rather
->> than CONFIG_SUSPEND. Why?)
-> 
-> CONFIG_PM_SLEEP covers both suspend (AKA suspend-to-ram) and 
-> hibernation (AKA suspend-to-disk).
+The max8903_charger.h file indicated that dcm and dok were not optional
+when dc_valid is set.
 
-Thanks for pointing that out.
+It makes sense to have dok as a compulsory pin when dc_valid is given.
+However dcm can be optionally wired to a fixed level especially when the
+circuit is configured for dc power exclusively.
 
+The previous implementation already allowed for this somewhat, however no
+error was given if dok wasn't given whilst dc_valid was.
 
->>>>> If the device isn't platform-specific then the driver has to work on a 
->>>>> bunch of different platforms.  It should be written to be 
->>>>> platform-independent as much as possible.
->>>>>
->>>>>> So this means I need to add in the probe function, for every driver
->>>>>> my platform uses:
->>>>>>
->>>>>>   if (platform == MY_PLATFORM) {
->>>>>>     ops.suspend = my_suspend;
->>>>>>     ops.resume  = my_resume;
->>>>>>   }
->>>>>>
->>>>>> Is that correct?
->>>>>
->>>>> No.  For one thing, you only have to worry about the 
->>>>> platform-independent drivers -- you know that the platform-specific 
->>>>> ones won't get used unless your platform is present.
->>>>
->>>> I guess the thermal driver is platform-specific, but most devices
->>>> are third-party IP blocks, so there is a "common" driver upstream.
->>>> But I would need a platform-specific suspend/resume sequence,
->>>> just for my platform.
->>>
->>> Why?  What sort of platform-specific things do you need to do?
->>
->> Save the value of the MMIO registers which will be lost when the
->> chip is powered down.
-> 
-> How did these registers get set in the first place?  Wherever the code 
-> is that sets them up initially, that's where these registers should be 
-> reinitialized following a resume.  If they were set up by 
-> platform-specific code then they should be reinitialized by 
-> platform-specific code.
+The new implementation enforces dok presence when dc_valid is given. Whilst
+allowing dcm to be optional.
 
-Consider two SoCs, SoCA and SocB.
+Signed-off-by: Chris Lapa <chris@lapa.com.au>
+---
+ drivers/power/max8903_charger.c       | 40 ++++++++++++-----------------------
+ include/linux/power/max8903_charger.h |  6 +++---
+ 2 files changed, 16 insertions(+), 30 deletions(-)
 
-They both have the same device D, which exposes 16 registers to interact
-with the hardware.
-
-When SoCA is suspended, it stops D's clock, but keeps D powered on,
-preserving the 16 registers. Thus when SoCA resumes, it finds the
-16 registers in the same state as before suspending.
-
-When SoCB is suspended, it powers D down. When SoCB resumes, the
-16 registers contain garbage/random values. Therefore, in the case
-of SoCB, the suspend routine should save the values of the registers
-to RAM (which is preserved by "contract") and restore them on resume.
-
-However, this save/restore operation is unnecessary on SoCA.
-
-Should the save/restore operation be added unconditionally to the
-driver, even if some SoCs do not need it?
-
-In other words, do we consider the performance penalty from saving
-and restoring device registers small enough that it should be done
-systematically, even if some SoCs do not require it?
-
-Some device tree nodes have a property called "always-on" which is
-documented as "If present, the block is powered through an always-on
-power domain, therefore it never loses context."
-
-In that case, I suppose the driver's suspend/resume routine should:
-
-suspend:
-if (always-on is not present) {
-    save device registers to RAM;
-}
-
-resume:
-if (always-on is not present) {
-    restore device registers from RAM;
-}
-
-Do you disagree?
-
-Regards.
+diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
+index d7544c8..20d4b55 100644
+--- a/drivers/power/max8903_charger.c
++++ b/drivers/power/max8903_charger.c
+@@ -282,9 +282,7 @@ static int max8903_probe(struct platform_device *pdev)
+ 
+ 	if (charger->pdata->dc_valid) {
+ 		if (charger->pdata->dok &&
+-				gpio_is_valid(charger->pdata->dok) &&
+-				charger->pdata->dcm &&
+-				gpio_is_valid(charger->pdata->dcm)) {
++				gpio_is_valid(charger->pdata->dok)) {
+ 			ret = devm_gpio_request(dev,
+ 						charger->pdata->dok,
+ 						charger->psy_desc.name);
+@@ -295,6 +293,17 @@ static int max8903_probe(struct platform_device *pdev)
+ 				return -EINVAL;
+ 			}
+ 
++			gpio = charger->pdata->dok; /* PULL_UPed Interrupt */
++			ta_in = gpio_get_value(gpio) ? 0 : 1;
++		} else {
++			dev_err(dev, "When DC is wired, DOK should"
++					" be wired as well.\n");
++			return -EINVAL;
++		}
++	}
++
++	if (charger->pdata->dcm) {
++		if (gpio_is_valid(charger->pdata->dcm)) {
+ 			ret = devm_gpio_request(dev,
+ 						charger->pdata->dcm,
+ 						charger->psy_desc.name);
+@@ -305,35 +314,12 @@ static int max8903_probe(struct platform_device *pdev)
+ 				return -EINVAL;
+ 			}
+ 
+-			gpio = charger->pdata->dok; /* PULL_UPed Interrupt */
+-			ta_in = gpio_get_value(gpio) ? 0 : 1;
+-
+ 			gpio = charger->pdata->dcm; /* Output */
+ 			gpio_set_value(gpio, ta_in);
+ 		} else {
+-			dev_err(dev, "When DC is wired, DOK and DCM should"
+-					" be wired as well.\n");
++			dev_err(dev, "Invalid pin: dcm.\n");
+ 			return -EINVAL;
+ 		}
+-	} else {
+-		if (charger->pdata->dcm) {
+-			if (gpio_is_valid(charger->pdata->dcm)) {
+-				ret = devm_gpio_request(dev,
+-							charger->pdata->dcm,
+-							charger->psy_desc.name);
+-				if (ret) {
+-					dev_err(dev,
+-						"Failed GPIO request for dcm: %d err %d\n",
+-						charger->pdata->dcm, ret);
+-					return -EINVAL;
+-				}
+-
+-				gpio_set_value(charger->pdata->dcm, 0);
+-			} else {
+-				dev_err(dev, "Invalid pin: dcm.\n");
+-				return -EINVAL;
+-			}
+-		}
+ 	}
+ 
+ 	if (charger->pdata->usb_valid) {
+diff --git a/include/linux/power/max8903_charger.h b/include/linux/power/max8903_charger.h
+index 24f51db..89d3f1c 100644
+--- a/include/linux/power/max8903_charger.h
++++ b/include/linux/power/max8903_charger.h
+@@ -26,8 +26,8 @@
+ struct max8903_pdata {
+ 	/*
+ 	 * GPIOs
+-	 * cen, chg, flt, and usus are optional.
+-	 * dok, dcm, and uok are not optional depending on the status of
++	 * cen, chg, flt, dcm and usus are optional.
++	 * dok and uok are not optional depending on the status of
+ 	 * dc_valid and usb_valid.
+ 	 */
+ 	int cen;	/* Charger Enable input */
+@@ -41,7 +41,7 @@ struct max8903_pdata {
+ 	/*
+ 	 * DC(Adapter/TA) is wired
+ 	 * When dc_valid is true,
+-	 *	dok and dcm should be valid.
++	 *	dok should be valid.
+ 	 *
+ 	 * At least one of dc_valid or usb_valid should be true.
+ 	 */
+-- 
+1.9.1
