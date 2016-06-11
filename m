@@ -1,125 +1,145 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: ARM: mxs: warnings on PM resume
-Date: Sat, 11 Jun 2016 03:42:01 +0200
-Message-ID: <2607020.0FcLMf1DX6@vostro.rjw.lan>
-References: <1713040590.199779.36789782-c361-4fe4-bc0d-b581fbce8069.open-xchange@email.1und1.de> <1955365225.76161.cd9a3eda-edc7-4bae-96f3-bdddccbb0478.open-xchange@email.1und1.de>
+Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
+Date: Sat, 11 Jun 2016 03:47:59 +0200
+Message-ID: <2597967.kdkjeIcHno@vostro.rjw.lan>
+References: <573DF82D.50006@deltatee.com> <2733358.ov5sOzsSmy@vostro.rjw.lan> <19310985.zBnH00loSf@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:44506 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46792 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750753AbcFKBh6 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 10 Jun 2016 21:37:58 -0400
-In-Reply-To: <1955365225.76161.cd9a3eda-edc7-4bae-96f3-bdddccbb0478.open-xchange@email.1und1.de>
+	by vger.kernel.org with SMTP id S1750753AbcFKBn4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 21:43:56 -0400
+In-Reply-To: <19310985.zBnH00loSf@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@nxp.com>, kernel@pengutronix.de, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, joerg.krause@embedded.rocks, Juergen Borleis <jbe@pengutronix.de>
+To: Logan Gunthorpe <logang@deltatee.com>
+Cc: Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
-On Saturday, June 11, 2016 03:01:31 AM Stefan Wahren wrote:
-> Hi,
->=20
-> [add Rafael, J=C3=B6rg and J=C3=BCrgen to CC]
->=20
-> > Stefan Wahren <stefan.wahren@i2se.com> hat am 1. Juni 2016 um 22:51
-> > geschrieben:
-> >=20
-> >=20
-> > Hi,
-> >=20
-> > i'm currently working on standby support for MXS platform. If i tri=
-gger the
-> > standby per sysfs everything works fine, but mostly on resume i get=
- a bunch of
-> > warnings (see below for full output):
-> >=20
-> > [   67.040000] Interrupts enabled before system core resume.
-> >=20
-> > My current working branch [1] based on Linux 4.5 ( cmdline has
-> > no_console_suspend=3D1 ). The test hardware is a i.MX23 board (
-> > iMX233-OLinuXino-MAXI ).
-> >=20
-> > How can i narrow down this issue to the relevant driver / interrupt=
- ?
-> >=20
-> > What is the right way to fix this issue?
-> >=20
-> > I have the suspicion it's triggered by clocksource/mxs-timer.c beca=
-use the
-> > vendor kernel 2.6.35 had a function call [2] to suspend the timers.=
-=20
-> >=20
-> > [1] - https://github.com/lategoodbye/linux-mxs-power/tree/rebase-4.=
-5
-> > [2] -
-> > http://git.freescale.com/git/cgit.cgi/imx/linux-2.6-imx.git/tree/ar=
-ch/arm/mach-mx23/pm.c?h=3Dimx_2.6.35_maintain#n284
-> >=20
-> > Full output in error case:
-> >=20
-> > # echo standby > /sys/power/state
-> > [   65.820000] PM: Syncing filesystems ... done.
-> > [   66.890000] Freezing user space processes ... (elapsed 0.018 sec=
-onds) done.
-> > [   66.920000] Freezing remaining freezable tasks ... (elapsed 0.00=
-4 seconds)
-> > done.
-> > [   66.960000] smsc95xx 1-1.1:1.0 eth0: entering SUSPEND2 mode
-> > [   66.990000] PM: suspend of devices complete after 56.500 msecs
-> > [   67.010000] PM: late suspend of devices complete after 11.906 ms=
-ecs
-> > [   67.030000] PM: noirq suspend of devices complete after 12.250 m=
-secs
-> > [   67.040000] ------------[ cut here ]------------
-> > [   67.040000] WARNING: CPU: 0 PID: 271 at drivers/base/syscore.c:9=
-9
-> > syscore_resume+0x14c/0x1bc()
-> > [   67.040000] Interrupts enabled before system core resume.
-> > [   67.040000] Modules linked in: mxs_lradc(C) industrialio_trigger=
-ed_buffer
-> > [   67.040000] CPU: 0 PID: 271 Comm: bash Tainted: G         C
-> >      4.5.0-g8b79a7d-dirty #86
-> > [   67.040000] Hardware name: Freescale MXS (Device Tree)
-> > [   67.040000] [<c000fdc4>] (unwind_backtrace) from [<c000de80>]
-> > (show_stack+0x10/0x14)
-> > [   67.040000] [<c000de80>] (show_stack) from [<c001d094>]
-> > (warn_slowpath_common+0x7c/0xb4)
-> > [   67.040000] [<c001d094>] (warn_slowpath_common) from [<c001d160>=
-]
-> > (warn_slowpath_fmt+0x30/0x40)
-> > [   67.040000] [<c001d160>] (warn_slowpath_fmt) from [<c035c6b8>]
-> > (syscore_resume+0x14c/0x1bc)
-> > [   67.040000] [<c035c6b8>] (syscore_resume) from [<c005d37c>]
-> > (suspend_devices_and_enter+0x480/0x770)
-> > [   67.040000] [<c005d37c>] (suspend_devices_and_enter) from [<c005=
-dad4>]
-> > (pm_suspend+0x468/0x4e4)
-> > [   67.040000] [<c005dad4>] (pm_suspend) from [<c005c324>]
-> > (state_store+0x80/0xcc)
-> > [   67.040000] [<c005c324>] (state_store) from [<c02dc0d8>]
-> > (kobj_attr_store+0x18/0x1c)
-> > [   67.040000] [<c02dc0d8>] (kobj_attr_store) from [<c0181988>]
-> > (sysfs_kf_write+0x48/0x4c)
-> > [   67.040000] [<c0181988>] (sysfs_kf_write) from [<c0180b34>]
-> > (kernfs_fop_write+0xe0/0x1a0)
-> > [   67.040000] [<c0180b34>] (kernfs_fop_write) from [<c0114b08>]
-> > (__vfs_write+0x2c/0xe8)
-> > [   67.040000] [<c0114b08>] (__vfs_write) from [<c0114c6c>]
-> > (vfs_write+0xa8/0x198)
-> > [   67.040000] [<c0114c6c>] (vfs_write) from [<c0114e30>]
-> > (SyS_write+0x44/0x88)
-> > [   67.040000] [<c0114e30>] (SyS_write) from [<c000a280>]
-> > (ret_fast_syscall+0x0/0x1c)
-> > [   67.040000] ---[ end trace 22f59f91777b0ede ]---
->=20
-> any hints or ideas to narrow down this issue are very welcome.
+On Saturday, June 11, 2016 02:13:45 AM Rafael J. Wysocki wrote:
+> On Saturday, June 11, 2016 12:33:31 AM Rafael J. Wysocki wrote:
+> > On Friday, June 10, 2016 04:28:01 PM Logan Gunthorpe wrote:
+> > > 
+> > > On 10/06/16 04:29 PM, Rafael J. Wysocki wrote:
+> > > > OK, I have a theory, but I need a bit of help.
+> > > > 
+> > > > This may be a dumb question, but I don't quite remember the answer readily.
+> > > > 
+> > > > Given a physical address, how do I get the corresponding virtual one under
+> > > > the kernel identity mapping?
+> > > 
+> > > Is that not just 'phys_to_virt(x)'??
+> > 
+> > Ah that.  Thanks!
+> 
+> So first, appended is a cleanup of the 64-bit hibernate/restore code that hopefully
+> will make it a bit clearer what happens there.
+> 
+> In particular, it follows from it quite clearly that the restore will only work
+> if the virtual address of the trampoline (&restore_registers) in the image
+> kernel happens to match the virtual address of the same chunk of memory in the
+> boot kernel (and after it has switched to the temporary page tables).
+> 
+> That appears to be the case most of the time, or hibernation would randomly
+> break for people all over, but I'm not actually sure if that's guaranteed to
+> happen.  If not, that very well may explain unexpected failures in there.
+> 
+> If it is not guaranteed to happen, the solution would be to pass the physical
+> address of that memory from the image kernel to the boot kernel instead of its
+> virtual address,
 
-Interrupts should not be enabled before syscore_resume() is called, but=
- they
-are, apparently by the platform code.
+OK, the appended patch does the trick for me.
+
+Logan, can you please try it?  It shouldn't break things, but I'm wondering if
+the problem you're having after commit ab76f7b4ab is still reproducible with it.
 
 Thanks,
 Rafael
+
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] x86 / hibernate: Pass physical address of the trampoline
+
+During resume from hibernation, the boot kernel has to jump to
+the image kernel's trampoline code to pass control to it.  On
+x86_64 the address of that code is passed from the image kernel
+to the boot kernel in the image header.
+
+Currently, the way in which that address is saved by the image kernel
+is not entirely straightforward (assembly code is involved in that
+unnecessarily etc).  Moreover, the current code passes the virtual
+address of the trampoline with the assumption that the image and boot
+kernels will always use the same virtual addresses for the chunk of
+physical address space occupied by the trampoline code.
+
+In case that assumption is not valid, pass the physical address of
+the trampoline code from the image kernel to the boot kernel and
+update RESTORE_MAGIC to avoid situations in which the boot kernel
+may use a different trampoline address passing convention from the
+one used by the image kernel.
+
+Also drop the assembly code chunk updating restore_jump_address
+in swsusp_arch_suspend() as it is not necessary any more.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ arch/x86/power/hibernate_64.c     |    8 ++++----
+ arch/x86/power/hibernate_asm_64.S |    3 ---
+ 2 files changed, 4 insertions(+), 7 deletions(-)
+
+Index: linux-pm/arch/x86/power/hibernate_64.c
+===================================================================
+--- linux-pm.orig/arch/x86/power/hibernate_64.c
++++ linux-pm/arch/x86/power/hibernate_64.c
+@@ -27,7 +27,7 @@ extern asmlinkage __visible int restore_
+  * Address to jump to in the last phase of restore in order to get to the image
+  * kernel's text (this value is passed in the image header).
+  */
+-unsigned long restore_jump_address __visible;
++void *restore_jump_address __visible;
+ 
+ /*
+  * Value of the cr3 register from before the hibernation (this value is passed
+@@ -113,7 +113,7 @@ struct restore_data_record {
+ 	unsigned long magic;
+ };
+ 
+-#define RESTORE_MAGIC	0x0123456789ABCDEFUL
++#define RESTORE_MAGIC	0x0123456789ABCDF0UL
+ 
+ /**
+  *	arch_hibernation_header_save - populate the architecture specific part
+@@ -126,7 +126,7 @@ int arch_hibernation_header_save(void *a
+ 
+ 	if (max_size < sizeof(struct restore_data_record))
+ 		return -EOVERFLOW;
+-	rdr->jump_address = restore_jump_address;
++	rdr->jump_address = (unsigned long)__pa_symbol(&restore_registers);
+ 	rdr->cr3 = restore_cr3;
+ 	rdr->magic = RESTORE_MAGIC;
+ 	return 0;
+@@ -141,7 +141,7 @@ int arch_hibernation_header_restore(void
+ {
+ 	struct restore_data_record *rdr = addr;
+ 
+-	restore_jump_address = rdr->jump_address;
++	restore_jump_address = (void *)(rdr->jump_address + __START_KERNEL_map);
+ 	restore_cr3 = rdr->cr3;
+ 	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
+ }
+Index: linux-pm/arch/x86/power/hibernate_asm_64.S
+===================================================================
+--- linux-pm.orig/arch/x86/power/hibernate_asm_64.S
++++ linux-pm/arch/x86/power/hibernate_asm_64.S
+@@ -44,9 +44,6 @@ ENTRY(swsusp_arch_suspend)
+ 	pushfq
+ 	popq	pt_regs_flags(%rax)
+ 
+-	/* save the address of restore_registers */
+-	movq	$restore_registers, %rax
+-	movq	%rax, restore_jump_address(%rip)
+ 	/* save cr3 */
+ 	movq	%cr3, %rax
+ 	movq	%rax, restore_cr3(%rip)
 
