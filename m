@@ -1,238 +1,165 @@
-From: Lianwei Wang <lianwei.wang@gmail.com>
-Subject: Re: [PATCH v1] PM / sleep: make pm notifier called symmetrically
-Date: Fri, 10 Jun 2016 23:23:31 -0700
-Message-ID: <CAJFUiJhemGu=PcbUoQH_B7VreRprK28F-qemGzyJjYLveZewbg@mail.gmail.com>
-References: <1465541252-12565-1-git-send-email-lianwei.wang@gmail.com> <1777369.TzkPvqGQk4@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
+Date: Sat, 11 Jun 2016 13:48:01 +0200
+Message-ID: <2614999.LIbMBxYypT@vostro.rjw.lan>
+References: <573DF82D.50006@deltatee.com> <19310985.zBnH00loSf@vostro.rjw.lan> <2597967.kdkjeIcHno@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:34700 "EHLO
-	mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751686AbcFKGXv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jun 2016 02:23:51 -0400
-In-Reply-To: <1777369.TzkPvqGQk4@vostro.rjw.lan>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52353 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751168AbcFKLn6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jun 2016 07:43:58 -0400
+In-Reply-To: <2597967.kdkjeIcHno@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+To: Logan Gunthorpe <logang@deltatee.com>
+Cc: Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
-On Fri, Jun 10, 2016 at 7:00 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, June 09, 2016 11:47:32 PM Lianwei Wang wrote:
->> This makes pm notifier PREPARE/POST symmetrical: if PREPARE
->> fails, we will only undo what ever happened on PREPARE.
->>
->> It fixes the unbalanced cpu hotplug enable in cpu pm notifier.
->>
->> Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
->
-> Did you fix the build issue with the previous iteration reported by 0-day?
->
-Yes. I had fix the build issue.
+On Saturday, June 11, 2016 03:47:59 AM Rafael J. Wysocki wrote:
+> On Saturday, June 11, 2016 02:13:45 AM Rafael J. Wysocki wrote:
+> > On Saturday, June 11, 2016 12:33:31 AM Rafael J. Wysocki wrote:
+> > > On Friday, June 10, 2016 04:28:01 PM Logan Gunthorpe wrote:
+> > > > 
+> > > > On 10/06/16 04:29 PM, Rafael J. Wysocki wrote:
+> > > > > OK, I have a theory, but I need a bit of help.
+> > > > > 
+> > > > > This may be a dumb question, but I don't quite remember the answer readily.
+> > > > > 
+> > > > > Given a physical address, how do I get the corresponding virtual one under
+> > > > > the kernel identity mapping?
+> > > > 
+> > > > Is that not just 'phys_to_virt(x)'??
+> > > 
+> > > Ah that.  Thanks!
+> > 
+> > So first, appended is a cleanup of the 64-bit hibernate/restore code that hopefully
+> > will make it a bit clearer what happens there.
+> > 
+> > In particular, it follows from it quite clearly that the restore will only work
+> > if the virtual address of the trampoline (&restore_registers) in the image
+> > kernel happens to match the virtual address of the same chunk of memory in the
+> > boot kernel (and after it has switched to the temporary page tables).
+> > 
+> > That appears to be the case most of the time, or hibernation would randomly
+> > break for people all over, but I'm not actually sure if that's guaranteed to
+> > happen.  If not, that very well may explain unexpected failures in there.
+> > 
+> > If it is not guaranteed to happen, the solution would be to pass the physical
+> > address of that memory from the image kernel to the boot kernel instead of its
+> > virtual address,
+> 
+> OK, the appended patch does the trick for me.
+> 
+> Logan, can you please try it?  It shouldn't break things, but I'm wondering if
+> the problem you're having after commit ab76f7b4ab is still reproducible with it.
 
->> ---
->>  kernel/power/hibernate.c | 20 ++++++++++++--------
->>  kernel/power/main.c      | 11 +++++++++--
->>  kernel/power/power.h     |  2 ++
->>  kernel/power/suspend.c   | 10 ++++++----
->>  kernel/power/user.c      | 18 ++++++++++++------
->>  5 files changed, 41 insertions(+), 20 deletions(-)
->>
->> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
->> index fca9254280ee..126e24caa82e 100644
->> --- a/kernel/power/hibernate.c
->> +++ b/kernel/power/hibernate.c
->> @@ -647,7 +647,7 @@ static void power_down(void)
->>   */
->>  int hibernate(void)
->>  {
->> -     int error;
->> +     int error, nr_calls = 0;
->>
->>       if (!hibernation_available()) {
->>               pr_debug("PM: Hibernation not available.\n");
->> @@ -662,9 +662,11 @@ int hibernate(void)
->>       }
->>
->>       pm_prepare_console();
->> -     error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
->> -     if (error)
->> +     error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE, -1, &nr_calls);
->> +     if (error) {
->> +             nr_calls--;
->>               goto Exit;
->> +     }
->>
->>       printk(KERN_INFO "PM: Syncing filesystems ... ");
->>       sys_sync();
->> @@ -714,7 +716,7 @@ int hibernate(void)
->>       /* Don't bother checking whether freezer_test_done is true */
->>       freezer_test_done = false;
->>   Exit:
->> -     pm_notifier_call_chain(PM_POST_HIBERNATION);
->> +     __pm_notifier_call_chain(PM_POST_HIBERNATION, nr_calls, NULL);
->>       pm_restore_console();
->>       atomic_inc(&snapshot_device_available);
->>   Unlock:
->> @@ -740,7 +742,7 @@ int hibernate(void)
->>   */
->>  static int software_resume(void)
->>  {
->> -     int error;
->> +     int error, nr_calls = 0;
->>       unsigned int flags;
->>
->>       /*
->> @@ -827,9 +829,11 @@ static int software_resume(void)
->>       }
->>
->>       pm_prepare_console();
->> -     error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
->> -     if (error)
->> +     error = __pm_notifier_call_chain(PM_RESTORE_PREPARE, -1, &nr_calls);
->> +     if (error) {
->> +             nr_calls--;
->>               goto Close_Finish;
->> +     }
->>
->>       pr_debug("PM: Preparing processes for restore.\n");
->>       error = freeze_processes();
->> @@ -855,7 +859,7 @@ static int software_resume(void)
->>       unlock_device_hotplug();
->>       thaw_processes();
->>   Finish:
->> -     pm_notifier_call_chain(PM_POST_RESTORE);
->> +     __pm_notifier_call_chain(PM_POST_RESTORE, nr_calls, NULL);
->>       pm_restore_console();
->>       atomic_inc(&snapshot_device_available);
->>       /* For success case, the suspend path will release the lock */
->> diff --git a/kernel/power/main.c b/kernel/power/main.c
->> index 27946975eff0..577a5dec5b35 100644
->> --- a/kernel/power/main.c
->> +++ b/kernel/power/main.c
->> @@ -38,12 +38,19 @@ int unregister_pm_notifier(struct notifier_block *nb)
->>  }
->>  EXPORT_SYMBOL_GPL(unregister_pm_notifier);
->>
->> -int pm_notifier_call_chain(unsigned long val)
->> +int __pm_notifier_call_chain(unsigned long val, int nr_to_call, int *nr_calls)
->>  {
->> -     int ret = blocking_notifier_call_chain(&pm_chain_head, val, NULL);
->> +     int ret;
->> +
->> +     ret =  __blocking_notifier_call_chain(&pm_chain_head, val, NULL,
->> +                                             nr_to_call, nr_calls);
->>
->>       return notifier_to_errno(ret);
->>  }
->> +int pm_notifier_call_chain(unsigned long val)
->> +{
->> +     return __pm_notifier_call_chain(val, -1, NULL);
->> +}
->>
->>  /* If set, devices may be suspended and resumed asynchronously. */
->>  int pm_async_enabled = 1;
->> diff --git a/kernel/power/power.h b/kernel/power/power.h
->> index efe1b3b17c88..51f02ecaf125 100644
->> --- a/kernel/power/power.h
->> +++ b/kernel/power/power.h
->> @@ -200,6 +200,8 @@ static inline void suspend_test_finish(const char *label) {}
->>
->>  #ifdef CONFIG_PM_SLEEP
->>  /* kernel/power/main.c */
->> +extern int __pm_notifier_call_chain(unsigned long val, int nr_to_call,
->> +                                 int *nr_calls);
->>  extern int pm_notifier_call_chain(unsigned long val);
->>  #endif
->>
->> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
->> index 5b70d64b871e..0acab9d7f96f 100644
->> --- a/kernel/power/suspend.c
->> +++ b/kernel/power/suspend.c
->> @@ -266,16 +266,18 @@ static int suspend_test(int level)
->>   */
->>  static int suspend_prepare(suspend_state_t state)
->>  {
->> -     int error;
->> +     int error, nr_calls = 0;
->>
->>       if (!sleep_state_supported(state))
->>               return -EPERM;
->>
->>       pm_prepare_console();
->>
->> -     error = pm_notifier_call_chain(PM_SUSPEND_PREPARE);
->> -     if (error)
->> +     error = __pm_notifier_call_chain(PM_SUSPEND_PREPARE, -1, &nr_calls);
->> +     if (error) {
->> +             nr_calls--;
->>               goto Finish;
->> +     }
->>
->>       trace_suspend_resume(TPS("freeze_processes"), 0, true);
->>       error = suspend_freeze_processes();
->> @@ -286,7 +288,7 @@ static int suspend_prepare(suspend_state_t state)
->>       suspend_stats.failed_freeze++;
->>       dpm_save_failed_step(SUSPEND_FREEZE);
->>   Finish:
->> -     pm_notifier_call_chain(PM_POST_SUSPEND);
->> +     __pm_notifier_call_chain(PM_POST_SUSPEND, nr_calls, NULL);
->>       pm_restore_console();
->>       return error;
->>  }
->> diff --git a/kernel/power/user.c b/kernel/power/user.c
->> index 526e8911460a..14ad11dd7eb7 100644
->> --- a/kernel/power/user.c
->> +++ b/kernel/power/user.c
->> @@ -47,7 +47,7 @@ atomic_t snapshot_device_available = ATOMIC_INIT(1);
->>  static int snapshot_open(struct inode *inode, struct file *filp)
->>  {
->>       struct snapshot_data *data;
->> -     int error;
->> +     int error, nr_calls = 0;
->>
->>       if (!hibernation_available())
->>               return -EPERM;
->> @@ -74,9 +74,11 @@ static int snapshot_open(struct inode *inode, struct file *filp)
->>                       swap_type_of(swsusp_resume_device, 0, NULL) : -1;
->>               data->mode = O_RDONLY;
->>               data->free_bitmaps = false;
->> -             error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
->> +             error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE,
->> +                                                     -1, &nr_calls);
->>               if (error)
->> -                     pm_notifier_call_chain(PM_POST_HIBERNATION);
->> +                     __pm_notifier_call_chain(PM_POST_HIBERNATION,
->> +                                                     --nr_calls, NULL);
->
-> I wouldn't break these lines, it looks weird.
-Ok, I will put them on the same line.
->
->>       } else {
->>               /*
->>                * Resuming.  We may need to wait for the image device to
->> @@ -86,13 +88,17 @@ static int snapshot_open(struct inode *inode, struct file *filp)
->>
->>               data->swap = -1;
->>               data->mode = O_WRONLY;
->> -             error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
->> +             error = __pm_notifier_call_chain(PM_RESTORE_PREPARE,
->> +                                                     -1, &nr_calls);
->>               if (!error) {
->>                       error = create_basic_memory_bitmaps();
->>                       data->free_bitmaps = !error;
->> -             }
->> +             } else
->> +                     nr_calls--;
->> +
->>               if (error)
->> -                     pm_notifier_call_chain(PM_POST_RESTORE);
->> +                     __pm_notifier_call_chain(PM_POST_RESTORE,
->> +                                                     nr_calls, NULL);
->>       }
->>       if (error)
->>               atomic_inc(&snapshot_device_available);
->>
->
-> Thanks,
-> Rafael
->
+No, it won't help, and I think I know what's going on.
+
+The temporary page tables set up by set_up_temporary_mappings() re-use the
+original boot kernel's text mapping, so if the trampoline code address
+falls into a non-executable page in that mapping, the boot kernel can't
+pass control to the image kernel.
+
+If that theory is correct, the patch below should help, but IMO it should
+be applied regardless to eliminate this particular failure mode.
+
+I'll prepare another patch to pass the physical address on top of this one.
+
+Thanks,
+Rafael
+
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] x86 / hibernate: Ensure that 64-bit trampoline code is executable
+
+During resume from hibernation, the boot kernel has to jump to
+the image kernel's trampoline code to pass control to it.  On
+x86_64 the address of that code is passed from the image kernel
+to the boot kernel in the image header.
+
+That address is interpreted with respect to the original boot
+kernel's kernel text memory mapping, so if the page containing it
+is not executable in that mapping, the jump to it will crash the
+kernel, so prevent that from happening.
+
+While at it, clean up the way in which the trampoline code address
+is saved by the image kernel (assembly code is involved in that
+unnecessarily etc).
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ arch/x86/power/hibernate_64.c     |   15 ++++++++++++---
+ arch/x86/power/hibernate_asm_64.S |    3 ---
+ 2 files changed, 12 insertions(+), 6 deletions(-)
+
+Index: linux-pm/arch/x86/power/hibernate_64.c
+===================================================================
+--- linux-pm.orig/arch/x86/power/hibernate_64.c
++++ linux-pm/arch/x86/power/hibernate_64.c
+@@ -12,6 +12,7 @@
+ #include <linux/smp.h>
+ #include <linux/suspend.h>
+ 
++#include <asm/cacheflush.h>
+ #include <asm/init.h>
+ #include <asm/proto.h>
+ #include <asm/page.h>
+@@ -27,7 +28,7 @@ extern asmlinkage __visible int restore_
+  * Address to jump to in the last phase of restore in order to get to the image
+  * kernel's text (this value is passed in the image header).
+  */
+-unsigned long restore_jump_address __visible;
++void *restore_jump_address __visible;
+ 
+ /*
+  * Value of the cr3 register from before the hibernation (this value is passed
+@@ -91,6 +92,14 @@ int swsusp_arch_resume(void)
+ 		return -ENOMEM;
+ 	memcpy(relocated_restore_code, &core_restore_code,
+ 	       &restore_registers - &core_restore_code);
++	/*
++	 * The temporary memory mapping set up by set_up_temporary_mappings()
++	 * above re-uses the original kernel text mapping.  If the page with
++	 * restore_jump_address is not executable in that mapping, it won't be
++	 * possible to pass control to the image kernel, so prevent that from
++	 * happening.
++	 */
++	set_memory_x((unsigned long)restore_jump_address, 1);
+ 
+ 	restore_image();
+ 	return 0;
+@@ -108,7 +117,7 @@ int pfn_is_nosave(unsigned long pfn)
+ }
+ 
+ struct restore_data_record {
+-	unsigned long jump_address;
++	void *jump_address;
+ 	unsigned long cr3;
+ 	unsigned long magic;
+ };
+@@ -126,7 +135,7 @@ int arch_hibernation_header_save(void *a
+ 
+ 	if (max_size < sizeof(struct restore_data_record))
+ 		return -EOVERFLOW;
+-	rdr->jump_address = restore_jump_address;
++	rdr->jump_address = &restore_registers;
+ 	rdr->cr3 = restore_cr3;
+ 	rdr->magic = RESTORE_MAGIC;
+ 	return 0;
+Index: linux-pm/arch/x86/power/hibernate_asm_64.S
+===================================================================
+--- linux-pm.orig/arch/x86/power/hibernate_asm_64.S
++++ linux-pm/arch/x86/power/hibernate_asm_64.S
+@@ -44,9 +44,6 @@ ENTRY(swsusp_arch_suspend)
+ 	pushfq
+ 	popq	pt_regs_flags(%rax)
+ 
+-	/* save the address of restore_registers */
+-	movq	$restore_registers, %rax
+-	movq	%rax, restore_jump_address(%rip)
+ 	/* save cr3 */
+ 	movq	%cr3, %rax
+ 	movq	%rax, restore_cr3(%rip)
+
