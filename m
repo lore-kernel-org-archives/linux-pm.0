@@ -1,173 +1,60 @@
-From: Logan Gunthorpe <logang@deltatee.com>
-Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
-Date: Sat, 11 Jun 2016 11:39:48 -0600
-Message-ID: <575C4CE4.6060608@deltatee.com>
-References: <573DF82D.50006@deltatee.com> <2733358.ov5sOzsSmy@vostro.rjw.lan>
- <19310985.zBnH00loSf@vostro.rjw.lan> <2597967.kdkjeIcHno@vostro.rjw.lan>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/5] Add suspend-to-idle validation for Intel SoCs
+Date: Sat, 11 Jun 2016 22:31:11 +0200
+Message-ID: <20160611203110.GA28852@amd>
+References: <1464842009-21789-1-git-send-email-dbasehore@chromium.org>
+ <20160607074632.GA13858@amd>
+ <CAGAzgsqRUBwzk5mkupUqjzB7XWwO5JEWL=ACqCaMrEZ=yxea2Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ale.deltatee.com ([207.54.116.67]:57971 "EHLO ale.deltatee.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752033AbcFKRkE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 11 Jun 2016 13:40:04 -0400
-In-Reply-To: <2597967.kdkjeIcHno@vostro.rjw.lan>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50558 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751883AbcFKUbP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jun 2016 16:31:15 -0400
+Content-Disposition: inline
+In-Reply-To: <CAGAzgsqRUBwzk5mkupUqjzB7XWwO5JEWL=ACqCaMrEZ=yxea2Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
+To: "dbasehore ." <dbasehore@chromium.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
 
-Hey Rafael,
+On Tue 2016-06-07 17:07:21, dbasehore . wrote:
+> On Tue, Jun 7, 2016 at 12:46 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Wed 2016-06-01 21:33:24, dbasehore@chromium.org wrote:
+> >> From: Derek Basehore <dbasehore@chromium.org>
+> >>
+> >> This patch set adds support for catching errors when entering freeze
+> >> on Intel Skylake SoCs. Support for this can be added to newer SoCs in
+> >> later patches.
+> >>
+> >> Verification is done by waking up the CPU once every X (default 10)
+> >> seconds to check the residency of S0ix. This can't be verified before
+> >> attempting to enter S0ix through mwait, so we have to repeatedly
+> >> verify entry into that state. Successfully entering S0ix is no
+> >> guarantee that it will be entered on the next attempt, so we have to
+> >> schedule another check. This has a minimal power impact of <1% of the
+> >> total system power on our systems.
+> >
+> > Dunno. Should this be protected with something like CONFIG_TEST_SLEEP?
+> > People probably don't want this for production...
+> >
+> 
+> That depends, if you switch to using suspend to idle instead of
+> suspend to RAM, would you rather not catch power bugs due to
+> misconfigured hardware in production?
 
-I tried this patch as well and there was no change.
+> I agree that it shouldn't be on by default since freeze shouldn't fail
+> because some IP on the SoC doesn't have firmware loaded (this happens
+> with i915), but I was just going to leave it off by default instead of
+> adding yet another config option for a small feature.
 
-I have a couple tentative observations to make though. None of this is 
-100% clear to me so please correct me if I'm wrong anywhere:
+I'd rather have testing features optional. In 2 years, hopefully the
+drivers are debugged, and people can set this to off...
 
-1) Commit ab76f7b4ab only extends the NX bit between __ex_table and 
-rodata; which, by my understanding, shouldn't be used by anything. And 
-__ex_table and rodata are fixed by the kernel's binary so both symbols 
-should be the same in both the image kernel and the boot kernel given 
-that both are running from the same binary.
-
-2) When ab76f7b4ab is reverted, hibernation seems to work 100%. Though, 
-when it's in place, it only works some of the time. Given that commit is 
-only extending the NX region a bit, if there is some random mismatch, 
-why does it never reach rodata? In other words, why is rodata a magic 
-line that seems to work all the time -- why doesn't this random mismatch 
-ever extend into the rodata region? rodata isn't _that_ far away from 
-the end of ex_table.
-
-Anyway, thanks again for looking into this.
-
-Logan
+									Pavel
 
 
-On 10/06/16 07:47 PM, Rafael J. Wysocki wrote:
-> On Saturday, June 11, 2016 02:13:45 AM Rafael J. Wysocki wrote:
->> On Saturday, June 11, 2016 12:33:31 AM Rafael J. Wysocki wrote:
->>> On Friday, June 10, 2016 04:28:01 PM Logan Gunthorpe wrote:
->>>>
->>>> On 10/06/16 04:29 PM, Rafael J. Wysocki wrote:
->>>>> OK, I have a theory, but I need a bit of help.
->>>>>
->>>>> This may be a dumb question, but I don't quite remember the answer readily.
->>>>>
->>>>> Given a physical address, how do I get the corresponding virtual one under
->>>>> the kernel identity mapping?
->>>>
->>>> Is that not just 'phys_to_virt(x)'??
->>>
->>> Ah that.  Thanks!
->>
->> So first, appended is a cleanup of the 64-bit hibernate/restore code that hopefully
->> will make it a bit clearer what happens there.
->>
->> In particular, it follows from it quite clearly that the restore will only work
->> if the virtual address of the trampoline (&restore_registers) in the image
->> kernel happens to match the virtual address of the same chunk of memory in the
->> boot kernel (and after it has switched to the temporary page tables).
->>
->> That appears to be the case most of the time, or hibernation would randomly
->> break for people all over, but I'm not actually sure if that's guaranteed to
->> happen.  If not, that very well may explain unexpected failures in there.
->>
->> If it is not guaranteed to happen, the solution would be to pass the physical
->> address of that memory from the image kernel to the boot kernel instead of its
->> virtual address,
->
-> OK, the appended patch does the trick for me.
->
-> Logan, can you please try it?  It shouldn't break things, but I'm wondering if
-> the problem you're having after commit ab76f7b4ab is still reproducible with it.
->
-> Thanks,
-> Rafael
->
-> ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] x86 / hibernate: Pass physical address of the trampoline
->
-> During resume from hibernation, the boot kernel has to jump to
-> the image kernel's trampoline code to pass control to it.  On
-> x86_64 the address of that code is passed from the image kernel
-> to the boot kernel in the image header.
->
-> Currently, the way in which that address is saved by the image kernel
-> is not entirely straightforward (assembly code is involved in that
-> unnecessarily etc).  Moreover, the current code passes the virtual
-> address of the trampoline with the assumption that the image and boot
-> kernels will always use the same virtual addresses for the chunk of
-> physical address space occupied by the trampoline code.
->
-> In case that assumption is not valid, pass the physical address of
-> the trampoline code from the image kernel to the boot kernel and
-> update RESTORE_MAGIC to avoid situations in which the boot kernel
-> may use a different trampoline address passing convention from the
-> one used by the image kernel.
->
-> Also drop the assembly code chunk updating restore_jump_address
-> in swsusp_arch_suspend() as it is not necessary any more.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->   arch/x86/power/hibernate_64.c     |    8 ++++----
->   arch/x86/power/hibernate_asm_64.S |    3 ---
->   2 files changed, 4 insertions(+), 7 deletions(-)
->
-> Index: linux-pm/arch/x86/power/hibernate_64.c
-> ===================================================================
-> --- linux-pm.orig/arch/x86/power/hibernate_64.c
-> +++ linux-pm/arch/x86/power/hibernate_64.c
-> @@ -27,7 +27,7 @@ extern asmlinkage __visible int restore_
->    * Address to jump to in the last phase of restore in order to get to the image
->    * kernel's text (this value is passed in the image header).
->    */
-> -unsigned long restore_jump_address __visible;
-> +void *restore_jump_address __visible;
->
->   /*
->    * Value of the cr3 register from before the hibernation (this value is passed
-> @@ -113,7 +113,7 @@ struct restore_data_record {
->   	unsigned long magic;
->   };
->
-> -#define RESTORE_MAGIC	0x0123456789ABCDEFUL
-> +#define RESTORE_MAGIC	0x0123456789ABCDF0UL
->
->   /**
->    *	arch_hibernation_header_save - populate the architecture specific part
-> @@ -126,7 +126,7 @@ int arch_hibernation_header_save(void *a
->
->   	if (max_size < sizeof(struct restore_data_record))
->   		return -EOVERFLOW;
-> -	rdr->jump_address = restore_jump_address;
-> +	rdr->jump_address = (unsigned long)__pa_symbol(&restore_registers);
->   	rdr->cr3 = restore_cr3;
->   	rdr->magic = RESTORE_MAGIC;
->   	return 0;
-> @@ -141,7 +141,7 @@ int arch_hibernation_header_restore(void
->   {
->   	struct restore_data_record *rdr = addr;
->
-> -	restore_jump_address = rdr->jump_address;
-> +	restore_jump_address = (void *)(rdr->jump_address + __START_KERNEL_map);
->   	restore_cr3 = rdr->cr3;
->   	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
->   }
-> Index: linux-pm/arch/x86/power/hibernate_asm_64.S
-> ===================================================================
-> --- linux-pm.orig/arch/x86/power/hibernate_asm_64.S
-> +++ linux-pm/arch/x86/power/hibernate_asm_64.S
-> @@ -44,9 +44,6 @@ ENTRY(swsusp_arch_suspend)
->   	pushfq
->   	popq	pt_regs_flags(%rax)
->
-> -	/* save the address of restore_registers */
-> -	movq	$restore_registers, %rax
-> -	movq	%rax, restore_jump_address(%rip)
->   	/* save cr3 */
->   	movq	%cr3, %rax
->   	movq	%rax, restore_cr3(%rip)
->
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
