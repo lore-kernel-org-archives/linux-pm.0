@@ -1,60 +1,238 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/8] ARM: dts: Add operating-points-v2 tables for TI
- platforms
-Date: Sat, 11 Jun 2016 08:14:00 +0530
-Message-ID: <20160611024400.GE27439@vireshk-i7>
-References: <cover.1463606963.git.d-gerlach@ti.com>
- <20160519044744.GE32001@vireshk-i7>
- <20160610110414.GX22406@atomide.com>
- <575AD3A0.1050203@ti.com>
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: Re: [PATCH v1] PM / sleep: make pm notifier called symmetrically
+Date: Fri, 10 Jun 2016 23:23:31 -0700
+Message-ID: <CAJFUiJhemGu=PcbUoQH_B7VreRprK28F-qemGzyJjYLveZewbg@mail.gmail.com>
+References: <1465541252-12565-1-git-send-email-lianwei.wang@gmail.com> <1777369.TzkPvqGQk4@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:33384 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750929AbcFKCoE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jun 2016 22:44:04 -0400
-Received: by mail-pa0-f46.google.com with SMTP id b13so6351052pat.0
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jun 2016 19:44:03 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <575AD3A0.1050203@ti.com>
+Received: from mail-oi0-f66.google.com ([209.85.218.66]:34700 "EHLO
+	mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751686AbcFKGXv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jun 2016 02:23:51 -0400
+In-Reply-To: <1777369.TzkPvqGQk4@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>, Dave Gerlach <d-gerlach@ti.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Yegor Yefremov <yegorslists@googlemail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Oleg Nesterov <oleg@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On 10-06-16, 09:50, Nishanth Menon wrote:
-> On 06/10/2016 06:04 AM, Tony Lindgren wrote:
-> > * Viresh Kumar <viresh.kumar@linaro.org> [160518 21:49]:
-> >> On 18-05-16, 18:36, Dave Gerlach wrote:
-> >>> Hi,
-> >>> This series adds operating-points-v2 tables for am335x, am437x, dra7xx,
-> >>> and am57xx based platforms along with some support patches so that we
-> >>> can enable more OPPs for the CPU on these platforms.
-> >>>
-> >>> These patches rely on the ti-cpufreq series sent here [1] and provide
-> >>> opp-supported-hw data for each OPP so that only the appropriate OPPs
-> >>> for a specific piece of silicon get enabled.
-> >>
-> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > 
-> > Applying all the dts changes into omap-for-v4.8/dt thanks.
-> > 
-> > Tony
-> > 
-> Viresh, are we ready with the cpufreq series?
-> 
-> https://patchwork.kernel.org/patch/9122961/
-> https://patchwork.kernel.org/patch/9122921/
-> 
-> Also current series: https://patchwork.kernel.org/patch/9123071/
-> Seems to have comments pending.
-> 
-> Dave is on vacation for another week or so, doubt he can respond in
-> time -> Should we wait on this series till we get the cpufreq support in?
+On Fri, Jun 10, 2016 at 7:00 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, June 09, 2016 11:47:32 PM Lianwei Wang wrote:
+>> This makes pm notifier PREPARE/POST symmetrical: if PREPARE
+>> fails, we will only undo what ever happened on PREPARE.
+>>
+>> It fixes the unbalanced cpu hotplug enable in cpu pm notifier.
+>>
+>> Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
+>
+> Did you fix the build issue with the previous iteration reported by 0-day?
+>
+Yes. I had fix the build issue.
 
-Rafael handles all the merges, etc. It would be better if you can
-reply to that thread instead.
-
--- 
-viresh
+>> ---
+>>  kernel/power/hibernate.c | 20 ++++++++++++--------
+>>  kernel/power/main.c      | 11 +++++++++--
+>>  kernel/power/power.h     |  2 ++
+>>  kernel/power/suspend.c   | 10 ++++++----
+>>  kernel/power/user.c      | 18 ++++++++++++------
+>>  5 files changed, 41 insertions(+), 20 deletions(-)
+>>
+>> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+>> index fca9254280ee..126e24caa82e 100644
+>> --- a/kernel/power/hibernate.c
+>> +++ b/kernel/power/hibernate.c
+>> @@ -647,7 +647,7 @@ static void power_down(void)
+>>   */
+>>  int hibernate(void)
+>>  {
+>> -     int error;
+>> +     int error, nr_calls = 0;
+>>
+>>       if (!hibernation_available()) {
+>>               pr_debug("PM: Hibernation not available.\n");
+>> @@ -662,9 +662,11 @@ int hibernate(void)
+>>       }
+>>
+>>       pm_prepare_console();
+>> -     error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+>> -     if (error)
+>> +     error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE, -1, &nr_calls);
+>> +     if (error) {
+>> +             nr_calls--;
+>>               goto Exit;
+>> +     }
+>>
+>>       printk(KERN_INFO "PM: Syncing filesystems ... ");
+>>       sys_sync();
+>> @@ -714,7 +716,7 @@ int hibernate(void)
+>>       /* Don't bother checking whether freezer_test_done is true */
+>>       freezer_test_done = false;
+>>   Exit:
+>> -     pm_notifier_call_chain(PM_POST_HIBERNATION);
+>> +     __pm_notifier_call_chain(PM_POST_HIBERNATION, nr_calls, NULL);
+>>       pm_restore_console();
+>>       atomic_inc(&snapshot_device_available);
+>>   Unlock:
+>> @@ -740,7 +742,7 @@ int hibernate(void)
+>>   */
+>>  static int software_resume(void)
+>>  {
+>> -     int error;
+>> +     int error, nr_calls = 0;
+>>       unsigned int flags;
+>>
+>>       /*
+>> @@ -827,9 +829,11 @@ static int software_resume(void)
+>>       }
+>>
+>>       pm_prepare_console();
+>> -     error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
+>> -     if (error)
+>> +     error = __pm_notifier_call_chain(PM_RESTORE_PREPARE, -1, &nr_calls);
+>> +     if (error) {
+>> +             nr_calls--;
+>>               goto Close_Finish;
+>> +     }
+>>
+>>       pr_debug("PM: Preparing processes for restore.\n");
+>>       error = freeze_processes();
+>> @@ -855,7 +859,7 @@ static int software_resume(void)
+>>       unlock_device_hotplug();
+>>       thaw_processes();
+>>   Finish:
+>> -     pm_notifier_call_chain(PM_POST_RESTORE);
+>> +     __pm_notifier_call_chain(PM_POST_RESTORE, nr_calls, NULL);
+>>       pm_restore_console();
+>>       atomic_inc(&snapshot_device_available);
+>>       /* For success case, the suspend path will release the lock */
+>> diff --git a/kernel/power/main.c b/kernel/power/main.c
+>> index 27946975eff0..577a5dec5b35 100644
+>> --- a/kernel/power/main.c
+>> +++ b/kernel/power/main.c
+>> @@ -38,12 +38,19 @@ int unregister_pm_notifier(struct notifier_block *nb)
+>>  }
+>>  EXPORT_SYMBOL_GPL(unregister_pm_notifier);
+>>
+>> -int pm_notifier_call_chain(unsigned long val)
+>> +int __pm_notifier_call_chain(unsigned long val, int nr_to_call, int *nr_calls)
+>>  {
+>> -     int ret = blocking_notifier_call_chain(&pm_chain_head, val, NULL);
+>> +     int ret;
+>> +
+>> +     ret =  __blocking_notifier_call_chain(&pm_chain_head, val, NULL,
+>> +                                             nr_to_call, nr_calls);
+>>
+>>       return notifier_to_errno(ret);
+>>  }
+>> +int pm_notifier_call_chain(unsigned long val)
+>> +{
+>> +     return __pm_notifier_call_chain(val, -1, NULL);
+>> +}
+>>
+>>  /* If set, devices may be suspended and resumed asynchronously. */
+>>  int pm_async_enabled = 1;
+>> diff --git a/kernel/power/power.h b/kernel/power/power.h
+>> index efe1b3b17c88..51f02ecaf125 100644
+>> --- a/kernel/power/power.h
+>> +++ b/kernel/power/power.h
+>> @@ -200,6 +200,8 @@ static inline void suspend_test_finish(const char *label) {}
+>>
+>>  #ifdef CONFIG_PM_SLEEP
+>>  /* kernel/power/main.c */
+>> +extern int __pm_notifier_call_chain(unsigned long val, int nr_to_call,
+>> +                                 int *nr_calls);
+>>  extern int pm_notifier_call_chain(unsigned long val);
+>>  #endif
+>>
+>> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+>> index 5b70d64b871e..0acab9d7f96f 100644
+>> --- a/kernel/power/suspend.c
+>> +++ b/kernel/power/suspend.c
+>> @@ -266,16 +266,18 @@ static int suspend_test(int level)
+>>   */
+>>  static int suspend_prepare(suspend_state_t state)
+>>  {
+>> -     int error;
+>> +     int error, nr_calls = 0;
+>>
+>>       if (!sleep_state_supported(state))
+>>               return -EPERM;
+>>
+>>       pm_prepare_console();
+>>
+>> -     error = pm_notifier_call_chain(PM_SUSPEND_PREPARE);
+>> -     if (error)
+>> +     error = __pm_notifier_call_chain(PM_SUSPEND_PREPARE, -1, &nr_calls);
+>> +     if (error) {
+>> +             nr_calls--;
+>>               goto Finish;
+>> +     }
+>>
+>>       trace_suspend_resume(TPS("freeze_processes"), 0, true);
+>>       error = suspend_freeze_processes();
+>> @@ -286,7 +288,7 @@ static int suspend_prepare(suspend_state_t state)
+>>       suspend_stats.failed_freeze++;
+>>       dpm_save_failed_step(SUSPEND_FREEZE);
+>>   Finish:
+>> -     pm_notifier_call_chain(PM_POST_SUSPEND);
+>> +     __pm_notifier_call_chain(PM_POST_SUSPEND, nr_calls, NULL);
+>>       pm_restore_console();
+>>       return error;
+>>  }
+>> diff --git a/kernel/power/user.c b/kernel/power/user.c
+>> index 526e8911460a..14ad11dd7eb7 100644
+>> --- a/kernel/power/user.c
+>> +++ b/kernel/power/user.c
+>> @@ -47,7 +47,7 @@ atomic_t snapshot_device_available = ATOMIC_INIT(1);
+>>  static int snapshot_open(struct inode *inode, struct file *filp)
+>>  {
+>>       struct snapshot_data *data;
+>> -     int error;
+>> +     int error, nr_calls = 0;
+>>
+>>       if (!hibernation_available())
+>>               return -EPERM;
+>> @@ -74,9 +74,11 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+>>                       swap_type_of(swsusp_resume_device, 0, NULL) : -1;
+>>               data->mode = O_RDONLY;
+>>               data->free_bitmaps = false;
+>> -             error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+>> +             error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE,
+>> +                                                     -1, &nr_calls);
+>>               if (error)
+>> -                     pm_notifier_call_chain(PM_POST_HIBERNATION);
+>> +                     __pm_notifier_call_chain(PM_POST_HIBERNATION,
+>> +                                                     --nr_calls, NULL);
+>
+> I wouldn't break these lines, it looks weird.
+Ok, I will put them on the same line.
+>
+>>       } else {
+>>               /*
+>>                * Resuming.  We may need to wait for the image device to
+>> @@ -86,13 +88,17 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+>>
+>>               data->swap = -1;
+>>               data->mode = O_WRONLY;
+>> -             error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
+>> +             error = __pm_notifier_call_chain(PM_RESTORE_PREPARE,
+>> +                                                     -1, &nr_calls);
+>>               if (!error) {
+>>                       error = create_basic_memory_bitmaps();
+>>                       data->free_bitmaps = !error;
+>> -             }
+>> +             } else
+>> +                     nr_calls--;
+>> +
+>>               if (error)
+>> -                     pm_notifier_call_chain(PM_POST_RESTORE);
+>> +                     __pm_notifier_call_chain(PM_POST_RESTORE,
+>> +                                                     nr_calls, NULL);
+>>       }
+>>       if (error)
+>>               atomic_inc(&snapshot_device_available);
+>>
+>
+> Thanks,
+> Rafael
+>
