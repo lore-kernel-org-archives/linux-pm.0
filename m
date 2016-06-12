@@ -1,67 +1,99 @@
-From: Hongtao Jia <hongtao.jia@nxp.com>
-Subject: Re: [PATCH 7/7] thermal: qoriq: Add thermal management support
-Date: Sun, 12 Jun 2016 08:58:42 +0000
-Message-ID: <AM4PR0401MB1843BE91034567CEC96A76FEEB520@AM4PR0401MB1843.eurprd04.prod.outlook.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: ARM: mxs: warnings on PM resume
+Date: Sun, 12 Jun 2016 12:27:02 +0200 (CEST)
+Message-ID: <908847370.85504.d47d66b7-356b-4e07-9e1d-807a299ea337.open-xchange@email.1und1.de>
+References: <1713040590.199779.36789782-c361-4fe4-bc0d-b581fbce8069.open-xchange@email.1und1.de>
+ <1955365225.76161.cd9a3eda-edc7-4bae-96f3-bdddccbb0478.open-xchange@email.1und1.de>
+ <2607020.0FcLMf1DX6@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db3on0098.outbound.protection.outlook.com ([157.55.234.98]:31455
-	"EHLO emea01-db3-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750724AbcFLJdF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 12 Jun 2016 05:33:05 -0400
-Content-Language: zh-CN
+Received: from mout.kundenserver.de ([217.72.192.74]:57763 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750755AbcFLK1p convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Jun 2016 06:27:45 -0400
+In-Reply-To: <2607020.0FcLMf1DX6@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>
-Cc: "kbuild-all@01.org" <kbuild-all@01.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "galak@codeaurora.org" <galak@codeaurora.org>, Scott Wood <scott.wood@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: kernel@pengutronix.de, Shawn Guo <shawnguo@kernel.org>, joerg.krause@embedded.rocks, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@nxp.com>
 
-SGkgYWxsLA0KDQpJIHJlY2VpdmVkIHRoaXMgYXV0byBidWlsZCBlcnJvciBub3RpY2UuIEkgaGF2
-ZSBzb21ldGhpbmcgdG8gY2xhcmlmeSBhbmQgYXNrOg0KLSBbY2Fubm90IGFwcGx5IHRvIHJvYmgv
-Zm9yLW5leHQgc29jLXRoZXJtYWwvbmV4dF0NCiAgIEl0IGNvdWxkIGFwcGx5IHRvIHJvYmgvZm9y
-LW5leHQuDQogICBJdCBjb3VsZCBub3QgYXBwbHkgdG8gc29jLXRoZXJtYWwvbmV4dCBiZWNhdXNl
-IHRoaXMgYnJhbmNoIGlzIG5vdCB1cGRhdGVkIHRvIHRoZSBsYXRlc3Qga2VybmVsLg0KDQotIFth
-dXRvIGJ1aWxkIHRlc3QgRVJST1Igb24gdjQuNy1yYzFdIFthbHNvIGJ1aWxkIHRlc3QgRVJST1Ig
-b24gbmV4dC0yMDE2MDYwM10NCiAgIEl0IHBhc3NlZCBhbGwgYnVpbGQgdGVzdCB1bmRlciBBUkNI
-PWFybS9wb3dlcnBjL3g4Ni4NCiAgIFRoZSBlcnJvciBsb2cgdW5kZXIgQVJDSD11bSAiaW1wbGlj
-aXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rpb24gJ2lvdW5tYXAnIiBsb29rcyBvZGQgZm9yIG1lIGJl
-Y2F1c2UNCiAgIEkgYmVsaWV2ZSBpdCdzIGluY2x1ZGVkIGluIDxsaW51eC9pby5oPi4gQW55IHN1
-Z2dlc3Rpb25zIGZvciBtZSB0byBmaXggdGhpcyBpc3N1ZT8NCg0KVGhhbmtzLg0KLSBIb25ndGFv
-DQoNCg0KPiAtLS0tLdPKvP7Urbz+LS0tLS0NCj4gt6K8/sjLOiBrYnVpbGQgdGVzdCByb2JvdCBb
-bWFpbHRvOmxrcEBpbnRlbC5jb21dDQo+ILeiy83KsbzkOiBNb25kYXksIEp1bmUgMDYsIDIwMTYg
-MTo1MiBBTQ0KPiDK1bz+yMs6IEhvbmd0YW8gSmlhIDxob25ndGFvLmppYUBueHAuY29tPg0KPiCz
-rcvNOiBrYnVpbGQtYWxsQDAxLm9yZzsgZWR1YmV6dmFsQGdtYWlsLmNvbTsgcnVpLnpoYW5nQGlu
-dGVsLmNvbTsNCj4gcm9iaCtkdEBrZXJuZWwub3JnOyBnYWxha0Bjb2RlYXVyb3JhLm9yZzsgU2Nv
-dHQgV29vZA0KPiA8c2NvdHQud29vZEBueHAuY29tPjsgc2hhd25ndW9Aa2VybmVsLm9yZzsgbGlu
-dXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGlu
-dXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMu
-b3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IEhvbmd0YW8gSmlhDQo+
-IDxob25ndGFvLmppYUBueHAuY29tPg0KPiDW98ziOiBSZTogW1BBVENIIDcvN10gdGhlcm1hbDog
-cW9yaXE6IEFkZCB0aGVybWFsIG1hbmFnZW1lbnQgc3VwcG9ydA0KPiANCj4gSGksDQo+IA0KPiBb
-YXV0byBidWlsZCB0ZXN0IEVSUk9SIG9uIHY0LjctcmMxXQ0KPiBbYWxzbyBidWlsZCB0ZXN0IEVS
-Uk9SIG9uIG5leHQtMjAxNjA2MDNdDQo+IFtjYW5ub3QgYXBwbHkgdG8gcm9iaC9mb3ItbmV4dCBz
-b2MtdGhlcm1hbC9uZXh0XQ0KPiBbaWYgeW91ciBwYXRjaCBpcyBhcHBsaWVkIHRvIHRoZSB3cm9u
-ZyBnaXQgdHJlZSwgcGxlYXNlIGRyb3AgdXMgYSBub3RlIHRvIGhlbHANCj4gaW1wcm92ZSB0aGUg
-c3lzdGVtXQ0KPiANCj4gdXJsOiAgICBodHRwczovL2dpdGh1Yi5jb20vMGRheS1jaS9saW51eC9j
-b21taXRzL0ppYS1Ib25ndGFvL2R0LWJpbmRpbmdzLQ0KPiBVcGRhdGUtUW9ySVEtVE1VLXRoZXJt
-YWwtYmluZGluZ3MvMjAxNjA2MDMtMTU0NDI4DQo+IGNvbmZpZzogdW0tYWxsbW9kY29uZmlnIChh
-dHRhY2hlZCBhcyAuY29uZmlnKQ0KPiBjb21waWxlcjogZ2NjLTYgKERlYmlhbiA2LjEuMS0xKSA2
-LjEuMSAyMDE2MDQzMA0KPiByZXByb2R1Y2U6DQo+ICAgICAgICAgIyBzYXZlIHRoZSBhdHRhY2hl
-ZCAuY29uZmlnIHRvIGxpbnV4IGJ1aWxkIHRyZWUNCj4gICAgICAgICBtYWtlIEFSQ0g9dW0NCj4g
-DQo+IEFsbCBlcnJvcnMgKG5ldyBvbmVzIHByZWZpeGVkIGJ5ID4+KToNCj4gDQo+ICAgIGRyaXZl
-cnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmM6IEluIGZ1bmN0aW9uICdxb3JpcV90bXVfcHJvYmUn
-Og0KPiA+PiBkcml2ZXJzL3RoZXJtYWwvcW9yaXFfdGhlcm1hbC5jOjI1NToyOiBlcnJvcjogaW1w
-bGljaXQgZGVjbGFyYXRpb24gb2YNCj4gZnVuY3Rpb24gJ2lvdW5tYXAnIFstV2Vycm9yPWltcGxp
-Y2l0LWZ1bmN0aW9uLWRlY2xhcmF0aW9uXQ0KPiAgICAgIGlvdW5tYXAoZGF0YS0+cmVncyk7DQo+
-ICAgICAgXn5+fn5+fg0KPiAgICBjYzE6IHNvbWUgd2FybmluZ3MgYmVpbmcgdHJlYXRlZCBhcyBl
-cnJvcnMNCj4gDQo+IHZpbSArL2lvdW5tYXAgKzI1NSBkcml2ZXJzL3RoZXJtYWwvcW9yaXFfdGhl
-cm1hbC5jDQo+IA0KPiAgICAyNDkJCXNpdGUgfD0gMHgxIDw8ICgxNSAtIGRhdGEtPnNlbnNvcl9p
-ZCk7DQo+ICAgIDI1MAkJdG11X3dyaXRlKGRhdGEsIHNpdGUgfCBUTVJfTUUgfCBUTVJfQUxQRiwg
-JmRhdGEtPnJlZ3MtDQo+ID50bXIpOw0KPiAgICAyNTENCj4gICAgMjUyCQlyZXR1cm4gMDsNCj4g
-ICAgMjUzDQo+ICAgIDI1NAllcnJfdG11Og0KPiAgPiAyNTUJCWlvdW5tYXAoZGF0YS0+cmVncyk7
-DQo+ICAgIDI1Ng0KPiAgICAyNTcJZXJyX2lvbWFwOg0KPiAgICAyNTgJCXBsYXRmb3JtX3NldF9k
-cnZkYXRhKHBkZXYsIE5VTEwpOw0KPiANCj4gLS0tDQo+IDAtREFZIGtlcm5lbCB0ZXN0IGluZnJh
-c3RydWN0dXJlICAgICAgICAgICAgICAgIE9wZW4gU291cmNlIFRlY2hub2xvZ3kgQ2VudGVyDQo+
-IGh0dHBzOi8vbGlzdHMuMDEub3JnL3BpcGVybWFpbC9rYnVpbGQtYWxsICAgICAgICAgICAgICAg
-ICAgIEludGVsIENvcnBvcmF0aW9uDQo=
+Hi Rafael,
+
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> hat am 11. Juni 2016 um 03:42
+> geschrieben:
+>=20
+>=20
+> On Saturday, June 11, 2016 03:01:31 AM Stefan Wahren wrote:
+> > Hi,
+> >=20
+> > [add Rafael, J=C3=B6rg and J=C3=BCrgen to CC]
+> >=20
+> > > Stefan Wahren <stefan.wahren@i2se.com> hat am 1. Juni 2016 um 22:=
+51
+> > > geschrieben:
+> > >=20
+> > >=20
+> > > Hi,
+> > >=20
+> > > i'm currently working on standby support for MXS platform. If i t=
+rigger
+> > > the
+> > > standby per sysfs everything works fine, but mostly on resume i g=
+et a
+> > > bunch of
+> > > warnings (see below for full output):
+> > >=20
+> > > [   67.040000] Interrupts enabled before system core resume.
+> > >=20
+> > > My current working branch [1] based on Linux 4.5 ( cmdline has
+> > > no_console_suspend=3D1 ). The test hardware is a i.MX23 board (
+> > > iMX233-OLinuXino-MAXI ).
+> > >=20
+> > > How can i narrow down this issue to the relevant driver / interru=
+pt ?
+> > >=20
+> > > What is the right way to fix this issue?
+> > >=20
+> >=20
+> > any hints or ideas to narrow down this issue are very welcome.
+>=20
+> Interrupts should not be enabled before syscore_resume() is called, b=
+ut they
+> are, apparently by the platform code.
+
+sure, but it isn't that simple. I can't reproduce the warning everytime=
+=2E At
+least i need 5 tries and more to reproduce it.
+
+I place the following code in the suspend code, before the low level su=
+spend
+code in SRAM gets executed:
+
+if (!irqs_disabled())
+	pr_info("IRQs not disabled before suspend\n");
+
+The info message above only get printed if the warning "Interrupts enab=
+led
+before system core resume." appears.
+
+After that i dumped all enabled IRQs (at the same code place) from the =
+interrupt
+collector (irqchip) and compared them with cat /proc/interrupts. I noti=
+ced that
+the dump contains all interrupt from /proc/interrupts plus the IRQs fro=
+m the 3
+GPIO banks, which were not listed under PROC FS.
+
+So i take a look at the GPIO driver gpio-mxs.c and noticed that it seem=
+s to miss
+the flag IRQCHIP_MASK_ON_SUSPEND compared to a driver gpio-mxc.c for ve=
+ry
+similiar hardware. Unfortunately adding the flag in the GPIO driver doe=
+sn't fix
+the issue.
+
+So any hints about narrowing down the issue would be helpful.
+
+Stefan
