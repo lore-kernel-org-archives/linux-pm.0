@@ -1,86 +1,67 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 2/3] dt-bindings: Document Renesas R-Car FCP power-domains usage
-Date: Sun, 12 Jun 2016 10:46:34 +0200
-Message-ID: <CAMuHMdUnwHYUVGHZn=gE0dxqR81iKO0dMEMATOL=Sw5aWbGVgQ@mail.gmail.com>
-References: <1465479695-18644-1-git-send-email-kieran@bingham.xyz>
- <1465479695-18644-3-git-send-email-kieran@bingham.xyz> <20160610173914.GA20505@rob-hp-laptop>
- <CAMuHMdWQZjE+AnPry6PiVc69PVdZ_2zstOKR==B6nywun2Om9Q@mail.gmail.com> <CAL_JsqLd+sXeEtq+chtrCxyDgyBm9s3giCC+ri8oMvfVLjunaA@mail.gmail.com>
+From: Hongtao Jia <hongtao.jia@nxp.com>
+Subject: Re: [PATCH 7/7] thermal: qoriq: Add thermal management support
+Date: Sun, 12 Jun 2016 08:58:42 +0000
+Message-ID: <AM4PR0401MB1843BE91034567CEC96A76FEEB520@AM4PR0401MB1843.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAL_JsqLd+sXeEtq+chtrCxyDgyBm9s3giCC+ri8oMvfVLjunaA@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Kieran Bingham <kieran@ksquared.org.uk>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "open list:MEDIA DRIVERS FOR RENESAS - FCP" <linux-media@vger.kernel.org>, "open list:MEDIA DRIVERS FOR RENESAS - FCP" <linux-renesas-soc@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-db3on0098.outbound.protection.outlook.com ([157.55.234.98]:31455
+	"EHLO emea01-db3-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750724AbcFLJdF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 12 Jun 2016 05:33:05 -0400
+Content-Language: zh-CN
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kbuild test robot <lkp@intel.com>
+Cc: "kbuild-all@01.org" <kbuild-all@01.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "galak@codeaurora.org" <galak@codeaurora.org>, Scott Wood <scott.wood@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Rob,
-
-CC linux-pm
-
-On Fri, Jun 10, 2016 at 11:33 PM, Rob Herring <robh@kernel.org> wrote:
-> On Fri, Jun 10, 2016 at 2:11 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> On Fri, Jun 10, 2016 at 7:39 PM, Rob Herring <robh@kernel.org> wrote:
->>> On Thu, Jun 09, 2016 at 02:41:33PM +0100, Kieran Bingham wrote:
->>>> The power domain must be specified to bring the device out of module
->>>> standby. Document this in the example provided, so that new additions
->>>> are not missed.
->>>>
->>>> Signed-off-by: Kieran Bingham <kieran@bingham.xyz>
->>>> ---
->>>>  Documentation/devicetree/bindings/media/renesas,fcp.txt | 1 +
->>>>  1 file changed, 1 insertion(+)
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/media/renesas,fcp.txt b/Documentation/devicetree/bindings/media/renesas,fcp.txt
->>>> index 271dcfdb5a76..6a55f5215221 100644
->>>> --- a/Documentation/devicetree/bindings/media/renesas,fcp.txt
->>>> +++ b/Documentation/devicetree/bindings/media/renesas,fcp.txt
->>>> @@ -31,4 +31,5 @@ Device node example
->>>>               compatible = "renesas,r8a7795-fcpv", "renesas,fcpv";
->>>>               reg = <0 0xfea2f000 0 0x200>;
->>>>               clocks = <&cpg CPG_MOD 602>;
->>>> +             power-domains = <&sysc R8A7795_PD_A3VP>;
->>>
->>> This needs to be documented above too, not just the example.
->>
->> Why? Power domains are an optional feature, whose presence depends
->> on the platform, not on the device.
->
-> Examples are not documentation. The binding should stand on its own
-> without the example.
->
-> How did I know this is optional unless you document it as optional?
-> How many power domains does the device have?
-
-The device does not have power domains, and is not aware of the existence
-of power domains. Each SoC has one or more power domains.
-
-"power-domains" properties are used to describe the hierarchical relationship
-between power domains and the devices that resides in these power domains.
-Just like nodes and subnodes describe the hierarchical relationship between
-buses and the devices directly connected to these buses.
-
-On the (Linux) software side, the device driver does have to use Runtime PM
-if an SoC has more power domains than just the single "always-on" power domain.
-
->> Hence "power-domains" properties may appear in any device node.
->> Having to document them in every single binding document is overkill.
->
-> We do it for everything else pretty much. There's some exceptions like "status".
-
-IMHO having to document "power-domains" in every single DT binding is
-as silly as having to document that the device node must be a child of the bus
-device node in every single DT binding. This belongs in the DT binding of the
-power controller, which is the device controlling the power domain.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+SGkgYWxsLA0KDQpJIHJlY2VpdmVkIHRoaXMgYXV0byBidWlsZCBlcnJvciBub3RpY2UuIEkgaGF2
+ZSBzb21ldGhpbmcgdG8gY2xhcmlmeSBhbmQgYXNrOg0KLSBbY2Fubm90IGFwcGx5IHRvIHJvYmgv
+Zm9yLW5leHQgc29jLXRoZXJtYWwvbmV4dF0NCiAgIEl0IGNvdWxkIGFwcGx5IHRvIHJvYmgvZm9y
+LW5leHQuDQogICBJdCBjb3VsZCBub3QgYXBwbHkgdG8gc29jLXRoZXJtYWwvbmV4dCBiZWNhdXNl
+IHRoaXMgYnJhbmNoIGlzIG5vdCB1cGRhdGVkIHRvIHRoZSBsYXRlc3Qga2VybmVsLg0KDQotIFth
+dXRvIGJ1aWxkIHRlc3QgRVJST1Igb24gdjQuNy1yYzFdIFthbHNvIGJ1aWxkIHRlc3QgRVJST1Ig
+b24gbmV4dC0yMDE2MDYwM10NCiAgIEl0IHBhc3NlZCBhbGwgYnVpbGQgdGVzdCB1bmRlciBBUkNI
+PWFybS9wb3dlcnBjL3g4Ni4NCiAgIFRoZSBlcnJvciBsb2cgdW5kZXIgQVJDSD11bSAiaW1wbGlj
+aXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rpb24gJ2lvdW5tYXAnIiBsb29rcyBvZGQgZm9yIG1lIGJl
+Y2F1c2UNCiAgIEkgYmVsaWV2ZSBpdCdzIGluY2x1ZGVkIGluIDxsaW51eC9pby5oPi4gQW55IHN1
+Z2dlc3Rpb25zIGZvciBtZSB0byBmaXggdGhpcyBpc3N1ZT8NCg0KVGhhbmtzLg0KLSBIb25ndGFv
+DQoNCg0KPiAtLS0tLdPKvP7Urbz+LS0tLS0NCj4gt6K8/sjLOiBrYnVpbGQgdGVzdCByb2JvdCBb
+bWFpbHRvOmxrcEBpbnRlbC5jb21dDQo+ILeiy83KsbzkOiBNb25kYXksIEp1bmUgMDYsIDIwMTYg
+MTo1MiBBTQ0KPiDK1bz+yMs6IEhvbmd0YW8gSmlhIDxob25ndGFvLmppYUBueHAuY29tPg0KPiCz
+rcvNOiBrYnVpbGQtYWxsQDAxLm9yZzsgZWR1YmV6dmFsQGdtYWlsLmNvbTsgcnVpLnpoYW5nQGlu
+dGVsLmNvbTsNCj4gcm9iaCtkdEBrZXJuZWwub3JnOyBnYWxha0Bjb2RlYXVyb3JhLm9yZzsgU2Nv
+dHQgV29vZA0KPiA8c2NvdHQud29vZEBueHAuY29tPjsgc2hhd25ndW9Aa2VybmVsLm9yZzsgbGlu
+dXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGlu
+dXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMu
+b3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IEhvbmd0YW8gSmlhDQo+
+IDxob25ndGFvLmppYUBueHAuY29tPg0KPiDW98ziOiBSZTogW1BBVENIIDcvN10gdGhlcm1hbDog
+cW9yaXE6IEFkZCB0aGVybWFsIG1hbmFnZW1lbnQgc3VwcG9ydA0KPiANCj4gSGksDQo+IA0KPiBb
+YXV0byBidWlsZCB0ZXN0IEVSUk9SIG9uIHY0LjctcmMxXQ0KPiBbYWxzbyBidWlsZCB0ZXN0IEVS
+Uk9SIG9uIG5leHQtMjAxNjA2MDNdDQo+IFtjYW5ub3QgYXBwbHkgdG8gcm9iaC9mb3ItbmV4dCBz
+b2MtdGhlcm1hbC9uZXh0XQ0KPiBbaWYgeW91ciBwYXRjaCBpcyBhcHBsaWVkIHRvIHRoZSB3cm9u
+ZyBnaXQgdHJlZSwgcGxlYXNlIGRyb3AgdXMgYSBub3RlIHRvIGhlbHANCj4gaW1wcm92ZSB0aGUg
+c3lzdGVtXQ0KPiANCj4gdXJsOiAgICBodHRwczovL2dpdGh1Yi5jb20vMGRheS1jaS9saW51eC9j
+b21taXRzL0ppYS1Ib25ndGFvL2R0LWJpbmRpbmdzLQ0KPiBVcGRhdGUtUW9ySVEtVE1VLXRoZXJt
+YWwtYmluZGluZ3MvMjAxNjA2MDMtMTU0NDI4DQo+IGNvbmZpZzogdW0tYWxsbW9kY29uZmlnIChh
+dHRhY2hlZCBhcyAuY29uZmlnKQ0KPiBjb21waWxlcjogZ2NjLTYgKERlYmlhbiA2LjEuMS0xKSA2
+LjEuMSAyMDE2MDQzMA0KPiByZXByb2R1Y2U6DQo+ICAgICAgICAgIyBzYXZlIHRoZSBhdHRhY2hl
+ZCAuY29uZmlnIHRvIGxpbnV4IGJ1aWxkIHRyZWUNCj4gICAgICAgICBtYWtlIEFSQ0g9dW0NCj4g
+DQo+IEFsbCBlcnJvcnMgKG5ldyBvbmVzIHByZWZpeGVkIGJ5ID4+KToNCj4gDQo+ICAgIGRyaXZl
+cnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmM6IEluIGZ1bmN0aW9uICdxb3JpcV90bXVfcHJvYmUn
+Og0KPiA+PiBkcml2ZXJzL3RoZXJtYWwvcW9yaXFfdGhlcm1hbC5jOjI1NToyOiBlcnJvcjogaW1w
+bGljaXQgZGVjbGFyYXRpb24gb2YNCj4gZnVuY3Rpb24gJ2lvdW5tYXAnIFstV2Vycm9yPWltcGxp
+Y2l0LWZ1bmN0aW9uLWRlY2xhcmF0aW9uXQ0KPiAgICAgIGlvdW5tYXAoZGF0YS0+cmVncyk7DQo+
+ICAgICAgXn5+fn5+fg0KPiAgICBjYzE6IHNvbWUgd2FybmluZ3MgYmVpbmcgdHJlYXRlZCBhcyBl
+cnJvcnMNCj4gDQo+IHZpbSArL2lvdW5tYXAgKzI1NSBkcml2ZXJzL3RoZXJtYWwvcW9yaXFfdGhl
+cm1hbC5jDQo+IA0KPiAgICAyNDkJCXNpdGUgfD0gMHgxIDw8ICgxNSAtIGRhdGEtPnNlbnNvcl9p
+ZCk7DQo+ICAgIDI1MAkJdG11X3dyaXRlKGRhdGEsIHNpdGUgfCBUTVJfTUUgfCBUTVJfQUxQRiwg
+JmRhdGEtPnJlZ3MtDQo+ID50bXIpOw0KPiAgICAyNTENCj4gICAgMjUyCQlyZXR1cm4gMDsNCj4g
+ICAgMjUzDQo+ICAgIDI1NAllcnJfdG11Og0KPiAgPiAyNTUJCWlvdW5tYXAoZGF0YS0+cmVncyk7
+DQo+ICAgIDI1Ng0KPiAgICAyNTcJZXJyX2lvbWFwOg0KPiAgICAyNTgJCXBsYXRmb3JtX3NldF9k
+cnZkYXRhKHBkZXYsIE5VTEwpOw0KPiANCj4gLS0tDQo+IDAtREFZIGtlcm5lbCB0ZXN0IGluZnJh
+c3RydWN0dXJlICAgICAgICAgICAgICAgIE9wZW4gU291cmNlIFRlY2hub2xvZ3kgQ2VudGVyDQo+
+IGh0dHBzOi8vbGlzdHMuMDEub3JnL3BpcGVybWFpbC9rYnVpbGQtYWxsICAgICAgICAgICAgICAg
+ICAgIEludGVsIENvcnBvcmF0aW9uDQo=
