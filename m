@@ -1,120 +1,281 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
-Date: Sun, 12 Jun 2016 03:05:04 +0200
-Message-ID: <3878383.bGDWSmEsze@vostro.rjw.lan>
-References: <573DF82D.50006@deltatee.com> <2597967.kdkjeIcHno@vostro.rjw.lan> <575C4CE4.6060608@deltatee.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52771 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751896AbcFLBBB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jun 2016 21:01:01 -0400
-In-Reply-To: <575C4CE4.6060608@deltatee.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Scott Wood <oss@buserror.net>
+Subject: [RESEND PATCH 2/2] cpufreq: qoriq: Don't look at clock implementation details
+Date: Sat, 11 Jun 2016 22:16:26 -0500
+Message-ID: <1465701386-6220-2-git-send-email-oss@buserror.net>
+References: <1465701386-6220-1-git-send-email-oss@buserror.net>
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1465701386-6220-1-git-send-email-oss@buserror.net>
+Sender: linux-clk-owner@vger.kernel.org
+To: Russell King <linux@armlinux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, yuantian.tang@nxp.com, leoyang.li@nxp.com, xiaofeng.ren@nxp.com, Scott Wood <scottwood@freescale.com>
 List-Id: linux-pm@vger.kernel.org
-To: Logan Gunthorpe <logang@deltatee.com>
-Cc: Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
-On Saturday, June 11, 2016 11:39:48 AM Logan Gunthorpe wrote:
-> Hey Rafael,
-> 
-> I tried this patch as well and there was no change.
-> 
-> I have a couple tentative observations to make though. None of this is 
-> 100% clear to me so please correct me if I'm wrong anywhere:
-> 
-> 1) Commit ab76f7b4ab only extends the NX bit between __ex_table and 
-> rodata; which, by my understanding, shouldn't be used by anything. And 
-> __ex_table and rodata are fixed by the kernel's binary so both symbols 
-> should be the same in both the image kernel and the boot kernel given 
-> that both are running from the same binary.
+From: Scott Wood <scottwood@freescale.com>
 
-Well, what if the kernel is relocated?
+Get the CPU clock's potential parent clocks from the clock interface
+itself, rather than manually parsing the clocks property to find a
+phandle, looking at the clock-names property of that, and assuming that
+those are valid parent clocks for the cpu clock.
 
-> 2) When ab76f7b4ab is reverted, hibernation seems to work 100%. Though, 
-> when it's in place, it only works some of the time. Given that commit is 
-> only extending the NX region a bit, if there is some random mismatch, 
-> why does it never reach rodata? In other words, why is rodata a magic 
-> line that seems to work all the time -- why doesn't this random mismatch 
-> ever extend into the rodata region? rodata isn't _that_ far away from 
-> the end of ex_table.
+This is necessary now that the clocks are generated based on the clock
+driver's knowledge of the chip rather than a fragile device-tree
+description of the mux options.
 
-That's a very good question. :-)
+We can now rely on the clock driver to ensure that the mux only exposes
+options that are valid.  The cpufreq driver was currently being overly
+conservative in some cases -- for example, the "min_cpufreq =
+get_bus_freq()" restriction only applies to chips with erratum
+A-004510, and whether the freq_mask used on p5020 is needed depends on
+the actual frequencies of the PLLs (FWIW, p5040 has a similar
+limitation but its .freq_mask was zero) -- and the frequency mask
+mechanism made assumptions about particular parent clock indices that
+are no longer valid.
 
-Overall, it looks like re-using the boot kernel text mapping in the temporary
-page tables is a bad idea.  I guess a temporary kernel text mapping is needed
-too or at least the existing one has to be modified to cover the trampoline
-code properly.
-
-> Anyway, thanks again for looking into this.
-
-No problem.  I haven't helped much so far, though ...
-
-Can you please check if the patch below makes any difference?
-
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/x86/power/hibernate_64.c |   19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+Previously sent as http://patchwork.ozlabs.org/patch/519804/
 
-Index: linux-pm/arch/x86/power/hibernate_64.c
-===================================================================
---- linux-pm.orig/arch/x86/power/hibernate_64.c
-+++ linux-pm/arch/x86/power/hibernate_64.c
-@@ -12,6 +12,7 @@
- #include <linux/smp.h>
- #include <linux/suspend.h>
- 
-+#include <asm/cacheflush.h>
- #include <asm/init.h>
- #include <asm/proto.h>
- #include <asm/page.h>
-@@ -27,7 +28,7 @@ extern asmlinkage __visible int restore_
-  * Address to jump to in the last phase of restore in order to get to the image
-  * kernel's text (this value is passed in the image header).
-  */
--unsigned long restore_jump_address __visible;
-+void *restore_jump_address __visible;
- 
- /*
-  * Value of the cr3 register from before the hibernation (this value is passed
-@@ -108,7 +109,7 @@ int pfn_is_nosave(unsigned long pfn)
- }
- 
- struct restore_data_record {
--	unsigned long jump_address;
-+	void *jump_address;
- 	unsigned long cr3;
- 	unsigned long magic;
+ drivers/cpufreq/qoriq-cpufreq.c | 137 ++++++++++++----------------------------
+ 1 file changed, 40 insertions(+), 97 deletions(-)
+
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 53d8c3f..f94943a 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -37,53 +37,20 @@ struct cpu_data {
+ 	struct thermal_cooling_device *cdev;
  };
-@@ -126,7 +127,7 @@ int arch_hibernation_header_save(void *a
  
- 	if (max_size < sizeof(struct restore_data_record))
- 		return -EOVERFLOW;
--	rdr->jump_address = restore_jump_address;
-+	rdr->jump_address = &restore_registers;
- 	rdr->cr3 = restore_cr3;
- 	rdr->magic = RESTORE_MAGIC;
- 	return 0;
-@@ -140,8 +141,18 @@ int arch_hibernation_header_save(void *a
- int arch_hibernation_header_restore(void *addr)
++/*
++ * Don't use cpufreq on this SoC -- used when the SoC would have otherwise
++ * matched a more generic compatible.
++ */
++#define SOC_BLACKLIST		1
++
+ /**
+  * struct soc_data - SoC specific data
+- * @freq_mask: mask the disallowed frequencies
+- * @flag: unique flags
++ * @flags: SOC_xxx
+  */
+ struct soc_data {
+-	u32 freq_mask[4];
+-	u32 flag;
+-};
+-
+-#define FREQ_MASK	1
+-/* see hardware specification for the allowed frqeuencies */
+-static const struct soc_data sdata[] = {
+-	{ /* used by p2041 and p3041 */
+-		.freq_mask = {0x8, 0x8, 0x2, 0x2},
+-		.flag = FREQ_MASK,
+-	},
+-	{ /* used by p5020 */
+-		.freq_mask = {0x8, 0x2},
+-		.flag = FREQ_MASK,
+-	},
+-	{ /* used by p4080, p5040 */
+-		.freq_mask = {0},
+-		.flag = 0,
+-	},
++	u32 flags;
+ };
+ 
+-/*
+- * the minimum allowed core frequency, in Hz
+- * for chassis v1.0, >= platform frequency
+- * for chassis v2.0, >= platform frequency / 2
+- */
+-static u32 min_cpufreq;
+-static const u32 *fmask;
+-
+-#if defined(CONFIG_ARM)
+-static int get_cpu_physical_id(int cpu)
+-{
+-	return topology_core_id(cpu);
+-}
+-#else
+-static int get_cpu_physical_id(int cpu)
+-{
+-	return get_hard_smp_processor_id(cpu);
+-}
+-#endif
+-
+ static u32 get_bus_freq(void)
  {
- 	struct restore_data_record *rdr = addr;
-+	unsigned long text_end, all_end;
-+
-+	if (rdr->magic != RESTORE_MAGIC)
-+		return -EINVAL;
- 
- 	restore_jump_address = rdr->jump_address;
- 	restore_cr3 = rdr->cr3;
--	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
-+
-+	text_end = PFN_ALIGN(&__stop___ex_table);
-+	all_end = roundup((unsigned long)restore_jump_address, PMD_SIZE);
-+	if (all_end > text_end)
-+		set_memory_x(text_end, (all_end - text_end) >> PAGE_SHIFT);
-+
-+	return 0;
+ 	struct device_node *soc;
+@@ -101,9 +68,10 @@ static u32 get_bus_freq(void)
+ 	return sysfreq;
  }
+ 
+-static struct device_node *cpu_to_clk_node(int cpu)
++static struct clk *cpu_to_clk(int cpu)
+ {
+-	struct device_node *np, *clk_np;
++	struct device_node *np;
++	struct clk *clk;
+ 
+ 	if (!cpu_present(cpu))
+ 		return NULL;
+@@ -112,37 +80,28 @@ static struct device_node *cpu_to_clk_node(int cpu)
+ 	if (!np)
+ 		return NULL;
+ 
+-	clk_np = of_parse_phandle(np, "clocks", 0);
+-	if (!clk_np)
+-		return NULL;
+-
++	clk = of_clk_get(np, 0);
+ 	of_node_put(np);
+-
+-	return clk_np;
++	return clk;
+ }
+ 
+ /* traverse cpu nodes to get cpu mask of sharing clock wire */
+ static void set_affected_cpus(struct cpufreq_policy *policy)
+ {
+-	struct device_node *np, *clk_np;
+ 	struct cpumask *dstp = policy->cpus;
++	struct clk *clk;
+ 	int i;
+ 
+-	np = cpu_to_clk_node(policy->cpu);
+-	if (!np)
+-		return;
+-
+ 	for_each_present_cpu(i) {
+-		clk_np = cpu_to_clk_node(i);
+-		if (!clk_np)
++		clk = cpu_to_clk(i);
++		if (IS_ERR(clk)) {
++			pr_err("%s: no clock for cpu %d\n", __func__, i);
+ 			continue;
++		}
+ 
+-		if (clk_np == np)
++		if (clk_is_match(policy->clk, clk))
+ 			cpumask_set_cpu(i, dstp);
+-
+-		of_node_put(clk_np);
+ 	}
+-	of_node_put(np);
+ }
+ 
+ /* reduce the duplicated frequencies in frequency table */
+@@ -200,7 +159,7 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct device_node *np, *pnode;
+ 	int i, count, ret;
+-	u32 freq, mask;
++	u32 freq;
+ 	struct clk *clk;
+ 	struct cpufreq_frequency_table *table;
+ 	struct cpu_data *data;
+@@ -221,17 +180,12 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		goto err_nomem2;
+ 	}
+ 
+-	pnode = of_parse_phandle(np, "clocks", 0);
+-	if (!pnode) {
+-		pr_err("%s: could not get clock information\n", __func__);
+-		goto err_nomem2;
+-	}
++	count = clk_get_num_parents(policy->clk);
+ 
+-	count = of_property_count_strings(pnode, "clock-names");
+ 	data->pclk = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
+ 	if (!data->pclk) {
+ 		pr_err("%s: no memory\n", __func__);
+-		goto err_node;
++		goto err_nomem2;
+ 	}
+ 
+ 	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
+@@ -240,23 +194,11 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		goto err_pclk;
+ 	}
+ 
+-	if (fmask)
+-		mask = fmask[get_cpu_physical_id(cpu)];
+-	else
+-		mask = 0x0;
+-
+ 	for (i = 0; i < count; i++) {
+-		clk = of_clk_get(pnode, i);
++		clk = clk_get_parent_by_index(policy->clk, i);
+ 		data->pclk[i] = clk;
+ 		freq = clk_get_rate(clk);
+-		/*
+-		 * the clock is valid if its frequency is not masked
+-		 * and large than minimum allowed frequency.
+-		 */
+-		if (freq < min_cpufreq || (mask & (1 << i)))
+-			table[i].frequency = CPUFREQ_ENTRY_INVALID;
+-		else
+-			table[i].frequency = freq / 1000;
++		table[i].frequency = freq / 1000;
+ 		table[i].driver_data = i;
+ 	}
+ 	freq_table_redup(table, count);
+@@ -290,10 +232,7 @@ err_nomem1:
+ 	kfree(table);
+ err_pclk:
+ 	kfree(data->pclk);
+-err_node:
+-	of_node_put(pnode);
+ err_nomem2:
+-	policy->driver_data = NULL;
+ 	kfree(data);
+ err_np:
+ 	of_node_put(np);
+@@ -357,12 +296,20 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.attr		= cpufreq_generic_attr,
+ };
+ 
++static const struct soc_data blacklist = {
++	.flags = SOC_BLACKLIST,
++};
++
+ static const struct of_device_id node_matches[] __initconst = {
+-	{ .compatible = "fsl,p2041-clockgen", .data = &sdata[0], },
+-	{ .compatible = "fsl,p3041-clockgen", .data = &sdata[0], },
+-	{ .compatible = "fsl,p5020-clockgen", .data = &sdata[1], },
+-	{ .compatible = "fsl,p4080-clockgen", .data = &sdata[2], },
+-	{ .compatible = "fsl,p5040-clockgen", .data = &sdata[2], },
++	/* e6500 cannot use cpufreq due to erratum A-008083 */
++	{ .compatible = "fsl,b4420-clockgen", &blacklist },
++	{ .compatible = "fsl,b4860-clockgen", &blacklist },
++	{ .compatible = "fsl,t2080-clockgen", &blacklist },
++	{ .compatible = "fsl,t4240-clockgen", &blacklist },
++
++	{ .compatible = "fsl,ls1021a-clockgen", },
++	{ .compatible = "fsl,p4080-clockgen", },
++	{ .compatible = "fsl,qoriq-clockgen-1.0", },
+ 	{ .compatible = "fsl,qoriq-clockgen-2.0", },
+ 	{}
+ };
+@@ -380,16 +327,12 @@ static int __init qoriq_cpufreq_init(void)
+ 
+ 	match = of_match_node(node_matches, np);
+ 	data = match->data;
+-	if (data) {
+-		if (data->flag)
+-			fmask = data->freq_mask;
+-		min_cpufreq = get_bus_freq();
+-	} else {
+-		min_cpufreq = get_bus_freq() / 2;
+-	}
+ 
+ 	of_node_put(np);
+ 
++	if (data && data->flags & SOC_BLACKLIST)
++		return -ENODEV;
++
+ 	ret = cpufreq_register_driver(&qoriq_cpufreq_driver);
+ 	if (!ret)
+ 		pr_info("Freescale QorIQ CPU frequency scaling driver\n");
+-- 
+2.5.0
 
