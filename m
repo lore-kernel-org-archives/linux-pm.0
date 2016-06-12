@@ -1,121 +1,57 @@
-From: Scott Wood <oss@buserror.net>
-Subject: [PATCH v2 1/2] clk: Add consumer APIs for discovering possible parent clocks
-Date: Sat, 11 Jun 2016 22:57:14 -0500
-Message-ID: <1465703835-2777-1-git-send-email-oss@buserror.net>
+From: Logan Gunthorpe <logang@deltatee.com>
+Subject: Re: PROBLEM: Resume form hibernate broken by setting NX on gap
+Date: Sat, 11 Jun 2016 22:48:08 -0600
+Message-ID: <575CE988.9030201@deltatee.com>
+References: <573DF82D.50006@deltatee.com> <2597967.kdkjeIcHno@vostro.rjw.lan>
+ <575C4CE4.6060608@deltatee.com> <3878383.bGDWSmEsze@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from host.buserror.net ([209.198.135.123]:50401 "EHLO
-	host.buserror.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751896AbcFLD5X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jun 2016 23:57:23 -0400
+Received: from ale.deltatee.com ([207.54.116.67]:59177 "EHLO ale.deltatee.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751492AbcFLEsZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 12 Jun 2016 00:48:25 -0400
+In-Reply-To: <3878383.bGDWSmEsze@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King <linux@armlinux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, yuantian.tang@nxp.com, leoyang.li@nxp.com, xiaofeng.ren@nxp.com, Scott Wood <scottwood@freescale.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, Denys Vlasenko <dvlasenk@redhat.com>, Brian Gerst <brgerst@gmail.com>
 
-From: Scott Wood <scottwood@freescale.com>
+Hey,
 
-Commit fc4a05d4b0eb ("clk: Remove unused provider APIs") removed
-__clk_get_num_parents() and clk_hw_get_parent_by_index(), leaving only
-true provider API versions that operate on struct clk_hw.
+On 11/06/16 07:05 PM, Rafael J. Wysocki wrote:
+>> 1) Commit ab76f7b4ab only extends the NX bit between __ex_table and
+>> rodata; which, by my understanding, shouldn't be used by anything. And
+>> __ex_table and rodata are fixed by the kernel's binary so both symbols
+>> should be the same in both the image kernel and the boot kernel given
+>> that both are running from the same binary.
+>
+> Well, what if the kernel is relocated?
 
-qoriq-cpufreq needs these functions in order to determine the options
-it has for calling clk_set_parent() and thus populate the cpufreq
-table, so revive them as legitimate consumer APIs.
+Ah, I'm sure I don't fully grasp the implications of that but I would 
+assume that if the image kernel were located somewhere else it would 
+still be far away from the boot kernel's ex_table/rodata boundary.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-v2: Add missing 'static inline' to stub functions.
+>> 2) When ab76f7b4ab is reverted, hibernation seems to work 100%. Though,
+>> when it's in place, it only works some of the time. Given that commit is
+>> only extending the NX region a bit, if there is some random mismatch,
+>> why does it never reach rodata? In other words, why is rodata a magic
+>> line that seems to work all the time -- why doesn't this random mismatch
+>> ever extend into the rodata region? rodata isn't _that_ far away from
+>> the end of ex_table.
+>
+> That's a very good question. :-)
 
- drivers/clk/clk.c   | 19 +++++++++++++++++++
- include/linux/clk.h | 31 +++++++++++++++++++++++++++++++
- 2 files changed, 50 insertions(+)
+Yeah, I guess if we knew the answer we'd understand what was going on 
+and have a fix.
 
-diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-index d584004..d61a3fe 100644
---- a/drivers/clk/clk.c
-+++ b/drivers/clk/clk.c
-@@ -290,6 +290,12 @@ struct clk_hw *__clk_get_hw(struct clk *clk)
- }
- EXPORT_SYMBOL_GPL(__clk_get_hw);
- 
-+unsigned int clk_get_num_parents(struct clk *clk)
-+{
-+	return !clk ? 0 : clk->core->num_parents;
-+}
-+EXPORT_SYMBOL_GPL(clk_get_num_parents);
-+
- unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
- {
- 	return hw->core->num_parents;
-@@ -358,6 +364,19 @@ static struct clk_core *clk_core_get_parent_by_index(struct clk_core *core,
- 	return core->parents[index];
- }
- 
-+struct clk *clk_get_parent_by_index(struct clk *clk, unsigned int index)
-+{
-+	struct clk_core *parent;
-+
-+	if (!clk)
-+		return NULL;
-+
-+	parent = clk_core_get_parent_by_index(clk->core, index);
-+
-+	return !parent ? NULL : parent->hw->clk;
-+}
-+EXPORT_SYMBOL_GPL(clk_get_parent_by_index);
-+
- struct clk_hw *
- clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int index)
- {
-diff --git a/include/linux/clk.h b/include/linux/clk.h
-index 0df4a51..acd115f 100644
---- a/include/linux/clk.h
-+++ b/include/linux/clk.h
-@@ -392,6 +392,26 @@ int clk_set_parent(struct clk *clk, struct clk *parent);
- struct clk *clk_get_parent(struct clk *clk);
- 
- /**
-+ * clk_get_parent_by_index - get a possible parent clock by index
-+ * @clk: clock source
-+ * @index: index into the array of possible parents of this clock
-+ *
-+ * Returns struct clk corresponding to the requested possible
-+ * parent clock source, or NULL.
-+ */
-+struct clk *clk_get_parent_by_index(struct clk *clk,
-+				    unsigned int index);
-+
-+/**
-+ * clk_get_num_parents - get number of possible parents
-+ * @clk: clock source
-+ *
-+ * Returns the number of possible parents of this clock,
-+ * which can then be enumerated using clk_get_parent_by_index().
-+ */
-+unsigned int clk_get_num_parents(struct clk *clk);
-+
-+/**
-  * clk_get_sys - get a clock based upon the device name
-  * @dev_id: device name
-  * @con_id: connection ID
-@@ -461,6 +481,17 @@ static inline struct clk *clk_get_parent(struct clk *clk)
- 	return NULL;
- }
- 
-+static inline struct clk *clk_get_parent_by_index(struct clk *clk,
-+						  unsigned int index)
-+{
-+	return NULL;
-+}
-+
-+static inline unsigned int clk_get_num_parents(struct clk *clk)
-+{
-+	return 0;
-+}
-+
- #endif
- 
- /* clk_prepare_enable helps cases using clk_enable in non-atomic context. */
--- 
-2.5.0
 
+> Can you please check if the patch below makes any difference?
+
+I'm afraid it's no different. The kernel still freezes on resume. 
+Though, no warnings with this one.
+
+Thanks,
+
+Logan
