@@ -1,51 +1,54 @@
-From: Jun Li <jun.li@nxp.com>
-Subject: RE: [RESEND PATCH v11 2/4] gadget: Support for the usb charger
- framework
-Date: Mon, 13 Jun 2016 15:15:09 +0000
-Message-ID: <AM4PR04MB21305FB56492FC547F52E73589530@AM4PR04MB2130.eurprd04.prod.outlook.com>
+From: Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>
+Subject: RE: [RESEND PATCH v11 3/4] gadget: Integrate with the usb gadget
+ supporting for usb charger
+Date: Mon, 13 Jun 2016 15:16:05 +0000
+Message-ID: <AM4PR04MB2130924DCEAA8A78DD67445A89530@AM4PR04MB2130.eurprd04.prod.outlook.com>
 References: <cover.1465807514.git.baolin.wang@linaro.org>
- <0f69a3bb3451dd850a7c2de30d17266b98ff337d.1465807514.git.baolin.wang@linaro.org>
+ <f7963d623278ce3141564068866a8b7104bcda6c.1465807514.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <0f69a3bb3451dd850a7c2de30d17266b98ff337d.1465807514.git.baolin.wang@linaro.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <f7963d623278ce3141564068866a8b7104bcda6c.1465807514.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>, "balbi@kernel.org" <balbi@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>
-Cc: "robh@kernel.org" <robh@kernel.org>, "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "ruslan.bilovol@gmail.com" <ruslan.bilovol@gmail.com>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vge>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org" <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org" <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Cc: "robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org" <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, "stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org" <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org" <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, "lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org" <device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel@vge>
 List-Id: linux-pm@vger.kernel.org
 
 Hi
 
 > -----Original Message-----
-> From: linux-usb-owner@vger.kernel.org [mailto:linux-usb-
-> owner@vger.kernel.org] On Behalf Of Baolin Wang
+> From: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org [mailto:linux-usb-
+> owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org] On Behalf Of Baolin Wang
 > Sent: Monday, June 13, 2016 4:47 PM
-> To: balbi@kernel.org; gregkh@linuxfoundation.org; sre@kernel.org;
-> dbaryshkov@gmail.com; dwmw2@infradead.org
-> Cc: robh@kernel.org; m.szyprowski@samsung.com; ruslan.bilovol@gmail.com;
-> peter.chen@freescale.com; stern@rowland.harvard.edu; r.baldyga@samsung.com;
-> yoshihiro.shimoda.uh@renesas.com; lee.jones@linaro.org; broonie@kernel.org;
-> ckeepax@opensource.wolfsonmicro.com; patches@opensource.wolfsonmicro.com;
-> baolin.wang@linaro.org; linux-pm@vger.kernel.org; linux-
-> usb@vger.kernel.org; device-mainlining@lists.linuxfoundation.org; linux-
-> kernel@vger.kernel.org
-> Subject: [RESEND PATCH v11 2/4] gadget: Support for the usb charger
-> framework
+> To: balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org; gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org; sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org;
+> dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org; dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
+> Cc: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org; m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org; ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org;
+> peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org; stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org; r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org;
+> yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org; lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org; broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org;
+> ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org; patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org;
+> baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org; linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linux-
+> usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org; linux-
+> kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Subject: [RESEND PATCH v11 3/4] gadget: Integrate with the usb gadget
+> supporting for usb charger
 > 
-> For supporting the usb charger, it adds the usb_charger_init() and
-> usb_charger_exit() functions for usb charger initialization and exit.
+> When the usb gadget supporting for usb charger is ready, the usb charger
+> can implement the usb_charger_plug_by_gadget() function and
+> usb_charger_exit() function by getting 'struct usb_charger' from 'struct
+> gadget'.
 > 
-> It will report to the usb charger when the gadget state is changed, then
-> the usb charger can do the power things.
-> 
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Reviewed-by: Li Jun <jun.li@nxp.com>
-Tested-by: Li Jun <jun.li@nxp.com>
+Reviewed-by: Li Jun <jun.li-3arQi8VN3Tc@public.gmane.org>
+Tested-by: Li Jun <jun.li-3arQi8VN3Tc@public.gmane.org>
 
 > ---
->  drivers/usb/gadget/udc/udc-core.c |   11 +++++++++++
->  include/linux/usb/gadget.h        |   11 +++++++++++
->  2 files changed, 22 insertions(+)
+>  drivers/usb/gadget/udc/charger.c |   39
+> +++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 38 insertions(+), 1 deletion(-)
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
