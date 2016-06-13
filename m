@@ -1,47 +1,286 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] powercap/rapl: add support for skx
-Date: Mon, 13 Jun 2016 23:56:18 +0200
-Message-ID: <1853463.fUpAPaBi47@vostro.rjw.lan>
-References: <1464021943-14915-1-git-send-email-jacob.jun.pan@linux.intel.com> <1464021943-14915-2-git-send-email-jacob.jun.pan@linux.intel.com> <2701882.MhyhBLMFz2@vostro.rjw.lan>
+From: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH] x86 / hibernate: Fix 64-bit code passing control to image kernel
+Date: Mon, 13 Jun 2016 14:58:57 -0700
+Message-ID: <CAGXu5jJ+3JKTBsB9HXapmamGZ0JU23YLvUe7gGqHj8vsYGJtOQ@mail.gmail.com>
+References: <3006711.q9ei2E2zzf@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2701882.MhyhBLMFz2@vostro.rjw.lan>
+In-Reply-To: <3006711.q9ei2E2zzf@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Prarit Bhargava <prarit@redhat.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Logan Gunthorpe <logang@deltatee.com>, the arch/x86 maintainers <x86@kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 13, 2016 11:32:10 PM Rafael J. Wysocki wrote:
-> On Monday, May 23, 2016 09:45:42 AM Jacob Pan wrote:
-> > SKX RAPL interface is similar to HSX/BDX.
-> > 
-> > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> > ---
-> >  drivers/powercap/intel_rapl.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> > index 470bb62..a417e68 100644
-> > --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -1096,6 +1096,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
-> >  	RAPL_CPU(0x4E, rapl_defaults_core),/* Skylake */
-> >  	RAPL_CPU(0x4C, rapl_defaults_cht),/* Braswell/Cherryview */
-> >  	RAPL_CPU(0x4A, rapl_defaults_tng),/* Tangier */
-> > +	RAPL_CPU(0x55, rapl_defaults_hsw_server),/* Skylake server */
-> >  	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
-> >  	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
-> >  	RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
-> > 
-> 
-> Can you please rebase this on top of 4.7-rc3?
+On Mon, Jun 13, 2016 at 6:42 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Logan Gunthorpe reports that hibernation stopped working reliably for
+> him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
+> and rodata).  Most likely, what happens is that the page containing
+> the image kernel's entry point is sometimes marked as non-executable
+> in the page tables used at the time of the final jump to the image
+> kernel.  That at least is why commit ab76f7b4ab23 may matter.
+>
+> However, there is one more long-standing issue with the code in
+> question, which is that the temporary page tables set up by it
+> to avoid page tables corruption when the last bits of the image
+> kernel's memory contents are copied into their original page frames
+> re-use the boot kernel's text mapping, but that mapping may very
+> well get corrupted just like any other part of the page tables.
+> Of course, if that happens, the final jump to the image kernel's
+> entry point will go to nowhere.
+>
+> As it turns out, those two issues may be addressed simultaneously.
+>
+> To that end, note that the code copying the last bits of the image
+> kernel's memory contents to the page frames occupied by them
+> previoulsy doesn't use the kernel text mapping, because it runs from
+> a special page covered by the identity mapping set up for that code
+> from scratch.  Hence, the kernel text mapping is only needed before
+> that code starts to run and then it will only be used just for the
+> final jump to the image kernel's entry point.
+>
+> Accordingly, the temporary page tables set up in swsusp_arch_resume()
+> on x86-64 can re-use the boot kernel's text mapping to start with,
+> but after all of the image kernel's memory contents are in place,
+> that mapping has to be replaced with a new one that will allow the
+> final jump to the image kernel's entry point to succeed.  Of course,
+> since the first thing the image kernel does after getting control back
+> is to switch over to its own original page tables, the new kernel text
+> mapping only has to cover the image kernel's entry point (along with
+> some following bytes).  Moreover, it has to do that so the virtual
+> address of the image kernel's entry point before the jump is the same
+> as the one mapped by the image kernel's page tables.
+>
+> With that in mind, modify the x86-64's arch_hibernation_header_save()
+> and arch_hibernation_header_restore() routines to pass the physical
+> address of the image kernel's entry point (in addition to its virtual
+> address) to the boot kernel (a small piece of assembly code involved
+> in passing the entry point's virtual address to the image kernel is
+> not necessary any more after that, so drop it).  Update RESTORE_MAGIC
+> too to reflect the image header format change.
+>
+> Next, in set_up_temporary_mappings(), use the physical and virtual
+> addresses of the image kernel's entry point passed in the image
+> header to set up a minimum kernel text mapping (using memory pages
+> that won't be overwritten by the image kernel's memory contents) that
+> will map those addresses to each other as appropriate.  Do not use
+> that mapping immediately, though.  Instead, use the original boot
+> kernel text mapping to start with and switch over to the new one
+> after all of the image kernel's memory has been restored, right
+> before the final jump to the image kernel's entry point.
+>
+> This makes the concern about the possible corruption of the original
+> boot kernel text mapping go away and if the the minimum kernel text
+> mapping used for the final jump marks the image kernel's entry point
+> memory as executable, the jump to it is guaraneed to succeed.
+>
+> Fixes: ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table and rodata)
+> Link: http://marc.info/?l=linux-pm&m=146372852823760&w=2
+> Reported-by: Logan Gunthorpe <logang@deltatee.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Or rather on top of the x86/cpu branch from tip?
+Acked-by: Kees Cook <keescook@chromium.org>
 
-BTW, I can take the Denverton support for RAPL too (unless already applied
-elsewhere), but it has to be based on x86/cpu as well.
+And as an awesome added benefit: this fixes KASLR hibernation for me,
+too! I will send a follow-up patch that removes all the KASLR vs
+hibernation hacks.
 
-Thanks,
-Rafael
+Yay!
+
+-Kees
+
+> ---
+>  arch/x86/power/hibernate_64.c     |   66 +++++++++++++++++++++++++++++++++++---
+>  arch/x86/power/hibernate_asm_64.S |   31 +++++++++--------
+>  2 files changed, 77 insertions(+), 20 deletions(-)
+>
+> Index: linux-pm/arch/x86/power/hibernate_64.c
+> ===================================================================
+> --- linux-pm.orig/arch/x86/power/hibernate_64.c
+> +++ linux-pm/arch/x86/power/hibernate_64.c
+> @@ -27,7 +27,8 @@ extern asmlinkage __visible int restore_
+>   * Address to jump to in the last phase of restore in order to get to the image
+>   * kernel's text (this value is passed in the image header).
+>   */
+> -unsigned long restore_jump_address __visible;
+> +void *restore_jump_address __visible;
+> +unsigned long jump_address_phys;
+>
+>  /*
+>   * Value of the cr3 register from before the hibernation (this value is passed
+> @@ -37,8 +38,51 @@ unsigned long restore_cr3 __visible;
+>
+>  pgd_t *temp_level4_pgt __visible;
+>
+> +void *restore_pgd_addr __visible;
+> +pgd_t restore_pgd __visible;
+> +
+>  void *relocated_restore_code __visible;
+>
+> +static int prepare_temporary_text_mapping(void)
+> +{
+> +       unsigned long vaddr = (unsigned long)restore_jump_address;
+> +       unsigned long paddr = jump_address_phys & PMD_MASK;
+> +       pmd_t *pmd;
+> +       pud_t *pud;
+> +
+> +       /*
+> +        * The new mapping only has to cover the page containing the image
+> +        * kernel's entry point (jump_address_phys), because the switch over to
+> +        * it is carried out by relocated code running from a page allocated
+> +        * specifically for this purpose and covered by the identity mapping, so
+> +        * the temporary kernel text mapping is only needed for the final jump.
+> +        * However, in that mapping the virtual address of the image kernel's
+> +        * entry point must be the same as its virtual address in the image
+> +        * kernel (restore_jump_address), so the image kernel's
+> +        * restore_registers() code doesn't find itself in a different area of
+> +        * the virtual address space after switching over to the original page
+> +        * tables used by the image kernel.
+> +        */
+> +       pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> +       if (!pud)
+> +               return -ENOMEM;
+> +
+> +       restore_pgd = __pgd(__pa(pud) | _KERNPG_TABLE);
+> +
+> +       pud += pud_index(vaddr);
+> +       pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
+> +       if (!pmd)
+> +               return -ENOMEM;
+> +
+> +       set_pud(pud, __pud(__pa(pmd) | _KERNPG_TABLE));
+> +
+> +       pmd += pmd_index(vaddr);
+> +       set_pmd(pmd, __pmd(paddr | __PAGE_KERNEL_LARGE_EXEC));
+> +
+> +       restore_pgd_addr = temp_level4_pgt + pgd_index(vaddr);
+> +       return 0;
+> +}
+> +
+>  static void *alloc_pgt_page(void *context)
+>  {
+>         return (void *)get_safe_page(GFP_ATOMIC);
+> @@ -59,10 +103,19 @@ static int set_up_temporary_mappings(voi
+>         if (!temp_level4_pgt)
+>                 return -ENOMEM;
+>
+> -       /* It is safe to reuse the original kernel mapping */
+> +       /* Re-use the original kernel text mapping for now */
+>         set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
+>                 init_level4_pgt[pgd_index(__START_KERNEL_map)]);
+>
+> +       /*
+> +        * Prepare a temporary mapping for the kernel text, but don't use it
+> +        * just yet, we'll switch over to it later.  It only has to cover one
+> +        * piece of code: the page containing the image kernel's entry point.
+> +        */
+> +       result = prepare_temporary_text_mapping();
+> +       if (result)
+> +               return result;
+> +
+>         /* Set up the direct mapping from scratch */
+>         for (i = 0; i < nr_pfn_mapped; i++) {
+>                 mstart = pfn_mapped[i].start << PAGE_SHIFT;
+> @@ -108,12 +161,13 @@ int pfn_is_nosave(unsigned long pfn)
+>  }
+>
+>  struct restore_data_record {
+> -       unsigned long jump_address;
+> +       void *jump_address;
+> +       unsigned long jump_address_phys;
+>         unsigned long cr3;
+>         unsigned long magic;
+>  };
+>
+> -#define RESTORE_MAGIC  0x0123456789ABCDEFUL
+> +#define RESTORE_MAGIC  0x123456789ABCDEF0UL
+>
+>  /**
+>   *     arch_hibernation_header_save - populate the architecture specific part
+> @@ -126,7 +180,8 @@ int arch_hibernation_header_save(void *a
+>
+>         if (max_size < sizeof(struct restore_data_record))
+>                 return -EOVERFLOW;
+> -       rdr->jump_address = restore_jump_address;
+> +       rdr->jump_address = &restore_registers;
+> +       rdr->jump_address_phys = __pa_symbol(&restore_registers);
+>         rdr->cr3 = restore_cr3;
+>         rdr->magic = RESTORE_MAGIC;
+>         return 0;
+> @@ -142,6 +197,7 @@ int arch_hibernation_header_restore(void
+>         struct restore_data_record *rdr = addr;
+>
+>         restore_jump_address = rdr->jump_address;
+> +       jump_address_phys = rdr->jump_address_phys;
+>         restore_cr3 = rdr->cr3;
+>         return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
+>  }
+> Index: linux-pm/arch/x86/power/hibernate_asm_64.S
+> ===================================================================
+> --- linux-pm.orig/arch/x86/power/hibernate_asm_64.S
+> +++ linux-pm/arch/x86/power/hibernate_asm_64.S
+> @@ -44,9 +44,6 @@ ENTRY(swsusp_arch_suspend)
+>         pushfq
+>         popq    pt_regs_flags(%rax)
+>
+> -       /* save the address of restore_registers */
+> -       movq    $restore_registers, %rax
+> -       movq    %rax, restore_jump_address(%rip)
+>         /* save cr3 */
+>         movq    %cr3, %rax
+>         movq    %rax, restore_cr3(%rip)
+> @@ -72,8 +69,10 @@ ENTRY(restore_image)
+>         movq    %rax, %cr4;  # turn PGE back on
+>
+>         /* prepare to jump to the image kernel */
+> -       movq    restore_jump_address(%rip), %rax
+>         movq    restore_cr3(%rip), %rbx
+> +       movq    restore_jump_address(%rip), %r10
+> +       movq    restore_pgd(%rip), %r8
+> +       movq    restore_pgd_addr(%rip), %r9
+>
+>         /* prepare to copy image data to their original locations */
+>         movq    restore_pblist(%rip), %rdx
+> @@ -96,20 +95,22 @@ ENTRY(core_restore_code)
+>         /* progress to the next pbe */
+>         movq    pbe_next(%rdx), %rdx
+>         jmp     .Lloop
+> +
+>  .Ldone:
+> +       /* switch over to the temporary kernel text mapping */
+> +       movq    %r8, (%r9)
+> +       /* flush TLB */
+> +       movq    %rax, %rdx
+> +       andq    $~(X86_CR4_PGE), %rdx
+> +       movq    %rdx, %cr4;  # turn off PGE
+> +       movq    %cr3, %rcx;  # flush TLB
+> +       movq    %rcx, %cr3;
+> +       movq    %rax, %cr4;  # turn PGE back on
+>         /* jump to the restore_registers address from the image header */
+> -       jmpq    *%rax
+> -       /*
+> -        * NOTE: This assumes that the boot kernel's text mapping covers the
+> -        * image kernel's page containing restore_registers and the address of
+> -        * this page is the same as in the image kernel's text mapping (it
+> -        * should always be true, because the text mapping is linear, starting
+> -        * from 0, and is supposed to cover the entire kernel text for every
+> -        * kernel).
+> -        *
+> -        * code below belongs to the image kernel
+> -        */
+> +       jmpq    *%r10
+>
+> +        /* code below belongs to the image kernel */
+> +       .align PAGE_SIZE
+>  ENTRY(restore_registers)
+>         FRAME_BEGIN
+>         /* go back to the original page tables */
+>
+
+
+
+-- 
+Kees Cook
+Chrome OS & Brillo Security
