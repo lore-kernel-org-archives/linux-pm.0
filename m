@@ -1,80 +1,48 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v6 10/11] cpuidle/powernv: Add support for POWER ISA v3
- idle states
-Date: Mon, 13 Jun 2016 17:34:46 +0200
-Message-ID: <20160613153446.GF10634@linaro.org>
-References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1465404871-5406-11-git-send-email-shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/5] soc: qcom: Add suspend to idle support
+Date: Mon, 13 Jun 2016 18:12:11 +0200
+Message-ID: <20160613161211.GG10634@linaro.org>
+References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
+ <1463634020-17252-2-git-send-email-andy.gross@linaro.org>
+ <CAPDyKFrAGVPkc=ycm-cQg6Y5NLx_d4xGeg8SaSiB-K5sxtv76A@mail.gmail.com>
+ <20160609180902.GJ13357@hector.attlocal.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f46.google.com ([74.125.82.46]:38411 "EHLO
+	mail-wm0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1424775AbcFMQMP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2016 12:12:15 -0400
+Received: by mail-wm0-f46.google.com with SMTP id m124so86657178wme.1
+        for <linux-pm@vger.kernel.org>; Mon, 13 Jun 2016 09:12:14 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1465404871-5406-11-git-send-email-shreyas@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Cc: mpe@ellerman.id.au, benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-pm@vger.kernel.org
+In-Reply-To: <20160609180902.GJ13357@hector.attlocal.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Gross <andy.gross@linaro.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, stanimir.varbanov@linaro.org
 
-On Wed, Jun 08, 2016 at 11:54:30AM -0500, Shreyas B. Prabhu wrote:
-> POWER ISA v3 defines a new idle processor core mechanism. In summary,
->  a) new instruction named stop is added.
->  b) new per thread SPR named PSSCR is added which controls the behavior
-> 	of stop instruction.
-> 
-> Supported idle states and value to be written to PSSCR register to enter
-> any idle state is exposed via ibm,cpu-idle-state-names and
-> ibm,cpu-idle-state-psscr respectively. To enter an idle state,
-> platform provided power_stop() needs to be invoked with the appropriate
-> PSSCR value.
-> 
-> This patch adds support for this new mechanism in cpuidle powernv driver.
-> 
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Paul Mackerras <paulus@ozlabs.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> ---
+On Thu, Jun 09, 2016 at 01:09:02PM -0500, Andy Gross wrote:
+> On Thu, Jun 09, 2016 at 09:39:34AM +0200, Ulf Hansson wrote:
+> > + Daniel
+> > 
+> > On 19 May 2016 at 07:00, Andy Gross <andy.gross@linaro.org> wrote:
 
 [ ... ]
 
-> +	rc = of_property_read_string_array(power_mgt,
-> +					   "ibm,cpu-idle-state-names", names,
-> +					   dt_idle_states);
-> +	if (rc < 0) {
-> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
-> +		goto out_free_latency;
-> +	}
-> +
-> +	/*
-> +	 * If the idle states use stop instruction, probe for psscr values
-> +	 * which are necessary to specify required stop level.
-> +	 */
-> +	if (flags[0] & (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP)) {
-> +		psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
-> +				    GFP_KERNEL);
+> > I don't think this will work!
+> > 
+> > When building a multi defconfig for ARM, you might overwrite the
+> > suspend_ops (there's only one set) as here you don't know that it's
+> > actually the QCOM platform that is running, right!?
+> > 
+> > Perhaps this code actually belongs closer to the cpuidle driver?
+> 
+> Hmmmm, I might have to get creative.  I originally had a DT entry for the pm,
+> but that doesn't make sense as this is purely a software construct.  The db410c
+> uses the arm cpuidle driver so I can't really hook it in there.  I'll have to
+> come up with something else.
 
-if (!psscr_val) check missing.
+IMO, the generic ARM driver should be revisited to add support for suspend 
+to idle.
 
-> +		rc = of_property_read_u64_array(power_mgt,
-> +						"ibm,cpu-idle-state-psscr",
-> +						psscr_val, dt_idle_states);
-> +		if (rc) {
-> +			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
-> +			goto out_free_psscr;
-> +		}
-> +	}
->  	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
-
-if (!residency_ns) check missing.
-
-I suppose the code is relying on 'of_property_read_u32_array' to check it, 
-right ?
-
-
-  -- Daniel
