@@ -1,97 +1,106 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: [PATCH] x86/KASLR: remove x86 hibernation restrictions
-Date: Mon, 13 Jun 2016 15:10:02 -0700
-Message-ID: <20160613221002.GA29719@www.outflux.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] x86 / hibernate: Fix 64-bit code passing control to image kernel
+Date: Tue, 14 Jun 2016 00:15 +0200
+Message-ID: <1518490.AMlP2tjrQi@vostro.rjw.lan>
+References: <3006711.q9ei2E2zzf@vostro.rjw.lan> <CAGXu5jJ+3JKTBsB9HXapmamGZ0JU23YLvUe7gGqHj8vsYGJtOQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
+In-Reply-To: <CAGXu5jJ+3JKTBsB9HXapmamGZ0JU23YLvUe7gGqHj8vsYGJtOQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Logan Gunthorpe <logang@deltatee.com>, the arch/x86 maintainers <x86@kernel.org>, Borislav Petkov <bp@alien8.de>, Jonathan Corbet <corbet@lwn.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Baoquan He <bhe@redhat.com>, Yinghai Lu <yinghai@kernel.org>, Andy Lutomirski <luto@kernel.org>, linux-doc@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Logan Gunthorpe <logang@deltatee.com>, the arch/x86 maintainers <x86@kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
 
-With the commit "Fix 64-bit code passing control to image kernel", there
-is no longer a problem with hibernation resuming a KASLR-booted kernel
-image.
+On Monday, June 13, 2016 02:58:57 PM Kees Cook wrote:
+> On Mon, Jun 13, 2016 at 6:42 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Logan Gunthorpe reports that hibernation stopped working reliably for
+> > him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
+> > and rodata).  Most likely, what happens is that the page containing
+> > the image kernel's entry point is sometimes marked as non-executable
+> > in the page tables used at the time of the final jump to the image
+> > kernel.  That at least is why commit ab76f7b4ab23 may matter.
+> >
+> > However, there is one more long-standing issue with the code in
+> > question, which is that the temporary page tables set up by it
+> > to avoid page tables corruption when the last bits of the image
+> > kernel's memory contents are copied into their original page frames
+> > re-use the boot kernel's text mapping, but that mapping may very
+> > well get corrupted just like any other part of the page tables.
+> > Of course, if that happens, the final jump to the image kernel's
+> > entry point will go to nowhere.
+> >
+> > As it turns out, those two issues may be addressed simultaneously.
+> >
+> > To that end, note that the code copying the last bits of the image
+> > kernel's memory contents to the page frames occupied by them
+> > previoulsy doesn't use the kernel text mapping, because it runs from
+> > a special page covered by the identity mapping set up for that code
+> > from scratch.  Hence, the kernel text mapping is only needed before
+> > that code starts to run and then it will only be used just for the
+> > final jump to the image kernel's entry point.
+> >
+> > Accordingly, the temporary page tables set up in swsusp_arch_resume()
+> > on x86-64 can re-use the boot kernel's text mapping to start with,
+> > but after all of the image kernel's memory contents are in place,
+> > that mapping has to be replaced with a new one that will allow the
+> > final jump to the image kernel's entry point to succeed.  Of course,
+> > since the first thing the image kernel does after getting control back
+> > is to switch over to its own original page tables, the new kernel text
+> > mapping only has to cover the image kernel's entry point (along with
+> > some following bytes).  Moreover, it has to do that so the virtual
+> > address of the image kernel's entry point before the jump is the same
+> > as the one mapped by the image kernel's page tables.
+> >
+> > With that in mind, modify the x86-64's arch_hibernation_header_save()
+> > and arch_hibernation_header_restore() routines to pass the physical
+> > address of the image kernel's entry point (in addition to its virtual
+> > address) to the boot kernel (a small piece of assembly code involved
+> > in passing the entry point's virtual address to the image kernel is
+> > not necessary any more after that, so drop it).  Update RESTORE_MAGIC
+> > too to reflect the image header format change.
+> >
+> > Next, in set_up_temporary_mappings(), use the physical and virtual
+> > addresses of the image kernel's entry point passed in the image
+> > header to set up a minimum kernel text mapping (using memory pages
+> > that won't be overwritten by the image kernel's memory contents) that
+> > will map those addresses to each other as appropriate.  Do not use
+> > that mapping immediately, though.  Instead, use the original boot
+> > kernel text mapping to start with and switch over to the new one
+> > after all of the image kernel's memory has been restored, right
+> > before the final jump to the image kernel's entry point.
+> >
+> > This makes the concern about the possible corruption of the original
+> > boot kernel text mapping go away and if the the minimum kernel text
+> > mapping used for the final jump marks the image kernel's entry point
+> > memory as executable, the jump to it is guaraneed to succeed.
+> >
+> > Fixes: ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table and rodata)
+> > Link: http://marc.info/?l=linux-pm&m=146372852823760&w=2
+> > Reported-by: Logan Gunthorpe <logang@deltatee.com>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Acked-by: Kees Cook <keescook@chromium.org>
+> 
+> And as an awesome added benefit: this fixes KASLR hibernation for me,
+> too!
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
-Depends on: https://lkml.org/lkml/2016/6/13/442
----
- Documentation/kernel-parameters.txt | 10 ++++------
- arch/x86/boot/compressed/kaslr.c    |  7 -------
- kernel/power/hibernate.c            |  6 ------
- 3 files changed, 4 insertions(+), 19 deletions(-)
+Interesting. :-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 82b42c958d1c..fa8c6d470ad2 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1803,12 +1803,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 	js=		[HW,JOY] Analog joystick
- 			See Documentation/input/joystick.txt.
- 
--	kaslr/nokaslr	[X86]
--			Enable/disable kernel and module base offset ASLR
--			(Address Space Layout Randomization) if built into
--			the kernel. When CONFIG_HIBERNATION is selected,
--			kASLR is disabled by default. When kASLR is enabled,
--			hibernation will be disabled.
-+	nokaslr		[KNL]
-+			When CONFIG_RANDOMIZE_BASE is set, this disables
-+			kernel and module base offset ASLR (Address Space
-+			Layout Randomization).
- 
- 	keepinitrd	[HW,ARM]
- 
-diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
-index cfeb0259ed81..dff42177cb0c 100644
---- a/arch/x86/boot/compressed/kaslr.c
-+++ b/arch/x86/boot/compressed/kaslr.c
-@@ -471,17 +471,10 @@ unsigned char *choose_random_location(unsigned long input,
- 	unsigned long choice = output;
- 	unsigned long random_addr;
- 
--#ifdef CONFIG_HIBERNATION
--	if (!cmdline_find_option_bool("kaslr")) {
--		warn("KASLR disabled: 'kaslr' not on cmdline (hibernation selected).");
--		goto out;
--	}
--#else
- 	if (cmdline_find_option_bool("nokaslr")) {
- 		warn("KASLR disabled: 'nokaslr' on cmdline.");
- 		goto out;
- 	}
--#endif
- 
- 	boot_params->hdr.loadflags |= KASLR_FLAG;
- 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index fca9254280ee..9021387c6ff4 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -1154,11 +1154,6 @@ static int __init nohibernate_setup(char *str)
- 	return 1;
- }
- 
--static int __init kaslr_nohibernate_setup(char *str)
--{
--	return nohibernate_setup(str);
--}
--
- static int __init page_poison_nohibernate_setup(char *str)
- {
- #ifdef CONFIG_PAGE_POISONING_ZERO
-@@ -1182,5 +1177,4 @@ __setup("hibernate=", hibernate_setup);
- __setup("resumewait", resumewait_setup);
- __setup("resumedelay=", resumedelay_setup);
- __setup("nohibernate", nohibernate_setup);
--__setup("kaslr", kaslr_nohibernate_setup);
- __setup("page_poison=", page_poison_nohibernate_setup);
--- 
-2.7.4
+Is there documentation I can read about how the KASLR thing works exactly,
+wrt page tables in particular?
 
+> I will send a follow-up patch that removes all the KASLR vs
+> hibernation hacks.
 
--- 
-Kees Cook
-Chrome OS & Brillo Security
+But that on x86-64 only?  32-bit still doesn't work I suppose?
+
+> Yay!
+
+I'm glad you like it. ;-)
+
+Cheers,
+Rafael
