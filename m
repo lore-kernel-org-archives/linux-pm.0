@@ -1,66 +1,61 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH v1 1/1] PCI / PM: enforce type casting for pci_power_t
-Date: Mon, 13 Jun 2016 16:19:33 +0300
-Message-ID: <1465823973.30123.15.camel@linux.intel.com>
-References: <1465321713-146178-1-git-send-email-andriy.shevchenko@linux.intel.com>
- <20160611001956.GH16462@localhost>
- <1465818054.30123.10.camel@linux.intel.com>
-	 <20160613131346.GA11051@localhost>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Linux panics when suspend cannot offline the secondary cores
+Date: Mon, 13 Jun 2016 15:30:49 +0200
+Message-ID: <2922940.3xeChLaYeK@vostro.rjw.lan>
+References: <575ADFAC.4090009@free.fr> <575B3326.1050500@free.fr> <575EA1B6.8030405@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:26914 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423115AbcFMNSO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Jun 2016 09:18:14 -0400
-In-Reply-To: <20160613131346.GA11051@localhost>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56223 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S965480AbcFMN0s (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2016 09:26:48 -0400
+In-Reply-To: <575EA1B6.8030405@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Mason <slash.tmp@free.fr>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Sebastian Frias <sf84@laposte.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>
 
-On Mon, 2016-06-13 at 08:13 -0500, Bjorn Helgaas wrote:
-> On Mon, Jun 13, 2016 at 02:40:54PM +0300, Andy Shevchenko wrote:
-> > On Fri, 2016-06-10 at 19:19 -0500, Bjorn Helgaas wrote:
-> > > On Tue, Jun 07, 2016 at 08:48:33PM +0300, Andy Shevchenko wrote:
-> > > > When cast pci_power_t type of variables a static analizer tool
-> > > > complains on
-> > > > that.
-> > > >=20
-> > > > 	include/linux/pci.h:119:37: warning: cast from
-> > > > restricted
-> > > > pci_power_t
-> > > >=20
-> > > > Enforce type casting to make static analizer happy.
-> > > >=20
-> > > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.c=
-o
-> > > > m>
-> > >=20
-> > > Applied to pci/pm for v4.8, thanks, Andy.
-> >=20
-> > Thanks.
-> >=20
-> > By the way, what was the main point to use __bitwise annotation to
-> > this
-> > type in the first place?
->=20
-> I don't know.=C2=A0=C2=A0It looks like pci_power_t was the first use =
-of
-> __bitwise in
-> pci.h, added by e8191db240d2 ("[PATCH] PCI: Cleanup PCI power
-> states").
-> That changelog mentions type-safety, but I must admit that doesn't
-> make it
-> obvious to me.
+On Monday, June 13, 2016 02:06:14 PM Mason wrote:
+> On 10/06/2016 23:37, Mason wrote:
+> 
+> > On 10/06/2016 23:35, Rafael J. Wysocki wrote:
+> > 
+> >> On Friday, June 10, 2016 05:41:32 PM Mason wrote:
+> >>
+> >>> I'm playing with S3 Suspend-to-RAM, and I noticed that Linux is really
+> >>> unhappy when the suspend framework fails to offline secondary cores.
+> >>>
+> >>> Is this expected/by design, or could it fail more gracefully?
+> >>> (It could also be something missing in my platform's code.)
+> >>
+> >> This looks like a CPU offline bug to me which is more general than just
+> >> system suspend.
+> > 
+> > You may be right, I will try just off-lining cpu1.
+> > Suspend may be a red herring.
+> > 
+> > By the way, I know my implementation of tango_cpu_die
+> > is incorrect, I was testing the failure mode.
+> 
+> Hello Rafael,
+> 
+> Suspend was indeed a red herring. Manually requesting cpu1 off-lining
+> also makes Linux panic when cpu_die() unexpectedly returns.
+> 
+> The subject should perhaps have been:
+> 
+>   Linux panics when secondary core off-lining fails
+> 
+> Could it be made to fail more gracefully?
+> Or is this borkage inherent to the failed operation?
+> Or is it a bug in my platform code?
+> (A bug other than tango_cpu_die() failing to kill the core.)
 
-I'm asking since any code which is using this type (all direct
-assignments or comparisons) brings a static analyzer complain.
-You may check by yourself with (my usual command to build kernel)
+Well, smp_ops.cpu_die() is not expected to return AFAICS, so that may be
+the reason why it fails for you the way it does.
 
-% make C=3D1 CF=3D-D__CHECK_ENDIAN__ W=3D1 -j64
+Thanks,
+Rafael
 
---=C2=A0
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
