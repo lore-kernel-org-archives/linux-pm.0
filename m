@@ -1,41 +1,69 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v2 1/1] x86/intel_idle: Add CPU model 0x4a (Atom Z34xx series)
-Date: Mon, 13 Jun 2016 14:34:30 +0300
-Message-ID: <1465817670-55290-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:47139 "EHLO mga04.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422763AbcFMLef (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Jun 2016 07:34:35 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Subject: Re: [PATCH v1 1/1] PCI / PM: enforce type casting for pci_power_t
+Date: Mon, 13 Jun 2016 14:40:54 +0300
+Message-ID: <1465818054.30123.10.camel@linux.intel.com>
+References: <1465321713-146178-1-git-send-email-andriy.shevchenko@linux.intel.com>
+	 <20160611001956.GH16462@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160611001956.GH16462@localhost>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Add CPU ID for Atom Z34xx processors. Datasheets indicate support for this,
-detailed information about potential quirks or limitations are missing, though.
-So we just reuse the definition for the previous ATOM series. The quite similar
-values (C1 is slightly deviated) are used in the official Intel Edison BSP.
+On Fri, 2016-06-10 at 19:19 -0500, Bjorn Helgaas wrote:
+> On Tue, Jun 07, 2016 at 08:48:33PM +0300, Andy Shevchenko wrote:
+> > When cast pci_power_t type of variables a static analizer tool
+> > complains on
+> > that.
+> >=20
+> > 	include/linux/pci.h:119:37: warning: cast from restricted
+> > pci_power_t
+> >=20
+> > Enforce type casting to make static analizer happy.
+> >=20
+> > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+>=20
+> Applied to pci/pm for v4.8, thanks, Andy.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
-Since v1:
-- rebase on top of changes regarding to intel-family.h introduction
- drivers/idle/intel_idle.c | 1 +
- 1 file changed, 1 insertion(+)
+Thanks.
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index b5dd41d..7d3a1b1 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -1034,6 +1034,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
- 	ICPU(INTEL_FAM6_SANDYBRIDGE_X,		idle_cpu_snb),
- 	ICPU(INTEL_FAM6_ATOM_CEDARVIEW,		idle_cpu_atom),
- 	ICPU(INTEL_FAM6_ATOM_SILVERMONT1,	idle_cpu_byt),
-+	ICPU(INTEL_FAM6_ATOM_MERRIFIELD1,	idle_cpu_atom),
- 	ICPU(INTEL_FAM6_ATOM_AIRMONT,		idle_cpu_cht),
- 	ICPU(INTEL_FAM6_IVYBRIDGE,		idle_cpu_ivb),
- 	ICPU(INTEL_FAM6_IVYBRIDGE_X,		idle_cpu_ivt),
--- 
-2.8.1
+By the way, what was the main point to use __bitwise annotation to this
+type in the first place?
 
+>=20
+> > ---
+> > =C2=A0include/linux/pci.h | 2 +-
+> > =C2=A01 file changed, 1 insertion(+), 1 deletion(-)
+> >=20
+> > diff --git a/include/linux/pci.h b/include/linux/pci.h
+> > index b67e4df..8d74834 100644
+> > --- a/include/linux/pci.h
+> > +++ b/include/linux/pci.h
+> > @@ -116,7 +116,7 @@ extern const char *pci_power_names[];
+> > =C2=A0
+> > =C2=A0static inline const char *pci_power_name(pci_power_t state)
+> > =C2=A0{
+> > -	return pci_power_names[1 + (int) state];
+> > +	return pci_power_names[1 + (__force int) state];
+> > =C2=A0}
+> > =C2=A0
+> > =C2=A0#define PCI_PM_D2_DELAY		200
+> > --=C2=A0
+> > 2.8.1
+> >=20
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pci=
+"=20
+> > in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-=
+info.html
+
+--=20
+
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
