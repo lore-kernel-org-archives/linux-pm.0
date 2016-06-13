@@ -1,76 +1,41 @@
-From: Rhyland Klein <rklein@nvidia.com>
-Subject: [PATCH] power_supply: fix return value of get_property
-Date: Mon, 13 Jun 2016 17:03:41 -0400
-Message-ID: <1465851821-1163-1-git-send-email-rklein@nvidia.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2] powercap/rapl: add support for skx
+Date: Mon, 13 Jun 2016 23:32:10 +0200
+Message-ID: <2701882.MhyhBLMFz2@vostro.rjw.lan>
+References: <1464021943-14915-1-git-send-email-jacob.jun.pan@linux.intel.com> <1464021943-14915-2-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:19801 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161183AbcFMVFw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2016 17:05:52 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1464021943-14915-2-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Prarit Bhargava <prarit@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rhyland Klein <rklein@nvidia.com>
 
-power_supply_get_property() should ideally return -EAGAIN if it is
-called while the power_supply is being registered. There was no way
-previously to determine if use_cnt == 0 meant that the power_supply
-wasn't fully registered yet, or if it had already been unregistered.
+On Monday, May 23, 2016 09:45:42 AM Jacob Pan wrote:
+> SKX RAPL interface is similar to HSX/BDX.
+> 
+> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+> ---
+>  drivers/powercap/intel_rapl.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+> index 470bb62..a417e68 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -1096,6 +1096,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+>  	RAPL_CPU(0x4E, rapl_defaults_core),/* Skylake */
+>  	RAPL_CPU(0x4C, rapl_defaults_cht),/* Braswell/Cherryview */
+>  	RAPL_CPU(0x4A, rapl_defaults_tng),/* Tangier */
+> +	RAPL_CPU(0x55, rapl_defaults_hsw_server),/* Skylake server */
+>  	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
+>  	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
+>  	RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
+> 
 
-Add a new boolean to the power_supply struct to simply show if
-registration is completed.
+Can you please rebase this on top of 4.7-rc3?
 
-Signed-off-by: Rhyland Klein <rklein@nvidia.com>
----
-This patch continues what was discussed with the patch
-"power_supply: power_supply_read_temp only if use_cnt > 0".
-Looking at the thermal code, it looks like we should indeed return
-EAGAIN if possible, and since this change is fairly simple, I think
-it makes sense to do it.
-
- drivers/power/power_supply_core.c | 6 +++++-
- include/linux/power_supply.h      | 1 +
- 2 files changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index b13cd074c52a..a39a47672979 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -491,8 +491,11 @@ int power_supply_get_property(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    union power_supply_propval *val)
- {
--	if (atomic_read(&psy->use_cnt) <= 0)
-+	if (atomic_read(&psy->use_cnt) <= 0) {
-+		if (!psy->initialized)
-+			return -EAGAIN;
- 		return -ENODEV;
-+	}
- 
- 	return psy->desc->get_property(psy, psp, val);
- }
-@@ -775,6 +778,7 @@ __power_supply_register(struct device *parent,
- 	if (rc)
- 		goto create_triggers_failed;
- 
-+	psy->initialized = true;
- 	/*
- 	 * Update use_cnt after any uevents (most notably from device_add()).
- 	 * We are here still during driver's probe but
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 751061790626..3965503315ef 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -248,6 +248,7 @@ struct power_supply {
- 	struct delayed_work deferred_register_work;
- 	spinlock_t changed_lock;
- 	bool changed;
-+	bool initialized;
- 	atomic_t use_cnt;
- #ifdef CONFIG_THERMAL
- 	struct thermal_zone_device *tzd;
--- 
-1.9.1
-
+Thanks,
+Rafael
