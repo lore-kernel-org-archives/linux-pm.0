@@ -1,81 +1,35 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Linux panics when suspend cannot offline the secondary cores
-Date: Mon, 13 Jun 2016 15:50:56 +0200
-Message-ID: <575EBA40.4000803@free.fr>
-References: <575ADFAC.4090009@free.fr> <575B3326.1050500@free.fr>
- <575EA1B6.8030405@free.fr> <2922940.3xeChLaYeK@vostro.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v6 09/11] cpuidle/powernv: Use CPUIDLE_STATE_MAX instead
+ of MAX_POWERNV_IDLE_STATES
+Date: Mon, 13 Jun 2016 17:01:50 +0200
+Message-ID: <20160613150150.GE10634@linaro.org>
+References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1465404871-5406-10-git-send-email-shreyas@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:50758 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423710AbcFMNvW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 13 Jun 2016 09:51:22 -0400
-In-Reply-To: <2922940.3xeChLaYeK@vostro.rjw.lan>
+Received: from mail-wm0-f49.google.com ([74.125.82.49]:36963 "EHLO
+	mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423004AbcFMPBy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2016 11:01:54 -0400
+Received: by mail-wm0-f49.google.com with SMTP id k204so83785569wmk.0
+        for <linux-pm@vger.kernel.org>; Mon, 13 Jun 2016 08:01:53 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1465404871-5406-10-git-send-email-shreyas@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Sebastian Frias <sf84@laposte.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Cc: mpe@ellerman.id.au, benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org, ego@linux.vnet.ibm.com, maddy@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 
-On 13/06/2016 15:30, Rafael J. Wysocki wrote:
-
-> On Monday, June 13, 2016 02:06:14 PM Mason wrote:
->
->> On 10/06/2016 23:37, Mason wrote:
->>
->>> On 10/06/2016 23:35, Rafael J. Wysocki wrote:
->>>
->>>> On Friday, June 10, 2016 05:41:32 PM Mason wrote:
->>>>
->>>>> I'm playing with S3 Suspend-to-RAM, and I noticed that Linux is really
->>>>> unhappy when the suspend framework fails to offline secondary cores.
->>>>>
->>>>> Is this expected/by design, or could it fail more gracefully?
->>>>> (It could also be something missing in my platform's code.)
->>>>
->>>> This looks like a CPU offline bug to me which is more general than just
->>>> system suspend.
->>>
->>> You may be right, I will try just off-lining cpu1.
->>> Suspend may be a red herring.
->>>
->>> By the way, I know my implementation of tango_cpu_die
->>> is incorrect, I was testing the failure mode.
->>
->> Hello Rafael,
->>
->> Suspend was indeed a red herring. Manually requesting cpu1 off-lining
->> also makes Linux panic when cpu_die() unexpectedly returns.
->>
->> The subject should perhaps have been:
->>
->>   Linux panics when secondary core off-lining fails
->>
->> Could it be made to fail more gracefully?
->> Or is this borkage inherent to the failed operation?
->> Or is it a bug in my platform code?
->> (A bug other than tango_cpu_die() failing to kill the core.)
+On Wed, Jun 08, 2016 at 11:54:29AM -0500, Shreyas B. Prabhu wrote:
+> Use cpuidle's CPUIDLE_STATE_MAX macro instead of powernv specific
+> MAX_POWERNV_IDLE_STATES.
 > 
-> Well, smp_ops.cpu_die() is not expected to return AFAICS, so that may be
-> the reason why it fails for you the way it does.
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+> ---
 
-I am aware that smp_ops.cpu_die() is not expected to return.
-(I was wondering if the framework could handle it gracefully.)
-
-The actual implementation for cpu_die() asks the firmware to off-line
-the current core. If the operation fails, for whatever reason, firmware
-is not supposed to return control to Linux?
-
-Is panic the only safe thing to do in Linux:
-(If yes, then why doesn't the framework panic immediately?)
-
-static void tango_cpu_die(unsigned int cpu)
-{
-	ask_firmware_to_offline(cpu);
-	/* if we return here, something went wrong */
-	panic("firmware could not offline");
-}
-
-Regards.
-
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
