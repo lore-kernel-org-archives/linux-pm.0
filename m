@@ -1,56 +1,100 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Subject: Re: ARM: mxs: warnings on PM resume
-Date: Sun, 12 Jun 2016 23:00:26 +0100
-Message-ID: <20160612220026.GS1041@n2100.armlinux.org.uk>
-References: <1713040590.199779.36789782-c361-4fe4-bc0d-b581fbce8069.open-xchange@email.1und1.de>
- <1955365225.76161.cd9a3eda-edc7-4bae-96f3-bdddccbb0478.open-xchange@email.1und1.de>
- <2607020.0FcLMf1DX6@vostro.rjw.lan>
- <908847370.85504.d47d66b7-356b-4e07-9e1d-807a299ea337.open-xchange@email.1und1.de>
- <20160612135428.GR1041@n2100.armlinux.org.uk>
- <1612475808.97029.eb34fc3a-2c1f-4f24-a990-897dd5df59a5.open-xchange@email.1und1.de>
+From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFC v4 01/14] regulator: of: Add helper for getting all supplies
+Date: Mon, 13 Jun 2016 11:44:16 +0800
+Message-ID: <20160613034416.GD32615@shlinux2>
+References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
+ <1465465471-28740-2-git-send-email-k.kozlowski@samsung.com>
+ <20160609102925.GS7510@sirena.org.uk>
+ <5759560A.70107@samsung.com>
+ <20160610173056.GA16503@rob-hp-laptop>
+ <20160612072901.GD22054@shlinux2>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.armlinux.org.uk ([78.32.30.218]:44930 "EHLO
-	pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932426AbcFLWAr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 12 Jun 2016 18:00:47 -0400
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1612475808.97029.eb34fc3a-2c1f-4f24-a990-897dd5df59a5.open-xchange@email.1und1.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160612072901.GD22054@shlinux2>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-fy+rA21nqHI@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, Shawn Guo <shawnguo@kernel.org>, joerg.krause@embedded.rocks, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@nxp.com>
 
-On Sun, Jun 12, 2016 at 11:45:50PM +0200, Stefan Wahren wrote:
-> Hi,
+On Sun, Jun 12, 2016 at 03:29:01PM +0800, Peter Chen wrote:
+> On Fri, Jun 10, 2016 at 12:30:56PM -0500, Rob Herring wrote:
+> > On Thu, Jun 09, 2016 at 01:42:02PM +0200, Krzysztof Kozlowski wrote:
+> > > On 06/09/2016 12:29 PM, Mark Brown wrote:
+> > > > On Thu, Jun 09, 2016 at 11:44:18AM +0200, Krzysztof Kozlowski wrote:
+> > > >> Few drivers have a need of getting regulator supplies without knowing
+> > > >> their names:
+> > > >> 1. The Simple Framebuffer driver works on setup provided by bootloader
+> > > >>    (outside of scope of kernel);
+> > > >> 2. Generic power sequence driver may be attached to any device node.
+> > > >>
+> > > >> Add a Device Tree helper for parsing "-supply" properties and returning
+> > > >> allocated bulk regulator consumers.
+> > > > 
+> > > > I'm still very concerned that this is just an invitation to people to
+> > > > write half baked regulator consumers and half baked DTs to go along with
+> > > > it, making it a standard API that doesn't have big red flags on it that
+> > > > will flag up when "normal" drivers use it is not good.  Right now this
+> > > > just looks like a standard API and people are going to just start using
+> > > > it.  If we are going to do this perhaps we need a separate header or
+> > > > something to help flag this up.
+> > > 
+> > > No problem, I can move it to a special header.  Actually, if you dislike
+> > > this as an API, it does not have to be in header at all.  I can just
+> > > duplicate the simplefb code.
+> > > 
+> > > > In the case of power sequences I'd expect the sequences to perform
+> > > > operations on named supplies - the core shouldn't know what the supplies
+> > > > are but the thing specifying the sequence should.
+> > > 
+> > > Hm, so maybe passing names like:
+> > > 
+> > > usb3503@08 {
+> > > 	reset-gpios = <&gpx3 5 GPIO_ACTIVE_HIGH>;
+> > > 	initial-mode = <1>;
+> > > 	vdd-supply = <&buck8_reg>;
+> > > 	foo-supply = <&buck9_reg>;
+> > > 
+> > >         power-sequence;
+> > > 	power-sequence-supplies = "vdd", "foo";
+> > 
+> > This alone would be fine as it is just one property, but then what's 
+> > next? power-sequence-delay, power-sequence-clocks, etc. What if you 
+> > need to express ordering relationship of supplies, clocks, gpios? We end 
+> > up with a scripting language in DT and we don't want to have that.
+> > 
 > 
-> > Russell King - ARM Linux <linux@armlinux.org.uk> hat am 12. Juni 2016 um 15:54
-> > geschrieben:
-> > 
-> > This isn't about the state of the interrupt controller.  It's about
-> > the state of the IRQ mask bit in the CPUs CPSR.
-> > 
-> > irq_disabled() returns true when the I bit in CPSR is set, false
-> > otherwise.
-> > 
-> > What it's pointing towards is some driver being unreasonable, and
-> > clearing the CPUs CPSR I bit after the core PM code has set it.  Causes
-> > can be using spin_lock_irq()/spin_unlock_irq()/local_irq_enable() etc
-> > inappropriately, rather than using the irqsave/irqrestore versions.
+> Can we do things like below:
 > 
-> i finally found the reason for the warning: clk_get_sys was called inside of
-> mxs_suspend_enter.
-> After moving it into the init function the issue disappear.
+> - DT describes hardware elements (clock, gpios, etc) for power sequence, and we
+> need a node for power sequence.
+> - Power sequence framework handles getting hardware elements.
 
-Hmm.  I suspect a faster way to have found that issue would be to build
-your development kernels with more debugging options enabled - eg,
-check that you have DEBUG_ATOMIC_SLEEP enabled.
+Framework may do few things, since hardware elements are also different
+for devices.
 
-That should have caught the attempt to take a mutex in an IRQs-disabled
-region.
+> - Power sequence platform driver handles special sequence for devices,
+> and we can create some generic drivers for generic devices.
+> 
+
+So, my suggestion is do like mmc does (like this patch set does). The
+reasons like belows:
+
+- This piece of power sequence code needs to work like device driver, not
+library, it is easy to manage resources using device driver.
+- The device on the bus has still not been found, so this piece of code
+can't be in device driver on each subsystem.
+- We need to have a place for these power sequences drivers
+
+Ideally, I hope it can work like regulator class, but it seems hard to
+compatible with current mmc-pwrseq DT node.
 
 -- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+
+Best Regards,
+Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
