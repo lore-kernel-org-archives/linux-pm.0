@@ -1,277 +1,271 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: conservative: Do not use transition notifications
-Date: Mon, 13 Jun 2016 15:36:09 +0200
-Message-ID: <4018929.eixPj0erQd@vostro.rjw.lan>
-References: <2899343.d3UcWvo4TA@vostro.rjw.lan> <20160613110851.GT27439@vireshk-i7>
+Subject: [PATCH] x86 / hibernate: Fix 64-bit code passing control to image kernel
+Date: Mon, 13 Jun 2016 15:42:26 +0200
+Message-ID: <3006711.q9ei2E2zzf@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:51539 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63615 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1423526AbcFMNcC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2016 09:32:02 -0400
-In-Reply-To: <20160613110851.GT27439@vireshk-i7>
+	by vger.kernel.org with SMTP id S1423481AbcFMNiZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2016 09:38:25 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kees Cook <keescook@chromium.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Logan Gunthorpe <logang@deltatee.com>, the arch/x86 maintainers <x86@kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>
 
-On Monday, June 13, 2016 04:38:51 PM Viresh Kumar wrote:
-> On 10-06-16, 03:00, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > The conservative governor registers a transition notifier so it
-> > can update its internal requested_freq value if it falls out of the
-> > policy->min...policy->max range, but that's not the most
-> > straightforward way to achieve that.
-> > 
-> > To do it in a more straightforward way, first make sure that
-> > cs_dbs_timer() will only set frequencies between min and max.
-> > 
-> > With that, note that requested_freq will always fall between min
-> > and max unless either policy->min or policy->max changes and the
-> > governor's ->limits() callback will be invoked then.
-> > 
-> > Using this observation, add a ->limits callback pointer to
-> > struct dbs_governor, make cpufreq_dbs_governor_limits() invoke
-> > that callback if present, implement that callback in the conservative
-> > governor to update requested_freq if needed and drop the transition
-> > notifier from it, which also makes it possible to drop the
-> > struct cs_governor definition from there and simplify the code
-> > accordingly.
-> 
-> This code looks to me over-complicated and I am not sure if I
-> understand why we wanted the notifiers anyway? Why can't we replace
-> 'dbs_info->requested_freq' with 'policy->cur' and kill the notifier
-> thing completely?
-> 
-> With requested_freq, we are trying to set the next freq to
-> requested_freq +- Delta, which I am not sure is the best approach
-> here.
-> 
-> What would go wrong if we will do, policy->cur +- delta instead?
-
-That should work too, but I wanted to avoid changing the governor's behavior
-too much.
-
-So there is a tradeoff between adding a new callback to struct dbs_governor
-just for conservative and making the latter behave slightly differently and
-I agree that changing the governor a bit more is better.
-
-And of course I'm all for more simplifications, so updated patch is appended. :-)
-
-Thanks,
-Rafael
-
----
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH v2] cpufreq: conservative: Do not use transition notifications
 
-The conservative governor registers a transition notifier so it
-can update its internal requested_freq value if it falls out of the
-policy->min...policy->max range, but requested_freq is not really
-necessary.
+Logan Gunthorpe reports that hibernation stopped working reliably for
+him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
+and rodata).  Most likely, what happens is that the page containing
+the image kernel's entry point is sometimes marked as non-executable
+in the page tables used at the time of the final jump to the image
+kernel.  That at least is why commit ab76f7b4ab23 may matter.
 
-That value is used to track the frequency requested by the governor
-previously, but policy->cur can be used instead of it and then the
-governor will not have to worry about updating the tracked value when
-the current frequency changes independently (for example, as a result
-of min or max changes).
+However, there is one more long-standing issue with the code in
+question, which is that the temporary page tables set up by it
+to avoid page tables corruption when the last bits of the image
+kernel's memory contents are copied into their original page frames
+re-use the boot kernel's text mapping, but that mapping may very
+well get corrupted just like any other part of the page tables.
+Of course, if that happens, the final jump to the image kernel's
+entry point will go to nowhere.
 
-Accodringly, drop requested_freq from struct cs_policy_dbs_info
-and modify cs_dbs_timer() to use policy->cur instead of it.
-While at it, notice that __cpufreq_driver_target() clamps its
-target_freq argument between policy->min and policy->max, so
-the callers of it don't have to do that and make additional
-changes in cs_dbs_timer() in accordance with that.
+As it turns out, those two issues may be addressed simultaneously.
 
-After these changes the transition notifier used by the conservative
-governor is not necessary any more, so drop it, which also makes it
-possible to drop the struct cs_governor definition and simplify the
-code accordingly.
+To that end, note that the code copying the last bits of the image
+kernel's memory contents to the page frames occupied by them
+previoulsy doesn't use the kernel text mapping, because it runs from
+a special page covered by the identity mapping set up for that code
+from scratch.  Hence, the kernel text mapping is only needed before
+that code starts to run and then it will only be used just for the
+final jump to the image kernel's entry point.
 
+Accordingly, the temporary page tables set up in swsusp_arch_resume()
+on x86-64 can re-use the boot kernel's text mapping to start with,
+but after all of the image kernel's memory contents are in place,
+that mapping has to be replaced with a new one that will allow the
+final jump to the image kernel's entry point to succeed.  Of course,
+since the first thing the image kernel does after getting control back
+is to switch over to its own original page tables, the new kernel text
+mapping only has to cover the image kernel's entry point (along with
+some following bytes).  Moreover, it has to do that so the virtual
+address of the image kernel's entry point before the jump is the same
+as the one mapped by the image kernel's page tables.
+
+With that in mind, modify the x86-64's arch_hibernation_header_save()
+and arch_hibernation_header_restore() routines to pass the physical
+address of the image kernel's entry point (in addition to its virtual
+address) to the boot kernel (a small piece of assembly code involved
+in passing the entry point's virtual address to the image kernel is
+not necessary any more after that, so drop it).  Update RESTORE_MAGIC
+too to reflect the image header format change.
+
+Next, in set_up_temporary_mappings(), use the physical and virtual
+addresses of the image kernel's entry point passed in the image
+header to set up a minimum kernel text mapping (using memory pages
+that won't be overwritten by the image kernel's memory contents) that
+will map those addresses to each other as appropriate.  Do not use
+that mapping immediately, though.  Instead, use the original boot
+kernel text mapping to start with and switch over to the new one
+after all of the image kernel's memory has been restored, right
+before the final jump to the image kernel's entry point.
+
+This makes the concern about the possible corruption of the original
+boot kernel text mapping go away and if the the minimum kernel text
+mapping used for the final jump marks the image kernel's entry point
+memory as executable, the jump to it is guaraneed to succeed.
+
+Fixes: ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table and rodata)
+Link: http://marc.info/?l=linux-pm&m=146372852823760&w=2
+Reported-by: Logan Gunthorpe <logang@deltatee.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/cpufreq_conservative.c |  103 ++++++---------------------------
- 1 file changed, 21 insertions(+), 82 deletions(-)
+ arch/x86/power/hibernate_64.c     |   66 +++++++++++++++++++++++++++++++++++---
+ arch/x86/power/hibernate_asm_64.S |   31 +++++++++--------
+ 2 files changed, 77 insertions(+), 20 deletions(-)
 
-Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
+Index: linux-pm/arch/x86/power/hibernate_64.c
 ===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-+++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-@@ -17,7 +17,6 @@
- struct cs_policy_dbs_info {
- 	struct policy_dbs_info policy_dbs;
- 	unsigned int down_skip;
--	unsigned int requested_freq;
- };
+--- linux-pm.orig/arch/x86/power/hibernate_64.c
++++ linux-pm/arch/x86/power/hibernate_64.c
+@@ -27,7 +27,8 @@ extern asmlinkage __visible int restore_
+  * Address to jump to in the last phase of restore in order to get to the image
+  * kernel's text (this value is passed in the image header).
+  */
+-unsigned long restore_jump_address __visible;
++void *restore_jump_address __visible;
++unsigned long jump_address_phys;
  
- static inline struct cs_policy_dbs_info *to_dbs_info(struct policy_dbs_info *policy_dbs)
-@@ -75,19 +74,17 @@ static unsigned int cs_dbs_timer(struct
+ /*
+  * Value of the cr3 register from before the hibernation (this value is passed
+@@ -37,8 +38,51 @@ unsigned long restore_cr3 __visible;
  
- 	/* Check for frequency increase */
- 	if (load > dbs_data->up_threshold) {
-+		unsigned int requested_freq = policy->cur;
+ pgd_t *temp_level4_pgt __visible;
+ 
++void *restore_pgd_addr __visible;
++pgd_t restore_pgd __visible;
 +
- 		dbs_info->down_skip = 0;
+ void *relocated_restore_code __visible;
  
- 		/* if we are already at full speed then break out early */
--		if (dbs_info->requested_freq == policy->max)
-+		if (requested_freq == policy->max)
- 			goto out;
- 
--		dbs_info->requested_freq += get_freq_target(cs_tuners, policy);
--
--		if (dbs_info->requested_freq > policy->max)
--			dbs_info->requested_freq = policy->max;
-+		requested_freq += get_freq_target(cs_tuners, policy);
- 
--		__cpufreq_driver_target(policy, dbs_info->requested_freq,
--			CPUFREQ_RELATION_H);
-+		__cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_H);
- 		goto out;
- 	}
- 
-@@ -98,34 +95,26 @@ static unsigned int cs_dbs_timer(struct
- 
- 	/* Check for frequency decrease */
- 	if (load < cs_tuners->down_threshold) {
--		unsigned int freq_target;
-+		unsigned int freq_target, requested_freq = policy->cur;
- 		/*
- 		 * if we cannot reduce the frequency anymore, break out early
- 		 */
--		if (policy->cur == policy->min)
-+		if (requested_freq == policy->min)
- 			goto out;
- 
- 		freq_target = get_freq_target(cs_tuners, policy);
--		if (dbs_info->requested_freq > freq_target)
--			dbs_info->requested_freq -= freq_target;
-+		if (requested_freq > freq_target)
-+			requested_freq -= freq_target;
- 		else
--			dbs_info->requested_freq = policy->min;
-+			requested_freq = policy->min;
- 
--		__cpufreq_driver_target(policy, dbs_info->requested_freq,
--				CPUFREQ_RELATION_L);
-+		__cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_L);
- 	}
- 
-  out:
- 	return dbs_data->sampling_rate;
- }
- 
--static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
--				void *data);
--
--static struct notifier_block cs_cpufreq_notifier_block = {
--	.notifier_call = dbs_cpufreq_notifier,
--};
--
- /************************** sysfs interface ************************/
- 
- static ssize_t store_sampling_down_factor(struct gov_attr_set *attr_set,
-@@ -254,13 +243,6 @@ static struct attribute *cs_attributes[]
- 
- /************************** sysfs end ************************/
- 
--struct cs_governor {
--	struct dbs_governor dbs_gov;
--	unsigned int usage_count;
--};
--
--static struct cs_governor cs_gov;
--
- static struct policy_dbs_info *cs_alloc(void)
++static int prepare_temporary_text_mapping(void)
++{
++	unsigned long vaddr = (unsigned long)restore_jump_address;
++	unsigned long paddr = jump_address_phys & PMD_MASK;
++	pmd_t *pmd;
++	pud_t *pud;
++
++	/*
++	 * The new mapping only has to cover the page containing the image
++	 * kernel's entry point (jump_address_phys), because the switch over to
++	 * it is carried out by relocated code running from a page allocated
++	 * specifically for this purpose and covered by the identity mapping, so
++	 * the temporary kernel text mapping is only needed for the final jump.
++	 * However, in that mapping the virtual address of the image kernel's
++	 * entry point must be the same as its virtual address in the image
++	 * kernel (restore_jump_address), so the image kernel's
++	 * restore_registers() code doesn't find itself in a different area of
++	 * the virtual address space after switching over to the original page
++	 * tables used by the image kernel.
++	 */
++	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
++	if (!pud)
++		return -ENOMEM;
++
++	restore_pgd = __pgd(__pa(pud) | _KERNPG_TABLE);
++
++	pud += pud_index(vaddr);
++	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
++	if (!pmd)
++		return -ENOMEM;
++
++	set_pud(pud, __pud(__pa(pmd) | _KERNPG_TABLE));
++
++	pmd += pmd_index(vaddr);
++	set_pmd(pmd, __pmd(paddr | __PAGE_KERNEL_LARGE_EXEC));
++
++	restore_pgd_addr = temp_level4_pgt + pgd_index(vaddr);
++	return 0;
++}
++
+ static void *alloc_pgt_page(void *context)
  {
- 	struct cs_policy_dbs_info *dbs_info;
-@@ -294,25 +276,11 @@ static int cs_init(struct dbs_data *dbs_
- 	dbs_data->min_sampling_rate = MIN_SAMPLING_RATE_RATIO *
- 		jiffies_to_usecs(10);
+ 	return (void *)get_safe_page(GFP_ATOMIC);
+@@ -59,10 +103,19 @@ static int set_up_temporary_mappings(voi
+ 	if (!temp_level4_pgt)
+ 		return -ENOMEM;
  
--	/*
--	 * This function and cs_exit() are only called under gov_dbs_data_mutex
--	 * which is global, so the cs_gov.usage_count accesses are guaranteed
--	 * to be serialized.
--	 */
--	if (!cs_gov.usage_count++)
--		cpufreq_register_notifier(&cs_cpufreq_notifier_block,
--					  CPUFREQ_TRANSITION_NOTIFIER);
--
- 	return 0;
+-	/* It is safe to reuse the original kernel mapping */
++	/* Re-use the original kernel text mapping for now */
+ 	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
+ 		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
+ 
++	/*
++	 * Prepare a temporary mapping for the kernel text, but don't use it
++	 * just yet, we'll switch over to it later.  It only has to cover one
++	 * piece of code: the page containing the image kernel's entry point.
++	 */
++	result = prepare_temporary_text_mapping();
++	if (result)
++		return result;
++
+ 	/* Set up the direct mapping from scratch */
+ 	for (i = 0; i < nr_pfn_mapped; i++) {
+ 		mstart = pfn_mapped[i].start << PAGE_SHIFT;
+@@ -108,12 +161,13 @@ int pfn_is_nosave(unsigned long pfn)
  }
  
- static void cs_exit(struct dbs_data *dbs_data)
- {
--	/* Protected by gov_dbs_data_mutex - see the comment in cs_init(). */
--	if (!--cs_gov.usage_count)
--		cpufreq_unregister_notifier(&cs_cpufreq_notifier_block,
--					    CPUFREQ_TRANSITION_NOTIFIER);
--
- 	kfree(dbs_data->tuners);
- }
- 
-@@ -321,49 +289,20 @@ static void cs_start(struct cpufreq_poli
- 	struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy->governor_data);
- 
- 	dbs_info->down_skip = 0;
--	dbs_info->requested_freq = policy->cur;
- }
- 
--static struct cs_governor cs_gov = {
--	.dbs_gov = {
--		.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
--		.kobj_type = { .default_attrs = cs_attributes },
--		.gov_dbs_timer = cs_dbs_timer,
--		.alloc = cs_alloc,
--		.free = cs_free,
--		.init = cs_init,
--		.exit = cs_exit,
--		.start = cs_start,
--	},
-+static struct dbs_governor cs_governor = {
-+	.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
-+	.kobj_type = { .default_attrs = cs_attributes },
-+	.gov_dbs_timer = cs_dbs_timer,
-+	.alloc = cs_alloc,
-+	.free = cs_free,
-+	.init = cs_init,
-+	.exit = cs_exit,
-+	.start = cs_start,
+ struct restore_data_record {
+-	unsigned long jump_address;
++	void *jump_address;
++	unsigned long jump_address_phys;
+ 	unsigned long cr3;
+ 	unsigned long magic;
  };
  
--#define CPU_FREQ_GOV_CONSERVATIVE	(&cs_gov.dbs_gov.gov)
--
--static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
--				void *data)
--{
--	struct cpufreq_freqs *freq = data;
--	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(freq->cpu);
--	struct cs_policy_dbs_info *dbs_info;
--
--	if (!policy)
--		return 0;
--
--	/* policy isn't governed by conservative governor */
--	if (policy->governor != CPU_FREQ_GOV_CONSERVATIVE)
--		return 0;
--
--	dbs_info = to_dbs_info(policy->governor_data);
--	/*
--	 * we only care if our internally tracked freq moves outside the 'valid'
--	 * ranges of frequency available to us otherwise we do not change it
--	*/
--	if (dbs_info->requested_freq > policy->max
--			|| dbs_info->requested_freq < policy->min)
--		dbs_info->requested_freq = freq->new;
--
--	return 0;
--}
-+#define CPU_FREQ_GOV_CONSERVATIVE	(&cs_governor.gov)
+-#define RESTORE_MAGIC	0x0123456789ABCDEFUL
++#define RESTORE_MAGIC	0x123456789ABCDEF0UL
  
- static int __init cpufreq_gov_dbs_init(void)
- {
+ /**
+  *	arch_hibernation_header_save - populate the architecture specific part
+@@ -126,7 +180,8 @@ int arch_hibernation_header_save(void *a
+ 
+ 	if (max_size < sizeof(struct restore_data_record))
+ 		return -EOVERFLOW;
+-	rdr->jump_address = restore_jump_address;
++	rdr->jump_address = &restore_registers;
++	rdr->jump_address_phys = __pa_symbol(&restore_registers);
+ 	rdr->cr3 = restore_cr3;
+ 	rdr->magic = RESTORE_MAGIC;
+ 	return 0;
+@@ -142,6 +197,7 @@ int arch_hibernation_header_restore(void
+ 	struct restore_data_record *rdr = addr;
+ 
+ 	restore_jump_address = rdr->jump_address;
++	jump_address_phys = rdr->jump_address_phys;
+ 	restore_cr3 = rdr->cr3;
+ 	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
+ }
+Index: linux-pm/arch/x86/power/hibernate_asm_64.S
+===================================================================
+--- linux-pm.orig/arch/x86/power/hibernate_asm_64.S
++++ linux-pm/arch/x86/power/hibernate_asm_64.S
+@@ -44,9 +44,6 @@ ENTRY(swsusp_arch_suspend)
+ 	pushfq
+ 	popq	pt_regs_flags(%rax)
+ 
+-	/* save the address of restore_registers */
+-	movq	$restore_registers, %rax
+-	movq	%rax, restore_jump_address(%rip)
+ 	/* save cr3 */
+ 	movq	%cr3, %rax
+ 	movq	%rax, restore_cr3(%rip)
+@@ -72,8 +69,10 @@ ENTRY(restore_image)
+ 	movq	%rax, %cr4;  # turn PGE back on
+ 
+ 	/* prepare to jump to the image kernel */
+-	movq	restore_jump_address(%rip), %rax
+ 	movq	restore_cr3(%rip), %rbx
++	movq	restore_jump_address(%rip), %r10
++	movq	restore_pgd(%rip), %r8
++	movq	restore_pgd_addr(%rip), %r9
+ 
+ 	/* prepare to copy image data to their original locations */
+ 	movq	restore_pblist(%rip), %rdx
+@@ -96,20 +95,22 @@ ENTRY(core_restore_code)
+ 	/* progress to the next pbe */
+ 	movq	pbe_next(%rdx), %rdx
+ 	jmp	.Lloop
++
+ .Ldone:
++	/* switch over to the temporary kernel text mapping */
++	movq	%r8, (%r9)
++	/* flush TLB */
++	movq	%rax, %rdx
++	andq	$~(X86_CR4_PGE), %rdx
++	movq	%rdx, %cr4;  # turn off PGE
++	movq	%cr3, %rcx;  # flush TLB
++	movq	%rcx, %cr3;
++	movq	%rax, %cr4;  # turn PGE back on
+ 	/* jump to the restore_registers address from the image header */
+-	jmpq	*%rax
+-	/*
+-	 * NOTE: This assumes that the boot kernel's text mapping covers the
+-	 * image kernel's page containing restore_registers and the address of
+-	 * this page is the same as in the image kernel's text mapping (it
+-	 * should always be true, because the text mapping is linear, starting
+-	 * from 0, and is supposed to cover the entire kernel text for every
+-	 * kernel).
+-	 *
+-	 * code below belongs to the image kernel
+-	 */
++	jmpq	*%r10
+ 
++	 /* code below belongs to the image kernel */
++	.align PAGE_SIZE
+ ENTRY(restore_registers)
+ 	FRAME_BEGIN
+ 	/* go back to the original page tables */
 
