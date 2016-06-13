@@ -1,30 +1,35 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] powercap/rapl: handle missing msrs
-Date: Mon, 13 Jun 2016 23:00:26 +0200
-Message-ID: <1784728.vFynEdWNBP@vostro.rjw.lan>
-References: <1464727290-5400-1-git-send-email-jacob.jun.pan@linux.intel.com> <1464727290-5400-2-git-send-email-jacob.jun.pan@linux.intel.com> <20160613115310.00bbaf18@jacob-VB>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
+Date: Mon, 13 Jun 2016 15:58:23 -0500
+Message-ID: <20160613205823.GA18747@localhost>
+References: <cover.1463134231.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61308 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1422779AbcFMU4T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jun 2016 16:56:19 -0400
-In-Reply-To: <20160613115310.00bbaf18@jacob-VB>
+Received: from mail.kernel.org ([198.145.29.136]:59514 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1424199AbcFMU61 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 13 Jun 2016 16:58:27 -0400
+Content-Disposition: inline
+In-Reply-To: <cover.1463134231.git.lukas@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jacob <jacob.jun.pan@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>
 
-On Monday, June 13, 2016 11:53:10 AM jacob wrote:
-> Hi Rafael,
-> 
-> Any feedback? It that is OK, can you take this patch independent of the
-> second patch (which is going into tip tree)?
+On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
+> This series powers Thunderbolt controllers on Macs down when nothing is
+> plugged in, saving 1.7 W on machines with a Light Ridge controller and
+> reportedly 4 W on Cactus Ridge 4C and Falcon Ridge 4C.
 
-I'll do that.
+Hi Lukas,
 
-Thanks,
-Rafael
+I suppose these depend on Mika's runtime PM patches (at least, I see
+Mika's commits in your github tree).  Would you mind rebasing your
+patches so they apply on my pci/pm branch?  I couldn't import them
+directly into stg.
 
+I'm sure git could pull them in easily, but I use git in a very
+simple-minded way.
+
+Bjorn
