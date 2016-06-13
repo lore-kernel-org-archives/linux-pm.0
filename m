@@ -1,78 +1,79 @@
-From: Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>
-Subject: RE: [RESEND PATCH v11 1/4] gadget: Introduce the usb charger
- framework
-Date: Mon, 13 Jun 2016 15:13:11 +0000
-Message-ID: <AM4PR04MB21308ECE74B23A44E51C42B689530@AM4PR04MB2130.eurprd04.prod.outlook.com>
-References: <cover.1465807514.git.baolin.wang@linaro.org>
- <710550bd6c860d7dbdd3e7225ef51b59ae9c39fb.1465807514.git.baolin.wang@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: conservative: Do not use transition
+ notifications
+Date: Mon, 13 Jun 2016 20:58:34 +0530
+Message-ID: <20160613152834.GZ27439@vireshk-i7>
+References: <2899343.d3UcWvo4TA@vostro.rjw.lan>
+ <20160613110851.GT27439@vireshk-i7>
+ <4018929.eixPj0erQd@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <710550bd6c860d7dbdd3e7225ef51b59ae9c39fb.1465807514.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Content-Language: en-US
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org" <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org" <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
-Cc: "robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org" <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, "stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org" <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org" <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, "lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org" <patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org" <device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel@vge>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <4018929.eixPj0erQd@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi
-
-> -----Original Message-----
-> From: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org [mailto:linux-usb-
-> owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org] On Behalf Of Baolin Wang
-> Sent: Monday, June 13, 2016 4:47 PM
-> To: balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org; gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org; sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org;
-> dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org; dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
-> Cc: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org; m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org; ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org;
-> peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org; stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org; r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org;
-> yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org; lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org; broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org;
-> ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org; patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org;
-> baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org; linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linux-
-> usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org; linux-
-> kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Subject: [RESEND PATCH v11 1/4] gadget: Introduce the usb charger
-> framework
+On 13-06-16, 15:36, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH v2] cpufreq: conservative: Do not use transition notifications
 > 
-> This patch introduces the usb charger driver based on usb gadget that
-> makes an enhancement to a power driver. It works well in practice but that
-> requires a system with suitable hardware.
+> The conservative governor registers a transition notifier so it
+> can update its internal requested_freq value if it falls out of the
+> policy->min...policy->max range, but requested_freq is not really
+> necessary.
 > 
-> The basic conception of the usb charger is that, when one usb charger is
-> added or removed by reporting from the usb gadget state change or the
-> extcon device state change, the usb charger will report to power user to
-> set the current limitation.
+> That value is used to track the frequency requested by the governor
+> previously, but policy->cur can be used instead of it and then the
+> governor will not have to worry about updating the tracked value when
+> the current frequency changes independently (for example, as a result
+> of min or max changes).
 > 
-> The usb charger will register notifiees on the usb gadget or the extcon
-> device to get notified the usb charger state. It also supplies the
-> notification mechanism to userspace When the usb charger state is changed.
+> Accodringly, drop requested_freq from struct cs_policy_dbs_info
+> and modify cs_dbs_timer() to use policy->cur instead of it.
+> While at it, notice that __cpufreq_driver_target() clamps its
+> target_freq argument between policy->min and policy->max, so
+> the callers of it don't have to do that and make additional
+> changes in cs_dbs_timer() in accordance with that.
 > 
-> Power user will register a notifiee on the usb charger to get notified by
-> status changes from the usb charger. It will report to power user to set
-> the current limitation when detecting the usb charger is added or removed
-> from extcon device state or usb gadget state.
+> After these changes the transition notifier used by the conservative
+> governor is not necessary any more, so drop it, which also makes it
+> possible to drop the struct cs_governor definition and simplify the
+> code accordingly.
 > 
-> This patch doesn't yet integrate with the gadget code, so some functions
-> which rely on the 'gadget' are not completed, that will be implemented in
-> the following patches.
-> 
-> Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-
-Reviewed-by: Li Jun <jun.li-3arQi8VN3Tc@public.gmane.org>
-Tested-by: Li Jun <jun.li-3arQi8VN3Tc@public.gmane.org>
-
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  drivers/usb/gadget/Kconfig       |    7 +
->  drivers/usb/gadget/udc/Makefile  |    1 +
->  drivers/usb/gadget/udc/charger.c |  770
-> ++++++++++++++++++++++++++++++++++++++
->  include/linux/usb/charger.h      |  191 ++++++++++
->  include/uapi/linux/usb/charger.h |   31 ++
->  5 files changed, 1000 insertions(+)
->  create mode 100644 drivers/usb/gadget/udc/charger.c  create mode 100644
-> include/linux/usb/charger.h  create mode 100644
-> include/uapi/linux/usb/charger.h
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  drivers/cpufreq/cpufreq_conservative.c |  103 ++++++---------------------------
+>  1 file changed, 21 insertions(+), 82 deletions(-)
+> 
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+> -static struct cs_governor cs_gov = {
+> -	.dbs_gov = {
+> -		.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
+> -		.kobj_type = { .default_attrs = cs_attributes },
+> -		.gov_dbs_timer = cs_dbs_timer,
+> -		.alloc = cs_alloc,
+> -		.free = cs_free,
+> -		.init = cs_init,
+> -		.exit = cs_exit,
+> -		.start = cs_start,
+> -	},
+> +static struct dbs_governor cs_governor = {
+> +	.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
+> +	.kobj_type = { .default_attrs = cs_attributes },
+> +	.gov_dbs_timer = cs_dbs_timer,
+> +	.alloc = cs_alloc,
+> +	.free = cs_free,
+> +	.init = cs_init,
+> +	.exit = cs_exit,
+> +	.start = cs_start,
+>  };
+
+Though, I am not sure why this change was required :)
+
+-- 
+viresh
