@@ -1,104 +1,99 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
-Date: Tue, 14 Jun 2016 15:22:28 -0500
-Message-ID: <20160614202228.GA8449@localhost>
-References: <cover.1463134231.git.lukas@wunner.de>
- <CAMxnaaU_3z6BSmSnYfi4ee=aTKm3aPyUaXds=G29wdp8O0m5Cw@mail.gmail.com>
- <20160614163703.GA31488@localhost>
- <CAMxnaaUQC0kyoBK1ri_AYEi=Dc_aiuiMp=kx1mFaZpsw9-D-eA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] x86 / hibernate: Fix 64-bit code passing control to image kernel
+Date: Wed, 15 Jun 2016 00:45:49 +0200
+Message-ID: <2733696.dQduXaPhFB@vostro.rjw.lan>
+References: <3006711.q9ei2E2zzf@vostro.rjw.lan> <CADjb_WRm1c4wrfs9xEStKOTuoS7XEV=a4Eq3QpVA4trn8GnVjA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMxnaaUQC0kyoBK1ri_AYEi=Dc_aiuiMp=kx1mFaZpsw9-D-eA@mail.gmail.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Andreas Noever <andreas.noever@gmail.com>
-Cc: Lukas Wunner <lukas@wunner.de>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46388 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751113AbcFNWll (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jun 2016 18:41:41 -0400
+In-Reply-To: <CADjb_WRm1c4wrfs9xEStKOTuoS7XEV=a4Eq3QpVA4trn8GnVjA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: chenyu <yu.chen.surf@gmail.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kees Cook <keescook@chromium.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Logan Gunthorpe <logang@deltatee.com>, the arch/x86 maintainers <x86@kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>
 
-On Tue, Jun 14, 2016 at 09:14:27PM +0200, Andreas Noever wrote:
-> On Tue, Jun 14, 2016 at 6:37 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > [+cc linux-kernel]
+On Tuesday, June 14, 2016 08:06:49 PM chenyu wrote:
+> On Mon, Jun 13, 2016 at 9:42 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > >
-> > On Sat, May 21, 2016 at 11:48:42AM +0200, Andreas Noever wrote:
-> >>
-> >> Signed-off-by: Andreas Noever <andreas.noever@gmail.com>
-> >>
-> >> Tested on MacBookPro10,1
-> >>
-> >> On Fri, May 13, 2016 at 1:15 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> >> > This series powers Thunderbolt controllers on Macs down when nothing is
-> >> > plugged in, saving 1.7 W on machines with a Light Ridge controller and
-> >> > reportedly 4 W on Cactus Ridge 4C and Falcon Ridge 4C.
-> >> >
-> >> > Briefly, a custom ACPI method provided by Apple is used to cut power to
-> >> > the controller.  A GPE is enabled while the controller is powered down
-> >> > which side-band signals a plug event, whereupon power is reinstated using
-> >> > the ACPI method.  Note that even though this mechanism is ACPI-based,
-> >> > it does not use _PSx methods and is thus entirely nonstandard.
+> > Logan Gunthorpe reports that hibernation stopped working reliably for
+> > him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
+> > and rodata).  Most likely, what happens is that the page containing
+> > the image kernel's entry point is sometimes marked as non-executable
+> > in the page tables used at the time of the final jump to the image
+> > kernel.  That at least is why commit ab76f7b4ab23 may matter.
 > >
-> > I think the current arrangement was that Andreas would ack Thunderbolt
-> > patches and I would merge them via the PCI tree.  That makes some sense
-> > because Thunderbolt and PCIe are related, but the more I think about
-> > it, the less I'm happy with it.
+> > However, there is one more long-standing issue with the code in
+> > question, which is that the temporary page tables set up by it
+> > to avoid page tables corruption when the last bits of the image
+> > kernel's memory contents are copied into their original page frames
+> > re-use the boot kernel's text mapping, but that mapping may very
+> > well get corrupted just like any other part of the page tables.
+> > Of course, if that happens, the final jump to the image kernel's
+> > entry point will go to nowhere.
 > >
-> > This series is a good example.  I'm sure it's good work and
-> > worthwhile.  But I can't really say anything about the content of it
-> > because most of it is Thunderbolt-specific and there's no public spec.
-> > It seems like this is basically a collection of reverse-engineered
-> > quirks that happen to work with the current state of Linux PM on
-> > certain Macs.  We don't know what might change on future Macs.  We
-> > don't know what might break when we make changes to Linux PM.
-> >
-> > I can't test this series, nor do I want to.  I can't test most of the
-> > patches I merge, but I can at least read the spec and see whether the
-> > patches make sense.  What I would *like* is to have public Thunderbolt
-> > specs and a kernel developer's guide so we know what to expect from
-> > the hardware and the firmware and we can write code that should work
-> > not just on current Macs, but also on non-Macs and future Macs.
-> >
-> > I don't think the current situation is really maintainable, and I'm
-> > not comfortable merging code that I can't maintain.
-> Most of the code is contained within the thunderbolt driver. I think
-> there is quite some precedence for reverse engineered drivers without
-> specs being part of the kernel. My understanding was that, since I am
-> listed in MAINTAINERS, I am responsible for the driver. Now our
-> changes often need improvements to the pci core, which is why I think
-> merging through your tree is a good idea (without transferring
-> responsibility). The changes to the drivers/pci should be supported by
-> the PCI-spec and make sense without knowing about thunderbolt (but it
-> might be the case that thunderbolt is the only user of these
-> features).
+> 100 rounds test has passed with this patch on top of 4.7-rc3,
+> Tested-by: Chen Yu <yu.c.chen@intel.com>
 > 
-> Specifically for this series we want to:
->  - whitelist thunderbolt bridges for PM. Detecting those bridges is
-> non-standard but I think this is acceptable, since this
-> blacklist/whitelist is basically a quirk.
->  - Load our portdrv on tb bridges. PCI just sees another portdriver
-> and all the reverse engineered magic lives inside the driver.
->  - Forward more PM callbacks to portdrivers (not tb specific)
->  - hotplug D3cold fixes: resume around board_added/remove_board,
-> ignore interrupts in d3cold (not tb specific and probably a general
-> bugfix)
->  - Make pci not fail if bridges have been put into D3cold by some
-> external mechanism.
+> BTW, I'm thinking of another possible scenario this patch fixed the NX issue,
+> according  to the log previously provided by Logan in bugzilla 116941
 > 
-> So maybe you could review the pci changes as a solution to the problem
-> "we want to load a custom portdriver which can put bridges into d3cold
-> in a device specific way". We certainly to not expect you to take
-> responsibility for the thunderbolt driver.
+> without ab76f7b4ab23:
+> 
+> --[ High Kernel Mapping ]---
+> 0xffffffff80000000-0xffffffff81000000          16M
+>           pmd
+> 0xffffffff81000000-0xffffffff81600000           6M     ro         PSE
+>    GLB x  pmd
+> 0xffffffff81600000-0xffffffff81800000           2M     ro         PSE
+>    GLB NX pmd
+> 0xffffffff81800000-0xffffffff81c00000           4M     RW
+>    GLB NX pte
+> 0xffffffff81c00000-0xffffffffa0000000         484M
+>           pmd
+> 
+> with ab76f7b4ab23:
+> 
+> ---[ High Kernel Mapping ]---
+> 0xffffffff80000000-0xffffffff81000000          16M
+>           pmd
+> 0xffffffff81000000-0xffffffff81400000           4M     ro         PSE
+>    GLB x  pmd
+> 0xffffffff81400000-0xffffffff8155e000        1400K     ro
+>    GLB x  pte
+> 0xffffffff8155e000-0xffffffff81600000         648K     RW
+>    GLB NX pte
+> 0xffffffff81600000-0xffffffff81800000           2M     ro         PSE
+>    GLB NX pmd
+> 0xffffffff81800000-0xffffffff81c00000           4M     RW
+>    GLB NX pte
+> 0xffffffff81c00000-0xffffffffa0000000         484M
+>           pmd
+> 
+> ffffffff81446bb0 T restore_registers
+> 
+> 
+> It looks like after the NX modification, the 'huge page' text mapping
+> is splited into smaller pieces,
+> from pmd to pte mapping,  and since the original pmd is located in
+> .data section(which should be
+> the same across hibernation),  while after modification the pte table
+> is allocated dynamically,
+> we can not guarantee the dynamically allocated pte table are the same
+> across hibernation,
+> thus the kernel entry of restore_registers might become unaccessible
+> because of broken
+> page table.
 
-That's a fine solution as far as I'm personally concerned.  I think
-it's poor for Linux overall, because I think it's fragile, and it's
-disappointing that a technology as important as Thunderbolt is so
-poorly supported by the promulgators.  But if you're willing to work
-in that environment, that's great.
+Right.
 
-You maintain the thunderbolt code and merge changes, and I'll review
-the pieces that touch drivers/pci.  I do have a couple comments on
-those pieces, but I don't think they'll be major.
+Quite frankly, I suspected something like that, but wasn't quite sure, so
+thanks a lot for that analysis!
 
-I just want to get out of the business of merging drivers/thunderbolt
-code that I can't maintain.
+Rafael
 
-Bjorn
