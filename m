@@ -1,77 +1,60 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Linux panics when suspend cannot offline the secondary cores
-Date: Tue, 14 Jun 2016 14:42:20 +0200
-Message-ID: <575FFBAC.3000507@free.fr>
-References: <575ADFAC.4090009@free.fr> <2922940.3xeChLaYeK@vostro.rjw.lan>
- <575EBA40.4000803@free.fr> <2041686.H4Vc2p72PV@vostro.rjw.lan>
- <20160613210213.GZ1041@n2100.armlinux.org.uk>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: lm-senser can't detect thermal on thermal_zone
+Date: Tue, 14 Jun 2016 21:24:18 +0800
+Message-ID: <1465910658.9422.9.camel@intel.com>
+References: <87posrn1oj.wl%kuninori.morimoto.gx@renesas.com>
+	 <1463100287.15071.8.camel@rzhang1-mobl4>
+	 <874ma2lnvw.wl%kuninori.morimoto.gx@renesas.com>
+	 <87zir89iai.wl%kuninori.morimoto.gx@renesas.com>
+	 <87oa7bkqvl.wl%kuninori.morimoto.gx@renesas.com>
+	 <1465885934.4001.4.camel@intel.com>
+	 <877fdscl6o.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:24391 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751332AbcFNMmp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 Jun 2016 08:42:45 -0400
-In-Reply-To: <20160613210213.GZ1041@n2100.armlinux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <877fdscl6o.wl%kuninori.morimoto.gx@renesas.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "cm-hiep@jinso.co.jp" <cm-hiep@jinso.co.jp>
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@armlinux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, Sebastian Frias <sf84@laposte.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>
 
-On 13/06/2016 23:02, Russell King - ARM Linux wrote:
+On =E4=BA=8C, 2016-06-14 at 07:03 +0000, Kuninori Morimoto wrote:
+> Hi Zhang
+>=20
+> >=20
+> > >=20
+> > > >=20
+> > > > >=20
+> > > > > struct thermal_zone_device
+> > > > > *thermal_zone_device_register(xxxx)
+> > > > > {
+> > > > > 	...
+> > > > > 	if (!tz->tzp || !tz->tzp->no_hwmon) {
+> > > > > 		result =3D thermal_add_hwmon_sysfs(tz);
+> > > > > 		...
+> > > > > 	}
+> > > > > 	...
+> > > > > }
+> > > > >=20
+> > > > > Does this mean "thermal_zone doesn't use lm-senser" ?
+> > I'd prefer to say of_thermal registered thermal_zone doesn't use
+> > lm-
+> > sensor.
+> > If you're really want to see hwmon interface, I think you should
+> > use
+> > thermal API (thermal_zone_device_register) directly.
+> Thank you for your feedback.
+> My driver is supporting both of_thermal and thermal API.
+> So, switching is not a big deal.
+>=20
+> But can you teach me why of_thermal doesn't use lm-senser ??
 
-> On Mon, Jun 13, 2016 at 10:49:32PM +0200, Rafael J. Wysocki wrote:
->
->> I guess all of the existing implementations of smp_ops.cpu_die() don't return
->> to the caller no matter what, so the caller did not have to consider anything
->> else.
-> 
-> Existing implementations for hardware which implements CPU hotplug
-> takes the requested CPU down in such a way that smp_ops.cpu_die()
-> *never* returns.
-> 
-> We have a number of evaluation boards where its desirable to emulate
-> CPU hotplug.  These boards have no power management abilities, and
-> have no way to power down or reset a CPU from software.  For these,
-> we implement CPU hotplug by taking the CPU down gracefully, taking
-> it out of coherency, and then placing it in a loop waiting for the
-> CPU up event to arrive.  At that point (and this is the only legal
-> time) smp_ops.cpu_die() returns - at which point you get the
-> resuscitating kernel message, and the CPU re-enters the kernel.
-> 
-> This path is _only_ for these evaluation platforms which have no
-> hardware support for CPU hotplug, and therefore no PM and no kexec.
-> 
-> The *only* solution to having working PM support Mason's platform is
-> a properly implemented CPU hotplug correctly - which means ensuring
-> that the CPU is either powered down or placed in reset during the
-> smp_ops.cpu_die() call.  Everything else (even the simulation of it)
-> is not good enough.
-> 
-> That can be done either by the dying CPU when it calls into
-> smp_ops.cpu_die(), or the CPU requesting the death of the CPU via
-> smp_ops.cpu_kill().
-> 
-> Either way, it's up to the platform code to implement these, and as
-> I say, a correct and proper implementation of this is a fundamental
-> requirement for system power management (like suspend) and kexec in
-> a SMP system.
+I don't know if there is a solid reason that we can not expose the
+hwmon interface. But just like the comment says, "/* No hwmon because
+there might be hwmon drivers registering */", given that of_thermal
+just parses THERMAL data of device tree, it is reasonable to me for
+exposing thermal interfaces only.
 
-Hello Russell,
-
-The current plan is to have cpu_die() jump into the firmware, and have
-the firmware "park" the calling core into a WFI loop until someone wants
-to online the parked core, via the smp_boot_secondary() callback.
-
-Would that work?
-
-So far, I haven't cared about what HOTPLUG does with the parked core,
-because we would just provide HOTPLUG as a requirement for suspend,
-which offlines the secondary cores, and then we will power down the
-entire SoC.
-
-On a tangential subject, is the scheduler able to off-line idle cores?
-
-Regards.
-
+thanks,
+rui
