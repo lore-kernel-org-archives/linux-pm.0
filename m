@@ -1,36 +1,66 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
 Subject: Re: [PATCH v6 10/11] cpuidle/powernv: Add support for POWER ISA v3
  idle states
-Date: Tue, 14 Jun 2016 21:29:48 +1000
-Message-ID: <1465903788.30200.8.camel@kernel.crashing.org>
+Date: Tue, 14 Jun 2016 21:31:17 +1000
+Message-ID: <1465903877.30200.9.camel@au1.ibm.com>
 References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1465404871-5406-11-git-send-email-shreyas@linux.vnet.ibm.com>
- <20160613153446.GF10634@linaro.org>
-	 <575FE0B0.4030309@linux.vnet.ibm.com>
+Reply-To: benh@au1.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gate.crashing.org ([63.228.1.57]:44467 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbcFNLa3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 Jun 2016 07:30:29 -0400
-In-Reply-To: <575FE0B0.4030309@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <575FE64C.9080107@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>, mpe@ellerman.id.au
+Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, maddy@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
-To: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, maddy@linux.vnet.ibm.com, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linuxppc-dev@lists.ozlabs.org
 
-On Tue, 2016-06-14 at 16:17 +0530, Shreyas B Prabhu wrote:
+=09
+ <1465404871-5406-11-git-send-email-shreyas@linux.vnet.ibm.com>
+=09
+=09
+ <1465854492.3022.30.camel@au1.ibm.com>
+	 <575FE64C.9080107@linux.vnet.ibm.com>
+Organization: IBM Australia
+Content-Type: text/plain; charset=3D"UTF-8"
+X-Mailer: Evolution 3.20.3 (3.20.3-1.fc24)=20
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-> 
-> I ignored adding this check because this is part of initcall and we are
-> unlikely to run out of memory at this state. But I'll add the check in
-> next version.
+On Tue, 2016-06-14 at 16:41 +0530, Shreyas B Prabhu wrote:
+> >> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0psscr_val =3D kcalloc(dt_idle_states, sizeof(*psscr_val),
+> >> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 GFP_KERNEL);
+> >> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0rc =3D of_property_read_u64_array(power_mgt,
+> >> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0"ibm,cpu-idle-sta=
+te-psscr",
+> >> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0psscr_val, dt_idl=
+e_states);
+> >=C2=A0
+> > Here, psscr val is only one u64 ... shouldn't you kmalloc sizeof(..=
+) *
+> > dt_idle_states ?
+>=20
+> I'm using kcalloc here since checkpatch script suggested kcalloc over
+> kzalloc for allocating memory for arrays.
+> I'll also include a patch to use kcalloc throughout the file for
+> uniformity in next version. I was originally planning to post that
+> cleanup separately.
 
-Why do you malloc the u64 array and not the string pointer array ?
-Shouldn't you either have both on stack or both allocated ?
+Ah ok, I missed the use of kcalloc (I didn't even know its existence),
+my brain just read kmalloc :-)
+
+Still, I find it inconsistent that you allocate here while you use the
+stack for the names. Any reason for that ?
 
 Cheers,
 Ben.
-
