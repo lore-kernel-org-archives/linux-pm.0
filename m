@@ -1,85 +1,77 @@
-From: chenyu <yu.chen.surf@gmail.com>
-Subject: Re: [PATCH] x86 / hibernate: Fix 64-bit code passing control to image kernel
-Date: Tue, 14 Jun 2016 20:06:49 +0800
-Message-ID: <CADjb_WRm1c4wrfs9xEStKOTuoS7XEV=a4Eq3QpVA4trn8GnVjA@mail.gmail.com>
-References: <3006711.q9ei2E2zzf@vostro.rjw.lan>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: Linux panics when suspend cannot offline the secondary cores
+Date: Tue, 14 Jun 2016 14:42:20 +0200
+Message-ID: <575FFBAC.3000507@free.fr>
+References: <575ADFAC.4090009@free.fr> <2922940.3xeChLaYeK@vostro.rjw.lan>
+ <575EBA40.4000803@free.fr> <2041686.H4Vc2p72PV@vostro.rjw.lan>
+ <20160613210213.GZ1041@n2100.armlinux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3006711.q9ei2E2zzf@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kees Cook <keescook@chromium.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Logan Gunthorpe <logang@deltatee.com>, the arch/x86 maintainers <x86@kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:24391 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751332AbcFNMmp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 Jun 2016 08:42:45 -0400
+In-Reply-To: <20160613210213.GZ1041@n2100.armlinux.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russell King - ARM Linux <linux@armlinux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, Sebastian Frias <sf84@laposte.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>
 
-On Mon, Jun 13, 2016 at 9:42 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 13/06/2016 23:02, Russell King - ARM Linux wrote:
+
+> On Mon, Jun 13, 2016 at 10:49:32PM +0200, Rafael J. Wysocki wrote:
 >
-> Logan Gunthorpe reports that hibernation stopped working reliably for
-> him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
-> and rodata).  Most likely, what happens is that the page containing
-> the image kernel's entry point is sometimes marked as non-executable
-> in the page tables used at the time of the final jump to the image
-> kernel.  That at least is why commit ab76f7b4ab23 may matter.
->
-> However, there is one more long-standing issue with the code in
-> question, which is that the temporary page tables set up by it
-> to avoid page tables corruption when the last bits of the image
-> kernel's memory contents are copied into their original page frames
-> re-use the boot kernel's text mapping, but that mapping may very
-> well get corrupted just like any other part of the page tables.
-> Of course, if that happens, the final jump to the image kernel's
-> entry point will go to nowhere.
->
-100 rounds test has passed with this patch on top of 4.7-rc3,
-Tested-by: Chen Yu <yu.c.chen@intel.com>
+>> I guess all of the existing implementations of smp_ops.cpu_die() don't return
+>> to the caller no matter what, so the caller did not have to consider anything
+>> else.
+> 
+> Existing implementations for hardware which implements CPU hotplug
+> takes the requested CPU down in such a way that smp_ops.cpu_die()
+> *never* returns.
+> 
+> We have a number of evaluation boards where its desirable to emulate
+> CPU hotplug.  These boards have no power management abilities, and
+> have no way to power down or reset a CPU from software.  For these,
+> we implement CPU hotplug by taking the CPU down gracefully, taking
+> it out of coherency, and then placing it in a loop waiting for the
+> CPU up event to arrive.  At that point (and this is the only legal
+> time) smp_ops.cpu_die() returns - at which point you get the
+> resuscitating kernel message, and the CPU re-enters the kernel.
+> 
+> This path is _only_ for these evaluation platforms which have no
+> hardware support for CPU hotplug, and therefore no PM and no kexec.
+> 
+> The *only* solution to having working PM support Mason's platform is
+> a properly implemented CPU hotplug correctly - which means ensuring
+> that the CPU is either powered down or placed in reset during the
+> smp_ops.cpu_die() call.  Everything else (even the simulation of it)
+> is not good enough.
+> 
+> That can be done either by the dying CPU when it calls into
+> smp_ops.cpu_die(), or the CPU requesting the death of the CPU via
+> smp_ops.cpu_kill().
+> 
+> Either way, it's up to the platform code to implement these, and as
+> I say, a correct and proper implementation of this is a fundamental
+> requirement for system power management (like suspend) and kexec in
+> a SMP system.
 
-BTW, I'm thinking of another possible scenario this patch fixed the NX issue,
-according  to the log previously provided by Logan in bugzilla 116941
+Hello Russell,
 
-without ab76f7b4ab23:
+The current plan is to have cpu_die() jump into the firmware, and have
+the firmware "park" the calling core into a WFI loop until someone wants
+to online the parked core, via the smp_boot_secondary() callback.
 
---[ High Kernel Mapping ]---
-0xffffffff80000000-0xffffffff81000000          16M
-          pmd
-0xffffffff81000000-0xffffffff81600000           6M     ro         PSE
-   GLB x  pmd
-0xffffffff81600000-0xffffffff81800000           2M     ro         PSE
-   GLB NX pmd
-0xffffffff81800000-0xffffffff81c00000           4M     RW
-   GLB NX pte
-0xffffffff81c00000-0xffffffffa0000000         484M
-          pmd
+Would that work?
 
-with ab76f7b4ab23:
+So far, I haven't cared about what HOTPLUG does with the parked core,
+because we would just provide HOTPLUG as a requirement for suspend,
+which offlines the secondary cores, and then we will power down the
+entire SoC.
 
----[ High Kernel Mapping ]---
-0xffffffff80000000-0xffffffff81000000          16M
-          pmd
-0xffffffff81000000-0xffffffff81400000           4M     ro         PSE
-   GLB x  pmd
-0xffffffff81400000-0xffffffff8155e000        1400K     ro
-   GLB x  pte
-0xffffffff8155e000-0xffffffff81600000         648K     RW
-   GLB NX pte
-0xffffffff81600000-0xffffffff81800000           2M     ro         PSE
-   GLB NX pmd
-0xffffffff81800000-0xffffffff81c00000           4M     RW
-   GLB NX pte
-0xffffffff81c00000-0xffffffffa0000000         484M
-          pmd
+On a tangential subject, is the scheduler able to off-line idle cores?
 
-ffffffff81446bb0 T restore_registers
+Regards.
 
-
-It looks like after the NX modification, the 'huge page' text mapping
-is splited into smaller pieces,
-from pmd to pte mapping,  and since the original pmd is located in
-.data section(which should be
-the same across hibernation),  while after modification the pte table
-is allocated dynamically,
-we can not guarantee the dynamically allocated pte table are the same
-across hibernation,
-thus the kernel entry of restore_registers might become unaccessible
-because of broken
-page table.
