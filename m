@@ -1,47 +1,88 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
-Date: Tue, 14 Jun 2016 11:27:11 +0200
-Message-ID: <20160614092711.GA22613@wunner.de>
-References: <cover.1463134231.git.lukas@wunner.de>
- <20160613205823.GA18747@localhost>
+From: James Morse <james.morse@arm.com>
+Subject: Re: [PATCH 3/5] PM / Hibernate: Allow architectures to specify the
+ hibernate/resume CPU
+Date: Tue, 14 Jun 2016 10:44:47 +0100
+Message-ID: <575FD20F.7020606@arm.com>
+References: <1464876657-6692-1-git-send-email-james.morse@arm.com> <1464876657-6692-4-git-send-email-james.morse@arm.com> <1982845.x73eTHIS7X@vostro.rjw.lan> <4959514.g8dkWscZ3h@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:58734 "EHLO
-	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbcFNJXR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jun 2016 05:23:17 -0400
-Content-Disposition: inline
-In-Reply-To: <20160613205823.GA18747@localhost>
+Received: from foss.arm.com ([217.140.101.70]:57538 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750901AbcFNJq4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 Jun 2016 05:46:56 -0400
+In-Reply-To: <4959514.g8dkWscZ3h@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-arm-kernel@lists.infradead.org, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-Hi Bjorn,
+Hi Rafael,
 
-On Mon, Jun 13, 2016 at 03:58:23PM -0500, Bjorn Helgaas wrote:
-> On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
-> > This series powers Thunderbolt controllers on Macs down when nothing is
-> > plugged in, saving 1.7 W on machines with a Light Ridge controller and
-> > reportedly 4 W on Cactus Ridge 4C and Falcon Ridge 4C.
-> I suppose these depend on Mika's runtime PM patches (at least, I see
-> Mika's commits in your github tree).  Would you mind rebasing your
-> patches so they apply on my pci/pm branch?  I couldn't import them
-> directly into stg.
+On 13/06/16 23:10, Rafael J. Wysocki wrote:
+> On Tuesday, June 14, 2016 12:05:28 AM Rafael J. Wysocki wrote:
+>> On Thursday, June 02, 2016 03:10:55 PM James Morse wrote:
+>>> On arm64 the cpu with logical id 0 is assumed to be the boot CPU. If a
+>>> user hotplugs this CPU out, then uses kexec to boot a new kernel, the new
+>>> kernel will assign logical id 0 to a different physical CPU.
+>>> This breaks hibernate as hibernate and resume will be attempted on different
+>>> CPUs.
+>>>
+>>> Define a weak symbol arch_hibernation_disable_cpus(), which defaults to
+>>> calling disable_nonboot_cpus). Architectures that allow CPU 0 to be
+>>> hotplugged can use this to control which CPU is used for hibernate/resume.
+>>>
+>>> Signed-off-by: James Morse <james.morse@arm.com>
+>>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>>> Cc: Pavel Machek <pavel@ucw.cz>
+>>> ---
+>>> I would have preferred a macro, but there is no hibernate-relevant header
+>>> file that all arch's have. arm, arm64 and x86 have a suspend.h, but powerpc
+>>> doesn't.
+>>
+>> What about include/linux/suspend.h?
+>>
+>> There are arch_ things declared in there.
+> 
+> I mean, what about using something like
+> 
+> #ifndef arch_hibernation_disable_cpus
+> #define arch_hibernation_disable_cpus disable_nonboot_cpus
+> #endif
+> 
+> in there or in another header file?
 
-Right, patch [08/13] no longer applies cleanly because the context has
-changed slightly ("100 ms" instead of "10 ms").
+This would work fine for an architecture that doesn't need to use
+arch_hibernation_disable_cpus(), but which header file should we use for an
+architecture that does?
 
-I've just sent out a rebased version of that patch in-reply-to the
-original version. So if you use threading in mutt (or limit the
-messages displayed to e.g. "~f lukas@wunner.de" and order by subject),
-you should be able to tag the rebased version and pipe that together
-with the rest to stg.
+As a macro it needs to be in an arch-specific header included before the #ifndef
+above.
 
-If this doesn't work out for some reason and you'd prefer me to resend
-the whole series just shout.
+Of those:
+include/linux/suspend.h only includes <asm/errno.h>
+kernel/power/power.h doesn't include any 'asm' headers.
+snapshot.c includes:
+> #include <asm/uaccess.h>
+> #include <asm/mmu_context.h>
+> #include <asm/pgtable.h>
+> #include <asm/tlbflush.h>
+> #include <asm/io.h>
 
-Thanks!
+... but none of those are appropriate.
 
-Lukas
+
+I initially added an include for <asm/suspend.h> to kernel/power/power.h, but it
+broke powerpc, as there is no suspend.h there. I took this as a dead-end for the
+macro approach, unless someone has a clever trick?!
+
+
+
+Thanks,
+
+James
+
+
+
+
