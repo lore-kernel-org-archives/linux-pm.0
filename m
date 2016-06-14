@@ -1,175 +1,100 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
-Date: Tue, 14 Jun 2016 11:37:04 -0500
-Message-ID: <20160614163703.GA31488@localhost>
-References: <cover.1463134231.git.lukas@wunner.de>
- <CAMxnaaU_3z6BSmSnYfi4ee=aTKm3aPyUaXds=G29wdp8O0m5Cw@mail.gmail.com>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: Re: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt >
+ 0
+Date: Tue, 14 Jun 2016 13:42:09 -0400
+Message-ID: <3cf2d32a-bd1b-03f1-2486-8311883639b2@nvidia.com>
+References: <1465507719-819-1-git-send-email-rklein@nvidia.com>
+ <575A8BBC.7040306@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:55942 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751356AbcFNQhK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 14 Jun 2016 12:37:10 -0400
-Content-Disposition: inline
-In-Reply-To: <CAMxnaaU_3z6BSmSnYfi4ee=aTKm3aPyUaXds=G29wdp8O0m5Cw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <575A8BBC.7040306@samsung.com>
+Sender: stable-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Noever <andreas.noever@gmail.com>
-Cc: Lukas Wunner <lukas@wunner.de>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, linux-kernel@vger.kernel.org
 
-[+cc linux-kernel]
-
-On Sat, May 21, 2016 at 11:48:42AM +0200, Andreas Noever wrote:
+On 6/10/2016 5:43 AM, Krzysztof Kozlowski wrote:
+> On 06/09/2016 11:28 PM, Rhyland Klein wrote:
+>> Change power_supply_read_temp() to use power_supply_get_property()
+>> so that it will check the use_cnt and ensure it is > 0. The use_cnt
+>> will be incremented at the end of __power_supply_register, so this
+>> will block to case where get_property can be called before the supply
+>> is fully registered. This fixes the issue show in the stack below:
+>>
+>> [    1.452598] power_supply_read_temp+0x78/0x80
+>> [    1.458680] thermal_zone_get_temp+0x5c/0x11c
+>> [    1.464765] thermal_zone_device_update+0x34/0xb4
+>> [    1.471195] thermal_zone_device_register+0x87c/0x8cc
+>> [    1.477974] __power_supply_register+0x364/0x424
+>> [    1.484317] power_supply_register_no_ws+0x10/0x18
+>> [    1.490833] bq27xxx_battery_setup+0x10c/0x164
+>> [    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
+>> [    1.503435] i2c_device_probe+0x174/0x240
+>> [    1.509172] driver_probe_device+0x1fc/0x29c
+>> [    1.515167] __driver_attach+0xa4/0xa8
+>> [    1.520643] bus_for_each_dev+0x58/0x98
+>> [    1.526204] driver_attach+0x20/0x28
+>> [    1.531505] bus_add_driver+0x1c8/0x22c
+>> [    1.537067] driver_register+0x68/0x108
+>> [    1.542630] i2c_register_driver+0x38/0x7c
+>> [    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
+>> [    1.555321] do_one_initcall+0x38/0x12c
+>> [    1.560886] kernel_init_freeable+0x148/0x1ec
+>> [    1.566972] kernel_init+0x10/0xfc
+>> [    1.572101] ret_from_fork+0x10/0x40
+>>
+>> Also make the same change to ps_get_max_charge_cntl_limit() and
+>> ps_get_cur_chrage_cntl_limit() to be safe. Lastly, change the return
+>> value of power_supply_get_property() to -EAGAIN from -ENODEV if
+>> use_cnt <= 0.
+>>
+>> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
+>> Cc: stable@vger.kernel.org
+>> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+>> ---
+>> v4:
+>>  - Fixed return check conditions
+>>  - Removed change to power_supply_get_property return code
+>>  - removed whitespace change
+>>
+>> v3:
+>>  - Changed calls to ->get_property() to use common
+>>    power_supply_get_property()
+>>  - reworded description, added "Fixes" line
+>>  - Changed return value of power_supply_get_property() to -EAGAIN
+>>
+>> v2:
+>>  - Added cc stable
+>>  - changed return to -EAGAIN in case of use_cnt < 1
+>>  - Removed WARNING
+>>  - return value check added in additional patch:
+>>    https://patchwork.kernel.org/patch/9158805/
+>>
+>>  drivers/power/power_supply_core.c | 27 ++++++++++++++++-----------
+>>  1 file changed, 16 insertions(+), 11 deletions(-)
 > 
-> Signed-off-by: Andreas Noever <andreas.noever@gmail.com>
->
-> Tested on MacBookPro10,1
+> Looks okay:
 > 
-> On Fri, May 13, 2016 at 1:15 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> > This series powers Thunderbolt controllers on Macs down when nothing is
-> > plugged in, saving 1.7 W on machines with a Light Ridge controller and
-> > reportedly 4 W on Cactus Ridge 4C and Falcon Ridge 4C.
-> >
-> > Briefly, a custom ACPI method provided by Apple is used to cut power to
-> > the controller.  A GPE is enabled while the controller is powered down
-> > which side-band signals a plug event, whereupon power is reinstated using
-> > the ACPI method.  Note that even though this mechanism is ACPI-based,
-> > it does not use _PSx methods and is thus entirely nonstandard.
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> 
+> Best regards,
+> Krzysztof
+> 
+> 
 
-I think the current arrangement was that Andreas would ack Thunderbolt
-patches and I would merge them via the PCI tree.  That makes some sense
-because Thunderbolt and PCIe are related, but the more I think about
-it, the less I'm happy with it.
+I sent another patch which is a follow up to this one, which changes the
+return value of power_supply_get_property() to return -EAGAIN if it is
+called during __power_supply_register(). Turns out the thermal framework
+(at least) will treat EAGAIN differently and since we were on the fence
+about what to return, it made sense to go ahead and do that to make
+everyone happy.
 
-This series is a good example.  I'm sure it's good work and
-worthwhile.  But I can't really say anything about the content of it
-because most of it is Thunderbolt-specific and there's no public spec.
-It seems like this is basically a collection of reverse-engineered
-quirks that happen to work with the current state of Linux PM on
-certain Macs.  We don't know what might change on future Macs.  We
-don't know what might break when we make changes to Linux PM.
+https://lkml.org/lkml/2016/6/13/943
 
-I can't test this series, nor do I want to.  I can't test most of the
-patches I merge, but I can at least read the spec and see whether the
-patches make sense.  What I would *like* is to have public Thunderbolt
-specs and a kernel developer's guide so we know what to expect from
-the hardware and the firmware and we can write code that should work
-not just on current Macs, but also on non-Macs and future Macs.
+-rhyland
 
-I don't think the current situation is really maintainable, and I'm
-not comfortable merging code that I can't maintain.
 
-I know I don't understand the whole situation, so somebody please tell
-me why I'm being unreasonable here.
-
-> > A Thunderbolt controller appears to the OS as a set of PCI devices:  One
-> > NHI (Native Host Interface) and multiple bridges.  Power is cut to the
-> > entire set of devices:
-> >
-> >   (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
-> >                                      +-- Downstream Bridge 1 --
-> >                                      +-- Downstream Bridge 2 --
-> >                                      ...
-> >
-> > v1 of this series shoehorned power control into the NHI driver.  This
-> > violated the Linux pm model which assumes that a child cannot resume
-> > before its parent. As seen above, the NHI is a child, so the child cut
-> > power to the bridges above it.
-> >
-> > v2 resolves this by positioning power control on the controller's
-> > topmost device, which is the upstream bridge.  That is achieved by
-> > binding to it as a Thunderbolt port service driver.  portdrv already
-> > calls down to each service driver on ->suspend and ->resume and I
-> > extended that scheme to further PM callbacks.  E.g. when the upstream
-> > bridge is runtime suspended, portdrv invokes the ->runtime_suspend
-> > callback of each attached service driver, and the Thunderbolt service
-> > driver's callback in turn invokes the ACPI method to cut power to the
-> > controller.
-> >
-> >
-> > For such a nonstandard ACPI-based PM mechanism one would normally assign
-> > a dev_pm_domain to the upstream bridge which overrides the PCI subsystem
-> > PM callbacks.  But that's not an option here because dev_pm_domain_set()
-> > can only be called during driver probe.  The driver is portdrv and
-> > obviously loads earlier than the thunderbolt port service driver.
-> > So one has to make do with the PCI subsystem PM callbacks.
-> >
-> > The PCI core currently assumes that devices can only be put into D3cold
-> > by the platform, i.e. using the standard ACPI _PSx methods.  I extended
-> > the PCI core so that it can deal with devices which are put into D3cold
-> > by the driver callbacks.  It turns out only two changes are needed to
-> > make this work, and they are in patches [09/13] and [10/13].  Runtime
-> > suspend works out of the box, but runtime resume tries to set the device
-> > power state *before* invoking the driver callback, and this goes awry
-> > since the device is still in D3cold.  I solved this by returning an error
-> > in pci_raw_set_power_state() if the device's current_state is D3cold
-> > (patch [09/13]).
-> >
-> > Theoretically it would also be possible to patch the missing _PSx methods
-> > into the ACPI namespace at runtime but I suspect it wouldn't be pretty:
-> > I think I'd have to include pre-compiled AML methods in the kernel and
-> > modify those blobs at runtime (adjust GPE number etc) before patching
-> > them into the namespace.
-> >
-> >
-> > To make direct-complete work for such non-platform-power-managed devices,
-> > I also had to modify pci_target_state() (patch [10/13]).
-> >
-> > Finally, I wanted to avoid the mandatory runtime resume after direct-
-> > complete which was introduced by Rafael with 58a1fbbb2ee8 ("PM / PCI /
-> > ACPI: Kick devices that might have been reset by firmware"), so I added
-> > the possibility to opt out of it (patch [11/13]).
-> >
-> >
-> > I've pushed these patches to GitHub where they can be reviewed more
-> > comfortably with green/red highlighting:
-> > https://github.com/l1k/linux/commits/thunderbolt_runpm_v2
-> >
-> > For reference, here's a link to v1:
-> > http://thread.gmane.org/gmane.linux.power-management.general/73197
-> >
-> > Thanks in advance for your comments.
-> >
-> > Lukas
-> >
-> >
-> > Lukas Wunner (13):
-> >   PCI: Recognize Thunderbolt devices
-> >   PCI: Allow D3 for Thunderbolt ports
-> >   PCI: Add Thunderbolt portdrv service type
-> >   PCI: Generalize portdrv pm iterator
-> >   PCI: Use portdrv pm iterator on further callbacks
-> >   PCI: pciehp: Support runtime pm
-> >   PCI: pciehp: Ignore interrupts during D3cold
-> >   PCI: Allow runtime PM for Thunderbolt hotplug ports on Macs
-> >   PCI: Do not write to PM control register while in D3cold
-> >   PCI: Avoid going from D3cold to D3hot for system sleep
-> >   PM / sleep: Allow opt-out from runtime resume after direct-complete
-> >   thunderbolt: Support runtime pm on upstream bridge
-> >   thunderbolt: Support runtime pm on NHI
-> >
-> >  drivers/base/power/generic_ops.c  |   3 +-
-> >  drivers/pci/hotplug/pciehp_ctrl.c |   9 +-
-> >  drivers/pci/hotplug/pciehp_hpc.c  |   4 +
-> >  drivers/pci/pci.c                 |  50 ++----
-> >  drivers/pci/pci.h                 |   2 +
-> >  drivers/pci/pcie/portdrv.h        |   6 +-
-> >  drivers/pci/pcie/portdrv_core.c   |  47 +-----
-> >  drivers/pci/pcie/portdrv_pci.c    |  88 ++++++++--
-> >  drivers/pci/probe.c               |  17 ++
-> >  drivers/thunderbolt/Kconfig       |   4 +-
-> >  drivers/thunderbolt/Makefile      |   4 +-
-> >  drivers/thunderbolt/nhi.c         |  32 +++-
-> >  drivers/thunderbolt/switch.c      |   9 +
-> >  drivers/thunderbolt/tb.c          |  13 ++
-> >  drivers/thunderbolt/upstream.c    | 345 ++++++++++++++++++++++++++++++++++++++
-> >  include/linux/pci.h               |   1 +
-> >  include/linux/pcieport_if.h       |   7 +
-> >  include/linux/pm.h                |   1 +
-> >  18 files changed, 539 insertions(+), 103 deletions(-)
-> >  create mode 100644 drivers/thunderbolt/upstream.c
-> >
-> > --
-> > 2.8.1
-> >
+-- 
+nvpublic
