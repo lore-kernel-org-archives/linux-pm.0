@@ -1,60 +1,69 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: lm-senser can't detect thermal on thermal_zone
-Date: Tue, 14 Jun 2016 21:24:18 +0800
-Message-ID: <1465910658.9422.9.camel@intel.com>
-References: <87posrn1oj.wl%kuninori.morimoto.gx@renesas.com>
-	 <1463100287.15071.8.camel@rzhang1-mobl4>
-	 <874ma2lnvw.wl%kuninori.morimoto.gx@renesas.com>
-	 <87zir89iai.wl%kuninori.morimoto.gx@renesas.com>
-	 <87oa7bkqvl.wl%kuninori.morimoto.gx@renesas.com>
-	 <1465885934.4001.4.camel@intel.com>
-	 <877fdscl6o.wl%kuninori.morimoto.gx@renesas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <877fdscl6o.wl%kuninori.morimoto.gx@renesas.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "cm-hiep@jinso.co.jp" <cm-hiep@jinso.co.jp>
+From: Marcin Niestroj <m.niestroj@grinn-global.com>
+Subject: [PATCH v2 2/5] power_supply: tps65217-charger: Fix NULL deref during property export
+Date: Tue, 14 Jun 2016 15:29:24 +0200
+Message-ID: <20160614132927.3309-3-m.niestroj@grinn-global.com>
+References: <20160614132927.3309-1-m.niestroj@grinn-global.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 2780.rev.megiteam.pl ([91.227.39.128]:42317 "EHLO
+	vk1046.megiteam.com.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752554AbcFNNfn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jun 2016 09:35:43 -0400
+In-Reply-To: <20160614132927.3309-1-m.niestroj@grinn-global.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Marcin Niestroj <m.niestroj@grinn-global.com>
 
-On =E4=BA=8C, 2016-06-14 at 07:03 +0000, Kuninori Morimoto wrote:
-> Hi Zhang
->=20
-> >=20
-> > >=20
-> > > >=20
-> > > > >=20
-> > > > > struct thermal_zone_device
-> > > > > *thermal_zone_device_register(xxxx)
-> > > > > {
-> > > > > 	...
-> > > > > 	if (!tz->tzp || !tz->tzp->no_hwmon) {
-> > > > > 		result =3D thermal_add_hwmon_sysfs(tz);
-> > > > > 		...
-> > > > > 	}
-> > > > > 	...
-> > > > > }
-> > > > >=20
-> > > > > Does this mean "thermal_zone doesn't use lm-senser" ?
-> > I'd prefer to say of_thermal registered thermal_zone doesn't use
-> > lm-
-> > sensor.
-> > If you're really want to see hwmon interface, I think you should
-> > use
-> > thermal API (thermal_zone_device_register) directly.
-> Thank you for your feedback.
-> My driver is supporting both of_thermal and thermal API.
-> So, switching is not a big deal.
->=20
-> But can you teach me why of_thermal doesn't use lm-senser ??
+This bug leads to:
 
-I don't know if there is a solid reason that we can not expose the
-hwmon interface. But just like the comment says, "/* No hwmon because
-there might be hwmon drivers registering */", given that of_thermal
-just parses THERMAL data of device tree, it is reasonable to me for
-exposing thermal interfaces only.
+[    1.906411] Unable to handle kernel NULL pointer dereference at virtual address 0000000c
+[    1.914878] pgd = c0004000
+[    1.917786] [0000000c] *pgd=00000000
+[    1.921536] Internal error: Oops: 5 [#1] SMP ARM
+[    1.926357] Modules linked in:
+[    1.929556] CPU: 0 PID: 14 Comm: kworker/0:1 Not tainted 4.4.5 #18
+[    1.936006] Hardware name: Generic AM33XX (Flattened Device Tree)
+[    1.942383] Workqueue: events power_supply_changed_work
+[    1.947842] task: de2c41c0 ti: de2c8000 task.ti: de2c8000
+[    1.953483] PC is at tps65217_ac_get_property+0x14/0x28
+[    1.958937] LR is at tps65217_ac_get_property+0x10/0x28
 
-thanks,
-rui
+Driver was trying to use drv_data in property get handler. However drv_data
+was not set, so it caused NULL pointer dereference. This patch properly
+sets drv_data during probe by power_supply_config parameter, so the
+property get handler works as desired.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+---
+ drivers/power/tps65217_charger.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/power/tps65217_charger.c b/drivers/power/tps65217_charger.c
+index d9f5673..73dfae4 100644
+--- a/drivers/power/tps65217_charger.c
++++ b/drivers/power/tps65217_charger.c
+@@ -197,6 +197,7 @@ static int tps65217_charger_probe(struct platform_device *pdev)
+ {
+ 	struct tps65217 *tps = dev_get_drvdata(pdev->dev.parent);
+ 	struct tps65217_charger *charger;
++	struct power_supply_config cfg = {};
+ 	int ret;
+ 
+ 	dev_dbg(&pdev->dev, "%s\n", __func__);
+@@ -208,9 +209,12 @@ static int tps65217_charger_probe(struct platform_device *pdev)
+ 	charger->tps = tps;
+ 	charger->dev = &pdev->dev;
+ 
++	cfg.of_node = pdev->dev.of_node;
++	cfg.drv_data = charger;
++
+ 	charger->ac = devm_power_supply_register(&pdev->dev,
+ 						 &tps65217_charger_desc,
+-						 NULL);
++						 &cfg);
+ 	if (IS_ERR(charger->ac)) {
+ 		dev_err(&pdev->dev, "failed: power supply register\n");
+ 		return PTR_ERR(charger->ac);
+-- 
+2.8.3
+
