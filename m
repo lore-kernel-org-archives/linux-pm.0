@@ -1,51 +1,55 @@
-From: Sumit Singh <sumsingh@nvidia.com>
-Subject: RE: Need help : Way to disable runtime PM with system suspend enabled
-Date: Tue, 14 Jun 2016 08:44:30 +0000
-Message-ID: <44bf41112ac543cfa2642076386a6aa1@bgmail103.nvidia.com>
-References: <d5f4566ed9f84a0e8840402bbac6b780@bgmail103.nvidia.com>
- <Pine.LNX.4.44L0.1606101043360.1615-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:17571 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751153AbcFNIog convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jun 2016 04:44:36 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1606101043360.1615-100000@iolanthe.rowland.org>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH v2 08/13 REBASED] PCI: Allow runtime PM for Thunderbolt hotplug
+ ports on Macs
+Date: Tue, 14 Jun 2016 11:08:49 +0200
+Message-ID: <cb74f780fd66e499aff6e6e229d58f03318810c4.1465894388.git.lukas@wunner.de>
+References: <47f9e4a9ca09e854d2d01812a4c05b7c6df02259.1463134231.git.lukas@wunner.de>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <47f9e4a9ca09e854d2d01812a4c05b7c6df02259.1463134231.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Prashant Gaikwad <pgaikwad@nvidia.com>, Bharat Nihalani <bnihalani@nvidia.com>
 
-Thanks Alan. I am trying with the approach that you suggested.
+Thunderbolt controllers have a pin to signal plug events while the
+controller is powered down.  On Macs this pin is wired to the
+southbridge and causes a GPE to be fired.  The OS may then power up the
+controller to probe the newly connected device.  It is thus okay to let
+Thunderbolt hotplug ports go to D3 on Macs.
 
-Thanks
-Sumit Singh
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/pcie/portdrv_pci.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
------Original Message-----
-From: Alan Stern [mailto:stern@rowland.harvard.edu] 
-Sent: Friday, June 10, 2016 8:28 PM
-To: Sumit Singh
-Cc: Rafael J. Wysocki; rjw@rjwysocki.net; linux-pm@vger.kernel.org; Prashant Gaikwad; Bharat Nihalani
-Subject: RE: Need help : Way to disable runtime PM with system suspend enabled
-
-On Fri, 10 Jun 2016, Sumit Singh wrote:
-
-> Thanks Rafael for the suggestion. I will try with that.
-> Using pm_runtime_forbid() API, we can do that. Could you please suggest a proper location for using this API, so that it is applicable to all the devices?
-
-If you want to change the kernel, you can change the definition of
-pm_runtime_allow() in drivers/base/power/runtime.c.  Just have the routine return immediately.  You should also change pm_runtime_init() by adding a call to pm_runtime_forbid(dev) at the end.
-
-If you want to change userspace, you can add a udev rule that writes "on" to the power/control file for each new device.  But the user could override this later on, so it wouldn't be as safe as changing the kernel.
-
-Alan Stern
-
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+index dc73a54..08761b8 100644
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -224,9 +224,12 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+ 	 * to enumerate devices behind this port properly (the port is
+ 	 * powered down preventing all config space accesses to the
+ 	 * subordinate devices).  We can't be sure for native PCIe hotplug
+-	 * either so prevent that as well.
++	 * either so prevent that as well.  However Thunderbolt controllers
++	 * on Macs are capable of side-band signaling plug events while
++	 * powered down, so allow them to suspend.
+ 	 */
+-	if (!dev->is_hotplug_bridge) {
++	if (!dev->is_hotplug_bridge ||
++	    (dev->is_thunderbolt && dmi_match(DMI_SYS_VENDOR, "Apple Inc."))) {
+ 		/*
+ 		 * Keep the port resumed 100ms to make sure things like
+ 		 * config space accesses from userspace (lspci) will not
+@@ -244,7 +247,8 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+ 
+ static void pcie_portdrv_remove(struct pci_dev *dev)
+ {
+-	if (!dev->is_hotplug_bridge) {
++	if (!dev->is_hotplug_bridge ||
++	    (dev->is_thunderbolt && dmi_match(DMI_SYS_VENDOR, "Apple Inc."))) {
+ 		pm_runtime_forbid(&dev->dev);
+ 		pm_runtime_get_noresume(&dev->dev);
+ 		pm_runtime_dont_use_autosuspend(&dev->dev);
+-- 
+2.8.1
