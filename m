@@ -1,132 +1,85 @@
-From: tip-bot for Kees Cook <tipbot@zytor.com>
-Subject: [tip:x86/boot] x86/KASLR, x86/power: Remove x86 hibernation
- restrictions
-Date: Tue, 14 Jun 2016 04:32:20 -0700
-Message-ID: <tip-36f79151e74bbca512cac092c2c56c5cbc5f2f03@git.kernel.org>
-References: <20160613221002.GA29719@www.outflux.net>
-Reply-To: linux-kernel@vger.kernel.org, luto@kernel.org,
-	  len.brown@intel.com, yinghai@kernel.org,
-	  linux-pm@vger.kernel.org, tglx@linutronix.de,
-	  dvlasenk@redhat.com, logang@deltatee.com, keescook@chromium.org,
-	  pavel@ucw.cz, bp@alien8.de, bhe@redhat.com, corbet@lwn.net,
-	  hpa@zytor.com, sds@tycho.nsa.gov, mingo@kernel.org,
-	  torvalds@linux-foundation.org, brgerst@gmail.com,
-	  peterz@infradead.org
+From: chenyu <yu.chen.surf@gmail.com>
+Subject: Re: [PATCH] x86 / hibernate: Fix 64-bit code passing control to image kernel
+Date: Tue, 14 Jun 2016 20:06:49 +0800
+Message-ID: <CADjb_WRm1c4wrfs9xEStKOTuoS7XEV=a4Eq3QpVA4trn8GnVjA@mail.gmail.com>
+References: <3006711.q9ei2E2zzf@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160613221002.GA29719@www.outflux.net>
-Content-Disposition: inline
+In-Reply-To: <3006711.q9ei2E2zzf@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-tip-commits@vger.kernel.org
-Cc: pavel@ucw.cz, peterz@infradead.org, brgerst@gmail.com, torvalds@linux-foundation.org, mingo@kernel.org, sds@tycho.nsa.gov, hpa@zytor.com, corbet@lwn.net, bhe@redhat.com, bp@alien8.de, luto@kernel.org, len.brown@intel.com, linux-kernel@vger.kernel.org, keescook@chromium.org, logang@deltatee.com, dvlasenk@redhat.com, tglx@linutronix.de, linux-pm@vger.kernel.org, yinghai@kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kees Cook <keescook@chromium.org>, Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@kernel.org>, Logan Gunthorpe <logang@deltatee.com>, the arch/x86 maintainers <x86@kernel.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
 
-Commit-ID:  36f79151e74bbca512cac092c2c56c5cbc5f2f03
-Gitweb:     http://git.kernel.org/tip/36f79151e74bbca512cac092c2c56c5cbc5f2f03
-Author:     Kees Cook <keescook@chromium.org>
-AuthorDate: Mon, 13 Jun 2016 15:10:02 -0700
-Committer:  Ingo Molnar <mingo@kernel.org>
-CommitDate: Tue, 14 Jun 2016 12:14:13 +0200
+On Mon, Jun 13, 2016 at 9:42 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Logan Gunthorpe reports that hibernation stopped working reliably for
+> him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
+> and rodata).  Most likely, what happens is that the page containing
+> the image kernel's entry point is sometimes marked as non-executable
+> in the page tables used at the time of the final jump to the image
+> kernel.  That at least is why commit ab76f7b4ab23 may matter.
+>
+> However, there is one more long-standing issue with the code in
+> question, which is that the temporary page tables set up by it
+> to avoid page tables corruption when the last bits of the image
+> kernel's memory contents are copied into their original page frames
+> re-use the boot kernel's text mapping, but that mapping may very
+> well get corrupted just like any other part of the page tables.
+> Of course, if that happens, the final jump to the image kernel's
+> entry point will go to nowhere.
+>
+100 rounds test has passed with this patch on top of 4.7-rc3,
+Tested-by: Chen Yu <yu.c.chen@intel.com>
 
-x86/KASLR, x86/power: Remove x86 hibernation restrictions
+BTW, I'm thinking of another possible scenario this patch fixed the NX issue,
+according  to the log previously provided by Logan in bugzilla 116941
 
-With the following fix:
+without ab76f7b4ab23:
 
-  70595b479ce1 ("x86/power/64: Fix crash whan the hibernation code passes control to the image kernel")
+--[ High Kernel Mapping ]---
+0xffffffff80000000-0xffffffff81000000          16M
+          pmd
+0xffffffff81000000-0xffffffff81600000           6M     ro         PSE
+   GLB x  pmd
+0xffffffff81600000-0xffffffff81800000           2M     ro         PSE
+   GLB NX pmd
+0xffffffff81800000-0xffffffff81c00000           4M     RW
+   GLB NX pte
+0xffffffff81c00000-0xffffffffa0000000         484M
+          pmd
 
-... there is no longer a problem with hibernation resuming a
-KASLR-booted kernel image, so remove the restriction.
+with ab76f7b4ab23:
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Baoquan He <bhe@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Brian Gerst <brgerst@gmail.com>
-Cc: Denys Vlasenko <dvlasenk@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Logan Gunthorpe <logang@deltatee.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: linux-doc@vger.kernel.org
-Link: http://lkml.kernel.org/r/20160613221002.GA29719@www.outflux.net
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
----
- Documentation/kernel-parameters.txt | 10 ++++------
- arch/x86/boot/compressed/kaslr.c    |  7 -------
- kernel/power/hibernate.c            |  6 ------
- 3 files changed, 4 insertions(+), 19 deletions(-)
+---[ High Kernel Mapping ]---
+0xffffffff80000000-0xffffffff81000000          16M
+          pmd
+0xffffffff81000000-0xffffffff81400000           4M     ro         PSE
+   GLB x  pmd
+0xffffffff81400000-0xffffffff8155e000        1400K     ro
+   GLB x  pte
+0xffffffff8155e000-0xffffffff81600000         648K     RW
+   GLB NX pte
+0xffffffff81600000-0xffffffff81800000           2M     ro         PSE
+   GLB NX pmd
+0xffffffff81800000-0xffffffff81c00000           4M     RW
+   GLB NX pte
+0xffffffff81c00000-0xffffffffa0000000         484M
+          pmd
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 82b42c9..fa8c6d4 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1803,12 +1803,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 	js=		[HW,JOY] Analog joystick
- 			See Documentation/input/joystick.txt.
- 
--	kaslr/nokaslr	[X86]
--			Enable/disable kernel and module base offset ASLR
--			(Address Space Layout Randomization) if built into
--			the kernel. When CONFIG_HIBERNATION is selected,
--			kASLR is disabled by default. When kASLR is enabled,
--			hibernation will be disabled.
-+	nokaslr		[KNL]
-+			When CONFIG_RANDOMIZE_BASE is set, this disables
-+			kernel and module base offset ASLR (Address Space
-+			Layout Randomization).
- 
- 	keepinitrd	[HW,ARM]
- 
-diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
-index cfeb025..dff4217 100644
---- a/arch/x86/boot/compressed/kaslr.c
-+++ b/arch/x86/boot/compressed/kaslr.c
-@@ -471,17 +471,10 @@ unsigned char *choose_random_location(unsigned long input,
- 	unsigned long choice = output;
- 	unsigned long random_addr;
- 
--#ifdef CONFIG_HIBERNATION
--	if (!cmdline_find_option_bool("kaslr")) {
--		warn("KASLR disabled: 'kaslr' not on cmdline (hibernation selected).");
--		goto out;
--	}
--#else
- 	if (cmdline_find_option_bool("nokaslr")) {
- 		warn("KASLR disabled: 'nokaslr' on cmdline.");
- 		goto out;
- 	}
--#endif
- 
- 	boot_params->hdr.loadflags |= KASLR_FLAG;
- 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index fca9254..9021387 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -1154,11 +1154,6 @@ static int __init nohibernate_setup(char *str)
- 	return 1;
- }
- 
--static int __init kaslr_nohibernate_setup(char *str)
--{
--	return nohibernate_setup(str);
--}
--
- static int __init page_poison_nohibernate_setup(char *str)
- {
- #ifdef CONFIG_PAGE_POISONING_ZERO
-@@ -1182,5 +1177,4 @@ __setup("hibernate=", hibernate_setup);
- __setup("resumewait", resumewait_setup);
- __setup("resumedelay=", resumedelay_setup);
- __setup("nohibernate", nohibernate_setup);
--__setup("kaslr", kaslr_nohibernate_setup);
- __setup("page_poison=", page_poison_nohibernate_setup);
+ffffffff81446bb0 T restore_registers
+
+
+It looks like after the NX modification, the 'huge page' text mapping
+is splited into smaller pieces,
+from pmd to pte mapping,  and since the original pmd is located in
+.data section(which should be
+the same across hibernation),  while after modification the pte table
+is allocated dynamically,
+we can not guarantee the dynamically allocated pte table are the same
+across hibernation,
+thus the kernel entry of restore_registers might become unaccessible
+because of broken
+page table.
