@@ -1,105 +1,87 @@
-From: Chris Lapa <chris@lapa.com.au>
-Subject: Re: [PATCH v2 1/4] max8903: adds documentation for device tree
- bindings.
-Date: Tue, 14 Jun 2016 11:54:17 +1000
-Message-ID: <001abdba-d10c-90d5-944f-ebeaf236eb12@lapa.com.au>
-References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
- <1465561970-18377-1-git-send-email-chris@lapa.com.au>
- <1465561970-18377-2-git-send-email-chris@lapa.com.au>
- <575AC5E5.3020405@samsung.com>
-Reply-To: chris@lapa.com.au
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: lm-senser can't detect thermal on thermal_zone
+Date: Tue, 14 Jun 2016 14:32:14 +0800
+Message-ID: <1465885934.4001.4.camel@intel.com>
+References: <87posrn1oj.wl%kuninori.morimoto.gx@renesas.com>
+	 <1463100287.15071.8.camel@rzhang1-mobl4>
+	 <874ma2lnvw.wl%kuninori.morimoto.gx@renesas.com>
+	 <87zir89iai.wl%kuninori.morimoto.gx@renesas.com>
+	 <87oa7bkqvl.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <575AC5E5.3020405@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:16586 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751191AbcFNGcU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 14 Jun 2016 02:32:20 -0400
+In-Reply-To: <87oa7bkqvl.wl%kuninori.morimoto.gx@renesas.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "cm-hiep@jinso.co.jp" <cm-hiep@jinso.co.jp>
 
-On 10/06/2016 11:51 PM, Krzysztof Kozlowski wrote:
-> On 06/10/2016 02:32 PM, Chris Lapa wrote:
->> From: Chris Lapa <chris@lapa.com.au>
->>
->> Signed-off-by: Chris Lapa <chris@lapa.com.au>
->> ---
->>  .../devicetree/bindings/power/max8903-charger.txt  | 30 ++++++++++++++++++++++
->>  1 file changed, 30 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power/max8903-charger.txt
->
-> You again skipped all of the maintainers. Your patch won't be applied.
-> You need to send the patch to the appropriate person so he/she could
-> apply it.
->
-> From this patch:
-> Rob Herring <robh+dt@kernel.org> (maintainer:OPEN FIRMWARE AND FLATTENED
-> DEVICE TREE BINDINGS,commit_signer:9/19=47%)
-> Mark Rutland <mark.rutland@arm.com> (maintainer:OPEN FIRMWARE AND
-> FLATTENED DEVICE TREE BINDINGS)
->
-> From power suppyy tree:
-> Sebastian Reichel <sre@kernel.org> (maintainer:POWER SUPPLY
-> CLASS/SUBSYSTEM and DRIVERS)
-> Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> (maintainer:POWER SUPPLY
-> CLASS/SUBSYSTEM and DRIVERS)
-> David Woodhouse <dwmw2@infradead.org> (maintainer:POWER SUPPLY
-> CLASS/SUBSYSTEM and DRIVERS)
->
->
->> diff --git a/Documentation/devicetree/bindings/power/max8903-charger.txt b/Documentation/devicetree/bindings/power/max8903-charger.txt
->> new file mode 100644
->> index 0000000..e0b5366
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/max8903-charger.txt
->> @@ -0,0 +1,30 @@
->> +Maxim Semiconductor MAX8903 Battery Charger bindings
->> +
->> +Required properties:
->> +- compatible: "maxim,max8903-charger" for MAX8903 Battery Charger
->> +- dc_valid: Specifies that the DC portion of the MAX8903 has been connected up
->> +		and that dok-gpios should be specified
->
-> You don't need the dc_valid nor the usb_valid.  If the dok-gpios are
-> present - use DC power. If the uok-gpios - USB power.
->
-I did think that as well, but I didn't want to break backwards 
-compatibility.
+On Thu, 2016-06-09 at 03:07 +0000, Kuninori Morimoto wrote:
+>=20
+> Hi Zhang
+>=20
+> Can you check this email ?
+>=20
+> >=20
+> > >=20
+> > > Thank you for your help
+> > >=20
+> > > >=20
+> > > > >=20
+> > > > > 	non thermal-zon
+> > > > > 	=C2=A0=C2=A0sensor command: OK
+> > > > > 	=C2=A0=C2=A0read from /sys/class/thermal/thermal_zone0 : OK
+> > > > >=20
+> > > > > 	thermal-zon
+> > > > > 	=C2=A0=C2=A0sensor command: NG
+> > > > > 	=C2=A0=C2=A0read from /sys/class/thermal/thermal_zone0 : OK
+> > > > config THERMAL_HWMON
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0bool
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0prompt "Expose =
+thermal sensors as hwmon device"
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0depends on HWMO=
+N=3Dy || HWMON=3DTHERMAL
+> > > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0default y
+> > > >=20
+> > > > please check if the thermal subsystem is built in, while hwmon
+> > > > subsystem
+> > > > is built as module.
+> > > > you should either set CONFIG_HWMON=3Dy, or set both CONFIG_HWMO=
+N
+> > > > and
+> > > > CONFIG_THERMAL as module.
+> > > Thanks. but it seems our system has it.
+> > >=20
+> > > I noticed that thermal_zone case uses of_parse_thermal_zones()
+> > > and it has this.
+> > >=20
+> > > 		/* No hwmon because there might be hwmon drivers
+> > > registering */
+> > > 		tzp->no_hwmon =3D true;
+> > >=20
+> > > and on thermal_zone_device_register() check this for hwmon
+> > >=20
+> > > struct thermal_zone_device *thermal_zone_device_register(xxxx)
+> > > {
+> > > 	...
+> > > 	if (!tz->tzp || !tz->tzp->no_hwmon) {
+> > > 		result =3D thermal_add_hwmon_sysfs(tz);
+> > > 		...
+> > > 	}
+> > > 	...
+> > > }
+> > >=20
+> > > Does this mean "thermal_zone doesn't use lm-senser" ?
 
-> If both or none: print error.
-Its valid to have both connected.
+I'd prefer to say of_thermal registered thermal_zone doesn't use lm-
+sensor.
+If you're really want to see hwmon interface, I think you should use
+thermal API (thermal_zone_device_register) directly.
 
->
-> BTW, It would be nice if send also the user of this bindings - DTS/DTSI.
-I'm not sure I understand what you mean here?
-
->
-> Best regards,
-> Krzysztof
->
->> +	- dok-gpios: Valid DC power has been detected
->> +- usb_valid: Specifies that the USB portion of the MAX8903 has been connected up
->> +		and that uok-gpios should be specified
->> +	- uok-gpios: Valid USB power has been detected
->> +
->> +Optional properties:
->> +- cen-gpios: Charge enable pin
->> +- chg-gpios: Charger status pin
->> +- flt-gpios: Fault pin
->> +- dcm-gpios: Current limit mode setting (DC or USB)
->> +- usus-gpios: USB suspend pin
->> +
->> +
->> +Example:
->> +
->> +	max8903-charger {
->> +		compatible = "maxim,max8903-charger";
->> +		dok-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
->> +		flt-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>;
->> +		chg-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
->> +		cen-gpios = <&gpio2 5 GPIO_ACTIVE_LOW>;
->> +		dc_valid;
->> +		status = "okay";
->> +	};
->>
->
+thanks,
+rui
