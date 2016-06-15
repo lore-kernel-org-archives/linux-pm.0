@@ -1,204 +1,159 @@
 From: James Morse <james.morse@arm.com>
-Subject: [PATCH v2 5/6] arm64: hibernate: Identify the CPU to resume on by its MPIDR
-Date: Wed, 15 Jun 2016 18:35:47 +0100
-Message-ID: <1466012148-7674-6-git-send-email-james.morse@arm.com>
+Subject: [PATCH v2 2/6] arm64: Add .mmuoff.text section
+Date: Wed, 15 Jun 2016 18:35:44 +0100
+Message-ID: <1466012148-7674-3-git-send-email-james.morse@arm.com>
 References: <1466012148-7674-1-git-send-email-james.morse@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39185 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:39175 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753129AbcFORi5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 15 Jun 2016 13:38:57 -0400
+	id S1751737AbcFORjB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 Jun 2016 13:39:01 -0400
 In-Reply-To: <1466012148-7674-1-git-send-email-james.morse@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 Cc: Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>
 
-On arm64 the cpu with logical id 0 is assumed to be the boot CPU. If a
-user hotplugs this CPU out, then uses kexec to boot a new kernel, the new
-kernel will assign logical id 0 to a different physical CPU.
-This breaks hibernate as hibernate and resume will be attempted on different
-CPUs.
+Resume from hibernate needs to clean any text executed by the kernel with
+the MMU off to the PoC. Collect these functions together into a new
+.mmuoff.text section.
 
-Save the MPIDR of the CPU we hibernated on in the hibernate arch-header,
-and provide arch_hibernation_disable_cpus() to switch to that CPU during
-resume. During hibernate use disable_nonboot_cpus(), and save the MPIDR of
-the CPU it selected, this ensures frozen_cpus is updated correctly.
+This covers booting of secondary cores and the cpu_suspend() path used
+by cpu-idle and suspend-to-ram.
 
-Booting with maxcpus=1, then bringing additional CPUs up from user space may
-cause us to hibernate on a CPU that isn't online during boot. In this case,
-bring the CPU online.
+The bulk of head.S is not included, as the primary boot code is only ever
+executed once, the kernel never needs to ensure it is cleaned to a
+particular point in the cache.
 
 Suggested-by: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: James Morse <james.morse@arm.com>
 Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
-Change since v1:
- * Fixed Brining typo
+This patch is new since v1.
 
- arch/arm64/include/asm/suspend.h |  1 +
- arch/arm64/kernel/hibernate.c    | 70 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 71 insertions(+)
+ arch/arm64/include/asm/sections.h | 1 +
+ arch/arm64/kernel/head.S          | 6 ++++--
+ arch/arm64/kernel/sleep.S         | 2 ++
+ arch/arm64/kernel/vmlinux.lds.S   | 3 +++
+ arch/arm64/mm/proc.S              | 4 ++++
+ 5 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/suspend.h
-index 024d623f662e..487758882ef3 100644
---- a/arch/arm64/include/asm/suspend.h
-+++ b/arch/arm64/include/asm/suspend.h
-@@ -46,5 +46,6 @@ int swsusp_arch_suspend(void);
- int swsusp_arch_resume(void);
- int arch_hibernation_header_save(void *addr, unsigned int max_size);
- int arch_hibernation_header_restore(void *addr);
-+int arch_hibernation_disable_cpus(bool suspend);
+diff --git a/arch/arm64/include/asm/sections.h b/arch/arm64/include/asm/sections.h
+index cb68eb348566..6f27c3f86a09 100644
+--- a/arch/arm64/include/asm/sections.h
++++ b/arch/arm64/include/asm/sections.h
+@@ -24,5 +24,6 @@ extern char __hibernate_exit_text_start[], __hibernate_exit_text_end[];
+ extern char __hyp_idmap_text_start[], __hyp_idmap_text_end[];
+ extern char __hyp_text_start[], __hyp_text_end[];
+ extern char __idmap_text_start[], __idmap_text_end[];
++extern char __mmuoff_text_start[], __mmuoff_text_end[];
  
- #endif
-diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
-index 75d45c4ceb84..5f9266aeff00 100644
---- a/arch/arm64/kernel/hibernate.c
-+++ b/arch/arm64/kernel/hibernate.c
-@@ -15,6 +15,7 @@
-  * License terms: GNU General Public License (GPL) version 2
+ #endif /* __ASM_SECTIONS_H */
+diff --git a/arch/arm64/kernel/head.S b/arch/arm64/kernel/head.S
+index 2c6e598a94dc..ff37231e2054 100644
+--- a/arch/arm64/kernel/head.S
++++ b/arch/arm64/kernel/head.S
+@@ -477,6 +477,7 @@ ENTRY(kimage_vaddr)
+  * Returns either BOOT_CPU_MODE_EL1 or BOOT_CPU_MODE_EL2 in x20 if
+  * booted in EL1 or EL2 respectively.
   */
- #define pr_fmt(x) "hibernate: " x
-+#include <linux/cpu.h>
- #include <linux/kvm_host.h>
- #include <linux/mm.h>
- #include <linux/notifier.h>
-@@ -26,6 +27,7 @@
++	.pushsection ".mmuoff.text", "ax"
+ ENTRY(el2_setup)
+ 	mrs	x0, CurrentEL
+ 	cmp	x0, #CurrentEL_EL2
+@@ -604,7 +605,7 @@ install_el2_stub:
+ 	mov	w20, #BOOT_CPU_MODE_EL2		// This CPU booted in EL2
+ 	eret
+ ENDPROC(el2_setup)
+-
++	.popsection
+ /*
+  * Sets the __boot_cpu_mode flag depending on the CPU boot mode passed
+  * in x20. See arch/arm64/include/asm/virt.h for more info.
+@@ -656,6 +657,7 @@ ENDPROC(secondary_holding_pen)
+ 	 * Secondary entry point that jumps straight into the kernel. Only to
+ 	 * be used where CPUs are brought online dynamically by the kernel.
+ 	 */
++	.pushsection ".mmuoff.text", "ax"
+ ENTRY(secondary_entry)
+ 	bl	el2_setup			// Drop to EL1
+ 	bl	set_cpu_boot_mode_flag
+@@ -687,7 +689,7 @@ __secondary_switched:
+ 	mov	x29, #0
+ 	b	secondary_start_kernel
+ ENDPROC(__secondary_switched)
+-
++	.popsection
+ /*
+  * The booting CPU updates the failed status @__early_cpu_boot_status,
+  * with MMU turned off.
+diff --git a/arch/arm64/kernel/sleep.S b/arch/arm64/kernel/sleep.S
+index 9a3aec97ac09..e66ce9b7bbde 100644
+--- a/arch/arm64/kernel/sleep.S
++++ b/arch/arm64/kernel/sleep.S
+@@ -97,6 +97,7 @@ ENTRY(__cpu_suspend_enter)
+ ENDPROC(__cpu_suspend_enter)
+ 	.ltorg
  
- #include <asm/barrier.h>
- #include <asm/cacheflush.h>
-+#include <asm/cputype.h>
- #include <asm/irqflags.h>
- #include <asm/memory.h>
- #include <asm/mmu_context.h>
-@@ -33,6 +35,7 @@
- #include <asm/pgtable.h>
- #include <asm/pgtable-hwdef.h>
- #include <asm/sections.h>
-+#include <asm/smp_plat.h>
- #include <asm/suspend.h>
- #include <asm/virt.h>
++	.pushsection ".mmuoff.text", "ax"
+ ENTRY(cpu_resume)
+ 	bl	el2_setup		// if in EL2 drop to EL1 cleanly
+ 	/* enable the MMU early - so we can access sleep_save_stash by va */
+@@ -106,6 +107,7 @@ ENTRY(cpu_resume)
+ 	adrp	x26, swapper_pg_dir
+ 	b	__cpu_setup
+ ENDPROC(cpu_resume)
++	.popsection
  
-@@ -59,6 +62,12 @@ extern char hibernate_el2_vectors[];
- extern char __hyp_stub_vectors[];
+ ENTRY(_cpu_resume)
+ 	mrs	x1, mpidr_el1
+diff --git a/arch/arm64/kernel/vmlinux.lds.S b/arch/arm64/kernel/vmlinux.lds.S
+index 435e820e898d..64fe907bcc5f 100644
+--- a/arch/arm64/kernel/vmlinux.lds.S
++++ b/arch/arm64/kernel/vmlinux.lds.S
+@@ -118,6 +118,9 @@ SECTIONS
+ 			__exception_text_end = .;
+ 			IRQENTRY_TEXT
+ 			SOFTIRQENTRY_TEXT
++			__mmuoff_text_start = .;
++			*(.mmuoff.text)
++			__mmuoff_text_end = .;
+ 			TEXT_TEXT
+ 			SCHED_TEXT
+ 			LOCK_TEXT
+diff --git a/arch/arm64/mm/proc.S b/arch/arm64/mm/proc.S
+index c4317879b938..655ff3ec90f2 100644
+--- a/arch/arm64/mm/proc.S
++++ b/arch/arm64/mm/proc.S
+@@ -83,6 +83,7 @@ ENDPROC(cpu_do_suspend)
+  *
+  * x0: Address of context pointer
+  */
++	.pushsection ".mmuoff.text", "ax"
+ ENTRY(cpu_do_resume)
+ 	ldp	x2, x3, [x0]
+ 	ldp	x4, x5, [x0, #16]
+@@ -111,6 +112,7 @@ ENTRY(cpu_do_resume)
+ 	isb
+ 	ret
+ ENDPROC(cpu_do_resume)
++	.popsection
+ #endif
  
  /*
-+ * The logical cpu number we should resume on, initialised to a non-cpu
-+ * number.
-+ */
-+static int sleep_cpu = -EINVAL;
-+
-+/*
-  * Values that may not change over hibernate/resume. We put the build number
-  * and date in here so that we guarantee not to resume with a different
-  * kernel.
-@@ -80,6 +89,8 @@ static struct arch_hibernate_hdr {
- 	 * re-configure el2.
- 	 */
- 	phys_addr_t	__hyp_stub_vectors;
-+
-+	u64		sleep_cpu_mpidr;
- } resume_hdr;
- 
- static inline void arch_hdr_invariants(struct arch_hibernate_hdr_invariants *i)
-@@ -122,12 +133,18 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
- 	else
- 		hdr->__hyp_stub_vectors = 0;
- 
-+	/* Save the mpidr of the cpu we called cpu_suspend() on... */
-+	hdr->sleep_cpu_mpidr = cpu_logical_map(sleep_cpu);
-+	pr_info("Suspending on CPU %d [mpidr:0x%llx]\n", sleep_cpu,
-+		hdr->sleep_cpu_mpidr);
-+
- 	return 0;
- }
- EXPORT_SYMBOL(arch_hibernation_header_save);
- 
- int arch_hibernation_header_restore(void *addr)
- {
-+	int ret;
- 	struct arch_hibernate_hdr_invariants invariants;
- 	struct arch_hibernate_hdr *hdr = addr;
- 
-@@ -137,6 +154,23 @@ int arch_hibernation_header_restore(void *addr)
- 		return -EINVAL;
- 	}
- 
-+	sleep_cpu = get_logical_index(hdr->sleep_cpu_mpidr);
-+	pr_info("Suspended on CPU %d [mpidr:0x%llx]\n", sleep_cpu,
-+		hdr->sleep_cpu_mpidr);
-+	if (sleep_cpu < 0) {
-+		pr_crit("Suspended on a CPU not known to this kernel!\n");
-+		return -EINVAL;
-+	}
-+	if (!cpu_online(sleep_cpu)) {
-+		pr_info("Suspended on a CPU that is offline! Bringing CPU up.\n");
-+		ret = cpu_up(sleep_cpu);
-+		if (ret) {
-+			pr_err("Failed to bring suspend-CPU up!\n");
-+			sleep_cpu = -EINVAL;
-+			return ret;
-+		}
-+	}
-+
- 	resume_hdr = *hdr;
- 
- 	return 0;
-@@ -233,6 +267,7 @@ int swsusp_arch_suspend(void)
- 	local_dbg_save(flags);
- 
- 	if (__cpu_suspend_enter(&state)) {
-+		sleep_cpu = smp_processor_id();
- 		ret = swsusp_save();
- 	} else {
- 		/* Clean kernel core startup/idle code to PoC*/
-@@ -251,6 +286,7 @@ int swsusp_arch_suspend(void)
- 		 */
- 		in_suspend = 0;
- 
-+		sleep_cpu = -EINVAL;
- 		__cpu_suspend_exit();
- 	}
- 
-@@ -506,3 +542,37 @@ static int __init check_boot_cpu_online_init(void)
- 	return 0;
- }
- core_initcall(check_boot_cpu_online_init);
-+
-+/* This overrides the weak version in kernel/power/hibernate.c */
-+int arch_hibernation_disable_cpus(bool suspend)
-+{
-+	int cpu, ret;
-+
-+	if (suspend) {
-+		/*
-+		 * During hibernate we need frozen_cpus to be updated and saved.
-+		 */
-+		ret = disable_nonboot_cpus();
-+	} else {
-+		/*
-+		 * Resuming from hibernate. From here, we can't race with
-+		 * userspace, and don't need to update frozen_cpus.
-+		 */
-+		pr_info("Disabling secondary CPUs ...\n");
-+
-+		/* sleep_cpu must have been loaded from the arch header */
-+		BUG_ON(sleep_cpu < 0);
-+
-+		for_each_online_cpu(cpu) {
-+			if (cpu == sleep_cpu)
-+				continue;
-+			ret = cpu_down(cpu);
-+			if (ret) {
-+				pr_err("Secondary CPUs are not disabled\n");
-+				break;
-+			}
-+		}
-+	}
-+
-+	return ret;
-+}
+@@ -172,6 +174,7 @@ ENDPROC(idmap_cpu_replace_ttbr1)
+  *	Initialise the processor for turning the MMU on.  Return in x0 the
+  *	value of the SCTLR_EL1 register.
+  */
++	.pushsection ".mmuoff.text", "ax"
+ ENTRY(__cpu_setup)
+ 	tlbi	vmalle1				// Invalidate local TLB
+ 	dsb	nsh
+@@ -255,3 +258,4 @@ ENDPROC(__cpu_setup)
+ crval:
+ 	.word	0xfcffffff			// clear
+ 	.word	0x34d5d91d			// set
++	.popsection
 -- 
 2.8.0.rc3
 
