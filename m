@@ -1,201 +1,176 @@
 From: James Morse <james.morse@arm.com>
-Subject: [PATCH v2 1/6] arm64: Create sections.h
-Date: Wed, 15 Jun 2016 18:35:43 +0100
-Message-ID: <1466012148-7674-2-git-send-email-james.morse@arm.com>
+Subject: [PATCH v2 3/6] arm64: hibernate: Support DEBUG_PAGEALLOC
+Date: Wed, 15 Jun 2016 18:35:45 +0100
+Message-ID: <1466012148-7674-4-git-send-email-james.morse@arm.com>
 References: <1466012148-7674-1-git-send-email-james.morse@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39170 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:39180 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751884AbcFORir (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 15 Jun 2016 13:38:47 -0400
+	id S932529AbcFORiw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 Jun 2016 13:38:52 -0400
 In-Reply-To: <1466012148-7674-1-git-send-email-james.morse@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 Cc: Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>
 
-Each time new section markers are added, kernel/vmlinux.ld.S is updated,
-and new extern char __start_foo[] definitions are scattered through the
-tree.
+DEBUG_PAGEALLOC removes the valid bit of page table entries to prevent
+any access to unallocated memory. Hibernate uses this as a hint that those
+pages don't need to be saved/restored. This patch adds the
+kernel_page_present() function it uses.
 
-Create asm/include/sections.h to collect these definitions (and include
-the existing asm-generic version).
+hibernate.c copies the resume kernel's linear map for use during restore.
+Add _copy_pte() to fill-in the holes made by DEBUG_PAGEALLOC in the resume
+kernel, so we can restore data the original kernel had at these addresses.
 
+Finally, DEBUG_PAGEALLOC means the linear-map alias of KERNEL_START to
+KERNEL_END may have holes in it, so we can't lazily clean this whole
+area to the PoC. Only clean the .mmuoff.text region, and the kernel/kvm
+idmaps.
+
+This reverts commit da24eb1f3f9e2c7b75c5f8c40d8e48e2c4789596.
+
+Reported-by: Will Deacon <will.deacon@arm.com>
 Signed-off-by: James Morse <james.morse@arm.com>
 ---
-Changes since v1:
- * Removed text_text markers,
- * Sorted sections.h
+Change since v1:
+ * Changed cleaning of text_text section to the new mmuoff section.
 
- arch/arm64/include/asm/Kbuild     |  1 -
- arch/arm64/include/asm/sections.h | 28 ++++++++++++++++++++++++++++
- arch/arm64/include/asm/traps.h    |  3 +--
- arch/arm64/include/asm/virt.h     |  5 +----
- arch/arm64/kernel/alternative.c   |  7 +++----
- arch/arm64/kernel/hibernate.c     |  6 ------
- arch/arm64/kvm/reset.c            |  3 +--
- 7 files changed, 34 insertions(+), 19 deletions(-)
- create mode 100644 arch/arm64/include/asm/sections.h
+ arch/arm64/Kconfig            |  1 -
+ arch/arm64/kernel/hibernate.c | 45 ++++++++++++++++++++++++++++++++++---------
+ arch/arm64/mm/pageattr.c      | 40 +++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 75 insertions(+), 11 deletions(-)
 
-diff --git a/arch/arm64/include/asm/Kbuild b/arch/arm64/include/asm/Kbuild
-index cff532a6744e..50c1f646b704 100644
---- a/arch/arm64/include/asm/Kbuild
-+++ b/arch/arm64/include/asm/Kbuild
-@@ -33,7 +33,6 @@ generic-y += poll.h
- generic-y += preempt.h
- generic-y += resource.h
- generic-y += rwsem.h
--generic-y += sections.h
- generic-y += segment.h
- generic-y += sembuf.h
- generic-y += serial.h
-diff --git a/arch/arm64/include/asm/sections.h b/arch/arm64/include/asm/sections.h
-new file mode 100644
-index 000000000000..cb68eb348566
---- /dev/null
-+++ b/arch/arm64/include/asm/sections.h
-@@ -0,0 +1,28 @@
-+/*
-+ * Copyright (C) 2016 ARM Limited
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+#ifndef __ASM_SECTIONS_H
-+#define __ASM_SECTIONS_H
-+
-+#include <asm-generic/sections.h>
-+
-+extern char __alt_instructions[], __alt_instructions_end[];
-+extern char __exception_text_start[], __exception_text_end[];
-+extern char __hibernate_exit_text_start[], __hibernate_exit_text_end[];
-+extern char __hyp_idmap_text_start[], __hyp_idmap_text_end[];
-+extern char __hyp_text_start[], __hyp_text_end[];
-+extern char __idmap_text_start[], __idmap_text_end[];
-+
-+#endif /* __ASM_SECTIONS_H */
-diff --git a/arch/arm64/include/asm/traps.h b/arch/arm64/include/asm/traps.h
-index 0cc2f29bf9da..90156c803f11 100644
---- a/arch/arm64/include/asm/traps.h
-+++ b/arch/arm64/include/asm/traps.h
-@@ -19,6 +19,7 @@
- #define __ASM_TRAP_H
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 5a0a691d4220..c7aa78b9f586 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -598,7 +598,6 @@ source kernel/Kconfig.preempt
+ source kernel/Kconfig.hz
  
- #include <linux/list.h>
-+#include <asm/sections.h>
+ config ARCH_SUPPORTS_DEBUG_PAGEALLOC
+-	depends on !HIBERNATION
+ 	def_bool y
  
- struct pt_regs;
- 
-@@ -52,8 +53,6 @@ static inline int __in_irqentry_text(unsigned long ptr)
- 
- static inline int in_exception_text(unsigned long ptr)
- {
--	extern char __exception_text_start[];
--	extern char __exception_text_end[];
- 	int in;
- 
- 	in = ptr >= (unsigned long)&__exception_text_start &&
-diff --git a/arch/arm64/include/asm/virt.h b/arch/arm64/include/asm/virt.h
-index dcbcf8dcbefb..b78611157f8b 100644
---- a/arch/arm64/include/asm/virt.h
-+++ b/arch/arm64/include/asm/virt.h
-@@ -40,6 +40,7 @@
- #ifndef __ASSEMBLY__
- 
- #include <asm/ptrace.h>
-+#include <asm/sections.h>
- 
- /*
-  * __boot_cpu_mode records what mode CPUs were booted in.
-@@ -82,10 +83,6 @@ extern void verify_cpu_run_el(void);
- static inline void verify_cpu_run_el(void) {}
- #endif
- 
--/* The section containing the hypervisor text */
--extern char __hyp_text_start[];
--extern char __hyp_text_end[];
--
- #endif /* __ASSEMBLY__ */
- 
- #endif /* ! __ASM__VIRT_H */
-diff --git a/arch/arm64/kernel/alternative.c b/arch/arm64/kernel/alternative.c
-index d2ee1b21a10d..4434dabde898 100644
---- a/arch/arm64/kernel/alternative.c
-+++ b/arch/arm64/kernel/alternative.c
-@@ -25,14 +25,13 @@
- #include <asm/alternative.h>
- #include <asm/cpufeature.h>
- #include <asm/insn.h>
-+#include <asm/sections.h>
- #include <linux/stop_machine.h>
- 
- #define __ALT_PTR(a,f)		(u32 *)((void *)&(a)->f + (a)->f)
- #define ALT_ORIG_PTR(a)		__ALT_PTR(a, orig_offset)
- #define ALT_REPL_PTR(a)		__ALT_PTR(a, alt_offset)
- 
--extern struct alt_instr __alt_instructions[], __alt_instructions_end[];
--
- struct alt_region {
- 	struct alt_instr *begin;
- 	struct alt_instr *end;
-@@ -124,8 +123,8 @@ static int __apply_alternatives_multi_stop(void *unused)
- {
- 	static int patched = 0;
- 	struct alt_region region = {
--		.begin	= __alt_instructions,
--		.end	= __alt_instructions_end,
-+		.begin	= (struct alt_instr *)__alt_instructions,
-+		.end	= (struct alt_instr *)__alt_instructions_end,
- 	};
- 
- 	/* We always have a CPU 0 at this point (__init) */
+ config ARCH_HAS_HOLES_MEMORYMODEL
 diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
-index f8df75d740f4..56e548fe0386 100644
+index 56e548fe0386..75d45c4ceb84 100644
 --- a/arch/arm64/kernel/hibernate.c
 +++ b/arch/arm64/kernel/hibernate.c
-@@ -52,12 +52,6 @@ extern int in_suspend;
- /* Do we need to reset el2? */
- #define el2_reset_needed() (is_hyp_mode_available() && !is_kernel_in_hyp_mode())
+@@ -235,8 +235,15 @@ int swsusp_arch_suspend(void)
+ 	if (__cpu_suspend_enter(&state)) {
+ 		ret = swsusp_save();
+ 	} else {
+-		/* Clean kernel to PoC for secondary core startup */
+-		__flush_dcache_area(LMADDR(KERNEL_START), KERNEL_END - KERNEL_START);
++		/* Clean kernel core startup/idle code to PoC*/
++		__flush_dcache_area(__mmuoff_text_start,
++				    __mmuoff_text_end - __mmuoff_text_start);
++		__flush_dcache_area(__idmap_text_start,
++				    __idmap_text_end - __idmap_text_start);
++
++		/* Clean kvm setup code to PoC? */
++		if (el2_reset_needed())
++			__flush_dcache_area(__hyp_idmap_text_start, __hyp_idmap_text_end - __hyp_idmap_text_start);
  
--/*
-- * Start/end of the hibernate exit code, this must be copied to a 'safe'
-- * location in memory, and executed from there.
-- */
--extern char __hibernate_exit_text_start[], __hibernate_exit_text_end[];
--
- /* temporary el2 vectors in the __hibernate_exit_text section. */
- extern char hibernate_el2_vectors[];
- 
-diff --git a/arch/arm64/kvm/reset.c b/arch/arm64/kvm/reset.c
-index b1ad730e1567..c2d3594dd546 100644
---- a/arch/arm64/kvm/reset.c
-+++ b/arch/arm64/kvm/reset.c
-@@ -32,6 +32,7 @@
- #include <asm/kvm_asm.h>
- #include <asm/kvm_coproc.h>
- #include <asm/kvm_mmu.h>
-+#include <asm/sections.h>
- 
- /*
-  * ARMv8 Reset Values
-@@ -133,8 +134,6 @@ int kvm_reset_vcpu(struct kvm_vcpu *vcpu)
- 	return kvm_timer_vcpu_reset(vcpu, cpu_vtimer_irq);
+ 		/*
+ 		 * Tell the hibernation core that we've just restored
+@@ -252,6 +259,32 @@ int swsusp_arch_suspend(void)
+ 	return ret;
  }
  
--extern char __hyp_idmap_text_start[];
--
- unsigned long kvm_hyp_reset_entry(void)
++static void _copy_pte(pte_t *dst_pte, pte_t *src_pte, unsigned long addr)
++{
++	unsigned long pfn = virt_to_pfn(addr);
++
++	if (pte_valid(*src_pte)) {
++		/*
++		 * Resume will overwrite areas that may be marked
++		 * read only (code, rodata). Clear the RDONLY bit from
++		 * the temporary mappings we use during restore.
++		 */
++		set_pte(dst_pte, __pte(pte_val(*src_pte) & ~PTE_RDONLY));
++	} else if (debug_pagealloc_enabled()) {
++		/*
++		 * debug_pagealloc may have removed the PTE_VALID bit if
++		 * the page isn't in use by the resume kernel. It may have
++		 * been in use by the original kernel, in which case we need
++		 * to put it back in our copy to do the restore.
++		 *
++		 * Check for mappable memory that gives us a translation
++		 * like part of the linear map.
++		 */
++		if (pfn_valid(pfn) && pte_pfn(*src_pte) == pfn)
++			set_pte(dst_pte, __pte((pte_val(*src_pte) & ~PTE_RDONLY) | PTE_VALID));
++	}
++}
++
+ static int copy_pte(pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long start,
+ 		    unsigned long end)
  {
- 	if (!__kvm_cpu_uses_extended_idmap()) {
+@@ -267,13 +300,7 @@ static int copy_pte(pmd_t *dst_pmd, pmd_t *src_pmd, unsigned long start,
+ 
+ 	src_pte = pte_offset_kernel(src_pmd, start);
+ 	do {
+-		if (!pte_none(*src_pte))
+-			/*
+-			 * Resume will overwrite areas that may be marked
+-			 * read only (code, rodata). Clear the RDONLY bit from
+-			 * the temporary mappings we use during restore.
+-			 */
+-			set_pte(dst_pte, __pte(pte_val(*src_pte) & ~PTE_RDONLY));
++		_copy_pte(dst_pte, src_pte, addr);
+ 	} while (dst_pte++, src_pte++, addr += PAGE_SIZE, addr != end);
+ 
+ 	return 0;
+diff --git a/arch/arm64/mm/pageattr.c b/arch/arm64/mm/pageattr.c
+index ca6d268e3313..b6c0da84258c 100644
+--- a/arch/arm64/mm/pageattr.c
++++ b/arch/arm64/mm/pageattr.c
+@@ -139,4 +139,42 @@ void __kernel_map_pages(struct page *page, int numpages, int enable)
+ 					__pgprot(0),
+ 					__pgprot(PTE_VALID));
+ }
+-#endif
++#ifdef CONFIG_HIBERNATION
++/*
++ * When built with CONFIG_DEBUG_PAGEALLOC and CONFIG_HIBERNATION, this function
++ * is used to determine if a linear map page has been marked as not-present by
++ * CONFIG_DEBUG_PAGEALLOC. Walk the page table and check the PTE_VALID bit.
++ * This is based on kern_addr_valid(), which almost does what we need.
++ */
++bool kernel_page_present(struct page *page)
++{
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *pte;
++	unsigned long addr = (unsigned long)page_address(page);
++
++	pgd = pgd_offset_k(addr);
++	if (pgd_none(*pgd))
++		return false;
++
++	pud = pud_offset(pgd, addr);
++	if (pud_none(*pud))
++		return false;
++	if (pud_sect(*pud))
++		return true;
++
++	pmd = pmd_offset(pud, addr);
++	if (pmd_none(*pmd))
++		return false;
++	if (pmd_sect(*pmd))
++		return true;
++
++	pte = pte_offset_kernel(pmd, addr);
++	if (pte_none(*pte))
++		return false;
++
++	return pte_valid(*pte);
++}
++#endif /* CONFIG_HIBERNATION */
++#endif /* CONFIG_DEBUG_PAGEALLOC */
 -- 
 2.8.0.rc3
 
