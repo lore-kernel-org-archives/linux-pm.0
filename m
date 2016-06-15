@@ -1,115 +1,216 @@
-From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Subject: [PATCH v5 8/8] arm64: add sysfs cpu_capacity attribute
-Date: Wed, 15 Jun 2016 11:17:57 +0100
-Message-ID: <1465985877-18271-9-git-send-email-juri.lelli@arm.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: [PATCH v5 4/8] arm64: parse cpu capacity-dmips-mhz from DT
+Date: Wed, 15 Jun 2016 11:17:53 +0100
+Message-ID: <1465985877-18271-5-git-send-email-juri.lelli@arm.com>
 References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1465985877-18271-1-git-send-email-juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, juri.lelli-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sgurrappadi-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, Mark Brown <broonie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1465985877-18271-1-git-send-email-juri.lelli@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, sgurrappadi@nvidia.com, Mark Brown <broonie@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add a sysfs cpu_capacity attribute with which it is possible to read and
-write (thus over-writing default values) CPUs capacity. This might be
-useful in situations where values needs changing after boot.
+With the introduction of cpu capacity-dmips-mhz bindings, CPU capacities
+can now be calculated from values extracted from DT and information
+coming from cpufreq. Add parsing of DT information at boot time, and
+complement it with cpufreq information. Also, store such information
+using per CPU variables, as we do for arm.
 
-The new attribute shows up as:
+Caveat: the information provided by this patch will start to be used in
+the future. We need to #define arch_scale_cpu_capacity to something
+provided in arch, so that scheduler's default implementation (which gets
+used if arch_scale_cpu_capacity is not defined) is overwritten.
 
- /sys/devices/system/cpu/cpu*/cpu_capacity
-
-Cc: Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>
-Cc: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
-Cc: Mark Brown <broonie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
-Signed-off-by: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Mark Brown <broonie@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm64/kernel/topology.c | 68 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
+
+Changes from v1:
+  - normalize w.r.t. highest capacity found in DT
+  - bailout conditions (all-or-nothing)
+
+Changes from v4:
+  - parsing modified to reflect change in binding (capacity-dmips-mhz)
+---
+ arch/arm64/kernel/topology.c | 145 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 145 insertions(+)
 
 diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index 780c2c7..33a35411 100644
+index 694f6de..780c2c7 100644
 --- a/arch/arm64/kernel/topology.c
 +++ b/arch/arm64/kernel/topology.c
-@@ -37,6 +37,74 @@ static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
- 	per_cpu(cpu_scale, cpu) = capacity;
- }
+@@ -19,10 +19,152 @@
+ #include <linux/nodemask.h>
+ #include <linux/of.h>
+ #include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/cpufreq.h>
  
-+#ifdef CONFIG_PROC_SYSCTL
-+#include <asm/cpu.h>
-+#include <linux/string.h>
-+static ssize_t show_cpu_capacity(struct device *dev,
-+				 struct device_attribute *attr,
-+				 char *buf)
+ #include <asm/cputype.h>
+ #include <asm/topology.h>
+ 
++static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
++
++unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
 +{
-+	struct cpu *cpu = container_of(dev, struct cpu, dev);
-+	ssize_t rc;
-+	int cpunum = cpu->dev.id;
-+	unsigned long capacity = arch_scale_cpu_capacity(NULL, cpunum);
-+
-+	rc = sprintf(buf, "%lu\n", capacity);
-+
-+	return rc;
++	return per_cpu(cpu_scale, cpu);
 +}
 +
-+static ssize_t store_cpu_capacity(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf,
-+				  size_t count)
++static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
 +{
-+	struct cpu *cpu = container_of(dev, struct cpu, dev);
-+	int this_cpu = cpu->dev.id, i;
-+	unsigned long new_capacity;
-+	ssize_t ret;
-+
-+	if (count) {
-+		char *p = (char *) buf;
-+
-+		ret = kstrtoul(p, 0, &new_capacity);
-+		if (ret)
-+			return ret;
-+		if (new_capacity > SCHED_CAPACITY_SCALE)
-+			return -EINVAL;
-+
-+		for_each_cpu(i, &cpu_topology[this_cpu].core_sibling)
-+			set_capacity_scale(i, new_capacity);
-+	}
-+
-+	return count;
++	per_cpu(cpu_scale, cpu) = capacity;
 +}
 +
-+static DEVICE_ATTR(cpu_capacity,
-+		   0644,
-+		   show_cpu_capacity,
-+		   store_cpu_capacity);
++static u32 capacity_scale;
++static u32 *raw_capacity;
++static bool cap_parsing_failed;
 +
-+static int register_cpu_capacity_sysctl(void)
++static void __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
 +{
-+	int i;
-+	struct device *cpu;
++	int ret;
++	u32 cpu_capacity;
 +
-+	for_each_possible_cpu(i) {
-+		cpu = get_cpu_device(i);
-+		if (!cpu) {
-+			pr_err("%s: too early to get CPU%d device!\n",
-+			       __func__, i);
-+			continue;
++	if (cap_parsing_failed)
++		return;
++
++	ret = of_property_read_u32(cpu_node,
++				   "capacity-dmips-mhz",
++				   &cpu_capacity);
++	if (!ret) {
++		if (!raw_capacity) {
++			raw_capacity = kzalloc(sizeof(*raw_capacity) *
++					num_possible_cpus(), GFP_KERNEL);
++			if (!raw_capacity) {
++				pr_err("cpu_capacity: failed to allocate memory"
++				       " for raw capacities\n");
++				cap_parsing_failed = true;
++				return;
++			}
 +		}
-+		device_create_file(cpu, &dev_attr_cpu_capacity);
++		capacity_scale = max(cpu_capacity, capacity_scale);
++		raw_capacity[cpu] = cpu_capacity;
++		pr_debug("cpu_capacity: %s cpu_capacity=%u (raw)\n",
++			cpu_node->full_name, raw_capacity[cpu]);
++	} else {
++		pr_err("cpu_capacity: missing %s raw capacity "
++		       "(fallback to 1024 for all CPUs)\n",
++				cpu_node->full_name);
++		cap_parsing_failed = true;
++		kfree(raw_capacity);
 +	}
++}
++
++static void normalize_cpu_capacity(void)
++{
++	u64 capacity;
++	int cpu;
++
++	if (WARN_ON(!raw_capacity) || cap_parsing_failed)
++		return;
++
++	pr_debug("cpu_capacity: capacity_scale=%u\n", capacity_scale);
++	for_each_possible_cpu(cpu) {
++		pr_debug("cpu_capacity: cpu=%d raw_capacity=%u\n",
++			 cpu, raw_capacity[cpu]);
++		capacity = (raw_capacity[cpu] << SCHED_CAPACITY_SHIFT)
++			/ capacity_scale;
++		set_capacity_scale(cpu, capacity);
++		pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
++			cpu, arch_scale_cpu_capacity(NULL, cpu));
++	}
++}
++
++#ifdef CONFIG_CPU_FREQ
++static cpumask_var_t cpus_to_visit;
++static bool cap_parsing_done;
++
++static int
++init_cpu_capacity_callback(struct notifier_block *nb,
++			   unsigned long val,
++			   void *data)
++{
++	struct cpufreq_policy *policy = data;
++	int cpu;
++
++	if (cap_parsing_failed || cap_parsing_done)
++		return 0;
++
++	switch (val) {
++	case CPUFREQ_NOTIFY:
++		pr_debug("cpu_capacity: init cpu capacity for CPUs [%*pbl] "
++				"(to_visit=%*pbl)\n",
++				cpumask_pr_args(policy->related_cpus),
++				cpumask_pr_args(cpus_to_visit));
++		cpumask_andnot(cpus_to_visit,
++			       cpus_to_visit,
++			       policy->related_cpus);
++		for_each_cpu(cpu, policy->related_cpus) {
++			raw_capacity[cpu] = arch_scale_cpu_capacity(NULL, cpu) *
++					    policy->max / 1000UL;
++			capacity_scale = max(raw_capacity[cpu], capacity_scale);
++		}
++		if (cpumask_empty(cpus_to_visit)) {
++			normalize_cpu_capacity();
++			kfree(raw_capacity);
++			pr_debug("cpu_capacity: parsing done\n");
++			cap_parsing_done = true;
++		}
++	}
++	return 0;
++}
++
++static struct notifier_block init_cpu_capacity_notifier = {
++	.notifier_call = init_cpu_capacity_callback,
++};
++
++static int __init register_cpufreq_notifier(void)
++{
++	if (cap_parsing_failed)
++		return -EINVAL;
++
++	if (!alloc_cpumask_var(&cpus_to_visit, GFP_KERNEL)) {
++		pr_err("cpu_capacity: failed to allocate memory for "
++				"cpus_to_visit\n");
++		return -ENOMEM;
++	}
++	cpumask_copy(cpus_to_visit, cpu_possible_mask);
++
++	return cpufreq_register_notifier(&init_cpu_capacity_notifier,
++					 CPUFREQ_POLICY_NOTIFIER);
++}
++core_initcall(register_cpufreq_notifier);
++#else
++static int __init free_raw_capacity(void)
++{
++	kfree(raw_capacity);
 +
 +	return 0;
 +}
-+late_initcall(register_cpu_capacity_sysctl);
++core_initcall(free_raw_capacity);
 +#endif
 +
- static u32 capacity_scale;
- static u32 *raw_capacity;
- static bool cap_parsing_failed;
+ static int __init get_cpu_for_node(struct device_node *node)
+ {
+ 	struct device_node *cpu_node;
+@@ -34,6 +176,7 @@ static int __init get_cpu_for_node(struct device_node *node)
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		if (of_get_cpu_node(cpu, NULL) == cpu_node) {
++			parse_cpu_capacity(cpu_node, cpu);
+ 			of_node_put(cpu_node);
+ 			return cpu;
+ 		}
+@@ -185,6 +328,8 @@ static int __init parse_dt_topology(void)
+ 	if (ret != 0)
+ 		goto out_map;
+ 
++	normalize_cpu_capacity();
++
+ 	/*
+ 	 * Check that all cores are in the topology; the SMP code will
+ 	 * only mark cores described in the DT as possible.
 -- 
 2.7.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
