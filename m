@@ -1,69 +1,171 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [RFC PATCH] x86: Move away from /dev/cpu/*/msr
-Date: Wed, 15 Jun 2016 13:21:01 -0400
-Message-ID: <CAJvTdKnDUDXwmj_Yy=Z-ScugHX_2sHtijk7WESWc26rNqPzGpQ@mail.gmail.com>
-References: <20160615100029.GB32588@pd.tnic> <CAJvTdKkoMPZTagM_wRSCwbb=NKfBAU8SNMPz2hZuPhPqq_heFA@mail.gmail.com>
- <20160615165618.GF32588@pd.tnic>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160615165618.GF32588@pd.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thomas Renninger <trenn@suse.com>, Kan Liang <kan.liang@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+From: James Morse <james.morse@arm.com>
+Subject: [PATCH v2 0/6] arm64: hibernate: Fix DEBUG_PAGEALLOC and hibernate on non-boot cpu
+Date: Wed, 15 Jun 2016 18:35:42 +0100
+Message-ID: <1466012148-7674-1-git-send-email-james.morse@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:39161 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751737AbcFORil (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 Jun 2016 13:38:41 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>
 
-On Wed, Jun 15, 2016 at 12:56 PM, Borislav Petkov <bp@alien8.de> wrote:
-> On Wed, Jun 15, 2016 at 12:41:21PM -0400, Len Brown wrote:
->> Recent hardware has an additional MSR field
->>
->> MSR_IA32_HWP_REQUEST.ENERGY_PERFORMANCE_PREFERENCE
->> that replaces
->>
->> MSR_IA32_ENERGY_PERF_BIAS
->> for the purpose of P-state control.
->>
->>
->> Both MSRs/fields exist and have effect at the same time.
->>
->> so the API
->> energy_policy_pref_hint
->>
->> will not work -- as it isn't clear which MSR it refers to.
->
-> Surely we can make the new interface work too - perhaps add a new sysfs
-> file for the new thing. The old MSR_IA32_ENERGY_PERF_BIAS would be
-> needed on those older boxes.
->
-> Or we can have a sysfs file which is called something like
-> "perf_preference" or whatnot and that thing either maps input to the old
-> MSR_IA32_ENERGY_PERF_BIAS or to the new thing.
+Hi all,
 
-Maybe I wasn't clear.
-The API -- the name -- must be clear about what MSR it talks to.
-I suggest that the name exactly match the name of the actual MSR,
-because you are about to need a 2nd one with a name so close
-that it will otherwise be ambiguous.
+These patches improve the hibernate support for v4.8.
 
->> I've updated x86_energy_perf_policy to talk to this MSR
->> and a number of others for the benefit of HWP.  The
->> patch is over 1000 lines.  I'll post it shortly.
->
-> So we should *not* give ourselves the example that using msr.ko for
-> other things *besides* debugging is ok. It is very wrong to talk to
-> naked MSRs and we have done it by now because this thing was there and
-> well, sure, why not use it.
->
-> But poking at MSRs is dangerous and we need proper abstraction. And we
-> should work towards that instead perpetuating wrong use.
+Patches 1&2 fix the hibernate problem with DEBUG_PAGEALLOC reported by Will.
+This also addresses the outstanding comment from Catalin [0] regarding cleaning
+of the whole kernel to the PoC. Now we clean a new section '.mmuoff.text'.
 
-Again, I support your direction.  I'm not trying to work against it,
-I'm trying to tell you that you are just scratching the surface
-and there will be more steps to complete the task -- because
-there are more MSRs.  Your new API doesn't exist on the
-installed base, and so the old /dev/msr method must be available
-to the installed base.  Sure, in the future, when the new API
-is available, we can update the utility to use it going forward.
+Patch one adds sections.h to avoid duplicate definitions of
+__hyp_idmap_text_start. (it looks like kprobes will duplicate this too [1)
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+The rest of the patches fix hibernate/resume on any CPU as discussed on the
+list[2]. Suzuki's maxcpus improvements mean the CPU we hibernated on may be
+offline during boot, and kexec will allow the CPUs logical order to be shuffled.
+Log output below[3], suspend happens on cpu0, with mpidr 0x103. For
+resume, cpu5 is brought up as it has mpidr 0x103, and cpu0 is taken down.
+After resume, /proc/cpuinfo shows only the original cpu0.
+
+Changes since v1:
+ * Fixed 'Brining' typo.
+ * Added .mmuoff.text section and gathered functions together.
+ * Put sections.h in alphabetical order.
+
+[v1] http://www.spinics.net/lists/arm-kernel/msg507805.html
+
+[0] http://www.spinics.net/lists/arm-kernel/msg499305.html
+[1] http://www.spinics.net/lists/arm-kernel/msg506451.html
+[2] http://www.spinics.net/lists/arm-kernel/msg499036.html
+[3] hotplug cpu0, kexec, hibernate, resume
+-------------------------%<-------------------------
+root@ubuntu:~# echo disk > /sys/power/state
+PM: Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.007 seconds) done.
+PM: Preallocating image memory... done (allocated 10112 pages)
+PM: Allocated 647168 kbytes in 2.69 seconds (240.58 MB/s)
+Freezing remaining freezable tasks ... (elapsed 0.005 seconds) done.
+PM: freeze of devices complete after 27.013 msecs
+PM: late freeze of devices complete after 20.624 msecs
+PM: noirq freeze of devices complete after 22.211 msecs
+Disabling non-boot CPUs ...
+PM: Creating hibernation image:
+PM: Need to copy 10103 pages
+PM: Hibernation image created (10103 pages copied)
+PM: noirq thaw of devices complete after 22.350 msecs
+PM: early thaw of devices complete after 23.680 msecs
+PM: thaw of devices complete after 98.331 msecs
+hibernate: Suspending on cpu 0 [mpidr:0x103]
+PM: Using 1 thread(s) for compression.
+PM: Compressing and saving image data (10105 pages)...
+PM: Image saving progress:   0%
+atkbd serio0: keyboard reset failed on 1c060000.kmi
+atkbd serio1: keyboard reset failed on 1c070000.kmi
+PM: Image saving progress:  10%
+PM: Image saving progress:  20%
+PM: Image saving progress:  30%
+PM: Image saving progress:  40%
+PM: Image saving progress:  50%
+PM: Image saving progress:  60%
+PM: Image saving progress:  70%
+PM: Image saving progress:  80%
+PM: Image saving progress:  90%
+PM: Image saving progress: 100%
+PM: Image saving done.
+PM: Wrote 646720 kbytes in 93.08 seconds (6.94 MB/s)
+PM: S|
+reboot: Power down
+
+[ ... ]
+
+Freezing user space processes ... (elapsed 0.000 seconds) done.
+PM: Using 1 thread(s) for decompression.
+PM: Loading and decompressing image data (10105 pages)...
+hibernate: Suspended on cpu 5 [mpidr:0x103]
+hibernate: Suspended on a CPU that is offline! Brining CPU up.
+Detected VIPT I-cache on CPU5
+CPU5: Booted secondary processor [410fd033]
+random: nonblocking pool is initialized
+PM: Image loading progress:   0%
+PM: Image loading progress:  10%
+PM: Image loading progress:  20%
+PM: Image loading progress:  30%
+PM: Image loading progress:  40%
+PM: Image loading progress:  50%
+PM: Image loading progress:  60%
+PM: Image loading progress:  70%
+PM: Image loading progress:  80%
+PM: Image loading progress:  90%
+PM: Image loading progress: 100%
+PM: Image loading done.
+PM: Read 646720 kbytes in 30.47 seconds (21.22 MB/s)
+PM: quiesce of devices complete after 32.958 msecs
+PM: late quiesce of devices complete after 11.574 msecs
+PM: noirq quiesce of devices complete after 24.918 msecs
+hibernate: Disabling secondary CPUs ...
+IRQ1 no longer affine to CPU0
+IRQ6 no longer affine to CPU0
+IRQ28 no longer affine to CPU0
+IRQ29 no longer affine to CPU0
+IRQ32 no longer affine to CPU0
+IRQ34 no longer affine to CPU0
+IRQ35 no longer affine to CPU0
+IRQ37 no longer affine to CPU0
+IRQ41 no longer affine to CPU0
+IRQ48 no longer affine to CPU0
+CPU0: shutdown
+
+psci: CPU0 killed.
+PM: noirq restore of devices complete after 27.419 msecs
+PM: early restore of devices complete after 23.554 msecs
+PM: restore of devices complete after 113.188 msecs
+Restarting tasks ... done.
+root@ubuntu:~# atkbd serio0: keyboard reset failed on 1c060000.kmi
+atkbd serio1: keyboard reset failed on 1c070000.kmi
+root@ubuntu:~# cat /proc/cpuinfo
+processor       : 0
+BogoMIPS        : 100.00
+Features        : fp asimd evtstrm aes pmull sha1 sha2 crc32
+CPU implementer : 0x41
+CPU architecture: 8
+CPU variant     : 0x0
+CPU part        : 0xd03
+CPU revision    : 3
+
+root@ubuntu:~#
+-------------------------%<-------------------------
+
+James Morse (6):
+  arm64: Create sections.h
+  arm64: Add .mmuoff.text section
+  arm64: hibernate: Support DEBUG_PAGEALLOC
+  PM / Hibernate: Allow architectures to specify the hibernate/resume
+    CPU
+  arm64: hibernate: Identify the CPU to resume on by its MPIDR
+  Revert "arm64: hibernate: Refuse to hibernate if the boot cpu is
+    offline"
+
+ arch/arm64/Kconfig                |   1 -
+ arch/arm64/include/asm/Kbuild     |   1 -
+ arch/arm64/include/asm/sections.h |  29 ++++++++
+ arch/arm64/include/asm/suspend.h  |   1 +
+ arch/arm64/include/asm/traps.h    |   3 +-
+ arch/arm64/include/asm/virt.h     |   5 +-
+ arch/arm64/kernel/alternative.c   |   7 +-
+ arch/arm64/kernel/head.S          |   6 +-
+ arch/arm64/kernel/hibernate.c     | 137 ++++++++++++++++++++++++++++----------
+ arch/arm64/kernel/sleep.S         |   2 +
+ arch/arm64/kernel/vmlinux.lds.S   |   3 +
+ arch/arm64/kvm/reset.c            |   3 +-
+ arch/arm64/mm/pageattr.c          |  40 ++++++++++-
+ arch/arm64/mm/proc.S              |   4 ++
+ kernel/power/hibernate.c          |  16 ++++-
+ 15 files changed, 202 insertions(+), 56 deletions(-)
+ create mode 100644 arch/arm64/include/asm/sections.h
+
+-- 
+2.8.0.rc3
+
