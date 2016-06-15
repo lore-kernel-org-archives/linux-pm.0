@@ -1,58 +1,62 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH 0/8] PM / Domains: Add support for removing PM domains
-Date: Wed, 15 Jun 2016 16:46:38 +0200
-Message-ID: <CAPDyKFoUxknMzF-TReS+3LkRLvw-X1SeBCw83_y_bsXVGJVnXA@mail.gmail.com>
-References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH v5 4/8] arm64: parse cpu capacity-dmips-mhz from DT
+Date: Wed, 15 Jun 2016 15:48:21 +0100
+Message-ID: <20160615144821.GF5981@e106622-lin>
+References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com>
+ <1465985877-18271-5-git-send-email-juri.lelli@arm.com>
+ <20160615134938.GA2282@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1457090634-14785-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:38029 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932752AbcFOOs1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 Jun 2016 10:48:27 -0400
+Content-Disposition: inline
+In-Reply-To: <20160615134938.GA2282@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, sgurrappadi@nvidia.com
 
-On 4 March 2016 at 12:23, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> In order to safely remove PM domains there are a few changes that need to be
-> made to ensure that no one is holding an external reference to a PM domain
-> after it has been removed. One solution, implemented here, solves this by
-> eliminating external references to PM domain. Another alternative would be
-> to employ some reference counting for the PM domains, however, I did not see
-> a good reason for allowing external references in the first place (as always
-> there could be something that I have over-looked!).
->
-> Jon Hunter (8):
->   PM / Domains: Add new helper functions for device-tree
->   ARM: EXYNOS: Remove calls to of_genpd_get_from_provider()
->   staging: board: Remove calls to of_genpd_get_from_provider()
->   PM / Domains: Don't expose generic_pm_domain structure
->   PM / Domains: Verify the PM domain is present when adding a provider
->   PM / Domains: Remove a provider by referencing the data pointer
->   PM / Domains: Prepare for adding support to remove PM domains
->   PM / Domains: Add support for removing PM domains
->
->  arch/arm/mach-exynos/pm_domains.c |  23 +--
->  drivers/base/power/domain.c       | 324 +++++++++++++++++++++++++++++++++++---
->  drivers/staging/board/board.c     |   9 +-
->  include/linux/pm_domain.h         |  55 ++++---
->  4 files changed, 348 insertions(+), 63 deletions(-)
->
-> --
-> 2.1.4
->
+On 15/06/16 14:49, Mark Brown wrote:
+> On Wed, Jun 15, 2016 at 11:17:53AM +0100, Juri Lelli wrote:
+> 
+> > +		if (!raw_capacity) {
+> > +			raw_capacity = kzalloc(sizeof(*raw_capacity) *
+> > +					num_possible_cpus(), GFP_KERNEL);
+> 
+> kcalloc()?
+> 
 
-Apologize for the long delay!
+Right. Will change.
 
-I have looked through this now and I really like this!
+> > +			if (!raw_capacity) {
+> > +				pr_err("cpu_capacity: failed to allocate memory"
+> > +				       " for raw capacities\n");
+> 
+> It's normally better to avoid splitting errors message so people can
+> grep if they see the error.
+> 
 
-There were a few comments, but those should be easily taken care of.
-So please go ahead and re-spin a new version!
+Tried to avoid breaking 80 columns. But, we seem to have longer pr_err
+strings already. I'll change that.
 
-There are a few outstanding genpd patches which I have posted a while
-ago but which isn't yet queued for 4.8.
-I don't know whether those will conflict with this series (if they get
-merged prior to this), but I guess it's better if you anyway base you
-series on Rafael's latest changes instead of on top of mine...
+> > +	} else {
+> > +		pr_err("cpu_capacity: missing %s raw capacity "
+> > +		       "(fallback to 1024 for all CPUs)\n",
+> > +				cpu_node->full_name);
+> 
+> That's going to complain fairly loudly for all existing DTs isn't it and
+> it's kind of redundant if all the cores have the same capacity (which is
+> a very common case)?  How about printing an error only if we already
+> found one, or printing a single warning at the end if we didn't get
+> anything?
 
-Kind regards
-Uffe
+Right, I'll change the condition for which pr_err is emitted. I think
+the situation for which we care the most about is when we find partial
+information in DT.
+
+Thanks,
+
+- Juri
