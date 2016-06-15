@@ -1,78 +1,64 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 3/3] firmware: scpi: add device power domain support using
- genpd
-Date: Wed, 15 Jun 2016 14:44:06 +0100
-Message-ID: <57615BA6.5010406@arm.com>
-References: <1465228439-13457-1-git-send-email-sudeep.holla@arm.com>
- <1465228439-13457-4-git-send-email-sudeep.holla@arm.com>
- <CAPDyKFp5GacJNq_hqhrdupN9gYNHYmE_-Z7ZV-c6BP59AaurZw@mail.gmail.com>
- <576156D6.4010606@arm.com>
- <CAPDyKFrerQU61iN6qjLLbw_=xmodmkGCZMEx29kC6arOzMfHiw@mail.gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v5 4/8] arm64: parse cpu capacity-dmips-mhz from DT
+Date: Wed, 15 Jun 2016 14:49:38 +0100
+Message-ID: <20160615134938.GA2282@sirena.org.uk>
+References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com>
+ <1465985877-18271-5-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="Qcw+NG9yjQzXdZsc"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrerQU61iN6qjLLbw_=xmodmkGCZMEx29kC6arOzMfHiw@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1465985877-18271-5-git-send-email-juri.lelli@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jon Medhurst <tixy@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, sgurrappadi@nvidia.com
 List-Id: linux-pm@vger.kernel.org
 
 
+--Qcw+NG9yjQzXdZsc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On 15/06/16 14:29, Ulf Hansson wrote:
-> [...]
->
->>
->>>> +static const struct of_device_id scpi_power_domain_ids[] = {
->>>> +       { .compatible = "arm,scpi-power-domains", },
->>>> +       { /* sentinel */ }
->>>> +};
->>>
->>>
->>> Actually I think you shouldn't implement this a standalone driver and
->>> thus you can remove this compatible.
->>>
->>
->> While I tend to agree, I did this to keep it aligned with other SCPI
->> users(clocks, sensors,.. for example).
->>
->> I assume remove compatible just from driver ? IMO, it doesn't make sense
->> to add power domain provider without a compatible.
->>
->>> Instead, I think it's better if you let the arm_scpi driver to also
->>> initialize the PM domain.
->>>
->>
->> OK, I can do that.
->>
->>> If you still want the PM domain code to be maintained in a separate
->>> file, just provide a header file which declares an
->>> "scpi_pm_domain_init()" function (and a stub when not supported),
->>> which the arm_scpi driver should call during ->probe().
->>>
->>
->> I am fine with that, just that it deviates from the approach taken in
->> other subsystems as I mentioned above.
->
-> If DT maintainers are happy with you adding a compatible for this,
-> don't let me stop you from implementing this as standalone driver.
->
+On Wed, Jun 15, 2016 at 11:17:53AM +0100, Juri Lelli wrote:
 
-I assume compatibles are always preferred even if they are not used to
-make it future proof and may be that's why the binding was accepted. We
-need to have a node to specify phandle in the consumers anyways, it's
-always better to have separate node for each of the SCPI users/provider
-(like clock, sensors, power domains) instead of pointing all to the one
-SCPI node. Again that's just my view.
+> +		if (!raw_capacity) {
+> +			raw_capacity = kzalloc(sizeof(*raw_capacity) *
+> +					num_possible_cpus(), GFP_KERNEL);
 
-> I have no strong opinions about it, so perhaps it's then better to not
-> deviate from other cases!?
->
+kcalloc()?
 
-OK, thanks. I will respin with Kconfig changes and retain the file in
-drivers/firmware for now.
+> +			if (!raw_capacity) {
+> +				pr_err("cpu_capacity: failed to allocate memory"
+> +				       " for raw capacities\n");
 
--- 
-Regards,
-Sudeep
+It's normally better to avoid splitting errors message so people can
+grep if they see the error.
+
+> +	} else {
+> +		pr_err("cpu_capacity: missing %s raw capacity "
+> +		       "(fallback to 1024 for all CPUs)\n",
+> +				cpu_node->full_name);
+
+That's going to complain fairly loudly for all existing DTs isn't it and
+it's kind of redundant if all the cores have the same capacity (which is
+a very common case)?  How about printing an error only if we already
+found one, or printing a single warning at the end if we didn't get
+anything?
+
+--Qcw+NG9yjQzXdZsc
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJXYVzuAAoJECTWi3JdVIfQjxEH/1RBpCn3SSBgvm+gaCDRM+gB
+IDAn8FgjstVelwko/PnhR6NH3oPXL3qsDWsK0UO+Z172Yeo7WzBT4DFwCgZmsjYW
+JQ9cno8hXnOwzfTm9yTadK9RBFI8+K5ANRGgnO8HChUXveCtupnpIMpfbad6YTua
+VbLxynUjaSRS+rmqzhJKQrmjivif6ywmXfSupEBCXnPCVQhqukz+hkacuezMI9vS
+4ZiE5xc4Hc8AKMs8EYxriXLr+y27kr51AGPWsL/Pwz5mjNpo/EFZp9BU/9QunmxH
+hG4PK8XAJvka9OcMzyBsjhG2KmjiybvZn/0RfgpriiK4XwZVV1330R/m0a7r4HE=
+=TQFd
+-----END PGP SIGNATURE-----
+
+--Qcw+NG9yjQzXdZsc--
