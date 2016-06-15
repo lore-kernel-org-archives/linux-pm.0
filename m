@@ -1,87 +1,74 @@
 From: James Morse <james.morse@arm.com>
-Subject: [PATCH v2 4/6] PM / Hibernate: Allow architectures to specify the hibernate/resume CPU
-Date: Wed, 15 Jun 2016 18:35:46 +0100
-Message-ID: <1466012148-7674-5-git-send-email-james.morse@arm.com>
+Subject: [PATCH v2 6/6] Revert "arm64: hibernate: Refuse to hibernate if the boot cpu is offline"
+Date: Wed, 15 Jun 2016 18:35:48 +0100
+Message-ID: <1466012148-7674-7-git-send-email-james.morse@arm.com>
 References: <1466012148-7674-1-git-send-email-james.morse@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39185 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:39194 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753237AbcFORiz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 15 Jun 2016 13:38:55 -0400
+	id S932529AbcFORi7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 Jun 2016 13:38:59 -0400
 In-Reply-To: <1466012148-7674-1-git-send-email-james.morse@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 Cc: Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>
 
-On arm64 the cpu with logical id 0 is assumed to be the boot CPU. If a
-user hotplugs this CPU out, then uses kexec to boot a new kernel, the new
-kernel will assign logical id 0 to a different physical CPU.
-This breaks hibernate as hibernate and resume will be attempted on different
-CPUs.
+Now that we use the MPIDR to resume on the same CPU that we hibernated on,
+we no longer need to refuse to hibernate if the boot cpu is offline. (Which
+we can't possibly know if kexec causes logical CPUs to be renumbered).
 
-Define a weak symbol arch_hibernation_disable_cpus(), which defaults to
-calling disable_nonboot_cpus). Architectures that allow CPU 0 to be
-hotplugged can use this to control which CPU is used for hibernate/resume.
+This reverts commit 1fe492ce6482b77807b25d29690a48c46456beee.
 
 Signed-off-by: James Morse <james.morse@arm.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>
 ---
-If this approach is acceptable, this patch should go with 4&5 via the arm64
-tree.
+ arch/arm64/kernel/hibernate.c | 26 --------------------------
+ 1 file changed, 26 deletions(-)
 
- kernel/power/hibernate.c | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index fca9254280ee..0e668a3207ec 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -70,6 +70,16 @@ bool hibernation_available(void)
+diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
+index 5f9266aeff00..07c59cbfd615 100644
+--- a/arch/arm64/kernel/hibernate.c
++++ b/arch/arm64/kernel/hibernate.c
+@@ -18,7 +18,6 @@
+ #include <linux/cpu.h>
+ #include <linux/kvm_host.h>
+ #include <linux/mm.h>
+-#include <linux/notifier.h>
+ #include <linux/pm.h>
+ #include <linux/sched.h>
+ #include <linux/suspend.h>
+@@ -518,31 +517,6 @@ out:
+ 	return rc;
  }
  
- /**
-+ * arch_hibernation_disable_cpus - Allow architectures to direct which CPU
-+ * is used for suspend or resume.
-+ * @suspend: True during hibernate, false for resume.
-+ */
-+int __weak arch_hibernation_disable_cpus(__maybe_unused bool suspend)
-+{
-+	return disable_nonboot_cpus();
-+}
-+
-+/**
-  * hibernation_set_ops - Set the global hibernate operations.
-  * @ops: Hibernation operations to use in subsequent hibernation transitions.
-  */
-@@ -279,7 +289,7 @@ static int create_image(int platform_mode)
- 	if (error || hibernation_test(TEST_PLATFORM))
- 		goto Platform_finish;
- 
--	error = disable_nonboot_cpus();
-+	error = arch_hibernation_disable_cpus(true);
- 	if (error || hibernation_test(TEST_CPUS))
- 		goto Enable_cpus;
- 
-@@ -433,7 +443,7 @@ static int resume_target_kernel(bool platform_mode)
- 	if (error)
- 		goto Cleanup;
- 
--	error = disable_nonboot_cpus();
-+	error = arch_hibernation_disable_cpus(false);
- 	if (error)
- 		goto Enable_cpus;
- 
-@@ -551,7 +561,7 @@ int hibernation_platform_enter(void)
- 	if (error)
- 		goto Platform_finish;
- 
--	error = disable_nonboot_cpus();
-+	error = arch_hibernation_disable_cpus(true);
- 	if (error)
- 		goto Enable_cpus;
- 
+-static int check_boot_cpu_online_pm_callback(struct notifier_block *nb,
+-					     unsigned long action, void *ptr)
+-{
+-	if (action == PM_HIBERNATION_PREPARE &&
+-	     cpumask_first(cpu_online_mask) != 0) {
+-		pr_warn("CPU0 is offline.\n");
+-		return notifier_from_errno(-ENODEV);
+-	}
+-
+-	return NOTIFY_OK;
+-}
+-
+-static int __init check_boot_cpu_online_init(void)
+-{
+-	/*
+-	 * Set this pm_notifier callback with a lower priority than
+-	 * cpu_hotplug_pm_callback, so that cpu_hotplug_pm_callback will be
+-	 * called earlier to disable cpu hotplug before the cpu online check.
+-	 */
+-	pm_notifier(check_boot_cpu_online_pm_callback, -INT_MAX);
+-
+-	return 0;
+-}
+-core_initcall(check_boot_cpu_online_init);
+-
+ /* This overrides the weak version in kernel/power/hibernate.c */
+ int arch_hibernation_disable_cpus(bool suspend)
+ {
 -- 
 2.8.0.rc3
 
