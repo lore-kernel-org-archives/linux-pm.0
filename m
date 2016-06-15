@@ -1,70 +1,50 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 4/5] mfd: tps65217: Add power button as subdevice
-Date: Wed, 15 Jun 2016 15:12:42 +0100
-Message-ID: <20160615141242.GK4948@dell>
-References: <20160614132927.3309-1-m.niestroj@grinn-global.com>
- <20160614132927.3309-5-m.niestroj@grinn-global.com>
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v5 1/8] Documentation: arm: define DT cpu
+ capacity-dmips-mhz bindings
+Date: Wed, 15 Jun 2016 15:22:39 +0100
+Message-ID: <20160615142239.GD5981@e106622-lin>
+References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com>
+ <1465985877-18271-2-git-send-email-juri.lelli@arm.com>
+ <20160615140447.GB2282@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f172.google.com ([209.85.217.172]:34436 "EHLO
-	mail-lb0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753512AbcFOOMD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2016 10:12:03 -0400
-Received: by mail-lb0-f172.google.com with SMTP id oe3so1957184lbb.1
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2016 07:12:01 -0700 (PDT)
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20160614132927.3309-5-m.niestroj@grinn-global.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160615140447.GB2282-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, sgurrappadi-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Marcin Niestroj <m.niestroj@grinn-global.com>
-Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
 
-On Tue, 14 Jun 2016, Marcin Niestroj wrote:
+On 15/06/16 15:04, Mark Brown wrote:
+> On Wed, Jun 15, 2016 at 11:17:50AM +0100, Juri Lelli wrote:
+> 
+> > +CPU capacities are obtained by running a suitable benchmark. This binding makes
+> > +no aspersions on the validity or suitability of any particular benchmark, the
+> > +final capacity should, however, be:
+> 
+> Makes no guarantees.  An aspersion is an insult!
+> 
 
-> Add tps65217 power buttor subdevice with assigned IRQ resources.
->=20
-> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
-> ---
-> depends on patch 1 in series
->=20
->  drivers/mfd/tps65217.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
+Whoops! :-/
 
-Applied, thanks.
+Sure, I'll change that.
 
-> diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
-> index d49f94e..68cf431 100644
-> --- a/drivers/mfd/tps65217.c
-> +++ b/drivers/mfd/tps65217.c
-> @@ -38,6 +38,10 @@ static struct resource charger_resources[] =3D {
->  	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
->  };
-> =20
-> +static struct resource pb_resources[] =3D {
-> +	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
-> +};
-> +
->  struct tps65217_irq {
->  	int mask;
->  	int interrupt;
-> @@ -122,6 +126,12 @@ static struct mfd_cell tps65217s[] =3D {
->  		.resources =3D charger_resources,
->  		.of_compatible =3D "ti,tps65217-charger",
->  	},
-> +	{
-> +		.name =3D "tps65217-pwrbutton",
-> +		.num_resources =3D ARRAY_SIZE(pb_resources),
-> +		.resources =3D pb_resources,
-> +		.of_compatible =3D "ti,tps65217-pwrbutton",
-> +	},
->  };
-> =20
->  static irqreturn_t tps65217_irq_thread(int irq, void *data)
+> > +CPU capacities are obtained by running the Dhrystone benchmark on each CPU at
+> > +max frequency. The obtained DMIPS score is then divided by the frequency (in
+> > +MHz) at which the benchmark has been run, so that DMIPS/MHz are obtained.
+> > +Such values are then normalized w.r.t. the highest score obtained in the
+> > +system.
+> 
+> Perhaps worth mentioning that caches and so on should be enabled (based
+> on previous experience with people doing bringup)?
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+OK. I'll add something along this line.
+
+Thanks,
+
+- Juri
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
