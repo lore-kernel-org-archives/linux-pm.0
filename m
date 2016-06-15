@@ -1,78 +1,113 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Subject: Re: [PATCH] cpupower: Use conventional shared library versioning
-Date: Wed, 15 Jun 2016 12:13:33 +0100
-Message-ID: <1465989213.3529.264.camel@decadent.org.uk>
-References: <20160610010554.GR7555@decadent.org.uk>
-	 <2753168.d7n2N2ZaIy@skinner>
+From: Mason <slash.tmp@free.fr>
+Subject: Rebooting Cortex A9 MPCore (was: Linux panics when suspend cannot
+ offline the secondary cores)
+Date: Wed, 15 Jun 2016 13:48:27 +0200
+Message-ID: <5761408B.7080906@free.fr>
+References: <575ADFAC.4090009@free.fr> <2922940.3xeChLaYeK@vostro.rjw.lan>
+ <575EBA40.4000803@free.fr> <2041686.H4Vc2p72PV@vostro.rjw.lan>
+ <20160613210213.GZ1041@n2100.armlinux.org.uk> <575FFBAC.3000507@free.fr>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg="pgp-sha512";
-	protocol="application/pgp-signature"; boundary="=-O0G4sHjsZDIUEneG4M42"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:57155 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752575AbcFOLNn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2016 07:13:43 -0400
-In-Reply-To: <2753168.d7n2N2ZaIy@skinner>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:57723 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753093AbcFOLsz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 15 Jun 2016 07:48:55 -0400
+In-Reply-To: <575FFBAC.3000507@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: linux-pm@vger.kernel.org
+To: Russell King - ARM Linux <linux@armlinux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, Sebastian Frias <sf84@laposte.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
+On 14/06/2016 14:42, Mason wrote:
 
---=-O0G4sHjsZDIUEneG4M42
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+> On 13/06/2016 23:02, Russell King - ARM Linux wrote:
+> 
+>> On Mon, Jun 13, 2016 at 10:49:32PM +0200, Rafael J. Wysocki wrote:
+>>
+>>> I guess all of the existing implementations of smp_ops.cpu_die() don't return
+>>> to the caller no matter what, so the caller did not have to consider anything
+>>> else.
+>>
+>> Existing implementations for hardware which implements CPU hotplug
+>> takes the requested CPU down in such a way that smp_ops.cpu_die()
+>> *never* returns.
+>>
+>> We have a number of evaluation boards where its desirable to emulate
+>> CPU hotplug.  These boards have no power management abilities, and
+>> have no way to power down or reset a CPU from software.  For these,
+>> we implement CPU hotplug by taking the CPU down gracefully, taking
+>> it out of coherency, and then placing it in a loop waiting for the
+>> CPU up event to arrive.  At that point (and this is the only legal
+>> time) smp_ops.cpu_die() returns - at which point you get the
+>> resuscitating kernel message, and the CPU re-enters the kernel.
+>>
+>> This path is _only_ for these evaluation platforms which have no
+>> hardware support for CPU hotplug, and therefore no PM and no kexec.
+>>
+>> The *only* solution to having working PM support Mason's platform is
+>> a properly implemented CPU hotplug correctly - which means ensuring
+>> that the CPU is either powered down or placed in reset during the
+>> smp_ops.cpu_die() call.  Everything else (even the simulation of it)
+>> is not good enough.
+>>
+>> That can be done either by the dying CPU when it calls into
+>> smp_ops.cpu_die(), or the CPU requesting the death of the CPU via
+>> smp_ops.cpu_kill().
+>>
+>> Either way, it's up to the platform code to implement these, and as
+>> I say, a correct and proper implementation of this is a fundamental
+>> requirement for system power management (like suspend) and kexec in
+>> a SMP system.
+> 
+> Hello Russell,
+> 
+> The current plan is to have cpu_die() jump into the firmware, and have
+> the firmware "park" the calling core into a WFI loop until someone wants
+> to online the parked core, via the smp_boot_secondary() callback.
 
-On Wed, 2016-06-15 at 13:03 +0200, Thomas Renninger wrote:
-> Hi Ben,
->=20
-> On Friday, June 10, 2016 02:05:54 AM Ben Hutchings wrote:
-> > The current choice of variable names is rather confusing.=C2=A0=C2=A0LI=
-B_MIN is
-> > used for the soname version, which would normally be the *major* part
-> > of the version.
-> >=20
-> > - Rename LIB_MAJ (the full version) to LIB_VER and LIB_MIN (the soname
-> > =C2=A0 version) to LIB_SONAME_VER
-> > - Define LIB_SONAME_VER to be the first component of LIB_VER
-> > - Bump the full version to 1.0.0, since the soname version is currently=
- 1
->=20
-> I am currently working on adding rapl/powercapping things into
-> cpupower.
-> I will collect/integrate your patches and send them altogether.
+Link to the whole discussion:
+http://thread.gmane.org/gmane.linux.power-management.general/77268
 
-The ABI break has already happened, so changing the soname version is a
-bug fix that should go into 4.7. =C2=A0But I agree this second patch doesn'=
-t
-need to.
+Change of plans, because of MMU issues.
 
-Ben.
+cpu_die:
+  secondary core jumps from Linux into the firmware
+  firmware prepares the core to be reset(*)
+  core spins in a busy loop => never returns
 
---=20
-Ben Hutchings
-Reality is just a crutch for people who can't handle science fiction.
+cpu_kill:
+  main core jumps from Linux into the firmware
+  firmware resets secondary core, and puts it in a WFE/WFI loop
+      (until smp_boot_secondary() is called from Linux)
 
---=-O0G4sHjsZDIUEneG4M42
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Our preliminary implementation passes basic stress tests.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+The starred step is a bit unclear to me...
+What steps are required to prepare a Cortex A9 MPCore to safely reboot?
 
-iQIcBAABCgAGBQJXYThdAAoJEOe/yOyVhhEJQ1QQAJqobIh6+u+8Uc69pDvgVwyy
-xeSHF/SRfMODQyyiLlVHbUd6qvLwW3ltVHxsziuqTbskMX/j61I6YAFmK3ohdhDZ
-H6VrhPK77yMolQAZ/UnKSrI45rIgYQ7hBtDXvlbvqW5FE519aLSrCOInVBK9iDxO
-Y+Q864lvfZOci4gwxFhbTWus6ub4iah669k2Ot0v4V72KtCHVdgfM+bUsYsC527r
-H30F5GJVdNXjXfQcmNh6PqnihqpprfcG5ZqZlMy3bnza6s8ncE1baAevbqKRiEAz
-k2TsHgwqe8HpBLJMNdxGD9ACAPDLGszTLS0YKzSnmW1n1LuiQ3kCAPrUvyNgoAtS
-dW0gZogo89a/Wnk2zdq7ptmzKMy2maFhDP0pLUEF5gQ59fwzystd/gsC4Ve0i/vl
-hUyW1DIOe8DqbIBXKmRVoBuFpVTXliZvWACpdheUZQiCwsIK0GK7z9H7tCiKBfa2
-/N2f6IZ8m+vMX9a5xqxP9IL7RbG/0b191XBVpoFZcOXbFnJHxbuPkoMkfwcmMr08
-BAtfrvLEfEWJKPDrTT2paBmUMuVgzLLPWa+nY9muK144OmCkHMRMbRRHEZx0aj0e
-Eq98Dw4CTjQ09AmTQRdbX11VDtKYxGXVzIWhPX9TN0FL4/oZCNaddbA+zE3o7zrJ
-qTxPhG5iOLmIM/qtYCZ2
-=nSB/
------END PGP SIGNATURE-----
+I briefly discussed the topic with mrutland on IRC:
 
---=-O0G4sHjsZDIUEneG4M42--
+> Typically the sequence is:
+> 1) prevent allocation (i.e. disable translation and caching in all modes)
+> 2) clean+invalidate local caches
+> 3) exit coherency somehow
+
+Point 1 was clarified thus
+
+> Typically, you need to prevent allocation into data or unified caches,
+> and that may involve disabling data and instruction cacheability
+> (since instruction lookups may allocate in unified cache)
+
+Does someone know if step 1 is required on Cortex A9 MPCore,
+and how to achieve it?
+
+Is point 3 achieved by clearing bit 6 in ACTLR? (ACTLR.SMP)
+
+The MPCore TRM mentions "SCU CPU Power Status Register"
+which speaks of modes (normal, dormant, powered-off).
+Are these relevant for taking the core offline?
+
+Regards.
+
