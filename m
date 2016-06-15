@@ -1,95 +1,53 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 4/6] PM / Hibernate: Allow architectures to specify the
- hibernate/resume CPU
-Date: Wed, 15 Jun 2016 23:10:08 +0200
-Message-ID: <CAJZ5v0ipRONyMe15k=-FhcKEGM6kMh5Vu35XQexBr0SMYQoktQ@mail.gmail.com>
-References: <1466012148-7674-1-git-send-email-james.morse@arm.com> <1466012148-7674-5-git-send-email-james.morse@arm.com>
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Power driver patches to avoid lockdep complaints
+Date: Wed, 15 Jun 2016 14:13:44 -0700
+Message-ID: <20160615211344.GA31850@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:35111 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753076AbcFOVKK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2016 17:10:10 -0400
-Received: by mail-wm0-f65.google.com with SMTP id k184so6861722wme.2
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2016 14:10:10 -0700 (PDT)
-In-Reply-To: <1466012148-7674-5-git-send-email-james.morse@arm.com>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:38526 "EHLO
+	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753055AbcFOVNs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2016 17:13:48 -0400
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5FLDhcu090962
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2016 17:13:47 -0400
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+	by mx0a-001b2d01.pphosted.com with ESMTP id 23je2n0s0q-1
+	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2016 17:13:47 -0400
+Received: from localhost
+	by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
+	Wed, 15 Jun 2016 15:13:46 -0600
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com [9.57.198.28])
+	by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 89FD61FF001E
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2016 15:13:28 -0600 (MDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u5FLDiDP40632472
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2016 21:13:44 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+	by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u5FLDh1h031123
+	for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2016 17:13:44 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>
+To: rjw@rjwysocki.net, pavel@ucw.cz, tony@atomide.com, linux@roeck-us.net
+Cc: rostedt@goodmis.org, linux-pm@vger.kernel.org
 
-On Wed, Jun 15, 2016 at 7:35 PM, James Morse <james.morse@arm.com> wrote:
-> On arm64 the cpu with logical id 0 is assumed to be the boot CPU. If a
-> user hotplugs this CPU out, then uses kexec to boot a new kernel, the new
-> kernel will assign logical id 0 to a different physical CPU.
-> This breaks hibernate as hibernate and resume will be attempted on different
-> CPUs.
->
-> Define a weak symbol arch_hibernation_disable_cpus(), which defaults to
-> calling disable_nonboot_cpus). Architectures that allow CPU 0 to be
-> hotplugged can use this to control which CPU is used for hibernate/resume.
->
-> Signed-off-by: James Morse <james.morse@arm.com>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> ---
-> If this approach is acceptable, this patch should go with 4&5 via the arm64
-> tree.
+Hello!
 
-I'm not entirely happy with this, but if you absolutely need it and if
-you can't think about any cleaner way to achieve the goal, feel free
-to add my ACK to this patch if necessary.
+Ingo was not comfortable taking these through -tip, which is understandable,
+given that they don't depend on each other or on anything else not already
+in mainline, and that they don't have anything to do with -tip.
 
->  kernel/power/hibernate.c | 16 +++++++++++++---
->  1 file changed, 13 insertions(+), 3 deletions(-)
->
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index fca9254280ee..0e668a3207ec 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -70,6 +70,16 @@ bool hibernation_available(void)
->  }
->
->  /**
-> + * arch_hibernation_disable_cpus - Allow architectures to direct which CPU
-> + * is used for suspend or resume.
-> + * @suspend: True during hibernate, false for resume.
-> + */
-> +int __weak arch_hibernation_disable_cpus(__maybe_unused bool suspend)
-> +{
-> +       return disable_nonboot_cpus();
-> +}
-> +
-> +/**
->   * hibernation_set_ops - Set the global hibernate operations.
->   * @ops: Hibernation operations to use in subsequent hibernation transitions.
->   */
-> @@ -279,7 +289,7 @@ static int create_image(int platform_mode)
->         if (error || hibernation_test(TEST_PLATFORM))
->                 goto Platform_finish;
->
-> -       error = disable_nonboot_cpus();
-> +       error = arch_hibernation_disable_cpus(true);
->         if (error || hibernation_test(TEST_CPUS))
->                 goto Enable_cpus;
->
-> @@ -433,7 +443,7 @@ static int resume_target_kernel(bool platform_mode)
->         if (error)
->                 goto Cleanup;
->
-> -       error = disable_nonboot_cpus();
-> +       error = arch_hibernation_disable_cpus(false);
->         if (error)
->                 goto Enable_cpus;
->
-> @@ -551,7 +561,7 @@ int hibernation_platform_enter(void)
->         if (error)
->                 goto Platform_finish;
->
-> -       error = disable_nonboot_cpus();
-> +       error = arch_hibernation_disable_cpus(true);
->         if (error)
->                 goto Enable_cpus;
->
-> --
+So what would you guys like to do with these?
+
+They may be pulled from 13e698e68f75 (power: Use _rcuidle for
+suspend/resume tracepoints) in my -rcu tree:
+
+	git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
+
+							Thanx, Paul
+
