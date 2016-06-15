@@ -1,34 +1,46 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 10/11] cpuidle/powernv: Add support for POWER ISA v3
- idle states
-Date: Wed, 15 Jun 2016 10:27:25 +0530
-Message-ID: <5760E035.4070103@linux.vnet.ibm.com>
-References: <1465404871-5406-1-git-send-email-shreyas@linux.vnet.ibm.com> <1465404871-5406-11-git-send-email-shreyas@linux.vnet.ibm.com> <20160613153446.GF10634@linaro.org>	 <575FE0B0.4030309@linux.vnet.ibm.com> <1465903788.30200.8.camel@kernel.crashing.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 10/10] i2c: designware-platdrv: Rework system PM support
+Date: Wed, 15 Jun 2016 09:52:37 +0200
+Message-ID: <CAPDyKFow3QqMx_qCuSwBbL2rp2zfazyHWb0ez1nuM863b+=AKg@mail.gmail.com>
+References: <1465916848-8207-1-git-send-email-ulf.hansson@linaro.org>
+ <1465916848-8207-11-git-send-email-ulf.hansson@linaro.org> <1465918516.30123.66.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1465903788.30200.8.camel@kernel.crashing.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: ego@linux.vnet.ibm.com, mikey@neuling.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, maddy@linux.vnet.ibm.com, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1465918516.30123.66.camel@linux.intel.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 06/14/2016 04:59 PM, Benjamin Herrenschmidt wrote:
-> On Tue, 2016-06-14 at 16:17 +0530, Shreyas B Prabhu wrote:
-> 
+On 14 June 2016 at 17:35, Andy Shevchenko
+<andriy.shevchenko@linux.intel.com> wrote:
+> On Tue, 2016-06-14 at 17:07 +0200, Ulf Hansson wrote:
+>> The current code that deploys the system PM support relies on the
+>> "direct_complete" feature supported by the PM core. The goal is to
+>> avoid
+>> performing unnecessary operations during the system PM sequence.
 >>
->> I ignored adding this check because this is part of initcall and we are
->> unlikely to run out of memory at this state. But I'll add the check in
->> next version.
-> 
-> Why do you malloc the u64 array and not the string pointer array ?
-> Shouldn't you either have both on stack or both allocated ?
-> 
+>
+>>
+>>  static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
+>> -     .prepare = dw_i2c_plat_prepare,
+>> -     .complete = dw_i2c_plat_complete,
+>> -     SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend,
+>> dw_i2c_plat_resume)
+>> -     SET_RUNTIME_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume,
+>> NULL)
+>> +     SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
+>> +                             pm_runtime_force_resume)
+>> +     SET_RUNTIME_PM_OPS(dw_i2c_plat_runtime_suspend,
+>> +                     dw_i2c_plat_runtime_resume,
+>> +                     NULL)
+>>  };
+>
+> UNIVERSAL_PM_OPS ?
 
-Yes. I'll make this consistent.
+The UNIVERSAL_DEV_PM_OPS assigns the same callbacks for system PM as
+runtime PM, that doesn't work here.
 
-Thanks,
-Shreyas
+Kind regards
+Uffe
