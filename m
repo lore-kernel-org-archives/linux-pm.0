@@ -1,116 +1,91 @@
-From: Rob Herring <robh+dt@kernel.org>
-Subject: Re: [PATCH v5 1/8] Documentation: arm: define DT cpu
- capacity-dmips-mhz bindings
-Date: Wed, 15 Jun 2016 17:11:16 -0500
-Message-ID: <CAL_JsqJwQVsn3=6vQus4Q2OhnLUsJVN70j2+f3QoJejcb=p9YA@mail.gmail.com>
-References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com> <1465985877-18271-2-git-send-email-juri.lelli@arm.com>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: [PATCH v2] power_supply: fix return value of get_property
+Date: Wed, 15 Jun 2016 18:13:04 -0400
+Message-ID: <1466028784-24459-1-git-send-email-rklein@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:42150 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753129AbcFOWLm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 15 Jun 2016 18:11:42 -0400
-In-Reply-To: <1465985877-18271-2-git-send-email-juri.lelli@arm.com>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:8512 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753105AbcFOWNY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2016 18:13:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, peterz@infradead.org, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Mark Brown <broonie@kernel.org>, sgurrappadi@nvidia.com, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rhyland Klein <rklein@nvidia.com>
 
-On Wed, Jun 15, 2016 at 5:17 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> ARM systems may be configured to have cpus with different power/performance
-> characteristics within the same chip. In this case, additional information
-> has to be made available to the kernel (the scheduler in particular) for it
-> to be aware of such differences and take decisions accordingly.
->
-> Therefore, this patch aims at standardizing cpu capacities device tree
-> bindings for ARM platforms. Bindings define cpu capacity-dmips-mhz
-> parameter, to allow operating systems to retrieve such information from
-> the device tree and initialize related kernel structures, paving the way
-> for common code in the kernel to deal with heterogeneity.
->
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> Cc: Kumar Gala <galak@codeaurora.org>
-> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Cc: Olof Johansson <olof@lixom.net>
-> Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> Cc: Paul Walmsley <paul@pwsan.com>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Chen-Yu Tsai <wens@csie.org>
-> Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> ---
->
-> Changes from v1:
->  - removed section regarding capacity-scale
->  - added information regarding normalization
->
-> Changes from v4:
->  - binding changed to capacity-dmips-mhz
->  - sections and changelod updated accordingly
-> ---
->  .../devicetree/bindings/arm/cpu-capacity.txt       | 236 +++++++++++++++++++++
->  Documentation/devicetree/bindings/arm/cpus.txt     |  10 +
->  2 files changed, 246 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/cpu-capacity.txt
->
-> diff --git a/Documentation/devicetree/bindings/arm/cpu-capacity.txt b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
-> new file mode 100644
-> index 0000000..7582a13
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
-> @@ -0,0 +1,236 @@
-> +==========================================
-> +ARM CPUs capacity bindings
-> +==========================================
-> +
-> +==========================================
-> +1 - Introduction
-> +==========================================
-> +
-> +ARM systems may be configured to have cpus with different power/performance
-> +characteristics within the same chip. In this case, additional information
-> +has to be made available to the kernel (the scheduler in particular) for
-> +it to be aware of such differences and take decisions accordingly.
-> +
-> +==========================================
-> +2 - CPU capacity definition
-> +==========================================
-> +
-> +CPU capacity is a number that provides the scheduler information about CPUs
-> +heterogeneity. Such heterogeneity can come from micro-architectural differences
-> +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
-> +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
-> +context is about differing performance characteristics; this binding tries to
-> +capture a first-order approximation of the relative performance of CPUs.
-> +
-> +CPU capacities are obtained by running a suitable benchmark. This binding makes
-> +no aspersions on the validity or suitability of any particular benchmark, the
-> +final capacity should, however, be:
-> +
-> +* A "single-threaded" or CPU affine benchmark
-> +* Divided by the running frequency of the CPU executing the benchmark
-> +* Not subject to dynamic frequency scaling of the CPU
-> +
-> +For the time being we however advise usage of the Dhrystone benchmark. What
-> +above thus becomes:
-> +
-> +CPU capacities are obtained by running the Dhrystone benchmark on each CPU at
-> +max frequency. The obtained DMIPS score is then divided by the frequency (in
-> +MHz) at which the benchmark has been run, so that DMIPS/MHz are obtained.
-> +Such values are then normalized w.r.t. the highest score obtained in the
-> +system.
+power_supply_get_property() should ideally return -EAGAIN if it is
+called while the power_supply is being registered. There was no way
+previously to determine if use_cnt == 0 meant that the power_supply
+wasn't fully registered yet, or if it had already been unregistered.
 
-So the property says it represents DMIPS/MHz, but we take that and
-"normalize" them back to a made up numbers? Perhaps that step should
-be optional. Then paranoid Si vendors can put their fake numbers in
-and end users can update the dts files with real numbers.
+Add a new boolean to the power_supply struct to simply show if
+registration is completed. Lastly, modify the check in
+power_supply_show_property() to also ignore -EAGAIN when so it
+doesn't complain about not returning the property.
 
-Is there any point in allowing people to pick their own scale? Why not
-just 100 (as in percent)?
+Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+---
+v2:
+ - Modify power_supply_show_property() to not complain if it
+   sees a return value of -EAGAIN after calling
+   power_supply_get_property().
 
-Rob
+ drivers/power/power_supply_core.c  | 6 +++++-
+ drivers/power/power_supply_sysfs.c | 2 +-
+ include/linux/power_supply.h       | 1 +
+ 3 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+index b13cd074c52a..a39a47672979 100644
+--- a/drivers/power/power_supply_core.c
++++ b/drivers/power/power_supply_core.c
+@@ -491,8 +491,11 @@ int power_supply_get_property(struct power_supply *psy,
+ 			    enum power_supply_property psp,
+ 			    union power_supply_propval *val)
+ {
+-	if (atomic_read(&psy->use_cnt) <= 0)
++	if (atomic_read(&psy->use_cnt) <= 0) {
++		if (!psy->initialized)
++			return -EAGAIN;
+ 		return -ENODEV;
++	}
+ 
+ 	return psy->desc->get_property(psy, psp, val);
+ }
+@@ -775,6 +778,7 @@ __power_supply_register(struct device *parent,
+ 	if (rc)
+ 		goto create_triggers_failed;
+ 
++	psy->initialized = true;
+ 	/*
+ 	 * Update use_cnt after any uevents (most notably from device_add()).
+ 	 * We are here still during driver's probe but
+diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
+index 80fed98832f9..bcde8d13476a 100644
+--- a/drivers/power/power_supply_sysfs.c
++++ b/drivers/power/power_supply_sysfs.c
+@@ -83,7 +83,7 @@ static ssize_t power_supply_show_property(struct device *dev,
+ 			if (ret == -ENODATA)
+ 				dev_dbg(dev, "driver has no data for `%s' property\n",
+ 					attr->attr.name);
+-			else if (ret != -ENODEV)
++			else if (ret != -ENODEV && ret != -EAGAIN)
+ 				dev_err(dev, "driver failed to report `%s' property: %zd\n",
+ 					attr->attr.name, ret);
+ 			return ret;
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 751061790626..3965503315ef 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -248,6 +248,7 @@ struct power_supply {
+ 	struct delayed_work deferred_register_work;
+ 	spinlock_t changed_lock;
+ 	bool changed;
++	bool initialized;
+ 	atomic_t use_cnt;
+ #ifdef CONFIG_THERMAL
+ 	struct thermal_zone_device *tzd;
+-- 
+1.9.1
+
