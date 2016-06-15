@@ -1,68 +1,36 @@
-From: chenyu <yu.chen.surf@gmail.com>
-Subject: Re: [RFC PATCH] x86: Move away from /dev/cpu/*/msr
-Date: Wed, 15 Jun 2016 18:22:59 +0800
-Message-ID: <CADjb_WSTH6b2vpM2A=Kp_NKdUzVEoAhPNAQgU0jCuLS2_o55xw@mail.gmail.com>
-References: <20160615100029.GB32588@pd.tnic>
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v5 4/8] arm64: parse cpu capacity-dmips-mhz from DT
+Date: Wed, 15 Jun 2016 11:25:11 +0100
+Message-ID: <20160615102511.GZ5981@e106622-lin>
+References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com>
+ <1465985877-18271-5-git-send-email-juri.lelli@arm.com>
+ <CADRr18P=EOwpZTc-aS=4cCa8B3ObpuqpbNNv+w5Q4shXD6s7HQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:34133 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753285AbcFOKXB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2016 06:23:01 -0400
-In-Reply-To: <20160615100029.GB32588@pd.tnic>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CADRr18P=EOwpZTc-aS=4cCa8B3ObpuqpbNNv+w5Q4shXD6s7HQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, LAK <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "Lorenzo Pieralisi (lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org)" <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>, Dietmar Eggemann <dietmar.eggemann-5wv7dgnIgG8@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, sgurrappadi-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thomas Renninger <trenn@suse.com>, Kan Liang <kan.liang@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wed, Jun 15, 2016 at 6:00 PM, Borislav Petkov <bp@alien8.de> wrote:
-> Comments are, as always, appreciated.
->
-> ---
-> From: Borislav Petkov <bp@suse.de>
-> Date: Wed, 15 Jun 2016 11:20:41 +0200
-> Subject: [PATCH] Move away from msr.ko
->
-> Take care of MSR_IA32_ENERGY_PERF_BIAS.
->
-> Not-yet-signed-off-by: Borislav Petkov <bp@suse.de>
-[cut]
-> +static ssize_t
-> +energy_policy_pref_hint_show(struct device *dev, struct device_attribute *attr,
-> +                            char *buf)
-> +{
-> +       u64 epb;
-> +
-> +       rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-MSR_IA32_ENERGY_PERF_BIAS is of core scope, should we use rdmsr_on_cpu?
-> +
-> +       return sprintf(buf, "%d\n", (unsigned int)(epb & 0xFULL));
-> +}
-> +
-> +static ssize_t
-> +energy_policy_pref_hint_store(struct device *dev, struct device_attribute *attr,
-> +                             const char *buf, size_t count)
-> +{
-> +       u32 val;
-> +       u64 epb;
-> +
-> +       if (kstrtou32(buf, 10, &val) < 0)
-> +               return -EINVAL;
-> +
-> +       if (val > 15)
-> +               return -EINVAL;
-> +
-> +       rdmsrl(MSR_IA32_ENERGY_PERF_BIAS, epb);
-rdmsr_on_cpu?
-> +
-> +       if ((epb & 0xf) == val)
-> +               return count;
-> +
-> +       wrmsrl(MSR_IA32_ENERGY_PERF_BIAS, (epb & ~0xFULL) | val);
-wrmsr_on_cpu?
+On 15/06/16 11:20, Mark Brown wrote:
+> On 15 June 2016 at 11:17, Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org> wrote:
+> 
+> 
+> > Cc: Mark Brown <broonie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> >
+> 
+> Please use broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org for any upstream work, I'm really not set up
+> to handle upstream stuff on my Linaro address.
 
+Sure. Will update the address.
 
+Best,
 
-thanks,
-Yu
+- Juri
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
