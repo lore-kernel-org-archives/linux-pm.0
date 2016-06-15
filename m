@@ -1,72 +1,204 @@
-From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v5 1/8] Documentation: arm: define DT cpu
- capacity-dmips-mhz bindings
-Date: Wed, 15 Jun 2016 15:24:32 +0100
-Message-ID: <20160615142432.GE5981@e106622-lin>
-References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com>
- <1465985877-18271-2-git-send-email-juri.lelli@arm.com>
- <CAKfTPtBnwepf3gpR2zFXHvkaxB_mSiVM1Wv3RD+iuX72HN8bcg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH 8/8] PM / Domains: Add support for removing PM domains
+Date: Wed, 15 Jun 2016 16:33:59 +0200
+Message-ID: <CAPDyKFrKCB00hHhpSaJZ57wThPFRjnp+3xMz_YW9k+zqafppHg@mail.gmail.com>
+References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com> <1457090634-14785-9-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtBnwepf3gpR2zFXHvkaxB_mSiVM1Wv3RD+iuX72HN8bcg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LAK <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>, Dietmar Eggemann <dietmar.eggemann-5wv7dgnIgG8@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sai Charan Gurrappadi <sgurrappadi-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Olof
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1457090634-14785-9-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 15/06/16 14:51, Vincent Guittot wrote:
-> On 15 June 2016 at 12:17, Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org> wrote:
+On 4 March 2016 at 12:23, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+> The genpd framework allows users to add PM domains via the pm_genpd_init()
+> function, however, there is no corresponding function to remove a PM
+> domain. For most devices this may be fine as the PM domains are never
+> removed, however, for devices that wish to populate the PM domains from
+> within a driver, having the ability to remove a PM domain if the probing
+> of the device fails or the driver is unloaded is necessary.
+>
+> Add the function pm_genpd_remove() to remove a PM domain by referencing
+> it's generic_pm_domain structure.
+>
+> If a device supports nested or subdomains, then the PM domains
+> should be removed in reverse order to ensure that the subdomains are
+> removed first. Hence, add the function pm_genpd_remove_tail() to remove
+> the last PM domain added by a given provider and return the
+> generic_pm_domain structure for the PM domain that was removed.
 
-[...]
+Perhaps split this up, so the pm_genpd_remove_tail() gets added in a
+separate patch on top.
 
-> > +==========================================
-> > +ARM CPUs capacity bindings
-> > +==========================================
-> > +
-> > +==========================================
-> > +1 - Introduction
-> > +==========================================
-> > +
-> > +ARM systems may be configured to have cpus with different power/performance
-> > +characteristics within the same chip. In this case, additional information
-> > +has to be made available to the kernel (the scheduler in particular) for
-> 
-> not sure that it's worth mentioning the scheduler in particular here
-> 
+>
+> PM domains can only be removed if they are not a parent domain to
+> another PM domain and have no devices associated with them.
+>
+> When removing PM domains, the PM domain will also be removed from the
+> list of providers, if it was registered.
+>
+> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+>  drivers/base/power/domain.c | 96 +++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h   | 12 ++++++
+>  2 files changed, 108 insertions(+)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 9b33377bf01b..17090e1c91d6 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1556,6 +1556,102 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>  }
+>  EXPORT_SYMBOL_GPL(pm_genpd_init);
+>
+> +/**
+> + * __pm_genpd_remove - Remove a generic I/O PM domain
+> + * @genpd: Pointer to PM domain that is to be removed.
+> + *
+> + * To remove the PM domain, this function:
+> + *  - Removes the PM domain from the list of providers, if registered.
+> + *  - Removes the PM domain as a subdomain to any parent domains,
+> + *    if it was added.
+> + *  - Removes the PM domain from the list of registered PM domains.
+> + *
+> + * The PM domain will only be removed, if it is not a parent to any
+> + * other PM domain and has no devices associated with it. Must be called
+> + * with the gpd_list_lock held.
+> + */
+> +static int __pm_genpd_remove(struct generic_pm_domain *genpd)
 
-OK. I can remove that bit.
+Please rename to genpd_remove() as it's a static function.
 
-> > +it to be aware of such differences and take decisions accordingly.
-> > +
+> +{
+> +       struct gpd_link *l, *link;
+> +       int ret = 0;
+> +
+> +       if (IS_ERR_OR_NULL(genpd))
+> +               return -EINVAL;
+> +
+> +       if (genpd->provider_data)
+> +               of_genpd_del_provider_by_data(genpd->provider_data);
+> +
+> +       mutex_lock(&genpd->lock);
+> +
+> +       if (!list_empty(&genpd->master_links) || genpd->device_count) {
+> +               mutex_unlock(&genpd->lock);
+> +               pr_err("%s: unable to remove %s\n", __func__, genpd->name);
+> +               return -EBUSY;
+> +       }
+> +
+> +       list_for_each_entry_safe(link, l, &genpd->slave_links, slave_node) {
+> +               list_del(&link->master_node);
+> +               list_del(&link->slave_node);
+> +               kfree(link);
+> +       }
+> +
+> +       list_del(&genpd->gpd_list_node);
+> +       mutex_unlock(&genpd->lock);
+> +       cancel_work_sync(&genpd->power_off_work);
+> +       pr_debug("%s: removed %s\n", __func__, genpd->name);
+> +
+> +       return ret;
+> +}
+> +
+> +/**
+> + * pm_genpd_remove - Remove a generic I/O PM domain
+> + * @genpd: Pointer to PM domain that is to be removed.
+> + */
+> +int pm_genpd_remove(struct generic_pm_domain *genpd)
+> +{
+> +       int ret;
+> +
+> +       mutex_lock(&gpd_list_lock);
+> +       ret = __pm_genpd_remove(genpd);
+> +       mutex_unlock(&gpd_list_lock);
+> +
+> +       return ret;
+> +}
+> +
+> +/**
+> + * pm_genpd_remove_tail - Remove the last PM domain registered for a provider
+> + * @provider: Pointer to device structure associated with provider
+> + *
+> + * Find the last PM domain that was added by the provider whose 'provider'
+> + * device structure matches the device structure given. The 'provider'
+> + * device structure for a given PM domain should be initialised by the
+> + * device that is creating the PM domains and hence, calling
+> + * pm_genpd_init().
 
-[...]
+Maybe make this a bigger "Important note" as what is needed to
+actually benefit from using this function.
 
-> > +==========================================
-> > +3 - capacity-dmips-mhz
-> > +==========================================
-> > +
-> > +capacity-dmips-mhz is an optional cpu node [1] property: u32 value
-> > +representing CPU capacity expressed in normalized DMIPS/MHz. At boot time, the
-> > +maximum frequency available to the cpu is then used to calculate the capacity
-> > +value internally used by the kernel.
-> > +
-> > +capacity-dmips-mhz property is all-or-nothing: if it is specified for a cpu
-> > +node, it has to be specified for every other cpu nodes, or the system will
-> > +fall back to the default capacity value for every CPU. If cpufreq is not
-> > +available, final capacities are calculated by directly using capacity-dmips-
-> > +mhz values (normalized w.r.t. the highest value found while parsing the DT).
-> 
-> looks good to me
-> 
+> + *
+> + * Returns a valid pointer to struct generic_pm_domain on success or
+> + * ERR_PTR() on failure.
+> + */
+> +struct generic_pm_domain *pm_genpd_remove_tail(struct device *provider)
+> +{
+> +       struct generic_pm_domain *g, *gpd, *genpd = ERR_PTR(-ENOENT);
+> +       int ret;
+> +
+> +       if (IS_ERR_OR_NULL(provider))
+> +               return ERR_PTR(-EINVAL);
+> +
+> +       mutex_lock(&gpd_list_lock);
+> +       list_for_each_entry_safe(gpd, g, &gpd_list, gpd_list_node) {
+> +               if (gpd->provider == provider) {
+> +                       ret = __pm_genpd_remove(gpd);
+> +                       genpd = ret ? ERR_PTR(ret) : gpd;
+> +                       break;
+> +               }
+> +       }
+> +       mutex_unlock(&gpd_list_lock);
+> +
+> +       return genpd;
+> +}
+> +
+>  #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+>  /*
+>   * Device Tree based PM domain providers.
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 7b7921a65cb0..78b23718392f 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -53,6 +53,7 @@ struct generic_pm_domain {
+>         struct mutex lock;
+>         struct dev_power_governor *gov;
+>         struct work_struct power_off_work;
+> +       struct device *provider;        /* Identity of the domain provider */
+>         void *provider_data;
+>         const char *name;
+>         atomic_t sd_count;      /* Number of subdomains with power "on" */
+> @@ -132,6 +133,8 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
+>                                      struct generic_pm_domain *target);
+>  extern void pm_genpd_init(struct generic_pm_domain *genpd,
+>                           struct dev_power_governor *gov, bool is_off);
+> +extern int pm_genpd_remove(struct generic_pm_domain *genpd);
+> +extern struct generic_pm_domain *pm_genpd_remove_tail(struct device *provider);
+>
+>  extern struct dev_power_governor simple_qos_governor;
+>  extern struct dev_power_governor pm_domain_always_on_gov;
+> @@ -166,6 +169,15 @@ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+>                                  struct dev_power_governor *gov, bool is_off)
+>  {
+>  }
+> +static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
+> +{
+> +       return -ENOTSUPP;
+> +}
+> +static inline
+> +struct generic_pm_domain *pm_genpd_remove_tail(struct device *provider)
+> +{
+> +       return ERR_PTR(-ENOTSUPP);
+> +}
+>  #endif
+>
+>  static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+> --
+> 2.1.4
+>
 
-Great! Thanks for reviewing this.
-
-Best,
-
-- Juri
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Kind regards
+Uffe
