@@ -1,338 +1,264 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v5 1/8] Documentation: arm: define DT cpu
- capacity-dmips-mhz bindings
-Date: Wed, 15 Jun 2016 14:51:46 +0200
-Message-ID: <CAKfTPtBnwepf3gpR2zFXHvkaxB_mSiVM1Wv3RD+iuX72HN8bcg@mail.gmail.com>
-References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com> <1465985877-18271-2-git-send-email-juri.lelli@arm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 3/3] firmware: scpi: add device power domain support using genpd
+Date: Wed, 15 Jun 2016 15:05:12 +0200
+Message-ID: <CAPDyKFp5GacJNq_hqhrdupN9gYNHYmE_-Z7ZV-c6BP59AaurZw@mail.gmail.com>
+References: <1465228439-13457-1-git-send-email-sudeep.holla@arm.com> <1465228439-13457-4-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f47.google.com ([209.85.215.47]:35155 "EHLO
-	mail-lf0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753340AbcFOMwI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2016 08:52:08 -0400
-Received: by mail-lf0-f47.google.com with SMTP id l188so9544112lfe.2
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2016 05:52:07 -0700 (PDT)
-In-Reply-To: <1465985877-18271-2-git-send-email-juri.lelli@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1465228439-13457-4-git-send-email-sudeep.holla@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jon Medhurst <tixy@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Mark Brown <broonie@kernel.org>, Sai Charan Gurrappadi <sgurrappadi@nvidia.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof
 
-On 15 June 2016 at 12:17, Juri Lelli <juri.lelli@arm.com> wrote:
-> ARM systems may be configured to have cpus with different power/performance
-> characteristics within the same chip. In this case, additional information
-> has to be made available to the kernel (the scheduler in particular) for it
-> to be aware of such differences and take decisions accordingly.
+On 6 June 2016 at 17:53, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> This patch hooks up the support for device power domain provided by
+> SCPI using the Linux generic power domain infrastructure.
 >
-> Therefore, this patch aims at standardizing cpu capacities device tree
-> bindings for ARM platforms. Bindings define cpu capacity-dmips-mhz
-> parameter, to allow operating systems to retrieve such information from
-> the device tree and initialize related kernel structures, paving the way
-> for common code in the kernel to deal with heterogeneity.
->
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> Cc: Kumar Gala <galak@codeaurora.org>
-> Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
-> Cc: Olof Johansson <olof@lixom.net>
-> Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> Cc: Paul Walmsley <paul@pwsan.com>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: Chen-Yu Tsai <wens@csie.org>
-> Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+
+For following versions, please keep me in the loop for the entire
+series. Including the cover-letter which I am unable to find.
+
 > ---
+>  drivers/firmware/Kconfig   |   8 +++
+>  drivers/firmware/Makefile  |   1 +
+>  drivers/firmware/scpi_pd.c | 152 +++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 161 insertions(+)
+>  create mode 100644 drivers/firmware/scpi_pd.c
 >
-> Changes from v1:
->  - removed section regarding capacity-scale
->  - added information regarding normalization
+> Hi,
 >
-> Changes from v4:
->  - binding changed to capacity-dmips-mhz
->  - sections and changelod updated accordingly
-> ---
->  .../devicetree/bindings/arm/cpu-capacity.txt       | 236 +++++++++++++++++++++
->  Documentation/devicetree/bindings/arm/cpus.txt     |  10 +
->  2 files changed, 246 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/cpu-capacity.txt
+> Since most of the power controller drivers are place in drivers/soc/<soc_name>,
+> I am not sure where to put this SCPI power domain code as it can be used
+> on multiple SoC. I have placed it in drivers/firmware temporarily for
+> review. Please suggest the most apt place to put this driver.
+
+To me, I think it makes sense to put this in the suggested directory,
+as it's not SoC specific code.
+
 >
-> diff --git a/Documentation/devicetree/bindings/arm/cpu-capacity.txt b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
+> Regards,
+> Sudeep
+>
+> diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+> index 41abdc54815e..80c963c60f13 100644
+> --- a/drivers/firmware/Kconfig
+> +++ b/drivers/firmware/Kconfig
+> @@ -27,6 +27,14 @@ config ARM_SCPI_PROTOCOL
+>           This protocol library provides interface for all the client drivers
+>           making use of the features offered by the SCP.
+>
+> +config ARM_SCPI_POWER_DOMAIN
+> +       tristate "SCPI power domain driver"
+> +       depends on (ARM_SCPI_PROTOCOL && PM) || COMPILE_TEST
+> +       select PM_GENERIC_DOMAINS_OF
+
+I think this is better:
+depends on (ARM_SCPI_PROTOCOL) || COMPILE_TEST
+select PM_GENERIC_DOMAINS if PM
+
+> +       help
+> +         This enables support for the SCPI power domains which can be
+> +         enabled or disabled via the SCP firmware
+> +
+>  config EDD
+>         tristate "BIOS Enhanced Disk Drive calls determine boot disk"
+>         depends on X86
+> diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
+> index 474bada56fcd..24f7fe8e3fc3 100644
+> --- a/drivers/firmware/Makefile
+> +++ b/drivers/firmware/Makefile
+> @@ -3,6 +3,7 @@
+>  #
+>  obj-$(CONFIG_ARM_PSCI_FW)      += psci.o
+>  obj-$(CONFIG_ARM_SCPI_PROTOCOL)        += arm_scpi.o
+> +obj-$(CONFIG_ARM_SCPI_POWER_DOMAIN) += scpi_pd.o
+>  obj-$(CONFIG_DMI)              += dmi_scan.o
+>  obj-$(CONFIG_DMI_SYSFS)                += dmi-sysfs.o
+>  obj-$(CONFIG_EDD)              += edd.o
+> diff --git a/drivers/firmware/scpi_pd.c b/drivers/firmware/scpi_pd.c
+
+Perhaps name it scpi_pm_domain.c instead as it gives a better
+description of its purpose.
+
 > new file mode 100644
-> index 0000000..7582a13
+> index 000000000000..fb24631d2b2e
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
-> @@ -0,0 +1,236 @@
-> +==========================================
-> +ARM CPUs capacity bindings
-> +==========================================
+> +++ b/drivers/firmware/scpi_pd.c
+> @@ -0,0 +1,152 @@
+> +/*
+> + * SCPI Generic power domain support.
+> + *
+> + * Copyright (C) 2016 ARM Ltd.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms and conditions of the GNU General Public License,
+> + * version 2, as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+> + * more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along
+> + * with this program. If not, see <http://www.gnu.org/licenses/>.
+> + */
 > +
-> +==========================================
-> +1 - Introduction
-> +==========================================
+> +#include <linux/err.h>
+> +#include <linux/io.h>
+> +#include <linux/module.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/scpi_protocol.h>
 > +
-> +ARM systems may be configured to have cpus with different power/performance
-> +characteristics within the same chip. In this case, additional information
-> +has to be made available to the kernel (the scheduler in particular) for
-
-not sure that it's worth mentioning the scheduler in particular here
-
-> +it to be aware of such differences and take decisions accordingly.
-> +
-> +==========================================
-> +2 - CPU capacity definition
-> +==========================================
-> +
-> +CPU capacity is a number that provides the scheduler information about CPUs
-> +heterogeneity. Such heterogeneity can come from micro-architectural differences
-> +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
-> +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
-> +context is about differing performance characteristics; this binding tries to
-> +capture a first-order approximation of the relative performance of CPUs.
-> +
-> +CPU capacities are obtained by running a suitable benchmark. This binding makes
-> +no aspersions on the validity or suitability of any particular benchmark, the
-> +final capacity should, however, be:
-> +
-> +* A "single-threaded" or CPU affine benchmark
-> +* Divided by the running frequency of the CPU executing the benchmark
-> +* Not subject to dynamic frequency scaling of the CPU
-> +
-> +For the time being we however advise usage of the Dhrystone benchmark. What
-> +above thus becomes:
-> +
-> +CPU capacities are obtained by running the Dhrystone benchmark on each CPU at
-> +max frequency. The obtained DMIPS score is then divided by the frequency (in
-> +MHz) at which the benchmark has been run, so that DMIPS/MHz are obtained.
-> +Such values are then normalized w.r.t. the highest score obtained in the
-> +system.
-> +
-> +==========================================
-> +3 - capacity-dmips-mhz
-> +==========================================
-> +
-> +capacity-dmips-mhz is an optional cpu node [1] property: u32 value
-> +representing CPU capacity expressed in normalized DMIPS/MHz. At boot time, the
-> +maximum frequency available to the cpu is then used to calculate the capacity
-> +value internally used by the kernel.
-> +
-> +capacity-dmips-mhz property is all-or-nothing: if it is specified for a cpu
-> +node, it has to be specified for every other cpu nodes, or the system will
-> +fall back to the default capacity value for every CPU. If cpufreq is not
-> +available, final capacities are calculated by directly using capacity-dmips-
-> +mhz values (normalized w.r.t. the highest value found while parsing the DT).
-
-looks good to me
-
-> +
-> +===========================================
-> +4 - Examples
-> +===========================================
-> +
-> +Example 1 (ARM 64-bit, 6-cpu system, two clusters):
-> +capacities-dmips-mhz are scaled w.r.t. 1024 (cpu@0 and cpu@1)
-> +supposing cluster0@max-freq=1100 and custer1@max-freq=850,
-> +final capacities are 1024 for cluster0 and 446 for cluster1
-> +
-> +cpus {
-> +       #address-cells = <2>;
-> +       #size-cells = <0>;
-> +
-> +       cpu-map {
-> +               cluster0 {
-> +                       core0 {
-> +                               cpu = <&A57_0>;
-> +                       };
-> +                       core1 {
-> +                               cpu = <&A57_1>;
-> +                       };
-> +               };
-> +
-> +               cluster1 {
-> +                       core0 {
-> +                               cpu = <&A53_0>;
-> +                       };
-> +                       core1 {
-> +                               cpu = <&A53_1>;
-> +                       };
-> +                       core2 {
-> +                               cpu = <&A53_2>;
-> +                       };
-> +                       core3 {
-> +                               cpu = <&A53_3>;
-> +                       };
-> +               };
-> +       };
-> +
-> +       idle-states {
-> +               entry-method = "arm,psci";
-> +
-> +               CPU_SLEEP_0: cpu-sleep-0 {
-> +                       compatible = "arm,idle-state";
-> +                       arm,psci-suspend-param = <0x0010000>;
-> +                       local-timer-stop;
-> +                       entry-latency-us = <100>;
-> +                       exit-latency-us = <250>;
-> +                       min-residency-us = <150>;
-> +               };
-> +
-> +               CLUSTER_SLEEP_0: cluster-sleep-0 {
-> +                       compatible = "arm,idle-state";
-> +                       arm,psci-suspend-param = <0x1010000>;
-> +                       local-timer-stop;
-> +                       entry-latency-us = <800>;
-> +                       exit-latency-us = <700>;
-> +                       min-residency-us = <2500>;
-> +               };
-> +       };
-> +
-> +       A57_0: cpu@0 {
-> +               compatible = "arm,cortex-a57","arm,armv8";
-> +               reg = <0x0 0x0>;
-> +               device_type = "cpu";
-> +               enable-method = "psci";
-> +               next-level-cache = <&A57_L2>;
-> +               clocks = <&scpi_dvfs 0>;
-> +               cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-> +               capacity-dmips-mhz = <1024>;
-> +       };
-> +
-> +       A57_1: cpu@1 {
-> +               compatible = "arm,cortex-a57","arm,armv8";
-> +               reg = <0x0 0x1>;
-> +               device_type = "cpu";
-> +               enable-method = "psci";
-> +               next-level-cache = <&A57_L2>;
-> +               clocks = <&scpi_dvfs 0>;
-> +               cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-> +               capacity-dmips-mhz = <1024>;
-> +       };
-> +
-> +       A53_0: cpu@100 {
-> +               compatible = "arm,cortex-a53","arm,armv8";
-> +               reg = <0x0 0x100>;
-> +               device_type = "cpu";
-> +               enable-method = "psci";
-> +               next-level-cache = <&A53_L2>;
-> +               clocks = <&scpi_dvfs 1>;
-> +               cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-> +               capacity-dmips-mhz = <578>;
-> +       };
-> +
-> +       A53_1: cpu@101 {
-> +               compatible = "arm,cortex-a53","arm,armv8";
-> +               reg = <0x0 0x101>;
-> +               device_type = "cpu";
-> +               enable-method = "psci";
-> +               next-level-cache = <&A53_L2>;
-> +               clocks = <&scpi_dvfs 1>;
-> +               cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-> +               capacity-dmips-mhz = <578>;
-> +       };
-> +
-> +       A53_2: cpu@102 {
-> +               compatible = "arm,cortex-a53","arm,armv8";
-> +               reg = <0x0 0x102>;
-> +               device_type = "cpu";
-> +               enable-method = "psci";
-> +               next-level-cache = <&A53_L2>;
-> +               clocks = <&scpi_dvfs 1>;
-> +               cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-> +               capacity-dmips-mhz = <578>;
-> +       };
-> +
-> +       A53_3: cpu@103 {
-> +               compatible = "arm,cortex-a53","arm,armv8";
-> +               reg = <0x0 0x103>;
-> +               device_type = "cpu";
-> +               enable-method = "psci";
-> +               next-level-cache = <&A53_L2>;
-> +               clocks = <&scpi_dvfs 1>;
-> +               cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-> +               capacity-dmips-mhz = <578>;
-> +       };
-> +
-> +       A57_L2: l2-cache0 {
-> +               compatible = "cache";
-> +       };
-> +
-> +       A53_L2: l2-cache1 {
-> +               compatible = "cache";
-> +       };
+> +struct scpi_pm_domain {
+> +       struct generic_pm_domain genpd;
+> +       struct scpi_ops *ops;
+> +       u32 domain;
+> +       char name[20];
 > +};
 > +
-> +Example 2 (ARM 32-bit, 4-cpu system, two clusters,
-> +          cpus 0,1@1GHz, cpus 2,3@500MHz):
-> +capacities-dmips-mhz are scaled w.r.t. 2 (cpu@0 and cpu@1), this means that first
-> +cpu@0 and cpu@1 are twice fast than cpu@2 and cpu@3 (at the same frequency)
-> +
-> +cpus {
-> +       #address-cells = <1>;
-> +       #size-cells = <0>;
-> +
-> +       cpu0: cpu@0 {
-> +               device_type = "cpu";
-> +               compatible = "arm,cortex-a15";
-> +               reg = <0>;
-> +               capacity-dmips-mhz = <2>;
-> +       };
-> +
-> +       cpu1: cpu@1 {
-> +               device_type = "cpu";
-> +               compatible = "arm,cortex-a15";
-> +               reg = <1>;
-> +               capacity-dmips-mhz = <2>;
-> +       };
-> +
-> +       cpu2: cpu@2 {
-> +               device_type = "cpu";
-> +               compatible = "arm,cortex-a15";
-> +               reg = <0x100>;
-> +               capacity-dmips-mhz = <1>;
-> +       };
-> +
-> +       cpu3: cpu@3 {
-> +               device_type = "cpu";
-> +               compatible = "arm,cortex-a15";
-> +               reg = <0x101>;
-> +               capacity-dmips-mhz = <1>;
-> +       };
+> +enum scpi_power_domain_state {
+> +       SCPI_PD_STATE_ON = 0,
+> +       SCPI_PD_STATE_OFF = 3,
 > +};
 > +
-> +===========================================
-> +5 - References
-> +===========================================
+> +#define to_scpi_pd(gpd) container_of(gpd, struct scpi_pm_domain, genpd)
 > +
-> +[1] ARM Linux Kernel documentation - CPUs bindings
-> +    Documentation/devicetree/bindings/arm/cpus.txt
-> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
-> index 3f0cbbb..d79442d 100644
-> --- a/Documentation/devicetree/bindings/arm/cpus.txt
-> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
-> @@ -238,6 +238,14 @@ nodes to be present and contain the properties described below.
->                         # List of phandles to idle state nodes supported
->                           by this cpu [3].
->
-> +       - capacity-dmips-mhz
-> +               Usage: Optional
-> +               Value type: <u32>
-> +               Definition:
-> +                       # u32 value representing CPU capacity [3] in
-> +                         DMIPS/MHz, relative to highest capacity-dmips-mhz
-> +                         in the system.
+> +static int scpi_pd_power(struct scpi_pm_domain *pd, bool power_on)
+> +{
+> +       int ret;
+> +       enum scpi_power_domain_state state;
 > +
->         - rockchip,pmu
->                 Usage: optional for systems that have an "enable-method"
->                        property value of "rockchip,rk3066-smp"
-> @@ -461,3 +469,5 @@ cpus {
->  [2] arm/msm/qcom,kpss-acc.txt
->  [3] ARM Linux kernel documentation - idle states bindings
->      Documentation/devicetree/bindings/arm/idle-states.txt
-> +[3] ARM Linux kernel documentation - cpu capacity bindings
-> +    Documentation/devicetree/bindings/arm/cpu-capacity.txt
+> +       if (power_on)
+> +               state = SCPI_PD_STATE_ON;
+> +       else
+> +               state = SCPI_PD_STATE_OFF;
+> +
+> +       ret = pd->ops->device_set_power_state(pd->domain, state);
+> +       if (ret)
+> +               return ret;
+> +
+> +       return (state == pd->ops->device_get_power_state(pd->domain));
+> +}
+> +
+> +static int scpi_pd_power_on(struct generic_pm_domain *domain)
+> +{
+> +       struct scpi_pm_domain *pd = to_scpi_pd(domain);
+> +
+> +       return scpi_pd_power(pd, true);
+> +}
+> +
+> +static int scpi_pd_power_off(struct generic_pm_domain *domain)
+> +{
+> +       struct scpi_pm_domain *pd = to_scpi_pd(domain);
+> +
+> +       return scpi_pd_power(pd, false);
+> +}
+> +
+> +static int scpi_pm_domain_probe(struct platform_device *pdev)
+> +{
+> +       struct device *dev = &pdev->dev;
+> +       struct device_node *np = dev->of_node;
+> +       struct scpi_pm_domain *scpi_pd;
+> +       struct genpd_onecell_data *scpi_pd_data;
+> +       struct generic_pm_domain **domains;
+> +       struct scpi_ops *scpi_ops;
+> +       int ret, num_domains, i;
+> +
+> +       scpi_ops = get_scpi_ops();
+> +       if (!scpi_ops)
+> +               return -EPROBE_DEFER;
+> +
+> +       if (!np) {
+> +               dev_err(dev, "device tree node not found\n");
+> +               return -ENODEV;
+> +       }
+> +
+> +       ret = of_property_read_u32(np, "num-domains", &num_domains);
+> +       if (ret) {
+> +               dev_err(dev, "number of domains not found\n");
+> +               return -EINVAL;
+> +       }
+> +
+> +       scpi_pd = devm_kcalloc(dev, num_domains, sizeof(*scpi_pd), GFP_KERNEL);
+> +       if (!scpi_pd)
+> +               return -ENOMEM;
+> +
+> +       scpi_pd_data = devm_kzalloc(dev, sizeof(*scpi_pd_data), GFP_KERNEL);
+> +       if (!scpi_pd_data)
+> +               return -ENOMEM;
+> +
+> +       domains = devm_kcalloc(dev, num_domains, sizeof(*domains), GFP_KERNEL);
+> +       if (!domains)
+> +               return -ENOMEM;
+> +
+> +       for (i = 0; i < num_domains; i++, scpi_pd++) {
+> +               domains[i] = &scpi_pd->genpd;
+> +
+> +               scpi_pd->domain = i;
+> +               scpi_pd->ops = scpi_ops;
+> +               sprintf(scpi_pd->name, "%s.%d", np->name, i);
+> +               scpi_pd->genpd.name = scpi_pd->name;
+> +               scpi_pd->genpd.power_off = scpi_pd_power_off;
+> +               scpi_pd->genpd.power_on = scpi_pd_power_on;
+> +
+> +               /*
+> +                * Treat all power domains as off at boot.
+> +                *
+> +                * The SCP firmware itself may have switched on some domains,
+> +                * but for reference counting purpose, keep it this way.
+> +                */
+> +               pm_genpd_init(&scpi_pd->genpd, NULL, true);
+> +       }
+> +
+> +       scpi_pd_data->domains = domains;
+> +       scpi_pd_data->num_domains = num_domains;
+> +
+> +       of_genpd_add_provider_onecell(np, scpi_pd_data);
+> +
+> +       return 0;
+> +}
+> +
+> +static const struct of_device_id scpi_power_domain_ids[] = {
+> +       { .compatible = "arm,scpi-power-domains", },
+> +       { /* sentinel */ }
+> +};
+
+Actually I think you shouldn't implement this a standalone driver and
+thus you can remove this compatible.
+
+Instead, I think it's better if you let the arm_scpi driver to also
+initialize the PM domain.
+
+If you still want the PM domain code to be maintained in a separate
+file, just provide a header file which declares an
+"scpi_pm_domain_init()" function (and a stub when not supported),
+which the arm_scpi driver should call during ->probe().
+
+> +MODULE_DEVICE_TABLE(of, scpi_power_domain_ids);
+> +
+> +static struct platform_driver scpi_power_domain_driver = {
+> +       .driver = {
+> +               .name = "scpi_power_domain",
+> +               .of_match_table = scpi_power_domain_ids,
+> +       },
+> +       .probe = scpi_pm_domain_probe,
+> +};
+> +module_platform_driver(scpi_power_domain_driver);
+> +
+> +MODULE_AUTHOR("Sudeep Holla <sudeep.holla@arm.com>");
+> +MODULE_DESCRIPTION("ARM SCPI power domain driver");
+> +MODULE_LICENSE("GPL v2");
 > --
-> 2.7.0
+> 2.7.4
 >
+
+Kind regards
+Uffe
