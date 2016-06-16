@@ -1,48 +1,82 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 0/2] cpufreq: Sort policy->freq_table
-Date: Thu, 16 Jun 2016 21:47:39 +0530
-Message-ID: <20160616161739.GB24612@vireshk-i7>
-References: <cover.1465295033.git.viresh.kumar@linaro.org>
- <27658050.4ol4GjkJ1n@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <27658050.4ol4GjkJ1n@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH] idle/intel: add denverton
+Date: Thu, 16 Jun 2016 09:42:29 -0700
+Message-ID: <1466095349-5381-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:10635 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753899AbcFPQoM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 16 Jun 2016 12:44:12 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On 08-06-16, 02:19, Rafael J. Wysocki wrote:
-> On Tuesday, June 07, 2016 03:55:13 PM Viresh Kumar wrote:
-> > Hi Rafael,
-> > 
-> > I have spent some more time on this stuff and finally came out with a
-> > very simple solution. I hope you will like it more than the previous
-> > versions.
-> > 
-> > Instead of trying to sort the freq-table passed by the drivers, which
-> > was complicated and would have broken some drivers for sure, this patch
-> > just checks if the freq-table is sorted or not.
-> > 
-> > If it is sorted, then we just use a different set of helpers for it. The
-> > table can be sorted in both ascending and descending orders now and
-> > helpers are present for both the cases.
-> 
-> Well, that's something I was thinking about from the start. :-)
-> 
-> > All the patches are pushed here for testing in case anyone wants to try:
-> > git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/sorted-freq-table
-> > 
-> > V3->V4:
-> > - Written from scratch really, completely different approach.
-> 
-> I'll look at the code later this week.
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ drivers/idle/intel_idle.c | 35 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
-Hi Rafael,
-
-Did you get a chance to look at these? Steve may be blocked on this :)
-
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index c966492..633fc35 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -827,6 +827,35 @@ static struct cpuidle_state bxt_cstates[] = {
+ 		.enter = NULL }
+ };
+ 
++static struct cpuidle_state dnv_cstates[] = {
++	{
++		.name = "C1-DNV",
++		.desc = "MWAIT 0x00",
++		.flags = MWAIT2flg(0x00),
++		.exit_latency = 2,
++		.target_residency = 2,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.name = "C1E-DNV",
++		.desc = "MWAIT 0x01",
++		.flags = MWAIT2flg(0x01),
++		.exit_latency = 10,
++		.target_residency = 20,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.name = "C6-DNV",
++		.desc = "MWAIT 0x20",
++		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 50,
++		.target_residency = 500,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.enter = NULL }
++};
++
+ /**
+  * intel_idle
+  * @dev: cpuidle_device
+@@ -1016,6 +1045,11 @@ static const struct idle_cpu idle_cpu_bxt = {
+ 	.disable_promotion_to_c1e = true,
+ };
+ 
++static const struct idle_cpu idle_cpu_dnv = {
++	.state_table = dnv_cstates,
++	.disable_promotion_to_c1e = true,
++};
++
+ #define ICPU(model, cpu) \
+ 	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
+ 
+@@ -1052,6 +1086,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+ 	ICPU(0x55, idle_cpu_skx),
+ 	ICPU(0x57, idle_cpu_knl),
+ 	ICPU(0x5c, idle_cpu_bxt),
++	ICPU(0x5f, idle_cpu_dnv),
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, intel_idle_ids);
 -- 
-viresh
+1.9.1
+
