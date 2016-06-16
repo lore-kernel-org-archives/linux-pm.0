@@ -1,89 +1,43 @@
-From: Marcin Niestroj <m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
-Subject: Re: [PATCH v2 4/5] mfd: tps65217: Add power button as subdevice
-Date: Thu, 16 Jun 2016 13:43:51 +0200
-Message-ID: <936f74b4-9446-c49e-56c1-98dfa6d774b9@grinn-global.com>
-References: <20160614132927.3309-1-m.niestroj@grinn-global.com>
- <20160614132927.3309-5-m.niestroj@grinn-global.com>
- <20160615141242.GK4948@dell>
- <61c57049-04e3-434c-6293-58a9297c73c9@grinn-global.com>
- <20160616103622.GS4948@dell>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: x86 hibernate, resume with different kernel version
+Date: Thu, 16 Jun 2016 14:11:48 +0200
+Message-ID: <CAJZ5v0jWStdJDg_HENAMOiK3SaV=SHm6Zy-p6oMDvOUUZJRD+w@mail.gmail.com>
+References: <20160616100330.GA4954@sig21.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160616103622.GS4948@dell>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:36585 "EHLO
+	mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754060AbcFPMLu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 08:11:50 -0400
+Received: by mail-wm0-f54.google.com with SMTP id f126so48286259wma.1
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jun 2016 05:11:49 -0700 (PDT)
+In-Reply-To: <20160616100330.GA4954@sig21.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Johannes Stezenbach <js@sig21.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 
-On 16.06.2016 12:36, Lee Jones wrote:
-> On Wed, 15 Jun 2016, Marcin Niestroj wrote:
+On Thu, Jun 16, 2016 at 12:03 PM, Johannes Stezenbach <js@sig21.net> wrote:
+> Hi,
 >
->> Hi,
->>
->> On 15.06.2016 16:12, Lee Jones wrote:
->>> On Tue, 14 Jun 2016, Marcin Niestroj wrote:
->>>
->>>> Add tps65217 power buttor subdevice with assigned IRQ resources.
->>>>
->>>> Signed-off-by: Marcin Niestroj <m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
->>>> ---
->>>> depends on patch 1 in series
->>>>
->>>> drivers/mfd/tps65217.c | 10 ++++++++++
->>>> 1 file changed, 10 insertions(+)
->>>
->>> Applied, thanks.
->>
->> Did you also apply patch 1? As I stated above, this patch depends on
->> patch 1.
+> it's not important for me but I hibernated kernel v4.5.7
+> and inadvertantly resumed using v4.6.2, and ISTR this
+> should work (confirmed by looking into git where I found
+> commit cc456c4e7cac3837a86aaa7ca3cb9f488d44d196).
 >
-> Nope.  It looks like you still have changes to make.
+> My swap is an LVM volume inside dm-crypt, on boot the kernel read
+> the resume image but then immediately reset and invalidated it.
+> I'm using Debian sid, the initrd calls /bin/resume from
+> klibc-utils package.
 >
-> What does it rely on?  The IRQ define?
+> So, should this still work?  I couldn't find any
+> information about it.
 
-Yes, TPS65217_IRQ_PB is an enum declared in patch 1.
+It should in theory, but may not in fact due to bugs discovered
+recently.  This patch should help:
+https://patchwork.kernel.org/patch/9172981/ (it has to be applied to
+both the image and boot kernels).
 
-I have just send new version of the whole patch series including your
-suggestions.
-
->
->>>> diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
->>>> index d49f94e..68cf431 100644
->>>> --- a/drivers/mfd/tps65217.c
->>>> +++ b/drivers/mfd/tps65217.c
->>>> @@ -38,6 +38,10 @@ static struct resource charger_resources[] = {
->>>> 	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
->>>> };
->>>>
->>>> +static struct resource pb_resources[] = {
->>>> +	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
->>>> +};
->>>> +
->>>> struct tps65217_irq {
->>>> 	int mask;
->>>> 	int interrupt;
->>>> @@ -122,6 +126,12 @@ static struct mfd_cell tps65217s[] = {
->>>> 		.resources = charger_resources,
->>>> 		.of_compatible = "ti,tps65217-charger",
->>>> 	},
->>>> +	{
->>>> +		.name = "tps65217-pwrbutton",
->>>> +		.num_resources = ARRAY_SIZE(pb_resources),
->>>> +		.resources = pb_resources,
->>>> +		.of_compatible = "ti,tps65217-pwrbutton",
->>>> +	},
->>>> };
->>>>
->>>> static irqreturn_t tps65217_irq_thread(int irq, void *data)
->>>
->>
->
-
--- 
-Marcin Niestroj
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
