@@ -1,139 +1,137 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] PM / OPP: 'UNKNOWN' status of opp-table->shared
-Date: Thu, 16 Jun 2016 12:03:33 +0530
-Message-ID: <87bd097db7b673b1f75ca2086dfa76f4dfbf7f8c.1466058619.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, acourbot@nvidia.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gnurou@gmail.com, linux-tegra@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v2 1/4] max8903: adds documentation for device tree
+ bindings.
+Date: Thu, 16 Jun 2016 08:35:14 +0200
+Message-ID: <576248A2.3030004@samsung.com>
+References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
+ <1465561970-18377-1-git-send-email-chris@lapa.com.au>
+ <1465561970-18377-2-git-send-email-chris@lapa.com.au>
+ <575AC5E5.3020405@samsung.com>
+ <001abdba-d10c-90d5-944f-ebeaf236eb12@lapa.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:10109 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbcFPGfS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 02:35:18 -0400
+In-reply-to: <001abdba-d10c-90d5-944f-ebeaf236eb12@lapa.com.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: chris@lapa.com.au
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-dev_pm_opp_get_sharing_cpus() returns 0 even in the case where the OPP
-core doesn't know if the table is shared or not. It is working for most
-of the platforms, as the OPP table was never created and we returned
--ENODEV then.
+On 06/14/2016 03:54 AM, Chris Lapa wrote:
+> On 10/06/2016 11:51 PM, Krzysztof Kozlowski wrote:
+>> On 06/10/2016 02:32 PM, Chris Lapa wrote:
+>>> From: Chris Lapa <chris@lapa.com.au>
+>>>
+>>> Signed-off-by: Chris Lapa <chris@lapa.com.au>
+>>> ---
+>>>  .../devicetree/bindings/power/max8903-charger.txt  | 30
+>>> ++++++++++++++++++++++
+>>>  1 file changed, 30 insertions(+)
+>>>  create mode 100644
+>>> Documentation/devicetree/bindings/power/max8903-charger.txt
+>>
+>> You again skipped all of the maintainers. Your patch won't be applied.
+>> You need to send the patch to the appropriate person so he/she could
+>> apply it.
+>>
+>> From this patch:
+>> Rob Herring <robh+dt@kernel.org> (maintainer:OPEN FIRMWARE AND FLATTENED
+>> DEVICE TREE BINDINGS,commit_signer:9/19=47%)
+>> Mark Rutland <mark.rutland@arm.com> (maintainer:OPEN FIRMWARE AND
+>> FLATTENED DEVICE TREE BINDINGS)
+>>
+>> From power suppyy tree:
+>> Sebastian Reichel <sre@kernel.org> (maintainer:POWER SUPPLY
+>> CLASS/SUBSYSTEM and DRIVERS)
+>> Dmitry Eremin-Solenikov <dbaryshkov@gmail.com> (maintainer:POWER SUPPLY
+>> CLASS/SUBSYSTEM and DRIVERS)
+>> David Woodhouse <dwmw2@infradead.org> (maintainer:POWER SUPPLY
+>> CLASS/SUBSYSTEM and DRIVERS)
+>>
+>>
+>>> diff --git
+>>> a/Documentation/devicetree/bindings/power/max8903-charger.txt
+>>> b/Documentation/devicetree/bindings/power/max8903-charger.txt
+>>> new file mode 100644
+>>> index 0000000..e0b5366
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/power/max8903-charger.txt
+>>> @@ -0,0 +1,30 @@
+>>> +Maxim Semiconductor MAX8903 Battery Charger bindings
+>>> +
+>>> +Required properties:
+>>> +- compatible: "maxim,max8903-charger" for MAX8903 Battery Charger
+>>> +- dc_valid: Specifies that the DC portion of the MAX8903 has been
+>>> connected up
+>>> +        and that dok-gpios should be specified
+>>
+>> You don't need the dc_valid nor the usb_valid.  If the dok-gpios are
+>> present - use DC power. If the uok-gpios - USB power.
+>>
+> I did think that as well, but I didn't want to break backwards
+> compatibility.
 
-But in case of one of the platforms (Jetson TK1) at least, the situation
-is a bit different. The OPP table is created (somehow) before
-dev_pm_opp_get_sharing_cpus() is called and so we returned 0. The caller
-of this routine treated that as 'CPUs don't share OPPs' and that had bad
-consequences on performance.
+What do you mean by backwards compatibility? The driver did not support
+DeviceTree before so it is not about DT compatibility. If you think
+about platform data then it is different: how you match DT into driver's
+structure is up to you.
 
-Fix this by converting 'shared_opp' to an integer and have an extra
-value when its state in undefined. dev_pm_opp_get_sharing_cpus() returns
--EINVAL now in that case, so that the caller can handle it accordingly
-(cpufreq-dt considers that as 'all CPUs share the table').
 
-Fixes: 6f707daa3833 ("PM / OPP: Add dev_pm_opp_get_sharing_cpus()")
-Reported-by: Alexandre Courbot <acourbot@nvidia.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Hi Alexandre,
+> 
+>> If both or none: print error.
+> Its valid to have both connected.
 
-This is untested, can you please confirm if this fixes it for you?
+Ah, okay. Just an example.
 
- drivers/base/power/opp/core.c |  3 +++
- drivers/base/power/opp/cpu.c  | 12 +++++++++---
- drivers/base/power/opp/of.c   | 10 ++++++++--
- drivers/base/power/opp/opp.h  |  5 ++++-
- 4 files changed, 24 insertions(+), 6 deletions(-)
+> 
+>>
+>> BTW, It would be nice if send also the user of this bindings - DTS/DTSI.
+> I'm not sure I understand what you mean here?
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 7c04c87738a6..14d212885098 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -764,6 +764,9 @@ static struct opp_table *_add_opp_table(struct device *dev)
- 	/* Set regulator to a non-NULL error value */
- 	opp_table->regulator = ERR_PTR(-ENXIO);
- 
-+	/* Set sharing information as unknown */
-+	opp_table->shared_opp = OPP_TABLE_SHARED_UNKNOWN;
-+
- 	/* Find clk for the device */
- 	opp_table->clk = clk_get(dev, NULL);
- 	if (IS_ERR(opp_table->clk)) {
-diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
-index 83d6e7ba1a34..4ca86df8a451 100644
---- a/drivers/base/power/opp/cpu.c
-+++ b/drivers/base/power/opp/cpu.c
-@@ -211,7 +211,7 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev,
- 		}
- 
- 		/* Mark opp-table as multiple CPUs are sharing it now */
--		opp_table->shared_opp = true;
-+		opp_table->shared_opp = OPP_TABLE_IS_SHARED;
- 	}
- unlock:
- 	mutex_unlock(&opp_table_lock);
-@@ -227,7 +227,8 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_sharing_cpus);
-  *
-  * This updates the @cpumask with CPUs that are sharing OPPs with @cpu_dev.
-  *
-- * Returns -ENODEV if OPP table isn't already present.
-+ * Returns -ENODEV if OPP table isn't already present and -EINVAL if the OPP
-+ * table's status is shared-unknown.
-  *
-  * Locking: The internal opp_table and opp structures are RCU protected.
-  * Hence this function internally uses RCU updater strategy with mutex locks
-@@ -249,9 +250,14 @@ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
- 		goto unlock;
- 	}
- 
-+	if (opp_table->shared_opp == OPP_TABLE_SHARED_UNKNOWN) {
-+		ret = -EINVAL;
-+		goto unlock;
-+	}
-+
- 	cpumask_clear(cpumask);
- 
--	if (opp_table->shared_opp) {
-+	if (opp_table->shared_opp == OPP_TABLE_IS_SHARED) {
- 		list_for_each_entry(opp_dev, &opp_table->dev_list, node)
- 			cpumask_set_cpu(opp_dev->dev->id, cpumask);
- 	} else {
-diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index 94d2010558e3..83ad3a6a16f1 100644
---- a/drivers/base/power/opp/of.c
-+++ b/drivers/base/power/opp/of.c
-@@ -34,7 +34,10 @@ static struct opp_table *_managed_opp(const struct device_node *np)
- 			 * But the OPPs will be considered as shared only if the
- 			 * OPP table contains a "opp-shared" property.
- 			 */
--			return opp_table->shared_opp ? opp_table : NULL;
-+			if (opp_table->shared_opp == OPP_TABLE_IS_SHARED)
-+				return opp_table;
-+
-+			return NULL;
- 		}
- 	}
- 
-@@ -353,7 +356,10 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- 	}
- 
- 	opp_table->np = opp_np;
--	opp_table->shared_opp = of_property_read_bool(opp_np, "opp-shared");
-+	if (of_property_read_bool(opp_np, "opp-shared"))
-+		opp_table->shared_opp = OPP_TABLE_IS_SHARED;
-+	else
-+		opp_table->shared_opp = OPP_TABLE_IS_NOT_SHARED;
- 
- 	mutex_unlock(&opp_table_lock);
- 
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index 20f3be22e060..ffd0b54e7894 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -166,7 +166,10 @@ struct opp_table {
- 	/* For backward compatibility with v1 bindings */
- 	unsigned int voltage_tolerance_v1;
- 
--	bool shared_opp;
-+#define OPP_TABLE_IS_NOT_SHARED		0
-+#define OPP_TABLE_IS_SHARED		1
-+#define OPP_TABLE_SHARED_UNKNOWN	UINT_MAX
-+	unsigned int shared_opp;
- 	struct dev_pm_opp *suspend_opp;
- 
- 	unsigned int *supported_hw;
--- 
-2.7.1.410.g6faf27b
+I mean I would like to see the DTS file which is using this device and
+these bindings. It is not necessary but it would be nice.
+
+Best regards,
+Krzysztof
+
+> 
+>>
+>> Best regards,
+>> Krzysztof
+>>
+>>> +    - dok-gpios: Valid DC power has been detected
+>>> +- usb_valid: Specifies that the USB portion of the MAX8903 has been
+>>> connected up
+>>> +        and that uok-gpios should be specified
+>>> +    - uok-gpios: Valid USB power has been detected
+>>> +
+>>> +Optional properties:
+>>> +- cen-gpios: Charge enable pin
+>>> +- chg-gpios: Charger status pin
+>>> +- flt-gpios: Fault pin
+>>> +- dcm-gpios: Current limit mode setting (DC or USB)
+>>> +- usus-gpios: USB suspend pin
+>>> +
+>>> +
+>>> +Example:
+>>> +
+>>> +    max8903-charger {
+>>> +        compatible = "maxim,max8903-charger";
+>>> +        dok-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
+>>> +        flt-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>;
+>>> +        chg-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
+>>> +        cen-gpios = <&gpio2 5 GPIO_ACTIVE_LOW>;
+>>> +        dc_valid;
+>>> +        status = "okay";
+>>> +    };
+>>>
+>>
+> 
+> 
+> 
+
