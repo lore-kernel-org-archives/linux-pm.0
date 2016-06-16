@@ -1,35 +1,30 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 3/3] tools/power/turbostat: add denverton rapl support
-Date: Thu, 16 Jun 2016 09:48:22 -0700
-Message-ID: <1466095702-5537-4-git-send-email-jacob.jun.pan@linux.intel.com>
-References: <1466095702-5537-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH v2 3/3] firmware: scpi: add device power domain support
+ using genpd
+Date: Thu, 16 Jun 2016 18:47:54 +0100
+Message-ID: <1466099274.20208.65.camel@linaro.org>
+References: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
+	 <1466073481-697-4-git-send-email-sudeep.holla@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1466095702-5537-1-git-send-email-jacob.jun.pan@linux.intel.com>
+In-Reply-To: <1466073481-697-4-git-send-email-sudeep.holla@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Denverton CPU RAPL supports package, core, and dram domains.
+On Thu, 2016-06-16 at 11:38 +0100, Sudeep Holla wrote:
+[...]
+> +enum scpi_power_domain_state {
+> +	SCPI_PD_STATE_ON = 0,
+> +	SCPI_PD_STATE_OFF = 3,
+> +};
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 3 +++
- 1 file changed, 3 insertions(+)
+The SCPI doc defines the meaning of these numbers (0 and 3) in the 'Juno
+specifics' chapter. So does these values need to come from device-tree
+to allow for other hardware or SCP implementations?
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index d219c4f..3c10d6d 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -2677,6 +2677,9 @@ void rapl_probe(unsigned int family, unsigned int model)
- 	case 0x4D:	/* AVN */
- 		do_rapl = RAPL_PKG | RAPL_CORES;
- 		break;
-+	case 0x5f:	/* DNV */
-+		do_rapl = RAPL_PKG | RAPL_DRAM | RAPL_DRAM_POWER_INFO | RAPL_DRAM_PERF_STATUS | RAPL_PKG_PERF_STATUS | RAPL_PKG_POWER_INFO | RAPL_CORES_ENERGY_STATUS;
-+		break;
- 	default:
- 		return;
- 	}
 -- 
-1.9.1
+Tixy
