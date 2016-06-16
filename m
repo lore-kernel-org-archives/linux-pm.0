@@ -1,158 +1,86 @@
-From: Andy Gross <andy.gross@linaro.org>
-Subject: Re: [PATCH 3/5] arm64: dts: msm8916: Add spc compat tag
-Date: Wed, 15 Jun 2016 22:12:05 -1000
-Message-ID: <20160616081205.GB3488@hector.psav.com>
-References: <1463634020-17252-1-git-send-email-andy.gross@linaro.org>
- <1463634020-17252-4-git-send-email-andy.gross@linaro.org>
- <20160610154857.GA6430@leverpostej>
- <20160610161234.GO13357@hector.attlocal.net>
- <20160610162555.GB6430@leverpostej>
- <20160610164721.GP13357@hector.attlocal.net>
- <20160613110043.GB19604@leverpostej>
- <20160613134833.GB26738@red-moon>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH v5 1/8] Documentation: arm: define DT cpu
+ capacity-dmips-mhz bindings
+Date: Thu, 16 Jun 2016 09:20:42 +0100
+Message-ID: <20160616082042.GI5981@e106622-lin>
+References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com>
+ <1465985877-18271-2-git-send-email-juri.lelli@arm.com>
+ <CAL_JsqJwQVsn3=6vQus4Q2OhnLUsJVN70j2+f3QoJejcb=p9YA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:35151 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753808AbcFPIMI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 04:12:08 -0400
-Received: by mail-pa0-f53.google.com with SMTP id hl6so15958920pac.2
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jun 2016 01:12:08 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160613134833.GB26738@red-moon>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAL_JsqJwQVsn3=6vQus4Q2OhnLUsJVN70j2+f3QoJejcb=p9YA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, peterz@infradead.org, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Mark Brown <broonie@kernel.org>, sgurrappadi@nvidia.com, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, stanimir.varbanov@linaro.org
 
-On Mon, Jun 13, 2016 at 02:48:33PM +0100, Lorenzo Pieralisi wrote:
-> On Mon, Jun 13, 2016 at 12:00:43PM +0100, Mark Rutland wrote:
-> > On Fri, Jun 10, 2016 at 11:47:21AM -0500, Andy Gross wrote:
-> > > On Fri, Jun 10, 2016 at 05:25:55PM +0100, Mark Rutland wrote:
-> > > > On Fri, Jun 10, 2016 at 11:12:34AM -0500, Andy Gross wrote:
-> > > > > On Fri, Jun 10, 2016 at 04:48:57PM +0100, Mark Rutland wrote:
-> > > > > > [+ Lorenzo]
-> > > > > > 
-> > > > > > On Thu, May 19, 2016 at 12:00:18AM -0500, Andy Gross wrote:
-> > > > > > > This patch adds the qcom,idle-state-spc compatible to the SPC idle
-> > > > > > > state.  This compatible indicates that the state is one which supports
-> > > > > > > freeze.
-> > > > > > > 
-> > > > > > > Signed-off-by: Andy Gross <andy.gross@linaro.org>
-> > > > > > > ---
-> > > > > > >  arch/arm64/boot/dts/qcom/msm8916.dtsi | 2 +-
-> > > > > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > > > > 
-> > > > > > > diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-> > > > > > > index 208af00..032e411 100644
-> > > > > > > --- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-> > > > > > > +++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-> > > > > > > @@ -104,7 +104,7 @@
-> > > > > > >  
-> > > > > > >  		idle-states {
-> > > > > > >  			CPU_SPC: spc {
-> > > > > > > -				compatible = "arm,idle-state";
-> > > > > > > +				compatible = "qcom,idle-state-spc", "arm,idle-state";
-> > > > > > >  				arm,psci-suspend-param = <0x40000002>;
-> > > > > > >  				entry-latency-us = <130>;
-> > > > > > >  				exit-latency-us = <150>;
-> > > > > > 
-> > > > > > This looks suspicious.
-> > > > > > 
-> > > > > > This is a PSCI idle state, and we have a PSCI driver driven by the
-> > > > > > generic ARM cpuidle driver.
-> > > > > > 
-> > > > > > Why do we need a qcom-specific compatible here?
-> > > > > > 
-> > > > > > Surely we should be able to use the idle code in a generic fashion to
-> > > > > > driver suspend-to-idle?
-> > > > > 
-> > > > > We need a way to identify specific idle states that support suspend-to-idle.  In
-> > > > > addition, when we have identified the states, we may have to configure the
-> > > > > enter_freeze() function.
-> > > > 
-> > > > Could you elaborate on what you mean by a state supporting
-> > > > suspend-to-idle? It was my understanding that any idle state should
-> > > > function for suspend-to-idle (and the choice of state is potentially
-> > > > subjective).
-> > > 
-> > > when you freeze the system, cpuidle will try to find the deepest state which
-> > > supports freeze (by checking if a enter_freeze() exists).  If it does exist,
-> > > then the tick is frozen and the enter_freeze is called as each cpu goes idle.
-> > 
-> > Per Lorenzo's replies in another thread, it sounds like this is a
-> > generic issue, and not specific to Qualcomm. My understanding is that
-> > the only issue is coupled idle states, and further, that issue is really
-> > an implementation detail within Linux w.r.t. IRQ management.
-> > 
-> > So it sounds like we need to rework things to be robust in the case of
-> > coupled idle states, and we can wire up enter_freeze for all states
-> > generically.
-> > 
-> > If there is some peroblem with making things robust, I assume we can
-> > identify coupled idle states today in some generic manner. I don't
-> > currently see the need for any DT binding.
-> > 
-> > Lorenzo, does the above make sense to you?
-> 
-> It does but I have a concern, let me summarize the problem here.
-> 
-> An idle state is freezeable if it can be entered with a function
-> that does not enable IRQs and that's a kernel implementation
-> detail; that function is used to initialize its enter_freeze()
-> hook.
-> 
-> That's the case for all ARM platforms I am aware of, apart
-> from the ones relying on coupled C-states that (by construction,
-> in core CPUidle code) rely on IRQ enabling in their enter
-> function body to work (NB: I do not handle coupled idle states
-> in generic ARM CPUidle code, and I will never do so that's a
-> non-existing problem).
-> 
-> The point is: while initializing the idle states in:
-> 
-> drivers/cpuidle/dt_idle_states.c (init_state_node())
-> 
-> we do not have all necessary information to know if we can
-> safely initialize the enter_freeze() hook (because
-> that's a property that depends on the CPUidle back-end).
+Hi,
 
-And this is why I was modifying the enter_freeze after the cpuidle driver was
-loaded.  And also why i was keying off the compat tag.
+On 15/06/16 17:11, Rob Herring wrote:
+> On Wed, Jun 15, 2016 at 5:17 AM, Juri Lelli <juri.lelli@arm.com> wrote:
 
-> 
-> We could add a DT property to report an idle state as
-> "freezeable", but that's ugly and ill-defined, it is a kernel
-> implementation detail, not sure a DT property makes sense
-> here.
-> 
-> So, either:
-> 
-> (1) We consider all idle states to be "freezeable" and so
->     I initialize their enter_freeze() pointer == enter()
->     (and assume the idle back-end does NOT enable IRQs, I
->     could add some documentation for that)
+[...]
 
-The only issue at the moment with this is that the function prototypes are
-different.  That is why I call the .enter function from withing my enter_freeze.
-
-Otherwise I think this would work pretty well.
-
+> > +==========================================
+> > +2 - CPU capacity definition
+> > +==========================================
+> > +
+> > +CPU capacity is a number that provides the scheduler information about CPUs
+> > +heterogeneity. Such heterogeneity can come from micro-architectural differences
+> > +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
+> > +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
+> > +context is about differing performance characteristics; this binding tries to
+> > +capture a first-order approximation of the relative performance of CPUs.
+> > +
+> > +CPU capacities are obtained by running a suitable benchmark. This binding makes
+> > +no aspersions on the validity or suitability of any particular benchmark, the
+> > +final capacity should, however, be:
+> > +
+> > +* A "single-threaded" or CPU affine benchmark
+> > +* Divided by the running frequency of the CPU executing the benchmark
+> > +* Not subject to dynamic frequency scaling of the CPU
+> > +
+> > +For the time being we however advise usage of the Dhrystone benchmark. What
+> > +above thus becomes:
+> > +
+> > +CPU capacities are obtained by running the Dhrystone benchmark on each CPU at
+> > +max frequency. The obtained DMIPS score is then divided by the frequency (in
+> > +MHz) at which the benchmark has been run, so that DMIPS/MHz are obtained.
+> > +Such values are then normalized w.r.t. the highest score obtained in the
+> > +system.
 > 
-> (2) I have to add code that probes the idle back-end (ie
->     the arm_cpuidle_suspend() implementation) to detect
->     which states require IRQs to be enabled.
-> 
-> (2) is ugly/convoluted (and solving a problem that does not exist
-> at present). I am quite tempted to go for (1) and if we ever
-> have some issues with that we blacklist the respective platforms
-> enable-methods in the DT idle parsing code.
-> 
-> Thoughts appreciated.
-> 
-> Lorenzo
+> So the property says it represents DMIPS/MHz, but we take that and
+> "normalize" them back to a made up numbers?
 
-Regards,
+The normalization step is required if one wants to prevent
+cross-platform comparisons (I think that's what vendors generally want).
+They are not made up, they still come from measured DMIPS/MHz values.
 
-Andy
+> Perhaps that step should
+> be optional. Then paranoid Si vendors can put their fake numbers in
+> and end users can update the dts files with real numbers.
+> 
+
+But, you can also decide to skip that step and put non normalized
+numbers in. This documentation is advising people for what seems to be
+be the most common way of coming up with values that, once in a DT,
+won't be used to compare perf of different platforms.
+
+Maybe we want to add a paragraph clearly stating this point?
+
+> Is there any point in allowing people to pick their own scale? Why not
+> just 100 (as in percent)?
+> 
+
+I think we agreed that not picking any particular scale is more flexible
+and easier to use. For example, if there is a 2x factor between you cpus
+you can simply put 1 and 2 there. But, if you need higher "resolution"
+you can put whatever suits you better and we'll use the max as scale.
+
+Thanks a lot for the review.
+
+Best,
+
+- Juri
