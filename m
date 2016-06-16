@@ -1,51 +1,120 @@
-From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Subject: Re: [PATCH v2 0/3] firmware: scpi: add device power domain support
-Date: Thu, 16 Jun 2016 14:14:54 +0100
-Message-ID: <1466082894.20208.1.camel@linaro.org>
-References: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
+From: James Morse <james.morse@arm.com>
+Subject: Re: [PATCH v2 2/6] arm64: Add .mmuoff.text section
+Date: Thu, 16 Jun 2016 14:22:21 +0100
+Message-ID: <5762A80D.1030705@arm.com>
+References: <1466012148-7674-1-git-send-email-james.morse@arm.com> <1466012148-7674-3-git-send-email-james.morse@arm.com> <20160616111007.GB6073@leverpostej>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:43711 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754471AbcFPNY1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 16 Jun 2016 09:24:27 -0400
+In-Reply-To: <20160616111007.GB6073@leverpostej>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On Thu, 2016-06-16 at 11:37 +0100, Sudeep Holla wrote:
-> This series add support for SCPI based device device power state
-> management using genpd.
+Hi Mark,
+
+On 16/06/16 12:10, Mark Rutland wrote:
+> On Wed, Jun 15, 2016 at 06:35:44PM +0100, James Morse wrote:
+>> Resume from hibernate needs to clean any text executed by the kernel with
+>> the MMU off to the PoC. Collect these functions together into a new
+>> .mmuoff.text section.
+>>
+>> This covers booting of secondary cores and the cpu_suspend() path used
+>> by cpu-idle and suspend-to-ram.
+>>
+>> The bulk of head.S is not included, as the primary boot code is only ever
+>> executed once, the kernel never needs to ensure it is cleaned to a
+>> particular point in the cache.
+
+
+>> diff --git a/arch/arm64/kernel/head.S b/arch/arm64/kernel/head.S
+>> index 2c6e598a94dc..ff37231e2054 100644
+>> --- a/arch/arm64/kernel/head.S
+>> +++ b/arch/arm64/kernel/head.S
+>> @@ -656,6 +657,7 @@ ENDPROC(secondary_holding_pen)
+>>  	 * Secondary entry point that jumps straight into the kernel. Only to
+>>  	 * be used where CPUs are brought online dynamically by the kernel.
+>>  	 */
+>> +	.pushsection ".mmuoff.text", "ax"
+>>  ENTRY(secondary_entry)
+>>  	bl	el2_setup			// Drop to EL1
+>>  	bl	set_cpu_boot_mode_flag
+>> @@ -687,7 +689,7 @@ __secondary_switched:
+>>  	mov	x29, #0
+>>  	b	secondary_start_kernel
+>>  ENDPROC(__secondary_switched)
+>> -
+>> +	.popsection
 > 
-> Regards,
-> Sudeep
-> 
-> v1[1]->v2:
-> 	- Fixed the endianness handling in scpi_device_get_power_state
-> 	  as spotted by Tixy
-> 	- Renamed scpi_pd.c to scpi_pm_domain.c as suggested by Ulf
+> I think we also need to cover set_cpu_boot_mode_flag and
+> __boot_cpu_mode.
 
-You seemed to also have made some changes to the contents of the file,
-is that deliberate? This is the diff...
+Bother, yes.
+How come cpu_resume doesn't call this? I guess we assume
+psci_cpu_suspend_enter() will bring the core back at the same EL
 
---- a/drivers/firmware/scpi_pm_domain.c
-+++ b/drivers/firmware/scpi_pd.c
-@@ -27,7 +27,7 @@ struct scpi_pm_domain {
-        struct generic_pm_domain genpd;
-        struct scpi_ops *ops;
-        u32 domain;
--       char name[20];
-+       char name[30];
- };
- 
- enum scpi_power_domain_state {
-@@ -51,7 +51,7 @@ static int scpi_pd_power(struct scpi_pm_domain *pd,
-bool power_on)
-        if (ret)
-                return ret;
- 
--       return (state == pd->ops->device_get_power_state(pd->domain));
-+       return !(state == pd->ops->device_get_power_state(pd->domain));
- }
- 
- static int scpi_pd_power_on(struct generic_pm_domain *domain)
+
+> Likewise secondary_holding_pen and secondary_holding_pen_release, in
+> case you booted with maxcpus=1, suspended, resumed, then tried to bring
+> secondaries up with spin-table.
+
+Whoa! This must never happen!
+With KASLR:
+* relocate to location-1,
+* release the secondary cores from firmware into
+  location-1:secondary_holding_pen,
+* resume from hibernate, at which point we are running from location-2,
+  as the kaslr values are now from the hibernate kernel.
+* location-2:secondary_holding_pen is empty,
+* location-1:secondary_holding_pen now contains a user-space string, or some
+  other horror.
+
+
+This didn't come up during testing because maxcpus=1 was permanent before v4.7,
+and we can't bundle cores back into the secondary_holding_pen. Hibernate without
+PSCI (or some other cpu_die()) mechanism fails in the core code:
+> [70648.097242] Disabling non-boot CPUs ...
+> [70648.117277] Error taking CPU1 down: -95
+> [70648.117286] Non-boot CPUs are not disabled
+
+... but if we never tried to boot those cpus, we don't hit this check, and the
+cores are left in secondary_holding_pen after smp_prepare_cpus(), called well
+before the late_initcall that kicks of resume.
+
+This is broken on systems that load the kernel at a different address over a
+reboot, (using KASLR or a fancy boot loader), and use spin-table for secondary
+cores. (probably none in practice, but still worth fixing)
+
+
+Thinking aloud:
+cpus_stuck_in_kernel only indicates cores that we failed to fully bring up.
+(incompatible translation granule etc). There could still be cores in the
+kernel's secondary holding pen. We should prevent kexec/hibernate in this case.
+(hibernate because we can't safely resume on such a machine)
+
+kexec[0] currently checks for a cpu_die() call:
+> if (num_online_cpus() > 1)
+
+Changing this to 'num_possible_cpus() > 1' will cover the above case.
+Similar code will need to be added to hibernate.
+
+
+An alternative is to increase cpus_stuck_in_kernel in
+smp_spin_table_cpu_prepare(), but it stops being a counter at this point.
+
+
+Thoughts? Does this make sense, or do I have the wrong end of the stick somewhere!
+
+
+
+James
+
+
+[0] http://www.spinics.net/lists/arm-kernel/msg510097.html
+
