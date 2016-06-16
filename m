@@ -1,90 +1,113 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v7 1/6] mfd: max8997: Use regmap to access registers
-Date: Thu, 16 Jun 2016 16:07:27 +0100
-Message-ID: <20160616150727.GF4948@dell>
-References: <1464773339-756-1-git-send-email-k.kozlowski@samsung.com>
- <1464774841-1439-1-git-send-email-k.kozlowski@samsung.com>
- <20160608142621.GG14888@dell>
- <57582C1F.5040306@samsung.com>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: Re: [PATCH v2] power_supply: fix return value of get_property
+Date: Thu, 16 Jun 2016 11:40:47 -0400
+Message-ID: <04e70c84-f34d-2c61-0d8b-80cbeaac356e@nvidia.com>
+References: <1466028784-24459-1-git-send-email-rklein@nvidia.com>
+ <576266A9.9030906@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <rtc-linux+bncBDA7X7F2WUEBBBMBRO5QKGQE7QLYCDA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <57582C1F.5040306-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, r.baldyga-anjuHVi6/WSaMJb+Lgu22Q@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:6601 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754022AbcFPPkt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 11:40:49 -0400
+In-Reply-To: <576266A9.9030906@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 08 Jun 2016, Krzysztof Kozlowski wrote:
+On 6/16/2016 4:43 AM, Krzysztof Kozlowski wrote:
+> On 06/16/2016 12:13 AM, Rhyland Klein wrote:
+>> power_supply_get_property() should ideally return -EAGAIN if it is
+>> called while the power_supply is being registered. There was no way
+>> previously to determine if use_cnt == 0 meant that the power_supply
+>> wasn't fully registered yet, or if it had already been unregistered.
+>>
+>> Add a new boolean to the power_supply struct to simply show if
+>> registration is completed. Lastly, modify the check in
+>> power_supply_show_property() to also ignore -EAGAIN when so it
+>> doesn't complain about not returning the property.
+>>
+>> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+>> ---
+>> v2:
+>>  - Modify power_supply_show_property() to not complain if it
+>>    sees a return value of -EAGAIN after calling
+>>    power_supply_get_property().
+>>
+>>  drivers/power/power_supply_core.c  | 6 +++++-
+>>  drivers/power/power_supply_sysfs.c | 2 +-
+>>  include/linux/power_supply.h       | 1 +
+>>  3 files changed, 7 insertions(+), 2 deletions(-)
+> 
+> I don't like it for two reasons:
+> 1. There is still a short window when the information will be
+> inaccurate. See comment below.
+> 
+> 2. Although the code is not very complicated but it adds another field
+> and some checks just for differentiating EAGAIN/ENODEV. It is
+> unnecessary complexity.
+> 
+>>
+>> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+>> index b13cd074c52a..a39a47672979 100644
+>> --- a/drivers/power/power_supply_core.c
+>> +++ b/drivers/power/power_supply_core.c
+>> @@ -491,8 +491,11 @@ int power_supply_get_property(struct power_supply *psy,
+>>  			    enum power_supply_property psp,
+>>  			    union power_supply_propval *val)
+>>  {
+>> -	if (atomic_read(&psy->use_cnt) <= 0)
+>> +	if (atomic_read(&psy->use_cnt) <= 0) {
+>> +		if (!psy->initialized)
+>> +			return -EAGAIN;
+>>  		return -ENODEV;
+>> +	}
+>>  
+>>  	return psy->desc->get_property(psy, psp, val);
+>>  }
+>> @@ -775,6 +778,7 @@ __power_supply_register(struct device *parent,
+>>  	if (rc)
+>>  		goto create_triggers_failed;
+>>  
+>> +	psy->initialized = true;
+> 
+> If someone calls power_supply_get_property() here, then ENODEV will be
+> returned which is wrong.
+> 
+> The problem is not solved entirely... I am not convinced that introduced
+> complexity is worth fixing it.
+> 
 
-> On 06/08/2016 04:26 PM, Lee Jones wrote:
-> > On Wed, 01 Jun 2016, Krzysztof Kozlowski wrote:
-> >=20
-> >> From: Robert Baldyga <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> >>
-> >> This patch modifies max8997 driver and each associated function driver=
-,
-> >> to use regmap instead of operating directly on i2c bus. It will allow =
-to
-> >> simplify IRQ handling using regmap-irq.
-> >>
-> >> Signed-off-by: Robert Baldyga <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> >> Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> >>
-> >> Acked-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> >> Acked-by: Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> >> Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> >> Acked-by: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> >> Acked-by: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> >> Acked-by: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> >> [k.kozlowski: Collect acks, rebase on v4.6-rc6]
-> >> Signed-off-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> >> Acked-by: Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> >> ---
-> >>  drivers/extcon/extcon-max8997.c       |  31 ++++----
-> >>  drivers/input/misc/max8997_haptic.c   |  34 ++++----
-> >>  drivers/leds/leds-max8997.c           |  13 ++--
-> >>  drivers/mfd/Kconfig                   |   1 +
-> >>  drivers/mfd/max8997-irq.c             |  64 ++++++---------
-> >>  drivers/mfd/max8997.c                 | 141 +++++++++++++++----------=
----------
-> >>  drivers/power/max8997_charger.c       |  33 ++++----
-> >>  drivers/regulator/max8997-regulator.c |  87 ++++++++++-----------
-> >=20
-> > Is it just Mark's Ack you require?
->=20
-> Yes, only Mark's is missing here. All other patches got everything they
-> need.
+Right now, without this patch, this causes the thermal function
+"update_temperature" in:
 
-I think you'd better re-submit and get Mark's attention.
+thermal_zone_device_register->
+  thermal_zone_device_update->
+    update_temperature
+      (->thermal_zone_get_temp() from the original stack)
 
-Also indicate that his Ack is all you need.
+to print a warning as it sees ret != -EAGAIN. This causes a warning
+"failed to read out thermal zone". I think the idea there is if anything
+other than "try again" it complains. While this doesn't cause functional
+problems, I do think avoid the warning is worth while.
 
-Once received, I can take the set.
+I think that there is an onus on the power_supply code to be accurate in
+its return codes, and EAGAIN is the correct one we should be returning.
+I don't see how someone would call power_supply_get_property, but I
+agree there is the possibility that if someone did call there, that it
+could return the wrong value.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+We could wrap the setting of initialized and use_cnt inside a mutex,
+which should prevent anyone calling anything in between if we wanted to
+completely plug that hole. I am not fond of the idea of adding a struct
+member for such a small, specific case, but as we found before, I don't
+think there is another way to differentiate otherwise.
 
---=20
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
----=20
-You received this message because you are subscribed to the Google Groups "=
-rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+-rhyland
+
+
+-- 
+nvpublic
