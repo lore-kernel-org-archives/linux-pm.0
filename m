@@ -1,38 +1,83 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [QUERY] AMBA: PM domains when !CONFIG_PM
-Date: Thu, 16 Jun 2016 12:19:13 +0100
-Message-ID: <57628B31.3090901@arm.com>
+From: maruthi srinivas <maruthi.srinivas.b@gmail.com>
+Subject: Re: [RESEND PATCH v3 1/2] PM / Domains: Allow genpd to power on
+ during the system PM phases
+Date: Thu, 16 Jun 2016 17:00:00 +0530
+Message-ID: <CANv6ZMb5kMHHrr2Za6_mH+rmu2vEJFuLjc0kt0a+4e6DyyY=ZA@mail.gmail.com>
+References: <1464601388-26693-1-git-send-email-ulf.hansson@linaro.org>
+ <1464601388-26693-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@baylibre.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <1464601388-26693-2-git-send-email-ulf.hansson@linaro.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Len Brown <len.brown@intel.com>, Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>, Axel Haslam <ahaslam@baylibre.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maling list - DRI developers <dri-devel@lists.freedesktop.org>, Jon Hunter <jonathanh@nvidia.com>, Alex Deucher <alexander.deucher@amd.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, Lina Iyer <lina.iyer@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ulf, Kevin,
-
-I have a situation where we need to enable the power domain to access an
-AMBA device. This is all fine with patches from Ulf and Marek in amba/bus.c
-
-The problem is when we disable CONFIG_PM, dev_pm_domain_attach
-returns -ENODEV irrespective of whether a DT node has a PM domain
-in it or not. If dev_pm_domain_attach returns anything other than
--EPROBE_DEFER, we ignore the error and proceed to access the device
-which will explode.
-
-Basically, we need a way to prevent addition of that amba device if DT
-node has PD specified but CONFIG_PM=n. Any thoughts ?
-
--- 
-Regards,
-Sudeep
+T24gTW9uLCBNYXkgMzAsIDIwMTYgYXQgMzoxMyBQTSwgVWxmIEhhbnNzb24gPHVsZi5oYW5zc29u
+QGxpbmFyby5vcmc+IHdyb3RlOgo+IElmIHRoZSBQTSBkb21haW4gaXMgcG93ZXJlZCBvZmYgd2hl
+biB0aGUgZmlyc3QgZGV2aWNlIHN0YXJ0cyBpdHMgc3lzdGVtIFBNCj4gcHJlcGFyZSBwaGFzZSwg
+Z2VucGQgcHJldmVudHMgYW55IGZ1cnRoZXIgYXR0ZW1wdHMgdG8gcG93ZXIgb24gdGhlIFBNCj4g
+ZG9tYWluIGR1cmluZyB0aGUgZm9sbG93aW5nIHN5c3RlbSBQTSBwaGFzZXMuIE5vdCB1bnRpbCB0
+aGUgc3lzdGVtIFBNCj4gY29tcGxldGUgcGhhc2UgaXMgZmluYWxpemVkIGZvciBhbGwgZGV2aWNl
+cyBpbiB0aGUgUE0gZG9tYWluLCBnZW5wZCBhZ2Fpbgo+IGFsbG93cyBpdCB0byBiZSBwb3dlcmVk
+IG9uLgo+Cj4gVGhpcyBiZWhhdmlvdXIgbmVlZHMgdG8gYmUgY2hhbmdlZCwgYXMgYSBzdWJzeXN0
+ZW0vZHJpdmVyIGZvciBhIGRldmljZSBpbgo+IHRoZSBzYW1lIFBNIGRvbWFpbiBtYXkgc3RpbGwg
+bmVlZCB0byBiZSBhYmxlIHRvIHNlcnZlIHJlcXVlc3RzIGluIHNvbWUgb2YKPiB0aGUgc3lzdGVt
+IFBNIHBoYXNlcy4gQWNjb3JkaW5nbHksIGl0IG1heSBuZWVkIHRvIHJ1bnRpbWUgcmVzdW1lIGl0
+cwo+IGRldmljZSBhbmQgdGh1cyBhbHNvIHJlcXVlc3QgdGhlIGNvcnJlc3BvbmRpbmcgUE0gZG9t
+YWluIHRvIGJlIHBvd2VyZWQgb24uCj4KPiBUbyBkZWFsIHdpdGggdGhlc2Ugc2NlbmFyaW9zLCBs
+ZXQncyBtYWtlIHRoZSBkZXZpY2Ugb3BlcmF0aW9uYWwgaW4gdGhlCj4gc3lzdGVtIFBNIHByZXBh
+cmUgcGhhc2UgYnkgcnVudGltZSByZXN1bWluZyBpdCwgbm8gbWF0dGVyIGlmIHRoZSBQTSBkb21h
+aW4KPiBpcyBwb3dlcmVkIG9uIG9yIG9mZi4gQ2hhbmdpbmcgdGhpcyBhbHNvIGVuYWJsZXMgdXMg
+dG8gcmVtb3ZlIGdlbnBkJ3MKPiBzdXNwZW5kX3Bvd2VyX29mZiBmbGFnLCBhcyBpdCdzIGJlaW5n
+IHVzZWQgdG8gdHJhY2sgdGhpcyBjb25kaXRpb24uCj4gQWRkaXRpb25hbGx5LCB3ZSBtdXN0IGFs
+bG93IHRoZSBQTSBkb21haW4gdG8gYmUgcG93ZXJlZCBvbiB2aWEgcnVudGltZSBQTQo+IGR1cmlu
+ZyB0aGUgc3lzdGVtIFBNIHBoYXNlcy4KPgo+IFRoaXMgY2hhbmdlIGFsc28gcmVxdWlyZXMgYSBm
+aXggaW4gdGhlIEFNRCBBQ1AgKEF1ZGlvIENvUHJvY2Vzc29yKSBkcm0KPiBkcml2ZXIuIEl0IHJl
+Z2lzdGVycyBhIGdlbnBkIHRvIG1vZGVsIHRoZSBBQ1AgYXMgYSBQTSBkb21haW4sIGJ1dAo+IHVu
+Zm9ydHVuYXRlbHkgaXQncyBhbHNvIGFidXNlcyBnZW5wZCdzICJpbnRlcm5hbCIgc3VzcGVuZF9w
+b3dlcl9vZmYgZmxhZwo+IHRvIGRlYWwgd2l0aCBhIGNvcm5lciBjYXNlIGF0IHN5c3RlbSBQTSBy
+ZXN1bWUuCj4KPiBNb3JlIHByZWNpc2VseSwgdGhlIHNvIGNhbGxlZCBTTVUgYmxvY2sgcG93ZXJz
+IG9uIHRoZSBBQ1AgYXQgc3lzdGVtIFBNCj4gcmVzdW1lLCB1bmNvbmRpdGlvbmFsbHkgaWYgaXQn
+cyBiZWluZyB1c2VkIG9yIG5vdC4gVGhpcyBtYXkgbGVhZCB0byB0aGF0Cj4gZ2VucGQncyBpbnRl
+cm5hbCBzdGF0dXMgb2YgdGhlIHBvd2VyIHN0YXRlLCBtYXkgbm90IGNvcnJlY3RseSByZWZsZWN0
+IHRoZQo+IHBvd2VyIHN0YXRlIG9mIHRoZSBIVyBhZnRlciBhIHN5c3RlbSBQTSByZXN1bWUuCj4K
+PiBCZWNhdXNlIG9mIGNoYW5naW5nIHRoZSBiZWhhdmlvdXIgb2YgZ2VucGQsIGJ5IHJ1bnRpbWUg
+cmVzdW1pbmcgZGV2aWNlcyBpbgo+IHRoZSBwcmVwYXJlIHBoYXNlLCB0aGUgQU1EIEFDUCBkcm0g
+ZHJpdmVyIG5vIGxvbmdlciBoYXZlIHRvIGRlYWwgd2l0aCB0aGlzCj4gY29ybmVyIGNhc2UuIFNv
+IGxldCdzIGp1c3QgZHJvcCB0aGUgcmVsYXRlZCBjb2RlIGluIHRoaXMgZHJpdmVyLgo+Cj4gQ2M6
+IERhdmlkIEFpcmxpZSA8YWlybGllZEBsaW51eC5pZT4KPiBDYzogQWxleCBEZXVjaGVyIDxhbGV4
+YW5kZXIuZGV1Y2hlckBhbWQuY29tPgo+IENjOiBDaHJpc3RpYW4gS8O2bmlnIDxjaHJpc3RpYW4u
+a29lbmlnQGFtZC5jb20+Cj4gQ2M6IE1hcnV0aGkgU3Jpbml2YXMgQmF5eWF2YXJhcHUgPE1hcnV0
+aGkuQmF5eWF2YXJhcHVAYW1kLmNvbT4KPiBDYzogZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9w
+Lm9yZwo+IFNpZ25lZC1vZmYtYnk6IFVsZiBIYW5zc29uIDx1bGYuaGFuc3NvbkBsaW5hcm8ub3Jn
+Pgo+IC0tLQo+Cj4gQ2hhbmdlcyBpbiB2MzoKPiAgICAgICAgIC0gVXBkYXRlZCBjaGFuZ2Vsb2cu
+Cj4KPiBDaGFuZ2VzIGluIHYyOgo+ICAgICAgICAgLSBVcGRhdGVkIGNoYW5nZWxvZy4KPiAgICAg
+ICAgIC0gQWRkZWQgYSBmaXggaW4gdGhlIEFNRCBBQ1AgKEF1ZGlvIENvUHJvY2Vzc29yKSBkcm0g
+ZHJpdmVyLCB3aGljaAo+ICAgICAgICAgcmVnaXN0ZXJzIGEgZ2VucGQuIFRoZSBmaXggcmVtb3Zl
+cyB0aGUgdXNhZ2Ugb2YgZ2VucGQncyBpbnRlcm5hbAo+ICAgICAgICAgc3VzcGVuZF9wb3dlcl9v
+ZmYgZmxhZyBhcyBpdCdzIG5vdCBuZWVkZWQgYWZ0ZXIgdGhpcyBjaGFuZ2UuIEJlY2F1c2Ugb2YK
+PiAgICAgICAgIHRoaXMgY2hhbmdlIEkgYW0gYWxzbyByZXF1ZXN0aW5nIGFuIGFjayBmcm9tIHRo
+ZSBkcm0gZHJpdmVyIG1haW50YWluZXIuCj4KPgo+IC0tLQo+ICBkcml2ZXJzL2Jhc2UvcG93ZXIv
+ZG9tYWluLmMgICAgICAgICAgICAgfCA4NCArKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tLS0t
+LS0KPiAgZHJpdmVycy9ncHUvZHJtL2FtZC9hbWRncHUvYW1kZ3B1X2FjcC5jIHwgMjMgLS0tLS0t
+LS0tCj4gIGluY2x1ZGUvbGludXgvcG1fZG9tYWluLmggICAgICAgICAgICAgICB8ICAxIC0KPiAg
+MyBmaWxlcyBjaGFuZ2VkLCAzMSBpbnNlcnRpb25zKCspLCA3NyBkZWxldGlvbnMoLSkKPgoKRm9y
+IHRoZSBBQ1AgcGFydCBvZiBEUk0gZHJpdmVyIDoKCkFja2VkLWJ5OiBNYXJ1dGhpIEJheXlhdmFy
+YXB1IDxtYXJ1dGhpLmJheXlhdmFyYXB1QGFtZC5jb20+Cgo+Cj4gLS0KPiBUbyB1bnN1YnNjcmli
+ZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtcG0iIGlu
+Cj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKPiBN
+b3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1p
+bmZvLmh0bWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+ZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0
+dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
