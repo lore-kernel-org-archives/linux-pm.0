@@ -1,65 +1,32 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH v1 1/1] intel_idle: Add CPU model 74 (Atom Z34xx series)
-Date: Wed, 15 Jun 2016 21:14:48 -0400
-Message-ID: <CAJvTdKmDWQPtfHBtTEF2-_Ax=PvUpc6E56wR=6GjJcKf-kjXQw@mail.gmail.com>
-References: <1465232806-138619-1-git-send-email-andriy.shevchenko@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / Hibernate: Don't let kasan instrument snapshot.c
+Date: Thu, 16 Jun 2016 03:22:36 +0200
+Message-ID: <10410002.s5W5iLN5MG@vostro.rjw.lan>
+References: <1464870032-12289-1-git-send-email-james.morse@arm.com> <7230305.BYjCFel4WC@vostro.rjw.lan> <57612D0E.5050209@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f66.google.com ([209.85.192.66]:36628 "EHLO
-	mail-qg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932084AbcFPBOt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2016 21:14:49 -0400
-Received: by mail-qg0-f66.google.com with SMTP id 78so3164188qgt.3
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2016 18:14:49 -0700 (PDT)
-In-Reply-To: <1465232806-138619-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:44870 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753214AbcFPBS0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2016 21:18:26 -0400
+In-Reply-To: <57612D0E.5050209@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
+To: James Morse <james.morse@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>
 
-Hi Andy,
+On Wednesday, June 15, 2016 11:25:18 AM James Morse wrote:
+> Hi Rafael,
+> 
+> On 15/06/16 00:26, Rafael J. Wysocki wrote:
+> > Does the arch code need to be annotated in a similar way too?
+> 
+> Only if you do the restore copying from C, both 32bit and 64bit x86 do this copy
+> in assembly code, which doesn't get instrumented.
 
-Is this a patch from the Android kernel tree?
-Is there anybody testing the upstream kernel on this hardware?
+OK, that's what I wanted to know.
 
-Past efforts to support old hardware that nobody tests upstream
-have resulted in all pain and no gain, and I'm not eager to
-repeat that experience.
+Thanks!
 
-thanks,
--Len
-
-
-On Mon, Jun 6, 2016 at 1:06 PM, Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
-> Add CPU ID for Atom Z34xx processors. Datasheets indicate support for this,
-> detailed information about potential quirks or limitations are missing, though.
-> So we just reuse the definition for the previous ATOM series. The quite similar
-> values (C1 is slightly deviated) are used in the official Intel Edison BSP.
->
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  drivers/idle/intel_idle.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index c966492..bb52275 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -1033,6 +1033,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
->         ICPU(0x2d, idle_cpu_snb),
->         ICPU(0x36, idle_cpu_atom),
->         ICPU(0x37, idle_cpu_byt),
-> +       ICPU(0x4a, idle_cpu_atom),
->         ICPU(0x4c, idle_cpu_cht),
->         ICPU(0x3a, idle_cpu_ivb),
->         ICPU(0x3e, idle_cpu_ivt),
-> --
-> 2.8.1
->
-
-
-
--- 
-Len Brown, Intel Open Source Technology Center
