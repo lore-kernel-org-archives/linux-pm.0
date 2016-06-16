@@ -1,86 +1,45 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 4/5] mfd: tps65217: Add power button as subdevice
-Date: Thu, 16 Jun 2016 11:36:22 +0100
-Message-ID: <20160616103622.GS4948@dell>
-References: <20160614132927.3309-1-m.niestroj@grinn-global.com>
- <20160614132927.3309-5-m.niestroj@grinn-global.com>
- <20160615141242.GK4948@dell>
- <61c57049-04e3-434c-6293-58a9297c73c9@grinn-global.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v2 0/3] firmware: scpi: add device power domain support
+Date: Thu, 16 Jun 2016 11:37:58 +0100
+Message-ID: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f51.google.com ([74.125.82.51]:38247 "EHLO
-	mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752605AbcFPKgF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 06:36:05 -0400
-Received: by mail-wm0-f51.google.com with SMTP id m124so62901214wme.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jun 2016 03:35:41 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <61c57049-04e3-434c-6293-58a9297c73c9@grinn-global.com>
+Received: from foss.arm.com ([217.140.101.70]:42825 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751681AbcFPKiQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 16 Jun 2016 06:38:16 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marcin Niestroj <m.niestroj@grinn-global.com>
-Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Jon Medhurst <tixy@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>
 
-On Wed, 15 Jun 2016, Marcin Niestroj wrote:
+This series add support for SCPI based device device power state
+management using genpd.
 
-> Hi,
->=20
-> On 15.06.2016 16:12, Lee Jones wrote:
-> >On Tue, 14 Jun 2016, Marcin Niestroj wrote:
-> >
-> >>Add tps65217 power buttor subdevice with assigned IRQ resources.
-> >>
-> >>Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
-> >>---
-> >>depends on patch 1 in series
-> >>
-> >> drivers/mfd/tps65217.c | 10 ++++++++++
-> >> 1 file changed, 10 insertions(+)
-> >
-> >Applied, thanks.
->=20
-> Did you also apply patch 1? As I stated above, this patch depends on
-> patch 1.
+Regards,
+Sudeep
 
-Nope.  It looks like you still have changes to make.
+v1[1]->v2:
+	- Fixed the endianness handling in scpi_device_get_power_state
+	  as spotted by Tixy
+	- Renamed scpi_pd.c to scpi_pm_domain.c as suggested by Ulf
+	- Added Mark's ack on DT binding
 
-What does it rely on?  The IRQ define?
+[1] https://marc.info/?l=linux-kernel&m=146522850003483&w=2
 
-> >>diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
-> >>index d49f94e..68cf431 100644
-> >>--- a/drivers/mfd/tps65217.c
-> >>+++ b/drivers/mfd/tps65217.c
-> >>@@ -38,6 +38,10 @@ static struct resource charger_resources[] =3D {
-> >> 	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
-> >> };
-> >>
-> >>+static struct resource pb_resources[] =3D {
-> >>+	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
-> >>+};
-> >>+
-> >> struct tps65217_irq {
-> >> 	int mask;
-> >> 	int interrupt;
-> >>@@ -122,6 +126,12 @@ static struct mfd_cell tps65217s[] =3D {
-> >> 		.resources =3D charger_resources,
-> >> 		.of_compatible =3D "ti,tps65217-charger",
-> >> 	},
-> >>+	{
-> >>+		.name =3D "tps65217-pwrbutton",
-> >>+		.num_resources =3D ARRAY_SIZE(pb_resources),
-> >>+		.resources =3D pb_resources,
-> >>+		.of_compatible =3D "ti,tps65217-pwrbutton",
-> >>+	},
-> >> };
-> >>
-> >> static irqreturn_t tps65217_irq_thread(int irq, void *data)
-> >
->=20
+Sudeep Holla (3):
+  firmware: arm_scpi: add support for device power state management
+  Documentation: add DT bindings for ARM SCPI power domains
+  firmware: scpi: add device power domain support using genpd
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+ Documentation/devicetree/bindings/arm/arm,scpi.txt |  34 +++++
+ drivers/firmware/Kconfig                           |   9 ++
+ drivers/firmware/Makefile                          |   1 +
+ drivers/firmware/arm_scpi.c                        |  30 ++++
+ drivers/firmware/scpi_pm_domain.c                  | 152 +++++++++++++++++++++
+ include/linux/scpi_protocol.h                      |   2 +
+ 6 files changed, 228 insertions(+)
+ create mode 100644 drivers/firmware/scpi_pm_domain.c
+
+--
+2.7.4
+
