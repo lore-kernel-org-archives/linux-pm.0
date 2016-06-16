@@ -1,48 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / clk: export symbols for existing pm_clk_<...> API fcns
-Date: Thu, 16 Jun 2016 16:04:16 +0200
-Message-ID: <3160821.3V0eYIUger@vostro.rjw.lan>
-References: <1465149495-22961-1-git-send-email-paul.gortmaker@windriver.com> <20160606101647.GA22028@amd>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v3 1/5] mfd: tps65217: Add support for IRQs
+Date: Thu, 16 Jun 2016 15:30:18 +0100
+Message-ID: <20160616143018.GY4948@dell>
+References: <20160616114110.23455-1-m.niestroj@grinn-global.com>
+ <20160616114110.23455-2-m.niestroj@grinn-global.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160606101647.GA22028@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>, Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Vinod Koul <vinod.koul@intel.com>, Jon Hunter <jonathanh@nvidia.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160616114110.23455-2-m.niestroj@grinn-global.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Marcin Niestroj <m.niestroj@grinn-global.com>
+Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 06, 2016 12:16:47 PM Pavel Machek wrote:
-> On Sun 2016-06-05 13:58:15, Paul Gortmaker wrote:
-> > While trying to convert a DMA driver from bool to tristate, we
-> > encountered the following:
-> > 
-> > ERROR: "pm_clk_add_clk" [drivers/dma/tegra210-adma.ko] undefined!
-> > ERROR: "pm_clk_create" [drivers/dma/tegra210-adma.ko] undefined!
-> > ERROR: "pm_clk_destroy" [drivers/dma/tegra210-adma.ko] undefined!
-> > ERROR: "pm_clk_suspend" [drivers/dma/tegra210-adma.ko] undefined!
-> > ERROR: "pm_clk_resume" [drivers/dma/tegra210-adma.ko] undefined!
-> > 
-> > Since in principle there is nothing preventing these functions
-> > from being used in modular code as well as builtin, we add the
-> > export of them.  We expand the scope to also include:
-> > 
-> >    pm_clk_add
-> >    of_pm_clk_add_clks
-> >    pm_clk_remove
-> >    pm_clk_remove_clk
-> >    pm_clk_init
-> >    pm_clk_runtime_suspend
-> >    pm_clk_runtime_resume
-> >    pm_clk_add_notifier
-> > 
-> > ...since these functions are also non-static and presumably form
-> > part of the existing API used by other drivers that may become
-> > modular in the future.
-> > 
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+On Thu, 16 Jun 2016, Marcin Niestroj wrote:
 
-Applied, thanks!
+> Add support for handling IRQs: power button, AC and USB power state
+> changes. Mask and interrupt bits are shared within one register, whic=
+h
+> prevents us to use regmap_irq implementation. New irq_domain is creat=
+ed in
+> order to add interrupt handling for each tps65217's subsystem. IRQ
+> resources have been added for charger subsystem to be able to notify =
+about
+> AC and USB state changes.
+>=20
+> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+> ---
+
+Please insert a change-log here in future.
+
+>  drivers/mfd/Kconfig          |   1 +
+>  drivers/mfd/tps65217.c       | 194 +++++++++++++++++++++++++++++++++=
+++++++++--
+>  include/linux/mfd/tps65217.h |  11 +++
+>  3 files changed, 198 insertions(+), 8 deletions(-)
+
+Once you've fixed Grygorii's comments, you may add my:
+
+  Acked-by: Lee Jones <lee.jones@linaro.org>
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe linux-input" =
+in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
