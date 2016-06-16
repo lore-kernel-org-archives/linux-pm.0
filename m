@@ -1,61 +1,58 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: 'UNKNOWN' status of opp-table->shared
-Date: Thu, 16 Jun 2016 12:27:03 +0530
-Message-ID: <20160616065703.GB5726@vireshk-i7>
-References: <87bd097db7b673b1f75ca2086dfa76f4dfbf7f8c.1466058619.git.viresh.kumar@linaro.org>
- <dfe1db09-8361-ebc8-063a-c8e0393ceedc@nvidia.com>
+From: Alexandre Courbot <acourbot@nvidia.com>
+Subject: Re: [PATCH RFC] Revert "cpufreq: dt: Identify cpu-sharing for
+ platforms without operating-points-v2"
+Date: Thu, 16 Jun 2016 15:57:06 +0900
+Message-ID: <5db9eb89-1026-e710-755b-c7a0fa87819e@nvidia.com>
+References: <20160616053524.19921-1-acourbot@nvidia.com>
+ <20160616063529.GA5726@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:36245 "EHLO
-	mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751275AbcFPG5H (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 02:57:07 -0400
-Received: by mail-pf0-f169.google.com with SMTP id t190so17058918pfb.3
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jun 2016 23:57:06 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <dfe1db09-8361-ebc8-063a-c8e0393ceedc@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160616063529.GA5726@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <treding@nvidia.com>
+Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, gnurou@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Courbot <acourbot@nvidia.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gnurou@gmail.com, linux-tegra@vger.kernel.org
 
-On 16-06-16, 15:55, Alexandre Courbot wrote:
-> On 06/16/2016 03:33 PM, Viresh Kumar wrote:
-> >dev_pm_opp_get_sharing_cpus() returns 0 even in the case where the OPP
-> >core doesn't know if the table is shared or not. It is working for most
-> >of the platforms, as the OPP table was never created and we returned
-> >-ENODEV then.
-> >
-> >But in case of one of the platforms (Jetson TK1) at least, the situation
-> >is a bit different. The OPP table is created (somehow) before
-> >dev_pm_opp_get_sharing_cpus() is called and so we returned 0. The caller
-> >of this routine treated that as 'CPUs don't share OPPs' and that had bad
-> >consequences on performance.
-> >
-> >Fix this by converting 'shared_opp' to an integer and have an extra
-> >value when its state in undefined. dev_pm_opp_get_sharing_cpus() returns
-> >-EINVAL now in that case, so that the caller can handle it accordingly
-> >(cpufreq-dt considers that as 'all CPUs share the table').
-> >
-> >Fixes: 6f707daa3833 ("PM / OPP: Add dev_pm_opp_get_sharing_cpus()")
-> >Reported-by: Alexandre Courbot <acourbot@nvidia.com>
-> >Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >---
-> >Hi Alexandre,
-> >
-> >This is untested, can you please confirm if this fixes it for you?
-> 
-> Yep, with this cpufreq_init() takes the fallback path and cpufreq behaves as
-> expected thereafter.
-> 
-> Thanks for reacting so quickly! Can this go into 4.7 fixes?
+On 06/16/2016 03:35 PM, Viresh Kumar wrote:
+> +Rafael
+>
+> On 16-06-16, 14:35, Alexandre Courbot wrote:
+>> This is not an actual request for revert, but rather for comments about
+>> the observed behavior since I am not really familiar with cpufreq.
+>>
+>> I am observing a serious performance regression on Jetson TK1 since 4.7-rc1:
+>> namely, moving windows under X would become unsufferably slow, and graphical
+>> performance under X in general is seriously degraded. After bisecting, I
+>> found the regression to be visible since commit 1530b9963eeb ("cpufreq: dt:
+>> Identify cpu-sharing for platforms without operating-points-v2")
+>>
+>> If I revert this commit, I noticed that the CPU frequency immediately jumps to
+>> a higher frequency once I start moving windows (resulting in a smooth and
+>> responsive action), whereas enabling this commit causes the CPU frequency to
+>> remain low (typically 204 Mhz) in that case, resulting in CPU-bound slowness.
+>>
+>> What happens is that with 1530b9963eeb applied, dev_pm_opp_get_sharing_cpus()
+>> returns zero causing the fallback variable to remain false, whereas without it
+>> opp_v1 is set to true.
+>>
+>> It is not clear to me whether this is a cpufreq issue or a Tegra issue, so I am
+>> posting this in the hope to get clarifications from either side.
+>>
+>> Thanks!
+>
+> Yeah, you just hit a corner case. Sorry about that :(
+>
+> Can you try a patch that I sent to you instead? Its subject is:
+>
+> [PATCH] PM / OPP: 'UNKNOWN' status of opp-table->shared
 
-This will :)
+Thanks, this seems to solve the issue.
 
-> Tested-by: Alexandre Courbot <acourbot@nvidia.com>
+> Also I would like to know one more thing. You can hit this bug only if
+> some other piece of code for your platform is creating OPP table for
+> the CPUs. Which code is doing that ?
 
-Thanks.
-
--- 
-viresh
+Good question. I am still educating myself about OPP - adding Thierry in 
+the meantime who may have an answer.
