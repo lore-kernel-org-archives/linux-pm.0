@@ -1,62 +1,79 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: adjust _PSS[0] freqeuency
-Date: Thu, 16 Jun 2016 03:23:41 +0200
-Message-ID: <1688029.LNMYJLLlPf@vostro.rjw.lan>
-References: <1465971179-7832-1-git-send-email-srinivas.pandruvada@linux.intel.com> <2223313.a2PmTKX7X3@vostro.rjw.lan> <1465981336.4343.3.camel@linux.intel.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
+Date: Wed, 15 Jun 2016 15:55:06 -1000
+Message-ID: <CA+55aFz1TS8q9-+z+8y6y+6ogNAOup+1x7wkeKuoAeAeSQEDOg@mail.gmail.com>
+References: <cover.1463134231.git.lukas@wunner.de> <CAMxnaaU_3z6BSmSnYfi4ee=aTKm3aPyUaXds=G29wdp8O0m5Cw@mail.gmail.com>
+ <20160614163703.GA31488@localhost> <CAMxnaaUQC0kyoBK1ri_AYEi=Dc_aiuiMp=kx1mFaZpsw9-D-eA@mail.gmail.com>
+ <20160614202228.GA8449@localhost> <20160615184050.GA983@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42996 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753209AbcFPBTb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jun 2016 21:19:31 -0400
-In-Reply-To: <1465981336.4343.3.camel@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160615184050.GA983@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Andreas Noever <andreas.noever@gmail.com>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: linux-pm@vger.kernel.org
 
-On Wednesday, June 15, 2016 02:02:16 AM Srinivas Pandruvada wrote:
-> On Wed, 2016-06-15 at 01:23 +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, June 14, 2016 11:12:59 PM Srinivas Pandruvada wrote:
-> > > Intel P State uses max P-State as the max turbo P-State. This max
-> > > P-State
-> > > can be limited by ACPI _PSS table entry 0. After
-> > > 'commit 9522a2ff9cde ("cpufreq: intel_pstate: Enforce _PPC
-> > > limits")''
-> > > the _PSS table entry[0] will be used to cap max performance for
-> > > enterprise and performance server by default.
-> > > 
-> > > Even though this is correct processing, but when the performance
-> > > results
-> > > are compared with the version before the above commit, then
-> > > obviously the
-> > > results will be worse, if the _PSS table entry 0 is not the max
-> > > turbo
-> > > P-State.
-> > > 
-> > > This change will change the _PSS table entry 0 to the max turbo
-> > > frequency
-> > > if turbo is enabled in the BIOS. In this way, the performance will
-> > > be
-> > > comparable to the version without _PSS/_PPC support.
-> > > 
-> > > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel
-> > > .com>
-> > > ---
-> > >  drivers/cpufreq/intel_pstate.c | 22 ++--------------------
-> > >  1 file changed, 2 insertions(+), 20 deletions(-)
-> > 
-> > Nice. :-)
-> > 
-> > I guess I should add a Fixes tag pointing to commit 9522a2ff9cde to
-> > this?
-> Yes we can.
+On Wed, Jun 15, 2016 at 8:40 AM, Lukas Wunner <lukas@wunner.de> wrote:
+>
+> So how should changes to drivers/thunderbolt/ be merged in the future?
+>
+> Andreas could probably send pulls directly to Linus, but I'm not sure
+> what the requirements are. I believe Linus wants signed tags. The trust
+> path from Linus to me is 4 hops and I've signed Andreas' key today,
+> yielding a 5 hop trust path:
+>
+> Is there an upper limit on the acceptable length of the trust path?
+> Does the key have to be signed by another maintainer?
 
-OK, applied with a rewritten changelog.
+I care not one whit about the idiotic gpg "trust path" crap.
 
-Thanks,
-Rafael
+To me, signatures are not about technicalities. I absolutely abhor all
+the crazy people who think that signatures are about automatic web of
+trust, and spend a lot of time on things like subkeys that expire
+every six months etc (you know who you are). To me, that is just
+complete gpg masturbation, and completely misses the point about
+"trust".
 
+Trust is not about the gpg signature. Trust is about the *person*. And
+the gpg signature is a good and reasonable approximation of an ID. But
+it's not some kind of absolute thing.
+
+I'd much rather get an email from a current maintainer that I trust,
+saying "look, there's going to be a new maintainer for this part of
+the tree, and I signed his gpg keym and the fingerprint of that is
+so-and-so.
+
+Then, I'll do a "gpg --fetch-key", so that I have that particular key
+in my keyring, and can verify that "ok, yes, I recognize the key that
+signed it".
+
+At no point do I start counting hops.
+
+And if you lose your key, screw the whole crazy "key revocation
+protocol". Its a joke. Most people who lost their keys will not have
+any revocation key either. Just let me and others know. I'll just
+remove that key from my keychain.
+
+What makes me look at a key is "I've never seen this key before". The
+most common reason is the people who do that f*cking annoying "let's
+refresh signing keys every six months whether I need it or not because
+I auto-expire them". Then I'll have to look at why the hell I'm
+getting a signed pull request with a new key.
+
+So don't worry about technicalities. I've pulled from people who had
+not a single signature on their keychain, because they just were in
+the wrong spot. I'd rather have a signed pull even then, just so that
+I see that I get the pull requests from the same person each time, and
+hopefully in a week (or month, or two), that key will get signatures.
+
+Obviously, if you can get five people I know personally signing your
+key, that makes me worry less about your particular identity, and
+that's fine.
+
+But the *real* trust is something that builds up over time as people
+are good maintainers. It has absolutely nothing to do with gpg key
+details. And that *real* trust is what matters a whole lot more than a
+few random bits that just happen to be part of a pgp key.
+
+                Linus
