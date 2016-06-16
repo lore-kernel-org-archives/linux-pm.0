@@ -1,294 +1,139 @@
-From: Scott Wood <oss@buserror.net>
-Subject: [PATCH v3 2/2] cpufreq: qoriq: Don't look at clock implementation details
-Date: Thu, 16 Jun 2016 01:21:25 -0500
-Message-ID: <1466058085-19353-2-git-send-email-oss@buserror.net>
-References: <1466058085-19353-1-git-send-email-oss@buserror.net>
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1466058085-19353-1-git-send-email-oss@buserror.net>
-Sender: linux-clk-owner@vger.kernel.org
-To: Russell King <linux@armlinux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, yuantian.tang@nxp.com, leoyang.li@nxp.com, xiaofeng.ren@nxp.com, Scott Wood <scottwood@freescale.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] PM / OPP: 'UNKNOWN' status of opp-table->shared
+Date: Thu, 16 Jun 2016 12:03:33 +0530
+Message-ID: <87bd097db7b673b1f75ca2086dfa76f4dfbf7f8c.1466058619.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, acourbot@nvidia.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gnurou@gmail.com, linux-tegra@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Scott Wood <scottwood@freescale.com>
+dev_pm_opp_get_sharing_cpus() returns 0 even in the case where the OPP
+core doesn't know if the table is shared or not. It is working for most
+of the platforms, as the OPP table was never created and we returned
+-ENODEV then.
 
-Get the CPU clock's potential parent clocks from the clock interface
-itself, rather than manually parsing the clocks property to find a
-phandle, looking at the clock-names property of that, and assuming that
-those are valid parent clocks for the cpu clock.
+But in case of one of the platforms (Jetson TK1) at least, the situation
+is a bit different. The OPP table is created (somehow) before
+dev_pm_opp_get_sharing_cpus() is called and so we returned 0. The caller
+of this routine treated that as 'CPUs don't share OPPs' and that had bad
+consequences on performance.
 
-This is necessary now that the clocks are generated based on the clock
-driver's knowledge of the chip rather than a fragile device-tree
-description of the mux options.
+Fix this by converting 'shared_opp' to an integer and have an extra
+value when its state in undefined. dev_pm_opp_get_sharing_cpus() returns
+-EINVAL now in that case, so that the caller can handle it accordingly
+(cpufreq-dt considers that as 'all CPUs share the table').
 
-We can now rely on the clock driver to ensure that the mux only exposes
-options that are valid.  The cpufreq driver was currently being overly
-conservative in some cases -- for example, the "min_cpufreq =
-get_bus_freq()" restriction only applies to chips with erratum
-A-004510, and whether the freq_mask used on p5020 is needed depends on
-the actual frequencies of the PLLs (FWIW, p5040 has a similar
-limitation but its .freq_mask was zero) -- and the frequency mask
-mechanism made assumptions about particular parent clock indices that
-are no longer valid.
-
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Fixes: 6f707daa3833 ("PM / OPP: Add dev_pm_opp_get_sharing_cpus()")
+Reported-by: Alexandre Courbot <acourbot@nvidia.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-v2: no changes
+Hi Alexandre,
 
-v3: Remove the now-unused pnode and the call to of_node_put()
+This is untested, can you please confirm if this fixes it for you?
 
- drivers/cpufreq/qoriq-cpufreq.c | 141 ++++++++++++----------------------------
- 1 file changed, 41 insertions(+), 100 deletions(-)
+ drivers/base/power/opp/core.c |  3 +++
+ drivers/base/power/opp/cpu.c  | 12 +++++++++---
+ drivers/base/power/opp/of.c   | 10 ++++++++--
+ drivers/base/power/opp/opp.h  |  5 ++++-
+ 4 files changed, 24 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 53d8c3f..d66b3da 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -37,53 +37,20 @@ struct cpu_data {
- 	struct thermal_cooling_device *cdev;
- };
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 7c04c87738a6..14d212885098 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -764,6 +764,9 @@ static struct opp_table *_add_opp_table(struct device *dev)
+ 	/* Set regulator to a non-NULL error value */
+ 	opp_table->regulator = ERR_PTR(-ENXIO);
  
-+/*
-+ * Don't use cpufreq on this SoC -- used when the SoC would have otherwise
-+ * matched a more generic compatible.
-+ */
-+#define SOC_BLACKLIST		1
++	/* Set sharing information as unknown */
++	opp_table->shared_opp = OPP_TABLE_SHARED_UNKNOWN;
 +
- /**
-  * struct soc_data - SoC specific data
-- * @freq_mask: mask the disallowed frequencies
-- * @flag: unique flags
-+ * @flags: SOC_xxx
-  */
- struct soc_data {
--	u32 freq_mask[4];
--	u32 flag;
--};
--
--#define FREQ_MASK	1
--/* see hardware specification for the allowed frqeuencies */
--static const struct soc_data sdata[] = {
--	{ /* used by p2041 and p3041 */
--		.freq_mask = {0x8, 0x8, 0x2, 0x2},
--		.flag = FREQ_MASK,
--	},
--	{ /* used by p5020 */
--		.freq_mask = {0x8, 0x2},
--		.flag = FREQ_MASK,
--	},
--	{ /* used by p4080, p5040 */
--		.freq_mask = {0},
--		.flag = 0,
--	},
-+	u32 flags;
- };
+ 	/* Find clk for the device */
+ 	opp_table->clk = clk_get(dev, NULL);
+ 	if (IS_ERR(opp_table->clk)) {
+diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+index 83d6e7ba1a34..4ca86df8a451 100644
+--- a/drivers/base/power/opp/cpu.c
++++ b/drivers/base/power/opp/cpu.c
+@@ -211,7 +211,7 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev,
+ 		}
  
--/*
-- * the minimum allowed core frequency, in Hz
-- * for chassis v1.0, >= platform frequency
-- * for chassis v2.0, >= platform frequency / 2
-- */
--static u32 min_cpufreq;
--static const u32 *fmask;
--
--#if defined(CONFIG_ARM)
--static int get_cpu_physical_id(int cpu)
--{
--	return topology_core_id(cpu);
--}
--#else
--static int get_cpu_physical_id(int cpu)
--{
--	return get_hard_smp_processor_id(cpu);
--}
--#endif
--
- static u32 get_bus_freq(void)
- {
- 	struct device_node *soc;
-@@ -101,9 +68,10 @@ static u32 get_bus_freq(void)
- 	return sysfreq;
- }
- 
--static struct device_node *cpu_to_clk_node(int cpu)
-+static struct clk *cpu_to_clk(int cpu)
- {
--	struct device_node *np, *clk_np;
-+	struct device_node *np;
-+	struct clk *clk;
- 
- 	if (!cpu_present(cpu))
- 		return NULL;
-@@ -112,37 +80,28 @@ static struct device_node *cpu_to_clk_node(int cpu)
- 	if (!np)
- 		return NULL;
- 
--	clk_np = of_parse_phandle(np, "clocks", 0);
--	if (!clk_np)
--		return NULL;
--
-+	clk = of_clk_get(np, 0);
- 	of_node_put(np);
--
--	return clk_np;
-+	return clk;
- }
- 
- /* traverse cpu nodes to get cpu mask of sharing clock wire */
- static void set_affected_cpus(struct cpufreq_policy *policy)
- {
--	struct device_node *np, *clk_np;
- 	struct cpumask *dstp = policy->cpus;
-+	struct clk *clk;
- 	int i;
- 
--	np = cpu_to_clk_node(policy->cpu);
--	if (!np)
--		return;
--
- 	for_each_present_cpu(i) {
--		clk_np = cpu_to_clk_node(i);
--		if (!clk_np)
-+		clk = cpu_to_clk(i);
-+		if (IS_ERR(clk)) {
-+			pr_err("%s: no clock for cpu %d\n", __func__, i);
- 			continue;
-+		}
- 
--		if (clk_np == np)
-+		if (clk_is_match(policy->clk, clk))
- 			cpumask_set_cpu(i, dstp);
--
--		of_node_put(clk_np);
+ 		/* Mark opp-table as multiple CPUs are sharing it now */
+-		opp_table->shared_opp = true;
++		opp_table->shared_opp = OPP_TABLE_IS_SHARED;
  	}
--	of_node_put(np);
- }
- 
- /* reduce the duplicated frequencies in frequency table */
-@@ -198,9 +157,9 @@ static void freq_table_sort(struct cpufreq_frequency_table *freq_table,
- 
- static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	struct device_node *np, *pnode;
-+	struct device_node *np;
- 	int i, count, ret;
--	u32 freq, mask;
-+	u32 freq;
- 	struct clk *clk;
- 	struct cpufreq_frequency_table *table;
- 	struct cpu_data *data;
-@@ -221,17 +180,12 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_nomem2;
+ unlock:
+ 	mutex_unlock(&opp_table_lock);
+@@ -227,7 +227,8 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_sharing_cpus);
+  *
+  * This updates the @cpumask with CPUs that are sharing OPPs with @cpu_dev.
+  *
+- * Returns -ENODEV if OPP table isn't already present.
++ * Returns -ENODEV if OPP table isn't already present and -EINVAL if the OPP
++ * table's status is shared-unknown.
+  *
+  * Locking: The internal opp_table and opp structures are RCU protected.
+  * Hence this function internally uses RCU updater strategy with mutex locks
+@@ -249,9 +250,14 @@ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+ 		goto unlock;
  	}
  
--	pnode = of_parse_phandle(np, "clocks", 0);
--	if (!pnode) {
--		pr_err("%s: could not get clock information\n", __func__);
--		goto err_nomem2;
--	}
-+	count = clk_get_num_parents(policy->clk);
- 
--	count = of_property_count_strings(pnode, "clock-names");
- 	data->pclk = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
- 	if (!data->pclk) {
- 		pr_err("%s: no memory\n", __func__);
--		goto err_node;
-+		goto err_nomem2;
- 	}
- 
- 	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
-@@ -240,23 +194,11 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_pclk;
- 	}
- 
--	if (fmask)
--		mask = fmask[get_cpu_physical_id(cpu)];
--	else
--		mask = 0x0;
--
- 	for (i = 0; i < count; i++) {
--		clk = of_clk_get(pnode, i);
-+		clk = clk_get_parent_by_index(policy->clk, i);
- 		data->pclk[i] = clk;
- 		freq = clk_get_rate(clk);
--		/*
--		 * the clock is valid if its frequency is not masked
--		 * and large than minimum allowed frequency.
--		 */
--		if (freq < min_cpufreq || (mask & (1 << i)))
--			table[i].frequency = CPUFREQ_ENTRY_INVALID;
--		else
--			table[i].frequency = freq / 1000;
-+		table[i].frequency = freq / 1000;
- 		table[i].driver_data = i;
- 	}
- 	freq_table_redup(table, count);
-@@ -282,18 +224,13 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = u64temp + 1;
- 
- 	of_node_put(np);
--	of_node_put(pnode);
--
- 	return 0;
- 
- err_nomem1:
- 	kfree(table);
- err_pclk:
- 	kfree(data->pclk);
--err_node:
--	of_node_put(pnode);
- err_nomem2:
--	policy->driver_data = NULL;
- 	kfree(data);
- err_np:
- 	of_node_put(np);
-@@ -357,12 +294,20 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
- 	.attr		= cpufreq_generic_attr,
- };
- 
-+static const struct soc_data blacklist = {
-+	.flags = SOC_BLACKLIST,
-+};
++	if (opp_table->shared_opp == OPP_TABLE_SHARED_UNKNOWN) {
++		ret = -EINVAL;
++		goto unlock;
++	}
 +
- static const struct of_device_id node_matches[] __initconst = {
--	{ .compatible = "fsl,p2041-clockgen", .data = &sdata[0], },
--	{ .compatible = "fsl,p3041-clockgen", .data = &sdata[0], },
--	{ .compatible = "fsl,p5020-clockgen", .data = &sdata[1], },
--	{ .compatible = "fsl,p4080-clockgen", .data = &sdata[2], },
--	{ .compatible = "fsl,p5040-clockgen", .data = &sdata[2], },
-+	/* e6500 cannot use cpufreq due to erratum A-008083 */
-+	{ .compatible = "fsl,b4420-clockgen", &blacklist },
-+	{ .compatible = "fsl,b4860-clockgen", &blacklist },
-+	{ .compatible = "fsl,t2080-clockgen", &blacklist },
-+	{ .compatible = "fsl,t4240-clockgen", &blacklist },
+ 	cpumask_clear(cpumask);
+ 
+-	if (opp_table->shared_opp) {
++	if (opp_table->shared_opp == OPP_TABLE_IS_SHARED) {
+ 		list_for_each_entry(opp_dev, &opp_table->dev_list, node)
+ 			cpumask_set_cpu(opp_dev->dev->id, cpumask);
+ 	} else {
+diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+index 94d2010558e3..83ad3a6a16f1 100644
+--- a/drivers/base/power/opp/of.c
++++ b/drivers/base/power/opp/of.c
+@@ -34,7 +34,10 @@ static struct opp_table *_managed_opp(const struct device_node *np)
+ 			 * But the OPPs will be considered as shared only if the
+ 			 * OPP table contains a "opp-shared" property.
+ 			 */
+-			return opp_table->shared_opp ? opp_table : NULL;
++			if (opp_table->shared_opp == OPP_TABLE_IS_SHARED)
++				return opp_table;
 +
-+	{ .compatible = "fsl,ls1021a-clockgen", },
-+	{ .compatible = "fsl,p4080-clockgen", },
-+	{ .compatible = "fsl,qoriq-clockgen-1.0", },
- 	{ .compatible = "fsl,qoriq-clockgen-2.0", },
- 	{}
- };
-@@ -380,16 +325,12 @@ static int __init qoriq_cpufreq_init(void)
++			return NULL;
+ 		}
+ 	}
  
- 	match = of_match_node(node_matches, np);
- 	data = match->data;
--	if (data) {
--		if (data->flag)
--			fmask = data->freq_mask;
--		min_cpufreq = get_bus_freq();
--	} else {
--		min_cpufreq = get_bus_freq() / 2;
--	}
+@@ -353,7 +356,10 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+ 	}
  
- 	of_node_put(np);
+ 	opp_table->np = opp_np;
+-	opp_table->shared_opp = of_property_read_bool(opp_np, "opp-shared");
++	if (of_property_read_bool(opp_np, "opp-shared"))
++		opp_table->shared_opp = OPP_TABLE_IS_SHARED;
++	else
++		opp_table->shared_opp = OPP_TABLE_IS_NOT_SHARED;
  
-+	if (data && data->flags & SOC_BLACKLIST)
-+		return -ENODEV;
-+
- 	ret = cpufreq_register_driver(&qoriq_cpufreq_driver);
- 	if (!ret)
- 		pr_info("Freescale QorIQ CPU frequency scaling driver\n");
+ 	mutex_unlock(&opp_table_lock);
+ 
+diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+index 20f3be22e060..ffd0b54e7894 100644
+--- a/drivers/base/power/opp/opp.h
++++ b/drivers/base/power/opp/opp.h
+@@ -166,7 +166,10 @@ struct opp_table {
+ 	/* For backward compatibility with v1 bindings */
+ 	unsigned int voltage_tolerance_v1;
+ 
+-	bool shared_opp;
++#define OPP_TABLE_IS_NOT_SHARED		0
++#define OPP_TABLE_IS_SHARED		1
++#define OPP_TABLE_SHARED_UNKNOWN	UINT_MAX
++	unsigned int shared_opp;
+ 	struct dev_pm_opp *suspend_opp;
+ 
+ 	unsigned int *supported_hw;
 -- 
-2.5.0
-
+2.7.1.410.g6faf27b
