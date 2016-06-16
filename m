@@ -1,113 +1,48 @@
-From: Rhyland Klein <rklein@nvidia.com>
-Subject: Re: [PATCH v2] power_supply: fix return value of get_property
-Date: Thu, 16 Jun 2016 11:40:47 -0400
-Message-ID: <04e70c84-f34d-2c61-0d8b-80cbeaac356e@nvidia.com>
-References: <1466028784-24459-1-git-send-email-rklein@nvidia.com>
- <576266A9.9030906@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V4 0/2] cpufreq: Sort policy->freq_table
+Date: Thu, 16 Jun 2016 21:47:39 +0530
+Message-ID: <20160616161739.GB24612@vireshk-i7>
+References: <cover.1465295033.git.viresh.kumar@linaro.org>
+ <27658050.4ol4GjkJ1n@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:6601 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754022AbcFPPkt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 11:40:49 -0400
-In-Reply-To: <576266A9.9030906@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <27658050.4ol4GjkJ1n@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 6/16/2016 4:43 AM, Krzysztof Kozlowski wrote:
-> On 06/16/2016 12:13 AM, Rhyland Klein wrote:
->> power_supply_get_property() should ideally return -EAGAIN if it is
->> called while the power_supply is being registered. There was no way
->> previously to determine if use_cnt == 0 meant that the power_supply
->> wasn't fully registered yet, or if it had already been unregistered.
->>
->> Add a new boolean to the power_supply struct to simply show if
->> registration is completed. Lastly, modify the check in
->> power_supply_show_property() to also ignore -EAGAIN when so it
->> doesn't complain about not returning the property.
->>
->> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
->> ---
->> v2:
->>  - Modify power_supply_show_property() to not complain if it
->>    sees a return value of -EAGAIN after calling
->>    power_supply_get_property().
->>
->>  drivers/power/power_supply_core.c  | 6 +++++-
->>  drivers/power/power_supply_sysfs.c | 2 +-
->>  include/linux/power_supply.h       | 1 +
->>  3 files changed, 7 insertions(+), 2 deletions(-)
+On 08-06-16, 02:19, Rafael J. Wysocki wrote:
+> On Tuesday, June 07, 2016 03:55:13 PM Viresh Kumar wrote:
+> > Hi Rafael,
+> > 
+> > I have spent some more time on this stuff and finally came out with a
+> > very simple solution. I hope you will like it more than the previous
+> > versions.
+> > 
+> > Instead of trying to sort the freq-table passed by the drivers, which
+> > was complicated and would have broken some drivers for sure, this patch
+> > just checks if the freq-table is sorted or not.
+> > 
+> > If it is sorted, then we just use a different set of helpers for it. The
+> > table can be sorted in both ascending and descending orders now and
+> > helpers are present for both the cases.
 > 
-> I don't like it for two reasons:
-> 1. There is still a short window when the information will be
-> inaccurate. See comment below.
+> Well, that's something I was thinking about from the start. :-)
 > 
-> 2. Although the code is not very complicated but it adds another field
-> and some checks just for differentiating EAGAIN/ENODEV. It is
-> unnecessary complexity.
+> > All the patches are pushed here for testing in case anyone wants to try:
+> > git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/sorted-freq-table
+> > 
+> > V3->V4:
+> > - Written from scratch really, completely different approach.
 > 
->>
->> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
->> index b13cd074c52a..a39a47672979 100644
->> --- a/drivers/power/power_supply_core.c
->> +++ b/drivers/power/power_supply_core.c
->> @@ -491,8 +491,11 @@ int power_supply_get_property(struct power_supply *psy,
->>  			    enum power_supply_property psp,
->>  			    union power_supply_propval *val)
->>  {
->> -	if (atomic_read(&psy->use_cnt) <= 0)
->> +	if (atomic_read(&psy->use_cnt) <= 0) {
->> +		if (!psy->initialized)
->> +			return -EAGAIN;
->>  		return -ENODEV;
->> +	}
->>  
->>  	return psy->desc->get_property(psy, psp, val);
->>  }
->> @@ -775,6 +778,7 @@ __power_supply_register(struct device *parent,
->>  	if (rc)
->>  		goto create_triggers_failed;
->>  
->> +	psy->initialized = true;
-> 
-> If someone calls power_supply_get_property() here, then ENODEV will be
-> returned which is wrong.
-> 
-> The problem is not solved entirely... I am not convinced that introduced
-> complexity is worth fixing it.
-> 
+> I'll look at the code later this week.
 
-Right now, without this patch, this causes the thermal function
-"update_temperature" in:
+Hi Rafael,
 
-thermal_zone_device_register->
-  thermal_zone_device_update->
-    update_temperature
-      (->thermal_zone_get_temp() from the original stack)
-
-to print a warning as it sees ret != -EAGAIN. This causes a warning
-"failed to read out thermal zone". I think the idea there is if anything
-other than "try again" it complains. While this doesn't cause functional
-problems, I do think avoid the warning is worth while.
-
-I think that there is an onus on the power_supply code to be accurate in
-its return codes, and EAGAIN is the correct one we should be returning.
-I don't see how someone would call power_supply_get_property, but I
-agree there is the possibility that if someone did call there, that it
-could return the wrong value.
-
-We could wrap the setting of initialized and use_cnt inside a mutex,
-which should prevent anyone calling anything in between if we wanted to
-completely plug that hole. I am not fond of the idea of adding a struct
-member for such a small, specific case, but as we found before, I don't
-think there is another way to differentiate otherwise.
-
--rhyland
-
+Did you get a chance to look at these? Steve may be blocked on this :)
 
 -- 
-nvpublic
+viresh
