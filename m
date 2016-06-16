@@ -1,83 +1,56 @@
-From: maruthi srinivas <maruthi.srinivas.b@gmail.com>
-Subject: Re: [RESEND PATCH v3 1/2] PM / Domains: Allow genpd to power on
- during the system PM phases
-Date: Thu, 16 Jun 2016 17:00:00 +0530
-Message-ID: <CANv6ZMb5kMHHrr2Za6_mH+rmu2vEJFuLjc0kt0a+4e6DyyY=ZA@mail.gmail.com>
-References: <1464601388-26693-1-git-send-email-ulf.hansson@linaro.org>
- <1464601388-26693-2-git-send-email-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <1464601388-26693-2-git-send-email-ulf.hansson@linaro.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Len Brown <len.brown@intel.com>, Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>, Axel Haslam <ahaslam@baylibre.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Maling list - DRI developers <dri-devel@lists.freedesktop.org>, Jon Hunter <jonathanh@nvidia.com>, Alex Deucher <alexander.deucher@amd.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, Lina Iyer <lina.iyer@linaro.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+From: Marcin Niestroj <m.niestroj@grinn-global.com>
+Subject: [PATCH v3 4/5] mfd: tps65217: Add power button as subdevice
+Date: Thu, 16 Jun 2016 13:41:09 +0200
+Message-ID: <20160616114110.23455-5-m.niestroj@grinn-global.com>
+References: <20160616114110.23455-1-m.niestroj@grinn-global.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 2780.rev.megiteam.pl ([91.227.39.128]:49518 "EHLO
+	vk1046.megiteam.com.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754021AbcFPLlZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 07:41:25 -0400
+In-Reply-To: <20160616114110.23455-1-m.niestroj@grinn-global.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Marcin Niestroj <m.niestroj@grinn-global.com>
 
-T24gTW9uLCBNYXkgMzAsIDIwMTYgYXQgMzoxMyBQTSwgVWxmIEhhbnNzb24gPHVsZi5oYW5zc29u
-QGxpbmFyby5vcmc+IHdyb3RlOgo+IElmIHRoZSBQTSBkb21haW4gaXMgcG93ZXJlZCBvZmYgd2hl
-biB0aGUgZmlyc3QgZGV2aWNlIHN0YXJ0cyBpdHMgc3lzdGVtIFBNCj4gcHJlcGFyZSBwaGFzZSwg
-Z2VucGQgcHJldmVudHMgYW55IGZ1cnRoZXIgYXR0ZW1wdHMgdG8gcG93ZXIgb24gdGhlIFBNCj4g
-ZG9tYWluIGR1cmluZyB0aGUgZm9sbG93aW5nIHN5c3RlbSBQTSBwaGFzZXMuIE5vdCB1bnRpbCB0
-aGUgc3lzdGVtIFBNCj4gY29tcGxldGUgcGhhc2UgaXMgZmluYWxpemVkIGZvciBhbGwgZGV2aWNl
-cyBpbiB0aGUgUE0gZG9tYWluLCBnZW5wZCBhZ2Fpbgo+IGFsbG93cyBpdCB0byBiZSBwb3dlcmVk
-IG9uLgo+Cj4gVGhpcyBiZWhhdmlvdXIgbmVlZHMgdG8gYmUgY2hhbmdlZCwgYXMgYSBzdWJzeXN0
-ZW0vZHJpdmVyIGZvciBhIGRldmljZSBpbgo+IHRoZSBzYW1lIFBNIGRvbWFpbiBtYXkgc3RpbGwg
-bmVlZCB0byBiZSBhYmxlIHRvIHNlcnZlIHJlcXVlc3RzIGluIHNvbWUgb2YKPiB0aGUgc3lzdGVt
-IFBNIHBoYXNlcy4gQWNjb3JkaW5nbHksIGl0IG1heSBuZWVkIHRvIHJ1bnRpbWUgcmVzdW1lIGl0
-cwo+IGRldmljZSBhbmQgdGh1cyBhbHNvIHJlcXVlc3QgdGhlIGNvcnJlc3BvbmRpbmcgUE0gZG9t
-YWluIHRvIGJlIHBvd2VyZWQgb24uCj4KPiBUbyBkZWFsIHdpdGggdGhlc2Ugc2NlbmFyaW9zLCBs
-ZXQncyBtYWtlIHRoZSBkZXZpY2Ugb3BlcmF0aW9uYWwgaW4gdGhlCj4gc3lzdGVtIFBNIHByZXBh
-cmUgcGhhc2UgYnkgcnVudGltZSByZXN1bWluZyBpdCwgbm8gbWF0dGVyIGlmIHRoZSBQTSBkb21h
-aW4KPiBpcyBwb3dlcmVkIG9uIG9yIG9mZi4gQ2hhbmdpbmcgdGhpcyBhbHNvIGVuYWJsZXMgdXMg
-dG8gcmVtb3ZlIGdlbnBkJ3MKPiBzdXNwZW5kX3Bvd2VyX29mZiBmbGFnLCBhcyBpdCdzIGJlaW5n
-IHVzZWQgdG8gdHJhY2sgdGhpcyBjb25kaXRpb24uCj4gQWRkaXRpb25hbGx5LCB3ZSBtdXN0IGFs
-bG93IHRoZSBQTSBkb21haW4gdG8gYmUgcG93ZXJlZCBvbiB2aWEgcnVudGltZSBQTQo+IGR1cmlu
-ZyB0aGUgc3lzdGVtIFBNIHBoYXNlcy4KPgo+IFRoaXMgY2hhbmdlIGFsc28gcmVxdWlyZXMgYSBm
-aXggaW4gdGhlIEFNRCBBQ1AgKEF1ZGlvIENvUHJvY2Vzc29yKSBkcm0KPiBkcml2ZXIuIEl0IHJl
-Z2lzdGVycyBhIGdlbnBkIHRvIG1vZGVsIHRoZSBBQ1AgYXMgYSBQTSBkb21haW4sIGJ1dAo+IHVu
-Zm9ydHVuYXRlbHkgaXQncyBhbHNvIGFidXNlcyBnZW5wZCdzICJpbnRlcm5hbCIgc3VzcGVuZF9w
-b3dlcl9vZmYgZmxhZwo+IHRvIGRlYWwgd2l0aCBhIGNvcm5lciBjYXNlIGF0IHN5c3RlbSBQTSBy
-ZXN1bWUuCj4KPiBNb3JlIHByZWNpc2VseSwgdGhlIHNvIGNhbGxlZCBTTVUgYmxvY2sgcG93ZXJz
-IG9uIHRoZSBBQ1AgYXQgc3lzdGVtIFBNCj4gcmVzdW1lLCB1bmNvbmRpdGlvbmFsbHkgaWYgaXQn
-cyBiZWluZyB1c2VkIG9yIG5vdC4gVGhpcyBtYXkgbGVhZCB0byB0aGF0Cj4gZ2VucGQncyBpbnRl
-cm5hbCBzdGF0dXMgb2YgdGhlIHBvd2VyIHN0YXRlLCBtYXkgbm90IGNvcnJlY3RseSByZWZsZWN0
-IHRoZQo+IHBvd2VyIHN0YXRlIG9mIHRoZSBIVyBhZnRlciBhIHN5c3RlbSBQTSByZXN1bWUuCj4K
-PiBCZWNhdXNlIG9mIGNoYW5naW5nIHRoZSBiZWhhdmlvdXIgb2YgZ2VucGQsIGJ5IHJ1bnRpbWUg
-cmVzdW1pbmcgZGV2aWNlcyBpbgo+IHRoZSBwcmVwYXJlIHBoYXNlLCB0aGUgQU1EIEFDUCBkcm0g
-ZHJpdmVyIG5vIGxvbmdlciBoYXZlIHRvIGRlYWwgd2l0aCB0aGlzCj4gY29ybmVyIGNhc2UuIFNv
-IGxldCdzIGp1c3QgZHJvcCB0aGUgcmVsYXRlZCBjb2RlIGluIHRoaXMgZHJpdmVyLgo+Cj4gQ2M6
-IERhdmlkIEFpcmxpZSA8YWlybGllZEBsaW51eC5pZT4KPiBDYzogQWxleCBEZXVjaGVyIDxhbGV4
-YW5kZXIuZGV1Y2hlckBhbWQuY29tPgo+IENjOiBDaHJpc3RpYW4gS8O2bmlnIDxjaHJpc3RpYW4u
-a29lbmlnQGFtZC5jb20+Cj4gQ2M6IE1hcnV0aGkgU3Jpbml2YXMgQmF5eWF2YXJhcHUgPE1hcnV0
-aGkuQmF5eWF2YXJhcHVAYW1kLmNvbT4KPiBDYzogZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9w
-Lm9yZwo+IFNpZ25lZC1vZmYtYnk6IFVsZiBIYW5zc29uIDx1bGYuaGFuc3NvbkBsaW5hcm8ub3Jn
-Pgo+IC0tLQo+Cj4gQ2hhbmdlcyBpbiB2MzoKPiAgICAgICAgIC0gVXBkYXRlZCBjaGFuZ2Vsb2cu
-Cj4KPiBDaGFuZ2VzIGluIHYyOgo+ICAgICAgICAgLSBVcGRhdGVkIGNoYW5nZWxvZy4KPiAgICAg
-ICAgIC0gQWRkZWQgYSBmaXggaW4gdGhlIEFNRCBBQ1AgKEF1ZGlvIENvUHJvY2Vzc29yKSBkcm0g
-ZHJpdmVyLCB3aGljaAo+ICAgICAgICAgcmVnaXN0ZXJzIGEgZ2VucGQuIFRoZSBmaXggcmVtb3Zl
-cyB0aGUgdXNhZ2Ugb2YgZ2VucGQncyBpbnRlcm5hbAo+ICAgICAgICAgc3VzcGVuZF9wb3dlcl9v
-ZmYgZmxhZyBhcyBpdCdzIG5vdCBuZWVkZWQgYWZ0ZXIgdGhpcyBjaGFuZ2UuIEJlY2F1c2Ugb2YK
-PiAgICAgICAgIHRoaXMgY2hhbmdlIEkgYW0gYWxzbyByZXF1ZXN0aW5nIGFuIGFjayBmcm9tIHRo
-ZSBkcm0gZHJpdmVyIG1haW50YWluZXIuCj4KPgo+IC0tLQo+ICBkcml2ZXJzL2Jhc2UvcG93ZXIv
-ZG9tYWluLmMgICAgICAgICAgICAgfCA4NCArKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tLS0t
-LS0KPiAgZHJpdmVycy9ncHUvZHJtL2FtZC9hbWRncHUvYW1kZ3B1X2FjcC5jIHwgMjMgLS0tLS0t
-LS0tCj4gIGluY2x1ZGUvbGludXgvcG1fZG9tYWluLmggICAgICAgICAgICAgICB8ICAxIC0KPiAg
-MyBmaWxlcyBjaGFuZ2VkLCAzMSBpbnNlcnRpb25zKCspLCA3NyBkZWxldGlvbnMoLSkKPgoKRm9y
-IHRoZSBBQ1AgcGFydCBvZiBEUk0gZHJpdmVyIDoKCkFja2VkLWJ5OiBNYXJ1dGhpIEJheXlhdmFy
-YXB1IDxtYXJ1dGhpLmJheXlhdmFyYXB1QGFtZC5jb20+Cgo+Cj4gLS0KPiBUbyB1bnN1YnNjcmli
-ZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtcG0iIGlu
-Cj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKPiBN
-b3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1p
-bmZvLmh0bWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
-ZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0
-dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
+Add tps65217 power buttor subdevice with assigned IRQ resources.
+
+Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+---
+depends on patch 1 in series
+
+ drivers/mfd/tps65217.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
+index 7763dbc..d76de72 100644
+--- a/drivers/mfd/tps65217.c
++++ b/drivers/mfd/tps65217.c
+@@ -38,6 +38,10 @@ static struct resource charger_resources[] = {
+ 	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
+ };
+ 
++static struct resource pb_resources[] = {
++	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
++};
++
+ struct tps65217_irq {
+ 	int mask;
+ 	int interrupt;
+@@ -122,6 +126,12 @@ static struct mfd_cell tps65217s[] = {
+ 		.resources = charger_resources,
+ 		.of_compatible = "ti,tps65217-charger",
+ 	},
++	{
++		.name = "tps65217-pwrbutton",
++		.num_resources = ARRAY_SIZE(pb_resources),
++		.resources = pb_resources,
++		.of_compatible = "ti,tps65217-pwrbutton",
++	},
+ };
+ 
+ static irqreturn_t tps65217_irq_thread(int irq, void *data)
+-- 
+2.8.3
+
