@@ -1,73 +1,53 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 07/13] PCI: pciehp: Ignore interrupts during D3cold
-Date: Fri, 17 Jun 2016 17:52:04 -0500
-Message-ID: <20160617225204.GC10416@localhost>
-References: <cover.1463134231.git.lukas@wunner.de>
- <98a243badc295903ec4cf7de5e2985b468c45907.1463134231.git.lukas@wunner.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] x86/power/64: Avoid memory corruption in 64-bit swsusp_arch_resume()
+Date: Sat, 18 Jun 2016 01:33:47 +0200
+Message-ID: <2755592.YNNOVbNgS2@vostro.rjw.lan>
+References: <3006711.q9ei2E2zzf@vostro.rjw.lan> <tip-70595b479ce173425dd5cb347dc6c8b1060dfb2c@git.kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <98a243badc295903ec4cf7de5e2985b468c45907.1463134231.git.lukas@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61900 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751690AbcFQX3f (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2016 19:29:35 -0400
+In-Reply-To: <tip-70595b479ce173425dd5cb347dc6c8b1060dfb2c@git.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: mingo@kernel.org
+Cc: sds@tycho.nsa.gov, logang@deltatee.com, keescook@chromium.org, tglx@linutronix.de, luto@kernel.org, peterz@infradead.org, hpa@zytor.com, torvalds@linux-foundation.org, bp@alien8.de, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, brgerst@gmail.com, dvlasenk@redhat.com, linux-kernel@vger.kernel.org
 
-[+cc Mika, Rafael]
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
-> If a hotplug port is suspended to D3cold, its slot status register
-> cannot be read.  If that hotplug port happens to share its IRQ with
-> other devices, then whenever an interrupt occurs for one of these
-> devices, a "no response from device" message is logged with level
-> KERN_INFO.  Apart from this annoyance, CPU time is needlessly spent
-> trying to read the slot status register even though we know in advance
-> that it will fail.
+Commit 70595b479ce1 (x86/power/64: Fix crash whan the hibernation
+code passes control to the image kernel) forgot to update the last
+argument of memcpy() in swsusp_arch_resume() to reflect the other
+changes made by it and that may lead to memory corruption if the
+core_restore_code code happens to be located at the end of a page,
+so fix it.
 
-I guess this is a pretty generic problem that could affect any device
-that shares an IRQ.
+Fixes: 70595b479ce1 (x86/power/64: Fix crash whan the hibernation code passes control to the image kernel)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-I think I'll queue this on my pci/pm branch, since it seems closely
-related to Mika's "PCI: Add runtime PM support for PCIe ports".
+Commit 70595b479ce1 is in tip and linux-next now.
 
-Did you check for the same issue in other likely places, e.g., AER,
-PME, etc.?
+---
+ arch/x86/power/hibernate_64.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-> On MacBook Pros introduced 2011 and 2012, the IRQ of a Thunderbolt
-> hotplug port is unfortunately shared with a wireless card, an audio card
-> and an SDXC controller.  When the Thunderbolt controller is powered
-> down, the machine carries out at least one unneeded slot status register
-> read for each wireless packet received and prints a corresponding error
-> message to the system log.
-> 
-> The hotplug port's current_state will be D3cold when it's powered down,
-> so ignore interrupts that occur during that power state.
-> 
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> ---
->  drivers/pci/hotplug/pciehp_hpc.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
-> index 5c24e93..08e84d6 100644
-> --- a/drivers/pci/hotplug/pciehp_hpc.c
-> +++ b/drivers/pci/hotplug/pciehp_hpc.c
-> @@ -546,6 +546,10 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
->  	u8 present;
->  	bool link;
->  
-> +	/* Interrupts cannot originate from a controller that's asleep */
-> +	if (pdev->current_state == PCI_D3cold)
-> +		return IRQ_NONE;
-> +
->  	/*
->  	 * In order to guarantee that all interrupt events are
->  	 * serviced, we need to re-inspect Slot Status register after
-> -- 
-> 2.8.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Index: linux-pm/arch/x86/power/hibernate_64.c
+===================================================================
+--- linux-pm.orig/arch/x86/power/hibernate_64.c
++++ linux-pm/arch/x86/power/hibernate_64.c
+@@ -142,8 +142,7 @@ int swsusp_arch_resume(void)
+ 	relocated_restore_code = (void *)get_safe_page(GFP_ATOMIC);
+ 	if (!relocated_restore_code)
+ 		return -ENOMEM;
+-	memcpy(relocated_restore_code, &core_restore_code,
+-	       &restore_registers - &core_restore_code);
++	memcpy(relocated_restore_code, &core_restore_code, PAGE_SIZE);
+ 
+ 	restore_image();
+ 	return 0;
+
