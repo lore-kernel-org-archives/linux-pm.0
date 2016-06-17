@@ -1,62 +1,37 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 0/3] firmware: scpi: add device power domain support
-Date: Fri, 17 Jun 2016 16:34:44 +0100
-Message-ID: <57641894.5030504@arm.com>
-References: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
- <CANLsYkwHMCSep-zBY+iQmCpGy2wvyegbb9pH70rv+iKsreSQwA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: regression caused by bb6ab52f2bef ("intel_pstate: Do not set
+ utilization update hook too early")
+Date: Fri, 17 Jun 2016 17:40:38 +0200
+Message-ID: <CAJZ5v0jEf0rYZMqL_x8aHaNo4RwAJGqSToO4VxRL7hfsv7BEfg@mail.gmail.com>
+References: <20160617163023.5bb374f8@xhacker> <20160617164054.6339c5d4@xhacker>
+ <CAJZ5v0hd9HKUHzEnnBnp4-DmcHXgy1GgMK-st=Bs36rxzYR5xw@mail.gmail.com>
+ <20160617131651.GU3923@linux.vnet.ibm.com> <20160617140353.GQ30154@twins.programming.kicks-ass.net>
+ <2c6f6aab934141e08d9636739a9f7a94@SC-EXCH02.marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CANLsYkwHMCSep-zBY+iQmCpGy2wvyegbb9pH70rv+iKsreSQwA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mathieu Poirier <mathieu.poirier@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Jon Medhurst <tixy@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f42.google.com ([74.125.82.42]:38040 "EHLO
+	mail-wm0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbcFQPkk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2016 11:40:40 -0400
+In-Reply-To: <2c6f6aab934141e08d9636739a9f7a94@SC-EXCH02.marvell.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jisheng Zhang <jszhang@marvell.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-
-
-On 17/06/16 16:22, Mathieu Poirier wrote:
-> On 16 June 2016 at 04:37, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> This series add support for SCPI based device device power state
->> management using genpd.
->>
->> Regards,
->> Sudeep
->>
->> v1[1]->v2:
->>          - Fixed the endianness handling in scpi_device_get_power_state
->>            as spotted by Tixy
->>          - Renamed scpi_pd.c to scpi_pm_domain.c as suggested by Ulf
->>          - Added Mark's ack on DT binding
->>
->> [1] https://marc.info/?l=linux-kernel&m=146522850003483&w=2
->>
->> Sudeep Holla (3):
->>    firmware: arm_scpi: add support for device power state management
->>    Documentation: add DT bindings for ARM SCPI power domains
->>    firmware: scpi: add device power domain support using genpd
->>
->>   Documentation/devicetree/bindings/arm/arm,scpi.txt |  34 +++++
->>   drivers/firmware/Kconfig                           |   9 ++
->>   drivers/firmware/Makefile                          |   1 +
->>   drivers/firmware/arm_scpi.c                        |  30 ++++
->>   drivers/firmware/scpi_pm_domain.c                  | 152 +++++++++++++++++++++
->>   include/linux/scpi_protocol.h                      |   2 +
->>   6 files changed, 228 insertions(+)
->>   create mode 100644 drivers/firmware/scpi_pm_domain.c
->>
->> --
->> 2.7.4
->>
+On Fri, Jun 17, 2016 at 5:32 PM, Jisheng Zhang <jszhang@marvell.com> wrote:
+> Hi all,
 >
-> For the set:
+> First of all, sorry for top post, only webmail is available now.
 >
-> Tested-by: Mathieu Poirier <mathieu.poirier@linaro.org>
->
+> Second, sorry again for report incorrect commit, I were too tired this morning so I remember the wrong commit.  The regression is caused by bb6ab52f2bef ("intel_pstate: Do not set utilization update hook too early"), so I update the email title.
 
-Thanks for testing.
+OK, that makes much more sense. :-)
 
--- 
-Regards,
-Sudeep
+And
+
+4578ee7e1def intel_pstate: Avoid unnecessary synchronize_sched()
+during initialization
+
+is not sufficient I suppose?
