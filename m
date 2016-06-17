@@ -1,58 +1,53 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: x86 hibernate, resume with different kernel version
-Date: Fri, 17 Jun 2016 02:53:28 +0200
-Message-ID: <CAJZ5v0ifvgqtVhK52DCCbsPxWbpHTXVo4WDEZJbHo2-rvM2xNw@mail.gmail.com>
-References: <20160616100330.GA4954@sig21.net> <CAJZ5v0jWStdJDg_HENAMOiK3SaV=SHm6Zy-p6oMDvOUUZJRD+w@mail.gmail.com>
- <20160616190621.GA3849@sig21.net> <CAJZ5v0gUFyOi4ND3GA5HX96ffh9pZpO3mOjyPkYLgNXk+EnscA@mail.gmail.com>
+Subject: Re: [PATCH V4 0/2] cpufreq: Sort policy->freq_table
+Date: Fri, 17 Jun 2016 02:56:59 +0200
+Message-ID: <CAJZ5v0gMtuV-stZLf0QBQH2W_Ut1p0mq9GnpL-LCfe8eRRwAbw@mail.gmail.com>
+References: <cover.1465295033.git.viresh.kumar@linaro.org> <27658050.4ol4GjkJ1n@vostro.rjw.lan>
+ <20160616161739.GB24612@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f47.google.com ([74.125.82.47]:38724 "EHLO
-	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751795AbcFQAxa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 20:53:30 -0400
-Received: by mail-wm0-f47.google.com with SMTP id m124so91319891wme.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jun 2016 17:53:30 -0700 (PDT)
-In-Reply-To: <CAJZ5v0gUFyOi4ND3GA5HX96ffh9pZpO3mOjyPkYLgNXk+EnscA@mail.gmail.com>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:33789 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751795AbcFQA5B (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 20:57:01 -0400
+In-Reply-To: <20160616161739.GB24612@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Johannes Stezenbach <js@sig21.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>
 
-On Fri, Jun 17, 2016 at 12:00 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Thu, Jun 16, 2016 at 9:06 PM, Johannes Stezenbach <js@sig21.net> wrote:
->> On Thu, Jun 16, 2016 at 02:11:48PM +0200, Rafael J. Wysocki wrote:
->>> On Thu, Jun 16, 2016 at 12:03 PM, Johannes Stezenbach <js@sig21.net> wrote:
->>> > it's not important for me but I hibernated kernel v4.5.7
->>> > and inadvertantly resumed using v4.6.2, and ISTR this
->>> > should work (confirmed by looking into git where I found
->>> > commit cc456c4e7cac3837a86aaa7ca3cb9f488d44d196).
->>> >
->>> > My swap is an LVM volume inside dm-crypt, on boot the kernel read
->>> > the resume image but then immediately reset and invalidated it.
->>> > I'm using Debian sid, the initrd calls /bin/resume from
->>> > klibc-utils package.
->>> >
->>> > So, should this still work?  I couldn't find any
->>> > information about it.
->>>
->>> It should in theory, but may not in fact due to bugs discovered
->>> recently.  This patch should help:
->>> https://patchwork.kernel.org/patch/9172981/ (it has to be applied to
->>> both the image and boot kernels).
+On Thu, Jun 16, 2016 at 6:17 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 08-06-16, 02:19, Rafael J. Wysocki wrote:
+>> On Tuesday, June 07, 2016 03:55:13 PM Viresh Kumar wrote:
+>> > Hi Rafael,
+>> >
+>> > I have spent some more time on this stuff and finally came out with a
+>> > very simple solution. I hope you will like it more than the previous
+>> > versions.
+>> >
+>> > Instead of trying to sort the freq-table passed by the drivers, which
+>> > was complicated and would have broken some drivers for sure, this patch
+>> > just checks if the freq-table is sorted or not.
+>> >
+>> > If it is sorted, then we just use a different set of helpers for it. The
+>> > table can be sorted in both ascending and descending orders now and
+>> > helpers are present for both the cases.
 >>
->> I applied it to both the v4.5.7 and v4.6.2 kernels, booted
->> v4.5.7, hibernated, booted v4.6.2 to resume: still resets.
+>> Well, that's something I was thinking about from the start. :-)
+>>
+>> > All the patches are pushed here for testing in case anyone wants to try:
+>> > git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/sorted-freq-table
+>> >
+>> > V3->V4:
+>> > - Written from scratch really, completely different approach.
+>>
+>> I'll look at the code later this week.
 >
-> Well, it looks broken now, but it used to work at one point at least.
-> I need to investigate a bit when the time permits.
+> Hi Rafael,
+>
+> Did you get a chance to look at these? Steve may be blocked on this :)
 
-So I tried 4.6.0 and 4.7-rc3, both with
-https://patchwork.kernel.org/patch/9172981/ applied, and it worked for
-me.
+I know, but I have stuff to do other than cpufreq.
 
-On x86-64 there's nothing fundamentally preventing a different kernel
-from being used as a boot kernel for resume from hibernation (as long
-as it uses the same header format as the image kernel), but
-incompatibilities in device drivers are not impossible (although they
-shouldn't matter in theory).
+And in particular regression fixes take precedence, of course.
