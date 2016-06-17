@@ -1,294 +1,93 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: [PATCH v2 2/3] power_supply: bq27xxx_battery: Index register numbers by enum
-Date: Fri, 17 Jun 2016 17:02:34 -0500
-Message-ID: <20160617220235.24991-2-afd@ti.com>
-References: <20160617220235.24991-1-afd@ti.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for
+ system sleep
+Date: Sat, 18 Jun 2016 00:14:07 +0200
+Message-ID: <20160617221407.GB1927@wunner.de>
+References: <cover.1463134231.git.lukas@wunner.de>
+ <20ccb6cc38f872c3d56b44cc2b9776a4a39c7dc5.1463134232.git.lukas@wunner.de>
+ <20160617210924.GA12254@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160617220235.24991-1-afd@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:56019 "EHLO
+	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbcFQWKI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2016 18:10:08 -0400
+Content-Disposition: inline
+In-Reply-To: <20160617210924.GA12254@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Currently we use tables to map from register function to register number,
-these tables assume the enum used to describe the register function
-and index the register number is ordered to match the enum order. Index
-the register numbers by the enum instead. This also removes the need
-to comment each value with its function.
+On Fri, Jun 17, 2016 at 04:09:24PM -0500, Bjorn Helgaas wrote:
+> On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
+> > There are devices wich are not power-managed by the platform, yet can be
+> 
+> s/wich/which/
 
-Signed-off-by: Andrew F. Davis <afd@ti.com>
----
- drivers/power/bq27xxx_battery.c | 238 ++++++++++++++++++++--------------------
- 1 file changed, 119 insertions(+), 119 deletions(-)
+Oops.
 
-diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
-index 45f6ebf..01737fa 100644
---- a/drivers/power/bq27xxx_battery.c
-+++ b/drivers/power/bq27xxx_battery.c
-@@ -104,143 +104,143 @@ enum bq27xxx_reg_index {
- 
- /* Register mappings */
- static u8 bq27000_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	INVALID_REG_ADDR,	/* INT TEMP - NA*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	0x18,	/* TTF		*/
--	0x1c,	/* TTES		*/
--	0x26,	/* TTECP	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	0x22,	/* AE		*/
--	0x0b,	/* SOC(RSOC)	*/
--	0x76,	/* DCAP(ILMD)	*/
--	0x24,	/* AP		*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = 0x18,
-+	[BQ27XXX_REG_TTES] = 0x1c,
-+	[BQ27XXX_REG_TTECP] = 0x26,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = 0x22,
-+	[BQ27XXX_REG_SOC] = 0x0b,
-+	[BQ27XXX_REG_DCAP] = 0x76,
-+	[BQ27XXX_REG_AP] = 0x24,
- };
- 
- static u8 bq27010_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	INVALID_REG_ADDR,	/* INT TEMP - NA*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	0x18,	/* TTF		*/
--	0x1c,	/* TTES		*/
--	0x26,	/* TTECP	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x0b,	/* SOC(RSOC)	*/
--	0x76,	/* DCAP(ILMD)	*/
--	INVALID_REG_ADDR,	/* AP - NA	*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = 0x18,
-+	[BQ27XXX_REG_TTES] = 0x1c,
-+	[BQ27XXX_REG_TTECP] = 0x26,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x0b,
-+	[BQ27XXX_REG_DCAP] = 0x76,
-+	[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
- };
- 
- static u8 bq27500_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	0x28,	/* INT TEMP	*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	INVALID_REG_ADDR,	/* TTF - NA	*/
--	0x1a,	/* TTES		*/
--	INVALID_REG_ADDR,	/* TTECP - NA	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x2c,	/* SOC(RSOC)	*/
--	0x3c,	/* DCAP(ILMD)	*/
--	INVALID_REG_ADDR,	/* AP - NA	*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = 0x28,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTES] = 0x1a,
-+	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x2c,
-+	[BQ27XXX_REG_DCAP] = 0x3c,
-+	[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
- };
- 
- static u8 bq27530_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	0x32,	/* INT TEMP	*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	INVALID_REG_ADDR,	/* TTF - NA	*/
--	INVALID_REG_ADDR,	/* TTES - NA	*/
--	INVALID_REG_ADDR,	/* TTECP - NA	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x2c,	/* SOC(RSOC)	*/
--	INVALID_REG_ADDR,	/* DCAP - NA	*/
--	0x24,	/* AP		*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = 0x32,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x2c,
-+	[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_AP] = 0x24,
- };
- 
- static u8 bq27541_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	0x28,	/* INT TEMP	*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	INVALID_REG_ADDR,	/* TTF - NA	*/
--	INVALID_REG_ADDR,	/* TTES - NA	*/
--	INVALID_REG_ADDR,	/* TTECP - NA	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x2c,	/* SOC(RSOC)	*/
--	0x3c,	/* DCAP		*/
--	0x24,	/* AP		*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = 0x28,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x2c,
-+	[BQ27XXX_REG_DCAP] = 0x3c,
-+	[BQ27XXX_REG_AP] = 0x24,
- };
- 
- static u8 bq27545_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x06,	/* TEMP		*/
--	0x28,	/* INT TEMP	*/
--	0x08,	/* VOLT		*/
--	0x14,	/* AVG CURR	*/
--	0x0a,	/* FLAGS	*/
--	0x16,	/* TTE		*/
--	INVALID_REG_ADDR,	/* TTF - NA	*/
--	INVALID_REG_ADDR,	/* TTES - NA	*/
--	INVALID_REG_ADDR,	/* TTECP - NA	*/
--	0x0c,	/* NAC		*/
--	0x12,	/* LMD(FCC)	*/
--	0x2a,	/* CYCT		*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x2c,	/* SOC(RSOC)	*/
--	INVALID_REG_ADDR,	/* DCAP - NA */
--	0x24,	/* AP		*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x06,
-+	[BQ27XXX_REG_INT_TEMP] = 0x28,
-+	[BQ27XXX_REG_VOLT] = 0x08,
-+	[BQ27XXX_REG_AI] = 0x14,
-+	[BQ27XXX_REG_FLAGS] = 0x0a,
-+	[BQ27XXX_REG_TTE] = 0x16,
-+	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_NAC] = 0x0c,
-+	[BQ27XXX_REG_FCC] = 0x12,
-+	[BQ27XXX_REG_CYCT] = 0x2a,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x2c,
-+	[BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_AP] = 0x24,
- };
- 
- static u8 bq27421_regs[] = {
--	0x00,	/* CONTROL	*/
--	0x02,	/* TEMP		*/
--	0x1e,	/* INT TEMP	*/
--	0x04,	/* VOLT		*/
--	0x10,	/* AVG CURR	*/
--	0x06,	/* FLAGS	*/
--	INVALID_REG_ADDR,	/* TTE - NA	*/
--	INVALID_REG_ADDR,	/* TTF - NA	*/
--	INVALID_REG_ADDR,	/* TTES - NA	*/
--	INVALID_REG_ADDR,	/* TTECP - NA	*/
--	0x08,	/* NAC		*/
--	0x0e,	/* FCC		*/
--	INVALID_REG_ADDR,	/* CYCT - NA	*/
--	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x1c,	/* SOC		*/
--	0x3c,	/* DCAP		*/
--	0x18,	/* AP		*/
-+	[BQ27XXX_REG_CTRL] = 0x00,
-+	[BQ27XXX_REG_TEMP] = 0x02,
-+	[BQ27XXX_REG_INT_TEMP] = 0x1e,
-+	[BQ27XXX_REG_VOLT] = 0x04,
-+	[BQ27XXX_REG_AI] = 0x10,
-+	[BQ27XXX_REG_FLAGS] = 0x06,
-+	[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_NAC] = 0x08,
-+	[BQ27XXX_REG_FCC] = 0x0e,
-+	[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+	[BQ27XXX_REG_SOC] = 0x1c,
-+	[BQ27XXX_REG_DCAP] = 0x3c,
-+	[BQ27XXX_REG_AP] = 0x18,
- };
- 
- static u8 *bq27xxx_regs[] = {
--- 
-2.9.0
+> 
+> > runtime suspended to D3cold with some other mechanism.  When putting the
+> > system to sleep, we currently handle such devices improperly by trying
+> > to transition them from D3cold to D3hot (the default power state defined
+> > at the beginning of pci_target_state()).  Avoid that.
+> > 
+> > An example for devices affected by this are Thunderbolt controllers
+> > built into Macs which can be put into D3cold with nonstandard ACPI
+> > methods.
+> > 
+> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> 
+> This needs an ack from Rafael.
+> 
+> Naive question: why is the default target_state PCI_D3hot?
+
+No idea. :-)
+
+> 
+> > ---
+> >  drivers/pci/pci.c | 2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > index 791dfe7..6af9911 100644
+> > --- a/drivers/pci/pci.c
+> > +++ b/drivers/pci/pci.c
+> > @@ -1943,6 +1943,8 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
+> >  			      && !(dev->pme_support & (1 << target_state)))
+> >  				target_state--;
+> >  		}
+> > +	} else if (dev->current_state == PCI_D3cold) {
+> > +		target_state = PCI_D3cold;
+> >  	}
+> 
+> This only covers the case of !device_may_wakeup().  So I guess
+> device_may_wakeup() is false for these Thunderbolt controllers.
+
+Correct. device_may_wakeup() is defined in include/linux/pm_wakeup.h as:
+dev->power.can_wakeup && !!dev->power.wakeup
+
+The first one, dev->power.can_wakeup is true because PME is claimed to be
+supported for all power states in the PMC register, so pci_pm_init() calls
+device_set_wakeup_capable(&dev->dev, true):
+  Capabilities: [80] Power Management version 3
+    Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+    Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
+
+The second one, dev->power.wakeup is false because device_wakeup_enable()
+is never called.
+
+
+> Is there a reason you don't want to do this check for devices that
+> may wakeup?
+
+Fear of breaking things. It would mean that a device would be left in
+D3cold even though it may not be able to signal wakeup from that power
+state. That's a change of behaviour the consequences of which I cannot
+estimate. Intuitively, I would expect breakage from such a change.
+
+Thanks,
+
+Lukas
