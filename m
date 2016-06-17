@@ -1,93 +1,108 @@
-From: Jisheng Zhang <jszhang@marvell.com>
-Subject: RE: regression caused by bb6ab52f2bef ("intel_pstate: Do not set
- utilization update hook too early")
-Date: Fri, 17 Jun 2016 16:09:33 +0000
-Message-ID: <24e20dd7b2b047a19515ff52ad105c37@SC-EXCH02.marvell.com>
-References: <20160617163023.5bb374f8@xhacker>
- <20160617164054.6339c5d4@xhacker>
- <CAJZ5v0hd9HKUHzEnnBnp4-DmcHXgy1GgMK-st=Bs36rxzYR5xw@mail.gmail.com>
- <20160617131651.GU3923@linux.vnet.ibm.com>
- <20160617140353.GQ30154@twins.programming.kicks-ass.net>
- <2c6f6aab934141e08d9636739a9f7a94@SC-EXCH02.marvell.com>
- <CAJZ5v0jEf0rYZMqL_x8aHaNo4RwAJGqSToO4VxRL7hfsv7BEfg@mail.gmail.com>,<CAJZ5v0hXAVA0B-GgdXKfbotLvU4x73OrHOEpjB1Lg0cfh8G88w@mail.gmail.com>,<393b63b7caa7474a97baf248c4891b72@SC-EXCH02.marvell.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH v3 1/5] mfd: tps65217: Add support for IRQs
+Date: Fri, 17 Jun 2016 19:09:40 +0300
+Message-ID: <576420C4.4060002@ti.com>
+References: <20160616114110.23455-1-m.niestroj@grinn-global.com>
+ <20160616114110.23455-2-m.niestroj@grinn-global.com>
+ <5762A3AC.9010409@ti.com>
+ <123e6759-fa44-48f0-860d-623aaa39f8ea@grinn-global.com>
+ <57640C3C.1070001@ti.com>
+ <062438af-c05f-00b3-adc6-ac27e7cec892@grinn-global.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <393b63b7caa7474a97baf248c4891b72@SC-EXCH02.marvell.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:54669 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161117AbcFQQKZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 Jun 2016 12:10:25 -0400
+In-Reply-To: <062438af-c05f-00b3-adc6-ac27e7cec892@grinn-global.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marcin Niestroj <m.niestroj@grinn-global.com>, Lee Jones <lee.jones@linaro.org>
+Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
 
-Dear all,
-
-If using acpi-cpufreq instead, v4.6, v4.6-rc3, v4.7-rc3 can't reproduce=
- the issue. It seems
-only intel_pstate is impacted.
-
-Thanks,
-Jisheng
-________________________________________
-=46rom: Jisheng Zhang
-Sent: Friday, June 17, 2016 23:53
-To: Rafael J. Wysocki
-Cc: Peter Zijlstra; Paul E. McKenney; Rafael J. Wysocki; Viresh Kumar; =
-linux-pm@vger.kernel.org; Linux Kernel Mailing List
-Subject: RE: regression caused by bb6ab52f2bef ("intel_pstate: Do not s=
-et utilization update hook too early")
-
-Dear Rafael,
-
-I used intel_pstate.
-
-I just tested v4.7-rc3, which should include commit 4578ee7e1def intel_=
-pstate: Avoid
-unnecessary synchronize_sched() during initialization, I can still get =
-the same
-wakeups, so it's not sufficient.
-
-Another clue maybe helpful, I found these top2 wakeup/s is consistent, =
-e.g
-rcu_sched always gives about 10 wakeups/s, and tick_sched_timer gave
-5.6-5.9 wakeups/s,
-
-            144.3 =B5s/s      10.0        Process        [rcu_sched]
-
-            193.9 =B5s/s       5.7        Timer          tick_sched_tim=
-er
-
-Thanks,
-Jisheng
-
-________________________________________
-=46rom:  Rafael J. Wysocki
-Sent: Friday, June 17, 2016 23:42
-To: Jisheng Zhang
-Cc: Peter Zijlstra; Paul E. McKenney; Rafael J. Wysocki; Viresh Kumar; =
-linux-pm@vger.kernel.org; Linux Kernel Mailing List
-Subject: Re: regression caused by bb6ab52f2bef ("intel_pstate: Do not s=
-et utilization update hook too early")
-
-On Fri, Jun 17, 2016 at 5:40 PM, Rafael J. Wysocki  wrote:
-> On Fri, Jun 17, 2016 at 5:32 PM, Jisheng Zhang  wrote:
->> Hi all,
+On 06/17/2016 06:31 PM, Marcin Niestroj wrote:
+> 
+> 
+> On 17.06.2016 16:42, Grygorii Strashko wrote:
+>> On 06/17/2016 05:05 PM, Marcin Niestroj wrote:
+>>>
+>>> On 16.06.2016 15:03, Grygorii Strashko wrote:
+>>>> On 06/16/2016 02:41 PM, Marcin Niestroj wrote:
+>>>>> Add support for handling IRQs: power button, AC and USB power state
+>>>>> changes. Mask and interrupt bits are shared within one register, which
+>>>>> prevents us to use regmap_irq implementation. New irq_domain is
+>>>>> created in
+>>>>> order to add interrupt handling for each tps65217's subsystem. IRQ
+>>>>> resources have been added for charger subsystem to be able to notify
+>>>>> about
+>>>>> AC and USB state changes.
+>>>>>
+>>>>> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+>>>>> ---
+>>>>>   drivers/mfd/Kconfig          |   1 +
+>>>>>   drivers/mfd/tps65217.c       | 194
+>>>>> +++++++++++++++++++++++++++++++++++++++++--
+>>>>>   include/linux/mfd/tps65217.h |  11 +++
+>>>>>   3 files changed, 198 insertions(+), 8 deletions(-)
 >>
->> First of all, sorry for top post, only webmail is available now.
+>> [...]
 >>
->> Second, sorry again for report incorrect commit, I were too tired th=
-is morning so I remember the wrong commit.  The regression is caused by=
- bb6ab52f2bef ("intel_pstate: Do not set utilization update hook too ea=
-rly"), so I update the email title.
->
-> OK, that makes much more sense. :-)
->
-> And
->
-> 4578ee7e1def intel_pstate: Avoid unnecessary synchronize_sched()
-> during initialization
->
-> is not sufficient I suppose?
+>>>>> +{
+>>>>> +    int ret;
+>>>>> +
+>>>>> +    mutex_init(&tps->irq_lock);
+>>>>> +
+>>>>> +    /* Mask all interrupt sources */
+>>>>> +    tps->irq_mask = (TPS65217_INT_RESERVEDM | TPS65217_INT_PBM
+>>>>> +            | TPS65217_INT_ACM | TPS65217_INT_USBM);
+>>>>> +    tps65217_reg_write(tps, TPS65217_REG_INT, tps->irq_mask,
+>>>>> +            TPS65217_PROTECT_NONE);
+>>>>> +
+>>>>> +    tps->irq_domain = irq_domain_add_linear(tps->dev->of_node,
+>>>>> +        TPS65217_NUM_IRQ, &tps65217_irq_domain_ops, tps);
+>>>>> +    if (!tps->irq_domain) {
+>>>>> +        dev_err(tps->dev, "Could not create IRQ domain\n");
+>>>>> +        return -ENOMEM;
+>>>>> +    }
+>>>>> +
+>>>>> +    ret = devm_request_threaded_irq(tps->dev, irq, NULL,
+>>>>> +                    tps65217_irq_thread,
+>>>>> +                    IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+>>>>
+>>>> Are there any reasons why IRQ trigger type specified here explicitly?
+>>>
+>>> Not really. I have configured it that way, it worked and I forgot about
+>>> it when preparing patches. Could you give some hint here?
+>>>
+>>
+>> It's better to get it from DT and in case of DT boot it will - the real
+>> IRQ trigger type may depends on board.
+>>
+> 
+> So what I understand, I need to remove IRQF_TRIGGER_RISING here.
+> Addidional flags will be passed by 'irq_flags' in
+> "interrupts = <irq_num irq_flags>" in DT, right?
 
-I mean, it is not sufficient to reduce the number of wakeups again?
+Indeed. And usually it is not "Addidional flags" - its mandatory cell for
+ the most of IRQ controllers.
+
+The problem with hard-coded IRQ trigger type values in code is that on
+different boards IRQ can be wired on different way - to the GIC/INTC,
+to SoC GPIO, to GPIO expanders and .. And they can support different sets
+of allowed IRQ triggering types. More over, on some boards IRQ signal can be
+inverted, for example :P
+
+So, It's more generic to not hard-code it if your driver is expected to be
+used only with DT.
+Also as per TRM http://www.ti.com/lit/ds/symlink/tps65217.pdf
+nINT - interrupt output (active low, open drain). Pin is pulled low if an interrupt bit is set. The
+       output goes high after the bit causing the interrupt in register INT has been read.
+       The interrupt sources can be masked in register INT, so no interrupt is generated when the
+       corresponding interrupt bit is set
+
+
+-- 
+regards,
+-grygorii
