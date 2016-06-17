@@ -1,87 +1,82 @@
-From: Marcin Niestroj <m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
-Subject: Re: [PATCH v3 1/5] mfd: tps65217: Add support for IRQs
-Date: Fri, 17 Jun 2016 17:31:29 +0200
-Message-ID: <062438af-c05f-00b3-adc6-ac27e7cec892@grinn-global.com>
-References: <20160616114110.23455-1-m.niestroj@grinn-global.com>
- <20160616114110.23455-2-m.niestroj@grinn-global.com>
- <5762A3AC.9010409@ti.com>
- <123e6759-fa44-48f0-860d-623aaa39f8ea@grinn-global.com>
- <57640C3C.1070001@ti.com>
+From: Jisheng Zhang <jszhang@marvell.com>
+Subject: RE: regression caused by bb6ab52f2bef ("intel_pstate: Do not set
+ utilization update hook too early")
+Date: Fri, 17 Jun 2016 15:32:00 +0000
+Message-ID: <2c6f6aab934141e08d9636739a9f7a94@SC-EXCH02.marvell.com>
+References: <20160617163023.5bb374f8@xhacker>
+ <20160617164054.6339c5d4@xhacker>
+ <CAJZ5v0hd9HKUHzEnnBnp4-DmcHXgy1GgMK-st=Bs36rxzYR5xw@mail.gmail.com>
+ <20160617131651.GU3923@linux.vnet.ibm.com>,<20160617140353.GQ30154@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <57640C3C.1070001-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160617140353.GQ30154@twins.programming.kicks-ass.net>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi all,
+
+First of all, sorry for top post, only webmail is available now.
+
+Second, sorry again for report incorrect commit, I were too tired this morning so I remember the wrong commit.  The regression is caused by bb6ab52f2bef ("intel_pstate: Do not set utilization update hook too early"), so I update the email title.
+
+here is the bisect log:
+
+# good: [9735a22799b9214d17d3c231fe377fc852f042e9] Linux 4.6-rc2
+git bisect good 9735a22799b9214d17d3c231fe377fc852f042e9
+
+# bad: [bf16200689118d19de1b8d2a3c314fc21f5dc7bb] Linux 4.6-rc3
+git bisect bad bf16200689118d19de1b8d2a3c314fc21f5dc7bb
+
+# good: [839a3f765728cdca0057a12e2dc0bf669ac1c22e] Merge branch 'for-linus-4.6' of git://git.kernel.org/pub/scm/linux/kernel/git/mason/linux-btrfs
+git bisect good 839a3f765728cdca0057a12e2dc0bf669ac1c22e
+
+# bad: [63b106a87dd84283e21aa2ce476732633eaab11d] Merge tag 'md/4.6-rc2-fix' of git://git.kernel.org/pub/scm/linux/kernel/git/shli/md
+git bisect bad 63b106a87dd84283e21aa2ce476732633eaab11d
+
+# good: [30d237a6c2e9be1bb816fe8e787b88fd7aad833b] Merge tag 'mac80211-for-davem-2016-04-06' of git://git.kernel.org/pub/scm/linux/kernel/git/jberg/mac80211
+git bisect good 30d237a6c2e9be1bb816fe8e787b88fd7aad833b
+
+# bad: [fa81e66ec8648f62e96e95e53db2ea95a4b57b26] Merge branches 'pm-cpufreq', 'pm-cpuidle' and 'acpi-cppc'
+git bisect bad fa81e66ec8648f62e96e95e53db2ea95a4b57b26
+
+# good: [08820546e4c30c84d0a1f1a49df055e1719c07ea] intel_idle: Propagate hot plug errors.
+git bisect good 08820546e4c30c84d0a1f1a49df055e1719c07ea
+
+# bad: [b318556479cc923970a79d6c2311138581c0db83] cpufreq: dt: Drop stale comment
+git bisect bad b318556479cc923970a79d6c2311138581c0db83
+
+# bad: [febce40febcff3ccdb33f63456ffc4cfc61640c8] intel_pstate: Avoid extra invocation of intel_pstate_sample()
+git bisect bad febce40febcff3ccdb33f63456ffc4cfc61640c8
+
+# bad: [bb6ab52f2befe1fb29ac198f27d8a6aadf510f81] intel_pstate: Do not set utilization update hook too early
+git bisect bad bb6ab52f2befe1fb29ac198f27d8a6aadf510f81
+
+# first bad commit: [bb6ab52f2befe1fb29ac198f27d8a6aadf510f81] intel_pstate: Do not set utilization update hook too early
 
 
-On 17.06.2016 16:42, Grygorii Strashko wrote:
-> On 06/17/2016 05:05 PM, Marcin Niestroj wrote:
->>
->> On 16.06.2016 15:03, Grygorii Strashko wrote:
->>> On 06/16/2016 02:41 PM, Marcin Niestroj wrote:
->>>> Add support for handling IRQs: power button, AC and USB power state
->>>> changes. Mask and interrupt bits are shared within one register, which
->>>> prevents us to use regmap_irq implementation. New irq_domain is
->>>> created in
->>>> order to add interrupt handling for each tps65217's subsystem. IRQ
->>>> resources have been added for charger subsystem to be able to notify
->>>> about
->>>> AC and USB state changes.
->>>>
->>>> Signed-off-by: Marcin Niestroj <m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
->>>> ---
->>>>   drivers/mfd/Kconfig          |   1 +
->>>>   drivers/mfd/tps65217.c       | 194
->>>> +++++++++++++++++++++++++++++++++++++++++--
->>>>   include/linux/mfd/tps65217.h |  11 +++
->>>>   3 files changed, 198 insertions(+), 8 deletions(-)
->
-> [...]
->
->>>> +{
->>>> +    int ret;
->>>> +
->>>> +    mutex_init(&tps->irq_lock);
->>>> +
->>>> +    /* Mask all interrupt sources */
->>>> +    tps->irq_mask = (TPS65217_INT_RESERVEDM | TPS65217_INT_PBM
->>>> +            | TPS65217_INT_ACM | TPS65217_INT_USBM);
->>>> +    tps65217_reg_write(tps, TPS65217_REG_INT, tps->irq_mask,
->>>> +            TPS65217_PROTECT_NONE);
->>>> +
->>>> +    tps->irq_domain = irq_domain_add_linear(tps->dev->of_node,
->>>> +        TPS65217_NUM_IRQ, &tps65217_irq_domain_ops, tps);
->>>> +    if (!tps->irq_domain) {
->>>> +        dev_err(tps->dev, "Could not create IRQ domain\n");
->>>> +        return -ENOMEM;
->>>> +    }
->>>> +
->>>> +    ret = devm_request_threaded_irq(tps->dev, irq, NULL,
->>>> +                    tps65217_irq_thread,
->>>> +                    IRQF_TRIGGER_RISING | IRQF_ONESHOT,
->>>
->>> Are there any reasons why IRQ trigger type specified here explicitly?
->>
->> Not really. I have configured it that way, it worked and I forgot about
->> it when preparing patches. Could you give some hint here?
->>
->
-> It's better to get it from DT and in case of DT boot it will - the real
-> IRQ trigger type may depends on board.
->
+________________________________________
+From: Peter Zijlstra [peterz@infradead.org]
+Sent: Friday, June 17, 2016 22:03
+To: Paul E. McKenney
+Cc: Rafael J. Wysocki; Jisheng Zhang; Rafael J. Wysocki; Viresh Kumar; linux-pm@vger.kernel.org; Linux Kernel Mailing List
+Subject: Re: regression caused by 08f511fd41c3 ("cpufreq: Reduce cpufreq_update_util() overhead a bit")
 
-So what I understand, I need to remove IRQF_TRIGGER_RISING here.
-Addidional flags will be passed by 'irq_flags' in
-"interrupts = <irq_num irq_flags>" in DT, right?
+On Fri, Jun 17, 2016 at 06:16:51AM -0700, Paul E. McKenney wrote:
+> > Paul, Peter, any ideas about what may be going on here?
+>
+> Looks to me like this commit moved some code from synchronize_rcu() to
+> synchronize_sched().  Assuming that this is a CONFIG_PREEMPT=y system,
+> might there have been a decrease in the wakeups from the rcu_preempt
+> kthread?
 
--- 
-Marcin Niestroj
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The 'funny' thing is though; those synchronize thingies are only reached
+when we change cpufreq policy, so things like:
+
+  for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor ; do echo performance > $i ; done
+
+Something which is hardly possible when idle. Weird.
