@@ -1,67 +1,94 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v3 3/7] max8903: cleans up confusing relationship between
- dc_valid, dok and dcm.
-Date: Fri, 17 Jun 2016 08:26:58 +0200
-Message-ID: <57639832.6000201@samsung.com>
-References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
- <1466139626-51434-1-git-send-email-chris@lapa.com.au>
- <1466139626-51434-4-git-send-email-chris@lapa.com.au>
+From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v2 01/10] driver core: Add a wrapper around
+	__device_release_driver()
+Date: Fri, 17 Jun 2016 08:26:51 +0200
+Message-ID: <1466144820-6286-2-git-send-email-m.szyprowski@samsung.com>
+References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:54448 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbcFQG1E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2016 02:27:04 -0400
-In-reply-to: <1466139626-51434-4-git-send-email-chris@lapa.com.au>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-reply-to: <1466144820-6286-1-git-send-email-m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chris Lapa <chris@lapa.com.au>, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 06/17/2016 07:00 AM, Chris Lapa wrote:
-> From: Chris Lapa <chris@lapa.com.au>
-> 
-> The max8903_charger.h file indicated that dcm and dok were not optional
-> when dc_valid is set.
-> 
-> It makes sense to have dok as a compulsory pin when dc_valid is given.
-> However dcm can be optionally wired to a fixed level especially when the
-> circuit is configured for dc power exclusively.
-> 
-> The previous implementation already allowed for this somewhat, however no
-> error was given if dok wasn't given whilst dc_valid was.
-> 
-> The new implementation enforces dok presence when dc_valid is given. Whilst
-> allowing dcm to be optional.
-> 
-> Signed-off-by: Chris Lapa <chris@lapa.com.au>
-> ---
->  drivers/power/max8903_charger.c       | 23 ++++++++++-------------
->  include/linux/power/max8903_charger.h |  6 +++---
->  2 files changed, 13 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
-> index 0a5b0e1..dbd911c4 100644
-> --- a/drivers/power/max8903_charger.c
-> +++ b/drivers/power/max8903_charger.c
-> @@ -211,27 +211,24 @@ static int max8903_probe(struct platform_device *pdev)
->  	}
->  
->  	if (pdata->dc_valid) {
-> -		if (pdata->dok && gpio_is_valid(pdata->dok) &&
-> -				pdata->dcm && gpio_is_valid(pdata->dcm)) {
-> +		if (pdata->dok && gpio_is_valid(pdata->dok)) {
->  			gpio = pdata->dok; /* PULL_UPed Interrupt */
->  			ta_in = gpio_get_value(gpio) ? 0 : 1;
-> +		} else {
-> +			dev_err(dev, "When DC is wired, DOK should"
-> +					" be wired as well.\n");
+From: "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 
-Just found one nit. Don't split the strings.
-        dev_err(dev,
-                "When DC is wired, DOK should be wired as well.\n");
+Add an internal wrapper around __device_release_driver() that will
+acquire device locks and do the necessary checks before calling it.
 
-Best regards,
-Krzysztof
+The next patch will make use of it.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+---
+ drivers/base/dd.c | 30 ++++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 16688f50729c..d9e76e9205c7 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -796,6 +796,22 @@ static void __device_release_driver(struct device *dev)
+ 	}
+ }
+ 
++static void device_release_driver_internal(struct device *dev,
++					   struct device_driver *drv,
++					   struct device *parent)
++{
++	if (parent)
++		device_lock(parent);
++
++	device_lock(dev);
++	if (!drv || drv == dev->driver)
++		__device_release_driver(dev);
++
++	device_unlock(dev);
++	if (parent)
++		device_unlock(parent);
++}
++
+ /**
+  * device_release_driver - manually detach device from driver.
+  * @dev: device.
+@@ -810,9 +826,7 @@ void device_release_driver(struct device *dev)
+ 	 * within their ->remove callback for the same device, they
+ 	 * will deadlock right here.
+ 	 */
+-	device_lock(dev);
+-	__device_release_driver(dev);
+-	device_unlock(dev);
++	device_release_driver_internal(dev, NULL, NULL);
+ }
+ EXPORT_SYMBOL_GPL(device_release_driver);
+ 
+@@ -837,15 +851,7 @@ void driver_detach(struct device_driver *drv)
+ 		dev = dev_prv->device;
+ 		get_device(dev);
+ 		spin_unlock(&drv->p->klist_devices.k_lock);
+-
+-		if (dev->parent)	/* Needed for USB */
+-			device_lock(dev->parent);
+-		device_lock(dev);
+-		if (dev->driver == drv)
+-			__device_release_driver(dev);
+-		device_unlock(dev);
+-		if (dev->parent)
+-			device_unlock(dev->parent);
++		device_release_driver_internal(dev, drv, dev->parent);
+ 		put_device(dev);
+ 	}
+ }
+-- 
+1.9.1
