@@ -1,79 +1,50 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH v3 1/5] mfd: tps65217: Add support for IRQs
-Date: Fri, 17 Jun 2016 17:42:04 +0300
-Message-ID: <57640C3C.1070001@ti.com>
-References: <20160616114110.23455-1-m.niestroj@grinn-global.com>
- <20160616114110.23455-2-m.niestroj@grinn-global.com>
- <5762A3AC.9010409@ti.com>
- <123e6759-fa44-48f0-860d-623aaa39f8ea@grinn-global.com>
+From: Mathieu Poirier <mathieu.poirier@linaro.org>
+Subject: Re: [PATCH v2 0/3] firmware: scpi: add device power domain support
+Date: Fri, 17 Jun 2016 09:22:15 -0600
+Message-ID: <CANLsYkwHMCSep-zBY+iQmCpGy2wvyegbb9pH70rv+iKsreSQwA@mail.gmail.com>
+References: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:51085 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751105AbcFQOmy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 17 Jun 2016 10:42:54 -0400
-In-Reply-To: <123e6759-fa44-48f0-860d-623aaa39f8ea@grinn-global.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Jon Medhurst <tixy@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Marcin Niestroj <m.niestroj@grinn-global.com>, Lee Jones <lee.jones@linaro.org>
-Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
 
-On 06/17/2016 05:05 PM, Marcin Niestroj wrote:
+On 16 June 2016 at 04:37, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> This series add support for SCPI based device device power state
+> management using genpd.
 >
-> On 16.06.2016 15:03, Grygorii Strashko wrote:
->> On 06/16/2016 02:41 PM, Marcin Niestroj wrote:
->>> Add support for handling IRQs: power button, AC and USB power state
->>> changes. Mask and interrupt bits are shared within one register, which
->>> prevents us to use regmap_irq implementation. New irq_domain is
->>> created in
->>> order to add interrupt handling for each tps65217's subsystem. IRQ
->>> resources have been added for charger subsystem to be able to notify
->>> about
->>> AC and USB state changes.
->>>
->>> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
->>> ---
->>>   drivers/mfd/Kconfig          |   1 +
->>>   drivers/mfd/tps65217.c       | 194
->>> +++++++++++++++++++++++++++++++++++++++++--
->>>   include/linux/mfd/tps65217.h |  11 +++
->>>   3 files changed, 198 insertions(+), 8 deletions(-)
-
-[...]
-
->>> +{
->>> +    int ret;
->>> +
->>> +    mutex_init(&tps->irq_lock);
->>> +
->>> +    /* Mask all interrupt sources */
->>> +    tps->irq_mask = (TPS65217_INT_RESERVEDM | TPS65217_INT_PBM
->>> +            | TPS65217_INT_ACM | TPS65217_INT_USBM);
->>> +    tps65217_reg_write(tps, TPS65217_REG_INT, tps->irq_mask,
->>> +            TPS65217_PROTECT_NONE);
->>> +
->>> +    tps->irq_domain = irq_domain_add_linear(tps->dev->of_node,
->>> +        TPS65217_NUM_IRQ, &tps65217_irq_domain_ops, tps);
->>> +    if (!tps->irq_domain) {
->>> +        dev_err(tps->dev, "Could not create IRQ domain\n");
->>> +        return -ENOMEM;
->>> +    }
->>> +
->>> +    ret = devm_request_threaded_irq(tps->dev, irq, NULL,
->>> +                    tps65217_irq_thread,
->>> +                    IRQF_TRIGGER_RISING | IRQF_ONESHOT,
->>
->> Are there any reasons why IRQ trigger type specified here explicitly?
+> Regards,
+> Sudeep
 >
-> Not really. I have configured it that way, it worked and I forgot about
-> it when preparing patches. Could you give some hint here?
+> v1[1]->v2:
+>         - Fixed the endianness handling in scpi_device_get_power_state
+>           as spotted by Tixy
+>         - Renamed scpi_pd.c to scpi_pm_domain.c as suggested by Ulf
+>         - Added Mark's ack on DT binding
+>
+> [1] https://marc.info/?l=linux-kernel&m=146522850003483&w=2
+>
+> Sudeep Holla (3):
+>   firmware: arm_scpi: add support for device power state management
+>   Documentation: add DT bindings for ARM SCPI power domains
+>   firmware: scpi: add device power domain support using genpd
+>
+>  Documentation/devicetree/bindings/arm/arm,scpi.txt |  34 +++++
+>  drivers/firmware/Kconfig                           |   9 ++
+>  drivers/firmware/Makefile                          |   1 +
+>  drivers/firmware/arm_scpi.c                        |  30 ++++
+>  drivers/firmware/scpi_pm_domain.c                  | 152 +++++++++++++++++++++
+>  include/linux/scpi_protocol.h                      |   2 +
+>  6 files changed, 228 insertions(+)
+>  create mode 100644 drivers/firmware/scpi_pm_domain.c
+>
+> --
+> 2.7.4
 >
 
-It's better to get it from DT and in case of DT boot it will - the real
-IRQ trigger type may depends on board.
+For the set:
 
--- 
-regards,
--grygorii
+Tested-by: Mathieu Poirier <mathieu.poirier@linaro.org>
