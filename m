@@ -1,134 +1,71 @@
-From: "Nayak, Rajendra" <rnayak@codeaurora.org>
-Subject: Re: [PATCH v6 00/11] qcom: Add support for TSENS driver
-Date: Fri, 17 Jun 2016 11:29:15 +0530
-Message-ID: <576391B3.7090508@codeaurora.org>
-References: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
- <575A57F8.6060004@codeaurora.org>
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [RESEND v7 0/6] regulator: mfd: max8997: Add regmap
+Date: Fri, 17 Jun 2016 08:10:27 +0200
+Message-ID: <1466143833-5856-1-git-send-email-k.kozlowski@samsung.com>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <575A57F8.6060004@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: edubezval@gmail.com, andy.gross@linaro.org
-Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <rtc-linux+bncBDKZNNNLXAHBBY5IR25QKGQEHWT7CYA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Cc: r.baldyga-anjuHVi6/WSaMJb+Lgu22Q@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hey Eduardo,
+Dear Mark,
 
-On 6/10/2016 11:32 AM, Rajendra Nayak wrote:
-> Eduardo,
->
-> On 05/05/2016 02:21 PM, Rajendra Nayak wrote:
->> Current set of patches apply on 4.6-rc6. Fixes for the nvmem apis
->> are now posted [1] and queued in -next [2]
->> Patches [1-6] will need to be merged via thermal tree/Eduardo.
->
-> Any plans to pull these in for 4.8?
+I'm pushing old Robert's work and I miss only ack from you.
+Could you take a look at patch 1/6?
 
-These patches have been on the list for quite a while, and they
-do not have any outstanding dependencies or comments to be
-addressed. I would really hope to see these in for 4.8.
-Let me know if there is something you want me to address before
-you pull them in.
 
-regards,
-Rajendra
+Changes since v6
+================
+1. Add some acks.
+2. Remove patches already applied.
 
->
-> regards,
-> Rajendra
->
->> Patches [7-11] will need to go via qcom-msm tree/Andy.
->>
->> Changes since v5:
->> * Minor review fixes from Eduardo
->>
->> Changes since v4:
->> * dropped qcom,tsens-slopes binding, used coefficients instead
->> * dropped qcom,sensor-id binding
->> * Added support for msm8996 family
->> * Other minor review fixes from v4
->>
->> Changes since v3:
->> * Dropped 'clk: qcom: create virtual child device for TSENS' which
->> is picked up by Stephen
->> * Updated GCC bindings with optional TSENS properties
->>
->> Changes since v2:
->> * Minor review fixes from Stephen/Punit and rebase on 4.3-rc4
->>
->> Changes since v1:
->> * Created virtual tsens device from gcc driver for 8960,
->> with DT having a single node for gcc and tsens
->> * Minor fixes with rebasing on 4.3-rc1
->>
->> Changes since RFC:
->> * Added support for 8916 and 8084
->> * Based off the latest nvmem framework patches [1]
->> * Minor review fixes for comments mostly from Lina
->>
->> This is an attempt to have a single TSENS driver for
->> the different versions of the TSENS IP that exist, on
->> different qcom msm/apq SoCs'
->> Support is added for msm8916, msm8960, msm8974 and msm8996 families.
->>
->> A lot of the work is based of original code from Stephen Boyd
->> and Siddartha Mohanadoss. I have also picked some of what
->> Narendran Rajan did in his attempt to upstream the support
->> for 8960 family. I could not keep the original authorship on
->> any of the patches because I ended up moving the code around
->> quite a bit in an effort to have a single driver for the
->> various devices. I would be glad to change the authorship
->> for any of the patches if needed.
->>
->> [1] https://lkml.org/lkml/2016/4/24/103
->> [2] git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git char-misc-next
->>
->> Rajendra Nayak (11):
->>    thermal: qcom: tsens: Add a skeletal TSENS drivers
->>    thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
->>    thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
->>    thermal: core: export apis to get slope and offset
->>    thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
->>    thermal: qcom: tsens-8996: Add support for 8996 family of SoCs
->>    arm: dts: msm8974: Add thermal zones, tsens and qfprom nodes
->>    arm: dts: apq8064: Add thermal zones, tsens and qfprom nodes
->>    arm: dts: apq8084: Add thermal zones, tsens and qfprom nodes
->>    arm64: dts: msm8916: Add thermal zones, tsens and qfprom nodes
->>    arm64: dts: msm8996: Add thermal zones, tsens and qfprom nodes
->>
->>   .../devicetree/bindings/clock/qcom,gcc.txt         |  18 ++
->>   .../devicetree/bindings/thermal/qcom-tsens.txt     |  21 ++
->>   Documentation/thermal/sysfs-api.txt                |  12 +
->>   arch/arm/boot/dts/qcom-apq8064.dtsi                | 103 ++++++++
->>   arch/arm/boot/dts/qcom-apq8084.dtsi                | 103 ++++++++
->>   arch/arm/boot/dts/qcom-msm8974.dtsi                | 103 ++++++++
->>   arch/arm64/boot/dts/qcom/msm8916.dtsi              |  64 +++++
->>   arch/arm64/boot/dts/qcom/msm8996.dtsi              |  92 +++++++
->>   drivers/thermal/Kconfig                            |   5 +
->>   drivers/thermal/Makefile                           |   1 +
->>   drivers/thermal/qcom/Kconfig                       |  11 +
->>   drivers/thermal/qcom/Makefile                      |   2 +
->>   drivers/thermal/qcom/tsens-8916.c                  | 113 ++++++++
->>   drivers/thermal/qcom/tsens-8960.c                  | 292 +++++++++++++++++++++
->>   drivers/thermal/qcom/tsens-8974.c                  | 244 +++++++++++++++++
->>   drivers/thermal/qcom/tsens-8996.c                  |  84 ++++++
->>   drivers/thermal/qcom/tsens-common.c                | 141 ++++++++++
->>   drivers/thermal/qcom/tsens.c                       | 200 ++++++++++++++
->>   drivers/thermal/qcom/tsens.h                       |  92 +++++++
->>   drivers/thermal/thermal_core.c                     |  30 +++
->>   include/linux/thermal.h                            |   8 +
->>   21 files changed, 1739 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
->>   create mode 100644 drivers/thermal/qcom/Kconfig
->>   create mode 100644 drivers/thermal/qcom/Makefile
->>   create mode 100644 drivers/thermal/qcom/tsens-8916.c
->>   create mode 100644 drivers/thermal/qcom/tsens-8960.c
->>   create mode 100644 drivers/thermal/qcom/tsens-8974.c
->>   create mode 100644 drivers/thermal/qcom/tsens-8996.c
->>   create mode 100644 drivers/thermal/qcom/tsens-common.c
->>   create mode 100644 drivers/thermal/qcom/tsens.c
->>   create mode 100644 drivers/thermal/qcom/tsens.h
->>
->
+
+Best regards,
+Krzysztof
+
+
+Krzysztof Kozlowski (3):
+  extcon: max8997: Fix handling error code of regmap_irq_get_virq()
+  rtc: max8997: Check for ERRNO of regmap_irq_get_virq()
+  extcon: max8997: Fix inconsistent indenting
+
+Robert Baldyga (3):
+  mfd: max8997: Use regmap to access registers
+  mfd: max8997: handle IRQs using regmap
+  mfd: max8997: Change irq names to upper case
+
+ drivers/extcon/extcon-max8997.c       |  72 +++----
+ drivers/input/misc/max8997_haptic.c   |  34 +--
+ drivers/leds/leds-max8997.c           |  13 +-
+ drivers/mfd/Kconfig                   |   3 +-
+ drivers/mfd/Makefile                  |   2 +-
+ drivers/mfd/max8997-irq.c             | 383 ----------------------------------
+ drivers/mfd/max8997.c                 | 245 +++++++++++++++-------
+ drivers/power/max8997_charger.c       |  33 +--
+ drivers/regulator/max8997-regulator.c |  87 ++++----
+ drivers/rtc/rtc-max8997.c             |  60 +++---
+ include/linux/mfd/max8997-private.h   |  82 ++++++--
+ 11 files changed, 385 insertions(+), 629 deletions(-)
+ delete mode 100644 drivers/mfd/max8997-irq.c
+
+-- 
+1.9.1
+
+-- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
