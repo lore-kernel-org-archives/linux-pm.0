@@ -1,54 +1,50 @@
-From: Chris Lapa <chris@lapa.com.au>
-Subject: [PATCH v3 0/7] max8903: Add device tree support and misc fixes
-Date: Fri, 17 Jun 2016 15:00:19 +1000
-Message-ID: <1466139626-51434-1-git-send-email-chris@lapa.com.au>
-References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
-In-Reply-To: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
-References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: k.kozlowski@samsung.com, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chris Lapa <chris@lapa.com.au>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 0/2] intel_idle updates
+Date: Fri, 17 Jun 2016 01:28:32 -0400
+Message-ID: <20160617052834.26064-1-lenb@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f193.google.com ([209.85.220.193]:34475 "EHLO
+	mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751114AbcFQF3K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2016 01:29:10 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-From: Chris Lapa <chris@lapa.com.au>
+Rafael,
 
-This patch set adds device tree support for the MAX8903 battery charger.
-It also cleans up logic with dc_valid, dok and dcm pins as well as
-fixing up validity checking of gpios.
+Since you've already pulled Dave's intel-family.h intel_idle changes
+into your tree, please also apply these intel_idle patches to that branch.  
 
-I verified these patches work on a board I have here, which uses the
-DC power side (not the USB portition) of the MAX8903.
+[PATCH 1/2] drivers/idle: make intel_idle.c driver more explicitly
+[PATCH 2/2] idle_intel: Add Denverton
 
-Changes v2 -> v3:
- * Seperate requesting of gpio's into its own commit
- * Fixed up validity checking of GPIO's
- * Remove dc_valid and usb_valid from device tree
- * Remove some unncessary init to psy_cfg.num_supplicants and psy_cfg.supplied_to
- * Reorder patches so device tree implementation is final patch
+And if you prefer to use git...
 
-Changes v1 -> v2:
- * Seperate DT bindings documentation into its own commit
- * Add maxim prefix to DT compatible field
- * Add gpios suffix to gpio's in DT
- * Remove malloc failed error message
+The following changes since commit 5edb56491d4812c42175980759da53388e5d86f5:
 
-Chris Lapa (7):
-  max8903: adds documentation for device tree bindings.
-  max8903: store pointer to pdata instead of copying it.
-  max8903: cleans up confusing relationship between dc_valid, dok and
-    dcm.
-  max8903: adds requesting of gpios.
-  max8903: removes non zero validity checks on gpios.
-  max8903: remove unnecessary 'out of memory' error message.
-  max8903: adds support for initiation via device tree.
+  Linux 4.7-rc3 (2016-06-12 07:20:35 -0700)
 
- .../devicetree/bindings/power/max8903-charger.txt  |  25 ++
- drivers/power/max8903_charger.c                    | 278 +++++++++++++++------
- include/linux/power/max8903_charger.h              |   6 +-
- 3 files changed, 227 insertions(+), 82 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/max8903-charger.txt
+are available in the git repository at:
 
--- 
-1.9.1
+  git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git cpuidle
+
+for you to fetch changes up to 264f6eef366c0669cf9c8b1850977e13be85160a:
+
+  idle_intel: Add Denverton (2016-06-16 21:05:24 -0400)
+
+----------------------------------------------------------------
+Jacob Pan (1):
+      idle_intel: Add Denverton
+
+Paul Gortmaker (1):
+      drivers/idle: make intel_idle.c driver more explicitly non-modular
+
+ drivers/idle/intel_idle.c | 76 +++++++++++++++++++++++++++--------------------
+ 1 file changed, 43 insertions(+), 33 deletions(-)
+
+
+thanks!
+-Len
+
