@@ -1,73 +1,58 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 08/13] PCI: Allow runtime PM for Thunderbolt hotplug
- ports on Macs
-Date: Fri, 17 Jun 2016 16:53:12 -0500
-Message-ID: <20160617215312.GC12254@localhost>
-References: <cover.1463134231.git.lukas@wunner.de>
- <47f9e4a9ca09e854d2d01812a4c05b7c6df02259.1463134231.git.lukas@wunner.de>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH 3/3] power_supply: bq27xxx_battery: Group register
+ mappings into one table
+Date: Fri, 17 Jun 2016 17:00:34 -0500
+Message-ID: <57647302.1080205@ti.com>
+References: <20160531184500.10871-1-afd@ti.com>
+ <20160531184500.10871-3-afd@ti.com> <20160610012934.GA5848@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <47f9e4a9ca09e854d2d01812a4c05b7c6df02259.1463134231.git.lukas@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([198.47.19.11]:60408 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754000AbcFQWBE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 Jun 2016 18:01:04 -0400
+In-Reply-To: <20160610012934.GA5848@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
-> Thunderbolt controllers have a pin to signal plug events while the
-> controller is powered down.  On Macs this pin is wired to the
-> southbridge and causes a GPE to be fired.  The OS may then power up the
-> controller to probe the newly connected device.  It is thus okay to let
-> Thunderbolt hotplug ports go to D3 on Macs.
-> 
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> ---
->  drivers/pci/pcie/portdrv_pci.c | 10 +++++++---
->  1 file changed, 7 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-> index f75d4b5..7860ab3 100644
-> --- a/drivers/pci/pcie/portdrv_pci.c
-> +++ b/drivers/pci/pcie/portdrv_pci.c
-> @@ -224,9 +224,12 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
->  	 * to enumerate devices behind this port properly (the port is
->  	 * powered down preventing all config space accesses to the
->  	 * subordinate devices).  We can't be sure for native PCIe hotplug
-> -	 * either so prevent that as well.
-> +	 * either so prevent that as well.  However Thunderbolt controllers
-> +	 * on Macs are capable of side-band signaling plug events while
-> +	 * powered down, so allow them to suspend.
->  	 */
-> -	if (!dev->is_hotplug_bridge) {
-> +	if (!dev->is_hotplug_bridge ||
-> +	    (dev->is_thunderbolt && dmi_match(DMI_SYS_VENDOR, "Apple Inc."))) {
+On 06/09/2016 08:29 PM, Sebastian Reichel wrote:
+> Hi,
+>=20
+> On Tue, May 31, 2016 at 01:45:00PM -0500, Andrew F. Davis wrote:
+>> Currently for each device with a unique register map we have a named
+>> array that we then merge into a multidimensional array. Skip this
+>> middle step and apply the register arrays directly to the multi-arra=
+y.
+>=20
+> I applied the first two patches, but the third (this one) does not
+> compile for me:
+>=20
+>   CC [M]  drivers/power/bq27xxx_battery.o
+> drivers/power/bq27xxx_battery.c:108:2: warning: braces around scalar =
+initializer
+>   [BQ27000] =3D {
+>   ^
+> drivers/power/bq27xxx_battery.c:108:2: note: (near initialization for=
+ =E2=80=98bq27xxx_regs[1]=E2=80=99)
+> drivers/power/bq27xxx_battery.c:109:4: error: array index in non-arra=
+y initializer
+>    [BQ27XXX_REG_CTRL] =3D 0x00,
+>     ^
+> drivers/power/bq27xxx_battery.c:109:4: note: (near initialization for=
+ =E2=80=98bq27xxx_regs[1]=E2=80=99)
+> drivers/power/bq27xxx_battery.c:110:4: error: array index in non-arra=
+y initializer
+>    [BQ27XXX_REG_TEMP] =3D 0x06,
+>     ^
+> ...
+>=20
 
-I'd rather have a bit in the pci_dev to control this.  I don't know
-how this would be different from the recently-added "bridge_d3" bit.
-The bit could be set by a quirk.
+That's odd, I looks like I was attempting a jagged array in C, oops :)
+I'll post v2 with this fixed.
 
-It'd be nice if it were a single bit so we don't have to test
-is_hotplug_bridge *and* another bit.
-
->  		/*
->  		 * Keep the port resumed 10ms to make sure things like
->  		 * config space accesses from userspace (lspci) will not
-> @@ -243,7 +246,8 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
->  
->  static void pcie_portdrv_remove(struct pci_dev *dev)
->  {
-> -	if (!dev->is_hotplug_bridge) {
-> +	if (!dev->is_hotplug_bridge ||
-> +	    (dev->is_thunderbolt && dmi_match(DMI_SYS_VENDOR, "Apple Inc."))) {
->  		pm_runtime_forbid(&dev->dev);
->  		pm_runtime_get_noresume(&dev->dev);
->  		pm_runtime_dont_use_autosuspend(&dev->dev);
-> -- 
-> 2.8.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Andrew
