@@ -1,48 +1,47 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / Domains: Convert pm_genpd_init() to return an error code
-Date: Fri, 17 Jun 2016 12:59:30 +0200
-Message-ID: <CAMuHMdVofBY-kNULQHWmoAuovLfK4HG4Ce1VORrKekOG9vAbWg@mail.gmail.com>
-References: <1466159272-9726-1-git-send-email-ulf.hansson@linaro.org>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: [RFC] Adding PM support to thermal driver
+Date: Fri, 17 Jun 2016 13:11:54 +0200
+Message-ID: <5763DAFA.6060008@free.fr>
+References: <57617ED6.6050305@free.fr> <m2eg7ynmt3.fsf@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:34444 "EHLO
-	mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752988AbcFQK7c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2016 06:59:32 -0400
-Received: by mail-it0-f65.google.com with SMTP id f6so1590554ith.1
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jun 2016 03:59:32 -0700 (PDT)
-In-Reply-To: <1466159272-9726-1-git-send-email-ulf.hansson@linaro.org>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:61134 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751301AbcFQLMN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 Jun 2016 07:12:13 -0400
+In-Reply-To: <m2eg7ynmt3.fsf@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Kevin Hilman <khilman@baylibre.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@arm.com>, linux-pm <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Frias <sf84@laposte.net>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>
 
-Hi Ulf,
+On 15/06/2016 23:51, Kevin Hilman wrote:
 
-On Fri, Jun 17, 2016 at 12:27 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> The are already cases when pm_genpd_init() can fail. Currently we hide the
-> failures instead of propagating an error code, which is a better method.
->
-> Moreover, to prepare for future changes like moving away from using a
-> fixed array-size of the struct genpd_power_state, to instead dynamically
-> allocate data for it, the pm_genpd_init() API needs to be able to return
-> an error code, as allocation can fail.
->
-> Current users of the pm_genpd_init() is thus requested to start dealing
-> with error codes. In the transition phase, users will have to live with
-> only error messages being printed to log.
+> Mason writes:
+> 
+>> I need to support suspend-to-RAM in my platform.
+>> This platform powers down on suspend, so the contents of device registers are lost.
+>> Can you tell me if this patch looks OK for adding S2R support?
+> 
+> The idea looks right for ensuring a clean resume after context loss.
 
-What can we do in case of error? It's not like anything is going to work
-if PM domains are failing...
+Thanks for your quick review.
 
-Gr{oetje,eeting}s,
+> However, I'm a bit surprised to see an empty ->suspend hook though.
+> Is there nothing to do to gracefully shutdown this hardware?  A quick
+> glance suggests maybe CMD_OFF should be sent?
 
-                        Geert
+We discussed this internally. When Linux asks to be suspended to RAM,
+the firmware cuts the power to the entire platform (except RAM obviously,
+and a few blocks listening for wakeup events).
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+So it seems pointless to write code to power individual HW blocks down
+that are about to be powered down globally.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+(NB: the thermal block dissipates ~50 microwatts, so powering it down
+ASAP saves only a negligible amount of energy.)
+
+Regards.
+
