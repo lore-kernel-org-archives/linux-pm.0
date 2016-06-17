@@ -1,50 +1,56 @@
-From: Mathieu Poirier <mathieu.poirier@linaro.org>
-Subject: Re: [PATCH v2 0/3] firmware: scpi: add device power domain support
-Date: Fri, 17 Jun 2016 09:22:15 -0600
-Message-ID: <CANLsYkwHMCSep-zBY+iQmCpGy2wvyegbb9pH70rv+iKsreSQwA@mail.gmail.com>
-References: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: ktime_get_ts64() splat during resume
+Date: Fri, 17 Jun 2016 17:28:10 +0200
+Message-ID: <CAJZ5v0gsrAGcQqTO-+E3yGsNaO+45TmX5Wn=AoYu9JxWsR1HQA@mail.gmail.com>
+References: <20160617105435.GB15997@pd.tnic> <alpine.DEB.2.11.1606171351390.5839@nanos>
+ <20160617132943.GA3336@nazgul.tnic> <20160617143346.GA3912@pd.tnic>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
+In-Reply-To: <20160617143346.GA3912@pd.tnic>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Jon Medhurst <tixy@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>
+To: Borislav Petkov <bp@alien8.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Logan Gunthorpe <logang@deltatee.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kees Cook <keescook@chromium.org>, Stable <stable@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
 List-Id: linux-pm@vger.kernel.org
 
-On 16 June 2016 at 04:37, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> This series add support for SCPI based device device power state
-> management using genpd.
+On Fri, Jun 17, 2016 at 4:33 PM, Borislav Petkov <bp@alien8.de> wrote:
+> Ok,
 >
-> Regards,
-> Sudeep
+> bisect is done, full log below.
 >
-> v1[1]->v2:
->         - Fixed the endianness handling in scpi_device_get_power_state
->           as spotted by Tixy
->         - Renamed scpi_pd.c to scpi_pm_domain.c as suggested by Ulf
->         - Added Mark's ack on DT binding
+> Rafael, that fix
 >
-> [1] https://marc.info/?l=linux-kernel&m=146522850003483&w=2
+>   70595b479ce1 ("x86/power/64: Fix crash whan the hibernation code passes control to the image kernel")
 >
-> Sudeep Holla (3):
->   firmware: arm_scpi: add support for device power state management
->   Documentation: add DT bindings for ARM SCPI power domains
->   firmware: scpi: add device power domain support using genpd
+> breaks s2disk here. It explodes during resume and a statically allocated
+> struct's member is NULL. See
 >
->  Documentation/devicetree/bindings/arm/arm,scpi.txt |  34 +++++
->  drivers/firmware/Kconfig                           |   9 ++
->  drivers/firmware/Makefile                          |   1 +
->  drivers/firmware/arm_scpi.c                        |  30 ++++
->  drivers/firmware/scpi_pm_domain.c                  | 152 +++++++++++++++++++++
->  include/linux/scpi_protocol.h                      |   2 +
->  6 files changed, 228 insertions(+)
->  create mode 100644 drivers/firmware/scpi_pm_domain.c
+> https://lkml.kernel.org/r/20160617105435.GB15997@pd.tnic
 >
-> --
-> 2.7.4
+> for the splat and some debugging attempts.
 >
+> Reverting 70595b479ce1 fixes the issue here.
 
-For the set:
+Quite evidently, memory is corrupted in the image kernel, but this
+particular commit only affects the boot kernel, so it can't really
+corrupt anything in the image one.
 
-Tested-by: Mathieu Poirier <mathieu.poirier@linaro.org>
+A couple of questions:
+- I guess this is reproducible 100% of the time?
+- If you do "echo disk > /sys/power/state" instead of using s2disk,
+does it still crash in the same way?
+- Are both the image and boot kernels the same binary?
+
+> @stable folk: You might want to hold off on picking up that one yet...
+>
+>
+> Now, I have serial connected to that box so if you want me to dump stuff
+> and try patches, let me know.
+>
+> Btw, while I have your ear, can you pick up my einj fixes please?
+>
+> :-)
+>
+> -> https://lkml.kernel.org/r/1463992084-10012-1-git-send-email-bp@alien8.de
+
+Sure.  I thought Tony would pick them up.
