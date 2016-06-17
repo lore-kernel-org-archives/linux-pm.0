@@ -1,58 +1,70 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 0/3] firmware: scpi: add device power domain support
-Date: Fri, 17 Jun 2016 10:56:45 +0200
-Message-ID: <CAPDyKFohYGyQshYNxTP103XDwWG5GYsfAPr8=DskNtzGBk2MJA@mail.gmail.com>
-References: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
- <1466082894.20208.1.camel@linaro.org> <5762A8FD.7070807@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5762A8FD.7070807@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Jon Medhurst (Tixy)" <tixy@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>
+From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Subject: [RESEND PATCH v2 1/2] power/cpuidle: enhance the precision of state select
+Date: Fri, 17 Jun 2016 17:13:35 +0800
+Message-ID: <1466154816-17900-1-git-send-email-zhaoyang.huang@spreadtrum.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:34927 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752665AbcFQJNq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2016 05:13:46 -0400
+Received: by mail-pa0-f43.google.com with SMTP id hl6so26858727pac.2
+        for <linux-pm@vger.kernel.org>; Fri, 17 Jun 2016 02:13:45 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, zhaoyang.huang@spreadtrum.com, tglx@linutronix.de
 
-On 16 June 2016 at 15:26, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
->
-> On 16/06/16 14:14, Jon Medhurst (Tixy) wrote:
->>
->> On Thu, 2016-06-16 at 11:37 +0100, Sudeep Holla wrote:
->>>
->>> This series add support for SCPI based device device power state
->>> management using genpd.
->>>
->>> Regards,
->>> Sudeep
->>>
->>> v1[1]->v2:
->>>         - Fixed the endianness handling in scpi_device_get_power_state
->>>           as spotted by Tixy
->>>         - Renamed scpi_pd.c to scpi_pm_domain.c as suggested by Ulf
->>
->>
->> You seemed to also have made some changes to the contents of the file,
->> is that deliberate? This is the diff...
->>
->
-> name array was accidental. I added it as I was not sure if I want to
-> make it dynamic, just found I might be hitting the max while testing and
-> added it.
->
-> The other change was something that I found recently after I tried to
-> get rid of juno coresight primecell override after I realized AMBA
-> framework should be able to cope up with power domains. I will reply
-> on that thread. Sorry for missing out this in changelog. I assume in my
-> previous testings only the paths that ignored the return were executed.
->
-> --
-> Regards,
-> Sudeep
+In previous version, cpu_pm_enter is invoked after the governor
+select the state, which cause the executing time of cpu_pm_enter
+is included in the idle time. Moving it before the state selection.
 
-For the series,
+Signed-off-by: Zhaoyang Huang <zhaoyang.huang@spreadtrum.com>
+---
+ kernel/sched/idle.c |   18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index bd12c6c..929da2e 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -5,6 +5,7 @@
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+ #include <linux/cpuhotplug.h>
++#include <linux/cpu_pm.h>
+ #include <linux/tick.h>
+ #include <linux/mm.h>
+ #include <linux/stackprotector.h>
+@@ -130,6 +131,7 @@ static void cpuidle_idle_call(void)
+ 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+ 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+ 	int next_state, entered_state;
++	int ret;
+ 
+ 	/*
+ 	 * Check if the idle task must be rescheduled. If it is the
+@@ -174,12 +176,16 @@ static void cpuidle_idle_call(void)
+ 		/*
+ 		 * Ask the cpuidle framework to choose a convenient idle state.
+ 		 */
+-		next_state = cpuidle_select(drv, dev);
+-		entered_state = call_cpuidle(drv, dev, next_state);
+-		/*
+-		 * Give the governor an opportunity to reflect on the outcome
+-		 */
+-		cpuidle_reflect(dev, entered_state);
++		ret = cpu_pm_enter();
++		if (!ret) {
++			next_state = cpuidle_select(drv, dev);
++			entered_state = call_cpuidle(drv, dev, next_state);
++			cpu_pm_exit();
++			/*
++			 * Give the governor an opportunity to reflect on the outcome
++			 */
++			cpuidle_reflect(dev, entered_state);
++		}
+ 	}
+ 
+ exit_idle:
+-- 
+1.7.9.5
 
-Kind regards
-Uffe
