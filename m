@@ -1,8 +1,7 @@
 From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v2 06/10] driver core: Avoid endless recursion if device has
-	more than one link
-Date: Fri, 17 Jun 2016 08:26:56 +0200
-Message-ID: <1466144820-6286-7-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH v2 09/10] iommu/exynos: Remove excessive, useless debug
+Date: Fri, 17 Jun 2016 08:26:59 +0200
+Message-ID: <1466144820-6286-10-git-send-email-m.szyprowski@samsung.com>
 References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,27 +21,27 @@ To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76
 Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch fixes endless recursion, which happends when device has
-more than one link.
+Remove excessive, useless debug about skipping TLB invalidation, which
+is a normal situation when more aggressive power management is enabled.
 
 Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 ---
- drivers/base/core.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/iommu/exynos-iommu.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 215cd44de761..4e778539b750 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -57,7 +57,8 @@ static int device_reorder_to_tail(struct device *dev, void *not_used)
- 	device_pm_move_last(dev);
- 	device_for_each_child(dev, NULL, device_reorder_to_tail);
- 	list_for_each_entry(link, &dev->consumer_links, c_node)
--		device_reorder_to_tail(link->consumer, NULL);
-+		if (link->consumer != dev)
-+			device_reorder_to_tail(link->consumer, NULL);
- 
- 	return 0;
+diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
+index 633e6d023c0d..9d1a14f88891 100644
+--- a/drivers/iommu/exynos-iommu.c
++++ b/drivers/iommu/exynos-iommu.c
+@@ -574,9 +574,6 @@ static void sysmmu_tlb_invalidate_entry(struct sysmmu_drvdata *data,
+ 			sysmmu_unblock(data);
+ 		}
+ 		clk_disable(data->clk_master);
+-	} else {
+-		dev_dbg(data->master,
+-			"disabled. Skipping TLB invalidation @ %#x\n", iova);
+ 	}
+ 	spin_unlock_irqrestore(&data->lock, flags);
  }
 -- 
 1.9.1
