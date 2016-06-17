@@ -1,33 +1,98 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] intel_idle: correct/improve BXT support
-Date: Thu, 16 Jun 2016 22:50:43 -0400
-Message-ID: <CAJvTdKmcCMY9XAjGz2EpsrDQ+ZKGAb+QiM6guiLH7KR0PLiVRg@mail.gmail.com>
-References: <574C4D9002000078000EFAAC@prv-mh.provo.novell.com>
- <CAJvTdK=wLx0Te2fPG_hVPDDDKuhmamsZqjo-zinnzQbxgXBpfQ@mail.gmail.com> <5762789902000078000F58EF@prv-mh.provo.novell.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f179.google.com ([209.85.220.179]:34535 "EHLO
-	mail-qk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754466AbcFQCuo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jun 2016 22:50:44 -0400
-Received: by mail-qk0-f179.google.com with SMTP id s186so73062916qkc.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jun 2016 19:50:44 -0700 (PDT)
-In-Reply-To: <5762789902000078000F58EF@prv-mh.provo.novell.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chris Lapa <chris@lapa.com.au>
+Subject: [PATCH v3 2/7] max8903: store pointer to pdata instead of copying it.
+Date: Fri, 17 Jun 2016 15:00:21 +1000
+Message-ID: <1466139626-51434-3-git-send-email-chris@lapa.com.au>
+References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
+ <1466139626-51434-1-git-send-email-chris@lapa.com.au>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1466139626-51434-1-git-send-email-chris@lapa.com.au>
+In-Reply-To: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
+References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
+Sender: linux-kernel-owner@vger.kernel.org
+To: k.kozlowski@samsung.com, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chris Lapa <chris@lapa.com.au>
 List-Id: linux-pm@vger.kernel.org
-To: Jan Beulich <JBeulich@suse.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-Jan,
-I'm fine with consolidated clean-up, as long as clean-up is not mixed
-with bug-fix or functional changes.
+From: Chris Lapa <chris@lapa.com.au>
 
-Also, it is ideal for bug fixes and functional changes to precede
-clean-ups in a series, since clean-ups tend to more frequently suffer
-merge conflicts, create false dependencies,  and sometimes get delayed
-or dropped.
+Stores pointer to pdata because it easily allows pdata to reference
+either platform data or in the future device tree data.
 
+Signed-off-by: Chris Lapa <chris@lapa.com.au>
+---
+ drivers/power/max8903_charger.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
 
-thanks!
-Len Brown, Intel Open Source Technology Center
+diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
+index 17876ca..0a5b0e1 100644
+--- a/drivers/power/max8903_charger.c
++++ b/drivers/power/max8903_charger.c
+@@ -29,7 +29,7 @@
+ #include <linux/power/max8903_charger.h>
+ 
+ struct max8903_data {
+-	struct max8903_pdata pdata;
++	struct max8903_pdata *pdata;
+ 	struct device *dev;
+ 	struct power_supply *psy;
+ 	struct power_supply_desc psy_desc;
+@@ -53,8 +53,8 @@ static int max8903_get_property(struct power_supply *psy,
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_STATUS:
+ 		val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
+-		if (data->pdata.chg) {
+-			if (gpio_get_value(data->pdata.chg) == 0)
++		if (data->pdata->chg) {
++			if (gpio_get_value(data->pdata->chg) == 0)
+ 				val->intval = POWER_SUPPLY_STATUS_CHARGING;
+ 			else if (data->usb_in || data->ta_in)
+ 				val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+@@ -81,7 +81,7 @@ static int max8903_get_property(struct power_supply *psy,
+ static irqreturn_t max8903_dcin(int irq, void *_data)
+ {
+ 	struct max8903_data *data = _data;
+-	struct max8903_pdata *pdata = &data->pdata;
++	struct max8903_pdata *pdata = data->pdata;
+ 	bool ta_in;
+ 	enum power_supply_type old_type;
+ 
+@@ -122,7 +122,7 @@ static irqreturn_t max8903_dcin(int irq, void *_data)
+ static irqreturn_t max8903_usbin(int irq, void *_data)
+ {
+ 	struct max8903_data *data = _data;
+-	struct max8903_pdata *pdata = &data->pdata;
++	struct max8903_pdata *pdata = data->pdata;
+ 	bool usb_in;
+ 	enum power_supply_type old_type;
+ 
+@@ -161,7 +161,7 @@ static irqreturn_t max8903_usbin(int irq, void *_data)
+ static irqreturn_t max8903_fault(int irq, void *_data)
+ {
+ 	struct max8903_data *data = _data;
+-	struct max8903_pdata *pdata = &data->pdata;
++	struct max8903_pdata *pdata = data->pdata;
+ 	bool fault;
+ 
+ 	fault = gpio_get_value(pdata->flt) ? false : true;
+@@ -190,12 +190,18 @@ static int max8903_probe(struct platform_device *pdev)
+ 	int ta_in = 0;
+ 	int usb_in = 0;
+ 
++	if (pdata == NULL) {
++		dev_err(dev, "No platform data.\n");
++		return -EINVAL;
++	}
++
+ 	data = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
+ 	if (data == NULL) {
+ 		dev_err(dev, "Cannot allocate memory.\n");
+ 		return -ENOMEM;
+ 	}
+-	memcpy(&data->pdata, pdata, sizeof(struct max8903_pdata));
++
++	data->pdata = pdev->dev.platform_data;
+ 	data->dev = dev;
+ 	platform_set_drvdata(pdev, data);
+ 
+-- 
+1.9.1
