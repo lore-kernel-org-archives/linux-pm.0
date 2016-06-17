@@ -1,60 +1,145 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: [PATCH 2/2] power/supply: unify DT documentation
-Date: Fri, 17 Jun 2016 15:25:32 +0200
-Message-ID: <1466169932-28031-3-git-send-email-sre@kernel.org>
-References: <1466169932-28031-1-git-send-email-sre@kernel.org>
+Subject: [PATCH 0/2] Move power supply subsystem to drivers/power/supply
+Date: Fri, 17 Jun 2016 15:25:30 +0200
+Message-ID: <1466169932-28031-1-git-send-email-sre@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1466169932-28031-1-git-send-email-sre@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Currently the power supply device tree documentation is spread
-in .../bindings/power_supply and .../bindings/power. This
-unifies the files for chargers and battery fuel gauges in
-.../bindings/power/supply and the ones for system reset/shutdown
-in .../bindings/power/reset (same structure as used for the
-drivers itself).
+Hi,
 
-Signed-off-by: Sebastian Reichel <sre@kernel.org>
----
- .../devicetree/bindings/{power_supply => power/reset}/axxia-reset.txt  | 0
- .../bindings/{power_supply => power/reset}/imx-snvs-poweroff.txt       | 0
- .../devicetree/bindings/{power_supply => power/reset}/msm-poweroff.txt | 0
- .../bindings/{power_supply => power/reset}/qnap-poweroff.txt           | 0
- .../bindings/{power_supply => power/reset}/restart-poweroff.txt        | 0
- .../bindings/{power_supply => power/supply}/ab8500/btemp.txt           | 0
- .../bindings/{power_supply => power/supply}/ab8500/chargalg.txt        | 0
- .../bindings/{power_supply => power/supply}/ab8500/charger.txt         | 0
- .../devicetree/bindings/{power_supply => power/supply}/ab8500/fg.txt   | 0
- .../devicetree/bindings/power/{ => supply}/act8945a-charger.txt        | 0
- .../bindings/{power_supply => power/supply}/axp20x_usb_power.txt       | 0
- Documentation/devicetree/bindings/power/{ => supply}/bq2415x.txt       | 0
- Documentation/devicetree/bindings/power/{ => supply}/bq24257.txt       | 0
- Documentation/devicetree/bindings/power/{ => supply}/bq25890.txt       | 0
- .../bindings/{power_supply => power/supply}/charger-manager.txt        | 0
- .../devicetree/bindings/power/{ => supply}/da9150-charger.txt          | 0
- Documentation/devicetree/bindings/power/{ => supply}/da9150-fg.txt     | 0
- .../bindings/{power_supply => power/supply}/gpio-charger.txt           | 0
- Documentation/devicetree/bindings/power/{ => supply}/isp1704.txt       | 0
- .../bindings/{power_supply => power/supply}/lp8727_charger.txt         | 0
- Documentation/devicetree/bindings/power/{ => supply}/ltc2941.txt       | 0
- .../bindings/{power_supply => power/supply}/max17042_battery.txt       | 0
- .../bindings/{power_supply => power/supply}/max8925_batter.txt         | 0
- .../bindings/{power_supply => power/supply}/olpc_battery.txt           | 0
- .../bindings/{power_supply => power/supply}/power_supply.txt           | 0
- .../devicetree/bindings/power/{ => supply}/qcom,coincell-charger.txt   | 0
- .../devicetree/bindings/{power_supply => power/supply}/qcom_smbb.txt   | 0
- .../devicetree/bindings/power/{ => supply}/rt9455_charger.txt          | 0
- Documentation/devicetree/bindings/power/{ => supply}/rx51-battery.txt  | 0
- .../bindings/{power_supply => power/supply}/sbs_sbs-battery.txt        | 0
- .../devicetree/bindings/{power_supply => power/supply}/ti,bq24735.txt  | 0
- .../devicetree/bindings/{power_supply => power/supply}/tps65090.txt    | 0
- .../bindings/{power_supply => power/supply}/tps65217_charger.txt       | 0
- Documentation/devicetree/bindings/power/{ => supply}/twl-charger.txt   | 0
- MAINTAINERS                                                            | 3 +--
- 35 files changed, 1 insertion(+), 2 deletions(-)
+More people are interested in using the drivers/power/ directory,
+see for example pwrseq (https://patchwork.kernel.org/patch/9146309/).
+Make it more appealing to do so by moving the power supply
+subsystem into drivers/power/supply.
+
+While at it also clean up the DT binding documentation
+mess for the power supply subsystem.
+
+-- Sebastian
+
+Sebastian Reichel (2):
+  power: move power supply drivers to power/supply
+  power/supply: unify DT documentation
+
+ .../{power_supply => power/reset}/axxia-reset.txt  |   0
+ .../reset}/imx-snvs-poweroff.txt                   |   0
+ .../{power_supply => power/reset}/msm-poweroff.txt |   0
+ .../reset}/qnap-poweroff.txt                       |   0
+ .../reset}/restart-poweroff.txt                    |   0
+ .../supply}/ab8500/btemp.txt                       |   0
+ .../supply}/ab8500/chargalg.txt                    |   0
+ .../supply}/ab8500/charger.txt                     |   0
+ .../{power_supply => power/supply}/ab8500/fg.txt   |   0
+ .../power/{ => supply}/act8945a-charger.txt        |   0
+ .../supply}/axp20x_usb_power.txt                   |   0
+ .../bindings/power/{ => supply}/bq2415x.txt        |   0
+ .../bindings/power/{ => supply}/bq24257.txt        |   0
+ .../bindings/power/{ => supply}/bq25890.txt        |   0
+ .../supply}/charger-manager.txt                    |   0
+ .../bindings/power/{ => supply}/da9150-charger.txt |   0
+ .../bindings/power/{ => supply}/da9150-fg.txt      |   0
+ .../supply}/gpio-charger.txt                       |   0
+ .../bindings/power/{ => supply}/isp1704.txt        |   0
+ .../supply}/lp8727_charger.txt                     |   0
+ .../bindings/power/{ => supply}/ltc2941.txt        |   0
+ .../supply}/max17042_battery.txt                   |   0
+ .../supply}/max8925_batter.txt                     |   0
+ .../supply}/olpc_battery.txt                       |   0
+ .../supply}/power_supply.txt                       |   0
+ .../power/{ => supply}/qcom,coincell-charger.txt   |   0
+ .../{power_supply => power/supply}/qcom_smbb.txt   |   0
+ .../bindings/power/{ => supply}/rt9455_charger.txt |   0
+ .../bindings/power/{ => supply}/rx51-battery.txt   |   0
+ .../supply}/sbs_sbs-battery.txt                    |   0
+ .../{power_supply => power/supply}/ti,bq24735.txt  |   0
+ .../{power_supply => power/supply}/tps65090.txt    |   0
+ .../supply}/tps65217_charger.txt                   |   0
+ .../bindings/power/{ => supply}/twl-charger.txt    |   0
+ Documentation/power/power_supply_class.txt         |   4 +-
+ MAINTAINERS                                        |  44 +-
+ drivers/power/Kconfig                              | 516 +--------------------
+ drivers/power/Makefile                             |  75 +--
+ drivers/power/{ => supply}/88pm860x_battery.c      |   0
+ drivers/power/{ => supply}/88pm860x_charger.c      |   0
+ drivers/power/supply/Kconfig                       | 512 ++++++++++++++++++++
+ drivers/power/supply/Makefile                      |  74 +++
+ drivers/power/{ => supply}/ab8500_bmdata.c         |   0
+ drivers/power/{ => supply}/ab8500_btemp.c          |   0
+ drivers/power/{ => supply}/ab8500_charger.c        |   0
+ drivers/power/{ => supply}/ab8500_fg.c             |   0
+ drivers/power/{ => supply}/abx500_chargalg.c       |   0
+ drivers/power/{ => supply}/act8945a_charger.c      |   0
+ drivers/power/{ => supply}/apm_power.c             |   0
+ drivers/power/{ => supply}/axp20x_usb_power.c      |   0
+ drivers/power/{ => supply}/axp288_charger.c        |   0
+ drivers/power/{ => supply}/axp288_fuel_gauge.c     |   0
+ drivers/power/{ => supply}/bq2415x_charger.c       |   0
+ drivers/power/{ => supply}/bq24190_charger.c       |   0
+ drivers/power/{ => supply}/bq24257_charger.c       |   0
+ drivers/power/{ => supply}/bq24735-charger.c       |   0
+ drivers/power/{ => supply}/bq25890_charger.c       |   0
+ drivers/power/{ => supply}/bq27xxx_battery.c       |   0
+ drivers/power/{ => supply}/bq27xxx_battery_i2c.c   |   0
+ drivers/power/{ => supply}/charger-manager.c       |   0
+ drivers/power/{ => supply}/collie_battery.c        |   0
+ drivers/power/{ => supply}/da9030_battery.c        |   0
+ drivers/power/{ => supply}/da9052-battery.c        |   0
+ drivers/power/{ => supply}/da9150-charger.c        |   0
+ drivers/power/{ => supply}/da9150-fg.c             |   0
+ drivers/power/{ => supply}/ds2760_battery.c        |   4 +-
+ drivers/power/{ => supply}/ds2780_battery.c        |   4 +-
+ drivers/power/{ => supply}/ds2781_battery.c        |   4 +-
+ drivers/power/{ => supply}/ds2782_battery.c        |   0
+ drivers/power/{ => supply}/generic-adc-battery.c   |   0
+ drivers/power/{ => supply}/goldfish_battery.c      |   0
+ drivers/power/{ => supply}/gpio-charger.c          |   0
+ drivers/power/{ => supply}/intel_mid_battery.c     |   0
+ drivers/power/{ => supply}/ipaq_micro_battery.c    |   0
+ drivers/power/{ => supply}/isp1704_charger.c       |   0
+ drivers/power/{ => supply}/jz4740-battery.c        |   0
+ drivers/power/{ => supply}/lp8727_charger.c        |   0
+ drivers/power/{ => supply}/lp8788-charger.c        |   0
+ drivers/power/{ => supply}/ltc2941-battery-gauge.c |   0
+ drivers/power/{ => supply}/max14577_charger.c      |   0
+ drivers/power/{ => supply}/max17040_battery.c      |   0
+ drivers/power/{ => supply}/max17042_battery.c      |   0
+ drivers/power/{ => supply}/max77693_charger.c      |   0
+ drivers/power/{ => supply}/max8903_charger.c       |   0
+ drivers/power/{ => supply}/max8925_power.c         |   0
+ drivers/power/{ => supply}/max8997_charger.c       |   0
+ drivers/power/{ => supply}/max8998_charger.c       |   0
+ drivers/power/{ => supply}/olpc_battery.c          |   0
+ drivers/power/{ => supply}/pcf50633-charger.c      |   0
+ drivers/power/{ => supply}/pda_power.c             |   0
+ drivers/power/{ => supply}/pm2301_charger.c        |   0
+ drivers/power/{ => supply}/pm2301_charger.h        |   0
+ drivers/power/{ => supply}/pmu_battery.c           |   0
+ drivers/power/{ => supply}/power_supply.h          |   0
+ drivers/power/{ => supply}/power_supply_core.c     |   0
+ drivers/power/{ => supply}/power_supply_leds.c     |   0
+ drivers/power/{ => supply}/power_supply_sysfs.c    |   0
+ drivers/power/{ => supply}/qcom_smbb.c             |   0
+ drivers/power/{ => supply}/rt5033_battery.c        |   0
+ drivers/power/{ => supply}/rt9455_charger.c        |   0
+ drivers/power/{ => supply}/rx51_battery.c          |   0
+ drivers/power/{ => supply}/s3c_adc_battery.c       |   0
+ drivers/power/{ => supply}/sbs-battery.c           |   0
+ drivers/power/{ => supply}/smb347-charger.c        |   0
+ drivers/power/{ => supply}/test_power.c            |   0
+ drivers/power/{ => supply}/tosa_battery.c          |   0
+ drivers/power/{ => supply}/tps65090-charger.c      |   0
+ drivers/power/{ => supply}/tps65217_charger.c      |   0
+ drivers/power/{ => supply}/twl4030_charger.c       |   0
+ drivers/power/{ => supply}/twl4030_madc_battery.c  |   0
+ drivers/power/{ => supply}/wm831x_backup.c         |   0
+ drivers/power/{ => supply}/wm831x_power.c          |   0
+ drivers/power/{ => supply}/wm8350_power.c          |   0
+ drivers/power/{ => supply}/wm97xx_battery.c        |   2 -
+ drivers/power/{ => supply}/z2_battery.c            |   0
+ 115 files changed, 623 insertions(+), 616 deletions(-)
  rename Documentation/devicetree/bindings/{power_supply => power/reset}/axxia-reset.txt (100%)
  rename Documentation/devicetree/bindings/{power_supply => power/reset}/imx-snvs-poweroff.txt (100%)
  rename Documentation/devicetree/bindings/{power_supply => power/reset}/msm-poweroff.txt (100%)
@@ -89,156 +174,83 @@ Signed-off-by: Sebastian Reichel <sre@kernel.org>
  rename Documentation/devicetree/bindings/{power_supply => power/supply}/tps65090.txt (100%)
  rename Documentation/devicetree/bindings/{power_supply => power/supply}/tps65217_charger.txt (100%)
  rename Documentation/devicetree/bindings/power/{ => supply}/twl-charger.txt (100%)
+ rename drivers/power/{ => supply}/88pm860x_battery.c (100%)
+ rename drivers/power/{ => supply}/88pm860x_charger.c (100%)
+ create mode 100644 drivers/power/supply/Kconfig
+ create mode 100644 drivers/power/supply/Makefile
+ rename drivers/power/{ => supply}/ab8500_bmdata.c (100%)
+ rename drivers/power/{ => supply}/ab8500_btemp.c (100%)
+ rename drivers/power/{ => supply}/ab8500_charger.c (100%)
+ rename drivers/power/{ => supply}/ab8500_fg.c (100%)
+ rename drivers/power/{ => supply}/abx500_chargalg.c (100%)
+ rename drivers/power/{ => supply}/act8945a_charger.c (100%)
+ rename drivers/power/{ => supply}/apm_power.c (100%)
+ rename drivers/power/{ => supply}/axp20x_usb_power.c (100%)
+ rename drivers/power/{ => supply}/axp288_charger.c (100%)
+ rename drivers/power/{ => supply}/axp288_fuel_gauge.c (100%)
+ rename drivers/power/{ => supply}/bq2415x_charger.c (100%)
+ rename drivers/power/{ => supply}/bq24190_charger.c (100%)
+ rename drivers/power/{ => supply}/bq24257_charger.c (100%)
+ rename drivers/power/{ => supply}/bq24735-charger.c (100%)
+ rename drivers/power/{ => supply}/bq25890_charger.c (100%)
+ rename drivers/power/{ => supply}/bq27xxx_battery.c (100%)
+ rename drivers/power/{ => supply}/bq27xxx_battery_i2c.c (100%)
+ rename drivers/power/{ => supply}/charger-manager.c (100%)
+ rename drivers/power/{ => supply}/collie_battery.c (100%)
+ rename drivers/power/{ => supply}/da9030_battery.c (100%)
+ rename drivers/power/{ => supply}/da9052-battery.c (100%)
+ rename drivers/power/{ => supply}/da9150-charger.c (100%)
+ rename drivers/power/{ => supply}/da9150-fg.c (100%)
+ rename drivers/power/{ => supply}/ds2760_battery.c (99%)
+ rename drivers/power/{ => supply}/ds2780_battery.c (99%)
+ rename drivers/power/{ => supply}/ds2781_battery.c (99%)
+ rename drivers/power/{ => supply}/ds2782_battery.c (100%)
+ rename drivers/power/{ => supply}/generic-adc-battery.c (100%)
+ rename drivers/power/{ => supply}/goldfish_battery.c (100%)
+ rename drivers/power/{ => supply}/gpio-charger.c (100%)
+ rename drivers/power/{ => supply}/intel_mid_battery.c (100%)
+ rename drivers/power/{ => supply}/ipaq_micro_battery.c (100%)
+ rename drivers/power/{ => supply}/isp1704_charger.c (100%)
+ rename drivers/power/{ => supply}/jz4740-battery.c (100%)
+ rename drivers/power/{ => supply}/lp8727_charger.c (100%)
+ rename drivers/power/{ => supply}/lp8788-charger.c (100%)
+ rename drivers/power/{ => supply}/ltc2941-battery-gauge.c (100%)
+ rename drivers/power/{ => supply}/max14577_charger.c (100%)
+ rename drivers/power/{ => supply}/max17040_battery.c (100%)
+ rename drivers/power/{ => supply}/max17042_battery.c (100%)
+ rename drivers/power/{ => supply}/max77693_charger.c (100%)
+ rename drivers/power/{ => supply}/max8903_charger.c (100%)
+ rename drivers/power/{ => supply}/max8925_power.c (100%)
+ rename drivers/power/{ => supply}/max8997_charger.c (100%)
+ rename drivers/power/{ => supply}/max8998_charger.c (100%)
+ rename drivers/power/{ => supply}/olpc_battery.c (100%)
+ rename drivers/power/{ => supply}/pcf50633-charger.c (100%)
+ rename drivers/power/{ => supply}/pda_power.c (100%)
+ rename drivers/power/{ => supply}/pm2301_charger.c (100%)
+ rename drivers/power/{ => supply}/pm2301_charger.h (100%)
+ rename drivers/power/{ => supply}/pmu_battery.c (100%)
+ rename drivers/power/{ => supply}/power_supply.h (100%)
+ rename drivers/power/{ => supply}/power_supply_core.c (100%)
+ rename drivers/power/{ => supply}/power_supply_leds.c (100%)
+ rename drivers/power/{ => supply}/power_supply_sysfs.c (100%)
+ rename drivers/power/{ => supply}/qcom_smbb.c (100%)
+ rename drivers/power/{ => supply}/rt5033_battery.c (100%)
+ rename drivers/power/{ => supply}/rt9455_charger.c (100%)
+ rename drivers/power/{ => supply}/rx51_battery.c (100%)
+ rename drivers/power/{ => supply}/s3c_adc_battery.c (100%)
+ rename drivers/power/{ => supply}/sbs-battery.c (100%)
+ rename drivers/power/{ => supply}/smb347-charger.c (100%)
+ rename drivers/power/{ => supply}/test_power.c (100%)
+ rename drivers/power/{ => supply}/tosa_battery.c (100%)
+ rename drivers/power/{ => supply}/tps65090-charger.c (100%)
+ rename drivers/power/{ => supply}/tps65217_charger.c (100%)
+ rename drivers/power/{ => supply}/twl4030_charger.c (100%)
+ rename drivers/power/{ => supply}/twl4030_madc_battery.c (100%)
+ rename drivers/power/{ => supply}/wm831x_backup.c (100%)
+ rename drivers/power/{ => supply}/wm831x_power.c (100%)
+ rename drivers/power/{ => supply}/wm8350_power.c (100%)
+ rename drivers/power/{ => supply}/wm97xx_battery.c (99%)
+ rename drivers/power/{ => supply}/z2_battery.c (100%)
 
-diff --git a/Documentation/devicetree/bindings/power_supply/axxia-reset.txt b/Documentation/devicetree/bindings/power/reset/axxia-reset.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/axxia-reset.txt
-rename to Documentation/devicetree/bindings/power/reset/axxia-reset.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt b/Documentation/devicetree/bindings/power/reset/imx-snvs-poweroff.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/imx-snvs-poweroff.txt
-rename to Documentation/devicetree/bindings/power/reset/imx-snvs-poweroff.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/msm-poweroff.txt b/Documentation/devicetree/bindings/power/reset/msm-poweroff.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/msm-poweroff.txt
-rename to Documentation/devicetree/bindings/power/reset/msm-poweroff.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/qnap-poweroff.txt b/Documentation/devicetree/bindings/power/reset/qnap-poweroff.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/qnap-poweroff.txt
-rename to Documentation/devicetree/bindings/power/reset/qnap-poweroff.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/restart-poweroff.txt b/Documentation/devicetree/bindings/power/reset/restart-poweroff.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/restart-poweroff.txt
-rename to Documentation/devicetree/bindings/power/reset/restart-poweroff.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/ab8500/btemp.txt b/Documentation/devicetree/bindings/power/supply/ab8500/btemp.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/ab8500/btemp.txt
-rename to Documentation/devicetree/bindings/power/supply/ab8500/btemp.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/ab8500/chargalg.txt b/Documentation/devicetree/bindings/power/supply/ab8500/chargalg.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/ab8500/chargalg.txt
-rename to Documentation/devicetree/bindings/power/supply/ab8500/chargalg.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/ab8500/charger.txt b/Documentation/devicetree/bindings/power/supply/ab8500/charger.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/ab8500/charger.txt
-rename to Documentation/devicetree/bindings/power/supply/ab8500/charger.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/ab8500/fg.txt b/Documentation/devicetree/bindings/power/supply/ab8500/fg.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/ab8500/fg.txt
-rename to Documentation/devicetree/bindings/power/supply/ab8500/fg.txt
-diff --git a/Documentation/devicetree/bindings/power/act8945a-charger.txt b/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/act8945a-charger.txt
-rename to Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/axp20x_usb_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/axp20x_usb_power.txt
-rename to Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt
-diff --git a/Documentation/devicetree/bindings/power/bq2415x.txt b/Documentation/devicetree/bindings/power/supply/bq2415x.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/bq2415x.txt
-rename to Documentation/devicetree/bindings/power/supply/bq2415x.txt
-diff --git a/Documentation/devicetree/bindings/power/bq24257.txt b/Documentation/devicetree/bindings/power/supply/bq24257.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/bq24257.txt
-rename to Documentation/devicetree/bindings/power/supply/bq24257.txt
-diff --git a/Documentation/devicetree/bindings/power/bq25890.txt b/Documentation/devicetree/bindings/power/supply/bq25890.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/bq25890.txt
-rename to Documentation/devicetree/bindings/power/supply/bq25890.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/charger-manager.txt b/Documentation/devicetree/bindings/power/supply/charger-manager.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/charger-manager.txt
-rename to Documentation/devicetree/bindings/power/supply/charger-manager.txt
-diff --git a/Documentation/devicetree/bindings/power/da9150-charger.txt b/Documentation/devicetree/bindings/power/supply/da9150-charger.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/da9150-charger.txt
-rename to Documentation/devicetree/bindings/power/supply/da9150-charger.txt
-diff --git a/Documentation/devicetree/bindings/power/da9150-fg.txt b/Documentation/devicetree/bindings/power/supply/da9150-fg.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/da9150-fg.txt
-rename to Documentation/devicetree/bindings/power/supply/da9150-fg.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/gpio-charger.txt b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/gpio-charger.txt
-rename to Documentation/devicetree/bindings/power/supply/gpio-charger.txt
-diff --git a/Documentation/devicetree/bindings/power/isp1704.txt b/Documentation/devicetree/bindings/power/supply/isp1704.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/isp1704.txt
-rename to Documentation/devicetree/bindings/power/supply/isp1704.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/lp8727_charger.txt b/Documentation/devicetree/bindings/power/supply/lp8727_charger.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/lp8727_charger.txt
-rename to Documentation/devicetree/bindings/power/supply/lp8727_charger.txt
-diff --git a/Documentation/devicetree/bindings/power/ltc2941.txt b/Documentation/devicetree/bindings/power/supply/ltc2941.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/ltc2941.txt
-rename to Documentation/devicetree/bindings/power/supply/ltc2941.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/max17042_battery.txt b/Documentation/devicetree/bindings/power/supply/max17042_battery.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/max17042_battery.txt
-rename to Documentation/devicetree/bindings/power/supply/max17042_battery.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/max8925_batter.txt b/Documentation/devicetree/bindings/power/supply/max8925_batter.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/max8925_batter.txt
-rename to Documentation/devicetree/bindings/power/supply/max8925_batter.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/olpc_battery.txt b/Documentation/devicetree/bindings/power/supply/olpc_battery.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/olpc_battery.txt
-rename to Documentation/devicetree/bindings/power/supply/olpc_battery.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/power_supply.txt b/Documentation/devicetree/bindings/power/supply/power_supply.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/power_supply.txt
-rename to Documentation/devicetree/bindings/power/supply/power_supply.txt
-diff --git a/Documentation/devicetree/bindings/power/qcom,coincell-charger.txt b/Documentation/devicetree/bindings/power/supply/qcom,coincell-charger.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/qcom,coincell-charger.txt
-rename to Documentation/devicetree/bindings/power/supply/qcom,coincell-charger.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/qcom_smbb.txt b/Documentation/devicetree/bindings/power/supply/qcom_smbb.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/qcom_smbb.txt
-rename to Documentation/devicetree/bindings/power/supply/qcom_smbb.txt
-diff --git a/Documentation/devicetree/bindings/power/rt9455_charger.txt b/Documentation/devicetree/bindings/power/supply/rt9455_charger.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/rt9455_charger.txt
-rename to Documentation/devicetree/bindings/power/supply/rt9455_charger.txt
-diff --git a/Documentation/devicetree/bindings/power/rx51-battery.txt b/Documentation/devicetree/bindings/power/supply/rx51-battery.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/rx51-battery.txt
-rename to Documentation/devicetree/bindings/power/supply/rx51-battery.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/sbs_sbs-battery.txt b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/sbs_sbs-battery.txt
-rename to Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/ti,bq24735.txt b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/ti,bq24735.txt
-rename to Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/tps65090.txt b/Documentation/devicetree/bindings/power/supply/tps65090.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/tps65090.txt
-rename to Documentation/devicetree/bindings/power/supply/tps65090.txt
-diff --git a/Documentation/devicetree/bindings/power_supply/tps65217_charger.txt b/Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power_supply/tps65217_charger.txt
-rename to Documentation/devicetree/bindings/power/supply/tps65217_charger.txt
-diff --git a/Documentation/devicetree/bindings/power/twl-charger.txt b/Documentation/devicetree/bindings/power/supply/twl-charger.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/power/twl-charger.txt
-rename to Documentation/devicetree/bindings/power/supply/twl-charger.txt
-diff --git a/MAINTAINERS b/MAINTAINERS
-index a5a6705f34e7..5bac2dfac445 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9066,8 +9066,7 @@ M:	David Woodhouse <dwmw2@infradead.org>
- L:	linux-pm@vger.kernel.org
- T:	git git://git.infradead.org/battery-2.6.git
- S:	Maintained
--F:	Documentation/devicetree/bindings/power/
--F:	Documentation/devicetree/bindings/power_supply/
-+F:	Documentation/devicetree/bindings/power/supply/
- F:	include/linux/power_supply.h
- F:	drivers/power/supply/
- 
 -- 
 2.8.1
