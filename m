@@ -1,127 +1,69 @@
 From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 03/13] PCI: Add Thunderbolt portdrv service type
-Date: Fri, 17 Jun 2016 17:51:52 -0500
-Message-ID: <20160617225152.GD12254@localhost>
+Subject: Re: [PATCH v2 07/13] PCI: pciehp: Ignore interrupts during D3cold
+Date: Fri, 17 Jun 2016 17:52:04 -0500
+Message-ID: <20160617225204.GC10416@localhost>
 References: <cover.1463134231.git.lukas@wunner.de>
- <3e694101e5fa1551e07b5ecf92157087922e952f.1463134231.git.lukas@wunner.de>
+ <98a243badc295903ec4cf7de5e2985b468c45907.1463134231.git.lukas@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3e694101e5fa1551e07b5ecf92157087922e952f.1463134231.git.lukas@wunner.de>
+In-Reply-To: <98a243badc295903ec4cf7de5e2985b468c45907.1463134231.git.lukas@wunner.de>
 Sender: linux-pci-owner@vger.kernel.org
 To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
+[+cc Mika, Rafael]
+
 On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
-> A Thunderbolt controller is a PCIe switch which, as defined in the PCIe
-> spec, appears to the OS "as a collection of virtual PCI-to-PCI bridges".
-> 
-> We're about to add support for Apple's nonstandard ACPI methods to power
-> Thunderbolt controllers up and down.  To facilitate that, allocate a
-> port service for every PCI bridge belonging to a Thunderbolt controller.
-> 
-> This port service might come in handy for other use cases, e.g. device
-> initialization of Thunderbolt controllers.
-> 
-> To understand when and how this port service will be allocated, consider
-> the PCI devices exposed by a Thunderbolt host controller:
-> 
->   (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
->                                      +-- Downstream Bridge 1 --
->                                      +-- Downstream Bridge 2 --
->                                      ...
-> 
-> The upstream and downstream bridges represent the PCIe switch and a
-> Thunderbolt port service will be allocated for each of them.  Hotplugged
-> devices will appear behind the downstream bridges.  The NHI (Native Host
-> Interface) is a virtual PCI device to manage the switch fabric and is
-> not relevant here.  It uses class 0x88000, so it is not a PCIe port.
-> 
-> Next, consider the PCI devices exposed by Thunderbolt controllers built
-> into hotplugged devices:
-> 
->   -- Upstream Bridge ---- Downstream Bridge ---- Hotplugged device
-> 
-> Again, Thunderbolt port services will be allocated for the upstream and
-> downstream bridge, but not for the hotplugged device, which might use
-> e.g. class 0x20000 if it's a Thunderbolt Ethernet adapter.
+> If a hotplug port is suspended to D3cold, its slot status register
+> cannot be read.  If that hotplug port happens to share its IRQ with
+> other devices, then whenever an interrupt occurs for one of these
+> devices, a "no response from device" message is logged with level
+> KERN_INFO.  Apart from this annoyance, CPU time is needlessly spent
+> trying to read the slot status register even though we know in advance
+> that it will fail.
 
-I don't really *like* the portdrv infrastructure, even though we're
-sort of stuck with it now.  It seems like all it really does is allow
-multiple sub-drivers to attach to a single device and share interrupts
-between them.  And we get some extra devices in sysfs that don't fit
-the regular PCI model.  We used to support loadable sub-drivers
-(pciehp, aer, etc.), but we decided that didn't really make sense
-(though I notice you do support thunderbolt as a module).
+I guess this is a pretty generic problem that could affect any device
+that shares an IRQ.
 
-I think we would be better off if the PCIe services (hotplug, AER,
-etc.) were directly integrated into the PCI core without the portdrv
-abstraction in the middle.  But anyway, we do have portdrv, and the
-only question here is whether extending it for Thunderbolt is the
-right thing.
+I think I'll queue this on my pci/pm branch, since it seems closely
+related to Mika's "PCI: Add runtime PM support for PCIe ports".
 
-So the question for Thunderbolt is what benefit you get from being a
-portdrv sub-driver.  It seems like basically a way for you to hook on
-to PCI bridges that happen to be Thunderbolt controllers.  I don't
-think you really use any portdrv services (other than forwarding the
-PM ops down to you, which a regular PCI device driver would get for
-free).
+Did you check for the same issue in other likely places, e.g., AER,
+PME, etc.?
 
-upstream.c does a lot of ACPI stuff; I can't tell whether it has more
-affinity with ACPI or with PCI.  I don't see any PNP IDs though, so I
-guess you just look for the magic method names in the ACPI device
-associated with some PCI device.  That seems a little bit "back-door"
-to me; from an ASL point of view, I would think you'd want to start
-from a _HID and interpret the device based on that.
-
+> On MacBook Pros introduced 2011 and 2012, the IRQ of a Thunderbolt
+> hotplug port is unfortunately shared with a wireless card, an audio card
+> and an SDXC controller.  When the Thunderbolt controller is powered
+> down, the machine carries out at least one unneeded slot status register
+> read for each wireless packet received and prints a corresponding error
+> message to the system log.
+> 
+> The hotplug port's current_state will be D3cold when it's powered down,
+> so ignore interrupts that occur during that power state.
+> 
 > Signed-off-by: Lukas Wunner <lukas@wunner.de>
 > ---
->  drivers/pci/pcie/portdrv.h      | 2 +-
->  drivers/pci/pcie/portdrv_core.c | 2 ++
->  include/linux/pcieport_if.h     | 2 ++
->  3 files changed, 5 insertions(+), 1 deletion(-)
+>  drivers/pci/hotplug/pciehp_hpc.c | 4 ++++
+>  1 file changed, 4 insertions(+)
 > 
-> diff --git a/drivers/pci/pcie/portdrv.h b/drivers/pci/pcie/portdrv.h
-> index 587aef3..a0d9973 100644
-> --- a/drivers/pci/pcie/portdrv.h
-> +++ b/drivers/pci/pcie/portdrv.h
-> @@ -11,7 +11,7 @@
+> diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
+> index 5c24e93..08e84d6 100644
+> --- a/drivers/pci/hotplug/pciehp_hpc.c
+> +++ b/drivers/pci/hotplug/pciehp_hpc.c
+> @@ -546,6 +546,10 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
+>  	u8 present;
+>  	bool link;
 >  
->  #include <linux/compiler.h>
->  
-> -#define PCIE_PORT_DEVICE_MAXSERVICES   5
-> +#define PCIE_PORT_DEVICE_MAXSERVICES	6
->  /*
->   * According to the PCI Express Base Specification 2.0, the indices of
->   * the MSI-X table entries used by port services must not exceed 31
-> diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
-> index d04fb58..8cd9db8 100644
-> --- a/drivers/pci/pcie/portdrv_core.c
-> +++ b/drivers/pci/pcie/portdrv_core.c
-> @@ -310,6 +310,8 @@ static int get_port_device_capability(struct pci_dev *dev)
->  	}
->  	if (pci_find_ext_capability(dev, PCI_EXT_CAP_ID_DPC))
->  		services |= PCIE_PORT_SERVICE_DPC;
-> +	if (dev->is_thunderbolt)
-> +		services |= PCIE_PORT_SERVICE_TBT;
->  
->  	return services;
->  }
-> diff --git a/include/linux/pcieport_if.h b/include/linux/pcieport_if.h
-> index afcd130..d205bd6 100644
-> --- a/include/linux/pcieport_if.h
-> +++ b/include/linux/pcieport_if.h
-> @@ -23,6 +23,8 @@
->  #define PCIE_PORT_SERVICE_VC		(1 << PCIE_PORT_SERVICE_VC_SHIFT)
->  #define PCIE_PORT_SERVICE_DPC_SHIFT	4	/* Downstream Port Containment */
->  #define PCIE_PORT_SERVICE_DPC		(1 << PCIE_PORT_SERVICE_DPC_SHIFT)
-> +#define PCIE_PORT_SERVICE_TBT_SHIFT	5	/* Thunderbolt */
-> +#define PCIE_PORT_SERVICE_TBT		(1 << PCIE_PORT_SERVICE_TBT_SHIFT)
->  
->  struct pcie_device {
->  	int		irq;	    /* Service IRQ/MSI/MSI-X Vector */
+> +	/* Interrupts cannot originate from a controller that's asleep */
+> +	if (pdev->current_state == PCI_D3cold)
+> +		return IRQ_NONE;
+> +
+>  	/*
+>  	 * In order to guarantee that all interrupt events are
+>  	 * serviced, we need to re-inspect Slot Status register after
 > -- 
 > 2.8.1
 > 
