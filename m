@@ -1,42 +1,62 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: regression caused by 08f511fd41c3 ("cpufreq: Reduce
- cpufreq_update_util() overhead a bit")
-Date: Fri, 17 Jun 2016 17:32:25 +0200
-Message-ID: <CAJZ5v0h+hoA0QBQKdnnxWErNGZ0Fd-sYjjH_oTdH6No9Uz2B2A@mail.gmail.com>
-References: <20160617163023.5bb374f8@xhacker> <20160617164054.6339c5d4@xhacker>
- <CAJZ5v0hd9HKUHzEnnBnp4-DmcHXgy1GgMK-st=Bs36rxzYR5xw@mail.gmail.com>
- <20160617131651.GU3923@linux.vnet.ibm.com> <20160617140353.GQ30154@twins.programming.kicks-ass.net>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 0/3] firmware: scpi: add device power domain support
+Date: Fri, 17 Jun 2016 16:34:44 +0100
+Message-ID: <57641894.5030504@arm.com>
+References: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
+ <CANLsYkwHMCSep-zBY+iQmCpGy2wvyegbb9pH70rv+iKsreSQwA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:36059 "EHLO
-	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751058AbcFQPc2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2016 11:32:28 -0400
-In-Reply-To: <20160617140353.GQ30154@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CANLsYkwHMCSep-zBY+iQmCpGy2wvyegbb9pH70rv+iKsreSQwA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mathieu Poirier <mathieu.poirier@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Jon Medhurst <tixy@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Jisheng Zhang <jszhang@marvell.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, Jun 17, 2016 at 4:03 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Fri, Jun 17, 2016 at 06:16:51AM -0700, Paul E. McKenney wrote:
->> > Paul, Peter, any ideas about what may be going on here?
+
+
+On 17/06/16 16:22, Mathieu Poirier wrote:
+> On 16 June 2016 at 04:37, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>> This series add support for SCPI based device device power state
+>> management using genpd.
 >>
->> Looks to me like this commit moved some code from synchronize_rcu() to
->> synchronize_sched().  Assuming that this is a CONFIG_PREEMPT=y system,
->> might there have been a decrease in the wakeups from the rcu_preempt
->> kthread?
+>> Regards,
+>> Sudeep
+>>
+>> v1[1]->v2:
+>>          - Fixed the endianness handling in scpi_device_get_power_state
+>>            as spotted by Tixy
+>>          - Renamed scpi_pd.c to scpi_pm_domain.c as suggested by Ulf
+>>          - Added Mark's ack on DT binding
+>>
+>> [1] https://marc.info/?l=linux-kernel&m=146522850003483&w=2
+>>
+>> Sudeep Holla (3):
+>>    firmware: arm_scpi: add support for device power state management
+>>    Documentation: add DT bindings for ARM SCPI power domains
+>>    firmware: scpi: add device power domain support using genpd
+>>
+>>   Documentation/devicetree/bindings/arm/arm,scpi.txt |  34 +++++
+>>   drivers/firmware/Kconfig                           |   9 ++
+>>   drivers/firmware/Makefile                          |   1 +
+>>   drivers/firmware/arm_scpi.c                        |  30 ++++
+>>   drivers/firmware/scpi_pm_domain.c                  | 152 +++++++++++++++++++++
+>>   include/linux/scpi_protocol.h                      |   2 +
+>>   6 files changed, 228 insertions(+)
+>>   create mode 100644 drivers/firmware/scpi_pm_domain.c
+>>
+>> --
+>> 2.7.4
+>>
 >
-> The 'funny' thing is though; those synchronize thingies are only reached
-> when we change cpufreq policy, so things like:
+> For the set:
 >
->   for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor ; do echo performance > $i ; done
+> Tested-by: Mathieu Poirier <mathieu.poirier@linaro.org>
+>
 
-Or if you change min or max for a policy and the driver is intel_pstate.
+Thanks for testing.
 
-> Something which is hardly possible when idle. Weird.
-
-Well, exactly.
-
-Jisheng, do you use intel_pstate or acpi-cpufreq as the scaling driver?
+-- 
+Regards,
+Sudeep
