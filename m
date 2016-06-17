@@ -1,56 +1,87 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: ktime_get_ts64() splat during resume
-Date: Fri, 17 Jun 2016 17:28:10 +0200
-Message-ID: <CAJZ5v0gsrAGcQqTO-+E3yGsNaO+45TmX5Wn=AoYu9JxWsR1HQA@mail.gmail.com>
-References: <20160617105435.GB15997@pd.tnic> <alpine.DEB.2.11.1606171351390.5839@nanos>
- <20160617132943.GA3336@nazgul.tnic> <20160617143346.GA3912@pd.tnic>
+From: Marcin Niestroj <m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
+Subject: Re: [PATCH v3 1/5] mfd: tps65217: Add support for IRQs
+Date: Fri, 17 Jun 2016 17:31:29 +0200
+Message-ID: <062438af-c05f-00b3-adc6-ac27e7cec892@grinn-global.com>
+References: <20160616114110.23455-1-m.niestroj@grinn-global.com>
+ <20160616114110.23455-2-m.niestroj@grinn-global.com>
+ <5762A3AC.9010409@ti.com>
+ <123e6759-fa44-48f0-860d-623aaa39f8ea@grinn-global.com>
+ <57640C3C.1070001@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160617143346.GA3912@pd.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Logan Gunthorpe <logang@deltatee.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kees Cook <keescook@chromium.org>, Stable <stable@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
+Content-Type: text/plain; charset=iso-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <57640C3C.1070001-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 17, 2016 at 4:33 PM, Borislav Petkov <bp@alien8.de> wrote:
-> Ok,
->
-> bisect is done, full log below.
->
-> Rafael, that fix
->
->   70595b479ce1 ("x86/power/64: Fix crash whan the hibernation code passes control to the image kernel")
->
-> breaks s2disk here. It explodes during resume and a statically allocated
-> struct's member is NULL. See
->
-> https://lkml.kernel.org/r/20160617105435.GB15997@pd.tnic
->
-> for the splat and some debugging attempts.
->
-> Reverting 70595b479ce1 fixes the issue here.
 
-Quite evidently, memory is corrupted in the image kernel, but this
-particular commit only affects the boot kernel, so it can't really
-corrupt anything in the image one.
 
-A couple of questions:
-- I guess this is reproducible 100% of the time?
-- If you do "echo disk > /sys/power/state" instead of using s2disk,
-does it still crash in the same way?
-- Are both the image and boot kernels the same binary?
+On 17.06.2016 16:42, Grygorii Strashko wrote:
+> On 06/17/2016 05:05 PM, Marcin Niestroj wrote:
+>>
+>> On 16.06.2016 15:03, Grygorii Strashko wrote:
+>>> On 06/16/2016 02:41 PM, Marcin Niestroj wrote:
+>>>> Add support for handling IRQs: power button, AC and USB power state
+>>>> changes. Mask and interrupt bits are shared within one register, which
+>>>> prevents us to use regmap_irq implementation. New irq_domain is
+>>>> created in
+>>>> order to add interrupt handling for each tps65217's subsystem. IRQ
+>>>> resources have been added for charger subsystem to be able to notify
+>>>> about
+>>>> AC and USB state changes.
+>>>>
+>>>> Signed-off-by: Marcin Niestroj <m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
+>>>> ---
+>>>>   drivers/mfd/Kconfig          |   1 +
+>>>>   drivers/mfd/tps65217.c       | 194
+>>>> +++++++++++++++++++++++++++++++++++++++++--
+>>>>   include/linux/mfd/tps65217.h |  11 +++
+>>>>   3 files changed, 198 insertions(+), 8 deletions(-)
+>
+> [...]
+>
+>>>> +{
+>>>> +    int ret;
+>>>> +
+>>>> +    mutex_init(&tps->irq_lock);
+>>>> +
+>>>> +    /* Mask all interrupt sources */
+>>>> +    tps->irq_mask = (TPS65217_INT_RESERVEDM | TPS65217_INT_PBM
+>>>> +            | TPS65217_INT_ACM | TPS65217_INT_USBM);
+>>>> +    tps65217_reg_write(tps, TPS65217_REG_INT, tps->irq_mask,
+>>>> +            TPS65217_PROTECT_NONE);
+>>>> +
+>>>> +    tps->irq_domain = irq_domain_add_linear(tps->dev->of_node,
+>>>> +        TPS65217_NUM_IRQ, &tps65217_irq_domain_ops, tps);
+>>>> +    if (!tps->irq_domain) {
+>>>> +        dev_err(tps->dev, "Could not create IRQ domain\n");
+>>>> +        return -ENOMEM;
+>>>> +    }
+>>>> +
+>>>> +    ret = devm_request_threaded_irq(tps->dev, irq, NULL,
+>>>> +                    tps65217_irq_thread,
+>>>> +                    IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+>>>
+>>> Are there any reasons why IRQ trigger type specified here explicitly?
+>>
+>> Not really. I have configured it that way, it worked and I forgot about
+>> it when preparing patches. Could you give some hint here?
+>>
+>
+> It's better to get it from DT and in case of DT boot it will - the real
+> IRQ trigger type may depends on board.
+>
 
-> @stable folk: You might want to hold off on picking up that one yet...
->
->
-> Now, I have serial connected to that box so if you want me to dump stuff
-> and try patches, let me know.
->
-> Btw, while I have your ear, can you pick up my einj fixes please?
->
-> :-)
->
-> -> https://lkml.kernel.org/r/1463992084-10012-1-git-send-email-bp@alien8.de
+So what I understand, I need to remove IRQF_TRIGGER_RISING here.
+Addidional flags will be passed by 'irq_flags' in
+"interrupts = <irq_num irq_flags>" in DT, right?
 
-Sure.  I thought Tony would pick them up.
+-- 
+Marcin Niestroj
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
