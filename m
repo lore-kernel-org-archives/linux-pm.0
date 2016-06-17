@@ -1,96 +1,723 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Domains: Convert pm_genpd_init() to return an error code
-Date: Fri, 17 Jun 2016 12:27:52 +0200
-Message-ID: <1466159272-9726-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f41.google.com ([209.85.215.41]:36054 "EHLO
-	mail-lf0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753029AbcFQK16 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2016 06:27:58 -0400
-Received: by mail-lf0-f41.google.com with SMTP id q132so57470924lfe.3
-        for <linux-pm@vger.kernel.org>; Fri, 17 Jun 2016 03:27:57 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2 02/10] driver core: Functional dependencies tracking
+ support
+Date: Fri, 17 Jun 2016 12:36:20 +0200
+Message-ID: <20160617103620.GA1626@wunner.de>
+References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
+ <1466144820-6286-3-git-send-email-m.szyprowski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1466144820-6286-3-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-The are already cases when pm_genpd_init() can fail. Currently we hide the
-failures instead of propagating an error code, which is a better method.
+Hi Marek,
 
-Moreover, to prepare for future changes like moving away from using a
-fixed array-size of the struct genpd_power_state, to instead dynamically
-allocate data for it, the pm_genpd_init() API needs to be able to return
-an error code, as allocation can fail.
+On Fri, Jun 17, 2016 at 08:26:52AM +0200, Marek Szyprowski wrote:
+> From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> 
+> Currently, there is a problem with handling cases where functional
+> dependencies between devices are involved.
+> 
+> What I mean by a "functional dependency" is when the driver of device
+> B needs both device A and its driver to be present and functional to
+> be able to work.  This implies that the driver of A needs to be
+> working for B to be probed successfully and it cannot be unbound from
+> the device before the B's driver.  This also has certain consequences
+> for power management of these devices (suspend/resume and runtime PM
+> ordering).
+> 
+> Add support for representing those functional dependencies between
+> devices to allow the driver core to track them and act on them in
+> certain cases where they matter.
 
-Current users of the pm_genpd_init() is thus requested to start dealing
-with error codes. In the transition phase, users will have to live with
-only error messages being printed to log.
+Rafael has indicated that he intends to respin this series:
+https://lkml.org/lkml/2016/6/8/1061
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 10 +++++++---
- include/linux/pm_domain.h   |  9 +++++----
- 2 files changed, 12 insertions(+), 7 deletions(-)
+We also have such a functional dependency for Thunderbolt on Macs:
+On resume from system sleep, the PCIe hotplug ports may not resume
+before the thunderbolt driver has reestablished the PCI tunnels.
+Currently this is enforced by quirk_apple_wait_for_thunderbolt()
+in drivers/pci/quirks.c. It would be good if we could represent
+this dependency using something like Rafael's approach instead of
+open coding it, however one detail in Rafael's patches is problematic:
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 9193aac..a1f2aff 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1258,12 +1258,14 @@ EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
-  * @genpd: PM domain object to initialize.
-  * @gov: PM domain governor to associate with the domain (may be NULL).
-  * @is_off: Initial value of the domain's power_is_off field.
-+ *
-+ * Returns 0 on successful initialization, else a negative error code.
-  */
--void pm_genpd_init(struct generic_pm_domain *genpd,
--		   struct dev_power_governor *gov, bool is_off)
-+int pm_genpd_init(struct generic_pm_domain *genpd,
-+		  struct dev_power_governor *gov, bool is_off)
- {
- 	if (IS_ERR_OR_NULL(genpd))
--		return;
-+		return -EINVAL;
- 
- 	INIT_LIST_HEAD(&genpd->master_links);
- 	INIT_LIST_HEAD(&genpd->slave_links);
-@@ -1321,6 +1323,8 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	mutex_lock(&gpd_list_lock);
- 	list_add(&genpd->gpd_list_node, &gpd_list);
- 	mutex_unlock(&gpd_list_lock);
-+
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(pm_genpd_init);
- 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index dd5b044..31fec85 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -127,8 +127,8 @@ extern int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
- 				  struct generic_pm_domain *new_subdomain);
- extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 				     struct generic_pm_domain *target);
--extern void pm_genpd_init(struct generic_pm_domain *genpd,
--			  struct dev_power_governor *gov, bool is_off);
-+extern int pm_genpd_init(struct generic_pm_domain *genpd,
-+			 struct dev_power_governor *gov, bool is_off);
- 
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -163,9 +163,10 @@ static inline int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- {
- 	return -ENOSYS;
- }
--static inline void pm_genpd_init(struct generic_pm_domain *genpd,
--				 struct dev_power_governor *gov, bool is_off)
-+static inline int pm_genpd_init(struct generic_pm_domain *genpd,
-+				struct dev_power_governor *gov, bool is_off)
- {
-+	return -ENOSYS;
- }
- #endif
- 
--- 
-1.9.1
+> New links are added by calling device_link_add() which may happen
+> either before the consumer device is probed or when probing it, in
+> which case the caller needs to ensure that the driver of the
+> supplier device is present and functional and the DEVICE_LINK_PROBE_TIME
+> flag should be passed to device_link_add() to reflect that.
 
+The thunderbolt driver cannot call device_link_add() before the
+PCIe hotplug ports are bound to a driver unless we amend portdrv
+to return -EPROBE_DEFER for Thunderbolt hotplug ports on Macs
+if the thunderbolt driver isn't loaded.
+
+It would therefore be beneficial if device_link_add() can be
+called even *after* the consumer is bound.
+
+Thanks,
+
+Lukas
+
+> 
+> Link objects are deleted either explicitly, by calling
+> device_link_del() on the link object in question, or automatically,
+> when the consumer device is unbound from its driver or when one
+> of the target devices is deleted, depending on the link type.
+> 
+> There are two types of link objects, persistent and non-persistent.
+> The difference between them is that the persistent links stay around
+> until one of the target devices is deleted, which the non-persistent
+> ones are deleted when the consumer driver is unbound from its device
+> (ie. they are assumed to be valid only as long as the consumer device
+> has a driver bound to it).  The DEVICE_LINK_PERSISTENT flag has to
+> be passed to device_link_add() so as to create a persistent link.
+> 
+> One of the actions carried out by device_link_add() is to reorder
+> the lists used for device shutdown and system suspend/resume to
+> put the consumer device along with all of its children and all of
+> its consumers (and so on, recursively) to the ends of those list
+> in order to ensure the right ordering between the all of the supplier
+> and consumer devices.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  drivers/base/base.h    |  11 ++
+>  drivers/base/core.c    | 386 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/base/dd.c      |  42 +++++-
+>  include/linux/device.h |  36 +++++
+>  4 files changed, 470 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/base/base.h b/drivers/base/base.h
+> index e05db388bd1c..cccb1d211541 100644
+> --- a/drivers/base/base.h
+> +++ b/drivers/base/base.h
+> @@ -107,6 +107,9 @@ extern void bus_remove_device(struct device *dev);
+>  
+>  extern int bus_add_driver(struct device_driver *drv);
+>  extern void bus_remove_driver(struct device_driver *drv);
+> +extern void device_release_driver_internal(struct device *dev,
+> +					   struct device_driver *drv,
+> +					   struct device *parent);
+>  
+>  extern void driver_detach(struct device_driver *drv);
+>  extern int driver_probe_device(struct device_driver *drv, struct device *dev);
+> @@ -152,3 +155,11 @@ extern int devtmpfs_init(void);
+>  #else
+>  static inline int devtmpfs_init(void) { return 0; }
+>  #endif
+> +
+> +/* Device links */
+> +extern int device_links_check_suppliers(struct device *dev);
+> +extern void device_links_driver_bound(struct device *dev);
+> +extern void device_links_driver_gone(struct device *dev);
+> +extern void device_links_no_driver(struct device *dev);
+> +extern bool device_links_busy(struct device *dev);
+> +extern void device_links_unbind_consumers(struct device *dev);
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 0a8bdade53f2..416341df3268 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -44,6 +44,367 @@ static int __init sysfs_deprecated_setup(char *arg)
+>  early_param("sysfs.deprecated", sysfs_deprecated_setup);
+>  #endif
+>  
+> +/* Device links support. */
+> +
+> +DEFINE_STATIC_SRCU(device_links_srcu);
+> +static DEFINE_MUTEX(device_links_lock);
+> +
+> +static int device_reorder_to_tail(struct device *dev, void *not_used)
+> +{
+> +	struct devlink *link;
+> +
+> +	devices_kset_move_last(dev);
+> +	device_pm_move_last(dev);
+> +	device_for_each_child(dev, NULL, device_reorder_to_tail);
+> +	list_for_each_entry(link, &dev->consumer_links, c_node)
+> +		device_reorder_to_tail(link->consumer, NULL);
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * device_link_add - Create a link between two devices.
+> + * @consumer: Consumer end of the link.
+> + * @supplier: Supplier end of the link.
+> + * @flags: Link flags.
+> + *
+> + * At least one of the flags must be set.  If DEVICE_LINK_PROBE_TIME is set, the
+> + * caller is expected to know that (a) the supplier device is present and active
+> + * (ie. its driver is functional) and (b) the consumer device is probing at the
+> + * moment and therefore the initial state of the link will be "consumer probe"
+> + * in that case.  If DEVICE_LINK_PROBE_TIME is not set, DEVICE_LINK_PERSISTENT
+> + * must be set (meaning that the link will not go away when the consumer driver
+> + * goes away).
+> + *
+> + * A side effect of the link creation is re-ordering of dpm_list and the
+> + * devices_kset list by moving the consumer device and all devices depending
+> + * on it to the ends of those lists.
+> + */
+> +struct devlink *device_link_add(struct device *consumer,
+> +				struct device *supplier, u32 flags)
+> +{
+> +	struct devlink *link;
+> +
+> +	if (!consumer || !supplier || !flags)
+> +		return NULL;
+> +
+> +	mutex_lock(&device_links_lock);
+> +
+> +	list_for_each_entry(link, &supplier->supplier_links, s_node)
+> +		if (link->consumer == consumer)
+> +			goto out;
+> +
+> +	link = kmalloc(sizeof(*link), GFP_KERNEL);
+> +	if (!link)
+> +		goto out;
+> +
+> +	get_device(supplier);
+> +	link->supplier = supplier;
+> +	INIT_LIST_HEAD(&link->s_node);
+> +	get_device(consumer);
+> +	link->consumer = consumer;
+> +	INIT_LIST_HEAD(&link->c_node);
+> +	link->flags = flags;
+> +	link->status = (flags & DEVICE_LINK_PROBE_TIME) ?
+> +			DEVICE_LINK_CONSUMER_PROBE : DEVICE_LINK_DORMANT;
+> +	spin_lock_init(&link->lock);
+> +
+> +	/*
+> +	 * Move the consumer and all of the devices depending on it to the end
+> +	 * of dpm_list and the devices_kset list.
+> +	 *
+> +	 * We have to hold dpm_list locked throughout all that or else we may
+> +	 * end up suspending with a wrong ordering of it.
+> +	 */
+> +	device_pm_lock();
+> +	device_reorder_to_tail(consumer, NULL);
+> +	device_pm_unlock();
+> +
+> +	list_add_tail_rcu(&link->s_node, &supplier->supplier_links);
+> +	list_add_tail_rcu(&link->c_node, &consumer->consumer_links);
+> +
+> +	dev_info(consumer, "Linked as a consumer to %s\n", dev_name(supplier));
+> +
+> + out:
+> +	mutex_unlock(&device_links_lock);
+> +	return link;
+> +}
+> +EXPORT_SYMBOL_GPL(device_link_add);
+> +
+> +static void __devlink_free_srcu(struct rcu_head *rhead)
+> +{
+> +	struct devlink *link;
+> +
+> +	link = container_of(rhead, struct devlink, rcu_head);
+> +	put_device(link->consumer);
+> +	put_device(link->supplier);
+> +	kfree(link);
+> +}
+> +
+> +static void devlink_del(struct devlink *link)
+> +{
+> +	dev_info(link->consumer, "Dropping the link to %s\n",
+> +		 dev_name(link->supplier));
+> +
+> +	list_del_rcu(&link->s_node);
+> +	list_del_rcu(&link->c_node);
+> +	call_srcu(&device_links_srcu, &link->rcu_head, __devlink_free_srcu);
+> +}
+> +
+> +/**
+> + * device_link_del - Delete a link between two devices.
+> + * @link: Device link to delete.
+> + */
+> +void device_link_del(struct devlink *link)
+> +{
+> +	mutex_lock(&device_links_lock);
+> +	devlink_del(link);
+> +	mutex_unlock(&device_links_lock);
+> +}
+> +EXPORT_SYMBOL_GPL(device_link_del);
+> +
+> +static int device_links_read_lock(void)
+> +{
+> +	return srcu_read_lock(&device_links_srcu);
+> +}
+> +
+> +static void device_links_read_unlock(int idx)
+> +{
+> +	return srcu_read_unlock(&device_links_srcu, idx);
+> +}
+> +
+> +static void device_links_missing_supplier(struct device *dev)
+> +{
+> +	struct devlink *link;
+> +
+> +	list_for_each_entry_rcu(link, &dev->consumer_links, c_node) {
+> +		spin_lock(&link->lock);
+> +
+> +		if (link->status == DEVICE_LINK_CONSUMER_PROBE)
+> +			link->status = DEVICE_LINK_AVAILABLE;
+> +
+> +		spin_unlock(&link->lock);
+> +	}
+> +}
+> +
+> +/**
+> + * device_links_check_suppliers - Check supplier devices for this one.
+> + * @dev: Consumer device.
+> + *
+> + * Check links from this device to any suppliers.  Walk the list of the device's
+> + * consumer links and see if all of the suppliers are available.  If not, simply
+> + * return -EPROBE_DEFER.
+> + *
+> + * Walk the list under SRCU and check each link's status field under its lock.
+> + *
+> + * We need to guarantee that the supplier will not go away after the check has
+> + * been positive here.  It only can go away in __device_release_driver() and
+> + * that function  checks the device's links to consumers.  This means we need to
+> + * mark the link as "consumer probe in progress" to make the supplier removal
+> + * wait for us to complete (or bad things may happen).
+> + */
+> +int device_links_check_suppliers(struct device *dev)
+> +{
+> +	struct devlink *link;
+> +	int idx, ret = 0;
+> +
+> +	idx = device_links_read_lock();
+> +
+> +	list_for_each_entry_rcu(link, &dev->consumer_links, c_node) {
+> +		spin_lock(&link->lock);
+> +		if (link->status != DEVICE_LINK_AVAILABLE) {
+> +			spin_unlock(&link->lock);
+> +			device_links_missing_supplier(dev);
+> +			ret = -EPROBE_DEFER;
+> +			break;
+> +		}
+> +		link->status = DEVICE_LINK_CONSUMER_PROBE;
+> +		spin_unlock(&link->lock);
+> +	}
+> +
+> +	device_links_read_unlock(idx);
+> +	return ret;
+> +}
+> +
+> +/**
+> + * device_links_driver_bound - Update device links after probing its driver.
+> + * @dev: Device to update the links for.
+> + *
+> + * The probe has been successful, so update links from this device to any
+> + * consumers by changing their status to "available".
+> + *
+> + * Also change the status of @dev's links to suppliers to "active".
+> + */
+> +void device_links_driver_bound(struct device *dev)
+> +{
+> +	struct devlink *link;
+> +	int idx;
+> +
+> +	idx = device_links_read_lock();
+> +
+> +	list_for_each_entry_rcu(link, &dev->supplier_links, s_node) {
+> +		spin_lock(&link->lock);
+> +		WARN_ON(link->status != DEVICE_LINK_DORMANT);
+> +		link->status = DEVICE_LINK_AVAILABLE;
+> +		spin_unlock(&link->lock);
+> +	}
+> +
+> +	list_for_each_entry_rcu(link, &dev->consumer_links, c_node) {
+> +		spin_lock(&link->lock);
+> +		WARN_ON(link->status != DEVICE_LINK_CONSUMER_PROBE);
+> +		link->status = DEVICE_LINK_ACTIVE;
+> +		spin_unlock(&link->lock);
+> +	}
+> +
+> +	device_links_read_unlock(idx);
+> +}
+> +
+> +/**
+> + * device_links_driver_gone - Update links after driver removal.
+> + * @dev: Device whose driver has gone away.
+> + *
+> + * Update links to consumers for @dev by changing their status to "dormant".
+> + */
+> +void device_links_driver_gone(struct device *dev)
+> +{
+> +	struct devlink *link;
+> +	int idx;
+> +
+> +	idx = device_links_read_lock();
+> +
+> +	list_for_each_entry_rcu(link, &dev->supplier_links, s_node) {
+> +		WARN_ON(!(link->flags & DEVICE_LINK_PERSISTENT));
+> +		spin_lock(&link->lock);
+> +		WARN_ON(link->status != DEVICE_LINK_SUPPLIER_UNBIND);
+> +		link->status = DEVICE_LINK_DORMANT;
+> +		spin_unlock(&link->lock);
+> +	}
+> +
+> +	device_links_read_unlock(idx);
+> +}
+> +
+> +/**
+> + * device_links_no_driver - Update links of a device without a driver.
+> + * @dev: Device without a drvier.
+> + *
+> + * Delete all non-persistent links from this device to any suppliers.
+> + * Persistent links stay around, but their status is changed to "available",
+> + * unless they already are in the "supplier unbind in progress" state in which
+> + * case they need not be updated.
+> + */
+> +void device_links_no_driver(struct device *dev)
+> +{
+> +	struct devlink *link, *ln;
+> +
+> +	mutex_lock(&device_links_lock);
+> +
+> +	list_for_each_entry_safe_reverse(link, ln, &dev->consumer_links, c_node)
+> +		if (link->flags & DEVICE_LINK_PERSISTENT) {
+> +			spin_lock(&link->lock);
+> +
+> +			if (link->status != DEVICE_LINK_SUPPLIER_UNBIND)
+> +				link->status = DEVICE_LINK_AVAILABLE;
+> +
+> +			spin_unlock(&link->lock);
+> +		} else {
+> +			devlink_del(link);
+> +		}
+> +
+> +	mutex_unlock(&device_links_lock);
+> +}
+> +
+> +/**
+> + * device_links_busy - Check if there are any busy links to consumers.
+> + * @dev: Device to check.
+> + *
+> + * Check each consumer of the device and return 'true' it if its link's status
+> + * is one of "consumer probe" or "active" (meaning that the given consumer is
+> + * probing right now or its driver is present).  Otherwise, change the link
+> + * state to "supplier unbind" to prevent the consumer from being probed
+> + * successfully going forward.
+> + *
+> + * Return 'false' if there are no probing or active consumers.
+> + */
+> +bool device_links_busy(struct device *dev)
+> +{
+> +	struct devlink *link;
+> +	int idx;
+> +	bool ret = false;
+> +
+> +	idx = device_links_read_lock();
+> +
+> +	list_for_each_entry_rcu(link, &dev->supplier_links, s_node) {
+> +		spin_lock(&link->lock);
+> +		if (link->status == DEVICE_LINK_CONSUMER_PROBE
+> +		    || link->status == DEVICE_LINK_ACTIVE) {
+> +			spin_unlock(&link->lock);
+> +			ret = true;
+> +			break;
+> +		}
+> +		link->status = DEVICE_LINK_SUPPLIER_UNBIND;
+> +		spin_unlock(&link->lock);
+> +	}
+> +
+> +	device_links_read_unlock(idx);
+> +	return ret;
+> +}
+> +
+> +/**
+> + * device_links_unbind_consumers - Force unbind consumers of the given device.
+> + * @dev: Device to unbind the consumers of.
+> + *
+> + * Walk the list of links to consumers for @dev and if any of them is in the
+> + * "consumer probe" state, wait for all device probes in progress to complete
+> + * and start over.
+> + *
+> + * If that's not the case, change the status of the link to "supplier unbind"
+> + * and check if the link was in the "active" state.  If so, force the consumer
+> + * driver to unbind and start over (the consumer will not re-probe as we have
+> + * changed the state of the link already).
+> + */
+> +void device_links_unbind_consumers(struct device *dev)
+> +{
+> +	struct devlink *link;
+> +	int idx;
+> +
+> + start:
+> +	idx = device_links_read_lock();
+> +
+> +	list_for_each_entry_rcu(link, &dev->supplier_links, s_node) {
+> +		enum devlink_status status;
+> +
+> +		spin_lock(&link->lock);
+> +		status = link->status;
+> +		if (status == DEVICE_LINK_CONSUMER_PROBE) {
+> +			spin_unlock(&link->lock);
+> +
+> +			device_links_read_unlock(idx);
+> +
+> +			wait_for_device_probe();
+> +			goto start;
+> +		}
+> +		link->status = DEVICE_LINK_SUPPLIER_UNBIND;
+> +		if (status == DEVICE_LINK_ACTIVE) {
+> +			struct device *consumer = link->consumer;
+> +
+> +			get_device(consumer);
+> +			spin_unlock(&link->lock);
+> +
+> +			device_links_read_unlock(idx);
+> +
+> +			device_release_driver_internal(consumer, NULL,
+> +						       consumer->parent);
+> +			put_device(consumer);
+> +			goto start;
+> +		}
+> +		spin_unlock(&link->lock);
+> +	}
+> +
+> +	device_links_read_unlock(idx);
+> +}
+> +
+> +/* Device links support end. */
+> +
+>  int (*platform_notify)(struct device *dev) = NULL;
+>  int (*platform_notify_remove)(struct device *dev) = NULL;
+>  static struct kobject *dev_kobj;
+> @@ -711,6 +1072,8 @@ void device_initialize(struct device *dev)
+>  #ifdef CONFIG_GENERIC_MSI_IRQ
+>  	INIT_LIST_HEAD(&dev->msi_list);
+>  #endif
+> +	INIT_LIST_HEAD(&dev->supplier_links);
+> +	INIT_LIST_HEAD(&dev->consumer_links);
+>  }
+>  EXPORT_SYMBOL_GPL(device_initialize);
+>  
+> @@ -1233,6 +1596,7 @@ void device_del(struct device *dev)
+>  {
+>  	struct device *parent = dev->parent;
+>  	struct class_interface *class_intf;
+> +	struct devlink *link, *ln;
+>  
+>  	/* Notify clients of device removal.  This call must come
+>  	 * before dpm_sysfs_remove().
+> @@ -1240,6 +1604,28 @@ void device_del(struct device *dev)
+>  	if (dev->bus)
+>  		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+>  					     BUS_NOTIFY_DEL_DEVICE, dev);
+> +
+> +	/*
+> +	 * Delete all of the remaining links from this device to any other
+> +	 * devices (either consumers or suppliers).
+> +	 *
+> +	 * This requires that all links be dormant, so warn if that's no the
+> +	 * case.
+> +	 */
+> +	mutex_lock(&device_links_lock);
+> +
+> +	list_for_each_entry_safe_reverse(link, ln, &dev->consumer_links, c_node) {
+> +		WARN_ON(link->status != DEVICE_LINK_DORMANT);
+> +		devlink_del(link);
+> +	}
+> +
+> +	list_for_each_entry_safe_reverse(link, ln, &dev->supplier_links, s_node) {
+> +		WARN_ON(link->status != DEVICE_LINK_DORMANT);
+> +		devlink_del(link);
+> +	}
+> +
+> +	mutex_unlock(&device_links_lock);
+> +
+>  	dpm_sysfs_remove(dev);
+>  	if (parent)
+>  		klist_del(&dev->p->knode_parent);
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index d9e76e9205c7..7c0abeba89e9 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -249,6 +249,7 @@ static void driver_bound(struct device *dev)
+>  		 __func__, dev_name(dev));
+>  
+>  	klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
+> +	device_links_driver_bound(dev);
+>  
+>  	device_pm_check_callbacks(dev);
+>  
+> @@ -399,6 +400,7 @@ probe_failed:
+>  		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+>  					     BUS_NOTIFY_DRIVER_NOT_BOUND, dev);
+>  pinctrl_bind_failed:
+> +	device_links_no_driver(dev);
+>  	devres_release_all(dev);
+>  	driver_sysfs_remove(dev);
+>  	dev->driver = NULL;
+> @@ -489,6 +491,10 @@ int driver_probe_device(struct device_driver *drv, struct device *dev)
+>  	if (!device_is_registered(dev))
+>  		return -ENODEV;
+>  
+> +	ret = device_links_check_suppliers(dev);
+> +	if (ret)
+> +		return ret;
+> +
+>  	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+>  		 drv->bus->name, __func__, dev_name(dev), drv->name);
+>  
+> @@ -756,7 +762,7 @@ EXPORT_SYMBOL_GPL(driver_attach);
+>   * __device_release_driver() must be called with @dev lock held.
+>   * When called for a USB interface, @dev->parent lock must be held as well.
+>   */
+> -static void __device_release_driver(struct device *dev)
+> +static void __device_release_driver(struct device *dev, struct device *parent)
+>  {
+>  	struct device_driver *drv;
+>  
+> @@ -765,6 +771,25 @@ static void __device_release_driver(struct device *dev)
+>  		if (driver_allows_async_probing(drv))
+>  			async_synchronize_full();
+>  
+> +		while (device_links_busy(dev)) {
+> +			device_unlock(dev);
+> +			if (parent)
+> +				device_unlock(parent);
+> +
+> +			device_links_unbind_consumers(dev);
+> +			if (parent)
+> +				device_lock(parent);
+> +
+> +			device_lock(dev);
+> +			/*
+> +			 * A concurrent invocation of the same function might
+> +			 * have released the driver successfully while this one
+> +			 * was waiting, so check for that.
+> +			 */
+> +			if (dev->driver != drv)
+> +				return;
+> +		}
+> +
+>  		pm_runtime_get_sync(dev);
+>  
+>  		driver_sysfs_remove(dev);
+> @@ -780,6 +805,9 @@ static void __device_release_driver(struct device *dev)
+>  			dev->bus->remove(dev);
+>  		else if (drv->remove)
+>  			drv->remove(dev);
+> +
+> +		device_links_driver_gone(dev);
+> +		device_links_no_driver(dev);
+>  		devres_release_all(dev);
+>  		dev->driver = NULL;
+>  		dev_set_drvdata(dev, NULL);
+> @@ -796,16 +824,16 @@ static void __device_release_driver(struct device *dev)
+>  	}
+>  }
+>  
+> -static void device_release_driver_internal(struct device *dev,
+> -					   struct device_driver *drv,
+> -					   struct device *parent)
+> +void device_release_driver_internal(struct device *dev,
+> +				    struct device_driver *drv,
+> +				    struct device *parent)
+>  {
+>  	if (parent)
+>  		device_lock(parent);
+>  
+>  	device_lock(dev);
+>  	if (!drv || drv == dev->driver)
+> -		__device_release_driver(dev);
+> +		__device_release_driver(dev, parent);
+>  
+>  	device_unlock(dev);
+>  	if (parent)
+> @@ -818,6 +846,10 @@ static void device_release_driver_internal(struct device *dev,
+>   *
+>   * Manually detach device from driver.
+>   * When called for a USB interface, @dev->parent lock must be held.
+> + *
+> + * If this function is to be called with @dev->parent lock held, ensure that
+> + * the device's consumers are unbound in advance or that their locks can be
+> + * acquired under the @dev->parent lock.
+>   */
+>  void device_release_driver(struct device *dev)
+>  {
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 38f02814d53a..647204bd74a0 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -706,6 +706,34 @@ struct device_dma_parameters {
+>  	unsigned long segment_boundary_mask;
+>  };
+>  
+> +enum devlink_status {
+> +	DEVICE_LINK_DORMANT = 0,	/* Link not in use. */
+> +	DEVICE_LINK_AVAILABLE,		/* Supplier driver is present. */
+> +	DEVICE_LINK_ACTIVE,		/* Consumer driver is present too. */
+> +	DEVICE_LINK_CONSUMER_PROBE,	/* Consumer is probing. */
+> +	DEVICE_LINK_SUPPLIER_UNBIND,	/* Supplier is unbinding. */
+> +};
+> +
+> +/*
+> + * Device link flags.
+> + *
+> + * PERSISTENT: Do not delete the link on consumer device driver unbind.
+> + * PROBE_TIME: Assume supplier device functional when creating the link.
+> + */
+> +#define DEVICE_LINK_PERSISTENT	(1 << 0)
+> +#define DEVICE_LINK_PROBE_TIME	(1 << 1)
+> +
+> +struct devlink {
+> +	struct device *supplier;
+> +	struct list_head s_node;
+> +	struct device *consumer;
+> +	struct list_head c_node;
+> +	enum devlink_status status;
+> +	u32 flags;
+> +	spinlock_t lock;
+> +	struct rcu_head rcu_head;
+> +};
+> +
+>  /**
+>   * struct device - The basic device structure
+>   * @parent:	The device's "parent" device, the device to which it is attached.
+> @@ -731,6 +759,8 @@ struct device_dma_parameters {
+>   * 		on.  This shrinks the "Board Support Packages" (BSPs) and
+>   * 		minimizes board-specific #ifdefs in drivers.
+>   * @driver_data: Private pointer for driver specific info.
+> + * @supplier_links: Links to consumer devices.
+> + * @consumer_links: Links to supplier devices.
+>   * @power:	For device power management.
+>   * 		See Documentation/power/devices.txt for details.
+>   * @pm_domain:	Provide callbacks that are executed during system suspend,
+> @@ -797,6 +827,8 @@ struct device {
+>  					   core doesn't touch it */
+>  	void		*driver_data;	/* Driver data, set and get with
+>  					   dev_set/get_drvdata */
+> +	struct list_head	supplier_links;
+> +	struct list_head	consumer_links;
+>  	struct dev_pm_info	power;
+>  	struct dev_pm_domain	*pm_domain;
+>  
+> @@ -1113,6 +1145,10 @@ extern void device_shutdown(void);
+>  /* debugging and troubleshooting/diagnostic helpers. */
+>  extern const char *dev_driver_string(const struct device *dev);
+>  
+> +/* Device links interface. */
+> +struct devlink *device_link_add(struct device *consumer,
+> +				struct device *supplier, u32 flags);
+> +void device_link_del(struct devlink *link);
+>  
+>  #ifdef CONFIG_PRINTK
+>  
+> -- 
+> 1.9.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
