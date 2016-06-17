@@ -1,51 +1,73 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: ktime_get_ts64() splat during resume
-Date: Fri, 17 Jun 2016 23:03:46 +0200
-Message-ID: <CAJZ5v0jZypC17Qbvn3TXe5Z6M5JrGaktAwXQwAW=UEhccRv=nw@mail.gmail.com>
-References: <20160617105435.GB15997@pd.tnic> <alpine.DEB.2.11.1606171351390.5839@nanos>
- <20160617132943.GA3336@nazgul.tnic> <20160617143346.GA3912@pd.tnic>
- <CAJZ5v0gsrAGcQqTO-+E3yGsNaO+45TmX5Wn=AoYu9JxWsR1HQA@mail.gmail.com> <20160617161247.GB3912@pd.tnic>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for
+ system sleep
+Date: Fri, 17 Jun 2016 16:09:24 -0500
+Message-ID: <20160617210924.GA12254@localhost>
+References: <cover.1463134231.git.lukas@wunner.de>
+ <20ccb6cc38f872c3d56b44cc2b9776a4a39c7dc5.1463134232.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f44.google.com ([74.125.82.44]:36499 "EHLO
-	mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753145AbcFQVDs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jun 2016 17:03:48 -0400
-In-Reply-To: <20160617161247.GB3912@pd.tnic>
+Received: from mail.kernel.org ([198.145.29.136]:37466 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751129AbcFQVJ3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 Jun 2016 17:09:29 -0400
+Content-Disposition: inline
+In-Reply-To: <20ccb6cc38f872c3d56b44cc2b9776a4a39c7dc5.1463134232.git.lukas@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Logan Gunthorpe <logang@deltatee.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kees Cook <keescook@chromium.org>, Stable <stable@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Fri, Jun 17, 2016 at 6:12 PM, Borislav Petkov <bp@alien8.de> wrote:
-> On Fri, Jun 17, 2016 at 05:28:10PM +0200, Rafael J. Wysocki wrote:
->> A couple of questions:
->> - I guess this is reproducible 100% of the time?
->
-> Yap.
->
-> I took latest Linus + tip/master which has your commit.
->
->> - If you do "echo disk > /sys/power/state" instead of using s2disk,
->> does it still crash in the same way?
->
-> My suspend to disk script does:
->
-> echo 3 > /proc/sys/vm/drop_caches
-> echo "shutdown" > /sys/power/disk
-> echo "disk" > /sys/power/state
->
-> I don't use anything else for years now.
->
->> - Are both the image and boot kernels the same binary?
->
-> Yep.
+On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
+> There are devices wich are not power-managed by the platform, yet can be
 
-OK, we need to find out what's wrong, then.
+s/wich/which/
 
-First, please revert the changes in hibernate_asm_64.S alone and see
-if that makes any difference.
+> runtime suspended to D3cold with some other mechanism.  When putting the
+> system to sleep, we currently handle such devices improperly by trying
+> to transition them from D3cold to D3hot (the default power state defined
+> at the beginning of pci_target_state()).  Avoid that.
+> 
+> An example for devices affected by this are Thunderbolt controllers
+> built into Macs which can be put into D3cold with nonstandard ACPI
+> methods.
+> 
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
 
-Hibernation should still work then most of the time, but the bug fixed
-by this commit will be back.
+This needs an ack from Rafael.
+
+Naive question: why is the default target_state PCI_D3hot?
+
+> ---
+>  drivers/pci/pci.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 791dfe7..6af9911 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -1943,6 +1943,8 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
+>  			      && !(dev->pme_support & (1 << target_state)))
+>  				target_state--;
+>  		}
+> +	} else if (dev->current_state == PCI_D3cold) {
+> +		target_state = PCI_D3cold;
+>  	}
+
+This only covers the case of !device_may_wakeup().  So I guess
+device_may_wakeup() is false for these Thunderbolt controllers.  Is
+there a reason you don't want to do this check for devices that may
+wakeup?
+
+Sorry, more naive questions.  I don't know anything about power
+management, and it all looks like black magic to me.
+
+>  	return target_state;
+> -- 
+> 2.8.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
