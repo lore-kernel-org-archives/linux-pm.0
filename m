@@ -1,89 +1,134 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2] idle_intel: Add Denverton
-Date: Fri, 17 Jun 2016 01:28:34 -0400
-Message-ID: <264f6eef366c0669cf9c8b1850977e13be85160a.1466141080.git.len.brown@intel.com>
-References: <20160617052834.26064-1-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160617052834.26064-1-lenb@kernel.org>
-In-Reply-To: <cf53e700fa10ffcc6fb2333057e88bac01821040.1466141080.git.len.brown@intel.com>
-References: <cf53e700fa10ffcc6fb2333057e88bac01821040.1466141080.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Jacob Pan <jacob.jun.pan@linux.intel.com>, Len Brown <len.brown@intel.com>
+From: "Nayak, Rajendra" <rnayak@codeaurora.org>
+Subject: Re: [PATCH v6 00/11] qcom: Add support for TSENS driver
+Date: Fri, 17 Jun 2016 11:29:15 +0530
+Message-ID: <576391B3.7090508@codeaurora.org>
+References: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
+ <575A57F8.6060004@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <575A57F8.6060004@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: edubezval@gmail.com, andy.gross@linaro.org
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Hey Eduardo,
 
-Denverton is an Intel Atom based micro server which shares the same
-Goldmont architecture as Broxton. The available C-states on
-Denverton is a subset of Broxton with only C1, C1e, and C6.
+On 6/10/2016 11:32 AM, Rajendra Nayak wrote:
+> Eduardo,
+>
+> On 05/05/2016 02:21 PM, Rajendra Nayak wrote:
+>> Current set of patches apply on 4.6-rc6. Fixes for the nvmem apis
+>> are now posted [1] and queued in -next [2]
+>> Patches [1-6] will need to be merged via thermal tree/Eduardo.
+>
+> Any plans to pull these in for 4.8?
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/idle/intel_idle.c | 35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+These patches have been on the list for quite a while, and they
+do not have any outstanding dependencies or comments to be
+addressed. I would really hope to see these in for 4.8.
+Let me know if there is something you want me to address before
+you pull them in.
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index f93788f..46fed5a 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -825,6 +825,35 @@ static struct cpuidle_state bxt_cstates[] = {
- 		.enter = NULL }
- };
- 
-+static struct cpuidle_state dnv_cstates[] = {
-+	{
-+		.name = "C1-DNV",
-+		.desc = "MWAIT 0x00",
-+		.flags = MWAIT2flg(0x00),
-+		.exit_latency = 2,
-+		.target_residency = 2,
-+		.enter = &intel_idle,
-+		.enter_freeze = intel_idle_freeze, },
-+	{
-+		.name = "C1E-DNV",
-+		.desc = "MWAIT 0x01",
-+		.flags = MWAIT2flg(0x01),
-+		.exit_latency = 10,
-+		.target_residency = 20,
-+		.enter = &intel_idle,
-+		.enter_freeze = intel_idle_freeze, },
-+	{
-+		.name = "C6-DNV",
-+		.desc = "MWAIT 0x20",
-+		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
-+		.exit_latency = 50,
-+		.target_residency = 500,
-+		.enter = &intel_idle,
-+		.enter_freeze = intel_idle_freeze, },
-+	{
-+		.enter = NULL }
-+};
-+
- /**
-  * intel_idle
-  * @dev: cpuidle_device
-@@ -1014,6 +1043,11 @@ static const struct idle_cpu idle_cpu_bxt = {
- 	.disable_promotion_to_c1e = true,
- };
- 
-+static const struct idle_cpu idle_cpu_dnv = {
-+	.state_table = dnv_cstates,
-+	.disable_promotion_to_c1e = true,
-+};
-+
- #define ICPU(model, cpu) \
- 	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
- 
-@@ -1050,6 +1084,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
- 	ICPU(0x55, idle_cpu_skx),
- 	ICPU(0x57, idle_cpu_knl),
- 	ICPU(0x5c, idle_cpu_bxt),
-+	ICPU(0x5f, idle_cpu_dnv),
- 	{}
- };
- 
--- 
-2.9.0
+regards,
+Rajendra
+
+>
+> regards,
+> Rajendra
+>
+>> Patches [7-11] will need to go via qcom-msm tree/Andy.
+>>
+>> Changes since v5:
+>> * Minor review fixes from Eduardo
+>>
+>> Changes since v4:
+>> * dropped qcom,tsens-slopes binding, used coefficients instead
+>> * dropped qcom,sensor-id binding
+>> * Added support for msm8996 family
+>> * Other minor review fixes from v4
+>>
+>> Changes since v3:
+>> * Dropped 'clk: qcom: create virtual child device for TSENS' which
+>> is picked up by Stephen
+>> * Updated GCC bindings with optional TSENS properties
+>>
+>> Changes since v2:
+>> * Minor review fixes from Stephen/Punit and rebase on 4.3-rc4
+>>
+>> Changes since v1:
+>> * Created virtual tsens device from gcc driver for 8960,
+>> with DT having a single node for gcc and tsens
+>> * Minor fixes with rebasing on 4.3-rc1
+>>
+>> Changes since RFC:
+>> * Added support for 8916 and 8084
+>> * Based off the latest nvmem framework patches [1]
+>> * Minor review fixes for comments mostly from Lina
+>>
+>> This is an attempt to have a single TSENS driver for
+>> the different versions of the TSENS IP that exist, on
+>> different qcom msm/apq SoCs'
+>> Support is added for msm8916, msm8960, msm8974 and msm8996 families.
+>>
+>> A lot of the work is based of original code from Stephen Boyd
+>> and Siddartha Mohanadoss. I have also picked some of what
+>> Narendran Rajan did in his attempt to upstream the support
+>> for 8960 family. I could not keep the original authorship on
+>> any of the patches because I ended up moving the code around
+>> quite a bit in an effort to have a single driver for the
+>> various devices. I would be glad to change the authorship
+>> for any of the patches if needed.
+>>
+>> [1] https://lkml.org/lkml/2016/4/24/103
+>> [2] git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git char-misc-next
+>>
+>> Rajendra Nayak (11):
+>>    thermal: qcom: tsens: Add a skeletal TSENS drivers
+>>    thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
+>>    thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
+>>    thermal: core: export apis to get slope and offset
+>>    thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
+>>    thermal: qcom: tsens-8996: Add support for 8996 family of SoCs
+>>    arm: dts: msm8974: Add thermal zones, tsens and qfprom nodes
+>>    arm: dts: apq8064: Add thermal zones, tsens and qfprom nodes
+>>    arm: dts: apq8084: Add thermal zones, tsens and qfprom nodes
+>>    arm64: dts: msm8916: Add thermal zones, tsens and qfprom nodes
+>>    arm64: dts: msm8996: Add thermal zones, tsens and qfprom nodes
+>>
+>>   .../devicetree/bindings/clock/qcom,gcc.txt         |  18 ++
+>>   .../devicetree/bindings/thermal/qcom-tsens.txt     |  21 ++
+>>   Documentation/thermal/sysfs-api.txt                |  12 +
+>>   arch/arm/boot/dts/qcom-apq8064.dtsi                | 103 ++++++++
+>>   arch/arm/boot/dts/qcom-apq8084.dtsi                | 103 ++++++++
+>>   arch/arm/boot/dts/qcom-msm8974.dtsi                | 103 ++++++++
+>>   arch/arm64/boot/dts/qcom/msm8916.dtsi              |  64 +++++
+>>   arch/arm64/boot/dts/qcom/msm8996.dtsi              |  92 +++++++
+>>   drivers/thermal/Kconfig                            |   5 +
+>>   drivers/thermal/Makefile                           |   1 +
+>>   drivers/thermal/qcom/Kconfig                       |  11 +
+>>   drivers/thermal/qcom/Makefile                      |   2 +
+>>   drivers/thermal/qcom/tsens-8916.c                  | 113 ++++++++
+>>   drivers/thermal/qcom/tsens-8960.c                  | 292 +++++++++++++++++++++
+>>   drivers/thermal/qcom/tsens-8974.c                  | 244 +++++++++++++++++
+>>   drivers/thermal/qcom/tsens-8996.c                  |  84 ++++++
+>>   drivers/thermal/qcom/tsens-common.c                | 141 ++++++++++
+>>   drivers/thermal/qcom/tsens.c                       | 200 ++++++++++++++
+>>   drivers/thermal/qcom/tsens.h                       |  92 +++++++
+>>   drivers/thermal/thermal_core.c                     |  30 +++
+>>   include/linux/thermal.h                            |   8 +
+>>   21 files changed, 1739 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+>>   create mode 100644 drivers/thermal/qcom/Kconfig
+>>   create mode 100644 drivers/thermal/qcom/Makefile
+>>   create mode 100644 drivers/thermal/qcom/tsens-8916.c
+>>   create mode 100644 drivers/thermal/qcom/tsens-8960.c
+>>   create mode 100644 drivers/thermal/qcom/tsens-8974.c
+>>   create mode 100644 drivers/thermal/qcom/tsens-8996.c
+>>   create mode 100644 drivers/thermal/qcom/tsens-common.c
+>>   create mode 100644 drivers/thermal/qcom/tsens.c
+>>   create mode 100644 drivers/thermal/qcom/tsens.h
+>>
+>
