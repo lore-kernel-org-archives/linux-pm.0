@@ -1,77 +1,67 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v3 3/7] max8903: cleans up confusing relationship between
- dc_valid, dok and dcm.
-Date: Fri, 17 Jun 2016 08:42:09 +0200
-Message-ID: <57639BC1.4060604@samsung.com>
-References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
- <1466139626-51434-1-git-send-email-chris@lapa.com.au>
- <1466139626-51434-4-git-send-email-chris@lapa.com.au>
- <57639832.6000201@samsung.com>
- <32bde516-87b5-bb63-c6a3-1ec043758904@lapa.com.au>
+From: Johannes Stezenbach <js@sig21.net>
+Subject: Re: x86 hibernate, resume with different kernel version
+Date: Fri, 17 Jun 2016 09:35:00 +0200
+Message-ID: <20160617073500.GA9368@sig21.net>
+References: <20160616100330.GA4954@sig21.net>
+ <CAJZ5v0jWStdJDg_HENAMOiK3SaV=SHm6Zy-p6oMDvOUUZJRD+w@mail.gmail.com>
+ <20160616190621.GA3849@sig21.net>
+ <CAJZ5v0gUFyOi4ND3GA5HX96ffh9pZpO3mOjyPkYLgNXk+EnscA@mail.gmail.com>
+ <CAJZ5v0ifvgqtVhK52DCCbsPxWbpHTXVo4WDEZJbHo2-rvM2xNw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <32bde516-87b5-bb63-c6a3-1ec043758904@lapa.com.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: chris@lapa.com.au, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.sig21.net ([80.244.240.74]:58606 "EHLO mail.sig21.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751711AbcFQHfG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 17 Jun 2016 03:35:06 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0ifvgqtVhK52DCCbsPxWbpHTXVo4WDEZJbHo2-rvM2xNw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
 
-On 06/17/2016 08:28 AM, Chris Lapa wrote:
-> On 17/06/2016 4:26 PM, Krzysztof Kozlowski wrote:
->> On 06/17/2016 07:00 AM, Chris Lapa wrote:
->>> From: Chris Lapa <chris@lapa.com.au>
->>>
->>> The max8903_charger.h file indicated that dcm and dok were not optional
->>> when dc_valid is set.
->>>
->>> It makes sense to have dok as a compulsory pin when dc_valid is given.
->>> However dcm can be optionally wired to a fixed level especially when the
->>> circuit is configured for dc power exclusively.
->>>
->>> The previous implementation already allowed for this somewhat,
->>> however no
->>> error was given if dok wasn't given whilst dc_valid was.
->>>
->>> The new implementation enforces dok presence when dc_valid is given.
->>> Whilst
->>> allowing dcm to be optional.
->>>
->>> Signed-off-by: Chris Lapa <chris@lapa.com.au>
->>> ---
->>>  drivers/power/max8903_charger.c       | 23 ++++++++++-------------
->>>  include/linux/power/max8903_charger.h |  6 +++---
->>>  2 files changed, 13 insertions(+), 16 deletions(-)
->>>
->>> diff --git a/drivers/power/max8903_charger.c
->>> b/drivers/power/max8903_charger.c
->>> index 0a5b0e1..dbd911c4 100644
->>> --- a/drivers/power/max8903_charger.c
->>> +++ b/drivers/power/max8903_charger.c
->>> @@ -211,27 +211,24 @@ static int max8903_probe(struct platform_device
->>> *pdev)
->>>      }
->>>
->>>      if (pdata->dc_valid) {
->>> -        if (pdata->dok && gpio_is_valid(pdata->dok) &&
->>> -                pdata->dcm && gpio_is_valid(pdata->dcm)) {
->>> +        if (pdata->dok && gpio_is_valid(pdata->dok)) {
->>>              gpio = pdata->dok; /* PULL_UPed Interrupt */
->>>              ta_in = gpio_get_value(gpio) ? 0 : 1;
->>> +        } else {
->>> +            dev_err(dev, "When DC is wired, DOK should"
->>> +                    " be wired as well.\n");
->>
->> Just found one nit. Don't split the strings.
->>         dev_err(dev,
->>                 "When DC is wired, DOK should be wired as well.\n");
-> I saw that one as well when I ran checkpatch, however I thought if I
-> changed it then I would get a warning about the line being > 80 chars.
-> So wasn't sure which direction to go.
+On Fri, Jun 17, 2016 at 02:53:28AM +0200, Rafael J. Wysocki wrote:
+> On Fri, Jun 17, 2016 at 12:00 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > On Thu, Jun 16, 2016 at 9:06 PM, Johannes Stezenbach <js@sig21.net> wrote:
+> >> On Thu, Jun 16, 2016 at 02:11:48PM +0200, Rafael J. Wysocki wrote:
+> >>> On Thu, Jun 16, 2016 at 12:03 PM, Johannes Stezenbach <js@sig21.net> wrote:
+> >>> > it's not important for me but I hibernated kernel v4.5.7
+> >>> > and inadvertantly resumed using v4.6.2, and ISTR this
+> >>> > should work (confirmed by looking into git where I found
+> >>> > commit cc456c4e7cac3837a86aaa7ca3cb9f488d44d196).
+> >>> >
+> >>> > My swap is an LVM volume inside dm-crypt, on boot the kernel read
+> >>> > the resume image but then immediately reset and invalidated it.
+> >>> > I'm using Debian sid, the initrd calls /bin/resume from
+> >>> > klibc-utils package.
+> >>> >
+> >>> > So, should this still work?  I couldn't find any
+> >>> > information about it.
+> >>>
+> >>> It should in theory, but may not in fact due to bugs discovered
+> >>> recently.  This patch should help:
+> >>> https://patchwork.kernel.org/patch/9172981/ (it has to be applied to
+> >>> both the image and boot kernels).
+> >>
+> >> I applied it to both the v4.5.7 and v4.6.2 kernels, booted
+> >> v4.5.7, hibernated, booted v4.6.2 to resume: still resets.
+> >
+> > Well, it looks broken now, but it used to work at one point at least.
+> > I need to investigate a bit when the time permits.
+> 
+> So I tried 4.6.0 and 4.7-rc3, both with
+> https://patchwork.kernel.org/patch/9172981/ applied, and it worked for
+> me.
+> 
+> On x86-64 there's nothing fundamentally preventing a different kernel
+> from being used as a boot kernel for resume from hibernation (as long
+> as it uses the same header format as the image kernel), but
+> incompatibilities in device drivers are not impossible (although they
+> shouldn't matter in theory).
 
-Checkpatch shouldn't complain on strings so if you move the string to
-next line, it should be ok.
+OK, knowing it should work is enough since the use case
+is not relly important for me.
 
-Best regards,
-Krzysztof
+Thanks,
+Johannes
