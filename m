@@ -1,61 +1,54 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: ktime_get_ts64() splat during resume
-Date: Fri, 17 Jun 2016 18:12:47 +0200
-Message-ID: <20160617161247.GB3912@pd.tnic>
-References: <20160617105435.GB15997@pd.tnic>
- <alpine.DEB.2.11.1606171351390.5839@nanos>
- <20160617132943.GA3336@nazgul.tnic>
- <20160617143346.GA3912@pd.tnic>
- <CAJZ5v0gsrAGcQqTO-+E3yGsNaO+45TmX5Wn=AoYu9JxWsR1HQA@mail.gmail.com>
+From: Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH 08/12] doc: binding: pwrseq-usb-generic: add binding doc
+ for generic usb power sequence driver
+Date: Fri, 17 Jun 2016 12:16:48 -0500
+Message-ID: <CAL_JsqLvs0s2TyfqPM5vtmyY81_X84VjCGjsGYbTgT4syOfp9Q@mail.gmail.com>
+References: <1466158165-9380-1-git-send-email-peter.chen@nxp.com> <1466158165-9380-9-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gsrAGcQqTO-+E3yGsNaO+45TmX5Wn=AoYu9JxWsR1HQA@mail.gmail.com>
-Sender: stable-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Logan Gunthorpe <logang@deltatee.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kees Cook <keescook@chromium.org>, Stable <stable@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <1466158165-9380-9-git-send-email-peter.chen@nxp.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Peter Chen <peter.chen@nxp.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Stephen Boyd <stephen.boyd@linaro.org>, oscar@naiandei.net, Arnd Bergmann <arnd@arndb.de>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Linux USB List <linux-usb@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, troy.kisky@boundarydevices.com, Javier Martinez Canillas <javier@osg.samsung.com>, Philipp Zabel <p.zabel@pengutronix.de>, Fabio Estevam <festevam@gmai>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 17, 2016 at 05:28:10PM +0200, Rafael J. Wysocki wrote:
-> A couple of questions:
-> - I guess this is reproducible 100% of the time?
+On Fri, Jun 17, 2016 at 5:09 AM, Peter Chen <peter.chen@nxp.com> wrote:
+> Add binding doc for generic usb power sequence driver, and update
+> generic usb device binding-doc accordingly.
+>
+> Signed-off-by: Peter Chen <peter.chen@nxp.com>
+> ---
+>  .../bindings/power/pwrseq/pwrseq-usb-generic.txt   | 31 ++++++++++++++++++++++
+>  .../devicetree/bindings/usb/usb-device.txt         |  2 ++
+>  2 files changed, 33 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
+>
+> diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
+> new file mode 100644
+> index 0000000..8ad98382
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
+> @@ -0,0 +1,31 @@
+> +The power sequence for generic USB Devices
+> +
+> +Some hard-wired USB devices need to do power sequence to let the
+> +device work normally, the typical power sequence like: enable USB
+> +PHY clock, toggle reset pin, etc. But current Linux USB driver
+> +lacks of such code to do it, it may cause some hard-wired USB devices
+> +works abnormal or can't be recognized by controller at all. The
+> +power sequence will be done before this device can be found at USB
+> +bus.
+> +
+> +Required properties:
+> +- compatible : contains "usb-pwrseq-generic".
 
-Yap.
+In case I have not been clear, no.
 
-I took latest Linus + tip/master which has your commit.
+I am not going to accept anything along the lines of the current mmc
+pwrseq. I am basically okay with Krzysztof's proposal as it is *only*
+an added property and not a duplication of information. I'd suggest
+you figure out how to make the kernel work with that rather than
+trying to work-around whatever kernel limitations there are.
 
-> - If you do "echo disk > /sys/power/state" instead of using s2disk,
-> does it still crash in the same way?
-
-My suspend to disk script does:
-
-echo 3 > /proc/sys/vm/drop_caches
-echo "shutdown" > /sys/power/disk
-echo "disk" > /sys/power/state
-
-I don't use anything else for years now.
-
-> - Are both the image and boot kernels the same binary?
-
-Yep.
-
-> Sure.  I thought Tony would pick them up.
-
-Oh ok, next time I'll pester him.
-
-:-)
-
-But seriously, should we route the RAS-relevant stuff touching
-drivers/acpi/apei/ through our tree instead? Provided you're fine with
-them?
-
-This way we'll unload some of the burden off you...
-
-Thanks!
-
--- 
-Regards/Gruss,
-    Boris.
-
-ECO tip #101: Trim your mails when you reply.
+Rob
