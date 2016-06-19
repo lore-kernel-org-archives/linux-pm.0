@@ -1,220 +1,56 @@
-From: Chris Lapa <chris-oDmnclXj83W6c6uEtOJ/EA@public.gmane.org>
-Subject: [PATCH v4 5/7] max8903: removes non zero validity checks on gpios.
-Date: Mon, 20 Jun 2016 08:27:20 +1000
-Message-ID: <1466375242-38354-6-git-send-email-chris@cpdesign.com.au>
+From: Chris Lapa <chris@lapa.com.au>
+Subject: [PATCH v4 1/7] max8903: adds documentation for device tree bindings.
+Date: Mon, 20 Jun 2016 08:27:16 +1000
+Message-ID: <1466375242-38354-2-git-send-email-chris@cpdesign.com.au>
 References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
  <1466375242-38354-1-git-send-email-chris@cpdesign.com.au>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1466375242-38354-1-git-send-email-chris-DtE7ei5U7Kg0n/F98K4Iww@public.gmane.org>
-In-Reply-To: <1464849897-21527-3-git-send-email-chris-oDmnclXj83W6c6uEtOJ/EA@public.gmane.org>
-References: <1464849897-21527-3-git-send-email-chris-oDmnclXj83W6c6uEtOJ/EA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Chris Lapa <chris-oDmnclXj83W6c6uEtOJ/EA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1466375242-38354-1-git-send-email-chris@cpdesign.com.au>
+In-Reply-To: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
+References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
+Sender: linux-kernel-owner@vger.kernel.org
+To: k.kozlowski@samsung.com, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chris Lapa <chris@lapa.com.au>
 List-Id: linux-pm@vger.kernel.org
 
-From: Chris Lapa <chris-oDmnclXj83W6c6uEtOJ/EA@public.gmane.org>
+From: Chris Lapa <chris@lapa.com.au>
 
-Prior to this commit a zero gpio was treated as invalid. Whereas
-gpio_is_valid() will treat a zero gpio as valid.
-
-This commit removes the confusion and explicitly uses gpio_is_valid()
-throughout. Which in turn results in several of the error messages becoming
-redundant and thus removed.
-
-Signed-off-by: Chris Lapa <chris-oDmnclXj83W6c6uEtOJ/EA@public.gmane.org>
+Signed-off-by: Chris Lapa <chris@lapa.com.au>
 ---
- drivers/power/max8903_charger.c | 115 ++++++++++++++++------------------------
- 1 file changed, 47 insertions(+), 68 deletions(-)
+ .../devicetree/bindings/power/max8903-charger.txt  | 25 ++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/max8903-charger.txt
 
-diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
-index 3f35593..643a87a 100644
---- a/drivers/power/max8903_charger.c
-+++ b/drivers/power/max8903_charger.c
-@@ -53,7 +53,7 @@ static int max8903_get_property(struct power_supply *psy,
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
- 		val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
--		if (data->pdata->chg) {
-+		if (gpio_is_valid(data->pdata->chg)) {
- 			if (gpio_get_value(data->pdata->chg) == 0)
- 				val->intval = POWER_SUPPLY_STATUS_CHARGING;
- 			else if (data->usb_in || data->ta_in)
-@@ -93,11 +93,11 @@ static irqreturn_t max8903_dcin(int irq, void *_data)
- 	data->ta_in = ta_in;
- 
- 	/* Set Current-Limit-Mode 1:DC 0:USB */
--	if (pdata->dcm)
-+	if (gpio_is_valid(pdata->dcm))
- 		gpio_set_value(pdata->dcm, ta_in ? 1 : 0);
- 
- 	/* Charger Enable / Disable (cen is negated) */
--	if (pdata->cen)
-+	if (gpio_is_valid(pdata->cen))
- 		gpio_set_value(pdata->cen, ta_in ? 0 :
- 				(data->usb_in ? 0 : 1));
- 
-@@ -136,7 +136,7 @@ static irqreturn_t max8903_usbin(int irq, void *_data)
- 	/* Do not touch Current-Limit-Mode */
- 
- 	/* Charger Enable / Disable (cen is negated) */
--	if (pdata->cen)
-+	if (gpio_is_valid(pdata->cen))
- 		gpio_set_value(pdata->cen, usb_in ? 0 :
- 				(data->ta_in ? 0 : 1));
- 
-@@ -190,7 +190,7 @@ static int max8903_setup_gpios(struct platform_device *pdev)
- 	int usb_in = 0;
- 
- 	if (pdata->dc_valid) {
--		if (pdata->dok && gpio_is_valid(pdata->dok)) {
-+		if (gpio_is_valid(pdata->dok)) {
- 			ret = devm_gpio_request(dev, pdata->dok,
- 						data->psy_desc.name);
- 			if (ret) {
-@@ -208,27 +208,21 @@ static int max8903_setup_gpios(struct platform_device *pdev)
- 		}
- 	}
- 
--	if (pdata->dcm) {
--		if (gpio_is_valid(pdata->dcm)) {
--			ret = devm_gpio_request(dev, pdata->dcm,
--						data->psy_desc.name);
--			if (ret) {
--				dev_err(dev,
--					"Failed GPIO request for dcm: %d err %d\n",
--					pdata->dcm, ret);
--				return ret;
--			}
--
--			gpio = pdata->dcm; /* Output */
--			gpio_set_value(gpio, ta_in);
--		} else {
--			dev_err(dev, "Invalid pin: dcm.\n");
--			return -EINVAL;
-+	if (gpio_is_valid(pdata->dcm)) {
-+		ret = devm_gpio_request(dev, pdata->dcm, data->psy_desc.name);
-+		if (ret) {
-+			dev_err(dev,
-+				"Failed GPIO request for dcm: %d err %d\n",
-+				pdata->dcm, ret);
-+			return ret;
- 		}
+diff --git a/Documentation/devicetree/bindings/power/max8903-charger.txt b/Documentation/devicetree/bindings/power/max8903-charger.txt
+new file mode 100644
+index 0000000..aea1dd2a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/max8903-charger.txt
+@@ -0,0 +1,25 @@
++Maxim Semiconductor MAX8903 Battery Charger bindings
 +
-+		gpio = pdata->dcm; /* Output */
-+		gpio_set_value(gpio, ta_in);
- 	}
- 
- 	if (pdata->usb_valid) {
--		if (pdata->uok && gpio_is_valid(pdata->uok)) {
-+		if (gpio_is_valid(pdata->uok)) {
- 			ret = devm_gpio_request(dev, pdata->uok,
- 						data->psy_desc.name);
- 			if (ret) {
-@@ -247,60 +241,45 @@ static int max8903_setup_gpios(struct platform_device *pdev)
- 		}
- 	}
- 
--	if (pdata->cen) {
--		if (gpio_is_valid(pdata->cen)) {
--			ret = devm_gpio_request(dev, pdata->cen,
--						data->psy_desc.name);
--			if (ret) {
--				dev_err(dev,
--					"Failed GPIO request for cen: %d err %d\n",
--					pdata->cen, ret);
--				return ret;
--			}
--
--			gpio_set_value(pdata->cen, (ta_in || usb_in) ? 0 : 1);
--		} else {
--			dev_err(dev, "Invalid pin: cen.\n");
--			return -EINVAL;
-+	if (gpio_is_valid(pdata->cen)) {
-+		ret = devm_gpio_request(dev, pdata->cen, data->psy_desc.name);
-+		if (ret) {
-+			dev_err(dev,
-+				"Failed GPIO request for cen: %d err %d\n",
-+				pdata->cen, ret);
-+			return ret;
- 		}
++Required properties:
++- compatible: "maxim,max8903-charger" for MAX8903 Battery Charger
++- dok-gpios: Valid DC power has been detected, optional if uok-gpios is provided
++- uok-gpios: Valid USB power has been detected, optional if dok-gpios is provided
 +
-+		gpio_set_value(pdata->cen, (ta_in || usb_in) ? 0 : 1);
- 	}
- 
--	if (pdata->chg) {
--		if (gpio_is_valid(pdata->chg)) {
--			ret = devm_gpio_request(dev, pdata->chg,
--						data->psy_desc.name);
--			if (ret) {
--				dev_err(dev,
--					"Failed GPIO request for chg: %d err %d\n",
--					pdata->chg, ret);
--				return ret;
--			}
-+	if (gpio_is_valid(pdata->chg)) {
-+		ret = devm_gpio_request(dev, pdata->chg, data->psy_desc.name);
-+		if (ret) {
-+			dev_err(dev,
-+				"Failed GPIO request for chg: %d err %d\n",
-+				pdata->chg, ret);
-+			return ret;
- 		}
- 	}
- 
--	if (pdata->flt) {
--		if (gpio_is_valid(pdata->flt)) {
--			ret = devm_gpio_request(dev, pdata->flt,
--						data->psy_desc.name);
--			if (ret) {
--				dev_err(dev,
--					"Failed GPIO request for flt: %d err %d\n",
--					pdata->flt, ret);
--				return ret;
--			}
-+	if (gpio_is_valid(pdata->flt)) {
-+		ret = devm_gpio_request(dev, pdata->flt, data->psy_desc.name);
-+		if (ret) {
-+			dev_err(dev,
-+				"Failed GPIO request for flt: %d err %d\n",
-+				pdata->flt, ret);
-+			return ret;
- 		}
- 	}
- 
--	if (pdata->usus) {
--		if (gpio_is_valid(pdata->usus)) {
--			ret = devm_gpio_request(dev, pdata->usus,
--						data->psy_desc.name);
--			if (ret) {
--				dev_err(dev,
--					"Failed GPIO request for usus: %d err %d\n",
--					pdata->usus, ret);
--				return ret;
--			}
-+	if (gpio_is_valid(pdata->usus)) {
-+		ret = devm_gpio_request(dev, pdata->usus, data->psy_desc.name);
-+		if (ret) {
-+			dev_err(dev,
-+				"Failed GPIO request for usus: %d err %d\n",
-+				pdata->usus, ret);
-+			return ret;
- 		}
- 	}
- 
-@@ -385,7 +364,7 @@ static int max8903_probe(struct platform_device *pdev)
- 		}
- 	}
- 
--	if (pdata->flt) {
-+	if (gpio_is_valid(pdata->flt)) {
- 		ret = devm_request_threaded_irq(dev, gpio_to_irq(pdata->flt),
- 					NULL, max8903_fault,
- 					IRQF_TRIGGER_FALLING |
++Optional properties:
++- cen-gpios: Charge enable pin
++- chg-gpios: Charger status pin
++- flt-gpios: Fault pin
++- dcm-gpios: Current limit mode setting (DC or USB)
++- usus-gpios: USB suspend pin
++
++
++Example:
++
++	max8903-charger {
++		compatible = "maxim,max8903-charger";
++		dok-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
++		flt-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>;
++		chg-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
++		cen-gpios = <&gpio2 5 GPIO_ACTIVE_LOW>;
++		status = "okay";
++	};
 -- 
 1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
