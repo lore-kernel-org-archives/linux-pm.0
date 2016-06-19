@@ -1,192 +1,207 @@
 From: Chris Lapa <chris@lapa.com.au>
-Subject: Re: [PATCH v3 4/7] max8903: adds requesting of gpios.
-Date: Sun, 19 Jun 2016 23:51:07 +1000
-Message-ID: <3ec2ecbd-8f88-99bf-0d5d-bf3252cd61fd@lapa.com.au>
+Subject: Re: [PATCH v3 7/7] max8903: adds support for initiation via device
+ tree.
+Date: Sun, 19 Jun 2016 23:52:27 +1000
+Message-ID: <9e2fe4a3-05b0-1382-2932-151231ccecd3@lapa.com.au>
 References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
  <1466139626-51434-1-git-send-email-chris@lapa.com.au>
- <1466139626-51434-5-git-send-email-chris@lapa.com.au>
- <576398F7.4050704@samsung.com>
+ <1466139626-51434-8-git-send-email-chris@lapa.com.au>
+ <57639B8A.1030109@samsung.com>
 Reply-To: chris@lapa.com.au
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f67.google.com ([209.85.220.67]:33782 "EHLO
-	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbcFSNvO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 19 Jun 2016 09:51:14 -0400
-Received: by mail-pa0-f67.google.com with SMTP id ts6so9095948pac.0
-        for <linux-pm@vger.kernel.org>; Sun, 19 Jun 2016 06:51:14 -0700 (PDT)
-In-Reply-To: <576398F7.4050704@samsung.com>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:36199 "EHLO
+	mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbcFSNwe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 19 Jun 2016 09:52:34 -0400
+Received: by mail-pf0-f193.google.com with SMTP id i123so6630192pfg.3
+        for <linux-pm@vger.kernel.org>; Sun, 19 Jun 2016 06:52:34 -0700 (PDT)
+In-Reply-To: <57639B8A.1030109@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
 Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 17/06/2016 4:30 PM, Krzysztof Kozlowski wrote:
+On 17/06/2016 4:41 PM, Krzysztof Kozlowski wrote:
 > On 06/17/2016 07:00 AM, Chris Lapa wrote:
 >> From: Chris Lapa <chris@lapa.com.au>
 >>
->> This change ensures all gpios are available for the driver to use.
+>> Adds support for device tree to setup a max8903 battery charger. DC and USB
+>> validity are determined by looking the presence of the dok and uok gpios.
 >>
 >> Signed-off-by: Chris Lapa <chris@lapa.com.au>
 >> ---
->>  drivers/power/max8903_charger.c | 79 ++++++++++++++++++++++++++++++++++++-----
->>  1 file changed, 70 insertions(+), 9 deletions(-)
+>>  drivers/power/max8903_charger.c | 217 +++++++++++++++++++++++++++-------------
+>>  1 file changed, 145 insertions(+), 72 deletions(-)
 >>
 >> diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
->> index dbd911c4..c068efe 100644
+>> index 5ddc667..3c59213 100644
 >> --- a/drivers/power/max8903_charger.c
 >> +++ b/drivers/power/max8903_charger.c
->> @@ -212,6 +212,16 @@ static int max8903_probe(struct platform_device *pdev)
+>> @@ -23,6 +23,9 @@
+>>  #include <linux/gpio.h>
+>>  #include <linux/interrupt.h>
+>>  #include <linux/module.h>
+>> +#include <linux/of.h>
+>> +#include <linux/of_device.h>
+>> +#include <linux/of_gpio.h>
+>>  #include <linux/slab.h>
+>>  #include <linux/power_supply.h>
+>>  #include <linux/platform_device.h>
+>> @@ -75,6 +78,7 @@ static int max8903_get_property(struct power_supply *psy,
+>>  	default:
+>>  		return -EINVAL;
+>>  	}
+>> +
+>>  	return 0;
+>>  }
 >>
->>  	if (pdata->dc_valid) {
->>  		if (pdata->dok && gpio_is_valid(pdata->dok)) {
->> +			ret = devm_gpio_request(dev,
->> +						pdata->dok,
+>> @@ -179,48 +183,116 @@ static irqreturn_t max8903_fault(int irq, void *_data)
+>>  	return IRQ_HANDLED;
+>>  }
+>>
+>> +static struct max8903_pdata *max8903_parse_dt_data(
+>> +		struct device *dev)
+>> +{
+>> +	struct device_node *of_node = dev->of_node;
 >
-> No need to split these two arguments. They fit in 80 chars.
+> Common naming convention for device_node is just 'np':
+> 	struct device_node *np = dev->of_node;
 >
->> +						data->psy_desc.name);
->> +			if (ret) {
->> +				dev_err(dev,
->> +						"Failed GPIO request for dok: %d err %d\n",
->> +						pdata->dok, ret);
+> It is shorter and already spread in the kernel.
 >
-> Indentation here is wrong. These should be aligned to first argument (dev).
+>> +	struct max8903_pdata *pdata = NULL;
+>> +
+>> +	if (!of_node)
+>> +		return NULL;
+>> +
+>> +	pdata = devm_kzalloc(dev, sizeof(*pdata),
+>> +				GFP_KERNEL);
 >
->> +				return -EINVAL;
+> No need to break the line.
 >
-> Return 'ret'.
+>> +	if (!pdata)
+>> +		return NULL;
+>> +
+>> +	pdata->dc_valid = false;
+>> +	pdata->usb_valid = false;
+>> +
+>> +	pdata->cen = of_get_named_gpio(of_node, "cen-gpios", 0);
+>> +	if (!gpio_is_valid(pdata->cen))
+>> +		pdata->cen = -EINVAL;
+>> +
+>> +	pdata->chg = of_get_named_gpio(of_node, "chg-gpios", 0);
+>> +	if (!gpio_is_valid(pdata->chg))
+>> +		pdata->chg = -EINVAL;
+>> +
+>> +	pdata->flt = of_get_named_gpio(of_node, "flt-gpios", 0);
+>> +	if (!gpio_is_valid(pdata->flt))
+>> +		pdata->flt = -EINVAL;
+>> +
+>> +	pdata->usus = of_get_named_gpio(of_node, "usus-gpios", 0);
+>> +	if (!gpio_is_valid(pdata->usus))
+>> +		pdata->usus = -EINVAL;
+>> +
+>> +	pdata->dcm = of_get_named_gpio(of_node, "dcm-gpios", 0);
+>> +	if (!gpio_is_valid(pdata->dcm))
+>> +		pdata->dcm = -EINVAL;
+>> +
+>> +	pdata->dok = of_get_named_gpio(of_node, "dok-gpios", 0);
+>> +	if (!gpio_is_valid(pdata->dok))
+>> +		pdata->dok = -EINVAL;
+>> +	else
+>> +		pdata->dc_valid = true;
+>> +
+>> +	pdata->uok = of_get_named_gpio(of_node, "uok-gpios", 0);
+>> +	if (!gpio_is_valid(pdata->uok))
+>> +		pdata->uok = -EINVAL;
+>> +	else
+>> +		pdata->usb_valid = true;
+>> +
+>> +	return pdata;
+>> +}
+>> +
+>>  static int max8903_probe(struct platform_device *pdev)
+>>  {
+>> -	struct max8903_data *data;
+>> +	struct max8903_data *charger;
+>>  	struct device *dev = &pdev->dev;
+>> -	struct max8903_pdata *pdata = pdev->dev.platform_data;
+>>  	struct power_supply_config psy_cfg = {};
+>>  	int ret = 0;
+>>  	int gpio;
+>>  	int ta_in = 0;
+>>  	int usb_in = 0;
+>>
+>> -	if (pdata == NULL) {
+>> +	charger = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
+>> +	if (!charger)
+>> +		return -ENOMEM;
+>> +
+>> +	charger->pdata = pdev->dev.platform_data;
+>> +	if (IS_ENABLED(CONFIG_OF) && !charger->pdata && dev->of_node)
+>> +		charger->pdata = max8903_parse_dt_data(dev);
+>> +
+>> +	if (!charger->pdata) {
+>>  		dev_err(dev, "No platform data.\n");
+>>  		return -EINVAL;
+>>  	}
+>>
+>> -	data = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
+>> -	if (!data)
+>> -		return -ENOMEM;
+>> +	charger->dev = dev;
+>>
+>> -	data->pdata = pdev->dev.platform_data;
+>> -	data->dev = dev;
+>> -	platform_set_drvdata(pdev, data);
+>> +	charger->fault = false;
+>> +	charger->ta_in = ta_in;
+>> +	charger->usb_in = usb_in;
+>>
+>> -	if (pdata->dc_valid == false && pdata->usb_valid == false) {
+>> +	charger->psy_desc.name = "max8903_charger";
+>> +	charger->psy_desc.type = (ta_in) ? POWER_SUPPLY_TYPE_MAINS :
+>> +			((usb_in) ? POWER_SUPPLY_TYPE_USB :
+>> +			 POWER_SUPPLY_TYPE_BATTERY);
+>> +	charger->psy_desc.get_property = max8903_get_property;
+>> +	charger->psy_desc.properties = max8903_charger_props;
+>> +	charger->psy_desc.num_properties = ARRAY_SIZE(max8903_charger_props);
+>> +
+>> +	platform_set_drvdata(pdev, charger);
+>> +
+>> +	if (charger->pdata->dc_valid == false && charger->pdata->usb_valid == false) {
+>>  		dev_err(dev, "No valid power sources.\n");
+>>  		return -EINVAL;
+>>  	}
+>>
+>> -	if (pdata->dc_valid) {
+>> -		if (gpio_is_valid(pdata->dok)) {
+>> +
+>> +	if (charger->pdata->dc_valid) {
+>> +		if (gpio_is_valid(charger->pdata->dok)) {
+>>  			ret = devm_gpio_request(dev,
+>> -						pdata->dok,
+>> -						data->psy_desc.name);
+>> +						charger->pdata->dok,
+>> +						charger->psy_desc.name);
+>>  			if (ret) {
+>>  				dev_err(dev,
+>>  						"Failed GPIO request for dok: %d err %d\n",
+>> -						pdata->dok, ret);
+>> +						charger->pdata->dok, ret);
 >
-> All these three comments apply also to code below.
 >
-> Anyway the probe function is getting bigger and more difficult to read.
-> Consider factoring out some code to a separate function. For example all
-> the GPIO handling stuff could be factored.
+> I pointed the weird indentation in 4/7. Just a reminder: after fixing it
+> in 4/7 you also have to adjust it in consecutive patches.
 >
 > Best regards,
 > Krzysztof
+>
 
-Good idea, I've split the gpio setup code into a function named: 
-max8903_setup_gpios()
-
-Also fixed the other issues you mentioned above.
+Fixed in v4. Will send later once I have a chance to test on the hardware.
 
 Thanks,
 Chris
-
->
->> +			}
->> +
->>  			gpio = pdata->dok; /* PULL_UPed Interrupt */
->>  			ta_in = gpio_get_value(gpio) ? 0 : 1;
->>  		} else {
->> @@ -223,6 +233,16 @@ static int max8903_probe(struct platform_device *pdev)
->>
->>  	if (pdata->dcm) {
->>  		if (gpio_is_valid(pdata->dcm)) {
->> +			ret = devm_gpio_request(dev,
->> +						pdata->dcm,
->> +						data->psy_desc.name);
->> +			if (ret) {
->> +				dev_err(dev,
->> +						"Failed GPIO request for dcm: %d err %d\n",
->> +						pdata->dcm, ret);
->> +				return -EINVAL;
->> +			}
->> +
->>  			gpio = pdata->dcm; /* Output */
->>  			gpio_set_value(gpio, ta_in);
->>  		} else {
->> @@ -233,6 +253,16 @@ static int max8903_probe(struct platform_device *pdev)
->>
->>  	if (pdata->usb_valid) {
->>  		if (pdata->uok && gpio_is_valid(pdata->uok)) {
->> +			ret = devm_gpio_request(dev,
->> +						pdata->uok,
->> +						data->psy_desc.name);
->> +			if (ret) {
->> +				dev_err(dev,
->> +						"Failed GPIO request for uok: %d err %d\n",
->> +						pdata->uok, ret);
->> +				return -EINVAL;
->> +			}
->> +
->>  			gpio = pdata->uok;
->>  			usb_in = gpio_get_value(gpio) ? 0 : 1;
->>  		} else {
->> @@ -244,6 +274,16 @@ static int max8903_probe(struct platform_device *pdev)
->>
->>  	if (pdata->cen) {
->>  		if (gpio_is_valid(pdata->cen)) {
->> +			ret = devm_gpio_request(dev,
->> +						pdata->cen,
->> +						data->psy_desc.name);
->> +			if (ret) {
->> +				dev_err(dev,
->> +						"Failed GPIO request for cen: %d err %d\n",
->> +						pdata->cen, ret);
->> +				return -EINVAL;
->> +			}
->> +
->>  			gpio_set_value(pdata->cen, (ta_in || usb_in) ? 0 : 1);
->>  		} else {
->>  			dev_err(dev, "Invalid pin: cen.\n");
->> @@ -252,23 +292,44 @@ static int max8903_probe(struct platform_device *pdev)
->>  	}
->>
->>  	if (pdata->chg) {
->> -		if (!gpio_is_valid(pdata->chg)) {
->> -			dev_err(dev, "Invalid pin: chg.\n");
->> -			return -EINVAL;
->> +		if (gpio_is_valid(pdata->chg)) {
->> +			ret = devm_gpio_request(dev,
->> +						pdata->chg,
->> +						data->psy_desc.name);
->> +			if (ret) {
->> +				dev_err(dev,
->> +						"Failed GPIO request for chg: %d err %d\n",
->> +						pdata->chg, ret);
->> +				return -EINVAL;
->> +			}
->>  		}
->>  	}
->>
->>  	if (pdata->flt) {
->> -		if (!gpio_is_valid(pdata->flt)) {
->> -			dev_err(dev, "Invalid pin: flt.\n");
->> -			return -EINVAL;
->> +		if (gpio_is_valid(pdata->flt)) {
->> +			ret = devm_gpio_request(dev,
->> +						pdata->flt,
->> +						data->psy_desc.name);
->> +			if (ret) {
->> +				dev_err(dev,
->> +						"Failed GPIO request for flt: %d err %d\n",
->> +						pdata->flt, ret);
->> +				return -EINVAL;
->> +			}
->>  		}
->>  	}
->>
->>  	if (pdata->usus) {
->> -		if (!gpio_is_valid(pdata->usus)) {
->> -			dev_err(dev, "Invalid pin: usus.\n");
->> -			return -EINVAL;
->> +		if (gpio_is_valid(pdata->usus)) {
->> +			ret = devm_gpio_request(dev,
->> +						pdata->usus,
->> +						data->psy_desc.name);
->> +			if (ret) {
->> +				dev_err(dev,
->> +						"Failed GPIO request for usus: %d err %d\n",
->> +						pdata->usus, ret);
->> +				return -EINVAL;
->> +			}
->>  		}
->>  	}
->>
->>
->
-
