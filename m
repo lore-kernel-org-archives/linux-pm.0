@@ -1,106 +1,212 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: [PATCH v9 0/4] add reboot mode driver
-Date: Mon, 20 Jun 2016 14:34:50 +0800
-Message-ID: <1466404490-3315-1-git-send-email-andy.yan@rock-chips.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.135]:40564 "EHLO
-	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbcFTGwL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 02:52:11 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Lianwei Wang <lianwei.wang@gmail.com>
+Subject: [PATCH v2] PM / sleep: make pm notifier called symmetrically
+Date: Sun, 19 Jun 2016 23:52:27 -0700
+Message-ID: <1466405547-3830-1-git-send-email-lianwei.wang@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, tglx@linutronix.de, peterz@infradead.org, mingo@kernel.org, oleg@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Lianwei Wang <lianwei.wang@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: robh+dt@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de
-Cc: k.kozlowski@samsung.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, bjorn.andersson@linaro.org, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, sre@kernel.org, matthias.bgg@gmail.com, linux-pm@vger.kernel.org, mbrugger@suse.com, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, richard@nod.at, Andy Yan <andy.yan@rock-chips.com>
 
+This makes pm notifier PREPARE/POST symmetrical: if PREPARE
+fails, we will only undo what ever happened on PREPARE.
 
-This driver parses the reboot commands like "reboot bootloader"
-and "reboot recovery" to get a boot mode described in the
-device tree , then call the corresponding  write interfae
-to store the boot mode in some place like special register
-or ram , which can be read by the bootloader after system
-reboot.
+It fixes the unbalanced cpu hotplug enable in cpu pm notifier.
 
-This is commonly done on Android based devices, in order to
-reboot the device into fastboot or recovery mode.
+Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
+---
+ kernel/power/hibernate.c | 20 ++++++++++++--------
+ kernel/power/main.c      | 11 +++++++++--
+ kernel/power/power.h     |  2 ++
+ kernel/power/suspend.c   | 10 ++++++----
+ kernel/power/user.c      | 14 ++++++++------
+ 5 files changed, 37 insertions(+), 20 deletions(-)
 
-
-Changes in v9:
-- select MFD_SYSCON when syscon-reboot-mode driver enabled
-- refactoring error handling in reboot_mode_register
-
-Changes in v8:
-- do some cleanup when driver ubind
-
-Changes in v7:
-- fix some spelling mistakes
-- declare that the mode magic should be none-zero value
-- address some suggestions from Krzysztof, make syscon-reboot-mode driver data self-contained.
-
-Changes in v6:
-- fix a typo with "property"
-- describe property "mask" more clear
-
-Changes in v5:
-- delete a unnecessary blank line in syscon-reboot-mode.txt
-- rename mode-fastoboot to mode-bootloader in syscon-reboot-mode.txt
-- rename macro BOOT_LOADER to BOOT_BL_DOWNLOAD, which gives a more clear mean
-- use two blank space under help in Kconfig
-- use unsigned int instead of int for member magic in struct mode_info
-
-Changes in v4:
-- remove mode-maskrom
-- rename mode-fastboot to mode-bootloader to keep compatible with the exiting Android device
-- make this driver depends on OF to avoid kbuild test error
-
-Changes in v3:
-- descirbe all reboot mode as properity instead of subnode
-- scan multi properities
-- add mask value for some platform which only use some bits of the register
-  to store boot mode magic value
-- descirbe all reboot mode as property instead of subnode
-- add rk3036 support
-- descirbe all reboot mode as property instead of subnode
-
-Changes in v2:
-- move to dir drivers/power/reset/
-- make syscon-reboot-mode a generic driver
-- make this node as a subnode of PMU
-- make this node as a subnode of pmugrf
-
-Changes in v1:
-- fix the embarrassed compile warning
-- correct the maskrom magic number
-- check for the normal reboot
-- correct the maskrom magic number
-- use macro defined in rockchip_boot-mode.h for reboot-mode DT node
-
-Andy Yan (4):
-  dt-bindings: power: reset: add document for reboot-mode driver
-  power: reset: add reboot mode driver
-  ARM: dts: rockchip: add syscon-reboot-mode DT node
-  ARM64: dts: rockchip: add syscon-reboot-mode DT node
-
- .../bindings/power/reset/reboot-mode.txt           |  25 ++++
- .../bindings/power/reset/syscon-reboot-mode.txt    |  35 ++++++
- arch/arm/boot/dts/rk3036.dtsi                      |  11 +-
- arch/arm/boot/dts/rk3288.dtsi                      |  10 ++
- arch/arm/boot/dts/rk3xxx.dtsi                      |  12 +-
- arch/arm64/boot/dts/rockchip/rk3368.dtsi           |  12 +-
- drivers/power/reset/Kconfig                        |  14 +++
- drivers/power/reset/Makefile                       |   2 +
- drivers/power/reset/reboot-mode.c                  | 128 +++++++++++++++++++++
- drivers/power/reset/reboot-mode.h                  |  14 +++
- drivers/power/reset/syscon-reboot-mode.c           | 100 ++++++++++++++++
- include/dt-bindings/soc/rockchip_boot-mode.h       |  15 +++
- 12 files changed, 375 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.txt
- create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
- create mode 100644 drivers/power/reset/reboot-mode.c
- create mode 100644 drivers/power/reset/reboot-mode.h
- create mode 100644 drivers/power/reset/syscon-reboot-mode.c
- create mode 100644 include/dt-bindings/soc/rockchip_boot-mode.h
-
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index fca9254280ee..126e24caa82e 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -647,7 +647,7 @@ static void power_down(void)
+  */
+ int hibernate(void)
+ {
+-	int error;
++	int error, nr_calls = 0;
+ 
+ 	if (!hibernation_available()) {
+ 		pr_debug("PM: Hibernation not available.\n");
+@@ -662,9 +662,11 @@ int hibernate(void)
+ 	}
+ 
+ 	pm_prepare_console();
+-	error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
+-	if (error)
++	error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE, -1, &nr_calls);
++	if (error) {
++		nr_calls--;
+ 		goto Exit;
++	}
+ 
+ 	printk(KERN_INFO "PM: Syncing filesystems ... ");
+ 	sys_sync();
+@@ -714,7 +716,7 @@ int hibernate(void)
+ 	/* Don't bother checking whether freezer_test_done is true */
+ 	freezer_test_done = false;
+  Exit:
+-	pm_notifier_call_chain(PM_POST_HIBERNATION);
++	__pm_notifier_call_chain(PM_POST_HIBERNATION, nr_calls, NULL);
+ 	pm_restore_console();
+ 	atomic_inc(&snapshot_device_available);
+  Unlock:
+@@ -740,7 +742,7 @@ int hibernate(void)
+  */
+ static int software_resume(void)
+ {
+-	int error;
++	int error, nr_calls = 0;
+ 	unsigned int flags;
+ 
+ 	/*
+@@ -827,9 +829,11 @@ static int software_resume(void)
+ 	}
+ 
+ 	pm_prepare_console();
+-	error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
+-	if (error)
++	error = __pm_notifier_call_chain(PM_RESTORE_PREPARE, -1, &nr_calls);
++	if (error) {
++		nr_calls--;
+ 		goto Close_Finish;
++	}
+ 
+ 	pr_debug("PM: Preparing processes for restore.\n");
+ 	error = freeze_processes();
+@@ -855,7 +859,7 @@ static int software_resume(void)
+ 	unlock_device_hotplug();
+ 	thaw_processes();
+  Finish:
+-	pm_notifier_call_chain(PM_POST_RESTORE);
++	__pm_notifier_call_chain(PM_POST_RESTORE, nr_calls, NULL);
+ 	pm_restore_console();
+ 	atomic_inc(&snapshot_device_available);
+ 	/* For success case, the suspend path will release the lock */
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 27946975eff0..5ea50b1b7595 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -38,12 +38,19 @@ int unregister_pm_notifier(struct notifier_block *nb)
+ }
+ EXPORT_SYMBOL_GPL(unregister_pm_notifier);
+ 
+-int pm_notifier_call_chain(unsigned long val)
++int __pm_notifier_call_chain(unsigned long val, int nr_to_call, int *nr_calls)
+ {
+-	int ret = blocking_notifier_call_chain(&pm_chain_head, val, NULL);
++	int ret;
++
++	ret = __blocking_notifier_call_chain(&pm_chain_head, val, NULL,
++						nr_to_call, nr_calls);
+ 
+ 	return notifier_to_errno(ret);
+ }
++int pm_notifier_call_chain(unsigned long val)
++{
++	return __pm_notifier_call_chain(val, -1, NULL);
++}
+ 
+ /* If set, devices may be suspended and resumed asynchronously. */
+ int pm_async_enabled = 1;
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index efe1b3b17c88..51f02ecaf125 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -200,6 +200,8 @@ static inline void suspend_test_finish(const char *label) {}
+ 
+ #ifdef CONFIG_PM_SLEEP
+ /* kernel/power/main.c */
++extern int __pm_notifier_call_chain(unsigned long val, int nr_to_call,
++				    int *nr_calls);
+ extern int pm_notifier_call_chain(unsigned long val);
+ #endif
+ 
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 5b70d64b871e..0acab9d7f96f 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -266,16 +266,18 @@ static int suspend_test(int level)
+  */
+ static int suspend_prepare(suspend_state_t state)
+ {
+-	int error;
++	int error, nr_calls = 0;
+ 
+ 	if (!sleep_state_supported(state))
+ 		return -EPERM;
+ 
+ 	pm_prepare_console();
+ 
+-	error = pm_notifier_call_chain(PM_SUSPEND_PREPARE);
+-	if (error)
++	error = __pm_notifier_call_chain(PM_SUSPEND_PREPARE, -1, &nr_calls);
++	if (error) {
++		nr_calls--;
+ 		goto Finish;
++	}
+ 
+ 	trace_suspend_resume(TPS("freeze_processes"), 0, true);
+ 	error = suspend_freeze_processes();
+@@ -286,7 +288,7 @@ static int suspend_prepare(suspend_state_t state)
+ 	suspend_stats.failed_freeze++;
+ 	dpm_save_failed_step(SUSPEND_FREEZE);
+  Finish:
+-	pm_notifier_call_chain(PM_POST_SUSPEND);
++	__pm_notifier_call_chain(PM_POST_SUSPEND, nr_calls, NULL);
+ 	pm_restore_console();
+ 	return error;
+ }
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 526e8911460a..35310b627388 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -47,7 +47,7 @@ atomic_t snapshot_device_available = ATOMIC_INIT(1);
+ static int snapshot_open(struct inode *inode, struct file *filp)
+ {
+ 	struct snapshot_data *data;
+-	int error;
++	int error, nr_calls = 0;
+ 
+ 	if (!hibernation_available())
+ 		return -EPERM;
+@@ -74,9 +74,9 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 			swap_type_of(swsusp_resume_device, 0, NULL) : -1;
+ 		data->mode = O_RDONLY;
+ 		data->free_bitmaps = false;
+-		error = pm_notifier_call_chain(PM_HIBERNATION_PREPARE);
++		error = __pm_notifier_call_chain(PM_HIBERNATION_PREPARE, -1, &nr_calls);
+ 		if (error)
+-			pm_notifier_call_chain(PM_POST_HIBERNATION);
++			__pm_notifier_call_chain(PM_POST_HIBERNATION, --nr_calls, NULL);
+ 	} else {
+ 		/*
+ 		 * Resuming.  We may need to wait for the image device to
+@@ -86,13 +86,15 @@ static int snapshot_open(struct inode *inode, struct file *filp)
+ 
+ 		data->swap = -1;
+ 		data->mode = O_WRONLY;
+-		error = pm_notifier_call_chain(PM_RESTORE_PREPARE);
++		error = __pm_notifier_call_chain(PM_RESTORE_PREPARE, -1, &nr_calls);
+ 		if (!error) {
+ 			error = create_basic_memory_bitmaps();
+ 			data->free_bitmaps = !error;
+-		}
++		} else
++			nr_calls--;
++
+ 		if (error)
+-			pm_notifier_call_chain(PM_POST_RESTORE);
++			__pm_notifier_call_chain(PM_POST_RESTORE, nr_calls, NULL);
+ 	}
+ 	if (error)
+ 		atomic_inc(&snapshot_device_available);
 -- 
-2.7.4
-
-
+1.9.1
