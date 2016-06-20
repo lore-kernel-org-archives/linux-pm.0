@@ -1,64 +1,33 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 0/3] firmware: scpi: add device power domain support
-Date: Mon, 20 Jun 2016 19:02:43 +0100
-Message-ID: <57682FC3.3070504@arm.com>
-References: <1466073481-697-1-git-send-email-sudeep.holla@arm.com>
- <m24m8nbv7k.fsf@baylibre.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH] thermal: tango: add resume support
+Date: Mon, 20 Jun 2016 11:17:21 -0700
+Message-ID: <m2k2hjafny.fsf@baylibre.com>
+References: <5768138C.6080206@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:34917 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752237AbcFTSDU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 20 Jun 2016 14:03:20 -0400
-In-Reply-To: <m24m8nbv7k.fsf@baylibre.com>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:34102 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752049AbcFTSRY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 14:17:24 -0400
+Received: by mail-pa0-f41.google.com with SMTP id bz2so53108413pad.1
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jun 2016 11:17:23 -0700 (PDT)
+In-Reply-To: <5768138C.6080206@free.fr> (Mason's message of "Mon, 20 Jun 2016
+	18:02:20 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Jon Medhurst <tixy@linaro.org>, Mathieu Poirier <mathieu.poirier@linaro.org>, Suzuki K Poulose <suzuki.poulose@arm.com>
+To: Mason <slash.tmp@free.fr>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Frias <sf84@laposte.net>
 
+Mason <slash.tmp@free.fr> writes:
 
-
-On 20/06/16 18:56, Kevin Hilman wrote:
-> Sudeep Holla <sudeep.holla@arm.com> writes:
+> From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
 >
->> This series add support for SCPI based device device power state
->> management using genpd.
->>
->> Regards,
->> Sudeep
->>
->> v1[1]->v2:
->> 	- Fixed the endianness handling in scpi_device_get_power_state
->> 	  as spotted by Tixy
->> 	- Renamed scpi_pd.c to scpi_pm_domain.c as suggested by Ulf
->> 	- Added Mark's ack on DT binding
->>
->> [1] https://marc.info/?l=linux-kernel&m=146522850003483&w=2
->>
->> Sudeep Holla (3):
->>    firmware: arm_scpi: add support for device power state management
->>    Documentation: add DT bindings for ARM SCPI power domains
->>    firmware: scpi: add device power domain support using genpd
->
-> Other than the couple nits on specific patches,
->
-> Reviewed-by: Kevin Hilman <khilman@baylibre.com>
->
-> And just a[nother] reminder to be sure to keep things that are Juno
-> specific well described since we know other vendors will be (and are
-> being) "creative" in their implementations of SCPI.
->
+> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
 
-Agreed as mentioned in the other thread.
+Overall looks good, but as I mentioned in the RFC, since you don't have
+a ->suspend() method it looks suspicious, so at least the changelog
+should describe why you think that doesn't exist.  For that matter, the
+changelog needs some more description of the patch well. :)
 
-I just sent a PR to arm-soc this afternoon. Do you think it's better to
-recall it and incorporate this ?
-
-Extremely sorry for rushing, I thought it would get too late. Ulf
-reviewed them so I rushed a bit.
-
--- 
-Regards,
-Sudeep
+Kevin
