@@ -1,65 +1,43 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v5 4/4] PCI: Add runtime PM support for PCIe ports
-Date: Mon, 20 Jun 2016 15:43:34 -0500
-Message-ID: <20160620204334.GB17036@localhost>
-References: <1461919919-120102-1-git-send-email-mika.westerberg@linux.intel.com>
- <1461919919-120102-5-git-send-email-mika.westerberg@linux.intel.com>
- <20160617204824.GB10416@localhost>
- <20160617213209.GA1927@wunner.de>
- <20160620081057.GV1739@lahna.fi.intel.com>
+From: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC PATCH] x86: Move away from /dev/cpu/*/msr
+Date: Mon, 20 Jun 2016 14:12:32 -0700
+Message-ID: <87inx3bm4f.fsf@tassilo.jf.intel.com>
+References: <20160615100029.GB32588@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:46420 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752827AbcFTUwC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 20 Jun 2016 16:52:02 -0400
-Content-Disposition: inline
-In-Reply-To: <20160620081057.GV1739@lahna.fi.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160615100029.GB32588@pd.tnic> (Borislav Petkov's message of
+	"Wed, 15 Jun 2016 12:00:29 +0200")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thomas Renninger <trenn@suse.com>, Kan Liang <kan.liang@intel.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Mon, Jun 20, 2016 at 11:10:57AM +0300, Mika Westerberg wrote:
-> On Fri, Jun 17, 2016 at 11:32:09PM +0200, Lukas Wunner wrote:
-> > On Fri, Jun 17, 2016 at 03:48:24PM -0500, Bjorn Helgaas wrote:
-> > > On Fri, Apr 29, 2016 at 11:51:59AM +0300, Mika Westerberg wrote:
-> > [snip]
-> > > > +
-> > > > +	/*
-> > > > +	 * Prevent runtime PM if the port is advertising support for PCIe
-> > > > +	 * hotplug. Otherwise the BIOS hotplug SMI code might not be able
-> > > > +	 * to enumerate devices behind this port properly (the port is
-> > > > +	 * powered down preventing all config space accesses to the
-> > > > +	 * subordinate devices). We can't be sure for native PCIe hotplug
-> > > > +	 * either so prevent that as well.
-> > > 
-> > > Can we wordsmith this comment a bit?  I'm not sure what "BIOS hotplug
-> > > SMI code" even is or why it is relevant.  And it seems x86-centric so
-> > > may not apply to other arches.
-> > 
-> > The comment pertains to:
-> > https://bugzilla.kernel.org/show_bug.cgi?id=53811
-> > 
-> > It was discussed on April 12/13:
-> > https://patchwork.kernel.org/patch/8782801/
-> > 
-> > Executive summary:
-> > On non-Macs, Thunderbolt is driven by the firmware in System Management
-> > Mode, on hotplug the CPU receives a Sytem Management Interrupt (SMI) and
-> > jumps to SMM code. This doesn't work reliably if the hotplug port has
-> > been transitioned to D3hot, the SMM code tries to access config space
-> > of hotplugged devices (not possible if port is in D3hot) and is apparently
-> > too dumb to check if the port is in D3hot and wake it up.
-> 
-> That's the best guess what happens on non-Macs.
-> 
-> Bjorn, do you want me to update the comment to open up what SMI means
-> and maybe add better explanation?
+Borislav Petkov <bp@alien8.de> writes:
 
-I withdraw my request.  I guess it's probably not worth doing anything
-right now.  It's just a little out of place because this is
-theoretically generic code, but the whole SMM thing is x86-specific.
+> Comments are, as always, appreciated.
 
-Bjorn
+Seems like a waste of kernel code to me. The MSR interface works
+perfectly fine. There are potentially hundreds of useful MSRs,
+are you going to add new sysfs for each of them?
+
+Even the more obscure ones can be very useful for debugging
+and monitoring.
+
+Most MSRs are model specific so this would end up with tons
+of switch (x86_model) ... which are always difficult to maintain
+and need to be updated all the time when new CPUs come out.
+
+This will likely generate a really large ongoing number of patches,
+and to solve what problem exactly?
+
+The whole thing doesn't make any sense to me.
+
+It's just a waste of code, maintainer time, patch review
+capacity, which all could be far more usefully employed
+to do something that actually solves real problems.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only
