@@ -1,34 +1,41 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v4 2/7] max8903: store pointer to pdata instead of copying
- it.
-Date: Mon, 20 Jun 2016 14:18:06 +0200
-Message-ID: <5767DEFE.6060108@samsung.com>
-References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
- <1466375242-38354-1-git-send-email-chris@cpdesign.com.au>
- <1466375242-38354-3-git-send-email-chris@cpdesign.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1466375242-38354-3-git-send-email-chris@cpdesign.com.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chris Lapa <chris@lapa.com.au>, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH] thermal: hisilicon: Add dependency on the clock driver to allow frequency scaling
+Date: Mon, 20 Jun 2016 17:46:36 +0530
+Message-ID: <f6bbd7ddf978001aa0f1c6fb8fc454a30241d0a8.1466424352.git.amit.kucheria@linaro.org>
+References: <32d418f24a4da44ad4ca5b2b1276ffcea2aa7d6c.1466424352.git.amit.kucheria@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f177.google.com ([209.85.192.177]:35442 "EHLO
+	mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751496AbcFTMXc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 08:23:32 -0400
+Received: by mail-pf0-f177.google.com with SMTP id c2so53938726pfa.2
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jun 2016 05:21:58 -0700 (PDT)
+In-Reply-To: <32d418f24a4da44ad4ca5b2b1276ffcea2aa7d6c.1466424352.git.amit.kucheria@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, leo.yan@linaro.org, Eduardo Valentin <edubezval@gmail.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Zhang Rui <rui.zhang@intel.com>
 
-On 06/20/2016 12:27 AM, Chris Lapa wrote:
-> From: Chris Lapa <chris@lapa.com.au>
-> 
-> Stores pointer to pdata because it easily allows pdata to reference
-> either platform data or in the future device tree data.
-> 
-> Signed-off-by: Chris Lapa <chris@lapa.com.au>
-> ---
->  drivers/power/max8903_charger.c | 20 +++++++++++++-------
->  1 file changed, 13 insertions(+), 7 deletions(-)
+The Hisilicon clock stub driver is needed to allow the thermal drivers to
+actually scale the frequency. Make it an automatic dependency.
 
-The same as in #1. For the record:
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+---
+ drivers/thermal/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-BR.
-Krzysztof
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 22ae1f7..4e843f7 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -178,6 +178,7 @@ config THERMAL_EMULATION
+ config HISI_THERMAL
+ 	tristate "Hisilicon thermal driver"
+ 	depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
++	select STUB_CLK_HI6220
+ 	help
+ 	  Enable this to plug hisilicon's thermal sensor driver into the Linux
+ 	  thermal framework. cpufreq is used as the cooling device to throttle
+-- 
+2.5.0
+
