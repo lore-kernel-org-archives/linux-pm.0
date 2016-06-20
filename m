@@ -1,127 +1,71 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 08/12] doc: binding: pwrseq-usb-generic: add binding doc
- for generic usb power sequence driver
-Date: Mon, 20 Jun 2016 11:16:07 -0500
-Message-ID: <20160620161607.GA11427@rob-hp-laptop>
-References: <1466158165-9380-1-git-send-email-peter.chen@nxp.com>
- <1466158165-9380-9-git-send-email-peter.chen@nxp.com>
- <CAL_JsqLvs0s2TyfqPM5vtmyY81_X84VjCGjsGYbTgT4syOfp9Q@mail.gmail.com>
- <20160620112651.GA26936@shlinux2>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: Re: [PATCH 0/8] ARM: dts: Add operating-points-v2 tables for TI
+ platforms
+Date: Mon, 20 Jun 2016 11:57:14 -0500
+Message-ID: <5768206A.5050501@ti.com>
+References: <cover.1463606963.git.d-gerlach@ti.com>
+ <20160519044744.GE32001@vireshk-i7> <20160610110414.GX22406@atomide.com>
+ <575AD3A0.1050203@ti.com> <20160611024400.GE27439@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f194.google.com ([209.85.214.194]:35565 "EHLO
-	mail-ob0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751881AbcFTQQZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 12:16:25 -0400
-Content-Disposition: inline
-In-Reply-To: <20160620112651.GA26936@shlinux2>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20160611024400.GE27439@vireshk-i7>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Yegor Yefremov <yegorslists@googlemail.com>, Rob Herring <robh+dt@kernel.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Peter Chen <peter.chen@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, Stephen Boyd <stephen.boyd@linaro.org>, oscar@naiandei.net, Arnd Bergmann <arnd@arndb.de>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Linux USB List <linux-usb@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, troy.kisky@boundarydevices.com, Javier Martinez Canillas <javier@osg.samsung.com>, Philipp Zabel <p.zabel@pengutronix.>
 
-On Mon, Jun 20, 2016 at 07:26:51PM +0800, Peter Chen wrote:
-> On Fri, Jun 17, 2016 at 12:16:48PM -0500, Rob Herring wrote:
-> > On Fri, Jun 17, 2016 at 5:09 AM, Peter Chen <peter.chen@nxp.com> wrote:
-> > > Add binding doc for generic usb power sequence driver, and update
-> > > generic usb device binding-doc accordingly.
-> > >
-> > > Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> > > ---
-> > >  .../bindings/power/pwrseq/pwrseq-usb-generic.txt   | 31 ++++++++++++++++++++++
-> > >  .../devicetree/bindings/usb/usb-device.txt         |  2 ++
-> > >  2 files changed, 33 insertions(+)
-> > >  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
-> > > new file mode 100644
-> > > index 0000000..8ad98382
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
-> > > @@ -0,0 +1,31 @@
-> > > +The power sequence for generic USB Devices
-> > > +
-> > > +Some hard-wired USB devices need to do power sequence to let the
-> > > +device work normally, the typical power sequence like: enable USB
-> > > +PHY clock, toggle reset pin, etc. But current Linux USB driver
-> > > +lacks of such code to do it, it may cause some hard-wired USB devices
-> > > +works abnormal or can't be recognized by controller at all. The
-> > > +power sequence will be done before this device can be found at USB
-> > > +bus.
-> > > +
-> > > +Required properties:
-> > > +- compatible : contains "usb-pwrseq-generic".
-> > 
-> > In case I have not been clear, no.
-> > 
-> > I am not going to accept anything along the lines of the current mmc
-> > pwrseq. I am basically okay with Krzysztof's proposal as it is *only*
-> > an added property and not a duplication of information. I'd suggest
-> > you figure out how to make the kernel work with that rather than
-> > trying to work-around whatever kernel limitations there are.
-> > 
-> 
-> I see.
-> 
-> Would you agree with below:
+On 06/10/2016 09:44 PM, Viresh Kumar wrote:
+> On 10-06-16, 09:50, Nishanth Menon wrote:
+>> On 06/10/2016 06:04 AM, Tony Lindgren wrote:
+>>> * Viresh Kumar <viresh.kumar@linaro.org> [160518 21:49]:
+>>>> On 18-05-16, 18:36, Dave Gerlach wrote:
+>>>>> Hi,
+>>>>> This series adds operating-points-v2 tables for am335x, am437x, dra7xx,
+>>>>> and am57xx based platforms along with some support patches so that we
+>>>>> can enable more OPPs for the CPU on these platforms.
+>>>>>
+>>>>> These patches rely on the ti-cpufreq series sent here [1] and provide
+>>>>> opp-supported-hw data for each OPP so that only the appropriate OPPs
+>>>>> for a specific piece of silicon get enabled.
+>>>>
+>>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>
+>>> Applying all the dts changes into omap-for-v4.8/dt thanks.
+>>>
+>>> Tony
+>>>
+>> Viresh, are we ready with the cpufreq series?
+>>
+>> https://patchwork.kernel.org/patch/9122961/
+>> https://patchwork.kernel.org/patch/9122921/
+>>
+>> Also current series: https://patchwork.kernel.org/patch/9123071/
+>> Seems to have comments pending.
+>>
+>> Dave is on vacation for another week or so, doubt he can respond in
+>> time -> Should we wait on this series till we get the cpufreq support in?
+>
+> Rafael handles all the merges, etc. It would be better if you can
+> reply to that thread instead.
+>
 
-In general, yes. There are some points being discussed in the other 
-thread.
+Sorry for the delay responding here, the only issue with this series 
+would be that we haven't received an ACK on the DT binding doc from 
+cpufreq series [1] from a DT maintainer, so if comments are received 
+there these patches could potentially change. I had pinged but still no 
+response either way.
 
-> &usbotg1 {
-> 	vbus-supply = <&reg_usb_otg1_vbus>;
-> 	pinctrl-names = "default";
-> 	pinctrl-0 = <&pinctrl_usb_otg1_id>;
-> 	status = "okay";
-> 
-> 	#address-cells = <1>;
-> 	#size-cells = <0>;
-> 	hub: genesys@1 {
-> 		compatible = "usb5e3,608";
-> 		reg = <1>;
-> 
-> 		power-sequence;
-> 		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
-> 		reset-duration-us = <10>;
+Regards,
+Dave
 
-I wonder if this really needs to be specified. A sufficiently long 
-default should be good enough for 90 something % of devices.
-
-> 		clocks = <&clks IMX6SX_CLK_CKO>;
-> 
-> 		#address-cells = <1>;
-> 		#size-cells = <0>;
-> 		ethernet: asix@1 {
-> 			compatible = "usbb95,1708";
-> 			reg = <1>;
-> 
-> 			power-sequence;
-> 			reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
-> 			reset-duration-us = <15>;
-> 			clocks = <&clks IMX6SX_CLK_IPG>;
-> 		};
-> 	};
-> };
-> 
-> If the node has property "power-sequence", the pwrseq core will create
-> related platform device, and the driver under pwrseq driver will handle
-> power sequence stuffs. 
-
-This I have issue with. If you are creating a platform device here, you 
-are trying to work-around limitations in the linux driver model. Either 
-we need some sort of pre-probe hook to the drivers to call or each 
-parent node driver is responsible for checking and calling pwr-seq 
-functions for child nodes. e.g. The host controller calls pwr-seq for 
-the hub, the hub driver calls the power seq for the asix chip. Soon as 
-we have a case too complex for the generic pwr-seq, we're going to need 
-the pre-probe hook as I don't want to see a continual expansion of 
-generic pwr-seq binding for ever more complex cases.
-
-> The property below "power-sequence" will be
-> handled at pwrseq driver.
-
-You cannot rely on order other than for logical readability. There are 
-no guarantees of either the dtb or kernel ordering of properties.
-
-Rob
+[1] https://patchwork.kernel.org/patch/9122921/
