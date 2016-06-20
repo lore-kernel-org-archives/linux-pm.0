@@ -1,87 +1,125 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 3/5] PM / Domains: Allow runtime PM during system PM phases
-Date: Mon, 20 Jun 2016 10:23:13 +0200
-Message-ID: <CAPDyKFov5OYxAVn8rdomF15=7hUk9Xzb+ukyqfqSW5Px4zHqZw@mail.gmail.com>
-References: <1464600795-26307-1-git-send-email-ulf.hansson@linaro.org>
- <1464600795-26307-4-git-send-email-ulf.hansson@linaro.org> <m2shwenneg.fsf@baylibre.com>
+From: Andy Yan <andy.yan@rock-chips.com>
+Subject: Re: [PATCH v9 2/4] power: reset: add reboot mode driver
+Date: Mon, 20 Jun 2016 16:28:30 +0800
+Message-ID: <5767A92E.5040602@rock-chips.com>
+References: <1466404490-3315-1-git-send-email-andy.yan@rock-chips.com>
+ <1466404696-3464-1-git-send-email-andy.yan@rock-chips.com>
+ <5767A4C0.3080902@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f54.google.com ([74.125.82.54]:34258 "EHLO
-	mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751557AbcFTIXQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 04:23:16 -0400
-Received: by mail-wm0-f54.google.com with SMTP id 187so5225186wmz.1
-        for <linux-pm@vger.kernel.org>; Mon, 20 Jun 2016 01:23:15 -0700 (PDT)
-In-Reply-To: <m2shwenneg.fsf@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5767A4C0.3080902@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, robh+dt@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de, bjorn.andersson@linaro.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, sre@kernel.org, matthias.bgg@gmail.com, linux-pm@vger.kernel.org, mbrugger@suse.com, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, richard@nod.at
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-On 15 June 2016 at 23:38, Kevin Hilman <khilman@baylibre.com> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
->
->> In cases when the PM domain isn't powered off when genpd's ->prepare()
->> callback is invoked, genpd runtime resumes and disables runtime PM for the
->> device. This behaviour was needed when genpd managed intermediate states
->> during the power off sequence, as to maintain proper low power states of
->> devices during system PM suspend/resume.
->>
->> The commit ba2bbfbf6307 ("PM / Domains: Remove intermediate states from
->> the power off sequence"), enables genpd to improve its behaviour in this
->> regards.
->>
->> The PM core disables runtime PM at __device_suspend_late() before it calls
->> a system PM "late" callback for a device. When resuming a device, after a
->> corresponding "early" callback has been invoked, the PM core re-enables
->> runtime PM.
->>
->> By changing genpd to allow runtime PM according to the same system PM
->> phases as the PM core, devices can be runtime resumed by its corresponding
->
-> grammar nit: s/its/their/
->
->> subsystem/driver when really needed.
->>
->> In this way, genpd no longer need to runtime resume the device from its
->> ->prepare() callback. In most cases that avoids unnecessary and energy-
->> wasting operations of runtime resuming devices that have nothing to do,
->> only to runtime suspend them shortly after.
->>
->> Although, because of changing this behaviour in genpd and due to that
->> genpd powers on the PM domain unconditionally in the system PM resume
->> "noirq" phase, it could potentially cause a PM domain to stay powered on
->> even if it's unused after the system has resumed. To avoid this, let's
->> schedule a power off work when genpd's system PM ->complete() callback has
->> been invoked for the last device in the PM domain.
->
-> IIUC, this should be the end of the changelog for this patch.  The rest
-> was moved to a new patch, no?
->
->> Another issue that arises due to this change in genpd, concerns those
->> platforms/PM domains that makes use of genpd's device ->stop|start()
->> callbacks. In these scenarios, the corresponding subsystem/driver needs to
->> invoke pm_runtime_force_suspend() from a system PM suspend callback to
->> allow genpd's ->runtime_suspend() to be invoked for an active device, else
->> genpd won't "stop" a device that has been "started".
->>
->> The subsystem/driver also needs to invoke pm_runtime_force_resume()
->> in a system PM resume callback, to restore the runtime PM state for the
->> device and to re-enable runtime PM.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->
-> Other than the changelog nits above, LGTM.
->
-> Reviewed-by: Kevin Hilman <khilman@baylibre.com>
->
-> Kevin
+Hi Krzysztof:
 
-Kevin, thanks for the review(s)!
+On 2016=E5=B9=B406=E6=9C=8820=E6=97=A5 16:09, Krzysztof Kozlowski wrote=
+:
+> On 06/20/2016 08:38 AM, Andy Yan wrote:
+>> This driver parses the reboot commands like "reboot bootloader"
+>> and "reboot recovery" to get a boot mode described in the
+>> device tree , then call the write interfae to store the boot
+>> mode in some place like special register or sram, which can
+>> be read by the bootloader after system reboot, then the bootloader
+>> can take different action according to the mode stored.
+>>
+>> This is commonly used on Android based devices, in order to
+>> reboot the device into fastboot or recovery mode.
+>>
+>> Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+>> Reviewed-by: Moritz Fischer <moritz.fischer@ettus.com>
+>> Tested-by: John Stultz <john.stultz@linaro.org>
+>> Acked-by: John Stultz <john.stultz@linaro.org>
+>> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+>>
+>> ---
+>>
+>> Changes in v9:
+>> - select MFD_SYSCON when syscon-reboot-mode driver enabled
+>> - refactoring error handling in reboot_mode_register
+>>
+>> Changes in v8:
+>> - do some cleanup when driver ubind
+>>
+>> Changes in v7:
+>> - address some suggestions from Krzysztof, make syscon-reboot-mode d=
+river data self-contained.
+>>
+>> Changes in v6: None
+>> Changes in v5:
+>> - use two blank space under help in Kconfig
+>> - use unsigned int instead of int for member magic in struct mode_in=
+fo
+>>
+>> Changes in v4:
+>> - make this driver depends on OF to avoid kbuild test error
+>>
+>> Changes in v3:
+>> - scan multi properities
+>> - add mask value for some platform which only use some bits of the r=
+egister
+>>    to store boot mode magic value
+>>
+>> Changes in v2:
+>> - move to dir drivers/power/reset/
+>> - make syscon-reboot-mode a generic driver
+>>
+>> Changes in v1:
+>> - fix the embarrassed compile warning
+>> - correct the maskrom magic number
+>> - check for the normal reboot
+>>
+>>   drivers/power/reset/Kconfig              |  14 ++++
+>>   drivers/power/reset/Makefile             |   2 +
+>>   drivers/power/reset/reboot-mode.c        | 128 +++++++++++++++++++=
+++++++++++++
+>>   drivers/power/reset/reboot-mode.h        |  14 ++++
+>>   drivers/power/reset/syscon-reboot-mode.c | 100 +++++++++++++++++++=
++++++
+>>   5 files changed, 258 insertions(+)
+>>   create mode 100644 drivers/power/reset/reboot-mode.c
+>>   create mode 100644 drivers/power/reset/reboot-mode.h
+>>   create mode 100644 drivers/power/reset/syscon-reboot-mode.c
+>>
+>> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconf=
+ig
+>> index 9bb2622..4ceaf74 100644
+>> --- a/drivers/power/reset/Kconfig
+>> +++ b/drivers/power/reset/Kconfig
+>> @@ -183,5 +183,19 @@ config POWER_RESET_ZX
+>>   	help
+>>   	  Reboot support for ZTE SoCs.
+>>  =20
+>> +config REBOOT_MODE
+>> +	tristate
+>> +
+>> +config SYSCON_REBOOT_MODE
+>> +	bool "Generic SYSCON regmap reboot mode driver"
+> Why not tristate?
 
-Rafael, I noticed you have queued the two series and amended the
-change-log according to the comments from Kevin. Thanks!
-
-Kind regards
-Uffe
+    I see many reset drivers in this directories  use bool, so I follow=
+=20
+them.
+>
+> Beside that the patch looks good.
+>
+> Best regards,
+> Krzysztof
+>
+>> +	depends on OF
+>> +	select REBOOT_MODE
+>> +	select MFD_SYSCON
+>> +	help
+>> +	  Say y here will enable reboot mode driver. This will
+>> +	  get reboot mode arguments and store it in SYSCON mapped
+>> +	  register, then the bootloader can read it to take different
+>> +	  action according to the mode.
+>> +
+>
+>
+>
