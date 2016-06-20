@@ -1,109 +1,51 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH v5 4/4] PCI: Add runtime PM support for PCIe ports
-Date: Mon, 20 Jun 2016 11:10:57 +0300
-Message-ID: <20160620081057.GV1739@lahna.fi.intel.com>
-References: <1461919919-120102-1-git-send-email-mika.westerberg@linux.intel.com>
- <1461919919-120102-5-git-send-email-mika.westerberg@linux.intel.com>
- <20160617204824.GB10416@localhost>
- <20160617213209.GA1927@wunner.de>
+From: chenyu <yu.chen.surf@gmail.com>
+Subject: Re: ktime_get_ts64() splat during resume
+Date: Mon, 20 Jun 2016 16:17:13 +0800
+Message-ID: <CADjb_WRhcNEN0q7zPBdr79bGsbXL66EpvvgwEdCq_C_a3i8iSQ@mail.gmail.com>
+References: <20160617105435.GB15997@pd.tnic> <alpine.DEB.2.11.1606171351390.5839@nanos>
+ <20160617132943.GA3336@nazgul.tnic> <20160617143346.GA3912@pd.tnic> <CAJZ5v0gsrAGcQqTO-+E3yGsNaO+45TmX5Wn=AoYu9JxWsR1HQA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:41544 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751571AbcFTIQE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 20 Jun 2016 04:16:04 -0400
-Content-Disposition: inline
-In-Reply-To: <20160617213209.GA1927@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0gsrAGcQqTO-+E3yGsNaO+45TmX5Wn=AoYu9JxWsR1HQA@mail.gmail.com>
+Sender: stable-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Logan Gunthorpe <logang@deltatee.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Kees Cook <keescook@chromium.org>, Stable <stable@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linus Torvalds <torvalds@linux-foundation.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Qipeng Zha <qipeng.zha@intel.com>, Qi Zheng <qi.zheng@intel.com>, Dave Airlie <airlied@gmail.com>, Mathias Nyman <mathias.nyman@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, Jun 17, 2016 at 11:32:09PM +0200, Lukas Wunner wrote:
-> On Fri, Jun 17, 2016 at 03:48:24PM -0500, Bjorn Helgaas wrote:
-> > On Fri, Apr 29, 2016 at 11:51:59AM +0300, Mika Westerberg wrote:
-> [snip]
-> > > +
-> > > +	/*
-> > > +	 * Prevent runtime PM if the port is advertising support for PCIe
-> > > +	 * hotplug. Otherwise the BIOS hotplug SMI code might not be able
-> > > +	 * to enumerate devices behind this port properly (the port is
-> > > +	 * powered down preventing all config space accesses to the
-> > > +	 * subordinate devices). We can't be sure for native PCIe hotplug
-> > > +	 * either so prevent that as well.
-> > 
-> > Can we wordsmith this comment a bit?  I'm not sure what "BIOS hotplug
-> > SMI code" even is or why it is relevant.  And it seems x86-centric so
-> > may not apply to other arches.
-> 
-> The comment pertains to:
-> https://bugzilla.kernel.org/show_bug.cgi?id=53811
-> 
-> It was discussed on April 12/13:
-> https://patchwork.kernel.org/patch/8782801/
-> 
-> Executive summary:
-> On non-Macs, Thunderbolt is driven by the firmware in System Management
-> Mode, on hotplug the CPU receives a Sytem Management Interrupt (SMI) and
-> jumps to SMM code. This doesn't work reliably if the hotplug port has
-> been transitioned to D3hot, the SMM code tries to access config space
-> of hotplugged devices (not possible if port is in D3hot) and is apparently
-> too dumb to check if the port is in D3hot and wake it up.
+On Fri, Jun 17, 2016 at 11:28 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Fri, Jun 17, 2016 at 4:33 PM, Borislav Petkov <bp@alien8.de> wrote:
+>> Ok,
+>>
+>> bisect is done, full log below.
+>>
+>> Rafael, that fix
+>>
+>>   70595b479ce1 ("x86/power/64: Fix crash whan the hibernation code passes control to the image kernel")
+>>
+>> breaks s2disk here. It explodes during resume and a statically allocated
+>> struct's member is NULL. See
+>>
+>> https://lkml.kernel.org/r/20160617105435.GB15997@pd.tnic
+>>
+>> for the splat and some debugging attempts.
+>>
+>> Reverting 70595b479ce1 fixes the issue here.
+>
+> Quite evidently, memory is corrupted in the image kernel, but this
+> particular commit only affects the boot kernel, so it can't really
+> corrupt anything in the image one.
+>
+In previous patch,
+before we jump to the new kernel entry, we add the
+text mapping to temp_level4_pgt,
 
-That's the best guess what happens on non-Macs.
+         /* switch over to the temporary kernel text mapping */
+        movq    %r8, (%r9)
+If I understand correctly,  r9 contains the virtual address
+of restore_pgd_addr, since the page table for restore_pgd_addr might be
+incoherent across hibernation(as NX patch changes the kernel text mapping
+to dynamically mapping), so we might write pmd entry to an incorrect place in
+temp_level4_pgt?
 
-Bjorn, do you want me to update the comment to open up what SMI means
-and maybe add better explanation?
-
-> On Macs, Thunderbolt is not driven by the firmware except immediately on
-> boot: It is initially set up by an EFI driver, but once ExitBootServices
-> has been called, the OS is responsible. Therefore on Macs the hotplug
-> ports may be suspended to D3hot just fine. This is done by patch
-> [08/13] of my series "Runtime PM for Thunderbolt on Macs".
-> 
-> > 
-> > > +	 */
-> > > +	if (!dev->is_hotplug_bridge) {
-> > 
-> > Your changelog mentions ACPI hotplug (I assume this means acpiphp).
-> > Would it be sufficient to prevent runtime PM when we're using acpiphp?
-> > That would be more selective and would avoid penalizing non-ACPI
-> > platforms and newer systems that use native pciehp.
-> > 
-> > PCIe r3.0, sec 6.7.3.4 says a port should generate a wakeup event
-> > using PME on hotplug events that occur when the port is in D1, D2, or
-> > D3hot (it doesn't mention D3cold).  Is that relevant here?  Is there a
-> > way to control which D-states we use based on which ones can assert
-> > PME?
-> 
-> This was discussed between April 18 and April 21, please refer to
-> the above-linked patchwork entry.
-> 
-> I had done some tests and the result was:
-> "A hotplug port may go to D3hot and will still generate interrupts on
-> hotplug, but all its parent ports are *not* allowed to go to D3hot
-> because otherwise the hotplug interrupts will no longer come through.
-> The algorithm in pci_bridge_d3_update() and pci_dev_check_d3cold()
-> needs to be amended to take that into account. Hm, it's nontrivial
-> I guess, allowing bridge_d3 = true for the lowest hotplug bridge in a
-> hierarchy but not for anything above?"
-> 
-> Mika's reply was:
-> "If we need to do things like that, it will get pretty complex and we
-> still cannot be sure whether hotplug works. I think it is safer to go
-> back to what I already had and disable runtime PM from such ports."
-
-Indeed that seems to be the most reliable way.
-
-In addition it may be possible to relax this a bit more like:
-
- - For ACPI hotplug bridges we disable runtime PM like we are doing
-   currently.
-
- - For native PCIe ports supporting hotplug, enable runtime PM and call
-   pci_d3cold_disable() in pcie_portdrv_probe() which allows the port to
-   go into D3hot.
-
-But I think it may be better to do that separately after v4.8-rc1 is
-released :)
+Yu
