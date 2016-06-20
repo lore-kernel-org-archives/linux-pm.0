@@ -1,52 +1,67 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH v9 3/4] ARM: dts: rockchip: add syscon-reboot-mode DT node
-Date: Mon, 20 Jun 2016 14:55:46 -0700
-Message-ID: <20160620215545.GE1256@tuxbot>
-References: <1466404490-3315-1-git-send-email-andy.yan@rock-chips.com>
- <1466404769-3534-1-git-send-email-andy.yan@rock-chips.com>
+From: Chris Lapa <chris@lapa.com.au>
+Subject: Re: [PATCH v3 1/7] max8903: adds documentation for device tree
+ bindings.
+Date: Tue, 21 Jun 2016 09:43:47 +1000
+Message-ID: <c4d85f15-e0ed-7a6c-4c2f-fcf79eb96856@lapa.com.au>
+References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
+ <1466139626-51434-2-git-send-email-chris@lapa.com.au>
+ <20160620132247.GA30380@rob-hp-laptop>
+Reply-To: chris@lapa.com.au
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1466404769-3534-1-git-send-email-andy.yan@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>
-Cc: robh+dt@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de, k.kozlowski@samsung.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, sre@kernel.org, matthias.bgg@gmail.com, linux-pm@vger.kernel.org, mbrugger@suse.com, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, richard@nod.at
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:36761 "EHLO
+	mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752526AbcFTXpM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 19:45:12 -0400
+Received: by mail-pf0-f193.google.com with SMTP id i123so9488429pfg.3
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jun 2016 16:43:53 -0700 (PDT)
+In-Reply-To: <20160620132247.GA30380@rob-hp-laptop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: k.kozlowski@samsung.com, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Sun 19 Jun 23:39 PDT 2016, Andy Yan wrote:
+On 20/06/2016 11:22 PM, Rob Herring wrote:
+> On Fri, Jun 17, 2016 at 03:00:20PM +1000, Chris Lapa wrote:
+>> From: Chris Lapa <chris@lapa.com.au>
+>>
+>> Signed-off-by: Chris Lapa <chris@lapa.com.au>
+>> ---
+>>  .../devicetree/bindings/power/max8903-charger.txt  | 25 ++++++++++++++++++++++
+>>  1 file changed, 25 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/max8903-charger.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/max8903-charger.txt b/Documentation/devicetree/bindings/power/max8903-charger.txt
+>> new file mode 100644
+>> index 0000000..aea1dd2a
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/max8903-charger.txt
+>> @@ -0,0 +1,25 @@
+>> +Maxim Semiconductor MAX8903 Battery Charger bindings
+>> +
+>> +Required properties:
+>> +- compatible: "maxim,max8903-charger" for MAX8903 Battery Charger
+>
+> Drop "charger" as that is implied by the chip.
+Just for clarification, you mean:
+	compatible: "maxim,max8903" for MAX8903 Battery Charger
 
-> Rockchip platform use a SYSCON mapped register store
-> the reboot mode magic value for bootloader to use when
-> system reboot. So add syscon-reboot-mode driver DT node
-> for rk3xxx/rk3036/rk3288 based platform
-> 
-> Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
-> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
-> 
-[..]
-> diff --git a/include/dt-bindings/soc/rockchip_boot-mode.h b/include/dt-bindings/soc/rockchip_boot-mode.h
-> new file mode 100644
-> index 0000000..ae7c867
-> --- /dev/null
-> +++ b/include/dt-bindings/soc/rockchip_boot-mode.h
-> @@ -0,0 +1,15 @@
-> +#ifndef __ROCKCHIP_BOOT_MODE_H
-> +#define __ROCKCHIP_BOOT_MODE_H
-> +
-> +/*high 24 bits is tag, low 8 bits is type*/
-> +#define REBOOT_FLAG		0x5242C300
-> +/* normal boot */
-> +#define BOOT_NORMAL		(REBOOT_FLAG + 0)
-> +/* enter bootloader rockusb mode */
-> +#define BOOT_BL_DOWNLOAD	(REBOOT_FLAG + 1)
-> +/* enter recovery */
-> +#define BOOT_RECOVERY		(REBOOT_FLAG + 3)
-> + /* enter fastboot mode */
-> +#define BOOT_FASTBOOT		(REBOOT_FLAG + 9)
+Thanks,
+Chris
 
-The names of these defines are too generic for being in a header file.
-You should likely make them include "ROCKCHIP" and "BOOT_MODE".
+>
+>> +- dok-gpios: Valid DC power has been detected, optional if uok-gpios is provided
+>> +- uok-gpios: Valid USB power has been detected, optional if dok-gpios is provided
+>> +
+>> +Optional properties:
+>> +- cen-gpios: Charge enable pin
+>> +- chg-gpios: Charger status pin
+>> +- flt-gpios: Fault pin
+>> +- dcm-gpios: Current limit mode setting (DC or USB)
+>> +- usus-gpios: USB suspend pin
+>
+> Need to state direction and active state for all of these.
+>
 
-Regards,
-Bjorn
