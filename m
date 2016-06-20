@@ -1,49 +1,50 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v4 2/5] power_supply: tps65217-charger: Fix NULL deref
- during property export
-Date: Mon, 20 Jun 2016 15:23:14 +0200
-Message-ID: <CAJKOXPd87nM=7nPsact67TNHVhr45MJxP9=LKvv-esTQsg2A-A@mail.gmail.com>
-References: <20160620105056.25843-1-m.niestroj@grinn-global.com> <20160620105056.25843-3-m.niestroj@grinn-global.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 1/7] max8903: adds documentation for device tree
+ bindings.
+Date: Mon, 20 Jun 2016 08:22:47 -0500
+Message-ID: <20160620132247.GA30380@rob-hp-laptop>
+References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
+ <1466139626-51434-2-git-send-email-chris@lapa.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <20160620105056.25843-3-m.niestroj@grinn-global.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Marcin Niestroj <m.niestroj@grinn-global.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1466139626-51434-2-git-send-email-chris@lapa.com.au>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chris Lapa <chris@lapa.com.au>
+Cc: k.kozlowski@samsung.com, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 20, 2016 at 12:50 PM, Marcin Niestroj
-<m.niestroj@grinn-global.com> wrote:
-> This bug leads to:
->
-> [    1.906411] Unable to handle kernel NULL pointer dereference at virtual address 0000000c
-> [    1.914878] pgd = c0004000
-> [    1.917786] [0000000c] *pgd=00000000
-> [    1.921536] Internal error: Oops: 5 [#1] SMP ARM
-> [    1.926357] Modules linked in:
-> [    1.929556] CPU: 0 PID: 14 Comm: kworker/0:1 Not tainted 4.4.5 #18
-> [    1.936006] Hardware name: Generic AM33XX (Flattened Device Tree)
-> [    1.942383] Workqueue: events power_supply_changed_work
-> [    1.947842] task: de2c41c0 ti: de2c8000 task.ti: de2c8000
-> [    1.953483] PC is at tps65217_ac_get_property+0x14/0x28
-> [    1.958937] LR is at tps65217_ac_get_property+0x10/0x28
->
-> Driver was trying to use drv_data in property get handler. However drv_data
-> was not set, so it caused NULL pointer dereference. This patch properly
-> sets drv_data during probe by power_supply_config parameter, so the
-> property get handler works as desired.
->
-> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+On Fri, Jun 17, 2016 at 03:00:20PM +1000, Chris Lapa wrote:
+> From: Chris Lapa <chris@lapa.com.au>
+> 
+> Signed-off-by: Chris Lapa <chris@lapa.com.au>
 > ---
-> Changes v1 -> v4: none
+>  .../devicetree/bindings/power/max8903-charger.txt  | 25 ++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/max8903-charger.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/power/max8903-charger.txt b/Documentation/devicetree/bindings/power/max8903-charger.txt
+> new file mode 100644
+> index 0000000..aea1dd2a
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/max8903-charger.txt
+> @@ -0,0 +1,25 @@
+> +Maxim Semiconductor MAX8903 Battery Charger bindings
+> +
+> +Required properties:
+> +- compatible: "maxim,max8903-charger" for MAX8903 Battery Charger
 
-This should crash on first try (get_property() is called just after
-power supply register)... I wonder how was it working before...
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Drop "charger" as that is implied by the chip.
 
-Fixes: 3636859b280c ("power_supply: Add support for tps65217-charger.")
-Cc: <stable@vger.kernel.org>
+> +- dok-gpios: Valid DC power has been detected, optional if uok-gpios is provided
+> +- uok-gpios: Valid USB power has been detected, optional if dok-gpios is provided
+> +
+> +Optional properties:
+> +- cen-gpios: Charge enable pin
+> +- chg-gpios: Charger status pin
+> +- flt-gpios: Fault pin
+> +- dcm-gpios: Current limit mode setting (DC or USB)
+> +- usus-gpios: USB suspend pin
 
-Best regards,
-Krzysztof
+Need to state direction and active state for all of these.
