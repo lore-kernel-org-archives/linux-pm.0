@@ -1,100 +1,66 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH 1/4] thermal: rcar_gen3_thermal: Document the R-Car Gen3
- thermal bindings
-Date: Mon, 20 Jun 2016 09:49:38 +0200
-Message-ID: <CAMuHMdX5UuFTwXHY08DJyGS_deK5iyf1QkGW1OeG5QPD4K3k+A@mail.gmail.com>
-References: <57661211.7010900@rvc.renesas.com> <57661290.9000501@rvc.renesas.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 0/4] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal support
+Date: Mon, 20 Jun 2016 09:40:26 +0200
+Message-ID: <CAMuHMdU3_O9YA6cjR=-ub6drKu8g-s4hmem4uggZeNBMJrC8qQ@mail.gmail.com>
+References: <57661211.7010900@rvc.renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <57661290.9000501-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Khiem Nguyen <khiem.nguyen.xt-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>
-Cc: Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Magnus Damm <damm+renesas-yzvPICuk2ACczHhG9Qg4qA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Thao Phuong Le. Nguyen" <thao.nguyen.yb-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>, "Hien Duy. Dang" <hien.dang.eb-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>, Toru Oishi <toru.oishi.zj-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:36806 "EHLO
+	mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbcFTHwv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 03:52:51 -0400
+In-Reply-To: <57661211.7010900@rvc.renesas.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
+Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Wolfram Sang <wsa@the-dreams.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <damm+renesas@opensource.se>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Thao Phuong Le. Nguyen" <thao.nguyen.yb@rvc.renesas.com>, "Hien Duy. Dang" <hien.dang.eb@rvc.renesas.com>, Toru Oishi <toru.oishi.zj@rvc.renesas.com>, Simon Horman <horms@verge.net.au>, "open list:MEDIA DRIVERS FOR RENESAS - FCP" <linux-renesas-soc@vger.kernel.org>
 
 Hi Khiem,
 
-On Sun, Jun 19, 2016 at 5:33 AM, Khiem Nguyen
-<khiem.nguyen.xt-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org> wrote:
+On Sun, Jun 19, 2016 at 5:31 AM, Khiem Nguyen
+<khiem.nguyen.xt@rvc.renesas.com> wrote:
+> This patchset adds new thermal sensor driver to support 3 sensors
+> found in R-Car Gen3 series.
 >
-> Signed-off-by: Hien Dang <hien.dang.eb-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>
-> Signed-off-by: Khiem Nguyen <khiem.nguyen.xt-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>
+> It has been decided to create new driver, instead of using the existing
+> thermal driver due to many differences in HW setting flows, the method
+> to calculate temperatures value and some newly supported features.
+>
+> The new driver can support both polling mode and interrupt mode.
+> It has been tested with R-Car H3.
+>
+> This driver is developed based on early work of Hien Dang and Thao Nguyen.
+> All comments are welcome.
 
-Thanks for your patch!
+Thanks for your series!
 
-> ---
->  .../bindings/thermal/rcar-gen3-thermal.txt         | 79 ++++++++++++++++++++++
->  1 file changed, 79 insertions(+)
+Please CC linux-renesas-soc for drivers related to Renesas SoCs.
+Please CC Simon for dts and defconfig updates that should go through his tree.
+
+> Khiem Nguyen (4):
+>   thermal: rcar_gen3_thermal: Document the R-Car Gen3 thermal bindings
+>   thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal driver support
+>   arm64: dts: r8a7795: Add R-Car Gen3 thermal support
+>   arm64: defconfig: Enable R-Car Gen3 thermal support
+>
+>  .../bindings/thermal/rcar-gen3-thermal.txt         |  79 ++++
+>  arch/arm64/boot/dts/renesas/r8a7795.dtsi           |  86 ++++
+>  arch/arm64/configs/defconfig                       |   2 +
+>  drivers/thermal/Kconfig                            |   9 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/rcar_gen3_thermal.c                | 524 +++++++++++++++++++++
+>  6 files changed, 701 insertions(+)
 >  create mode 100644 Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
->
-> diff --git a/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
-> new file mode 100644
-> index 0000000..ed6ce45
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
-> @@ -0,0 +1,79 @@
-> +* DT bindings for Renesas R-Car Gen3 Thermal Sensor driver
-> +
-> +Required properties:
-> +- compatible           : "renesas,thermal-<soctype>",
-
-Please use "renesas,<soctype>-thermal", as this is the preferred order for
-new bindings.
-
-> +                         Examples with soctypes are:
-> +                           - "renesas,thermal-r8a7795" (R-Car H3)
-
-renesas,r8a7795-thermal
-
-> +                           - "renesas,thermal-r8a7796" (R-Car M3)
-
-renesas,r8a7796-thermal, M3-W
-
-> +                           - "renesas,rcar-gen3-thermal" as fallback
-> +- reg                  : Address range of the thermal registers.
-> +- clocks               : Must contain a reference to the functional clock.
-
-According to the datasheet, the USB_EXTAL clock is also an input for the
-thermal block. Should it be added?
-
-> +- #thermal-sensor-cells : Please see ./thermal.txt
-> +
-> +Option properties:
-
-Optional
-
-> +
-> +- interrupts           : Use interrupt
-> +- power-domain         : Must contain a reference to the power domain. This property is
-> +                         mandatory if the thermal sensor instance is part of a controllable power
-> +                         domain.
-> +
-> +Example (non interrupt support):
-
-Is there a good reason why you wouldn't want to use interrupts?
-If not, please make it mandatory.
-
-> +
-> +       tsc1: thermal@e6198000 {
-> +               compatible = "renesas,thermal-r8a7795",
-> +                       "renesas,rcar-gen3-thermal";
-> +               reg = <0 0xe6198000 0 0x5c>;
-
-According to the datasheet, there are more registers beyond this range.
-Shouldn't it be "reg = <0 0xe6198000 0 0x68>;"?
+>  create mode 100644 drivers/thermal/rcar_gen3_thermal.c
 
 Gr{oetje,eeting}s,
 
                         Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
 In personal conversations with technical people, I call myself a hacker. But
 when I'm talking to journalists I just say "programmer" or something like that.
                                 -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
