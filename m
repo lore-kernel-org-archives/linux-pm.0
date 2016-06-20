@@ -1,118 +1,129 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH 08/12] doc: binding: pwrseq-usb-generic: add binding doc
- for generic usb power sequence driver
-Date: Mon, 20 Jun 2016 20:29:55 +0800
-Message-ID: <CAGb2v65nuVyHjQY7-shvygCTVxG6eHbwGygr_Cw2Hg7mg+rAwg@mail.gmail.com>
-References: <1466158165-9380-1-git-send-email-peter.chen@nxp.com>
- <1466158165-9380-9-git-send-email-peter.chen@nxp.com>
- <CAL_JsqLvs0s2TyfqPM5vtmyY81_X84VjCGjsGYbTgT4syOfp9Q@mail.gmail.com>
- <20160620112651.GA26936@shlinux2>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v9 2/4] power: reset: add reboot mode driver
+Date: Mon, 20 Jun 2016 14:31:43 +0200
+Message-ID: <5767E22F.5030207@samsung.com>
+References: <1466404490-3315-1-git-send-email-andy.yan@rock-chips.com>
+ <1466404696-3464-1-git-send-email-andy.yan@rock-chips.com>
+ <5767A4C0.3080902@samsung.com> <5767A92E.5040602@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160620112651.GA26936@shlinux2>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Peter Chen <peter.chen@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>, Stephen Boyd <stephen.boyd@linaro.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Fabio Estevam <festevam@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Javier Martinez Canillas <javier@osg.samsung.com>, Alan Stern <stern@rowland.harvard.edu>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, troy.kisky@boundarydevices.com, Rob Herring <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, oscar@naiandei.net, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux USB List <linux-usb@vger.kernel.org>, linux-mmc@vger
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:44787 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752526AbcFTMnW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 08:43:22 -0400
+In-reply-to: <5767A92E.5040602@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Yan <andy.yan@rock-chips.com>, robh+dt@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de, bjorn.andersson@linaro.org
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, sre@kernel.org, matthias.bgg@gmail.com, linux-pm@vger.kernel.org, mbrugger@suse.com, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, richard@nod.at, Paul Gortmaker <paul.gortmaker@windriver.com>
 
-Hi,
+On 06/20/2016 10:28 AM, Andy Yan wrote:
+> Hi Krzysztof:
+>=20
+> On 2016=E5=B9=B406=E6=9C=8820=E6=97=A5 16:09, Krzysztof Kozlowski wro=
+te:
+>> On 06/20/2016 08:38 AM, Andy Yan wrote:
+>>> This driver parses the reboot commands like "reboot bootloader"
+>>> and "reboot recovery" to get a boot mode described in the
+>>> device tree , then call the write interfae to store the boot
+>>> mode in some place like special register or sram, which can
+>>> be read by the bootloader after system reboot, then the bootloader
+>>> can take different action according to the mode stored.
+>>>
+>>> This is commonly used on Android based devices, in order to
+>>> reboot the device into fastboot or recovery mode.
+>>>
+>>> Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+>>> Reviewed-by: Moritz Fischer <moritz.fischer@ettus.com>
+>>> Tested-by: John Stultz <john.stultz@linaro.org>
+>>> Acked-by: John Stultz <john.stultz@linaro.org>
+>>> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+>>>
+>>> ---
+>>>
+>>> Changes in v9:
+>>> - select MFD_SYSCON when syscon-reboot-mode driver enabled
+>>> - refactoring error handling in reboot_mode_register
+>>>
+>>> Changes in v8:
+>>> - do some cleanup when driver ubind
+>>>
+>>> Changes in v7:
+>>> - address some suggestions from Krzysztof, make syscon-reboot-mode
+>>> driver data self-contained.
+>>>
+>>> Changes in v6: None
+>>> Changes in v5:
+>>> - use two blank space under help in Kconfig
+>>> - use unsigned int instead of int for member magic in struct mode_i=
+nfo
+>>>
+>>> Changes in v4:
+>>> - make this driver depends on OF to avoid kbuild test error
+>>>
+>>> Changes in v3:
+>>> - scan multi properities
+>>> - add mask value for some platform which only use some bits of the
+>>> register
+>>>    to store boot mode magic value
+>>>
+>>> Changes in v2:
+>>> - move to dir drivers/power/reset/
+>>> - make syscon-reboot-mode a generic driver
+>>>
+>>> Changes in v1:
+>>> - fix the embarrassed compile warning
+>>> - correct the maskrom magic number
+>>> - check for the normal reboot
+>>>
+>>>   drivers/power/reset/Kconfig              |  14 ++++
+>>>   drivers/power/reset/Makefile             |   2 +
+>>>   drivers/power/reset/reboot-mode.c        | 128
+>>> +++++++++++++++++++++++++++++++
+>>>   drivers/power/reset/reboot-mode.h        |  14 ++++
+>>>   drivers/power/reset/syscon-reboot-mode.c | 100
+>>> ++++++++++++++++++++++++
+>>>   5 files changed, 258 insertions(+)
+>>>   create mode 100644 drivers/power/reset/reboot-mode.c
+>>>   create mode 100644 drivers/power/reset/reboot-mode.h
+>>>   create mode 100644 drivers/power/reset/syscon-reboot-mode.c
+>>>
+>>> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kcon=
+fig
+>>> index 9bb2622..4ceaf74 100644
+>>> --- a/drivers/power/reset/Kconfig
+>>> +++ b/drivers/power/reset/Kconfig
+>>> @@ -183,5 +183,19 @@ config POWER_RESET_ZX
+>>>       help
+>>>         Reboot support for ZTE SoCs.
+>>>   +config REBOOT_MODE
+>>> +    tristate
+>>> +
+>>> +config SYSCON_REBOOT_MODE
+>>> +    bool "Generic SYSCON regmap reboot mode driver"
+>> Why not tristate?
+>=20
+>    I see many reset drivers in this directories  use bool, so I follo=
+w
+> them.
 
-On Mon, Jun 20, 2016 at 7:26 PM, Peter Chen <hzpeterchen@gmail.com> wrote:
-> On Fri, Jun 17, 2016 at 12:16:48PM -0500, Rob Herring wrote:
->> On Fri, Jun 17, 2016 at 5:09 AM, Peter Chen <peter.chen@nxp.com> wrote:
->> > Add binding doc for generic usb power sequence driver, and update
->> > generic usb device binding-doc accordingly.
->> >
->> > Signed-off-by: Peter Chen <peter.chen@nxp.com>
->> > ---
->> >  .../bindings/power/pwrseq/pwrseq-usb-generic.txt   | 31 ++++++++++++++++++++++
->> >  .../devicetree/bindings/usb/usb-device.txt         |  2 ++
->> >  2 files changed, 33 insertions(+)
->> >  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
->> >
->> > diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
->> > new file mode 100644
->> > index 0000000..8ad98382
->> > --- /dev/null
->> > +++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
->> > @@ -0,0 +1,31 @@
->> > +The power sequence for generic USB Devices
->> > +
->> > +Some hard-wired USB devices need to do power sequence to let the
->> > +device work normally, the typical power sequence like: enable USB
->> > +PHY clock, toggle reset pin, etc. But current Linux USB driver
->> > +lacks of such code to do it, it may cause some hard-wired USB devices
->> > +works abnormal or can't be recognized by controller at all. The
->> > +power sequence will be done before this device can be found at USB
->> > +bus.
->> > +
->> > +Required properties:
->> > +- compatible : contains "usb-pwrseq-generic".
->>
->> In case I have not been clear, no.
->>
->> I am not going to accept anything along the lines of the current mmc
->> pwrseq. I am basically okay with Krzysztof's proposal as it is *only*
->> an added property and not a duplication of information. I'd suggest
->> you figure out how to make the kernel work with that rather than
->> trying to work-around whatever kernel limitations there are.
->>
->
-> I see.
->
-> Would you agree with below:
->
-> &usbotg1 {
->         vbus-supply = <&reg_usb_otg1_vbus>;
->         pinctrl-names = "default";
->         pinctrl-0 = <&pinctrl_usb_otg1_id>;
->         status = "okay";
->
->         #address-cells = <1>;
->         #size-cells = <0>;
->         hub: genesys@1 {
->                 compatible = "usb5e3,608";
->                 reg = <1>;
->
->                 power-sequence;
->                 reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
->                 reset-duration-us = <10>;
->                 clocks = <&clks IMX6SX_CLK_CKO>;
->
->                 #address-cells = <1>;
->                 #size-cells = <0>;
->                 ethernet: asix@1 {
->                         compatible = "usbb95,1708";
->                         reg = <1>;
->
->                         power-sequence;
->                         reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
->                         reset-duration-us = <15>;
->                         clocks = <&clks IMX6SX_CLK_IPG>;
->                 };
->         };
-> };
->
-> If the node has property "power-sequence", the pwrseq core will create
-> related platform device, and the driver under pwrseq driver will handle
-> power sequence stuffs. The property below "power-sequence" will be
-> handled at pwrseq driver.
++Cc Paul,
 
-Isn't this binding what Krzysztof proposed? His series also provides example
-code for enabling USB device power sequencing. Does it not work for you?
+I don't mind that although I don't see any particular objections for
+making it module-capable. In the same time I just reminded myself about
+Paul Gortmaker's long effort (like [1] [2]) about removing module
+capability from non-modular drivers.
 
-Having 2 series by 2 separate people doing the same thing but slightly
-different is very confusing.
+=46ollowing his rationale, I think either this should be a tristate or =
+the
+module stuff should be removed.
 
-Regards
-ChenYu
+Best regards,
+Krzysztof
+
+[1] https://lkml.org/lkml/2016/2/21/180
+[2] https://lkml.org/lkml/2016/6/13/682
+
+
