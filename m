@@ -1,84 +1,127 @@
-From: Mason <slash.tmp@free.fr>
-Subject: [PATCH] thermal: tango: add resume support
-Date: Mon, 20 Jun 2016 18:02:20 +0200
-Message-ID: <5768138C.6080206@free.fr>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 08/12] doc: binding: pwrseq-usb-generic: add binding doc
+ for generic usb power sequence driver
+Date: Mon, 20 Jun 2016 11:16:07 -0500
+Message-ID: <20160620161607.GA11427@rob-hp-laptop>
+References: <1466158165-9380-1-git-send-email-peter.chen@nxp.com>
+ <1466158165-9380-9-git-send-email-peter.chen@nxp.com>
+ <CAL_JsqLvs0s2TyfqPM5vtmyY81_X84VjCGjsGYbTgT4syOfp9Q@mail.gmail.com>
+ <20160620112651.GA26936@shlinux2>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:51423 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754451AbcFTQCi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 20 Jun 2016 12:02:38 -0400
+Received: from mail-ob0-f194.google.com ([209.85.214.194]:35565 "EHLO
+	mail-ob0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbcFTQQZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 12:16:25 -0400
+Content-Disposition: inline
+In-Reply-To: <20160620112651.GA26936@shlinux2>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Sebastian Frias <sf84@laposte.net>
+To: Peter Chen <hzpeterchen@gmail.com>
+Cc: Peter Chen <peter.chen@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, Stephen Boyd <stephen.boyd@linaro.org>, oscar@naiandei.net, Arnd Bergmann <arnd@arndb.de>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Linux USB List <linux-usb@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, troy.kisky@boundarydevices.com, Javier Martinez Canillas <javier@osg.samsung.com>, Philipp Zabel <p.zabel@pengutronix.>
 
-From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+On Mon, Jun 20, 2016 at 07:26:51PM +0800, Peter Chen wrote:
+> On Fri, Jun 17, 2016 at 12:16:48PM -0500, Rob Herring wrote:
+> > On Fri, Jun 17, 2016 at 5:09 AM, Peter Chen <peter.chen@nxp.com> wrote:
+> > > Add binding doc for generic usb power sequence driver, and update
+> > > generic usb device binding-doc accordingly.
+> > >
+> > > Signed-off-by: Peter Chen <peter.chen@nxp.com>
+> > > ---
+> > >  .../bindings/power/pwrseq/pwrseq-usb-generic.txt   | 31 ++++++++++++++++++++++
+> > >  .../devicetree/bindings/usb/usb-device.txt         |  2 ++
+> > >  2 files changed, 33 insertions(+)
+> > >  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
+> > > new file mode 100644
+> > > index 0000000..8ad98382
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-usb-generic.txt
+> > > @@ -0,0 +1,31 @@
+> > > +The power sequence for generic USB Devices
+> > > +
+> > > +Some hard-wired USB devices need to do power sequence to let the
+> > > +device work normally, the typical power sequence like: enable USB
+> > > +PHY clock, toggle reset pin, etc. But current Linux USB driver
+> > > +lacks of such code to do it, it may cause some hard-wired USB devices
+> > > +works abnormal or can't be recognized by controller at all. The
+> > > +power sequence will be done before this device can be found at USB
+> > > +bus.
+> > > +
+> > > +Required properties:
+> > > +- compatible : contains "usb-pwrseq-generic".
+> > 
+> > In case I have not been clear, no.
+> > 
+> > I am not going to accept anything along the lines of the current mmc
+> > pwrseq. I am basically okay with Krzysztof's proposal as it is *only*
+> > an added property and not a duplication of information. I'd suggest
+> > you figure out how to make the kernel work with that rather than
+> > trying to work-around whatever kernel limitations there are.
+> > 
+> 
+> I see.
+> 
+> Would you agree with below:
 
-Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
----
- drivers/thermal/tango_thermal.c | 27 +++++++++++++++++++++++++--
- 1 file changed, 25 insertions(+), 2 deletions(-)
+In general, yes. There are some points being discussed in the other 
+thread.
 
-diff --git a/drivers/thermal/tango_thermal.c b/drivers/thermal/tango_thermal.c
-index 70e0d9f406e9..d571ce2f546d 100644
---- a/drivers/thermal/tango_thermal.c
-+++ b/drivers/thermal/tango_thermal.c
-@@ -64,6 +64,12 @@ static const struct thermal_zone_of_device_ops ops = {
- 	.get_temp	= tango_get_temp,
- };
- 
-+static void tango_thermal_init(struct tango_thermal_priv *priv)
-+{
-+	writel(0, priv->base + TEMPSI_CFG);
-+	writel(CMD_ON, priv->base + TEMPSI_CMD);
-+}
-+
- static int tango_thermal_probe(struct platform_device *pdev)
- {
- 	struct resource *res;
-@@ -79,14 +85,30 @@ static int tango_thermal_probe(struct platform_device *pdev)
- 	if (IS_ERR(priv->base))
- 		return PTR_ERR(priv->base);
- 
-+	platform_set_drvdata(pdev, priv);
- 	priv->thresh_idx = IDX_MIN;
--	writel(0, priv->base + TEMPSI_CFG);
--	writel(CMD_ON, priv->base + TEMPSI_CMD);
-+	tango_thermal_init(priv);
- 
- 	tzdev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
- 	return PTR_ERR_OR_ZERO(tzdev);
- }
- 
-+#ifdef CONFIG_PM_SLEEP
-+static int tango_thermal_resume(struct device *dev)
-+{
-+	struct tango_thermal_priv *priv = dev_get_drvdata(dev);
-+	tango_thermal_init(priv);
-+
-+	return 0;
-+}
-+
-+static SIMPLE_DEV_PM_OPS(tango_thermal_pm, NULL, tango_thermal_resume);
-+
-+#define DEV_PM_OPS	&tango_thermal_pm
-+#else
-+#define DEV_PM_OPS	NULL
-+#endif
-+
- static const struct of_device_id tango_sensor_ids[] = {
- 	{
- 		.compatible = "sigma,smp8758-thermal",
-@@ -99,6 +121,7 @@ static struct platform_driver tango_thermal_driver = {
- 	.driver	= {
- 		.name		= "tango-thermal",
- 		.of_match_table	= tango_sensor_ids,
-+		.pm		= DEV_PM_OPS,
- 	},
- };
- 
--- 
-2.8.2
+> &usbotg1 {
+> 	vbus-supply = <&reg_usb_otg1_vbus>;
+> 	pinctrl-names = "default";
+> 	pinctrl-0 = <&pinctrl_usb_otg1_id>;
+> 	status = "okay";
+> 
+> 	#address-cells = <1>;
+> 	#size-cells = <0>;
+> 	hub: genesys@1 {
+> 		compatible = "usb5e3,608";
+> 		reg = <1>;
+> 
+> 		power-sequence;
+> 		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
+> 		reset-duration-us = <10>;
+
+I wonder if this really needs to be specified. A sufficiently long 
+default should be good enough for 90 something % of devices.
+
+> 		clocks = <&clks IMX6SX_CLK_CKO>;
+> 
+> 		#address-cells = <1>;
+> 		#size-cells = <0>;
+> 		ethernet: asix@1 {
+> 			compatible = "usbb95,1708";
+> 			reg = <1>;
+> 
+> 			power-sequence;
+> 			reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
+> 			reset-duration-us = <15>;
+> 			clocks = <&clks IMX6SX_CLK_IPG>;
+> 		};
+> 	};
+> };
+> 
+> If the node has property "power-sequence", the pwrseq core will create
+> related platform device, and the driver under pwrseq driver will handle
+> power sequence stuffs. 
+
+This I have issue with. If you are creating a platform device here, you 
+are trying to work-around limitations in the linux driver model. Either 
+we need some sort of pre-probe hook to the drivers to call or each 
+parent node driver is responsible for checking and calling pwr-seq 
+functions for child nodes. e.g. The host controller calls pwr-seq for 
+the hub, the hub driver calls the power seq for the asix chip. Soon as 
+we have a case too complex for the generic pwr-seq, we're going to need 
+the pre-probe hook as I don't want to see a continual expansion of 
+generic pwr-seq binding for ever more complex cases.
+
+> The property below "power-sequence" will be
+> handled at pwrseq driver.
+
+You cannot rely on order other than for logical readability. There are 
+no guarantees of either the dtb or kernel ordering of properties.
+
+Rob
