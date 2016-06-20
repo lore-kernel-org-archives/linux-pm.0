@@ -1,176 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / hibernate: Recycle safe pages after image restoration
-Date: Mon, 20 Jun 2016 03:13:44 +0200
-Message-ID: <1812721.V0eVCV6g4v@vostro.rjw.lan>
+From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Subject: Re: [RESEND PATCH v2 2/2] power/idle: enhance the precision of sleep_length
+Date: Mon, 20 Jun 2016 09:14:58 +0800
+Message-ID: <CAN2waFuLW0DPjJb=X-0kB9nVbB9aQoJ95EnVidPBpTBx3CYVvg@mail.gmail.com>
+References: <1466154816-17900-1-git-send-email-zhaoyang.huang@spreadtrum.com>
+ <1466154816-17900-2-git-send-email-zhaoyang.huang@spreadtrum.com>
+ <alpine.DEB.2.11.1606171125460.5839@nanos> <CAN2waFuETjxzRwST_EGY4GhxFUZZsOPkysrcBsKCSmcp5hV+UQ@mail.gmail.com>
+ <alpine.DEB.2.11.1606171346540.5839@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:51170 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751423AbcFTBKE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 19 Jun 2016 21:10:04 -0400
+Received: from mail-yw0-f177.google.com ([209.85.161.177]:33403 "EHLO
+	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751487AbcFTBO7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 19 Jun 2016 21:14:59 -0400
+Received: by mail-yw0-f177.google.com with SMTP id v77so5796255ywg.0
+        for <linux-pm@vger.kernel.org>; Sun, 19 Jun 2016 18:14:59 -0700 (PDT)
+In-Reply-To: <alpine.DEB.2.11.1606171346540.5839@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, =?UTF-8?B?Wmhhb3lhbmcgSHVhbmcgKOm7hOacnemYsyk=?= <zhaoyang.huang@spreadtrum.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-The hibernation image restoration code in snapshot.c allocates more
-safe pages (ie. pages that were not used by the image kernel before
-hibernation and therefore are suitable for storing temporary stuff
-that must not collide with the image kernel's memory contents).
-Those extra allocated safe pages are not freed and are never
-used later until control goes back to the image kernel.
-
-Moreover, after loading the image one of the memory bitmaps used
-for that and also built of safe pages is returned to the memory
-management subsystem via memory_bm_free().
-
-None of those things is particularly efficient, because arch-specific
-image restoration code usually needs safe pages too and allocates
-them using get_safe_page() which has to go through the memory
-management subsystem and then consult the hibernate subsystem's
-memory bitmaps to see if the page is really safe (and it if isn't,
-the allocation is repeated and so on).  All of that takes time
-and energy and the two sources of known safe pages that have
-already been allocated once can be put to a good use in there.
-
-For this reason, make it possible to recycle memory pages from
-the bitmap that's not necessary any more by adding them to the
-list of known safe pages instead of freeing them and rework
-get_safe_page() to make it return pages from that list first
-and only ask the memory management system for a new page if
-that list is empty.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/power/snapshot.c |   77 ++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 61 insertions(+), 16 deletions(-)
-
-Index: linux-pm/kernel/power/snapshot.c
-===================================================================
---- linux-pm.orig/kernel/power/snapshot.c
-+++ linux-pm/kernel/power/snapshot.c
-@@ -74,6 +74,30 @@ void __init hibernate_image_size_init(vo
-  */
- struct pbe *restore_pblist;
- 
-+/* struct linked_page is used to build chains of pages */
-+
-+#define LINKED_PAGE_DATA_SIZE	(PAGE_SIZE - sizeof(void *))
-+
-+struct linked_page {
-+	struct linked_page *next;
-+	char data[LINKED_PAGE_DATA_SIZE];
-+} __packed;
-+
-+/*
-+ * List of "safe" pages (ie. pages that were not used by the image kernel
-+ * before hibernation) that may be used as temporary storage for kernel image
-+ * memory contents.
-+ */
-+static struct linked_page *safe_pages_list;
-+
-+static void recycle_safe_page(void *page_address)
-+{
-+	struct linked_page *lp = page_address;
-+
-+	lp->next = safe_pages_list;
-+	safe_pages_list = lp;
-+}
-+
- /* Pointer to an auxiliary buffer (1 page) */
- static void *buffer;
- 
-@@ -115,6 +139,13 @@ static void *get_image_page(gfp_t gfp_ma
- 
- unsigned long get_safe_page(gfp_t gfp_mask)
- {
-+	if (safe_pages_list) {
-+		void *ret = safe_pages_list;
-+
-+		safe_pages_list = safe_pages_list->next;
-+		memset(ret, 0, PAGE_SIZE);
-+		return (unsigned long)ret;
-+	}
- 	return (unsigned long)get_image_page(gfp_mask, PG_SAFE);
- }
- 
-@@ -150,15 +181,6 @@ static inline void free_image_page(void
- 	__free_page(page);
- }
- 
--/* struct linked_page is used to build chains of pages */
--
--#define LINKED_PAGE_DATA_SIZE	(PAGE_SIZE - sizeof(void *))
--
--struct linked_page {
--	struct linked_page *next;
--	char data[LINKED_PAGE_DATA_SIZE];
--} __packed;
--
- static inline void
- free_list_of_pages(struct linked_page *list, int clear_page_nosave)
- {
-@@ -621,6 +643,34 @@ static void memory_bm_free(struct memory
- 	INIT_LIST_HEAD(&bm->zones);
- }
- 
-+static void recycle_zone_bm_rtree(struct mem_zone_bm_rtree *zone)
-+{
-+	struct rtree_node *node;
-+
-+	list_for_each_entry(node, &zone->nodes, list)
-+		recycle_safe_page(node->data);
-+
-+	list_for_each_entry(node, &zone->leaves, list)
-+		recycle_safe_page(node->data);
-+}
-+
-+static void memory_bm_recycle(struct memory_bitmap *bm)
-+{
-+	struct mem_zone_bm_rtree *zone;
-+	struct linked_page *p_list;
-+
-+	list_for_each_entry(zone, &bm->zones, list)
-+		recycle_zone_bm_rtree(zone);
-+
-+	p_list = bm->p_list;
-+	while (p_list) {
-+		struct linked_page *lp = p_list;
-+
-+		p_list = lp->next;
-+		recycle_safe_page(lp);
-+	}
-+}
-+
- /**
-  *	memory_bm_find_bit - Find the bit for pfn in the memory
-  *			     bitmap
-@@ -2104,11 +2154,6 @@ static int unpack_orig_pfns(unsigned lon
- 	return 0;
- }
- 
--/* List of "safe" pages that may be used to store data loaded from the suspend
-- * image
-- */
--static struct linked_page *safe_pages_list;
--
- #ifdef CONFIG_HIGHMEM
- /* struct highmem_pbe is used for creating the list of highmem pages that
-  * should be restored atomically during the resume from disk, because the page
-@@ -2546,9 +2591,9 @@ void snapshot_write_finalize(struct snap
- 	/* Restore page key for data page (s390 only). */
- 	page_key_write(handle->buffer);
- 	page_key_free();
--	/* Free only if we have loaded the image entirely */
-+	/* Do that only if we have loaded the image entirely */
- 	if (handle->cur > 1 && handle->cur > nr_meta_pages + nr_copy_pages) {
--		memory_bm_free(&orig_bm, PG_UNSAFE_CLEAR);
-+		memory_bm_recycle(&orig_bm);
- 		free_highmem_data();
- 	}
- }
-
+On 17 June 2016 at 19:50, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Fri, 17 Jun 2016, Zhaoyang Huang wrote:
+>> On 17 June 2016 at 17:27, Thomas Gleixner <tglx@linutronix.de> wrote:
+>> > On Fri, 17 Jun 2016, Zhaoyang Huang wrote:
+>> >> There should be a gap between tick_nohz_idle_enter and
+>> >> tick_nohz_get_sleep_length when idle, which will cause the
+>> >> sleep_length is not very precised. Change it in this patch.
+>> >
+>> > What kind of imprecision are we talking about? Seconds, nanoseconds or
+>> > lightyears?
+>> >
+>> > Your changelog lacks any form of useful information.
+>> >
+>> sorry for the confusion. The imprecision can be caused by, for
+>> example, the callback function registered for CPU_PM_ENTER, which may
+>> consume a period of time within the 'idle' time. Besides, I also
+>> wonder why not calc the 'sleep_length' in the
+>> tick_nohz_get_sleep_length?  This value is calculated at very
+>> beginning of the idle in current approach.
+>
+> You still are not explaining the amount of imprecision. What are you talking
+> about and is it really relevant in any way or are you just trying to solve an
+> acedemic issue?
+>
+> Thanks,
+>
+>         tglx
+>
+Indeed, it is depends on how deep the idle state is. For example, the
+lightest level for my current platform is 1100us, which sums up the
+entry,exit and min time. However, there is a callback which do memory
+management(merge the same page) in CPU_PM_ENTER will consume at least
+500us. In current approach, it cause 50% imprecision for this level of
+idle state.
