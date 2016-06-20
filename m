@@ -1,58 +1,40 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 07/12] power: pwrseq: rename file name for generic driver
-Date: Mon, 20 Jun 2016 14:48:20 +0200
-Message-ID: <5767E614.5030002@samsung.com>
-References: <1466158165-9380-1-git-send-email-peter.chen@nxp.com>
- <1466158165-9380-8-git-send-email-peter.chen@nxp.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 5/5] Input: Add tps65217 power button driver
+Date: Mon, 20 Jun 2016 08:06:04 -0500
+Message-ID: <20160620130604.GA23272@rob-hp-laptop>
+References: <20160616114110.23455-1-m.niestroj@grinn-global.com>
+ <20160616114110.23455-6-m.niestroj@grinn-global.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1466158165-9380-8-git-send-email-peter.chen@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, stephen.boyd@linaro.org, oscar@naiandei.net, arnd@arndb.de, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, linux-usb@vger.kernel.org, linux-mmc@vger.kernel.org, troy.kisky@boundarydevices.com, javier@osg.samsung.com, p.zabel@pengutronix.de, festevam@gmail.com, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20160616114110.23455-6-m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Marcin Niestroj <m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/17/2016 12:09 PM, Peter Chen wrote:
-> The individual driver file name is better to contain module name.
+On Thu, Jun 16, 2016 at 01:41:10PM +0200, Marcin Niestroj wrote:
+> This driver enables us to use tps65217's power button as KEY_POWER on
+> am335x boards (directly connected button in chiliboard, accessible pin
+> via expansion header in beaglebone). This patch has been tested with
+> chiliboard.
 > 
-> Signed-off-by: Peter Chen <peter.chen@nxp.com>
+> Signed-off-by: Marcin Niestroj <m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
 > ---
->  .../power/pwrseq/{pwrseq-simple.txt => mmc-pwrseq-simple.txt}         | 0
->  drivers/power/pwrseq/Makefile                                         | 4 ++--
->  drivers/power/pwrseq/{pwrseq.c => core.c}                             | 0
->  drivers/power/pwrseq/{pwrseq_simple.c => pwrseq_mmc_simple.c}         | 0
->  4 files changed, 2 insertions(+), 2 deletions(-)
->  rename Documentation/devicetree/bindings/power/pwrseq/{pwrseq-simple.txt => mmc-pwrseq-simple.txt} (100%)
->  rename drivers/power/pwrseq/{pwrseq.c => core.c} (100%)
->  rename drivers/power/pwrseq/{pwrseq_simple.c => pwrseq_mmc_simple.c} (100%)
+> depends on patches 1-4 in series
 > 
-> diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-simple.txt b/Documentation/devicetree/bindings/power/pwrseq/mmc-pwrseq-simple.txt
-> similarity index 100%
-> rename from Documentation/devicetree/bindings/power/pwrseq/pwrseq-simple.txt
-> rename to Documentation/devicetree/bindings/power/pwrseq/mmc-pwrseq-simple.txt
-> diff --git a/drivers/power/pwrseq/Makefile b/drivers/power/pwrseq/Makefile
-> index 9e40e4b..d475e01 100644
-> --- a/drivers/power/pwrseq/Makefile
-> +++ b/drivers/power/pwrseq/Makefile
-> @@ -1,3 +1,3 @@
-> -obj-$(CONFIG_POWER_SEQ)		+= pwrseq.o
-> -obj-$(CONFIG_POWER_SEQ_SIMPLE)	+= pwrseq_simple.o
-> +obj-$(CONFIG_POWER_SEQ)		+= core.o
-> +obj-$(CONFIG_POWER_SEQ_SIMPLE)	+= pwrseq_mmc_simple.o
+>  .../bindings/input/tps65217-pwrbutton.txt          |  17 +++
 
-Although the driver was developed for MMC but it is quite generic (or
-rather - mmc independent). The name of the driver is just
-"pwrseq_simple" so I think MMC prefix is not needed.
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
-Best regards,
-Krzysztof
+>  drivers/input/misc/Kconfig                         |  10 ++
+>  drivers/input/misc/Makefile                        |   1 +
+>  drivers/input/misc/tps65217-pwrbutton.c            | 131 +++++++++++++++++++++
+>  4 files changed, 159 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/input/tps65217-pwrbutton.txt
+>  create mode 100644 drivers/input/misc/tps65217-pwrbutton.c
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
