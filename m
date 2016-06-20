@@ -1,71 +1,91 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 08/12] doc: binding: pwrseq-usb-generic: add binding doc
- for generic usb power sequence driver
-Date: Mon, 20 Jun 2016 18:06:10 +0100
-Message-ID: <20160620170609.GA26099@sirena.org.uk>
-References: <1466158165-9380-1-git-send-email-peter.chen@nxp.com>
- <1466158165-9380-9-git-send-email-peter.chen@nxp.com>
- <CAL_JsqLvs0s2TyfqPM5vtmyY81_X84VjCGjsGYbTgT4syOfp9Q@mail.gmail.com>
- <20160620112651.GA26936@shlinux2>
- <20160620161607.GA11427@rob-hp-laptop>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] devfreq_cooling: pass a pointer to devfreq in the power
+ model callbacks
+Date: Mon, 20 Jun 2016 18:36:17 +0100
+Message-ID: <20160620173617.GC2941@e104805>
+References: <1464945931-5200-1-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="fKtH0JUtvN5p2ETH"
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:34828 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755873AbcFTRnK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 20 Jun 2016 13:43:10 -0400
 Content-Disposition: inline
-In-Reply-To: <20160620161607.GA11427@rob-hp-laptop>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Boyd <stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Linux USB List <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Maciej S. Szmigiero" <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Philipp Zabel <p.zabel@pengutron>
+In-Reply-To: <1464945931-5200-1-git-send-email-javi.merino@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, lukasz.luba@arm.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
+Eduardo, Rui,
 
---fKtH0JUtvN5p2ETH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jun 03, 2016 at 10:25:31AM +0100, Javi Merino wrote:
+> When the devfreq cooling device was designed, it was an oversight not to
+> pass a pointer to the struct devfreq as the first parameters of the
+> callbacks.  The design patterns of the kernel suggest it for a good
+> reason.
+> 
+> By passing a pointer to struct devfreq, the driver can register one
+> function that works with multiple devices.  With the current
+> implementation, a driver that can work with multiple devices has to
+> create multiple copies of the same function with different parameters so
+> that each devfreq_cooling_device can use the appropriate one.  By
+> passing a pointer to struct devfreq, the driver can identify which
+> device it's referring to.
+> 
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Reviewed-by: Punit Agrawal <punit.agrawal@arm.com>
+> Signed-off-by: Javi Merino <javi.merino@arm.com>
+> ---
+>  drivers/thermal/devfreq_cooling.c | 5 +++--
+>  include/linux/devfreq_cooling.h   | 6 ++++--
+>  2 files changed, 7 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+> index 01f0015f80dc..c549d83a0c7d 100644
+> --- a/drivers/thermal/devfreq_cooling.c
+> +++ b/drivers/thermal/devfreq_cooling.c
+> @@ -238,7 +238,7 @@ get_static_power(struct devfreq_cooling_device *dfc, unsigned long freq)
+>  		return 0;
+>  	}
+>  
+> -	return dfc->power_ops->get_static_power(voltage);
+> +	return dfc->power_ops->get_static_power(df, voltage);
+>  }
+>  
+>  /**
+> @@ -262,7 +262,8 @@ get_dynamic_power(struct devfreq_cooling_device *dfc, unsigned long freq,
+>  	struct devfreq_cooling_power *dfc_power = dfc->power_ops;
+>  
+>  	if (dfc_power->get_dynamic_power)
+> -		return dfc_power->get_dynamic_power(freq, voltage);
+> +		return dfc_power->get_dynamic_power(dfc->devfreq, freq,
+> +						    voltage);
+>  
+>  	freq_mhz = freq / 1000000;
+>  	power = (u64)dfc_power->dyn_power_coeff * freq_mhz * voltage * voltage;
+> diff --git a/include/linux/devfreq_cooling.h b/include/linux/devfreq_cooling.h
+> index 7adf6cc4b305..959714e93e5b 100644
+> --- a/include/linux/devfreq_cooling.h
+> +++ b/include/linux/devfreq_cooling.h
+> @@ -37,8 +37,10 @@
+>   *			@dyn_power_coeff * frequency * voltage^2
+>   */
+>  struct devfreq_cooling_power {
+> -	unsigned long (*get_static_power)(unsigned long voltage);
+> -	unsigned long (*get_dynamic_power)(unsigned long freq,
+> +	unsigned long (*get_static_power)(struct devfreq *devfreq,
+> +					  unsigned long voltage);
+> +	unsigned long (*get_dynamic_power)(struct devfreq *devfreq,
+> +					   unsigned long freq,
+>  					   unsigned long voltage);
+>  	unsigned long dyn_power_coeff;
+>  };
 
-On Mon, Jun 20, 2016 at 11:16:07AM -0500, Rob Herring wrote:
-> On Mon, Jun 20, 2016 at 07:26:51PM +0800, Peter Chen wrote:
+If there are no objections, can you pick this for the next merge
+window?
 
-> > If the node has property "power-sequence", the pwrseq core will create
-> > related platform device, and the driver under pwrseq driver will handle
-> > power sequence stuffs.=20
-
-> This I have issue with. If you are creating a platform device here, you=
-=20
-> are trying to work-around limitations in the linux driver model. Either=
-=20
-> we need some sort of pre-probe hook to the drivers to call or each=20
-> parent node driver is responsible for checking and calling pwr-seq=20
-> functions for child nodes. e.g. The host controller calls pwr-seq for=20
-> the hub, the hub driver calls the power seq for the asix chip. Soon as=20
-> we have a case too complex for the generic pwr-seq, we're going to need=
-=20
-> the pre-probe hook as I don't want to see a continual expansion of=20
-> generic pwr-seq binding for ever more complex cases.
-
-I think it's fairly clear that we need one or both of these mechanisms
-for enumerable buses in embedded contexts - it's something that keeps
-croping up.
-
---fKtH0JUtvN5p2ETH
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXaCKAAAoJECTWi3JdVIfQSx0H/A8CgWBIxx6BRObIJtvZqknF
-Q3EiIP60kb6FR1CxObdWXAf7bx9gFZYaOQ4nyh1lS40woh55wStbDlsAfe3/xRVe
-ZgnwYlWgL2DVeyG0nqd3VFE+gTCVWgFZM0PMJrcNTUsVUItoRHeZHTPnskwuGa8i
-uVCBvvOjJ9vKenPNCpv9S8sqk51d1sQ/e9Z6ydy15xmQVNkTczSVpJW4H6N3mqYA
-IEugYPm3AzJ8fOFMrU84f2vwL7xPfnsZjseczRVobCebL1iJub0b+3WxlUUy1aiE
-oJ9uAVSYl0TOgo6HoWO3t4KFNU6MFNTlAwCRVmBzIIMhH9GYDOrZDOsP6awOEVE=
-=aFUu
------END PGP SIGNATURE-----
-
---fKtH0JUtvN5p2ETH--
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Javi
