@@ -1,86 +1,84 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH v9 2/4] power: reset: add reboot mode driver
-Date: Mon, 20 Jun 2016 10:40:02 -0400
-Message-ID: <20160620144002.GY12567@windriver.com>
-References: <1466404490-3315-1-git-send-email-andy.yan@rock-chips.com>
- <1466404696-3464-1-git-send-email-andy.yan@rock-chips.com>
- <5767A4C0.3080902@samsung.com>
- <5767A92E.5040602@rock-chips.com>
- <5767E22F.5030207@samsung.com>
+From: Mason <slash.tmp@free.fr>
+Subject: [PATCH] thermal: tango: add resume support
+Date: Mon, 20 Jun 2016 18:02:20 +0200
+Message-ID: <5768138C.6080206@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.windriver.com ([147.11.1.11]:56207 "EHLO
-	mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755197AbcFTOlN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 10:41:13 -0400
-Content-Disposition: inline
-In-Reply-To: <5767E22F.5030207@samsung.com>
+Received: from smtp2-g21.free.fr ([212.27.42.2]:51423 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754451AbcFTQCi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 20 Jun 2016 12:02:38 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Andy Yan <andy.yan@rock-chips.com>, robh+dt@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de, bjorn.andersson@linaro.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, sre@kernel.org, matthias.bgg@gmail.com, linux-pm@vger.kernel.org, mbrugger@suse.com, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, richard@nod.at
+To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Sebastian Frias <sf84@laposte.net>
 
-[Re: [PATCH v9 2/4] power: reset: add reboot mode driver] On 20/06/2016=
- (Mon 14:31) Krzysztof Kozlowski wrote:
+From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
 
-> On 06/20/2016 10:28 AM, Andy Yan wrote:
-> > Hi Krzysztof:
-> >=20
-> > On 2016=E5=B9=B406=E6=9C=8820=E6=97=A5 16:09, Krzysztof Kozlowski w=
-rote:
-> >> On 06/20/2016 08:38 AM, Andy Yan wrote:
+Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+---
+ drivers/thermal/tango_thermal.c | 27 +++++++++++++++++++++++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
 
-[...]
-
-> >>> +
-> >>> +config SYSCON_REBOOT_MODE
-> >>> +    bool "Generic SYSCON regmap reboot mode driver"
-> >> Why not tristate?
-> >=20
-> >    I see many reset drivers in this directories  use bool, so I fol=
-low
-> > them.
-
-Andy - understood, but mistakes done in the past do not justify
-repeating them again in the present.  OK, this is not strictly a mistak=
-e
-in that it causes an error, but it isn't an ideal approach.
-
->=20
-> +Cc Paul,
->=20
-> I don't mind that although I don't see any particular objections for
-> making it module-capable. In the same time I just reminded myself abo=
-ut
-> Paul Gortmaker's long effort (like [1] [2]) about removing module
-> capability from non-modular drivers.
-
-Thanks -- it is nice to see that people are starting to add this to
-their review checklist ; early on they were getting added faster than I
-could remove them.  :-(   But I think we are making ground now.
-
-=46or this case, I don't have any bias for it being built-in vs. being
-modular, so long as the code is actually consistent with the Kconfig.=20
-
-=46or existing bool settings I just remove the modular references, sinc=
-e I
-can't be extending the functionality to include a modular usage when I
-can't test it or even be sure if a module has a sensible use case.
-
-Paul.
---
-
->=20
-> Following his rationale, I think either this should be a tristate or =
-the
-> module stuff should be removed.
->=20
-> Best regards,
-> Krzysztof
->=20
-> [1] https://lkml.org/lkml/2016/2/21/180
-> [2] https://lkml.org/lkml/2016/6/13/682
->=20
->=20
+diff --git a/drivers/thermal/tango_thermal.c b/drivers/thermal/tango_thermal.c
+index 70e0d9f406e9..d571ce2f546d 100644
+--- a/drivers/thermal/tango_thermal.c
++++ b/drivers/thermal/tango_thermal.c
+@@ -64,6 +64,12 @@ static const struct thermal_zone_of_device_ops ops = {
+ 	.get_temp	= tango_get_temp,
+ };
+ 
++static void tango_thermal_init(struct tango_thermal_priv *priv)
++{
++	writel(0, priv->base + TEMPSI_CFG);
++	writel(CMD_ON, priv->base + TEMPSI_CMD);
++}
++
+ static int tango_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+@@ -79,14 +85,30 @@ static int tango_thermal_probe(struct platform_device *pdev)
+ 	if (IS_ERR(priv->base))
+ 		return PTR_ERR(priv->base);
+ 
++	platform_set_drvdata(pdev, priv);
+ 	priv->thresh_idx = IDX_MIN;
+-	writel(0, priv->base + TEMPSI_CFG);
+-	writel(CMD_ON, priv->base + TEMPSI_CMD);
++	tango_thermal_init(priv);
+ 
+ 	tzdev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
+ 	return PTR_ERR_OR_ZERO(tzdev);
+ }
+ 
++#ifdef CONFIG_PM_SLEEP
++static int tango_thermal_resume(struct device *dev)
++{
++	struct tango_thermal_priv *priv = dev_get_drvdata(dev);
++	tango_thermal_init(priv);
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(tango_thermal_pm, NULL, tango_thermal_resume);
++
++#define DEV_PM_OPS	&tango_thermal_pm
++#else
++#define DEV_PM_OPS	NULL
++#endif
++
+ static const struct of_device_id tango_sensor_ids[] = {
+ 	{
+ 		.compatible = "sigma,smp8758-thermal",
+@@ -99,6 +121,7 @@ static struct platform_driver tango_thermal_driver = {
+ 	.driver	= {
+ 		.name		= "tango-thermal",
+ 		.of_match_table	= tango_sensor_ids,
++		.pm		= DEV_PM_OPS,
+ 	},
+ };
+ 
+-- 
+2.8.2
