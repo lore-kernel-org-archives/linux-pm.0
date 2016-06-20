@@ -1,111 +1,47 @@
-From: Marcin Niestroj <m.niestroj@grinn-global.com>
-Subject: Re: [PATCH v3 1/5] mfd: tps65217: Add support for IRQs
-Date: Mon, 20 Jun 2016 12:56:42 +0200
-Message-ID: <90cc8e89-3132-e43e-371b-842774a5a7fc@grinn-global.com>
-References: <20160616114110.23455-1-m.niestroj@grinn-global.com>
- <20160616114110.23455-2-m.niestroj@grinn-global.com>
- <5762A3AC.9010409@ti.com>
- <123e6759-fa44-48f0-860d-623aaa39f8ea@grinn-global.com>
- <57640C3C.1070001@ti.com>
- <062438af-c05f-00b3-adc6-ac27e7cec892@grinn-global.com>
- <576420C4.4060002@ti.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Domains: Convert pm_genpd_init() to return an error code
+Date: Mon, 20 Jun 2016 13:17:17 +0200
+Message-ID: <CAPDyKFqhTyGARX+ijvtsfN8GWpFQ=S00K0EidfqmaWXqz+fJ2w@mail.gmail.com>
+References: <1466159272-9726-1-git-send-email-ulf.hansson@linaro.org> <CAMuHMdVofBY-kNULQHWmoAuovLfK4HG4Ce1VORrKekOG9vAbWg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <576420C4.4060002@ti.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, Lee Jones <lee.jones@linaro.org>
-Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:37123 "EHLO
+	mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751577AbcFTLRT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 07:17:19 -0400
+Received: by mail-wm0-f44.google.com with SMTP id a66so73761729wme.0
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jun 2016 04:17:19 -0700 (PDT)
+In-Reply-To: <CAMuHMdVofBY-kNULQHWmoAuovLfK4HG4Ce1VORrKekOG9vAbWg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-On 17.06.2016 18:09, Grygorii Strashko wrote:
-> On 06/17/2016 06:31 PM, Marcin Niestroj wrote:
+On 17 June 2016 at 12:59, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Ulf,
+>
+> On Fri, Jun 17, 2016 at 12:27 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> The are already cases when pm_genpd_init() can fail. Currently we hide the
+>> failures instead of propagating an error code, which is a better method.
 >>
+>> Moreover, to prepare for future changes like moving away from using a
+>> fixed array-size of the struct genpd_power_state, to instead dynamically
+>> allocate data for it, the pm_genpd_init() API needs to be able to return
+>> an error code, as allocation can fail.
 >>
->> On 17.06.2016 16:42, Grygorii Strashko wrote:
->>> On 06/17/2016 05:05 PM, Marcin Niestroj wrote:
->>>>
->>>> On 16.06.2016 15:03, Grygorii Strashko wrote:
->>>>> On 06/16/2016 02:41 PM, Marcin Niestroj wrote:
->>>>>> Add support for handling IRQs: power button, AC and USB power state
->>>>>> changes. Mask and interrupt bits are shared within one register, which
->>>>>> prevents us to use regmap_irq implementation. New irq_domain is
->>>>>> created in
->>>>>> order to add interrupt handling for each tps65217's subsystem. IRQ
->>>>>> resources have been added for charger subsystem to be able to notify
->>>>>> about
->>>>>> AC and USB state changes.
->>>>>>
->>>>>> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
->>>>>> ---
->>>>>>   drivers/mfd/Kconfig          |   1 +
->>>>>>   drivers/mfd/tps65217.c       | 194
->>>>>> +++++++++++++++++++++++++++++++++++++++++--
->>>>>>   include/linux/mfd/tps65217.h |  11 +++
->>>>>>   3 files changed, 198 insertions(+), 8 deletions(-)
->>>
->>> [...]
->>>
->>>>>> +{
->>>>>> +    int ret;
->>>>>> +
->>>>>> +    mutex_init(&tps->irq_lock);
->>>>>> +
->>>>>> +    /* Mask all interrupt sources */
->>>>>> +    tps->irq_mask = (TPS65217_INT_RESERVEDM | TPS65217_INT_PBM
->>>>>> +            | TPS65217_INT_ACM | TPS65217_INT_USBM);
->>>>>> +    tps65217_reg_write(tps, TPS65217_REG_INT, tps->irq_mask,
->>>>>> +            TPS65217_PROTECT_NONE);
->>>>>> +
->>>>>> +    tps->irq_domain = irq_domain_add_linear(tps->dev->of_node,
->>>>>> +        TPS65217_NUM_IRQ, &tps65217_irq_domain_ops, tps);
->>>>>> +    if (!tps->irq_domain) {
->>>>>> +        dev_err(tps->dev, "Could not create IRQ domain\n");
->>>>>> +        return -ENOMEM;
->>>>>> +    }
->>>>>> +
->>>>>> +    ret = devm_request_threaded_irq(tps->dev, irq, NULL,
->>>>>> +                    tps65217_irq_thread,
->>>>>> +                    IRQF_TRIGGER_RISING | IRQF_ONESHOT,
->>>>>
->>>>> Are there any reasons why IRQ trigger type specified here explicitly?
->>>>
->>>> Not really. I have configured it that way, it worked and I forgot about
->>>> it when preparing patches. Could you give some hint here?
->>>>
->>>
->>> It's better to get it from DT and in case of DT boot it will - the real
->>> IRQ trigger type may depends on board.
->>>
->>
->> So what I understand, I need to remove IRQF_TRIGGER_RISING here.
->> Addidional flags will be passed by 'irq_flags' in
->> "interrupts = <irq_num irq_flags>" in DT, right?
+>> Current users of the pm_genpd_init() is thus requested to start dealing
+>> with error codes. In the transition phase, users will have to live with
+>> only error messages being printed to log.
 >
-> Indeed. And usually it is not "Addidional flags" - its mandatory cell for
->  the most of IRQ controllers.
->
-> The problem with hard-coded IRQ trigger type values in code is that on
-> different boards IRQ can be wired on different way - to the GIC/INTC,
-> to SoC GPIO, to GPIO expanders and .. And they can support different sets
-> of allowed IRQ triggering types. More over, on some boards IRQ signal can be
-> inverted, for example :P
->
-> So, It's more generic to not hard-code it if your driver is expected to be
-> used only with DT.
-> Also as per TRM http://www.ti.com/lit/ds/symlink/tps65217.pdf
-> nINT - interrupt output (active low, open drain). Pin is pulled low if an interrupt bit is set. The
->        output goes high after the bit causing the interrupt in register INT has been read.
->        The interrupt sources can be masked in register INT, so no interrupt is generated when the
->        corresponding interrupt bit is set
->
->
+> What can we do in case of error? It's not like anything is going to work
+> if PM domains are failing...
 
-Thanks very much for making this clear to me.
+I guess that would depend on the SoC and what particular PM domain
+that would be failing.
 
-I have just send new patch version with fixes from your comments.
+Due to that, I would prefer to allow the user to be able to act on
+errors - currently they can't.
 
--- 
-Regards,
-Marcin Niestroj
+Kind regards
+Uffe
