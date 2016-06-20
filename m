@@ -1,64 +1,52 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: ktime_get_ts64() splat during resume
-Date: Mon, 20 Jun 2016 23:15:18 +0200
-Message-ID: <CAJZ5v0grcXRW6tukVmyZ3Xi0PqXSyf0+swfOLjxJkNawsSP-QA@mail.gmail.com>
-References: <20160617105435.GB15997@pd.tnic> <20160617161247.GB3912@pd.tnic>
- <CAJZ5v0jZypC17Qbvn3TXe5Z6M5JrGaktAwXQwAW=UEhccRv=nw@mail.gmail.com>
- <2816580.laIl5zA8fL@vostro.rjw.lan> <CA+55aFwGshPVCeBeMbY_RYrA+UR7-jLjy4SCbcHTxQ=f2KwESA@mail.gmail.com>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: Re: [PATCH v9 3/4] ARM: dts: rockchip: add syscon-reboot-mode DT node
+Date: Mon, 20 Jun 2016 14:55:46 -0700
+Message-ID: <20160620215545.GE1256@tuxbot>
+References: <1466404490-3315-1-git-send-email-andy.yan@rock-chips.com>
+ <1466404769-3534-1-git-send-email-andy.yan@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CA+55aFwGshPVCeBeMbY_RYrA+UR7-jLjy4SCbcHTxQ=f2KwESA@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <1466404769-3534-1-git-send-email-andy.yan@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Borislav Petkov <bp@alien8.de>, Logan Gunthorpe <logang@deltatee.com>, Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Stable <stable@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
+To: Andy Yan <andy.yan@rock-chips.com>
+Cc: robh+dt@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de, k.kozlowski@samsung.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, sre@kernel.org, matthias.bgg@gmail.com, linux-pm@vger.kernel.org, mbrugger@suse.com, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, richard@nod.at
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 20, 2016 at 8:29 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> On Mon, Jun 20, 2016 at 7:38 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>
->> Overall, we seem to be heading towards the "really weird" territory here.
->
-> So the whole commit that Boris bisected down to is weird to me.
->
-> Why isn't the temporary text mapping just set up unconditionally in
-> the temp_level4_pgt?
->
-> Why does it have that insane "let's leave the temp_level4_pgt alone
-> until we actually switch to it, and save away restore_pgd_addr and the
-> restore_pgd, to then be set up at restore time"?
->
-> All the other temporary mappings are set up statically in the
-> temp_level4_pgt, why not that one?
+On Sun 19 Jun 23:39 PDT 2016, Andy Yan wrote:
 
-The text mapping in temp_level4_pgt has to map the image kernel's
-physical entry address to the same virtual address that the image
-kernel had for it, because the image kernel will switch over to its
-own page tables first and it will use its own kernel text mapping from
-that point on.  That may not be the same as the text mapping of the
-(currently running) restore (or "boot") kernel.
+> Rockchip platform use a SYSCON mapped register store
+> the reboot mode magic value for bootloader to use when
+> system reboot. So add syscon-reboot-mode driver DT node
+> for rk3xxx/rk3036/rk3288 based platform
+> 
+> Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+> 
+[..]
+> diff --git a/include/dt-bindings/soc/rockchip_boot-mode.h b/include/dt-bindings/soc/rockchip_boot-mode.h
+> new file mode 100644
+> index 0000000..ae7c867
+> --- /dev/null
+> +++ b/include/dt-bindings/soc/rockchip_boot-mode.h
+> @@ -0,0 +1,15 @@
+> +#ifndef __ROCKCHIP_BOOT_MODE_H
+> +#define __ROCKCHIP_BOOT_MODE_H
+> +
+> +/*high 24 bits is tag, low 8 bits is type*/
+> +#define REBOOT_FLAG		0x5242C300
+> +/* normal boot */
+> +#define BOOT_NORMAL		(REBOOT_FLAG + 0)
+> +/* enter bootloader rockusb mode */
+> +#define BOOT_BL_DOWNLOAD	(REBOOT_FLAG + 1)
+> +/* enter recovery */
+> +#define BOOT_RECOVERY		(REBOOT_FLAG + 3)
+> + /* enter fastboot mode */
+> +#define BOOT_FASTBOOT		(REBOOT_FLAG + 9)
 
-So if we set up the text mapping in temp_level4_pgt upfront, we
-basically can't reference the original kernel text (or do any
-addressing relative to it) any more after switching over to
-temp_level4_pgt.
+The names of these defines are too generic for being in a header file.
+You should likely make them include "ROCKCHIP" and "BOOT_MODE".
 
-For some reason I thought that was not doable, but now that I look at
-the code it looks like it can be done.  I'll try doing that.
-
-> I suspect whatever corruption happens boils down to the same issue
-> that made people do that odd decision in the first place.
-
-The breakage appears to happen regardless of these changes, though.
-
-> And regardless, those games are too ugly to live. So I would suggest
-> that that original commit should just be considered broken, and
-> reverted (or just removed - I'm not sure if it's in a stable branch or
-> not) and the fix be rethought so that the code mapping can be done
-> once and for all and *without* the extra games.
-
-OK
-
-Thanks,
-Rafael
+Regards,
+Bjorn
