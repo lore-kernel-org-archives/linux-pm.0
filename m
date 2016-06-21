@@ -1,34 +1,59 @@
-From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v9 2/4] power: reset: add reboot mode driver
-Date: Tue, 21 Jun 2016 11:32:51 +0200
-Message-ID: <576909C3.4010109@samsung.com>
-References: <1466404490-3315-1-git-send-email-andy.yan@rock-chips.com>
- <1466404696-3464-1-git-send-email-andy.yan@rock-chips.com>
- <5767A4C0.3080902@samsung.com> <5767A92E.5040602@rock-chips.com>
- <5767E22F.5030207@samsung.com> <20160620144002.GY12567@windriver.com>
- <5768DBCB.4090903@rock-chips.com>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [LKP] [lkp] [x86 tsc] 19fa5e7364: WARNING: CPU: 0 PID: 0 at
+ arch/x86/mm/extable.c:50 ex_handler_rdmsr_unsafe+0x72/0x80
+Date: Tue, 21 Jun 2016 12:10:11 +0200
+Message-ID: <1e840272-9a0c-1e95-0356-12c031df7458@redhat.com>
+References: <CADjb_WQVKRWZs+d2iK17i42_kRHBN=m8xo5i3ydDv1QWbT5MyA@mail.gmail.com>
+ <SG2PR02MB15503CF343A5B5868F11C637802B0@SG2PR02MB1550.apcprd02.prod.outlook.com>
+ <CANRm+Cyu8Vd_BudEPFBnvq4MuA0XY4RTNudfpwbEiM5yCzJpZw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <5768DBCB.4090903-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Paul Gortmaker <paul.gortmaker-CWA4WttNNZF54TAoqtyWWQ@public.gmane.org>
-Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mbrugger-IBi9RG/b67k@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, moritz.fischer-+aYTwkv1SeIAvxtiuMwx3w@public.gmane.org, richard-/L3Ra7n9ekc@public.gmane.org
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CANRm+Cyu8Vd_BudEPFBnvq4MuA0XY4RTNudfpwbEiM5yCzJpZw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Wanpeng Li <kernellwp@gmail.com>, Yu Chen <yu.chen.surf@gmail.com>, kernel test robot <xiaolong.ye@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, linux-acpi@vger.kernel.org, Len Brown <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>, Radim Krcmar <rkrcmar@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, lkp@01.org
 List-Id: linux-pm@vger.kernel.org
 
-On 06/21/2016 08:16 AM, Andy Yan wrote:
->   I will remove the module related stuff in the next version.
->>> Following his rationale, I think either this should be a tristate or the
->>> module stuff should be removed.
-
-How about making it tristate? I think there isn't any obstacles for this
-driver being a module. Some distros like modules.
-
-Best regards.
-Krzysztof
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+DQoNCk9uIDIxLzA2LzIwMTYgMDg6MDgsIFdhbnBlbmcgTGkgd3JvdGU6DQo+IENjIEtWTSBN
+TCwgUGFvbG8sIFJhZGltLA0KPj4+IEZZSSwgcmF3IFFFTVUgY29tbWFuZCBsaW5lIGlzOg0K
+Pj4+DQo+Pj4gICAgICAgICBxZW11LXN5c3RlbS14ODZfNjQgLWVuYWJsZS1rdm0gLWNwdSBT
+YW5keUJyaWRnZSAta2VybmVsIC9wa2cvbGludXgveDg2XzY0LXJhbmRjb25maWctdzAtMDYx
+ODA2MjgvZ2NjLTYvMTlmYTVlNzM2NDdmZGUxZTZhNzAzOGE4ZjA1Y2RkZjRjNDNmMDhkMy92
+bWxpbnV6LTQuNy4wLXJjMy0wMDAwOS1nMTlmYTVlNyAtYXBwZW5kICdyb290PS9kZXYvcmFt
+MCB1c2VyPWxrcCBqb2I9L2xrcC9zY2hlZHVsZWQvdm0ta2J1aWxkLXlvY3RvLXg4Nl82NC0z
+Mi9iaXNlY3RfYm9vdC0xLXlvY3RvLW1pbmltYWwteDg2XzY0LmNnei14ODZfNjQtcmFuZGNv
+bmZpZy13MC0wNjE4MDYyOC0xOWZhNWU3MzY0N2ZkZTFlNmE3MDM4YThmMDVjZGRmNGM0M2Yw
+OGQzLTIwMTYwNjE4LTI1NTM1LWg4MmJheC0wLnlhbWx+IEFSQ0g9eDg2XzY0IGtjb25maWc9
+eDg2XzY0LXJhbmRjb25maWctdzAtMDYxODA2MjggYnJhbmNoPWludGVybmFsLWV5d2EvbWFz
+dGVyIGNvbW1pdD0xOWZhNWU3MzY0N2ZkZTFlNmE3MDM4YThmMDVjZGRmNGM0M2YwOGQzIEJP
+T1RfSU1BR0U9L3BrZy9saW51eC94ODZfNjQtcmFuZGNvbmZpZy13MC0wNjE4MDYyOC9nY2Mt
+Ni8xOWZhNWU3MzY0N2ZkZTFlNmE3MDM4YThmMDVjZGRmNGM0M2YwOGQzL3ZtbGludXotNC43
+LjAtcmMzLTAwMDA5LWcxOWZhNWU3IG1heF91cHRpbWU9NjAwIFJFU1VMVF9ST09UPS9yZXN1
+bHQvYm9vdC8xL3ZtLWtidWlsZC15b2N0by14ODZfNjQveW9jdG8tbWluaW1hbC14ODZfNjQu
+Y2d6L3g4Nl82NC1yYW5kY29uZmlnLXcwLTA2MTgwNjI4L2djYy02LzE5ZmE1ZTczNjQ3ZmRl
+MWU2YTcwMzhhOGYwNWNkZGY0YzQzZjA4ZDMvMCBMS1BfU0VSVkVSPWlubiBlYXJseXByaW50
+az10dHlTMCwxMTUyMDAgc3lzdGVtZC5sb2dfbGV2ZWw9ZXJyIGRlYnVnIGFwaWM9ZGVidWcg
+c3lzcnFfYWx3YXlzX2VuYWJsZWQgcmN1cGRhdGUucmN1X2NwdV9zdGFsbF90aW1lb3V0PTEw
+MCBwYW5pYz0tMSBzb2Z0bG9ja3VwX3BhbmljPTEgbm1pX3dhdGNoZG9nPXBhbmljIG9vcHM9
+cGFuaWMgbG9hZF9yYW1kaXNrPTIgcHJvbXB0X3JhbWRpc2s9MCBjb25zb2xlPXR0eVMwLDEx
+NTIwMCBjb25zb2xlPXR0eTAgdmdhPW5vcm1hbCBydyBpcD06Ojo6dm0ta2J1aWxkLXlvY3Rv
+LXg4Nl82NC0zMjo6ZGhjcCBkcmJkLm1pbm9yX2NvdW50PTgnICAtaW5pdHJkIC9mcy9zZGgx
+L2luaXRyZC12bS1rYnVpbGQteW9jdG8teDg2XzY0LTMyIC1tIDMyMCAtc21wIDEgLWRldmlj
+ZSBlMTAwMCxuZXRkZXY9bmV0MCAtbmV0ZGV2IHVzZXIsaWQ9bmV0MCAtYm9vdCBvcmRlcj1u
+YyAtbm8tcmVib290IC13YXRjaGRvZyBpNjMwMGVzYiAtcnRjIGJhc2U9bG9jYWx0aW1lIC1k
+cml2ZSBmaWxlPS9mcy9zZGgxL2Rpc2swLXZtLWtidWlsZC15b2N0by14ODZfNjQtMzIsbWVk
+aWE9ZGlzayxpZj12aXJ0aW8gLXBpZGZpbGUgL2Rldi9zaG0va2Jvb3QvcGlkLXZtLWtidWls
+ZC15b2N0by14ODZfNjQtMzIgLXNlcmlhbCBmaWxlOi9kZXYvc2htL2tib290L3NlcmlhbC12
+bS1rYnVpbGQteW9jdG8teDg2XzY0LTMyIC1kYWVtb25pemUgLWRpc3BsYXkgbm9uZSAtbW9u
+aXRvciBudWxsDQo+Pj4NCj4+IFRoaXMgIHByb2JsZW0gd2FzIGNhdXNlZCBkdWUgdG8ga3Zt
+IGRvZXMgbm90IHN1cHBvcnQgTVNSX1BMQVRGT1JNX0lORk8oMHhjZSksDQo+PiBhY2NvcmRp
+bmcgdG8gV2FucGVuZydzIGZlZWRiYWNrLg0KPj4NCj4+IEhpIFdhbnBlbmcsIGlzIGl0IHBv
+c3NpYmxlIGZvciBrdm0gdG8gc2ltdWxhdGUgdGhpcyBNU1IsIG90aGVyd2lzZSB3ZQ0KPj4g
+bWlnaHQgaGF2ZSB0byB1c2UNCj4+IHJkbXNyX3NhZmUgaW5zdGVhZC4NCj4gDQo+IFRoZXJl
+IGlzIGEgdGhyZWFkIGRpc2N1c3NlZCB0aGlzIGJlZm9yZQ0KPiBodHRwczovL3BhdGNod29y
+ay5rZXJuZWwub3JnL3BhdGNoLzg4MzMwMjEvLCBNU1JfUExBVEZPUk1fSU5GTyBjYW4ndA0K
+PiBiZSBzaW1wbGUgZW11bGF0aW9uLg0KPiANCj4gUGluZyBQYW9sbywgUmFkaW0uIDopDQoN
+CnJkbXNyX3NhZmUgbXVzdCBiZSB1c2VkIGluc3RlYWQuICBJJ2xsIHByZXBhcmUgYSBwYXRj
+aC4NCg0KUGFvbG8NCg==
