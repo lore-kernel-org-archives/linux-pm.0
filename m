@@ -1,112 +1,47 @@
-From: Felipe Balbi <balbi@kernel.org>
-Subject: Re: [PATCH v12 1/4] gadget: Introduce the usb charger framework
-Date: Tue, 21 Jun 2016 13:25:12 +0300
-Message-ID: <87eg7qon3r.fsf@linux.intel.com>
-References: <cover.1466497505.git.baolin.wang@linaro.org> <831e03e8935b4c62e1e6bf94c93e0a08a73d89b2.1466497505.git.baolin.wang@linaro.org>
+From: Wanpeng Li <kernellwp@gmail.com>
+Subject: Re: [LKP] [lkp] [x86 tsc] 19fa5e7364: WARNING: CPU: 0 PID: 0 at
+ arch/x86/mm/extable.c:50 ex_handler_rdmsr_unsafe+0x72/0x80
+Date: Tue, 21 Jun 2016 18:24:18 +0800
+Message-ID: <CANRm+CzS3CKb43ipjoBMwOJ49bmqx=3zMSU7u6-spmt1uk9ULQ@mail.gmail.com>
+References: <CADjb_WQVKRWZs+d2iK17i42_kRHBN=m8xo5i3ydDv1QWbT5MyA@mail.gmail.com>
+ <SG2PR02MB15503CF343A5B5868F11C637802B0@SG2PR02MB1550.apcprd02.prod.outlook.com>
+ <CANRm+Cyu8Vd_BudEPFBnvq4MuA0XY4RTNudfpwbEiM5yCzJpZw@mail.gmail.com> <1e840272-9a0c-1e95-0356-12c031df7458@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha256; protocol="application/pgp-signature"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <831e03e8935b4c62e1e6bf94c93e0a08a73d89b2.1466497505.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: robh@kernel.org, jun.li@nxp.com, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, grygorii.strashko@ti.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <kvm-owner@vger.kernel.org>
+In-Reply-To: <1e840272-9a0c-1e95-0356-12c031df7458@redhat.com>
+Sender: kvm-owner@vger.kernel.org
+To: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Yu Chen <yu.chen.surf@gmail.com>, kernel test robot <xiaolong.ye@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-acpi@vger.kernel.org, Len Brown <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>, Radim Krcmar <rkrcmar@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, lkp@01.org
 List-Id: linux-pm@vger.kernel.org
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-
-Hi,
-
-Baolin Wang <baolin.wang@linaro.org> writes:
-> This patch introduces the usb charger driver based on usb gadget that
-> makes an enhancement to a power driver. It works well in practice but
-> that requires a system with suitable hardware.
+2016-06-21 18:10 GMT+08:00 Paolo Bonzini <pbonzini@redhat.com>:
 >
-> The basic conception of the usb charger is that, when one usb charger
-> is added or removed by reporting from the usb gadget state change or
-> the extcon device state change, the usb charger will report to power
-> user to set the current limitation.
 >
-> The usb charger will register notifiees on the usb gadget or the extcon
-> device to get notified the usb charger state. It also supplies the
-> notification mechanism to userspace When the usb charger state is changed.
+> On 21/06/2016 08:08, Wanpeng Li wrote:
+>> Cc KVM ML, Paolo, Radim,
+>>>> FYI, raw QEMU command line is:
+>>>>
+>>>>         qemu-system-x86_64 -enable-kvm -cpu SandyBridge -kernel /pkg/linux/x86_64-randconfig-w0-06180628/gcc-6/19fa5e73647fde1e6a7038a8f05cddf4c43f08d3/vmlinuz-4.7.0-rc3-00009-g19fa5e7 -append 'root=/dev/ram0 user=lkp job=/lkp/scheduled/vm-kbuild-yocto-x86_64-32/bisect_boot-1-yocto-minimal-x86_64.cgz-x86_64-randconfig-w0-06180628-19fa5e73647fde1e6a7038a8f05cddf4c43f08d3-20160618-25535-h82bax-0.yaml~ ARCH=x86_64 kconfig=x86_64-randconfig-w0-06180628 branch=internal-eywa/master commit=19fa5e73647fde1e6a7038a8f05cddf4c43f08d3 BOOT_IMAGE=/pkg/linux/x86_64-randconfig-w0-06180628/gcc-6/19fa5e73647fde1e6a7038a8f05cddf4c43f08d3/vmlinuz-4.7.0-rc3-00009-g19fa5e7 max_uptime=600 RESULT_ROOT=/result/boot/1/vm-kbuild-yocto-x86_64/yocto-minimal-x86_64.cgz/x86_64-randconfig-w0-06180628/gcc-6/19fa5e73
+ 647fde1e6a7038a8f05cddf4c43f08d3/0 LKP_SERVER=inn earlyprintk=ttyS0,115200 systemd.log_level=err debug apic=debug sysrq_always_enabled rcupdate.rcu_cpu_stall_timeout=100 panic=-1 softlockup_panic=1 nmi_watchdog=panic oops=panic load_ramdisk=2 prompt_ramdisk=0 console=ttyS0,115200 console=tty0 vga=normal rw ip=::::vm-kbuild-yocto-x86_64-32::dhcp drbd.minor_count=8'  -initrd /fs/sdh1/initrd-vm-kbuild-yocto-x86_64-32 -m 320 -smp 1 -device e1000,netdev=net0 -netdev user,id=net0 -boot order=nc -no-reboot -watchdog i6300esb -rtc base=localtime -drive file=/fs/sdh1/disk0-vm-kbuild-yocto-x86_64-32,media=disk,if=virtio -pidfile /dev/shm/kboot/pid-vm-kbuild-yocto-x86_64-32 -serial file:/dev/shm/kboot/serial-vm-kbuild-yocto-x86_64-32 -daemonize -display none -monitor null
+>>>>
+>>> This  problem was caused due to kvm does not support MSR_PLATFORM_INFO(0xce),
+>>> according to Wanpeng's feedback.
+>>>
+>>> Hi Wanpeng, is it possible for kvm to simulate this MSR, otherwise we
+>>> might have to use
+>>> rdmsr_safe instead.
+>>
+>> There is a thread discussed this before
+>> https://patchwork.kernel.org/patch/8833021/, MSR_PLATFORM_INFO can't
+>> be simple emulation.
+>>
+>> Ping Paolo, Radim. :)
 >
-> Power user will register a notifiee on the usb charger to get notified
-> by status changes from the usb charger. It will report to power user
-> to set the current limitation when detecting the usb charger is added
-> or removed from extcon device state or usb gadget state.
->
-> This patch doesn't yet integrate with the gadget code, so some functions
-> which rely on the 'gadget' are not completed, that will be implemented
-> in the following patches.
->
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> Reviewed-by: Li Jun <jun.li@nxp.com>
-> Tested-by: Li Jun <jun.li@nxp.com>
-> ---
->  drivers/usb/gadget/Kconfig       |    7 +
->  drivers/usb/gadget/udc/Makefile  |    1 +
->  drivers/usb/gadget/udc/charger.c |  770 ++++++++++++++++++++++++++++++++=
-++++++
->  include/linux/usb/charger.h      |  191 ++++++++++
->  include/uapi/linux/usb/charger.h |   31 ++
->  5 files changed, 1000 insertions(+)
->  create mode 100644 drivers/usb/gadget/udc/charger.c
->  create mode 100644 include/linux/usb/charger.h
->  create mode 100644 include/uapi/linux/usb/charger.h
->
-> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
-> index 2057add..89f4e9b 100644
-> --- a/drivers/usb/gadget/Kconfig
-> +++ b/drivers/usb/gadget/Kconfig
-> @@ -134,6 +134,13 @@ config U_SERIAL_CONSOLE
->  	help
->  	   It supports the serial gadget can be used as a console.
->=20=20
-> +config USB_CHARGER
-> +	bool "USB charger support"
+> rdmsr_safe must be used instead.  I'll prepare a patch.
 
-you didn't build test all possibilities, did you?
+Actually I have such a patch on hand under testing, I will send out soon. :)
 
-I have a feeling this won't link if USB_GADGET=3Dm. Can you test that?
-
-> diff --git a/drivers/usb/gadget/udc/charger.c b/drivers/usb/gadget/udc/ch=
-arger.c
-[...]
-> +struct class *usb_charger_class;
-
-We already have a UDC class, do we really, really need another class
-here?
-
-> +subsys_initcall(usb_charger_class_init);
-
-this should always work as module_init(). Please make sure that's the
-case.
-
-=2D-=20
-balbi
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXaRYJAAoJEIaOsuA1yqREg7YP/jvqts69sdsMx/vGlcpAvkpU
-MGQGlsnuCTPU+MUlBC0g5H2O7fEr9bxf4VN0jXJqRgwlqq2OjBs/Kbvl65mCohHg
-s6GggLH0qhk5YWAXIxZfKTurKL6eLZ8IclgAlUA253i5bt15vFOvM94a40J8zFRC
-+CU3AM9uGsI85ern6BSgSoZTtQ3T6A4eM3szv/4rX5FhlRJirMRrFbHrvZnwoQPx
-BWFs0E13QDLl+i6jUnGverQ6Lw7bU7qVSje6n1rClIe5OqqjN0ERIg90TdhiiUTN
-fyaam18/iBbyvblmX31c1hIqruR/ZNHVLcbN8zah78YuEyiQ7FrFErP5toE22AVF
-citWRxMnrBG2F+o/XwG4k+wMjCRPtSgQ34RbwryQ6aBbYaC8NxSzygjMNaRzIOga
-9QhT1jPA+OFOi4tdPi2+PSGzkJ8tb4a/FHdvsXOMdKrddkXsVkM8pTGkhWa8eyo7
-tECjEXckZ5ru2v/D+2M2d342Xzi7UcaoUwMnv3ij2yVsSM9DoofcL04YOoeICVAo
-w0yh/n6XIYANfMbTXatw3yfvNpxZ5tunb2OzBKZERGqmFCKsIE8SuVrbl+uoH7SO
-2oGPQKnkcCNBidxUvPHSFiSzOg0smD0wmPAheG0y46i30I5Y1SogHaf3tQl6hogO
-vjIAU1P7iRObBNZruLsw
-=EPSt
------END PGP SIGNATURE-----
---=-=-=--
+Regards,
+Wanpeng Li
