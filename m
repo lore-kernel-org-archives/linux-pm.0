@@ -1,258 +1,89 @@
-From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH v4 2/5] clockevents: Add timed freeze
-Date: Mon, 20 Jun 2016 17:12:58 -0700
-Message-ID: <CAGAzgsq0DvWepF=prqXHOv8msCxVOeAcLUCNgGRPkSrV_-nRtg@mail.gmail.com>
-References: <1465506139-25981-1-git-send-email-dbasehore@chromium.org>
- <1465506139-25981-3-git-send-email-dbasehore@chromium.org> <alpine.DEB.2.11.1606100001180.28031@nanos>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [balbi-usb:testing/next 64/67] otg.c:undefined reference to
+ `usb_gadget_vbus_disconnect'
+Date: Tue, 21 Jun 2016 03:18:26 +0200
+Message-ID: <20160621011826.GA17167@earth>
+References: <201606081642.T1wpsuI1%fengguang.wu@intel.com>
+ <87k2i09f1k.fsf@linux.intel.com>
+ <20160612023955.GA22054@shlinux2>
+ <87vb1d4oy8.fsf@linux.intel.com>
+ <87r3c14ofg.fsf@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f46.google.com ([209.85.213.46]:33465 "EHLO
-	mail-vk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932736AbcFUAOq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jun 2016 20:14:46 -0400
-Received: by mail-vk0-f46.google.com with SMTP id d185so531280vkg.0
-        for <linux-pm@vger.kernel.org>; Mon, 20 Jun 2016 17:13:00 -0700 (PDT)
-In-Reply-To: <alpine.DEB.2.11.1606100001180.28031@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="cWoXeonUoKmBZSoM"
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <87r3c14ofg.fsf-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Felipe Balbi <felipe.balbi-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Cc: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, kbuild test robot <fengguang.wu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kbuild-all-JC7UmRfGjtg@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Peter Zijlstra <peterz@infradead.org>
 
-On Thu, Jun 9, 2016 at 3:43 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Thu, 9 Jun 2016, dbasehore@chromium.org wrote:
->>
->> +/*
->> + * Clockevent device may run during freeze
->> + */
->> +# define CLOCK_EVT_FEAT_FREEZE               0x000100
->
-> This is a bad name and a horrible comment. The device does not freeze. It is
-> able to run during suspend.
->
-> Hint: We have CLOCK_SOURCE_SUSPEND_NONSTOP which is self explanatory.
->
->>  /**
->>   * struct clock_event_device - clock event device descriptor
->>   * @event_handler:   Assigned by the framework to be called by the low
->>   *                   level handler of the event source
->>   * @set_next_event:  set next event function using a clocksource delta
->>   * @set_next_ktime:  set next event function using a direct ktime value
->> + * @event_pending:   check if the programmed event is still pending. Used
->> + *                   for freeze events when timekeeping is suspended and
->> + *                   irqs are disabled.
->>   * @next_event:              local storage for the next event in oneshot mode
->>   * @max_delta_ns:    maximum delta value in ns
->>   * @min_delta_ns:    minimum delta value in ns
->> @@ -100,7 +108,9 @@ struct clock_event_device {
->>       void                    (*event_handler)(struct clock_event_device *);
->>       int                     (*set_next_event)(unsigned long evt, struct clock_event_device *);
->>       int                     (*set_next_ktime)(ktime_t expires, struct clock_event_device *);
->> +     bool                    (*event_expired)(struct clock_event_device *);
->>       ktime_t                 next_event;
->> +     bool                    freeze_event_programmed;
->
-> I really don't like that flag. Why do you need it at all?
 
-Probably left over from when I tried doing this a different way. I'll remove it.
+--cWoXeonUoKmBZSoM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->
->>       u64                     max_delta_ns;
->>       u64                     min_delta_ns;
->
->> +static int clockevents_program_freeze_event(struct clock_event_device *dev,
->> +                                         ktime_t delta)
->> +{
->> +     int64_t delta_ns = ktime_to_ns(delta);
->
-> Why int? Please use u64 and spare all the silly type casts you have in your
-> code.
->
->> +     unsigned long long clc;
->
-> What's wrong with u64?
+Hi Felipe,
 
-Will change.
+On Mon, Jun 13, 2016 at 09:01:55AM +0300, Felipe Balbi wrote:
+> From d45bdfafc3143dc7acc9d71131807d3e30ab7bcd Mon Sep 17 00:00:00 2001
+> From: Felipe Balbi <felipe.balbi-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> Date: Tue, 31 May 2016 13:07:47 +0300
+> Subject: [PATCH] usb: gadget: move gadget API functions to udc-core
+>=20
+> instead of defining all functions as static inlines,
+> let's move them to udc-core and export them with
+> EXPORT_SYMBOL_GPL, that way we can make sure that
+> only GPL drivers will use them.
+>=20
+> As a side effect, it'll be nicer to add tracepoints
+> to the gadget API.
+>=20
+> While at that, also fix Kconfig dependencies to
+> avoid randconfig build failures.
+>=20
+> Signed-off-by: Felipe Balbi <felipe.balbi-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> ---
+>  drivers/phy/Kconfig               |   1 +
+>  drivers/power/Kconfig             |   1 +
+>  drivers/usb/gadget/udc/udc-core.c | 573 ++++++++++++++++++++++++++++++++=
++++++
+>  drivers/usb/host/Kconfig          |   2 +-
+>  drivers/usb/phy/Kconfig           |  11 +-
+>  include/linux/usb/gadget.h        | 585 ++++----------------------------=
+------
+>  6 files changed, 645 insertions(+), 528 deletions(-)
 
->
->> +     int ret;
->> +
->> +     if (delta_ns > (int64_t) dev->max_delta_ns) {
->> +             printk_deferred(KERN_WARNING
->> +                             "Freeze event time longer than max delta\n");
->> +             delta_ns = (int64_t) dev->max_delta_ns;
->
-> What's the point of this? Tell the caller that it does not work and be done
-> with it. -ERANGE or something like that.
->
+[For drivers/power/Kconfig]
+Acked-By: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
-Okay.
+-- Sebastian
 
->> +     }
->
->> +     clockevents_tick_resume(dev);
->> +     clockevents_switch_state(dev, CLOCK_EVT_STATE_ONESHOT);
->> +     delta_ns = max_t(int64_t, delta_ns, dev->min_delta_ns);
->
-> You're comparing signed and insigned. Use u64 and max()... Also you really
-> should tell the caller, that providing a timeout that small is silly.
->
->> +     clc = ((unsigned long long) delta_ns * dev->mult) >> dev->shift;
->
-> Sigh.
->
->> +     ret = dev->set_next_event((unsigned long) clc, dev);
->> +     if (ret < 0) {
->> +             printk_deferred(KERN_WARNING
->> +                             "Failed to program freeze event\n");
->> +             clockevents_shutdown(dev);
->> +     } else {
->> +             dev->freeze_event_programmed = true;
->
-> I'm still not seing why you need that flag.
->
->> +     }
->> +
->> +     return ret;
->> +}
->> +
->> +static bool clockevents_freeze_event_expired(struct clock_event_device *dev)
->> +{
->> +     if (dev->freeze_event_programmed)
->> +             return dev->event_expired(dev);
->
-> So this will oops from deep inside suspend when the clock event does not have
-> the callback ....
->
->> +     return false;
->> +}
->> +
->> +static void clockevents_cleanup_freeze_event(struct clock_event_device *dev)
->> +{
->> +     if (!(dev->features & CLOCK_EVT_FEAT_FREEZE))
->> +             return;
->
-> What's that check for? This is only called from the code below in a section
-> which cannot be reached when the flag is not set.
->
->> +     clockevents_shutdown(dev);
->
-> You can open code this line at the call site because that's all you need.
->
->> +     dev->freeze_event_programmed = false;
->> +}
->
->> +/**
->> + * timed_freeze - Enter freeze on a CPU for a timed duration
->> + * @ops:     Pointers for enter freeze and callback functions.
->> + * @data:    Pointer to pass arguments to the function pointers.
->> + * @delta:   Time to freeze for. If this amount of time passes in freeze, the
->> + *           callback in ops will be called.
->> + *
->> + * Returns the value from ops->enter_freeze or ops->callback on success, -EERROR
->> + * otherwise. If an error is encountered while setting up the clock event,
->> + * freeze with still be entered, but it will not be timed nor will the callback
->> + * function be run.
->
-> That logic makes no sense at all.
->
->> +int timed_freeze(struct timed_freeze_ops *ops, void *data, ktime_t delta)
->> +{
->> +     int cpu = smp_processor_id();
->> +     struct tick_device *td = tick_get_device(cpu);
->> +     struct clock_event_device *dev;
->> +     int ret;
->> +
->> +     if (!ops || !ops->enter_freeze) {
->> +             printk_deferred(KERN_ERR
->> +                             "[%s] called with invalid ops\n", __func__);
->> +             return -EINVAL;
->> +     }
->> +
->> +     if (!td || !td->evtdev ||
->
-> td is always valid, because it's a pointer to a per cpu variable.
->
->> +         !(td->evtdev->features & CLOCK_EVT_FEAT_FREEZE)) {
->> +             printk_deferred(KERN_WARNING
->> +                             "[%s] called with invalid clock event device\n",
->
-> The function is not called with an invalid clock event device. There is either
-> no clock event device or the device does not support this.
->
->> +                             __func__);
->> +             ret = -ENOSYS;
->> +             goto freeze_no_check;
->> +     }
->> +
->> +     dev = td->evtdev;
->> +     if (!clockevent_state_shutdown(dev)) {
->> +             printk_deferred(KERN_WARNING
->> +                             "[%s] called while clock event device in use\n",
->> +                             __func__);
->> +             ret = -EBUSY;
->> +             goto freeze_no_check;
->> +     }
->> +
->> +     ret = clockevents_program_freeze_event(dev, delta);
->> +     if (ret < 0)
->> +             goto freeze_no_check;
->> +
->> +     ret = ops->enter_freeze(data);
->> +     if (ret < 0)
->> +             goto out;
->> +
->> +     if (ops->callback && clockevents_freeze_event_expired(dev))
->> +             ret = ops->callback(data);
->
-> This callback thing is just wrong here. If that fails then how is the call
-> site supposed to figure out where the error came from? From your printks?
->
-> The correct way to do this is:
->
-> int tick_set_frozen_event(ktime_t delta)
-> {
->         if (....)
->                 return -EINVAL;
->         if (....)
->                 return -ENOSYS;
->
->         return program_event(dev, delta);
-> }
->
-> and:
->
-> int tick_clear_frozen_event()
-> {
->         ret = event_expired(dev);
->         clockevents_shutdown(dev);
->         return ret;
-> }
->
-> So no ops, nothing nada.
->
-> And at the call site you do:
->
->     ret = tick_set_frozen_event(delta);
->     if (ret)
->                 goto deal_with_ret;
->
->     ret = freeze();
->     if (ret) {
->              tick_clear_frozen_event();
->              goto deal_with_freeze_abort;
->     }
->
->     ret = tick_clear_frozen_event();
->
->     do_something_sensible(ret);
->
-> That's actually understandable and debugable code.
->
-> Thanks,
->
->         tglx
->
->
+--cWoXeonUoKmBZSoM
+Content-Type: application/pgp-signature; name="signature.asc"
 
-I'll address these in another patch to be sent out soon.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJXaJXgAAoJENju1/PIO/qaN6oP/jcnYAC10ZLpv3lrLW8unhOS
+EZn+3OTzlJpS0PrucmzJQZ2LODiKC6J0NAOe9GaySXgX63USGSa0ILu2Ayz93rfG
+DzyHlmh98z0TyRSCZNptdv5ehOOuvFfZMdbDw4343jYXSglSJX1DFCswbms+tgGZ
+SnEQHQxOEio0J2Avyf/mgKtJDV5pXDv1QKUV4NIxNSTDQfbD30gqZBNpjHMael6X
+C81Ukr0Qr80sYSC8lsf3A+rgtjWDpCxPL7Rg5pD+zVy/jSP5gc7rzFGwbQalW457
+6giczS4t0XGPrUCrzG6FYuc9GAOJUjAnBEFWwn3oPhxwX/FJvxIgNc0x90Zz/Bxt
+0ITakJYvqkiGR25ukO6G61KxjrFCW0V6whr3a3zHviNiUJ6arKim7zCt2Xtx5Kez
+6Au2kyB7iE5hqdrLrQg1lXtT9Nb97MQCn3Z0yqHQhzkoy9WD14fM8RHbJP6FhMCJ
+V9DWDxPFScc0izyaqUmxoUIpSAo7YktGNqb6O5GeUVy6sT0oUXTXwWyirWKd2LNu
+QYiCM/a5zbnk/ej9IOdV3yWJzZr4TcMrlv7l2zUP5eqV5SsqfcIyJvmPBINrA8sB
+dgF5ZW9rVwqBI1Nrjagij1bNV+LZCR3IODHvQ3vxtSS2EGxvYqy1KMixqeFwFvZE
+nIfDO06bpC3y54LXMmos
+=u6c2
+-----END PGP SIGNATURE-----
+
+--cWoXeonUoKmBZSoM--
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
