@@ -1,53 +1,36 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v12 4/4] power: wm831x_power: Support USB charger current
- limit management
-Date: Tue, 21 Jun 2016 15:53:54 +0100
-Message-ID: <20160621145354.GD26099@sirena.org.uk>
-References: <cover.1466497505.git.baolin.wang@linaro.org>
- <7dc384248d51b1de0df54909f3c5550584b31357.1466497506.git.baolin.wang@linaro.org>
- <878txyomue.fsf@linux.intel.com>
- <20160621110332.GC26099@sirena.org.uk>
- <87r3bqn4l8.fsf@linux.intel.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH v2] thermal: tango: add resume support
+Date: Tue, 21 Jun 2016 07:59:57 -0700
+Message-ID: <7hoa6ubn9u.fsf@baylibre.com>
+References: <57690362.2000706@free.fr>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="1C2QhcYtVTlNtC1j"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <87r3bqn4l8.fsf@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Baolin Wang <baolin.wang@linaro.org>, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, robh@kernel.org, jun.li@nxp.com, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, grygorii.strashko@ti.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:36440 "EHLO
+	mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751858AbcFUPHN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jun 2016 11:07:13 -0400
+Received: by mail-pf0-f175.google.com with SMTP id t190so7503041pfb.3
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jun 2016 08:07:13 -0700 (PDT)
+In-Reply-To: <57690362.2000706@free.fr> (Mason's message of "Tue, 21 Jun 2016
+	11:05:38 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mason <slash.tmp@free.fr>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sebastian Frias <sf84@laposte.net>
 
+Mason <slash.tmp@free.fr> writes:
 
---1C2QhcYtVTlNtC1j
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+>
+> When this platform is suspended, firmware powers the entire SoC down,
+> except a few hardware blocks waiting for wakeup events. And there is
+> no context to save for this particular block.
+>
+> Therefore, there is nothing useful for the driver to do on suspend;
+> so we define a NULL suspend hook. On resume, the driver initializes
+> the block exactly as is done in the probe callback.
+>
+> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
 
-On Tue, Jun 21, 2016 at 02:50:27PM +0300, Felipe Balbi wrote:
-> Mark Brown <broonie@kernel.org> writes:
-
-> > The wm831x has no DT support currently.
-
-> okay, perhaps its time to add it.
-
-The only platform using it would need the DT connector overlays
-completing in order to be able to convert to DT.  I'm really not
-convinced it's worth the effort either.
-
---1C2QhcYtVTlNtC1j
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXaVUBAAoJECTWi3JdVIfQd3IH/12YEamL0U2d9yIBz4tCseth
-z/O3xQcIXO1jsmol8J+xmuqTDGNirpmplrtXSjy6IFYguHMMrCRNK4njx3DxIbut
-bVsSi7qxzPLCz7xBW1DtgkRtZxLXqBZAis/lQ8YC2/mejo4T6OxKElCVIS89ydwF
-LcuVQk+fiYwmdTW0X7VjjapHv+3IA964LEf4jYfsDtMkprmgc7lAq2E+G64UQFLJ
-YreMpqlTNLDDZtHKr4QC6vyujvz/U9a6X3YWJsNQdn/Qs59PhaPfSZJNSOupSRd0
-ijAjFXqflbNZE/26nOzv/9mMJPmNPfZ0f3qjeJQzzgo8ALvS7fG8H45Cx3tT5L0=
-=A2Bj
------END PGP SIGNATURE-----
-
---1C2QhcYtVTlNtC1j--
+Reviewed-by: Kevin Hilman <khilman@baylibre.com>
