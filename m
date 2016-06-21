@@ -1,112 +1,103 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 0/5] PM / devfreq: remove modular references from
- non-modules
-Date: Tue, 21 Jun 2016 15:17:01 +0900
-Message-ID: <5768DBDD.6030704@samsung.com>
-References: <CGME20160621051708epcas1p4d2bacb86070cd65ec1fba990e108425e@epcas1p4.samsung.com>
- <20160621051501.18396-1-paul.gortmaker@windriver.com>
+From: Felipe Balbi <balbi@kernel.org>
+Subject: Re: [RESEND PATCH v11 1/4] gadget: Introduce the usb charger framework
+Date: Tue, 21 Jun 2016 10:45:48 +0300
+Message-ID: <874m8nouhf.fsf@linux.intel.com>
+References: <cover.1465807514.git.baolin.wang@linaro.org> <710550bd6c860d7dbdd3e7225ef51b59ae9c39fb.1465807514.git.baolin.wang@linaro.org> <AM4PR04MB21308ECE74B23A44E51C42B689530@AM4PR04MB2130.eurprd04.prod.outlook.com> <CAMz4ku+1HxXLhFJp6mK+hRqKxHZ+ELC3CmJhupLgDcO7SJXy5g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha256; protocol="application/pgp-signature"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20160621051501.18396-1-paul.gortmaker@windriver.com>
+In-Reply-To: <CAMz4ku+1HxXLhFJp6mK+hRqKxHZ+ELC3CmJhupLgDcO7SJXy5g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>, Jun Li <jun.li@nxp.com>
+Cc: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "robh@kernel.org" <robh@kernel.org>, "m.szyprowski@samsung.com" <m.szyprowski@samsung.com>, "ruslan.bilovol@gmail.com" <ruslan.bilovol@gmail.com>, "peter.chen@freescale.com" <peter.chen@freescale.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "broonie@kernel.org" <broonie@kernel.org>, "ckeepax@opensource.wolfsonmicro.com" <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.o>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Paul,
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-It is good for devfreq/devfreq-event framework(patch1/patch2).
 
-But, I think that the device driver (patch3/4/5) should change
-the type from 'bool' to 'tristate' instead of using the .
+Hi Baolin,
 
-Thanks,
-Chanwoo Choi
+Baolin Wang <baolin.wang@linaro.org> writes:
+>>> -----Original Message-----
+>>> From: linux-usb-owner@vger.kernel.org [mailto:linux-usb-
+>>> owner@vger.kernel.org] On Behalf Of Baolin Wang
+>>> Sent: Monday, June 13, 2016 4:47 PM
+>>> To: balbi@kernel.org; gregkh@linuxfoundation.org; sre@kernel.org;
+>>> dbaryshkov@gmail.com; dwmw2@infradead.org
+>>> Cc: robh@kernel.org; m.szyprowski@samsung.com; ruslan.bilovol@gmail.com;
+>>> peter.chen@freescale.com; stern@rowland.harvard.edu; r.baldyga@samsung.=
+com;
+>>> yoshihiro.shimoda.uh@renesas.com; lee.jones@linaro.org; broonie@kernel.=
+org;
+>>> ckeepax@opensource.wolfsonmicro.com; patches@opensource.wolfsonmicro.co=
+m;
+>>> baolin.wang@linaro.org; linux-pm@vger.kernel.org; linux-
+>>> usb@vger.kernel.org; device-mainlining@lists.linuxfoundation.org; linux-
+>>> kernel@vger.kernel.org
+>>> Subject: [RESEND PATCH v11 1/4] gadget: Introduce the usb charger
+>>> framework
+>>>
+>>> This patch introduces the usb charger driver based on usb gadget that
+>>> makes an enhancement to a power driver. It works well in practice but t=
+hat
+>>> requires a system with suitable hardware.
+>>>
+>>> The basic conception of the usb charger is that, when one usb charger is
+>>> added or removed by reporting from the usb gadget state change or the
+>>> extcon device state change, the usb charger will report to power user to
+>>> set the current limitation.
+>>>
+>>> The usb charger will register notifiees on the usb gadget or the extcon
+>>> device to get notified the usb charger state. It also supplies the
+>>> notification mechanism to userspace When the usb charger state is chang=
+ed.
+>>>
+>>> Power user will register a notifiee on the usb charger to get notified =
+by
+>>> status changes from the usb charger. It will report to power user to set
+>>> the current limitation when detecting the usb charger is added or remov=
+ed
+>>> from extcon device state or usb gadget state.
+>>>
+>>> This patch doesn't yet integrate with the gadget code, so some functions
+>>> which rely on the 'gadget' are not completed, that will be implemented =
+in
+>>> the following patches.
+>>>
+>>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+>>
+>> Reviewed-by: Li Jun <jun.li@nxp.com>
+>> Tested-by: Li Jun <jun.li@nxp.com>
+>
+> Do you have any comments about this patchset, if not I will resend it
+> with testing by Li Jun (thanks for Jun reviewing and testing). Thanks.
 
-On 2016=EB=85=84 06=EC=9B=94 21=EC=9D=BC 14:14, Paul Gortmaker wrote:
-> For anyone new to the underlying goal of this cleanup, we are trying =
-to
-> not use module support for code that can never be built as a module s=
-ince:
->=20
->  (1) it is easy to accidentally write unused module_exit and remove c=
-ode
->  (2) it can be misleading when reading the source, thinking it can be
->      modular when the Makefile and/or Kconfig prohibit it
->  (3) it requires the include of the module.h header file which in tur=
-n
->      includes nearly everything else, thus adding to CPP overhead.
->  (4) it gets copied/replicated into other code and spreads like weeds=
-=2E
->=20
-> We have already merged over 100 of these for mainline to date, so the=
-re
-> is really nothing new to see here, in terms of the type of change.
->=20
-> That said, devfreq changes seen here cover the following categories:
->=20
->   -just replacement of modular macros with their non-modular
->    equivalents that CPP would have inserted anyway
->=20
->   -the removal of including module.h ; replaced with init.h
->    and/or export.h as required based on whether the file used it.
->=20
->   -the removal of any/all unused/orphaned __exit functions that
->    would never be called.
->=20
->   -the removal of any ".remove" functions that were hooked into
->    the driver struct.   This ".remove" function would of
->    course not be called from the __exit function since that was
->    never run.  However in theory, someone could have triggered it
->    via sysfs unbind, even though there isn't a sensible use case
->    for doing so.  So to cover that possibility, we've also disabled
->    sysfs unbind in the driver.
->=20
-> There are no initcall level changes here; everything stays at the lev=
-el
-> of initcall it was previously - either by not using modular versions =
-to
-> begin with, or by using the builtin level equivalents.
->=20
-> Build tested for arm and arm64 allmodconfig (for which all the driver=
-s
-> touched here get coverage) on the linux-next tree from today to ensur=
-e
-> no silly typos crept in.
->=20
-> If there is a desire for any of these to be modular, we can definitel=
-y
-> consider that, but by default the changes here keep the code consiste=
-nt
-> with existing behaviour.  Thus I do not expand functionality into the
-> modular realm that I can't run time test, or even know if the modular
-> instance has a sensible modular use case.
->=20
-> Paul.
-> ---
->=20
-> Cc: Chanwoo Choi <cw00.choi@samsung.com>
-> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-samsung-soc@vger.kernel.org
->=20
->=20
-> Paul Gortmaker (5):
->   PM / devfreq: make devfreq explicitly non-modular
->   PM / devfreq: make devfreq-event explicitly non-modular
->   PM / devfreq: make exynos-bus explicitly non-modular
->   PM / devfreq: make event/exynos-nocp explicitly non-modular
->   PM / devfreq: make event/exynos-ppmu explicitly non-modular
->=20
->  drivers/devfreq/devfreq-event.c     | 12 +-----------
->  drivers/devfreq/devfreq.c           | 13 +------------
->  drivers/devfreq/event/exynos-nocp.c | 19 +++----------------
->  drivers/devfreq/event/exynos-ppmu.c |  8 ++------
->  drivers/devfreq/exynos-bus.c        |  9 ++-------
->  5 files changed, 9 insertions(+), 52 deletions(-)
->=20
+please resend. I don't have the series in my queue anymore, sorry.
+
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXaPCsAAoJEIaOsuA1yqREDY4P/2AmtaIDyJFC4wqvIKK9nMfe
+DkjdOiIA5yjd5iMkw3wqGUEisBYBFF6Ue7BDr2t8RyiDAsxXy8GcQAfmKpRq32zN
+sVZXSlql23ojQs90yHWyCTSPG4DFZKVx2RyF2Jsu6QqWmyigavlJZ7rMQXmlViVV
+fJifEsdXWjZ3ZmamZqTN0ZpMJubyWIt/SYMKjIl0tBmQR5jWnaiFFo/5X7e+YwdT
+VVS6td32+rRdzyacGwpdrm0TVGndVxh787AK30KBryKDLbkGSg87AtKPaKRHeKS4
+8DM8n7ucKXHRqBAGh04RtGj/yPzAIto3Bs8+kOTSQxykPJ1fIIc8XnV3Vk1LBvgm
+jWMZSyPXqvsFBNLUDrQntIzY5nWDMMFuAXuKNxn94f77hhKNILbIqpp9YZ1j3FC0
+SQ1NIc2J57iS12g4bJhzblHEWwSUKpm6ju5GE0hvEko43ClZxa5pkCtHlbHd9qAj
+CdMBfAj456Pct6ZHpYsIQwE1Xac1uX6wN0/WGCN+gz8v79E5nHPEcWVH0z32bCwY
+M3G5getZy5IUfvh0Q+x5mH3WQ3n9ZH6JMmBmCBX9/S9pbiev4XHjx/O7tsHJgI6S
+oFbK907ljalTFFECTc/B+nCfJEdKCK6ZOJccLg3XLp1i/6A0mJ5E1R4Xa/BTKz+v
+9A7MRCylFNnK0ADYzmhx
+=Pdzx
+-----END PGP SIGNATURE-----
+--=-=-=--
