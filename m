@@ -1,46 +1,116 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 5/5] Input: Add tps65217 power button driver
-Date: Tue, 21 Jun 2016 08:17:35 -0500
-Message-ID: <20160621131735.GA896@rob-hp-laptop>
-References: <20160620105056.25843-1-m.niestroj@grinn-global.com>
- <20160620105056.25843-6-m.niestroj@grinn-global.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [RFC PATCH 6/8] PM / Domains: Remove a provider by referencing
+ the data pointer
+Date: Tue, 21 Jun 2016 14:47:08 +0100
+Message-ID: <5769455C.9010809@nvidia.com>
+References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
+ <1457090634-14785-7-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFpLcnLvQmpQgzhOExq67XrbaW9Nf1Gk2Y+CND8dn_cmyA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f193.google.com ([209.85.214.193]:36375 "EHLO
-	mail-ob0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751863AbcFUNfx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jun 2016 09:35:53 -0400
-Content-Disposition: inline
-In-Reply-To: <20160620105056.25843-6-m.niestroj@grinn-global.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAPDyKFpLcnLvQmpQgzhOExq67XrbaW9Nf1Gk2Y+CND8dn_cmyA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alexander Aring <alex.aring@gmail.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Kukjin Kim <kgene@kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Marcin Niestroj <m.niestroj@grinn-global.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 
-On Mon, Jun 20, 2016 at 12:50:56PM +0200, Marcin Niestroj wrote:
-> This driver enables us to use tps65217's power button as KEY_POWER on
-> am335x boards (directly connected button in chiliboard, accessible pin
-> via expansion header in beaglebone). This patch has been tested with
-> chiliboard.
-> 
-> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
-> ---
-> Depends on patches 1-4 in series
-> 
-> Changes v2 -> v4: none
-> 
-> Changes v1 -> v2:
->  * Added information about parent device in tps65217 power button
->    device-tree binding documentation (suggested by Rob)
-> 
->  .../bindings/input/tps65217-pwrbutton.txt          |  17 +++
 
-Acked-by: Rob Herring <robh@kernel.org>
+On 15/06/16 15:38, Ulf Hansson wrote:
+> On 4 March 2016 at 12:23, Jon Hunter <jonathanh@nvidia.com> wrote:
+>> To remove a PM domain from the system, it is necessary to ensure
+>> that any PM domain providers associated with the PM domain have
+>> been removed. Otherwise it could be possible to obtain a pointer
+>> to a PM domain structure that has been removed.
+>>
+>> PM domains now have a reference to the pointer for the PM domain
+>> provider's data variable. Add a function so that a PM domain can
+>> remove a PM domain provider by referencing the data pointer.
+>>
+>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+>> ---
+>>  drivers/base/power/domain.c | 24 ++++++++++++++++++++++++
+>>  include/linux/pm_domain.h   |  2 ++
+>>  2 files changed, 26 insertions(+)
+>>
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 72055fef6256..438885f2455f 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -1738,6 +1738,30 @@ void of_genpd_del_provider(struct device_node *np)
+>>  EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+>>
+>>  /**
+>> + * of_genpd_del_provider_by_data() - Remove a registered PM domain provider
+>> + * @data: Pointer to the data associated with the PM domain provider
+>> + *
+>> + * Look up a PM domain provider based upon a pointer to it's data and
+>> + * remove the PM domain provider from the list of providers.
+>> + */
+>> +void of_genpd_del_provider_by_data(void *data)
+>> +{
+>> +       struct of_genpd_provider *c, *cp;
+>> +
+>> +       mutex_lock(&of_genpd_mutex);
+>> +       list_for_each_entry_safe(cp, c, &of_genpd_providers, link) {
+>> +               if (cp->data == data) {
+>> +                       list_del(&cp->link);
+>> +                       of_node_put(cp->node);
+>> +                       kfree(cp);
+>> +                       break;
+>> +               }
+>> +       }
+>> +       mutex_unlock(&of_genpd_mutex);
+>> +}
+>> +EXPORT_SYMBOL_GPL(of_genpd_del_provider_by_data);
+>> +
+>> +/**
+>>   * of_genpd_get_from_provider() - Look-up PM domain
+>>   * @genpdspec: OF phandle args to use for look-up
+>>   *
+>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>> index bed84413546f..7b7921a65cb0 100644
+>> --- a/include/linux/pm_domain.h
+>> +++ b/include/linux/pm_domain.h
+>> @@ -199,6 +199,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
+>>  int of_genpd_add_provider_onecell(struct device_node *np,
+>>                                   struct genpd_onecell_data *data);
+>>  void of_genpd_del_provider(struct device_node *np);
+> 
+> There's currently only one user of of_genpd_del_provider().
+> 
+> Could this patch just convert that user to the new API, so we don't
+> need to keep both the legacy and new one?
+> 
+> I guess we could then just stick to the name "of_genpd_del_provider()".
 
->  drivers/input/misc/Kconfig                         |  10 ++
->  drivers/input/misc/Makefile                        |   1 +
->  drivers/input/misc/tps65217-pwrbutton.c            | 131 +++++++++++++++++++++
->  4 files changed, 159 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/input/tps65217-pwrbutton.txt
->  create mode 100644 drivers/input/misc/tps65217-pwrbutton.c
+I had a look at this and to do that we would end up with
+of_genpd_del_provider(struct device_node *np, void *data) where the user
+should only pass one of the arguments. It seems a bit odd. However,
+unless I have forgotten something, I wonder if we should just make
+of_genpd_del_provider_by_name() a local function and not export this at
+all? It seems more natural for users to delete a provider by the
+device_node than by name rather than the data argument.
+
+The only problem I see with making of_genpd_del_provider_by_name() local
+is that I need to add a prototype for the function at the top of the
+domain.c source file so that it builds because __pm_genpd_remove() is
+defined above it. Yes I could move __pm_genpd_remove() to the bottom of
+the file but then it is not located next to pm_genpd_init() which seems odd.
+
+Let me know what you think.
+
+Cheers
+Jon
+
+-- 
+nvpublic
