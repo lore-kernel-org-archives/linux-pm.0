@@ -1,138 +1,118 @@
 From: Rhyland Klein <rklein@nvidia.com>
-Subject: Re: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt >
- 0
-Date: Tue, 21 Jun 2016 14:06:55 -0400
-Message-ID: <8b081e45-94c8-bb53-69ca-0a617c668de5@nvidia.com>
-References: <1465507719-819-1-git-send-email-rklein@nvidia.com>
+Subject: Re: [PATCH v2] power_supply: fix return value of get_property
+Date: Tue, 21 Jun 2016 14:08:05 -0400
+Message-ID: <2d2e4c90-472d-fa1a-6fbc-dfb99e80069d@nvidia.com>
+References: <1466028784-24459-1-git-send-email-rklein@nvidia.com>
+ <576266A9.9030906@samsung.com>
+ <04e70c84-f34d-2c61-0d8b-80cbeaac356e@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1465507719-819-1-git-send-email-rklein@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:5394 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751794AbcFUSIz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jun 2016 14:08:55 -0400
+In-Reply-To: <04e70c84-f34d-2c61-0d8b-80cbeaac356e@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 6/9/2016 5:28 PM, Rhyland Klein wrote:
-> Change power_supply_read_temp() to use power_supply_get_property()
-> so that it will check the use_cnt and ensure it is > 0. The use_cnt
-> will be incremented at the end of __power_supply_register, so this
-> will block to case where get_property can be called before the supply
-> is fully registered. This fixes the issue show in the stack below:
+On 6/16/2016 11:40 AM, Rhyland Klein wrote:
+> On 6/16/2016 4:43 AM, Krzysztof Kozlowski wrote:
+>> On 06/16/2016 12:13 AM, Rhyland Klein wrote:
+>>> power_supply_get_property() should ideally return -EAGAIN if it is
+>>> called while the power_supply is being registered. There was no way
+>>> previously to determine if use_cnt == 0 meant that the power_supply
+>>> wasn't fully registered yet, or if it had already been unregistered.
+>>>
+>>> Add a new boolean to the power_supply struct to simply show if
+>>> registration is completed. Lastly, modify the check in
+>>> power_supply_show_property() to also ignore -EAGAIN when so it
+>>> doesn't complain about not returning the property.
+>>>
+>>> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
+>>> ---
+>>> v2:
+>>>  - Modify power_supply_show_property() to not complain if it
+>>>    sees a return value of -EAGAIN after calling
+>>>    power_supply_get_property().
+>>>
+>>>  drivers/power/power_supply_core.c  | 6 +++++-
+>>>  drivers/power/power_supply_sysfs.c | 2 +-
+>>>  include/linux/power_supply.h       | 1 +
+>>>  3 files changed, 7 insertions(+), 2 deletions(-)
+>>
+>> I don't like it for two reasons:
+>> 1. There is still a short window when the information will be
+>> inaccurate. See comment below.
+>>
+>> 2. Although the code is not very complicated but it adds another field
+>> and some checks just for differentiating EAGAIN/ENODEV. It is
+>> unnecessary complexity.
+>>
+>>>
+>>> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
+>>> index b13cd074c52a..a39a47672979 100644
+>>> --- a/drivers/power/power_supply_core.c
+>>> +++ b/drivers/power/power_supply_core.c
+>>> @@ -491,8 +491,11 @@ int power_supply_get_property(struct power_supply *psy,
+>>>  			    enum power_supply_property psp,
+>>>  			    union power_supply_propval *val)
+>>>  {
+>>> -	if (atomic_read(&psy->use_cnt) <= 0)
+>>> +	if (atomic_read(&psy->use_cnt) <= 0) {
+>>> +		if (!psy->initialized)
+>>> +			return -EAGAIN;
+>>>  		return -ENODEV;
+>>> +	}
+>>>  
+>>>  	return psy->desc->get_property(psy, psp, val);
+>>>  }
+>>> @@ -775,6 +778,7 @@ __power_supply_register(struct device *parent,
+>>>  	if (rc)
+>>>  		goto create_triggers_failed;
+>>>  
+>>> +	psy->initialized = true;
+>>
+>> If someone calls power_supply_get_property() here, then ENODEV will be
+>> returned which is wrong.
+>>
+>> The problem is not solved entirely... I am not convinced that introduced
+>> complexity is worth fixing it.
+>>
 > 
-> [    1.452598] power_supply_read_temp+0x78/0x80
-> [    1.458680] thermal_zone_get_temp+0x5c/0x11c
-> [    1.464765] thermal_zone_device_update+0x34/0xb4
-> [    1.471195] thermal_zone_device_register+0x87c/0x8cc
-> [    1.477974] __power_supply_register+0x364/0x424
-> [    1.484317] power_supply_register_no_ws+0x10/0x18
-> [    1.490833] bq27xxx_battery_setup+0x10c/0x164
-> [    1.497003] bq27xxx_battery_i2c_probe+0xd0/0x1b0
-> [    1.503435] i2c_device_probe+0x174/0x240
-> [    1.509172] driver_probe_device+0x1fc/0x29c
-> [    1.515167] __driver_attach+0xa4/0xa8
-> [    1.520643] bus_for_each_dev+0x58/0x98
-> [    1.526204] driver_attach+0x20/0x28
-> [    1.531505] bus_add_driver+0x1c8/0x22c
-> [    1.537067] driver_register+0x68/0x108
-> [    1.542630] i2c_register_driver+0x38/0x7c
-> [    1.548457] bq27xxx_battery_i2c_driver_init+0x18/0x20
-> [    1.555321] do_one_initcall+0x38/0x12c
-> [    1.560886] kernel_init_freeable+0x148/0x1ec
-> [    1.566972] kernel_init+0x10/0xfc
-> [    1.572101] ret_from_fork+0x10/0x40
+> Right now, without this patch, this causes the thermal function
+> "update_temperature" in:
 > 
-> Also make the same change to ps_get_max_charge_cntl_limit() and
-> ps_get_cur_chrage_cntl_limit() to be safe. Lastly, change the return
-> value of power_supply_get_property() to -EAGAIN from -ENODEV if
-> use_cnt <= 0.
+> thermal_zone_device_register->
+>   thermal_zone_device_update->
+>     update_temperature
+>       (->thermal_zone_get_temp() from the original stack)
 > 
-> Fixes: 297d716f6260 ("power_supply: Change ownership from driver to core")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
-> ---
-> v4:
->  - Fixed return check conditions
->  - Removed change to power_supply_get_property return code
->  - removed whitespace change
+> to print a warning as it sees ret != -EAGAIN. This causes a warning
+> "failed to read out thermal zone". I think the idea there is if anything
+> other than "try again" it complains. While this doesn't cause functional
+> problems, I do think avoid the warning is worth while.
 > 
-> v3:
->  - Changed calls to ->get_property() to use common
->    power_supply_get_property()
->  - reworded description, added "Fixes" line
->  - Changed return value of power_supply_get_property() to -EAGAIN
+> I think that there is an onus on the power_supply code to be accurate in
+> its return codes, and EAGAIN is the correct one we should be returning.
+> I don't see how someone would call power_supply_get_property, but I
+> agree there is the possibility that if someone did call there, that it
+> could return the wrong value.
 > 
-> v2:
->  - Added cc stable
->  - changed return to -EAGAIN in case of use_cnt < 1
->  - Removed WARNING
->  - return value check added in additional patch:
->    https://patchwork.kernel.org/patch/9158805/
-> 
->  drivers/power/power_supply_core.c | 27 ++++++++++++++++-----------
->  1 file changed, 16 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-> index 456987c88baa..b13cd074c52a 100644
-> --- a/drivers/power/power_supply_core.c
-> +++ b/drivers/power/power_supply_core.c
-> @@ -565,11 +565,12 @@ static int power_supply_read_temp(struct thermal_zone_device *tzd,
->  
->  	WARN_ON(tzd == NULL);
->  	psy = tzd->devdata;
-> -	ret = psy->desc->get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
-> +	ret = power_supply_get_property(psy, POWER_SUPPLY_PROP_TEMP, &val);
-> +	if (ret)
-> +		return ret;
->  
->  	/* Convert tenths of degree Celsius to milli degree Celsius. */
-> -	if (!ret)
-> -		*temp = val.intval * 100;
-> +	*temp = val.intval * 100;
->  
->  	return ret;
->  }
-> @@ -612,10 +613,12 @@ static int ps_get_max_charge_cntl_limit(struct thermal_cooling_device *tcd,
->  	int ret;
->  
->  	psy = tcd->devdata;
-> -	ret = psy->desc->get_property(psy,
-> -		POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX, &val);
-> -	if (!ret)
-> -		*state = val.intval;
-> +	ret = power_supply_get_property(psy,
-> +			POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX, &val);
-> +	if (ret)
-> +		return ret;
-> +
-> +	*state = val.intval;
->  
->  	return ret;
->  }
-> @@ -628,10 +631,12 @@ static int ps_get_cur_chrage_cntl_limit(struct thermal_cooling_device *tcd,
->  	int ret;
->  
->  	psy = tcd->devdata;
-> -	ret = psy->desc->get_property(psy,
-> -		POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT, &val);
-> -	if (!ret)
-> -		*state = val.intval;
-> +	ret = power_supply_get_property(psy,
-> +			POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT, &val);
-> +	if (ret)
-> +		return ret;
-> +
-> +	*state = val.intval;
->  
->  	return ret;
->  }
+> We could wrap the setting of initialized and use_cnt inside a mutex,
+> which should prevent anyone calling anything in between if we wanted to
+> completely plug that hole. I am not fond of the idea of adding a struct
+> member for such a small, specific case, but as we found before, I don't
+> think there is another way to differentiate otherwise.
 > 
 
-Sebastian, might this be accepted soon? We can't enable the bq27xxx
-driver for Tegra210 Smaug without running into the crash this prevents.
+Sebastian, do you have an opinion on this?
 
 -rhyland
+
 
 -- 
 nvpublic
