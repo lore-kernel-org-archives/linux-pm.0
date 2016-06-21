@@ -1,61 +1,73 @@
-From: Felipe Balbi <balbi@kernel.org>
-Subject: Re: [PATCH v12 2/4] gadget: Support for the usb charger framework
-Date: Tue, 21 Jun 2016 14:49:52 +0300
-Message-ID: <87twgmn4m7.fsf@linux.intel.com>
-References: <cover.1466497505.git.baolin.wang@linaro.org> <f7bae2566824a5e1da14c1a19dee6af5f250262f.1466497506.git.baolin.wang@linaro.org> <87bn2uomzd.fsf@linux.intel.com> <CAMz4ku+t66t+E3dCysfE9yNkKRCYwv7mXpJs4ShGbZWSZO_B9g@mail.gmail.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [RFC PATCH 6/8] PM / Domains: Remove a provider by referencing
+ the data pointer
+Date: Tue, 21 Jun 2016 15:45:09 +0100
+Message-ID: <576952F5.5020808@nvidia.com>
+References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
+ <1457090634-14785-7-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha256; protocol="application/pgp-signature"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:38334 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752268AbcFUOm2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 21 Jun 2016 10:42:28 -0400
-In-Reply-To: <CAMz4ku+t66t+E3dCysfE9yNkKRCYwv7mXpJs4ShGbZWSZO_B9g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1457090634-14785-7-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
-
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
 
-Hi,
+On 04/03/16 11:23, Jon Hunter wrote:
+> To remove a PM domain from the system, it is necessary to ensure
+> that any PM domain providers associated with the PM domain have
+> been removed. Otherwise it could be possible to obtain a pointer
+> to a PM domain structure that has been removed.
+> 
+> PM domains now have a reference to the pointer for the PM domain
+> provider's data variable. Add a function so that a PM domain can
+> remove a PM domain provider by referencing the data pointer.
+> 
+> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+>  drivers/base/power/domain.c | 24 ++++++++++++++++++++++++
+>  include/linux/pm_domain.h   |  2 ++
+>  2 files changed, 26 insertions(+)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 72055fef6256..438885f2455f 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1738,6 +1738,30 @@ void of_genpd_del_provider(struct device_node *np)
+>  EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+>  
+>  /**
+> + * of_genpd_del_provider_by_data() - Remove a registered PM domain provider
+> + * @data: Pointer to the data associated with the PM domain provider
+> + *
+> + * Look up a PM domain provider based upon a pointer to it's data and
+> + * remove the PM domain provider from the list of providers.
+> + */
+> +void of_genpd_del_provider_by_data(void *data)
+> +{
+> +	struct of_genpd_provider *c, *cp;
+> +
+> +	mutex_lock(&of_genpd_mutex);
+> +	list_for_each_entry_safe(cp, c, &of_genpd_providers, link) {
+> +		if (cp->data == data) {
+> +			list_del(&cp->link);
+> +			of_node_put(cp->node);
+> +			kfree(cp);
+> +			break;
+> +		}
+> +	}
+> +	mutex_unlock(&of_genpd_mutex);
 
-Baolin Wang <baolin.wang@linaro.org> writes:
->> Can't you just tie a charger to a UDC and avoid the charger class
->> completely?
->
-> Yeah, I also hope so. But we really want something to manage the
-> charger devices, do you have any good suggestion to avoid the 'class'
-> but also can manage the charger devices?
+On further the thought I believe that the above does not need to be safe
+variant of list_for_each_entry because we are breaking out of the loop
+when we find the one we are looking for. of_genpd_del_provider() does
+the same.
 
-manage in what way? It seems to me that they don't need to be real
-devices, just a handle as part of struct usb_gadget, no?
+Cheers
+Jon
 
-=2D-=20
-balbi
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXaSngAAoJEIaOsuA1yqREI4IP/0v8yDkNUQefnP1aefswOOiF
-H5iOFp1LYuSE/HgufeWQRmGxxftYf5iZfKEMnhObaVAGTOfFa2yv17wEfoXzJuYx
-tfN2FGEI1nzhc0gDFHq6hFAsJz7w8sgWv2ya+pVw9oc/TrUoIXHTj6GCJvJ5uYNM
-Ol/5fBGtPGkjow3md0rJx+GeXTJfcFwunBaPgkfGp7m6iQym22RrB3+zQT61Ld09
-OZlMczieKGx/MKfp2M1sVq6DRMUMIjSSP5vx9+H2xewmxWsX81lyoPuwbk9SGN0P
-qYmvrZEze7KWAe4sUCC60a6HUeBJBh+BFvFUlpwbvagIw2lFYMh9SbqU873WpjwV
-TPf66dXR778EB53L51SWKr/EG5TuAmVFzBLOWPaokiOWGe3nqYaQRUIk80pNz4uW
-T8MXS2HnWE5LhvNVf+oiZshZZzdPM3/Yqbnzirb9pU7VJzrB3SyjwgdaF5kp77zD
-xsv7JNDOw8mxoOXrnmEAgNA4v9S0wmD/mWGBKzJ8vdtQ6di67K/u5e4KTLqbKNXg
-Mwfl4cdUX4uSAjH220X8eoHddhaeRqLdbgkygAn0OcXawHVsPJWZu+E5VMB0c0ty
-EtKNmdUr++9kPF9sgN7dGQEod2JRUmtMf+vMbx3ivgDajko8hr5Zwa4efvw7gsUF
-TG91VBJl3a8dNANnDtI8
-=TsPh
------END PGP SIGNATURE-----
---=-=-=--
+-- 
+nvpublic
