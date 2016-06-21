@@ -1,67 +1,78 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH 07/12] power: pwrseq: rename file name for generic driver
-Date: Tue, 21 Jun 2016 10:19:49 +0800
-Message-ID: <20160621021949.GF26936@shlinux2>
-References: <1466158165-9380-1-git-send-email-peter.chen@nxp.com>
- <1466158165-9380-8-git-send-email-peter.chen@nxp.com>
- <5767E614.5030002@samsung.com>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: [PATCH 1/5] PM / devfreq: make devfreq explicitly non-modular
+Date: Tue, 21 Jun 2016 01:14:57 -0400
+Message-ID: <20160621051501.18396-2-paul.gortmaker@windriver.com>
+References: <20160621051501.18396-1-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <5767E614.5030002@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: mark.rutland@arm.com, Peter Chen <peter.chen@nxp.com>, ulf.hansson@linaro.org, stephen.boyd@linaro.org, festevam@gmail.com, arnd@arndb.de, javier@osg.samsung.com, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, oscar@naiandei.net, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, linux-mmc@vger.kernel.org, sre@kernel.org, broonie@kernel.org, p.zabel@pengutronix.de
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160621051501.18396-1-paul.gortmaker@windriver.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jun 20, 2016 at 02:48:20PM +0200, Krzysztof Kozlowski wrote:
-> On 06/17/2016 12:09 PM, Peter Chen wrote:
-> > The individual driver file name is better to contain module name.
-> > 
-> > Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> > ---
-> >  .../power/pwrseq/{pwrseq-simple.txt => mmc-pwrseq-simple.txt}         | 0
-> >  drivers/power/pwrseq/Makefile                                         | 4 ++--
-> >  drivers/power/pwrseq/{pwrseq.c => core.c}                             | 0
-> >  drivers/power/pwrseq/{pwrseq_simple.c => pwrseq_mmc_simple.c}         | 0
-> >  4 files changed, 2 insertions(+), 2 deletions(-)
-> >  rename Documentation/devicetree/bindings/power/pwrseq/{pwrseq-simple.txt => mmc-pwrseq-simple.txt} (100%)
-> >  rename drivers/power/pwrseq/{pwrseq.c => core.c} (100%)
-> >  rename drivers/power/pwrseq/{pwrseq_simple.c => pwrseq_mmc_simple.c} (100%)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-simple.txt b/Documentation/devicetree/bindings/power/pwrseq/mmc-pwrseq-simple.txt
-> > similarity index 100%
-> > rename from Documentation/devicetree/bindings/power/pwrseq/pwrseq-simple.txt
-> > rename to Documentation/devicetree/bindings/power/pwrseq/mmc-pwrseq-simple.txt
-> > diff --git a/drivers/power/pwrseq/Makefile b/drivers/power/pwrseq/Makefile
-> > index 9e40e4b..d475e01 100644
-> > --- a/drivers/power/pwrseq/Makefile
-> > +++ b/drivers/power/pwrseq/Makefile
-> > @@ -1,3 +1,3 @@
-> > -obj-$(CONFIG_POWER_SEQ)		+= pwrseq.o
-> > -obj-$(CONFIG_POWER_SEQ_SIMPLE)	+= pwrseq_simple.o
-> > +obj-$(CONFIG_POWER_SEQ)		+= core.o
-> > +obj-$(CONFIG_POWER_SEQ_SIMPLE)	+= pwrseq_mmc_simple.o
-> 
-> Although the driver was developed for MMC but it is quite generic (or
-> rather - mmc independent). The name of the driver is just
-> "pwrseq_simple" so I think MMC prefix is not needed.
-> 
+The Kconfig currently controlling compilation of this code is:
 
-It is may be common for MMC, but not USB, or others. Eg, its reset-gpios
-is just like enable-gpios. Some reset chip process needs to toggle gpio.
+menuconfig PM_DEVFREQ
+      bool "Generic Dynamic Voltage and Frequency Scaling (DVFS) support"
 
+...meaning that it currently is not being built as a module by anyone.
+
+Lets remove the modular code that is essentially orphaned, so that
+when reading the driver there is no doubt it is builtin-only.
+
+This code wasn't using module_init, so we don't need to be concerned
+with altering the initcall level here.
+
+We also delete the MODULE_LICENSE tag etc. since all that information
+is already contained at the top of the file in the comments.
+
+We don't replace module.h with init.h since the file already has that.
+But we do add export.h since this file does export some symbols.
+
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ drivers/devfreq/devfreq.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 1d6c803804d5..6723f31c3973 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -15,7 +15,7 @@
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
+-#include <linux/module.h>
++#include <linux/export.h>
+ #include <linux/slab.h>
+ #include <linux/stat.h>
+ #include <linux/pm_opp.h>
+@@ -1198,13 +1198,6 @@ static int __init devfreq_init(void)
+ }
+ subsys_initcall(devfreq_init);
+ 
+-static void __exit devfreq_exit(void)
+-{
+-	class_destroy(devfreq_class);
+-	destroy_workqueue(devfreq_wq);
+-}
+-module_exit(devfreq_exit);
+-
+ /*
+  * The followings are helper functions for devfreq user device drivers with
+  * OPP framework.
+@@ -1470,7 +1463,3 @@ void devm_devfreq_unregister_notifier(struct device *dev,
+ 			       devm_devfreq_dev_match, devfreq));
+ }
+ EXPORT_SYMBOL(devm_devfreq_unregister_notifier);
+-
+-MODULE_AUTHOR("MyungJoo Ham <myungjoo.ham@samsung.com>");
+-MODULE_DESCRIPTION("devfreq class support");
+-MODULE_LICENSE("GPL");
 -- 
-
-Best Regards,
-Peter Chen
+2.8.4
