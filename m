@@ -1,83 +1,112 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: Re: [PATCH v9 2/4] power: reset: add reboot mode driver
-Date: Tue, 21 Jun 2016 14:16:43 +0800
-Message-ID: <5768DBCB.4090903@rock-chips.com>
-References: <1466404490-3315-1-git-send-email-andy.yan@rock-chips.com>
- <1466404696-3464-1-git-send-email-andy.yan@rock-chips.com>
- <5767A4C0.3080902@samsung.com> <5767A92E.5040602@rock-chips.com>
- <5767E22F.5030207@samsung.com> <20160620144002.GY12567@windriver.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 0/5] PM / devfreq: remove modular references from
+ non-modules
+Date: Tue, 21 Jun 2016 15:17:01 +0900
+Message-ID: <5768DBDD.6030704@samsung.com>
+References: <CGME20160621051708epcas1p4d2bacb86070cd65ec1fba990e108425e@epcas1p4.samsung.com>
+ <20160621051501.18396-1-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160620144002.GY12567@windriver.com>
+In-reply-to: <20160621051501.18396-1-paul.gortmaker@windriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: robh+dt@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de, bjorn.andersson@linaro.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, sre@kernel.org, matthias.bgg@gmail.com, linux-pm@vger.kernel.org, mbrugger@suse.com, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, richard@nod.at
+To: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Paul:
+Hi Paul,
 
-On 2016=E5=B9=B406=E6=9C=8820=E6=97=A5 22:40, Paul Gortmaker wrote:
-> [Re: [PATCH v9 2/4] power: reset: add reboot mode driver] On 20/06/20=
-16 (Mon 14:31) Krzysztof Kozlowski wrote:
->
->> On 06/20/2016 10:28 AM, Andy Yan wrote:
->>> Hi Krzysztof:
->>>
->>> On 2016=E5=B9=B406=E6=9C=8820=E6=97=A5 16:09, Krzysztof Kozlowski w=
-rote:
->>>> On 06/20/2016 08:38 AM, Andy Yan wrote:
-> [...]
->
->>>>> +
->>>>> +config SYSCON_REBOOT_MODE
->>>>> +    bool "Generic SYSCON regmap reboot mode driver"
->>>> Why not tristate?
->>>     I see many reset drivers in this directories  use bool, so I fo=
-llow
->>> them.
-> Andy - understood, but mistakes done in the past do not justify
-> repeating them again in the present.  OK, this is not strictly a mist=
-ake
-> in that it causes an error, but it isn't an ideal approach.
->
->> +Cc Paul,
->>
->> I don't mind that although I don't see any particular objections for
->> making it module-capable. In the same time I just reminded myself ab=
-out
->> Paul Gortmaker's long effort (like [1] [2]) about removing module
->> capability from non-modular drivers.
-> Thanks -- it is nice to see that people are starting to add this to
-> their review checklist ; early on they were getting added faster than=
- I
-> could remove them.  :-(   But I think we are making ground now.
->
-> For this case, I don't have any bias for it being built-in vs. being
-> modular, so long as the code is actually consistent with the Kconfig.
->
-> For existing bool settings I just remove the modular references, sinc=
-e I
-> can't be extending the functionality to include a modular usage when =
-I
-> can't test it or even be sure if a module has a sensible use case.
->
+It is good for devfreq/devfreq-event framework(patch1/patch2).
+
+But, I think that the device driver (patch3/4/5) should change
+the type from 'bool' to 'tristate' instead of using the .
+
+Thanks,
+Chanwoo Choi
+
+On 2016=EB=85=84 06=EC=9B=94 21=EC=9D=BC 14:14, Paul Gortmaker wrote:
+> For anyone new to the underlying goal of this cleanup, we are trying =
+to
+> not use module support for code that can never be built as a module s=
+ince:
+>=20
+>  (1) it is easy to accidentally write unused module_exit and remove c=
+ode
+>  (2) it can be misleading when reading the source, thinking it can be
+>      modular when the Makefile and/or Kconfig prohibit it
+>  (3) it requires the include of the module.h header file which in tur=
+n
+>      includes nearly everything else, thus adding to CPP overhead.
+>  (4) it gets copied/replicated into other code and spreads like weeds=
+=2E
+>=20
+> We have already merged over 100 of these for mainline to date, so the=
+re
+> is really nothing new to see here, in terms of the type of change.
+>=20
+> That said, devfreq changes seen here cover the following categories:
+>=20
+>   -just replacement of modular macros with their non-modular
+>    equivalents that CPP would have inserted anyway
+>=20
+>   -the removal of including module.h ; replaced with init.h
+>    and/or export.h as required based on whether the file used it.
+>=20
+>   -the removal of any/all unused/orphaned __exit functions that
+>    would never be called.
+>=20
+>   -the removal of any ".remove" functions that were hooked into
+>    the driver struct.   This ".remove" function would of
+>    course not be called from the __exit function since that was
+>    never run.  However in theory, someone could have triggered it
+>    via sysfs unbind, even though there isn't a sensible use case
+>    for doing so.  So to cover that possibility, we've also disabled
+>    sysfs unbind in the driver.
+>=20
+> There are no initcall level changes here; everything stays at the lev=
+el
+> of initcall it was previously - either by not using modular versions =
+to
+> begin with, or by using the builtin level equivalents.
+>=20
+> Build tested for arm and arm64 allmodconfig (for which all the driver=
+s
+> touched here get coverage) on the linux-next tree from today to ensur=
+e
+> no silly typos crept in.
+>=20
+> If there is a desire for any of these to be modular, we can definitel=
+y
+> consider that, but by default the changes here keep the code consiste=
+nt
+> with existing behaviour.  Thus I do not expand functionality into the
+> modular realm that I can't run time test, or even know if the modular
+> instance has a sensible modular use case.
+>=20
 > Paul.
-> --
-
-   I will remove the module related stuff in the next version.
->> Following his rationale, I think either this should be a tristate or=
- the
->> module stuff should be removed.
->>
->> Best regards,
->> Krzysztof
->>
->> [1] https://lkml.org/lkml/2016/2/21/180
->> [2] https://lkml.org/lkml/2016/6/13/682
->>
->>
->
->
+> ---
+>=20
+> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-samsung-soc@vger.kernel.org
+>=20
+>=20
+> Paul Gortmaker (5):
+>   PM / devfreq: make devfreq explicitly non-modular
+>   PM / devfreq: make devfreq-event explicitly non-modular
+>   PM / devfreq: make exynos-bus explicitly non-modular
+>   PM / devfreq: make event/exynos-nocp explicitly non-modular
+>   PM / devfreq: make event/exynos-ppmu explicitly non-modular
+>=20
+>  drivers/devfreq/devfreq-event.c     | 12 +-----------
+>  drivers/devfreq/devfreq.c           | 13 +------------
+>  drivers/devfreq/event/exynos-nocp.c | 19 +++----------------
+>  drivers/devfreq/event/exynos-ppmu.c |  8 ++------
+>  drivers/devfreq/exynos-bus.c        |  9 ++-------
+>  5 files changed, 9 insertions(+), 52 deletions(-)
+>=20
