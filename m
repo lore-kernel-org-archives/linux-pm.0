@@ -1,70 +1,83 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?W1BVTEwgUmVxdWVzdF0gRGV2ZnJlcSBGaXhlcyBmb3IgUkM1?=
- =?UTF-8?B?Ky4=?=
-Date: Tue, 21 Jun 2016 05:49:43 +0000
-Message-ID: <1787004839.214561.1466488183645.JavaMail.weblogic@ep2ml104d>
-References: <CGME20160621054943epcms1p5edf96fb3b2179a62bff867190bc6dc13@epcms1p5>
-Reply-To: myungjoo.ham@samsung.com
+From: Andy Yan <andy.yan@rock-chips.com>
+Subject: Re: [PATCH v9 2/4] power: reset: add reboot mode driver
+Date: Tue, 21 Jun 2016 14:16:43 +0800
+Message-ID: <5768DBCB.4090903@rock-chips.com>
+References: <1466404490-3315-1-git-send-email-andy.yan@rock-chips.com>
+ <1466404696-3464-1-git-send-email-andy.yan@rock-chips.com>
+ <5767A4C0.3080902@samsung.com> <5767A92E.5040602@rock-chips.com>
+ <5767E22F.5030207@samsung.com> <20160620144002.GY12567@windriver.com>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_214560_1403678011.1466488183644"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:50991 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752872AbcFUGW7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jun 2016 02:22:59 -0400
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
- by mailout2.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0O9301SW2XIXH6C0@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 21 Jun 2016 14:49:45 +0900 (KST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160620144002.GY12567@windriver.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Paul Gortmaker <paul.gortmaker@windriver.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: robh+dt@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de, bjorn.andersson@linaro.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, sre@kernel.org, matthias.bgg@gmail.com, linux-pm@vger.kernel.org, mbrugger@suse.com, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, richard@nod.at
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?cmp3QHJqd3lzb2NraS5uZXQ=?= <rjw@rjwysocki.net>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>
-Cc: =?UTF-8?B?cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20=?= <rafael.j.wysocki@intel.com>, =?UTF-8?B?bHVrYXN6Lmx1YmFAYXJtLmNvbQ==?= <lukasz.luba@arm.com>, =?UTF-8?B?ZGFuLmNhcnBlbnRlckBvcmFjbGUuY29t?= <dan.carpenter@oracle.com>, =?UTF-8?B?bXl1bmdqb28uaGFtQGdtYWlsLmNvbQ==?= <myungjoo.ham@gmail.com>
 
-------=_Part_214560_1403678011.1466488183644
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+Hi Paul:
 
-RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBhIHB1bGwgcmVxdWVzdCBvZiAiUE0gLyBEZXZmcmVx
-IEZpeGVzIiB0YXJnZXR0aW5nIFJDNSsuDQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0KDQotLS0t
-LUJFR0lOIFBHUCBTSUdORUQgTUVTU0FHRS0tLS0tDQpIYXNoOiBTSEExDQoNClRoZSBmb2xsb3dp
-bmcgY2hhbmdlcyBzaW5jZSBjb21taXQgMzM2ODhhYmIyODAyZmYzYTIzMGJkMjQ0MWY3NjU0Nzdi
-OTRjYzg5ZToNCg0KICBMaW51eCA0LjctcmM0ICgyMDE2LTA2LTE5IDIxOjMwOjAyIC0wNzAwKQ0K
-DQphcmUgYXZhaWxhYmxlIGluIHRoZSBnaXQgcmVwb3NpdG9yeSBhdDoNCg0KICBodHRwczovL2dp
-dC5rZXJuZWwub3JnL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9tengvZGV2ZnJlcS5naXQgZml4
-ZXMNCg0KZm9yIHlvdSB0byBmZXRjaCBjaGFuZ2VzIHVwIHRvIDcyYjI4MzViYWI2YmIwZjc2ODhh
-NzgzMDFhYzE0NjZjNzI5Y2IxYzk6DQoNCiAgUE0gLyBkZXZmcmVxOiBmaXggaW5pdGlhbGl6YXRp
-b24gb2YgY3VycmVudCBmcmVxdWVuY3kgaW4gbGFzdCBzdGF0dXMgKDIwMTYtMDYtMjEgMTQ6MjU6
-MzAgKzA5MDApDQoNCi0gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KUHVsbCBSZXF1ZXN0IG9mIERldmZyZXEgRml4ZXMgKDMu
-NyByYyA1KykgZm9yIFJhZmFlbCBMaW51eCBQTS4NCg0KLSAtLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQpDYWkgWmhpeW9uZyAo
-MSk6DQogICAgICBQTSAvIGRldmZyZXE6IGZpeCBkb3VibGUgY2FsbCBwdXRfZGV2aWNlDQoNCkRh
-biBDYXJwZW50ZXIgKDEpOg0KICAgICAgUE0gLyBkZXZmcmVxOiBleHlub3Mtbm9jcDogUmVtb3Zl
-IGluY29ycmVjdCBJU19FUlIoKSBjaGVjaw0KDQpMdWthc3ogTHViYSAoMSk6DQogICAgICBQTSAv
-IGRldmZyZXE6IGZpeCBpbml0aWFsaXphdGlvbiBvZiBjdXJyZW50IGZyZXF1ZW5jeSBpbiBsYXN0
-IHN0YXR1cw0KDQpNeXVuZ0pvbyBIYW0gKDMpOg0KICAgICAgUE0gLyBkZXZmcmVxOiBkZXZtX2t6
-YWxsb2MgdG8gaGF2ZSBkZXYgcG9pbnRlciBtb3JlIHByZWNpc2VseQ0KICAgICAgUE0gLyBkZXZm
-cmVxOiBmaXggZHVwbGljYXRlZCBrZnJlZSBvbiBkZXZmcmVxIHBvaW50ZXINCiAgICAgIFBNIC8g
-ZGV2ZnJlcTogcmVtb3ZlIGRvdWJsZSBwdXRfZGV2aWNlDQoNCiBkcml2ZXJzL2RldmZyZXEvZGV2
-ZnJlcS5jICAgICAgICAgICB8IDIyICsrKysrKysrKystLS0tLS0tLS0tLS0NCiBkcml2ZXJzL2Rl
-dmZyZXEvZXZlbnQvZXh5bm9zLW5vY3AuYyB8ICAzIC0tLQ0KIDIgZmlsZXMgY2hhbmdlZCwgMTAg
-aW5zZXJ0aW9ucygrKSwgMTUgZGVsZXRpb25zKC0pDQotLS0tLUJFR0lOIFBHUCBTSUdOQVRVUkUt
-LS0tLQ0KVmVyc2lvbjogR251UEcgdjENCg0KaVFJY0JBRUJBZ0FHQlFKWGFOTUVBQW9KRUJPaHVy
-dldCb0NLN3pFUUFKS0JBRVRobHU2Q2RRRWNON2R1WkUyNQ0KREQycEd6U0tRNXNxL1JZZzZZMEJV
-Y3lZM2x0Z2VuUnp2OTNPSHlHczRrMlN1NjVyUmhzbzdDbEt2NnN0V2RVbw0KdGZrV3V2Z0gzWmpu
-czB6bGxha25zQ3ZsNWl6eFJhWWRDb2Jtb0RaL29tSHZQM3U5YUxxYk83UEFxb25MUXpYKw0KL21x
-YXNRVjAyR1NCZ3NnSmlTNnQ1aFI2OG9CRW1HTWVTNnlpWmhNMUJBUGtWcXZ4VnBvcGdOeFkzWkZq
-SFcrWQ0KSVV6c2xlaWl2eVU2aFpqbkpOd2NSR0p0cTN1Ris2Nll2RERNLzdqVURBZURLMW1Gc21K
-bytrQjlqVHVnTGh2bw0KQjZaa09mZ0crczNHUlFZVmxxNjFOSHhjTzVGUThxRG1EcEJMYUFOZWl0
-ZDZJZmZWSm9Qb0Z1c1VXblRYY3E1Vw0Kd3hVL1dPRWdJblJEMmhiOXlNVGJ6bEZ0SmpTTlBOTS95
-UVNFN3dTTUZRZ1ZJQm9xVlRMMUltV3dmWktQaFZDag0KVk53aWJ5dFBVSm1aRDJnVDk3S3pobno3
-bzBEREEvWWxsallibWNqM0wveUwrbXlsdFhLRnNSOTk4SzgwT2lHaw0KYnlNZWhhcDVpdGZLbXdV
-N1dtZ3BVU0NnMkYwS2c5SmNPQU84U1I0SjBSQjM5STFVb3Q1aDZIZWk2dmJ6ZjVhbA0KUjRWRll5
-TnRrNVZ1TXlkdEVGd204bTVIZUsxVEZReFppR3hNcmljRDVVOXNBNHNPRElyQVd4REJBOHdLTVU4
-Nw0KeTBycDNGUFJVaWdQZW16VUlQWFJTcndGcFNsdFZGc2RIdDU4L1pXTGNvMXdUdVYzYmlzYkZQ
-K3FBd0Q5QXdZcg0KTCthdHhubGl5Zm5tbjdPSHZaeFINCj1CclpzDQotLS0tLUVORCBQR1AgU0lH
-TkFUVVJFLS0tLS0NCg==
-------=_Part_214560_1403678011.1466488183644--
+On 2016=E5=B9=B406=E6=9C=8820=E6=97=A5 22:40, Paul Gortmaker wrote:
+> [Re: [PATCH v9 2/4] power: reset: add reboot mode driver] On 20/06/20=
+16 (Mon 14:31) Krzysztof Kozlowski wrote:
+>
+>> On 06/20/2016 10:28 AM, Andy Yan wrote:
+>>> Hi Krzysztof:
+>>>
+>>> On 2016=E5=B9=B406=E6=9C=8820=E6=97=A5 16:09, Krzysztof Kozlowski w=
+rote:
+>>>> On 06/20/2016 08:38 AM, Andy Yan wrote:
+> [...]
+>
+>>>>> +
+>>>>> +config SYSCON_REBOOT_MODE
+>>>>> +    bool "Generic SYSCON regmap reboot mode driver"
+>>>> Why not tristate?
+>>>     I see many reset drivers in this directories  use bool, so I fo=
+llow
+>>> them.
+> Andy - understood, but mistakes done in the past do not justify
+> repeating them again in the present.  OK, this is not strictly a mist=
+ake
+> in that it causes an error, but it isn't an ideal approach.
+>
+>> +Cc Paul,
+>>
+>> I don't mind that although I don't see any particular objections for
+>> making it module-capable. In the same time I just reminded myself ab=
+out
+>> Paul Gortmaker's long effort (like [1] [2]) about removing module
+>> capability from non-modular drivers.
+> Thanks -- it is nice to see that people are starting to add this to
+> their review checklist ; early on they were getting added faster than=
+ I
+> could remove them.  :-(   But I think we are making ground now.
+>
+> For this case, I don't have any bias for it being built-in vs. being
+> modular, so long as the code is actually consistent with the Kconfig.
+>
+> For existing bool settings I just remove the modular references, sinc=
+e I
+> can't be extending the functionality to include a modular usage when =
+I
+> can't test it or even be sure if a module has a sensible use case.
+>
+> Paul.
+> --
+
+   I will remove the module related stuff in the next version.
+>> Following his rationale, I think either this should be a tristate or=
+ the
+>> module stuff should be removed.
+>>
+>> Best regards,
+>> Krzysztof
+>>
+>> [1] https://lkml.org/lkml/2016/2/21/180
+>> [2] https://lkml.org/lkml/2016/6/13/682
+>>
+>>
+>
+>
