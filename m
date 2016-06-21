@@ -1,73 +1,135 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [RFC PATCH 6/8] PM / Domains: Remove a provider by referencing
- the data pointer
-Date: Tue, 21 Jun 2016 15:45:09 +0100
-Message-ID: <576952F5.5020808@nvidia.com>
-References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
- <1457090634-14785-7-git-send-email-jonathanh@nvidia.com>
+From: Felipe Balbi <balbi@kernel.org>
+Subject: Re: [PATCH v12 1/4] gadget: Introduce the usb charger framework
+Date: Tue, 21 Jun 2016 17:50:16 +0300
+Message-ID: <871t3qmw9j.fsf@linux.intel.com>
+References: <cover.1466497505.git.baolin.wang@linaro.org> <831e03e8935b4c62e1e6bf94c93e0a08a73d89b2.1466497505.git.baolin.wang@linaro.org> <87eg7qon3r.fsf@linux.intel.com> <CAMz4kuJHPqvYiUGi8Ar5cR_8dENddvVjNEuG1wJVt3E3vp1UOQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1457090634-14785-7-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha256; protocol="application/pgp-signature"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAMz4kuJHPqvYiUGi8Ar5cR_8dENddvVjNEuG1wJVt3E3vp1UOQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-On 04/03/16 11:23, Jon Hunter wrote:
-> To remove a PM domain from the system, it is necessary to ensure
-> that any PM domain providers associated with the PM domain have
-> been removed. Otherwise it could be possible to obtain a pointer
-> to a PM domain structure that has been removed.
-> 
-> PM domains now have a reference to the pointer for the PM domain
-> provider's data variable. Add a function so that a PM domain can
-> remove a PM domain provider by referencing the data pointer.
-> 
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
->  drivers/base/power/domain.c | 24 ++++++++++++++++++++++++
->  include/linux/pm_domain.h   |  2 ++
->  2 files changed, 26 insertions(+)
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 72055fef6256..438885f2455f 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1738,6 +1738,30 @@ void of_genpd_del_provider(struct device_node *np)
->  EXPORT_SYMBOL_GPL(of_genpd_del_provider);
->  
->  /**
-> + * of_genpd_del_provider_by_data() - Remove a registered PM domain provider
-> + * @data: Pointer to the data associated with the PM domain provider
-> + *
-> + * Look up a PM domain provider based upon a pointer to it's data and
-> + * remove the PM domain provider from the list of providers.
-> + */
-> +void of_genpd_del_provider_by_data(void *data)
-> +{
-> +	struct of_genpd_provider *c, *cp;
-> +
-> +	mutex_lock(&of_genpd_mutex);
-> +	list_for_each_entry_safe(cp, c, &of_genpd_providers, link) {
-> +		if (cp->data == data) {
-> +			list_del(&cp->link);
-> +			of_node_put(cp->node);
-> +			kfree(cp);
-> +			break;
-> +		}
-> +	}
-> +	mutex_unlock(&of_genpd_mutex);
 
-On further the thought I believe that the above does not need to be safe
-variant of list_for_each_entry because we are breaking out of the loop
-when we find the one we are looking for. of_genpd_del_provider() does
-the same.
+Hi,
 
-Cheers
-Jon
+Baolin Wang <baolin.wang@linaro.org> writes:
+>>> This patch introduces the usb charger driver based on usb gadget that
+>>> makes an enhancement to a power driver. It works well in practice but
+>>> that requires a system with suitable hardware.
+>>>
+>>> The basic conception of the usb charger is that, when one usb charger
+>>> is added or removed by reporting from the usb gadget state change or
+>>> the extcon device state change, the usb charger will report to power
+>>> user to set the current limitation.
+>>>
+>>> The usb charger will register notifiees on the usb gadget or the extcon
+>>> device to get notified the usb charger state. It also supplies the
+>>> notification mechanism to userspace When the usb charger state is chang=
+ed.
+>>>
+>>> Power user will register a notifiee on the usb charger to get notified
+>>> by status changes from the usb charger. It will report to power user
+>>> to set the current limitation when detecting the usb charger is added
+>>> or removed from extcon device state or usb gadget state.
+>>>
+>>> This patch doesn't yet integrate with the gadget code, so some functions
+>>> which rely on the 'gadget' are not completed, that will be implemented
+>>> in the following patches.
+>>>
+>>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+>>> Reviewed-by: Li Jun <jun.li@nxp.com>
+>>> Tested-by: Li Jun <jun.li@nxp.com>
+>>> ---
+>>>  drivers/usb/gadget/Kconfig       |    7 +
+>>>  drivers/usb/gadget/udc/Makefile  |    1 +
+>>>  drivers/usb/gadget/udc/charger.c |  770 ++++++++++++++++++++++++++++++=
+++++++++
+>>>  include/linux/usb/charger.h      |  191 ++++++++++
+>>>  include/uapi/linux/usb/charger.h |   31 ++
+>>>  5 files changed, 1000 insertions(+)
+>>>  create mode 100644 drivers/usb/gadget/udc/charger.c
+>>>  create mode 100644 include/linux/usb/charger.h
+>>>  create mode 100644 include/uapi/linux/usb/charger.h
+>>>
+>>> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+>>> index 2057add..89f4e9b 100644
+>>> --- a/drivers/usb/gadget/Kconfig
+>>> +++ b/drivers/usb/gadget/Kconfig
+>>> @@ -134,6 +134,13 @@ config U_SERIAL_CONSOLE
+>>>       help
+>>>          It supports the serial gadget can be used as a console.
+>>>
+>>> +config USB_CHARGER
+>>> +     bool "USB charger support"
+>>
+>> you didn't build test all possibilities, did you?
+>>
+>> I have a feeling this won't link if USB_GADGET=3Dm. Can you test that?
+>
+> OK.
+>
+>>
+>>> diff --git a/drivers/usb/gadget/udc/charger.c b/drivers/usb/gadget/udc/=
+charger.c
+>> [...]
+>>> +struct class *usb_charger_class;
+>>
+>> We already have a UDC class, do we really, really need another class
+>> here?
+>
+> We want to manage the usb charger devices by this class and one usb
+> charger device is not equal with one usb device which managed by UDC
 
--- 
-nvpublic
+Can you explain this statement? If charging is done via a USB peripheral
+port, why don't we have a 1:1 mapping between charger and UDC?
+
+> class, so can we use UDC class to manage charger devices?
+> By the way, you also suggested to use the 'class' things instead of
+> 'bus' in previous mail.
+
+true, I did say that. It seems clearer, however, that we don't need this
+virtual device here.
+
+>>> +subsys_initcall(usb_charger_class_init);
+>>
+>> this should always work as module_init(). Please make sure that's the
+>> case.
+>
+> we should make sure the charger class has been allocated before user
+> try to add a new gadget to the udc class. So it should be issued
+> before 'module_init()' (many usb drivers are at module_init level).
+
+=2DEPROBE_DEFER?
+
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXaVQoAAoJEIaOsuA1yqREuJAP/23RKKzh6UmMO87AvyZ/ypt7
+G3X+v/D00cnFx0g2d7ctpgzyHIM6qTXo85Z2BzDdtB4U0PQkT3sWzfdgRrEUb9Z8
+lNNtH1LsYxkPr2AZ1J6JWqjyzPeNODOxS/9YBU2eqRru5CfR0JAszCaRCVn4AAHe
+VtKtO1yRzKFsnAYXS+JgdIPQAvRuHMHS8XmxgSSAh5rZsKjNgO2Lvl92mA+hJ/hJ
+S0onrXIU3rmLS94gFWW9R+eiqWJwDXMog5SVpaMIdSK9kt9m5iwBVh8RlChOw8nA
+5O4oFRYfOCXg3temTgA+7z1mkPJyVzpVn/dxHcPg1AgCnTJ099pKCQNtdCCmMEzE
+4lfnV/pU6qT2qds2vgHIREvq0Z5tyzD5H6vdUUEQT7otlxwKhnlpT77tF5862B/z
+K2ZDZHz95XF07WmuDOCLGp1wx+ADfX7DDq3CZdkNF7qWXBVILmep2O/IYiQyKD9p
+fPEvGJmBKLwDCyNWxZ2pg4F8csDLcg5GA2DOPmopLhYjOTsKJAwyUHacSBZlBZL7
+43exkZy7rIJSnEfLbIHqsR4cvFLBDPtHNsIJirz8GtN2zOKooICOJqknW4Q6b0oe
+JjnOzZZ1wmCKArolbt4SFgcvKWtYFd54q1l+G2kAopEZn6t4OedPyykO2v1kCvw4
+YqIOHv1Rpfwhux11IGHS
+=UPvc
+-----END PGP SIGNATURE-----
+--=-=-=--
