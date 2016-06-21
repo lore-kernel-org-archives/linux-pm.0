@@ -1,52 +1,48 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v6 2/4] power: reset: add reboot mode driver
-Date: Tue, 21 Jun 2016 13:39:45 +0200
-Message-ID: <57692781.4070506@samsung.com>
-References: <1458646525-491-1-git-send-email-andy.yan@rock-chips.com>
- <1458646642-591-1-git-send-email-andy.yan@rock-chips.com>
- <CAJKOXPcKzGTAicbsXK-cC9WQT0vBhpSG_q2GCn37+72x2hdhsQ@mail.gmail.com>
- <57691E92.5090205@rock-chips.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v12 4/4] power: wm831x_power: Support USB charger current
+ limit management
+Date: Tue, 21 Jun 2016 19:45:23 +0800
+Message-ID: <CAMz4kuJnkd=zpbnaCRcYd4wjzWVpr5Zom0BBJRnjTTikpwxKjA@mail.gmail.com>
+References: <cover.1466497505.git.baolin.wang@linaro.org> <7dc384248d51b1de0df54909f3c5550584b31357.1466497506.git.baolin.wang@linaro.org>
+ <878txyomue.fsf@linux.intel.com> <20160621110332.GC26099@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:62243 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbcFULjv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jun 2016 07:39:51 -0400
-In-reply-to: <57691E92.5090205@rock-chips.com>
+Received: from mail-yw0-f180.google.com ([209.85.161.180]:35291 "EHLO
+	mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbcFULpa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jun 2016 07:45:30 -0400
+Received: by mail-yw0-f180.google.com with SMTP id l125so11045949ywb.2
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jun 2016 04:45:24 -0700 (PDT)
+In-Reply-To: <20160621110332.GC26099@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>
-Cc: robh+dt@kernel.org, sre@kernel.org, heiko@sntech.de, john.stultz@linaro.org, arnd@arndb.de, galak@codeaurora.org, ijc+devicetree@hellion.org.uk, catalin.marinas@arm.com, olof@lixom.net, alexandre.belloni@free-electrons.com, dbaryshkov@gmail.com, jun.nie@linaro.org, pawel.moll@arm.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, matthias.bgg@gmail.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, f.fainelli@gmail.com, linux@arm.linux.org.uk, mbrugger@suse.com, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, linux-kernel@vger.kernel.org, wxt@rock-chips.com, dwmw2@infradead.org, mark.rutland@arm.com
+To: Mark Brown <broonie@kernel.org>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 
-On 06/21/2016 01:01 PM, Andy Yan wrote:
+On 21 June 2016 at 19:03, Mark Brown <broonie@kernel.org> wrote:
+> On Tue, Jun 21, 2016 at 01:30:49PM +0300, Felipe Balbi wrote:
+>> Baolin Wang <baolin.wang@linaro.org> writes:
+>> > @@ -607,8 +647,31 @@ static int wm831x_power_probe(struct platform_device *pdev)
+>> >             }
+>> >     }
+>
+>> > +   if (wm831x_pdata && wm831x_pdata->usb_gadget) {
+>> > +           power->usb_charger =
+>> > +                   usb_charger_find_by_name(wm831x_pdata->usb_gadget);
+>
+>> the fact that you rely on strings and pass them via pdata is an
+>> indication that you don't have enough description of the HW. Seems like
+>> we need to come up with a set of DT properties which tie a charger to a
+>> UDC.
+>
+>> I'm thinking a phandle would be enough?
+>
+> The wm831x has no DT support currently.
 
-(...)
+Another hand I suppose the usb charger is one virtual device and does
+not need be described from DT.
 
->>> +MODULE_AUTHOR("Andy Yan <andy.yan@rock-chips.com");
->>> +MODULE_DESCRIPTION("System reboot mode driver");
->>> +MODULE_LICENSE("GPL v2");
->>> diff --git a/drivers/power/reset/reboot-mode.h
->>> b/drivers/power/reset/reboot-mode.h
->>> new file mode 100644
->>> index 0000000..44ed34f
->>> --- /dev/null
->>> +++ b/drivers/power/reset/reboot-mode.h
->>> @@ -0,0 +1,6 @@
->>> +#ifndef __REBOOT_MODE_H__
->>> +#define __REBOOT_MODE_H__
->>> +
->>> +int reboot_mode_register(struct device *dev, int (*write)(int));
->> Documentation would be appreciated. Although it is local header but
->> you decoupled them and you are exporting the function.
-> 
->    You want this driver being a module in V9, so you may also want
->  I document this function when a exporting it. Where I should write the
->  documentation, and would you please give me some example?
-
-Follow kernel-doc (kernel-doc-nano-HOWTO.txt). There is an example. Put
-the documentation of functions next to them in source file (not header).
-
-Best regards,
-Krzysztof
+-- 
+Baolin.wang
+Best Regards
