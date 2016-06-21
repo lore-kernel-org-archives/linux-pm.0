@@ -1,59 +1,72 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Subject: Re: [LKP] [lkp] [x86 tsc] 19fa5e7364: WARNING: CPU: 0 PID: 0 at
- arch/x86/mm/extable.c:50 ex_handler_rdmsr_unsafe+0x72/0x80
-Date: Tue, 21 Jun 2016 12:10:11 +0200
-Message-ID: <1e840272-9a0c-1e95-0356-12c031df7458@redhat.com>
-References: <CADjb_WQVKRWZs+d2iK17i42_kRHBN=m8xo5i3ydDv1QWbT5MyA@mail.gmail.com>
- <SG2PR02MB15503CF343A5B5868F11C637802B0@SG2PR02MB1550.apcprd02.prod.outlook.com>
- <CANRm+Cyu8Vd_BudEPFBnvq4MuA0XY4RTNudfpwbEiM5yCzJpZw@mail.gmail.com>
+From: Felipe Balbi <balbi@kernel.org>
+Subject: Re: [PATCH v12 2/4] gadget: Support for the usb charger framework
+Date: Tue, 21 Jun 2016 13:27:50 +0300
+Message-ID: <87bn2uomzd.fsf@linux.intel.com>
+References: <cover.1466497505.git.baolin.wang@linaro.org> <f7bae2566824a5e1da14c1a19dee6af5f250262f.1466497506.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha256; protocol="application/pgp-signature"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CANRm+Cyu8Vd_BudEPFBnvq4MuA0XY4RTNudfpwbEiM5yCzJpZw@mail.gmail.com>
+In-Reply-To: <f7bae2566824a5e1da14c1a19dee6af5f250262f.1466497506.git.baolin.wang@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wanpeng Li <kernellwp@gmail.com>, Yu Chen <yu.chen.surf@gmail.com>, kernel test robot <xiaolong.ye@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, linux-acpi@vger.kernel.org, Len Brown <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, kvm <kvm@vger.kernel.org>, Radim Krcmar <rkrcmar@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, lkp@01.org
+To: gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: robh@kernel.org, jun.li@nxp.com, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, grygorii.strashko@ti.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCk9uIDIxLzA2LzIwMTYgMDg6MDgsIFdhbnBlbmcgTGkgd3JvdGU6DQo+IENjIEtWTSBN
-TCwgUGFvbG8sIFJhZGltLA0KPj4+IEZZSSwgcmF3IFFFTVUgY29tbWFuZCBsaW5lIGlzOg0K
-Pj4+DQo+Pj4gICAgICAgICBxZW11LXN5c3RlbS14ODZfNjQgLWVuYWJsZS1rdm0gLWNwdSBT
-YW5keUJyaWRnZSAta2VybmVsIC9wa2cvbGludXgveDg2XzY0LXJhbmRjb25maWctdzAtMDYx
-ODA2MjgvZ2NjLTYvMTlmYTVlNzM2NDdmZGUxZTZhNzAzOGE4ZjA1Y2RkZjRjNDNmMDhkMy92
-bWxpbnV6LTQuNy4wLXJjMy0wMDAwOS1nMTlmYTVlNyAtYXBwZW5kICdyb290PS9kZXYvcmFt
-MCB1c2VyPWxrcCBqb2I9L2xrcC9zY2hlZHVsZWQvdm0ta2J1aWxkLXlvY3RvLXg4Nl82NC0z
-Mi9iaXNlY3RfYm9vdC0xLXlvY3RvLW1pbmltYWwteDg2XzY0LmNnei14ODZfNjQtcmFuZGNv
-bmZpZy13MC0wNjE4MDYyOC0xOWZhNWU3MzY0N2ZkZTFlNmE3MDM4YThmMDVjZGRmNGM0M2Yw
-OGQzLTIwMTYwNjE4LTI1NTM1LWg4MmJheC0wLnlhbWx+IEFSQ0g9eDg2XzY0IGtjb25maWc9
-eDg2XzY0LXJhbmRjb25maWctdzAtMDYxODA2MjggYnJhbmNoPWludGVybmFsLWV5d2EvbWFz
-dGVyIGNvbW1pdD0xOWZhNWU3MzY0N2ZkZTFlNmE3MDM4YThmMDVjZGRmNGM0M2YwOGQzIEJP
-T1RfSU1BR0U9L3BrZy9saW51eC94ODZfNjQtcmFuZGNvbmZpZy13MC0wNjE4MDYyOC9nY2Mt
-Ni8xOWZhNWU3MzY0N2ZkZTFlNmE3MDM4YThmMDVjZGRmNGM0M2YwOGQzL3ZtbGludXotNC43
-LjAtcmMzLTAwMDA5LWcxOWZhNWU3IG1heF91cHRpbWU9NjAwIFJFU1VMVF9ST09UPS9yZXN1
-bHQvYm9vdC8xL3ZtLWtidWlsZC15b2N0by14ODZfNjQveW9jdG8tbWluaW1hbC14ODZfNjQu
-Y2d6L3g4Nl82NC1yYW5kY29uZmlnLXcwLTA2MTgwNjI4L2djYy02LzE5ZmE1ZTczNjQ3ZmRl
-MWU2YTcwMzhhOGYwNWNkZGY0YzQzZjA4ZDMvMCBMS1BfU0VSVkVSPWlubiBlYXJseXByaW50
-az10dHlTMCwxMTUyMDAgc3lzdGVtZC5sb2dfbGV2ZWw9ZXJyIGRlYnVnIGFwaWM9ZGVidWcg
-c3lzcnFfYWx3YXlzX2VuYWJsZWQgcmN1cGRhdGUucmN1X2NwdV9zdGFsbF90aW1lb3V0PTEw
-MCBwYW5pYz0tMSBzb2Z0bG9ja3VwX3BhbmljPTEgbm1pX3dhdGNoZG9nPXBhbmljIG9vcHM9
-cGFuaWMgbG9hZF9yYW1kaXNrPTIgcHJvbXB0X3JhbWRpc2s9MCBjb25zb2xlPXR0eVMwLDEx
-NTIwMCBjb25zb2xlPXR0eTAgdmdhPW5vcm1hbCBydyBpcD06Ojo6dm0ta2J1aWxkLXlvY3Rv
-LXg4Nl82NC0zMjo6ZGhjcCBkcmJkLm1pbm9yX2NvdW50PTgnICAtaW5pdHJkIC9mcy9zZGgx
-L2luaXRyZC12bS1rYnVpbGQteW9jdG8teDg2XzY0LTMyIC1tIDMyMCAtc21wIDEgLWRldmlj
-ZSBlMTAwMCxuZXRkZXY9bmV0MCAtbmV0ZGV2IHVzZXIsaWQ9bmV0MCAtYm9vdCBvcmRlcj1u
-YyAtbm8tcmVib290IC13YXRjaGRvZyBpNjMwMGVzYiAtcnRjIGJhc2U9bG9jYWx0aW1lIC1k
-cml2ZSBmaWxlPS9mcy9zZGgxL2Rpc2swLXZtLWtidWlsZC15b2N0by14ODZfNjQtMzIsbWVk
-aWE9ZGlzayxpZj12aXJ0aW8gLXBpZGZpbGUgL2Rldi9zaG0va2Jvb3QvcGlkLXZtLWtidWls
-ZC15b2N0by14ODZfNjQtMzIgLXNlcmlhbCBmaWxlOi9kZXYvc2htL2tib290L3NlcmlhbC12
-bS1rYnVpbGQteW9jdG8teDg2XzY0LTMyIC1kYWVtb25pemUgLWRpc3BsYXkgbm9uZSAtbW9u
-aXRvciBudWxsDQo+Pj4NCj4+IFRoaXMgIHByb2JsZW0gd2FzIGNhdXNlZCBkdWUgdG8ga3Zt
-IGRvZXMgbm90IHN1cHBvcnQgTVNSX1BMQVRGT1JNX0lORk8oMHhjZSksDQo+PiBhY2NvcmRp
-bmcgdG8gV2FucGVuZydzIGZlZWRiYWNrLg0KPj4NCj4+IEhpIFdhbnBlbmcsIGlzIGl0IHBv
-c3NpYmxlIGZvciBrdm0gdG8gc2ltdWxhdGUgdGhpcyBNU1IsIG90aGVyd2lzZSB3ZQ0KPj4g
-bWlnaHQgaGF2ZSB0byB1c2UNCj4+IHJkbXNyX3NhZmUgaW5zdGVhZC4NCj4gDQo+IFRoZXJl
-IGlzIGEgdGhyZWFkIGRpc2N1c3NlZCB0aGlzIGJlZm9yZQ0KPiBodHRwczovL3BhdGNod29y
-ay5rZXJuZWwub3JnL3BhdGNoLzg4MzMwMjEvLCBNU1JfUExBVEZPUk1fSU5GTyBjYW4ndA0K
-PiBiZSBzaW1wbGUgZW11bGF0aW9uLg0KPiANCj4gUGluZyBQYW9sbywgUmFkaW0uIDopDQoN
-CnJkbXNyX3NhZmUgbXVzdCBiZSB1c2VkIGluc3RlYWQuICBJJ2xsIHByZXBhcmUgYSBwYXRj
-aC4NCg0KUGFvbG8NCg==
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+
+Hi,
+
+Baolin Wang <baolin.wang@linaro.org> writes:
+> For supporting the usb charger, it adds the usb_charger_init() and
+> usb_charger_exit() functions for usb charger initialization and exit.
+>
+> It will report to the usb charger when the gadget state is changed,
+> then the usb charger can do the power things.
+>
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> Reviewed-by: Li Jun <jun.li@nxp.com>
+> Tested-by: Li Jun <jun.li@nxp.com>
+
+Before anything, I must say that I really liked this patch. It's
+minimaly invasive to udc core and does all the necessary changes. If it
+wasn't for the extra charger class, this would've been perfect.
+
+Can't you just tie a charger to a UDC and avoid the charger class
+completely?
+
+>  static inline int usb_gadget_vbus_draw(struct usb_gadget *gadget, unsign=
+ed mA)
+>  {
+> +	if (gadget->charger)
+
+I guess you could do this check inside
+usb_gadget_set_cur_limit_by_type() itself.
+
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXaRamAAoJEIaOsuA1yqRExuIP/j2IikJOFNIX7M+ixwED8poJ
+1ukutmtQAi012IIMk/GHNKttXC7IxsE7zD+WveLjBPh0oLv1BvtXoOs1ryzQdH3C
+66eSJ4k0z9bnm6g7nKX6KqZa44ukodJHDRTnhMGcmscyBLqQGxQXM6HS1NOt60T4
+Ggr96g2eL6oU+OJYM/e08jpd79lusO/AXzjPZs/fmVWiPFgujFJXgHNpo7+46fTJ
+HyiCn0s0O+yrLWp8ceinlT+5Sbchk+uGfM+wK2ORwvBdfR+WSqUeA+zn5oj/8D6H
+mZzM1TfT6jvis+rGrrpnNL4+NtwYNPKMTbZsqNRjg0d+h78xzPUPki7wV1KKk+yS
+PZZb10RqMMLyAbnr5kKW0JMIP5pW1Bl33V2/rf2EEJbuEO+/EXUVHalqdV5DZu+1
+JE7qXR3CYrGEIcCIH6oeytrArPVX7n7gCl4+FOIDdnlGTGLJ+bwG7bB+XPvMpLGU
+gEAzFtSG5tyau+lvpqGWeiE8okJwYAcxWLGRVvHWS5wcsfVKwFQocA6crlmZZ/Ih
+BIx6WGZRpb9hElg8V7fbThFeYghXm9hd3R4B+k5brWjeynmE5XmJ7IdReU6+AfS5
+qt1CTI+/GUDP9mTopcbf5sfGjCl4nd2yg5+KcHMLC/BUFiYwSYUq3RjC4YOyJgcW
+NrtLOeGQCZeyy/G6M6Q/
+=dgJQ
+-----END PGP SIGNATURE-----
+--=-=-=--
