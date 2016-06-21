@@ -1,67 +1,92 @@
-From: Felipe Balbi <balbi@kernel.org>
-Subject: Re: [PATCH v12 4/4] power: wm831x_power: Support USB charger current limit management
-Date: Tue, 21 Jun 2016 13:30:49 +0300
-Message-ID: <878txyomue.fsf@linux.intel.com>
-References: <cover.1466497505.git.baolin.wang@linaro.org> <7dc384248d51b1de0df54909f3c5550584b31357.1466497506.git.baolin.wang@linaro.org>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: [PATCH] PM / clk: Add support for adding a specific clock from device-tree
+Date: Tue, 21 Jun 2016 11:33:25 +0100
+Message-ID: <1466505205-20115-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:23960 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750768AbcFUKe0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 21 Jun 2016 06:34:26 -0400
-In-Reply-To: <7dc384248d51b1de0df54909f3c5550584b31357.1466497506.git.baolin.wang@linaro.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:9132 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751644AbcFUKf0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jun 2016 06:35:26 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: robh@kernel.org, jun.li@nxp.com, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, grygorii.strashko@ti.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Some drivers using the PM clocks framework need to add specific clocks
+from device-tree using a name by calling the functions
+of_clk_get_by_name() and then pm_clk_add_clk(). Rather than having
+drivers call both functions, add a helper function of_pm_clk_add_clk()
+that will call these functions so drivers can call a single function
+to add a specific clock from device-tree.
 
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+---
 
-Hi,
+Some examples of drivers that would be able to make use of this new
+function are drivers/dma/tegra210-adma.c and
+drivers/irqchip/irq-gic-pm.c.
 
-Baolin Wang <baolin.wang@linaro.org> writes:
-> @@ -607,8 +647,31 @@ static int wm831x_power_probe(struct platform_device=
- *pdev)
->  		}
->  	}
->=20=20
-> +	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
-> +		power->usb_charger =3D
-> +			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
+ drivers/base/power/clock_ops.c | 32 ++++++++++++++++++++++++++++++++
+ include/linux/pm_clock.h       |  1 +
+ 2 files changed, 33 insertions(+)
 
-the fact that you rely on strings and pass them via pdata is an
-indication that you don't have enough description of the HW. Seems like
-we need to come up with a set of DT properties which tie a charger to a
-UDC.
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
+index 761f5c21f9f0..8e2e4757adcb 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -141,6 +141,38 @@ EXPORT_SYMBOL_GPL(pm_clk_add_clk);
+ 
+ 
+ /**
++ * of_pm_clk_add_clk - Start using a device clock for power management.
++ * @dev: Device whose clock is going to be used for power management.
++ * @name: Name of clock that is going to be used for power management.
++ *
++ * Add the clock described in the 'clocks' device-tree node that matches
++ * with the 'name' provided, to the list of clocks used for the power
++ * management of @dev. On success, returns 0. Returns a negative error
++ * code if the clock is not found or cannot be added.
++ */
++int of_pm_clk_add_clk(struct device *dev, const char *name)
++{
++	struct clk *clk;
++	int ret;
++
++	if (!dev || !dev->of_node || !name)
++		return -EINVAL;
++
++	clk = of_clk_get_by_name(dev->of_node, name);
++	if (IS_ERR(clk))
++		return PTR_ERR(clk);
++
++	ret = pm_clk_add_clk(dev, clk);
++	if (ret) {
++		clk_put(clk);
++		return ret;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(of_pm_clk_add_clk);
++
++/**
+  * of_pm_clk_add_clks - Start using device clock(s) for power management.
+  * @dev: Device whose clock(s) is going to be used for power management.
+  *
+diff --git a/include/linux/pm_clock.h b/include/linux/pm_clock.h
+index 308d6044f153..09779b0ae720 100644
+--- a/include/linux/pm_clock.h
++++ b/include/linux/pm_clock.h
+@@ -42,6 +42,7 @@ extern int pm_clk_create(struct device *dev);
+ extern void pm_clk_destroy(struct device *dev);
+ extern int pm_clk_add(struct device *dev, const char *con_id);
+ extern int pm_clk_add_clk(struct device *dev, struct clk *clk);
++extern int of_pm_clk_add_clk(struct device *dev, const char *name);
+ extern int of_pm_clk_add_clks(struct device *dev);
+ extern void pm_clk_remove(struct device *dev, const char *con_id);
+ extern void pm_clk_remove_clk(struct device *dev, struct clk *clk);
+-- 
+2.1.4
 
-I'm thinking a phandle would be enough?
-
-=2D-=20
-balbi
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXaRdZAAoJEIaOsuA1yqREWksP/3H62lJ2lTqKX3DhMAKRJyK7
-zpq0+xXK++/Y+jPDseQhFL8FlxMvOnkIgxZwJ6BX1jE8bj4opr17+H4fvbevi0e5
-Hz9kGCLQrQWmjypAuDI9jD5a8wL4fc6ei0tBcsr6dH/5dts8lqZy8YOFmbyLdsni
-1kSe3IZiwfDlj5iDLQmt6x/Fe5eLZ51223JzAuRCqhYnWMYcJX/WlW3oR+J8TPVD
-EQ1LDvVnmw/xnAi8Ez81ttDTZOoFALJzD8yrMi8bP/Jzb0vADMkLNxLMj9o3KN66
-scD7Hj2kxC6HNQVKyQ9l50UpLH5FNR/Xo6niOP5RqtywliOBrFG2k6byQ46u6Ow7
-WFABSaprC7GCzby98YapXnHQwIwinpg0kRIwql5gbs5fGhR0q+aXKypnohlcK2o3
-sv8YaMsWK0cSJeh/91ML9jPYfw/iqfqZ4kO8uY1ncNR0BdNsKG7QyWTgu27r+jEa
-A5K4OHBrkRzY/oGkK8w7m/sS6jCe+n6GHhqcs36QOjWEkca+cQKkhZavu5Ad2NKc
-Sd/pltYy2UqFQ1M47hEax0HuzedoZZ9fNtlTKaP3uM4wuwxgyv0WUEMQxULyYXt+
-qeurXpyS/GSh087tlRG7/18KenZtIoMt0tCq0faFq4YW3flznynobAWgtcpBiJ43
-e39cEK1HqI14wa0ksS7f
-=Wca5
------END PGP SIGNATURE-----
---=-=-=--
