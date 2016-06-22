@@ -1,113 +1,64 @@
-From: Wanpeng Li <kernellwp@gmail.com>
-Subject: [PATCH] x86: fix rdmsr MSR_PLATFORM_INFO unsafe warning in kvm guest
-Date: Wed, 22 Jun 2016 09:28:28 +0800
-Message-ID: <1466558908-3524-1-git-send-email-wanpeng.li@hotmail.com>
+From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v12 2/4] gadget: Support for the usb charger framework
+Date: Wed, 22 Jun 2016 09:45:55 +0800
+Message-ID: <CAMz4kuK24gb1LmJ5ByiF4Sy3ukXdM8esBuTB0y=AL6fLCD0WQw@mail.gmail.com>
+References: <cover.1466497505.git.baolin.wang@linaro.org> <f7bae2566824a5e1da14c1a19dee6af5f250262f.1466497506.git.baolin.wang@linaro.org>
+ <87bn2uomzd.fsf@linux.intel.com> <CAMz4ku+t66t+E3dCysfE9yNkKRCYwv7mXpJs4ShGbZWSZO_B9g@mail.gmail.com>
+ <87twgmn4m7.fsf@linux.intel.com> <CAMz4kuKtof=wret_JJVaxe3uXjtaSeCFWn8V6y2wzTjjmrQVLQ@mail.gmail.com>
+ <87inx2n2vs.fsf@linux.intel.com> <CAMz4kuKnzjPOqEr9kJY6SCnq2rszsc55X5=7mWb+ZcbL6G_8DQ@mail.gmail.com>
+ <87d1nan2ft.fsf@linux.intel.com> <CAMz4kuLnKH3to_gYdZC3+eos8a4i9nyqXQZyjui+eryv5i+_EQ@mail.gmail.com>
+ <87a8ien1o0.fsf@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <kvm-owner@vger.kernel.org>
-Sender: kvm-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, linux-acpi@vger.kernel.org, lkp@01.org, x86@kernel.org
-Cc: Wanpeng Li <wanpeng.li@hotmail.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Chen Yu <y.c.chen@intel.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>, jacob.jun.pan@intel.com, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <87a8ien1o0.fsf-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ruslan Bilovol <ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, grygorii.strashko-l0cyMroinI0@public.gmane.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-=46rom: Wanpeng Li <wanpeng.li@hotmail.com>
+On 21 June 2016 at 20:53, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>
+> Hi,
+>
+> Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
+>>>>>>>>> Can't you just tie a charger to a UDC and avoid the charger class
+>>>>>>>>> completely?
+>>>>>>>>
+>>>>>>>> Yeah, I also hope so. But we really want something to manage the
+>>>>>>>> charger devices, do you have any good suggestion to avoid the 'class'
+>>>>>>>> but also can manage the charger devices?
+>>>>>>>
+>>>>>>> manage in what way? It seems to me that they don't need to be real
+>>>>>>> devices, just a handle as part of struct usb_gadget, no?
+>>>>>>
+>>>>>> Although charger device is not one real hardware device, we also use
+>>>>>> one 'struct device' to describe it in charger.c file. So we should
+>>>>>> manage the 'struct device' with one proper way.
+>>>>>
+>>>>> that's fine, but why do you think they need a struct device to start with?
+>>>>
+>>>> We can get/put usb charger and mange usb charger attributes with the
+>>>> device model if we use a struct device.
+>>>
+>>> We already have that as part of struct usb_udc. Why don't you just
+>>> create a subdirectory called charger which will hold all your
+>>> charger-related attributes. That directory will only be created if a
+>>> valid ->charger pointer exists.
+>>
+>> That means we can remove all the device and class things in charger.c
+>> file, right? OK, I try to do that. Thanks.
+>
+> right. Keep your charger.c file, because to conditionally compile and
+> link that to udc-core.ko, but remove all the class initialization and
+> all of that extra code.
 
-------------[ cut here ]------------
-WARNING: CPU: 0 PID: 0 at arch/x86/mm/extable.c:50 ex_handler_rdmsr_uns=
-afe+0x6a/0x70
-unchecked MSR access error: RDMSR from 0xce
-Modules linked in:
-CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.7.0-rc3+ #1
-Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS Bochs 01/01=
-/2011
- 0000000000000000 ffffffff81c03ce0 ffffffff813b3eae ffffffff81c03d30
- 0000000000000000 ffffffff81c03d20 ffffffff81067181 0000003200000001
- ffffffff81c03df8 ffffffff8179676c 0000000000000000 ffffffff81fcd2c0
-Call Trace:
- dump_stack+0x67/0x99
- __warn+0xd1/0xf0
- warn_slowpath_fmt+0x4f/0x60
- ex_handler_rdmsr_unsafe+0x6a/0x70
- fixup_exception+0x39/0x50
- do_general_protection+0x93/0x1b0
- general_protection+0x22/0x30
- ? cpu_khz_from_msr+0xd8/0x1c0
- native_calibrate_cpu+0x30/0x5b0
- tsc_init+0x2b/0x297
- x86_late_time_init+0xf/0x11
- start_kernel+0x398/0x451
- ? set_init_arg+0x55/0x55
- x86_64_start_reservations+0x2f/0x31
- x86_64_start_kernel+0xea/0xed
+Make sense.
 
-After commit (fc141535ad8 : "x86 tsc_msr: Extend to include Intel Core=20
-Architecture"), rdmsr MSR_PLATFORM_INFO is used to get maximum non-turb=
-o=20
-ratio for recent Intel Core Architecture which results in kvm guest rdm=
-sr=20
-unsafe warning.
-
-As Radim pointed out before:
-
-| MSR_PLATFORM_INFO: Intel changes it from family to family and there i=
-s
-| no obvious overlap or default.  If we picked 0 (any other fixed value=
-),
-| then the guest would have to know that 0 doesn't mean that
-| MSR_PLATFORM_INFO returned 0, but that KVM doesn't emulate this MSR a=
-nd
-| the value cannot be used.  This is very similar to handling a #GP in =
-the
-| guest, but also has a disadvantage, because KVM cannot say that
-| MSR_PLATFORM_INFO is 0.  Simple emulation is not possible.
-
-This patch fix it by using rdmsr_safe to read MSR_PLATFORM_INFO in kvm=20
-guest in order that #GP can be fixed up, then tsc will be calibrated by=
-=20
-PIT, HPET etc.
-
-Reported-by: kernel test robot <xiaolong.ye@intel.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Chen Yu <y.c.chen@intel.com>
-Cc: Paolo Bonzini <pbonzini@redhat.com>
-Cc: Radim Kr=C4=8Dm=C3=A1=C5=99 <rkrcmar@redhat.com>
-Cc: jacob.jun.pan@intel.com
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Signed-off-by: Wanpeng Li <wanpeng.li@hotmail.com>
----
- arch/x86/kernel/tsc_msr.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/kernel/tsc_msr.c b/arch/x86/kernel/tsc_msr.c
-index e0c2b30..e6e465e 100644
---- a/arch/x86/kernel/tsc_msr.c
-+++ b/arch/x86/kernel/tsc_msr.c
-@@ -70,7 +70,7 @@ static int match_cpu(u8 family, u8 model)
-  */
- unsigned long cpu_khz_from_msr(void)
- {
--	u32 lo, hi, ratio, freq_id, freq;
-+	u32 lo, hi, freq_id, freq, ratio =3D 0;
- 	unsigned long res;
- 	int cpu_index;
-=20
-@@ -123,8 +123,8 @@ unsigned long cpu_khz_from_msr(void)
- 	}
-=20
- get_ratio:
--	rdmsr(MSR_PLATFORM_INFO, lo, hi);
--	ratio =3D (lo >> 8) & 0xff;
-+	if (!rdmsr_safe(MSR_PLATFORM_INFO, &lo, &hi))
-+		ratio =3D (lo >> 8) & 0xff;
-=20
- done:
- 	/* TSC frequency =3D maximum resolved freq * maximum resolved bus rat=
-io */
---=20
-1.9.1
-
+-- 
+Baolin.wang
+Best Regards
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
