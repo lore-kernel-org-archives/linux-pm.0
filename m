@@ -1,43 +1,84 @@
-From: Rhyland Klein <rklein@nvidia.com>
-Subject: Re: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt >
- 0
-Date: Wed, 22 Jun 2016 11:31:39 -0400
-Message-ID: <01a31c96-3c21-511c-c279-04016bb17e52@nvidia.com>
-References: <1465507719-819-1-git-send-email-rklein@nvidia.com>
- <8b081e45-94c8-bb53-69ca-0a617c668de5@nvidia.com>
- <20160622142353.GA16084@earth>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC PATCH 1/8] PM / Domains: Add new helper functions for
+ device-tree
+Date: Wed, 22 Jun 2016 17:36:23 +0200
+Message-ID: <CAPDyKFpk2QMC3R+V3fiF5wK=9ExPrvCPUmD98ZL54q02TDAFEA@mail.gmail.com>
+References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
+ <1457090634-14785-2-git-send-email-jonathanh@nvidia.com>
+ <576AA7B2.5030004@nvidia.com>
+ <CAPDyKFqEis0OX68eFD0dbneYOngGQfvu4JYbWzm7tTbs8WPS5A@mail.gmail.com>
+ <576AAD4B.2020905@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:7116 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750957AbcFVPbs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 11:31:48 -0400
-In-Reply-To: <20160622142353.GA16084@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <576AAD4B.2020905@nvidia.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alexander Aring <alex.aring@gmail.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Kukjin Kim <kgene@kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 
-On 6/22/2016 10:23 AM, Sebastian Reichel wrote:
-> * PGP Signed by an unknown key
-> 
-> Hi Rhyland,
-> 
-> On Tue, Jun 21, 2016 at 02:06:55PM -0400, Rhyland Klein wrote:
->> Sebastian, might this be accepted soon? We can't enable the bq27xxx
->> driver for Tegra210 Smaug without running into the crash this prevents.
-> 
-> Yes, I have already queued this in my fixes branch some days ago,
-> but did not yet pushed it. It's pushed out now:
-> 
-> https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/commit/?h=fixes&id=5bc28b93a36e3cb3acc2870fb75cb6ffb182fece
-> 
+On 22 June 2016 at 17:22, Jon Hunter <jonathanh@nvidia.com> wrote:
+>
+> On 22/06/16 16:08, Ulf Hansson wrote:
+>> On 22 June 2016 at 16:58, Jon Hunter <jonathanh@nvidia.com> wrote:
+>>> Hi Ulf,
+>>>
+>>> On 04/03/16 11:23, Jon Hunter wrote:
+>>>> Ideally, if we are returning a reference to a PM domain via a call to
+>>>> of_genpd_get_from_provider(), then we should keep track of such
+>>>> references via a reference count. The reference count could then be used
+>>>> to determine if a PM domain can be safely removed. Alternatively, it is
+>>>> possible to avoid such external references by providing APIs to access
+>>>> the PM domain and hence, eliminate any calls to
+>>>> of_genpd_get_from_provider().
+>>>>
+>>>> Add new helper functions for adding a device and a subdomain to a PM
+>>>> domain when using device-tree, so that external calls to
+>>>> of_genpd_get_from_provider() can be removed.
+>>>
+>>> While we are at it, does it make sense to add helpers for
+>>> of_genpd_remove_device/subdomain() as well? Seems that these could be
+>>> useful for doing the inverse when cleaning up.
+>>
+>> I would prefer if we could avoid adding new APIs until we really see
+>> the need for it.
+>>
+>> Moreover, I would like to avoid us adding OF specific APIs, unless
+>> those can be really justified.
+>> Hope that made sense.
+>
+> Yes makes sense. However, after this series, the
+> pm_genpd_remove_device/subdomain really become provider only APIs
+> because clients can no longer get access to the genpd struct. Although
+> today none of the users of the new of_genpd_add_device/subdomain do any
+> clean-up on failure, it is possible that someone may. Therefore, I was
+> thinking that we should have a way for a client to remove a subdomain or
+> device it has added.
+>
+> Does that make sense? I guess we could always add those as needed.
+>
+> I am looking at a use-case for usb where we are populating the
+> pm-domains at runtime and we may need to clean-up on failure. However, I
+> can always wait to add more APIs until we really need them.
 
-Thanks!
+You may very well be right that these will be needed.
 
--rhyland
+How about posting those patches as separate change and on top of the
+series. Then we can decide if we want to pick them now or later.
 
--- 
-nvpublic
+>
+> Let me know what you think about my response to patch 6/8.
+
+I am on it.
+
+Kind regards
+Uffe
