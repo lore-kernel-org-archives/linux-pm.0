@@ -1,88 +1,50 @@
-From: Michal Hocko <mhocko@kernel.org>
-Subject: [PATCH] oom, suspend: fix oom_reaper vs. oom_killer_disable race
-Date: Wed, 22 Jun 2016 14:13:54 +0200
-Message-ID: <1466597634-16199-1-git-send-email-mhocko@kernel.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH] MAINTAINERS: Extend Samsung SoC entry with S3C/S5P drivers
+Date: Wed, 22 Jun 2016 14:16:45 +0200
+Message-ID: <1466597805-31988-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:36008 "EHLO
-	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751755AbcFVMOH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 08:14:07 -0400
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:28565 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752308AbcFVMRE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 08:17:04 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Michal Hocko <mhocko@suse.com>
+To: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-From: Michal Hocko <mhocko@suse.com>
+Some of the drivers for S3C and S5P families of Samsung SoCs go in
+through Samsung SoC tree.  Extend the entry so proper maintainers would
+be displayed in such cases, most notably the cpufreq drivers.  This does
+not change the work-flow for other drivers which have sub-maintainers
+(like Samsung clocks).
 
-Tetsuo has reported the following potential oom_killer_disable vs.
-oom_reaper race:
-
-(1) freeze_processes() starts freezing user space threads.
-(2) Somebody (maybe a kenrel thread) calls out_of_memory().
-(3) The OOM killer calls mark_oom_victim() on a user space thread
-    P1 which is already in __refrigerator().
-(4) oom_killer_disable() sets oom_killer_disabled = true.
-(5) P1 leaves __refrigerator() and enters do_exit().
-(6) The OOM reaper calls exit_oom_victim(P1) before P1 can call
-    exit_oom_victim(P1).
-(7) oom_killer_disable() returns while P1 not yet finished
-(8) P1 perform IO/interfere with the freezer.
-
-This situation is unfortunate. We cannot move oom_killer_disable after
-all the freezable kernel threads are frozen because the oom victim might
-depend on some of those kthreads to make a forward progress to exit so
-we could deadlock. It is also far from trivial to teach the oom_reaper
-to not call exit_oom_victim() because then we would lose a guarantee of
-the OOM killer and oom_killer_disable forward progress because
-exit_mm->mmput might block and never call exit_oom_victim.
-
-It seems the easiest way forward is to workaround this race by calling
-try_to_freeze_tasks again after oom_killer_disable. This will make sure
-that all the tasks are frozen or it bails out.
-
-Fixes: 449d777d7ad6 ("mm, oom_reaper: clear TIF_MEMDIE for all tasks queued for oom_reaper")
-Reported-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: Michal Hocko <mhocko@suse.com>
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 ---
+ MAINTAINERS | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Hi,
-this is a temporal fix that is easy enough for the current 4.7 cycle.
-Even though I suspect PM suspend race with the OOM killer is super
-unlikely it is better to not risk it considering the patch is quite
-trivial. I plan to come up with a proper solution later on after some
-other OOM killer/reaper changes settle down.  It is really desirable
-that oom_killer_disable() is a full "barrier" rather than working around
-potential issues.
-
-So if this looks like a proper fix to you Rafael I would route this via Andrew.
-What do you think?
-
- kernel/power/process.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index df058bed53ce..0c2ee9761d57 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -146,6 +146,18 @@ int freeze_processes(void)
- 	if (!error && !oom_killer_disable())
- 		error = -EBUSY;
- 
-+	/*
-+	 * There is a hard to fix race between oom_reaper kernel thread
-+	 * and oom_killer_disable. oom_reaper calls exit_oom_victim
-+	 * before the victim reaches exit_mm so try to freeze all the tasks
-+	 * again and catch such a left over task.
-+	 */
-+	if (!error) {
-+		pr_info("Double checking all user space processes after OOM killer disable... ");
-+		error = try_to_freeze_tasks(true);
-+		pr_cont("\n");
-+	}
-+
- 	if (error)
- 		thaw_processes();
- 	return error;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 092ce3990541..1e5cf07030ae 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1619,8 +1619,10 @@ F:	arch/arm/mach-s3c24*/
+ F:	arch/arm/mach-s3c64xx/
+ F:	arch/arm/mach-s5p*/
+ F:	arch/arm/mach-exynos*/
+-F:	drivers/*/*s3c2410*
+-F:	drivers/*/*/*s3c2410*
++F:	drivers/*/*s3c24*
++F:	drivers/*/*/*s3c24*
++F:	drivers/*/*s3c64xx*
++F:	drivers/*/*s5pv210*
+ F:	drivers/memory/samsung/*
+ F:	drivers/soc/samsung/*
+ F:	drivers/spi/spi-s3c*
 -- 
-2.8.1
+1.9.1
 
