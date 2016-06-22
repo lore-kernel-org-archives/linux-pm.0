@@ -1,117 +1,84 @@
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle/powernv: Fix snooze timeout
-Date: Wed, 22 Jun 2016 14:36:43 -0500
-Message-ID: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:38393 "EHLO
-	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751080AbcFVThA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 15:37:00 -0400
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5MJY6t2082422
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 15:37:00 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	by mx0a-001b2d01.pphosted.com with ESMTP id 23q6qndqg3-1
-	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 15:37:00 -0400
-Received: from localhost
-	by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Wed, 22 Jun 2016 13:36:59 -0600
-Sender: linux-pm-owner@vger.kernel.org
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH 00/14] PM: SoC idle support using PM domains
+Date: Wed, 22 Jun 2016 13:36:35 -0600
+Message-ID: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 
-Snooze is a poll idle state in powernv and pseries platforms. Snooze
-has a timeout so that if a cpu stays in snooze for more than target
-residency of the next available idle state, then it would exit thereby
-giving chance to the cpuidle governor to re-evaluate and
-promote the cpu to a deeper idle state. Therefore whenever snooze exits
-due to this timeout, its last_residency will be target_residency of next
-deeper state.
+Hi all,
 
-commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
-changed the math around last_residency calculation. Specifically, while
-converting last_residency value from nanoseconds to microseconds it does
-right shift by 10. Due to this, in snooze timeout exit scenarios
-last_residency calculated is roughly 2.3% less than target_residency of
-next available state. This pattern is picked up get_typical_interval()
-in the menu governor and therefore expected_interval in menu_select() is
-frequently less than the target_residency of any state but snooze.
+Changes since RFC-v3:
+- Reorganize the patches. Documentations have their own patch.
+- Moved code around with PSCI OS initiated so they would not have compiler
+  errors in other configuration.
+- Minor bug fixes with genpd power_on functionality.
+- Rebased on top of 4.7-rc1
 
-Due to this we are entering snooze at a higher rate, thereby affecting
-the single thread performance.
-Since the math around last_residency is not meant to be precise, fix this
-issue setting snooze timeout to 105% of target_residency of next
-available idle state.
-
-This also adds comment around why snooze timeout is necessary.
-
-Reported-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-powernv.c | 14 ++++++++++++++
- drivers/cpuidle/cpuidle-pseries.c | 13 +++++++++++++
- 2 files changed, 27 insertions(+)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index e12dc30..5835491 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -268,10 +268,24 @@ static int powernv_idle_probe(void)
- 		cpuidle_state_table = powernv_states;
- 		/* Device tree can indicate more idle states */
- 		max_idle_state = powernv_add_idle_states();
-+
-+		/*
-+		 * Staying in snooze for a long period can degrade the
-+		 * perfomance of the sibling cpus. Set timeout for snooze such
-+		 * that if the cpu stays in snooze longer than target residency
-+		 * of the next available idle state then exit from snooze. This
-+		 * gives a chance to the cpuidle governor to re-evaluate and
-+		 * promote it to deeper idle states.
-+		 */
- 		if (max_idle_state > 1) {
- 			snooze_timeout_en = true;
- 			snooze_timeout = powernv_states[1].target_residency *
- 					 tb_ticks_per_usec;
-+			/*
-+			 * Give a 5% margin since target residency related math
-+			 * is not precise in cpuidle core.
-+			 */
-+			snooze_timeout += snooze_timeout / 20;
- 		}
-  	} else
-  		return -ENODEV;
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index 07135e0..22de841 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -250,10 +250,23 @@ static int pseries_idle_probe(void)
- 	} else
- 		return -ENODEV;
+This is the submission of the SoC idle support in the kernel for CPU domains
+using genpd. The patches were submitted as RFC's earlier, the last of them is
+[1]. Since the RFC, multiple discussions have happened around making the
+patches generic across all architectures. For now, the patches address the
+needs of the ARM community, but sure enough can be extended to support other
+architectures. Some of the limitations in making this patch generic is the lack
+of device idle state description in the DT, but that in itself is a bigger
+topic for a future discussion.
  
-+	/*
-+	 * Staying in snooze for a long period can degrade the
-+	 * perfomance of the sibling cpus. Set timeout for snooze such
-+	 * that if the cpu stays in snooze longer than target residency
-+	 * of the next available idle state then exit from snooze. This
-+	 * gives a chance to the cpuidle governor to re-evaluate and
-+	 * promote it to deeper idle states.
-+	 */
- 	if (max_idle_state > 1) {
- 		snooze_timeout_en = true;
- 		snooze_timeout = cpuidle_state_table[1].target_residency *
- 				 tb_ticks_per_usec;
-+		/*
-+		 * Give a 5% margin since target residency related math
-+		 * is not precise in cpuidle core.
-+		 */
-+		snooze_timeout += snooze_timeout / 20;
- 	}
- 	return 0;
- }
--- 
-2.1.4
+The patch has been tested on the 410c Dragonboard and the MTK EVB boards. Both
+show good power savings when used with OS Initiated PSCI f/w.
 
+Ulf is maintaining a branch tracking the PM/genpd changes that are in
+pipleline. This series sits well on his branch. You may find the entire series
+at [2].
+
+Thanks,
+Lina
+
+[1]. http://lists.infradead.org/pipermail/linux-arm-kernel/2016-March/412934.html
+[2]. https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-psci-v1
+
+Axel Haslam (2):
+  PM / Domains: Allow domain power states to be read from DT
+  dt/bindings: update binding for PM domain idle states
+
+Lina Iyer (12):
+  PM / Domains: Abstract genpd locking
+  PM / Domains: Support IRQ safe PM domains
+  PM / doc: update device documentation for devices in IRQ safe PM
+    domains
+  PM / cpu_domains: Setup PM domains for CPUs/clusters
+  ARM: cpuidle: Add runtime PM support for CPUs
+  timer: Export next wake up of a CPU
+  PM / cpu_domains: Add PM Domain governor for CPUs
+  doc / cpu_domains: Describe CPU PM domains setup and governor
+  drivers: firmware: psci: Allow OS Initiated suspend mode
+  drivers: firmware: psci: Support cluster idle states for OS-Initiated
+  ARM64: dts: Add PSCI cpuidle support for MSM8916
+  ARM64: dts: Define CPU power domain for MSM8916
+
+ .../devicetree/bindings/power/power_domain.txt     |  70 ++++
+ Documentation/power/cpu_domains.txt                |  79 +++++
+ Documentation/power/devices.txt                    |  12 +-
+ arch/arm64/boot/dts/qcom/msm8916.dtsi              |  49 +++
+ drivers/base/power/Makefile                        |   1 +
+ drivers/base/power/cpu_domains.c                   | 366 +++++++++++++++++++++
+ drivers/base/power/domain.c                        | 300 ++++++++++++++---
+ drivers/cpuidle/cpuidle-arm.c                      |  55 ++++
+ drivers/firmware/psci.c                            |  92 +++++-
+ include/linux/cpu_domains.h                        |  37 +++
+ include/linux/pm_domain.h                          |  16 +-
+ include/linux/tick.h                               |  10 +
+ include/uapi/linux/psci.h                          |   5 +
+ kernel/time/tick-sched.c                           |  13 +
+ 14 files changed, 1054 insertions(+), 51 deletions(-)
+ create mode 100644 Documentation/power/cpu_domains.txt
+ create mode 100644 drivers/base/power/cpu_domains.c
+ create mode 100644 include/linux/cpu_domains.h
+
+-- 
+2.7.4
