@@ -1,93 +1,33 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH v5 1/8] Documentation: arm: define DT cpu
- capacity-dmips-mhz bindings
-Date: Wed, 22 Jun 2016 17:51:12 +0100
-Message-ID: <20160622165112.GD5981@e106622-lin>
-References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com>
- <1465985877-18271-2-git-send-email-juri.lelli@arm.com>
- <CAL_JsqJwQVsn3=6vQus4Q2OhnLUsJVN70j2+f3QoJejcb=p9YA@mail.gmail.com>
- <20160616082042.GI5981@e106622-lin>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [PATCH] x86: fix rdmsr MSR_PLATFORM_INFO unsafe warning in kvm
+ guest
+Date: Wed, 22 Jun 2016 19:43:15 +0200
+Message-ID: <aab33eba-e2d7-ff60-6a63-abee2a47cac8@redhat.com>
+References: <1466558908-3524-1-git-send-email-wanpeng.li@hotmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160616082042.GI5981@e106622-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, peterz@infradead.org, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Mark Brown <broonie@kernel.org>, sgurrappadi@nvidia.com, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:32907 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbcFVRnU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 13:43:20 -0400
+In-Reply-To: <1466558908-3524-1-git-send-email-wanpeng.li@hotmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wanpeng Li <kernellwp@gmail.com>, linux-kernel@vger.kernel.org, kvm@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, linux-acpi@vger.kernel.org, lkp@01.org, x86@kernel.org
+Cc: Wanpeng Li <wanpeng.li@hotmail.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Chen Yu <y.c.chen@intel.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, jacob.jun.pan@intel.com, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
 
-Hi Rob,
 
-On 16/06/16 09:20, Juri Lelli wrote:
-> Hi,
-> 
-> On 15/06/16 17:11, Rob Herring wrote:
-> > On Wed, Jun 15, 2016 at 5:17 AM, Juri Lelli <juri.lelli@arm.com> wrote:
-> 
-> [...]
-> 
-> > > +==========================================
-> > > +2 - CPU capacity definition
-> > > +==========================================
-> > > +
-> > > +CPU capacity is a number that provides the scheduler information about CPUs
-> > > +heterogeneity. Such heterogeneity can come from micro-architectural differences
-> > > +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
-> > > +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
-> > > +context is about differing performance characteristics; this binding tries to
-> > > +capture a first-order approximation of the relative performance of CPUs.
-> > > +
-> > > +CPU capacities are obtained by running a suitable benchmark. This binding makes
-> > > +no aspersions on the validity or suitability of any particular benchmark, the
-> > > +final capacity should, however, be:
-> > > +
-> > > +* A "single-threaded" or CPU affine benchmark
-> > > +* Divided by the running frequency of the CPU executing the benchmark
-> > > +* Not subject to dynamic frequency scaling of the CPU
-> > > +
-> > > +For the time being we however advise usage of the Dhrystone benchmark. What
-> > > +above thus becomes:
-> > > +
-> > > +CPU capacities are obtained by running the Dhrystone benchmark on each CPU at
-> > > +max frequency. The obtained DMIPS score is then divided by the frequency (in
-> > > +MHz) at which the benchmark has been run, so that DMIPS/MHz are obtained.
-> > > +Such values are then normalized w.r.t. the highest score obtained in the
-> > > +system.
-> > 
-> > So the property says it represents DMIPS/MHz, but we take that and
-> > "normalize" them back to a made up numbers?
-> 
-> The normalization step is required if one wants to prevent
-> cross-platform comparisons (I think that's what vendors generally want).
-> They are not made up, they still come from measured DMIPS/MHz values.
-> 
-> > Perhaps that step should
-> > be optional. Then paranoid Si vendors can put their fake numbers in
-> > and end users can update the dts files with real numbers.
-> > 
-> 
-> But, you can also decide to skip that step and put non normalized
-> numbers in. This documentation is advising people for what seems to be
-> be the most common way of coming up with values that, once in a DT,
-> won't be used to compare perf of different platforms.
-> 
-> Maybe we want to add a paragraph clearly stating this point?
-> 
-> > Is there any point in allowing people to pick their own scale? Why not
-> > just 100 (as in percent)?
-> > 
-> 
-> I think we agreed that not picking any particular scale is more flexible
-> and easier to use. For example, if there is a 2x factor between you cpus
-> you can simply put 1 and 2 there. But, if you need higher "resolution"
-> you can put whatever suits you better and we'll use the max as scale.
-> 
-> Thanks a lot for the review.
-> 
 
-Do you have any further comments on this point?
+On 22/06/2016 03:28, Wanpeng Li wrote:
+>  
+>  get_ratio:
+> -	rdmsr(MSR_PLATFORM_INFO, lo, hi);
+> -	ratio = (lo >> 8) & 0xff;
+> +	if (!rdmsr_safe(MSR_PLATFORM_INFO, &lo, &hi))
+> +		ratio = (lo >> 8) & 0xff;
 
-Best,
+This looks good, thanks.
 
-- Juri
+Paolo
