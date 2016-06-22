@@ -1,129 +1,113 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH 08/12] doc: binding: pwrseq-usb-generic: add binding doc
- for generic usb power sequence driver
-Date: Wed, 22 Jun 2016 09:14:39 +0800
-Message-ID: <20160622011439.GA21361@shlinux2>
-References: <1466158165-9380-1-git-send-email-peter.chen@nxp.com>
- <1466158165-9380-9-git-send-email-peter.chen@nxp.com>
- <CAL_JsqLvs0s2TyfqPM5vtmyY81_X84VjCGjsGYbTgT4syOfp9Q@mail.gmail.com>
- <20160620112651.GA26936@shlinux2>
- <20160620161607.GA11427@rob-hp-laptop>
- <20160621021117.GD26936@shlinux2>
- <20160621212653.GA22764@rob-hp-laptop>
+From: Wanpeng Li <kernellwp@gmail.com>
+Subject: [PATCH] x86: fix rdmsr MSR_PLATFORM_INFO unsafe warning in kvm guest
+Date: Wed, 22 Jun 2016 09:28:28 +0800
+Message-ID: <1466558908-3524-1-git-send-email-wanpeng.li@hotmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20160621212653.GA22764@rob-hp-laptop>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Peter Chen <peter.chen@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>, Stephen Boyd <stephen.boyd@linaro.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, Fabio Estevam <festevam@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Javier Martinez Canillas <javier@osg.samsung.com>, Alan Stern <stern@rowland.harvard.edu>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, troy.kisky@boundarydevices.com, Mark Brown <broonie@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, oscar@naiandei.net, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux USB List <linux-usb@vger.kernel.org>, linux-mmc@vger.
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <kvm-owner@vger.kernel.org>
+Sender: kvm-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, linux-acpi@vger.kernel.org, lkp@01.org, x86@kernel.org
+Cc: Wanpeng Li <wanpeng.li@hotmail.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Chen Yu <y.c.chen@intel.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>, jacob.jun.pan@intel.com, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 21, 2016 at 04:26:53PM -0500, Rob Herring wrote:
-> On Tue, Jun 21, 2016 at 10:11:17AM +0800, Peter Chen wrote:
-> > On Mon, Jun 20, 2016 at 11:16:07AM -0500, Rob Herring wrote:
-> > > On Mon, Jun 20, 2016 at 07:26:51PM +0800, Peter Chen wrote:
-> > > > On Fri, Jun 17, 2016 at 12:16:48PM -0500, Rob Herring wrote:
-> > > > > On Fri, Jun 17, 2016 at 5:09 AM, Peter Chen <peter.chen@nxp.com> wrote:
-> > > > > > Add binding doc for generic usb power sequence driver, and update
-> > > > > > generic usb device binding-doc accordingly.
-> 
-> [...]
-> 
-> > > > 		clocks = <&clks IMX6SX_CLK_CKO>;
-> > > > 
-> > > > 		#address-cells = <1>;
-> > > > 		#size-cells = <0>;
-> > > > 		ethernet: asix@1 {
-> > > > 			compatible = "usbb95,1708";
-> > > > 			reg = <1>;
-> > > > 
-> > > > 			power-sequence;
-> > > > 			reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
-> > > > 			reset-duration-us = <15>;
-> > > > 			clocks = <&clks IMX6SX_CLK_IPG>;
-> > > > 		};
-> > > > 	};
-> > > > };
-> > > > 
-> > > > If the node has property "power-sequence", the pwrseq core will create
-> > > > related platform device, and the driver under pwrseq driver will handle
-> > > > power sequence stuffs. 
-> > > 
-> > > This I have issue with. If you are creating a platform device here, you 
-> > > are trying to work-around limitations in the linux driver model.
-> > 
-> > My current solution like below, but it seems you didn't agree with that.
-> > I just double confirm here, if you don't, I give up the solution for
-> > using generic power sequence framework.
-> > 
-> > In drivers/usb/core/hub.c
-> > 
-> > 	for_each_child_of_node(parent->of_node, node) {
-> > 		hdev_pwrseq = pwrseq_alloc(node, "usb_pwrseq_generic");
-> > 		if (!IS_ERR_OR_NULL(hdev_pwrseq)) {
-> > 			pwrseq_node = kzalloc(sizeof(pwrseq_node), GFP_KERNEL);
-> > 			if (!pwrseq_node) {
-> > 				ret = -ENOMEM;
-> > 				goto err1;
-> > 			}
-> > 			/* power on sequence */
-> > 			ret = pwrseq_pre_power_on(hdev_pwrseq);
-> 
-> Why does this function need to do anything more than:
-> 
-> - Check if the child has a "power-sequence" property
-> - Get the "reset-gpios" GPIO
-> - Assert reset for specified/default time
-> - Deassert reset
-> 
+=46rom: Wanpeng Li <wanpeng.li@hotmail.com>
 
-Besides gpios, it may exist clock and regulator operation, and the
-operation may be failed. I thought these operations can be easy
-done belongs to a device, but now, let me try this straight-forward
-way, thanks.
+------------[ cut here ]------------
+WARNING: CPU: 0 PID: 0 at arch/x86/mm/extable.c:50 ex_handler_rdmsr_uns=
+afe+0x6a/0x70
+unchecked MSR access error: RDMSR from 0xce
+Modules linked in:
+CPU: 0 PID: 0 Comm: swapper/0 Not tainted 4.7.0-rc3+ #1
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS Bochs 01/01=
+/2011
+ 0000000000000000 ffffffff81c03ce0 ffffffff813b3eae ffffffff81c03d30
+ 0000000000000000 ffffffff81c03d20 ffffffff81067181 0000003200000001
+ ffffffff81c03df8 ffffffff8179676c 0000000000000000 ffffffff81fcd2c0
+Call Trace:
+ dump_stack+0x67/0x99
+ __warn+0xd1/0xf0
+ warn_slowpath_fmt+0x4f/0x60
+ ex_handler_rdmsr_unsafe+0x6a/0x70
+ fixup_exception+0x39/0x50
+ do_general_protection+0x93/0x1b0
+ general_protection+0x22/0x30
+ ? cpu_khz_from_msr+0xd8/0x1c0
+ native_calibrate_cpu+0x30/0x5b0
+ tsc_init+0x2b/0x297
+ x86_late_time_init+0xf/0x11
+ start_kernel+0x398/0x451
+ ? set_init_arg+0x55/0x55
+ x86_64_start_reservations+0x2f/0x31
+ x86_64_start_kernel+0xea/0xed
 
-Peter
-> Then continue on as normal. That seems straight-forward to me.
-> 
-> There is no reason you need a platform device in the mix. Perhaps trying 
-> to move the MMC pwr-seq code is pointless as it adds needless 
-> complexity.
-> 
-> [...]
-> 
-> > > Either 
-> > > we need some sort of pre-probe hook to the drivers to call or each 
-> > > parent node driver is responsible for checking and calling pwr-seq 
-> > > functions for child nodes. e.g. The host controller calls pwr-seq for 
-> > > the hub, the hub driver calls the power seq for the asix chip. Soon as 
-> > > we have a case too complex for the generic pwr-seq, we're going to need 
-> > > the pre-probe hook as I don't want to see a continual expansion of 
-> > > generic pwr-seq binding for ever more complex cases.
-> > > 
-> > 
-> > How the driver know what it needs to handle (eg, gpio, clock) if there
-> > is no device for it? The most important we need to consider is which
-> > device owns there power sequence properties, then the corresponding
-> > driver can handle it.
-> 
-> What can be handled by is defined by presence of power-sequence 
-> property. There can be 1 driver for the device. That is the USB hub 
-> driver in this example. You should not have 2 "devices".
-> 
-> Rob
+After commit (fc141535ad8 : "x86 tsc_msr: Extend to include Intel Core=20
+Architecture"), rdmsr MSR_PLATFORM_INFO is used to get maximum non-turb=
+o=20
+ratio for recent Intel Core Architecture which results in kvm guest rdm=
+sr=20
+unsafe warning.
 
--- 
+As Radim pointed out before:
 
-Best Regards,
-Peter Chen
+| MSR_PLATFORM_INFO: Intel changes it from family to family and there i=
+s
+| no obvious overlap or default.  If we picked 0 (any other fixed value=
+),
+| then the guest would have to know that 0 doesn't mean that
+| MSR_PLATFORM_INFO returned 0, but that KVM doesn't emulate this MSR a=
+nd
+| the value cannot be used.  This is very similar to handling a #GP in =
+the
+| guest, but also has a disadvantage, because KVM cannot say that
+| MSR_PLATFORM_INFO is 0.  Simple emulation is not possible.
+
+This patch fix it by using rdmsr_safe to read MSR_PLATFORM_INFO in kvm=20
+guest in order that #GP can be fixed up, then tsc will be calibrated by=
+=20
+PIT, HPET etc.
+
+Reported-by: kernel test robot <xiaolong.ye@intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Chen Yu <y.c.chen@intel.com>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Radim Kr=C4=8Dm=C3=A1=C5=99 <rkrcmar@redhat.com>
+Cc: jacob.jun.pan@intel.com
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Signed-off-by: Wanpeng Li <wanpeng.li@hotmail.com>
+---
+ arch/x86/kernel/tsc_msr.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/kernel/tsc_msr.c b/arch/x86/kernel/tsc_msr.c
+index e0c2b30..e6e465e 100644
+--- a/arch/x86/kernel/tsc_msr.c
++++ b/arch/x86/kernel/tsc_msr.c
+@@ -70,7 +70,7 @@ static int match_cpu(u8 family, u8 model)
+  */
+ unsigned long cpu_khz_from_msr(void)
+ {
+-	u32 lo, hi, ratio, freq_id, freq;
++	u32 lo, hi, freq_id, freq, ratio =3D 0;
+ 	unsigned long res;
+ 	int cpu_index;
+=20
+@@ -123,8 +123,8 @@ unsigned long cpu_khz_from_msr(void)
+ 	}
+=20
+ get_ratio:
+-	rdmsr(MSR_PLATFORM_INFO, lo, hi);
+-	ratio =3D (lo >> 8) & 0xff;
++	if (!rdmsr_safe(MSR_PLATFORM_INFO, &lo, &hi))
++		ratio =3D (lo >> 8) & 0xff;
+=20
+ done:
+ 	/* TSC frequency =3D maximum resolved freq * maximum resolved bus rat=
+io */
+--=20
+1.9.1
+
