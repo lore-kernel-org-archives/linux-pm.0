@@ -1,94 +1,93 @@
-From: Rhyland Klein <rklein@nvidia.com>
-Subject: [PATCH v3] power_supply: fix return value of get_property
-Date: Wed, 22 Jun 2016 11:45:52 -0400
-Message-ID: <1466610352-28926-1-git-send-email-rklein@nvidia.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH v5 1/8] Documentation: arm: define DT cpu
+ capacity-dmips-mhz bindings
+Date: Wed, 22 Jun 2016 17:51:12 +0100
+Message-ID: <20160622165112.GD5981@e106622-lin>
+References: <1465985877-18271-1-git-send-email-juri.lelli@arm.com>
+ <1465985877-18271-2-git-send-email-juri.lelli@arm.com>
+ <CAL_JsqJwQVsn3=6vQus4Q2OhnLUsJVN70j2+f3QoJejcb=p9YA@mail.gmail.com>
+ <20160616082042.GI5981@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:17373 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932185AbcFVQIh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 12:08:37 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160616082042.GI5981@e106622-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, peterz@infradead.org, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, dietmar.eggemann@arm.com, Mark Brown <broonie@kernel.org>, sgurrappadi@nvidia.com, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Rhyland Klein <rklein@nvidia.com>
 
-power_supply_get_property() should ideally return -EAGAIN if it is
-called while the power_supply is being registered. There was no way
-previously to determine if use_cnt == 0 meant that the power_supply
-wasn't fully registered yet, or if it had already been unregistered.
+Hi Rob,
 
-Add a new boolean to the power_supply struct to simply show if
-registration is completed. Lastly, modify the check in
-power_supply_show_property() to also ignore -EAGAIN when so it
-doesn't complain about not returning the property.
+On 16/06/16 09:20, Juri Lelli wrote:
+> Hi,
+> 
+> On 15/06/16 17:11, Rob Herring wrote:
+> > On Wed, Jun 15, 2016 at 5:17 AM, Juri Lelli <juri.lelli@arm.com> wrote:
+> 
+> [...]
+> 
+> > > +==========================================
+> > > +2 - CPU capacity definition
+> > > +==========================================
+> > > +
+> > > +CPU capacity is a number that provides the scheduler information about CPUs
+> > > +heterogeneity. Such heterogeneity can come from micro-architectural differences
+> > > +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
+> > > +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
+> > > +context is about differing performance characteristics; this binding tries to
+> > > +capture a first-order approximation of the relative performance of CPUs.
+> > > +
+> > > +CPU capacities are obtained by running a suitable benchmark. This binding makes
+> > > +no aspersions on the validity or suitability of any particular benchmark, the
+> > > +final capacity should, however, be:
+> > > +
+> > > +* A "single-threaded" or CPU affine benchmark
+> > > +* Divided by the running frequency of the CPU executing the benchmark
+> > > +* Not subject to dynamic frequency scaling of the CPU
+> > > +
+> > > +For the time being we however advise usage of the Dhrystone benchmark. What
+> > > +above thus becomes:
+> > > +
+> > > +CPU capacities are obtained by running the Dhrystone benchmark on each CPU at
+> > > +max frequency. The obtained DMIPS score is then divided by the frequency (in
+> > > +MHz) at which the benchmark has been run, so that DMIPS/MHz are obtained.
+> > > +Such values are then normalized w.r.t. the highest score obtained in the
+> > > +system.
+> > 
+> > So the property says it represents DMIPS/MHz, but we take that and
+> > "normalize" them back to a made up numbers?
+> 
+> The normalization step is required if one wants to prevent
+> cross-platform comparisons (I think that's what vendors generally want).
+> They are not made up, they still come from measured DMIPS/MHz values.
+> 
+> > Perhaps that step should
+> > be optional. Then paranoid Si vendors can put their fake numbers in
+> > and end users can update the dts files with real numbers.
+> > 
+> 
+> But, you can also decide to skip that step and put non normalized
+> numbers in. This documentation is advising people for what seems to be
+> be the most common way of coming up with values that, once in a DT,
+> won't be used to compare perf of different platforms.
+> 
+> Maybe we want to add a paragraph clearly stating this point?
+> 
+> > Is there any point in allowing people to pick their own scale? Why not
+> > just 100 (as in percent)?
+> > 
+> 
+> I think we agreed that not picking any particular scale is more flexible
+> and easier to use. For example, if there is a 2x factor between you cpus
+> you can simply put 1 and 2 there. But, if you need higher "resolution"
+> you can put whatever suits you better and we'll use the max as scale.
+> 
+> Thanks a lot for the review.
+> 
 
-Signed-off-by: Rhyland Klein <rklein@nvidia.com>
----
-v3:
- - Moved psy->initialized after atomic increment of use_cnt
+Do you have any further comments on this point?
 
-v2:
- - Modify power_supply_show_property() to not complain if it
-   sees a return value of -EAGAIN after calling
-   power_supply_get_property().
+Best,
 
- drivers/power/power_supply_core.c  | 6 +++++-
- drivers/power/power_supply_sysfs.c | 2 +-
- include/linux/power_supply.h       | 1 +
- 3 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index b13cd074c52a..a74d8ca383a1 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -491,8 +491,11 @@ int power_supply_get_property(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    union power_supply_propval *val)
- {
--	if (atomic_read(&psy->use_cnt) <= 0)
-+	if (atomic_read(&psy->use_cnt) <= 0) {
-+		if (!psy->initialized)
-+			return -EAGAIN;
- 		return -ENODEV;
-+	}
- 
- 	return psy->desc->get_property(psy, psp, val);
- }
-@@ -785,6 +788,7 @@ __power_supply_register(struct device *parent,
- 	 *    after calling power_supply_register()).
- 	 */
- 	atomic_inc(&psy->use_cnt);
-+	psy->initialized = true;
- 
- 	queue_delayed_work(system_power_efficient_wq,
- 			   &psy->deferred_register_work,
-diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
-index 80fed98832f9..bcde8d13476a 100644
---- a/drivers/power/power_supply_sysfs.c
-+++ b/drivers/power/power_supply_sysfs.c
-@@ -83,7 +83,7 @@ static ssize_t power_supply_show_property(struct device *dev,
- 			if (ret == -ENODATA)
- 				dev_dbg(dev, "driver has no data for `%s' property\n",
- 					attr->attr.name);
--			else if (ret != -ENODEV)
-+			else if (ret != -ENODEV && ret != -EAGAIN)
- 				dev_err(dev, "driver failed to report `%s' property: %zd\n",
- 					attr->attr.name, ret);
- 			return ret;
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 751061790626..3965503315ef 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -248,6 +248,7 @@ struct power_supply {
- 	struct delayed_work deferred_register_work;
- 	spinlock_t changed_lock;
- 	bool changed;
-+	bool initialized;
- 	atomic_t use_cnt;
- #ifdef CONFIG_THERMAL
- 	struct thermal_zone_device *tzd;
--- 
-1.9.1
-
+- Juri
