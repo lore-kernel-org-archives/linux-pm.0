@@ -1,184 +1,242 @@
-From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v5 1/5] thermal: Add support for hardware-tracked trip
- points
-Date: Wed, 22 Jun 2016 11:15:19 +0800
-Message-ID: <1466565319.2379.0.camel@intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v5 0/5] Thermal: Support for hardware-tracked trip points
+Date: Wed, 22 Jun 2016 11:25:39 +0800
+Message-ID: <1466565939.2379.5.camel@intel.com>
 References: <1465213489-14898-1-git-send-email-wxt@rock-chips.com>
- <1465213489-14898-2-git-send-email-wxt@rock-chips.com>
+	 <57689B82.3000902@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1465213489-14898-2-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Ni Wade <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, javi.merino-5wv7dgnIgG8@public.gmane.org, Durgadoss R <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Jonathan Corbet <corbet-T1hC0tSOHrs@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, peter-p08lbbvQ7EI@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, smbarber-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, briannorris-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, Andy Champ <andycham-vV1OtcyAfmbQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:13882 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752033AbcFVDZt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 21 Jun 2016 23:25:49 -0400
+In-Reply-To: <57689B82.3000902@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Caesar Wang <caesar.upstream@gmail.com>, Caesar Wang <wxt@rock-chips.com>, edubezval@gmail.com, linux-pm@vger.kernel.org
+Cc: Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>, smbarber@google.com, Durgadoss R <durgadoss.r@intel.com>, Jonathan Corbet <corbet@lwn.net>, linux-rockchip@lists.infradead.org, briannorris@google.com, Andy Champ <andycham@amazon.com>, huangtao@rock-chips.com, Sascha Hauer <s.hauer@pengutronix.de>, javi.merino@arm.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Ni Wade <wni@nvidia.com>, Keerthy <j-keerthy@ti.com>, dmitry.torokhov@gmail.com, peter@piie.net, dianders@chromium.org, Leo Yan <leo.yan@linaro.org>, cf@rock-chips.com
 
-T24g5LiALCAyMDE2LTA2LTA2IGF0IDE5OjQ0ICswODAwLCBDYWVzYXIgV2FuZyB3cm90ZToKPiBG
-cm9tOiBTYXNjaGEgSGF1ZXIgPHMuaGF1ZXJAcGVuZ3V0cm9uaXguZGU+Cj4gCj4gVGhpcyBhZGRz
-IHN1cHBvcnQgZm9yIGhhcmR3YXJlLXRyYWNrZWQgdHJpcCBwb2ludHMgdG8gdGhlIGRldmljZSB0
-cmVlCj4gdGhlcm1hbCBzZW5zb3IgZnJhbWV3b3JrLgo+IAo+IFRoZSBmcmFtZXdvcmsgc3VwcG9y
-dHMgYW4gYXJiaXRyYXJ5IG51bWJlciBvZiB0cmlwIHBvaW50cy4gV2hlbmV2ZXIKPiB0aGUgY3Vy
-cmVudCB0ZW1wZXJhdHVyZSBpcyB1cGRhdGVkLCB0aGUgdHJpcCBwb2ludHMgaW1tZWRpYXRlbHkK
-PiBiZWxvdyBhbmQgYWJvdmUgdGhlIGN1cnJlbnQgdGVtcGVyYXR1cmUgYXJlIGZvdW5kLiBBIC5z
-ZXRfdHJpcHMKPiBjYWxsYmFjayBpcyB0aGVuIGNhbGxlZCB3aXRoIHRoZSB0ZW1wZXJhdHVyZXMu
-IElmIHRoZXJlIGlzIG5vIHRyaXAKPiBwb2ludCBhYm92ZSBvciBiZWxvdyB0aGUgY3VycmVudCB0
-ZW1wZXJhdHVyZSwgdGhlIHBhc3NlZCB0cmlwCj4gdGVtcGVyYXR1cmUgd2lsbCBiZSAtSU5UX01B
-WCBvciBJTlRfTUFYIHJlc3BlY3RpdmVseS4gSW4gdGhpcwo+IGNhbGxiYWNrLAo+IHRoZSBkcml2
-ZXIgc2hvdWxkIHByb2dyYW0gdGhlIGhhcmR3YXJlIHN1Y2ggdGhhdCBpdCBpcyBub3RpZmllZAo+
-IHdoZW4gZWl0aGVyIG9mIHRoZXNlIHRyaXAgcG9pbnRzIGFyZSB0cmlnZ2VyZWQuIFdoZW4gYSB0
-cmlwIHBvaW50Cj4gaXMgdHJpZ2dlcmVkLCB0aGUgZHJpdmVyIHNob3VsZCBjYWxsIGB0aGVybWFs
-X3pvbmVfZGV2aWNlX3VwZGF0ZScKPiBmb3IgdGhlIHJlc3BlY3RpdmUgdGhlcm1hbCB6b25lLiBU
-aGlzIHdpbGwgY2F1c2UgdGhlIHRyaXAgcG9pbnRzCj4gdG8gYmUgdXBkYXRlZCBhZ2Fpbi4KPiAK
-PiBJZiAuc2V0X3RyaXBzIGlzIG5vdCBpbXBsZW1lbnRlZCwgdGhlIGZyYW1ld29yayBiZWhhdmVz
-IGFzIGJlZm9yZS4KPiAKPiBUaGlzIHBhdGNoIGlzIGJhc2VkIG9uIGFuIGVhcmxpZXIgdmVyc2lv
-biBmcm9tIE1pa2tvIFBlcnR0dW5lbgo+IDxtaWtrby5wZXJ0dHVuZW5Aa2Fwc2kuZmk+Cj4gCj4g
-U2lnbmVkLW9mZi1ieTogU2FzY2hhIEhhdWVyIDxzLmhhdWVyQHBlbmd1dHJvbml4LmRlPgo+IFNp
-Z25lZC1vZmYtYnk6IENhZXNhciBXYW5nIDx3eHRAcm9jay1jaGlwcy5jb20+Cj4gQ2M6IFpoYW5n
-IFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT4KPiBDYzogRWR1YXJkbyBWYWxlbnRpbiA8ZWR1YmV6
-dmFsQGdtYWlsLmNvbT4KPiBDYzogbGludXgtcG1Admdlci5rZXJuZWwub3JnCj4gCj4gLS0tCj4g
-Cj4gQ2hhbmdlcyBpbiB2NToKPiAtIGFkZCB0aGUgbG9jayBmb3IgdGhlcm1hbF96b25lX3NldF90
-cmlwcyBmdW5jdGlvbi4KPiAtIGNoYW5nZSBiYXNlZCBvbiBuZXh0IGtlcm5lbC4KPiAKPiBDaGFu
-Z2VzIGluIHY0Ogo+IC0gTWlzc2luZyB0aGUgbG9jayBhZGRlZCBpbiB2My4KPiAKPiBDaGFuZ2Vz
-IGluIHYzOgo+IC0gYXMgSmF2aSBjb21tZW50cyBvbiBodHRwczovL3BhdGNod29yay5rZXJuZWwu
-b3JnL3BhdGNoLzkwMDEyODEvLgo+IC0gYWRkIHRoZSBsb2NrIGZvciBwcmV2ZW50aW5nIHRoZSBj
-YWxsZWQgZnJvbSBtdWx0aSBwbGFjY2UKPiAtIGFkZCB0aGUgbm90ZSBmb3IgcHJlX2xvdy9oaWdo
-X3RyaXAuCj4gCj4gQ2hhbmdlcyBpbiB2MjoKPiAtIHVwZGF0ZSB0aGUgc3lzZnMtYXBpLnR4dCBm
-b3Igc2V0X3RyaXBzLgo+IAo+IMKgRG9jdW1lbnRhdGlvbi90aGVybWFsL3N5c2ZzLWFwaS50eHQg
-fMKgwqA3ICsrKysrCj4gwqBkcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmPCoMKgwqDCoMKg
-wqB8IDU0Cj4gKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKwo+IMKgZHJpdmVy
-cy90aGVybWFsL3RoZXJtYWxfc3lzZnMuY8KgwqDCoMKgwqB8wqDCoDMgKysrCj4gwqBpbmNsdWRl
-L2xpbnV4L3RoZXJtYWwuaMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgfCAxMCArKysrKysrCj4g
-wqA0IGZpbGVzIGNoYW5nZWQsIDc0IGluc2VydGlvbnMoKykKPiAKPiBkaWZmIC0tZ2l0IGEvRG9j
-dW1lbnRhdGlvbi90aGVybWFsL3N5c2ZzLWFwaS50eHQKPiBiL0RvY3VtZW50YXRpb24vdGhlcm1h
-bC9zeXNmcy1hcGkudHh0Cj4gaW5kZXggZWZjM2YzZC4uNzVkODgzOCAxMDA2NDQKPiAtLS0gYS9E
-b2N1bWVudGF0aW9uL3RoZXJtYWwvc3lzZnMtYXBpLnR4dAo+ICsrKyBiL0RvY3VtZW50YXRpb24v
-dGhlcm1hbC9zeXNmcy1hcGkudHh0Cj4gQEAgLTQ5LDYgKzQ5LDkgQEAgdGVtcGVyYXR1cmUpIGFu
-ZCB0aHJvdHRsZSBhcHByb3ByaWF0ZSBkZXZpY2VzLgo+IMKgCS5iaW5kOiBiaW5kIHRoZSB0aGVy
-bWFsIHpvbmUgZGV2aWNlIHdpdGggYSB0aGVybWFsIGNvb2xpbmcKPiBkZXZpY2UuCj4gwqAJLnVu
-YmluZDogdW5iaW5kIHRoZSB0aGVybWFsIHpvbmUgZGV2aWNlIHdpdGggYSB0aGVybWFsCj4gY29v
-bGluZyBkZXZpY2UuCj4gwqAJLmdldF90ZW1wOiBnZXQgdGhlIGN1cnJlbnQgdGVtcGVyYXR1cmUg
-b2YgdGhlIHRoZXJtYWwgem9uZS4KPiArCS5zZXRfdHJpcHM6IHNldCB0aGUgdHJpcCBwb2ludHMg
-d2luZG93LiBXaGVuZXZlciB0aGUgY3VycmVudAo+IHRlbXBlcmF0dXJlCj4gKwkJwqDCoMKgwqBp
-cyB1cGRhdGVkLCB0aGUgdHJpcCBwb2ludHMgaW1tZWRpYXRlbHkgYmVsb3cKPiBhbmQgYWJvdmUg
-dGhlCj4gKwkJwqDCoMKgwqBjdXJyZW50IHRlbXBlcmF0dXJlIGFyZSBmb3VuZC4KPiDCoAkuZ2V0
-X21vZGU6IGdldCB0aGUgY3VycmVudCBtb2RlIChlbmFibGVkL2Rpc2FibGVkKSBvZiB0aGUKPiB0
-aGVybWFsIHpvbmUuCj4gwqAJwqDCoMKgwqAtICJlbmFibGVkIiBtZWFucyB0aGUga2VybmVsIHRo
-ZXJtYWwgbWFuYWdlbWVudCBpcwo+IGVuYWJsZWQuCj4gwqAJwqDCoMKgwqAtICJkaXNhYmxlZCIg
-d2lsbCBwcmV2ZW50IGtlcm5lbCB0aGVybWFsIGRyaXZlciBhY3Rpb24KPiB1cG9uIHRyaXAgcG9p
-bnRzCj4gQEAgLTk1LDYgKzk4LDEwIEBAIHRlbXBlcmF0dXJlKSBhbmQgdGhyb3R0bGUgYXBwcm9w
-cmlhdGUgZGV2aWNlcy4KPiDCoAkJCWdldF90ZW1wOglhIHBvaW50ZXIgdG8gYSBmdW5jdGlvbgo+
-IHRoYXQgcmVhZHMgdGhlCj4gwqAJCQkJCXNlbnNvciB0ZW1wZXJhdHVyZS4gVGhpcyBpcwo+IG1h
-bmRhdG9yeQo+IMKgCQkJCQljYWxsYmFjayBwcm92aWRlZCBieSBzZW5zb3IKPiBkcml2ZXIuCj4g
-KwkJCXNldF90cmlwczrCoMKgwqDCoMKgwqBhIHBvaW50ZXIgdG8gYSBmdW5jdGlvbiB0aGF0Cj4g
-c2V0cyBhCj4gKwkJCQkJdGVtcGVyYXR1cmUgd2luZG93LiBXaGVuCj4gdGhpcyB3aW5kb3cgaXMK
-PiArCQkJCQlsZWZ0IHRoZSBkcml2ZXIgbXVzdCBpbmZvcm0KPiB0aGUgdGhlcm1hbAo+ICsJCQkJ
-CWNvcmUgdmlhCj4gdGhlcm1hbF96b25lX2RldmljZV91cGRhdGUuCj4gwqAJCQlnZXRfdHJlbmQ6
-wqAJYSBwb2ludGVyIHRvIGEgZnVuY3Rpb24KPiB0aGF0IHJlYWRzIHRoZQo+IMKgCQkJCQlzZW5z
-b3IgdGVtcGVyYXR1cmUgdHJlbmQuCj4gwqAJCQlzZXRfZW11bF90ZW1wOglhIHBvaW50ZXIgdG8g
-YQo+IGZ1bmN0aW9uIHRoYXQgc2V0cwo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvdGhl
-cm1hbF9jb3JlLmMKPiBiL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYwo+IGluZGV4IDc5
-MmFhYjcuLmU2OWFlZTIgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29y
-ZS5jCj4gKysrIGIvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jCj4gQEAgLTM2OCw2ICsz
-NjgsNTYgQEAgc3RhdGljIHZvaWQgaGFuZGxlX3RoZXJtYWxfdHJpcChzdHJ1Y3QKPiB0aGVybWFs
-X3pvbmVfZGV2aWNlICp0eiwgaW50IHRyaXApCj4gwqAJbW9uaXRvcl90aGVybWFsX3pvbmUodHop
-Owo+IMKgfQo+IMKgCj4gK3ZvaWQgdGhlcm1hbF96b25lX3NldF90cmlwcyhzdHJ1Y3QgdGhlcm1h
-bF96b25lX2RldmljZSAqdHopCj4gK3sKPiArCWludCBsb3cgPSAtSU5UX01BWDsKPiArCWludCBo
-aWdoID0gSU5UX01BWDsKPiArCWludCB0cmlwX3RlbXAsIGh5c3RlcmVzaXM7Cj4gKwlpbnQgaSwg
-cmV0Owo+ICsKPiArCW11dGV4X2xvY2soJnR6LT5sb2NrKTsKPiArCj4gKwlpZiAoIXR6LT5vcHMt
-PnNldF90cmlwcykKPiArCQlnb3RvIGV4aXQ7Cj4gKwoJaWYgKCF0ei0+b3BzLT5nZXRfdHJpcF9o
-eXN0KQoJCWdvdG8gZXhpdDsKCm90aGVyd2lzZSwgdGhlIHBhdGNoIGxvb2tzIGdvb2QgdG8gbWUu
-Cgp0aGFua3MsCnJ1aQo+ICsJZm9yIChpID0gMDsgaSA8IHR6LT50cmlwczsgaSsrKSB7Cj4gKwkJ
-aW50IHRyaXBfbG93Owo+ICsKPiArCQl0ei0+b3BzLT5nZXRfdHJpcF90ZW1wKHR6LCBpLCAmdHJp
-cF90ZW1wKTsKPiArCQl0ei0+b3BzLT5nZXRfdHJpcF9oeXN0KHR6LCBpLCAmaHlzdGVyZXNpcyk7
-Cj4gKwo+ICsJCXRyaXBfbG93ID0gdHJpcF90ZW1wIC0gaHlzdGVyZXNpczsKPiArCj4gKwkJaWYg
-KHRyaXBfbG93IDwgdHotPnRlbXBlcmF0dXJlICYmIHRyaXBfbG93ID4gbG93KQo+ICsJCQlsb3cg
-PSB0cmlwX2xvdzsKPiArCj4gKwkJaWYgKHRyaXBfdGVtcCA+IHR6LT50ZW1wZXJhdHVyZSAmJiB0
-cmlwX3RlbXAgPCBoaWdoKQo+ICsJCQloaWdoID0gdHJpcF90ZW1wOwo+ICsJfQo+ICsKPiArCS8q
-IE5vIG5lZWQgdG8gY2hhbmdlIHRyaXAgcG9pbnRzICovCj4gKwlpZiAodHotPnByZXZfbG93X3Ry
-aXAgPT0gbG93ICYmIHR6LT5wcmV2X2hpZ2hfdHJpcCA9PSBoaWdoKQo+ICsJCWdvdG8gZXhpdDsK
-PiArCj4gKwl0ei0+cHJldl9sb3dfdHJpcCA9IGxvdzsKPiArCXR6LT5wcmV2X2hpZ2hfdHJpcCA9
-IGhpZ2g7Cj4gKwo+ICsJZGV2X2RiZygmdHotPmRldmljZSwgIm5ldyB0ZW1wZXJhdHVyZSBib3Vu
-ZGFyaWVzOiAlZCA8IHggPAo+ICVkXG4iLAo+ICsJCQlsb3csIGhpZ2gpOwo+ICsKPiArCS8qCj4g
-KwnCoCogU2V0IGEgdGVtcGVyYXR1cmUgd2luZG93LiBXaGVuIHRoaXMgd2luZG93IGlzIGxlZnQg
-dGhlCj4gZHJpdmVyCj4gKwnCoCogbXVzdCBpbmZvcm0gdGhlIHRoZXJtYWwgY29yZSB2aWEKPiB0
-aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0ZS4KPiArCcKgKi8KPiArCXJldCA9IHR6LT5vcHMtPnNl
-dF90cmlwcyh0eiwgbG93LCBoaWdoKTsKPiArCWlmIChyZXQpCj4gKwkJZGV2X2VycigmdHotPmRl
-dmljZSwgIkZhaWxlZCB0byBzZXQgdHJpcHM6ICVkXG4iLAo+IHJldCk7Cj4gKwo+ICtleGl0Ogo+
-ICsJbXV0ZXhfdW5sb2NrKCZ0ei0+bG9jayk7Cj4gK30KPiArRVhQT1JUX1NZTUJPTF9HUEwodGhl
-cm1hbF96b25lX3NldF90cmlwcyk7Cj4gKwo+IMKgc3RhdGljIHZvaWQgdXBkYXRlX3RlbXBlcmF0
-dXJlKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0eikKPiDCoHsKPiDCoAlpbnQgdGVtcCwg
-cmV0Owo+IEBAIC00MTcsNiArNDY3LDggQEAgdm9pZCB0aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0
-ZShzdHJ1Y3QKPiB0aGVybWFsX3pvbmVfZGV2aWNlICp0eikKPiDCoAo+IMKgCXVwZGF0ZV90ZW1w
-ZXJhdHVyZSh0eik7Cj4gwqAKPiArCXRoZXJtYWxfem9uZV9zZXRfdHJpcHModHopOwo+ICsKPiDC
-oAlmb3IgKGNvdW50ID0gMDsgY291bnQgPCB0ei0+dHJpcHM7IGNvdW50KyspCj4gwqAJCWhhbmRs
-ZV90aGVybWFsX3RyaXAodHosIGNvdW50KTsKPiDCoH0KPiBAQCAtMTE3NSw2ICsxMjI3LDggQEAg
-dGhlcm1hbF96b25lX2RldmljZV9yZWdpc3Rlcihjb25zdCBjaGFyICp0eXBlLAo+IGludCB0cmlw
-cywgaW50IG1hc2ssCj4gwqAJdHotPnRyaXBzID0gdHJpcHM7Cj4gwqAJdHotPnBhc3NpdmVfZGVs
-YXkgPSBwYXNzaXZlX2RlbGF5Owo+IMKgCXR6LT5wb2xsaW5nX2RlbGF5ID0gcG9sbGluZ19kZWxh
-eTsKPiArCXR6LT5wcmV2X2xvd190cmlwID0gSU5UX01BWDsKPiArCXR6LT5wcmV2X2hpZ2hfdHJp
-cCA9IC1JTlRfTUFYOwo+IMKgCj4gwqAJLyogc3lzIEkvRiAqLwo+IMKgCS8qIEFkZCBub2RlcyB0
-aGF0IGFyZSBhbHdheXMgcHJlc2VudCB2aWEgLmdyb3VwcyAqLwo+IGRpZmYgLS1naXQgYS9kcml2
-ZXJzL3RoZXJtYWwvdGhlcm1hbF9zeXNmcy5jCj4gYi9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9z
-eXNmcy5jCj4gaW5kZXggNzQzZGY1MC4uMzNiYmUzMCAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL3Ro
-ZXJtYWwvdGhlcm1hbF9zeXNmcy5jCj4gKysrIGIvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfc3lz
-ZnMuYwo+IEBAIC0yMTksNiArMjE5LDkgQEAgdHJpcF9wb2ludF9oeXN0X3N0b3JlKHN0cnVjdCBk
-ZXZpY2UgKmRldiwgc3RydWN0Cj4gZGV2aWNlX2F0dHJpYnV0ZSAqYXR0ciwKPiDCoAlyZXQgPSB0
-ei0+b3BzLT5zZXRfdHJpcF9oeXN0KHR6LCB0cmlwLCB0ZW1wZXJhdHVyZSk7Cj4gwqAJbXV0ZXhf
-dW5sb2NrKCZ0ei0+bG9jayk7Cj4gwqAKPiArCWlmICghcmV0KQo+ICsJCXRoZXJtYWxfem9uZV9z
-ZXRfdHJpcHModHopOwo+ICsKPiDCoAlyZXR1cm4gcmV0ID8gcmV0IDogY291bnQ7Cj4gwqB9Cj4g
-wqAKPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC90aGVybWFsLmggYi9pbmNsdWRlL2xpbnV4
-L3RoZXJtYWwuaAo+IGluZGV4IGVhNjY3YjYuLjc4MGU2OWQgMTAwNjQ0Cj4gLS0tIGEvaW5jbHVk
-ZS9saW51eC90aGVybWFsLmgKPiArKysgYi9pbmNsdWRlL2xpbnV4L3RoZXJtYWwuaAo+IEBAIC05
-OSw2ICs5OSw3IEBAIHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlX29wcyB7Cj4gwqAJaW50ICgq
-dW5iaW5kKSAoc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKiwKPiDCoAkJwqDCoMKgwqDCoMKg
-wqBzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZSAqKTsKPiDCoAlpbnQgKCpnZXRfdGVtcCkg
-KHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICosIGludCAqKTsKPiArCWludCAoKnNldF90cmlw
-cykgKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICosIGludCwgaW50KTsKPiDCoAlpbnQgKCpn
-ZXRfbW9kZSkgKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICosCj4gwqAJCQnCoGVudW0gdGhl
-cm1hbF9kZXZpY2VfbW9kZSAqKTsKPiDCoAlpbnQgKCpzZXRfbW9kZSkgKHN0cnVjdCB0aGVybWFs
-X3pvbmVfZGV2aWNlICosCj4gQEAgLTE2OSw2ICsxNzAsMTAgQEAgc3RydWN0IHRoZXJtYWxfYXR0
-ciB7Cj4gwqAgKiBAbGFzdF90ZW1wZXJhdHVyZToJcHJldmlvdXMgdGVtcGVyYXR1cmUgcmVhZAo+
-IMKgICogQGVtdWxfdGVtcGVyYXR1cmU6CWVtdWxhdGVkIHRlbXBlcmF0dXJlIHdoZW4gdXNpbmcK
-PiBDT05GSUdfVEhFUk1BTF9FTVVMQVRJT04KPiDCoCAqIEBwYXNzaXZlOgkJMSBpZiB5b3UndmUg
-Y3Jvc3NlZCBhIHBhc3NpdmUgdHJpcAo+IHBvaW50LCAwIG90aGVyd2lzZS4KPiArICogQHByZXZf
-bG93X3RyaXA6CXRoZSBsb3cgY3VycmVudCB0ZW1wZXJhdHVyZSBpZiB5b3UndmUKPiBjcm9zc2Vk
-IGEgcGFzc2l2ZQo+ICsJCQl0cmlwIHBvaW50Lgo+ICsgKiBAcHJldl9oaWdoX3RyaXA6CXRoZSBh
-Ym92ZSBjdXJyZW50IHRlbXBlcmF0dXJlIGlmIHlvdSd2ZQo+IGNyb3NzZWQgYQo+ICsJCQlwYXNz
-aXZlIHRyaXAgcG9pbnQuCj4gwqAgKiBAZm9yY2VkX3Bhc3NpdmU6CUlmID4gMCwgdGVtcGVyYXR1
-cmUgYXQgd2hpY2ggdG8gc3dpdGNoIG9uCj4gYWxsIEFDUEkKPiDCoCAqCQkJcHJvY2Vzc29yIGNv
-b2xpbmcgZGV2aWNlcy7CoMKgQ3VycmVudGx5IG9ubHkKPiB1c2VkIGJ5IHRoZQo+IMKgICoJCQlz
-dGVwLXdpc2UgZ292ZXJub3IuCj4gQEAgLTIwMSw2ICsyMDYsOCBAQCBzdHJ1Y3QgdGhlcm1hbF96
-b25lX2RldmljZSB7Cj4gwqAJaW50IGxhc3RfdGVtcGVyYXR1cmU7Cj4gwqAJaW50IGVtdWxfdGVt
-cGVyYXR1cmU7Cj4gwqAJaW50IHBhc3NpdmU7Cj4gKwlpbnQgcHJldl9sb3dfdHJpcDsKPiArCWlu
-dCBwcmV2X2hpZ2hfdHJpcDsKPiDCoAl1bnNpZ25lZCBpbnQgZm9yY2VkX3Bhc3NpdmU7Cj4gwqAJ
-YXRvbWljX3QgbmVlZF91cGRhdGU7Cj4gwqAJc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2Vfb3Bz
-ICpvcHM7Cj4gQEAgLTQyOCw2ICs0MzUsNyBAQCBpbnQgdGhlcm1hbF96b25lX2JpbmRfY29vbGlu
-Z19kZXZpY2Uoc3RydWN0Cj4gdGhlcm1hbF96b25lX2RldmljZSAqLCBpbnQsCj4gwqBpbnQgdGhl
-cm1hbF96b25lX3VuYmluZF9jb29saW5nX2RldmljZShzdHJ1Y3QgdGhlcm1hbF96b25lX2Rldmlj
-ZSAqLAo+IGludCwKPiDCoAkJCQnCoMKgwqDCoMKgwqDCoHN0cnVjdCB0aGVybWFsX2Nvb2xpbmdf
-ZGV2aWNlCj4gKik7Cj4gwqB2b2lkIHRoZXJtYWxfem9uZV9kZXZpY2VfdXBkYXRlKHN0cnVjdCB0
-aGVybWFsX3pvbmVfZGV2aWNlICopOwo+ICt2b2lkIHRoZXJtYWxfem9uZV9zZXRfdHJpcHMoc3Ry
-dWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKik7Cj4gwqAKPiDCoHN0cnVjdCB0aGVybWFsX2Nvb2xp
-bmdfZGV2aWNlICp0aGVybWFsX2Nvb2xpbmdfZGV2aWNlX3JlZ2lzdGVyKGNoYXIKPiAqLCB2b2lk
-ICosCj4gwqAJCWNvbnN0IHN0cnVjdCB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlX29wcyAqKTsKPiBA
-QCAtNDc3LDYgKzQ4NSw4IEBAIHN0YXRpYyBpbmxpbmUgaW50Cj4gdGhlcm1hbF96b25lX3VuYmlu
-ZF9jb29saW5nX2RldmljZSgKPiDCoHsgcmV0dXJuIC1FTk9ERVY7IH0KPiDCoHN0YXRpYyBpbmxp
-bmUgdm9pZCB0aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0ZShzdHJ1Y3QKPiB0aGVybWFsX3pvbmVf
-ZGV2aWNlICp0eikKPiDCoHsgfQo+ICtzdGF0aWMgaW5saW5lIHZvaWQgdGhlcm1hbF96b25lX3Nl
-dF90cmlwcyhzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZQo+ICp0eikKPiAreyB9Cj4gwqBzdGF0
-aWMgaW5saW5lIHN0cnVjdCB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlICoKPiDCoHRoZXJtYWxfY29v
-bGluZ19kZXZpY2VfcmVnaXN0ZXIoY2hhciAqdHlwZSwgdm9pZCAqZGV2ZGF0YSwKPiDCoAljb25z
-dCBzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZV9vcHMgKm9wcykKCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LXJvY2tjaGlwIG1haWxpbmcg
-bGlzdApMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZy
-YWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9ja2NoaXAK
+On =E4=BA=8C, 2016-06-21 at 09:42 +0800, Caesar Wang wrote:
+> Do you have other ideas for the following patches? :-)=C2=A0
+> Even if only took two weeks feel after a long time.
+>=20
+> 9157919 New=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [v5=
+,1/5] thermal: Add support for hardware-
+> tracked trip points
+> 9157917 New=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [v5=
+,2/5] thermal: of: implement .set_trips for
+> device tree thermal zones
+> 9161129 New=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [v5=
+=2E1,3/5] thermal: streamline get_trend
+> callbacks
+> 9157929 New=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [v5=
+,4/5] thermal: bang-bang governor: act on
+> lower trip boundary
+> 9157925 New=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [v5=
+,5/5] thermal: rockchip: add the set_trips
+> function
+> ---
+>=20
+I have no objections to this patch set, except one change in patch 1/5.
+But as this also touches of_thermal and rockchip thermal driver. I'd
+leave this patch set for Eduardo to review and take.
+BTW, Eduardo is traveling recently, so you may still need to wait some
+time.
+
+Thanks,
+rui
+>=20
+> Caesar
+>=20
+> On 2016=E5=B9=B406=E6=9C=8806=E6=97=A5 19:44, Caesar Wang wrote:
+> > Thank you all for providing inputs and comments on previous
+> > versions of
+> > this patchset.
+> > Especially thanks to the (Mikko,Sascha,Eduardo,Javi,Steve....).
+> >=20
+> > The history patches come from Mikko and Sascha.
+> > =C2=A0=C2=A0=C2=A0=C2=A0http://thread.gmane.org/gmane.linux.power-m=
+anagement.general/59
+> > 451
+> >=20
+> > Now, I pick them up to continue upstream.
+> > Nevermind!
+> >=20
+> > This series history patches:
+> > v4: https://lkml.org/lkml/2016/5/27/122
+> > v3: https://lkml.org/lkml/2016/5/24/797
+> > v2: https://lkml.org/lkml/2016/5/3/220
+> > v1: https://lkml.org/lkml/2016/4/24/227
+> >=20
+> > This series adds support for hardware trip points. It picks up
+> > earlier
+> > work from Mikko Perttunen. Mikko implemented hardware trip points
+> > as part
+> > of the device tree support. It was suggested back then to move the
+> > functionality to the thermal core instead of putting more code into
+> > the
+> > device tree support. This series does exactly that.
+> >=20
+> > This series patches rebase the conflicts with the lastest next
+> > kernel.
+> > Note that the hardware-tracked trip points are very well tested
+> > currently.
+> >=20
+> > Verified and tested on https://github.com/Caesar-github/rockchip/tr
+> > ee/wip/fixes-thermal-0606
+> > That's based on the next kernel (4.7-rc2).
+> > localhost / # cat /proc/version
+> > Linux version 4.7.0-rc2-next-20160606-02546-g534926d (wxt@nb)
+> > ---
+> > There are five pathes in this series.
+> > thermal: Add support for hardware-tracked trip point
+> > thermal: of: implement .set_trips for device tree thermal zones
+> > thermal: streamline get_trend callbacks
+> > thermal: bang-bang governor: act on lower trip boundary
+> > thermal: rockchip: add the set_trips function
+> >=20
+> > Note: the hardware-tracked trip points that the similar patches
+> > were verified
+> > on ChromoeOs platform.
+> > e.g.:
+> > https://chromium.googlesource.com/chromiumos/third_party/kernel/+/c
+> > hromeos-3.14
+> > https://chromium.googlesource.com/chromiumos/third_party/kernel/+/c
+> > hromeos-3.18
+> > https://chromium.googlesource.com/chromiumos/third_party/kernel/+/c
+> > hromeos-4.4
+> > ---
+> >=20
+> > Anyway, I take the lastest thermal change to test from next kernel,
+> >=20
+> > Tested on RK3399 SoCs on https://chromium.googlesource.com/chromium
+> > os/third_party/kernel/+/chromeos-4.4
+> > And
+> > Tested on RK3288 SoCs with chromebook on next kernel.
+> > localhost / # while true; do grep ""
+> > /sys/class/thermal/thermal_zone[0-1]/temp; sleep .5; done
+> > /sys/class/thermal/thermal_zone1/temp:45454
+> > /sys/class/thermal/thermal_zone2/temp:44090
+> > /sys/class/thermal/thermal_zone1/temp:44545
+> > /sys/class/thermal/thermal_zone2/temp:44545
+> > /sys/class/thermal/thermal_zone1/temp:45454
+> > /sys/class/thermal/thermal_zone2/temp:44545
+> > /sys/class/thermal/thermal_zone1/temp:45000
+> > ...
+> > Then add the loading,
+> > localhost / # md5sum /dev/zero &
+> > [3] 8354
+> > ..
+> > The Set trips trigger the hardware-tracked points.
+> >=20
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 68461, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 2 - temp: 64166, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
+> > 1: low: 68000, high 75000
+> > rockchip-thermal ff280000.tsadc: sensor 2 - temp: 66153, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
+> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
+> > 1: low: 68000, high 70000
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 68076, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 2 - temp: 65384, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
+> > 1: low: 68000, high 75000
+> > rockchip-thermal ff280000.tsadc: sensor 2 - temp: 65384, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
+> > 1: low: 68000, high 70000
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70833, retval: 0
+> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
+> > 1: low: 68000, high 75000
+> > rockchip-thermal ff280000.tsadc: sensor 2 - temp: 66153, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
+> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
+> > 1: low: 68000, high 70000
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70416, retval: 0
+> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
+> > 1: low: 68000, high 75000
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
+> > 1: low: 68000, high 70000
+> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
+> > 1: low: 68000, high 75000
+> > ..
+> > ---
+> > Anyway, the series patches are verified on rockchip platform.
+> >=20
+> > Thanks someone are reviewing and testing for it.
+> >=20
+> > -Caesar
+> >=20
+> >=20
+> > Changes in v5:
+> > - add the lock for thermal_zone_set_trips function.
+> > - change based on next kernel.
+> > - add the tested by Steve.
+> >=20
+> > Changes in v4:
+> > - Missing the lock added in v3.
+> > - as the Javi comments, %s/implemnets/implements.
+> >=20
+> > Changes in v3:
+> > - as Javi comments on https://patchwork.kernel.org/patch/9001281/.
+> > - add the lock for preventing the called from multi placce
+> > - add the note for pre_low/high_trip.
+> > - as the Javi comments on https://patchwork.kernel.org/patch/900131
+> > 1/.
+> > - add the select if they set the option for devicetree.
+> > - Add the peter's ACK.
+> >=20
+> > Changes in v2:
+> > - update the sysfs-api.txt for set_trips.
+> > - add the commit in patch[v2 2/5].
+> > - Update the commit for patch[v2 4/5].
+> >=20
+> > Caesar Wang (1):
+> > =C2=A0 thermal: rockchip: add the set_trips function
+> >=20
+> > Sascha Hauer (4):
+> > =C2=A0 thermal: Add support for hardware-tracked trip points
+> > =C2=A0 thermal: of: implement .set_trips for device tree thermal zo=
+nes
+> > =C2=A0 thermal: streamline get_trend callbacks
+> > =C2=A0 thermal: bang-bang governor: act on lower trip boundary
+> >=20
+> > =C2=A0Documentation/thermal/sysfs-api.txt=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=
+=A0=C2=A07 +++
+> > =C2=A0drivers/thermal/gov_bang_bang.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A02 +-
+> > =C2=A0drivers/thermal/of-thermal.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 30 ++++++++
+> > ----
+> > =C2=A0drivers/thermal/rockchip_thermal.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0| 39
+> > ++++++++++++++++
+> > =C2=A0drivers/thermal/thermal_core.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0| 54
+> > ++++++++++++++++++++++
+> > =C2=A0drivers/thermal/thermal_sysfs.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A03 ++
+> > =C2=A0drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 ++++-=
+-----
+> > =C2=A0include/linux/thermal.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 16 ++++++-
+> > =C2=A08 files changed, 147 insertions(+), 29 deletions(-)
+> >=20
+> =C2=A0
