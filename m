@@ -1,80 +1,256 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?UkU6IFJlOiBbUFVMTCBSZXF1ZXN0XSBEZXZmcmVxIEZpeGVz?=
- =?UTF-8?B?IGZvciBSQzUrLg==?=
-Date: Wed, 22 Jun 2016 04:50:03 +0000
-Message-ID: <1778096369.335055.1466571003447.JavaMail.weblogic@ep2ml104d>
-References: <CGME20160621054943epcms1p5edf96fb3b2179a62bff867190bc6dc13@epcms1p5>
- <1787004839.214561.1466488183645.JavaMail.weblogic@ep2ml104d>
-Reply-To: myungjoo.ham@samsung.com
-Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_335054_1120804258.1466571003447"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:37075 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbcFVFBZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 01:01:25 -0400
-Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
- by mailout2.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0O9500OG6PFG7WE0@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 22 Jun 2016 13:50:04 +0900 (KST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCH 1/1] thermal: core: call thermal_zone_device_update() after mode update
+Date: Tue, 21 Jun 2016 22:06:30 -0700
+Message-ID: <1466571990-12346-1-git-send-email-edubezval@gmail.com>
+References: <1466563538.2471.10.camel@intel.com>
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <1466563538.2471.10.camel@intel.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, Darren Hart <dvhart@infradead.org>, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?UmFmYWVsIEouIFd5c29ja2k=?= <rafael@kernel.org>
-Cc: =?UTF-8?B?cmp3QHJqd3lzb2NraS5uZXQ=?= <rjw@rjwysocki.net>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20=?= <rafael.j.wysocki@intel.com>, =?UTF-8?B?bHVrYXN6Lmx1YmFAYXJtLmNvbQ==?= <lukasz.luba@arm.com>, =?UTF-8?B?ZGFuLmNhcnBlbnRlckBvcmFjbGUuY29t?= <dan.carpenter@oracle.com>, =?UTF-8?B?bXl1bmdqb28uaGFtQGdtYWlsLmNvbQ==?= <myungjoo.ham@gmail.com>
 
-------=_Part_335054_1120804258.1466571003447
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+Because several drivers do the following pattern:
+.set_mode()
+   ...
+   local_data->mode = new_mode;
+   thermal_zone_device_update(tz);
 
-T24gVHVlLCBKdW4gMjEsIDIwMTYgYXQgNzo0OSBBTSwgTXl1bmdKb28gSGFtIDxteXVuZ2pvby5o
-YW1Ac2Ftc3VuZy5jb20+IHdyb3RlOg0KPiA+IERlYXIgUmFmYWVsLA0KPiA+DQo+ID4gSGVyZSBn
-b2VzIGEgcHVsbCByZXF1ZXN0IG9mICJQTSAvIERldmZyZXEgRml4ZXMiIHRhcmdldHRpbmcgUkM1
-Ky4NCj4gDQo+IFlvdSBzaG91bGQgc2lnbiBvZmYgYWxsIG9mIHlvdXIgY29tbWl0cyBhbmQgc29t
-ZSBvZiB0aGVtIGFyZSBvbmx5DQo+IGFja2VkLWJ5LiAgQ2FuIHlvdSBwbGVhc2UgYWRkIHRoZSBz
-aWduLW9mZnMgYXMgYXBwcm9wcmlhdGUgYW5kIHNlbnQNCj4gdGhlIHJlcXVlc3QgYWdhaW4/DQo+
-IA0KPiBUaGFua3MsDQo+IFJhZmFlbA0KDQpPb3BzLiBTdXJlLCBJJ2xsIHVwZGF0ZSBhbmQgc2Vu
-ZCB0aGUgcmVxdWVzdCBhZ2FpbiBzb29uLg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCj4gDQo+
-IA0KPiA+IC0tLS0tQkVHSU4gUEdQIFNJR05FRCBNRVNTQUdFLS0tLS0NCj4gPiBIYXNoOiBTSEEx
-DQo+ID4NCj4gPiBUaGUgZm9sbG93aW5nIGNoYW5nZXMgc2luY2UgY29tbWl0IDMzNjg4YWJiMjgw
-MmZmM2EyMzBiZDI0NDFmNzY1NDc3Yjk0Y2M4OWU6DQo+ID4NCj4gPiAgIExpbnV4IDQuNy1yYzQg
-KDIwMTYtMDYtMTkgMjE6MzA6MDIgLTA3MDApDQo+ID4NCj4gPiBhcmUgYXZhaWxhYmxlIGluIHRo
-ZSBnaXQgcmVwb3NpdG9yeSBhdDoNCj4gPg0KPiA+ICAgaHR0cHM6Ly9naXQua2VybmVsLm9yZy9w
-dWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEuZ2l0IGZpeGVzDQo+ID4NCj4gPiBm
-b3IgeW91IHRvIGZldGNoIGNoYW5nZXMgdXAgdG8gNzJiMjgzNWJhYjZiYjBmNzY4OGE3ODMwMWFj
-MTQ2NmM3MjljYjFjOToNCj4gPg0KPiA+ICAgUE0gLyBkZXZmcmVxOiBmaXggaW5pdGlhbGl6YXRp
-b24gb2YgY3VycmVudCBmcmVxdWVuY3kgaW4gbGFzdCBzdGF0dXMgKDIwMTYtMDYtMjEgMTQ6MjU6
-MzAgKzA5MDApDQo+ID4NCj4gPiAtIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPiBQdWxsIFJlcXVlc3Qgb2YgRGV2ZnJl
-cSBGaXhlcyAoMy43IHJjIDUrKSBmb3IgUmFmYWVsIExpbnV4IFBNLg0KPiA+DQo+ID4gLSAtLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tDQo+ID4gQ2FpIFpoaXlvbmcgKDEpOg0KPiA+ICAgICAgIFBNIC8gZGV2ZnJlcTogZml4IGRv
-dWJsZSBjYWxsIHB1dF9kZXZpY2UNCj4gPg0KPiA+IERhbiBDYXJwZW50ZXIgKDEpOg0KPiA+ICAg
-ICAgIFBNIC8gZGV2ZnJlcTogZXh5bm9zLW5vY3A6IFJlbW92ZSBpbmNvcnJlY3QgSVNfRVJSKCkg
-Y2hlY2sNCj4gPg0KPiA+IEx1a2FzeiBMdWJhICgxKToNCj4gPiAgICAgICBQTSAvIGRldmZyZXE6
-IGZpeCBpbml0aWFsaXphdGlvbiBvZiBjdXJyZW50IGZyZXF1ZW5jeSBpbiBsYXN0IHN0YXR1cw0K
-PiA+DQo+ID4gTXl1bmdKb28gSGFtICgzKToNCj4gPiAgICAgICBQTSAvIGRldmZyZXE6IGRldm1f
-a3phbGxvYyB0byBoYXZlIGRldiBwb2ludGVyIG1vcmUgcHJlY2lzZWx5DQo+ID4gICAgICAgUE0g
-LyBkZXZmcmVxOiBmaXggZHVwbGljYXRlZCBrZnJlZSBvbiBkZXZmcmVxIHBvaW50ZXINCj4gPiAg
-ICAgICBQTSAvIGRldmZyZXE6IHJlbW92ZSBkb3VibGUgcHV0X2RldmljZQ0KPiA+DQo+ID4gIGRy
-aXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgICAgICAgICAgIHwgMjIgKysrKysrKysrKy0tLS0tLS0t
-LS0tLQ0KPiA+ICBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLW5vY3AuYyB8ICAzIC0tLQ0K
-PiA+ICAyIGZpbGVzIGNoYW5nZWQsIDEwIGluc2VydGlvbnMoKyksIDE1IGRlbGV0aW9ucygtKQ0K
-PiA+IC0tLS0tQkVHSU4gUEdQIFNJR05BVFVSRS0tLS0tDQo+ID4gVmVyc2lvbjogR251UEcgdjEN
-Cj4gPg0KPiA+IGlRSWNCQUVCQWdBR0JRSlhhTk1FQUFvSkVCT2h1cnZXQm9DSzd6RVFBSktCQUVU
-aGx1NkNkUUVjTjdkdVpFMjUNCj4gPiBERDJwR3pTS1E1c3EvUllnNlkwQlVjeVkzbHRnZW5SenY5
-M09IeUdzNGsyU3U2NXJSaHNvN0NsS3Y2c3RXZFVvDQo+ID4gdGZrV3V2Z0gzWmpuczB6bGxha25z
-Q3ZsNWl6eFJhWWRDb2Jtb0RaL29tSHZQM3U5YUxxYk83UEFxb25MUXpYKw0KPiA+IC9tcWFzUVYw
-MkdTQmdzZ0ppUzZ0NWhSNjhvQkVtR01lUzZ5aVpoTTFCQVBrVnF2eFZwb3BnTnhZM1pGakhXK1kN
-Cj4gPiBJVXpzbGVpaXZ5VTZoWmpuSk53Y1JHSnRxM3VGKzY2WXZERE0vN2pVREFlREsxbUZzbUpv
-K2tCOWpUdWdMaHZvDQo+ID4gQjZaa09mZ0crczNHUlFZVmxxNjFOSHhjTzVGUThxRG1EcEJMYUFO
-ZWl0ZDZJZmZWSm9Qb0Z1c1VXblRYY3E1Vw0KPiA+IHd4VS9XT0VnSW5SRDJoYjl5TVRiemxGdEpq
-U05QTk0veVFTRTd3U01GUWdWSUJvcVZUTDFJbVd3ZlpLUGhWQ2oNCj4gPiBWTndpYnl0UFVKbVpE
-MmdUOTdLemhuejdvMEREQS9ZbGxqWWJtY2ozTC95TCtteWx0WEtGc1I5OThLODBPaUdrDQo+ID4g
-YnlNZWhhcDVpdGZLbXdVN1dtZ3BVU0NnMkYwS2c5SmNPQU84U1I0SjBSQjM5STFVb3Q1aDZIZWk2
-dmJ6ZjVhbA0KPiA+IFI0VkZZeU50azVWdU15ZHRFRndtOG01SGVLMVRGUXhaaUd4TXJpY0Q1VTlz
-QTRzT0RJckFXeERCQTh3S01VODcNCj4gPiB5MHJwM0ZQUlVpZ1BlbXpVSVBYUlNyd0ZwU2x0VkZz
-ZEh0NTgvWldMY28xd1R1VjNiaXNiRlArcUF3RDlBd1lyDQo+ID4gTCthdHhubGl5Zm5tbjdPSHZa
-eFINCj4gPiA9QnJacw0KPiA+IC0tLS0tRU5EIFBHUCBTSUdOQVRVUkUtLS0tLQ0KPiANCg==
-------=_Part_335054_1120804258.1466571003447--
+makes sense to simply do the thermal_zone_device_update()
+in thermal core, after setting the new mode.
+
+Also, this patch also remove deadlocks on drivers that
+call thermal_zone_device_update() on .set_mode(),
+as .set_mode()  is now called always with tz->lock held.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org
+Cc: "Lee, Chun-Yi" <jlee@suse.com>
+Cc: Darren Hart <dvhart@infradead.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Keerthy <j-keerthy@ti.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-omap@vger.kernel.org
+Cc: platform-driver-x86@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+---
+Rui, Keerthy,
+
+I think this patch should take care of the introduced deadlock.
+
+Let me know if solves on your end.
+
+BR,
+
+Eduardo
+---
+
+ drivers/acpi/thermal.c                             |  2 --
+ drivers/platform/x86/acerhdf.c                     |  1 -
+ drivers/thermal/imx_thermal.c                      |  1 -
+ drivers/thermal/of-thermal.c                       |  8 ++---
+ drivers/thermal/thermal_core.c                     | 41 +++++++++++++++++-----
+ drivers/thermal/thermal_sysfs.c                    |  1 +
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |  1 -
+ 7 files changed, 36 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 82707f9..8582b88 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -519,8 +519,6 @@ static void acpi_thermal_check(void *data)
+ 
+ 	if (!tz->tz_enabled)
+ 		return;
+-
+-	thermal_zone_device_update(tz->thermal_zone);
+ }
+ 
+ /* sys I/F for generic thermal sysfs support */
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 460fa67..aee33ba 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -405,7 +405,6 @@ static inline void acerhdf_enable_kernelmode(void)
+ 	kernelmode = 1;
+ 
+ 	thz_dev->polling_delay = interval*1000;
+-	thermal_zone_device_update(thz_dev);
+ 	pr_notice("kernel mode fan control ON\n");
+ }
+ 
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index c5547bd..a413eb6 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -246,7 +246,6 @@ static int imx_set_mode(struct thermal_zone_device *tz,
+ 	}
+ 
+ 	data->mode = mode;
+-	thermal_zone_device_update(tz);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index b8e509c..b44c102 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -181,9 +181,6 @@ static int of_thermal_set_emul_temp(struct thermal_zone_device *tz,
+ {
+ 	struct __thermal_zone *data = tz->devdata;
+ 
+-	if (!data->ops || !data->ops->set_emul_temp)
+-		return -EINVAL;
+-
+ 	return data->ops->set_emul_temp(data->sensor_data, temp);
+ }
+ 
+@@ -292,7 +289,6 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
+ 	mutex_unlock(&tz->lock);
+ 
+ 	data->mode = mode;
+-	thermal_zone_device_update(tz);
+ 
+ 	return 0;
+ }
+@@ -427,7 +423,9 @@ thermal_zone_of_add_sensor(struct device_node *zone,
+ 
+ 	tzd->ops->get_temp = of_thermal_get_temp;
+ 	tzd->ops->get_trend = of_thermal_get_trend;
+-	tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
++	if (ops->set_emul_temp)
++		tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
++
+ 	mutex_unlock(&tzd->lock);
+ 
+ 	return tzd;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 09da955..bb1ede7 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -323,6 +323,21 @@ static void handle_non_critical_trips(struct thermal_zone_device *tz,
+ 		       def_governor->throttle(tz, trip);
+ }
+ 
++static void thermal_zone_update_stats(struct thermal_zone_device *tz,
++				      int last_trip, int cur_trip)
++{
++	unsigned long long cur_time = get_jiffies_64();
++	struct thermal_zone_stats *cur, *last;
++
++	cur = tz->stats_table[cur_trip];
++	last = tz->stats_table[last_trip];
++
++	cur->counter++;
++	cur->last_time = cur_time;
++
++	last->time_in += cur_time - last->last_time;
++}
++
+ static void thermal_tripped_notify(struct thermal_zone_device *tz,
+ 				   int trip, enum thermal_trip_type trip_type,
+ 				   int trip_temp)
+@@ -333,6 +348,7 @@ static void thermal_tripped_notify(struct thermal_zone_device *tz,
+ 			NULL };
+ 	int upper_trip_hyst, upper_trip_temp, trip_hyst = 0;
+ 	int ret = 0;
++	int cur_trip, last_trip;
+ 
+ 	snprintf(tuv_name, sizeof(tuv_name), "THERMAL_ZONE=%s", tz->type);
+ 	snprintf(tuv_temp, sizeof(tuv_temp), "TEMP=%d", tz->temperature);
+@@ -344,8 +360,11 @@ static void thermal_tripped_notify(struct thermal_zone_device *tz,
+ 	mutex_lock(&tz->lock);
+ 
+ 	/* crossing up */
+-	if (tz->last_temperature < trip_temp && trip_temp < tz->temperature)
++	if (tz->last_temperature < trip_temp && trip_temp < tz->temperature) {
+ 		kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
++		last_trip = trip - 1;
++		cur_trip = trip;
++	}
+ 
+ 	if (tz->ops->get_trip_hyst)
+ 		tz->ops->get_trip_hyst(tz, trip, &trip_hyst);
+@@ -355,6 +374,8 @@ static void thermal_tripped_notify(struct thermal_zone_device *tz,
+ 	if (tz->last_temperature > trip_temp && trip_temp > tz->temperature) {
+ 		snprintf(tuv_trip, sizeof(tuv_trip), "TRIP=%d", trip - 1);
+ 		kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
++		last_trip = trip;
++		cur_trip = trip - 1;
+ 	}
+ 
+ 	ret = tz->ops->get_trip_temp(tz, trip + 1, &upper_trip_temp);
+@@ -369,19 +390,15 @@ static void thermal_tripped_notify(struct thermal_zone_device *tz,
+ 	    upper_trip_temp > tz->temperature)
+ 		kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
+ 
++	thermal_zone_device_update_stats(tz, last_trip, cur_trip);
+ unlock:
+ 	mutex_unlock(&tz->lock);
+ }
+ 
+ static void handle_critical_trips(struct thermal_zone_device *tz,
+-				  int trip, enum thermal_trip_type trip_type)
++				  int trip, enum thermal_trip_type trip_type,
++				  int trip_temp)
+ {
+-	int trip_temp;
+-
+-	tz->ops->get_trip_temp(tz, trip, &trip_temp);
+-
+-	thermal_tripped_notify(tz, trip, trip_type, trip_temp);
+-
+ 	/* If we have not crossed the trip_temp, we do not care. */
+ 	if (trip_temp <= 0 || tz->temperature < trip_temp)
+ 		return;
+@@ -402,15 +419,21 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
+ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+ {
+ 	enum thermal_trip_type type;
++	int trip_temp;
++
++	tz->ops->get_trip_temp(tz, trip, &trip_temp);
+ 
+ 	/* Ignore disabled trip points */
+ 	if (test_bit(trip, &tz->trips_disabled))
+ 		return;
+ 
+ 	tz->ops->get_trip_type(tz, trip, &type);
++	tz->ops->get_trip_type(tz, trip, &trip_temp);
++
++	thermal_tripped_notify(tz, trip, trip_type, trip_temp);
+ 
+ 	if (type == THERMAL_TRIP_CRITICAL || type == THERMAL_TRIP_HOT)
+-		handle_critical_trips(tz, trip, type);
++		handle_critical_trips(tz, trip, type, trip_temp);
+ 	else
+ 		handle_non_critical_trips(tz, trip, type);
+ }
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index 743df50..3d0dc30 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -100,6 +100,7 @@ mode_store(struct device *dev, struct device_attribute *attr,
+ 	mutex_lock(&tz->lock);
+ 	result = tz->ops->set_mode(tz, mode);
+ 	mutex_unlock(&tz->lock);
++	thermal_zone_device_update(tz);
+ 
+ 	if (result)
+ 		return result;
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index 15c0a9a..9a5a3a3 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -205,7 +205,6 @@ static int ti_thermal_set_mode(struct thermal_zone_device *thermal,
+ 	data->mode = mode;
+ 	ti_bandgap_write_update_interval(bgp, data->sensor_id,
+ 					data->ti_thermal->polling_delay);
+-	thermal_zone_device_update(data->ti_thermal);
+ 	dev_dbg(&thermal->device, "thermal polling set for duration=%d msec\n",
+ 		data->ti_thermal->polling_delay);
+ 
+-- 
+2.1.4
