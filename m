@@ -1,7 +1,7 @@
 From: Ben Dooks <ben.dooks@codethink.co.uk>
-Subject: [PATCH 2/2] cpufreq: exynos: use relaxed IO accesors
-Date: Wed, 22 Jun 2016 10:36:38 +0100
-Message-ID: <1466588198-27445-3-git-send-email-ben.dooks@codethink.co.uk>
+Subject: [PATCH 1/2] cpufreq: s5pv210: use relaxed IO accesors
+Date: Wed, 22 Jun 2016 10:36:37 +0100
+Message-ID: <1466588198-27445-2-git-send-email-ben.dooks@codethink.co.uk>
 References: <1466588198-27445-1-git-send-email-ben.dooks@codethink.co.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -33,97 +33,216 @@ Cc: linux-pm@vger.kernel.org
 Cc: linux-samsung-soc@vger.kernel.org
 Cc: linux-arm-kernel@lists.infradead.org
 ---
- drivers/cpufreq/exynos5440-cpufreq.c | 28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+ drivers/cpufreq/s5pv210-cpufreq.c | 68 +++++++++++++++++++--------------------
+ 1 file changed, 34 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
-index c0f3373..7a5707f 100644
---- a/drivers/cpufreq/exynos5440-cpufreq.c
-+++ b/drivers/cpufreq/exynos5440-cpufreq.c
-@@ -155,7 +155,7 @@ static int init_div_table(void)
- 		tmp = (clk_div | ema_div | (volt_id << P0_7_VDD_SHIFT)
- 			| ((freq / FREQ_UNIT) << P0_7_FREQ_SHIFT));
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index 4f4e9df..6bab65b 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -220,7 +220,7 @@ static void s5pv210_set_refresh(enum s5pv210_dmc_port ch, unsigned long freq)
  
--		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 *
-+		writel_relaxed(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 *
- 						(pos - freq_tbl));
- 	}
+ 	tmp1 /= tmp;
  
-@@ -169,17 +169,17 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
- 	struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
- 	struct cpufreq_frequency_table *pos;
- 	/* Disable DVFS */
--	__raw_writel(0,	dvfs_info->base + XMU_DVFS_CTRL);
-+	writel_relaxed(0,	dvfs_info->base + XMU_DVFS_CTRL);
- 
- 	/* Enable PSTATE Change Event */
--	tmp = __raw_readl(dvfs_info->base + XMU_PMUEVTEN);
-+	tmp = readl_relaxed(dvfs_info->base + XMU_PMUEVTEN);
- 	tmp |= (1 << PSTATE_CHANGED_EVTEN_SHIFT);
--	 __raw_writel(tmp, dvfs_info->base + XMU_PMUEVTEN);
-+	 writel_relaxed(tmp, dvfs_info->base + XMU_PMUEVTEN);
- 
- 	/* Enable PSTATE Change IRQ */
--	tmp = __raw_readl(dvfs_info->base + XMU_PMUIRQEN);
-+	tmp = readl_relaxed(dvfs_info->base + XMU_PMUIRQEN);
- 	tmp |= (1 << PSTATE_CHANGED_IRQEN_SHIFT);
--	 __raw_writel(tmp, dvfs_info->base + XMU_PMUIRQEN);
-+	 writel_relaxed(tmp, dvfs_info->base + XMU_PMUIRQEN);
- 
- 	/* Set initial performance index */
- 	cpufreq_for_each_entry(pos, freq_table)
-@@ -197,14 +197,14 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
- 						cur_frequency);
- 
- 	for (cpu = 0; cpu < CONFIG_NR_CPUS; cpu++) {
--		tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
-+		tmp = readl_relaxed(dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
- 		tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
- 		tmp |= ((pos - freq_table) << C0_3_PSTATE_NEW_SHIFT);
--		__raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
-+		writel_relaxed(tmp, dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
- 	}
- 
- 	/* Enable DVFS */
--	__raw_writel(1 << XMU_DVFS_CTRL_EN_SHIFT,
-+	writel_relaxed(1 << XMU_DVFS_CTRL_EN_SHIFT,
- 				dvfs_info->base + XMU_DVFS_CTRL);
+-	__raw_writel(tmp1, reg);
++	writel_relaxed(tmp1, reg);
  }
  
-@@ -223,11 +223,11 @@ static int exynos_target(struct cpufreq_policy *policy, unsigned int index)
+ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+@@ -297,29 +297,29 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 		 * 1. Temporary Change divider for MFC and G3D
+ 		 * SCLKA2M(200/1=200)->(200/4=50)Mhz
+ 		 */
+-		reg = __raw_readl(S5P_CLK_DIV2);
++		reg = readl_relaxed(S5P_CLK_DIV2);
+ 		reg &= ~(S5P_CLKDIV2_G3D_MASK | S5P_CLKDIV2_MFC_MASK);
+ 		reg |= (3 << S5P_CLKDIV2_G3D_SHIFT) |
+ 			(3 << S5P_CLKDIV2_MFC_SHIFT);
+-		__raw_writel(reg, S5P_CLK_DIV2);
++		writel_relaxed(reg, S5P_CLK_DIV2);
  
- 	/* Set the target frequency in all C0_3_PSTATE register */
- 	for_each_cpu(i, policy->cpus) {
--		tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
-+		tmp = readl_relaxed(dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
- 		tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
- 		tmp |= (index << C0_3_PSTATE_NEW_SHIFT);
+ 		/* For MFC, G3D dividing */
+ 		do {
+-			reg = __raw_readl(S5P_CLKDIV_STAT0);
++			reg = readl_relaxed(S5P_CLKDIV_STAT0);
+ 		} while (reg & ((1 << 16) | (1 << 17)));
  
--		__raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
-+		writel_relaxed(tmp, dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
+ 		/*
+ 		 * 2. Change SCLKA2M(200Mhz)to SCLKMPLL in MFC_MUX, G3D MUX
+ 		 * (200/4=50)->(667/4=166)Mhz
+ 		 */
+-		reg = __raw_readl(S5P_CLK_SRC2);
++		reg = readl_relaxed(S5P_CLK_SRC2);
+ 		reg &= ~(S5P_CLKSRC2_G3D_MASK | S5P_CLKSRC2_MFC_MASK);
+ 		reg |= (1 << S5P_CLKSRC2_G3D_SHIFT) |
+ 			(1 << S5P_CLKSRC2_MFC_SHIFT);
+-		__raw_writel(reg, S5P_CLK_SRC2);
++		writel_relaxed(reg, S5P_CLK_SRC2);
+ 
+ 		do {
+-			reg = __raw_readl(S5P_CLKMUX_STAT1);
++			reg = readl_relaxed(S5P_CLKMUX_STAT1);
+ 		} while (reg & ((1 << 7) | (1 << 3)));
+ 
+ 		/*
+@@ -331,19 +331,19 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 			s5pv210_set_refresh(DMC1, 133000);
+ 
+ 		/* 4. SCLKAPLL -> SCLKMPLL */
+-		reg = __raw_readl(S5P_CLK_SRC0);
++		reg = readl_relaxed(S5P_CLK_SRC0);
+ 		reg &= ~(S5P_CLKSRC0_MUX200_MASK);
+ 		reg |= (0x1 << S5P_CLKSRC0_MUX200_SHIFT);
+-		__raw_writel(reg, S5P_CLK_SRC0);
++		writel_relaxed(reg, S5P_CLK_SRC0);
+ 
+ 		do {
+-			reg = __raw_readl(S5P_CLKMUX_STAT0);
++			reg = readl_relaxed(S5P_CLKMUX_STAT0);
+ 		} while (reg & (0x1 << 18));
+ 
  	}
- 	mutex_unlock(&cpufreq_lock);
- 	return 0;
-@@ -246,7 +246,7 @@ static void exynos_cpufreq_work(struct work_struct *work)
- 	mutex_lock(&cpufreq_lock);
- 	freqs.old = policy->cur;
  
--	cur_pstate = __raw_readl(dvfs_info->base + XMU_P_STATUS);
-+	cur_pstate = readl_relaxed(dvfs_info->base + XMU_P_STATUS);
- 	if (cur_pstate >> C0_3_PSTATE_VALID_SHIFT & 0x1)
- 		index = (cur_pstate >> C0_3_PSTATE_CURR_SHIFT) & P_VALUE_MASK;
+ 	/* Change divider */
+-	reg = __raw_readl(S5P_CLK_DIV0);
++	reg = readl_relaxed(S5P_CLK_DIV0);
+ 
+ 	reg &= ~(S5P_CLKDIV0_APLL_MASK | S5P_CLKDIV0_A2M_MASK |
+ 		S5P_CLKDIV0_HCLK200_MASK | S5P_CLKDIV0_PCLK100_MASK |
+@@ -359,25 +359,25 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 		(clkdiv_val[index][6] << S5P_CLKDIV0_HCLK133_SHIFT) |
+ 		(clkdiv_val[index][7] << S5P_CLKDIV0_PCLK66_SHIFT));
+ 
+-	__raw_writel(reg, S5P_CLK_DIV0);
++	writel_relaxed(reg, S5P_CLK_DIV0);
+ 
+ 	do {
+-		reg = __raw_readl(S5P_CLKDIV_STAT0);
++		reg = readl_relaxed(S5P_CLKDIV_STAT0);
+ 	} while (reg & 0xff);
+ 
+ 	/* ARM MCS value changed */
+-	reg = __raw_readl(S5P_ARM_MCS_CON);
++	reg = readl_relaxed(S5P_ARM_MCS_CON);
+ 	reg &= ~0x3;
+ 	if (index >= L3)
+ 		reg |= 0x3;
  	else
-@@ -270,9 +270,9 @@ static irqreturn_t exynos_cpufreq_irq(int irq, void *id)
- {
- 	unsigned int tmp;
+ 		reg |= 0x1;
  
--	tmp = __raw_readl(dvfs_info->base + XMU_PMUIRQ);
-+	tmp = readl_relaxed(dvfs_info->base + XMU_PMUIRQ);
- 	if (tmp >> PSTATE_CHANGED_SHIFT & 0x1) {
--		__raw_writel(tmp, dvfs_info->base + XMU_PMUIRQ);
-+		writel_relaxed(tmp, dvfs_info->base + XMU_PMUIRQ);
- 		disable_irq_nosync(irq);
- 		schedule_work(&dvfs_info->irq_work);
+-	__raw_writel(reg, S5P_ARM_MCS_CON);
++	writel_relaxed(reg, S5P_ARM_MCS_CON);
+ 
+ 	if (pll_changing) {
+ 		/* 5. Set Lock time = 30us*24Mhz = 0x2cf */
+-		__raw_writel(0x2cf, S5P_APLL_LOCK);
++		writel_relaxed(0x2cf, S5P_APLL_LOCK);
+ 
+ 		/*
+ 		 * 6. Turn on APLL
+@@ -385,12 +385,12 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 		 * 6-2. Wait untile the PLL is locked
+ 		 */
+ 		if (index == L0)
+-			__raw_writel(APLL_VAL_1000, S5P_APLL_CON);
++			writel_relaxed(APLL_VAL_1000, S5P_APLL_CON);
+ 		else
+-			__raw_writel(APLL_VAL_800, S5P_APLL_CON);
++			writel_relaxed(APLL_VAL_800, S5P_APLL_CON);
+ 
+ 		do {
+-			reg = __raw_readl(S5P_APLL_CON);
++			reg = readl_relaxed(S5P_APLL_CON);
+ 		} while (!(reg & (0x1 << 29)));
+ 
+ 		/*
+@@ -398,39 +398,39 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 		 * to SCLKA2M(200Mhz) in MFC_MUX and G3D MUX
+ 		 * (667/4=166)->(200/4=50)Mhz
+ 		 */
+-		reg = __raw_readl(S5P_CLK_SRC2);
++		reg = readl_relaxed(S5P_CLK_SRC2);
+ 		reg &= ~(S5P_CLKSRC2_G3D_MASK | S5P_CLKSRC2_MFC_MASK);
+ 		reg |= (0 << S5P_CLKSRC2_G3D_SHIFT) |
+ 			(0 << S5P_CLKSRC2_MFC_SHIFT);
+-		__raw_writel(reg, S5P_CLK_SRC2);
++		writel_relaxed(reg, S5P_CLK_SRC2);
+ 
+ 		do {
+-			reg = __raw_readl(S5P_CLKMUX_STAT1);
++			reg = readl_relaxed(S5P_CLKMUX_STAT1);
+ 		} while (reg & ((1 << 7) | (1 << 3)));
+ 
+ 		/*
+ 		 * 8. Change divider for MFC and G3D
+ 		 * (200/4=50)->(200/1=200)Mhz
+ 		 */
+-		reg = __raw_readl(S5P_CLK_DIV2);
++		reg = readl_relaxed(S5P_CLK_DIV2);
+ 		reg &= ~(S5P_CLKDIV2_G3D_MASK | S5P_CLKDIV2_MFC_MASK);
+ 		reg |= (clkdiv_val[index][10] << S5P_CLKDIV2_G3D_SHIFT) |
+ 			(clkdiv_val[index][9] << S5P_CLKDIV2_MFC_SHIFT);
+-		__raw_writel(reg, S5P_CLK_DIV2);
++		writel_relaxed(reg, S5P_CLK_DIV2);
+ 
+ 		/* For MFC, G3D dividing */
+ 		do {
+-			reg = __raw_readl(S5P_CLKDIV_STAT0);
++			reg = readl_relaxed(S5P_CLKDIV_STAT0);
+ 		} while (reg & ((1 << 16) | (1 << 17)));
+ 
+ 		/* 9. Change MPLL to APLL in MSYS_MUX */
+-		reg = __raw_readl(S5P_CLK_SRC0);
++		reg = readl_relaxed(S5P_CLK_SRC0);
+ 		reg &= ~(S5P_CLKSRC0_MUX200_MASK);
+ 		reg |= (0x0 << S5P_CLKSRC0_MUX200_SHIFT);
+-		__raw_writel(reg, S5P_CLK_SRC0);
++		writel_relaxed(reg, S5P_CLK_SRC0);
+ 
+ 		do {
+-			reg = __raw_readl(S5P_CLKMUX_STAT0);
++			reg = readl_relaxed(S5P_CLKMUX_STAT0);
+ 		} while (reg & (0x1 << 18));
+ 
+ 		/*
+@@ -447,13 +447,13 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
+ 	 * and memory refresh parameter should be changed
+ 	 */
+ 	if (bus_speed_changing) {
+-		reg = __raw_readl(S5P_CLK_DIV6);
++		reg = readl_relaxed(S5P_CLK_DIV6);
+ 		reg &= ~S5P_CLKDIV6_ONEDRAM_MASK;
+ 		reg |= (clkdiv_val[index][8] << S5P_CLKDIV6_ONEDRAM_SHIFT);
+-		__raw_writel(reg, S5P_CLK_DIV6);
++		writel_relaxed(reg, S5P_CLK_DIV6);
+ 
+ 		do {
+-			reg = __raw_readl(S5P_CLKDIV_STAT1);
++			reg = readl_relaxed(S5P_CLKDIV_STAT1);
+ 		} while (reg & (1 << 15));
+ 
+ 		/* Reconfigure DRAM refresh counter value */
+@@ -493,7 +493,7 @@ static int check_mem_type(void __iomem *dmc_reg)
+ {
+ 	unsigned long val;
+ 
+-	val = __raw_readl(dmc_reg + 0x4);
++	val = readl_relaxed(dmc_reg + 0x4);
+ 	val = (val & (0xf << 8));
+ 
+ 	return val >> 8;
+@@ -538,10 +538,10 @@ static int s5pv210_cpu_init(struct cpufreq_policy *policy)
  	}
+ 
+ 	/* Find current refresh counter and frequency each DMC */
+-	s5pv210_dram_conf[0].refresh = (__raw_readl(dmc_base[0] + 0x30) * 1000);
++	s5pv210_dram_conf[0].refresh = (readl_relaxed(dmc_base[0] + 0x30) * 1000);
+ 	s5pv210_dram_conf[0].freq = clk_get_rate(dmc0_clk);
+ 
+-	s5pv210_dram_conf[1].refresh = (__raw_readl(dmc_base[1] + 0x30) * 1000);
++	s5pv210_dram_conf[1].refresh = (readl_relaxed(dmc_base[1] + 0x30) * 1000);
+ 	s5pv210_dram_conf[1].freq = clk_get_rate(dmc1_clk);
+ 
+ 	policy->suspend_freq = SLEEP_FREQ;
 -- 
 2.8.1
