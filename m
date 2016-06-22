@@ -1,41 +1,114 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/2] cpufreq: exynos: use relaxed IO accesors
-Date: Wed, 22 Jun 2016 11:53:32 +0200
-Message-ID: <3668897.kYSEflAvDO@wuerfel>
-References: <1466587984-14105-1-git-send-email-ben.dooks@codethink.co.uk>
+From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH 2/2] thermal: rockchip: fixes the exception interrupts
+Date: Wed, 22 Jun 2016 18:13:57 +0800
+Message-ID: <1466590437-15912-2-git-send-email-wxt@rock-chips.com>
+References: <1466584925-4829-1-git-send-email-wxt@rock-chips.com>
+ <1466590437-15912-1-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1466587984-14105-1-git-send-email-ben.dooks@codethink.co.uk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@lists.codethink.co.uk, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ben Dooks <ben.dooks@codethink.co.uk>
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1466590437-15912-1-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, smbarber-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, June 22, 2016 10:33:03 AM CEST Ben Dooks wrote:
-> The use of __raw IO accesors is not endian safe and should be used
-> sparingly. The relaxed variants should be as lightweight and also
-> are endian safe.
-> 
-> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
-> 
+The hardware-tracked trips will set the alarm interrupt value for
+registers. Then when the thermal zone has no trips to be set,
+That make the thermal trips callback a over range value.
 
-Why not use the normal readl/writel() here instead of the relaxed version?
+The root cause is the rk_tsadcv2_temp_to_code() function to handle the
+invalid temperature range is indeed incorrect, let's fix it on now.
+Otherwise, the thermal alarm interrupt will be triggered all the time
+on some SoCs.
 
-Either one should work here, but in general I'd recommend using the
-non-relaxed version unless code is particularly performance sensitive.
+Fox example:
+localhost tmp # grep thermal /proc/interrupts; sleep 5;
+grep thermal /proc/interrupts
 
-The main argument for that is to not let people get used to using
-_relaxed() all the time because it causes some very hard to debug
-problems in the cases where you actually need the barriers.
+23:     994830  ..    GICv3 129 Level     rockchip_thermal
+23:    1003423  ..    GICv3 129 Level     rockchip_thermal
 
-	Arnd
+Reported-by: Rocky Hao <rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+---
+
+Changes in v1: None
+
+ drivers/thermal/rockchip_thermal.c | 20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index 2d5ba97..db5ecc5 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -401,13 +401,17 @@ static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
+ 				   int temp)
+ {
+ 	int high, low, mid;
++	u32 error = 0;
+ 
+ 	low = 0;
+ 	high = table.length - 1;
+ 	mid = (high + low) / 2;
+ 
+-	if (temp < table.id[low].temp || temp > table.id[high].temp)
+-		return 0;
++	/* Return mask code data when the temp is over table range */
++	if (temp < table.id[low].temp || temp > table.id[high].temp) {
++		error = table.data_mask;
++		goto exit;
++	}
+ 
+ 	while (low <= high) {
+ 		if (temp == table.id[mid].temp)
+@@ -419,7 +423,9 @@ static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
+ 		mid = (low + high) / 2;
+ 	}
+ 
+-	return 0;
++exit:
++	pr_err("Invalid the conversion, error=%d\n", error);
++	return error;
+ }
+ 
+ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
+@@ -651,7 +657,11 @@ static void rk_tsadcv2_alarm_temp(struct chip_tsadc_table table,
+ {
+ 	u32 alarm_value, int_en;
+ 
++	/* Make sure the value is valid */
+ 	alarm_value = rk_tsadcv2_temp_to_code(table, temp);
++	if (alarm_value == table.data_mask)
++		return;
++
+ 	writel_relaxed(alarm_value & table.data_mask,
+ 		       regs + TSADCV2_COMP_INT(chn));
+ 
+@@ -665,7 +675,11 @@ static void rk_tsadcv2_tshut_temp(struct chip_tsadc_table table,
+ {
+ 	u32 tshut_value, val;
+ 
++	/* Make sure the value is valid */
+ 	tshut_value = rk_tsadcv2_temp_to_code(table, temp);
++	if (tshut_value == table.data_mask)
++		return;
++
+ 	writel_relaxed(tshut_value, regs + TSADCV2_COMP_SHUT(chn));
+ 
+ 	/* TSHUT will be valid */
+-- 
+1.9.1
