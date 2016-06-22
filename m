@@ -1,52 +1,88 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 1/2] cpufreq: s5pv210: use relaxed IO accesors
-Date: Wed, 22 Jun 2016 14:04:41 +0200
-Message-ID: <CAJKOXPcywVya133jsz5_5mE8j4M3L6+orcWPPrStpNshcj+JsA@mail.gmail.com>
-References: <1466588198-27445-1-git-send-email-ben.dooks@codethink.co.uk>
- <1466588198-27445-2-git-send-email-ben.dooks@codethink.co.uk>
- <20160622093820.GE5458@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160622093820.GE5458@vireshk-i7>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ben Dooks <ben.dooks@codethink.co.uk>
-Cc: linux-kernel@lists.codethink.co.uk, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org
+From: Michal Hocko <mhocko@kernel.org>
+Subject: [PATCH] oom, suspend: fix oom_reaper vs. oom_killer_disable race
+Date: Wed, 22 Jun 2016 14:13:54 +0200
+Message-ID: <1466597634-16199-1-git-send-email-mhocko@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:36008 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751755AbcFVMOH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 08:14:07 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, linux-mm@kvack.org, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Michal Hocko <mhocko@suse.com>
 
-On Wed, Jun 22, 2016 at 11:38 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 22-06-16, 10:36, Ben Dooks wrote:
->> The use of __raw IO accesors is not endian safe and should be used
->> sparingly. The relaxed variants should be as lightweight and also
->> are endian safe.
->>
->> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
->> ---
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: linux-pm@vger.kernel.org
->> Cc: linux-samsung-soc@vger.kernel.org
->> Cc: linux-arm-kernel@lists.infradead.org
->> ---
->>  drivers/cpufreq/s5pv210-cpufreq.c | 68 +++++++++++++++++++--------------------
->>  1 file changed, 34 insertions(+), 34 deletions(-)
->
-> For both patches:
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+From: Michal Hocko <mhocko@suse.com>
 
-Applied for v4.8, thanks.
+Tetsuo has reported the following potential oom_killer_disable vs.
+oom_reaper race:
 
-When resending the cpufreq-exynos please CC me as well.
+(1) freeze_processes() starts freezing user space threads.
+(2) Somebody (maybe a kenrel thread) calls out_of_memory().
+(3) The OOM killer calls mark_oom_victim() on a user space thread
+    P1 which is already in __refrigerator().
+(4) oom_killer_disable() sets oom_killer_disabled = true.
+(5) P1 leaves __refrigerator() and enters do_exit().
+(6) The OOM reaper calls exit_oom_victim(P1) before P1 can call
+    exit_oom_victim(P1).
+(7) oom_killer_disable() returns while P1 not yet finished
+(8) P1 perform IO/interfere with the freezer.
 
-Best regards,
-Krzysztof
+This situation is unfortunate. We cannot move oom_killer_disable after
+all the freezable kernel threads are frozen because the oom victim might
+depend on some of those kthreads to make a forward progress to exit so
+we could deadlock. It is also far from trivial to teach the oom_reaper
+to not call exit_oom_victim() because then we would lose a guarantee of
+the OOM killer and oom_killer_disable forward progress because
+exit_mm->mmput might block and never call exit_oom_victim.
+
+It seems the easiest way forward is to workaround this race by calling
+try_to_freeze_tasks again after oom_killer_disable. This will make sure
+that all the tasks are frozen or it bails out.
+
+Fixes: 449d777d7ad6 ("mm, oom_reaper: clear TIF_MEMDIE for all tasks queued for oom_reaper")
+Reported-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Michal Hocko <mhocko@suse.com>
+---
+
+Hi,
+this is a temporal fix that is easy enough for the current 4.7 cycle.
+Even though I suspect PM suspend race with the OOM killer is super
+unlikely it is better to not risk it considering the patch is quite
+trivial. I plan to come up with a proper solution later on after some
+other OOM killer/reaper changes settle down.  It is really desirable
+that oom_killer_disable() is a full "barrier" rather than working around
+potential issues.
+
+So if this looks like a proper fix to you Rafael I would route this via Andrew.
+What do you think?
+
+ kernel/power/process.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index df058bed53ce..0c2ee9761d57 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -146,6 +146,18 @@ int freeze_processes(void)
+ 	if (!error && !oom_killer_disable())
+ 		error = -EBUSY;
+ 
++	/*
++	 * There is a hard to fix race between oom_reaper kernel thread
++	 * and oom_killer_disable. oom_reaper calls exit_oom_victim
++	 * before the victim reaches exit_mm so try to freeze all the tasks
++	 * again and catch such a left over task.
++	 */
++	if (!error) {
++		pr_info("Double checking all user space processes after OOM killer disable... ");
++		error = try_to_freeze_tasks(true);
++		pr_cont("\n");
++	}
++
+ 	if (error)
+ 		thaw_processes();
+ 	return error;
+-- 
+2.8.1
+
