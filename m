@@ -1,143 +1,129 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCHv2 1/1] thermal: core: call thermal_zone_device_update()
- after mode update
-Date: Wed, 22 Jun 2016 15:03:45 +0530
-Message-ID: <576A5B79.7070209@ti.com>
-References: <1466563538.2471.10.camel@intel.com>
- <1466572546-12944-1-git-send-email-edubezval@gmail.com>
+From: Ben Dooks <ben.dooks@codethink.co.uk>
+Subject: [PATCH 2/2] cpufreq: exynos: use relaxed IO accesors
+Date: Wed, 22 Jun 2016 10:36:38 +0100
+Message-ID: <1466588198-27445-3-git-send-email-ben.dooks@codethink.co.uk>
+References: <1466588198-27445-1-git-send-email-ben.dooks@codethink.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1466572546-12944-1-git-send-email-edubezval@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, Darren Hart <dvhart@infradead.org>, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1466588198-27445-1-git-send-email-ben.dooks@codethink.co.uk>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-kernel@lists.codethink.co.uk
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ben Dooks <ben.dooks@codethink.co.uk>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+The use of __raw IO accesors is not endian safe and should be used
+sparingly. The relaxed variants should be as lightweight and also
+are endian safe.
 
+Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+---
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+---
+ drivers/cpufreq/exynos5440-cpufreq.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
-On Wednesday 22 June 2016 10:45 AM, Eduardo Valentin wrote:
-> Because several drivers do the following pattern:
-> .set_mode()
->     ...
->     local_data->mode = new_mode;
->     thermal_zone_device_update(tz);
->
-> makes sense to simply do the thermal_zone_device_update()
-> in thermal core, after setting the new mode.
-
-http://pastebin.ubuntu.com/17687601/
-
-linux-next + current v2 of the patch.
-The back trace still comes.
-
-Regards,
-Keerthy
-
->
-> Also, this patch also remove deadlocks on drivers that
-> call thermal_zone_device_update() on .set_mode(),
-> as .set_mode()  is now called always with tz->lock held.
->
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: linux-acpi@vger.kernel.org
-> Cc: "Lee, Chun-Yi" <jlee@suse.com>
-> Cc: Darren Hart <dvhart@infradead.org>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Keerthy <j-keerthy@ti.com>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: platform-driver-x86@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-> ---
-> Please ignore last version.
->
-> V1-> V2:
-> Cleaned the patch and remove unrelated changes.
-> ---
->
->   drivers/acpi/thermal.c                             | 2 --
->   drivers/platform/x86/acerhdf.c                     | 1 -
->   drivers/thermal/imx_thermal.c                      | 1 -
->   drivers/thermal/of-thermal.c                       | 1 -
->   drivers/thermal/thermal_sysfs.c                    | 1 +
->   drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 1 -
->   6 files changed, 1 insertion(+), 6 deletions(-)
->
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index 82707f9..8582b88 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -519,8 +519,6 @@ static void acpi_thermal_check(void *data)
->
->   	if (!tz->tz_enabled)
->   		return;
-> -
-> -	thermal_zone_device_update(tz->thermal_zone);
->   }
->
->   /* sys I/F for generic thermal sysfs support */
-> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-> index 460fa67..aee33ba 100644
-> --- a/drivers/platform/x86/acerhdf.c
-> +++ b/drivers/platform/x86/acerhdf.c
-> @@ -405,7 +405,6 @@ static inline void acerhdf_enable_kernelmode(void)
->   	kernelmode = 1;
->
->   	thz_dev->polling_delay = interval*1000;
-> -	thermal_zone_device_update(thz_dev);
->   	pr_notice("kernel mode fan control ON\n");
->   }
->
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index c5547bd..a413eb6 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -246,7 +246,6 @@ static int imx_set_mode(struct thermal_zone_device *tz,
->   	}
->
->   	data->mode = mode;
-> -	thermal_zone_device_update(tz);
->
->   	return 0;
->   }
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index b8e509c..4602e2e 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -292,7 +292,6 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
->   	mutex_unlock(&tz->lock);
->
->   	data->mode = mode;
-> -	thermal_zone_device_update(tz);
->
->   	return 0;
->   }
-> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-> index 743df50..3d0dc30 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -100,6 +100,7 @@ mode_store(struct device *dev, struct device_attribute *attr,
->   	mutex_lock(&tz->lock);
->   	result = tz->ops->set_mode(tz, mode);
->   	mutex_unlock(&tz->lock);
-> +	thermal_zone_device_update(tz);
->
->   	if (result)
->   		return result;
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> index 15c0a9a..9a5a3a3 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> @@ -205,7 +205,6 @@ static int ti_thermal_set_mode(struct thermal_zone_device *thermal,
->   	data->mode = mode;
->   	ti_bandgap_write_update_interval(bgp, data->sensor_id,
->   					data->ti_thermal->polling_delay);
-> -	thermal_zone_device_update(data->ti_thermal);
->   	dev_dbg(&thermal->device, "thermal polling set for duration=%d msec\n",
->   		data->ti_thermal->polling_delay);
->
->
+diff --git a/drivers/cpufreq/exynos5440-cpufreq.c b/drivers/cpufreq/exynos5440-cpufreq.c
+index c0f3373..7a5707f 100644
+--- a/drivers/cpufreq/exynos5440-cpufreq.c
++++ b/drivers/cpufreq/exynos5440-cpufreq.c
+@@ -155,7 +155,7 @@ static int init_div_table(void)
+ 		tmp = (clk_div | ema_div | (volt_id << P0_7_VDD_SHIFT)
+ 			| ((freq / FREQ_UNIT) << P0_7_FREQ_SHIFT));
+ 
+-		__raw_writel(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 *
++		writel_relaxed(tmp, dvfs_info->base + XMU_PMU_P0_7 + 4 *
+ 						(pos - freq_tbl));
+ 	}
+ 
+@@ -169,17 +169,17 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
+ 	struct cpufreq_frequency_table *freq_table = dvfs_info->freq_table;
+ 	struct cpufreq_frequency_table *pos;
+ 	/* Disable DVFS */
+-	__raw_writel(0,	dvfs_info->base + XMU_DVFS_CTRL);
++	writel_relaxed(0,	dvfs_info->base + XMU_DVFS_CTRL);
+ 
+ 	/* Enable PSTATE Change Event */
+-	tmp = __raw_readl(dvfs_info->base + XMU_PMUEVTEN);
++	tmp = readl_relaxed(dvfs_info->base + XMU_PMUEVTEN);
+ 	tmp |= (1 << PSTATE_CHANGED_EVTEN_SHIFT);
+-	 __raw_writel(tmp, dvfs_info->base + XMU_PMUEVTEN);
++	 writel_relaxed(tmp, dvfs_info->base + XMU_PMUEVTEN);
+ 
+ 	/* Enable PSTATE Change IRQ */
+-	tmp = __raw_readl(dvfs_info->base + XMU_PMUIRQEN);
++	tmp = readl_relaxed(dvfs_info->base + XMU_PMUIRQEN);
+ 	tmp |= (1 << PSTATE_CHANGED_IRQEN_SHIFT);
+-	 __raw_writel(tmp, dvfs_info->base + XMU_PMUIRQEN);
++	 writel_relaxed(tmp, dvfs_info->base + XMU_PMUIRQEN);
+ 
+ 	/* Set initial performance index */
+ 	cpufreq_for_each_entry(pos, freq_table)
+@@ -197,14 +197,14 @@ static void exynos_enable_dvfs(unsigned int cur_frequency)
+ 						cur_frequency);
+ 
+ 	for (cpu = 0; cpu < CONFIG_NR_CPUS; cpu++) {
+-		tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
++		tmp = readl_relaxed(dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
+ 		tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
+ 		tmp |= ((pos - freq_table) << C0_3_PSTATE_NEW_SHIFT);
+-		__raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
++		writel_relaxed(tmp, dvfs_info->base + XMU_C0_3_PSTATE + cpu * 4);
+ 	}
+ 
+ 	/* Enable DVFS */
+-	__raw_writel(1 << XMU_DVFS_CTRL_EN_SHIFT,
++	writel_relaxed(1 << XMU_DVFS_CTRL_EN_SHIFT,
+ 				dvfs_info->base + XMU_DVFS_CTRL);
+ }
+ 
+@@ -223,11 +223,11 @@ static int exynos_target(struct cpufreq_policy *policy, unsigned int index)
+ 
+ 	/* Set the target frequency in all C0_3_PSTATE register */
+ 	for_each_cpu(i, policy->cpus) {
+-		tmp = __raw_readl(dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
++		tmp = readl_relaxed(dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
+ 		tmp &= ~(P_VALUE_MASK << C0_3_PSTATE_NEW_SHIFT);
+ 		tmp |= (index << C0_3_PSTATE_NEW_SHIFT);
+ 
+-		__raw_writel(tmp, dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
++		writel_relaxed(tmp, dvfs_info->base + XMU_C0_3_PSTATE + i * 4);
+ 	}
+ 	mutex_unlock(&cpufreq_lock);
+ 	return 0;
+@@ -246,7 +246,7 @@ static void exynos_cpufreq_work(struct work_struct *work)
+ 	mutex_lock(&cpufreq_lock);
+ 	freqs.old = policy->cur;
+ 
+-	cur_pstate = __raw_readl(dvfs_info->base + XMU_P_STATUS);
++	cur_pstate = readl_relaxed(dvfs_info->base + XMU_P_STATUS);
+ 	if (cur_pstate >> C0_3_PSTATE_VALID_SHIFT & 0x1)
+ 		index = (cur_pstate >> C0_3_PSTATE_CURR_SHIFT) & P_VALUE_MASK;
+ 	else
+@@ -270,9 +270,9 @@ static irqreturn_t exynos_cpufreq_irq(int irq, void *id)
+ {
+ 	unsigned int tmp;
+ 
+-	tmp = __raw_readl(dvfs_info->base + XMU_PMUIRQ);
++	tmp = readl_relaxed(dvfs_info->base + XMU_PMUIRQ);
+ 	if (tmp >> PSTATE_CHANGED_SHIFT & 0x1) {
+-		__raw_writel(tmp, dvfs_info->base + XMU_PMUIRQ);
++		writel_relaxed(tmp, dvfs_info->base + XMU_PMUIRQ);
+ 		disable_irq_nosync(irq);
+ 		schedule_work(&dvfs_info->irq_work);
+ 	}
+-- 
+2.8.1
