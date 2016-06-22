@@ -1,118 +1,145 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v12 1/4] gadget: Introduce the usb charger framework
-Date: Wed, 22 Jun 2016 09:49:24 +0800
-Message-ID: <CAMz4kuLs02QZr82EAsNrnakjLuuLL6HSH5+4aN3bFMy7=COqCw@mail.gmail.com>
-References: <cover.1466497505.git.baolin.wang@linaro.org> <831e03e8935b4c62e1e6bf94c93e0a08a73d89b2.1466497505.git.baolin.wang@linaro.org>
- <87eg7qon3r.fsf@linux.intel.com> <CAMz4kuJHPqvYiUGi8Ar5cR_8dENddvVjNEuG1wJVt3E3vp1UOQ@mail.gmail.com>
- <871t3qmw9j.fsf@linux.intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 02/15] thermal: sysfs: lock tz while on access to mode
+ properties
+Date: Wed, 22 Jun 2016 10:45:38 +0800
+Message-ID: <1466563538.2471.10.camel@intel.com>
+References: <1464676296-5610-1-git-send-email-edubezval@gmail.com>
+	 <1464676296-5610-3-git-send-email-edubezval@gmail.com>
+	 <57568F08.2070307@ti.com> <5756923F.6010007@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <871t3qmw9j.fsf@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:46293 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751513AbcFVCrO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 21 Jun 2016 22:47:14 -0400
+In-Reply-To: <5756923F.6010007@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "R, Vignesh" <vigneshr@ti.com>
 
-On 21 June 2016 at 22:50, Felipe Balbi <balbi@kernel.org> wrote:
->
-> Hi,
->
-> Baolin Wang <baolin.wang@linaro.org> writes:
->>>> This patch introduces the usb charger driver based on usb gadget that
->>>> makes an enhancement to a power driver. It works well in practice but
->>>> that requires a system with suitable hardware.
->>>>
->>>> The basic conception of the usb charger is that, when one usb charger
->>>> is added or removed by reporting from the usb gadget state change or
->>>> the extcon device state change, the usb charger will report to power
->>>> user to set the current limitation.
->>>>
->>>> The usb charger will register notifiees on the usb gadget or the extcon
->>>> device to get notified the usb charger state. It also supplies the
->>>> notification mechanism to userspace When the usb charger state is changed.
->>>>
->>>> Power user will register a notifiee on the usb charger to get notified
->>>> by status changes from the usb charger. It will report to power user
->>>> to set the current limitation when detecting the usb charger is added
->>>> or removed from extcon device state or usb gadget state.
->>>>
->>>> This patch doesn't yet integrate with the gadget code, so some functions
->>>> which rely on the 'gadget' are not completed, that will be implemented
->>>> in the following patches.
->>>>
->>>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
->>>> Reviewed-by: Li Jun <jun.li@nxp.com>
->>>> Tested-by: Li Jun <jun.li@nxp.com>
->>>> ---
->>>>  drivers/usb/gadget/Kconfig       |    7 +
->>>>  drivers/usb/gadget/udc/Makefile  |    1 +
->>>>  drivers/usb/gadget/udc/charger.c |  770 ++++++++++++++++++++++++++++++++++++++
->>>>  include/linux/usb/charger.h      |  191 ++++++++++
->>>>  include/uapi/linux/usb/charger.h |   31 ++
->>>>  5 files changed, 1000 insertions(+)
->>>>  create mode 100644 drivers/usb/gadget/udc/charger.c
->>>>  create mode 100644 include/linux/usb/charger.h
->>>>  create mode 100644 include/uapi/linux/usb/charger.h
->>>>
->>>> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
->>>> index 2057add..89f4e9b 100644
->>>> --- a/drivers/usb/gadget/Kconfig
->>>> +++ b/drivers/usb/gadget/Kconfig
->>>> @@ -134,6 +134,13 @@ config U_SERIAL_CONSOLE
->>>>       help
->>>>          It supports the serial gadget can be used as a console.
->>>>
->>>> +config USB_CHARGER
->>>> +     bool "USB charger support"
->>>
->>> you didn't build test all possibilities, did you?
->>>
->>> I have a feeling this won't link if USB_GADGET=m. Can you test that?
->>
->> OK.
->>
->>>
->>>> diff --git a/drivers/usb/gadget/udc/charger.c b/drivers/usb/gadget/udc/charger.c
->>> [...]
->>>> +struct class *usb_charger_class;
->>>
->>> We already have a UDC class, do we really, really need another class
->>> here?
->>
->> We want to manage the usb charger devices by this class and one usb
->> charger device is not equal with one usb device which managed by UDC
->
-> Can you explain this statement? If charging is done via a USB peripheral
-> port, why don't we have a 1:1 mapping between charger and UDC?
+On =E4=BA=8C, 2016-06-07 at 14:52 +0530, Keerthy wrote:
+>=20
+> On Tuesday 07 June 2016 02:38 PM, Keerthy wrote:
+> >=20
+> > Hi Eduardo,
+> >=20
+> > On Tuesday 31 May 2016 12:01 PM, Eduardo Valentin wrote:
+> > >=20
+> > > Serialized calls to tz.ops in user facing
+> > > sysfs handler mode_show()=C2=A0=C2=A0and mode_store().
+> > This seems to be causing a deadlock at boot time during the ending
+> > stages of boot:
+> >=20
+> > http://pastebin.ubuntu.com/17085291/
+> >=20
+> > It took a while to git bisect on linux-next.
+> >=20
+> > Seems like you introduced new locking at the sysfs layer which
+> > causes
+> > this deadlock as the underlying code again tries to acquire the
+> > same
+> > tz->lock.
+> I confirm reverting this patch helps me boot on linux-next. This
+> patch=C2=A0
+> can be dropped as the lower layer functions are already acquiring tz-
+> >lock.
+>=20
+> Thanks Vignesh for reporting the deadlock.
+>=20
+the root cause of the deadlock is that some platform driver invokes
+thermal_zone_device_update() in .set_mode(), after mode changed.
 
-Sorry for confusing, but forget it, I plan to remove the device/class
-things as you suggested.
+If we wants to lock tz->ops->set_mode(), we should cleanup all the
+platform thermal drivers, and deliver a thermal_zone_device_update()
+in=C2=A0mode_store(), at the same time.
 
->
->> class, so can we use UDC class to manage charger devices?
->> By the way, you also suggested to use the 'class' things instead of
->> 'bus' in previous mail.
->
-> true, I did say that. It seems clearer, however, that we don't need this
-> virtual device here.
+thanks,
+rui
 
-OK.
-
->
->>>> +subsys_initcall(usb_charger_class_init);
->>>
->>> this should always work as module_init(). Please make sure that's the
->>> case.
->>
->> we should make sure the charger class has been allocated before user
->> try to add a new gadget to the udc class. So it should be issued
->> before 'module_init()' (many usb drivers are at module_init level).
->
-> -EPROBE_DEFER?
-
-OK. But 'EPROBE_DEFER' is not needed if we remove the class things.
-
--- 
-Baolin.wang
-Best Regards
+> Regards,
+> Keerthy
+>=20
+> >=20
+> >=20
+> > Regards,
+> > Keerthy
+> >=20
+> > >=20
+> > >=20
+> > > Cc: Zhang Rui <rui.zhang@intel.com>
+> > > Cc: linux-pm@vger.kernel.org
+> > > Cc: linux-kernel@vger.kernel.org
+> > > Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> > > ---
+> > > =C2=A0 drivers/thermal/thermal_sysfs.c | 13 ++++++++++---
+> > > =C2=A0 1 file changed, 10 insertions(+), 3 deletions(-)
+> > >=20
+> > > diff --git a/drivers/thermal/thermal_sysfs.c
+> > > b/drivers/thermal/thermal_sysfs.c
+> > > index ee983ca..1db2406 100644
+> > > --- a/drivers/thermal/thermal_sysfs.c
+> > > +++ b/drivers/thermal/thermal_sysfs.c
+> > > @@ -62,7 +62,9 @@ mode_show(struct device *dev, struct
+> > > device_attribute *attr, char *buf)
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (!tz->ops->get_mode)
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0retur=
+n -EPERM;
+> > >=20
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0mutex_lock(&tz->lock);
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0result =3D tz->ops->get_mode(=
+tz, &mode);
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0mutex_unlock(&tz->lock);
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (result)
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0retur=
+n result;
+> > >=20
+> > > @@ -75,17 +77,22 @@ mode_store(struct device *dev, struct
+> > > device_attribute *attr,
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0const char =
+*buf, size_t count)
+> > > =C2=A0 {
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0struct thermal_zone_device *t=
+z =3D to_thermal_zone(dev);
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0enum thermal_device_mode mode =3D THERMA=
+L_DEVICE_DISABLED;
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int result;
+> > >=20
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (!tz->ops->set_mode)
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0retur=
+n -EPERM;
+> > >=20
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (!strncmp(buf, "enabled", =
+sizeof("enabled") - 1))
+> > > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0result =3D tz->o=
+ps->set_mode(tz, THERMAL_DEVICE_ENABLED);
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0mode =3D THERMAL=
+_DEVICE_ENABLED;
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0else if (!strncmp(buf, "disab=
+led", sizeof("disabled") - 1))
+> > > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0result =3D tz->o=
+ps->set_mode(tz, THERMAL_DEVICE_DISABLED);
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0mode =3D THERMAL=
+_DEVICE_DISABLED;
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0else
+> > > -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0result =3D -EINV=
+AL;
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return -EINVAL;
+> > > +
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0mutex_lock(&tz->lock);
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0result =3D tz->ops->set_mode(tz, mode);
+> > > +=C2=A0=C2=A0=C2=A0=C2=A0mutex_unlock(&tz->lock);
+> > >=20
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (result)
+> > > =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0retur=
+n result;
+> > >=20
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm"=
+=20
+> > in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-=
+info.html
