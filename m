@@ -1,25 +1,27 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
+From: Balbir Singh <bsingharora@gmail.com>
 Subject: Re: [PATCH] cpuidle/powernv: Fix snooze timeout
-Date: Thu, 23 Jun 2016 00:49:06 +0200
-Message-ID: <CAJZ5v0hEUHbA9mM4h21BBvh=tzeO5nc1nSi49qq4aN0+oRkQYA@mail.gmail.com>
+Date: Thu, 23 Jun 2016 09:48:59 +1000
+Message-ID: <576B23EB.7080903@gmail.com>
 References: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:34219 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752078AbcFVWtI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 18:49:08 -0400
-Received: by mail-wm0-f65.google.com with SMTP id 187so5745811wmz.1
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 15:49:07 -0700 (PDT)
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:35192 "EHLO
+	mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbcFVXtu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 19:49:50 -0400
+Received: by mail-pf0-f193.google.com with SMTP id t190so5176415pfb.2
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 16:49:50 -0700 (PDT)
 In-Reply-To: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org
 
-On Wed, Jun 22, 2016 at 9:36 PM, Shreyas B. Prabhu
-<shreyas@linux.vnet.ibm.com> wrote:
+
+
+On 23/06/16 05:36, Shreyas B. Prabhu wrote:
 > Snooze is a poll idle state in powernv and pseries platforms. Snooze
 > has a timeout so that if a cpu stays in snooze for more than target
 > residency of the next available idle state, then it would exit thereby
@@ -27,7 +29,7 @@ On Wed, Jun 22, 2016 at 9:36 PM, Shreyas B. Prabhu
 > promote the cpu to a deeper idle state. Therefore whenever snooze exits
 > due to this timeout, its last_residency will be target_residency of next
 > deeper state.
->
+> 
 > commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
 > changed the math around last_residency calculation. Specifically, while
 > converting last_residency value from nanoseconds to microseconds it does
@@ -36,85 +38,91 @@ On Wed, Jun 22, 2016 at 9:36 PM, Shreyas B. Prabhu
 > next available state. This pattern is picked up get_typical_interval()
 > in the menu governor and therefore expected_interval in menu_select() is
 > frequently less than the target_residency of any state but snooze.
->
+> 
 > Due to this we are entering snooze at a higher rate, thereby affecting
 > the single thread performance.
 > Since the math around last_residency is not meant to be precise, fix this
 > issue setting snooze timeout to 105% of target_residency of next
 > available idle state.
->
+> 
 > This also adds comment around why snooze timeout is necessary.
-
-Daniel, any comments?
-
+> 
 > Reported-by: Anton Blanchard <anton@samba.org>
 > Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 > ---
 >  drivers/cpuidle/cpuidle-powernv.c | 14 ++++++++++++++
 >  drivers/cpuidle/cpuidle-pseries.c | 13 +++++++++++++
 >  2 files changed, 27 insertions(+)
->
+> 
 > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
 > index e12dc30..5835491 100644
 > --- a/drivers/cpuidle/cpuidle-powernv.c
 > +++ b/drivers/cpuidle/cpuidle-powernv.c
 > @@ -268,10 +268,24 @@ static int powernv_idle_probe(void)
->                 cpuidle_state_table = powernv_states;
->                 /* Device tree can indicate more idle states */
->                 max_idle_state = powernv_add_idle_states();
+>  		cpuidle_state_table = powernv_states;
+>  		/* Device tree can indicate more idle states */
+>  		max_idle_state = powernv_add_idle_states();
 > +
-> +               /*
-> +                * Staying in snooze for a long period can degrade the
-> +                * perfomance of the sibling cpus. Set timeout for snooze such
-> +                * that if the cpu stays in snooze longer than target residency
-> +                * of the next available idle state then exit from snooze. This
-> +                * gives a chance to the cpuidle governor to re-evaluate and
-> +                * promote it to deeper idle states.
-> +                */
->                 if (max_idle_state > 1) {
->                         snooze_timeout_en = true;
->                         snooze_timeout = powernv_states[1].target_residency *
->                                          tb_ticks_per_usec;
-> +                       /*
-> +                        * Give a 5% margin since target residency related math
-> +                        * is not precise in cpuidle core.
-> +                        */
-> +                       snooze_timeout += snooze_timeout / 20;
->                 }
->         } else
->                 return -ENODEV;
+> +		/*
+> +		 * Staying in snooze for a long period can degrade the
+> +		 * perfomance of the sibling cpus. Set timeout for snooze such
+> +		 * that if the cpu stays in snooze longer than target residency
+> +		 * of the next available idle state then exit from snooze. This
+> +		 * gives a chance to the cpuidle governor to re-evaluate and
+> +		 * promote it to deeper idle states.
+> +		 */
+>  		if (max_idle_state > 1) {
+>  			snooze_timeout_en = true;
+>  			snooze_timeout = powernv_states[1].target_residency *
+>  					 tb_ticks_per_usec;
+> +			/*
+> +			 * Give a 5% margin since target residency related math
+> +			 * is not precise in cpuidle core.
+> +			 */
+
+Is this due to the microsecond conversion mentioned above? It would be nice to
+have it in the comment. Does
+
+(powernv_states[1].target_residency + tb_ticks_per_usec) / tb_ticks_per_usec solve
+your rounding issues, assuming the issue is really rounding or maybe it is due
+to the shift by 10, could you please elaborate on what related math is not
+precise? That would explain to me why I missed understanding your changes.
+
+> +			snooze_timeout += snooze_timeout / 20;
+
+For now 5% is sufficient, but do you want to check to assert to check if
+
+snooze_timeout (in microseconds) / tb_ticks_per_usec > powernv_states[i].target_residency?
+
+>  		}
+>   	} else
+>   		return -ENODEV;
 > diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
 > index 07135e0..22de841 100644
 > --- a/drivers/cpuidle/cpuidle-pseries.c
 > +++ b/drivers/cpuidle/cpuidle-pseries.c
 > @@ -250,10 +250,23 @@ static int pseries_idle_probe(void)
->         } else
->                 return -ENODEV;
->
-> +       /*
-> +        * Staying in snooze for a long period can degrade the
-> +        * perfomance of the sibling cpus. Set timeout for snooze such
-> +        * that if the cpu stays in snooze longer than target residency
-> +        * of the next available idle state then exit from snooze. This
-> +        * gives a chance to the cpuidle governor to re-evaluate and
-> +        * promote it to deeper idle states.
-> +        */
->         if (max_idle_state > 1) {
->                 snooze_timeout_en = true;
->                 snooze_timeout = cpuidle_state_table[1].target_residency *
->                                  tb_ticks_per_usec;
-> +               /*
-> +                * Give a 5% margin since target residency related math
-> +                * is not precise in cpuidle core.
-> +                */
-> +               snooze_timeout += snooze_timeout / 20;
->         }
->         return 0;
+>  	} else
+>  		return -ENODEV;
+>  
+> +	/*
+> +	 * Staying in snooze for a long period can degrade the
+> +	 * perfomance of the sibling cpus. Set timeout for snooze such
+> +	 * that if the cpu stays in snooze longer than target residency
+> +	 * of the next available idle state then exit from snooze. This
+> +	 * gives a chance to the cpuidle governor to re-evaluate and
+> +	 * promote it to deeper idle states.
+> +	 */
+>  	if (max_idle_state > 1) {
+>  		snooze_timeout_en = true;
+>  		snooze_timeout = cpuidle_state_table[1].target_residency *
+>  				 tb_ticks_per_usec;
+> +		/*
+> +		 * Give a 5% margin since target residency related math
+> +		 * is not precise in cpuidle core.
+> +		 */
+> +		snooze_timeout += snooze_timeout / 20;
+>  	}
+>  	return 0;
 >  }
-> --
-> 2.1.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
