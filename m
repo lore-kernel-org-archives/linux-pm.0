@@ -1,115 +1,43 @@
-From: Mason <slash.tmp@free.fr>
-Subject: CPU1 does not come back online after failed suspend request
-Date: Wed, 22 Jun 2016 17:30:02 +0200
-Message-ID: <576AAEFA.1050509@free.fr>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: Re: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt >
+ 0
+Date: Wed, 22 Jun 2016 11:31:39 -0400
+Message-ID: <01a31c96-3c21-511c-c279-04016bb17e52@nvidia.com>
+References: <1465507719-819-1-git-send-email-rklein@nvidia.com>
+ <8b081e45-94c8-bb53-69ca-0a617c668de5@nvidia.com>
+ <20160622142353.GA16084@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2-g21.free.fr ([212.27.42.2]:4142 "EHLO smtp2-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751434AbcFVPao (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Jun 2016 11:30:44 -0400
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:7116 "EHLO
+	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbcFVPbs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 11:31:48 -0400
+In-Reply-To: <20160622142353.GA16084@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Kevin Hilman <khilman@kernel.org>, Sebastian Frias <sf84@laposte.net>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 
-Hello,
+On 6/22/2016 10:23 AM, Sebastian Reichel wrote:
+> * PGP Signed by an unknown key
+> 
+> Hi Rhyland,
+> 
+> On Tue, Jun 21, 2016 at 02:06:55PM -0400, Rhyland Klein wrote:
+>> Sebastian, might this be accepted soon? We can't enable the bq27xxx
+>> driver for Tegra210 Smaug without running into the crash this prevents.
+> 
+> Yes, I have already queued this in my fixes branch some days ago,
+> but did not yet pushed it. It's pushed out now:
+> 
+> https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/commit/?h=fixes&id=5bc28b93a36e3cb3acc2870fb75cb6ffb182fece
+> 
 
-(I'm using v4.7-rc4)
+Thanks!
 
-My dual-core platform defines the usual hooks:
+-rhyland
 
-static const struct smp_operations tango_smp_ops __initconst = {
-	.smp_boot_secondary	= tango_boot_secondary,
-	.cpu_kill		= tango_cpu_kill,
-	.cpu_die		= tango_cpu_die,
-};
-
-static const struct platform_suspend_ops tango_pm_ops = {
-	.enter = tango_pm_enter,
-	.valid = tango_pm_valid,
-};
-
-static int tango_pm_powerdown(unsigned long data)
-{
-	// tango_suspend(virt_to_phys(cpu_resume)); // SHOULD NOT RETURN
-	printk("DEBUG: %s\n", __func__);
-	// INSERT ONE SECOND DELAY
-	return 42;
-}
-
-static int tango_pm_enter(suspend_state_t state)
-{
-	printk("DEBUG: %s\n", __func__);
-	int ret = cpu_suspend(0, tango_pm_powerdown);
-	printk("DEBUG: cpu_suspend returned %d\n", ret);
-	return 0;
-}
-
-I'm trying to test the error path, i.e. when tango_pm_powerdown()
-does in fact return.
-
-Secondary core off-lining via /sys/devices/system/cpu/cpu1/online
-seems to work as expected:
-
-# cat /sys/devices/system/cpu/online     
-0-1
-# echo 0 > /sys/devices/system/cpu/cpu1/online
-[   64.022349] CPU1: shutdown
-[   64.022354] DEBUG: tango_cpu_die
-[   64.028370] DEBUG: tango_cpu_kill
-# cat /sys/devices/system/cpu/online 
-0
-# echo 1 > /sys/devices/system/cpu/cpu1/online
-[   73.955994] DEBUG: tango_boot_secondary
-# cat /sys/devices/system/cpu/online 
-0-1
-
-
-But the secondary core does not come back online after a failed
-suspend attempt (see below). I tried adding a 1 second delay in
-tango_pm_powerdown() to rule out timing issues.
-
-# echo mem > /sys/power/state
-[   16.328980] PM: Syncing filesystems ... done.
-[   16.336844] Freezing user space processes ... (elapsed 0.001 seconds) done.
-[   16.345421] Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
-[   16.354034] Suspending console(s) (use no_console_suspend to debug)
-[   16.362965] PM: suspend of devices complete after 1.764 msecs
-[   16.363870] PM: late suspend of devices complete after 0.896 msecs
-[   16.364519] PM: noirq suspend of devices complete after 0.642 msecs
-[   16.364522] Disabling non-boot CPUs ...
-[   16.382340] CPU1: shutdown
-[   16.382344] DEBUG: tango_cpu_die
-[   16.382346] DEBUG: tango_cpu_kill
-[   16.392635] DEBUG: tango_pm_enter
-[   16.392635] DEBUG: tango_pm_powerdown
-[   16.392635] DEBUG: cpu_suspend returned 42
-[   16.392664] Enabling non-boot CPUs ...
-[   16.412544] DEBUG: tango_boot_secondary
-[   17.411927] CPU1: failed to come online
-[   17.432448] Error taking CPU1 up: -5
-[   17.433034] PM: noirq resume of devices complete after 0.576 msecs
-[   17.433750] PM: early resume of devices complete after 0.688 msecs
-[   17.435121] nb8800 26000.ethernet eth0: Link is Down
-[   17.435301] PM: resume of devices complete after 1.541 msecs
-[   17.516826] Restarting tasks ... done.
-
-[root@toto5 ~]# cat /sys/devices/system/cpu/online
-0
-
-As you can see, cpu1 did not come back online.
-[ 17.411927] CPU1: failed to come online
-[ 17.432448] Error taking CPU1 up: -5
-
-The other weirdness is that my 1 second delay happens between
-"DEBUG: tango_pm_powerdown" and "DEBUG: cpu_suspend returned 42",
-yet the timestamps for these two lines are identical. Is that
-because that the timestamp variable is not updated deep within
-the suspend framework? (My timer ticks at 27 MHz.)
-
-Any idea what might be going wrong?
-
-Regards.
+-- 
+nvpublic
