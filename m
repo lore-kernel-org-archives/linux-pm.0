@@ -1,299 +1,180 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH 04/14] PM / Domains: Support IRQ safe PM domains
-Date: Wed, 22 Jun 2016 13:36:39 -0600
-Message-ID: <1466624209-27432-5-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH 12/14] drivers: firmware: psci: Support cluster idle states for OS-Initiated
+Date: Wed, 22 Jun 2016 13:36:47 -0600
+Message-ID: <1466624209-27432-13-git-send-email-lina.iyer@linaro.org>
 References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:34161 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751726AbcFVThb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 15:37:31 -0400
-Received: by mail-pa0-f41.google.com with SMTP id bz2so19565021pad.1
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 12:37:31 -0700 (PDT)
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:35628 "EHLO
+	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbcFVThy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 15:37:54 -0400
+Received: by mail-pf0-f181.google.com with SMTP id c2so20519266pfa.2
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 12:37:54 -0700 (PDT)
 In-Reply-To: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Kevin Hilman <khilman@linaro.org>
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>
 
-Generic Power Domains currently support turning on/off only in process
-context. This prevents the usage of PM domains for domains that could b=
-e
-powered on/off in a context where IRQs are disabled. Many such domains
-exist today and do not get powered off, when the IRQ safe devices in
-that domain are powered off, because of this limitation.
+PSCI OS initiated firmware may allow Linux to determine the state of the
+CPU cluster and the cluster at coherency level to enter idle states when
+there are no active CPUs. Since Linux has a better idea of the QoS and
+the wakeup pattern of the CPUs, the cluster idle states may be better
+determined by the OS instead of the firmware.
 
-However, not all domains can operate in IRQ safe contexts. Genpd
-therefore, has to support both cases where the domain may or may not
-operate in IRQ safe contexts. Configuring genpd to use an appropriate
-lock for that domain, would allow domains that have IRQ safe devices to
-runtime suspend and resume, in atomic context.
+The last CPU entering idle in a cluster, is responsible for selecting
+the state of the cluster. Only one CPU in a cluster may provide the
+cluster idle state to the firmware. Similarly, the last CPU in the
+system may provide the state of the coherency domain along with the
+cluster and the CPU state IDs.
 
-To achieve domain specific locking, set the domain's ->flag to
-GENPD_FLAG_IRQ_SAFE while defining the domain. This indicates that genp=
-d
-should use a spinlock instead of a mutex for locking the domain. Lockin=
-g
-is abstracted through genpd_lock() and genpd_unlock() functions that us=
-e
-the flag to determine the appropriate lock to be used for that domain.
+Utilize the CPU PM domain framework's helper functions to build up the
+hierarchy of cluster topology using Generic PM domains. We provide
+callbacks for domain power_on and power_off. By appending the state IDs
+at each domain level in the -power_off() callbacks, we build up a
+composite state ID that can be passed onto the firmware to idle the CPU,
+the cluster and the coherency interface.
 
-Domains that have lower latency to suspend and resume and can operate
-with IRQs disabled may now be able to save power, when the component
-devices and sub-domains are idle at runtime.
-
-The restriction this imposes on the domain hierarchy is that non-IRQ
-safe domains may not have IRQ-safe subdomains, but IRQ safe domains may
-have IRQ safe and non-IRQ safe subdomains and devices.
-
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Krzysztof Koz=C5=82owski <k.kozlowski@samsung.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-[Ulf: Rebased and solved a conflict]
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/domain.c | 107 ++++++++++++++++++++++++++++++++++++=
-+++-----
- include/linux/pm_domain.h   |  10 ++++-
- 2 files changed, 106 insertions(+), 11 deletions(-)
+ drivers/firmware/psci.c | 70 ++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 67 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 8d41e4c..b1c2aa6 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -74,11 +74,61 @@ static const struct genpd_lock_fns genpd_mtx_fns  =3D=
+diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+index 3920aba..01ec0d5 100644
+--- a/drivers/firmware/psci.c
++++ b/drivers/firmware/psci.c
+@@ -15,6 +15,7 @@
+ 
+ #include <linux/arm-smccc.h>
+ #include <linux/cpuidle.h>
++#include <linux/cpu_domains.h>
+ #include <linux/errno.h>
+ #include <linux/linkage.h>
+ #include <linux/of.h>
+@@ -53,6 +54,17 @@
+  */
+ static int resident_cpu = -1;
+ static bool psci_has_osi_pd;
++static DEFINE_PER_CPU(u32, cluster_state_id);
++
++static inline u32 psci_get_composite_state_id(u32 cpu_state)
++{
++	return cpu_state | this_cpu_read(cluster_state_id);
++}
++
++static inline void psci_reset_composite_state_id(void)
++{
++	this_cpu_write(cluster_state_id, 0);
++}
+ 
+ bool psci_tos_resident_on(int cpu)
  {
- 	.unlock =3D genpd_unlock_mtx,
- };
-=20
-+static void genpd_lock_spin(struct generic_pm_domain *genpd)
-+	__acquires(&genpd->slock)
-+{
-+	unsigned long flags;
+@@ -179,6 +191,8 @@ static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
+ 
+ 	fn = psci_function_id[PSCI_FN_CPU_ON];
+ 	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
++	/* Reset CPU cluster states */
++	psci_reset_composite_state_id();
+ 	return psci_to_linux_errno(err);
+ }
+ 
+@@ -250,6 +264,34 @@ static int __init psci_features(u32 psci_func_id)
+ 
+ #ifdef CONFIG_CPU_IDLE
+ static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
++static bool psci_suspend_mode_is_osi;
 +
-+	spin_lock_irqsave(&genpd->slock, flags);
-+	genpd->lock_flags =3D flags;
++static int psci_set_suspend_mode_osi(bool enable)
++{
++	int ret;
++	int mode;
++
++	if (enable && !psci_has_osi_pd)
++		return -ENODEV;
++
++	if (enable == psci_suspend_mode_is_osi)
++		return 0;
++
++	mode = enable ? PSCI_1_0_SUSPEND_MODE_OSI : PSCI_1_0_SUSPEND_MODE_PC;
++	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			     mode, 0, 0);
++	if (!ret)
++		psci_suspend_mode_is_osi = enable;
++
++	return psci_to_linux_errno(ret);
 +}
 +
-+static void genpd_lock_nested_spin(struct generic_pm_domain *genpd,
-+					int depth)
-+	__acquires(&genpd->slock)
++static int psci_pd_power_off(u32 state_idx, u32 param,
++		const struct cpumask *mask)
 +{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave_nested(&genpd->slock, flags, depth);
-+	genpd->lock_flags =3D flags;
-+}
-+
-+static int genpd_lock_interruptible_spin(struct generic_pm_domain *gen=
-pd)
-+	__acquires(&genpd->slock)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&genpd->slock, flags);
-+	genpd->lock_flags =3D flags;
++	__this_cpu_add(cluster_state_id, param);
 +	return 0;
 +}
-+
-+static void genpd_unlock_spin(struct generic_pm_domain *genpd)
-+	__releases(&genpd->slock)
-+{
-+	spin_unlock_irqrestore(&genpd->slock, genpd->lock_flags);
-+}
-+
-+static const struct genpd_lock_fns genpd_spin_fns =3D {
-+	.lock =3D genpd_lock_spin,
-+	.lock_nested =3D genpd_lock_nested_spin,
-+	.lock_interruptible =3D genpd_lock_interruptible_spin,
-+	.unlock =3D genpd_unlock_spin,
-+};
-+
- #define genpd_lock(p)			p->lock_fns->lock(p)
- #define genpd_lock_nested(p, d)		p->lock_fns->lock_nested(p, d)
- #define genpd_lock_interruptible(p)	p->lock_fns->lock_interruptible(p)
- #define genpd_unlock(p)			p->lock_fns->unlock(p)
-=20
-+#define genpd_is_irq_safe(genpd)	(genpd->flags & GENPD_FLAG_IRQ_SAFE)
-+
-+static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
-+		struct generic_pm_domain *genpd)
-+{
-+	return pm_runtime_is_irq_safe(dev) && !genpd_is_irq_safe(genpd);
-+}
-+
- /*
-  * Get the generic PM domain for a particular struct device.
-  * This validates the struct device pointer, the PM domain pointer,
-@@ -343,7 +393,12 @@ static int genpd_poweroff(struct generic_pm_domain=
- *genpd, bool is_async)
- 		if (stat > PM_QOS_FLAGS_NONE)
- 			return -EBUSY;
-=20
--		if (!pm_runtime_suspended(pdd->dev) || pdd->dev->power.irq_safe)
-+		/*
-+		 * Do not allow PM domain to be powered off, when an IRQ safe
-+		 * device is part of a non-IRQ safe domain.
-+		 */
-+		if (!pm_runtime_suspended(pdd->dev) ||
-+			irq_safe_dev_in_no_sleep_domain(pdd->dev, genpd))
- 			not_suspended++;
+ 
+ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ {
+@@ -304,6 +346,20 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
  	}
-=20
-@@ -506,10 +561,10 @@ static int genpd_runtime_suspend(struct device *d=
-ev)
- 	}
-=20
- 	/*
--	 * If power.irq_safe is set, this routine will be run with interrupts
--	 * off, so it can't use mutexes.
-+	 * If power.irq_safe is set, this routine may be run with
-+	 * IRQs disabled, so suspend only if the PM domain also is irq_safe.
- 	 */
--	if (dev->power.irq_safe)
-+	if (irq_safe_dev_in_no_sleep_domain(dev, genpd))
- 		return 0;
-=20
- 	genpd_lock(genpd);
-@@ -543,8 +598,11 @@ static int genpd_runtime_resume(struct device *dev=
-)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
-=20
--	/* If power.irq_safe, the PM domain is never powered off. */
--	if (dev->power.irq_safe) {
-+	/*
-+	 * As we don't power off a non IRQ safe domain, which holds
-+	 * an IRQ safe device, we don't need to restore power to it.
-+	 */
-+	if (irq_safe_dev_in_no_sleep_domain(dev, genpd)) {
- 		timed =3D false;
- 		goto out;
- 	}
-@@ -586,7 +644,8 @@ static int genpd_runtime_resume(struct device *dev)
- err_stop:
- 	genpd_stop_dev(genpd, dev);
- err_poweroff:
--	if (!dev->power.irq_safe) {
-+	if (!dev->power.irq_safe ||
-+		(dev->power.irq_safe && genpd_is_irq_safe(genpd))) {
- 		genpd_lock(genpd);
- 		genpd_poweroff(genpd, 0);
- 		genpd_unlock(genpd);
-@@ -1117,6 +1176,11 @@ int __pm_genpd_add_device(struct generic_pm_doma=
-in *genpd, struct device *dev,
- 	if (IS_ERR(gpd_data))
- 		return PTR_ERR(gpd_data);
-=20
-+	/* Check if we are adding an IRQ safe device to non-IRQ safe domain *=
-/
-+	if (irq_safe_dev_in_no_sleep_domain(dev, genpd))
-+		dev_warn_once(dev, "PM domain %s will not be powered off\n",
-+				genpd->name);
+ 	/* Idle states parsed correctly, initialize per-cpu pointer */
+ 	per_cpu(psci_power_state, cpu) = psci_states;
 +
- 	genpd_lock(genpd);
-=20
- 	if (genpd->prepared_count > 0) {
-@@ -1211,6 +1275,17 @@ int pm_genpd_add_subdomain(struct generic_pm_dom=
-ain *genpd,
- 	    || genpd =3D=3D subdomain)
- 		return -EINVAL;
-=20
-+	/*
-+	 * If the domain can be powered on/off in an IRQ safe
-+	 * context, ensure that the subdomain can also be
-+	 * powered on/off in that context.
-+	 */
-+	if (!genpd_is_irq_safe(genpd) && genpd_is_irq_safe(subdomain)) {
-+		WARN("Parent %s of subdomain %s must be IRQ safe\n",
-+				genpd->name, subdomain->name);
-+		return -EINVAL;
-+	}
-+
- 	link =3D kzalloc(sizeof(*link), GFP_KERNEL);
- 	if (!link)
- 		return -ENOMEM;
-@@ -1369,6 +1444,17 @@ static int genpd_of_parse(struct generic_pm_doma=
-in *genpd)
- 	return genpd_of_parse_power_states(genpd);
- }
-=20
-+static void genpd_lock_init(struct generic_pm_domain *genpd)
-+{
-+	if (genpd->flags & GENPD_FLAG_IRQ_SAFE) {
-+		spin_lock_init(&genpd->slock);
-+		genpd->lock_fns =3D &genpd_spin_fns;
-+	} else {
-+		mutex_init(&genpd->mlock);
-+		genpd->lock_fns =3D &genpd_mtx_fns;
-+	}
-+}
-+
- /**
-  * pm_genpd_init - Initialize a generic I/O PM domain object.
-  * @genpd: PM domain object to initialize.
-@@ -1388,8 +1474,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd=
-,
- 	INIT_LIST_HEAD(&genpd->master_links);
- 	INIT_LIST_HEAD(&genpd->slave_links);
- 	INIT_LIST_HEAD(&genpd->dev_list);
--	mutex_init(&genpd->mlock);
--	genpd->lock_fns =3D &genpd_mtx_fns;
-+	genpd_lock_init(genpd);
- 	genpd->gov =3D gov;
- 	INIT_WORK(&genpd->power_off_work, genpd_power_off_work_fn);
- 	atomic_set(&genpd->sd_count, 0);
-@@ -1833,7 +1918,9 @@ static int pm_genpd_summary_one(struct seq_file *=
-s,
- 	}
-=20
- 	list_for_each_entry(pm_data, &genpd->dev_list, list_node) {
--		kobj_path =3D kobject_get_path(&pm_data->dev->kobj, GFP_KERNEL);
-+		kobj_path =3D kobject_get_path(&pm_data->dev->kobj,
-+				genpd_is_irq_safe(genpd) ?
-+				GFP_ATOMIC : GFP_KERNEL);
- 		if (kobj_path =3D=3D NULL)
- 			continue;
-=20
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 2d7e1bc..9b65c79 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -15,9 +15,11 @@
- #include <linux/err.h>
- #include <linux/of.h>
- #include <linux/notifier.h>
-+#include <linux/spinlock.h>
-=20
- /* Defines used for the flags field in the struct generic_pm_domain */
- #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
-+#define GENPD_FLAG_IRQ_SAFE	(1U << 1) /* PM domain operates in atomic =
-*/
-=20
- #define GENPD_MAX_NUM_STATES	8 /* Number of possible low power states =
-*/
-=20
-@@ -76,7 +78,13 @@ struct generic_pm_domain {
- 	unsigned int state_count; /* number of states */
- 	unsigned int state_idx; /* state that genpd will go to when off */
- 	const struct genpd_lock_fns *lock_fns;
--	struct mutex mlock;
-+	union {
-+		struct mutex mlock;
-+		struct {
-+			spinlock_t slock;
-+			unsigned long lock_flags;
++	if (psci_has_osi_pd) {
++		int ret;
++		const struct cpu_pd_ops psci_pd_ops = {
++			.power_off = psci_pd_power_off,
 +		};
-+	};
-=20
- };
-=20
---=20
++
++		ret = of_setup_cpu_pd_single(cpu, &psci_pd_ops);
++		if (!ret)
++			ret = psci_set_suspend_mode_osi(true);
++		if (ret)
++			pr_warn("CPU%d: Error setting PSCI OSI mode\n", cpu);
++	}
++
+ 	return 0;
+ 
+ free_mem:
+@@ -330,15 +386,17 @@ int psci_cpu_init_idle(unsigned int cpu)
+ static int psci_suspend_finisher(unsigned long index)
+ {
+ 	u32 *state = __this_cpu_read(psci_power_state);
++	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
+ 
+-	return psci_ops.cpu_suspend(state[index - 1],
+-				    virt_to_phys(cpu_resume));
++	return psci_ops.cpu_suspend(ext_state, virt_to_phys(cpu_resume));
+ }
+ 
+ int psci_cpu_suspend_enter(unsigned long index)
+ {
+ 	int ret;
+ 	u32 *state = __this_cpu_read(psci_power_state);
++	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
++
+ 	/*
+ 	 * idle state index 0 corresponds to wfi, should never be called
+ 	 * from the cpu_suspend operations
+@@ -347,10 +405,16 @@ int psci_cpu_suspend_enter(unsigned long index)
+ 		return -EINVAL;
+ 
+ 	if (!psci_power_state_loses_context(state[index - 1]))
+-		ret = psci_ops.cpu_suspend(state[index - 1], 0);
++		ret = psci_ops.cpu_suspend(ext_state, 0);
+ 	else
+ 		ret = cpu_suspend(index, psci_suspend_finisher);
+ 
++	/*
++	 * Clear the CPU's cluster states, we start afresh after coming
++	 * out of idle.
++	 */
++	psci_reset_composite_state_id();
++
+ 	return ret;
+ }
+ 
+-- 
 2.7.4
 
