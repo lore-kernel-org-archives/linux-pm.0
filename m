@@ -1,84 +1,55 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC PATCH 1/8] PM / Domains: Add new helper functions for
- device-tree
-Date: Wed, 22 Jun 2016 17:36:23 +0200
-Message-ID: <CAPDyKFpk2QMC3R+V3fiF5wK=9ExPrvCPUmD98ZL54q02TDAFEA@mail.gmail.com>
-References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
- <1457090634-14785-2-git-send-email-jonathanh@nvidia.com>
- <576AA7B2.5030004@nvidia.com>
- <CAPDyKFqEis0OX68eFD0dbneYOngGQfvu4JYbWzm7tTbs8WPS5A@mail.gmail.com>
- <576AAD4B.2020905@nvidia.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] MAINTAINERS: Extend Samsung SoC entry with S3C/S5P
+ drivers
+Date: Wed, 22 Jun 2016 21:16:04 +0530
+Message-ID: <20160622154604.GH5458@vireshk-i7>
+References: <1466597805-31988-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <576AAD4B.2020905@nvidia.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alexander Aring <alex.aring@gmail.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Kukjin Kim <kgene@kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1466597805-31988-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 22 June 2016 at 17:22, Jon Hunter <jonathanh@nvidia.com> wrote:
->
-> On 22/06/16 16:08, Ulf Hansson wrote:
->> On 22 June 2016 at 16:58, Jon Hunter <jonathanh@nvidia.com> wrote:
->>> Hi Ulf,
->>>
->>> On 04/03/16 11:23, Jon Hunter wrote:
->>>> Ideally, if we are returning a reference to a PM domain via a call to
->>>> of_genpd_get_from_provider(), then we should keep track of such
->>>> references via a reference count. The reference count could then be used
->>>> to determine if a PM domain can be safely removed. Alternatively, it is
->>>> possible to avoid such external references by providing APIs to access
->>>> the PM domain and hence, eliminate any calls to
->>>> of_genpd_get_from_provider().
->>>>
->>>> Add new helper functions for adding a device and a subdomain to a PM
->>>> domain when using device-tree, so that external calls to
->>>> of_genpd_get_from_provider() can be removed.
->>>
->>> While we are at it, does it make sense to add helpers for
->>> of_genpd_remove_device/subdomain() as well? Seems that these could be
->>> useful for doing the inverse when cleaning up.
->>
->> I would prefer if we could avoid adding new APIs until we really see
->> the need for it.
->>
->> Moreover, I would like to avoid us adding OF specific APIs, unless
->> those can be really justified.
->> Hope that made sense.
->
-> Yes makes sense. However, after this series, the
-> pm_genpd_remove_device/subdomain really become provider only APIs
-> because clients can no longer get access to the genpd struct. Although
-> today none of the users of the new of_genpd_add_device/subdomain do any
-> clean-up on failure, it is possible that someone may. Therefore, I was
-> thinking that we should have a way for a client to remove a subdomain or
-> device it has added.
->
-> Does that make sense? I guess we could always add those as needed.
->
-> I am looking at a use-case for usb where we are populating the
-> pm-domains at runtime and we may need to clean-up on failure. However, I
-> can always wait to add more APIs until we really need them.
+On 22-06-16, 14:16, Krzysztof Kozlowski wrote:
+> Some of the drivers for S3C and S5P families of Samsung SoCs go in
+> through Samsung SoC tree.  Extend the entry so proper maintainers would
+> be displayed in such cases, most notably the cpufreq drivers.  This does
+> not change the work-flow for other drivers which have sub-maintainers
+> (like Samsung clocks).
+> 
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: linux-samsung-soc@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  MAINTAINERS | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 092ce3990541..1e5cf07030ae 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -1619,8 +1619,10 @@ F:	arch/arm/mach-s3c24*/
+>  F:	arch/arm/mach-s3c64xx/
+>  F:	arch/arm/mach-s5p*/
+>  F:	arch/arm/mach-exynos*/
+> -F:	drivers/*/*s3c2410*
+> -F:	drivers/*/*/*s3c2410*
+> +F:	drivers/*/*s3c24*
+> +F:	drivers/*/*/*s3c24*
+> +F:	drivers/*/*s3c64xx*
+> +F:	drivers/*/*s5pv210*
+>  F:	drivers/memory/samsung/*
+>  F:	drivers/soc/samsung/*
+>  F:	drivers/spi/spi-s3c*
 
-You may very well be right that these will be needed.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-How about posting those patches as separate change and on top of the
-series. Then we can decide if we want to pick them now or later.
-
->
-> Let me know what you think about my response to patch 6/8.
-
-I am on it.
-
-Kind regards
-Uffe
+-- 
+viresh
