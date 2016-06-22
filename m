@@ -1,52 +1,122 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH 05/14] PM / doc: update device documentation for devices in IRQ safe PM domains
-Date: Wed, 22 Jun 2016 13:36:40 -0600
-Message-ID: <1466624209-27432-6-git-send-email-lina.iyer@linaro.org>
+From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 02/14] dt/bindings: update binding for PM domain idle states
+Date: Wed, 22 Jun 2016 13:36:37 -0600
+Message-ID: <1466624209-27432-3-git-send-email-lina.iyer@linaro.org>
 References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:33038 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751453AbcFVThe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 15:37:34 -0400
-Received: by mail-pa0-f49.google.com with SMTP id b13so19608877pat.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 12:37:34 -0700 (PDT)
-In-Reply-To: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1466624209-27432-1-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, ahaslam-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, mtitinger-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
 
-Update documentation to reflect the changes made to support IRQ safe PM
-domains.
+From: Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Update DT bindings to describe idle states of PM domains.
+
+Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Signed-off-by: Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+[Lina: Added state properties, removed state names, wakeup-latency,
+added of_pm_genpd_init() API, pruned commit text]
+Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+[Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
 ---
- Documentation/power/devices.txt | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/power/power_domain.txt     | 70 ++++++++++++++++++++++
+ 1 file changed, 70 insertions(+)
 
-diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
-index 8ba6625..a622136 100644
---- a/Documentation/power/devices.txt
-+++ b/Documentation/power/devices.txt
-@@ -607,7 +607,17 @@ individually.  Instead, a set of devices sharing a power resource can be put
- into a low-power state together at the same time by turning off the shared
- power resource.  Of course, they also need to be put into the full-power state
- together, by turning the shared power resource on.  A set of devices with this
--property is often referred to as a power domain.
-+property is often referred to as a power domain. A power domain may also be
-+nested inside another power domain.
-+
-+Devices, by default, operate in process context. If a device can operate in
-+IRQ safe context that has to be explicitly indicated by setting the irq_safe
-+boolean inside struct generic_pm_domain to be true. Power domains by default,
-+operate in process context but could have devices that are IRQ safe. Such
-+power domains cannot be powered on/off during runtime PM. On the other hand,
-+IRQ safe PM domains that have IRQ safe devices may be powered off when all
-+the devices are in idle. An IRQ safe domain may only be attached as a
-+subdomain to another IRQ safe domain.
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 025b5e7..41e8dda 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -29,6 +29,43 @@ Optional properties:
+    specified by this binding. More details about power domain specifier are
+    available in the next section.
  
- Support for power domains is provided through the pm_domain field of struct
- device.  This field is a pointer to an object of type struct dev_pm_domain,
++- power-states : A phandle of an idle-state that shall be soaked into a
++                generic domain power state.
++
++==Power state==
++
++A PM domain power state describes an idle state of a domain and must be
++have the following properties -
++
++	- entry-latency-us
++		Usage: Not required if wakeup-latency-us is provided.
++		Value type: <prop-encoded-array>
++		Definition: u32 value representing worst case latency in
++		microseconds required to enter the idle state.
++		The exit-latency-us duration may be guaranteed
++		only after entry-latency-us has passed.
++
++	- exit-latency-us
++		Usage: Not required if wakeup-latency-us is provided.
++		Value type: <prop-encoded-array>
++		Definition: u32 value representing worst case latency
++		in microseconds required to exit the idle state.
++
++	- residency-us:
++		Usage: Optional
++		Value type: <prop-encoded-array>
++		Definition: A u32 value representing the time for which a
++		domain must be idle in the state to reap power saving benefits
++		of entering the state.
++
++	- state-param:
++		Usage: Optional
++		Value type: <prop-encoded-array>
++		Definition: A u32 value as defined by the state. May be used
++		by the driver to hold state related u32 data. In the case of
++		PSCI, an extended state-id for the domain may be encoded in
++		this value.
++
+ Example:
+ 
+ 	power: power-controller@12340000 {
+@@ -55,6 +92,39 @@ Example 2:
+ 		#power-domain-cells = <1>;
+ 	};
+ 
++Example 3:
++
++	pm-domains {
++		a57_pd: a57_pd@ {
++			/* will have a57 platform ARM_PD_METHOD_OF_DECLARE*/
++			compatible = "arm,pd","arm,cortex-a57";
++			#power-domain-cells = <0>;
++			power-states = <&CLUSTER_SLEEP_0>;
++		};
++
++		a53_pd: a53_pd@ {
++			/* will have a a53 platform ARM_PD_METHOD_OF_DECLARE*/
++			compatible = "arm,pd","arm,cortex-a53";
++			#power-domain-cells = <0>;
++			power-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
++		};
++
++		CLUSTER_SLEEP_0: power-state@0 {
++			entry-latency-us = <1000>;
++			exit-latency-us = <2000>;
++			residency-us = <10000>;
++			state-param = <0x1000010>;
++		};
++
++		CLUSTER_SLEEP_1: power-state@1 {
++			entry-latency-us = <5000>;
++			exit-latency-us = <5000>;
++			residency-us = <100000>;
++			state-param = <0x1000020>;
++		};
++	};
++
++
+ The nodes above define two power controllers: 'parent' and 'child'.
+ Domains created by the 'child' power controller are subdomains of '0' power
+ domain provided by the 'parent' power controller.
 -- 
 2.7.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
