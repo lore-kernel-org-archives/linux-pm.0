@@ -1,95 +1,120 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH 14/14] ARM64: dts: Define CPU power domain for MSM8916
-Date: Wed, 22 Jun 2016 13:36:49 -0600
-Message-ID: <1466624209-27432-15-git-send-email-lina.iyer@linaro.org>
-References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpuidle/powernv: Fix snooze timeout
+Date: Thu, 23 Jun 2016 00:49:06 +0200
+Message-ID: <CAJZ5v0hEUHbA9mM4h21BBvh=tzeO5nc1nSi49qq4aN0+oRkQYA@mail.gmail.com>
+References: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:34210 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbcFVTiA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 15:38:00 -0400
-Received: by mail-pa0-f46.google.com with SMTP id bz2so19567623pad.1
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 12:37:59 -0700 (PDT)
-In-Reply-To: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:34219 "EHLO
+	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752078AbcFVWtI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 18:49:08 -0400
+Received: by mail-wm0-f65.google.com with SMTP id 187so5745811wmz.1
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 15:49:07 -0700 (PDT)
+In-Reply-To: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
 
-Define power domain and the power states for the domain as defined by
-the PSCI firmware. The 8916 firmware supports OS initiated method of
-powering off the CPU clusters.
+On Wed, Jun 22, 2016 at 9:36 PM, Shreyas B. Prabhu
+<shreyas@linux.vnet.ibm.com> wrote:
+> Snooze is a poll idle state in powernv and pseries platforms. Snooze
+> has a timeout so that if a cpu stays in snooze for more than target
+> residency of the next available idle state, then it would exit thereby
+> giving chance to the cpuidle governor to re-evaluate and
+> promote the cpu to a deeper idle state. Therefore whenever snooze exits
+> due to this timeout, its last_residency will be target_residency of next
+> deeper state.
+>
+> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
+> changed the math around last_residency calculation. Specifically, while
+> converting last_residency value from nanoseconds to microseconds it does
+> right shift by 10. Due to this, in snooze timeout exit scenarios
+> last_residency calculated is roughly 2.3% less than target_residency of
+> next available state. This pattern is picked up get_typical_interval()
+> in the menu governor and therefore expected_interval in menu_select() is
+> frequently less than the target_residency of any state but snooze.
+>
+> Due to this we are entering snooze at a higher rate, thereby affecting
+> the single thread performance.
+> Since the math around last_residency is not meant to be precise, fix this
+> issue setting snooze timeout to 105% of target_residency of next
+> available idle state.
+>
+> This also adds comment around why snooze timeout is necessary.
 
-Cc: <devicetree@vger.kernel.org>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- arch/arm64/boot/dts/qcom/msm8916.dtsi | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+Daniel, any comments?
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index 3029773..208af00 100644
---- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -64,6 +64,7 @@
- 			next-level-cache = <&L2_0>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
- 
- 		CPU1: cpu@1 {
-@@ -73,6 +74,7 @@
- 			next-level-cache = <&L2_0>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
- 
- 		CPU2: cpu@2 {
-@@ -82,6 +84,7 @@
- 			next-level-cache = <&L2_0>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
- 
- 		CPU3: cpu@3 {
-@@ -91,6 +94,7 @@
- 			next-level-cache = <&L2_0>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
- 
- 		L2_0: l2-cache {
-@@ -110,6 +114,27 @@
- 		};
- 	};
- 
-+	CPU_PD: cpu-pd@0 {
-+		#power-domain-cells = <0>;
-+		power-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
-+	};
-+
-+	pd-power-states {
-+		CLUSTER_RET: power-state@1 {
-+			state-param = <0x1000010>;
-+			entry-latency-us = <500>;
-+			exit-latency-us = <500>;
-+			residency-us = <2000>;
-+		 };
-+
-+		CLUSTER_PWR_DWN: power-state@2 {
-+			state-param = <0x1000030>;
-+			entry-latency-us = <2000>;
-+			exit-latency-us = <2000>;
-+			residency-us = <6000>;
-+		};
-+	};
-+
- 	psci {
- 		compatible = "arm,psci-1.0";
- 		method = "smc";
--- 
-2.7.4
-
+> Reported-by: Anton Blanchard <anton@samba.org>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 14 ++++++++++++++
+>  drivers/cpuidle/cpuidle-pseries.c | 13 +++++++++++++
+>  2 files changed, 27 insertions(+)
+>
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index e12dc30..5835491 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -268,10 +268,24 @@ static int powernv_idle_probe(void)
+>                 cpuidle_state_table = powernv_states;
+>                 /* Device tree can indicate more idle states */
+>                 max_idle_state = powernv_add_idle_states();
+> +
+> +               /*
+> +                * Staying in snooze for a long period can degrade the
+> +                * perfomance of the sibling cpus. Set timeout for snooze such
+> +                * that if the cpu stays in snooze longer than target residency
+> +                * of the next available idle state then exit from snooze. This
+> +                * gives a chance to the cpuidle governor to re-evaluate and
+> +                * promote it to deeper idle states.
+> +                */
+>                 if (max_idle_state > 1) {
+>                         snooze_timeout_en = true;
+>                         snooze_timeout = powernv_states[1].target_residency *
+>                                          tb_ticks_per_usec;
+> +                       /*
+> +                        * Give a 5% margin since target residency related math
+> +                        * is not precise in cpuidle core.
+> +                        */
+> +                       snooze_timeout += snooze_timeout / 20;
+>                 }
+>         } else
+>                 return -ENODEV;
+> diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+> index 07135e0..22de841 100644
+> --- a/drivers/cpuidle/cpuidle-pseries.c
+> +++ b/drivers/cpuidle/cpuidle-pseries.c
+> @@ -250,10 +250,23 @@ static int pseries_idle_probe(void)
+>         } else
+>                 return -ENODEV;
+>
+> +       /*
+> +        * Staying in snooze for a long period can degrade the
+> +        * perfomance of the sibling cpus. Set timeout for snooze such
+> +        * that if the cpu stays in snooze longer than target residency
+> +        * of the next available idle state then exit from snooze. This
+> +        * gives a chance to the cpuidle governor to re-evaluate and
+> +        * promote it to deeper idle states.
+> +        */
+>         if (max_idle_state > 1) {
+>                 snooze_timeout_en = true;
+>                 snooze_timeout = cpuidle_state_table[1].target_residency *
+>                                  tb_ticks_per_usec;
+> +               /*
+> +                * Give a 5% margin since target residency related math
+> +                * is not precise in cpuidle core.
+> +                */
+> +               snooze_timeout += snooze_timeout / 20;
+>         }
+>         return 0;
+>  }
+> --
+> 2.1.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
