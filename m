@@ -1,114 +1,129 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / hibernate: Simplify mark_unsafe_pages()
-Date: Wed, 22 Jun 2016 03:19:45 +0200
-Message-ID: <28211201.GaRaWsd3LX@vostro.rjw.lan>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH 08/12] doc: binding: pwrseq-usb-generic: add binding doc
+ for generic usb power sequence driver
+Date: Wed, 22 Jun 2016 09:14:39 +0800
+Message-ID: <20160622011439.GA21361@shlinux2>
+References: <1466158165-9380-1-git-send-email-peter.chen@nxp.com>
+ <1466158165-9380-9-git-send-email-peter.chen@nxp.com>
+ <CAL_JsqLvs0s2TyfqPM5vtmyY81_X84VjCGjsGYbTgT4syOfp9Q@mail.gmail.com>
+ <20160620112651.GA26936@shlinux2>
+ <20160620161607.GA11427@rob-hp-laptop>
+ <20160621021117.GD26936@shlinux2>
+ <20160621212653.GA22764@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20160621212653.GA22764@rob-hp-laptop>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robh@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Peter Chen <peter.chen@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>, Stephen Boyd <stephen.boyd@linaro.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, Fabio Estevam <festevam@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Javier Martinez Canillas <javier@osg.samsung.com>, Alan Stern <stern@rowland.harvard.edu>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, troy.kisky@boundarydevices.com, Mark Brown <broonie@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, oscar@naiandei.net, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux USB List <linux-usb@vger.kernel.org>, linux-mmc@vger.
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, Jun 21, 2016 at 04:26:53PM -0500, Rob Herring wrote:
+> On Tue, Jun 21, 2016 at 10:11:17AM +0800, Peter Chen wrote:
+> > On Mon, Jun 20, 2016 at 11:16:07AM -0500, Rob Herring wrote:
+> > > On Mon, Jun 20, 2016 at 07:26:51PM +0800, Peter Chen wrote:
+> > > > On Fri, Jun 17, 2016 at 12:16:48PM -0500, Rob Herring wrote:
+> > > > > On Fri, Jun 17, 2016 at 5:09 AM, Peter Chen <peter.chen@nxp.com> wrote:
+> > > > > > Add binding doc for generic usb power sequence driver, and update
+> > > > > > generic usb device binding-doc accordingly.
+> 
+> [...]
+> 
+> > > > 		clocks = <&clks IMX6SX_CLK_CKO>;
+> > > > 
+> > > > 		#address-cells = <1>;
+> > > > 		#size-cells = <0>;
+> > > > 		ethernet: asix@1 {
+> > > > 			compatible = "usbb95,1708";
+> > > > 			reg = <1>;
+> > > > 
+> > > > 			power-sequence;
+> > > > 			reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
+> > > > 			reset-duration-us = <15>;
+> > > > 			clocks = <&clks IMX6SX_CLK_IPG>;
+> > > > 		};
+> > > > 	};
+> > > > };
+> > > > 
+> > > > If the node has property "power-sequence", the pwrseq core will create
+> > > > related platform device, and the driver under pwrseq driver will handle
+> > > > power sequence stuffs. 
+> > > 
+> > > This I have issue with. If you are creating a platform device here, you 
+> > > are trying to work-around limitations in the linux driver model.
+> > 
+> > My current solution like below, but it seems you didn't agree with that.
+> > I just double confirm here, if you don't, I give up the solution for
+> > using generic power sequence framework.
+> > 
+> > In drivers/usb/core/hub.c
+> > 
+> > 	for_each_child_of_node(parent->of_node, node) {
+> > 		hdev_pwrseq = pwrseq_alloc(node, "usb_pwrseq_generic");
+> > 		if (!IS_ERR_OR_NULL(hdev_pwrseq)) {
+> > 			pwrseq_node = kzalloc(sizeof(pwrseq_node), GFP_KERNEL);
+> > 			if (!pwrseq_node) {
+> > 				ret = -ENOMEM;
+> > 				goto err1;
+> > 			}
+> > 			/* power on sequence */
+> > 			ret = pwrseq_pre_power_on(hdev_pwrseq);
+> 
+> Why does this function need to do anything more than:
+> 
+> - Check if the child has a "power-sequence" property
+> - Get the "reset-gpios" GPIO
+> - Assert reset for specified/default time
+> - Deassert reset
+> 
 
-Rework mark_unsafe_pages() to use a simpler method to clear
-all bits in free_pages_map and to set the bits for the "unsafe"
-pages (ie. pages that were used by the image kernel before
-hibernation) with the help of duplicate_memory_bitmap().
+Besides gpios, it may exist clock and regulator operation, and the
+operation may be failed. I thought these operations can be easy
+done belongs to a device, but now, let me try this straight-forward
+way, thanks.
 
-For this purpose, move the pfn_valid() check from mark_unsafe_pages()
-to unpack_orig_pfns() where the "unsafe" pages are discovered.
+Peter
+> Then continue on as normal. That seems straight-forward to me.
+> 
+> There is no reason you need a platform device in the mix. Perhaps trying 
+> to move the MMC pwr-seq code is pointless as it adds needless 
+> complexity.
+> 
+> [...]
+> 
+> > > Either 
+> > > we need some sort of pre-probe hook to the drivers to call or each 
+> > > parent node driver is responsible for checking and calling pwr-seq 
+> > > functions for child nodes. e.g. The host controller calls pwr-seq for 
+> > > the hub, the hub driver calls the power seq for the asix chip. Soon as 
+> > > we have a case too complex for the generic pwr-seq, we're going to need 
+> > > the pre-probe hook as I don't want to see a continual expansion of 
+> > > generic pwr-seq binding for ever more complex cases.
+> > > 
+> > 
+> > How the driver know what it needs to handle (eg, gpio, clock) if there
+> > is no device for it? The most important we need to consider is which
+> > device owns there power sequence properties, then the corresponding
+> > driver can handle it.
+> 
+> What can be handled by is defined by presence of power-sequence 
+> property. There can be 1 driver for the device. That is the USB hub 
+> driver in this example. You should not have 2 "devices".
+> 
+> Rob
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/power/snapshot.c |   53 +++++++++++++++++++-----------------------------
- 1 file changed, 22 insertions(+), 31 deletions(-)
+-- 
 
-Index: linux-pm/kernel/power/snapshot.c
-===================================================================
---- linux-pm.orig/kernel/power/snapshot.c
-+++ linux-pm/kernel/power/snapshot.c
-@@ -2049,6 +2049,19 @@ int snapshot_read_next(struct snapshot_h
- 	return PAGE_SIZE;
- }
- 
-+static void duplicate_memory_bitmap(struct memory_bitmap *dst,
-+				    struct memory_bitmap *src)
-+{
-+	unsigned long pfn;
-+
-+	memory_bm_position_reset(src);
-+	pfn = memory_bm_next_pfn(src);
-+	while (pfn != BM_END_OF_MAP) {
-+		memory_bm_set_bit(dst, pfn);
-+		pfn = memory_bm_next_pfn(src);
-+	}
-+}
-+
- /**
-  *	mark_unsafe_pages - mark the pages that cannot be used for storing
-  *	the image during resume, because they conflict with the pages that
-@@ -2060,44 +2073,22 @@ static int mark_unsafe_pages(struct memo
- 	struct zone *zone;
- 	unsigned long pfn, max_zone_pfn;
- 
--	/* Clear page flags */
--	for_each_populated_zone(zone) {
--		max_zone_pfn = zone_end_pfn(zone);
--		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
--			if (pfn_valid(pfn))
--				swsusp_unset_page_free(pfn_to_page(pfn));
-+	/* Clear the "free"/"unsafe" bit for all PFNs */
-+	memory_bm_position_reset(free_pages_map);
-+	pfn = memory_bm_next_pfn(free_pages_map);
-+	while (pfn != BM_END_OF_MAP) {
-+		memory_bm_clear_current(free_pages_map);
-+		pfn = memory_bm_next_pfn(free_pages_map);
- 	}
- 
--	/* Mark pages that correspond to the "original" pfns as "unsafe" */
--	memory_bm_position_reset(bm);
--	do {
--		pfn = memory_bm_next_pfn(bm);
--		if (likely(pfn != BM_END_OF_MAP)) {
--			if (likely(pfn_valid(pfn)))
--				swsusp_set_page_free(pfn_to_page(pfn));
--			else
--				return -EFAULT;
--		}
--	} while (pfn != BM_END_OF_MAP);
-+	/* Mark pages that correspond to the "original" PFNs as "unsafe" */
-+	duplicate_memory_bitmap(free_pages_map, bm);
- 
- 	allocated_unsafe_pages = 0;
- 
- 	return 0;
- }
- 
--static void
--duplicate_memory_bitmap(struct memory_bitmap *dst, struct memory_bitmap *src)
--{
--	unsigned long pfn;
--
--	memory_bm_position_reset(src);
--	pfn = memory_bm_next_pfn(src);
--	while (pfn != BM_END_OF_MAP) {
--		memory_bm_set_bit(dst, pfn);
--		pfn = memory_bm_next_pfn(src);
--	}
--}
--
- static int check_header(struct swsusp_info *info)
- {
- 	char *reason;
-@@ -2145,7 +2136,7 @@ static int unpack_orig_pfns(unsigned lon
- 		/* Extract and buffer page key for data page (s390 only). */
- 		page_key_memorize(buf + j);
- 
--		if (memory_bm_pfn_present(bm, buf[j]))
-+		if (pfn_valid(buf[j]) && memory_bm_pfn_present(bm, buf[j]))
- 			memory_bm_set_bit(bm, buf[j]);
- 		else
- 			return -EFAULT;
+Best Regards,
+Peter Chen
