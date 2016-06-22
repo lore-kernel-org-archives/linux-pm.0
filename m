@@ -1,91 +1,147 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH 08/14] timer: Export next wake up of a CPU
-Date: Wed, 22 Jun 2016 13:36:43 -0600
-Message-ID: <1466624209-27432-9-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH 09/14] PM / cpu_domains: Add PM Domain governor for CPUs
+Date: Wed, 22 Jun 2016 13:36:44 -0600
+Message-ID: <1466624209-27432-10-git-send-email-lina.iyer@linaro.org>
 References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:33054 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbcFVThm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 15:37:42 -0400
-Received: by mail-pa0-f49.google.com with SMTP id b13so19609670pat.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 12:37:42 -0700 (PDT)
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:36485 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbcFVThp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 15:37:45 -0400
+Received: by mail-pa0-f50.google.com with SMTP id wo6so19575468pac.3
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 12:37:45 -0700 (PDT)
 In-Reply-To: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
 
-Knowing the sleep length of the CPU is useful for the power state
-determination on idle. However, when the common sleep time between
-multiple CPUs is needed, the sleep length of a CPU is not useful.
+A PM domain comprising of CPUs may be powered off when all the CPUs in
+the domain are powered down. Powering down a CPU domain is generally a
+expensive operation and therefore the power performance trade offs
+should be considered. The time between the last CPU powering down and
+the first CPU powering up in a domain, is the time available for the
+domain to sleep. Ideally, the sleep time of the domain should fulfill
+the residency requirement of the domains' idle state.
 
-By reading the next wake up event of a CPU, governors can determine the
-first CPU to wake up (due to timer) amongst a cluster of CPUs and the
-sleep time available between the last CPU to idle and the first CPU to
-resume. This information is useful to determine if the caches and other
-common hardware blocks can also be put in idle during this common period
-of inactivity.
+To do this effectively, read the time before the wakeup of the cluster's
+CPUs and ensure that the domain's idle state sleep time guarantees the
+QoS requirements of each of the CPU, the PM QoS CPU_DMA_LATENCY and the
+state's residency.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- include/linux/tick.h     | 10 ++++++++++
- kernel/time/tick-sched.c | 13 +++++++++++++
- 2 files changed, 23 insertions(+)
+ drivers/base/power/cpu_domains.c | 80 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 79 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/tick.h b/include/linux/tick.h
-index 62be0786..9535141 100644
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -117,6 +117,7 @@ extern void tick_nohz_idle_enter(void);
- extern void tick_nohz_idle_exit(void);
- extern void tick_nohz_irq_exit(void);
- extern ktime_t tick_nohz_get_sleep_length(void);
-+extern ktime_t tick_nohz_get_next_wakeup(int cpu);
- extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
- extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
- #else /* !CONFIG_NO_HZ_COMMON */
-@@ -131,6 +132,15 @@ static inline ktime_t tick_nohz_get_sleep_length(void)
+diff --git a/drivers/base/power/cpu_domains.c b/drivers/base/power/cpu_domains.c
+index 63dd45d..1803fde 100644
+--- a/drivers/base/power/cpu_domains.c
++++ b/drivers/base/power/cpu_domains.c
+@@ -17,9 +17,12 @@
+ #include <linux/list.h>
+ #include <linux/of.h>
+ #include <linux/pm_domain.h>
++#include <linux/pm_qos.h>
++#include <linux/pm_runtime.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+ #include <linux/slab.h>
++#include <linux/tick.h>
  
- 	return len;
- }
-+
-+static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
-+{
-+	ktime_t len = { .tv64 = NSEC_PER_SEC/HZ };
-+
-+	/* Next wake up is the tick period, assume it starts now */
-+	return ktime_add(len, ktime_get());
-+}
-+
- static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
- static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
- #endif /* !CONFIG_NO_HZ_COMMON */
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index 536ada8..addf3235 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -979,6 +979,19 @@ ktime_t tick_nohz_get_sleep_length(void)
- 	return ts->sleep_length;
+ #define CPU_PD_NAME_MAX 36
+ 
+@@ -52,6 +55,81 @@ struct cpu_pm_domain *to_cpu_pd(struct generic_pm_domain *d)
+ 	return res;
  }
  
-+/**
-+ * tick_nohz_get_next_wakeup - return the next wake up of the CPU
-+ *
-+ * Called with interrupts disabled on the cpu
-+ */
-+ktime_t tick_nohz_get_next_wakeup(int cpu)
++static bool cpu_pd_down_ok(struct dev_pm_domain *pd)
 +{
-+	struct clock_event_device *dev =
-+			per_cpu(tick_cpu_device.evtdev, cpu);
++	struct generic_pm_domain *genpd = pd_to_genpd(pd);
++	struct cpu_pm_domain *cpu_pd = to_cpu_pd(genpd);
++	int qos_ns = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
++	u64 sleep_ns;
++	ktime_t earliest, next_wakeup;
++	int cpu;
++	int i;
 +
-+	return dev->next_event;
++	/* Reset the last set genpd state, default to index 0 */
++	genpd->state_idx = 0;
++
++	/* We don't want to power down, if QoS is 0 */
++	if (!qos_ns)
++		return false;
++
++	/*
++	 * Find the sleep time for the cluster.
++	 * The time between now and the first wake up of any CPU that
++	 * are in this domain hierarchy is the time available for the
++	 * domain to be idle.
++	 *
++	 * We only care about the next wakeup for any online CPU in that
++	 * cluster. Hotplug off any of the CPUs that we care about will
++	 * wait on the genpd lock, until we are done. Any other CPU hotplug
++	 * is not of consequence to our sleep time.
++	 */
++	earliest = ktime_set(KTIME_SEC_MAX, 0);
++	for_each_cpu_and(cpu, cpu_pd->cpus, cpu_online_mask) {
++		next_wakeup = tick_nohz_get_next_wakeup(cpu);
++		if (earliest.tv64 > next_wakeup.tv64)
++			earliest = next_wakeup;
++	}
++
++	sleep_ns = ktime_to_ns(ktime_sub(earliest, ktime_get()));
++	if (sleep_ns <= 0)
++		return false;
++
++	/*
++	 * Find the deepest sleep state that satisfies the residency
++	 * requirement and the QoS constraint
++	 */
++	for (i = genpd->state_count - 1; i >= 0; i--) {
++		u64 state_sleep_ns;
++
++		state_sleep_ns = genpd->states[i].power_off_latency_ns +
++			genpd->states[i].power_on_latency_ns +
++			genpd->states[i].residency_ns;
++
++		/*
++		 * If we can't sleep to save power in the state, move on
++		 * to the next lower idle state.
++		 */
++		if (state_sleep_ns > sleep_ns)
++			continue;
++
++		/*
++		 * We also don't want to sleep more than we should to
++		 * gaurantee QoS.
++		 */
++		if (state_sleep_ns < (qos_ns * NSEC_PER_USEC))
++			break;
++	}
++
++	if (i >= 0)
++		genpd->state_idx = i;
++
++	return (i >= 0);
 +}
 +
- static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
++static struct dev_power_governor cpu_pd_gov = {
++	.power_down_ok = cpu_pd_down_ok,
++};
++
+ static int cpu_pd_attach_cpu(struct cpu_pm_domain *cpu_pd, int cpu)
  {
- #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ 	int ret;
+@@ -144,7 +222,7 @@ static struct generic_pm_domain *of_init_cpu_pm_domain(struct device_node *dn,
+ 
+ 	/* Register the CPU genpd */
+ 	pr_debug("adding %s as CPU PM domain\n", pd->genpd->name);
+-	ret = pm_genpd_init(pd->genpd, &simple_qos_governor, false);
++	ret = pm_genpd_init(pd->genpd, &cpu_pd_gov, false);
+ 	if (ret) {
+ 		pr_err("Unable to initialize domain %s\n", dn->full_name);
+ 		goto fail;
 -- 
 2.7.4
 
