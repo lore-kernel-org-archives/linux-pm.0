@@ -1,127 +1,176 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 1/1] thermal: core: call thermal_zone_device_update() after mode update
-Date: Tue, 21 Jun 2016 22:15:46 -0700
-Message-ID: <1466572546-12944-1-git-send-email-edubezval@gmail.com>
-References: <1466563538.2471.10.camel@intel.com>
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <1466563538.2471.10.camel@intel.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, Darren Hart <dvhart@infradead.org>, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH v6 0/5] Thermal: Support for hardware-tracked trip points
+Date: Wed, 22 Jun 2016 16:42:00 +0800
+Message-ID: <1466584925-4829-1-git-send-email-wxt@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Laxman Dewangan <ldewangan-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, smbarber-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, Durgadoss R <durgadoss.r-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jonathan Corbet <corbet-T1hC0tSOHrs@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, briannorris-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Andy Champ <andycham-vV1OtcyAfmbQT0dZR+AlfA@public.gmane.org>, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, javi.merino-5wv7dgnIgG8@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Ni Wade <wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, peter-p08lbbvQ7EI@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Because several drivers do the following pattern:
-.set_mode()
-   ...
-   local_data->mode = new_mode;
-   thermal_zone_device_update(tz);
+Thank you all for providing inputs and comments on previous versions of
+this patchset.
+Especially thanks to the (Mikko,Sascha,Eduardo,Javi,Steve,Rui....).
 
-makes sense to simply do the thermal_zone_device_update()
-in thermal core, after setting the new mode.
+The history patches come from Mikko and Sascha.
+    http://thread.gmane.org/gmane.linux.power-management.general/59451
 
-Also, this patch also remove deadlocks on drivers that
-call thermal_zone_device_update() on .set_mode(),
-as .set_mode()  is now called always with tz->lock held.
+Now, I pick them up to continue upstream.
+Nevermind!
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org
-Cc: "Lee, Chun-Yi" <jlee@suse.com>
-Cc: Darren Hart <dvhart@infradead.org>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Keerthy <j-keerthy@ti.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-omap@vger.kernel.org
-Cc: platform-driver-x86@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+This series history patches:
+v5: https://lkml.org/lkml/2016/6/6/353
+v4: https://lkml.org/lkml/2016/5/27/122
+v3: https://lkml.org/lkml/2016/5/24/797
+v2: https://lkml.org/lkml/2016/5/3/220
+v1: https://lkml.org/lkml/2016/4/24/227
+
+This series adds support for hardware trip points. It picks up earlier
+work from Mikko Perttunen. Mikko implemented hardware trip points as part
+of the device tree support. It was suggested back then to move the
+functionality to the thermal core instead of putting more code into the
+device tree support. This series does exactly that.
+
+This series patches rebase the conflicts with the lastest next kernel.
+Note that the hardware-tracked trip points are very well tested currently.
+
+Verified and tested on https://github.com/Caesar-github/rockchip/tree/wip/fixes-thermal-0622
+That's based on the next kernel (4.7-rc4).
+localhost / # cat /proc/version
+Linux version 4.7.0-rc4-next-20160622-06645-g5cba085 (wxt@nb)
 ---
-Please ignore last version.
+There are five pathes in this series.
+thermal: Add support for hardware-tracked trip point
+thermal: of: implement .set_trips for device tree thermal zones
+thermal: streamline get_trend callbacks
+thermal: bang-bang governor: act on lower trip boundary
+thermal: rockchip: add the set_trips function
 
-V1-> V2:
-Cleaned the patch and remove unrelated changes.
+Note: the hardware-tracked trip points that the similar patches were verified
+on ChromoeOs platform.
+e.g.:
+https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.14
+https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.18
+https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-4.4
 ---
 
- drivers/acpi/thermal.c                             | 2 --
- drivers/platform/x86/acerhdf.c                     | 1 -
- drivers/thermal/imx_thermal.c                      | 1 -
- drivers/thermal/of-thermal.c                       | 1 -
- drivers/thermal/thermal_sysfs.c                    | 1 +
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 1 -
- 6 files changed, 1 insertion(+), 6 deletions(-)
+Anyway, I take the lastest thermal change to test from next kernel,
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 82707f9..8582b88 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -519,8 +519,6 @@ static void acpi_thermal_check(void *data)
- 
- 	if (!tz->tz_enabled)
- 		return;
--
--	thermal_zone_device_update(tz->thermal_zone);
- }
- 
- /* sys I/F for generic thermal sysfs support */
-diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-index 460fa67..aee33ba 100644
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -405,7 +405,6 @@ static inline void acerhdf_enable_kernelmode(void)
- 	kernelmode = 1;
- 
- 	thz_dev->polling_delay = interval*1000;
--	thermal_zone_device_update(thz_dev);
- 	pr_notice("kernel mode fan control ON\n");
- }
- 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index c5547bd..a413eb6 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -246,7 +246,6 @@ static int imx_set_mode(struct thermal_zone_device *tz,
- 	}
- 
- 	data->mode = mode;
--	thermal_zone_device_update(tz);
- 
- 	return 0;
- }
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index b8e509c..4602e2e 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -292,7 +292,6 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
- 	mutex_unlock(&tz->lock);
- 
- 	data->mode = mode;
--	thermal_zone_device_update(tz);
- 
- 	return 0;
- }
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index 743df50..3d0dc30 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -100,6 +100,7 @@ mode_store(struct device *dev, struct device_attribute *attr,
- 	mutex_lock(&tz->lock);
- 	result = tz->ops->set_mode(tz, mode);
- 	mutex_unlock(&tz->lock);
-+	thermal_zone_device_update(tz);
- 
- 	if (result)
- 		return result;
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 15c0a9a..9a5a3a3 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -205,7 +205,6 @@ static int ti_thermal_set_mode(struct thermal_zone_device *thermal,
- 	data->mode = mode;
- 	ti_bandgap_write_update_interval(bgp, data->sensor_id,
- 					data->ti_thermal->polling_delay);
--	thermal_zone_device_update(data->ti_thermal);
- 	dev_dbg(&thermal->device, "thermal polling set for duration=%d msec\n",
- 		data->ti_thermal->polling_delay);
- 
+Tested on RK3399 SoCs on https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-4.4
+And
+Tested on RK3288 SoCs with chromebook on next kernel.
+localhost / # while true; do grep "" /sys/class/thermal/thermal_zone[0-1]/temp; sleep .5; done
+/sys/class/thermal/thermal_zone1/temp:45454
+/sys/class/thermal/thermal_zone2/temp:44090
+/sys/class/thermal/thermal_zone1/temp:44545
+/sys/class/thermal/thermal_zone2/temp:44545
+/sys/class/thermal/thermal_zone1/temp:45454
+/sys/class/thermal/thermal_zone2/temp:44545
+/sys/class/thermal/thermal_zone1/temp:45000
+...
+Then add the loading,
+localhost / # md5sum /dev/zero &
+[3] 8354
+..
+The Set trips trigger the hardware-tracked points.
+
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 68461, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 2 - temp: 64166, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 75000
+rockchip-thermal ff280000.tsadc: sensor 2 - temp: 66153, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 70000
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 68076, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 2 - temp: 65384, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 75000
+rockchip-thermal ff280000.tsadc: sensor 2 - temp: 65384, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 70000
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70833, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 75000
+rockchip-thermal ff280000.tsadc: sensor 2 - temp: 66153, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 70000
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70416, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 75000
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 70000
+rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
+rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor 1: low: 68000, high 75000
+..
+---
+Anyway, the series patches are verified on rockchip platform.
+
+Thanks someone are reviewing and testing for it.
+
+-Caesar
+
+
+Changes in v6:
+- add Javi's Reviewed-by
+- As Rui's comments on https://patchwork.kernel.org/patch/9157909/,
+  add the "get_trip_hyst" to judge.
+- fixes a check warning from the scripts.
+- as the Keerthy comments on https://patchwork.kernel.org/patch/9157913/,
+  change the get_trend for of_thermal.c.
+
+Changes in v5:
+- add the lock for thermal_zone_set_trips function.
+- change based on next kernel.
+- add the tested by Steve.
+
+Changes in v4:
+- Missing the lock added in v3.
+- as the Javi comments, %s/implemnets/implements.
+
+Changes in v3:
+- as Javi comments on https://patchwork.kernel.org/patch/9001281/.
+- add the lock for preventing the called from multi placce
+- add the note for pre_low/high_trip.
+- as the Javi comments on https://patchwork.kernel.org/patch/9001311/.
+- add the select if they set the option for devicetree.
+- Add the peter's ACK.
+
+Changes in v2:
+- update the sysfs-api.txt for set_trips.
+- add the commit in patch[v2 2/5].
+- Update the commit for patch[v2 4/5].
+
+Caesar Wang (1):
+  thermal: rockchip: add the set_trips function
+
+Sascha Hauer (4):
+  thermal: Add support for hardware-tracked trip points
+  thermal: of: implement .set_trips for device tree thermal zones
+  thermal: streamline get_trend callbacks
+  thermal: bang-bang governor: act on lower trip boundary
+
+ Documentation/thermal/sysfs-api.txt                |  7 +++
+ drivers/thermal/gov_bang_bang.c                    |  2 +-
+ drivers/thermal/of-thermal.c                       | 35 ++++++++------
+ drivers/thermal/rockchip_thermal.c                 | 39 ++++++++++++++++
+ drivers/thermal/thermal_core.c                     | 54 ++++++++++++++++++++++
+ drivers/thermal/thermal_sysfs.c                    |  3 ++
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 ++++------
+ include/linux/thermal.h                            | 16 ++++++-
+ 8 files changed, 147 insertions(+), 34 deletions(-)
+
 -- 
-2.1.4
+1.9.1
