@@ -1,180 +1,110 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH 12/14] drivers: firmware: psci: Support cluster idle states for OS-Initiated
-Date: Wed, 22 Jun 2016 13:36:47 -0600
-Message-ID: <1466624209-27432-13-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH 10/14] doc / cpu_domains: Describe CPU PM domains setup and governor
+Date: Wed, 22 Jun 2016 13:36:45 -0600
+Message-ID: <1466624209-27432-11-git-send-email-lina.iyer@linaro.org>
 References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:35628 "EHLO
-	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbcFVThy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 15:37:54 -0400
-Received: by mail-pf0-f181.google.com with SMTP id c2so20519266pfa.2
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 12:37:54 -0700 (PDT)
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-PSCI OS initiated firmware may allow Linux to determine the state of the
-CPU cluster and the cluster at coherency level to enter idle states when
-there are no active CPUs. Since Linux has a better idea of the QoS and
-the wakeup pattern of the CPUs, the cluster idle states may be better
-determined by the OS instead of the firmware.
+A generic CPU PM domain functionality is provided by
+drivers/base/power/cpu_domains.c. This document describes the generic
+usecase of CPU's PM domains, the setup of such domains and a CPU
+specific genpd governor.
 
-The last CPU entering idle in a cluster, is responsible for selecting
-the state of the cluster. Only one CPU in a cluster may provide the
-cluster idle state to the firmware. Similarly, the last CPU in the
-system may provide the state of the coherency domain along with the
-cluster and the CPU state IDs.
-
-Utilize the CPU PM domain framework's helper functions to build up the
-hierarchy of cluster topology using Generic PM domains. We provide
-callbacks for domain power_on and power_off. By appending the state IDs
-at each domain level in the -power_off() callbacks, we build up a
-composite state ID that can be passed onto the firmware to idle the CPU,
-the cluster and the coherency interface.
-
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/firmware/psci.c | 70 ++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 67 insertions(+), 3 deletions(-)
+ Documentation/power/cpu_domains.txt | 79 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 79 insertions(+)
+ create mode 100644 Documentation/power/cpu_domains.txt
 
-diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
-index 3920aba..01ec0d5 100644
---- a/drivers/firmware/psci.c
-+++ b/drivers/firmware/psci.c
-@@ -15,6 +15,7 @@
- 
- #include <linux/arm-smccc.h>
- #include <linux/cpuidle.h>
-+#include <linux/cpu_domains.h>
- #include <linux/errno.h>
- #include <linux/linkage.h>
- #include <linux/of.h>
-@@ -53,6 +54,17 @@
-  */
- static int resident_cpu = -1;
- static bool psci_has_osi_pd;
-+static DEFINE_PER_CPU(u32, cluster_state_id);
+diff --git a/Documentation/power/cpu_domains.txt b/Documentation/power/cpu_domains.txt
+new file mode 100644
+index 0000000..bd99e92
+--- /dev/null
++++ b/Documentation/power/cpu_domains.txt
+@@ -0,0 +1,79 @@
++CPU PM domains
++==============
 +
-+static inline u32 psci_get_composite_state_id(u32 cpu_state)
-+{
-+	return cpu_state | this_cpu_read(cluster_state_id);
-+}
++Newer CPUs are grouped in SoCs as clusters. A cluster in addition to the CPUs
++may have caches, floating point units and other architecture specific power
++controller that share resources when any of the CPUs are active. When the CPUs
++are in idle, some of these cluster components may also idle. A cluster may
++also be nested inside another cluster that provides common coherency
++interfaces to share data between the clusters. The organization of such
++clusters and CPU may be descibed in DT, since they are SoC specific.
 +
-+static inline void psci_reset_composite_state_id(void)
-+{
-+	this_cpu_write(cluster_state_id, 0);
-+}
- 
- bool psci_tos_resident_on(int cpu)
- {
-@@ -179,6 +191,8 @@ static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
- 
- 	fn = psci_function_id[PSCI_FN_CPU_ON];
- 	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
-+	/* Reset CPU cluster states */
-+	psci_reset_composite_state_id();
- 	return psci_to_linux_errno(err);
- }
- 
-@@ -250,6 +264,34 @@ static int __init psci_features(u32 psci_func_id)
- 
- #ifdef CONFIG_CPU_IDLE
- static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
-+static bool psci_suspend_mode_is_osi;
++CPUIdle framework enables the CPUs to determine the sleep time and enter low
++power state to save power during periods of idle. CPUs in a cluster may enter
++and exit idle state independently of each other. During the time when all the
++CPUs are in idle state, the cluster may safely put some of the shared
++resources in their idle state. The time between the last CPU to enter idle and
++the first CPU to wake up is the time available for the cluster to enter its
++idle state.
 +
-+static int psci_set_suspend_mode_osi(bool enable)
-+{
-+	int ret;
-+	int mode;
++When SoCs power down the CPU during cpuidle, they generally have supplemental
++hardware that can handshake with the CPU with a signal that indicates that the
++CPU has stopped execution. The hardware is also responsible for warm booting
++the CPU on receiving an interrupt. In a cluster architecture, common resources
++that are shared by a cluster may also be powered down by an external
++microcontroller or a processor. The microcontroller may be programmed in
++advance to put the hardware blocks in a low power state, when the last active
++CPU sends the idle signal. When the signal is received, the microcontroller
++may trigger the hardware blocks to enter their low power state. When an
++interrupt to wakeup the processor is received, the microcontroller is
++responsible for bringing up the hardware blocks to its active state, before
++waking up the CPU. The timelines for such operations should be in the
++acceptable range for for CPU idle to get power benefits.
 +
-+	if (enable && !psci_has_osi_pd)
-+		return -ENODEV;
++CPU PM Domain Setup
++-------------------
 +
-+	if (enable == psci_suspend_mode_is_osi)
-+		return 0;
++PM domains are represented in the DT as domain consumers and providers. A
++device may have a domain provider and a domain provider may support multiple
++domain consumers. Domains like clusters, may also be nested inside one
++another. A domain that has no active consumer, may be powered off and any
++resuming consumer would trigger the domain back to active. Parent domains may
++be powered off when the child domains are powered off. The CPU cluster can be
++fashioned as a PM domain. When the CPU devices are powered off, the PM domain
++may be powered off.
 +
-+	mode = enable ? PSCI_1_0_SUSPEND_MODE_OSI : PSCI_1_0_SUSPEND_MODE_PC;
-+	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
-+			     mode, 0, 0);
-+	if (!ret)
-+		psci_suspend_mode_is_osi = enable;
++Device idle is reference counted by runtime PM. When there is no active need
++for the device, runtime PM invokes callbacks to suspend the parent domain.
++Generic PM domain (genpd) handles the hierarchy of devices, domains and the
++reference counting of objects leading to last man down and first man up in the
++domain. The CPU domains helper functions defines PM domains for each CPU
++cluster and attaches the CPU devices to the respective PM domains.
 +
-+	return psci_to_linux_errno(ret);
-+}
++Platform drivers may use the following API to register their CPU PM domains.
 +
-+static int psci_pd_power_off(u32 state_idx, u32 param,
-+		const struct cpumask *mask)
-+{
-+	__this_cpu_add(cluster_state_id, param);
-+	return 0;
-+}
- 
- static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
- {
-@@ -304,6 +346,20 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
- 	}
- 	/* Idle states parsed correctly, initialize per-cpu pointer */
- 	per_cpu(psci_power_state, cpu) = psci_states;
++of_setup_cpu_pd() -
++Provides a single step registration of the CPU PM domain and attach CPUs to
++the genpd. Platform drivers may additionally register callbacks for power_on
++and power_off operations for the PM domain.
 +
-+	if (psci_has_osi_pd) {
-+		int ret;
-+		const struct cpu_pd_ops psci_pd_ops = {
-+			.power_off = psci_pd_power_off,
-+		};
++of_setup_cpu_pd_single() -
++Define PM domain for a single CPU and attach the CPU to its domain.
 +
-+		ret = of_setup_cpu_pd_single(cpu, &psci_pd_ops);
-+		if (!ret)
-+			ret = psci_set_suspend_mode_osi(true);
-+		if (ret)
-+			pr_warn("CPU%d: Error setting PSCI OSI mode\n", cpu);
-+	}
 +
- 	return 0;
- 
- free_mem:
-@@ -330,15 +386,17 @@ int psci_cpu_init_idle(unsigned int cpu)
- static int psci_suspend_finisher(unsigned long index)
- {
- 	u32 *state = __this_cpu_read(psci_power_state);
-+	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
- 
--	return psci_ops.cpu_suspend(state[index - 1],
--				    virt_to_phys(cpu_resume));
-+	return psci_ops.cpu_suspend(ext_state, virt_to_phys(cpu_resume));
- }
- 
- int psci_cpu_suspend_enter(unsigned long index)
- {
- 	int ret;
- 	u32 *state = __this_cpu_read(psci_power_state);
-+	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
++CPU PM Domain governor
++----------------------
 +
- 	/*
- 	 * idle state index 0 corresponds to wfi, should never be called
- 	 * from the cpu_suspend operations
-@@ -347,10 +405,16 @@ int psci_cpu_suspend_enter(unsigned long index)
- 		return -EINVAL;
- 
- 	if (!psci_power_state_loses_context(state[index - 1]))
--		ret = psci_ops.cpu_suspend(state[index - 1], 0);
-+		ret = psci_ops.cpu_suspend(ext_state, 0);
- 	else
- 		ret = cpu_suspend(index, psci_suspend_finisher);
- 
-+	/*
-+	 * Clear the CPU's cluster states, we start afresh after coming
-+	 * out of idle.
-+	 */
-+	psci_reset_composite_state_id();
++CPUs have a unique ability to determine their next wakeup. CPUs may wake up
++for known timer interrupts and unknown interrupts from idle. Prediction
++algorithms and heuristic based algorithms like the Menu governor for cpuidle
++can determine the next wakeup of the CPU. However, determining the wakeup
++across a group of CPUs is a tough problem to solve.
 +
- 	return ret;
- }
- 
++A simplistic approach would be to resort to known wakeups of the CPUs in
++determining the next wakeup of any CPU in the cluster. The CPU PM domain
++governor does just that. By looking into the tick device of the CPUs, the
++governor can determine the sleep time between the last CPU and the first
++scheduled wakeup of any CPU in that domain. This combined with the PM QoS
++requirement for CPU_DMA_LATENCY can be used to determine the deepest possible
++idle state of the CPU domain.
 -- 
 2.7.4
-
