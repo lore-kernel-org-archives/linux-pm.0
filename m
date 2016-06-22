@@ -1,242 +1,80 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v5 0/5] Thermal: Support for hardware-tracked trip points
-Date: Wed, 22 Jun 2016 11:25:39 +0800
-Message-ID: <1466565939.2379.5.camel@intel.com>
-References: <1465213489-14898-1-git-send-email-wxt@rock-chips.com>
-	 <57689B82.3000902@gmail.com>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?UkU6IFJlOiBbUFVMTCBSZXF1ZXN0XSBEZXZmcmVxIEZpeGVz?=
+ =?UTF-8?B?IGZvciBSQzUrLg==?=
+Date: Wed, 22 Jun 2016 04:50:03 +0000
+Message-ID: <1778096369.335055.1466571003447.JavaMail.weblogic@ep2ml104d>
+References: <CGME20160621054943epcms1p5edf96fb3b2179a62bff867190bc6dc13@epcms1p5>
+ <1787004839.214561.1466488183645.JavaMail.weblogic@ep2ml104d>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/related;
+ boundary="----=_Part_335054_1120804258.1466571003447"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:13882 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752033AbcFVDZt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 21 Jun 2016 23:25:49 -0400
-In-Reply-To: <57689B82.3000902@gmail.com>
+Received: from mailout2.samsung.com ([203.254.224.25]:37075 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbcFVFBZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 01:01:25 -0400
+Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
+ by mailout2.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0O9500OG6PFG7WE0@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 22 Jun 2016 13:50:04 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <caesar.upstream@gmail.com>, Caesar Wang <wxt@rock-chips.com>, edubezval@gmail.com, linux-pm@vger.kernel.org
-Cc: Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>, smbarber@google.com, Durgadoss R <durgadoss.r@intel.com>, Jonathan Corbet <corbet@lwn.net>, linux-rockchip@lists.infradead.org, briannorris@google.com, Andy Champ <andycham@amazon.com>, huangtao@rock-chips.com, Sascha Hauer <s.hauer@pengutronix.de>, javi.merino@arm.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Ni Wade <wni@nvidia.com>, Keerthy <j-keerthy@ti.com>, dmitry.torokhov@gmail.com, peter@piie.net, dianders@chromium.org, Leo Yan <leo.yan@linaro.org>, cf@rock-chips.com
+To: =?UTF-8?B?UmFmYWVsIEouIFd5c29ja2k=?= <rafael@kernel.org>
+Cc: =?UTF-8?B?cmp3QHJqd3lzb2NraS5uZXQ=?= <rjw@rjwysocki.net>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20=?= <rafael.j.wysocki@intel.com>, =?UTF-8?B?bHVrYXN6Lmx1YmFAYXJtLmNvbQ==?= <lukasz.luba@arm.com>, =?UTF-8?B?ZGFuLmNhcnBlbnRlckBvcmFjbGUuY29t?= <dan.carpenter@oracle.com>, =?UTF-8?B?bXl1bmdqb28uaGFtQGdtYWlsLmNvbQ==?= <myungjoo.ham@gmail.com>
 
-On =E4=BA=8C, 2016-06-21 at 09:42 +0800, Caesar Wang wrote:
-> Do you have other ideas for the following patches? :-)=C2=A0
-> Even if only took two weeks feel after a long time.
->=20
-> 9157919 New=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [v5=
-,1/5] thermal: Add support for hardware-
-> tracked trip points
-> 9157917 New=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [v5=
-,2/5] thermal: of: implement .set_trips for
-> device tree thermal zones
-> 9161129 New=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [v5=
-=2E1,3/5] thermal: streamline get_trend
-> callbacks
-> 9157929 New=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [v5=
-,4/5] thermal: bang-bang governor: act on
-> lower trip boundary
-> 9157925 New=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 [v5=
-,5/5] thermal: rockchip: add the set_trips
-> function
-> ---
->=20
-I have no objections to this patch set, except one change in patch 1/5.
-But as this also touches of_thermal and rockchip thermal driver. I'd
-leave this patch set for Eduardo to review and take.
-BTW, Eduardo is traveling recently, so you may still need to wait some
-time.
+------=_Part_335054_1120804258.1466571003447
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-Thanks,
-rui
->=20
-> Caesar
->=20
-> On 2016=E5=B9=B406=E6=9C=8806=E6=97=A5 19:44, Caesar Wang wrote:
-> > Thank you all for providing inputs and comments on previous
-> > versions of
-> > this patchset.
-> > Especially thanks to the (Mikko,Sascha,Eduardo,Javi,Steve....).
-> >=20
-> > The history patches come from Mikko and Sascha.
-> > =C2=A0=C2=A0=C2=A0=C2=A0http://thread.gmane.org/gmane.linux.power-m=
-anagement.general/59
-> > 451
-> >=20
-> > Now, I pick them up to continue upstream.
-> > Nevermind!
-> >=20
-> > This series history patches:
-> > v4: https://lkml.org/lkml/2016/5/27/122
-> > v3: https://lkml.org/lkml/2016/5/24/797
-> > v2: https://lkml.org/lkml/2016/5/3/220
-> > v1: https://lkml.org/lkml/2016/4/24/227
-> >=20
-> > This series adds support for hardware trip points. It picks up
-> > earlier
-> > work from Mikko Perttunen. Mikko implemented hardware trip points
-> > as part
-> > of the device tree support. It was suggested back then to move the
-> > functionality to the thermal core instead of putting more code into
-> > the
-> > device tree support. This series does exactly that.
-> >=20
-> > This series patches rebase the conflicts with the lastest next
-> > kernel.
-> > Note that the hardware-tracked trip points are very well tested
-> > currently.
-> >=20
-> > Verified and tested on https://github.com/Caesar-github/rockchip/tr
-> > ee/wip/fixes-thermal-0606
-> > That's based on the next kernel (4.7-rc2).
-> > localhost / # cat /proc/version
-> > Linux version 4.7.0-rc2-next-20160606-02546-g534926d (wxt@nb)
-> > ---
-> > There are five pathes in this series.
-> > thermal: Add support for hardware-tracked trip point
-> > thermal: of: implement .set_trips for device tree thermal zones
-> > thermal: streamline get_trend callbacks
-> > thermal: bang-bang governor: act on lower trip boundary
-> > thermal: rockchip: add the set_trips function
-> >=20
-> > Note: the hardware-tracked trip points that the similar patches
-> > were verified
-> > on ChromoeOs platform.
-> > e.g.:
-> > https://chromium.googlesource.com/chromiumos/third_party/kernel/+/c
-> > hromeos-3.14
-> > https://chromium.googlesource.com/chromiumos/third_party/kernel/+/c
-> > hromeos-3.18
-> > https://chromium.googlesource.com/chromiumos/third_party/kernel/+/c
-> > hromeos-4.4
-> > ---
-> >=20
-> > Anyway, I take the lastest thermal change to test from next kernel,
-> >=20
-> > Tested on RK3399 SoCs on https://chromium.googlesource.com/chromium
-> > os/third_party/kernel/+/chromeos-4.4
-> > And
-> > Tested on RK3288 SoCs with chromebook on next kernel.
-> > localhost / # while true; do grep ""
-> > /sys/class/thermal/thermal_zone[0-1]/temp; sleep .5; done
-> > /sys/class/thermal/thermal_zone1/temp:45454
-> > /sys/class/thermal/thermal_zone2/temp:44090
-> > /sys/class/thermal/thermal_zone1/temp:44545
-> > /sys/class/thermal/thermal_zone2/temp:44545
-> > /sys/class/thermal/thermal_zone1/temp:45454
-> > /sys/class/thermal/thermal_zone2/temp:44545
-> > /sys/class/thermal/thermal_zone1/temp:45000
-> > ...
-> > Then add the loading,
-> > localhost / # md5sum /dev/zero &
-> > [3] 8354
-> > ..
-> > The Set trips trigger the hardware-tracked points.
-> >=20
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 68461, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 2 - temp: 64166, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
-> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
-> > 1: low: 68000, high 75000
-> > rockchip-thermal ff280000.tsadc: sensor 2 - temp: 66153, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
-> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
-> > 1: low: 68000, high 70000
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 68076, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 2 - temp: 65384, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
-> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
-> > 1: low: 68000, high 75000
-> > rockchip-thermal ff280000.tsadc: sensor 2 - temp: 65384, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
-> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
-> > 1: low: 68000, high 70000
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70833, retval: 0
-> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
-> > 1: low: 68000, high 75000
-> > rockchip-thermal ff280000.tsadc: sensor 2 - temp: 66153, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69230, retval: 0
-> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
-> > 1: low: 68000, high 70000
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70416, retval: 0
-> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
-> > 1: low: 68000, high 75000
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 69615, retval: 0
-> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
-> > 1: low: 68000, high 70000
-> > rockchip-thermal ff280000.tsadc: sensor 1 - temp: 70000, retval: 0
-> > rockchip-thermal ff280000.tsadc: rockchip_thermal_set_trips: sensor
-> > 1: low: 68000, high 75000
-> > ..
-> > ---
-> > Anyway, the series patches are verified on rockchip platform.
-> >=20
-> > Thanks someone are reviewing and testing for it.
-> >=20
-> > -Caesar
-> >=20
-> >=20
-> > Changes in v5:
-> > - add the lock for thermal_zone_set_trips function.
-> > - change based on next kernel.
-> > - add the tested by Steve.
-> >=20
-> > Changes in v4:
-> > - Missing the lock added in v3.
-> > - as the Javi comments, %s/implemnets/implements.
-> >=20
-> > Changes in v3:
-> > - as Javi comments on https://patchwork.kernel.org/patch/9001281/.
-> > - add the lock for preventing the called from multi placce
-> > - add the note for pre_low/high_trip.
-> > - as the Javi comments on https://patchwork.kernel.org/patch/900131
-> > 1/.
-> > - add the select if they set the option for devicetree.
-> > - Add the peter's ACK.
-> >=20
-> > Changes in v2:
-> > - update the sysfs-api.txt for set_trips.
-> > - add the commit in patch[v2 2/5].
-> > - Update the commit for patch[v2 4/5].
-> >=20
-> > Caesar Wang (1):
-> > =C2=A0 thermal: rockchip: add the set_trips function
-> >=20
-> > Sascha Hauer (4):
-> > =C2=A0 thermal: Add support for hardware-tracked trip points
-> > =C2=A0 thermal: of: implement .set_trips for device tree thermal zo=
-nes
-> > =C2=A0 thermal: streamline get_trend callbacks
-> > =C2=A0 thermal: bang-bang governor: act on lower trip boundary
-> >=20
-> > =C2=A0Documentation/thermal/sysfs-api.txt=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=
-=A0=C2=A07 +++
-> > =C2=A0drivers/thermal/gov_bang_bang.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A02 +-
-> > =C2=A0drivers/thermal/of-thermal.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 30 ++++++++
-> > ----
-> > =C2=A0drivers/thermal/rockchip_thermal.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0| 39
-> > ++++++++++++++++
-> > =C2=A0drivers/thermal/thermal_core.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0| 54
-> > ++++++++++++++++++++++
-> > =C2=A0drivers/thermal/thermal_sysfs.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0|=C2=A0=C2=A03 ++
-> > =C2=A0drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 25 ++++-=
------
-> > =C2=A0include/linux/thermal.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 16 ++++++-
-> > =C2=A08 files changed, 147 insertions(+), 29 deletions(-)
-> >=20
-> =C2=A0
+T24gVHVlLCBKdW4gMjEsIDIwMTYgYXQgNzo0OSBBTSwgTXl1bmdKb28gSGFtIDxteXVuZ2pvby5o
+YW1Ac2Ftc3VuZy5jb20+IHdyb3RlOg0KPiA+IERlYXIgUmFmYWVsLA0KPiA+DQo+ID4gSGVyZSBn
+b2VzIGEgcHVsbCByZXF1ZXN0IG9mICJQTSAvIERldmZyZXEgRml4ZXMiIHRhcmdldHRpbmcgUkM1
+Ky4NCj4gDQo+IFlvdSBzaG91bGQgc2lnbiBvZmYgYWxsIG9mIHlvdXIgY29tbWl0cyBhbmQgc29t
+ZSBvZiB0aGVtIGFyZSBvbmx5DQo+IGFja2VkLWJ5LiAgQ2FuIHlvdSBwbGVhc2UgYWRkIHRoZSBz
+aWduLW9mZnMgYXMgYXBwcm9wcmlhdGUgYW5kIHNlbnQNCj4gdGhlIHJlcXVlc3QgYWdhaW4/DQo+
+IA0KPiBUaGFua3MsDQo+IFJhZmFlbA0KDQpPb3BzLiBTdXJlLCBJJ2xsIHVwZGF0ZSBhbmQgc2Vu
+ZCB0aGUgcmVxdWVzdCBhZ2FpbiBzb29uLg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCj4gDQo+
+IA0KPiA+IC0tLS0tQkVHSU4gUEdQIFNJR05FRCBNRVNTQUdFLS0tLS0NCj4gPiBIYXNoOiBTSEEx
+DQo+ID4NCj4gPiBUaGUgZm9sbG93aW5nIGNoYW5nZXMgc2luY2UgY29tbWl0IDMzNjg4YWJiMjgw
+MmZmM2EyMzBiZDI0NDFmNzY1NDc3Yjk0Y2M4OWU6DQo+ID4NCj4gPiAgIExpbnV4IDQuNy1yYzQg
+KDIwMTYtMDYtMTkgMjE6MzA6MDIgLTA3MDApDQo+ID4NCj4gPiBhcmUgYXZhaWxhYmxlIGluIHRo
+ZSBnaXQgcmVwb3NpdG9yeSBhdDoNCj4gPg0KPiA+ICAgaHR0cHM6Ly9naXQua2VybmVsLm9yZy9w
+dWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEuZ2l0IGZpeGVzDQo+ID4NCj4gPiBm
+b3IgeW91IHRvIGZldGNoIGNoYW5nZXMgdXAgdG8gNzJiMjgzNWJhYjZiYjBmNzY4OGE3ODMwMWFj
+MTQ2NmM3MjljYjFjOToNCj4gPg0KPiA+ICAgUE0gLyBkZXZmcmVxOiBmaXggaW5pdGlhbGl6YXRp
+b24gb2YgY3VycmVudCBmcmVxdWVuY3kgaW4gbGFzdCBzdGF0dXMgKDIwMTYtMDYtMjEgMTQ6MjU6
+MzAgKzA5MDApDQo+ID4NCj4gPiAtIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPiBQdWxsIFJlcXVlc3Qgb2YgRGV2ZnJl
+cSBGaXhlcyAoMy43IHJjIDUrKSBmb3IgUmFmYWVsIExpbnV4IFBNLg0KPiA+DQo+ID4gLSAtLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tDQo+ID4gQ2FpIFpoaXlvbmcgKDEpOg0KPiA+ICAgICAgIFBNIC8gZGV2ZnJlcTogZml4IGRv
+dWJsZSBjYWxsIHB1dF9kZXZpY2UNCj4gPg0KPiA+IERhbiBDYXJwZW50ZXIgKDEpOg0KPiA+ICAg
+ICAgIFBNIC8gZGV2ZnJlcTogZXh5bm9zLW5vY3A6IFJlbW92ZSBpbmNvcnJlY3QgSVNfRVJSKCkg
+Y2hlY2sNCj4gPg0KPiA+IEx1a2FzeiBMdWJhICgxKToNCj4gPiAgICAgICBQTSAvIGRldmZyZXE6
+IGZpeCBpbml0aWFsaXphdGlvbiBvZiBjdXJyZW50IGZyZXF1ZW5jeSBpbiBsYXN0IHN0YXR1cw0K
+PiA+DQo+ID4gTXl1bmdKb28gSGFtICgzKToNCj4gPiAgICAgICBQTSAvIGRldmZyZXE6IGRldm1f
+a3phbGxvYyB0byBoYXZlIGRldiBwb2ludGVyIG1vcmUgcHJlY2lzZWx5DQo+ID4gICAgICAgUE0g
+LyBkZXZmcmVxOiBmaXggZHVwbGljYXRlZCBrZnJlZSBvbiBkZXZmcmVxIHBvaW50ZXINCj4gPiAg
+ICAgICBQTSAvIGRldmZyZXE6IHJlbW92ZSBkb3VibGUgcHV0X2RldmljZQ0KPiA+DQo+ID4gIGRy
+aXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgICAgICAgICAgIHwgMjIgKysrKysrKysrKy0tLS0tLS0t
+LS0tLQ0KPiA+ICBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLW5vY3AuYyB8ICAzIC0tLQ0K
+PiA+ICAyIGZpbGVzIGNoYW5nZWQsIDEwIGluc2VydGlvbnMoKyksIDE1IGRlbGV0aW9ucygtKQ0K
+PiA+IC0tLS0tQkVHSU4gUEdQIFNJR05BVFVSRS0tLS0tDQo+ID4gVmVyc2lvbjogR251UEcgdjEN
+Cj4gPg0KPiA+IGlRSWNCQUVCQWdBR0JRSlhhTk1FQUFvSkVCT2h1cnZXQm9DSzd6RVFBSktCQUVU
+aGx1NkNkUUVjTjdkdVpFMjUNCj4gPiBERDJwR3pTS1E1c3EvUllnNlkwQlVjeVkzbHRnZW5SenY5
+M09IeUdzNGsyU3U2NXJSaHNvN0NsS3Y2c3RXZFVvDQo+ID4gdGZrV3V2Z0gzWmpuczB6bGxha25z
+Q3ZsNWl6eFJhWWRDb2Jtb0RaL29tSHZQM3U5YUxxYk83UEFxb25MUXpYKw0KPiA+IC9tcWFzUVYw
+MkdTQmdzZ0ppUzZ0NWhSNjhvQkVtR01lUzZ5aVpoTTFCQVBrVnF2eFZwb3BnTnhZM1pGakhXK1kN
+Cj4gPiBJVXpzbGVpaXZ5VTZoWmpuSk53Y1JHSnRxM3VGKzY2WXZERE0vN2pVREFlREsxbUZzbUpv
+K2tCOWpUdWdMaHZvDQo+ID4gQjZaa09mZ0crczNHUlFZVmxxNjFOSHhjTzVGUThxRG1EcEJMYUFO
+ZWl0ZDZJZmZWSm9Qb0Z1c1VXblRYY3E1Vw0KPiA+IHd4VS9XT0VnSW5SRDJoYjl5TVRiemxGdEpq
+U05QTk0veVFTRTd3U01GUWdWSUJvcVZUTDFJbVd3ZlpLUGhWQ2oNCj4gPiBWTndpYnl0UFVKbVpE
+MmdUOTdLemhuejdvMEREQS9ZbGxqWWJtY2ozTC95TCtteWx0WEtGc1I5OThLODBPaUdrDQo+ID4g
+YnlNZWhhcDVpdGZLbXdVN1dtZ3BVU0NnMkYwS2c5SmNPQU84U1I0SjBSQjM5STFVb3Q1aDZIZWk2
+dmJ6ZjVhbA0KPiA+IFI0VkZZeU50azVWdU15ZHRFRndtOG01SGVLMVRGUXhaaUd4TXJpY0Q1VTlz
+QTRzT0RJckFXeERCQTh3S01VODcNCj4gPiB5MHJwM0ZQUlVpZ1BlbXpVSVBYUlNyd0ZwU2x0VkZz
+ZEh0NTgvWldMY28xd1R1VjNiaXNiRlArcUF3RDlBd1lyDQo+ID4gTCthdHhubGl5Zm5tbjdPSHZa
+eFINCj4gPiA9QnJacw0KPiA+IC0tLS0tRU5EIFBHUCBTSUdOQVRVUkUtLS0tLQ0KPiANCg==
+------=_Part_335054_1120804258.1466571003447--
