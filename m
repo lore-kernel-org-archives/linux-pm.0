@@ -1,62 +1,143 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt
- > 0
-Date: Wed, 22 Jun 2016 16:23:54 +0200
-Message-ID: <20160622142353.GA16084@earth>
-References: <1465507719-819-1-git-send-email-rklein@nvidia.com>
- <8b081e45-94c8-bb53-69ca-0a617c668de5@nvidia.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="a8Wt8u1KmwUX3Y2C"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:39256 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750799AbcFVOYd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 22 Jun 2016 10:24:33 -0400
-Content-Disposition: inline
-In-Reply-To: <8b081e45-94c8-bb53-69ca-0a617c668de5@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCHv3 1/1] thermal: core: call thermal_zone_device_update() after mode update
+Date: Wed, 22 Jun 2016 07:34:14 -0700
+Message-ID: <1466606054-28867-1-git-send-email-edubezval@gmail.com>
+References: <1466563538.2471.10.camel@intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1466563538.2471.10.camel@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, Darren Hart <dvhart@infradead.org>, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rhyland Klein <rklein@nvidia.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
+
+Because several drivers do the following pattern:
+.set_mode()
+   ...
+   local_data->mode = new_mode;
+   thermal_zone_device_update(tz);
+
+makes sense to simply do the thermal_zone_device_update()
+in thermal core, after setting the new mode.
+
+Also, this patch also remove deadlocks on drivers that
+call thermal_zone_device_update() on .set_mode(),
+as .set_mode()  is now called always with tz->lock held.
+
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org
+Cc: "Lee, Chun-Yi" <jlee@suse.com>
+Cc: Darren Hart <dvhart@infradead.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Keerthy <j-keerthy@ti.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-omap@vger.kernel.org
+Cc: platform-driver-x86@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+---
+
+Hey,
 
 
---a8Wt8u1KmwUX3Y2C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+V2--> V3: Remove locking from OF thermal set mode.
+The locking is done from thermal core already.
 
-Hi Rhyland,
+BR,
 
-On Tue, Jun 21, 2016 at 02:06:55PM -0400, Rhyland Klein wrote:
-> Sebastian, might this be accepted soon? We can't enable the bq27xxx
-> driver for Tegra210 Smaug without running into the crash this prevents.
+Eduardo
 
-Yes, I have already queued this in my fixes branch some days ago,
-but did not yet pushed it. It's pushed out now:
+ drivers/acpi/thermal.c                             | 2 --
+ drivers/platform/x86/acerhdf.c                     | 1 -
+ drivers/thermal/imx_thermal.c                      | 1 -
+ drivers/thermal/of-thermal.c                       | 5 -----
+ drivers/thermal/thermal_sysfs.c                    | 1 +
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 1 -
+ 6 files changed, 1 insertion(+), 10 deletions(-)
 
-https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/commit/?h=fixes&id=5bc28b93a36e3cb3acc2870fb75cb6ffb182fece
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 82707f9..8582b88 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -519,8 +519,6 @@ static void acpi_thermal_check(void *data)
+ 
+ 	if (!tz->tz_enabled)
+ 		return;
+-
+-	thermal_zone_device_update(tz->thermal_zone);
+ }
+ 
+ /* sys I/F for generic thermal sysfs support */
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 460fa67..aee33ba 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -405,7 +405,6 @@ static inline void acerhdf_enable_kernelmode(void)
+ 	kernelmode = 1;
+ 
+ 	thz_dev->polling_delay = interval*1000;
+-	thermal_zone_device_update(thz_dev);
+ 	pr_notice("kernel mode fan control ON\n");
+ }
+ 
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index c5547bd..a413eb6 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -246,7 +246,6 @@ static int imx_set_mode(struct thermal_zone_device *tz,
+ 	}
+ 
+ 	data->mode = mode;
+-	thermal_zone_device_update(tz);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index b8e509c..95c47da 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -282,17 +282,12 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
+ {
+ 	struct __thermal_zone *data = tz->devdata;
+ 
+-	mutex_lock(&tz->lock);
+-
+ 	if (mode == THERMAL_DEVICE_ENABLED)
+ 		tz->polling_delay = data->polling_delay;
+ 	else
+ 		tz->polling_delay = 0;
+ 
+-	mutex_unlock(&tz->lock);
+-
+ 	data->mode = mode;
+-	thermal_zone_device_update(tz);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index 743df50..3d0dc30 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -100,6 +100,7 @@ mode_store(struct device *dev, struct device_attribute *attr,
+ 	mutex_lock(&tz->lock);
+ 	result = tz->ops->set_mode(tz, mode);
+ 	mutex_unlock(&tz->lock);
++	thermal_zone_device_update(tz);
+ 
+ 	if (result)
+ 		return result;
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index 15c0a9a..9a5a3a3 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -205,7 +205,6 @@ static int ti_thermal_set_mode(struct thermal_zone_device *thermal,
+ 	data->mode = mode;
+ 	ti_bandgap_write_update_interval(bgp, data->sensor_id,
+ 					data->ti_thermal->polling_delay);
+-	thermal_zone_device_update(data->ti_thermal);
+ 	dev_dbg(&thermal->device, "thermal polling set for duration=%d msec\n",
+ 		data->ti_thermal->polling_delay);
+ 
+-- 
+2.1.4
 
--- Sebastian
-
---a8Wt8u1KmwUX3Y2C
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJXap92AAoJENju1/PIO/qaALoQAJr2coGVaJwo/z06c1d1bELe
-71wvGrD3dj7j8fy/V4144FOJivFY+6QgOXq9h3jRw+hXim/xUeJWbHY3vltQX6OB
-RpwTLOTwQXxaU8DX8n+rtIuyxhwYhKeFgGeSk2Vpx5QDQvRdQA76cSmtdJ28ZNPJ
-xhS+8T0FXpNYmiHgUsApAi8Z8njCTGqZPAPmEqomSURtmAcAMzKwFWk0z8oqZNMs
-mLgEQO83Bp1i8/dI/0SYMxQP/sZyHmfkSlSjOF2o2X+mJtseqHT67srV4d2NkDHV
-oZ8YRW0THzcDiPWI/uKS1Eix0PR6oldnwpAF4ayfAnbnwrkUGnxWeWltpqNiW2o+
-9LMy3M2kJSr/5LeGOaNqeOzD5JmL6ulbPQFTCPrAc4hBhLfnJj1+9pUWM2eCbDfB
-voepjwMBam1TjBAVTMSS9uIEwZPzIdRFcSIKd4FciXpCHSnqcCxDSrE/3jT/URxG
-hveS0KfsC+n6AH7QGKeoFx7dw0xOjsEmAw+Yfmp46eQub9yEDfsZkt1Z9q92BhJt
-9gCpvslJCyxWy7/QUqjWcAg+ZvUTFzMoG90Xt6zjl2E14mK2FiGI1dYUH9RBeWAZ
-/EkVpjLJFPpsRwpzYz5aSZkPBbynMoijIQk+lrbsHLy959I4wqI5fTshJHgx4Xix
-cyJNxXV7ReKfi75OQk0h
-=mtpL
------END PGP SIGNATURE-----
-
---a8Wt8u1KmwUX3Y2C--
