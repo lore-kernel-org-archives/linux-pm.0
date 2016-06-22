@@ -1,64 +1,118 @@
-From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v12 2/4] gadget: Support for the usb charger framework
-Date: Wed, 22 Jun 2016 09:45:55 +0800
-Message-ID: <CAMz4kuK24gb1LmJ5ByiF4Sy3ukXdM8esBuTB0y=AL6fLCD0WQw@mail.gmail.com>
-References: <cover.1466497505.git.baolin.wang@linaro.org> <f7bae2566824a5e1da14c1a19dee6af5f250262f.1466497506.git.baolin.wang@linaro.org>
- <87bn2uomzd.fsf@linux.intel.com> <CAMz4ku+t66t+E3dCysfE9yNkKRCYwv7mXpJs4ShGbZWSZO_B9g@mail.gmail.com>
- <87twgmn4m7.fsf@linux.intel.com> <CAMz4kuKtof=wret_JJVaxe3uXjtaSeCFWn8V6y2wzTjjmrQVLQ@mail.gmail.com>
- <87inx2n2vs.fsf@linux.intel.com> <CAMz4kuKnzjPOqEr9kJY6SCnq2rszsc55X5=7mWb+ZcbL6G_8DQ@mail.gmail.com>
- <87d1nan2ft.fsf@linux.intel.com> <CAMz4kuLnKH3to_gYdZC3+eos8a4i9nyqXQZyjui+eryv5i+_EQ@mail.gmail.com>
- <87a8ien1o0.fsf@linux.intel.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v12 1/4] gadget: Introduce the usb charger framework
+Date: Wed, 22 Jun 2016 09:49:24 +0800
+Message-ID: <CAMz4kuLs02QZr82EAsNrnakjLuuLL6HSH5+4aN3bFMy7=COqCw@mail.gmail.com>
+References: <cover.1466497505.git.baolin.wang@linaro.org> <831e03e8935b4c62e1e6bf94c93e0a08a73d89b2.1466497505.git.baolin.wang@linaro.org>
+ <87eg7qon3r.fsf@linux.intel.com> <CAMz4kuJHPqvYiUGi8Ar5cR_8dENddvVjNEuG1wJVt3E3vp1UOQ@mail.gmail.com>
+ <871t3qmw9j.fsf@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <87a8ien1o0.fsf-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ruslan Bilovol <ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, grygorii.strashko-l0cyMroinI0@public.gmane.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <871t3qmw9j.fsf@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Felipe Balbi <balbi@kernel.org>
+Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 21 June 2016 at 20:53, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+On 21 June 2016 at 22:50, Felipe Balbi <balbi@kernel.org> wrote:
 >
 > Hi,
 >
-> Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
->>>>>>>>> Can't you just tie a charger to a UDC and avoid the charger class
->>>>>>>>> completely?
->>>>>>>>
->>>>>>>> Yeah, I also hope so. But we really want something to manage the
->>>>>>>> charger devices, do you have any good suggestion to avoid the 'class'
->>>>>>>> but also can manage the charger devices?
->>>>>>>
->>>>>>> manage in what way? It seems to me that they don't need to be real
->>>>>>> devices, just a handle as part of struct usb_gadget, no?
->>>>>>
->>>>>> Although charger device is not one real hardware device, we also use
->>>>>> one 'struct device' to describe it in charger.c file. So we should
->>>>>> manage the 'struct device' with one proper way.
->>>>>
->>>>> that's fine, but why do you think they need a struct device to start with?
+> Baolin Wang <baolin.wang@linaro.org> writes:
+>>>> This patch introduces the usb charger driver based on usb gadget that
+>>>> makes an enhancement to a power driver. It works well in practice but
+>>>> that requires a system with suitable hardware.
 >>>>
->>>> We can get/put usb charger and mange usb charger attributes with the
->>>> device model if we use a struct device.
+>>>> The basic conception of the usb charger is that, when one usb charger
+>>>> is added or removed by reporting from the usb gadget state change or
+>>>> the extcon device state change, the usb charger will report to power
+>>>> user to set the current limitation.
+>>>>
+>>>> The usb charger will register notifiees on the usb gadget or the extcon
+>>>> device to get notified the usb charger state. It also supplies the
+>>>> notification mechanism to userspace When the usb charger state is changed.
+>>>>
+>>>> Power user will register a notifiee on the usb charger to get notified
+>>>> by status changes from the usb charger. It will report to power user
+>>>> to set the current limitation when detecting the usb charger is added
+>>>> or removed from extcon device state or usb gadget state.
+>>>>
+>>>> This patch doesn't yet integrate with the gadget code, so some functions
+>>>> which rely on the 'gadget' are not completed, that will be implemented
+>>>> in the following patches.
+>>>>
+>>>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+>>>> Reviewed-by: Li Jun <jun.li@nxp.com>
+>>>> Tested-by: Li Jun <jun.li@nxp.com>
+>>>> ---
+>>>>  drivers/usb/gadget/Kconfig       |    7 +
+>>>>  drivers/usb/gadget/udc/Makefile  |    1 +
+>>>>  drivers/usb/gadget/udc/charger.c |  770 ++++++++++++++++++++++++++++++++++++++
+>>>>  include/linux/usb/charger.h      |  191 ++++++++++
+>>>>  include/uapi/linux/usb/charger.h |   31 ++
+>>>>  5 files changed, 1000 insertions(+)
+>>>>  create mode 100644 drivers/usb/gadget/udc/charger.c
+>>>>  create mode 100644 include/linux/usb/charger.h
+>>>>  create mode 100644 include/uapi/linux/usb/charger.h
+>>>>
+>>>> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+>>>> index 2057add..89f4e9b 100644
+>>>> --- a/drivers/usb/gadget/Kconfig
+>>>> +++ b/drivers/usb/gadget/Kconfig
+>>>> @@ -134,6 +134,13 @@ config U_SERIAL_CONSOLE
+>>>>       help
+>>>>          It supports the serial gadget can be used as a console.
+>>>>
+>>>> +config USB_CHARGER
+>>>> +     bool "USB charger support"
 >>>
->>> We already have that as part of struct usb_udc. Why don't you just
->>> create a subdirectory called charger which will hold all your
->>> charger-related attributes. That directory will only be created if a
->>> valid ->charger pointer exists.
+>>> you didn't build test all possibilities, did you?
+>>>
+>>> I have a feeling this won't link if USB_GADGET=m. Can you test that?
 >>
->> That means we can remove all the device and class things in charger.c
->> file, right? OK, I try to do that. Thanks.
+>> OK.
+>>
+>>>
+>>>> diff --git a/drivers/usb/gadget/udc/charger.c b/drivers/usb/gadget/udc/charger.c
+>>> [...]
+>>>> +struct class *usb_charger_class;
+>>>
+>>> We already have a UDC class, do we really, really need another class
+>>> here?
+>>
+>> We want to manage the usb charger devices by this class and one usb
+>> charger device is not equal with one usb device which managed by UDC
 >
-> right. Keep your charger.c file, because to conditionally compile and
-> link that to udc-core.ko, but remove all the class initialization and
-> all of that extra code.
+> Can you explain this statement? If charging is done via a USB peripheral
+> port, why don't we have a 1:1 mapping between charger and UDC?
 
-Make sense.
+Sorry for confusing, but forget it, I plan to remove the device/class
+things as you suggested.
+
+>
+>> class, so can we use UDC class to manage charger devices?
+>> By the way, you also suggested to use the 'class' things instead of
+>> 'bus' in previous mail.
+>
+> true, I did say that. It seems clearer, however, that we don't need this
+> virtual device here.
+
+OK.
+
+>
+>>>> +subsys_initcall(usb_charger_class_init);
+>>>
+>>> this should always work as module_init(). Please make sure that's the
+>>> case.
+>>
+>> we should make sure the charger class has been allocated before user
+>> try to add a new gadget to the udc class. So it should be issued
+>> before 'module_init()' (many usb drivers are at module_init level).
+>
+> -EPROBE_DEFER?
+
+OK. But 'EPROBE_DEFER' is not needed if we remove the class things.
 
 -- 
 Baolin.wang
 Best Regards
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
