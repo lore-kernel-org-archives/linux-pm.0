@@ -1,113 +1,51 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH 1/2] thermal: rockchip: fixes the period time for tsadc
-Date: Wed, 22 Jun 2016 18:13:56 +0800
-Message-ID: <1466590437-15912-1-git-send-email-wxt@rock-chips.com>
-References: <1466584925-4829-1-git-send-email-wxt@rock-chips.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH 1/2] cpufreq: exynos: use relaxed IO accesors
+Date: Wed, 22 Jun 2016 12:36:18 +0200
+Message-ID: <CAJKOXPfFaAq4te5Jp2sXkK7MfS-NxmWnx931dDojFfBW34ofeQ@mail.gmail.com>
+References: <1466587984-14105-1-git-send-email-ben.dooks@codethink.co.uk>
+ <3668897.kYSEflAvDO@wuerfel>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1466584925-4829-1-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, smbarber-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, cf-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <3668897.kYSEflAvDO@wuerfel>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Arnd Bergmann <arnd@arndb.de>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@lists.codethink.co.uk, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ben Dooks <ben.dooks@codethink.co.uk>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-We should increase the period cycles to save power since the rk3399 has
-the high frequency for tsadc clock.
+On Wed, Jun 22, 2016 at 11:53 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Wednesday, June 22, 2016 10:33:03 AM CEST Ben Dooks wrote:
+>> The use of __raw IO accesors is not endian safe and should be used
+>> sparingly. The relaxed variants should be as lightweight and also
+>> are endian safe.
+>>
+>> Signed-off-by: Ben Dooks <ben.dooks@codethink.co.uk>
+>>
+>
+> Why not use the normal readl/writel() here instead of the relaxed version?
+>
+> Either one should work here, but in general I'd recommend using the
+> non-relaxed version unless code is particularly performance sensitive.
+>
+> The main argument for that is to not let people get used to using
+> _relaxed() all the time because it causes some very hard to debug
+> problems in the cases where you actually need the barriers.
 
-Fixes commit b0d70338bca22cb14
-("thermal: rockchip: Support the RK3399 SoCs in thermal driver")
+I think that would be actually different patch, not endian related.
+The concurrent operations here are excluded by mutexes so this looks
+safe.
 
-Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Viresh,
+I saw your ack. Do you prefer me to take the set through samsung-soc?
 
----
-
-Note:
-- depend on the " [v6,5/5] thermal: rockchip: add the set_trips function"
-  at https://patchwork.kernel.org/patch/9192179/, otherwise will cause the merge
-  conflict.
-
- drivers/thermal/rockchip_thermal.c | 34 ++++++++++++++++++++++++----------
- 1 file changed, 24 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 8175cdb..2d5ba97 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -211,8 +211,11 @@ struct rockchip_thermal_data {
- 
- #define TSADCV2_HIGHT_INT_DEBOUNCE_COUNT	4
- #define TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT	4
--#define TSADCV2_AUTO_PERIOD_TIME		250 /* msec */
--#define TSADCV2_AUTO_PERIOD_HT_TIME		50  /* msec */
-+#define TSADCV2_AUTO_PERIOD_TIME		250 /* 250ms */
-+#define TSADCV2_AUTO_PERIOD_HT_TIME		50  /* 50ms */
-+#define TSADCV3_AUTO_PERIOD_TIME		187500 /* 250ms */
-+#define TSADCV3_AUTO_PERIOD_HT_TIME		37500  /* 50ms */
-+
- #define TSADCV2_USER_INTER_PD_SOC		0x340 /* 13 clocks */
- 
- #define GRF_SARADC_TESTBIT			0x0e644
-@@ -547,6 +550,16 @@ static void rk_tsadcv3_initialize(struct regmap *grf, void __iomem *regs,
- 		/* Set interleave value to workround ic time sync issue */
- 		writel_relaxed(TSADCV2_USER_INTER_PD_SOC, regs +
- 			       TSADCV2_USER_CON);
-+
-+		writel_relaxed(TSADCV2_AUTO_PERIOD_TIME,
-+			       regs + TSADCV2_AUTO_PERIOD);
-+		writel_relaxed(TSADCV2_HIGHT_INT_DEBOUNCE_COUNT,
-+			       regs + TSADCV2_HIGHT_INT_DEBOUNCE);
-+		writel_relaxed(TSADCV2_AUTO_PERIOD_HT_TIME,
-+			       regs + TSADCV2_AUTO_PERIOD_HT);
-+		writel_relaxed(TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT,
-+			       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
-+
- 	} else {
- 		regmap_write(grf, GRF_TSADC_TESTBIT_L, GRF_TSADC_TSEN_PD_ON);
- 		mdelay(10);
-@@ -555,6 +568,15 @@ static void rk_tsadcv3_initialize(struct regmap *grf, void __iomem *regs,
- 		regmap_write(grf, GRF_SARADC_TESTBIT, GRF_SARADC_TESTBIT_ON);
- 		regmap_write(grf, GRF_TSADC_TESTBIT_H, GRF_TSADC_TESTBIT_H_ON);
- 		usleep_range(90, 200); /* The spec note says at least 90 us */
-+
-+		writel_relaxed(TSADCV3_AUTO_PERIOD_TIME,
-+			       regs + TSADCV2_AUTO_PERIOD);
-+		writel_relaxed(TSADCV2_HIGHT_INT_DEBOUNCE_COUNT,
-+			       regs + TSADCV2_HIGHT_INT_DEBOUNCE);
-+		writel_relaxed(TSADCV3_AUTO_PERIOD_HT_TIME,
-+			       regs + TSADCV2_AUTO_PERIOD_HT);
-+		writel_relaxed(TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT,
-+			       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
- 	}
- 
- 	if (tshut_polarity == TSHUT_HIGH_ACTIVE)
-@@ -563,14 +585,6 @@ static void rk_tsadcv3_initialize(struct regmap *grf, void __iomem *regs,
- 	else
- 		writel_relaxed(0U & ~TSADCV2_AUTO_TSHUT_POLARITY_HIGH,
- 			       regs + TSADCV2_AUTO_CON);
--
--	writel_relaxed(TSADCV2_AUTO_PERIOD_TIME, regs + TSADCV2_AUTO_PERIOD);
--	writel_relaxed(TSADCV2_HIGHT_INT_DEBOUNCE_COUNT,
--		       regs + TSADCV2_HIGHT_INT_DEBOUNCE);
--	writel_relaxed(TSADCV2_AUTO_PERIOD_HT_TIME,
--		       regs + TSADCV2_AUTO_PERIOD_HT);
--	writel_relaxed(TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT,
--		       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
- }
- 
- static void rk_tsadcv2_irq_ack(void __iomem *regs)
--- 
-1.9.1
+Best regards,
+Krzysztof
