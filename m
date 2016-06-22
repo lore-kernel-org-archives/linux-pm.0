@@ -1,63 +1,73 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] PM / suspend: show workqueues busy name in suspend flow
-Date: Wed, 22 Jun 2016 11:21:26 -0400
-Message-ID: <20160622152126.GV3262@mtj.duckdns.org>
-References: <1466586509-32400-1-git-send-email-roger.lu@mediatek.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [RFC PATCH 1/8] PM / Domains: Add new helper functions for
+ device-tree
+Date: Wed, 22 Jun 2016 16:22:51 +0100
+Message-ID: <576AAD4B.2020905@nvidia.com>
+References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
+ <1457090634-14785-2-git-send-email-jonathanh@nvidia.com>
+ <576AA7B2.5030004@nvidia.com>
+ <CAPDyKFqEis0OX68eFD0dbneYOngGQfvu4JYbWzm7tTbs8WPS5A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f194.google.com ([209.85.161.194]:34951 "EHLO
-	mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbcFVPVa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 11:21:30 -0400
-Content-Disposition: inline
-In-Reply-To: <1466586509-32400-1-git-send-email-roger.lu@mediatek.com>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:10589 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751146AbcFVPXE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 11:23:04 -0400
+In-Reply-To: <CAPDyKFqEis0OX68eFD0dbneYOngGQfvu4JYbWzm7tTbs8WPS5A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Roger Lu <roger.lu@mediatek.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lai Jiangshan <jiangshanlai@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, djkurtz@chromium.org, drinkcat@chromium.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Alexander Aring <alex.aring@gmail.com>, Eric Anholt <eric@anholt.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-Hello,
 
-On Wed, Jun 22, 2016 at 05:08:29PM +0800, Roger Lu wrote:
-> When suspend flow is aborted because of workqueues busy,
-> show workqueues busy name for debug purpose.
+On 22/06/16 16:08, Ulf Hansson wrote:
+> On 22 June 2016 at 16:58, Jon Hunter <jonathanh@nvidia.com> wrote:
+>> Hi Ulf,
+>>
+>> On 04/03/16 11:23, Jon Hunter wrote:
+>>> Ideally, if we are returning a reference to a PM domain via a call to
+>>> of_genpd_get_from_provider(), then we should keep track of such
+>>> references via a reference count. The reference count could then be used
+>>> to determine if a PM domain can be safely removed. Alternatively, it is
+>>> possible to avoid such external references by providing APIs to access
+>>> the PM domain and hence, eliminate any calls to
+>>> of_genpd_get_from_provider().
+>>>
+>>> Add new helper functions for adding a device and a subdomain to a PM
+>>> domain when using device-tree, so that external calls to
+>>> of_genpd_get_from_provider() can be removed.
+>>
+>> While we are at it, does it make sense to add helpers for
+>> of_genpd_remove_device/subdomain() as well? Seems that these could be
+>> useful for doing the inverse when cleaning up.
 > 
-> Signed-off-by: Roger Lu <roger.lu@mediatek.com>
-> ---
->  include/linux/workqueue.h |  1 +
->  kernel/power/process.c    |  3 +++
->  kernel/workqueue.c        | 35 +++++++++++++++++++++++++++++++++++
->  3 files changed, 39 insertions(+)
+> I would prefer if we could avoid adding new APIs until we really see
+> the need for it.
 > 
-> diff --git a/include/linux/workqueue.h b/include/linux/workqueue.h
-> index ca73c50..c9f9b24 100644
-> --- a/include/linux/workqueue.h
-> +++ b/include/linux/workqueue.h
-> @@ -609,6 +609,7 @@ long work_on_cpu(int cpu, long (*fn)(void *), void
->  *arg);
->  #ifdef CONFIG_FREEZER
->  extern void freeze_workqueues_begin(void);
->  extern bool freeze_workqueues_busy(void);
-> +extern void show_workqueues_busy(void);
->  extern void thaw_workqueues(void);
->  #endif /* CONFIG_FREEZER */
->  
-> diff --git a/kernel/power/process.c b/kernel/power/process.c
-> index df058be..b538881 100644
-> --- a/kernel/power/process.c
-> +++ b/kernel/power/process.c
-> @@ -89,6 +89,9 @@ static int try_to_freeze_tasks(bool user_only)
->  		       elapsed_msecs / 1000, elapsed_msecs % 1000,
->  		       todo - wq_busy, wq_busy);
->  
-> +		if (wq_busy)
-> +			show_workqueues_busy();
+> Moreover, I would like to avoid us adding OF specific APIs, unless
+> those can be really justified.
+> Hope that made sense.
 
-I think it'd probably be better to call show_workqueue_state() instead
-so that we can get a full picture of what's going on.
+Yes makes sense. However, after this series, the
+pm_genpd_remove_device/subdomain really become provider only APIs
+because clients can no longer get access to the genpd struct. Although
+today none of the users of the new of_genpd_add_device/subdomain do any
+clean-up on failure, it is possible that someone may. Therefore, I was
+thinking that we should have a way for a client to remove a subdomain or
+device it has added.
 
-Thanks.
+Does that make sense? I guess we could always add those as needed.
+
+I am looking at a use-case for usb where we are populating the
+pm-domains at runtime and we may need to clean-up on failure. However, I
+can always wait to add more APIs until we really need them.
+
+Let me know what you think about my response to patch 6/8.
+
+Cheers
+Jon
 
 -- 
-tejun
+nvpublic
