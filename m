@@ -1,122 +1,159 @@
-From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH 02/14] dt/bindings: update binding for PM domain idle states
-Date: Wed, 22 Jun 2016 13:36:37 -0600
-Message-ID: <1466624209-27432-3-git-send-email-lina.iyer@linaro.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH 07/14] ARM: cpuidle: Add runtime PM support for CPUs
+Date: Wed, 22 Jun 2016 13:36:42 -0600
+Message-ID: <1466624209-27432-8-git-send-email-lina.iyer@linaro.org>
 References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1466624209-27432-1-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, ahaslam-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, mtitinger-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:34175 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751736AbcFVThk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 15:37:40 -0400
+Received: by mail-pa0-f49.google.com with SMTP id bz2so19565794pad.1
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 12:37:40 -0700 (PDT)
+In-Reply-To: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-From: Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+Notify runtime PM when the CPU is going to be powered off in the idle
+state. This allows for runtime PM suspend/resume of the CPU as well as
+its PM domain.
 
-Update DT bindings to describe idle states of PM domains.
+We do not call into runtime PM for ARM WFI to keep the default state
+simple and faster.
 
-Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Signed-off-by: Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-[Lina: Added state properties, removed state names, wakeup-latency,
-added of_pm_genpd_init() API, pruned commit text]
-Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-[Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- .../devicetree/bindings/power/power_domain.txt     | 70 ++++++++++++++++++++++
- 1 file changed, 70 insertions(+)
+ drivers/cpuidle/cpuidle-arm.c | 55 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index 025b5e7..41e8dda 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -29,6 +29,43 @@ Optional properties:
-    specified by this binding. More details about power domain specifier are
-    available in the next section.
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index e342565e..3abd145 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -11,12 +11,14 @@
  
-+- power-states : A phandle of an idle-state that shall be soaked into a
-+                generic domain power state.
-+
-+==Power state==
-+
-+A PM domain power state describes an idle state of a domain and must be
-+have the following properties -
-+
-+	- entry-latency-us
-+		Usage: Not required if wakeup-latency-us is provided.
-+		Value type: <prop-encoded-array>
-+		Definition: u32 value representing worst case latency in
-+		microseconds required to enter the idle state.
-+		The exit-latency-us duration may be guaranteed
-+		only after entry-latency-us has passed.
-+
-+	- exit-latency-us
-+		Usage: Not required if wakeup-latency-us is provided.
-+		Value type: <prop-encoded-array>
-+		Definition: u32 value representing worst case latency
-+		in microseconds required to exit the idle state.
-+
-+	- residency-us:
-+		Usage: Optional
-+		Value type: <prop-encoded-array>
-+		Definition: A u32 value representing the time for which a
-+		domain must be idle in the state to reap power saving benefits
-+		of entering the state.
-+
-+	- state-param:
-+		Usage: Optional
-+		Value type: <prop-encoded-array>
-+		Definition: A u32 value as defined by the state. May be used
-+		by the driver to hold state related u32 data. In the case of
-+		PSCI, an extended state-id for the domain may be encoded in
-+		this value.
-+
- Example:
+ #define pr_fmt(fmt) "CPUidle arm: " fmt
  
- 	power: power-controller@12340000 {
-@@ -55,6 +92,39 @@ Example 2:
- 		#power-domain-cells = <1>;
- 	};
++#include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
  
-+Example 3:
+ #include <asm/cpuidle.h>
+@@ -37,6 +39,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv, int idx)
+ {
+ 	int ret;
++	struct device *cpu_dev = get_cpu_device(dev->cpu);
+ 
+ 	if (!idx) {
+ 		cpu_do_idle();
+@@ -46,12 +49,20 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ 	ret = cpu_pm_enter();
+ 	if (!ret) {
+ 		/*
++		 * Call runtime PM suspend on our device
++		 * Notify RCU to pay attention to critical sections
++		 * called from within runtime PM.
++		 */
++		RCU_NONIDLE(pm_runtime_put_sync_suspend(cpu_dev));
 +
-+	pm-domains {
-+		a57_pd: a57_pd@ {
-+			/* will have a57 platform ARM_PD_METHOD_OF_DECLARE*/
-+			compatible = "arm,pd","arm,cortex-a57";
-+			#power-domain-cells = <0>;
-+			power-states = <&CLUSTER_SLEEP_0>;
-+		};
++		/*
+ 		 * Pass idle state index to cpu_suspend which in turn will
+ 		 * call the CPU ops suspend protocol with idle index as a
+ 		 * parameter.
+ 		 */
+ 		ret = arm_cpuidle_suspend(idx);
+ 
++		RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
+ 		cpu_pm_exit();
+ 	}
+ 
+@@ -84,6 +95,34 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
+ 	{ },
+ };
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++static int arm_idle_cpu_hotplug(struct notifier_block *nb,
++			unsigned long action, void *data)
++{
++	struct device *cpu_dev = get_cpu_device(smp_processor_id());
 +
-+		a53_pd: a53_pd@ {
-+			/* will have a a53 platform ARM_PD_METHOD_OF_DECLARE*/
-+			compatible = "arm,pd","arm,cortex-a53";
-+			#power-domain-cells = <0>;
-+			power-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
-+		};
++	/* Execute CPU runtime PM on that CPU */
++	switch (action & ~CPU_TASKS_FROZEN) {
++	case CPU_DYING:
++		pm_runtime_put_sync_suspend(cpu_dev);
++		break;
++	case CPU_STARTING:
++		pm_runtime_get_sync(cpu_dev);
++		break;
++	default:
++		break;
++	}
 +
-+		CLUSTER_SLEEP_0: power-state@0 {
-+			entry-latency-us = <1000>;
-+			exit-latency-us = <2000>;
-+			residency-us = <10000>;
-+			state-param = <0x1000010>;
-+		};
++	return NOTIFY_OK;
++}
++#else
++static int arm_idle_cpu_hotplug(struct notifier_block *nb,
++			unsigned long action, void *data)
++{
++	return NOTIFY_OK;
++}
++#endif
 +
-+		CLUSTER_SLEEP_1: power-state@1 {
-+			entry-latency-us = <5000>;
-+			exit-latency-us = <5000>;
-+			residency-us = <100000>;
-+			state-param = <0x1000020>;
-+		};
-+	};
+ /*
+  * arm_idle_init
+  *
+@@ -96,6 +135,7 @@ static int __init arm_idle_init(void)
+ 	int cpu, ret;
+ 	struct cpuidle_driver *drv = &arm_idle_driver;
+ 	struct cpuidle_device *dev;
++	struct device *cpu_dev;
+ 
+ 	/*
+ 	 * Initialize idle states data, starting at index 1.
+@@ -118,6 +158,16 @@ static int __init arm_idle_init(void)
+ 	 * idle states suspend back-end specific data
+ 	 */
+ 	for_each_possible_cpu(cpu) {
 +
++		/* Initialize Runtime PM for the CPU */
++		cpu_dev = get_cpu_device(cpu);
++		pm_runtime_irq_safe(cpu_dev);
++		pm_runtime_enable(cpu_dev);
++		if (cpu_online(cpu)) {
++			pm_runtime_get_noresume(cpu_dev);
++			pm_runtime_set_active(cpu_dev);
++		}
 +
- The nodes above define two power controllers: 'parent' and 'child'.
- Domains created by the 'child' power controller are subdomains of '0' power
- domain provided by the 'parent' power controller.
+ 		ret = arm_cpuidle_init(cpu);
+ 
+ 		/*
+@@ -148,10 +198,15 @@ static int __init arm_idle_init(void)
+ 		}
+ 	}
+ 
++	/* Register for hotplug notifications for runtime PM */
++	hotcpu_notifier(arm_idle_cpu_hotplug, 0);
++
+ 	return 0;
+ out_fail:
+ 	while (--cpu >= 0) {
+ 		dev = per_cpu(cpuidle_devices, cpu);
++		cpu_dev = get_cpu_device(cpu);
++		__pm_runtime_disable(cpu_dev, false);
+ 		cpuidle_unregister_device(dev);
+ 		kfree(dev);
+ 	}
 -- 
 2.7.4
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
