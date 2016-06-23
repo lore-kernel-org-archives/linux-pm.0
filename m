@@ -1,106 +1,57 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH 02/14] dt/bindings: update binding for PM domain idle
- states
-Date: Thu, 23 Jun 2016 12:39:39 -0600
-Message-ID: <20160623183939.GE1115@linaro.org>
-References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
- <1466624209-27432-3-git-send-email-lina.iyer@linaro.org>
- <20160623173312.GA22204@leverpostej>
- <20160623180451.GD1115@linaro.org>
- <20160623181927.GB31170@leverpostej>
+From: megous@megous.com
+Subject: [PATCH 04/14] dt-bindings: document sun8i_ths
+Date: Thu, 23 Jun 2016 21:20:54 +0200
+Message-ID: <20160623192104.18720-5-megous@megous.com>
+References: <20160623192104.18720-1-megous@megous.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160623181927.GB31170@leverpostej>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20160623192104.18720-1-megous@megous.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: dev@linux-sunxi.org
+Cc: Ondrej Jirman <megous@megous.com>, Mark Rutland <mark.rutland@arm.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 23 2016 at 12:19 -0600, Mark Rutland wrote:
->On Thu, Jun 23, 2016 at 12:04:51PM -0600, Lina Iyer wrote:
->> Hi Mark,
->>
->> On Thu, Jun 23 2016 at 11:35 -0600, Mark Rutland wrote:
->> >Hi,
->> >
->> >On Wed, Jun 22, 2016 at 01:36:37PM -0600, Lina Iyer wrote:
->> >>From: Axel Haslam <ahaslam+renesas@baylibre.com>
->> >>
->> >>Update DT bindings to describe idle states of PM domains.
->> >>
->> >>Cc: <devicetree@vger.kernel.org>
->> >>Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
->> >>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> >>[Lina: Added state properties, removed state names, wakeup-latency,
->> >>added of_pm_genpd_init() API, pruned commit text]
->> >>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> >>[Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
->> >>---
->> >> .../devicetree/bindings/power/power_domain.txt     | 70 ++++++++++++++++++++++
->> >> 1 file changed, 70 insertions(+)
->> >>
->> >>diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->> >>index 025b5e7..41e8dda 100644
->> >>--- a/Documentation/devicetree/bindings/power/power_domain.txt
->> >>+++ b/Documentation/devicetree/bindings/power/power_domain.txt
->> >>@@ -29,6 +29,43 @@ Optional properties:
->> >>    specified by this binding. More details about power domain specifier are
->> >>    available in the next section.
->> >>
->> >>+- power-states : A phandle of an idle-state that shall be soaked into a
->> >>+                generic domain power state.
->> >
->> >It's somewhat unfortunate that this gives us two possible locations for
->> >idle state lists (under the /cpus node and in a pm-domains node),
->> >especially as it's not clear what would happen were a DT to have both.
->> >
->> >I would prefer that we extend the existing bindings such that states can
->> >refer to the power domains which they affect.
->> >
->> I agree. The CPU idle states have become defined to be specific to CPUs.
->> PM Domain idle states are generic for any type of domain. I am hoping at
->> some point, we could converge and use the same idle state, but that
->> would mean changing the CPU idle states to make it generic.
->
->Outside of CPU idling, I don't fully understand how this will be used,
->so it's not clear to me what would need to be made generic. Apologies
->for my ignorance there.
->
-There may be non-PSCI ARM v7 CPU domains that may have domain controller
-drivers in the kernel. They would not hook into the ARM PSCI frameworks.
-It is still cpuidle though.
-
->> At some point, during my development, I did use the arm,idle-state for
->> domains as well, but the binding definitions were too restrictive for
->> a generic PM domain.
->>
->> I would be willing to make the change to CPU idle states to make it
->> generic and then we could just reference domain and CPU idle states
->> using the same bindings. Are we okay with that, specifically,
->> arm,psci-suspend-param? This binding is very restrictive in its
->> description. What we pass to the platform driver upon choosing a domain
->> state is very platform specific and therefore has to be generic in its
->> description.
->
->I was suggesting that for PSCI we should consistently us
->arm,psci-suspend-param, not that this should be used for all power
->domain state data.
->
->I imagine that mechanisms for powering down power domains will have
->varied requirements on data they require (and may require more than can
->be encoded in a u32), and I don't think it's best to try to force a
->single representation in the DT for that. It would be better to allow
->them to define the properties which they require.
->
-The only way to do that is to push the DT parsing to the platform
-drivers. In the case of CPU domains controlled by PSCI, we could use the
-arm,idle-states but any other generic domain, may need to define their
-own bindings and fill up the domain states before initiailizing the domain.
-
-While this approach pushes the onus on to the platform code, I am fine
-with it. Is that what you were thinking too?
-
-Thanks,
-Lina
+RnJvbTogT25kcmVqIEppcm1hbiA8bWVnb3VzQG1lZ291cy5jb20+CgpUaGlzIHBhdGNoIGFkZHMg
+dGhlIGJpbmRpbmcgZG9jdW1lbnRhdGlvbiBmb3IgdGhlIHN1bjhpX3RocyBkcml2ZXIKClNpZ25l
+ZC1vZmYtYnk6IE9uZMWZZWogSmlybWFuIDxtZWdvdXNAbWVnb3VzLmNvbT4KLS0tCiAuLi4vZGV2
+aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3N1bjhpLXRocy50eHQgICAgICB8IDMxICsrKysrKysr
+KysrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAzMSBpbnNlcnRpb25zKCspCiBjcmVhdGUg
+bW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvc3Vu
+OGktdGhzLnR4dAoKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
+cy90aGVybWFsL3N1bjhpLXRocy50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGlu
+Z3MvdGhlcm1hbC9zdW44aS10aHMudHh0Cm5ldyBmaWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAw
+MDAuLjgyNmNkNTcKLS0tIC9kZXYvbnVsbAorKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
+YmluZGluZ3MvdGhlcm1hbC9zdW44aS10aHMudHh0CkBAIC0wLDAgKzEsMzEgQEAKKyogc3VuOGkg
+VEhTCisKK1JlcXVpcmVkIHByb3BlcnRpZXM6CistIGNvbXBhdGlibGUgOiAiYWxsd2lubmVyLHN1
+bjhpLWgzLXRocyIKKy0gcmVnIDogQWRkcmVzcyByYW5nZSBvZiB0aGUgdGhlcm1hbCByZWdpc3Rl
+cnMgYW5kIGxvY2F0aW9uIG9mIHRoZSBjYWxpYnJhdGlvbgorICAgICAgICB2YWx1ZQorLSByZXNl
+dHMgOiBNdXN0IGNvbnRhaW4gYW4gZW50cnkgZm9yIGVhY2ggZW50cnkgaW4gcmVzZXQtbmFtZXMu
+CisgICAgICAgICAgIHNlZSAuLi9yZXNldC9yZXNldC50eHQgZm9yIGRldGFpbHMKKy0gcmVzZXQt
+bmFtZXMgOiBNdXN0IGluY2x1ZGUgdGhlIG5hbWUgImFoYiIKKy0gY2xvY2tzIDogTXVzdCBjb250
+YWluIGFuIGVudHJ5IGZvciBlYWNoIGVudHJ5IGluIGNsb2NrLW5hbWVzLgorLSBjbG9jay1uYW1l
+cyA6IE11c3QgY29udGFpbiAiYWhiIiBmb3IgdGhlIGJ1cyBnYXRlIGFuZCAidGhzIiBmb3IgdGhl
+IFRIUworICBjbG9jaworCitPcHRpb25hbCBwcm9wZXJ0aWVzOgorLSBudm1lbS1jZWxscyA6IE11
+c3QgY29udGFpbiBhbiBlbnRyeSBmb3IgZWFjaCBlbnRyeSBpbiBudm1lbS1jZWxsLW5hbWVzCist
+IG52bWVtLWNlbGwtbmFtZXMgOiBNdXN0IGNvbnRhaW4gImNhbGlicmF0aW9uIiBmb3IgdGhlIGNl
+bGwgY29udGFpbmluZyB0aGUKKyAgdGVtcGVyYXR1cmUgY2FsaWJyYXRpb24gY2VsbCwgaWYgYXZh
+aWxhYmxlCisKK0V4YW1wbGU6Cit0aHM6IHRoc0AwMWMyNTAwMCB7CisJI3RoZXJtYWwtc2Vuc29y
+LWNlbGxzID0gPDA+OworCWNvbXBhdGlibGUgPSAiYWxsd2lubmVyLHN1bjhpLWgzLXRocyI7CisJ
+cmVnID0gPDB4MDFjMjUwMDAgMHg0MDA+OworCWludGVycnVwdHMgPSA8R0lDX1NQSSA2MyBJUlFf
+VFlQRV9MRVZFTF9ISUdIPjsKKwlyZXNldHMgPSA8JmJ1c19yc3QgMTM2PjsKKwlyZXNldC1uYW1l
+cyA9ICJhaGIiOworCWNsb2NrcyA9IDwmYnVzX2dhdGVzIDcyPiwgPCZ0aHNfY2xrPjsKKwljbG9j
+ay1uYW1lcyA9ICJhaGIiLCAidGhzIjsKKwludm1lbS1jZWxscyA9IDwmdGhzX2NhbGlicmF0aW9u
+PjsKKwludm1lbS1jZWxsLW5hbWVzID0gImNhbGlicmF0aW9uIjsKK307Ci0tIAoyLjkuMAoKCl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1r
+ZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpo
+dHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJu
+ZWwK
