@@ -1,64 +1,43 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] cpuidle/powernv: Fix snooze timeout
-Date: Thu, 23 Jun 2016 12:01:57 +0200
-Message-ID: <576BB395.5050502@linaro.org>
-References: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <576B23EB.7080903@gmail.com> <576B6C64.6060206@linux.vnet.ibm.com>
- <576BABC5.7020600@gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RESEND PATCH v2 2/2] power/idle: enhance the precision of
+ sleep_length
+Date: Thu, 23 Jun 2016 12:16:20 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1606231215010.5839@nanos>
+References: <1466154816-17900-1-git-send-email-zhaoyang.huang@spreadtrum.com> <1466154816-17900-2-git-send-email-zhaoyang.huang@spreadtrum.com> <alpine.DEB.2.11.1606171125460.5839@nanos> <CAN2waFuETjxzRwST_EGY4GhxFUZZsOPkysrcBsKCSmcp5hV+UQ@mail.gmail.com>
+ <alpine.DEB.2.11.1606171346540.5839@nanos> <CAN2waFuLW0DPjJb=X-0kB9nVbB9aQoJ95EnVidPBpTBx3CYVvg@mail.gmail.com> <CAN2waFs2tQFYs-ZGvY2i1e+PSBAjNwn1+C6N_J3tm8BkvXXVcQ@mail.gmail.com> <alpine.DEB.2.11.1606230859530.5839@nanos>
+ <CAN2waFuLRG1AsebmWey6N16v8AM7HDK6q=tV1su-gNWNjbC6hw@mail.gmail.com> <alpine.DEB.2.11.1606231016290.5839@nanos> <CAN2waFt8u7HX9GC0SMeRtc2AB3SN=yu7GLbVHY5O6DtK4GFZeQ@mail.gmail.com> <alpine.DEB.2.11.1606231033530.5839@nanos>
+ <CAN2waFsnAUExsAhCgtTLcxYrxVuBL+TfFA0viOhk-9WGFnwnhQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f42.google.com ([74.125.82.42]:38369 "EHLO
-	mail-wm0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbcFWKB7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2016 06:01:59 -0400
-Received: by mail-wm0-f42.google.com with SMTP id r201so42163378wme.1
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 03:01:58 -0700 (PDT)
-In-Reply-To: <576BABC5.7020600@gmail.com>
+Received: from www.linutronix.de ([62.245.132.108]:47057 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbcFWKS1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2016 06:18:27 -0400
+In-Reply-To: <CAN2waFsnAUExsAhCgtTLcxYrxVuBL+TfFA0viOhk-9WGFnwnhQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Balbir Singh <bsingharora@gmail.com>, Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org
+To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Geng Ren <geng.ren@spreadtrum.com>, Alex Wang <alex.wang@spreadtrum.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, =?GB2312?Q?Zhaoyang_Huang_=28=BB=C6=B3=AF=D1=F4=29?= <zhaoyang.huang@spreadtrum.com>, Serge Broslavsky <serge.broslavsky@linaro.org>
 
-On 06/23/2016 11:28 AM, Balbir Singh wrote:
+On Thu, 23 Jun 2016, Zhaoyang Huang wrote:
+> On 23 June 2016 at 16:35, Thomas Gleixner <tglx@linutronix.de> wrote:
+> >> Hi, Thomas. If the entry,exit,min time of one idle state sums up to
+> >> 500us in some platform, the 100us callback which should be common as
+> >> caused by cache miss would also generate 20% imprecision. Don't you
+> >
+> > A cache miss is causing a 100us callback? What are you talking about?
+> >
+> By a serials of memory access which maybe missed on cache all. Anyway,
+> we can require the callback not to introduce schedule etc, but can not
+> ask them to ensure their own executing time, which they can not
+> control.
 
-[ ... ]
+I really do not understand what you are trying to solve. If the enter to idle
+code is delayed by cache misses for 100us then you have other serious problems
+than the accuracy of that time stamp.
 
->> cpuidle_enter_state()
->> {
->> 	[...]
->> 	time_start =3D local_clock();
->> 	[enter idle state]
->> 	time_end =3D local_clock();
->> 	/*
->>           * local_clock() returns the time in nanosecond, let's shif=
-t
->>           * by 10 (divide by 1024) to have microsecond based time.
->>           */
->>          diff =3D (time_end - time_start) >> 10;
->> 	[...]
->> 	dev->last_residency =3D (int) diff;
->> }
->>
->> Because of >>10 as opposed to /1000, last_residency is lesser by 2.3=
-%
+Thanks,
 
-I am surprised the last_residency is 2.3% exactly less. The difference=20
-between >>10 and /1000 is 2.34%.
-
-What is the next target residency value ?
-
-Does it solve the issue if you replace >>10 by /1000 ?
-
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+	tglx
 
