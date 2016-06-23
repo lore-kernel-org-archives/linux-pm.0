@@ -1,138 +1,474 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / hibernate: Do not free preallocated safe pages during image restore
-Date: Thu, 23 Jun 2016 02:09:19 +0200
-Message-ID: <6148276.54TsU2aq5D@vostro.rjw.lan>
+Subject: Re: [PATCH V4 1/2] cpufreq: Handle sorted frequency tables more efficiently
+Date: Thu, 23 Jun 2016 02:28:58 +0200
+Message-ID: <15131722.y1kqigY9Ad@vostro.rjw.lan>
+References: <cover.1465295033.git.viresh.kumar@linaro.org> <c80f4bf69bd4eb739038cb0f91392fad9cfde59f.1465295033.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64845 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55588 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751189AbcFWAFA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 20:05:00 -0400
+	by vger.kernel.org with SMTP id S1751040AbcFWAYk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 20:24:40 -0400
+In-Reply-To: <c80f4bf69bd4eb739038cb0f91392fad9cfde59f.1465295033.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tuesday, June 07, 2016 03:55:14 PM Viresh Kumar wrote:
+> cpufreq drivers aren't required to provide a sorted frequency table
+> today, and even the ones which provide a sorted table aren't handled
+> efficiently by cpufreq core.
+> 
+> This patch adds infrastructure to verify if the freq-table provided by
+> the drivers is sorted or not, and use efficient helpers if they are
+> sorted.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/freq_table.c |  67 +++++++++-
+>  include/linux/cpufreq.h      | 284 ++++++++++++++++++++++++++++++++++++++++++-
+>  2 files changed, 343 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/freq_table.c b/drivers/cpufreq/freq_table.c
+> index eac8bcbdaad1..0c1139a5f33a 100644
+> --- a/drivers/cpufreq/freq_table.c
+> +++ b/drivers/cpufreq/freq_table.c
+> @@ -113,9 +113,9 @@ int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy)
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_generic_frequency_table_verify);
+>  
+> -int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+> -				    unsigned int target_freq,
+> -				    unsigned int relation)
+> +int cpufreq_table_find_index_unsorted(struct cpufreq_policy *policy,
 
-The core image restoration code preallocates some safe pages
-(ie. pages that weren't used by the image kernel before hibernation)
-for future use before allocating the bulk of memory for loading the
-image data.  Those safe pages are then freed so they can be allocated
-again (with the memory management subsystem's help).  That's done to
-ensure that there will be enough safe pages for temporary data
-structures needed during image restoration.
+Is the "find" part really necessary in this name?
 
-However, it is not really necessary to free those pages after they
-have been allocated.  They can be added to the (global) list of
-safe pages right away and then picked up from there when needed
-without freeing.
+> +				      unsigned int target_freq,
+> +				      unsigned int relation)
+>  {
+>  	struct cpufreq_frequency_table optimal = {
+>  		.driver_data = ~0,
+> @@ -205,7 +205,7 @@ int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+>  		 table[index].frequency);
+>  	return index;
+>  }
+> -EXPORT_SYMBOL_GPL(cpufreq_frequency_table_target);
+> +EXPORT_SYMBOL_GPL(cpufreq_table_find_index_unsorted);
+>  
+>  int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
+>  		unsigned int freq)
+> @@ -297,13 +297,70 @@ struct freq_attr *cpufreq_generic_attr[] = {
+>  };
+>  EXPORT_SYMBOL_GPL(cpufreq_generic_attr);
+>  
+> +static void set_freq_table_sorted(struct cpufreq_policy *policy)
+> +{
+> +	struct cpufreq_frequency_table *pos, *table = policy->freq_table;
+> +	struct cpufreq_frequency_table *prev = NULL;
+> +	int ascending = 0;
+> +
+> +	cpufreq_for_each_valid_entry(pos, table) {
+> +		if (!prev) {
+> +			prev = pos;
+> +			continue;
+> +		}
+> +
+> +		if (pos->frequency == prev->frequency) {
+> +			pr_warn("Duplicate freq-table entries: %u\n",
+> +				pos->frequency);
 
-That reduces the overhead related to using safe pages, especially
-in the arch-specific code, so modify the code accordingly.
+Shouldn't cpufreq_table_validate_and_show() simply return an error in this case?
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/power/snapshot.c |   33 +++++++++++++++++----------------
- 1 file changed, 17 insertions(+), 16 deletions(-)
+Or do we know about any drivers having this problem potentially?
 
-Index: linux-pm/kernel/power/snapshot.c
-===================================================================
---- linux-pm.orig/kernel/power/snapshot.c
-+++ linux-pm/kernel/power/snapshot.c
-@@ -137,16 +137,21 @@ static void *get_image_page(gfp_t gfp_ma
- 	return res;
- }
- 
--unsigned long get_safe_page(gfp_t gfp_mask)
-+static void *__get_safe_page(gfp_t gfp_mask)
- {
- 	if (safe_pages_list) {
- 		void *ret = safe_pages_list;
- 
- 		safe_pages_list = safe_pages_list->next;
- 		memset(ret, 0, PAGE_SIZE);
--		return (unsigned long)ret;
-+		return ret;
- 	}
--	return (unsigned long)get_image_page(gfp_mask, PG_SAFE);
-+	return get_image_page(gfp_mask, PG_SAFE);
-+}
-+
-+unsigned long get_safe_page(gfp_t gfp_mask)
-+{
-+	return (unsigned long)__get_safe_page(gfp_mask);
- }
- 
- static struct page *alloc_image_page(gfp_t gfp_mask)
-@@ -230,7 +235,8 @@ static void *chain_alloc(struct chain_al
- 	if (LINKED_PAGE_DATA_SIZE - ca->used_space < size) {
- 		struct linked_page *lp;
- 
--		lp = get_image_page(ca->gfp_mask, ca->safe_needed);
-+		lp = ca->safe_needed ? __get_safe_page(ca->gfp_mask) :
-+					get_image_page(ca->gfp_mask, PG_ANY);
- 		if (!lp)
- 			return NULL;
- 
-@@ -2367,7 +2373,7 @@ static int
- prepare_image(struct memory_bitmap *new_bm, struct memory_bitmap *bm)
- {
- 	unsigned int nr_pages, nr_highmem;
--	struct linked_page *sp_list, *lp;
-+	struct linked_page *lp;
- 	int error;
- 
- 	/* If there is no highmem, the buffer will not be necessary */
-@@ -2393,9 +2399,9 @@ prepare_image(struct memory_bitmap *new_
- 	 * NOTE: This way we make sure there will be enough safe pages for the
- 	 * chain_alloc() in get_buffer().  It is a bit wasteful, but
- 	 * nr_copy_pages cannot be greater than 50% of the memory anyway.
-+	 *
-+	 * nr_copy_pages cannot be less than allocated_unsafe_pages too.
- 	 */
--	sp_list = NULL;
--	/* nr_copy_pages cannot be lesser than allocated_unsafe_pages */
- 	nr_pages = nr_copy_pages - nr_highmem - allocated_unsafe_pages;
- 	nr_pages = DIV_ROUND_UP(nr_pages, PBES_PER_LINKED_PAGE);
- 	while (nr_pages > 0) {
-@@ -2404,12 +2410,11 @@ prepare_image(struct memory_bitmap *new_
- 			error = -ENOMEM;
- 			goto Free;
- 		}
--		lp->next = sp_list;
--		sp_list = lp;
-+		lp->next = safe_pages_list;
-+		safe_pages_list = lp;
- 		nr_pages--;
- 	}
- 	/* Preallocate memory for the image */
--	safe_pages_list = NULL;
- 	nr_pages = nr_copy_pages - nr_highmem - allocated_unsafe_pages;
- 	while (nr_pages > 0) {
- 		lp = (struct linked_page *)get_zeroed_page(GFP_ATOMIC);
-@@ -2427,12 +2432,6 @@ prepare_image(struct memory_bitmap *new_
- 		swsusp_set_page_free(virt_to_page(lp));
- 		nr_pages--;
- 	}
--	/* Free the reserved safe pages so that chain_alloc() can use them */
--	while (sp_list) {
--		lp = sp_list->next;
--		free_image_page(sp_list, PG_UNSAFE_CLEAR);
--		sp_list = lp;
--	}
- 	return 0;
- 
-  Free:
-@@ -2522,6 +2521,8 @@ int snapshot_write_next(struct snapshot_
- 		if (error)
- 			return error;
- 
-+		safe_pages_list = NULL;
-+
- 		error = memory_bm_create(&copy_bm, GFP_ATOMIC, PG_ANY);
- 		if (error)
- 			return error;
+> +			continue;
+> +		}
+> +
+> +		/* Frequency increased from prev to pos */
+> +		if (pos->frequency > prev->frequency) {
+> +			/* But frequency was decreasing earlier */
+> +			if (ascending < 0) {
+> +				policy->freq_table_sorted = false;
+> +				pr_debug("Freq table is unsorted\n");
+> +				return;
+> +			}
+> +
+> +			ascending++;
+> +		} else {
+> +			/* Frequency decreased from prev to pos */
+> +
+> +			/* But frequency was increasing earlier */
+> +			if (ascending > 0) {
+> +				policy->freq_table_sorted = false;
+> +				pr_debug("Freq table is unsorted\n");
+> +				return;
+> +			}
+> +
+> +			ascending--;
+> +		}
+> +
+> +		prev = pos;
+> +	}
+> +
+> +	policy->freq_table_sorted = true;
+> +
+> +	if (ascending > 0)
+> +		policy->freq_table_sorted_ascending = true;
+
+So what about making policy->freq_table_sorted an enum instead of using two
+fields?
+
+> +	else
+> +		policy->freq_table_sorted_ascending = false;
+> +
+> +	pr_debug("Freq table is sorted in %s order\n",
+> +		 ascending > 0 ? "ascending" : "descending");
+> +}
+> +
+>  int cpufreq_table_validate_and_show(struct cpufreq_policy *policy,
+>  				      struct cpufreq_frequency_table *table)
+>  {
+>  	int ret = cpufreq_frequency_table_cpuinfo(policy, table);
+>  
+> -	if (!ret)
+> +	if (!ret) {
+>  		policy->freq_table = table;
+> +		set_freq_table_sorted(policy);
+> +	}
+>  
+>  	return ret;
+>  }
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index c378776628b4..5133570e86f2 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -86,7 +86,11 @@ struct cpufreq_policy {
+>  					 * called, but you're in IRQ context */
+>  
+>  	struct cpufreq_user_policy user_policy;
+> +
+> +	/* Freq-table and its flags */
+>  	struct cpufreq_frequency_table	*freq_table;
+> +	bool			freq_table_sorted;
+> +	bool			freq_table_sorted_ascending;
+>  
+>  	struct list_head        policy_list;
+>  	struct kobject		kobj;
+> @@ -597,9 +601,9 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
+>  				   struct cpufreq_frequency_table *table);
+>  int cpufreq_generic_frequency_table_verify(struct cpufreq_policy *policy);
+>  
+> -int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+> -				   unsigned int target_freq,
+> -				   unsigned int relation);
+> +int cpufreq_table_find_index_unsorted(struct cpufreq_policy *policy,
+> +				      unsigned int target_freq,
+> +				      unsigned int relation);
+>  int cpufreq_frequency_table_get_index(struct cpufreq_policy *policy,
+>  		unsigned int freq);
+>  
+> @@ -610,6 +614,280 @@ int cpufreq_boost_trigger_state(int state);
+>  int cpufreq_boost_enabled(void);
+>  int cpufreq_enable_boost_support(void);
+>  bool policy_has_boost_freq(struct cpufreq_policy *policy);
+> +
+> +static inline bool freq_is_invalid(struct cpufreq_policy *policy, unsigned int frequency)
+> +{
+> +	if (unlikely(frequency == CPUFREQ_ENTRY_INVALID))
+> +		return true;
+> +
+> +	if (unlikely((frequency < policy->min) || (frequency > policy->max)))
+> +		return true;
+
+This is confusing.  A frequency beyond min..max is not invalid, it is out of
+bounds.
+
+> +
+> +	return false;
+> +}
+> +
+> +/* Find lowest freq at or above target in a table in ascending order */
+> +static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
+> +					      unsigned int target_freq)
+> +{
+> +	struct cpufreq_frequency_table *table = policy->freq_table;
+> +	unsigned int freq;
+> +	int i, best = -1;
+> +
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +		freq = table[i].frequency;
+> +
+> +		if (freq_is_invalid(policy, freq))
+> +			continue;
+> +
+> +		if (freq >= target_freq)
+> +			return i;
+> +
+> +		best = i;
+> +	}
+> +
+> +	if (best == -1) {
+> +		WARN(1, "Invalid frequency table: %d\n", policy->cpu);
+
+After a successful cpufreq_table_validate_and_show() that should be impossible,
+shouldn't it?
+
+> +		return -EINVAL;
+> +	}
+> +
+> +	return best;
+> +}
+> +
+> +/* Find lowest freq at or above target in a table in descending order */
+> +static inline int cpufreq_table_find_index_dl(struct cpufreq_policy *policy,
+> +					      unsigned int target_freq)
+> +{
+> +	struct cpufreq_frequency_table *table = policy->freq_table;
+> +	unsigned int freq;
+> +	int i, best = -1;
+> +
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +		freq = table[i].frequency;
+> +
+> +		if (freq_is_invalid(policy, freq))
+> +			continue;
+> +
+> +		if (freq == target_freq)
+> +			return i;
+> +
+> +		if (freq > target_freq) {
+> +			best = i;
+> +			continue;
+> +		}
+> +
+> +		/* No freq found below target_freq */
+> +		if (best == -1)
+> +			return i;
+> +
+> +		return best;
+> +	}
+> +
+> +	if (best == -1) {
+> +		WARN(1, "Invalid frequency table: %d\n", policy->cpu);
+> +		return -EINVAL;
+> +	}
+> +
+> +	return best;
+> +}
+> +
+> +/* Works only on sorted freq-tables */
+> +static inline int cpufreq_table_find_index_l(struct cpufreq_policy *policy,
+> +					     unsigned int target_freq)
+> +{
+> +	if (policy->freq_table_sorted_ascending)
+> +		return cpufreq_table_find_index_al(policy, target_freq);
+> +	else
+> +		return cpufreq_table_find_index_dl(policy, target_freq);
+> +}
+> +
+> +/* Find highest freq at or below target in a table in ascending order */
+> +static inline int cpufreq_table_find_index_ah(struct cpufreq_policy *policy,
+> +					      unsigned int target_freq)
+> +{
+> +	struct cpufreq_frequency_table *table = policy->freq_table;
+> +	unsigned int freq;
+> +	int i, best = -1;
+> +
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +		freq = table[i].frequency;
+> +
+> +		if (freq_is_invalid(policy, freq))
+> +			continue;
+> +
+> +		if (freq == target_freq)
+> +			return i;
+> +
+> +		if (freq < target_freq) {
+> +			best = i;
+> +			continue;
+> +		}
+> +
+> +		/* No freq found below target_freq */
+> +		if (best == -1)
+> +			return i;
+> +
+> +		return best;
+> +	}
+> +
+> +	if (best == -1) {
+> +		WARN(1, "Invalid frequency table: %d\n", policy->cpu);
+> +		return -EINVAL;
+> +	}
+> +
+> +	return best;
+> +}
+> +
+> +/* Find highest freq at or below target in a table in descending order */
+> +static inline int cpufreq_table_find_index_dh(struct cpufreq_policy *policy,
+> +					      unsigned int target_freq)
+> +{
+> +	struct cpufreq_frequency_table *table = policy->freq_table;
+> +	unsigned int freq;
+> +	int i, best = -1;
+> +
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +		freq = table[i].frequency;
+> +
+> +		if (freq_is_invalid(policy, freq))
+> +			continue;
+> +
+> +		if (freq <= target_freq)
+> +			return i;
+> +
+> +		best = i;
+> +	}
+> +
+> +	if (best == -1) {
+> +		WARN(1, "Invalid frequency table: %d\n", policy->cpu);
+> +		return -EINVAL;
+> +	}
+> +
+> +	return best;
+> +}
+
+I still don't see a reason for min/max checking in these routines.
+
+So what is the reason?
+
+> +
+> +/* Works only on sorted freq-tables */
+> +static inline int cpufreq_table_find_index_h(struct cpufreq_policy *policy,
+> +					     unsigned int target_freq)
+> +{
+> +	if (policy->freq_table_sorted_ascending)
+> +		return cpufreq_table_find_index_ah(policy, target_freq);
+> +	else
+> +		return cpufreq_table_find_index_dh(policy, target_freq);
+> +}
+> +
+> +/* Find closest freq to target in a table in ascending order */
+> +static inline int cpufreq_table_find_index_ac(struct cpufreq_policy *policy,
+> +					      unsigned int target_freq)
+> +{
+> +	struct cpufreq_frequency_table *table = policy->freq_table;
+> +	unsigned int freq;
+> +	int i, best = -1;
+> +
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +		freq = table[i].frequency;
+> +
+> +		if (freq_is_invalid(policy, freq))
+> +			continue;
+> +
+> +		if (freq == target_freq)
+> +			return i;
+> +
+> +		if (freq < target_freq) {
+> +			best = i;
+> +			continue;
+> +		}
+> +
+> +		/* No freq found below target_freq */
+> +		if (best == -1)
+> +			return i;
+> +
+> +		/* Choose the closest freq */
+> +		if (target_freq - table[best].frequency > freq - target_freq)
+> +			return i;
+> +
+> +		return best;
+> +	}
+> +
+> +	if (best == -1) {
+
+Can we actually get here?
+
+> +		WARN(1, "Invalid frequency table: %d\n", policy->cpu);
+> +		return -EINVAL;
+> +	}
+> +
+> +	return best;
+> +}
+> +
+> +/* Find closest freq to target in a table in descending order */
+> +static inline int cpufreq_table_find_index_dc(struct cpufreq_policy *policy,
+> +					      unsigned int target_freq)
+> +{
+> +	struct cpufreq_frequency_table *table = policy->freq_table;
+> +	unsigned int freq;
+> +	int i, best = -1;
+> +
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +		freq = table[i].frequency;
+> +
+> +		if (freq_is_invalid(policy, freq))
+> +			continue;
+> +
+> +		if (freq == target_freq)
+> +			return i;
+> +
+> +		if (freq > target_freq) {
+> +			best = i;
+> +			continue;
+> +		}
+> +
+> +		/* No freq found below target_freq */
+> +		if (best == -1)
+> +			return i;
+> +
+> +		/* Choose the closest freq */
+> +		if (target_freq - table[best].frequency > freq - target_freq)
+> +			return i;
+> +
+> +		return best;
+> +	}
+> +
+> +	if (best == -1) {
+> +		WARN(1, "Invalid frequency table: %d\n", policy->cpu);
+> +		return -EINVAL;
+> +	}
+> +
+> +	return best;
+> +}
+> +
+> +/* Works only on sorted freq-tables */
+> +static inline int cpufreq_table_find_index_c(struct cpufreq_policy *policy,
+> +					     unsigned int target_freq)
+> +{
+> +	if (policy->freq_table_sorted_ascending)
+> +		return cpufreq_table_find_index_ac(policy, target_freq);
+> +	else
+> +		return cpufreq_table_find_index_dc(policy, target_freq);
+> +}
+> +
+> +static inline int cpufreq_frequency_table_target(struct cpufreq_policy *policy,
+> +						 unsigned int target_freq,
+> +						 unsigned int relation)
+> +{
+> +	if (unlikely(!policy->freq_table_sorted))
+> +		return cpufreq_table_find_index_unsorted(policy, target_freq,
+> +							 relation);
+> +
+> +	switch (relation) {
+> +	case CPUFREQ_RELATION_L:
+> +		return cpufreq_table_find_index_l(policy, target_freq);
+> +	case CPUFREQ_RELATION_H:
+> +		return cpufreq_table_find_index_h(policy, target_freq);
+> +	case CPUFREQ_RELATION_C:
+> +		return cpufreq_table_find_index_c(policy, target_freq);
+> +	default:
+> +		pr_err("%s: Invalid relation: %d\n", __func__, relation);
+> +		return -EINVAL;
+> +	}
+> +}
+>  #else
+>  static inline int cpufreq_boost_trigger_state(int state)
+>  {
+
+Thanks,
+Rafael
 
