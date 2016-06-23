@@ -1,104 +1,98 @@
-From: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH 02/14] dt/bindings: update binding for PM domain idle
- states
-Date: Thu, 23 Jun 2016 18:35:17 +0100
-Message-ID: <20160623173312.GA22204@leverpostej>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH 01/14] PM / Domains: Allow domain power states to be read
+ from DT
+Date: Thu, 23 Jun 2016 18:38:22 +0100
+Message-ID: <20160623173822.GB22204@leverpostej>
 References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
- <1466624209-27432-3-git-send-email-lina.iyer@linaro.org>
+ <1466624209-27432-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1466624209-27432-3-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, ahaslam-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, mtitinger-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+In-Reply-To: <1466624209-27432-2-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On Wed, Jun 22, 2016 at 01:36:37PM -0600, Lina Iyer wrote:
-> From: Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+On Wed, Jun 22, 2016 at 01:36:36PM -0600, Lina Iyer wrote:
+> From: Axel Haslam <ahaslam+renesas@baylibre.com>
 > 
-> Update DT bindings to describe idle states of PM domains.
+> This patch allows domains to define idle states in the DT. SoC's can
+> define domain idle states in DT using the "power-states" property of the
+> domain provider. Calling of_pm_genpd_init() will  read the idle states
+> and initialize the genpd for the domain.
 > 
-> Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-> Signed-off-by: Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-> Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> In addition to the entry and exit latency for idle state, also add
+> residency and state-param properties. A domain idling in a state is only
+> power effecient if it stays idle for a certain period in that state. The
+> residency provides this minimum time for the idle state to provide power
+> benefits. The state-param is a state specific u32 value that the
+> platform may use for that idle state.
+> 
+> Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 > [Lina: Added state properties, removed state names, wakeup-latency,
 > added of_pm_genpd_init() API, pruned commit text]
-> Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> [Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> [Ulf: Moved around code to make it compile properly, rebased on top of multiple
+> state support,changed to use pm_genpd_init()]
 > ---
->  .../devicetree/bindings/power/power_domain.txt     | 70 ++++++++++++++++++++++
->  1 file changed, 70 insertions(+)
+>  drivers/base/power/domain.c | 84 ++++++++++++++++++++++++++++++++++++++++++++-
+>  include/linux/pm_domain.h   |  3 ++
+>  2 files changed, 86 insertions(+), 1 deletion(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> index 025b5e7..41e8dda 100644
-> --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -29,6 +29,43 @@ Optional properties:
->     specified by this binding. More details about power domain specifier are
->     available in the next section.
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index a1f2aff..62ffabd 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1253,6 +1253,82 @@ out:
+>  }
+>  EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
 >  
-> +- power-states : A phandle of an idle-state that shall be soaked into a
-> +                generic domain power state.
-
-It's somewhat unfortunate that this gives us two possible locations for
-idle state lists (under the /cpus node and in a pm-domains node),
-especially as it's not clear what would happen were a DT to have both.
-
-I would prefer that we extend the existing bindings such that states can
-refer to the power domains which they affect.
-
-> +==Power state==
+> +static int genpd_of_get_power_state(struct genpd_power_state *genpd_state,
+> +				    struct device_node *state_node)
+> +{
+> +	int err = 0;
+> +	u32 latency;
+> +	u32 residency;
+> +	u32 param;
+> +	u32 entry_latency, exit_latency;
 > +
-> +A PM domain power state describes an idle state of a domain and must be
-> +have the following properties -
+> +	err = of_property_read_u32(state_node, "entry-latency-us",
+> +				   &entry_latency);
+> +	if (err) {
+> +		pr_debug(" * %s missing entry-latency-us property\n",
+> +			 state_node->full_name);
+> +		return -EINVAL;
+> +	}
 > +
-> +	- entry-latency-us
-> +		Usage: Not required if wakeup-latency-us is provided.
-> +		Value type: <prop-encoded-array>
-> +		Definition: u32 value representing worst case latency in
-> +		microseconds required to enter the idle state.
-> +		The exit-latency-us duration may be guaranteed
-> +		only after entry-latency-us has passed.
+> +	err = of_property_read_u32(state_node, "exit-latency-us",
+> +				   &exit_latency);
+> +	if (err) {
+> +		pr_debug(" * %s missing exit-latency-us property\n",
+> +			 state_node->full_name);
+> +		return -EINVAL;
+> +	}
 > +
-> +	- exit-latency-us
-> +		Usage: Not required if wakeup-latency-us is provided.
-> +		Value type: <prop-encoded-array>
-> +		Definition: u32 value representing worst case latency
-> +		in microseconds required to exit the idle state.
-
-These are part of the existing idle state binding
-(Documentation/devicetree/bindings/arm/idle-states.txt), and I would
-prefer that we did not duplicate this nor come up with an independent
-set of idle state bindings.
-
+> +	err = of_property_read_u32(state_node, "residency-us", &residency);
+> +	if (!err)
+> +		genpd_state->residency_ns = 1000 * residency;
 > +
-> +	- residency-us:
-> +		Usage: Optional
-> +		Value type: <prop-encoded-array>
-> +		Definition: A u32 value representing the time for which a
-> +		domain must be idle in the state to reap power saving benefits
-> +		of entering the state.
-
-This is "min-residency-us" per the existing bindings.
-
+> +	err = of_property_read_u32(state_node, "state-param", &param);
+> +	if (!err)
+> +		genpd_state->param = param;
 > +
-> +	- state-param:
-> +		Usage: Optional
-> +		Value type: <prop-encoded-array>
-> +		Definition: A u32 value as defined by the state. May be used
-> +		by the driver to hold state related u32 data. In the case of
-> +		PSCI, an extended state-id for the domain may be encoded in
-> +		this value.
+> +	latency = entry_latency + exit_latency;
+> +	genpd_state->power_on_latency_ns = 1000 * latency;
+> +	genpd_state->power_off_latency_ns = 1000 * entry_latency;
+> +
+> +	return 0;
+> +}
 
-This is "arm,psci-suspend-param", per the existing bindings.
+As with the binding, I would very much prefer that this were unfiied
+with the existing idle state parsing. I'm not keen on having two
+arbitrarily different idle state binidngs and parsers.
 
 Thanks,
 Mark.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
