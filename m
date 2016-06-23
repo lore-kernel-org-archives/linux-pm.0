@@ -1,17 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] PM / hibernate: Simplify mark_unsafe_pages()
-Date: Thu, 23 Jun 2016 02:07:30 +0200
-Message-ID: <8588549.m9b2d9p6pQ@vostro.rjw.lan>
-References: <28211201.GaRaWsd3LX@vostro.rjw.lan>
+Subject: [PATCH] PM / hibernate: Do not free preallocated safe pages during image restore
+Date: Thu, 23 Jun 2016 02:09:19 +0200
+Message-ID: <6148276.54TsU2aq5D@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57410 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64845 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750996AbcFWADM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 20:03:12 -0400
-In-Reply-To: <28211201.GaRaWsd3LX@vostro.rjw.lan>
+	by vger.kernel.org with SMTP id S1751189AbcFWAFA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 20:05:00 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
@@ -19,122 +17,122 @@ Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Rework mark_unsafe_pages() to use a simpler method of clearing
-all bits in free_pages_map and to set the bits for the "unsafe"
-pages (ie. pages that were used by the image kernel before
-hibernation) with the help of duplicate_memory_bitmap().
+The core image restoration code preallocates some safe pages
+(ie. pages that weren't used by the image kernel before hibernation)
+for future use before allocating the bulk of memory for loading the
+image data.  Those safe pages are then freed so they can be allocated
+again (with the memory management subsystem's help).  That's done to
+ensure that there will be enough safe pages for temporary data
+structures needed during image restoration.
 
-For this purpose, move the pfn_valid() check from mark_unsafe_pages()
-to unpack_orig_pfns() where the "unsafe" pages are discovered.
+However, it is not really necessary to free those pages after they
+have been allocated.  They can be added to the (global) list of
+safe pages right away and then picked up from there when needed
+without freeing.
+
+That reduces the overhead related to using safe pages, especially
+in the arch-specific code, so modify the code accordingly.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
-
-v1 -> v2: mark_unsafe_pages() can be void now.
-
----
- kernel/power/snapshot.c |   64 ++++++++++++++++++------------------------------
- 1 file changed, 25 insertions(+), 39 deletions(-)
+ kernel/power/snapshot.c |   33 +++++++++++++++++----------------
+ 1 file changed, 17 insertions(+), 16 deletions(-)
 
 Index: linux-pm/kernel/power/snapshot.c
 ===================================================================
 --- linux-pm.orig/kernel/power/snapshot.c
 +++ linux-pm/kernel/power/snapshot.c
-@@ -2049,53 +2049,41 @@ int snapshot_read_next(struct snapshot_h
- 	return PAGE_SIZE;
+@@ -137,16 +137,21 @@ static void *get_image_page(gfp_t gfp_ma
+ 	return res;
  }
  
-+static void duplicate_memory_bitmap(struct memory_bitmap *dst,
-+				    struct memory_bitmap *src)
-+{
-+	unsigned long pfn;
-+
-+	memory_bm_position_reset(src);
-+	pfn = memory_bm_next_pfn(src);
-+	while (pfn != BM_END_OF_MAP) {
-+		memory_bm_set_bit(dst, pfn);
-+		pfn = memory_bm_next_pfn(src);
-+	}
+-unsigned long get_safe_page(gfp_t gfp_mask)
++static void *__get_safe_page(gfp_t gfp_mask)
+ {
+ 	if (safe_pages_list) {
+ 		void *ret = safe_pages_list;
+ 
+ 		safe_pages_list = safe_pages_list->next;
+ 		memset(ret, 0, PAGE_SIZE);
+-		return (unsigned long)ret;
++		return ret;
+ 	}
+-	return (unsigned long)get_image_page(gfp_mask, PG_SAFE);
++	return get_image_page(gfp_mask, PG_SAFE);
 +}
 +
- /**
-  *	mark_unsafe_pages - mark the pages that cannot be used for storing
-  *	the image during resume, because they conflict with the pages that
-  *	had been used before suspend
-  */
- 
--static int mark_unsafe_pages(struct memory_bitmap *bm)
-+static void mark_unsafe_pages(struct memory_bitmap *bm)
- {
--	struct zone *zone;
--	unsigned long pfn, max_zone_pfn;
-+	unsigned long pfn;
- 
--	/* Clear page flags */
--	for_each_populated_zone(zone) {
--		max_zone_pfn = zone_end_pfn(zone);
--		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
--			if (pfn_valid(pfn))
--				swsusp_unset_page_free(pfn_to_page(pfn));
-+	/* Clear the "free"/"unsafe" bit for all PFNs */
-+	memory_bm_position_reset(free_pages_map);
-+	pfn = memory_bm_next_pfn(free_pages_map);
-+	while (pfn != BM_END_OF_MAP) {
-+		memory_bm_clear_current(free_pages_map);
-+		pfn = memory_bm_next_pfn(free_pages_map);
- 	}
- 
--	/* Mark pages that correspond to the "original" pfns as "unsafe" */
--	memory_bm_position_reset(bm);
--	do {
--		pfn = memory_bm_next_pfn(bm);
--		if (likely(pfn != BM_END_OF_MAP)) {
--			if (likely(pfn_valid(pfn)))
--				swsusp_set_page_free(pfn_to_page(pfn));
--			else
--				return -EFAULT;
--		}
--	} while (pfn != BM_END_OF_MAP);
-+	/* Mark pages that correspond to the "original" PFNs as "unsafe" */
-+	duplicate_memory_bitmap(free_pages_map, bm);
- 
- 	allocated_unsafe_pages = 0;
--
--	return 0;
--}
--
--static void
--duplicate_memory_bitmap(struct memory_bitmap *dst, struct memory_bitmap *src)
--{
--	unsigned long pfn;
--
--	memory_bm_position_reset(src);
--	pfn = memory_bm_next_pfn(src);
--	while (pfn != BM_END_OF_MAP) {
--		memory_bm_set_bit(dst, pfn);
--		pfn = memory_bm_next_pfn(src);
--	}
++unsigned long get_safe_page(gfp_t gfp_mask)
++{
++	return (unsigned long)__get_safe_page(gfp_mask);
  }
  
- static int check_header(struct swsusp_info *info)
-@@ -2145,7 +2133,7 @@ static int unpack_orig_pfns(unsigned lon
- 		/* Extract and buffer page key for data page (s390 only). */
- 		page_key_memorize(buf + j);
+ static struct page *alloc_image_page(gfp_t gfp_mask)
+@@ -230,7 +235,8 @@ static void *chain_alloc(struct chain_al
+ 	if (LINKED_PAGE_DATA_SIZE - ca->used_space < size) {
+ 		struct linked_page *lp;
  
--		if (memory_bm_pfn_present(bm, buf[j]))
-+		if (pfn_valid(buf[j]) && memory_bm_pfn_present(bm, buf[j]))
- 			memory_bm_set_bit(bm, buf[j]);
- 		else
- 			return -EFAULT;
-@@ -2387,9 +2375,7 @@ prepare_image(struct memory_bitmap *new_
- 	buffer = NULL;
+-		lp = get_image_page(ca->gfp_mask, ca->safe_needed);
++		lp = ca->safe_needed ? __get_safe_page(ca->gfp_mask) :
++					get_image_page(ca->gfp_mask, PG_ANY);
+ 		if (!lp)
+ 			return NULL;
  
- 	nr_highmem = count_highmem_image_pages(bm);
--	error = mark_unsafe_pages(bm);
--	if (error)
--		goto Free;
-+	mark_unsafe_pages(bm);
+@@ -2367,7 +2373,7 @@ static int
+ prepare_image(struct memory_bitmap *new_bm, struct memory_bitmap *bm)
+ {
+ 	unsigned int nr_pages, nr_highmem;
+-	struct linked_page *sp_list, *lp;
++	struct linked_page *lp;
+ 	int error;
  
- 	error = memory_bm_create(new_bm, GFP_ATOMIC, PG_SAFE);
- 	if (error)
+ 	/* If there is no highmem, the buffer will not be necessary */
+@@ -2393,9 +2399,9 @@ prepare_image(struct memory_bitmap *new_
+ 	 * NOTE: This way we make sure there will be enough safe pages for the
+ 	 * chain_alloc() in get_buffer().  It is a bit wasteful, but
+ 	 * nr_copy_pages cannot be greater than 50% of the memory anyway.
++	 *
++	 * nr_copy_pages cannot be less than allocated_unsafe_pages too.
+ 	 */
+-	sp_list = NULL;
+-	/* nr_copy_pages cannot be lesser than allocated_unsafe_pages */
+ 	nr_pages = nr_copy_pages - nr_highmem - allocated_unsafe_pages;
+ 	nr_pages = DIV_ROUND_UP(nr_pages, PBES_PER_LINKED_PAGE);
+ 	while (nr_pages > 0) {
+@@ -2404,12 +2410,11 @@ prepare_image(struct memory_bitmap *new_
+ 			error = -ENOMEM;
+ 			goto Free;
+ 		}
+-		lp->next = sp_list;
+-		sp_list = lp;
++		lp->next = safe_pages_list;
++		safe_pages_list = lp;
+ 		nr_pages--;
+ 	}
+ 	/* Preallocate memory for the image */
+-	safe_pages_list = NULL;
+ 	nr_pages = nr_copy_pages - nr_highmem - allocated_unsafe_pages;
+ 	while (nr_pages > 0) {
+ 		lp = (struct linked_page *)get_zeroed_page(GFP_ATOMIC);
+@@ -2427,12 +2432,6 @@ prepare_image(struct memory_bitmap *new_
+ 		swsusp_set_page_free(virt_to_page(lp));
+ 		nr_pages--;
+ 	}
+-	/* Free the reserved safe pages so that chain_alloc() can use them */
+-	while (sp_list) {
+-		lp = sp_list->next;
+-		free_image_page(sp_list, PG_UNSAFE_CLEAR);
+-		sp_list = lp;
+-	}
+ 	return 0;
+ 
+  Free:
+@@ -2522,6 +2521,8 @@ int snapshot_write_next(struct snapshot_
+ 		if (error)
+ 			return error;
+ 
++		safe_pages_list = NULL;
++
+ 		error = memory_bm_create(&copy_bm, GFP_ATOMIC, PG_ANY);
+ 		if (error)
+ 			return error;
 
