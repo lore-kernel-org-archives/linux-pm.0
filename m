@@ -1,156 +1,136 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v13 4/4] power: wm831x_power: Support USB charger current limit management
-Date: Thu, 23 Jun 2016 16:58:00 +0800
-Message-ID: <7c8f00fd406e14d7bd71d6229522e1683aa7e97b.1466671672.git.baolin.wang@linaro.org>
-References: <cover.1466671672.git.baolin.wang@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1466671672.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1466671672.git.baolin.wang@linaro.org>
-References: <cover.1466671672.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: robh@kernel.org, jun.li@nxp.com, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, grygorii.strashko@ti.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+From: Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH] cpuidle/powernv: Fix snooze timeout
+Date: Thu, 23 Jun 2016 19:28:37 +1000
+Message-ID: <576BABC5.7020600@gmail.com>
+References: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <576B23EB.7080903@gmail.com> <576B6C64.6060206@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:36350 "EHLO
+	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751460AbcFWJ2q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2016 05:28:46 -0400
+Received: by mail-pa0-f66.google.com with SMTP id av7so44084pac.3
+        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 02:28:45 -0700 (PDT)
+In-Reply-To: <576B6C64.6060206@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org
 
-Integrate with the newly added USB charger interface to limit the current
-we draw from the USB input based on the input device configuration
-identified by the USB stack, allowing us to charge more quickly from high
-current inputs without drawing more current than specified from others.
 
-Signed-off-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-Acked-by: Lee Jones <lee.jones@linaro.org>
-Acked-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
-Acked-by: Peter Chen <peter.chen@freescale.com>
-Acked-by: Sebastian Reichel <sre@kernel.org>
----
- drivers/power/wm831x_power.c     |   69 ++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/wm831x/pdata.h |    3 ++
- 2 files changed, 72 insertions(+)
 
-diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
-index 7082301..cef1812 100644
---- a/drivers/power/wm831x_power.c
-+++ b/drivers/power/wm831x_power.c
-@@ -13,6 +13,7 @@
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/slab.h>
-+#include <linux/usb/charger.h>
- 
- #include <linux/mfd/wm831x/core.h>
- #include <linux/mfd/wm831x/auxadc.h>
-@@ -31,6 +32,8 @@ struct wm831x_power {
- 	char usb_name[20];
- 	char battery_name[20];
- 	bool have_battery;
-+	struct usb_charger *usb_charger;
-+	struct notifier_block usb_notify;
- };
- 
- static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
-@@ -125,6 +128,43 @@ static enum power_supply_property wm831x_usb_props[] = {
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- };
- 
-+/* In milliamps */
-+static const unsigned int wm831x_usb_limits[] = {
-+	0,
-+	2,
-+	100,
-+	500,
-+	900,
-+	1500,
-+	1800,
-+	550,
-+};
-+
-+static int wm831x_usb_limit_change(struct notifier_block *nb,
-+				   unsigned long limit, void *data)
-+{
-+	struct wm831x_power *wm831x_power = container_of(nb,
-+							 struct wm831x_power,
-+							 usb_notify);
-+	unsigned int i, best;
-+
-+	/* Find the highest supported limit */
-+	best = 0;
-+	for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
-+		if (limit >= wm831x_usb_limits[i] &&
-+		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
-+			best = i;
-+	}
-+
-+	dev_dbg(wm831x_power->wm831x->dev,
-+		"Limiting USB current to %umA", wm831x_usb_limits[best]);
-+
-+	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
-+		        WM831X_USB_ILIM_MASK, best);
-+
-+	return 0;
-+}
-+
- /*********************************************************************
-  *		Battery properties
-  *********************************************************************/
-@@ -607,8 +647,31 @@ static int wm831x_power_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
-+		power->usb_charger =
-+			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
-+		if (IS_ERR(power->usb_charger)) {
-+			ret = PTR_ERR(power->usb_charger);
-+			dev_err(&pdev->dev,
-+				"Failed to find USB gadget: %d\n", ret);
-+			goto err_bat_irq;
-+		}
-+
-+		power->usb_notify.notifier_call = wm831x_usb_limit_change;
-+
-+		ret = usb_charger_register_notify(power->usb_charger,
-+						  &power->usb_notify);
-+		if (ret != 0) {
-+			dev_err(&pdev->dev,
-+				"Failed to register notifier: %d\n", ret);
-+			goto err_usb_charger;
-+		}
-+	}
-+
- 	return ret;
- 
-+err_usb_charger:
-+	/* put_device on charger */
- err_bat_irq:
- 	--i;
- 	for (; i >= 0; i--) {
-@@ -637,6 +700,12 @@ static int wm831x_power_remove(struct platform_device *pdev)
- 	struct wm831x *wm831x = wm831x_power->wm831x;
- 	int irq, i;
- 
-+	if (wm831x_power->usb_charger) {
-+		usb_charger_unregister_notify(wm831x_power->usb_charger,
-+					      &wm831x_power->usb_notify);
-+		/* Free charger */
-+	}
-+
- 	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
- 		irq = wm831x_irq(wm831x, 
- 				 platform_get_irq_byname(pdev,
-diff --git a/include/linux/mfd/wm831x/pdata.h b/include/linux/mfd/wm831x/pdata.h
-index dcc9631..5af8399 100644
---- a/include/linux/mfd/wm831x/pdata.h
-+++ b/include/linux/mfd/wm831x/pdata.h
-@@ -126,6 +126,9 @@ struct wm831x_pdata {
- 	/** The driver should initiate a power off sequence during shutdown */
- 	bool soft_shutdown;
- 
-+	/** dev_name of USB charger gadget to integrate with */
-+	const char *usb_gadget;
-+
- 	int irq_base;
- 	int gpio_base;
- 	int gpio_defaults[WM831X_GPIO_NUM];
--- 
-1.7.9.5
+On 23/06/16 14:58, Shreyas B Prabhu wrote:
+> 
+> 
+> On 06/23/2016 05:18 AM, Balbir Singh wrote:
+>>
+>>
+>> On 23/06/16 05:36, Shreyas B. Prabhu wrote:
+>>> Snooze is a poll idle state in powernv and pseries platforms. Snooze
+>>> has a timeout so that if a cpu stays in snooze for more than target
+>>> residency of the next available idle state, then it would exit thereby
+>>> giving chance to the cpuidle governor to re-evaluate and
+>>> promote the cpu to a deeper idle state. Therefore whenever snooze exits
+>>> due to this timeout, its last_residency will be target_residency of next
+>>> deeper state.
+>>>
+>>> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
+>>> changed the math around last_residency calculation. Specifically, while
+>>> converting last_residency value from nanoseconds to microseconds it does
+>>> right shift by 10. Due to this, in snooze timeout exit scenarios
+>>> last_residency calculated is roughly 2.3% less than target_residency of
+>>> next available state. This pattern is picked up get_typical_interval()
+>>> in the menu governor and therefore expected_interval in menu_select() is
+>>> frequently less than the target_residency of any state but snooze.
+>>>
+>>> Due to this we are entering snooze at a higher rate, thereby affecting
+>>> the single thread performance.
+>>> Since the math around last_residency is not meant to be precise, fix this
+>>> issue setting snooze timeout to 105% of target_residency of next
+>>> available idle state.
+>>>
+>>> This also adds comment around why snooze timeout is necessary.
+>>>
+>>> Reported-by: Anton Blanchard <anton@samba.org>
+>>> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+>>> ---
+>>>  drivers/cpuidle/cpuidle-powernv.c | 14 ++++++++++++++
+>>>  drivers/cpuidle/cpuidle-pseries.c | 13 +++++++++++++
+>>>  2 files changed, 27 insertions(+)
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+>>> index e12dc30..5835491 100644
+>>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>>> @@ -268,10 +268,24 @@ static int powernv_idle_probe(void)
+>>>  		cpuidle_state_table = powernv_states;
+>>>  		/* Device tree can indicate more idle states */
+>>>  		max_idle_state = powernv_add_idle_states();
+>>> +
+>>> +		/*
+>>> +		 * Staying in snooze for a long period can degrade the
+>>> +		 * perfomance of the sibling cpus. Set timeout for snooze such
+>>> +		 * that if the cpu stays in snooze longer than target residency
+>>> +		 * of the next available idle state then exit from snooze. This
+>>> +		 * gives a chance to the cpuidle governor to re-evaluate and
+>>> +		 * promote it to deeper idle states.
+>>> +		 */
+>>>  		if (max_idle_state > 1) {
+>>>  			snooze_timeout_en = true;
+>>>  			snooze_timeout = powernv_states[1].target_residency *
+>>>  					 tb_ticks_per_usec;
+>>> +			/*
+>>> +			 * Give a 5% margin since target residency related math
+>>> +			 * is not precise in cpuidle core.
+>>> +			 */
+>>
+>> Is this due to the microsecond conversion mentioned above? It would be nice to
+>> have it in the comment. Does
+>>
+>> (powernv_states[1].target_residency + tb_ticks_per_usec) / tb_ticks_per_usec solve
+>> your rounding issues, assuming the issue is really rounding or maybe it is due
+>> to the shift by 10, could you please elaborate on what related math is not
+>> precise? That would explain to me why I missed understanding your changes.
+>>
+>>> +			snooze_timeout += snooze_timeout / 20;
+>>
+>> For now 5% is sufficient, but do you want to check to assert to check if
+>>
+>> snooze_timeout (in microseconds) / tb_ticks_per_usec > powernv_states[i].target_residency?
+>>
+> 
+> This is not a rounding issue. As I mentioned in the commit message, this
+> is because of the last_residency calculation in cpuidle.c.
+> To elaborate, last residency calculation is done in the following way
+> after commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with
+> local_clock()") -
+> 
+> cpuidle_enter_state()
+> {
+> 	[...]
+> 	time_start = local_clock();
+> 	[enter idle state]
+> 	time_end = local_clock();
+> 	/*
+>          * local_clock() returns the time in nanosecond, let's shift
+>          * by 10 (divide by 1024) to have microsecond based time.
+>          */
+>         diff = (time_end - time_start) >> 10;
+> 	[...]
+> 	dev->last_residency = (int) diff;
+> }
+> 
+> Because of >>10 as opposed to /1000, last_residency is lesser by 2.3%
+
+
+This is still a rounding error but at a different site. I see we saved
+a division by doing a >> 10, but we added it right back by doing a /20
+later in the platform code. Shouldn't the rounding affect other
+platforms as well? Can't we fix it in cpuidle_enter_state(). Division
+by 1000 can be optimized if required (but rather not add that complexity).
+Thanks for patiently explaining this
+
+Balbir
