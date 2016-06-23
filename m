@@ -1,66 +1,40 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH 1/1] thermal: core: call thermal_zone_device_update()
- after mode update
-Date: Thu, 23 Jun 2016 18:07:58 +0530
-Message-ID: <576BD826.6030007@ti.com>
-References: <1466563538.2471.10.camel@intel.com>
- <1466571990-12346-1-git-send-email-edubezval@gmail.com>
- <CAJZ5v0hRosrpW50Jx3p6-yHmNFLEaHpf9htfevtunEa10Jo7Dg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: Re: [PULL Request] Devfreq Fixes for RC5+.
+Date: Thu, 23 Jun 2016 14:53:27 +0200
+Message-ID: <CAJZ5v0gJRKSUoaCJDzLzH5SR6mj=_DkWXVPLHgzHWs4xGDqAAw@mail.gmail.com>
+References: <CGME20160621054943epcms1p5edf96fb3b2179a62bff867190bc6dc13@epcms1p5>
+ <1787004839.214561.1466488183645.JavaMail.weblogic@ep2ml104d> <179507006.447144.1466648616502.JavaMail.weblogic@ep2ml101a>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([198.47.19.11]:59543 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751040AbcFWMim (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 23 Jun 2016 08:38:42 -0400
-In-Reply-To: <CAJZ5v0hRosrpW50Jx3p6-yHmNFLEaHpf9htfevtunEa10Jo7Dg@mail.gmail.com>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:36410 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752362AbcFWMx3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2016 08:53:29 -0400
+Received: by mail-wm0-f66.google.com with SMTP id c82so10749913wme.3
+        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 05:53:28 -0700 (PDT)
+In-Reply-To: <179507006.447144.1466648616502.JavaMail.weblogic@ep2ml101a>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Lee, Chun-Yi" <jlee@suse.com>, Darren Hart <dvhart@infradead.org>, Keerthy <j-keerthy@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Myungjoo Ham <myungjoo.ham@samsung.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "lukasz.luba@arm.com" <lukasz.luba@arm.com>, "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>
 
-
-
-On Thursday 23 June 2016 05:57 PM, Rafael J. Wysocki wrote:
-> On Wed, Jun 22, 2016 at 7:06 AM, Eduardo Valentin <edubezval@gmail.com> wrote:
->> Because several drivers do the following pattern:
->> .set_mode()
->>     ...
->>     local_data->mode = new_mode;
->>     thermal_zone_device_update(tz);
->>
->> makes sense to simply do the thermal_zone_device_update()
->> in thermal core, after setting the new mode.
->>
->> Also, this patch also remove deadlocks on drivers that
->> call thermal_zone_device_update() on .set_mode(),
->> as .set_mode()  is now called always with tz->lock held.
+On Thu, Jun 23, 2016 at 4:23 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> Here goes the pull request with updated commits:
 >
-> To me, this part of the patch is way more important than the
-> optimization mentioned before.
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 >
-> Apparently, the problem is that drivers deadlock, because the
-> thermal_zone_device_update() invoked from ->set_mode() is called under
-> tz->lock.
+> The following changes since commit 33688abb2802ff3a230bd2441f765477b94cc89e:
 >
-> So to address that problem you make the core call
-> thermal_zone_device_update() after ->set_mode() outside of tz->lock
-> and the drivers don't have to do it any more.
+>   Linux 4.7-rc4 (2016-06-19 21:30:02 -0700)
 >
-> Is that correct?
+> are available in the git repository at:
+>
+>   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git fixes
+>
+> for you to fetch changes up to 8d39fc085d268a56486066a3deca94745f804f2d:
+>
+>   PM / devfreq: fix initialization of current frequency in last status (2016-06-22 13:53:00 +0900)
 
-Rafael,
-
-On my set up, mode_store locks tz->lock and eventually ends up calling 
-of_thermal_set_mode before releasing tz->lock which again tries to lock 
-tz->lock and ends up in a deadlock.
-
-http://pastebin.ubuntu.com/17687601/
-
-Regards,
-Keerthy
->
-> Thanks,
-> Rafael
->
+Pulled, thanks!
