@@ -1,46 +1,126 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH] PM / devfreq: Send the DEVFREQ_POSTCHANGE notification when
- target() is failed
-Date: Thu, 23 Jun 2016 11:18:43 +0900
-Message-ID: <1466648323-776-1-git-send-email-cw00.choi@samsung.com>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?UkU6IFJlOiBbUFVMTCBSZXF1ZXN0XSBEZXZmcmVxIEZpeGVz?=
+ =?UTF-8?B?IGZvciBSQzUrLg==?=
+Date: Thu, 23 Jun 2016 02:23:36 +0000
+Message-ID: <179507006.447144.1466648616502.JavaMail.weblogic@ep2ml101a>
+References: <CGME20160621054943epcms1p5edf96fb3b2179a62bff867190bc6dc13@epcms1p5>
+ <1787004839.214561.1466488183645.JavaMail.weblogic@ep2ml104d>
+Reply-To: myungjoo.ham@samsung.com
+Mime-Version: 1.0
+Content-Type: multipart/related;
+ boundary="----=_Part_447143_555440645.1466648616502"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:53262 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750838AbcFWCSr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 22:18:47 -0400
+Received: from mailout1.samsung.com ([203.254.224.24]:57830 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751312AbcFWCXl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 22:23:41 -0400
+Received: from epcas2p2.samsung.com (unknown [182.195.41.54])
+ by mailout1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0O9701UKBDBDIU80@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 23 Jun 2016 11:23:37 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: kyungmin.park@samsung.com, hl@rock-chips.com, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+To: =?UTF-8?B?UmFmYWVsIEouIFd5c29ja2k=?= <rafael@kernel.org>
+Cc: =?UTF-8?B?cmp3QHJqd3lzb2NraS5uZXQ=?= <rjw@rjwysocki.net>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20=?= <rafael.j.wysocki@intel.com>, =?UTF-8?B?bHVrYXN6Lmx1YmFAYXJtLmNvbQ==?= <lukasz.luba@arm.com>, =?UTF-8?B?ZGFuLmNhcnBlbnRlckBvcmFjbGUuY29t?= <dan.carpenter@oracle.com>, =?UTF-8?B?bXl1bmdqb28uaGFtQGdtYWlsLmNvbQ==?= <myungjoo.ham@gmail.com>
 
-This patch sends the DEVFREQ_POSTCHANGE notification when
-devfreq->profile->targer() is failed. The PRECHANGE/POSTCHANGE
-should be paired.
+------=_Part_447143_555440645.1466648616502
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-Fixes: 0fe3a66410a3 ("PM / devfreq: Add new DEVFREQ_TRANSITION_NOTIFIER notifier")
-Reported-by: Lin Huang <hl@rock-chips.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 1d6c803804d5..387799fec4c3 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -268,8 +268,11 @@ int update_devfreq(struct devfreq *devfreq)
- 	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
- 
- 	err = devfreq->profile->target(devfreq->dev.parent, &freq, flags);
--	if (err)
-+	if (err) {
-+		freqs.new = cur_freq;
-+		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
- 		return err;
-+	}
- 
- 	freqs.new = freq;
- 	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
--- 
-1.9.1
-
+SGVyZSBnb2VzIHRoZSBwdWxsIHJlcXVlc3Qgd2l0aCB1cGRhdGVkIGNvbW1pdHM6DQoNCi0tLS0t
+QkVHSU4gUEdQIFNJR05FRCBNRVNTQUdFLS0tLS0NCkhhc2g6IFNIQTENCg0KVGhlIGZvbGxvd2lu
+ZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCAzMzY4OGFiYjI4MDJmZjNhMjMwYmQyNDQxZjc2NTQ3N2I5
+NGNjODllOg0KDQogIExpbnV4IDQuNy1yYzQgKDIwMTYtMDYtMTkgMjE6MzA6MDIgLTA3MDApDQoN
+CmFyZSBhdmFpbGFibGUgaW4gdGhlIGdpdCByZXBvc2l0b3J5IGF0Og0KDQogIGh0dHBzOi8vZ2l0
+Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L216eC9kZXZmcmVxLmdpdCBmaXhl
+cw0KDQpmb3IgeW91IHRvIGZldGNoIGNoYW5nZXMgdXAgdG8gOGQzOWZjMDg1ZDI2OGE1NjQ4NjA2
+NmEzZGVjYTk0NzQ1ZjgwNGYyZDoNCg0KICBQTSAvIGRldmZyZXE6IGZpeCBpbml0aWFsaXphdGlv
+biBvZiBjdXJyZW50IGZyZXF1ZW5jeSBpbiBsYXN0IHN0YXR1cyAoMjAxNi0wNi0yMiAxMzo1Mzow
+MCArMDkwMCkNCg0KLSAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tDQpQdWxsIGplcXVlc3Qgb2YgUE0gLyBEZXZmcmVxIGZpeGVz
+IHRhcmdldHRpbmcgTGludXggNC43IFJDIDUrLg0KDQotIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCkNhaSBaaGl5b25nICgx
+KToNCiAgICAgIFBNIC8gZGV2ZnJlcTogZml4IGRvdWJsZSBjYWxsIHB1dF9kZXZpY2UNCg0KRGFu
+IENhcnBlbnRlciAoMSk6DQogICAgICBQTSAvIGRldmZyZXE6IGV4eW5vcy1ub2NwOiBSZW1vdmUg
+aW5jb3JyZWN0IElTX0VSUigpIGNoZWNrDQoNCkx1a2FzeiBMdWJhICgxKToNCiAgICAgIFBNIC8g
+ZGV2ZnJlcTogZml4IGluaXRpYWxpemF0aW9uIG9mIGN1cnJlbnQgZnJlcXVlbmN5IGluIGxhc3Qg
+c3RhdHVzDQoNCk15dW5nSm9vIEhhbSAoMyk6DQogICAgICBQTSAvIGRldmZyZXE6IGRldm1fa3ph
+bGxvYyB0byBoYXZlIGRldiBwb2ludGVyIG1vcmUgcHJlY2lzZWx5DQogICAgICBQTSAvIGRldmZy
+ZXE6IGZpeCBkdXBsaWNhdGVkIGtmcmVlIG9uIGRldmZyZXEgcG9pbnRlcg0KICAgICAgUE0gLyBk
+ZXZmcmVxOiByZW1vdmUgZG91YmxlIHB1dF9kZXZpY2UNCg0KIGRyaXZlcnMvZGV2ZnJlcS9kZXZm
+cmVxLmMgICAgICAgICAgIHwgMjIgKysrKysrKysrKy0tLS0tLS0tLS0tLQ0KIGRyaXZlcnMvZGV2
+ZnJlcS9ldmVudC9leHlub3Mtbm9jcC5jIHwgIDMgLS0tDQogMiBmaWxlcyBjaGFuZ2VkLCAxMCBp
+bnNlcnRpb25zKCspLCAxNSBkZWxldGlvbnMoLSkNCi0tLS0tQkVHSU4gUEdQIFNJR05BVFVSRS0t
+LS0tDQpWZXJzaW9uOiBHbnVQRyB2MQ0KDQppUUljQkFFQkFnQUdCUUpYYTBmQ0FBb0pFQk9odXJ2
+V0JvQ0sxdzhQLzJyZ0tMa3YyT1UvZTJyeWptRld5M0wxDQorVnZSbE1yYnR3U29IY1N3VW1mOHBX
+dHFUNHpVN0pLTDdWOFVOcG9RK08vV2doM2ZFeUdtT2RTQ0RYdit6U2N6DQpXRzNFY1J5V0c5cGV3
+bjdhdHZJT2RPdDdaYkdhQUJtTlI2RHRMazRHVU5qWjBRcUgwNlQ1VHlCdXAwbnpTTStQDQpuSUFO
+YldyQmtVWTd6cWErYzJpM2V3WXRrS25uL1RnaFFsRHR6Y0ErTytrTGU0RTNpYllzbVJod20zSzBV
+TTdlDQpvc1hMN1F5WkRsUm1uTnc0cjk4SmxHQ1dvS0V0R3loYXBoRXlQQitCREQrQzdET2tsck1D
+UnRrR1lwMzlFVnZhDQpJRmZNd29BMjk0UFVFM01EMHA1MlRrcUdZcnBLbnJtTUZHWXUydnNuZ2pz
+ZmV5d01TRmswMEYwUXJ1QlAzMGVLDQozM3BxWEZRZUVjelRLMnVaYytWVUlpai9BbnhjQTd1Q0dK
+ZjA3RjRvR003NnpnYkVEUEhheVZYOFptYUo2aUs4DQoyNGJNQmJrVGhvakpaQnFMVlh0b3I0RTZt
+RGhWQjNzTXRnYVJkQ0tpZTdyT09ZZE1xVGVweXRUdTJ0dEpGSjNCDQpvVVQvYzBMdTZyd3c3Zzlm
+MmEvMWRadFFzSHptbGd3UURZek93aHlJRjIvVVBXN2NLZEJGUEl1eFlkRVJaQUtrDQpOUDYwVTlq
+NnY4UG9yZGk5bCtQNTk5TUg4VU4xS3h5clRMb1RTNHdKVW1kS0E0ajFaVG9ZZXVYQUpNeHFRbjY3
+DQp5cVJJZFFhcDEvd3pLbGpjK3lUeWt2dWJhVXVHTUEyZUN1K00rdGdrZFoxWFZITHV0Q25XSHpr
+UXA0bXpZaUMxDQo4UlNScUZLTW1Yc1piY0htREVEcQ0KPVFEV3cNCi0tLS0tRU5EIFBHUCBTSUdO
+QVRVUkUtLS0tLQ0KDQrCoA0KwqANCi0tLS0tLS0tLSBPcmlnaW5hbCBNZXNzYWdlIC0tLS0tLS0t
+LQ0KU2VuZGVyIDogUmFmYWVsIEouIFd5c29ja2nCoDxyYWZhZWxAa2VybmVsLm9yZz4NCkRhdGUg
+ICA6IDIwMTYtMDYtMjIgMDc6MjYgKEdNVCs5KQ0KVGl0bGUgIDogUmU6IFtQVUxMIFJlcXVlc3Rd
+IERldmZyZXEgRml4ZXMgZm9yIFJDNSsuDQrCoA0KT27CoFR1ZSzCoEp1bsKgMjEswqAyMDE2wqBh
+dMKgNzo0OcKgQU0swqBNeXVuZ0pvb8KgSGFtwqA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPsKg
+d3JvdGU6DQo+wqBEZWFywqBSYWZhZWwsDQo+DQo+wqBIZXJlwqBnb2VzwqBhwqBwdWxswqByZXF1
+ZXN0wqBvZsKgIlBNwqAvwqBEZXZmcmVxwqBGaXhlcyLCoHRhcmdldHRpbmfCoFJDNSsuDQrCoA0K
+WW91wqBzaG91bGTCoHNpZ27CoG9mZsKgYWxswqBvZsKgeW91csKgY29tbWl0c8KgYW5kwqBzb21l
+wqBvZsKgdGhlbcKgYXJlwqBvbmx5DQphY2tlZC1ieS7CoMKgQ2FuwqB5b3XCoHBsZWFzZcKgYWRk
+wqB0aGXCoHNpZ24tb2Zmc8KgYXPCoGFwcHJvcHJpYXRlwqBhbmTCoHNlbnQNCnRoZcKgcmVxdWVz
+dMKgYWdhaW4/DQrCoA0KVGhhbmtzLA0KUmFmYWVsDQrCoA0KwqANCj7CoC0tLS0tQkVHSU7CoFBH
+UMKgU0lHTkVEwqBNRVNTQUdFLS0tLS0NCj7CoEhhc2g6wqBTSEExDQo+DQo+wqBUaGXCoGZvbGxv
+d2luZ8KgY2hhbmdlc8Kgc2luY2XCoGNvbW1pdMKgMzM2ODhhYmIyODAyZmYzYTIzMGJkMjQ0MWY3
+NjU0NzdiOTRjYzg5ZToNCj4NCj7CoMKgwqBMaW51eMKgNC43LXJjNMKgKDIwMTYtMDYtMTnCoDIx
+OjMwOjAywqAtMDcwMCkNCj4NCj7CoGFyZcKgYXZhaWxhYmxlwqBpbsKgdGhlwqBnaXTCoHJlcG9z
+aXRvcnnCoGF0Og0KPg0KPsKgwqDCoGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51
+eC9rZXJuZWwvZ2l0L216eC9kZXZmcmVxLmdpdMKgZml4ZXMNCj4NCj7CoGZvcsKgeW91wqB0b8Kg
+ZmV0Y2jCoGNoYW5nZXPCoHVwwqB0b8KgNzJiMjgzNWJhYjZiYjBmNzY4OGE3ODMwMWFjMTQ2NmM3
+MjljYjFjOToNCj4NCj7CoMKgwqBQTcKgL8KgZGV2ZnJlcTrCoGZpeMKgaW5pdGlhbGl6YXRpb27C
+oG9mwqBjdXJyZW50wqBmcmVxdWVuY3nCoGluwqBsYXN0wqBzdGF0dXPCoCgyMDE2LTA2LTIxwqAx
+NDoyNTozMMKgKzA5MDApDQo+DQo+wqAtwqAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+wqBQdWxswqBSZXF1ZXN0wqBvZsKg
+RGV2ZnJlccKgRml4ZXPCoCgzLjfCoHJjwqA1KynCoGZvcsKgUmFmYWVswqBMaW51eMKgUE0uDQo+
+DQo+wqAtwqAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tDQo+wqBDYWnCoFpoaXlvbmfCoCgxKToNCj7CoMKgwqDCoMKgwqDCoFBN
+wqAvwqBkZXZmcmVxOsKgZml4wqBkb3VibGXCoGNhbGzCoHB1dF9kZXZpY2UNCj4NCj7CoERhbsKg
+Q2FycGVudGVywqAoMSk6DQo+wqDCoMKgwqDCoMKgwqBQTcKgL8KgZGV2ZnJlcTrCoGV4eW5vcy1u
+b2NwOsKgUmVtb3ZlwqBpbmNvcnJlY3TCoElTX0VSUigpwqBjaGVjaw0KPg0KPsKgTHVrYXN6wqBM
+dWJhwqAoMSk6DQo+wqDCoMKgwqDCoMKgwqBQTcKgL8KgZGV2ZnJlcTrCoGZpeMKgaW5pdGlhbGl6
+YXRpb27CoG9mwqBjdXJyZW50wqBmcmVxdWVuY3nCoGluwqBsYXN0wqBzdGF0dXMNCj4NCj7CoE15
+dW5nSm9vwqBIYW3CoCgzKToNCj7CoMKgwqDCoMKgwqDCoFBNwqAvwqBkZXZmcmVxOsKgZGV2bV9r
+emFsbG9jwqB0b8KgaGF2ZcKgZGV2wqBwb2ludGVywqBtb3JlwqBwcmVjaXNlbHkNCj7CoMKgwqDC
+oMKgwqDCoFBNwqAvwqBkZXZmcmVxOsKgZml4wqBkdXBsaWNhdGVkwqBrZnJlZcKgb27CoGRldmZy
+ZXHCoHBvaW50ZXINCj7CoMKgwqDCoMKgwqDCoFBNwqAvwqBkZXZmcmVxOsKgcmVtb3ZlwqBkb3Vi
+bGXCoHB1dF9kZXZpY2UNCj4NCj7CoMKgZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuY8KgwqDCoMKg
+wqDCoMKgwqDCoMKgwqB8wqAyMsKgKysrKysrKysrKy0tLS0tLS0tLS0tLQ0KPsKgwqBkcml2ZXJz
+L2RldmZyZXEvZXZlbnQvZXh5bm9zLW5vY3AuY8KgfMKgwqAzwqAtLS0NCj7CoMKgMsKgZmlsZXPC
+oGNoYW5nZWQswqAxMMKgaW5zZXJ0aW9ucygrKSzCoDE1wqBkZWxldGlvbnMoLSkNCj7CoC0tLS0t
+QkVHSU7CoFBHUMKgU0lHTkFUVVJFLS0tLS0NCj7CoFZlcnNpb246wqBHbnVQR8KgdjENCj4NCj7C
+oGlRSWNCQUVCQWdBR0JRSlhhTk1FQUFvSkVCT2h1cnZXQm9DSzd6RVFBSktCQUVUaGx1NkNkUUVj
+TjdkdVpFMjUNCj7CoEREMnBHelNLUTVzcS9SWWc2WTBCVWN5WTNsdGdlblJ6djkzT0h5R3M0azJT
+dTY1clJoc283Q2xLdjZzdFdkVW8NCj7CoHRma1d1dmdIM1pqbnMwemxsYWtuc0N2bDVpenhSYVlk
+Q29ibW9EWi9vbUh2UDN1OWFMcWJPN1BBcW9uTFF6WCsNCj7CoC9tcWFzUVYwMkdTQmdzZ0ppUzZ0
+NWhSNjhvQkVtR01lUzZ5aVpoTTFCQVBrVnF2eFZwb3BnTnhZM1pGakhXK1kNCj7CoElVenNsZWlp
+dnlVNmhaam5KTndjUkdKdHEzdUYrNjZZdkRETS83alVEQWVESzFtRnNtSm8ra0I5alR1Z0xodm8N
+Cj7CoEI2WmtPZmdHK3MzR1JRWVZscTYxTkh4Y081RlE4cURtRHBCTGFBTmVpdGQ2SWZmVkpvUG9G
+dXNVV25UWGNxNVcNCj7CoHd4VS9XT0VnSW5SRDJoYjl5TVRiemxGdEpqU05QTk0veVFTRTd3U01G
+UWdWSUJvcVZUTDFJbVd3ZlpLUGhWQ2oNCj7CoFZOd2lieXRQVUptWkQyZ1Q5N0t6aG56N28wRERB
+L1lsbGpZYm1jajNML3lMK215bHRYS0ZzUjk5OEs4ME9pR2sNCj7CoGJ5TWVoYXA1aXRmS213VTdX
+bWdwVVNDZzJGMEtnOUpjT0FPOFNSNEowUkIzOUkxVW90NWg2SGVpNnZiemY1YWwNCj7CoFI0VkZZ
+eU50azVWdU15ZHRFRndtOG01SGVLMVRGUXhaaUd4TXJpY0Q1VTlzQTRzT0RJckFXeERCQTh3S01V
+ODcNCj7CoHkwcnAzRlBSVWlnUGVtelVJUFhSU3J3RnBTbHRWRnNkSHQ1OC9aV0xjbzF3VHVWM2Jp
+c2JGUCtxQXdEOUF3WXINCj7CoEwrYXR4bmxpeWZubW43T0h2WnhSDQo+wqA9QnJacw0KPsKgLS0t
+LS1FTkTCoFBHUMKgU0lHTkFUVVJFLS0tLS0NCsKgDQrCoA0KwqANCi0tDQpNeXVuZ0pvbyBIYW0g
+KO2VqOuqheyjvCksIFBoLkQuDQpEZXZlbG9wZXIgZVhwZXJpZW5jZSBMYWIsIFMvVyBQbGF0Zm9y
+bSBUZWFtLMKgU29mdHdhcmUgUiZEIENlbnRlcg0KU2Ftc3VuZyBFbGVjdHJvbmljcw0KQ2VsbDog
+KzgyLTEwLTY3MTQtMjg1OA0KwqA=
+------=_Part_447143_555440645.1466648616502--
