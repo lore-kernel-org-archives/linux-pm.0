@@ -1,169 +1,153 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: [PATCHv4 1/1] thermal: core: call thermal_zone_device_update()
- after mode update
-Date: Wed, 22 Jun 2016 21:51:58 -0700
-Message-ID: <20160623045158.GB3379@f23x64.localdomain>
-References: <1466563538.2471.10.camel@intel.com>
- <1466607798-30025-1-git-send-email-edubezval@gmail.com>
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle/powernv: Fix snooze timeout
+Date: Thu, 23 Jun 2016 10:28:12 +0530
+Message-ID: <576B6C64.6060206@linux.vnet.ibm.com>
+References: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com> <576B23EB.7080903@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1466607798-30025-1-git-send-email-edubezval@gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org, Peter Feuerer <peter@piie.net>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:59414 "EHLO
+	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750785AbcFWE6a (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2016 00:58:30 -0400
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5N4s5R3136113
+	for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 00:58:29 -0400
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [125.16.236.3])
+	by mx0a-001b2d01.pphosted.com with ESMTP id 23q796gdap-1
+	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 00:58:29 -0400
+Received: from localhost
+	by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
+	Thu, 23 Jun 2016 10:28:23 +0530
+Received: from d28relay06.in.ibm.com (d28relay06.in.ibm.com [9.184.220.150])
+	by d28dlp01.in.ibm.com (Postfix) with ESMTP id EF509E005B
+	for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 10:32:04 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+	by d28relay06.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u5N4wK1n45219936
+	for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 10:28:20 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+	by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u5N4wFuW019186
+	for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 10:28:19 +0530
+In-Reply-To: <576B23EB.7080903@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Balbir Singh <bsingharora@gmail.com>, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org
 
-On Wed, Jun 22, 2016 at 08:03:18AM -0700, Eduardo Valentin wrote:
-> Because several drivers do the following pattern:
-> .set_mode()
->    ...
->    local_data->mode = new_mode;
->    thermal_zone_device_update(tz);
-> 
-> makes sense to simply do the thermal_zone_device_update()
-> in thermal core, after setting the new mode.
-> 
-> Also, this patch also remove deadlocks on drivers that
-> call thermal_zone_device_update() on .set_mode(),
-> as .set_mode()  is now called always with tz->lock held.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: linux-acpi@vger.kernel.org
-> Cc: "Lee, Chun-Yi" <jlee@suse.com>
-> Cc: Darren Hart <dvhart@infradead.org>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Keerthy <j-keerthy@ti.com>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: platform-driver-x86@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 
-+Peter Feuerer <peter@piie.net>
 
-Peter, any concerns regarding the acerhdf driver?
-
-> ---
-> Hello,
+On 06/23/2016 05:18 AM, Balbir Singh wrote:
 > 
-> V3->V4:
-> - ti-soc: Removed extra locking from TI SoC in set_mode
-> - ACPI: Kept the update on check as it is called on other places
 > 
-> BR,
+> On 23/06/16 05:36, Shreyas B. Prabhu wrote:
+>> Snooze is a poll idle state in powernv and pseries platforms. Snooze
+>> has a timeout so that if a cpu stays in snooze for more than target
+>> residency of the next available idle state, then it would exit thereby
+>> giving chance to the cpuidle governor to re-evaluate and
+>> promote the cpu to a deeper idle state. Therefore whenever snooze exits
+>> due to this timeout, its last_residency will be target_residency of next
+>> deeper state.
+>>
+>> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
+>> changed the math around last_residency calculation. Specifically, while
+>> converting last_residency value from nanoseconds to microseconds it does
+>> right shift by 10. Due to this, in snooze timeout exit scenarios
+>> last_residency calculated is roughly 2.3% less than target_residency of
+>> next available state. This pattern is picked up get_typical_interval()
+>> in the menu governor and therefore expected_interval in menu_select() is
+>> frequently less than the target_residency of any state but snooze.
+>>
+>> Due to this we are entering snooze at a higher rate, thereby affecting
+>> the single thread performance.
+>> Since the math around last_residency is not meant to be precise, fix this
+>> issue setting snooze timeout to 105% of target_residency of next
+>> available idle state.
+>>
+>> This also adds comment around why snooze timeout is necessary.
+>>
+>> Reported-by: Anton Blanchard <anton@samba.org>
+>> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+>> ---
+>>  drivers/cpuidle/cpuidle-powernv.c | 14 ++++++++++++++
+>>  drivers/cpuidle/cpuidle-pseries.c | 13 +++++++++++++
+>>  2 files changed, 27 insertions(+)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+>> index e12dc30..5835491 100644
+>> --- a/drivers/cpuidle/cpuidle-powernv.c
+>> +++ b/drivers/cpuidle/cpuidle-powernv.c
+>> @@ -268,10 +268,24 @@ static int powernv_idle_probe(void)
+>>  		cpuidle_state_table = powernv_states;
+>>  		/* Device tree can indicate more idle states */
+>>  		max_idle_state = powernv_add_idle_states();
+>> +
+>> +		/*
+>> +		 * Staying in snooze for a long period can degrade the
+>> +		 * perfomance of the sibling cpus. Set timeout for snooze such
+>> +		 * that if the cpu stays in snooze longer than target residency
+>> +		 * of the next available idle state then exit from snooze. This
+>> +		 * gives a chance to the cpuidle governor to re-evaluate and
+>> +		 * promote it to deeper idle states.
+>> +		 */
+>>  		if (max_idle_state > 1) {
+>>  			snooze_timeout_en = true;
+>>  			snooze_timeout = powernv_states[1].target_residency *
+>>  					 tb_ticks_per_usec;
+>> +			/*
+>> +			 * Give a 5% margin since target residency related math
+>> +			 * is not precise in cpuidle core.
+>> +			 */
 > 
-> Eduardo
+> Is this due to the microsecond conversion mentioned above? It would be nice to
+> have it in the comment. Does
 > 
->  drivers/acpi/thermal.c                             | 1 -
->  drivers/platform/x86/acerhdf.c                     | 1 -
->  drivers/thermal/imx_thermal.c                      | 1 -
->  drivers/thermal/of-thermal.c                       | 5 -----
->  drivers/thermal/thermal_sysfs.c                    | 1 +
->  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 5 -----
->  6 files changed, 1 insertion(+), 13 deletions(-)
+> (powernv_states[1].target_residency + tb_ticks_per_usec) / tb_ticks_per_usec solve
+> your rounding issues, assuming the issue is really rounding or maybe it is due
+> to the shift by 10, could you please elaborate on what related math is not
+> precise? That would explain to me why I missed understanding your changes.
 > 
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index 82707f9..03c3460 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -581,7 +581,6 @@ static int thermal_set_mode(struct thermal_zone_device *thermal,
->  		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
->  			"%s kernel ACPI thermal control\n",
->  			tz->tz_enabled ? "Enable" : "Disable"));
-> -		acpi_thermal_check(tz);
->  	}
->  	return 0;
->  }
-> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-> index 460fa67..aee33ba 100644
-> --- a/drivers/platform/x86/acerhdf.c
-> +++ b/drivers/platform/x86/acerhdf.c
-> @@ -405,7 +405,6 @@ static inline void acerhdf_enable_kernelmode(void)
->  	kernelmode = 1;
->  
->  	thz_dev->polling_delay = interval*1000;
-> -	thermal_zone_device_update(thz_dev);
->  	pr_notice("kernel mode fan control ON\n");
->  }
->  
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index c5547bd..a413eb6 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -246,7 +246,6 @@ static int imx_set_mode(struct thermal_zone_device *tz,
->  	}
->  
->  	data->mode = mode;
-> -	thermal_zone_device_update(tz);
->  
->  	return 0;
->  }
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index b8e509c..95c47da 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -282,17 +282,12 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
->  {
->  	struct __thermal_zone *data = tz->devdata;
->  
-> -	mutex_lock(&tz->lock);
-> -
->  	if (mode == THERMAL_DEVICE_ENABLED)
->  		tz->polling_delay = data->polling_delay;
->  	else
->  		tz->polling_delay = 0;
->  
-> -	mutex_unlock(&tz->lock);
-> -
->  	data->mode = mode;
-> -	thermal_zone_device_update(tz);
->  
->  	return 0;
->  }
-> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-> index 743df50..3d0dc30 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -100,6 +100,7 @@ mode_store(struct device *dev, struct device_attribute *attr,
->  	mutex_lock(&tz->lock);
->  	result = tz->ops->set_mode(tz, mode);
->  	mutex_unlock(&tz->lock);
-> +	thermal_zone_device_update(tz);
->  
->  	if (result)
->  		return result;
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> index 15c0a9a..5dce053 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> @@ -193,19 +193,14 @@ static int ti_thermal_set_mode(struct thermal_zone_device *thermal,
->  		return 0;
->  	}
->  
-> -	mutex_lock(&data->ti_thermal->lock);
-> -
->  	if (mode == THERMAL_DEVICE_ENABLED)
->  		data->ti_thermal->polling_delay = FAST_TEMP_MONITORING_RATE;
->  	else
->  		data->ti_thermal->polling_delay = 0;
->  
-> -	mutex_unlock(&data->ti_thermal->lock);
-> -
->  	data->mode = mode;
->  	ti_bandgap_write_update_interval(bgp, data->sensor_id,
->  					data->ti_thermal->polling_delay);
-> -	thermal_zone_device_update(data->ti_thermal);
->  	dev_dbg(&thermal->device, "thermal polling set for duration=%d msec\n",
->  		data->ti_thermal->polling_delay);
->  
-> -- 
-> 2.1.4
+>> +			snooze_timeout += snooze_timeout / 20;
 > 
+> For now 5% is sufficient, but do you want to check to assert to check if
+> 
+> snooze_timeout (in microseconds) / tb_ticks_per_usec > powernv_states[i].target_residency?
 > 
 
--- 
-Darren Hart
-Intel Open Source Technology Center
+This is not a rounding issue. As I mentioned in the commit message, this
+is because of the last_residency calculation in cpuidle.c.
+To elaborate, last residency calculation is done in the following way
+after commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with
+local_clock()") -
+
+cpuidle_enter_state()
+{
+	[...]
+	time_start = local_clock();
+	[enter idle state]
+	time_end = local_clock();
+	/*
+         * local_clock() returns the time in nanosecond, let's shift
+         * by 10 (divide by 1024) to have microsecond based time.
+         */
+        diff = (time_end - time_start) >> 10;
+	[...]
+	dev->last_residency = (int) diff;
+}
+
+Because of >>10 as opposed to /1000, last_residency is lesser by 2.3%
+
+In snooze timeout exit scenarios because of this, last_residency
+calculated is 2.3% less than target_residency of next available state.
+This affects get_typical_interval() in the menu governor and therefore
+expected_interval in menu_select() is frequently less than the
+target_residency of any state but snooze.
+
+
+I'll expand the comments as you suggested.
+
+Thanks,
+Shreyas
+
