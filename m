@@ -1,128 +1,140 @@
-From: Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH] cpuidle/powernv: Fix snooze timeout
-Date: Thu, 23 Jun 2016 09:48:59 +1000
-Message-ID: <576B23EB.7080903@gmail.com>
-References: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2] PM / hibernate: Simplify mark_unsafe_pages()
+Date: Thu, 23 Jun 2016 02:07:30 +0200
+Message-ID: <8588549.m9b2d9p6pQ@vostro.rjw.lan>
+References: <28211201.GaRaWsd3LX@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:35192 "EHLO
-	mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751210AbcFVXtu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 19:49:50 -0400
-Received: by mail-pf0-f193.google.com with SMTP id t190so5176415pfb.2
-        for <linux-pm@vger.kernel.org>; Wed, 22 Jun 2016 16:49:50 -0700 (PDT)
-In-Reply-To: <1466624203-1847-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57410 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750996AbcFWADM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jun 2016 20:03:12 -0400
+In-Reply-To: <28211201.GaRaWsd3LX@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+Rework mark_unsafe_pages() to use a simpler method of clearing
+all bits in free_pages_map and to set the bits for the "unsafe"
+pages (ie. pages that were used by the image kernel before
+hibernation) with the help of duplicate_memory_bitmap().
 
-On 23/06/16 05:36, Shreyas B. Prabhu wrote:
-> Snooze is a poll idle state in powernv and pseries platforms. Snooze
-> has a timeout so that if a cpu stays in snooze for more than target
-> residency of the next available idle state, then it would exit thereby
-> giving chance to the cpuidle governor to re-evaluate and
-> promote the cpu to a deeper idle state. Therefore whenever snooze exits
-> due to this timeout, its last_residency will be target_residency of next
-> deeper state.
-> 
-> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
-> changed the math around last_residency calculation. Specifically, while
-> converting last_residency value from nanoseconds to microseconds it does
-> right shift by 10. Due to this, in snooze timeout exit scenarios
-> last_residency calculated is roughly 2.3% less than target_residency of
-> next available state. This pattern is picked up get_typical_interval()
-> in the menu governor and therefore expected_interval in menu_select() is
-> frequently less than the target_residency of any state but snooze.
-> 
-> Due to this we are entering snooze at a higher rate, thereby affecting
-> the single thread performance.
-> Since the math around last_residency is not meant to be precise, fix this
-> issue setting snooze timeout to 105% of target_residency of next
-> available idle state.
-> 
-> This also adds comment around why snooze timeout is necessary.
-> 
-> Reported-by: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> ---
->  drivers/cpuidle/cpuidle-powernv.c | 14 ++++++++++++++
->  drivers/cpuidle/cpuidle-pseries.c | 13 +++++++++++++
->  2 files changed, 27 insertions(+)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index e12dc30..5835491 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -268,10 +268,24 @@ static int powernv_idle_probe(void)
->  		cpuidle_state_table = powernv_states;
->  		/* Device tree can indicate more idle states */
->  		max_idle_state = powernv_add_idle_states();
-> +
-> +		/*
-> +		 * Staying in snooze for a long period can degrade the
-> +		 * perfomance of the sibling cpus. Set timeout for snooze such
-> +		 * that if the cpu stays in snooze longer than target residency
-> +		 * of the next available idle state then exit from snooze. This
-> +		 * gives a chance to the cpuidle governor to re-evaluate and
-> +		 * promote it to deeper idle states.
-> +		 */
->  		if (max_idle_state > 1) {
->  			snooze_timeout_en = true;
->  			snooze_timeout = powernv_states[1].target_residency *
->  					 tb_ticks_per_usec;
-> +			/*
-> +			 * Give a 5% margin since target residency related math
-> +			 * is not precise in cpuidle core.
-> +			 */
+For this purpose, move the pfn_valid() check from mark_unsafe_pages()
+to unpack_orig_pfns() where the "unsafe" pages are discovered.
 
-Is this due to the microsecond conversion mentioned above? It would be nice to
-have it in the comment. Does
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-(powernv_states[1].target_residency + tb_ticks_per_usec) / tb_ticks_per_usec solve
-your rounding issues, assuming the issue is really rounding or maybe it is due
-to the shift by 10, could you please elaborate on what related math is not
-precise? That would explain to me why I missed understanding your changes.
+v1 -> v2: mark_unsafe_pages() can be void now.
 
-> +			snooze_timeout += snooze_timeout / 20;
+---
+ kernel/power/snapshot.c |   64 ++++++++++++++++++------------------------------
+ 1 file changed, 25 insertions(+), 39 deletions(-)
 
-For now 5% is sufficient, but do you want to check to assert to check if
+Index: linux-pm/kernel/power/snapshot.c
+===================================================================
+--- linux-pm.orig/kernel/power/snapshot.c
++++ linux-pm/kernel/power/snapshot.c
+@@ -2049,53 +2049,41 @@ int snapshot_read_next(struct snapshot_h
+ 	return PAGE_SIZE;
+ }
+ 
++static void duplicate_memory_bitmap(struct memory_bitmap *dst,
++				    struct memory_bitmap *src)
++{
++	unsigned long pfn;
++
++	memory_bm_position_reset(src);
++	pfn = memory_bm_next_pfn(src);
++	while (pfn != BM_END_OF_MAP) {
++		memory_bm_set_bit(dst, pfn);
++		pfn = memory_bm_next_pfn(src);
++	}
++}
++
+ /**
+  *	mark_unsafe_pages - mark the pages that cannot be used for storing
+  *	the image during resume, because they conflict with the pages that
+  *	had been used before suspend
+  */
+ 
+-static int mark_unsafe_pages(struct memory_bitmap *bm)
++static void mark_unsafe_pages(struct memory_bitmap *bm)
+ {
+-	struct zone *zone;
+-	unsigned long pfn, max_zone_pfn;
++	unsigned long pfn;
+ 
+-	/* Clear page flags */
+-	for_each_populated_zone(zone) {
+-		max_zone_pfn = zone_end_pfn(zone);
+-		for (pfn = zone->zone_start_pfn; pfn < max_zone_pfn; pfn++)
+-			if (pfn_valid(pfn))
+-				swsusp_unset_page_free(pfn_to_page(pfn));
++	/* Clear the "free"/"unsafe" bit for all PFNs */
++	memory_bm_position_reset(free_pages_map);
++	pfn = memory_bm_next_pfn(free_pages_map);
++	while (pfn != BM_END_OF_MAP) {
++		memory_bm_clear_current(free_pages_map);
++		pfn = memory_bm_next_pfn(free_pages_map);
+ 	}
+ 
+-	/* Mark pages that correspond to the "original" pfns as "unsafe" */
+-	memory_bm_position_reset(bm);
+-	do {
+-		pfn = memory_bm_next_pfn(bm);
+-		if (likely(pfn != BM_END_OF_MAP)) {
+-			if (likely(pfn_valid(pfn)))
+-				swsusp_set_page_free(pfn_to_page(pfn));
+-			else
+-				return -EFAULT;
+-		}
+-	} while (pfn != BM_END_OF_MAP);
++	/* Mark pages that correspond to the "original" PFNs as "unsafe" */
++	duplicate_memory_bitmap(free_pages_map, bm);
+ 
+ 	allocated_unsafe_pages = 0;
+-
+-	return 0;
+-}
+-
+-static void
+-duplicate_memory_bitmap(struct memory_bitmap *dst, struct memory_bitmap *src)
+-{
+-	unsigned long pfn;
+-
+-	memory_bm_position_reset(src);
+-	pfn = memory_bm_next_pfn(src);
+-	while (pfn != BM_END_OF_MAP) {
+-		memory_bm_set_bit(dst, pfn);
+-		pfn = memory_bm_next_pfn(src);
+-	}
+ }
+ 
+ static int check_header(struct swsusp_info *info)
+@@ -2145,7 +2133,7 @@ static int unpack_orig_pfns(unsigned lon
+ 		/* Extract and buffer page key for data page (s390 only). */
+ 		page_key_memorize(buf + j);
+ 
+-		if (memory_bm_pfn_present(bm, buf[j]))
++		if (pfn_valid(buf[j]) && memory_bm_pfn_present(bm, buf[j]))
+ 			memory_bm_set_bit(bm, buf[j]);
+ 		else
+ 			return -EFAULT;
+@@ -2387,9 +2375,7 @@ prepare_image(struct memory_bitmap *new_
+ 	buffer = NULL;
+ 
+ 	nr_highmem = count_highmem_image_pages(bm);
+-	error = mark_unsafe_pages(bm);
+-	if (error)
+-		goto Free;
++	mark_unsafe_pages(bm);
+ 
+ 	error = memory_bm_create(new_bm, GFP_ATOMIC, PG_SAFE);
+ 	if (error)
 
-snooze_timeout (in microseconds) / tb_ticks_per_usec > powernv_states[i].target_residency?
-
->  		}
->   	} else
->   		return -ENODEV;
-> diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-> index 07135e0..22de841 100644
-> --- a/drivers/cpuidle/cpuidle-pseries.c
-> +++ b/drivers/cpuidle/cpuidle-pseries.c
-> @@ -250,10 +250,23 @@ static int pseries_idle_probe(void)
->  	} else
->  		return -ENODEV;
->  
-> +	/*
-> +	 * Staying in snooze for a long period can degrade the
-> +	 * perfomance of the sibling cpus. Set timeout for snooze such
-> +	 * that if the cpu stays in snooze longer than target residency
-> +	 * of the next available idle state then exit from snooze. This
-> +	 * gives a chance to the cpuidle governor to re-evaluate and
-> +	 * promote it to deeper idle states.
-> +	 */
->  	if (max_idle_state > 1) {
->  		snooze_timeout_en = true;
->  		snooze_timeout = cpuidle_state_table[1].target_residency *
->  				 tb_ticks_per_usec;
-> +		/*
-> +		 * Give a 5% margin since target residency related math
-> +		 * is not precise in cpuidle core.
-> +		 */
-> +		snooze_timeout += snooze_timeout / 20;
->  	}
->  	return 0;
->  }
-> 
