@@ -1,56 +1,57 @@
-From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: Re: [RESEND PATCH v2 2/2] power/idle: enhance the precision of sleep_length
-Date: Thu, 23 Jun 2016 16:45:29 +0800
-Message-ID: <CAN2waFsnAUExsAhCgtTLcxYrxVuBL+TfFA0viOhk-9WGFnwnhQ@mail.gmail.com>
-References: <1466154816-17900-1-git-send-email-zhaoyang.huang@spreadtrum.com>
- <1466154816-17900-2-git-send-email-zhaoyang.huang@spreadtrum.com>
- <alpine.DEB.2.11.1606171125460.5839@nanos> <CAN2waFuETjxzRwST_EGY4GhxFUZZsOPkysrcBsKCSmcp5hV+UQ@mail.gmail.com>
- <alpine.DEB.2.11.1606171346540.5839@nanos> <CAN2waFuLW0DPjJb=X-0kB9nVbB9aQoJ95EnVidPBpTBx3CYVvg@mail.gmail.com>
- <CAN2waFs2tQFYs-ZGvY2i1e+PSBAjNwn1+C6N_J3tm8BkvXXVcQ@mail.gmail.com>
- <alpine.DEB.2.11.1606230859530.5839@nanos> <CAN2waFuLRG1AsebmWey6N16v8AM7HDK6q=tV1su-gNWNjbC6hw@mail.gmail.com>
- <alpine.DEB.2.11.1606231016290.5839@nanos> <CAN2waFt8u7HX9GC0SMeRtc2AB3SN=yu7GLbVHY5O6DtK4GFZeQ@mail.gmail.com>
- <alpine.DEB.2.11.1606231033530.5839@nanos>
+From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v12 2/4] gadget: Support for the usb charger framework
+Date: Thu, 23 Jun 2016 16:56:27 +0800
+Message-ID: <CAMz4kuJ990pfVxSz7sVEOOiL8gC+BAjJ=PLioez5_Y5c+OyxxQ@mail.gmail.com>
+References: <cover.1466497505.git.baolin.wang@linaro.org> <f7bae2566824a5e1da14c1a19dee6af5f250262f.1466497506.git.baolin.wang@linaro.org>
+ <87bn2uomzd.fsf@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f177.google.com ([209.85.161.177]:32828 "EHLO
-	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751858AbcFWIpa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2016 04:45:30 -0400
-Received: by mail-yw0-f177.google.com with SMTP id v77so65577874ywg.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 01:45:30 -0700 (PDT)
-In-Reply-To: <alpine.DEB.2.11.1606231033530.5839@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <87bn2uomzd.fsf-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ruslan Bilovol <ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, grygorii.strashko-l0cyMroinI0@public.gmane.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Geng Ren <geng.ren@spreadtrum.com>, Alex Wang <alex.wang@spreadtrum.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, =?UTF-8?B?Wmhhb3lhbmcgSHVhbmcgKOm7hOacnemYsyk=?= <zhaoyang.huang@spreadtrum.com>, Serge Broslavsky <serge.broslavsky@linaro.org>
 
-On 23 June 2016 at 16:35, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Thu, 23 Jun 2016, Zhaoyang Huang wrote:
->> On 23 June 2016 at 16:18, Thomas Gleixner <tglx@linutronix.de> wrote:
->> > On Thu, 23 Jun 2016, Zhaoyang Huang wrote:
->> >> On 23 June 2016 at 15:01, Thomas Gleixner <tglx@linutronix.de> wrote:
->> >> Thomas, I agree with you, I have discussed the modification with the
->> >> call back owner. However, I wonder if we can make the idle's framework
->> >> to be more precised without the assumption of short CPU_PM_ENTER
->> >> callbacks. Thank you!
->> >
->> > What's the point? To help people who put insanities into the idle code path?
->> >
->> > Thanks,
->> >
->> >         tglx
->> >
->> Hi, Thomas. If the entry,exit,min time of one idle state sums up to
->> 500us in some platform, the 100us callback which should be common as
->> caused by cache miss would also generate 20% imprecision. Don't you
+Hi,
+
+On 21 June 2016 at 18:27, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
 >
-> A cache miss is causing a 100us callback? What are you talking about?
+> Hi,
 >
-> Thanks,
+> Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
+>> For supporting the usb charger, it adds the usb_charger_init() and
+>> usb_charger_exit() functions for usb charger initialization and exit.
+>>
+>> It will report to the usb charger when the gadget state is changed,
+>> then the usb charger can do the power things.
+>>
+>> Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> Reviewed-by: Li Jun <jun.li-3arQi8VN3Tc@public.gmane.org>
+>> Tested-by: Li Jun <jun.li-3arQi8VN3Tc@public.gmane.org>
 >
->         tglx
-By a serials of memory access which maybe missed on cache all. Anyway,
-we can require the callback not to introduce schedule etc, but can not
-ask them to ensure their own executing time, which they can not
-control.
+> Before anything, I must say that I really liked this patch. It's
+> minimaly invasive to udc core and does all the necessary changes. If it
+> wasn't for the extra charger class, this would've been perfect.
+>
+> Can't you just tie a charger to a UDC and avoid the charger class
+> completely?
+>
+>>  static inline int usb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
+>>  {
+>> +     if (gadget->charger)
+>
+> I guess you could do this check inside
+> usb_gadget_set_cur_limit_by_type() itself.
+
+We will access the 'gadget->charger->type' member when issuing
+usb_gadget_set_cur_limit_by_type(), so I think I should leave the
+check here in next new version.
+
+-- 
+Baolin.wang
+Best Regards
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
