@@ -1,40 +1,45 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Re: [PULL Request] Devfreq Fixes for RC5+.
-Date: Thu, 23 Jun 2016 14:53:27 +0200
-Message-ID: <CAJZ5v0gJRKSUoaCJDzLzH5SR6mj=_DkWXVPLHgzHWs4xGDqAAw@mail.gmail.com>
-References: <CGME20160621054943epcms1p5edf96fb3b2179a62bff867190bc6dc13@epcms1p5>
- <1787004839.214561.1466488183645.JavaMail.weblogic@ep2ml104d> <179507006.447144.1466648616502.JavaMail.weblogic@ep2ml101a>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] powercap/intel_rapl: Add support for Ivy Bridge server
+Date: Thu, 23 Jun 2016 06:34:35 -0700
+Message-ID: <20160623063435.2d1d963a@yairi>
+References: <1466667204-26340-1-git-send-email-xiaolong.wang@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:36410 "EHLO
-	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752362AbcFWMx3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2016 08:53:29 -0400
-Received: by mail-wm0-f66.google.com with SMTP id c82so10749913wme.3
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 05:53:28 -0700 (PDT)
-In-Reply-To: <179507006.447144.1466648616502.JavaMail.weblogic@ep2ml101a>
+Received: from mga02.intel.com ([134.134.136.20]:24073 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751427AbcFWNfM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 23 Jun 2016 09:35:12 -0400
+In-Reply-To: <1466667204-26340-1-git-send-email-xiaolong.wang@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Myungjoo Ham <myungjoo.ham@samsung.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "lukasz.luba@arm.com" <lukasz.luba@arm.com>, "dan.carpenter@oracle.com" <dan.carpenter@oracle.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>
+To: Xiaolong Wang <xiaolong.wang@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, jacob.jun.pan@linux.intel.com
 
-On Thu, Jun 23, 2016 at 4:23 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
-> Here goes the pull request with updated commits:
->
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> The following changes since commit 33688abb2802ff3a230bd2441f765477b94cc89e:
->
->   Linux 4.7-rc4 (2016-06-19 21:30:02 -0700)
->
-> are available in the git repository at:
->
->   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git fixes
->
-> for you to fetch changes up to 8d39fc085d268a56486066a3deca94745f804f2d:
->
->   PM / devfreq: fix initialization of current frequency in last status (2016-06-22 13:53:00 +0900)
+On Thu, 23 Jun 2016 15:33:24 +0800
+Xiaolong Wang <xiaolong.wang@linux.intel.com> wrote:
 
-Pulled, thanks!
+> It's confirmed that RAPL works as expected on Ivy Bridge servers.
+> Tested against processor: Intel(R) Xeon(R) CPU E5-2697 v2 @2.70GHz
+> 
+> Signed-off-by: Xiaolong Wang <xiaolong.wang@linux.intel.com>
+looks good to me but please always send to lkml as well.
+> ---
+>  drivers/powercap/intel_rapl.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/powercap/intel_rapl.c
+> b/drivers/powercap/intel_rapl.c index 06d21e6..fbab29d 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -1134,6 +1134,7 @@ static const struct x86_cpu_id rapl_ids[]
+> __initconst = { RAPL_CPU(INTEL_FAM6_SANDYBRIDGE_X,
+> rapl_defaults_core), 
+>  	RAPL_CPU(INTEL_FAM6_IVYBRIDGE,
+> rapl_defaults_core),
+> +	RAPL_CPU(INTEL_FAM6_IVYBRIDGE_X,	rapl_defaults_core),
+>  
+>  	RAPL_CPU(INTEL_FAM6_HASWELL_CORE,	rapl_defaults_core),
+>  	RAPL_CPU(INTEL_FAM6_HASWELL_ULT,	rapl_defaults_core),
+
