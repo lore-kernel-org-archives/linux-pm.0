@@ -1,56 +1,148 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [patch] cpufreq/pcc-cpufreq: Fix doorbell.access_width
-Date: Thu, 23 Jun 2016 23:13:39 +0200
-Message-ID: <119a72eb-b691-77cf-9d3a-55b67a50f410@intel.com>
-References: <1466579229.3188.14.camel@gmail.com>
- <1466664342.5839.39.camel@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] thermal: intel_pch_thermal: Add suspend/resume callback
+Date: Thu, 23 Jun 2016 15:02:46 -0700
+Message-ID: <1466719366-18514-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:35160 "EHLO mga11.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:44374 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751189AbcFWVOI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 23 Jun 2016 17:14:08 -0400
-In-Reply-To: <1466664342.5839.39.camel@gmail.com>
+	id S1752117AbcFWWB0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 23 Jun 2016 18:01:26 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Galbraith <umgwanakikbuti@gmail.com>
-Cc: Lv Zheng <lv.zheng@intel.com>, Bob Moore <robert.moore@intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+To: rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, edubezval@gmail.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 6/23/2016 8:45 AM, Mike Galbraith wrote:
-> Commit 920de6ebfab8 apparently exposed a latent bug, doorbell.access_width
-> is initialized to 64, but per Lv Zheng, it should be 4, and indeed, making
-> that change does bring pcc-cpufreq back to life.
->
-> Suggested-by: Lv Zheng <lv.zheng@intel.com>
-> Signed-off-by: Mike Galbraith <umgwanakikbuti@gmail.com>
-> ---
->   drivers/cpufreq/pcc-cpufreq.c |    2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- a/drivers/cpufreq/pcc-cpufreq.c
-> +++ b/drivers/cpufreq/pcc-cpufreq.c
-> @@ -487,7 +487,7 @@ static int __init pcc_cpufreq_probe(void
->   	doorbell.space_id = reg_resource->space_id;
->   	doorbell.bit_width = reg_resource->bit_width;
->   	doorbell.bit_offset = reg_resource->bit_offset;
-> -	doorbell.access_width = 64;
-> +	doorbell.access_width = 4;
->   	doorbell.address = reg_resource->address;
->   
->   	pr_debug("probe: doorbell: space_id is %d, bit_width is %d, "
+Added suspend/resume callback to disable/enable PCH thermal sensor
+respectively. If the sensor is enabled by the BIOS, then the sensor status
+will not be changed during suspend/resume.
 
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/thermal/intel_pch_thermal.c | 60 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 59 insertions(+), 1 deletion(-)
 
-OK, I picked this up from the LKML patchwork (will push to Linus 
-tomorrow), but next time please CC patches related to ACPI to linux-acpi 
-and PM patches to linux-pm (so this one should have gone to both, 
-ideally).  They are much easier to handle/review then and more people 
-are likely to look at them too.
-
-
-Thanks,
-
-Rafael
-
+diff --git a/drivers/thermal/intel_pch_thermal.c b/drivers/thermal/intel_pch_thermal.c
+index 6a6ec1c..9b4815e 100644
+--- a/drivers/thermal/intel_pch_thermal.c
++++ b/drivers/thermal/intel_pch_thermal.c
+@@ -21,6 +21,7 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/thermal.h>
++#include <linux/pm.h>
+ 
+ /* Intel PCH thermal Device IDs */
+ #define PCH_THERMAL_DID_WPT	0x9CA4 /* Wildcat Point */
+@@ -65,6 +66,7 @@ struct pch_thermal_device {
+ 	unsigned long crt_temp;
+ 	int hot_trip_id;
+ 	unsigned long hot_temp;
++	bool bios_enabled;
+ };
+ 
+ static int pch_wpt_init(struct pch_thermal_device *ptd, int *nr_trips)
+@@ -75,8 +77,10 @@ static int pch_wpt_init(struct pch_thermal_device *ptd, int *nr_trips)
+ 	*nr_trips = 0;
+ 
+ 	/* Check if BIOS has already enabled thermal sensor */
+-	if (WPT_TSS_TSDSS & readb(ptd->hw_base + WPT_TSS))
++	if (WPT_TSS_TSDSS & readb(ptd->hw_base + WPT_TSS)) {
++		ptd->bios_enabled = true;
+ 		goto read_trips;
++	}
+ 
+ 	tsel = readb(ptd->hw_base + WPT_TSEL);
+ 	/*
+@@ -130,9 +134,39 @@ static int pch_wpt_get_temp(struct pch_thermal_device *ptd, int *temp)
+ 	return 0;
+ }
+ 
++static int pch_wpt_suspend(struct pch_thermal_device *ptd)
++{
++	u8 tsel;
++
++	if (ptd->bios_enabled)
++		return 0;
++
++	tsel = readb(ptd->hw_base + WPT_TSEL);
++
++	writeb(tsel & 0xFE, ptd->hw_base + WPT_TSEL);
++
++	return 0;
++}
++
++static int pch_wpt_resume(struct pch_thermal_device *ptd)
++{
++	u8 tsel;
++
++	if (ptd->bios_enabled)
++		return 0;
++
++	tsel = readb(ptd->hw_base + WPT_TSEL);
++
++	writeb(tsel | WPT_TSEL_ETS, ptd->hw_base + WPT_TSEL);
++
++	return 0;
++}
++
+ struct pch_dev_ops {
+ 	int (*hw_init)(struct pch_thermal_device *ptd, int *nr_trips);
+ 	int (*get_temp)(struct pch_thermal_device *ptd, int *temp);
++	int (*suspend)(struct pch_thermal_device *ptd);
++	int (*resume)(struct pch_thermal_device *ptd);
+ };
+ 
+ 
+@@ -140,6 +174,8 @@ struct pch_dev_ops {
+ static const struct pch_dev_ops pch_dev_ops_wpt = {
+ 	.hw_init = pch_wpt_init,
+ 	.get_temp = pch_wpt_get_temp,
++	.suspend = pch_wpt_suspend,
++	.resume = pch_wpt_resume,
+ };
+ 
+ static int pch_thermal_get_temp(struct thermal_zone_device *tzd, int *temp)
+@@ -269,6 +305,22 @@ static void intel_pch_thermal_remove(struct pci_dev *pdev)
+ 	pci_disable_device(pdev);
+ }
+ 
++static int intel_pch_thermal_suspend(struct device *device)
++{
++	struct pci_dev *pdev = to_pci_dev(device);
++	struct pch_thermal_device *ptd = pci_get_drvdata(pdev);
++
++	return ptd->ops->suspend(ptd);
++}
++
++static int intel_pch_thermal_resume(struct device *device)
++{
++	struct pci_dev *pdev = to_pci_dev(device);
++	struct pch_thermal_device *ptd = pci_get_drvdata(pdev);
++
++	return ptd->ops->resume(ptd);
++}
++
+ static struct pci_device_id intel_pch_thermal_id[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_WPT) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_SKL) },
+@@ -276,11 +328,17 @@ static struct pci_device_id intel_pch_thermal_id[] = {
+ };
+ MODULE_DEVICE_TABLE(pci, intel_pch_thermal_id);
+ 
++static const struct dev_pm_ops intel_pch_pm_ops = {
++	.suspend = intel_pch_thermal_suspend,
++	.resume = intel_pch_thermal_resume,
++};
++
+ static struct pci_driver intel_pch_thermal_driver = {
+ 	.name		= "intel_pch_thermal",
+ 	.id_table	= intel_pch_thermal_id,
+ 	.probe		= intel_pch_thermal_probe,
+ 	.remove		= intel_pch_thermal_remove,
++	.driver.pm	= &intel_pch_pm_ops,
+ };
+ 
+ module_pci_driver(intel_pch_thermal_driver);
+-- 
+2.5.5
 
