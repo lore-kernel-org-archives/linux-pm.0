@@ -1,46 +1,34 @@
-From: Wanpeng Li <kernellwp@gmail.com>
-Subject: Re: [LKP] [PATCH] x86: fix rdmsr MSR_PLATFORM_INFO unsafe warning in
- kvm guest
-Date: Thu, 23 Jun 2016 16:00:09 +0800
-Message-ID: <CANRm+CzXjODDjiSHeyHHeaAyLjrBBJ9QzmCtFsyxJc=Qe4KMZg@mail.gmail.com>
-References: <1466558908-3524-1-git-send-email-wanpeng.li@hotmail.com>
- <alpine.DEB.2.11.1606230908140.5839@nanos> <CADjb_WRQDYKoYqmfpfhHN_5rui_90rS0DD2JxRh6d5Wp5TMsgQ@mail.gmail.com>
- <CANRm+Cwgr27rDiakOhtLcK=PB50BAU-dXLcGpa4uWO-YXqhOBg@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RESEND PATCH v2 2/2] power/idle: enhance the precision of
+ sleep_length
+Date: Thu, 23 Jun 2016 10:18:11 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1606231016290.5839@nanos>
+References: <1466154816-17900-1-git-send-email-zhaoyang.huang@spreadtrum.com> <1466154816-17900-2-git-send-email-zhaoyang.huang@spreadtrum.com> <alpine.DEB.2.11.1606171125460.5839@nanos> <CAN2waFuETjxzRwST_EGY4GhxFUZZsOPkysrcBsKCSmcp5hV+UQ@mail.gmail.com>
+ <alpine.DEB.2.11.1606171346540.5839@nanos> <CAN2waFuLW0DPjJb=X-0kB9nVbB9aQoJ95EnVidPBpTBx3CYVvg@mail.gmail.com> <CAN2waFs2tQFYs-ZGvY2i1e+PSBAjNwn1+C6N_J3tm8BkvXXVcQ@mail.gmail.com> <alpine.DEB.2.11.1606230859530.5839@nanos>
+ <CAN2waFuLRG1AsebmWey6N16v8AM7HDK6q=tV1su-gNWNjbC6hw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CANRm+Cwgr27rDiakOhtLcK=PB50BAU-dXLcGpa4uWO-YXqhOBg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yu Chen <yu.chen.surf@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, kvm <kvm@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Jacob Pan <jacob.jun.pan@intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Paolo Bonzini <pbonzini@redhat.com>, Zhang Rui <rui.zhang@intel.com>, lkp@01.org, Wanpeng Li <wanpeng.li@hotmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:46634 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbcFWIUU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2016 04:20:20 -0400
+In-Reply-To: <CAN2waFuLRG1AsebmWey6N16v8AM7HDK6q=tV1su-gNWNjbC6hw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Geng Ren <geng.ren@spreadtrum.com>, Alex Wang <alex.wang@spreadtrum.com>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, =?GB2312?Q?Zhaoyang_Huang_=28=BB=C6=B3=AF=D1=F4=29?= <zhaoyang.huang@spreadtrum.com>
 
-2016-06-23 15:41 GMT+08:00 Wanpeng Li <kernellwp@gmail.com>:
-> Hi Yu=EF=BC=8C
-> 2016-06-23 15:37 GMT+08:00 Yu Chen <yu.chen.surf@gmail.com>:
->> On Thu, Jun 23, 2016 at 3:09 PM, Thomas Gleixner <tglx@linutronix.de=
-> wrote:
->>> On Wed, 22 Jun 2016, Wanpeng Li wrote:
->>>> After commit (fc141535ad8 : "x86 tsc_msr: Extend to include Intel =
-Core
->>>
->>> Where did you find that commit? It's neither in Linus tree nor in t=
-ip.
->>>
->> It is in Len's tree, we are planing to resend the patchset with Wanp=
-eng's fix
->> merged with a credit to him in commit msg, thanks for Wanpeng's effo=
-rt.
->> thanks all.
->
-> I prefer this patch can be applied separately instead of fold into th=
-e
-> bad commit since it shows the issue when access MSR_PLATFORM_INFO in
-> kvm guest and other guys who want to access MSR_PLATFORM_INFO later
-> can find the changelog and make better decisions.
+On Thu, 23 Jun 2016, Zhaoyang Huang wrote:
+> On 23 June 2016 at 15:01, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Thomas, I agree with you, I have discussed the modification with the
+> call back owner. However, I wonder if we can make the idle's framework
+> to be more precised without the assumption of short CPU_PM_ENTER
+> callbacks. Thank you!
 
-Thomas, does it make sense to keep separate?
+What's the point? To help people who put insanities into the idle code path?
 
-Regards,
-Wanpeng Li
+Thanks,
+
+	tglx
+
