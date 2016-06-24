@@ -1,166 +1,230 @@
 From: Chris Lapa <chris@lapa.com.au>
-Subject: [PATCH v5 7/7] max8903: adds support for initiation via device tree
-Date: Fri, 24 Jun 2016 12:26:12 +1000
-Message-ID: <1466735172-13372-8-git-send-email-chris@cpdesign.com.au>
+Subject: [PATCH v5 4/7] max8903: adds requesting of gpios.
+Date: Fri, 24 Jun 2016 12:26:09 +1000
+Message-ID: <1466735172-13372-5-git-send-email-chris@cpdesign.com.au>
 References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
  <1466735172-13372-1-git-send-email-chris@cpdesign.com.au>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:33578 "EHLO
-	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752425AbcFXC05 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 23 Jun 2016 22:26:57 -0400
-Received: by mail-pa0-f65.google.com with SMTP id ts6so7772887pac.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Jun 2016 19:26:57 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1466735172-13372-1-git-send-email-chris@cpdesign.com.au>
 In-Reply-To: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
 References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: k.kozlowski@samsung.com, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
 Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chris Lapa <chris@lapa.com.au>
+List-Id: linux-pm@vger.kernel.org
 
 From: Chris Lapa <chris@lapa.com.au>
 
-Adds support for device tree to setup a max8903 battery charger. DC and USB
-validity are determined by looking the presence of the dok and uok gpios.
+This change ensures all gpios are available for the driver to use and also
+splits off gpio setup into its own function for readability.
 
 Signed-off-by: Chris Lapa <chris@lapa.com.au>
+
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/power/max8903_charger.c | 78 +++++++++++++++++++++++++++++++++++++----
- 1 file changed, 72 insertions(+), 6 deletions(-)
+ drivers/power/max8903_charger.c | 136 ++++++++++++++++++++++++++++++----------
+ 1 file changed, 102 insertions(+), 34 deletions(-)
 
 diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
-index 9453bbf..fdc73d6 100644
+index 6ec705f..3f35593 100644
 --- a/drivers/power/max8903_charger.c
 +++ b/drivers/power/max8903_charger.c
-@@ -23,6 +23,9 @@
- #include <linux/gpio.h>
- #include <linux/interrupt.h>
- #include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/of_gpio.h>
- #include <linux/slab.h>
- #include <linux/power_supply.h>
- #include <linux/platform_device.h>
-@@ -75,6 +78,7 @@ static int max8903_get_property(struct power_supply *psy,
- 	default:
- 		return -EINVAL;
- 	}
-+
- 	return 0;
- }
- 
-@@ -179,6 +183,56 @@ static irqreturn_t max8903_fault(int irq, void *_data)
+@@ -179,39 +179,27 @@ static irqreturn_t max8903_fault(int irq, void *_data)
  	return IRQ_HANDLED;
  }
  
-+static struct max8903_pdata *max8903_parse_dt_data(struct device *dev)
-+{
-+	struct device_node *np = dev->of_node;
-+	struct max8903_pdata *pdata = NULL;
-+
-+	if (!np)
-+		return NULL;
-+
-+	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
-+	if (!pdata)
-+		return NULL;
-+
-+	pdata->dc_valid = false;
-+	pdata->usb_valid = false;
-+
-+	pdata->cen = of_get_named_gpio(np, "cen-gpios", 0);
-+	if (!gpio_is_valid(pdata->cen))
-+		pdata->cen = -EINVAL;
-+
-+	pdata->chg = of_get_named_gpio(np, "chg-gpios", 0);
-+	if (!gpio_is_valid(pdata->chg))
-+		pdata->chg = -EINVAL;
-+
-+	pdata->flt = of_get_named_gpio(np, "flt-gpios", 0);
-+	if (!gpio_is_valid(pdata->flt))
-+		pdata->flt = -EINVAL;
-+
-+	pdata->usus = of_get_named_gpio(np, "usus-gpios", 0);
-+	if (!gpio_is_valid(pdata->usus))
-+		pdata->usus = -EINVAL;
-+
-+	pdata->dcm = of_get_named_gpio(np, "dcm-gpios", 0);
-+	if (!gpio_is_valid(pdata->dcm))
-+		pdata->dcm = -EINVAL;
-+
-+	pdata->dok = of_get_named_gpio(np, "dok-gpios", 0);
-+	if (!gpio_is_valid(pdata->dok))
-+		pdata->dok = -EINVAL;
-+	else
-+		pdata->dc_valid = true;
-+
-+	pdata->uok = of_get_named_gpio(np, "uok-gpios", 0);
-+	if (!gpio_is_valid(pdata->uok))
-+		pdata->uok = -EINVAL;
-+	else
-+		pdata->usb_valid = true;
-+
-+	return pdata;
-+}
-+
- static int max8903_setup_gpios(struct platform_device *pdev)
+-static int max8903_probe(struct platform_device *pdev)
++static int max8903_setup_gpios(struct platform_device *pdev)
  {
- 	struct max8903_data *data = platform_get_drvdata(pdev);
-@@ -298,16 +352,20 @@ static int max8903_probe(struct platform_device *pdev)
- 	struct power_supply_config psy_cfg = {};
+-	struct max8903_data *data;
++	struct max8903_data *data = platform_get_drvdata(pdev);
+ 	struct device *dev = &pdev->dev;
+ 	struct max8903_pdata *pdata = pdev->dev.platform_data;
+-	struct power_supply_config psy_cfg = {};
  	int ret = 0;
+ 	int gpio;
+ 	int ta_in = 0;
+ 	int usb_in = 0;
  
 -	if (pdata == NULL) {
 -		dev_err(dev, "No platform data.\n");
 -		return -EINVAL;
 -	}
 -
- 	data = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
- 	if (!data)
- 		return -ENOMEM;
- 
+-	data = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
+-	if (data == NULL) {
+-		dev_err(dev, "Cannot allocate memory.\n");
+-		return -ENOMEM;
+-	}
+-
 -	data->pdata = pdev->dev.platform_data;
-+	if (IS_ENABLED(CONFIG_OF) && !pdata && dev->of_node)
-+		pdata = max8903_parse_dt_data(dev);
+-	data->dev = dev;
+-	platform_set_drvdata(pdev, data);
+-
+-	if (pdata->dc_valid == false && pdata->usb_valid == false) {
+-		dev_err(dev, "No valid power sources.\n");
+-		return -EINVAL;
+-	}
+-
+ 	if (pdata->dc_valid) {
+ 		if (pdata->dok && gpio_is_valid(pdata->dok)) {
++			ret = devm_gpio_request(dev, pdata->dok,
++						data->psy_desc.name);
++			if (ret) {
++				dev_err(dev,
++					"Failed GPIO request for dok: %d err %d\n",
++					pdata->dok, ret);
++				return ret;
++			}
 +
-+	if (!pdata) {
+ 			gpio = pdata->dok; /* PULL_UPed Interrupt */
+ 			ta_in = gpio_get_value(gpio) ? 0 : 1;
+ 		} else {
+@@ -222,6 +210,15 @@ static int max8903_probe(struct platform_device *pdev)
+ 
+ 	if (pdata->dcm) {
+ 		if (gpio_is_valid(pdata->dcm)) {
++			ret = devm_gpio_request(dev, pdata->dcm,
++						data->psy_desc.name);
++			if (ret) {
++				dev_err(dev,
++					"Failed GPIO request for dcm: %d err %d\n",
++					pdata->dcm, ret);
++				return ret;
++			}
++
+ 			gpio = pdata->dcm; /* Output */
+ 			gpio_set_value(gpio, ta_in);
+ 		} else {
+@@ -232,6 +229,15 @@ static int max8903_probe(struct platform_device *pdev)
+ 
+ 	if (pdata->usb_valid) {
+ 		if (pdata->uok && gpio_is_valid(pdata->uok)) {
++			ret = devm_gpio_request(dev, pdata->uok,
++						data->psy_desc.name);
++			if (ret) {
++				dev_err(dev,
++					"Failed GPIO request for uok: %d err %d\n",
++					pdata->uok, ret);
++				return ret;
++			}
++
+ 			gpio = pdata->uok;
+ 			usb_in = gpio_get_value(gpio) ? 0 : 1;
+ 		} else {
+@@ -243,6 +249,15 @@ static int max8903_probe(struct platform_device *pdev)
+ 
+ 	if (pdata->cen) {
+ 		if (gpio_is_valid(pdata->cen)) {
++			ret = devm_gpio_request(dev, pdata->cen,
++						data->psy_desc.name);
++			if (ret) {
++				dev_err(dev,
++					"Failed GPIO request for cen: %d err %d\n",
++					pdata->cen, ret);
++				return ret;
++			}
++
+ 			gpio_set_value(pdata->cen, (ta_in || usb_in) ? 0 : 1);
+ 		} else {
+ 			dev_err(dev, "Invalid pin: cen.\n");
+@@ -251,23 +266,41 @@ static int max8903_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	if (pdata->chg) {
+-		if (!gpio_is_valid(pdata->chg)) {
+-			dev_err(dev, "Invalid pin: chg.\n");
+-			return -EINVAL;
++		if (gpio_is_valid(pdata->chg)) {
++			ret = devm_gpio_request(dev, pdata->chg,
++						data->psy_desc.name);
++			if (ret) {
++				dev_err(dev,
++					"Failed GPIO request for chg: %d err %d\n",
++					pdata->chg, ret);
++				return ret;
++			}
+ 		}
+ 	}
+ 
+ 	if (pdata->flt) {
+-		if (!gpio_is_valid(pdata->flt)) {
+-			dev_err(dev, "Invalid pin: flt.\n");
+-			return -EINVAL;
++		if (gpio_is_valid(pdata->flt)) {
++			ret = devm_gpio_request(dev, pdata->flt,
++						data->psy_desc.name);
++			if (ret) {
++				dev_err(dev,
++					"Failed GPIO request for flt: %d err %d\n",
++					pdata->flt, ret);
++				return ret;
++			}
+ 		}
+ 	}
+ 
+ 	if (pdata->usus) {
+-		if (!gpio_is_valid(pdata->usus)) {
+-			dev_err(dev, "Invalid pin: usus.\n");
+-			return -EINVAL;
++		if (gpio_is_valid(pdata->usus)) {
++			ret = devm_gpio_request(dev, pdata->usus,
++						data->psy_desc.name);
++			if (ret) {
++				dev_err(dev,
++					"Failed GPIO request for usus: %d err %d\n",
++					pdata->usus, ret);
++				return ret;
++			}
+ 		}
+ 	}
+ 
+@@ -275,9 +308,44 @@ static int max8903_probe(struct platform_device *pdev)
+ 	data->ta_in = ta_in;
+ 	data->usb_in = usb_in;
+ 
++	return 0;
++}
++
++static int max8903_probe(struct platform_device *pdev)
++{
++	struct max8903_data *data;
++	struct device *dev = &pdev->dev;
++	struct max8903_pdata *pdata = pdev->dev.platform_data;
++	struct power_supply_config psy_cfg = {};
++	int ret = 0;
++
++	if (pdata == NULL) {
 +		dev_err(dev, "No platform data.\n");
 +		return -EINVAL;
 +	}
 +
-+	pdev->dev.platform_data = pdata;
-+	data->pdata = pdata;
- 	data->dev = dev;
- 	platform_set_drvdata(pdev, data);
- 
-@@ -328,6 +386,7 @@ static int max8903_probe(struct platform_device *pdev)
- 	data->psy_desc.properties = max8903_charger_props;
- 	data->psy_desc.num_properties = ARRAY_SIZE(max8903_charger_props);
- 
-+	psy_cfg.of_node = dev->of_node;
- 	psy_cfg.drv_data = data;
- 
- 	data->psy = devm_power_supply_register(dev, &data->psy_desc, &psy_cfg);
-@@ -378,10 +437,17 @@ static int max8903_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id max8903_match_ids[] = {
-+	{ .compatible = "maxim,max8903", },
-+	{ /* sentinel */ }
-+};
-+MODULE_DEVICE_TABLE(of, max8903_match_ids);
++	data = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
++	if (data == NULL) {
++		dev_err(dev, "Cannot allocate memory.\n");
++		return -ENOMEM;
++	}
 +
- static struct platform_driver max8903_driver = {
- 	.probe	= max8903_probe,
- 	.driver = {
- 		.name	= "max8903-charger",
-+		.of_match_table = max8903_match_ids
- 	},
- };
- 
++	data->pdata = pdev->dev.platform_data;
++	data->dev = dev;
++	platform_set_drvdata(pdev, data);
++
++	if (pdata->dc_valid == false && pdata->usb_valid == false) {
++		dev_err(dev, "No valid power sources.\n");
++		return -EINVAL;
++	}
++
++	ret = max8903_setup_gpios(pdev);
++	if (ret)
++		return ret;
++
+ 	data->psy_desc.name = "max8903_charger";
+-	data->psy_desc.type = (ta_in) ? POWER_SUPPLY_TYPE_MAINS :
+-			((usb_in) ? POWER_SUPPLY_TYPE_USB :
++	data->psy_desc.type = (data->ta_in) ? POWER_SUPPLY_TYPE_MAINS :
++			((data->usb_in) ? POWER_SUPPLY_TYPE_USB :
+ 			 POWER_SUPPLY_TYPE_BATTERY);
+ 	data->psy_desc.get_property = max8903_get_property;
+ 	data->psy_desc.properties = max8903_charger_props;
 -- 
 1.9.1
-
