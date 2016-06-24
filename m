@@ -1,137 +1,88 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 08/12] doc: binding: pwrseq-usb-generic: add binding doc
- for generic usb power sequence driver
-Date: Fri, 24 Jun 2016 10:25:05 -0500
-Message-ID: <CAL_Jsq+1r0r1NONoyeU5=jSJR9tEV=1rN8CidWroqA+a_OrYAw@mail.gmail.com>
-References: <1466158165-9380-1-git-send-email-peter.chen@nxp.com>
- <1466158165-9380-9-git-send-email-peter.chen@nxp.com> <CAL_JsqLvs0s2TyfqPM5vtmyY81_X84VjCGjsGYbTgT4syOfp9Q@mail.gmail.com>
- <20160620112651.GA26936@shlinux2> <20160620161607.GA11427@rob-hp-laptop>
- <20160621021117.GD26936@shlinux2> <20160621212653.GA22764@rob-hp-laptop> <CAPDyKFroH6AGObKGZoZ-6=Sb3Zii6gXdm_wO3fuc2BAx6fpFHg@mail.gmail.com>
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] cpuidle: Fix last_residency division
+Date: Fri, 24 Jun 2016 21:31:35 +0530
+Message-ID: <576D595F.9090001@linux.vnet.ibm.com>
+References: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com> <063D6719AE5E284EB5DD2968C1650D6D5F4E3E66@AcuExch.aculab.com> <14940457.SEYBmqcunj@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:47446 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751166AbcFXPZg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 24 Jun 2016 11:25:36 -0400
-In-Reply-To: <CAPDyKFroH6AGObKGZoZ-6=Sb3Zii6gXdm_wO3fuc2BAx6fpFHg@mail.gmail.com>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:23630 "EHLO
+	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751138AbcFXQBz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jun 2016 12:01:55 -0400
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5OFxChA046530
+	for <linux-pm@vger.kernel.org>; Fri, 24 Jun 2016 12:01:46 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	by mx0a-001b2d01.pphosted.com with ESMTP id 23rq9m94q7-1
+	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 24 Jun 2016 12:01:45 -0400
+Received: from localhost
+	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
+	Sat, 25 Jun 2016 02:01:43 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+	by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0C1182CE805B
+	for <linux-pm@vger.kernel.org>; Sat, 25 Jun 2016 02:01:40 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+	by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u5OG1evW65404988
+	for <linux-pm@vger.kernel.org>; Sat, 25 Jun 2016 02:01:40 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u5OG1d8V004789
+	for <linux-pm@vger.kernel.org>; Sat, 25 Jun 2016 02:01:39 +1000
+In-Reply-To: <14940457.SEYBmqcunj@wuerfel>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Peter Chen <hzpeterchen@gmail.com>, Peter Chen <peter.chen@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Stephen Boyd <stephen.boyd@linaro.org>, oscar@naiandei.net, Arnd Bergmann <arnd@arndb.de>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Linux USB List <linux-usb@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, troy.kisky@boundarydevices.com, Javier Martinez Canillas <javier@osg.samsung.com>, Philipp Zabel <p.zabel@pengutronix.de>
+To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
+Cc: David Laight <David.Laight@aculab.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "anton@samba.org" <anton@samba.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Jun 22, 2016 at 4:09 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 21 June 2016 at 23:26, Rob Herring <robh@kernel.org> wrote:
->> On Tue, Jun 21, 2016 at 10:11:17AM +0800, Peter Chen wrote:
->>> On Mon, Jun 20, 2016 at 11:16:07AM -0500, Rob Herring wrote:
->>> > On Mon, Jun 20, 2016 at 07:26:51PM +0800, Peter Chen wrote:
->>> > > On Fri, Jun 17, 2016 at 12:16:48PM -0500, Rob Herring wrote:
->>> > > > On Fri, Jun 17, 2016 at 5:09 AM, Peter Chen <peter.chen@nxp.com> wrote:
->>> > > > > Add binding doc for generic usb power sequence driver, and update
->>> > > > > generic usb device binding-doc accordingly.
+
+
+On 06/24/2016 03:41 PM, Arnd Bergmann wrote:
+> On Friday, June 24, 2016 9:00:48 AM CEST David Laight wrote:
+>> The intent of the >> 10 was probably to avoid an expensive 64bit divide.
+>> So maybe something like:
+>>         diff = time_end - time_start;
+>>         if (diff >= INT_MAX/2)
+>>                 diff_32 = INT_MAX/2/1000;
+>>         else
+>>                 diff_32 = diff;
+>>                 diff_32 += diff_32 >> 6;
+>>                 diff_32 >>= 10;
+>>         }
 >>
->> [...]
->>
->>> > >           clocks = <&clks IMX6SX_CLK_CKO>;
->>> > >
->>> > >           #address-cells = <1>;
->>> > >           #size-cells = <0>;
->>> > >           ethernet: asix@1 {
->>> > >                   compatible = "usbb95,1708";
->>> > >                   reg = <1>;
->>> > >
->>> > >                   power-sequence;
->>> > >                   reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
->>> > >                   reset-duration-us = <15>;
->>> > >                   clocks = <&clks IMX6SX_CLK_IPG>;
->>> > >           };
->>> > >   };
->>> > > };
->>> > >
->>> > > If the node has property "power-sequence", the pwrseq core will create
->>> > > related platform device, and the driver under pwrseq driver will handle
->>> > > power sequence stuffs.
->>> >
->>> > This I have issue with. If you are creating a platform device here, you
->>> > are trying to work-around limitations in the linux driver model.
+>> Adding an extra 1/32 makes the division by be something slightly below 1000.
+> 
+> Why not change the definition of the time to nanoseconds and update
+> the users accordingly?
+> 
+> I see that cpuidle_enter_state() writes to the last_residency value,
+> and it is read in three places: ladder_select_state(), menu_update()
+> and show_state_time() (for sysfs).
+> 
+
+Updating show_state_time() to convert ns to us gets bit messy since
+show_state_##_name which is used for disable, usage and time simply
+returns state_usage->_name. And state_usage->time updation happens in
+cpuidle_enter_state() itself.
+
+> If those functions are called less often than cpuidle_enter_state(),
+> we could just move the division there. Since the divisor is constant,
+> do_div() can convert it into a multiply and shift, or we could use
+> your the code you suggest above, or use a 32-bit division most of
+> the time:
+> 
+> 	if (diff <= UINT_MAX)
+> 		diff_32 = (u32)diff / NSECS_PER_USEC;
+> 	else
+> 		diff_32 = div_u64(diff, NSECS_PER_USEC;
+> 
+> which gcc itself will turn into a multiplication or series of
+> shifts on CPUs on which that is faster.
 >
-> I somewhat understand your point.
->
-> Although, having the option to use a driver (which requires a device)
-> has turned out to be quite convenient from many aspects - at least in
-> the mmc case.
->
-> Certainly one can do without it, but in the end using a driver avoids
-> open coding.
+I'm not sure which division method of the three suggested here to use.
+Does anyone have a strong preference?
 
-Why would it be open coded? Just create library functions to parse the
-node and implement the generic pwr-seq steps.
+--Shreyas
 
->>> My current solution like below, but it seems you didn't agree with that.
->>> I just double confirm here, if you don't, I give up the solution for
->>> using generic power sequence framework.
->>>
->>> In drivers/usb/core/hub.c
->>>
->>>       for_each_child_of_node(parent->of_node, node) {
->>>               hdev_pwrseq = pwrseq_alloc(node, "usb_pwrseq_generic");
->>>               if (!IS_ERR_OR_NULL(hdev_pwrseq)) {
->>>                       pwrseq_node = kzalloc(sizeof(pwrseq_node), GFP_KERNEL);
->>>                       if (!pwrseq_node) {
->>>                               ret = -ENOMEM;
->>>                               goto err1;
->>>                       }
->>>                       /* power on sequence */
->>>                       ret = pwrseq_pre_power_on(hdev_pwrseq);
->>
->> Why does this function need to do anything more than:
->>
->> - Check if the child has a "power-sequence" property
->> - Get the "reset-gpios" GPIO
->> - Assert reset for specified/default time
->> - Deassert reset
->>
->> Then continue on as normal. That seems straight-forward to me.
->>
->> There is no reason you need a platform device in the mix. Perhaps trying
->> to move the MMC pwr-seq code is pointless as it adds needless
->> complexity.
->
-> Complexity?
->
-> The problem we are tying to solve, is to make the various platform/SoC
-> specific power sequences to be able to live in generic drivers.
->
-> One could decide to encode the sequences inside the driver code
-> itself, but it will soon turn into a mess and more importantly, lots
-> of open coding as to support different platforms/SoCs. To most kernel
-> hackers I don't think this is an option to consider.
-
-I'm not proposing open coding, but having generic library functions.
-I'm not saying the mmc pwr-seq has to change from being a driver
-either. Leave it as is. I'm only talking about Krzysztof's new
-proposal.
-
-> The MMC pwr-seq code/drivers tries to address these issues - in a
-> somewhat generic way.
-> Initially we have decided to start with only a few flavours of
-> supported sequences and so far these have been sufficient.
-
-Only a few because we've pushed back against defining state machines in DT.
-
-> Finally, I am indeed concerned that it so hard to agree on a solution
-> to deal with generic power sequences. There have been many attempts
-> throughout the last ~4-5 years, but peoples strong opinions about
-> different approaches mad them all fail. Isn't it time to finally just
-> pick a solution and stick with it, even if it doesn't meet all peoples
-> expectations?
-
-No. I'm pretty that is not how kernel development works. Features get
-merged when all are happy (or not paying attention).
-
->From what I recall, all attempts have worked around the problem that
-the driver model has no way to either force probe or provide a
-pre-probe hook on probeable buses. This then leads to the work-around
-defining the DT binding.
-
-Rob
