@@ -1,88 +1,148 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] cpuidle: Fix last_residency division
-Date: Fri, 24 Jun 2016 21:31:35 +0530
-Message-ID: <576D595F.9090001@linux.vnet.ibm.com>
-References: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com> <063D6719AE5E284EB5DD2968C1650D6D5F4E3E66@AcuExch.aculab.com> <14940457.SEYBmqcunj@wuerfel>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH 11/14] drivers: firmware: psci: Allow OS Initiated
+ suspend mode
+Date: Fri, 24 Jun 2016 10:53:29 -0600
+Message-ID: <20160624165329.GA1085@linaro.org>
+References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
+ <1466624209-27432-12-git-send-email-lina.iyer@linaro.org>
+ <CAGm_ybjO+jAN62fqFyVrw_+5LOnUumEfn8kxmDa+s5ap0Bqk9A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:23630 "EHLO
-	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751138AbcFXQBz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jun 2016 12:01:55 -0400
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5OFxChA046530
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jun 2016 12:01:46 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
-	by mx0a-001b2d01.pphosted.com with ESMTP id 23rq9m94q7-1
-	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 24 Jun 2016 12:01:45 -0400
-Received: from localhost
-	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Sat, 25 Jun 2016 02:01:43 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
-	by d23dlp01.au.ibm.com (Postfix) with ESMTP id 0C1182CE805B
-	for <linux-pm@vger.kernel.org>; Sat, 25 Jun 2016 02:01:40 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u5OG1evW65404988
-	for <linux-pm@vger.kernel.org>; Sat, 25 Jun 2016 02:01:40 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u5OG1d8V004789
-	for <linux-pm@vger.kernel.org>; Sat, 25 Jun 2016 02:01:39 +1000
-In-Reply-To: <14940457.SEYBmqcunj@wuerfel>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:36207 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbcFXQxt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jun 2016 12:53:49 -0400
+Received: by mail-pf0-f180.google.com with SMTP id t190so40865625pfb.3
+        for <linux-pm@vger.kernel.org>; Fri, 24 Jun 2016 09:53:33 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAGm_ybjO+jAN62fqFyVrw_+5LOnUumEfn8kxmDa+s5ap0Bqk9A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
-Cc: David Laight <David.Laight@aculab.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "anton@samba.org" <anton@samba.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Vikas Sajjan <sajjan.linux@gmail.com>
+Cc: ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Mark Rutland <mark.rutland@arm.com>, k.kozlowski@samsung.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, ahaslam@baylibre.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, geert@linux-m68k.org, andy.gross@linaro.org, mtitinger@baylibre.com
 
-
-
-On 06/24/2016 03:41 PM, Arnd Bergmann wrote:
-> On Friday, June 24, 2016 9:00:48 AM CEST David Laight wrote:
->> The intent of the >> 10 was probably to avoid an expensive 64bit divide.
->> So maybe something like:
->>         diff = time_end - time_start;
->>         if (diff >= INT_MAX/2)
->>                 diff_32 = INT_MAX/2/1000;
->>         else
->>                 diff_32 = diff;
->>                 diff_32 += diff_32 >> 6;
->>                 diff_32 >>= 10;
->>         }
->>
->> Adding an extra 1/32 makes the division by be something slightly below 1000.
-> 
-> Why not change the definition of the time to nanoseconds and update
-> the users accordingly?
-> 
-> I see that cpuidle_enter_state() writes to the last_residency value,
-> and it is read in three places: ladder_select_state(), menu_update()
-> and show_state_time() (for sysfs).
-> 
-
-Updating show_state_time() to convert ns to us gets bit messy since
-show_state_##_name which is used for disable, usage and time simply
-returns state_usage->_name. And state_usage->time updation happens in
-cpuidle_enter_state() itself.
-
-> If those functions are called less often than cpuidle_enter_state(),
-> we could just move the division there. Since the divisor is constant,
-> do_div() can convert it into a multiply and shift, or we could use
-> your the code you suggest above, or use a 32-bit division most of
-> the time:
-> 
-> 	if (diff <= UINT_MAX)
-> 		diff_32 = (u32)diff / NSECS_PER_USEC;
-> 	else
-> 		diff_32 = div_u64(diff, NSECS_PER_USEC;
-> 
-> which gcc itself will turn into a multiplication or series of
-> shifts on CPUs on which that is faster.
+On Fri, Jun 24 2016 at 22:25 -0600, Vikas Sajjan wrote:
+>Hi Lina,
 >
-I'm not sure which division method of the three suggested here to use.
-Does anyone have a strong preference?
+>On Thu, Jun 23, 2016 at 1:06 AM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> PSCI firmware v1.0 onwards may support 2 different modes for
+>> CPU_SUSPEND. Platform coordinated mode is the default and every firmware
+>> should support it. OS Initiated mode is optional for the firmware to
+>> implement and allow Linux to make an better decision on the state of
+>> the CPU cluster heirarchy.
+>>
+>> With the kernel capable of deciding the state for CPU cluster and
+>> coherency domains, the OS Initiated mode may now be used by the kernel,
+>> provided the firmware supports it. SET_SUSPEND_MODE is a PSCI function
+>> available on v1.0 onwards and can be used to set the mode in the
+>> firmware.
+>>
+>> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>> Cc: Mark Rutland <mark.rutland@arm.com>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> [Ulf: Rebased on 4.7 rc1]
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  drivers/firmware/psci.c   | 22 +++++++++++++++++++++-
+>>  include/uapi/linux/psci.h |  5 +++++
+>>  2 files changed, 26 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+>> index 03e0458..3920aba 100644
+>> --- a/drivers/firmware/psci.c
+>> +++ b/drivers/firmware/psci.c
+>> @@ -52,6 +52,7 @@
+>>   * require cooperation with a Trusted OS driver.
+>>   */
+>>  static int resident_cpu = -1;
+>> +static bool psci_has_osi_pd;
+>>
+>>  bool psci_tos_resident_on(int cpu)
+>>  {
+>> @@ -563,10 +564,29 @@ out_put_node:
+>>         return err;
+>>  }
+>>
+>> +static int __init psci_1_0_init(struct device_node *np)
+>> +{
+>> +       int ret;
+>> +
+>> +       ret = psci_0_2_init(np);
+>> +       if (ret)
+>> +               return ret;
+>> +
+>> +       /* Check if PSCI OSI mode is available */
+>> +       ret = psci_features(psci_function_id[PSCI_FN_CPU_SUSPEND]);
+>> +       if (ret & PSCI_1_0_OS_INITIATED) {
+>> +               ret = psci_features(PSCI_1_0_FN_SET_SUSPEND_MODE);
+>> +               if (!ret)
+>> +                       psci_has_osi_pd = true;
+>
+>IMHO, its better to have this done in psci_init_cpu_suspend() itself
+>for 2 reasons
+>
+>a] psci_init_cpu_suspend() already calls
+>psci_features(psci_function_id[PSCI_FN_CPU_SUSPEND])
+>b] by moving this in psci_init_cpu_suspend() we make this support
+>available even for ACPI platforms, since psci_acpi_init() calls
+>psci_probe() and this calls  psci_init_cpu_suspend() for
+>PSCI_VERSION_MAJOR(ver) >= 1
+>
+Hmmm.. I can do that.
 
---Shreyas
+Thanks,
+Lina
 
+
+
+>I even posted a patch [1] yesterday, without being aware of your
+>patchset for the same.
+>
+>[1] http://www.spinics.net/lists/arm-kernel/msg513682.html
+>
+>
+>> +       }
+>> +
+>> +       return 0;
+>> +}
+>> +
+>>  static const struct of_device_id psci_of_match[] __initconst = {
+>>         { .compatible = "arm,psci",     .data = psci_0_1_init},
+>>         { .compatible = "arm,psci-0.2", .data = psci_0_2_init},
+>> -       { .compatible = "arm,psci-1.0", .data = psci_0_2_init},
+>> +       { .compatible = "arm,psci-1.0", .data = psci_1_0_init},
+>>         {},
+>>  };
+>>
+>> diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
+>> index 3d7a0fc..7dd778e 100644
+>> --- a/include/uapi/linux/psci.h
+>> +++ b/include/uapi/linux/psci.h
+>> @@ -48,6 +48,7 @@
+>>
+>>  #define PSCI_1_0_FN_PSCI_FEATURES              PSCI_0_2_FN(10)
+>>  #define PSCI_1_0_FN_SYSTEM_SUSPEND             PSCI_0_2_FN(14)
+>> +#define PSCI_1_0_FN_SET_SUSPEND_MODE           PSCI_0_2_FN(15)
+>>
+>>  #define PSCI_1_0_FN64_SYSTEM_SUSPEND           PSCI_0_2_FN64(14)
+>>
+>> @@ -93,6 +94,10 @@
+>>  #define PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK  \
+>>                         (0x1 << PSCI_1_0_FEATURES_CPU_SUSPEND_PF_SHIFT)
+>>
+>> +#define PSCI_1_0_OS_INITIATED                  BIT(0)
+>> +#define PSCI_1_0_SUSPEND_MODE_PC               0
+>> +#define PSCI_1_0_SUSPEND_MODE_OSI              1
+>> +
+>>  /* PSCI return values (inclusive of all PSCI versions) */
+>>  #define PSCI_RET_SUCCESS                       0
+>>  #define PSCI_RET_NOT_SUPPORTED                 -1
+>> --
+>> 2.7.4
+>>
+>>
+>> _______________________________________________
+>> linux-arm-kernel mailing list
+>> linux-arm-kernel@lists.infradead.org
+>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
