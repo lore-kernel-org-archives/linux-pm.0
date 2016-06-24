@@ -1,230 +1,96 @@
-From: Chris Lapa <chris@lapa.com.au>
-Subject: [PATCH v5 4/7] max8903: adds requesting of gpios.
-Date: Fri, 24 Jun 2016 12:26:09 +1000
-Message-ID: <1466735172-13372-5-git-send-email-chris@cpdesign.com.au>
-References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
- <1466735172-13372-1-git-send-email-chris@cpdesign.com.au>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1466735172-13372-1-git-send-email-chris@cpdesign.com.au>
-In-Reply-To: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
-References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: k.kozlowski@samsung.com, dwmw2@infradead.org, dbaryshkov@gmail.com, sre@kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chris Lapa <chris@lapa.com.au>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [PATCH 04/14] dt-bindings: document sun8i_ths
+Date: Fri, 24 Jun 2016 10:46:11 +0800
+Message-ID: <CAGb2v64f6DmagOJMbj9YiLU+umpZ2m8YzpQjA3RhoymjEf+5cA@mail.gmail.com>
+References: <20160623192104.18720-1-megous@megous.com> <20160623192104.18720-5-megous@megous.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160623192104.18720-5-megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org
+Cc: dev <dev-3kdeTeqwOZ9EV1b7eY7vFQ@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Chris Lapa <chris@lapa.com.au>
+On Fri, Jun 24, 2016 at 3:20 AM,  <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org> wrote:
+> From: Ondrej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
+>
+> This patch adds the binding documentation for the sun8i_ths driver
+>
+> Signed-off-by: Ond=C5=99ej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
+> ---
+>  .../devicetree/bindings/thermal/sun8i-ths.txt      | 31 ++++++++++++=
+++++++++++
+>  1 file changed, 31 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/sun8i-t=
+hs.txt
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/sun8i-ths.txt =
+b/Documentation/devicetree/bindings/thermal/sun8i-ths.txt
+> new file mode 100644
+> index 0000000..826cd57
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/sun8i-ths.txt
+> @@ -0,0 +1,31 @@
+> +* sun8i THS
 
-This change ensures all gpios are available for the driver to use and also
-splits off gpio setup into its own function for readability.
+An explanation of the acronym would be nice, both in the docs,
+and in the commit message.
 
-Signed-off-by: Chris Lapa <chris@lapa.com.au>
+> +
+> +Required properties:
+> +- compatible : "allwinner,sun8i-h3-ths"
+> +- reg : Address range of the thermal registers and location of the c=
+alibration
 
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- drivers/power/max8903_charger.c | 136 ++++++++++++++++++++++++++++++----------
- 1 file changed, 102 insertions(+), 34 deletions(-)
+                                        *sensor*
 
-diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
-index 6ec705f..3f35593 100644
---- a/drivers/power/max8903_charger.c
-+++ b/drivers/power/max8903_charger.c
-@@ -179,39 +179,27 @@ static irqreturn_t max8903_fault(int irq, void *_data)
- 	return IRQ_HANDLED;
- }
- 
--static int max8903_probe(struct platform_device *pdev)
-+static int max8903_setup_gpios(struct platform_device *pdev)
- {
--	struct max8903_data *data;
-+	struct max8903_data *data = platform_get_drvdata(pdev);
- 	struct device *dev = &pdev->dev;
- 	struct max8903_pdata *pdata = pdev->dev.platform_data;
--	struct power_supply_config psy_cfg = {};
- 	int ret = 0;
- 	int gpio;
- 	int ta_in = 0;
- 	int usb_in = 0;
- 
--	if (pdata == NULL) {
--		dev_err(dev, "No platform data.\n");
--		return -EINVAL;
--	}
--
--	data = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
--	if (data == NULL) {
--		dev_err(dev, "Cannot allocate memory.\n");
--		return -ENOMEM;
--	}
--
--	data->pdata = pdev->dev.platform_data;
--	data->dev = dev;
--	platform_set_drvdata(pdev, data);
--
--	if (pdata->dc_valid == false && pdata->usb_valid == false) {
--		dev_err(dev, "No valid power sources.\n");
--		return -EINVAL;
--	}
--
- 	if (pdata->dc_valid) {
- 		if (pdata->dok && gpio_is_valid(pdata->dok)) {
-+			ret = devm_gpio_request(dev, pdata->dok,
-+						data->psy_desc.name);
-+			if (ret) {
-+				dev_err(dev,
-+					"Failed GPIO request for dok: %d err %d\n",
-+					pdata->dok, ret);
-+				return ret;
-+			}
-+
- 			gpio = pdata->dok; /* PULL_UPed Interrupt */
- 			ta_in = gpio_get_value(gpio) ? 0 : 1;
- 		} else {
-@@ -222,6 +210,15 @@ static int max8903_probe(struct platform_device *pdev)
- 
- 	if (pdata->dcm) {
- 		if (gpio_is_valid(pdata->dcm)) {
-+			ret = devm_gpio_request(dev, pdata->dcm,
-+						data->psy_desc.name);
-+			if (ret) {
-+				dev_err(dev,
-+					"Failed GPIO request for dcm: %d err %d\n",
-+					pdata->dcm, ret);
-+				return ret;
-+			}
-+
- 			gpio = pdata->dcm; /* Output */
- 			gpio_set_value(gpio, ta_in);
- 		} else {
-@@ -232,6 +229,15 @@ static int max8903_probe(struct platform_device *pdev)
- 
- 	if (pdata->usb_valid) {
- 		if (pdata->uok && gpio_is_valid(pdata->uok)) {
-+			ret = devm_gpio_request(dev, pdata->uok,
-+						data->psy_desc.name);
-+			if (ret) {
-+				dev_err(dev,
-+					"Failed GPIO request for uok: %d err %d\n",
-+					pdata->uok, ret);
-+				return ret;
-+			}
-+
- 			gpio = pdata->uok;
- 			usb_in = gpio_get_value(gpio) ? 0 : 1;
- 		} else {
-@@ -243,6 +249,15 @@ static int max8903_probe(struct platform_device *pdev)
- 
- 	if (pdata->cen) {
- 		if (gpio_is_valid(pdata->cen)) {
-+			ret = devm_gpio_request(dev, pdata->cen,
-+						data->psy_desc.name);
-+			if (ret) {
-+				dev_err(dev,
-+					"Failed GPIO request for cen: %d err %d\n",
-+					pdata->cen, ret);
-+				return ret;
-+			}
-+
- 			gpio_set_value(pdata->cen, (ta_in || usb_in) ? 0 : 1);
- 		} else {
- 			dev_err(dev, "Invalid pin: cen.\n");
-@@ -251,23 +266,41 @@ static int max8903_probe(struct platform_device *pdev)
- 	}
- 
- 	if (pdata->chg) {
--		if (!gpio_is_valid(pdata->chg)) {
--			dev_err(dev, "Invalid pin: chg.\n");
--			return -EINVAL;
-+		if (gpio_is_valid(pdata->chg)) {
-+			ret = devm_gpio_request(dev, pdata->chg,
-+						data->psy_desc.name);
-+			if (ret) {
-+				dev_err(dev,
-+					"Failed GPIO request for chg: %d err %d\n",
-+					pdata->chg, ret);
-+				return ret;
-+			}
- 		}
- 	}
- 
- 	if (pdata->flt) {
--		if (!gpio_is_valid(pdata->flt)) {
--			dev_err(dev, "Invalid pin: flt.\n");
--			return -EINVAL;
-+		if (gpio_is_valid(pdata->flt)) {
-+			ret = devm_gpio_request(dev, pdata->flt,
-+						data->psy_desc.name);
-+			if (ret) {
-+				dev_err(dev,
-+					"Failed GPIO request for flt: %d err %d\n",
-+					pdata->flt, ret);
-+				return ret;
-+			}
- 		}
- 	}
- 
- 	if (pdata->usus) {
--		if (!gpio_is_valid(pdata->usus)) {
--			dev_err(dev, "Invalid pin: usus.\n");
--			return -EINVAL;
-+		if (gpio_is_valid(pdata->usus)) {
-+			ret = devm_gpio_request(dev, pdata->usus,
-+						data->psy_desc.name);
-+			if (ret) {
-+				dev_err(dev,
-+					"Failed GPIO request for usus: %d err %d\n",
-+					pdata->usus, ret);
-+				return ret;
-+			}
- 		}
- 	}
- 
-@@ -275,9 +308,44 @@ static int max8903_probe(struct platform_device *pdev)
- 	data->ta_in = ta_in;
- 	data->usb_in = usb_in;
- 
-+	return 0;
-+}
-+
-+static int max8903_probe(struct platform_device *pdev)
-+{
-+	struct max8903_data *data;
-+	struct device *dev = &pdev->dev;
-+	struct max8903_pdata *pdata = pdev->dev.platform_data;
-+	struct power_supply_config psy_cfg = {};
-+	int ret = 0;
-+
-+	if (pdata == NULL) {
-+		dev_err(dev, "No platform data.\n");
-+		return -EINVAL;
-+	}
-+
-+	data = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
-+	if (data == NULL) {
-+		dev_err(dev, "Cannot allocate memory.\n");
-+		return -ENOMEM;
-+	}
-+
-+	data->pdata = pdev->dev.platform_data;
-+	data->dev = dev;
-+	platform_set_drvdata(pdev, data);
-+
-+	if (pdata->dc_valid == false && pdata->usb_valid == false) {
-+		dev_err(dev, "No valid power sources.\n");
-+		return -EINVAL;
-+	}
-+
-+	ret = max8903_setup_gpios(pdev);
-+	if (ret)
-+		return ret;
-+
- 	data->psy_desc.name = "max8903_charger";
--	data->psy_desc.type = (ta_in) ? POWER_SUPPLY_TYPE_MAINS :
--			((usb_in) ? POWER_SUPPLY_TYPE_USB :
-+	data->psy_desc.type = (data->ta_in) ? POWER_SUPPLY_TYPE_MAINS :
-+			((data->usb_in) ? POWER_SUPPLY_TYPE_USB :
- 			 POWER_SUPPLY_TYPE_BATTERY);
- 	data->psy_desc.get_property = max8903_get_property;
- 	data->psy_desc.properties = max8903_charger_props;
--- 
-1.9.1
+Also you only specify one address range in the example. The "location
+of the calibration value" is handled by the nvram-* properties. Please
+remove the description.
+
+> +        value
+> +- resets : Must contain an entry for each entry in reset-names.
+
+This, and clocks below, should probably read "must contain phandles
+to reset/clock controls matching the entries of the names".
+
+Regards
+ChenYu
+
+> +           see ../reset/reset.txt for details
+> +- reset-names : Must include the name "ahb"
+> +- clocks : Must contain an entry for each entry in clock-names.
+> +- clock-names : Must contain "ahb" for the bus gate and "ths" for th=
+e THS
+> +  clock
+> +
+> +Optional properties:
+> +- nvmem-cells : Must contain an entry for each entry in nvmem-cell-n=
+ames
+> +- nvmem-cell-names : Must contain "calibration" for the cell contain=
+ing the
+> +  temperature calibration cell, if available
+> +
+> +Example:
+> +ths: ths@01c25000 {
+> +       #thermal-sensor-cells =3D <0>;
+> +       compatible =3D "allwinner,sun8i-h3-ths";
+> +       reg =3D <0x01c25000 0x400>;
+> +       interrupts =3D <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
+> +       resets =3D <&bus_rst 136>;
+> +       reset-names =3D "ahb";
+> +       clocks =3D <&bus_gates 72>, <&ths_clk>;
+> +       clock-names =3D "ahb", "ths";
+> +       nvmem-cells =3D <&ths_calibration>;
+> +       nvmem-cell-names =3D "calibration";
+> +};
+> --
+> 2.9.0
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
