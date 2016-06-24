@@ -1,96 +1,46 @@
-From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: Re: [PATCH 04/14] dt-bindings: document sun8i_ths
-Date: Fri, 24 Jun 2016 10:46:11 +0800
-Message-ID: <CAGb2v64f6DmagOJMbj9YiLU+umpZ2m8YzpQjA3RhoymjEf+5cA@mail.gmail.com>
-References: <20160623192104.18720-1-megous@megous.com> <20160623192104.18720-5-megous@megous.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 0/2] arm64: dts: r8a7796: Add SYSC PM Domains
+Date: Fri, 24 Jun 2016 12:05:42 +0900
+Message-ID: <20160624030541.GB14973@verge.net.au>
+References: <1464685726-21611-1-git-send-email-geert+renesas@glider.be>
+ <20160606013359.GE4859@verge.net.au>
+ <20160606015301.GB2317@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160623192104.18720-5-megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org
-Cc: dev <dev-3kdeTeqwOZ9EV1b7eY7vFQ@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160606015301.GB2317@verge.net.au>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Magnus Damm <damm+renesas@opensource.se>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jun 24, 2016 at 3:20 AM,  <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org> wrote:
-> From: Ondrej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
->
-> This patch adds the binding documentation for the sun8i_ths driver
->
-> Signed-off-by: Ond=C5=99ej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
-> ---
->  .../devicetree/bindings/thermal/sun8i-ths.txt      | 31 ++++++++++++=
-++++++++++
->  1 file changed, 31 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/sun8i-t=
-hs.txt
->
-> diff --git a/Documentation/devicetree/bindings/thermal/sun8i-ths.txt =
-b/Documentation/devicetree/bindings/thermal/sun8i-ths.txt
-> new file mode 100644
-> index 0000000..826cd57
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/sun8i-ths.txt
-> @@ -0,0 +1,31 @@
-> +* sun8i THS
+On Mon, Jun 06, 2016 at 10:53:02AM +0900, Simon Horman wrote:
+> On Mon, Jun 06, 2016 at 10:33:59AM +0900, Simon Horman wrote:
+> > On Tue, May 31, 2016 at 11:08:43AM +0200, Geert Uytterhoeven wrote:
+> > > 	Hi Simon, Magnus,
+> > > 
+> > > This patch series adds support for the power areas exposed by the System
+> > > Controller on the Renesas R-Car M3-W SoC to the DTS.
+> > > 
+> > > This series is against Simon's "[PATCH v3 0/3] arm64: Add Renesas
+> > > R8A7796 SoC support".  It has a build and runtime dependency on my series
+> > > "[PATCH v2 0/3] soc: renesas: rcar-sysc: Add support for R-Car M3-W power
+> > > areas".
+> > > 
+> > > For your convenience, I've pushed this series to the
+> > > topic/r8a7796-sysc-dt-v1 branch of
+> > > https://git.kernel.org/cgit/linux/kernel/git/geert/renesas-drivers.git.
+> > > This has been tested on r8a7796/salvator-x.
+> > 
+> > Thanks, I have tentatively queued this up.
+> 
+> Bother, I spoke to soon.
+> 
+> There is a compile-time dependency on 8a7796-cpg-mssr.h in the basic
+> support for r8a7796 which this series depends on.  So "[PATCH 0/4] clk:
+> renesas: cpg-mssr: Add support for R-Car M3-W" needs to be present. I have
+> deferred these patches pending that. 
+> 
 
-An explanation of the acronym would be nice, both in the docs,
-and in the commit message.
-
-> +
-> +Required properties:
-> +- compatible : "allwinner,sun8i-h3-ths"
-> +- reg : Address range of the thermal registers and location of the c=
-alibration
-
-                                        *sensor*
-
-Also you only specify one address range in the example. The "location
-of the calibration value" is handled by the nvram-* properties. Please
-remove the description.
-
-> +        value
-> +- resets : Must contain an entry for each entry in reset-names.
-
-This, and clocks below, should probably read "must contain phandles
-to reset/clock controls matching the entries of the names".
-
-Regards
-ChenYu
-
-> +           see ../reset/reset.txt for details
-> +- reset-names : Must include the name "ahb"
-> +- clocks : Must contain an entry for each entry in clock-names.
-> +- clock-names : Must contain "ahb" for the bus gate and "ths" for th=
-e THS
-> +  clock
-> +
-> +Optional properties:
-> +- nvmem-cells : Must contain an entry for each entry in nvmem-cell-n=
-ames
-> +- nvmem-cell-names : Must contain "calibration" for the cell contain=
-ing the
-> +  temperature calibration cell, if available
-> +
-> +Example:
-> +ths: ths@01c25000 {
-> +       #thermal-sensor-cells =3D <0>;
-> +       compatible =3D "allwinner,sun8i-h3-ths";
-> +       reg =3D <0x01c25000 0x400>;
-> +       interrupts =3D <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
-> +       resets =3D <&bus_rst 136>;
-> +       reset-names =3D "ahb";
-> +       clocks =3D <&bus_gates 72>, <&ths_clk>;
-> +       clock-names =3D "ahb", "ths";
-> +       nvmem-cells =3D <&ths_calibration>;
-> +       nvmem-cell-names =3D "calibration";
-> +};
-> --
-> 2.9.0
->
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" i=
-n
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I have requeued this.
