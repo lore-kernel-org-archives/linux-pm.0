@@ -1,7 +1,7 @@
 From: Chris Lapa <chris@lapa.com.au>
-Subject: [PATCH v5 1/7] max8903: adds documentation for device tree bindings.
-Date: Fri, 24 Jun 2016 12:26:06 +1000
-Message-ID: <1466735172-13372-2-git-send-email-chris@cpdesign.com.au>
+Subject: [PATCH v5 2/7] max8903: store pointer to pdata instead of copying it.
+Date: Fri, 24 Jun 2016 12:26:07 +1000
+Message-ID: <1466735172-13372-3-git-send-email-chris@cpdesign.com.au>
 References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
  <1466735172-13372-1-git-send-email-chris@cpdesign.com.au>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,86 +15,86 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Chris Lapa <chris@lapa.com.au>
 
-Signed-off-by: Chris Lapa <chris@lapa.com.au>
----
- .../devicetree/bindings/power/max8903-charger.txt  | 25 +++++++++++++++
- arch/arm/boot/dts/dairytest-servo.dtsi             | 36 ++++++++++++++++++++++
- 2 files changed, 61 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/max8903-charger.txt
- create mode 100644 arch/arm/boot/dts/dairytest-servo.dtsi
+Stores pointer to pdata because it easily allows pdata to reference
+either platform data or in the future device tree data.
 
-diff --git a/Documentation/devicetree/bindings/power/max8903-charger.txt b/Documentation/devicetree/bindings/power/max8903-charger.txt
-new file mode 100644
-index 0000000..f0f4e12
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/max8903-charger.txt
-@@ -0,0 +1,25 @@
-+Maxim Semiconductor MAX8903 Battery Charger bindings
+Signed-off-by: Chris Lapa <chris@lapa.com.au>
+
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ drivers/power/max8903_charger.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
+index 17876ca..0a5b0e1 100644
+--- a/drivers/power/max8903_charger.c
++++ b/drivers/power/max8903_charger.c
+@@ -29,7 +29,7 @@
+ #include <linux/power/max8903_charger.h>
+ 
+ struct max8903_data {
+-	struct max8903_pdata pdata;
++	struct max8903_pdata *pdata;
+ 	struct device *dev;
+ 	struct power_supply *psy;
+ 	struct power_supply_desc psy_desc;
+@@ -53,8 +53,8 @@ static int max8903_get_property(struct power_supply *psy,
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_STATUS:
+ 		val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
+-		if (data->pdata.chg) {
+-			if (gpio_get_value(data->pdata.chg) == 0)
++		if (data->pdata->chg) {
++			if (gpio_get_value(data->pdata->chg) == 0)
+ 				val->intval = POWER_SUPPLY_STATUS_CHARGING;
+ 			else if (data->usb_in || data->ta_in)
+ 				val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
+@@ -81,7 +81,7 @@ static int max8903_get_property(struct power_supply *psy,
+ static irqreturn_t max8903_dcin(int irq, void *_data)
+ {
+ 	struct max8903_data *data = _data;
+-	struct max8903_pdata *pdata = &data->pdata;
++	struct max8903_pdata *pdata = data->pdata;
+ 	bool ta_in;
+ 	enum power_supply_type old_type;
+ 
+@@ -122,7 +122,7 @@ static irqreturn_t max8903_dcin(int irq, void *_data)
+ static irqreturn_t max8903_usbin(int irq, void *_data)
+ {
+ 	struct max8903_data *data = _data;
+-	struct max8903_pdata *pdata = &data->pdata;
++	struct max8903_pdata *pdata = data->pdata;
+ 	bool usb_in;
+ 	enum power_supply_type old_type;
+ 
+@@ -161,7 +161,7 @@ static irqreturn_t max8903_usbin(int irq, void *_data)
+ static irqreturn_t max8903_fault(int irq, void *_data)
+ {
+ 	struct max8903_data *data = _data;
+-	struct max8903_pdata *pdata = &data->pdata;
++	struct max8903_pdata *pdata = data->pdata;
+ 	bool fault;
+ 
+ 	fault = gpio_get_value(pdata->flt) ? false : true;
+@@ -190,12 +190,18 @@ static int max8903_probe(struct platform_device *pdev)
+ 	int ta_in = 0;
+ 	int usb_in = 0;
+ 
++	if (pdata == NULL) {
++		dev_err(dev, "No platform data.\n");
++		return -EINVAL;
++	}
 +
-+Required properties:
-+- compatible: "maxim,max8903" for MAX8903 Battery Charger
-+- dok-gpios: Valid DC power has been detected (active low, input), optional if uok-gpios is provided
-+- uok-gpios: Valid USB power has been detected (active low, input), optional if dok-gpios is provided
+ 	data = devm_kzalloc(dev, sizeof(struct max8903_data), GFP_KERNEL);
+ 	if (data == NULL) {
+ 		dev_err(dev, "Cannot allocate memory.\n");
+ 		return -ENOMEM;
+ 	}
+-	memcpy(&data->pdata, pdata, sizeof(struct max8903_pdata));
 +
-+Optional properties:
-+- cen-gpios: Charge enable pin (active low, output)
-+- chg-gpios: Charger status pin (active low, input)
-+- flt-gpios: Fault pin (active low, output)
-+- dcm-gpios: Current limit mode setting (DC=1 or USB=0, output)
-+- usus-gpios: USB suspend pin (active high, output)
-+
-+
-+Example:
-+
-+	max8903-charger {
-+		compatible = "maxim,max8903";
-+		dok-gpios = <&gpio2 3 GPIO_ACTIVE_LOW>;
-+		flt-gpios = <&gpio2 2 GPIO_ACTIVE_LOW>;
-+		chg-gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
-+		cen-gpios = <&gpio2 5 GPIO_ACTIVE_LOW>;
-+		status = "okay";
-+	};
-diff --git a/arch/arm/boot/dts/dairytest-servo.dtsi b/arch/arm/boot/dts/dairytest-servo.dtsi
-new file mode 100644
-index 0000000..3fbe81d
---- /dev/null
-+++ b/arch/arm/boot/dts/dairytest-servo.dtsi
-@@ -0,0 +1,36 @@
-+#include <dt-bindings/board/am335x-bbw-bbb-base.h>
-+#include <dt-bindings/gpio/gpio.h>
-+#include <dt-bindings/pinctrl/am33xx.h>
-+
-+&am33xx_pinmux {
-+    servo_power_pin: pinmux_servo_power_pin{
-+        pinctrl-single,pins = <
-+            BONE_P9_27 (PIN_OUTPUT| MUX_MODE7)  /* ZCZ(C13) - gpio3_19, OUTPUT | MODE7 */
-+        >;
-+    };
-+
-+    ehrpwm2_pin: pinmux_ehrpwm2_pin{
-+        pinctrl-single,pins = <
-+            BONE_P8_19 (PIN_OUTPUT | MUX_MODE4) /* ZCZ(R1) - ehrpwm2a, OUTPUT | MODE3 */
-+        >;
-+    };
-+};
-+
-+/ {
-+    servo_power {
-+        status = "okay";
-+        compatible = "pinctrl-single";
-+        pinctrl-names = "default";
-+        pinctrl-0 = <&servo_power_pin>;
-+    };
-+};
-+
-+&epwmss2 {
-+    status = "okay";
-+};
-+
-+&ehrpwm2 {
-+    pinctrl-names = "default";
-+    pinctrl-0 = <&ehrpwm2_pin>;
-+    status = "okay";
-+};
++	data->pdata = pdev->dev.platform_data;
+ 	data->dev = dev;
+ 	platform_set_drvdata(pdev, data);
+ 
 -- 
 1.9.1
