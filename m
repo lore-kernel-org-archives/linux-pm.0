@@ -1,7 +1,7 @@
 From: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH 5/7] power: act8945a_charger: Add capacity level property
-Date: Fri, 24 Jun 2016 15:17:38 +0800
-Message-ID: <1466752660-2922-6-git-send-email-wenyou.yang@atmel.com>
+Subject: [PATCH 6/7] power: act8945a_charger: Add max current property
+Date: Fri, 24 Jun 2016 15:17:39 +0800
+Message-ID: <1466752660-2922-7-git-send-email-wenyou.yang@atmel.com>
 References: <1466752660-2922-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,49 +12,51 @@ To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Erem
 Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add the power supply capacity level property, it corresponds to
-POWER_SUPPLY_CAPACITY_LEVEL_*.
-
-It also utilizes the precision voltage detector function module
-to catch the low battery voltage.
+Add the power supply's current max property,
+POWER_SUPPLY_PROP_CURRENT_MAX.
 
 Signed-off-by: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
 ---
 
- drivers/power/act8945a_charger.c | 78 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 78 insertions(+)
+ drivers/power/act8945a_charger.c | 79 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 77 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/power/act8945a_charger.c b/drivers/power/act8945a_charger.c
-index be65e5d..9b79f5e 100644
+index 9b79f5e..8d99bff 100644
 --- a/drivers/power/act8945a_charger.c
 +++ b/drivers/power/act8945a_charger.c
-@@ -83,6 +83,7 @@ struct act8945a_charger {
- 
+@@ -84,6 +84,7 @@ struct act8945a_charger {
  	bool init_done;
  	int irq_pin;
-+	int lbo_pin;
+ 	int lbo_pin;
++	int chgin_level;
  };
  
  static int act8945a_get_charger_state(struct regmap *regmap, int *val)
-@@ -208,11 +209,70 @@ static int act8945a_get_battery_health(struct regmap *regmap, int *val)
+@@ -267,12 +268,79 @@ static int act8945a_get_capacity_level(struct act8945a_charger *charger,
  	return 0;
  }
  
-+static int act8945a_get_capacity_level(struct act8945a_charger *charger,
-+				       struct regmap *regmap, int *val)
++#define MAX_CURRENT_USB_HIGH	450000
++#define MAX_CURRENT_USB_LOW	90000
++#define MAX_CURRENT_USB_PRE	45000
++/*
++ * Riset(K) = 2336 * (1V/Ichg(mA)) - 0.205
++ * Riset = 2.43K
++ */
++#define MAX_CURRENT_AC_HIGH		886527
++#define MAX_CURRENT_AC_LOW		117305
++#define MAX_CURRENT_AC_HIGH_PRE		88653
++#define MAX_CURRENT_AC_LOW_PRE		11731
++
++static int act8945a_get_current_max(struct act8945a_charger *charger,
++				    struct regmap *regmap, int *val)
 +{
 +	int ret;
-+	unsigned int status, state, config;
-+	int lbo_level = 1;
-+
-+	if (gpio_is_valid(charger->lbo_pin))
-+		lbo_level = gpio_get_value(charger->lbo_pin);
++	unsigned int status, state;
++	unsigned int acin_state;
 +
 +	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = regmap_read(regmap, ACT8945A_APCH_CFG, &config);
 +	if (ret < 0)
 +		return ret;
 +
@@ -62,36 +64,39 @@ index be65e5d..9b79f5e 100644
 +	if (ret < 0)
 +		return ret;
 +
++	acin_state = (state & APCH_STATE_ACINSTAT) >> 1;
++
 +	state &= APCH_STATE_CSTATE;
 +	state >>= APCH_STATE_CSTATE_SHIFT;
 +
 +	switch (state) {
 +	case APCH_STATE_CSTATE_PRE:
-+		*val = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
++		if (acin_state) {
++			if (charger->chgin_level)
++				*val = MAX_CURRENT_AC_HIGH_PRE;
++			else
++				*val = MAX_CURRENT_AC_LOW_PRE;
++		} else {
++			*val = MAX_CURRENT_USB_PRE;
++		}
 +		break;
 +	case APCH_STATE_CSTATE_FAST:
-+		if (lbo_level)
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_HIGH;
-+		else
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
++		if (acin_state) {
++			if (charger->chgin_level)
++				*val = MAX_CURRENT_AC_HIGH;
++			else
++				*val = MAX_CURRENT_AC_LOW;
++		} else {
++			if (charger->chgin_level)
++				*val = MAX_CURRENT_USB_HIGH;
++			else
++				*val = MAX_CURRENT_USB_LOW;
++		}
 +		break;
 +	case APCH_STATE_CSTATE_EOC:
-+		if (status & APCH_STATUS_CHGDAT)
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-+		else
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-+		break;
 +	case APCH_STATE_CSTATE_DISABLED:
 +	default:
-+		if (config & APCH_CFG_SUSCHG) {
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_UNKNOWN;
-+		} else {
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-+			if (!(status & APCH_STATUS_INDAT)) {
-+				if (!lbo_level)
-+					*val = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
-+			}
-+		}
++		*val = 0;
 +		break;
 +	}
 +
@@ -103,42 +108,36 @@ index be65e5d..9b79f5e 100644
  	POWER_SUPPLY_PROP_CHARGE_TYPE,
  	POWER_SUPPLY_PROP_TECHNOLOGY,
  	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
+ 	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
++	POWER_SUPPLY_PROP_CURRENT_MAX,
  	POWER_SUPPLY_PROP_MODEL_NAME,
  	POWER_SUPPLY_PROP_MANUFACTURER
  };
-@@ -238,6 +298,10 @@ static int act8945a_charger_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_HEALTH:
- 		ret = act8945a_get_battery_health(regmap, &val->intval);
+@@ -302,6 +370,10 @@ static int act8945a_charger_get_property(struct power_supply *psy,
+ 		ret = act8945a_get_capacity_level(charger,
+ 						  regmap, &val->intval);
  		break;
-+	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
-+		ret = act8945a_get_capacity_level(charger,
-+						  regmap, &val->intval);
++	case POWER_SUPPLY_PROP_CURRENT_MAX:
++		ret = act8945a_get_current_max(charger,
++					       regmap, &val->intval);
 +		break;
  	case POWER_SUPPLY_PROP_MODEL_NAME:
  		val->strval = act8945a_charger_model;
  		break;
-@@ -364,6 +428,20 @@ static int act8945a_charger_config(struct device *dev,
- 		}
- 	}
- 
-+	charger->lbo_pin = of_get_named_gpio(np, "active-semi,lbo-gpios", 0);
-+	if (gpio_is_valid(charger->lbo_pin)) {
-+		if (!devm_gpio_request(dev, charger->lbo_pin, "lbo-detect")) {
-+			ret = devm_request_irq(dev,
-+					       gpio_to_irq(charger->lbo_pin),
-+					       act8945a_status_changed,
-+					       IRQF_TRIGGER_FALLING |
-+					       IRQF_TRIGGER_RISING,
-+					       "lbo-detect", charger);
-+			if (ret)
-+				dev_dbg(dev, "failed to request LBO pin IRQ\n");
-+		}
-+	}
-+
- 	chglev_pin = of_get_named_gpio_flags(np,
+@@ -446,8 +518,11 @@ static int act8945a_charger_config(struct device *dev,
  				"active-semi,chglev-gpios", 0, &flags);
  
+ 	if (gpio_is_valid(chglev_pin)) {
+-		gpio_set_value(chglev_pin,
+-			       ((flags == OF_GPIO_ACTIVE_LOW) ? 0 : 1));
++		if (!devm_gpio_request(dev, charger->irq_pin, "chglev-pin")) {
++			charger->chgin_level =
++					(flags == OF_GPIO_ACTIVE_LOW) ? 0 : 1;
++			gpio_set_value(chglev_pin, charger->chgin_level);
++		}
+ 	}
+ 
+ 	if (of_property_read_u32(np,
 -- 
 2.7.4
 
