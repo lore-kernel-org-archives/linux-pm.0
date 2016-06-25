@@ -1,71 +1,56 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][RFC] cpufreq: Avoid warning during resume by return EAGAIN if cpufreq is unavailable
-Date: Sun, 26 Jun 2016 00:28:48 +0800
-Message-ID: <1466872128-14566-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/4][RFC v2] PM / sleep: Avoid accessing frozen_cpus if
+ it is NULL
+Date: Sat, 25 Jun 2016 18:51:13 +0200
+Message-ID: <20160625165113.GA4362@amd>
+References: <cover.1466844557.git.yu.c.chen@intel.com>
+ <f9847b8bd15ad5056255150c71df37f2f74bc080.1466844557.git.yu.c.chen@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45491 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbcFYQvR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jun 2016 12:51:17 -0400
+Content-Disposition: inline
+In-Reply-To: <f9847b8bd15ad5056255150c71df37f2f74bc080.1466844557.git.yu.c.chen@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Varun Koyyalagunta <cpudebug@centtech.com>, linux-kernel@vger.kernel.org
 
-Previously we saw warning during resume on some platforms,
-which use acpi-cpufreq:
+On Sun 2016-06-26 00:18:30, Chen Yu wrote:
+> frozen_cpus might be NULL if the allocation in previous
+> alloc_frozen_cpus failed, when CONFIG_CPUMASK_OFFSTACK
+> is set.
+> 
+> This patch avoid accessing this cpumask if it is NULL.
+> 
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  kernel/cpu.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> index d948e44..d25266e 100644
+> --- a/kernel/cpu.c
+> +++ b/kernel/cpu.c
+> @@ -1021,6 +1021,8 @@ int disable_nonboot_cpus(void)
+>  {
+>  	int cpu, first_cpu, error = 0;
+>  
+> +	if (frozen_cpus == NULL)
+> +		return -ENOMEM;
+>  	cpu_maps_update_begin();
+>  	first_cpu = cpumask_first(cpu_online_mask);
+>  	/*
 
-smpboot: Booting Node 0 Processor 3 APIC 0x5
-cache: parent cpu3 should not be sleeping
-CPU3 is up
-ACPI: Waking up from system sleep state S3
-WARNING: CPU: 0 PID: 12546 at drivers/cpufreq/cpufreq.c:2173
-Call Trace:
-[<ffffffff81311d95>] dump_stack+0x5c/0x77
-[<ffffffff8107aef4>] __warn+0xc4/0xe0
-[<ffffffff8148c13e>] cpufreq_update_policy+0xfe/0x150
-[<ffffffff8148c190>] cpufreq_update_policy+0x150/0x150
-[<ffffffffc03e42ef>] acpi_processor_notify+0x51/0xdc [processor]
-[<ffffffff813b0d24>] acpi_ev_notify_dispatch+0x3c/0x55
-[<ffffffff81399613>] acpi_os_execute_deferred+0x10/0x1a
-[<ffffffff81093ffb>] process_one_work+0x14b/0x400
-[<ffffffff81094aa5>] worker_thread+0x65/0x4a0
-[<ffffffff81094a40>] rescuer_thread+0x340/0x340
-[<ffffffff81099dbf>] kthread+0xdf/0x100
-[<ffffffff815c7ee2>] ret_from_fork+0x22/0x40
-[<ffffffff81099ce0>] kthread_park+0x50/0x50
+I'd say that whoever allocates frozen_cpus should just abort the
+hibernation if there's not enough memory for the operation...? This
+seems like checking for the problem too late.
 
-This is because this platforms tries to notify
-the processor to reevaluate the _PPC object in _WAK,
-however at that time the cpufreq driver's resume has
-not been invoked yet, thus cpufreq_update_current_freq
-returns zero because of cpufreq_suspended = true, which
-caused the warning.
-
-Actually it should be unnecessary to care the update request
-at that moment, so remove the warning and change the return
-value to -EAGAIN for invokers.
-
-Reported-and-tested-by: BzukTuk <darlor@seznam.cz>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- drivers/cpufreq/cpufreq.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 9009295..67a3aa1 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2262,8 +2262,11 @@ int cpufreq_update_policy(unsigned int cpu)
- 	 */
- 	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
- 		new_policy.cur = cpufreq_update_current_freq(policy);
--		if (WARN_ON(!new_policy.cur)) {
--			ret = -EIO;
-+		if (!new_policy.cur) {
-+			if (WARN_ON(!cpufreq_suspended))
-+				ret = -EIO;
-+			else
-+				ret = -EAGAIN;
- 			goto unlock;
- 		}
- 	}
+Best regards,
+									Pavel
 -- 
-2.7.4
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
