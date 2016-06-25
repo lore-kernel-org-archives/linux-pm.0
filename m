@@ -1,54 +1,71 @@
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [PATCH 4/5] PM / devfreq: make event/exynos-nocp DEVFREQ_EVENT_EXYNOS_NOCP tristate
-Date: Sat, 25 Jun 2016 14:43:50 -0400
-Message-ID: <20160625184351.5045-5-paul.gortmaker@windriver.com>
+Subject: [PATCH 2/5] PM / devfreq: make devfreq-event explicitly non-modular
+Date: Sat, 25 Jun 2016 14:43:48 -0400
+Message-ID: <20160625184351.5045-3-paul.gortmaker@windriver.com>
 References: <20160625184351.5045-1-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20160625184351.5045-1-paul.gortmaker@windriver.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 The Kconfig currently controlling compilation of this code is:
 
-event/Kconfig:config DEVFREQ_EVENT_EXYNOS_NOCP
-event/Kconfig:  bool "EXYNOS NoC (Network On Chip) Probe DEVFREQ event Driver"
+menuconfig PM_DEVFREQ_EVENT
+	bool "DEVFREQ-Event device Support"
 
 ...meaning that it currently is not being built as a module by anyone.
 
-Rather than rip out the existing modular code, Chanwoo indicated
-that he'd rather see the driver offered as tristate.
+Lets remove the modular code that is essentially orphaned, so that
+when reading the driver there is no doubt it is builtin-only.
 
-I don't have the hardware for runtime validation, so this change
-is only validated for compile and modpost.
+This code wasn't using module_init, so we don't need to be concerned
+with altering the initcall level here.
 
-Cc: Chanwoo Choi <cw00.choi@samsung.com>
+We don't replace module.h with init.h since the file already has that.
+But we do add export.h since this file does export some symbols.
+
+We also delete the MODULE_LICENSE tag etc. since all that information
+is already contained at the top of the file in the comments.
+
 Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>
 Cc: linux-pm@vger.kernel.org
-Cc: linux-samsung-soc@vger.kernel.org
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- drivers/devfreq/event/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/devfreq/devfreq-event.c | 12 +-----------
+ 1 file changed, 1 insertion(+), 11 deletions(-)
 
-diff --git a/drivers/devfreq/event/Kconfig b/drivers/devfreq/event/Kconfig
-index 1e8b4f469f38..96ea29d1ede5 100644
---- a/drivers/devfreq/event/Kconfig
-+++ b/drivers/devfreq/event/Kconfig
-@@ -14,7 +14,7 @@ menuconfig PM_DEVFREQ_EVENT
- if PM_DEVFREQ_EVENT
- 
- config DEVFREQ_EVENT_EXYNOS_NOCP
--	bool "EXYNOS NoC (Network On Chip) Probe DEVFREQ event Driver"
-+	tristate "EXYNOS NoC (Network On Chip) Probe DEVFREQ event Driver"
- 	depends on ARCH_EXYNOS
- 	select PM_OPP
- 	help
+diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
+index 39b048eda2ce..9aea2c7ecbe6 100644
+--- a/drivers/devfreq/devfreq-event.c
++++ b/drivers/devfreq/devfreq-event.c
+@@ -15,7 +15,7 @@
+ #include <linux/kernel.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
+-#include <linux/module.h>
++#include <linux/export.h>
+ #include <linux/slab.h>
+ #include <linux/list.h>
+ #include <linux/of.h>
+@@ -481,13 +481,3 @@ static int __init devfreq_event_init(void)
+ 	return 0;
+ }
+ subsys_initcall(devfreq_event_init);
+-
+-static void __exit devfreq_event_exit(void)
+-{
+-	class_destroy(devfreq_event_class);
+-}
+-module_exit(devfreq_event_exit);
+-
+-MODULE_AUTHOR("Chanwoo Choi <cw00.choi@samsung.com>");
+-MODULE_DESCRIPTION("DEVFREQ-Event class support");
+-MODULE_LICENSE("GPL");
 -- 
 2.8.4
