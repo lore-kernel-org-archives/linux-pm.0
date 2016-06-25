@@ -1,146 +1,86 @@
-From: =?UTF-8?Q?Ond=c5=99ej_Jirman?= <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH 03/14] thermal: Add support for sun8i THS on
- Allwinner H3
-Date: Sat, 25 Jun 2016 02:56:59 +0200
-Message-ID: <7dd9107e-c9ec-595f-4c7d-6226c049a6aa@megous.com>
-References: <20160623192104.18720-1-megous@megous.com>
- <20160623192104.18720-4-megous@megous.com>
- <CAGb2v66sFfbD0rTaeeR9CBZFaXLiCKV4DrqKi4Yhc3+u2q+UMw@mail.gmail.com>
- <f6015f63-f8e6-6aa4-aab3-48a8152f0df5@megous.com>
- <CAGb2v65DEgD-mpFMHaWU1XRwBgmQ+=hu2A9EW5u=v0oynGCE1Q@mail.gmail.com>
-Reply-To: megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RESEND PATCH v2 1/2] power/cpuidle: enhance the precision of
+ state select
+Date: Sat, 25 Jun 2016 03:09:30 +0200
+Message-ID: <CAJZ5v0jzF6MuA7yQqYuDBCHDfG0cJZ_qtQvfbDL8dNw2XGDL_Q@mail.gmail.com>
+References: <1466154816-17900-1-git-send-email-zhaoyang.huang@spreadtrum.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="QACmJNw8OtAwAvBPND6OTVELwvo6CUAFr"
-Return-path: <linux-sunxi+bncBDXLF6FR5INBBYVNW65QKGQEHLE6DJA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <CAGb2v65DEgD-mpFMHaWU1XRwBgmQ+=hu2A9EW5u=v0oynGCE1Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Cc: dev <dev-3kdeTeqwOZ9EV1b7eY7vFQ@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-List-Id: linux-pm@vger.kernel.org
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---QACmJNw8OtAwAvBPND6OTVELwvo6CUAFr
-Content-Type: multipart/mixed; boundary="aNfoO1CmeJr3mgOvVcjA2lJgnsDC1Flxt"
-From: =?UTF-8?Q?Ond=c5=99ej_Jirman?= <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
-To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Cc: dev <dev-3kdeTeqwOZ9EV1b7eY7vFQ@public.gmane.org>,
- linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>,
- open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>,
- "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Message-ID: <7dd9107e-c9ec-595f-4c7d-6226c049a6aa-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH 03/14] thermal: Add support for sun8i THS on Allwinner H3
-References: <20160623192104.18720-1-megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
- <20160623192104.18720-4-megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
- <CAGb2v66sFfbD0rTaeeR9CBZFaXLiCKV4DrqKi4Yhc3+u2q+UMw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
- <f6015f63-f8e6-6aa4-aab3-48a8152f0df5-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
- <CAGb2v65DEgD-mpFMHaWU1XRwBgmQ+=hu2A9EW5u=v0oynGCE1Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-In-Reply-To: <CAGb2v65DEgD-mpFMHaWU1XRwBgmQ+=hu2A9EW5u=v0oynGCE1Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-
---aNfoO1CmeJr3mgOvVcjA2lJgnsDC1Flxt
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:35486 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750996AbcFYBJc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 24 Jun 2016 21:09:32 -0400
+In-Reply-To: <1466154816-17900-1-git-send-email-zhaoyang.huang@spreadtrum.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, zhaoyang.huang@spreadtrum.com, Thomas Gleixner <tglx@linutronix.de>
 
-On 25.6.2016 02:54, Chen-Yu Tsai wrote:
-> On Sat, Jun 25, 2016 at 8:35 AM, Ond=C5=99ej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org> w=
-rote:
->> On 24.6.2016 05:09, Chen-Yu Tsai wrote:
->>>> +static int sun8i_ths_h3_init(struct platform_device *pdev,
->>>> +                            struct sun8i_ths_data *data)
->>>> +{
->>>> +       int ret;
->>>> +       size_t callen;
->>>> +       s32 *caldata;
->>>> +
->>>> +       data->busclk =3D devm_clk_get(&pdev->dev, "ahb");
->>>> +       if (IS_ERR(data->busclk)) {
->>>> +               ret =3D PTR_ERR(data->busclk);
->>>> +               dev_err(&pdev->dev, "failed to get ahb clk: %d\n", ret=
-);
->>>> +               return ret;
->>>> +       }
->>>> +
->>>> +       data->clk =3D devm_clk_get(&pdev->dev, "ths");
->>>> +       if (IS_ERR(data->clk)) {
->>>> +               ret =3D PTR_ERR(data->clk);
->>>> +               dev_err(&pdev->dev, "failed to get ths clk: %d\n", ret=
-);
->>>> +               return ret;
->>>> +       }
->>>> +
->>>> +       data->reset =3D devm_reset_control_get(&pdev->dev, "ahb");
->>>
->>> IIRC with the new shared reset control stuff merged, you are supposed
->>> to specify whether you want a shared or exclusive one when you ask for
->>> it.
->>
->> Here devm_reset_control_get will get the exclusive reference. So this
->> should be ok.
->=20
-> See https://patchwork.kernel.org/patch/9158691/
->=20
-> The generic ones might be removed later on. I remember in another thread
-> it was asked that new users should use the explicit API, and avoid having
-> to be converted.
+On Fri, Jun 17, 2016 at 11:13 AM, Zhaoyang Huang
+<zhaoyang.huang@linaro.org> wrote:
+> In previous version, cpu_pm_enter is invoked
 
-I see, thank you, I'll change that.
+By whom?  Not by the core surely?
 
-regards,
-  Ondrej
+> after the governor select the state, which cause the executing time of cpu_pm_enter
+> is included in the idle time. Moving it before the state selection.
+>
+> Signed-off-by: Zhaoyang Huang <zhaoyang.huang@spreadtrum.com>
+> ---
+>  kernel/sched/idle.c |   18 ++++++++++++------
+>  1 file changed, 12 insertions(+), 6 deletions(-)
+>
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index bd12c6c..929da2e 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -5,6 +5,7 @@
+>  #include <linux/cpu.h>
+>  #include <linux/cpuidle.h>
+>  #include <linux/cpuhotplug.h>
+> +#include <linux/cpu_pm.h>
+>  #include <linux/tick.h>
+>  #include <linux/mm.h>
+>  #include <linux/stackprotector.h>
+> @@ -130,6 +131,7 @@ static void cpuidle_idle_call(void)
+>         struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+>         struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+>         int next_state, entered_state;
+> +       int ret;
+>
+>         /*
+>          * Check if the idle task must be rescheduled. If it is the
+> @@ -174,12 +176,16 @@ static void cpuidle_idle_call(void)
+>                 /*
+>                  * Ask the cpuidle framework to choose a convenient idle state.
+>                  */
+> -               next_state = cpuidle_select(drv, dev);
+> -               entered_state = call_cpuidle(drv, dev, next_state);
+> -               /*
+> -                * Give the governor an opportunity to reflect on the outcome
+> -                */
+> -               cpuidle_reflect(dev, entered_state);
+> +               ret = cpu_pm_enter();
 
-> ChenYu
->=20
->>
->> regards,
->>   Ondrej
->>
->>>
->>> Regards
->>> ChenYu
->>>
->>>> +MODULE_LICENSE("GPL v2");
->>>> --
->>>> 2.9.0
->>>>
->>
+"To move" usually means "take it away from there and put it here" as
+far as kernel patches are concerned, but I only see it added here.
 
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+> +               if (!ret) {
+> +                       next_state = cpuidle_select(drv, dev);
+> +                       entered_state = call_cpuidle(drv, dev, next_state);
+> +                       cpu_pm_exit();
+> +                       /*
+> +                        * Give the governor an opportunity to reflect on the outcome
+> +                        */
+> +                       cpuidle_reflect(dev, entered_state);
+> +               }
+>         }
+>
+>  exit_idle:
+> --
 
---aNfoO1CmeJr3mgOvVcjA2lJgnsDC1Flxt--
+No way I will agree to add that notification stuff to the core.
 
---QACmJNw8OtAwAvBPND6OTVELwvo6CUAFr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXbdbbAAoJEG5kJsZ3z+/xpDwQAI19Rbn7tn74fr7EXf1KW1zw
-xb0mCCoFY93GfRX915optRBeMz64O5nild+kOYg8HaopH8tEWG/ivAta0g7DBhQT
-6Yj3GM/wlVS4pP6uOY+ZJdrhWxB6nmM7GsOD2DGbk9O5PG1rGLFjSo72JBqhAXQE
-rc7EW5ME5mw3ZDgdbRhJbxVNEsseiGq45f66EpUA3WTpUWY2pCTx7ckuNj7uZRu5
-CvmIeDcDd+r9uss8s2D/jtM/cIx2/nkbbFSeo+Twkdr6hvAOZ7BabRTG+e9ozumg
-Ge3PRWDL5nFR2L/IBWQiJNpEtgmMpJKMq7Eex+vPygWj1u4dYOHvm+8QFNYnUAaU
-GwZa1eJloRdnDl73as7EYQAGA501uX/4k2C2PtQyzkwOPHr5WoozI+Md0dZts93q
-ccjhRljhpO6O02HEFu+p5z39MQT/RsvdAreDycgGC1/lIO639LalX1TXpvAZU7ri
-Y+zfSxkcaU4DOUr1Lvlv5MsN2IDBWbcxbYeL0Z4vEdrTRmvpo87nkDVQ0Q7knhXe
-Z8XfCfd/ilxP4GhuVKDU/CGY2g5CYSkD8FQm52n58xauXBtbtPCZ3P7eZB93nJ5+
-AQ0Rq/T+wJI5uVVysuyb/TiaTGjzOrTOJRETqrPns14XrUdoQH/Ivcx4pG1jhICd
-Gi4ORrJeWI2X4rscNbww
-=jcVW
------END PGP SIGNATURE-----
-
---QACmJNw8OtAwAvBPND6OTVELwvo6CUAFr--
+Thanks,
+Rafael
