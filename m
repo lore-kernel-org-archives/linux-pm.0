@@ -1,92 +1,54 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/4][RFC v2] PM / hibernate: introduce a flag to indicate
- resuming from hibernation
-Date: Sat, 25 Jun 2016 18:53:02 +0200
-Message-ID: <20160625165302.GC4362@amd>
-References: <cover.1466844557.git.yu.c.chen@intel.com>
- <d4195120e18af7b097b64b0c45a55187617dc234.1466844557.git.yu.c.chen@intel.com>
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: [PATCH 3/5] PM / devfreq: make exynos-bus ARM_EXYNOS_BUS_DEVFREQ tristate
+Date: Sat, 25 Jun 2016 14:43:49 -0400
+Message-ID: <20160625184351.5045-4-paul.gortmaker@windriver.com>
+References: <20160625184351.5045-1-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45524 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbcFYQxE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jun 2016 12:53:04 -0400
-Content-Disposition: inline
-In-Reply-To: <d4195120e18af7b097b64b0c45a55187617dc234.1466844557.git.yu.c.chen@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160625184351.5045-1-paul.gortmaker@windriver.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Varun Koyyalagunta <cpudebug@centtech.com>, linux-kernel@vger.kernel.org
 
-On Sun 2016-06-26 00:18:52, Chen Yu wrote:
-> Sometime we need to do some operations before resuming from
-> hibernation, so introduce a flag to indicate this stage.
-> 
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->  include/linux/suspend.h  | 7 +++++++
->  kernel/power/hibernate.c | 3 +++
->  2 files changed, 10 insertions(+)
-> 
-> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-> index 8b6ec7e..422e87a 100644
-> --- a/include/linux/suspend.h
-> +++ b/include/linux/suspend.h
-> @@ -384,6 +384,12 @@ extern bool system_entering_hibernation(void);
->  extern bool hibernation_available(void);
->  asmlinkage int swsusp_save(void);
->  extern struct pbe *restore_pblist;
-> +extern bool in_resume_hibernate;
+The Kconfig currently controlling compilation of this code is:
 
-in_resume_hibernation? But it is pretty sad if we need another such
-state function...
-								Pavel
+devfreq/Kconfig:config ARM_EXYNOS_BUS_DEVFREQ
+devfreq/Kconfig:        bool "ARM EXYNOS Generic Memory Bus DEVFREQ Driver"
 
-> +static inline bool hibernation_in_resume(void)
-> +{
-> +	return in_resume_hibernate;
-> +}
->  #else /* CONFIG_HIBERNATION */
->  static inline void register_nosave_region(unsigned long b, unsigned long e) {}
->  static inline void register_nosave_region_late(unsigned long b, unsigned long e) {}
-> @@ -395,6 +401,7 @@ static inline void hibernation_set_ops(const struct platform_hibernation_ops *op
->  static inline int hibernate(void) { return -ENOSYS; }
->  static inline bool system_entering_hibernation(void) { return false; }
->  static inline bool hibernation_available(void) { return false; }
-> +static inline bool hibernation_in_resume(void) { return false; }
->  #endif /* CONFIG_HIBERNATION */
->  
->  /* Hibernation and suspend events */
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index fca9254..41be909 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -43,6 +43,7 @@ static char resume_file[256] = CONFIG_PM_STD_PARTITION;
->  dev_t swsusp_resume_device;
->  sector_t swsusp_resume_block;
->  __visible int in_suspend __nosavedata;
-> +bool in_resume_hibernate;
->  
->  enum {
->  	HIBERNATION_INVALID,
-> @@ -433,6 +434,7 @@ static int resume_target_kernel(bool platform_mode)
->  	if (error)
->  		goto Cleanup;
->  
-> +	in_resume_hibernate = true;
->  	error = disable_nonboot_cpus();
->  	if (error)
->  		goto Enable_cpus;
-> @@ -474,6 +476,7 @@ static int resume_target_kernel(bool platform_mode)
->  	local_irq_enable();
->  
->   Enable_cpus:
-> +	in_resume_hibernate = false;
->  	enable_nonboot_cpus();
->  
->   Cleanup:
+...meaning that it currently is not being built as a module by anyone.
 
+Rather than rip out the existing modular code, Chanwoo indicated
+that he'd rather see the driver offered as tristate.
+
+I don't have the hardware for runtime validation, so this change
+is only validated for compile and modpost.
+
+Cc: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ drivers/devfreq/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 78dac0e9da11..a5be56ec57f2 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -75,7 +75,7 @@ config DEVFREQ_GOV_PASSIVE
+ comment "DEVFREQ Drivers"
+ 
+ config ARM_EXYNOS_BUS_DEVFREQ
+-	bool "ARM EXYNOS Generic Memory Bus DEVFREQ Driver"
++	tristate "ARM EXYNOS Generic Memory Bus DEVFREQ Driver"
+ 	depends on ARCH_EXYNOS
+ 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+ 	select DEVFREQ_GOV_PASSIVE
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.8.4
