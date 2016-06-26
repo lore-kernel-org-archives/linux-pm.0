@@ -1,153 +1,84 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [PATCH 1/2] Documentation: Add sbs-manager device tree node
- documentation
-Date: Sun, 26 Jun 2016 13:21:00 +0800
-Message-ID: <9ccbeeb9-3612-fe07-3396-48da7c832bc6@electromag.com.au>
-References: <1466622436-27963-1-git-send-email-karl-heinz@schneider-inet.de>
- <1466622436-27963-2-git-send-email-karl-heinz@schneider-inet.de>
- <20160624175014.GA29990@rob-hp-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy2.45ru.net.au ([203.30.46.146]:35545 "EHLO
-	anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751671AbcFZFVL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 26 Jun 2016 01:21:11 -0400
-In-Reply-To: <20160624175014.GA29990@rob-hp-laptop>
-Sender: linux-pm-owner@vger.kernel.org
+From: Stephen Boyd <stephen.boyd@linaro.org>
+Subject: [PATCH] power: qcom_smbb: Make an extcon for usb cable detection
+Date: Sat, 25 Jun 2016 22:54:37 -0700
+Message-ID: <20160626055437.18516-1-stephen.boyd@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Bjorn Andersson <bjorn.andersson@linaro.org>, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>
 
-G'day Rob
+On these PMICs the usb cable connection/disconnection is
+indicated by the usb-valid interrupt being high or low
+respectively. Let's make an extcon for that, so we can notify usb
+drivers of the cable state.
 
-Couple of thoughts / question below.
+Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Stephen Boyd <stephen.boyd@linaro.org>
+---
+ drivers/power/qcom_smbb.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-On 25/06/2016 01:50, Rob Herring wrote:
-> On Wed, Jun 22, 2016 at 09:07:15PM +0200, Karl-Heinz Schneider wrote:
->> This patch adds device tree documentation for the sbs-manager
->>
->> Reviewed-by: Phil Reid <preid@electromag.com.au>
->> Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
->> ---
->>  .../devicetree/bindings/power/sbs,sbs-manager.txt  | 58 ++++++++++++++++++++++
->>  1 file changed, 58 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
->>
->> diff --git a/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
->> new file mode 100644
->> index 0000000..d52b466
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
->> @@ -0,0 +1,58 @@
->> +Binding for sbs-manager
->> +
->> +Required properties:
->> +- compatible: should be "sbs,sbs-manager" or "lltc,ltc1760" if device is a
->> +    ltc1760.
->
-> sbs is not a vendor. What chip is sbs-manager? I suspect you should drop
-> it and only list specific chips.
-This follows the interface to the existing paired sbs,sbs-battery driver defined in power/sbs-battery.c
-It implements a generic driver for the Smart Battery System Manager Specification.
-Spec available here: http://sbs-forum.org/specs/sbsm100b.pdf
-
-In addition the ltc1760 extends the spec.
-
-
->
->> +- reg: integer, i2c address of the device. Should be <0xa>.
->> +
->> +Optional properties:
->> +- sbsm,i2c-retry-count: integer, number of retries for trying to read or write
->> +    to registers. Default: 1
->
-> Seems like a driver setting. Is having a retry in the driver a problem
-> if the h/w works and never actually needs it?
-Similarly the sbs-battery driver specifies the same same retry behaviour. And is a model for this implementation.
-
-I've found the ltc1760 and sbs batteries to be problematic when communicating to them.
-A lot of drivers (and the associated hardware) don't handle multiple bus masters well.
-The bus arbitation doesn't seem to work correctly.
-Retries where the only thing I could do to to get things to work reliably.
-Mostly means the driver needs fixing, but in one case the designware core hardware seemed to be the problem for me.
-
-
->
->> +
->> +From OS view the device is basically an i2c-mux used to communicate with up to
->> +four smart battery devices at address 0xb. The driver actually implements this
->> +behaviour. So standard i2c-mux nodes can be used to register up to four slave
->> +batteries. Channels will be numerated as 1, 2, 4 and 8.
->> +
->> +Example:
->> +
->> +batman@0a {
->> +    compatible = "sbs,sbs-manager";
->> +    reg = <0x0a>;
->> +    sbsm,i2c-retry-count = <3>;
->> +    #address-cells = <1>;
->> +    #size-cells = <0>;
->> +
->> +    channel1@1 {
->
-> channel@1
->
-> Do we have a standard node name for mux nodes? If not, we should.
->
->> +        #address-cells = <1>;
->> +        #size-cells = <0>;
->> +        reg = <1>;
->> +
->> +        battery1@0b {
->
-> battery@b
->
->> +            compatible = "sbs-battery";
->
-> This should be an actual battery model. Or all this information is
-> generic, you don't really need it in DT.
-Do we really want to restrict to battery model?
-I have hardware where complete different sbs compliant batteries can be plugged in.
-Without the compatible flag here how do you get the sbs-battery driver to load and manage the battery itself?
-Or are you suggesting the manager should do this somehow?
-I'm still learning...
-
-
->
->> +            reg = <0x0b>;
->> +        };
->> +    };
->> +
->> +    channel2@2 {
->> +        #address-cells = <1>;
->> +        #size-cells = <0>;
->> +        reg = <2>;
->> +
->> +        battery2@0b {
->> +            compatible = "sbs-battery";
->> +            reg = <0x0b>;
->> +        };
->> +    };
->> +
->> +    channel3@4 {
->> +        #address-cells = <1>;
->> +        #size-cells = <0>;
->> +        reg = <4>;
->> +
->> +        battery3@0b {
->> +            compatible = "sbs-battery";
->> +            reg = <0x0b>;
->> +        };
->> +    };
->> +};
->> --
->> 1.9.1
->>
-
-
+diff --git a/drivers/power/qcom_smbb.c b/drivers/power/qcom_smbb.c
+index 5eb1e9e543e2..b5896ba2a602 100644
+--- a/drivers/power/qcom_smbb.c
++++ b/drivers/power/qcom_smbb.c
+@@ -34,6 +34,7 @@
+ #include <linux/power_supply.h>
+ #include <linux/regmap.h>
+ #include <linux/slab.h>
++#include <linux/extcon.h>
+ 
+ #define SMBB_CHG_VMAX		0x040
+ #define SMBB_CHG_VSAFE		0x041
+@@ -111,6 +112,7 @@ struct smbb_charger {
+ 	unsigned int revision;
+ 	unsigned int addr;
+ 	struct device *dev;
++	struct extcon_dev *edev;
+ 
+ 	bool dc_disabled;
+ 	bool jeita_ext_temp;
+@@ -125,6 +127,11 @@ struct smbb_charger {
+ 	struct regmap *regmap;
+ };
+ 
++static const unsigned int smbb_usb_extcon_cable[] = {
++	EXTCON_USB,
++	EXTCON_NONE,
++};
++
+ static int smbb_vbat_weak_fn(unsigned int index)
+ {
+ 	return 2100000 + index * 100000;
+@@ -371,6 +378,8 @@ static irqreturn_t smbb_usb_valid_handler(int irq, void *_data)
+ 	struct smbb_charger *chg = _data;
+ 
+ 	smbb_set_line_flag(chg, irq, STATUS_USBIN_VALID);
++	extcon_set_cable_state_(chg->edev, EXTCON_USB,
++				chg->status & STATUS_USBIN_VALID);
+ 	power_supply_changed(chg->usb_psy);
+ 
+ 	return IRQ_HANDLED;
+@@ -849,6 +858,18 @@ static int smbb_charger_probe(struct platform_device *pdev)
+ 		return PTR_ERR(chg->usb_psy);
+ 	}
+ 
++	chg->edev = devm_extcon_dev_allocate(&pdev->dev, smbb_usb_extcon_cable);
++	if (IS_ERR(chg->edev)) {
++		dev_err(&pdev->dev, "failed to allocate extcon device\n");
++		return -ENOMEM;
++	}
++
++	rc = devm_extcon_dev_register(&pdev->dev, chg->edev);
++	if (rc < 0) {
++		dev_err(&pdev->dev, "failed to register extcon device\n");
++		return rc;
++	}
++
+ 	if (!chg->dc_disabled) {
+ 		dc_cfg.drv_data = chg;
+ 		dc_cfg.supplied_to = smbb_bif;
 -- 
-Regards
-Phil Reid
-
+2.9.0.rc2.8.ga28705d
