@@ -1,130 +1,63 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH 3/7] hwmon: (core) Add current attribute support to new API
-Date: Sat, 25 Jun 2016 20:26:26 -0700
-Message-ID: <1466911590-26296-4-git-send-email-linux@roeck-us.net>
-References: <1466911590-26296-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1466911590-26296-1-git-send-email-linux@roeck-us.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jean Delvare <jdelvare@suse.com>
-Cc: Jonathan Cameron <jic23@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH 1/4][RFC v2] PM / sleep: Avoid accessing frozen_cpus if
+ it is NULL
+Date: Sun, 26 Jun 2016 04:25:29 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402877B82A@shsmsx102.ccr.corp.intel.com>
+References: <cover.1466844557.git.yu.c.chen@intel.com>
+ <f9847b8bd15ad5056255150c71df37f2f74bc080.1466844557.git.yu.c.chen@intel.com>
+ <20160625165113.GA4362@amd>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:16792 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751318AbcFZEZe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 26 Jun 2016 00:25:34 -0400
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Varun Koyyalagunta <cpudebug@centtech.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
- drivers/hwmon/hwmon.c | 21 +++++++++++++++++++++
- include/linux/hwmon.h | 36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 57 insertions(+)
 
-diff --git a/drivers/hwmon/hwmon.c b/drivers/hwmon/hwmon.c
-index d2916074befd..8c3c7ffe828b 100644
---- a/drivers/hwmon/hwmon.c
-+++ b/drivers/hwmon/hwmon.c
-@@ -251,6 +251,7 @@ static struct attribute *hwmon_genattr(struct device *dev,
- static const char * const hwmon_chip_attr_templates[] = {
- 	[hwmon_chip_temp_reset_history] = "temp_reset_history",
- 	[hwmon_chip_in_reset_history] = "in_reset_history",
-+	[hwmon_chip_curr_reset_history] = "curr_reset_history",
- 	[hwmon_chip_update_interval] = "update_interval",
- 	[hwmon_chip_alarms] = "alarms",
- };
-@@ -300,16 +301,36 @@ static const char * const hwmon_in_attr_templates[] = {
- 	[hwmon_in_crit_alarm] = "in%d_crit_alarm",
- };
- 
-+static const char * const hwmon_curr_attr_templates[] = {
-+	[hwmon_curr_input] = "curr%d_input",
-+	[hwmon_curr_min] = "curr%d_min",
-+	[hwmon_curr_max] = "curr%d_max",
-+	[hwmon_curr_lcrit] = "curr%d_lcrit",
-+	[hwmon_curr_crit] = "curr%d_crit",
-+	[hwmon_curr_average] = "curr%d_average",
-+	[hwmon_curr_lowest] = "curr%d_lowest",
-+	[hwmon_curr_highest] = "curr%d_highest",
-+	[hwmon_curr_reset_history] = "curr%d_reset_history",
-+	[hwmon_curr_label] = "curr%d_label",
-+	[hwmon_curr_alarm] = "curr%d_alarm",
-+	[hwmon_curr_min_alarm] = "curr%d_min_alarm",
-+	[hwmon_curr_max_alarm] = "curr%d_max_alarm",
-+	[hwmon_curr_lcrit_alarm] = "curr%d_lcrit_alarm",
-+	[hwmon_curr_crit_alarm] = "curr%d_crit_alarm",
-+};
-+
- static const char * const *__templates[] = {
- 	[hwmon_chip] = hwmon_chip_attr_templates,
- 	[hwmon_temp] = hwmon_temp_attr_templates,
- 	[hwmon_in] = hwmon_in_attr_templates,
-+	[hwmon_curr] = hwmon_curr_attr_templates,
- };
- 
- static const int __templates_size[] = {
- 	[hwmon_chip] = ARRAY_SIZE(hwmon_chip_attr_templates),
- 	[hwmon_temp] = ARRAY_SIZE(hwmon_temp_attr_templates),
- 	[hwmon_in] = ARRAY_SIZE(hwmon_in_attr_templates),
-+	[hwmon_curr] = ARRAY_SIZE(hwmon_curr_attr_templates),
- };
- 
- static int hwmon_num_channel_attrs(const struct hwmon_channel_info *info)
-diff --git a/include/linux/hwmon.h b/include/linux/hwmon.h
-index 5e632c0fcbf4..bac3c5dc672f 100644
---- a/include/linux/hwmon.h
-+++ b/include/linux/hwmon.h
-@@ -31,6 +31,7 @@ enum hwmon_sensor_types {
- enum hwmon_chip_attributes {
- 	hwmon_chip_temp_reset_history,
- 	hwmon_chip_in_reset_history,
-+	hwmon_chip_curr_reset_history,
- 	hwmon_chip_register_tz,
- 	hwmon_chip_update_interval,
- 	hwmon_chip_alarms,
-@@ -38,6 +39,7 @@ enum hwmon_chip_attributes {
- 
- #define HWMON_C_TEMP_RESET_HISTORY	BIT(hwmon_chip_temp_reset_history)
- #define HWMON_C_IN_RESET_HISTORY	BIT(hwmon_chip_in_reset_history)
-+#define HWMON_C_CURR_RESET_HISTORY	BIT(hwmon_chip_curr_reset_history)
- #define HWMON_C_REGISTER_TZ		BIT(hwmon_chip_register_tz)
- #define HWMON_C_UPDATE_INTERVAL		BIT(hwmon_chip_update_interval)
- #define HWMON_C_ALARMS			BIT(hwmon_chip_alarms)
-@@ -126,6 +128,40 @@ enum hwmon_in_attributes {
- #define HWMON_I_LCRIT_ALARM	BIT(hwmon_in_lcrit_alarm)
- #define HWMON_I_CRIT_ALARM	BIT(hwmon_in_crit_alarm)
- 
-+enum hwmon_curr_attributes {
-+	hwmon_curr_input,
-+	hwmon_curr_min,
-+	hwmon_curr_max,
-+	hwmon_curr_lcrit,
-+	hwmon_curr_crit,
-+	hwmon_curr_average,
-+	hwmon_curr_lowest,
-+	hwmon_curr_highest,
-+	hwmon_curr_reset_history,
-+	hwmon_curr_label,
-+	hwmon_curr_alarm,
-+	hwmon_curr_min_alarm,
-+	hwmon_curr_max_alarm,
-+	hwmon_curr_lcrit_alarm,
-+	hwmon_curr_crit_alarm,
-+};
-+
-+#define HWMON_C_INPUT		BIT(hwmon_curr_input)
-+#define HWMON_C_MIN		BIT(hwmon_curr_min)
-+#define HWMON_C_MAX		BIT(hwmon_curr_max)
-+#define HWMON_C_LCRIT		BIT(hwmon_curr_lcrit)
-+#define HWMON_C_CRIT		BIT(hwmon_curr_crit)
-+#define HWMON_C_AVERAGE		BIT(hwmon_curr_average)
-+#define HWMON_C_LOWEST		BIT(hwmon_curr_lowest)
-+#define HWMON_C_HIGHEST		BIT(hwmon_curr_highest)
-+#define HWMON_C_RESET_HISTORY	BIT(hwmon_curr_reset_history)
-+#define HWMON_C_LABEL		BIT(hwmon_curr_label)
-+#define HWMON_C_ALARM		BIT(hwmon_curr_alarm)
-+#define HWMON_C_MIN_ALARM	BIT(hwmon_curr_min_alarm)
-+#define HWMON_C_MAX_ALARM	BIT(hwmon_curr_max_alarm)
-+#define HWMON_C_LCRIT_ALARM	BIT(hwmon_curr_lcrit_alarm)
-+#define HWMON_C_CRIT_ALARM	BIT(hwmon_curr_crit_alarm)
-+
- /**
-  * struct hwmon_ops - hwmon device operations
-  * @is_visible: Callback to return attribute visibility.
--- 
-2.5.0
+> -----Original Message-----
+> From: Chen, Yu C
+> Sent: Sunday, June 26, 2016 9:17 AM
+> To: 'Pavel Machek'
+> Cc: linux-pm@vger.kernel.org; x86@kernel.org; Rafael J. Wysocki; Len Brown;
+> Peter Zijlstra; H. Peter Anvin; Borislav Petkov; Brian Gerst; Thomas Gleixner;
+> Ingo Molnar; Varun Koyyalagunta; linux-kernel@vger.kernel.org
+> Subject: RE: [PATCH 1/4][RFC v2] PM / sleep: Avoid accessing frozen_cpus if it
+> is NULL
+> 
+> Hi,
+> 
+> > -----Original Message-----
+> > From: Pavel Machek [mailto:pavel@ucw.cz]
+> > Sent: Sunday, June 26, 2016 12:51 AM
+> > To: Chen, Yu C
+> > Cc: linux-pm@vger.kernel.org; x86@kernel.org; Rafael J. Wysocki; Len
+> > Brown; Peter Zijlstra; H. Peter Anvin; Borislav Petkov; Brian Gerst;
+> > Thomas Gleixner; Ingo Molnar; Varun Koyyalagunta;
+> > linux-kernel@vger.kernel.org
+> > Subject: Re: [PATCH 1/4][RFC v2] PM / sleep: Avoid accessing
+> > frozen_cpus if it is NULL
+> >
+[cut]
+> >
+> > I'd say that whoever allocates frozen_cpus should just abort the
+> > hibernation if there's not enough memory for the operation...? This
+> > seems like checking for the problem too late.
+> >
+> The allocation of frozen_cpus is alloc_frozen_cpus, which is in core_initcall, and
+> do_initcall during boot up  seems not to care about the return value from these
+> functions.  So I think either we add the check in disable_nonboot_cpus, or we
+> can set noresume = 1 and nohibernate = 1 if alloc_frozen_cpus fails.
+> 
+Besides, disable_nonboot_cpus is not only used for hibernation, but also for
+suspend to ram, kexec, etc, so it might be better to check before we use
+it, thus to avoid introducing new flags IMO.
+
+thanks,
+Yu
