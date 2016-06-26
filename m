@@ -1,131 +1,99 @@
-From: tip-bot for Kees Cook <tipbot@zytor.com>
-Subject: [tip:x86/boot] x86/KASLR, x86/power: Remove x86 hibernation
- restrictions
-Date: Sun, 26 Jun 2016 04:01:18 -0700
-Message-ID: <tip-65fe935dd2387a4faf15314c73f5e6d31ef0217e@git.kernel.org>
-References: <20160613221002.GA29719@www.outflux.net>
-Reply-To: dvlasenk@redhat.com, linux-kernel@vger.kernel.org,
-	  mingo@kernel.org, tglx@linutronix.de, corbet@lwn.net,
-	  yinghai@kernel.org, pavel@ucw.cz, linux-pm@vger.kernel.org,
-	  keescook@chromium.org, hpa@zytor.com, brgerst@gmail.com,
-	  len.brown@intel.com, torvalds@linux-foundation.org, bp@alien8.de,
-	  luto@kernel.org, peterz@infradead.org, logang@deltatee.com,
-	  bhe@redhat.com, sds@tycho.nsa.gov
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH] power: qcom_smbb: Make an extcon for usb cable detection
+Date: Sun, 26 Jun 2016 20:17:53 +0900
+Message-ID: <CAGTfZH2+rpy-WTmSuxAALEUQGpXN7KvwHpThpk-WYh=Ye1vwNg@mail.gmail.com>
+References: <20160626055437.18516-1-stephen.boyd@linaro.org>
+Reply-To: cw00.choi@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160613221002.GA29719@www.outflux.net>
-Content-Disposition: inline
+In-Reply-To: <20160626055437.18516-1-stephen.boyd@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-tip-commits@vger.kernel.org
-Cc: pavel@ucw.cz, linux-pm@vger.kernel.org, yinghai@kernel.org, mingo@kernel.org, linux-kernel@vger.kernel.org, tglx@linutronix.de, corbet@lwn.net, dvlasenk@redhat.com, sds@tycho.nsa.gov, peterz@infradead.org, logang@deltatee.com, bhe@redhat.com, torvalds@linux-foundation.org, bp@alien8.de, luto@kernel.org, keescook@chromium.org, hpa@zytor.com, brgerst@gmail.com, len.brown@intel.com
+To: Stephen Boyd <stephen.boyd@linaro.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-arm-msm@vger.kernel.org, Bjorn Andersson <bjorn.andersson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Commit-ID:  65fe935dd2387a4faf15314c73f5e6d31ef0217e
-Gitweb:     http://git.kernel.org/tip/65fe935dd2387a4faf15314c73f5e6d31ef0217e
-Author:     Kees Cook <keescook@chromium.org>
-AuthorDate: Mon, 13 Jun 2016 15:10:02 -0700
-Committer:  Ingo Molnar <mingo@kernel.org>
-CommitDate: Sun, 26 Jun 2016 12:32:03 +0200
+Hi,
 
-x86/KASLR, x86/power: Remove x86 hibernation restrictions
+Looks good to me.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-With the following fix:
+Thanks,
+Chanwoo Choi
 
-  70595b479ce1 ("x86/power/64: Fix crash whan the hibernation code passes control to the image kernel")
-
-... there is no longer a problem with hibernation resuming a
-KASLR-booted kernel image, so remove the restriction.
-
-Signed-off-by: Kees Cook <keescook@chromium.org>
-Cc: Andy Lutomirski <luto@kernel.org>
-Cc: Baoquan He <bhe@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Brian Gerst <brgerst@gmail.com>
-Cc: Denys Vlasenko <dvlasenk@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Logan Gunthorpe <logang@deltatee.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: linux-doc@vger.kernel.org
-Link: http://lkml.kernel.org/r/20160613221002.GA29719@www.outflux.net
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
----
- Documentation/kernel-parameters.txt | 10 ++++------
- arch/x86/boot/compressed/kaslr.c    |  7 -------
- kernel/power/hibernate.c            |  6 ------
- 3 files changed, 4 insertions(+), 19 deletions(-)
-
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 82b42c9..fa8c6d4 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1803,12 +1803,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 	js=		[HW,JOY] Analog joystick
- 			See Documentation/input/joystick.txt.
- 
--	kaslr/nokaslr	[X86]
--			Enable/disable kernel and module base offset ASLR
--			(Address Space Layout Randomization) if built into
--			the kernel. When CONFIG_HIBERNATION is selected,
--			kASLR is disabled by default. When kASLR is enabled,
--			hibernation will be disabled.
-+	nokaslr		[KNL]
-+			When CONFIG_RANDOMIZE_BASE is set, this disables
-+			kernel and module base offset ASLR (Address Space
-+			Layout Randomization).
- 
- 	keepinitrd	[HW,ARM]
- 
-diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
-index cfeb025..dff4217 100644
---- a/arch/x86/boot/compressed/kaslr.c
-+++ b/arch/x86/boot/compressed/kaslr.c
-@@ -471,17 +471,10 @@ unsigned char *choose_random_location(unsigned long input,
- 	unsigned long choice = output;
- 	unsigned long random_addr;
- 
--#ifdef CONFIG_HIBERNATION
--	if (!cmdline_find_option_bool("kaslr")) {
--		warn("KASLR disabled: 'kaslr' not on cmdline (hibernation selected).");
--		goto out;
--	}
--#else
- 	if (cmdline_find_option_bool("nokaslr")) {
- 		warn("KASLR disabled: 'nokaslr' on cmdline.");
- 		goto out;
- 	}
--#endif
- 
- 	boot_params->hdr.loadflags |= KASLR_FLAG;
- 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index fca9254..9021387 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -1154,11 +1154,6 @@ static int __init nohibernate_setup(char *str)
- 	return 1;
- }
- 
--static int __init kaslr_nohibernate_setup(char *str)
--{
--	return nohibernate_setup(str);
--}
--
- static int __init page_poison_nohibernate_setup(char *str)
- {
- #ifdef CONFIG_PAGE_POISONING_ZERO
-@@ -1182,5 +1177,4 @@ __setup("hibernate=", hibernate_setup);
- __setup("resumewait", resumewait_setup);
- __setup("resumedelay=", resumedelay_setup);
- __setup("nohibernate", nohibernate_setup);
--__setup("kaslr", kaslr_nohibernate_setup);
- __setup("page_poison=", page_poison_nohibernate_setup);
+2016-06-26 14:54 GMT+09:00 Stephen Boyd <stephen.boyd@linaro.org>:
+> On these PMICs the usb cable connection/disconnection is
+> indicated by the usb-valid interrupt being high or low
+> respectively. Let's make an extcon for that, so we can notify usb
+> drivers of the cable state.
+>
+> Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
+> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+> Signed-off-by: Stephen Boyd <stephen.boyd@linaro.org>
+> ---
+>  drivers/power/qcom_smbb.c | 21 +++++++++++++++++++++
+>  1 file changed, 21 insertions(+)
+>
+> diff --git a/drivers/power/qcom_smbb.c b/drivers/power/qcom_smbb.c
+> index 5eb1e9e543e2..b5896ba2a602 100644
+> --- a/drivers/power/qcom_smbb.c
+> +++ b/drivers/power/qcom_smbb.c
+> @@ -34,6 +34,7 @@
+>  #include <linux/power_supply.h>
+>  #include <linux/regmap.h>
+>  #include <linux/slab.h>
+> +#include <linux/extcon.h>
+>
+>  #define SMBB_CHG_VMAX          0x040
+>  #define SMBB_CHG_VSAFE         0x041
+> @@ -111,6 +112,7 @@ struct smbb_charger {
+>         unsigned int revision;
+>         unsigned int addr;
+>         struct device *dev;
+> +       struct extcon_dev *edev;
+>
+>         bool dc_disabled;
+>         bool jeita_ext_temp;
+> @@ -125,6 +127,11 @@ struct smbb_charger {
+>         struct regmap *regmap;
+>  };
+>
+> +static const unsigned int smbb_usb_extcon_cable[] = {
+> +       EXTCON_USB,
+> +       EXTCON_NONE,
+> +};
+> +
+>  static int smbb_vbat_weak_fn(unsigned int index)
+>  {
+>         return 2100000 + index * 100000;
+> @@ -371,6 +378,8 @@ static irqreturn_t smbb_usb_valid_handler(int irq, void *_data)
+>         struct smbb_charger *chg = _data;
+>
+>         smbb_set_line_flag(chg, irq, STATUS_USBIN_VALID);
+> +       extcon_set_cable_state_(chg->edev, EXTCON_USB,
+> +                               chg->status & STATUS_USBIN_VALID);
+>         power_supply_changed(chg->usb_psy);
+>
+>         return IRQ_HANDLED;
+> @@ -849,6 +858,18 @@ static int smbb_charger_probe(struct platform_device *pdev)
+>                 return PTR_ERR(chg->usb_psy);
+>         }
+>
+> +       chg->edev = devm_extcon_dev_allocate(&pdev->dev, smbb_usb_extcon_cable);
+> +       if (IS_ERR(chg->edev)) {
+> +               dev_err(&pdev->dev, "failed to allocate extcon device\n");
+> +               return -ENOMEM;
+> +       }
+> +
+> +       rc = devm_extcon_dev_register(&pdev->dev, chg->edev);
+> +       if (rc < 0) {
+> +               dev_err(&pdev->dev, "failed to register extcon device\n");
+> +               return rc;
+> +       }
+> +
+>         if (!chg->dc_disabled) {
+>                 dc_cfg.drv_data = chg;
+>                 dc_cfg.supplied_to = smbb_bif;
+> --
+> 2.9.0.rc2.8.ga28705d
+>
