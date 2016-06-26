@@ -1,100 +1,131 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 1/2] cpufreq: Handle sorted frequency tables more
- efficiently
-Date: Sun, 26 Jun 2016 16:08:40 +0530
-Message-ID: <20160626103840.GA32206@ubuntu>
-References: <cover.1465295033.git.viresh.kumar@linaro.org>
- <c80f4bf69bd4eb739038cb0f91392fad9cfde59f.1465295033.git.viresh.kumar@linaro.org>
- <15131722.y1kqigY9Ad@vostro.rjw.lan>
+From: tip-bot for Kees Cook <tipbot@zytor.com>
+Subject: [tip:x86/boot] x86/KASLR, x86/power: Remove x86 hibernation
+ restrictions
+Date: Sun, 26 Jun 2016 04:01:18 -0700
+Message-ID: <tip-65fe935dd2387a4faf15314c73f5e6d31ef0217e@git.kernel.org>
+References: <20160613221002.GA29719@www.outflux.net>
+Reply-To: dvlasenk@redhat.com, linux-kernel@vger.kernel.org,
+	  mingo@kernel.org, tglx@linutronix.de, corbet@lwn.net,
+	  yinghai@kernel.org, pavel@ucw.cz, linux-pm@vger.kernel.org,
+	  keescook@chromium.org, hpa@zytor.com, brgerst@gmail.com,
+	  len.brown@intel.com, torvalds@linux-foundation.org, bp@alien8.de,
+	  luto@kernel.org, peterz@infradead.org, logang@deltatee.com,
+	  bhe@redhat.com, sds@tycho.nsa.gov
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160613221002.GA29719@www.outflux.net>
 Content-Disposition: inline
-In-Reply-To: <15131722.y1kqigY9Ad@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org
+To: linux-tip-commits@vger.kernel.org
+Cc: pavel@ucw.cz, linux-pm@vger.kernel.org, yinghai@kernel.org, mingo@kernel.org, linux-kernel@vger.kernel.org, tglx@linutronix.de, corbet@lwn.net, dvlasenk@redhat.com, sds@tycho.nsa.gov, peterz@infradead.org, logang@deltatee.com, bhe@redhat.com, torvalds@linux-foundation.org, bp@alien8.de, luto@kernel.org, keescook@chromium.org, hpa@zytor.com, brgerst@gmail.com, len.brown@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+Commit-ID:  65fe935dd2387a4faf15314c73f5e6d31ef0217e
+Gitweb:     http://git.kernel.org/tip/65fe935dd2387a4faf15314c73f5e6d31ef0217e
+Author:     Kees Cook <keescook@chromium.org>
+AuthorDate: Mon, 13 Jun 2016 15:10:02 -0700
+Committer:  Ingo Molnar <mingo@kernel.org>
+CommitDate: Sun, 26 Jun 2016 12:32:03 +0200
 
-Thanks for having a look at this..
+x86/KASLR, x86/power: Remove x86 hibernation restrictions
 
-On 23-06-16, 02:28, Rafael J. Wysocki wrote:
-> On Tuesday, June 07, 2016 03:55:14 PM Viresh Kumar wrote:
-> > +/* Find lowest freq at or above target in a table in ascending order */
-> > +static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
-> > +					      unsigned int target_freq)
-> > +{
-> > +	struct cpufreq_frequency_table *table = policy->freq_table;
-> > +	unsigned int freq;
-> > +	int i, best = -1;
-> > +
-> > +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> > +		freq = table[i].frequency;
-> > +
-> > +		if (freq_is_invalid(policy, freq))
-> > +			continue;
-> > +
-> > +		if (freq >= target_freq)
-> > +			return i;
-> > +
-> > +		best = i;
-> > +	}
-> > +
-> > +	if (best == -1) {
-> > +		WARN(1, "Invalid frequency table: %d\n", policy->cpu);
-> 
-> After a successful cpufreq_table_validate_and_show() that should be impossible,
-> shouldn't it?
+With the following fix:
 
-This shouldn't be possible unless cpufreq_table_validate_and_show() has a bug,
-or somehow that routine isn't called.
+  70595b479ce1 ("x86/power/64: Fix crash whan the hibernation code passes control to the image kernel")
 
-Though, to catch such bugs, what about WARN_ON(best == -1); ? The WARN() will
-have an unlikely() statement as well to optimize it and we can catch the bugs as
-well.
+... there is no longer a problem with hibernation resuming a
+KASLR-booted kernel image, so remove the restriction.
 
-Or if you think we should just remove them..
+Signed-off-by: Kees Cook <keescook@chromium.org>
+Cc: Andy Lutomirski <luto@kernel.org>
+Cc: Baoquan He <bhe@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Brian Gerst <brgerst@gmail.com>
+Cc: Denys Vlasenko <dvlasenk@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Logan Gunthorpe <logang@deltatee.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Yinghai Lu <yinghai@kernel.org>
+Cc: linux-doc@vger.kernel.org
+Link: http://lkml.kernel.org/r/20160613221002.GA29719@www.outflux.net
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+---
+ Documentation/kernel-parameters.txt | 10 ++++------
+ arch/x86/boot/compressed/kaslr.c    |  7 -------
+ kernel/power/hibernate.c            |  6 ------
+ 3 files changed, 4 insertions(+), 19 deletions(-)
 
-> > +/* Find highest freq at or below target in a table in descending order */
-> > +static inline int cpufreq_table_find_index_dh(struct cpufreq_policy *policy,
-> > +					      unsigned int target_freq)
-> > +{
-> > +	struct cpufreq_frequency_table *table = policy->freq_table;
-> > +	unsigned int freq;
-> > +	int i, best = -1;
-> > +
-> > +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> > +		freq = table[i].frequency;
-> > +
-> > +		if (freq_is_invalid(policy, freq))
-> > +			continue;
-> > +
-> > +		if (freq <= target_freq)
-> > +			return i;
-> > +
-> > +		best = i;
-> > +	}
-> > +
-> > +	if (best == -1) {
-> > +		WARN(1, "Invalid frequency table: %d\n", policy->cpu);
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	return best;
-> > +}
-> 
-> I still don't see a reason for min/max checking in these routines.
-> 
-> So what is the reason?
-
-These routines are all part of the existing API cpufreq_frequency_table_target()
-and that always had these checks. Over that, not all of its callers are ensuring
-that the target-freq is clamped before this routine is called. And so we need to
-make sure that these routines return a frequency between min/max only.
-
-What do you say ?
-
--- 
-viresh
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 82b42c9..fa8c6d4 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1803,12 +1803,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 	js=		[HW,JOY] Analog joystick
+ 			See Documentation/input/joystick.txt.
+ 
+-	kaslr/nokaslr	[X86]
+-			Enable/disable kernel and module base offset ASLR
+-			(Address Space Layout Randomization) if built into
+-			the kernel. When CONFIG_HIBERNATION is selected,
+-			kASLR is disabled by default. When kASLR is enabled,
+-			hibernation will be disabled.
++	nokaslr		[KNL]
++			When CONFIG_RANDOMIZE_BASE is set, this disables
++			kernel and module base offset ASLR (Address Space
++			Layout Randomization).
+ 
+ 	keepinitrd	[HW,ARM]
+ 
+diff --git a/arch/x86/boot/compressed/kaslr.c b/arch/x86/boot/compressed/kaslr.c
+index cfeb025..dff4217 100644
+--- a/arch/x86/boot/compressed/kaslr.c
++++ b/arch/x86/boot/compressed/kaslr.c
+@@ -471,17 +471,10 @@ unsigned char *choose_random_location(unsigned long input,
+ 	unsigned long choice = output;
+ 	unsigned long random_addr;
+ 
+-#ifdef CONFIG_HIBERNATION
+-	if (!cmdline_find_option_bool("kaslr")) {
+-		warn("KASLR disabled: 'kaslr' not on cmdline (hibernation selected).");
+-		goto out;
+-	}
+-#else
+ 	if (cmdline_find_option_bool("nokaslr")) {
+ 		warn("KASLR disabled: 'nokaslr' on cmdline.");
+ 		goto out;
+ 	}
+-#endif
+ 
+ 	boot_params->hdr.loadflags |= KASLR_FLAG;
+ 
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index fca9254..9021387 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -1154,11 +1154,6 @@ static int __init nohibernate_setup(char *str)
+ 	return 1;
+ }
+ 
+-static int __init kaslr_nohibernate_setup(char *str)
+-{
+-	return nohibernate_setup(str);
+-}
+-
+ static int __init page_poison_nohibernate_setup(char *str)
+ {
+ #ifdef CONFIG_PAGE_POISONING_ZERO
+@@ -1182,5 +1177,4 @@ __setup("hibernate=", hibernate_setup);
+ __setup("resumewait", resumewait_setup);
+ __setup("resumedelay=", resumedelay_setup);
+ __setup("nohibernate", nohibernate_setup);
+-__setup("kaslr", kaslr_nohibernate_setup);
+ __setup("page_poison=", page_poison_nohibernate_setup);
