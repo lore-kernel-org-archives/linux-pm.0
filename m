@@ -1,80 +1,50 @@
-From: Keerthy <a0393675@ti.com>
-Subject: Re: [PATCH] thermal: of-thermal: Fix setting of set_emul_temp hook
-Date: Mon, 27 Jun 2016 11:48:03 +0530
-Message-ID: <5770C51B.30505@ti.com>
-References: <1464857690-23330-1-git-send-email-j-keerthy@ti.com>
- <575A5DD0.4080208@ti.com>
+From: Peter Rosin <peda@axentia.se>
+Subject: Re: [PATCH 1/2] Documentation: Add sbs-manager device tree node
+ documentation
+Date: Mon, 27 Jun 2016 00:35:17 +0200
+Message-ID: <83b7648c-43d6-7a32-29bb-65f2606399fd@axentia.se>
+References: <1466622436-27963-1-git-send-email-karl-heinz@schneider-inet.de>
+ <1466622436-27963-2-git-send-email-karl-heinz@schneider-inet.de>
+ <20160624175014.GA29990@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([198.47.19.11]:52271 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750870AbcF0GSJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Jun 2016 02:18:09 -0400
-In-Reply-To: <575A5DD0.4080208@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20160624175014.GA29990@rob-hp-laptop>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>, Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com, rui.zhang@intel.com
-Cc: nm@ti.com, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
+On 2016-06-24 19:50, Rob Herring wrote:
+> On Wed, Jun 22, 2016 at 09:07:15PM +0200, Karl-Heinz Schneider wrote:
+>> This patch adds device tree documentation for the sbs-manager
 
+*snip*
 
-On Friday 10 June 2016 11:57 AM, Keerthy wrote:
->
->
-> On Thursday 02 June 2016 02:24 PM, Keerthy wrote:
->> Currently thermal zone set_emul_temp is set unconditionally
->> with of_thermal_set_emul_temp function. Set this only if the
->> set_emul_temp hook is provided for thermal_zone_of_device_ops.
->>
->> This fixes emul_temp failures on platforms for which set_emul_temp
->> hook is not populated.
->
-> Eduardo,
->
-> A gentle ping on this patch.
-
-Eduardo,
-
-Another gentle ping.
-
-
->
->
->>
->> Fixes: "184a4bf623f (thermal: of: Extend current
->>     of-thermal.c code to allow setting emulated temp)"
->> Suggested-by: Eduardo Valentin <edubezval@gmail.com>
->> Signed-off-by: Keerthy <j-keerthy@ti.com>
->> ---
->>   drivers/thermal/of-thermal.c | 7 +++----
->>   1 file changed, 3 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->> index b8e509c..93d8ce0 100644
->> --- a/drivers/thermal/of-thermal.c
->> +++ b/drivers/thermal/of-thermal.c
->> @@ -181,9 +181,6 @@ static int of_thermal_set_emul_temp(struct
->> thermal_zone_device *tz,
->>   {
->>       struct __thermal_zone *data = tz->devdata;
->>
->> -    if (!data->ops || !data->ops->set_emul_temp)
->> -        return -EINVAL;
->> -
->>       return data->ops->set_emul_temp(data->sensor_data, temp);
->>   }
->>
->> @@ -427,7 +424,9 @@ thermal_zone_of_add_sensor(struct device_node *zone,
->>
->>       tzd->ops->get_temp = of_thermal_get_temp;
->>       tzd->ops->get_trend = of_thermal_get_trend;
->> -    tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
->> +    if (ops->set_emul_temp)
->> +        tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
 >> +
->>       mutex_unlock(&tzd->lock);
->>
->>       return tzd;
->>
+>> +From OS view the device is basically an i2c-mux used to communicate with up to
+>> +four smart battery devices at address 0xb. The driver actually implements this
+>> +behaviour. So standard i2c-mux nodes can be used to register up to four slave
+>> +batteries. Channels will be numerated as 1, 2, 4 and 8.
+>> +
+>> +Example:
+>> +
+>> +batman@0a {
+>> +    compatible = "sbs,sbs-manager";
+>> +    reg = <0x0a>;
+>> +    sbsm,i2c-retry-count = <3>;
+>> +    #address-cells = <1>;
+>> +    #size-cells = <0>;
+>> +
+>> +    channel1@1 {
+> 
+> channel@1
+> 
+> Do we have a standard node name for mux nodes? If not, we should.
+
+No name is enforced by the i2c mux support code, but I think "i2c"
+dominates, and quite possibly it is the only documented name?
+
+Cheers,
+Peter
