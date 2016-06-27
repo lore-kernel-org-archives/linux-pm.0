@@ -1,46 +1,120 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH] thermal: hisilicon: Add dependency on the clock driver to
- allow frequency scaling
-Date: Sun, 26 Jun 2016 22:02:25 +0530
-Message-ID: <CAHLCerPjDdQToVnkh6q=xq4=BWjV-tnX3=599yudfVwf_XBnPQ@mail.gmail.com>
-References: <32d418f24a4da44ad4ca5b2b1276ffcea2aa7d6c.1466424352.git.amit.kucheria@linaro.org>
- <f6bbd7ddf978001aa0f1c6fb8fc454a30241d0a8.1466424352.git.amit.kucheria@linaro.org>
- <20160620131616.GA400@leoy-linaro>
+From: Jisheng Zhang <jszhang@marvell.com>
+Subject: Re: regression caused by bb6ab52f2bef ("intel_pstate: Do not set
+ utilization update hook too early")
+Date: Mon, 27 Jun 2016 14:08:58 +0800
+Message-ID: <20160627140858.0c7686f0@xhacker>
+References: <20160617163023.5bb374f8@xhacker>
+	<393b63b7caa7474a97baf248c4891b72@SC-EXCH02.marvell.com>
+	<24e20dd7b2b047a19515ff52ad105c37@SC-EXCH02.marvell.com>
+	<2958182.eDEME9b2CX@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160620131616.GA400@leoy-linaro>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>, xuwei5@hisilicon.com
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Zhang Rui <rui.zhang@intel.com>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:59220 "EHLO
+	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751644AbcF0GNH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 02:13:07 -0400
+In-Reply-To: <2958182.eDEME9b2CX@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
 
-On Mon, Jun 20, 2016 at 6:46 PM, Leo Yan <leo.yan@linaro.org> wrote:
-> Hi Amit,
->
-> On Mon, Jun 20, 2016 at 05:46:36PM +0530, Amit Kucheria wrote:
->> The Hisilicon clock stub driver is needed to allow the thermal drivers to
->> actually scale the frequency. Make it an automatic dependency.
->>
->> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
->> ---
->>  drivers/thermal/Kconfig | 1 +
->>  1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index 22ae1f7..4e843f7 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -178,6 +178,7 @@ config THERMAL_EMULATION
->>  config HISI_THERMAL
->>       tristate "Hisilicon thermal driver"
->>       depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
->> +     select STUB_CLK_HI6220
->
-> Acked-by: Leo Yan <leo.yan@linaro.org>
+Dear Rafael,
 
-Thanks Leo. Eduardo, will you take this through your tree or should
-Wei include this in his tree?
+On Sat, 25 Jun 2016 02:14:28 +0200 "Rafael J. Wysocki" wrote:
 
-Regards,
-Amit
+> On Friday, June 17, 2016 04:09:33 PM Jisheng Zhang wrote:
+> > Dear all,
+> > 
+> > If using acpi-cpufreq instead, v4.6, v4.6-rc3, v4.7-rc3 can't reproduce the issue. It seems
+> > only intel_pstate is impacted.  
+> 
+> Which is quite obvious, since the commit your bisection led to was
+> intel_pstate-specific. :-)
+> 
+> If the issue is what I'm thinking it is, the patch below should help, so
+> can you please test it?
+> 
+> Thanks,
+> Rafael
+> 
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH] intel_pstate: Do not clear utilization update hooks on policy changes
+> 
+> intel_pstate_set_policy() is invoked by the cpufreq core during
+> driver initialization, on changes of policy attributes (minimim and
+> maximum frequency, for example) via sysfs and via CPU notifications
+> from the platform firmware.  On some platforms the latter may occur
+> relatively often.
+> 
+> Commit bb6ab52f2bef (intel_pstate: Do not set utilization update hook
+> too early) made intel_pstate_set_policy() clear the CPU's utilization
+> update hook before updating the policy attributes for it (and set the
+> hook again after doind that), but that involves invoking
+> synchronize_sched() and adds overhead to the CPU notifications
+> mentioned above and to the sched-RCU handling in general.
+> 
+> That extra overhead is arguably not necessary, because updating
+> policy attributes when the CPU's utilization update hook is active
+> should not lead to any adverse effects, so drop the clearing of
+> the hook from intel_pstate_set_policy() and make it check if
+> the hook has been set already when attempting to set it.
+
+This patch works! 
+
+on a 32 snb cores server:
+
+80 wakeups/s w/o the patch
+
+7 wakeups/s w/ the patch
+
+
+on a 4 snb cores laptop:
+
+22 wakeups/s w/o the patch
+
+6 wakeups/s w/ the patch
+
+Thank you so much for fixing it ;)
+
+> 
+> Fixes: bb6ab52f2bef (intel_pstate: Do not set utilization update hook too early)
+> Reported-by: Jisheng Zhang <jszhang@marvell.com>
+
+So feel free to add
+
+Tested-by: Jisheng Zhang <jszhang@marvell.com>
+
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c |    5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -1440,6 +1440,9 @@ static void intel_pstate_set_update_util
+>  {
+>  	struct cpudata *cpu = all_cpu_data[cpu_num];
+>  
+> +	if (cpu->update_util_set)
+> +		return;
+> +
+>  	/* Prevent intel_pstate_update_util() from using stale data. */
+>  	cpu->sample.time = 0;
+>  	cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
+> @@ -1480,8 +1483,6 @@ static int intel_pstate_set_policy(struc
+>  	if (!policy->cpuinfo.max_freq)
+>  		return -ENODEV;
+>  
+> -	intel_pstate_clear_update_util_hook(policy->cpu);
+> -
+>  	pr_debug("set_policy cpuinfo.max %u policy->max %u\n",
+>  		 policy->cpuinfo.max_freq, policy->max);
+>  
+> 
+
