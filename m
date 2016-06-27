@@ -1,118 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5 2/2] cpufreq: Reuse new freq-table helpers
-Date: Mon, 27 Jun 2016 09:59:34 +0530
-Message-ID: <29326603f17249f7636fc4ada43b96ad455fecbb.1467001203.git.viresh.kumar@linaro.org>
-References: <cover.1467001203.git.viresh.kumar@linaro.org>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: [PATCH] cpufreq: dt: call of_node_put() before error out
+Date: Mon, 27 Jun 2016 14:50:13 +0900
+Message-ID: <1467006613-24076-1-git-send-email-yamada.masahiro@socionext.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1467001203.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1467001203.git.viresh.kumar@linaro.org>
-References: <cover.1467001203.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org, linuxppc-dev@lists.ozlabs.org
+To: linux-pm@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch migrates few users of cpufreq tables to the new helpers that
-work on sorted freq-tables.
+If of_match_node() fails, this init function bails out without
+calling of_node_put().
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+I also changed of_node_put(of_root) to of_node_put(np); both of them
+hold the same pointer, but it seems better to call of_node_put()
+against the node returned by of_find_node_by_path().
+
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
- drivers/cpufreq/acpi-cpufreq.c         | 14 ++++----------
- drivers/cpufreq/amd_freq_sensitivity.c |  4 ++--
- drivers/cpufreq/cpufreq_ondemand.c     |  6 ++----
- drivers/cpufreq/powernv-cpufreq.c      |  3 +--
- drivers/cpufreq/s5pv210-cpufreq.c      |  3 +--
- 5 files changed, 10 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 32a15052f363..11c9a078e0fd 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -468,20 +468,14 @@ unsigned int acpi_cpufreq_fast_switch(struct cpufreq_policy *policy,
- 	struct acpi_cpufreq_data *data = policy->driver_data;
- 	struct acpi_processor_performance *perf;
- 	struct cpufreq_frequency_table *entry;
--	unsigned int next_perf_state, next_freq, freq;
-+	unsigned int next_perf_state, next_freq, index;
+ drivers/cpufreq/cpufreq-dt-platdev.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 3646b14..0bb44d5 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -79,15 +79,16 @@ static const struct of_device_id machines[] __initconst = {
+ static int __init cpufreq_dt_platdev_init(void)
+ {
+ 	struct device_node *np = of_find_node_by_path("/");
++	const struct of_device_id *match;
  
- 	/*
- 	 * Find the closest frequency above target_freq.
--	 *
--	 * The table is sorted in the reverse order with respect to the
--	 * frequency and all of the entries are valid (see the initialization).
- 	 */
--	entry = policy->freq_table;
--	do {
--		entry++;
--		freq = entry->frequency;
--	} while (freq >= target_freq && freq != CPUFREQ_TABLE_END);
--	entry--;
-+	index = cpufreq_table_find_index_dl(policy, target_freq);
-+
-+	entry = &policy->freq_table[index];
- 	next_freq = entry->frequency;
- 	next_perf_state = entry->driver_data;
+ 	if (!np)
+ 		return -ENODEV;
  
-diff --git a/drivers/cpufreq/amd_freq_sensitivity.c b/drivers/cpufreq/amd_freq_sensitivity.c
-index 6d5dc04c3a37..042023bbbf62 100644
---- a/drivers/cpufreq/amd_freq_sensitivity.c
-+++ b/drivers/cpufreq/amd_freq_sensitivity.c
-@@ -91,8 +91,8 @@ static unsigned int amd_powersave_bias_target(struct cpufreq_policy *policy,
- 		else {
- 			unsigned int index;
+-	if (!of_match_node(machines, np))
++	match = of_match_node(machines, np);
++	of_node_put(np);
++	if (!match)
+ 		return -ENODEV;
  
--			index = cpufreq_frequency_table_target(policy,
--				policy->cur - 1, CPUFREQ_RELATION_H);
-+			index = cpufreq_table_find_index_h(policy,
-+							   policy->cur - 1);
- 			freq_next = policy->freq_table[index].frequency;
- 		}
- 
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 0c93cd9dee99..3a1f49f5f4c6 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -85,11 +85,9 @@ static unsigned int generic_powersave_bias_target(struct cpufreq_policy *policy,
- 	freq_avg = freq_req - freq_reduc;
- 
- 	/* Find freq bounds for freq_avg in freq_table */
--	index = cpufreq_frequency_table_target(policy, freq_avg,
--					       CPUFREQ_RELATION_H);
-+	index = cpufreq_table_find_index_h(policy, freq_avg);
- 	freq_lo = freq_table[index].frequency;
--	index = cpufreq_frequency_table_target(policy, freq_avg,
--					       CPUFREQ_RELATION_L);
-+	index = cpufreq_table_find_index_l(policy, freq_avg);
- 	freq_hi = freq_table[index].frequency;
- 
- 	/* Find out how long we have to be in hi and lo freqs */
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index b29c5c20c3a1..2a2920c4fdf9 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -760,8 +760,7 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
- 		struct cpufreq_policy policy;
- 
- 		cpufreq_get_policy(&policy, cpu);
--		index = cpufreq_frequency_table_target(&policy, policy.cur,
--					       CPUFREQ_RELATION_C);
-+		index = cpufreq_table_find_index_c(&policy, policy.cur);
- 		powernv_cpufreq_target_index(&policy, index);
- 		cpumask_andnot(&mask, &mask, policy.cpus);
- 	}
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index 4f4e9df9b7fc..9e07588ea9f5 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -246,8 +246,7 @@ static int s5pv210_target(struct cpufreq_policy *policy, unsigned int index)
- 	new_freq = s5pv210_freq_table[index].frequency;
- 
- 	/* Finding current running level index */
--	priv_index = cpufreq_frequency_table_target(policy, old_freq,
--						    CPUFREQ_RELATION_H);
-+	priv_index = cpufreq_table_find_index_h(policy, old_freq);
- 
- 	arm_volt = dvs_conf[index].arm_volt;
- 	int_volt = dvs_conf[index].int_volt;
+-	of_node_put(of_root);
+-
+ 	return PTR_ERR_OR_ZERO(platform_device_register_simple("cpufreq-dt", -1,
+ 							       NULL, 0));
+ }
 -- 
-2.7.4
+1.9.1
