@@ -1,124 +1,107 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V4 1/2] cpufreq: Handle sorted frequency tables more efficiently
-Date: Mon, 27 Jun 2016 02:28:39 +0200
-Message-ID: <CAJZ5v0jOH1k=FaAHaCLHnp=9MKjUM0v6WJ-HSUFHTy_dsL_KRg@mail.gmail.com>
-References: <cover.1465295033.git.viresh.kumar@linaro.org> <c80f4bf69bd4eb739038cb0f91392fad9cfde59f.1465295033.git.viresh.kumar@linaro.org>
- <15131722.y1kqigY9Ad@vostro.rjw.lan> <20160626103840.GA32206@ubuntu>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: powernv: Replacing pstate_id with frequency
+ table index
+Date: Mon, 27 Jun 2016 12:00:34 +0530
+Message-ID: <20160627063034.GA3341@vireshk-i7>
+References: <1466776987-19031-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f48.google.com ([74.125.82.48]:36278 "EHLO
-	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751555AbcF0A2l (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 26 Jun 2016 20:28:41 -0400
-In-Reply-To: <20160626103840.GA32206@ubuntu>
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:33688 "EHLO
+	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751510AbcF0Gai (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 02:30:38 -0400
+Received: by mail-pf0-f179.google.com with SMTP id i123so58741479pfg.0
+        for <linux-pm@vger.kernel.org>; Sun, 26 Jun 2016 23:30:37 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1466776987-19031-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com
 
-On Sun, Jun 26, 2016 at 12:38 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Hi Rafael,
->
-> Thanks for having a look at this..
->
-> On 23-06-16, 02:28, Rafael J. Wysocki wrote:
->> On Tuesday, June 07, 2016 03:55:14 PM Viresh Kumar wrote:
->> > +/* Find lowest freq at or above target in a table in ascending order */
->> > +static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
->> > +                                         unsigned int target_freq)
->> > +{
->> > +   struct cpufreq_frequency_table *table = policy->freq_table;
->> > +   unsigned int freq;
->> > +   int i, best = -1;
->> > +
->> > +   for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
->> > +           freq = table[i].frequency;
->> > +
->> > +           if (freq_is_invalid(policy, freq))
->> > +                   continue;
->> > +
->> > +           if (freq >= target_freq)
->> > +                   return i;
->> > +
->> > +           best = i;
->> > +   }
->> > +
->> > +   if (best == -1) {
->> > +           WARN(1, "Invalid frequency table: %d\n", policy->cpu);
->>
->> After a successful cpufreq_table_validate_and_show() that should be impossible,
->> shouldn't it?
->
-> This shouldn't be possible unless cpufreq_table_validate_and_show() has a bug,
-> or somehow that routine isn't called.
+Hi Akshay,
 
-If it isn't called, the information on whether or not the table is
-sorted may very well be bogus.
+Did you try running checkpatch for this?
 
-And it can double check the table right away to catch possible bugs
-instead of running an additional if () every time a frequency is
-selected.
+On 24-06-16, 19:33, Akshay Adiga wrote:
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index b29c5c2..f6ce6f0 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -43,6 +43,7 @@
+>  #define PMSR_SPR_EM_DISABLE	(1UL << 31)
+>  #define PMSR_MAX(x)		((x >> 32) & 0xFF)
+>  
+> +
 
-> Though, to catch such bugs, what about WARN_ON(best == -1); ? The WARN() will
-> have an unlikely() statement as well to optimize it and we can catch the bugs as
-> well.
->
-> Or if you think we should just remove them..
+?
 
-I would just drop those checks or do them once upfront.
+>  #define MAX_RAMP_DOWN_TIME				5120
+>  /*
+>   * On an idle system we want the global pstate to ramp-down from max value to
+> @@ -124,20 +125,29 @@ static int nr_chips;
+>  static DEFINE_PER_CPU(struct chip *, chip_info);
+>  
+>  /*
+> - * Note: The set of pstates consists of contiguous integers, the
+> - * smallest of which is indicated by powernv_pstate_info.min, the
+> - * largest of which is indicated by powernv_pstate_info.max.
+> + * Note: The set of pstates consists of contiguous integers,
+> + *
+> + * powernv_pstate_info stores the index of the frequency table
+> + *  instead of pstate itself for each of the pstates referred
+>   *
+>   * The nominal pstate is the highest non-turbo pstate in this
+>   * platform. This is indicated by powernv_pstate_info.nominal.
+>   */
+>  static struct powernv_pstate_info {
+> -	int min;
+> -	int max;
+> -	int nominal;
+> -	int nr_pstates;
+> +	unsigned int min;
+> +	unsigned int max;
+> +	unsigned int nominal;
+> +	unsigned int nr_pstates;
+>  } powernv_pstate_info;
+>  
+> +/* Use following macros for conversions between pstate_id and index */
+> +static inline int get_pstate(unsigned int i) {
 
->> > +/* Find highest freq at or below target in a table in descending order */
->> > +static inline int cpufreq_table_find_index_dh(struct cpufreq_policy *policy,
->> > +                                         unsigned int target_freq)
->> > +{
->> > +   struct cpufreq_frequency_table *table = policy->freq_table;
->> > +   unsigned int freq;
->> > +   int i, best = -1;
->> > +
->> > +   for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
->> > +           freq = table[i].frequency;
->> > +
->> > +           if (freq_is_invalid(policy, freq))
->> > +                   continue;
->> > +
->> > +           if (freq <= target_freq)
->> > +                   return i;
->> > +
->> > +           best = i;
->> > +   }
->> > +
->> > +   if (best == -1) {
->> > +           WARN(1, "Invalid frequency table: %d\n", policy->cpu);
->> > +           return -EINVAL;
->> > +   }
->> > +
->> > +   return best;
->> > +}
->>
->> I still don't see a reason for min/max checking in these routines.
->>
->> So what is the reason?
->
-> These routines are all part of the existing API cpufreq_frequency_table_target()
-> and that always had these checks.
+Read coding-styles please on how to write functions.
 
-Well, that's one of the reasons I've actively avoided that stuff in
-the acpi-cpufreq's fast switch callback. :-)
+> +	return powernv_freqs[i].driver_data;
+> +}
 
-> Over that, not all of its callers are ensuring
-> that the target-freq is clamped before this routine is called. And so we need to
-> make sure that these routines return a frequency between min/max only.
->
-> What do you say ?
+Add a blank line here please.
 
-I think that the min/max checks at that level are just bogus, because
-they are racy and that may lead to a situation where none of the
-frequencies appears to be suitable while at least one of them must be.
+> +static inline unsigned int get_index(int pstate) {
+> +	return abs(pstate - get_pstate(powernv_pstate_info.max));
+> +}
+> +
+>  static inline void reset_gpstates(struct cpufreq_policy *policy)
+>  {
+>  	struct global_pstate_info *gpstates = policy->driver_data;
+> @@ -208,23 +218,28 @@ static int init_powernv_pstates(void)
+>  		return -ENODEV;
+>  	}
+>  
+> +	powernv_pstate_info.nr_pstates = nr_pstates;
+>  	pr_debug("NR PStates %d\n", nr_pstates);
+>  	for (i = 0; i < nr_pstates; i++) {
+>  		u32 id = be32_to_cpu(pstate_ids[i]);
+>  		u32 freq = be32_to_cpu(pstate_freqs[i]);
+>  
+> -		pr_debug("PState id %d freq %d MHz\n", id, freq);
 
-So IMO all of the callers should be made clamp the target frequency
-between min and max and those checks should be dropped from the
-low-level helpers.
+?
 
-Thanks,
-Rafael
+>  		powernv_freqs[i].frequency = freq * 1000; /* kHz */
+>  		powernv_freqs[i].driver_data = id;
+
+Will it be possible for Shilpa who was earlier on this to review this patch? As
+we don't really have great knowledge of the internals of this driver.
+
+-- 
+viresh
