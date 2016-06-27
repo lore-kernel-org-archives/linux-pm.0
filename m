@@ -1,117 +1,136 @@
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: powernv: Replacing pstate_id with frequency
- table index
-Date: Mon, 27 Jun 2016 12:52:31 +0530
-Message-ID: <5770D437.6000406@linux.vnet.ibm.com>
-References: <1466776987-19031-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <20160627063034.GA3341@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Subject: [RFC PATCH v3 1/2] power/cpuidle: enhance the precision of state select
+Date: Mon, 27 Jun 2016 15:42:15 +0800
+Message-ID: <1467013336-19966-1-git-send-email-zhaoyang.huang@spreadtrum.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:48471 "EHLO
-	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751710AbcF0HWo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 03:22:44 -0400
-Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5R7IqIs037907
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jun 2016 03:22:43 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
-	by mx0a-001b2d01.pphosted.com with ESMTP id 23sp40sj09-1
-	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Mon, 27 Jun 2016 03:22:43 -0400
-Received: from localhost
-	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
-	Mon, 27 Jun 2016 17:22:41 +1000
-In-Reply-To: <20160627063034.GA3341@vireshk-i7>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:35528 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751385AbcF0Hm1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 03:42:27 -0400
+Received: by mail-pa0-f46.google.com with SMTP id hl6so56625807pac.2
+        for <linux-pm@vger.kernel.org>; Mon, 27 Jun 2016 00:42:26 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, mingo@redhat.com, peterz@infradead.org, zhaoyang.huang@spreadtrum.com, private-pmwg@lists.linaro.org, tglx@linutronix.de
 
-Hi viresh,
+In previous version, cpu_pm_enter is invoked after the governor
+select the state, which cause the executing time of cpu_pm_enter
+is included in the idle time. Moving it before the state selection.
 
-My apologies. I realize that i have messed it up a quite a few places. Surely with the checkpatch as well. I will send a v2 with corrections.
+Please refer to bellowing chart for detailed information
 
-On 06/27/2016 12:00 PM, Viresh Kumar wrote:
+current approach:
+static void cpu_idle_loop(void)
+{
+	while (1) {
+		tick_nohz_idle_enter();
+		--->__tick_nohz_idle_enter
+		--->tick_nohz_stop_sched_tick
+		    {
+		    ...
+		    	ts->sleep_length = ktime_sub(dev->next_event, now);          /*1*/
+		    ...
+		    }
 
-> Hi Akshay,
->
-> Did you try running checkpatch for this?
->
-> On 24-06-16, 19:33, Akshay Adiga wrote:
->> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
->> index b29c5c2..f6ce6f0 100644
->> --- a/drivers/cpufreq/powernv-cpufreq.c
->> +++ b/drivers/cpufreq/powernv-cpufreq.c
->> @@ -43,6 +43,7 @@
->>   #define PMSR_SPR_EM_DISABLE	(1UL << 31)
->>   #define PMSR_MAX(x)		((x >> 32) & 0xFF)
->>   
->> +
-> ?
->
->>   #define MAX_RAMP_DOWN_TIME				5120
->>   /*
->>    * On an idle system we want the global pstate to ramp-down from max value to
->> @@ -124,20 +125,29 @@ static int nr_chips;
->>   static DEFINE_PER_CPU(struct chip *, chip_info);
->>   
->>   /*
->> - * Note: The set of pstates consists of contiguous integers, the
->> - * smallest of which is indicated by powernv_pstate_info.min, the
->> - * largest of which is indicated by powernv_pstate_info.max.
->> + * Note: The set of pstates consists of contiguous integers,
->> + *
->> + * powernv_pstate_info stores the index of the frequency table
->> + *  instead of pstate itself for each of the pstates referred
->>    *
->>    * The nominal pstate is the highest non-turbo pstate in this
->>    * platform. This is indicated by powernv_pstate_info.nominal.
->>    */
->>   static struct powernv_pstate_info {
->> -	int min;
->> -	int max;
->> -	int nominal;
->> -	int nr_pstates;
->> +	unsigned int min;
->> +	unsigned int max;
->> +	unsigned int nominal;
->> +	unsigned int nr_pstates;
->>   } powernv_pstate_info;
->>   
->> +/* Use following macros for conversions between pstate_id and index */
->> +static inline int get_pstate(unsigned int i) {
-> Read coding-styles please on how to write functions.
->
->> +	return powernv_freqs[i].driver_data;
->> +}
-> Add a blank line here please.
->
->> +static inline unsigned int get_index(int pstate) {
->> +	return abs(pstate - get_pstate(powernv_pstate_info.max));
->> +}
->> +
->>   static inline void reset_gpstates(struct cpufreq_policy *policy)
->>   {
->>   	struct global_pstate_info *gpstates = policy->driver_data;
->> @@ -208,23 +218,28 @@ static int init_powernv_pstates(void)
->>   		return -ENODEV;
->>   	}
->>   
->> +	powernv_pstate_info.nr_pstates = nr_pstates;
->>   	pr_debug("NR PStates %d\n", nr_pstates);
->>   	for (i = 0; i < nr_pstates; i++) {
->>   		u32 id = be32_to_cpu(pstate_ids[i]);
->>   		u32 freq = be32_to_cpu(pstate_freqs[i]);
->>   
->> -		pr_debug("PState id %d freq %d MHz\n", id, freq);
-> ?
->
->>   		powernv_freqs[i].frequency = freq * 1000; /* kHz */
->>   		powernv_freqs[i].driver_data = id;
-> Will it be possible for Shilpa who was earlier on this to review this patch? As
-> we don't really have great knowledge of the internals of this driver.
->
+		while (!need_resched()) {
+			...
+			local_irq_disable();
+			arch_cpu_idle_enter();
+			--->idle_notifier_call_chain(IDLE_START);                    /*2*/
+
+			cpuidle_idle_call();
+			--->next_state = cpuidle_select(drv, dev);                   /*3*/
+			--->static int arm_enter_idle_state(...)
+			{
+			...
+				ret = cpu_pm_enter();                                /*4*/
+			}
+}
+
+---------|----------------------|----------------------------|------------------------------------|--------------------------------------------|--------------------
+       1.now              2.IDLE_START             3.select idle state                     4.CPU_PM_ENTER                                 next_event
+   (sleep_length)
+
+modified approach:
+static void cpu_idle_loop(void)
+{
+	while (1) {
+		tick_nohz_idle_enter();
+		--->__tick_nohz_idle_enter
+		--->tick_nohz_stop_sched_tick
+		    {
+		    ...
+
+		    ...
+		    }
+
+		while (!need_resched()) {
+			...
+			local_irq_disable();
+			arch_cpu_idle_enter();
+			--->idle_notifier_call_chain(IDLE_START);                            /*1*/
+
+			cpuidle_idle_call();
+			--->ret = cpu_pm_enter();                                            /*2*/
+			--->tick_nohz_get_sleep_length
+			{
+				ts->sleep_length = ktime_sub(dev->next_event, now);          /*3*/
+			}
+			--->next_state = cpuidle_select(drv, dev);                           /*4*/
+			--->static int arm_enter_idle_state(...)
+}
+
+----------------|---------------------------------------|---------------------|------------------|--------------------------------------------|--------------------
+          1.IDLE_START                           2.CPU_PM_ENTER            3.now          4.select idle state                            next_event
+                                                                        (sleep_length)
+Signed-off-by: Zhaoyang Huang <zhaoyang.huang@spreadtrum.com>
+---
+ kernel/sched/idle.c | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
+
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index bd12c6c..929da2e 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -5,6 +5,7 @@
+ #include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+ #include <linux/cpuhotplug.h>
++#include <linux/cpu_pm.h>
+ #include <linux/tick.h>
+ #include <linux/mm.h>
+ #include <linux/stackprotector.h>
+@@ -130,6 +131,7 @@ static void cpuidle_idle_call(void)
+ 	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
+ 	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
+ 	int next_state, entered_state;
++	int ret;
+ 
+ 	/*
+ 	 * Check if the idle task must be rescheduled. If it is the
+@@ -174,12 +176,16 @@ static void cpuidle_idle_call(void)
+ 		/*
+ 		 * Ask the cpuidle framework to choose a convenient idle state.
+ 		 */
+-		next_state = cpuidle_select(drv, dev);
+-		entered_state = call_cpuidle(drv, dev, next_state);
+-		/*
+-		 * Give the governor an opportunity to reflect on the outcome
+-		 */
+-		cpuidle_reflect(dev, entered_state);
++		ret = cpu_pm_enter();
++		if (!ret) {
++			next_state = cpuidle_select(drv, dev);
++			entered_state = call_cpuidle(drv, dev, next_state);
++			cpu_pm_exit();
++			/*
++			 * Give the governor an opportunity to reflect on the outcome
++			 */
++			cpuidle_reflect(dev, entered_state);
++		}
+ 	}
+ 
+ exit_idle:
+-- 
+1.9.1
 
