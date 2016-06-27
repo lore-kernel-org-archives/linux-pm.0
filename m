@@ -1,35 +1,157 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/3] cpufreq: intel_pstate: trivial improvements
-Date: Mon, 27 Jun 2016 15:13:00 +0530
-Message-ID: <20160627094300.GB15437@vireshk-i7>
-References: <1467019575-664-1-git-send-email-jszhang@marvell.com>
+From: Francesco Lavra <francescolavra.fl@gmail.com>
+Subject: Re: [PATCH V5 1/2] cpufreq: Handle sorted frequency tables more
+ efficiently
+Date: Mon, 27 Jun 2016 12:10:52 +0200
+Message-ID: <5770FBAC.3040901@gmail.com>
+References: <cover.1467001203.git.viresh.kumar@linaro.org>
+ <594b312d352b55f44d5ebea954fdf784e966867e.1467001203.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:36265 "EHLO
-	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751609AbcF0JnE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 05:43:04 -0400
-Received: by mail-pf0-f176.google.com with SMTP id t190so60437650pfb.3
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jun 2016 02:43:03 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1467019575-664-1-git-send-email-jszhang@marvell.com>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:33832 "EHLO
+	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736AbcF0KLC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 06:11:02 -0400
+In-Reply-To: <594b312d352b55f44d5ebea954fdf784e966867e.1467001203.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jisheng Zhang <jszhang@marvell.com>
-Cc: srinivas.pandruvada@linux.intel.com, lenb@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 27-06-16, 17:26, Jisheng Zhang wrote:
-> The first patch fixes incorrect placement of __initdata
-> 
-> The second patch is to add __init/__initdata marker to some functions
-> or varaiables so that we can discard them.
-> 
-> The third patch declares pid_params/pstate_funcs/hwp_active as
-> __read_mostly, under the fact that they are mostly read and not
-> written to.
+Hi,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 06/27/2016 06:29 AM, Viresh Kumar wrote:
+> cpufreq drivers aren't required to provide a sorted frequency table
+> today, and even the ones which provide a sorted table aren't handled
+> efficiently by cpufreq core.
+>
+> This patch adds infrastructure to verify if the freq-table provided by
+> the drivers is sorted or not, and use efficient helpers if they are
+> sorted.
+<snip>
+> @@ -610,6 +617,227 @@ int cpufreq_boost_trigger_state(int state);
+>   int cpufreq_boost_enabled(void);
+>   int cpufreq_enable_boost_support(void);
+>   bool policy_has_boost_freq(struct cpufreq_policy *policy);
+> +
+> +/* Find lowest freq at or above target in a table in ascending order */
+> +static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
+> +					      unsigned int target_freq)
+> +{
+> +	struct cpufreq_frequency_table *table = policy->freq_table;
+> +	unsigned int freq;
+> +	int i, best = -1;
+> +
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +		freq = table[i].frequency;
+> +
+> +		if (freq >= target_freq)
+> +			return i;
+> +
+> +		best = i;
+> +	}
+> +
+> +	return best;
+> +}
+> +
+> +/* Find lowest freq at or above target in a table in descending order */
+> +static inline int cpufreq_table_find_index_dl(struct cpufreq_policy *policy,
+> +					      unsigned int target_freq)
+> +{
+> +	struct cpufreq_frequency_table *table = policy->freq_table;
+> +	unsigned int freq;
+> +	int i, best = -1;
+> +
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +		freq = table[i].frequency;
+> +
+> +		if (freq == target_freq)
+> +			return i;
+> +
+> +		if (freq > target_freq) {
+> +			best = i;
+> +			continue;
+> +		}
+> +
+> +		/* No freq found below target_freq */
 
--- 
-viresh
+"below" should be "above"
+
+> +/* Find closest freq to target in a table in ascending order */
+> +static inline int cpufreq_table_find_index_ac(struct cpufreq_policy *policy,
+> +					      unsigned int target_freq)
+> +{
+> +	struct cpufreq_frequency_table *table = policy->freq_table;
+> +	unsigned int freq;
+> +	int i, best = -1;
+> +
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +		freq = table[i].frequency;
+> +
+> +		if (freq == target_freq)
+> +			return i;
+> +
+> +		if (freq < target_freq) {
+> +			best = i;
+> +			continue;
+> +		}
+> +
+> +		/* No freq found below target_freq */
+> +		if (best == -1)
+> +			return i;
+> +
+> +		/* Choose the closest freq */
+> +		if (target_freq - table[best].frequency > freq - target_freq)
+> +			return i;
+> +
+> +		return best;
+> +	}
+> +
+> +	return best;
+> +}
+> +
+> +/* Find closest freq to target in a table in descending order */
+> +static inline int cpufreq_table_find_index_dc(struct cpufreq_policy *policy,
+> +					      unsigned int target_freq)
+> +{
+> +	struct cpufreq_frequency_table *table = policy->freq_table;
+> +	unsigned int freq;
+> +	int i, best = -1;
+> +
+> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+> +		freq = table[i].frequency;
+> +
+> +		if (freq == target_freq)
+> +			return i;
+> +
+> +		if (freq > target_freq) {
+> +			best = i;
+> +			continue;
+> +		}
+> +
+> +		/* No freq found below target_freq */
+
+"below" should be "above"
+
+> +		if (best == -1)
+> +			return i;
+> +
+> +		/* Choose the closest freq */
+> +		if (target_freq - table[best].frequency > freq - target_freq)
+
+Here, table[best].frequency > target_freq, and freq < and target_freq, 
+so you should reverse the sign of both sides of the inequation:
+
+	if (table[best].frequency - target_freq > target_freq - freq)
+
+> +			return i;
+> +
+> +		return best;
+> +	}
+> +
+> +	return best;
+> +}
+
+Regards,
+Francesco
