@@ -1,120 +1,80 @@
-From: Jisheng Zhang <jszhang@marvell.com>
-Subject: Re: regression caused by bb6ab52f2bef ("intel_pstate: Do not set
- utilization update hook too early")
-Date: Mon, 27 Jun 2016 14:08:58 +0800
-Message-ID: <20160627140858.0c7686f0@xhacker>
-References: <20160617163023.5bb374f8@xhacker>
-	<393b63b7caa7474a97baf248c4891b72@SC-EXCH02.marvell.com>
-	<24e20dd7b2b047a19515ff52ad105c37@SC-EXCH02.marvell.com>
-	<2958182.eDEME9b2CX@vostro.rjw.lan>
+From: Keerthy <a0393675@ti.com>
+Subject: Re: [PATCH] thermal: of-thermal: Fix setting of set_emul_temp hook
+Date: Mon, 27 Jun 2016 11:48:03 +0530
+Message-ID: <5770C51B.30505@ti.com>
+References: <1464857690-23330-1-git-send-email-j-keerthy@ti.com>
+ <575A5DD0.4080208@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:59220 "EHLO
-	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751644AbcF0GNH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 02:13:07 -0400
-In-Reply-To: <2958182.eDEME9b2CX@vostro.rjw.lan>
+Received: from bear.ext.ti.com ([198.47.19.11]:52271 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbcF0GSJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Jun 2016 02:18:09 -0400
+In-Reply-To: <575A5DD0.4080208@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
-
-Dear Rafael,
-
-On Sat, 25 Jun 2016 02:14:28 +0200 "Rafael J. Wysocki" wrote:
-
-> On Friday, June 17, 2016 04:09:33 PM Jisheng Zhang wrote:
-> > Dear all,
-> > 
-> > If using acpi-cpufreq instead, v4.6, v4.6-rc3, v4.7-rc3 can't reproduce the issue. It seems
-> > only intel_pstate is impacted.  
-> 
-> Which is quite obvious, since the commit your bisection led to was
-> intel_pstate-specific. :-)
-> 
-> If the issue is what I'm thinking it is, the patch below should help, so
-> can you please test it?
-> 
-> Thanks,
-> Rafael
-> 
-> ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] intel_pstate: Do not clear utilization update hooks on policy changes
-> 
-> intel_pstate_set_policy() is invoked by the cpufreq core during
-> driver initialization, on changes of policy attributes (minimim and
-> maximum frequency, for example) via sysfs and via CPU notifications
-> from the platform firmware.  On some platforms the latter may occur
-> relatively often.
-> 
-> Commit bb6ab52f2bef (intel_pstate: Do not set utilization update hook
-> too early) made intel_pstate_set_policy() clear the CPU's utilization
-> update hook before updating the policy attributes for it (and set the
-> hook again after doind that), but that involves invoking
-> synchronize_sched() and adds overhead to the CPU notifications
-> mentioned above and to the sched-RCU handling in general.
-> 
-> That extra overhead is arguably not necessary, because updating
-> policy attributes when the CPU's utilization update hook is active
-> should not lead to any adverse effects, so drop the clearing of
-> the hook from intel_pstate_set_policy() and make it check if
-> the hook has been set already when attempting to set it.
-
-This patch works! 
-
-on a 32 snb cores server:
-
-80 wakeups/s w/o the patch
-
-7 wakeups/s w/ the patch
+To: Keerthy <j-keerthy@ti.com>, edubezval@gmail.com, rui.zhang@intel.com
+Cc: nm@ti.com, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
-on a 4 snb cores laptop:
 
-22 wakeups/s w/o the patch
+On Friday 10 June 2016 11:57 AM, Keerthy wrote:
+>
+>
+> On Thursday 02 June 2016 02:24 PM, Keerthy wrote:
+>> Currently thermal zone set_emul_temp is set unconditionally
+>> with of_thermal_set_emul_temp function. Set this only if the
+>> set_emul_temp hook is provided for thermal_zone_of_device_ops.
+>>
+>> This fixes emul_temp failures on platforms for which set_emul_temp
+>> hook is not populated.
+>
+> Eduardo,
+>
+> A gentle ping on this patch.
 
-6 wakeups/s w/ the patch
+Eduardo,
 
-Thank you so much for fixing it ;)
+Another gentle ping.
 
-> 
-> Fixes: bb6ab52f2bef (intel_pstate: Do not set utilization update hook too early)
-> Reported-by: Jisheng Zhang <jszhang@marvell.com>
 
-So feel free to add
-
-Tested-by: Jisheng Zhang <jszhang@marvell.com>
-
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -1440,6 +1440,9 @@ static void intel_pstate_set_update_util
->  {
->  	struct cpudata *cpu = all_cpu_data[cpu_num];
->  
-> +	if (cpu->update_util_set)
-> +		return;
-> +
->  	/* Prevent intel_pstate_update_util() from using stale data. */
->  	cpu->sample.time = 0;
->  	cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
-> @@ -1480,8 +1483,6 @@ static int intel_pstate_set_policy(struc
->  	if (!policy->cpuinfo.max_freq)
->  		return -ENODEV;
->  
-> -	intel_pstate_clear_update_util_hook(policy->cpu);
-> -
->  	pr_debug("set_policy cpuinfo.max %u policy->max %u\n",
->  		 policy->cpuinfo.max_freq, policy->max);
->  
-> 
-
+>
+>
+>>
+>> Fixes: "184a4bf623f (thermal: of: Extend current
+>>     of-thermal.c code to allow setting emulated temp)"
+>> Suggested-by: Eduardo Valentin <edubezval@gmail.com>
+>> Signed-off-by: Keerthy <j-keerthy@ti.com>
+>> ---
+>>   drivers/thermal/of-thermal.c | 7 +++----
+>>   1 file changed, 3 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+>> index b8e509c..93d8ce0 100644
+>> --- a/drivers/thermal/of-thermal.c
+>> +++ b/drivers/thermal/of-thermal.c
+>> @@ -181,9 +181,6 @@ static int of_thermal_set_emul_temp(struct
+>> thermal_zone_device *tz,
+>>   {
+>>       struct __thermal_zone *data = tz->devdata;
+>>
+>> -    if (!data->ops || !data->ops->set_emul_temp)
+>> -        return -EINVAL;
+>> -
+>>       return data->ops->set_emul_temp(data->sensor_data, temp);
+>>   }
+>>
+>> @@ -427,7 +424,9 @@ thermal_zone_of_add_sensor(struct device_node *zone,
+>>
+>>       tzd->ops->get_temp = of_thermal_get_temp;
+>>       tzd->ops->get_trend = of_thermal_get_trend;
+>> -    tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
+>> +    if (ops->set_emul_temp)
+>> +        tzd->ops->set_emul_temp = of_thermal_set_emul_temp;
+>> +
+>>       mutex_unlock(&tzd->lock);
+>>
+>>       return tzd;
+>>
