@@ -1,102 +1,56 @@
-From: Michele DiGiorgio <michele.digiorgio@arm.com>
-Subject: Re: [PATCH] thermal: fix race condition when updating cooling device
-Date: Mon, 27 Jun 2016 09:54:25 +0100
-Message-ID: <5770E9C1.1010208@arm.com>
-References: <1464877531-2161-1-git-send-email-michele.digiorgio@arm.com>
- <20160606125113.GC2897@e104805>
+From: David Laight <David.Laight@ACULAB.COM>
+Subject: RE: [PATCH v2] cpuidle: Fix last_residency division
+Date: Mon, 27 Jun 2016 08:59:10 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4E4E87@AcuExch.aculab.com>
+References: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <14940457.SEYBmqcunj@wuerfel> <576D595F.9090001@linux.vnet.ibm.com>
+ <3748080.8f21OXxXix@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([146.101.78.143]:33208 "EHLO
-	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751215AbcF0IzF convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Jun 2016 04:55:05 -0400
-In-Reply-To: <20160606125113.GC2897@e104805>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <3748080.8f21OXxXix@wuerfel>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: 'Arnd Bergmann' <arnd@arndb.de>, Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "anton@samba.org" <anton@samba.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Javi Merino <javi.merino@arm.com>, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Peter Feuerer <peter@piie.net>
 
-Hi Eduardo, Rui,
-
-On 06/06/16 13:51, Javi Merino wrote:
-> On Thu, Jun 02, 2016 at 03:25:31PM +0100, Michele Di Giorgio wrote:
->> When multiple thermal zones are bound to the same cooling device, multiple
->> kernel threads may want to update the cooling device state by calling
->> thermal_cdev_update(). Having cdev not protected by a mutex can lead to a race
->> condition. Consider the following situation with two kernel threads k1 and k2:
->>
->>          Thread k1                           Thread k2
->>                                      ||
->>                                      ||  call thermal_cdev_update()
->>                                      ||      ...
->>                                      ||      set_cur_state(cdev, target);
->>      call power_actor_set_power()    ||
->>          ...                         ||
->>          instance->target = state;   ||
->>          cdev->updated = false;      ||
->>                                      ||      cdev->updated = true;
->>                                      ||      // completes execution
->>      call thermal_cdev_update()      ||
->>          // cdev->updated == true    ||
->>          return;                     ||
->>                                      \/
->>                                      time
->>
->> k2 has already looped through the thermal instances looking for the deepest
->> cooling device state and is preempted right before setting cdev->updated to
->> true. Now, k1 runs, modifies the thermal instance state and sets cdev->updated
->> to false. Then, k1 is preempted and k2 continues the execution by setting
->> cdev->updated to true, therefore preventing k1 from performing the update.
->> Notice that this is not an issue if k2 looks at the instance->target modified by
->> k1 "after" it is assigned by k1. In fact, in this case the update will happen
->> anyway and k1 can safely return immediately from thermal_cdev_update().
->>
->> This may lead to a situation where a thermal governor never updates the cooling
->> device. For example, this is the case for the step_wise governor: when calling
->> the function thermal_zone_trip_update(), the governor may always get a new state
->> equal to the old one (which, however, wasn't notified to the cooling device) and
->> will therefore skip the update.
->>
->> CC: Zhang Rui <rui.zhang@intel.com>
->> CC: Eduardo Valentin <edubezval@gmail.com>
->> CC: Peter Feuerer <peter@piie.net>
->> Reported-by: Toby Huang <toby.huang@arm.com>
->> Signed-off-by: Michele Di Giorgio <michele.digiorgio@arm.com>
->> ---
->> Protecting only the assignment of cdev->updated with mutexes may look
->> suspicious, but it is necessary to guarantee synchronization and avoiding the
->> situation described in the commit message.
->>
->> There are other two possible solutions.
->>
->> Moving the cdev->lock mutex outside thermal_cdev_update() and protect both the
->> assignment and the function. This would work, but will probably cause many
->> issues when updating all the modules that use thermal_cdev_update().
->>
->> The other solution is to make cdev->updated an atomic_t, change the if
->> condition to an atomic_cmpxchg and extend the critical section to include the
->> call to cdev->ops->set_cur_state().
->
-> True.  In any case, the mutex needs to cover set_cur_state() in
-> thermal_cdev_update().  This fixes the race condition, so I'm happy
-> with it.
->
-> Reviewed-by: Javi Merino <javi.merino@arm.com>
->
->>   drivers/thermal/fair_share.c      |  2 ++
->>   drivers/thermal/gov_bang_bang.c   |  2 ++
->>   drivers/thermal/power_allocator.c |  2 ++
->>   drivers/thermal/step_wise.c       |  2 ++
->>   drivers/thermal/thermal_core.c    | 10 +++++++---
->>   5 files changed, 15 insertions(+), 3 deletions(-)
->
-
-If there are no comments/issues, could you please consider this for next
-merge window?
-
-Thanks,
-Michele
-IMPORTANT NOTICE: The contents of this email and any attachments are confidential and may also be privileged. If you are not the intended recipient, please notify the sender immediately and do not disclose the contents to any other person, use it for any purpose, or store or copy the information in any medium. Thank you.
-
+RnJvbTogQXJuZCBCZXJnbWFubgo+IFNlbnQ6IDI0IEp1bmUgMjAxNiAyMDo0Mwo+IE9uIEZyaWRh
+eSwgSnVuZSAyNCwgMjAxNiA5OjMxOjM1IFBNIENFU1QgU2hyZXlhcyBCIFByYWJodSB3cm90ZToK
+PiA+ID4gSWYgdGhvc2UgZnVuY3Rpb25zIGFyZSBjYWxsZWQgbGVzcyBvZnRlbiB0aGFuIGNwdWlk
+bGVfZW50ZXJfc3RhdGUoKSwKPiA+ID4gd2UgY291bGQganVzdCBtb3ZlIHRoZSBkaXZpc2lvbiB0
+aGVyZS4gU2luY2UgdGhlIGRpdmlzb3IgaXMgY29uc3RhbnQsCj4gPiA+IGRvX2RpdigpIGNhbiBj
+b252ZXJ0IGl0IGludG8gYSBtdWx0aXBseSBhbmQgc2hpZnQsIG9yIHdlIGNvdWxkIHVzZQo+ID4g
+PiB5b3VyIHRoZSBjb2RlIHlvdSBzdWdnZXN0IGFib3ZlLCBvciB1c2UgYSAzMi1iaXQgZGl2aXNp
+b24gbW9zdCBvZgo+ID4gPiB0aGUgdGltZToKPiA+ID4KPiA+ID4gICAgICAgaWYgKGRpZmYgPD0g
+VUlOVF9NQVgpCj4gPiA+ICAgICAgICAgICAgICAgZGlmZl8zMiA9ICh1MzIpZGlmZiAvIE5TRUNT
+X1BFUl9VU0VDOwo+ID4gPiAgICAgICBlbHNlCj4gPiA+ICAgICAgICAgICAgICAgZGlmZl8zMiA9
+IGRpdl91NjQoZGlmZiwgTlNFQ1NfUEVSX1VTRUM7Cj4gPiA+Cj4gPiA+IHdoaWNoIGdjYyBpdHNl
+bGYgd2lsbCB0dXJuIGludG8gYSBtdWx0aXBsaWNhdGlvbiBvciBzZXJpZXMgb2YKPiA+ID4gc2hp
+ZnRzIG9uIENQVXMgb24gd2hpY2ggdGhhdCBpcyBmYXN0ZXIuCj4gPiA+Cj4gPiBJJ20gbm90IHN1
+cmUgd2hpY2ggZGl2aXNpb24gbWV0aG9kIG9mIHRoZSB0aHJlZSBzdWdnZXN0ZWQgaGVyZSB0byB1
+c2UuCj4gPiBEb2VzIGFueW9uZSBoYXZlIGEgc3Ryb25nIHByZWZlcmVuY2U/Cj4gPgo+IAo+IEl0
+IGRlcGVuZHMgb24gaG93IGFjY3VyYXRlIHdlIHdhbnQgaXQgYW5kIGhvdyBsb25nIHdlIGV4cGVj
+dAo+IHRoZSB0aW1lcyB0byBiZS4gVGhlIG9wdGltaXphdGlvbiBmb3IgdGhlIDQuMiBzZWNvbmQg
+Y3V0b2ZmCj4gZm9yIGRvaW5nIGEgMzItYml0IGRpdmlzaW9uIG9ubHkgbWFrZXMgc2Vuc2UgaWYg
+dGhlIG1ham9yaXR5Cj4gb2YgdGhlIHNsZWVwIHRpbWVzIGFyZSBiZWxvdyB0aGF0LgoKSXQgYWxz
+byBkZXBlbmRzIGlmIHRoZSBjb2RlIGFjdHVhbGx5IGNhcmVzIGFib3V0IHRoZSBsZW5ndGggb2Yg
+J2xvbmcnIHNsZWVwcy4KSSdkIGd1ZXNzIHRoYXQgZm9yIGNwdSBpZGxlIDQuMiBzZWNvbmRzIGlz
+ICdhIGxvbmcgdGltZScsIHNvIHRoZSBkaXZfdTY0KCkKcmVzdWx0IGNvdWxkIGJlIHRyZWF0ZWQg
+YXMgNC4yIHNlY29uZHMgd2l0aG91dCBjYXVzaW5nIGdyaWVmLgoKQWN0dWFsbHkgdGhlIGNvc3Qg
+b2YgYSA2NGJpdCBkaXZpZGUgYWZ0ZXIgYSA0IHNlY29uZCBzbGVlcCB3aWxsIGJlIG5vaXNlLgpP
+VE9IIGEgNjRiaXQgZGl2aWRlIGFmdGVyIGEgc2xlZXAgdGhhdCBsYXN0ZWQgYSBmZXcgbnMgd2ls
+bCBiZSBzaWduaWZpY2FudC4KCglEYXZpZAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX18KTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdApMaW51eHBwYy1kZXZA
+bGlzdHMub3psYWJzLm9yZwpodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhw
+cGMtZGV2
