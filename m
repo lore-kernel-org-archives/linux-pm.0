@@ -1,50 +1,97 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [RFC PATCH 0/4] ARM: remove big.LITTLE switcher support
-Date: Mon, 27 Jun 2016 15:49:44 -0400 (EDT)
-Message-ID: <alpine.LFD.2.20.1606271540000.2550@knanqh.ubzr>
-References: <1467026770-5699-1-git-send-email-b.zolnierkie@samsung.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH v3] x86/power/64: Fix kernel text mapping corruption
+ during image restoration (was: Re: ktime_get_ts64() splat during resume)
+Date: Mon, 27 Jun 2016 22:08:03 +0200
+Message-ID: <20160627200803.GB3678@pd.tnic>
+References: <20160617105435.GB15997@pd.tnic>
+ <96a692a0-08eb-6d64-d396-82bee5d7a0a1@deltatee.com>
+ <CAGXu5j+1_06mKVsV2BeBZtitRk8GtjMPH8_zAxocfxtp7NeLXg@mail.gmail.com>
+ <1735047.Yzv12qmPPB@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f181.google.com ([209.85.220.181]:35282 "EHLO
-	mail-qk0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752066AbcF0Ttx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 15:49:53 -0400
-Received: by mail-qk0-f181.google.com with SMTP id a125so24551024qkc.2
-        for <linux-pm@vger.kernel.org>; Mon, 27 Jun 2016 12:49:53 -0700 (PDT)
-In-Reply-To: <1467026770-5699-1-git-send-email-b.zolnierkie@samsung.com>
+Received: from mail.skyhub.de ([78.46.96.112]:52676 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751876AbcF0UIG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Jun 2016 16:08:06 -0400
+Content-Disposition: inline
+In-Reply-To: <1735047.Yzv12qmPPB@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King <rmk+kernel@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Dave Martin <dave.martin@linaro.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kees Cook <keescook@chromium.org>, Logan Gunthorpe <logang@deltatee.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
 
-On Mon, 27 Jun 2016, Bartlomiej Zolnierkiewicz wrote:
-
-> Hi,
+On Mon, Jun 27, 2016 at 04:24:22PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH v2] x86/power/64: Fix kernel text mapping corruption during image restoration
 > 
-> It seems that in mainline kernel big.LITTLE switcher support
-> may be usable only on ARM Versatile Express TC2 platform
-> (but even this platform doesn't enable it in its defconfig).
-
-It is also used on some Samsung targets.
-
-> The following patchset removes big.LITTLE switcher support
-> (from both ARM core and arm_big_little CPUfreq driver) in
-> favor of using HMP.
+> Logan Gunthorpe reports that hibernation stopped working reliably for
+> him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
+> and rodata).
 > 
-> Since HMP support at scheduler level is not yet merged this
-> patchset is probably premature and thus is marked as RFC.
+> That turns out to be a consequence of a long-standing issue with the
+> 64-bit image restoration code on x86, which is that the temporary
+> page tables set up by it to avoid page tables corruption when the
+> last bits of the image kernel's memory contents are copied into
+> their original page frames re-use the boot kernel's text mapping,
+> but that mapping may very well get corrupted just like any other
+> part of the page tables.  Of course, if that happens, the final
+> jump to the image kernel's entry point will go to nowhere.
+> 
+> The exact reason why commit ab76f7b4ab23 matters here is that it
+> sometimes causes a PMD of a large page to be split into PTEs
+> that are allocated dynamically and get corrupted during image
+> restoration as described above.
+> 
+> To fix that issue note that the code copying the last bits of the
+> image kernel's memory contents to the page frames occupied by them
+> previoulsy doesn't use the kernel text mapping, because it runs from
+> a special page covered by the identity mapping set up for that code
+> from scratch.  Hence, the kernel text mapping is only needed before
+> that code starts to run and then it will only be used just for the
+> final jump to the image kernel's entry point.
+> 
+> Accordingly, the temporary page tables set up in swsusp_arch_resume()
+> on x86-64 need to contain the kernel text mapping too.  That mapping
+> is only going to be used for the final jump to the image kernel, so
+> it only needs to cover the image kernel's entry point, because the
+> first thing the image kernel does after getting control back is to
+> switch over to its own original page tables.  Moreover, the virtual
+> address of the image kernel's entry point in that mapping has to be
+> the same as the one mapped by the image kernel's page tables.
+> 
+> With that in mind, modify the x86-64's arch_hibernation_header_save()
+> and arch_hibernation_header_restore() routines to pass the physical
+> address of the image kernel's entry point (in addition to its virtual
+> address) to the boot kernel (a small piece of assembly code involved
+> in passing the entry point's virtual address to the image kernel is
+> not necessary any more after that, so drop it).  Update RESTORE_MAGIC
+> too to reflect the image header format change.
+> 
+> Next, in set_up_temporary_mappings(), use the physical and virtual
+> addresses of the image kernel's entry point passed in the image
+> header to set up a minimum kernel text mapping (using memory pages
+> that won't be overwritten by the image kernel's memory contents) that
+> will map those addresses to each other as appropriate.
+> 
+> This makes the concern about the possible corruption of the original
+> boot kernel text mapping go away and if the the minimum kernel text
+> mapping used for the final jump marks the image kernel's entry point
+> memory as executable, the jump to it is guaraneed to succeed.
+> 
+> Fixes: ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table and rodata)
+> Link: http://marc.info/?l=linux-pm&m=146372852823760&w=2
+> Reported-by: Logan Gunthorpe <logang@deltatee.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  arch/x86/power/hibernate_64.c     |   90 ++++++++++++++++++++++++++++++++------
+>  arch/x86/power/hibernate_asm_64.S |   55 ++++++++++-------------
+>  2 files changed, 102 insertions(+), 43 deletions(-)
 
-It is premature indeed.
+Reported-and-tested-by: Borislav Petkov <bp@suse.de>
 
-And before this is removed, comparison with power/performance benchmark 
-numbers will have to be provided as well to justify this removal.  At 
-the moment there is nothing else in mainline that can achieve what this 
-code does.
+-- 
+Regards/Gruss,
+    Boris.
 
-We all agree that the scheduler based solution is the best way to do it. 
-But this has been a couple years already and this is still work in 
-progress.
-
-
-Nicolas
+ECO tip #101: Trim your mails when you reply.
