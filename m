@@ -1,97 +1,64 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH v3] x86/power/64: Fix kernel text mapping corruption
- during image restoration (was: Re: ktime_get_ts64() splat during resume)
-Date: Mon, 27 Jun 2016 22:08:03 +0200
-Message-ID: <20160627200803.GB3678@pd.tnic>
-References: <20160617105435.GB15997@pd.tnic>
- <96a692a0-08eb-6d64-d396-82bee5d7a0a1@deltatee.com>
- <CAGXu5j+1_06mKVsV2BeBZtitRk8GtjMPH8_zAxocfxtp7NeLXg@mail.gmail.com>
- <1735047.Yzv12qmPPB@vostro.rjw.lan>
+From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Subject: Re: [PATCH 1/2] Documentation: Add sbs-manager device tree node
+ documentation
+Date: Mon, 27 Jun 2016 22:37:51 +0200
+Message-ID: <1467059871.9121.7.camel@amnesix>
+References: <1466622436-27963-1-git-send-email-karl-heinz@schneider-inet.de>
+	 <1466622436-27963-2-git-send-email-karl-heinz@schneider-inet.de>
+	 <20160624175014.GA29990@rob-hp-laptop>
+	 <83b7648c-43d6-7a32-29bb-65f2606399fd@axentia.se>
+	 <CAL_JsqKTQLD72Vx-PaFRiUegNhY30pmD7ewEXtoLNj4mj8=phA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:52676 "EHLO mail.skyhub.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751876AbcF0UIG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 27 Jun 2016 16:08:06 -0400
-Content-Disposition: inline
-In-Reply-To: <1735047.Yzv12qmPPB@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAL_JsqKTQLD72Vx-PaFRiUegNhY30pmD7ewEXtoLNj4mj8=phA@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Peter Rosin <peda@axentia.se>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kees Cook <keescook@chromium.org>, Logan Gunthorpe <logang@deltatee.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
 
-On Mon, Jun 27, 2016 at 04:24:22PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH v2] x86/power/64: Fix kernel text mapping corruption during image restoration
+Am Montag, den 27.06.2016, 10:28 -0500 schrieb Rob Herring:
+> On Sun, Jun 26, 2016 at 5:35 PM, Peter Rosin <peda@axentia.se> wrote:
+> > On 2016-06-24 19:50, Rob Herring wrote:
+> >> On Wed, Jun 22, 2016 at 09:07:15PM +0200, Karl-Heinz Schneider wrote:
+> >>> This patch adds device tree documentation for the sbs-manager
+> >
+> > *snip*
+> >
+> >>> +
+> >>> +From OS view the device is basically an i2c-mux used to communicate with up to
+> >>> +four smart battery devices at address 0xb. The driver actually implements this
+> >>> +behaviour. So standard i2c-mux nodes can be used to register up to four slave
+> >>> +batteries. Channels will be numerated as 1, 2, 4 and 8.
+> >>> +
+> >>> +Example:
+> >>> +
+> >>> +batman@0a {
+> >>> +    compatible = "sbs,sbs-manager";
+> >>> +    reg = <0x0a>;
+> >>> +    sbsm,i2c-retry-count = <3>;
+> >>> +    #address-cells = <1>;
+> >>> +    #size-cells = <0>;
+> >>> +
+> >>> +    channel1@1 {
+> >>
+> >> channel@1
+> >>
+> >> Do we have a standard node name for mux nodes? If not, we should.
+> >
+> > No name is enforced by the i2c mux support code, but I think "i2c"
+> > dominates, and quite possibly it is the only documented name?
 > 
-> Logan Gunthorpe reports that hibernation stopped working reliably for
-> him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
-> and rodata).
-> 
-> That turns out to be a consequence of a long-standing issue with the
-> 64-bit image restoration code on x86, which is that the temporary
-> page tables set up by it to avoid page tables corruption when the
-> last bits of the image kernel's memory contents are copied into
-> their original page frames re-use the boot kernel's text mapping,
-> but that mapping may very well get corrupted just like any other
-> part of the page tables.  Of course, if that happens, the final
-> jump to the image kernel's entry point will go to nowhere.
-> 
-> The exact reason why commit ab76f7b4ab23 matters here is that it
-> sometimes causes a PMD of a large page to be split into PTEs
-> that are allocated dynamically and get corrupted during image
-> restoration as described above.
-> 
-> To fix that issue note that the code copying the last bits of the
-> image kernel's memory contents to the page frames occupied by them
-> previoulsy doesn't use the kernel text mapping, because it runs from
-> a special page covered by the identity mapping set up for that code
-> from scratch.  Hence, the kernel text mapping is only needed before
-> that code starts to run and then it will only be used just for the
-> final jump to the image kernel's entry point.
-> 
-> Accordingly, the temporary page tables set up in swsusp_arch_resume()
-> on x86-64 need to contain the kernel text mapping too.  That mapping
-> is only going to be used for the final jump to the image kernel, so
-> it only needs to cover the image kernel's entry point, because the
-> first thing the image kernel does after getting control back is to
-> switch over to its own original page tables.  Moreover, the virtual
-> address of the image kernel's entry point in that mapping has to be
-> the same as the one mapped by the image kernel's page tables.
-> 
-> With that in mind, modify the x86-64's arch_hibernation_header_save()
-> and arch_hibernation_header_restore() routines to pass the physical
-> address of the image kernel's entry point (in addition to its virtual
-> address) to the boot kernel (a small piece of assembly code involved
-> in passing the entry point's virtual address to the image kernel is
-> not necessary any more after that, so drop it).  Update RESTORE_MAGIC
-> too to reflect the image header format change.
-> 
-> Next, in set_up_temporary_mappings(), use the physical and virtual
-> addresses of the image kernel's entry point passed in the image
-> header to set up a minimum kernel text mapping (using memory pages
-> that won't be overwritten by the image kernel's memory contents) that
-> will map those addresses to each other as appropriate.
-> 
-> This makes the concern about the possible corruption of the original
-> boot kernel text mapping go away and if the the minimum kernel text
-> mapping used for the final jump marks the image kernel's entry point
-> memory as executable, the jump to it is guaraneed to succeed.
-> 
-> Fixes: ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table and rodata)
-> Link: http://marc.info/?l=linux-pm&m=146372852823760&w=2
-> Reported-by: Logan Gunthorpe <logang@deltatee.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  arch/x86/power/hibernate_64.c     |   90 ++++++++++++++++++++++++++++++++------
->  arch/x86/power/hibernate_asm_64.S |   55 ++++++++++-------------
->  2 files changed, 102 insertions(+), 43 deletions(-)
+> The kernel generally doesn't care what node names are, but standard
+> naming is convention. If "i2c" is most common, then go with that.
+Will do so. 
 
-Reported-and-tested-by: Borislav Petkov <bp@suse.de>
+"channelx" will go "i2c"
+"batteryx" will go "battery"
+> 
+> Rob
 
--- 
-Regards/Gruss,
-    Boris.
+Karl-Heinz
 
-ECO tip #101: Trim your mails when you reply.
+
