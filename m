@@ -1,157 +1,57 @@
-From: Francesco Lavra <francescolavra.fl@gmail.com>
-Subject: Re: [PATCH V5 1/2] cpufreq: Handle sorted frequency tables more
- efficiently
-Date: Mon, 27 Jun 2016 12:10:52 +0200
-Message-ID: <5770FBAC.3040901@gmail.com>
-References: <cover.1467001203.git.viresh.kumar@linaro.org>
- <594b312d352b55f44d5ebea954fdf784e966867e.1467001203.git.viresh.kumar@linaro.org>
+From: Jisheng Zhang <jszhang@marvell.com>
+Subject: [PATCH v2 3/3] intel_pstate: Declare pid_params/pstate_funcs/hwp_active __read_mostly
+Date: Mon, 27 Jun 2016 18:07:18 +0800
+Message-ID: <1467022038-924-4-git-send-email-jszhang@marvell.com>
+References: <1467022038-924-1-git-send-email-jszhang@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:33832 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbcF0KLC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 06:11:02 -0400
-In-Reply-To: <594b312d352b55f44d5ebea954fdf784e966867e.1467001203.git.viresh.kumar@linaro.org>
+Received: from mx0a-0016f401.pphosted.com ([67.231.148.174]:46019 "EHLO
+	mx0a-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751748AbcF0KLf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 06:11:35 -0400
+In-Reply-To: <1467022038-924-1-git-send-email-jszhang@marvell.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: srinivas.pandruvada@linux.intel.com, lenb@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jisheng Zhang <jszhang@marvell.com>
 
-Hi,
+pid_params is written once by copy_pid_params() during initialization,
+and thereafter is mostly read by hot path intel_pstate_update_util().
+The read of pid_params gets more after commit a4675fbc4a7a ("cpufreq:
+intel_pstate: Replace timers with utilization update callbacks")
 
-On 06/27/2016 06:29 AM, Viresh Kumar wrote:
-> cpufreq drivers aren't required to provide a sorted frequency table
-> today, and even the ones which provide a sorted table aren't handled
-> efficiently by cpufreq core.
->
-> This patch adds infrastructure to verify if the freq-table provided by
-> the drivers is sorted or not, and use efficient helpers if they are
-> sorted.
-<snip>
-> @@ -610,6 +617,227 @@ int cpufreq_boost_trigger_state(int state);
->   int cpufreq_boost_enabled(void);
->   int cpufreq_enable_boost_support(void);
->   bool policy_has_boost_freq(struct cpufreq_policy *policy);
-> +
-> +/* Find lowest freq at or above target in a table in ascending order */
-> +static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
-> +					      unsigned int target_freq)
-> +{
-> +	struct cpufreq_frequency_table *table = policy->freq_table;
-> +	unsigned int freq;
-> +	int i, best = -1;
-> +
-> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> +		freq = table[i].frequency;
-> +
-> +		if (freq >= target_freq)
-> +			return i;
-> +
-> +		best = i;
-> +	}
-> +
-> +	return best;
-> +}
-> +
-> +/* Find lowest freq at or above target in a table in descending order */
-> +static inline int cpufreq_table_find_index_dl(struct cpufreq_policy *policy,
-> +					      unsigned int target_freq)
-> +{
-> +	struct cpufreq_frequency_table *table = policy->freq_table;
-> +	unsigned int freq;
-> +	int i, best = -1;
-> +
-> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> +		freq = table[i].frequency;
-> +
-> +		if (freq == target_freq)
-> +			return i;
-> +
-> +		if (freq > target_freq) {
-> +			best = i;
-> +			continue;
-> +		}
-> +
-> +		/* No freq found below target_freq */
+pstate_funcs is written once by copy_cpu_funcs() during initialization,
+and thereafter is mostly read by hot path intel_pstate_update_util()
 
-"below" should be "above"
+hwp_active is written to once during initialization and thereafter is
+mostly read by hot path intel_pstate_update_util().
 
-> +/* Find closest freq to target in a table in ascending order */
-> +static inline int cpufreq_table_find_index_ac(struct cpufreq_policy *policy,
-> +					      unsigned int target_freq)
-> +{
-> +	struct cpufreq_frequency_table *table = policy->freq_table;
-> +	unsigned int freq;
-> +	int i, best = -1;
-> +
-> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> +		freq = table[i].frequency;
-> +
-> +		if (freq == target_freq)
-> +			return i;
-> +
-> +		if (freq < target_freq) {
-> +			best = i;
-> +			continue;
-> +		}
-> +
-> +		/* No freq found below target_freq */
-> +		if (best == -1)
-> +			return i;
-> +
-> +		/* Choose the closest freq */
-> +		if (target_freq - table[best].frequency > freq - target_freq)
-> +			return i;
-> +
-> +		return best;
-> +	}
-> +
-> +	return best;
-> +}
-> +
-> +/* Find closest freq to target in a table in descending order */
-> +static inline int cpufreq_table_find_index_dc(struct cpufreq_policy *policy,
-> +					      unsigned int target_freq)
-> +{
-> +	struct cpufreq_frequency_table *table = policy->freq_table;
-> +	unsigned int freq;
-> +	int i, best = -1;
-> +
-> +	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
-> +		freq = table[i].frequency;
-> +
-> +		if (freq == target_freq)
-> +			return i;
-> +
-> +		if (freq > target_freq) {
-> +			best = i;
-> +			continue;
-> +		}
-> +
-> +		/* No freq found below target_freq */
+The fact that they are mostly read and not written to makes them
+candidates for __read_mostly declarations.
 
-"below" should be "above"
+Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
+---
+ drivers/cpufreq/intel_pstate.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> +		if (best == -1)
-> +			return i;
-> +
-> +		/* Choose the closest freq */
-> +		if (target_freq - table[best].frequency > freq - target_freq)
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 861bcba..2eda50d 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -281,9 +281,9 @@ struct cpu_defaults {
+ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu);
+ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu);
+ 
+-static struct pstate_adjust_policy pid_params;
+-static struct pstate_funcs pstate_funcs;
+-static int hwp_active;
++static struct pstate_adjust_policy pid_params __read_mostly;
++static struct pstate_funcs pstate_funcs __read_mostly;
++static int hwp_active __read_mostly;
+ 
+ #ifdef CONFIG_ACPI
+ static bool acpi_ppc;
+-- 
+2.8.1
 
-Here, table[best].frequency > target_freq, and freq < and target_freq, 
-so you should reverse the sign of both sides of the inequation:
-
-	if (table[best].frequency - target_freq > target_freq - freq)
-
-> +			return i;
-> +
-> +		return best;
-> +	}
-> +
-> +	return best;
-> +}
-
-Regards,
-Francesco
