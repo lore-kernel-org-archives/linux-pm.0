@@ -1,68 +1,43 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 4/5] PM / devfreq: make event/exynos-nocp
- DEVFREQ_EVENT_EXYNOS_NOCP tristate
-Date: Mon, 27 Jun 2016 11:29:14 +0900
-Message-ID: <57708F7A.70707@samsung.com>
-References: <20160625184351.5045-1-paul.gortmaker@windriver.com>
- <CGME20160625184526epcas1p19ff89d95186db96de6a9b38eee44c0d2@epcas1p1.samsung.com>
- <20160625184351.5045-5-paul.gortmaker@windriver.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V5 0/2] cpufreq: Sorted policy->freq_table
+Date: Mon, 27 Jun 2016 09:59:32 +0530
+Message-ID: <cover.1467001203.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20160625184351.5045-5-paul.gortmaker@windriver.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-kernel@vger.kernel.org
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Paul,
+Hi Rafael,
 
-On 2016=EB=85=84 06=EC=9B=94 26=EC=9D=BC 03:43, Paul Gortmaker wrote:
-> The Kconfig currently controlling compilation of this code is:
->=20
-> event/Kconfig:config DEVFREQ_EVENT_EXYNOS_NOCP
-> event/Kconfig:  bool "EXYNOS NoC (Network On Chip) Probe DEVFREQ even=
-t Driver"
->=20
-> ...meaning that it currently is not being built as a module by anyone=
-=2E
->=20
-> Rather than rip out the existing modular code, Chanwoo indicated
-> that he'd rather see the driver offered as tristate.
->=20
-> I don't have the hardware for runtime validation, so this change
-> is only validated for compile and modpost.
->=20
-> Cc: Chanwoo Choi <cw00.choi@samsung.com>
-> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-samsung-soc@vger.kernel.org
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> ---
->  drivers/devfreq/event/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/devfreq/event/Kconfig b/drivers/devfreq/event/Kc=
-onfig
-> index 1e8b4f469f38..96ea29d1ede5 100644
-> --- a/drivers/devfreq/event/Kconfig
-> +++ b/drivers/devfreq/event/Kconfig
-> @@ -14,7 +14,7 @@ menuconfig PM_DEVFREQ_EVENT
->  if PM_DEVFREQ_EVENT
-> =20
->  config DEVFREQ_EVENT_EXYNOS_NOCP
-> -	bool "EXYNOS NoC (Network On Chip) Probe DEVFREQ event Driver"
-> +	tristate "EXYNOS NoC (Network On Chip) Probe DEVFREQ event Driver"
->  	depends on ARCH_EXYNOS
->  	select PM_OPP
->  	help
->=20
+This series is aimed to make traversing of cpufreq table more efficient
+for platforms that already sort the frequency tables. The cpufreq core
+now checks if the freq table is sorted and applies a different set of
+helpers on such tables while traversing them.
 
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+All the patches are pushed here for testing in case anyone wants to try:
+git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/sorted-freq-table
 
-Regards,
-Chanwoo Choi
+V4->V4:
+- s/cpufreq_table_find_index_unsorted/cpufreq_table_index_unsorted
+- return error for duplicate frequencies
+- freq-table-sorted is an enum now
+- Remove freq_is_invalid() and clamp the frequencies at the top of few
+  helpers.
+- Remove few checks which were impossible to hit (best == -1)
+
+Viresh Kumar (2):
+  cpufreq: Handle sorted frequency tables more efficiently
+  cpufreq: Reuse new freq-table helpers
+
+ drivers/cpufreq/acpi-cpufreq.c         |  14 +-
+ drivers/cpufreq/amd_freq_sensitivity.c |   4 +-
+ drivers/cpufreq/cpufreq_ondemand.c     |   6 +-
+ drivers/cpufreq/freq_table.c           |  73 ++++++++--
+ drivers/cpufreq/powernv-cpufreq.c      |   3 +-
+ drivers/cpufreq/s5pv210-cpufreq.c      |   3 +-
+ include/linux/cpufreq.h                | 234 ++++++++++++++++++++++++++++++++-
+ 7 files changed, 306 insertions(+), 31 deletions(-)
+
+-- 
+2.7.4
