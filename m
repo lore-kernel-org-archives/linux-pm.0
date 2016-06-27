@@ -1,357 +1,51 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v3] x86/power/64: Fix kernel text mapping corruption during image restoration (was: Re: ktime_get_ts64() splat during resume)
-Date: Mon, 27 Jun 2016 16:24:22 +0200
-Message-ID: <1735047.Yzv12qmPPB@vostro.rjw.lan>
-References: <20160617105435.GB15997@pd.tnic> <96a692a0-08eb-6d64-d396-82bee5d7a0a1@deltatee.com> <CAGXu5j+1_06mKVsV2BeBZtitRk8GtjMPH8_zAxocfxtp7NeLXg@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 1/2] Documentation: Add sbs-manager device tree node documentation
+Date: Mon, 27 Jun 2016 10:28:35 -0500
+Message-ID: <CAL_JsqKTQLD72Vx-PaFRiUegNhY30pmD7ewEXtoLNj4mj8=phA@mail.gmail.com>
+References: <1466622436-27963-1-git-send-email-karl-heinz@schneider-inet.de>
+ <1466622436-27963-2-git-send-email-karl-heinz@schneider-inet.de>
+ <20160624175014.GA29990@rob-hp-laptop> <83b7648c-43d6-7a32-29bb-65f2606399fd@axentia.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGXu5j+1_06mKVsV2BeBZtitRk8GtjMPH8_zAxocfxtp7NeLXg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>, Logan Gunthorpe <logang@deltatee.com>, Borislav Petkov <bp@alien8.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <83b7648c-43d6-7a32-29bb-65f2606399fd@axentia.se>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Peter Rosin <peda@axentia.se>
+Cc: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 21, 2016 11:04:41 AM Kees Cook wrote:
-> On Mon, Jun 20, 2016 at 9:35 PM, Logan Gunthorpe <logang@deltatee.com> wrote:
-> > Hey Rafael,
-> >
-> > This patch appears to be working on my laptop. Thanks.
-> 
-> Same for me: resume still works with KASLR in my tests too.
+On Sun, Jun 26, 2016 at 5:35 PM, Peter Rosin <peda@axentia.se> wrote:
+> On 2016-06-24 19:50, Rob Herring wrote:
+>> On Wed, Jun 22, 2016 at 09:07:15PM +0200, Karl-Heinz Schneider wrote:
+>>> This patch adds device tree documentation for the sbs-manager
+>
+> *snip*
+>
+>>> +
+>>> +From OS view the device is basically an i2c-mux used to communicate with up to
+>>> +four smart battery devices at address 0xb. The driver actually implements this
+>>> +behaviour. So standard i2c-mux nodes can be used to register up to four slave
+>>> +batteries. Channels will be numerated as 1, 2, 4 and 8.
+>>> +
+>>> +Example:
+>>> +
+>>> +batman@0a {
+>>> +    compatible = "sbs,sbs-manager";
+>>> +    reg = <0x0a>;
+>>> +    sbsm,i2c-retry-count = <3>;
+>>> +    #address-cells = <1>;
+>>> +    #size-cells = <0>;
+>>> +
+>>> +    channel1@1 {
+>>
+>> channel@1
+>>
+>> Do we have a standard node name for mux nodes? If not, we should.
+>
+> No name is enforced by the i2c mux support code, but I think "i2c"
+> dominates, and quite possibly it is the only documented name?
 
-Unfortunately, Boris still sees post-resume memory corruption with the patch
-you have tested, but that turns out to be a result of some super-weird
-corruption of a pointer on the stack which leads to a store at a wrong address
-(and there's no way it can be related to the rest of the patch).
+The kernel generally doesn't care what node names are, but standard
+naming is convention. If "i2c" is most common, then go with that.
 
-We have verified that it can be avoided by rearranging set_up_temporary_text_mapping()
-to use fewer local variables and the appended patch contains this modification.
-
-I also went on and changed relocate_restore_code() slightly in a similar fashion,
-but all of those changes should not affect the behavior (unless there's something
-insane going on behind the curtains, that is).
-
-Kees, Logan, Boris, please try this one and let me know if it works for you.
-
-Thanks,
-Rafael
-
-
----
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH v2] x86/power/64: Fix kernel text mapping corruption during image restoration
-
-Logan Gunthorpe reports that hibernation stopped working reliably for
-him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
-and rodata).
-
-That turns out to be a consequence of a long-standing issue with the
-64-bit image restoration code on x86, which is that the temporary
-page tables set up by it to avoid page tables corruption when the
-last bits of the image kernel's memory contents are copied into
-their original page frames re-use the boot kernel's text mapping,
-but that mapping may very well get corrupted just like any other
-part of the page tables.  Of course, if that happens, the final
-jump to the image kernel's entry point will go to nowhere.
-
-The exact reason why commit ab76f7b4ab23 matters here is that it
-sometimes causes a PMD of a large page to be split into PTEs
-that are allocated dynamically and get corrupted during image
-restoration as described above.
-
-To fix that issue note that the code copying the last bits of the
-image kernel's memory contents to the page frames occupied by them
-previoulsy doesn't use the kernel text mapping, because it runs from
-a special page covered by the identity mapping set up for that code
-from scratch.  Hence, the kernel text mapping is only needed before
-that code starts to run and then it will only be used just for the
-final jump to the image kernel's entry point.
-
-Accordingly, the temporary page tables set up in swsusp_arch_resume()
-on x86-64 need to contain the kernel text mapping too.  That mapping
-is only going to be used for the final jump to the image kernel, so
-it only needs to cover the image kernel's entry point, because the
-first thing the image kernel does after getting control back is to
-switch over to its own original page tables.  Moreover, the virtual
-address of the image kernel's entry point in that mapping has to be
-the same as the one mapped by the image kernel's page tables.
-
-With that in mind, modify the x86-64's arch_hibernation_header_save()
-and arch_hibernation_header_restore() routines to pass the physical
-address of the image kernel's entry point (in addition to its virtual
-address) to the boot kernel (a small piece of assembly code involved
-in passing the entry point's virtual address to the image kernel is
-not necessary any more after that, so drop it).  Update RESTORE_MAGIC
-too to reflect the image header format change.
-
-Next, in set_up_temporary_mappings(), use the physical and virtual
-addresses of the image kernel's entry point passed in the image
-header to set up a minimum kernel text mapping (using memory pages
-that won't be overwritten by the image kernel's memory contents) that
-will map those addresses to each other as appropriate.
-
-This makes the concern about the possible corruption of the original
-boot kernel text mapping go away and if the the minimum kernel text
-mapping used for the final jump marks the image kernel's entry point
-memory as executable, the jump to it is guaraneed to succeed.
-
-Fixes: ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table and rodata)
-Link: http://marc.info/?l=linux-pm&m=146372852823760&w=2
-Reported-by: Logan Gunthorpe <logang@deltatee.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- arch/x86/power/hibernate_64.c     |   90 ++++++++++++++++++++++++++++++++------
- arch/x86/power/hibernate_asm_64.S |   55 ++++++++++-------------
- 2 files changed, 102 insertions(+), 43 deletions(-)
-
-Index: linux-pm/arch/x86/power/hibernate_64.c
-===================================================================
---- linux-pm.orig/arch/x86/power/hibernate_64.c
-+++ linux-pm/arch/x86/power/hibernate_64.c
-@@ -28,6 +28,7 @@ extern asmlinkage __visible int restore_
-  * kernel's text (this value is passed in the image header).
-  */
- unsigned long restore_jump_address __visible;
-+unsigned long jump_address_phys;
- 
- /*
-  * Value of the cr3 register from before the hibernation (this value is passed
-@@ -37,7 +38,43 @@ unsigned long restore_cr3 __visible;
- 
- pgd_t *temp_level4_pgt __visible;
- 
--void *relocated_restore_code __visible;
-+unsigned long relocated_restore_code __visible;
-+
-+static int set_up_temporary_text_mapping(void)
-+{
-+	pmd_t *pmd;
-+	pud_t *pud;
-+
-+	/*
-+	 * The new mapping only has to cover the page containing the image
-+	 * kernel's entry point (jump_address_phys), because the switch over to
-+	 * it is carried out by relocated code running from a page allocated
-+	 * specifically for this purpose and covered by the identity mapping, so
-+	 * the temporary kernel text mapping is only needed for the final jump.
-+	 * Moreover, in that mapping the virtual address of the image kernel's
-+	 * entry point must be the same as its virtual address in the image
-+	 * kernel (restore_jump_address), so the image kernel's
-+	 * restore_registers() code doesn't find itself in a different area of
-+	 * the virtual address space after switching over to the original page
-+	 * tables used by the image kernel.
-+	 */
-+	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-+	if (!pud)
-+		return -ENOMEM;
-+
-+	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
-+	if (!pmd)
-+		return -ENOMEM;
-+
-+	set_pmd(pmd + pmd_index(restore_jump_address),
-+		__pmd((jump_address_phys & PMD_MASK) | __PAGE_KERNEL_LARGE_EXEC));
-+	set_pud(pud + pud_index(restore_jump_address),
-+		__pud(__pa(pmd) | _KERNPG_TABLE));
-+	set_pgd(temp_level4_pgt + pgd_index(restore_jump_address),
-+		__pgd(__pa(pud) | _KERNPG_TABLE));
-+
-+	return 0;
-+}
- 
- static void *alloc_pgt_page(void *context)
- {
-@@ -59,9 +96,10 @@ static int set_up_temporary_mappings(voi
- 	if (!temp_level4_pgt)
- 		return -ENOMEM;
- 
--	/* It is safe to reuse the original kernel mapping */
--	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
--		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
-+	/* Prepare a temporary mapping for the kernel text */
-+	result = set_up_temporary_text_mapping();
-+	if (result)
-+		return result;
- 
- 	/* Set up the direct mapping from scratch */
- 	for (i = 0; i < nr_pfn_mapped; i++) {
-@@ -78,19 +116,44 @@ static int set_up_temporary_mappings(voi
- 	return 0;
- }
- 
-+static int relocate_restore_code(void)
-+{
-+	pgd_t *pgd;
-+	pmd_t *pmd;
-+
-+	relocated_restore_code = get_safe_page(GFP_ATOMIC);
-+	if (!relocated_restore_code)
-+		return -ENOMEM;
-+
-+	memcpy((void *)relocated_restore_code, &core_restore_code, PAGE_SIZE);
-+
-+	/* Make the page containing the relocated code executable */
-+	pgd = (pgd_t *)__va(read_cr3()) + pgd_index(relocated_restore_code);
-+	pmd = pmd_offset(pud_offset(pgd, relocated_restore_code),
-+			 relocated_restore_code);
-+	if (pmd_large(*pmd)) {
-+		set_pmd(pmd, __pmd(pmd_val(*pmd) & ~_PAGE_NX));
-+	} else {
-+		pte_t *pte = pte_offset_kernel(pmd, relocated_restore_code);
-+
-+		set_pte(pte, __pte(pte_val(*pte) & ~_PAGE_NX));
-+	}
-+
-+	return 0;
-+}
-+
- int swsusp_arch_resume(void)
- {
- 	int error;
- 
- 	/* We have got enough memory and from now on we cannot recover */
--	if ((error = set_up_temporary_mappings()))
-+	error = set_up_temporary_mappings();
-+	if (error)
- 		return error;
- 
--	relocated_restore_code = (void *)get_safe_page(GFP_ATOMIC);
--	if (!relocated_restore_code)
--		return -ENOMEM;
--	memcpy(relocated_restore_code, &core_restore_code,
--	       &restore_registers - &core_restore_code);
-+	error = relocate_restore_code();
-+	if (error)
-+		return error;
- 
- 	restore_image();
- 	return 0;
-@@ -109,11 +172,12 @@ int pfn_is_nosave(unsigned long pfn)
- 
- struct restore_data_record {
- 	unsigned long jump_address;
-+	unsigned long jump_address_phys;
- 	unsigned long cr3;
- 	unsigned long magic;
- };
- 
--#define RESTORE_MAGIC	0x0123456789ABCDEFUL
-+#define RESTORE_MAGIC	0x123456789ABCDEF0UL
- 
- /**
-  *	arch_hibernation_header_save - populate the architecture specific part
-@@ -126,7 +190,8 @@ int arch_hibernation_header_save(void *a
- 
- 	if (max_size < sizeof(struct restore_data_record))
- 		return -EOVERFLOW;
--	rdr->jump_address = restore_jump_address;
-+	rdr->jump_address = (unsigned long)&restore_registers;
-+	rdr->jump_address_phys = __pa_symbol(&restore_registers);
- 	rdr->cr3 = restore_cr3;
- 	rdr->magic = RESTORE_MAGIC;
- 	return 0;
-@@ -142,6 +207,7 @@ int arch_hibernation_header_restore(void
- 	struct restore_data_record *rdr = addr;
- 
- 	restore_jump_address = rdr->jump_address;
-+	jump_address_phys = rdr->jump_address_phys;
- 	restore_cr3 = rdr->cr3;
- 	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
- }
-Index: linux-pm/arch/x86/power/hibernate_asm_64.S
-===================================================================
---- linux-pm.orig/arch/x86/power/hibernate_asm_64.S
-+++ linux-pm/arch/x86/power/hibernate_asm_64.S
-@@ -44,9 +44,6 @@ ENTRY(swsusp_arch_suspend)
- 	pushfq
- 	popq	pt_regs_flags(%rax)
- 
--	/* save the address of restore_registers */
--	movq	$restore_registers, %rax
--	movq	%rax, restore_jump_address(%rip)
- 	/* save cr3 */
- 	movq	%cr3, %rax
- 	movq	%rax, restore_cr3(%rip)
-@@ -57,31 +54,34 @@ ENTRY(swsusp_arch_suspend)
- ENDPROC(swsusp_arch_suspend)
- 
- ENTRY(restore_image)
--	/* switch to temporary page tables */
--	movq	$__PAGE_OFFSET, %rdx
--	movq	temp_level4_pgt(%rip), %rax
--	subq	%rdx, %rax
--	movq	%rax, %cr3
--	/* Flush TLB */
--	movq	mmu_cr4_features(%rip), %rax
--	movq	%rax, %rdx
--	andq	$~(X86_CR4_PGE), %rdx
--	movq	%rdx, %cr4;  # turn off PGE
--	movq	%cr3, %rcx;  # flush TLB
--	movq	%rcx, %cr3;
--	movq	%rax, %cr4;  # turn PGE back on
--
- 	/* prepare to jump to the image kernel */
--	movq	restore_jump_address(%rip), %rax
--	movq	restore_cr3(%rip), %rbx
-+	movq	restore_jump_address(%rip), %r8
-+	movq	restore_cr3(%rip), %r9
-+
-+	/* prepare to switch to temporary page tables */
-+	movq	temp_level4_pgt(%rip), %rax
-+	movq	mmu_cr4_features(%rip), %rbx
- 
- 	/* prepare to copy image data to their original locations */
- 	movq	restore_pblist(%rip), %rdx
-+
-+	/* jump to relocated restore code */
- 	movq	relocated_restore_code(%rip), %rcx
- 	jmpq	*%rcx
- 
- 	/* code below has been relocated to a safe page */
- ENTRY(core_restore_code)
-+	/* switch to temporary page tables */
-+	movq	$__PAGE_OFFSET, %rcx
-+	subq	%rcx, %rax
-+	movq	%rax, %cr3
-+	/* flush TLB */
-+	movq	%rbx, %rcx
-+	andq	$~(X86_CR4_PGE), %rcx
-+	movq	%rcx, %cr4;  # turn off PGE
-+	movq	%cr3, %rcx;  # flush TLB
-+	movq	%rcx, %cr3;
-+	movq	%rbx, %cr4;  # turn PGE back on
- .Lloop:
- 	testq	%rdx, %rdx
- 	jz	.Ldone
-@@ -96,24 +96,17 @@ ENTRY(core_restore_code)
- 	/* progress to the next pbe */
- 	movq	pbe_next(%rdx), %rdx
- 	jmp	.Lloop
-+
- .Ldone:
- 	/* jump to the restore_registers address from the image header */
--	jmpq	*%rax
--	/*
--	 * NOTE: This assumes that the boot kernel's text mapping covers the
--	 * image kernel's page containing restore_registers and the address of
--	 * this page is the same as in the image kernel's text mapping (it
--	 * should always be true, because the text mapping is linear, starting
--	 * from 0, and is supposed to cover the entire kernel text for every
--	 * kernel).
--	 *
--	 * code below belongs to the image kernel
--	 */
-+	jmpq	*%r8
- 
-+	 /* code below belongs to the image kernel */
-+	.align PAGE_SIZE
- ENTRY(restore_registers)
- 	FRAME_BEGIN
- 	/* go back to the original page tables */
--	movq    %rbx, %cr3
-+	movq    %r9, %cr3
- 
- 	/* Flush TLB, including "global" things (vmalloc) */
- 	movq	mmu_cr4_features(%rip), %rax
+Rob
