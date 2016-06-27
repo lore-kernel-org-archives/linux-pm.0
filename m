@@ -1,184 +1,159 @@
-From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Subject: Re: [PATCH 1/2] Documentation: Add sbs-manager device tree node
- documentation
-Date: Mon, 27 Jun 2016 23:10:24 +0200
-Message-ID: <1467061824.9121.33.camel@amnesix>
-References: <1466622436-27963-1-git-send-email-karl-heinz@schneider-inet.de>
-	 <1466622436-27963-2-git-send-email-karl-heinz@schneider-inet.de>
-	 <20160624175014.GA29990@rob-hp-laptop>
-	 <9ccbeeb9-3612-fe07-3396-48da7c832bc6@electromag.com.au>
-	 <CAL_JsqL38hnQpchy8q+yk1rZQ1ngF4JUwFgN0V=mGyAyAq1GVg@mail.gmail.com>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: CPU1 does not come back online after failed suspend request
+Date: Mon, 27 Jun 2016 23:12:15 +0200
+Message-ID: <577196AF.1010201@free.fr>
+References: <576AAEFA.1050509@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from schneider-inet.de ([85.214.76.205]:33363 "EHLO
-	h1714509.stratoserver.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751638AbcF0VKi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 17:10:38 -0400
-In-Reply-To: <CAL_JsqL38hnQpchy8q+yk1rZQ1ngF4JUwFgN0V=mGyAyAq1GVg@mail.gmail.com>
+Received: from smtp4-g21.free.fr ([212.27.42.4]:32909 "EHLO smtp4-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751638AbcF0VMh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Jun 2016 17:12:37 -0400
+In-Reply-To: <576AAEFA.1050509@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Phil Reid <preid@electromag.com.au>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>
+To: linux-pm <linux-pm@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, Kevin Hilman <khilman@kernel.org>, Sebastian Frias <sf84@laposte.net>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Mark Rutland <mark.rutland@arm.com>, Will Deacon <will.deacon@arm.com>
 
-Am Sonntag, den 26.06.2016, 09:05 -0500 schrieb Rob Herring:
-> On Sun, Jun 26, 2016 at 12:21 AM, Phil Reid <preid@electromag.com.au> wrote:
-> > G'day Rob
-> >
-> > Couple of thoughts / question below.
-> >
-> > On 25/06/2016 01:50, Rob Herring wrote:
-> >>
-> >> On Wed, Jun 22, 2016 at 09:07:15PM +0200, Karl-Heinz Schneider wrote:
-> >>>
-> >>> This patch adds device tree documentation for the sbs-manager
-> >>>
-> >>> Reviewed-by: Phil Reid <preid@electromag.com.au>
-> >>> Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-> >>> ---
-> >>>  .../devicetree/bindings/power/sbs,sbs-manager.txt  | 58
-> >>> ++++++++++++++++++++++
-> >>>  1 file changed, 58 insertions(+)
-> >>>  create mode 100644
-> >>> Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
-> >>>
-> >>> diff --git a/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
-> >>> b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
-> >>> new file mode 100644
-> >>> index 0000000..d52b466
-> >>> --- /dev/null
-> >>> +++ b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
-> >>> @@ -0,0 +1,58 @@
-> >>> +Binding for sbs-manager
-> >>> +
-> >>> +Required properties:
-> >>> +- compatible: should be "sbs,sbs-manager" or "lltc,ltc1760" if device is
-> >>> a
-> >>> +    ltc1760.
-> >>
-> >>
-> >> sbs is not a vendor. What chip is sbs-manager? I suspect you should drop
-> >> it and only list specific chips.
-> >
-> > This follows the interface to the existing paired sbs,sbs-battery driver
-> > defined in power/sbs-battery.c
-> > It implements a generic driver for the Smart Battery System Manager
-> > Specification.
-> > Spec available here: http://sbs-forum.org/specs/sbsm100b.pdf
-> >
-> > In addition the ltc1760 extends the spec.
-> 
-> Chips will always vary from specs in some way either on purpose or by
-> accident. sbs,sbs-manager is fine as a fallback string, but there
-> should always be a chip specific string first.
+On 22/06/2016 17:30, Mason wrote:
 
-All right. Will change compatible string to "lltc,ltc1760" and mention
-in the Required properties section that "sbs,sbs-manager" is usable as
-fallback.
+> My dual-core platform defines the usual hooks:
 > 
-> >>> +- reg: integer, i2c address of the device. Should be <0xa>.
-> >>> +
-> >>> +Optional properties:
-> >>> +- sbsm,i2c-retry-count: integer, number of retries for trying to read or
-> >>> write
-> >>> +    to registers. Default: 1
-> >>
-> >>
-> >> Seems like a driver setting. Is having a retry in the driver a problem
-> >> if the h/w works and never actually needs it?
-> >
-> > Similarly the sbs-battery driver specifies the same same retry behaviour.
-> > And is a model for this implementation.
-> >
-> > I've found the ltc1760 and sbs batteries to be problematic when
-> > communicating to them.
-> > A lot of drivers (and the associated hardware) don't handle multiple bus
-> > masters well.
-> > The bus arbitation doesn't seem to work correctly.
-> > Retries where the only thing I could do to to get things to work reliably.
-> > Mostly means the driver needs fixing, but in one case the designware core
-> > hardware seemed to be the problem for me.
+> static const struct smp_operations tango_smp_ops __initconst = {
+> 	.smp_boot_secondary	= tango_boot_secondary,
+> 	.cpu_kill		= tango_cpu_kill,
+> 	.cpu_die		= tango_cpu_die,
+> };
 > 
-> I'm not questioning the need for a retry. I'm questioning the need to
-> limit the retries and tune per platform. What would be the issue if
-> the driver hardcodes the number of retries to 10? This will work for
-> any h/w that needs 0, 1, 2, ..., or 10 retries. The only issue would
-> be how long until it errors out.
+> static const struct platform_suspend_ops tango_pm_ops = {
+> 	.enter = tango_pm_enter,
+> 	.valid = tango_pm_valid,
+> };
 > 
-> And yes, I can confirm DW i2c h/w is a POS at least for some versions.
+> static int tango_pm_powerdown(unsigned long data)
+> {
+> 	// tango_suspend(virt_to_phys(cpu_resume)); // SHOULD NOT RETURN
+> 	printk("DEBUG: %s\n", __func__);
+> 	// INSERT ONE SECOND DELAY
+> 	return 42;
+> }
 > 
-> >>> +From OS view the device is basically an i2c-mux used to communicate with
-> >>> up to
-> >>> +four smart battery devices at address 0xb. The driver actually
-> >>> implements this
-> >>> +behaviour. So standard i2c-mux nodes can be used to register up to four
-> >>> slave
-> >>> +batteries. Channels will be numerated as 1, 2, 4 and 8.
-> >>> +
-> >>> +Example:
-> >>> +
-> >>> +batman@0a {
-> >>> +    compatible = "sbs,sbs-manager";
-> >>> +    reg = <0x0a>;
-> >>> +    sbsm,i2c-retry-count = <3>;
-> >>> +    #address-cells = <1>;
-> >>> +    #size-cells = <0>;
-> >>> +
-> >>> +    channel1@1 {
-> >>
-> >>
-> >> channel@1
-> >>
-> >> Do we have a standard node name for mux nodes? If not, we should.
-> >>
-> >>> +        #address-cells = <1>;
-> >>> +        #size-cells = <0>;
-> >>> +        reg = <1>;
-> >>> +
-> >>> +        battery1@0b {
-> >>
-> >>
-> >> battery@b
-> >>
-> >>> +            compatible = "sbs-battery";
-> >>
-> >>
-> >> This should be an actual battery model. Or all this information is
-> >> generic, you don't really need it in DT.
-> >
-> > Do we really want to restrict to battery model?
+> static int tango_pm_enter(suspend_state_t state)
+> {
+> 	printk("DEBUG: %s\n", __func__);
+> 	int ret = cpu_suspend(0, tango_pm_powerdown);
+> 	printk("DEBUG: cpu_suspend returned %d\n", ret);
+> 	return 0;
+> }
 > 
-> You're not. It is just being explicit in case some battery needs
-> special handling and you only find that out after writing the binding.
-> The DT model is such that the kernel can be updated with fixes without
-> updating the DT. Specific compatible strings are needed for that to
-> work.
+> I'm trying to test the error path, i.e. when tango_pm_powerdown()
+> does in fact return.
 > 
-> > I have hardware where complete different sbs compliant batteries can be
-> > plugged in.
-> > Without the compatible flag here how do you get the sbs-battery driver to
-> > load and manage the battery itself?
-> > Or are you suggesting the manager should do this somehow?
-> > I'm still learning...
+> Secondary core off-lining via /sys/devices/system/cpu/cpu1/online
+> seems to work as expected:
 > 
-> sbs,sbs-battery can still be a fall-back compatible string.
+> # cat /sys/devices/system/cpu/online     
+> 0-1
+> # echo 0 > /sys/devices/system/cpu/cpu1/online
+> [   64.022349] CPU1: shutdown
+> [   64.022354] DEBUG: tango_cpu_die
+> [   64.028370] DEBUG: tango_cpu_kill
+> # cat /sys/devices/system/cpu/online 
+> 0
+> # echo 1 > /sys/devices/system/cpu/cpu1/online
+> [   73.955994] DEBUG: tango_boot_secondary
+> # cat /sys/devices/system/cpu/online 
+> 0-1
+> 
+> 
+> But the secondary core does not come back online after a failed
+> suspend attempt (see below). I tried adding a 1 second delay in
+> tango_pm_powerdown() to rule out timing issues.
+> 
+> # echo mem > /sys/power/state
+> [   16.328980] PM: Syncing filesystems ... done.
+> [   16.336844] Freezing user space processes ... (elapsed 0.001 seconds) done.
+> [   16.345421] Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
+> [   16.354034] Suspending console(s) (use no_console_suspend to debug)
+> [   16.362965] PM: suspend of devices complete after 1.764 msecs
+> [   16.363870] PM: late suspend of devices complete after 0.896 msecs
+> [   16.364519] PM: noirq suspend of devices complete after 0.642 msecs
+> [   16.364522] Disabling non-boot CPUs ...
+> [   16.382340] CPU1: shutdown
+> [   16.382344] DEBUG: tango_cpu_die
+> [   16.382346] DEBUG: tango_cpu_kill
+> [   16.392635] DEBUG: tango_pm_enter
+> [   16.392635] DEBUG: tango_pm_powerdown
+> [   16.392635] DEBUG: cpu_suspend returned 42
+> [   16.392664] Enabling non-boot CPUs ...
+> [   16.412544] DEBUG: tango_boot_secondary
+> [   17.411927] CPU1: failed to come online
+> [   17.432448] Error taking CPU1 up: -5
+> [   17.433034] PM: noirq resume of devices complete after 0.576 msecs
+> [   17.433750] PM: early resume of devices complete after 0.688 msecs
+> [   17.435121] nb8800 26000.ethernet eth0: Link is Down
+> [   17.435301] PM: resume of devices complete after 1.541 msecs
+> [   17.516826] Restarting tasks ... done.
+> 
+> [root@toto5 ~]# cat /sys/devices/system/cpu/online
+> 0
+> 
+> As you can see, cpu1 did not come back online.
+> [ 17.411927] CPU1: failed to come online
+> [ 17.432448] Error taking CPU1 up: -5
+> 
+> The other weirdness is that my 1 second delay happens between
+> "DEBUG: tango_pm_powerdown" and "DEBUG: cpu_suspend returned 42",
+> yet the timestamps for these two lines are identical. Is that
+> because that the timestamp variable is not updated deep within
+> the suspend framework? (My timer ticks at 27 MHz.)
+> 
+> Any idea what might be going wrong?
 
-Consider this scenario: compatible = "ti,bq2060", "sbs,sbs-battery";
+I've made some progress on this issue, thanks to Mark Rutland.
 
-By now the there is no special "bq2060" driver. But my battery might be
-on of those. I code the DT this way everything should work find
-(sbs-battery driver will bind).
-If battery is removable and battery device changes everything should
-still work fine hence sbs-battery works on subset of registers of the
-standard.
+The FW allows only one thread at a time - similar to the BKL
+of old. This means kill() on cpu0 fails, if die() is still
+executing on cpu1. The issue would be even worse with 4 cores,
+as die() may fail also.
 
-But what happens if a kernel update is done and a bq2060 driver appears
-which might want access to registers not part of the standard and the
-(now changed) device doesn't provide?
-> 
-> Rob
+Basically, I was assuming that Linux guaranteed some kind of
+synchronization - by first calling die(), waiting for die()
+to "complete", and then calling kill() - but there can be no
+such synchronization.
 
-Karl-Heinz
+So the new plan is as follows:
 
+In die()
+Call the FW in a loop, until the given core actually "dies".
+
+static void tango_cpu_die(unsigned int cpu)
+{
+	while ( 1 )
+		tango_aux_core_die(cpu);
+}
+
+In kill()
+Since kill() and die() are not synchronized, kill() might
+try to affect cores that have not died yet.
+Call the FW in a loop, but sleep/spin a while between tries,
+to give die() a chance to run.
+
+static int tango_cpu_kill(unsigned int cpu)
+{
+	int err;
+	do {
+		//msleep(cpu); // or mdelay?
+		err = tango_aux_core_kill(cpu);
+	} while (err);
+	return 1;
+}
+
+Question: are we allowed to sleep in cpu_kill? or may we only spin?
+
+Does the above plan look acceptable, at least for my platform?
+
+Regards.
 
