@@ -1,51 +1,51 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/2] Documentation: Add sbs-manager device tree node documentation
-Date: Mon, 27 Jun 2016 10:28:35 -0500
-Message-ID: <CAL_JsqKTQLD72Vx-PaFRiUegNhY30pmD7ewEXtoLNj4mj8=phA@mail.gmail.com>
-References: <1466622436-27963-1-git-send-email-karl-heinz@schneider-inet.de>
- <1466622436-27963-2-git-send-email-karl-heinz@schneider-inet.de>
- <20160624175014.GA29990@rob-hp-laptop> <83b7648c-43d6-7a32-29bb-65f2606399fd@axentia.se>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v2 1/3] intel_pstate: Fix incorrect placement of
+ __initdata
+Date: Mon, 27 Jun 2016 10:19:04 -0700
+Message-ID: <1467047944.8970.79.camel@linux.intel.com>
+References: <1467022038-924-1-git-send-email-jszhang@marvell.com>
+	 <1467022038-924-2-git-send-email-jszhang@marvell.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <83b7648c-43d6-7a32-29bb-65f2606399fd@axentia.se>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>
-Cc: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Phil Reid <preid@electromag.com.au>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:64386 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751784AbcF0RRk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 27 Jun 2016 13:17:40 -0400
+In-Reply-To: <1467022038-924-2-git-send-email-jszhang@marvell.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jisheng Zhang <jszhang@marvell.com>, lenb@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sun, Jun 26, 2016 at 5:35 PM, Peter Rosin <peda@axentia.se> wrote:
-> On 2016-06-24 19:50, Rob Herring wrote:
->> On Wed, Jun 22, 2016 at 09:07:15PM +0200, Karl-Heinz Schneider wrote:
->>> This patch adds device tree documentation for the sbs-manager
->
-> *snip*
->
->>> +
->>> +From OS view the device is basically an i2c-mux used to communicate with up to
->>> +four smart battery devices at address 0xb. The driver actually implements this
->>> +behaviour. So standard i2c-mux nodes can be used to register up to four slave
->>> +batteries. Channels will be numerated as 1, 2, 4 and 8.
->>> +
->>> +Example:
->>> +
->>> +batman@0a {
->>> +    compatible = "sbs,sbs-manager";
->>> +    reg = <0x0a>;
->>> +    sbsm,i2c-retry-count = <3>;
->>> +    #address-cells = <1>;
->>> +    #size-cells = <0>;
->>> +
->>> +    channel1@1 {
->>
->> channel@1
->>
->> Do we have a standard node name for mux nodes? If not, we should.
->
-> No name is enforced by the i2c mux support code, but I think "i2c"
-> dominates, and quite possibly it is the only documented name?
-
-The kernel generally doesn't care what node names are, but standard
-naming is convention. If "i2c" is most common, then go with that.
-
-Rob
+On Mon, 2016-06-27 at 18:07 +0800, Jisheng Zhang wrote:
+> __initdata should be placed between the variable name and equal sign
+> (if there is) for the variable to be placed in the intended section.
+>=20
+> Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+> =C2=A0drivers/cpufreq/intel_pstate.c | 6 +++---
+> =C2=A01 file changed, 3 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/cpufreq/intel_pstate.c
+> b/drivers/cpufreq/intel_pstate.c
+> index fe9dc17..44099e9 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1574,9 +1574,9 @@ static struct cpufreq_driver
+> intel_pstate_driver =3D {
+> =C2=A0	.name		=3D "intel_pstate",
+> =C2=A0};
+> =C2=A0
+> -static int __initdata no_load;
+> -static int __initdata no_hwp;
+> -static int __initdata hwp_only;
+> +static int no_load __initdata;
+> +static int no_hwp __initdata;
+> +static int hwp_only __initdata;
+> =C2=A0static unsigned int force_load;
+> =C2=A0
+> =C2=A0static int intel_pstate_msrs_not_valid(void)
