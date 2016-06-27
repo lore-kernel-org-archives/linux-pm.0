@@ -1,56 +1,37 @@
-From: David Laight <David.Laight@ACULAB.COM>
-Subject: RE: [PATCH v2] cpuidle: Fix last_residency division
-Date: Mon, 27 Jun 2016 08:59:10 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D5F4E4E87@AcuExch.aculab.com>
-References: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <14940457.SEYBmqcunj@wuerfel> <576D595F.9090001@linux.vnet.ibm.com>
- <3748080.8f21OXxXix@wuerfel>
+From: Jisheng Zhang <jszhang@marvell.com>
+Subject: [PATCH 0/3] cpufreq: intel_pstate: trivial improvements
+Date: Mon, 27 Jun 2016 17:26:12 +0800
+Message-ID: <1467019575-664-1-git-send-email-jszhang@marvell.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <3748080.8f21OXxXix@wuerfel>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: 'Arnd Bergmann' <arnd@arndb.de>, Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "anton@samba.org" <anton@samba.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:5266 "EHLO
+	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751703AbcF0JaP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 05:30:15 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: srinivas.pandruvada@linux.intel.com, lenb@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jisheng Zhang <jszhang@marvell.com>
 
-RnJvbTogQXJuZCBCZXJnbWFubgo+IFNlbnQ6IDI0IEp1bmUgMjAxNiAyMDo0Mwo+IE9uIEZyaWRh
-eSwgSnVuZSAyNCwgMjAxNiA5OjMxOjM1IFBNIENFU1QgU2hyZXlhcyBCIFByYWJodSB3cm90ZToK
-PiA+ID4gSWYgdGhvc2UgZnVuY3Rpb25zIGFyZSBjYWxsZWQgbGVzcyBvZnRlbiB0aGFuIGNwdWlk
-bGVfZW50ZXJfc3RhdGUoKSwKPiA+ID4gd2UgY291bGQganVzdCBtb3ZlIHRoZSBkaXZpc2lvbiB0
-aGVyZS4gU2luY2UgdGhlIGRpdmlzb3IgaXMgY29uc3RhbnQsCj4gPiA+IGRvX2RpdigpIGNhbiBj
-b252ZXJ0IGl0IGludG8gYSBtdWx0aXBseSBhbmQgc2hpZnQsIG9yIHdlIGNvdWxkIHVzZQo+ID4g
-PiB5b3VyIHRoZSBjb2RlIHlvdSBzdWdnZXN0IGFib3ZlLCBvciB1c2UgYSAzMi1iaXQgZGl2aXNp
-b24gbW9zdCBvZgo+ID4gPiB0aGUgdGltZToKPiA+ID4KPiA+ID4gICAgICAgaWYgKGRpZmYgPD0g
-VUlOVF9NQVgpCj4gPiA+ICAgICAgICAgICAgICAgZGlmZl8zMiA9ICh1MzIpZGlmZiAvIE5TRUNT
-X1BFUl9VU0VDOwo+ID4gPiAgICAgICBlbHNlCj4gPiA+ICAgICAgICAgICAgICAgZGlmZl8zMiA9
-IGRpdl91NjQoZGlmZiwgTlNFQ1NfUEVSX1VTRUM7Cj4gPiA+Cj4gPiA+IHdoaWNoIGdjYyBpdHNl
-bGYgd2lsbCB0dXJuIGludG8gYSBtdWx0aXBsaWNhdGlvbiBvciBzZXJpZXMgb2YKPiA+ID4gc2hp
-ZnRzIG9uIENQVXMgb24gd2hpY2ggdGhhdCBpcyBmYXN0ZXIuCj4gPiA+Cj4gPiBJJ20gbm90IHN1
-cmUgd2hpY2ggZGl2aXNpb24gbWV0aG9kIG9mIHRoZSB0aHJlZSBzdWdnZXN0ZWQgaGVyZSB0byB1
-c2UuCj4gPiBEb2VzIGFueW9uZSBoYXZlIGEgc3Ryb25nIHByZWZlcmVuY2U/Cj4gPgo+IAo+IEl0
-IGRlcGVuZHMgb24gaG93IGFjY3VyYXRlIHdlIHdhbnQgaXQgYW5kIGhvdyBsb25nIHdlIGV4cGVj
-dAo+IHRoZSB0aW1lcyB0byBiZS4gVGhlIG9wdGltaXphdGlvbiBmb3IgdGhlIDQuMiBzZWNvbmQg
-Y3V0b2ZmCj4gZm9yIGRvaW5nIGEgMzItYml0IGRpdmlzaW9uIG9ubHkgbWFrZXMgc2Vuc2UgaWYg
-dGhlIG1ham9yaXR5Cj4gb2YgdGhlIHNsZWVwIHRpbWVzIGFyZSBiZWxvdyB0aGF0LgoKSXQgYWxz
-byBkZXBlbmRzIGlmIHRoZSBjb2RlIGFjdHVhbGx5IGNhcmVzIGFib3V0IHRoZSBsZW5ndGggb2Yg
-J2xvbmcnIHNsZWVwcy4KSSdkIGd1ZXNzIHRoYXQgZm9yIGNwdSBpZGxlIDQuMiBzZWNvbmRzIGlz
-ICdhIGxvbmcgdGltZScsIHNvIHRoZSBkaXZfdTY0KCkKcmVzdWx0IGNvdWxkIGJlIHRyZWF0ZWQg
-YXMgNC4yIHNlY29uZHMgd2l0aG91dCBjYXVzaW5nIGdyaWVmLgoKQWN0dWFsbHkgdGhlIGNvc3Qg
-b2YgYSA2NGJpdCBkaXZpZGUgYWZ0ZXIgYSA0IHNlY29uZCBzbGVlcCB3aWxsIGJlIG5vaXNlLgpP
-VE9IIGEgNjRiaXQgZGl2aWRlIGFmdGVyIGEgc2xlZXAgdGhhdCBsYXN0ZWQgYSBmZXcgbnMgd2ls
-bCBiZSBzaWduaWZpY2FudC4KCglEYXZpZAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX18KTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdApMaW51eHBwYy1kZXZA
-bGlzdHMub3psYWJzLm9yZwpodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGluZm8vbGludXhw
-cGMtZGV2
+The first patch fixes incorrect placement of __initdata
+
+The second patch is to add __init/__initdata marker to some functions
+or varaiables so that we can discard them.
+
+The third patch declares pid_params/pstate_funcs/hwp_active as
+__read_mostly, under the fact that they are mostly read and not
+written to.
+
+
+Jisheng Zhang (3):
+  intel_pstate: Fix incorrect placement of __initdata
+  intel_pstate: add __init/__initdata marker to some functions/variables
+  intel_pstate: Declare pid_params/pstate_funcs/hwp_active __read_mostly
+
+ drivers/cpufreq/intel_pstate.c | 30 +++++++++++++++---------------
+ 1 file changed, 15 insertions(+), 15 deletions(-)
+
+-- 
+2.8.1
+
