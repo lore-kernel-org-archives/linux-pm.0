@@ -1,169 +1,141 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][RFC v3] x86, hotplug: Use hlt instead of mwait if invoked from disable_nonboot_cpus
-Date: Tue, 28 Jun 2016 17:16:43 +0800
-Message-ID: <1467105403-5085-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:9094 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750871AbcF1JJf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 28 Jun 2016 05:09:35 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Icenowy Zheng <icenowy@aosc.xyz>
+Subject: [RFC PATCH 1/5] clk: sunxi: Add a driver for the PLL2 on A31/23/33
+Date: Tue, 28 Jun 2016 18:13:21 +0800
+Message-ID: <20160628101325.2522-1-icenowy@aosc.xyz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, maxime.ripard@free-electrons.com, wens@csie.org, emilio@elopez.com.ar
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, Icenowy Zheng <icenowy@aosc.xyz>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 
-Stress test from Varun Koyyalagunta reports that, the
-nonboot CPU would hang occasionally, when resuming from
-hibernation. Further investigation shows that, the precise
-stage when nonboot CPU hangs, is the time when the nonboot
-CPU been woken up incorrectly, and tries to monitor the
-mwait_ptr for the second time, then an exception is
-triggered due to illegal vaddr access, say, something like,
-'Unable to handler kernel address of 0xffff8800ba800010...'
-
-Further investigation shows that, this exception is caused
-by accessing a page without PRESENT flag, because the pte entry
-for this vaddr is zero. Here's the scenario how this problem
-happens: Page table for direct mapping is allocated dynamically
-by kernel_physical_mapping_init, it is possible that in the
-resume process, when the boot CPU is trying to write back pages
-to their original address, and just right to writes to the monitor
-mwait_ptr then wakes up one of the nonboot CPUs, since the page
-table currently used by the nonboot CPU might not the same as it
-is before the hibernation, an exception might occur due to
-inconsistent page table.
-
-First try is to get rid of this problem by changing the monitor
-address from task.flag to zero page, because no one would write
-data to zero page. But there is still problem because of a ping-pong
-wake up scenario in mwait_play_dead:
-
-One possible implementation of a clflush is a read-invalidate snoop,
-which is what a store might look like, so cflush might break the mwait.
-
-1. CPU1 wait at zero page
-2. CPU2 cflush zero page, wake CPU1 up, then CPU2 waits at zero page
-3. CPU1 is woken up, and invoke cflush zero page, thus wake up CPU2 again.
-then the nonboot CPUs never sleep for long.
-
-So it's better to monitor different address for each
-nonboot CPUs, however since there is only one zero page, at most:
-PAGE_SIZE/L1_CACHE_LINE CPUs are satisfied, which is usually 64
-on a x86_64, apparently it's not enough for servers, maybe more
-zero pages are required.
-
-So choose a new solution as Brian suggested, to put the nonboot CPUs
-into hlt before resume, without touching any memory during s/r.
-Theoretically there might still be some problems if some of the CPUs have
-already been put offline, but since the case is very rare and users
-can work around it, we do not deal with this special case in kernel
-for now.
-
-BTW, as James mentioned, he might want to encapsulate disable_nonboot_cpus
-into arch-specific, so this patch might need small change after that.
-
-Comments and suggestions would be appreciated.
-
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=106371
-Reported-and-tested-by: Varun Koyyalagunta <cpudebug@centtech.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- arch/x86/kernel/smpboot.c | 17 +++++++++++++++++
- include/linux/smp.h       |  2 ++
- kernel/cpu.c              | 11 +++++++++++
- 3 files changed, 30 insertions(+)
-
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index fafe8b9..00b5181 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1331,6 +1331,8 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
- 	smp_quirk_init_udelay();
- }
- 
-+static bool force_hlt_play_dead;
-+
- void arch_enable_nonboot_cpus_begin(void)
- {
- 	set_mtrr_aps_delayed_init();
-@@ -1342,6 +1344,19 @@ void arch_enable_nonboot_cpus_end(void)
- }
- 
- /*
-+ * If we come from disable_nonboot_cpus, use hlt directly.
-+ */
-+void arch_disable_nonboot_cpus_begin(void)
-+{
-+	force_hlt_play_dead = true;
-+}
-+
-+void arch_disable_nonboot_cpus_end(void)
-+{
-+	force_hlt_play_dead = false;
-+}
-+
-+/*
-  * Early setup to make printk work.
-  */
- void __init native_smp_prepare_boot_cpu(void)
-@@ -1642,6 +1657,8 @@ void native_play_dead(void)
- 	play_dead_common();
- 	tboot_shutdown(TB_SHUTDOWN_WFS);
- 
-+	if (force_hlt_play_dead)
-+		hlt_play_dead();
- 	mwait_play_dead();	/* Only returns on failure */
- 	if (cpuidle_play_dead())
- 		hlt_play_dead();
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index c441407..b2d1b4c 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -193,6 +193,8 @@ extern void arch_disable_smp_support(void);
- 
- extern void arch_enable_nonboot_cpus_begin(void);
- extern void arch_enable_nonboot_cpus_end(void);
-+extern void arch_disable_nonboot_cpus_begin(void);
-+extern void arch_disable_nonboot_cpus_end(void);
- 
- void smp_setup_processor_id(void);
- 
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index d948e44..fc9e839 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -1017,6 +1017,14 @@ EXPORT_SYMBOL_GPL(cpu_up);
- #ifdef CONFIG_PM_SLEEP_SMP
- static cpumask_var_t frozen_cpus;
- 
-+void __weak arch_disable_nonboot_cpus_begin(void)
-+{
-+}
-+
-+void __weak arch_disable_nonboot_cpus_end(void)
-+{
-+}
-+
- int disable_nonboot_cpus(void)
- {
- 	int cpu, first_cpu, error = 0;
-@@ -1029,6 +1037,8 @@ int disable_nonboot_cpus(void)
- 	 */
- 	cpumask_clear(frozen_cpus);
- 
-+	arch_disable_nonboot_cpus_begin();
-+
- 	pr_info("Disabling non-boot CPUs ...\n");
- 	for_each_online_cpu(cpu) {
- 		if (cpu == first_cpu)
-@@ -1049,6 +1059,7 @@ int disable_nonboot_cpus(void)
- 	else
- 		pr_err("Non-boot CPUs are not disabled\n");
- 
-+	arch_disable_nonboot_cpus_end();
- 	/*
- 	 * Make sure the CPUs won't be enabled by someone else. We need to do
- 	 * this even in case of failure as all disable_nonboot_cpus() users are
--- 
-2.7.4
-
+VGhpcyBpcyBiYXNlZCBvbiB0aGUgUExMMiBkcml2ZXIgZm9yIEExMC8yMC4KClNpZ25lZC1vZmYt
+Ynk6IEljZW5vd3kgWmhlbmcgPGljZW5vd3lAYW9zYy54eXo+Ci0tLQogZHJpdmVycy9jbGsvc3Vu
+eGkvTWFrZWZpbGUgICAgICAgfCAgIDEgKwogZHJpdmVycy9jbGsvc3VueGkvY2xrLWEzMS1wbGwy
+LmMgfCAxOTQgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCiAyIGZpbGVz
+IGNoYW5nZWQsIDE5NSBpbnNlcnRpb25zKCspCiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9j
+bGsvc3VueGkvY2xrLWEzMS1wbGwyLmMKCmRpZmYgLS1naXQgYS9kcml2ZXJzL2Nsay9zdW54aS9N
+YWtlZmlsZSBiL2RyaXZlcnMvY2xrL3N1bnhpL01ha2VmaWxlCmluZGV4IDM5ZDIwNDQuLjk1MTk5
+MmUgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY2xrL3N1bnhpL01ha2VmaWxlCisrKyBiL2RyaXZlcnMv
+Y2xrL3N1bnhpL01ha2VmaWxlCkBAIC05LDYgKzksNyBAQCBvYmoteSArPSBjbGstYTEwLW1vZDEu
+bwogb2JqLXkgKz0gY2xrLWExMC1wbGwyLm8KIG9iai15ICs9IGNsay1hMTAtdmUubwogb2JqLXkg
+Kz0gY2xrLWEyMC1nbWFjLm8KK29iai15ICs9IGNsay1hMzEtcGxsMi5vCiBvYmoteSArPSBjbGst
+bW9kMC5vCiBvYmoteSArPSBjbGstc2ltcGxlLWdhdGVzLm8KIG9iai15ICs9IGNsay1zdW40aS1k
+aXNwbGF5Lm8KZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2xrL3N1bnhpL2Nsay1hMzEtcGxsMi5jIGIv
+ZHJpdmVycy9jbGsvc3VueGkvY2xrLWEzMS1wbGwyLmMKbmV3IGZpbGUgbW9kZSAxMDA2NDQKaW5k
+ZXggMDAwMDAwMC4uM2ZkZDk4YgotLS0gL2Rldi9udWxsCisrKyBiL2RyaXZlcnMvY2xrL3N1bnhp
+L2Nsay1hMzEtcGxsMi5jCkBAIC0wLDAgKzEsMTk0IEBACisvKgorICogQ29weXJpZ2h0IDIwMTMg
+RW1pbGlvIEzDs3BlegorICogRW1pbGlvIEzDs3BleiA8ZW1pbGlvQGVsb3Blei5jb20uYXI+Cisg
+KgorICogQ29weXJpZ2h0IDIwMTUgTWF4aW1lIFJpcGFyZAorICogTWF4aW1lIFJpcGFyZCA8bWF4
+aW1lLnJpcGFyZEBmcmVlLWVsZWN0cm9ucy5jb20+CisgKgorICogQ29weXJpZ2h0IDIwMTYgSWNl
+bm93eSBaaGVuZworICogSWNlbm93eSBaaGVuZyA8aWNlbm93eUBhb3NjLnh5ej4KKyAqCisgKiBU
+aGlzIHByb2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5k
+L29yIG1vZGlmeQorICogaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJs
+aWMgTGljZW5zZSBhcyBwdWJsaXNoZWQgYnkKKyAqIHRoZSBGcmVlIFNvZnR3YXJlIEZvdW5kYXRp
+b247IGVpdGhlciB2ZXJzaW9uIDIgb2YgdGhlIExpY2Vuc2UsIG9yCisgKiAoYXQgeW91ciBvcHRp
+b24pIGFueSBsYXRlciB2ZXJzaW9uLgorICoKKyAqIFRoaXMgcHJvZ3JhbSBpcyBkaXN0cmlidXRl
+ZCBpbiB0aGUgaG9wZSB0aGF0IGl0IHdpbGwgYmUgdXNlZnVsLAorICogYnV0IFdJVEhPVVQgQU5Z
+IFdBUlJBTlRZOyB3aXRob3V0IGV2ZW4gdGhlIGltcGxpZWQgd2FycmFudHkgb2YKKyAqIE1FUkNI
+QU5UQUJJTElUWSBvciBGSVRORVNTIEZPUiBBIFBBUlRJQ1VMQVIgUFVSUE9TRS4gIFNlZSB0aGUK
+KyAqIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGZvciBtb3JlIGRldGFpbHMuCisgKi8KKwor
+I2luY2x1ZGUgPGxpbnV4L2Nsay1wcm92aWRlci5oPgorI2luY2x1ZGUgPGxpbnV4L29mLmg+Cisj
+aW5jbHVkZSA8bGludXgvb2ZfYWRkcmVzcy5oPgorI2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4KKwor
+I2luY2x1ZGUgPGR0LWJpbmRpbmdzL2Nsb2NrL3N1bjRpLWExMC1wbGwyLmg+CisKKyNkZWZpbmUg
+U1VONklfQTMxX1BMTDJfRU5BQkxFCQkzMQorCisjZGVmaW5lIFNVTjZJX0EzMV9QTEwyX1BSRV9E
+SVZfU0hJRlQJMAorI2RlZmluZSBTVU42SV9BMzFfUExMMl9QUkVfRElWX1dJRFRICTUKKyNkZWZp
+bmUgU1VONklfQTMxX1BMTDJfUFJFX0RJVl9NQVNLCUdFTk1BU0soU1VONklfQTMxX1BMTDJfUFJF
+X0RJVl9XSURUSCAtIDEsIDApCisKKyNkZWZpbmUgU1VONklfQTMxX1BMTDJfTl9TSElGVAkJOAor
+I2RlZmluZSBTVU42SV9BMzFfUExMMl9OX1dJRFRICQk3CisjZGVmaW5lIFNVTjZJX0EzMV9QTEwy
+X05fTUFTSwkJR0VOTUFTSyhTVU42SV9BMzFfUExMMl9OX1dJRFRIIC0gMSwgMCkKKworI2RlZmlu
+ZSBTVU42SV9BMzFfUExMMl9QT1NUX0RJVl9TSElGVAkxNgorI2RlZmluZSBTVU42SV9BMzFfUExM
+Ml9QT1NUX0RJVl9XSURUSAk0CisjZGVmaW5lIFNVTjZJX0EzMV9QTEwyX1BPU1RfRElWX01BU0sJ
+R0VOTUFTSyhTVU42SV9BMzFfUExMMl9QT1NUX0RJVl9XSURUSCAtIDEsIDApCisKKyNkZWZpbmUg
+U1VONklfQTMxX1BMTDJfUE9TVF9ESVZfVkFMVUUJNAorCisjZGVmaW5lIFNVTjZJX0EzMV9QTEwy
+X09VVFBVVFMJCTQKKworc3RhdGljIERFRklORV9TUElOTE9DSyhzdW42aV9hMzFfcGxsMl9sb2Nr
+KTsKKworc3RhdGljIHZvaWQgX19pbml0IHN1bjZpX2EzMV9wbGwyX3NldHVwKHN0cnVjdCBkZXZp
+Y2Vfbm9kZSAqbm9kZSkKK3sKKwljb25zdCBjaGFyICpjbGtfbmFtZSA9IG5vZGUtPm5hbWUsICpw
+YXJlbnQ7CisJc3RydWN0IGNsayAqKmNsa3MsICpiYXNlX2NsaywgKnByZWRpdl9jbGs7CisJc3Ry
+dWN0IGNsa19vbmVjZWxsX2RhdGEgKmNsa19kYXRhOworCXN0cnVjdCBjbGtfbXVsdGlwbGllciAq
+bXVsdDsKKwlzdHJ1Y3QgY2xrX2dhdGUgKmdhdGU7CisJdm9pZCBfX2lvbWVtICpyZWc7CisJdTMy
+IHZhbDsKKworCXJlZyA9IG9mX2lvX3JlcXVlc3RfYW5kX21hcChub2RlLCAwLCBvZl9ub2RlX2Z1
+bGxfbmFtZShub2RlKSk7CisJaWYgKElTX0VSUihyZWcpKQorCQlyZXR1cm47CisKKwljbGtfZGF0
+YSA9IGt6YWxsb2Moc2l6ZW9mKCpjbGtfZGF0YSksIEdGUF9LRVJORUwpOworCWlmICghY2xrX2Rh
+dGEpCisJCWdvdG8gZXJyX3VubWFwOworCisJY2xrcyA9IGtjYWxsb2MoU1VONklfQTMxX1BMTDJf
+T1VUUFVUUywgc2l6ZW9mKHN0cnVjdCBjbGsgKiksIEdGUF9LRVJORUwpOworCWlmICghY2xrcykK
+KwkJZ290byBlcnJfZnJlZV9kYXRhOworCisJcGFyZW50ID0gb2ZfY2xrX2dldF9wYXJlbnRfbmFt
+ZShub2RlLCAwKTsKKwlwcmVkaXZfY2xrID0gY2xrX3JlZ2lzdGVyX2RpdmlkZXIoTlVMTCwgInBs
+bDItcHJlZGl2IiwKKwkJCQkJICBwYXJlbnQsIDAsIHJlZywKKwkJCQkJICBTVU42SV9BMzFfUExM
+Ml9QUkVfRElWX1NISUZULAorCQkJCQkgIFNVTjZJX0EzMV9QTEwyX1BSRV9ESVZfV0lEVEgsCisJ
+CQkJCSAgQ0xLX0RJVklERVJfT05FX0JBU0VEIHwKKwkJCQkJICBDTEtfRElWSURFUl9BTExPV19a
+RVJPLAorCQkJCQkgICZzdW42aV9hMzFfcGxsMl9sb2NrKTsKKwlpZiAoIXByZWRpdl9jbGspIHsK
+KwkJcHJfZXJyKCJDb3VsZG4ndCByZWdpc3RlciB0aGUgcHJlZGl2IGNsb2NrXG4iKTsKKwkJZ290
+byBlcnJfZnJlZV9hcnJheTsKKwl9CisKKwkvKiBTZXR1cCB0aGUgZ2F0ZSBwYXJ0IG9mIHRoZSBQ
+TEwyICovCisJZ2F0ZSA9IGt6YWxsb2Moc2l6ZW9mKHN0cnVjdCBjbGtfZ2F0ZSksIEdGUF9LRVJO
+RUwpOworCWlmICghZ2F0ZSkKKwkJZ290byBlcnJfdW5yZWdpc3Rlcl9wcmVkaXY7CisKKwlnYXRl
+LT5yZWcgPSByZWc7CisJZ2F0ZS0+Yml0X2lkeCA9IFNVTjZJX0EzMV9QTEwyX0VOQUJMRTsKKwln
+YXRlLT5sb2NrID0gJnN1bjZpX2EzMV9wbGwyX2xvY2s7CisKKwkvKiBTZXR1cCB0aGUgbXVsdGlw
+bGllciBwYXJ0IG9mIHRoZSBQTEwyICovCisJbXVsdCA9IGt6YWxsb2Moc2l6ZW9mKHN0cnVjdCBj
+bGtfbXVsdGlwbGllciksIEdGUF9LRVJORUwpOworCWlmICghbXVsdCkKKwkJZ290byBlcnJfZnJl
+ZV9nYXRlOworCisJbXVsdC0+cmVnID0gcmVnOworCW11bHQtPnNoaWZ0ID0gU1VONklfQTMxX1BM
+TDJfTl9TSElGVDsKKwltdWx0LT53aWR0aCA9IDc7CisJbXVsdC0+ZmxhZ3MgPSBDTEtfTVVMVElQ
+TElFUl9aRVJPX0JZUEFTUyB8CisJCQlDTEtfTVVMVElQTElFUl9ST1VORF9DTE9TRVNUOworCW11
+bHQtPmxvY2sgPSAmc3VuNmlfYTMxX3BsbDJfbG9jazsKKworCXBhcmVudCA9IF9fY2xrX2dldF9u
+YW1lKHByZWRpdl9jbGspOworCWJhc2VfY2xrID0gY2xrX3JlZ2lzdGVyX2NvbXBvc2l0ZShOVUxM
+LCAicGxsMi1iYXNlIiwKKwkJCQkJICAmcGFyZW50LCAxLAorCQkJCQkgIE5VTEwsIE5VTEwsCisJ
+CQkJCSAgJm11bHQtPmh3LCAmY2xrX211bHRpcGxpZXJfb3BzLAorCQkJCQkgICZnYXRlLT5odywg
+JmNsa19nYXRlX29wcywKKwkJCQkJICBDTEtfU0VUX1JBVEVfUEFSRU5UKTsKKwlpZiAoIWJhc2Vf
+Y2xrKSB7CisJCXByX2VycigiQ291bGRuJ3QgcmVnaXN0ZXIgdGhlIGJhc2UgbXVsdGlwbGllciBj
+bG9ja1xuIik7CisJCWdvdG8gZXJyX2ZyZWVfbXVsdGlwbGllcjsKKwl9CisKKwlwYXJlbnQgPSBf
+X2Nsa19nZXRfbmFtZShiYXNlX2Nsayk7CisKKwkvKgorCSAqIFBMTDItMXgKKwkgKgorCSAqIFRo
+aXMgaXMgc3VwcG9zZWQgdG8gaGF2ZSBhIHBvc3QgZGl2aWRlciwgYnV0IHdlIHdvbid0IG5lZWQK
+KwkgKiB0byB1c2UgaXQsIHdlIGp1c3QgbmVlZCB0byBpbml0aWFsaXNlIGl0IHRvIDQsIGFuZCB1
+c2UgYQorCSAqIGZpeGVkIGRpdmlkZXIuCisJICovCisJdmFsID0gcmVhZGwocmVnKTsKKwl2YWwg
+Jj0gfihTVU42SV9BMzFfUExMMl9QT1NUX0RJVl9NQVNLIDw8IFNVTjZJX0EzMV9QTEwyX1BPU1Rf
+RElWX1NISUZUKTsKKwl2YWwgfD0gKFNVTjZJX0EzMV9QTEwyX1BPU1RfRElWX1ZBTFVFIC0gMSkK
+KwkgICAgICAgPDwgU1VONklfQTMxX1BMTDJfUE9TVF9ESVZfU0hJRlQ7CisJd3JpdGVsKHZhbCwg
+cmVnKTsKKworCW9mX3Byb3BlcnR5X3JlYWRfc3RyaW5nX2luZGV4KG5vZGUsICJjbG9jay1vdXRw
+dXQtbmFtZXMiLAorCQkJCSAgICAgIFNVTjRJX0ExMF9QTEwyXzFYLCAmY2xrX25hbWUpOworCWNs
+a3NbU1VONElfQTEwX1BMTDJfMVhdID0gY2xrX3JlZ2lzdGVyX2ZpeGVkX2ZhY3RvcihOVUxMLCBj
+bGtfbmFtZSwKKwkJCQkJCQkgICAgcGFyZW50LAorCQkJCQkJCSAgICBDTEtfU0VUX1JBVEVfUEFS
+RU5ULAorCQkJCQkJCSAgICAxLAorCQkJCQkJCSAgICBTVU42SV9BMzFfUExMMl9QT1NUX0RJVl9W
+QUxVRSk7CisJV0FSTl9PTihJU19FUlIoY2xrc1tTVU40SV9BMTBfUExMMl8xWF0pKTsKKworCS8q
+CisJICogUExMMi0yeAorCSAqCisJICogVGhpcyBjbG9jayBkb2Vzbid0IHVzZSB0aGUgcG9zdCBk
+aXZpZGVyLCBhbmQgcmVhbGx5IGlzIGp1c3QKKwkgKiBhIGZpeGVkIGRpdmlkZXIgZnJvbSB0aGUg
+UExMMiBiYXNlIGNsb2NrLgorCSAqLworCW9mX3Byb3BlcnR5X3JlYWRfc3RyaW5nX2luZGV4KG5v
+ZGUsICJjbG9jay1vdXRwdXQtbmFtZXMiLAorCQkJCSAgICAgIFNVTjRJX0ExMF9QTEwyXzJYLCAm
+Y2xrX25hbWUpOworCWNsa3NbU1VONElfQTEwX1BMTDJfMlhdID0gY2xrX3JlZ2lzdGVyX2ZpeGVk
+X2ZhY3RvcihOVUxMLCBjbGtfbmFtZSwKKwkJCQkJCQkgICAgcGFyZW50LAorCQkJCQkJCSAgICBD
+TEtfU0VUX1JBVEVfUEFSRU5ULAorCQkJCQkJCSAgICAxLCAyKTsKKwlXQVJOX09OKElTX0VSUihj
+bGtzW1NVTjRJX0ExMF9QTEwyXzJYXSkpOworCisJLyogUExMMi00eCAqLworCW9mX3Byb3BlcnR5
+X3JlYWRfc3RyaW5nX2luZGV4KG5vZGUsICJjbG9jay1vdXRwdXQtbmFtZXMiLAorCQkJCSAgICAg
+IFNVTjRJX0ExMF9QTEwyXzRYLCAmY2xrX25hbWUpOworCWNsa3NbU1VONElfQTEwX1BMTDJfNFhd
+ID0gY2xrX3JlZ2lzdGVyX2ZpeGVkX2ZhY3RvcihOVUxMLCBjbGtfbmFtZSwKKwkJCQkJCQkgICAg
+cGFyZW50LAorCQkJCQkJCSAgICBDTEtfU0VUX1JBVEVfUEFSRU5ULAorCQkJCQkJCSAgICAxLCAx
+KTsKKwlXQVJOX09OKElTX0VSUihjbGtzW1NVTjRJX0ExMF9QTEwyXzRYXSkpOworCisJLyogUExM
+Mi04eCAqLworCW9mX3Byb3BlcnR5X3JlYWRfc3RyaW5nX2luZGV4KG5vZGUsICJjbG9jay1vdXRw
+dXQtbmFtZXMiLAorCQkJCSAgICAgIFNVTjRJX0ExMF9QTEwyXzhYLCAmY2xrX25hbWUpOworCWNs
+a3NbU1VONElfQTEwX1BMTDJfOFhdID0gY2xrX3JlZ2lzdGVyX2ZpeGVkX2ZhY3RvcihOVUxMLCBj
+bGtfbmFtZSwKKwkJCQkJCQkgICAgcGFyZW50LAorCQkJCQkJCSAgICBDTEtfU0VUX1JBVEVfUEFS
+RU5ULAorCQkJCQkJCSAgICAyLCAxKTsKKwlXQVJOX09OKElTX0VSUihjbGtzW1NVTjRJX0ExMF9Q
+TEwyXzhYXSkpOworCisJY2xrX2RhdGEtPmNsa3MgPSBjbGtzOworCWNsa19kYXRhLT5jbGtfbnVt
+ID0gU1VONklfQTMxX1BMTDJfT1VUUFVUUzsKKwlvZl9jbGtfYWRkX3Byb3ZpZGVyKG5vZGUsIG9m
+X2Nsa19zcmNfb25lY2VsbF9nZXQsIGNsa19kYXRhKTsKKworCXJldHVybjsKKworZXJyX2ZyZWVf
+bXVsdGlwbGllcjoKKwlrZnJlZShtdWx0KTsKK2Vycl9mcmVlX2dhdGU6CisJa2ZyZWUoZ2F0ZSk7
+CitlcnJfdW5yZWdpc3Rlcl9wcmVkaXY6CisJY2xrX3VucmVnaXN0ZXJfZGl2aWRlcihwcmVkaXZf
+Y2xrKTsKK2Vycl9mcmVlX2FycmF5OgorCWtmcmVlKGNsa3MpOworZXJyX2ZyZWVfZGF0YToKKwlr
+ZnJlZShjbGtfZGF0YSk7CitlcnJfdW5tYXA6CisJaW91bm1hcChyZWcpOworfQorCitDTEtfT0Zf
+REVDTEFSRShzdW42aV9hMzFfcGxsMiwgImFsbHdpbm5lcixzdW42aS1hMzEtcGxsMi1jbGsiLAor
+CSAgICAgICBzdW42aV9hMzFfcGxsMl9zZXR1cCk7Ci0tIAoyLjkuMAoKCl9fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGlu
+ZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMu
+aW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
