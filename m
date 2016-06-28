@@ -1,44 +1,177 @@
-From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
-Subject: RE: [PATCH] power: act8945a_charger: fix semicolon.cocci warnings
-Date: Tue, 28 Jun 2016 01:34:20 +0000
-Message-ID: <B256D81BAE5131468A838E5D7A24364101650CD156@penmbx01>
-References: <201606242015.gipMOaF7%fengguang.wu@intel.com>
- <20160624124305.GA11000@ivytown2>
+From: Wenyou Yang <wenyou.yang@atmel.com>
+Subject: [PATCH v2 2/7] power: act8945a_charger: Improve
+Date: Tue, 28 Jun 2016 09:22:45 +0800
+Message-ID: <1467076970-12206-3-git-send-email-wenyou.yang@atmel.com>
+References: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160624124305.GA11000@ivytown2>
-Content-Language: en-US
+In-Reply-To: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>
-Cc: "kbuild-all@01.org" <kbuild-all@01.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbToga2J1aWxkIHRlc3Qgcm9i
-b3QgW21haWx0bzpsa3BAaW50ZWwuY29tXQ0KPiBTZW50OiAyMDE2xOo21MIyNMjVIDIwOjQzDQo+
-IFRvOiBZYW5nLCBXZW55b3UgPFdlbnlvdS5ZYW5nQGF0bWVsLmNvbT4NCj4gQ2M6IGtidWlsZC1h
-bGxAMDEub3JnOyBTZWJhc3RpYW4gUmVpY2hlbCA8c3JlQGtlcm5lbC5vcmc+OyBEbWl0cnkgRXJl
-bWluLQ0KPiBTb2xlbmlrb3YgPGRiYXJ5c2hrb3ZAZ21haWwuY29tPjsgRGF2aWQgV29vZGhvdXNl
-DQo+IDxkd213MkBpbmZyYWRlYWQub3JnPjsgUm9iIEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9y
-Zz47IFBhd2VsIE1vbGwNCj4gPHBhd2VsLm1vbGxAYXJtLmNvbT47IE1hcmsgQnJvd24gPGJyb29u
-aWVAa2VybmVsLm9yZz47IElhbiBDYW1wYmVsbA0KPiA8aWpjK2RldmljZXRyZWVAaGVsbGlvbi5v
-cmcudWs+OyBLdW1hciBHYWxhIDxnYWxha0Bjb2RlYXVyb3JhLm9yZz47IGxpbnV4LQ0KPiBrZXJu
-ZWxAdmdlci5rZXJuZWwub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJt
-LQ0KPiBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgRmVycmUsIE5pY29sYXMgPE5pY29sYXMu
-RkVSUkVAYXRtZWwuY29tPjsgbGludXgtDQo+IHBtQHZnZXIua2VybmVsLm9yZzsgWWFuZywgV2Vu
-eW91IDxXZW55b3UuWWFuZ0BhdG1lbC5jb20+DQo+IFN1YmplY3Q6IFtQQVRDSF0gcG93ZXI6IGFj
-dDg5NDVhX2NoYXJnZXI6IGZpeCBzZW1pY29sb24uY29jY2kgd2FybmluZ3MNCj4gDQo+IGRyaXZl
-cnMvcG93ZXIvYWN0ODk0NWFfY2hhcmdlci5jOjExNToyLTM6IFVubmVlZGVkIHNlbWljb2xvbg0K
-PiANCj4gDQo+ICBSZW1vdmUgdW5uZWVkZWQgc2VtaWNvbG9uLg0KPiANCj4gR2VuZXJhdGVkIGJ5
-OiBzY3JpcHRzL2NvY2NpbmVsbGUvbWlzYy9zZW1pY29sb24uY29jY2kNCj4gDQo+IENDOiBXZW55
-b3UgWWFuZyA8d2VueW91LnlhbmdAYXRtZWwuY29tPg0KPiBTaWduZWQtb2ZmLWJ5OiBGZW5nZ3Vh
-bmcgV3UgPGZlbmdndWFuZy53dUBpbnRlbC5jb20+DQpBY2tlZC1ieSBXZW55b3UgWWFuZyA8V2Vu
-eW91LnlhbmdAYXRtZWwuY29tPg0KDQpUaGFuayB5b3UgZm9yIHlvdXIgZml4Lg0KDQo+IC0tLQ0K
-PiANCj4gIGFjdDg5NDVhX2NoYXJnZXIuYyB8ICAgIDIgKy0NCj4gIDEgZmlsZSBjaGFuZ2VkLCAx
-IGluc2VydGlvbigrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gLS0tIGEvZHJpdmVycy9wb3dlci9h
-Y3Q4OTQ1YV9jaGFyZ2VyLmMNCj4gKysrIGIvZHJpdmVycy9wb3dlci9hY3Q4OTQ1YV9jaGFyZ2Vy
-LmMNCj4gQEAgLTExMiw3ICsxMTIsNyBAQCBzdGF0aWMgaW50IGFjdDg5NDVhX2dldF9jaGFyZ2Vy
-X3N0YXRlKHN0DQo+ICAJCWVsc2UNCj4gIAkJCSp2YWwgPSBQT1dFUl9TVVBQTFlfU1RBVFVTX05P
-VF9DSEFSR0lORzsNCj4gIAkJYnJlYWs7DQo+IC0JfTsNCj4gKwl9DQo+IA0KPiAgCXJldHVybiAw
-Ow0KPiAgfQ0KDQoNCkJlc3QgUmVnYXJkcywNCldlbnlvdSBZYW5nDQo=
+When get the property, first check the charger state machine,
+then check the status bit to decide what value is assigned to
+the corresponding property.
+
+Retain the SUSCHG bit of REG 0x71 when configure the timers to
+avoid losting the charger suspending info after boot.
+
+Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
+---
+
+Changes in v2:
+ - Add missing ret declaration.
+
+ drivers/power/act8945a_charger.c | 86 ++++++++++++++++++++++++++++++++--------
+ 1 file changed, 69 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/power/act8945a_charger.c b/drivers/power/act8945a_charger.c
+index 72d39ba..c680a40 100644
+--- a/drivers/power/act8945a_charger.c
++++ b/drivers/power/act8945a_charger.c
+@@ -94,17 +94,25 @@ static int act8945a_get_charger_state(struct regmap *regmap, int *val)
+ 	state &= APCH_STATE_CSTATE;
+ 	state >>= APCH_STATE_CSTATE_SHIFT;
+ 
+-	if (state == APCH_STATE_CSTATE_EOC) {
++	switch (state) {
++	case APCH_STATE_CSTATE_PRE:
++	case APCH_STATE_CSTATE_FAST:
++		*val = POWER_SUPPLY_STATUS_CHARGING;
++		break;
++	case APCH_STATE_CSTATE_EOC:
+ 		if (status & APCH_STATUS_CHGDAT)
+ 			*val = POWER_SUPPLY_STATUS_FULL;
+ 		else
++			*val = POWER_SUPPLY_STATUS_CHARGING;
++		break;
++	case APCH_STATE_CSTATE_DISABLED:
++	default:
++		if (!(status & APCH_STATUS_INDAT))
++			*val = POWER_SUPPLY_STATUS_DISCHARGING;
++		else
+ 			*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
+-	} else if ((state == APCH_STATE_CSTATE_FAST) ||
+-		   (state == APCH_STATE_CSTATE_PRE)) {
+-		*val = POWER_SUPPLY_STATUS_CHARGING;
+-	} else {
+-		*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
+-	}
++		break;
++	};
+ 
+ 	return 0;
+ }
+@@ -112,7 +120,11 @@ static int act8945a_get_charger_state(struct regmap *regmap, int *val)
+ static int act8945a_get_charge_type(struct regmap *regmap, int *val)
+ {
+ 	int ret;
+-	unsigned int state;
++	unsigned int status, state;
++
++	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
++	if (ret < 0)
++		return ret;
+ 
+ 	ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
+ 	if (ret < 0)
+@@ -129,9 +141,15 @@ static int act8945a_get_charge_type(struct regmap *regmap, int *val)
+ 		*val = POWER_SUPPLY_CHARGE_TYPE_FAST;
+ 		break;
+ 	case APCH_STATE_CSTATE_EOC:
++		*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
++		break;
+ 	case APCH_STATE_CSTATE_DISABLED:
+ 	default:
+-		*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
++		if (!(status & APCH_STATUS_INDAT))
++			*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
++		else
++			*val = POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
++		break;
+ 	}
+ 
+ 	return 0;
+@@ -140,20 +158,45 @@ static int act8945a_get_charge_type(struct regmap *regmap, int *val)
+ static int act8945a_get_battery_health(struct regmap *regmap, int *val)
+ {
+ 	int ret;
+-	unsigned int status;
++	unsigned int status, state, config;
+ 
+ 	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	if (status & APCH_STATUS_TEMPDAT)
+-		*val = POWER_SUPPLY_HEALTH_OVERHEAT;
+-	else if (!(status & APCH_STATUS_INDAT))
+-		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+-	else if (status & APCH_STATUS_TIMRDAT)
+-		*val = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
+-	else
++	ret = regmap_read(regmap, ACT8945A_APCH_CFG, &config);
++	if (ret < 0)
++		return ret;
++
++	ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
++	if (ret < 0)
++		return ret;
++
++	state &= APCH_STATE_CSTATE;
++	state >>= APCH_STATE_CSTATE_SHIFT;
++
++	switch (state) {
++	case APCH_STATE_CSTATE_DISABLED:
++		if (config & APCH_CFG_SUSCHG) {
++			*val = POWER_SUPPLY_HEALTH_UNKNOWN;
++		} else if (status & APCH_STATUS_INDAT) {
++			if (!(status & APCH_STATUS_TEMPDAT))
++				*val = POWER_SUPPLY_HEALTH_OVERHEAT;
++			else if (status & APCH_STATUS_TIMRDAT)
++				*val = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
++			else
++				*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
++		} else {
++			*val = POWER_SUPPLY_HEALTH_GOOD;
++		}
++		break;
++	case APCH_STATE_CSTATE_PRE:
++	case APCH_STATE_CSTATE_FAST:
++	case APCH_STATE_CSTATE_EOC:
++	default:
+ 		*val = POWER_SUPPLY_HEALTH_GOOD;
++		break;
++	}
+ 
+ 	return 0;
+ }
+@@ -224,7 +267,9 @@ static int act8945a_charger_config(struct device *dev,
+ 	u32 pre_time_out;
+ 	u32 input_voltage_threshold;
+ 	int chglev_pin;
++	int ret;
+ 
++	unsigned int tmp;
+ 	unsigned int value = 0;
+ 
+ 	if (!np) {
+@@ -232,6 +277,13 @@ static int act8945a_charger_config(struct device *dev,
+ 		return -EINVAL;
+ 	}
+ 
++	ret = regmap_read(regmap, ACT8945A_APCH_CFG, &tmp);
++	if (ret)
++		return ret;
++
++	if (tmp & APCH_CFG_SUSCHG)
++		value |= APCH_CFG_SUSCHG;
++
+ 	chglev_pin = of_get_named_gpio_flags(np,
+ 				"active-semi,chglev-gpios", 0, &flags);
+ 
+-- 
+2.7.4
