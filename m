@@ -1,57 +1,55 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt
- > 0
-Date: Tue, 28 Jun 2016 20:20:31 +0200
-Message-ID: <20160628182030.GB2391@earth>
-References: <1465507719-819-1-git-send-email-rklein@nvidia.com>
- <8b081e45-94c8-bb53-69ca-0a617c668de5@nvidia.com>
- <20160622142353.GA16084@earth>
- <e2537dba-927f-375a-fcc4-7f46ce3e2dcd@nvidia.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v2] clk: Provide notifier stubs when !COMMON_CLK
+Date: Tue, 28 Jun 2016 21:01:00 +0200
+Message-ID: <20160628190100.GA11586@kozik-lap>
+References: <1467113104-8650-1-git-send-email-k.kozlowski@samsung.com>
+ <20160628172653.GB1521@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="oC1+HKm2/end4ao3"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-clk-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <e2537dba-927f-375a-fcc4-7f46ce3e2dcd@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rhyland Klein <rklein@nvidia.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
+In-Reply-To: <20160628172653.GB1521@codeaurora.org>
+Sender: linux-clk-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Russell King <linux@armlinux.org.uk>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Jun 28, 2016 at 10:26:53AM -0700, Stephen Boyd wrote:
+> On 06/28, Krzysztof Kozlowski wrote:
+> > The clk notifier symbols are hidden by COMMON_CLK.  However on some
+> > platforms HAVE_CLK might be set while COMMON_CLK not which leads to
+> > compile test build errors like:
+> > 
+> > $ make.cross ARCH=sh
+> >    drivers/devfreq/tegra-devfreq.c: In function 'tegra_actmon_rate_notify_cb':
+> > >> drivers/devfreq/tegra-devfreq.c:391:16: error: 'POST_RATE_CHANGE' undeclared (first use in this function)
+> >      if (action != POST_RATE_CHANGE)
+> >                    ^
+> >    drivers/devfreq/tegra-devfreq.c: In function 'tegra_devfreq_probe':
+> > >> drivers/devfreq/tegra-devfreq.c:654:8: error: implicit declaration of function 'clk_notifier_register' [-Werror=implicit-function-declaration]
+> >      err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
+> >            ^
+> > 
+> > Export the macros and data type declarations outside of COMMON_CLK ifdef
+> > and provide stubs to fix the compile testing.
+> > 
+> > Reported-by: kbuild test robot <lkp@intel.com>
+> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > 
+> > ---
+> > 
+> 
+> Ok. Did you want some stable branch to pull this in and base your
+> use case on?
 
---oC1+HKm2/end4ao3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+It is only one patch but indeed without the branch my patches would have
+to wait for next release. If you would be so kind, could you prepare
+the stable branch? I hope MyungJoo Ham will use it.
 
-Hi,
+Anyway I encountered more linkage errors for clk API (like clk_get_rate()).
+They happen for various compile-tested drivers in case of MIPS (and
+maybe others like SH). I will investigate it more but I think it is not
+related strictly to this issue.
 
-On Thu, Jun 23, 2016 at 01:43:47PM -0400, Rhyland Klein wrote:
-> On 6/22/2016 10:23 AM, Sebastian Reichel wrote:
-> Is this also going to go into linux-next?
-
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=02184c60eba8491ea574cd17b8ba766c86d468f2
-
--- Sebastian
-
---oC1+HKm2/end4ao3
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJXcr/uAAoJENju1/PIO/qamj8P/jwHAIaxbwfXEaTqDjNcMmIk
-JzmPM7tdM5VHN6Ba3+EFtzyXMyvkQoS+VJZf4kdRMDYskBex5Kqltj+l02JlldWw
-c7DbOTUFdh1Eim41uwmG/Hp2h3oktF8oVtWilnkjw8cPV4I580OkNzcUzPX5iBYG
-GTIpfibK2Rsp1Ibrrk9pmrfkvNJr6cS8/kShrTy2Ic+0+hoNnf+QUsphayvjOVoM
-Rxq6Z7XLnAeujd+8SbO18mfLnK1NqHEkoJJGTpZbZu5Mv7+CAWqSVWTcM0cGvHjg
-PP8zNQq1ZUBJwTl7hDtsqt6fn7SW0AKa0Mwd1GBbXz4QK0LcBxGfaTMyKIYduvQX
-NmGj2HPJhe9YOeWXiW5ac+0d7rdY/9odlB5Q0PwQWr4Zp++RB2ksuEJti8dZ4Gcd
-X//mzGe3HIlgSwo4mNIqg7oqHx+xiLUIn5Il8mU46htBeVwifgLYUqdVZi3GRx7a
-q4Joy+acMmb/KJJPHaPSR+4l6CIp2PVRNJQizurPKMsbrSqF9datIpPhUlejNbvL
-8XpV9wxfVDg3iyNH31Xq0hsOSXapKVw0GSsuU7Dk7gVCA9ZPHPlhc8pWn1oRSyoT
-hWS5xL5nxqBYonfoqi4tdvhGkq9zwNyyv3lcRNviVZpWuKLkRCOeTixo6I9KD1rj
-X1/m+j9lmdbO3EsW3vzo
-=mfNO
------END PGP SIGNATURE-----
-
---oC1+HKm2/end4ao3--
+Best regards,
+Krzysztof
