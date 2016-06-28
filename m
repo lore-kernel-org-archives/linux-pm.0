@@ -1,70 +1,88 @@
-From: Vikas Sajjan <sajjan.linux@gmail.com>
-Subject: Re: [PATCH 11/14] drivers: firmware: psci: Allow OS Initiated suspend mode
-Date: Tue, 28 Jun 2016 11:37:22 +0530
-Message-ID: <CAGm_ybgPFmc1QD_9-8VVTTZ=4Oon23ZGnjfo4vqt5hknt74O_Q@mail.gmail.com>
-References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
- <1466624209-27432-12-git-send-email-lina.iyer@linaro.org> <CAGm_ybjO+jAN62fqFyVrw_+5LOnUumEfn8kxmDa+s5ap0Bqk9A@mail.gmail.com>
- <20160627101231.GB1113@leverpostej>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20160627101231.GB1113@leverpostej>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Lina Iyer <lina.iyer@linaro.org>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, k.kozlowski@samsung.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, ahaslam@baylibre.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, geert@linux-m68k.org, andy.gross@linaro.org, mtitinger@baylibre.com, Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH] clk: Provide notifier stubs when !COMMON_CLK
+Date: Tue, 28 Jun 2016 08:20:33 +0200
+Message-ID: <1467094833-7553-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:58095 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbcF1GVB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2016 02:21:01 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russell King <linux@armlinux.org.uk>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Hi Mark,
+The clk notifier symbols are hidden by COMMON_CLK.  However on some
+platforms HAVE_CLK might be set while COMMON_CLK not which leads to
+compile test build errors like:
 
-On Mon, Jun 27, 2016 at 3:42 PM, Mark Rutland <mark.rutland@arm.com> wrote:
-> On Fri, Jun 24, 2016 at 09:55:20AM +0530, Vikas Sajjan wrote:
->> On Thu, Jun 23, 2016 at 1:06 AM, Lina Iyer <lina.iyer@linaro.org> wrote:
->> > +static int __init psci_1_0_init(struct device_node *np)
->> > +{
->> > +       int ret;
->> > +
->> > +       ret = psci_0_2_init(np);
->> > +       if (ret)
->> > +               return ret;
->> > +
->> > +       /* Check if PSCI OSI mode is available */
->> > +       ret = psci_features(psci_function_id[PSCI_FN_CPU_SUSPEND]);
->> > +       if (ret & PSCI_1_0_OS_INITIATED) {
->> > +               ret = psci_features(PSCI_1_0_FN_SET_SUSPEND_MODE);
->> > +               if (!ret)
->> > +                       psci_has_osi_pd = true;
->>
->> IMHO, its better to have this done in psci_init_cpu_suspend() itself
->> for 2 reasons
->>
->> a] psci_init_cpu_suspend() already calls
->> psci_features(psci_function_id[PSCI_FN_CPU_SUSPEND])
->> b] by moving this in psci_init_cpu_suspend() we make this support
->> available even for ACPI platforms, since psci_acpi_init() calls
->> psci_probe() and this calls  psci_init_cpu_suspend() for
->> PSCI_VERSION_MAJOR(ver) >= 1
->
-> For ACPI platforms it is necessary to go through a handshake to
-> determine whether LPI can use OSI (see 6.2.11.2 in the ACPI 6.1 spec).
-> So there will have to be some ACPI-specific code to determine whether
-> OSI should be used.
->
-> We will probably have to an ACPI-specific wrapper for
-> psci_init_cpu_suspend to cater for that. I don't think that
-> psci_init_cpu_suspend itself should be in charge of deciding whether to
-> enable OSI.
+$ make.cross ARCH=sh
+   drivers/devfreq/tegra-devfreq.c: In function 'tegra_actmon_rate_notify_cb':
+>> drivers/devfreq/tegra-devfreq.c:391:16: error: 'POST_RATE_CHANGE' undeclared (first use in this function)
+     if (action != POST_RATE_CHANGE)
+                   ^
+   drivers/devfreq/tegra-devfreq.c: In function 'tegra_devfreq_probe':
+>> drivers/devfreq/tegra-devfreq.c:654:8: error: implicit declaration of function 'clk_notifier_register' [-Werror=implicit-function-declaration]
+     err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
+           ^
 
-True, I think you are referring to the function acpi_bus_osc_support()
-which does the handing shaking.
-Right, for ACPI platforms along with SET_SUSPEND_MODE feature, we
-should also be depending on the handing shaking result to set the
-psci_has_osi_pd flag.
+Export the macros and data type declarations outside of COMMON_CLK ifdef
+and provide stubs to fix the compile testing.
 
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
->
-> Thanks,
-> Mark.
+---
 
-Thanks and Regards
-Vikas Sajjan
-Hewlett Packard Enterprise
+Reported when testing patch [1] on ARCH=sh. I don't have the sh cross
+compile toolchain so I cannot verify whether this fixes reported issue.
+
+[1] http://www.gossamer-threads.com/lists/linux/kernel/2471798
+---
+ include/linux/clk.h | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/clk.h b/include/linux/clk.h
+index 834179f3fa72..c83b8a9ffc14 100644
+--- a/include/linux/clk.h
++++ b/include/linux/clk.h
+@@ -20,8 +20,6 @@ struct device;
+ 
+ struct clk;
+ 
+-#ifdef CONFIG_COMMON_CLK
+-
+ /**
+  * DOC: clk notifier callback types
+  *
+@@ -61,6 +59,8 @@ struct clk_notifier {
+ 	struct list_head		node;
+ };
+ 
++#ifdef CONFIG_COMMON_CLK
++
+ /**
+  * struct clk_notifier_data - rate data to pass to the notifier callback
+  * @clk: struct clk * being changed
+@@ -140,6 +140,18 @@ bool clk_is_match(const struct clk *p, const struct clk *q);
+ 
+ #else
+ 
++static inline int clk_notifier_register(struct clk *clk,
++					struct notifier_block *nb)
++{
++	return -ENOTSUPP;
++}
++
++static inline int clk_notifier_unregister(struct clk *clk,
++					  struct notifier_block *nb)
++{
++	return -ENOTSUPP;
++}
++
+ static inline long clk_get_accuracy(struct clk *clk)
+ {
+ 	return -ENOTSUPP;
+-- 
+1.9.1
+
