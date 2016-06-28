@@ -1,39 +1,49 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] PM / suspend: show workqueues busy name in suspend flow
-Date: Tue, 28 Jun 2016 12:56:16 -0400
-Message-ID: <20160628165616.GD5185@htj.duckdns.org>
-References: <1466586509-32400-1-git-send-email-roger.lu@mediatek.com>
- <20160622152126.GV3262@mtj.duckdns.org>
- <1467020645.25092.24.camel@mtksdaap41>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v2] clk: Provide notifier stubs when !COMMON_CLK
+Date: Tue, 28 Jun 2016 10:26:53 -0700
+Message-ID: <20160628172653.GB1521@codeaurora.org>
+References: <1467113104-8650-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f193.google.com ([209.85.220.193]:33264 "EHLO
-	mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750871AbcF1Q4b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2016 12:56:31 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:41231 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750710AbcF1Rfk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2016 13:35:40 -0400
 Content-Disposition: inline
-In-Reply-To: <1467020645.25092.24.camel@mtksdaap41>
+In-Reply-To: <1467113104-8650-1-git-send-email-k.kozlowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Roger Lu <roger.lu@mediatek.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lai Jiangshan <jiangshanlai@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, djkurtz@chromium.org, drinkcat@chromium.org, fan.chen@mediatek.com, eddie.huang@mediatek.com
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Russell King <linux@armlinux.org.uk>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Hello, Roger.
-
-On Mon, Jun 27, 2016 at 05:44:05PM +0800, Roger Lu wrote:
-> show_workqueue_state() is a better choice to me. However, only freezable
-> workqueue is able to affect suspend flow. So, is there other mailing
-> list discussing about showing freezable workqueue state only?? Maybe we
-> can use that API in this case. Thanks very much.
+On 06/28, Krzysztof Kozlowski wrote:
+> The clk notifier symbols are hidden by COMMON_CLK.  However on some
+> platforms HAVE_CLK might be set while COMMON_CLK not which leads to
+> compile test build errors like:
 > 
-> freezable workqueue means workqueue is created with flag WQ_FREEZABLE.
+> $ make.cross ARCH=sh
+>    drivers/devfreq/tegra-devfreq.c: In function 'tegra_actmon_rate_notify_cb':
+> >> drivers/devfreq/tegra-devfreq.c:391:16: error: 'POST_RATE_CHANGE' undeclared (first use in this function)
+>      if (action != POST_RATE_CHANGE)
+>                    ^
+>    drivers/devfreq/tegra-devfreq.c: In function 'tegra_devfreq_probe':
+> >> drivers/devfreq/tegra-devfreq.c:654:8: error: implicit declaration of function 'clk_notifier_register' [-Werror=implicit-function-declaration]
+>      err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
+>            ^
+> 
+> Export the macros and data type declarations outside of COMMON_CLK ifdef
+> and provide stubs to fix the compile testing.
+> 
+> Reported-by: kbuild test robot <lkp@intel.com>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> 
+> ---
+> 
 
-It's for debugging anyway and workqueue dumps usually are pretty
-short.  I don't think it's fine to use the same function.  We can add
-flags in the printouts but I'm not even sure that'd be necessary.
-
-Thanks.
+Ok. Did you want some stable branch to pull this in and base your
+use case on?
 
 -- 
-tejun
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
