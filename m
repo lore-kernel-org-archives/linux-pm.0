@@ -1,89 +1,54 @@
-From: James Morse <james.morse@arm.com>
-Subject: [PATCH v3 5/7] PM / Hibernate: Allow arch code to influence CPU hotplug during hibernate
-Date: Tue, 28 Jun 2016 15:51:48 +0100
-Message-ID: <1467125510-18758-6-git-send-email-james.morse@arm.com>
-References: <1467125510-18758-1-git-send-email-james.morse@arm.com>
+From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+Subject: Re: [PATCH v3 1/2] ARM: tango: add HOTPLUG_CPU support
+Date: Tue, 28 Jun 2016 17:04:17 +0200
+Message-ID: <577291F1.8060105@sigmadesigns.com>
+References: <57726597.8030501@sigmadesigns.com>
+ <577266AD.8000006@sigmadesigns.com> <57726DE0.8090308@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:48059 "EHLO foss.arm.com"
+Received: from a.mx.sdesigns.eu ([78.31.43.6]:14508 "EHLO a.mx.sdesigns.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752023AbcF1OzQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 28 Jun 2016 10:55:16 -0400
-In-Reply-To: <1467125510-18758-1-git-send-email-james.morse@arm.com>
+	id S1752128AbcF1PEU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 28 Jun 2016 11:04:20 -0400
+In-Reply-To: <57726DE0.8090308@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, James Morse <james.morse@arm.com>, Chen Yu C <yu.c.chen@intel.com>, linux-pm@vger.kernel.org
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: arm-soc <arm@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Frias <sf84@laposte.net>, Mason <slash.tmp@free.fr>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-Architecture code may need to do extra work when secondary CPUs are
-disabled during hibernate and resume. This may include pushing sleeping
-CPUs into a deeper power-saving state, or influencing which CPU resume
-occurs on.
+On 28/06/2016 14:30, Robin Murphy wrote:
 
-Define a macro arch_hibernation_disable_cpus(), which defaults to calling
-disable_nonboot_cpus() if undefined. Architectures that need to do extra
-work around these calls can use this to influence disable_nonboot_cpus()
-behaviour. The macro should be defined in asm/suspend.h, and
-ARCH_HIBERNATION_CPUHP should be added to Kconfig.
+> On 28/06/16 12:59, Marc Gonzalez wrote:
+>
+>> +#ifdef CONFIG_HOTPLUG_CPU
+>> +/*
+>> + * cpu_kill() and cpu_die() run concurrently on different cores.
+>> + * Firmware will only "kill" a core once it has properly "died".
+>> + * Keep trying to kill a core until the operation succeeds, but
+>> + * sleep between tries to give the core time to die.
+>> + */
+>> +static int tango_cpu_kill(unsigned int cpu)
+>> +{
+>> +	do {
+>> +		msleep(10);
+>> +	} while (tango_aux_core_kill(cpu) != 0);
+> 
+> Does the firmware guarantee that this will succeed (or at least report
+> success) in finite time, regardless of how messed up the system might
+> be? I'd imagine this should probably have either a timeout or a comment
+> clarifying why it doesn't need a timeout.
 
-Signed-off-by: James Morse <james.morse@arm.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>
----
-Changes since v2:
- * Added CONFIG_ARCH_HIBERNATION_CPUHP include guard allowing
- * Switch to macro approach.
+Good point.
 
- kernel/power/hibernate.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+The FW allows only one thread at a time. If a thread is wedged inside
+the FW, no other thread can use the FW. In that situation, cpu0 would
+remain stuck inside tango_cpu_kill().
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index fca9254280ee..338745e78f7e 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -31,8 +31,16 @@
- #include <linux/ktime.h>
- #include <trace/events/power.h>
- 
-+#ifdef CONFIG_ARCH_HIBERNATION_CPUHP
-+/* Arch definition of the arch_hibernation_disable_cpus() macro? */
-+#include <asm/suspend.h>
-+#endif
-+
- #include "power.h"
- 
-+#ifndef arch_hibernation_disable_cpus
-+#define arch_hibernation_disable_cpus(x) disable_nonboot_cpus()
-+#endif
- 
- static int nocompress;
- static int noresume;
-@@ -279,7 +287,7 @@ static int create_image(int platform_mode)
- 	if (error || hibernation_test(TEST_PLATFORM))
- 		goto Platform_finish;
- 
--	error = disable_nonboot_cpus();
-+	error = arch_hibernation_disable_cpus(true);
- 	if (error || hibernation_test(TEST_CPUS))
- 		goto Enable_cpus;
- 
-@@ -433,7 +441,7 @@ static int resume_target_kernel(bool platform_mode)
- 	if (error)
- 		goto Cleanup;
- 
--	error = disable_nonboot_cpus();
-+	error = arch_hibernation_disable_cpus(false);
- 	if (error)
- 		goto Enable_cpus;
- 
-@@ -551,7 +559,7 @@ int hibernation_platform_enter(void)
- 	if (error)
- 		goto Platform_finish;
- 
--	error = disable_nonboot_cpus();
-+	error = arch_hibernation_disable_cpus(true);
- 	if (error)
- 		goto Enable_cpus;
- 
--- 
-2.8.0.rc3
+Note, that if tango_cpu_kill() starts failing, then secondary cores
+will remain "zombies". So the system is mostly hosed anyway...
+Only cpu0 will be available.
+
+Regards.
 
