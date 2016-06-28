@@ -1,13 +1,15 @@
-From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-Subject: [PATCH v3 1/2] ARM: tango: add HOTPLUG_CPU support
-Date: Tue, 28 Jun 2016 13:59:41 +0200
-Message-ID: <577266AD.8000006@sigmadesigns.com>
-References: <57726597.8030501@sigmadesigns.com>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH] PM / devfreq: exynos: fix error path in exynos_bus_probe()
+Date: Tue, 28 Jun 2016 21:05:06 +0900
+Message-ID: <CAGTfZH2-PJazsjGCkFs7HeOc4VsFW3t7wZge2ODaD-2P1F5ixg@mail.gmail.com>
+References: <1467112869-30488-1-git-send-email-b.zolnierkie@samsung.com>
+ <1467112869-30488-2-git-send-email-b.zolnierkie@samsung.com>
+Reply-To: cw00.choi@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <57726597.8030501@sigmadesigns.com>
+In-Reply-To: <1467112869-30488-2-git-send-email-b.zolnierkie@samsung.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -17,76 +19,39 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: arm-soc <arm@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Sebastian Frias <sf84@laposte.net>, Mason <slash.tmp@free.fr>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-cpu_die() and cpu_kill() are implemented in firmware.
+2016-06-28 20:21 GMT+09:00 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>:
+> In case of exynos_bus_parse_of() failure the code shouldn't
+> try to remove the OPP table and disable+unprepare bus->clk
+> as it has been already handled in exynos_bus_parse_of().
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+>  drivers/devfreq/exynos-bus.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+> index 2363d0a..e946f8f 100644
+> --- a/drivers/devfreq/exynos-bus.c
+> +++ b/drivers/devfreq/exynos-bus.c
+> @@ -407,7 +407,7 @@ static int exynos_bus_probe(struct platform_device *pdev)
+>         /* Parse the device-tree to get the resource information */
+>         ret = exynos_bus_parse_of(np, bus);
+>         if (ret < 0)
+> -               goto err;
+> +               return ret;
+>
+>         profile = devm_kzalloc(dev, sizeof(*profile), GFP_KERNEL);
+>         if (!profile) {
+> --
+> 1.9.1
 
-Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
----
- arch/arm/mach-tango/platsmp.c | 30 ++++++++++++++++++++++++++++++
- arch/arm/mach-tango/smc.h     |  4 +++-
- 2 files changed, 33 insertions(+), 1 deletion(-)
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-diff --git a/arch/arm/mach-tango/platsmp.c b/arch/arm/mach-tango/platsmp.c
-index a21f55e000d2..a24b9b1d0b1a 100644
---- a/arch/arm/mach-tango/platsmp.c
-+++ b/arch/arm/mach-tango/platsmp.c
-@@ -1,3 +1,4 @@
-+#include <linux/delay.h>
- #include <linux/init.h>
- #include <linux/smp.h>
- #include "smc.h"
-@@ -9,8 +10,37 @@ static int tango_boot_secondary(unsigned int cpu, struct task_struct *idle)
- 	return 0;
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+/*
-+ * cpu_kill() and cpu_die() run concurrently on different cores.
-+ * Firmware will only "kill" a core once it has properly "died".
-+ * Keep trying to kill a core until the operation succeeds, but
-+ * sleep between tries to give the core time to die.
-+ */
-+static int tango_cpu_kill(unsigned int cpu)
-+{
-+	do {
-+		msleep(10);
-+	} while (tango_aux_core_kill(cpu) != 0);
-+
-+	return 1;
-+}
-+
-+static void tango_cpu_die(unsigned int cpu)
-+{
-+	do {
-+		cpu_relax();
-+	} while (tango_aux_core_die(cpu) != 0);
-+}
-+#else
-+#define tango_cpu_kill	NULL
-+#define tango_cpu_die	NULL
-+#endif
-+
- static const struct smp_operations tango_smp_ops __initconst = {
- 	.smp_boot_secondary	= tango_boot_secondary,
-+	.cpu_kill		= tango_cpu_kill,
-+	.cpu_die		= tango_cpu_die,
- };
- 
- CPU_METHOD_OF_DECLARE(tango4_smp, "sigma,tango4-smp", &tango_smp_ops);
-diff --git a/arch/arm/mach-tango/smc.h b/arch/arm/mach-tango/smc.h
-index 7a4af35cc390..3d31f984f44c 100644
---- a/arch/arm/mach-tango/smc.h
-+++ b/arch/arm/mach-tango/smc.h
-@@ -2,4 +2,6 @@ extern int tango_smc(unsigned int val, unsigned int service);
- 
- #define tango_set_l2_control(val)	tango_smc(val, 0x102)
- #define tango_start_aux_core(val)	tango_smc(val, 0x104)
--#define tango_set_aux_boot_addr(val)	tango_smc((unsigned int)val, 0x105)
-+#define tango_set_aux_boot_addr(val)	tango_smc(val, 0x105)
-+#define tango_aux_core_die(val)		tango_smc(val, 0x121)
-+#define tango_aux_core_kill(val)	tango_smc(val, 0x122)
--- 
-2.9.0
+And, this patch fixes the bug. It should be included in v4.7-rc version.
+
+Thanks,
+Chanwoo Choi
