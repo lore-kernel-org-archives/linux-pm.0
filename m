@@ -1,64 +1,69 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] devfreq: Add COMPILE_TEST for build coverage
-Date: Tue, 28 Jun 2016 09:32:27 +0200
-Message-ID: <5772280B.40306@samsung.com>
-References: <201606280241.YE5uVWhf%fengguang.wu@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [RFC PATCH 0/4] ARM: remove big.LITTLE switcher support
+Date: Tue, 28 Jun 2016 10:18:17 +0200
+Message-ID: <8154264.t0CjdgHDuf@amdc1976>
+References: <1467026770-5699-1-git-send-email-b.zolnierkie@samsung.com>
+ <alpine.LFD.2.20.1606271540000.2550@knanqh.ubzr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:32429 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752042AbcF1Hcc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2016 03:32:32 -0400
-In-reply-to: <201606280241.YE5uVWhf%fengguang.wu@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <alpine.LFD.2.20.1606271540000.2550@knanqh.ubzr>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King <rmk+kernel@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Dave Martin <dave.martin@linaro.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>
-Cc: kbuild-all@01.org, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 06/27/2016 08:37 PM, kbuild test robot wrote:
-> Hi,
-> 
-> [auto build test ERROR on v4.7-rc5]
-> [also build test ERROR on next-20160627]
-> [cannot apply to devfreq/for-rafael]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Krzysztof-Kozlowski/devfreq-Add-COMPILE_TEST-for-build-coverage/20160627-220248
-> config: sh-allyesconfig (attached as .config)
-> compiler: sh4-linux-gnu-gcc (Debian 5.3.1-8) 5.3.1 20160205
-> reproduce:
->         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=sh 
-> 
-> All errors (new ones prefixed by >>):
-> 
->    drivers/devfreq/tegra-devfreq.c: In function 'tegra_actmon_rate_notify_cb':
->>> drivers/devfreq/tegra-devfreq.c:391:16: error: 'POST_RATE_CHANGE' undeclared (first use in this function)
->      if (action != POST_RATE_CHANGE)
->                    ^
->    drivers/devfreq/tegra-devfreq.c:391:16: note: each undeclared identifier is reported only once for each function it appears in
->>> drivers/devfreq/tegra-devfreq.c:396:24: error: dereferencing pointer to incomplete type 'struct clk_notifier_data'
->      tegra->cur_freq = data->new_rate / KHZ;
->                            ^
->    drivers/devfreq/tegra-devfreq.c: In function 'tegra_devfreq_probe':
->>> drivers/devfreq/tegra-devfreq.c:654:8: error: implicit declaration of function 'clk_notifier_register' [-Werror=implicit-function-declaration]
->      err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
->            ^
->    drivers/devfreq/tegra-devfreq.c: In function 'tegra_devfreq_remove':
->>> drivers/devfreq/tegra-devfreq.c:734:2: error: implicit declaration of function 'clk_notifier_unregister' [-Werror=implicit-function-declaration]
->      clk_notifier_unregister(tegra->emc_clock, &tegra->rate_change_nb);
->      ^
->    cc1: some warnings being treated as errors
 
-I sent a follow up [1] for clock which I think fixes this report. In
-case it won't be accepted, I'll change the Kconfig dependency to COMMON_CLK.
+Hi,
 
-[1] https://lkml.org/lkml/2016/6/28/73
+On Monday, June 27, 2016 03:49:44 PM Nicolas Pitre wrote:
+> On Mon, 27 Jun 2016, Bartlomiej Zolnierkiewicz wrote:
+> 
+> > Hi,
+> > 
+> > It seems that in mainline kernel big.LITTLE switcher support
+> > may be usable only on ARM Versatile Express TC2 platform
+> > (but even this platform doesn't enable it in its defconfig).
+> 
+> It is also used on some Samsung targets.
+
+Could you please explain this more?  AFAIK mainline never
+had working IKS solution (big.LITTLE switcher support +
+arm_big_little CPUfreq driver support) on any Samsung SoC.
+
+> > The following patchset removes big.LITTLE switcher support
+> > (from both ARM core and arm_big_little CPUfreq driver) in
+> > favor of using HMP.
+> > 
+> > Since HMP support at scheduler level is not yet merged this
+> > patchset is probably premature and thus is marked as RFC.
+> 
+> It is premature indeed.
+> 
+> And before this is removed, comparison with power/performance benchmark 
+> numbers will have to be provided as well to justify this removal.  At 
+> the moment there is nothing else in mainline that can achieve what this 
+> code does.
+
+I agree given that this code has real users and according
+to my research on mainline kernel it seems that the IKS
+functionality (bL switcher core code together with
+arm_bit_little CPUfreq driver support) is usable only on
+TC2 and even this platform doesn't enable it by default.
+
+IOW I would really like to get the confirmation that there
+are platforms that are making use of IKS functionality
+currently with the mainline  kernel.  Otherwise we should
+either consider its removal or enable it on platforms that
+are supposed to use it.
+
+> We all agree that the scheduler based solution is the best way to do it. 
+> But this has been a couple years already and this is still work in 
+> progress.
 
 Best regards,
-Krzysztof
-
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
