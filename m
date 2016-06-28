@@ -1,90 +1,36 @@
-From: Icenowy Zheng <icenowy@aosc.xyz>
-Subject: [RFC PATCH 5/5] ARM: sun8i: enable ths node for A23/33
-Date: Tue, 28 Jun 2016 18:13:25 +0800
-Message-ID: <20160628101325.2522-5-icenowy@aosc.xyz>
-References: <20160628101325.2522-1-icenowy@aosc.xyz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160628101325.2522-1-icenowy@aosc.xyz>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, maxime.ripard@free-electrons.com, wens@csie.org, emilio@elopez.com.ar
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, Icenowy Zheng <icenowy@aosc.xyz>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH] PM / devfreq: exynos: fix error path in exynos_bus_probe()
+Date: Tue, 28 Jun 2016 13:21:09 +0200
+Message-ID: <1467112869-30488-2-git-send-email-b.zolnierkie@samsung.com>
+References: <1467112869-30488-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1467112869-30488-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Icenowy Zheng <icenowy@aosc.xyz>
----
- arch/arm/boot/dts/sun8i-a23-a33.dtsi | 16 ++++++++++++++++
- arch/arm/boot/dts/sun8i-a23.dtsi     |  4 ++++
- arch/arm/boot/dts/sun8i-a33.dtsi     |  4 ++++
- 3 files changed, 24 insertions(+)
+In case of exynos_bus_parse_of() failure the code shouldn't
+try to remove the OPP table and disable+unprepare bus->clk
+as it has been already handled in exynos_bus_parse_of().
 
-diff --git a/arch/arm/boot/dts/sun8i-a23-a33.dtsi b/arch/arm/boot/dts/sun8i-a23-a33.dtsi
-index a340cea..04df1ca 100644
---- a/arch/arm/boot/dts/sun8i-a23-a33.dtsi
-+++ b/arch/arm/boot/dts/sun8i-a23-a33.dtsi
-@@ -66,6 +66,14 @@
- 		};
- 	};
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/devfreq/exynos-bus.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+index 2363d0a..e946f8f 100644
+--- a/drivers/devfreq/exynos-bus.c
++++ b/drivers/devfreq/exynos-bus.c
+@@ -407,7 +407,7 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	/* Parse the device-tree to get the resource information */
+ 	ret = exynos_bus_parse_of(np, bus);
+ 	if (ret < 0)
+-		goto err;
++		return ret;
  
-+	thermal-zones {
-+		cpu_thermal: cpu_thermal {
-+			polling-delay-passive = <330>;
-+			polling-delay = <1000>;
-+			thermal-sensors = <&ths 0>;
-+		};
-+	};
-+
- 	timer {
- 		compatible = "arm,armv7-timer";
- 		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-@@ -473,6 +481,14 @@
- 			status = "disabled";
- 		};
- 
-+		ths: ths@01c25000 {
-+			#thermal-sensor-cells = <0>;
-+			/* compatible is in per-cpu dtsi file */
-+			reg = <0x01c25000 0x44>;
-+			clocks = <&pll2 0>;
-+			clock-names = "pll2";
-+		};
-+
- 		uart0: serial@01c28000 {
- 			compatible = "snps,dw-apb-uart";
- 			reg = <0x01c28000 0x400>;
-diff --git a/arch/arm/boot/dts/sun8i-a23.dtsi b/arch/arm/boot/dts/sun8i-a23.dtsi
-index 92e6616..41f0d9e 100644
---- a/arch/arm/boot/dts/sun8i-a23.dtsi
-+++ b/arch/arm/boot/dts/sun8i-a23.dtsi
-@@ -124,3 +124,7 @@
- 		     <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>,
- 		     <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
- };
-+
-+&ths {
-+	compatible = "allwinner,sun8i-a23-ths";
-+};
-diff --git a/arch/arm/boot/dts/sun8i-a33.dtsi b/arch/arm/boot/dts/sun8i-a33.dtsi
-index 001d840..2273124 100644
---- a/arch/arm/boot/dts/sun8i-a33.dtsi
-+++ b/arch/arm/boot/dts/sun8i-a33.dtsi
-@@ -173,3 +173,7 @@
- 	};
- 
- };
-+
-+&ths {
-+	compatible = "allwinner,sun8i-a33-ths";
-+};
+ 	profile = devm_kzalloc(dev, sizeof(*profile), GFP_KERNEL);
+ 	if (!profile) {
 -- 
-2.9.0
+1.9.1
