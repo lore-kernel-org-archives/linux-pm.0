@@ -1,60 +1,35 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][RFC] cpufreq: Avoid warning during resume by return EAGAIN if cpufreq is unavailable
-Date: Tue, 28 Jun 2016 03:31:11 +0200
-Message-ID: <91695540.4NGfil38DW@vostro.rjw.lan>
-References: <1466872128-14566-1-git-send-email-yu.c.chen@intel.com> <2394728.0JDBHijQ6J@vostro.rjw.lan> <20160627072027.GC3341@vireshk-i7>
+From: Wenyou Yang <wenyou.yang@atmel.com>
+Subject: [PATCH v2 0/7] power: act8945a_charger: Improvements
+Date: Tue, 28 Jun 2016 09:22:43 +0800
+Message-ID: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160627072027.GC3341@vireshk-i7>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Chen Yu <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, June 27, 2016 12:50:27 PM Viresh Kumar wrote:
-> On 27-06-16, 03:12, Rafael J. Wysocki wrote:
-> > ---
-> >  drivers/cpufreq/cpufreq.c |    7 ++++---
-> >  1 file changed, 4 insertions(+), 3 deletions(-)
-> > 
-> > Index: linux-pm/drivers/cpufreq/cpufreq.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> > +++ linux-pm/drivers/cpufreq/cpufreq.c
-> > @@ -1544,9 +1544,6 @@ static unsigned int cpufreq_update_curre
-> >  {
-> >  	unsigned int new_freq;
-> >  
-> > -	if (cpufreq_suspended)
-> > -		return 0;
-> > -
-> >  	new_freq = cpufreq_driver->get(policy->cpu);
-> >  	if (!new_freq)
-> >  		return 0;
-> > @@ -2280,6 +2277,10 @@ int cpufreq_update_policy(unsigned int c
-> >  	 * -> ask driver for current freq and notify governors about a change
-> >  	 */
-> >  	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
-> > +		if (cpufreq_suspended) {
-> > +			ret = -EAGAIN;
-> > +			goto unlock;
-> > +		}
-> >  		new_policy.cur = cpufreq_update_current_freq(policy);
-> >  		if (WARN_ON(!new_policy.cur)) {
-> >  			ret = -EIO;
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This patch series is used to improve the act8945a-charger, such as
+improve the way to check the status, fix the power supply type
+property, add the status change update, and add more properties:
+capacity level property and max current property.
 
-Thanks, but this needs to go in in two pieces, because cpufreq_start_governor()
-in the mainline doesn't check cpufreq_suspended (the linux-next version of it
-does that).
+Changes in v2:
+ - Add missing ret declaration.
 
-So the second part of the patch is needed in the mainline/stable to get rid
-of false-positive WARN_ON()s and the first one can go in on top of the
-previous linux-next changes.
+Wenyou Yang (7):
+  power: act8945a_charger: Remove "battery_temperature"
+  power: act8945a_charger: Improve
+  power: act8945a_charger: Add status change update support
+  power: act8945a_charger: Fix the power supply type
+  power: act8945a_charger: Add capacity level property
+  power: act8945a_charger: Add max current property
+  doc: bindings: act8945a-charger: Update properties
 
-Thanks,
-Rafael
+ .../devicetree/bindings/power/act8945a-charger.txt |   6 +-
+ drivers/power/act8945a_charger.c                   | 371 ++++++++++++++++++---
+ 2 files changed, 337 insertions(+), 40 deletions(-)
 
+-- 
+2.7.4
