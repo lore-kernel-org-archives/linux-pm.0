@@ -1,50 +1,64 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 03/14] dt-bindings: document sun8i_ths -
- H3 thermal sensor driver
-Date: Tue, 28 Jun 2016 15:56:27 -0500
-Message-ID: <20160628205627.GM3737@rob-hp-laptop>
-References: <20160625034511.7966-1-megous@megous.com>
- <20160625034511.7966-4-megous@megous.com>
-Reply-To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 7/7] doc: bindings: act8945a-charger: Update properties
+Date: Tue, 28 Jun 2016 15:57:50 -0500
+Message-ID: <20160628205750.GZ3737@rob-hp-laptop>
+References: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
+ <1467076970-12206-8-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDJIP47K7MERBBGJZO5QKGQEBXNOXKY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20160625034511.7966-4-megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org
-Cc: dev-3kdeTeqwOZ9EV1b7eY7vFQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1467076970-12206-8-git-send-email-wenyou.yang@atmel.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Wenyou Yang <wenyou.yang@atmel.com>
+Cc: devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, Kumar Gala <galak@codeaurora.org>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jun 25, 2016 at 05:45:00AM +0200, megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org wrote:
-> From: Ondrej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
->=20
-> This patch adds the binding documentation for the
-> sun8i_ths driver. This is a driver for thermal sensor
-> found in Allwinner H3 SoC.
->=20
-> Signed-off-by: Ond=C5=99ej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
+On Tue, Jun 28, 2016 at 09:22:50AM +0800, Wenyou Yang wrote:
+> Due the driver improvements, update the properties,
+>  - Remove "active-semi,check-battery-temperature" property.
+>  - Add the properties, "active-semi,irq_gpio"
+>    and "active-semi,lbo-gpios".
+> 
+> Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
 > ---
->  .../devicetree/bindings/thermal/sun8i-ths.txt      | 26 ++++++++++++++++=
-++++++
->  1 file changed, 26 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/sun8i-ths.t=
-xt
+> 
+> Changes in v2: None
+> 
+>  Documentation/devicetree/bindings/power/act8945a-charger.txt | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/act8945a-charger.txt b/Documentation/devicetree/bindings/power/act8945a-charger.txt
+> index bea254c..d7cf05b 100644
+> --- a/Documentation/devicetree/bindings/power/act8945a-charger.txt
+> +++ b/Documentation/devicetree/bindings/power/act8945a-charger.txt
+> @@ -4,10 +4,12 @@ Required properties:
+>   - compatible: "active-semi,act8945a", please refer to ../mfd/act8945a.txt.
+>   - active-semi,chglev-gpios: charge current level phandle with args
+>     as described in ../gpio/gpio.txt.
+> + - active-semi,irq_gpios: specify the charger interrupt input phanle
+> +   with args as as described in ../gpio/gpio.txt.
 
-I guess the example will change for the clocks some, but otherwise:
+Use "interrupts" property instead.
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+> + - active-semi,lbo-gpios: specify the low battery voltage detect phandle
+> +   with args as as described in ../gpio/gpio.txt.
+>  
+>  Optional properties:
+> - - active-semi,check-battery-temperature: boolean to check the battery
+> -   temperature or not.
+>   - active-semi,input-voltage-threshold-microvolt: unit: mV;
+>     Specifies the charger's input over-voltage threshold value;
+>     The value can be: 6600, 7000, 7500, 8000; default: 6600
+> -- 
+> 2.7.4
+> 
