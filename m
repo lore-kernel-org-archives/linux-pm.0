@@ -1,54 +1,64 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 10/13] ARM: shmobile: r8a7791: Prioritize DT APMU support
-Date: Tue, 28 Jun 2016 16:10:39 +0200
-Message-ID: <1467123042-8468-11-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v5 12/13] ARM: dts: r8a7791: Add APMU node
+Date: Tue, 28 Jun 2016 16:10:41 +0200
+Message-ID: <1467123042-8468-13-git-send-email-geert+renesas@glider.be>
 References: <1467123042-8468-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from laurent.telenet-ops.be ([195.130.137.89]:33604 "EHLO
-	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752272AbcF1OKt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2016 10:10:49 -0400
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1467123042-8468-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-renesas-soc-owner@vger.kernel.org
 To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Keita Kobayashi <keita.kobayashi.ym@renesas.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Magnus Damm <damm+renesas@opensource.se>, Geert Uytterhoeven <geert+renesas@glider.be>
+List-Id: linux-pm@vger.kernel.org
 
 From: Magnus Damm <damm+renesas@opensource.se>
 
-Adjust the r8a7791 SoC support code to not configure any non-DT SMP code
-in case the DT-based enable-method has been installed already.
+Add a DT node for the Advanced Power Management Units (APMU), and use
+the enable-method to point out that the APMU should be used for SMP
+support.
 
 Signed-off-by: Magnus Damm <damm+renesas@opensource.se>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
+----
 v5:
   - No changes,
 
 v4:
-  - No changes,
+  - Improve patch description,
+  - Use "renesas,<soctype>-apmu" instead of "renesas,apmu-<soctype>",
 
 v3:
   - No changes,
 
 v2:
-  - New.
+  - No changes.
 ---
- arch/arm/mach-shmobile/setup-r8a7791.c | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/boot/dts/r8a7791.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm/mach-shmobile/setup-r8a7791.c b/arch/arm/mach-shmobile/setup-r8a7791.c
-index 3b8dbaf07777145e..110e8b588e563fca 100644
---- a/arch/arm/mach-shmobile/setup-r8a7791.c
-+++ b/arch/arm/mach-shmobile/setup-r8a7791.c
-@@ -29,6 +29,7 @@ static const char *const r8a7791_boards_compat_dt[] __initconst = {
- };
+diff --git a/arch/arm/boot/dts/r8a7791.dtsi b/arch/arm/boot/dts/r8a7791.dtsi
+index 1985bd0dc32ce738..8f0086bbd96bb27a 100644
+--- a/arch/arm/boot/dts/r8a7791.dtsi
++++ b/arch/arm/boot/dts/r8a7791.dtsi
+@@ -43,6 +43,7 @@
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
++		enable-method = "renesas,apmu";
  
- DT_MACHINE_START(R8A7791_DT, "Generic R8A7791 (Flattened Device Tree)")
-+	.smp_init	= shmobile_smp_init_fallback_ops,
- 	.smp		= smp_ops(r8a7791_smp_ops),
- 	.init_early	= shmobile_init_delay,
- 	.init_time	= rcar_gen2_timer_init,
+ 		cpu0: cpu@0 {
+ 			device_type = "cpu";
+@@ -101,6 +102,12 @@
+ 		};
+ 	};
+ 
++	apmu@e6152000 {
++		compatible = "renesas,r8a7791-apmu", "renesas,apmu";
++		reg = <0 0xe6152000 0 0x188>;
++		cpus = <&cpu0 &cpu1>;
++	};
++
+ 	gic: interrupt-controller@f1001000 {
+ 		compatible = "arm,gic-400";
+ 		#interrupt-cells = <3>;
 -- 
 1.9.1
-
