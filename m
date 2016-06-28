@@ -1,95 +1,57 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [RFC PATCH 3/5] thermal: Add support for the thermal sensor on
- A23/33
-Date: Tue, 28 Jun 2016 13:46:40 +0200
-Message-ID: <20160628114640.GE5550@lukather>
-References: <20160628101325.2522-1-icenowy@aosc.xyz>
- <20160628101325.2522-3-icenowy@aosc.xyz>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2] clk: Provide notifier stubs when !COMMON_CLK
+Date: Tue, 28 Jun 2016 13:58:49 +0200
+Message-ID: <14387179.nnNuRe7g05@amdc1976>
+References: <1467113104-8650-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0738689973533869486=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160628101325.2522-3-icenowy@aosc.xyz>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Icenowy Zheng <icenowy@aosc.xyz>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, emilio@elopez.com.ar, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, edubezval@gmail.com, wens@csie.org, robh+dt@kernel.org, rui.zhang@intel.com, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1467113104-8650-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Russell King <linux@armlinux.org.uk>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---===============0738689973533869486==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2qXFWqzzG3v1+95a"
-Content-Disposition: inline
-
-
---2qXFWqzzG3v1+95a
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
 Hi,
 
-Thanks for working on this.
+On Tuesday, June 28, 2016 01:25:04 PM Krzysztof Kozlowski wrote:
+> The clk notifier symbols are hidden by COMMON_CLK.  However on some
+> platforms HAVE_CLK might be set while COMMON_CLK not which leads to
+> compile test build errors like:
+> 
+> $ make.cross ARCH=sh
+>    drivers/devfreq/tegra-devfreq.c: In function 'tegra_actmon_rate_notify_cb':
+> >> drivers/devfreq/tegra-devfreq.c:391:16: error: 'POST_RATE_CHANGE' undeclared (first use in this function)
+>      if (action != POST_RATE_CHANGE)
+>                    ^
+>    drivers/devfreq/tegra-devfreq.c: In function 'tegra_devfreq_probe':
+> >> drivers/devfreq/tegra-devfreq.c:654:8: error: implicit declaration of function 'clk_notifier_register' [-Werror=implicit-function-declaration]
+>      err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
+>            ^
+> 
+> Export the macros and data type declarations outside of COMMON_CLK ifdef
+> and provide stubs to fix the compile testing.
+> 
+> Reported-by: kbuild test robot <lkp@intel.com>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> 
+> ---
+> 
+> Reported when testing patch [1] on ARCH=sh. I don't have the sh cross
+> compile toolchain so I cannot verify whether this fixes reported issue.
 
-On Tue, Jun 28, 2016 at 06:13:23PM +0800, Icenowy Zheng wrote:
-> This patch adds support for the sun8iw3 thermal sensor on
-> Allwinner A23/33 SoCs.
->=20
-> Signed-off-by: Icenowy Zheng <icenowy@aosc.xyz>
+FWIW I've verified with sh cross-compiler.
 
-The IP is awfully similar to the A31's, which already has a driver
-(drivers/input/touchscreen/sun4i-ts.c).
+Tested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-There's no reason to add a new one here.
+> Tested on similar configuration on MIPS (HAVE_CLK && !COMMON_CLK)
+> 
+> [1] http://www.gossamer-threads.com/lists/linux/kernel/2471798
 
-Thanks,
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---2qXFWqzzG3v1+95a
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXcmOgAAoJEBx+YmzsjxAgCloP/RDSvYyA518FR5v7//CArHXA
-lnT7ifb8uLBI1mCT+zGOOcjf21yY4R7Jms+OEhqMAMfhk/LLuFcK6naK6pCRBbdc
-7c9uIjcYlDyQCuUWEae5pUJLpHV1oLydZ6oLKh+nQ6YRBgV5r//7z7utP4Efap11
-TzHwe6P9OLYkqLcRt5m8ofHF+jeSMXmaCPiEgPeVJvaBuSi4bIc1rBXPQypri8Y0
-tcbvktoVsbjJ9WVLhnk+KZQuR9O28bc0Mb6iscUEX1CV89T1O+zOCj+WE5xkc/cD
-xjXL9L+wUdRx6KuH1x4F9kMi0fbmAg78vdXfRbf0SDfTCxPCt6xDZOhhOnO23MwQ
-nr4Te9lMZUAjAHo+r4qxeLWCg5RORE10BfpGLgOMRRaESKqBZIgN36XoSK3aF/2D
-nVpxgOBISlH0eFkAsQSMlIucFKWMj2vm0YpRL1FW51o7/fc0dzWGMSxN17xSmyhV
-8I46kFehqH4rcYAJBnmt7ByhXC7JQOKzv5lnEgK1lpc9DLqVJdZyimOQNUkSdF6b
-uYOnL6wPvCX1RkuIPq2j9R6wV/00jQrGT5m2kFnuyGhogX/0fV3/imdHISKDXCjU
-g3osaLOxk4KMpzDEViU//5ykTi8M7943zNIXboVJxUAM5l4J72LZH1ERz8NnyP1F
-MJl9wkGzjOx/h92stazQ
-=wERd
------END PGP SIGNATURE-----
-
---2qXFWqzzG3v1+95a--
-
-
---===============0738689973533869486==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============0738689973533869486==--
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
