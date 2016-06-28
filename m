@@ -1,57 +1,92 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v2] clk: Provide notifier stubs when !COMMON_CLK
-Date: Tue, 28 Jun 2016 13:58:49 +0200
-Message-ID: <14387179.nnNuRe7g05@amdc1976>
-References: <1467113104-8650-1-git-send-email-k.kozlowski@samsung.com>
+From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+Subject: [PATCH v3 1/2] ARM: tango: add HOTPLUG_CPU support
+Date: Tue, 28 Jun 2016 13:59:41 +0200
+Message-ID: <577266AD.8000006@sigmadesigns.com>
+References: <57726597.8030501@sigmadesigns.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1467113104-8650-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Russell King <linux@armlinux.org.uk>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <57726597.8030501@sigmadesigns.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: arm-soc <arm@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Sebastian Frias <sf84@laposte.net>, Mason <slash.tmp@free.fr>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+cpu_die() and cpu_kill() are implemented in firmware.
 
-Hi,
+Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+---
+ arch/arm/mach-tango/platsmp.c | 30 ++++++++++++++++++++++++++++++
+ arch/arm/mach-tango/smc.h     |  4 +++-
+ 2 files changed, 33 insertions(+), 1 deletion(-)
 
-On Tuesday, June 28, 2016 01:25:04 PM Krzysztof Kozlowski wrote:
-> The clk notifier symbols are hidden by COMMON_CLK.  However on some
-> platforms HAVE_CLK might be set while COMMON_CLK not which leads to
-> compile test build errors like:
-> 
-> $ make.cross ARCH=sh
->    drivers/devfreq/tegra-devfreq.c: In function 'tegra_actmon_rate_notify_cb':
-> >> drivers/devfreq/tegra-devfreq.c:391:16: error: 'POST_RATE_CHANGE' undeclared (first use in this function)
->      if (action != POST_RATE_CHANGE)
->                    ^
->    drivers/devfreq/tegra-devfreq.c: In function 'tegra_devfreq_probe':
-> >> drivers/devfreq/tegra-devfreq.c:654:8: error: implicit declaration of function 'clk_notifier_register' [-Werror=implicit-function-declaration]
->      err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
->            ^
-> 
-> Export the macros and data type declarations outside of COMMON_CLK ifdef
-> and provide stubs to fix the compile testing.
-> 
-> Reported-by: kbuild test robot <lkp@intel.com>
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> 
-> ---
-> 
-> Reported when testing patch [1] on ARCH=sh. I don't have the sh cross
-> compile toolchain so I cannot verify whether this fixes reported issue.
-
-FWIW I've verified with sh cross-compiler.
-
-Tested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-> Tested on similar configuration on MIPS (HAVE_CLK && !COMMON_CLK)
-> 
-> [1] http://www.gossamer-threads.com/lists/linux/kernel/2471798
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/arch/arm/mach-tango/platsmp.c b/arch/arm/mach-tango/platsmp.c
+index a21f55e000d2..a24b9b1d0b1a 100644
+--- a/arch/arm/mach-tango/platsmp.c
++++ b/arch/arm/mach-tango/platsmp.c
+@@ -1,3 +1,4 @@
++#include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/smp.h>
+ #include "smc.h"
+@@ -9,8 +10,37 @@ static int tango_boot_secondary(unsigned int cpu, struct task_struct *idle)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++/*
++ * cpu_kill() and cpu_die() run concurrently on different cores.
++ * Firmware will only "kill" a core once it has properly "died".
++ * Keep trying to kill a core until the operation succeeds, but
++ * sleep between tries to give the core time to die.
++ */
++static int tango_cpu_kill(unsigned int cpu)
++{
++	do {
++		msleep(10);
++	} while (tango_aux_core_kill(cpu) != 0);
++
++	return 1;
++}
++
++static void tango_cpu_die(unsigned int cpu)
++{
++	do {
++		cpu_relax();
++	} while (tango_aux_core_die(cpu) != 0);
++}
++#else
++#define tango_cpu_kill	NULL
++#define tango_cpu_die	NULL
++#endif
++
+ static const struct smp_operations tango_smp_ops __initconst = {
+ 	.smp_boot_secondary	= tango_boot_secondary,
++	.cpu_kill		= tango_cpu_kill,
++	.cpu_die		= tango_cpu_die,
+ };
+ 
+ CPU_METHOD_OF_DECLARE(tango4_smp, "sigma,tango4-smp", &tango_smp_ops);
+diff --git a/arch/arm/mach-tango/smc.h b/arch/arm/mach-tango/smc.h
+index 7a4af35cc390..3d31f984f44c 100644
+--- a/arch/arm/mach-tango/smc.h
++++ b/arch/arm/mach-tango/smc.h
+@@ -2,4 +2,6 @@ extern int tango_smc(unsigned int val, unsigned int service);
+ 
+ #define tango_set_l2_control(val)	tango_smc(val, 0x102)
+ #define tango_start_aux_core(val)	tango_smc(val, 0x104)
+-#define tango_set_aux_boot_addr(val)	tango_smc((unsigned int)val, 0x105)
++#define tango_set_aux_boot_addr(val)	tango_smc(val, 0x105)
++#define tango_aux_core_die(val)		tango_smc(val, 0x121)
++#define tango_aux_core_kill(val)	tango_smc(val, 0x122)
+-- 
+2.9.0
