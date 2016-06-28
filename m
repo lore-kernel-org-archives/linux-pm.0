@@ -1,55 +1,39 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v2] clk: Provide notifier stubs when !COMMON_CLK
-Date: Tue, 28 Jun 2016 21:01:00 +0200
-Message-ID: <20160628190100.GA11586@kozik-lap>
-References: <1467113104-8650-1-git-send-email-k.kozlowski@samsung.com>
- <20160628172653.GB1521@codeaurora.org>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: Re: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt >
+ 0
+Date: Tue, 28 Jun 2016 16:19:26 -0400
+Message-ID: <c1aee8a0-958b-48b6-4662-791c2493363c@nvidia.com>
+References: <1465507719-819-1-git-send-email-rklein@nvidia.com>
+ <8b081e45-94c8-bb53-69ca-0a617c668de5@nvidia.com>
+ <20160622142353.GA16084@earth>
+ <e2537dba-927f-375a-fcc4-7f46ce3e2dcd@nvidia.com>
+ <20160628182030.GB2391@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-clk-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160628172653.GB1521@codeaurora.org>
-Sender: linux-clk-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Russell King <linux@armlinux.org.uk>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20160628182030.GB2391@earth>
+Sender: stable-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 28, 2016 at 10:26:53AM -0700, Stephen Boyd wrote:
-> On 06/28, Krzysztof Kozlowski wrote:
-> > The clk notifier symbols are hidden by COMMON_CLK.  However on some
-> > platforms HAVE_CLK might be set while COMMON_CLK not which leads to
-> > compile test build errors like:
-> > 
-> > $ make.cross ARCH=sh
-> >    drivers/devfreq/tegra-devfreq.c: In function 'tegra_actmon_rate_notify_cb':
-> > >> drivers/devfreq/tegra-devfreq.c:391:16: error: 'POST_RATE_CHANGE' undeclared (first use in this function)
-> >      if (action != POST_RATE_CHANGE)
-> >                    ^
-> >    drivers/devfreq/tegra-devfreq.c: In function 'tegra_devfreq_probe':
-> > >> drivers/devfreq/tegra-devfreq.c:654:8: error: implicit declaration of function 'clk_notifier_register' [-Werror=implicit-function-declaration]
-> >      err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
-> >            ^
-> > 
-> > Export the macros and data type declarations outside of COMMON_CLK ifdef
-> > and provide stubs to fix the compile testing.
-> > 
-> > Reported-by: kbuild test robot <lkp@intel.com>
-> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > 
-> > ---
-> > 
+On 6/28/2016 2:20 PM, Sebastian Reichel wrote:
+> * PGP Signed by an unknown key
 > 
-> Ok. Did you want some stable branch to pull this in and base your
-> use case on?
+> Hi,
+> 
+> On Thu, Jun 23, 2016 at 01:43:47PM -0400, Rhyland Klein wrote:
+>> On 6/22/2016 10:23 AM, Sebastian Reichel wrote:
+>> Is this also going to go into linux-next?
+> 
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=02184c60eba8491ea574cd17b8ba766c86d468f2
+> 
 
-It is only one patch but indeed without the branch my patches would have
-to wait for next release. If you would be so kind, could you prepare
-the stable branch? I hope MyungJoo Ham will use it.
+Thanks!
 
-Anyway I encountered more linkage errors for clk API (like clk_get_rate()).
-They happen for various compile-tested drivers in case of MIPS (and
-maybe others like SH). I will investigate it more but I think it is not
-related strictly to this issue.
+-rhyland
 
-Best regards,
-Krzysztof
+
+-- 
+nvpublic
