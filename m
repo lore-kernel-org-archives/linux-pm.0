@@ -1,71 +1,70 @@
-From: Robin Murphy <robin.murphy@arm.com>
-Subject: Re: [PATCH v3 1/2] ARM: tango: add HOTPLUG_CPU support
-Date: Tue, 28 Jun 2016 16:16:50 +0100
-Message-ID: <577294E2.5030405@arm.com>
-References: <57726597.8030501@sigmadesigns.com>
- <577266AD.8000006@sigmadesigns.com> <57726DE0.8090308@arm.com>
- <577291F1.8060105@sigmadesigns.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [RFC PATCH 0/4] ARM: remove big.LITTLE switcher support
+Date: Tue, 28 Jun 2016 12:13:43 -0400 (EDT)
+Message-ID: <alpine.LFD.2.20.1606281157190.24439@knanqh.ubzr>
+References: <1467026770-5699-1-git-send-email-b.zolnierkie@samsung.com> <alpine.LFD.2.20.1606271540000.2550@knanqh.ubzr> <8154264.t0CjdgHDuf@amdc1976>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:48214 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752236AbcF1PQ7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 28 Jun 2016 11:16:59 -0400
-In-Reply-To: <577291F1.8060105@sigmadesigns.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <8154264.t0CjdgHDuf@amdc1976>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King <rmk+kernel@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, Dave Martin <dave.martin@linaro.org>, Sudeep KarkadaNagesha <sudeep.karkadanagesha@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Sebastian Frias <sf84@laposte.net>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Mason <slash.tmp@free.fr>, arm-soc <arm@kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 28/06/16 16:04, Marc Gonzalez wrote:
-> On 28/06/2016 14:30, Robin Murphy wrote:
-> 
->> On 28/06/16 12:59, Marc Gonzalez wrote:
->>
->>> +#ifdef CONFIG_HOTPLUG_CPU
->>> +/*
->>> + * cpu_kill() and cpu_die() run concurrently on different cores.
->>> + * Firmware will only "kill" a core once it has properly "died".
->>> + * Keep trying to kill a core until the operation succeeds, but
->>> + * sleep between tries to give the core time to die.
->>> + */
->>> +static int tango_cpu_kill(unsigned int cpu)
->>> +{
->>> +	do {
->>> +		msleep(10);
->>> +	} while (tango_aux_core_kill(cpu) != 0);
->>
->> Does the firmware guarantee that this will succeed (or at least report
->> success) in finite time, regardless of how messed up the system might
->> be? I'd imagine this should probably have either a timeout or a comment
->> clarifying why it doesn't need a timeout.
-> 
-> Good point.
-> 
-> The FW allows only one thread at a time. If a thread is wedged inside
-> the FW, no other thread can use the FW. In that situation, cpu0 would
-> remain stuck inside tango_cpu_kill().
-> 
-> Note, that if tango_cpu_kill() starts failing, then secondary cores
-> will remain "zombies". So the system is mostly hosed anyway...
-> Only cpu0 will be available.
-
-Indeed; my thought was that if CPU1 somehow ends up wedged such that
-tango_aux_core_die() never completes, then CPU0 eventually timing out
-and being able to limp through a clean(ish) reboot is probably
-preferable to spinning in cpu_kill() forever.
-
-Robin.
+On Tue, 28 Jun 2016, Bartlomiej Zolnierkiewicz wrote:
 
 > 
-> Regards.
+> Hi,
 > 
+> On Monday, June 27, 2016 03:49:44 PM Nicolas Pitre wrote:
+> > On Mon, 27 Jun 2016, Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > > Hi,
+> > > 
+> > > It seems that in mainline kernel big.LITTLE switcher support
+> > > may be usable only on ARM Versatile Express TC2 platform
+> > > (but even this platform doesn't enable it in its defconfig).
+> > 
+> > It is also used on some Samsung targets.
 > 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
+> Could you please explain this more?  AFAIK mainline never
+> had working IKS solution (big.LITTLE switcher support +
+> arm_big_little CPUfreq driver support) on any Samsung SoC.
 
+You might be right about mainline.  Out-of-tree support for some Samsung 
+targets certainly exists though.
+
+> > > The following patchset removes big.LITTLE switcher support
+> > > (from both ARM core and arm_big_little CPUfreq driver) in
+> > > favor of using HMP.
+> > > 
+> > > Since HMP support at scheduler level is not yet merged this
+> > > patchset is probably premature and thus is marked as RFC.
+> > 
+> > It is premature indeed.
+> > 
+> > And before this is removed, comparison with power/performance benchmark 
+> > numbers will have to be provided as well to justify this removal.  At 
+> > the moment there is nothing else in mainline that can achieve what this 
+> > code does.
+> 
+> I agree given that this code has real users and according
+> to my research on mainline kernel it seems that the IKS
+> functionality (bL switcher core code together with
+> arm_bit_little CPUfreq driver support) is usable only on
+> TC2 and even this platform doesn't enable it by default.
+
+It is not enabled by default because it used to be experimental. And 
+given that it pairs two A15's with two A7's leaving the third A7 
+completely unused, some people didn't consider a good default for 
+showing the complete platform capacity.  
+
+But if you want predictable scheduler results right now with mainline on 
+a b.L system then IKS is the only available solution. It also provides a 
+good reference to do performance/power comparison against any solution 
+meant to replace it. Enabling it by default on TC2 might not be such a 
+bad idea at this point.  I certainly have it enabled in my local config.
+
+
+Nicolas
