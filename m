@@ -1,71 +1,57 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v5 0/7] max8903: Add device tree support and misc fixes
-Date: Tue, 28 Jun 2016 20:16:37 +0200
-Message-ID: <20160628181636.GA2391@earth>
-References: <1464849897-21527-3-git-send-email-chris@lapa.com.au>
- <1466735172-13372-1-git-send-email-chris@cpdesign.com.au>
+Subject: Re: [PATCH v4] power_supply: power_supply_read_temp only if use_cnt
+ > 0
+Date: Tue, 28 Jun 2016 20:20:31 +0200
+Message-ID: <20160628182030.GB2391@earth>
+References: <1465507719-819-1-git-send-email-rklein@nvidia.com>
+ <8b081e45-94c8-bb53-69ca-0a617c668de5@nvidia.com>
+ <20160622142353.GA16084@earth>
+ <e2537dba-927f-375a-fcc4-7f46ce3e2dcd@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="TB36FDmn/VVEgNH/"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:50016 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751947AbcF1SQn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 28 Jun 2016 14:16:43 -0400
+	protocol="application/pgp-signature"; boundary="oC1+HKm2/end4ao3"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1466735172-13372-1-git-send-email-chris@cpdesign.com.au>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <e2537dba-927f-375a-fcc4-7f46ce3e2dcd@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rhyland Klein <rklein@nvidia.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chris Lapa <chris@lapa.com.au>
-Cc: k.kozlowski@samsung.com, dwmw2@infradead.org, dbaryshkov@gmail.com, mark.rutland@arm.com, robh+dt@kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
---TB36FDmn/VVEgNH/
+--oC1+HKm2/end4ao3
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Chris,
+Hi,
 
-On Fri, Jun 24, 2016 at 12:26:05PM +1000, Chris Lapa wrote:
-> This patch set adds device tree support for the MAX8903 battery charger.
-> It also cleans up logic with dc_valid, dok and dcm pins as well as
-> fixing up validity checking of gpios.
->=20
-> I verified these patches work on a board I have here, which uses the
-> DC power side (not the USB portition) of the MAX8903.
+On Thu, Jun 23, 2016 at 01:43:47PM -0400, Rhyland Klein wrote:
+> On 6/22/2016 10:23 AM, Sebastian Reichel wrote:
+> Is this also going to go into linux-next?
 
-I queued this into my for-next branch, except for the dtsi file,
-which I dropped from your first patch. Please submit it separately
-to the correct maintainers.
-
-[...]
-
->  arch/arm/boot/dts/dairytest-servo.dtsi             |  36 ++++
-
-[...]
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=02184c60eba8491ea574cd17b8ba766c86d468f2
 
 -- Sebastian
 
---TB36FDmn/VVEgNH/
+--oC1+HKm2/end4ao3
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJXcr8AAAoJENju1/PIO/qaOQUP/RMzfEVdrAt5DmDYhz9BxmD6
-ZThtqLFqODoeNoH+jccrqHvmJC1Tam6PMe7s1loLkIaKRqVS6KL5rscomgaSYO+c
-eVIPw6DjaOF7FUh/BQ07mp9rttY3EYCqNVKkkKhr8BmPJWkFWpA01fUGvf6qH25D
-4OIadufKXAJKvVKsMABm1kEcS85SQgyttT47I+dwS2MMNkgh3paa6gzcd2iyc13u
-rUApnu9CdTCXsK8EIjI7HBG8lIy/dwZogFTgGy9XbeKGVG2fp6qvPtuO9d3AXa4v
-nH2hvUFPgeAOT4uuZOFuqBnZVFY32p1jazCdawtWy86rdwUv+pD5nBd09PsMIfp1
-ImluCBAmiIQgKnHF48ABLKlZAZ508XZ9B9BCiiid5Ch/DY1KCYjKJbRUJe9fc6rz
-QRSgP4HmwWtkPI5VCS2+VrdIxgoKKgimTV8ZN8pTb27Mt9GqKqcnN4z4J0YH/j2n
-6vCy/veyBWUt27WGbeu/j9STrUGV+Jt4abFLgAG3kJ1S4UJRyBhT5aE3tEnGc+ay
-WxkSV2viOMCMMZ7U9cN0Zmn9wCMULmvm+9kZsKzS5PA2XsKMLahJ2aW/nx+B+BmO
-E14T2RW/X5xE5Y2FOdT7zYStfQVOAlxaflVrcXGypNvXgNnCLU8g37WtajAOefZk
-B8+MdTsJAJk1RL0kINOr
-=0SUI
+iQIcBAEBCgAGBQJXcr/uAAoJENju1/PIO/qamj8P/jwHAIaxbwfXEaTqDjNcMmIk
+JzmPM7tdM5VHN6Ba3+EFtzyXMyvkQoS+VJZf4kdRMDYskBex5Kqltj+l02JlldWw
+c7DbOTUFdh1Eim41uwmG/Hp2h3oktF8oVtWilnkjw8cPV4I580OkNzcUzPX5iBYG
+GTIpfibK2Rsp1Ibrrk9pmrfkvNJr6cS8/kShrTy2Ic+0+hoNnf+QUsphayvjOVoM
+Rxq6Z7XLnAeujd+8SbO18mfLnK1NqHEkoJJGTpZbZu5Mv7+CAWqSVWTcM0cGvHjg
+PP8zNQq1ZUBJwTl7hDtsqt6fn7SW0AKa0Mwd1GBbXz4QK0LcBxGfaTMyKIYduvQX
+NmGj2HPJhe9YOeWXiW5ac+0d7rdY/9odlB5Q0PwQWr4Zp++RB2ksuEJti8dZ4Gcd
+X//mzGe3HIlgSwo4mNIqg7oqHx+xiLUIn5Il8mU46htBeVwifgLYUqdVZi3GRx7a
+q4Joy+acMmb/KJJPHaPSR+4l6CIp2PVRNJQizurPKMsbrSqF9datIpPhUlejNbvL
+8XpV9wxfVDg3iyNH31Xq0hsOSXapKVw0GSsuU7Dk7gVCA9ZPHPlhc8pWn1oRSyoT
+hWS5xL5nxqBYonfoqi4tdvhGkq9zwNyyv3lcRNviVZpWuKLkRCOeTixo6I9KD1rj
+X1/m+j9lmdbO3EsW3vzo
+=mfNO
 -----END PGP SIGNATURE-----
 
---TB36FDmn/VVEgNH/--
+--oC1+HKm2/end4ao3--
