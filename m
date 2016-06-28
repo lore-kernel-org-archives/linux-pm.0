@@ -1,80 +1,44 @@
-From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v2 1/7] power: act8945a_charger: Remove "battery_temperature"
-Date: Tue, 28 Jun 2016 09:22:44 +0800
-Message-ID: <1467076970-12206-2-git-send-email-wenyou.yang@atmel.com>
-References: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
+From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
+Subject: RE: [PATCH] power: act8945a_charger: fix semicolon.cocci warnings
+Date: Tue, 28 Jun 2016 01:34:20 +0000
+Message-ID: <B256D81BAE5131468A838E5D7A24364101650CD156@penmbx01>
+References: <201606242015.gipMOaF7%fengguang.wu@intel.com>
+ <20160624124305.GA11000@ivytown2>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
+In-Reply-To: <20160624124305.GA11000@ivytown2>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
+To: kbuild test robot <lkp@intel.com>
+Cc: "kbuild-all@01.org" <kbuild-all@01.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Remove "battery_temperature" member, it is redundant, it is the
-hardware's responsibility to handle TH pin properly.
-It is unnecessary to use the dt property to check if there is
-a battery temperature monitor or not.
-
-Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
----
-
-Changes in v2: None
-
- drivers/power/act8945a_charger.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/power/act8945a_charger.c b/drivers/power/act8945a_charger.c
-index b5c00e4..72d39ba 100644
---- a/drivers/power/act8945a_charger.c
-+++ b/drivers/power/act8945a_charger.c
-@@ -76,7 +76,6 @@ static const char *act8945a_charger_manufacturer = "Active-semi";
- 
- struct act8945a_charger {
- 	struct regmap *regmap;
--	bool battery_temperature;
- };
- 
- static int act8945a_get_charger_state(struct regmap *regmap, int *val)
-@@ -138,8 +137,7 @@ static int act8945a_get_charge_type(struct regmap *regmap, int *val)
- 	return 0;
- }
- 
--static int act8945a_get_battery_health(struct act8945a_charger *charger,
--				       struct regmap *regmap, int *val)
-+static int act8945a_get_battery_health(struct regmap *regmap, int *val)
- {
- 	int ret;
- 	unsigned int status;
-@@ -148,7 +146,7 @@ static int act8945a_get_battery_health(struct act8945a_charger *charger,
- 	if (ret < 0)
- 		return ret;
- 
--	if (charger->battery_temperature && !(status & APCH_STATUS_TEMPDAT))
-+	if (status & APCH_STATUS_TEMPDAT)
- 		*val = POWER_SUPPLY_HEALTH_OVERHEAT;
- 	else if (!(status & APCH_STATUS_INDAT))
- 		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-@@ -188,8 +186,7 @@ static int act8945a_charger_get_property(struct power_supply *psy,
- 		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
- 		break;
- 	case POWER_SUPPLY_PROP_HEALTH:
--		ret = act8945a_get_battery_health(charger,
--						  regmap, &val->intval);
-+		ret = act8945a_get_battery_health(regmap, &val->intval);
- 		break;
- 	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		val->strval = act8945a_charger_model;
-@@ -235,9 +232,6 @@ static int act8945a_charger_config(struct device *dev,
- 		return -EINVAL;
- 	}
- 
--	charger->battery_temperature = of_property_read_bool(np,
--				"active-semi,check-battery-temperature");
--
- 	chglev_pin = of_get_named_gpio_flags(np,
- 				"active-semi,chglev-gpios", 0, &flags);
- 
--- 
-2.7.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbToga2J1aWxkIHRlc3Qgcm9i
+b3QgW21haWx0bzpsa3BAaW50ZWwuY29tXQ0KPiBTZW50OiAyMDE2xOo21MIyNMjVIDIwOjQzDQo+
+IFRvOiBZYW5nLCBXZW55b3UgPFdlbnlvdS5ZYW5nQGF0bWVsLmNvbT4NCj4gQ2M6IGtidWlsZC1h
+bGxAMDEub3JnOyBTZWJhc3RpYW4gUmVpY2hlbCA8c3JlQGtlcm5lbC5vcmc+OyBEbWl0cnkgRXJl
+bWluLQ0KPiBTb2xlbmlrb3YgPGRiYXJ5c2hrb3ZAZ21haWwuY29tPjsgRGF2aWQgV29vZGhvdXNl
+DQo+IDxkd213MkBpbmZyYWRlYWQub3JnPjsgUm9iIEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9y
+Zz47IFBhd2VsIE1vbGwNCj4gPHBhd2VsLm1vbGxAYXJtLmNvbT47IE1hcmsgQnJvd24gPGJyb29u
+aWVAa2VybmVsLm9yZz47IElhbiBDYW1wYmVsbA0KPiA8aWpjK2RldmljZXRyZWVAaGVsbGlvbi5v
+cmcudWs+OyBLdW1hciBHYWxhIDxnYWxha0Bjb2RlYXVyb3JhLm9yZz47IGxpbnV4LQ0KPiBrZXJu
+ZWxAdmdlci5rZXJuZWwub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJt
+LQ0KPiBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgRmVycmUsIE5pY29sYXMgPE5pY29sYXMu
+RkVSUkVAYXRtZWwuY29tPjsgbGludXgtDQo+IHBtQHZnZXIua2VybmVsLm9yZzsgWWFuZywgV2Vu
+eW91IDxXZW55b3UuWWFuZ0BhdG1lbC5jb20+DQo+IFN1YmplY3Q6IFtQQVRDSF0gcG93ZXI6IGFj
+dDg5NDVhX2NoYXJnZXI6IGZpeCBzZW1pY29sb24uY29jY2kgd2FybmluZ3MNCj4gDQo+IGRyaXZl
+cnMvcG93ZXIvYWN0ODk0NWFfY2hhcmdlci5jOjExNToyLTM6IFVubmVlZGVkIHNlbWljb2xvbg0K
+PiANCj4gDQo+ICBSZW1vdmUgdW5uZWVkZWQgc2VtaWNvbG9uLg0KPiANCj4gR2VuZXJhdGVkIGJ5
+OiBzY3JpcHRzL2NvY2NpbmVsbGUvbWlzYy9zZW1pY29sb24uY29jY2kNCj4gDQo+IENDOiBXZW55
+b3UgWWFuZyA8d2VueW91LnlhbmdAYXRtZWwuY29tPg0KPiBTaWduZWQtb2ZmLWJ5OiBGZW5nZ3Vh
+bmcgV3UgPGZlbmdndWFuZy53dUBpbnRlbC5jb20+DQpBY2tlZC1ieSBXZW55b3UgWWFuZyA8V2Vu
+eW91LnlhbmdAYXRtZWwuY29tPg0KDQpUaGFuayB5b3UgZm9yIHlvdXIgZml4Lg0KDQo+IC0tLQ0K
+PiANCj4gIGFjdDg5NDVhX2NoYXJnZXIuYyB8ICAgIDIgKy0NCj4gIDEgZmlsZSBjaGFuZ2VkLCAx
+IGluc2VydGlvbigrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gLS0tIGEvZHJpdmVycy9wb3dlci9h
+Y3Q4OTQ1YV9jaGFyZ2VyLmMNCj4gKysrIGIvZHJpdmVycy9wb3dlci9hY3Q4OTQ1YV9jaGFyZ2Vy
+LmMNCj4gQEAgLTExMiw3ICsxMTIsNyBAQCBzdGF0aWMgaW50IGFjdDg5NDVhX2dldF9jaGFyZ2Vy
+X3N0YXRlKHN0DQo+ICAJCWVsc2UNCj4gIAkJCSp2YWwgPSBQT1dFUl9TVVBQTFlfU1RBVFVTX05P
+VF9DSEFSR0lORzsNCj4gIAkJYnJlYWs7DQo+IC0JfTsNCj4gKwl9DQo+IA0KPiAgCXJldHVybiAw
+Ow0KPiAgfQ0KDQoNCkJlc3QgUmVnYXJkcywNCldlbnlvdSBZYW5nDQo=
