@@ -1,53 +1,81 @@
-From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v2 7/7] doc: bindings: act8945a-charger: Update properties
-Date: Tue, 28 Jun 2016 09:22:50 +0800
-Message-ID: <1467076970-12206-8-git-send-email-wenyou.yang@atmel.com>
-References: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
+From: Jisheng Zhang <jszhang@marvell.com>
+Subject: Re: [PATCH v2 3/3] intel_pstate: Declare
+ pid_params/pstate_funcs/hwp_active __read_mostly
+Date: Tue, 28 Jun 2016 10:29:27 +0800
+Message-ID: <20160628102927.4d74fb2c@xhacker>
+References: <1467022038-924-1-git-send-email-jszhang@marvell.com>
+	<1467022038-924-4-git-send-email-jszhang@marvell.com>
+	<1467048594.8970.81.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eusmtp01.atmel.com ([212.144.249.243]:50576 "EHLO
-	eusmtp01.atmel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbcF1BiJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jun 2016 21:38:09 -0400
-In-Reply-To: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1467048594.8970.81.camel@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, lenb@kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 
-Due the driver improvements, update the properties,
- - Remove "active-semi,check-battery-temperature" property.
- - Add the properties, "active-semi,irq_gpio"
-   and "active-semi,lbo-gpios".
+Dear Rafael,
 
-Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
----
+On Mon, 27 Jun 2016 10:29:54 -0700
+Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> wrote:
 
-Changes in v2: None
+> On Mon, 2016-06-27 at 18:07 +0800, Jisheng Zhang wrote:
+> > pid_params is written once by copy_pid_params() during
+> > initialization,
+> > and thereafter is mostly read by hot path intel_pstate_update_util(=
+).
+> > The read of pid_params gets more after commit a4675fbc4a7a ("cpufre=
+q:
+> > intel_pstate: Replace timers with utilization update callbacks")
+> >=20
+> > pstate_funcs is written once by copy_cpu_funcs() during
+> > initialization,
+> > and thereafter is mostly read by hot path intel_pstate_update_util(=
+)
+> >=20
+> > hwp_active is written to once during initialization and thereafter =
+is
+> > mostly read by hot path intel_pstate_update_util().
+> >=20
+> > The fact that they are mostly read and not written to makes them
+> > candidates for __read_mostly declarations.
+> >=20
+> > Signed-off-by: Jisheng Zhang <jszhang@marvell.com> =20
+> Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
- Documentation/devicetree/bindings/power/act8945a-charger.txt | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+oops, I missed Viresh's Ack in this patch, so can you please add the mi=
+ssing
 
-diff --git a/Documentation/devicetree/bindings/power/act8945a-charger.txt b/Documentation/devicetree/bindings/power/act8945a-charger.txt
-index bea254c..d7cf05b 100644
---- a/Documentation/devicetree/bindings/power/act8945a-charger.txt
-+++ b/Documentation/devicetree/bindings/power/act8945a-charger.txt
-@@ -4,10 +4,12 @@ Required properties:
-  - compatible: "active-semi,act8945a", please refer to ../mfd/act8945a.txt.
-  - active-semi,chglev-gpios: charge current level phandle with args
-    as described in ../gpio/gpio.txt.
-+ - active-semi,irq_gpios: specify the charger interrupt input phanle
-+   with args as as described in ../gpio/gpio.txt.
-+ - active-semi,lbo-gpios: specify the low battery voltage detect phandle
-+   with args as as described in ../gpio/gpio.txt.
- 
- Optional properties:
-- - active-semi,check-battery-temperature: boolean to check the battery
--   temperature or not.
-  - active-semi,input-voltage-threshold-microvolt: unit: mV;
-    Specifies the charger's input over-voltage threshold value;
-    The value can be: 6600, 7000, 7500, 8000; default: 6600
--- 
-2.7.4
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
+Sorry for inconvenience,
+Jisheng
+
+> > ---
+> > =C2=A0drivers/cpufreq/intel_pstate.c | 6 +++---
+> > =C2=A01 file changed, 3 insertions(+), 3 deletions(-)
+> >=20
+> > diff --git a/drivers/cpufreq/intel_pstate.c
+> > b/drivers/cpufreq/intel_pstate.c
+> > index 861bcba..2eda50d 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -281,9 +281,9 @@ struct cpu_defaults {
+> > =C2=A0static inline int32_t get_target_pstate_use_performance(struc=
+t
+> > cpudata *cpu);
+> > =C2=A0static inline int32_t get_target_pstate_use_cpu_load(struct c=
+pudata
+> > *cpu);
+> > =C2=A0
+> > -static struct pstate_adjust_policy pid_params;
+> > -static struct pstate_funcs pstate_funcs;
+> > -static int hwp_active;
+> > +static struct pstate_adjust_policy pid_params __read_mostly;
+> > +static struct pstate_funcs pstate_funcs __read_mostly;
+> > +static int hwp_active __read_mostly;
+> > =C2=A0
+> > =C2=A0#ifdef CONFIG_ACPI
+> > =C2=A0static bool acpi_ppc; =20
