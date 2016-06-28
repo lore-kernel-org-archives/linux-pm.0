@@ -1,7 +1,7 @@
 From: Icenowy Zheng <icenowy@aosc.xyz>
-Subject: [RFC PATCH 4/5] ARM: sun8i: enable PLL2 on a23/33
-Date: Tue, 28 Jun 2016 18:13:24 +0800
-Message-ID: <20160628101325.2522-4-icenowy@aosc.xyz>
+Subject: [RFC PATCH 5/5] ARM: sun8i: enable ths node for A23/33
+Date: Tue, 28 Jun 2016 18:13:25 +0800
+Message-ID: <20160628101325.2522-5-icenowy@aosc.xyz>
 References: <20160628101325.2522-1-icenowy@aosc.xyz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,36 +23,68 @@ List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Icenowy Zheng <icenowy@aosc.xyz>
 ---
- arch/arm/boot/dts/sun8i-a23-a33.dtsi | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/arm/boot/dts/sun8i-a23-a33.dtsi | 16 ++++++++++++++++
+ arch/arm/boot/dts/sun8i-a23.dtsi     |  4 ++++
+ arch/arm/boot/dts/sun8i-a33.dtsi     |  4 ++++
+ 3 files changed, 24 insertions(+)
 
 diff --git a/arch/arm/boot/dts/sun8i-a23-a33.dtsi b/arch/arm/boot/dts/sun8i-a23-a33.dtsi
-index 7e05e09..a340cea 100644
+index a340cea..04df1ca 100644
 --- a/arch/arm/boot/dts/sun8i-a23-a33.dtsi
 +++ b/arch/arm/boot/dts/sun8i-a23-a33.dtsi
-@@ -46,6 +46,7 @@
+@@ -66,6 +66,14 @@
+ 		};
+ 	};
  
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- 
-+#include <dt-bindings/clock/sun4i-a10-pll2.h>
- #include <dt-bindings/pinctrl/sun4i-a10.h>
- 
- / {
-@@ -120,6 +121,15 @@
- 			clock-output-names = "pll1";
++	thermal-zones {
++		cpu_thermal: cpu_thermal {
++			polling-delay-passive = <330>;
++			polling-delay = <1000>;
++			thermal-sensors = <&ths 0>;
++		};
++	};
++
+ 	timer {
+ 		compatible = "arm,armv7-timer";
+ 		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+@@ -473,6 +481,14 @@
+ 			status = "disabled";
  		};
  
-+		pll2: clk@01c20008 {
-+			#clock-cells = <1>;
-+			compatible = "allwinner,sun6i-a31-pll2-clk";
-+			reg = <0x01c20008 0x8>;
-+			clocks = <&osc24M>;
-+			clock-output-names = "pll2-1x", "pll2-2x",
-+					     "pll2-4x", "pll2-8x";
++		ths: ths@01c25000 {
++			#thermal-sensor-cells = <0>;
++			/* compatible is in per-cpu dtsi file */
++			reg = <0x01c25000 0x44>;
++			clocks = <&pll2 0>;
++			clock-names = "pll2";
 +		};
 +
- 		/* dummy clock until actually implemented */
- 		pll5: pll5_clk {
- 			#clock-cells = <0>;
+ 		uart0: serial@01c28000 {
+ 			compatible = "snps,dw-apb-uart";
+ 			reg = <0x01c28000 0x400>;
+diff --git a/arch/arm/boot/dts/sun8i-a23.dtsi b/arch/arm/boot/dts/sun8i-a23.dtsi
+index 92e6616..41f0d9e 100644
+--- a/arch/arm/boot/dts/sun8i-a23.dtsi
++++ b/arch/arm/boot/dts/sun8i-a23.dtsi
+@@ -124,3 +124,7 @@
+ 		     <GIC_SPI 15 IRQ_TYPE_LEVEL_HIGH>,
+ 		     <GIC_SPI 17 IRQ_TYPE_LEVEL_HIGH>;
+ };
++
++&ths {
++	compatible = "allwinner,sun8i-a23-ths";
++};
+diff --git a/arch/arm/boot/dts/sun8i-a33.dtsi b/arch/arm/boot/dts/sun8i-a33.dtsi
+index 001d840..2273124 100644
+--- a/arch/arm/boot/dts/sun8i-a33.dtsi
++++ b/arch/arm/boot/dts/sun8i-a33.dtsi
+@@ -173,3 +173,7 @@
+ 	};
+ 
+ };
++
++&ths {
++	compatible = "allwinner,sun8i-a33-ths";
++};
 -- 
 2.9.0
