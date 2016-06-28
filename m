@@ -1,41 +1,112 @@
-From: Icenowy Zheng <icenowy@aosc.xyz>
-Subject: Re: [RFC PATCH 3/5] thermal: Add support for the thermal sensor on
- A23/33
-Date: Tue, 28 Jun 2016 22:03:10 +0800
-Message-ID: <203181467122590@web5g.yandex.ru>
-References: <20160628101325.2522-1-icenowy@aosc.xyz>
- <20160628101325.2522-3-icenowy@aosc.xyz> <20160628114640.GE5550@lukather>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160628114640.GE5550@lukather>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "emilio@elopez.com.ar" <emilio@elopez.com.ar>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "wens@csie.org" <wens@csie.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v5 04/13] soc: renesas: rcar-sysc: Move SYSC interrupt config to rcar-sysc driver
+Date: Tue, 28 Jun 2016 16:10:33 +0200
+Message-ID: <1467123042-8468-5-git-send-email-geert+renesas@glider.be>
+References: <1467123042-8468-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1467123042-8468-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Keita Kobayashi <keita.kobayashi.ym@renesas.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-CgoyOC4wNi4yMDE2LCAxOTo0NiwgIk1heGltZSBSaXBhcmQiIDxtYXhpbWUucmlwYXJkQGZyZWUt
-ZWxlY3Ryb25zLmNvbT46Cj4gSGksCj4KPiBUaGFua3MgZm9yIHdvcmtpbmcgb24gdGhpcy4KPgo+
-IE9uIFR1ZSwgSnVuIDI4LCAyMDE2IGF0IDA2OjEzOjIzUE0gKzA4MDAsIEljZW5vd3kgWmhlbmcg
-d3JvdGU6Cj4+IMKgVGhpcyBwYXRjaCBhZGRzIHN1cHBvcnQgZm9yIHRoZSBzdW44aXczIHRoZXJt
-YWwgc2Vuc29yIG9uCj4+IMKgQWxsd2lubmVyIEEyMy8zMyBTb0NzLgo+Pgo+PiDCoFNpZ25lZC1v
-ZmYtYnk6IEljZW5vd3kgWmhlbmcgPGljZW5vd3lAYW9zYy54eXo+Cj4KPiBUaGUgSVAgaXMgYXdm
-dWxseSBzaW1pbGFyIHRvIHRoZSBBMzEncywgd2hpY2ggYWxyZWFkeSBoYXMgYSBkcml2ZXIKPiAo
-ZHJpdmVycy9pbnB1dC90b3VjaHNjcmVlbi9zdW40aS10cy5jKS4KPgo+IFRoZXJlJ3Mgbm8gcmVh
-c29uIHRvIGFkZCBhIG5ldyBvbmUgaGVyZS4KPgo+IFRoYW5rcywKPiBNYXhpbWUKPgo+IC0tCj4g
-TWF4aW1lIFJpcGFyZCwgRnJlZSBFbGVjdHJvbnMKPiBFbWJlZGRlZCBMaW51eCwgS2VybmVsIGFu
-ZCBBbmRyb2lkIGVuZ2luZWVyaW5nCj4gaHR0cDovL2ZyZWUtZWxlY3Ryb25zLmNvbQoKT3IuLi4g
-c2hvdWxkIEkgc3BsaXQgdGhlIFBMTDIgZHJpdmVyIGludG8gYW5vdGhlciBwYXRjaCBzZXQ/Cgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0t
-a2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcK
-aHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2Vy
-bmVsCg==
+On R-Car H1 and Gen2, the SYSC interrupt registers are always configured
+using hardcoded values in platform code. For R-Car Gen2, values are
+provided for H2 and M2-W only, other SoCs are not yet supported, and
+never will be.
+
+Move this configuration from SoC-specific platform code to the
+rcar_sysc_init() wrapper, so it can be skipped if the SYSC is configured
+from DT. This would be the case not only for H1, H2, and M2-W using a
+modern DTS, but also for other R-Car Gen2 SoCs not supported by the
+platform code, relying purely on DT.
+
+There is no longer a need to return the mapped register block, hence
+make the function return void.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Reviewed-by: Ulrich Hecht <ulrich.hecht+renesas@gmail.com>
+---
+v5:
+  - Add Reviewed-by,
+
+v4:
+  - New.
+---
+ arch/arm/mach-shmobile/pm-r8a7779.c   |  6 +-----
+ arch/arm/mach-shmobile/pm-rcar-gen2.c |  6 +-----
+ drivers/soc/renesas/rcar-sysc.c       | 12 ++++++++----
+ include/linux/soc/renesas/rcar-sysc.h |  2 +-
+ 4 files changed, 11 insertions(+), 15 deletions(-)
+
+diff --git a/arch/arm/mach-shmobile/pm-r8a7779.c b/arch/arm/mach-shmobile/pm-r8a7779.c
+index 4174cbcbc467d047..5c9a93f5e650181a 100644
+--- a/arch/arm/mach-shmobile/pm-r8a7779.c
++++ b/arch/arm/mach-shmobile/pm-r8a7779.c
+@@ -23,11 +23,7 @@
+ 
+ static void __init r8a7779_sysc_init(void)
+ {
+-	void __iomem *base = rcar_sysc_init(0xffd85000);
+-
+-	/* enable all interrupt sources, but do not use interrupt handler */
+-	iowrite32(0x0131000e, base + SYSCIER);
+-	iowrite32(0, base + SYSCIMR);
++	rcar_sysc_init(0xffd85000, 0x0131000e);
+ }
+ 
+ #else /* CONFIG_PM || CONFIG_SMP */
+diff --git a/arch/arm/mach-shmobile/pm-rcar-gen2.c b/arch/arm/mach-shmobile/pm-rcar-gen2.c
+index 61361dac6068210a..dd9ac366868f4336 100644
+--- a/arch/arm/mach-shmobile/pm-rcar-gen2.c
++++ b/arch/arm/mach-shmobile/pm-rcar-gen2.c
+@@ -36,11 +36,7 @@
+ 
+ static void __init rcar_gen2_sysc_init(u32 syscier)
+ {
+-	void __iomem *base = rcar_sysc_init(0xe6180000);
+-
+-	/* enable all interrupt sources, but do not use interrupt handler */
+-	iowrite32(syscier, base + SYSCIER);
+-	iowrite32(0, base + SYSCIMR);
++	rcar_sysc_init(0xe6180000, syscier);
+ }
+ 
+ #else /* CONFIG_SMP */
+diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
+index 68d6856c9d3cd192..22f0d646225c444e 100644
+--- a/drivers/soc/renesas/rcar-sysc.c
++++ b/drivers/soc/renesas/rcar-sysc.c
+@@ -400,10 +400,14 @@ out_put:
+ }
+ early_initcall(rcar_sysc_pd_init);
+ 
+-void __iomem * __init rcar_sysc_init(phys_addr_t base)
++void __init rcar_sysc_init(phys_addr_t base, u32 syscier)
+ {
+-	if (rcar_sysc_pd_init())
+-		rcar_sysc_base = ioremap_nocache(base, PAGE_SIZE);
++	if (!rcar_sysc_pd_init())
++		return;
+ 
+-	return rcar_sysc_base;
++	rcar_sysc_base = ioremap_nocache(base, PAGE_SIZE);
++
++	/* enable all interrupt sources, but do not use interrupt handler */
++	iowrite32(syscier, rcar_sysc_base + SYSCIER);
++	iowrite32(0, rcar_sysc_base + SYSCIMR);
+ }
+diff --git a/include/linux/soc/renesas/rcar-sysc.h b/include/linux/soc/renesas/rcar-sysc.h
+index 92fc613ab23db091..7b8b280c181b8389 100644
+--- a/include/linux/soc/renesas/rcar-sysc.h
++++ b/include/linux/soc/renesas/rcar-sysc.h
+@@ -11,6 +11,6 @@ struct rcar_sysc_ch {
+ 
+ int rcar_sysc_power_down(const struct rcar_sysc_ch *sysc_ch);
+ int rcar_sysc_power_up(const struct rcar_sysc_ch *sysc_ch);
+-void __iomem *rcar_sysc_init(phys_addr_t base);
++void rcar_sysc_init(phys_addr_t base, u32 syscier);
+ 
+ #endif /* __LINUX_SOC_RENESAS_RCAR_SYSC_H__ */
+-- 
+1.9.1
