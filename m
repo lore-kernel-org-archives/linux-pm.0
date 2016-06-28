@@ -1,76 +1,77 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v5 13/13] ARM: dts: r8a7793: Add APMU node and second CPU core
-Date: Tue, 28 Jun 2016 16:10:42 +0200
-Message-ID: <1467123042-8468-14-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v5 03/13] soc: renesas: rcar-sysc: Make rcar_sysc_init() init the PM domains
+Date: Tue, 28 Jun 2016 16:10:32 +0200
+Message-ID: <1467123042-8468-4-git-send-email-geert+renesas@glider.be>
 References: <1467123042-8468-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from baptiste.telenet-ops.be ([195.130.132.51]:49242 "EHLO
+	baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752091AbcF1OKt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jun 2016 10:10:49 -0400
 In-Reply-To: <1467123042-8468-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Keita Kobayashi <keita.kobayashi.ym@renesas.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Magnus Damm <damm+renesas@opensource.se>, Geert Uytterhoeven <geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Keita Kobayashi <keita.kobayashi.ym@renesas.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-From: Magnus Damm <damm+renesas@opensource.se>
+Let rcar_sysc_init() trigger initialization of the SYSC PM domains from
+DT if called before the early_initcall.
+On failure, it falls back to mapping the passed register block, as
+before.
 
-Add DT nodes for the Advanced Power Management Unit (APMU) and the
-second CPU core.  Use the enable-method to point out that the APMU
-should be used for SMP support.
-
-Signed-off-by: Magnus Damm <damm+renesas@opensource.se>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
 v5:
-  - Add missing power-domains property to cpu1 node,
+  - No changes,
 
 v4:
-  - Improve patch description,
-  - Use "renesas,<soctype>-apmu" instead of "renesas,apmu-<soctype>",
-
-v3:
   - New.
 ---
- arch/arm/boot/dts/r8a7793.dtsi | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ drivers/soc/renesas/rcar-sysc.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/boot/dts/r8a7793.dtsi b/arch/arm/boot/dts/r8a7793.dtsi
-index 9b55c1c6ee31a49d..8d02aacf28926271 100644
---- a/arch/arm/boot/dts/r8a7793.dtsi
-+++ b/arch/arm/boot/dts/r8a7793.dtsi
-@@ -35,6 +35,7 @@
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-+		enable-method = "renesas,apmu";
+diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
+index 59a8152681a59a5c..68d6856c9d3cd192 100644
+--- a/drivers/soc/renesas/rcar-sysc.c
++++ b/drivers/soc/renesas/rcar-sysc.c
+@@ -164,15 +164,6 @@ static bool rcar_sysc_power_is_off(const struct rcar_sysc_ch *sysc_ch)
+ 	return false;
+ }
  
- 		cpu0: cpu@0 {
- 			device_type = "cpu";
-@@ -56,6 +57,14 @@
- 			next-level-cache = <&L2_CA15>;
- 		};
+-void __iomem *rcar_sysc_init(phys_addr_t base)
+-{
+-	rcar_sysc_base = ioremap_nocache(base, PAGE_SIZE);
+-	if (!rcar_sysc_base)
+-		panic("unable to ioremap R-Car SYSC hardware block\n");
+-
+-	return rcar_sysc_base;
+-}
+-
+ struct rcar_sysc_pd {
+ 	struct generic_pm_domain genpd;
+ 	struct rcar_sysc_ch ch;
+@@ -328,6 +319,9 @@ static int __init rcar_sysc_pd_init(void)
+ 	unsigned int i;
+ 	int error;
  
-+		cpu1: cpu@1 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a15";
-+			reg = <1>;
-+			clock-frequency = <1500000000>;
-+			power-domains = <&sysc R8A7793_PD_CA15_CPU1>;
-+		};
++	if (rcar_sysc_base)
++		return 0;
 +
- 		L2_CA15: cache-controller@0 {
- 			compatible = "cache";
- 			reg = <0>;
-@@ -65,6 +74,12 @@
- 		};
- 	};
- 
-+	apmu@e6152000 {
-+		compatible = "renesas,r8a7793-apmu", "renesas,apmu";
-+		reg = <0 0xe6152000 0 0x188>;
-+		cpus = <&cpu0 &cpu1>;
-+	};
+ 	np = of_find_matching_node_and_match(NULL, rcar_sysc_matches, &match);
+ 	if (!np)
+ 		return -ENODEV;
+@@ -405,3 +399,11 @@ out_put:
+ 	return error;
+ }
+ early_initcall(rcar_sysc_pd_init);
 +
- 	thermal-zones {
- 		cpu_thermal: cpu-thermal {
- 			polling-delay-passive	= <0>;
++void __iomem * __init rcar_sysc_init(phys_addr_t base)
++{
++	if (rcar_sysc_pd_init())
++		rcar_sysc_base = ioremap_nocache(base, PAGE_SIZE);
++
++	return rcar_sysc_base;
++}
 -- 
 1.9.1
+
