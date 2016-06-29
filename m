@@ -1,89 +1,154 @@
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH v3] cpuidle: Fix last_residency division
-Date: Wed, 29 Jun 2016 02:06:11 -0500
-Message-ID: <1467183971-12327-1-git-send-email-shreyas@linux.vnet.ibm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3] cpuidle: Fix last_residency division
+Date: Wed, 29 Jun 2016 09:37:05 +0200
+Message-ID: <57737AA1.7050201@linaro.org>
+References: <1467183971-12327-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: rjw@rjwysocki.net
-Cc: arnd@arndb.de, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, David.Laight@ACULAB.COM, anton@samba.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:37770 "EHLO
+	mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751328AbcF2HhJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2016 03:37:09 -0400
+Received: by mail-wm0-f44.google.com with SMTP id a66so59641001wme.0
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 00:37:08 -0700 (PDT)
+In-Reply-To: <1467183971-12327-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au, bsingharora@gmail.com, David.Laight@ACULAB.COM, arnd@arndb.de, Nicolas Pitre <nicolas.pitre@linaro.org>
 
-U25vb3plIGlzIGEgcG9sbCBpZGxlIHN0YXRlIGluIHBvd2VybnYgYW5kIHBzZXJpZXMgcGxhdGZv
-cm1zLiBTbm9vemUKaGFzIGEgdGltZW91dCBzbyB0aGF0IGlmIGEgY3B1IHN0YXlzIGluIHNub296
-ZSBmb3IgbW9yZSB0aGFuIHRhcmdldApyZXNpZGVuY3kgb2YgdGhlIG5leHQgYXZhaWxhYmxlIGlk
-bGUgc3RhdGUsIHRoZW4gaXQgd291bGQgZXhpdCB0aGVyZWJ5CmdpdmluZyBjaGFuY2UgdG8gdGhl
-IGNwdWlkbGUgZ292ZXJub3IgdG8gcmUtZXZhbHVhdGUgYW5kCnByb21vdGUgdGhlIGNwdSB0byBh
-IGRlZXBlciBpZGxlIHN0YXRlLiBUaGVyZWZvcmUgd2hlbmV2ZXIgc25vb3plIGV4aXRzCmR1ZSB0
-byB0aGlzIHRpbWVvdXQsIGl0cyBsYXN0X3Jlc2lkZW5jeSB3aWxsIGJlIHRhcmdldF9yZXNpZGVu
-Y3kgb2YgbmV4dApkZWVwZXIgc3RhdGUuCgpjb21taXQgZTkzZTU5Y2U1Yjg1ICgiY3B1aWRsZTog
-UmVwbGFjZSBrdGltZV9nZXQoKSB3aXRoIGxvY2FsX2Nsb2NrKCkiKQpjaGFuZ2VkIHRoZSBtYXRo
-IGFyb3VuZCBsYXN0X3Jlc2lkZW5jeSBjYWxjdWxhdGlvbi4gU3BlY2lmaWNhbGx5LCB3aGlsZQpj
-b252ZXJ0aW5nIGxhc3RfcmVzaWRlbmN5IHZhbHVlIGZyb20gbmFub3NlY29uZHMgdG8gbWljcm9z
-ZWNvbmRzIGl0IGRvZXMKcmlnaHQgc2hpZnQgYnkgMTAuIER1ZSB0byB0aGlzLCBpbiBzbm9vemUg
-dGltZW91dCBleGl0IHNjZW5hcmlvcwpsYXN0X3Jlc2lkZW5jeSBjYWxjdWxhdGVkIGlzIHJvdWdo
-bHkgMi4zJSBsZXNzIHRoYW4gdGFyZ2V0X3Jlc2lkZW5jeSBvZgpuZXh0IGF2YWlsYWJsZSBzdGF0
-ZS4gVGhpcyBwYXR0ZXJuIGlzIHBpY2tlZCB1cCBnZXRfdHlwaWNhbF9pbnRlcnZhbCgpCmluIHRo
-ZSBtZW51IGdvdmVybm9yIGFuZCB0aGVyZWZvcmUgZXhwZWN0ZWRfaW50ZXJ2YWwgaW4gbWVudV9z
-ZWxlY3QoKSBpcwpmcmVxdWVudGx5IGxlc3MgdGhhbiB0aGUgdGFyZ2V0X3Jlc2lkZW5jeSBvZiBh
-bnkgc3RhdGUgYnV0IHNub296ZS4KCkR1ZSB0byB0aGlzIHdlIGFyZSBlbnRlcmluZyBzbm9vemUg
-YXQgYSBoaWdoZXIgcmF0ZSwgdGhlcmVieSBhZmZlY3RpbmcKdGhlIHNpbmdsZSB0aHJlYWQgcGVy
-Zm9ybWFuY2UuCgpGaXggdGhpcyBieSB1c2luZyBhIGJldHRlciBhcHByb3hpbWF0aW9uIGZvciBk
-aXZpc2lvbiBieSAxMDAwLgoKUmVwb3J0ZWQtYnk6IEFudG9uIEJsYW5jaGFyZCA8YW50b25Ac2Ft
-YmEub3JnPgpCaXNlY3RlZC1ieTogU2hpbHBhc3JpIEcgQmhhdCA8c2hpbHBhLmJoYXRAbGludXgu
-dm5ldC5pYm0uY29tPgpTdWdnZXN0ZWQtYnkgRGF2aWQgTGFpZ2h0IDxkYXZpZC5sYWlnaHRAYWN1
-bGFiLmNvbT4KU2lnbmVkLW9mZi1ieTogU2hyZXlhcyBCLiBQcmFiaHUgPHNocmV5YXNAbGludXgu
-dm5ldC5pYm0uY29tPgotLS0KQ2hhbmdlcyBpbiB2Mwo9PT09PT09PT09PT09CiAtIFVzaW5nIGFw
-cHJveGltYXRpb24gc3VnZ2VzdGVkIGJ5IERhdmlkCgpDaGFuZ2VzIGluIHYyCj09PT09PT09PT09
-PT0KIC0gRml4aW5nIGl0IGluIHRoZSBjcHVpZGxlIGNvcmUgY29kZSBpbnN0ZWFkIG9mIGRyaXZl
-ciBjb2RlLgoKIGRyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMgfCAxMSArKystLS0tLS0tLQogZHJp
-dmVycy9jcHVpZGxlL2NwdWlkbGUuaCB8IDIzICsrKysrKysrKysrKysrKysrKysrKysrCiAyIGZp
-bGVzIGNoYW5nZWQsIDI2IGluc2VydGlvbnMoKyksIDggZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYyBiL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMK
-aW5kZXggYTRkMDA1OS4uZTlhN2Y3NCAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVpZGxlL2NwdWlk
-bGUuYworKysgYi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5jCkBAIC0xNzQsNyArMTc0LDYgQEAg
-aW50IGNwdWlkbGVfZW50ZXJfc3RhdGUoc3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXYsIHN0cnVj
-dCBjcHVpZGxlX2RyaXZlciAqZHJ2LAogCXN0cnVjdCBjcHVpZGxlX3N0YXRlICp0YXJnZXRfc3Rh
-dGUgPSAmZHJ2LT5zdGF0ZXNbaW5kZXhdOwogCWJvb2wgYnJvYWRjYXN0ID0gISEodGFyZ2V0X3N0
-YXRlLT5mbGFncyAmIENQVUlETEVfRkxBR19USU1FUl9TVE9QKTsKIAl1NjQgdGltZV9zdGFydCwg
-dGltZV9lbmQ7Ci0JczY0IGRpZmY7CiAKIAkvKgogCSAqIFRlbGwgdGhlIHRpbWUgZnJhbWV3b3Jr
-IHRvIHN3aXRjaCB0byBhIGJyb2FkY2FzdCB0aW1lciBiZWNhdXNlIG91cgpAQCAtMjE4LDE0ICsy
-MTcsMTAgQEAgaW50IGNwdWlkbGVfZW50ZXJfc3RhdGUoc3RydWN0IGNwdWlkbGVfZGV2aWNlICpk
-ZXYsIHN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2LAogCQlsb2NhbF9pcnFfZW5hYmxlKCk7CiAK
-IAkvKgotCSAqIGxvY2FsX2Nsb2NrKCkgcmV0dXJucyB0aGUgdGltZSBpbiBuYW5vc2Vjb25kLCBs
-ZXQncyBzaGlmdAotCSAqIGJ5IDEwIChkaXZpZGUgYnkgMTAyNCkgdG8gaGF2ZSBtaWNyb3NlY29u
-ZCBiYXNlZCB0aW1lLgorCSAqIGxvY2FsX2Nsb2NrKCkgcmV0dXJucyB0aGUgdGltZSBpbiBuYW5v
-c2Vjb25kLCBjb252ZXJ0IGl0IHRvCisJICogbWljcm9zZWNvbmQgYmFzZWQgdGltZS4KIAkgKi8K
-LQlkaWZmID0gKHRpbWVfZW5kIC0gdGltZV9zdGFydCkgPj4gMTA7Ci0JaWYgKGRpZmYgPiBJTlRf
-TUFYKQotCQlkaWZmID0gSU5UX01BWDsKLQotCWRldi0+bGFzdF9yZXNpZGVuY3kgPSAoaW50KSBk
-aWZmOworCWRldi0+bGFzdF9yZXNpZGVuY3kgPSBjb252ZXJ0X25zZWNfdG9fdXNlYyh0aW1lX2Vu
-ZCAtIHRpbWVfc3RhcnQpOwogCiAJaWYgKGVudGVyZWRfc3RhdGUgPj0gMCkgewogCQkvKiBVcGRh
-dGUgY3B1aWRsZSBjb3VudGVycyAqLwpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVpZGxlL2NwdWlk
-bGUuaCBiL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmgKaW5kZXggZjg3ZjM5OS4uYzhlYTVhZCAx
-MDA2NDQKLS0tIGEvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuaAorKysgYi9kcml2ZXJzL2NwdWlk
-bGUvY3B1aWRsZS5oCkBAIC02OCw0ICs2OCwyNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgY3B1aWRs
-ZV9jb3VwbGVkX3VucmVnaXN0ZXJfZGV2aWNlKHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2KQog
-fQogI2VuZGlmCiAKKy8qCisgKiBVc2VkIGZvciBjYWxjdWxhdGluZyBsYXN0X3Jlc2lkZW5jeSBp
-biB1c2VjLiBPcHRpbWl6ZWQgZm9yIGNhc2UKKyAqIHdoZXJlIGxhc3RfcmVzaWRlbmN5IGluIG5z
-ZWNzIGlzIDwgSU5UX01BWC8yIGJ5IHVzaW5nIGZhc3RlcgorICogYXBwcm94aW1hdGlvbi4gQXBw
-cm94aW1hdGVkIHZhbHVlIGhhcyBsZXNzIHRoYW4gMSUgZXJyb3IuCisgKi8KK3N0YXRpYyBpbmxp
-bmUgaW50IGNvbnZlcnRfbnNlY190b191c2VjKHU2NCBuc2VjKQoreworCWlmIChsaWtlbHkobnNl
-YyA8IElOVF9NQVggLyAyKSkgeworCQlpbnQgdXNlYyA9IChpbnQpbnNlYzsKKworCQl1c2VjICs9
-IHVzZWMgPj4gNTsKKwkJdXNlYyA9IHVzZWMgPj4gMTA7CisJCXJldHVybiB1c2VjOworCX0gZWxz
-ZSB7CisJCXU2NCB1c2VjID0gZGl2X3U2NChuc2VjLCAxMDAwKTsKKworCQlpZiAodXNlYyA+IElO
-VF9NQVgpCisJCQl1c2VjID0gSU5UX01BWDsKKwkJcmV0dXJuIChpbnQpdXNlYzsKKwl9Cit9CisK
-KwogI2VuZGlmIC8qIF9fRFJJVkVSX0NQVUlETEVfSCAqLwotLSAKMi4xLjQKCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5n
-IGxpc3QKTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMu
-b3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldg==
+On 06/29/2016 09:06 AM, Shreyas B. Prabhu wrote:
+> Snooze is a poll idle state in powernv and pseries platforms. Snooze
+> has a timeout so that if a cpu stays in snooze for more than target
+> residency of the next available idle state, then it would exit thereb=
+y
+> giving chance to the cpuidle governor to re-evaluate and
+> promote the cpu to a deeper idle state. Therefore whenever snooze exi=
+ts
+> due to this timeout, its last_residency will be target_residency of n=
+ext
+> deeper state.
+>
+> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()=
+")
+> changed the math around last_residency calculation. Specifically, whi=
+le
+> converting last_residency value from nanoseconds to microseconds it d=
+oes
+> right shift by 10. Due to this, in snooze timeout exit scenarios
+> last_residency calculated is roughly 2.3% less than target_residency =
+of
+> next available state. This pattern is picked up get_typical_interval(=
+)
+> in the menu governor and therefore expected_interval in menu_select()=
+ is
+> frequently less than the target_residency of any state but snooze.
+>
+> Due to this we are entering snooze at a higher rate, thereby affectin=
+g
+> the single thread performance.
+>
+> Fix this by using a better approximation for division by 1000.
+>
+> Reported-by: Anton Blanchard <anton@samba.org>
+> Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Suggested-by David Laight <david.laight@aculab.com>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+
+[Cc'ed Nicolas Pitre]
+
+> ---
+> Changes in v3
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>   - Using approximation suggested by David
+>
+> Changes in v2
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+>   - Fixing it in the cpuidle core code instead of driver code.
+>
+>   drivers/cpuidle/cpuidle.c | 11 +++--------
+>   drivers/cpuidle/cpuidle.h | 23 +++++++++++++++++++++++
+>   2 files changed, 26 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index a4d0059..e9a7f74 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -174,7 +174,6 @@ int cpuidle_enter_state(struct cpuidle_device *de=
+v, struct cpuidle_driver *drv,
+>   	struct cpuidle_state *target_state =3D &drv->states[index];
+>   	bool broadcast =3D !!(target_state->flags & CPUIDLE_FLAG_TIMER_STO=
+P);
+>   	u64 time_start, time_end;
+> -	s64 diff;
+>
+>   	/*
+>   	 * Tell the time framework to switch to a broadcast timer because =
+our
+> @@ -218,14 +217,10 @@ int cpuidle_enter_state(struct cpuidle_device *=
+dev, struct cpuidle_driver *drv,
+>   		local_irq_enable();
+>
+>   	/*
+> -	 * local_clock() returns the time in nanosecond, let's shift
+> -	 * by 10 (divide by 1024) to have microsecond based time.
+> +	 * local_clock() returns the time in nanosecond, convert it to
+> +	 * microsecond based time.
+>   	 */
+> -	diff =3D (time_end - time_start) >> 10;
+> -	if (diff > INT_MAX)
+> -		diff =3D INT_MAX;
+> -
+> -	dev->last_residency =3D (int) diff;
+> +	dev->last_residency =3D convert_nsec_to_usec(time_end - time_start)=
+;
+>
+>   	if (entered_state >=3D 0) {
+>   		/* Update cpuidle counters */
+> diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+> index f87f399..c8ea5ad 100644
+> --- a/drivers/cpuidle/cpuidle.h
+> +++ b/drivers/cpuidle/cpuidle.h
+> @@ -68,4 +68,27 @@ static inline void cpuidle_coupled_unregister_devi=
+ce(struct cpuidle_device *dev)
+>   }
+>   #endif
+>
+> +/*
+> + * Used for calculating last_residency in usec. Optimized for case
+> + * where last_residency in nsecs is < INT_MAX/2 by using faster
+> + * approximation. Approximated value has less than 1% error.
+> + */
+> +static inline int convert_nsec_to_usec(u64 nsec)
+> +{
+> +	if (likely(nsec < INT_MAX / 2)) {
+
+UINT_MAX ?
+
+> +		int usec =3D (int)nsec;
+> +
+> +		usec +=3D usec >> 5;
+> +		usec =3D usec >> 10;
+> +		return usec;
+> +	} else {
+> +		u64 usec =3D div_u64(nsec, 1000);
+> +
+> +		if (usec > INT_MAX)
+> +			usec =3D INT_MAX;
+> +		return (int)usec;
+> +	}
+> +}
+
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
