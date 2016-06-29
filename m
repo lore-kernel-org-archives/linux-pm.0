@@ -1,105 +1,107 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [RFC PATCH 3/5] thermal: Add support for the thermal sensor on
- A23/33
-Date: Wed, 29 Jun 2016 14:10:21 +0200
-Message-ID: <20160629121021.GD6095@lukather>
-References: <20160628101325.2522-1-icenowy@aosc.xyz>
- <20160628101325.2522-3-icenowy@aosc.xyz>
- <20160628114640.GE5550@lukather> <60021467122182@web19j.yandex.ru>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v12 2/4] gadget: Support for the usb charger framework
+Date: Wed, 29 Jun 2016 20:16:22 +0800
+Message-ID: <CAMz4kuJ2duayzdBL07+pMh5YA6QRXozX+CNpc8M8VQi=KicFbA@mail.gmail.com>
+References: <cover.1466497505.git.baolin.wang@linaro.org> <f7bae2566824a5e1da14c1a19dee6af5f250262f.1466497506.git.baolin.wang@linaro.org>
+ <87bn2uomzd.fsf@linux.intel.com> <CAMz4kuJ990pfVxSz7sVEOOiL8gC+BAjJ=PLioez5_Y5c+OyxxQ@mail.gmail.com>
+ <87eg7giexn.fsf@linux.intel.com> <CAMz4kuK30ZGdqgyHNj=xnVLSpceCFD4R8-LvqMS3EOUTUhcHtA@mail.gmail.com>
+ <87bn2kieb6.fsf@linux.intel.com> <CAMz4kuL9pJzNsn7xXXCp4s9Rczm5vWhuWfF7VjkuxsMUzNZXZQ@mail.gmail.com>
+ <87twgcgpwp.fsf@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5696923692927816473=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <60021467122182@web19j.yandex.ru>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Icenowy Zheng <icenowy@aosc.xyz>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "emilio@elopez.com.ar" <emilio@elopez.com.ar>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "wens@csie.org" <wens@csie.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <87twgcgpwp.fsf@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Felipe Balbi <balbi@kernel.org>
+Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Felipe,
 
---===============5696923692927816473==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ytoMbUMiTKPMT3hY"
-Content-Disposition: inline
+On 29 June 2016 at 20:06, Felipe Balbi <balbi@kernel.org> wrote:
+>
+> Hi,
+>
+> Baolin Wang <baolin.wang@linaro.org> writes:
+>>>>>>>> For supporting the usb charger, it adds the usb_charger_init() and
+>>>>>>>> usb_charger_exit() functions for usb charger initialization and exit.
+>>>>>>>>
+>>>>>>>> It will report to the usb charger when the gadget state is changed,
+>>>>>>>> then the usb charger can do the power things.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+>>>>>>>> Reviewed-by: Li Jun <jun.li@nxp.com>
+>>>>>>>> Tested-by: Li Jun <jun.li@nxp.com>
+>>>>>>>
+>>>>>>> Before anything, I must say that I really liked this patch. It's
+>>>>>>> minimaly invasive to udc core and does all the necessary changes. If it
+>>>>>>> wasn't for the extra charger class, this would've been perfect.
+>>>>>>>
+>>>>>>> Can't you just tie a charger to a UDC and avoid the charger class
+>>>>>>> completely?
+>>>>>>>
+>>>>>>>>  static inline int usb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
+>>>>>>>>  {
+>>>>>>>> +     if (gadget->charger)
+>>>>>>>
+>>>>>>> I guess you could do this check inside
+>>>>>>> usb_gadget_set_cur_limit_by_type() itself.
+>>>>>>
+>>>>>> We will access the 'gadget->charger->type' member when issuing
+>>>>>> usb_gadget_set_cur_limit_by_type(), so I think I should leave the
+>>>>>> check here in next new version.
+>>>>>
+>>>>> Here's what I mean:
+>>>>>
+>>>>> int usb_charger_set_cur_limit(struct usb_gadget *gadget, unsigned int mA)
+>>>>> {
+>>>>>         struct usb_charger *charger;
+>>>>>         enum usb_charger_type type;
+>>>>>
+>>>>>         if (!gadget->charger)
+>>>>>                 return 0;
+>>>>>
+>>>>>         charger = gadget->charger;
+>>>>>         type = charger->type;
+>>>>>
+>>>>>         return __usb_charger_set_cur_limit(charger, type, mA);
+>>>>> }
+>>>>
+>>>> But that means we need to export  both 'usb_charger_set_cur_limit()'
+>>>> function and '__usb_charger_set_cur_limit()' function in charger.c
+>>>> file. Cause some user may want to set the current limitation by one
+>>>> charger type parameter (may be not from charger->type), like by
+>>>> issuing '__usb_charger_set_cur_limit(charger, SDP_TYPE, mA)'. How do
+>>>> you think about this situation? Thanks.
+>>>
+>>> if we have that requirement, that's totally fine. Just rename
+>>> __usb_charger_set_cur_limit() back to
+>>> _usb_charger_set_cur_limit_by_type() and expose both. But
+>>> set_cur_limit_by_type can assume its arguments are valid at all times.
+>>
+>> Make sense. I'll fix this issue in v14 version. Thanks.
+>
+> there's one thing bothering me though:
+>
+> gadget->charger is supposed to be "current detected charger" right? If
+> we have a single port tied to a single charger, in which case would we
+> *ever* need to change current limit of any charger type other than
+> "current charger" ?
+
+What I mean is user can set the current limit by charger type as what
+they want at initial stage. As we know the default current of SDP (not
+super speed) is 500 mA, but user can set the current limit of SDP as
+450 mA if there are some special on their own platform by issuing
+'__usb_charger_set_cur_limit(charger, SDP_TYPE, 450)'.
+
+>
+> IOW, why do we need _set_cur_limit_by_type() exported at all?
+>
+> --
+> balbi
 
 
---ytoMbUMiTKPMT3hY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Tue, Jun 28, 2016 at 09:56:22PM +0800, Icenowy Zheng wrote:
-> The reason for a dedicate driver is:
-> 1. This IP have only thermal function, so it's not suitable to use a
-> driver at drivers/input/touchscreen/.
-
-That's not a problem, and it's being worked on [1].
-
-> 2. Control Register are quite different.
-
-That's not a problem either, there's just a bit that you don't need to
-set in the control 1 register, and that's pretty much it. It doesn't
-justify a whole new driver.
-
-> 3. This IP uses AUDIO PLL (PLL2) as its clock!
-
-It's listed as the input, but all the rest of the documentation refers
-only to 24MHz, which seems to indicate that it's only running on the
-oscillator, which would make much more sense.
-
-Thanks,
-Maxime
-
-1: http://lists.infradead.org/pipermail/linux-arm-kernel/2016-June/439487.h=
-tml
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
-
---ytoMbUMiTKPMT3hY
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXc7qtAAoJEBx+YmzsjxAg+gAQAKuIc+HZO+maeW9Ukek80wGz
-6Z+szxNy/rnxw2yv7uB/RNBPeCovY1huC6TTwrpXeKrUnpynRTHt5++CcL0Ps+4Y
-YB+DrTssXiKc9YVHSoCcsZrZrlf85M2Y0jmL8IT6ZOfIdLBKQWc3ODNrgnDRqKu0
-X0mgEI6oTM32XkVXqAR+1n6xKpx1TF9A7WJqFJHAdJ1QxhAzuTvZ8uiAd7BNUREM
-wYfX4/toqj3WuZutpqx+3gRjDLQSmu5GGdcvoXT5nhMH7FxObrBEpLZVydzL4O4n
-aKuM0d5aUJkWJwPDehRCASzcMnqkXZlIj0ve4kPsd6YcA2sW/LN9qjDQY5i/Dwfe
-A0gv+uyVEzeWyEeR/sxWsO/joAG1GxbqPopuqhurHahZoCkd5WoJtOSk+JHY92ib
-2C0Nep4dsGXuM+44AARe8LKKMtEbdQDJVIYTijheZ7bJ0BQnvUBr/DFdH/Bs6Qow
-+fhjXVrpghXhzmKCktbRTpnB96+Hj07hha6iB1pSpB810IhF4v+BXjSvTRBEbpZf
-ifMjFKXAtyEW4nozTlL9RhD7dsQnrQG58Zs3b/OTWTKbaRZh17G/c9XPd6XQEUii
-Z9dUXWd1LFKsNC+B2nFgWtHtIHgn+xWiW+Cud0FrNuSsP6GliOVb2kEbssd5v2ZN
-/Ae9RO6SDMjTiz7o9zaS
-=Mevt
------END PGP SIGNATURE-----
-
---ytoMbUMiTKPMT3hY--
-
-
---===============5696923692927816473==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============5696923692927816473==--
+-- 
+Baolin.wang
+Best Regards
