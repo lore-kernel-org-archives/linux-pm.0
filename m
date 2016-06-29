@@ -1,117 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 5/7] PM / Hibernate: Allow arch code to influence CPU
- hotplug during hibernate
-Date: Wed, 29 Jun 2016 02:10:56 +0200
-Message-ID: <7811260.OWJXivZiAP@vostro.rjw.lan>
-References: <1467125510-18758-1-git-send-email-james.morse@arm.com>
- <1467125510-18758-6-git-send-email-james.morse@arm.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v2] clk: Provide notifier stubs when !COMMON_CLK
+Date: Tue, 28 Jun 2016 17:14:49 -0700
+Message-ID: <20160629001449.GI1521@codeaurora.org>
+References: <1467113104-8650-1-git-send-email-k.kozlowski@samsung.com>
+ <20160628172653.GB1521@codeaurora.org>
+ <20160628190100.GA11586@kozik-lap>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1467125510-18758-6-git-send-email-james.morse@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: James Morse <james.morse@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Chen Yu C <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-clk-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160628190100.GA11586@kozik-lap>
+Sender: linux-clk-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Russell King <linux@armlinux.org.uk>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, June 28, 2016 03:51:48 PM James Morse wrote:
-> Architecture code may need to do extra work when secondary CPUs are
-> disabled during hibernate and resume. This may include pushing sleeping
-> CPUs into a deeper power-saving state, or influencing which CPU resume
-> occurs on.
+On 06/28, Krzysztof Kozlowski wrote:
+> On Tue, Jun 28, 2016 at 10:26:53AM -0700, Stephen Boyd wrote:
+> > On 06/28, Krzysztof Kozlowski wrote:
+> > > The clk notifier symbols are hidden by COMMON_CLK.  However on some
+> > > platforms HAVE_CLK might be set while COMMON_CLK not which leads to
+> > > compile test build errors like:
+> > > 
+> > > $ make.cross ARCH=sh
+> > >    drivers/devfreq/tegra-devfreq.c: In function 'tegra_actmon_rate_notify_cb':
+> > > >> drivers/devfreq/tegra-devfreq.c:391:16: error: 'POST_RATE_CHANGE' undeclared (first use in this function)
+> > >      if (action != POST_RATE_CHANGE)
+> > >                    ^
+> > >    drivers/devfreq/tegra-devfreq.c: In function 'tegra_devfreq_probe':
+> > > >> drivers/devfreq/tegra-devfreq.c:654:8: error: implicit declaration of function 'clk_notifier_register' [-Werror=implicit-function-declaration]
+> > >      err = clk_notifier_register(tegra->emc_clock, &tegra->rate_change_nb);
+> > >            ^
+> > > 
+> > > Export the macros and data type declarations outside of COMMON_CLK ifdef
+> > > and provide stubs to fix the compile testing.
+> > > 
+> > > Reported-by: kbuild test robot <lkp@intel.com>
+> > > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > > 
+> > > ---
+> > > 
+> > 
+> > Ok. Did you want some stable branch to pull this in and base your
+> > use case on?
 > 
-> Define a macro arch_hibernation_disable_cpus(), which defaults to calling
-> disable_nonboot_cpus() if undefined. Architectures that need to do extra
-> work around these calls can use this to influence disable_nonboot_cpus()
-> behaviour. The macro should be defined in asm/suspend.h, and
-> ARCH_HIBERNATION_CPUHP should be added to Kconfig.
+> It is only one patch but indeed without the branch my patches would have
+> to wait for next release. If you would be so kind, could you prepare
+> the stable branch? I hope MyungJoo Ham will use it.
 > 
-> Signed-off-by: James Morse <james.morse@arm.com>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Pavel Machek <pavel@ucw.cz>
+> Anyway I encountered more linkage errors for clk API (like clk_get_rate()).
+> They happen for various compile-tested drivers in case of MIPS (and
+> maybe others like SH). I will investigate it more but I think it is not
+> related strictly to this issue.
 
-As you noted, this could be used to address the x86 issue that Yu is working on,
-so I'd like it to go in as the first patch in the series and through the PM tree.
+Sure. That's probably because some clk APIs are optional and not
+implemented, leading to link errors.
 
-A couple of nits below. 
+I've applied this patch to a branch called clk-notify and merged
+it into clk-next.
 
-> ---
-> Changes since v2:
->  * Added CONFIG_ARCH_HIBERNATION_CPUHP include guard allowing
-
-What about calling it CONFIG_ARCH_HIBERNATION_CPU_OFFLINE?  It's not
-hotplug really.
-
->  * Switch to macro approach.
-> 
->  kernel/power/hibernate.c | 14 +++++++++++---
->  1 file changed, 11 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> index fca9254280ee..338745e78f7e 100644
-> --- a/kernel/power/hibernate.c
-> +++ b/kernel/power/hibernate.c
-> @@ -31,8 +31,16 @@
->  #include <linux/ktime.h>
->  #include <trace/events/power.h>
->  
-> +#ifdef CONFIG_ARCH_HIBERNATION_CPUHP
-> +/* Arch definition of the arch_hibernation_disable_cpus() macro? */
-> +#include <asm/suspend.h>
-> +#endif
-> +
->  #include "power.h"
->  
-> +#ifndef arch_hibernation_disable_cpus
-> +#define arch_hibernation_disable_cpus(x) disable_nonboot_cpus()
-
-For the x86 case we'll also need the complementary "enable", so why don't
-you add it here and then use it instead of the enable_nonboot_cpus()?
-
-> +#endif
->  
->  static int nocompress;
->  static int noresume;
-> @@ -279,7 +287,7 @@ static int create_image(int platform_mode)
->  	if (error || hibernation_test(TEST_PLATFORM))
->  		goto Platform_finish;
->  
-> -	error = disable_nonboot_cpus();
-> +	error = arch_hibernation_disable_cpus(true);
->  	if (error || hibernation_test(TEST_CPUS))
->  		goto Enable_cpus;
->  
-> @@ -433,7 +441,7 @@ static int resume_target_kernel(bool platform_mode)
->  	if (error)
->  		goto Cleanup;
->  
-> -	error = disable_nonboot_cpus();
-> +	error = arch_hibernation_disable_cpus(false);
->  	if (error)
->  		goto Enable_cpus;
->  
-> @@ -551,7 +559,7 @@ int hibernation_platform_enter(void)
->  	if (error)
->  		goto Platform_finish;
->  
-> -	error = disable_nonboot_cpus();
-> +	error = arch_hibernation_disable_cpus(true);
-
-Does this one here actually matter?
-
->  	if (error)
->  		goto Enable_cpus;
->  
-> 
-
-Thanks,
-Rafael
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
