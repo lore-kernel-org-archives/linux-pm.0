@@ -1,17 +1,17 @@
-From: Icenowy Zheng <icenowy@aosc.xyz>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
 Subject: Re: [RFC PATCH 3/5] thermal: Add support for the thermal sensor on
  A23/33
-Date: Wed, 29 Jun 2016 21:33:31 +0800
-Message-ID: <1209771467207211@web22j.yandex.ru>
+Date: Wed, 29 Jun 2016 15:42:09 +0200
+Message-ID: <20160629134209.GE6095@lukather>
 References: <20160628101325.2522-1-icenowy@aosc.xyz>
  <20160628101325.2522-3-icenowy@aosc.xyz>
- <20160628114640.GE5550@lukather>
- <60021467122182@web19j.yandex.ru> <20160629121021.GD6095@lukather>
+ <20160628114640.GE5550@lukather> <60021467122182@web19j.yandex.ru>
+ <20160629121021.GD6095@lukather>
+ <1112501467207099@web30g.yandex.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: multipart/mixed; boundary="===============3459195704307295037=="
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160629121021.GD6095@lukather>
+In-Reply-To: <1112501467207099@web30g.yandex.ru>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -21,30 +21,68 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
+To: Icenowy Zheng <icenowy@aosc.xyz>
 Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "emilio@elopez.com.ar" <emilio@elopez.com.ar>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "linux@armlinux.org.uk" <linux@armlinux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "wens@csie.org" <wens@csie.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-CgoyOS4wNi4yMDE2LCAyMDoxMCwgIk1heGltZSBSaXBhcmQiIDxtYXhpbWUucmlwYXJkQGZyZWUt
-ZWxlY3Ryb25zLmNvbT46Cj4gSGksCj4KPiBPbiBUdWUsIEp1biAyOCwgMjAxNiBhdCAwOTo1Njoy
-MlBNICswODAwLCBJY2Vub3d5IFpoZW5nIHdyb3RlOgo+PiDCoFRoZSByZWFzb24gZm9yIGEgZGVk
-aWNhdGUgZHJpdmVyIGlzOgo+PiDCoDEuIFRoaXMgSVAgaGF2ZSBvbmx5IHRoZXJtYWwgZnVuY3Rp
-b24sIHNvIGl0J3Mgbm90IHN1aXRhYmxlIHRvIHVzZSBhCj4+IMKgZHJpdmVyIGF0IGRyaXZlcnMv
-aW5wdXQvdG91Y2hzY3JlZW4vLgo+Cj4gVGhhdCdzIG5vdCBhIHByb2JsZW0sIGFuZCBpdCdzIGJl
-aW5nIHdvcmtlZCBvbiBbMV0uCj4KPj4gwqAyLiBDb250cm9sIFJlZ2lzdGVyIGFyZSBxdWl0ZSBk
-aWZmZXJlbnQuCj4KPiBUaGF0J3Mgbm90IGEgcHJvYmxlbSBlaXRoZXIsIHRoZXJlJ3MganVzdCBh
-IGJpdCB0aGF0IHlvdSBkb24ndCBuZWVkIHRvCj4gc2V0IGluIHRoZSBjb250cm9sIDEgcmVnaXN0
-ZXIsIGFuZCB0aGF0J3MgcHJldHR5IG11Y2ggaXQuIEl0IGRvZXNuJ3QKPiBqdXN0aWZ5IGEgd2hv
-bGUgbmV3IGRyaXZlci4KPgo+PiDCoDMuIFRoaXMgSVAgdXNlcyBBVURJTyBQTEwgKFBMTDIpIGFz
-IGl0cyBjbG9jayEKPgo+IEl0J3MgbGlzdGVkIGFzIHRoZSBpbnB1dCwgYnV0IGFsbCB0aGUgcmVz
-dCBvZiB0aGUgZG9jdW1lbnRhdGlvbiByZWZlcnMKPiBvbmx5IHRvIDI0TUh6LCB3aGljaCBzZWVt
-cyB0byBpbmRpY2F0ZSB0aGF0IGl0J3Mgb25seSBydW5uaW5nIG9uIHRoZQo+IG9zY2lsbGF0b3Is
-IHdoaWNoIHdvdWxkIG1ha2UgbXVjaCBtb3JlIHNlbnNlLgo+Cj4gVGhhbmtzLAo+IE1heGltZQo+
-Cj4gMTogaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvcGlwZXJtYWlsL2xpbnV4LWFybS1rZXJu
-ZWwvMjAxNi1KdW5lLzQzOTQ4Ny5odG1sCj4KPiAtLQo+IE1heGltZSBSaXBhcmQsIEZyZWUgRWxl
-Y3Ryb25zCj4gRW1iZWRkZWQgTGludXgsIEtlcm5lbCBhbmQgQW5kcm9pZCBlbmdpbmVlcmluZwo+
-IGh0dHA6Ly9mcmVlLWVsZWN0cm9ucy5jb20KCkkgd2lsbCB0cnkgdG8gdXNlIGl0IHdpdGhvdXQg
-cGxsMiBlbmFibGVkLgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0
-cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGlu
-Zm8vbGludXgtYXJtLWtlcm5lbAo=
+
+--===============3459195704307295037==
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="WlEyl6ow+jlIgNUh"
+Content-Disposition: inline
+
+
+--WlEyl6ow+jlIgNUh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Jun 29, 2016 at 09:31:39PM +0800, Icenowy Zheng wrote:
+> However, sun8iw3/5 ths is not even a GPADC... It's a specified IP,
+> only used as an ADC suitable for temperature sensor.
+
+It doesn't matter. It's the same IP, labelled differently.
+
+Maxime
+
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+
+--WlEyl6ow+jlIgNUh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJXc9AxAAoJEBx+YmzsjxAgp/IP/jQa7fDmZqGh+u6mIm2hXDm3
+RmcbTls4tOJ4/s7mL+uroQYIgKG1eYYzdcrWynJ3w+K692fZNbKn/gnxvUM46fM0
+a1gEILtd1zCoVrvfBUxEe0OuiFlO2JNOyXtrLhwgswogHA0OjEbszJlq6eDTK9VL
+1YKY5e875LrCHB4rV+wOIMTEPXdW++7O158dpct/kqT4LdjJlk/9P8ova9wi4Vld
+BP57maIDwIlBvtd1DqDFbr9as1vbLew5q8s7wxGtZ/n8N1FpBm8vwobGygWRLJaV
+JuuY4SD8jO6qxmv6OXA+o23GBcwQe4eh7PGek/NTtnAavDlnxA/qHPkfb5thupjJ
+caddJ2MvTA5Z0VmvqElWMpkycUnmQVZSreWnpGXiFhQ6eLDj2KSx9LVP9gFniQpA
+28h6s0TRrUsbQy3X0Kd8dcXkUZbz+7dG1yxjB9rlzZhTYHlAhI/iVM1ZK1OMl3Ah
+fu05GRyEEudEo3cf09BhTlnhJzpdx7WJrl0y5ILmVOBFQR6jRrYeODi/PDAtTRKU
+AEU1FlWgNHH3ngkeyAzg2zo8wT1bX8T6aMOWIxGjiNei/ploXhPyTxl/xqhfDuEQ
+JbwnxrRtY5OqBqugw64wOlOu40d2dEmufrLKmZinLhQxhrgrvQNkjuHlFAh2O8c8
+wUw9Mb2oVPwSnA3/z4hA
+=603y
+-----END PGP SIGNATURE-----
+
+--WlEyl6ow+jlIgNUh--
+
+
+--===============3459195704307295037==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============3459195704307295037==--
