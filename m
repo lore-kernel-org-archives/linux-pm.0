@@ -1,84 +1,89 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] cpuidle: Fix last_residency division
-Date: Wed, 29 Jun 2016 12:30:35 +0530
-Message-ID: <57737213.4070204@linux.vnet.ibm.com>
-References: <1466756638-2362-1-git-send-email-shreyas@linux.vnet.ibm.com> <14940457.SEYBmqcunj@wuerfel> <576D595F.9090001@linux.vnet.ibm.com> <3748080.8f21OXxXix@wuerfel> <063D6719AE5E284EB5DD2968C1650D6D5F4E4E87@AcuExch.aculab.com>
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v3] cpuidle: Fix last_residency division
+Date: Wed, 29 Jun 2016 02:06:11 -0500
+Message-ID: <1467183971-12327-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:47841 "EHLO
-	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751251AbcF2HAp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2016 03:00:45 -0400
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5T6sWue134224
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 03:00:44 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-	by mx0a-001b2d01.pphosted.com with ESMTP id 23usua184r-1
-	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 03:00:44 -0400
-Received: from localhost
-	by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Wed, 29 Jun 2016 17:00:41 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
-	by d23dlp03.au.ibm.com (Postfix) with ESMTP id 356DF357805A
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 17:00:40 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
-	by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u5T70e7f1507608
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 17:00:40 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
-	by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u5T70co3023221
-	for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 17:00:39 +1000
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D5F4E4E87@AcuExch.aculab.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: rjw@rjwysocki.net
+Cc: arnd@arndb.de, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, David.Laight@ACULAB.COM, anton@samba.org, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: David Laight <David.Laight@ACULAB.COM>, 'Arnd Bergmann' <arnd@arndb.de>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "anton@samba.org" <anton@samba.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-
-
-On 06/27/2016 02:29 PM, David Laight wrote:
-> From: Arnd Bergmann
->> Sent: 24 June 2016 20:43
->> On Friday, June 24, 2016 9:31:35 PM CEST Shreyas B Prabhu wrote:
->>>> If those functions are called less often than cpuidle_enter_state(),
->>>> we could just move the division there. Since the divisor is constant,
->>>> do_div() can convert it into a multiply and shift, or we could use
->>>> your the code you suggest above, or use a 32-bit division most of
->>>> the time:
->>>>
->>>>       if (diff <= UINT_MAX)
->>>>               diff_32 = (u32)diff / NSECS_PER_USEC;
->>>>       else
->>>>               diff_32 = div_u64(diff, NSECS_PER_USEC;
->>>>
->>>> which gcc itself will turn into a multiplication or series of
->>>> shifts on CPUs on which that is faster.
->>>>
->>> I'm not sure which division method of the three suggested here to use.
->>> Does anyone have a strong preference?
->>>
->>
->> It depends on how accurate we want it and how long we expect
->> the times to be. The optimization for the 4.2 second cutoff
->> for doing a 32-bit division only makes sense if the majority
->> of the sleep times are below that.
-> 
-> It also depends if the code actually cares about the length of 'long' sleeps.
-> I'd guess that for cpu idle 4.2 seconds is 'a long time', so the div_u64()
-> result could be treated as 4.2 seconds without causing grief.
-> 
-> Actually the cost of a 64bit divide after a 4 second sleep will be noise.
-> OTOH a 64bit divide after a sleep that lasted a few ns will be significant.
-> 
-Agreed. I'll use the code you suggested, with a small change-
-Using diff_32 += diff_32 >> 5 instead of diff_32 += diff_32 >> 6
-since I want to err on the side of last_residency being more than actual.
-
-And for long sleep cases, I'll use div_u64().
-
-Thanks,
-Shreyas
-
+U25vb3plIGlzIGEgcG9sbCBpZGxlIHN0YXRlIGluIHBvd2VybnYgYW5kIHBzZXJpZXMgcGxhdGZv
+cm1zLiBTbm9vemUKaGFzIGEgdGltZW91dCBzbyB0aGF0IGlmIGEgY3B1IHN0YXlzIGluIHNub296
+ZSBmb3IgbW9yZSB0aGFuIHRhcmdldApyZXNpZGVuY3kgb2YgdGhlIG5leHQgYXZhaWxhYmxlIGlk
+bGUgc3RhdGUsIHRoZW4gaXQgd291bGQgZXhpdCB0aGVyZWJ5CmdpdmluZyBjaGFuY2UgdG8gdGhl
+IGNwdWlkbGUgZ292ZXJub3IgdG8gcmUtZXZhbHVhdGUgYW5kCnByb21vdGUgdGhlIGNwdSB0byBh
+IGRlZXBlciBpZGxlIHN0YXRlLiBUaGVyZWZvcmUgd2hlbmV2ZXIgc25vb3plIGV4aXRzCmR1ZSB0
+byB0aGlzIHRpbWVvdXQsIGl0cyBsYXN0X3Jlc2lkZW5jeSB3aWxsIGJlIHRhcmdldF9yZXNpZGVu
+Y3kgb2YgbmV4dApkZWVwZXIgc3RhdGUuCgpjb21taXQgZTkzZTU5Y2U1Yjg1ICgiY3B1aWRsZTog
+UmVwbGFjZSBrdGltZV9nZXQoKSB3aXRoIGxvY2FsX2Nsb2NrKCkiKQpjaGFuZ2VkIHRoZSBtYXRo
+IGFyb3VuZCBsYXN0X3Jlc2lkZW5jeSBjYWxjdWxhdGlvbi4gU3BlY2lmaWNhbGx5LCB3aGlsZQpj
+b252ZXJ0aW5nIGxhc3RfcmVzaWRlbmN5IHZhbHVlIGZyb20gbmFub3NlY29uZHMgdG8gbWljcm9z
+ZWNvbmRzIGl0IGRvZXMKcmlnaHQgc2hpZnQgYnkgMTAuIER1ZSB0byB0aGlzLCBpbiBzbm9vemUg
+dGltZW91dCBleGl0IHNjZW5hcmlvcwpsYXN0X3Jlc2lkZW5jeSBjYWxjdWxhdGVkIGlzIHJvdWdo
+bHkgMi4zJSBsZXNzIHRoYW4gdGFyZ2V0X3Jlc2lkZW5jeSBvZgpuZXh0IGF2YWlsYWJsZSBzdGF0
+ZS4gVGhpcyBwYXR0ZXJuIGlzIHBpY2tlZCB1cCBnZXRfdHlwaWNhbF9pbnRlcnZhbCgpCmluIHRo
+ZSBtZW51IGdvdmVybm9yIGFuZCB0aGVyZWZvcmUgZXhwZWN0ZWRfaW50ZXJ2YWwgaW4gbWVudV9z
+ZWxlY3QoKSBpcwpmcmVxdWVudGx5IGxlc3MgdGhhbiB0aGUgdGFyZ2V0X3Jlc2lkZW5jeSBvZiBh
+bnkgc3RhdGUgYnV0IHNub296ZS4KCkR1ZSB0byB0aGlzIHdlIGFyZSBlbnRlcmluZyBzbm9vemUg
+YXQgYSBoaWdoZXIgcmF0ZSwgdGhlcmVieSBhZmZlY3RpbmcKdGhlIHNpbmdsZSB0aHJlYWQgcGVy
+Zm9ybWFuY2UuCgpGaXggdGhpcyBieSB1c2luZyBhIGJldHRlciBhcHByb3hpbWF0aW9uIGZvciBk
+aXZpc2lvbiBieSAxMDAwLgoKUmVwb3J0ZWQtYnk6IEFudG9uIEJsYW5jaGFyZCA8YW50b25Ac2Ft
+YmEub3JnPgpCaXNlY3RlZC1ieTogU2hpbHBhc3JpIEcgQmhhdCA8c2hpbHBhLmJoYXRAbGludXgu
+dm5ldC5pYm0uY29tPgpTdWdnZXN0ZWQtYnkgRGF2aWQgTGFpZ2h0IDxkYXZpZC5sYWlnaHRAYWN1
+bGFiLmNvbT4KU2lnbmVkLW9mZi1ieTogU2hyZXlhcyBCLiBQcmFiaHUgPHNocmV5YXNAbGludXgu
+dm5ldC5pYm0uY29tPgotLS0KQ2hhbmdlcyBpbiB2Mwo9PT09PT09PT09PT09CiAtIFVzaW5nIGFw
+cHJveGltYXRpb24gc3VnZ2VzdGVkIGJ5IERhdmlkCgpDaGFuZ2VzIGluIHYyCj09PT09PT09PT09
+PT0KIC0gRml4aW5nIGl0IGluIHRoZSBjcHVpZGxlIGNvcmUgY29kZSBpbnN0ZWFkIG9mIGRyaXZl
+ciBjb2RlLgoKIGRyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMgfCAxMSArKystLS0tLS0tLQogZHJp
+dmVycy9jcHVpZGxlL2NwdWlkbGUuaCB8IDIzICsrKysrKysrKysrKysrKysrKysrKysrCiAyIGZp
+bGVzIGNoYW5nZWQsIDI2IGluc2VydGlvbnMoKyksIDggZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0
+IGEvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYyBiL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMK
+aW5kZXggYTRkMDA1OS4uZTlhN2Y3NCAxMDA2NDQKLS0tIGEvZHJpdmVycy9jcHVpZGxlL2NwdWlk
+bGUuYworKysgYi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5jCkBAIC0xNzQsNyArMTc0LDYgQEAg
+aW50IGNwdWlkbGVfZW50ZXJfc3RhdGUoc3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXYsIHN0cnVj
+dCBjcHVpZGxlX2RyaXZlciAqZHJ2LAogCXN0cnVjdCBjcHVpZGxlX3N0YXRlICp0YXJnZXRfc3Rh
+dGUgPSAmZHJ2LT5zdGF0ZXNbaW5kZXhdOwogCWJvb2wgYnJvYWRjYXN0ID0gISEodGFyZ2V0X3N0
+YXRlLT5mbGFncyAmIENQVUlETEVfRkxBR19USU1FUl9TVE9QKTsKIAl1NjQgdGltZV9zdGFydCwg
+dGltZV9lbmQ7Ci0JczY0IGRpZmY7CiAKIAkvKgogCSAqIFRlbGwgdGhlIHRpbWUgZnJhbWV3b3Jr
+IHRvIHN3aXRjaCB0byBhIGJyb2FkY2FzdCB0aW1lciBiZWNhdXNlIG91cgpAQCAtMjE4LDE0ICsy
+MTcsMTAgQEAgaW50IGNwdWlkbGVfZW50ZXJfc3RhdGUoc3RydWN0IGNwdWlkbGVfZGV2aWNlICpk
+ZXYsIHN0cnVjdCBjcHVpZGxlX2RyaXZlciAqZHJ2LAogCQlsb2NhbF9pcnFfZW5hYmxlKCk7CiAK
+IAkvKgotCSAqIGxvY2FsX2Nsb2NrKCkgcmV0dXJucyB0aGUgdGltZSBpbiBuYW5vc2Vjb25kLCBs
+ZXQncyBzaGlmdAotCSAqIGJ5IDEwIChkaXZpZGUgYnkgMTAyNCkgdG8gaGF2ZSBtaWNyb3NlY29u
+ZCBiYXNlZCB0aW1lLgorCSAqIGxvY2FsX2Nsb2NrKCkgcmV0dXJucyB0aGUgdGltZSBpbiBuYW5v
+c2Vjb25kLCBjb252ZXJ0IGl0IHRvCisJICogbWljcm9zZWNvbmQgYmFzZWQgdGltZS4KIAkgKi8K
+LQlkaWZmID0gKHRpbWVfZW5kIC0gdGltZV9zdGFydCkgPj4gMTA7Ci0JaWYgKGRpZmYgPiBJTlRf
+TUFYKQotCQlkaWZmID0gSU5UX01BWDsKLQotCWRldi0+bGFzdF9yZXNpZGVuY3kgPSAoaW50KSBk
+aWZmOworCWRldi0+bGFzdF9yZXNpZGVuY3kgPSBjb252ZXJ0X25zZWNfdG9fdXNlYyh0aW1lX2Vu
+ZCAtIHRpbWVfc3RhcnQpOwogCiAJaWYgKGVudGVyZWRfc3RhdGUgPj0gMCkgewogCQkvKiBVcGRh
+dGUgY3B1aWRsZSBjb3VudGVycyAqLwpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVpZGxlL2NwdWlk
+bGUuaCBiL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmgKaW5kZXggZjg3ZjM5OS4uYzhlYTVhZCAx
+MDA2NDQKLS0tIGEvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuaAorKysgYi9kcml2ZXJzL2NwdWlk
+bGUvY3B1aWRsZS5oCkBAIC02OCw0ICs2OCwyNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQgY3B1aWRs
+ZV9jb3VwbGVkX3VucmVnaXN0ZXJfZGV2aWNlKHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2KQog
+fQogI2VuZGlmCiAKKy8qCisgKiBVc2VkIGZvciBjYWxjdWxhdGluZyBsYXN0X3Jlc2lkZW5jeSBp
+biB1c2VjLiBPcHRpbWl6ZWQgZm9yIGNhc2UKKyAqIHdoZXJlIGxhc3RfcmVzaWRlbmN5IGluIG5z
+ZWNzIGlzIDwgSU5UX01BWC8yIGJ5IHVzaW5nIGZhc3RlcgorICogYXBwcm94aW1hdGlvbi4gQXBw
+cm94aW1hdGVkIHZhbHVlIGhhcyBsZXNzIHRoYW4gMSUgZXJyb3IuCisgKi8KK3N0YXRpYyBpbmxp
+bmUgaW50IGNvbnZlcnRfbnNlY190b191c2VjKHU2NCBuc2VjKQoreworCWlmIChsaWtlbHkobnNl
+YyA8IElOVF9NQVggLyAyKSkgeworCQlpbnQgdXNlYyA9IChpbnQpbnNlYzsKKworCQl1c2VjICs9
+IHVzZWMgPj4gNTsKKwkJdXNlYyA9IHVzZWMgPj4gMTA7CisJCXJldHVybiB1c2VjOworCX0gZWxz
+ZSB7CisJCXU2NCB1c2VjID0gZGl2X3U2NChuc2VjLCAxMDAwKTsKKworCQlpZiAodXNlYyA+IElO
+VF9NQVgpCisJCQl1c2VjID0gSU5UX01BWDsKKwkJcmV0dXJuIChpbnQpdXNlYzsKKwl9Cit9CisK
+KwogI2VuZGlmIC8qIF9fRFJJVkVSX0NQVUlETEVfSCAqLwotLSAKMi4xLjQKCl9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5n
+IGxpc3QKTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMu
+b3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldg==
