@@ -1,59 +1,259 @@
-From: Roger Lu <roger.lu-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH] PM / suspend: show workqueues busy name in suspend flow
-Date: Wed, 29 Jun 2016 11:54:11 +0800
-Message-ID: <1467172451.4141.20.camel@mtksdaap41>
-References: <1466586509-32400-1-git-send-email-roger.lu@mediatek.com>
- <20160622152126.GV3262@mtj.duckdns.org>
- <1467020645.25092.24.camel@mtksdaap41>
- <20160628165616.GD5185@htj.duckdns.org>
+From: Bin Gao <bin.gao@linux.intel.com>
+Subject: [PATCH v2] thermal: add Intel BXT WhiskeyCove PMIC thermal driver
+Date: Tue, 28 Jun 2016 21:28:46 -0700
+Message-ID: <20160629042846.GA137699@worksta>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <20160628165616.GD5185-piEFEHQLUPpN0TnZuCh8vA@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, drinkcat-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Lai Jiangshan <jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: ysiyer <yegnesh.s.iyer@intel.com>, Ajay Thomas <ajay.thomas.david.rajamanickam@intel.com>, Bin Gao <bin.gao@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Tejun,
+This change add support for pmic thermal driver which is intended to
+handle the alert interrupts triggered upon thermal trip point cross
+and notify the thermal framework appropriately with the zone, temp,
+crossed trip and event details.
 
-On Tue, 2016-06-28 at 12:56 -0400, Tejun Heo wrote:
-> Hello, Roger.
-> 
-> On Mon, Jun 27, 2016 at 05:44:05PM +0800, Roger Lu wrote:
-> > show_workqueue_state() is a better choice to me. However, only freezable
-> > workqueue is able to affect suspend flow. So, is there other mailing
-> > list discussing about showing freezable workqueue state only?? Maybe we
-> > can use that API in this case. Thanks very much.
-> > 
-> > freezable workqueue means workqueue is created with flag WQ_FREEZABLE.
-> 
-> It's for debugging anyway and workqueue dumps usually are pretty
-> short.  I don't think it's fine to use the same function.  We can add
-> flags in the printouts but I'm not even sure that'd be necessary.
-> 
-> Thanks.
-> 
+Signed-off-by: Yegnesh S Iyer <yegnesh.s.iyer@intel.com>
+Signed-off-by: Bin Gao <bin.gao@intel.com>
+---
+Changes in v2:
+ - Removed unnecessary request_threaded_irq() - we should be only
+   using devm_request_threaded_irq() with virq
+ drivers/thermal/Kconfig              |  10 +++
+ drivers/thermal/Makefile             |   1 +
+ drivers/thermal/intel_pmic_thermal.c | 155 +++++++++++++++++++++++++++++++++++
+ include/linux/mfd/intel_soc_pmic.h   |  21 +++++
+ 4 files changed, 187 insertions(+)
+ create mode 100644 drivers/thermal/intel_pmic_thermal.c
 
-Please allow me to elaborate my previous concern about printing
-freezable workqueue info only in this case.
-
-The benefit of it is that debugger can quickly understand which
-freezable workqueues block suspend flow and assign this issue to
-corresponding owner instead of extracting freezable workqueue info from
-show_workqueue_state() first and, then, assigning the issue.
-
-Adding a flag to printout the info we need is great. Perhaps we can do
-that. Thanks for the advice.
-
-Sincerely,
-Roger Lu.
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 2d702ca..9065ba7 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -332,6 +332,16 @@ menu "ACPI INT340X thermal drivers"
+ source drivers/thermal/int340x_thermal/Kconfig
+ endmenu
+ 
++config INTEL_PMIC_THERMAL
++	tristate "Intel PMIC thermal driver"
++	depends on X86 && INTEL_SOC_PMIC && REGMAP
++	help
++	  Select this driver for Intel PMIC with ADC channels monitoring system
++	  temperature measurements and alerts.
++	  This driver is used for monitoring the ADC channels of PMIC and handles
++	  the alert trip point interrupts and notifies the thermal framework with
++	  the trip point and temperature details of the zone.
++
+ config INTEL_PCH_THERMAL
+ 	tristate "Intel PCH Thermal Reporting Driver"
+ 	depends on X86 && PCI
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 10b07c1..159efcc 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -45,6 +45,7 @@ obj-$(CONFIG_INTEL_SOC_DTS_THERMAL)	+= intel_soc_dts_thermal.o
+ obj-$(CONFIG_INTEL_QUARK_DTS_THERMAL)	+= intel_quark_dts_thermal.o
+ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
+ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
++obj-$(CONFIG_INTEL_PMIC_THERMAL) += intel_pmic_thermal.o
+ obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
+ obj-$(CONFIG_ST_THERMAL)	+= st/
+ obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra/
+diff --git a/drivers/thermal/intel_pmic_thermal.c b/drivers/thermal/intel_pmic_thermal.c
+new file mode 100644
+index 0000000..8c40a0a
+--- /dev/null
++++ b/drivers/thermal/intel_pmic_thermal.c
+@@ -0,0 +1,155 @@
++/*
++ * pmic_thermal.c - PMIC thermal driver
++ *
++ * Copyright (C) 2015 Intel Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version
++ * 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/slab.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/device.h>
++#include <linux/thermal.h>
++#include <linux/platform_device.h>
++#include <linux/sched.h>
++#include <linux/mfd/intel_soc_pmic.h>
++
++static irqreturn_t pmic_thermal_irq_handler(int irq, void *data)
++{
++	struct platform_device *pdev = data;
++	struct pmic_thermal_data *td =
++			(struct pmic_thermal_data *)pdev->dev.platform_data;
++	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
++	struct regmap *regmap = pmic->regmap;
++	struct thermal_zone_device *tzd;
++	int i, j, ret;
++	u16 reg, evt_stat_reg;
++	u8 reg_val, mask, irq_stat, trip;
++
++	/* Resolve thermal irqs */
++	for (i = 0; i < td->num_maps; i++) {
++		for (j = 0; j < td->maps[i].num_trips; j++) {
++			reg = td->maps[i].trip_config[j].irq_reg;
++			mask = td->maps[i].trip_config[j].irq_mask;
++			/*
++			 * Read the irq register to resolve whether the
++			 * interrupt was triggered for this sensor
++			 */
++			if (regmap_read(regmap, reg, &ret))
++				return IRQ_HANDLED;
++
++			reg_val = (u8)ret;
++
++			irq_stat = ((u8)ret & mask);
++			if (irq_stat) {
++				/*
++				 * Read the status register to find out what
++				 * event occurred i.e a high or a low
++				 */
++				evt_stat_reg =
++					td->maps[i].trip_config[j].evt_stat;
++				if (regmap_read(regmap, evt_stat_reg, &ret))
++					return IRQ_HANDLED;
++
++				trip = td->maps[i].trip_config[j].trip_num;
++				tzd = thermal_zone_get_zone_by_name(
++						td->maps[i].handle);
++				if (!IS_ERR(tzd))
++					thermal_zone_device_update(tzd);
++
++				/* Clear the appropriate irq */
++				regmap_write(regmap, reg, reg_val & mask);
++			}
++		}
++	}
++
++	return IRQ_HANDLED;
++}
++
++static int pmic_thermal_probe(struct platform_device *pdev)
++{
++	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
++	struct regmap *regmap = pmic->regmap;
++	struct pmic_thermal_data *thermal_data;
++	struct regmap_irq_chip_data *regmap_irq_chip;
++	int ret, irq, virq, i, j, pmic_irq_count = 0;
++	u16 reg;
++	u8 mask;
++
++	thermal_data = (struct pmic_thermal_data *)pdev->dev.platform_data;
++	if (thermal_data == NULL) {
++		dev_err(&pdev->dev, "No thermal data initialized!!\n");
++		return -ENODEV;
++	}
++
++	regmap_irq_chip = pmic->irq_chip_data_level2;
++	while ((irq = platform_get_irq(pdev, pmic_irq_count)) != -ENXIO) {
++		virq = regmap_irq_get_virq(regmap_irq_chip, irq);
++		if (virq < 0) {
++			dev_err(&pdev->dev,
++				"failed to get virtual interrupt=%d\n", irq);
++			return virq;
++		}
++
++		ret = devm_request_threaded_irq(&pdev->dev, virq,
++				NULL, pmic_thermal_irq_handler,
++				IRQF_ONESHOT, "pmic_thermal", pdev);
++
++		if (ret) {
++			dev_err(&pdev->dev, "request irq failed: %d,virq: %d\n",
++								ret, virq);
++			return ret;
++		}
++		pmic_irq_count++;
++	}
++
++	/* Enable thermal interrupts */
++	for (i = 0; i < thermal_data->num_maps; i++) {
++		for (j = 0; j < thermal_data->maps[i].num_trips; j++) {
++			reg = thermal_data->maps[i].trip_config[j].irq_en;
++			mask = thermal_data->maps[i].trip_config[j].irq_en_mask;
++			if (regmap_update_bits(regmap, reg, mask, 0x00))
++				return ret;
++		}
++	}
++
++	return 0;
++}
++
++static int pmic_thermal_remove(struct platform_device *pdev)
++{
++	return 0;
++}
++
++static struct platform_device_id pmic_thermal_id_table[] = {
++	{ .name = "whiskey_cove_thermal" },
++	{ .name = "bxt_wcove_thermal" },
++	{},
++};
++
++static struct platform_driver pmic_thermal_driver = {
++	.probe = pmic_thermal_probe,
++	.remove = pmic_thermal_remove,
++	.driver = {
++		.name = "pmic_thermal",
++	},
++	.id_table = pmic_thermal_id_table,
++};
++
++MODULE_DEVICE_TABLE(platform, pmic_thermal_id_table);
++module_platform_driver(pmic_thermal_driver);
++
++MODULE_AUTHOR("Yegnesh S Iyer <yegnesh.s.iyer@intel.com>");
++MODULE_DESCRIPTION("PMIC thermal Driver");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/mfd/intel_soc_pmic.h b/include/linux/mfd/intel_soc_pmic.h
+index cf619db..7df4302 100644
+--- a/include/linux/mfd/intel_soc_pmic.h
++++ b/include/linux/mfd/intel_soc_pmic.h
+@@ -21,6 +21,27 @@
+ 
+ #include <linux/regmap.h>
+ 
++struct trip_config_map {
++	u16 irq_reg;
++	u16 irq_en;
++	u16 evt_stat;
++	u8 irq_mask;
++	u8 irq_en_mask;
++	u8 evt_mask;
++	u8 trip_num;
++};
++
++struct thermal_irq_map {
++	char handle[20];
++	int num_trips;
++	struct trip_config_map *trip_config;
++};
++
++struct pmic_thermal_data {
++	struct thermal_irq_map *maps;
++	int num_maps;
++};
++
+ struct intel_soc_pmic {
+ 	int irq;
+ 	struct regmap *regmap;
+-- 
+1.9.1
