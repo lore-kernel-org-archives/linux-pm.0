@@ -1,107 +1,103 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v12 2/4] gadget: Support for the usb charger framework
-Date: Wed, 29 Jun 2016 20:16:22 +0800
-Message-ID: <CAMz4kuJ2duayzdBL07+pMh5YA6QRXozX+CNpc8M8VQi=KicFbA@mail.gmail.com>
-References: <cover.1466497505.git.baolin.wang@linaro.org> <f7bae2566824a5e1da14c1a19dee6af5f250262f.1466497506.git.baolin.wang@linaro.org>
- <87bn2uomzd.fsf@linux.intel.com> <CAMz4kuJ990pfVxSz7sVEOOiL8gC+BAjJ=PLioez5_Y5c+OyxxQ@mail.gmail.com>
- <87eg7giexn.fsf@linux.intel.com> <CAMz4kuK30ZGdqgyHNj=xnVLSpceCFD4R8-LvqMS3EOUTUhcHtA@mail.gmail.com>
- <87bn2kieb6.fsf@linux.intel.com> <CAMz4kuL9pJzNsn7xXXCp4s9Rczm5vWhuWfF7VjkuxsMUzNZXZQ@mail.gmail.com>
- <87twgcgpwp.fsf@linux.intel.com>
+From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+Subject: [PATCH v4 1/2] ARM: tango: add HOTPLUG_CPU support
+Date: Wed, 29 Jun 2016 14:21:42 +0200
+Message-ID: <5773BD56.5040104@sigmadesigns.com>
+References: <57726597.8030501@sigmadesigns.com>
+ <577266AD.8000006@sigmadesigns.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87twgcgpwp.fsf@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <577266AD.8000006@sigmadesigns.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: arm-soc <arm@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Sebastian Frias <sf84@laposte.net>, linux-pm <linux-pm@vger.kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Robin Murphy <robin.murphy@arm.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Felipe,
+cpu_die() and cpu_kill() are implemented in firmware.
 
-On 29 June 2016 at 20:06, Felipe Balbi <balbi@kernel.org> wrote:
->
-> Hi,
->
-> Baolin Wang <baolin.wang@linaro.org> writes:
->>>>>>>> For supporting the usb charger, it adds the usb_charger_init() and
->>>>>>>> usb_charger_exit() functions for usb charger initialization and exit.
->>>>>>>>
->>>>>>>> It will report to the usb charger when the gadget state is changed,
->>>>>>>> then the usb charger can do the power things.
->>>>>>>>
->>>>>>>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
->>>>>>>> Reviewed-by: Li Jun <jun.li@nxp.com>
->>>>>>>> Tested-by: Li Jun <jun.li@nxp.com>
->>>>>>>
->>>>>>> Before anything, I must say that I really liked this patch. It's
->>>>>>> minimaly invasive to udc core and does all the necessary changes. If it
->>>>>>> wasn't for the extra charger class, this would've been perfect.
->>>>>>>
->>>>>>> Can't you just tie a charger to a UDC and avoid the charger class
->>>>>>> completely?
->>>>>>>
->>>>>>>>  static inline int usb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
->>>>>>>>  {
->>>>>>>> +     if (gadget->charger)
->>>>>>>
->>>>>>> I guess you could do this check inside
->>>>>>> usb_gadget_set_cur_limit_by_type() itself.
->>>>>>
->>>>>> We will access the 'gadget->charger->type' member when issuing
->>>>>> usb_gadget_set_cur_limit_by_type(), so I think I should leave the
->>>>>> check here in next new version.
->>>>>
->>>>> Here's what I mean:
->>>>>
->>>>> int usb_charger_set_cur_limit(struct usb_gadget *gadget, unsigned int mA)
->>>>> {
->>>>>         struct usb_charger *charger;
->>>>>         enum usb_charger_type type;
->>>>>
->>>>>         if (!gadget->charger)
->>>>>                 return 0;
->>>>>
->>>>>         charger = gadget->charger;
->>>>>         type = charger->type;
->>>>>
->>>>>         return __usb_charger_set_cur_limit(charger, type, mA);
->>>>> }
->>>>
->>>> But that means we need to export  both 'usb_charger_set_cur_limit()'
->>>> function and '__usb_charger_set_cur_limit()' function in charger.c
->>>> file. Cause some user may want to set the current limitation by one
->>>> charger type parameter (may be not from charger->type), like by
->>>> issuing '__usb_charger_set_cur_limit(charger, SDP_TYPE, mA)'. How do
->>>> you think about this situation? Thanks.
->>>
->>> if we have that requirement, that's totally fine. Just rename
->>> __usb_charger_set_cur_limit() back to
->>> _usb_charger_set_cur_limit_by_type() and expose both. But
->>> set_cur_limit_by_type can assume its arguments are valid at all times.
->>
->> Make sense. I'll fix this issue in v14 version. Thanks.
->
-> there's one thing bothering me though:
->
-> gadget->charger is supposed to be "current detected charger" right? If
-> we have a single port tied to a single charger, in which case would we
-> *ever* need to change current limit of any charger type other than
-> "current charger" ?
+Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+---
+New in v4:
+o panic() if tango_cpu_die() returns unexpectedly
+o timeout after 10 tries in tango_cpu_kill()
+---
+ arch/arm/mach-tango/platsmp.c | 36 ++++++++++++++++++++++++++++++++++++
+ arch/arm/mach-tango/smc.h     |  4 +++-
+ 2 files changed, 39 insertions(+), 1 deletion(-)
 
-What I mean is user can set the current limit by charger type as what
-they want at initial stage. As we know the default current of SDP (not
-super speed) is 500 mA, but user can set the current limit of SDP as
-450 mA if there are some special on their own platform by issuing
-'__usb_charger_set_cur_limit(charger, SDP_TYPE, 450)'.
-
->
-> IOW, why do we need _set_cur_limit_by_type() exported at all?
->
-> --
-> balbi
-
-
-
+diff --git a/arch/arm/mach-tango/platsmp.c b/arch/arm/mach-tango/platsmp.c
+index a21f55e000d2..8380699d4fa3 100644
+--- a/arch/arm/mach-tango/platsmp.c
++++ b/arch/arm/mach-tango/platsmp.c
+@@ -1,3 +1,4 @@
++#include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/smp.h>
+ #include "smc.h"
+@@ -9,8 +10,43 @@ static int tango_boot_secondary(unsigned int cpu, struct task_struct *idle)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++/*
++ * cpu_kill() and cpu_die() run concurrently on different cores.
++ * Firmware will only "kill" a core once it has properly "died".
++ * Try a few times to kill a core before giving up, and sleep
++ * between tries to give that core enough time to die.
++ */
++static int tango_cpu_kill(unsigned int cpu)
++{
++	int i, err;
++
++	for (i = 0; i < 10; ++i) {
++		msleep(10);
++		err = tango_aux_core_kill(cpu);
++		if (!err)
++			return true;
++	}
++
++	return false;
++}
++
++static void tango_cpu_die(unsigned int cpu)
++{
++	while (tango_aux_core_die(cpu) < 0)
++		cpu_relax();
++
++	panic("cpu %d failed to die\n", cpu);
++}
++#else
++#define tango_cpu_kill	NULL
++#define tango_cpu_die	NULL
++#endif
++
+ static const struct smp_operations tango_smp_ops __initconst = {
+ 	.smp_boot_secondary	= tango_boot_secondary,
++	.cpu_kill		= tango_cpu_kill,
++	.cpu_die		= tango_cpu_die,
+ };
+ 
+ CPU_METHOD_OF_DECLARE(tango4_smp, "sigma,tango4-smp", &tango_smp_ops);
+diff --git a/arch/arm/mach-tango/smc.h b/arch/arm/mach-tango/smc.h
+index 7a4af35cc390..3d31f984f44c 100644
+--- a/arch/arm/mach-tango/smc.h
++++ b/arch/arm/mach-tango/smc.h
+@@ -2,4 +2,6 @@ extern int tango_smc(unsigned int val, unsigned int service);
+ 
+ #define tango_set_l2_control(val)	tango_smc(val, 0x102)
+ #define tango_start_aux_core(val)	tango_smc(val, 0x104)
+-#define tango_set_aux_boot_addr(val)	tango_smc((unsigned int)val, 0x105)
++#define tango_set_aux_boot_addr(val)	tango_smc(val, 0x105)
++#define tango_aux_core_die(val)		tango_smc(val, 0x121)
++#define tango_aux_core_kill(val)	tango_smc(val, 0x122)
 -- 
-Baolin.wang
-Best Regards
+2.9.0
