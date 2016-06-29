@@ -1,8 +1,8 @@
 From: Icenowy Zheng <icenowy@aosc.xyz>
 Subject: Re: [RFC PATCH 3/5] thermal: Add support for the thermal sensor on
  A23/33
-Date: Wed, 29 Jun 2016 21:31:39 +0800
-Message-ID: <1112501467207099@web30g.yandex.ru>
+Date: Wed, 29 Jun 2016 21:33:31 +0800
+Message-ID: <1209771467207211@web22j.yandex.ru>
 References: <20160628101325.2522-1-icenowy@aosc.xyz>
  <20160628101325.2522-3-icenowy@aosc.xyz>
  <20160628114640.GE5550@lukather>
@@ -43,9 +43,8 @@ IHdoaWNoIHdvdWxkIG1ha2UgbXVjaCBtb3JlIHNlbnNlLgo+Cj4gVGhhbmtzLAo+IE1heGltZQo+
 Cj4gMTogaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvcGlwZXJtYWlsL2xpbnV4LWFybS1rZXJu
 ZWwvMjAxNi1KdW5lLzQzOTQ4Ny5odG1sCj4KPiAtLQo+IE1heGltZSBSaXBhcmQsIEZyZWUgRWxl
 Y3Ryb25zCj4gRW1iZWRkZWQgTGludXgsIEtlcm5lbCBhbmQgQW5kcm9pZCBlbmdpbmVlcmluZwo+
-IGh0dHA6Ly9mcmVlLWVsZWN0cm9ucy5jb20KClRoYW5rcy4KCkhvd2V2ZXIsIHN1bjhpdzMvNSB0
-aHMgaXMgbm90IGV2ZW4gYSBHUEFEQy4uLiBJdCdzIGEgc3BlY2lmaWVkIElQLCBvbmx5IHVzZWQg
-YXMgYW4gQURDIHN1aXRhYmxlIGZvciB0ZW1wZXJhdHVyZSBzZW5zb3IuCgpfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
-bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
-LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+IGh0dHA6Ly9mcmVlLWVsZWN0cm9ucy5jb20KCkkgd2lsbCB0cnkgdG8gdXNlIGl0IHdpdGhvdXQg
+cGxsMiBlbmFibGVkLgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0
+cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGlu
+Zm8vbGludXgtYXJtLWtlcm5lbAo=
