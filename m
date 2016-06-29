@@ -1,185 +1,94 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 4/4] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
-Date: Wed, 29 Jun 2016 19:30:03 +0200
-Message-ID: <CAPDyKFotR6dk+ntMWH4nCjg2mFJe3YzVqw=M-6Vy7b8tdMFxsw@mail.gmail.com>
-References: <1463485296-22742-1-git-send-email-ulf.hansson@linaro.org>
- <1463485296-22742-5-git-send-email-ulf.hansson@linaro.org> <CAMuHMdVM66516s_+Ups7fng5xpasdiUnW=3Ybz+vGHbgN+5mpQ@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [RFC PATCH v1] ARM: tango: add Suspend-to-RAM support
+Date: Wed, 29 Jun 2016 18:48:18 +0100
+Message-ID: <577409E2.7020106@arm.com>
+References: <5773D3FB.4030101@sigmadesigns.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdVM66516s_+Ups7fng5xpasdiUnW=3Ybz+vGHbgN+5mpQ@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:55866 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750878AbcF2RsX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 Jun 2016 13:48:23 -0400
+In-Reply-To: <5773D3FB.4030101@sigmadesigns.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Kevin Hilman <khilman@kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Sebastian Frias <sf84@laposte.net>, Robin Murphy <robin.murphy@arm.com>
 
-On 28 June 2016 at 18:26, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi Ulf, Rafael,
+
+
+On 29/06/16 14:58, Marc Gonzalez wrote:
+> Ask firmware to put RAM in self-refresh mode and power system down.
 >
-> On Tue, May 17, 2016 at 1:41 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> When the pm_runtime_force_suspend|resume() helpers were invented, we still
->> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
->>
->> To make sure these helpers worked for all combinations and without
->> introducing too much of complexity, the device was always resumed in
->> pm_runtime_force_resume().
->>
->> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
->> unset, we needed to resume the device as the subsystem/driver couldn't
->> rely on using runtime PM to do it.
->>
->> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
->> removed this combination, of using CONFIG_PM_SLEEP without the earlier
->> CONFIG_PM_RUNTIME.
->>
->> For this reason we can now rely on the subsystem/driver to use runtime PM
->> to resume the device, instead of forcing that to be done in all cases. In
->> other words, let's defer this to a later point when it's actually needed.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>  drivers/base/power/runtime.c | 11 +++++++++++
->>  1 file changed, 11 insertions(+)
->>
->> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
->> index 09e4eb1..1db7b46 100644
->> --- a/drivers/base/power/runtime.c
->> +++ b/drivers/base/power/runtime.c
->> @@ -1509,6 +1509,17 @@ int pm_runtime_force_resume(struct device *dev)
->>         if (!pm_runtime_status_suspended(dev))
->>                 goto out;
->>
->> +       /*
->> +        * The PM core increases the runtime PM usage count in the system PM
->> +        * prepare phase. If the count is greather than 1 at this point, someone
->> +        * else has also increased it. In that case, invoke the runtime resume
->> +        * callback for the device as that is likely what is expected. In other
->> +        * case we trust the subsystem/driver to runtime resume the device when
->> +        * it's actually needed.
->> +        */
->> +       if (atomic_read(&dev->power.usage_count) < 2)
->> +               goto out;
->> +
->>         ret = pm_runtime_set_active(dev);
->>         if (ret)
->>                 goto out;
+>      echo mem > /sys/power/state
 >
-> This patch (commit eb13a0a1b6d5d5c2 in pm/linux-next) breaks resume on
-
-Thanks for reporting!
-
-> sh73a0/kzm9g and r8a73a4/ape6evm. On these boards, the Ethernet controller is a
-> child of a local bus (bsc), whose clock (zb) is controlled through pm_clk and
-> simple-pm-bus, cfr.
+> See Documentation/power/states.txt
 >
->     arch/arm/boot/dts/r8a73a4-ape6evm.dts
->     arch/arm/boot/dts/r8a73a4.dtsi
->     arch/arm/boot/dts/sh73a0-kzm9g.dts
->     arch/arm/boot/dts/sh73a0.dtsi
+> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+> ---
+> This is a RFC because I have a few doubts:
+> 1) return value when tango_suspend() fails and unexpectedly returns (I used -EIO)
+> 2) conditionally building pm.c (using CONFIG_SUSPEND? CONFIG_PM_SLEEP? other?)
+> 3) .valid is required, right?
+> ---
+>   arch/arm/mach-tango/Makefile |  1 +
+>   arch/arm/mach-tango/pm.c     | 37 +++++++++++++++++++++++++++++++++++++
+>   arch/arm/mach-tango/smc.h    |  1 +
+>   3 files changed, 39 insertions(+)
+>   create mode 100644 arch/arm/mach-tango/pm.c
 >
-> During resume, the bus clock is not enabled, causing an imprecise abort
-> when accessing the Ethernet controller's registers. With some debug code
-> added:
-
-I was looking into this in some more detail.
-
-As you are stating that Ethernet device is a child device to the local
-bus device, I would have expected that the pm_runtime_get_sync()
-invoked during ->probe() in the Ethernet driver should cause its
-parent device (the bus device) to be "forced" resumed.
-
-That's because the pm_runtime_get_sync() should trigger an increased
-usage count of the parent device. Later, when
-pm_runtime_force_resume() validates the count for the bus device, it
-should be 2 and thus it should lead to that it decides to *not* defer
-the resume of the device. Apparently this isn't happening for some
-reason...
-
-Perhaps there's a pm_suspend_ignore_children() set for the parent?
-Or perhaps the parent/child relationship isn't set up correctly?
-
+> diff --git a/arch/arm/mach-tango/Makefile b/arch/arm/mach-tango/Makefile
+> index 7ca753aa9fb6..822b7ca803c6 100644
+> --- a/arch/arm/mach-tango/Makefile
+> +++ b/arch/arm/mach-tango/Makefile
+> @@ -3,3 +3,4 @@ AFLAGS_smc.o := -Wa,-march=armv7-a$(plus_sec)
 >
->     PM: Syncing filesystems ... done.
->     PM: Preparing system for sleep (mem)
->     Freezing user space processes ... (elapsed 0.001 seconds) done.
->     Double checking all user space processes after OOM killer
-> disable... (elapsed 0.000 seconds)
->     Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
->     PM: Suspending system (mem)
->     smsc911x: smsc911x_suspend
->     simple-pm-bus fec10000.bus: simple_pm_bus_suspend
->     PM: suspend of devices complete after 21.484 msecs
->     PM: suspend devices took 0.030 seconds
->     PM: late suspend of devices complete after 0.488 msecs
->     cpg_div6_clock_disable: zb
->     rmobile_pd_power_down: a3sp
->     PM: noirq suspend of devices complete after 8.300 msecs
->     Disabling non-boot CPUs ...
->     CPU1: shutdown
->
->     PM: early resume of devices complete after 0.488 msecs
->     simple-pm-bus fec10000.bus: simple_pm_bus_resume
->     smsc911x: smsc911x_resume
->     Unhandled fault: imprecise external abort (0x1406) at 0xb6f40068
->     pgd = deedc000
->     [b6f40068] *pgd=5f774831, *pte=4087659f, *ppte=40876e7e
->     Internal error: : 1406 [#1] SMP ARM
->     Modules linked in:
->     CPU: 0 PID: 1062 Comm: s2ram Not tainted
-> 4.7.0-rc5-kzm9g-00391-g87777f5105e9303a-dirty #765
->     Hardware name: Generic SH73A0 (Flattened Device Tree)
->     task: dedc0840 ti: deee6000 task.ti: deee6000
->     PC is at __smsc911x_reg_read+0x1c/0x60
->     LR is at smsc911x_resume+0x78/0xd0
->
-> After reverting this patch, resume succeeds again, as the zb clock is enabled
-> first:
->
->     PM: Syncing filesystems ... done.
->     PM: Preparing system for sleep (mem)
->     Freezing user space processes ... (elapsed 0.001 seconds) done.
->     Double checking all user space processes after OOM killer
-> disable... (elapsed 0.000 seconds)
->     Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
->     PM: Suspending system (mem)
->     smsc911x: smsc911x_suspend
->     simple-pm-bus fec10000.bus: simple_pm_bus_suspend
->     PM: suspend of devices complete after 22.460 msecs
->     PM: suspend devices took 0.030 seconds
->     PM: late suspend of devices complete after 0.488 msecs
->     cpg_div6_clock_disable: zb
->     rmobile_pd_power_down: a3sp
->     PM: noirq suspend of devices complete after 8.300 msecs
->     Disabling non-boot CPUs ...
->     CPU1: shutdown
->
->     Enabling non-boot CPUs ...
->     CPU1 is up
->     rmobile_pd_power_up: a3sp
->     rmobile_pd_power_up: a4mp
->     a4mp: Power on, 0x00000100 -> PSTR = 0x007b3133
->     cpg_div6_clock_enable: zb
->     PM: noirq resume of devices complete after 92.773 msecs
->     PM: early resume of devices complete after 0.488 msecs
->     simple-pm-bus fec10000.bus: simple_pm_bus_resume
->     smsc911x: smsc911x_resume
->     PM: resume of devices complete after 28.564 msecs
->     PM: resume devices took 0.040 seconds
->     PM: Finishing wakeup.
->     Restarting tasks ...
->     rmobile_pd_power_down: a4mp
->     a4mp: Power off, 0x00000100 -> PSTR = 0x007b3033
->     done.
+>   obj-y += setup.o smc.o xenv.o
+>   obj-$(CONFIG_SMP) += platsmp.o
+> +obj-$(CONFIG_SUSPEND) += pm.o
+> diff --git a/arch/arm/mach-tango/pm.c b/arch/arm/mach-tango/pm.c
+> new file mode 100644
+> index 000000000000..08a39beaea09
+> --- /dev/null
+> +++ b/arch/arm/mach-tango/pm.c
+> @@ -0,0 +1,37 @@
+> +#include <linux/init.h>
+> +#include <linux/suspend.h>
+> +#include <asm/suspend.h>
+> +#include "smc.h"
+> +
+> +static int tango_pm_powerdown(unsigned long arg)
+> +{
+> +	tango_suspend(virt_to_phys(cpu_resume));
+> +
+> +	return -EIO; /* tango_suspend has failed */
+> +}
+> +
+> +static int tango_pm_enter(suspend_state_t state)
+> +{
+> +	if (state == PM_SUSPEND_MEM)
+> +		return cpu_suspend(0, tango_pm_powerdown);
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +static int tango_pm_valid(suspend_state_t state)
+> +{
+> +	return state == PM_SUSPEND_MEM;
+> +}
+> +
+> +static const struct platform_suspend_ops tango_pm_ops = {
+> +	.enter = tango_pm_enter,
+> +	.valid = tango_pm_valid,
 
-Thanks for the detailed explanation of what is happening!
+You can use suspend_valid_only_mem instead which does exactly same thing.
 
-Unless we can fix this in the Ethernet driver/local bus, I have some
-ideas of how we could change genpd, to still allow $subject patch to
-be applied. Although I will wait a day or two before I propose
-something. In the meantime I will also try to collect some more
-information.
+-- 
+Regards,
+Sudeep
 
-Thanks!
-
-Kind regards
-Uffe
+-- 
+Regards,
+Sudeep
