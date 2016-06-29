@@ -1,83 +1,75 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v12 2/4] gadget: Support for the usb charger framework
-Date: Wed, 29 Jun 2016 16:38:42 +0800
-Message-ID: <CAMz4kuL9pJzNsn7xXXCp4s9Rczm5vWhuWfF7VjkuxsMUzNZXZQ@mail.gmail.com>
-References: <cover.1466497505.git.baolin.wang@linaro.org> <f7bae2566824a5e1da14c1a19dee6af5f250262f.1466497506.git.baolin.wang@linaro.org>
- <87bn2uomzd.fsf@linux.intel.com> <CAMz4kuJ990pfVxSz7sVEOOiL8gC+BAjJ=PLioez5_Y5c+OyxxQ@mail.gmail.com>
- <87eg7giexn.fsf@linux.intel.com> <CAMz4kuK30ZGdqgyHNj=xnVLSpceCFD4R8-LvqMS3EOUTUhcHtA@mail.gmail.com>
- <87bn2kieb6.fsf@linux.intel.com>
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3] cpuidle: Fix last_residency division
+Date: Wed, 29 Jun 2016 14:29:36 +0530
+Message-ID: <57738DF8.3000909@linux.vnet.ibm.com>
+References: <1467183971-12327-1-git-send-email-shreyas@linux.vnet.ibm.com> <57737AA1.7050201@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87bn2kieb6.fsf@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:36335 "EHLO
+	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751141AbcF2JAZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2016 05:00:25 -0400
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5T90KtO141350
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 05:00:25 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+	by mx0a-001b2d01.pphosted.com with ESMTP id 23usua5236-1
+	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 05:00:23 -0400
+Received: from localhost
+	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
+	Wed, 29 Jun 2016 18:59:43 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+	by d23dlp01.au.ibm.com (Postfix) with ESMTP id 32EB82CE8046
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 18:59:41 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+	by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u5T8xfSq12190142
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 18:59:41 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+	by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u5T8xdId024241
+	for <linux-pm@vger.kernel.org>; Wed, 29 Jun 2016 18:59:40 +1000
+In-Reply-To: <57737AA1.7050201@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au, bsingharora@gmail.com, David.Laight@ACULAB.COM, arnd@arndb.de, Nicolas Pitre <nicolas.pitre@linaro.org>
 
-On 29 June 2016 at 16:34, Felipe Balbi <balbi@kernel.org> wrote:
->
-> Hi,
->
-> Baolin Wang <baolin.wang@linaro.org> writes:
->>>>>> For supporting the usb charger, it adds the usb_charger_init() and
->>>>>> usb_charger_exit() functions for usb charger initialization and exit.
->>>>>>
->>>>>> It will report to the usb charger when the gadget state is changed,
->>>>>> then the usb charger can do the power things.
->>>>>>
->>>>>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
->>>>>> Reviewed-by: Li Jun <jun.li@nxp.com>
->>>>>> Tested-by: Li Jun <jun.li@nxp.com>
->>>>>
->>>>> Before anything, I must say that I really liked this patch. It's
->>>>> minimaly invasive to udc core and does all the necessary changes. If it
->>>>> wasn't for the extra charger class, this would've been perfect.
->>>>>
->>>>> Can't you just tie a charger to a UDC and avoid the charger class
->>>>> completely?
->>>>>
->>>>>>  static inline int usb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
->>>>>>  {
->>>>>> +     if (gadget->charger)
->>>>>
->>>>> I guess you could do this check inside
->>>>> usb_gadget_set_cur_limit_by_type() itself.
->>>>
->>>> We will access the 'gadget->charger->type' member when issuing
->>>> usb_gadget_set_cur_limit_by_type(), so I think I should leave the
->>>> check here in next new version.
->>>
->>> Here's what I mean:
->>>
->>> int usb_charger_set_cur_limit(struct usb_gadget *gadget, unsigned int mA)
->>> {
->>>         struct usb_charger *charger;
->>>         enum usb_charger_type type;
->>>
->>>         if (!gadget->charger)
->>>                 return 0;
->>>
->>>         charger = gadget->charger;
->>>         type = charger->type;
->>>
->>>         return __usb_charger_set_cur_limit(charger, type, mA);
->>> }
+
 >>
->> But that means we need to export  both 'usb_charger_set_cur_limit()'
->> function and '__usb_charger_set_cur_limit()' function in charger.c
->> file. Cause some user may want to set the current limitation by one
->> charger type parameter (may be not from charger->type), like by
->> issuing '__usb_charger_set_cur_limit(charger, SDP_TYPE, mA)'. How do
->> you think about this situation? Thanks.
->
-> if we have that requirement, that's totally fine. Just rename
-> __usb_charger_set_cur_limit() back to
-> _usb_charger_set_cur_limit_by_type() and expose both. But
-> set_cur_limit_by_type can assume its arguments are valid at all times.
+>> +/*
+>> + * Used for calculating last_residency in usec. Optimized for case
+>> + * where last_residency in nsecs is < INT_MAX/2 by using faster
+>> + * approximation. Approximated value has less than 1% error.
+>> + */
+>> +static inline int convert_nsec_to_usec(u64 nsec)
+>> +{
+>> +    if (likely(nsec < INT_MAX / 2)) {
+> 
+> UINT_MAX ?
 
-Make sense. I'll fix this issue in v14 version. Thanks.
+I don't think I can use UINT_MAX here since usec += usec >> 5 can
+overflow. Also using INT_MAX / 2 instead of INT_MAX since potentially
+usec += usec >> 5 can be negative and usec >> 10 will retain the sign bit.
 
--- 
-Baolin.wang
-Best Regards
+> 
+>> +        int usec = (int)nsec;
+>> +
+>> +        usec += usec >> 5;
+>> +        usec = usec >> 10;
+>> +        return usec;
+>> +    } else {
+>> +        u64 usec = div_u64(nsec, 1000);
+>> +
+>> +        if (usec > INT_MAX)
+>> +            usec = INT_MAX;
+>> +        return (int)usec;
+>> +    }
+>> +}
+> 
+
+Thanks,
+Shreyas
+
