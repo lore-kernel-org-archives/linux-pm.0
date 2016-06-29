@@ -1,50 +1,45 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] PM / runtime: Asynchronous "idle" in pm_runtime_allow()
-Date: Wed, 29 Jun 2016 10:02:42 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1606291002030.1917-100000@iolanthe.rowland.org>
-References: <2236951.5ps16Zk8OD@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2236951.5ps16Zk8OD@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@baylibre.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] power: qcom-smbb: add extcon dependency
+Date: Wed, 29 Jun 2016 16:30:02 +0200
+Message-ID: <20160629143056.7405-1-arnd@arndb.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.17.10]:50578 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752048AbcF2OaQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2016 10:30:16 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Courtney Cavin <courtney.cavin@sonymobile.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 29 Jun 2016, Rafael J. Wysocki wrote:
+Building the smbb driver without extcon results in a link failure:
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Arjan reports that it takes a relatively long time to enable runtime
-> PM for multiple devices at system startup, because all writes to the
-> "control" attribute in sysfs are handled synchronously and if the
-> device is suspended as a result of the write, it will block until
-> that operation is complete.
-> 
-> That may be avoided by passing the RPM_ASYNC flag to rpm_idle()
-> in pm_runtime_allow() which will make it execute the device's
-> "idle" callback asynchronously, so writes to "control" changing
-> it from "on" to "auto" will return without waiting.
-> 
-> Reported-by: Arjan van de Ven <arjan@linux.intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/base/power/runtime.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-pm/drivers/base/power/runtime.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/runtime.c
-> +++ linux-pm/drivers/base/power/runtime.c
-> @@ -1256,7 +1256,7 @@ void pm_runtime_allow(struct device *dev
->  
->  	dev->power.runtime_auto = true;
->  	if (atomic_dec_and_test(&dev->power.usage_count))
-> -		rpm_idle(dev, RPM_AUTO);
-> +		rpm_idle(dev, RPM_AUTO | RPM_ASYNC);
->  
->   out:
->  	spin_unlock_irq(&dev->power.lock);
+drivers/power/built-in.o: In function `smbb_usb_valid_handler':
+:(.text+0x3190): undefined reference to `extcon_set_cable_state_'
+drivers/power/built-in.o: In function `smbb_charger_probe':
+:(.text+0x3880): undefined reference to `devm_extcon_dev_allocate'
+:(.text+0x3898): undefined reference to `devm_extcon_dev_register'
 
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+This adds a Kconfig dependency.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Fixes: 56d7df8716b2 ("power: Add Qualcomm SMBB driver")
+---
+ drivers/power/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 0f11a0f4c369..acd4a1524a1e 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -394,6 +394,7 @@ config CHARGER_QCOM_SMBB
+ 	tristate "Qualcomm Switch-Mode Battery Charger and Boost"
+ 	depends on MFD_SPMI_PMIC || COMPILE_TEST
+ 	depends on OF
++	depends on EXTCON
+ 	help
+ 	  Say Y to include support for the Switch-Mode Battery Charger and
+ 	  Boost (SMBB) hardware found in Qualcomm PM8941 PMICs.  The charger
+-- 
+2.9.0
+
