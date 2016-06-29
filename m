@@ -1,194 +1,141 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCHv4 1/1] thermal: core: call thermal_zone_device_update()
- after mode update
-Date: Wed, 29 Jun 2016 14:23:22 +0800
-Message-ID: <1467181402.2194.9.camel@intel.com>
-References: <1466563538.2471.10.camel@intel.com>
-	 <1466607798-30025-1-git-send-email-edubezval@gmail.com>
+From: Yuantian Tang <yuantian.tang@nxp.com>
+Subject: RE: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
+ parent clocks
+Date: Wed, 29 Jun 2016 05:50:26 +0000
+Message-ID: <DBXPR04MB49546917495DA33834B05D7F0230@DBXPR04MB495.eurprd04.prod.outlook.com>
+References: <1466058085-19353-1-git-send-email-oss@buserror.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1466607798-30025-1-git-send-email-edubezval@gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, Darren Hart <dvhart@infradead.org>, Keerthy <j-keerthy@ti.com>, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1466058085-19353-1-git-send-email-oss@buserror.net>
+Content-Language: en-US
+Sender: linux-clk-owner@vger.kernel.org
+To: Scott Wood <oss@buserror.net>, Russell King <linux@armlinux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Yang-Leo Li <leoyang.li@nxp.com>, Xiaofeng Ren <xiaofeng.ren@nxp.com>, Scott Wood <scottwood@freescale.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi, Eduardo,
+Hi,
 
-as the locking patch set has not been in upstream yet, you should
-either fold this fix into patch 02/15, or rebase your locking patch
-series on top of this fix.
+This patch is acked by clock maintainer. If no comments from anyone else, we will merge it in next week.
 
-thanks,
-rui
+Thanks,
+Yuantian
 
-On =E4=B8=89, 2016-06-22 at 08:03 -0700, Eduardo Valentin wrote:
-> Because several drivers do the following pattern:
-> .set_mode()
-> =C2=A0=C2=A0=C2=A0...
-> =C2=A0=C2=A0=C2=A0local_data->mode =3D new_mode;
-> =C2=A0=C2=A0=C2=A0thermal_zone_device_update(tz);
->=20
-> makes sense to simply do the thermal_zone_device_update()
-> in thermal core, after setting the new mode.
->=20
-> Also, this patch also remove deadlocks on drivers that
-> call thermal_zone_device_update() on .set_mode(),
-> as .set_mode()=C2=A0=C2=A0is now called always with tz->lock held.
->=20
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: linux-acpi@vger.kernel.org
-> Cc: "Lee, Chun-Yi" <jlee@suse.com>
-> Cc: Darren Hart <dvhart@infradead.org>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Keerthy <j-keerthy@ti.com>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: platform-driver-x86@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> -----Original Message-----
+> From: Scott Wood [mailto:oss@buserror.net]
+> Sent: Thursday, June 16, 2016 2:21 PM
+> To: Russell King <linux@armlinux.org.uk>; Michael Turquette
+> <mturquette@baylibre.com>; Stephen Boyd <sboyd@codeaurora.org>;
+> Viresh Kumar <viresh.kumar@linaro.org>; Rafael J. Wysocki
+> <rjw@rjwysocki.net>
+> Cc: linux-clk@vger.kernel.org; linux-pm@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; Yuantian Tang <yuantian.tang@nxp.com>; Yang-Leo Li
+> <leoyang.li@nxp.com>; Xiaofeng Ren <xiaofeng.ren@nxp.com>; Scott Wood
+> <scottwood@freescale.com>
+> Subject: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
+> parent clocks
+> 
+> From: Scott Wood <scottwood@freescale.com>
+> 
+> Commit fc4a05d4b0eb ("clk: Remove unused provider APIs") removed
+> __clk_get_num_parents() and clk_hw_get_parent_by_index(), leaving only
+> true provider API versions that operate on struct clk_hw.
+> 
+> qoriq-cpufreq needs these functions in order to determine the options it has
+> for calling clk_set_parent() and thus populate the cpufreq table, so revive
+> them as legitimate consumer APIs.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 > ---
-> Hello,
->=20
-> V3->V4:
-> - ti-soc: Removed extra locking from TI SoC in set_mode
-> - ACPI: Kept the update on check as it is called on other places
->=20
-> BR,
->=20
-> Eduardo
->=20
-> =C2=A0drivers/acpi/thermal.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 1 -
-> =C2=A0drivers/platform/x86/acerhdf.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0| 1 -
-> =C2=A0drivers/thermal/imx_thermal.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0| 1 -
-> =C2=A0drivers/thermal/of-thermal.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0| 5 -----
-> =C2=A0drivers/thermal/thermal_sysfs.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0| 1 +
-> =C2=A0drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 5 -----
-> =C2=A06 files changed, 1 insertion(+), 13 deletions(-)
->=20
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index 82707f9..03c3460 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -581,7 +581,6 @@ static int thermal_set_mode(struct
-> thermal_zone_device *thermal,
-> =C2=A0		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-> =C2=A0			"%s kernel ACPI thermal control\n",
-> =C2=A0			tz->tz_enabled ? "Enable" : "Disable"));
-> -		acpi_thermal_check(tz);
-> =C2=A0	}
-> =C2=A0	return 0;
-> =C2=A0}
-> diff --git a/drivers/platform/x86/acerhdf.c
-> b/drivers/platform/x86/acerhdf.c
-> index 460fa67..aee33ba 100644
-> --- a/drivers/platform/x86/acerhdf.c
-> +++ b/drivers/platform/x86/acerhdf.c
-> @@ -405,7 +405,6 @@ static inline void
-> acerhdf_enable_kernelmode(void)
-> =C2=A0	kernelmode =3D 1;
-> =C2=A0
-> =C2=A0	thz_dev->polling_delay =3D interval*1000;
-> -	thermal_zone_device_update(thz_dev);
-> =C2=A0	pr_notice("kernel mode fan control ON\n");
-> =C2=A0}
-> =C2=A0
-> diff --git a/drivers/thermal/imx_thermal.c
-> b/drivers/thermal/imx_thermal.c
-> index c5547bd..a413eb6 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -246,7 +246,6 @@ static int imx_set_mode(struct
-> thermal_zone_device *tz,
-> =C2=A0	}
-> =C2=A0
-> =C2=A0	data->mode =3D mode;
-> -	thermal_zone_device_update(tz);
-> =C2=A0
-> =C2=A0	return 0;
-> =C2=A0}
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-
-> thermal.c
-> index b8e509c..95c47da 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -282,17 +282,12 @@ static int of_thermal_set_mode(struct
-> thermal_zone_device *tz,
-> =C2=A0{
-> =C2=A0	struct __thermal_zone *data =3D tz->devdata;
-> =C2=A0
-> -	mutex_lock(&tz->lock);
-> -
-> =C2=A0	if (mode =3D=3D THERMAL_DEVICE_ENABLED)
-> =C2=A0		tz->polling_delay =3D data->polling_delay;
-> =C2=A0	else
-> =C2=A0		tz->polling_delay =3D 0;
-> =C2=A0
-> -	mutex_unlock(&tz->lock);
-> -
-> =C2=A0	data->mode =3D mode;
-> -	thermal_zone_device_update(tz);
-> =C2=A0
-> =C2=A0	return 0;
-> =C2=A0}
-> diff --git a/drivers/thermal/thermal_sysfs.c
-> b/drivers/thermal/thermal_sysfs.c
-> index 743df50..3d0dc30 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -100,6 +100,7 @@ mode_store(struct device *dev, struct
-> device_attribute *attr,
-> =C2=A0	mutex_lock(&tz->lock);
-> =C2=A0	result =3D tz->ops->set_mode(tz, mode);
-> =C2=A0	mutex_unlock(&tz->lock);
-> +	thermal_zone_device_update(tz);
-> =C2=A0
-> =C2=A0	if (result)
-> =C2=A0		return result;
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> index 15c0a9a..5dce053 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> @@ -193,19 +193,14 @@ static int ti_thermal_set_mode(struct
-> thermal_zone_device *thermal,
-> =C2=A0		return 0;
-> =C2=A0	}
-> =C2=A0
-> -	mutex_lock(&data->ti_thermal->lock);
-> -
-> =C2=A0	if (mode =3D=3D THERMAL_DEVICE_ENABLED)
-> =C2=A0		data->ti_thermal->polling_delay =3D
-> FAST_TEMP_MONITORING_RATE;
-> =C2=A0	else
-> =C2=A0		data->ti_thermal->polling_delay =3D 0;
-> =C2=A0
-> -	mutex_unlock(&data->ti_thermal->lock);
-> -
-> =C2=A0	data->mode =3D mode;
-> =C2=A0	ti_bandgap_write_update_interval(bgp, data->sensor_id,
-> =C2=A0					data->ti_thermal-
-> >polling_delay);
-> -	thermal_zone_device_update(data->ti_thermal);
-> =C2=A0	dev_dbg(&thermal->device, "thermal polling set for
-> duration=3D%d msec\n",
-> =C2=A0		data->ti_thermal->polling_delay);
-> =C2=A0
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> v2: Add missing 'static inline' to stub functions.
+> 
+> v3: no changes
+> 
+>  drivers/clk/clk.c   | 19 +++++++++++++++++++
+>  include/linux/clk.h | 31 +++++++++++++++++++++++++++++++
+>  2 files changed, 50 insertions(+)
+> 
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c index d584004..d61a3fe 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -290,6 +290,12 @@ struct clk_hw *__clk_get_hw(struct clk *clk)  }
+> EXPORT_SYMBOL_GPL(__clk_get_hw);
+> 
+> +unsigned int clk_get_num_parents(struct clk *clk) {
+> +	return !clk ? 0 : clk->core->num_parents; }
+> +EXPORT_SYMBOL_GPL(clk_get_num_parents);
+> +
+>  unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)  {
+>  	return hw->core->num_parents;
+> @@ -358,6 +364,19 @@ static struct clk_core
+> *clk_core_get_parent_by_index(struct clk_core *core,
+>  	return core->parents[index];
+>  }
+> 
+> +struct clk *clk_get_parent_by_index(struct clk *clk, unsigned int
+> +index) {
+> +	struct clk_core *parent;
+> +
+> +	if (!clk)
+> +		return NULL;
+> +
+> +	parent = clk_core_get_parent_by_index(clk->core, index);
+> +
+> +	return !parent ? NULL : parent->hw->clk; }
+> +EXPORT_SYMBOL_GPL(clk_get_parent_by_index);
+> +
+>  struct clk_hw *
+>  clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int index)
+> { diff --git a/include/linux/clk.h b/include/linux/clk.h index 0df4a51..acd115f
+> 100644
+> --- a/include/linux/clk.h
+> +++ b/include/linux/clk.h
+> @@ -392,6 +392,26 @@ int clk_set_parent(struct clk *clk, struct clk *parent);
+> struct clk *clk_get_parent(struct clk *clk);
+> 
+>  /**
+> + * clk_get_parent_by_index - get a possible parent clock by index
+> + * @clk: clock source
+> + * @index: index into the array of possible parents of this clock
+> + *
+> + * Returns struct clk corresponding to the requested possible
+> + * parent clock source, or NULL.
+> + */
+> +struct clk *clk_get_parent_by_index(struct clk *clk,
+> +				    unsigned int index);
+> +
+> +/**
+> + * clk_get_num_parents - get number of possible parents
+> + * @clk: clock source
+> + *
+> + * Returns the number of possible parents of this clock,
+> + * which can then be enumerated using clk_get_parent_by_index().
+> + */
+> +unsigned int clk_get_num_parents(struct clk *clk);
+> +
+> +/**
+>   * clk_get_sys - get a clock based upon the device name
+>   * @dev_id: device name
+>   * @con_id: connection ID
+> @@ -461,6 +481,17 @@ static inline struct clk *clk_get_parent(struct clk *clk)
+>  	return NULL;
+>  }
+> 
+> +static inline struct clk *clk_get_parent_by_index(struct clk *clk,
+> +						  unsigned int index)
+> +{
+> +	return NULL;
+> +}
+> +
+> +static inline unsigned int clk_get_num_parents(struct clk *clk) {
+> +	return 0;
+> +}
+> +
+>  #endif
+> 
+>  /* clk_prepare_enable helps cases using clk_enable in non-atomic context.
+> */
+> --
+> 2.5.0
+
