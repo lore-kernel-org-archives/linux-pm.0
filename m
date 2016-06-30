@@ -1,87 +1,80 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Subject: Re: [PATCH v4] x86/power/64: Fix kernel text mapping corruption
- during image restoration
-Date: Thu, 30 Jun 2016 08:24:02 -0700
-Message-ID: <CALCETrU38QiDYBpZKJOjezsQ==ON=H3SCUhAVbBJuFq2MGwsZA@mail.gmail.com>
-References: <20160617105435.GB15997@pd.tnic> <CAGXu5j+1_06mKVsV2BeBZtitRk8GtjMPH8_zAxocfxtp7NeLXg@mail.gmail.com>
- <1735047.Yzv12qmPPB@vostro.rjw.lan> <1735143.jkZ4XHok9E@vostro.rjw.lan>
- <20160630150539.GA3962@pd.tnic> <CAJZ5v0jZ6vPjuKT8h+B6i2bBoEU2=wjXiptZGrcjm7B2b6uQ9w@mail.gmail.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [PATCH] cpuidle: Fix last_residency division
+Date: Thu, 30 Jun 2016 11:28:14 -0400 (EDT)
+Message-ID: <alpine.LFD.2.20.1606301123430.12094@knanqh.ubzr>
+References: <1467296844-2055-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f42.google.com ([209.85.213.42]:33831 "EHLO
-	mail-vk0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932107AbcF3PYX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2016 11:24:23 -0400
-Received: by mail-vk0-f42.google.com with SMTP id c2so114501660vkg.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 08:24:22 -0700 (PDT)
-In-Reply-To: <CAJZ5v0jZ6vPjuKT8h+B6i2bBoEU2=wjXiptZGrcjm7B2b6uQ9w@mail.gmail.com>
+Received: from mail-qk0-f175.google.com ([209.85.220.175]:36014 "EHLO
+	mail-qk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932072AbcF3P2R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2016 11:28:17 -0400
+Received: by mail-qk0-f175.google.com with SMTP id j2so96900127qkf.3
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 08:28:16 -0700 (PDT)
+In-Reply-To: <1467296844-2055-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Borislav Petkov <bp@alien8.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Logan Gunthorpe <logang@deltatee.com>, Kees Cook <keescook@chromium.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au, bsingharora@gmail.com, David.Laight@ACULAB.COM, Arnd Bergmann <arnd@arndb.de>
 
-On Thu, Jun 30, 2016 at 8:17 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Thu, Jun 30, 2016 at 5:05 PM, Borislav Petkov <bp@alien8.de> wrote:
->> On Thu, Jun 30, 2016 at 03:17:20PM +0200, Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> Logan Gunthorpe reports that hibernation stopped working reliably for
->>> him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
->>> and rodata).
->>
->> ...
->>
->>> +static int relocate_restore_code(void)
->>> +{
->>> +     pgd_t *pgd;
->>> +     pud_t *pud;
->>> +
->>> +     relocated_restore_code = get_safe_page(GFP_ATOMIC);
->>> +     if (!relocated_restore_code)
->>> +             return -ENOMEM;
->>> +
->>> +     memcpy((void *)relocated_restore_code, &core_restore_code, PAGE_SIZE);
->>> +
->>> +     /* Make the page containing the relocated code executable */
->>> +     pgd = (pgd_t *)__va(read_cr3()) + pgd_index(relocated_restore_code);
->>> +     pud = pud_offset(pgd, relocated_restore_code);
->>> +     if (pud_large(*pud)) {
->>> +             set_pud(pud, __pud(pud_val(*pud) & ~_PAGE_NX));
->>> +     } else {
->>> +             pmd_t *pmd = pmd_offset(pud, relocated_restore_code);
->>> +
->>> +             if (pmd_large(*pmd)) {
->>> +                     set_pmd(pmd, __pmd(pmd_val(*pmd) & ~_PAGE_NX));
->>> +             } else {
->>> +                     pte_t *pte = pte_offset_kernel(pmd, relocated_restore_code);
->>> +
->>> +                     set_pte(pte, __pte(pte_val(*pte) & ~_PAGE_NX));
->>> +             }
->>> +     }
->>> +     flush_tlb_all();
->>
->> I know you want to flush TLBs but this causes the splat below on the
->> resume kernel.
->>
->> Most likely because:
->>
->> resume_target_kernel() does local_irq_disable() and then
->>
->> swsusp_arch_resume() -> relocate_restore_code() -> flush_tlb_all()
->>
->> and smp_call_function_many() doesn't like it when IRQs are disabled.
->
-> Right.
->
-> Can I invoke __flush_tlb_all() from here to flush the TLB on the local
-> CPU?  That should be sufficient IMO.
+On Thu, 30 Jun 2016, Shreyas B. Prabhu wrote:
 
-Yes, unless there's another CPU already up at the time, but that seems unlikely.
+> Snooze is a poll idle state in powernv and pseries platforms. Snooze
+> has a timeout so that if a cpu stays in snooze for more than target
+> residency of the next available idle state, then it would exit thereby
+> giving chance to the cpuidle governor to re-evaluate and
+> promote the cpu to a deeper idle state. Therefore whenever snooze exits
+> due to this timeout, its last_residency will be target_residency of next
+> deeper state.
+> 
+> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
+> changed the math around last_residency calculation. Specifically, while
+> converting last_residency value from nanoseconds to microseconds it does
+> right shift by 10. Due to this, in snooze timeout exit scenarios
+> last_residency calculated is roughly 2.3% less than target_residency of
+> next available state. This pattern is picked up get_typical_interval()
+> in the menu governor and therefore expected_interval in menu_select() is
+> frequently less than the target_residency of any state but snooze.
+> 
+> Due to this we are entering snooze at a higher rate, thereby affecting
+> the single thread performance.
+> 
+> Fix this by using a better approximation for division by 1000.
+> 
+> Reported-by: Anton Blanchard <anton@samba.org>
+> Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Suggested-by David Laight <david.laight@aculab.com>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 
-FWIW, the CPU can and will cache the NX bit and the CPU will *not*
-refresh the TLB before sending a page fault.  You definitely need to
-flush.  I wonder if this is also why you're seeing a certain amount of
-random corruption.
+Minor nit:
 
---Andy
+> +/*
+> + * To ensure that there is no overflow while approximation
+> + * for dividing val by 1000, we must respect -
+> + * val + (val >> 5) <= 0xFFFFFFFF
+> + * val + val/32 <= 0xFFFFFFFF
+> + * val <= (0xFFFFFFFF * 32) / 33
+> + * val <= 0xF83E0F82
+> + * Hence the threshold for val below which we can use the
+> + * approximation is 0xF83E0F82
+> + */
+> +#define DIV_APPROXIMATION_THRESHOLD 0xF83E0F82UL
+> +
+> +/*
+> + * Used for calculating last_residency in usec. Optimized for case
+> + * where last_residency in nsecs is < DIV_APPROXIMATION_THRESHOLD
+> + * Approximated value has less than 1% error.
+> + */
+> +static inline int convert_nsec_to_usec(u64 nsec)
+> +{
+> +	if (likely(nsec < DIV_APPROXIMATION_THRESHOLD)) {
+
+To be coherent with the comment, you could use <= instead.
+
+Then you may add:
+
+Reviewed-by: Nicolas Pitre <nico@linaro.org>
+
+
+Nicolas
