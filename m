@@ -1,117 +1,112 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4] cpuidle: Fix last_residency division
-Date: Thu, 30 Jun 2016 16:57:34 +0200
-Message-ID: <5775335E.2040003@linaro.org>
-References: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH v4] x86/power/64: Fix kernel text mapping corruption
+ during image restoration
+Date: Thu, 30 Jun 2016 17:05:39 +0200
+Message-ID: <20160630150539.GA3962@pd.tnic>
+References: <20160617105435.GB15997@pd.tnic>
+ <CAGXu5j+1_06mKVsV2BeBZtitRk8GtjMPH8_zAxocfxtp7NeLXg@mail.gmail.com>
+ <1735047.Yzv12qmPPB@vostro.rjw.lan>
+ <1735143.jkZ4XHok9E@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net
-Cc: nicolas.pitre@linaro.org, arnd@arndb.de, linux-pm@vger.kernel.org, David.Laight@ACULAB.COM, anton@samba.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.skyhub.de ([78.46.96.112]:57273 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932102AbcF3PFm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 30 Jun 2016 11:05:42 -0400
+Content-Disposition: inline
+In-Reply-To: <1735143.jkZ4XHok9E@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Logan Gunthorpe <logang@deltatee.com>, Kees Cook <keescook@chromium.org>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
 
-T24gMDYvMzAvMjAxNiAwNDozNCBQTSwgU2hyZXlhcyBCLiBQcmFiaHUgd3JvdGU6Cj4gU25vb3pl
-IGlzIGEgcG9sbCBpZGxlIHN0YXRlIGluIHBvd2VybnYgYW5kIHBzZXJpZXMgcGxhdGZvcm1zLiBT
-bm9vemUKPiBoYXMgYSB0aW1lb3V0IHNvIHRoYXQgaWYgYSBjcHUgc3RheXMgaW4gc25vb3plIGZv
-ciBtb3JlIHRoYW4gdGFyZ2V0Cj4gcmVzaWRlbmN5IG9mIHRoZSBuZXh0IGF2YWlsYWJsZSBpZGxl
-IHN0YXRlLCB0aGVuIGl0IHdvdWxkIGV4aXQgdGhlcmVieQo+IGdpdmluZyBjaGFuY2UgdG8gdGhl
-IGNwdWlkbGUgZ292ZXJub3IgdG8gcmUtZXZhbHVhdGUgYW5kCj4gcHJvbW90ZSB0aGUgY3B1IHRv
-IGEgZGVlcGVyIGlkbGUgc3RhdGUuIFRoZXJlZm9yZSB3aGVuZXZlciBzbm9vemUgZXhpdHMKPiBk
-dWUgdG8gdGhpcyB0aW1lb3V0LCBpdHMgbGFzdF9yZXNpZGVuY3kgd2lsbCBiZSB0YXJnZXRfcmVz
-aWRlbmN5IG9mIG5leHQKPiBkZWVwZXIgc3RhdGUuCj4KPiBjb21taXQgZTkzZTU5Y2U1Yjg1ICgi
-Y3B1aWRsZTogUmVwbGFjZSBrdGltZV9nZXQoKSB3aXRoIGxvY2FsX2Nsb2NrKCkiKQo+IGNoYW5n
-ZWQgdGhlIG1hdGggYXJvdW5kIGxhc3RfcmVzaWRlbmN5IGNhbGN1bGF0aW9uLiBTcGVjaWZpY2Fs
-bHksIHdoaWxlCj4gY29udmVydGluZyBsYXN0X3Jlc2lkZW5jeSB2YWx1ZSBmcm9tIG5hbm9zZWNv
-bmRzIHRvIG1pY3Jvc2Vjb25kcyBpdCBkb2VzCj4gcmlnaHQgc2hpZnQgYnkgMTAuIER1ZSB0byB0
-aGlzLCBpbiBzbm9vemUgdGltZW91dCBleGl0IHNjZW5hcmlvcwo+IGxhc3RfcmVzaWRlbmN5IGNh
-bGN1bGF0ZWQgaXMgcm91Z2hseSAyLjMlIGxlc3MgdGhhbiB0YXJnZXRfcmVzaWRlbmN5IG9mCj4g
-bmV4dCBhdmFpbGFibGUgc3RhdGUuIFRoaXMgcGF0dGVybiBpcyBwaWNrZWQgdXAgZ2V0X3R5cGlj
-YWxfaW50ZXJ2YWwoKQo+IGluIHRoZSBtZW51IGdvdmVybm9yIGFuZCB0aGVyZWZvcmUgZXhwZWN0
-ZWRfaW50ZXJ2YWwgaW4gbWVudV9zZWxlY3QoKSBpcwo+IGZyZXF1ZW50bHkgbGVzcyB0aGFuIHRo
-ZSB0YXJnZXRfcmVzaWRlbmN5IG9mIGFueSBzdGF0ZSBidXQgc25vb3plLgo+Cj4gRHVlIHRvIHRo
-aXMgd2UgYXJlIGVudGVyaW5nIHNub296ZSBhdCBhIGhpZ2hlciByYXRlLCB0aGVyZWJ5IGFmZmVj
-dGluZwo+IHRoZSBzaW5nbGUgdGhyZWFkIHBlcmZvcm1hbmNlLgo+Cj4gRml4IHRoaXMgYnkgdXNp
-bmcgYSBiZXR0ZXIgYXBwcm94aW1hdGlvbiBmb3IgZGl2aXNpb24gYnkgMTAwMC4KPgo+IFJlcG9y
-dGVkLWJ5OiBBbnRvbiBCbGFuY2hhcmQgPGFudG9uQHNhbWJhLm9yZz4KPiBCaXNlY3RlZC1ieTog
-U2hpbHBhc3JpIEcgQmhhdCA8c2hpbHBhLmJoYXRAbGludXgudm5ldC5pYm0uY29tPgo+IFN1Z2dl
-c3RlZC1ieSBEYXZpZCBMYWlnaHQgPGRhdmlkLmxhaWdodEBhY3VsYWIuY29tPgo+IFNpZ25lZC1v
-ZmYtYnk6IFNocmV5YXMgQi4gUHJhYmh1IDxzaHJleWFzQGxpbnV4LnZuZXQuaWJtLmNvbT4KPiAt
-LS0KPiBDaGFuZ2VzIGluIHY0Cj4gPT09PT09PT09PT09PQo+ICAgLSBJbmNyZWFzaW5nIHRoZSB0
-aHJlc2hvbGQgdXB0byB3aGljaCBhcHByb3hpbWF0aW9uIGNhbiBiZSB1c2VkLgo+ICAgLSBSZW1v
-dmVkIGV4cGxpY2l0IGNhc3QuIEluc3RlYWQgYWRkZWQgYSBjb21tZW50IHNheWluZyB3aHkgY2Fz
-dAo+ICAgICBpcyBzYWZlLgo+Cj4gQ2hhbmdlcyBpbiB2Mwo+ID09PT09PT09PT09PT0KPiAgIC0g
-VXNpbmcgYXBwcm94aW1hdGlvbiBzdWdnZXN0ZWQgYnkgRGF2aWQKPgo+IENoYW5nZXMgaW4gdjIK
-PiA9PT09PT09PT09PT09Cj4gICAtIEZpeGluZyBpdCBpbiB0aGUgY3B1aWRsZSBjb3JlIGNvZGUg
-aW5zdGVhZCBvZiBkcml2ZXIgY29kZS4KPgo+ICAgZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYyB8
-IDExICsrKy0tLS0tLS0tCj4gICBkcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5oIHwgMzggKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysKPiAgIDIgZmlsZXMgY2hhbmdlZCwgNDEg
-aW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nw
-dWlkbGUvY3B1aWRsZS5jIGIvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYwo+IGluZGV4IGE0ZDAw
-NTkuLmY1NWFkMDEgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYwo+ICsr
-KyBiL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMKPiBAQCAtMTc0LDcgKzE3NCw2IEBAIGludCBj
-cHVpZGxlX2VudGVyX3N0YXRlKHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2LCBzdHJ1Y3QgY3B1
-aWRsZV9kcml2ZXIgKmRydiwKPiAgIAlzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSAqdGFyZ2V0X3N0YXRl
-ID0gJmRydi0+c3RhdGVzW2luZGV4XTsKPiAgIAlib29sIGJyb2FkY2FzdCA9ICEhKHRhcmdldF9z
-dGF0ZS0+ZmxhZ3MgJiBDUFVJRExFX0ZMQUdfVElNRVJfU1RPUCk7Cj4gICAJdTY0IHRpbWVfc3Rh
-cnQsIHRpbWVfZW5kOwo+IC0JczY0IGRpZmY7Cj4KPiAgIAkvKgo+ICAgCSAqIFRlbGwgdGhlIHRp
-bWUgZnJhbWV3b3JrIHRvIHN3aXRjaCB0byBhIGJyb2FkY2FzdCB0aW1lciBiZWNhdXNlIG91cgo+
-IEBAIC0yMTgsMTQgKzIxNywxMCBAQCBpbnQgY3B1aWRsZV9lbnRlcl9zdGF0ZShzdHJ1Y3QgY3B1
-aWRsZV9kZXZpY2UgKmRldiwgc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYsCj4gICAJCWxvY2Fs
-X2lycV9lbmFibGUoKTsKPgo+ICAgCS8qCj4gLQkgKiBsb2NhbF9jbG9jaygpIHJldHVybnMgdGhl
-IHRpbWUgaW4gbmFub3NlY29uZCwgbGV0J3Mgc2hpZnQKPiAtCSAqIGJ5IDEwIChkaXZpZGUgYnkg
-MTAyNCkgdG8gaGF2ZSBtaWNyb3NlY29uZCBiYXNlZCB0aW1lLgo+ICsJICogbG9jYWxfY2xvY2so
-KSByZXR1cm5zIHRoZSB0aW1lIGluIG5hbm9zZWNvbmRzLCBjb252ZXJ0IGl0IHRvCj4gKwkgKiBt
-aWNyb3NlY29uZCBiYXNlZCB0aW1lLgo+ICAgCSAqLwo+IC0JZGlmZiA9ICh0aW1lX2VuZCAtIHRp
-bWVfc3RhcnQpID4+IDEwOwo+IC0JaWYgKGRpZmYgPiBJTlRfTUFYKQo+IC0JCWRpZmYgPSBJTlRf
-TUFYOwo+IC0KPiAtCWRldi0+bGFzdF9yZXNpZGVuY3kgPSAoaW50KSBkaWZmOwo+ICsJZGV2LT5s
-YXN0X3Jlc2lkZW5jeSA9IGNvbnZlcnRfbnNlY190b191c2VjKHRpbWVfZW5kIC0gdGltZV9zdGFy
-dCk7Cj4KPiAgIAlpZiAoZW50ZXJlZF9zdGF0ZSA+PSAwKSB7Cj4gICAJCS8qIFVwZGF0ZSBjcHVp
-ZGxlIGNvdW50ZXJzICovCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmgg
-Yi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5oCj4gaW5kZXggZjg3ZjM5OS4uYTAyN2IzNSAxMDA2
-NDQKPiAtLS0gYS9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5oCj4gKysrIGIvZHJpdmVycy9jcHVp
-ZGxlL2NwdWlkbGUuaAo+IEBAIC02OCw0ICs2OCw0MiBAQCBzdGF0aWMgaW5saW5lIHZvaWQgY3B1
-aWRsZV9jb3VwbGVkX3VucmVnaXN0ZXJfZGV2aWNlKHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2
-KQo+ICAgfQo+ICAgI2VuZGlmCj4KPiArLyoKPiArICogVG8gZW5zdXJlIHRoYXQgdGhlcmUgaXMg
-bm8gb3ZlcmZsb3cgd2hpbGUgYXBwcm94aW1hdGlvbgo+ICsgKiBmb3IgZGl2aWRpbmcgdmFsIGJ5
-IDEwMDAsIHdlIG11c3QgcmVzcGVjdCAtCj4gKyAqIHZhbCArICh2YWwgPj4gNSkgPD0gMHhGRkZG
-RkZGRgo+ICsgKiB2YWwgKyB2YWwvMzIgPD0gMHhGRkZGRkZGRgo+ICsgKiB2YWwgPD0gKDB4RkZG
-RkZGRkYgKiAzMikgLyAzMwo+ICsgKiB2YWwgPD0gMHhGODNFMEY4Mgo+ICsgKiBIZW5jZSB0aGUg
-dGhyZXNob2xkIGZvciB2YWwgYmVsb3cgd2hpY2ggd2UgY2FuIHVzZSB0aGUKPiArICogYXBwcm94
-aW1hdGlvbiBpcyAweEY4M0UwRjgyCj4gKyAqLwo+ICsjZGVmaW5lIERJVl9BUFBST1hJTUFUSU9O
-X1RIUkVTSE9MRCAweEY4M0UwRjgyVUwKPiArCj4gKy8qCj4gKyAqIFVzZWQgZm9yIGNhbGN1bGF0
-aW5nIGxhc3RfcmVzaWRlbmN5IGluIHVzZWMuIE9wdGltaXplZCBmb3IgY2FzZQo+ICsgKiB3aGVy
-ZSBsYXN0X3Jlc2lkZW5jeSBpbiBuc2VjcyBpcyA8IERJVl9BUFBST1hJTUFUSU9OX1RIUkVTSE9M
-RAo+ICsgKiBBcHByb3hpbWF0ZWQgdmFsdWUgaGFzIGxlc3MgdGhhbiAxJSBlcnJvci4KPiArICov
-Cj4gK3N0YXRpYyBpbmxpbmUgaW50IGNvbnZlcnRfbnNlY190b191c2VjKHU2NCBuc2VjKQo+ICt7
-Cj4gKwlpZiAobGlrZWx5KG5zZWMgPCBESVZfQVBQUk9YSU1BVElPTl9USFJFU0hPTEQpKSB7Cj4g
-KwkJdTMyIHVzZWMgPSBuc2VjOwo+ICsKPiArCQl1c2VjICs9IHVzZWMgPj4gNTsKPiArCQl1c2Vj
-ID0gdXNlYyA+PiAxMDsKPiArCj4gKwkJLyogQ2FuIHNhZmVseSBjYXN0IHRvIGludCBzaW5jZSB1
-c2VjIGlzIDwgSU5UX01BWCAqLwo+ICsJCXJldHVybiB1c2VjOwo+ICsJfSBlbHNlIHsKPiArCQl1
-NjQgdXNlYyA9IGRpdl91NjQobnNlYywgMTAwMCk7Cj4gKwo+ICsJCWlmICh1c2VjID4gSU5UX01B
-WCkKPiArCQkJdXNlYyA9IElOVF9NQVg7Cj4gKwo+ICsJCS8qIENhbiBzYWZlbHkgY2FzdCB0byBp
-bnQgc2luY2UgdXNlYyBpcyA8IElOVF9NQVggKi8KPiArCQlyZXR1cm4gdXNlYzsKPiArCX0KPiAr
-fQoKCldoYXQgYm90aGVycyBtZSB3aXRoIHRoaXMgZGl2aXNpb24gaXMgdGhlIGJlbmVmaXQgb2Yg
-YWRkaW5nIGFuIGV4dHJhIAp1bHRyYSBvcHRpbWl6ZWQgZGl2aXNpb24gYnkgMTAwMCBpbiBjcHVp
-ZGxlLmggd2hpbGUgd2UgaGF2ZSBhbHJlYWR5IAprdGltZV9kaXZucyB3aGljaCBpcyBvcHRpbWl6
-ZWQgaW4ga3RpbWUuaC4KCldoeSBub3Q6Cgp0cyA9IG5zX3RvX2t0aW1lKGxvY2FsX2Nsb2NrKCkp
-OwoKLi4uCgp0ZSA9IG5zX3RvX2t0aW1lKGxvY2FsX2Nsb2NrKCkpOwoKCmRpZmYgPSBrdGltZV91
-c19kZWx0YSh0ZSwgdHMpOwoKCgoKCi0tIAogIDxodHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5h
-cm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MKCkZvbGxvdyBMaW5h
-cm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8Cjxo
-dHRwOi8vdHdpdHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwKPGh0dHA6Ly93d3cubGlu
-YXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QKTGludXhwcGMtZGV2
-QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4
-cHBjLWRldg==
+On Thu, Jun 30, 2016 at 03:17:20PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Logan Gunthorpe reports that hibernation stopped working reliably for
+> him after commit ab76f7b4ab23 (x86/mm: Set NX on gap between __ex_table
+> and rodata).
+
+...
+
+> +static int relocate_restore_code(void)
+> +{
+> +	pgd_t *pgd;
+> +	pud_t *pud;
+> +
+> +	relocated_restore_code = get_safe_page(GFP_ATOMIC);
+> +	if (!relocated_restore_code)
+> +		return -ENOMEM;
+> +
+> +	memcpy((void *)relocated_restore_code, &core_restore_code, PAGE_SIZE);
+> +
+> +	/* Make the page containing the relocated code executable */
+> +	pgd = (pgd_t *)__va(read_cr3()) + pgd_index(relocated_restore_code);
+> +	pud = pud_offset(pgd, relocated_restore_code);
+> +	if (pud_large(*pud)) {
+> +		set_pud(pud, __pud(pud_val(*pud) & ~_PAGE_NX));
+> +	} else {
+> +		pmd_t *pmd = pmd_offset(pud, relocated_restore_code);
+> +
+> +		if (pmd_large(*pmd)) {
+> +			set_pmd(pmd, __pmd(pmd_val(*pmd) & ~_PAGE_NX));
+> +		} else {
+> +			pte_t *pte = pte_offset_kernel(pmd, relocated_restore_code);
+> +
+> +			set_pte(pte, __pte(pte_val(*pte) & ~_PAGE_NX));
+> +		}
+> +	}
+> +	flush_tlb_all();
+
+I know you want to flush TLBs but this causes the splat below on the
+resume kernel.
+
+Most likely because:
+
+resume_target_kernel() does local_irq_disable() and then
+
+swsusp_arch_resume() -> relocate_restore_code() -> flush_tlb_all()
+
+and smp_call_function_many() doesn't like it when IRQs are disabled.
+
+[    7.613645] Disabling non-boot CPUs ...
+[    7.902408] ------------[ cut here ]------------
+[    7.907106] WARNING: CPU: 0 PID: 1 at kernel/smp.c:416 smp_call_function_many+0xb6/0x260
+[    7.915319] Modules linked in:
+[    7.918501] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.7.0-rc5+ #11
+[    7.924931] Hardware name: To be filled by O.E.M. To be filled by O.E.M./M5A97 EVO R2.0, BIOS 1503 01/16/2013
+[    7.934967]  0000000000000000 ffff88042b957cf8 ffffffff812ac1c3 0000000000000000
+[    7.942664]  0000000000000000 ffff88042b957d38 ffffffff8105435d 000001a02b957d28
+[    7.950369]  0000000000000000 0000000000000000 ffffffff8104d420 0000000000000000
+[    7.958072] Call Trace:
+[    7.960598]  [<ffffffff812ac1c3>] dump_stack+0x67/0x94
+[    7.965815]  [<ffffffff8105435d>] __warn+0xdd/0x100
+[    7.970771]  [<ffffffff8104d420>] ? leave_mm+0xc0/0xc0
+[    7.975981]  [<ffffffff8105444d>] warn_slowpath_null+0x1d/0x20
+[    7.981891]  [<ffffffff810cb526>] smp_call_function_many+0xb6/0x260
+[    7.988236]  [<ffffffff8104d420>] ? leave_mm+0xc0/0xc0
+[    7.993452]  [<ffffffff810cb716>] smp_call_function+0x46/0x80
+[    7.999277]  [<ffffffff8104d420>] ? leave_mm+0xc0/0xc0
+[    8.004494]  [<ffffffff810cb78e>] on_each_cpu+0x3e/0xa0
+[    8.009790]  [<ffffffff81098e00>] ? hibernation_restore+0x130/0x130
+[    8.016135]  [<ffffffff8104debc>] flush_tlb_all+0x1c/0x20
+[    8.021613]  [<ffffffff815bd8d4>] swsusp_arch_resume+0x254/0x2b0
+[    8.027696]  [<ffffffff815bd660>] ? restore_processor_state+0x2f0/0x2f0
+[    8.034387]  [<ffffffff81098d9d>] hibernation_restore+0xcd/0x130
+[    8.040464]  [<ffffffff81112fbd>] software_resume.part.6+0x1f9/0x25b
+[    8.046894]  [<ffffffff81098e26>] software_resume+0x26/0x30
+[    8.052545]  [<ffffffff81000449>] do_one_initcall+0x59/0x190
+[    8.058282]  [<ffffffff81071b3c>] ? parse_args+0x26c/0x3f0
+[    8.063867]  [<ffffffff8168b000>] ? _raw_read_unlock_irqrestore+0x30/0x60
+[    8.070730]  [<ffffffff81cd5002>] kernel_init_freeable+0x118/0x19e
+[    8.076986]  [<ffffffff816851ae>] kernel_init+0xe/0x100
+[    8.082290]  [<ffffffff8168b75f>] ret_from_fork+0x1f/0x40
+[    8.087768]  [<ffffffff816851a0>] ? rest_init+0x90/0x90
+[    8.093073] ---[ end trace 6361ce069253f25c ]---
+
+-- 
+Regards/Gruss,
+    Boris.
+
+ECO tip #101: Trim your mails when you reply.
