@@ -1,86 +1,69 @@
-From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Subject: [PATCH v2 1/2] Documentation: Add sbs-manager device tree node documentation
-Date: Thu, 30 Jun 2016 22:05:41 +0200
-Message-ID: <1467317142-14063-2-git-send-email-karl-heinz@schneider-inet.de>
-References: <1bFnWI-0000MX-9R>
- <1467317142-14063-1-git-send-email-karl-heinz@schneider-inet.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/2] cpufreq: Upstream Android's Interactive governor
+Date: Thu, 30 Jun 2016 13:30:22 -0700
+Message-ID: <20160630203022.GN12473@ubuntu>
+References: <cover.1463723328.git.viresh.kumar@linaro.org>
+ <CAJZ5v0hW1yYD7FhOaK5Hkj7956jtQThzqY=OmCr38q_zDCjmog@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from schneider-inet.de ([85.214.76.205]:35514 "EHLO
-	h1714509.stratoserver.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751854AbcF3UGI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2016 16:06:08 -0400
-In-Reply-To: <1467317142-14063-1-git-send-email-karl-heinz@schneider-inet.de>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:35647 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752061AbcF3Ua7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2016 16:30:59 -0400
+Received: by mail-pa0-f45.google.com with SMTP id hl6so31503127pac.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 13:30:59 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hW1yYD7FhOaK5Hkj7956jtQThzqY=OmCr38q_zDCjmog@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>, Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, mike@android.com, toddpoynor@google.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kandoiruchi@google.com, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-This patch adds device tree documentation for the sbs-manager
+On 20-05-16, 13:26, Rafael J. Wysocki wrote:
+> On Fri, May 20, 2016 at 8:39 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > Hi Rafael et. al.,
+> >
+> > We had some discussions [1] last week on the PM mailing about
+> > upstreaming the cpufreq governor most widely used on Andoid Mobile
+> > phones and tablets: Interactive governor. People (including Rafael)
+> > mostly agreed that we better get it upstreamed and here is an attempt to
+> > upstream most of it (idle notifiers aren't included in this series).
+> >
+> > I picked the latest code spread over 70-80 patches from [2].  The
+> > unmodified code, based over mainline is pushed [4] for reference.
+> >
+> > I have updated the governor to align it with the current practices
+> > followed with mainline governors, like using utilization hooks from the
+> > scheduler and handling kobject (for governor's sysfs directory) in a
+> > race free manner. And of course this included general cleanup of the
+> > governor as well. This version is pushed here [3] for testing.
+> >
+> > The Android version of interactive governor also uses idle EXIT
+> > notifiers, but that code isn't part of this series and will be sent
+> > separately later. For people interested in looking at that, those are 3
+> > minor patches on top of this series and are pushed here [5].
+> >
+> > I haven't changed the core logic of the governor intentionally, as that
+> > rather requires more in-depth knowledge of the use case for which the
+> > optimizations have been done. So, we should do any such thing later on
+> > with new patches, so that people can find things easily.
+> >
+> > I also haven't tried to change the userspace interface as that may have
+> > broken the userspace that already exists and uses this governor.
+> >
+> > This has been lightly tested on my Exynos board (dual ARM A15), where
+> > the governor gets inserted/removed multiple times, the sysfs files are
+> > all functional. The frequency gets changed with load, etc.
+> >
+> > This series is based of pm/bleeding-edge branch + few patches from
+> > Rafael [6] & [7] and few minor cleanups from me [8].
+> 
+> OK, thanks!
+> 
+> This may take some time to review, though.
 
-Reviewed-by: Phil Reid <preid@electromag.com.au>
-Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
----
- .../devicetree/bindings/power/sbs,sbs-manager.txt  | 52 ++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+Ping !!
 
-diff --git a/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
-new file mode 100644
-index 0000000..1d7e5ee
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
-@@ -0,0 +1,52 @@
-+Binding for sbs-manager
-+
-+Required properties:
-+- compatible: should be "lltc,ltc1760" or use "sbs,sbs-manager" as fallback.
-+- reg: integer, i2c address of the device. Should be <0xa>.
-+
-+From OS view the device is basically an i2c-mux used to communicate with up to
-+four smart battery devices at address 0xb. The driver actually implements this
-+behaviour. So standard i2c-mux nodes can be used to register up to four slave
-+batteries. Channels will be numerated as 1, 2, 4 and 8.
-+
-+Example:
-+
-+batman@0a {
-+    compatible = "lltc,ltc1760";
-+    reg = <0x0a>;
-+    #address-cells = <1>;
-+    #size-cells = <0>;
-+
-+    i2c@1 {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        reg = <1>;
-+
-+        battery@0b {
-+            compatible = "ti,bq2060", "sbs,sbs-battery";
-+            reg = <0x0b>;
-+        };
-+    };
-+
-+    i2c@2 {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        reg = <2>;
-+
-+        battery@0b {
-+            compatible = "ti,bq2060", "sbs,sbs-battery";
-+            reg = <0x0b>;
-+        };
-+    };
-+
-+    i2c@4 {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        reg = <4>;
-+
-+        battery@0b {
-+            compatible = "ti,bq2060", "sbs,sbs-battery";
-+            reg = <0x0b>;
-+        };
-+    };
-+};
---
-1.9.1
+-- 
+viresh
