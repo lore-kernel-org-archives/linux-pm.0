@@ -1,86 +1,117 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle: Fix last_residency division
-Date: Thu, 30 Jun 2016 20:06:18 +0530
-Message-ID: <57752E62.5030909@linux.vnet.ibm.com>
-References: <1467296844-2055-1-git-send-email-shreyas@linux.vnet.ibm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v4] cpuidle: Fix last_residency division
+Date: Thu, 30 Jun 2016 16:57:34 +0200
+Message-ID: <5775335E.2040003@linaro.org>
+References: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:19110 "EHLO
-	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752141AbcF3Ogd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2016 10:36:33 -0400
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5UEYaL9128304
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 10:36:32 -0400
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
-	by mx0b-001b2d01.pphosted.com with ESMTP id 23v09909qd-1
-	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 10:36:32 -0400
-Received: from localhost
-	by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Fri, 1 Jul 2016 00:36:29 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
-	by d23dlp01.au.ibm.com (Postfix) with ESMTP id AC3F32CE8046
-	for <linux-pm@vger.kernel.org>; Fri,  1 Jul 2016 00:36:25 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
-	by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u5UEaMJw63570126
-	for <linux-pm@vger.kernel.org>; Fri, 1 Jul 2016 00:36:25 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
-	by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u5UEaLs7006869
-	for <linux-pm@vger.kernel.org>; Fri, 1 Jul 2016 00:36:22 +1000
-In-Reply-To: <1467296844-2055-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net
+Cc: nicolas.pitre@linaro.org, arnd@arndb.de, linux-pm@vger.kernel.org, David.Laight@ACULAB.COM, anton@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au, bsingharora@gmail.com, David.Laight@ACULAB.COM, arnd@arndb.de, nicolas.pitre@linaro.org
 
-Please ignore this mail. I have resent this post using the correct
-version number. Sorry for the noise.
-
-
-On 06/30/2016 07:57 PM, Shreyas B. Prabhu wrote:
-> Snooze is a poll idle state in powernv and pseries platforms. Snooze
-> has a timeout so that if a cpu stays in snooze for more than target
-> residency of the next available idle state, then it would exit thereby
-> giving chance to the cpuidle governor to re-evaluate and
-> promote the cpu to a deeper idle state. Therefore whenever snooze exits
-> due to this timeout, its last_residency will be target_residency of next
-> deeper state.
-> 
-> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
-> changed the math around last_residency calculation. Specifically, while
-> converting last_residency value from nanoseconds to microseconds it does
-> right shift by 10. Due to this, in snooze timeout exit scenarios
-> last_residency calculated is roughly 2.3% less than target_residency of
-> next available state. This pattern is picked up get_typical_interval()
-> in the menu governor and therefore expected_interval in menu_select() is
-> frequently less than the target_residency of any state but snooze.
-> 
-> Due to this we are entering snooze at a higher rate, thereby affecting
-> the single thread performance.
-> 
-> Fix this by using a better approximation for division by 1000.
-> 
-> Reported-by: Anton Blanchard <anton@samba.org>
-> Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Suggested-by David Laight <david.laight@aculab.com>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> ---
-> Changes in v4
-> =============
->  - Increasing the threshold upto which approximation can be used.
->  - Removed explicit cast. Instead added a comment saying why cast
->    is safe.
-> 
-> Changes in v3
-> =============
->  - Using approximation suggested by David
-> 
-> Changes in v2
-> =============
->  - Fixing it in the cpuidle core code instead of driver code.
-> 
-
+T24gMDYvMzAvMjAxNiAwNDozNCBQTSwgU2hyZXlhcyBCLiBQcmFiaHUgd3JvdGU6Cj4gU25vb3pl
+IGlzIGEgcG9sbCBpZGxlIHN0YXRlIGluIHBvd2VybnYgYW5kIHBzZXJpZXMgcGxhdGZvcm1zLiBT
+bm9vemUKPiBoYXMgYSB0aW1lb3V0IHNvIHRoYXQgaWYgYSBjcHUgc3RheXMgaW4gc25vb3plIGZv
+ciBtb3JlIHRoYW4gdGFyZ2V0Cj4gcmVzaWRlbmN5IG9mIHRoZSBuZXh0IGF2YWlsYWJsZSBpZGxl
+IHN0YXRlLCB0aGVuIGl0IHdvdWxkIGV4aXQgdGhlcmVieQo+IGdpdmluZyBjaGFuY2UgdG8gdGhl
+IGNwdWlkbGUgZ292ZXJub3IgdG8gcmUtZXZhbHVhdGUgYW5kCj4gcHJvbW90ZSB0aGUgY3B1IHRv
+IGEgZGVlcGVyIGlkbGUgc3RhdGUuIFRoZXJlZm9yZSB3aGVuZXZlciBzbm9vemUgZXhpdHMKPiBk
+dWUgdG8gdGhpcyB0aW1lb3V0LCBpdHMgbGFzdF9yZXNpZGVuY3kgd2lsbCBiZSB0YXJnZXRfcmVz
+aWRlbmN5IG9mIG5leHQKPiBkZWVwZXIgc3RhdGUuCj4KPiBjb21taXQgZTkzZTU5Y2U1Yjg1ICgi
+Y3B1aWRsZTogUmVwbGFjZSBrdGltZV9nZXQoKSB3aXRoIGxvY2FsX2Nsb2NrKCkiKQo+IGNoYW5n
+ZWQgdGhlIG1hdGggYXJvdW5kIGxhc3RfcmVzaWRlbmN5IGNhbGN1bGF0aW9uLiBTcGVjaWZpY2Fs
+bHksIHdoaWxlCj4gY29udmVydGluZyBsYXN0X3Jlc2lkZW5jeSB2YWx1ZSBmcm9tIG5hbm9zZWNv
+bmRzIHRvIG1pY3Jvc2Vjb25kcyBpdCBkb2VzCj4gcmlnaHQgc2hpZnQgYnkgMTAuIER1ZSB0byB0
+aGlzLCBpbiBzbm9vemUgdGltZW91dCBleGl0IHNjZW5hcmlvcwo+IGxhc3RfcmVzaWRlbmN5IGNh
+bGN1bGF0ZWQgaXMgcm91Z2hseSAyLjMlIGxlc3MgdGhhbiB0YXJnZXRfcmVzaWRlbmN5IG9mCj4g
+bmV4dCBhdmFpbGFibGUgc3RhdGUuIFRoaXMgcGF0dGVybiBpcyBwaWNrZWQgdXAgZ2V0X3R5cGlj
+YWxfaW50ZXJ2YWwoKQo+IGluIHRoZSBtZW51IGdvdmVybm9yIGFuZCB0aGVyZWZvcmUgZXhwZWN0
+ZWRfaW50ZXJ2YWwgaW4gbWVudV9zZWxlY3QoKSBpcwo+IGZyZXF1ZW50bHkgbGVzcyB0aGFuIHRo
+ZSB0YXJnZXRfcmVzaWRlbmN5IG9mIGFueSBzdGF0ZSBidXQgc25vb3plLgo+Cj4gRHVlIHRvIHRo
+aXMgd2UgYXJlIGVudGVyaW5nIHNub296ZSBhdCBhIGhpZ2hlciByYXRlLCB0aGVyZWJ5IGFmZmVj
+dGluZwo+IHRoZSBzaW5nbGUgdGhyZWFkIHBlcmZvcm1hbmNlLgo+Cj4gRml4IHRoaXMgYnkgdXNp
+bmcgYSBiZXR0ZXIgYXBwcm94aW1hdGlvbiBmb3IgZGl2aXNpb24gYnkgMTAwMC4KPgo+IFJlcG9y
+dGVkLWJ5OiBBbnRvbiBCbGFuY2hhcmQgPGFudG9uQHNhbWJhLm9yZz4KPiBCaXNlY3RlZC1ieTog
+U2hpbHBhc3JpIEcgQmhhdCA8c2hpbHBhLmJoYXRAbGludXgudm5ldC5pYm0uY29tPgo+IFN1Z2dl
+c3RlZC1ieSBEYXZpZCBMYWlnaHQgPGRhdmlkLmxhaWdodEBhY3VsYWIuY29tPgo+IFNpZ25lZC1v
+ZmYtYnk6IFNocmV5YXMgQi4gUHJhYmh1IDxzaHJleWFzQGxpbnV4LnZuZXQuaWJtLmNvbT4KPiAt
+LS0KPiBDaGFuZ2VzIGluIHY0Cj4gPT09PT09PT09PT09PQo+ICAgLSBJbmNyZWFzaW5nIHRoZSB0
+aHJlc2hvbGQgdXB0byB3aGljaCBhcHByb3hpbWF0aW9uIGNhbiBiZSB1c2VkLgo+ICAgLSBSZW1v
+dmVkIGV4cGxpY2l0IGNhc3QuIEluc3RlYWQgYWRkZWQgYSBjb21tZW50IHNheWluZyB3aHkgY2Fz
+dAo+ICAgICBpcyBzYWZlLgo+Cj4gQ2hhbmdlcyBpbiB2Mwo+ID09PT09PT09PT09PT0KPiAgIC0g
+VXNpbmcgYXBwcm94aW1hdGlvbiBzdWdnZXN0ZWQgYnkgRGF2aWQKPgo+IENoYW5nZXMgaW4gdjIK
+PiA9PT09PT09PT09PT09Cj4gICAtIEZpeGluZyBpdCBpbiB0aGUgY3B1aWRsZSBjb3JlIGNvZGUg
+aW5zdGVhZCBvZiBkcml2ZXIgY29kZS4KPgo+ICAgZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYyB8
+IDExICsrKy0tLS0tLS0tCj4gICBkcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5oIHwgMzggKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysKPiAgIDIgZmlsZXMgY2hhbmdlZCwgNDEg
+aW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkKPgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Nw
+dWlkbGUvY3B1aWRsZS5jIGIvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYwo+IGluZGV4IGE0ZDAw
+NTkuLmY1NWFkMDEgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9jcHVpZGxlL2NwdWlkbGUuYwo+ICsr
+KyBiL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmMKPiBAQCAtMTc0LDcgKzE3NCw2IEBAIGludCBj
+cHVpZGxlX2VudGVyX3N0YXRlKHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2LCBzdHJ1Y3QgY3B1
+aWRsZV9kcml2ZXIgKmRydiwKPiAgIAlzdHJ1Y3QgY3B1aWRsZV9zdGF0ZSAqdGFyZ2V0X3N0YXRl
+ID0gJmRydi0+c3RhdGVzW2luZGV4XTsKPiAgIAlib29sIGJyb2FkY2FzdCA9ICEhKHRhcmdldF9z
+dGF0ZS0+ZmxhZ3MgJiBDUFVJRExFX0ZMQUdfVElNRVJfU1RPUCk7Cj4gICAJdTY0IHRpbWVfc3Rh
+cnQsIHRpbWVfZW5kOwo+IC0JczY0IGRpZmY7Cj4KPiAgIAkvKgo+ICAgCSAqIFRlbGwgdGhlIHRp
+bWUgZnJhbWV3b3JrIHRvIHN3aXRjaCB0byBhIGJyb2FkY2FzdCB0aW1lciBiZWNhdXNlIG91cgo+
+IEBAIC0yMTgsMTQgKzIxNywxMCBAQCBpbnQgY3B1aWRsZV9lbnRlcl9zdGF0ZShzdHJ1Y3QgY3B1
+aWRsZV9kZXZpY2UgKmRldiwgc3RydWN0IGNwdWlkbGVfZHJpdmVyICpkcnYsCj4gICAJCWxvY2Fs
+X2lycV9lbmFibGUoKTsKPgo+ICAgCS8qCj4gLQkgKiBsb2NhbF9jbG9jaygpIHJldHVybnMgdGhl
+IHRpbWUgaW4gbmFub3NlY29uZCwgbGV0J3Mgc2hpZnQKPiAtCSAqIGJ5IDEwIChkaXZpZGUgYnkg
+MTAyNCkgdG8gaGF2ZSBtaWNyb3NlY29uZCBiYXNlZCB0aW1lLgo+ICsJICogbG9jYWxfY2xvY2so
+KSByZXR1cm5zIHRoZSB0aW1lIGluIG5hbm9zZWNvbmRzLCBjb252ZXJ0IGl0IHRvCj4gKwkgKiBt
+aWNyb3NlY29uZCBiYXNlZCB0aW1lLgo+ICAgCSAqLwo+IC0JZGlmZiA9ICh0aW1lX2VuZCAtIHRp
+bWVfc3RhcnQpID4+IDEwOwo+IC0JaWYgKGRpZmYgPiBJTlRfTUFYKQo+IC0JCWRpZmYgPSBJTlRf
+TUFYOwo+IC0KPiAtCWRldi0+bGFzdF9yZXNpZGVuY3kgPSAoaW50KSBkaWZmOwo+ICsJZGV2LT5s
+YXN0X3Jlc2lkZW5jeSA9IGNvbnZlcnRfbnNlY190b191c2VjKHRpbWVfZW5kIC0gdGltZV9zdGFy
+dCk7Cj4KPiAgIAlpZiAoZW50ZXJlZF9zdGF0ZSA+PSAwKSB7Cj4gICAJCS8qIFVwZGF0ZSBjcHVp
+ZGxlIGNvdW50ZXJzICovCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY3B1aWRsZS9jcHVpZGxlLmgg
+Yi9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5oCj4gaW5kZXggZjg3ZjM5OS4uYTAyN2IzNSAxMDA2
+NDQKPiAtLS0gYS9kcml2ZXJzL2NwdWlkbGUvY3B1aWRsZS5oCj4gKysrIGIvZHJpdmVycy9jcHVp
+ZGxlL2NwdWlkbGUuaAo+IEBAIC02OCw0ICs2OCw0MiBAQCBzdGF0aWMgaW5saW5lIHZvaWQgY3B1
+aWRsZV9jb3VwbGVkX3VucmVnaXN0ZXJfZGV2aWNlKHN0cnVjdCBjcHVpZGxlX2RldmljZSAqZGV2
+KQo+ICAgfQo+ICAgI2VuZGlmCj4KPiArLyoKPiArICogVG8gZW5zdXJlIHRoYXQgdGhlcmUgaXMg
+bm8gb3ZlcmZsb3cgd2hpbGUgYXBwcm94aW1hdGlvbgo+ICsgKiBmb3IgZGl2aWRpbmcgdmFsIGJ5
+IDEwMDAsIHdlIG11c3QgcmVzcGVjdCAtCj4gKyAqIHZhbCArICh2YWwgPj4gNSkgPD0gMHhGRkZG
+RkZGRgo+ICsgKiB2YWwgKyB2YWwvMzIgPD0gMHhGRkZGRkZGRgo+ICsgKiB2YWwgPD0gKDB4RkZG
+RkZGRkYgKiAzMikgLyAzMwo+ICsgKiB2YWwgPD0gMHhGODNFMEY4Mgo+ICsgKiBIZW5jZSB0aGUg
+dGhyZXNob2xkIGZvciB2YWwgYmVsb3cgd2hpY2ggd2UgY2FuIHVzZSB0aGUKPiArICogYXBwcm94
+aW1hdGlvbiBpcyAweEY4M0UwRjgyCj4gKyAqLwo+ICsjZGVmaW5lIERJVl9BUFBST1hJTUFUSU9O
+X1RIUkVTSE9MRCAweEY4M0UwRjgyVUwKPiArCj4gKy8qCj4gKyAqIFVzZWQgZm9yIGNhbGN1bGF0
+aW5nIGxhc3RfcmVzaWRlbmN5IGluIHVzZWMuIE9wdGltaXplZCBmb3IgY2FzZQo+ICsgKiB3aGVy
+ZSBsYXN0X3Jlc2lkZW5jeSBpbiBuc2VjcyBpcyA8IERJVl9BUFBST1hJTUFUSU9OX1RIUkVTSE9M
+RAo+ICsgKiBBcHByb3hpbWF0ZWQgdmFsdWUgaGFzIGxlc3MgdGhhbiAxJSBlcnJvci4KPiArICov
+Cj4gK3N0YXRpYyBpbmxpbmUgaW50IGNvbnZlcnRfbnNlY190b191c2VjKHU2NCBuc2VjKQo+ICt7
+Cj4gKwlpZiAobGlrZWx5KG5zZWMgPCBESVZfQVBQUk9YSU1BVElPTl9USFJFU0hPTEQpKSB7Cj4g
+KwkJdTMyIHVzZWMgPSBuc2VjOwo+ICsKPiArCQl1c2VjICs9IHVzZWMgPj4gNTsKPiArCQl1c2Vj
+ID0gdXNlYyA+PiAxMDsKPiArCj4gKwkJLyogQ2FuIHNhZmVseSBjYXN0IHRvIGludCBzaW5jZSB1
+c2VjIGlzIDwgSU5UX01BWCAqLwo+ICsJCXJldHVybiB1c2VjOwo+ICsJfSBlbHNlIHsKPiArCQl1
+NjQgdXNlYyA9IGRpdl91NjQobnNlYywgMTAwMCk7Cj4gKwo+ICsJCWlmICh1c2VjID4gSU5UX01B
+WCkKPiArCQkJdXNlYyA9IElOVF9NQVg7Cj4gKwo+ICsJCS8qIENhbiBzYWZlbHkgY2FzdCB0byBp
+bnQgc2luY2UgdXNlYyBpcyA8IElOVF9NQVggKi8KPiArCQlyZXR1cm4gdXNlYzsKPiArCX0KPiAr
+fQoKCldoYXQgYm90aGVycyBtZSB3aXRoIHRoaXMgZGl2aXNpb24gaXMgdGhlIGJlbmVmaXQgb2Yg
+YWRkaW5nIGFuIGV4dHJhIAp1bHRyYSBvcHRpbWl6ZWQgZGl2aXNpb24gYnkgMTAwMCBpbiBjcHVp
+ZGxlLmggd2hpbGUgd2UgaGF2ZSBhbHJlYWR5IAprdGltZV9kaXZucyB3aGljaCBpcyBvcHRpbWl6
+ZWQgaW4ga3RpbWUuaC4KCldoeSBub3Q6Cgp0cyA9IG5zX3RvX2t0aW1lKGxvY2FsX2Nsb2NrKCkp
+OwoKLi4uCgp0ZSA9IG5zX3RvX2t0aW1lKGxvY2FsX2Nsb2NrKCkpOwoKCmRpZmYgPSBrdGltZV91
+c19kZWx0YSh0ZSwgdHMpOwoKCgoKCi0tIAogIDxodHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5h
+cm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MKCkZvbGxvdyBMaW5h
+cm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5jb20vcGFnZXMvTGluYXJvPiBGYWNlYm9vayB8Cjxo
+dHRwOi8vdHdpdHRlci5jb20vIyEvbGluYXJvb3JnPiBUd2l0dGVyIHwKPGh0dHA6Ly93d3cubGlu
+YXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QKTGludXhwcGMtZGV2
+QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4
+cHBjLWRldg==
