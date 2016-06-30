@@ -1,184 +1,98 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v14 1/4] usb: gadget: Introduce the usb charger framework
-Date: Thu, 30 Jun 2016 19:01:06 +0800
-Message-ID: <CAMz4kuKk6H1wdMEH4qNt+4-Q+KSq_ScYkZPMLfVCrPzK6Fprtw@mail.gmail.com>
-References: <cover.1467264233.git.baolin.wang@linaro.org> <374f15d1aa524a1550ebf757d3e14adba5680c5d.1467264233.git.baolin.wang@linaro.org>
- <87y45nezov.fsf@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v3] x86/power/64: Fix kernel text mapping corruption
+ during image restoration
+Date: Thu, 30 Jun 2016 13:27:16 +0200
+Message-ID: <CAJZ5v0j+w4tBiFL16Dz_T1Jokj3pYubt2z0DP-eB2sFA5W3-rg@mail.gmail.com>
+References: <20160617105435.GB15997@pd.tnic> <CAGXu5jK4w+2WOEeNqv2CU5wqTY3oDY3pWPgJkM7Lp2AmEZuj2g@mail.gmail.com>
+ <65d98ad4-124b-64e4-84e5-877af71a1d44@deltatee.com> <2398306.qXx6AZtdS5@vostro.rjw.lan>
+ <20160630094505.GA17833@pd.tnic>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87y45nezov.fsf@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:33764 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbcF3L1T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2016 07:27:19 -0400
+In-Reply-To: <20160630094505.GA17833@pd.tnic>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Logan Gunthorpe <logang@deltatee.com>, Kees Cook <keescook@chromium.org>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
 
-Hi Felipe,
-
-On 30 June 2016 at 18:30, Felipe Balbi <balbi@kernel.org> wrote:
+On Thu, Jun 30, 2016 at 11:45 AM, Borislav Petkov <bp@alien8.de> wrote:
+> On Thu, Jun 30, 2016 at 04:20:43AM +0200, Rafael J. Wysocki wrote:
+>> That's not what Boris was seeing at least.
 >
-> Hi,
+> Well, I had it a couple of times during testing patches. This is all
+> from the logs:
 >
-> Baolin Wang <baolin.wang@linaro.org> writes:
->> +static ssize_t charger_state_show(struct device *dev,
->> +                               struct device_attribute *attr,
->> +                               char *buf)
->> +{
->> +     struct usb_charger *uchger = dev_to_uchger(dev);
->> +     int cnt;
->> +
->> +     switch (uchger->state) {
->> +     case USB_CHARGER_PRESENT:
->> +             cnt = sprintf(buf, "%s\n", "PRESENT");
->> +             break;
->> +     case USB_CHARGER_REMOVE:
->> +             cnt = sprintf(buf, "%s\n", "REMOVE");
->> +             break;
->> +     default:
->> +             cnt = sprintf(buf, "%s\n", "UNKNOWN");
->> +             break;
->
-> are these the only states we need? Don't we need at least "CHARGING" and
-> "ERROR" or something like that? Maybe those are exposed elsewhere,
-> dunno.
+> [   65.121109] PM: Basic memory bitmaps freed
+> [   65.125991] Restarting tasks ...
+> [   65.129342] kernel tried to execute NX-protected page - exploit attempt? (uid: 0)
+> [   65.129585] done.
+> [   65.141314] BUG: unable to handle kernel paging request at ffff88042b957e40
 
-Present state means we are charging. For charging error, I think it
-can be exposed in power driver, which is more proper. Until now I only
-see PRESENT and REMOVE state are useful.
+I mean the failure mode, not the particular exception type. :-)
 
->
->> +static int __usb_charger_set_cur_limit_by_type(struct usb_charger *uchger,
->> +                                            enum usb_charger_type type,
->> +                                            unsigned int cur_limit)
->> +{
->> +     if (WARN(!uchger, "charger can not be NULL"))
->> +             return -EINVAL;
->
-> IIRC, I mentioned that this should assume charger to be a valid
-> pointer. Look at this, for a second:
->
-> You check that you have a valid pointer here...
+You always saw it in a user space task after kernel resume:
 
-Okay. I will remove this.
+> [   65.141340] Call Trace:
+> [   65.141344]  [<ffffffff81181e1e>] ? getname_flags+0x5e/0x1b0
+> [   65.141346]  [<ffffffff811782bf>] ? cp_new_stat+0x10f/0x120
+> [   65.141348]  [<ffffffff810bb33a>] ? ktime_get_ts64+0x4a/0xf0
+> [   65.141353]  [<ffffffff81185fc7>] ? poll_select_copy_remaining+0xe7/0x130
+> [   65.141355]  [<ffffffff8100263a>] exit_to_usermode_loop+0x8a/0xb0
+> [   65.141356]  [<ffffffff81002a6b>] syscall_return_slowpath+0x5b/0x70
+> [   65.141358]  [<ffffffff81688e72>] entry_SYSCALL_64_fastpath+0xa5/0xa7
 
->
->> +int usb_charger_set_cur_limit_by_type(struct usb_charger *uchger,
->> +                                   enum usb_charger_type type,
->> +                                   unsigned int cur_limit)
->> +{
->> +     int ret;
->> +
->> +     if (WARN(!uchger, "charger can not be NULL"))
->> +             return -EINVAL;
->
-> ... and here, before calling the other function. This is the only place
-> which should check for valid uchger.
+[cut]
 
-Okay.
+> [  381.850792] Call Trace:
+> [  381.850795]  [<ffffffff8117f8ae>] ? getname_flags+0x5e/0x1b0
+> [  381.850797]  [<ffffffff81175d5f>] ? cp_new_stat+0x10f/0x120
+> [  381.850799]  [<ffffffff810b9eca>] ? ktime_get_ts64+0x4a/0xf0
+> [  381.850800]  [<ffffffff81183a57>] ? poll_select_copy_remaining+0xe7/0x130
+> [  381.850802]  [<ffffffff8100263a>] exit_to_usermode_loop+0x8a/0xb0
+> [  381.850804]  [<ffffffff81002a6b>] syscall_return_slowpath+0x5b/0x70
+> [  381.850806]  [<ffffffff81688272>] entry_SYSCALL_64_fastpath+0xa5/0xa7
 
->
->> +     mutex_lock(&uchger->lock);
->> +     ret = __usb_charger_set_cur_limit_by_type(uchger, type, cur_limit);
->> +     mutex_unlock(&uchger->lock);
->> +
->> +     return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(usb_charger_set_cur_limit_by_type);
->> +
->> +/*
->> + * usb_charger_set_cur_limit() - Set the current limitation.
->> + * @uchger - the usb charger instance.
->> + * @cur_limit_set - the current limitation.
->> + */
->> +int usb_charger_set_cur_limit(struct usb_charger *uchger,
->> +                           struct usb_charger_cur_limit *cur_limit_set)
->> +{
->> +     if (WARN(!uchger || !cur_limit_set, "charger or setting can't be NULL"))
->> +             return -EINVAL;
->
-> I can see a pattern here. Not *all* errors need a splat. Sometimes a
-> simple pr_err() or dev_err() (when you have a valid dev pointer) are
-> enough.
+[cut]
 
-Make sense.
+> [   49.022675] Call Trace:
+> [   49.022680]  [<ffffffff8117f8ae>] ? getname_flags+0x5e/0x1b0
+> [   49.022683]  [<ffffffff81175d5f>] ? cp_new_stat+0x10f/0x120
+> [   49.022686]  [<ffffffff810b9eca>] ? ktime_get_ts64+0x4a/0xf0
+> [   49.022689]  [<ffffffff81183a57>] ? poll_select_copy_remaining+0xe7/0x130
+> [   49.022692]  [<ffffffff8100263a>] exit_to_usermode_loop+0x8a/0xb0
+> [   49.022695]  [<ffffffff81002a6b>] syscall_return_slowpath+0x5b/0x70
+> [   49.022698]  [<ffffffff81688272>] entry_SYSCALL_64_fastpath+0xa5/0xa7
 
->
->> diff --git a/include/linux/usb/charger.h b/include/linux/usb/charger.h
->> new file mode 100644
->> index 0000000..d2e745e
->> --- /dev/null
->> +++ b/include/linux/usb/charger.h
->> @@ -0,0 +1,164 @@
->> +#ifndef __LINUX_USB_CHARGER_H__
->> +#define __LINUX_USB_CHARGER_H__
->> +
->> +#include <uapi/linux/usb/ch9.h>
->> +#include <uapi/linux/usb/charger.h>
->> +
->> +#define CHARGER_NAME_MAX 30
->> +
->> +/* Current limitation by charger type */
->> +struct usb_charger_cur_limit {
->> +     unsigned int sdp_cur_limit;
->> +     unsigned int dcp_cur_limit;
->> +     unsigned int cdp_cur_limit;
->> +     unsigned int aca_cur_limit;
->> +};
->> +
->> +struct usb_charger_nb {
->> +     struct notifier_block   nb;
->> +     struct usb_charger      *uchger;
->> +};
->> +
->
-> please add KernelDoc here. And mention the fields which aren't supposed
-> to be accessed directly but should rely on the accessor functions. At
-> least type and state prefer to be accessed by their respective
-> getter/setter methods.
+[cut]
 
-Will add kernel doc for struct usb_charger. Thanks for your comments.
+> [   39.636905] Call Trace:
+> [   39.636908]  [<ffffffff8117f8be>] ? getname_flags+0x5e/0x1b0
+> [   39.636910]  [<ffffffff81175d6f>] ? cp_new_stat+0x10f/0x120
+> [   39.636912]  [<ffffffff810b9eaa>] ? ktime_get_ts64+0x4a/0xf0
+> [   39.636917]  [<ffffffff81183a67>] ? poll_select_copy_remaining+0xe7/0x130
+> [   39.636919]  [<ffffffff8100263a>] exit_to_usermode_loop+0x8a/0xb0
+> [   39.636921]  [<ffffffff81002a6b>] syscall_return_slowpath+0x5b/0x70
+> [   39.636922]  [<ffffffff81688272>] entry_SYSCALL_64_fastpath+0xa5/0xa7
 
->
->> +struct usb_charger {
->> +     char                    name[CHARGER_NAME_MAX];
->> +     struct list_head        list;
->> +     struct raw_notifier_head        uchger_nh;
->> +     /* protect the notifier head and charger */
->> +     struct mutex            lock;
->> +     int                     id;
->> +     enum usb_charger_type   type;
->> +     enum usb_charger_state  state;
->> +
->> +     /* for supporting extcon usb gpio */
->> +     struct extcon_dev       *extcon_dev;
->> +     struct usb_charger_nb   extcon_nb;
->> +
->> +     /* for supporting usb gadget */
->> +     struct usb_gadget       *gadget;
->> +     enum usb_device_state   old_gadget_state;
->> +
->> +     /* for supporting power supply */
->> +     struct power_supply     *psy;
->> +
->> +     /* user can get charger type by implementing this callback */
->> +     enum usb_charger_type   (*get_charger_type)(struct usb_charger *);
->> +     /*
->> +      * charger detection method can be implemented if you need to
->> +      * manually detect the charger type.
->> +      */
->> +     enum usb_charger_type   (*charger_detect)(struct usb_charger *);
->> +
->> +     /* current limitation */
->> +     struct usb_charger_cur_limit    cur_limit;
->> +     /* to check if it is needed to change the SDP charger default current */
->> +     unsigned int            sdp_default_cur_change;
->> +};
->
-> --
-> balbi
+which is a clear indication of image corruption during restore.
 
+In the Logan's case this happens in swsusp_arch_resume() proper and
+the address in RIP is relative to the identity mapping, so the only
+place it can happen is the jump to relocated_restore_code.  That's
+because before that jump the addresses in RIP are relative to the
+kernel text mapping and after it we immediately switch over to the
+temporary page tables which are all executable.  So that is the only
+place AFAICS.
 
+Also in your case the failure was 100% reproducible, while in the
+Logan's case it has happened once so far (so generally it happens once
+in a blue moon).
 
--- 
-Baolin.wang
-Best Regards
+In summary, I'm sure that this is a different issue.
+
+Thanks,
+Rafael
