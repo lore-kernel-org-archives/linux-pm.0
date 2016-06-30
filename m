@@ -1,68 +1,67 @@
-From: Yuantian Tang <yuantian.tang@nxp.com>
-Subject: RE: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
- parent clocks
-Date: Thu, 30 Jun 2016 03:01:50 +0000
-Message-ID: <DBXPR04MB4951CA4EFB4FB5A2BDE7542F0240@DBXPR04MB495.eurprd04.prod.outlook.com>
-References: <1466058085-19353-1-git-send-email-oss@buserror.net>
- <2091721.Cm4CVR1ptK@vostro.rjw.lan>
- <DBXPR04MB4958B5147DAA4F05BED4884F0240@DBXPR04MB495.eurprd04.prod.outlook.com>
- <2040199.AxgevOCPID@vostro.rjw.lan>
+From: Roger Lu <roger.lu@mediatek.com>
+Subject: [PATCH] PM / suspend: show workqueue state in suspend flow
+Date: Thu, 30 Jun 2016 11:17:46 +0800
+Message-ID: <1467256666-27808-1-git-send-email-roger.lu@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db3on0066.outbound.protection.outlook.com ([157.55.234.66]:51072
-	"EHLO emea01-db3-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751601AbcF3DDt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 29 Jun 2016 23:03:49 -0400
-In-Reply-To: <2040199.AxgevOCPID@vostro.rjw.lan>
-Content-Language: en-US
+Received: from mailgw02.mediatek.com ([210.61.82.184]:32955 "EHLO
+	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751550AbcF3DUV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jun 2016 23:20:21 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Scott Wood <oss@buserror.net>, Russell King <linux@armlinux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Yang-Leo Li <leoyang.li@nxp.com>, Xiaofeng Ren <xiaofeng.ren@nxp.com>, Scott Wood <scottwood@freescale.com>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>
+Cc: srv_heupstream@mediatek.com, linux-mediatek@lists.infradead.org, Sascha Hauer <kernel@pengutronix.de>, Lai Jiangshan <jiangshanlai@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Roger Lu <roger.lu@mediatek.com>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBb
-bWFpbHRvOnJqd0Byand5c29ja2kubmV0XQ0KPiBTZW50OiBUaHVyc2RheSwgSnVuZSAzMCwgMjAx
-NiAxMDoyNCBBTQ0KPiBUbzogWXVhbnRpYW4gVGFuZyA8eXVhbnRpYW4udGFuZ0BueHAuY29tPg0K
-PiBDYzogU2NvdHQgV29vZCA8b3NzQGJ1c2Vycm9yLm5ldD47IFJ1c3NlbGwgS2luZyA8bGludXhA
-YXJtbGludXgub3JnLnVrPjsNCj4gTWljaGFlbCBUdXJxdWV0dGUgPG10dXJxdWV0dGVAYmF5bGli
-cmUuY29tPjsgU3RlcGhlbiBCb3lkDQo+IDxzYm95ZEBjb2RlYXVyb3JhLm9yZz47IFZpcmVzaCBL
-dW1hciA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+OyBsaW51eC0NCj4gY2xrQHZnZXIua2VybmVs
-Lm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96
-bGFicy5vcmc7IFlhbmctTGVvIExpIDxsZW95YW5nLmxpQG54cC5jb20+OyBYaWFvZmVuZyBSZW4N
-Cj4gPHhpYW9mZW5nLnJlbkBueHAuY29tPjsgU2NvdHQgV29vZCA8c2NvdHR3b29kQGZyZWVzY2Fs
-ZS5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjMgMS8yXSBjbGs6IEFkZCBjb25zdW1lciBB
-UElzIGZvciBkaXNjb3ZlcmluZyBwb3NzaWJsZQ0KPiBwYXJlbnQgY2xvY2tzDQo+IA0KPiBPbiBU
-aHVyc2RheSwgSnVuZSAzMCwgMjAxNiAwMTo0NzowOSBBTSBZdWFudGlhbiBUYW5nIHdyb3RlOg0K
-PiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFJhZmFlbCBKLiBX
-eXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+ID4gPiBTZW50OiBUaHVyc2RheSwg
-SnVuZSAzMCwgMjAxNiA5OjQ3IEFNDQo+ID4gPiBUbzogWXVhbnRpYW4gVGFuZyA8eXVhbnRpYW4u
-dGFuZ0BueHAuY29tPg0KPiA+ID4gQ2M6IFNjb3R0IFdvb2QgPG9zc0BidXNlcnJvci5uZXQ+OyBS
-dXNzZWxsIEtpbmcNCj4gPiA+IDxsaW51eEBhcm1saW51eC5vcmcudWs+OyBNaWNoYWVsIFR1cnF1
-ZXR0ZQ0KPiA+ID4gPG10dXJxdWV0dGVAYmF5bGlicmUuY29tPjsgU3RlcGhlbiBCb3lkIDxzYm95
-ZEBjb2RlYXVyb3JhLm9yZz47DQo+ID4gPiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5h
-cm8ub3JnPjsgbGludXgtIGNsa0B2Z2VyLmtlcm5lbC5vcmc7DQo+ID4gPiBsaW51eC1wbUB2Z2Vy
-Lmtlcm5lbC5vcmc7IGxpbnV4cHBjLSBkZXZAbGlzdHMub3psYWJzLm9yZzsgWWFuZy1MZW8NCj4g
-PiA+IExpIDxsZW95YW5nLmxpQG54cC5jb20+OyBYaWFvZmVuZyBSZW4gPHhpYW9mZW5nLnJlbkBu
-eHAuY29tPjsgU2NvdHQNCj4gPiA+IFdvb2QgPHNjb3R0d29vZEBmcmVlc2NhbGUuY29tPg0KPiA+
-ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2MyAxLzJdIGNsazogQWRkIGNvbnN1bWVyIEFQSXMgZm9y
-IGRpc2NvdmVyaW5nDQo+ID4gPiBwb3NzaWJsZSBwYXJlbnQgY2xvY2tzDQo+ID4gPg0KPiA+ID4g
-T24gV2VkbmVzZGF5LCBKdW5lIDI5LCAyMDE2IDA1OjUwOjI2IEFNIFl1YW50aWFuIFRhbmcgd3Jv
-dGU6DQo+ID4gPiA+IEhpLA0KPiA+ID4gPg0KPiA+ID4gPiBUaGlzIHBhdGNoIGlzIGFja2VkIGJ5
-IGNsb2NrIG1haW50YWluZXIuIElmIG5vIGNvbW1lbnRzIGZyb20NCj4gPiA+ID4gYW55b25lIGVs
-c2UsDQo+ID4gPiB3ZSB3aWxsIG1lcmdlIGl0IGluIG5leHQgd2Vlay4NCj4gPiA+DQo+ID4gPiBU
-aGVyZSBpcyBhIGNwdWZyZXEgY29tbWl0IGRlcGVuZGluZyBvbiBpdC4gIEFyZSB5b3UgZ29pbmcg
-dG8gaGFuZGxlDQo+ID4gPiB0aGF0IG9uZSB0b28/DQo+ID4gPg0KPiA+IFRoYXQgb25lIGhhcyBi
-ZWVuIGFja2VkIGJ5IGNwdWZyZXEgbWFpbnRhaW5lci4gWW91IGNhbiBnZXQgdGhpcyBmcm9tDQo+
-IHBhdGNoIGNvbW1lbnRzLg0KPiANCj4gSSBrbm93IHRoYXQgaXQgaGFzIGJlZW4gQUNLZWQuDQo+
-IA0KPiBNeSBxdWVzdGlvbiBpcyB3aGV0aGVyIG9yIG5vdCB5b3UgYXJlIGdvaW5nIHRvIGFwcGx5
-IGl0IGFsb25nIHRoZSBbMS8yXS4NCj4gDQo+IElmIG5vdCwgaXQgd2lsbCBoYXZlIHRvIGJlIGRl
-ZmVycmVkIHVudGlsIHRoZSBbMS8yXSBpcyBtZXJnZWQgYW5kIHRoZW4gYXBwbGllZA0KPiB3aGlj
-aCBtYXkgbm90IGJlIGRlc2lyYWJsZS4NCj4gDQpJIGhvcGUgd2UgY2FuIGFwcGx5IGJvdGggYXQg
-c2FtZSB0aW1lLiBTZWVtcyBTY290dCBoYXMgYSBmZXcgY29uY2VybnMuDQoNCldoYXQgeW91IHRo
-aW5rIGFib3V0IHRoaXMgcGF0Y2g/IENhbiB5b3UgYXBwbHkgaXQ/DQpJZiB5b3UgaGF2ZSBhcHBs
-aWVkIHRoaXMgcGF0Y2gsIHRoZW4gSSBjYW4gcHVzaCBDUFVmcmVxIG1haW50YWluZXIgdG8gYXBw
-bHkgYW5vdGhlciBvbmUgd2hpY2ggd2lsbCBiZSBkZWxheWVkLg0KDQpSZWdhcmRzLA0KWXVhbnRp
-YW4NCg0KPiBUaGFua3MsDQo+IFJhZmFlbA0KDQo=
+If freezable workqueue aborts suspend flow, show
+workqueue state for debug purpose.
+
+Signed-off-by: Roger Lu <roger.lu@mediatek.com>
+---
+ kernel/power/process.c | 3 +++
+ kernel/workqueue.c     | 7 +++++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index df058be..6eef250 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -89,6 +89,9 @@ static int try_to_freeze_tasks(bool user_only)
+ 		       elapsed_msecs / 1000, elapsed_msecs % 1000,
+ 		       todo - wq_busy, wq_busy);
+ 
++		if (wq_busy)
++			show_workqueue_state();
++
+ 		if (!wakeup) {
+ 			read_lock(&tasklist_lock);
+ 			for_each_process_thread(g, p) {
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index e1c0e99..c945617 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -4369,8 +4369,8 @@ static void show_pwq(struct pool_workqueue *pwq)
+ /**
+  * show_workqueue_state - dump workqueue state
+  *
+- * Called from a sysrq handler and prints out all busy workqueues and
+- * pools.
++ * Called from a sysrq handler or try_to_freeze_tasks() and prints out
++ * all busy workqueues and pools.
+  */
+ void show_workqueue_state(void)
+ {
+@@ -4396,6 +4396,9 @@ void show_workqueue_state(void)
+ 		if (idle)
+ 			continue;
+ 
++		if (wq->flags & WQ_FREEZABLE)
++			pr_info("freezable ");
++
+ 		pr_info("workqueue %s: flags=0x%x\n", wq->name, wq->flags);
+ 
+ 		for_each_pwq(pwq, wq) {
+-- 
+2.6.4
+
