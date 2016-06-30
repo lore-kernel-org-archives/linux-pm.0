@@ -1,40 +1,90 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH] PM / runtime: Asynchronous "idle" in pm_runtime_allow()
-Date: Thu, 30 Jun 2016 15:48:37 -0700
-Message-ID: <m2poqyqomy.fsf@baylibre.com>
-References: <2236951.5ps16Zk8OD@vostro.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/2] Documentation: Add sbs-manager device tree node
+ documentation
+Date: Fri, 1 Jul 2016 00:52:17 +0200
+Message-ID: <20160630225217.GA11555@earth>
+References: <1bFnWI-0000MX-9R>
+ <1467317142-14063-1-git-send-email-karl-heinz@schneider-inet.de>
+ <1467317142-14063-2-git-send-email-karl-heinz@schneider-inet.de>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:33102 "EHLO
-	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751536AbcF3Wsj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2016 18:48:39 -0400
-Received: by mail-pf0-f172.google.com with SMTP id i123so33611964pfg.0
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 15:48:39 -0700 (PDT)
-In-Reply-To: <2236951.5ps16Zk8OD@vostro.rjw.lan> (Rafael J. Wysocki's message
-	of "Wed, 29 Jun 2016 02:53:48 +0200")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+Return-path: <linux-i2c-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1467317142-14063-2-git-send-email-karl-heinz@schneider-inet.de>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>
 
-"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Arjan reports that it takes a relatively long time to enable runtime
-> PM for multiple devices at system startup, because all writes to the
-> "control" attribute in sysfs are handled synchronously and if the
-> device is suspended as a result of the write, it will block until
-> that operation is complete.
->
-> That may be avoided by passing the RPM_ASYNC flag to rpm_idle()
-> in pm_runtime_allow() which will make it execute the device's
-> "idle" callback asynchronously, so writes to "control" changing
-> it from "on" to "auto" will return without waiting.
->
-> Reported-by: Arjan van de Ven <arjan@linux.intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+Hi,
+
+On Thu, Jun 30, 2016 at 10:05:41PM +0200, Karl-Heinz Schneider wrote:
+> This patch adds device tree documentation for the sbs-manager
+>=20
+> Reviewed-by: Phil Reid <preid@electromag.com.au>
+> Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+> ---
+>  .../devicetree/bindings/power/sbs,sbs-manager.txt  | 52 ++++++++++++++++=
+++++++
+>  1 file changed, 52 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/sbs,sbs-manag=
+er.txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt =
+b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+> new file mode 100644
+> index 0000000..1d7e5ee
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+> @@ -0,0 +1,52 @@
+> +Binding for sbs-manager
+> +
+> +Required properties:
+> +- compatible: should be "lltc,ltc1760" or use "sbs,sbs-manager" as fallb=
+ack.
+> +- reg: integer, i2c address of the device. Should be <0xa>.
+> +
+> +From OS view the device is basically an i2c-mux used to communicate with=
+ up to
+> +four smart battery devices at address 0xb. The driver actually implement=
+s this
+> +behaviour. So standard i2c-mux nodes can be used to register up to four =
+slave
+> +batteries. Channels will be numerated as 1, 2, 4 and 8.
+
+I think it's better to use channel 1-4 and do the translation in the
+driver's channel select method. It means one does not have to worry
+about anybody accidently configuring channel 3 and it also maps
+nicely to the datasheet talking about BAT1-BAT4.
+
+-- Sebastian
+
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJXdaKeAAoJENju1/PIO/qahvcP/3vmy11A4NUBox5Frmp8o76I
+UidXT3yiypDzsqHfr+TPk+yCg42lsmPaJDBxHwReY6Sz//4Tdwx2wEE4R1UoWZN8
+VGUsUZ6BVhYIrO0Nac3EaXnWlW14CVjuLEgiu3kP9SIbAarx+AyC3Dw+vi/B+FjR
+ym5d5RpI+7CiWYE6A/yVG36aBquHsb8SZBrNkUA7uboXohjHmuRDkCJH7/knukcj
+TwbunXrWeG/J+yPtR57Q3PVNOg45Y5KPFe7loXittqXSoCE7TE+tmLgS+gBu8lOB
+ouYJt2xpFOSVU0nkyYprVkZqFaJOC29exV4IiYjHaSlovQpsEC7svgW6Z5YRSsdL
+Qm+MQ4JLH7OgLlEEQO9Z9SgtVB9PUVmtaYHbE6ssUMRlEowWTlAbVGD08WS99ZI/
+XNqpvd3ZsnRJYWieY6WAElKnRXWlr/KwJXgTTqMuWkiuuNDrPADhCJRAqd1dnNl7
+YCE6jgCYk30rDuOgiZsmdKZb1qqCZboC72yJS4RDu6/LCeSU3az0ymQDxcwoR743
+i5QrNX+RhiI9MYX7Pb1iqxQaOBMgG65azRK57OAfEZ3Zsd448+SHXSN1JWzLnqUo
+u9BjCU4JOHVVgyf6dza9/e3qRJBYHHwWvragSTjGnABj5YQH/51MFAC2b9JGQmv7
+NUyIGhRlC7uoFNA9Hx/F
+=8sli
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--
