@@ -1,23 +1,23 @@
 From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle: Fix last_residency division
-Date: Thu, 30 Jun 2016 09:27:24 -0500
-Message-ID: <1467296844-2055-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v4] cpuidle: Fix last_residency division
+Date: Thu, 30 Jun 2016 09:34:13 -0500
+Message-ID: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:48683 "EHLO
-	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752323AbcF3Ob0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2016 10:31:26 -0400
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5UETNIY129066
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 10:31:25 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	by mx0b-001b2d01.pphosted.com with ESMTP id 23vvccuas2-1
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:55173 "EHLO
+	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752049AbcF3Oei (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jun 2016 10:34:38 -0400
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u5UEYaKZ045781
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 10:34:37 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+	by mx0a-001b2d01.pphosted.com with ESMTP id 23usubskqh-1
 	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 10:31:25 -0400
+	for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 10:34:37 -0400
 Received: from localhost
-	by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Thu, 30 Jun 2016 08:31:19 -0600
+	Thu, 30 Jun 2016 10:34:33 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net
