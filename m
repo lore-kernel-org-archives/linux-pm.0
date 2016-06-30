@@ -1,408 +1,311 @@
-From: Jia Hongtao <hongtao.jia@nxp.com>
-Subject: [PATCH V2 7/7] thermal: qoriq: Add thermal management support
-Date: Thu, 30 Jun 2016 11:08:38 +0800
-Message-ID: <1467256118-41754-1-git-send-email-hongtao.jia@nxp.com>
+From: Logan Gunthorpe <logang@deltatee.com>
+Subject: Re: [PATCH v3] x86/power/64: Fix kernel text mapping corruption
+ during image restoration
+Date: Wed, 29 Jun 2016 21:56:17 -0600
+Message-ID: <8273253c-95dd-0156-7af8-d2a164d1491b@deltatee.com>
+References: <20160617105435.GB15997@pd.tnic>
+ <65d98ad4-124b-64e4-84e5-877af71a1d44@deltatee.com>
+ <2398306.qXx6AZtdS5@vostro.rjw.lan> <1829549.Og2FdTtl4p@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: edubezval@gmail.com, rui.zhang@intel.com, robh+dt@kernel.org, galak@codeaurora.org, scott.wood@nxp.com, shawnguo@kernel.org
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hongtao.jia@nxp.com, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ale.deltatee.com ([207.54.116.67]:41477 "EHLO ale.deltatee.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751486AbcF3D4m (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 29 Jun 2016 23:56:42 -0400
+In-Reply-To: <1829549.Og2FdTtl4p@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kees Cook <keescook@chromium.org>, Borislav Petkov <bp@alien8.de>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andy Lutomirski <luto@kernel.org>, Brian Gerst <brgerst@gmail.com>, Denys Vlasenko <dvlasenk@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Smalley <sds@tycho.nsa.gov>
 
-This driver add thermal management support by enabling TMU (Thermal
-Monitoring Unit) on QorIQ platform.
 
-It's based on thermal of framework:
-- Trip points defined in device tree.
-- Cpufreq as cooling device registered in qoriq cpufreq driver.
 
-Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
----
-Changes of V2:
-* Add HAS_IOMEM dependency to fix build error on UM
+On 29/06/16 08:55 PM, Rafael J. Wysocki wrote:
 
- drivers/thermal/Kconfig         |  10 ++
- drivers/thermal/Makefile        |   1 +
- drivers/thermal/qoriq_thermal.c | 328 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 339 insertions(+)
- create mode 100644 drivers/thermal/qoriq_thermal.c
+> The only thing that comes to mind at this point is that TLBs should be flushed
+> after page tables changes, so please apply the appended and let me know
+> if you see this panic any more with it.
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 2d702ca..56ef30d 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -195,6 +195,16 @@ config IMX_THERMAL
- 	  cpufreq is used as the cooling device to throttle CPUs when the
- 	  passive trip is crossed.
 
-+config QORIQ_THERMAL
-+	tristate "QorIQ Thermal Monitoring Unit"
-+	depends on THERMAL_OF
-+	depends on HAS_IOMEM
-+	help
-+	  Support for Thermal Monitoring Unit (TMU) found on QorIQ platforms.
-+	  It supports one critical trip point and one passive trip point. The
-+	  cpufreq is used as the cooling device to throttle CPUs when the
-+	  passive trip is crossed.
-+
- config SPEAR_THERMAL
- 	tristate "SPEAr thermal sensor driver"
- 	depends on PLAT_SPEAR || COMPILE_TEST
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 10b07c1..6662232 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -37,6 +37,7 @@ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
- obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
- obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
-+obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
- obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
- obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
- obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-new file mode 100644
-index 0000000..644ba52
---- /dev/null
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -0,0 +1,328 @@
-+/*
-+ * Copyright 2016 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/thermal.h>
-+
-+#include "thermal_core.h"
-+
-+#define SITES_MAX	16
-+
-+/*
-+ * QorIQ TMU Registers
-+ */
-+struct qoriq_tmu_site_regs {
-+	u32 tritsr;		/* Immediate Temperature Site Register */
-+	u32 tratsr;		/* Average Temperature Site Register */
-+	u8 res0[0x8];
-+};
-+
-+struct qoriq_tmu_regs {
-+	u32 tmr;		/* Mode Register */
-+#define TMR_DISABLE	0x0
-+#define TMR_ME		0x80000000
-+#define TMR_ALPF	0x0c000000
-+	u32 tsr;		/* Status Register */
-+	u32 tmtmir;		/* Temperature measurement interval Register */
-+#define TMTMIR_DEFAULT	0x0000000f
-+	u8 res0[0x14];
-+	u32 tier;		/* Interrupt Enable Register */
-+#define TIER_DISABLE	0x0
-+	u32 tidr;		/* Interrupt Detect Register */
-+	u32 tiscr;		/* Interrupt Site Capture Register */
-+	u32 ticscr;		/* Interrupt Critical Site Capture Register */
-+	u8 res1[0x10];
-+	u32 tmhtcrh;		/* High Temperature Capture Register */
-+	u32 tmhtcrl;		/* Low Temperature Capture Register */
-+	u8 res2[0x8];
-+	u32 tmhtitr;		/* High Temperature Immediate Threshold */
-+	u32 tmhtatr;		/* High Temperature Average Threshold */
-+	u32 tmhtactr;	/* High Temperature Average Crit Threshold */
-+	u8 res3[0x24];
-+	u32 ttcfgr;		/* Temperature Configuration Register */
-+	u32 tscfgr;		/* Sensor Configuration Register */
-+	u8 res4[0x78];
-+	struct qoriq_tmu_site_regs site[SITES_MAX];
-+	u8 res5[0x9f8];
-+	u32 ipbrr0;		/* IP Block Revision Register 0 */
-+	u32 ipbrr1;		/* IP Block Revision Register 1 */
-+	u8 res6[0x310];
-+	u32 ttr0cr;		/* Temperature Range 0 Control Register */
-+	u32 ttr1cr;		/* Temperature Range 1 Control Register */
-+	u32 ttr2cr;		/* Temperature Range 2 Control Register */
-+	u32 ttr3cr;		/* Temperature Range 3 Control Register */
-+};
-+
-+/*
-+ * Thermal zone data
-+ */
-+struct qoriq_tmu_data {
-+	struct thermal_zone_device *tz;
-+	struct qoriq_tmu_regs __iomem *regs;
-+	int sensor_id;
-+	bool little_endian;
-+};
-+
-+static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem *addr)
-+{
-+	if (p->little_endian)
-+		iowrite32(val, addr);
-+	else
-+		iowrite32be(val, addr);
-+}
-+
-+static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr)
-+{
-+	if (p->little_endian)
-+		return ioread32(addr);
-+	else
-+		return ioread32be(addr);
-+}
-+
-+static int tmu_get_temp(void *p, int *temp)
-+{
-+	u32 val;
-+	struct qoriq_tmu_data *data = p;
-+
-+	val = tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
-+	*temp = (val & 0xff) * 1000;
-+
-+	return 0;
-+}
-+
-+static int qoriq_tmu_get_sensor_id(void)
-+{
-+	int ret, id;
-+	struct of_phandle_args sensor_specs;
-+	struct device_node *np, *sensor_np;
-+
-+	np = of_find_node_by_name(NULL, "thermal-zones");
-+	if (!np)
-+		return -ENODEV;
-+
-+	sensor_np = of_get_next_child(np, NULL);
-+	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
-+			"#thermal-sensor-cells",
-+			0, &sensor_specs);
-+	if (ret) {
-+		of_node_put(np);
-+		of_node_put(sensor_np);
-+		return ret;
-+	}
-+
-+	if (sensor_specs.args_count >= 1) {
-+		id = sensor_specs.args[0];
-+		WARN(sensor_specs.args_count > 1,
-+				"%s: too many cells in sensor specifier %d\n",
-+				sensor_specs.np->name, sensor_specs.args_count);
-+	} else {
-+		id = 0;
-+	}
-+
-+	of_node_put(np);
-+	of_node_put(sensor_np);
-+
-+	return id;
-+}
-+
-+static int qoriq_tmu_calibration(struct platform_device *pdev)
-+{
-+	int i, val, len;
-+	u32 range[4];
-+	const u32 *calibration;
-+	struct device_node *np = pdev->dev.of_node;
-+	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
-+
-+	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
-+		dev_err(&pdev->dev, "missing calibration range.\n");
-+		return -ENODEV;
-+	}
-+
-+	/* Init temperature range registers */
-+	tmu_write(data, range[0], &data->regs->ttr0cr);
-+	tmu_write(data, range[1], &data->regs->ttr1cr);
-+	tmu_write(data, range[2], &data->regs->ttr2cr);
-+	tmu_write(data, range[3], &data->regs->ttr3cr);
-+
-+	calibration = of_get_property(np, "fsl,tmu-calibration", &len);
-+	if (calibration == NULL || len % 8) {
-+		dev_err(&pdev->dev, "invalid calibration data.\n");
-+		return -ENODEV;
-+	}
-+
-+	for (i = 0; i < len; i += 8, calibration += 2) {
-+		val = of_read_number(calibration, 1);
-+		tmu_write(data, val, &data->regs->ttcfgr);
-+		val = of_read_number(calibration + 1, 1);
-+		tmu_write(data, val, &data->regs->tscfgr);
-+	}
-+
-+	return 0;
-+}
-+
-+static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
-+{
-+	/* Disable interrupt, using polling instead */
-+	tmu_write(data, TIER_DISABLE, &data->regs->tier);
-+
-+	/* Set update_interval */
-+	tmu_write(data, TMTMIR_DEFAULT, &data->regs->tmtmir);
-+
-+	/* Disable monitoring */
-+	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
-+}
-+
-+static struct thermal_zone_of_device_ops tmu_tz_ops = {
-+	.get_temp = tmu_get_temp,
-+};
-+
-+static int qoriq_tmu_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+	const struct thermal_trip *trip;
-+	struct qoriq_tmu_data *data;
-+	struct device_node *np = pdev->dev.of_node;
-+	u32 site = 0;
-+
-+	if (!np) {
-+		dev_err(&pdev->dev, "Device OF-Node is NULL");
-+		return -ENODEV;
-+	}
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-+			    GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, data);
-+
-+	data->little_endian = of_property_read_bool(np, "little-endian");
-+
-+	data->sensor_id = qoriq_tmu_get_sensor_id();
-+	if (data->sensor_id < 0) {
-+		dev_err(&pdev->dev, "Failed to get sensor id\n");
-+		ret = -ENODEV;
-+		goto err_iomap;
-+	}
-+
-+	data->regs = of_iomap(np, 0);
-+	if (!data->regs) {
-+		dev_err(&pdev->dev, "Failed to get memory region\n");
-+		ret = -ENODEV;
-+		goto err_iomap;
-+	}
-+
-+	qoriq_tmu_init_device(data);	/* TMU initialization */
-+
-+	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
-+	if (ret < 0)
-+		goto err_tmu;
-+
-+	data->tz = thermal_zone_of_sensor_register(&pdev->dev, data->sensor_id,
-+				data, &tmu_tz_ops);
-+	if (IS_ERR(data->tz)) {
-+		ret = PTR_ERR(data->tz);
-+		dev_err(&pdev->dev,
-+			"Failed to register thermal zone device %d\n", ret);
-+		goto err_tmu;
-+	}
-+
-+	trip = of_thermal_get_trip_points(data->tz);
-+
-+	/* Enable monitoring */
-+	site |= 0x1 << (15 - data->sensor_id);
-+	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
-+
-+	return 0;
-+
-+err_tmu:
-+	iounmap(data->regs);
-+
-+err_iomap:
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return ret;
-+}
-+
-+static int qoriq_tmu_remove(struct platform_device *pdev)
-+{
-+	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
-+
-+	thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
-+
-+	/* Disable monitoring */
-+	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
-+
-+	iounmap(data->regs);
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int qoriq_tmu_suspend(struct device *dev)
-+{
-+	u32 tmr;
-+	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
-+
-+	/* Disable monitoring */
-+	tmr = tmu_read(data, &data->regs->tmr);
-+	tmr &= ~TMR_ME;
-+	tmu_write(data, tmr, &data->regs->tmr);
-+
-+	return 0;
-+}
-+
-+static int qoriq_tmu_resume(struct device *dev)
-+{
-+	u32 tmr;
-+	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
-+
-+	/* Enable monitoring */
-+	tmr = tmu_read(data, &data->regs->tmr);
-+	tmr |= TMR_ME;
-+	tmu_write(data, tmr, &data->regs->tmr);
-+
-+	return 0;
-+}
-+#endif
-+
-+static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
-+			 qoriq_tmu_suspend, qoriq_tmu_resume);
-+
-+static const struct of_device_id qoriq_tmu_match[] = {
-+	{ .compatible = "fsl,qoriq-tmu", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, qoriq_tmu_match);
-+
-+static struct platform_driver qoriq_tmu = {
-+	.driver	= {
-+		.name		= "qoriq_thermal",
-+		.pm		= &qoriq_tmu_pm_ops,
-+		.of_match_table	= qoriq_tmu_match,
-+	},
-+	.probe	= qoriq_tmu_probe,
-+	.remove	= qoriq_tmu_remove,
-+};
-+module_platform_driver(qoriq_tmu);
-+
-+MODULE_AUTHOR("Jia Hongtao <hongtao.jia@nxp.com>");
-+MODULE_DESCRIPTION("QorIQ Thermal Monitoring Unit driver");
-+MODULE_LICENSE("GPL v2");
---
-2.1.0.27.g96db324
+Ok, I'll build a new kernel tomorrow. But keep in mind the panic is 
+pretty rare as I've only seen it once so far after a couple dozen or so 
+hibernates. So it may be hard to get a concrete yes or no on whether it 
+fixes the issue.
+
+I've got a script to run a bunch of hibernates in a row. I usually only 
+run it for a handful of iterations, but I'll try running it for much 
+longer with this patch and let you know in a couple days.
+
+Logan
+
+
+> Thanks,
+> Rafael
+>
+>
+> ---
+>  arch/x86/power/hibernate_64.c     |   92 +++++++++++++++++++++++++++++++++-----
+>  arch/x86/power/hibernate_asm_64.S |   55 +++++++++-------------
+>  2 files changed, 104 insertions(+), 43 deletions(-)
+>
+> Index: linux-pm/arch/x86/power/hibernate_64.c
+> ===================================================================
+> --- linux-pm.orig/arch/x86/power/hibernate_64.c
+> +++ linux-pm/arch/x86/power/hibernate_64.c
+> @@ -19,6 +19,7 @@
+>  #include <asm/mtrr.h>
+>  #include <asm/sections.h>
+>  #include <asm/suspend.h>
+> +#include <asm/tlbflush.h>
+>
+>  /* Defined in hibernate_asm_64.S */
+>  extern asmlinkage __visible int restore_image(void);
+> @@ -28,6 +29,7 @@ extern asmlinkage __visible int restore_
+>   * kernel's text (this value is passed in the image header).
+>   */
+>  unsigned long restore_jump_address __visible;
+> +unsigned long jump_address_phys;
+>
+>  /*
+>   * Value of the cr3 register from before the hibernation (this value is passed
+> @@ -37,7 +39,43 @@ unsigned long restore_cr3 __visible;
+>
+>  pgd_t *temp_level4_pgt __visible;
+>
+> -void *relocated_restore_code __visible;
+> +unsigned long relocated_restore_code __visible;
+> +
+> +static int set_up_temporary_text_mapping(void)
+> +{
+> +	pmd_t *pmd;
+> +	pud_t *pud;
+> +
+> +	/*
+> +	 * The new mapping only has to cover the page containing the image
+> +	 * kernel's entry point (jump_address_phys), because the switch over to
+> +	 * it is carried out by relocated code running from a page allocated
+> +	 * specifically for this purpose and covered by the identity mapping, so
+> +	 * the temporary kernel text mapping is only needed for the final jump.
+> +	 * Moreover, in that mapping the virtual address of the image kernel's
+> +	 * entry point must be the same as its virtual address in the image
+> +	 * kernel (restore_jump_address), so the image kernel's
+> +	 * restore_registers() code doesn't find itself in a different area of
+> +	 * the virtual address space after switching over to the original page
+> +	 * tables used by the image kernel.
+> +	 */
+> +	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> +	if (!pud)
+> +		return -ENOMEM;
+> +
+> +	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
+> +	if (!pmd)
+> +		return -ENOMEM;
+> +
+> +	set_pmd(pmd + pmd_index(restore_jump_address),
+> +		__pmd((jump_address_phys & PMD_MASK) | __PAGE_KERNEL_LARGE_EXEC));
+> +	set_pud(pud + pud_index(restore_jump_address),
+> +		__pud(__pa(pmd) | _KERNPG_TABLE));
+> +	set_pgd(temp_level4_pgt + pgd_index(restore_jump_address),
+> +		__pgd(__pa(pud) | _KERNPG_TABLE));
+> +
+> +	return 0;
+> +}
+>
+>  static void *alloc_pgt_page(void *context)
+>  {
+> @@ -59,9 +97,10 @@ static int set_up_temporary_mappings(voi
+>  	if (!temp_level4_pgt)
+>  		return -ENOMEM;
+>
+> -	/* It is safe to reuse the original kernel mapping */
+> -	set_pgd(temp_level4_pgt + pgd_index(__START_KERNEL_map),
+> -		init_level4_pgt[pgd_index(__START_KERNEL_map)]);
+> +	/* Prepare a temporary mapping for the kernel text */
+> +	result = set_up_temporary_text_mapping();
+> +	if (result)
+> +		return result;
+>
+>  	/* Set up the direct mapping from scratch */
+>  	for (i = 0; i < nr_pfn_mapped; i++) {
+> @@ -78,19 +117,45 @@ static int set_up_temporary_mappings(voi
+>  	return 0;
+>  }
+>
+> +static int relocate_restore_code(void)
+> +{
+> +	pgd_t *pgd;
+> +	pmd_t *pmd;
+> +
+> +	relocated_restore_code = get_safe_page(GFP_ATOMIC);
+> +	if (!relocated_restore_code)
+> +		return -ENOMEM;
+> +
+> +	memcpy((void *)relocated_restore_code, &core_restore_code, PAGE_SIZE);
+> +
+> +	/* Make the page containing the relocated code executable */
+> +	pgd = (pgd_t *)__va(read_cr3()) + pgd_index(relocated_restore_code);
+> +	pmd = pmd_offset(pud_offset(pgd, relocated_restore_code),
+> +			 relocated_restore_code);
+> +	if (pmd_large(*pmd)) {
+> +		set_pmd(pmd, __pmd(pmd_val(*pmd) & ~_PAGE_NX));
+> +	} else {
+> +		pte_t *pte = pte_offset_kernel(pmd, relocated_restore_code);
+> +
+> +		set_pte(pte, __pte(pte_val(*pte) & ~_PAGE_NX));
+> +	}
+> +	flush_tlb_all();
+> +
+> +	return 0;
+> +}
+> +
+>  int swsusp_arch_resume(void)
+>  {
+>  	int error;
+>
+>  	/* We have got enough memory and from now on we cannot recover */
+> -	if ((error = set_up_temporary_mappings()))
+> +	error = set_up_temporary_mappings();
+> +	if (error)
+>  		return error;
+>
+> -	relocated_restore_code = (void *)get_safe_page(GFP_ATOMIC);
+> -	if (!relocated_restore_code)
+> -		return -ENOMEM;
+> -	memcpy(relocated_restore_code, &core_restore_code,
+> -	       &restore_registers - &core_restore_code);
+> +	error = relocate_restore_code();
+> +	if (error)
+> +		return error;
+>
+>  	restore_image();
+>  	return 0;
+> @@ -109,11 +174,12 @@ int pfn_is_nosave(unsigned long pfn)
+>
+>  struct restore_data_record {
+>  	unsigned long jump_address;
+> +	unsigned long jump_address_phys;
+>  	unsigned long cr3;
+>  	unsigned long magic;
+>  };
+>
+> -#define RESTORE_MAGIC	0x0123456789ABCDEFUL
+> +#define RESTORE_MAGIC	0x123456789ABCDEF0UL
+>
+>  /**
+>   *	arch_hibernation_header_save - populate the architecture specific part
+> @@ -126,7 +192,8 @@ int arch_hibernation_header_save(void *a
+>
+>  	if (max_size < sizeof(struct restore_data_record))
+>  		return -EOVERFLOW;
+> -	rdr->jump_address = restore_jump_address;
+> +	rdr->jump_address = (unsigned long)&restore_registers;
+> +	rdr->jump_address_phys = __pa_symbol(&restore_registers);
+>  	rdr->cr3 = restore_cr3;
+>  	rdr->magic = RESTORE_MAGIC;
+>  	return 0;
+> @@ -142,6 +209,7 @@ int arch_hibernation_header_restore(void
+>  	struct restore_data_record *rdr = addr;
+>
+>  	restore_jump_address = rdr->jump_address;
+> +	jump_address_phys = rdr->jump_address_phys;
+>  	restore_cr3 = rdr->cr3;
+>  	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
+>  }
+> Index: linux-pm/arch/x86/power/hibernate_asm_64.S
+> ===================================================================
+> --- linux-pm.orig/arch/x86/power/hibernate_asm_64.S
+> +++ linux-pm/arch/x86/power/hibernate_asm_64.S
+> @@ -44,9 +44,6 @@ ENTRY(swsusp_arch_suspend)
+>  	pushfq
+>  	popq	pt_regs_flags(%rax)
+>
+> -	/* save the address of restore_registers */
+> -	movq	$restore_registers, %rax
+> -	movq	%rax, restore_jump_address(%rip)
+>  	/* save cr3 */
+>  	movq	%cr3, %rax
+>  	movq	%rax, restore_cr3(%rip)
+> @@ -57,31 +54,34 @@ ENTRY(swsusp_arch_suspend)
+>  ENDPROC(swsusp_arch_suspend)
+>
+>  ENTRY(restore_image)
+> -	/* switch to temporary page tables */
+> -	movq	$__PAGE_OFFSET, %rdx
+> -	movq	temp_level4_pgt(%rip), %rax
+> -	subq	%rdx, %rax
+> -	movq	%rax, %cr3
+> -	/* Flush TLB */
+> -	movq	mmu_cr4_features(%rip), %rax
+> -	movq	%rax, %rdx
+> -	andq	$~(X86_CR4_PGE), %rdx
+> -	movq	%rdx, %cr4;  # turn off PGE
+> -	movq	%cr3, %rcx;  # flush TLB
+> -	movq	%rcx, %cr3;
+> -	movq	%rax, %cr4;  # turn PGE back on
+> -
+>  	/* prepare to jump to the image kernel */
+> -	movq	restore_jump_address(%rip), %rax
+> -	movq	restore_cr3(%rip), %rbx
+> +	movq	restore_jump_address(%rip), %r8
+> +	movq	restore_cr3(%rip), %r9
+> +
+> +	/* prepare to switch to temporary page tables */
+> +	movq	temp_level4_pgt(%rip), %rax
+> +	movq	mmu_cr4_features(%rip), %rbx
+>
+>  	/* prepare to copy image data to their original locations */
+>  	movq	restore_pblist(%rip), %rdx
+> +
+> +	/* jump to relocated restore code */
+>  	movq	relocated_restore_code(%rip), %rcx
+>  	jmpq	*%rcx
+>
+>  	/* code below has been relocated to a safe page */
+>  ENTRY(core_restore_code)
+> +	/* switch to temporary page tables */
+> +	movq	$__PAGE_OFFSET, %rcx
+> +	subq	%rcx, %rax
+> +	movq	%rax, %cr3
+> +	/* flush TLB */
+> +	movq	%rbx, %rcx
+> +	andq	$~(X86_CR4_PGE), %rcx
+> +	movq	%rcx, %cr4;  # turn off PGE
+> +	movq	%cr3, %rcx;  # flush TLB
+> +	movq	%rcx, %cr3;
+> +	movq	%rbx, %cr4;  # turn PGE back on
+>  .Lloop:
+>  	testq	%rdx, %rdx
+>  	jz	.Ldone
+> @@ -96,24 +96,17 @@ ENTRY(core_restore_code)
+>  	/* progress to the next pbe */
+>  	movq	pbe_next(%rdx), %rdx
+>  	jmp	.Lloop
+> +
+>  .Ldone:
+>  	/* jump to the restore_registers address from the image header */
+> -	jmpq	*%rax
+> -	/*
+> -	 * NOTE: This assumes that the boot kernel's text mapping covers the
+> -	 * image kernel's page containing restore_registers and the address of
+> -	 * this page is the same as in the image kernel's text mapping (it
+> -	 * should always be true, because the text mapping is linear, starting
+> -	 * from 0, and is supposed to cover the entire kernel text for every
+> -	 * kernel).
+> -	 *
+> -	 * code below belongs to the image kernel
+> -	 */
+> +	jmpq	*%r8
+>
+> +	 /* code below belongs to the image kernel */
+> +	.align PAGE_SIZE
+>  ENTRY(restore_registers)
+>  	FRAME_BEGIN
+>  	/* go back to the original page tables */
+> -	movq    %rbx, %cr3
+> +	movq    %r9, %cr3
+>
+>  	/* Flush TLB, including "global" things (vmalloc) */
+>  	movq	mmu_cr4_features(%rip), %rax
+>
