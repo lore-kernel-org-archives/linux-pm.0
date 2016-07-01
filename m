@@ -1,86 +1,83 @@
-From: Scott Wood <oss@buserror.net>
-Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
- parent clocks
-Date: Fri, 01 Jul 2016 01:55:46 -0500
-Message-ID: <1467356146.32358.32.camel@buserror.net>
-References: <1466058085-19353-1-git-send-email-oss@buserror.net>
- <DBXPR04MB4951CA4EFB4FB5A2BDE7542F0240@DBXPR04MB495.eurprd04.prod.outlook.com>
- <DB5PR0401MB1928B6A4F1049592292D348C91240@DB5PR0401MB1928.eurprd04.prod.outlook.com>
- <3794032.AoZL3DhM7U@vostro.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v4] cpuidle: Fix last_residency division
+Date: Fri, 1 Jul 2016 10:06:59 +0200
+Message-ID: <577624A3.2000406@linaro.org>
+References: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <5775335E.2040003@linaro.org>
+ <alpine.LFD.2.20.1606301132350.12094@knanqh.ubzr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <3794032.AoZL3DhM7U@vostro.rjw.lan>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Scott Wood <scott.wood@nxp.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@armlinux.org.uk>, Yang-Leo Li <leoyang.li@nxp.com>, Yuantian Tang <yuantian.tang@nxp.com>, Xiaofeng Ren <xiaofeng.ren@nxp.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:37396 "EHLO
+	mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669AbcGAIHA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 04:07:00 -0400
+Received: by mail-wm0-f44.google.com with SMTP id a66so17833097wme.0
+        for <linux-pm@vger.kernel.org>; Fri, 01 Jul 2016 01:07:00 -0700 (PDT)
+In-Reply-To: <alpine.LFD.2.20.1606301132350.12094@knanqh.ubzr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au, bsingharora@gmail.com, David.Laight@ACULAB.COM, arnd@arndb.de
 
-T24gVGh1LCAyMDE2LTA2LTMwIGF0IDE1OjI5ICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToKPiBPbiBUaHVyc2RheSwgSnVuZSAzMCwgMjAxNiAwNTo0Njo0MiBBTSBTY290dCBXb29kIHdy
-b3RlOgo+ID4gCj4gPiBPbiAwNi8yOS8yMDE2IDEwOjAyIFBNLCBZdWFudGlhbiBUYW5nIHdyb3Rl
-Ogo+ID4gPiAKPiA+ID4gPiAKPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+ID4g
-PiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdCj4g
-PiA+ID4gU2VudDogVGh1cnNkYXksIEp1bmUgMzAsIDIwMTYgMTA6MjQgQU0KPiA+ID4gPiBUbzog
-WXVhbnRpYW4gVGFuZyA8eXVhbnRpYW4udGFuZ0BueHAuY29tPgo+ID4gPiA+IENjOiBTY290dCBX
-b29kIDxvc3NAYnVzZXJyb3IubmV0PjsgUnVzc2VsbCBLaW5nIDxsaW51eEBhcm1saW51eC5vcmcu
-dWsKPiA+ID4gPiA+Owo+ID4gPiA+IE1pY2hhZWwgVHVycXVldHRlIDxtdHVycXVldHRlQGJheWxp
-YnJlLmNvbT47IFN0ZXBoZW4gQm95ZAo+ID4gPiA+IDxzYm95ZEBjb2RlYXVyb3JhLm9yZz47IFZp
-cmVzaCBLdW1hciA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+OyBsaW51eC0KPiA+ID4gPiBjbGtA
-dmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLQo+ID4g
-PiA+IGRldkBsaXN0cy5vemxhYnMub3JnOyBZYW5nLUxlbyBMaSA8bGVveWFuZy5saUBueHAuY29t
-PjsgWGlhb2ZlbmcgUmVuCj4gPiA+ID4gPHhpYW9mZW5nLnJlbkBueHAuY29tPjsgU2NvdHQgV29v
-ZCA8c2NvdHR3b29kQGZyZWVzY2FsZS5jb20+Cj4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2
-MyAxLzJdIGNsazogQWRkIGNvbnN1bWVyIEFQSXMgZm9yIGRpc2NvdmVyaW5nCj4gPiA+ID4gcG9z
-c2libGUKPiA+ID4gPiBwYXJlbnQgY2xvY2tzCj4gPiA+ID4gCj4gPiA+ID4gT24gVGh1cnNkYXks
-IEp1bmUgMzAsIDIwMTYgMDE6NDc6MDkgQU0gWXVhbnRpYW4gVGFuZyB3cm90ZToKPiA+ID4gPiA+
-IAo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0KPiA+
-ID4gPiA+ID4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5l
-dF0KPiA+ID4gPiA+ID4gU2VudDogVGh1cnNkYXksIEp1bmUgMzAsIDIwMTYgOTo0NyBBTQo+ID4g
-PiA+ID4gPiBUbzogWXVhbnRpYW4gVGFuZyA8eXVhbnRpYW4udGFuZ0BueHAuY29tPgo+ID4gPiA+
-ID4gPiBDYzogU2NvdHQgV29vZCA8b3NzQGJ1c2Vycm9yLm5ldD47IFJ1c3NlbGwgS2luZwo+ID4g
-PiA+ID4gPiA8bGludXhAYXJtbGludXgub3JnLnVrPjsgTWljaGFlbCBUdXJxdWV0dGUKPiA+ID4g
-PiA+ID4gPG10dXJxdWV0dGVAYmF5bGlicmUuY29tPjsgU3RlcGhlbiBCb3lkIDxzYm95ZEBjb2Rl
-YXVyb3JhLm9yZz47Cj4gPiA+ID4gPiA+IFZpcmVzaCBLdW1hciA8dmlyZXNoLmt1bWFyQGxpbmFy
-by5vcmc+OyBsaW51eC0gY2xrQHZnZXIua2VybmVsLm9yZwo+ID4gPiA+ID4gPiA7Cj4gPiA+ID4g
-PiA+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtIGRldkBsaXN0cy5vemxhYnMu
-b3JnOyBZYW5nLUxlbwo+ID4gPiA+ID4gPiBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgWGlhb2Zl
-bmcgUmVuIDx4aWFvZmVuZy5yZW5AbnhwLmNvbT47Cj4gPiA+ID4gPiA+IFNjb3R0Cj4gPiA+ID4g
-PiA+IFdvb2QgPHNjb3R0d29vZEBmcmVlc2NhbGUuY29tPgo+ID4gPiA+ID4gPiBTdWJqZWN0OiBS
-ZTogW1BBVENIIHYzIDEvMl0gY2xrOiBBZGQgY29uc3VtZXIgQVBJcyBmb3IgZGlzY292ZXJpbmcK
-PiA+ID4gPiA+ID4gcG9zc2libGUgcGFyZW50IGNsb2Nrcwo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+
-ID4gT24gV2VkbmVzZGF5LCBKdW5lIDI5LCAyMDE2IDA1OjUwOjI2IEFNIFl1YW50aWFuIFRhbmcg
-d3JvdGU6Cj4gPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+ID4gSGksCj4gPiA+ID4gPiA+ID4gCj4g
-PiA+ID4gPiA+ID4gVGhpcyBwYXRjaCBpcyBhY2tlZCBieSBjbG9jayBtYWludGFpbmVyLiBJZiBu
-byBjb21tZW50cyBmcm9tCj4gPiA+ID4gPiA+ID4gYW55b25lIGVsc2UsCj4gPiA+ID4gPiA+IHdl
-IHdpbGwgbWVyZ2UgaXQgaW4gbmV4dCB3ZWVrLgo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gVGhl
-cmUgaXMgYSBjcHVmcmVxIGNvbW1pdCBkZXBlbmRpbmcgb24gaXQuwqDCoEFyZSB5b3UgZ29pbmcg
-dG8KPiA+ID4gPiA+ID4gaGFuZGxlCj4gPiA+ID4gPiA+IHRoYXQgb25lIHRvbz8KPiA+ID4gPiA+
-ID4gCj4gPiA+ID4gPiBUaGF0IG9uZSBoYXMgYmVlbiBhY2tlZCBieSBjcHVmcmVxIG1haW50YWlu
-ZXIuIFlvdSBjYW4gZ2V0IHRoaXMgZnJvbQo+ID4gPiA+IHBhdGNoIGNvbW1lbnRzLgo+ID4gPiA+
-IAo+ID4gPiA+IEkga25vdyB0aGF0IGl0IGhhcyBiZWVuIEFDS2VkLgo+ID4gPiA+IAo+ID4gPiA+
-IE15IHF1ZXN0aW9uIGlzIHdoZXRoZXIgb3Igbm90IHlvdSBhcmUgZ29pbmcgdG8gYXBwbHkgaXQg
-YWxvbmcgdGhlCj4gPiA+ID4gWzEvMl0uCj4gPiA+ID4gCj4gPiA+ID4gSWYgbm90LCBpdCB3aWxs
-IGhhdmUgdG8gYmUgZGVmZXJyZWQgdW50aWwgdGhlIFsxLzJdIGlzIG1lcmdlZCBhbmQgdGhlbgo+
-ID4gPiA+IGFwcGxpZWQKPiA+ID4gPiB3aGljaCBtYXkgbm90IGJlIGRlc2lyYWJsZS4KPiA+ID4g
-PiAKPiA+ID4gSSBob3BlIHdlIGNhbiBhcHBseSBib3RoIGF0IHNhbWUgdGltZS4gU2VlbXMgU2Nv
-dHQgaGFzIGEgZmV3IGNvbmNlcm5zLgo+ID4gPiAKPiA+ID4gV2hhdCB5b3UgdGhpbmsgYWJvdXQg
-dGhpcyBwYXRjaD8gQ2FuIHlvdSBhcHBseSBpdD8KPiA+ID4gSWYgeW91IGhhdmUgYXBwbGllZCB0
-aGlzIHBhdGNoLCB0aGVuIEkgY2FuIHB1c2ggQ1BVZnJlcSBtYWludGFpbmVyIHRvCj4gPiA+IGFw
-cGx5IGFub3RoZXIgb25lIHdoaWNoIHdpbGwgYmUgZGVsYXllZC4KPiA+IE15IG9ubHkgY29uY2Vy
-biB3YXMgZ2V0dGluZyBhbiBhY2sgZm9yIHRoaXMgcGF0Y2ggKDEvMikgLS0gZGlkIEkgbWlzcyBp
-dAo+ID4gc29tZXdoZXJlPwo+IE9LLCBzbyB3aG8ncyBnb2luZyB0byBhcHBseSB0aGUgc2VyaWVz
-PwoKSWRlYWxseSBpdCBzaG91bGQgZ28gdmlhIHRoZSBjcHVmcmVxIHRyZWUuCgotU2NvdHQKCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRl
-diBtYWlsaW5nIGxpc3QKTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0
-cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldg==
+On 06/30/2016 05:37 PM, Nicolas Pitre wrote:
+> On Thu, 30 Jun 2016, Daniel Lezcano wrote:
+
+[ ... ]
+
+>>> +	if (likely(nsec < DIV_APPROXIMATION_THRESHOLD)) {
+>>> +		u32 usec =3D nsec;
+>>> +
+>>> +		usec +=3D usec >> 5;
+>>> +		usec =3D usec >> 10;
+>>> +
+>>> +		/* Can safely cast to int since usec is < INT_MAX */
+>>> +		return usec;
+>>> +	} else {
+>>> +		u64 usec =3D div_u64(nsec, 1000);
+>>> +
+>>> +		if (usec > INT_MAX)
+>>> +			usec =3D INT_MAX;
+>>> +
+>>> +		/* Can safely cast to int since usec is < INT_MAX */
+>>> +		return usec;
+>>> +	}
+>>> +}
+>>
+>>
+>> What bothers me with this division is the benefit of adding an extra=
+ ultra
+>> optimized division by 1000 in cpuidle.h while we have already ktime_=
+divns
+>> which is optimized in ktime.h.
+>
+> It is "optimized" but still much heavier than what is presented above=
+ as
+> it provides maximum precision.
+>
+> It all depends on how important the performance gain from the origina=
+l
+> shift by 10 was in the first place.
+
+Actually the original shift was there because it was convenient as a=20
+simple ~div1000 operation. But against all odds, the approximation=20
+introduced a regression on a very specific use case on PowerPC.
+
+We are not in the hot path and I think we can live with a ktime_divns=20
+without problem. That would simplify the fix I believe.
+
+Perhaps the div1000 routine could be moved in ktime.h to be used as a=20
+helper for ktime_divns when we divide by the 1000 constant and submitte=
+d=20
+in a separate patch as an optimization.
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
