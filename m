@@ -1,100 +1,161 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH 12/21] usb: chipidea: msm: Keep device runtime enabled
-Date: Fri, 1 Jul 2016 11:20:52 +0800
-Message-ID: <20160701032052.GG18426@shlinux2>
-References: <20160626072838.28082-1-stephen.boyd@linaro.org>
- <20160626072838.28082-13-stephen.boyd@linaro.org>
- <20160629064600.GG25236@shlinux2>
- <146724741028.16253.4741331543289283958@sboyd-linaro>
- <20160630013901.GC19928@shlinux2>
- <146731865461.12823.6532384101517870130@sboyd-linaro>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <146731865461.12823.6532384101517870130@sboyd-linaro>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <stephen.boyd@linaro.org>
-Cc: linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, Andy Gross <andy.gross@linaro.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Neil Armstrong <narmstrong@baylibre.com>, Arnd Bergmann <arnd@arndb.de>, Felipe Balbi <balbi@kernel.org>, Peter Chen <peter.chen@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v15 4/4] power: wm831x_power: Support USB charger current limit management
+Date: Fri,  1 Jul 2016 14:05:48 +0800
+Message-ID: <8d4738ad034a340a5c4e2ead4c09d49585c06ac7.1467352530.git.baolin.wang@linaro.org>
+References: <cover.1467352530.git.baolin.wang@linaro.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1467352530.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1467352530.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1467352530.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
+Cc: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jun.li-3arQi8VN3Tc@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, grygorii.strashko-l0cyMroinI0@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jun 30, 2016 at 01:30:54PM -0700, Stephen Boyd wrote:
-> Quoting Peter Chen (2016-06-29 18:39:01)
-> > On Wed, Jun 29, 2016 at 05:43:30PM -0700, Stephen Boyd wrote:
-> > > Quoting Peter Chen (2016-06-28 23:46:00)
-> > > > On Sun, Jun 26, 2016 at 12:28:29AM -0700, Stephen Boyd wrote:
-> > > > > Sometimes the usb wrapper device is part of a power domain that
-> > > > > needs to stay on as long as the device is active. Let's get and
-> > > > > put the device in driver probe/remove so that we keep the power
-> > > > > domain powered as long as the device is attached. We can fine
-> > > > > tune this later to handle wakeup interrupts, etc. for finer grain
-> > > > > power management later, but this is necessary to make sure we can
-> > > > > keep accessing the device right now.
-> > > > 
-> > > > Since some of the controllers work abnormal if we enables runtime
-> > > > pm unconditionally, so I use one system flag CI_HDRC_SUPPORTS_RUNTIME_PM
-> > > > for it. I can't understand why you can't access device without enable
-> > > > parent's runtime pm, the controller will not enter runtime suspend
-> > > > without that flag.
-> > > 
-> > > Correct, the child device of ci_hdrc_msm will be able to do runtime PM
-> > > and keep the parent enabled if the CI_HDRC_SUPPORTS_RUNTIME_PM flag is
-> > > set. But even if that flag isn't set, the ci_hdrc_msm driver is calling
-> > > pm_runtime_enable() on the same device that it would be called on if the
-> > > CI_HDRC_SUPPORTS_RUNTIME_PM flag was set. That allows runtime PM
-> > > transition of child devices such as the usb ports (usb1-port1 for
-> > > example) to propagate up all the way to the ci_hdrc_msm device and
-> > > disable any attached power domains.
-> > 
-> > Sorry, I can't get you.
-> > 
-> > If the chipidea core's runtime is disabled, the port under the
-> > controller will not be in runtime suspended, only the bus will
-> > be in suspended due to USB core enables runtime PM by default.
-> 
-> Hmm sorry, I was confused too.
-> 
-> From what I can tell, if I don't call pm_runtime_set_active() on the
-> glue device, it will runtime suspend once I call pm_runtime_enable() on
-> it (which we do in ci_hdrc_mms_probe()). When we runtime suspend the
-> glue device, we turn off the power domain associated with it too. The
-> runtime pm enabled state of the core device doesn't seem to matter
-> either way here. So perhaps I should be calling pm_runtime_set_active()
-> before pm_runtime_enable() there instead of doing the get/put? It isn't
-> clear to me when we should be calling pm_runtime_get() vs.
-> pm_runtime_set_active() though.
-> 
-> > 
-> > > 
-> > > Why don't we call runtime PM functions on the ci->dev for all cases of
-> > > ci->supports_runtime_pm? It seems like the glue drivers should be
-> > > managing their own device power states and the ci->dev should be managed
-> > > by core.c code.
-> > > 
-> > 
-> > This is current design. Chipidea core manages portsc.phcd and PHY's PM
-> > (through PHY's API), and glue layer manages its own clocks on the system
-> > bus for register visit (and data transfer if necessary).
-> > 
-> 
-> Sorry, I mean this code in core.c
-> 
-> 	pm_runtime_set_active(&pdev->dev);
-> 	pm_runtime_enable(&pdev->dev);
->        	pm_runtime_set_autosuspend_delay(&pdev->dev, 2000);
->        	pm_runtime_mark_last_busy(ci->dev);
->        	pm_runtime_use_autosuspend(&pdev->dev);
-> 
-> which confused me. I thought pdev->dev was the glue device, but it's the
-> same as ci->dev, the core device. I get it now, but I'd like to change
-> all the calls there to use ci->dev to be clearer.
+Integrate with the newly added USB charger interface to limit the current
+we draw from the USB input based on the input device configuration
+identified by the USB stack, allowing us to charge more quickly from high
+current inputs without drawing more current than specified from others.
 
-Yes, please do it.
+Signed-off-by: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>
+Acked-by: Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Acked-by: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+---
+ drivers/power/wm831x_power.c     |   69 ++++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/wm831x/pdata.h |    3 ++
+ 2 files changed, 72 insertions(+)
 
-Glue device is the parent for core device, and at core.c, only ci_hdrc_add_device and
-ci_get_platdata will touch glue device.
-
+diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
+index 7082301..cef1812 100644
+--- a/drivers/power/wm831x_power.c
++++ b/drivers/power/wm831x_power.c
+@@ -13,6 +13,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+ #include <linux/slab.h>
++#include <linux/usb/charger.h>
+ 
+ #include <linux/mfd/wm831x/core.h>
+ #include <linux/mfd/wm831x/auxadc.h>
+@@ -31,6 +32,8 @@ struct wm831x_power {
+ 	char usb_name[20];
+ 	char battery_name[20];
+ 	bool have_battery;
++	struct usb_charger *usb_charger;
++	struct notifier_block usb_notify;
+ };
+ 
+ static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
+@@ -125,6 +128,43 @@ static enum power_supply_property wm831x_usb_props[] = {
+ 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+ };
+ 
++/* In milliamps */
++static const unsigned int wm831x_usb_limits[] = {
++	0,
++	2,
++	100,
++	500,
++	900,
++	1500,
++	1800,
++	550,
++};
++
++static int wm831x_usb_limit_change(struct notifier_block *nb,
++				   unsigned long limit, void *data)
++{
++	struct wm831x_power *wm831x_power = container_of(nb,
++							 struct wm831x_power,
++							 usb_notify);
++	unsigned int i, best;
++
++	/* Find the highest supported limit */
++	best = 0;
++	for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
++		if (limit >= wm831x_usb_limits[i] &&
++		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
++			best = i;
++	}
++
++	dev_dbg(wm831x_power->wm831x->dev,
++		"Limiting USB current to %umA", wm831x_usb_limits[best]);
++
++	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
++		        WM831X_USB_ILIM_MASK, best);
++
++	return 0;
++}
++
+ /*********************************************************************
+  *		Battery properties
+  *********************************************************************/
+@@ -607,8 +647,31 @@ static int wm831x_power_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
++		power->usb_charger =
++			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
++		if (IS_ERR(power->usb_charger)) {
++			ret = PTR_ERR(power->usb_charger);
++			dev_err(&pdev->dev,
++				"Failed to find USB gadget: %d\n", ret);
++			goto err_bat_irq;
++		}
++
++		power->usb_notify.notifier_call = wm831x_usb_limit_change;
++
++		ret = usb_charger_register_notify(power->usb_charger,
++						  &power->usb_notify);
++		if (ret != 0) {
++			dev_err(&pdev->dev,
++				"Failed to register notifier: %d\n", ret);
++			goto err_usb_charger;
++		}
++	}
++
+ 	return ret;
+ 
++err_usb_charger:
++	/* put_device on charger */
+ err_bat_irq:
+ 	--i;
+ 	for (; i >= 0; i--) {
+@@ -637,6 +700,12 @@ static int wm831x_power_remove(struct platform_device *pdev)
+ 	struct wm831x *wm831x = wm831x_power->wm831x;
+ 	int irq, i;
+ 
++	if (wm831x_power->usb_charger) {
++		usb_charger_unregister_notify(wm831x_power->usb_charger,
++					      &wm831x_power->usb_notify);
++		/* Free charger */
++	}
++
+ 	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
+ 		irq = wm831x_irq(wm831x, 
+ 				 platform_get_irq_byname(pdev,
+diff --git a/include/linux/mfd/wm831x/pdata.h b/include/linux/mfd/wm831x/pdata.h
+index dcc9631..5af8399 100644
+--- a/include/linux/mfd/wm831x/pdata.h
++++ b/include/linux/mfd/wm831x/pdata.h
+@@ -126,6 +126,9 @@ struct wm831x_pdata {
+ 	/** The driver should initiate a power off sequence during shutdown */
+ 	bool soft_shutdown;
+ 
++	/** dev_name of USB charger gadget to integrate with */
++	const char *usb_gadget;
++
+ 	int irq_base;
+ 	int gpio_base;
+ 	int gpio_defaults[WM831X_GPIO_NUM];
 -- 
+1.7.9.5
 
-Best Regards,
-Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
