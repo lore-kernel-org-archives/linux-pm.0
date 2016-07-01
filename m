@@ -1,54 +1,56 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v6 00/11] qcom: Add support for TSENS driver
-Date: Fri, 1 Jul 2016 13:52:25 -0700
-Message-ID: <20160701205223.GA7814@localhost.localdomain>
-References: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
- <575A57F8.6060004@codeaurora.org>
- <576391B3.7090508@codeaurora.org>
- <57749F20.4010700@codeaurora.org>
+Subject: Re: [PATCH 1/1] thermal: core: call thermal_zone_device_update()
+ after mode update
+Date: Fri, 1 Jul 2016 13:53:31 -0700
+Message-ID: <20160701205329.GB7814@localhost.localdomain>
+References: <1466563538.2471.10.camel@intel.com>
+ <1466571990-12346-1-git-send-email-edubezval@gmail.com>
+ <CAJZ5v0hRosrpW50Jx3p6-yHmNFLEaHpf9htfevtunEa10Jo7Dg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:33530 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751959AbcGAUxQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 16:53:16 -0400
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:34447 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752410AbcGAUxn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 16:53:43 -0400
 Content-Disposition: inline
-In-Reply-To: <57749F20.4010700@codeaurora.org>
+In-Reply-To: <CAJZ5v0hRosrpW50Jx3p6-yHmNFLEaHpf9htfevtunEa10Jo7Dg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: andy.gross@linaro.org, rui.zhang@intel.com, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rui Zhang <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Lee, Chun-Yi" <jlee@suse.com>, Darren Hart <dvhart@infradead.org>, Keerthy <j-keerthy@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu, Jun 30, 2016 at 09:55:04AM +0530, Rajendra Nayak wrote:
-> Rui,
+On Thu, Jun 23, 2016 at 02:27:12PM +0200, Rafael J. Wysocki wrote:
+> On Wed, Jun 22, 2016 at 7:06 AM, Eduardo Valentin <edubezval@gmail.com> wrote:
+> > Because several drivers do the following pattern:
+> > .set_mode()
+> >    ...
+> >    local_data->mode = new_mode;
+> >    thermal_zone_device_update(tz);
+> >
+> > makes sense to simply do the thermal_zone_device_update()
+> > in thermal core, after setting the new mode.
+> >
+> > Also, this patch also remove deadlocks on drivers that
+> > call thermal_zone_device_update() on .set_mode(),
+> > as .set_mode()  is now called always with tz->lock held.
 > 
-> On 06/17/2016 11:29 AM, Nayak, Rajendra wrote:
-> > Hey Eduardo,
-> > 
-> > On 6/10/2016 11:32 AM, Rajendra Nayak wrote:
-> >> Eduardo,
-> >>
-> >> On 05/05/2016 02:21 PM, Rajendra Nayak wrote:
-> >>> Current set of patches apply on 4.6-rc6. Fixes for the nvmem apis
-> >>> are now posted [1] and queued in -next [2]
-> >>> Patches [1-6] will need to be merged via thermal tree/Eduardo.
-> >>
-> >> Any plans to pull these in for 4.8?
-> > 
-> > These patches have been on the list for quite a while, and they
-> > do not have any outstanding dependencies or comments to be
-> > addressed. I would really hope to see these in for 4.8.
-> > Let me know if there is something you want me to address before
-> > you pull them in.
+> To me, this part of the patch is way more important than the
+> optimization mentioned before.
 > 
-> Would you be able to pull this driver in? I haven't heard back
-> anything from Eduardo despite multiple pings.
-> These patches (v6) have been on the list for a couple months now,
-> which address all issues/concerns that were raised by Eduardo
-> in his previous reviews.
+> Apparently, the problem is that drivers deadlock, because the
+> thermal_zone_device_update() invoked from ->set_mode() is called under
+> tz->lock.
+> 
+> So to address that problem you make the core call
+> thermal_zone_device_update() after ->set_mode() outside of tz->lock
+> and the drivers don't have to do it any more.
+> 
+> Is that correct?
 
-Apologize for the late answer. I will take care of queueing them.
+Yes this is correct. The optimization is simply a consequence of the bug
+fix, as reported by Keerthy.
 
-BR,
-
+> 
+> Thanks,
+> Rafael
