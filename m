@@ -1,83 +1,57 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v4] cpuidle: Fix last_residency division
-Date: Fri, 1 Jul 2016 10:06:59 +0200
-Message-ID: <577624A3.2000406@linaro.org>
-References: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <5775335E.2040003@linaro.org>
- <alpine.LFD.2.20.1606301132350.12094@knanqh.ubzr>
+From: Icenowy Zheng <icenowy-ymACFijhrKM@public.gmane.org>
+Subject: [PATCH 1/4] mfd: axp20x: add adc volatile ranges for axp22x
+Date: Fri,  1 Jul 2016 17:29:23 +0800
+Message-ID: <20160701092926.32005-1-icenowy@aosc.xyz>
+Reply-To: icenowy-ymACFijhrKM@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f44.google.com ([74.125.82.44]:37396 "EHLO
-	mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752669AbcGAIHA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 04:07:00 -0400
-Received: by mail-wm0-f44.google.com with SMTP id a66so17833097wme.0
-        for <linux-pm@vger.kernel.org>; Fri, 01 Jul 2016 01:07:00 -0700 (PDT)
-In-Reply-To: <alpine.LFD.2.20.1606301132350.12094@knanqh.ubzr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBCZLPFN5Q4OBBKXQ3C5QKGQEJFTKXUA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: wens-jdAy2FN1RRM@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Icenowy Zheng <icenowy-ymACFijhrKM@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au, bsingharora@gmail.com, David.Laight@ACULAB.COM, arnd@arndb.de
 
-On 06/30/2016 05:37 PM, Nicolas Pitre wrote:
-> On Thu, 30 Jun 2016, Daniel Lezcano wrote:
+AXP22x has also some different register map than axp20x, they're also
+added here.
 
-[ ... ]
+Signed-off-by: Icenowy Zheng <icenowy-ymACFijhrKM@public.gmane.org>
+---
+ drivers/mfd/axp20x.c       | 1 +
+ include/linux/mfd/axp20x.h | 4 ++++
+ 2 files changed, 5 insertions(+)
 
->>> +	if (likely(nsec < DIV_APPROXIMATION_THRESHOLD)) {
->>> +		u32 usec =3D nsec;
->>> +
->>> +		usec +=3D usec >> 5;
->>> +		usec =3D usec >> 10;
->>> +
->>> +		/* Can safely cast to int since usec is < INT_MAX */
->>> +		return usec;
->>> +	} else {
->>> +		u64 usec =3D div_u64(nsec, 1000);
->>> +
->>> +		if (usec > INT_MAX)
->>> +			usec =3D INT_MAX;
->>> +
->>> +		/* Can safely cast to int since usec is < INT_MAX */
->>> +		return usec;
->>> +	}
->>> +}
->>
->>
->> What bothers me with this division is the benefit of adding an extra=
- ultra
->> optimized division by 1000 in cpuidle.h while we have already ktime_=
-divns
->> which is optimized in ktime.h.
->
-> It is "optimized" but still much heavier than what is presented above=
- as
-> it provides maximum precision.
->
-> It all depends on how important the performance gain from the origina=
-l
-> shift by 10 was in the first place.
-
-Actually the original shift was there because it was convenient as a=20
-simple ~div1000 operation. But against all odds, the approximation=20
-introduced a regression on a very specific use case on PowerPC.
-
-We are not in the hot path and I think we can live with a ktime_divns=20
-without problem. That would simplify the fix I believe.
-
-Perhaps the div1000 routine could be moved in ktime.h to be used as a=20
-helper for ktime_divns when we divide by the 1000 constant and submitte=
-d=20
-in a separate patch as an optimization.
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index d62209d..cee5288 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -96,6 +96,7 @@ static const struct regmap_range axp22x_volatile_ranges[] = {
+ 	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
+ 	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
+ 	regmap_reg_range(AXP22X_GPIO_STATE, AXP22X_GPIO_STATE),
++	regmap_reg_range(AXP22X_PMIC_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
+ 	regmap_reg_range(AXP20X_FG_RES, AXP20X_FG_RES),
+ };
+ 
+diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+index 0be4982..ad3d9c7 100644
+--- a/include/linux/mfd/axp20x.h
++++ b/include/linux/mfd/axp20x.h
+@@ -201,6 +201,10 @@ enum {
+ #define AXP20X_OCV_MAX			0xf
+ 
+ /* AXP22X specific registers */
++#define AXP22X_PMIC_ADC_H		0x56
++#define AXP22X_PMIC_ADC_L		0x57
++#define AXP22X_TS_ADC_H			0x58
++#define AXP22X_TS_ADC_L			0x59
+ #define AXP22X_BATLOW_THRES1		0xe6
+ 
+ /* AXP288 specific registers */
+-- 
+2.9.0
