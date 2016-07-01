@@ -1,8 +1,8 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH 2/7] arm: mach-shmobile: pm-rmobile: add missing of_node_put
- after calling of_parse_phandle
-Date: Fri, 1 Jul 2016 17:41:56 +0800
-Message-ID: <1467366121-14120-3-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH 6/7] devfreq: add missing of_node_put after calling
+ of_parse_phandle
+Date: Fri, 1 Jul 2016 17:42:00 +0800
+Message-ID: <1467366121-14120-7-git-send-email-peter.chen@nxp.com>
 References: <1467366121-14120-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,30 +19,35 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Peter Chen <peter.chen@nxp.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: Peter Chen <peter.chen@nxp.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 of_node_put needs to be called when the device node which is got
 from of_parse_phandle has finished using.
 
-Cc: Simon Horman <horms@verge.net.au>
-Cc: Magnus Damm <magnus.damm@gmail.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Peter Chen <peter.chen@nxp.com>
 ---
- arch/arm/mach-shmobile/pm-rmobile.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/devfreq/devfreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
-index c0b05e9..8eb2cb6 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.c
-+++ b/arch/arm/mach-shmobile/pm-rmobile.c
-@@ -209,6 +209,7 @@ static void __init add_special_pd(struct device_node *np, enum pd_types type)
- 	special_pds[num_special_pds].pd = pd;
- 	special_pds[num_special_pds].type = type;
- 	num_special_pds++;
-+	of_node_put(pd);
- }
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 1d6c803..3f2142f 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -706,10 +706,12 @@ struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev, int index)
+ 		if (devfreq->dev.parent
+ 			&& devfreq->dev.parent->of_node == node) {
+ 			mutex_unlock(&devfreq_list_lock);
++			of_node_put(node);
+ 			return devfreq;
+ 		}
+ 	}
+ 	mutex_unlock(&devfreq_list_lock);
++	of_node_put(node);
  
- static void __init get_special_pds(void)
+ 	return ERR_PTR(-EPROBE_DEFER);
+ }
 -- 
 1.9.1
