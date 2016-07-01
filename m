@@ -1,64 +1,86 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v15 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
-Date: Fri,  1 Jul 2016 14:05:44 +0800
-Message-ID: <cover.1467352530.git.baolin.wang@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: robh@kernel.org, jun.li@nxp.com, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, grygorii.strashko@ti.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+From: Scott Wood <oss@buserror.net>
+Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible
+ parent clocks
+Date: Fri, 01 Jul 2016 01:55:46 -0500
+Message-ID: <1467356146.32358.32.camel@buserror.net>
+References: <1466058085-19353-1-git-send-email-oss@buserror.net>
+ <DBXPR04MB4951CA4EFB4FB5A2BDE7542F0240@DBXPR04MB495.eurprd04.prod.outlook.com>
+ <DB5PR0401MB1928B6A4F1049592292D348C91240@DB5PR0401MB1928.eurprd04.prod.outlook.com>
+ <3794032.AoZL3DhM7U@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <3794032.AoZL3DhM7U@vostro.rjw.lan>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Scott Wood <scott.wood@nxp.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@armlinux.org.uk>, Yang-Leo Li <leoyang.li@nxp.com>, Yuantian Tang <yuantian.tang@nxp.com>, Xiaofeng Ren <xiaofeng.ren@nxp.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Currently the Linux kernel does not provide any standard integration of this
-feature that integrates the USB subsystem with the system power regulation
-provided by PMICs meaning that either vendors must add this in their kernels
-or USB gadget devices based on Linux (such as mobile phones) may not behave
-as they should. Thus provide a standard framework for doing this in kernel.
-
-Now introduce one user with wm831x_power to support and test the usb charger,
-which is pending testing. Moreover there may be other potential users will use
-it in future.
-
-Changes since v14:
- - Add kernel documentation for struct usb_cahrger.
- - Remove some redundant WARN() functions.
-
-Changes since v13:
- - Remove the charger checking in usb_gadget_vbus_draw() function.
- - Rename some functions in charger.c file.
- - Rebase on git://git.kernel.org/pub/scm/linux/kernel/git/balbi/usb.git tags/usb-for-v4.8
-
-Changes since v12:
- - Remove the class and device things.
- - Link usb charger to udc-core.ko.
- - Create one "charger" subdirectory which holds all charger-related attributes.
-
-Changes since v11:
- - Reviewed and tested by Li Jun.
-
-Changes since v10:
- - Introduce usb_charger_get_state() function to check charger state.
- - Remove the mutex lock in usb_charger_set_cur_limit_by_type() function
- in case will be issued in atomic context.
-
-Baolin Wang (4):
-  usb: gadget: Introduce the usb charger framework
-  usb: gadget: Support for the usb charger framework
-  usb: gadget: Integrate with the usb gadget supporting for usb charger
-  power: wm831x_power: Support USB charger current limit management
-
- drivers/power/wm831x_power.c     |   69 ++++
- drivers/usb/gadget/Kconfig       |    8 +
- drivers/usb/gadget/udc/Makefile  |    1 +
- drivers/usb/gadget/udc/charger.c |  738 ++++++++++++++++++++++++++++++++++++++
- drivers/usb/gadget/udc/core.c    |   17 +
- include/linux/mfd/wm831x/pdata.h |    3 +
- include/linux/usb/charger.h      |  183 ++++++++++
- include/linux/usb/gadget.h       |    3 +
- include/uapi/linux/usb/charger.h |   31 ++
- 9 files changed, 1053 insertions(+)
- create mode 100644 drivers/usb/gadget/udc/charger.c
- create mode 100644 include/linux/usb/charger.h
- create mode 100644 include/uapi/linux/usb/charger.h
-
--- 
-1.7.9.5
+T24gVGh1LCAyMDE2LTA2LTMwIGF0IDE1OjI5ICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
+ZToKPiBPbiBUaHVyc2RheSwgSnVuZSAzMCwgMjAxNiAwNTo0Njo0MiBBTSBTY290dCBXb29kIHdy
+b3RlOgo+ID4gCj4gPiBPbiAwNi8yOS8yMDE2IDEwOjAyIFBNLCBZdWFudGlhbiBUYW5nIHdyb3Rl
+Ogo+ID4gPiAKPiA+ID4gPiAKPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQo+ID4g
+PiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdCj4g
+PiA+ID4gU2VudDogVGh1cnNkYXksIEp1bmUgMzAsIDIwMTYgMTA6MjQgQU0KPiA+ID4gPiBUbzog
+WXVhbnRpYW4gVGFuZyA8eXVhbnRpYW4udGFuZ0BueHAuY29tPgo+ID4gPiA+IENjOiBTY290dCBX
+b29kIDxvc3NAYnVzZXJyb3IubmV0PjsgUnVzc2VsbCBLaW5nIDxsaW51eEBhcm1saW51eC5vcmcu
+dWsKPiA+ID4gPiA+Owo+ID4gPiA+IE1pY2hhZWwgVHVycXVldHRlIDxtdHVycXVldHRlQGJheWxp
+YnJlLmNvbT47IFN0ZXBoZW4gQm95ZAo+ID4gPiA+IDxzYm95ZEBjb2RlYXVyb3JhLm9yZz47IFZp
+cmVzaCBLdW1hciA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+OyBsaW51eC0KPiA+ID4gPiBjbGtA
+dmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLQo+ID4g
+PiA+IGRldkBsaXN0cy5vemxhYnMub3JnOyBZYW5nLUxlbyBMaSA8bGVveWFuZy5saUBueHAuY29t
+PjsgWGlhb2ZlbmcgUmVuCj4gPiA+ID4gPHhpYW9mZW5nLnJlbkBueHAuY29tPjsgU2NvdHQgV29v
+ZCA8c2NvdHR3b29kQGZyZWVzY2FsZS5jb20+Cj4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCB2
+MyAxLzJdIGNsazogQWRkIGNvbnN1bWVyIEFQSXMgZm9yIGRpc2NvdmVyaW5nCj4gPiA+ID4gcG9z
+c2libGUKPiA+ID4gPiBwYXJlbnQgY2xvY2tzCj4gPiA+ID4gCj4gPiA+ID4gT24gVGh1cnNkYXks
+IEp1bmUgMzAsIDIwMTYgMDE6NDc6MDkgQU0gWXVhbnRpYW4gVGFuZyB3cm90ZToKPiA+ID4gPiA+
+IAo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0KPiA+
+ID4gPiA+ID4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5l
+dF0KPiA+ID4gPiA+ID4gU2VudDogVGh1cnNkYXksIEp1bmUgMzAsIDIwMTYgOTo0NyBBTQo+ID4g
+PiA+ID4gPiBUbzogWXVhbnRpYW4gVGFuZyA8eXVhbnRpYW4udGFuZ0BueHAuY29tPgo+ID4gPiA+
+ID4gPiBDYzogU2NvdHQgV29vZCA8b3NzQGJ1c2Vycm9yLm5ldD47IFJ1c3NlbGwgS2luZwo+ID4g
+PiA+ID4gPiA8bGludXhAYXJtbGludXgub3JnLnVrPjsgTWljaGFlbCBUdXJxdWV0dGUKPiA+ID4g
+PiA+ID4gPG10dXJxdWV0dGVAYmF5bGlicmUuY29tPjsgU3RlcGhlbiBCb3lkIDxzYm95ZEBjb2Rl
+YXVyb3JhLm9yZz47Cj4gPiA+ID4gPiA+IFZpcmVzaCBLdW1hciA8dmlyZXNoLmt1bWFyQGxpbmFy
+by5vcmc+OyBsaW51eC0gY2xrQHZnZXIua2VybmVsLm9yZwo+ID4gPiA+ID4gPiA7Cj4gPiA+ID4g
+PiA+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtIGRldkBsaXN0cy5vemxhYnMu
+b3JnOyBZYW5nLUxlbwo+ID4gPiA+ID4gPiBMaSA8bGVveWFuZy5saUBueHAuY29tPjsgWGlhb2Zl
+bmcgUmVuIDx4aWFvZmVuZy5yZW5AbnhwLmNvbT47Cj4gPiA+ID4gPiA+IFNjb3R0Cj4gPiA+ID4g
+PiA+IFdvb2QgPHNjb3R0d29vZEBmcmVlc2NhbGUuY29tPgo+ID4gPiA+ID4gPiBTdWJqZWN0OiBS
+ZTogW1BBVENIIHYzIDEvMl0gY2xrOiBBZGQgY29uc3VtZXIgQVBJcyBmb3IgZGlzY292ZXJpbmcK
+PiA+ID4gPiA+ID4gcG9zc2libGUgcGFyZW50IGNsb2Nrcwo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+
+ID4gT24gV2VkbmVzZGF5LCBKdW5lIDI5LCAyMDE2IDA1OjUwOjI2IEFNIFl1YW50aWFuIFRhbmcg
+d3JvdGU6Cj4gPiA+ID4gPiA+ID4gCj4gPiA+ID4gPiA+ID4gSGksCj4gPiA+ID4gPiA+ID4gCj4g
+PiA+ID4gPiA+ID4gVGhpcyBwYXRjaCBpcyBhY2tlZCBieSBjbG9jayBtYWludGFpbmVyLiBJZiBu
+byBjb21tZW50cyBmcm9tCj4gPiA+ID4gPiA+ID4gYW55b25lIGVsc2UsCj4gPiA+ID4gPiA+IHdl
+IHdpbGwgbWVyZ2UgaXQgaW4gbmV4dCB3ZWVrLgo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gVGhl
+cmUgaXMgYSBjcHVmcmVxIGNvbW1pdCBkZXBlbmRpbmcgb24gaXQuwqDCoEFyZSB5b3UgZ29pbmcg
+dG8KPiA+ID4gPiA+ID4gaGFuZGxlCj4gPiA+ID4gPiA+IHRoYXQgb25lIHRvbz8KPiA+ID4gPiA+
+ID4gCj4gPiA+ID4gPiBUaGF0IG9uZSBoYXMgYmVlbiBhY2tlZCBieSBjcHVmcmVxIG1haW50YWlu
+ZXIuIFlvdSBjYW4gZ2V0IHRoaXMgZnJvbQo+ID4gPiA+IHBhdGNoIGNvbW1lbnRzLgo+ID4gPiA+
+IAo+ID4gPiA+IEkga25vdyB0aGF0IGl0IGhhcyBiZWVuIEFDS2VkLgo+ID4gPiA+IAo+ID4gPiA+
+IE15IHF1ZXN0aW9uIGlzIHdoZXRoZXIgb3Igbm90IHlvdSBhcmUgZ29pbmcgdG8gYXBwbHkgaXQg
+YWxvbmcgdGhlCj4gPiA+ID4gWzEvMl0uCj4gPiA+ID4gCj4gPiA+ID4gSWYgbm90LCBpdCB3aWxs
+IGhhdmUgdG8gYmUgZGVmZXJyZWQgdW50aWwgdGhlIFsxLzJdIGlzIG1lcmdlZCBhbmQgdGhlbgo+
+ID4gPiA+IGFwcGxpZWQKPiA+ID4gPiB3aGljaCBtYXkgbm90IGJlIGRlc2lyYWJsZS4KPiA+ID4g
+PiAKPiA+ID4gSSBob3BlIHdlIGNhbiBhcHBseSBib3RoIGF0IHNhbWUgdGltZS4gU2VlbXMgU2Nv
+dHQgaGFzIGEgZmV3IGNvbmNlcm5zLgo+ID4gPiAKPiA+ID4gV2hhdCB5b3UgdGhpbmsgYWJvdXQg
+dGhpcyBwYXRjaD8gQ2FuIHlvdSBhcHBseSBpdD8KPiA+ID4gSWYgeW91IGhhdmUgYXBwbGllZCB0
+aGlzIHBhdGNoLCB0aGVuIEkgY2FuIHB1c2ggQ1BVZnJlcSBtYWludGFpbmVyIHRvCj4gPiA+IGFw
+cGx5IGFub3RoZXIgb25lIHdoaWNoIHdpbGwgYmUgZGVsYXllZC4KPiA+IE15IG9ubHkgY29uY2Vy
+biB3YXMgZ2V0dGluZyBhbiBhY2sgZm9yIHRoaXMgcGF0Y2ggKDEvMikgLS0gZGlkIEkgbWlzcyBp
+dAo+ID4gc29tZXdoZXJlPwo+IE9LLCBzbyB3aG8ncyBnb2luZyB0byBhcHBseSB0aGUgc2VyaWVz
+PwoKSWRlYWxseSBpdCBzaG91bGQgZ28gdmlhIHRoZSBjcHVmcmVxIHRyZWUuCgotU2NvdHQKCl9f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4cHBjLWRl
+diBtYWlsaW5nIGxpc3QKTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcKaHR0cHM6Ly9saXN0
+cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldg==
