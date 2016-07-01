@@ -1,73 +1,117 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4] cpuidle: Fix last_residency division
-Date: Fri, 01 Jul 2016 19:46:35 +0530
-Message-ID: <57767B43.3000802@linux.vnet.ibm.com>
-References: <1467297253-2171-1-git-send-email-shreyas@linux.vnet.ibm.com> <5775335E.2040003@linaro.org> <alpine.LFD.2.20.1606301132350.12094@knanqh.ubzr> <577624A3.2000406@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v5] cpuidle: Fix last_residency division
+Date: Fri,  1 Jul 2016 09:24:14 -0500
+Message-ID: <1467383054-1959-1-git-send-email-shreyas@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:26407 "EHLO
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:42427 "EHLO
 	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752028AbcGAOQp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 10:16:45 -0400
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u61EEEUc042677
-	for <linux-pm@vger.kernel.org>; Fri, 1 Jul 2016 10:16:45 -0400
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
-	by mx0a-001b2d01.pphosted.com with ESMTP id 23wajf4cj5-1
+	by vger.kernel.org with ESMTP id S1752712AbcGAOY5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 10:24:57 -0400
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u61EIu69003696
+	for <linux-pm@vger.kernel.org>; Fri, 1 Jul 2016 10:24:28 -0400
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+	by mx0a-001b2d01.pphosted.com with ESMTP id 23wbt3jfb3-1
 	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 01 Jul 2016 10:16:45 -0400
+	for <linux-pm@vger.kernel.org>; Fri, 01 Jul 2016 10:24:28 -0400
 Received: from localhost
-	by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
 	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Sat, 2 Jul 2016 00:16:42 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
-	by d23dlp01.au.ibm.com (Postfix) with ESMTP id AAD5C2CE8057
-	for <linux-pm@vger.kernel.org>; Sat,  2 Jul 2016 00:16:39 +1000 (EST)
-Received: from d23av06.au.ibm.com (d23av06.au.ibm.com [9.190.235.151])
-	by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u61EGdQN16318632
-	for <linux-pm@vger.kernel.org>; Sat, 2 Jul 2016 00:16:39 +1000
-Received: from d23av06.au.ibm.com (localhost [127.0.0.1])
-	by d23av06.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u61EGcp3030174
-	for <linux-pm@vger.kernel.org>; Sat, 2 Jul 2016 00:16:39 +1000
-In-Reply-To: <577624A3.2000406@linaro.org>
+	Fri, 1 Jul 2016 10:24:26 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Nicolas Pitre <nicolas.pitre@linaro.org>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org, mpe@ellerman.id.au, bsingharora@gmail.com, David.Laight@ACULAB.COM, arnd@arndb.de
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, daniel.lezcano@linaro.org, nicolas.pitre@linaro.org, bsingharora@gmail.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
 
+Snooze is a poll idle state in powernv and pseries platforms. Snooze
+has a timeout so that if a cpu stays in snooze for more than target
+residency of the next available idle state, then it would exit thereby
+giving chance to the cpuidle governor to re-evaluate and
+promote the cpu to a deeper idle state. Therefore whenever snooze exits
+due to this timeout, its last_residency will be target_residency of next
+deeper state.
 
+commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
+changed the math around last_residency calculation. Specifically, while
+converting last_residency value from nanoseconds to microseconds it does
+right shift by 10. Due to this, in snooze timeout exit scenarios
+last_residency calculated is roughly 2.3% less than target_residency of
+next available state. This pattern is picked up get_typical_interval()
+in the menu governor and therefore expected_interval in menu_select() is
+frequently less than the target_residency of any state but snooze.
 
-On 07/01/2016 01:36 PM, Daniel Lezcano wrote:
-> On 06/30/2016 05:37 PM, Nicolas Pitre wrote:
->> On Thu, 30 Jun 2016, Daniel Lezcano wrote:
->>> +    }
->>>> +}
->>>
->>>
->>> What bothers me with this division is the benefit of adding an extra
->>> ultra
->>> optimized division by 1000 in cpuidle.h while we have already
->>> ktime_divns
->>> which is optimized in ktime.h.
->>
->> It is "optimized" but still much heavier than what is presented above as
->> it provides maximum precision.
->>
->> It all depends on how important the performance gain from the original
->> shift by 10 was in the first place.
-> 
-> Actually the original shift was there because it was convenient as a
-> simple ~div1000 operation. But against all odds, the approximation
-> introduced a regression on a very specific use case on PowerPC.
-> 
-> We are not in the hot path and I think we can live with a ktime_divns
-> without problem. That would simplify the fix I believe.
-> 
+Due to this we are entering snooze at a higher rate, thereby affecting
+the single thread performance.
 
-I agree too. I'll post next version with this.
+Fix this by using precise division via ktime_us_delta.
 
-Thanks,
-Shreyas
+Reported-by: Anton Blanchard <anton@samba.org>
+Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+---
+Changes in v5
+=============
+ - Replacing approximation division with ktime_us_delta.
+
+Changes in v4
+=============
+ - Increasing the threshold upto which approximation can be used.
+ - Removed explicit cast. Instead added a comment saying why cast
+   is safe.
+
+Changes in v3
+=============
+ - Using approximation suggested by David
+
+Changes in v2
+=============
+ - Fixing it in the cpuidle core code instead of driver code.
+
+ drivers/cpuidle/cpuidle.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index a4d0059..c73207a 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -173,7 +173,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 
+ 	struct cpuidle_state *target_state = &drv->states[index];
+ 	bool broadcast = !!(target_state->flags & CPUIDLE_FLAG_TIMER_STOP);
+-	u64 time_start, time_end;
++	ktime_t time_start, time_end;
+ 	s64 diff;
+ 
+ 	/*
+@@ -195,13 +195,13 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	sched_idle_set_state(target_state);
+ 
+ 	trace_cpu_idle_rcuidle(index, dev->cpu);
+-	time_start = local_clock();
++	time_start = ns_to_ktime(local_clock());
+ 
+ 	stop_critical_timings();
+ 	entered_state = target_state->enter(dev, drv, index);
+ 	start_critical_timings();
+ 
+-	time_end = local_clock();
++	time_end = ns_to_ktime(local_clock());
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+ 
+ 	/* The cpu is no longer idle or about to enter idle. */
+@@ -217,11 +217,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	if (!cpuidle_state_is_coupled(drv, index))
+ 		local_irq_enable();
+ 
+-	/*
+-	 * local_clock() returns the time in nanosecond, let's shift
+-	 * by 10 (divide by 1024) to have microsecond based time.
+-	 */
+-	diff = (time_end - time_start) >> 10;
++	diff = ktime_us_delta(time_end, time_start);
+ 	if (diff > INT_MAX)
+ 		diff = INT_MAX;
+ 
+-- 
+2.1.4
 
