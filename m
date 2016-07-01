@@ -1,8 +1,8 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH 6/7] devfreq: add missing of_node_put after calling
- of_parse_phandle
-Date: Fri, 1 Jul 2016 17:42:00 +0800
-Message-ID: <1467366121-14120-7-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH 5/7] bus: vexpress-config: add missing of_node_put after
+ calling of_parse_phandle
+Date: Fri, 1 Jul 2016 17:41:59 +0800
+Message-ID: <1467366121-14120-6-git-send-email-peter.chen@nxp.com>
 References: <1467366121-14120-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,35 +19,31 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Peter Chen <peter.chen@nxp.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Peter Chen <peter.chen@nxp.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Liviu Dudau <liviu.dudau@arm.com>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
 of_node_put needs to be called when the device node which is got
 from of_parse_phandle has finished using.
 
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Signed-off-by: Peter Chen <peter.chen@nxp.com>
 ---
- drivers/devfreq/devfreq.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/bus/vexpress-config.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 1d6c803..3f2142f 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -706,10 +706,12 @@ struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev, int index)
- 		if (devfreq->dev.parent
- 			&& devfreq->dev.parent->of_node == node) {
- 			mutex_unlock(&devfreq_list_lock);
-+			of_node_put(node);
- 			return devfreq;
- 		}
- 	}
- 	mutex_unlock(&devfreq_list_lock);
-+	of_node_put(node);
+diff --git a/drivers/bus/vexpress-config.c b/drivers/bus/vexpress-config.c
+index c3cb76b..9efdf1d 100644
+--- a/drivers/bus/vexpress-config.c
++++ b/drivers/bus/vexpress-config.c
+@@ -178,6 +178,7 @@ static int vexpress_config_populate(struct device_node *node)
  
- 	return ERR_PTR(-EPROBE_DEFER);
- }
+ 	parent = class_find_device(vexpress_config_class, NULL, bridge,
+ 			vexpress_config_node_match);
++	of_node_put(bridge);
+ 	if (WARN_ON(!parent))
+ 		return -ENODEV;
+ 
 -- 
 1.9.1
