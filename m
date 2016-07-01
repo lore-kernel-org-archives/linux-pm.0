@@ -1,64 +1,56 @@
-From: Will Deacon <will.deacon@arm.com>
-Subject: Re: [PATCH 4/7] bus: arm-cci: add missing of_node_put after calling
- of_parse_phandle
-Date: Fri, 1 Jul 2016 11:33:47 +0100
-Message-ID: <20160701103346.GF12735@arm.com>
-References: <1467366121-14120-1-git-send-email-peter.chen@nxp.com>
- <1467366121-14120-5-git-send-email-peter.chen@nxp.com>
- <57764626.4060800@arm.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/7] arm: mach-shmobile: pm-rmobile: add missing
+ of_node_put after calling of_parse_phandle
+Date: Fri, 1 Jul 2016 14:31:58 +0200
+Message-ID: <CAMuHMdVE8VzPunLzr7WO-kzcg25rKvFkoQcjJ4czwrQxX_obiw@mail.gmail.com>
+References: <1467366121-14120-1-git-send-email-peter.chen@nxp.com> <1467366121-14120-3-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <57764626.4060800@arm.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Suzuki K Poulose <Suzuki.Poulose@arm.com>
-Cc: Peter Chen <peter.chen@nxp.com>, linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Sudeep Holla <Sudeep.Holla@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f67.google.com ([209.85.214.67]:36193 "EHLO
+	mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751426AbcGAMck (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 08:32:40 -0400
+In-Reply-To: <1467366121-14120-3-git-send-email-peter.chen@nxp.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Chen <peter.chen@nxp.com>
+Cc: Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
 
-On Fri, Jul 01, 2016 at 11:29:58AM +0100, Suzuki K Poulose wrote:
-> On 01/07/16 10:41, Peter Chen wrote:
-> >of_node_put needs to be called when the device node which is got
-> >from of_parse_phandle has finished using.
-> >
-> >Cc: Will Deacon <will.deacon@arm.com>
-> >Cc: Suzuki K Poulose <suzuki.poulose@arm.com>
-> >Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> 
-> Thanks for the fix.
-> 
-> >---
-> >  drivers/bus/arm-cci.c | 5 ++++-
-> >  1 file changed, 4 insertions(+), 1 deletion(-)
-> >
-> >diff --git a/drivers/bus/arm-cci.c b/drivers/bus/arm-cci.c
-> >index a49b283..e7b0b8c 100644
-> >--- a/drivers/bus/arm-cci.c
-> >+++ b/drivers/bus/arm-cci.c
-> >@@ -1912,9 +1912,12 @@ static int __cci_ace_get_port(struct device_node *dn, int type)
-> >  	cci_portn = of_parse_phandle(dn, "cci-control-port", 0);
-> >  	for (i = 0; i < nb_cci_ports; i++) {
-> >  		ace_match = ports[i].type == type;
-> >-		if (ace_match && cci_portn == ports[i].dn)
-> >+		if (ace_match && cci_portn == ports[i].dn) {
-> >+			of_node_put(cci_portn);
-> >  			return i;
-> >+		}
-> >  	}
-> >+	of_node_put(cci_portn);
-> 
-> nit: Could we please do some thing like this ?
-> 		if (ace_match && cci_portn == ports[i].dn)
-> 			break;
-> 	}
-> 
-> 	of_node_put(cci_portn);
-> 	return (i < nb_cci_ports) ? i : -ENODEV ;
-> 
-> Either way,
-> 
-> Reviewed-by: Suzuki K Poulose <suzuki.poulose@arm.com>
+Hi Peter,
 
-Please route this via arm-soc once you've addressed Suzuki's comment.
+On Fri, Jul 1, 2016 at 11:41 AM, Peter Chen <peter.chen@nxp.com> wrote:
+> of_node_put needs to be called when the device node which is got
+> from of_parse_phandle has finished using.
+>
+> Cc: Simon Horman <horms@verge.net.au>
+> Cc: Magnus Damm <magnus.damm@gmail.com>
+> Signed-off-by: Peter Chen <peter.chen@nxp.com>
 
-Will
+NAKed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+> --- a/arch/arm/mach-shmobile/pm-rmobile.c
+> +++ b/arch/arm/mach-shmobile/pm-rmobile.c
+> @@ -209,6 +209,7 @@ static void __init add_special_pd(struct device_node *np, enum pd_types type)
+>         special_pds[num_special_pds].pd = pd;
+
+The pd pointer is stored in the line above, and released later in
+put_special_pds().
+
+>         special_pds[num_special_pds].type = type;
+>         num_special_pds++;
+> +       of_node_put(pd);
+
+Hence it must not be released here, as that would cause a double release
+when put_special_pds() is executed.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
