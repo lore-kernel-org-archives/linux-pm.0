@@ -1,146 +1,992 @@
 From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v15 3/4] usb: gadget: Integrate with the usb gadget supporting for usb charger
-Date: Fri,  1 Jul 2016 14:05:47 +0800
-Message-ID: <9e05cbfc9dff2bca09d818c5cadafbd9d666da2a.1467352530.git.baolin.wang@linaro.org>
+Subject: [PATCH v15 1/4] usb: gadget: Introduce the usb charger framework
+Date: Fri,  1 Jul 2016 14:05:45 +0800
+Message-ID: <407af209e5cd2fc26ed87e1fb1e3ec57678214e6.1467352530.git.baolin.wang@linaro.org>
 References: <cover.1467352530.git.baolin.wang@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:34381 "EHLO
-	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932102AbcGAGGu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 02:06:50 -0400
-Received: by mail-pf0-f179.google.com with SMTP id h14so37006650pfe.1
-        for <linux-pm@vger.kernel.org>; Thu, 30 Jun 2016 23:06:49 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1467352530.git.baolin.wang@linaro.org>
 In-Reply-To: <cover.1467352530.git.baolin.wang@linaro.org>
 References: <cover.1467352530.git.baolin.wang@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
 Cc: robh@kernel.org, jun.li@nxp.com, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, grygorii.strashko@ti.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-When the usb gadget supporting for usb charger is ready, the usb charger
-can implement the usb_charger_plug_by_gadget() function, usb_charger_exit()
-function and dev_to_uchger() function by getting 'struct usb_charger' from
-'struct gadget'.
+This patch introduces the usb charger driver based on usb gadget that
+makes an enhancement to a power driver. It works well in practice but
+that requires a system with suitable hardware.
+
+The basic conception of the usb charger is that, when one usb charger
+is added or removed by reporting from the usb gadget state change or
+the extcon device state change, the usb charger will report to power
+user to set the current limitation.
+
+The usb charger will register notifiees on the usb gadget or the extcon
+device to get notified the usb charger state. It also supplies the
+notification mechanism to userspace When the usb charger state is changed.
+
+Power user will register a notifiee on the usb charger to get notified
+by status changes from the usb charger. It will report to power user
+to set the current limitation when detecting the usb charger is added
+or removed from extcon device state or usb gadget state.
+
+This patch doesn't yet integrate with the gadget code, so some functions
+which rely on the 'gadget' are not completed, that will be implemented
+in the following patches.
 
 Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
 Reviewed-by: Li Jun <jun.li@nxp.com>
 Tested-by: Li Jun <jun.li@nxp.com>
 ---
- drivers/usb/gadget/udc/charger.c |   67 ++++++++++++++++++++++++++++++++++++--
- 1 file changed, 64 insertions(+), 3 deletions(-)
+ drivers/usb/gadget/Kconfig       |    8 +
+ drivers/usb/gadget/udc/Makefile  |    1 +
+ drivers/usb/gadget/udc/charger.c |  677 ++++++++++++++++++++++++++++++++++++++
+ include/linux/usb/charger.h      |  183 +++++++++++
+ include/uapi/linux/usb/charger.h |   31 ++
+ 5 files changed, 900 insertions(+)
+ create mode 100644 drivers/usb/gadget/udc/charger.c
+ create mode 100644 include/linux/usb/charger.h
+ create mode 100644 include/uapi/linux/usb/charger.h
 
+diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
+index 3c3f31c..acea3f7 100644
+--- a/drivers/usb/gadget/Kconfig
++++ b/drivers/usb/gadget/Kconfig
+@@ -134,6 +134,14 @@ config U_SERIAL_CONSOLE
+ 	help
+ 	   It supports the serial gadget can be used as a console.
+ 
++config USB_CHARGER
++	bool "USB charger support"
++	select EXTCON
++	help
++	  The usb charger driver based on the usb gadget that makes an
++	  enhancement to a power driver which can set the current limitation
++	  when the usb charger is added or removed.
++
+ source "drivers/usb/gadget/udc/Kconfig"
+ 
+ #
+diff --git a/drivers/usb/gadget/udc/Makefile b/drivers/usb/gadget/udc/Makefile
+index 98e74ed..ede2351 100644
+--- a/drivers/usb/gadget/udc/Makefile
++++ b/drivers/usb/gadget/udc/Makefile
+@@ -2,6 +2,7 @@
+ CFLAGS_trace.o			:= -I$(src)
+ 
+ udc-core-y			:= core.o trace.o
++udc-core-$(CONFIG_USB_CHARGER)	+= charger.o
+ 
+ #
+ # USB peripheral controller drivers
 diff --git a/drivers/usb/gadget/udc/charger.c b/drivers/usb/gadget/udc/charger.c
-index 54c1712f..57f9fd2 100644
---- a/drivers/usb/gadget/udc/charger.c
+new file mode 100644
+index 0000000..54c1712f
+--- /dev/null
 +++ b/drivers/usb/gadget/udc/charger.c
-@@ -36,7 +36,9 @@ static unsigned int __usb_charger_get_cur_limit(struct usb_charger *uchger);
- 
- static struct usb_charger *dev_to_uchger(struct device *dev)
- {
--	return NULL;
-+	struct usb_gadget *gadget = container_of(dev, struct usb_gadget, dev);
+@@ -0,0 +1,677 @@
++/*
++ * charger.c -- USB charger driver
++ *
++ * Copyright (C) 2016 Linaro Ltd.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
 +
-+	return gadget->charger;
- }
- 
- /*
-@@ -305,7 +307,13 @@ static int __usb_charger_set_cur_limit_by_type(struct usb_charger *uchger,
- int usb_charger_set_cur_limit_by_gadget(struct usb_gadget *gadget,
- 					unsigned int cur_limit)
- {
--	return 0;
-+	struct usb_charger *uchger = gadget->charger;
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/extcon.h>
++#include <linux/export.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/slab.h>
++#include <linux/usb.h>
++#include <linux/usb/ch9.h>
++#include <linux/usb/gadget.h>
++#include <linux/usb/charger.h>
++#include <linux/power_supply.h>
 +
-+	if (!uchger)
-+		return -EINVAL;
++/* Default current limit by charger type. */
++#define DEFAULT_SDP_CUR_LIMIT		500
++#define DEFAULT_SDP_CUR_LIMIT_SS	900
++#define DEFAULT_DCP_CUR_LIMIT		1500
++#define DEFAULT_CDP_CUR_LIMIT		1500
++#define DEFAULT_ACA_CUR_LIMIT		1500
 +
-+	return __usb_charger_set_cur_limit_by_type(uchger, uchger->type,
-+						   cur_limit);
- }
- EXPORT_SYMBOL_GPL(usb_charger_set_cur_limit_by_gadget);
- 
-@@ -563,11 +571,52 @@ usb_charger_plug_by_extcon(struct notifier_block *nb,
- int usb_charger_plug_by_gadget(struct usb_gadget *gadget,
- 			       unsigned long state)
- {
-+	struct usb_charger *uchger = gadget->charger;
-+	enum usb_charger_state uchger_state;
++static DEFINE_IDA(usb_charger_ida);
++static LIST_HEAD(charger_list);
++static DEFINE_MUTEX(charger_lock);
 +
-+	if (WARN(!uchger, "charger can not be NULL"))
-+		return -EINVAL;
++static unsigned int __usb_charger_get_cur_limit(struct usb_charger *uchger);
 +
-+	/*
-+	 * Report event to power to setting the current limitation
-+	 * for this usb charger when one usb charger state is changed
-+	 * with detecting by usb gadget state.
-+	 */
-+	if (uchger->old_gadget_state != state) {
-+		uchger->old_gadget_state = state;
++static struct usb_charger *dev_to_uchger(struct device *dev)
++{
++	return NULL;
++}
 +
-+		if (state >= USB_STATE_ATTACHED)
-+			uchger_state = USB_CHARGER_PRESENT;
-+		else if (state == USB_STATE_NOTATTACHED)
-+			uchger_state = USB_CHARGER_REMOVE;
-+		else
-+			uchger_state = USB_CHARGER_DEFAULT;
++/*
++ * charger_current_show() - Show the charger current limit.
++ */
++static ssize_t charger_current_show(struct device *dev,
++				    struct device_attribute *attr,
++				    char *buf)
++{
++	struct usb_charger *uchger = dev_to_uchger(dev);
 +
-+		usb_charger_notify_others(uchger, uchger_state);
++	return sprintf(buf, "%u\n", __usb_charger_get_cur_limit(uchger));
++}
++static DEVICE_ATTR_RO(charger_current);
++
++/*
++ * charger_type_show() - Show the charger type.
++ *
++ * It can be SDP/DCP/CDP/ACA type, else for unknown type.
++ */
++static ssize_t charger_type_show(struct device *dev,
++				 struct device_attribute *attr,
++				 char *buf)
++{
++	struct usb_charger *uchger = dev_to_uchger(dev);
++	int cnt;
++
++	switch (uchger->type) {
++	case SDP_TYPE:
++		cnt = sprintf(buf, "%s\n", "SDP");
++		break;
++	case DCP_TYPE:
++		cnt = sprintf(buf, "%s\n", "DCP");
++		break;
++	case CDP_TYPE:
++		cnt = sprintf(buf, "%s\n", "CDP");
++		break;
++	case ACA_TYPE:
++		cnt = sprintf(buf, "%s\n", "ACA");
++		break;
++	default:
++		cnt = sprintf(buf, "%s\n", "UNKNOWN");
++		break;
 +	}
 +
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(usb_charger_plug_by_gadget);
- 
- /*
-+ * usb_charger_unregister() - Unregister a usb charger.
-+ * @uchger - the usb charger to be unregistered.
++	return cnt;
++}
++static DEVICE_ATTR_RO(charger_type);
++
++/*
++ * charger_state_show() - Show the charger state.
++ *
++ * Charger state can be present or removed.
 + */
-+static int usb_charger_unregister(struct usb_charger *uchger)
++static ssize_t charger_state_show(struct device *dev,
++				  struct device_attribute *attr,
++				  char *buf)
 +{
-+	ida_simple_remove(&usb_charger_ida, uchger->id);
-+	sysfs_remove_groups(&uchger->gadget->dev.kobj, usb_charger_groups);
++	struct usb_charger *uchger = dev_to_uchger(dev);
++	int cnt;
++
++	switch (uchger->state) {
++	case USB_CHARGER_PRESENT:
++		cnt = sprintf(buf, "%s\n", "PRESENT");
++		break;
++	case USB_CHARGER_REMOVE:
++		cnt = sprintf(buf, "%s\n", "REMOVE");
++		break;
++	default:
++		cnt = sprintf(buf, "%s\n", "UNKNOWN");
++		break;
++	}
++
++	return cnt;
++}
++static DEVICE_ATTR_RO(charger_state);
++
++static struct attribute *usb_charger_attrs[] = {
++	&dev_attr_charger_current.attr,
++	&dev_attr_charger_type.attr,
++	&dev_attr_charger_state.attr,
++	NULL
++};
++
++static const struct attribute_group usb_charger_group = {
++	.name = "charger",
++	.attrs = usb_charger_attrs,
++};
++__ATTRIBUTE_GROUPS(usb_charger);
++
++/*
++ * usb_charger_find_by_name() - Get the usb charger instance by name.
++ * @name - usb charger name.
++ */
++struct usb_charger *usb_charger_find_by_name(const char *name)
++{
++	struct usb_charger *uchger;
++
++	if (WARN(!name, "can't work with NULL name"))
++		return ERR_PTR(-EINVAL);
 +
 +	mutex_lock(&charger_lock);
-+	list_del(&uchger->list);
++	list_for_each_entry(uchger, &charger_list, list) {
++		if (!strcmp(uchger->name, name))
++			break;
++	}
 +	mutex_unlock(&charger_lock);
 +
-+	kfree(uchger);
++	if (WARN(!uchger, "can't find usb charger"))
++		return ERR_PTR(-ENODEV);
++
++	return uchger;
++}
++EXPORT_SYMBOL_GPL(usb_charger_find_by_name);
++
++/*
++ * usb_charger_get_type() - get the usb charger type with lock protection.
++ * @uchger - usb charger instance.
++ *
++ * Users can get the charger type by this safe API, rather than using the
++ * usb_charger structure directly.
++ */
++enum usb_charger_type usb_charger_get_type(struct usb_charger *uchger)
++{
++	enum usb_charger_type type;
++
++	mutex_lock(&uchger->lock);
++	type = uchger->type;
++	mutex_unlock(&uchger->lock);
++
++	return type;
++}
++EXPORT_SYMBOL_GPL(usb_charger_get_type);
++
++/*
++ * usb_charger_get_state() - Get the charger state with lock protection.
++ * @uchger - the usb charger instance.
++ *
++ * Users should get the charger state by this safe API.
++ */
++enum usb_charger_state usb_charger_get_state(struct usb_charger *uchger)
++{
++	enum usb_charger_state state;
++
++	mutex_lock(&uchger->lock);
++	state = uchger->state;
++	mutex_unlock(&uchger->lock);
++
++	return state;
++}
++EXPORT_SYMBOL_GPL(usb_charger_get_state);
++
++/*
++ * usb_charger_detect_type() - detect the charger type manually.
++ * @uchger - usb charger instance.
++ *
++ * Note: You should ensure you need to detect the charger type manually on your
++ * platform.
++ * You should call it at the right gadget state to avoid affecting gadget
++ * enumeration.
++ */
++int usb_charger_detect_type(struct usb_charger *uchger)
++{
++	enum usb_charger_type type;
++
++	if (!uchger->charger_detect)
++		return -EINVAL;
++
++	type = uchger->charger_detect(uchger);
++
++	mutex_lock(&uchger->lock);
++	uchger->type = type;
++	mutex_unlock(&uchger->lock);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(usb_charger_detect_type);
++
++/*
++ * usb_charger_get_type_by_others() - Get the usb charger type by the callback
++ * which is implemented by users.
++ * @uchger - the usb charger instance.
++ *
++ * Note: This function is just used for getting the charger type, not for
++ * detecting charger type which might affect the DP/DM line when gadget is on
++ * enumeration state.
++ */
++static enum usb_charger_type
++usb_charger_get_type_by_others(struct usb_charger *uchger)
++{
++	if (uchger->type != UNKNOWN_TYPE)
++		return uchger->type;
++
++	if (uchger->psy) {
++		union power_supply_propval val;
++
++		power_supply_get_property(uchger->psy,
++					  POWER_SUPPLY_PROP_CHARGE_TYPE,
++					  &val);
++		switch (val.intval) {
++		case POWER_SUPPLY_TYPE_USB:
++			uchger->type = SDP_TYPE;
++			break;
++		case POWER_SUPPLY_TYPE_USB_DCP:
++			uchger->type = DCP_TYPE;
++			break;
++		case POWER_SUPPLY_TYPE_USB_CDP:
++			uchger->type = CDP_TYPE;
++			break;
++		case POWER_SUPPLY_TYPE_USB_ACA:
++			uchger->type = ACA_TYPE;
++			break;
++		default:
++			uchger->type = UNKNOWN_TYPE;
++			break;
++		}
++	} else if (uchger->get_charger_type) {
++		uchger->type = uchger->get_charger_type(uchger);
++	} else {
++		uchger->type = UNKNOWN_TYPE;
++	}
++
++	return uchger->type;
++}
++
++/*
++ * __usb_charger_set_cur_limit_by_type() - Set the current limitation
++ * by charger type.
++ * @uchger - the usb charger instance.
++ * @type - the usb charger type.
++ * @cur_limit - the current limitation.
++ */
++static int __usb_charger_set_cur_limit_by_type(struct usb_charger *uchger,
++					       enum usb_charger_type type,
++					       unsigned int cur_limit)
++{
++	switch (type) {
++	case SDP_TYPE:
++		uchger->cur_limit.sdp_cur_limit = cur_limit;
++		uchger->sdp_default_cur_change = 1;
++		break;
++	case DCP_TYPE:
++		uchger->cur_limit.dcp_cur_limit = cur_limit;
++		break;
++	case CDP_TYPE:
++		uchger->cur_limit.cdp_cur_limit	= cur_limit;
++		break;
++	case ACA_TYPE:
++		uchger->cur_limit.aca_cur_limit	= cur_limit;
++		break;
++	default:
++		return -EINVAL;
++	}
++
 +	return 0;
 +}
 +
 +/*
-  * usb_charger_register() - Register a new usb charger.
-  * @uchger - the new usb charger instance.
-  */
-@@ -647,6 +696,7 @@ int usb_charger_init(struct usb_gadget *ugadget)
- 
- 	/* register a notifier on a usb gadget device */
- 	uchger->gadget = ugadget;
-+	ugadget->charger = uchger;
- 	uchger->old_gadget_state = USB_STATE_NOTATTACHED;
- 
- 	/* register a new usb charger */
-@@ -669,7 +719,18 @@ fail:
- 
- int usb_charger_exit(struct usb_gadget *ugadget)
- {
--	return 0;
-+	struct usb_charger *uchger = ugadget->charger;
++ * usb_charger_set_cur_limit_by_gadget() - Set the current limitation from
++ * gadget layer.
++ * @gadget - the usb gadget device.
++ * @cur_limit - the current limitation.
++ *
++ * Note: This function is used in atomic contexts without mutex lock.
++ */
++int usb_charger_set_cur_limit_by_gadget(struct usb_gadget *gadget,
++					unsigned int cur_limit)
++{
++	return 0;
++}
++EXPORT_SYMBOL_GPL(usb_charger_set_cur_limit_by_gadget);
++
++/*
++ * usb_charger_set_cur_limit_by_type() - Set the current limitation
++ * by charger type with lock protection.
++ * @uchger - the usb charger instance.
++ * @type - the usb charger type.
++ * @cur_limit - the current limitation.
++ *
++ * Users should set the current limitation by this lock protection API.
++ */
++int usb_charger_set_cur_limit_by_type(struct usb_charger *uchger,
++				      enum usb_charger_type type,
++				      unsigned int cur_limit)
++{
++	int ret;
 +
 +	if (!uchger)
 +		return -EINVAL;
 +
-+	ugadget->charger = NULL;
-+	if (uchger->extcon_dev)
++	mutex_lock(&uchger->lock);
++	ret = __usb_charger_set_cur_limit_by_type(uchger, type, cur_limit);
++	mutex_unlock(&uchger->lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(usb_charger_set_cur_limit_by_type);
++
++/*
++ * usb_charger_set_cur_limit() - Set the current limitation.
++ * @uchger - the usb charger instance.
++ * @cur_limit_set - the current limitation.
++ */
++int usb_charger_set_cur_limit(struct usb_charger *uchger,
++			      struct usb_charger_cur_limit *cur_limit_set)
++{
++	if (!uchger || !cur_limit_set)
++		return -EINVAL;
++
++	mutex_lock(&uchger->lock);
++	uchger->cur_limit.sdp_cur_limit = cur_limit_set->sdp_cur_limit;
++	uchger->cur_limit.dcp_cur_limit = cur_limit_set->dcp_cur_limit;
++	uchger->cur_limit.cdp_cur_limit = cur_limit_set->cdp_cur_limit;
++	uchger->cur_limit.aca_cur_limit = cur_limit_set->aca_cur_limit;
++	uchger->sdp_default_cur_change = 1;
++	mutex_unlock(&uchger->lock);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(usb_charger_set_cur_limit);
++
++/*
++ * __usb_charger_get_cur_limit() - Get the current limitation by
++ * different usb charger type.
++ * @uchger - the usb charger instance.
++ *
++ * return the current limitation to set.
++ */
++static unsigned int
++__usb_charger_get_cur_limit(struct usb_charger *uchger)
++{
++	enum usb_charger_type uchger_type =
++		usb_charger_get_type_by_others(uchger);
++	unsigned int cur_limit;
++
++	switch (uchger_type) {
++	case SDP_TYPE:
++		/*
++		 * For super speed gadget, the default charger current should
++		 * be 900 mA.
++		 */
++		if (!uchger->sdp_default_cur_change && uchger->gadget &&
++		    uchger->gadget->speed >= USB_SPEED_SUPER) {
++			uchger->cur_limit.sdp_cur_limit =
++				DEFAULT_SDP_CUR_LIMIT_SS;
++
++			uchger->sdp_default_cur_change = 1;
++		}
++
++		cur_limit = uchger->cur_limit.sdp_cur_limit;
++		break;
++	case DCP_TYPE:
++		cur_limit = uchger->cur_limit.dcp_cur_limit;
++		break;
++	case CDP_TYPE:
++		cur_limit = uchger->cur_limit.cdp_cur_limit;
++		break;
++	case ACA_TYPE:
++		cur_limit = uchger->cur_limit.aca_cur_limit;
++		break;
++	default:
++		return 0;
++	}
++
++	return cur_limit;
++}
++
++/*
++ * usb_charger_get_cur_limit() - Get the charger current with lock protection.
++ * @uchger - the usb charger instance.
++ *
++ * Users should get the charger current by this safe API.
++ */
++unsigned int usb_charger_get_cur_limit(struct usb_charger *uchger)
++{
++	unsigned int cur;
++
++	mutex_lock(&uchger->lock);
++	cur = __usb_charger_get_cur_limit(uchger);
++	mutex_unlock(&uchger->lock);
++
++	return cur;
++}
++EXPORT_SYMBOL_GPL(usb_charger_get_cur_limit);
++
++/*
++ * usb_charger_register_notify() - Register a notifiee to get notified by
++ * any attach status changes from the usb charger detection.
++ * @uchger - the usb charger instance which is monitored.
++ * @nb - a notifier block to be registered.
++ */
++int usb_charger_register_notify(struct usb_charger *uchger,
++				struct notifier_block *nb)
++{
++	int ret;
++
++	if (!uchger || !nb) {
++		pr_err("Charger or nb can not be NULL.\n");
++		return -EINVAL;
++	}
++
++	mutex_lock(&uchger->lock);
++	ret = raw_notifier_chain_register(&uchger->uchger_nh, nb);
++
++	/* Generate an initial notify so users start in the right state */
++	if (!ret) {
++		usb_charger_get_type_by_others(uchger);
++		raw_notifier_call_chain(&uchger->uchger_nh,
++					__usb_charger_get_cur_limit(uchger),
++					uchger);
++	}
++	mutex_unlock(&uchger->lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(usb_charger_register_notify);
++
++/*
++ * usb_charger_unregister_notify() - Unregister a notifiee from the usb charger.
++ * @uchger - the usb charger instance which is monitored.
++ * @nb - a notifier block to be unregistered.
++ */
++int usb_charger_unregister_notify(struct usb_charger *uchger,
++				  struct notifier_block *nb)
++{
++	int ret;
++
++	if (!uchger || !nb) {
++		pr_err("Charger or nb can not be NULL.\n");
++		return -EINVAL;
++	}
++
++	mutex_lock(&uchger->lock);
++	ret = raw_notifier_chain_unregister(&uchger->uchger_nh, nb);
++	mutex_unlock(&uchger->lock);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(usb_charger_unregister_notify);
++
++/*
++ * usb_charger_notifier_others() - It will notify other device registered
++ * on usb charger when the usb charger state is changed.
++ * @uchger - the usb charger instance.
++ * @state - the state of the usb charger.
++ */
++static void
++usb_charger_notify_others(struct usb_charger *uchger,
++			  enum usb_charger_state state)
++{
++	char uchger_state[50] = { 0 };
++	char *envp[] = { uchger_state, NULL };
++
++	mutex_lock(&uchger->lock);
++	uchger->state = state;
++
++	switch (state) {
++	case USB_CHARGER_PRESENT:
++		usb_charger_get_type_by_others(uchger);
++		raw_notifier_call_chain(&uchger->uchger_nh,
++			__usb_charger_get_cur_limit(uchger),
++			uchger);
++		snprintf(uchger_state, ARRAY_SIZE(uchger_state),
++			 "USB_CHARGER_STATE=%s", "USB_CHARGER_PRESENT");
++		break;
++	case USB_CHARGER_REMOVE:
++		uchger->type = UNKNOWN_TYPE;
++		raw_notifier_call_chain(&uchger->uchger_nh, 0, uchger);
++		snprintf(uchger_state, ARRAY_SIZE(uchger_state),
++			 "USB_CHARGER_STATE=%s", "USB_CHARGER_REMOVE");
++		break;
++	default:
++		pr_warn("Unknown USB charger state: %d\n", state);
++		mutex_unlock(&uchger->lock);
++		return;
++	}
++
++	kobject_uevent_env(&uchger->gadget->dev.kobj, KOBJ_CHANGE, envp);
++	mutex_unlock(&uchger->lock);
++}
++
++/*
++ * usb_charger_plug_by_extcon() - The notifier call function which is registered
++ * on the extcon device.
++ * @nb - the notifier block that notified by extcon device.
++ * @state - the extcon device state.
++ * @data - here specify a extcon device.
++ *
++ * return the notify flag.
++ */
++static int
++usb_charger_plug_by_extcon(struct notifier_block *nb,
++			   unsigned long state, void *data)
++{
++	struct usb_charger_nb *extcon_nb =
++		container_of(nb, struct usb_charger_nb, nb);
++	struct usb_charger *uchger = extcon_nb->uchger;
++	enum usb_charger_state uchger_state;
++
++	if (WARN(!uchger, "charger can not be NULL"))
++		return NOTIFY_BAD;
++
++	/*
++	 * Report event to power to setting the current limitation
++	 * for this usb charger when one usb charger is added or removed
++	 * with detecting by extcon device.
++	 */
++	if (state)
++		uchger_state = USB_CHARGER_PRESENT;
++	else
++		uchger_state = USB_CHARGER_REMOVE;
++
++	usb_charger_notify_others(uchger, uchger_state);
++
++	return NOTIFY_OK;
++}
++
++/*
++ * usb_charger_plug_by_gadget() - Set the usb charger current limitation
++ * according to the usb gadget device state.
++ * @gadget - the usb gadget device.
++ * @state - the usb gadget state.
++ */
++int usb_charger_plug_by_gadget(struct usb_gadget *gadget,
++			       unsigned long state)
++{
++	return 0;
++}
++EXPORT_SYMBOL_GPL(usb_charger_plug_by_gadget);
++
++/*
++ * usb_charger_register() - Register a new usb charger.
++ * @uchger - the new usb charger instance.
++ */
++static int usb_charger_register(struct usb_charger *uchger)
++{
++	int ret;
++
++	ret = ida_simple_get(&usb_charger_ida, 0, 0, GFP_KERNEL);
++	if (ret < 0) {
++		pr_err("Failed to register usb charger: %d\n", ret);
++		return ret;
++	}
++
++	uchger->id = ret;
++	scnprintf(uchger->name, CHARGER_NAME_MAX, "usb-charger.%d", uchger->id);
++
++	ret = sysfs_create_groups(&uchger->gadget->dev.kobj,
++				  usb_charger_groups);
++	if (ret) {
++		pr_err("Failed to create usb charger attributes: %d\n", ret);
++		goto fail;
++	}
++
++	mutex_lock(&charger_lock);
++	list_add_tail(&uchger->list, &charger_list);
++	mutex_unlock(&charger_lock);
++
++	return 0;
++
++fail:
++	ida_simple_remove(&usb_charger_ida, uchger->id);
++	uchger->id = -1;
++	return ret;
++}
++
++int usb_charger_init(struct usb_gadget *ugadget)
++{
++	struct usb_charger *uchger;
++	struct extcon_dev *edev;
++	struct power_supply *psy;
++	int ret;
++
++	uchger = kzalloc(sizeof(struct usb_charger), GFP_KERNEL);
++	if (!uchger)
++		return -ENOMEM;
++
++	uchger->type = UNKNOWN_TYPE;
++	uchger->state = USB_CHARGER_DEFAULT;
++	uchger->id = -1;
++	uchger->sdp_default_cur_change = 0;
++
++	uchger->cur_limit.sdp_cur_limit = DEFAULT_SDP_CUR_LIMIT;
++	uchger->cur_limit.dcp_cur_limit = DEFAULT_DCP_CUR_LIMIT;
++	uchger->cur_limit.cdp_cur_limit = DEFAULT_CDP_CUR_LIMIT;
++	uchger->cur_limit.aca_cur_limit = DEFAULT_ACA_CUR_LIMIT;
++
++	mutex_init(&uchger->lock);
++	RAW_INIT_NOTIFIER_HEAD(&uchger->uchger_nh);
++
++	/* register a notifier on a extcon device if it is exsited */
++	edev = extcon_get_edev_by_phandle(ugadget->dev.parent, 0);
++	if (!IS_ERR_OR_NULL(edev)) {
++		uchger->extcon_dev = edev;
++		uchger->extcon_nb.nb.notifier_call = usb_charger_plug_by_extcon;
++		uchger->extcon_nb.uchger = uchger;
++		extcon_register_notifier(edev, EXTCON_USB,
++					 &uchger->extcon_nb.nb);
++	}
++
++	/* to check if the usb charger is link to a power supply */
++	psy = devm_power_supply_get_by_phandle(ugadget->dev.parent,
++					       "power-supplies");
++	if (!IS_ERR_OR_NULL(psy))
++		uchger->psy = psy;
++	else
++		uchger->psy = NULL;
++
++	/* register a notifier on a usb gadget device */
++	uchger->gadget = ugadget;
++	uchger->old_gadget_state = USB_STATE_NOTATTACHED;
++
++	/* register a new usb charger */
++	ret = usb_charger_register(uchger);
++	if (ret)
++		goto fail;
++
++	return 0;
++
++fail:
++	if (uchger->extcon_dev) {
 +		extcon_unregister_notifier(uchger->extcon_dev,
 +					   EXTCON_USB,
 +					   &uchger->extcon_nb.nb);
++	}
 +
-+	return usb_charger_unregister(uchger);
- }
- 
- MODULE_AUTHOR("Baolin Wang <baolin.wang@linaro.org>");
++	kfree(uchger);
++	return ret;
++}
++
++int usb_charger_exit(struct usb_gadget *ugadget)
++{
++	return 0;
++}
++
++MODULE_AUTHOR("Baolin Wang <baolin.wang@linaro.org>");
++MODULE_DESCRIPTION("USB charger driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/usb/charger.h b/include/linux/usb/charger.h
+new file mode 100644
+index 0000000..a4da19a
+--- /dev/null
++++ b/include/linux/usb/charger.h
+@@ -0,0 +1,183 @@
++#ifndef __LINUX_USB_CHARGER_H__
++#define __LINUX_USB_CHARGER_H__
++
++#include <uapi/linux/usb/ch9.h>
++#include <uapi/linux/usb/charger.h>
++
++#define CHARGER_NAME_MAX 30
++
++/* Current limitation by charger type */
++struct usb_charger_cur_limit {
++	unsigned int sdp_cur_limit;
++	unsigned int dcp_cur_limit;
++	unsigned int cdp_cur_limit;
++	unsigned int aca_cur_limit;
++};
++
++struct usb_charger_nb {
++	struct notifier_block	nb;
++	struct usb_charger	*uchger;
++};
++
++/**
++ * struct usb_charger - describe one usb charger
++ * @name: Charger name.
++ * @list: For linking usb charger instances into one global list.
++ * @uchger_nh: Notifier head for users to register.
++ * @lock: Protect the notifier head and charger.
++ * @id: The charger id.
++ * @type: The charger type, it can be SDP_TYPE, DCP_TYPE, CDP_TYPE or
++ * ACA_TYPE.
++ * @state: Indicate the charger state.
++ * @extcon_dev: For supporting extcon usb gpio device to detect usb cable
++ * event (plugin or not).
++ * @extcon_nb: Report the events to charger from extcon device.
++ * @gadget: One usb charger is always tied to one usb gadget.
++ * @old_gadget_state: Record the previous state of one usb gadget to check if
++ * the gadget state is changed. If gadget state is changed, then notify the
++ * event to charger.
++ * @psy: User can get the charger type from power supply if the power supply
++ * supports POWER_SUPPLY_PROP_CHARGE_TYPE property.
++ * @get_charger_type: User can get charger type by implementing this callback.
++ * @charger_detect: Charger detection method can be implemented if you need to
++ * manually detect the charger type.
++ * @cur_limit: Describe the current limitation by charger type.
++ * @sdp_default_cur_change: Check if it is needed to change the SDP charger
++ * default current.
++ *
++ * Users can set 'get_charger_type' and 'charger_detect' callbacks directly
++ * according to their own requirements. Beyond that, users can not touch
++ * anything else directly in this structure.
++ */
++struct usb_charger {
++	char			name[CHARGER_NAME_MAX];
++	struct list_head	list;
++	struct raw_notifier_head	uchger_nh;
++	struct mutex		lock;
++	int			id;
++	enum usb_charger_type	type;
++	enum usb_charger_state	state;
++
++	struct extcon_dev	*extcon_dev;
++	struct usb_charger_nb	extcon_nb;
++
++	struct usb_gadget	*gadget;
++	enum usb_device_state	old_gadget_state;
++
++	struct power_supply	*psy;
++
++	enum usb_charger_type	(*get_charger_type)(struct usb_charger *);
++	enum usb_charger_type	(*charger_detect)(struct usb_charger *);
++
++	struct usb_charger_cur_limit	cur_limit;
++	unsigned int		sdp_default_cur_change;
++};
++
++#ifdef CONFIG_USB_CHARGER
++extern struct usb_charger *usb_charger_find_by_name(const char *name);
++
++extern int usb_charger_register_notify(struct usb_charger *uchger,
++				       struct notifier_block *nb);
++extern int usb_charger_unregister_notify(struct usb_charger *uchger,
++					 struct notifier_block *nb);
++
++extern int usb_charger_set_cur_limit(struct usb_charger *uchger,
++				struct usb_charger_cur_limit *cur_limit_set);
++extern int usb_charger_set_cur_limit_by_type(struct usb_charger *uchger,
++					     enum usb_charger_type type,
++					     unsigned int cur_limit);
++extern int usb_charger_set_cur_limit_by_gadget(struct usb_gadget *gadget,
++					       unsigned int cur_limit);
++extern unsigned int usb_charger_get_cur_limit(struct usb_charger *uchger);
++
++extern int usb_charger_plug_by_gadget(struct usb_gadget *gadget,
++				      unsigned long state);
++extern enum usb_charger_type usb_charger_get_type(struct usb_charger *uchger);
++extern int usb_charger_detect_type(struct usb_charger *uchger);
++extern enum usb_charger_state usb_charger_get_state(struct usb_charger *uchger);
++
++extern int usb_charger_init(struct usb_gadget *ugadget);
++extern int usb_charger_exit(struct usb_gadget *ugadget);
++#else
++static inline struct usb_charger *usb_charger_find_by_name(const char *name)
++{
++	return ERR_PTR(-ENODEV);
++}
++
++static inline int
++usb_charger_register_notify(struct usb_charger *uchger,
++			    struct notifier_block *nb)
++{
++	return 0;
++}
++
++static inline int
++usb_charger_unregister_notify(struct usb_charger *uchger,
++			      struct notifier_block *nb)
++{
++	return 0;
++}
++
++static inline int
++usb_charger_set_cur_limit(struct usb_charger *uchger,
++			  struct usb_charger_cur_limit *cur_limit_set)
++{
++	return 0;
++}
++
++static inline int
++usb_charger_set_cur_limit_by_type(struct usb_charger *uchger,
++				  enum usb_charger_type type,
++				  unsigned int cur_limit)
++{
++	return 0;
++}
++
++static inline int
++usb_charger_set_cur_limit_by_gadget(struct usb_gadget *gadget,
++				    unsigned int cur_limit)
++{
++	return 0;
++}
++
++static inline unsigned int
++usb_charger_get_cur_limit(struct usb_charger *uchger)
++{
++	return 0;
++}
++
++static inline enum usb_charger_type
++usb_charger_get_type(struct usb_charger *uchger)
++{
++	return UNKNOWN_TYPE;
++}
++
++static inline enum usb_charger_state
++usb_charger_get_state(struct usb_charger *uchger)
++{
++	return USB_CHARGER_REMOVE;
++}
++
++static inline int usb_charger_detect_type(struct usb_charger *uchger)
++{
++	return 0;
++}
++
++static inline int
++usb_charger_plug_by_gadget(struct usb_gadget *gadget, unsigned long state)
++{
++	return 0;
++}
++
++static inline int usb_charger_init(struct usb_gadget *ugadget)
++{
++	return 0;
++}
++
++static inline int usb_charger_exit(struct usb_gadget *ugadget)
++{
++	return 0;
++}
++#endif
++
++#endif /* __LINUX_USB_CHARGER_H__ */
+diff --git a/include/uapi/linux/usb/charger.h b/include/uapi/linux/usb/charger.h
+new file mode 100644
+index 0000000..3c56ec4
+--- /dev/null
++++ b/include/uapi/linux/usb/charger.h
+@@ -0,0 +1,31 @@
++/*
++ * This file defines the USB charger type and state that are needed for
++ * USB device APIs.
++ */
++
++#ifndef _UAPI__LINUX_USB_CHARGER_H
++#define _UAPI__LINUX_USB_CHARGER_H
++
++/*
++ * USB charger type:
++ * SDP (Standard Downstream Port)
++ * DCP (Dedicated Charging Port)
++ * CDP (Charging Downstream Port)
++ * ACA (Accessory Charger Adapters)
++ */
++enum usb_charger_type {
++	UNKNOWN_TYPE,
++	SDP_TYPE,
++	DCP_TYPE,
++	CDP_TYPE,
++	ACA_TYPE,
++};
++
++/* USB charger state */
++enum usb_charger_state {
++	USB_CHARGER_DEFAULT,
++	USB_CHARGER_PRESENT,
++	USB_CHARGER_REMOVE,
++};
++
++#endif /* _UAPI__LINUX_USB_CHARGER_H */
 -- 
 1.7.9.5
-
