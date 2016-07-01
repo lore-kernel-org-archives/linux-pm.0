@@ -1,68 +1,73 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH 7/7] devfreq: exynos-bus: add missing of_node_put after
- calling of_parse_phandle
-Date: Fri, 1 Jul 2016 17:42:01 +0800
-Message-ID: <1467366121-14120-8-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH 3/7] arm: mach-u300: regulator: add missing of_node_put after calling of_parse_phandle
+Date: Fri, 1 Jul 2016 17:41:57 +0800
+Message-ID: <1467366121-14120-4-git-send-email-peter.chen__19870.7299925902$1467367686$gmane$org@nxp.com>
 References: <1467366121-14120-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-by2nam03on0045.outbound.protection.outlook.com ([104.47.42.45]:61360
+	"EHLO NAM03-BY2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752211AbcGAKHZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 1 Jul 2016 06:07:25 -0400
 In-Reply-To: <1467366121-14120-1-git-send-email-peter.chen@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Peter Chen <peter.chen@nxp.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: Peter Chen <peter.chen@nxp.com>, Linus Walleij <linus.walleij@linaro.org>
 
 of_node_put needs to be called when the device node which is got
 from of_parse_phandle has finished using.
 
-Cc: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
 Signed-off-by: Peter Chen <peter.chen@nxp.com>
 ---
- drivers/devfreq/exynos-bus.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+ arch/arm/mach-u300/regulator.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-index 2363d0a..a38b5ec 100644
---- a/drivers/devfreq/exynos-bus.c
-+++ b/drivers/devfreq/exynos-bus.c
-@@ -383,7 +383,7 @@ err_clk:
- static int exynos_bus_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
--	struct device_node *np = dev->of_node;
-+	struct device_node *np = dev->of_node, node;
- 	struct devfreq_dev_profile *profile;
- 	struct devfreq_simple_ondemand_data *ondemand_data;
- 	struct devfreq_passive_data *passive_data;
-@@ -415,10 +415,13 @@ static int exynos_bus_probe(struct platform_device *pdev)
- 		goto err;
+diff --git a/arch/arm/mach-u300/regulator.c b/arch/arm/mach-u300/regulator.c
+index 595b574..509643e 100644
+--- a/arch/arm/mach-u300/regulator.c
++++ b/arch/arm/mach-u300/regulator.c
+@@ -71,19 +71,21 @@ static int __init __u300_init_boardpower(struct platform_device *pdev)
+ 	regmap = syscon_node_to_regmap(syscon_np);
+ 	if (IS_ERR(regmap)) {
+ 		pr_crit("U300: could not locate syscon regmap\n");
+-		return PTR_ERR(regmap);
++		err = PTR_ERR(regmap);
++		goto error;
  	}
  
--	if (of_parse_phandle(dev->of_node, "devfreq", 0))
-+	node = of_parse_phandle(dev->of_node, "devfreq", 0);
-+	if (node) {
-+		of_node_put(node);
- 		goto passive;
--	else
-+	} else {
- 		ret = exynos_bus_parent_parse_of(np, bus);
-+	}
+ 	main_power_15 = regulator_get(&pdev->dev, "vana15");
  
- 	if (ret < 0)
- 		goto err;
+ 	if (IS_ERR(main_power_15)) {
+ 		pr_err("could not get vana15");
+-		return PTR_ERR(main_power_15);
++		err = PTR_ERR(main_power_15);
++		goto error;
+ 	}
+ 	err = regulator_enable(main_power_15);
+ 	if (err) {
+ 		pr_err("could not enable vana15\n");
+-		return err;
++		goto error;
+ 	}
+ 
+ 	/*
+@@ -99,8 +101,12 @@ static int __init __u300_init_boardpower(struct platform_device *pdev)
+ 
+ 	/* Register globally exported PM poweroff hook */
+ 	pm_power_off = u300_pm_poweroff;
++	of_node_put(syscon_np);
+ 
+ 	return 0;
++error:
++	of_node_put(syscon_np);
++	return err;
+ }
+ 
+ static int __init s365_board_probe(struct platform_device *pdev)
 -- 
 1.9.1
+
