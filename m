@@ -1,65 +1,63 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.7-rc6
-Date: Fri, 1 Jul 2016 23:14:53 +0200
-Message-ID: <CAJZ5v0gUAsbZq3-OOksvMHREDAv7-2HwkVKNZHO-0P49_SYBXA@mail.gmail.com>
+From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Subject: Re: [PATCH v2 1/2] Documentation: Add sbs-manager device tree node
+ documentation
+Date: Fri, 01 Jul 2016 23:49:31 +0200
+Message-ID: <1467409771.9121.38.camel@amnesix>
+References: <1bFnWI-0000MX-9R>
+	 <1467317142-14063-1-git-send-email-karl-heinz@schneider-inet.de>
+	 <1467317142-14063-2-git-send-email-karl-heinz@schneider-inet.de>
+	 <20160630225217.GA11555@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:33608 "EHLO
-	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752441AbcGAVOz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 17:14:55 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20160630225217.GA11555@earth>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-Hi Linus,
+Hi Sebastian,
 
-Please pull from
+Am Freitag, den 01.07.2016, 00:52 +0200 schrieb Sebastian Reichel:
+> Hi,
+> 
+> On Thu, Jun 30, 2016 at 10:05:41PM +0200, Karl-Heinz Schneider wrote:
+> > This patch adds device tree documentation for the sbs-manager
+> > 
+> > Reviewed-by: Phil Reid <preid@electromag.com.au>
+> > Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+> > ---
+> >  .../devicetree/bindings/power/sbs,sbs-manager.txt  | 52 ++++++++++++++++++++++
+> >  1 file changed, 52 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+> > new file mode 100644
+> > index 0000000..1d7e5ee
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+> > @@ -0,0 +1,52 @@
+> > +Binding for sbs-manager
+> > +
+> > +Required properties:
+> > +- compatible: should be "lltc,ltc1760" or use "sbs,sbs-manager" as fallback.
+> > +- reg: integer, i2c address of the device. Should be <0xa>.
+> > +
+> > +From OS view the device is basically an i2c-mux used to communicate with up to
+> > +four smart battery devices at address 0xb. The driver actually implements this
+> > +behaviour. So standard i2c-mux nodes can be used to register up to four slave
+> > +batteries. Channels will be numerated as 1, 2, 4 and 8.
+> 
+> I think it's better to use channel 1-4 and do the translation in the
+> driver's channel select method. It means one does not have to worry
+> about anybody accidently configuring channel 3 and it also maps
+> nicely to the datasheet talking about BAT1-BAT4.
+You're not the first one pointing that out... Will fix that in the next
+revision.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.7-rc6
+> 
+> -- Sebastian
 
-to receive power management fixes for v4.7-rc6 with top-most commit
-742c87bf27d3b715820da6f8a81d6357adbf18f8
-
- cpufreq: Avoid false-positive WARN_ON()s in cpufreq_update_policy()
-
-on top of commit 4c2e07c6a29e0129e975727b9f57eede813eea85
-
- Linux 4.7-rc5
-
-Three cpufreq fixes, one in the core (stable-candidate) and two
-in drivers (intel_pstate and cpufreq-dt).
-
-Specifics:
-
- - Fix a recent intel_pstate regression that caused the number of
-   wakeups to increase significantly on an idle system in some cases
-   due to excessive synchronize_sched() invocations (Rafael Wysocki).
-
- - Fix unnecessary invocations of WARN_ON() in the cpufreq core
-   after cpufreq has been suspended introduced during the 4.6 cycla
-   (Rafael Wysocki).
-
- - Fix an error code path in the cpufreq-dt-platdev driver that
-   forgets to drop a reference to a DT node (Masahiro Yamada).
-
-Thanks!
-
----------------
-
-Masahiro Yamada (1):
-      cpufreq: dt: call of_node_put() before error out
-
-Rafael J. Wysocki (2):
-      intel_pstate: Do not clear utilization update hooks on policy changes
-      cpufreq: Avoid false-positive WARN_ON()s in cpufreq_update_policy()
-
----------------
-
- drivers/cpufreq/cpufreq-dt-platdev.c | 7 ++++---
- drivers/cpufreq/cpufreq.c            | 4 ++++
- drivers/cpufreq/intel_pstate.c       | 5 +++--
- 3 files changed, 11 insertions(+), 5 deletions(-)
+-- 
+Greetings
