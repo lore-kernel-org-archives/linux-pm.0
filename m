@@ -1,13 +1,13 @@
 From: Peter Chen <peter.chen@nxp.com>
 Subject: [PATCH 3/7] arm: mach-u300: regulator: add missing of_node_put after calling of_parse_phandle
 Date: Fri, 1 Jul 2016 17:41:57 +0800
-Message-ID: <1467366121-14120-4-git-send-email-peter.chen__29316.9396849864$1467367688$gmane$org@nxp.com>
+Message-ID: <1467366121-14120-4-git-send-email-peter.chen__23218.5955312618$1467367695$gmane$org@nxp.com>
 References: <1467366121-14120-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1467366121-14120-1-git-send-email-peter.chen@nxp.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-renesas-soc-owner@vger.kernel.org
 To: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 Cc: Peter Chen <peter.chen@nxp.com>, Linus Walleij <linus.walleij@linaro.org>
 List-Id: linux-pm@vger.kernel.org
