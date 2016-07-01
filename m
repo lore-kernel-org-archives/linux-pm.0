@@ -1,11 +1,11 @@
 From: Peter Chen <peter.chen@nxp.com>
 Subject: [PATCH 0/7] add missing of_node_put after calling of_parse_phandle (1st)
 Date: Fri, 1 Jul 2016 17:41:54 +0800
-Message-ID: <1467366121-14120-1-git-send-email-peter.chen__16863.1589542658$1467379520$gmane$org@nxp.com>
+Message-ID: <1467366121-14120-1-git-send-email-peter.chen__11706.223319243$1467379533$gmane$org@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 Cc: Peter Chen <peter.chen@nxp.com>
 List-Id: linux-pm@vger.kernel.org
