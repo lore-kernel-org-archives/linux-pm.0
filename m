@@ -1,19 +1,14 @@
 From: Peter Chen <peter.chen@nxp.com>
 Subject: [PATCH 0/7] add missing of_node_put after calling of_parse_phandle (1st)
 Date: Fri, 1 Jul 2016 17:41:54 +0800
-Message-ID: <1467366121-14120-1-git-send-email-peter.chen__43473.8869000741$1467379596$gmane$org@nxp.com>
+Message-ID: <1467366121-14120-1-git-send-email-peter.chen__31073.7855070785$1467379603$gmane$org@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2nam02on0046.outbound.protection.outlook.com ([104.47.38.46]:62183
-	"EHLO NAM02-BL2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751280AbcGANZH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 1 Jul 2016 09:25:07 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 Cc: Peter Chen <peter.chen@nxp.com>
+List-Id: linux-pm@vger.kernel.org
 
 Hi all,
 
@@ -45,4 +40,3 @@ Peter Chen (7):
 
 -- 
 1.9.1
-
