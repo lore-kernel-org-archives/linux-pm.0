@@ -1,67 +1,102 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/2] cpufreq: Upstream Android's Interactive governor
-Date: Fri, 01 Jul 2016 22:48:15 +0200
-Message-ID: <1683879.7aNvap4GvS@vostro.rjw.lan>
-References: <cover.1463723328.git.viresh.kumar@linaro.org> <CAJZ5v0hW1yYD7FhOaK5Hkj7956jtQThzqY=OmCr38q_zDCjmog@mail.gmail.com> <20160630203022.GN12473@ubuntu>
+Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering possible parent clocks
+Date: Fri, 01 Jul 2016 22:53:44 +0200
+Message-ID: <1736057.IZk9ncTkZk@vostro.rjw.lan>
+References: <1466058085-19353-1-git-send-email-oss@buserror.net> <3794032.AoZL3DhM7U@vostro.rjw.lan> <1467356146.32358.32.camel@buserror.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42594 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64100 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752160AbcGAUoO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 16:44:14 -0400
-In-Reply-To: <20160630203022.GN12473@ubuntu>
+	by vger.kernel.org with SMTP id S1751911AbcGAUtj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jul 2016 16:49:39 -0400
+In-Reply-To: <1467356146.32358.32.camel@buserror.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, mike@android.com, toddpoynor@google.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kandoiruchi@google.com, Juri Lelli <juri.lelli@arm.com>, Steve Muckle <steve.muckle@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Scott Wood <oss@buserror.net>
+Cc: Scott Wood <scott.wood@nxp.com>, Yuantian Tang <yuantian.tang@nxp.com>, Russell King <linux@armlinux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Yang-Leo Li <leoyang.li@nxp.com>, Xiaofeng Ren <xiaofeng.ren@nxp.com>
 
-On Thursday, June 30, 2016 01:30:22 PM Viresh Kumar wrote:
-> On 20-05-16, 13:26, Rafael J. Wysocki wrote:
-> > On Fri, May 20, 2016 at 8:39 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > > Hi Rafael et. al.,
-> > >
-> > > We had some discussions [1] last week on the PM mailing about
-> > > upstreaming the cpufreq governor most widely used on Andoid Mobile
-> > > phones and tablets: Interactive governor. People (including Rafael)
-> > > mostly agreed that we better get it upstreamed and here is an attempt to
-> > > upstream most of it (idle notifiers aren't included in this series).
-> > >
-> > > I picked the latest code spread over 70-80 patches from [2].  The
-> > > unmodified code, based over mainline is pushed [4] for reference.
-> > >
-> > > I have updated the governor to align it with the current practices
-> > > followed with mainline governors, like using utilization hooks from the
-> > > scheduler and handling kobject (for governor's sysfs directory) in a
-> > > race free manner. And of course this included general cleanup of the
-> > > governor as well. This version is pushed here [3] for testing.
-> > >
-> > > The Android version of interactive governor also uses idle EXIT
-> > > notifiers, but that code isn't part of this series and will be sent
-> > > separately later. For people interested in looking at that, those are 3
-> > > minor patches on top of this series and are pushed here [5].
-> > >
-> > > I haven't changed the core logic of the governor intentionally, as that
-> > > rather requires more in-depth knowledge of the use case for which the
-> > > optimizations have been done. So, we should do any such thing later on
-> > > with new patches, so that people can find things easily.
-> > >
-> > > I also haven't tried to change the userspace interface as that may have
-> > > broken the userspace that already exists and uses this governor.
-> > >
-> > > This has been lightly tested on my Exynos board (dual ARM A15), where
-> > > the governor gets inserted/removed multiple times, the sysfs files are
-> > > all functional. The frequency gets changed with load, etc.
-> > >
-> > > This series is based of pm/bleeding-edge branch + few patches from
-> > > Rafael [6] & [7] and few minor cleanups from me [8].
-> > 
-> > OK, thanks!
-> > 
-> > This may take some time to review, though.
+On Friday, July 01, 2016 01:55:46 AM Scott Wood wrote:
+> On Thu, 2016-06-30 at 15:29 +0200, Rafael J. Wysocki wrote:
+> > On Thursday, June 30, 2016 05:46:42 AM Scott Wood wrote:
+> > > 
+> > > On 06/29/2016 10:02 PM, Yuantian Tang wrote:
+> > > > 
+> > > > > 
+> > > > > -----Original Message-----
+> > > > > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > > > > Sent: Thursday, June 30, 2016 10:24 AM
+> > > > > To: Yuantian Tang <yuantian.tang@nxp.com>
+> > > > > Cc: Scott Wood <oss@buserror.net>; Russell King <linux@armlinux.org.uk
+> > > > > >;
+> > > > > Michael Turquette <mturquette@baylibre.com>; Stephen Boyd
+> > > > > <sboyd@codeaurora.org>; Viresh Kumar <viresh.kumar@linaro.org>; linux-
+> > > > > clk@vger.kernel.org; linux-pm@vger.kernel.org; linuxppc-
+> > > > > dev@lists.ozlabs.org; Yang-Leo Li <leoyang.li@nxp.com>; Xiaofeng Ren
+> > > > > <xiaofeng.ren@nxp.com>; Scott Wood <scottwood@freescale.com>
+> > > > > Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering
+> > > > > possible
+> > > > > parent clocks
+> > > > > 
+> > > > > On Thursday, June 30, 2016 01:47:09 AM Yuantian Tang wrote:
+> > > > > > 
+> > > > > > > 
+> > > > > > > -----Original Message-----
+> > > > > > > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > > > > > > Sent: Thursday, June 30, 2016 9:47 AM
+> > > > > > > To: Yuantian Tang <yuantian.tang@nxp.com>
+> > > > > > > Cc: Scott Wood <oss@buserror.net>; Russell King
+> > > > > > > <linux@armlinux.org.uk>; Michael Turquette
+> > > > > > > <mturquette@baylibre.com>; Stephen Boyd <sboyd@codeaurora.org>;
+> > > > > > > Viresh Kumar <viresh.kumar@linaro.org>; linux- clk@vger.kernel.org
+> > > > > > > ;
+> > > > > > > linux-pm@vger.kernel.org; linuxppc- dev@lists.ozlabs.org; Yang-Leo
+> > > > > > > Li <leoyang.li@nxp.com>; Xiaofeng Ren <xiaofeng.ren@nxp.com>;
+> > > > > > > Scott
+> > > > > > > Wood <scottwood@freescale.com>
+> > > > > > > Subject: Re: [PATCH v3 1/2] clk: Add consumer APIs for discovering
+> > > > > > > possible parent clocks
+> > > > > > > 
+> > > > > > > On Wednesday, June 29, 2016 05:50:26 AM Yuantian Tang wrote:
+> > > > > > > > 
+> > > > > > > > Hi,
+> > > > > > > > 
+> > > > > > > > This patch is acked by clock maintainer. If no comments from
+> > > > > > > > anyone else,
+> > > > > > > we will merge it in next week.
+> > > > > > > 
+> > > > > > > There is a cpufreq commit depending on it.  Are you going to
+> > > > > > > handle
+> > > > > > > that one too?
+> > > > > > > 
+> > > > > > That one has been acked by cpufreq maintainer. You can get this from
+> > > > > patch comments.
+> > > > > 
+> > > > > I know that it has been ACKed.
+> > > > > 
+> > > > > My question is whether or not you are going to apply it along the
+> > > > > [1/2].
+> > > > > 
+> > > > > If not, it will have to be deferred until the [1/2] is merged and then
+> > > > > applied
+> > > > > which may not be desirable.
+> > > > > 
+> > > > I hope we can apply both at same time. Seems Scott has a few concerns.
+> > > > 
+> > > > What you think about this patch? Can you apply it?
+> > > > If you have applied this patch, then I can push CPUfreq maintainer to
+> > > > apply another one which will be delayed.
+> > > My only concern was getting an ack for this patch (1/2) -- did I miss it
+> > > somewhere?
+> > OK, so who's going to apply the series?
 > 
-> Ping !!
+> Ideally it should go via the cpufreq tree.
 
-More time needed, sorry.
+OK, I'll apply both, then.
+
+Who exactly has ACKed the [1/2] from the clk side?
+
+Thanks,
+Rafael
 
