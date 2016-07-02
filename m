@@ -1,66 +1,58 @@
 From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH 7/7] devfreq: exynos-bus: add missing of_node_put after
- calling of_parse_phandle
-Date: Sat, 2 Jul 2016 13:53:39 +0900
-Message-ID: <CAGTfZH2HmmEbbmvm9pqMKv_chzPfZvrRvk+g-fkYPQ7pDfGa0Q@mail.gmail.com>
-References: <1467366121-14120-1-git-send-email-peter.chen@nxp.com> <1467366121-14120-8-git-send-email-peter.chen@nxp.com>
+Subject: Re: [PATCH 03/12] PM,devfreq: Employ atomic_fetch_inc()
+Date: Sat, 2 Jul 2016 14:04:29 +0900
+Message-ID: <CAGTfZH0rdzcTbPsX+dgsZN49CQD7kiM2HoW2ukBeiSFE_r8Txg@mail.gmail.com>
+References: <1466453164-13185-1-git-send-email-dave@stgolabs.net> <1466453164-13185-4-git-send-email-dave@stgolabs.net>
 Reply-To: chanwoo@kernel.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1467366121-14120-8-git-send-email-peter.chen@nxp.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Peter Chen <peter.chen@nxp.com>
-Cc: linux-renesas-soc@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f196.google.com ([209.85.161.196]:34545 "EHLO
+	mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750792AbcGBFEb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 2 Jul 2016 01:04:31 -0400
+In-Reply-To: <1466453164-13185-4-git-send-email-dave@stgolabs.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Davidlohr Bueso <dave@stgolabs.net>
+Cc: peterz@infradead.org, mingo@kernel.org, davem@davemloft.net, Chanwoo Choi <cw00.choi@samsung.com>, dougthompson@xmission.com, bp@alien8.de, mchehab@osg.samsung.com, Greg KH <gregkh@linuxfoundation.org>, pfg@sgi.com, jikos@kernel.org, hans.verkuil@cisco.com, awalls@md.metrocast.net, dledford@redhat.com, sean.hefty@intel.com, kys@microsoft.com, heiko.carstens@de.ibm.com, James.Bottomley@hansenpartnership.com, sumit.semwal@linaro.org, schwidefsky@de.ibm.com, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Davidlohr Bueso <dbueso@suse.de>
 
-Hi Peter,
+Hi Davidlohr,
 
-2016-07-01 18:42 GMT+09:00 Peter Chen <peter.chen@nxp.com>:
-> of_node_put needs to be called when the device node which is got
-> from of_parse_phandle has finished using.
->
-> Cc: Chanwoo Choi <cw00.choi@samsung.com>
-> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> Cc: Kyungmin Park <kyungmin.park@samsung.com>
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> ---
->  drivers/devfreq/exynos-bus.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-> index 2363d0a..a38b5ec 100644
-> --- a/drivers/devfreq/exynos-bus.c
-> +++ b/drivers/devfreq/exynos-bus.c
-> @@ -383,7 +383,7 @@ err_clk:
->  static int exynos_bus_probe(struct platform_device *pdev)
->  {
->         struct device *dev = &pdev->dev;
-> -       struct device_node *np = dev->of_node;
-> +       struct device_node *np = dev->of_node, node;
->         struct devfreq_dev_profile *profile;
->         struct devfreq_simple_ondemand_data *ondemand_data;
->         struct devfreq_passive_data *passive_data;
-> @@ -415,10 +415,13 @@ static int exynos_bus_probe(struct platform_device *pdev)
->                 goto err;
->         }
->
-> -       if (of_parse_phandle(dev->of_node, "devfreq", 0))
-> +       node = of_parse_phandle(dev->of_node, "devfreq", 0);
-> +       if (node) {
-> +               of_node_put(node);
->                 goto passive;
-> -       else
-> +       } else {
->                 ret = exynos_bus_parent_parse_of(np, bus);
-> +       }
->
->         if (ret < 0)
->                 goto err;
 
 Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-Regards,
+Thanks,
 Chanwoo Choi
+
+
+2016-06-21 5:05 GMT+09:00 Davidlohr Bueso <dave@stgolabs.net>:
+> Now that we have fetch_inc() we can stop using inc_return() - 1.
+>
+> These are very similar to the existing OP-RETURN primitives we already
+> have, except they return the value of the atomic variable _before_
+> modification.
+>
+> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Davidlohr Bueso <dbueso@suse.de>
+> ---
+>  drivers/devfreq/devfreq-event.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
+> index 39b048eda2ce..45b02d3d7e7d 100644
+> --- a/drivers/devfreq/devfreq-event.c
+> +++ b/drivers/devfreq/devfreq-event.c
+> @@ -329,7 +329,7 @@ struct devfreq_event_dev *devfreq_event_add_edev(struct device *dev,
+>         edev->dev.class = devfreq_event_class;
+>         edev->dev.release = devfreq_event_release_edev;
+>
+> -       dev_set_name(&edev->dev, "event.%d", atomic_inc_return(&event_no) - 1);
+> +       dev_set_name(&edev->dev, "event.%d", atomic_fetch_inc(&event_no));
+>         ret = device_register(&edev->dev);
+>         if (ret < 0) {
+>                 put_device(&edev->dev);
+> --
+> 2.6.6
+>
