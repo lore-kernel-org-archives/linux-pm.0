@@ -1,69 +1,66 @@
 From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH 1/7] extcon: add missing of_node_put after calling
- of_parse_phandle
-Date: Sat, 2 Jul 2016 13:46:20 +0900
-Message-ID: <CAGTfZH0vSSNSJQHaNFjzd_ciPAcRG8bST-W5bacA2mi4T7sQTg@mail.gmail.com>
-References: <1467366121-14120-1-git-send-email-peter.chen@nxp.com>
- <1467366121-14120-2-git-send-email-peter.chen@nxp.com>
+Subject: Re: [PATCH 7/7] devfreq: exynos-bus: add missing of_node_put after
+ calling of_parse_phandle
+Date: Sat, 2 Jul 2016 13:53:39 +0900
+Message-ID: <CAGTfZH2HmmEbbmvm9pqMKv_chzPfZvrRvk+g-fkYPQ7pDfGa0Q@mail.gmail.com>
+References: <1467366121-14120-1-git-send-email-peter.chen@nxp.com> <1467366121-14120-8-git-send-email-peter.chen@nxp.com>
 Reply-To: chanwoo@kernel.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1467366121-14120-2-git-send-email-peter.chen@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1467366121-14120-8-git-send-email-peter.chen@nxp.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Peter Chen <peter.chen@nxp.com>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-renesas-soc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Cc: linux-renesas-soc@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kukjin Kim <kgene@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi Peter,
 
-Applied it.
-
-Regards,
-Chanwoo Choi
-
-2016-07-01 18:41 GMT+09:00 Peter Chen <peter.chen@nxp.com>:
+2016-07-01 18:42 GMT+09:00 Peter Chen <peter.chen@nxp.com>:
 > of_node_put needs to be called when the device node which is got
 > from of_parse_phandle has finished using.
 >
-> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
 > Cc: Chanwoo Choi <cw00.choi@samsung.com>
+> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 > Signed-off-by: Peter Chen <peter.chen@nxp.com>
 > ---
->  drivers/extcon/extcon.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/devfreq/exynos-bus.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
 >
-> diff --git a/drivers/extcon/extcon.c b/drivers/extcon/extcon.c
-> index 21a123c..86ea14d 100644
-> --- a/drivers/extcon/extcon.c
-> +++ b/drivers/extcon/extcon.c
-> @@ -1107,10 +1107,12 @@ struct extcon_dev *extcon_get_edev_by_phandle(struct device *dev, int index)
->         list_for_each_entry(edev, &extcon_dev_list, entry) {
->                 if (edev->dev.parent && edev->dev.parent->of_node == node) {
->                         mutex_unlock(&extcon_dev_list_lock);
-> +                       of_node_put(node);
->                         return edev;
->                 }
+> diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+> index 2363d0a..a38b5ec 100644
+> --- a/drivers/devfreq/exynos-bus.c
+> +++ b/drivers/devfreq/exynos-bus.c
+> @@ -383,7 +383,7 @@ err_clk:
+>  static int exynos_bus_probe(struct platform_device *pdev)
+>  {
+>         struct device *dev = &pdev->dev;
+> -       struct device_node *np = dev->of_node;
+> +       struct device_node *np = dev->of_node, node;
+>         struct devfreq_dev_profile *profile;
+>         struct devfreq_simple_ondemand_data *ondemand_data;
+>         struct devfreq_passive_data *passive_data;
+> @@ -415,10 +415,13 @@ static int exynos_bus_probe(struct platform_device *pdev)
+>                 goto err;
 >         }
->         mutex_unlock(&extcon_dev_list_lock);
-> +       of_node_put(node);
 >
->         return ERR_PTR(-EPROBE_DEFER);
->  }
-> --
-> 1.9.1
+> -       if (of_parse_phandle(dev->of_node, "devfreq", 0))
+> +       node = of_parse_phandle(dev->of_node, "devfreq", 0);
+> +       if (node) {
+> +               of_node_put(node);
+>                 goto passive;
+> -       else
+> +       } else {
+>                 ret = exynos_bus_parent_parse_of(np, bus);
+> +       }
 >
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>         if (ret < 0)
+>                 goto err;
+
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+Regards,
+Chanwoo Choi
