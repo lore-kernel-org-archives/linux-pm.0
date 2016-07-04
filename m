@@ -1,69 +1,130 @@
-From: "Nayak, Rajendra" <rnayak@codeaurora.org>
-Subject: Re: [PATCH v6 00/11] qcom: Add support for TSENS driver
-Date: Mon, 4 Jul 2016 13:34:06 +0530
-Message-ID: <577A1876.4000005@codeaurora.org>
-References: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org>
- <575A57F8.6060004@codeaurora.org> <576391B3.7090508@codeaurora.org>
- <57749F20.4010700@codeaurora.org>
- <20160701205223.GA7814@localhost.localdomain>
- <20160702012301.GB9035@localhost.localdomain>
+From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+Subject: Re: [RFC PATCH v2] ARM: tango: add Suspend-to-RAM support
+Date: Mon, 4 Jul 2016 11:01:44 +0200
+Message-ID: <577A25F8.80702@sigmadesigns.com>
+References: <5773D3FB.4030101@sigmadesigns.com> <577409E2.7020106@arm.com>
+ <5774DBDE.1070605@sigmadesigns.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20160702012301.GB9035@localhost.localdomain>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: andy.gross@linaro.org, rui.zhang@intel.com, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from a.mx.sdesigns.eu ([78.31.43.6]:64728 "EHLO a.mx.sdesigns.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932106AbcGDJBq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Jul 2016 05:01:46 -0400
+In-Reply-To: <5774DBDE.1070605@sigmadesigns.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Kevin Hilman <khilman@kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Sebastian Frias <sf84@laposte.net>, Robin Murphy <robin.murphy@arm.com>, Arnd Bergmann <arnd@arndb.de>
 
+On 30/06/2016 10:44, Marc Gonzalez wrote:
 
-On 7/2/2016 6:53 AM, Eduardo Valentin wrote:
-> On Fri, Jul 01, 2016 at 01:52:25PM -0700, Eduardo Valentin wrote:
->> On Thu, Jun 30, 2016 at 09:55:04AM +0530, Rajendra Nayak wrote:
->>> Rui,
->>>
->>> On 06/17/2016 11:29 AM, Nayak, Rajendra wrote:
->>>> Hey Eduardo,
->>>>
->>>> On 6/10/2016 11:32 AM, Rajendra Nayak wrote:
->>>>> Eduardo,
->>>>>
->>>>> On 05/05/2016 02:21 PM, Rajendra Nayak wrote:
->>>>>> Current set of patches apply on 4.6-rc6. Fixes for the nvmem apis
->>>>>> are now posted [1] and queued in -next [2]
->>>>>> Patches [1-6] will need to be merged via thermal tree/Eduardo.
->>>>>
->>>>> Any plans to pull these in for 4.8?
->>>>
->>>> These patches have been on the list for quite a while, and they
->>>> do not have any outstanding dependencies or comments to be
->>>> addressed. I would really hope to see these in for 4.8.
->>>> Let me know if there is something you want me to address before
->>>> you pull them in.
->>>
->>> Would you be able to pull this driver in? I haven't heard back
->>> anything from Eduardo despite multiple pings.
->>> These patches (v6) have been on the list for a couple months now,
->>> which address all issues/concerns that were raised by Eduardo
->>> in his previous reviews.
->>
->> Apologize for the late answer. I will take care of queueing them.
->
-> Applied patches 1-6. The DT patches lack the cooling map, on all of
-> them. In case you do not have a working cooling device in your
-> platform, at least add an empty map with a TODO flag.
+> Ask firmware to put RAM in self-refresh mode and power system down.
+> 
+>     echo mem > /sys/power/state
+> 
+> See Documentation/power/states.txt
+> 
+> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+> ---
+> 
+> This is a RFC because I have a few doubts:
+> 
+> 1) return value when tango_suspend() fails and unexpectedly returns (I used -EIO)
+> Is there a better error to return?
+> 
+> 2) conditionally building pm.c (using CONFIG_SUSPEND? CONFIG_PM_SLEEP? other?)
+> Is there a better config knob to use?
+> 
+> 3) .valid is required, right?
+> AFAICS, the answer is "yes", .valid is indeed required:
+> ("no valid callback implies that none are valid")
+> 
+> static bool valid_state(suspend_state_t state)
+> {
+> 	/*
+> 	 * PM_SUSPEND_STANDBY and PM_SUSPEND_MEM states need low level
+> 	 * support and need to be valid to the low level
+> 	 * implementation, no valid callback implies that none are valid.
+> 	 */
+> 	return suspend_ops && suspend_ops->valid && suspend_ops->valid(state);
+> }
+> 
+> ---
+>  arch/arm/mach-tango/Makefile |  1 +
+>  arch/arm/mach-tango/pm.c     | 32 ++++++++++++++++++++++++++++++++
+>  arch/arm/mach-tango/smc.h    |  1 +
+>  3 files changed, 34 insertions(+)
+>  create mode 100644 arch/arm/mach-tango/pm.c
+> 
+> diff --git a/arch/arm/mach-tango/Makefile b/arch/arm/mach-tango/Makefile
+> index 7ca753aa9fb6..822b7ca803c6 100644
+> --- a/arch/arm/mach-tango/Makefile
+> +++ b/arch/arm/mach-tango/Makefile
+> @@ -3,3 +3,4 @@ AFLAGS_smc.o := -Wa,-march=armv7-a$(plus_sec)
+>  
+>  obj-y += setup.o smc.o xenv.o
+>  obj-$(CONFIG_SMP) += platsmp.o
+> +obj-$(CONFIG_SUSPEND) += pm.o
+> diff --git a/arch/arm/mach-tango/pm.c b/arch/arm/mach-tango/pm.c
+> new file mode 100644
+> index 000000000000..b05c6d6f99d0
+> --- /dev/null
+> +++ b/arch/arm/mach-tango/pm.c
+> @@ -0,0 +1,32 @@
+> +#include <linux/init.h>
+> +#include <linux/suspend.h>
+> +#include <asm/suspend.h>
+> +#include "smc.h"
+> +
+> +static int tango_pm_powerdown(unsigned long arg)
+> +{
+> +	tango_suspend(virt_to_phys(cpu_resume));
+> +
+> +	return -EIO; /* tango_suspend has failed */
+> +}
+> +
+> +static int tango_pm_enter(suspend_state_t state)
+> +{
+> +	if (state == PM_SUSPEND_MEM)
+> +		return cpu_suspend(0, tango_pm_powerdown);
+> +
+> +	return -EINVAL;
+> +}
+> +
+> +static const struct platform_suspend_ops tango_pm_ops = {
+> +	.enter = tango_pm_enter,
+> +	.valid = suspend_valid_only_mem,
+> +};
+> +
+> +static int __init tango_pm_init(void)
+> +{
+> +	suspend_set_ops(&tango_pm_ops);
+> +	return 0;
+> +}
+> +
+> +late_initcall(tango_pm_init);
+> diff --git a/arch/arm/mach-tango/smc.h b/arch/arm/mach-tango/smc.h
+> index 3d31f984f44c..57919539da1b 100644
+> --- a/arch/arm/mach-tango/smc.h
+> +++ b/arch/arm/mach-tango/smc.h
+> @@ -3,5 +3,6 @@ extern int tango_smc(unsigned int val, unsigned int service);
+>  #define tango_set_l2_control(val)	tango_smc(val, 0x102)
+>  #define tango_start_aux_core(val)	tango_smc(val, 0x104)
+>  #define tango_set_aux_boot_addr(val)	tango_smc(val, 0x105)
+> +#define tango_suspend(val)		tango_smc(val, 0x120)
+>  #define tango_aux_core_die(val)		tango_smc(val, 0x121)
+>  #define tango_aux_core_kill(val)	tango_smc(val, 0x122)
+> 
 
-Thanks Eduardo. I will add empty maps in cases where
-CPUfreq support is still missing.
+Hello everyone,
 
->
-> After you fix the DT patch, you may add my
->
-> Acked-by: Eduardo Valentin <edubezval@gmail.com>
->
-> on them.
->
->>
->> BR,
->>
+I'll wait a few more days for comments, then I'll submit the patch
+to arm-soc for inclusion in v4.8 (if no issues are raised).
+
+(I suppose the return value for tango_pm_powerdown() is not that
+big a deal.)
+
+Regards.
+
