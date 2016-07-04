@@ -1,57 +1,66 @@
-From: Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v5] cpuidle: Fix last_residency division
-Date: Mon, 4 Jul 2016 16:10:00 +1000
-Message-ID: <5102d9f9-3b38-17c3-98ce-cceb073da764@gmail.com>
-References: <1467383054-1959-1-git-send-email-shreyas@linux.vnet.ibm.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] thermal: hwmon: EXPORT_SYMBOL for thermal hwmon sysfs
+Date: Mon, 4 Jul 2016 08:49:12 +0200
+Message-ID: <CAMuHMdUad0bA7-ueEZsT5CrHDkDrO2rHuULojQTmt7NKRtpK8w@mail.gmail.com>
+References: <87lh1ykqs4.wl%kuninori.morimoto.gx@renesas.com>
+ <201607031043.pubKFAon%fengguang.wu@intel.com> <87zipyz1w9.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:34532 "EHLO
-	mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbcGDGKH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2016 02:10:07 -0400
-Received: by mail-pf0-f194.google.com with SMTP id 66so15548769pfy.1
-        for <linux-pm@vger.kernel.org>; Sun, 03 Jul 2016 23:10:06 -0700 (PDT)
-In-Reply-To: <1467383054-1959-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <87zipyz1w9.wl%kuninori.morimoto.gx@renesas.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "cm-hiep@jinso.co.jp" <cm-hiep@jinso.co.jp>, PhucBui <bd-phuc@jinso.co.jp>
 List-Id: linux-pm@vger.kernel.org
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, daniel.lezcano@linaro.org, nicolas.pitre@linaro.org
 
+Hi Morimoto-san,
 
-
-On 02/07/16 00:24, Shreyas B. Prabhu wrote:
-> Snooze is a poll idle state in powernv and pseries platforms. Snooze
-> has a timeout so that if a cpu stays in snooze for more than target
-> residency of the next available idle state, then it would exit thereby
-> giving chance to the cpuidle governor to re-evaluate and
-> promote the cpu to a deeper idle state. Therefore whenever snooze exits
-> due to this timeout, its last_residency will be target_residency of next
-> deeper state.
-> 
-> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
-> changed the math around last_residency calculation. Specifically, while
-> converting last_residency value from nanoseconds to microseconds it does
-> right shift by 10. Due to this, in snooze timeout exit scenarios
-> last_residency calculated is roughly 2.3% less than target_residency of
-> next available state. This pattern is picked up get_typical_interval()
-> in the menu governor and therefore expected_interval in menu_select() is
-> frequently less than the target_residency of any state but snooze.
-> 
-> Due to this we are entering snooze at a higher rate, thereby affecting
-> the single thread performance.
-> 
-> Fix this by using precise division via ktime_us_delta.
-> 
-> Reported-by: Anton Blanchard <anton@samba.org>
-> Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+On Mon, Jul 4, 2016 at 2:31 AM, Kuninori Morimoto
+<kuninori.morimoto.gx@renesas.com> wrote:
+> From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+>
+> thermal_add_hwmon_sysfs()/thermal_remove_hwmon_sysfs() need
+> EXPORT_SYMBOL(). Otherwise we will have ERROR
+>
+>>> ERROR: "thermal_remove_hwmon_sysfs" [drivers/thermal/rcar_thermal.ko] undefined!
+>>> ERROR: "thermal_add_hwmon_sysfs" [drivers/thermal/rcar_thermal.ko] undefined!
+>
+> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 > ---
+>  drivers/thermal/thermal_hwmon.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+> index 06fd2ed9..8eecba8 100644
+> --- a/drivers/thermal/thermal_hwmon.c
+> +++ b/drivers/thermal/thermal_hwmon.c
+> @@ -232,6 +232,7 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+>
+>         return result;
+>  }
+> +EXPORT_SYMBOL(thermal_add_hwmon_sysfs);
 
-This looks so much cleaner :)
+EXPORT_SYMBOL_GPL?
+That seems to be prevalent in the thermal subsystem, except for a few cases
+in cpu_cooling.c and thermal_helpers.c.
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+>  void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+>  {
+> @@ -270,3 +271,4 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+>         hwmon_device_unregister(hwmon->device);
+>         kfree(hwmon);
+>  }
+> +EXPORT_SYMBOL(thermal_remove_hwmon_sysfs);
 
-Balbir
+EXPORT_SYMBOL_GPL?
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
