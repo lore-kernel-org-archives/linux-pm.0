@@ -1,109 +1,169 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 4/4] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
-Date: Mon, 4 Jul 2016 15:57:50 +0200
-Message-ID: <CAMuHMdU+nGmU0TJXtRxvfjsdFokhsh3e0m1DPXnU20k141BN5Q@mail.gmail.com>
-References: <1463485296-22742-1-git-send-email-ulf.hansson@linaro.org>
- <1463485296-22742-5-git-send-email-ulf.hansson@linaro.org>
- <CAMuHMdVM66516s_+Ups7fng5xpasdiUnW=3Ybz+vGHbgN+5mpQ@mail.gmail.com> <CAPDyKFotR6dk+ntMWH4nCjg2mFJe3YzVqw=M-6Vy7b8tdMFxsw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: James Morse <james.morse@arm.com>
+Subject: [PATCH v4 0/3] PM / Hibernate: Allow arch code to influence CPUs disabled during hibernate
+Date: Mon,  4 Jul 2016 15:52:27 +0100
+Message-ID: <1467643950-11034-1-git-send-email-james.morse@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f196.google.com ([209.85.223.196]:34551 "EHLO
-	mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753025AbcGDN5w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2016 09:57:52 -0400
-In-Reply-To: <CAPDyKFotR6dk+ntMWH4nCjg2mFJe3YzVqw=M-6Vy7b8tdMFxsw@mail.gmail.com>
+Received: from foss.arm.com ([217.140.101.70]:48262 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752206AbcGDOzG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Jul 2016 10:55:06 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Chen Yu C <yu.c.chen@intel.com>
 
-Hi Ulf,
+Hi all,
 
-On Wed, Jun 29, 2016 at 7:30 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 28 June 2016 at 18:26, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> This patch (commit eb13a0a1b6d5d5c2 in pm/linux-next) breaks resume on
->
-> Thanks for reporting!
->
->> sh73a0/kzm9g and r8a73a4/ape6evm. On these boards, the Ethernet controller is a
->> child of a local bus (bsc), whose clock (zb) is controlled through pm_clk and
->> simple-pm-bus, cfr.
->>
->>     arch/arm/boot/dts/r8a73a4-ape6evm.dts
->>     arch/arm/boot/dts/r8a73a4.dtsi
->>     arch/arm/boot/dts/sh73a0-kzm9g.dts
->>     arch/arm/boot/dts/sh73a0.dtsi
->>
->> During resume, the bus clock is not enabled, causing an imprecise abort
->> when accessing the Ethernet controller's registers. With some debug code
->> added:
->
-> I was looking into this in some more detail.
->
-> As you are stating that Ethernet device is a child device to the local
-> bus device, I would have expected that the pm_runtime_get_sync()
-> invoked during ->probe() in the Ethernet driver should cause its
-> parent device (the bus device) to be "forced" resumed.
->
-> That's because the pm_runtime_get_sync() should trigger an increased
-> usage count of the parent device. Later, when
-> pm_runtime_force_resume() validates the count for the bus device, it
-> should be 2 and thus it should lead to that it decides to *not* defer
-> the resume of the device. Apparently this isn't happening for some
-> reason...
->
-> Perhaps there's a pm_suspend_ignore_children() set for the parent?
-> Or perhaps the parent/child relationship isn't set up correctly?
+This series is a break-up/continuation of [v3]. These patches allow arm64 to
+hibernate on any CPU saving the cpu-id in the arch header, then switch to it
+during resume by hooking disable_nonboot_cpus(). Today we forbid
+hibernate if CPU0 has been offlined but this is futile if we booted via
+kexec, as this may have occured with CPU0 offline. The first sign something
+has gone wrong is a hang during resume.
 
-No, ignore_children = 0. I've dumped all fields from the bus' prepare
-callback I had added for Kevin's test:
+With this series applied I can offline CPU0, kexec, hibernate and then
+resume[3], the implementation is as discussed on the list[2].
 
-PM: Suspending system (mem)
-simple-pm-bus fec10000.bus: simple_pm_bus_prepare
-can_wakeup = 0
-async_suspend = 0
-is_prepared = 0
-is_suspended = 0
-is_noirq_suspended = 0
-is_late_suspended = 0
-early_init = 1
-direct_complete = 0
-wakeup_path = 0
-syscore = 0
-no_pm_callbacks = 0
-timer_expires = 0
-usage_count = 1
-child_count = 1
-disable_depth = 0
-idle_notification = 0
-request_pending = 0
-deferred_resume = 0
-run_wake = 0
-runtime_auto = 1
-ignore_children = 0
-no_callbacks = 0
-irq_safe = 0
-use_autosuspend = 0
-timer_autosuspends = 0
-memalloc_noio = 1
-request = 0
-runtime_status = 0
-runtime_error = 0
-autosuspend_delay = 0
-last_busy = 4294937777
-active_jiffies = 0
-suspended_jiffies = 430
-accounting_timestamp = 4294937777
-PM: suspend of devices complete after 4.394 msecs
+Patch one should be usable for Chen Yu's hlt/mwait problem too [1].
 
-Gr{oetje,eeting}s,
+This series is aimed at the PM tree, is based on v4.7-rc6, and can be
+retrieved from:
+git://linux-arm.org/linux-jm.git -b hibernate/cpuN/v4
 
-                        Geert
+Changes since v3:
+ * Split series, at the PM/Hibernate patch, merged arm64 patches to remove
+   dependencies.
+ * Changed Kconfig symbol name.
+ * Fixed logic error '<= 0' when testing for an unrecognised CPU.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Changes since v2:
+ * Split wrong-CPU logic into an earlier patch that just returns an error.
+ * Changed core code patch to use macros instead of a weak function.
+   CONFIG_ARCH_HIBERNATION_HEADER now implies an asm/suspend.h header.
+ * Wording in error messages 'hibernate' not 'suspend'.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Changes since v1:
+ * Fixed 'Brining' typo.
+
+
+[v1] http://www.spinics.net/lists/arm-kernel/msg507805.html
+[v2] http://permalink.gmane.org/gmane.linux.power-management.general/77467
+[v3] http://www.spinics.net/lists/arm-kernel/msg514644.html
+
+[0] http://www.spinics.net/lists/arm-kernel/msg499305.html
+[1] https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1176775.html
+[2] http://www.spinics.net/lists/arm-kernel/msg499036.html
+[3] offline cpu0, kexec, hibernate, resume
+-------------------------%<-------------------------
+root@ubuntu:~# echo disk > /sys/power/state
+PM: Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.007 seconds) done.
+PM: Preallocating image memory... done (allocated 10112 pages)
+PM: Allocated 647168 kbytes in 2.69 seconds (240.58 MB/s)
+Freezing remaining freezable tasks ... (elapsed 0.005 seconds) done.
+PM: freeze of devices complete after 27.013 msecs
+PM: late freeze of devices complete after 20.624 msecs
+PM: noirq freeze of devices complete after 22.211 msecs
+Disabling non-boot CPUs ...
+PM: Creating hibernation image:
+PM: Need to copy 10103 pages
+PM: Hibernation image created (10103 pages copied)
+PM: noirq thaw of devices complete after 22.350 msecs
+PM: early thaw of devices complete after 23.680 msecs
+PM: thaw of devices complete after 98.331 msecs
+hibernate: Suspending on cpu 0 [mpidr:0x103]
+PM: Using 1 thread(s) for compression.
+PM: Compressing and saving image data (10105 pages)...
+PM: Image saving progress:   0%
+atkbd serio0: keyboard reset failed on 1c060000.kmi
+atkbd serio1: keyboard reset failed on 1c070000.kmi
+PM: Image saving progress:  10%
+PM: Image saving progress:  20%
+PM: Image saving progress:  30%
+PM: Image saving progress:  40%
+PM: Image saving progress:  50%
+PM: Image saving progress:  60%
+PM: Image saving progress:  70%
+PM: Image saving progress:  80%
+PM: Image saving progress:  90%
+PM: Image saving progress: 100%
+PM: Image saving done.
+PM: Wrote 646720 kbytes in 93.08 seconds (6.94 MB/s)
+PM: S|
+reboot: Power down
+
+[ ... ]
+
+Freezing user space processes ... (elapsed 0.000 seconds) done.
+PM: Using 1 thread(s) for decompression.
+PM: Loading and decompressing image data (10105 pages)...
+hibernate: Suspended on cpu 5 [mpidr:0x103]
+hibernate: Suspended on a CPU that is offline! Brining CPU up.
+Detected VIPT I-cache on CPU5
+CPU5: Booted secondary processor [410fd033]
+random: nonblocking pool is initialized
+PM: Image loading progress:   0%
+PM: Image loading progress:  10%
+PM: Image loading progress:  20%
+PM: Image loading progress:  30%
+PM: Image loading progress:  40%
+PM: Image loading progress:  50%
+PM: Image loading progress:  60%
+PM: Image loading progress:  70%
+PM: Image loading progress:  80%
+PM: Image loading progress:  90%
+PM: Image loading progress: 100%
+PM: Image loading done.
+PM: Read 646720 kbytes in 30.47 seconds (21.22 MB/s)
+PM: quiesce of devices complete after 32.958 msecs
+PM: late quiesce of devices complete after 11.574 msecs
+PM: noirq quiesce of devices complete after 24.918 msecs
+hibernate: Disabling secondary CPUs ...
+IRQ1 no longer affine to CPU0
+IRQ6 no longer affine to CPU0
+IRQ28 no longer affine to CPU0
+IRQ29 no longer affine to CPU0
+IRQ32 no longer affine to CPU0
+IRQ34 no longer affine to CPU0
+IRQ35 no longer affine to CPU0
+IRQ37 no longer affine to CPU0
+IRQ41 no longer affine to CPU0
+IRQ48 no longer affine to CPU0
+CPU0: shutdown
+
+psci: CPU0 killed.
+PM: noirq restore of devices complete after 27.419 msecs
+PM: early restore of devices complete after 23.554 msecs
+PM: restore of devices complete after 113.188 msecs
+Restarting tasks ... done.
+root@ubuntu:~# atkbd serio0: keyboard reset failed on 1c060000.kmi
+atkbd serio1: keyboard reset failed on 1c070000.kmi
+root@ubuntu:~# cat /proc/cpuinfo
+processor       : 0
+BogoMIPS        : 100.00
+Features        : fp asimd evtstrm aes pmull sha1 sha2 crc32
+CPU implementer : 0x41
+CPU architecture: 8
+CPU variant     : 0x0
+CPU part        : 0xd03
+CPU revision    : 3
+
+root@ubuntu:~#
+-------------------------%<-------------------------
+
+James Morse (3):
+  PM / Hibernate: Allow arch code to influence CPUs disabled during
+    hibernate
+  arm64: hibernate: Resume when hibernate image created on non-boot CPU
+  Revert "arm64: hibernate: Refuse to hibernate if the boot cpu is
+    offline"
+
+ arch/arm64/Kconfig               |  4 ++
+ arch/arm64/include/asm/suspend.h |  4 ++
+ arch/arm64/kernel/hibernate.c    | 86 ++++++++++++++++++++++++++++++----------
+ kernel/power/hibernate.c         | 14 +++++--
+ 4 files changed, 84 insertions(+), 24 deletions(-)
+
+-- 
+2.8.0.rc3
+
