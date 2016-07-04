@@ -1,24 +1,26 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / sleep: make pm notifier called symmetrically
-Date: Mon, 04 Jul 2016 15:08:09 +0200
-Message-ID: <2216193.VQsjbIr0Ni@vostro.rjw.lan>
-References: <1466405547-3830-1-git-send-email-lianwei.wang@gmail.com>
+Subject: Re: [PATCH v1 1/1] tools/turbostat: allow user to alter DESTDIR and PREFIX
+Date: Mon, 04 Jul 2016 15:08:48 +0200
+Message-ID: <2932678.f1gtzO8SIO@vostro.rjw.lan>
+References: <1466168373-101010-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1466405547-3830-1-git-send-email-lianwei.wang@gmail.com>
+In-Reply-To: <1466168373-101010-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lianwei Wang <lianwei.wang@gmail.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, mingo@kernel.org, oleg@redhat.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, June 19, 2016 11:52:27 PM Lianwei Wang wrote:
-> This makes pm notifier PREPARE/POST symmetrical: if PREPARE
-> fails, we will only undo what ever happened on PREPARE.
+On Friday, June 17, 2016 03:59:33 PM Andy Shevchenko wrote:
+> When run
+> 	make -C tools DESTDIR=/my/nice/dir turbostat_install
+> get a message
+> 	install: cannot create regular file '/usr/bin/turbostat': Permission denied
 > 
-> It fixes the unbalanced cpu hotplug enable in cpu pm notifier.
+> Allow user to alter DESTDIR and PREFIX variables.
 > 
-> Signed-off-by: Lianwei Wang <lianwei.wang@gmail.com>
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
 Applied, thanks!
