@@ -1,130 +1,103 @@
-From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-Subject: Re: [RFC PATCH v2] ARM: tango: add Suspend-to-RAM support
-Date: Mon, 4 Jul 2016 11:01:44 +0200
-Message-ID: <577A25F8.80702@sigmadesigns.com>
-References: <5773D3FB.4030101@sigmadesigns.com> <577409E2.7020106@arm.com>
- <5774DBDE.1070605@sigmadesigns.com>
+From: James Morse <james.morse@arm.com>
+Subject: Re: [PATCH v3 5/7] PM / Hibernate: Allow arch code to influence CPU
+ hotplug during hibernate
+Date: Mon, 04 Jul 2016 10:04:26 +0100
+Message-ID: <577A269A.6060307@arm.com>
+References: <1467125510-18758-1-git-send-email-james.morse@arm.com> <1467125510-18758-6-git-send-email-james.morse@arm.com> <7811260.OWJXivZiAP@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from a.mx.sdesigns.eu ([78.31.43.6]:64728 "EHLO a.mx.sdesigns.eu"
+Received: from foss.arm.com ([217.140.101.70]:46105 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932106AbcGDJBq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Jul 2016 05:01:46 -0400
-In-Reply-To: <5774DBDE.1070605@sigmadesigns.com>
+	id S1753256AbcGDJGr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Jul 2016 05:06:47 -0400
+In-Reply-To: <7811260.OWJXivZiAP@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Mark Rutland <mark.rutland@arm.com>, Kevin Hilman <khilman@kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Mason <slash.tmp@free.fr>, Sebastian Frias <sf84@laposte.net>, Robin Murphy <robin.murphy@arm.com>, Arnd Bergmann <arnd@arndb.de>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Chen Yu C <yu.c.chen@intel.com>, linux-pm@vger.kernel.org
 
-On 30/06/2016 10:44, Marc Gonzalez wrote:
+Hi Rafael,
 
-> Ask firmware to put RAM in self-refresh mode and power system down.
-> 
->     echo mem > /sys/power/state
-> 
-> See Documentation/power/states.txt
-> 
-> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-> ---
-> 
-> This is a RFC because I have a few doubts:
-> 
-> 1) return value when tango_suspend() fails and unexpectedly returns (I used -EIO)
-> Is there a better error to return?
-> 
-> 2) conditionally building pm.c (using CONFIG_SUSPEND? CONFIG_PM_SLEEP? other?)
-> Is there a better config knob to use?
-> 
-> 3) .valid is required, right?
-> AFAICS, the answer is "yes", .valid is indeed required:
-> ("no valid callback implies that none are valid")
-> 
-> static bool valid_state(suspend_state_t state)
-> {
-> 	/*
-> 	 * PM_SUSPEND_STANDBY and PM_SUSPEND_MEM states need low level
-> 	 * support and need to be valid to the low level
-> 	 * implementation, no valid callback implies that none are valid.
-> 	 */
-> 	return suspend_ops && suspend_ops->valid && suspend_ops->valid(state);
-> }
-> 
-> ---
->  arch/arm/mach-tango/Makefile |  1 +
->  arch/arm/mach-tango/pm.c     | 32 ++++++++++++++++++++++++++++++++
->  arch/arm/mach-tango/smc.h    |  1 +
->  3 files changed, 34 insertions(+)
->  create mode 100644 arch/arm/mach-tango/pm.c
-> 
-> diff --git a/arch/arm/mach-tango/Makefile b/arch/arm/mach-tango/Makefile
-> index 7ca753aa9fb6..822b7ca803c6 100644
-> --- a/arch/arm/mach-tango/Makefile
-> +++ b/arch/arm/mach-tango/Makefile
-> @@ -3,3 +3,4 @@ AFLAGS_smc.o := -Wa,-march=armv7-a$(plus_sec)
->  
->  obj-y += setup.o smc.o xenv.o
->  obj-$(CONFIG_SMP) += platsmp.o
-> +obj-$(CONFIG_SUSPEND) += pm.o
-> diff --git a/arch/arm/mach-tango/pm.c b/arch/arm/mach-tango/pm.c
-> new file mode 100644
-> index 000000000000..b05c6d6f99d0
-> --- /dev/null
-> +++ b/arch/arm/mach-tango/pm.c
-> @@ -0,0 +1,32 @@
-> +#include <linux/init.h>
-> +#include <linux/suspend.h>
-> +#include <asm/suspend.h>
-> +#include "smc.h"
-> +
-> +static int tango_pm_powerdown(unsigned long arg)
-> +{
-> +	tango_suspend(virt_to_phys(cpu_resume));
-> +
-> +	return -EIO; /* tango_suspend has failed */
-> +}
-> +
-> +static int tango_pm_enter(suspend_state_t state)
-> +{
-> +	if (state == PM_SUSPEND_MEM)
-> +		return cpu_suspend(0, tango_pm_powerdown);
-> +
-> +	return -EINVAL;
-> +}
-> +
-> +static const struct platform_suspend_ops tango_pm_ops = {
-> +	.enter = tango_pm_enter,
-> +	.valid = suspend_valid_only_mem,
-> +};
-> +
-> +static int __init tango_pm_init(void)
-> +{
-> +	suspend_set_ops(&tango_pm_ops);
-> +	return 0;
-> +}
-> +
-> +late_initcall(tango_pm_init);
-> diff --git a/arch/arm/mach-tango/smc.h b/arch/arm/mach-tango/smc.h
-> index 3d31f984f44c..57919539da1b 100644
-> --- a/arch/arm/mach-tango/smc.h
-> +++ b/arch/arm/mach-tango/smc.h
-> @@ -3,5 +3,6 @@ extern int tango_smc(unsigned int val, unsigned int service);
->  #define tango_set_l2_control(val)	tango_smc(val, 0x102)
->  #define tango_start_aux_core(val)	tango_smc(val, 0x104)
->  #define tango_set_aux_boot_addr(val)	tango_smc(val, 0x105)
-> +#define tango_suspend(val)		tango_smc(val, 0x120)
->  #define tango_aux_core_die(val)		tango_smc(val, 0x121)
->  #define tango_aux_core_kill(val)	tango_smc(val, 0x122)
-> 
+On 29/06/16 01:10, Rafael J. Wysocki wrote:
+> On Tuesday, June 28, 2016 03:51:48 PM James Morse wrote:
+>> Architecture code may need to do extra work when secondary CPUs are
+>> disabled during hibernate and resume. This may include pushing sleeping
+>> CPUs into a deeper power-saving state, or influencing which CPU resume
+>> occurs on.
+>>
+>> Define a macro arch_hibernation_disable_cpus(), which defaults to calling
+>> disable_nonboot_cpus() if undefined. Architectures that need to do extra
+>> work around these calls can use this to influence disable_nonboot_cpus()
+>> behaviour. The macro should be defined in asm/suspend.h, and
+>> ARCH_HIBERNATION_CPUHP should be added to Kconfig.
 
-Hello everyone,
+> As you noted, this could be used to address the x86 issue that Yu is working on,
+> so I'd like it to go in as the first patch in the series and through the PM tree.
 
-I'll wait a few more days for comments, then I'll submit the patch
-to arm-soc for inclusion in v4.8 (if no issues are raised).
+Sure, I will split the series here, and group the later patches so there are no
+dependencies.
 
-(I suppose the return value for tango_pm_powerdown() is not that
-big a deal.)
 
-Regards.
+> 
+>> ---
+>> Changes since v2:
+>>  * Added CONFIG_ARCH_HIBERNATION_CPUHP include guard allowing
+> 
+> What about calling it CONFIG_ARCH_HIBERNATION_CPU_OFFLINE?  It's not
+> hotplug really.
+
+Even with the enable calls added? CONFIG_ARCH_HIBERNATION_CPU_HOOKS?
+
+
+>> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+>> index fca9254280ee..338745e78f7e 100644
+>> --- a/kernel/power/hibernate.c
+>> +++ b/kernel/power/hibernate.c
+>> @@ -31,8 +31,16 @@
+>>  #include <linux/ktime.h>
+>>  #include <trace/events/power.h>
+>>  
+>> +#ifdef CONFIG_ARCH_HIBERNATION_CPUHP
+>> +/* Arch definition of the arch_hibernation_disable_cpus() macro? */
+>> +#include <asm/suspend.h>
+>> +#endif
+>> +
+>>  #include "power.h"
+>>  
+>> +#ifndef arch_hibernation_disable_cpus
+>> +#define arch_hibernation_disable_cpus(x) disable_nonboot_cpus()
+> 
+> For the x86 case we'll also need the complementary "enable", so why don't
+> you add it here and then use it instead of the enable_nonboot_cpus()?
+
+Done. I've added the 'in_suspend' argument so that it's symmetrical, this may be
+slightly different to the behaviour of your 'in_resume_hibernate' flag.
+
+
+> 
+>> +#endif
+>>  
+>>  static int nocompress;
+>>  static int noresume;
+
+
+>> @@ -551,7 +559,7 @@ int hibernation_platform_enter(void)
+>>  	if (error)
+>>  		goto Platform_finish;
+>>  
+>> -	error = disable_nonboot_cpus();
+>> +	error = arch_hibernation_disable_cpus(true);
+> 
+> Does this one here actually matter?
+
+I added it for completeness/symmetry (but not the enable call because it
+wouldn't have any users). I assume its something to do with acpi...
+
+
+
+Thanks,
+
+James
 
