@@ -1,89 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 5/7] PM / Hibernate: Allow arch code to influence CPU
- hotplug during hibernate
-Date: Mon, 04 Jul 2016 14:04:53 +0200
-Message-ID: <5024161.npQD1be5Q1@vostro.rjw.lan>
-References: <1467125510-18758-1-git-send-email-james.morse@arm.com>
- <7811260.OWJXivZiAP@vostro.rjw.lan> <577A269A.6060307@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v5] cpuidle: Fix last_residency division
+Date: Mon, 4 Jul 2016 14:20:59 +0200
+Message-ID: <CAJZ5v0jCTr607OTekNVuYGDmA=ObhgVKDrHdSWB-metEpuydXQ@mail.gmail.com>
+References: <1467383054-1959-1-git-send-email-shreyas@linux.vnet.ibm.com> <5102d9f9-3b38-17c3-98ce-cceb073da764@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <577A269A.6060307@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: James Morse <james.morse@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Chen Yu C <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:35289 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753681AbcGDMVG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2016 08:21:06 -0400
+Received: by mail-wm0-f66.google.com with SMTP id a66so21271082wme.2
+        for <linux-pm@vger.kernel.org>; Mon, 04 Jul 2016 05:21:01 -0700 (PDT)
+In-Reply-To: <5102d9f9-3b38-17c3-98ce-cceb073da764@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Balbir Singh <bsingharora@gmail.com>, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Nicolas Pitre <nicolas.pitre@linaro.org>
 
-On Monday, July 04, 2016 10:04:26 AM James Morse wrote:
-> Hi Rafael,
-> 
-> On 29/06/16 01:10, Rafael J. Wysocki wrote:
-> > On Tuesday, June 28, 2016 03:51:48 PM James Morse wrote:
-> >> Architecture code may need to do extra work when secondary CPUs are
-> >> disabled during hibernate and resume. This may include pushing sleeping
-> >> CPUs into a deeper power-saving state, or influencing which CPU resume
-> >> occurs on.
-> >>
-> >> Define a macro arch_hibernation_disable_cpus(), which defaults to calling
-> >> disable_nonboot_cpus() if undefined. Architectures that need to do extra
-> >> work around these calls can use this to influence disable_nonboot_cpus()
-> >> behaviour. The macro should be defined in asm/suspend.h, and
-> >> ARCH_HIBERNATION_CPUHP should be added to Kconfig.
-> 
-> > As you noted, this could be used to address the x86 issue that Yu is working on,
-> > so I'd like it to go in as the first patch in the series and through the PM tree.
-> 
-> Sure, I will split the series here, and group the later patches so there are no
-> dependencies.
-> 
-> 
-> > 
-> >> ---
-> >> Changes since v2:
-> >>  * Added CONFIG_ARCH_HIBERNATION_CPUHP include guard allowing
-> > 
-> > What about calling it CONFIG_ARCH_HIBERNATION_CPU_OFFLINE?  It's not
-> > hotplug really.
-> 
-> Even with the enable calls added? CONFIG_ARCH_HIBERNATION_CPU_HOOKS?
+On Mon, Jul 4, 2016 at 8:10 AM, Balbir Singh <bsingharora@gmail.com> wrote:
+>
+>
+> On 02/07/16 00:24, Shreyas B. Prabhu wrote:
+>> Snooze is a poll idle state in powernv and pseries platforms. Snooze
+>> has a timeout so that if a cpu stays in snooze for more than target
+>> residency of the next available idle state, then it would exit thereby
+>> giving chance to the cpuidle governor to re-evaluate and
+>> promote the cpu to a deeper idle state. Therefore whenever snooze exits
+>> due to this timeout, its last_residency will be target_residency of next
+>> deeper state.
+>>
+>> commit e93e59ce5b85 ("cpuidle: Replace ktime_get() with local_clock()")
+>> changed the math around last_residency calculation. Specifically, while
+>> converting last_residency value from nanoseconds to microseconds it does
+>> right shift by 10. Due to this, in snooze timeout exit scenarios
+>> last_residency calculated is roughly 2.3% less than target_residency of
+>> next available state. This pattern is picked up get_typical_interval()
+>> in the menu governor and therefore expected_interval in menu_select() is
+>> frequently less than the target_residency of any state but snooze.
+>>
+>> Due to this we are entering snooze at a higher rate, thereby affecting
+>> the single thread performance.
+>>
+>> Fix this by using precise division via ktime_us_delta.
+>>
+>> Reported-by: Anton Blanchard <anton@samba.org>
+>> Bisected-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+>> ---
+>
+> This looks so much cleaner :)
+>
+> Acked-by: Balbir Singh <bsingharora@gmail.com>
 
-Fine by me. :-)
-
-> >> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-> >> index fca9254280ee..338745e78f7e 100644
-> >> --- a/kernel/power/hibernate.c
-> >> +++ b/kernel/power/hibernate.c
-> >> @@ -31,8 +31,16 @@
-> >>  #include <linux/ktime.h>
-> >>  #include <trace/events/power.h>
-> >>  
-> >> +#ifdef CONFIG_ARCH_HIBERNATION_CPUHP
-> >> +/* Arch definition of the arch_hibernation_disable_cpus() macro? */
-> >> +#include <asm/suspend.h>
-> >> +#endif
-> >> +
-> >>  #include "power.h"
-> >>  
-> >> +#ifndef arch_hibernation_disable_cpus
-> >> +#define arch_hibernation_disable_cpus(x) disable_nonboot_cpus()
-> > 
-> > For the x86 case we'll also need the complementary "enable", so why don't
-> > you add it here and then use it instead of the enable_nonboot_cpus()?
-> 
-> Done. I've added the 'in_suspend' argument so that it's symmetrical, this may be
-> slightly different to the behaviour of your 'in_resume_hibernate' flag.
-
-Well, it turns out that I was wrong, we don't need the "enable" thing, so
-I guess it can stay the way it was.
-
-Thanks,
-Rafael
+Patch applied, thanks!
