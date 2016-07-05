@@ -1,84 +1,83 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: WARNING: CPU: 0 PID: 0 at net/ipv4/af_inet.c:155
- inet_sock_destruct+0x1c4/0x1dc
-Date: Tue, 5 Jul 2016 22:26:29 +0200
-Message-ID: <577C17F5.4020106@free.fr>
-References: <577BB72E.3020904@free.fr> <577BC94A.4060204@free.fr>
- <577BD201.2040202@gmail.com> <577BD8BB.7060306@free.fr>
- <577BDE4E.7090509@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp4-g21.free.fr ([212.27.42.4]:33622 "EHLO smtp4-g21.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752100AbcGEU0p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Jul 2016 16:26:45 -0400
-In-Reply-To: <577BDE4E.7090509@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Markus Mayer <mmayer@broadcom.com>
+Subject: [PATCH v2 0/7] lib: string: add functions to case-convert strings
+Date: Tue,  5 Jul 2016 13:47:04 -0700
+Message-ID: <1467751631-22878-1-git-send-email-mmayer@broadcom.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>, Al Viro <viro@zeniv.linux.org.uk>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Chris Metcalf <cmetcalf@ezchip.com>, Kees Cook <keescook@chromium.org>
+Cc: Markus Mayer <mmayer@broadcom.com>, dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org, linux-acpi@vger.kernel.org, speakup@linux-speakup.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>, linux-pm <linux-pm@vger.kernel.org>, netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Cc: Sebastian Frias <sf84@laposte.net>
 
-On 05/07/2016 18:20, Florian Fainelli wrote:
-> On 07/05/2016 08:56 AM, Mason wrote:
->> On 05/07/2016 17:28, Florian Fainelli wrote:
->>
->>> nb8800.c does not currently show suspend/resume hooks implemented, are
->>> you positive that when you suspend, you properly tear down all HW, stop
->>> transmit queues, etc. and do the opposite upon resumption?
->>
->> I am currently testing the error path for my suspend routine.
->> Firmware is, in fact, denying the suspend request, and immediately
->> returns control to Linux, without having powered anything down.
->>
->> I expected not having to save any context in that situation.
->> Am I mistaken?
-> 
-> It depends what power state you are going to and resuming from, and how
-> much of this is platform dependent, on the platforms I work with S2
-> preserves register states for our On/Off domain, while S3 only keeps an
-> always-on power island and shuts off the On/Off domain, you therefore
-> need to have your drivers in the On/Off domain suspend any activity and
-> preserve important register states, or re-initialize them from scratch
-> whichever is the most convenient.
+This series introduces a family of generic string case conversion
+functions. This kind of functionality is needed in several places in
+the kernel. Right now, everybody seems to be implementing their own
+copy of this functionality.
 
-Thanks for bringing these details to my attention, they will
-definitely prove useful when I test an actual suspend/resume
-sequence. However, I must stress that the platform did NOT
-power down in my test case, because the firmware currently
-denies all suspend requests.
+Based on the discussion of the previous version of this series[1] and
+the use cases found in the kernel, it does look like having several
+flavours of case conversion functions is beneficial. The use cases fall
+into three categories:
+    - copying a string and converting the case while specifying a
+      maximum length to mimic strncpy()
+    - copying a string and converting the case without specifying a
+      length to mimic strcpy()
+    - converting the case of a string in-place (i.e. modifying the
+      string that was passed in)
 
-Therefore, loss of context cannot possibly explain the
-warning I am seeing.
+Consequently, I am proposing these new functions:
+    char *strncpytoupper(char *dst, const char *src, size_t len);
+    char *strncpytolower(char *dst, const char *src, size_t len);
+    char *strcpytoupper(char *dst, const char *src);
+    char *strcpytolower(char *dst, const char *src);
+    char *strtoupper(char *s);
+    char *strtolower(char *s);
+They all return a pointer to the terminating '\0' in the destination
+string (for strtoupper() and strtolower() that is "s").
 
->> You mention "stop transmit queues". Can you say more about this?
-> 
-> See drivers/net/ethernet/broadcom/genet/bcmgenet.c which is a driver
-> that takes care of that for instance, look for bcmgenet_{suspend,resume}
+Several drivers are being modified to make use of the functions above.
+Another driver that also makes use of this functionality will be
+submitted upstream shortly, which prompted this whole exercise.
 
-Thanks. I will look into it.
+The changes made here have been compile-tested, but not tried out, due
+to lack of required hardware.
 
-If I understand correctly, something is missing in the
-network interface code? (My system is using an NFS root
-filesystem, so network is an important subsystem.)
+Changes since v1:
+  - expanded strtolower() into a family of functions that cover use
+    cases when a length argument is or isn't required and that support
+    copying the string into a new buffer or changing it in-place 
+  - changed the function semantics to return a pointer to the
+    terminating '\0' character of the modified string
+  - added strtoupper() functionality mirroring the above
+  - dropped the ACPICA patch, since that code is OS independent and
+    can't rely on a Linux library function (see [2])
+  - Added two new patches replacing strtoupper() implementations
 
->>> Is your system clocksource also correctly saved/restored, or if you go
->>> through a firmware in-between could it be changing the counter values
->>> and make Linux think that more time as elapsed than it really happened?
->>
->> Thanks for pointing this out, I was not aware I was supposed to save
->> and restore the tick counter on suspend/resume. (This is not an issue
->> in this specific situation, as the platform is NOT suspended.)
-> 
-> You don't have to save and restore the clocksource counter, although if
-> you want proper time accounting to be done across suspend states, you
-> would want to use a clocksource which is persistent across these suspend
-> states.
+[1] https://lkml.org/lkml/2016/6/30/727
+[2] https://lkml.org/lkml/2016/7/1/9
 
-The clocksource is a 27 MHz 32-bit tick counter. In other words,
-the counter wraps around every 159 seconds. If Linux suspends
-for several hours, how can it determine how much time went by?
+Markus Mayer (7):
+  lib: string: add functions str[n]cpytolower()/str[n]cpytoupper()
+  drm/nouveau/core: make use of new strncpytolower() function
+  ACPI / device_sysfs: make use of new strtolower() function
+  staging: speakup: replace spk_strlwr() with strncpytolower()
+  iscsi-target: replace iscsi_initiatorname_tolower() with
+    strcpytolower()
+  drm/nouveau/fifo/gk104: make use of new strcpytoupper() function
+  power_supply: make use of new strcpytoupper() function
 
-Regards.
+ drivers/acpi/device_sysfs.c                      |  4 +-
+ drivers/gpu/drm/nouveau/nvkm/core/firmware.c     |  9 +----
+ drivers/gpu/drm/nouveau/nvkm/engine/fifo/gk104.c |  5 +--
+ drivers/power/power_supply_sysfs.c               | 13 +++----
+ drivers/staging/speakup/kobjects.c               |  3 +-
+ drivers/staging/speakup/main.c                   |  3 +-
+ drivers/staging/speakup/speakup.h                |  1 -
+ drivers/staging/speakup/varhandlers.c            | 12 ------
+ drivers/target/iscsi/iscsi_target_nego.c         | 17 +--------
+ include/linux/string.h                           | 48 ++++++++++++++++++++++++
+ lib/string.c                                     | 40 ++++++++++++++++++++
+ 11 files changed, 100 insertions(+), 55 deletions(-)
+
+-- 
+2.7.4
 
