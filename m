@@ -1,14 +1,14 @@
 From: Icenowy Zheng <icenowy-ymACFijhrKM@public.gmane.org>
 Subject: Re: [PATCH 2/4] power: add axp20x-battery driver
-Date: Tue, 05 Jul 2016 16:33:31 +0800
-Message-ID: <4101467707611@web7h.yandex.ru>
+Date: Tue, 05 Jul 2016 16:47:38 +0800
+Message-ID: <112861467708458@web7h.yandex.ru>
 References: <20160701092926.32005-1-icenowy@aosc.xyz>
 	 <20160701092926.32005-2-icenowy@aosc.xyz> <577B44FD.6040404@mailbox.org>
 Reply-To: icenowy-ymACFijhrKM@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBCZLPFN5Q4OBBYXB5W5QKGQEZQAK2UQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCZLPFN5Q4OBBLXI5W5QKGQE6MKUXJA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <577B44FD.6040404-cl+VPiYnx/1AfugRpC6u6w@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -379,9 +379,16 @@ ly */
 >> =C2=A0+MODULE_DESCRIPTION("AXP20x PMIC battery status driver");
 >> =C2=A0+MODULE_LICENSE("GPL");
 
-Therotically, it can run on axp20x. However, I have currently no test devic=
-e. (Still waiting for my C.H.I.P.)
-So I can only promise it to run on axp22x.
+I read the datasheet of axp20x, and then found that this driver does not su=
+pport backup RTC battery.=20
+(But maybe backup battery do not need a driver -- at least on IBM PC it has=
+ no driver)
+
+And I don't know whether the axp20x has default Li-ion/LiPo battery OCV par=
+ameter. (axp22x seems to be have a set of default OCV)
+
+You can test this driver on AXP20x. (I think I didn't access to AXP22x-spec=
+ified registers in the power supply code)
 
 --=20
 You received this message because you are subscribed to the Google Groups "=
