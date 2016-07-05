@@ -1,48 +1,51 @@
-From: Rhyland Klein <rklein@nvidia.com>
-Subject: Re: [RESEND PATCH] thermal: helpers: Check return value of get_temp
-Date: Tue, 5 Jul 2016 12:22:47 -0400
-Message-ID: <7cf6dc8c-d914-d978-8550-440717bd9b77@nvidia.com>
-References: <1465232019-12441-1-git-send-email-rklein@nvidia.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: [bug report] thermal: qcom: tsens-8974: Add support for 8974 family
+ of SoCs
+Date: Tue, 5 Jul 2016 19:46:57 +0300
+Message-ID: <20160705164657.GA1379@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1465232019-12441-1-git-send-email-rklein@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from userp1040.oracle.com ([156.151.31.81]:46651 "EHLO
+	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752345AbcGEQrs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2016 12:47:48 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rnayak@codeaurora.org
+Cc: linux-pm@vger.kernel.org
 
-On 6/6/2016 12:53 PM, Rhyland Klein wrote:
-> Check the return value of get_temp, which can fail. If it does, then
-> unlock and return the error code.
-> 
-> Signed-off-by: Rhyland Klein <rklein@nvidia.com>
-> ---
->  drivers/thermal/thermal_helpers.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-> index 5e1c160944c9..dc260749f8d6 100644
-> --- a/drivers/thermal/thermal_helpers.c
-> +++ b/drivers/thermal/thermal_helpers.c
-> @@ -90,6 +90,10 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
->  	mutex_lock(&tz->lock);
->  
->  	ret = tz->ops->get_temp(tz, temp);
-> +	if (!ret) {
-> +		mutex_unlock(&tz->lock);
-> +		goto exit;
-> +	}
->  
->  	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
->  		for (count = 0; count < tz->trips; count++) {
-> 
+Hello Rajendra Nayak,
 
-I haven't seen any comments on this patch, has anyone had a chance to
-review it yet?
+The patch ffd6a56b9a88: "thermal: qcom: tsens-8974: Add support for
+8974 family of SoCs" from May 5, 2016, leads to the following static
+checker warning:
 
--rhyland
+	drivers/thermal/qcom/tsens-8974.c:152 calibrate_8974()
+	warn: mask and shift to zero
 
--- 
-nvpublic
+drivers/thermal/qcom/tsens-8974.c
+  141                  case ONE_PT_CALIB:
+   142                  case ONE_PT_CALIB2:
+   143                          base1 = bkp[0] & BASE1_MASK;
+   144                          p1[0] = (bkp[0] & S0_P1_MASK) >> S0_P1_SHIFT;
+   145                          p1[1] = (bkp[0] & S1_P1_MASK) >> S1_P1_SHIFT;
+   146                          p1[2] = (bkp[0] & S2_P1_MASK) >> S2_P1_SHIFT;
+   147                          p1[3] = (bkp[0] & S3_P1_MASK) >> S3_P1_SHIFT;
+   148                          p1[4] = (bkp[1] & S4_P1_MASK);
+   149                          p1[5] = (bkp[1] & S5_P1_MASK) >> S5_P1_SHIFT;
+   150                          p1[6] = (bkp[1] & S6_P1_MASK) >> S6_P1_SHIFT;
+   151                          p1[7] = (bkp[1] & S7_P1_MASK) >> S7_P1_SHIFT;
+   152                          p1[8] = (bkp[2] & S8_P1_MASK_BKP) >> S8_P1_SHIFT;
+
+0x3f >> 24 is zero.  This looks like a cut-and-paste bug but it's not
+clear to me what was intended.
+
+   153                          p1[9] = (bkp[2] & S9_P1_MASK_BKP) >> S9_P1_BKP_SHIFT;
+   154                          p1[10] = (bkp[2] & S10_P1_MASK_BKP) >> S10_P1_BKP_SHIFT;
+   155                          break;
+   156                  }
+
+regards,
+dan carpenter
