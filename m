@@ -1,77 +1,71 @@
-From: James Morse <james.morse@arm.com>
-Subject: [PATCH v4 3/3] Revert "arm64: hibernate: Refuse to hibernate if the boot cpu is offline"
-Date: Mon,  4 Jul 2016 15:52:30 +0100
-Message-ID: <1467643950-11034-4-git-send-email-james.morse@arm.com>
-References: <1467643950-11034-1-git-send-email-james.morse@arm.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH] thermal: qcom: tsens-8916: mark PM functions __maybe_unused
+Date: Tue, 05 Jul 2016 08:07:24 +0530
+Message-ID: <577B1D64.2020509@codeaurora.org>
+References: <20160704131318.990672-1-arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:48285 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752307AbcGDOzd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Jul 2016 10:55:33 -0400
-In-Reply-To: <1467643950-11034-1-git-send-email-james.morse@arm.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:50597 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753568AbcGEChb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jul 2016 22:37:31 -0400
+In-Reply-To: <20160704131318.990672-1-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Chen Yu C <yu.c.chen@intel.com>
+To: Arnd Bergmann <arnd@arndb.de>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Lina Iyer <lina.iyer@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Now that we use the MPIDR to resume on the same CPU that we hibernated on,
-we no longer need to refuse to hibernate if the boot cpu is offline. (Which
-we can't possibly know if kexec causes logical CPUs to be renumbered).
 
-This reverts commit 1fe492ce6482b77807b25d29690a48c46456beee.
+On 07/04/2016 06:42 PM, Arnd Bergmann wrote:
+> The newly added tsens-8916 driver produces warnings when CONFIG_PM
+> is disabled:
+> 
+> drivers/thermal/qcom/tsens.c:53:12: error: 'tsens_resume' defined but not used [-Werror=unused-function]
+>  static int tsens_resume(struct device *dev)
+>             ^~~~~~~~~~~~
+> drivers/thermal/qcom/tsens.c:43:12: error: 'tsens_suspend' defined but not used [-Werror=unused-function]
+>  static int tsens_suspend(struct device *dev)
+>             ^~~~~~~~~~~~~
+> 
+> This marks both functions __maybe_unused to let the compiler
+> know that they might be used in other configurations, without
+> adding ugly #ifdef logic.
 
-Signed-off-by: James Morse <james.morse@arm.com>
----
-This patch should be merged via the PM tree, (potentially with another user
-of patch one)
+Thanks Arnd,
+Reviewed-by: Rajendra Nayak <rnayak@codeaurora.org>
 
- arch/arm64/kernel/hibernate.c | 26 --------------------------
- 1 file changed, 26 deletions(-)
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/thermal/qcom/tsens.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+> index 446f70b5dbb2..e4fca3350d26 100644
+> --- a/drivers/thermal/qcom/tsens.c
+> +++ b/drivers/thermal/qcom/tsens.c
+> @@ -40,7 +40,7 @@ static int tsens_get_trend(void *p, int trip, enum thermal_trend *trend)
+>  	return -ENOTSUPP;
+>  }
+>  
+> -static int tsens_suspend(struct device *dev)
+> +static int  __maybe_unused tsens_suspend(struct device *dev)
+>  {
+>  	struct tsens_device *tmdev = dev_get_drvdata(dev);
+>  
+> @@ -50,7 +50,7 @@ static int tsens_suspend(struct device *dev)
+>  	return 0;
+>  }
+>  
+> -static int tsens_resume(struct device *dev)
+> +static int __maybe_unused  tsens_resume(struct device *dev)
+>  {
+>  	struct tsens_device *tmdev = dev_get_drvdata(dev);
+>  
+> 
 
-diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
-index bae45abde7a2..ea1acf323b61 100644
---- a/arch/arm64/kernel/hibernate.c
-+++ b/arch/arm64/kernel/hibernate.c
-@@ -18,7 +18,6 @@
- #include <linux/cpu.h>
- #include <linux/kvm_host.h>
- #include <linux/mm.h>
--#include <linux/notifier.h>
- #include <linux/pm.h>
- #include <linux/sched.h>
- #include <linux/suspend.h>
-@@ -504,31 +503,6 @@ out:
- 	return rc;
- }
- 
--static int check_boot_cpu_online_pm_callback(struct notifier_block *nb,
--					     unsigned long action, void *ptr)
--{
--	if (action == PM_HIBERNATION_PREPARE &&
--	     cpumask_first(cpu_online_mask) != 0) {
--		pr_warn("CPU0 is offline.\n");
--		return notifier_from_errno(-ENODEV);
--	}
--
--	return NOTIFY_OK;
--}
--
--static int __init check_boot_cpu_online_init(void)
--{
--	/*
--	 * Set this pm_notifier callback with a lower priority than
--	 * cpu_hotplug_pm_callback, so that cpu_hotplug_pm_callback will be
--	 * called earlier to disable cpu hotplug before the cpu online check.
--	 */
--	pm_notifier(check_boot_cpu_online_pm_callback, -INT_MAX);
--
--	return 0;
--}
--core_initcall(check_boot_cpu_online_init);
--
- int _arch_hibernation_disable_cpus(bool suspend)
- {
- 	int cpu, ret;
 -- 
-2.8.0.rc3
-
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
