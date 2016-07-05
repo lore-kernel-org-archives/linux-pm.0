@@ -1,51 +1,108 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: [bug report] thermal: qcom: tsens-8974: Add support for 8974 family
- of SoCs
-Date: Tue, 5 Jul 2016 19:46:57 +0300
-Message-ID: <20160705164657.GA1379@mwanda>
+From: Catalin Marinas <catalin.marinas@arm.com>
+Subject: Re: [PATCH v4 2/3] arm64: hibernate: Resume when hibernate image
+ created on non-boot CPU
+Date: Tue, 5 Jul 2016 18:49:01 +0100
+Message-ID: <20160705174901.GK3565@e104818-lin.cambridge.arm.com>
+References: <1467643950-11034-1-git-send-email-james.morse@arm.com>
+ <1467643950-11034-3-git-send-email-james.morse@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:46651 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752345AbcGEQrs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2016 12:47:48 -0400
+Received: from foss.arm.com ([217.140.101.70]:54358 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752862AbcGERtG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Jul 2016 13:49:06 -0400
 Content-Disposition: inline
+In-Reply-To: <1467643950-11034-3-git-send-email-james.morse@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rnayak@codeaurora.org
-Cc: linux-pm@vger.kernel.org
+To: James Morse <james.morse@arm.com>
+Cc: linux-pm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Chen Yu C <yu.c.chen@intel.com>, Will Deacon <will.deacon@arm.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
 
-Hello Rajendra Nayak,
+On Mon, Jul 04, 2016 at 03:52:29PM +0100, James Morse wrote:
+> diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/suspend.h
+> index 024d623f662e..9b3e8d9bfc8c 100644
+> --- a/arch/arm64/include/asm/suspend.h
+> +++ b/arch/arm64/include/asm/suspend.h
+> @@ -47,4 +47,8 @@ int swsusp_arch_resume(void);
+>  int arch_hibernation_header_save(void *addr, unsigned int max_size);
+>  int arch_hibernation_header_restore(void *addr);
+>  
+> +/* Used to resume on the CPU we hibernated on */
+> +int _arch_hibernation_disable_cpus(bool suspend);
+> +#define arch_hibernation_disable_cpus(x) _arch_hibernation_disable_cpus(x)
 
-The patch ffd6a56b9a88: "thermal: qcom: tsens-8974: Add support for
-8974 family of SoCs" from May 5, 2016, leads to the following static
-checker warning:
+Nitpick: we normally tend to use the same name for the function an macro
+but it's fine like this as well:
 
-	drivers/thermal/qcom/tsens-8974.c:152 calibrate_8974()
-	warn: mask and shift to zero
++int arch_hibernation_disable_cpus(bool suspend);
++#define arch_hibernation_disable_cpus arch_hibernation_disable_cpus
 
-drivers/thermal/qcom/tsens-8974.c
-  141                  case ONE_PT_CALIB:
-   142                  case ONE_PT_CALIB2:
-   143                          base1 = bkp[0] & BASE1_MASK;
-   144                          p1[0] = (bkp[0] & S0_P1_MASK) >> S0_P1_SHIFT;
-   145                          p1[1] = (bkp[0] & S1_P1_MASK) >> S1_P1_SHIFT;
-   146                          p1[2] = (bkp[0] & S2_P1_MASK) >> S2_P1_SHIFT;
-   147                          p1[3] = (bkp[0] & S3_P1_MASK) >> S3_P1_SHIFT;
-   148                          p1[4] = (bkp[1] & S4_P1_MASK);
-   149                          p1[5] = (bkp[1] & S5_P1_MASK) >> S5_P1_SHIFT;
-   150                          p1[6] = (bkp[1] & S6_P1_MASK) >> S6_P1_SHIFT;
-   151                          p1[7] = (bkp[1] & S7_P1_MASK) >> S7_P1_SHIFT;
-   152                          p1[8] = (bkp[2] & S8_P1_MASK_BKP) >> S8_P1_SHIFT;
+BTW, do you expect an architecture to define ARCH_HIBERNATION_CPU_HOOKS
+but not arch_hibernation_disable_cpus? Or you'd expect more hooks in the
+future?
 
-0x3f >> 24 is zero.  This looks like a cut-and-paste bug but it's not
-clear to me what was intended.
+> diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
+> index 21ab5df9fa76..bae45abde7a2 100644
+> --- a/arch/arm64/kernel/hibernate.c
+> +++ b/arch/arm64/kernel/hibernate.c
+> @@ -15,6 +15,7 @@
+>   * License terms: GNU General Public License (GPL) version 2
+>   */
+>  #define pr_fmt(x) "hibernate: " x
+> +#include <linux/cpu.h>
+>  #include <linux/kvm_host.h>
+>  #include <linux/mm.h>
+>  #include <linux/notifier.h>
+> @@ -26,6 +27,7 @@
+>  
+>  #include <asm/barrier.h>
+>  #include <asm/cacheflush.h>
+> +#include <asm/cputype.h>
+>  #include <asm/irqflags.h>
+>  #include <asm/memory.h>
+>  #include <asm/mmu_context.h>
+> @@ -34,6 +36,7 @@
+>  #include <asm/pgtable-hwdef.h>
+>  #include <asm/sections.h>
+>  #include <asm/smp.h>
+> +#include <asm/smp_plat.h>
+>  #include <asm/suspend.h>
+>  #include <asm/virt.h>
+>  
+> @@ -66,6 +69,12 @@ extern char hibernate_el2_vectors[];
+>  extern char __hyp_stub_vectors[];
+>  
+>  /*
+> + * The logical cpu number we should resume on, initialised to a non-cpu
+> + * number.
+> + */
+> +static int sleep_cpu = -EINVAL;
+> +
+> +/*
+>   * Values that may not change over hibernate/resume. We put the build number
+>   * and date in here so that we guarantee not to resume with a different
+>   * kernel.
+> @@ -87,6 +96,8 @@ static struct arch_hibernate_hdr {
+>  	 * re-configure el2.
+>  	 */
+>  	phys_addr_t	__hyp_stub_vectors;
+> +
+> +	u64		sleep_cpu_mpidr;
+>  } resume_hdr;
+>  
+>  static inline void arch_hdr_invariants(struct arch_hibernate_hdr_invariants *i)
+> @@ -129,12 +140,18 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+>  	else
+>  		hdr->__hyp_stub_vectors = 0;
+>  
+> +	/* Save the mpidr of the cpu we called cpu_suspend() on... */
+> +	hdr->sleep_cpu_mpidr = cpu_logical_map(sleep_cpu);
+> +	pr_info("Hibernating on CPU %d [mpidr:0x%llx]\n", sleep_cpu,
+> +		hdr->sleep_cpu_mpidr);
 
-   153                          p1[9] = (bkp[2] & S9_P1_MASK_BKP) >> S9_P1_BKP_SHIFT;
-   154                          p1[10] = (bkp[2] & S10_P1_MASK_BKP) >> S10_P1_BKP_SHIFT;
-   155                          break;
-   156                  }
+Do we have a guarantee that sleep_cpu != -EINVAL here?
 
-regards,
-dan carpenter
+If the above is fine, feel free to add:
+
+Reviewed-by: Catalin Marinas <catalin.marinas@arm.com>
