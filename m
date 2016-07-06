@@ -1,98 +1,107 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v2 0/7] lib: string: add functions to case-convert
- strings
-Date: Tue, 05 Jul 2016 15:56:17 -0700
-Message-ID: <1467759377.8360.12.camel@perches.com>
-References: <1467751631-22878-1-git-send-email-mmayer@broadcom.com>
-	 <1467756874.16342.11.camel@perches.com>
-	 <CAGt4E5vqiUOVmgqY8OvRPNpoS54hZMOHid6ND4CRyb5p9y5ndw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 1/3] PM / Hibernate: Allow arch code to influence CPUs disabled during hibernate
+Date: Wed, 06 Jul 2016 02:38:51 +0200
+Message-ID: <54369969.i5TPzUzNII@vostro.rjw.lan>
+References: <1467643950-11034-1-git-send-email-james.morse@arm.com> <1467643950-11034-2-git-send-email-james.morse@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAGt4E5vqiUOVmgqY8OvRPNpoS54hZMOHid6ND4CRyb5p9y5ndw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Markus Mayer <markus.mayer@broadcom.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Al Viro <viro@zeniv.linux.org.uk>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Chris Metcalf <cmetcalf@ezchip.com>, Kees Cook <keescook@chromium.org>, dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org, linux-acpi@vger.kernel.org, speakup@linux-speakup.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-pm@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62587 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751157AbcGFAeQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jul 2016 20:34:16 -0400
+In-Reply-To: <1467643950-11034-2-git-send-email-james.morse@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: James Morse <james.morse@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Chen Yu C <yu.c.chen@intel.com>
 
-On Tue, 2016-07-05 at 15:36 -0700, Markus Mayer wrote:
-> On 5 July 2016 at 15:14, Joe Perches <joe@perches.com> wrote:
-> > On Tue, 2016-07-05 at 13:47 -0700, Markus Mayer wrote:
-> > > This series introduces a family of generic string case conversion
-> > > functions. This kind of functionality is needed in several places=
- in
-> > > the kernel. Right now, everybody seems to be implementing their o=
-wn
-> > > copy of this functionality.
-> > >=20
-> > > Based on the discussion of the previous version of this series[1]=
- and
-> > > the use cases found in the kernel, it does look like having sever=
-al
-> > > flavours of case conversion functions is beneficial. The use case=
-s fall
-> > > into three categories:
-> > > =A0=A0=A0=A0- copying a string and converting the case while spec=
-ifying a
-> > > =A0=A0=A0=A0=A0=A0maximum length to mimic strncpy()
-> > > =A0=A0=A0=A0- copying a string and converting the case without sp=
-ecifying a
-> > > =A0=A0=A0=A0=A0=A0length to mimic strcpy()
-> > > =A0=A0=A0=A0- converting the case of a string in-place (i.e. modi=
-fying the
-> > > =A0=A0=A0=A0=A0=A0string that was passed in)
-> > >=20
-> > > Consequently, I am proposing these new functions:
-> > > =A0=A0=A0=A0char *strncpytoupper(char *dst, const char *src, size=
-_t len);
-> > > =A0=A0=A0=A0char *strncpytolower(char *dst, const char *src, size=
-_t len);
-> > > =A0=A0=A0=A0char *strcpytoupper(char *dst, const char *src);
-> > > =A0=A0=A0=A0char *strcpytolower(char *dst, const char *src);
-> > > =A0=A0=A0=A0char *strtoupper(char *s);
-> > > =A0=A0=A0=A0char *strtolower(char *s);
-> > I think there isn't much value in anything other
-> > than strto.
-> >=20
-> > Using str[n]cpy followed by strto is
-> > pretty obvious and rarely used anyway.
-> First time around, folks were proposing the "copy" variants when I
-> submitted just strtolower() by itself[1]. They just asked for source
-> and destination parameters to strtolower(), but looking at the use
-> cases that wouldn't have worked so well. Hence it evolved into these =
-6
-> functions.
->=20
-> Here's a breakdown of how the functions are being used (patches 2-7),
-> see also [2]:
->=20
-> Patch 2: strncpytolower()
-> Patch 3: strtolower()
-> Patch 4: strncpytolower() and strtolower()
-> Patch 5: strtolower()
-> Patch 6: strcpytoupper()
-> Patch 7: strcpytoupper()
->=20
-> So it does look like the copy + change case variant is more frequentl=
-y
-> used than just strto.
+On Monday, July 04, 2016 03:52:28 PM James Morse wrote:
+> Architecture code may need to do extra work when secondary CPUs are
+> disabled during hibernate and resume. This may include pushing sleeping
+> CPUs into a deeper power-saving state, or influencing which CPU resume
+> occurs on.
+> 
+> Define a macro arch_hibernation_disable_cpus(), which defaults to
+> calling disable_nonboot_cpus() if undefined. Architectures that
+> need to do extra work around these calls can use this to influence
+> the CPU down calls.
+> The macros should be defined in asm/suspend.h, and
+> ARCH_HIBERNATION_CPU_HOOKS should be added to Kconfig.
+> 
+> Signed-off-by: James Morse <james.morse@arm.com>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> ---
+> Changes since v3:
+>  * Changed kconfig name to CONFIG_ARCH_HIBERNATION_CPU_HOOKS
+> 
+> Changes since v2:
+>  * Added CONFIG_ARCH_HIBERNATION_CPUHP include guard allowing
+>  * Switch to macro approach.
+> 
+>  kernel/power/hibernate.c | 14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
+> 
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index fca9254280ee..855a3a2374c8 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -31,8 +31,16 @@
+>  #include <linux/ktime.h>
+>  #include <trace/events/power.h>
+>  
+> +#ifdef CONFIG_ARCH_HIBERNATION_CPU_HOOKS
+> +/* Arch definition of the arch_hibernation_disable_cpus() macros? */
+> +#include <asm/suspend.h>
+> +#endif
+> +
+>  #include "power.h"
+>  
+> +#ifndef arch_hibernation_disable_cpus
+> +#define arch_hibernation_disable_cpus(x) disable_nonboot_cpus()
+> +#endif
+>  
+>  static int nocompress;
+>  static int noresume;
+> @@ -279,7 +287,7 @@ static int create_image(int platform_mode)
+>  	if (error || hibernation_test(TEST_PLATFORM))
+>  		goto Platform_finish;
+>  
+> -	error = disable_nonboot_cpus();
+> +	error = arch_hibernation_disable_cpus(true);
+>  	if (error || hibernation_test(TEST_CPUS))
+>  		goto Enable_cpus;
+>  
+> @@ -433,7 +441,7 @@ static int resume_target_kernel(bool platform_mode)
+>  	if (error)
+>  		goto Cleanup;
+>  
+> -	error = disable_nonboot_cpus();
+> +	error = arch_hibernation_disable_cpus(false);
 
-Are these functions useful? =A0<shrug> Not to me, not so much.
+Why "false"?
 
-None of the functions would have the strcpy performance of
-the arch / asm
-versions of strcpy and the savings in overall
-code isn't significant (or
-measured?).
+>  	if (error)
+>  		goto Enable_cpus;
+>  
+> @@ -551,7 +559,7 @@ int hibernation_platform_enter(void)
+>  	if (error)
+>  		goto Platform_finish;
+>  
+> -	error = disable_nonboot_cpus();
+> +	error = arch_hibernation_disable_cpus(true);
 
-Of course none of the uses are runtime performance important.
+I have the same question about this hunk I had before.
 
-This patch also adds always compiled functions that aren't used
-in many .configs.
+Is it really necessary to do the arch thing here?
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+It shouldn't really matter AFAICS.
+
+>  	if (error)
+>  		goto Enable_cpus;
+
+Thanks,
+Rafael
+
