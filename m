@@ -1,95 +1,56 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PULL Request] Devfreq Fixes-2 for next-RC
-Date: Wed, 6 Jul 2016 21:55:52 +0200
-Message-ID: <CAJZ5v0gQY=P5=Yq7m5S2ocjykq7YR=AuC-doSA99q80J5+ma4A@mail.gmail.com>
-References: <CGME20160706042318epcms1p155db66d1feeea1e45cbcc57f5c004479@epcms1p1>
- <11403313.450560.1467778998317.JavaMail.weblogic@ep2ml104d>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 1/3] PM / Hibernate: Allow arch code to influence CPUs disabled during hibernate
+Date: Wed, 06 Jul 2016 23:11:12 +0200
+Message-ID: <3861939.zr3zvCQ85S@vostro.rjw.lan>
+References: <1467643950-11034-1-git-send-email-james.morse@arm.com> <2602641.slsnqsKrbn@vostro.rjw.lan> <577CCC5F.2060409@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:33371 "EHLO
-	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755775AbcGFTzy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2016 15:55:54 -0400
-Received: by mail-wm0-f66.google.com with SMTP id r201so1034226wme.0
-        for <linux-pm@vger.kernel.org>; Wed, 06 Jul 2016 12:55:54 -0700 (PDT)
-In-Reply-To: <11403313.450560.1467778998317.JavaMail.weblogic@ep2ml104d>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49480 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755453AbcGFVGg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2016 17:06:36 -0400
+In-Reply-To: <577CCC5F.2060409@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Myungjoo Ham <myungjoo.ham@samsung.com>
-Cc: "rafael@kerne.org" <rafael@kerne.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, "peter.chen@nxp.com" <peter.chen@nxp.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>
+To: James Morse <james.morse@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Chen Yu C <yu.c.chen@intel.com>
 
-On Wed, Jul 6, 2016 at 6:23 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
-> Dear Rafael,
->
-> Here goes the second set of devfreq fixes for Linux 4.7 RC-x.
+On Wednesday, July 06, 2016 10:16:15 AM James Morse wrote:
+> Hi Rafael,
+> 
+> On 05/07/16 13:28, Rafael J. Wysocki wrote:
+> > On Monday, July 04, 2016 03:52:28 PM James Morse wrote:
+> >> Architecture code may need to do extra work when secondary CPUs are
+> >> disabled during hibernate and resume. This may include pushing sleeping
+> >> CPUs into a deeper power-saving state, or influencing which CPU resume
+> >> occurs on.
+> >>
+> >> Define a macro arch_hibernation_disable_cpus(), which defaults to
+> >> calling disable_nonboot_cpus() if undefined. Architectures that
+> >> need to do extra work around these calls can use this to influence
+> >> the CPU down calls.
+> >> The macros should be defined in asm/suspend.h, and
+> >> ARCH_HIBERNATION_CPU_HOOKS should be added to Kconfig.
+> >>
+> >> Signed-off-by: James Morse <james.morse@arm.com>
+> >> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> >> Cc: Pavel Machek <pavel@ucw.cz>
+> > 
+> > I'm going to apply this one later today.
+> > 
+> > If you want me to apply the other two as well, they need to be ACKed by the
+> > ARM64 maintainers.
+> 
+> Thanks. I'd like to get to the bottom of Lorenzo's comments[0] before the arm64
+> patches go any further though!
 
-Well, we are in the -rc7 time frame now and the modularity-related
-changes aren't something I'd want to push this late in the cycle.
+OK
 
-The other fixes are sort of fine, but it looks to me that they can
-wait for the 4.8 merge window just fine, so what about if I queue up
-all of this material for 4.8?
+Can you please answer my questions regarding patch [1/3] in the
+meantime (posted separately)?
 
 Thanks,
 Rafael
 
-
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> The following changes since commit a99cde438de0c4c0cecc1d1af1a55a75b10bfdef:
->
->   Linux 4.7-rc6 (2016-07-03 23:01:00 -0700)
->
-> are available in the git repository at:
->
->   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git fixes-2
->
-> for you to fetch changes up to d8150d14e9bc44ba55c707cc67f4fa66d65cfdef:
->
->   PM / devfreq: exynos-bus: add missing of_node_put after calling of_parse_phandle (2016-07-06 13:11:24 +0900)
->
-> - ----------------------------------------------------------------
-> Pull request of second Linux 4.7-rcX devfreq fixes for Linux-PM
->
-> - ----------------------------------------------------------------
-> Bartlomiej Zolnierkiewicz (2):
->       PM / devfreq: exynos: fix error path in exynos_bus_probe()
->       PM / devfreq: exynos-ppmu: fix error path in exynos_ppmu_probe()
->
-> Paul Gortmaker (5):
->       PM / devfreq: make devfreq explicitly non-modular
->       PM / devfreq: make devfreq-event explicitly non-modular
->       PM / devfreq: make exynos-bus ARM_EXYNOS_BUS_DEVFREQ tristate
->       PM / devfreq: make event/exynos-nocp DEVFREQ_EVENT_EXYNOS_NOCP tristate
->       PM / devfreq: make event/exynos-ppmu DEVFREQ_EVENT_EXYNOS_PPMU tristate
->
-> Peter Chen (2):
->       PM / devfreq: add missing of_node_put after calling of_parse_phandle
->       PM / devfreq: exynos-bus: add missing of_node_put after calling of_parse_phandle
->
->  drivers/devfreq/Kconfig             |  2 +-
->  drivers/devfreq/devfreq-event.c     | 12 +-----------
->  drivers/devfreq/devfreq.c           | 15 +++------------
->  drivers/devfreq/event/Kconfig       |  4 ++--
->  drivers/devfreq/event/exynos-ppmu.c |  3 ++-
->  drivers/devfreq/exynos-bus.c        | 11 +++++++----
->  6 files changed, 16 insertions(+), 31 deletions(-)
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1
->
-> iQIcBAEBAgAGBQJXfIZ4AAoJEBOhurvWBoCKowoP/0Iw72IhDI8NFjCFHCcNGKu3
-> TTGJAxC31VhtbrNfB923AWiRGzWqGZ9v1ruV7N0dMnMOwd4SaiQ7l9+qD3WKUgHZ
-> axaIDGg67EJvYqc15p4npfQJAwZZudvbv1xmmthWFiwwDOMYrDZRjy7Z/dJrU+Gn
-> AACATyx6sYGDLxtp0Wi9lRMRHbHgV01JBs/EWhU7u2R9J+GV5V+BVW0Lu4KG/4yv
-> KOzv1oYCfM+EHXiaeOGFs/kzJXFGihofMoX+JEZtwDfABiVj7kuupo7biksnbwpo
-> TWTFJerzFovyFmkygaCSON08ABRX/iy4xoq38HCE7F4SMf6OrYZMqqDfT2HmXyS/
-> iusyrqsiDvdDcMXc7mTbXadC5dAjdiqK5ATzyKCiGJED181FTauBsjp/ZGC0jbwQ
-> eLa1oVsUUYFOKeix5wwCwTzziGrOL2oh9WX8GZds1G50XKcGXk3ej97MawyJSBxv
-> OuVBJt8iZK1uqGHJMWnZYqACI7CQqNDUz/DWNAS8AZJ+A/x6i2DYhVCfUdYDCCpL
-> ayfI+DzE3kAWeTRNEwsdF8mS2cudvtkO+FKcNGjV12eVtSlJ8gzpHtXZNk3W1T3v
-> lQ18+n5pRmjSJFONRvVVx0jldPmIOIEZyyyIcdOXFeEHB/yhljtYvwcQhkHa4Z8L
-> DVFHRkxh+7t5m8CJgjL4
-> =+2T2
-> -----END PGP SIGNATURE-----
