@@ -1,35 +1,95 @@
-From: Yan <yanp.bugz@gmail.com>
-Subject: Kernel Summit little request ( API for querying the resume cause [3]
- )
-Date: Wed, 6 Jul 2016 21:57:09 +0300
-Message-ID: <577D5485.80400@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PULL Request] Devfreq Fixes-2 for next-RC
+Date: Wed, 6 Jul 2016 21:55:52 +0200
+Message-ID: <CAJZ5v0gQY=P5=Yq7m5S2ocjykq7YR=AuC-doSA99q80J5+ma4A@mail.gmail.com>
+References: <CGME20160706042318epcms1p155db66d1feeea1e45cbcc57f5c004479@epcms1p1>
+ <11403313.450560.1467778998317.JavaMail.weblogic@ep2ml104d>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f42.google.com ([209.85.215.42]:34186 "EHLO
-	mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932289AbcGFS5M (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2016 14:57:12 -0400
-Received: by mail-lf0-f42.google.com with SMTP id h129so160782576lfh.1
-        for <linux-pm@vger.kernel.org>; Wed, 06 Jul 2016 11:57:11 -0700 (PDT)
-Received: from [10.0.2.17] (broadband-5-228-84-134.nationalcablenetworks.ru. [5.228.84.134])
-        by smtp.gmail.com with ESMTPSA id e65sm3644447lji.30.2016.07.06.11.57.09
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 06 Jul 2016 11:57:09 -0700 (PDT)
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:33371 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755775AbcGFTzy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2016 15:55:54 -0400
+Received: by mail-wm0-f66.google.com with SMTP id r201so1034226wme.0
+        for <linux-pm@vger.kernel.org>; Wed, 06 Jul 2016 12:55:54 -0700 (PDT)
+In-Reply-To: <11403313.450560.1467778998317.JavaMail.weblogic@ep2ml104d>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Myungjoo Ham <myungjoo.ham@samsung.com>
+Cc: "rafael@kerne.org" <rafael@kerne.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, "peter.chen@nxp.com" <peter.chen@nxp.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>
 
-I've written here for about a year ago about API for querying the resume
-cause and benefits of it (e. g. PC will be able to go to hibernation
-after N seconds of sleep).
-(https://marc.info/?l=linux-pm&m=144012283218241)
+On Wed, Jul 6, 2016 at 6:23 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> Dear Rafael,
+>
+> Here goes the second set of devfreq fixes for Linux 4.7 RC-x.
 
-Krzysztof Kozlowski said that it's worth topic to discuss on kernel
-summit. Can you raise it please?
+Well, we are in the -rc7 time frame now and the modularity-related
+changes aren't something I'd want to push this late in the cycle.
+
+The other fixes are sort of fine, but it looks to me that they can
+wait for the 4.8 merge window just fine, so what about if I queue up
+all of this material for 4.8?
+
+Thanks,
+Rafael
 
 
-Kind regards, Yan
-
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> The following changes since commit a99cde438de0c4c0cecc1d1af1a55a75b10bfdef:
+>
+>   Linux 4.7-rc6 (2016-07-03 23:01:00 -0700)
+>
+> are available in the git repository at:
+>
+>   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git fixes-2
+>
+> for you to fetch changes up to d8150d14e9bc44ba55c707cc67f4fa66d65cfdef:
+>
+>   PM / devfreq: exynos-bus: add missing of_node_put after calling of_parse_phandle (2016-07-06 13:11:24 +0900)
+>
+> - ----------------------------------------------------------------
+> Pull request of second Linux 4.7-rcX devfreq fixes for Linux-PM
+>
+> - ----------------------------------------------------------------
+> Bartlomiej Zolnierkiewicz (2):
+>       PM / devfreq: exynos: fix error path in exynos_bus_probe()
+>       PM / devfreq: exynos-ppmu: fix error path in exynos_ppmu_probe()
+>
+> Paul Gortmaker (5):
+>       PM / devfreq: make devfreq explicitly non-modular
+>       PM / devfreq: make devfreq-event explicitly non-modular
+>       PM / devfreq: make exynos-bus ARM_EXYNOS_BUS_DEVFREQ tristate
+>       PM / devfreq: make event/exynos-nocp DEVFREQ_EVENT_EXYNOS_NOCP tristate
+>       PM / devfreq: make event/exynos-ppmu DEVFREQ_EVENT_EXYNOS_PPMU tristate
+>
+> Peter Chen (2):
+>       PM / devfreq: add missing of_node_put after calling of_parse_phandle
+>       PM / devfreq: exynos-bus: add missing of_node_put after calling of_parse_phandle
+>
+>  drivers/devfreq/Kconfig             |  2 +-
+>  drivers/devfreq/devfreq-event.c     | 12 +-----------
+>  drivers/devfreq/devfreq.c           | 15 +++------------
+>  drivers/devfreq/event/Kconfig       |  4 ++--
+>  drivers/devfreq/event/exynos-ppmu.c |  3 ++-
+>  drivers/devfreq/exynos-bus.c        | 11 +++++++----
+>  6 files changed, 16 insertions(+), 31 deletions(-)
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1
+>
+> iQIcBAEBAgAGBQJXfIZ4AAoJEBOhurvWBoCKowoP/0Iw72IhDI8NFjCFHCcNGKu3
+> TTGJAxC31VhtbrNfB923AWiRGzWqGZ9v1ruV7N0dMnMOwd4SaiQ7l9+qD3WKUgHZ
+> axaIDGg67EJvYqc15p4npfQJAwZZudvbv1xmmthWFiwwDOMYrDZRjy7Z/dJrU+Gn
+> AACATyx6sYGDLxtp0Wi9lRMRHbHgV01JBs/EWhU7u2R9J+GV5V+BVW0Lu4KG/4yv
+> KOzv1oYCfM+EHXiaeOGFs/kzJXFGihofMoX+JEZtwDfABiVj7kuupo7biksnbwpo
+> TWTFJerzFovyFmkygaCSON08ABRX/iy4xoq38HCE7F4SMf6OrYZMqqDfT2HmXyS/
+> iusyrqsiDvdDcMXc7mTbXadC5dAjdiqK5ATzyKCiGJED181FTauBsjp/ZGC0jbwQ
+> eLa1oVsUUYFOKeix5wwCwTzziGrOL2oh9WX8GZds1G50XKcGXk3ej97MawyJSBxv
+> OuVBJt8iZK1uqGHJMWnZYqACI7CQqNDUz/DWNAS8AZJ+A/x6i2DYhVCfUdYDCCpL
+> ayfI+DzE3kAWeTRNEwsdF8mS2cudvtkO+FKcNGjV12eVtSlJ8gzpHtXZNk3W1T3v
+> lQ18+n5pRmjSJFONRvVVx0jldPmIOIEZyyyIcdOXFeEHB/yhljtYvwcQhkHa4Z8L
+> DVFHRkxh+7t5m8CJgjL4
+> =+2T2
+> -----END PGP SIGNATURE-----
