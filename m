@@ -1,81 +1,107 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?W1BVTEwgUmVxdWVzdF0gRGV2ZnJlcSBGaXhlcy0yIGZvciBu?=
- =?UTF-8?B?ZXh0LVJD?=
-Date: Wed, 06 Jul 2016 04:23:18 +0000
-Message-ID: <11403313.450560.1467778998317.JavaMail.weblogic@ep2ml104d>
-References: <CGME20160706042318epcms1p155db66d1feeea1e45cbcc57f5c004479@epcms1p1>
-Reply-To: myungjoo.ham@samsung.com
+From: Markus Mayer <markus.mayer@broadcom.com>
+Subject: Re: [PATCH v2 0/7] lib: string: add functions to case-convert strings
+Date: Tue, 5 Jul 2016 21:32:16 -0700
+Message-ID: <CAGt4E5u_C9TVgJh5NUCSb6zM_UTazJPTPrsBO9K0atzXAopR8w@mail.gmail.com>
+References: <1467751631-22878-1-git-send-email-mmayer@broadcom.com>
+ <1467756874.16342.11.camel@perches.com> <CAGt4E5vqiUOVmgqY8OvRPNpoS54hZMOHid6ND4CRyb5p9y5ndw@mail.gmail.com>
+ <1467759377.8360.12.camel@perches.com>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_450559_1018097287.1467778998317"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:57698 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbcGFEXW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2016 00:23:22 -0400
-Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0O9V010V1LIV5770@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 06 Jul 2016 13:23:19 +0900 (KST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1467759377.8360.12.camel@perches.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Al Viro <viro@zeniv.linux.org.uk>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Chris Metcalf <cmetcalf@ezchip.com>, Kees Cook <keescook@chromium.org>, dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org, linux-acpi@vger.kernel.org, speakup@linux-speakup.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-pm@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?cmFmYWVsQGtlcm5lLm9yZw==?= <rafael@kerne.org>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>
-Cc: =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?cGV0ZXIuY2hlbkBueHAuY29t?= <peter.chen@nxp.com>, =?UTF-8?B?QmFydGxvbWllaiBab2xuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, =?UTF-8?B?cGF1bC5nb3J0bWFrZXJAd2luZHJpdmVyLmNvbQ==?= <paul.gortmaker@windriver.com>
 
-------=_Part_450559_1018097287.1467778998317
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+On 5 July 2016 at 15:56, Joe Perches <joe@perches.com> wrote:
+> On Tue, 2016-07-05 at 15:36 -0700, Markus Mayer wrote:
+>> On 5 July 2016 at 15:14, Joe Perches <joe@perches.com> wrote:
+>> > On Tue, 2016-07-05 at 13:47 -0700, Markus Mayer wrote:
+>> > > This series introduces a family of generic string case conversion
+>> > > functions. This kind of functionality is needed in several places in
+>> > > the kernel. Right now, everybody seems to be implementing their own
+>> > > copy of this functionality.
+>> > >
+>> > > Based on the discussion of the previous version of this series[1] and
+>> > > the use cases found in the kernel, it does look like having several
+>> > > flavours of case conversion functions is beneficial. The use cases fall
+>> > > into three categories:
+>> > >     - copying a string and converting the case while specifying a
+>> > >       maximum length to mimic strncpy()
+>> > >     - copying a string and converting the case without specifying a
+>> > >       length to mimic strcpy()
+>> > >     - converting the case of a string in-place (i.e. modifying the
+>> > >       string that was passed in)
+>> > >
+>> > > Consequently, I am proposing these new functions:
+>> > >     char *strncpytoupper(char *dst, const char *src, size_t len);
+>> > >     char *strncpytolower(char *dst, const char *src, size_t len);
+>> > >     char *strcpytoupper(char *dst, const char *src);
+>> > >     char *strcpytolower(char *dst, const char *src);
+>> > >     char *strtoupper(char *s);
+>> > >     char *strtolower(char *s);
+>> > I think there isn't much value in anything other
+>> > than strto.
+>> >
+>> > Using str[n]cpy followed by strto is
+>> > pretty obvious and rarely used anyway.
+>> First time around, folks were proposing the "copy" variants when I
+>> submitted just strtolower() by itself[1]. They just asked for source
+>> and destination parameters to strtolower(), but looking at the use
+>> cases that wouldn't have worked so well. Hence it evolved into these 6
+>> functions.
+>>
+>> Here's a breakdown of how the functions are being used (patches 2-7),
+>> see also [2]:
+>>
+>> Patch 2: strncpytolower()
+>> Patch 3: strtolower()
+>> Patch 4: strncpytolower() and strtolower()
+>> Patch 5: strtolower()
+>> Patch 6: strcpytoupper()
+>> Patch 7: strcpytoupper()
+>>
+>> So it does look like the copy + change case variant is more frequently
+>> used than just strto.
+>
+> Are these functions useful?  <shrug> Not to me, not so much.
 
-RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyB0aGUgc2Vjb25kIHNldCBvZiBkZXZmcmVxIGZpeGVz
-IGZvciBMaW51eCA0LjcgUkMteC4NCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0KLS0tLS1CRUdJTiBQ
-R1AgU0lHTkVEIE1FU1NBR0UtLS0tLQ0KSGFzaDogU0hBMQ0KDQpUaGUgZm9sbG93aW5nIGNoYW5n
-ZXMgc2luY2UgY29tbWl0IGE5OWNkZTQzOGRlMGM0YzBjZWNjMWQxYWYxYTU1YTc1YjEwYmZkZWY6
-DQoNCiAgTGludXggNC43LXJjNiAoMjAxNi0wNy0wMyAyMzowMTowMCAtMDcwMCkNCg0KYXJlIGF2
-YWlsYWJsZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkgYXQ6DQoNCiAgaHR0cHM6Ly9naXQua2VybmVs
-Lm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEuZ2l0IGZpeGVzLTINCg0K
-Zm9yIHlvdSB0byBmZXRjaCBjaGFuZ2VzIHVwIHRvIGQ4MTUwZDE0ZTliYzQ0YmE1NWM3MDdjYzY3
-ZjRmYTY2ZDY1Y2ZkZWY6DQoNCiAgUE0gLyBkZXZmcmVxOiBleHlub3MtYnVzOiBhZGQgbWlzc2lu
-ZyBvZl9ub2RlX3B1dCBhZnRlciBjYWxsaW5nIG9mX3BhcnNlX3BoYW5kbGUgKDIwMTYtMDctMDYg
-MTM6MTE6MjQgKzA5MDApDQoNCi0gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KUHVsbCByZXF1ZXN0IG9mIHNlY29uZCBMaW51
-eCA0LjctcmNYIGRldmZyZXEgZml4ZXMgZm9yIExpbnV4LVBNDQoNCi0gLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KQmFydGxv
-bWllaiBab2xuaWVya2lld2ljeiAoMik6DQogICAgICBQTSAvIGRldmZyZXE6IGV4eW5vczogZml4
-IGVycm9yIHBhdGggaW4gZXh5bm9zX2J1c19wcm9iZSgpDQogICAgICBQTSAvIGRldmZyZXE6IGV4
-eW5vcy1wcG11OiBmaXggZXJyb3IgcGF0aCBpbiBleHlub3NfcHBtdV9wcm9iZSgpDQoNClBhdWwg
-R29ydG1ha2VyICg1KToNCiAgICAgIFBNIC8gZGV2ZnJlcTogbWFrZSBkZXZmcmVxIGV4cGxpY2l0
-bHkgbm9uLW1vZHVsYXINCiAgICAgIFBNIC8gZGV2ZnJlcTogbWFrZSBkZXZmcmVxLWV2ZW50IGV4
-cGxpY2l0bHkgbm9uLW1vZHVsYXINCiAgICAgIFBNIC8gZGV2ZnJlcTogbWFrZSBleHlub3MtYnVz
-IEFSTV9FWFlOT1NfQlVTX0RFVkZSRVEgdHJpc3RhdGUNCiAgICAgIFBNIC8gZGV2ZnJlcTogbWFr
-ZSBldmVudC9leHlub3Mtbm9jcCBERVZGUkVRX0VWRU5UX0VYWU5PU19OT0NQIHRyaXN0YXRlDQog
-ICAgICBQTSAvIGRldmZyZXE6IG1ha2UgZXZlbnQvZXh5bm9zLXBwbXUgREVWRlJFUV9FVkVOVF9F
-WFlOT1NfUFBNVSB0cmlzdGF0ZQ0KDQpQZXRlciBDaGVuICgyKToNCiAgICAgIFBNIC8gZGV2ZnJl
-cTogYWRkIG1pc3Npbmcgb2Zfbm9kZV9wdXQgYWZ0ZXIgY2FsbGluZyBvZl9wYXJzZV9waGFuZGxl
-DQogICAgICBQTSAvIGRldmZyZXE6IGV4eW5vcy1idXM6IGFkZCBtaXNzaW5nIG9mX25vZGVfcHV0
-IGFmdGVyIGNhbGxpbmcgb2ZfcGFyc2VfcGhhbmRsZQ0KDQogZHJpdmVycy9kZXZmcmVxL0tjb25m
-aWcgICAgICAgICAgICAgfCAgMiArLQ0KIGRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLWV2ZW50LmMg
-ICAgIHwgMTIgKy0tLS0tLS0tLS0tDQogZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYyAgICAgICAg
-ICAgfCAxNSArKystLS0tLS0tLS0tLS0NCiBkcml2ZXJzL2RldmZyZXEvZXZlbnQvS2NvbmZpZyAg
-ICAgICB8ICA0ICsrLS0NCiBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUuYyB8ICAz
-ICsrLQ0KIGRyaXZlcnMvZGV2ZnJlcS9leHlub3MtYnVzLmMgICAgICAgIHwgMTEgKysrKysrKy0t
-LS0NCiA2IGZpbGVzIGNoYW5nZWQsIDE2IGluc2VydGlvbnMoKyksIDMxIGRlbGV0aW9ucygtKQ0K
-LS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0NClZlcnNpb246IEdudVBHIHYxDQoNCmlRSWNC
-QUVCQWdBR0JRSlhmSVo0QUFvSkVCT2h1cnZXQm9DS293b1AvMEl3NzJJaERJOE5GakNGSENjTkdL
-dTMNClRUR0pBeEMzMVZodGJyTmZCOTIzQVdpUkd6V3FHWjl2MXJ1VjdOMGRNbk1Pd2Q0U2FpUTds
-OStxRDNXS1VnSFoNCmF4YUlER2c2N0VKdllxYzE1cDRucGZRSkF3Wlp1ZHZidjF4bW10aFdGaXd3
-RE9NWXJEWlJqeTdaL2RKclUrR24NCkFBQ0FUeXg2c1lHREx4dHAwV2k5bFJNUkhiSGdWMDFKQnMv
-RVdoVTd1MlI5SitHVjVWK0JWVzBMdTRLRy80eXYNCktPenYxb1lDZk0rRUhYaWFlT0dGcy9rekpY
-RkdpaG9mTW9YK0pFWnR3RGZBQmlWajdrdXVwbzdiaWtzbmJ3cG8NClRXVEZKZXJ6Rm92eUZta3ln
-YUNTT04wOEFCUlgvaXk0eG9xMzhIQ0U3RjRTTWY2T3JZWk1xcURmVDJIbVh5Uy8NCml1c3lycXNp
-RHZkRGNNWGM3bVRiWGFkQzVkQWpkaXFLNUFUenlLQ2lHSkVEMTgxRlRhdUJzanAvWkdDMGpid1EN
-CmVMYTFvVnNVVVlGT0tlaXg1d3dDd1R6emlHck9MMm9oOVdYOEdaZHMxRzUwWEtjR1hrM2VqOTdN
-YXd5SlNCeHYNCk91VkJKdDhpWksxdXFHSEpNV25aWXFBQ0k3Q1FxTkRVei9EV05BUzhBWkorQS94
-NmkyRFloVkNmVWRZRENDcEwNCmF5ZkkrRHpFM2tBV2VUUk5Fd3NkRjhtUzJjdWR2dGtPK0ZLY05H
-alYxMmVWdFNsSjhnenBIdFhaTmszVzFUM3YNCmxRMTgrbjVwUm1qU0pGT05SdlZWeDBqbGRQbUlP
-SUVaeXl5SWNkT1hGZUVIQi95aGxqdFl2d2NRaGtIYTRaOEwNCkRWRkhSa3hoKzd0NW04Q0pnakw0
-DQo9KzJUMg0KLS0tLS1FTkQgUEdQIFNJR05BVFVSRS0tLS0tDQrCoA0KLS0NCk15dW5nSm9vIEhh
-bSAo7ZWo66qF7KO8KSwgUGguRC4NCkRldmVsb3BlciBlWHBlcmllbmNlIExhYiwgUy9XIFBsYXRm
-b3JtIFRlYW0swqBTb2Z0d2FyZSBSJkQgQ2VudGVyDQpTYW1zdW5nIEVsZWN0cm9uaWNzDQpDZWxs
-OiArODItMTAtNjcxNC0yODU4DQrCoA==
-------=_Part_450559_1018097287.1467778998317--
+The use cases do exist. I'll leave it up to the maintainers to decide
+whether duplicate implementations or potentially unused generic
+functions are to be preferred.
+
+What I do know is that I have a driver in the wings that also needs a
+strolower() implementation. If this ends up not being accepted, I'll
+have to add yet another driver-local strtolower() implementation to
+the kernel. But if that's the decision then so be it.
+
+> None of the functions would have the strcpy performance of
+> the arch / asm
+> versions of strcpy and the savings in overall
+> code isn't significant (or
+> measured?).
+
+100% agreed. These functions won't set any speed records. Keep in mind
+also that in 4 out of the 6 cases where I replaced local
+implementations of "strcpytoXXX", the code was doing essentially the
+same I am proposing here (no assembly code). Only 2 of the 6 called
+strncpy() before, benefiting from optimized assembly implementations.
+But they still had to walk the string explicitly afterwards to convert
+the case, which probably means the overall speed won't change that
+much using the functions proposed here.
+
+> Of course none of the uses are runtime performance important.
+
+That is also very true.
+
+> This patch also adds always compiled functions that aren't used
+> in many .configs.
+
+It adds 2 functions (strncpytolower() and strncpytoupper()). The other
+4 are static inline one-liners and won't show up anywhere if not used
+(and if used the compiler will insert calls to strncpyto<lower|upper>
+instead).
+
+Regards,
+-Markus
