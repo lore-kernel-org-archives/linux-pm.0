@@ -1,56 +1,49 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 1/3] PM / Hibernate: Allow arch code to influence CPUs disabled during hibernate
-Date: Wed, 06 Jul 2016 23:11:12 +0200
-Message-ID: <3861939.zr3zvCQ85S@vostro.rjw.lan>
-References: <1467643950-11034-1-git-send-email-james.morse@arm.com> <2602641.slsnqsKrbn@vostro.rjw.lan> <577CCC5F.2060409@arm.com>
+Subject: [PATCH 3/3] PM / hibernate: Add missing braces in __register_nosave_region()
+Date: Wed, 06 Jul 2016 23:44:31 +0200
+Message-ID: <10569352.sLrsX6jVCn@vostro.rjw.lan>
+References: <20396026.uktHd5ozkC@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49480 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61310 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755453AbcGFVGg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2016 17:06:36 -0400
-In-Reply-To: <577CCC5F.2060409@arm.com>
+	by vger.kernel.org with SMTP id S1755480AbcGFVkE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2016 17:40:04 -0400
+In-Reply-To: <20396026.uktHd5ozkC@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Pavel Machek <pavel@ucw.cz>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Chen Yu C <yu.c.chen@intel.com>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wednesday, July 06, 2016 10:16:15 AM James Morse wrote:
-> Hi Rafael,
-> 
-> On 05/07/16 13:28, Rafael J. Wysocki wrote:
-> > On Monday, July 04, 2016 03:52:28 PM James Morse wrote:
-> >> Architecture code may need to do extra work when secondary CPUs are
-> >> disabled during hibernate and resume. This may include pushing sleeping
-> >> CPUs into a deeper power-saving state, or influencing which CPU resume
-> >> occurs on.
-> >>
-> >> Define a macro arch_hibernation_disable_cpus(), which defaults to
-> >> calling disable_nonboot_cpus() if undefined. Architectures that
-> >> need to do extra work around these calls can use this to influence
-> >> the CPU down calls.
-> >> The macros should be defined in asm/suspend.h, and
-> >> ARCH_HIBERNATION_CPU_HOOKS should be added to Kconfig.
-> >>
-> >> Signed-off-by: James Morse <james.morse@arm.com>
-> >> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> >> Cc: Pavel Machek <pavel@ucw.cz>
-> > 
-> > I'm going to apply this one later today.
-> > 
-> > If you want me to apply the other two as well, they need to be ACKed by the
-> > ARM64 maintainers.
-> 
-> Thanks. I'd like to get to the bottom of Lorenzo's comments[0] before the arm64
-> patches go any further though!
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-OK
+One branch of an if/else statement in __register_nosave_region() is
+formatted against the kernel coding style which causes the code to
+look slightly odd.  To fix that, add missing braces to it.
 
-Can you please answer my questions regarding patch [1/3] in the
-meantime (posted separately)?
+No functional changes.
 
-Thanks,
-Rafael
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/power/snapshot.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-pm/kernel/power/snapshot.c
+===================================================================
+--- linux-pm.orig/kernel/power/snapshot.c
++++ linux-pm/kernel/power/snapshot.c
+@@ -945,9 +945,10 @@ void __init __register_nosave_region(uns
+ 		/* During init, this shouldn't fail */
+ 		region = kmalloc(sizeof(struct nosave_region), GFP_KERNEL);
+ 		BUG_ON(!region);
+-	} else
++	} else {
+ 		/* This allocation cannot fail */
+ 		region = memblock_virt_alloc(sizeof(struct nosave_region), 0);
++	}
+ 	region->start_pfn = start_pfn;
+ 	region->end_pfn = end_pfn;
+ 	list_add_tail(&region->list, &nosave_regions);
 
