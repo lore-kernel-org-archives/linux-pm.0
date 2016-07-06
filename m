@@ -1,48 +1,43 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 2/3] tools/power turbostat: Replace MSR_NHM_TURBO_RATIO_LIMIT
-Date: Wed,  6 Jul 2016 16:07:56 -0700
-Message-ID: <1467846477-13659-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/3] x86: Remove duplicate turbo ratio MSRs
+Date: Thu, 7 Jul 2016 01:21:22 +0200
+Message-ID: <CAJZ5v0iTb5GMwLgHnMJOCQnwnCwgDQyziCdoxWaX5Bq57Qk=+g@mail.gmail.com>
 References: <1467846477-13659-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:32798 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932593AbcGFXVY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2016 19:21:24 -0400
 In-Reply-To: <1467846477-13659-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
-Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Borislav Petkov <bp@suse.de>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Replace MSR_NHM_TURBO_RATIO_LIMIT with MSR_TURBO_RATIO_LIMIT.
+On Thu, Jul 7, 2016 at 1:07 AM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> MSR_NHM_TURBO_RATIO_LIMIT and MSR_IVT_TURBO_RATIO_LIMIT are
+> duplicate MSRs with MSR_TURBO_RATIO_LIMIT and MSR_TURBO_RATIO_LIMIT1
+> respectively. So remove them by first removing their usage and then
+> from msr-index.h.
+>
+> Srinivas Pandruvada (3):
+>   cpufreq: intel_pstate: Replace MSR_NHM_TURBO_RATIO_LIMIT
+>   tools/power turbostat: Replace MSR_NHM_TURBO_RATIO_LIMIT
+>   x86: remove duplicate turbo ratio limit MSRs
+>
+>  arch/x86/include/asm/msr-index.h      | 2 --
+>  drivers/cpufreq/intel_pstate.c        | 4 ++--
+>  tools/power/x86/turbostat/turbostat.8 | 2 +-
+>  tools/power/x86/turbostat/turbostat.c | 2 +-
+>  4 files changed, 4 insertions(+), 6 deletions(-)
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- tools/power/x86/turbostat/turbostat.8 | 2 +-
- tools/power/x86/turbostat/turbostat.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+The series looks good to me.
 
-diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
-index 89a55d5..492e84f 100644
---- a/tools/power/x86/turbostat/turbostat.8
-+++ b/tools/power/x86/turbostat/turbostat.8
-@@ -123,7 +123,7 @@ cpu0: MSR_NHM_PLATFORM_INFO: 0x80838f3012300
- 35 * 100 = 3500 MHz TSC frequency
- cpu0: MSR_IA32_POWER_CTL: 0x0004005d (C1E auto-promotion: DISabled)
- cpu0: MSR_NHM_SNB_PKG_CST_CFG_CTL: 0x1e000400 (UNdemote-C3, UNdemote-C1, demote-C3, demote-C1, UNlocked: pkg-cstate-limit=0: pc0)
--cpu0: MSR_NHM_TURBO_RATIO_LIMIT: 0x25262727
-+cpu0: MSR_TURBO_RATIO_LIMIT: 0x25262727
- 37 * 100 = 3700 MHz max turbo 4 active cores
- 38 * 100 = 3800 MHz max turbo 3 active cores
- 39 * 100 = 3900 MHz max turbo 2 active cores
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index acbf7ff..3e199b5 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1480,7 +1480,7 @@ dump_knl_turbo_ratio_limits(void)
- 	unsigned int cores[buckets_no];
- 	unsigned int ratio[buckets_no];
- 
--	get_msr(base_cpu, MSR_NHM_TURBO_RATIO_LIMIT, &msr);
-+	get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT, &msr);
- 
- 	fprintf(outf, "cpu%d: MSR_TURBO_RATIO_LIMIT: 0x%08llx\n",
- 		base_cpu, msr);
--- 
-2.5.5
+If anyone has any objections against this going in through the PM
+tree, please let me know.
+
+Thanks,
+Rafael
