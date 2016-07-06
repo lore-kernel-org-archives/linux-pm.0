@@ -1,107 +1,105 @@
-From: Markus Mayer <markus.mayer@broadcom.com>
-Subject: Re: [PATCH v2 0/7] lib: string: add functions to case-convert strings
-Date: Tue, 5 Jul 2016 21:32:16 -0700
-Message-ID: <CAGt4E5u_C9TVgJh5NUCSb6zM_UTazJPTPrsBO9K0atzXAopR8w@mail.gmail.com>
-References: <1467751631-22878-1-git-send-email-mmayer@broadcom.com>
- <1467756874.16342.11.camel@perches.com> <CAGt4E5vqiUOVmgqY8OvRPNpoS54hZMOHid6ND4CRyb5p9y5ndw@mail.gmail.com>
- <1467759377.8360.12.camel@perches.com>
+From: Michael Haas <haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org>
+Subject: Re: [PATCH 2/4] power: add axp20x-battery driver
+Date: Wed, 6 Jul 2016 06:34:53 +0200
+Message-ID: <577C8A6D.8000409@computerlinguist.org>
+References: <20160701092926.32005-1-icenowy@aosc.xyz>
+ <20160701092926.32005-2-icenowy@aosc.xyz> <577B44FD.6040404@mailbox.org>
+ <4101467707611@web7h.yandex.ru>
+Reply-To: haas-bdq14YP6qtSV9CzYT+GlPGD2FQJk+8+b@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1467759377.8360.12.camel@perches.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Al Viro <viro@zeniv.linux.org.uk>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Chris Metcalf <cmetcalf@ezchip.com>, Kees Cook <keescook@chromium.org>, dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org, linux-acpi@vger.kernel.org, speakup@linux-speakup.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, target-devel@vger.kernel.org, linux-pm@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Return-path: <linux-sunxi+bncBCD4V7EG6QFRBBUV6K5QKGQECTQAIAA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <4101467707611-tvSLaYVQeptuio3avFS2gg@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: icenowy-ymACFijhrKM@public.gmane.org, "wens-jdAy2FN1RRM@public.gmane.org" <wens-jdAy2FN1RRM@public.gmane.org>, "maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org" <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, "sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org" <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+Cc: "robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "mark.rutland-5wv7dgnIgG8@public.gmane.org" <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org" <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 5 July 2016 at 15:56, Joe Perches <joe@perches.com> wrote:
-> On Tue, 2016-07-05 at 15:36 -0700, Markus Mayer wrote:
->> On 5 July 2016 at 15:14, Joe Perches <joe@perches.com> wrote:
->> > On Tue, 2016-07-05 at 13:47 -0700, Markus Mayer wrote:
->> > > This series introduces a family of generic string case conversion
->> > > functions. This kind of functionality is needed in several places in
->> > > the kernel. Right now, everybody seems to be implementing their own
->> > > copy of this functionality.
->> > >
->> > > Based on the discussion of the previous version of this series[1] and
->> > > the use cases found in the kernel, it does look like having several
->> > > flavours of case conversion functions is beneficial. The use cases fall
->> > > into three categories:
->> > >     - copying a string and converting the case while specifying a
->> > >       maximum length to mimic strncpy()
->> > >     - copying a string and converting the case without specifying a
->> > >       length to mimic strcpy()
->> > >     - converting the case of a string in-place (i.e. modifying the
->> > >       string that was passed in)
->> > >
->> > > Consequently, I am proposing these new functions:
->> > >     char *strncpytoupper(char *dst, const char *src, size_t len);
->> > >     char *strncpytolower(char *dst, const char *src, size_t len);
->> > >     char *strcpytoupper(char *dst, const char *src);
->> > >     char *strcpytolower(char *dst, const char *src);
->> > >     char *strtoupper(char *s);
->> > >     char *strtolower(char *s);
->> > I think there isn't much value in anything other
->> > than strto.
->> >
->> > Using str[n]cpy followed by strto is
->> > pretty obvious and rarely used anyway.
->> First time around, folks were proposing the "copy" variants when I
->> submitted just strtolower() by itself[1]. They just asked for source
->> and destination parameters to strtolower(), but looking at the use
->> cases that wouldn't have worked so well. Hence it evolved into these 6
->> functions.
->>
->> Here's a breakdown of how the functions are being used (patches 2-7),
->> see also [2]:
->>
->> Patch 2: strncpytolower()
->> Patch 3: strtolower()
->> Patch 4: strncpytolower() and strtolower()
->> Patch 5: strtolower()
->> Patch 6: strcpytoupper()
->> Patch 7: strcpytoupper()
->>
->> So it does look like the copy + change case variant is more frequently
->> used than just strto.
->
-> Are these functions useful?  <shrug> Not to me, not so much.
+Hi There,
 
-The use cases do exist. I'll leave it up to the maintainers to decide
-whether duplicate implementations or potentially unused generic
-functions are to be preferred.
+On 05.07.2016 10:33, Icenowy Zheng wrote:
+> On 01.07.2016 11:29, Icenowy Zheng wrote:
 
-What I do know is that I have a driver in the wings that also needs a
-strolower() implementation. If this ends up not being accepted, I'll
-have to add yet another driver-local strtolower() implementation to
-the kernel. But if that's the decision then so be it.
+>>>   +
+>>>   +static enum power_supply_property axp22x_battery_properties[] = {
+>>>   + POWER_SUPPLY_PROP_CAPACITY,
+>>>   + POWER_SUPPLY_PROP_HEALTH,
+>>>   + POWER_SUPPLY_PROP_PRESENT,
+>>>   + POWER_SUPPLY_PROP_STATUS,
+>>>   + POWER_SUPPLY_PROP_CURRENT_NOW,
+>>>   + POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>>>   +};
 
-> None of the functions would have the strcpy performance of
-> the arch / asm
-> versions of strcpy and the savings in overall
-> code isn't significant (or
-> measured?).
+Here's what Bruno's driver supports:
 
-100% agreed. These functions won't set any speed records. Keep in mind
-also that in 4 out of the 6 cases where I replaced local
-implementations of "strcpytoXXX", the code was doing essentially the
-same I am proposing here (no assembly code). Only 2 of the 6 called
-strncpy() before, benefiting from optimized assembly implementations.
-But they still had to walk the string explicitly afterwards to convert
-the case, which probably means the overall speed won't change that
-much using the functions proposed here.
+static enum power_supply_property axp20x_battery_power_properties[] = {
+     POWER_SUPPLY_PROP_PRESENT,
+     POWER_SUPPLY_PROP_ONLINE,
+     POWER_SUPPLY_PROP_STATUS,
+     POWER_SUPPLY_PROP_VOLTAGE_NOW,
+     POWER_SUPPLY_PROP_CURRENT_NOW,
+     POWER_SUPPLY_PROP_CURRENT_MAX,
+     POWER_SUPPLY_PROP_HEALTH,
+     POWER_SUPPLY_PROP_TECHNOLOGY,
+     POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
+     POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
+     /* POWER_SUPPLY_PROP_POWER_NOW, */
+     POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+     /* POWER_SUPPLY_PROP_CHARGE_NOW, */
+     POWER_SUPPLY_PROP_CAPACITY,
+     POWER_SUPPLY_PROP_TEMP,
+     POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
+     POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+};
 
-> Of course none of the uses are runtime performance important.
+>>>   +
+>>>   +static int axp20x_battery_probe(struct platform_device *pdev)
+>>>   +{
+>>>   + struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
+>>>   + struct power_supply_config psy_cfg = {};
+>>>   + struct axp20x_battery *power;
+>>>   + static const char * const axp22x_irq_names[] = {
+>>>   + "BATT_PLUGIN", "BATT_REMOVAL", "BATT_ENT_ACT_MODE",
+>>>   + "BATT_EXIT_ACT_MODE", "CHARG", "CHARG_DONE", NULL };
 
-That is also very true.
 
-> This patch also adds always compiled functions that aren't used
-> in many .configs.
+And here are the interrupts handled:
 
-It adds 2 functions (strncpytolower() and strncpytoupper()). The other
-4 are static inline one-liners and won't show up anywhere if not used
-(and if used the compiler will insert calls to strncpyto<lower|upper>
-instead).
+static const char * const irq_names[] = { "BATT_HOT", "BATT_COLD",
+         "BATT_PLUGIN", "BATT_REMOVAL", "BATT_ACTIVATE",
+         "BATT_ACTIVATED", "BATT_CHARGING", "BATT_CHARGED",
+         "BATT_CHG_CURR_LOW", "BATT_POWER_LOW_WARN",
+         "BATT_POWER_LOW_CRIT" };
 
-Regards,
--Markus
+
+
+There are a couple of issues with the version of Bruno's driver that I have:
+
+* power management is disabled (in the driver, not in the charger) - 
+think suspend/resume
+* the temperature sensor data is not turned into a temperature value 
+correctly
+* the IRQ handlers need to be cleaned up (remove logging)
+* device tree binding documentation is missing
+
+Other than that, it's basically working and I have been using it at 
+least for some testing.
+
+The device tree bindings support:
+* OCV curve support
+* battery resistance
+* battery capacity
+* temp sensor settings
+
+You can find my copy of Bruno's driver here:
+https://github.com/mhaas/linux-sunxi/blob/axp209-charger/drivers/power/axp20x_fuel_gauge.c
+
+Thanks,
+
+Michael
