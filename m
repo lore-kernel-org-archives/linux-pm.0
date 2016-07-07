@@ -1,114 +1,160 @@
-From: Andreas Noever <andreas.noever@gmail.com>
-Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
-Date: Thu, 7 Jul 2016 19:39:12 +0200
-Message-ID: <CAMxnaaUij=0QvT2frky2KCtrf4KuA-GQrpCYUa6Bs1EdRK+WFg@mail.gmail.com>
-References: <cover.1463134231.git.lukas@wunner.de> <CAMxnaaU_3z6BSmSnYfi4ee=aTKm3aPyUaXds=G29wdp8O0m5Cw@mail.gmail.com>
- <20160614163703.GA31488@localhost> <CAMxnaaUQC0kyoBK1ri_AYEi=Dc_aiuiMp=kx1mFaZpsw9-D-eA@mail.gmail.com>
- <20160614202228.GA8449@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <20160614202228.GA8449@localhost>
-Sender: linux-pci-owner@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>, Bjorn Helgaas <helgaas@kernel.org>
-Cc: Lukas Wunner <lukas@wunner.de>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Subject: [PATCH v7 00/11] powerpc/powernv/cpuidle: Add support for POWER ISA v3 idle states
+Date: Fri,  8 Jul 2016 02:17:01 +0530
+Message-ID: <1467924432-29003-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mpe@ellerman.id.au
+Cc: benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org, ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jun 14, 2016 at 10:22 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Tue, Jun 14, 2016 at 09:14:27PM +0200, Andreas Noever wrote:
->> On Tue, Jun 14, 2016 at 6:37 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
->> > [+cc linux-kernel]
->> >
->> > On Sat, May 21, 2016 at 11:48:42AM +0200, Andreas Noever wrote:
->> >>
->> >> Signed-off-by: Andreas Noever <andreas.noever@gmail.com>
->> >>
->> >> Tested on MacBookPro10,1
->> >>
->> >> On Fri, May 13, 2016 at 1:15 PM, Lukas Wunner <lukas@wunner.de> wrote:
->> >> > This series powers Thunderbolt controllers on Macs down when nothing is
->> >> > plugged in, saving 1.7 W on machines with a Light Ridge controller and
->> >> > reportedly 4 W on Cactus Ridge 4C and Falcon Ridge 4C.
->> >> >
->> >> > Briefly, a custom ACPI method provided by Apple is used to cut power to
->> >> > the controller.  A GPE is enabled while the controller is powered down
->> >> > which side-band signals a plug event, whereupon power is reinstated using
->> >> > the ACPI method.  Note that even though this mechanism is ACPI-based,
->> >> > it does not use _PSx methods and is thus entirely nonstandard.
->> >
->> > I think the current arrangement was that Andreas would ack Thunderbolt
->> > patches and I would merge them via the PCI tree.  That makes some sense
->> > because Thunderbolt and PCIe are related, but the more I think about
->> > it, the less I'm happy with it.
->> >
->> > This series is a good example.  I'm sure it's good work and
->> > worthwhile.  But I can't really say anything about the content of it
->> > because most of it is Thunderbolt-specific and there's no public spec.
->> > It seems like this is basically a collection of reverse-engineered
->> > quirks that happen to work with the current state of Linux PM on
->> > certain Macs.  We don't know what might change on future Macs.  We
->> > don't know what might break when we make changes to Linux PM.
->> >
->> > I can't test this series, nor do I want to.  I can't test most of the
->> > patches I merge, but I can at least read the spec and see whether the
->> > patches make sense.  What I would *like* is to have public Thunderbolt
->> > specs and a kernel developer's guide so we know what to expect from
->> > the hardware and the firmware and we can write code that should work
->> > not just on current Macs, but also on non-Macs and future Macs.
->> >
->> > I don't think the current situation is really maintainable, and I'm
->> > not comfortable merging code that I can't maintain.
->> Most of the code is contained within the thunderbolt driver. I think
->> there is quite some precedence for reverse engineered drivers without
->> specs being part of the kernel. My understanding was that, since I am
->> listed in MAINTAINERS, I am responsible for the driver. Now our
->> changes often need improvements to the pci core, which is why I think
->> merging through your tree is a good idea (without transferring
->> responsibility). The changes to the drivers/pci should be supported by
->> the PCI-spec and make sense without knowing about thunderbolt (but it
->> might be the case that thunderbolt is the only user of these
->> features).
->>
->> Specifically for this series we want to:
->>  - whitelist thunderbolt bridges for PM. Detecting those bridges is
->> non-standard but I think this is acceptable, since this
->> blacklist/whitelist is basically a quirk.
->>  - Load our portdrv on tb bridges. PCI just sees another portdriver
->> and all the reverse engineered magic lives inside the driver.
->>  - Forward more PM callbacks to portdrivers (not tb specific)
->>  - hotplug D3cold fixes: resume around board_added/remove_board,
->> ignore interrupts in d3cold (not tb specific and probably a general
->> bugfix)
->>  - Make pci not fail if bridges have been put into D3cold by some
->> external mechanism.
->>
->> So maybe you could review the pci changes as a solution to the problem
->> "we want to load a custom portdriver which can put bridges into d3cold
->> in a device specific way". We certainly to not expect you to take
->> responsibility for the thunderbolt driver.
->
-> That's a fine solution as far as I'm personally concerned.  I think
-> it's poor for Linux overall, because I think it's fragile, and it's
-> disappointing that a technology as important as Thunderbolt is so
-> poorly supported by the promulgators.  But if you're willing to work
-> in that environment, that's great.
->
-> You maintain the thunderbolt code and merge changes, and I'll review
-> the pieces that touch drivers/pci.  I do have a couple comments on
-> those pieces, but I don't think they'll be major.
->
-> I just want to get out of the business of merging drivers/thunderbolt
-> code that I can't maintain.
+POWER ISA v3 defines a new idle processor core mechanism. In summary,
+ a) new instruction named stop is added. This instruction replaces
+	instructions like nap, sleep, rvwinkle.
+ b) new per thread SPR named PSSCR is added which controls the behavior
+	of stop instruction. 
+		
+PSSCR has following key fields
+	Bits 0:3  - Power-Saving Level Status. This field indicates the
+	lowest power-saving state the thread entered since stop
+	instruction was last executed.
+		
+	Bit 42 - Enable State Loss                          
+	0 - No state is lost irrespective of other fields  
+	1 - Allows state loss
+		
+	Bits 44:47 - Power-Saving Level Limit      
+	This limits the power-saving level that can be entered into.
+		
+	Bits 60:63 - Requested Level              
+	Used to specify which power-saving level must be entered on
+	executing stop instruction
+		
+Stop idle states and their properties like name, latency, target
+residency, psscr value are exposed via device tree.
 
-[+ Greg]
+This patch series adds support for this new mechanism.
 
-Hi Greg,
+Patches 1-6 are cleanups and code movement.
+Patch 7 adds platform specific support for stop and psscr handling.
+Patch 8 and 9 are minor cleanup in cpuidle driver.
+Patch 10 adds cpuidle driver support.
+Patch 11 makes offlined cpu use deepest stop state.
 
-do you mind if we revert to the old scheme and merge TB changes
-through your tree?
+Note: Documentation for the device tree bindings is posted here-
+http://patchwork.ozlabs.org/patch/629125/
 
-Regards,
-Andreas
+Changes in v7
+=============
+ - File renamed to idle_book3s.S instead of idle_power_common.S
+ - Comment changes
+ - power_stop0, power_stop renamed to power9_idle and power_idle_stop
+ - PSSCR template is now a macro instead of storing in paca
+ - power9_idle in C file instead of assembly
+ - Fixed TOC related bug
+ - Handling subcore within FTR section
+ - Functions in idle.c reordered and broken into multiple functions
+ - calling __restore_cpu_power8/9 via cur_cpu_spec->cpu_restore 
+ - Added a minor patch with minor cleanups in cpuidle-powernv.c . This
+   was mainly to make the existing code consistent with the review
+   comments for new code
+ - Using stack for variables while probing for idle states instead of
+   kzalloc/kcalloc
 
+Changes in v6
+=============
+ - Restore new POWER ISA v3 SPRS when waking up from deep idle
 
-> Bjorn
+Changes in v5
+=============
+ - Use generic cpuidle constant CPUIDLE_NAME_LEN
+ - Fix return code handling for of_property_read_string_array
+ - Use DT flags to determine if are using stop instruction, instead of
+   cpu_has_feature
+ - Removed uncessary cast with names
+ - &stop_loop -> stop_loop
+ - Added POWERNV_THRESHOLD_LATENCY_NS to filter out idle states with high latency
+
+Changes in v4
+=============
+ - Added a patch to use PNV_THREAD_WINKLE macro while requesting for winkle
+ - Moved power7_powersave_common rename to more appropriate patch
+ - renaming power7_enter_nap_mode to pnv_enter_arch207_idle_mode
+ - Added PSSCR layout to Patch 7's commit message
+ - Improved / Fixed comments
+ - Fixed whitespace error in paca.h
+ - Using MAX_POSSIBLE_STOP_STATE macro instead of hardcoding 0xF has
+   max possible stop state
+
+Changes in v3
+=============
+ - Rebased on powerpc-next
+ - Dropping patch 1 since we are not adding a new file for P9 idle support
+ - Improved comments in multiple places
+ - Moved GET_PACA from power7_restore_hyp_resource to System Reset
+ - Instead of moving few functions from idle_power7 to idle_power_common,
+   renaming idle_power7.S to idle_power_common.S
+ - Moved HSTATE_HWTHREAD_STATE updation to power_powersave_common
+ - Dropped earlier patch 5 which moved few macros from idle_power_common to
+   asm/cpuidle.h. 
+ - Added a patch to rename reusable power7_* idle functions to pnv_*
+ - Added new patch that creates abstraction for saving SPRs before
+   entering deep idle states
+ - Instead of introducing new file idle_power_stop.S, P9 idle support
+   is added to idle_power_common.S using CPU_FTR sections.
+ - Fixed r4 reg clobbering in power_stop0
+
+Changes in v2
+=============
+ - Rebased on v4.6-rc6
+ - Using CPU_FTR_ARCH_300 bit instead of CPU_FTR_STOP_INST
+
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+
+Shreyas B. Prabhu (11):
+  powerpc/powernv: Use PNV_THREAD_WINKLE macro while requesting for
+    winkle
+  powerpc/kvm: make hypervisor state restore a function
+  powerpc/powernv: Rename idle_power7.S to idle_book3s.S
+  powerpc/powernv: Rename reusable idle functions to hardware agnostic
+    names
+  powerpc/powernv: Make pnv_powersave_common more generic
+  powerpc/powernv: abstraction for saving SPRs before entering deep idle
+    states
+  powerpc/powernv: Add platform support for stop instruction
+  cpuidle/powernv: Use CPUIDLE_STATE_MAX instead of
+    MAX_POWERNV_IDLE_STATES
+  cpuidle/powernv: cleanup powernv_add_idle_states
+  cpuidle/powernv: Add support for POWER ISA v3 idle states
+  powerpc/powernv: Use deepest stop state when cpu is offlined
+
+ arch/powerpc/include/asm/cpuidle.h        |   2 +
+ arch/powerpc/include/asm/kvm_book3s_asm.h |   2 +-
+ arch/powerpc/include/asm/opal-api.h       |  11 +-
+ arch/powerpc/include/asm/ppc-opcode.h     |   4 +
+ arch/powerpc/include/asm/processor.h      |   2 +
+ arch/powerpc/include/asm/reg.h            |  10 +
+ arch/powerpc/kernel/Makefile              |   2 +-
+ arch/powerpc/kernel/exceptions-64s.S      |  30 +-
+ arch/powerpc/kernel/idle_book3s.S         | 664 ++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/idle_power7.S         | 515 -----------------------
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |   4 +-
+ arch/powerpc/platforms/powernv/idle.c     | 185 +++++++--
+ arch/powerpc/platforms/powernv/powernv.h  |   1 +
+ arch/powerpc/platforms/powernv/smp.c      |   4 +-
+ drivers/cpuidle/cpuidle-powernv.c         |  99 ++++-
+ 15 files changed, 940 insertions(+), 595 deletions(-)
+ create mode 100644 arch/powerpc/kernel/idle_book3s.S
+ delete mode 100644 arch/powerpc/kernel/idle_power7.S
+
+-- 
+2.4.11
