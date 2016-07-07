@@ -1,71 +1,47 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
-Date: Thu, 7 Jul 2016 17:02:43 +0200
-Message-ID: <20160707150243.GA3633@wunner.de>
-References: <cover.1463134231.git.lukas@wunner.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V5 0/2] cpufreq: Sorted policy->freq_table
+Date: Thu, 7 Jul 2016 08:36:38 -0700
+Message-ID: <20160707153638.GC3932@ubuntu>
+References: <cover.1467001203.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:51925 "EHLO
-	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750968AbcGGO6S (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 10:58:18 -0400
+Received: from mail-pf0-f178.google.com ([209.85.192.178]:36152 "EHLO
+	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752604AbcGGPgk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 11:36:40 -0400
+Received: by mail-pf0-f178.google.com with SMTP id t190so7110060pfb.3
+        for <linux-pm@vger.kernel.org>; Thu, 07 Jul 2016 08:36:39 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <cover.1463134231.git.lukas@wunner.de>
+In-Reply-To: <cover.1467001203.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org
 
-Dear Rafael,
+On 27-06-16, 09:59, Viresh Kumar wrote:
+> Hi Rafael,
+> 
+> This series is aimed to make traversing of cpufreq table more efficient
+> for platforms that already sort the frequency tables. The cpufreq core
+> now checks if the freq table is sorted and applies a different set of
+> helpers on such tables while traversing them.
+> 
+> All the patches are pushed here for testing in case anyone wants to try:
+> git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/sorted-freq-table
+> 
+> V4->V4:
+> - s/cpufreq_table_find_index_unsorted/cpufreq_table_index_unsorted
+> - return error for duplicate frequencies
+> - freq-table-sorted is an enum now
+> - Remove freq_is_invalid() and clamp the frequencies at the top of few
+>   helpers.
+> - Remove few checks which were impossible to hit (best == -1)
 
-The honor of your presence is requested to the review of this series
-posted May 13.
+Thanks Rafael for applying this series.
 
-Bjorn has requested an ack from you on patches 9 and 10, so the series
-is essentially blocked until you find the time to comment. It would
-also be good if you could look at the PM-related patches 4, 5, 6 and 11.
-They're all fairly small. You do not have to bother about the larger
-thunderbolt patches at the end of the series:
+@Steve: I think you are unblocked now (sorry for the long delay) to get your
+work going.
 
-[01/13]  https://patchwork.kernel.org/patch/9090411/
-[02/13]  https://patchwork.kernel.org/patch/9090421/
-[03/13]  https://patchwork.kernel.org/patch/9090451/
-[04/13]  https://patchwork.kernel.org/patch/9090471/
-[05/13]  https://patchwork.kernel.org/patch/9090491/
-[06/13]  https://patchwork.kernel.org/patch/9090511/
-[07/13]  https://patchwork.kernel.org/patch/9090531/
-[08/13]  https://patchwork.kernel.org/patch/9090541/
-[09/13]  https://patchwork.kernel.org/patch/9090621/
-[10/13]  https://patchwork.kernel.org/patch/9090641/
-[11/13]  https://patchwork.kernel.org/patch/9090651/
-[12/13]  https://patchwork.kernel.org/patch/9090571/
-[13/13]  https://patchwork.kernel.org/patch/9090591/
-
-There are also still unanswered questions about the architecture
-I've chosen in this series: I'm attaching to the upstream bridge
-of the Thunderbolt controller as a port service to be able to
-power it down when nothing is plugged in. This architecture is
-a workaround for the fact that dev_pm_domain_set() cannot be
-called after a device is bound to a driver.
-
-I've explained this in detail in an e-mail to you on June 17:
-http://www.spinics.net/lists/linux-pci/msg52120.html
-
-Near the end of that e-mail are two questions:
-(1) Would it be possible to allow dev_pm_domain_set() for already
-    bound devices? (It would allow me to simplify this series
-    considerably.)
-(2) How should the PCI core deal with devices that can be suspended
-    to D3cold but not by the platform? Is it correct to solve this
-    with dev_pm_domain_set()? (As is currently done for Optimus GPUs.)
-    Is it also okay to suspend/resume them in the driver runtime PM
-    callbacks? (This requires patch [09/13] of my series to work
-    properly.)
-
-Your help answering those questions and/or reviewing this series
-is greatly appreciated.
-
-Thank you!
-
-Lukas
+-- 
+viresh
