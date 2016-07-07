@@ -1,202 +1,114 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][RFC v3] x86, hotplug: Use hlt instead of mwait if invoked from disable_nonboot_cpus
-Date: Thu, 07 Jul 2016 02:33:21 +0200
-Message-ID: <209704957.TWElLMTLfP@vostro.rjw.lan>
-References: <1467105403-5085-1-git-send-email-yu.c.chen@intel.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PULL Request] Devfreq Fixes-2 for next-RC
+Date: Thu, 7 Jul 2016 09:43:19 +0900
+Message-ID: <CAJ0PZbSww-L6W99Xa1zP-nBW2=GMWP44qFwfBfMf2rRqTJCFNw@mail.gmail.com>
+References: <CGME20160706042318epcms1p155db66d1feeea1e45cbcc57f5c004479@epcms1p1>
+ <11403313.450560.1467778998317.JavaMail.weblogic@ep2ml104d> <CAJZ5v0gQY=P5=Yq7m5S2ocjykq7YR=AuC-doSA99q80J5+ma4A@mail.gmail.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56851 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932235AbcGGA2p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2016 20:28:45 -0400
-In-Reply-To: <1467105403-5085-1-git-send-email-yu.c.chen@intel.com>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:35526 "EHLO
+	mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751363AbcGGAoV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jul 2016 20:44:21 -0400
+Received: by mail-oi0-f65.google.com with SMTP id d132so423495oig.2
+        for <linux-pm@vger.kernel.org>; Wed, 06 Jul 2016 17:43:34 -0700 (PDT)
+In-Reply-To: <CAJZ5v0gQY=P5=Yq7m5S2ocjykq7YR=AuC-doSA99q80J5+ma4A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>, James Morse <james.morse@arm.com>
-Cc: linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "rafael@kerne.org" <rafael@kerne.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, "peter.chen@nxp.com" <peter.chen@nxp.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>
 
-On Tuesday, June 28, 2016 05:16:43 PM Chen Yu wrote:
-> Stress test from Varun Koyyalagunta reports that, the
-> nonboot CPU would hang occasionally, when resuming from
-> hibernation. Further investigation shows that, the precise
-> stage when nonboot CPU hangs, is the time when the nonboot
-> CPU been woken up incorrectly, and tries to monitor the
-> mwait_ptr for the second time, then an exception is
-> triggered due to illegal vaddr access, say, something like,
-> 'Unable to handler kernel address of 0xffff8800ba800010...'
-> 
-> Further investigation shows that, this exception is caused
-> by accessing a page without PRESENT flag, because the pte entry
-> for this vaddr is zero. Here's the scenario how this problem
-> happens: Page table for direct mapping is allocated dynamically
-> by kernel_physical_mapping_init, it is possible that in the
-> resume process, when the boot CPU is trying to write back pages
-> to their original address, and just right to writes to the monitor
-> mwait_ptr then wakes up one of the nonboot CPUs, since the page
-> table currently used by the nonboot CPU might not the same as it
-> is before the hibernation, an exception might occur due to
-> inconsistent page table.
-> 
-> First try is to get rid of this problem by changing the monitor
-> address from task.flag to zero page, because no one would write
-> data to zero page. But there is still problem because of a ping-pong
-> wake up scenario in mwait_play_dead:
-> 
-> One possible implementation of a clflush is a read-invalidate snoop,
-> which is what a store might look like, so cflush might break the mwait.
-> 
-> 1. CPU1 wait at zero page
-> 2. CPU2 cflush zero page, wake CPU1 up, then CPU2 waits at zero page
-> 3. CPU1 is woken up, and invoke cflush zero page, thus wake up CPU2 again.
-> then the nonboot CPUs never sleep for long.
-> 
-> So it's better to monitor different address for each
-> nonboot CPUs, however since there is only one zero page, at most:
-> PAGE_SIZE/L1_CACHE_LINE CPUs are satisfied, which is usually 64
-> on a x86_64, apparently it's not enough for servers, maybe more
-> zero pages are required.
-> 
-> So choose a new solution as Brian suggested, to put the nonboot CPUs
-> into hlt before resume, without touching any memory during s/r.
-> Theoretically there might still be some problems if some of the CPUs have
-> already been put offline, but since the case is very rare and users
-> can work around it, we do not deal with this special case in kernel
-> for now.
-> 
-> BTW, as James mentioned, he might want to encapsulate disable_nonboot_cpus
-> into arch-specific, so this patch might need small change after that.
-> 
-> Comments and suggestions would be appreciated.
-> 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=106371
-> Reported-and-tested-by: Varun Koyyalagunta <cpudebug@centtech.com>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+On Thu, Jul 7, 2016 at 4:55 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Jul 6, 2016 at 6:23 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>> Dear Rafael,
+>>
+>> Here goes the second set of devfreq fixes for Linux 4.7 RC-x.
+>
+> Well, we are in the -rc7 time frame now and the modularity-related
+> changes aren't something I'd want to push this late in the cycle.
+>
+> The other fixes are sort of fine, but it looks to me that they can
+> wait for the 4.8 merge window just fine, so what about if I queue up
+> all of this material for 4.8?
+>
+> Thanks,
+> Rafael
 
-Below is my sort of version of this (untested) and I did it this way, because
-the issue is specific to resume from hibernation (the workaround need not be
-applied anywhere else) and the hibernate_resume_nonboot_cpu_disable() thing may
-be useful to arm64 too if I'm not mistaken (James?).
-
-Actually, if arm64 uses it too, the __weak implementation can be dropped,
-because it will be possible to make it depend on ARCH_HIBERNATION_HEADER
-(x86 and arm64 are the only users of that).
-
-Thanks,
-Rafael
+Sure, this may wait for 4.8.
 
 
----
- arch/x86/include/asm/cpu.h |    2 ++
- arch/x86/kernel/smpboot.c  |    5 +++++
- arch/x86/power/cpu.c       |   19 +++++++++++++++++++
- kernel/power/hibernate.c   |    7 ++++++-
- kernel/power/power.h       |    2 ++
- 5 files changed, 34 insertions(+), 1 deletion(-)
+Cheers,
+MyungJoo
 
-Index: linux-pm/kernel/power/hibernate.c
-===================================================================
---- linux-pm.orig/kernel/power/hibernate.c
-+++ linux-pm/kernel/power/hibernate.c
-@@ -409,6 +409,11 @@ int hibernation_snapshot(int platform_mo
- 	goto Close;
- }
- 
-+int __weak hibernate_resume_nonboot_cpu_disable(void)
-+{
-+	return disable_nonboot_cpus();
-+}
-+
- /**
-  * resume_target_kernel - Restore system state from a hibernation image.
-  * @platform_mode: Whether or not to use the platform driver.
-@@ -433,7 +438,7 @@ static int resume_target_kernel(bool pla
- 	if (error)
- 		goto Cleanup;
- 
--	error = disable_nonboot_cpus();
-+	error = hibernate_resume_nonboot_cpu_disable();
- 	if (error)
- 		goto Enable_cpus;
- 
-Index: linux-pm/kernel/power/power.h
-===================================================================
---- linux-pm.orig/kernel/power/power.h
-+++ linux-pm/kernel/power/power.h
-@@ -38,6 +38,8 @@ static inline char *check_image_kernel(s
- }
- #endif /* CONFIG_ARCH_HIBERNATION_HEADER */
- 
-+extern int hibernate_resume_nonboot_cpu_disable(void);
-+
- /*
-  * Keep some memory free so that I/O operations can succeed without paging
-  * [Might this be more than 4 MB?]
-Index: linux-pm/arch/x86/power/cpu.c
-===================================================================
---- linux-pm.orig/arch/x86/power/cpu.c
-+++ linux-pm/arch/x86/power/cpu.c
-@@ -266,6 +266,25 @@ void notrace restore_processor_state(voi
- EXPORT_SYMBOL(restore_processor_state);
- #endif
- 
-+#if defined(CONFIG_HIBERNATION) && defined(CONFIG_HOTPLUG_CPU)
-+int hibernate_resume_nonboot_cpu_disable(void)
-+{
-+	int ret;
-+
-+	/*
-+	 * Ensure that MONITOR/MWAIT will not be used in the "play dead" loop
-+	 * during image restoration, because it is likely that the monitored
-+	 * address will be actually written to at that time and then the "dead"
-+	 * CPU may start executing instructions from an image kernel's page
-+	 * (and that may not be the "play dead" loop any more).
-+	 */
-+	force_hlt_play_dead = true;
-+	ret = disable_nonboot_cpus();
-+	force_hlt_play_dead = false;
-+	return ret;
-+}
-+#endif
-+
- /*
-  * When bsp_check() is called in hibernate and suspend, cpu hotplug
-  * is disabled already. So it's unnessary to handle race condition between
-Index: linux-pm/arch/x86/kernel/smpboot.c
-===================================================================
---- linux-pm.orig/arch/x86/kernel/smpboot.c
-+++ linux-pm/arch/x86/kernel/smpboot.c
-@@ -1441,6 +1441,8 @@ __init void prefill_possible_map(void)
- 
- #ifdef CONFIG_HOTPLUG_CPU
- 
-+bool force_hlt_play_dead;
-+
- static void remove_siblinginfo(int cpu)
- {
- 	int sibling;
-@@ -1642,6 +1644,9 @@ void native_play_dead(void)
- 	play_dead_common();
- 	tboot_shutdown(TB_SHUTDOWN_WFS);
- 
-+	if (force_hlt_play_dead)
-+		hlt_play_dead();
-+
- 	mwait_play_dead();	/* Only returns on failure */
- 	if (cpuidle_play_dead())
- 		hlt_play_dead();
-Index: linux-pm/arch/x86/include/asm/cpu.h
-===================================================================
---- linux-pm.orig/arch/x86/include/asm/cpu.h
-+++ linux-pm/arch/x86/include/asm/cpu.h
-@@ -26,6 +26,8 @@ struct x86_cpu {
- };
- 
- #ifdef CONFIG_HOTPLUG_CPU
-+extern bool force_hlt_play_dead;
-+
- extern int arch_register_cpu(int num);
- extern void arch_unregister_cpu(int);
- extern void start_cpu0(void);
+>
+>
+>> -----BEGIN PGP SIGNED MESSAGE-----
+>> Hash: SHA1
+>>
+>> The following changes since commit a99cde438de0c4c0cecc1d1af1a55a75b10bfdef:
+>>
+>>   Linux 4.7-rc6 (2016-07-03 23:01:00 -0700)
+>>
+>> are available in the git repository at:
+>>
+>>   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git fixes-2
+>>
+>> for you to fetch changes up to d8150d14e9bc44ba55c707cc67f4fa66d65cfdef:
+>>
+>>   PM / devfreq: exynos-bus: add missing of_node_put after calling of_parse_phandle (2016-07-06 13:11:24 +0900)
+>>
+>> - ----------------------------------------------------------------
+>> Pull request of second Linux 4.7-rcX devfreq fixes for Linux-PM
+>>
+>> - ----------------------------------------------------------------
+>> Bartlomiej Zolnierkiewicz (2):
+>>       PM / devfreq: exynos: fix error path in exynos_bus_probe()
+>>       PM / devfreq: exynos-ppmu: fix error path in exynos_ppmu_probe()
+>>
+>> Paul Gortmaker (5):
+>>       PM / devfreq: make devfreq explicitly non-modular
+>>       PM / devfreq: make devfreq-event explicitly non-modular
+>>       PM / devfreq: make exynos-bus ARM_EXYNOS_BUS_DEVFREQ tristate
+>>       PM / devfreq: make event/exynos-nocp DEVFREQ_EVENT_EXYNOS_NOCP tristate
+>>       PM / devfreq: make event/exynos-ppmu DEVFREQ_EVENT_EXYNOS_PPMU tristate
+>>
+>> Peter Chen (2):
+>>       PM / devfreq: add missing of_node_put after calling of_parse_phandle
+>>       PM / devfreq: exynos-bus: add missing of_node_put after calling of_parse_phandle
+>>
+>>  drivers/devfreq/Kconfig             |  2 +-
+>>  drivers/devfreq/devfreq-event.c     | 12 +-----------
+>>  drivers/devfreq/devfreq.c           | 15 +++------------
+>>  drivers/devfreq/event/Kconfig       |  4 ++--
+>>  drivers/devfreq/event/exynos-ppmu.c |  3 ++-
+>>  drivers/devfreq/exynos-bus.c        | 11 +++++++----
+>>  6 files changed, 16 insertions(+), 31 deletions(-)
+>> -----BEGIN PGP SIGNATURE-----
+>> Version: GnuPG v1
+>>
+>> iQIcBAEBAgAGBQJXfIZ4AAoJEBOhurvWBoCKowoP/0Iw72IhDI8NFjCFHCcNGKu3
+>> TTGJAxC31VhtbrNfB923AWiRGzWqGZ9v1ruV7N0dMnMOwd4SaiQ7l9+qD3WKUgHZ
+>> axaIDGg67EJvYqc15p4npfQJAwZZudvbv1xmmthWFiwwDOMYrDZRjy7Z/dJrU+Gn
+>> AACATyx6sYGDLxtp0Wi9lRMRHbHgV01JBs/EWhU7u2R9J+GV5V+BVW0Lu4KG/4yv
+>> KOzv1oYCfM+EHXiaeOGFs/kzJXFGihofMoX+JEZtwDfABiVj7kuupo7biksnbwpo
+>> TWTFJerzFovyFmkygaCSON08ABRX/iy4xoq38HCE7F4SMf6OrYZMqqDfT2HmXyS/
+>> iusyrqsiDvdDcMXc7mTbXadC5dAjdiqK5ATzyKCiGJED181FTauBsjp/ZGC0jbwQ
+>> eLa1oVsUUYFOKeix5wwCwTzziGrOL2oh9WX8GZds1G50XKcGXk3ej97MawyJSBxv
+>> OuVBJt8iZK1uqGHJMWnZYqACI7CQqNDUz/DWNAS8AZJ+A/x6i2DYhVCfUdYDCCpL
+>> ayfI+DzE3kAWeTRNEwsdF8mS2cudvtkO+FKcNGjV12eVtSlJ8gzpHtXZNk3W1T3v
+>> lQ18+n5pRmjSJFONRvVVx0jldPmIOIEZyyyIcdOXFeEHB/yhljtYvwcQhkHa4Z8L
+>> DVFHRkxh+7t5m8CJgjL4
+>> =+2T2
+>> -----END PGP SIGNATURE-----
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
+
+
+-- 
+MyungJoo Ham, Ph.D.
+Frontier CS Lab, S/W Center, Samsung Electronics
