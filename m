@@ -1,56 +1,69 @@
-From: Stephen Boyd <stephen.boyd@linaro.org>
-Subject: Re: [PATCH 5/6] usb: chipidea: host: let the hcd know's parent device node
-Date: Thu, 07 Jul 2016 15:56:51 -0700
-Message-ID: <146793221122.31330.7571458363004882365@sboyd-linaro>
-References: <1467882892-27589-1-git-send-email-peter.chen@nxp.com>
- <1467882892-27589-6-git-send-email-peter.chen@nxp.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.7-rc7
+Date: Fri, 8 Jul 2016 01:42:08 +0200
+Message-ID: <CAJZ5v0jEEL-G-DS8_DJUddX8j9z0UWROB8z0+sWcuJizVLq9Ow@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:33298 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752052AbcGGW4y convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 18:56:54 -0400
-Received: by mail-pa0-f45.google.com with SMTP id b13so9745090pat.0
-        for <linux-pm@vger.kernel.org>; Thu, 07 Jul 2016 15:56:53 -0700 (PDT)
-In-Reply-To: <1467882892-27589-6-git-send-email-peter.chen@nxp.com>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:34194 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752299AbcGGXmL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 19:42:11 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org
-Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, linux-pm@vger.kernel.org, Peter Chen <peter.chen@freescale.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
 
-Quoting Peter Chen (2016-07-07 02:14:51)
-> diff --git a/drivers/usb/chipidea/host.c b/drivers/usb/chipidea/host.c
-> index 053bac9..55120ef 100644
-> --- a/drivers/usb/chipidea/host.c
-> +++ b/drivers/usb/chipidea/host.c
-> @@ -109,15 +109,25 @@ static int host_start(struct ci_hdrc *ci)
->         struct ehci_hcd *ehci;
->         struct ehci_ci_priv *priv;
->         int ret;
-> +       struct device *dev = ci->dev;
->  
-> -       if (usb_disabled())
-> +       if (usb_disabled() || !dev)
+Hi Linus,
 
-Does that ever happen?
+Please pull from
 
->                 return -ENODEV;
->  
-> -       hcd = usb_create_hcd(&ci_ehci_hc_driver, ci->dev, dev_name(ci->dev));
-> +       /*
-> +        * USB Core will try to get child node under roothub,
-> +        * but chipidea core has no of_node, and the child node
-> +        * for controller is located at glue layer's node which
-> +        * is chipidea core's parent.
-> +        */
-> +       if (dev->parent && dev->parent->of_node)
-> +               dev->of_node = dev->parent->of_node;
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.7-rc7
 
-Why not do this during the ci device probe? How is host special for
-having an of_node for the child device.
+to receive power management fixes for v4.7-rc7 with top-most commit
+7fe39a21557b251e101671f2c3f79558a756afef
 
-Doing that would also make my ULPI bus DT discovery patch simpler
-because we wouldn't have to search the parent of the parent for a DT
-node to find the ULPI node that's a child of the ci glue device.
+ Merge branches 'pm-cpuidle-fixes' and 'pm-sleep-fixes'
+
+on top of commit a99cde438de0c4c0cecc1d1af1a55a75b10bfdef
+
+ Linux 4.7-rc6
+
+One fix for a recent cpuidle core change that, against all odds,
+introduced a functional regression on Power systems and the fix
+for the crash during resume from hibernation on x86-64 that has
+been in the works for the last few weeks (it actually was ready
+last week, but I wanted to allow the reporters to test if for some
+more time).
+
+Specifics:
+
+ - Fix a recent performance regression on Power systems (powernv
+   and pseries) introduced by a core cpuidle commit that decreased
+   the precision of the last_residency conversion from nano- to
+   microseconds, which should not matter in theory, but turned out
+   to play not-so-well with the special "snooze" idle state on Power
+   (Shreyas B Prabhu).
+
+ - Fix a crash during resume from hibernation on x86-64 caused by
+   possible corruption of the kernel text part of page tables in the
+   last phase of image restoration exposed by a security-related
+   change during the 4.3 development cycle (Rafael Wysocki).
+
+Thanks!
+
+---------------
+
+Rafael J. Wysocki (1):
+      x86/power/64: Fix kernel text mapping corruption during image restoration
+
+Shreyas B. Prabhu (1):
+      cpuidle: Fix last_residency division
+
+---------------
+
+ arch/x86/power/hibernate_64.c     | 97 ++++++++++++++++++++++++++++++++++-----
+ arch/x86/power/hibernate_asm_64.S | 55 ++++++++++------------
+ drivers/cpuidle/cpuidle.c         | 12 ++---
+ 3 files changed, 113 insertions(+), 51 deletions(-)
