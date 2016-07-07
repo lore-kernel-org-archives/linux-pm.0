@@ -1,118 +1,140 @@
-From: Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 1/6] binding-doc: power: pwrseq-generic: add binding doc
- for generic power sequence library
-Date: Thu, 7 Jul 2016 16:53:07 -0700
-Message-ID: <577EEB63.3020007@gmail.com>
-References: <1467882892-27589-1-git-send-email-peter.chen@nxp.com>
- <1467882892-27589-2-git-send-email-peter.chen@nxp.com>
- <1467884834.4236.36.camel@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1467884834.4236.36.camel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+From: Peter Wu <peter@lekensteyn.nl>
+Subject: [PATCH v2 4/4] drm/nouveau/acpi: fix lockup with PCIe runtime PM
+Date: Fri,  8 Jul 2016 01:38:27 +0200
+Message-ID: <20160707233827.2100-5-peter@lekensteyn.nl>
+References: <20160707233827.2100-1-peter@lekensteyn.nl>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160707233827.2100-1-peter@lekensteyn.nl>
+Sender: linux-pci-owner@vger.kernel.org
+To: nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org
+Cc: Dave Airlie <airlied@redhat.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Since "PCI: Add runtime PM support for PCIe ports", the parent PCIe port
+can be runtime-suspended which disables power resources via ACPI. This
+is incompatible with DSM, resulting in a GPU device which is still in D3
+and locks up the kernel on resume (on a Clevo P651RA, GTX965M).
 
+Mirror the behavior of Windows 8 and newer[1] (as observed via an AMLi
+debugger trace) and stop using the DSM functions for D3cold when power
+resources are available on the parent PCIe port.
 
-On 07/07/2016 02:47 AM, Philipp Zabel wrote:
-> Am Donnerstag, den 07.07.2016, 17:14 +0800 schrieb Peter Chen:
->> Add binding doc for generic power sequence library.
->>
->> Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
->> ---
->>  .../bindings/power/pwrseq/pwrseq-generic.txt       | 56 ++++++++++++++++++++++
->>  1 file changed, 56 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
->>
->> diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
->> new file mode 100644
->> index 0000000..4b23834
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
->> @@ -0,0 +1,56 @@
->> +The generic power sequence library
->> +
->> +Some hard-wired USB/MMC devices need to do power sequence to let the
->> +device work normally, the typical power sequence like: enable USB
->> +PHY clock, toggle reset pin, etc. But current Linux USB driver
->> +lacks of such code to do it, it may cause some hard-wired USB devices
->> +works abnormal or can't be recognized by controller at all. The
->> +power sequence will be done before this device can be found at USB
->> +bus.
->> +
->> +The power sequence properties is under the device node.
->> +
->> +Required properties:
->> +- power-sequence: this device needs to do power sequence before enumeration
->> +
->> +Optional properties:
->> +- clocks: the input clock for device.
->> +- clock-name: must be "pwrseq-clk"
-> The "-clk" in the clock name is redundant.
->
->> +- pwrseq-reset-gpios: Should specify the GPIO for reset.
->> +- pwrseq-reset-duration-us: the duration in microsecond for assert reset signal.
-> I understand you want to make it explicit that this GPIO is for the
-> pwrseq library, but are we really gaining anything over just calling
-> these reset-gpios and reset-duration-us?
-> The same applies to the clock name above.
-using  reset-gpios makes sense to  me too.
-The above "power-sequence" might then be better called "reset-on-init",
-But really, if a device has a reset gpio shouldn't the default behavior be to
-reset it on boot and when coming back from sleep?
-Is a special property even needed?
->
->> +Below is the example of USB power sequence properties on USB device
->> +nodes which have two level USB hubs.
->> +
->> +&usbotg1 {
->> +	vbus-supply = <&reg_usb_otg1_vbus>;
->> +	pinctrl-names = "default";
->> +	pinctrl-0 = <&pinctrl_usb_otg1_id>;
->> +	status = "okay";
->> +
->> +	#address-cells = <1>;
->> +	#size-cells = <0>;
->> +	hub: genesys@1 {
->> +		compatible = "usb5e3,608";
->> +		reg = <1>;
->> +
->> +		power-sequence;
->> +		clocks = <&clks IMX6SX_CLK_CKO>;
->> +		clock-names = "pwrseq-clk";
->> +		pwrseq-reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
->> +		pwrseq-reset-duration-us = <10>;
->> +
->> +		#address-cells = <1>;
->> +		#size-cells = <0>;
->> +		ethernet: asix@1 {
->> +			compatible = "usbb95,1708";
->> +			reg = <1>;
->> +
->> +			power-sequence;
->> +			clocks = <&clks IMX6SX_CLK_IPG>;
->> +			clock-names = "pwrseq-clk";
->> +			pwrseq-reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
->> +			pwrseq-reset-duration-us = <15>;
->> +		};
-> This looks weird. The hub and ethernet chips don't have "pwrseq" clock
-> and reset input pins. I'd remove the clock-names and pwrseq- reset
-> prefix.
->
-> regards
-> Philipp
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+pci_d3cold_disable() is not used because on some machines, the old DSM
+method is broken. On a Lenovo T440p (GT 730M) memory and disk corruption
+would occur, but that is fixed with this patch[2].
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ [1]: https://msdn.microsoft.com/windows/hardware/drivers/bringup/firmware-requirements-for-d3cold
+ [2]: https://github.com/Bumblebee-Project/bbswitch/issues/78#issuecomment-223549072
+
+ v2: simply check directly for _PR3. Added affected machines.
+
+Signed-off-by: Peter Wu <peter@lekensteyn.nl>
+---
+ drivers/gpu/drm/nouveau/nouveau_acpi.c | 33 +++++++++++++++++++++++++++++----
+ 1 file changed, 29 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/gpu/drm/nouveau/nouveau_acpi.c b/drivers/gpu/drm/nouveau/nouveau_acpi.c
+index ad273ad..38a6445 100644
+--- a/drivers/gpu/drm/nouveau/nouveau_acpi.c
++++ b/drivers/gpu/drm/nouveau/nouveau_acpi.c
+@@ -46,6 +46,7 @@ static struct nouveau_dsm_priv {
+ 	bool dsm_detected;
+ 	bool optimus_detected;
+ 	bool optimus_flags_detected;
++	bool optimus_skip_dsm;
+ 	acpi_handle dhandle;
+ 	acpi_handle rom_handle;
+ } nouveau_dsm_priv;
+@@ -212,9 +213,26 @@ static const struct vga_switcheroo_handler nouveau_dsm_handler = {
+ 	.get_client_id = nouveau_dsm_get_client_id,
+ };
+ 
++/* Firmware supporting Windows 8 or later do not use _DSM to put the device into
++ * D3cold, they instead rely on disabling power resources on the parent. */
++static bool nouveau_pr3_present(struct pci_dev *pdev)
++{
++	struct pci_dev *parent_pdev = pci_upstream_bridge(pdev);
++	struct acpi_device *parent_adev;
++
++	if (!parent_pdev)
++		return false;
++
++	parent_adev = ACPI_COMPANION(&parent_pdev->dev);
++	if (!parent_adev)
++		return false;
++
++	return acpi_has_method(parent_adev->handle, "_PR3");
++}
++
+ static void nouveau_dsm_pci_probe(struct pci_dev *pdev, acpi_handle *dhandle_out,
+ 				  bool *has_mux, bool *has_opt,
+-				  bool *has_opt_flags)
++				  bool *has_opt_flags, bool *has_pr3)
+ {
+ 	acpi_handle dhandle;
+ 	bool supports_mux;
+@@ -239,6 +257,7 @@ static void nouveau_dsm_pci_probe(struct pci_dev *pdev, acpi_handle *dhandle_out
+ 	*has_mux = supports_mux;
+ 	*has_opt = !!optimus_funcs;
+ 	*has_opt_flags = optimus_funcs & (1 << NOUVEAU_DSM_OPTIMUS_FLAGS);
++	*has_pr3 = false;
+ 
+ 	if (optimus_funcs) {
+ 		uint32_t result;
+@@ -248,6 +267,8 @@ static void nouveau_dsm_pci_probe(struct pci_dev *pdev, acpi_handle *dhandle_out
+ 			 (result & OPTIMUS_ENABLED) ? "enabled" : "disabled",
+ 			 (result & OPTIMUS_DYNAMIC_PWR_CAP) ? "dynamic power, " : "",
+ 			 (result & OPTIMUS_HDA_CODEC_MASK) ? "hda bios codec supported" : "");
++
++		*has_pr3 = nouveau_pr3_present(pdev);
+ 	}
+ }
+ 
+@@ -260,6 +281,7 @@ static bool nouveau_dsm_detect(void)
+ 	bool has_mux = false;
+ 	bool has_optimus = false;
+ 	bool has_optimus_flags = false;
++	bool has_power_resources = false;
+ 	int vga_count = 0;
+ 	bool guid_valid;
+ 	bool ret = false;
+@@ -275,14 +297,14 @@ static bool nouveau_dsm_detect(void)
+ 		vga_count++;
+ 
+ 		nouveau_dsm_pci_probe(pdev, &dhandle, &has_mux, &has_optimus,
+-				      &has_optimus_flags);
++				      &has_optimus_flags, &has_power_resources);
+ 	}
+ 
+ 	while ((pdev = pci_get_class(PCI_CLASS_DISPLAY_3D << 8, pdev)) != NULL) {
+ 		vga_count++;
+ 
+ 		nouveau_dsm_pci_probe(pdev, &dhandle, &has_mux, &has_optimus,
+-				      &has_optimus_flags);
++				      &has_optimus_flags, &has_power_resources);
+ 	}
+ 
+ 	/* find the optimus DSM or the old v1 DSM */
+@@ -292,8 +314,11 @@ static bool nouveau_dsm_detect(void)
+ 			&buffer);
+ 		printk(KERN_INFO "VGA switcheroo: detected Optimus DSM method %s handle\n",
+ 			acpi_method_name);
++		if (has_power_resources)
++			pr_info("nouveau: detected PR support, will not use DSM\n");
+ 		nouveau_dsm_priv.optimus_detected = true;
+ 		nouveau_dsm_priv.optimus_flags_detected = has_optimus_flags;
++		nouveau_dsm_priv.optimus_skip_dsm = has_power_resources;
+ 		ret = true;
+ 	} else if (vga_count == 2 && has_mux && guid_valid) {
+ 		nouveau_dsm_priv.dhandle = dhandle;
+@@ -324,7 +349,7 @@ void nouveau_register_dsm_handler(void)
+ void nouveau_switcheroo_optimus_dsm(void)
+ {
+ 	u32 result = 0;
+-	if (!nouveau_dsm_priv.optimus_detected)
++	if (!nouveau_dsm_priv.optimus_detected || nouveau_dsm_priv.optimus_skip_dsm)
+ 		return;
+ 
+ 	if (nouveau_dsm_priv.optimus_flags_detected)
+-- 
+2.9.0
