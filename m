@@ -1,89 +1,60 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH 6/6] ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
-Date: Thu, 7 Jul 2016 17:14:52 +0800
-Message-ID: <1467882892-27589-7-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH 3/6] binding-doc: usb: usb-device: add optional properties for
+ power sequence
+Date: Thu, 7 Jul 2016 17:14:49 +0800
+Message-ID: <1467882892-27589-4-git-send-email-peter.chen@nxp.com>
 References: <1467882892-27589-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2nam02on0058.outbound.protection.outlook.com ([104.47.38.58]:29824
-	"EHLO NAM02-BL2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751389AbcGGJXM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 Jul 2016 05:23:12 -0400
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1467882892-27589-1-git-send-email-peter.chen@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org
-Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, Peter Chen <peter.chen@freescale.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, stephen.boyd@linaro.org, oscar@naiandei.net, arnd@arndb.de, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, linux-usb@vger.kernel.org, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, Peter Chen <peter.chen@nxp.com>, p.zabel@pengutronix.de, festevam@gmail.com, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-From: Peter Chen <peter.chen@freescale.com>
+Add optional properties for power sequence.
 
-The current dts describes USB HUB's property at USB controller's
-entry, it is improper. The USB HUB should be the child node
-under USB controller, and power sequence properties are under
-it.
-
-Signed-off-by: Peter Chen <peter.chen@freescale.com>
-Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Signed-off-by: Peter Chen <peter.chen@nxp.com>
 ---
- arch/arm/boot/dts/imx6qdl-udoo.dtsi | 28 +++++++++++++++-------------
- 1 file changed, 15 insertions(+), 13 deletions(-)
+ Documentation/devicetree/bindings/usb/usb-device.txt | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/arm/boot/dts/imx6qdl-udoo.dtsi b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
-index 3bee2f9..e6c4e8c 100644
---- a/arch/arm/boot/dts/imx6qdl-udoo.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
-@@ -9,6 +9,8 @@
-  *
-  */
+diff --git a/Documentation/devicetree/bindings/usb/usb-device.txt b/Documentation/devicetree/bindings/usb/usb-device.txt
+index 1c35e7b..ef0c9b2 100644
+--- a/Documentation/devicetree/bindings/usb/usb-device.txt
++++ b/Documentation/devicetree/bindings/usb/usb-device.txt
+@@ -13,6 +13,10 @@ Required properties:
+ - reg: the port number which this device is connecting to, the range
+   is 1-31.
  
-+#include <dt-bindings/gpio/gpio.h>
++Optional properties:
++power sequence properties, see
++Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt for detail
 +
- / {
- 	aliases {
- 		backlight = &backlight;
-@@ -58,17 +60,6 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
+ Example:
  
--		reg_usb_h1_vbus: regulator@0 {
--			compatible = "regulator-fixed";
--			reg = <0>;
--			regulator-name = "usb_h1_vbus";
--			regulator-min-microvolt = <5000000>;
--			regulator-max-microvolt = <5000000>;
--			enable-active-high;
--			startup-delay-us = <2>; /* USB2415 requires a POR of 1 us minimum */
--			gpio = <&gpio7 12 0>;
--		};
--
- 		reg_panel: regulator@1 {
- 			compatible = "regulator-fixed";
- 			reg = <1>;
-@@ -259,9 +250,20 @@
- &usbh1 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_usbh>;
--	vbus-supply = <&reg_usb_h1_vbus>;
--	clocks = <&clks IMX6QDL_CLK_CKO>;
- 	status = "okay";
-+
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+	hub: usb2415@1 {
-+		compatible = "usb424,2514";
-+		reg = <1>;
+ &usb1 {
+@@ -24,5 +28,11 @@ Example:
+ 	hub: genesys@1 {
+ 		compatible = "usb5e3,608";
+ 		reg = <1>;
 +
 +		power-sequence;
-+		clocks = <&clks IMX6QDL_CLK_CKO>;
++		clocks = <&clks IMX6SX_CLK_CKO>;
 +		clock-names = "pwrseq-clk";
-+		pwrseq-reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
-+		pwrseq-reset-duration-us = <3000>;
-+	};
- };
- 
- &usdhc3 {
++		pwrseq-reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
++		pwrseq-reset-duration-us = <10>;
+ 	};
+ }
 -- 
 1.9.1
-
