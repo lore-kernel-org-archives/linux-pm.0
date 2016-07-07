@@ -1,40 +1,86 @@
-From: James Morse <james.morse@arm.com>
-Subject: Re: [PATCH][RFC v3] x86, hotplug: Use hlt instead of mwait if invoked
- from disable_nonboot_cpus
-Date: Thu, 07 Jul 2016 09:38:14 +0100
-Message-ID: <577E14F6.6060706@arm.com>
-References: <1467105403-5085-1-git-send-email-yu.c.chen@intel.com> <209704957.TWElLMTLfP@vostro.rjw.lan>
+From: Dawei Chien <dawei.chien@mediatek.com>
+Subject: [PATCH 3/3] arm: dts: thermal: add thermal/auxadc node.
+Date: Thu, 7 Jul 2016 17:06:26 +0800
+Message-ID: <1467882386-40544-4-git-send-email-dawei.chien@mediatek.com>
+References: <1467882386-40544-1-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <209704957.TWElLMTLfP@vostro.rjw.lan>
+In-Reply-To: <1467882386-40544-1-git-send-email-dawei.chien@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Chen Yu <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, x86@kernel.org, linux-kernel@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@armlinux.org.uk>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Fan Chen <fan.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Yingjoe Chen <yingjoe.chen@mediatek.com>, Erin Lo <erin.lo@mediatek.com>, Dawei Chien <dawei.chien@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+This adds the thermal controller and auxadc nodes
+to the Mediatek MT2701 dtsi file.
 
-On 07/07/16 01:33, Rafael J. Wysocki wrote:
-> Below is my sort of version of this (untested) and I did it this way, because
-> the issue is specific to resume from hibernation (the workaround need not be
-> applied anywhere else) and the hibernate_resume_nonboot_cpu_disable() thing may
-> be useful to arm64 too if I'm not mistaken (James?).
+Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+---
+This patch depned on:
+https://patchwork.kernel.org/patch/9213545/
+---
+ arch/arm/boot/dts/mt2701.dtsi |   43 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-Yes, we will always need to do something extra (based on data in the
-arch_hibernation_header) to resume if CPU0 was offline, or kexec meant we no
-longer know which CPU the firmware will boot us on.
-
-
-> Actually, if arm64 uses it too, the __weak implementation can be dropped,
-> because it will be possible to make it depend on ARCH_HIBERNATION_HEADER
-> (x86 and arm64 are the only users of that).
-
-Heh, I avoided that as it felt too much like a hack!
-
-
-
-Thanks,
-
-James
+diff --git a/arch/arm/boot/dts/mt2701.dtsi b/arch/arm/boot/dts/mt2701.dtsi
+index 2ac8b50..0834a23 100644
+--- a/arch/arm/boot/dts/mt2701.dtsi
++++ b/arch/arm/boot/dts/mt2701.dtsi
+@@ -77,6 +77,36 @@
+ 		#clock-cells = <0>;
+ 	};
+ 
++	thermal-zones {
++		cpu_thermal: cpu_thermal {
++			polling-delay-passive = <1000>; /* milliseconds */
++			polling-delay = <1000>; /* milliseconds */
++
++			thermal-sensors = <&thermal 0>;
++			sustainable-power = <1000>;
++
++			trips {
++				threshold: trip-point@0 {
++					temperature = <68000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++
++				target: trip-point@1 {
++					temperature = <85000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++
++				cpu_crit: cpu_crit@0 {
++					temperature = <115000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++		};
++	};
++
+ 	timer {
+ 		compatible = "arm,armv7-timer";
+ 		interrupt-parent = <&gic>;
+@@ -183,4 +213,17 @@
+ 		clocks = <&uart_clk>;
+ 		status = "disabled";
+ 	};
++
++	thermal: thermal@1100b000 {
++		#thermal-sensor-cells = <0>;
++		compatible = "mediatek,mt2701-thermal";
++		reg = <0 0x1100b000 0 0x1000>;
++		interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_LOW>;
++		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
++		clock-names = "therm", "auxadc";
++		resets = <&pericfg 0x10>;
++		reset-names = "therm";
++		mediatek,auxadc = <&auxadc>;
++		mediatek,apmixedsys = <&apmixedsys>;
++	};
+ };
+-- 
+1.7.9.5
