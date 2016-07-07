@@ -1,27 +1,35 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V5 2/2] cpufreq: Reuse new freq-table helpers
-Date: Thu, 07 Jul 2016 15:29:48 +0200
-Message-ID: <3343635.EHbr2qf22Z@vostro.rjw.lan>
-References: <cover.1467001203.git.viresh.kumar@linaro.org> <29326603f17249f7636fc4ada43b96ad455fecbb.1467001203.git.viresh.kumar@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v3] ARM: tango: add Suspend-to-RAM support
+Date: Thu, 07 Jul 2016 16:01:55 +0200
+Message-ID: <3357484.uFrtXQllNK@wuerfel>
+References: <5773D3FB.4030101@sigmadesigns.com> <577A25F8.80702@sigmadesigns.com> <577E543E.80401@sigmadesigns.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50687 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751220AbcGGNZM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 09:25:12 -0400
-In-Reply-To: <29326603f17249f7636fc4ada43b96ad455fecbb.1467001203.git.viresh.kumar@linaro.org>
+Received: from mout.kundenserver.de ([212.227.126.130]:60107 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751131AbcGGN7S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 09:59:18 -0400
+In-Reply-To: <577E543E.80401@sigmadesigns.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, steve.muckle@linaro.org, linuxppc-dev@lists.ozlabs.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>, Olof Johansson <olof@lixom.net>, arm-soc <arm@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Frias <sf84@laposte.net>, Kevin Hilman <khilman@kernel.org>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, linux-pm <linux-pm@vger.kernel.org>, Mason <slash.tmp@free.fr>, Sudeep Holla <sudeep.holla@arm.com>, Robin Murphy <robin.murphy@arm.com>
 
-On Monday, June 27, 2016 09:59:34 AM Viresh Kumar wrote:
-> This patch migrates few users of cpufreq tables to the new helpers that
-> work on sorted freq-tables.
+On Thursday, July 7, 2016 3:08:14 PM CEST Marc Gonzalez wrote:
+> Ask firmware to put RAM in self-refresh mode and power system down.
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>     echo mem > /sys/power/state
+> 
+> See Documentation/power/states.txt
+> 
+> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+> ---
+> v3 is identical to v2 minus the RFC tag
+> Olof, if still possible, please merge for v4.8
 
-Applied, thanks!
+Applied to next/soc, thanks!
+
+	Arnd
 
