@@ -1,81 +1,53 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH] PM / hibernate: Introduce snapshot test mode for hibernation
-Date: Thu,  7 Jul 2016 14:40:58 +0800
-Message-ID: <1467873658-31986-1-git-send-email-yu.c.chen@intel.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH] thermal: hisilicon: Add dependency on the clock driver to
+ allow frequency scaling
+Date: Thu, 7 Jul 2016 12:13:38 +0530
+Message-ID: <CAHLCerNp=xbqUmj3yOpRT7pUc-bOkBquSW0Z3MdcTYVPqP+b8g@mail.gmail.com>
+References: <32d418f24a4da44ad4ca5b2b1276ffcea2aa7d6c.1466424352.git.amit.kucheria@linaro.org>
+ <f6bbd7ddf978001aa0f1c6fb8fc454a30241d0a8.1466424352.git.amit.kucheria@linaro.org>
+ <20160620131616.GA400@leoy-linaro> <CAHLCerPjDdQToVnkh6q=xq4=BWjV-tnX3=599yudfVwf_XBnPQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:33100 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750812AbcGGGd5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 Jul 2016 02:33:57 -0400
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:35696 "EHLO
+	mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbcGGGnk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 02:43:40 -0400
+Received: by mail-lf0-f66.google.com with SMTP id w130so612581lfd.2
+        for <linux-pm@vger.kernel.org>; Wed, 06 Jul 2016 23:43:40 -0700 (PDT)
+In-Reply-To: <CAHLCerPjDdQToVnkh6q=xq4=BWjV-tnX3=599yudfVwf_XBnPQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+To: Leo Yan <leo.yan@linaro.org>, xuwei5@hisilicon.com, guodong.xu@linaro.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, kongxinwei <kong.kongxinwei@hisilicon.com>, Zhang Rui <rui.zhang@intel.com>
 
-This mode is to verify if the snapshot data written to
-swap device can be successfully restored to memory. It
-is useful to ease the debugging process on hibernation,
-since this mode can not only bypass the BIOSen/bootloader,
-but also the system re-initialization.
+On Sun, Jun 26, 2016 at 10:02 PM, Amit Kucheria
+<amit.kucheria@linaro.org> wrote:
+> On Mon, Jun 20, 2016 at 6:46 PM, Leo Yan <leo.yan@linaro.org> wrote:
+>> Hi Amit,
+>>
+>> On Mon, Jun 20, 2016 at 05:46:36PM +0530, Amit Kucheria wrote:
+>>> The Hisilicon clock stub driver is needed to allow the thermal drivers to
+>>> actually scale the frequency. Make it an automatic dependency.
+>>>
+>>> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+>>> ---
+>>>  drivers/thermal/Kconfig | 1 +
+>>>  1 file changed, 1 insertion(+)
+>>>
+>>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>>> index 22ae1f7..4e843f7 100644
+>>> --- a/drivers/thermal/Kconfig
+>>> +++ b/drivers/thermal/Kconfig
+>>> @@ -178,6 +178,7 @@ config THERMAL_EMULATION
+>>>  config HISI_THERMAL
+>>>       tristate "Hisilicon thermal driver"
+>>>       depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
+>>> +     select STUB_CLK_HI6220
+>>
+>> Acked-by: Leo Yan <leo.yan@linaro.org>
+>
+> Thanks Leo. Eduardo, will you take this through your tree or should
+> Wei include this in his tree?
 
-For example:
-$ sudo echo snapshot > /sys/power/disk
-$ sudo echo disk > /sys/power/state
-
-/* manual resume.*/
-$ sudo echo 8:3 > /sys/power/resume
-
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- kernel/power/hibernate.c | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index fca9254..667d926 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -52,6 +52,7 @@ enum {
- #ifdef CONFIG_SUSPEND
- 	HIBERNATION_SUSPEND,
- #endif
-+	HIBERNATION_SNAPSHOT,
- 	/* keep last */
- 	__HIBERNATION_AFTER_LAST
- };
-@@ -631,6 +632,9 @@ static void power_down(void)
- 			                "Try swapon -a.\n");
- 		return;
- #endif
-+	case HIBERNATION_SNAPSHOT:
-+		/* Do nothing. */
-+		return;
- 	}
- 	kernel_halt();
- 	/*
-@@ -878,6 +882,7 @@ static const char * const hibernation_modes[] = {
- #ifdef CONFIG_SUSPEND
- 	[HIBERNATION_SUSPEND]	= "suspend",
- #endif
-+	[HIBERNATION_SNAPSHOT]	= "snapshot",
- };
- 
- /*
-@@ -924,6 +929,7 @@ static ssize_t disk_show(struct kobject *kobj, struct kobj_attribute *attr,
- #ifdef CONFIG_SUSPEND
- 		case HIBERNATION_SUSPEND:
- #endif
-+		case HIBERNATION_SNAPSHOT:
- 			break;
- 		case HIBERNATION_PLATFORM:
- 			if (hibernation_ops)
-@@ -970,6 +976,7 @@ static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
- #ifdef CONFIG_SUSPEND
- 		case HIBERNATION_SUSPEND:
- #endif
-+		case HIBERNATION_SNAPSHOT:
- 			hibernation_mode = mode;
- 			break;
- 		case HIBERNATION_PLATFORM:
--- 
-2.7.4
-
+Ping!
