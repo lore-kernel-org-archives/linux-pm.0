@@ -1,85 +1,96 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [PATCH v3 2/2] cpufreq: qoriq: Don't look at clock implementation details
-Date: Wed, 06 Jul 2016 18:30:17 -0700
-Message-ID: <146785501714.73491.8643317356949121718@resonance>
-References: <1466058085-19353-1-git-send-email-oss@buserror.net>
- <1466058085-19353-2-git-send-email-oss@buserror.net>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][RFC v3] x86, hotplug: Use hlt instead of mwait if
+ invoked from disable_nonboot_cpus
+Date: Thu, 7 Jul 2016 02:50:09 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402877EBB4@shsmsx102.ccr.corp.intel.com>
+References: <1467105403-5085-1-git-send-email-yu.c.chen@intel.com>
+ <209704957.TWElLMTLfP@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1466058085-19353-2-git-send-email-oss@buserror.net>
-Sender: linux-clk-owner@vger.kernel.org
-To: Scott Wood <oss@buserror.net>, Russell King <linux@armlinux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, yuantian.tang@nxp.com, leoyang.li@nxp.com, xiaofeng.ren@nxp.com, Scott Wood <scottwood@freescale.com>
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:12887 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751862AbcGGCuV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 Jul 2016 22:50:21 -0400
+In-Reply-To: <209704957.TWElLMTLfP@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, James Morse <james.morse@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@suse.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Quoting Scott Wood (2016-06-15 23:21:25)
-> -static struct device_node *cpu_to_clk_node(int cpu)
-> +static struct clk *cpu_to_clk(int cpu)
->  {
-> -       struct device_node *np, *clk_np;
-> +       struct device_node *np;
-> +       struct clk *clk;
->  
->         if (!cpu_present(cpu))
->                 return NULL;
-> @@ -112,37 +80,28 @@ static struct device_node *cpu_to_clk_node(int cpu)
->         if (!np)
->                 return NULL;
->  
-> -       clk_np = of_parse_phandle(np, "clocks", 0);
-> -       if (!clk_np)
-> -               return NULL;
-> -
-> +       clk = of_clk_get(np, 0);
-
-Why not use devm_clk_get here?
-
-> @@ -221,17 +180,12 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
->                 goto err_nomem2;
->         }
->  
-> -       pnode = of_parse_phandle(np, "clocks", 0);
-> -       if (!pnode) {
-> -               pr_err("%s: could not get clock information\n", __func__);
-> -               goto err_nomem2;
-> -       }
-> +       count = clk_get_num_parents(policy->clk);
-
-We already have of_clk_get_parent_count. This is found in
-clk-provider.h, which doesn't fit perfectly here since the cpufreq
-driver is not a clock provider, but instead a consumer.
-
-> @@ -240,23 +194,11 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
->                 goto err_pclk;
->         }
->  
-> -       if (fmask)
-> -               mask = fmask[get_cpu_physical_id(cpu)];
-> -       else
-> -               mask = 0x0;
-> -
->         for (i = 0; i < count; i++) {
-> -               clk = of_clk_get(pnode, i);
-> +               clk = clk_get_parent_by_index(policy->clk, i);
->                 data->pclk[i] = clk;
->                 freq = clk_get_rate(clk);
-> -               /*
-> -                * the clock is valid if its frequency is not masked
-> -                * and large than minimum allowed frequency.
-> -                */
-> -               if (freq < min_cpufreq || (mask & (1 << i)))
-> -                       table[i].frequency = CPUFREQ_ENTRY_INVALID;
-> -               else
-> -                       table[i].frequency = freq / 1000;
-> +               table[i].frequency = freq / 1000;
-
-Hmm, so you change cpu clock rate by selecting different clock sources
-from a cpu clock mux, right? I wonder if you can just have a child mux
-clock that selects parents from .set_rate (via a .determine_rate
-callback)? Then you could just call clk_set_rate() on your cpu mux clock
-and maybe skip most of the stuff this driver does?
-
-Regards,
-Mike
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tp
+IFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFRodXJzZGF5LCBKdWx5IDA3LCAy
+MDE2IDg6MzMgQU0NCj4gVG86IENoZW4sIFl1IEM7IEphbWVzIE1vcnNlDQo+IENjOiBsaW51eC1w
+bUB2Z2VyLmtlcm5lbC5vcmc7IFRob21hcyBHbGVpeG5lcjsgSC4gUGV0ZXIgQW52aW47IFBhdmVs
+IE1hY2hlazsNCj4gQm9yaXNsYXYgUGV0a292OyBQZXRlciBaaWpsc3RyYTsgSW5nbyBNb2xuYXI7
+IExlbiBCcm93bjsgeDg2QGtlcm5lbC5vcmc7IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwu
+b3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdW1JGQyB2M10geDg2LCBob3RwbHVnOiBVc2UgaGx0
+IGluc3RlYWQgb2YgbXdhaXQgaWYgaW52b2tlZA0KPiBmcm9tIGRpc2FibGVfbm9uYm9vdF9jcHVz
+DQo+IA0KPiBPbiBUdWVzZGF5LCBKdW5lIDI4LCAyMDE2IDA1OjE2OjQzIFBNIENoZW4gWXUgd3Jv
+dGU6DQo+ID4gU3RyZXNzIHRlc3QgZnJvbSBWYXJ1biBLb3l5YWxhZ3VudGEgcmVwb3J0cyB0aGF0
+LCB0aGUgbm9uYm9vdCBDUFUNCj4gPiB3b3VsZCBoYW5nIG9jY2FzaW9uYWxseSwgd2hlbiByZXN1
+bWluZyBmcm9tIGhpYmVybmF0aW9uLiBGdXJ0aGVyDQo+ID4gaW52ZXN0aWdhdGlvbiBzaG93cyB0
+aGF0LCB0aGUgcHJlY2lzZSBzdGFnZSB3aGVuIG5vbmJvb3QgQ1BVIGhhbmdzLCBpcw0KPiA+IHRo
+ZSB0aW1lIHdoZW4gdGhlIG5vbmJvb3QgQ1BVIGJlZW4gd29rZW4gdXAgaW5jb3JyZWN0bHksIGFu
+ZCB0cmllcyB0bw0KPiA+IG1vbml0b3IgdGhlIG13YWl0X3B0ciBmb3IgdGhlIHNlY29uZCB0aW1l
+LCB0aGVuIGFuIGV4Y2VwdGlvbiBpcw0KPiA+IHRyaWdnZXJlZCBkdWUgdG8gaWxsZWdhbCB2YWRk
+ciBhY2Nlc3MsIHNheSwgc29tZXRoaW5nIGxpa2UsICdVbmFibGUgdG8NCj4gPiBoYW5kbGVyIGtl
+cm5lbCBhZGRyZXNzIG9mIDB4ZmZmZjg4MDBiYTgwMDAxMC4uLicNCj4gPg0KPiA+IEZ1cnRoZXIg
+aW52ZXN0aWdhdGlvbiBzaG93cyB0aGF0LCB0aGlzIGV4Y2VwdGlvbiBpcyBjYXVzZWQgYnkNCj4g
+PiBhY2Nlc3NpbmcgYSBwYWdlIHdpdGhvdXQgUFJFU0VOVCBmbGFnLCBiZWNhdXNlIHRoZSBwdGUg
+ZW50cnkgZm9yIHRoaXMNCj4gPiB2YWRkciBpcyB6ZXJvLiBIZXJlJ3MgdGhlIHNjZW5hcmlvIGhv
+dyB0aGlzIHByb2JsZW0NCj4gPiBoYXBwZW5zOiBQYWdlIHRhYmxlIGZvciBkaXJlY3QgbWFwcGlu
+ZyBpcyBhbGxvY2F0ZWQgZHluYW1pY2FsbHkgYnkNCj4gPiBrZXJuZWxfcGh5c2ljYWxfbWFwcGlu
+Z19pbml0LCBpdCBpcyBwb3NzaWJsZSB0aGF0IGluIHRoZSByZXN1bWUNCj4gPiBwcm9jZXNzLCB3
+aGVuIHRoZSBib290IENQVSBpcyB0cnlpbmcgdG8gd3JpdGUgYmFjayBwYWdlcyB0byB0aGVpcg0K
+PiA+IG9yaWdpbmFsIGFkZHJlc3MsIGFuZCBqdXN0IHJpZ2h0IHRvIHdyaXRlcyB0byB0aGUgbW9u
+aXRvciBtd2FpdF9wdHINCj4gPiB0aGVuIHdha2VzIHVwIG9uZSBvZiB0aGUgbm9uYm9vdCBDUFVz
+LCBzaW5jZSB0aGUgcGFnZSB0YWJsZSBjdXJyZW50bHkNCj4gPiB1c2VkIGJ5IHRoZSBub25ib290
+IENQVSBtaWdodCBub3QgdGhlIHNhbWUgYXMgaXQgaXMgYmVmb3JlIHRoZQ0KPiA+IGhpYmVybmF0
+aW9uLCBhbiBleGNlcHRpb24gbWlnaHQgb2NjdXIgZHVlIHRvIGluY29uc2lzdGVudCBwYWdlIHRh
+YmxlLg0KPiA+DQo+ID4gRmlyc3QgdHJ5IGlzIHRvIGdldCByaWQgb2YgdGhpcyBwcm9ibGVtIGJ5
+IGNoYW5naW5nIHRoZSBtb25pdG9yDQo+ID4gYWRkcmVzcyBmcm9tIHRhc2suZmxhZyB0byB6ZXJv
+IHBhZ2UsIGJlY2F1c2Ugbm8gb25lIHdvdWxkIHdyaXRlIGRhdGENCj4gPiB0byB6ZXJvIHBhZ2Uu
+IEJ1dCB0aGVyZSBpcyBzdGlsbCBwcm9ibGVtIGJlY2F1c2Ugb2YgYSBwaW5nLXBvbmcgd2FrZQ0K
+PiA+IHVwIHNjZW5hcmlvIGluIG13YWl0X3BsYXlfZGVhZDoNCj4gPg0KPiA+IE9uZSBwb3NzaWJs
+ZSBpbXBsZW1lbnRhdGlvbiBvZiBhIGNsZmx1c2ggaXMgYSByZWFkLWludmFsaWRhdGUgc25vb3As
+DQo+ID4gd2hpY2ggaXMgd2hhdCBhIHN0b3JlIG1pZ2h0IGxvb2sgbGlrZSwgc28gY2ZsdXNoIG1p
+Z2h0IGJyZWFrIHRoZSBtd2FpdC4NCj4gPg0KPiA+IDEuIENQVTEgd2FpdCBhdCB6ZXJvIHBhZ2UN
+Cj4gPiAyLiBDUFUyIGNmbHVzaCB6ZXJvIHBhZ2UsIHdha2UgQ1BVMSB1cCwgdGhlbiBDUFUyIHdh
+aXRzIGF0IHplcm8gcGFnZQ0KPiA+IDMuIENQVTEgaXMgd29rZW4gdXAsIGFuZCBpbnZva2UgY2Zs
+dXNoIHplcm8gcGFnZSwgdGh1cyB3YWtlIHVwIENQVTIgYWdhaW4uDQo+ID4gdGhlbiB0aGUgbm9u
+Ym9vdCBDUFVzIG5ldmVyIHNsZWVwIGZvciBsb25nLg0KPiA+DQo+ID4gU28gaXQncyBiZXR0ZXIg
+dG8gbW9uaXRvciBkaWZmZXJlbnQgYWRkcmVzcyBmb3IgZWFjaCBub25ib290IENQVXMsDQo+ID4g
+aG93ZXZlciBzaW5jZSB0aGVyZSBpcyBvbmx5IG9uZSB6ZXJvIHBhZ2UsIGF0IG1vc3Q6DQo+ID4g
+UEFHRV9TSVpFL0wxX0NBQ0hFX0xJTkUgQ1BVcyBhcmUgc2F0aXNmaWVkLCB3aGljaCBpcyB1c3Vh
+bGx5IDY0IG9uIGENCj4gPiB4ODZfNjQsIGFwcGFyZW50bHkgaXQncyBub3QgZW5vdWdoIGZvciBz
+ZXJ2ZXJzLCBtYXliZSBtb3JlIHplcm8gcGFnZXMNCj4gPiBhcmUgcmVxdWlyZWQuDQo+ID4NCj4g
+PiBTbyBjaG9vc2UgYSBuZXcgc29sdXRpb24gYXMgQnJpYW4gc3VnZ2VzdGVkLCB0byBwdXQgdGhl
+IG5vbmJvb3QgQ1BVcw0KPiA+IGludG8gaGx0IGJlZm9yZSByZXN1bWUsIHdpdGhvdXQgdG91Y2hp
+bmcgYW55IG1lbW9yeSBkdXJpbmcgcy9yLg0KPiA+IFRoZW9yZXRpY2FsbHkgdGhlcmUgbWlnaHQg
+c3RpbGwgYmUgc29tZSBwcm9ibGVtcyBpZiBzb21lIG9mIHRoZSBDUFVzDQo+ID4gaGF2ZSBhbHJl
+YWR5IGJlZW4gcHV0IG9mZmxpbmUsIGJ1dCBzaW5jZSB0aGUgY2FzZSBpcyB2ZXJ5IHJhcmUgYW5k
+DQo+ID4gdXNlcnMgY2FuIHdvcmsgYXJvdW5kIGl0LCB3ZSBkbyBub3QgZGVhbCB3aXRoIHRoaXMg
+c3BlY2lhbCBjYXNlIGluDQo+ID4ga2VybmVsIGZvciBub3cuDQo+ID4NCj4gPiBCVFcsIGFzIEph
+bWVzIG1lbnRpb25lZCwgaGUgbWlnaHQgd2FudCB0byBlbmNhcHN1bGF0ZQ0KPiA+IGRpc2FibGVf
+bm9uYm9vdF9jcHVzIGludG8gYXJjaC1zcGVjaWZpYywgc28gdGhpcyBwYXRjaCBtaWdodCBuZWVk
+IHNtYWxsDQo+IGNoYW5nZSBhZnRlciB0aGF0Lg0KPiA+DQo+ID4gQ29tbWVudHMgYW5kIHN1Z2dl
+c3Rpb25zIHdvdWxkIGJlIGFwcHJlY2lhdGVkLg0KPiA+DQo+ID4gTGluazogaHR0cHM6Ly9idWd6
+aWxsYS5rZXJuZWwub3JnL3Nob3dfYnVnLmNnaT9pZD0xMDYzNzENCj4gPiBSZXBvcnRlZC1hbmQt
+dGVzdGVkLWJ5OiBWYXJ1biBLb3l5YWxhZ3VudGEgPGNwdWRlYnVnQGNlbnR0ZWNoLmNvbT4NCj4g
+PiBTaWduZWQtb2ZmLWJ5OiBDaGVuIFl1IDx5dS5jLmNoZW5AaW50ZWwuY29tPg0KPiANCj4gQmVs
+b3cgaXMgbXkgc29ydCBvZiB2ZXJzaW9uIG9mIHRoaXMgKHVudGVzdGVkKSBhbmQgSSBkaWQgaXQg
+dGhpcyB3YXksIGJlY2F1c2UgdGhlDQo+IGlzc3VlIGlzIHNwZWNpZmljIHRvIHJlc3VtZSBmcm9t
+IGhpYmVybmF0aW9uICh0aGUgd29ya2Fyb3VuZCBuZWVkIG5vdCBiZQ0KPiBhcHBsaWVkIGFueXdo
+ZXJlIGVsc2UpIGFuZCB0aGUgaGliZXJuYXRlX3Jlc3VtZV9ub25ib290X2NwdV9kaXNhYmxlKCkN
+Cj4gdGhpbmcgbWF5IGJlIHVzZWZ1bCB0byBhcm02NCB0b28gaWYgSSdtIG5vdCBtaXN0YWtlbiAo
+SmFtZXM/KS4NCg0KSmFtZXMgbWlnaHQgd2FudCBhIGZsYWcgdG8gZGlzdGluZ3Vpc2ggd2hldGhl
+ciBpdCBpcyBmcm9tIHN1c3BlbmQgb3IgcmVzdW1lLA0KaW4gaGlzIGFyY2gtc3BlY2lmaWMgZGlz
+YWJsZWRfbm9uYm9vdF9jcHVzPw0KDQphbmQgdGhpcyBwYXRjaCB3b3JrcyBvbiBteSB4ZW9uLg0K
+VGVzdGVkLWJ5OiBDaGVuIFl1IDx5dS5jLmNoZW5AaW50ZWwuY29tPg0KDQo+IA0KPiBBY3R1YWxs
+eSwgaWYgYXJtNjQgdXNlcyBpdCB0b28sIHRoZSBfX3dlYWsgaW1wbGVtZW50YXRpb24gY2FuIGJl
+IGRyb3BwZWQsDQo+IGJlY2F1c2UgaXQgd2lsbCBiZSBwb3NzaWJsZSB0byBtYWtlIGl0IGRlcGVu
+ZCBvbiBBUkNIX0hJQkVSTkFUSU9OX0hFQURFUg0KPiAoeDg2IGFuZCBhcm02NCBhcmUgdGhlIG9u
+bHkgdXNlcnMgb2YgdGhhdCkuDQo+IA0KPiBUaGFua3MsDQo+IFJhZmFlbA0KPiANCg==
