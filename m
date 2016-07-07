@@ -1,16 +1,16 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH 5/6] usb: chipidea: host: let the hcd know's parent device node
-Date: Thu, 7 Jul 2016 17:14:51 +0800
-Message-ID: <1467882892-27589-6-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH 6/6] ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+Date: Thu, 7 Jul 2016 17:14:52 +0800
+Message-ID: <1467882892-27589-7-git-send-email-peter.chen@nxp.com>
 References: <1467882892-27589-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-co1nam03on0055.outbound.protection.outlook.com ([104.47.40.55]:46336
-	"EHLO NAM03-CO1-obe.outbound.protection.outlook.com"
+Received: from mail-bl2nam02on0058.outbound.protection.outlook.com ([104.47.38.58]:29824
+	"EHLO NAM02-BL2-obe.outbound.protection.outlook.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756087AbcGGJXE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 Jul 2016 05:23:04 -0400
+	id S1751389AbcGGJXM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 7 Jul 2016 05:23:12 -0400
 In-Reply-To: <1467882892-27589-1-git-send-email-peter.chen@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,60 +19,71 @@ Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengu
 
 From: Peter Chen <peter.chen@freescale.com>
 
-Since the hcd (chipidea core device) has no device node, so
-if we want to describe the child node under the hcd, we had
-to put it under its parent's node (glue layer device), and
-in the code, we need to let the hcd knows glue layer's code,
-then the USB core can handle this node.
+The current dts describes USB HUB's property at USB controller's
+entry, it is improper. The USB HUB should be the child node
+under USB controller, and power sequence properties are under
+it.
 
 Signed-off-by: Peter Chen <peter.chen@freescale.com>
-Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Signed-off-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 ---
- drivers/usb/chipidea/host.c | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ arch/arm/boot/dts/imx6qdl-udoo.dtsi | 28 +++++++++++++++-------------
+ 1 file changed, 15 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/usb/chipidea/host.c b/drivers/usb/chipidea/host.c
-index 053bac9..55120ef 100644
---- a/drivers/usb/chipidea/host.c
-+++ b/drivers/usb/chipidea/host.c
-@@ -109,15 +109,25 @@ static int host_start(struct ci_hdrc *ci)
- 	struct ehci_hcd *ehci;
- 	struct ehci_ci_priv *priv;
- 	int ret;
-+	struct device *dev = ci->dev;
+diff --git a/arch/arm/boot/dts/imx6qdl-udoo.dtsi b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+index 3bee2f9..e6c4e8c 100644
+--- a/arch/arm/boot/dts/imx6qdl-udoo.dtsi
++++ b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+@@ -9,6 +9,8 @@
+  *
+  */
  
--	if (usb_disabled())
-+	if (usb_disabled() || !dev)
- 		return -ENODEV;
- 
--	hcd = usb_create_hcd(&ci_ehci_hc_driver, ci->dev, dev_name(ci->dev));
-+	/*
-+	 * USB Core will try to get child node under roothub,
-+	 * but chipidea core has no of_node, and the child node
-+	 * for controller is located at glue layer's node which
-+	 * is chipidea core's parent.
-+	 */
-+	if (dev->parent && dev->parent->of_node)
-+		dev->of_node = dev->parent->of_node;
++#include <dt-bindings/gpio/gpio.h>
 +
-+	hcd = usb_create_hcd(&ci_ehci_hc_driver, dev, dev_name(dev));
- 	if (!hcd)
- 		return -ENOMEM;
+ / {
+ 	aliases {
+ 		backlight = &backlight;
+@@ -58,17 +60,6 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
  
--	dev_set_drvdata(ci->dev, ci);
-+	dev_set_drvdata(dev, ci);
- 	hcd->rsrc_start = ci->hw_bank.phys;
- 	hcd->rsrc_len = ci->hw_bank.size;
- 	hcd->regs = ci->hw_bank.abs;
-@@ -143,7 +153,7 @@ static int host_start(struct ci_hdrc *ci)
- 		if (ci->platdata->flags & CI_HDRC_TURN_VBUS_EARLY_ON) {
- 			ret = regulator_enable(ci->platdata->reg_vbus);
- 			if (ret) {
--				dev_err(ci->dev,
-+				dev_err(dev,
- 				"Failed to enable vbus regulator, ret=%d\n",
- 									ret);
- 				goto put_hcd;
+-		reg_usb_h1_vbus: regulator@0 {
+-			compatible = "regulator-fixed";
+-			reg = <0>;
+-			regulator-name = "usb_h1_vbus";
+-			regulator-min-microvolt = <5000000>;
+-			regulator-max-microvolt = <5000000>;
+-			enable-active-high;
+-			startup-delay-us = <2>; /* USB2415 requires a POR of 1 us minimum */
+-			gpio = <&gpio7 12 0>;
+-		};
+-
+ 		reg_panel: regulator@1 {
+ 			compatible = "regulator-fixed";
+ 			reg = <1>;
+@@ -259,9 +250,20 @@
+ &usbh1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_usbh>;
+-	vbus-supply = <&reg_usb_h1_vbus>;
+-	clocks = <&clks IMX6QDL_CLK_CKO>;
+ 	status = "okay";
++
++	#address-cells = <1>;
++	#size-cells = <0>;
++	hub: usb2415@1 {
++		compatible = "usb424,2514";
++		reg = <1>;
++
++		power-sequence;
++		clocks = <&clks IMX6QDL_CLK_CKO>;
++		clock-names = "pwrseq-clk";
++		pwrseq-reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
++		pwrseq-reset-duration-us = <3000>;
++	};
+ };
+ 
+ &usdhc3 {
 -- 
 1.9.1
 
