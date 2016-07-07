@@ -1,391 +1,78 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH 2/6] power: add power sequence library
-Date: Thu, 7 Jul 2016 17:14:48 +0800
-Message-ID: <1467882892-27589-3-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH 5/6] usb: chipidea: host: let the hcd know's parent device node
+Date: Thu, 7 Jul 2016 17:14:51 +0800
+Message-ID: <1467882892-27589-6-git-send-email-peter.chen@nxp.com>
 References: <1467882892-27589-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2nam02on0058.outbound.protection.outlook.com ([104.47.38.58]:29824
-	"EHLO NAM02-BL2-obe.outbound.protection.outlook.com"
+Received: from mail-co1nam03on0055.outbound.protection.outlook.com ([104.47.40.55]:46336
+	"EHLO NAM03-CO1-obe.outbound.protection.outlook.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756241AbcGGJW6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 Jul 2016 05:22:58 -0400
+	id S1756087AbcGGJXE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 7 Jul 2016 05:23:04 -0400
 In-Reply-To: <1467882892-27589-1-git-send-email-peter.chen@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org
-Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, Peter Chen <peter.chen@nxp.com>
+Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, Peter Chen <peter.chen@freescale.com>
 
-We have an well-known problem that the device needs to do some power
-sequence before it can be recognized by related host, the typical
-example like hard-wired mmc devices and usb devices.
+From: Peter Chen <peter.chen@freescale.com>
 
-This power sequence is hard to be described at device tree and handled by
-related host driver, so we have created a common power sequence
-library to cover this requirement. The core code has supplied
-some common helpers for host driver, and individual power sequence
-libraries handle kinds of power sequence for devices.
+Since the hcd (chipidea core device) has no device node, so
+if we want to describe the child node under the hcd, we had
+to put it under its parent's node (glue layer device), and
+in the code, we need to let the hcd knows glue layer's code,
+then the USB core can handle this node.
 
-pwrseq_generic is intended for general purpose of power sequence, which
-handles gpios and clocks currently, and can cover regulator and pinctrl
-in future. The host driver calls pwrseq_alloc_generic to create
-an generic pwrseq instance.
-
-Signed-off-by: Peter Chen <peter.chen@nxp.com>
+Signed-off-by: Peter Chen <peter.chen@freescale.com>
+Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 ---
- drivers/power/Kconfig                 |   1 +
- drivers/power/Makefile                |   1 +
- drivers/power/pwrseq/Kconfig          |  20 +++++
- drivers/power/pwrseq/Makefile         |   2 +
- drivers/power/pwrseq/core.c           |  79 ++++++++++++++++++++
- drivers/power/pwrseq/pwrseq_generic.c | 134 ++++++++++++++++++++++++++++++++++
- include/linux/power/pwrseq.h          |  55 ++++++++++++++
- 7 files changed, 292 insertions(+)
- create mode 100644 drivers/power/pwrseq/Kconfig
- create mode 100644 drivers/power/pwrseq/Makefile
- create mode 100644 drivers/power/pwrseq/core.c
- create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
- create mode 100644 include/linux/power/pwrseq.h
+ drivers/usb/chipidea/host.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index acd4a15..f6aa4fd 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -515,3 +515,4 @@ endif # POWER_SUPPLY
+diff --git a/drivers/usb/chipidea/host.c b/drivers/usb/chipidea/host.c
+index 053bac9..55120ef 100644
+--- a/drivers/usb/chipidea/host.c
++++ b/drivers/usb/chipidea/host.c
+@@ -109,15 +109,25 @@ static int host_start(struct ci_hdrc *ci)
+ 	struct ehci_hcd *ehci;
+ 	struct ehci_ci_priv *priv;
+ 	int ret;
++	struct device *dev = ci->dev;
  
- source "drivers/power/reset/Kconfig"
- source "drivers/power/avs/Kconfig"
-+source "drivers/power/pwrseq/Kconfig"
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index e46b75d..4ed2e12 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -74,3 +74,4 @@ obj-$(CONFIG_CHARGER_TPS65217)	+= tps65217_charger.o
- obj-$(CONFIG_POWER_RESET)	+= reset/
- obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
- obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
-+obj-$(CONFIG_POWER_SEQUENCE)	+= pwrseq/
-diff --git a/drivers/power/pwrseq/Kconfig b/drivers/power/pwrseq/Kconfig
-new file mode 100644
-index 0000000..188729e
---- /dev/null
-+++ b/drivers/power/pwrseq/Kconfig
-@@ -0,0 +1,20 @@
-+#
-+# Power Sequence library
-+#
+-	if (usb_disabled())
++	if (usb_disabled() || !dev)
+ 		return -ENODEV;
+ 
+-	hcd = usb_create_hcd(&ci_ehci_hc_driver, ci->dev, dev_name(ci->dev));
++	/*
++	 * USB Core will try to get child node under roothub,
++	 * but chipidea core has no of_node, and the child node
++	 * for controller is located at glue layer's node which
++	 * is chipidea core's parent.
++	 */
++	if (dev->parent && dev->parent->of_node)
++		dev->of_node = dev->parent->of_node;
 +
-+config POWER_SEQUENCE
-+	bool
-+
-+menu "Power Sequence Support"
-+
-+config PWRSEQ_GENERIC
-+	bool "Generic power sequence control"
-+	depends on OF
-+	select POWER_SEQUENCE
-+	help
-+	  It is used for drivers which needs to do power sequence
-+	  (eg, turn on clock, toggle reset gpio) before the related
-+	  devices can be found by hardware. This generic one can be
-+	  used for common power sequence control.
-+
-+endmenu
-diff --git a/drivers/power/pwrseq/Makefile b/drivers/power/pwrseq/Makefile
-new file mode 100644
-index 0000000..ad82389
---- /dev/null
-+++ b/drivers/power/pwrseq/Makefile
-@@ -0,0 +1,2 @@
-+obj-$(CONFIG_POWER_SEQUENCE) += core.o
-+obj-$(CONFIG_PWRSEQ_GENERIC) += pwrseq_generic.o
-diff --git a/drivers/power/pwrseq/core.c b/drivers/power/pwrseq/core.c
-new file mode 100644
-index 0000000..e40315c
---- /dev/null
-+++ b/drivers/power/pwrseq/core.c
-@@ -0,0 +1,79 @@
-+/*
-+ * core.c	power sequence core file
-+ *
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Author: Peter Chen <peter.chen@nxp.com>
-+ *
-+ * This program is free software: you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2  of
-+ * the License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/power/pwrseq.h>
-+
-+static DEFINE_MUTEX(pwrseq_list_mutex);
-+static LIST_HEAD(pwrseq_list);
-+
-+int pwrseq_get(struct device_node *np, struct pwrseq *p)
-+{
-+	if (p && p->get)
-+		return p->get(np, p);
-+
-+	return -ENOTSUPP;
-+}
-+
-+int pwrseq_on(struct device_node *np, struct pwrseq *p)
-+{
-+	if (p && p->on)
-+		return p->on(np, p);
-+
-+	return -ENOTSUPP;
-+}
-+
-+void pwrseq_off(struct pwrseq *p)
-+{
-+	if (p && p->off)
-+		p->off(p);
-+}
-+
-+void pwrseq_put(struct pwrseq *p)
-+{
-+	if (p && p->put)
-+		p->put(p);
-+}
-+
-+void pwrseq_free(struct pwrseq *p)
-+{
-+	if (p && p->free)
-+		p->free(p);
-+}
-+
-+void pwrseq_register(struct pwrseq *pwrseq)
-+{
-+	mutex_lock(&pwrseq_list_mutex);
-+	list_add(&pwrseq->node, &pwrseq_list);
-+	mutex_unlock(&pwrseq_list_mutex);
-+}
-+
-+void pwrseq_unregister(struct pwrseq *pwrseq)
-+{
-+	mutex_lock(&pwrseq_list_mutex);
-+	list_del(&pwrseq->node);
-+	mutex_unlock(&pwrseq_list_mutex);
-+}
-+
-+bool is_pwrseq_supported(struct device_node *np)
-+{
-+	if (of_find_property(np, "power-sequence", NULL))
-+		return true;
-+
-+	return false;
-+}
-diff --git a/drivers/power/pwrseq/pwrseq_generic.c b/drivers/power/pwrseq/pwrseq_generic.c
-new file mode 100644
-index 0000000..e3cacb0
---- /dev/null
-+++ b/drivers/power/pwrseq/pwrseq_generic.c
-@@ -0,0 +1,134 @@
-+/*
-+ * pwrseq_generic.c	Generic power sequence handling
-+ *
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Author: Peter Chen <peter.chen@nxp.com>
-+ *
-+ * This program is free software: you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2  of
-+ * the License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/delay.h>
-+#include <linux/gpio.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
-+#include <linux/slab.h>
-+
-+#include <linux/power/pwrseq.h>
-+
-+struct pwrseq_generic {
-+	struct pwrseq pwrseq;
-+	struct gpio_desc *gpiod_reset;
-+	struct clk *clk;
-+};
-+
-+#define to_generic_pwrseq(p) container_of(p, struct pwrseq_generic, pwrseq)
-+
-+static void pwrseq_generic_free(struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+
-+	pwrseq_unregister(pwrseq);
-+	kfree(pwrseq_gen);
-+}
-+
-+static void pwrseq_generic_put(struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+
-+	if (pwrseq_gen->gpiod_reset)
-+		gpiod_put(pwrseq_gen->gpiod_reset);
-+
-+	clk_put(pwrseq_gen->clk);
-+}
-+
-+static void pwrseq_generic_off(struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+
-+	clk_disable_unprepare(pwrseq_gen->clk);
-+}
-+
-+static int pwrseq_generic_on(struct device_node *np, struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+	int ret = 0;
-+	u32 duration_us = 50;
-+	struct gpio_desc *gpiod_reset = pwrseq_gen->gpiod_reset;
-+
-+	if (pwrseq_gen->clk) {
-+		ret = clk_prepare_enable(pwrseq_gen->clk);
-+		if (ret) {
-+			pr_err("Can't enable clock on %s: %d\n",
-+				np->name, ret);
-+			return ret;
-+		}
-+	}
-+
-+	if (gpiod_reset) {
-+		of_property_read_u32(np, "pwrseq-reset-duration-us",
-+				&duration_us);
-+		gpiod_direction_output(gpiod_reset, 1);
-+		gpiod_set_value(gpiod_reset, 1);
-+		usleep_range(duration_us, duration_us + 10);
-+		gpiod_set_value(gpiod_reset, 0);
-+	}
-+
-+	return ret;
-+}
-+
-+static int pwrseq_generic_get(struct device_node *np, struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+	int gpio;
-+
-+	pwrseq_gen->clk = of_clk_get_by_name(np, "pwrseq-clk");
-+	if (IS_ERR(pwrseq_gen->clk)) {
-+		pr_debug("Can't get clock on %s: %ld\n",
-+			np->name, PTR_ERR(pwrseq_gen->clk));
-+		pwrseq_gen->clk = NULL;
-+	}
-+
-+	gpio = of_get_named_gpio_flags(np, "pwrseq-reset-gpios", 0, NULL);
-+	if (IS_ERR_VALUE(gpio) && (gpio != -ENODEV)) {
-+		pr_err("Failed to get reset gpio on %s, err = %d\n",
-+				np->name, gpio);
-+		clk_put(pwrseq_gen->clk);
-+		return gpio;
-+	}
-+
-+	if (gpio != -ENODEV)
-+		pwrseq_gen->gpiod_reset = gpio_to_desc(gpio);
-+
-+	return 0;
-+}
-+
-+struct pwrseq *pwrseq_alloc_generic(void)
-+{
-+	struct pwrseq_generic *pwrseq_gen;
-+
-+	pwrseq_gen = kzalloc(sizeof(pwrseq_gen), GFP_KERNEL);
-+	if (!pwrseq_gen)
-+		return ERR_PTR(-ENOMEM);
-+
-+	pwrseq_gen->pwrseq.get = pwrseq_generic_get;
-+	pwrseq_gen->pwrseq.on = pwrseq_generic_on;
-+	pwrseq_gen->pwrseq.off = pwrseq_generic_off;
-+	pwrseq_gen->pwrseq.put = pwrseq_generic_put;
-+	pwrseq_gen->pwrseq.free = pwrseq_generic_free;
-+
-+	pwrseq_register(&pwrseq_gen->pwrseq);
-+	return &pwrseq_gen->pwrseq;
-+}
-+EXPORT_SYMBOL_GPL(pwrseq_alloc_generic);
-diff --git a/include/linux/power/pwrseq.h b/include/linux/power/pwrseq.h
-new file mode 100644
-index 0000000..600f70c
---- /dev/null
-+++ b/include/linux/power/pwrseq.h
-@@ -0,0 +1,55 @@
-+#ifndef __LINUX_PWRSEQ_H
-+#define __LINUX_PWRSEQ_H
-+
-+#include <linux/of.h>
-+
-+struct pwrseq {
-+	char *name;
-+	struct list_head node;
-+	int (*get)(struct device_node *np, struct pwrseq *p);
-+	int (*on)(struct device_node *np, struct pwrseq *p);
-+	void (*off)(struct pwrseq *p);
-+	void (*put)(struct pwrseq *p);
-+	void (*free)(struct pwrseq *p);
-+};
-+
-+#if IS_ENABLED(CONFIG_POWER_SEQUENCE)
-+int pwrseq_get(struct device_node *np, struct pwrseq *p);
-+int pwrseq_on(struct device_node *np, struct pwrseq *p);
-+void pwrseq_off(struct pwrseq *p);
-+void pwrseq_put(struct pwrseq *p);
-+void pwrseq_free(struct pwrseq *p);
-+void pwrseq_register(struct pwrseq *pwrseq);
-+void pwrseq_unregister(struct pwrseq *pwrseq);
-+bool is_pwrseq_supported(struct device_node *np);
-+
-+#else
-+static inline int pwrseq_get(struct device_node *np, struct pwrseq *p)
-+{
-+	return 0;
-+}
-+static inline int pwrseq_on(struct device_node *np, struct pwrseq *p)
-+{
-+	return 0;
-+}
-+static inline void pwrseq_off(struct pwrseq *p) {}
-+static inline void pwrseq_put(struct pwrseq *p) {}
-+static inline void pwrseq_free(struct pwrseq *p) {}
-+static inline void pwrseq_register(struct pwrseq *pwrseq) {}
-+static inline void pwrseq_unregister(struct pwrseq *pwrseq) {}
-+static inline bool is_pwrseq_supported(struct device_node *np)
-+{
-+	return false;
-+}
-+#endif /* CONFIG_POWER_SEQUENCE */
-+
-+#if IS_ENABLED(CONFIG_PWRSEQ_GENERIC)
-+struct pwrseq *pwrseq_alloc_generic(void);
-+#else
-+static inline struct pwrseq *pwrseq_alloc_generic(void)
-+{
-+	return NULL;
-+}
-+#endif /* CONFIG_PWRSEQ_GENERIC */
-+
-+#endif  /* __LINUX_PWRSEQ_H */
++	hcd = usb_create_hcd(&ci_ehci_hc_driver, dev, dev_name(dev));
+ 	if (!hcd)
+ 		return -ENOMEM;
+ 
+-	dev_set_drvdata(ci->dev, ci);
++	dev_set_drvdata(dev, ci);
+ 	hcd->rsrc_start = ci->hw_bank.phys;
+ 	hcd->rsrc_len = ci->hw_bank.size;
+ 	hcd->regs = ci->hw_bank.abs;
+@@ -143,7 +153,7 @@ static int host_start(struct ci_hdrc *ci)
+ 		if (ci->platdata->flags & CI_HDRC_TURN_VBUS_EARLY_ON) {
+ 			ret = regulator_enable(ci->platdata->reg_vbus);
+ 			if (ret) {
+-				dev_err(ci->dev,
++				dev_err(dev,
+ 				"Failed to enable vbus regulator, ret=%d\n",
+ 									ret);
+ 				goto put_hcd;
 -- 
 1.9.1
 
