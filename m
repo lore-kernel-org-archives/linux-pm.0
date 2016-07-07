@@ -1,132 +1,56 @@
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH v7 09/11] cpuidle/powernv: cleanup powernv_add_idle_states
-Date: Fri,  8 Jul 2016 02:17:10 +0530
-Message-ID: <1467924432-29003-10-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1467924432-29003-1-git-send-email-shreyas@linux.vnet.ibm.com>
+From: Stephen Boyd <stephen.boyd@linaro.org>
+Subject: Re: [PATCH 5/6] usb: chipidea: host: let the hcd know's parent device node
+Date: Thu, 07 Jul 2016 15:56:51 -0700
+Message-ID: <146793221122.31330.7571458363004882365@sboyd-linaro>
+References: <1467882892-27589-1-git-send-email-peter.chen@nxp.com>
+ <1467882892-27589-6-git-send-email-peter.chen@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:52074 "EHLO
-	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753235AbcGGUsD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 16:48:03 -0400
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u67KixuK112259
-	for <linux-pm@vger.kernel.org>; Thu, 7 Jul 2016 16:48:02 -0400
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	by mx0a-001b2d01.pphosted.com with ESMTP id 2415xmk6vn-1
-	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 07 Jul 2016 16:48:02 -0400
-Received: from localhost
-	by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Thu, 7 Jul 2016 14:48:01 -0600
-In-Reply-To: <1467924432-29003-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:33298 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752052AbcGGW4y convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 18:56:54 -0400
+Received: by mail-pa0-f45.google.com with SMTP id b13so9745090pat.0
+        for <linux-pm@vger.kernel.org>; Thu, 07 Jul 2016 15:56:53 -0700 (PDT)
+In-Reply-To: <1467882892-27589-6-git-send-email-peter.chen@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: mpe@ellerman.id.au
-Cc: benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org, ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+To: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org
+Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, linux-pm@vger.kernel.org, Peter Chen <peter.chen@freescale.com>
 
- - Use stack instead of kzalloc'ed memory for variables while probing
-   device tree for idle states.
- - Set cap for number of idle states that can be added to
-   cpuidle_state_table
- - Minor change in way we check of_property_read_u32_array for error
-   for sake of consistency
- - Drop unnecessary "&" while assigning function pointer
+Quoting Peter Chen (2016-07-07 02:14:51)
+> diff --git a/drivers/usb/chipidea/host.c b/drivers/usb/chipidea/host.c
+> index 053bac9..55120ef 100644
+> --- a/drivers/usb/chipidea/host.c
+> +++ b/drivers/usb/chipidea/host.c
+> @@ -109,15 +109,25 @@ static int host_start(struct ci_hdrc *ci)
+>         struct ehci_hcd *ehci;
+>         struct ehci_ci_priv *priv;
+>         int ret;
+> +       struct device *dev = ci->dev;
+>  
+> -       if (usb_disabled())
+> +       if (usb_disabled() || !dev)
 
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- - New in v7. This was mainly to make the existing code
-   consistent with the review comments for new code
+Does that ever happen?
 
- drivers/cpuidle/cpuidle-powernv.c | 36 +++++++++++++++++++-----------------
- 1 file changed, 19 insertions(+), 17 deletions(-)
+>                 return -ENODEV;
+>  
+> -       hcd = usb_create_hcd(&ci_ehci_hc_driver, ci->dev, dev_name(ci->dev));
+> +       /*
+> +        * USB Core will try to get child node under roothub,
+> +        * but chipidea core has no of_node, and the child node
+> +        * for controller is located at glue layer's node which
+> +        * is chipidea core's parent.
+> +        */
+> +       if (dev->parent && dev->parent->of_node)
+> +               dev->of_node = dev->parent->of_node;
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 3a763a8..a89f546 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -166,7 +166,9 @@ static int powernv_add_idle_states(void)
- 	struct device_node *power_mgt;
- 	int nr_idle_states = 1; /* Snooze */
- 	int dt_idle_states;
--	u32 *latency_ns, *residency_ns, *flags;
-+	u32 latency_ns[CPUIDLE_STATE_MAX];
-+	u32 residency_ns[CPUIDLE_STATE_MAX];
-+	u32 flags[CPUIDLE_STATE_MAX];
- 	int i, rc;
- 
- 	/* Currently we have snooze statically defined */
-@@ -184,22 +186,28 @@ static int powernv_add_idle_states(void)
- 		goto out;
- 	}
- 
--	flags = kzalloc(sizeof(*flags) * dt_idle_states, GFP_KERNEL);
-+	/*
-+	 * Since snooze is used as first idle state, max idle states allowed is
-+	 * CPUIDLE_STATE_MAX -1
-+	 */
-+	if (dt_idle_states > CPUIDLE_STATE_MAX - 1) {
-+		pr_warn("cpuidle-powernv: discovered idle states more than allowed");
-+		dt_idle_states = CPUIDLE_STATE_MAX - 1;
-+	}
-+
- 	if (of_property_read_u32_array(power_mgt,
- 			"ibm,cpu-idle-state-flags", flags, dt_idle_states)) {
- 		pr_warn("cpuidle-powernv : missing ibm,cpu-idle-state-flags in DT\n");
--		goto out_free_flags;
-+		goto out;
- 	}
- 
--	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
--	rc = of_property_read_u32_array(power_mgt,
--		"ibm,cpu-idle-state-latencies-ns", latency_ns, dt_idle_states);
--	if (rc) {
-+	if (of_property_read_u32_array(power_mgt,
-+		"ibm,cpu-idle-state-latencies-ns", latency_ns,
-+		dt_idle_states)) {
- 		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-latencies-ns in DT\n");
--		goto out_free_latency;
-+		goto out;
- 	}
- 
--	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
- 	rc = of_property_read_u32_array(power_mgt,
- 		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
- 
-@@ -215,7 +223,7 @@ static int powernv_add_idle_states(void)
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
- 			powernv_states[nr_idle_states].flags = 0;
- 			powernv_states[nr_idle_states].target_residency = 100;
--			powernv_states[nr_idle_states].enter = &nap_loop;
-+			powernv_states[nr_idle_states].enter = nap_loop;
- 		}
- 
- 		/*
-@@ -230,7 +238,7 @@ static int powernv_add_idle_states(void)
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
- 			powernv_states[nr_idle_states].target_residency = 300000;
--			powernv_states[nr_idle_states].enter = &fastsleep_loop;
-+			powernv_states[nr_idle_states].enter = fastsleep_loop;
- 		}
- #endif
- 		powernv_states[nr_idle_states].exit_latency =
-@@ -243,12 +251,6 @@ static int powernv_add_idle_states(void)
- 
- 		nr_idle_states++;
- 	}
--
--	kfree(residency_ns);
--out_free_latency:
--	kfree(latency_ns);
--out_free_flags:
--	kfree(flags);
- out:
- 	return nr_idle_states;
- }
--- 
-2.4.11
+Why not do this during the ci device probe? How is host special for
+having an of_node for the child device.
 
+Doing that would also make my ULPI bus DT discovery patch simpler
+because we wouldn't have to search the parent of the parent for a DT
+node to find the ULPI node that's a child of the ci glue device.
