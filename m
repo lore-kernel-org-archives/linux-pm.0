@@ -1,88 +1,65 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
-Date: Fri, 8 Jul 2016 03:28:12 +0200
-Message-ID: <CAJZ5v0i4TJ_nFj4x2couZqPyrjWhig5fFRfG2LNCHfG=3h1CBg@mail.gmail.com>
-References: <cover.1463134231.git.lukas@wunner.de> <20160707150243.GA3633@wunner.de>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH 5/6] usb: chipidea: host: let the hcd know's parent
+ device node
+Date: Fri, 8 Jul 2016 09:54:47 +0800
+Message-ID: <20160708015447.GB27779@shlinux2>
+References: <1467882892-27589-1-git-send-email-peter.chen@nxp.com>
+ <1467882892-27589-6-git-send-email-peter.chen@nxp.com>
+ <146793221122.31330.7571458363004882365@sboyd-linaro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f45.google.com ([74.125.82.45]:35433 "EHLO
-	mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753408AbcGHB2P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 21:28:15 -0400
-In-Reply-To: <20160707150243.GA3633@wunner.de>
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:34712 "EHLO
+	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753470AbcGHCCT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 22:02:19 -0400
+Content-Disposition: inline
+In-Reply-To: <146793221122.31330.7571458363004882365@sboyd-linaro>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>
+To: Stephen Boyd <stephen.boyd@linaro.org>
+Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, linux-pm@vger.kernel.org, Peter Chen <peter.chen@freescale.com>
 
-On Thu, Jul 7, 2016 at 5:02 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> Dear Rafael,
->
-> The honor of your presence is requested to the review of this series
-> posted May 13.
->
-> Bjorn has requested an ack from you on patches 9 and 10, so the series
-> is essentially blocked until you find the time to comment. It would
-> also be good if you could look at the PM-related patches 4, 5, 6 and 11.
-> They're all fairly small. You do not have to bother about the larger
-> thunderbolt patches at the end of the series:
+On Thu, Jul 07, 2016 at 03:56:51PM -0700, Stephen Boyd wrote:
+> Quoting Peter Chen (2016-07-07 02:14:51)
+> > diff --git a/drivers/usb/chipidea/host.c b/drivers/usb/chipidea/host.c
+> > index 053bac9..55120ef 100644
+> > --- a/drivers/usb/chipidea/host.c
+> > +++ b/drivers/usb/chipidea/host.c
+> > @@ -109,15 +109,25 @@ static int host_start(struct ci_hdrc *ci)
+> >         struct ehci_hcd *ehci;
+> >         struct ehci_ci_priv *priv;
+> >         int ret;
+> > +       struct device *dev = ci->dev;
+> >  
+> > -       if (usb_disabled())
+> > +       if (usb_disabled() || !dev)
+> 
+> Does that ever happen?
 
-Sorry for being the bottleneck here.
+I don't think so, will delete it.
 
-This has been in my todo list all the time, but I get pulled away from
-it on a regular basis due to regressions and similar.
+> 
+> >                 return -ENODEV;
+> >  
+> > -       hcd = usb_create_hcd(&ci_ehci_hc_driver, ci->dev, dev_name(ci->dev));
+> > +       /*
+> > +        * USB Core will try to get child node under roothub,
+> > +        * but chipidea core has no of_node, and the child node
+> > +        * for controller is located at glue layer's node which
+> > +        * is chipidea core's parent.
+> > +        */
+> > +       if (dev->parent && dev->parent->of_node)
+> > +               dev->of_node = dev->parent->of_node;
+> 
+> Why not do this during the ci device probe? How is host special for
+> having an of_node for the child device.
+> 
 
-> [01/13]  https://patchwork.kernel.org/patch/9090411/
-> [02/13]  https://patchwork.kernel.org/patch/9090421/
-> [03/13]  https://patchwork.kernel.org/patch/9090451/
-> [04/13]  https://patchwork.kernel.org/patch/9090471/
-> [05/13]  https://patchwork.kernel.org/patch/9090491/
-> [06/13]  https://patchwork.kernel.org/patch/9090511/
-> [07/13]  https://patchwork.kernel.org/patch/9090531/
-> [08/13]  https://patchwork.kernel.org/patch/9090541/
-> [09/13]  https://patchwork.kernel.org/patch/9090621/
-> [10/13]  https://patchwork.kernel.org/patch/9090641/
-> [11/13]  https://patchwork.kernel.org/patch/9090651/
-> [12/13]  https://patchwork.kernel.org/patch/9090571/
-> [13/13]  https://patchwork.kernel.org/patch/9090591/
->
-> There are also still unanswered questions about the architecture
-> I've chosen in this series: I'm attaching to the upstream bridge
-> of the Thunderbolt controller as a port service to be able to
-> power it down when nothing is plugged in. This architecture is
-> a workaround for the fact that dev_pm_domain_set() cannot be
-> called after a device is bound to a driver.
->
-> I've explained this in detail in an e-mail to you on June 17:
-> http://www.spinics.net/lists/linux-pci/msg52120.html
+Good idea. I did this when I added USB device DT support, but did not
+consider potential gadget/phy use cases.
 
-I've read this, but I still don't quite understand the problem to be
-honest.  I'll have another look.
+-- 
 
-> Near the end of that e-mail are two questions:
-> (1) Would it be possible to allow dev_pm_domain_set() for already
->     bound devices? (It would allow me to simplify this series
->     considerably.)
-
-I don't think so, because setting a PM domain generally changes the
-set of PM callbacks for the device and it may not be safe to call it
-after the driver has been bound.
-
-> (2) How should the PCI core deal with devices that can be suspended
->     to D3cold but not by the platform? Is it correct to solve this
->     with dev_pm_domain_set()? (As is currently done for Optimus GPUs.)
->     Is it also okay to suspend/resume them in the driver runtime PM
->     callbacks? (This requires patch [09/13] of my series to work
->     properly.)
->
-> Your help answering those questions and/or reviewing this series
-> is greatly appreciated.
->
-> Thank you!
-
-Well, honestly, you may be underestimating the amount of time needed
-for me to understand the problem you're trying to solve.
-
-Thanks,
-Rafael
+Best Regards,
+Peter Chen
