@@ -1,97 +1,58 @@
-From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v3 1/7] lib: string: add functions to case-convert
-	strings
-Date: Fri,  8 Jul 2016 15:43:08 -0700
-Message-ID: <1468017794-4818-2-git-send-email-mmayer@broadcom.com>
+From: Markus Mayer <mmayer@broadcom.com>
+Subject: [PATCH v3 7/7] power_supply: make use of new strcpytoupper() function
+Date: Fri,  8 Jul 2016 15:43:14 -0700
+Message-ID: <1468017794-4818-8-git-send-email-mmayer@broadcom.com>
 References: <1468017794-4818-1-git-send-email-mmayer@broadcom.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <1468017794-4818-1-git-send-email-mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, Rasmus Villemoes <linux-qQsb+v5E8BnlAoU/VqSP6n9LOBIZ5rWg@public.gmane.org>, Chris Metcalf <cmetcalf-d5a29ZRxExrQT0dZR+AlfA@public.gmane.org>, Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, speakup-UPO/6gOIxNZglr+F8WMZYdi2O/JbrIOy@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:34387 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932915AbcGHWod (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jul 2016 18:44:33 -0400
+Received: by mail-pa0-f44.google.com with SMTP id fi15so2941595pac.1
+        for <linux-pm@vger.kernel.org>; Fri, 08 Jul 2016 15:44:32 -0700 (PDT)
+In-Reply-To: <1468017794-4818-1-git-send-email-mmayer@broadcom.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Markus Mayer <mmayer@broadcom.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-QWRkIGEgY29sbGVjdGlvbiBvZiBnZW5lcmljIGZ1bmN0aW9ucyB0byBjb252ZXJ0IHN0cmluZ3Mg
-dG8gbG93ZXJjYXNlCm9yIHVwcGVyY2FzZS4KCkNoYW5naW5nIHRoZSBjYXNlIG9mIGEgc3RyaW5n
-ICh3aXRoIG9yIHdpdGhvdXQgY29weWluZyBpdCBmaXJzdCkgc2VlbXMKdG8gYmUgYSByZWN1cnJp
-bmcgcmVxdWlyZW1lbnQgaW4gdGhlIGtlcm5lbCB0aGF0IGlzIGN1cnJlbnRseSBiZWluZwpzb2x2
-ZWQgYnkgc2V2ZXJhbCBkdXBsaWNhdGVkIGltcGxlbWVudGF0aW9ucyBkb2luZyB0aGUgc2FtZSB0
-aGluZy4gVGhpcwpjaGFuZ2UgYWltcyBhdCByZWR1Y2luZyB0aGlzIGNvZGUgZHVwbGljYXRpb24u
-CgpUaGUgbmV3IGZ1bmN0aW9ucyBhcmUKICAgIHZvaWQgc3RybGNweXRvdXBwZXIoY2hhciAqZHN0
-LCBjb25zdCBjaGFyICpzcmMsIHNpemVfdCBsZW4pOwogICAgdm9pZCBzdHJsY3B5dG9sb3dlcihj
-aGFyICpkc3QsIGNvbnN0IGNoYXIgKnNyYywgc2l6ZV90IGxlbik7CiAgICB2b2lkIHN0cmNweXRv
-dXBwZXIoY2hhciAqZHN0LCBjb25zdCBjaGFyICpzcmMpOwogICAgdm9pZCBzdHJjcHl0b2xvd2Vy
-KGNoYXIgKmRzdCwgY29uc3QgY2hhciAqc3JjKTsKICAgIHZvaWQgc3RydG91cHBlcihjaGFyICpz
-KTsKICAgIHZvaWQgc3RydG9sb3dlcihjaGFyICpzKTsKClRoZSAic3RyW2xdY3B5dG8qIiB2ZXJz
-aW9ucyBvZiB0aGUgZnVuY3Rpb24gdGFrZSBhIGRlc3RpbmF0aW9uIHN0cmluZwphbmQgYSBzb3Vy
-Y2Ugc3RyaW5nIGFzIGFyZ3VtZW50cy4gVGhlICJzdHJsY3B5dG8qIiB2ZXJzaW9ucyBhZGRpdGlv
-bmFsbHkKdGFrZSBhIGxlbmd0aCBhcmd1bWVudCBsaWtlIHN0cmxjcHkoKSBpdHNlbGYuIExhc3Rs
-eSwgdGhlIHN0cnRvKgpmdW5jdGlvbnMgdGFrZSBhIHNpbmdsZSBzdHJpbmcgYXJndW1lbnQgYW5k
-IG1vZGlmeSB0aGUgcGFzc2VkLWluIHN0cmluZy4KCkxpa2Ugc3RybGNweSgpLCBhbmQgdW5saWtl
-IHN0cm5jcHkoKSwgdGhlIGZ1bmN0aW9ucyBndWFyYW50ZWUgTlVMTAp0ZXJtaW5hdGlvbiBvZiB0
-aGUgZGVzdGluYXRpb24gc3RyaW5nLgoKU2lnbmVkLW9mZi1ieTogTWFya3VzIE1heWVyIDxtbWF5
-ZXJAYnJvYWRjb20uY29tPgotLS0KIGluY2x1ZGUvbGludXgvc3RyaW5nLmggfCA0MCArKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCiBsaWIvc3RyaW5nLmMgICAgICAgICAg
-IHwgMzggKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysKIDIgZmlsZXMgY2hh
-bmdlZCwgNzggaW5zZXJ0aW9ucygrKQoKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvc3RyaW5n
-LmggYi9pbmNsdWRlL2xpbnV4L3N0cmluZy5oCmluZGV4IDI2YjZmNmEuLjM2YzlkMTQgMTAwNjQ0
-Ci0tLSBhL2luY2x1ZGUvbGludXgvc3RyaW5nLmgKKysrIGIvaW5jbHVkZS9saW51eC9zdHJpbmcu
-aApAQCAtMTE2LDYgKzExNiw4IEBAIGV4dGVybiB2b2lkICogbWVtY2hyKGNvbnN0IHZvaWQgKixp
-bnQsX19rZXJuZWxfc2l6ZV90KTsKICNlbmRpZgogdm9pZCAqbWVtY2hyX2ludihjb25zdCB2b2lk
-ICpzLCBpbnQgYywgc2l6ZV90IG4pOwogY2hhciAqc3RycmVwbGFjZShjaGFyICpzLCBjaGFyIG9s
-ZCwgY2hhciBuZXcpOworZXh0ZXJuIHZvaWQgc3RybGNweXRvdXBwZXIoY2hhciAqZHN0LCBjb25z
-dCBjaGFyICpzcmMsIHNpemVfdCBsZW4pOworZXh0ZXJuIHZvaWQgc3RybGNweXRvbG93ZXIoY2hh
-ciAqZHN0LCBjb25zdCBjaGFyICpzcmMsIHNpemVfdCBsZW4pOwogCiBleHRlcm4gdm9pZCBrZnJl
-ZV9jb25zdChjb25zdCB2b2lkICp4KTsKIApAQCAtMTY5LDQgKzE3MSw0MiBAQCBzdGF0aWMgaW5s
-aW5lIGNvbnN0IGNoYXIgKmtiYXNlbmFtZShjb25zdCBjaGFyICpwYXRoKQogCXJldHVybiB0YWls
-ID8gdGFpbCArIDEgOiBwYXRoOwogfQogCisvKioKKyAqIHN0cmNweXRvdXBwZXIgLSBDb3B5IHN0
-cmluZyBhbmQgY29udmVydCB0byB1cHBlcmNhc2UuCisgKiBAZHN0OiBUaGUgYnVmZmVyIHRvIHN0
-b3JlIHRoZSByZXN1bHQuCisgKiBAc3JjOiBUaGUgc3RyaW5nIHRvIGNvbnZlcnQgdG8gdXBwZXJj
-YXNlLgorICovCitzdGF0aWMgaW5saW5lIHZvaWQgc3RyY3B5dG91cHBlcihjaGFyICpkc3QsIGNv
-bnN0IGNoYXIgKnNyYykKK3sKKwlzdHJsY3B5dG91cHBlcihkc3QsIHNyYywgLTEpOworfQorCisv
-KioKKyAqIHN0cmNweXRvbG93ZXIgLSBDb3B5IHN0cmluZyBhbmQgY29udmVydCB0byBsb3dlcmNh
-c2UuCisgKiBAZHN0OiBUaGUgYnVmZmVyIHRvIHN0b3JlIHRoZSByZXN1bHQuCisgKiBAc3JjOiBU
-aGUgc3RyaW5nIHRvIGNvbnZlcnQgdG8gbG93ZXJjYXNlLgorICovCitzdGF0aWMgaW5saW5lIHZv
-aWQgc3RyY3B5dG9sb3dlcihjaGFyICpkc3QsIGNvbnN0IGNoYXIgKnNyYykKK3sKKwlzdHJsY3B5
-dG9sb3dlcihkc3QsIHNyYywgLTEpOworfQorCisvKioKKyAqIHN0cnRvdXBwZXIgLSBDb252ZXJ0
-IHN0cmluZyB0byB1cHBlcmNhc2UuCisgKiBAczogVGhlIHN0cmluZyB0byBvcGVyYXRlIG9uLgor
-ICovCitzdGF0aWMgaW5saW5lIHZvaWQgc3RydG91cHBlcihjaGFyICpzKQoreworCXN0cmxjcHl0
-b3VwcGVyKHMsIHMsIC0xKTsKK30KKworLyoqCisgKiBzdHJ0b2xvd2VyIC0gQ29udmVydCBzdHJp
-bmcgdG8gbG93ZXJjYXNlLgorICogQHM6IFRoZSBzdHJpbmcgdG8gb3BlcmF0ZSBvbi4KKyAqLwor
-c3RhdGljIGlubGluZSB2b2lkIHN0cnRvbG93ZXIoY2hhciAqcykKK3sKKwlzdHJsY3B5dG9sb3dl
-cihzLCBzLCAtMSk7Cit9CisKICNlbmRpZiAvKiBfTElOVVhfU1RSSU5HX0hfICovCmRpZmYgLS1n
-aXQgYS9saWIvc3RyaW5nLmMgYi9saWIvc3RyaW5nLmMKaW5kZXggZWQ4MzU2Mi4uZmQ4YzQyNyAx
-MDA2NDQKLS0tIGEvbGliL3N0cmluZy5jCisrKyBiL2xpYi9zdHJpbmcuYwpAQCAtOTUyLDMgKzk1
-Miw0MSBAQCBjaGFyICpzdHJyZXBsYWNlKGNoYXIgKnMsIGNoYXIgb2xkLCBjaGFyIG5ldykKIAly
-ZXR1cm4gczsKIH0KIEVYUE9SVF9TWU1CT0woc3RycmVwbGFjZSk7CisKKy8qKgorICogc3RybGNw
-eXRvdXBwZXIgLSBDb3B5IGEgbGVuZ3RoLWxpbWl0ZWQgc3RyaW5nIGFuZCBjb252ZXJ0IHRvIHVw
-cGVyY2FzZS4KKyAqIEBkc3Q6IFRoZSBidWZmZXIgdG8gc3RvcmUgdGhlIHJlc3VsdC4KKyAqIEBz
-cmM6IFRoZSBzdHJpbmcgdG8gY29udmVydCB0byB1cHBlcmNhc2UuCisgKiBAbGVuOiBNYXhpbXVt
-IHN0cmluZyBsZW5ndGguIE1heSBiZSBTSVpFX01BWCAoLTEpIHRvIHNldCBubyBsaW1pdC4KKyAq
-Lwordm9pZCBzdHJsY3B5dG91cHBlcihjaGFyICpkc3QsIGNvbnN0IGNoYXIgKnNyYywgc2l6ZV90
-IGxlbikKK3sKKwlzaXplX3QgaTsKKworCWlmICghbGVuKQorCQlyZXR1cm47CisKKwlmb3IgKGkg
-PSAwOyBpIDwgbGVuICYmIHNyY1tpXTsgKytpKQorCQlkc3RbaV0gPSB0b3VwcGVyKHNyY1tpXSk7
-CisJZHN0W2kgPCBsZW4gPyBpIDogaSAtIDFdID0gJ1wwJzsKK30KK0VYUE9SVF9TWU1CT0woc3Ry
-bGNweXRvdXBwZXIpOworCisvKioKKyAqIHN0cmxjcHl0b2xvd2VyIC0gQ29weSBhIGxlbmd0aC1s
-aW1pdGVkIHN0cmluZyBhbmQgY29udmVydCB0byBsb3dlcmNhc2UuCisgKiBAZHN0OiBUaGUgYnVm
-ZmVyIHRvIHN0b3JlIHRoZSByZXN1bHQuCisgKiBAc3JjOiBUaGUgc3RyaW5nIHRvIGNvbnZlcnQg
-dG8gbG93ZXJjYXNlLgorICogQGxlbjogTWF4aW11bSBzdHJpbmcgbGVuZ3RoLiBNYXkgYmUgU0la
-RV9NQVggKC0xKSB0byBzZXQgbm8gbGltaXQuCisgKi8KK3ZvaWQgc3RybGNweXRvbG93ZXIoY2hh
-ciAqZHN0LCBjb25zdCBjaGFyICpzcmMsIHNpemVfdCBsZW4pCit7CisJc2l6ZV90IGk7CisKKwlp
-ZiAoIWxlbikKKwkJcmV0dXJuOworCisJZm9yIChpID0gMDsgaSA8IGxlbiAmJiBzcmNbaV07ICsr
-aSkKKwkJZHN0W2ldID0gdG9sb3dlcihzcmNbaV0pOworCWRzdFtpIDwgbGVuID8gaSA6IGkgLSAx
-XSA9ICdcMCc7Cit9CitFWFBPUlRfU1lNQk9MKHN0cmxjcHl0b2xvd2VyKTsKLS0gCjIuNy40Cgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1h
-aWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZy
-ZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL25vdXZlYXUK
+Call strcpytoupper() rather than walking the string explicitly to
+convert it to uppercase.
+
+Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+---
+ drivers/power/power_supply_sysfs.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_supply_sysfs.c
+index 80fed98..20fdcc5 100644
+--- a/drivers/power/power_supply_sysfs.c
++++ b/drivers/power/power_supply_sysfs.c
+@@ -256,19 +256,16 @@ void power_supply_init_attrs(struct device_type *dev_type)
+ 
+ static char *kstruprdup(const char *str, gfp_t gfp)
+ {
+-	char *ret, *ustr;
++	char *ustr;
+ 
+-	ustr = ret = kmalloc(strlen(str) + 1, gfp);
++	ustr = kmalloc(strlen(str) + 1, gfp);
+ 
+-	if (!ret)
++	if (!ustr)
+ 		return NULL;
+ 
+-	while (*str)
+-		*ustr++ = toupper(*str++);
++	strcpytoupper(ustr, str);
+ 
+-	*ustr = 0;
+-
+-	return ret;
++	return ustr;
+ }
+ 
+ int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
+-- 
+2.7.4
+
