@@ -1,74 +1,55 @@
-From: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Subject: Re: [PATCH v2 4/4] drm/nouveau/acpi: fix lockup with PCIe
-	runtime PM
-Date: Fri, 8 Jul 2016 11:30:57 +0300
-Message-ID: <20160708083057.GZ23527@lahna.fi.intel.com>
-References: <20160707233827.2100-1-peter@lekensteyn.nl>
- <20160707233827.2100-5-peter@lekensteyn.nl>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH 0/5] hwmon: New hwmon registration API
+Date: Fri, 08 Jul 2016 10:31:09 +0100
+Message-ID: <87d1mobhnm.fsf@e105922-lin.cambridge.arm.com>
+References: <1466911590-26296-1-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160707233827.2100-5-peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-hwmon-owner@vger.kernel.org>
+In-Reply-To: <1466911590-26296-1-git-send-email-linux@roeck-us.net> (Guenter
+	Roeck's message of "Sat, 25 Jun 2016 20:26:23 -0700")
+Sender: linux-hwmon-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Jean Delvare <jdelvare@suse.com>, Jonathan Cameron <jic23@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBKdWwgMDgsIDIwMTYgYXQgMDE6Mzg6MjdBTSArMDIwMCwgUGV0ZXIgV3Ugd3JvdGU6
-Cj4gU2luY2UgIlBDSTogQWRkIHJ1bnRpbWUgUE0gc3VwcG9ydCBmb3IgUENJZSBwb3J0cyIsIHRo
-ZSBwYXJlbnQgUENJZSBwb3J0Cj4gY2FuIGJlIHJ1bnRpbWUtc3VzcGVuZGVkIHdoaWNoIGRpc2Fi
-bGVzIHBvd2VyIHJlc291cmNlcyB2aWEgQUNQSS4gVGhpcwo+IGlzIGluY29tcGF0aWJsZSB3aXRo
-IERTTSwgcmVzdWx0aW5nIGluIGEgR1BVIGRldmljZSB3aGljaCBpcyBzdGlsbCBpbiBEMwo+IGFu
-ZCBsb2NrcyB1cCB0aGUga2VybmVsIG9uIHJlc3VtZSAob24gYSBDbGV2byBQNjUxUkEsIEdUWDk2
-NU0pLgo+IAo+IE1pcnJvciB0aGUgYmVoYXZpb3Igb2YgV2luZG93cyA4IGFuZCBuZXdlclsxXSAo
-YXMgb2JzZXJ2ZWQgdmlhIGFuIEFNTGkKPiBkZWJ1Z2dlciB0cmFjZSkgYW5kIHN0b3AgdXNpbmcg
-dGhlIERTTSBmdW5jdGlvbnMgZm9yIEQzY29sZCB3aGVuIHBvd2VyCj4gcmVzb3VyY2VzIGFyZSBh
-dmFpbGFibGUgb24gdGhlIHBhcmVudCBQQ0llIHBvcnQuCj4gCj4gcGNpX2QzY29sZF9kaXNhYmxl
-KCkgaXMgbm90IHVzZWQgYmVjYXVzZSBvbiBzb21lIG1hY2hpbmVzLCB0aGUgb2xkIERTTQo+IG1l
-dGhvZCBpcyBicm9rZW4uIE9uIGEgTGVub3ZvIFQ0NDBwIChHVCA3MzBNKSBtZW1vcnkgYW5kIGRp
-c2sgY29ycnVwdGlvbgo+IHdvdWxkIG9jY3VyLCBidXQgdGhhdCBpcyBmaXhlZCB3aXRoIHRoaXMg
-cGF0Y2hbMl0uCgpGYWlyIGVub3VnaC4KCj4gIFsxXTogaHR0cHM6Ly9tc2RuLm1pY3Jvc29mdC5j
-b20vd2luZG93cy9oYXJkd2FyZS9kcml2ZXJzL2JyaW5ndXAvZmlybXdhcmUtcmVxdWlyZW1lbnRz
-LWZvci1kM2NvbGQKPiAgWzJdOiBodHRwczovL2dpdGh1Yi5jb20vQnVtYmxlYmVlLVByb2plY3Qv
-YmJzd2l0Y2gvaXNzdWVzLzc4I2lzc3VlY29tbWVudC0yMjM1NDkwNzIKPiAKPiAgdjI6IHNpbXBs
-eSBjaGVjayBkaXJlY3RseSBmb3IgX1BSMy4gQWRkZWQgYWZmZWN0ZWQgbWFjaGluZXMuCj4gCj4g
-U2lnbmVkLW9mZi1ieTogUGV0ZXIgV3UgPHBldGVyQGxla2Vuc3RleW4ubmw+CgpPbmUgbml0cGlj
-ayBiZWxvdyBidXQgb3RoZXJ3aXNlIGxvb2tzIHJlYXNvbmFibGUgdG8gbWUuCgpSZXZpZXdlZC1i
-eTogTWlrYSBXZXN0ZXJiZXJnIDxtaWthLndlc3RlcmJlcmdAbGludXguaW50ZWwuY29tPgoKQlRX
-LCB0aGFua3MgZm9yIGRvaW5nIHRoaXMgOikKCj4gLS0tCj4gIGRyaXZlcnMvZ3B1L2RybS9ub3V2
-ZWF1L25vdXZlYXVfYWNwaS5jIHwgMzMgKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0t
-Cj4gIDEgZmlsZSBjaGFuZ2VkLCAyOSBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQo+IAo+
-IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGkuYyBiL2Ry
-aXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5jCj4gaW5kZXggYWQyNzNhZC4uMzhh
-NjQ0NSAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGku
-Ywo+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5jCj4gQEAgLTQ2
-LDYgKzQ2LDcgQEAgc3RhdGljIHN0cnVjdCBub3V2ZWF1X2RzbV9wcml2IHsKPiAgCWJvb2wgZHNt
-X2RldGVjdGVkOwo+ICAJYm9vbCBvcHRpbXVzX2RldGVjdGVkOwo+ICAJYm9vbCBvcHRpbXVzX2Zs
-YWdzX2RldGVjdGVkOwo+ICsJYm9vbCBvcHRpbXVzX3NraXBfZHNtOwo+ICAJYWNwaV9oYW5kbGUg
-ZGhhbmRsZTsKPiAgCWFjcGlfaGFuZGxlIHJvbV9oYW5kbGU7Cj4gIH0gbm91dmVhdV9kc21fcHJp
-djsKPiBAQCAtMjEyLDkgKzIxMywyNiBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IHZnYV9zd2l0Y2hl
-cm9vX2hhbmRsZXIgbm91dmVhdV9kc21faGFuZGxlciA9IHsKPiAgCS5nZXRfY2xpZW50X2lkID0g
-bm91dmVhdV9kc21fZ2V0X2NsaWVudF9pZCwKPiAgfTsKPiAgCj4gKy8qIEZpcm13YXJlIHN1cHBv
-cnRpbmcgV2luZG93cyA4IG9yIGxhdGVyIGRvIG5vdCB1c2UgX0RTTSB0byBwdXQgdGhlIGRldmlj
-ZSBpbnRvCj4gKyAqIEQzY29sZCwgdGhleSBpbnN0ZWFkIHJlbHkgb24gZGlzYWJsaW5nIHBvd2Vy
-IHJlc291cmNlcyBvbiB0aGUgcGFyZW50LiAqLwoKWW91IHNob3VsZCBmb2xsb3cgc3RhbmRhcmQg
-YmxvY2sgY29tbWVudCBzdHlsZSBoZXJlLgoKPiArc3RhdGljIGJvb2wgbm91dmVhdV9wcjNfcHJl
-c2VudChzdHJ1Y3QgcGNpX2RldiAqcGRldikKPiArewo+ICsJc3RydWN0IHBjaV9kZXYgKnBhcmVu
-dF9wZGV2ID0gcGNpX3Vwc3RyZWFtX2JyaWRnZShwZGV2KTsKPiArCXN0cnVjdCBhY3BpX2Rldmlj
-ZSAqcGFyZW50X2FkZXY7Cj4gKwo+ICsJaWYgKCFwYXJlbnRfcGRldikKPiArCQlyZXR1cm4gZmFs
-c2U7Cj4gKwo+ICsJcGFyZW50X2FkZXYgPSBBQ1BJX0NPTVBBTklPTigmcGFyZW50X3BkZXYtPmRl
-dik7Cj4gKwlpZiAoIXBhcmVudF9hZGV2KQo+ICsJCXJldHVybiBmYWxzZTsKPiArCj4gKwlyZXR1
-cm4gYWNwaV9oYXNfbWV0aG9kKHBhcmVudF9hZGV2LT5oYW5kbGUsICJfUFIzIik7Cj4gK30KX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWls
-aW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVl
-ZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
+Hi Guenter,
+
+Guenter Roeck <linux@roeck-us.net> writes:
+
+> Up to now, each hwmon driver has to implement its own sysfs attributes.
+> This requires a lot of template code, and distracts from the driver's
+> core function to read and write chip registers.
+>
+> To be able to reduce driver complexity, move sensor attribute handling
+> and thermal zone registration into the hwmon core. By using the new API,
+> driver size is typically reduced by 20-50% depending on driver complexity
+> and the number of sysfs attributes supported.
+>
+> The first patch of the series introduces the API as well as support
+> for temperature sensors. Subsequent patches introduce support for
+> voltage, current, power, energy, humidity, and fan speed sensors.
+>
+> The series was tested by converting several drivers (lm75, lm90, tmp102,
+> tmp421, ltc4245) to the new API. Testing was done with with real chips
+> as well as with the hwmon driver module test code available at
+> https://github.com/groeck/module-tests.
+
+I like this series - it takes all of the attributes' handling out of the
+individual driver code and moving it to hwmon core.
+
+Having attempted a port of scpi-hwmon.c, I think that driver will not
+gain a big savings in line count. Though it'll help separate access to
+sensors from sysfs related code - which I think is worth the change.
+
+FWIW,
+
+        Acked-by: Punit Agrawal <punit.agrawal@arm.com>
+
+Thanks,
+Punit
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
