@@ -1,147 +1,74 @@
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-Subject: [PATCH v8 09/11] cpuidle/powernv: cleanup cpuidle-powernv.c
-Date: Fri,  8 Jul 2016 11:50:51 +0530
-Message-ID: <1467958853-35841-10-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1467958853-35841-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:26381 "EHLO
-	mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754001AbcGHGVn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jul 2016 02:21:43 -0400
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-	by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u686A2ps007784
-	for <linux-pm@vger.kernel.org>; Fri, 8 Jul 2016 02:21:42 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
-	by mx0b-001b2d01.pphosted.com with ESMTP id 2415xnyr3s-1
-	(version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 08 Jul 2016 02:21:42 -0400
-Received: from localhost
-	by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <shreyas@linux.vnet.ibm.com>;
-	Fri, 8 Jul 2016 00:21:41 -0600
-In-Reply-To: <1467958853-35841-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [PATCH v2 4/4] drm/nouveau/acpi: fix lockup with PCIe
+	runtime PM
+Date: Fri, 8 Jul 2016 11:30:57 +0300
+Message-ID: <20160708083057.GZ23527@lahna.fi.intel.com>
+References: <20160707233827.2100-1-peter@lekensteyn.nl>
+ <20160707233827.2100-5-peter@lekensteyn.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20160707233827.2100-5-peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Peter Wu <peter-VTkQYDcBqhK7DlmcbJSQ7g@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Dave Airlie <airlied-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: mpe@ellerman.id.au
-Cc: benh@au1.ibm.com, paulus@ozlabs.org, mikey@neuling.org, ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, maddy@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
- - Use stack instead of kzalloc'ed memory for variables while probing
-   device tree for idle states.
- - Set cap for number of idle states that can be added to
-   cpuidle_state_table
- - Minor change in way we check of_property_read_u32_array for error
-   for sake of consistency
- - Drop unnecessary "&" while assigning function pointer
-
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
-Changes in v8
-=============
- - &snooze_loop -> snooze_loop
-
-Changes in v7
-=============
- - New in v7. This was mainly to make the existing code
-   consistent with the review comments for new code
-
- drivers/cpuidle/cpuidle-powernv.c | 38 ++++++++++++++++++++------------------
- 1 file changed, 20 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 3a763a8..600bbe1 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -100,7 +100,7 @@ static struct cpuidle_state powernv_states[CPUIDLE_STATE_MAX] = {
- 		.desc = "snooze",
- 		.exit_latency = 0,
- 		.target_residency = 0,
--		.enter = &snooze_loop },
-+		.enter = snooze_loop },
- };
- 
- static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
-@@ -166,7 +166,9 @@ static int powernv_add_idle_states(void)
- 	struct device_node *power_mgt;
- 	int nr_idle_states = 1; /* Snooze */
- 	int dt_idle_states;
--	u32 *latency_ns, *residency_ns, *flags;
-+	u32 latency_ns[CPUIDLE_STATE_MAX];
-+	u32 residency_ns[CPUIDLE_STATE_MAX];
-+	u32 flags[CPUIDLE_STATE_MAX];
- 	int i, rc;
- 
- 	/* Currently we have snooze statically defined */
-@@ -184,22 +186,28 @@ static int powernv_add_idle_states(void)
- 		goto out;
- 	}
- 
--	flags = kzalloc(sizeof(*flags) * dt_idle_states, GFP_KERNEL);
-+	/*
-+	 * Since snooze is used as first idle state, max idle states allowed is
-+	 * CPUIDLE_STATE_MAX -1
-+	 */
-+	if (dt_idle_states > CPUIDLE_STATE_MAX - 1) {
-+		pr_warn("cpuidle-powernv: discovered idle states more than allowed");
-+		dt_idle_states = CPUIDLE_STATE_MAX - 1;
-+	}
-+
- 	if (of_property_read_u32_array(power_mgt,
- 			"ibm,cpu-idle-state-flags", flags, dt_idle_states)) {
- 		pr_warn("cpuidle-powernv : missing ibm,cpu-idle-state-flags in DT\n");
--		goto out_free_flags;
-+		goto out;
- 	}
- 
--	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
--	rc = of_property_read_u32_array(power_mgt,
--		"ibm,cpu-idle-state-latencies-ns", latency_ns, dt_idle_states);
--	if (rc) {
-+	if (of_property_read_u32_array(power_mgt,
-+		"ibm,cpu-idle-state-latencies-ns", latency_ns,
-+		dt_idle_states)) {
- 		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-latencies-ns in DT\n");
--		goto out_free_latency;
-+		goto out;
- 	}
- 
--	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
- 	rc = of_property_read_u32_array(power_mgt,
- 		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
- 
-@@ -215,7 +223,7 @@ static int powernv_add_idle_states(void)
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
- 			powernv_states[nr_idle_states].flags = 0;
- 			powernv_states[nr_idle_states].target_residency = 100;
--			powernv_states[nr_idle_states].enter = &nap_loop;
-+			powernv_states[nr_idle_states].enter = nap_loop;
- 		}
- 
- 		/*
-@@ -230,7 +238,7 @@ static int powernv_add_idle_states(void)
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
- 			powernv_states[nr_idle_states].target_residency = 300000;
--			powernv_states[nr_idle_states].enter = &fastsleep_loop;
-+			powernv_states[nr_idle_states].enter = fastsleep_loop;
- 		}
- #endif
- 		powernv_states[nr_idle_states].exit_latency =
-@@ -243,12 +251,6 @@ static int powernv_add_idle_states(void)
- 
- 		nr_idle_states++;
- 	}
--
--	kfree(residency_ns);
--out_free_latency:
--	kfree(latency_ns);
--out_free_flags:
--	kfree(flags);
- out:
- 	return nr_idle_states;
- }
--- 
-2.4.11
-
+T24gRnJpLCBKdWwgMDgsIDIwMTYgYXQgMDE6Mzg6MjdBTSArMDIwMCwgUGV0ZXIgV3Ugd3JvdGU6
+Cj4gU2luY2UgIlBDSTogQWRkIHJ1bnRpbWUgUE0gc3VwcG9ydCBmb3IgUENJZSBwb3J0cyIsIHRo
+ZSBwYXJlbnQgUENJZSBwb3J0Cj4gY2FuIGJlIHJ1bnRpbWUtc3VzcGVuZGVkIHdoaWNoIGRpc2Fi
+bGVzIHBvd2VyIHJlc291cmNlcyB2aWEgQUNQSS4gVGhpcwo+IGlzIGluY29tcGF0aWJsZSB3aXRo
+IERTTSwgcmVzdWx0aW5nIGluIGEgR1BVIGRldmljZSB3aGljaCBpcyBzdGlsbCBpbiBEMwo+IGFu
+ZCBsb2NrcyB1cCB0aGUga2VybmVsIG9uIHJlc3VtZSAob24gYSBDbGV2byBQNjUxUkEsIEdUWDk2
+NU0pLgo+IAo+IE1pcnJvciB0aGUgYmVoYXZpb3Igb2YgV2luZG93cyA4IGFuZCBuZXdlclsxXSAo
+YXMgb2JzZXJ2ZWQgdmlhIGFuIEFNTGkKPiBkZWJ1Z2dlciB0cmFjZSkgYW5kIHN0b3AgdXNpbmcg
+dGhlIERTTSBmdW5jdGlvbnMgZm9yIEQzY29sZCB3aGVuIHBvd2VyCj4gcmVzb3VyY2VzIGFyZSBh
+dmFpbGFibGUgb24gdGhlIHBhcmVudCBQQ0llIHBvcnQuCj4gCj4gcGNpX2QzY29sZF9kaXNhYmxl
+KCkgaXMgbm90IHVzZWQgYmVjYXVzZSBvbiBzb21lIG1hY2hpbmVzLCB0aGUgb2xkIERTTQo+IG1l
+dGhvZCBpcyBicm9rZW4uIE9uIGEgTGVub3ZvIFQ0NDBwIChHVCA3MzBNKSBtZW1vcnkgYW5kIGRp
+c2sgY29ycnVwdGlvbgo+IHdvdWxkIG9jY3VyLCBidXQgdGhhdCBpcyBmaXhlZCB3aXRoIHRoaXMg
+cGF0Y2hbMl0uCgpGYWlyIGVub3VnaC4KCj4gIFsxXTogaHR0cHM6Ly9tc2RuLm1pY3Jvc29mdC5j
+b20vd2luZG93cy9oYXJkd2FyZS9kcml2ZXJzL2JyaW5ndXAvZmlybXdhcmUtcmVxdWlyZW1lbnRz
+LWZvci1kM2NvbGQKPiAgWzJdOiBodHRwczovL2dpdGh1Yi5jb20vQnVtYmxlYmVlLVByb2plY3Qv
+YmJzd2l0Y2gvaXNzdWVzLzc4I2lzc3VlY29tbWVudC0yMjM1NDkwNzIKPiAKPiAgdjI6IHNpbXBs
+eSBjaGVjayBkaXJlY3RseSBmb3IgX1BSMy4gQWRkZWQgYWZmZWN0ZWQgbWFjaGluZXMuCj4gCj4g
+U2lnbmVkLW9mZi1ieTogUGV0ZXIgV3UgPHBldGVyQGxla2Vuc3RleW4ubmw+CgpPbmUgbml0cGlj
+ayBiZWxvdyBidXQgb3RoZXJ3aXNlIGxvb2tzIHJlYXNvbmFibGUgdG8gbWUuCgpSZXZpZXdlZC1i
+eTogTWlrYSBXZXN0ZXJiZXJnIDxtaWthLndlc3RlcmJlcmdAbGludXguaW50ZWwuY29tPgoKQlRX
+LCB0aGFua3MgZm9yIGRvaW5nIHRoaXMgOikKCj4gLS0tCj4gIGRyaXZlcnMvZ3B1L2RybS9ub3V2
+ZWF1L25vdXZlYXVfYWNwaS5jIHwgMzMgKysrKysrKysrKysrKysrKysrKysrKysrKysrKystLS0t
+Cj4gIDEgZmlsZSBjaGFuZ2VkLCAyOSBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQo+IAo+
+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGkuYyBiL2Ry
+aXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5jCj4gaW5kZXggYWQyNzNhZC4uMzhh
+NjQ0NSAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9ub3V2ZWF1X2FjcGku
+Ywo+ICsrKyBiL2RyaXZlcnMvZ3B1L2RybS9ub3V2ZWF1L25vdXZlYXVfYWNwaS5jCj4gQEAgLTQ2
+LDYgKzQ2LDcgQEAgc3RhdGljIHN0cnVjdCBub3V2ZWF1X2RzbV9wcml2IHsKPiAgCWJvb2wgZHNt
+X2RldGVjdGVkOwo+ICAJYm9vbCBvcHRpbXVzX2RldGVjdGVkOwo+ICAJYm9vbCBvcHRpbXVzX2Zs
+YWdzX2RldGVjdGVkOwo+ICsJYm9vbCBvcHRpbXVzX3NraXBfZHNtOwo+ICAJYWNwaV9oYW5kbGUg
+ZGhhbmRsZTsKPiAgCWFjcGlfaGFuZGxlIHJvbV9oYW5kbGU7Cj4gIH0gbm91dmVhdV9kc21fcHJp
+djsKPiBAQCAtMjEyLDkgKzIxMywyNiBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IHZnYV9zd2l0Y2hl
+cm9vX2hhbmRsZXIgbm91dmVhdV9kc21faGFuZGxlciA9IHsKPiAgCS5nZXRfY2xpZW50X2lkID0g
+bm91dmVhdV9kc21fZ2V0X2NsaWVudF9pZCwKPiAgfTsKPiAgCj4gKy8qIEZpcm13YXJlIHN1cHBv
+cnRpbmcgV2luZG93cyA4IG9yIGxhdGVyIGRvIG5vdCB1c2UgX0RTTSB0byBwdXQgdGhlIGRldmlj
+ZSBpbnRvCj4gKyAqIEQzY29sZCwgdGhleSBpbnN0ZWFkIHJlbHkgb24gZGlzYWJsaW5nIHBvd2Vy
+IHJlc291cmNlcyBvbiB0aGUgcGFyZW50LiAqLwoKWW91IHNob3VsZCBmb2xsb3cgc3RhbmRhcmQg
+YmxvY2sgY29tbWVudCBzdHlsZSBoZXJlLgoKPiArc3RhdGljIGJvb2wgbm91dmVhdV9wcjNfcHJl
+c2VudChzdHJ1Y3QgcGNpX2RldiAqcGRldikKPiArewo+ICsJc3RydWN0IHBjaV9kZXYgKnBhcmVu
+dF9wZGV2ID0gcGNpX3Vwc3RyZWFtX2JyaWRnZShwZGV2KTsKPiArCXN0cnVjdCBhY3BpX2Rldmlj
+ZSAqcGFyZW50X2FkZXY7Cj4gKwo+ICsJaWYgKCFwYXJlbnRfcGRldikKPiArCQlyZXR1cm4gZmFs
+c2U7Cj4gKwo+ICsJcGFyZW50X2FkZXYgPSBBQ1BJX0NPTVBBTklPTigmcGFyZW50X3BkZXYtPmRl
+dik7Cj4gKwlpZiAoIXBhcmVudF9hZGV2KQo+ICsJCXJldHVybiBmYWxzZTsKPiArCj4gKwlyZXR1
+cm4gYWNwaV9oYXNfbWV0aG9kKHBhcmVudF9hZGV2LT5oYW5kbGUsICJfUFIzIik7Cj4gK30KX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWls
+aW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVl
+ZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
