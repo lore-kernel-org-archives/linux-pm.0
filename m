@@ -1,99 +1,62 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 0/5] hwmon: New hwmon registration API
-Date: Fri, 8 Jul 2016 06:48:08 -0700
-Message-ID: <577FAF18.7000408@roeck-us.net>
-References: <1466911590-26296-1-git-send-email-linux@roeck-us.net>
- <87d1mobhnm.fsf@e105922-lin.cambridge.arm.com>
+From: Markus Mayer <markus.mayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH v2 1/7] lib: string: add functions to
+	case-convert strings
+Date: Fri, 8 Jul 2016 11:04:49 -0700
+Message-ID: <CAGt4E5uKzs01nL7OJPscQby5bm70Ud18hutdYEhiEsQjU9W8pg@mail.gmail.com>
+References: <1467751631-22878-1-git-send-email-mmayer@broadcom.com>
+ <1467751631-22878-2-git-send-email-mmayer@broadcom.com>
+ <87oa692d8e.fsf@rasmusvillemoes.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-hwmon-owner@vger.kernel.org>
-In-Reply-To: <87d1mobhnm.fsf@e105922-lin.cambridge.arm.com>
-Sender: linux-hwmon-owner@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Jean Delvare <jdelvare@suse.com>, Jonathan Cameron <jic23@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <87oa692d8e.fsf-qQsb+v5E8BnlAoU/VqSP6n9LOBIZ5rWg@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Rasmus Villemoes <linux-qQsb+v5E8BnlAoU/VqSP6n9LOBIZ5rWg@public.gmane.org>
+Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, speakup-UPO/6gOIxNZglr+F8WMZYdi2O/JbrIOy@public.gmane.org, Linux Kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Chris Metcalf <cmetcalf-d5a29ZRxExrQT0dZR+AlfA@public.gmane.org>, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Punit,
-
-On 07/08/2016 02:31 AM, Punit Agrawal wrote:
-> Hi Guenter,
->
-> Guenter Roeck <linux@roeck-us.net> writes:
->
->> Up to now, each hwmon driver has to implement its own sysfs attributes.
->> This requires a lot of template code, and distracts from the driver's
->> core function to read and write chip registers.
->>
->> To be able to reduce driver complexity, move sensor attribute handling
->> and thermal zone registration into the hwmon core. By using the new API,
->> driver size is typically reduced by 20-50% depending on driver complexity
->> and the number of sysfs attributes supported.
->>
->> The first patch of the series introduces the API as well as support
->> for temperature sensors. Subsequent patches introduce support for
->> voltage, current, power, energy, humidity, and fan speed sensors.
->>
->> The series was tested by converting several drivers (lm75, lm90, tmp102,
->> tmp421, ltc4245) to the new API. Testing was done with with real chips
->> as well as with the hwmon driver module test code available at
->> https://github.com/groeck/module-tests.
->
-> I like this series - it takes all of the attributes' handling out of the
-> individual driver code and moving it to hwmon core.
->
-> Having attempted a port of scpi-hwmon.c, I think that driver will not
-> gain a big savings in line count. Though it'll help separate access to
-> sensors from sysfs related code - which I think is worth the change.
->
-
- From what I have seen, savings are for the most part on the binary image size.
-I have not seen much if any savings in terms of LOC, though that may in part
-be because of my coding style.
-
-Here is the result from the conversions I have done so far.
-
-Old:
-
-    text	   data	    bss	    dec	    hex	filename
-    5730	   4056	     64	   9850	   267a	drivers/hwmon/lm95245.o
-    5941	   4240	     64	  10245	   2805	drivers/hwmon/lm95241.o
-    5361	   3584	     64	   9009	   2331	drivers/hwmon/jc42.o
-    8609	  10872	     64	  19545	   4c59	drivers/hwmon/max31790.o
-    9080	  13232	     64	  22376	   5768	drivers/hwmon/nct7904.o
-    6574	   8498	     64	  15136	   3b20	drivers/hwmon/ltc4245.o
-    4516	   3464	     64	   8044	   1f6c	drivers/hwmon/tmp421.o
-    4223	   2744	     64	   7031	   1b77	drivers/hwmon/tmp102.o
-   21757	  13496	     64	  35317	   89f5	drivers/hwmon/lm90.o
-    6804	   3240	     64	  10108	   277c	drivers/hwmon/lm75.o
-
-New:
-
-    text	   data	    bss	    dec	    hex	filename
-    5166	   1568	    128	   6862	   1ace	drivers/hwmon/lm95245.o
-    4334	   1664	     64	   6062	   17ae	drivers/hwmon/lm95241.o
-    4579	   1456	     64	   6099	   17d3	drivers/hwmon/jc42.o
-    3687	   1312	     64	   5063	   13c7	drivers/hwmon/max31790.o
-    3905	   1720	     64	   5689	   1639	drivers/hwmon/nct7904.o
-    3989	   1658	     64	   5711	   164f	drivers/hwmon/ltc4245.o
-    3557	   1408	     64	   5029	   13a5	drivers/hwmon/tmp421.o
-    4037	   2200	     64	   6301	   189d	drivers/hwmon/tmp102.o
-   16485	   4288	     64	  20837	   5165	drivers/hwmon/lm90.o
-    5762	   2128	     64	   7954	   1f12	drivers/hwmon/lm75.o
-
-This is with x86_64.
-
-The largest savings are in drivers with simple access methods and
-a large number of attributes. The scpi driver is somewhat of an
-exception since it creates its attribute data structures dynamically;
-I would not expect to see much savings in that driver.
-
-> FWIW,
->
->          Acked-by: Punit Agrawal <punit.agrawal@arm.com>
->
-
-Thanks!
-
-Guenter
-
+T24gNyBKdWx5IDIwMTYgYXQgMTc6MTksIFJhc211cyBWaWxsZW1vZXMgPGxpbnV4QHJhc211c3Zp
+bGxlbW9lcy5kaz4gd3JvdGU6Cj4gT24gVHVlLCBKdWwgMDUgMjAxNiwgTWFya3VzIE1heWVyIDxt
+bWF5ZXJAYnJvYWRjb20uY29tPiB3cm90ZToKPgo+PiArLyoqCj4+ICsgKiBzdHJuY3B5dG91cHBl
+ciAtIENvcHkgYSBsZW5ndGgtbGltaXRlZCBzdHJpbmcgYW5kIGNvbnZlcnQgdG8gdXBwZXJjYXNl
+Lgo+PiArICogQGRzdDogVGhlIGJ1ZmZlciB0byBzdG9yZSB0aGUgcmVzdWx0Lgo+PiArICogQHNy
+YzogVGhlIHN0cmluZyB0byBjb252ZXJ0IHRvIHVwcGVyY2FzZS4KPj4gKyAqIEBsZW46IE1heGlt
+dW0gc3RyaW5nIGxlbmd0aC4gTWF5IGJlIDAgdG8gc2V0IG5vIGxpbWl0Lgo+PiArICoKPj4gKyAq
+IFJldHVybnMgcG9pbnRlciB0byB0ZXJtaW5hdGluZyAnXDAnIGluIEBkc3QuCj4+ICsgKi8KPj4g
+K2NoYXIgKnN0cm5jcHl0b3VwcGVyKGNoYXIgKmRzdCwgY29uc3QgY2hhciAqc3JjLCBzaXplX3Qg
+bGVuKQo+PiArewo+PiArICAgICBzaXplX3QgaTsKPj4gKwo+PiArICAgICBmb3IgKGkgPSAwOyBz
+cmNbaV0gIT0gJ1wwJyAmJiAoaSA8IGxlbiB8fCAhbGVuKTsgaSsrKQo+PiArICAgICAgICAgICAg
+IGRzdFtpXSA9IHRvdXBwZXIoc3JjW2ldKTsKPj4gKyAgICAgaWYgKGkgPCBsZW4gfHwgIWxlbikK
+Pj4gKyAgICAgICAgICAgICBkc3RbaV0gPSAnXDAnOwo+PiArCj4+ICsgICAgIHJldHVybiBkc3Qg
+KyBpOwo+PiArfQo+Cj4gSG0sIHRoaXMgc2VlbXMgdG8gY29weSB0aGUgaW5zYW5lIHNlbWFudGlj
+cyBmcm9tIHN0cm5jcHkgb2Ygbm90Cj4gZ3VhcmFudGVlaW5nICdcMCctdGVybWluYXRpb24uCgpZ
+ZWFoLiBJJ3ZlIGJlZW4gdG9zc2luZyB0aGF0IG9uZSBhcm91bmQgYSBiaXQuIFRoZSByZWFzb24g
+SSBkaWQgaXQKdGhpcyB3YXkgaW4gdGhlIGVuZCBpcyBkdWUgdG8gdGhlIHVzZSBjYXNlcyBJIGZv
+dW5kLiBzdHJuY3B5KCkgaXMKYmVpbmcgdXNlZCB0aGVyZSBhbmQgSSB3YXMgYSBsaXR0bGUgd2Fy
+eSB0byBtYWtlIHRvbyBtYW55IGNoYW5nZXMgYWxsCmF0IG9uY2UuCgpCdXQgSSB1bmRlcnN0YW5k
+IHlvdXIgcG9pbnQuIEknbGwgbG9vayBhdCBpdCBhZ2FpbiBhbmQgc2VlIHdoYXQKY2hhbmdlcyBt
+aWdodCBiZSByZXF1aXJlZCBpbiB0aGUgY29kZSB0aGF0IHVzZWQgc3RybmNweSgpIGJlZm9yZS4K
+Cj4gV2h5IHVzZSAwIGFzIGEgc2VudGluZWwsIHdoZW4gKHNpemVfdCktMSA9PSBTSVpFX01BWCB3
+b3VsZCB3b3JrIGp1c3QgYXMKPiB3ZWxsIGFuZCByZXF1aXJlIGEgbGl0dGxlIGxlc3MgY29kZSAo
+bm8gfHwgIWxlbik/CgpJJ2xsIGNoYW5nZSB0aGF0LgoKPiBJIHJlZ3JldCBzdWdnZXN0aW5nIHRo
+aXMgcmV0dXJuIHNlbWFudGljcyBhbmQgbm93IGFncmVlIHRoYXQgdm9pZCB3b3VsZAo+IGJlIGJl
+dHRlciwgZXNwZWNpYWxseSBzaW5jZSB0aGVyZSBkb2Vzbid0IHNlZW0gdG8gYmUgYW55b25lIHdo
+byBjYW4KPiB1c2UgdGhpcyAob3IgYW55IG90aGVyKSByZXR1cm4gdmFsdWUuIEhvdyBhYm91dAo+
+Cj4gaWYgKCFsZW4pCj4gICAgcmV0dXJuOwo+Cj4gZm9yIChpID0gMDsgaSA8IGxlbiAmJiBzcmNb
+aV07ICsraSkKPiAgIGRzdFtpXSA9IHRvdXBwZXIoc3JjW2ldKTsKPiBkc3RbaSA8IGxlbiA/IGkg
+OiBpLTFdID0gJ1wwJzsKClRoaXMgbWFrZXMgc2Vuc2UuCgo+IChJIHRoaW5rIHlvdSBtdXN0IGRv
+IGkgPCBsZW4gYmVmb3JlIHRlc3Rpbmcgc3JjW2ldLCBzaW5jZSB0aGUgbGVuCj4gcGFyYW1ldGVy
+IHNob3VsZCBiZSBhbiB1cHBlciBib3VuZCBvbiB0aGUgbnVtYmVyIG9mIGJ5dGVzIHRvIGFjY2Vz
+cyBpbgo+IGJvdGggc3JjIGFuZCBkc3QpLgo+Cj4gUmFzbXVzCgpUaGFua3MsCi1NYXJrdXMKX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTm91dmVhdSBtYWls
+aW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVl
+ZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
