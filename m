@@ -1,58 +1,88 @@
-From: Rasmus Villemoes <linux-qQsb+v5E8BnlAoU/VqSP6n9LOBIZ5rWg@public.gmane.org>
-Subject: Re: [PATCH v2 1/7] lib: string: add functions to
-	case-convert strings
-Date: Fri, 08 Jul 2016 02:19:13 +0200
-Message-ID: <87oa692d8e.fsf@rasmusvillemoes.dk>
-References: <1467751631-22878-1-git-send-email-mmayer@broadcom.com>
- <1467751631-22878-2-git-send-email-mmayer@broadcom.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
+Date: Fri, 8 Jul 2016 03:28:12 +0200
+Message-ID: <CAJZ5v0i4TJ_nFj4x2couZqPyrjWhig5fFRfG2LNCHfG=3h1CBg@mail.gmail.com>
+References: <cover.1463134231.git.lukas@wunner.de> <20160707150243.GA3633@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <1467751631-22878-2-git-send-email-mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org> (Markus
- Mayer's message of "Tue, 5 Jul 2016 13:47:05 -0700")
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/nouveau>
-List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
- <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, speakup-UPO/6gOIxNZglr+F8WMZYdi2O/JbrIOy@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Chris Metcalf <cmetcalf-d5a29ZRxExrQT0dZR+AlfA@public.gmane.org>, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f45.google.com ([74.125.82.45]:35433 "EHLO
+	mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753408AbcGHB2P (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jul 2016 21:28:15 -0400
+In-Reply-To: <20160707150243.GA3633@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>
 
-T24gVHVlLCBKdWwgMDUgMjAxNiwgTWFya3VzIE1heWVyIDxtbWF5ZXJAYnJvYWRjb20uY29tPiB3
-cm90ZToKCj4gQWRkIGEgY29sbGVjdGlvbiBvZiBnZW5lcmljIGZ1bmN0aW9ucyB0byBjb252ZXJ0
-IHN0cmluZ3MgdG8gbG93ZXJjYXNlCj4gb3IgdXBwZXJjYXNlLgo+Cj4gQ2hhbmdpbmcgdGhlIGNh
-c2Ugb2YgYSBzdHJpbmcgKHdpdGggb3Igd2l0aG91dCBjb3B5aW5nIGl0IGZpcnN0KSBzZWVtcwo+
-IHRvIGJlIGEgcmVjdXJyaW5nIHJlcXVpcmVtZW50IGluIHRoZSBrZXJuZWwgdGhhdCBpcyBjdXJy
-ZW50bHkgYmVpbmcKPiBzb2x2ZWQgYnkgc2V2ZXJhbCBkdXBsaWNhdGVkIGltcGxlbWVudGF0aW9u
-cyBkb2luZyB0aGUgc2FtZSB0aGluZy4gVGhpcwo+IGNoYW5nZSBhaW1zIGF0IHJlZHVjaW5nIHRo
-aXMgY29kZSBkdXBsaWNhdGlvbi4KPgo+ICsvKioKPiArICogc3RybmNweXRvdXBwZXIgLSBDb3B5
-IGEgbGVuZ3RoLWxpbWl0ZWQgc3RyaW5nIGFuZCBjb252ZXJ0IHRvIHVwcGVyY2FzZS4KPiArICog
-QGRzdDogVGhlIGJ1ZmZlciB0byBzdG9yZSB0aGUgcmVzdWx0Lgo+ICsgKiBAc3JjOiBUaGUgc3Ry
-aW5nIHRvIGNvbnZlcnQgdG8gdXBwZXJjYXNlLgo+ICsgKiBAbGVuOiBNYXhpbXVtIHN0cmluZyBs
-ZW5ndGguIE1heSBiZSAwIHRvIHNldCBubyBsaW1pdC4KPiArICoKPiArICogUmV0dXJucyBwb2lu
-dGVyIHRvIHRlcm1pbmF0aW5nICdcMCcgaW4gQGRzdC4KPiArICovCj4gK2NoYXIgKnN0cm5jcHl0
-b3VwcGVyKGNoYXIgKmRzdCwgY29uc3QgY2hhciAqc3JjLCBzaXplX3QgbGVuKQo+ICt7Cj4gKwlz
-aXplX3QgaTsKPiArCj4gKwlmb3IgKGkgPSAwOyBzcmNbaV0gIT0gJ1wwJyAmJiAoaSA8IGxlbiB8
-fCAhbGVuKTsgaSsrKQo+ICsJCWRzdFtpXSA9IHRvdXBwZXIoc3JjW2ldKTsKPiArCWlmIChpIDwg
-bGVuIHx8ICFsZW4pCj4gKwkJZHN0W2ldID0gJ1wwJzsKPiArCj4gKwlyZXR1cm4gZHN0ICsgaTsK
-PiArfQoKSG0sIHRoaXMgc2VlbXMgdG8gY29weSB0aGUgaW5zYW5lIHNlbWFudGljcyBmcm9tIHN0
-cm5jcHkgb2Ygbm90Cmd1YXJhbnRlZWluZyAnXDAnLXRlcm1pbmF0aW9uLgoKV2h5IHVzZSAwIGFz
-IGEgc2VudGluZWwsIHdoZW4gKHNpemVfdCktMSA9PSBTSVpFX01BWCB3b3VsZCB3b3JrIGp1c3Qg
-YXMKd2VsbCBhbmQgcmVxdWlyZSBhIGxpdHRsZSBsZXNzIGNvZGUgKG5vIHx8ICFsZW4pPwoKSSBy
-ZWdyZXQgc3VnZ2VzdGluZyB0aGlzIHJldHVybiBzZW1hbnRpY3MgYW5kIG5vdyBhZ3JlZSB0aGF0
-IHZvaWQgd291bGQKYmUgYmV0dGVyLCBlc3BlY2lhbGx5IHNpbmNlIHRoZXJlIGRvZXNuJ3Qgc2Vl
-bSB0byBiZSBhbnlvbmUgd2hvIGNhbgp1c2UgdGhpcyAob3IgYW55IG90aGVyKSByZXR1cm4gdmFs
-dWUuIEhvdyBhYm91dAoKaWYgKCFsZW4pCiAgIHJldHVybjsKCmZvciAoaSA9IDA7IGkgPCBsZW4g
-JiYgc3JjW2ldOyArK2kpCiAgZHN0W2ldID0gdG91cHBlcihzcmNbaV0pOwpkc3RbaSA8IGxlbiA/
-IGkgOiBpLTFdID0gJ1wwJzsKCihJIHRoaW5rIHlvdSBtdXN0IGRvIGkgPCBsZW4gYmVmb3JlIHRl
-c3Rpbmcgc3JjW2ldLCBzaW5jZSB0aGUgbGVuCnBhcmFtZXRlciBzaG91bGQgYmUgYW4gdXBwZXIg
-Ym91bmQgb24gdGhlIG51bWJlciBvZiBieXRlcyB0byBhY2Nlc3MgaW4KYm90aCBzcmMgYW5kIGRz
-dCkuCgpSYXNtdXMKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0
-cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
+On Thu, Jul 7, 2016 at 5:02 PM, Lukas Wunner <lukas@wunner.de> wrote:
+> Dear Rafael,
+>
+> The honor of your presence is requested to the review of this series
+> posted May 13.
+>
+> Bjorn has requested an ack from you on patches 9 and 10, so the series
+> is essentially blocked until you find the time to comment. It would
+> also be good if you could look at the PM-related patches 4, 5, 6 and 11.
+> They're all fairly small. You do not have to bother about the larger
+> thunderbolt patches at the end of the series:
+
+Sorry for being the bottleneck here.
+
+This has been in my todo list all the time, but I get pulled away from
+it on a regular basis due to regressions and similar.
+
+> [01/13]  https://patchwork.kernel.org/patch/9090411/
+> [02/13]  https://patchwork.kernel.org/patch/9090421/
+> [03/13]  https://patchwork.kernel.org/patch/9090451/
+> [04/13]  https://patchwork.kernel.org/patch/9090471/
+> [05/13]  https://patchwork.kernel.org/patch/9090491/
+> [06/13]  https://patchwork.kernel.org/patch/9090511/
+> [07/13]  https://patchwork.kernel.org/patch/9090531/
+> [08/13]  https://patchwork.kernel.org/patch/9090541/
+> [09/13]  https://patchwork.kernel.org/patch/9090621/
+> [10/13]  https://patchwork.kernel.org/patch/9090641/
+> [11/13]  https://patchwork.kernel.org/patch/9090651/
+> [12/13]  https://patchwork.kernel.org/patch/9090571/
+> [13/13]  https://patchwork.kernel.org/patch/9090591/
+>
+> There are also still unanswered questions about the architecture
+> I've chosen in this series: I'm attaching to the upstream bridge
+> of the Thunderbolt controller as a port service to be able to
+> power it down when nothing is plugged in. This architecture is
+> a workaround for the fact that dev_pm_domain_set() cannot be
+> called after a device is bound to a driver.
+>
+> I've explained this in detail in an e-mail to you on June 17:
+> http://www.spinics.net/lists/linux-pci/msg52120.html
+
+I've read this, but I still don't quite understand the problem to be
+honest.  I'll have another look.
+
+> Near the end of that e-mail are two questions:
+> (1) Would it be possible to allow dev_pm_domain_set() for already
+>     bound devices? (It would allow me to simplify this series
+>     considerably.)
+
+I don't think so, because setting a PM domain generally changes the
+set of PM callbacks for the device and it may not be safe to call it
+after the driver has been bound.
+
+> (2) How should the PCI core deal with devices that can be suspended
+>     to D3cold but not by the platform? Is it correct to solve this
+>     with dev_pm_domain_set()? (As is currently done for Optimus GPUs.)
+>     Is it also okay to suspend/resume them in the driver runtime PM
+>     callbacks? (This requires patch [09/13] of my series to work
+>     properly.)
+>
+> Your help answering those questions and/or reviewing this series
+> is greatly appreciated.
+>
+> Thank you!
+
+Well, honestly, you may be underestimating the amount of time needed
+for me to understand the problem you're trying to solve.
+
+Thanks,
+Rafael
