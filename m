@@ -1,119 +1,163 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
-Date: Fri, 8 Jul 2016 22:23:59 -0700
-Message-ID: <20160709052359.GC6330@kroah.com>
-References: <cover.1463134231.git.lukas@wunner.de>
- <CAMxnaaU_3z6BSmSnYfi4ee=aTKm3aPyUaXds=G29wdp8O0m5Cw@mail.gmail.com>
- <20160614163703.GA31488@localhost>
- <CAMxnaaUQC0kyoBK1ri_AYEi=Dc_aiuiMp=kx1mFaZpsw9-D-eA@mail.gmail.com>
- <20160614202228.GA8449@localhost>
- <CAMxnaaUij=0QvT2frky2KCtrf4KuA-GQrpCYUa6Bs1EdRK+WFg@mail.gmail.com>
+From: Luis de Bethencourt <luisbg@osg.samsung.com>
+Subject: Re: [PATCH v3 1/7] lib: string: add functions to case-convert strings
+Date: Sat, 09 Jul 2016 13:04:54 +0100
+Message-ID: <5780E866.8000001@osg.samsung.com>
+References: <1468017794-4818-1-git-send-email-mmayer@broadcom.com> <1468017794-4818-2-git-send-email-mmayer@broadcom.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMxnaaUij=0QvT2frky2KCtrf4KuA-GQrpCYUa6Bs1EdRK+WFg@mail.gmail.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Andreas Noever <andreas.noever@gmail.com>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Lukas Wunner <lukas@wunner.de>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:46249
+	"EHLO s-opensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751464AbcGIMFB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 9 Jul 2016 08:05:01 -0400
+In-Reply-To: <1468017794-4818-2-git-send-email-mmayer@broadcom.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Markus Mayer <mmayer@broadcom.com>, Andrew Morton <akpm@linux-foundation.org>, Al Viro <viro@zeniv.linux.org.uk>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Chris Metcalf <cmetcalf@ezchip.com>, Kees Cook <keescook@chromium.org>
+Cc: devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, nouveau@lists.freedesktop.org, speakup@linux-speakup.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, target-devel@vger.kernel.org
 
-On Thu, Jul 07, 2016 at 07:39:12PM +0200, Andreas Noever wrote:
-> On Tue, Jun 14, 2016 at 10:22 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > On Tue, Jun 14, 2016 at 09:14:27PM +0200, Andreas Noever wrote:
-> >> On Tue, Jun 14, 2016 at 6:37 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> >> > [+cc linux-kernel]
-> >> >
-> >> > On Sat, May 21, 2016 at 11:48:42AM +0200, Andreas Noever wrote:
-> >> >>
-> >> >> Signed-off-by: Andreas Noever <andreas.noever@gmail.com>
-> >> >>
-> >> >> Tested on MacBookPro10,1
-> >> >>
-> >> >> On Fri, May 13, 2016 at 1:15 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> >> >> > This series powers Thunderbolt controllers on Macs down when nothing is
-> >> >> > plugged in, saving 1.7 W on machines with a Light Ridge controller and
-> >> >> > reportedly 4 W on Cactus Ridge 4C and Falcon Ridge 4C.
-> >> >> >
-> >> >> > Briefly, a custom ACPI method provided by Apple is used to cut power to
-> >> >> > the controller.  A GPE is enabled while the controller is powered down
-> >> >> > which side-band signals a plug event, whereupon power is reinstated using
-> >> >> > the ACPI method.  Note that even though this mechanism is ACPI-based,
-> >> >> > it does not use _PSx methods and is thus entirely nonstandard.
-> >> >
-> >> > I think the current arrangement was that Andreas would ack Thunderbolt
-> >> > patches and I would merge them via the PCI tree.  That makes some sense
-> >> > because Thunderbolt and PCIe are related, but the more I think about
-> >> > it, the less I'm happy with it.
-> >> >
-> >> > This series is a good example.  I'm sure it's good work and
-> >> > worthwhile.  But I can't really say anything about the content of it
-> >> > because most of it is Thunderbolt-specific and there's no public spec.
-> >> > It seems like this is basically a collection of reverse-engineered
-> >> > quirks that happen to work with the current state of Linux PM on
-> >> > certain Macs.  We don't know what might change on future Macs.  We
-> >> > don't know what might break when we make changes to Linux PM.
-> >> >
-> >> > I can't test this series, nor do I want to.  I can't test most of the
-> >> > patches I merge, but I can at least read the spec and see whether the
-> >> > patches make sense.  What I would *like* is to have public Thunderbolt
-> >> > specs and a kernel developer's guide so we know what to expect from
-> >> > the hardware and the firmware and we can write code that should work
-> >> > not just on current Macs, but also on non-Macs and future Macs.
-> >> >
-> >> > I don't think the current situation is really maintainable, and I'm
-> >> > not comfortable merging code that I can't maintain.
-> >> Most of the code is contained within the thunderbolt driver. I think
-> >> there is quite some precedence for reverse engineered drivers without
-> >> specs being part of the kernel. My understanding was that, since I am
-> >> listed in MAINTAINERS, I am responsible for the driver. Now our
-> >> changes often need improvements to the pci core, which is why I think
-> >> merging through your tree is a good idea (without transferring
-> >> responsibility). The changes to the drivers/pci should be supported by
-> >> the PCI-spec and make sense without knowing about thunderbolt (but it
-> >> might be the case that thunderbolt is the only user of these
-> >> features).
-> >>
-> >> Specifically for this series we want to:
-> >>  - whitelist thunderbolt bridges for PM. Detecting those bridges is
-> >> non-standard but I think this is acceptable, since this
-> >> blacklist/whitelist is basically a quirk.
-> >>  - Load our portdrv on tb bridges. PCI just sees another portdriver
-> >> and all the reverse engineered magic lives inside the driver.
-> >>  - Forward more PM callbacks to portdrivers (not tb specific)
-> >>  - hotplug D3cold fixes: resume around board_added/remove_board,
-> >> ignore interrupts in d3cold (not tb specific and probably a general
-> >> bugfix)
-> >>  - Make pci not fail if bridges have been put into D3cold by some
-> >> external mechanism.
-> >>
-> >> So maybe you could review the pci changes as a solution to the problem
-> >> "we want to load a custom portdriver which can put bridges into d3cold
-> >> in a device specific way". We certainly to not expect you to take
-> >> responsibility for the thunderbolt driver.
-> >
-> > That's a fine solution as far as I'm personally concerned.  I think
-> > it's poor for Linux overall, because I think it's fragile, and it's
-> > disappointing that a technology as important as Thunderbolt is so
-> > poorly supported by the promulgators.  But if you're willing to work
-> > in that environment, that's great.
-> >
-> > You maintain the thunderbolt code and merge changes, and I'll review
-> > the pieces that touch drivers/pci.  I do have a couple comments on
-> > those pieces, but I don't think they'll be major.
-> >
-> > I just want to get out of the business of merging drivers/thunderbolt
-> > code that I can't maintain.
+On 08/07/16 23:43, Markus Mayer wrote:
+> Add a collection of generic functions to convert strings to lowercase
+> or uppercase.
 > 
-> [+ Greg]
+> Changing the case of a string (with or without copying it first) seems
+> to be a recurring requirement in the kernel that is currently being
+> solved by several duplicated implementations doing the same thing. This
+> change aims at reducing this code duplication.
 > 
-> Hi Greg,
+> The new functions are
+>     void strlcpytoupper(char *dst, const char *src, size_t len);
+>     void strlcpytolower(char *dst, const char *src, size_t len);
+>     void strcpytoupper(char *dst, const char *src);
+>     void strcpytolower(char *dst, const char *src);
+>     void strtoupper(char *s);
+>     void strtolower(char *s);
 > 
-> do you mind if we revert to the old scheme and merge TB changes
-> through your tree?
+> The "str[l]cpyto*" versions of the function take a destination string
+> and a source string as arguments. The "strlcpyto*" versions additionally
+> take a length argument like strlcpy() itself. Lastly, the strto*
+> functions take a single string argument and modify the passed-in string.
+> 
+> Like strlcpy(), and unlike strncpy(), the functions guarantee NULL
+> termination of the destination string.
+> 
+> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+> ---
+>  include/linux/string.h | 40 ++++++++++++++++++++++++++++++++++++++++
+>  lib/string.c           | 38 ++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 78 insertions(+)
+> 
+> diff --git a/include/linux/string.h b/include/linux/string.h
+> index 26b6f6a..36c9d14 100644
+> --- a/include/linux/string.h
+> +++ b/include/linux/string.h
+> @@ -116,6 +116,8 @@ extern void * memchr(const void *,int,__kernel_size_t);
+>  #endif
+>  void *memchr_inv(const void *s, int c, size_t n);
+>  char *strreplace(char *s, char old, char new);
+> +extern void strlcpytoupper(char *dst, const char *src, size_t len);
+> +extern void strlcpytolower(char *dst, const char *src, size_t len);
+>  
+>  extern void kfree_const(const void *x);
+>  
+> @@ -169,4 +171,42 @@ static inline const char *kbasename(const char *path)
+>  	return tail ? tail + 1 : path;
+>  }
+>  
+> +/**
+> + * strcpytoupper - Copy string and convert to uppercase.
+> + * @dst: The buffer to store the result.
+> + * @src: The string to convert to uppercase.
+> + */
+> +static inline void strcpytoupper(char *dst, const char *src)
+> +{
+> +	strlcpytoupper(dst, src, -1);
+> +}
+> +
 
-I will be glad to take them, feel free to send them on to me.
+Why not use SIZE_MAX instead of -1?
 
-thanks,
+> +/**
+> + * strcpytolower - Copy string and convert to lowercase.
+> + * @dst: The buffer to store the result.
+> + * @src: The string to convert to lowercase.
+> + */
+> +static inline void strcpytolower(char *dst, const char *src)
+> +{
+> +	strlcpytolower(dst, src, -1);
+> +}
+> +
 
-greg k-h
+Same here, and the 2 below :)
+
+Thanks Markus,
+Luis
+
+> +/**
+> + * strtoupper - Convert string to uppercase.
+> + * @s: The string to operate on.
+> + */
+> +static inline void strtoupper(char *s)
+> +{
+> +	strlcpytoupper(s, s, -1);
+> +}
+> +
+> +/**
+> + * strtolower - Convert string to lowercase.
+> + * @s: The string to operate on.
+> + */
+> +static inline void strtolower(char *s)
+> +{
+> +	strlcpytolower(s, s, -1);
+> +}
+> +
+>  #endif /* _LINUX_STRING_H_ */
+> diff --git a/lib/string.c b/lib/string.c
+> index ed83562..fd8c427 100644
+> --- a/lib/string.c
+> +++ b/lib/string.c
+> @@ -952,3 +952,41 @@ char *strreplace(char *s, char old, char new)
+>  	return s;
+>  }
+>  EXPORT_SYMBOL(strreplace);
+> +
+> +/**
+> + * strlcpytoupper - Copy a length-limited string and convert to uppercase.
+> + * @dst: The buffer to store the result.
+> + * @src: The string to convert to uppercase.
+> + * @len: Maximum string length. May be SIZE_MAX (-1) to set no limit.
+> + */
+> +void strlcpytoupper(char *dst, const char *src, size_t len)
+> +{
+> +	size_t i;
+> +
+> +	if (!len)
+> +		return;
+> +
+> +	for (i = 0; i < len && src[i]; ++i)
+> +		dst[i] = toupper(src[i]);
+> +	dst[i < len ? i : i - 1] = '\0';
+> +}
+> +EXPORT_SYMBOL(strlcpytoupper);
+> +
+> +/**
+> + * strlcpytolower - Copy a length-limited string and convert to lowercase.
+> + * @dst: The buffer to store the result.
+> + * @src: The string to convert to lowercase.
+> + * @len: Maximum string length. May be SIZE_MAX (-1) to set no limit.
+> + */
+> +void strlcpytolower(char *dst, const char *src, size_t len)
+> +{
+> +	size_t i;
+> +
+> +	if (!len)
+> +		return;
+> +
+> +	for (i = 0; i < len && src[i]; ++i)
+> +		dst[i] = tolower(src[i]);
+> +	dst[i < len ? i : i - 1] = '\0';
+> +}
+> +EXPORT_SYMBOL(strlcpytolower);
+> 
+
