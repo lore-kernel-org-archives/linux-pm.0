@@ -1,44 +1,60 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] intel_pstate: Fix MSR_CONFIG_TDP_x addressing in
- core_get_max_pstate
-Date: Sat, 09 Jul 2016 20:45:39 -0700
-Message-ID: <1468122339.13617.128.camel@linux.intel.com>
-References: <577FF3FC.6030004@siemens.com>
-	 <1468006747.13617.117.camel@linux.intel.com>
-	 <1741569.1V1Ap4DoMu@vostro.rjw.lan>
+From: Markus Mayer <markus.mayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH v3 0/7] lib: string: add functions to
+	case-convert strings
+Date: Sat, 9 Jul 2016 21:11:05 -0700
+Message-ID: <CAGt4E5t0TGMxiUfV5Mx+EGyAYAmTOCEJe4QxjpjujvZfPwvYuQ@mail.gmail.com>
+References: <1468017794-4818-1-git-send-email-mmayer@broadcom.com>
+ <9b88baed-a067-fcfd-d087-66e36f3060d7@mellanox.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:32701 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756854AbcGJDrH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 9 Jul 2016 23:47:07 -0400
-In-Reply-To: <1741569.1V1Ap4DoMu@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+In-Reply-To: <9b88baed-a067-fcfd-d087-66e36f3060d7-VPRAkNaXOzVWk0Htik3J/w@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Chris Metcalf <cmetcalf-VPRAkNaXOzVWk0Htik3J/w@public.gmane.org>
+Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Rasmus Villemoes <linux-qQsb+v5E8BnlAoU/VqSP6n9LOBIZ5rWg@public.gmane.org>, Linux Kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, speakup-UPO/6gOIxNZglr+F8WMZYdi2O/JbrIOy@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jan Kiszka <jan.kiszka@siemens.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Sat, 2016-07-09 at 02:45 +0200, Rafael J. Wysocki wrote:
-> On Friday, July 08, 2016 12:39:07 PM Srinivas Pandruvada wrote:
-> > On Fri, 2016-07-08 at 20:42 +0200, Jan Kiszka wrote:
-> > > If MSR_CONFIG_TDP_CONTROL is locked, we currently try to address
-> > > some
-> > > MSR 0x80000648 or so. Mask out the relevant level bits 0 and 1.
-> > > 
-> > > Found while running over the Jailhouse hypervisor which became
-> > > upset
-> > > about this strange MSR index.
-> > > 
-> > > Signed-off-by: Jan Kiszka <jan.kiszka@siemens.com>
-> > Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> 
-> OK
-> 
-> Should this go into stable?
-Better to mark for stable tree 4.4+
-
-Thanks,
-Srinivas
-
+T24gOSBKdWx5IDIwMTYgYXQgMjA6MTMsIENocmlzIE1ldGNhbGYgPGNtZXRjYWxmQG1lbGxhbm94
+LmNvbT4gd3JvdGU6Cj4gT24gNy84LzIwMTYgNjo0MyBQTSwgTWFya3VzIE1heWVyIHdyb3RlOgo+
+Pgo+PiBUaGlzIHNlcmllcyBpbnRyb2R1Y2VzIGEgZmFtaWx5IG9mIGdlbmVyaWMgc3RyaW5nIGNh
+c2UgY29udmVyc2lvbgo+PiBmdW5jdGlvbnMuIFRoaXMga2luZCBvZiBmdW5jdGlvbmFsaXR5IGlz
+IG5lZWRlZCBpbiBzZXZlcmFsIHBsYWNlcyBpbgo+PiB0aGUga2VybmVsLiBSaWdodCBub3csIGV2
+ZXJ5Ym9keSBzZWVtcyB0byBiZSBpbXBsZW1lbnRpbmcgdGhlaXIgb3duCj4+IGNvcHkgb2YgdGhp
+cyBmdW5jdGlvbmFsaXR5Lgo+Pgo+PiBCYXNlZCBvbiB0aGUgZGlzY3Vzc2lvbiBvZiB0aGUgcHJl
+dmlvdXMgdmVyc2lvbiBvZiB0aGlzIHNlcmllc1sxXSBhbmQKPj4gdGhlIHVzZSBjYXNlcyBmb3Vu
+ZCBpbiB0aGUga2VybmVsLCBpdCBkb2VzIGxvb2sgbGlrZSBoYXZpbmcgc2V2ZXJhbAo+PiBmbGF2
+b3VycyBvZiBjYXNlIGNvbnZlcnNpb24gZnVuY3Rpb25zIGlzIGJlbmVmaWNpYWwuIFRoZSB1c2Ug
+Y2FzZXMgZmFsbAo+PiBpbnRvIHRocmVlIGNhdGVnb3JpZXM6Cj4+ICAgICAgLSBjb3B5aW5nIGEg
+c3RyaW5nIGFuZCBjb252ZXJ0aW5nIHRoZSBjYXNlIHdoaWxlIHNwZWNpZnlpbmcgYQo+PiAgICAg
+ICAgbWF4aW11bSBsZW5ndGggdG8gbWltaWMgc3RybGNweSgpCj4+ICAgICAgLSBjb3B5aW5nIGEg
+c3RyaW5nIGFuZCBjb252ZXJ0aW5nIHRoZSBjYXNlIHdpdGhvdXQgc3BlY2lmeWluZyBhCj4+ICAg
+ICAgICBsZW5ndGggdG8gbWltaWMgc3RyY3B5KCkKPj4gICAgICAtIGNvbnZlcnRpbmcgdGhlIGNh
+c2Ugb2YgYSBzdHJpbmcgaW4tcGxhY2UgKGkuZS4gbW9kaWZ5aW5nIHRoZQo+PiAgICAgICAgc3Ry
+aW5nIHRoYXQgd2FzIHBhc3NlZCBpbikKPj4KPj4gQ29uc2VxdWVudGx5LCBJIGFtIHByb3Bvc2lu
+ZyB0aGVzZSBuZXcgZnVuY3Rpb25zOgo+PiAgICAgIHZvaWQgc3RybGNweXRvdXBwZXIoY2hhciAq
+ZHN0LCBjb25zdCBjaGFyICpzcmMsIHNpemVfdCBsZW4pOwo+PiAgICAgIHZvaWQgc3RybGNweXRv
+bG93ZXIoY2hhciAqZHN0LCBjb25zdCBjaGFyICpzcmMsIHNpemVfdCBsZW4pOwo+PiAgICAgIHZv
+aWQgc3RyY3B5dG91cHBlcihjaGFyICpkc3QsIGNvbnN0IGNoYXIgKnNyYyk7Cj4+ICAgICAgdm9p
+ZCBzdHJjcHl0b2xvd2VyKGNoYXIgKmRzdCwgY29uc3QgY2hhciAqc3JjKTsKPj4gICAgICB2b2lk
+IHN0cnRvdXBwZXIoY2hhciAqcyk7Cj4+ICAgICAgdm9pZCBzdHJ0b2xvd2VyKGNoYXIgKnMpOwo+
+Cj4KPiBZb3UgbWF5IHdhbnQgdG8gcmVhZCB0aGUgYXJ0aWNsZSBoZXJlOgo+Cj4gaHR0cHM6Ly9s
+d24ubmV0L0FydGljbGVzLzY1OTIxNC8KCkknbGwgcmVhZCB0aGF0LiBUaGFua3MuCgo+IGFuZCBm
+b2xsb3cgdXAgc29tZSBvZiB0aGUgZGlzY3Vzc2lvbiB0aHJlYWRzIG9uIExLTUwgYWJvdXQgdGhl
+IGJlc3QKPiBzZW1hbnRpY3MgdG8gYWR2ZXJ0aXNlIGZvciB0aGUgc3RybGNweS9zdHJzY3B5IHZh
+cmlhbnRzLiAgSXQgbWlnaHQgYmUKPiBoZWxwZnVsIHRvIHJldHVybiBzb21lIGtpbmQgb2Ygb3Zl
+cmZsb3cvdHJ1bmNhdGlvbiBlcnJvciBmcm9tIHlvdXIKPiBjb3B5IGZ1bmN0aW9ucyBzbyBwZW9w
+bGUgY2FuIGVycm9yLWNoZWNrIHRoZSByZXN1bHQuCgpJIGFtIGluY2xpbmVkIHRvIGFncmVlLiBI
+b3dldmVyLCBldmVyeWJvZHkgaGFzIGJlZW4gdGVsbGluZyBtZSB0aGF0CnRoZXNlIGZ1bmN0aW9u
+cyBzaG91bGQgYmUgdm9pZC4gT3JpZ2luYWxseSB0aGV5IHdlcmVuJ3QuCgpSZWdhcmRzLAotTWFy
+a3VzCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCk5vdXZl
+YXUgbWFpbGluZyBsaXN0Ck5vdXZlYXVAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vbm91dmVhdQo=
