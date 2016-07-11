@@ -1,117 +1,33 @@
-From: Keerthy <a0393675-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH 3/3] arm: dts: thermal: add thermal/auxadc node.
-Date: Mon, 11 Jul 2016 14:39:26 +0530
-Message-ID: <57836246.3010800@ti.com>
-References: <1467882386-40544-1-git-send-email-dawei.chien@mediatek.com>
- <1467882386-40544-4-git-send-email-dawei.chien@mediatek.com>
- <577E465D.8070004@ti.com> <1468227415.15776.34.camel@mtksdaap41>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH -next] PM / devfreq: exynos-ppmu: remove unneeded of_node_put()
+Date: Mon, 11 Jul 2016 15:08:33 +0200
+Message-ID: <CAJZ5v0iYF27t6c76S-8=BtHL0mFm6F7xJL7SJhyaPBRETPZSFA@mail.gmail.com>
+References: <1467985444-9242-1-git-send-email-weiyj_lk@163.com> <CAJ0PZbQiZpUOORap6vD52j_h4VNF4t6yjFabkE1L5-ir-8gF7w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1468227415.15776.34.camel@mtksdaap41>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Erin Lo <erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Fan Chen <fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Yingjoe Chen <yingjoe.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAJ0PZbQiZpUOORap6vD52j_h4VNF4t6yjFabkE1L5-ir-8gF7w@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@gmail.com>
+Cc: weiyj_lk@163.com, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Wei Yongjun <yongjun_wei@trendmicro.com.cn>, Linux PM list <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Monday 11 July 2016 02:26 PM, dawei chien wrote:
-> Dear Keerthy,
->
-> On Thu, 2016-07-07 at 17:39 +0530, Keerthy wrote:
+On Mon, Jul 11, 2016 at 4:19 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> On Fri, Jul 8, 2016 at 10:44 PM,  <weiyj_lk@163.com> wrote:
+>> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 >>
->> On Thursday 07 July 2016 02:36 PM, Dawei Chien wrote:
->>> This adds the thermal controller and auxadc nodes
->>> to the Mediatek MT2701 dtsi file.
->>>
->>> Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
->>> ---
->>> This patch depned on:
->>> https://patchwork.kernel.org/patch/9213545/
->>> ---
->>>    arch/arm/boot/dts/mt2701.dtsi |   43 +++++++++++++++++++++++++++++++++++++++++
->>>    1 file changed, 43 insertions(+)
->>>
->>> diff --git a/arch/arm/boot/dts/mt2701.dtsi b/arch/arm/boot/dts/mt2701.dtsi
->>> index 2ac8b50..0834a23 100644
->>> --- a/arch/arm/boot/dts/mt2701.dtsi
->>> +++ b/arch/arm/boot/dts/mt2701.dtsi
->>> @@ -77,6 +77,36 @@
->>>    		#clock-cells = <0>;
->>>    	};
->>>
->>> +	thermal-zones {
->>> +		cpu_thermal: cpu_thermal {
->>> +			polling-delay-passive = <1000>; /* milliseconds */
->>> +			polling-delay = <1000>; /* milliseconds */
->>> +
->>> +			thermal-sensors = <&thermal 0>;
->>> +			sustainable-power = <1000>;
->>> +
->>> +			trips {
->>> +				threshold: trip-point@0 {
->>> +					temperature = <68000>;
->>> +					hysteresis = <2000>;
->>> +					type = "passive";
->>> +				};
->>> +
->>> +				target: trip-point@1 {
->>> +					temperature = <85000>;
->>> +					hysteresis = <2000>;
->>> +					type = "passive";
->>> +				};
->>> +
->>> +				cpu_crit: cpu_crit@0 {
->>> +					temperature = <115000>;
->>> +					hysteresis = <2000>;
->>> +					type = "critical";
->>> +				};
->>> +			};
->>> +		};
->>> +	};
->>> +
+>> for_each_child_of_node() performs an of_node_put() on each iteration, so
+>> putting an of_node_put() before a continue results in a double put.
 >>
->> are there any corresponding cooling-maps?
->
-> Since MT2701 does not register CPUFREQ cooling device and its' own
-> device node, I could not add cooling-maps so far.
-> Could we add cooling map after CPUFREQ ready, thank you.
-
-Okay. I was curious to know about the cooling agents.
-
->
+>> Generated by: scripts/coccinelle/iterators/device_node_continue.cocci
 >>
->>>    	timer {
->>>    		compatible = "arm,armv7-timer";
->>>    		interrupt-parent = <&gic>;
->>> @@ -183,4 +213,17 @@
->>>    		clocks = <&uart_clk>;
->>>    		status = "disabled";
->>>    	};
->>> +
->>> +	thermal: thermal@1100b000 {
->>> +		#thermal-sensor-cells = <0>;
->>> +		compatible = "mediatek,mt2701-thermal";
->>> +		reg = <0 0x1100b000 0 0x1000>;
->>> +		interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_LOW>;
->>> +		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
->>> +		clock-names = "therm", "auxadc";
->>> +		resets = <&pericfg 0x10>;
->>> +		reset-names = "therm";
->>> +		mediatek,auxadc = <&auxadc>;
->>> +		mediatek,apmixedsys = <&apmixedsys>;
->>> +	};
->>>    };
->>>
+>> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 >
+> Thank you!
 >
+> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+
+Do you want me to apply this one directly?
+
+Thanks,
+Rafael
