@@ -1,101 +1,70 @@
-From: dawei chien <dawei.chien@mediatek.com>
-Subject: Re: [PATCH 3/3] arm: dts: thermal: add thermal/auxadc node.
-Date: Mon, 11 Jul 2016 16:56:55 +0800
-Message-ID: <1468227415.15776.34.camel@mtksdaap41>
-References: <1467882386-40544-1-git-send-email-dawei.chien@mediatek.com>
-	 <1467882386-40544-4-git-send-email-dawei.chien@mediatek.com>
-	 <577E465D.8070004@ti.com>
+From: Liviu Dudau <liviu.dudau@arm.com>
+Subject: Re: [PATCH 5/7] bus: vexpress-config: add missing of_node_put after
+ calling of_parse_phandle
+Date: Mon, 11 Jul 2016 10:02:23 +0100
+Message-ID: <20160711090223.GJ8609@e106497-lin.cambridge.arm.com>
+References: <1467366121-14120-1-git-send-email-peter.chen@nxp.com>
+ <1467366121-14120-6-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <577E465D.8070004@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <a0393675@ti.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@armlinux.org.uk>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Fan Chen <fan.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Yingjoe Chen <yingjoe.chen@mediatek.com>, Erin Lo <erin.lo@mediatek.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:51498 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753075AbcGKJCZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Jul 2016 05:02:25 -0400
+Content-Disposition: inline
+In-Reply-To: <1467366121-14120-6-git-send-email-peter.chen@nxp.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Chen <peter.chen@nxp.com>
+Cc: linux-renesas-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>
 
-Dear Keerthy,
+On Fri, Jul 01, 2016 at 05:41:59PM +0800, Peter Chen wrote:
+> of_node_put needs to be called when the device node which is got
+> from of_parse_phandle has finished using.
+>=20
+> Cc: Liviu Dudau <liviu.dudau@arm.com>
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Signed-off-by: Peter Chen <peter.chen@nxp.com>
 
-On Thu, 2016-07-07 at 17:39 +0530, Keerthy wrote:
-> 
-> On Thursday 07 July 2016 02:36 PM, Dawei Chien wrote:
-> > This adds the thermal controller and auxadc nodes
-> > to the Mediatek MT2701 dtsi file.
-> >
-> > Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
-> > ---
-> > This patch depned on:
-> > https://patchwork.kernel.org/patch/9213545/
-> > ---
-> >   arch/arm/boot/dts/mt2701.dtsi |   43 +++++++++++++++++++++++++++++++++++++++++
-> >   1 file changed, 43 insertions(+)
-> >
-> > diff --git a/arch/arm/boot/dts/mt2701.dtsi b/arch/arm/boot/dts/mt2701.dtsi
-> > index 2ac8b50..0834a23 100644
-> > --- a/arch/arm/boot/dts/mt2701.dtsi
-> > +++ b/arch/arm/boot/dts/mt2701.dtsi
-> > @@ -77,6 +77,36 @@
-> >   		#clock-cells = <0>;
-> >   	};
-> >
-> > +	thermal-zones {
-> > +		cpu_thermal: cpu_thermal {
-> > +			polling-delay-passive = <1000>; /* milliseconds */
-> > +			polling-delay = <1000>; /* milliseconds */
-> > +
-> > +			thermal-sensors = <&thermal 0>;
-> > +			sustainable-power = <1000>;
-> > +
-> > +			trips {
-> > +				threshold: trip-point@0 {
-> > +					temperature = <68000>;
-> > +					hysteresis = <2000>;
-> > +					type = "passive";
-> > +				};
-> > +
-> > +				target: trip-point@1 {
-> > +					temperature = <85000>;
-> > +					hysteresis = <2000>;
-> > +					type = "passive";
-> > +				};
-> > +
-> > +				cpu_crit: cpu_crit@0 {
-> > +					temperature = <115000>;
-> > +					hysteresis = <2000>;
-> > +					type = "critical";
-> > +				};
-> > +			};
-> > +		};
-> > +	};
-> > +
-> 
-> are there any corresponding cooling-maps?
+Acked-by: Liviu Dudau <Liviu.Dudau@arm.com>
 
-Since MT2701 does not register CPUFREQ cooling device and its' own
-device node, I could not add cooling-maps so far.
-Could we add cooling map after CPUFREQ ready, thank you.
+> ---
+>  drivers/bus/vexpress-config.c | 1 +
+>  1 file changed, 1 insertion(+)
+>=20
+> diff --git a/drivers/bus/vexpress-config.c b/drivers/bus/vexpress-con=
+fig.c
+> index c3cb76b..9efdf1d 100644
+> --- a/drivers/bus/vexpress-config.c
+> +++ b/drivers/bus/vexpress-config.c
+> @@ -178,6 +178,7 @@ static int vexpress_config_populate(struct device=
+_node *node)
+> =20
+>  	parent =3D class_find_device(vexpress_config_class, NULL, bridge,
+>  			vexpress_config_node_match);
+> +	of_node_put(bridge);
+>  	if (WARN_ON(!parent))
+>  		return -ENODEV;
+> =20
+> --=20
+> 1.9.1
+>=20
+>=20
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>=20
 
-> 
-> >   	timer {
-> >   		compatible = "arm,armv7-timer";
-> >   		interrupt-parent = <&gic>;
-> > @@ -183,4 +213,17 @@
-> >   		clocks = <&uart_clk>;
-> >   		status = "disabled";
-> >   	};
-> > +
-> > +	thermal: thermal@1100b000 {
-> > +		#thermal-sensor-cells = <0>;
-> > +		compatible = "mediatek,mt2701-thermal";
-> > +		reg = <0 0x1100b000 0 0x1000>;
-> > +		interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_LOW>;
-> > +		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
-> > +		clock-names = "therm", "auxadc";
-> > +		resets = <&pericfg 0x10>;
-> > +		reset-names = "therm";
-> > +		mediatek,auxadc = <&auxadc>;
-> > +		mediatek,apmixedsys = <&apmixedsys>;
-> > +	};
-> >   };
-> >
+--=20
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+| I would like to |
+| fix the world,  |
+| but they're not |
+| giving me the   |
+ \ source code!  /
+  ---------------
+    =C2=AF\_(=E3=83=84)_/=C2=AF
