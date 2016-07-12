@@ -1,63 +1,120 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Kernel stability on baytrail machines
-Date: Tue, 12 Jul 2016 23:24:48 +0200
-Message-ID: <20160712212448.GA19237@amd>
-References: <606d9b223f3c12775d108b98c4df72ae@feix.cz>
- <20160409160119.GA19362@xo-6d-61-c0.localdomain>
- <20160409201417.4436d4bd@lxorguk.ukuu.org.uk>
- <20160712194158.GA4834@laptop>
+From: Andreas Noever <andreas.noever@gmail.com>
+Subject: Re: [PATCH v2 00/13] Runtime PM for Thunderbolt on Macs
+Date: Tue, 12 Jul 2016 23:46:16 +0200
+Message-ID: <CAMxnaaVjMV3+VkvaE3EsRu9e7X=92Ya4Hq0TTu1T=Ribwx3qnQ@mail.gmail.com>
+References: <cover.1463134231.git.lukas@wunner.de> <CAMxnaaU_3z6BSmSnYfi4ee=aTKm3aPyUaXds=G29wdp8O0m5Cw@mail.gmail.com>
+ <20160614163703.GA31488@localhost> <CAMxnaaUQC0kyoBK1ri_AYEi=Dc_aiuiMp=kx1mFaZpsw9-D-eA@mail.gmail.com>
+ <20160614202228.GA8449@localhost> <CAMxnaaUij=0QvT2frky2KCtrf4KuA-GQrpCYUa6Bs1EdRK+WFg@mail.gmail.com>
+ <20160709052359.GC6330@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-Content-Disposition: inline
-In-Reply-To: <20160712194158.GA4834@laptop>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
-Cc: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Michal Feix <michal@feix.cz>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160709052359.GC6330@kroah.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Lukas Wunner <lukas@wunner.de>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>, Huang Ying <ying.huang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlIDIwMTYtMDctMTIgMTY6NDE6NTgsIEV6ZXF1aWVsIEdhcmNpYSB3cm90ZToKPiBIaSBB
-bGFuLAo+IAo+IChBZGRpbmcgaW50ZXJlc3RlZCBwZW9wbGUgdG8gdGhpcyB0aHJlYWQpCj4gCj4g
-T24gMDkgQXByIDA4OjE0IFBNLCBPbmUgVGhvdXNhbmQgR25vbWVzIHdyb3RlOgo+ID4gPiA+IEkg
-ZG8gZmVlbCB0aGF0IHRoZSBpbXBvcnRhbmNlIG9mIHRoZSBtZW50aW9uZWQgYnVnIGlzIGN1cnJl
-bnRseQo+ID4gPiA+IHVuZGVyZXN0aW1hdGVkLiBDYW4gYW55b25lIGhlcmUgZ2l2ZSBhIG5vdGUs
-IGhvdyBtdWNoIGN1cnJlbnQgbGludXgKPiA+ID4gPiBrZXJuZWwgaXMgc3VwcG9zZWQgdG8gYmUg
-c3RhYmxlIG9uIGdlbmVyYWwgYmF5dHJhaWwgbWFjaGluZXM/ICAKPiA+ID4gCj4gPiA+IElmIHlv
-dSBkaWQgbm90IGdldCBhbnkgcmVwbGllcy4uLiB5b3UgbWlnaHQgd2FudCB0byBjaGVjayBNQUlO
-VEFJTkVSUyBmaWxlLCBhbmQKPiA+ID4gcHV0IEludGVsIHg4NiBtYWludGFpbmVycyBvbiBDYyBs
-aXN0Lgo+ID4gPiAKPiA+ID4gSSdtIHN1cmUgc29tZW9uZSBjYXJlcyA6LSkuCj4gPiAKPiA+IFll
-cyB3ZSBjYXJlLCBhbmQgdGhlcmUgYXJlIHBlb3BsZSBsb29raW5nIGF0IHRoZSB2YXJpb3VzIHJl
-cG9ydHMuCj4gPiAKPiAKPiBBcmUgdGhlcmUgYW55IHVwZGF0ZXMgb24gdGhlIHN0YXR1cyBvZiB0
-aGlzIGlzc3VlPwo+IAo+IFRoZSBjdXJyZW50IGJ1Z3ppbGxhIHJlcG9ydCBbMV0gbWFya3MgdGhp
-cyBhcyBhIHBvd2VyIG1hbmFnZW1lbnQKPiBpc3N1ZS4gSG93ZXZlciwgbWFueSByZXBvcnRzIGlu
-ZGljYXRlIHRoYXQgaXQgd291bGQgb25seSBmcmVlemUKPiB3aGVuIHJ1bm5pbmcgWCwgc28gaXQn
-cyBub3QgY29tcGxldGVseSBjbGVhciBpZiBpdCdzIHJlbGF0ZWQgdG8KPiB0aGUgZ2Z4IGRyaXZl
-ciB0b28uCgpEb2VzCgoiaW50ZWxfaWRsZS5tYXhfY3N0YXRlPTEiCgpmaXggaXQgZm9yIHlvdT8K
-CklmIHlvdSBmZWVsIGl0IGlzIFgtb25seSBwcm9ibGVtLCB5b3UgbWF5IHdhbnQgdG8gcHJvdmlk
-ZSBkZXRhaWxzCmFib3V0IHlvdXIgZ3JhcGhpY3Mgc3Vic3lzdGVtIChEUk0gZW5hYmxlZD8gZnJh
-bWVidWZmZXIgb25seT8pIGFuZApwcm9iYWJseSBjYy4KCi4uLmFjdHVhbGx5Li4uIHlvdSBtYXkg
-d2FudCB0byB2ZXJpZnkgaWYgaXQgaGFwcGVucyBpbiB1bmFjY2VsZXJhdGVkIFguCgpJTlRFTCBE
-Uk0gRFJJVkVSUyAoZXhjbHVkaW5nIFBvdWxzYm8sIE1vb3Jlc3Rvd24gYW5kIGRlcml2YXRpdmUK
-Y2hpcHNldHMpCk06ICAgICAgRGFuaWVsIFZldHRlciA8ZGFuaWVsLnZldHRlckBpbnRlbC5jb20+
-Ck06ICAgICAgSmFuaSBOaWt1bGEgPGphbmkubmlrdWxhQGxpbnV4LmludGVsLmNvbT4KTDogICAg
-ICBpbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCkw6ICAgICAgZHJpLWRldmVsQGxpc3Rz
-LmZyZWVkZXNrdG9wLm9yZwpXOiAgICAgIGh0dHBzOi8vMDEub3JnL2xpbnV4Z3JhcGhpY3MvClE6
-ICAgICAgaHR0cDovL3BhdGNod29yay5mcmVlZGVza3RvcC5vcmcvcHJvamVjdC9pbnRlbC1nZngv
-ClQ6ICAgICAgZ2l0IGdpdDovL2Fub25naXQuZnJlZWRlc2t0b3Aub3JnL2RybS1pbnRlbApTOiAg
-ICAgIFN1cHBvcnRlZApGOiAgICAgIGRyaXZlcnMvZ3B1L2RybS9pOTE1LwpGOiAgICAgIGluY2x1
-ZGUvZHJtL2k5MTUqCkY6ICAgICAgaW5jbHVkZS91YXBpL2RybS9pOTE1X2RybS5oCgpCZXN0IHJl
-Z2FyZHMsCgkJCQkJCQkJCVBhdmVsCgotLSAKKGVuZ2xpc2gpIGh0dHA6Ly93d3cubGl2ZWpvdXJu
-YWwuY29tL35wYXZlbG1hY2hlawooY2Vza3ksIHBpY3R1cmVzKSBodHRwOi8vYXRyZXkua2FybGlu
-Lm1mZi5jdW5pLmN6L35wYXZlbC9waWN0dXJlL2hvcnNlcy9ibG9nLmh0bWwKX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlz
-dApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0
-b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
+On Sat, Jul 9, 2016 at 7:23 AM, Greg KH <gregkh@linuxfoundation.org> wrote:
+> On Thu, Jul 07, 2016 at 07:39:12PM +0200, Andreas Noever wrote:
+>> On Tue, Jun 14, 2016 at 10:22 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+>> > On Tue, Jun 14, 2016 at 09:14:27PM +0200, Andreas Noever wrote:
+>> >> On Tue, Jun 14, 2016 at 6:37 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+>> >> > [+cc linux-kernel]
+>> >> >
+>> >> > On Sat, May 21, 2016 at 11:48:42AM +0200, Andreas Noever wrote:
+>> >> >>
+>> >> >> Signed-off-by: Andreas Noever <andreas.noever@gmail.com>
+>> >> >>
+>> >> >> Tested on MacBookPro10,1
+>> >> >>
+>> >> >> On Fri, May 13, 2016 at 1:15 PM, Lukas Wunner <lukas@wunner.de> wrote:
+>> >> >> > This series powers Thunderbolt controllers on Macs down when nothing is
+>> >> >> > plugged in, saving 1.7 W on machines with a Light Ridge controller and
+>> >> >> > reportedly 4 W on Cactus Ridge 4C and Falcon Ridge 4C.
+>> >> >> >
+>> >> >> > Briefly, a custom ACPI method provided by Apple is used to cut power to
+>> >> >> > the controller.  A GPE is enabled while the controller is powered down
+>> >> >> > which side-band signals a plug event, whereupon power is reinstated using
+>> >> >> > the ACPI method.  Note that even though this mechanism is ACPI-based,
+>> >> >> > it does not use _PSx methods and is thus entirely nonstandard.
+>> >> >
+>> >> > I think the current arrangement was that Andreas would ack Thunderbolt
+>> >> > patches and I would merge them via the PCI tree.  That makes some sense
+>> >> > because Thunderbolt and PCIe are related, but the more I think about
+>> >> > it, the less I'm happy with it.
+>> >> >
+>> >> > This series is a good example.  I'm sure it's good work and
+>> >> > worthwhile.  But I can't really say anything about the content of it
+>> >> > because most of it is Thunderbolt-specific and there's no public spec.
+>> >> > It seems like this is basically a collection of reverse-engineered
+>> >> > quirks that happen to work with the current state of Linux PM on
+>> >> > certain Macs.  We don't know what might change on future Macs.  We
+>> >> > don't know what might break when we make changes to Linux PM.
+>> >> >
+>> >> > I can't test this series, nor do I want to.  I can't test most of the
+>> >> > patches I merge, but I can at least read the spec and see whether the
+>> >> > patches make sense.  What I would *like* is to have public Thunderbolt
+>> >> > specs and a kernel developer's guide so we know what to expect from
+>> >> > the hardware and the firmware and we can write code that should work
+>> >> > not just on current Macs, but also on non-Macs and future Macs.
+>> >> >
+>> >> > I don't think the current situation is really maintainable, and I'm
+>> >> > not comfortable merging code that I can't maintain.
+>> >> Most of the code is contained within the thunderbolt driver. I think
+>> >> there is quite some precedence for reverse engineered drivers without
+>> >> specs being part of the kernel. My understanding was that, since I am
+>> >> listed in MAINTAINERS, I am responsible for the driver. Now our
+>> >> changes often need improvements to the pci core, which is why I think
+>> >> merging through your tree is a good idea (without transferring
+>> >> responsibility). The changes to the drivers/pci should be supported by
+>> >> the PCI-spec and make sense without knowing about thunderbolt (but it
+>> >> might be the case that thunderbolt is the only user of these
+>> >> features).
+>> >>
+>> >> Specifically for this series we want to:
+>> >>  - whitelist thunderbolt bridges for PM. Detecting those bridges is
+>> >> non-standard but I think this is acceptable, since this
+>> >> blacklist/whitelist is basically a quirk.
+>> >>  - Load our portdrv on tb bridges. PCI just sees another portdriver
+>> >> and all the reverse engineered magic lives inside the driver.
+>> >>  - Forward more PM callbacks to portdrivers (not tb specific)
+>> >>  - hotplug D3cold fixes: resume around board_added/remove_board,
+>> >> ignore interrupts in d3cold (not tb specific and probably a general
+>> >> bugfix)
+>> >>  - Make pci not fail if bridges have been put into D3cold by some
+>> >> external mechanism.
+>> >>
+>> >> So maybe you could review the pci changes as a solution to the problem
+>> >> "we want to load a custom portdriver which can put bridges into d3cold
+>> >> in a device specific way". We certainly to not expect you to take
+>> >> responsibility for the thunderbolt driver.
+>> >
+>> > That's a fine solution as far as I'm personally concerned.  I think
+>> > it's poor for Linux overall, because I think it's fragile, and it's
+>> > disappointing that a technology as important as Thunderbolt is so
+>> > poorly supported by the promulgators.  But if you're willing to work
+>> > in that environment, that's great.
+>> >
+>> > You maintain the thunderbolt code and merge changes, and I'll review
+>> > the pieces that touch drivers/pci.  I do have a couple comments on
+>> > those pieces, but I don't think they'll be major.
+>> >
+>> > I just want to get out of the business of merging drivers/thunderbolt
+>> > code that I can't maintain.
+>>
+>> [+ Greg]
+>>
+>> Hi Greg,
+>>
+>> do you mind if we revert to the old scheme and merge TB changes
+>> through your tree?
+>
+> I will be glad to take them, feel free to send them on to me.
+
+Thanks!
+Andreas
+
+> thanks,
+>
+> greg k-h
