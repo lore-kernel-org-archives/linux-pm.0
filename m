@@ -1,119 +1,230 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Query] Preemption (hogging) of the work handler
-Date: Tue, 12 Jul 2016 10:11:13 -0700
-Message-ID: <20160712171113.GD4695@ubuntu>
-References: <20160701165959.GR12473@ubuntu>
- <20160701172232.GD28719@htj.duckdns.org>
- <20160706182842.GS2671@ubuntu>
- <20160711102603.GI12410@quack2.suse.cz>
- <20160711154438.GA528@swordfish>
- <20160711223501.GI4695@ubuntu>
- <20160712093805.GA498@swordfish>
- <20160712125243.GA8597@pathway.suse.cz>
- <20160712131203.GN4695@ubuntu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:33337 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752450AbcGLRLP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jul 2016 13:11:15 -0400
-Received: by mail-pa0-f45.google.com with SMTP id ks6so8453480pab.0
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jul 2016 10:11:15 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160712131203.GN4695@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+From: Al Stone <ahs3@redhat.com>
+Subject: [PATCH v4] Force cppc_cpufreq to report values in KHz to fix user space reporting
+Date: Tue, 12 Jul 2016 11:16:11 -0600
+Message-ID: <1468343771-32176-1-git-send-email-ahs3@redhat.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, rjw@rjwysocki.net
+Cc: lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ahs3@redhat.com
 List-Id: linux-pm@vger.kernel.org
-To: Petr Mladek <pmladek@suse.com>, rjw@rjwysocki.net
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, linux-pm@vger.kernel.org
 
-On 12-07-16, 06:12, Viresh Kumar wrote:
+When CPPC is being used by ACPI on arm64, user space tools such as
+cpupower report CPU frequency values from sysfs that are incorrect.
 
-> Yeah, so I tried debugging this more and I am able to get printing
-> done to just before arch_suspend_disable_irqs() in suspend.c and then
-> it stops because of the async nature.
-> 
-> I get to this point for both successful suspend/resume (where system
-> resumes back successfully) and in the bad case (where the system just
-> hangs/crashes).
-> 
-> FWIW, I also tried commenting out following in suspend_enter():
-> 
->         error = suspend_ops->enter(state);
-> 
-> so that the system doesn't go into suspend at all, and just resume
-> back immediately (similar to TEST_CORE) and I saw the hang/crash then
-> as well one of the times.
+What the driver was doing was reporting the values given by ACPI tables
+in whatever scale was used to provide them.  However, the ACPI spec
+defines the CPPC values as unitless abstract numbers.  Internal kernel
+structures such as struct perf_cap, in contrast, expect these values
+to be in KHz.  When these struct values get reported via sysfs, the
+user space tools also assume they are in KHz, causing them to report
+incorrect values (for example, reporting a CPU frequency of 1MHz when
+it should be 1.8GHz).
 
-So I tried it cleanly without any local hacks using:
+While the investigation for a long term fix proceeds (several options
+are being explored, some of which may require spec changes or other
+much more invasive fixes), this patch forces the values read by CPPC
+to be read in KHz, regardless of what they actually represent.
 
-echo core > /sys/power/pm_test
+The downside is that this approach has some assumptions:
 
-and I still see the problem, so whatever happens, happens before
-putting the system into complete suspend.
+   (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
+   value for a processor is set to a non-zero value.
 
-FWIW, I also tried this hacky thing:
+   (2) It assumes that all processors run at the same speed, or that
+   the CPPC values have all been scaled to reflect relative speed.
+   This patch retrieves the largest CPU Max Frequency from a type 4 DMI
+   record that it can find.  This may not be an issue, however, as a
+   sampling of DMI data on x86 and arm64 indicates there is often only
+   one such record regardless.  Since CPPC is relatively new, it is
+   unclear if the ACPI ASL will always be written to reflect any sort
+   of relative performance of processors of differing speeds.
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index bc71478fac26..045ebc88fe08 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -170,6 +170,7 @@ void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
-  *
-  * This function should be called after devices have been suspended.
-  */
-+extern bool printk_sync_suspended;
- static int suspend_enter(suspend_state_t state, bool *wakeup)
- {
-        char suspend_abort[MAX_SUSPEND_ABORT_LEN];
-@@ -218,6 +219,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
-        }
+   (3) It assumes that performance and frequency both scale linearly.
+
+For arm64 servers, this may be sufficient, but it does rely on
+firmware values being set correctly.  Hence, other approaches are
+also being considered.
+
+This has been tested on three arm64 servers, with and without DMI, with
+and without CPPC support.
+
+Changes for v4:
+    -- Replaced magic constants with #defines (Rafael Wysocki)
+    -- Renamed cppc_unitless_to_khz() to cppc_to_khz() (Rafael Wysocki)
+    -- Replaced hidden initialization with a clearer form (Rafael Wysocki)
+    -- Instead of picking up the first Max Speed value from DMI, we will
+       now get the largest Max Speed; still an approximation, but slightly
+       less subject to error (Rafael Wysocki)
+    -- Kconfig for cppc_cpufreq now depends on DMI, instead of selecting
+       it, in order to make sure DMI is set up properly (Rafael Wysocki)
+
+Changes for v3:
+    -- Added clarifying commentary re short-term vs long-term fix (Alexey
+       Klimov)
+    -- Added range checking code to ensure proper arithmetic occurs,
+       especially no division by zero (Alexey Klimov)
+
+Changes for v2:
+    -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
+       not SELECT DMI (found by build daemon)
+
+Signed-off-by: Al Stone <ahs3@redhat.com>
+---
+ drivers/acpi/cppc_acpi.c    | 106 +++++++++++++++++++++++++++++++++++++++++---
+ drivers/cpufreq/Kconfig.arm |   2 +-
+ 2 files changed, 102 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index 8adac69..6e6df9c 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -40,8 +40,18 @@
+ #include <linux/cpufreq.h>
+ #include <linux/delay.h>
+ #include <linux/ktime.h>
++#include <linux/dmi.h>
++
++#include <asm/unaligned.h>
  
-        arch_suspend_disable_irqs();
-+       printk_sync_suspended = true;
-        BUG_ON(!irqs_disabled());
- 
-        error = syscore_suspend();
-@@ -237,6 +239,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
-                syscore_resume();
-        }
- 
-+       printk_sync_suspended = false;
-        arch_suspend_enable_irqs();
-        BUG_ON(irqs_disabled());
- 
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 46bb017ac2c9..187054074b96 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -293,6 +293,7 @@ static u32 log_buf_len = __LOG_BUF_LEN;
- 
- /* Control whether printing to console must be synchronous. */
- static bool __read_mostly printk_sync = false;
-+bool printk_sync_suspended = false;
- /* Printing kthread for async printk */
- static struct task_struct *printk_kthread;
- /* When `true' printing thread has messages to print */
-@@ -300,7 +301,7 @@ static bool printk_kthread_need_flush_console;
- 
- static inline bool can_printk_async(void)
- {
--       return !printk_sync && printk_kthread;
-+       return !printk_sync && !printk_sync_suspended && printk_kthread;
+ #include <acpi/cppc_acpi.h>
++
++/* Minimum struct length needed for the DMI processor entry we want */
++#define DMI_ENTRY_PROCESSOR_MIN_LENGTH	48
++
++/* Offest in the DMI processor structure for the max frequency */
++#define DMI_PROCESSOR_MAX_SPEED  0x14
++
+ /*
+  * Lock to provide mutually exclusive access to the PCC
+  * channel. e.g. When the remote updates the shared region
+@@ -709,6 +719,56 @@ static int cpc_write(struct cpc_reg *reg, u64 val)
+ 	return ret_val;
  }
  
- /* Return log buffer address */
-
-
-i.e. I disabled async-printk after interrupts are disabled on the last
-running CPU (0) and enabled it again before enabling interrupts back.
-
-This FIXES the hangs for me :)
-
-
-I don't think its a crash but some sort of deadlock in async printk
-thread because of the state it was left in before we offlined all
-other CPUs and disabled interrupts on the local one.
-
++static u64 cppc_dmi_khz;
++
++static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
++{
++	const u8 *dmi_data = (const u8 *)dm;
++	u16 *mhz = (u16 *)private;
++
++	if (dm->type == DMI_ENTRY_PROCESSOR &&
++	    dm->length >= DMI_ENTRY_PROCESSOR_MIN_LENGTH) {
++		u16 val = (u16)get_unaligned((const u16 *)
++				(dmi_data + DMI_PROCESSOR_MAX_SPEED));
++		*mhz = val > *mhz ? val : *mhz;
++	}
++}
++
++
++static u64 cppc_get_dmi_khz(void)
++{
++	u16 mhz = 0;
++
++	dmi_walk(cppc_find_dmi_mhz, &mhz);
++
++	/*
++	 * Real stupid fallback value, just in case there is no
++	 * actual value set.
++	 */
++	mhz = mhz ? mhz : 1;
++
++	return (1000 * mhz);
++}
++
++static u64 cppc_to_khz(u64 min_in, u64 max_in, u64 val)
++{
++	/*
++	 * The incoming val should be min <= val <= max.  Our
++	 * job is to convert that to KHz so it can be properly
++	 * reported to user space via cpufreq_policy.
++	 */
++	u64 curval = val;
++	u64 maxf = max_in;
++	u64 minf = min_in;
++
++	/* range check the input values */
++	curval = curval < minf ? minf : curval;
++	curval = curval > maxf ? maxf : curval;
++	minf = minf >= maxf ? maxf - 1 : minf;
++
++	return ((curval - minf) * cppc_dmi_khz) / (maxf - minf);
++}
++
+ /**
+  * cppc_get_perf_caps - Get a CPUs performance capabilities.
+  * @cpunum: CPU from which to get capabilities info.
+@@ -748,17 +808,53 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 		}
+ 	}
+ 
+-	cpc_read(&highest_reg->cpc_entry.reg, &high);
+-	perf_caps->highest_perf = high;
++	/*
++	 * Since these values in perf_caps will be used in setting
++	 * up the cpufreq policy, they must always be stored in units
++	 * of KHz.  If they are not, user space tools will become very
++	 * confused since they assume these are in KHz when reading
++	 * sysfs.
++	 *
++	 * NB: there may be better approaches to this problem that, as
++	 * of this writing, are still being explored.  Ideally, this is
++	 * a short term solution since correlating CPPC abstract values
++	 * with CPU frequency may or may not reflect actual performance.
++	 *
++	 * The reason longer term solutions are being explored is because
++	 * this solution requires we make the following assumptions:
++	 *
++	 *    (1) It relies on SMBIOS3 being used, *and* that the Max
++	 *        Frequency value for a processor is set to a non-zero value.
++	 *
++	 *    (2) It assumes that all processors run at the same speed, or
++	 *        that the CPPC values have all been scaled to reflect any
++	 *        relative differences.  This code retrieves the largest CPU
++	 *        Max Frequency from a type 4 DMI record that it can find.
++	 *        This may not be an issue, however, as a sampling of DMI
++	 *        data on x86 and arm64 indicates there is often only one
++	 *        such record regardless.
++	 *
++	 *    (3) It assumes that performance and frequency both scale
++	 *        linearly.
++	 *
++	 * None of these are particularly horrible assumptions.  But, they
++	 * are assumptions and ultimately we'd like to be able to report
++	 * performance without quite so many of them.
++	 *
++	 */
++	cppc_dmi_khz = cppc_get_dmi_khz();
+ 
++	cpc_read(&highest_reg->cpc_entry.reg, &high);
+ 	cpc_read(&lowest_reg->cpc_entry.reg, &low);
+-	perf_caps->lowest_perf = low;
++
++	perf_caps->highest_perf = cppc_to_khz(low, high, high);
++	perf_caps->lowest_perf = cppc_to_khz(low, high, low);
+ 
+ 	cpc_read(&ref_perf->cpc_entry.reg, &ref);
+-	perf_caps->reference_perf = ref;
++	perf_caps->reference_perf = cppc_to_khz(low, high, ref);
+ 
+ 	cpc_read(&nom_perf->cpc_entry.reg, &nom);
+-	perf_caps->nominal_perf = nom;
++	perf_caps->nominal_perf = cppc_to_khz(low, high, nom);
+ 
+ 	if (!ref)
+ 		perf_caps->reference_perf = perf_caps->nominal_perf;
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 14b1f93..b4aae52 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -253,7 +253,7 @@ config ARM_PXA2xx_CPUFREQ
+ 
+ config ACPI_CPPC_CPUFREQ
+ 	tristate "CPUFreq driver based on the ACPI CPPC spec"
+-	depends on ACPI
++	depends on ACPI && DMI
+ 	select ACPI_CPPC_LIB
+ 	default n
+ 	help
 -- 
-viresh
+1.8.3.1
