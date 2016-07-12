@@ -1,34 +1,46 @@
-From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH v3 2/2] power: Adds support for Smart Battery System
- Manager
-Date: Wed, 13 Jul 2016 04:06:55 +0800
-Message-ID: <201607130449.xU6uiSoe%fengguang.wu@intel.com>
-References: <1468349295-4935-3-git-send-email-karl-heinz@schneider-inet.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Query] Preemption (hogging) of the work handler
+Date: Tue, 12 Jul 2016 13:08:34 -0700
+Message-ID: <20160712200834.GO4695@ubuntu>
+References: <20160701172232.GD28719@htj.duckdns.org>
+ <20160706182842.GS2671@ubuntu>
+ <20160711102603.GI12410@quack2.suse.cz>
+ <20160711154438.GA528@swordfish>
+ <20160711223501.GI4695@ubuntu>
+ <20160712093805.GA498@swordfish>
+ <20160712125243.GA8597@pathway.suse.cz>
+ <20160712131203.GN4695@ubuntu>
+ <20160712171113.GD4695@ubuntu>
+ <CAJZ5v0jNgDkkBAX0teTo8MEHa2f+5+TAmiyFWwvEUjTkEez9Jg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:34841 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbcGLUIm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jul 2016 16:08:42 -0400
+Received: by mail-pa0-f48.google.com with SMTP id dx3so9779609pab.2
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jul 2016 13:08:37 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1468349295-4935-3-git-send-email-karl-heinz@schneider-inet.de>
-Sender: linux-acpi-owner@vger.kernel.org
-Cc: kbuild-all@01.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>, Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+In-Reply-To: <CAJZ5v0jNgDkkBAX0teTo8MEHa2f+5+TAmiyFWwvEUjTkEez9Jg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, Andrew Morton <akpm@linux-foundation.org>, Steven Rostedt <rostedt@goodmis.org>, Linux PM <linux-pm@vger.kernel.org>
 
-Hi,
+On 12-07-16, 21:59, Rafael J. Wysocki wrote:
+> It looks like a new printk() waits for a previous one to make progress
+> and since progress cannot be made under the suspend conditions, it
+> waits forever.
 
-[auto build test WARNING on battery/master]
-[also build test WARNING on v4.7-rc7 next-20160712]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+Thanks.
 
-url:    https://github.com/0day-ci/linux/commits/Karl-Heinz-Schneider/Documentation-Add-sbs-manager-device-tree-node-documentation/20160713-025704
-base:   git://git.infradead.org/battery-2.6.git master
+Maybe, but to mention this clearly again, this doesn't happen
+every time. Sometime it takes 100 suspend/resume cycles to hit this
+thing.
 
+Lets see what Jan and Sergey have to say on this, as they were the
+ones who wrote these patches :)
 
-coccinelle warnings: (new ones prefixed by >>)
-
->> drivers/power/sbs-manager.c:315:3-8: No need to set .owner here. The core will do it.
-
-Please review and possibly fold the followup patch.
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+-- 
+viresh
