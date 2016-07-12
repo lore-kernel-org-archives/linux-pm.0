@@ -1,48 +1,109 @@
-From: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
-Subject: Re: Kernel stability on baytrail machines
-Date: Tue, 12 Jul 2016 16:41:58 -0300
-Message-ID: <20160712194158.GA4834@laptop>
-References: <606d9b223f3c12775d108b98c4df72ae@feix.cz>
- <20160409160119.GA19362@xo-6d-61-c0.localdomain>
- <20160409201417.4436d4bd@lxorguk.ukuu.org.uk>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [Query] Preemption (hogging) of the work handler
+Date: Tue, 12 Jul 2016 21:59:52 +0200
+Message-ID: <CAJZ5v0jNgDkkBAX0teTo8MEHa2f+5+TAmiyFWwvEUjTkEez9Jg@mail.gmail.com>
+References: <20160701165959.GR12473@ubuntu> <20160701172232.GD28719@htj.duckdns.org>
+ <20160706182842.GS2671@ubuntu> <20160711102603.GI12410@quack2.suse.cz>
+ <20160711154438.GA528@swordfish> <20160711223501.GI4695@ubuntu>
+ <20160712093805.GA498@swordfish> <20160712125243.GA8597@pathway.suse.cz>
+ <20160712131203.GN4695@ubuntu> <20160712171113.GD4695@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-Content-Disposition: inline
-In-Reply-To: <20160409201417.4436d4bd@lxorguk.ukuu.org.uk>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Cc: linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org, Michal Feix <michal@feix.cz>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160712171113.GD4695@ubuntu>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, Andrew Morton <akpm@linux-foundation.org>, Steven Rostedt <rostedt@goodmis.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgQWxhbiwKCihBZGRpbmcgaW50ZXJlc3RlZCBwZW9wbGUgdG8gdGhpcyB0aHJlYWQpCgpPbiAw
-OSBBcHIgMDg6MTQgUE0sIE9uZSBUaG91c2FuZCBHbm9tZXMgd3JvdGU6Cj4gPiA+IEkgZG8gZmVl
-bCB0aGF0IHRoZSBpbXBvcnRhbmNlIG9mIHRoZSBtZW50aW9uZWQgYnVnIGlzIGN1cnJlbnRseQo+
-ID4gPiB1bmRlcmVzdGltYXRlZC4gQ2FuIGFueW9uZSBoZXJlIGdpdmUgYSBub3RlLCBob3cgbXVj
-aCBjdXJyZW50IGxpbnV4Cj4gPiA+IGtlcm5lbCBpcyBzdXBwb3NlZCB0byBiZSBzdGFibGUgb24g
-Z2VuZXJhbCBiYXl0cmFpbCBtYWNoaW5lcz8gIAo+ID4gCj4gPiBJZiB5b3UgZGlkIG5vdCBnZXQg
-YW55IHJlcGxpZXMuLi4geW91IG1pZ2h0IHdhbnQgdG8gY2hlY2sgTUFJTlRBSU5FUlMgZmlsZSwg
-YW5kCj4gPiBwdXQgSW50ZWwgeDg2IG1haW50YWluZXJzIG9uIENjIGxpc3QuCj4gPiAKPiA+IEkn
-bSBzdXJlIHNvbWVvbmUgY2FyZXMgOi0pLgo+IAo+IFllcyB3ZSBjYXJlLCBhbmQgdGhlcmUgYXJl
-IHBlb3BsZSBsb29raW5nIGF0IHRoZSB2YXJpb3VzIHJlcG9ydHMuCj4gCgpBcmUgdGhlcmUgYW55
-IHVwZGF0ZXMgb24gdGhlIHN0YXR1cyBvZiB0aGlzIGlzc3VlPwoKVGhlIGN1cnJlbnQgYnVnemls
-bGEgcmVwb3J0IFsxXSBtYXJrcyB0aGlzIGFzIGEgcG93ZXIgbWFuYWdlbWVudAppc3N1ZS4gSG93
-ZXZlciwgbWFueSByZXBvcnRzIGluZGljYXRlIHRoYXQgaXQgd291bGQgb25seSBmcmVlemUKd2hl
-biBydW5uaW5nIFgsIHNvIGl0J3Mgbm90IGNvbXBsZXRlbHkgY2xlYXIgaWYgaXQncyByZWxhdGVk
-IHRvCnRoZSBnZnggZHJpdmVyIHRvby4KCkFsc28sIGRvIHdlIGtub3cgd2hpY2ggQ1BVcyBhcmUg
-YWZmZWN0IGJ5IHRoaXMgaXNzdWU/CmFuZCB3aGljaCBhcmUgTk9UIGFmZmVjdGVkIDopIC0gd291
-bGQgYmUgcXVpdGUgcmVsZXZhbnQKaW4gcGlja2luZyBhIENQVSBmb3IgYSBwcm9kdWN0LgoKWzFd
-IGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9MTA5MDUxCi0tIApF
-emVxdWllbCBHYXJjaWEsIFZhbmd1YXJkaWFTdXIKd3d3LnZhbmd1YXJkaWFzdXIuY29tLmFyCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBt
-YWlsaW5nIGxpc3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3Rz
-LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+On Tue, Jul 12, 2016 at 7:11 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 12-07-16, 06:12, Viresh Kumar wrote:
+>
+>> Yeah, so I tried debugging this more and I am able to get printing
+>> done to just before arch_suspend_disable_irqs() in suspend.c and then
+>> it stops because of the async nature.
+>>
+>> I get to this point for both successful suspend/resume (where system
+>> resumes back successfully) and in the bad case (where the system just
+>> hangs/crashes).
+>>
+>> FWIW, I also tried commenting out following in suspend_enter():
+>>
+>>         error = suspend_ops->enter(state);
+>>
+>> so that the system doesn't go into suspend at all, and just resume
+>> back immediately (similar to TEST_CORE) and I saw the hang/crash then
+>> as well one of the times.
+>
+> So I tried it cleanly without any local hacks using:
+>
+> echo core > /sys/power/pm_test
+>
+> and I still see the problem, so whatever happens, happens before
+> putting the system into complete suspend.
+>
+> FWIW, I also tried this hacky thing:
+>
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index bc71478fac26..045ebc88fe08 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -170,6 +170,7 @@ void __attribute__ ((weak)) arch_suspend_enable_irqs(void)
+>   *
+>   * This function should be called after devices have been suspended.
+>   */
+> +extern bool printk_sync_suspended;
+>  static int suspend_enter(suspend_state_t state, bool *wakeup)
+>  {
+>         char suspend_abort[MAX_SUSPEND_ABORT_LEN];
+> @@ -218,6 +219,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+>         }
+>
+>         arch_suspend_disable_irqs();
+> +       printk_sync_suspended = true;
+>         BUG_ON(!irqs_disabled());
+>
+>         error = syscore_suspend();
+> @@ -237,6 +239,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+>                 syscore_resume();
+>         }
+>
+> +       printk_sync_suspended = false;
+>         arch_suspend_enable_irqs();
+>         BUG_ON(irqs_disabled());
+>
+> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+> index 46bb017ac2c9..187054074b96 100644
+> --- a/kernel/printk/printk.c
+> +++ b/kernel/printk/printk.c
+> @@ -293,6 +293,7 @@ static u32 log_buf_len = __LOG_BUF_LEN;
+>
+>  /* Control whether printing to console must be synchronous. */
+>  static bool __read_mostly printk_sync = false;
+> +bool printk_sync_suspended = false;
+>  /* Printing kthread for async printk */
+>  static struct task_struct *printk_kthread;
+>  /* When `true' printing thread has messages to print */
+> @@ -300,7 +301,7 @@ static bool printk_kthread_need_flush_console;
+>
+>  static inline bool can_printk_async(void)
+>  {
+> -       return !printk_sync && printk_kthread;
+> +       return !printk_sync && !printk_sync_suspended && printk_kthread;
+>  }
+>
+>  /* Return log buffer address */
+>
+>
+> i.e. I disabled async-printk after interrupts are disabled on the last
+> running CPU (0) and enabled it again before enabling interrupts back.
+>
+> This FIXES the hangs for me :)
+>
+> I don't think its a crash but some sort of deadlock in async printk
+> thread because of the state it was left in before we offlined all
+> other CPUs and disabled interrupts on the local one.
+
+It looks like a new printk() waits for a previous one to make progress
+and since progress cannot be made under the suspend conditions, it
+waits forever.
