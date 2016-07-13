@@ -1,86 +1,83 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] x86 / hibernate: Use hlt_play_dead() when resuming from hibernation
-Date: Wed, 13 Jul 2016 14:01:52 +0200
-Message-ID: <CAJZ5v0jrCk0beq9GeA-Eo115XC7XfAxers+XJaXU6cSZJzaYpw@mail.gmail.com>
-References: <1467105403-5085-1-git-send-email-yu.c.chen@intel.com>
- <12570565.xIMhLmhDgj@vostro.rjw.lan> <20160713095617.GB27870@amd>
+Subject: Re: [Query] Preemption (hogging) of the work handler
+Date: Wed, 13 Jul 2016 14:05:19 +0200
+Message-ID: <CAJZ5v0gPJ9XOHO3xbbt+irPfh_V72-jeV8L_OTmA=8xnFbVmbQ@mail.gmail.com>
+References: <20160701165959.GR12473@ubuntu> <20160701172232.GD28719@htj.duckdns.org>
+ <20160706182842.GS2671@ubuntu> <20160711102603.GI12410@quack2.suse.cz>
+ <20160711154438.GA528@swordfish> <20160711223501.GI4695@ubuntu>
+ <20160712093805.GA498@swordfish> <20160712125243.GA8597@pathway.suse.cz>
+ <20160712131203.GN4695@ubuntu> <20160712171113.GD4695@ubuntu> <20160713070004.GB563@swordfish>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f50.google.com ([74.125.82.50]:35970 "EHLO
-	mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbcGMMCe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2016 08:02:34 -0400
-In-Reply-To: <20160713095617.GB27870@amd>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:36733 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbcGMMFh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2016 08:05:37 -0400
+In-Reply-To: <20160713070004.GB563@swordfish>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Chen Yu <yu.c.chen@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, James Morse <james.morse@arm.com>
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, Andrew Morton <akpm@linux-foundation.org>, Steven Rostedt <rostedt@goodmis.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Wed, Jul 13, 2016 at 11:56 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Sun 2016-07-10 03:49:25, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Jul 13, 2016 at 9:00 AM, Sergey Senozhatsky
+<sergey.senozhatsky.work@gmail.com> wrote:
+> On (07/12/16 10:11), Viresh Kumar wrote:
+>> +extern bool printk_sync_suspended;
+>>  static int suspend_enter(suspend_state_t state, bool *wakeup)
+>>  {
+>>         char suspend_abort[MAX_SUSPEND_ABORT_LEN];
+>> @@ -218,6 +219,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+>>         }
 >>
->> On Intel hardware, native_play_dead() uses mwait_play_dead() by
->> default and only falls back to the other methods if that fails.
->> That also happens during resume from hibernation, when the restore
->> (boot) kernel runs disable_nonboot_cpus() to take all of the CPUs
->> except for the boot one offline.
+>>         arch_suspend_disable_irqs();
+>> +       printk_sync_suspended = true;
+>>         BUG_ON(!irqs_disabled());
 >>
->> However, that is problematic, because the address passed to
->> __monitor() in mwait_play_dead() is likely to be written to in the
->> last phase of hibernate image restoration and that causes the "dead"
->> CPU to start executing instructions again.  Unfortunately, the page
->> containing the address in that CPU's instruction pointer may not be
->> valid any more at that point.
+>>         error = syscore_suspend();
+>> @@ -237,6 +239,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+>>                 syscore_resume();
+>>         }
 >>
->> First, that page may have been overwritten with image kernel memory
->> contents already, so the instructions the CPU attempts to execute may
->> simply be invalid.  Second, the page tables previously used by that
->> CPU may have been overwritten by image kernel memory contents, so the
->> address in its instruction pointer is impossible to resolve then.
+>> +       printk_sync_suspended = false;
+>>         arch_suspend_enable_irqs();
+>>         BUG_ON(irqs_disabled());
 >>
->> A report from Varun Koyyalagunta and investigation carried out by
->> Chen Yu show that the latter sometimes happens in practice.
+>> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+>> index 46bb017ac2c9..187054074b96 100644
+>> --- a/kernel/printk/printk.c
+>> +++ b/kernel/printk/printk.c
+>> @@ -293,6 +293,7 @@ static u32 log_buf_len = __LOG_BUF_LEN;
 >>
->> To prevent it from happening, modify native_play_dead() to make
->> it use hlt_play_dead() instead of mwait_play_dead() during resume
->> from hibernation which avoids the inadvertent "revivals" of "dead"
->> CPUs.
+>>  /* Control whether printing to console must be synchronous. */
+>>  static bool __read_mostly printk_sync = false;
+>> +bool printk_sync_suspended = false;
+>>  /* Printing kthread for async printk */
+>>  static struct task_struct *printk_kthread;
+>>  /* When `true' printing thread has messages to print */
+>> @@ -300,7 +301,7 @@ static bool printk_kthread_need_flush_console;
 >>
->> A slightly unpleasant consequence of this change is that if the
->> system is hibernated with one or more CPUs offline, it will generally
->> draw more power after resume than it did before hibernation, because
->> the physical state entered by CPUs via hlt_play_dead() is higher-power
->> than the mwait_play_dead() one in the majority of cases.  It is
->> possible to work around this, but it is unclear how much of a problem
->> that's going to be in practice, so the workaround will be implemented
->> later if it turns out to be necessary.
+>>  static inline bool can_printk_async(void)
+>>  {
+>> -       return !printk_sync && printk_kthread;
+>> +       return !printk_sync && !printk_sync_suspended && printk_kthread;
+>>  }
 >>
->> Link: https://bugzilla.kernel.org/show_bug.cgi?id=106371
->> Reported-by: Varun Koyyalagunta <cpudebug@centtech.com>
->> Original-by: Chen Yu <yu.c.chen@intel.com>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>  /* Return log buffer address */
+>>
+>>
+>> i.e. I disabled async-printk after interrupts are disabled on the last
+>> running CPU (0) and enabled it again before enabling interrupts back.
+>>
+>> This FIXES the hangs for me :)
 >
-> I notice that it changes even i386, where it should not be
-> neccessary. But we probably should switch i386 to support similar to
-> x86-64 one day (and I have patches) so no problem there.
->
-> But I wonder if simpler solution is to place the mwait semaphore into
-> known address? (Nosave region comes to mind?)
+> ah, just saw this. OK, very close to what I sent in another thread, so I
+> guess it will work on your side.
+> let me know if it doesn't, I'll fold it into 0001 and re-spin the series.
+> thanks for your help!
 
-It might work, but it wouldn't be simpler.
-
-First off, we'd need to monitor a separate cache line for each CPU
-(see the message from Chen Yu) and it'd be a pain to guarantee that.
-Second, CPUs may be woken up from MWAIT for other reasons, so that
-needs to be taken into account too.
-
-In principle, we might set up a MONITOR?MWAIT "play dead" loop in a
-safe page and make the "dead" CPUs jump to it during image restore,
-but then the image kernel (after getting control back) would need to
-migrate them away from there again, so doing the "halt" thing is *way*
-simpler than that.
+But you need to do an analogous thing for hibernation.  Essentially,
+wherever disable_nonboot_cpus() is called.
 
 Thanks,
 Rafael
