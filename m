@@ -1,244 +1,136 @@
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: Re: [Query] Preemption (hogging) of the work handler
-Date: Wed, 13 Jul 2016 14:45:07 +0900
-Message-ID: <20160713054507.GA563@swordfish>
-References: <20160701165959.GR12473@ubuntu>
- <20160701172232.GD28719@htj.duckdns.org>
- <20160706182842.GS2671@ubuntu>
- <20160711102603.GI12410@quack2.suse.cz>
- <20160711154438.GA528@swordfish>
- <20160711223501.GI4695@ubuntu>
- <20160712231903.GR4695@ubuntu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:34453 "EHLO
-	mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750852AbcGMFpR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2016 01:45:17 -0400
-Content-Disposition: inline
-In-Reply-To: <20160712231903.GR4695@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][RFC v2] PM / hibernate: Introduce snapshot test mode for hibernation
+Date: Wed, 13 Jul 2016 14:08:36 +0800
+Message-ID: <1468390116-957-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, rjw@rjwysocki.net, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, linux-pm@vger.kernel.org, Petr Mladek <pmladek@suse.com>
 
-Cc Petr Mladek.
+This mode is used to verify if the snapshot data written to
+the swap device can be successfully restored to the memory. It
+is useful to ease the debugging process on hibernation,
+since this mode can not only bypass the BIOSen/bootloader,
+but also the system re-initialization.
 
-On (07/12/16 16:19), Viresh Kumar wrote:
-[..]
-> Okay, we have tracked this BUG and its really interesting.
+For example:
+$ sudo echo snapshot > /sys/power/pm_test
+$ sudo echo disk > /sys/power/state
 
-good find!
+[  267.959784] PM: Image saving progress:  80%
+[  268.038669] PM: Image saving progress:  90%
+[  268.111745] PM: Image saving progress: 100%
+[  268.129269] PM: Image saving done.
+[  268.133485] PM: Wrote 518612 kbytes in 0.75 seconds (691.48 MB/s)
+[  268.140564] PM: S|
+[  268.160067] hibernation debug: Waiting for 5 seconds.
+...
+[  273.508638] PM: Looking for hibernation image.
+[  273.516583] PM: Image signature found, resuming
+[  273.926547] PM: Loading and decompressing image data (129653 pages)...
+[  274.122452] PM: Image loading progress:   0%
+[  274.322127] PM: Image loading progress:  10%
+...
 
-> I hacked the platform's serial driver to implement a putchar() routine
-> that simply writes to the FIFO in polling mode, that helped us in
-> tracing on where we are going wrong.
-> 
-> The problem is that we are running asynchronous printks and we call
-> wake_up_process() from the last running CPU which has disabled
-> interrupts. That takes us to: try_to_wake_up().
-> 
-> In our case the CPU gets deadlocked on this line in try_to_wake_up().
-> 
->         raw_spin_lock_irqsave(&p->pi_lock, flags);
+Rebased on top of linux-next.
 
-yeah, printk() can't handle these types of recursion. it can prevent
-printk() calls issued from within the logbuf_lock spinlock section,
-with some limitations:
-
-	if (unlikely(logbuf_cpu == smp_processor_id())) {
-		recursion_bug = true;
-		return;
-	}
-
-	raw_spin_lock(&logbuf_lock);
-	logbuf_cpu = this_cpu;
-		...
-	logbuf_cpu = UINT_MAX;
-	raw_spin_unlock(&logbuf_lock);
-
-so should, for instance, raw_spin_unlock() generate spin_dump(), printk()
-will blow up (both sync and async), because logbuf_cpu is already reset.
-it may look that async printk added another source of recursion - wake_up().
-but, apparently, this is not exactly correct. because there is already a
-wake_up() call in console_unlock() - up().
-
-	printk()
-	 if (logbuf_cpu == smp_processor_id())
-		return;
-
-         raw_spin_lock(&logbuf_lock);
-	 logbuf_cpu = this_cpu;
-	 ...
-	 logbuf_cpu = UINT_MAX;
-         raw_spin_unlock(&logbuf_lock);
-
-	 console_trylock()
-	   raw_spin_lock_irqsave(&sem->lock)      << ***
-	   raw_spin_unlock_irqsave(&sem->lock)    << ***
-
-	 console_unlock()
-          up()
-	   raw_spin_lock_irqsave(&sem->lock)  << ***
-	    __up()
-	     wake_up_process()
-	      try_to_wake_up()  << *** in may places
-
-
-*** a printk() call from here will kill the system. either it will
-recurse printk(), or spin forever in 'nested' printk() on one of
-the already taken spin locks.
-
-I had an idea of waking up a printk_kthread under logbuf_lock,
-so `logbuf_cpu == smp_processor_id()' test would help here. But
-it turned out to introduce a regression in printk() behaviour.
-apart from that, it didn't fix any of the existing recursion
-printks.
-
-there is printk_deferred() printk that is supposed to be used for
-printing under scheduler locks, but it won't help in all of the cases.
-
-printk() has many issues.
-
-> I will explain how:
-> 
-> The try_to_wake_up() function takes us through the scheduler code (RT
-> sched), to the hrtimer code, where we eventually call ktime_get() (for
-> the MONOTONIC clock used for hrtimer). And this function has this:
-> 
->         WARN_ON(timekeeping_suspended);
-> 
-> This starts another printk while we are in the middle of
-> wake_up_process() and the CPU tries to take the above lock again and
-> gets stuck there :)
-> 
-> This doesn't happen everytime because we don't always call ktime_get()
-> and it is called only if hrtimer_active() returns false.
-> 
-> This happened because of a WARN_ON() but it can happen anyway. Think
-> about this case:
-> 
-> - offline all CPUs, except 0
-> - call any routine that prints messages after disabling interrupts,
->   etc.
-> - If any of the function within wake_up_process() does a print, we are
->   screwed.
-> 
-> So the thing is that we can't really call wake_up_process() in cases
-> where the last CPU disables interrupts. And that's why my fixup patch
-> (which moved to synchronous prints after suspend) really works.
-> 
-> @Jan and Sergey: I would expect a patch from you guys to fix this
-> properly :)
-> 
-> Maybe something more in can_print_async() routine, like:
-> 
-> only-one-cpu-online + irqs_disabled()
-> 
-
-right. adding only (num_online_cpus() > 1) check to can_printk_async()
-*in theory* can break some cases. for example, SMP system, with only
-one online CPU, active rt_sched throttling (not necessarily because of
-printk kthread, any other task will do), and some of interrupts services
-by CPU0 keep calling printk(), so deferred printk IRQ will stay busy:
-
-	echo 0 > /sys/..../cpu{1..NR_CPUS}/online  # only CPU0 is active
-
-	CPU0
-	sched()
-	 printk_deferred()
-				IRQ
-				wake_up_klogd_work_func()
-					console_trylock()
-						console_unlock()
-
-								IRQ
-								printk()
-
-								IRQ
-								printk()
-								....
-								IRQ
-								printk()
-								...
-
-						  console_sem_up()
-						  return
-
-with async printk here we can offload printing from IRQ.
-
-the warning that you see is WARN_ON(timekeeping_suspended), so we have
-timekeeping_suspended, checking for irqs_disabled() is a _bit_ non-intuitive,
-I think, but in the existing scheme of things can work (at least tick_suspend()
-comment suggests so). correct me if I'm wrong.
-
-
-so... I think we can switch to sync printk mode in suspend_console() and
-enable async printk from resume_console(). IOW, suspend/kexec are now
-executed under sync printk mode.
-
-we already call console_unlock() during suspend, which is synchronous,
-many times (e.g. console_cpu_notify()).
-
-
-something like below, perhaps. will this work for you?
-
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 ---
- kernel/printk/printk.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ kernel/power/hibernate.c | 10 ++++++++--
+ kernel/power/main.c      |  3 +++
+ kernel/power/power.h     |  3 +++
+ kernel/power/swap.c      |  7 +++++++
+ 4 files changed, 21 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index bbb4180..786690e 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -288,6 +288,11 @@ static u32 log_buf_len = __LOG_BUF_LEN;
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 51441d8..30cc5b4 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -43,6 +43,7 @@ static char resume_file[256] = CONFIG_PM_STD_PARTITION;
+ dev_t swsusp_resume_device;
+ sector_t swsusp_resume_block;
+ __visible int in_suspend __nosavedata;
++static int software_resume(void);
  
- /* Control whether printing to console must be synchronous. */
- static bool __read_mostly printk_sync = true;
-+/*
-+ * Force sync printk mode during suspend/kexec, regardless whether
-+ * console_suspend_enabled permits console suspend.
-+ */
-+static bool __read_mostly force_printk_sync;
- /* Printing kthread for async printk */
- static struct task_struct *printk_kthread;
- /* When `true' printing thread has messages to print */
-@@ -295,7 +300,7 @@ static bool printk_kthread_need_flush_console;
- 
- static inline bool can_printk_async(void)
+ enum {
+ 	HIBERNATION_INVALID,
+@@ -647,7 +648,7 @@ static void power_down(void)
+  */
+ int hibernate(void)
  {
--	return !printk_sync && printk_kthread;
-+	return !printk_sync && printk_kthread && !force_printk_sync;
+-	int error, nr_calls = 0;
++	int error, nr_calls = 0, snapshot_test = 0;
+ 
+ 	if (!hibernation_available()) {
+ 		pr_debug("PM: Hibernation not available.\n");
+@@ -699,7 +700,9 @@ int hibernate(void)
+ 		pr_debug("PM: writing image.\n");
+ 		error = swsusp_write(flags);
+ 		swsusp_free();
+-		if (!error)
++		if (hibernation_test(TEST_SNAPSHOT))
++			snapshot_test = 1;
++		if (!error && !snapshot_test)
+ 			power_down();
+ 		in_suspend = 0;
+ 		pm_restore_gfp_mask();
+@@ -721,6 +724,9 @@ int hibernate(void)
+ 	atomic_inc(&snapshot_device_available);
+  Unlock:
+ 	unlock_system_sleep();
++	if (snapshot_test)
++		software_resume();
++
+ 	return error;
  }
  
- /* Return log buffer address */
-@@ -2027,6 +2032,7 @@ static bool suppress_message_printing(int level) { return false; }
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 5ea50b1..80fe48e 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -83,6 +83,9 @@ int pm_test_level = TEST_NONE;
  
- /* Still needs to be defined for users */
- DEFINE_PER_CPU(printk_func_t, printk_func);
-+static bool __read_mostly force_printk_sync;
+ static const char * const pm_tests[__TEST_AFTER_LAST] = {
+ 	[TEST_NONE] = "none",
++#ifdef CONFIG_HIBERNATION
++	[TEST_SNAPSHOT] = "snapshot",
++#endif
+ 	[TEST_CORE] = "core",
+ 	[TEST_CPUS] = "processors",
+ 	[TEST_PLATFORM] = "platform",
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 064963e..101d636 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -225,6 +225,9 @@ static inline int restore_highmem(void) { return 0; }
+ enum {
+ 	/* keep first */
+ 	TEST_NONE,
++#ifdef CONFIG_HIBERNATION
++	TEST_SNAPSHOT,
++#endif
+ 	TEST_CORE,
+ 	TEST_CPUS,
+ 	TEST_PLATFORM,
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 160e100..facd71b 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -348,6 +348,13 @@ static int swsusp_swap_check(void)
+ 	if (res < 0)
+ 		blkdev_put(hib_resume_bdev, FMODE_WRITE);
  
- #endif /* CONFIG_PRINTK */
- 
-@@ -2163,6 +2169,8 @@ MODULE_PARM_DESC(console_suspend, "suspend console during suspend"
-  */
- void suspend_console(void)
- {
-+	force_printk_sync = true;
++	/*
++	 * Update the resume device to the one actually used,
++	 * so software_resume() can use it in case it is invoked
++	 * from hibernate() to test the snapshot.
++	 */
++	swsusp_resume_device = hib_resume_bdev->bd_dev;
 +
- 	if (!console_suspend_enabled)
- 		return;
- 	printk("Suspending console(s) (use no_console_suspend to debug)\n");
-@@ -2173,6 +2181,8 @@ void suspend_console(void)
+ 	return res;
+ }
  
- void resume_console(void)
- {
-+	force_printk_sync = false;
-+
- 	if (!console_suspend_enabled)
- 		return;
- 	down_console_sem();
 -- 
-2.9.0.rc1
-
+2.7.4
