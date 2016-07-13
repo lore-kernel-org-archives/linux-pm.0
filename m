@@ -1,133 +1,128 @@
 From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [PATCH v3 2/3] cpufreq: schedutil: map raw required frequency to driver frequency
-Date: Wed, 13 Jul 2016 13:25:26 -0700
-Message-ID: <1468441527-23534-3-git-send-email-smuckle@linaro.org>
+Subject: [PATCH v3 1/3] cpufreq: add cpufreq_driver_resolve_freq()
+Date: Wed, 13 Jul 2016 13:25:25 -0700
+Message-ID: <1468441527-23534-2-git-send-email-smuckle@linaro.org>
 References: <1468441527-23534-1-git-send-email-smuckle@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:34295 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751001AbcGMUZr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2016 16:25:47 -0400
+Received: by mail-pa0-f48.google.com with SMTP id fi15so20808038pac.1
+        for <linux-pm@vger.kernel.org>; Wed, 13 Jul 2016 13:25:46 -0700 (PDT)
 In-Reply-To: <1468441527-23534-1-git-send-email-smuckle@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-The slow-path frequency transition path is relatively expensive as it
-requires waking up a thread to do work. Should support be added for
-remote CPU cpufreq updates that is also expensive since it requires an
-IPI. These activities should be avoided if they are not necessary.
+Cpufreq governors may need to know what a particular target frequency
+maps to in the driver without necessarily wanting to set the frequency.
+Support this operation via a new cpufreq API,
+cpufreq_driver_resolve_freq(). This API returns the lowest driver
+frequency equal or greater than the target frequency
+(CPUFREQ_RELATION_L), subject to any policy (min/max) or driver
+limitations. The mapping is also cached in the policy so that a
+subsequent fast_switch operation can avoid repeating the same lookup.
 
-To that end, calculate the actual driver-supported frequency required by
-the new utilization value in schedutil by using the recently added
-cpufreq_driver_resolve_freq API. If it is the same as the previously
-requested driver frequency then there is no need to continue with the
-update assuming the cpu frequency limits have not changed. This will
-have additional benefits should the semantics of the rate limit be
-changed to apply solely to frequency transitions rather than to
-frequency calculations in schedutil.
+The API will call a new cpufreq driver callback, resolve_freq(), if it
+has been registered by the driver. Otherwise the frequency is resolved
+via cpufreq_frequency_table_target(). Rather than require ->target()
+style drivers to provide a resolve_freq() callback it is left to the
+caller to ensure that the driver implements this callback if necessary
+to use cpufreq_driver_resolve_freq().
 
-The last raw required frequency is cached. This allows the driver
-frequency lookup to be skipped in the event that the new raw required
-frequency matches the last one, assuming a frequency update has not been
-forced due to limits changing (indicated by a next_freq value of
-UINT_MAX, see sugov_should_update_freq).
-
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Steve Muckle <smuckle@linaro.org>
 ---
- kernel/sched/cpufreq_schedutil.c | 31 +++++++++++++++++++++++--------
- 1 file changed, 23 insertions(+), 8 deletions(-)
+ drivers/cpufreq/cpufreq.c | 25 +++++++++++++++++++++++++
+ include/linux/cpufreq.h   | 16 ++++++++++++++++
+ 2 files changed, 41 insertions(+)
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 758efd7f3abe..a84641b222c1 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -47,6 +47,8 @@ struct sugov_cpu {
- 	struct update_util_data update_util;
- 	struct sugov_policy *sg_policy;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 118b4f30a406..b696baeb249d 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -492,6 +492,29 @@ void cpufreq_disable_fast_switch(struct cpufreq_policy *policy)
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_disable_fast_switch);
  
-+	unsigned int cached_raw_freq;
-+
- 	/* The fields below are only needed when sharing a policy. */
- 	unsigned long util;
- 	unsigned long max;
-@@ -106,7 +108,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
- 
- /**
-  * get_next_freq - Compute a new frequency for a given cpufreq policy.
-- * @policy: cpufreq policy object to compute the new frequency for.
-+ * @sg_cpu: schedutil cpu object to compute the new frequency for.
-  * @util: Current CPU utilization.
-  * @max: CPU capacity.
-  *
-@@ -121,14 +123,25 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
-  * next_freq = C * curr_freq * util_raw / max
-  *
-  * Take C = 1.25 for the frequency tipping point at (util / max) = 0.8.
++/**
++ * cpufreq_driver_resolve_freq - Map a target frequency to a driver-supported
++ * one.
++ * @target_freq: target frequency to resolve.
 + *
-+ * The lowest driver-supported frequency which is equal or greater than the raw
-+ * next_freq (as calculated above) is returned, subject to policy min/max and
-+ * cpufreq driver limitations.
-  */
--static unsigned int get_next_freq(struct cpufreq_policy *policy,
--				  unsigned long util, unsigned long max)
-+static unsigned int get_next_freq(struct sugov_cpu *sg_cpu, unsigned long util,
-+				  unsigned long max)
- {
-+	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
-+	struct cpufreq_policy *policy = sg_policy->policy;
- 	unsigned int freq = arch_scale_freq_invariant() ?
- 				policy->cpuinfo.max_freq : policy->cur;
- 
--	return (freq + (freq >> 2)) * util / max;
-+	freq = (freq + (freq >> 2)) * util / max;
++ * The target to driver frequency mapping is cached in the policy.
++ *
++ * Return: Lowest driver-supported frequency greater than or equal to the
++ * given target_freq, subject to policy (min/max) and driver limitations.
++ */
++unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
++					 unsigned int target_freq)
++{
++	target_freq = clamp_val(target_freq, policy->min, policy->max);
++	policy->cached_target_freq = target_freq;
++	if (cpufreq_driver->resolve_freq)
++		return cpufreq_driver->resolve_freq(policy, target_freq);
++	policy->cached_resolved_idx =
++		cpufreq_frequency_table_target(policy, target_freq,
++					       CPUFREQ_RELATION_L);
++	return policy->freq_table[policy->cached_resolved_idx].frequency;
++}
 +
-+	if (freq == sg_cpu->cached_raw_freq && sg_policy->next_freq != UINT_MAX)
-+		return sg_policy->next_freq;
-+	sg_cpu->cached_raw_freq = freq;
-+	return cpufreq_driver_resolve_freq(policy, freq);
- }
+ /*********************************************************************
+  *                          SYSFS INTERFACE                          *
+  *********************************************************************/
+@@ -2199,6 +2222,8 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 	policy->min = new_policy->min;
+ 	policy->max = new_policy->max;
  
- static void sugov_update_single(struct update_util_data *hook, u64 time,
-@@ -143,13 +156,14 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 		return;
++	policy->cached_target_freq = UINT_MAX;
++
+ 	pr_debug("new min and max freqs are %u - %u kHz\n",
+ 		 policy->min, policy->max);
  
- 	next_f = util == ULONG_MAX ? policy->cpuinfo.max_freq :
--			get_next_freq(policy, util, max);
-+			get_next_freq(sg_cpu, util, max);
- 	sugov_update_commit(sg_policy, time, next_f);
- }
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index c6410b1b2490..631ba33bbe9f 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -120,6 +120,10 @@ struct cpufreq_policy {
+ 	bool			fast_switch_possible;
+ 	bool			fast_switch_enabled;
  
--static unsigned int sugov_next_freq_shared(struct sugov_policy *sg_policy,
-+static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
- 					   unsigned long util, unsigned long max)
- {
-+	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
- 	struct cpufreq_policy *policy = sg_policy->policy;
- 	unsigned int max_f = policy->cpuinfo.max_freq;
- 	u64 last_freq_update_time = sg_policy->last_freq_update_time;
-@@ -189,7 +203,7 @@ static unsigned int sugov_next_freq_shared(struct sugov_policy *sg_policy,
- 		}
- 	}
++	 /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
++	unsigned int cached_target_freq;
++	int cached_resolved_idx;
++
+ 	/* Synchronization for frequency transitions */
+ 	bool			transition_ongoing; /* Tracks transition status */
+ 	spinlock_t		transition_lock;
+@@ -270,6 +274,16 @@ struct cpufreq_driver {
+ 					unsigned int index);
+ 	unsigned int	(*fast_switch)(struct cpufreq_policy *policy,
+ 				       unsigned int target_freq);
++
++	/*
++	 * Caches and returns the lowest driver-supported frequency greater than
++	 * or equal to the target frequency, subject to any driver limitations.
++	 * Does not set the frequency. Only to be implemented for drivers with
++	 * target().
++	 */
++	unsigned int	(*resolve_freq)(struct cpufreq_policy *policy,
++					unsigned int target_freq);
++
+ 	/*
+ 	 * Only for drivers with target_index() and CPUFREQ_ASYNC_NOTIFICATION
+ 	 * unset.
+@@ -501,6 +515,8 @@ int cpufreq_driver_target(struct cpufreq_policy *policy,
+ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+ 				   unsigned int target_freq,
+ 				   unsigned int relation);
++unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
++					 unsigned int target_freq);
+ int cpufreq_register_governor(struct cpufreq_governor *governor);
+ void cpufreq_unregister_governor(struct cpufreq_governor *governor);
  
--	return get_next_freq(policy, util, max);
-+	return get_next_freq(sg_cpu, util, max);
- }
- 
- static void sugov_update_shared(struct update_util_data *hook, u64 time,
-@@ -206,7 +220,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- 	sg_cpu->last_update = time;
- 
- 	if (sugov_should_update_freq(sg_policy, time)) {
--		next_f = sugov_next_freq_shared(sg_policy, util, max);
-+		next_f = sugov_next_freq_shared(sg_cpu, util, max);
- 		sugov_update_commit(sg_policy, time, next_f);
- 	}
- 
-@@ -433,6 +447,7 @@ static int sugov_start(struct cpufreq_policy *policy)
- 			sg_cpu->util = ULONG_MAX;
- 			sg_cpu->max = 0;
- 			sg_cpu->last_update = 0;
-+			sg_cpu->cached_raw_freq = 0;
- 			cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util,
- 						     sugov_update_shared);
- 		} else {
 -- 
 2.7.3
+
