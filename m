@@ -1,73 +1,50 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][RFC v2] PM / hibernate: Introduce snapshot test mode
- for hibernation
-Date: Wed, 13 Jul 2016 12:50:49 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402878091B@shsmsx102.ccr.corp.intel.com>
-References: <1468390116-957-1-git-send-email-yu.c.chen@intel.com>
- <CAJZ5v0gaQ5E99KfbC-behEb1uhpZiXHmCg1abC20zT9pqse=aQ@mail.gmail.com>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Subject: Re: [Query] Preemption (hogging) of the work handler
+Date: Wed, 13 Jul 2016 21:57:04 +0900
+Message-ID: <20160713125704.GA458@swordfish>
+References: <20160706182842.GS2671@ubuntu>
+ <20160711102603.GI12410@quack2.suse.cz>
+ <20160711154438.GA528@swordfish>
+ <20160711223501.GI4695@ubuntu>
+ <20160712093805.GA498@swordfish>
+ <20160712125243.GA8597@pathway.suse.cz>
+ <20160712131203.GN4695@ubuntu>
+ <20160712171113.GD4695@ubuntu>
+ <20160713070004.GB563@swordfish>
+ <CAJZ5v0gPJ9XOHO3xbbt+irPfh_V72-jeV8L_OTmA=8xnFbVmbQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:20270 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751893AbcGMMv3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Jul 2016 08:51:29 -0400
-In-Reply-To: <CAJZ5v0gaQ5E99KfbC-behEb1uhpZiXHmCg1abC20zT9pqse=aQ@mail.gmail.com>
-Content-Language: en-US
+Received: from mail-pa0-f67.google.com ([209.85.220.67]:35164 "EHLO
+	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751923AbcGMM5h (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2016 08:57:37 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gPJ9XOHO3xbbt+irPfh_V72-jeV8L_OTmA=8xnFbVmbQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Petr Mladek <pmladek@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, Andrew Morton <akpm@linux-foundation.org>, Steven Rostedt <rostedt@goodmis.org>, Linux PM <linux-pm@vger.kernel.org>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IHJqd3lzb2NraUBnbWFpbC5j
-b20gW21haWx0bzpyand5c29ja2lAZ21haWwuY29tXSBPbiBCZWhhbGYgT2YNCj4gUmFmYWVsIEou
-IFd5c29ja2kNCj4gU2VudDogV2VkbmVzZGF5LCBKdWx5IDEzLCAyMDE2IDg6MDcgUE0NCj4gVG86
-IENoZW4sIFl1IEMNCj4gQ2M6IExpbnV4IFBNOyBSYWZhZWwgSiAuIFd5c29ja2k7IFBhdmVsIE1h
-Y2hlazsgTGVuIEJyb3duOyBMaW51eCBLZXJuZWwNCj4gTWFpbGluZyBMaXN0DQo+IFN1YmplY3Q6
-IFJlOiBbUEFUQ0hdW1JGQyB2Ml0gUE0gLyBoaWJlcm5hdGU6IEludHJvZHVjZSBzbmFwc2hvdCB0
-ZXN0IG1vZGUgZm9yDQo+IGhpYmVybmF0aW9uDQo+IA0KPiBPbiBXZWQsIEp1bCAxMywgMjAxNiBh
-dCA4OjA4IEFNLCBDaGVuIFl1IDx5dS5jLmNoZW5AaW50ZWwuY29tPiB3cm90ZToNCj4gPiBUaGlz
-IG1vZGUgaXMgdXNlZCB0byB2ZXJpZnkgaWYgdGhlIHNuYXBzaG90IGRhdGEgd3JpdHRlbiB0byB0
-aGUgc3dhcA0KPiA+IGRldmljZSBjYW4gYmUgc3VjY2Vzc2Z1bGx5IHJlc3RvcmVkIHRvIHRoZSBt
-ZW1vcnkuIEl0IGlzIHVzZWZ1bCB0bw0KPiA+IGVhc2UgdGhlIGRlYnVnZ2luZyBwcm9jZXNzIG9u
-IGhpYmVybmF0aW9uLCBzaW5jZSB0aGlzIG1vZGUgY2FuIG5vdA0KPiA+IG9ubHkgYnlwYXNzIHRo
-ZSBCSU9TZW4vYm9vdGxvYWRlciwgYnV0IGFsc28gdGhlIHN5c3RlbQ0KPiA+IHJlLWluaXRpYWxp
-emF0aW9uLg0KPiA+DQo+ID4gRm9yIGV4YW1wbGU6DQo+ID4gJCBzdWRvIGVjaG8gc25hcHNob3Qg
-PiAvc3lzL3Bvd2VyL3BtX3Rlc3QgJCBzdWRvIGVjaG8gZGlzayA+DQo+ID4gL3N5cy9wb3dlci9z
-dGF0ZQ0KPiA+DQo+ID4gWyAgMjY3Ljk1OTc4NF0gUE06IEltYWdlIHNhdmluZyBwcm9ncmVzczog
-IDgwJSBbICAyNjguMDM4NjY5XSBQTToNCj4gPiBJbWFnZSBzYXZpbmcgcHJvZ3Jlc3M6ICA5MCUg
-WyAgMjY4LjExMTc0NV0gUE06IEltYWdlIHNhdmluZyBwcm9ncmVzczoNCj4gPiAxMDAlIFsgIDI2
-OC4xMjkyNjldIFBNOiBJbWFnZSBzYXZpbmcgZG9uZS4NCj4gPiBbICAyNjguMTMzNDg1XSBQTTog
-V3JvdGUgNTE4NjEyIGtieXRlcyBpbiAwLjc1IHNlY29uZHMgKDY5MS40OCBNQi9zKSBbDQo+ID4g
-MjY4LjE0MDU2NF0gUE06IFN8IFsgIDI2OC4xNjAwNjddIGhpYmVybmF0aW9uIGRlYnVnOiBXYWl0
-aW5nIGZvciA1DQo+ID4gc2Vjb25kcy4NCj4gPiAuLi4NCj4gPiBbICAyNzMuNTA4NjM4XSBQTTog
-TG9va2luZyBmb3IgaGliZXJuYXRpb24gaW1hZ2UuDQo+ID4gWyAgMjczLjUxNjU4M10gUE06IElt
-YWdlIHNpZ25hdHVyZSBmb3VuZCwgcmVzdW1pbmcgWyAgMjczLjkyNjU0N10gUE06DQo+ID4gTG9h
-ZGluZyBhbmQgZGVjb21wcmVzc2luZyBpbWFnZSBkYXRhICgxMjk2NTMgcGFnZXMpLi4uDQo+ID4g
-WyAgMjc0LjEyMjQ1Ml0gUE06IEltYWdlIGxvYWRpbmcgcHJvZ3Jlc3M6ICAgMCUNCj4gPiBbICAy
-NzQuMzIyMTI3XSBQTTogSW1hZ2UgbG9hZGluZyBwcm9ncmVzczogIDEwJSAuLi4NCj4gPg0KPiA+
-IFJlYmFzZWQgb24gdG9wIG9mIGxpbnV4LW5leHQuDQo+ID4NCj4gPiBTdWdnZXN0ZWQtYnk6IFJh
-ZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4NCj4gPiBTaWduZWQt
-b2ZmLWJ5OiBDaGVuIFl1IDx5dS5jLmNoZW5AaW50ZWwuY29tPg0KPiA+IC0tLQ0KPiA+ICBrZXJu
-ZWwvcG93ZXIvaGliZXJuYXRlLmMgfCAxMCArKysrKysrKy0tDQo+ID4gIGtlcm5lbC9wb3dlci9t
-YWluLmMgICAgICB8ICAzICsrKw0KPiA+ICBrZXJuZWwvcG93ZXIvcG93ZXIuaCAgICAgfCAgMyAr
-KysNCj4gPiAga2VybmVsL3Bvd2VyL3N3YXAuYyAgICAgIHwgIDcgKysrKysrKw0KPiA+ICA0IGZp
-bGVzIGNoYW5nZWQsIDIxIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBk
-aWZmIC0tZ2l0IGEva2VybmVsL3Bvd2VyL2hpYmVybmF0ZS5jIGIva2VybmVsL3Bvd2VyL2hpYmVy
-bmF0ZS5jIGluZGV4DQo+ID4gNTE0NDFkOC4uMzBjYzViNCAxMDA2NDQNCj4gPiAtLS0gYS9rZXJu
-ZWwvcG93ZXIvaGliZXJuYXRlLmMNCj4gPiArKysgYi9rZXJuZWwvcG93ZXIvaGliZXJuYXRlLmMN
-Cj4gPiBAQCAtNDMsNiArNDMsNyBAQCBzdGF0aWMgY2hhciByZXN1bWVfZmlsZVsyNTZdID0NCj4g
-PiBDT05GSUdfUE1fU1REX1BBUlRJVElPTjsgIGRldl90IHN3c3VzcF9yZXN1bWVfZGV2aWNlOyAg
-c2VjdG9yX3QNCj4gPiBzd3N1c3BfcmVzdW1lX2Jsb2NrOyAgX192aXNpYmxlIGludCBpbl9zdXNw
-ZW5kIF9fbm9zYXZlZGF0YTsNCj4gPiArc3RhdGljIGludCBzb2Z0d2FyZV9yZXN1bWUodm9pZCk7
-DQo+ID4NCj4gPiAgZW51bSB7DQo+ID4gICAgICAgICBISUJFUk5BVElPTl9JTlZBTElELA0KPiA+
-IEBAIC02NDcsNyArNjQ4LDcgQEAgc3RhdGljIHZvaWQgcG93ZXJfZG93bih2b2lkKQ0KPiA+ICAg
-Ki8NCj4gPiAgaW50IGhpYmVybmF0ZSh2b2lkKQ0KPiA+ICB7DQo+ID4gLSAgICAgICBpbnQgZXJy
-b3IsIG5yX2NhbGxzID0gMDsNCj4gPiArICAgICAgIGludCBlcnJvciwgbnJfY2FsbHMgPSAwLCBz
-bmFwc2hvdF90ZXN0ID0gMDsNCj4gDQo+IFdoeSBjYW4ndCBzbmFwc2hvdF90ZXN0IGJlIGEgYm9v
-bCB2YXJpYWJsZT8NCkFoIHllcywgaXQgd2FzIGEgYm9vbCwgSSB3YXMganVzdCB0aGlua2luZyB0
-byBhZGQgdGhpcyBuZXcgdmFyaWFibGUNCnNpbWlsYXIgdG8gdGhlIHZhcmlhYmxlICdlcnJvcicu
-IEknbGwgY2hhbmdlIGl0IHRvIGJvb2wgaW4gbmV4dCB2ZXJzaW9uLCBhbmQgYWxzbw0KYWRkIGRv
-Y3VtZW50IGFzIFBhdmVsIHN1Z2dlc3RlZC4gDQo+IA0KPiBUaGFua3MsDQo+IFJhZmFlbA0KDQp0
-aGFua3MsDQpZdQ0K
+Hello Rafael,
+
+On (07/13/16 14:05), Rafael J. Wysocki wrote:
+[..]
+> > ah, just saw this. OK, very close to what I sent in another thread, so I
+> > guess it will work on your side.
+> > let me know if it doesn't, I'll fold it into 0001 and re-spin the series.
+> > thanks for your help!
+> 
+> But you need to do an analogous thing for hibernation.  Essentially,
+> wherever disable_nonboot_cpus() is called.
+
+hibernation() suspends console, and suspend_console() forces printk to
+switch to sync mode. resume_console() lets printk to operate in async
+mode (if printk was configured to operate in async mode at all).
+
+the patch I'm talking about is:
+ http://marc.info/?l=linux-kernel&m=146838876027364&w=2
+
+am I missing something?
+
+	-ss
