@@ -1,11 +1,14 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v2 0/6] power: add power sequence library
-Date: Wed, 13 Jul 2016 10:06:44 +0800
-Message-ID: <1468375610-18625-1-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH v2 1/6] binding-doc: power: pwrseq-generic: add binding doc
+ for generic power sequence library
+Date: Wed, 13 Jul 2016 10:06:45 +0800
+Message-ID: <1468375610-18625-2-git-send-email-peter.chen@nxp.com>
+References: <1468375610-18625-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1468375610-18625-1-git-send-email-peter.chen@nxp.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,70 +22,72 @@ To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.or
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, stephen.boyd@linaro.org, oscar@naiandei.net, arnd@arndb.de, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, linux-usb@vger.kernel.org, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, stillcompiling@gmail.com, Peter Chen <peter.chen@nxp.com>, p.zabel@pengutronix.de, festevam@gmail.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+Add binding doc for generic power sequence library.
 
-This is a follow-up for my last power sequence framework patch set [1].
-According to Rob Herring and Ulf Hansson's comments[2], I use a generic
-power sequence library for parsing the power sequence elements on DT,
-and implement generic power sequence on library. The host driver
-can allocate power sequence instance, and calls pwrseq APIs accordingly.
-
-In future, if there are special power sequence requirements, the special
-power sequence library can be created.
-
-This patch set is tested on i.mx6 sabresx evk using a dts change, I use
-two hot-plug devices to simulate this use case, the related binding
-change is updated at patch[1/6], The udoo board changes were tested
-using my last power sequence patch set.[3]
-
-Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
-need to power on itself before it can be found by ULPI bus.
-
-[1] http://www.spinics.net/lists/linux-usb/msg142755.html
-[2] http://www.spinics.net/lists/linux-usb/msg143106.html
-[3] http://www.spinics.net/lists/linux-usb/msg142815.html
-
-Changes for v2:
-- Delete "pwrseq" prefix and clock-names for properties at dt binding
-- Should use structure not but its pointer for kzalloc
-- Since chipidea core has no of_node, let core's of_node equals glue
-  layer's at core's probe
-
-
-Peter Chen (6):
-  binding-doc: power: pwrseq-generic: add binding doc for generic power
-    sequence library
-  power: add power sequence library
-  binding-doc: usb: usb-device: add optional properties for power
-    sequence
-  usb: core: add power sequence handling for USB devices
-  usb: chipidea: let chipidea core device of_node equal's glue layer
-    device of_node
-  ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
-
- .../bindings/power/pwrseq/pwrseq-generic.txt       |  53 ++++++++
- .../devicetree/bindings/usb/usb-device.txt         |   9 ++
- arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  27 +++--
- drivers/power/Kconfig                              |   1 +
- drivers/power/Makefile                             |   1 +
- drivers/power/pwrseq/Kconfig                       |  20 +++
- drivers/power/pwrseq/Makefile                      |   2 +
- drivers/power/pwrseq/core.c                        |  79 ++++++++++++
- drivers/power/pwrseq/pwrseq_generic.c              | 134 +++++++++++++++++++++
- drivers/usb/chipidea/core.c                        |  10 ++
- drivers/usb/core/Makefile                          |   1 +
- drivers/usb/core/hub.c                             |  12 +-
- drivers/usb/core/hub.h                             |  12 ++
- drivers/usb/core/pwrseq.c                          | 102 ++++++++++++++++
- include/linux/power/pwrseq.h                       |  55 +++++++++
- 15 files changed, 502 insertions(+), 16 deletions(-)
+Signed-off-by: Peter Chen <peter.chen@nxp.com>
+---
+ .../bindings/power/pwrseq/pwrseq-generic.txt       | 53 ++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
- create mode 100644 drivers/power/pwrseq/Kconfig
- create mode 100644 drivers/power/pwrseq/Makefile
- create mode 100644 drivers/power/pwrseq/core.c
- create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
- create mode 100644 drivers/usb/core/pwrseq.c
- create mode 100644 include/linux/power/pwrseq.h
 
+diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+new file mode 100644
+index 0000000..186c58c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+@@ -0,0 +1,53 @@
++The generic power sequence library
++
++Some hard-wired USB/MMC devices need to do power sequence to let the
++device work normally, the typical power sequence like: enable USB
++PHY clock, toggle reset pin, etc. But current Linux USB driver
++lacks of such code to do it, it may cause some hard-wired USB devices
++works abnormal or can't be recognized by controller at all. The
++power sequence will be done before this device can be found at USB
++bus.
++
++The power sequence properties is under the device node.
++
++Required properties:
++- power-sequence: this device needs to do power sequence before enumeration
++
++Optional properties:
++- clocks: the input clock for device.
++- reset-gpios: Should specify the GPIO for reset.
++- reset-duration-us: the duration in microsecond for assert reset signal.
++
++Below is the example of USB power sequence properties on USB device
++nodes which have two level USB hubs.
++
++&usbotg1 {
++	vbus-supply = <&reg_usb_otg1_vbus>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_usb_otg1_id>;
++	status = "okay";
++
++	#address-cells = <1>;
++	#size-cells = <0>;
++	hub: genesys@1 {
++		compatible = "usb5e3,608";
++		reg = <1>;
++
++		power-sequence;
++		clocks = <&clks IMX6SX_CLK_CKO>;
++		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
++		reset-duration-us = <10>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		ethernet: asix@1 {
++			compatible = "usbb95,1708";
++			reg = <1>;
++
++			power-sequence;
++			clocks = <&clks IMX6SX_CLK_IPG>;
++			reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
++			reset-duration-us = <15>;
++		};
++	};
++};
 -- 
 1.9.1
