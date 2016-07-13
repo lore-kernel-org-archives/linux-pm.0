@@ -1,87 +1,42 @@
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: Re: [Query] Preemption (hogging) of the work handler
-Date: Wed, 13 Jul 2016 16:00:04 +0900
-Message-ID: <20160713070004.GB563@swordfish>
-References: <20160701165959.GR12473@ubuntu>
- <20160701172232.GD28719@htj.duckdns.org>
- <20160706182842.GS2671@ubuntu>
- <20160711102603.GI12410@quack2.suse.cz>
- <20160711154438.GA528@swordfish>
- <20160711223501.GI4695@ubuntu>
- <20160712093805.GA498@swordfish>
- <20160712125243.GA8597@pathway.suse.cz>
- <20160712131203.GN4695@ubuntu>
- <20160712171113.GD4695@ubuntu>
+From: Meelis Roos <mroos@linux.ee>
+Subject: Re: 4.7-rc6: NMI in intel_idle on HP Proliant G6
+Date: Wed, 13 Jul 2016 10:21:27 +0300 (EEST)
+Message-ID: <alpine.LRH.2.20.1607131018150.20366@math.ut.ee>
+References: <alpine.LRH.2.20.1607121445020.2088@math.ut.ee> <alpine.LRH.2.20.1607121525060.2088@math.ut.ee> <5630546.0MIYeGNSYG@vostro.rjw.lan> <alpine.LRH.2.20.1607121654490.2088@math.ut.ee>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f67.google.com ([209.85.220.67]:36733 "EHLO
-	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750883AbcGMHAX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2016 03:00:23 -0400
-Content-Disposition: inline
-In-Reply-To: <20160712171113.GD4695@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.LRH.2.20.1607121654490.2088@math.ut.ee>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Petr Mladek <pmladek@suse.com>, rjw@rjwysocki.net, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, linux-pm@vger.kernel.org
 
-On (07/12/16 10:11), Viresh Kumar wrote:
-> +extern bool printk_sync_suspended;
->  static int suspend_enter(suspend_state_t state, bool *wakeup)
->  {
->         char suspend_abort[MAX_SUSPEND_ABORT_LEN];
-> @@ -218,6 +219,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
->         }
->  
->         arch_suspend_disable_irqs();
-> +       printk_sync_suspended = true;
->         BUG_ON(!irqs_disabled());
->  
->         error = syscore_suspend();
-> @@ -237,6 +239,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
->                 syscore_resume();
->         }
->  
-> +       printk_sync_suspended = false;
->         arch_suspend_enable_irqs();
->         BUG_ON(irqs_disabled());
->  
-> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-> index 46bb017ac2c9..187054074b96 100644
-> --- a/kernel/printk/printk.c
-> +++ b/kernel/printk/printk.c
-> @@ -293,6 +293,7 @@ static u32 log_buf_len = __LOG_BUF_LEN;
->  
->  /* Control whether printing to console must be synchronous. */
->  static bool __read_mostly printk_sync = false;
-> +bool printk_sync_suspended = false;
->  /* Printing kthread for async printk */
->  static struct task_struct *printk_kthread;
->  /* When `true' printing thread has messages to print */
-> @@ -300,7 +301,7 @@ static bool printk_kthread_need_flush_console;
->  
->  static inline bool can_printk_async(void)
->  {
-> -       return !printk_sync && printk_kthread;
-> +       return !printk_sync && !printk_sync_suspended && printk_kthread;
->  }
->  
->  /* Return log buffer address */
+> > > > On HP Proliant DL360 G6, Debian unstable 4.6 kernel runs fine but 
+> > > > selfcompiled 4.7-rc6 and 4.7-rc7 sometimes crash with NMI from 
+> > > > intel_idle. Sometimes it boots fine. With intel_idle disabled, it has 
+> > > > booted successful so far in 2 tries, one with rc6 and one with rc7.
+> > > 
+> > > More testing shows it can NMI on acpi_idle too, not just intel_idle.
+> > > 
+> > > > Screenshot with some backtrace: 
+> > > > http://kodu.ut.ee/~mroos/intel-idle-NMI.png
+> > > 
+> > > http://kodu.ut.ee/~mroos/acpi-idle-NMI.png
+> > 
+> > There were almost no changes in the ACPI idle driver between 4.6 and
+> > 4.7-rc, so the reason is somewhere else.
+> > 
+> > Have you tried any earlier 4.7-rc?
 > 
+> I tried selfcompiled 4.6.0 now with the same conf that 4.7-rc's have and 
+> after multiple tries I got the same NMI out of 4.6 too, from kernfs 
+> lookup (that seems to just a random victim).
 > 
-> i.e. I disabled async-printk after interrupts are disabled on the last
-> running CPU (0) and enabled it again before enabling interrupts back.
-> 
-> This FIXES the hangs for me :)
+> So this is not a 4.7 regression and probably not idle-releated.
 
-ah, just saw this. OK, very close to what I sent in another thread, so I
-guess it will work on your side.
-let me know if it doesn't, I'll fold it into 0001 and re-spin the series.
-thanks for your help!
+Confirmed this is about IOMMU+DMAR, I'm continuing in another reply 
+thread with other CC-s to not bother linux-pm people with it.
 
-
-I'll also drop the KERN_CONT patch for now. apparently it didn't work for
-Petr.
-
-	-ss
+-- 
+Meelis Roos (mroos@linux.ee)
