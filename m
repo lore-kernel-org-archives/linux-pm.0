@@ -1,224 +1,183 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
- calls to hotplugged cpu")]
-Date: Wed, 13 Jul 2016 17:54:25 +0300
-Message-ID: <20160713145425.GB4329@intel.com>
-References: <57332171.8070403@linutronix.de>
- <20160511122116.GA4329@intel.com>
- <20160511084445.00030b49@gandalf.local.home>
- <20160511133406.GC4329@intel.com>
- <20160516193910.GL4329@intel.com>
- <573BA5E2.5040506@intel.com>
- <20160518072424.GU4329@intel.com>
- <20160526183207.GX4329@intel.com>
- <CAJZ5v0in8YwMBgLd6=KgGVc-f2yVvutOJG_u05OKLK7_EzN0yQ@mail.gmail.com>
- <20160531072650.GP4329@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Query] Preemption (hogging) of the work handler
+Date: Wed, 13 Jul 2016 08:39:10 -0700
+Message-ID: <20160713153910.GY4695@ubuntu>
+References: <20160701165959.GR12473@ubuntu>
+ <20160701172232.GD28719@htj.duckdns.org>
+ <20160706182842.GS2671@ubuntu>
+ <20160711102603.GI12410@quack2.suse.cz>
+ <20160711154438.GA528@swordfish>
+ <20160711223501.GI4695@ubuntu>
+ <20160712231903.GR4695@ubuntu>
+ <20160713054507.GA563@swordfish>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160531072650.GP4329@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
+In-Reply-To: <20160713054507.GA563@swordfish>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, rjw@rjwysocki.net, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, linux-pm@vger.kernel.org, Petr Mladek <pmladek@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, May 31, 2016 at 10:26:50AM +0300, Ville Syrj=E4l=E4 wrote:
-> On Mon, May 30, 2016 at 10:43:51PM +0200, Rafael J. Wysocki wrote:
-> > On Thu, May 26, 2016 at 8:32 PM, Ville Syrj=E4l=E4
-> > <ville.syrjala@linux.intel.com> wrote:
-> > > On Wed, May 18, 2016 at 10:24:24AM +0300, Ville Syrj=E4l=E4 wrote=
-:
-> > >> On Wed, May 18, 2016 at 01:14:42AM +0200, Rafael J. Wysocki wrot=
-e:
-> > >> > On 5/16/2016 9:39 PM, Ville Syrj=E4l=E4 wrote:
-> > >> > > On Wed, May 11, 2016 at 04:34:06PM +0300, Ville Syrj=E4l=E4 =
-wrote:
-> > >> > >> On Wed, May 11, 2016 at 08:44:45AM -0400, Steven Rostedt wr=
-ote:
-> > >> > >>> On Wed, 11 May 2016 15:21:16 +0300
-> > >> > >>> Ville Syrj=E4l=E4 <ville.syrjala@linux.intel.com> wrote:
-> > >> > >>>
-> > >> > >>>> Yeah can't get anything from the machine at that point. n=
-etconsole
-> > >> > >>>> didn't help either, and no serial on this machine. And II=
-RC I've
-> > >> > >>>> tried ramoops on this thing in the past but unfortunately=
- the memory
-> > >> > >>>> got cleared on reboot.
-> > >> > >>>>
-> > >> > >>> Can you look at the documentation in the kernel code at
-> > >> > >>>
-> > >> > >>> Documentation/power/basic-pm-debugging.txt And follow the =
-procedures
-> > >> > >>> for testing suspend to RAM (although it requires mostly ru=
-nning the
-> > >> > >>> same tests as for hibernation suspending).
-> > >> > >>>
-> > >> > >>> You can also use the tool s2ram for this as well.
-> > >> > >>>
-> > >> > >>> See Documentation/power/s2ram.txt
-> > >> > >>>
-> > >> > >>> Perhaps this can give us a bit more light onto the problem=
-=2E
-> > >> > >>>
-> > >> > >>> Basically the above does partial suspend and resume, and c=
-an pinpoint
-> > >> > >>> problem areas down to a more select location.
-> > >> > >> All the pm_test modes work fine. The only difference betwee=
-n them was
-> > >> > >> that 'platform' required me to manually wake up the machine=
- (hitting a
-> > >> > >> key was sufficient), whereas the others woke up without hel=
-p.
-> > >> > >>
-> > >> > >> pm_trace gave me
-> > >> > >> [    1.306633]   Magic number: 0:185:178
-> > >> > >> [    1.322880]   hash matches ../drivers/base/power/main.c:=
-1070
-> > >> > >> [    1.339270] acpi device:0e: hash matches
-> > >> > >> [    1.355414]  platform: hash matches
-> > >> > >>
-> > >> > >> which is the TRACE_SUSPEND in __device_suspend_noirq(), so =
-no help
-> > >> > >> there.
-> > >> > >>
-> > >> > >> I guess I could try to sprinkle more TRACE_RESUMEs around i=
-nto some
-> > >> > >> early resume code. If anyone has good ideas where to put th=
-em it
-> > >> > >> might speed things up a bit.
-> > >> > > So I did a bunch of that and found that it gets stuck somewh=
-ere
-> > >> > > around executing the _WAK method:
-> > >> > > platform_resume_noirq
-> > >> > >   acpi_pm_finish
-> > >> > >    acpi_leave_sleep_state
-> > >> > >     acpi_hw_sleep_dispatch
-> > >> > >      acpi_hw_legacy_wake
-> > >> > >       acpi_hw_execute_sleep_method
-> > >> > >        acpi_evaluate_object
-> > >> > >         acpi_ns_evaluate
-> > >> > >          acpi_ps_execute_method
-> > >> > >           acpi_ps_parse_aml
-> > >> > >
-> > >> > > It also seesm that adding a few TRACE_RESUME()s or an msleep=
-() right
-> > >> > > after enable_nonboot_cpus() can avoid the hang, sometimes.
-> > >> > >
-> > >> > > I've attached the DSDT in case anyone is interested in looki=
-ng at it.
-> > >> > >
-> > >> >
-> > >> > What if you comment out the execution of _WAK (line 318 of
-> > >> > drivers/acpi/acpica/hwsleep.c in 4.6)?  Does that make any dif=
-ference?
-> > >>
-> > >> Indeed it does. Tried with acpi_idle and intel_idle, and both ap=
-pear to
-> > >> resume just fine with that hack.
-> > >>
-> > >> -       acpi_hw_execute_sleep_method(METHOD_PATHNAME__WAK, sleep=
-_state);
-> > >> +       //acpi_hw_execute_sleep_method(METHOD_PATHNAME__WAK, sle=
-ep_state);
-> > >> +       printk(KERN_CRIT "skipping _WAK\n");
-> > >
-> > > Continuing with my detective work a bit, I decided to hack the DS=
-DT a
-> > > bit to see if I can narrow the it down further, and looks like I =
-found
-> > > it on the first guess. The following change stops it from hanging=
-=2E
-> > >
-> > > @ -5056,7 +5056,7 @@
-> > >          If (LEqual (Arg0, 0x03))
-> > >          {
-> > >              Store (0x01, \SPNF)
-> > > -           TRAP (0x46)
-> > > +           //TRAP (0x46)
-> > >              P8XH (0x00, 0x03)
-> > >          }
-> > >
-> > > So what does that do? Let's see:
-> > >
-> > >     OperationRegion (IO_T, SystemIO, 0x0800, 0x10)
-> > >     Field (IO_T, ByteAcc, NoLock, Preserve)
-> > >     {
-> > >         Offset (0x08),
-> > >         TRP0,   8
-> > >     }
-> > >
-> > >     OperationRegion (GNVS, SystemMemory, 0x3F5E0C7C, 0x0200)
-> > >     Field (GNVS, AnyAcc, Lock, Preserve)
-> > >     {
-> > >         OSYS,   16,
-> > >         SMIF,   8,
-> > >     ...
-> > >
-> > >     Method (TRAP, 1, Serialized)
-> > >     {
-> > >         Store (Arg0, SMIF) /* \SMIF */
-> > >         Store (0x00, TRP0) /* \TRP0 */
-> > >         Return (SMIF) /* \SMIF */
-> > >     }
-> > >
-> > > and a dump of the IOTR registers shows:
-> > >
-> > > 0x1e80: 0x0000fe01
-> > > 0x1e84: 0x00020001
-> > > 0x1e98: 0x000c0801
-> > > 0x1e9c: 0x000200f0
-> > >
-> > > which seems to be telling me that ports 0x800-0x80f and
-> > > 0xfe00-0xfe03 would trigger an SMI.
-> >=20
-> > Well, the name of the method kind of suggests that it triggers an S=
-MM trap. :-)
->=20
-> Which is why I wanted confirm that by looking at the IOTR regs ;)
->=20
-> >=20
-> > > So the next question is how do the idle drivers and cpu hotplug
-> > > fit into this picture. Do we need to force the second HT into
-> > > a specific C state before the SMI or something?
-> >=20
-> > Or you can ask why exactly someone put that SMM trap into _WAK.
-> >=20
-> > Apparently, it was regarded as necessary or no one would have
-> > bothered.  The only reason I can see why it might be regarded as
-> > necessary was that Windows did something Linux doesn't do on that
-> > platform, or, which to me is far more interesting, that Windows did=
-n't
-> > do something actually done by Linux.
-> >=20
-> > My theory would be that Windows didn't reinitialize the second HT
-> > properly during resume and the trap was added to let SMM do that.  =
-If
-> > that's the case, the trap may trigger by the time the second HT
-> > already executes code in Linux and then it will mess up with it and
-> > crash.
-> >=20
-> > Now, what do idles states have to do with that?  IIRC, Windows puts
-> > nonboot CPUs into idle states before suspend, so the SMM code
-> > triggered by the trap may make assumptions about the CPU being in s=
-uch
-> > a state or similar.
->=20
-> BTW I also tried to move the enable_nonboot_cpus() after _WAK, and I
-> tried to boot with nosmp, but neither trick helped. If someone could
-> throw some patches my way to force things into a specific state
-> before suspend/_WAK I'd be happy to test them out.
+On 13-07-16, 14:45, Sergey Senozhatsky wrote:
+> On (07/12/16 16:19), Viresh Kumar wrote:
+> [..]
+> > Okay, we have tracked this BUG and its really interesting.
+> 
+> good find!
+> 
+> > I hacked the platform's serial driver to implement a putchar() routine
+> > that simply writes to the FIFO in polling mode, that helped us in
+> > tracing on where we are going wrong.
+> > 
+> > The problem is that we are running asynchronous printks and we call
+> > wake_up_process() from the last running CPU which has disabled
+> > interrupts. That takes us to: try_to_wake_up().
+> > 
+> > In our case the CPU gets deadlocked on this line in try_to_wake_up().
+> > 
+> >         raw_spin_lock_irqsave(&p->pi_lock, flags);
+> 
+> yeah, printk() can't handle these types of recursion. it can prevent
+> printk() calls issued from within the logbuf_lock spinlock section,
+> with some limitations:
+> 
+> 	if (unlikely(logbuf_cpu == smp_processor_id())) {
+> 		recursion_bug = true;
+> 		return;
+> 	}
+> 
+> 	raw_spin_lock(&logbuf_lock);
+> 	logbuf_cpu = this_cpu;
+> 		...
+> 	logbuf_cpu = UINT_MAX;
+> 	raw_spin_unlock(&logbuf_lock);
+> 
+> so should, for instance, raw_spin_unlock() generate spin_dump(), printk()
+> will blow up (both sync and async), because logbuf_cpu is already reset.
 
-Ping. Anyone have any ideas what to try here? Would be nice to get this
-machine working again...
+I see.
 
---=20
-Ville Syrj=E4l=E4
-Intel OTC
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> it may look that async printk added another source of recursion - wake_up().
+> but, apparently, this is not exactly correct. because there is already a
+> wake_up() call in console_unlock() - up().
+> 
+> 	printk()
+> 	 if (logbuf_cpu == smp_processor_id())
+> 		return;
+> 
+>          raw_spin_lock(&logbuf_lock);
+> 	 logbuf_cpu = this_cpu;
+> 	 ...
+> 	 logbuf_cpu = UINT_MAX;
+>          raw_spin_unlock(&logbuf_lock);
+> 
+> 	 console_trylock()
+> 	   raw_spin_lock_irqsave(&sem->lock)      << ***
+> 	   raw_spin_unlock_irqsave(&sem->lock)    << ***
+> 
+> 	 console_unlock()
+>           up()
+> 	   raw_spin_lock_irqsave(&sem->lock)  << ***
+> 	    __up()
+> 	     wake_up_process()
+> 	      try_to_wake_up()  << *** in may places
+> 
+> 
+> *** a printk() call from here will kill the system. either it will
+> recurse printk(), or spin forever in 'nested' printk() on one of
+> the already taken spin locks.
+
+So, in case you are asked for similar issues (system hang), we should
+first doubt on recursive prints from somewhere :)
+
+:)
+
+> I had an idea of waking up a printk_kthread under logbuf_lock,
+> so `logbuf_cpu == smp_processor_id()' test would help here. But
+> it turned out to introduce a regression in printk() behaviour.
+> apart from that, it didn't fix any of the existing recursion
+> printks.
+> 
+> there is printk_deferred() printk that is supposed to be used for
+> printing under scheduler locks, but it won't help in all of the cases.
+> 
+> printk() has many issues.
+
+Yeah, that's why we are all here :)
+
+> right. adding only (num_online_cpus() > 1) check to can_printk_async()
+> *in theory* can break some cases. for example, SMP system, with only
+> one online CPU, active rt_sched throttling (not necessarily because of
+> printk kthread, any other task will do), and some of interrupts services
+> by CPU0 keep calling printk(), so deferred printk IRQ will stay busy:
+
+Right.
+
+> 	echo 0 > /sys/..../cpu{1..NR_CPUS}/online  # only CPU0 is active
+> 
+> 	CPU0
+> 	sched()
+> 	 printk_deferred()
+> 				IRQ
+> 				wake_up_klogd_work_func()
+> 					console_trylock()
+> 						console_unlock()
+> 
+> 								IRQ
+> 								printk()
+> 
+> 								IRQ
+> 								printk()
+> 								....
+> 								IRQ
+> 								printk()
+> 								...
+> 
+> 						  console_sem_up()
+> 						  return
+> 
+> with async printk here we can offload printing from IRQ.
+> 
+> the warning that you see is WARN_ON(timekeeping_suspended), so we have
+> timekeeping_suspended
+
+Right.
+
+> checking for irqs_disabled() is a _bit_ non-intuitive,
+> I think, but in the existing scheme of things can work (at least tick_suspend()
+> comment suggests so). correct me if I'm wrong.
+> 
+> 
+> so... I think we can switch to sync printk mode in suspend_console() and
+> enable async printk from resume_console(). IOW, suspend/kexec are now
+> executed under sync printk mode.
+> 
+> we already call console_unlock() during suspend, which is synchronous,
+> many times (e.g. console_cpu_notify()).
+> 
+> 
+> something like below, perhaps. will this work for you?
+
+Maybe not, as this can still lead to the original bug we were all
+chasing. This may hog some other CPU if we are doing excessive
+printing in suspend :(
+
+suspend_console() is called quite early, so for example in my case we
+do lots of printing during suspend (not from the suspend thread, but
+an IRQ handled by the USB subsystem, which removes a bus with help of
+some other thread probably).
+
+That is why my Hacky patch tried to do it after devices are removed
+and irqs are disabled, but before syscore users are suspended (and
+timekeeping is one of them). And so it fixes it for me completely.
+
+IOW, we should switch back to synchronous printing after disabling
+interrupts on the last running CPU.
+
+And I of course agree with Rafael that we would need something similar
+in Hibernation code path as well, if we choose to fix it my way.
+
+-- 
+viresh
