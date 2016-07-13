@@ -1,85 +1,73 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] x86 / hibernate: Use hlt_play_dead() when resuming from hibernation
-Date: Wed, 13 Jul 2016 14:41:32 +0200
-Message-ID: <CAJZ5v0h3i6SNJbTDk5KnZv0ALGcoYV+tEEuN1V8fGRtEDSs1aQ@mail.gmail.com>
-References: <1467105403-5085-1-git-send-email-yu.c.chen@intel.com>
- <12570565.xIMhLmhDgj@vostro.rjw.lan> <20160713095617.GB27870@amd> <CAJZ5v0jrCk0beq9GeA-Eo115XC7XfAxers+XJaXU6cSZJzaYpw@mail.gmail.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][RFC v2] PM / hibernate: Introduce snapshot test mode
+ for hibernation
+Date: Wed, 13 Jul 2016 12:50:49 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402878091B@shsmsx102.ccr.corp.intel.com>
+References: <1468390116-957-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0gaQ5E99KfbC-behEb1uhpZiXHmCg1abC20zT9pqse=aQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jrCk0beq9GeA-Eo115XC7XfAxers+XJaXU6cSZJzaYpw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Chen Yu <yu.c.chen@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, James Morse <james.morse@arm.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:20270 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751893AbcGMMv3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 13 Jul 2016 08:51:29 -0400
+In-Reply-To: <CAJZ5v0gaQ5E99KfbC-behEb1uhpZiXHmCg1abC20zT9pqse=aQ@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Jul 13, 2016 at 2:01 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Wed, Jul 13, 2016 at 11:56 AM, Pavel Machek <pavel@ucw.cz> wrote:
->> On Sun 2016-07-10 03:49:25, Rafael J. Wysocki wrote:
->>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>
->>> On Intel hardware, native_play_dead() uses mwait_play_dead() by
->>> default and only falls back to the other methods if that fails.
->>> That also happens during resume from hibernation, when the restore
->>> (boot) kernel runs disable_nonboot_cpus() to take all of the CPUs
->>> except for the boot one offline.
->>>
->>> However, that is problematic, because the address passed to
->>> __monitor() in mwait_play_dead() is likely to be written to in the
->>> last phase of hibernate image restoration and that causes the "dead"
->>> CPU to start executing instructions again.  Unfortunately, the page
->>> containing the address in that CPU's instruction pointer may not be
->>> valid any more at that point.
->>>
->>> First, that page may have been overwritten with image kernel memory
->>> contents already, so the instructions the CPU attempts to execute may
->>> simply be invalid.  Second, the page tables previously used by that
->>> CPU may have been overwritten by image kernel memory contents, so the
->>> address in its instruction pointer is impossible to resolve then.
->>>
->>> A report from Varun Koyyalagunta and investigation carried out by
->>> Chen Yu show that the latter sometimes happens in practice.
->>>
->>> To prevent it from happening, modify native_play_dead() to make
->>> it use hlt_play_dead() instead of mwait_play_dead() during resume
->>> from hibernation which avoids the inadvertent "revivals" of "dead"
->>> CPUs.
->>>
->>> A slightly unpleasant consequence of this change is that if the
->>> system is hibernated with one or more CPUs offline, it will generally
->>> draw more power after resume than it did before hibernation, because
->>> the physical state entered by CPUs via hlt_play_dead() is higher-power
->>> than the mwait_play_dead() one in the majority of cases.  It is
->>> possible to work around this, but it is unclear how much of a problem
->>> that's going to be in practice, so the workaround will be implemented
->>> later if it turns out to be necessary.
->>>
->>> Link: https://bugzilla.kernel.org/show_bug.cgi?id=106371
->>> Reported-by: Varun Koyyalagunta <cpudebug@centtech.com>
->>> Original-by: Chen Yu <yu.c.chen@intel.com>
->>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> I notice that it changes even i386, where it should not be
->> neccessary. But we probably should switch i386 to support similar to
->> x86-64 one day (and I have patches) so no problem there.
->>
->> But I wonder if simpler solution is to place the mwait semaphore into
->> known address? (Nosave region comes to mind?)
->
-> It might work, but it wouldn't be simpler.
->
-> First off, we'd need to monitor a separate cache line for each CPU
-> (see the message from Chen Yu) and it'd be a pain to guarantee that.
-> Second, CPUs may be woken up from MWAIT for other reasons, so that
-> needs to be taken into account too.
->
-> In principle, we might set up a MONITOR?MWAIT "play dead" loop in a
-> safe page and make the "dead" CPUs jump to it during image restore,
-> but then the image kernel (after getting control back) would need to
-> migrate them away from there again,
-
-And this is not enough even, because we'd also need to ensure that the
-non-boot CPUs would use "safe" page tables when restore_image() ran.
-
-Thanks,
-Rafael
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IHJqd3lzb2NraUBnbWFpbC5j
+b20gW21haWx0bzpyand5c29ja2lAZ21haWwuY29tXSBPbiBCZWhhbGYgT2YNCj4gUmFmYWVsIEou
+IFd5c29ja2kNCj4gU2VudDogV2VkbmVzZGF5LCBKdWx5IDEzLCAyMDE2IDg6MDcgUE0NCj4gVG86
+IENoZW4sIFl1IEMNCj4gQ2M6IExpbnV4IFBNOyBSYWZhZWwgSiAuIFd5c29ja2k7IFBhdmVsIE1h
+Y2hlazsgTGVuIEJyb3duOyBMaW51eCBLZXJuZWwNCj4gTWFpbGluZyBMaXN0DQo+IFN1YmplY3Q6
+IFJlOiBbUEFUQ0hdW1JGQyB2Ml0gUE0gLyBoaWJlcm5hdGU6IEludHJvZHVjZSBzbmFwc2hvdCB0
+ZXN0IG1vZGUgZm9yDQo+IGhpYmVybmF0aW9uDQo+IA0KPiBPbiBXZWQsIEp1bCAxMywgMjAxNiBh
+dCA4OjA4IEFNLCBDaGVuIFl1IDx5dS5jLmNoZW5AaW50ZWwuY29tPiB3cm90ZToNCj4gPiBUaGlz
+IG1vZGUgaXMgdXNlZCB0byB2ZXJpZnkgaWYgdGhlIHNuYXBzaG90IGRhdGEgd3JpdHRlbiB0byB0
+aGUgc3dhcA0KPiA+IGRldmljZSBjYW4gYmUgc3VjY2Vzc2Z1bGx5IHJlc3RvcmVkIHRvIHRoZSBt
+ZW1vcnkuIEl0IGlzIHVzZWZ1bCB0bw0KPiA+IGVhc2UgdGhlIGRlYnVnZ2luZyBwcm9jZXNzIG9u
+IGhpYmVybmF0aW9uLCBzaW5jZSB0aGlzIG1vZGUgY2FuIG5vdA0KPiA+IG9ubHkgYnlwYXNzIHRo
+ZSBCSU9TZW4vYm9vdGxvYWRlciwgYnV0IGFsc28gdGhlIHN5c3RlbQ0KPiA+IHJlLWluaXRpYWxp
+emF0aW9uLg0KPiA+DQo+ID4gRm9yIGV4YW1wbGU6DQo+ID4gJCBzdWRvIGVjaG8gc25hcHNob3Qg
+PiAvc3lzL3Bvd2VyL3BtX3Rlc3QgJCBzdWRvIGVjaG8gZGlzayA+DQo+ID4gL3N5cy9wb3dlci9z
+dGF0ZQ0KPiA+DQo+ID4gWyAgMjY3Ljk1OTc4NF0gUE06IEltYWdlIHNhdmluZyBwcm9ncmVzczog
+IDgwJSBbICAyNjguMDM4NjY5XSBQTToNCj4gPiBJbWFnZSBzYXZpbmcgcHJvZ3Jlc3M6ICA5MCUg
+WyAgMjY4LjExMTc0NV0gUE06IEltYWdlIHNhdmluZyBwcm9ncmVzczoNCj4gPiAxMDAlIFsgIDI2
+OC4xMjkyNjldIFBNOiBJbWFnZSBzYXZpbmcgZG9uZS4NCj4gPiBbICAyNjguMTMzNDg1XSBQTTog
+V3JvdGUgNTE4NjEyIGtieXRlcyBpbiAwLjc1IHNlY29uZHMgKDY5MS40OCBNQi9zKSBbDQo+ID4g
+MjY4LjE0MDU2NF0gUE06IFN8IFsgIDI2OC4xNjAwNjddIGhpYmVybmF0aW9uIGRlYnVnOiBXYWl0
+aW5nIGZvciA1DQo+ID4gc2Vjb25kcy4NCj4gPiAuLi4NCj4gPiBbICAyNzMuNTA4NjM4XSBQTTog
+TG9va2luZyBmb3IgaGliZXJuYXRpb24gaW1hZ2UuDQo+ID4gWyAgMjczLjUxNjU4M10gUE06IElt
+YWdlIHNpZ25hdHVyZSBmb3VuZCwgcmVzdW1pbmcgWyAgMjczLjkyNjU0N10gUE06DQo+ID4gTG9h
+ZGluZyBhbmQgZGVjb21wcmVzc2luZyBpbWFnZSBkYXRhICgxMjk2NTMgcGFnZXMpLi4uDQo+ID4g
+WyAgMjc0LjEyMjQ1Ml0gUE06IEltYWdlIGxvYWRpbmcgcHJvZ3Jlc3M6ICAgMCUNCj4gPiBbICAy
+NzQuMzIyMTI3XSBQTTogSW1hZ2UgbG9hZGluZyBwcm9ncmVzczogIDEwJSAuLi4NCj4gPg0KPiA+
+IFJlYmFzZWQgb24gdG9wIG9mIGxpbnV4LW5leHQuDQo+ID4NCj4gPiBTdWdnZXN0ZWQtYnk6IFJh
+ZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4NCj4gPiBTaWduZWQt
+b2ZmLWJ5OiBDaGVuIFl1IDx5dS5jLmNoZW5AaW50ZWwuY29tPg0KPiA+IC0tLQ0KPiA+ICBrZXJu
+ZWwvcG93ZXIvaGliZXJuYXRlLmMgfCAxMCArKysrKysrKy0tDQo+ID4gIGtlcm5lbC9wb3dlci9t
+YWluLmMgICAgICB8ICAzICsrKw0KPiA+ICBrZXJuZWwvcG93ZXIvcG93ZXIuaCAgICAgfCAgMyAr
+KysNCj4gPiAga2VybmVsL3Bvd2VyL3N3YXAuYyAgICAgIHwgIDcgKysrKysrKw0KPiA+ICA0IGZp
+bGVzIGNoYW5nZWQsIDIxIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBk
+aWZmIC0tZ2l0IGEva2VybmVsL3Bvd2VyL2hpYmVybmF0ZS5jIGIva2VybmVsL3Bvd2VyL2hpYmVy
+bmF0ZS5jIGluZGV4DQo+ID4gNTE0NDFkOC4uMzBjYzViNCAxMDA2NDQNCj4gPiAtLS0gYS9rZXJu
+ZWwvcG93ZXIvaGliZXJuYXRlLmMNCj4gPiArKysgYi9rZXJuZWwvcG93ZXIvaGliZXJuYXRlLmMN
+Cj4gPiBAQCAtNDMsNiArNDMsNyBAQCBzdGF0aWMgY2hhciByZXN1bWVfZmlsZVsyNTZdID0NCj4g
+PiBDT05GSUdfUE1fU1REX1BBUlRJVElPTjsgIGRldl90IHN3c3VzcF9yZXN1bWVfZGV2aWNlOyAg
+c2VjdG9yX3QNCj4gPiBzd3N1c3BfcmVzdW1lX2Jsb2NrOyAgX192aXNpYmxlIGludCBpbl9zdXNw
+ZW5kIF9fbm9zYXZlZGF0YTsNCj4gPiArc3RhdGljIGludCBzb2Z0d2FyZV9yZXN1bWUodm9pZCk7
+DQo+ID4NCj4gPiAgZW51bSB7DQo+ID4gICAgICAgICBISUJFUk5BVElPTl9JTlZBTElELA0KPiA+
+IEBAIC02NDcsNyArNjQ4LDcgQEAgc3RhdGljIHZvaWQgcG93ZXJfZG93bih2b2lkKQ0KPiA+ICAg
+Ki8NCj4gPiAgaW50IGhpYmVybmF0ZSh2b2lkKQ0KPiA+ICB7DQo+ID4gLSAgICAgICBpbnQgZXJy
+b3IsIG5yX2NhbGxzID0gMDsNCj4gPiArICAgICAgIGludCBlcnJvciwgbnJfY2FsbHMgPSAwLCBz
+bmFwc2hvdF90ZXN0ID0gMDsNCj4gDQo+IFdoeSBjYW4ndCBzbmFwc2hvdF90ZXN0IGJlIGEgYm9v
+bCB2YXJpYWJsZT8NCkFoIHllcywgaXQgd2FzIGEgYm9vbCwgSSB3YXMganVzdCB0aGlua2luZyB0
+byBhZGQgdGhpcyBuZXcgdmFyaWFibGUNCnNpbWlsYXIgdG8gdGhlIHZhcmlhYmxlICdlcnJvcicu
+IEknbGwgY2hhbmdlIGl0IHRvIGJvb2wgaW4gbmV4dCB2ZXJzaW9uLCBhbmQgYWxzbw0KYWRkIGRv
+Y3VtZW50IGFzIFBhdmVsIHN1Z2dlc3RlZC4gDQo+IA0KPiBUaGFua3MsDQo+IFJhZmFlbA0KDQp0
+aGFua3MsDQpZdQ0K
