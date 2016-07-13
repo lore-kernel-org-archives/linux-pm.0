@@ -1,42 +1,72 @@
-From: Meelis Roos <mroos@linux.ee>
-Subject: Re: 4.7-rc6: NMI in intel_idle on HP Proliant G6
-Date: Wed, 13 Jul 2016 10:21:27 +0300 (EEST)
-Message-ID: <alpine.LRH.2.20.1607131018150.20366@math.ut.ee>
-References: <alpine.LRH.2.20.1607121445020.2088@math.ut.ee> <alpine.LRH.2.20.1607121525060.2088@math.ut.ee> <5630546.0MIYeGNSYG@vostro.rjw.lan> <alpine.LRH.2.20.1607121654490.2088@math.ut.ee>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Subject: Re: [PATCH v2 1/6] binding-doc: power: pwrseq-generic: add binding
+ doc for generic power sequence library
+Date: Wed, 13 Jul 2016 09:27:31 +0200
+Message-ID: <1468394851.3638.13.camel@pengutronix.de>
+References: <1468375610-18625-1-git-send-email-peter.chen@nxp.com>
+ <1468375610-18625-2-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.20.1607121654490.2088@math.ut.ee>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1468375610-18625-2-git-send-email-peter.chen@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Peter Chen <peter.chen@nxp.com>
+Cc: mark.rutland@arm.com, ulf.hansson@linaro.org, stephen.boyd@linaro.org, k.kozlowski@samsung.com, festevam@gmail.com, stillcompiling@gmail.com, pawel.moll@arm.com, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, arnd@arndb.de, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, oscar@naiandei.net, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, sre@kernel.org, broonie@kernel.org, shawnguo@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-> > > > On HP Proliant DL360 G6, Debian unstable 4.6 kernel runs fine but 
-> > > > selfcompiled 4.7-rc6 and 4.7-rc7 sometimes crash with NMI from 
-> > > > intel_idle. Sometimes it boots fine. With intel_idle disabled, it has 
-> > > > booted successful so far in 2 tries, one with rc6 and one with rc7.
-> > > 
-> > > More testing shows it can NMI on acpi_idle too, not just intel_idle.
-> > > 
-> > > > Screenshot with some backtrace: 
-> > > > http://kodu.ut.ee/~mroos/intel-idle-NMI.png
-> > > 
-> > > http://kodu.ut.ee/~mroos/acpi-idle-NMI.png
-> > 
-> > There were almost no changes in the ACPI idle driver between 4.6 and
-> > 4.7-rc, so the reason is somewhere else.
-> > 
-> > Have you tried any earlier 4.7-rc?
+Am Mittwoch, den 13.07.2016, 10:06 +0800 schrieb Peter Chen:
+> Add binding doc for generic power sequence library.
 > 
-> I tried selfcompiled 4.6.0 now with the same conf that 4.7-rc's have and 
-> after multiple tries I got the same NMI out of 4.6 too, from kernfs 
-> lookup (that seems to just a random victim).
+> Signed-off-by: Peter Chen <peter.chen@nxp.com>
+> ---
+>  .../bindings/power/pwrseq/pwrseq-generic.txt       | 53 ++++++++++++++++++++++
+>  1 file changed, 53 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
 > 
-> So this is not a 4.7 regression and probably not idle-releated.
+> diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+> new file mode 100644
+> index 0000000..186c58c
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+> @@ -0,0 +1,53 @@
+> +The generic power sequence library
+> +
+> +Some hard-wired USB/MMC devices need to do power sequence to let the
+> +device work normally,
 
-Confirmed this is about IOMMU+DMAR, I'm continuing in another reply 
-thread with other CC-s to not bother linux-pm people with it.
+I would replace "to let the device work normally" with "before the
+device can be enumerated [on the bus]" here.
 
--- 
-Meelis Roos (mroos@linux.ee)
+>  the typical power sequence like: enable USB
+> +PHY clock, toggle reset pin, etc. But current Linux USB driver
+> +lacks of such code to do it, it may cause some hard-wired USB devices
+> +works abnormal or can't be recognized by controller at all. The
+> +power sequence will be done before this device can be found at USB
+> +bus.
+> +
+> +The power sequence properties is under the device node.
+> +
+> +Required properties:
+> +- power-sequence: this device needs to do power sequence before enumeration
+
+As Joshua pointed out, is this even needed at all?
+
+> +Optional properties:
+> +- clocks: the input clock for device.
+> +- reset-gpios: Should specify the GPIO for reset.
+> +- reset-duration-us: the duration in microsecond for assert reset signal.
+
+With the above two issues sorted out,
+Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
+
+regards
+Philipp
