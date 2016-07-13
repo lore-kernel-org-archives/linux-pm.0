@@ -1,78 +1,88 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Query] Preemption (hogging) of the work handler
-Date: Tue, 12 Jul 2016 17:18:08 -0700
-Message-ID: <20160713001808.GT4695@ubuntu>
-References: <20160701165959.GR12473@ubuntu>
- <20160701172232.GD28719@htj.duckdns.org>
- <20160706182842.GS2671@ubuntu>
- <20160711102603.GI12410@quack2.suse.cz>
- <20160711154438.GA528@swordfish>
- <20160711223501.GI4695@ubuntu>
- <20160712231903.GR4695@ubuntu>
+From: Peter Chen <peter.chen@nxp.com>
+Subject: [PATCH v2 0/6] power: add power sequence library
+Date: Wed, 13 Jul 2016 10:06:44 +0800
+Message-ID: <1468375610-18625-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:34018 "EHLO
-	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750829AbcGMASN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jul 2016 20:18:13 -0400
-Received: by mail-pf0-f178.google.com with SMTP id h14so12049850pfe.1
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jul 2016 17:18:13 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160712231903.GR4695@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, stephen.boyd@linaro.org, oscar@naiandei.net, arnd@arndb.de, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, linux-usb@vger.kernel.org, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, stillcompiling@gmail.com, Peter Chen <peter.chen@nxp.com>, p.zabel@pengutronix.de, festevam@gmail.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, rjw@rjwysocki.net
-Cc: Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, linux-pm@vger.kernel.org
 
-On 12-07-16, 16:19, Viresh Kumar wrote:
-> Okay, we have tracked this BUG and its really interesting.
-> 
-> I hacked the platform's serial driver to implement a putchar() routine
-> that simply writes to the FIFO in polling mode, that helped us in
-> tracing on where we are going wrong.
-> 
-> The problem is that we are running asynchronous printks and we call
-> wake_up_process() from the last running CPU which has disabled
-> interrupts. That takes us to: try_to_wake_up().
-> 
-> In our case the CPU gets deadlocked on this line in try_to_wake_up().
-> 
->         raw_spin_lock_irqsave(&p->pi_lock, flags);
-> 
-> I will explain how:
-> 
-> The try_to_wake_up() function takes us through the scheduler code (RT
-> sched), to the hrtimer code, where we eventually call ktime_get() (for
-> the MONOTONIC clock used for hrtimer). And this function has this:
-> 
->         WARN_ON(timekeeping_suspended);
-> 
-> This starts another printk while we are in the middle of
-> wake_up_process() and the CPU tries to take the above lock again and
-> gets stuck there :)
-> 
-> This doesn't happen everytime because we don't always call ktime_get()
-> and it is called only if hrtimer_active() returns false.
-> 
-> This happened because of a WARN_ON() but it can happen anyway. Think
-> about this case:
-> 
-> - offline all CPUs, except 0
-> - call any routine that prints messages after disabling interrupts,
->   etc.
-> - If any of the function within wake_up_process() does a print, we are
->   screwed.
-> 
-> So the thing is that we can't really call wake_up_process() in cases
-> where the last CPU disables interrupts. And that's why my fixup patch
-> (which moved to synchronous prints after suspend) really works.
+Hi all,
 
-Actually, any printk done from wake_up_process() will hit this, even
-if all the others CPUs are up as well :)
+This is a follow-up for my last power sequence framework patch set [1].
+According to Rob Herring and Ulf Hansson's comments[2], I use a generic
+power sequence library for parsing the power sequence elements on DT,
+and implement generic power sequence on library. The host driver
+can allocate power sequence instance, and calls pwrseq APIs accordingly.
 
-Its only BUG_ON() which has special handling in printk, and so we
-print that safely.
+In future, if there are special power sequence requirements, the special
+power sequence library can be created.
+
+This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+two hot-plug devices to simulate this use case, the related binding
+change is updated at patch[1/6], The udoo board changes were tested
+using my last power sequence patch set.[3]
+
+Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+need to power on itself before it can be found by ULPI bus.
+
+[1] http://www.spinics.net/lists/linux-usb/msg142755.html
+[2] http://www.spinics.net/lists/linux-usb/msg143106.html
+[3] http://www.spinics.net/lists/linux-usb/msg142815.html
+
+Changes for v2:
+- Delete "pwrseq" prefix and clock-names for properties at dt binding
+- Should use structure not but its pointer for kzalloc
+- Since chipidea core has no of_node, let core's of_node equals glue
+  layer's at core's probe
+
+
+Peter Chen (6):
+  binding-doc: power: pwrseq-generic: add binding doc for generic power
+    sequence library
+  power: add power sequence library
+  binding-doc: usb: usb-device: add optional properties for power
+    sequence
+  usb: core: add power sequence handling for USB devices
+  usb: chipidea: let chipidea core device of_node equal's glue layer
+    device of_node
+  ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+
+ .../bindings/power/pwrseq/pwrseq-generic.txt       |  53 ++++++++
+ .../devicetree/bindings/usb/usb-device.txt         |   9 ++
+ arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  27 +++--
+ drivers/power/Kconfig                              |   1 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/pwrseq/Kconfig                       |  20 +++
+ drivers/power/pwrseq/Makefile                      |   2 +
+ drivers/power/pwrseq/core.c                        |  79 ++++++++++++
+ drivers/power/pwrseq/pwrseq_generic.c              | 134 +++++++++++++++++++++
+ drivers/usb/chipidea/core.c                        |  10 ++
+ drivers/usb/core/Makefile                          |   1 +
+ drivers/usb/core/hub.c                             |  12 +-
+ drivers/usb/core/hub.h                             |  12 ++
+ drivers/usb/core/pwrseq.c                          | 102 ++++++++++++++++
+ include/linux/power/pwrseq.h                       |  55 +++++++++
+ 15 files changed, 502 insertions(+), 16 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+ create mode 100644 drivers/power/pwrseq/Kconfig
+ create mode 100644 drivers/power/pwrseq/Makefile
+ create mode 100644 drivers/power/pwrseq/core.c
+ create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
+ create mode 100644 drivers/usb/core/pwrseq.c
+ create mode 100644 include/linux/power/pwrseq.h
 
 -- 
-viresh
+1.9.1
