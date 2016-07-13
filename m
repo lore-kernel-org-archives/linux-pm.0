@@ -1,72 +1,67 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: Re: [PATCH] PM / hibernate: Introduce snapshot test mode for
- hibernation
-Date: Wed, 13 Jul 2016 18:39:44 +0800
-Message-ID: <57861A70.9090606@intel.com>
-References: <1467873658-31986-1-git-send-email-yu.c.chen@intel.com>
- <20160713095005.GA27870@amd> <578615D5.3060501@intel.com>
- <20160713102156.GA14505@atrey.karlin.mff.cuni.cz>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Kernel stability on baytrail machines
+Date: Wed, 13 Jul 2016 12:48:03 +0200
+Message-ID: <20160713104802.GA18296@atrey.karlin.mff.cuni.cz>
+References: <606d9b223f3c12775d108b98c4df72ae@feix.cz>
+ <20160409160119.GA19362@xo-6d-61-c0.localdomain>
+ <20160409201417.4436d4bd@lxorguk.ukuu.org.uk>
+ <20160712194158.GA4834@laptop>
+ <20160712212448.GA19237@amd>
+ <864e7ac7-8041-9a81-819c-d6b60b59dd0f@feix.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:23417 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752749AbcGMKc5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 13 Jul 2016 06:32:57 -0400
-In-Reply-To: <20160713102156.GA14505@atrey.karlin.mff.cuni.cz>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36938 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751139AbcGMKsT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2016 06:48:19 -0400
+Content-Disposition: inline
+In-Reply-To: <864e7ac7-8041-9a81-819c-d6b60b59dd0f@feix.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
+To: Michal Feix <michal@feix.cz>
+Cc: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org
 
+> On Tue 2016-07-12 16:41:58, Ezequiel Garcia wrote:
+> >>Hi Alan,
+> >>
+> >>(Adding interested people to this thread)
+> >>
+> >>On 09 Apr 08:14 PM, One Thousand Gnomes wrote:
+> >>>>>I do feel that the importance of the mentioned bug is currently
+> >>>>>underestimated. Can anyone here give a note, how much current linux
+> >>>>>kernel is supposed to be stable on general baytrail machines?
+> >>>>If you did not get any replies... you might want to check MAINTAINERS file, and
+> >>>>put Intel x86 maintainers on Cc list.
+> >>>>
+> >>>>I'm sure someone cares :-).
+> >>>Yes we care, and there are people looking at the various reports.
+> >>>
+> >>Are there any updates on the status of this issue?
+> >>
+> >>The current bugzilla report [1] marks this as a power management
+> >>issue. However, many reports indicate that it would only freeze
+> >>when running X, so it's not completely clear if it's related to
+> >>the gfx driver too.
+> >Does
+> >
+> >"intel_idle.max_cstate=1"
+> >
+> >fix it for you?
+> Yes, it does.
+> >If you feel it is X-only problem, you may want to provide details
+> >about your graphics subsystem (DRM enabled? framebuffer only?) and
+> >probably cc.
+> It's not X-only problem. Happens even in console mode, which is KMS
+> switched during boot though.
+> >...actually... you may want to verify if it happens in unaccelerated X.
+> As it happens even in console mode, is this relevant test?
 
+No, no need to test with X.
 
-On 2016=E5=B9=B407=E6=9C=8813=E6=97=A5 18:21, Pavel Machek wrote:
-> Hi!
->
->> On 2016???07???13??? 17:50, Pavel Machek wrote:
->>> On Thu 2016-07-07 14:40:58, Chen Yu wrote:
->>>> This mode is to verify if the snapshot data written to
->>>> swap device can be successfully restored to memory. It
->>>> is useful to ease the debugging process on hibernation,
->>>> since this mode can not only bypass the BIOSen/bootloader,
->>>> but also the system re-initialization.
->>>>
->>>> For example:
->>>> $ sudo echo snapshot > /sys/power/disk
->>>> $ sudo echo disk > /sys/power/state
->>>>
->>>> /* manual resume.*/
->>>> $ sudo echo 8:3 > /sys/power/resume
->>> Your examples will not work, will they?
->> It works on my platform, although I did not tested it for too many
->> rounds.
-> Please check again:
->
-> sudo echo disk > /sys/power/state
-> -bash: /sys/power/state: Permission denied
->
-> ...because bash does the open, not echo.
-Sorry, my bad, I logined as root:P
-I'll rewrite the commit log.
->>> This is also quite tricky/dangerous. If you do this with filesystem=
-s
->>> mounted R/W, it is "good bye, filesystems".
->> Ah, yes, this is quite tricky, maybe we can use this option as a
->> debug method,
->> for example, boot with rootfs =3D initrd, without mounting any disks=
-,
->> and then swapon the swap device, and do a testing. This should be sa=
-fer?
-> Yeah, that's the way. Read-only root is other option.
->
->>> I guess updating documentation would be welcome from my side,
->>> otherwise it should be ok.
->> OK, I'll  update the documents.
-> Just add fat warning into the documentation.
-OK.
-> Thanks,
-> 									Pavel
+Would it be possible to test in good old VGA mode?
 
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
