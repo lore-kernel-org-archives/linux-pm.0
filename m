@@ -1,136 +1,87 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][RFC v2] PM / hibernate: Introduce snapshot test mode for hibernation
-Date: Wed, 13 Jul 2016 14:08:36 +0800
-Message-ID: <1468390116-957-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Subject: Re: [Query] Preemption (hogging) of the work handler
+Date: Wed, 13 Jul 2016 16:00:04 +0900
+Message-ID: <20160713070004.GB563@swordfish>
+References: <20160701165959.GR12473@ubuntu>
+ <20160701172232.GD28719@htj.duckdns.org>
+ <20160706182842.GS2671@ubuntu>
+ <20160711102603.GI12410@quack2.suse.cz>
+ <20160711154438.GA528@swordfish>
+ <20160711223501.GI4695@ubuntu>
+ <20160712093805.GA498@swordfish>
+ <20160712125243.GA8597@pathway.suse.cz>
+ <20160712131203.GN4695@ubuntu>
+ <20160712171113.GD4695@ubuntu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f67.google.com ([209.85.220.67]:36733 "EHLO
+	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883AbcGMHAX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2016 03:00:23 -0400
+Content-Disposition: inline
+In-Reply-To: <20160712171113.GD4695@ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Petr Mladek <pmladek@suse.com>, rjw@rjwysocki.net, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, linux-pm@vger.kernel.org
 
-This mode is used to verify if the snapshot data written to
-the swap device can be successfully restored to the memory. It
-is useful to ease the debugging process on hibernation,
-since this mode can not only bypass the BIOSen/bootloader,
-but also the system re-initialization.
+On (07/12/16 10:11), Viresh Kumar wrote:
+> +extern bool printk_sync_suspended;
+>  static int suspend_enter(suspend_state_t state, bool *wakeup)
+>  {
+>         char suspend_abort[MAX_SUSPEND_ABORT_LEN];
+> @@ -218,6 +219,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+>         }
+>  
+>         arch_suspend_disable_irqs();
+> +       printk_sync_suspended = true;
+>         BUG_ON(!irqs_disabled());
+>  
+>         error = syscore_suspend();
+> @@ -237,6 +239,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+>                 syscore_resume();
+>         }
+>  
+> +       printk_sync_suspended = false;
+>         arch_suspend_enable_irqs();
+>         BUG_ON(irqs_disabled());
+>  
+> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+> index 46bb017ac2c9..187054074b96 100644
+> --- a/kernel/printk/printk.c
+> +++ b/kernel/printk/printk.c
+> @@ -293,6 +293,7 @@ static u32 log_buf_len = __LOG_BUF_LEN;
+>  
+>  /* Control whether printing to console must be synchronous. */
+>  static bool __read_mostly printk_sync = false;
+> +bool printk_sync_suspended = false;
+>  /* Printing kthread for async printk */
+>  static struct task_struct *printk_kthread;
+>  /* When `true' printing thread has messages to print */
+> @@ -300,7 +301,7 @@ static bool printk_kthread_need_flush_console;
+>  
+>  static inline bool can_printk_async(void)
+>  {
+> -       return !printk_sync && printk_kthread;
+> +       return !printk_sync && !printk_sync_suspended && printk_kthread;
+>  }
+>  
+>  /* Return log buffer address */
+> 
+> 
+> i.e. I disabled async-printk after interrupts are disabled on the last
+> running CPU (0) and enabled it again before enabling interrupts back.
+> 
+> This FIXES the hangs for me :)
 
-For example:
-$ sudo echo snapshot > /sys/power/pm_test
-$ sudo echo disk > /sys/power/state
+ah, just saw this. OK, very close to what I sent in another thread, so I
+guess it will work on your side.
+let me know if it doesn't, I'll fold it into 0001 and re-spin the series.
+thanks for your help!
 
-[  267.959784] PM: Image saving progress:  80%
-[  268.038669] PM: Image saving progress:  90%
-[  268.111745] PM: Image saving progress: 100%
-[  268.129269] PM: Image saving done.
-[  268.133485] PM: Wrote 518612 kbytes in 0.75 seconds (691.48 MB/s)
-[  268.140564] PM: S|
-[  268.160067] hibernation debug: Waiting for 5 seconds.
-...
-[  273.508638] PM: Looking for hibernation image.
-[  273.516583] PM: Image signature found, resuming
-[  273.926547] PM: Loading and decompressing image data (129653 pages)...
-[  274.122452] PM: Image loading progress:   0%
-[  274.322127] PM: Image loading progress:  10%
-...
 
-Rebased on top of linux-next.
+I'll also drop the KERN_CONT patch for now. apparently it didn't work for
+Petr.
 
-Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- kernel/power/hibernate.c | 10 ++++++++--
- kernel/power/main.c      |  3 +++
- kernel/power/power.h     |  3 +++
- kernel/power/swap.c      |  7 +++++++
- 4 files changed, 21 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 51441d8..30cc5b4 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -43,6 +43,7 @@ static char resume_file[256] = CONFIG_PM_STD_PARTITION;
- dev_t swsusp_resume_device;
- sector_t swsusp_resume_block;
- __visible int in_suspend __nosavedata;
-+static int software_resume(void);
- 
- enum {
- 	HIBERNATION_INVALID,
-@@ -647,7 +648,7 @@ static void power_down(void)
-  */
- int hibernate(void)
- {
--	int error, nr_calls = 0;
-+	int error, nr_calls = 0, snapshot_test = 0;
- 
- 	if (!hibernation_available()) {
- 		pr_debug("PM: Hibernation not available.\n");
-@@ -699,7 +700,9 @@ int hibernate(void)
- 		pr_debug("PM: writing image.\n");
- 		error = swsusp_write(flags);
- 		swsusp_free();
--		if (!error)
-+		if (hibernation_test(TEST_SNAPSHOT))
-+			snapshot_test = 1;
-+		if (!error && !snapshot_test)
- 			power_down();
- 		in_suspend = 0;
- 		pm_restore_gfp_mask();
-@@ -721,6 +724,9 @@ int hibernate(void)
- 	atomic_inc(&snapshot_device_available);
-  Unlock:
- 	unlock_system_sleep();
-+	if (snapshot_test)
-+		software_resume();
-+
- 	return error;
- }
- 
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 5ea50b1..80fe48e 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -83,6 +83,9 @@ int pm_test_level = TEST_NONE;
- 
- static const char * const pm_tests[__TEST_AFTER_LAST] = {
- 	[TEST_NONE] = "none",
-+#ifdef CONFIG_HIBERNATION
-+	[TEST_SNAPSHOT] = "snapshot",
-+#endif
- 	[TEST_CORE] = "core",
- 	[TEST_CPUS] = "processors",
- 	[TEST_PLATFORM] = "platform",
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 064963e..101d636 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -225,6 +225,9 @@ static inline int restore_highmem(void) { return 0; }
- enum {
- 	/* keep first */
- 	TEST_NONE,
-+#ifdef CONFIG_HIBERNATION
-+	TEST_SNAPSHOT,
-+#endif
- 	TEST_CORE,
- 	TEST_CPUS,
- 	TEST_PLATFORM,
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 160e100..facd71b 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -348,6 +348,13 @@ static int swsusp_swap_check(void)
- 	if (res < 0)
- 		blkdev_put(hib_resume_bdev, FMODE_WRITE);
- 
-+	/*
-+	 * Update the resume device to the one actually used,
-+	 * so software_resume() can use it in case it is invoked
-+	 * from hibernate() to test the snapshot.
-+	 */
-+	swsusp_resume_device = hib_resume_bdev->bd_dev;
-+
- 	return res;
- }
- 
--- 
-2.7.4
+	-ss
