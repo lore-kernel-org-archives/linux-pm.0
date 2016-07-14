@@ -1,37 +1,276 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH v3 0/3] cpufreq: avoid redundant driver calls in schedutil
-Date: Thu, 14 Jul 2016 11:00:14 -0700
-Message-ID: <20160714180014.GG27987@graphite.smuckle.net>
-References: <1468441527-23534-1-git-send-email-smuckle@linaro.org>
- <57876337.6090409@linaro.org>
+From: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Subject: Re: [PATCH v4] Force cppc_cpufreq to report values in KHz to fix user
+ space reporting
+Date: Thu, 14 Jul 2016 12:27:57 -0600
+Message-ID: <8ef70e85-90e9-9195-6899-70413303b65b@codeaurora.org>
+References: <1468343771-32176-1-git-send-email-ahs3@redhat.com>
+ <20160714100320.GA768@arm.com>
+ <05e072ac-165d-ec06-5ec1-cdc18fca272c@redhat.com>
+ <b513fa62-1c0f-b5fc-9b33-4888de5597bf@codeaurora.org>
+ <193e418c-a63b-79ba-7dc6-ad234733ef66@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:36782 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119AbcGNSAT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jul 2016 14:00:19 -0400
-Received: by mail-pa0-f51.google.com with SMTP id pp5so24056442pac.3
-        for <linux-pm@vger.kernel.org>; Thu, 14 Jul 2016 11:00:18 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <57876337.6090409@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <193e418c-a63b-79ba-7dc6-ad234733ef66@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: ahs3@redhat.com
+Cc: viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, rjw@rjwysocki.net, lenb@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alexey Klimov <alexey.klimov@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Pingbo Wen <pingbo.wen@linaro.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
 
-On Thu, Jul 14, 2016 at 06:02:31PM +0800, Pingbo Wen wrote:
-> > Steve Muckle (3):
-> >   cpufreq: add cpufreq_driver_resolve_freq()
-> >   cpufreq: schedutil: map raw required frequency to driver frequency
-> 
-> Tested the first two patches on db410c, only waking up irq_work 53
-> times, while previous was 257 times(79% decrease) in Android home idle
-> for 5 minutes.
+Hi Al,
 
-Thanks Pingbo. My experience measuring the number of calls into the acpi
-cpufreq fast switch path was similar. An arbitrary system workload I
-chose showed a ~75% reduction in calls.
 
-thanks,
-Steve
+
+On 7/14/2016 11:57 AM, Al Stone wrote:
+> On 07/14/2016 11:39 AM, Prakash, Prashanth wrote:
+>>
+>> On 7/14/2016 10:15 AM, Al Stone wrote:
+>>> On 07/14/2016 04:03 AM, Alexey Klimov wrote:
+>>>> Hi Al,
+>>>>
+>>>> On Tue, Jul 12, 2016 at 11:16:11AM -0600, Al Stone wrote:
+>>>>> When CPPC is being used by ACPI on arm64, user space tools such as
+>>>>> cpupower report CPU frequency values from sysfs that are incorrect.
+>>>>>
+>>>>> What the driver was doing was reporting the values given by ACPI tables
+>>>>> in whatever scale was used to provide them.  However, the ACPI spec
+>>>>> defines the CPPC values as unitless abstract numbers.  Internal kernel
+>>>>> structures such as struct perf_cap, in contrast, expect these values
+>>>>> to be in KHz.  When these struct values get reported via sysfs, the
+>>>>> user space tools also assume they are in KHz, causing them to report
+>>>>> incorrect values (for example, reporting a CPU frequency of 1MHz when
+>>>>> it should be 1.8GHz).
+>>>>>
+>>>>> While the investigation for a long term fix proceeds (several options
+>>>>> are being explored, some of which may require spec changes or other
+>>>>> much more invasive fixes), this patch forces the values read by CPPC
+>>>>> to be read in KHz, regardless of what they actually represent.
+>>>>>
+>>>>> The downside is that this approach has some assumptions:
+>>>>>
+>>>>>    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
+>>>>>    value for a processor is set to a non-zero value.
+>>>>>
+>>>>>    (2) It assumes that all processors run at the same speed, or that
+>>>>>    the CPPC values have all been scaled to reflect relative speed.
+>>>>>    This patch retrieves the largest CPU Max Frequency from a type 4 DMI
+>>>>>    record that it can find.  This may not be an issue, however, as a
+>>>>>    sampling of DMI data on x86 and arm64 indicates there is often only
+>>>>>    one such record regardless.  Since CPPC is relatively new, it is
+>>>>>    unclear if the ACPI ASL will always be written to reflect any sort
+>>>>>    of relative performance of processors of differing speeds.
+>>>>>
+>>>>>    (3) It assumes that performance and frequency both scale linearly.
+>>>>>
+>>>>> For arm64 servers, this may be sufficient, but it does rely on
+>>>>> firmware values being set correctly.  Hence, other approaches are
+>>>>> also being considered.
+>>>>>
+>>>>> This has been tested on three arm64 servers, with and without DMI, with
+>>>>> and without CPPC support.
+>>>>>
+>>>>> Changes for v4:
+>>>>>     -- Replaced magic constants with #defines (Rafael Wysocki)
+>>>>>     -- Renamed cppc_unitless_to_khz() to cppc_to_khz() (Rafael Wysocki)
+>>>>>     -- Replaced hidden initialization with a clearer form (Rafael Wysocki)
+>>>>>     -- Instead of picking up the first Max Speed value from DMI, we will
+>>>>>        now get the largest Max Speed; still an approximation, but slightly
+>>>>>        less subject to error (Rafael Wysocki)
+>>>>>     -- Kconfig for cppc_cpufreq now depends on DMI, instead of selecting
+>>>>>        it, in order to make sure DMI is set up properly (Rafael Wysocki)
+>>>>>
+>>>>> Changes for v3:
+>>>>>     -- Added clarifying commentary re short-term vs long-term fix (Alexey
+>>>>>        Klimov)
+>>>>>     -- Added range checking code to ensure proper arithmetic occurs,
+>>>>>        especially no division by zero (Alexey Klimov)
+>>>>>
+>>>>> Changes for v2:
+>>>>>     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
+>>>>>        not SELECT DMI (found by build daemon)
+>>>>>
+>>>>> Signed-off-by: Al Stone <ahs3@redhat.com>
+>>>>> ---
+>>>>>  drivers/acpi/cppc_acpi.c    | 106 +++++++++++++++++++++++++++++++++++++++++---
+>>>>>  drivers/cpufreq/Kconfig.arm |   2 +-
+>>>>>  2 files changed, 102 insertions(+), 6 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+>>>>> index 8adac69..6e6df9c 100644
+>>>>> --- a/drivers/acpi/cppc_acpi.c
+>>>>> +++ b/drivers/acpi/cppc_acpi.c
+>>>>> @@ -40,8 +40,18 @@
+>>>>>  #include <linux/cpufreq.h>
+>>>>>  #include <linux/delay.h>
+>>>>>  #include <linux/ktime.h>
+>>>>> +#include <linux/dmi.h>
+>>>>> +
+>>>>> +#include <asm/unaligned.h>
+>>>>>  
+>>>>>  #include <acpi/cppc_acpi.h>
+>>>>> +
+>>>>> +/* Minimum struct length needed for the DMI processor entry we want */
+>>>>> +#define DMI_ENTRY_PROCESSOR_MIN_LENGTH	48
+>>>>> +
+>>>>> +/* Offest in the DMI processor structure for the max frequency */
+>>>>> +#define DMI_PROCESSOR_MAX_SPEED  0x14
+>>>>> +
+>>>>>  /*
+>>>>>   * Lock to provide mutually exclusive access to the PCC
+>>>>>   * channel. e.g. When the remote updates the shared region
+>>>>> @@ -709,6 +719,56 @@ static int cpc_write(struct cpc_reg *reg, u64 val)
+>>>>>  	return ret_val;
+>>>>>  }
+>>>>>  
+>>>>> +static u64 cppc_dmi_khz;
+>>>>> +
+>>>>> +static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
+>>>>> +{
+>>>>> +	const u8 *dmi_data = (const u8 *)dm;
+>>>>> +	u16 *mhz = (u16 *)private;
+>>>>> +
+>>>>> +	if (dm->type == DMI_ENTRY_PROCESSOR &&
+>>>>> +	    dm->length >= DMI_ENTRY_PROCESSOR_MIN_LENGTH) {
+>>>>> +		u16 val = (u16)get_unaligned((const u16 *)
+>>>>> +				(dmi_data + DMI_PROCESSOR_MAX_SPEED));
+>>>>> +		*mhz = val > *mhz ? val : *mhz;
+>>>>> +	}
+>>>>> +}
+>>>>> +
+>>>>> +
+>>>>> +static u64 cppc_get_dmi_khz(void)
+>>>>> +{
+>>>>> +	u16 mhz = 0;
+>>>>> +
+>>>>> +	dmi_walk(cppc_find_dmi_mhz, &mhz);
+>>>>> +
+>>>>> +	/*
+>>>>> +	 * Real stupid fallback value, just in case there is no
+>>>>> +	 * actual value set.
+>>>>> +	 */
+>>>>> +	mhz = mhz ? mhz : 1;
+>>>>> +
+>>>>> +	return (1000 * mhz);
+>>>>> +}
+>>>>> +
+>>>>> +static u64 cppc_to_khz(u64 min_in, u64 max_in, u64 val)
+>>>>> +{
+>>>>> +	/*
+>>>>> +	 * The incoming val should be min <= val <= max.  Our
+>>>>> +	 * job is to convert that to KHz so it can be properly
+>>>>> +	 * reported to user space via cpufreq_policy.
+>>>>> +	 */
+>>>>> +	u64 curval = val;
+>>>>> +	u64 maxf = max_in;
+>>>>> +	u64 minf = min_in;
+>>>>> +
+>>>>> +	/* range check the input values */
+>>>>> +	curval = curval < minf ? minf : curval;
+>>>>> +	curval = curval > maxf ? maxf : curval;
+>>>>> +	minf = minf >= maxf ? maxf - 1 : minf;
+>>>> In the pedantic world kernel should warn in dmesg about nominal value that is
+>>>> out of range. Or min being larger than max.
+>>>> Not really an issue but for debugging purposes..
+>>> Fair enough.  I had some pr_warns/pr_info in there before while
+>>> I was debugging but pulled them out; it seemed noisy at the time.
+>>>
+>>>>> +	return ((curval - minf) * cppc_dmi_khz) / (maxf - minf);
+>>>>> +}
+>>>>> +
+>>>>>  /**
+>>>>>   * cppc_get_perf_caps - Get a CPUs performance capabilities.
+>>>>>   * @cpunum: CPU from which to get capabilities info.
+>>>>> @@ -748,17 +808,53 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+>>>>>  		}
+>>>>>  	}
+>>>>>  
+>>>>> -	cpc_read(&highest_reg->cpc_entry.reg, &high);
+>>>>> -	perf_caps->highest_perf = high;
+>>>>> +	/*
+>>>>> +	 * Since these values in perf_caps will be used in setting
+>>>>> +	 * up the cpufreq policy, they must always be stored in units
+>>>>> +	 * of KHz.  If they are not, user space tools will become very
+>>>>> +	 * confused since they assume these are in KHz when reading
+>>>>> +	 * sysfs.
+>>>>> +	 *
+>>>>> +	 * NB: there may be better approaches to this problem that, as
+>>>>> +	 * of this writing, are still being explored.  Ideally, this is
+>>>>> +	 * a short term solution since correlating CPPC abstract values
+>>>>> +	 * with CPU frequency may or may not reflect actual performance.
+>>>>> +	 *
+>>>>> +	 * The reason longer term solutions are being explored is because
+>>>>> +	 * this solution requires we make the following assumptions:
+>>>>> +	 *
+>>>>> +	 *    (1) It relies on SMBIOS3 being used, *and* that the Max
+>>>>> +	 *        Frequency value for a processor is set to a non-zero value.
+>>>>> +	 *
+>>>>> +	 *    (2) It assumes that all processors run at the same speed, or
+>>>>> +	 *        that the CPPC values have all been scaled to reflect any
+>>>>> +	 *        relative differences.  This code retrieves the largest CPU
+>>>>> +	 *        Max Frequency from a type 4 DMI record that it can find.
+>>>>> +	 *        This may not be an issue, however, as a sampling of DMI
+>>>>> +	 *        data on x86 and arm64 indicates there is often only one
+>>>>> +	 *        such record regardless.
+>>>>> +	 *
+>>>>> +	 *    (3) It assumes that performance and frequency both scale
+>>>>> +	 *        linearly.
+>>>>> +	 *
+>>>>> +	 * None of these are particularly horrible assumptions.  But, they
+>>>>> +	 * are assumptions and ultimately we'd like to be able to report
+>>>>> +	 * performance without quite so many of them.
+>>>>> +	 *
+>>>>> +	 */
+>>>>> +	cppc_dmi_khz = cppc_get_dmi_khz();
+>>>>>  
+>>>>> +	cpc_read(&highest_reg->cpc_entry.reg, &high);
+>>>>>  	cpc_read(&lowest_reg->cpc_entry.reg, &low);
+>>>>> -	perf_caps->lowest_perf = low;
+>>>>> +
+>>>>> +	perf_caps->highest_perf = cppc_to_khz(low, high, high);
+>>>>> +	perf_caps->lowest_perf = cppc_to_khz(low, high, low);
+>>>> Just to check. Do I understand correctly that cpufreq subsystem is populated
+>>>> with this converted values (policy->min and max), then cpufreq sends request to
+>>>> set new target_freq in converted units to CPPC that in its turn is not aware
+>>>> about convertation or do i miss something?
+>>>> There should be convertation back to abstract scale for cppc to correctly
+>>>> understand and handle request to set new desired performance, shouldn't it?
+>>> I'll go check again to be sure I didn't miss something, but my understanding
+>>> is that the CPPC abstract scale that was provided in the ACPI tables would be
+>>> translated to a different range modulo the frequency, with the relationships
+>>> between min, max and nominal intact, and that the new range would be used for
+>>> the abstract scale instead.  So as far as CPPC and cpufreq are concerned, they
+>>> would just use the new range for everything -- they just operate on whatever
+>>> range is provided, and are more concerned about the relationships between min,
+>>> max and nominal than their actual values.
+>> When we write our request to the desired perf register, the written value should be
+>> in the original scale, so we need to convert it from KHz to the same scale that was
+>> present in ACPI. So we have to do this conversion on all the APIs exposed by cppc acpi
+>> module
+>>
+>> Given the above, it might makes sense to move this logic to cpufreq/cppc_cpufreq.c,
+>> so that we have a clear boundary on what is the scale being used in each module.
+>> - ACPI will continue to use to original scale
+>> - cppc_cpufreq will use the KHz scale as rest of the cpufreq drivers
+>>
+>> Thanks,
+>> Prashanth
+> Oh, bugger.  Thanks, Prashanth.  I had spaced that these could be registers,
+> too, and not just integers, in the ASL.  My bad.
+>
+> So, yeah, that might make sense.  Another approach that might be simpler is to
+> look at the sysfs read for the various files and just fix the representation
+> there.  I'll take a look at both.
+I think your current approach of reporting the highest/lowest in KHz to the cpufreq
+framework is probably much better than fixing at the sysfs interface.
+
+One of the items on my todo list is to modify the cpufreq_stats to create a pseudo freq.
+table and use that to maintain the stats if the cpufreq driver(cppc) doesn't have a built-in
+freq. table. For things like these fixing at the sysfs interface can get a little ugly, whereas
+implementing it on top of your current approach would be much cleaner.
+
+There are very few interfaces in the cppc_cpufreq driver that would require an update
+due to this conversion, so it should be simpler compared to sysfs as well.
+
+Thanks,
+Prashanth
