@@ -1,105 +1,211 @@
 From: Chen Yu <yu.c.chen@intel.com>
-Subject: Re: [PATCH] PM / hibernate: Introduce snapshot test mode for
- hibernation
-Date: Thu, 14 Jul 2016 18:44:49 +0800
-Message-ID: <57876D21.8050003@intel.com>
-References: <1467873658-31986-1-git-send-email-yu.c.chen@intel.com>
- <20160713095005.GA27870@amd> <578615D5.3060501@intel.com>
- <20160713102156.GA14505@atrey.karlin.mff.cuni.cz>
- <57861A70.9090606@intel.com> <20160713170123.GA13546@amd>
- <CAJZ5v0jfFFKs09sQC0Fq2iiL30tJxKtaie7tWCaczO+Dm3Aa+w@mail.gmail.com>
- <20160713202611.GA32111@amd>
- <CAJZ5v0hsero4EhCwjo2mz4tN4aHj=bhsgcVJUYjHF9Kem=6M6g@mail.gmail.com>
- <20160713214546.GA26692@amd>
- <CAJZ5v0im+eGWFKTn_BMdW34WpOKxO2P_jkzTeAHGrM1mDaGabw@mail.gmail.com>
- <CAJZ5v0g5EC7gnYUpxnNUTOZhLP+xQxpWAcZYmKfZkq35xziotg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0g5EC7gnYUpxnNUTOZhLP+xQxpWAcZYmKfZkq35xziotg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2][RFC v3] PM / hibernate: Introduce snapshot test mode for hibernation
+Date: Thu, 14 Jul 2016 18:45:20 +0800
+Message-ID: <a402214c2c9c35e57ee6ae444c10155d4c0d0828.1468491815.git.yu.c.chen@intel.com>
+References: <cover.1468491815.git.yu.c.chen@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:1248 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751234AbcGNKhn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 14 Jul 2016 06:37:43 -0400
+In-Reply-To: <cover.1468491815.git.yu.c.chen@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 
-Hi,
+This mode is used to verify if the snapshot data written to
+the swap device can be successfully restored to the memory. It
+is useful to ease the debugging process on hibernation,
+since this mode can not only bypass the BIOSes/bootloader,
+but also the system re-initialization.
 
-On 2016=E5=B9=B407=E6=9C=8814=E6=97=A5 06:18, Rafael J. Wysocki wrote:
-> On Thu, Jul 14, 2016 at 12:00 AM, Rafael J. Wysocki <rafael@kernel.or=
-g> wrote:
->> On Wed, Jul 13, 2016 at 11:45 PM, Pavel Machek <pavel@ucw.cz> wrote:
->>> On Wed 2016-07-13 22:44:24, Rafael J. Wysocki wrote:
->>>> On Wed, Jul 13, 2016 at 10:26 PM, Pavel Machek <pavel@ucw.cz> wrot=
-e:
->>>>> On Wed 2016-07-13 22:04:27, Rafael J. Wysocki wrote:
->>>>>> On Wed, Jul 13, 2016 at 7:01 PM, Pavel Machek <pavel@ucw.cz> wro=
-te:
->>>>>>> Hi!
->>>>>>>
->>>>>>>>>> and then swapon the swap device, and do a testing. This shou=
-ld be safer?
->>>>>>>>> Yeah, that's the way. Read-only root is other option.
->>>>>>>>>
->>>>>>>>>>> I guess updating documentation would be welcome from my sid=
-e,
->>>>>>>>>>> otherwise it should be ok.
->>>>>>>>>> OK, I'll  update the documents.
->>>>>>>>> Just add fat warning into the documentation.
->>>>>>>> OK.
->>>>>>> Actually... If you could add
->>>>>>>
->>>>>>> printk(KERN_ALERT "Hibernation image written. If you have any
->>>>>>> filesystems mounted read-write and attempt to resume, you'll co=
-rrupt
->>>>>>> your data. To prevent that, remove the hibernation image.\n")
->>>>>>>
->>>>>>> ...I guess that would save someone's filesystem. (Yes, very hig=
-h
->>>>>>> loglevel. If you attempt to do this from anything else then sin=
-gleuser
->>>>>>> or initrd, you are asking for problems, so... lets make sure us=
-er sees
->>>>>>> it.)
->>>>>> Please see the new version of this patch:
->>>>>> https://patchwork.kernel.org/patch/9226837/
->>>>> New version changes nothing, right? You still need to be sure
->>>>> filesystems are not mounted r/w. So I would still like to see pri=
-ntk()
->>>>> with warning.
->>>> It shouldn't matter how they are mounted, because the contents of
->>>> persistent storage don't change.
->>> @@ -721,6 +724,9 @@  int hibernate(void)
->>>     atomic_inc(&snapshot_device_available);
->>>       Unlock:
->>>          unlock_system_sleep();
->>>          +       if (snapshot_test)
->>>          +          software_resume();
->>>          +
->>>                  return error;
->>>                   }
->>>
->>> Aha, I see, immediate wakeup here. Makes sense. ... ...
->>>
->>> No.
->>>
->>> AFAICT, freezer is used in hibernation_snapshot, which means at
->>> Unlock:, kernel threads are running; software_resume() freezes them
->>> again, but they had chance to run and potentially corrupt the
->>> persistent storage... right?
->> OK, there is a bug.
->>
->> The thawing of user space is potentially dangerous, so in the
->> "snapshot" test mode hibernate() should just call
->> free_basic_memory_bitmaps() and from there invoke the code below the
->> Check_image label in software_resume(), roughly.
-> Or rather call free_basic_memory_bitmaps() and
-> unlock_device_hotplug(), then do swsusp_check() and invoke the code
-> starting with the "PM: Loading hibernation image.\n" message in
-> software_resume().
-OK, I've used this solution and sent a v3 out.
-thanks!
->
-> Thanks,
-> Rafael
+For example:
+
+echo snapshot > /sys/power/pm_test
+echo disk > /sys/power/state
+
+[  267.959784] PM: Image saving progress:  80%
+[  268.038669] PM: Image saving progress:  90%
+[  268.111745] PM: Image saving progress: 100%
+[  268.129269] PM: Image saving done.
+[  268.133485] PM: Wrote 518612 kbytes in 0.75 seconds (691.48 MB/s)
+[  268.140564] PM: S|
+[  268.160067] hibernation debug: Waiting for 5 seconds.
+...
+[  273.508638] PM: Looking for hibernation image.
+[  273.516583] PM: Image signature found, resuming
+[  273.926547] PM: Loading and decompressing image data (129653 pages)...
+[  274.122452] PM: Image loading progress:   0%
+[  274.322127] PM: Image loading progress:  10%
+...
+
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+v3:
+ - According to the discussion, there was a potential risk in previous
+   version that might break the filesystem. This version avoids that issue
+   by restoring the pages with user/kernel threads kept in frozen.
+   Also updated the document.
+---
+ kernel/power/hibernate.c | 49 +++++++++++++++++++++++++++++++++++++++++++++++-
+ kernel/power/main.c      |  3 +++
+ kernel/power/power.h     |  3 +++
+ kernel/power/suspend.c   |  7 +++++++
+ kernel/power/swap.c      |  7 +++++++
+ 5 files changed, 68 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 51441d8..c0c8fe3 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -643,11 +643,53 @@ static void power_down(void)
+ }
+ 
+ /**
++ * software_resume_unthaw - Resume from a saved hibernation image with threads frozen.
++ *
++ * This routine is similar to software_resume, except that this one tries
++ * to resume from hibernation with user/kernel threads frozen.
++ * It is mainly used for snapshot test mode because it is important to keep the
++ * threads frozen, otherwise the filesystem might be broken due to inconsistent
++ * disk-data/metadata across hibernate.
++ */
++static int software_resume_unthaw(void)
++{
++	int error;
++	unsigned int flags;
++
++	pr_debug("PM: Hibernation image partition %d:%d present\n",
++		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
++
++	pr_debug("PM: Looking for hibernation image.\n");
++	error = swsusp_check();
++	if (error)
++		return error;
++
++	lock_device_hotplug();
++	error = create_basic_memory_bitmaps();
++	if (error)
++		goto Unlock;
++
++	error = swsusp_read(&flags);
++	swsusp_close(FMODE_READ);
++	if (!error)
++		hibernation_restore(flags & SF_PLATFORM_MODE);
++
++	printk(KERN_ERR "PM: Failed to load hibernation image, recovering.\n");
++	swsusp_free();
++	free_basic_memory_bitmaps();
++ Unlock:
++	unlock_device_hotplug();
++
++	return error;
++}
++
++/**
+  * hibernate - Carry out system hibernation, including saving the image.
+  */
+ int hibernate(void)
+ {
+ 	int error, nr_calls = 0;
++	bool snapshot_test = false;
+ 
+ 	if (!hibernation_available()) {
+ 		pr_debug("PM: Hibernation not available.\n");
+@@ -699,7 +741,9 @@ int hibernate(void)
+ 		pr_debug("PM: writing image.\n");
+ 		error = swsusp_write(flags);
+ 		swsusp_free();
+-		if (!error)
++		if (hibernation_test(TEST_SNAPSHOT))
++			snapshot_test = true;
++		if (!error && !snapshot_test)
+ 			power_down();
+ 		in_suspend = 0;
+ 		pm_restore_gfp_mask();
+@@ -711,6 +755,8 @@ int hibernate(void)
+ 	free_basic_memory_bitmaps();
+  Thaw:
+ 	unlock_device_hotplug();
++	if (snapshot_test)
++		software_resume_unthaw();
+ 	thaw_processes();
+ 
+ 	/* Don't bother checking whether freezer_test_done is true */
+@@ -721,6 +767,7 @@ int hibernate(void)
+ 	atomic_inc(&snapshot_device_available);
+  Unlock:
+ 	unlock_system_sleep();
++
+ 	return error;
+ }
+ 
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 5ea50b1..80fe48e 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -83,6 +83,9 @@ int pm_test_level = TEST_NONE;
+ 
+ static const char * const pm_tests[__TEST_AFTER_LAST] = {
+ 	[TEST_NONE] = "none",
++#ifdef CONFIG_HIBERNATION
++	[TEST_SNAPSHOT] = "snapshot",
++#endif
+ 	[TEST_CORE] = "core",
+ 	[TEST_CPUS] = "processors",
+ 	[TEST_PLATFORM] = "platform",
+diff --git a/kernel/power/power.h b/kernel/power/power.h
+index 064963e..101d636 100644
+--- a/kernel/power/power.h
++++ b/kernel/power/power.h
+@@ -225,6 +225,9 @@ static inline int restore_highmem(void) { return 0; }
+ enum {
+ 	/* keep first */
+ 	TEST_NONE,
++#ifdef CONFIG_HIBERNATION
++	TEST_SNAPSHOT,
++#endif
+ 	TEST_CORE,
+ 	TEST_CPUS,
+ 	TEST_PLATFORM,
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 0acab9d..7c0d5e9 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -479,6 +479,13 @@ static int enter_state(suspend_state_t state)
+ 			return -EAGAIN;
+ 		}
+ #endif
++	} else if (state == PM_SUSPEND_MEM) {
++#ifdef CONFIG_PM_DEBUG
++		if (pm_test_level != TEST_NONE && pm_test_level < TEST_CORES) {
++			pr_warn("PM: Unsupported test mode for suspend to ram, please choose none/freezer/devices/platform/processors/core.\n");
++			return -EAGAIN;
++		}
++#endif
+ 	} else if (!valid_state(state)) {
+ 		return -EINVAL;
+ 	}
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 160e100..facd71b 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -348,6 +348,13 @@ static int swsusp_swap_check(void)
+ 	if (res < 0)
+ 		blkdev_put(hib_resume_bdev, FMODE_WRITE);
+ 
++	/*
++	 * Update the resume device to the one actually used,
++	 * so software_resume() can use it in case it is invoked
++	 * from hibernate() to test the snapshot.
++	 */
++	swsusp_resume_device = hib_resume_bdev->bd_dev;
++
+ 	return res;
+ }
+ 
+-- 
+2.7.4
+
