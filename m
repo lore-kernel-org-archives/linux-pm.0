@@ -1,8 +1,9 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
 Subject: Re: [Query] Preemption (hogging) of the work handler
-Date: Thu, 14 Jul 2016 08:38:36 +0900
-Message-ID: <20160713233836.GA28362@kroah.com>
-References: <20160701172232.GD28719@htj.duckdns.org>
+Date: Thu, 14 Jul 2016 09:55:24 +0900
+Message-ID: <20160714005524.GA517@swordfish>
+References: <20160701165959.GR12473@ubuntu>
+ <20160701172232.GD28719@htj.duckdns.org>
  <20160706182842.GS2671@ubuntu>
  <20160711102603.GI12410@quack2.suse.cz>
  <20160711154438.GA528@swordfish>
@@ -10,43 +11,82 @@ References: <20160701172232.GD28719@htj.duckdns.org>
  <20160712231903.GR4695@ubuntu>
  <20160713054507.GA563@swordfish>
  <20160713153910.GY4695@ubuntu>
- <CAJZ5v0ifOMb=wCvCRoGb2AHTfGLc0z10_fPUYVMP3pH_kWtr4A@mail.gmail.com>
- <20160713231858.GG4695@ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:42936 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbcGMXie (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2016 19:38:34 -0400
+Received: from mail-pa0-f67.google.com ([209.85.220.67]:32792 "EHLO
+	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbcGNAz0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 13 Jul 2016 20:55:26 -0400
 Content-Disposition: inline
-In-Reply-To: <20160713231858.GG4695@ubuntu>
+In-Reply-To: <20160713153910.GY4695@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tejun Heo <tj@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, Vaibhav Hiremath <vaibhav.hiremath@linaro.org>, Alex Elder <alex.elder@linaro.org>, johan@kernel.org, Andrew Morton <akpm@linux-foundation.org>, Steven Rostedt <rostedt@goodmis.org>, Linux PM <linux-pm@vger.kernel.org>, Petr Mladek <pmladek@suse.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, rjw@rjwysocki.net, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, linux-pm@vger.kernel.org, Petr Mladek <pmladek@suse.com>
 
-On Wed, Jul 13, 2016 at 04:18:58PM -0700, Viresh Kumar wrote:
-> > Are all of those messages printed actually useful?
+Hello,
+
+On (07/13/16 08:39), Viresh Kumar wrote:
+[..]
+> Maybe not, as this can still lead to the original bug we were all
+> chasing. This may hog some other CPU if we are doing excessive
+> printing in suspend :(
+
+excessive printing is just part of the problem here. if we cab cond_resched()
+in console_unlock() (IOW, we execute console_unlock() with preemption and
+interrupts enabled) then everything must be ok, and *from printing POV* there
+is no difference whether it's printk_kthread or anything else in this case.
+the difference jumps in when original console_unlock() is executed with
+preemption/irq disabled, then offloading it to schedulable printk_kthread is
+the right thing.
+
+> suspend_console() is called quite early, so for example in my case we
+> do lots of printing during suspend (not from the suspend thread, but
+> an IRQ handled by the USB subsystem, which removes a bus with help of
+> some other thread probably).
+
+a silly question -- can we suspend consoles later?
+
+part of suspend/hibernation is cpu_down(), which lands in console_cpu_notify(),
+that does synchronous printing for every CPU taken down:
+
+static int console_cpu_notify(struct notifier_block *self,
+	unsigned long action, void *hcpu)
+{
+	switch (action) {
+	case CPU_ONLINE:
+	case CPU_DEAD:
+	case CPU_DOWN_FAILED:
+	case CPU_UP_CANCELED:
+		console_lock();
+		console_unlock();
+		^^^^^^^^^^^^^^
+	}
+	return NOTIFY_OK;
+}
+
+console_unlock() is synchronous (I posted a very early draft patch that makes
+it asynchronous, but that's a future work). so if there is a ton of printk()-s,
+then console_unlock() will print it, 100% guaranteed. even if printk_kthread
+is doing the printing job at the moment, cpu down path will wait for it to
+stop, lock the console semaphore, and got to console_unlock() printing loop.
+
+in printk that you have posted, that will happen not only for CPU_DEAD,
+but for CPU_DYING as well (possibly, there is a /* invoked with preemption
+disabled, so defer */ comment, so may be you never endup doing direct
+printk there, but then you schedule a console_unlock() work).
+
+> That is why my Hacky patch tried to do it after devices are removed
+> and irqs are disabled, but before syscore users are suspended (and
+> timekeeping is one of them). And so it fixes it for me completely.
 > 
-> Hmm, maybe not. But that's not the point I was trying to raise, as I
-> earlier mentioned :)
+> IOW, we should switch back to synchronous printing after disabling
+> interrupts on the last running CPU.
 > 
-> We have a problem with asynchronous printing after disabling
-> interrupts on the last running CPU, and we are trying to disable that
-> from suspend_console(), because we already have a function to call
-> this from.
+> And I of course agree with Rafael that we would need something similar
+> in Hibernation code path as well, if we choose to fix it my way.
 
-Note, this problem has also been seen in "the wild" in a number of
-3.10-based systems where a printk message happens right when suspend is
-happening.  If we are unlucky, it hits, causing a watchdog to trigger
-and the system is reset.  My personal phone happens to be one of those
-"unlucky" ones and is reset every other day or so due to this bug :(
+suspend/hibernation/kexec - all covered by this patch.
 
-So yes, lots of printk() messages will cause this to be hit more often,
-like in the system that Viresh is working on here.  But it will also
-trigger on "normal" systems as well, just much more infrequently.
-
-thanks,
-
-greg k-h
+	-ss
