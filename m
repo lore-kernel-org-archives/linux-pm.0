@@ -1,96 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [Query] Preemption (hogging) of the work handler
-Date: Thu, 14 Jul 2016 15:12:51 -0700
-Message-ID: <20160714221251.GE3057@ubuntu>
+Date: Thu, 14 Jul 2016 15:14:37 -0700
+Message-ID: <20160714221437.GF3057@ubuntu>
 References: <20160701165959.GR12473@ubuntu>
- <20160701172232.GD28719@htj.duckdns.org>
- <20160706182842.GS2671@ubuntu>
- <20160711102603.GI12410@quack2.suse.cz>
- <20160711154438.GA528@swordfish>
- <20160711223501.GI4695@ubuntu>
- <20160712231903.GR4695@ubuntu>
- <20160713054507.GA563@swordfish>
- <20160714141216.GC13151@quack2.suse.cz>
+ <163184622.ctfAvoN0Mo@vostro.rjw.lan>
+ <20160714143939.GF13151@quack2.suse.cz>
+ <56498260.j02nbY6ACm@vostro.rjw.lan>
+ <20160714145554.GG13151@quack2.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:36462 "EHLO
-	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbcGNWMy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jul 2016 18:12:54 -0400
-Received: by mail-pf0-f174.google.com with SMTP id t190so33947102pfb.3
-        for <linux-pm@vger.kernel.org>; Thu, 14 Jul 2016 15:12:53 -0700 (PDT)
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:35278 "EHLO
+	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751540AbcGNWOo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 14 Jul 2016 18:14:44 -0400
+Received: by mail-pf0-f182.google.com with SMTP id c2so34275662pfa.2
+        for <linux-pm@vger.kernel.org>; Thu, 14 Jul 2016 15:14:44 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20160714141216.GC13151@quack2.suse.cz>
+In-Reply-To: <20160714145554.GG13151@quack2.suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Jan Kara <jack@suse.cz>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, rjw@rjwysocki.net, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, linux-pm@vger.kernel.org, Petr Mladek <pmladek@suse.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, linux-pm@vger.kernel.org, Petr Mladek <pmladek@suse.com>, Thomas Gleixner <tglx@linutronix.de>
 
-On 14-07-16, 16:12, Jan Kara wrote:
-> Exactly. Calling printk() from certain parts of the kernel (like scheduler
-> code or timer code) has been always unsafe because printk itself uses these
-> parts and so it can lead to deadlocks. That's why printk_deffered() has
-> been introduced as you mention below.
-> 
-> And with sync printk the above deadlock doesn't trigger only by chance - if
-> there happened to be a waiter on console_sem while we suspend, the same
-> deadlock would trigger because up(&console_sem) will try to wake him up and
-> the warning in timekeeping code will cause recursive printk.
-> 
-> So I think your patch doesn't really address the real issue - it only
-> works around the particular WARN_ON(timekeeping_enabled) warning but if
-> there was a different warning in timekeeping code which would trigger, it
-> has a potential for causing recursive printk deadlock (and indeed we had
-> such issues previously - see e.g. 504d58745c9c "timer: Fix lock inversion
-> between hrtimer_bases.lock and scheduler locks").
-> 
-> So there are IMHO two issues here worth looking at:
-> 
-> 1) I didn't find how a wakeup would would lead to calling to ktime_get() in
-> the current upstream kernel or even current RT kernel. Maybe this is a
-> problem specific to the 3.10 kernel you are using? If yes, we don't have to
-> do anything for current upstream AFAIU.
+On 14-07-16, 16:55, Jan Kara wrote:
+> Agree on that - but that seems to be a problem of a particular wakeup
+> implementation of the 3.10 kernel Viresh is using, not a problem of the
+> upstream kernel.
 
-I haven't checked that earlier, but I see the path in both 3.10 and mainline.
-
-vprintk_emit
- -> wake_up_process
-  -> try_to_wake_up
-   -> ttwu_queue
-    -> ttwu_do_activate
-     -> ttwu_activate
-      -> activate_task
-       -> enqueue_task (sched/core.c)
-        -> enqueue_task_rt (rt.c)
-         -> enqueue_rt_entity
-          -> __enqueue_rt_entity
-           -> inc_rt_tasks
-            -> inc_rt_group
-             -> start_rt_bandwidth
-              -> start_bandwidth_timer
-               -> __hrtimer_start_range_ns
-                -> ktime_get()
-
-> If I just missed how wakeup can call into ktime_get() in current upstream,
-> there is another question:
-> 
-> 2) Is it OK that printk calls wakeup so late during suspend?
-
-To clarify again to everybody, we are talking about the place where all non-boot
-CPUs are already hot-unplugged and the last running one has disabled interrupts.
-
-I believe that we can't do migration at all now, right? What will we get by
-calling wake_up_process() now anyway ?
-
-> I believe it
-> is but I'm neither scheduler nor suspend expert. If it is OK, and wakeup
-> can lead to ktime_get() in current upstream, then this contradicts the
-> check WARN_ON(timekeeping_suspended) in ktime_get() and something is wrong.
-> 
-> Adding Thomas to CC as timer / RT expert...
-
-Thanks.
+I think we can get it to trigger on mainline as well. Also to mention that I
+also don't see it on every suspend. Probably hrtimer_active() call returns true
+in the sequence somewhere earlier, and we don't have to go activate a hrtimer.
 
 -- 
 viresh
