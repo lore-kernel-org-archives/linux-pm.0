@@ -1,149 +1,122 @@
-From: Peter Wu <peter@lekensteyn.nl>
-Subject: [PATCH v3 4/4] drm/nouveau/acpi: fix lockup with PCIe runtime PM
-Date: Fri, 15 Jul 2016 15:12:18 +0200
-Message-ID: <20160715131218.2416-5-peter@lekensteyn.nl>
-References: <20160715131218.2416-1-peter@lekensteyn.nl>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lekensteyn.nl ([178.21.112.251]:58933 "EHLO lekensteyn.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751040AbcGONNA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 15 Jul 2016 09:13:00 -0400
-In-Reply-To: <20160715131218.2416-1-peter@lekensteyn.nl>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>
+Subject: Re: [PATCH v2 00/10] Exynos IOMMU: proper runtime PM support (use
+	device dependencies)
+Date: Fri, 15 Jul 2016 15:21:22 +0200
+Message-ID: <5788E352.3040801@math.uni-bielefeld.de>
+References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
+	<5787B2B0.9020809@math.uni-bielefeld.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <5787B2B0.9020809-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Dave Airlie <airlied@redhat.com>
-Cc: nouveau@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-Since "PCI: Add runtime PM support for PCIe ports", the parent PCIe port
-can be runtime-suspended which disables power resources via ACPI. This
-is incompatible with DSM, resulting in a GPU device which is still in D3
-and locks up the kernel on resume (on a Clevo P651RA, GTX965M).
+Tobias Jakobi wrote:
+> Hello Marek,
+> 
+> I've tested the patchset on 4.7-rc7 and noticed that it breaks reboot on
+> my ODROID-X2.
+> 
+> Going to check where exactly things break.
+Sadly it's the last patch where everything comes together:
+"iommu/exynos: Add proper runtime pm support"
 
-Mirror the behavior of Windows 8 and newer[1] (as observed via an AMLi
-debugger trace) and stop using the DSM functions for D3cold when power
-resources are available on the parent PCIe port.
+I still have to check if forcing runpm status to 'on' makes a
+difference. I suspect that the aggressive clock gating might be the reason?
 
-pci_d3cold_disable() is not used because on some machines, the old DSM
-method is broken. On a Lenovo T440p (GT 730M) memory and disk corruption
-would occur, but that is fixed with this patch[2].
+With best wishes,
+Tobias
 
- [1]: https://msdn.microsoft.com/windows/hardware/drivers/bringup/firmware-requirements-for-d3cold
- [2]: https://github.com/Bumblebee-Project/bbswitch/issues/78#issuecomment-223549072
-
- v2: simply check directly for _PR3. Added affected machines.
- v3: fixed block comment coding style.
-
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Signed-off-by: Peter Wu <peter@lekensteyn.nl>
----
- drivers/gpu/drm/nouveau/nouveau_acpi.c | 35 ++++++++++++++++++++++++++++++----
- 1 file changed, 31 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/gpu/drm/nouveau/nouveau_acpi.c b/drivers/gpu/drm/nouveau/nouveau_acpi.c
-index ad273ad..f2ad17a 100644
---- a/drivers/gpu/drm/nouveau/nouveau_acpi.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_acpi.c
-@@ -46,6 +46,7 @@ static struct nouveau_dsm_priv {
- 	bool dsm_detected;
- 	bool optimus_detected;
- 	bool optimus_flags_detected;
-+	bool optimus_skip_dsm;
- 	acpi_handle dhandle;
- 	acpi_handle rom_handle;
- } nouveau_dsm_priv;
-@@ -212,9 +213,28 @@ static const struct vga_switcheroo_handler nouveau_dsm_handler = {
- 	.get_client_id = nouveau_dsm_get_client_id,
- };
- 
-+/*
-+ * Firmware supporting Windows 8 or later do not use _DSM to put the device into
-+ * D3cold, they instead rely on disabling power resources on the parent.
-+ */
-+static bool nouveau_pr3_present(struct pci_dev *pdev)
-+{
-+	struct pci_dev *parent_pdev = pci_upstream_bridge(pdev);
-+	struct acpi_device *parent_adev;
-+
-+	if (!parent_pdev)
-+		return false;
-+
-+	parent_adev = ACPI_COMPANION(&parent_pdev->dev);
-+	if (!parent_adev)
-+		return false;
-+
-+	return acpi_has_method(parent_adev->handle, "_PR3");
-+}
-+
- static void nouveau_dsm_pci_probe(struct pci_dev *pdev, acpi_handle *dhandle_out,
- 				  bool *has_mux, bool *has_opt,
--				  bool *has_opt_flags)
-+				  bool *has_opt_flags, bool *has_pr3)
- {
- 	acpi_handle dhandle;
- 	bool supports_mux;
-@@ -239,6 +259,7 @@ static void nouveau_dsm_pci_probe(struct pci_dev *pdev, acpi_handle *dhandle_out
- 	*has_mux = supports_mux;
- 	*has_opt = !!optimus_funcs;
- 	*has_opt_flags = optimus_funcs & (1 << NOUVEAU_DSM_OPTIMUS_FLAGS);
-+	*has_pr3 = false;
- 
- 	if (optimus_funcs) {
- 		uint32_t result;
-@@ -248,6 +269,8 @@ static void nouveau_dsm_pci_probe(struct pci_dev *pdev, acpi_handle *dhandle_out
- 			 (result & OPTIMUS_ENABLED) ? "enabled" : "disabled",
- 			 (result & OPTIMUS_DYNAMIC_PWR_CAP) ? "dynamic power, " : "",
- 			 (result & OPTIMUS_HDA_CODEC_MASK) ? "hda bios codec supported" : "");
-+
-+		*has_pr3 = nouveau_pr3_present(pdev);
- 	}
- }
- 
-@@ -260,6 +283,7 @@ static bool nouveau_dsm_detect(void)
- 	bool has_mux = false;
- 	bool has_optimus = false;
- 	bool has_optimus_flags = false;
-+	bool has_power_resources = false;
- 	int vga_count = 0;
- 	bool guid_valid;
- 	bool ret = false;
-@@ -275,14 +299,14 @@ static bool nouveau_dsm_detect(void)
- 		vga_count++;
- 
- 		nouveau_dsm_pci_probe(pdev, &dhandle, &has_mux, &has_optimus,
--				      &has_optimus_flags);
-+				      &has_optimus_flags, &has_power_resources);
- 	}
- 
- 	while ((pdev = pci_get_class(PCI_CLASS_DISPLAY_3D << 8, pdev)) != NULL) {
- 		vga_count++;
- 
- 		nouveau_dsm_pci_probe(pdev, &dhandle, &has_mux, &has_optimus,
--				      &has_optimus_flags);
-+				      &has_optimus_flags, &has_power_resources);
- 	}
- 
- 	/* find the optimus DSM or the old v1 DSM */
-@@ -292,8 +316,11 @@ static bool nouveau_dsm_detect(void)
- 			&buffer);
- 		printk(KERN_INFO "VGA switcheroo: detected Optimus DSM method %s handle\n",
- 			acpi_method_name);
-+		if (has_power_resources)
-+			pr_info("nouveau: detected PR support, will not use DSM\n");
- 		nouveau_dsm_priv.optimus_detected = true;
- 		nouveau_dsm_priv.optimus_flags_detected = has_optimus_flags;
-+		nouveau_dsm_priv.optimus_skip_dsm = has_power_resources;
- 		ret = true;
- 	} else if (vga_count == 2 && has_mux && guid_valid) {
- 		nouveau_dsm_priv.dhandle = dhandle;
-@@ -324,7 +351,7 @@ void nouveau_register_dsm_handler(void)
- void nouveau_switcheroo_optimus_dsm(void)
- {
- 	u32 result = 0;
--	if (!nouveau_dsm_priv.optimus_detected)
-+	if (!nouveau_dsm_priv.optimus_detected || nouveau_dsm_priv.optimus_skip_dsm)
- 		return;
- 
- 	if (nouveau_dsm_priv.optimus_flags_detected)
--- 
-2.9.0
-
+> With best wishes,
+> Tobias
+> 
+> 
+> Marek Szyprowski wrote:
+>> Hello,
+>>
+>> This patch series finally implements proper runtime PM support in Exynos
+>> IOMMU driver. This has been achieved by using device links, which lets
+>> SYSMMU controller's runtime PM to follow master's device runtime PM (the
+>> device which actually performs DMA transaction). The main idea
+>> behind this solution is an observation that any DMA activity from master
+>> device can be done only when master device is active, thus when master
+>> device is suspended SYSMMU controller device can also be suspended.
+>>
+>> This patchset solves the situation that power domains are always enabled,
+>> because all SYSMMU controllers (which belongs to those domains) are
+>> permanently active (because existing driver was simplified and kept
+>> SYSMMU device active all the time after initialization).
+>>
+>> Patches 1-5 are resend of the "[RFC][PATCH 0/5] Functional dependencies
+>> between devices" patchset:
+>> http://thread.gmane.org/gmane.linux.power-management.general/67424/focus=2126379
+>> I've included them here, because it is hard to find them all on mailing
+>> list archives.
+>>
+>> Patches 6-8 are fixes to device dependencies/links code, which were
+>> required to use this solution for Exynos IOMMU driver. I'm not PM/runtime
+>> PM code expert, so please double check if my changes are really correct.
+>>
+>> This patchset requires my previous changes to Exynos IOMMU driver
+>> submitted in the "Exynos IOMMU: improve clock management" thread:
+>> http://www.spinics.net/lists/arm-kernel/msg505695.html
+>>
+>> Best regards
+>> Marek Szyprowski
+>> Samsung R&D Institute Poland
+>>
+>>
+>> Changelog:
+>> v2:
+>> - replaced PM notifiers with generic device dependencies/links developped
+>>   by Rafael J. Wysocki
+>>
+>> v1: http://www.spinics.net/lists/arm-kernel/msg509600.html
+>> - initial version
+>>
+>>
+>> Patch summary:
+>>
+>> Marek Szyprowski (5):
+>>   driver core: Avoid endless recursion if device has more than one link
+>>   driver core: Add support for links to already probed drivers
+>>   PM core: Fix restoring devices with links during system PM transition
+>>   iommu/exynos: Remove excessive, useless debug
+>>   iommu/exynos: Add proper runtime pm support
+>>
+>> Rafael J. Wysocki (5):
+>>   driver core: Add a wrapper around __device_release_driver()
+>>   driver core: Functional dependencies tracking support
+>>   PM core: Make async suspend/resume of devices use device links
+>>   PM core: Make runtime PM of devices use device links
+>>   PM core: Optimize the use of device links for runtime PM
+>>
+>>  drivers/base/base.h          |  13 ++
+>>  drivers/base/core.c          | 410 +++++++++++++++++++++++++++++++++++++++++++
+>>  drivers/base/dd.c            |  65 +++++--
+>>  drivers/base/power/main.c    |  68 ++++++-
+>>  drivers/base/power/runtime.c | 130 +++++++++++++-
+>>  drivers/iommu/exynos-iommu.c | 221 +++++++++++------------
+>>  include/linux/device.h       |  41 +++++
+>>  include/linux/pm.h           |   1 +
+>>  include/linux/pm_runtime.h   |   6 +
+>>  9 files changed, 809 insertions(+), 146 deletions(-)
+>>
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
