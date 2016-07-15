@@ -1,122 +1,259 @@
-From: Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>
-Subject: Re: [PATCH v2 00/10] Exynos IOMMU: proper runtime PM support (use
-	device dependencies)
-Date: Fri, 15 Jul 2016 15:21:22 +0200
-Message-ID: <5788E352.3040801@math.uni-bielefeld.de>
-References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
-	<5787B2B0.9020809@math.uni-bielefeld.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2][RFC v4] PM / hibernate: Introduce snapshot test mode for hibernation
+Date: Sat, 16 Jul 2016 00:05:23 +0200
+Message-ID: <3685093.ugehdyFzVn@vostro.rjw.lan>
+References: <cover.1468500857.git.yu.c.chen@intel.com> <8f23b8935c5cbb807191f2aff7da3d4ec9a86fa5.1468500857.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <5787B2B0.9020809-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42017 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751193AbcGOWAg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 15 Jul 2016 18:00:36 -0400
+In-Reply-To: <8f23b8935c5cbb807191f2aff7da3d4ec9a86fa5.1468500857.git.yu.c.chen@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org
 
-Tobias Jakobi wrote:
-> Hello Marek,
+On Thursday, July 14, 2016 09:15:46 PM Chen Yu wrote:
+> snapshot test mode is used to verify if the snapshot data
+> written to the swap device can be successfully restored to
+> the memory. It is useful to ease the debugging process on
+> hibernation, since this mode can not only bypass the
+> BIOSes/bootloader, but also the system re-initialization.
 > 
-> I've tested the patchset on 4.7-rc7 and noticed that it breaks reboot on
-> my ODROID-X2.
+> For example:
 > 
-> Going to check where exactly things break.
-Sadly it's the last patch where everything comes together:
-"iommu/exynos: Add proper runtime pm support"
+> echo snapshot > /sys/power/pm_test
+> echo disk > /sys/power/state
+> 
+> [  267.959784] PM: Image saving progress:  80%
+> [  268.038669] PM: Image saving progress:  90%
+> [  268.111745] PM: Image saving progress: 100%
+> [  268.129269] PM: Image saving done.
+> [  268.133485] PM: Wrote 518612 kbytes in 0.75 seconds (691.48 MB/s)
+> [  268.140564] PM: S|
+> [  268.160067] hibernation debug: Waiting for 5 seconds.
+> ...
+> [  273.508638] PM: Looking for hibernation image.
+> [  273.516583] PM: Image signature found, resuming
+> [  273.926547] PM: Loading and decompressing image data (129653 pages)...
+> [  274.122452] PM: Image loading progress:   0%
+> [  274.322127] PM: Image loading progress:  10%
+> ...
+> 
+> Comments and suggestions would be appreciated.
+> 
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+> v4:
+>  - Fix some errors and modify the comment for software_resume_unthaw.
+> v3:
+>  - As Pavel mentioned, there was a potential risk in previous
+>    version that might break the filesystem. According to Rafael's suggestion,
+>    this version avoids that issue by restoring the pages with user/kernel
+>    threads kept in frozen. Also updated the document.
+> ---
+>  kernel/power/hibernate.c | 54 +++++++++++++++++++++++++++++++++++++++++++++++-
+>  kernel/power/main.c      |  3 +++
+>  kernel/power/power.h     |  3 +++
+>  kernel/power/suspend.c   |  8 +++++++
+>  kernel/power/swap.c      |  7 +++++++
+>  5 files changed, 74 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 51441d8..57864fc 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -643,11 +643,59 @@ static void power_down(void)
+>  }
+>  
+>  /**
+> + * software_resume_unthaw - Resume from a saved hibernation image with threads frozen.
+> + *
+> + * This routine is similar to software_resume, except that this one tries
+> + * to resume from hibernation with user/kernel threads frozen. And it is mainly
+> + * used for snapshot test mode because it is important to keep the threads frozen,
+> + * otherwise the filesystem might be broken due to inconsistent disk-data/metadata
+> + * across hibernation.
+> + *
+> + * software_resume_unthaw() does not invoke PM_RESTORE_PREPARE related callbacks,
+> + * since it is unclear whether it is safe to 'jump' from PM_HIBERNATION_PREPARE
+> + * to PM_RESTORE_PREPARE directly, and bypass this message should not impact much.
+> + */
+> +static int software_resume_unthaw(void)
 
-I still have to check if forcing runpm status to 'on' makes a
-difference. I suspect that the aggressive clock gating might be the reason?
+This name is really not the best one and quite confusing.
 
-With best wishes,
-Tobias
+> +{
+> +	int error;
+> +	unsigned int flags;
+> +
+> +	pr_debug("PM: Hibernation image partition %d:%d present\n",
+> +		MAJOR(swsusp_resume_device), MINOR(swsusp_resume_device));
 
-> With best wishes,
-> Tobias
-> 
-> 
-> Marek Szyprowski wrote:
->> Hello,
->>
->> This patch series finally implements proper runtime PM support in Exynos
->> IOMMU driver. This has been achieved by using device links, which lets
->> SYSMMU controller's runtime PM to follow master's device runtime PM (the
->> device which actually performs DMA transaction). The main idea
->> behind this solution is an observation that any DMA activity from master
->> device can be done only when master device is active, thus when master
->> device is suspended SYSMMU controller device can also be suspended.
->>
->> This patchset solves the situation that power domains are always enabled,
->> because all SYSMMU controllers (which belongs to those domains) are
->> permanently active (because existing driver was simplified and kept
->> SYSMMU device active all the time after initialization).
->>
->> Patches 1-5 are resend of the "[RFC][PATCH 0/5] Functional dependencies
->> between devices" patchset:
->> http://thread.gmane.org/gmane.linux.power-management.general/67424/focus=2126379
->> I've included them here, because it is hard to find them all on mailing
->> list archives.
->>
->> Patches 6-8 are fixes to device dependencies/links code, which were
->> required to use this solution for Exynos IOMMU driver. I'm not PM/runtime
->> PM code expert, so please double check if my changes are really correct.
->>
->> This patchset requires my previous changes to Exynos IOMMU driver
->> submitted in the "Exynos IOMMU: improve clock management" thread:
->> http://www.spinics.net/lists/arm-kernel/msg505695.html
->>
->> Best regards
->> Marek Szyprowski
->> Samsung R&D Institute Poland
->>
->>
->> Changelog:
->> v2:
->> - replaced PM notifiers with generic device dependencies/links developped
->>   by Rafael J. Wysocki
->>
->> v1: http://www.spinics.net/lists/arm-kernel/msg509600.html
->> - initial version
->>
->>
->> Patch summary:
->>
->> Marek Szyprowski (5):
->>   driver core: Avoid endless recursion if device has more than one link
->>   driver core: Add support for links to already probed drivers
->>   PM core: Fix restoring devices with links during system PM transition
->>   iommu/exynos: Remove excessive, useless debug
->>   iommu/exynos: Add proper runtime pm support
->>
->> Rafael J. Wysocki (5):
->>   driver core: Add a wrapper around __device_release_driver()
->>   driver core: Functional dependencies tracking support
->>   PM core: Make async suspend/resume of devices use device links
->>   PM core: Make runtime PM of devices use device links
->>   PM core: Optimize the use of device links for runtime PM
->>
->>  drivers/base/base.h          |  13 ++
->>  drivers/base/core.c          | 410 +++++++++++++++++++++++++++++++++++++++++++
->>  drivers/base/dd.c            |  65 +++++--
->>  drivers/base/power/main.c    |  68 ++++++-
->>  drivers/base/power/runtime.c | 130 +++++++++++++-
->>  drivers/iommu/exynos-iommu.c | 221 +++++++++++------------
->>  include/linux/device.h       |  41 +++++
->>  include/linux/pm.h           |   1 +
->>  include/linux/pm_runtime.h   |   6 +
->>  9 files changed, 809 insertions(+), 146 deletions(-)
->>
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+I don't think the above is necessary.
+
+The image partition is known to be present at this point.
+
+> +
+> +	pr_debug("PM: Looking for hibernation image.\n");
+> +	error = swsusp_check();
+> +	if (error)
+> +		return error;
+
+The code below can be shared with software_resume(), can't it?  And I'd move
+the above check to hibernate().
+
+So I'd move the part of software_resume() between the "PM: Loading hibernation
+image.\n" message and the invocation of unlock_device_hotplug() inclusive to a
+separate function and call that from software_resume() and from here.
+
+That new function can be called load_image_and_restore() or similar.
+
+> +
+> +	pr_debug("PM: Loading hibernation image.\n");
+> +
+> +	lock_device_hotplug();
+> +	error = create_basic_memory_bitmaps();
+> +	if (error)
+> +		goto Unlock;
+> +
+> +	error = swsusp_read(&flags);
+> +	swsusp_close(FMODE_READ);
+> +	if (!error)
+> +		hibernation_restore(flags & SF_PLATFORM_MODE);
+> +
+> +	printk(KERN_ERR "PM: Failed to load hibernation image, recovering.\n");
+> +	swsusp_free();
+> +	free_basic_memory_bitmaps();
+> + Unlock:
+> +	unlock_device_hotplug();
+> +
+> +	return error;
+> +}
+> +
+> +/**
+>   * hibernate - Carry out system hibernation, including saving the image.
+>   */
+>  int hibernate(void)
+>  {
+>  	int error, nr_calls = 0;
+> +	bool snapshot_test = false;
+>  
+>  	if (!hibernation_available()) {
+>  		pr_debug("PM: Hibernation not available.\n");
+> @@ -699,7 +747,9 @@ int hibernate(void)
+>  		pr_debug("PM: writing image.\n");
+>  		error = swsusp_write(flags);
+>  		swsusp_free();
+> -		if (!error)
+> +		if (hibernation_test(TEST_SNAPSHOT))
+> +			snapshot_test = true;
+> +		if (!error && !snapshot_test)
+>  			power_down();
+>  		in_suspend = 0;
+>  		pm_restore_gfp_mask();
+> @@ -711,6 +761,8 @@ int hibernate(void)
+>  	free_basic_memory_bitmaps();
+>   Thaw:
+>  	unlock_device_hotplug();
+> +	if (snapshot_test)
+> +		software_resume_unthaw();
+
+What about:
+
+	if (snapshot_test) {
+		pr_debug("PM: Checking hibernation image\n");
+		error = swsusp_check();
+		if (!error)
+			error = load_image_and_restore();
+	}
+
+>  	thaw_processes();
+>  
+>  	/* Don't bother checking whether freezer_test_done is true */
+> diff --git a/kernel/power/main.c b/kernel/power/main.c
+> index 5ea50b1..80fe48e 100644
+> --- a/kernel/power/main.c
+> +++ b/kernel/power/main.c
+> @@ -83,6 +83,9 @@ int pm_test_level = TEST_NONE;
+>  
+>  static const char * const pm_tests[__TEST_AFTER_LAST] = {
+>  	[TEST_NONE] = "none",
+> +#ifdef CONFIG_HIBERNATION
+> +	[TEST_SNAPSHOT] = "snapshot",
+> +#endif
+>  	[TEST_CORE] = "core",
+>  	[TEST_CPUS] = "processors",
+>  	[TEST_PLATFORM] = "platform",
+> diff --git a/kernel/power/power.h b/kernel/power/power.h
+> index 064963e..101d636 100644
+> --- a/kernel/power/power.h
+> +++ b/kernel/power/power.h
+> @@ -225,6 +225,9 @@ static inline int restore_highmem(void) { return 0; }
+>  enum {
+>  	/* keep first */
+>  	TEST_NONE,
+> +#ifdef CONFIG_HIBERNATION
+> +	TEST_SNAPSHOT,
+> +#endif
+>  	TEST_CORE,
+>  	TEST_CPUS,
+>  	TEST_PLATFORM,
+> diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+> index 0acab9d..0afa875 100644
+> --- a/kernel/power/suspend.c
+> +++ b/kernel/power/suspend.c
+> @@ -479,6 +479,14 @@ static int enter_state(suspend_state_t state)
+>  			return -EAGAIN;
+>  		}
+>  #endif
+> +	} else if (state == PM_SUSPEND_MEM) {
+> +#ifdef CONFIG_PM_DEBUG
+> +		if (pm_test_level != TEST_NONE && pm_test_level < TEST_CORE) {
+> +			pr_warn("PM: Unsupported test mode for suspend to ram, please choose"
+> +				" none/freezer/devices/platform/processors/core.\n");
+> +			return -EAGAIN;
+
+Well, this isn't nice.
+
+Maybe go back to the idea with having an extra string in /sys/power/disk,
+like "test_resume"?
+
+And if someone does
+
+# echo test_resume > /sys/power/disk
+# echo disk > /sys/power/state
+
+it will trigger the new feature?
+
+> +		}
+> +#endif
+>  	} else if (!valid_state(state)) {
+>  		return -EINVAL;
+>  	}
+> diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+> index 160e100..facd71b 100644
+> --- a/kernel/power/swap.c
+> +++ b/kernel/power/swap.c
+> @@ -348,6 +348,13 @@ static int swsusp_swap_check(void)
+>  	if (res < 0)
+>  		blkdev_put(hib_resume_bdev, FMODE_WRITE);
+>  
+> +	/*
+> +	 * Update the resume device to the one actually used,
+> +	 * so software_resume() can use it in case it is invoked
+> +	 * from hibernate() to test the snapshot.
+> +	 */
+> +	swsusp_resume_device = hib_resume_bdev->bd_dev;
+> +
+>  	return res;
+>  }
+
+Thanks,
+Rafael
+
