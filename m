@@ -1,26 +1,33 @@
-From: thomas <redacao-NKv66d9/FX7vMZ+sIwkYB18n826c+h2f@public.gmane.org>
-Subject: spectaculous
-Date: Sat, 16 Jul 2016 07:49:15 +0300
-Message-ID: <0000d98a1ecc$ee2d811f$6a9bfb3c$@fjellstrom.ca>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 1/2] Documentation: Add sbs-manager device tree node
+ documentation
+Date: Sat, 16 Jul 2016 17:05:02 -0500
+Message-ID: <20160716220502.GA19340@rob-hp-laptop>
+References: <1bIiDr-0004G1-0P>
+ <1468349295-4935-1-git-send-email-karl-heinz@schneider-inet.de>
+ <1468349295-4935-2-git-send-email-karl-heinz@schneider-inet.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-Content-Language: en-us
-List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
-List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
- <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
-Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
-Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
-To: linux-net <linux-net-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, linux-pm <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-questions-only <linux-questions-only-RxPa508aZeE@public.gmane.org>, linux-raid-request <linux-raid-request-4ESfhGDvgol+CIkdHa1UOg@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f66.google.com ([209.85.218.66]:34127 "EHLO
+	mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbcGPWFF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 16 Jul 2016 18:05:05 -0400
+Content-Disposition: inline
+In-Reply-To: <1468349295-4935-2-git-send-email-karl-heinz@schneider-inet.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>
 
-Hi,
+On Tue, Jul 12, 2016 at 08:48:14PM +0200, Karl-Heinz Schneider wrote:
+> This patch adds device tree documentation for the sbs-manager
+> 
+> Reviewed-by: Phil Reid <preid@electromag.com.au>
+> Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+> ---
+>  .../devicetree/bindings/power/sbs,sbs-manager.txt  | 52 ++++++++++++++++++++++
+>  1 file changed, 52 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
 
-Have you seen that place already? It's just spectaculous, you've got to look at it here <http://advance.sugarlandtxflorist.com/aebzwn>
-
-Take care, thomas-T/OQ2aoscs6U4IzBdx3r/Q@public.gmane.org
+Acked-by: Rob Herring <robh@kernel.org>
