@@ -1,49 +1,26 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: powernv: Replacing pstate_id with frequency table index
-Date: Sat, 16 Jul 2016 03:02:36 +0200
-Message-ID: <11588667.R3ZLC4VYDO@vostro.rjw.lan>
-References: <1467267787-2622-1-git-send-email-akshay.adiga@linux.vnet.ibm.com> <20160711184753.GD4695@ubuntu>
+From: thomas <redacao-NKv66d9/FX7vMZ+sIwkYB18n826c+h2f@public.gmane.org>
+Subject: spectaculous
+Date: Sat, 16 Jul 2016 07:49:15 +0300
+Message-ID: <0000d98a1ecc$ee2d811f$6a9bfb3c$@fjellstrom.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160711184753.GD4695@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com, paulus@ozlabs.org, mpe@ellerman.id.au
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+Content-Language: en-us
+List-Unsubscribe: <https://lists.01.org/mailman/options/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.01.org/pipermail/linux-nvdimm/>
+List-Post: <mailto:linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+List-Help: <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.01.org/mailman/listinfo/linux-nvdimm>,
+ <mailto:linux-nvdimm-request-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org?subject=subscribe>
+Errors-To: linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org
+Sender: "Linux-nvdimm" <linux-nvdimm-bounces-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>
+To: linux-net <linux-net-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-nvdimm <linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org>, linux-pm <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-questions-only <linux-questions-only-RxPa508aZeE@public.gmane.org>, linux-raid-request <linux-raid-request-4ESfhGDvgol+CIkdHa1UOg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 11, 2016 11:47:53 AM Viresh Kumar wrote:
-> On 30-06-16, 11:53, Akshay Adiga wrote:
-> > Refactoring code to use frequency table index instead of pstate_id.
-> > This abstraction will make the code independent of the pstate values.
-> > 
-> > - No functional changes
-> > - The highest frequency is at frequency table index 0 and the frequency
-> >   decreases as the index increases.
-> > - Macros pstates_to_idx() and idx_to_pstate() can be used for conversion
-> >   between pstate_id and index.
-> > - powernv_pstate_info now contains frequency table index to min, max and
-> >   nominal frequency (instead of pstate_ids)
-> > - global_pstate_info new stores index values instead pstate ids.
-> > - variables renamed as *_idx which now store index instead of pstate
-> > 
-> > Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> > Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> > ---
-> > Changes from v1:
-> >   - changed macro names from get_pstate()/ get_index() to 
-> > idx_to_pstate()/ pstate_to_idx()
-> >   - Renamed variables that store index instead of pstate_id to *_idx
-> >   - Retained previous printk's 
-> > 
-> > v1 : http://marc.info/?l=linux-pm&m=146677701501225&w=1
-> > 
-> >  drivers/cpufreq/powernv-cpufreq.c | 177 ++++++++++++++++++++++----------------
-> >  1 file changed, 102 insertions(+), 75 deletions(-)
-> 
-> Haven't done in-depth review, but I trust that Gautham has done it :)
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi,
 
-Patch applied, thanks!
+Have you seen that place already? It's just spectaculous, you've got to look at it here <http://advance.sugarlandtxflorist.com/aebzwn>
+
+Take care, thomas-T/OQ2aoscs6U4IzBdx3r/Q@public.gmane.org
