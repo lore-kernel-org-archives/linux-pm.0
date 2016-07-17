@@ -1,65 +1,134 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 3/6] binding-doc: usb: usb-device: add optional
- properties for power sequence
-Date: Sat, 16 Jul 2016 17:31:59 -0500
-Message-ID: <20160716223158.GB8984@rob-hp-laptop>
-References: <1468375610-18625-1-git-send-email-peter.chen@nxp.com>
- <1468375610-18625-4-git-send-email-peter.chen@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:36138 "EHLO
-	mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710AbcGPWcB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 16 Jul 2016 18:32:01 -0400
-Content-Disposition: inline
-In-Reply-To: <1468375610-18625-4-git-send-email-peter.chen@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v2 4/9] hwmon: (core) Add current attribute support to new API
+Date: Sat, 16 Jul 2016 22:30:27 -0700
+Message-ID: <1468733432-15730-5-git-send-email-linux@roeck-us.net>
+References: <1468733432-15730-1-git-send-email-linux@roeck-us.net>
+Return-path: <linux-hwmon-owner@vger.kernel.org>
+In-Reply-To: <1468733432-15730-1-git-send-email-linux@roeck-us.net>
+Sender: linux-hwmon-owner@vger.kernel.org
+To: Jean Delvare <jdelvare@suse.com>
+Cc: Jonathan Cameron <jic23@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Punit Agrawal <punit.agrawal@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <peter.chen@nxp.com>
-Cc: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, shawnguo@kernel.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com
 
-On Wed, Jul 13, 2016 at 10:06:47AM +0800, Peter Chen wrote:
-> Add optional properties for power sequence.
-> 
-> Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> ---
->  Documentation/devicetree/bindings/usb/usb-device.txt | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/usb/usb-device.txt b/Documentation/devicetree/bindings/usb/usb-device.txt
-> index 1c35e7b..0ccaadf 100644
-> --- a/Documentation/devicetree/bindings/usb/usb-device.txt
-> +++ b/Documentation/devicetree/bindings/usb/usb-device.txt
-> @@ -13,6 +13,10 @@ Required properties:
->  - reg: the port number which this device is connecting to, the range
->    is 1-31.
->  
-> +Optional properties:
-> +power sequence properties, see
-> +Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt for detail
-> +
->  Example:
->  
->  &usb1 {
-> @@ -24,5 +28,10 @@ Example:
->  	hub: genesys@1 {
->  		compatible = "usb5e3,608";
->  		reg = <1>;
-> +
-> +		power-sequence;
-> +		clocks = <&clks IMX6SX_CLK_CKO>;
-> +		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
-> +		reset-duration-us = <10>;
+Acked-by: Punit Agrawal <punit.agrawal@arm.com>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+v2: No change
 
-These belong in the binding doc for the hub.
+ drivers/hwmon/hwmon.c | 21 +++++++++++++++++++++
+ include/linux/hwmon.h | 36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 57 insertions(+)
 
->  	};
->  }
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/hwmon/hwmon.c b/drivers/hwmon/hwmon.c
+index 5d88bf7f825a..bc5c1c95cc48 100644
+--- a/drivers/hwmon/hwmon.c
++++ b/drivers/hwmon/hwmon.c
+@@ -253,6 +253,7 @@ static struct attribute *hwmon_genattr(struct device *dev,
+ static const char * const hwmon_chip_attr_templates[] = {
+ 	[hwmon_chip_temp_reset_history] = "temp_reset_history",
+ 	[hwmon_chip_in_reset_history] = "in_reset_history",
++	[hwmon_chip_curr_reset_history] = "curr_reset_history",
+ 	[hwmon_chip_update_interval] = "update_interval",
+ 	[hwmon_chip_alarms] = "alarms",
+ };
+@@ -302,16 +303,36 @@ static const char * const hwmon_in_attr_templates[] = {
+ 	[hwmon_in_crit_alarm] = "in%d_crit_alarm",
+ };
+ 
++static const char * const hwmon_curr_attr_templates[] = {
++	[hwmon_curr_input] = "curr%d_input",
++	[hwmon_curr_min] = "curr%d_min",
++	[hwmon_curr_max] = "curr%d_max",
++	[hwmon_curr_lcrit] = "curr%d_lcrit",
++	[hwmon_curr_crit] = "curr%d_crit",
++	[hwmon_curr_average] = "curr%d_average",
++	[hwmon_curr_lowest] = "curr%d_lowest",
++	[hwmon_curr_highest] = "curr%d_highest",
++	[hwmon_curr_reset_history] = "curr%d_reset_history",
++	[hwmon_curr_label] = "curr%d_label",
++	[hwmon_curr_alarm] = "curr%d_alarm",
++	[hwmon_curr_min_alarm] = "curr%d_min_alarm",
++	[hwmon_curr_max_alarm] = "curr%d_max_alarm",
++	[hwmon_curr_lcrit_alarm] = "curr%d_lcrit_alarm",
++	[hwmon_curr_crit_alarm] = "curr%d_crit_alarm",
++};
++
+ static const char * const *__templates[] = {
+ 	[hwmon_chip] = hwmon_chip_attr_templates,
+ 	[hwmon_temp] = hwmon_temp_attr_templates,
+ 	[hwmon_in] = hwmon_in_attr_templates,
++	[hwmon_curr] = hwmon_curr_attr_templates,
+ };
+ 
+ static const int __templates_size[] = {
+ 	[hwmon_chip] = ARRAY_SIZE(hwmon_chip_attr_templates),
+ 	[hwmon_temp] = ARRAY_SIZE(hwmon_temp_attr_templates),
+ 	[hwmon_in] = ARRAY_SIZE(hwmon_in_attr_templates),
++	[hwmon_curr] = ARRAY_SIZE(hwmon_curr_attr_templates),
+ };
+ 
+ static int hwmon_num_channel_attrs(const struct hwmon_channel_info *info)
+diff --git a/include/linux/hwmon.h b/include/linux/hwmon.h
+index a01b8e3fc6f3..8781c2253b1d 100644
+--- a/include/linux/hwmon.h
++++ b/include/linux/hwmon.h
+@@ -31,6 +31,7 @@ enum hwmon_sensor_types {
+ enum hwmon_chip_attributes {
+ 	hwmon_chip_temp_reset_history,
+ 	hwmon_chip_in_reset_history,
++	hwmon_chip_curr_reset_history,
+ 	hwmon_chip_register_tz,
+ 	hwmon_chip_update_interval,
+ 	hwmon_chip_alarms,
+@@ -38,6 +39,7 @@ enum hwmon_chip_attributes {
+ 
+ #define HWMON_C_TEMP_RESET_HISTORY	BIT(hwmon_chip_temp_reset_history)
+ #define HWMON_C_IN_RESET_HISTORY	BIT(hwmon_chip_in_reset_history)
++#define HWMON_C_CURR_RESET_HISTORY	BIT(hwmon_chip_curr_reset_history)
+ #define HWMON_C_REGISTER_TZ		BIT(hwmon_chip_register_tz)
+ #define HWMON_C_UPDATE_INTERVAL		BIT(hwmon_chip_update_interval)
+ #define HWMON_C_ALARMS			BIT(hwmon_chip_alarms)
+@@ -126,6 +128,40 @@ enum hwmon_in_attributes {
+ #define HWMON_I_LCRIT_ALARM	BIT(hwmon_in_lcrit_alarm)
+ #define HWMON_I_CRIT_ALARM	BIT(hwmon_in_crit_alarm)
+ 
++enum hwmon_curr_attributes {
++	hwmon_curr_input,
++	hwmon_curr_min,
++	hwmon_curr_max,
++	hwmon_curr_lcrit,
++	hwmon_curr_crit,
++	hwmon_curr_average,
++	hwmon_curr_lowest,
++	hwmon_curr_highest,
++	hwmon_curr_reset_history,
++	hwmon_curr_label,
++	hwmon_curr_alarm,
++	hwmon_curr_min_alarm,
++	hwmon_curr_max_alarm,
++	hwmon_curr_lcrit_alarm,
++	hwmon_curr_crit_alarm,
++};
++
++#define HWMON_C_INPUT		BIT(hwmon_curr_input)
++#define HWMON_C_MIN		BIT(hwmon_curr_min)
++#define HWMON_C_MAX		BIT(hwmon_curr_max)
++#define HWMON_C_LCRIT		BIT(hwmon_curr_lcrit)
++#define HWMON_C_CRIT		BIT(hwmon_curr_crit)
++#define HWMON_C_AVERAGE		BIT(hwmon_curr_average)
++#define HWMON_C_LOWEST		BIT(hwmon_curr_lowest)
++#define HWMON_C_HIGHEST		BIT(hwmon_curr_highest)
++#define HWMON_C_RESET_HISTORY	BIT(hwmon_curr_reset_history)
++#define HWMON_C_LABEL		BIT(hwmon_curr_label)
++#define HWMON_C_ALARM		BIT(hwmon_curr_alarm)
++#define HWMON_C_MIN_ALARM	BIT(hwmon_curr_min_alarm)
++#define HWMON_C_MAX_ALARM	BIT(hwmon_curr_max_alarm)
++#define HWMON_C_LCRIT_ALARM	BIT(hwmon_curr_lcrit_alarm)
++#define HWMON_C_CRIT_ALARM	BIT(hwmon_curr_crit_alarm)
++
+ /**
+  * struct hwmon_ops - hwmon device operations
+  * @is_visible: Callback to return attribute visibility. Mandatory.
+-- 
+2.5.0
+
