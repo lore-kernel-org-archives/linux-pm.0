@@ -1,167 +1,279 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v2 5/9] hwmon: (core) Add power attribute support to new API
-Date: Sat, 16 Jul 2016 22:30:28 -0700
-Message-ID: <1468733432-15730-6-git-send-email-linux@roeck-us.net>
+From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Subject: [PATCH v2 8/9] hwmon: (core) Document new kernel API
+Date: Sat, 16 Jul 2016 22:30:31 -0700
+Message-ID: <1468733432-15730-9-git-send-email-linux@roeck-us.net>
 References: <1468733432-15730-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:43032 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751767AbcGQFbF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jul 2016 01:31:05 -0400
-In-Reply-To: <1468733432-15730-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1468733432-15730-1-git-send-email-linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>
+Cc: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hwmon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jean Delvare <jdelvare@suse.com>
-Cc: Jonathan Cameron <jic23@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Punit Agrawal <punit.agrawal@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
 
-Acked-by: Punit Agrawal <punit.agrawal@arm.com>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Describe the new registration API function as well as the data
+structures it requires.
+
+Acked-by: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
 ---
-v2: No change
+v2: Fixed typos
 
- drivers/hwmon/hwmon.c | 30 ++++++++++++++++++++++++++++
- include/linux/hwmon.h | 54 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 84 insertions(+)
+ Documentation/hwmon/hwmon-kernel-api.txt | 229 ++++++++++++++++++++++++++++++-
+ 1 file changed, 227 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/hwmon/hwmon.c b/drivers/hwmon/hwmon.c
-index bc5c1c95cc48..7a5c8bba7dc2 100644
---- a/drivers/hwmon/hwmon.c
-+++ b/drivers/hwmon/hwmon.c
-@@ -254,6 +254,7 @@ static const char * const hwmon_chip_attr_templates[] = {
- 	[hwmon_chip_temp_reset_history] = "temp_reset_history",
- 	[hwmon_chip_in_reset_history] = "in_reset_history",
- 	[hwmon_chip_curr_reset_history] = "curr_reset_history",
-+	[hwmon_chip_power_reset_history] = "power_reset_history",
- 	[hwmon_chip_update_interval] = "update_interval",
- 	[hwmon_chip_alarms] = "alarms",
- };
-@@ -321,11 +322,39 @@ static const char * const hwmon_curr_attr_templates[] = {
- 	[hwmon_curr_crit_alarm] = "curr%d_crit_alarm",
- };
+diff --git a/Documentation/hwmon/hwmon-kernel-api.txt b/Documentation/hwmon/hwmon-kernel-api.txt
+index 2ecdbfc85ecf..f60a29ce7592 100644
+--- a/Documentation/hwmon/hwmon-kernel-api.txt
++++ b/Documentation/hwmon/hwmon-kernel-api.txt
+@@ -34,6 +34,19 @@ devm_hwmon_device_register_with_groups(struct device *dev,
+ 				       const char *name, void *drvdata,
+ 				       const struct attribute_group **groups);
  
-+static const char * const hwmon_power_attr_templates[] = {
-+	[hwmon_power_average] = "power%d_average",
-+	[hwmon_power_average_interval] = "power%d_average_interval",
-+	[hwmon_power_average_interval_max] = "power%d_interval_max",
-+	[hwmon_power_average_interval_min] = "power%d_interval_min",
-+	[hwmon_power_average_highest] = "power%d_average_highest",
-+	[hwmon_power_average_lowest] = "power%d_average_lowest",
-+	[hwmon_power_average_max] = "power%d_average_max",
-+	[hwmon_power_average_min] = "power%d_average_min",
-+	[hwmon_power_input] = "power%d_input",
-+	[hwmon_power_input_highest] = "power%d_input_highest",
-+	[hwmon_power_input_lowest] = "power%d_input_lowest",
-+	[hwmon_power_reset_history] = "power%d_reset_history",
-+	[hwmon_power_accuracy] = "power%d_accuracy",
-+	[hwmon_power_cap] = "power%d_cap",
-+	[hwmon_power_cap_hyst] = "power%d_cap_hyst",
-+	[hwmon_power_cap_max] = "power%d_cap_max",
-+	[hwmon_power_cap_min] = "power%d_cap_min",
-+	[hwmon_power_max] = "power%d_max",
-+	[hwmon_power_crit] = "power%d_crit",
-+	[hwmon_power_label] = "power%d_label",
-+	[hwmon_power_alarm] = "power%d_alarm",
-+	[hwmon_power_cap_alarm] = "power%d_cap_alarm",
-+	[hwmon_power_max_alarm] = "power%d_max_alarm",
-+	[hwmon_power_crit_alarm] = "power%d_crit_alarm",
++struct device *
++hwmon_device_register_with_info(struct device *dev,
++				const char *name, void *drvdata,
++				const struct hwmon_chip_info *info,
++				const struct attribute_group **groups);
++
++struct device *
++devm_hwmon_device_register_with_info(struct device *dev,
++				     const char *name,
++				     void *drvdata,
++				     const struct hwmon_chip_info *info,
++				     const struct attribute_group **groups);
++
+ void hwmon_device_unregister(struct device *dev);
+ void devm_hwmon_device_unregister(struct device *dev);
+ 
+@@ -60,15 +73,227 @@ devm_hwmon_device_register_with_groups is similar to
+ hwmon_device_register_with_groups. However, it is device managed, meaning the
+ hwmon device does not have to be removed explicitly by the removal function.
+ 
++hwmon_device_register_with_info is the most comprehensive and preferred means
++to register a hardware monitoring device. It creates the standard sysfs
++attributes in the hardware monitoring core, letting the driver focus on reading
++from and writing to the chip instead of having to bother with sysfs attributes.
++Its parameters are described in more detail below.
++
++devm_hwmon_device_register_with_info is similar to
++hwmon_device_register_with_info. However, it is device managed, meaning the
++hwmon device does not have to be removed explicitly by the removal function.
++
+ hwmon_device_unregister deregisters a registered hardware monitoring device.
+ The parameter of this function is the pointer to the registered hardware
+ monitoring device structure. This function must be called from the driver
+ remove function if the hardware monitoring device was registered with
+-hwmon_device_register or with hwmon_device_register_with_groups.
++hwmon_device_register, hwmon_device_register_with_groups, or
++hwmon_device_register_with_info.
+ 
+ devm_hwmon_device_unregister does not normally have to be called. It is only
+ needed for error handling, and only needed if the driver probe fails after
+-the call to devm_hwmon_device_register_with_groups.
++the call to devm_hwmon_device_register_with_groups and if the automatic
++(device managed) removal would be too late.
++
++Using devm_hwmon_device_register_with_info()
++--------------------------------------------
++
++hwmon_device_register_with_info() registers a hardware monitoring device.
++The parameters to this function are
++
++struct device *dev	Pointer to parent device
++const char *name	Device name
++void *drvdata		Driver private data
++const struct hwmon_chip_info *info
++			Pointer to chip description.
++const struct attribute_group **groups
++			Null-terminated list of additional sysfs attribute
++			groups.
++
++This function returns a pointer to the created hardware monitoring device
++on success and a negative error code for failure.
++
++The hwmon_chip_info structure looks as follows.
++
++struct hwmon_chip_info {
++	const struct hwmon_ops *ops;
++	const struct hwmon_channel_info **info;
 +};
 +
- static const char * const *__templates[] = {
- 	[hwmon_chip] = hwmon_chip_attr_templates,
- 	[hwmon_temp] = hwmon_temp_attr_templates,
- 	[hwmon_in] = hwmon_in_attr_templates,
- 	[hwmon_curr] = hwmon_curr_attr_templates,
-+	[hwmon_power] = hwmon_power_attr_templates,
- };
- 
- static const int __templates_size[] = {
-@@ -333,6 +362,7 @@ static const int __templates_size[] = {
- 	[hwmon_temp] = ARRAY_SIZE(hwmon_temp_attr_templates),
- 	[hwmon_in] = ARRAY_SIZE(hwmon_in_attr_templates),
- 	[hwmon_curr] = ARRAY_SIZE(hwmon_curr_attr_templates),
-+	[hwmon_power] = ARRAY_SIZE(hwmon_power_attr_templates),
- };
- 
- static int hwmon_num_channel_attrs(const struct hwmon_channel_info *info)
-diff --git a/include/linux/hwmon.h b/include/linux/hwmon.h
-index 8781c2253b1d..d7e432ef7c2a 100644
---- a/include/linux/hwmon.h
-+++ b/include/linux/hwmon.h
-@@ -32,6 +32,7 @@ enum hwmon_chip_attributes {
- 	hwmon_chip_temp_reset_history,
- 	hwmon_chip_in_reset_history,
- 	hwmon_chip_curr_reset_history,
-+	hwmon_chip_power_reset_history,
- 	hwmon_chip_register_tz,
- 	hwmon_chip_update_interval,
- 	hwmon_chip_alarms,
-@@ -40,6 +41,7 @@ enum hwmon_chip_attributes {
- #define HWMON_C_TEMP_RESET_HISTORY	BIT(hwmon_chip_temp_reset_history)
- #define HWMON_C_IN_RESET_HISTORY	BIT(hwmon_chip_in_reset_history)
- #define HWMON_C_CURR_RESET_HISTORY	BIT(hwmon_chip_curr_reset_history)
-+#define HWMON_C_POWER_RESET_HISTORY	BIT(hwmon_chip_power_reset_history)
- #define HWMON_C_REGISTER_TZ		BIT(hwmon_chip_register_tz)
- #define HWMON_C_UPDATE_INTERVAL		BIT(hwmon_chip_update_interval)
- #define HWMON_C_ALARMS			BIT(hwmon_chip_alarms)
-@@ -162,6 +164,58 @@ enum hwmon_curr_attributes {
- #define HWMON_C_LCRIT_ALARM	BIT(hwmon_curr_lcrit_alarm)
- #define HWMON_C_CRIT_ALARM	BIT(hwmon_curr_crit_alarm)
- 
-+enum hwmon_power_attributes {
-+	hwmon_power_average,
-+	hwmon_power_average_interval,
-+	hwmon_power_average_interval_max,
-+	hwmon_power_average_interval_min,
-+	hwmon_power_average_highest,
-+	hwmon_power_average_lowest,
-+	hwmon_power_average_max,
-+	hwmon_power_average_min,
-+	hwmon_power_input,
-+	hwmon_power_input_highest,
-+	hwmon_power_input_lowest,
-+	hwmon_power_reset_history,
-+	hwmon_power_accuracy,
-+	hwmon_power_cap,
-+	hwmon_power_cap_hyst,
-+	hwmon_power_cap_max,
-+	hwmon_power_cap_min,
-+	hwmon_power_max,
-+	hwmon_power_crit,
-+	hwmon_power_label,
-+	hwmon_power_alarm,
-+	hwmon_power_cap_alarm,
-+	hwmon_power_max_alarm,
-+	hwmon_power_crit_alarm,
++It contains the following fields:
++
++* ops:	Pointer to device operations.
++* info: NULL-terminated list of device channel descriptors.
++
++The list of hwmon operations is defined as:
++
++struct hwmon_ops {
++	umode_t (*is_visible)(const void *, enum hwmon_sensor_types type,
++			      u32 attr, int);
++	int (*read)(struct device *, enum hwmon_sensor_types type,
++		    u32 attr, int, long *);
++	int (*write)(struct device *, enum hwmon_sensor_types type,
++		     u32 attr, int, long);
 +};
 +
-+#define HWMON_P_AVERAGE			BIT(hwmon_power_average)
-+#define HWMON_P_AVERAGE_INTERVAL	BIT(hwmon_power_average_interval)
-+#define HWMON_P_AVERAGE_INTERVAL_MAX	BIT(hwmon_power_average_interval_max)
-+#define HWMON_P_AVERAGE_INTERVAL_MIN	BIT(hwmon_power_average_interval_min)
-+#define HWMON_P_AVERAGE_HIGHEST		BIT(hwmon_power_average_highest)
-+#define HWMON_P_AVERAGE_LOWEST		BIT(hwmon_power_average_lowest)
-+#define HWMON_P_AVERAGE_MAX		BIT(hwmon_power_average_max)
-+#define HWMON_P_AVERAGE_MIN		BIT(hwmon_power_average_min)
-+#define HWMON_P_INPUT			BIT(hwmon_power_input)
-+#define HWMON_P_INPUT_HIGHEST		BIT(hwmon_power_input_highest)
-+#define HWMON_P_INPUT_LOWEST		BIT(hwmon_power_input_lowest)
-+#define HWMON_P_RESET_HISTORY		BIT(hwmon_power_reset_history)
-+#define HWMON_P_ACCURACY		BIT(hwmon_power_accuracy)
-+#define HWMON_P_CAP			BIT(hwmon_power_cap)
-+#define HWMON_P_CAP_HYST		BIT(hwmon_power_cap_hyst)
-+#define HWMON_P_CAP_MAX			BIT(hwmon_power_cap_max)
-+#define HWMON_P_CAP_MIN			BIT(hwmon_power_cap_min)
-+#define HWMON_P_MAX			BIT(hwmon_power_max)
-+#define HWMON_P_CRIT			BIT(hwmon_power_crit)
-+#define HWMON_P_LABEL			BIT(hwmon_power_label)
-+#define HWMON_P_ALARM			BIT(hwmon_power_alarm)
-+#define HWMON_P_CAP_ALARM		BIT(hwmon_power_cap_alarm)
-+#define HWMON_P_MAX_ALARM		BIT(hwmon_power_max_alarm)
-+#define HWMON_P_CRIT_ALARM		BIT(hwmon_power_crit_alarm)
++It defines the following operations.
 +
- /**
-  * struct hwmon_ops - hwmon device operations
-  * @is_visible: Callback to return attribute visibility. Mandatory.
++* is_visible: Pointer to a function to return the file mode for each supported
++  attribute. This function is mandatory.
++
++* read: Pointer to a function for reading a value from the chip. This function
++  is optional, but must be provided if any readable attributes exist.
++
++* write: Pointer to a function for writing a value to the chip. This function is
++  optional, but must be provided if any writeable attributes exist.
++
++Each sensor channel is described with struct hwmon_channel_info, which is
++defined as follows.
++
++struct hwmon_channel_info {
++	enum hwmon_sensor_types type;
++	u32 *config;
++};
++
++It contains following fields:
++
++* type: The hardware monitoring sensor type.
++  Supported sensor types are
++  * hwmon_chip		A virtual sensor type, used to describe attributes
++			which apply to the entire chip.
++  * hwmon_temp		Temperature sensor
++  * hwmon_in		Voltage sensor
++  * hwmon_curr		Current sensor
++  * hwmon_power		Power sensor
++  * hwmon_energy	Energy sensor
++  * hwmon_humidity	Humidity sensor
++  * hwmon_fan		Fan speed sensor
++
++* config: Pointer to a 0-terminated list of configuration values for each
++  sensor of the given type. Each value is a combination of bit values
++  describing the attributes supposed by a single sensor.
++
++As an example, here is the complete description file for a LM75 compatible
++sensor chip. The chip has a single temperature sensor. The driver wants to
++register with the thermal subsystem (HWMON_C_REGISTER_TZ), and it supports
++the update_interval attribute (HWMON_C_UPDATE_INTERVAL). The chip supports
++reading the temperature (HWMON_T_INPUT), it has a maximum temperature
++register (HWMON_T_MAX) as well as a maximum temperature hysteresis register
++(HWMON_T_MAX_HYST).
++
++static const u32 lm75_chip_config[] = {
++	HWMON_C_REGISTER_TZ | HWMON_C_UPDATE_INTERVAL,
++	0
++};
++
++static const struct hwmon_channel_info lm75_chip = {
++	.type = hwmon_chip,
++	.config = lm75_chip_config,
++};
++
++static const u32 lm75_temp_config[] = {
++	HWMON_T_INPUT | HWMON_T_MAX | HWMON_T_MAX_HYST,
++	0
++};
++
++static const struct hwmon_channel_info lm75_temp = {
++	.type = hwmon_temp,
++	.config = lm75_temp_config,
++};
++
++static const struct hwmon_channel_info *lm75_info[] = {
++	&lm75_chip,
++	&lm75_temp,
++	NULL
++};
++
++static const struct hwmon_ops lm75_hwmon_ops = {
++	.is_visible = lm75_is_visible,
++	.read = lm75_read,
++	.write = lm75_write,
++};
++
++static const struct hwmon_chip_info lm75_chip_info = {
++	.ops = &lm75_hwmon_ops,
++	.info = lm75_info,
++};
++
++A complete list of bit values indicating individual attribute support
++is defined in include/linux/hwmon.h. Definition prefixes are as follows.
++
++HWMON_C_xxxx	Chip attributes, for use with hwmon_chip.
++HWMON_T_xxxx	Temperature attributes, for use with hwmon_temp.
++HWMON_I_xxxx	Voltage attributes, for use with hwmon_in.
++HWMON_C_xxxx	Current attributes, for use with hwmon_curr.
++		Notice the prefix overlap with chip attributes.
++HWMON_P_xxxx	Power attributes, for use with hwmon_power.
++HWMON_E_xxxx	Energy attributes, for use with hwmon_energy.
++HWMON_H_xxxx	Humidity attributes, for use with hwmon_humidity.
++HWMON_F_xxxx	Fan speed attributes, for use with hwmon_fan.
++
++Driver callback functions
++-------------------------
++
++Each driver provides is_visible, read, and write functions. Parameters
++and return values for those functions are as follows.
++
++umode_t is_visible_func(const void *data, enum hwmon_sensor_types type,
++			u32 attr, int channel)
++
++Parameters:
++	data:	Pointer to device private data structure.
++	type:	The sensor type.
++	attr:	Attribute identifier associated with a specific attribute.
++		For example, the attribute value for HWMON_T_INPUT would be
++		hwmon_temp_input. For complete mappings of bit fields to
++		attribute values please see include/linux/hwmon.h.
++	channel:The sensor channel number.
++
++Return value:
++	The file mode for this attribute. Typically, this will be 0 (the
++	attribute will not be created), S_IRUGO, or 'S_IRUGO | S_IWUSR'.
++
++int read_func(struct device *dev, enum hwmon_sensor_types type,
++	      u32 attr, int channel, long *val)
++
++Parameters:
++	dev:	Pointer to the hardware monitoring device.
++	type:	The sensor type.
++	attr:	Attribute identifier associated with a specific attribute.
++		For example, the attribute value for HWMON_T_INPUT would be
++		hwmon_temp_input. For complete mappings please see
++		include/linux/hwmon.h.
++	channel:The sensor channel number.
++	val:	Pointer to attribute value.
++
++Return value:
++	0 on success, a negative error number otherwise.
++
++int write_func(struct device *dev, enum hwmon_sensor_types type,
++	       u32 attr, int channel, long val)
++
++Parameters:
++	dev:	Pointer to the hardware monitoring device.
++	type:	The sensor type.
++	attr:	Attribute identifier associated with a specific attribute.
++		For example, the attribute value for HWMON_T_INPUT would be
++		hwmon_temp_input. For complete mappings please see
++		include/linux/hwmon.h.
++	channel:The sensor channel number.
++	val:	The value to write to the chip.
++
++Return value:
++	0 on success, a negative error number otherwise.
++
++
++Driver-provided sysfs attributes
++--------------------------------
++
++If the hardware monitoring device is registered with
++hwmon_device_register_with_info or devm_hwmon_device_register_with_info,
++it is most likely not necessary to provide sysfs attributes. Only non-standard
++sysfs attributes need to be provided when one of those registration functions
++is used.
+ 
+ The header file linux/hwmon-sysfs.h provides a number of useful macros to
+ declare and use hardware monitoring sysfs attributes.
 -- 
 2.5.0
-
