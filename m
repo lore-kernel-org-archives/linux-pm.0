@@ -1,241 +1,164 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: cpufreq: Intel P state driver: add cycle counter for clock
- frequency monitoring
-Date: Mon, 18 Jul 2016 09:29:42 -0700
-Message-ID: <1468859382.13661.167.camel@linux.intel.com>
-References: <66b88042-0f03-893b-33ac-c4e6df17534c@osadl.org>
+From: Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>
+Subject: Re: [PATCH v2 00/10] Exynos IOMMU: proper runtime PM support (use
+	device dependencies)
+Date: Mon, 18 Jul 2016 18:43:02 +0200
+Message-ID: <578D0716.6060106@math.uni-bielefeld.de>
+References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
+	<5787B2B0.9020809@math.uni-bielefeld.de>
+	<5788E352.3040801@math.uni-bielefeld.de>
+	<a15e438a-7fa0-3a4d-e6e2-13425512dddd@samsung.com>
+	<578CB6DB.90608@math.uni-bielefeld.de>
+	<6939949e-4c8e-cba0-9858-b37d1ba01869@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:28215 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751499AbcGRQ35 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 18 Jul 2016 12:29:57 -0400
-In-Reply-To: <66b88042-0f03-893b-33ac-c4e6df17534c@osadl.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <6939949e-4c8e-cba0-9858-b37d1ba01869-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Carsten Emde <C.Emde@osadl.org>, Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-Hi Carsten,
-
-On Sun, 2016-07-17 at 23:51 +0200, Carsten Emde wrote:
-> Most cpufreq drivers contain an interface to the cpufreq_stats plugin
-> that counts the time the processor stays in a given P state. The
-> Intel P
-> state driver, however, does not work on discrete P states but allows
-> to
-> run the processor at arbitrary clock frequencies within the allowed
-> range. Even if the frequencies were reduced to steps of 100 MHz, this
-> would result in too many P states.
-This is true even using acpi-cpufreq driver on Intel x86 processors for
-a while. Due to HW coordination, power limits, TDP the requested P
-state may not be honored for a given CPU. The stats shows, P states
-which are just requests.
+Hey Marek,
 
 
->  This patch, therefore, introduces the
-> additional cpufreq variable kcycles that contains the number of clock
-> cycles divided by 1000 since the most recent reboot. This allows to
-> monitor the average clock frequency during a defined time interval by
-> simply calculating the derivative.=20
-Can you not use turbostat?
+Marek Szyprowski wrote:
+> Dear Tobias
+> 
+> 
+> On 2016-07-18 13:00, Tobias Jakobi wrote:
+>> Marek Szyprowski wrote:
+>>> On 2016-07-15 15:21, Tobias Jakobi wrote:
+>>>> Tobias Jakobi wrote:
+>>>>> Hello Marek,
+>>>>>
+>>>>> I've tested the patchset on 4.7-rc7 and noticed that it breaks
+>>>>> reboot on
+>>>>> my ODROID-X2.
+>>>>>
+>>>>> Going to check where exactly things break.
+>>>> Sadly it's the last patch where everything comes together:
+>>>> "iommu/exynos: Add proper runtime pm support"
+>>>>
+>>>> I still have to check if forcing runpm status to 'on' makes a
+>>>> difference. I suspect that the aggressive clock gating might be the
+>>>> reason?
+>>> Thanks for testing. I will check this issue. Could you send me your
+>>> .config?
+>> This is the config I'm currently using:
+>> https://github.com/tobiasjakobi/odroid-environment/blob/master/sourcecode/system/vanilla-4.7-debug.conf
+>>
+>>
+>> Do you think checking this with no_console_suspend makes sense?
+> 
+> no_console_suspend switch won't provide more information, but I managed
+> to reproduce your issue. I'm really confused how enabling runtime pm can
+> cause problems with usb/smsc95xx ethernet driver (that is the reason for
+> failed reboot). Maybe it is somehow related to the global relations
+> between devices and drivers and the fact that creating the runtime pm
+> links change the order of operations. I will check this again when
+> Rafael send updated patches. Here is the log I got (after waiting some
+> time):
+thanks for looking into this! I'll try to reproduce this on my board. I
+have to admit that I didn't wait too long for the hung task message to
+appear.
 
-> With this patch, there are no longer
-> Intel processors around that do not provide a way to monitor the
-> clock
-> frequency. Such monitoring is important to fine tune a system's
-> energy
-> efficiency and to debug clock frequency modulation.
-What about using powercap/rapl? That will give more information about
-energy.
+I wonder if this has something to do with regulator code cutting some
+supplies too early. Is this on a X2 or a U2/U3? I'm not sure if we
+currently model the regulator setup correctly here (IIRC then buck8 is
+supplying the LAN/USB block on U2/U3).
 
->=20
-> (Earlier kernel versions can immediately use the now abandoned
-> function
-> intel_pstate_calc_freq(). I had to resuscitate it for kernel versions
-> where it disappeared.)
-Since the sampling function is called from scheduler hot path, we don't
-want any additional calculation. The place we really calculate when
-request from cpufreq callback or for tracing is enabled?
 
-Thanks,
-Srinivas
+- Tobias
 
->=20
-> Signed-off-by: Carsten Emde <C.Emde@osadl.org>
->=20
-> ---
-> =C2=A0drivers/cpufreq/cpufreq.c=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0|=C2=
-=A0=C2=A0=C2=A015 +++++++++++++++
-> =C2=A0drivers/cpufreq/intel_pstate.c |=C2=A0=C2=A0=C2=A039
-> ++++++++++++++++++++++++++++++++++++---
-> =C2=A0include/linux/cpufreq.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0|=C2=A0=C2=A0=C2=A0=C2=A02 ++
-> =C2=A03 files changed, 53 insertions(+), 3 deletions(-)
->=20
-> Index: linux-4.7.0-rc3+/drivers/cpufreq/cpufreq.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-4.7.0-rc3+.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-4.7.0-rc3+/drivers/cpufreq/cpufreq.c
-> @@ -815,6 +815,19 @@ static ssize_t show_bios_limit(struct cp
-> =C2=A0	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
-> =C2=A0}
-> =C2=A0
-> +/**
-> + * show_scaling_kcycles - show number of accumulated CPU cycles by
-> 1000
-> + */
-> +static ssize_t show_scaling_kcycles(struct cpufreq_policy *policy,
-> +					char *buf)
-> +{
-> +	if (cpufreq_driver && cpufreq_driver->kcycles) {
-> +		u64 kcycles =3D cpufreq_driver->kcycles(policy->cpu);
-> +		return sprintf(buf, "%llu\n", kcycles);
-> +	} else
-> +		return sprintf(buf, "<unsupported>");
-> +}
-> +
-> =C2=A0cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
-> =C2=A0cpufreq_freq_attr_ro(cpuinfo_min_freq);
-> =C2=A0cpufreq_freq_attr_ro(cpuinfo_max_freq);
-> @@ -829,6 +842,7 @@ cpufreq_freq_attr_rw(scaling_min_freq);
-> =C2=A0cpufreq_freq_attr_rw(scaling_max_freq);
-> =C2=A0cpufreq_freq_attr_rw(scaling_governor);
-> =C2=A0cpufreq_freq_attr_rw(scaling_setspeed);
-> +cpufreq_freq_attr_ro(scaling_kcycles);
-> =C2=A0
-> =C2=A0static struct attribute *default_attrs[] =3D {
-> =C2=A0	&cpuinfo_min_freq.attr,
-> @@ -842,6 +856,7 @@ static struct attribute *default_attrs[]
-> =C2=A0	&scaling_driver.attr,
-> =C2=A0	&scaling_available_governors.attr,
-> =C2=A0	&scaling_setspeed.attr,
-> +	&scaling_kcycles.attr,
-> =C2=A0	NULL
-> =C2=A0};
-> =C2=A0
-> Index: linux-4.7.0-rc3+/drivers/cpufreq/intel_pstate.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-4.7.0-rc3+.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-4.7.0-rc3+/drivers/cpufreq/intel_pstate.c
-> @@ -96,7 +96,6 @@ static inline u64 div_ext_fp(u64 x, u64
-> =C2=A0 *			read from MPERF MSR between last and
-> current sample
-> =C2=A0 * @tsc:		Difference of time stamp counter between
-> last and
-> =C2=A0 *			current sample
-> - * @freq:		Effective frequency calculated from
-> APERF/MPERF
-> =C2=A0 * @time:		Current time from scheduler
-> =C2=A0 *
-> =C2=A0 * This structure is used in the cpudata structure to store
-> performance sample
-> @@ -108,8 +107,8 @@ struct sample {
-> =C2=A0	u64 aperf;
-> =C2=A0	u64 mperf;
-> =C2=A0	u64 tsc;
-> -	int freq;
-> =C2=A0	u64 time;
-> +	u64 kcycles;
-> =C2=A0};
-> =C2=A0
-> =C2=A0/**
-> @@ -1154,11 +1153,26 @@ static inline void intel_pstate_calc_avg
-> =C2=A0	sample->core_avg_perf =3D div_ext_fp(sample->aperf, sample-
-> >mperf);
-> =C2=A0}
-> =C2=A0
-> +static inline int intel_pstate_calc_freq(struct cpudata *cpu)
-> +{
-> +	struct sample *sample =3D &cpu->sample;
-> +	int64_t core_pct;
-> +
-> +	core_pct =3D int_tofp(sample->aperf) * int_tofp(100);
-> +	core_pct =3D div64_u64(core_pct, int_tofp(sample->mperf));
-> +
-> +	return fp_toint(mul_fp(int_tofp(
-> +			cpu->pstate.max_pstate_physical *
-> +			cpu->pstate.scaling / 100),
-> +			core_pct));
-> +}
-> +
-> =C2=A0static inline bool intel_pstate_sample(struct cpudata *cpu, u64
-> time)
-> =C2=A0{
-> -	u64 aperf, mperf;
-> +	u64 aperf, mperf, interval;
-> =C2=A0	unsigned long flags;
-> =C2=A0	u64 tsc;
-> +	int freq;
-> =C2=A0
-> =C2=A0	local_irq_save(flags);
-> =C2=A0	rdmsrl(MSR_IA32_APERF, aperf);
-> @@ -1179,6 +1193,12 @@ static inline bool intel_pstate_sample(s
-> =C2=A0	cpu->sample.mperf -=3D cpu->prev_mperf;
-> =C2=A0	cpu->sample.tsc -=3D cpu->prev_tsc;
-> =C2=A0
-> +	freq =3D intel_pstate_calc_freq(cpu);
-> +	interval =3D (cpu->sample.time - cpu->last_sample_time) /
-> +		=C2=A0=C2=A0=C2=A0NSEC_PER_MSEC;
-> +	cpu->sample.kcycles +=3D ((u64) freq * interval) /
-> +		1000ULL;
-> +
-> =C2=A0	cpu->prev_aperf =3D aperf;
-> =C2=A0	cpu->prev_mperf =3D mperf;
-> =C2=A0	cpu->prev_tsc =3D tsc;
-> @@ -1436,6 +1456,18 @@ static void intel_pstate_set_performance
-> =C2=A0	limits->min_sysfs_pct =3D 0;
-> =C2=A0}
-> =C2=A0
-> +static u64 intel_pstate_kcycles_get(unsigned int cpu_num)
-> +{
-> +	struct sample *sample;
-> +	struct cpudata *cpu;
-> +
-> +	cpu =3D all_cpu_data[cpu_num];
-> +	if (!cpu)
-> +		return 0;
-> +	sample =3D &cpu->sample;
-> +	return sample->kcycles;
-> +}
-> +
-> =C2=A0static int intel_pstate_set_policy(struct cpufreq_policy *polic=
-y)
-> =C2=A0{
-> =C2=A0	struct cpudata *cpu;
-> @@ -1569,6 +1601,7 @@ static struct cpufreq_driver intel_pstat
-> =C2=A0	.setpolicy	=3D intel_pstate_set_policy,
-> =C2=A0	.resume		=3D intel_pstate_hwp_set_policy,
-> =C2=A0	.get		=3D intel_pstate_get,
-> +	.kcycles	=3D intel_pstate_kcycles_get,
-> =C2=A0	.init		=3D intel_pstate_cpu_init,
-> =C2=A0	.exit		=3D intel_pstate_cpu_exit,
-> =C2=A0	.stop_cpu	=3D intel_pstate_stop_cpu,
-> Index: linux-4.7.0-rc3+/include/linux/cpufreq.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-4.7.0-rc3+.orig/include/linux/cpufreq.h
-> +++ linux-4.7.0-rc3+/include/linux/cpufreq.h
-> @@ -275,6 +275,8 @@ struct cpufreq_driver {
-> =C2=A0	unsigned int	(*get)(unsigned int cpu);
-> =C2=A0
-> =C2=A0	/* optional */
-> +	u64		(*kcycles) (unsigned int cpu);
-> +
-> =C2=A0	int		(*bios_limit)(int cpu, unsigned int
-> *limit);
-> =C2=A0
-> =C2=A0	int		(*exit)(struct cpufreq_policy *policy);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-in=
-fo.html
+
+> 
+> # reboot
+> 
+> Broadcast message from root@target (ttySAC1) (Mon Jul 18 13:33:38 2016):
+> 
+> The system is going down for reboot NOW!
+> INIT: Switching to runlevel: 6
+> INIT: Sending processes the TERM signal
+> [info] Using makefile-style concurrent boot in runlevel 6.
+> [ ok ] Stopping cgroup management proxy daemon: cgproxy[....] Stopping
+> internet superserver: inetd.
+> [....] Stopping cgroup management daemon: cgmanagermax77686-rtc
+> max77686-rtc: RTC alarm IRQ: 119
+> [ ok ] Shutting down ALSA...done.
+> random: nonblocking pool is initialized
+> [info] Saving the system clock.
+> [info] Hardware Clock updated to Mon Jul 18 13:33:40 UTC 2016.
+> [ ok ] Asking all remaining processes to terminate...done.
+> [ ok ] All processes ended within 1 seconds...done.
+> [ ok ] Stopping rpcbind daemon....
+> [ ok ] Deconfiguring network interfaces...done.
+> [ ok ] Unmounting temporary filesystems...done.
+> [ ok ] Deactivating swap...done.
+> EXT4-fs (mmcblk1p2): re-mounted. Opts: (null)
+> [info] Will now restart.
+> smsc95xx 1-2:1.0 eth0: Failed to read reg index 0x00000114: -110
+> smsc95xx 1-2:1.0 eth0: Error reading MII_ACCESS
+> smsc95xx 1-2:1.0 eth0: MII is busy in smsc95xx_mdio_read
+> smsc95xx 1-2:1.0 eth0: Failed to read MII_BMSR
+> INFO: task kworker/0:1:410 blocked for more than 120 seconds.
+>       Not tainted 4.7.0-rc7-debug+ #155
+> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> kworker/0:1     D c06850a8     0   410      2 0x00000000
+> Workqueue: events_freezable mmc_rescan
+> Backtrace:
+> [<c0684e90>] (__schedule) from [<c068560c>] (schedule+0x44/0xb0)
+>  r10:00000000 r9:eebe1d88 r8:c0686234 r7:00000000 r6:00000002 r5:7fffffff
+>  r4:7fffffff
+> [<c06855c8>] (schedule) from [<c068a398>] (schedule_timeout+0x154/0x1b0)
+> [<c068a244>] (schedule_timeout) from [<c0686250>]
+> (wait_for_common+0xe0/0x174)
+>  r8:c0686234 r7:00000000 r6:00000002 r5:eebe1d8c r4:7fffffff
+> [<c0686170>] (wait_for_common) from [<c0686430>]
+> (wait_for_completion+0x18/0x1c)
+>  r10:00000001 r9:00000000 r8:00000000 r7:eebe1d88 r6:eebe1d78 r5:ee260000
+>  r4:eebe1de4
+> [<c0686418>] (wait_for_completion) from [<c04e72c8>]
+> (mmc_wait_for_req+0xc8/0x15c)
+> [<c04e7200>] (mmc_wait_for_req) from [<c04e73c8>]
+> (mmc_wait_for_cmd+0x6c/0xa4)
+>  r8:eef73d00 r7:00000003 r6:ee260000 r5:c0a02448 r4:eebe1de4 r3:00000000
+> [<c04e735c>] (mmc_wait_for_cmd) from [<c04edbf4>]
+> (mmc_send_status+0x8c/0xb0)
+>  r7:eebe1eb0 r6:ee260000 r5:ee260000 r4:00000000
+> [<c04edb68>] (mmc_send_status) from [<c04eaf80>] (mmc_alive+0x18/0x1c)
+>  r4:ee260000
+> [<c04eaf68>] (mmc_alive) from [<c04e93d0>]
+> (_mmc_detect_card_removed+0x40/0x90)
+> [<c04e9390>] (_mmc_detect_card_removed) from [<c04eba80>]
+> (mmc_detect+0x2c/0x78)
+>  r5:ee2602bc r4:ee260000
+> [<c04eba54>] (mmc_detect) from [<c04e96ac>] (mmc_rescan+0x1b0/0x324)
+>  r5:ee2602bc r4:ee260368
+> [<c04e94fc>] (mmc_rescan) from [<c013a818>] (process_one_work+0x194/0x414)
+>  r8:eef73d00 r7:eebe1eb0 r6:eef70280 r5:ee260368 r4:eea24080 r3:c04e94fc
+> [<c013a684>] (process_one_work) from [<c013ab0c>]
+> (worker_thread+0x34/0x4d4)
+>  r10:eef70280 r9:c0a02100 r8:00000008 r7:eef70280 r6:eea24098 r5:eef702b4
+>  r4:eea24080
+> [<c013aad8>] (worker_thread) from [<c0141e18>] (kthread+0xf8/0x11c)
+>  r10:00000000 r9:00000000 r8:00000000 r7:c013aad8 r6:eea24080 r5:00000000
+>  r4:eea29d00
+> [<c0141d20>] (kthread) from [<c0107ff0>] (ret_from_fork+0x14/0x24)
+>  r7:00000000 r6:00000000 r5:c0141d20 r4:eea29d00
+> 2 locks held by kworker/0:1/410:
+>  #0:  ("events_freezable"){.+.+.+}, at: [<c013a7ac>]
+> process_one_work+0x128/0x414
+>  #1:  ((&(&host->detect)->work)){+.+.+.}, at: [<c013a7ac>]
+> process_one_work+0x128/0x414
+> 
+> 
+> Best regards
