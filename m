@@ -1,88 +1,69 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] timekeeping: Fix memory overwrite of sleep_time_bin array
-Date: Tue, 19 Jul 2016 00:01:37 +0200
-Message-ID: <1938295.fBmZlflNpk@vostro.rjw.lan>
-References: <1468806139-31436-1-git-send-email-yu.c.chen@intel.com>
+From: Carsten Emde <C.Emde@osadl.org>
+Subject: Re: cpufreq: Intel P state driver: add cycle counter for clock
+ frequency monitoring
+Date: Tue, 19 Jul 2016 00:06:01 +0200
+Message-ID: <7b9c4007-bcc1-c2b2-86dc-d93c9a8031ed@osadl.org>
+References: <66b88042-0f03-893b-33ac-c4e6df17534c@osadl.org>
+ <1468859382.13661.167.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:60714 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751451AbcGRV4p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jul 2016 17:56:45 -0400
-In-Reply-To: <1468806139-31436-1-git-send-email-yu.c.chen@intel.com>
+Received: from toro.web-alm.net ([62.245.132.31]:41964 "EHLO toro.web-alm.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751041AbcGRWKR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 Jul 2016 18:10:17 -0400
+In-Reply-To: <1468859382.13661.167.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-On Monday, July 18, 2016 09:42:19 AM Chen Yu wrote:
-> It is reported the hibernation fails at 2nd attempt, which
-> hangs at hibernate() -> syscore_resume() -> i8237A_resume()
-> -> claim_dma_lock(), because the lock has already been taken.
-> However there is actually no other process would like to grab
-> this lock on that problematic platform.
-> 
-> Further investigation shows that, the problem is caused by setting
-> /sys/power/pm_trace to 1 before the 1st hibernation, since once
-> pm_trace is enabled, the rtc becomes an unmeaningful value after resumed,
-> which might bring a significant long sleep time in timekeeping_resume,
-> thus in tk_debug_account_sleep_time, the delta of timespec64 might
-> exceed 32bit after commit 7d489d15ce4b ("timekeeping: Convert timekeeping
-> core to use timespec64s"), thus if the bit31 happened set to 1, the
-> fls might return 32 and then we add 1 to sleep_time_bin[32], which
-> caused a memory overwritten. As System.map shows:
-> 
-> ffffffff81c9d080 b sleep_time_bin
-> ffffffff81c9d100 B dma_spin_lock
-> 
-> Thus set the dma_spin_lock.val to 1, which caused this problem.
+Hi Srinivas,
 
-Nice catch!
+>> Most cpufreq drivers contain an interface to the cpufreq_stats plugin
+>> that counts the time the processor stays in a given P state. The
+>> Intel P
+>> state driver, however, does not work on discrete P states but allows
+>> to
+>> run the processor at arbitrary clock frequencies within the allowed
+>> range. Even if the frequencies were reduced to steps of 100 MHz, this
+>> would result in too many P states.
+> This is true even using acpi-cpufreq driver on Intel x86 processors for
+> a while. Due to HW coordination, power limits, TDP the requested P
+> state may not be honored for a given CPU. The stats shows, P states
+> which are just requests.
+Ah, ok.
 
-> This patch fixes this issue by extending sleep_time_bin to 64, and
-> use __fls to be fit for timespec64.
-> 
-> Fixes: 7d489d15ce4b ("timekeeping: Convert timekeeping core to use timespec64s")
-> Reported-and-tested-by: Janek Kozicki <cosurgi@gmail.com>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->  kernel/time/timekeeping_debug.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/kernel/time/timekeeping_debug.c b/kernel/time/timekeeping_debug.c
-> index f6bd652..12b07d5 100644
-> --- a/kernel/time/timekeeping_debug.c
-> +++ b/kernel/time/timekeeping_debug.c
-> @@ -23,14 +23,14 @@
->  
->  #include "timekeeping_internal.h"
->  
-> -static unsigned int sleep_time_bin[32] = {0};
-> +static unsigned int sleep_time_bin[64] = {0};
->  
->  static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
->  {
->  	unsigned int bin;
->  	seq_puts(s, "      time (secs)        count\n");
->  	seq_puts(s, "------------------------------\n");
-> -	for (bin = 0; bin < 32; bin++) {
-> +	for (bin = 0; bin < 64; bin++) {
->  		if (sleep_time_bin[bin] == 0)
->  			continue;
->  		seq_printf(s, "%10u - %-10u %4u\n",
-> @@ -69,6 +69,7 @@ late_initcall(tk_debug_sleep_time_init);
->  
->  void tk_debug_account_sleep_time(struct timespec64 *t)
->  {
-> -	sleep_time_bin[fls(t->tv_sec)]++;
-> +	if (t->tv_sec > 0)
-> +		sleep_time_bin[__fls(t->tv_sec)]++;
+>>  This patch, therefore, introduces the
+>> additional cpufreq variable kcycles that contains the number of clock
+>> cycles divided by 1000 since the most recent reboot. This allows to
+>> monitor the average clock frequency during a defined time interval by
+>> simply calculating the derivative. 
+> Can you not use turbostat?
+I've been using the acpi-cpufreq an all our systems including non-x86
+ones and wanted to have a similar interface in the P state driver. If
+this is not possible, I certainly can use turbostat which, however,
+requires a separate data collection task.
 
-But you could simply validate t->tv_sec here without extending sleeo_time_bin[]
-and switching over to __fls(), couldn't you?
+>> With this patch, there are no longer
+>> Intel processors around that do not provide a way to monitor the
+>> clock
+>> frequency. Such monitoring is important to fine tune a system's
+>> energy
+>> efficiency and to debug clock frequency modulation.
+> What about using powercap/rapl? That will give more information about
+> energy.
+Yes, we monitor rapl-based energy consumption by default on all systems
+that provide this interface.
+
+>> (Earlier kernel versions can immediately use the now abandoned
+>> function
+>> intel_pstate_calc_freq(). I had to resuscitate it for kernel versions
+>> where it disappeared.)
+> Since the sampling function is called from scheduler hot path, we don't
+> want any additional calculation.
+Fair enough.
 
 Thanks,
-Rafael
-
+Carsten.
