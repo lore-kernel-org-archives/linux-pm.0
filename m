@@ -1,94 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 11/13] PM / sleep: Allow opt-out from runtime resume after direct-complete
-Date: Mon, 18 Jul 2016 15:18:25 +0200
-Message-ID: <10830072.vubE73bdx4@vostro.rjw.lan>
-References: <cover.1463134231.git.lukas@wunner.de> <9f0713b23baf7c6139a4b476cd9637d96e18cc95.1463134232.git.lukas@wunner.de>
+From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: Kernel stability on baytrail machines
+Date: Mon, 18 Jul 2016 14:30:03 +0100
+Message-ID: <20160718143003.3477c0bc@lxorguk.ukuu.org.uk>
+References: <606d9b223f3c12775d108b98c4df72ae@feix.cz>
+	<20160409160119.GA19362@xo-6d-61-c0.localdomain>
+	<20160409201417.4436d4bd@lxorguk.ukuu.org.uk>
+	<20160712194158.GA4834@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55448 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751136AbcGRNNe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jul 2016 09:13:34 -0400
-In-Reply-To: <9f0713b23baf7c6139a4b476cd9637d96e18cc95.1463134232.git.lukas@wunner.de>
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:50598 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751265AbcGRNaT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jul 2016 09:30:19 -0400
+In-Reply-To: <20160712194158.GA4834@laptop>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+To: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+Cc: Pavel Machek <pavel@ucw.cz>, Michal Feix <michal@feix.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org
 
-On Friday, May 13, 2016 01:15:31 PM Lukas Wunner wrote:
-> Since commit aae4518b3124 ("PM / sleep: Mechanism to avoid resuming
-> runtime-suspended devices unnecessarily"), we no longer wake up devices
-> which are already runtime suspended upon entering system sleep
-> ("direct-complete").
-> 
-> However commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might
-> have been reset by firmware") changed this to mandatorily runtime resume
-> such devices after the system is woken.  The motivation was to ensure
-> that devices do not remain in a reset-power-on state after system
-> resume, potentially preventing deep SoC-wide low-power states from being
-> entered on idle.
-> 
-> This is counter-productive for devices of which we know that the
-> mandatory runtime resume is unnecessary.  Thunderbolt on the Mac is a
-> case in point: Runtime resume not just powers up the controller, but
-> multiple adjacent chips, including a 15V boost converter, multiplexers
-> and an eeprom.  Gratuitously powering this up after every system sleep
-> burns a not insignificant amount of energy and needlessly strains the
-> hardware.
-> 
-> Perhaps it would have been better to carry out the mandatory runtime
-> resume only for those devices that actually need it, but at least we
-> should allow an opt-out.
-> 
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+On Tue, 12 Jul 2016 16:41:58 -0300
+Ezequiel Garcia <ezequiel@vanguardiasur.com.ar> wrote:
 
-I don't like this patch and especially adding a new dev_pm_ops flag to
-work around something that you're seeing as an issue in the generic ops.
-
-It is sort of like saying "the generic ops don't work for me, so modify
-them as well as struct dev_pm_ops", but maybe it's better to change the
-PCI bus type to do something different from calling the generic function?
-
-Or you can add a ->complete callback to your driver that will clear
-power.direct_complete for the device in question.
-
-> ---
->  drivers/base/power/generic_ops.c | 3 ++-
->  include/linux/pm.h               | 1 +
->  2 files changed, 3 insertions(+), 1 deletion(-)
+> Hi Alan,
 > 
-> diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
-> index 07c3c4a..6e88f55 100644
-> --- a/drivers/base/power/generic_ops.c
-> +++ b/drivers/base/power/generic_ops.c
-> @@ -316,7 +316,8 @@ void pm_complete_with_resume_check(struct device *dev)
->  	 * the sleep state it is going out of and it has never been resumed till
->  	 * now, resume it in case the firmware powered it up.
->  	 */
-> -	if (dev->power.direct_complete && pm_resume_via_firmware())
-> +	if (dev->power.direct_complete && pm_resume_via_firmware() &&
-> +	    !dev->power.direct_complete_noresume)
->  		pm_request_resume(dev);
->  }
->  EXPORT_SYMBOL_GPL(pm_complete_with_resume_check);
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 6a5d654..023de94 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -596,6 +596,7 @@ struct dev_pm_info {
->  	unsigned int		use_autosuspend:1;
->  	unsigned int		timer_autosuspends:1;
->  	unsigned int		memalloc_noio:1;
-> +	unsigned int		direct_complete_noresume:1;
->  	enum rpm_request	request;
->  	enum rpm_status		runtime_status;
->  	int			runtime_error;
+> (Adding interested people to this thread)
 > 
+> On 09 Apr 08:14 PM, One Thousand Gnomes wrote:
+> > > > I do feel that the importance of the mentioned bug is currently
+> > > > underestimated. Can anyone here give a note, how much current linux
+> > > > kernel is supposed to be stable on general baytrail machines?    
+> > > 
+> > > If you did not get any replies... you might want to check MAINTAINERS file, and
+> > > put Intel x86 maintainers on Cc list.
+> > > 
+> > > I'm sure someone cares :-).  
+> > 
+> > Yes we care, and there are people looking at the various reports.
+> >   
+> 
+> Are there any updates on the status of this issue?
+> 
+> The current bugzilla report [1] marks this as a power management
+> issue. However, many reports indicate that it would only freeze
+> when running X, so it's not completely clear if it's related to
+> the gfx driver too.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+There are two things we are currently tracking. One of them was merged
+which seems to have made my machine stable at least and fixes a problem
+related to the MMC. The second one we may need is a power related changed
+to SPI to hold the CPU in C0/C1 whenever the ACPI _SEM is held.
+
+Graphics shows these problems up because of the way the GPU causes power
+state changes.
+
+Alan
