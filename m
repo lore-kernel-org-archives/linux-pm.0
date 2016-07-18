@@ -1,100 +1,76 @@
-From: Jan Kara <jack@suse.cz>
-Subject: Re: [Query] Preemption (hogging) of the work handler
-Date: Mon, 18 Jul 2016 13:01:34 +0200
-Message-ID: <20160718110134.GB6782@quack2.suse.cz>
-References: <20160701165959.GR12473@ubuntu>
- <20160701172232.GD28719@htj.duckdns.org>
- <20160706182842.GS2671@ubuntu>
- <20160711102603.GI12410@quack2.suse.cz>
- <20160711154438.GA528@swordfish>
- <20160711223501.GI4695@ubuntu>
- <20160712231903.GR4695@ubuntu>
- <20160713054507.GA563@swordfish>
- <20160714141216.GC13151@quack2.suse.cz>
- <20160714221251.GE3057@ubuntu>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [RESEND PATCH v2] thermal: tango: add resume support
+Date: Mon, 18 Jul 2016 13:10:07 +0200
+Message-ID: <2701749.GrMaU3rvHr@wuerfel>
+References: <57726196.5060909@free.fr> <7689133.3ycKRvbtrh@wuerfel> <20160718101338.GB422@ulmo.ba.sec>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:40428 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751855AbcGRLBk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 18 Jul 2016 07:01:40 -0400
-Content-Disposition: inline
-In-Reply-To: <20160714221251.GE3057@ubuntu>
+Received: from mout.kundenserver.de ([212.227.126.134]:49605 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbcGRLKx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jul 2016 07:10:53 -0400
+In-Reply-To: <20160718101338.GB422@ulmo.ba.sec>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, rjw@rjwysocki.net, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, linux-pm@vger.kernel.org, Petr Mladek <pmladek@suse.com>, Thomas Gleixner <tglx@linutronix.de>
+To: linux-arm-kernel@lists.infradead.org
+Cc: Thierry Reding <thierry.reding@gmail.com>, Sebastian Frias <sf84@laposte.net>, Kevin Hilman <khilman@kernel.org>, linux-pm <linux-pm@vger.kernel.org>, Mason <slash.tmp@free.fr>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
 
-On Thu 14-07-16 15:12:51, Viresh Kumar wrote:
-> On 14-07-16, 16:12, Jan Kara wrote:
-> > Exactly. Calling printk() from certain parts of the kernel (like scheduler
-> > code or timer code) has been always unsafe because printk itself uses these
-> > parts and so it can lead to deadlocks. That's why printk_deffered() has
-> > been introduced as you mention below.
+On Monday, July 18, 2016 12:13:38 PM CEST Thierry Reding wrote:
+> On Mon, Jul 18, 2016 at 12:09:39PM +0200, Arnd Bergmann wrote:
+> > On Monday, July 18, 2016 11:33:28 AM CEST Thierry Reding wrote:
 > > 
-> > And with sync printk the above deadlock doesn't trigger only by chance - if
-> > there happened to be a waiter on console_sem while we suspend, the same
-> > deadlock would trigger because up(&console_sem) will try to wake him up and
-> > the warning in timekeeping code will cause recursive printk.
+> > > > +
+> > > > +     return 0;
+> > > > +}
+> > > > +
+> > > > +static SIMPLE_DEV_PM_OPS(tango_thermal_pm, NULL, tango_thermal_resume);
+> > > > +
+> > > > +#define DEV_PM_OPS   &tango_thermal_pm
+> > > > +#else
+> > > > +#define DEV_PM_OPS   NULL
+> > > > +#endif
+> > > 
+> > > In my experience it's often not useful to #ifdef the struct pm_ops.
+> > > These days you almost certainly want PM enabled, and the conditional
+> > > doesn't save you all that much in the first place, because it's not
+> > > unlikely for this to fit into some of the space that would be padded
+> > > out anyway.
 > > 
-> > So I think your patch doesn't really address the real issue - it only
-> > works around the particular WARN_ON(timekeeping_enabled) warning but if
-> > there was a different warning in timekeeping code which would trigger, it
-> > has a potential for causing recursive printk deadlock (and indeed we had
-> > such issues previously - see e.g. 504d58745c9c "timer: Fix lock inversion
-> > between hrtimer_bases.lock and scheduler locks").
+> > This will also generate a warning when CONFIG_PM_SLEEP is not set.
+> > Better write this as
 > > 
-> > So there are IMHO two issues here worth looking at:
+> > #define DEV_PM_OPS (IS_ENABLED(CONFIG_PM_SLEEP) ? &tango_thermal_pm : NULL)
 > > 
-> > 1) I didn't find how a wakeup would would lead to calling to ktime_get() in
-> > the current upstream kernel or even current RT kernel. Maybe this is a
-> > problem specific to the 3.10 kernel you are using? If yes, we don't have to
-> > do anything for current upstream AFAIU.
+> > so the compiler can drop the variable definition when it's not
+> > needed.
 > 
-> I haven't checked that earlier, but I see the path in both 3.10 and mainline.
-> 
-> vprintk_emit
->  -> wake_up_process
->   -> try_to_wake_up
->    -> ttwu_queue
->     -> ttwu_do_activate
->      -> ttwu_activate
->       -> activate_task
->        -> enqueue_task (sched/core.c)
->         -> enqueue_task_rt (rt.c)
->          -> enqueue_rt_entity
->           -> __enqueue_rt_entity
->            -> inc_rt_tasks
->             -> inc_rt_group
->              -> start_rt_bandwidth
->               -> start_bandwidth_timer
->                -> __hrtimer_start_range_ns
->                 -> ktime_get()
+> My suggestion was to define tango_thermal_pm unconditionally to avoid
+> any of these tricks. For any real use-case in which the 92 bytes for the
+> struct dev_pm_ops would matter you most likely want PM_SLEEP anyway, so
+> I don't really see why we would even want to make it optional.
 
-Yeah, you are right.
+Sure, leaving it unconditional works too. 
 
-> > If I just missed how wakeup can call into ktime_get() in current upstream,
-> > there is another question:
+> > > As a side-note, I've noticed that this driver has the following
+> > > dependencies:
+> > > 
+> > >         depends on ARCH_TANGO || COMPILE_TEST
+> > > 
+> > > which, last I checked, is probably going to fail on some architectures
+> > > because you need at least another one on HAS_IOMEM (for readl() and
+> > > writel()). That's a pre-existing problem, of course, so should be fixed
+> > > in a separate patch.
 > > 
-> > 2) Is it OK that printk calls wakeup so late during suspend?
+> > No need, we just merged a patch to no longer allow COMPILE_TEST on
+> > arch/um/, so we can safely rely on MMIO to be available for COMPILE_TEST.
 > 
-> To clarify again to everybody, we are talking about the place where all
-> non-boot CPUs are already hot-unplugged and the last running one has
-> disabled interrupts.
-> 
-> I believe that we can't do migration at all now, right? What will we get by
-> calling wake_up_process() now anyway ?
+> I thought at least S390 didn't have readl() and writel() either, at
+> least when PCI wasn't enabled, or some such.
 
-As I already wrote to Rafael, wake_up_process() will change the process
-state to TASK_RUNNING so that it can run after we resume from suspend.
+Yes, but they've never complained about COMPILE_TEST breakage because
+of that. Tile is in the same boat too in some configurations.
 
-But seeing that the same problem is in upstream I guess what Sergey did
-makes more sense if it works for you. If Sergey's fix does not work for you
-due to too many messages being printed during device suspend, then we will
-have to try something else...
+	Arnd
 
-								Honza
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
