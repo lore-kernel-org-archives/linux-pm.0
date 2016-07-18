@@ -1,53 +1,100 @@
-From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-Subject: Re: [PATCH v2 00/10] Exynos IOMMU: proper runtime PM support (use
- device dependencies)
-Date: Mon, 18 Jul 2016 13:00:43 +0200
-Message-ID: <578CB6DB.90608@math.uni-bielefeld.de>
-References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
- <5787B2B0.9020809@math.uni-bielefeld.de>
- <5788E352.3040801@math.uni-bielefeld.de>
- <a15e438a-7fa0-3a4d-e6e2-13425512dddd@samsung.com>
+From: Jan Kara <jack@suse.cz>
+Subject: Re: [Query] Preemption (hogging) of the work handler
+Date: Mon, 18 Jul 2016 13:01:34 +0200
+Message-ID: <20160718110134.GB6782@quack2.suse.cz>
+References: <20160701165959.GR12473@ubuntu>
+ <20160701172232.GD28719@htj.duckdns.org>
+ <20160706182842.GS2671@ubuntu>
+ <20160711102603.GI12410@quack2.suse.cz>
+ <20160711154438.GA528@swordfish>
+ <20160711223501.GI4695@ubuntu>
+ <20160712231903.GR4695@ubuntu>
+ <20160713054507.GA563@swordfish>
+ <20160714141216.GC13151@quack2.suse.cz>
+ <20160714221251.GE3057@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <a15e438a-7fa0-3a4d-e6e2-13425512dddd@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:40428 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751855AbcGRLBk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 Jul 2016 07:01:40 -0400
+Content-Disposition: inline
+In-Reply-To: <20160714221251.GE3057@ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Jan Kara <jack@suse.cz>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, rjw@rjwysocki.net, Tejun Heo <tj@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vlevenetz@mm-sol.com, vaibhav.hiremath@linaro.org, alex.elder@linaro.org, johan@kernel.org, akpm@linux-foundation.org, rostedt@goodmis.org, linux-pm@vger.kernel.org, Petr Mladek <pmladek@suse.com>, Thomas Gleixner <tglx@linutronix.de>
 
-Hello Marek,
-
-
-Marek Szyprowski wrote:
-> Hi Tobias,
+On Thu 14-07-16 15:12:51, Viresh Kumar wrote:
+> On 14-07-16, 16:12, Jan Kara wrote:
+> > Exactly. Calling printk() from certain parts of the kernel (like scheduler
+> > code or timer code) has been always unsafe because printk itself uses these
+> > parts and so it can lead to deadlocks. That's why printk_deffered() has
+> > been introduced as you mention below.
+> > 
+> > And with sync printk the above deadlock doesn't trigger only by chance - if
+> > there happened to be a waiter on console_sem while we suspend, the same
+> > deadlock would trigger because up(&console_sem) will try to wake him up and
+> > the warning in timekeeping code will cause recursive printk.
+> > 
+> > So I think your patch doesn't really address the real issue - it only
+> > works around the particular WARN_ON(timekeeping_enabled) warning but if
+> > there was a different warning in timekeeping code which would trigger, it
+> > has a potential for causing recursive printk deadlock (and indeed we had
+> > such issues previously - see e.g. 504d58745c9c "timer: Fix lock inversion
+> > between hrtimer_bases.lock and scheduler locks").
+> > 
+> > So there are IMHO two issues here worth looking at:
+> > 
+> > 1) I didn't find how a wakeup would would lead to calling to ktime_get() in
+> > the current upstream kernel or even current RT kernel. Maybe this is a
+> > problem specific to the 3.10 kernel you are using? If yes, we don't have to
+> > do anything for current upstream AFAIU.
 > 
+> I haven't checked that earlier, but I see the path in both 3.10 and mainline.
 > 
-> On 2016-07-15 15:21, Tobias Jakobi wrote:
->> Tobias Jakobi wrote:
->>> Hello Marek,
->>>
->>> I've tested the patchset on 4.7-rc7 and noticed that it breaks reboot on
->>> my ODROID-X2.
->>>
->>> Going to check where exactly things break.
->> Sadly it's the last patch where everything comes together:
->> "iommu/exynos: Add proper runtime pm support"
->>
->> I still have to check if forcing runpm status to 'on' makes a
->> difference. I suspect that the aggressive clock gating might be the
->> reason?
+> vprintk_emit
+>  -> wake_up_process
+>   -> try_to_wake_up
+>    -> ttwu_queue
+>     -> ttwu_do_activate
+>      -> ttwu_activate
+>       -> activate_task
+>        -> enqueue_task (sched/core.c)
+>         -> enqueue_task_rt (rt.c)
+>          -> enqueue_rt_entity
+>           -> __enqueue_rt_entity
+>            -> inc_rt_tasks
+>             -> inc_rt_group
+>              -> start_rt_bandwidth
+>               -> start_bandwidth_timer
+>                -> __hrtimer_start_range_ns
+>                 -> ktime_get()
+
+Yeah, you are right.
+
+> > If I just missed how wakeup can call into ktime_get() in current upstream,
+> > there is another question:
+> > 
+> > 2) Is it OK that printk calls wakeup so late during suspend?
 > 
-> Thanks for testing. I will check this issue. Could you send me your
-> .config?
-This is the config I'm currently using:
-https://github.com/tobiasjakobi/odroid-environment/blob/master/sourcecode/system/vanilla-4.7-debug.conf
-
-Do you think checking this with no_console_suspend makes sense?
-
-- Tobias
-
-
+> To clarify again to everybody, we are talking about the place where all
+> non-boot CPUs are already hot-unplugged and the last running one has
+> disabled interrupts.
 > 
-> Best regards
+> I believe that we can't do migration at all now, right? What will we get by
+> calling wake_up_process() now anyway ?
+
+As I already wrote to Rafael, wake_up_process() will change the process
+state to TASK_RUNNING so that it can run after we resume from suspend.
+
+But seeing that the same problem is in upstream I guess what Sergey did
+makes more sense if it works for you. If Sergey's fix does not work for you
+due to too many messages being printed during device suspend, then we will
+have to try something else...
+
+								Honza
+-- 
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
