@@ -1,58 +1,104 @@
-From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Subject: Re: Kernel stability on baytrail machines
-Date: Mon, 18 Jul 2016 14:30:03 +0100
-Message-ID: <20160718143003.3477c0bc@lxorguk.ukuu.org.uk>
-References: <606d9b223f3c12775d108b98c4df72ae@feix.cz>
-	<20160409160119.GA19362@xo-6d-61-c0.localdomain>
-	<20160409201417.4436d4bd@lxorguk.ukuu.org.uk>
-	<20160712194158.GA4834@laptop>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for system sleep
+Date: Mon, 18 Jul 2016 15:39:15 +0200
+Message-ID: <2339231.tBO8VQgPAo@vostro.rjw.lan>
+References: <cover.1463134231.git.lukas@wunner.de> <20160617210924.GA12254@localhost> <20160617221407.GB1927@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:50598 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751265AbcGRNaT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 18 Jul 2016 09:30:19 -0400
-In-Reply-To: <20160712194158.GA4834@laptop>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160617221407.GB1927@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
-Cc: Pavel Machek <pavel@ucw.cz>, Michal Feix <michal@feix.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org
 
-On Tue, 12 Jul 2016 16:41:58 -0300
-Ezequiel Garcia <ezequiel@vanguardiasur.com.ar> wrote:
-
-> Hi Alan,
-> 
-> (Adding interested people to this thread)
-> 
-> On 09 Apr 08:14 PM, One Thousand Gnomes wrote:
-> > > > I do feel that the importance of the mentioned bug is currently
-> > > > underestimated. Can anyone here give a note, how much current linux
-> > > > kernel is supposed to be stable on general baytrail machines?    
-> > > 
-> > > If you did not get any replies... you might want to check MAINTAINERS file, and
-> > > put Intel x86 maintainers on Cc list.
-> > > 
-> > > I'm sure someone cares :-).  
+On Saturday, June 18, 2016 12:14:07 AM Lukas Wunner wrote:
+> On Fri, Jun 17, 2016 at 04:09:24PM -0500, Bjorn Helgaas wrote:
+> > On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
+> > > There are devices wich are not power-managed by the platform, yet can be
 > > 
-> > Yes we care, and there are people looking at the various reports.
-> >   
+> > s/wich/which/
 > 
-> Are there any updates on the status of this issue?
+> Oops.
 > 
-> The current bugzilla report [1] marks this as a power management
-> issue. However, many reports indicate that it would only freeze
-> when running X, so it's not completely clear if it's related to
-> the gfx driver too.
+> > 
+> > > runtime suspended to D3cold with some other mechanism.  When putting the
+> > > system to sleep, we currently handle such devices improperly by trying
+> > > to transition them from D3cold to D3hot (the default power state defined
+> > > at the beginning of pci_target_state()).  Avoid that.
+> > > 
+> > > An example for devices affected by this are Thunderbolt controllers
+> > > built into Macs which can be put into D3cold with nonstandard ACPI
+> > > methods.
+> > > 
+> > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> > 
+> > This needs an ack from Rafael.
+> > 
+> > Naive question: why is the default target_state PCI_D3hot?
+> 
+> No idea. :-)
 
-There are two things we are currently tracking. One of them was merged
-which seems to have made my machine stable at least and fixes a problem
-related to the MMC. The second one we may need is a power related changed
-to SPI to hold the CPU in C0/C1 whenever the ACPI _SEM is held.
+Because D3_hot is the deepest state you can *program* the device to go into
+unless the platform can cut off power from it.
 
-Graphics shows these problems up because of the way the GPU causes power
-state changes.
+> > 
+> > > ---
+> > >  drivers/pci/pci.c | 2 ++
+> > >  1 file changed, 2 insertions(+)
+> > > 
+> > > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > > index 791dfe7..6af9911 100644
+> > > --- a/drivers/pci/pci.c
+> > > +++ b/drivers/pci/pci.c
+> > > @@ -1943,6 +1943,8 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
+> > >  			      && !(dev->pme_support & (1 << target_state)))
+> > >  				target_state--;
+> > >  		}
+> > > +	} else if (dev->current_state == PCI_D3cold) {
+> > > +		target_state = PCI_D3cold;
+> > >  	}
+> > 
+> > This only covers the case of !device_may_wakeup().  So I guess
+> > device_may_wakeup() is false for these Thunderbolt controllers.
+> 
+> Correct. device_may_wakeup() is defined in include/linux/pm_wakeup.h as:
+> dev->power.can_wakeup && !!dev->power.wakeup
+> 
+> The first one, dev->power.can_wakeup is true because PME is claimed to be
+> supported for all power states in the PMC register, so pci_pm_init() calls
+> device_set_wakeup_capable(&dev->dev, true):
+>   Capabilities: [80] Power Management version 3
+>     Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>     Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
+> 
+> The second one, dev->power.wakeup is false because device_wakeup_enable()
+> is never called.
+> 
+> 
+> > Is there a reason you don't want to do this check for devices that
+> > may wakeup?
+> 
+> Fear of breaking things. It would mean that a device would be left in
+> D3cold even though it may not be able to signal wakeup from that power
+> state.
 
-Alan
+Then it should not be put into D3_cold at run time too if it is wakeup-capable.
+
+> That's a change of behaviour the consequences of which I cannot
+> estimate. Intuitively, I would expect breakage from such a change.
+
+That would have been the case if the device had been capable of signaling
+wakeup from D3_cold at run time, but not from system sleep.  However, that
+can only happen when platform_pci_power_manageable() is true AFAICS.
+
+So I'd change the switch () under the platform_pci_power_manageable() check to
+return "state" in the default case and then do
+
+	return dev->current_state < target_state ? target_state : dev->current_state;
+
+at the end of the function.
+
+Thanks,
+Rafael
