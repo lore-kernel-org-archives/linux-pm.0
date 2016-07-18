@@ -1,174 +1,146 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 09/13] PCI: Do not write to PM control register while in D3cold
-Date: Mon, 18 Jul 2016 15:55:06 +0200
-Message-ID: <8931841.P295yLpjlt@vostro.rjw.lan>
-References: <cover.1463134231.git.lukas@wunner.de> <1741c0949a06c96a5bae9ef5d8eceaba8188730e.1463134232.git.lukas@wunner.de>
+From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v2 00/10] Exynos IOMMU: proper runtime PM support (use
+	device dependencies)
+Date: Mon, 18 Jul 2016 15:50:51 +0200
+Message-ID: <6939949e-4c8e-cba0-9858-b37d1ba01869@samsung.com>
+References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
+	<5787B2B0.9020809@math.uni-bielefeld.de>
+	<5788E352.3040801@math.uni-bielefeld.de>
+	<a15e438a-7fa0-3a4d-e6e2-13425512dddd@samsung.com>
+	<578CB6DB.90608@math.uni-bielefeld.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1741c0949a06c96a5bae9ef5d8eceaba8188730e.1463134232.git.lukas@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Huang Ying <ying.huang@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-reply-to: <578CB6DB.90608-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, May 13, 2016 01:15:31 PM Lukas Wunner wrote:
-> The PM control register is not accessible in D3cold so we shouldn't try
-> writing to it in pci_raw_set_power_state() and return an error instead.
-> 
-> The current behaviour is fatal for devices which are not power-managed
-> by the platform, yet can be runtime suspended to D3cold with some other
-> mechanism by the driver:
-> 
-> - When the device is runtime resumed, pci_pm_runtime_resume() first
->   calls pci_restore_standard_config() which calls pci_set_power_state()
->   which calls pci_raw_set_power_state() to put the device into D0.
->   This fails since the device is still in D3cold.  It will be powered up
->   later on when pci_pm_runtime_resume() calls the driver's
->   ->runtime_resume callback.
-> 
-> - pci_raw_set_power_state() prints a message that the device refused to
->   change power state and returns 0.  Further up in the call stack,
->   pci_restore_standard_config() calls pci_restore_state(), which fails
->   since the device is in D3cold, but nevertheless invalidates the
->   saved_state.
-> 
-> - When pci_pm_runtime_resume() finally calls the driver ->runtime_resume
->   callback to power up the device, the saved_state is gone.
-> 
-> Return an error from pci_raw_set_power_state() to avoid this.
-> 
-> An example for devices affected by this are Thunderbolt controllers
-> built into Macs which can be put into D3cold with nonstandard ACPI
-> methods.
-> 
-> Unfortunately we rely on pci_raw_set_power_state()'s current behaviour
-> in several places: When platform_pci_set_power_state() is called to wake
-> a device from D3cold, its current_state is not updated even though it is
-> no longer in D3cold.  Instead, pci_raw_set_power_state() is assumed to
-> clean up the resulting incongruence.  Fix by setting current_state to
-> PCI_UNKNOWN after platform_pci_set_power_state().
-> 
-> Also, when a bridge is put into D3cold, its children's current_state is
-> changed to D3cold in __pci_complete_power_transition().  (Introduced by
-> commit 448bd857d48e ("PCI/PM: add PCIe runtime D3cold support").) This
-> doesn't necessarily reflect the children's actual power state: They may
-> still be powered on, they're just no longer accessible.  However this
-> shouldn't be a concern because if the children are accessed, their
-> parent needs to resume anyway and the PM core takes care of this.
-> Again, pci_raw_set_power_state() is relied upon to clean up the
-> current_state when the children are resumed the next time.  We cannot
-> reliably reconstruct the children's current_state when resuming their
-> parent.  We also shouldn't blindly set it to PCI_UNKNOWN since some
-> children may actually be turned off and D3cold is their correct
-> current_state.  Therefore fix by no longer touching the children's
-> current_state at all.
-> 
-> Cc: Huang Ying <ying.huang@intel.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> ---
->  drivers/pci/pci.c | 43 ++++++++++---------------------------------
->  1 file changed, 10 insertions(+), 33 deletions(-)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 95727b4..791dfe7 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -612,6 +612,9 @@ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
->  	if (!dev->pm_cap)
->  		return -EIO;
->  
-> +	if (dev->current_state == PCI_D3cold)
-> +		return -EIO;
-> +
+Dear Tobias
 
-I can agree with this.
 
->  	if (state < PCI_D0 || state > PCI_D3hot)
->  		return -EINVAL;
->  
-> @@ -728,8 +731,10 @@ void pci_update_current_state(struct pci_dev *dev, pci_power_t state)
->   */
->  void pci_power_up(struct pci_dev *dev)
->  {
-> -	if (platform_pci_power_manageable(dev))
-> +	if (platform_pci_power_manageable(dev)) {
->  		platform_pci_set_power_state(dev, PCI_D0);
-> +		dev->current_state = PCI_UNKNOWN;
+On 2016-07-18 13:00, Tobias Jakobi wrote:
+> Marek Szyprowski wrote:
+>> On 2016-07-15 15:21, Tobias Jakobi wrote:
+>>> Tobias Jakobi wrote:
+>>>> Hello Marek,
+>>>>
+>>>> I've tested the patchset on 4.7-rc7 and noticed that it breaks reboot on
+>>>> my ODROID-X2.
+>>>>
+>>>> Going to check where exactly things break.
+>>> Sadly it's the last patch where everything comes together:
+>>> "iommu/exynos: Add proper runtime pm support"
+>>>
+>>> I still have to check if forcing runpm status to 'on' makes a
+>>> difference. I suspect that the aggressive clock gating might be the
+>>> reason?
+>> Thanks for testing. I will check this issue. Could you send me your
+>> .config?
+> This is the config I'm currently using:
+> https://github.com/tobiasjakobi/odroid-environment/blob/master/sourcecode/system/vanilla-4.7-debug.conf
+>
+> Do you think checking this with no_console_suspend makes sense?
 
-Why is this necessary?
+no_console_suspend switch won't provide more information, but I managed 
+to reproduce your issue. I'm really confused how enabling runtime pm can 
+cause problems with usb/smsc95xx ethernet driver (that is the reason for 
+failed reboot). Maybe it is somehow related to the global relations 
+between devices and drivers and the fact that creating the runtime pm 
+links change the order of operations. I will check this again when 
+Rafael send updated patches. Here is the log I got (after waiting some 
+time):
 
-> +	}
->  
->  	pci_raw_set_power_state(dev, PCI_D0);
->  	pci_update_current_state(dev, PCI_D0);
-> @@ -746,8 +751,10 @@ static int pci_platform_power_transition(struct pci_dev *dev, pci_power_t state)
->  
->  	if (platform_pci_power_manageable(dev)) {
->  		error = platform_pci_set_power_state(dev, state);
-> -		if (!error)
-> +		if (!error) {
-> +			dev->current_state = PCI_UNKNOWN;
+# reboot
 
-Again, why is this necessary?
+Broadcast message from root@target (ttySAC1) (Mon Jul 18 13:33:38 2016):
 
->  			pci_update_current_state(dev, state);
-> +		}
->  	} else
->  		error = -ENODEV;
->  
-> @@ -809,30 +816,6 @@ static void __pci_start_power_transition(struct pci_dev *dev, pci_power_t state)
->  }
->  
->  /**
-> - * __pci_dev_set_current_state - Set current state of a PCI device
-> - * @dev: Device to handle
-> - * @data: pointer to state to be set
-> - */
-> -static int __pci_dev_set_current_state(struct pci_dev *dev, void *data)
-> -{
-> -	pci_power_t state = *(pci_power_t *)data;
-> -
-> -	dev->current_state = state;
-> -	return 0;
-> -}
-> -
-> -/**
-> - * __pci_bus_set_current_state - Walk given bus and set current state of devices
-> - * @bus: Top bus of the subtree to walk.
-> - * @state: state to be set
-> - */
-> -static void __pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state)
-> -{
-> -	if (bus)
-> -		pci_walk_bus(bus, __pci_dev_set_current_state, &state);
-> -}
-> -
-> -/**
->   * __pci_complete_power_transition - Complete power transition of a PCI device
->   * @dev: PCI device to handle.
->   * @state: State to put the device into.
-> @@ -841,15 +824,9 @@ static void __pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state)
->   */
->  int __pci_complete_power_transition(struct pci_dev *dev, pci_power_t state)
->  {
-> -	int ret;
-> -
->  	if (state <= PCI_D0)
->  		return -EINVAL;
-> -	ret = pci_platform_power_transition(dev, state);
-> -	/* Power off the bridge may power off the whole hierarchy */
-> -	if (!ret && state == PCI_D3cold)
-> -		__pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
-> -	return ret;
-> +	return pci_platform_power_transition(dev, state);
->  }
->  EXPORT_SYMBOL_GPL(__pci_complete_power_transition);
+The system is going down for reboot NOW!
+INIT: Switching to runlevel: 6
+INIT: Sending processes the TERM signal
+[info] Using makefile-style concurrent boot in runlevel 6.
+[ ok ] Stopping cgroup management proxy daemon: cgproxy[....] Stopping 
+internet superserver: inetd.
+[....] Stopping cgroup management daemon: cgmanagermax77686-rtc 
+max77686-rtc: RTC alarm IRQ: 119
+[ ok ] Shutting down ALSA...done.
+random: nonblocking pool is initialized
+[info] Saving the system clock.
+[info] Hardware Clock updated to Mon Jul 18 13:33:40 UTC 2016.
+[ ok ] Asking all remaining processes to terminate...done.
+[ ok ] All processes ended within 1 seconds...done.
+[ ok ] Stopping rpcbind daemon....
+[ ok ] Deconfiguring network interfaces...done.
+[ ok ] Unmounting temporary filesystems...done.
+[ ok ] Deactivating swap...done.
+EXT4-fs (mmcblk1p2): re-mounted. Opts: (null)
+[info] Will now restart.
+smsc95xx 1-2:1.0 eth0: Failed to read reg index 0x00000114: -110
+smsc95xx 1-2:1.0 eth0: Error reading MII_ACCESS
+smsc95xx 1-2:1.0 eth0: MII is busy in smsc95xx_mdio_read
+smsc95xx 1-2:1.0 eth0: Failed to read MII_BMSR
+INFO: task kworker/0:1:410 blocked for more than 120 seconds.
+       Not tainted 4.7.0-rc7-debug+ #155
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+kworker/0:1     D c06850a8     0   410      2 0x00000000
+Workqueue: events_freezable mmc_rescan
+Backtrace:
+[<c0684e90>] (__schedule) from [<c068560c>] (schedule+0x44/0xb0)
+  r10:00000000 r9:eebe1d88 r8:c0686234 r7:00000000 r6:00000002 r5:7fffffff
+  r4:7fffffff
+[<c06855c8>] (schedule) from [<c068a398>] (schedule_timeout+0x154/0x1b0)
+[<c068a244>] (schedule_timeout) from [<c0686250>] 
+(wait_for_common+0xe0/0x174)
+  r8:c0686234 r7:00000000 r6:00000002 r5:eebe1d8c r4:7fffffff
+[<c0686170>] (wait_for_common) from [<c0686430>] 
+(wait_for_completion+0x18/0x1c)
+  r10:00000001 r9:00000000 r8:00000000 r7:eebe1d88 r6:eebe1d78 r5:ee260000
+  r4:eebe1de4
+[<c0686418>] (wait_for_completion) from [<c04e72c8>] 
+(mmc_wait_for_req+0xc8/0x15c)
+[<c04e7200>] (mmc_wait_for_req) from [<c04e73c8>] 
+(mmc_wait_for_cmd+0x6c/0xa4)
+  r8:eef73d00 r7:00000003 r6:ee260000 r5:c0a02448 r4:eebe1de4 r3:00000000
+[<c04e735c>] (mmc_wait_for_cmd) from [<c04edbf4>] 
+(mmc_send_status+0x8c/0xb0)
+  r7:eebe1eb0 r6:ee260000 r5:ee260000 r4:00000000
+[<c04edb68>] (mmc_send_status) from [<c04eaf80>] (mmc_alive+0x18/0x1c)
+  r4:ee260000
+[<c04eaf68>] (mmc_alive) from [<c04e93d0>] 
+(_mmc_detect_card_removed+0x40/0x90)
+[<c04e9390>] (_mmc_detect_card_removed) from [<c04eba80>] 
+(mmc_detect+0x2c/0x78)
+  r5:ee2602bc r4:ee260000
+[<c04eba54>] (mmc_detect) from [<c04e96ac>] (mmc_rescan+0x1b0/0x324)
+  r5:ee2602bc r4:ee260368
+[<c04e94fc>] (mmc_rescan) from [<c013a818>] (process_one_work+0x194/0x414)
+  r8:eef73d00 r7:eebe1eb0 r6:eef70280 r5:ee260368 r4:eea24080 r3:c04e94fc
+[<c013a684>] (process_one_work) from [<c013ab0c>] (worker_thread+0x34/0x4d4)
+  r10:eef70280 r9:c0a02100 r8:00000008 r7:eef70280 r6:eea24098 r5:eef702b4
+  r4:eea24080
+[<c013aad8>] (worker_thread) from [<c0141e18>] (kthread+0xf8/0x11c)
+  r10:00000000 r9:00000000 r8:00000000 r7:c013aad8 r6:eea24080 r5:00000000
+  r4:eea29d00
+[<c0141d20>] (kthread) from [<c0107ff0>] (ret_from_fork+0x14/0x24)
+  r7:00000000 r6:00000000 r5:c0141d20 r4:eea29d00
+2 locks held by kworker/0:1/410:
+  #0:  ("events_freezable"){.+.+.+}, at: [<c013a7ac>] 
+process_one_work+0x128/0x414
+  #1:  ((&(&host->detect)->work)){+.+.+.}, at: [<c013a7ac>] 
+process_one_work+0x128/0x414
 
-What about if powering off the bridge does remove power from the hierarchy
-below?
 
-Thanks,
-Rafael
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
