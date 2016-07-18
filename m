@@ -1,104 +1,174 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for system sleep
-Date: Mon, 18 Jul 2016 15:39:15 +0200
-Message-ID: <2339231.tBO8VQgPAo@vostro.rjw.lan>
-References: <cover.1463134231.git.lukas@wunner.de> <20160617210924.GA12254@localhost> <20160617221407.GB1927@wunner.de>
+Subject: Re: [PATCH v2 09/13] PCI: Do not write to PM control register while in D3cold
+Date: Mon, 18 Jul 2016 15:55:06 +0200
+Message-ID: <8931841.P295yLpjlt@vostro.rjw.lan>
+References: <cover.1463134231.git.lukas@wunner.de> <1741c0949a06c96a5bae9ef5d8eceaba8188730e.1463134232.git.lukas@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <20160617221407.GB1927@wunner.de>
+In-Reply-To: <1741c0949a06c96a5bae9ef5d8eceaba8188730e.1463134232.git.lukas@wunner.de>
 Sender: linux-pci-owner@vger.kernel.org
 To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Huang Ying <ying.huang@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, June 18, 2016 12:14:07 AM Lukas Wunner wrote:
-> On Fri, Jun 17, 2016 at 04:09:24PM -0500, Bjorn Helgaas wrote:
-> > On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
-> > > There are devices wich are not power-managed by the platform, yet can be
-> > 
-> > s/wich/which/
+On Friday, May 13, 2016 01:15:31 PM Lukas Wunner wrote:
+> The PM control register is not accessible in D3cold so we shouldn't try
+> writing to it in pci_raw_set_power_state() and return an error instead.
 > 
-> Oops.
+> The current behaviour is fatal for devices which are not power-managed
+> by the platform, yet can be runtime suspended to D3cold with some other
+> mechanism by the driver:
 > 
-> > 
-> > > runtime suspended to D3cold with some other mechanism.  When putting the
-> > > system to sleep, we currently handle such devices improperly by trying
-> > > to transition them from D3cold to D3hot (the default power state defined
-> > > at the beginning of pci_target_state()).  Avoid that.
-> > > 
-> > > An example for devices affected by this are Thunderbolt controllers
-> > > built into Macs which can be put into D3cold with nonstandard ACPI
-> > > methods.
-> > > 
-> > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > 
-> > This needs an ack from Rafael.
-> > 
-> > Naive question: why is the default target_state PCI_D3hot?
+> - When the device is runtime resumed, pci_pm_runtime_resume() first
+>   calls pci_restore_standard_config() which calls pci_set_power_state()
+>   which calls pci_raw_set_power_state() to put the device into D0.
+>   This fails since the device is still in D3cold.  It will be powered up
+>   later on when pci_pm_runtime_resume() calls the driver's
+>   ->runtime_resume callback.
 > 
-> No idea. :-)
+> - pci_raw_set_power_state() prints a message that the device refused to
+>   change power state and returns 0.  Further up in the call stack,
+>   pci_restore_standard_config() calls pci_restore_state(), which fails
+>   since the device is in D3cold, but nevertheless invalidates the
+>   saved_state.
+> 
+> - When pci_pm_runtime_resume() finally calls the driver ->runtime_resume
+>   callback to power up the device, the saved_state is gone.
+> 
+> Return an error from pci_raw_set_power_state() to avoid this.
+> 
+> An example for devices affected by this are Thunderbolt controllers
+> built into Macs which can be put into D3cold with nonstandard ACPI
+> methods.
+> 
+> Unfortunately we rely on pci_raw_set_power_state()'s current behaviour
+> in several places: When platform_pci_set_power_state() is called to wake
+> a device from D3cold, its current_state is not updated even though it is
+> no longer in D3cold.  Instead, pci_raw_set_power_state() is assumed to
+> clean up the resulting incongruence.  Fix by setting current_state to
+> PCI_UNKNOWN after platform_pci_set_power_state().
+> 
+> Also, when a bridge is put into D3cold, its children's current_state is
+> changed to D3cold in __pci_complete_power_transition().  (Introduced by
+> commit 448bd857d48e ("PCI/PM: add PCIe runtime D3cold support").) This
+> doesn't necessarily reflect the children's actual power state: They may
+> still be powered on, they're just no longer accessible.  However this
+> shouldn't be a concern because if the children are accessed, their
+> parent needs to resume anyway and the PM core takes care of this.
+> Again, pci_raw_set_power_state() is relied upon to clean up the
+> current_state when the children are resumed the next time.  We cannot
+> reliably reconstruct the children's current_state when resuming their
+> parent.  We also shouldn't blindly set it to PCI_UNKNOWN since some
+> children may actually be turned off and D3cold is their correct
+> current_state.  Therefore fix by no longer touching the children's
+> current_state at all.
+> 
+> Cc: Huang Ying <ying.huang@intel.com>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> ---
+>  drivers/pci/pci.c | 43 ++++++++++---------------------------------
+>  1 file changed, 10 insertions(+), 33 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 95727b4..791dfe7 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -612,6 +612,9 @@ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
+>  	if (!dev->pm_cap)
+>  		return -EIO;
+>  
+> +	if (dev->current_state == PCI_D3cold)
+> +		return -EIO;
+> +
 
-Because D3_hot is the deepest state you can *program* the device to go into
-unless the platform can cut off power from it.
+I can agree with this.
 
-> > 
-> > > ---
-> > >  drivers/pci/pci.c | 2 ++
-> > >  1 file changed, 2 insertions(+)
-> > > 
-> > > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> > > index 791dfe7..6af9911 100644
-> > > --- a/drivers/pci/pci.c
-> > > +++ b/drivers/pci/pci.c
-> > > @@ -1943,6 +1943,8 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
-> > >  			      && !(dev->pme_support & (1 << target_state)))
-> > >  				target_state--;
-> > >  		}
-> > > +	} else if (dev->current_state == PCI_D3cold) {
-> > > +		target_state = PCI_D3cold;
-> > >  	}
-> > 
-> > This only covers the case of !device_may_wakeup().  So I guess
-> > device_may_wakeup() is false for these Thunderbolt controllers.
-> 
-> Correct. device_may_wakeup() is defined in include/linux/pm_wakeup.h as:
-> dev->power.can_wakeup && !!dev->power.wakeup
-> 
-> The first one, dev->power.can_wakeup is true because PME is claimed to be
-> supported for all power states in the PMC register, so pci_pm_init() calls
-> device_set_wakeup_capable(&dev->dev, true):
->   Capabilities: [80] Power Management version 3
->     Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
->     Status: D0 NoSoftRst+ PME-Enable- DSel=0 DScale=1 PME-
-> 
-> The second one, dev->power.wakeup is false because device_wakeup_enable()
-> is never called.
-> 
-> 
-> > Is there a reason you don't want to do this check for devices that
-> > may wakeup?
-> 
-> Fear of breaking things. It would mean that a device would be left in
-> D3cold even though it may not be able to signal wakeup from that power
-> state.
+>  	if (state < PCI_D0 || state > PCI_D3hot)
+>  		return -EINVAL;
+>  
+> @@ -728,8 +731,10 @@ void pci_update_current_state(struct pci_dev *dev, pci_power_t state)
+>   */
+>  void pci_power_up(struct pci_dev *dev)
+>  {
+> -	if (platform_pci_power_manageable(dev))
+> +	if (platform_pci_power_manageable(dev)) {
+>  		platform_pci_set_power_state(dev, PCI_D0);
+> +		dev->current_state = PCI_UNKNOWN;
 
-Then it should not be put into D3_cold at run time too if it is wakeup-capable.
+Why is this necessary?
 
-> That's a change of behaviour the consequences of which I cannot
-> estimate. Intuitively, I would expect breakage from such a change.
+> +	}
+>  
+>  	pci_raw_set_power_state(dev, PCI_D0);
+>  	pci_update_current_state(dev, PCI_D0);
+> @@ -746,8 +751,10 @@ static int pci_platform_power_transition(struct pci_dev *dev, pci_power_t state)
+>  
+>  	if (platform_pci_power_manageable(dev)) {
+>  		error = platform_pci_set_power_state(dev, state);
+> -		if (!error)
+> +		if (!error) {
+> +			dev->current_state = PCI_UNKNOWN;
 
-That would have been the case if the device had been capable of signaling
-wakeup from D3_cold at run time, but not from system sleep.  However, that
-can only happen when platform_pci_power_manageable() is true AFAICS.
+Again, why is this necessary?
 
-So I'd change the switch () under the platform_pci_power_manageable() check to
-return "state" in the default case and then do
+>  			pci_update_current_state(dev, state);
+> +		}
+>  	} else
+>  		error = -ENODEV;
+>  
+> @@ -809,30 +816,6 @@ static void __pci_start_power_transition(struct pci_dev *dev, pci_power_t state)
+>  }
+>  
+>  /**
+> - * __pci_dev_set_current_state - Set current state of a PCI device
+> - * @dev: Device to handle
+> - * @data: pointer to state to be set
+> - */
+> -static int __pci_dev_set_current_state(struct pci_dev *dev, void *data)
+> -{
+> -	pci_power_t state = *(pci_power_t *)data;
+> -
+> -	dev->current_state = state;
+> -	return 0;
+> -}
+> -
+> -/**
+> - * __pci_bus_set_current_state - Walk given bus and set current state of devices
+> - * @bus: Top bus of the subtree to walk.
+> - * @state: state to be set
+> - */
+> -static void __pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state)
+> -{
+> -	if (bus)
+> -		pci_walk_bus(bus, __pci_dev_set_current_state, &state);
+> -}
+> -
+> -/**
+>   * __pci_complete_power_transition - Complete power transition of a PCI device
+>   * @dev: PCI device to handle.
+>   * @state: State to put the device into.
+> @@ -841,15 +824,9 @@ static void __pci_bus_set_current_state(struct pci_bus *bus, pci_power_t state)
+>   */
+>  int __pci_complete_power_transition(struct pci_dev *dev, pci_power_t state)
+>  {
+> -	int ret;
+> -
+>  	if (state <= PCI_D0)
+>  		return -EINVAL;
+> -	ret = pci_platform_power_transition(dev, state);
+> -	/* Power off the bridge may power off the whole hierarchy */
+> -	if (!ret && state == PCI_D3cold)
+> -		__pci_bus_set_current_state(dev->subordinate, PCI_D3cold);
+> -	return ret;
+> +	return pci_platform_power_transition(dev, state);
+>  }
+>  EXPORT_SYMBOL_GPL(__pci_complete_power_transition);
 
-	return dev->current_state < target_state ? target_state : dev->current_state;
-
-at the end of the function.
+What about if powering off the bridge does remove power from the hierarchy
+below?
 
 Thanks,
 Rafael
