@@ -1,49 +1,75 @@
-From: Carsten Emde <C.Emde@osadl.org>
-Subject: [PATCH] cpufreq: Intel P state driver: clean remnant struct element
-Date: Tue, 19 Jul 2016 01:19:15 +0200
-Message-ID: <baa442ec-5845-6438-8c03-6793220883e1@osadl.org>
-References: <66b88042-0f03-893b-33ac-c4e6df17534c@osadl.org>
- <1468859382.13661.167.camel@linux.intel.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH] timekeeping: Fix memory overwrite of sleep_time_bin
+ array
+Date: Mon, 18 Jul 2016 23:34:51 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE640287817D8@shsmsx102.ccr.corp.intel.com>
+References: <1468806139-31436-1-git-send-email-yu.c.chen@intel.com>
+ <1938295.fBmZlflNpk@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from toro.web-alm.net ([62.245.132.31]:42065 "EHLO toro.web-alm.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751616AbcGRXUT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 18 Jul 2016 19:20:19 -0400
-In-Reply-To: <1468859382.13661.167.camel@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1938295.fBmZlflNpk@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-Hi Srinivas,
-
-BTW: when I was working with the Intel P state driver I came across
-a remnant struct element that is no longer needed after the function
-intel_pstate_calc_freq() was retired.
-
-Signed-off-by: Carsten Emde <C.Emde@osadl.org>
-
-Index: linux-4.7.0-rc7+/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-4.7.0-rc7+.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-4.7.0-rc7+/drivers/cpufreq/intel_pstate.c
-@@ -96,7 +96,6 @@ static inline u64 div_ext_fp(u64 x, u64
-  *                     read from MPERF MSR between last and current sample
-  * @tsc:               Difference of time stamp counter between last and
-  *                     current sample
-- * @freq:              Effective frequency calculated from APERF/MPERF
-  * @time:              Current time from scheduler
-  *
-  * This structure is used in the cpudata structure to store performance sample
-@@ -108,7 +107,6 @@ struct sample {
-        u64 aperf;
-        u64 mperf;
-        u64 tsc;
--       int freq;
-        u64 time;
- };
- 
-
+SGkgUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFl
+bCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFR1ZXNkYXks
+IEp1bHkgMTksIDIwMTYgNjowMiBBTQ0KPiBUbzogQ2hlbiwgWXUgQw0KPiBDYzogSm9obiBTdHVs
+dHo7IFRob21hcyBHbGVpeG5lcjsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgTGludXgg
+UE0gbGlzdA0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSB0aW1la2VlcGluZzogRml4IG1lbW9yeSBv
+dmVyd3JpdGUgb2Ygc2xlZXBfdGltZV9iaW4NCj4gYXJyYXkNCj4gDQo+IE9uIE1vbmRheSwgSnVs
+eSAxOCwgMjAxNiAwOTo0MjoxOSBBTSBDaGVuIFl1IHdyb3RlOg0KPiA+IEl0IGlzIHJlcG9ydGVk
+IHRoZSBoaWJlcm5hdGlvbiBmYWlscyBhdCAybmQgYXR0ZW1wdCwgd2hpY2ggaGFuZ3MgYXQNCj4g
+PiBoaWJlcm5hdGUoKSAtPiBzeXNjb3JlX3Jlc3VtZSgpIC0+IGk4MjM3QV9yZXN1bWUoKQ0KPiA+
+IC0+IGNsYWltX2RtYV9sb2NrKCksIGJlY2F1c2UgdGhlIGxvY2sgaGFzIGFscmVhZHkgYmVlbiB0
+YWtlbi4NCj4gPiBIb3dldmVyIHRoZXJlIGlzIGFjdHVhbGx5IG5vIG90aGVyIHByb2Nlc3Mgd291
+bGQgbGlrZSB0byBncmFiIHRoaXMNCj4gPiBsb2NrIG9uIHRoYXQgcHJvYmxlbWF0aWMgcGxhdGZv
+cm0uDQo+ID4NCj4gPiBGdXJ0aGVyIGludmVzdGlnYXRpb24gc2hvd3MgdGhhdCwgdGhlIHByb2Js
+ZW0gaXMgY2F1c2VkIGJ5IHNldHRpbmcNCj4gPiAvc3lzL3Bvd2VyL3BtX3RyYWNlIHRvIDEgYmVm
+b3JlIHRoZSAxc3QgaGliZXJuYXRpb24sIHNpbmNlIG9uY2UNCj4gPiBwbV90cmFjZSBpcyBlbmFi
+bGVkLCB0aGUgcnRjIGJlY29tZXMgYW4gdW5tZWFuaW5nZnVsIHZhbHVlIGFmdGVyDQo+ID4gcmVz
+dW1lZCwgd2hpY2ggbWlnaHQgYnJpbmcgYSBzaWduaWZpY2FudCBsb25nIHNsZWVwIHRpbWUgaW4N
+Cj4gPiB0aW1la2VlcGluZ19yZXN1bWUsIHRodXMgaW4gdGtfZGVidWdfYWNjb3VudF9zbGVlcF90
+aW1lLCB0aGUgZGVsdGEgb2YNCj4gPiB0aW1lc3BlYzY0IG1pZ2h0IGV4Y2VlZCAzMmJpdCBhZnRl
+ciBjb21taXQgN2Q0ODlkMTVjZTRiICgidGltZWtlZXBpbmc6DQo+ID4gQ29udmVydCB0aW1la2Vl
+cGluZyBjb3JlIHRvIHVzZSB0aW1lc3BlYzY0cyIpLCB0aHVzIGlmIHRoZSBiaXQzMQ0KPiA+IGhh
+cHBlbmVkIHNldCB0byAxLCB0aGUgZmxzIG1pZ2h0IHJldHVybiAzMiBhbmQgdGhlbiB3ZSBhZGQg
+MSB0bw0KPiA+IHNsZWVwX3RpbWVfYmluWzMyXSwgd2hpY2ggY2F1c2VkIGEgbWVtb3J5IG92ZXJ3
+cml0dGVuLiBBcyBTeXN0ZW0ubWFwDQo+IHNob3dzOg0KPiA+DQo+ID4gZmZmZmZmZmY4MWM5ZDA4
+MCBiIHNsZWVwX3RpbWVfYmluDQo+ID4gZmZmZmZmZmY4MWM5ZDEwMCBCIGRtYV9zcGluX2xvY2sN
+Cj4gPg0KPiA+IFRodXMgc2V0IHRoZSBkbWFfc3Bpbl9sb2NrLnZhbCB0byAxLCB3aGljaCBjYXVz
+ZWQgdGhpcyBwcm9ibGVtLg0KPiANCj4gTmljZSBjYXRjaCENCj4gDQo+ID4gVGhpcyBwYXRjaCBm
+aXhlcyB0aGlzIGlzc3VlIGJ5IGV4dGVuZGluZyBzbGVlcF90aW1lX2JpbiB0byA2NCwgYW5kIHVz
+ZQ0KPiA+IF9fZmxzIHRvIGJlIGZpdCBmb3IgdGltZXNwZWM2NC4NCj4gPg0KPiA+IEZpeGVzOiA3
+ZDQ4OWQxNWNlNGIgKCJ0aW1la2VlcGluZzogQ29udmVydCB0aW1la2VlcGluZyBjb3JlIHRvIHVz
+ZQ0KPiA+IHRpbWVzcGVjNjRzIikNCj4gPiBSZXBvcnRlZC1hbmQtdGVzdGVkLWJ5OiBKYW5layBL
+b3ppY2tpIDxjb3N1cmdpQGdtYWlsLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBDaGVuIFl1IDx5
+dS5jLmNoZW5AaW50ZWwuY29tPg0KPiA+IC0tLQ0KPiA+ICBrZXJuZWwvdGltZS90aW1la2VlcGlu
+Z19kZWJ1Zy5jIHwgNyArKysrLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMo
+KyksIDMgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEva2VybmVsL3RpbWUvdGlt
+ZWtlZXBpbmdfZGVidWcuYw0KPiA+IGIva2VybmVsL3RpbWUvdGltZWtlZXBpbmdfZGVidWcuYyBp
+bmRleCBmNmJkNjUyLi4xMmIwN2Q1IDEwMDY0NA0KPiA+IC0tLSBhL2tlcm5lbC90aW1lL3RpbWVr
+ZWVwaW5nX2RlYnVnLmMNCj4gPiArKysgYi9rZXJuZWwvdGltZS90aW1la2VlcGluZ19kZWJ1Zy5j
+DQo+ID4gQEAgLTIzLDE0ICsyMywxNCBAQA0KPiA+DQo+ID4gICNpbmNsdWRlICJ0aW1la2VlcGlu
+Z19pbnRlcm5hbC5oIg0KPiA+DQo+ID4gLXN0YXRpYyB1bnNpZ25lZCBpbnQgc2xlZXBfdGltZV9i
+aW5bMzJdID0gezB9Ow0KPiA+ICtzdGF0aWMgdW5zaWduZWQgaW50IHNsZWVwX3RpbWVfYmluWzY0
+XSA9IHswfTsNCj4gPg0KPiA+ICBzdGF0aWMgaW50IHRrX2RlYnVnX3Nob3dfc2xlZXBfdGltZShz
+dHJ1Y3Qgc2VxX2ZpbGUgKnMsIHZvaWQgKmRhdGEpDQo+ID4gew0KPiA+ICAJdW5zaWduZWQgaW50
+IGJpbjsNCj4gPiAgCXNlcV9wdXRzKHMsICIgICAgICB0aW1lIChzZWNzKSAgICAgICAgY291bnRc
+biIpOw0KPiA+ICAJc2VxX3B1dHMocywgIi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxu
+Iik7DQo+ID4gLQlmb3IgKGJpbiA9IDA7IGJpbiA8IDMyOyBiaW4rKykgew0KPiA+ICsJZm9yIChi
+aW4gPSAwOyBiaW4gPCA2NDsgYmluKyspIHsNCj4gPiAgCQlpZiAoc2xlZXBfdGltZV9iaW5bYmlu
+XSA9PSAwKQ0KPiA+ICAJCQljb250aW51ZTsNCj4gPiAgCQlzZXFfcHJpbnRmKHMsICIlMTB1IC0g
+JS0xMHUgJTR1XG4iLCBAQCAtNjksNiArNjksNyBAQA0KPiA+IGxhdGVfaW5pdGNhbGwodGtfZGVi
+dWdfc2xlZXBfdGltZV9pbml0KTsNCj4gPg0KPiA+ICB2b2lkIHRrX2RlYnVnX2FjY291bnRfc2xl
+ZXBfdGltZShzdHJ1Y3QgdGltZXNwZWM2NCAqdCkgIHsNCj4gPiAtCXNsZWVwX3RpbWVfYmluW2Zs
+cyh0LT50dl9zZWMpXSsrOw0KPiA+ICsJaWYgKHQtPnR2X3NlYyA+IDApDQo+ID4gKwkJc2xlZXBf
+dGltZV9iaW5bX19mbHModC0+dHZfc2VjKV0rKzsNCj4gDQo+IEJ1dCB5b3UgY291bGQgc2ltcGx5
+IHZhbGlkYXRlIHQtPnR2X3NlYyBoZXJlIHdpdGhvdXQgZXh0ZW5kaW5nIHNsZWVvX3RpbWVfYmlu
+W10NCj4gYW5kIHN3aXRjaGluZyBvdmVyIHRvIF9fZmxzKCksIGNvdWxkbid0IHlvdT8NClllcywg
+d2UgY2FuIGNoZWNrIHRoZSBtYXhpbWFsIHZhbHVlIGZvciB0dl9zZWMsIGFuZCBkb24ndCBoYXZl
+IHRvIGV4dGVuZCBzbGVlcF90aW1lX2JpbiBhcnJheS4NCg0KdGhhbmtzLA0KWXUNCg0K
