@@ -1,66 +1,109 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v2 3/6] binding-doc: usb: usb-device: add optional
- properties for power sequence
-Date: Mon, 18 Jul 2016 10:55:07 +0800
-Message-ID: <20160718025507.GC31293@shlinux2>
+From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 1/6] binding-doc: power: pwrseq-generic: add binding
+ doc for generic power sequence library
+Date: Mon, 18 Jul 2016 11:04:00 +0800
+Message-ID: <20160718030400.GD31293@shlinux2>
 References: <1468375610-18625-1-git-send-email-peter.chen@nxp.com>
- <1468375610-18625-4-git-send-email-peter.chen@nxp.com>
- <20160716223158.GB8984@rob-hp-laptop>
+ <1468375610-18625-2-git-send-email-peter.chen@nxp.com>
+ <20160716223057.GA8984@rob-hp-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33188 "EHLO
-	mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751062AbcGRDDL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 17 Jul 2016 23:03:11 -0400
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20160716223158.GB8984@rob-hp-laptop>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160716223057.GA8984@rob-hp-laptop>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, shawnguo@kernel.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com
 
-On Sat, Jul 16, 2016 at 05:31:59PM -0500, Rob Herring wrote:
-> On Wed, Jul 13, 2016 at 10:06:47AM +0800, Peter Chen wrote:
-> > Add optional properties for power sequence.
+On Sat, Jul 16, 2016 at 05:30:57PM -0500, Rob Herring wrote:
+> On Wed, Jul 13, 2016 at 10:06:45AM +0800, Peter Chen wrote:
+> > Add binding doc for generic power sequence library.
+> 
+> I'd written a review on last version, but forgot to send it out. Anyway, 
+> I mostly had the same comments as Philipp and Joshua. A couple of things 
+> they missed...
+> 
 > > 
-> > Signed-off-by: Peter Chen <peter.chen@nxp.com>
+> > Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
 > > ---
-> >  Documentation/devicetree/bindings/usb/usb-device.txt | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
+> >  .../bindings/power/pwrseq/pwrseq-generic.txt       | 53 ++++++++++++++++++++++
+> >  1 file changed, 53 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
 > > 
-> > diff --git a/Documentation/devicetree/bindings/usb/usb-device.txt b/Documentation/devicetree/bindings/usb/usb-device.txt
-> > index 1c35e7b..0ccaadf 100644
-> > --- a/Documentation/devicetree/bindings/usb/usb-device.txt
-> > +++ b/Documentation/devicetree/bindings/usb/usb-device.txt
-> > @@ -13,6 +13,10 @@ Required properties:
-> >  - reg: the port number which this device is connecting to, the range
-> >    is 1-31.
-> >  
-> > +Optional properties:
-> > +power sequence properties, see
-> > +Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt for detail
+> > diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+> > new file mode 100644
+> > index 0000000..186c58c
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+> > @@ -0,0 +1,53 @@
+> > +The generic power sequence library
 > > +
-> >  Example:
-> >  
-> >  &usb1 {
-> > @@ -24,5 +28,10 @@ Example:
-> >  	hub: genesys@1 {
-> >  		compatible = "usb5e3,608";
-> >  		reg = <1>;
+> > +Some hard-wired USB/MMC devices need to do power sequence to let the
+> > +device work normally, the typical power sequence like: enable USB
+> > +PHY clock, toggle reset pin, etc. But current Linux USB driver
+> > +lacks of such code to do it, it may cause some hard-wired USB devices
+> > +works abnormal or can't be recognized by controller at all. The
+> > +power sequence will be done before this device can be found at USB
+> > +bus.
+> > +
+> > +The power sequence properties is under the device node.
+> > +
+> > +Required properties:
+> > +- power-sequence: this device needs to do power sequence before enumeration
+> > +
+> > +Optional properties:
+> > +- clocks: the input clock for device.
+> > +- reset-gpios: Should specify the GPIO for reset.
+> > +- reset-duration-us: the duration in microsecond for assert reset signal.
+> > +
+> > +Below is the example of USB power sequence properties on USB device
+> > +nodes which have two level USB hubs.
+> > +
+> > +&usbotg1 {
+> > +	vbus-supply = <&reg_usb_otg1_vbus>;
+> > +	pinctrl-names = "default";
+> > +	pinctrl-0 = <&pinctrl_usb_otg1_id>;
+> > +	status = "okay";
+> > +
+> > +	#address-cells = <1>;
+> > +	#size-cells = <0>;
+> > +	hub: genesys@1 {
+> 
+> genesys: hub@1
+> 
+> > +		compatible = "usb5e3,608";
+> > +		reg = <1>;
 > > +
 > > +		power-sequence;
 > > +		clocks = <&clks IMX6SX_CLK_CKO>;
 > > +		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
 > > +		reset-duration-us = <10>;
+> > +
+> > +		#address-cells = <1>;
+> > +		#size-cells = <0>;
+> > +		ethernet: asix@1 {
 > 
-> These belong in the binding doc for the hub.
+> asix: ethernet@1
 > 
+> > +			compatible = "usbb95,1708";
+> > +			reg = <1>;
+> > +
+> > +			power-sequence;
+> > +			clocks = <&clks IMX6SX_CLK_IPG>;
+> > +			reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
+> > +			reset-duration-us = <15>;
+> > +		};
+> > +	};
+> > +};
 
-There is no dedicated binding doc for USB hub, we only have this binding
-doc for hard-wired USB devices.
+Will change, thanks.
 
 -- 
 
 Best Regards,
 Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
