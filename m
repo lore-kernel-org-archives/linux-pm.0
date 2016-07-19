@@ -1,47 +1,39 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Check cpuid for MSR_HWP_INTERRUPT
-Date: Tue, 19 Jul 2016 16:42:49 -0700
-Message-ID: <1468971769.4150.12.camel@linux.intel.com>
-References: <1468971284-17686-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <CAJZ5v0iCouZ9xU8AOOL51RZZEsuRmY7fLLpidY+0mmoGB+R92Q@mail.gmail.com>
-	 <CAJZ5v0gGfRsaAPDSMB=AKYNoGFgrf53MdibdwY7bauSp5PDpgw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Subject: [PATCH][resend] cpufreq: intel_pstate: Check cpuid for MSR_HWP_INTERRUPT
+Date: Tue, 19 Jul 2016 16:52:01 -0700
+Message-ID: <1468972321-26332-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:17485 "EHLO mga02.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:63316 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752604AbcGSXoi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 Jul 2016 19:44:38 -0400
-In-Reply-To: <CAJZ5v0gGfRsaAPDSMB=AKYNoGFgrf53MdibdwY7bauSp5PDpgw@mail.gmail.com>
+	id S1752287AbcGSXwE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 Jul 2016 19:52:04 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Wed, 2016-07-20 at 01:40 +0200, Rafael J. Wysocki wrote:
-> On Wed, Jul 20, 2016 at 1:38 AM, Rafael J. Wysocki <rafael@kernel.org
-> > wrote:
-> >=20
-> > On Wed, Jul 20, 2016 at 1:34 AM, Srinivas Pandruvada
-> > <srinivas.pandruvada@linux.intel.com> wrote:
-> > >=20
-> > > From: spandruv <spandruv@spandruv-mobl.jf.intel.com>
-> > >=20
-> > > The MSR MSR_HWP_INTERRUPT is valid only when CPUID.06H:EAX[8] =3D
-> > > 1, so
-> > > check for feature before accessing this MSR.
-> > >=20
-> > > Signed-off-by: spandruv <spandruv@spandruv-mobl.jf.intel.com>
-> > Do you really want this in the S-o-b tag?
-> Well, it isn't a valid address even, so it can't be here.
-Resending, setup a new computer and forgot to add .gitconfig.
+The MSR MSR_HWP_INTERRUPT is valid only when CPUID.06H:EAX[8] = 1, so
+check for feature before accessing this MSR.
 
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 2fe9af1..4704fb2 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -823,7 +823,8 @@ static void __init intel_pstate_sysfs_expose_params(void)
+ static void intel_pstate_hwp_enable(struct cpudata *cpudata)
+ {
+ 	/* First disable HWP notification interrupt as we don't process them */
+-	wrmsrl_on_cpu(cpudata->cpu, MSR_HWP_INTERRUPT, 0x00);
++	if (static_cpu_has(X86_FEATURE_HWP_NOTIFY))
++		wrmsrl_on_cpu(cpudata->cpu, MSR_HWP_INTERRUPT, 0x00);
+ 
+ 	wrmsrl_on_cpu(cpudata->cpu, MSR_PM_ENABLE, 0x1);
+ }
+-- 
+2.7.4
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-in=
-fo.html
