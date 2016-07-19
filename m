@@ -1,41 +1,50 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Subject: [PATCH resend] intel_rapl: downgrade message if no RAPL domains found in a VM
-Date: Tue, 19 Jul 2016 13:49:57 +0200
-Message-ID: <1468928997-20431-1-git-send-email-pbonzini@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Thomas Renninger <trenn@suse.de>, Peter Zijlstra <peterz@infradead.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, Jacob Pan <jacob.jun.pan@linux.intel.com>, Andy Lutomirski <luto@amacapital.net>
+From: Chenhui Zhao <z.chenhui@gmail.com>
+Subject: Re: Sequence of suspend/resume calls
+Date: Tue, 19 Jul 2016 19:57:51 +0800
+Message-ID: <CAHwnS+V9KiDe-ZKC2OsPfG80BkySaYF3e=1TzaV6fhaQ+uCNNg@mail.gmail.com>
+References: <CANMsd01zGiB8wu3J1sqXGXwsNWq3AkaA26BSQHfPVAGdHwiUeg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vk0-f54.google.com ([209.85.213.54]:34993 "EHLO
+	mail-vk0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752995AbcGSL6M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jul 2016 07:58:12 -0400
+Received: by mail-vk0-f54.google.com with SMTP id w127so20905990vkh.2
+        for <linux-pm@vger.kernel.org>; Tue, 19 Jul 2016 04:58:11 -0700 (PDT)
+In-Reply-To: <CANMsd01zGiB8wu3J1sqXGXwsNWq3AkaA26BSQHfPVAGdHwiUeg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ryan <ryanphilips19@googlemail.com>
+Cc: linux-pm@vger.kernel.org
 
-People complain about the driver saying there's no valid RAPL domains
-in a VM, and doing so at KERN_ERR severity.  Downgrade this to KERN_INFO
-if running on a hypervisor, since it is basically stating the obvious.
+I don't know your case in detail. However, you may try to register a
+syscore ops.
+Please refer to drivers/base/syscore.c.
 
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Andy Lutomirski <luto@amacapital.net>
-Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
----
-	First sent out about a year ago. :)
+These callbacks will run when suspend_enter() calls syscore_suspend() and
+syscore_resume() in kernel/power/suspend.c.
 
- drivers/powercap/intel_rapl.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Chenhui
+Thanks
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index b2766b867b0e..0a0b09910116 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -1392,7 +1392,9 @@ static int rapl_detect_domains(struct rapl_package *rp, int cpu)
- 	}
- 	rp->nr_domains = bitmap_weight(&rp->domain_map,	RAPL_DOMAIN_MAX);
- 	if (!rp->nr_domains) {
--		pr_err("no valid rapl domains found in package %d\n", rp->id);
-+		printk("%sNo valid RAPL domains found in package %d\n",
-+		       boot_cpu_has(X86_FEATURE_HYPERVISOR) ? KERN_INFO : KERN_ERR,
-+		       rp->id);
- 		ret = -ENODEV;
- 		goto done;
- 	}
--- 
-2.7.4
+On Tue, Jul 19, 2016 at 9:34 AM, Ryan <ryanphilips19@googlemail.com> wrote:
+>
+> Hello,
+>
+>
+> Is it possible for the resume function of a particular driver to be
+> called before resume function of others are being called?
+>
+> Suppose, I have a driver - example_suspend, example_resume - Is it
+> possible for example_suspend to be called last
+> and example_resume to be called first thing as soon as cpu is woken up?
+>
+> If so, how can i do that?
+>
+> Thanks,
+> ryan
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
