@@ -1,73 +1,94 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v6 0/8] CPUs capacity information for heterogeneous systems
-Date: Tue, 19 Jul 2016 13:40:40 +0100
-Message-ID: <1468932048-31635-1-git-send-email-juri.lelli@arm.com>
+Subject: [PATCH v6 5/8] arm64, dts: add Juno cpu capacity-dmips-mhz information
+Date: Tue, 19 Jul 2016 13:40:45 +0100
+Message-ID: <1468932048-31635-6-git-send-email-juri.lelli@arm.com>
+References: <1468932048-31635-1-git-send-email-juri.lelli@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1468932048-31635-1-git-send-email-juri.lelli@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Arnd Bergmann <arnd@arndb.de>, Jon Medhurst <tixy@linaro.org>, Olof Johansson <olof@lixom.net>, Robin Murphy <robin.murphy@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+Add Juno cpu capacity-dmips-mhz bindings information.
 
-version 6 of "CPUs capacity information for heterogeneous systems" patchset [1]
-(please refer to previous postings to get some context).
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: Kumar Gala <galak@codeaurora.org>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Liviu Dudau <Liviu.Dudau@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Jon Medhurst <tixy@linaro.org>
+Cc: Olof Johansson <olof@lixom.net>
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: devicetree@vger.kernel.org
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+---
 
-A few changes from v5:
+Changes from v1:
+  - capacity-scale removed
 
- - rebase on top of mainline (4.7-rc6)
- - documentation fixes
- - kcalloc() for raw_capacity array
- - pr_err() only for partial updates
- - cpu_scale_mutex to protect sysfs interface
+Changes from v4:
+  - binding changed to capacity-dmips-mhz
+---
+ arch/arm64/boot/dts/arm/juno.dts | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Patches high level description:
-
- o 01/08 introduces documentation for the new optional DT binding
- o [02-06]/08 add cpu-capacity attribute to TC2, Juno and Juno r2 DTs and
-   provide parsing of such information at boot time
- o [07-08]/08 introduce sysfs attribute
-
-In case you would like to test this out, I pushed a branch here:
-
- git://linux-arm.org/linux-jl.git upstream/default_caps_v6
-
-This branch contains additional patches, useful to better understand how CPU
-capacity information is actually used by the scheduler.
-
-These patches also form the basis for Morten/Dietmar's "Clean-ups and
-asymmetric cpu capacity support" series [2] (and the EAS stack in general).
-
-Best,
-
-- Juri
-
-[1] v1 - https://lkml.org/lkml/2015/11/23/391
-    v2 - https://lkml.org/lkml/2016/1/8/417
-    v3 - https://lkml.org/lkml/2016/2/3/405
-    v4 - https://lkml.org/lkml/2016/3/18/350
-    v5 - https://lkml.org/lkml/2016/6/15/291
-[2] https://lkml.org/lkml/2016/6/22/614 
-
-Juri Lelli (8):
-  Documentation: arm: define DT cpu capacity-dmips-mhz bindings
-  arm: parse cpu capacity-dmips-mhz from DT
-  arm, dts: add TC2 cpu capacity-dmips-mhz information
-  arm64: parse cpu capacity-dmips-mhz from DT
-  arm64, dts: add Juno cpu capacity-dmips-mhz information
-  arm64, dts: add Juno r2 cpu capacity-dmips-mhz information
-  arm: add sysfs cpu_capacity attribute
-  arm64: add sysfs cpu_capacity attribute
-
- .../devicetree/bindings/arm/cpu-capacity.txt       | 236 +++++++++++++++++++++
- Documentation/devicetree/bindings/arm/cpus.txt     |  10 +
- arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts         |   5 +
- arch/arm/kernel/topology.c                         | 218 ++++++++++++++++++-
- arch/arm64/boot/dts/arm/juno-r2.dts                |   6 +
- arch/arm64/boot/dts/arm/juno.dts                   |   6 +
- arch/arm64/kernel/topology.c                       | 218 +++++++++++++++++++
- 7 files changed, 698 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/arm/cpu-capacity.txt
-
+diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
+index dcfcf15a17f5..ad07815080e0 100644
+--- a/arch/arm64/boot/dts/arm/juno.dts
++++ b/arch/arm64/boot/dts/arm/juno.dts
+@@ -90,6 +90,7 @@
+ 			next-level-cache = <&A57_L2>;
+ 			clocks = <&scpi_dvfs 0>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			capacity-dmips-mhz = <1024>;
+ 		};
+ 
+ 		A57_1: cpu@1 {
+@@ -100,6 +101,7 @@
+ 			next-level-cache = <&A57_L2>;
+ 			clocks = <&scpi_dvfs 0>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			capacity-dmips-mhz = <1024>;
+ 		};
+ 
+ 		A53_0: cpu@100 {
+@@ -110,6 +112,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			capacity-dmips-mhz = <578>;
+ 		};
+ 
+ 		A53_1: cpu@101 {
+@@ -120,6 +123,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			capacity-dmips-mhz = <578>;
+ 		};
+ 
+ 		A53_2: cpu@102 {
+@@ -130,6 +134,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			capacity-dmips-mhz = <578>;
+ 		};
+ 
+ 		A53_3: cpu@103 {
+@@ -140,6 +145,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			capacity-dmips-mhz = <578>;
+ 		};
+ 
+ 		A57_L2: l2-cache0 {
 -- 
 2.7.0
