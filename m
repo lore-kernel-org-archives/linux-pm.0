@@ -1,58 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [query] sleep introduced by invoking kernel API during runtime_resume
-Date: Tue, 19 Jul 2016 15:07:07 +0200
-Message-ID: <6837922.u6kG61aXrA@vostro.rjw.lan>
-References: <CAN2waFsgenQK50_+akz25X0DgVdz6w-zok59hwmE3hLoODZw3Q@mail.gmail.com> <4430171.SeORUQ46bP@vostro.rjw.lan>
+From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Subject: Re: [PATCH v3 2/2] power: Adds support for Smart Battery System
+ Manager
+Date: Tue, 19 Jul 2016 20:51:05 +0200
+Message-ID: <1468954265.3053.3.camel@amnesix>
+References: <1bIiDr-0004G1-0P>
+	 <1468349295-4935-1-git-send-email-karl-heinz@schneider-inet.de>
+	 <1468349295-4935-3-git-send-email-karl-heinz@schneider-inet.de>
+	 <20160719041729.GC1640@katana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41109 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753543AbcGSNCQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jul 2016 09:02:16 -0400
-In-Reply-To: <4430171.SeORUQ46bP@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20160719041729.GC1640@katana>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
-To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Cc: linux-pm@vger.kernel.org
 
-On Tuesday, July 19, 2016 03:03:58 PM Rafael J. Wysocki wrote:
-> On Tuesday, July 19, 2016 03:03:03 PM Zhaoyang Huang wrote:
-> > Dear folks,
-> > We run across a warning as 'BUG: sleeping function called from invalid
-> > context at' during rpm resume one device[1]. However, the
-> > device(kbase_device_resume) is unaware of sleeping which introduced by
-> > invoking kernel function. I would like to ask that how to avoid such
-> > kind of warning? It seems that 'RPM_ASYNC' also can not handle, for
-> > there is spin_lock_irq at beginning of pm_runtime_work.
-> > 
-> > 
-> > [1]
-> > __pm_runtime_resume
-> > {
-> >       spin_lock_irqsave(&dev->power.lock, flags);      ---> irqs_disabled
-> > 
-> >       kbase_device_resume->
-> > --->rpm_resume function for device
+Hi Wolfram,
+
+Am Dienstag, den 19.07.2016, 06:17 +0200 schrieb Wolfram Sang:
+> > +	data->muxc = i2c_mux_alloc(adapter, dev, SBSM_MAX_BATS, 0,
+> > +				   I2C_MUX_LOCKED, &sbsm_select, NULL);
+> > +	if (!data->muxc) {
+> > +		dev_err(dev, "failed to alloc i2c mux\n");
 > 
-> No, we don't call resume callbacks under dev->power.lock unless the
-> power.irq_safe flage is set for the device.
+> Don't print errors on ENOMEM.
 
-And not even in that case for that matter (but we may call them with
-disabled interrupts then).
+Will be fixed on next revision.
 
-> >                  devfreq_resume_device->
-> >                       devfreq_simple_ondemand_handler->
-> >                              devfreq_monitor_resume----->
-> >                                     {
-> >                                        mutex_lock(&devfreq->lock)
-> >     ----> check might_sleep here
-> >                                         ......
-> >                                        mutex_unlock(&devfreq->lock)
-> >                                     }
-> > }
+> 
+> Other than that, looks good to me, yet Peter has more insight to
+> i2c-muxes these days.
+> 
+Tanks for review. 
 
-Thanks,
-Rafael
-
+Will wait another few days before sending a new revision, hence changes
+are rather small.
+-- 
+Karl-Heinz
