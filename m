@@ -1,75 +1,214 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH] timekeeping: Fix memory overwrite of sleep_time_bin
- array
-Date: Mon, 18 Jul 2016 23:34:51 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE640287817D8@shsmsx102.ccr.corp.intel.com>
-References: <1468806139-31436-1-git-send-email-yu.c.chen@intel.com>
- <1938295.fBmZlflNpk@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1938295.fBmZlflNpk@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][RFC v5] PM / hibernate: Introduce test_resume mode for hibernation
+Date: Tue, 19 Jul 2016 08:36:44 +0800
+Message-ID: <1468888604-9337-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:56551 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751457AbcGSA3H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 18 Jul 2016 20:29:07 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 
-SGkgUmFmYWVsLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFl
-bCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFR1ZXNkYXks
-IEp1bHkgMTksIDIwMTYgNjowMiBBTQ0KPiBUbzogQ2hlbiwgWXUgQw0KPiBDYzogSm9obiBTdHVs
-dHo7IFRob21hcyBHbGVpeG5lcjsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgTGludXgg
-UE0gbGlzdA0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSB0aW1la2VlcGluZzogRml4IG1lbW9yeSBv
-dmVyd3JpdGUgb2Ygc2xlZXBfdGltZV9iaW4NCj4gYXJyYXkNCj4gDQo+IE9uIE1vbmRheSwgSnVs
-eSAxOCwgMjAxNiAwOTo0MjoxOSBBTSBDaGVuIFl1IHdyb3RlOg0KPiA+IEl0IGlzIHJlcG9ydGVk
-IHRoZSBoaWJlcm5hdGlvbiBmYWlscyBhdCAybmQgYXR0ZW1wdCwgd2hpY2ggaGFuZ3MgYXQNCj4g
-PiBoaWJlcm5hdGUoKSAtPiBzeXNjb3JlX3Jlc3VtZSgpIC0+IGk4MjM3QV9yZXN1bWUoKQ0KPiA+
-IC0+IGNsYWltX2RtYV9sb2NrKCksIGJlY2F1c2UgdGhlIGxvY2sgaGFzIGFscmVhZHkgYmVlbiB0
-YWtlbi4NCj4gPiBIb3dldmVyIHRoZXJlIGlzIGFjdHVhbGx5IG5vIG90aGVyIHByb2Nlc3Mgd291
-bGQgbGlrZSB0byBncmFiIHRoaXMNCj4gPiBsb2NrIG9uIHRoYXQgcHJvYmxlbWF0aWMgcGxhdGZv
-cm0uDQo+ID4NCj4gPiBGdXJ0aGVyIGludmVzdGlnYXRpb24gc2hvd3MgdGhhdCwgdGhlIHByb2Js
-ZW0gaXMgY2F1c2VkIGJ5IHNldHRpbmcNCj4gPiAvc3lzL3Bvd2VyL3BtX3RyYWNlIHRvIDEgYmVm
-b3JlIHRoZSAxc3QgaGliZXJuYXRpb24sIHNpbmNlIG9uY2UNCj4gPiBwbV90cmFjZSBpcyBlbmFi
-bGVkLCB0aGUgcnRjIGJlY29tZXMgYW4gdW5tZWFuaW5nZnVsIHZhbHVlIGFmdGVyDQo+ID4gcmVz
-dW1lZCwgd2hpY2ggbWlnaHQgYnJpbmcgYSBzaWduaWZpY2FudCBsb25nIHNsZWVwIHRpbWUgaW4N
-Cj4gPiB0aW1la2VlcGluZ19yZXN1bWUsIHRodXMgaW4gdGtfZGVidWdfYWNjb3VudF9zbGVlcF90
-aW1lLCB0aGUgZGVsdGEgb2YNCj4gPiB0aW1lc3BlYzY0IG1pZ2h0IGV4Y2VlZCAzMmJpdCBhZnRl
-ciBjb21taXQgN2Q0ODlkMTVjZTRiICgidGltZWtlZXBpbmc6DQo+ID4gQ29udmVydCB0aW1la2Vl
-cGluZyBjb3JlIHRvIHVzZSB0aW1lc3BlYzY0cyIpLCB0aHVzIGlmIHRoZSBiaXQzMQ0KPiA+IGhh
-cHBlbmVkIHNldCB0byAxLCB0aGUgZmxzIG1pZ2h0IHJldHVybiAzMiBhbmQgdGhlbiB3ZSBhZGQg
-MSB0bw0KPiA+IHNsZWVwX3RpbWVfYmluWzMyXSwgd2hpY2ggY2F1c2VkIGEgbWVtb3J5IG92ZXJ3
-cml0dGVuLiBBcyBTeXN0ZW0ubWFwDQo+IHNob3dzOg0KPiA+DQo+ID4gZmZmZmZmZmY4MWM5ZDA4
-MCBiIHNsZWVwX3RpbWVfYmluDQo+ID4gZmZmZmZmZmY4MWM5ZDEwMCBCIGRtYV9zcGluX2xvY2sN
-Cj4gPg0KPiA+IFRodXMgc2V0IHRoZSBkbWFfc3Bpbl9sb2NrLnZhbCB0byAxLCB3aGljaCBjYXVz
-ZWQgdGhpcyBwcm9ibGVtLg0KPiANCj4gTmljZSBjYXRjaCENCj4gDQo+ID4gVGhpcyBwYXRjaCBm
-aXhlcyB0aGlzIGlzc3VlIGJ5IGV4dGVuZGluZyBzbGVlcF90aW1lX2JpbiB0byA2NCwgYW5kIHVz
-ZQ0KPiA+IF9fZmxzIHRvIGJlIGZpdCBmb3IgdGltZXNwZWM2NC4NCj4gPg0KPiA+IEZpeGVzOiA3
-ZDQ4OWQxNWNlNGIgKCJ0aW1la2VlcGluZzogQ29udmVydCB0aW1la2VlcGluZyBjb3JlIHRvIHVz
-ZQ0KPiA+IHRpbWVzcGVjNjRzIikNCj4gPiBSZXBvcnRlZC1hbmQtdGVzdGVkLWJ5OiBKYW5layBL
-b3ppY2tpIDxjb3N1cmdpQGdtYWlsLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBDaGVuIFl1IDx5
-dS5jLmNoZW5AaW50ZWwuY29tPg0KPiA+IC0tLQ0KPiA+ICBrZXJuZWwvdGltZS90aW1la2VlcGlu
-Z19kZWJ1Zy5jIHwgNyArKysrLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMo
-KyksIDMgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEva2VybmVsL3RpbWUvdGlt
-ZWtlZXBpbmdfZGVidWcuYw0KPiA+IGIva2VybmVsL3RpbWUvdGltZWtlZXBpbmdfZGVidWcuYyBp
-bmRleCBmNmJkNjUyLi4xMmIwN2Q1IDEwMDY0NA0KPiA+IC0tLSBhL2tlcm5lbC90aW1lL3RpbWVr
-ZWVwaW5nX2RlYnVnLmMNCj4gPiArKysgYi9rZXJuZWwvdGltZS90aW1la2VlcGluZ19kZWJ1Zy5j
-DQo+ID4gQEAgLTIzLDE0ICsyMywxNCBAQA0KPiA+DQo+ID4gICNpbmNsdWRlICJ0aW1la2VlcGlu
-Z19pbnRlcm5hbC5oIg0KPiA+DQo+ID4gLXN0YXRpYyB1bnNpZ25lZCBpbnQgc2xlZXBfdGltZV9i
-aW5bMzJdID0gezB9Ow0KPiA+ICtzdGF0aWMgdW5zaWduZWQgaW50IHNsZWVwX3RpbWVfYmluWzY0
-XSA9IHswfTsNCj4gPg0KPiA+ICBzdGF0aWMgaW50IHRrX2RlYnVnX3Nob3dfc2xlZXBfdGltZShz
-dHJ1Y3Qgc2VxX2ZpbGUgKnMsIHZvaWQgKmRhdGEpDQo+ID4gew0KPiA+ICAJdW5zaWduZWQgaW50
-IGJpbjsNCj4gPiAgCXNlcV9wdXRzKHMsICIgICAgICB0aW1lIChzZWNzKSAgICAgICAgY291bnRc
-biIpOw0KPiA+ICAJc2VxX3B1dHMocywgIi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLVxu
-Iik7DQo+ID4gLQlmb3IgKGJpbiA9IDA7IGJpbiA8IDMyOyBiaW4rKykgew0KPiA+ICsJZm9yIChi
-aW4gPSAwOyBiaW4gPCA2NDsgYmluKyspIHsNCj4gPiAgCQlpZiAoc2xlZXBfdGltZV9iaW5bYmlu
-XSA9PSAwKQ0KPiA+ICAJCQljb250aW51ZTsNCj4gPiAgCQlzZXFfcHJpbnRmKHMsICIlMTB1IC0g
-JS0xMHUgJTR1XG4iLCBAQCAtNjksNiArNjksNyBAQA0KPiA+IGxhdGVfaW5pdGNhbGwodGtfZGVi
-dWdfc2xlZXBfdGltZV9pbml0KTsNCj4gPg0KPiA+ICB2b2lkIHRrX2RlYnVnX2FjY291bnRfc2xl
-ZXBfdGltZShzdHJ1Y3QgdGltZXNwZWM2NCAqdCkgIHsNCj4gPiAtCXNsZWVwX3RpbWVfYmluW2Zs
-cyh0LT50dl9zZWMpXSsrOw0KPiA+ICsJaWYgKHQtPnR2X3NlYyA+IDApDQo+ID4gKwkJc2xlZXBf
-dGltZV9iaW5bX19mbHModC0+dHZfc2VjKV0rKzsNCj4gDQo+IEJ1dCB5b3UgY291bGQgc2ltcGx5
-IHZhbGlkYXRlIHQtPnR2X3NlYyBoZXJlIHdpdGhvdXQgZXh0ZW5kaW5nIHNsZWVvX3RpbWVfYmlu
-W10NCj4gYW5kIHN3aXRjaGluZyBvdmVyIHRvIF9fZmxzKCksIGNvdWxkbid0IHlvdT8NClllcywg
-d2UgY2FuIGNoZWNrIHRoZSBtYXhpbWFsIHZhbHVlIGZvciB0dl9zZWMsIGFuZCBkb24ndCBoYXZl
-IHRvIGV4dGVuZCBzbGVlcF90aW1lX2JpbiBhcnJheS4NCg0KdGhhbmtzLA0KWXUNCg0K
+test_resume mode is to verify if the snapshot data
+written to swap device can be successfully restored
+to memory. It is useful to ease the debugging process
+on hibernation, since this mode can not only bypass
+the BIOSes/bootloader, but also the system re-initialization.
+
+For example:
+echo test_resume > /sys/power/disk
+echo disk > /sys/power/state
+
+[  187.306470] PM: Image saving progress:  70%
+[  187.395298] PM: Image saving progress:  80%
+[  187.476697] PM: Image saving progress:  90%
+[  187.554641] PM: Image saving done.
+[  187.558896] PM: Wrote 594600 kbytes in 0.90 seconds (660.66 MB/s)
+[  187.566000] PM: S|
+[  187.589742] PM: Basic memory bitmaps freed
+[  187.594694] PM: Checking hibernation image
+[  187.599865] PM: Image signature found, resuming
+[  187.605209] PM: Loading hibernation image.
+[  187.665753] PM: Basic memory bitmaps created
+[  187.691397] PM: Using 3 thread(s) for decompression.
+[  187.691397] PM: Loading and decompressing image data (148650 pages)...
+[  187.889719] PM: Image loading progress:   0%
+[  188.100452] PM: Image loading progress:  10%
+[  188.244781] PM: Image loading progress:  20%
+[  189.057305] PM: Image loading done.
+[  189.068793] PM: Image successfully loaded
+
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+v5:
+ - Introduce a new function to be shared with software_resume().
+v4:
+ - Fix some errors and modify the comment for software_resume_unthaw.
+v3:
+ - As Pavel mentioned, there was a potential risk in previous
+   version that might break the filesystem. According to Rafael's suggestion,
+   this version avoids that issue by restoring the pages with user/kernel
+   threads kept in frozen. Also updated the patch on top of linux-next.
+---
+ kernel/power/hibernate.c | 61 ++++++++++++++++++++++++++++++++----------------
+ kernel/power/swap.c      |  6 +++++
+ 2 files changed, 47 insertions(+), 20 deletions(-)
+
+diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+index 5f3523e..73ec63c 100644
+--- a/kernel/power/hibernate.c
++++ b/kernel/power/hibernate.c
+@@ -52,6 +52,7 @@ enum {
+ #ifdef CONFIG_SUSPEND
+ 	HIBERNATION_SUSPEND,
+ #endif
++	HIBERNATION_TEST_RESUME,
+ 	/* keep last */
+ 	__HIBERNATION_AFTER_LAST
+ };
+@@ -647,12 +648,39 @@ static void power_down(void)
+ 		cpu_relax();
+ }
+ 
++static int load_image_and_restore(void)
++{
++	int error;
++	unsigned int flags;
++
++	pr_debug("PM: Loading hibernation image.\n");
++
++	lock_device_hotplug();
++	error = create_basic_memory_bitmaps();
++	if (error)
++		goto Unlock;
++
++	error = swsusp_read(&flags);
++	swsusp_close(FMODE_READ);
++	if (!error)
++		hibernation_restore(flags & SF_PLATFORM_MODE);
++
++	printk(KERN_ERR "PM: Failed to load hibernation image, recovering.\n");
++	swsusp_free();
++	free_basic_memory_bitmaps();
++ Unlock:
++	unlock_device_hotplug();
++
++	return error;
++}
++
+ /**
+  * hibernate - Carry out system hibernation, including saving the image.
+  */
+ int hibernate(void)
+ {
+ 	int error, nr_calls = 0;
++	bool snapshot_test = false;
+ 
+ 	if (!hibernation_available()) {
+ 		pr_debug("PM: Hibernation not available.\n");
+@@ -704,7 +732,9 @@ int hibernate(void)
+ 		pr_debug("PM: writing image.\n");
+ 		error = swsusp_write(flags);
+ 		swsusp_free();
+-		if (!error)
++		if (hibernation_mode == HIBERNATION_TEST_RESUME)
++			snapshot_test = true;
++		if (!error && !snapshot_test)
+ 			power_down();
+ 		in_suspend = 0;
+ 		pm_restore_gfp_mask();
+@@ -716,6 +746,12 @@ int hibernate(void)
+ 	free_basic_memory_bitmaps();
+  Thaw:
+ 	unlock_device_hotplug();
++	if (snapshot_test) {
++		pr_debug("PM: Checking hibernation image\n");
++		error = swsusp_check();
++		if (!error)
++			error = load_image_and_restore();
++	}
+ 	thaw_processes();
+ 
+ 	/* Don't bother checking whether freezer_test_done is true */
+@@ -748,7 +784,6 @@ int hibernate(void)
+ static int software_resume(void)
+ {
+ 	int error, nr_calls = 0;
+-	unsigned int flags;
+ 
+ 	/*
+ 	 * If the user said "noresume".. bail out early.
+@@ -844,24 +879,7 @@ static int software_resume(void)
+ 	error = freeze_processes();
+ 	if (error)
+ 		goto Close_Finish;
+-
+-	pr_debug("PM: Loading hibernation image.\n");
+-
+-	lock_device_hotplug();
+-	error = create_basic_memory_bitmaps();
+-	if (error)
+-		goto Thaw;
+-
+-	error = swsusp_read(&flags);
+-	swsusp_close(FMODE_READ);
+-	if (!error)
+-		hibernation_restore(flags & SF_PLATFORM_MODE);
+-
+-	printk(KERN_ERR "PM: Failed to load hibernation image, recovering.\n");
+-	swsusp_free();
+-	free_basic_memory_bitmaps();
+- Thaw:
+-	unlock_device_hotplug();
++	error = load_image_and_restore();
+ 	thaw_processes();
+  Finish:
+ 	__pm_notifier_call_chain(PM_POST_RESTORE, nr_calls, NULL);
+@@ -887,6 +905,7 @@ static const char * const hibernation_modes[] = {
+ #ifdef CONFIG_SUSPEND
+ 	[HIBERNATION_SUSPEND]	= "suspend",
+ #endif
++	[HIBERNATION_TEST_RESUME]	= "test_resume",
+ };
+ 
+ /*
+@@ -933,6 +952,7 @@ static ssize_t disk_show(struct kobject *kobj, struct kobj_attribute *attr,
+ #ifdef CONFIG_SUSPEND
+ 		case HIBERNATION_SUSPEND:
+ #endif
++		case HIBERNATION_TEST_RESUME:
+ 			break;
+ 		case HIBERNATION_PLATFORM:
+ 			if (hibernation_ops)
+@@ -979,6 +999,7 @@ static ssize_t disk_store(struct kobject *kobj, struct kobj_attribute *attr,
+ #ifdef CONFIG_SUSPEND
+ 		case HIBERNATION_SUSPEND:
+ #endif
++		case HIBERNATION_TEST_RESUME:
+ 			hibernation_mode = mode;
+ 			break;
+ 		case HIBERNATION_PLATFORM:
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 160e100..51cef84 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -348,6 +348,12 @@ static int swsusp_swap_check(void)
+ 	if (res < 0)
+ 		blkdev_put(hib_resume_bdev, FMODE_WRITE);
+ 
++	/*
++	 * Update the resume device to the one actually used,
++	 * so the test_resume mode can use it in case it is
++	 * invoked from hibernate() to test the snapshot.
++	 */
++	swsusp_resume_device = hib_resume_bdev->bd_dev;
+ 	return res;
+ }
+ 
+-- 
+2.7.4
+
