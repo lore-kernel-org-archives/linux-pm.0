@@ -1,93 +1,424 @@
-From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v2 00/10] Exynos IOMMU: proper runtime PM support (use
-	device dependencies)
-Date: Tue, 19 Jul 2016 08:26:20 +0200
-Message-ID: <7c770ff5-2b22-adf6-b8d0-e94d1d7d7550@samsung.com>
-References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
-	<5787B2B0.9020809@math.uni-bielefeld.de>
-	<5788E352.3040801@math.uni-bielefeld.de>
-	<a15e438a-7fa0-3a4d-e6e2-13425512dddd@samsung.com>
-	<578CB6DB.90608@math.uni-bielefeld.de>
-	<6939949e-4c8e-cba0-9858-b37d1ba01869@samsung.com>
-	<578D0716.6060106@math.uni-bielefeld.de>
+From: Hongtao Jia <hongtao.jia@nxp.com>
+Subject: RE: [PATCH V2 7/7] thermal: qoriq: Add thermal management support
+Date: Tue, 19 Jul 2016 06:54:11 +0000
+Message-ID: <AM4PR0401MB18432B70EEB53C04594821DEEB370@AM4PR0401MB1843.eurprd04.prod.outlook.com>
+References: <1467256118-41754-1-git-send-email-hongtao.jia@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-reply-to: <578D0716.6060106-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1467256118-41754-1-git-send-email-hongtao.jia@nxp.com>
+Content-Language: zh-CN
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, Scott Wood <scott.wood@nxp.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Tobias
+Hi Eduardo,
 
+Any comments on this patch?
 
-On 2016-07-18 18:43, Tobias Jakobi wrote:
-> Marek Szyprowski wrote:
->> On 2016-07-18 13:00, Tobias Jakobi wrote:
->>> Marek Szyprowski wrote:
->>>> On 2016-07-15 15:21, Tobias Jakobi wrote:
->>>>> Tobias Jakobi wrote:
->>>>>> Hello Marek,
->>>>>>
->>>>>> I've tested the patchset on 4.7-rc7 and noticed that it breaks
->>>>>> reboot on
->>>>>> my ODROID-X2.
->>>>>>
->>>>>> Going to check where exactly things break.
->>>>> Sadly it's the last patch where everything comes together:
->>>>> "iommu/exynos: Add proper runtime pm support"
->>>>>
->>>>> I still have to check if forcing runpm status to 'on' makes a
->>>>> difference. I suspect that the aggressive clock gating might be the
->>>>> reason?
->>>> Thanks for testing. I will check this issue. Could you send me your
->>>> .config?
->>> This is the config I'm currently using:
->>> https://github.com/tobiasjakobi/odroid-environment/blob/master/sourcecode/system/vanilla-4.7-debug.conf
->>>
->>>
->>> Do you think checking this with no_console_suspend makes sense?
->> no_console_suspend switch won't provide more information, but I managed
->> to reproduce your issue. I'm really confused how enabling runtime pm can
->> cause problems with usb/smsc95xx ethernet driver (that is the reason for
->> failed reboot). Maybe it is somehow related to the global relations
->> between devices and drivers and the fact that creating the runtime pm
->> links change the order of operations. I will check this again when
->> Rafael send updated patches. Here is the log I got (after waiting some
->> time):
-> thanks for looking into this! I'll try to reproduce this on my board. I
-> have to admit that I didn't wait too long for the hung task message to
-> appear.
->
-> I wonder if this has something to do with regulator code cutting some
-> supplies too early. Is this on a X2 or a U2/U3?
+Thanks.
+-Hongtao.
 
-I've reproduced it on U3.
-
-> I'm not sure if we
-> currently model the regulator setup correctly here (IIRC then buck8 is
-> supplying the LAN/USB block on U2/U3).
-
-IMHO it is not really related to regulator operations, but the sequence
-of shutting down logical devices in the system. For some reasons when pm 
-links
-are used, something changes the order of operations in system shutdown
-procedure, what causes smsc95xx to hang. I have no idea why, but I don't 
-have
-time to investigate it further. I will wait for the next release of Rafael's
-pm links patches and then check everything again.
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+> -----Original Message-----
+> From: Jia Hongtao [mailto:hongtao.jia@nxp.com]
+> Sent: Thursday, June 30, 2016 11:09 AM
+> To: edubezval@gmail.com; rui.zhang@intel.com; robh+dt@kernel.org;
+> galak@codeaurora.org; Scott Wood <scott.wood@nxp.com>;
+> shawnguo@kernel.org
+> Cc: linux-pm@vger.kernel.org; devicetree@vger.kernel.org; linux-
+> kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-arm-
+> kernel@lists.infradead.org; Hongtao Jia <hongtao.jia@nxp.com>
+> Subject: [PATCH V2 7/7] thermal: qoriq: Add thermal management support
+> 
+> This driver add thermal management support by enabling TMU (Thermal
+> Monitoring Unit) on QorIQ platform.
+> 
+> It's based on thermal of framework:
+> - Trip points defined in device tree.
+> - Cpufreq as cooling device registered in qoriq cpufreq driver.
+> 
+> Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
+> ---
+> Changes of V2:
+> * Add HAS_IOMEM dependency to fix build error on UM
+> 
+>  drivers/thermal/Kconfig         |  10 ++
+>  drivers/thermal/Makefile        |   1 +
+>  drivers/thermal/qoriq_thermal.c | 328
+> ++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 339 insertions(+)
+>  create mode 100644 drivers/thermal/qoriq_thermal.c
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig index
+> 2d702ca..56ef30d 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -195,6 +195,16 @@ config IMX_THERMAL
+>  	  cpufreq is used as the cooling device to throttle CPUs when the
+>  	  passive trip is crossed.
+> 
+> +config QORIQ_THERMAL
+> +	tristate "QorIQ Thermal Monitoring Unit"
+> +	depends on THERMAL_OF
+> +	depends on HAS_IOMEM
+> +	help
+> +	  Support for Thermal Monitoring Unit (TMU) found on QorIQ platforms.
+> +	  It supports one critical trip point and one passive trip point. The
+> +	  cpufreq is used as the cooling device to throttle CPUs when the
+> +	  passive trip is crossed.
+> +
+>  config SPEAR_THERMAL
+>  	tristate "SPEAr thermal sensor driver"
+>  	depends on PLAT_SPEAR || COMPILE_TEST
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile index
+> 10b07c1..6662232 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -37,6 +37,7 @@ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
+>  obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
+>  obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
+>  obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
+> +obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
+>  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
+>  obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
+>  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
+> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c new
+> file mode 100644 index 0000000..644ba52
+> --- /dev/null
+> +++ b/drivers/thermal/qoriq_thermal.c
+> @@ -0,0 +1,328 @@
+> +/*
+> + * Copyright 2016 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> +it
+> + * under the terms and conditions of the GNU General Public License,
+> + * version 2, as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope it will be useful, but
+> +WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+> +or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+> +License for
+> + * more details.
+> + *
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/err.h>
+> +#include <linux/io.h>
+> +#include <linux/of.h>
+> +#include <linux/of_address.h>
+> +#include <linux/thermal.h>
+> +
+> +#include "thermal_core.h"
+> +
+> +#define SITES_MAX	16
+> +
+> +/*
+> + * QorIQ TMU Registers
+> + */
+> +struct qoriq_tmu_site_regs {
+> +	u32 tritsr;		/* Immediate Temperature Site Register */
+> +	u32 tratsr;		/* Average Temperature Site Register */
+> +	u8 res0[0x8];
+> +};
+> +
+> +struct qoriq_tmu_regs {
+> +	u32 tmr;		/* Mode Register */
+> +#define TMR_DISABLE	0x0
+> +#define TMR_ME		0x80000000
+> +#define TMR_ALPF	0x0c000000
+> +	u32 tsr;		/* Status Register */
+> +	u32 tmtmir;		/* Temperature measurement interval Register */
+> +#define TMTMIR_DEFAULT	0x0000000f
+> +	u8 res0[0x14];
+> +	u32 tier;		/* Interrupt Enable Register */
+> +#define TIER_DISABLE	0x0
+> +	u32 tidr;		/* Interrupt Detect Register */
+> +	u32 tiscr;		/* Interrupt Site Capture Register */
+> +	u32 ticscr;		/* Interrupt Critical Site Capture Register */
+> +	u8 res1[0x10];
+> +	u32 tmhtcrh;		/* High Temperature Capture Register */
+> +	u32 tmhtcrl;		/* Low Temperature Capture Register */
+> +	u8 res2[0x8];
+> +	u32 tmhtitr;		/* High Temperature Immediate Threshold */
+> +	u32 tmhtatr;		/* High Temperature Average Threshold */
+> +	u32 tmhtactr;	/* High Temperature Average Crit Threshold */
+> +	u8 res3[0x24];
+> +	u32 ttcfgr;		/* Temperature Configuration Register */
+> +	u32 tscfgr;		/* Sensor Configuration Register */
+> +	u8 res4[0x78];
+> +	struct qoriq_tmu_site_regs site[SITES_MAX];
+> +	u8 res5[0x9f8];
+> +	u32 ipbrr0;		/* IP Block Revision Register 0 */
+> +	u32 ipbrr1;		/* IP Block Revision Register 1 */
+> +	u8 res6[0x310];
+> +	u32 ttr0cr;		/* Temperature Range 0 Control Register */
+> +	u32 ttr1cr;		/* Temperature Range 1 Control Register */
+> +	u32 ttr2cr;		/* Temperature Range 2 Control Register */
+> +	u32 ttr3cr;		/* Temperature Range 3 Control Register */
+> +};
+> +
+> +/*
+> + * Thermal zone data
+> + */
+> +struct qoriq_tmu_data {
+> +	struct thermal_zone_device *tz;
+> +	struct qoriq_tmu_regs __iomem *regs;
+> +	int sensor_id;
+> +	bool little_endian;
+> +};
+> +
+> +static void tmu_write(struct qoriq_tmu_data *p, u32 val, void __iomem
+> +*addr) {
+> +	if (p->little_endian)
+> +		iowrite32(val, addr);
+> +	else
+> +		iowrite32be(val, addr);
+> +}
+> +
+> +static u32 tmu_read(struct qoriq_tmu_data *p, void __iomem *addr) {
+> +	if (p->little_endian)
+> +		return ioread32(addr);
+> +	else
+> +		return ioread32be(addr);
+> +}
+> +
+> +static int tmu_get_temp(void *p, int *temp) {
+> +	u32 val;
+> +	struct qoriq_tmu_data *data = p;
+> +
+> +	val = tmu_read(data, &data->regs->site[data->sensor_id].tritsr);
+> +	*temp = (val & 0xff) * 1000;
+> +
+> +	return 0;
+> +}
+> +
+> +static int qoriq_tmu_get_sensor_id(void) {
+> +	int ret, id;
+> +	struct of_phandle_args sensor_specs;
+> +	struct device_node *np, *sensor_np;
+> +
+> +	np = of_find_node_by_name(NULL, "thermal-zones");
+> +	if (!np)
+> +		return -ENODEV;
+> +
+> +	sensor_np = of_get_next_child(np, NULL);
+> +	ret = of_parse_phandle_with_args(sensor_np, "thermal-sensors",
+> +			"#thermal-sensor-cells",
+> +			0, &sensor_specs);
+> +	if (ret) {
+> +		of_node_put(np);
+> +		of_node_put(sensor_np);
+> +		return ret;
+> +	}
+> +
+> +	if (sensor_specs.args_count >= 1) {
+> +		id = sensor_specs.args[0];
+> +		WARN(sensor_specs.args_count > 1,
+> +				"%s: too many cells in sensor specifier %d\n",
+> +				sensor_specs.np->name,
+> sensor_specs.args_count);
+> +	} else {
+> +		id = 0;
+> +	}
+> +
+> +	of_node_put(np);
+> +	of_node_put(sensor_np);
+> +
+> +	return id;
+> +}
+> +
+> +static int qoriq_tmu_calibration(struct platform_device *pdev) {
+> +	int i, val, len;
+> +	u32 range[4];
+> +	const u32 *calibration;
+> +	struct device_node *np = pdev->dev.of_node;
+> +	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
+> +
+> +	if (of_property_read_u32_array(np, "fsl,tmu-range", range, 4)) {
+> +		dev_err(&pdev->dev, "missing calibration range.\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	/* Init temperature range registers */
+> +	tmu_write(data, range[0], &data->regs->ttr0cr);
+> +	tmu_write(data, range[1], &data->regs->ttr1cr);
+> +	tmu_write(data, range[2], &data->regs->ttr2cr);
+> +	tmu_write(data, range[3], &data->regs->ttr3cr);
+> +
+> +	calibration = of_get_property(np, "fsl,tmu-calibration", &len);
+> +	if (calibration == NULL || len % 8) {
+> +		dev_err(&pdev->dev, "invalid calibration data.\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	for (i = 0; i < len; i += 8, calibration += 2) {
+> +		val = of_read_number(calibration, 1);
+> +		tmu_write(data, val, &data->regs->ttcfgr);
+> +		val = of_read_number(calibration + 1, 1);
+> +		tmu_write(data, val, &data->regs->tscfgr);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static void qoriq_tmu_init_device(struct qoriq_tmu_data *data) {
+> +	/* Disable interrupt, using polling instead */
+> +	tmu_write(data, TIER_DISABLE, &data->regs->tier);
+> +
+> +	/* Set update_interval */
+> +	tmu_write(data, TMTMIR_DEFAULT, &data->regs->tmtmir);
+> +
+> +	/* Disable monitoring */
+> +	tmu_write(data, TMR_DISABLE, &data->regs->tmr); }
+> +
+> +static struct thermal_zone_of_device_ops tmu_tz_ops = {
+> +	.get_temp = tmu_get_temp,
+> +};
+> +
+> +static int qoriq_tmu_probe(struct platform_device *pdev) {
+> +	int ret;
+> +	const struct thermal_trip *trip;
+> +	struct qoriq_tmu_data *data;
+> +	struct device_node *np = pdev->dev.of_node;
+> +	u32 site = 0;
+> +
+> +	if (!np) {
+> +		dev_err(&pdev->dev, "Device OF-Node is NULL");
+> +		return -ENODEV;
+> +	}
+> +
+> +	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
+> +			    GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +
+> +	platform_set_drvdata(pdev, data);
+> +
+> +	data->little_endian = of_property_read_bool(np, "little-endian");
+> +
+> +	data->sensor_id = qoriq_tmu_get_sensor_id();
+> +	if (data->sensor_id < 0) {
+> +		dev_err(&pdev->dev, "Failed to get sensor id\n");
+> +		ret = -ENODEV;
+> +		goto err_iomap;
+> +	}
+> +
+> +	data->regs = of_iomap(np, 0);
+> +	if (!data->regs) {
+> +		dev_err(&pdev->dev, "Failed to get memory region\n");
+> +		ret = -ENODEV;
+> +		goto err_iomap;
+> +	}
+> +
+> +	qoriq_tmu_init_device(data);	/* TMU initialization */
+> +
+> +	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
+> +	if (ret < 0)
+> +		goto err_tmu;
+> +
+> +	data->tz = thermal_zone_of_sensor_register(&pdev->dev, data->sensor_id,
+> +				data, &tmu_tz_ops);
+> +	if (IS_ERR(data->tz)) {
+> +		ret = PTR_ERR(data->tz);
+> +		dev_err(&pdev->dev,
+> +			"Failed to register thermal zone device %d\n", ret);
+> +		goto err_tmu;
+> +	}
+> +
+> +	trip = of_thermal_get_trip_points(data->tz);
+> +
+> +	/* Enable monitoring */
+> +	site |= 0x1 << (15 - data->sensor_id);
+> +	tmu_write(data, site | TMR_ME | TMR_ALPF, &data->regs->tmr);
+> +
+> +	return 0;
+> +
+> +err_tmu:
+> +	iounmap(data->regs);
+> +
+> +err_iomap:
+> +	platform_set_drvdata(pdev, NULL);
+> +
+> +	return ret;
+> +}
+> +
+> +static int qoriq_tmu_remove(struct platform_device *pdev) {
+> +	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
+> +
+> +	thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
+> +
+> +	/* Disable monitoring */
+> +	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
+> +
+> +	iounmap(data->regs);
+> +	platform_set_drvdata(pdev, NULL);
+> +
+> +	return 0;
+> +}
+> +
+> +#ifdef CONFIG_PM_SLEEP
+> +static int qoriq_tmu_suspend(struct device *dev) {
+> +	u32 tmr;
+> +	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
+> +
+> +	/* Disable monitoring */
+> +	tmr = tmu_read(data, &data->regs->tmr);
+> +	tmr &= ~TMR_ME;
+> +	tmu_write(data, tmr, &data->regs->tmr);
+> +
+> +	return 0;
+> +}
+> +
+> +static int qoriq_tmu_resume(struct device *dev) {
+> +	u32 tmr;
+> +	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
+> +
+> +	/* Enable monitoring */
+> +	tmr = tmu_read(data, &data->regs->tmr);
+> +	tmr |= TMR_ME;
+> +	tmu_write(data, tmr, &data->regs->tmr);
+> +
+> +	return 0;
+> +}
+> +#endif
+> +
+> +static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
+> +			 qoriq_tmu_suspend, qoriq_tmu_resume);
+> +
+> +static const struct of_device_id qoriq_tmu_match[] = {
+> +	{ .compatible = "fsl,qoriq-tmu", },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, qoriq_tmu_match);
+> +
+> +static struct platform_driver qoriq_tmu = {
+> +	.driver	= {
+> +		.name		= "qoriq_thermal",
+> +		.pm		= &qoriq_tmu_pm_ops,
+> +		.of_match_table	= qoriq_tmu_match,
+> +	},
+> +	.probe	= qoriq_tmu_probe,
+> +	.remove	= qoriq_tmu_remove,
+> +};
+> +module_platform_driver(qoriq_tmu);
+> +
+> +MODULE_AUTHOR("Jia Hongtao <hongtao.jia@nxp.com>");
+> +MODULE_DESCRIPTION("QorIQ Thermal Monitoring Unit driver");
+> +MODULE_LICENSE("GPL v2");
+> --
+> 2.1.0.27.g96db324
