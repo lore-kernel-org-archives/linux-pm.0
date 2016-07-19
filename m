@@ -1,58 +1,63 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v3 2/2] power: Adds support for Smart Battery System
- Manager
-Date: Tue, 19 Jul 2016 06:17:29 +0200
-Message-ID: <20160719041729.GC1640@katana>
-References: <1bIiDr-0004G1-0P>
- <1468349295-4935-1-git-send-email-karl-heinz@schneider-inet.de>
- <1468349295-4935-3-git-send-email-karl-heinz@schneider-inet.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="GPJrCs/72TxItFYR"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1468349295-4935-3-git-send-email-karl-heinz@schneider-inet.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][v2] timekeeping: Fix memory overwrite of sleep_time_bin array
+Date: Tue, 19 Jul 2016 12:51:01 +0800
+Message-ID: <1468903861-12487-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysock" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Chen Yu <yu.c.chen@intel.com>, "Stable # 3 . 17+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+It is reported the hibernation fails at 2nd attempt, which
+hangs at hibernate() -> syscore_resume() -> i8237A_resume()
+-> claim_dma_lock(), because the lock has already been taken.
+However there is actually no other process would like to grab
+this lock on that problematic platform.
 
---GPJrCs/72TxItFYR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Further investigation shows that, the problem is caused by setting
+/sys/power/pm_trace to 1 before the 1st hibernation, since once
+pm_trace is enabled, the rtc becomes an unmeaningful value after resumed,
+which might bring a significant long sleep time in timekeeping_resume,
+thus in tk_debug_account_sleep_time, if the bit31 happened to be set to 1,
+the fls might return 32 and then we add 1 to sleep_time_bin[32], which
+caused a memory overwritten. As System.map shows:
 
+ffffffff81c9d080 b sleep_time_bin
+ffffffff81c9d100 B dma_spin_lock
 
-> +	data->muxc = i2c_mux_alloc(adapter, dev, SBSM_MAX_BATS, 0,
-> +				   I2C_MUX_LOCKED, &sbsm_select, NULL);
-> +	if (!data->muxc) {
-> +		dev_err(dev, "failed to alloc i2c mux\n");
+Thus set the dma_spin_lock.val to 1, which caused this problem.
 
-Don't print errors on ENOMEM.
+To fix this problem, we ignore those abnormal sleep time,
+since no one would like to sleep that long.
 
-Other than that, looks good to me, yet Peter has more insight to
-i2c-muxes these days.
+Cc: Stable <stable@vger.kernel.org> # 3.17+
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reported-and-tested-by: Janek Kozicki <cosurgi@gmail.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ kernel/time/timekeeping_debug.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-
---GPJrCs/72TxItFYR
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXjanZAAoJEBQN5MwUoCm2GIYQAKSkSVgD9XZRQ9tPpAuqkWpY
-32tKIbgXaBX3ZCj2VIftzI9U7S7EgipDl9D2ikVUOOf+WVWmtSbp4nKhA1S8TQlv
-0vQo2w7WdB0a51fOrl/aMh+bkrKdPKK8iXPP75uY5j2P0GVXhEJau9x/Sm47SNur
-jL0GTbahD8QR+dgbpTFT4GYGyxK9uPXcLuRRtM2xYFJ1acw7gvMBqUHTkhKS6sjV
-xah6NGxN0n7imil/FF3OC/I1/+hq9Y95OILCiQCD8GpsSCy8v3XWEcXeQof+5Bgx
-m2WhWW2fOTrtFY1+QVc/9XLgC85AEYSfndGQ3B/9UT3T4hGma7+IBCkeGL7Mf/nr
-ESbV/8YGcOBUf084VuCjgBiWdC9BNQttF7hkHN9PjSGeJDu+BVBzC0spy8eotFby
-G59HxYWLk8gcvuKDQCwXJZTlRCuizLd1KcNCnIhQHrGQ5vqTrYS6lD4j9a9xNM8n
-owWgmazfEiS5xMCWNcoGWWa2+3dc4iGlQGlx1Da7NnA4FipFbjcUWwjFTuPztAWw
-NenSieMlOeXM5PBkUPnE9C9iXav/sPTf2MsdhLzJrCaSoXnDHCU39tWPivGVSISU
-2Lw5wEsBeuUga17vxXe4kptLRhFX3jqZHbFk/9nz9cIfb+nIjoVYPHvsh9sQtBoZ
-GvWSWCSNM5pacXzscB/W
-=dzDV
------END PGP SIGNATURE-----
-
---GPJrCs/72TxItFYR--
+diff --git a/kernel/time/timekeeping_debug.c b/kernel/time/timekeeping_debug.c
+index f6bd652..b164bb9 100644
+--- a/kernel/time/timekeeping_debug.c
++++ b/kernel/time/timekeeping_debug.c
+@@ -24,6 +24,7 @@
+ #include "timekeeping_internal.h"
+ 
+ static unsigned int sleep_time_bin[32] = {0};
++#define MAX_SLEEP_TIME 0x7fffffff
+ 
+ static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
+ {
+@@ -69,6 +70,7 @@ late_initcall(tk_debug_sleep_time_init);
+ 
+ void tk_debug_account_sleep_time(struct timespec64 *t)
+ {
+-	sleep_time_bin[fls(t->tv_sec)]++;
++	if ((t->tv_sec >= 0) && (t->tv_sec <= MAX_SLEEP_TIME))
++		sleep_time_bin[fls(t->tv_sec)]++;
+ }
+ 
+-- 
+2.7.4
