@@ -1,71 +1,90 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: Intel P state driver: clean remnant struct
- element
-Date: Tue, 19 Jul 2016 15:16:23 -0700
-Message-ID: <1468966583.4150.8.camel@linux.intel.com>
-References: <66b88042-0f03-893b-33ac-c4e6df17534c@osadl.org>
-	 <1468859382.13661.167.camel@linux.intel.com>
-	 <baa442ec-5845-6438-8c03-6793220883e1@osadl.org>
+Subject: Re: [PATCH] intel_pstate: Update cpu_frequency tracepoint every time
+Date: Tue, 19 Jul 2016 15:39:18 -0700
+Message-ID: <1468967958.2125.2.camel@linux.intel.com>
+References: <3678564.0E838ntcHL@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:1265 "EHLO mga09.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:44091 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752446AbcGSWSK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 Jul 2016 18:18:10 -0400
-In-Reply-To: <baa442ec-5845-6438-8c03-6793220883e1@osadl.org>
+	id S1751824AbcGSWjn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 Jul 2016 18:39:43 -0400
+In-Reply-To: <3678564.0E838ntcHL@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Carsten Emde <C.Emde@osadl.org>, Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tue, 2016-07-19 at 01:19 +0200, Carsten Emde wrote:
-> Hi Srinivas,
+On Tue, 2016-07-19 at 15:10 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >=20
-> BTW: when I was working with the Intel P state driver I came across
-> a remnant struct element that is no longer needed after the function
-> intel_pstate_calc_freq() was retired.
-You are right. Can you resend with proper commit message?
-
-
-Thanks,
-Srinivas
-
-> Signed-off-by: Carsten Emde <C.Emde@osadl.org>
+> Currently, intel_pstate only updates the cpu_frequency tracepoint
+> if the new P-state to set is different from the current one, but
+> that causes powertop to report 100% idle on an 100% loaded system
+> sometimes.
 >=20
-> Index: linux-4.7.0-rc7+/drivers/cpufreq/intel_pstate.c
+> Prevent that from happening by updating the cpu_frequency tracepoint
+> every time intel_pstate_update_pstate() is called.
+>=20
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>-
+
+> --
+> =C2=A0drivers/cpufreq/intel_pstate.c |=C2=A0=C2=A0=C2=A012 ++++------=
+--
+> =C2=A01 file changed, 4 insertions(+), 8 deletions(-)
+>=20
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
 > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-4.7.0-rc7+.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-4.7.0-rc7+/drivers/cpufreq/intel_pstate.c
-> @@ -96,7 +96,6 @@ static inline u64 div_ext_fp(u64 x, u64
-> =C2=A0 *=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0read fro=
-m MPERF MSR between last and current
-> sample
-> =C2=A0 * @tsc:=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Difference of time stamp counter betwe=
-en last
-> and
-> =C2=A0 *=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0current =
-sample
-> - * @freq:=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0Effective frequency calculated from
-> APERF/MPERF
-> =C2=A0 * @time:=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0Current time from scheduler
-> =C2=A0 *
-> =C2=A0 * This structure is used in the cpudata structure to store
-> performance sample
-> @@ -108,7 +107,6 @@ struct sample {
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0u64 aperf;
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0u64 mperf;
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0u64 tsc;
-> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0int freq;
-> =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0u64 time;
-> =C2=A0};
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -1134,17 +1134,12 @@ static void intel_pstate_get_min_max(str
+> =C2=A0	*min =3D clamp_t(int, min_perf, cpu->pstate.min_pstate,
+> max_perf);
+> =C2=A0}
+> =C2=A0
+> -static inline void intel_pstate_record_pstate(struct cpudata *cpu,
+> int pstate)
+> -{
+> -	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
+> -	cpu->pstate.current_pstate =3D pstate;
+> -}
+> -
+> =C2=A0static void intel_pstate_set_min_pstate(struct cpudata *cpu)
+> =C2=A0{
+> =C2=A0	int pstate =3D cpu->pstate.min_pstate;
+> =C2=A0
+> -	intel_pstate_record_pstate(cpu, pstate);
+> +	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
+> +	cpu->pstate.current_pstate =3D pstate;
+> =C2=A0	/*
+> =C2=A0	=C2=A0* Generally, there is no guarantee that this code will
+> always run on
+> =C2=A0	=C2=A0* the CPU being updated, so force the register update to
+> run on the
+> @@ -1304,10 +1299,11 @@ static inline void intel_pstate_update_p
+> =C2=A0
+> =C2=A0	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
+> =C2=A0	pstate =3D clamp_t(int, pstate, min_perf, max_perf);
+> +	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
+> =C2=A0	if (pstate =3D=3D cpu->pstate.current_pstate)
+> =C2=A0		return;
+> =C2=A0
+> -	intel_pstate_record_pstate(cpu, pstate);
+> +	cpu->pstate.current_pstate =3D pstate;
+> =C2=A0	wrmsrl(MSR_IA32_PERF_CTL, pstate_funcs.get_val(cpu,
+> pstate));
+> =C2=A0}
 > =C2=A0
 >=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-in=
+fo.html
