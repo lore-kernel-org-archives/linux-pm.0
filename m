@@ -1,90 +1,43 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] intel_pstate: Update cpu_frequency tracepoint every time
-Date: Tue, 19 Jul 2016 15:39:18 -0700
-Message-ID: <1468967958.2125.2.camel@linux.intel.com>
-References: <3678564.0E838ntcHL@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Subject: [PATCH] cpufreq: intel_pstate: Check cpuid for MSR_HWP_INTERRUPT
+Date: Tue, 19 Jul 2016 16:34:44 -0700
+Message-ID: <1468971284-17686-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:44091 "EHLO mga09.intel.com"
+Received: from mga03.intel.com ([134.134.136.65]:23726 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751824AbcGSWjn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 19 Jul 2016 18:39:43 -0400
-In-Reply-To: <3678564.0E838ntcHL@vostro.rjw.lan>
+	id S1752516AbcGSXfH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 Jul 2016 19:35:07 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, spandruv <spandruv@spandruv-mobl.jf.intel.com>
 
-On Tue, 2016-07-19 at 15:10 +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> Currently, intel_pstate only updates the cpu_frequency tracepoint
-> if the new P-state to set is different from the current one, but
-> that causes powertop to report 100% idle on an 100% loaded system
-> sometimes.
->=20
-> Prevent that from happening by updating the cpu_frequency tracepoint
-> every time intel_pstate_update_pstate() is called.
->=20
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: spandruv <spandruv@spandruv-mobl.jf.intel.com>
 
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>-
+The MSR MSR_HWP_INTERRUPT is valid only when CPUID.06H:EAX[8] = 1, so
+check for feature before accessing this MSR.
 
-> --
-> =C2=A0drivers/cpufreq/intel_pstate.c |=C2=A0=C2=A0=C2=A012 ++++------=
---
-> =C2=A01 file changed, 4 insertions(+), 8 deletions(-)
->=20
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -1134,17 +1134,12 @@ static void intel_pstate_get_min_max(str
-> =C2=A0	*min =3D clamp_t(int, min_perf, cpu->pstate.min_pstate,
-> max_perf);
-> =C2=A0}
-> =C2=A0
-> -static inline void intel_pstate_record_pstate(struct cpudata *cpu,
-> int pstate)
-> -{
-> -	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
-> -	cpu->pstate.current_pstate =3D pstate;
-> -}
-> -
-> =C2=A0static void intel_pstate_set_min_pstate(struct cpudata *cpu)
-> =C2=A0{
-> =C2=A0	int pstate =3D cpu->pstate.min_pstate;
-> =C2=A0
-> -	intel_pstate_record_pstate(cpu, pstate);
-> +	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
-> +	cpu->pstate.current_pstate =3D pstate;
-> =C2=A0	/*
-> =C2=A0	=C2=A0* Generally, there is no guarantee that this code will
-> always run on
-> =C2=A0	=C2=A0* the CPU being updated, so force the register update to
-> run on the
-> @@ -1304,10 +1299,11 @@ static inline void intel_pstate_update_p
-> =C2=A0
-> =C2=A0	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
-> =C2=A0	pstate =3D clamp_t(int, pstate, min_perf, max_perf);
-> +	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
-> =C2=A0	if (pstate =3D=3D cpu->pstate.current_pstate)
-> =C2=A0		return;
-> =C2=A0
-> -	intel_pstate_record_pstate(cpu, pstate);
-> +	cpu->pstate.current_pstate =3D pstate;
-> =C2=A0	wrmsrl(MSR_IA32_PERF_CTL, pstate_funcs.get_val(cpu,
-> pstate));
-> =C2=A0}
-> =C2=A0
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at=C2=A0=C2=A0http://vger.kernel.org/majordomo-in=
-fo.html
+Signed-off-by: spandruv <spandruv@spandruv-mobl.jf.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 2fe9af1..712afbd 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -822,8 +822,10 @@ static void __init intel_pstate_sysfs_expose_params(void)
+ 
+ static void intel_pstate_hwp_enable(struct cpudata *cpudata)
+ {
++
+ 	/* First disable HWP notification interrupt as we don't process them */
+-	wrmsrl_on_cpu(cpudata->cpu, MSR_HWP_INTERRUPT, 0x00);
++	if (static_cpu_has(X86_FEATURE_HWP_NOTIFY))
++		wrmsrl_on_cpu(cpudata->cpu, MSR_HWP_INTERRUPT, 0x00);
+ 
+ 	wrmsrl_on_cpu(cpudata->cpu, MSR_PM_ENABLE, 0x1);
+ }
+-- 
+2.7.4
+
