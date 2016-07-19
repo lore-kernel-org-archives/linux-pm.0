@@ -1,63 +1,65 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][v2] timekeeping: Fix memory overwrite of sleep_time_bin array
-Date: Tue, 19 Jul 2016 12:51:01 +0800
-Message-ID: <1468903861-12487-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysock" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Chen Yu <yu.c.chen@intel.com>, "Stable # 3 . 17+" <stable@vger.kernel.org>
+From: Michal Feix <michal@feix.cz>
+Subject: Re: Kernel stability on baytrail machines
+Date: Tue, 19 Jul 2016 06:51:17 +0200
+Message-ID: <7f521bff-0fbf-a2f4-e779-c9bc40c7cd84@feix.cz>
+References: <606d9b223f3c12775d108b98c4df72ae@feix.cz>
+ <20160409160119.GA19362@xo-6d-61-c0.localdomain>
+ <20160409201417.4436d4bd@lxorguk.ukuu.org.uk> <20160712194158.GA4834@laptop>
+ <20160712212448.GA19237@amd> <864e7ac7-8041-9a81-819c-d6b60b59dd0f@feix.cz>
+ <20160713104802.GA18296@atrey.karlin.mff.cuni.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp-out3.iol.cz ([194.228.2.91]:51394 "EHLO smtp-out3.iol.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751953AbcGSEv1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 19 Jul 2016 00:51:27 -0400
+In-Reply-To: <20160713104802.GA18296@atrey.karlin.mff.cuni.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>, One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org
 
-It is reported the hibernation fails at 2nd attempt, which
-hangs at hibernate() -> syscore_resume() -> i8237A_resume()
--> claim_dma_lock(), because the lock has already been taken.
-However there is actually no other process would like to grab
-this lock on that problematic platform.
+Dne 13.7.2016 v 12:48 Pavel Machek napsal(a)
 
-Further investigation shows that, the problem is caused by setting
-/sys/power/pm_trace to 1 before the 1st hibernation, since once
-pm_trace is enabled, the rtc becomes an unmeaningful value after resumed,
-which might bring a significant long sleep time in timekeeping_resume,
-thus in tk_debug_account_sleep_time, if the bit31 happened to be set to 1,
-the fls might return 32 and then we add 1 to sleep_time_bin[32], which
-caused a memory overwritten. As System.map shows:
+>>>> Are there any updates on the status of this issue?
+>>>>
+>>>> The current bugzilla report [1] marks this as a power management
+>>>> issue. However, many reports indicate that it would only freeze
+>>>> when running X, so it's not completely clear if it's related to
+>>>> the gfx driver too.
+>>> Does
+>>>
+>>> "intel_idle.max_cstate=1"
+>>>
+>>> fix it for you?
+>> Yes, it does.
+>>> If you feel it is X-only problem, you may want to provide details
+>>> about your graphics subsystem (DRM enabled? framebuffer only?) and
+>>> probably cc.
+>> It's not X-only problem. Happens even in console mode, which is KMS
+>> switched during boot though.
+>>> ...actually... you may want to verify if it happens in unaccelerated X.
+>> As it happens even in console mode, is this relevant test?
+> No, no need to test with X.
+>
+> Would it be possible to test in good old VGA mode?
+For past few days I updated to 4.6.3 kernel and tested with X and 
+without X, in console mode and no KMS. My machine is way more stable 
+than with previous 4.5.* and 4.4.* kernels I tried.
 
-ffffffff81c9d080 b sleep_time_bin
-ffffffff81c9d100 B dma_spin_lock
+With 4.6.3 kernel and X running, I had only one freeze during Firefox 
+session with video playback. For the rest of two days of testing, no hang.
 
-Thus set the dma_spin_lock.val to 1, which caused this problem.
+I was not able to hang the machine during another 2 days of testing with 
+4.6.3 kernel and console mode with KMS disabled. It's fair to say, that 
+stress testing of GFX is quite limited when running in console mode :-). 
+I tried hard with mplayer with libcaca and with repeated kernel 
+compilation task. No hang occured.
 
-To fix this problem, we ignore those abnormal sleep time,
-since no one would like to sleep that long.
+My conclussion is that 4.6.3 is surelly a huge improvement, compared to 
+4.5 and 4.4. kernels regarding Bay trail stability issue.
 
-Cc: Stable <stable@vger.kernel.org> # 3.17+
-Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reported-and-tested-by: Janek Kozicki <cosurgi@gmail.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- kernel/time/timekeeping_debug.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+Michal Feix
 
-diff --git a/kernel/time/timekeeping_debug.c b/kernel/time/timekeeping_debug.c
-index f6bd652..b164bb9 100644
---- a/kernel/time/timekeeping_debug.c
-+++ b/kernel/time/timekeeping_debug.c
-@@ -24,6 +24,7 @@
- #include "timekeeping_internal.h"
- 
- static unsigned int sleep_time_bin[32] = {0};
-+#define MAX_SLEEP_TIME 0x7fffffff
- 
- static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
- {
-@@ -69,6 +70,7 @@ late_initcall(tk_debug_sleep_time_init);
- 
- void tk_debug_account_sleep_time(struct timespec64 *t)
- {
--	sleep_time_bin[fls(t->tv_sec)]++;
-+	if ((t->tv_sec >= 0) && (t->tv_sec <= MAX_SLEEP_TIME))
-+		sleep_time_bin[fls(t->tv_sec)]++;
- }
- 
--- 
-2.7.4
