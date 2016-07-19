@@ -1,41 +1,56 @@
-From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Subject: Re: [PATCH v3 2/2] power: Adds support for Smart Battery System
- Manager
-Date: Tue, 19 Jul 2016 20:51:05 +0200
-Message-ID: <1468954265.3053.3.camel@amnesix>
-References: <1bIiDr-0004G1-0P>
-	 <1468349295-4935-1-git-send-email-karl-heinz@schneider-inet.de>
-	 <1468349295-4935-3-git-send-email-karl-heinz@schneider-inet.de>
-	 <20160719041729.GC1640@katana>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v1 1/1] PCI / PM: check all fields in
+ pci_set_platform_pm()
+Date: Tue, 19 Jul 2016 16:37:51 -0500
+Message-ID: <20160719213751.GA18635@localhost>
+References: <1465223133-73532-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20160719041729.GC1640@katana>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1465223133-73532-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Wolfram,
-
-Am Dienstag, den 19.07.2016, 06:17 +0200 schrieb Wolfram Sang:
-> > +	data->muxc = i2c_mux_alloc(adapter, dev, SBSM_MAX_BATS, 0,
-> > +				   I2C_MUX_LOCKED, &sbsm_select, NULL);
-> > +	if (!data->muxc) {
-> > +		dev_err(dev, "failed to alloc i2c mux\n");
+On Mon, Jun 06, 2016 at 05:25:33PM +0300, Andy Shevchenko wrote:
+> When assign new PCI platform PM operations check for all mandatory fields to
+> prevent NULL pointer dereference.
 > 
-> Don't print errors on ENOMEM.
-
-Will be fixed on next revision.
-
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>  drivers/pci/pci.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> Other than that, looks good to me, yet Peter has more insight to
-> i2c-muxes these days.
-> 
-Tanks for review. 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index c8b4dbd..badbddc 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -530,8 +530,8 @@ static const struct pci_platform_pm_ops *pci_platform_pm;
+>  
+>  int pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
+>  {
+> -	if (!ops->is_manageable || !ops->set_state || !ops->choose_state
+> -	    || !ops->sleep_wake)
+> +	if (!ops->is_manageable || !ops->set_state || !ops->choose_state ||
+> +	    !ops->sleep_wake || !ops->run_wake || !ops->need_resume)
+>  		return -EINVAL;
 
-Will wait another few days before sending a new revision, hence changes
-are rather small.
--- 
-Karl-Heinz
+This looks OK to me.  platform_pci_run_wake() and
+platform_pci_need_resume() assume that if pci_platform_pm is set,
+pci_platform_pm->run_wake and pci_platform_pm->need_resume are valid
+function pointers.  This is analogous to what we already do for
+ops->is_manageable, etc.
+
+Rafael, do you want to take this or should I?
+
+>  	pci_platform_pm = ops;
+>  	return 0;
+> -- 
+> 2.8.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
