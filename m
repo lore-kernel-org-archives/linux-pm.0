@@ -1,173 +1,87 @@
-From: Michele Di Giorgio <michele.digiorgio@arm.com>
-Subject: [PATCH] thermal: fix race condition when updating cooling device
-Date: Wed, 20 Jul 2016 10:46:31 +0100
-Message-ID: <1469007991-15245-1-git-send-email-michele.digiorgio@arm.com>
+From: Peter Chen <peter.chen@nxp.com>
+Subject: [PATCH v3 0/6] power: add power sequence library
+Date: Wed, 20 Jul 2016 17:40:23 +0800
+Message-ID: <1469007629-31757-1-git-send-email-peter.chen@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Michele Di Giorgio <michele.digiorgio@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Peter Feuerer <peter@piie.net>
+To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, Peter Chen <peter.chen@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-When multiple thermal zones are bound to the same cooling device, multiple
-kernel threads may want to update the cooling device state by calling
-thermal_cdev_update(). Having cdev not protected by a mutex can lead to a race
-condition. Consider the following situation with two kernel threads k1 and k2:
+Hi all,
 
-	    Thread k1				Thread k2
-                                    ||
-                                    ||  call thermal_cdev_update()
-                                    ||      ...
-                                    ||      set_cur_state(cdev, target);
-    call power_actor_set_power()    ||
-        ...                         ||
-        instance->target = state;   ||
-        cdev->updated = false;      ||
-                                    ||      cdev->updated = true;
-                                    ||      // completes execution
-    call thermal_cdev_update()      ||
-        // cdev->updated == true    ||
-        return;                     ||
-                                    \/
-                                    time
+This is a follow-up for my last power sequence framework patch set [1].
+According to Rob Herring and Ulf Hansson's comments[2], I use a generic
+power sequence library for parsing the power sequence elements on DT,
+and implement generic power sequence on library. The host driver
+can allocate power sequence instance, and calls pwrseq APIs accordingly.
 
-k2 has already looped through the thermal instances looking for the deepest
-cooling device state and is preempted right before setting cdev->updated to
-true. Now, k1 runs, modifies the thermal instance state and sets cdev->updated
-to false. Then, k1 is preempted and k2 continues the execution by setting
-cdev->updated to true, therefore preventing k1 from performing the update.
-Notice that this is not an issue if k2 looks at the instance->target modified by
-k1 "after" it is assigned by k1. In fact, in this case the update will happen
-anyway and k1 can safely return immediately from thermal_cdev_update().
+In future, if there are special power sequence requirements, the special
+power sequence library can be created.
 
-This may lead to a situation where a thermal governor never updates the cooling
-device. For example, this is the case for the step_wise governor: when calling
-the function thermal_zone_trip_update(), the governor may always get a new state
-equal to the old one (which, however, wasn't notified to the cooling device) and
-will therefore skip the update.
+This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+two hot-plug devices to simulate this use case, the related binding
+change is updated at patch [1/6], The udoo board changes were tested
+using my last power sequence patch set.[3]
 
-CC: Zhang Rui <rui.zhang@intel.com>
-CC: Eduardo Valentin <edubezval@gmail.com>
-CC: Peter Feuerer <peter@piie.net>
-Reported-by: Toby Huang <toby.huang@arm.com>
-Signed-off-by: Michele Di Giorgio <michele.digiorgio@arm.com>
----
-Protecting only the assignment of cdev->updated with mutexes may look
-suspicious, but it is necessary to guarantee synchronization and avoiding the
-situation described in the commit message.
+Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+need to power on itself before it can be found by ULPI bus.
 
-There are other two possible solutions.
+[1] http://www.spinics.net/lists/linux-usb/msg142755.html
+[2] http://www.spinics.net/lists/linux-usb/msg143106.html
+[3] http://www.spinics.net/lists/linux-usb/msg142815.html
 
-Moving the cdev->lock mutex outside thermal_cdev_update() and protect both the
-assignment and the function. This would work, but will probably cause many
-issues when updating all the modules that use thermal_cdev_update().
+Changes for v3:
+- Delete "power-sequence" property at binding-doc, and change related code
+  at both library and user code.
+- Change binding-doc example node name with Rob's comments
+- of_get_named_gpio_flags only gets the gpio, but without setting gpio flags,
+  add additional code request gpio with proper gpio flags
+- Add Philipp Zabel's Ack and MAINTAINER's entry
 
-The other solution is to make cdev->updated an atomic_t, change the if
-condition to an atomic_cmpxchg and extend the critical section to include the
-call to cdev->ops->set_cur_state().
+Changes for v2:
+- Delete "pwrseq" prefix and clock-names for properties at dt binding
+- Should use structure not but its pointer for kzalloc
+- Since chipidea core has no of_node, let core's of_node equals glue
+  layer's at core's probe
 
- drivers/thermal/fair_share.c      |  2 ++
- drivers/thermal/gov_bang_bang.c   |  2 ++
- drivers/thermal/power_allocator.c |  2 ++
- drivers/thermal/step_wise.c       |  2 ++
- drivers/thermal/thermal_core.c    | 10 +++++++---
- 5 files changed, 15 insertions(+), 3 deletions(-)
+Peter Chen (6):
+  binding-doc: power: pwrseq-generic: add binding doc for generic power
+    sequence library
+  power: add power sequence library
+  binding-doc: usb: usb-device: add optional properties for power
+    sequence
+  usb: core: add power sequence handling for USB devices
+  usb: chipidea: let chipidea core device of_node equal's glue layer
+    device of_node
+  ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
 
-diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
-index 34fe365..68bd1b5 100644
---- a/drivers/thermal/fair_share.c
-+++ b/drivers/thermal/fair_share.c
-@@ -116,7 +116,9 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
- 		instance->target = get_target_state(tz, cdev, percentage,
- 						    cur_trip_level);
- 
-+		mutex_lock(&instance->cdev->lock);
- 		instance->cdev->updated = false;
-+		mutex_unlock(&instance->cdev->lock);
- 		thermal_cdev_update(cdev);
- 	}
- 	return 0;
-diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
-index 70836c5..39d1519 100644
---- a/drivers/thermal/gov_bang_bang.c
-+++ b/drivers/thermal/gov_bang_bang.c
-@@ -65,7 +65,9 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 		dev_dbg(&instance->cdev->device, "target=%d\n",
- 					(int)instance->target);
- 
-+		mutex_lock(&instance->cdev->lock);
- 		instance->cdev->updated = false; /* cdev needs update */
-+		mutex_unlock(&instance->cdev->lock);
- 	}
- 
- 	mutex_unlock(&tz->lock);
-diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index 1246aa6..2cc5616 100644
---- a/drivers/thermal/power_allocator.c
-+++ b/drivers/thermal/power_allocator.c
-@@ -529,7 +529,9 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
- 			continue;
- 
- 		instance->target = 0;
-+		mutex_lock(&instance->cdev->lock);
- 		instance->cdev->updated = false;
-+		mutex_unlock(&instance->cdev->lock);
- 		thermal_cdev_update(instance->cdev);
- 	}
- }
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index ea9366a..bcef2e7 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -175,7 +175,9 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 			update_passive_instance(tz, trip_type, -1);
- 
- 		instance->initialized = true;
-+		mutex_lock(&instance->cdev->lock);
- 		instance->cdev->updated = false; /* cdev needs update */
-+		mutex_unlock(&instance->cdev->lock);
- 	}
- 
- 	mutex_unlock(&tz->lock);
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index a0a8fd1..9d23109 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1089,7 +1089,9 @@ int power_actor_set_power(struct thermal_cooling_device *cdev,
- 		return ret;
- 
- 	instance->target = state;
-+	mutex_lock(&cdev->lock);
- 	cdev->updated = false;
-+	mutex_unlock(&cdev->lock);
- 	thermal_cdev_update(cdev);
- 
- 	return 0;
-@@ -1619,11 +1621,13 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- 	struct thermal_instance *instance;
- 	unsigned long target = 0;
- 
-+	mutex_lock(&cdev->lock);
- 	/* cooling device is updated*/
--	if (cdev->updated)
-+	if (cdev->updated) {
-+		mutex_unlock(&cdev->lock);
- 		return;
-+	}
- 
--	mutex_lock(&cdev->lock);
- 	/* Make sure cdev enters the deepest cooling state */
- 	list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) {
- 		dev_dbg(&cdev->device, "zone%d->target=%lu\n",
-@@ -1633,9 +1637,9 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
- 		if (instance->target > target)
- 			target = instance->target;
- 	}
--	mutex_unlock(&cdev->lock);
- 	cdev->ops->set_cur_state(cdev, target);
- 	cdev->updated = true;
-+	mutex_unlock(&cdev->lock);
- 	trace_cdev_update(cdev, target);
- 	dev_dbg(&cdev->device, "set to state %lu\n", target);
- }
+ .../bindings/power/pwrseq/pwrseq-generic.txt       |  48 +++++++
+ .../devicetree/bindings/usb/usb-device.txt         |  10 +-
+ MAINTAINERS                                        |   9 ++
+ arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  26 ++--
+ drivers/power/Kconfig                              |   1 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/pwrseq/Kconfig                       |  20 +++
+ drivers/power/pwrseq/Makefile                      |   2 +
+ drivers/power/pwrseq/core.c                        |  71 ++++++++++
+ drivers/power/pwrseq/pwrseq_generic.c              | 151 +++++++++++++++++++++
+ drivers/usb/chipidea/core.c                        |  10 ++
+ drivers/usb/core/Makefile                          |   1 +
+ drivers/usb/core/hub.c                             |  12 +-
+ drivers/usb/core/hub.h                             |  12 ++
+ drivers/usb/core/pwrseq.c                          | 100 ++++++++++++++
+ include/linux/power/pwrseq.h                       |  50 +++++++
+ 16 files changed, 507 insertions(+), 17 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+ create mode 100644 drivers/power/pwrseq/Kconfig
+ create mode 100644 drivers/power/pwrseq/Makefile
+ create mode 100644 drivers/power/pwrseq/core.c
+ create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
+ create mode 100644 drivers/usb/core/pwrseq.c
+ create mode 100644 include/linux/power/pwrseq.h
+
 -- 
 1.9.1
