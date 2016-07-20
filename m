@@ -1,74 +1,255 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH v3] thermal: tango: add resume support
-Date: Wed, 20 Jul 2016 12:50:14 +0200
-Message-ID: <20160720105014.GA17170@ulmo.ba.sec>
-References: <57726196.5060909@free.fr>
- <578CC9C9.3050806@free.fr>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH][v2] timekeeping: Fix memory overwrite of sleep_time_bin
+ array
+Date: Wed, 20 Jul 2016 19:06:58 +0800
+Message-ID: <20160720110658.GA5943@sharon>
+References: <1468903861-12487-1-git-send-email-yu.c.chen@intel.com>
+ <alpine.DEB.2.11.1607191031260.3596@nanos>
+ <578DEDBB.9030602@intel.com>
+ <alpine.DEB.2.11.1607191234200.3596@nanos>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:36280 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751510AbcGTKuS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jul 2016 06:50:18 -0400
-Received: by mail-wm0-f65.google.com with SMTP id x83so6384356wma.3
-        for <linux-pm@vger.kernel.org>; Wed, 20 Jul 2016 03:50:18 -0700 (PDT)
+Received: from mga14.intel.com ([192.55.52.115]:16711 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752079AbcGTK7S (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Jul 2016 06:59:18 -0400
 Content-Disposition: inline
-In-Reply-To: <578CC9C9.3050806@free.fr>
+In-Reply-To: <alpine.DEB.2.11.1607191234200.3596@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@baylibre.com>, Sebastian Frias <sf84@laposte.net>, Arnd Bergmann <arnd@arndb.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-
---d6Gm4EdcadzBjdND
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Jul 18, 2016 at 02:21:29PM +0200, Mason wrote:
-> From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+Hi Thomas,
+On Tue, Jul 19, 2016 at 12:40:14PM +0200, Thomas Gleixner wrote:
+> On Tue, 19 Jul 2016, Chen Yu wrote:
+> > On 2016=E5=B9=B407=E6=9C=8819=E6=97=A5 16:36, Thomas Gleixner wrote=
+:
+> > > On Tue, 19 Jul 2016, Chen Yu wrote:
+> > > > Further investigation shows that, the problem is caused by sett=
+ing
+> > > > /sys/power/pm_trace to 1 before the 1st hibernation, since once
+> > > > pm_trace is enabled, the rtc becomes an unmeaningful value afte=
+r resumed,
+> > >
+> > > So why is the RTC value useless if pm_trace is enabled? I really =
+have a hard
+> > > time to understand why pm_trace would affect the sleep time reado=
+ut from
+> > > RTC.
+> >
+> > After pm_trace is enabled, during system suspend/hibernate, the has=
+h name of
+> > each devices will be written to rtc, so the rtc value depends on wh=
+at we
+> > write in last suspend round, thus pm_trace can be used for diagnose=
+ which
+> > device failed to suspend(eg, the suspending on this device hang the=
+ system,
+> > we reboot the system , and check rtc hash value).
+> >=20
+> > In our case, after first hibernate/resume round, we found our curre=
+nt system
+> > time is at 2117, so syscore_resume -> timekeeping_resume :
+> > __timekeeping_inject_sleeptime(tk, &ts_delta) would inject a quite =
+large
+> > delta : 2117 - 2017 year, thus the sleep_time_bin is overflow.
 >=20
-> When this platform is suspended, firmware powers the entire SoC down,
-> except a few hardware blocks waiting for wakeup events. And there is
-> no context to save for this particular block.
+> While the range check is certainly correct and a good thing to have i=
+t's wrong
+> in the first place to call __timekeeping_inject_sleeptime() in case t=
+hat
+> pm_trace is enabled simply because that "hash" time value will also w=
+reckage
+> timekeeping. Your patch is just curing the symptom in the debug code =
+but not
+> fixing the root cause.
 >=20
-> Therefore, there is nothing useful for the driver to do on suspend;
-> so we define a NULL suspend hook. On resume, the driver initializes
-> the block exactly as is done in the probe callback.
->=20
-> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-> ---
-> Changes in v3
-> Drop the DEV_PM_OPS macro, which caused some confusion.
-> Note: tango_thermal_pm struct only exists when CONFIG_PM_SLEEP is defined
-> @Kevin, can I add your Reviewed-by tag back?
-> ---
->  drivers/thermal/tango_thermal.c | 23 +++++++++++++++++++++--
->  1 file changed, 21 insertions(+), 2 deletions(-)
+OK. I've modified the patch.
+In case I break any other stuff :p, could you help check
+if this patch is in the right direction, thanks:
 
-Reviewed-by: Thierry Reding <treding@nvidia.com>
+1.  There are two places would invoke __timekeeping_inject_sleeptime(),
+    they are timekeeping_resume and rtc_resume, so we need to deal with
+    them respctively.
 
---d6Gm4EdcadzBjdND
-Content-Type: application/pgp-signature; name="signature.asc"
+2.  for rtc_resume, if the pm_trace has once been enabled,
+    we bypass the injection of sleep time.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+3. for timekeeping_resume,
+     Currently we either use nonstop clock source, or use persistent
+     clock to get the sleep time. As pm_trace breaks systems who use rt=
+c
+     as a persistent clock, x86 is affected. So we add a
+     check for x86 that, if the pm_trace has been enabled, we can not
+     trust the persistent clock delta read from rtc, thus bypass
+     the injection of sleep time in this case.
 
-iQIcBAABCAAGBQJXj1diAAoJEN0jrNd/PrOhh4YQAJMAi3c/8YQN741olyQbdy9n
-UIis3NDwVnoTh+lL4oTWrT8ZpSx8zl28hvmm6iPV2DqoU6LoFxhoz4voILCdGOw5
-0b0aPFEoU+MNhgHwtnWYnRJWfLdcyPrdo0shnF5yglYpMlksR6l6p3cUVOobMsO9
-GGjBwjQy253z5qefUUTthAD/RL6JGHTGtKtNPBo/vSIraLLIAw2CM+Yvvwy7dava
-WTdMPxFhKrSCl2hpSRfnFdjqtfRa3um4qV+WKkMBvtX5rx0jEm9CFsdRS5HNy3Nk
-x20zCVjX1q3U1TEEoIeBOndy/kxj5yHIak4pVdnXr3EknbhYzVLBDNVjh83eDVAA
-XjSwB0S8UiAUojQYMILrgVIyWy/xK6z6dG8a/BsYLHjTTC20CVRqd+ujhtTldEzV
-wyYwZUwznraH3gGrvwGNTDZQuy7h2FBotpgnuQ4tueUJlr6SwKwPJ0VPqHZiV/ZL
-bfDbneZj/RQC4vsZGmERA9UNjSOLSEQcW1odlhjc90rXXX/sMtMSkZXa1GEc+HnP
-Yvvc04yynymQYY/QR4cEW4zEFD4CxmCvfxuVuvMzv5ONEHH+PqLY5xC3paAxL/DH
-EWIAvK1KWo1ufaNgAFG/AN0QgpjHfLvuaX7Im1C78Myx+AJUasugCovv+XTH9T/M
-9HX2Gid24td2M1v2zQVG
-=XPQ6
------END PGP SIGNATURE-----
+4. Why we checked the history of pm_trace: once pm_trace
+   has been enabled, the delta of rtc would not be reliable anymore.
+   For example, if we only check current pm_trace, we might still get
+   memory overwrite:
 
---d6Gm4EdcadzBjdND--
+   4.1 echo 1 > /sys/power/pm_trace
+   4.2 hibernate/resume (rtc is broken, do not add delta from rtc becau=
+se pm_trace is 1)
+   4.3 echo 0 > /sys/power/pm_trace
+   4.4 hibernate/resume (rtc is still broken, but add delta from rtc be=
+cause pm_trace is 0)
+
+   so we have to check if pm_trace has once been enabled, if it is, we =
+will not add
+   any delta from tsc until system reboots.
+
+Thanks,
+Yu
+
+Index: linux/kernel/time/timekeeping.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/kernel/time/timekeeping.c
++++ linux/kernel/time/timekeeping.c
+@@ -1448,6 +1448,11 @@ void __weak read_boot_clock64(struct tim
+ 	ts->tv_nsec =3D 0;
+ }
+=20
++bool __weak persistent_clock_is_usable(void)
++{
++	return true;
++}
++
+ /* Flag for if timekeeping_resume() has injected sleeptime */
+ static bool sleeptime_injected;
+=20
+@@ -1609,6 +1614,7 @@ void timekeeping_resume(void)
+ 	unsigned long flags;
+ 	struct timespec64 ts_new, ts_delta;
+ 	cycle_t cycle_now, cycle_delta;
++	bool persist_clock_usable =3D true;
+=20
+ 	sleeptime_injected =3D false;
+ 	read_persistent_clock64(&ts_new);
+@@ -1660,9 +1666,11 @@ void timekeeping_resume(void)
+ 	} else if (timespec64_compare(&ts_new, &timekeeping_suspend_time) > 0=
+) {
+ 		ts_delta =3D timespec64_sub(ts_new, timekeeping_suspend_time);
+ 		sleeptime_injected =3D true;
++		if (!persistent_clock_is_usable())
++			persist_clock_usable =3D false;
+ 	}
+=20
+-	if (sleeptime_injected)
++	if (sleeptime_injected && persist_clock_usable)
+ 		__timekeeping_inject_sleeptime(tk, &ts_delta);
+=20
+ 	/* Re-base the last cycle value */
+Index: linux/arch/x86/kernel/rtc.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/arch/x86/kernel/rtc.c
++++ linux/arch/x86/kernel/rtc.c
+@@ -8,6 +8,7 @@
+ #include <linux/export.h>
+ #include <linux/pnp.h>
+ #include <linux/of.h>
++#include <linux/pm-trace.h>
+=20
+ #include <asm/vsyscall.h>
+ #include <asm/x86_init.h>
+@@ -147,6 +148,10 @@ void read_persistent_clock(struct timesp
+ 	x86_platform.get_wallclock(ts);
+ }
+=20
++bool persistent_clock_is_usable(void)
++{
++	return !pm_trace_once_enabled();
++}
+=20
+ static struct resource rtc_resources[] =3D {
+ 	[0] =3D {
+Index: linux/drivers/rtc/class.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/drivers/rtc/class.c
++++ linux/drivers/rtc/class.c
+@@ -20,6 +20,7 @@
+ #include <linux/idr.h>
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
++#include <linux/pm-trace.h>
+=20
+ #include "rtc-core.h"
+=20
+@@ -138,7 +139,7 @@ static int rtc_resume(struct device *dev
+ 	sleep_time =3D timespec64_sub(sleep_time,
+ 			timespec64_sub(new_system, old_system));
+=20
+-	if (sleep_time.tv_sec >=3D 0)
++	if ((sleep_time.tv_sec >=3D 0) && (!pm_trace_once_enabled()) )
+ 		timekeeping_inject_sleeptime64(&sleep_time);
+ 	rtc_hctosys_ret =3D 0;
+ 	return 0;
+Index: linux/kernel/power/main.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/kernel/power/main.c
++++ linux/kernel/power/main.c
+@@ -532,6 +532,7 @@ power_attr(wake_unlock);
+=20
+ #ifdef CONFIG_PM_TRACE
+ int pm_trace_enabled;
++bool pm_trace_been_enabled;
+=20
+ static ssize_t pm_trace_show(struct kobject *kobj, struct kobj_attribu=
+te *attr,
+ 			     char *buf)
+@@ -548,6 +549,7 @@ pm_trace_store(struct kobject *kobj, str
+ 	if (sscanf(buf, "%d", &val) =3D=3D 1) {
+ 		pm_trace_enabled =3D !!val;
+ 		if (pm_trace_enabled) {
++			pm_trace_been_enabled =3D true;
+ 			pr_warn("PM: Enabling pm_trace changes system date and time during =
+resume.\n"
+ 				"PM: Correct system time has to be restored manually after resume.=
+\n");
+ 		}
+Index: linux/include/linux/pm-trace.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux.orig/include/linux/pm-trace.h
++++ linux/include/linux/pm-trace.h
+@@ -6,12 +6,18 @@
+ #include <linux/types.h>
+=20
+ extern int pm_trace_enabled;
++extern bool pm_trace_been_enabled;
+=20
+ static inline int pm_trace_is_enabled(void)
+ {
+        return pm_trace_enabled;
+ }
+=20
++static inline bool pm_trace_once_enabled(void)
++{
++       return pm_trace_been_enabled;
++}
++
+ struct device;
+ extern void set_trace_device(struct device *);
+ extern void generate_pm_trace(const void *tracedata, unsigned int user=
+);
+@@ -25,6 +31,7 @@ extern int show_trace_dev_match(char *bu
+ #else
+=20
+ static inline int pm_trace_is_enabled(void) { return 0; }
++static inline bool pm_trace_once_enabled(void) { return false; }
+=20
+ #define TRACE_DEVICE(dev) do { } while (0)
+ #define TRACE_RESUME(dev) do { } while (0)
