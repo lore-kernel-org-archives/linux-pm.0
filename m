@@ -1,28 +1,94 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: Sequence of suspend/resume calls
-Date: Wed, 20 Jul 2016 01:54:00 +0200
-Message-ID: <20160719235400.GB7890@wunner.de>
-References: <CANMsd01zGiB8wu3J1sqXGXwsNWq3AkaA26BSQHfPVAGdHwiUeg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 03/13] PCI: Add Thunderbolt portdrv service type
+Date: Wed, 20 Jul 2016 02:30:14 +0200
+Message-ID: <1492431.vTkZItZy2q@vostro.rjw.lan>
+References: <cover.1463134231.git.lukas@wunner.de> <3e694101e5fa1551e07b5ecf92157087922e952f.1463134231.git.lukas@wunner.de> <20160617225152.GD12254@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:50799 "EHLO
-	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752380AbcGSXxw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jul 2016 19:53:52 -0400
-Content-Disposition: inline
-In-Reply-To: <CANMsd01zGiB8wu3J1sqXGXwsNWq3AkaA26BSQHfPVAGdHwiUeg@mail.gmail.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54540 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752304AbcGTAZW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 19 Jul 2016 20:25:22 -0400
+In-Reply-To: <20160617225152.GD12254@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ryan <ryanphilips19@googlemail.com>
-Cc: linux-pm@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>, Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>
 
-On Mon, Jul 18, 2016 at 06:34:10PM -0700, Ryan wrote:
-> Is it possible for the resume function of a particular driver to be
-> called before resume function of others are being called?
+On Friday, June 17, 2016 05:51:52 PM Bjorn Helgaas wrote:
+> On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
+> > A Thunderbolt controller is a PCIe switch which, as defined in the PCIe
+> > spec, appears to the OS "as a collection of virtual PCI-to-PCI bridges".
+> > 
+> > We're about to add support for Apple's nonstandard ACPI methods to power
+> > Thunderbolt controllers up and down.  To facilitate that, allocate a
+> > port service for every PCI bridge belonging to a Thunderbolt controller.
+> > 
+> > This port service might come in handy for other use cases, e.g. device
+> > initialization of Thunderbolt controllers.
+> > 
+> > To understand when and how this port service will be allocated, consider
+> > the PCI devices exposed by a Thunderbolt host controller:
+> > 
+> >   (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
+> >                                      +-- Downstream Bridge 1 --
+> >                                      +-- Downstream Bridge 2 --
+> >                                      ...
+> > 
+> > The upstream and downstream bridges represent the PCIe switch and a
+> > Thunderbolt port service will be allocated for each of them.  Hotplugged
+> > devices will appear behind the downstream bridges.  The NHI (Native Host
+> > Interface) is a virtual PCI device to manage the switch fabric and is
+> > not relevant here.  It uses class 0x88000, so it is not a PCIe port.
+> > 
+> > Next, consider the PCI devices exposed by Thunderbolt controllers built
+> > into hotplugged devices:
+> > 
+> >   -- Upstream Bridge ---- Downstream Bridge ---- Hotplugged device
+> > 
+> > Again, Thunderbolt port services will be allocated for the upstream and
+> > downstream bridge, but not for the hotplugged device, which might use
+> > e.g. class 0x20000 if it's a Thunderbolt Ethernet adapter.
+> 
+> I don't really *like* the portdrv infrastructure, even though we're
+> sort of stuck with it now.  It seems like all it really does is allow
+> multiple sub-drivers to attach to a single device and share interrupts
+> between them.  And we get some extra devices in sysfs that don't fit
+> the regular PCI model.  We used to support loadable sub-drivers
+> (pciehp, aer, etc.), but we decided that didn't really make sense
+> (though I notice you do support thunderbolt as a module).
+> 
+> I think we would be better off if the PCIe services (hotplug, AER,
+> etc.) were directly integrated into the PCI core without the portdrv
+> abstraction in the middle.  But anyway, we do have portdrv, and the
+> only question here is whether extending it for Thunderbolt is the
+> right thing.
+> 
+> So the question for Thunderbolt is what benefit you get from being a
+> portdrv sub-driver.  It seems like basically a way for you to hook on
+> to PCI bridges that happen to be Thunderbolt controllers.  I don't
+> think you really use any portdrv services (other than forwarding the
+> PM ops down to you, which a regular PCI device driver would get for
+> free).
 
-device_pm_wait_for_dev()
+Moreover, this approach creates sort of a priority inversion between
+the Thunderbolt driver and the ports, because the driver, which really
+is a superior entity (as it corresponds to the switch as a whole) is
+caused to bind to children of the ports (ie. PCIe service devices).
 
-Best regards,
+That leads to ordering issues in probe and then suspend/resume etc.
 
-Lukas
+> upstream.c does a lot of ACPI stuff; I can't tell whether it has more
+> affinity with ACPI or with PCI.  I don't see any PNP IDs though, so I
+> guess you just look for the magic method names in the ACPI device
+> associated with some PCI device.  That seems a little bit "back-door"
+> to me; from an ASL point of view, I would think you'd want to start
+> from a _HID and interpret the device based on that.
+
+Or from _ADR if the device object in question maps to a PCI device.
+
+Thanks,
+Rafael
+
