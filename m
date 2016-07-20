@@ -1,92 +1,115 @@
-From: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
-Subject: Re: [PATCH v2 02/10] driver core: Functional dependencies tracking
-	support
-Date: Wed, 20 Jul 2016 08:24:50 +0200
-Message-ID: <20160720062450.GA8066@wunner.de>
-References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
-	<CAJZ5v0h71xxvzex2D6s9W8Qvq3+BqOQnTJRKy32gMu=tuQLxDA@mail.gmail.com>
-	<20160617140738.GA1809@wunner.de>
-	<1975118.iO8UCAENoH@vostro.rjw.lan>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2 03/13] PCI: Add Thunderbolt portdrv service type
+Date: Wed, 20 Jul 2016 08:59:19 +0200
+Message-ID: <20160720065919.GB8066@wunner.de>
+References: <cover.1463134231.git.lukas@wunner.de>
+ <3e694101e5fa1551e07b5ecf92157087922e952f.1463134231.git.lukas@wunner.de>
+ <20160617225152.GD12254@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:46277 "EHLO
+	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751975AbcGTG7M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jul 2016 02:59:12 -0400
 Content-Disposition: inline
-In-Reply-To: <1975118.iO8UCAENoH-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "open list:AMD IOMMU (AMD-VI)" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andreas Noever <andreas.noever-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <20160617225152.GD12254@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Wed, Jul 20, 2016 at 02:33:18AM +0200, Rafael J. Wysocki wrote:
-> On Friday, June 17, 2016 04:07:38 PM Lukas Wunner wrote:
-> > On Fri, Jun 17, 2016 at 02:54:56PM +0200, Rafael J. Wysocki wrote:
-> > > On Fri, Jun 17, 2016 at 12:36 PM, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org> wrote:
-> > > > On Fri, Jun 17, 2016 at 08:26:52AM +0200, Marek Szyprowski wrote:
-> > > > > From: "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> > > > We also have such a functional dependency for Thunderbolt on Macs:
-> > > > On resume from system sleep, the PCIe hotplug ports may not resume
-> > > > before the thunderbolt driver has reestablished the PCI tunnels.
-> > > > Currently this is enforced by quirk_apple_wait_for_thunderbolt()
-> > > > in drivers/pci/quirks.c. It would be good if we could represent
-> > > > this dependency using something like Rafael's approach instead of
-> > > > open coding it, however one detail in Rafael's patches is problematic:
-> > > >
-> > > > > New links are added by calling device_link_add() which may happen
-> > > > > either before the consumer device is probed or when probing it, in
-> > > > > which case the caller needs to ensure that the driver of the
-> > > > > supplier device is present and functional and the DEVICE_LINK_PROBE_TIME
-> > > > > flag should be passed to device_link_add() to reflect that.
-> > > >
-> > > > The thunderbolt driver cannot call device_link_add() before the
-> > > > PCIe hotplug ports are bound to a driver unless we amend portdrv
-> > > > to return -EPROBE_DEFER for Thunderbolt hotplug ports on Macs
-> > > > if the thunderbolt driver isn't loaded.
-> > > >
-> > > > It would therefore be beneficial if device_link_add() can be
-> > > > called even *after* the consumer is bound.
-> > > 
-> > > I don't quite follow.
-> > > 
-> > > Who's the provider and who's the consumer here?
+On Fri, Jun 17, 2016 at 05:51:52PM -0500, Bjorn Helgaas wrote:
+> On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
+> > A Thunderbolt controller is a PCIe switch which, as defined in the PCIe
+> > spec, appears to the OS "as a collection of virtual PCI-to-PCI bridges".
 > > 
-> > thunderbolt.ko is the supplier.
+> > We're about to add support for Apple's nonstandard ACPI methods to power
+> > Thunderbolt controllers up and down.  To facilitate that, allocate a
+> > port service for every PCI bridge belonging to a Thunderbolt controller.
+> > 
+> > This port service might come in handy for other use cases, e.g. device
+> > initialization of Thunderbolt controllers.
+> > 
+> > To understand when and how this port service will be allocated, consider
+> > the PCI devices exposed by a Thunderbolt host controller:
+> > 
+> >   (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
+> >                                      +-- Downstream Bridge 1 --
+> >                                      +-- Downstream Bridge 2 --
+> >                                      ...
+> > 
+> > The upstream and downstream bridges represent the PCIe switch and a
+> > Thunderbolt port service will be allocated for each of them.  Hotplugged
+> > devices will appear behind the downstream bridges.  The NHI (Native Host
+> > Interface) is a virtual PCI device to manage the switch fabric and is
+> > not relevant here.  It uses class 0x88000, so it is not a PCIe port.
+> > 
+> > Next, consider the PCI devices exposed by Thunderbolt controllers built
+> > into hotplugged devices:
+> > 
+> >   -- Upstream Bridge ---- Downstream Bridge ---- Hotplugged device
+> > 
+> > Again, Thunderbolt port services will be allocated for the upstream and
+> > downstream bridge, but not for the hotplugged device, which might use
+> > e.g. class 0x20000 if it's a Thunderbolt Ethernet adapter.
 > 
-> But it binds to the children of the ports that are supposed to be its
-> consumers?
+> I don't really *like* the portdrv infrastructure, even though we're
+> sort of stuck with it now.  It seems like all it really does is allow
+> multiple sub-drivers to attach to a single device and share interrupts
+> between them.  And we get some extra devices in sysfs that don't fit
+> the regular PCI model.  We used to support loadable sub-drivers
+> (pciehp, aer, etc.), but we decided that didn't really make sense
+> (though I notice you do support thunderbolt as a module).
 > 
-> Why is that even expected to work?
+> I think we would be better off if the PCIe services (hotplug, AER,
+> etc.) were directly integrated into the PCI core without the portdrv
+> abstraction in the middle.  But anyway, we do have portdrv, and the
+> only question here is whether extending it for Thunderbolt is the
+> right thing.
+> 
+> So the question for Thunderbolt is what benefit you get from being a
+> portdrv sub-driver.  It seems like basically a way for you to hook on
+> to PCI bridges that happen to be Thunderbolt controllers.  I don't
+> think you really use any portdrv services (other than forwarding the
+> PM ops down to you, which a regular PCI device driver would get for
+> free).
 
-No, the consumers are aunts (or uncles) of the supplier, if you will. :-)
+The assessment above is entirely correct, I'm sort of abusing the
+portdrv infrastructure as a way to bind to the upstream bridge.
 
-The consumers are the hotplug ports (named "Downstream Bridge 1 / 2" in
-the drawing below). The supplier is the NHI:
+For comparison, Optimus GPUs are also suspended to D3cold with a
+non-standard method (i.e., not by the ACPI platform). The way we
+handle that is to assign a dev_pm_domain to the device using
+dev_pm_domain_set(). You can just think of "dev_pm_domain" as a
+fancy name for overriding the callbacks in pci_dev_pm_ops:
+http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/gpu/vga/vga_switcheroo.c#n1014
 
-      (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
-                                         +-- Downstream Bridge 1 --
-                                         +-- Downstream Bridge 2 --
-                                         ...
+I cannot use that method with Thunderbolt because dev_pm_domain_set()
+can only be called for unbound devices. And the upstream bridge will
+already have been bound (to portdrv) when thunderbolt.ko loads.
 
-We're calling pci_power_up() and pci_restore_state() from
-pci_pm_resume_noirq(). And that will fail for devices below
-the hotplug ports if the PCI tunnels haven't been re-established
-yet by the NHI.
+I'm waiting for Rafael to weigh in if the dev_pm_domain_set() method
+is the right thing to do for devices which are suspended to D3cold
+in a non-standard way, and whether the "device not bound" restriction
+on dev_pm_domain_set() can be lifted. If so, I could rework this
+series to use that instead of binding to portdrv.
 
-Currently we achieve that via quirk_apple_wait_for_thunderbolt() in
-drivers/pci/quirks.c. It would be more elegant if we could make this
-relationship explicit with "device links" and let the core handle it.
 
-Or am I mistaken and this particular use case is not what "device links"
-are intended for?
+> upstream.c does a lot of ACPI stuff; I can't tell whether it has more
+> affinity with ACPI or with PCI.  I don't see any PNP IDs though, so I
+> guess you just look for the magic method names in the ACPI device
+> associated with some PCI device.  That seems a little bit "back-door"
+> to me; from an ASL point of view, I would think you'd want to start
+> from a _HID and interpret the device based on that.
 
-Thanks,
+Apple's ACPI methods to power the controller up/down are located
+below the NHI device in the namespace. I just use the ACPI_HANDLE()
+macro to get from the NHI's PCI device to its ACPI companion's
+handle, then find the methods below that. This avoids the need to
+search the namespace for a _HID or _ADR:
+https://github.com/l1k/linux/commit/65f56e6c8446#diff-66575f0946b607aa866a23518687f8b1R281
+
+Best regards,
 
 Lukas
