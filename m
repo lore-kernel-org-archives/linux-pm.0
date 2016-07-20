@@ -1,88 +1,100 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2 02/10] driver core: Functional dependencies tracking
- support
-Date: Wed, 20 Jul 2016 17:23:40 +0200
-Message-ID: <20160720152340.GA8337@wunner.de>
-References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
- <1975118.iO8UCAENoH@vostro.rjw.lan>
- <20160720062450.GA8066@wunner.de>
- <3969169.CcnEsvYuly@vostro.rjw.lan>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][v2] timekeeping: Fix memory overwrite of sleep_time_bin
+ array
+Date: Wed, 20 Jul 2016 16:59:36 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE64028782A4B@shsmsx102.ccr.corp.intel.com>
+References: <1468903861-12487-1-git-send-email-yu.c.chen@intel.com>
+ <alpine.DEB.2.11.1607191234200.3596@nanos> <20160720110658.GA5943@sharon>
+ <9248665.2Hdcz4PDBO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3969169.CcnEsvYuly@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:AMD IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>, linux-samsung-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:10980 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751093AbcGTQ7k (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 20 Jul 2016 12:59:40 -0400
+In-Reply-To: <9248665.2Hdcz4PDBO@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Jul 20, 2016 at 02:52:42PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, July 20, 2016 08:24:50 AM Lukas Wunner wrote:
-> > On Wed, Jul 20, 2016 at 02:33:18AM +0200, Rafael J. Wysocki wrote:
-> > > On Friday, June 17, 2016 04:07:38 PM Lukas Wunner wrote:
-> > > > On Fri, Jun 17, 2016 at 02:54:56PM +0200, Rafael J. Wysocki wrote:
-> > > > > On Fri, Jun 17, 2016 at 12:36 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> > > > > > On Fri, Jun 17, 2016 at 08:26:52AM +0200, Marek Szyprowski wrote:
-> > > > > > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> > > > > > We also have such a functional dependency for Thunderbolt on Macs:
-> > > > > > On resume from system sleep, the PCIe hotplug ports may not resume
-> > > > > > before the thunderbolt driver has reestablished the PCI tunnels.
-> > > > > > Currently this is enforced by quirk_apple_wait_for_thunderbolt()
-> > > > > > in drivers/pci/quirks.c. It would be good if we could represent
-> > > > > > this dependency using something like Rafael's approach instead of
-> > > > > > open coding it, however one detail in Rafael's patches is problematic:
-> > > > > >
-> > > > > > > New links are added by calling device_link_add() which may happen
-> > > > > > > either before the consumer device is probed or when probing it, in
-> > > > > > > which case the caller needs to ensure that the driver of the
-> > > > > > > supplier device is present and functional and the DEVICE_LINK_PROBE_TIME
-> > > > > > > flag should be passed to device_link_add() to reflect that.
-> > > > > >
-> > > > > > The thunderbolt driver cannot call device_link_add() before the
-> > > > > > PCIe hotplug ports are bound to a driver unless we amend portdrv
-> > > > > > to return -EPROBE_DEFER for Thunderbolt hotplug ports on Macs
-> > > > > > if the thunderbolt driver isn't loaded.
-> > > > > >
-> > > > > > It would therefore be beneficial if device_link_add() can be
-> > > > > > called even *after* the consumer is bound.
-> > > > > 
-> > > > > I don't quite follow.
-> > > > > 
-> > > > > Who's the provider and who's the consumer here?
-> > > > 
-> > > > thunderbolt.ko is the supplier.
-> > > 
-> > > But it binds to the children of the ports that are supposed to be its
-> > > consumers?
-> > > 
-> > > Why is that even expected to work?
-> > 
-> > No, the consumers are aunts (or uncles) of the supplier, if you will. :-)
-> > 
-> > The consumers are the hotplug ports (named "Downstream Bridge 1 / 2" in
-> > the drawing below). The supplier is the NHI:
-> > 
-> >       (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
-> >                                          +-- Downstream Bridge 1 --
-> >                                          +-- Downstream Bridge 2 --
-> >                                          ...
-> > 
-> > We're calling pci_power_up() and pci_restore_state() from
-> > pci_pm_resume_noirq(). And that will fail for devices below
-> > the hotplug ports if the PCI tunnels haven't been re-established
-> > yet by the NHI.
-> 
-> So the NHI is a PCIe device, right?
-> 
-> Does the Thunderbolt driver bind to that device?
-
-The NHI is a PCI device but not a bridge. It has class 0x88000.
-Yes, thunderbolt.ko binds to the NHI.
-
-And portdrv binds to the upstream bridge and downstream bridges.
-Those have class 0x60400.
-
-Best regards,
-
-Lukas
+SGksDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFlbCBKLiBXeXNv
+Y2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFdlZG5lc2RheSwgSnVseSAy
+MCwgMjAxNiA5OjAwIFBNDQo+IFRvOiBDaGVuLCBZdSBDDQo+IENjOiBUaG9tYXMgR2xlaXhuZXI7
+IEpvaG4gU3R1bHR6OyBMaW51eCBQTTsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdA0KPiBTdWJq
+ZWN0OiBSZTogW1BBVENIXVt2Ml0gdGltZWtlZXBpbmc6IEZpeCBtZW1vcnkgb3ZlcndyaXRlIG9m
+IHNsZWVwX3RpbWVfYmluDQo+IGFycmF5DQo+IA0KPiBPbiBXZWRuZXNkYXksIEp1bHkgMjAsIDIw
+MTYgMDc6MDY6NTggUE0gQ2hlbiBZdSB3cm90ZToNCj4gPiBIaSBUaG9tYXMsDQo+ID4gT24gVHVl
+LCBKdWwgMTksIDIwMTYgYXQgMTI6NDA6MTRQTSArMDIwMCwgVGhvbWFzIEdsZWl4bmVyIHdyb3Rl
+Og0KPiA+ID4gT24gVHVlLCAxOSBKdWwgMjAxNiwgQ2hlbiBZdSB3cm90ZToNCj4gPiA+ID4gT24g
+MjAxNuW5tDA35pyIMTnml6UgMTY6MzYsIFRob21hcyBHbGVpeG5lciB3cm90ZToNCj4gPiA+ID4g
+PiBPbiBUdWUsIDE5IEp1bCAyMDE2LCBDaGVuIFl1IHdyb3RlOg0KPiA+ID4gPiA+ID4gRnVydGhl
+ciBpbnZlc3RpZ2F0aW9uIHNob3dzIHRoYXQsIHRoZSBwcm9ibGVtIGlzIGNhdXNlZCBieQ0KPiA+
+ID4gPiA+ID4gc2V0dGluZyAvc3lzL3Bvd2VyL3BtX3RyYWNlIHRvIDEgYmVmb3JlIHRoZSAxc3Qg
+aGliZXJuYXRpb24sDQo+ID4gPiA+ID4gPiBzaW5jZSBvbmNlIHBtX3RyYWNlIGlzIGVuYWJsZWQs
+IHRoZSBydGMgYmVjb21lcyBhbg0KPiA+ID4gPiA+ID4gdW5tZWFuaW5nZnVsIHZhbHVlIGFmdGVy
+IHJlc3VtZWQsDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBTbyB3aHkgaXMgdGhlIFJUQyB2YWx1ZSB1
+c2VsZXNzIGlmIHBtX3RyYWNlIGlzIGVuYWJsZWQ/IEkgcmVhbGx5DQo+ID4gPiA+ID4gaGF2ZSBh
+IGhhcmQgdGltZSB0byB1bmRlcnN0YW5kIHdoeSBwbV90cmFjZSB3b3VsZCBhZmZlY3QgdGhlDQo+
+ID4gPiA+ID4gc2xlZXAgdGltZSByZWFkb3V0IGZyb20gUlRDLg0KPiA+ID4gPg0KPiA+ID4gPiBB
+ZnRlciBwbV90cmFjZSBpcyBlbmFibGVkLCBkdXJpbmcgc3lzdGVtIHN1c3BlbmQvaGliZXJuYXRl
+LCB0aGUNCj4gPiA+ID4gaGFzaCBuYW1lIG9mIGVhY2ggZGV2aWNlcyB3aWxsIGJlIHdyaXR0ZW4g
+dG8gcnRjLCBzbyB0aGUgcnRjIHZhbHVlDQo+ID4gPiA+IGRlcGVuZHMgb24gd2hhdCB3ZSB3cml0
+ZSBpbiBsYXN0IHN1c3BlbmQgcm91bmQsIHRodXMgcG1fdHJhY2UgY2FuDQo+ID4gPiA+IGJlIHVz
+ZWQgZm9yIGRpYWdub3NlIHdoaWNoIGRldmljZSBmYWlsZWQgdG8gc3VzcGVuZChlZywgdGhlDQo+
+ID4gPiA+IHN1c3BlbmRpbmcgb24gdGhpcyBkZXZpY2UgaGFuZyB0aGUgc3lzdGVtLCB3ZSByZWJv
+b3QgdGhlIHN5c3RlbSAsIGFuZA0KPiBjaGVjayBydGMgaGFzaCB2YWx1ZSkuDQo+ID4gPiA+DQo+
+ID4gPiA+IEluIG91ciBjYXNlLCBhZnRlciBmaXJzdCBoaWJlcm5hdGUvcmVzdW1lIHJvdW5kLCB3
+ZSBmb3VuZCBvdXINCj4gPiA+ID4gY3VycmVudCBzeXN0ZW0gdGltZSBpcyBhdCAyMTE3LCBzbyBz
+eXNjb3JlX3Jlc3VtZSAtPg0KPiB0aW1la2VlcGluZ19yZXN1bWUgOg0KPiA+ID4gPiBfX3RpbWVr
+ZWVwaW5nX2luamVjdF9zbGVlcHRpbWUodGssICZ0c19kZWx0YSkgd291bGQgaW5qZWN0IGEgcXVp
+dGUNCj4gPiA+ID4gbGFyZ2UgZGVsdGEgOiAyMTE3IC0gMjAxNyB5ZWFyLCB0aHVzIHRoZSBzbGVl
+cF90aW1lX2JpbiBpcyBvdmVyZmxvdy4NCj4gPiA+DQo+ID4gPiBXaGlsZSB0aGUgcmFuZ2UgY2hl
+Y2sgaXMgY2VydGFpbmx5IGNvcnJlY3QgYW5kIGEgZ29vZCB0aGluZyB0byBoYXZlDQo+ID4gPiBp
+dCdzIHdyb25nIGluIHRoZSBmaXJzdCBwbGFjZSB0byBjYWxsDQo+ID4gPiBfX3RpbWVrZWVwaW5n
+X2luamVjdF9zbGVlcHRpbWUoKSBpbiBjYXNlIHRoYXQgcG1fdHJhY2UgaXMgZW5hYmxlZA0KPiA+
+ID4gc2ltcGx5IGJlY2F1c2UgdGhhdCAiaGFzaCIgdGltZSB2YWx1ZSB3aWxsIGFsc28gd3JlY2th
+Z2UNCj4gPiA+IHRpbWVrZWVwaW5nLiBZb3VyIHBhdGNoIGlzIGp1c3QgY3VyaW5nIHRoZSBzeW1w
+dG9tIGluIHRoZSBkZWJ1ZyBjb2RlIGJ1dA0KPiBub3QgZml4aW5nIHRoZSByb290IGNhdXNlLg0K
+PiA+ID4NCj4gPiBPSy4gSSd2ZSBtb2RpZmllZCB0aGUgcGF0Y2guDQo+ID4gSW4gY2FzZSBJIGJy
+ZWFrIGFueSBvdGhlciBzdHVmZiA6cCwgY291bGQgeW91IGhlbHAgY2hlY2sgaWYgdGhpcyBwYXRj
+aA0KPiA+IGlzIGluIHRoZSByaWdodCBkaXJlY3Rpb24sIHRoYW5rczoNCj4gPg0KPiA+IDEuICBU
+aGVyZSBhcmUgdHdvIHBsYWNlcyB3b3VsZCBpbnZva2UgX190aW1la2VlcGluZ19pbmplY3Rfc2xl
+ZXB0aW1lKCksDQo+ID4gICAgIHRoZXkgYXJlIHRpbWVrZWVwaW5nX3Jlc3VtZSBhbmQgcnRjX3Jl
+c3VtZSwgc28gd2UgbmVlZCB0byBkZWFsIHdpdGgNCj4gPiAgICAgdGhlbSByZXNwY3RpdmVseS4N
+Cj4gPg0KPiA+IDIuICBmb3IgcnRjX3Jlc3VtZSwgaWYgdGhlIHBtX3RyYWNlIGhhcyBvbmNlIGJl
+ZW4gZW5hYmxlZCwNCj4gPiAgICAgd2UgYnlwYXNzIHRoZSBpbmplY3Rpb24gb2Ygc2xlZXAgdGlt
+ZS4NCj4gPg0KPiA+IDMuIGZvciB0aW1la2VlcGluZ19yZXN1bWUsDQo+ID4gICAgICBDdXJyZW50
+bHkgd2UgZWl0aGVyIHVzZSBub25zdG9wIGNsb2NrIHNvdXJjZSwgb3IgdXNlIHBlcnNpc3RlbnQN
+Cj4gPiAgICAgIGNsb2NrIHRvIGdldCB0aGUgc2xlZXAgdGltZS4gQXMgcG1fdHJhY2UgYnJlYWtz
+IHN5c3RlbXMgd2hvIHVzZSBydGMNCj4gPiAgICAgIGFzIGEgcGVyc2lzdGVudCBjbG9jaywgeDg2
+IGlzIGFmZmVjdGVkLiBTbyB3ZSBhZGQgYQ0KPiA+ICAgICAgY2hlY2sgZm9yIHg4NiB0aGF0LCBp
+ZiB0aGUgcG1fdHJhY2UgaGFzIGJlZW4gZW5hYmxlZCwgd2UgY2FuIG5vdA0KPiA+ICAgICAgdHJ1
+c3QgdGhlIHBlcnNpc3RlbnQgY2xvY2sgZGVsdGEgcmVhZCBmcm9tIHJ0YywgdGh1cyBieXBhc3MN
+Cj4gPiAgICAgIHRoZSBpbmplY3Rpb24gb2Ygc2xlZXAgdGltZSBpbiB0aGlzIGNhc2UuDQo+ID4N
+Cj4gPiA0LiBXaHkgd2UgY2hlY2tlZCB0aGUgaGlzdG9yeSBvZiBwbV90cmFjZTogb25jZSBwbV90
+cmFjZQ0KPiA+ICAgIGhhcyBiZWVuIGVuYWJsZWQsIHRoZSBkZWx0YSBvZiBydGMgd291bGQgbm90
+IGJlIHJlbGlhYmxlIGFueW1vcmUuDQo+ID4gICAgRm9yIGV4YW1wbGUsIGlmIHdlIG9ubHkgY2hl
+Y2sgY3VycmVudCBwbV90cmFjZSwgd2UgbWlnaHQgc3RpbGwgZ2V0DQo+ID4gICAgbWVtb3J5IG92
+ZXJ3cml0ZToNCj4gPg0KPiA+ICAgIDQuMSBlY2hvIDEgPiAvc3lzL3Bvd2VyL3BtX3RyYWNlDQo+
+ID4gICAgNC4yIGhpYmVybmF0ZS9yZXN1bWUgKHJ0YyBpcyBicm9rZW4sIGRvIG5vdCBhZGQgZGVs
+dGEgZnJvbSBydGMgYmVjYXVzZQ0KPiBwbV90cmFjZSBpcyAxKQ0KPiA+ICAgIDQuMyBlY2hvIDAg
+PiAvc3lzL3Bvd2VyL3BtX3RyYWNlDQo+ID4gICAgNC40IGhpYmVybmF0ZS9yZXN1bWUgKHJ0YyBp
+cyBzdGlsbCBicm9rZW4sIGJ1dCBhZGQgZGVsdGEgZnJvbSBydGMNCj4gPiBiZWNhdXNlIHBtX3Ry
+YWNlIGlzIDApDQo+IA0KPiBUaGUgaW5pdGlhbCBzdGF0ZSBvZiB0aGUgUlRDIGlzIGludmFsaWQs
+IGJ1dCB3aWxsIHRoZSBkZWx0YSBiZSBzdGlsbCBpbnZhbGlkPw0KPg0KQWNjb3JkaW5nIHRvIGZl
+ZWRiYWNrIGZyb20gdGhlIGJ1ZyByZXBvcnRlciwgDQp3aXRoIHByZXZpb3VzIHBhdGNoIGFwcGxp
+ZWQgd2hpY2ggdXNlcyBwbV90cmFjZV9pc19lbmFibGVkKCkgZGlyZWN0bHkgaW4NCiByZXN1bWUs
+IHRoZW4gYWZ0ZXIgc2V2ZXJhbCByb3VuZHMsICBvbmNlIHRoZSBwbV90cmFjZSBpcyBkaXNhYmxl
+ZCwgDQp0aGUgZm9sbG93aW5nIGhpYmVybmF0ZS9yZXN1bWUgIHdvdWxkIGJyaW5nICBhIG92ZXJm
+bG93IHNsZWVwIGRlbHRhLg0KIEl0IGxvb2tzIGxpa2UgdGhlIGRlbHRhIGFsc28gY29uc2lkZXJz
+IHRoZSBoaXN0b3JpY2FsKHByZXZpb3VzKSBkZWx0YSwgDQpzbyBJIGFkZGVkIHRoZSBoaXN0b3J5
+IHBtX29uY2VfdHJhY2UgLiBJJ2xsIGNvbmZpcm0gYW5kIGdpdmUgZmVlZGJhY2sgbGF0ZXIuDQog
+DQo+IEFuZCB3aGF0IGlmIHRoZSBhZG1pbiBmaXhlcyB1cCB0aGUgUlRDIGJlZm9yZSBoaWJlcm5h
+dGluZz8gIFlvdSB3aWxsIHN0aWxsDQo+IGRpc2NhcmQgdGhlIFJUQyBkZWx0YSB1bnRpbCB0aGUg
+bmV4dCByZWJvb3QsIHJpZ2h0Pw0KWWVzLCBpdCB3aWxsIGJlIGRpc2NhcmRlZCwgSSBhZ3JlZSB3
+ZSBzaG91bGQgbm90IGJ5cGFzcyB0aGUgZGVsdGEgaWYgc29tZW9uZSBoYXMNCmZpeGVkIHRoZSBy
+dGMsIEknbGwgZGlnIGludG8gdGhlIGNvZGUuDQogDQpUaGFua3MsDQpZdQ0KDQo=
