@@ -1,65 +1,92 @@
-From: Yuantian Tang <yuantian.tang@nxp.com>
-Subject: RE: [PATCH v3 2/2] cpufreq: qoriq: Don't look at clock implementation
- details
-Date: Wed, 20 Jul 2016 03:02:49 +0000
-Message-ID: <DB6PR0401MB2648CA1169D59950CD8BEC78F0080@DB6PR0401MB2648.eurprd04.prod.outlook.com>
-References: <1466058085-19353-1-git-send-email-oss@buserror.net>
-	 <1466058085-19353-2-git-send-email-oss@buserror.net>
-	 <146785501714.73491.8643317356949121718@resonance>
-	 <1467864803.32358.63.camel@buserror.net>
-	 <146794477678.73491.8244253339435407853@resonance>
- <1468012014.32358.74.camel@buserror.net>
+From: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Subject: Re: [PATCH v2 02/10] driver core: Functional dependencies tracking
+	support
+Date: Wed, 20 Jul 2016 08:24:50 +0200
+Message-ID: <20160720062450.GA8066@wunner.de>
+References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
+	<CAJZ5v0h71xxvzex2D6s9W8Qvq3+BqOQnTJRKy32gMu=tuQLxDA@mail.gmail.com>
+	<20160617140738.GA1809@wunner.de>
+	<1975118.iO8UCAENoH@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1468012014.32358.74.camel@buserror.net>
-Content-Language: en-US
-Sender: linux-clk-owner@vger.kernel.org
-To: Scott Wood <oss@buserror.net>, Michael Turquette <mturquette@baylibre.com>, Russell King <linux@armlinux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Yang-Leo Li <leoyang.li@nxp.com>, Xiaofeng Ren <xiaofeng.ren@nxp.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1975118.iO8UCAENoH-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "open list:AMD IOMMU (AMD-VI)" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andreas Noever <andreas.noever-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-UElORy4NCg0KUmVnYXJkcywNCll1YW50aWFuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0t
-LS0NCj4gRnJvbTogU2NvdHQgV29vZCBbbWFpbHRvOm9zc0BidXNlcnJvci5uZXRdDQo+IFNlbnQ6
-IFNhdHVyZGF5LCBKdWx5IDA5LCAyMDE2IDU6MDcgQU0NCj4gVG86IE1pY2hhZWwgVHVycXVldHRl
-IDxtdHVycXVldHRlQGJheWxpYnJlLmNvbT47IFJ1c3NlbGwgS2luZw0KPiA8bGludXhAYXJtbGlu
-dXgub3JnLnVrPjsgU3RlcGhlbiBCb3lkIDxzYm95ZEBjb2RlYXVyb3JhLm9yZz47IFZpcmVzaA0K
-PiBLdW1hciA8dmlyZXNoLmt1bWFyQGxpbmFyby5vcmc+OyBSYWZhZWwgSi4gV3lzb2NraSA8cmp3
-QHJqd3lzb2NraS5uZXQ+DQo+IENjOiBsaW51eC1jbGtAdmdlci5rZXJuZWwub3JnOyBsaW51eC1w
-bUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgWXVh
-bnRpYW4gVGFuZyA8eXVhbnRpYW4udGFuZ0BueHAuY29tPjsgWWFuZy1MZW8gTGkNCj4gPGxlb3lh
-bmcubGlAbnhwLmNvbT47IFhpYW9mZW5nIFJlbiA8eGlhb2ZlbmcucmVuQG54cC5jb20+DQo+IFN1
-YmplY3Q6IFJlOiBbUEFUQ0ggdjMgMi8yXSBjcHVmcmVxOiBxb3JpcTogRG9uJ3QgbG9vayBhdCBj
-bG9jaw0KPiBpbXBsZW1lbnRhdGlvbiBkZXRhaWxzDQo+IA0KPiBPbiBUaHUsIDIwMTYtMDctMDcg
-YXQgMTk6MjYgLTA3MDAsIE1pY2hhZWwgVHVycXVldHRlIHdyb3RlOg0KPiA+IFF1b3RpbmcgU2Nv
-dHQgV29vZCAoMjAxNi0wNy0wNiAyMToxMzoyMykNCj4gPiA+DQo+ID4gPiBPbiBXZWQsIDIwMTYt
-MDctMDYgYXQgMTg6MzAgLTA3MDAsIE1pY2hhZWwgVHVycXVldHRlIHdyb3RlOg0KPiA+ID4gPg0K
-PiA+ID4gPiBRdW90aW5nIFNjb3R0IFdvb2QgKDIwMTYtMDYtMTUgMjM6MjE6MjUpDQo+ID4gPiA+
-ID4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IC1zdGF0aWMgc3RydWN0IGRldmljZV9ub2RlICpjcHVf
-dG9fY2xrX25vZGUoaW50IGNwdSkNCj4gPiA+ID4gPiArc3RhdGljIHN0cnVjdCBjbGsgKmNwdV90
-b19jbGsoaW50IGNwdSkNCj4gPiA+ID4gPiDCoHsNCj4gPiA+ID4gPiAtwqDCoMKgwqDCoMKgwqBz
-dHJ1Y3QgZGV2aWNlX25vZGUgKm5wLCAqY2xrX25wOw0KPiA+ID4gPiA+ICvCoMKgwqDCoMKgwqDC
-oHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7DQo+ID4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgc3RydWN0
-IGNsayAqY2xrOw0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gwqDCoMKgwqDCoMKgwqDCoGlmICghY3B1
-X3ByZXNlbnQoY3B1KSkNCj4gPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oHJldHVybiBOVUxMOw0KPiA+ID4gPiA+IEBAIC0xMTIsMzcgKzgwLDI4IEBAIHN0YXRpYyBzdHJ1
-Y3QgZGV2aWNlX25vZGUNCj4gPiA+ID4gPiAqY3B1X3RvX2Nsa19ub2RlKGludA0KPiA+ID4gPiA+
-IGNwdSkNCj4gPiA+ID4gPiDCoMKgwqDCoMKgwqDCoMKgaWYgKCFucCkNCj4gPiA+ID4gPiDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJldHVybiBOVUxMOw0KPiA+ID4gPiA+DQo+ID4g
-PiA+ID4gLcKgwqDCoMKgwqDCoMKgY2xrX25wID0gb2ZfcGFyc2VfcGhhbmRsZShucCwgImNsb2Nr
-cyIsIDApOw0KPiA+ID4gPiA+IC3CoMKgwqDCoMKgwqDCoGlmICghY2xrX25wKQ0KPiA+ID4gPiA+
-IC3CoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZXR1cm4gTlVMTDsNCj4gPiA+ID4gPiAt
-DQo+ID4gPiA+ID4gK8KgwqDCoMKgwqDCoMKgY2xrID0gb2ZfY2xrX2dldChucCwgMCk7DQo+ID4g
-PiA+IFdoeSBub3QgdXNlIGRldm1fY2xrX2dldCBoZXJlPw0KPiA+ID4gZGV2bV9jbGtfZ2V0KCkg
-aXMgYSB3cmFwcGVyIGFyb3VuZCBjbGtfZ2V0KCkgd2hpY2ggaXMgbm90IHRoZSBzYW1lDQo+ID4g
-PiBhcyBvZl9jbGtfZ2V0KCkuIMKgV2hhdCBkZXZpY2Ugd291bGQgeW91IHBhc3MgdG8gZGV2bV9j
-bGtfZ2V0KCksIGFuZA0KPiA+ID4gd2hhdCBuYW1lIHdvdWxkIHlvdSBwYXNzPw0KPiA+IEknbSBm
-dXp6eSBvbiB3aGV0aGVyIG9yIG5vdCB5b3UgZ2V0IGEgc3RydWN0IGRldmljZSBmcm9tIGEgY3B1
-ZnJlcQ0KPiA+IGRyaXZlci4gSWYgc28sIHRoZW4gdGhhdCB3b3VsZCBiZSB0aGUgb25lIHRvIHVz
-ZS4gSSB3b3VsZCBob3BlIHRoYXQNCj4gPiBjcHVmcmVxIGRyaXZlcnMgbW9kZWwgY3B1cyBhcyBk
-ZXZpY2VzLCBidXQgSSdtIHJlYWxseSBub3Qgc3VyZSB3aXRob3V0DQo+ID4gbG9va2luZyBpbnRv
-IHRoZSBjb2RlLg0KPiANCj4gSXQncyBub3QgdGhlIGNwdWZyZXEgY29kZSB0aGF0IHByb3ZpZGVz
-IGl0LCBidXQgZ2V0X2NwdV9kZXZpY2UoKSBjb3VsZCBiZQ0KPiB1c2VkLg0KPiANCj4gRG8geW91
-IGhhdmUgYW55IGNvbW1lbnRzIG9uIHRoZSBmaXJzdCBwYXRjaCBvZiB0aGlzIHNldD8NCj4gDQo+
-IC1TY290dA0KDQo=
+On Wed, Jul 20, 2016 at 02:33:18AM +0200, Rafael J. Wysocki wrote:
+> On Friday, June 17, 2016 04:07:38 PM Lukas Wunner wrote:
+> > On Fri, Jun 17, 2016 at 02:54:56PM +0200, Rafael J. Wysocki wrote:
+> > > On Fri, Jun 17, 2016 at 12:36 PM, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org> wrote:
+> > > > On Fri, Jun 17, 2016 at 08:26:52AM +0200, Marek Szyprowski wrote:
+> > > > > From: "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> > > > We also have such a functional dependency for Thunderbolt on Macs:
+> > > > On resume from system sleep, the PCIe hotplug ports may not resume
+> > > > before the thunderbolt driver has reestablished the PCI tunnels.
+> > > > Currently this is enforced by quirk_apple_wait_for_thunderbolt()
+> > > > in drivers/pci/quirks.c. It would be good if we could represent
+> > > > this dependency using something like Rafael's approach instead of
+> > > > open coding it, however one detail in Rafael's patches is problematic:
+> > > >
+> > > > > New links are added by calling device_link_add() which may happen
+> > > > > either before the consumer device is probed or when probing it, in
+> > > > > which case the caller needs to ensure that the driver of the
+> > > > > supplier device is present and functional and the DEVICE_LINK_PROBE_TIME
+> > > > > flag should be passed to device_link_add() to reflect that.
+> > > >
+> > > > The thunderbolt driver cannot call device_link_add() before the
+> > > > PCIe hotplug ports are bound to a driver unless we amend portdrv
+> > > > to return -EPROBE_DEFER for Thunderbolt hotplug ports on Macs
+> > > > if the thunderbolt driver isn't loaded.
+> > > >
+> > > > It would therefore be beneficial if device_link_add() can be
+> > > > called even *after* the consumer is bound.
+> > > 
+> > > I don't quite follow.
+> > > 
+> > > Who's the provider and who's the consumer here?
+> > 
+> > thunderbolt.ko is the supplier.
+> 
+> But it binds to the children of the ports that are supposed to be its
+> consumers?
+> 
+> Why is that even expected to work?
+
+No, the consumers are aunts (or uncles) of the supplier, if you will. :-)
+
+The consumers are the hotplug ports (named "Downstream Bridge 1 / 2" in
+the drawing below). The supplier is the NHI:
+
+      (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
+                                         +-- Downstream Bridge 1 --
+                                         +-- Downstream Bridge 2 --
+                                         ...
+
+We're calling pci_power_up() and pci_restore_state() from
+pci_pm_resume_noirq(). And that will fail for devices below
+the hotplug ports if the PCI tunnels haven't been re-established
+yet by the NHI.
+
+Currently we achieve that via quirk_apple_wait_for_thunderbolt() in
+drivers/pci/quirks.c. It would be more elegant if we could make this
+relationship explicit with "device links" and let the core handle it.
+
+Or am I mistaken and this particular use case is not what "device links"
+are intended for?
+
+Thanks,
+
+Lukas
