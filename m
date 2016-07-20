@@ -1,105 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][v2] timekeeping: Fix memory overwrite of sleep_time_bin array
-Date: Wed, 20 Jul 2016 14:59:55 +0200
-Message-ID: <9248665.2Hdcz4PDBO@vostro.rjw.lan>
-References: <1468903861-12487-1-git-send-email-yu.c.chen@intel.com> <alpine.DEB.2.11.1607191234200.3596@nanos> <20160720110658.GA5943@sharon>
+From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 0/5] hwmon: New hwmon registration API
+Date: Wed, 20 Jul 2016 16:11:04 +0100
+Message-ID: <af94ec36-b77d-96f8-ff15-2cfbbe89c3fa@kernel.org>
+References: <1466911590-26296-1-git-send-email-linux@roeck-us.net>
+ <d83c43cc-dfa3-684d-9315-e1eec5cd79fe@kernel.org>
+ <5782EEBB.1040209@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160720110658.GA5943@sharon>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5782EEBB.1040209-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hwmon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 20, 2016 07:06:58 PM Chen Yu wrote:
-> Hi Thomas,
-> On Tue, Jul 19, 2016 at 12:40:14PM +0200, Thomas Gleixner wrote:
-> > On Tue, 19 Jul 2016, Chen Yu wrote:
-> > > On 2016=E5=B9=B407=E6=9C=8819=E6=97=A5 16:36, Thomas Gleixner wro=
-te:
-> > > > On Tue, 19 Jul 2016, Chen Yu wrote:
-> > > > > Further investigation shows that, the problem is caused by se=
-tting
-> > > > > /sys/power/pm_trace to 1 before the 1st hibernation, since on=
-ce
-> > > > > pm_trace is enabled, the rtc becomes an unmeaningful value af=
-ter resumed,
-> > > >
-> > > > So why is the RTC value useless if pm_trace is enabled? I reall=
-y have a hard
-> > > > time to understand why pm_trace would affect the sleep time rea=
-dout from
-> > > > RTC.
-> > >
-> > > After pm_trace is enabled, during system suspend/hibernate, the h=
-ash name of
-> > > each devices will be written to rtc, so the rtc value depends on =
-what we
-> > > write in last suspend round, thus pm_trace can be used for diagno=
-se which
-> > > device failed to suspend(eg, the suspending on this device hang t=
-he system,
-> > > we reboot the system , and check rtc hash value).
-> > >=20
-> > > In our case, after first hibernate/resume round, we found our cur=
-rent system
-> > > time is at 2117, so syscore_resume -> timekeeping_resume :
-> > > __timekeeping_inject_sleeptime(tk, &ts_delta) would inject a quit=
-e large
-> > > delta : 2117 - 2017 year, thus the sleep_time_bin is overflow.
-> >=20
-> > While the range check is certainly correct and a good thing to have=
- it's wrong
-> > in the first place to call __timekeeping_inject_sleeptime() in case=
- that
-> > pm_trace is enabled simply because that "hash" time value will also=
- wreckage
-> > timekeeping. Your patch is just curing the symptom in the debug cod=
-e but not
-> > fixing the root cause.
-> >=20
-> OK. I've modified the patch.
-> In case I break any other stuff :p, could you help check
-> if this patch is in the right direction, thanks:
->=20
-> 1.  There are two places would invoke __timekeeping_inject_sleeptime(=
-),
->     they are timekeeping_resume and rtc_resume, so we need to deal wi=
-th
->     them respctively.
->=20
-> 2.  for rtc_resume, if the pm_trace has once been enabled,
->     we bypass the injection of sleep time.
->=20
-> 3. for timekeeping_resume,
->      Currently we either use nonstop clock source, or use persistent
->      clock to get the sleep time. As pm_trace breaks systems who use =
-rtc
->      as a persistent clock, x86 is affected. So we add a
->      check for x86 that, if the pm_trace has been enabled, we can not
->      trust the persistent clock delta read from rtc, thus bypass
->      the injection of sleep time in this case.
->=20
-> 4. Why we checked the history of pm_trace: once pm_trace
->    has been enabled, the delta of rtc would not be reliable anymore.
->    For example, if we only check current pm_trace, we might still get
->    memory overwrite:
->=20
->    4.1 echo 1 > /sys/power/pm_trace
->    4.2 hibernate/resume (rtc is broken, do not add delta from rtc bec=
-ause pm_trace is 1)
->    4.3 echo 0 > /sys/power/pm_trace
->    4.4 hibernate/resume (rtc is still broken, but add delta from rtc =
-because pm_trace is 0)
+On 11/07/16 01:56, Guenter Roeck wrote:
+> Hi Jonathan,
+> 
+> On 07/10/2016 09:00 AM, Jonathan Cameron wrote:
+>> On 26/06/16 04:26, Guenter Roeck wrote:
+>>> Up to now, each hwmon driver has to implement its own sysfs attributes.
+>>> This requires a lot of template code, and distracts from the driver's
+>>> core function to read and write chip registers.
+>>>
+>>> To be able to reduce driver complexity, move sensor attribute handling
+>>> and thermal zone registration into the hwmon core. By using the new API,
+>>> driver size is typically reduced by 20-50% depending on driver complexity
+>>> and the number of sysfs attributes supported.
+>>>
+>>> The first patch of the series introduces the API as well as support
+>>> for temperature sensors. Subsequent patches introduce support for
+>>> voltage, current, power, energy, humidity, and fan speed sensors.
+>>>
+>>> The series was tested by converting several drivers (lm75, lm90, tmp102,
+>>> tmp421, ltc4245) to the new API. Testing was done with with real chips
+>>> as well as with the hwmon driver module test code available at
+>>> https://github.com/groeck/module-tests.
+>> Some cool stuff hiding in there :)
+>>
+>> I've only reviewed 1 and 7 and the intermediate ones are really either
+>> correct or they aren't and they look fine to me.
+>>
+> Thanks a lot for your feedback - it is reassuring that it looks sane to you.
+> 
+>>
+>> So what's next? (beyond presumably a lot of driver conversions).
+>>
+> Next steps will be to address your comments, re-test, submit a new series,
+> add to -next after v4.8-rc1 is out, submit the conversions I have done
+> and add to -next. Then, obviously, only accept new drivers using the
+> new API.
+> 
+> Not sure if there is anything else we can or want to do do at this time.
+> Do you have anything in mind ?
+> 
+Was wondering about the bridge to IIO (reverse of iio to hwmon bridge)
+that you mentioned - for that you'd probably need some in kernel interfaces
+for all this stuff.
 
-The initial state of the RTC is invalid, but will the delta be still in=
-valid?
+Anyhow, stuff for the future (perhaps distant)
 
-And what if the admin fixes up the RTC before hibernating?  You will st=
-ill discard
-the RTC delta until the next reboot, right?
-
-Thanks,
-Rafael
+Jonathan
+> Thanks,
+> Guenter
+> 
