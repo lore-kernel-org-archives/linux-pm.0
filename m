@@ -1,90 +1,105 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 02/10] driver core: Functional dependencies tracking support
-Date: Wed, 20 Jul 2016 14:52:42 +0200
-Message-ID: <3969169.CcnEsvYuly@vostro.rjw.lan>
-References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com> <1975118.iO8UCAENoH@vostro.rjw.lan> <20160720062450.GA8066@wunner.de>
+Subject: Re: [PATCH][v2] timekeeping: Fix memory overwrite of sleep_time_bin array
+Date: Wed, 20 Jul 2016 14:59:55 +0200
+Message-ID: <9248665.2Hdcz4PDBO@vostro.rjw.lan>
+References: <1468903861-12487-1-git-send-email-yu.c.chen@intel.com> <alpine.DEB.2.11.1607191234200.3596@nanos> <20160720110658.GA5943@sharon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45277 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752882AbcGTMrs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 20 Jul 2016 08:47:48 -0400
-In-Reply-To: <20160720062450.GA8066@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160720110658.GA5943@sharon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:AMD IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>, linux-samsung-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org
 
-On Wednesday, July 20, 2016 08:24:50 AM Lukas Wunner wrote:
-> On Wed, Jul 20, 2016 at 02:33:18AM +0200, Rafael J. Wysocki wrote:
-> > On Friday, June 17, 2016 04:07:38 PM Lukas Wunner wrote:
-> > > On Fri, Jun 17, 2016 at 02:54:56PM +0200, Rafael J. Wysocki wrote:
-> > > > On Fri, Jun 17, 2016 at 12:36 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> > > > > On Fri, Jun 17, 2016 at 08:26:52AM +0200, Marek Szyprowski wrote:
-> > > > > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> > > > > We also have such a functional dependency for Thunderbolt on Macs:
-> > > > > On resume from system sleep, the PCIe hotplug ports may not resume
-> > > > > before the thunderbolt driver has reestablished the PCI tunnels.
-> > > > > Currently this is enforced by quirk_apple_wait_for_thunderbolt()
-> > > > > in drivers/pci/quirks.c. It would be good if we could represent
-> > > > > this dependency using something like Rafael's approach instead of
-> > > > > open coding it, however one detail in Rafael's patches is problematic:
-> > > > >
-> > > > > > New links are added by calling device_link_add() which may happen
-> > > > > > either before the consumer device is probed or when probing it, in
-> > > > > > which case the caller needs to ensure that the driver of the
-> > > > > > supplier device is present and functional and the DEVICE_LINK_PROBE_TIME
-> > > > > > flag should be passed to device_link_add() to reflect that.
-> > > > >
-> > > > > The thunderbolt driver cannot call device_link_add() before the
-> > > > > PCIe hotplug ports are bound to a driver unless we amend portdrv
-> > > > > to return -EPROBE_DEFER for Thunderbolt hotplug ports on Macs
-> > > > > if the thunderbolt driver isn't loaded.
-> > > > >
-> > > > > It would therefore be beneficial if device_link_add() can be
-> > > > > called even *after* the consumer is bound.
-> > > > 
-> > > > I don't quite follow.
-> > > > 
-> > > > Who's the provider and who's the consumer here?
-> > > 
-> > > thunderbolt.ko is the supplier.
-> > 
-> > But it binds to the children of the ports that are supposed to be its
-> > consumers?
-> > 
-> > Why is that even expected to work?
-> 
-> No, the consumers are aunts (or uncles) of the supplier, if you will. :-)
-> 
-> The consumers are the hotplug ports (named "Downstream Bridge 1 / 2" in
-> the drawing below). The supplier is the NHI:
-> 
->       (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
->                                          +-- Downstream Bridge 1 --
->                                          +-- Downstream Bridge 2 --
->                                          ...
-> 
-> We're calling pci_power_up() and pci_restore_state() from
-> pci_pm_resume_noirq(). And that will fail for devices below
-> the hotplug ports if the PCI tunnels haven't been re-established
-> yet by the NHI.
+On Wednesday, July 20, 2016 07:06:58 PM Chen Yu wrote:
+> Hi Thomas,
+> On Tue, Jul 19, 2016 at 12:40:14PM +0200, Thomas Gleixner wrote:
+> > On Tue, 19 Jul 2016, Chen Yu wrote:
+> > > On 2016=E5=B9=B407=E6=9C=8819=E6=97=A5 16:36, Thomas Gleixner wro=
+te:
+> > > > On Tue, 19 Jul 2016, Chen Yu wrote:
+> > > > > Further investigation shows that, the problem is caused by se=
+tting
+> > > > > /sys/power/pm_trace to 1 before the 1st hibernation, since on=
+ce
+> > > > > pm_trace is enabled, the rtc becomes an unmeaningful value af=
+ter resumed,
+> > > >
+> > > > So why is the RTC value useless if pm_trace is enabled? I reall=
+y have a hard
+> > > > time to understand why pm_trace would affect the sleep time rea=
+dout from
+> > > > RTC.
+> > >
+> > > After pm_trace is enabled, during system suspend/hibernate, the h=
+ash name of
+> > > each devices will be written to rtc, so the rtc value depends on =
+what we
+> > > write in last suspend round, thus pm_trace can be used for diagno=
+se which
+> > > device failed to suspend(eg, the suspending on this device hang t=
+he system,
+> > > we reboot the system , and check rtc hash value).
+> > >=20
+> > > In our case, after first hibernate/resume round, we found our cur=
+rent system
+> > > time is at 2117, so syscore_resume -> timekeeping_resume :
+> > > __timekeeping_inject_sleeptime(tk, &ts_delta) would inject a quit=
+e large
+> > > delta : 2117 - 2017 year, thus the sleep_time_bin is overflow.
+> >=20
+> > While the range check is certainly correct and a good thing to have=
+ it's wrong
+> > in the first place to call __timekeeping_inject_sleeptime() in case=
+ that
+> > pm_trace is enabled simply because that "hash" time value will also=
+ wreckage
+> > timekeeping. Your patch is just curing the symptom in the debug cod=
+e but not
+> > fixing the root cause.
+> >=20
+> OK. I've modified the patch.
+> In case I break any other stuff :p, could you help check
+> if this patch is in the right direction, thanks:
+>=20
+> 1.  There are two places would invoke __timekeeping_inject_sleeptime(=
+),
+>     they are timekeeping_resume and rtc_resume, so we need to deal wi=
+th
+>     them respctively.
+>=20
+> 2.  for rtc_resume, if the pm_trace has once been enabled,
+>     we bypass the injection of sleep time.
+>=20
+> 3. for timekeeping_resume,
+>      Currently we either use nonstop clock source, or use persistent
+>      clock to get the sleep time. As pm_trace breaks systems who use =
+rtc
+>      as a persistent clock, x86 is affected. So we add a
+>      check for x86 that, if the pm_trace has been enabled, we can not
+>      trust the persistent clock delta read from rtc, thus bypass
+>      the injection of sleep time in this case.
+>=20
+> 4. Why we checked the history of pm_trace: once pm_trace
+>    has been enabled, the delta of rtc would not be reliable anymore.
+>    For example, if we only check current pm_trace, we might still get
+>    memory overwrite:
+>=20
+>    4.1 echo 1 > /sys/power/pm_trace
+>    4.2 hibernate/resume (rtc is broken, do not add delta from rtc bec=
+ause pm_trace is 1)
+>    4.3 echo 0 > /sys/power/pm_trace
+>    4.4 hibernate/resume (rtc is still broken, but add delta from rtc =
+because pm_trace is 0)
 
-So the NHI is a PCIe device, right?
+The initial state of the RTC is invalid, but will the delta be still in=
+valid?
 
-Does the Thunderbolt driver bind to that device?
-
-> Currently we achieve that via quirk_apple_wait_for_thunderbolt() in
-> drivers/pci/quirks.c. It would be more elegant if we could make this
-> relationship explicit with "device links" and let the core handle it.
-> 
-> Or am I mistaken and this particular use case is not what "device links"
-> are intended for?
-
-I'm not sure yet.
+And what if the admin fixes up the RTC before hibernating?  You will st=
+ill discard
+the RTC delta until the next reboot, right?
 
 Thanks,
 Rafael
-
