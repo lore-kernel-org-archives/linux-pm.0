@@ -1,81 +1,51 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v3 5/6] usb: chipidea: let chipidea core device of_node
- equal's glue layer device of_node
-Date: Thu, 21 Jul 2016 18:12:39 +0800
-Message-ID: <20160721101239.GB22749@shlinux2>
-References: <1469007629-31757-1-git-send-email-peter.chen@nxp.com>
- <1469007629-31757-6-git-send-email-peter.chen@nxp.com>
- <20160721091438.GL1041@n2100.armlinux.org.uk>
- <20160721092012.GA22749@shlinux2>
- <20160721094128.GN1041@n2100.armlinux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Grzegorz Jaszczyk <jaz@semihalf.com>
+Subject: [PATCH] thermal: armada: add support for suspend/resume
+Date: Thu, 21 Jul 2016 12:43:27 +0200
+Message-ID: <1469097807-17748-1-git-send-email-jaz@semihalf.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160721094128.GN1041@n2100.armlinux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, stephen.boyd@linaro.org, oscar@naiandei.net, arnd@arndb.de, pawel.moll@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, s.hauer@pengutronix.de, linux-usb@vger.kernel.org, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, stillcompiling@gmail.com, Peter Chen <peter.chen@freescale.com>, p.zabel@pengutronix.de, festevam@gmail.com, linux-arm-kernel@lists.infradead.org
+To: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, thomas.petazzoni@free-electrons.com, gregory.clement@free-electrons.com
+Cc: mw@semihalf.com, jaz@semihalf.com, alior@marvell.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 21, 2016 at 10:41:28AM +0100, Russell King - ARM Linux wrote:
-> On Thu, Jul 21, 2016 at 05:20:12PM +0800, Peter Chen wrote:
-> > On Thu, Jul 21, 2016 at 10:14:38AM +0100, Russell King - ARM Linux wrote:
-> > > On Wed, Jul 20, 2016 at 05:40:28PM +0800, Peter Chen wrote:
-> > > > diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
-> > > > index 69426e6..0d05812 100644
-> > > > --- a/drivers/usb/chipidea/core.c
-> > > > +++ b/drivers/usb/chipidea/core.c
-> > > > @@ -914,6 +914,16 @@ static int ci_hdrc_probe(struct platform_device *pdev)
-> > > >  	if (!ci)
-> > > >  		return -ENOMEM;
-> > > >  
-> > > > +	/*
-> > > > +	 * At device tree, we have no device node for chipidea core,
-> > > > +	 * the glue layer's node is the parent node for host and udc
-> > > > +	 * device. But in related driver, the parent device is chipidea
-> > > > +	 * core. So, in order to let the common driver get parent's node,
-> > > > +	 * we let the core's device node equals glue layer's node.
-> > > > +	 */
-> > > > +	if (dev->parent && dev->parent->of_node)
-> > > > +		dev->of_node = dev->parent->of_node;
-> > > 
-> > > This is a dangerous thing to do.  You're changing the dev->of_node of
-> > > _this_ device, which means that _this_ driver will no longer match
-> > > the device if you remove and reinsert the driver module, or unbind
-> > > and try to re-bind the device to this driver.
-> > > 
-> > 
-> > Thanks for commenting it.
-> > 
-> > I have tested load/unload, it does not show any problems.
-> > 
-> > The chipidea core device is created by code at runtime, not by device node.
-> > And we have NO device node for this chipidea core device at dts.
-> 
-> Okay, so we still probably have the bind/unbind problem, where "dev"
-> can be matched by the driver which claimed "dev->parent".  Remember,
-> in an OF environment, driver matching is done by the compatible
-> property, which is accessed via dev->of_node.
-> 
-> Therefore, I would suggest that you NULL dev->of_node in the error
-> cleanup paths and in the remove function, so you don't have an
-> unbound device with a duplicated (but inappropriate) dev->of_node
-> pointer.
-> 
+There is no need to implement subroutine for suspend since there is no
+data to store before suspending.
 
-Although it does no mismatch between driver and device due to the driver
-has no of_match_table, I find it has below re-request pinctrl error
-after re-bind, that's due to the parent device which has of_node
-and there is a pinctrl property in it.
+Signed-off-by: Grzegorz Jaszczyk <jaz@semihalf.com>
+---
+ drivers/thermal/armada_thermal.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-imx6sx-pinctrl 20e0000.iomuxc: pin MX6SX_PAD_GPIO1_IO10 already requested by 2184000.usb;
-cannot claim for ci_hdrc.0
-
-After adding your suggestion, this error has gone, thanks.
-
-
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index ae75328..65f9838 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -304,12 +304,26 @@ static int armada_thermal_exit(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static int armada_thermal_resume(struct device *dev)
++{
++	struct thermal_zone_device *thermal =
++		dev_get_drvdata(dev);
++	struct armada_thermal_priv *priv = thermal->devdata;
++
++	priv->data->init_sensor(to_platform_device(dev), priv);
++
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(armada_thermal_pm_ops, NULL, armada_thermal_resume);
++
+ static struct platform_driver armada_thermal_driver = {
+ 	.probe = armada_thermal_probe,
+ 	.remove = armada_thermal_exit,
+ 	.driver = {
+ 		.name = "armada_thermal",
+ 		.of_match_table = armada_thermal_id_table,
++		.pm = &armada_thermal_pm_ops,
+ 	},
+ };
+ 
 -- 
-
-Best Regards,
-Peter Chen
+1.8.3.1
