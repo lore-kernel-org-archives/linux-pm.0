@@ -1,68 +1,83 @@
-From: Paolo Bonzini <pbonzini@redhat.com>
-Subject: Re: [PATCH resend] intel_rapl: downgrade message if no RAPL domains
- found in a VM
-Date: Thu, 21 Jul 2016 10:58:29 -0400 (EDT)
-Message-ID: <2117164955.9476317.1469113109470.JavaMail.zimbra@redhat.com>
-References: <1468928997-20431-1-git-send-email-pbonzini@redhat.com> <1617795.yheICcaOFs@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 1/3] cpufreq: add cpufreq_driver_resolve_freq()
+Date: Thu, 21 Jul 2016 12:59:26 -0700
+Message-ID: <20160721195926.GF3122@ubuntu>
+References: <1468441527-23534-1-git-send-email-smuckle@linaro.org>
+ <1468441527-23534-2-git-send-email-smuckle@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx4-phx2.redhat.com ([209.132.183.25]:47879 "EHLO
-	mx4-phx2.redhat.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753113AbcGUO67 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jul 2016 10:58:59 -0400
-In-Reply-To: <1617795.yheICcaOFs@vostro.rjw.lan>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:34006 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752077AbcGUT73 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 21 Jul 2016 15:59:29 -0400
+Received: by mail-pa0-f46.google.com with SMTP id fi15so31976763pac.1
+        for <linux-pm@vger.kernel.org>; Thu, 21 Jul 2016 12:59:29 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1468441527-23534-2-git-send-email-smuckle@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Jacob Pan <jacob.jun.pan@linux.intel.com>, Andy Lutomirski <luto@amacapital.net>
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
 
-
-
------ Original Message -----
-> From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> To: "Paolo Bonzini" <pbonzini@redhat.com>
-> Cc: linux-kernel@vger.kernel.org, "Thomas Renninger" <trenn@suse.de>, "Peter Zijlstra" <peterz@infradead.org>,
-> linux-pm@vger.kernel.org, "Jacob Pan" <jacob.jun.pan@linux.intel.com>, "Andy Lutomirski" <luto@amacapital.net>
-> Sent: Thursday, July 21, 2016 3:19:28 PM
-> Subject: Re: [PATCH resend] intel_rapl: downgrade message if no RAPL domains found in a VM
+On 13-07-16, 13:25, Steve Muckle wrote:
+> Cpufreq governors may need to know what a particular target frequency
+> maps to in the driver without necessarily wanting to set the frequency.
+> Support this operation via a new cpufreq API,
+> cpufreq_driver_resolve_freq(). This API returns the lowest driver
+> frequency equal or greater than the target frequency
+> (CPUFREQ_RELATION_L), subject to any policy (min/max) or driver
+> limitations. The mapping is also cached in the policy so that a
+> subsequent fast_switch operation can avoid repeating the same lookup.
 > 
-> On Tuesday, July 19, 2016 01:49:57 PM Paolo Bonzini wrote:
-> > People complain about the driver saying there's no valid RAPL domains
-> > in a VM, and doing so at KERN_ERR severity.  Downgrade this to KERN_INFO
-> > if running on a hypervisor, since it is basically stating the obvious.
-> > 
-> > Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> > Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> > Cc: Andy Lutomirski <luto@amacapital.net>
-> > Signed-off-by: Paolo Bonzini <pbonzini@redhat.com>
-> > ---
-> > 	First sent out about a year ago. :)
-> > 
-> >  drivers/powercap/intel_rapl.c | 4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> > index b2766b867b0e..0a0b09910116 100644
-> > --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -1392,7 +1392,9 @@ static int rapl_detect_domains(struct rapl_package
-> > *rp, int cpu)
-> >  	}
-> >  	rp->nr_domains = bitmap_weight(&rp->domain_map,	RAPL_DOMAIN_MAX);
-> >  	if (!rp->nr_domains) {
-> > -		pr_err("no valid rapl domains found in package %d\n", rp->id);
-> > +		printk("%sNo valid RAPL domains found in package %d\n",
-> > +		       boot_cpu_has(X86_FEATURE_HYPERVISOR) ? KERN_INFO : KERN_ERR,
-> > +		       rp->id);
+> The API will call a new cpufreq driver callback, resolve_freq(), if it
+> has been registered by the driver. Otherwise the frequency is resolved
+> via cpufreq_frequency_table_target(). Rather than require ->target()
+> style drivers to provide a resolve_freq() callback it is left to the
+> caller to ensure that the driver implements this callback if necessary
+> to use cpufreq_driver_resolve_freq().
 > 
-> But we print that message with pr_debug() now (as in linux-next).
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Steve Muckle <smuckle@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c | 25 +++++++++++++++++++++++++
+>  include/linux/cpufreq.h   | 16 ++++++++++++++++
+>  2 files changed, 41 insertions(+)
 > 
-> Do you still want to do anything about that?
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 118b4f30a406..b696baeb249d 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -492,6 +492,29 @@ void cpufreq_disable_fast_switch(struct cpufreq_policy *policy)
+>  }
+>  EXPORT_SYMBOL_GPL(cpufreq_disable_fast_switch);
+>  
+> +/**
+> + * cpufreq_driver_resolve_freq - Map a target frequency to a driver-supported
+> + * one.
+> + * @target_freq: target frequency to resolve.
+> + *
+> + * The target to driver frequency mapping is cached in the policy.
+> + *
+> + * Return: Lowest driver-supported frequency greater than or equal to the
+> + * given target_freq, subject to policy (min/max) and driver limitations.
+> + */
+> +unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
+> +					 unsigned int target_freq)
+> +{
+> +	target_freq = clamp_val(target_freq, policy->min, policy->max);
+> +	policy->cached_target_freq = target_freq;
+> +	if (cpufreq_driver->resolve_freq)
+> +		return cpufreq_driver->resolve_freq(policy, target_freq);
 
-Oops, then I guess what is in linux-next is okay.
+Any reason why we still have this call around ? I thought the whole
+attempt I made was to get rid of this :)
 
-Thanks,
+The core can do this pretty much now by itself, why do we still want
+this call?
 
-Paolo
+Also, your series doesn't add a user for it yet, so better drop it for
+now.
+
+-- 
+viresh
