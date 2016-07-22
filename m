@@ -1,72 +1,89 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: Disallow ->resolve_freq() for drivers
- providing ->target_index()
-Date: Fri, 22 Jul 2016 08:13:27 -0700
-Message-ID: <20160722151327.GP3122@ubuntu>
-References: <065301260510fbca81f5481b27b0de956073068a.1469137133.git.viresh.kumar@linaro.org>
- <1490801.bHMYROVPDC@vostro.rjw.lan>
- <20160721232228.GT27987@graphite.smuckle.net>
- <CAJZ5v0idFG6nr3dRzt66L7gxHpxf05RP4CMQc6Edn0zkzXSKow@mail.gmail.com>
- <20160721234558.GX27987@graphite.smuckle.net>
- <CAJZ5v0j1vX+TwjcDxhbfd2ZruxWz7hFfiMUD6NL_+ZHyDqcU5g@mail.gmail.com>
- <20160722000903.GY27987@graphite.smuckle.net>
- <CAJZ5v0iH0J5JK+PUMsDN3K7aJNKiBt=5p5N3mry=KEL+=ZM94w@mail.gmail.com>
- <20160722003405.GZ27987@graphite.smuckle.net>
+From: Andreas Herrmann <aherrmann@suse.com>
+Subject: [PATCH] Revert "cpufreq: pcc-cpufreq: update default value of
+ cpuinfo_transition_latency"
+Date: Fri, 22 Jul 2016 17:14:11 +0200
+Message-ID: <20160722151411.GB11711@suselix.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.nue.novell.com ([195.135.221.5]:45497 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbcGVPOr (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Fri, 22 Jul 2016 11:14:47 -0400
 Content-Disposition: inline
-In-Reply-To: <20160722003405.GZ27987@graphite.smuckle.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Jacob Tanenbaum <jtanenba@redhat.com>, stable@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 21-07-16, 17:34, Steve Muckle wrote:
-> On Fri, Jul 22, 2016 at 02:18:54AM +0200, Rafael J. Wysocki wrote:
-> > > My thinking was that one of these two would be preferable:
-> > >
-> > > - Forcing ->target() drivers to install a ->resolve_freq callback,
-> > >   enforcing this at cpufreq driver init time.
-> > 
-> > That would have been possible, but your series didn't do that.
-> > 
-> > >   My understanding is
-> > >   ->target() drivers are deprecated anyway
-> > 
-> > No, they aren't.
-> 
-> Ok. I didn't follow Documentation/cpu-freq/cpu-drivers.txt section 1.5
-> then - it suggests something about target() is deprecated, perhaps it's
-> out of date.
 
-They are kind of deprecated for the new uesrs, but we still have
-handful of users of it.
+This reverts commit 790d849bf811a8ab5d4cd2cce0f6fda92f6aebf2.
 
-> Sorry, that should've been "check that either ->target_index() or
-> ->resolve_freq() is implemented." 
-> 
-> Implementing resolve_freq for the target() drivers and requiring it at
-> driver init time is probably the better way to go though. Perhaps I can
-> work on this at some point.
+Using a v4.7-rc7 kernel on a HP ProLiant triggered following messages
 
-As I said earlier as well in one of the emails, if you are worried
-about the extra 'if' check in the hot path, then wouldn't this fix it
-for you?
+ pcc-cpufreq: (v1.10.00) driver loaded with frequency limits: 1200 MHz, 2800 MHz
+ cpufreq: ondemand governor failed, too long transition latency of HW, fallback to performance governor
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 3dd4884c6f9e..91d8ec4c8eb7 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -517,7 +517,7 @@ unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
-                return policy->freq_table[idx].frequency;
-        }
+The last line was shown for each CPU in the system.
+Testing v4.5 (where commit 790d849b was integrated) triggered
+similar messages. Same behaviour on a 2nd HP Proliant system.
+
+So commit 790d849bf (cpufreq: pcc-cpufreq: update default value of
+cpuinfo_transition_latency) causes the system to use performance
+governor which, I guess, was not the intention of the patch.
+
+Enabling debug output in pcc-cpufreq provides following verbose output:
+
+ pcc-cpufreq: (v1.10.00) driver loaded with frequency limits: 1200 MHz, 2800 MHz
+ pcc_get_offset: for CPU 0: pcc_cpu_data input_offset: 0x44, pcc_cpu_data output_offset: 0x48
+ init: policy->max is 2800000, policy->min is 1200000
+ get: get_freq for CPU 0
+ get: SUCCESS: (virtual) output_offset for cpu 0 is 0xffffc9000d7c0048, contains a value of: 0xff06. Speed is: 168000 MHz
+ cpufreq: ondemand governor failed, too long transition latency of HW, fallback to performance governor
+ target: CPU 0 should go to target freq: 2800000 (virtual) input_offset is 0xffffc9000d7c0044
+ target: was SUCCESSFUL for cpu 0
+
+I am asking to revert 790d849bf to re-enable usage of ondemand
+governor with pcc-cpufreq.
+
+CC: Jacob Tanenbaum <jtanenba@redhat.com>
+CC: <stable@vger.kernel.org> # 4.5+
+Signed-off-by: Andreas Herrmann <aherrmann@suse.com>
+
+---
+ Documentation/cpu-freq/pcc-cpufreq.txt | 4 ++--
+ drivers/cpufreq/pcc-cpufreq.c          | 2 --
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/cpu-freq/pcc-cpufreq.txt b/Documentation/cpu-freq/pcc-cpufreq.txt
+index 0a94224..9e3c3b3 100644
+--- a/Documentation/cpu-freq/pcc-cpufreq.txt
++++ b/Documentation/cpu-freq/pcc-cpufreq.txt
+@@ -159,8 +159,8 @@ to be strictly associated with a P-state.
  
--       if (cpufreq_driver->resolve_freq)
-+       if (likely(cpufreq_driver->resolve_freq))
-                return cpufreq_driver->resolve_freq(policy, target_freq);
+ 2.2 cpuinfo_transition_latency:
+ -------------------------------
+-The cpuinfo_transition_latency field is CPUFREQ_ETERNAL. The PCC specification
+-does not include a field to expose this value currently.
++The cpuinfo_transition_latency field is 0. The PCC specification does
++not include a field to expose this value currently.
  
-        return target_freq;
-
+ 2.3 cpuinfo_cur_freq:
+ ---------------------
+diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+index a7ecb9a..3f0ce2a 100644
+--- a/drivers/cpufreq/pcc-cpufreq.c
++++ b/drivers/cpufreq/pcc-cpufreq.c
+@@ -555,8 +555,6 @@ static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	policy->min = policy->cpuinfo.min_freq =
+ 		ioread32(&pcch_hdr->minimum_frequency) * 1000;
+ 
+-	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+-
+ 	pr_debug("init: policy->max is %d, policy->min is %d\n",
+ 		policy->max, policy->min);
+ out:
 -- 
-viresh
+2.1.4
+
