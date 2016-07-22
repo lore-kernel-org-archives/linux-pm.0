@@ -1,48 +1,95 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] Revert "cpufreq: pcc-cpufreq: update default value of
- cpuinfo_transition_latency"
-Date: Fri, 22 Jul 2016 16:30:42 -0700
-Message-ID: <20160722233042.GI3122@ubuntu>
-References: <20160722151411.GB11711@suselix.suse.de>
- <3431802.ZZWypmTthK@vostro.rjw.lan>
- <20160722212852.GE3122@ubuntu>
- <3860863.MLaNBM27lJ@vostro.rjw.lan>
+From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v4 0/7] lib: string: add functions to case-convert
+	strings
+Date: Fri, 22 Jul 2016 16:31:02 -0700
+Message-ID: <1469230269-1644-1-git-send-email-mmayer@broadcom.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3860863.MLaNBM27lJ@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Andreas Herrmann <aherrmann@suse.com>, Jacob Tanenbaum <jtanenba@redhat.com>, stable@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, Rasmus Villemoes <linux-qQsb+v5E8BnlAoU/VqSP6n9LOBIZ5rWg@public.gmane.org>, Chris Metcalf <cmetcalf-d5a29ZRxExrQT0dZR+AlfA@public.gmane.org>, Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, speakup-UPO/6gOIxNZglr+F8WMZYdi2O/JbrIOy@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 22-07-16, 23:46, Rafael J. Wysocki wrote:
-> On Friday, July 22, 2016 02:28:52 PM Viresh Kumar wrote:
-> > On 22-07-16, 23:31, Rafael J. Wysocki wrote:
-> > > > cpufreq.c
-> > > > 
-> > > > 	if (policy->governor->max_transition_latency &&
-> > > > 	    policy->cpuinfo.transition_latency >
-> > > > 	    policy->governor->max_transition_latency) {
-> > > > 
-> > > > - And this check will always fail, unless max_transition_latency is zero.
-> > > 
-> > > Why would it fail?  If governor->max_transition_latency is non-zero, but less
-> > > than UNIT_MAX, the condition checked will be true to my eyes.
-> > 
-> > Bad wording. Sorry.
-> > 
-> > I meant, this 'if' check will always succeed (as you also noted), and
-> > so we will always get the error message reported in this patch.
-> 
-> Not always, but for drivers setting cpuinfo.transition_latency to CPUFREQ_ETERNAL.
-
-So the drivers which have set their transition_latency to
-CPUFREQ_ETERNAL, can't use ondemand governor unless
-governor->max_transition_latency is set to 0 from userspace.
-
-What should be done about this patch then ? It broke in late 2015.
-
--- 
-viresh
+VGhpcyBzZXJpZXMgaW50cm9kdWNlcyBhIGZhbWlseSBvZiBnZW5lcmljIHN0cmluZyBjYXNlIGNv
+bnZlcnNpb24KZnVuY3Rpb25zLiBUaGlzIGtpbmQgb2YgZnVuY3Rpb25hbGl0eSBpcyBuZWVkZWQg
+aW4gc2V2ZXJhbCBwbGFjZXMgaW4KdGhlIGtlcm5lbC4gUmlnaHQgbm93LCBldmVyeWJvZHkgc2Vl
+bXMgdG8gYmUgaW1wbGVtZW50aW5nIHRoZWlyIG93bgpjb3B5IG9mIHRoaXMgZnVuY3Rpb25hbGl0
+eS4KCkJhc2VkIG9uIHRoZSBkaXNjdXNzaW9uIG9mIHRoZSBwcmV2aW91cyB2ZXJzaW9uIG9mIHRo
+aXMgc2VyaWVzWzFdIGFuZAp0aGUgdXNlIGNhc2VzIGZvdW5kIGluIHRoZSBrZXJuZWwsIGl0IGRv
+ZXMgbG9vayBsaWtlIGhhdmluZyBzZXZlcmFsCmZsYXZvdXJzIG9mIGNhc2UgY29udmVyc2lvbiBm
+dW5jdGlvbnMgaXMgYmVuZWZpY2lhbC4gVGhlIHVzZSBjYXNlcyBmYWxsCmludG8gdGhyZWUgY2F0
+ZWdvcmllczoKICAgIC0gY29weWluZyBhIHN0cmluZyBhbmQgY29udmVydGluZyB0aGUgY2FzZSB3
+aGlsZSBzcGVjaWZ5aW5nIGEKICAgICAgbWF4aW11bSBsZW5ndGggdG8gbWltaWMgc3RybGNweSgp
+CiAgICAtIGNvcHlpbmcgYSBzdHJpbmcgYW5kIGNvbnZlcnRpbmcgdGhlIGNhc2Ugd2l0aG91dCBz
+cGVjaWZ5aW5nIGEKICAgICAgbGVuZ3RoIHRvIG1pbWljIHN0cmNweSgpCiAgICAtIGNvbnZlcnRp
+bmcgdGhlIGNhc2Ugb2YgYSBzdHJpbmcgaW4tcGxhY2UgKGkuZS4gbW9kaWZ5aW5nIHRoZQogICAg
+ICBzdHJpbmcgdGhhdCB3YXMgcGFzc2VkIGluKQoKQ29uc2VxdWVudGx5LCBJIGFtIHByb3Bvc2lu
+ZyB0aGVzZSBuZXcgZnVuY3Rpb25zOgogICAgaW50IHN0cmxjcHl0b3VwcGVyKGNoYXIgKmRzdCwg
+Y29uc3QgY2hhciAqc3JjLCBzaXplX3QgbGVuKTsKICAgIGludCBzdHJsY3B5dG9sb3dlcihjaGFy
+ICpkc3QsIGNvbnN0IGNoYXIgKnNyYywgc2l6ZV90IGxlbik7CiAgICB2b2lkIHN0cmNweXRvdXBw
+ZXIoY2hhciAqZHN0LCBjb25zdCBjaGFyICpzcmMpOwogICAgdm9pZCBzdHJjcHl0b2xvd2VyKGNo
+YXIgKmRzdCwgY29uc3QgY2hhciAqc3JjKTsKICAgIHZvaWQgc3RydG91cHBlcihjaGFyICpzKTsK
+ICAgIHZvaWQgc3RydG9sb3dlcihjaGFyICpzKTsKClNldmVyYWwgZHJpdmVycyBhcmUgYmVpbmcg
+bW9kaWZpZWQgdG8gbWFrZSB1c2Ugb2YgdGhlIGZ1bmN0aW9ucyBhYm92ZS4KQW5vdGhlciBkcml2
+ZXIgdGhhdCBhbHNvIG1ha2VzIHVzZSBvZiB0aGlzIGZ1bmN0aW9uYWxpdHkgd2lsbCBiZQpzdWJt
+aXR0ZWQgdXBzdHJlYW0gc2hvcnRseSwgd2hpY2ggcHJvbXB0ZWQgdGhpcyB3aG9sZSBleGVyY2lz
+ZS4KClRoZSBjaGFuZ2VzIG1hZGUgaGVyZSBoYXZlIGJlZW4gY29tcGlsZS10ZXN0ZWQsIGJ1dCBu
+b3QgdHJpZWQgb3V0LCBkdWUKdG8gbGFjayBvZiByZXF1aXJlZCBoYXJkd2FyZS4KCkNoYW5nZXMg
+c2luY2UgdjM6CiAgLSBzdHJsY3B5dG91cHBlcigpIGFuZCBzdHJsY3B5dG9sb3dlcigpIHJldHVy
+biBsZW5ndGggb2YgZGVzdGluYXRpb24KICAgIG9yIC1FMkJJRyAoc2VlIFsyXSkKICAtIHdlIHVz
+ZSB+KHNpemVfdCkwIGluc3RlYWQgb2YgLTEgdG8gY29weSBzdHJpbmdzIG9mIGFyYml0cmFyeSBs
+ZW5ndGgKICAgIGluIHN0cmNweXRvKigpIGFuZCBzdHJ0byooKQogIC0gQSBmZXcgQUNLcyBhZGRl
+ZAoKQ2hhbmdlcyBzaW5jZSB2MjoKICAtIHVzZSBzdHJsY3B5KCkgc2VtYW50aWNzIG5vdCBzdHJu
+Y3B5KCkgc2VtYW50aWNzLCBpLmUuIGd1YXJhbnRlZQogICAgTlVMTCB0ZXJtaW5hdGlvbgogIC0g
+YXMgYSByZXN1bHQgc3RybmNweXRvPHVwcGVyfGxvd2VyPiBhcmUgbm93IGNhbGxlZAogICAgc3Ry
+bGNweXRvPHVwcGVyfGxvd2VyPgogIC0gbWFrZSBmdW5jdGlvbnMgdm9pZAogIC0gdXNlIGxlbiA9
+PSAtMSAoU0laRV9NQVgpIGFzIG5vLWxpbWl0IGluZGljYXRvciByYXRoZXIgdGhlbiBsZW4gPT0g
+MAogIC0gY2hhbmdlIFBBVENIIDIvNyB0byBtYXRjaCBzdHJsY3B5KCkgc2VtYW50aWNzCiAgLSBj
+aGFuZ2UgUEFUQ0ggNC83IHRvIG1hdGNoIHN0cmxjcHkoKSBzZW1hbnRpY3MKCkNoYW5nZXMgc2lu
+Y2UgdjE6CiAgLSBleHBhbmRlZCBzdHJ0b2xvd2VyKCkgaW50byBhIGZhbWlseSBvZiBmdW5jdGlv
+bnMgdGhhdCBjb3ZlciB1c2UKICAgIGNhc2VzIHdoZW4gYSBsZW5ndGggYXJndW1lbnQgaXMgb3Ig
+aXNuJ3QgcmVxdWlyZWQgYW5kIHRoYXQgc3VwcG9ydAogICAgY29weWluZyB0aGUgc3RyaW5nIGlu
+dG8gYSBuZXcgYnVmZmVyIG9yIGNoYW5naW5nIGl0IGluLXBsYWNlIAogIC0gY2hhbmdlZCB0aGUg
+ZnVuY3Rpb24gc2VtYW50aWNzIHRvIHJldHVybiBhIHBvaW50ZXIgdG8gdGhlCiAgICB0ZXJtaW5h
+dGluZyAnXDAnIGNoYXJhY3RlciBvZiB0aGUgbW9kaWZpZWQgc3RyaW5nCiAgLSBhZGRlZCBzdHJ0
+b3VwcGVyKCkgZnVuY3Rpb25hbGl0eSBtaXJyb3JpbmcgdGhlIGFib3ZlCiAgLSBkcm9wcGVkIHRo
+ZSBBQ1BJQ0EgcGF0Y2gsIHNpbmNlIHRoYXQgY29kZSBpcyBPUyBpbmRlcGVuZGVudCBhbmQKICAg
+IGNhbid0IHJlbHkgb24gYSBMaW51eCBsaWJyYXJ5IGZ1bmN0aW9uIChzZWUgWzNdKQogIC0gQWRk
+ZWQgdHdvIG5ldyBwYXRjaGVzIHJlcGxhY2luZyBzdHJ0b3VwcGVyKCkgaW1wbGVtZW50YXRpb25z
+CgpbMV0gaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTYvNi8zMC83MjcKWzJdIGh0dHBzOi8vbGtt
+bC5vcmcvbGttbC8yMDE2LzcvMTAvNApbM10gaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTYvNy8x
+LzkKCk1hcmt1cyBNYXllciAoNyk6CiAgbGliOiBzdHJpbmc6IGFkZCBmdW5jdGlvbnMgdG8gY2Fz
+ZS1jb252ZXJ0IHN0cmluZ3MKICBkcm0vbm91dmVhdS9jb3JlOiBtYWtlIHVzZSBvZiBuZXcgc3Ry
+bGNweXRvbG93ZXIoKSBmdW5jdGlvbgogIEFDUEkgLyBkZXZpY2Vfc3lzZnM6IG1ha2UgdXNlIG9m
+IG5ldyBzdHJ0b2xvd2VyKCkgZnVuY3Rpb24KICBzdGFnaW5nOiBzcGVha3VwOiByZXBsYWNlIHNw
+a19zdHJsd3IoKSB3aXRoIHN0cmxjcHl0b2xvd2VyKCkKICBpc2NzaS10YXJnZXQ6IHJlcGxhY2Ug
+aXNjc2lfaW5pdGlhdG9ybmFtZV90b2xvd2VyKCkgd2l0aCBzdHJ0b2xvd2VyKCkKICBkcm0vbm91
+dmVhdS9maWZvL2drMTA0OiBtYWtlIHVzZSBvZiBuZXcgc3RyY3B5dG91cHBlcigpIGZ1bmN0aW9u
+CiAgcG93ZXJfc3VwcGx5OiBtYWtlIHVzZSBvZiBuZXcgc3RyY3B5dG91cHBlcigpIGZ1bmN0aW9u
+CgogZHJpdmVycy9hY3BpL2RldmljZV9zeXNmcy5jICAgICAgICAgICAgICAgICAgICAgIHwgIDQg
+Ky0tCiBkcml2ZXJzL2dwdS9kcm0vbm91dmVhdS9udmttL2NvcmUvZmlybXdhcmUuYyAgICAgfCAg
+OSArLS0tLQogZHJpdmVycy9ncHUvZHJtL25vdXZlYXUvbnZrbS9lbmdpbmUvZmlmby9nazEwNC5j
+IHwgIDUgKy0tCiBkcml2ZXJzL3Bvd2VyL3Bvd2VyX3N1cHBseV9zeXNmcy5jICAgICAgICAgICAg
+ICAgfCAxMyArKystLS0tCiBkcml2ZXJzL3N0YWdpbmcvc3BlYWt1cC9rb2JqZWN0cy5jICAgICAg
+ICAgICAgICAgfCAgMyArLQogZHJpdmVycy9zdGFnaW5nL3NwZWFrdXAvbWFpbi5jICAgICAgICAg
+ICAgICAgICAgIHwgIDMgKy0KIGRyaXZlcnMvc3RhZ2luZy9zcGVha3VwL3NwZWFrdXAuaCAgICAg
+ICAgICAgICAgICB8ICAxIC0KIGRyaXZlcnMvc3RhZ2luZy9zcGVha3VwL3ZhcmhhbmRsZXJzLmMg
+ICAgICAgICAgICB8IDEyIC0tLS0tLS0KIGRyaXZlcnMvdGFyZ2V0L2lzY3NpL2lzY3NpX3Rhcmdl
+dF9uZWdvLmMgICAgICAgICB8IDE3ICstLS0tLS0tLQogaW5jbHVkZS9saW51eC9zdHJpbmcuaCAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIHwgNDAgKysrKysrKysrKysrKysrKysrKysrCiBsaWIv
+c3RyaW5nLmMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfCA0NiArKysrKysr
+KysrKysrKysrKysrKysrKysKIDExIGZpbGVzIGNoYW5nZWQsIDk4IGluc2VydGlvbnMoKyksIDU1
+IGRlbGV0aW9ucygtKQoKLS0gCjIuNy40CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fXwpOb3V2ZWF1IG1haWxpbmcgbGlzdApOb3V2ZWF1QGxpc3RzLmZyZWVk
+ZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L25vdXZlYXUK
