@@ -1,164 +1,66 @@
-From: Jisheng Zhang <jszhang@marvell.com>
-Subject: [PATCH] PM / OPP: optimize dev_pm_opp_set_rate() a bit
-Date: Fri, 22 Jul 2016 20:42:50 +0800
-Message-ID: <1469191370-1285-1-git-send-email-jszhang@marvell.com>
+From: Phil Reid <preid@electromag.com.au>
+Subject: Re: [PATCH 4/4] power: sbs-battery: Use gpio_desc and sleeping calls
+ for battery detect
+Date: Fri, 22 Jul 2016 22:18:28 +0800
+Message-ID: <fbc31b36-e6bf-b7c5-742b-91619280b8f4@electromag.com.au>
+References: <201607221825.d8qlO3ak%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jisheng Zhang <jszhang@marvell.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from anchovy3.45ru.net.au ([203.30.46.155]:37568 "EHLO
+	anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750810AbcGVOSh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jul 2016 10:18:37 -0400
+In-Reply-To: <201607221825.d8qlO3ak%fengguang.wu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kbuild test robot <lkp@intel.com>
+Cc: kbuild-all@01.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org
 
-In dev_pm_opp_set_rate(), _find_opp_table() is called three times: once
-by _get_opp_clk(), twice by dev_pm_opp_find_freq_ceil(). If there are
-several opp_tables in the system, three times of opp table finding is a
-big waste. This patch reduced the call of _find_opp_table() to only
-once.
+On 22/07/2016 18:40, kbuild test robot wrote:
+> Hi,
+>
+> [auto build test ERROR on battery/master]
+> [also build test ERROR on v4.7-rc7 next-20160722]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Phil-Reid/power-sbs-manager-fixup-gpio-detect-irq-handling/20160722-174454
+> base:   git://git.infradead.org/battery-2.6.git master
+> config: x86_64-randconfig-n0-07221807 (attached as .config)
+> compiler: gcc-6 (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>         # save the attached .config to linux build tree
+>         make ARCH=x86_64
+>
+> All errors (new ones prefixed by >>):
+>
+>    drivers/power/sbs-battery.c: In function 'sbs_probe':
+>>> drivers/power/sbs-battery.c:857:33: error: passing argument 1 of 'sbs_of_populate_pdata' from incompatible pointer type [-Werror=incompatible-pointer-types]
+>       pdata = sbs_of_populate_pdata(chip);
+>                                     ^~~~
+>    drivers/power/sbs-battery.c:805:34: note: expected 'struct i2c_client *' but argument is of type 'struct sbs_info *'
+>     static struct sbs_platform_data *sbs_of_populate_pdata(
+>                                      ^~~~~~~~~~~~~~~~~~~~~
+>    cc1: some warnings being treated as errors
+>
+> vim +/sbs_of_populate_pdata +857 drivers/power/sbs-battery.c
+>
+>    851		chip->ignore_changes = 1;
+>    852		chip->last_state = POWER_SUPPLY_STATUS_UNKNOWN;
+>    853	
+>    854		if (pdata) {
+>    855			pdata = sbs_populate_pdata(chip);
+>    856		} else {
+>  > 857			pdata = sbs_of_populate_pdata(chip);
+>    858		}
+>    859	
+>    860		if (IS_ERR(pdata))
+>
+Forgot to update an empty function for when CONFIG_OF is not defined.
+I'll update after other feedback on the patch.
 
-Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
----
- drivers/base/power/opp/core.c | 85 ++++++++++++++++++-------------------------
- 1 file changed, 36 insertions(+), 49 deletions(-)
-
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 7c04c87..96043ee 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -402,6 +402,22 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_exact);
- 
-+static struct dev_pm_opp *_find_freq_ceil(struct opp_table *opp_table,
-+					  unsigned long *freq)
-+{
-+	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
-+
-+	list_for_each_entry_rcu(temp_opp, &opp_table->opp_list, node) {
-+		if (temp_opp->available && temp_opp->rate >= *freq) {
-+			opp = temp_opp;
-+			*freq = opp->rate;
-+			break;
-+		}
-+	}
-+
-+	return opp;
-+}
-+
- /**
-  * dev_pm_opp_find_freq_ceil() - Search for an rounded ceil freq
-  * @dev:	device for which we do this operation
-@@ -427,7 +443,6 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 					     unsigned long *freq)
- {
- 	struct opp_table *opp_table;
--	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
- 
- 	opp_rcu_lockdep_assert();
- 
-@@ -440,15 +455,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 	if (IS_ERR(opp_table))
- 		return ERR_CAST(opp_table);
- 
--	list_for_each_entry_rcu(temp_opp, &opp_table->opp_list, node) {
--		if (temp_opp->available && temp_opp->rate >= *freq) {
--			opp = temp_opp;
--			*freq = opp->rate;
--			break;
--		}
--	}
--
--	return opp;
-+	return _find_freq_ceil(opp_table, freq);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_ceil);
- 
-@@ -506,34 +513,6 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
- 
--/*
-- * The caller needs to ensure that opp_table (and hence the clk) isn't freed,
-- * while clk returned here is used.
-- */
--static struct clk *_get_opp_clk(struct device *dev)
--{
--	struct opp_table *opp_table;
--	struct clk *clk;
--
--	rcu_read_lock();
--
--	opp_table = _find_opp_table(dev);
--	if (IS_ERR(opp_table)) {
--		dev_err(dev, "%s: device opp doesn't exist\n", __func__);
--		clk = ERR_CAST(opp_table);
--		goto unlock;
--	}
--
--	clk = opp_table->clk;
--	if (IS_ERR(clk))
--		dev_err(dev, "%s: No clock available for the device\n",
--			__func__);
--
--unlock:
--	rcu_read_unlock();
--	return clk;
--}
--
- static int _set_opp_voltage(struct device *dev, struct regulator *reg,
- 			    unsigned long u_volt, unsigned long u_volt_min,
- 			    unsigned long u_volt_max)
-@@ -586,9 +565,24 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 		return -EINVAL;
- 	}
- 
--	clk = _get_opp_clk(dev);
--	if (IS_ERR(clk))
-+	rcu_read_lock();
-+
-+	opp_table = _find_opp_table(dev);
-+	if (IS_ERR(opp_table)) {
-+		dev_err(dev, "%s: device opp doesn't exist\n", __func__);
-+		rcu_read_unlock();
-+		return PTR_ERR(opp_table);
-+	}
-+
-+	clk = opp_table->clk;
-+	if (IS_ERR(clk)) {
-+		dev_err(dev, "%s: No clock available for the device\n",
-+			__func__);
-+		rcu_read_unlock();
- 		return PTR_ERR(clk);
-+	}
-+
-+	rcu_read_unlock();
- 
- 	freq = clk_round_rate(clk, target_freq);
- 	if ((long)freq <= 0)
-@@ -605,14 +599,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 
- 	rcu_read_lock();
- 
--	opp_table = _find_opp_table(dev);
--	if (IS_ERR(opp_table)) {
--		dev_err(dev, "%s: device opp doesn't exist\n", __func__);
--		rcu_read_unlock();
--		return PTR_ERR(opp_table);
--	}
--
--	old_opp = dev_pm_opp_find_freq_ceil(dev, &old_freq);
-+	old_opp = _find_freq_ceil(opp_table, &old_freq);
- 	if (!IS_ERR(old_opp)) {
- 		ou_volt = old_opp->u_volt;
- 		ou_volt_min = old_opp->u_volt_min;
-@@ -622,7 +609,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 			__func__, old_freq, PTR_ERR(old_opp));
- 	}
- 
--	opp = dev_pm_opp_find_freq_ceil(dev, &freq);
-+	opp = _find_freq_ceil(opp_table, &freq);
- 	if (IS_ERR(opp)) {
- 		ret = PTR_ERR(opp);
- 		dev_err(dev, "%s: failed to find OPP for freq %lu (%d)\n",
 -- 
-2.8.1
+Regards
+Phil Reid
+
