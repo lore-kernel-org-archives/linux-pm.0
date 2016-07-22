@@ -1,49 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/3] cpufreq: add cpufreq_driver_resolve_freq()
-Date: Fri, 22 Jul 2016 08:16:42 -0700
-Message-ID: <20160722151641.GQ3122@ubuntu>
-References: <1468441527-23534-1-git-send-email-smuckle@linaro.org>
- <1468441527-23534-2-git-send-email-smuckle@linaro.org>
- <20160721195926.GF3122@ubuntu>
- <2012245.HQXNKhffmu@vostro.rjw.lan>
- <20160721203041.GH3122@ubuntu>
- <20160721232131.GS27987@graphite.smuckle.net>
- <20160721233003.GM3122@ubuntu>
- <20160721233648.GV27987@graphite.smuckle.net>
- <20160722004405.GA27987@graphite.smuckle.net>
+Subject: Re: [PATCH] Revert "cpufreq: pcc-cpufreq: update default value of
+ cpuinfo_transition_latency"
+Date: Fri, 22 Jul 2016 08:36:56 -0700
+Message-ID: <20160722153656.GR3122@ubuntu>
+References: <20160722151411.GB11711@suselix.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:32975 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbcGVPQo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jul 2016 11:16:44 -0400
-Received: by mail-pa0-f42.google.com with SMTP id ks6so40587268pab.0
-        for <linux-pm@vger.kernel.org>; Fri, 22 Jul 2016 08:16:44 -0700 (PDT)
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160722004405.GA27987@graphite.smuckle.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160722151411.GB11711@suselix.suse.de>
+Sender: stable-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andreas Herrmann <aherrmann@suse.com>
+Cc: Jacob Tanenbaum <jtanenba@redhat.com>, stable@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
 
-On 21-07-16, 17:44, Steve Muckle wrote:
-> Going back and checking I see I was thinking of your suggestion that
-> cpufreq_register_driver() check that only target() drivers offer a
-> resolve_freq() callback. I put a comment for this in cpufreq.h but not a
-> check - I could add a check in another patch if you like.
+On 22-07-16, 17:14, Andreas Herrmann wrote:
+> diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+> index a7ecb9a..3f0ce2a 100644
+> --- a/drivers/cpufreq/pcc-cpufreq.c
+> +++ b/drivers/cpufreq/pcc-cpufreq.c
+> @@ -555,8 +555,6 @@ static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  	policy->min = policy->cpuinfo.min_freq =
+>  		ioread32(&pcch_hdr->minimum_frequency) * 1000;
+>  
+> -	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+> -
+>  	pr_debug("init: policy->max is %d, policy->min is %d\n",
+>  		policy->max, policy->min);
+>  out:
 
-That can be done as we aren't supporting the ->resolve_freq() callback
-for ->target_index() drivers.
+Hi Rafael,
 
-> Long term as I was mentioning in the other thread I think it'd be good
-> if the current target() drivers were modified to supply resolve_freq(),
-> and that cpufreq_register_driver() were again changed to require it for
-> those drivers.
+I am very confused on this, can you help me understand ?
 
-There is no need for us to force this, its really optional for such
-platforms. Worst case, schedutil wouldn't work at the best, so what?
-Its a platform driver's choice, isn't it ?
+- CPUFREQ_ETERNAL = -1
+- unsigned int transition_latency = CPUFREQ_ETERNAL, will set it to UINT_MAX.
+- Many drivers do it today
+
+cpufreq.c
+
+	if (policy->governor->max_transition_latency &&
+	    policy->cpuinfo.transition_latency >
+	    policy->governor->max_transition_latency) {
+
+- And this check will always fail, unless max_transition_latency is zero.
+
+What am I missing ?
 
 -- 
 viresh
