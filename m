@@ -1,56 +1,90 @@
-From: Linda Knippers <linda.knippers@hpe.com>
-Subject: Re: [PATCH] Revert "cpufreq: pcc-cpufreq: update default value of
- cpuinfo_transition_latency"
-Date: Fri, 22 Jul 2016 15:25:43 -0400
-Message-ID: <ead100e9-e2a0-3733-9537-ec47dc38e75c@hpe.com>
-References: <20160722151411.GB11711@suselix.suse.de>
- <20160722153656.GR3122@ubuntu>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: Re: [PATCH] PM-wakeup: Delete unnecessary checks before two function
+ calls
+Date: Fri, 22 Jul 2016 22:35:27 +0200
+Message-ID: <427a7f9d-d1c2-10be-9a23-30350ced6149@users.sourceforge.net>
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
+ <530A086E.8010901@users.sourceforge.net>
+ <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
+ <530A72AA.3000601@users.sourceforge.net>
+ <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
+ <530B5FB6.6010207@users.sourceforge.net>
+ <alpine.DEB.2.10.1402241710370.2074@hadrien>
+ <530C5E18.1020800@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251014170.2080@hadrien>
+ <530CD2C4.4050903@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net> <546C7E75.9080301@users.sourceforge.net>
+ <558FCAC1.1090605@users.sourceforge.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160722153656.GR3122@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andreas Herrmann <aherrmann@suse.com>
-Cc: Jacob Tanenbaum <jtanenba@redhat.com>, stable@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+In-Reply-To: <558FCAC1.1090605@users.sourceforge.net>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 List-Id: linux-pm@vger.kernel.org
 
+Am 28.06.2015 um 12:21 schrieb SF Markus Elfring:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sun, 28 Jun 2015 12:14:43 +0200
+> 
+> The functions dev_pm_disarm_wake_irq() and wakeup_source_unregister() test
+> whether their argument is NULL and then return immediately.
+> Thus the test around the calls is not needed.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+>  drivers/base/power/wakeup.c | 10 +++-------
+>  1 file changed, 3 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> index 40f7160..3741bc2 100644
+> --- a/drivers/base/power/wakeup.c
+> +++ b/drivers/base/power/wakeup.c
+> @@ -341,8 +341,7 @@ void device_wakeup_arm_wake_irqs(void)
+>  
+>  	rcu_read_lock();
+>  	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+> -		if (ws->wakeirq)
+> -			dev_pm_arm_wake_irq(ws->wakeirq);
+> +		dev_pm_arm_wake_irq(ws->wakeirq);
+>  	}
+>  	rcu_read_unlock();
+>  }
+> @@ -358,8 +357,7 @@ void device_wakeup_disarm_wake_irqs(void)
+>  
+>  	rcu_read_lock();
+>  	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+> -		if (ws->wakeirq)
+> -			dev_pm_disarm_wake_irq(ws->wakeirq);
+> +		dev_pm_disarm_wake_irq(ws->wakeirq);
+>  	}
+>  	rcu_read_unlock();
+>  }
+> @@ -396,9 +394,7 @@ int device_wakeup_disable(struct device *dev)
+>  		return -EINVAL;
+>  
+>  	ws = device_wakeup_detach(dev);
+> -	if (ws)
+> -		wakeup_source_unregister(ws);
+> -
+> +	wakeup_source_unregister(ws);
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(device_wakeup_disable);
+> 
 
+How do you think about to integrate this update suggestion
+into another source code repository?
 
-On 7/22/2016 11:36 AM, Viresh Kumar wrote:
-> On 22-07-16, 17:14, Andreas Herrmann wrote:
->> diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
->> index a7ecb9a..3f0ce2a 100644
->> --- a/drivers/cpufreq/pcc-cpufreq.c
->> +++ b/drivers/cpufreq/pcc-cpufreq.c
->> @@ -555,8 +555,6 @@ static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>  	policy->min = policy->cpuinfo.min_freq =
->>  		ioread32(&pcch_hdr->minimum_frequency) * 1000;
->>  
->> -	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
->> -
->>  	pr_debug("init: policy->max is %d, policy->min is %d\n",
->>  		policy->max, policy->min);
->>  out:
-> 
-> Hi Rafael,
-> 
-> I am very confused on this, can you help me understand ?
-> 
-> - CPUFREQ_ETERNAL = -1
-> - unsigned int transition_latency = CPUFREQ_ETERNAL, will set it to UINT_MAX.
-> - Many drivers do it today
-> 
-> cpufreq.c
-> 
-> 	if (policy->governor->max_transition_latency &&
-> 	    policy->cpuinfo.transition_latency >
-> 	    policy->governor->max_transition_latency) {
-> 
-> - And this check will always fail, unless max_transition_latency is zero.
-> 
-> What am I missing ?
-
-I don't know what's missing but I can reproduce the problem.
-
--- ljk
+Regards,
+Markus
