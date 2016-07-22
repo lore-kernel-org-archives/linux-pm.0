@@ -1,90 +1,83 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: Re: [PATCH] PM-wakeup: Delete unnecessary checks before two function
- calls
-Date: Fri, 22 Jul 2016 22:35:27 +0200
-Message-ID: <427a7f9d-d1c2-10be-9a23-30350ced6149@users.sourceforge.net>
-References: <5307CAA2.8060406@users.sourceforge.net>
- <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
- <530A086E.8010901@users.sourceforge.net>
- <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
- <530A72AA.3000601@users.sourceforge.net>
- <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
- <530B5FB6.6010207@users.sourceforge.net>
- <alpine.DEB.2.10.1402241710370.2074@hadrien>
- <530C5E18.1020800@users.sourceforge.net>
- <alpine.DEB.2.10.1402251014170.2080@hadrien>
- <530CD2C4.4050903@users.sourceforge.net>
- <alpine.DEB.2.10.1402251840450.7035@hadrien>
- <530CF8FF.8080600@users.sourceforge.net>
- <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
- <530DD06F.4090703@users.sourceforge.net>
- <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net> <546C7E75.9080301@users.sourceforge.net>
- <558FCAC1.1090605@users.sourceforge.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2] cpufreq: Disallow ->resolve_freq() for drivers providing ->target_index()
+Date: Fri, 22 Jul 2016 23:11:39 +0200
+Message-ID: <1635689.iZWBWcBJ5f@vostro.rjw.lan>
+References: <065301260510fbca81f5481b27b0de956073068a.1469137133.git.viresh.kumar@linaro.org> <20160722003405.GZ27987@graphite.smuckle.net> <20160722151327.GP3122@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <kernel-janitors-owner@vger.kernel.org>
-In-Reply-To: <558FCAC1.1090605@users.sourceforge.net>
-Sender: kernel-janitors-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64546 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750796AbcGVVGm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jul 2016 17:06:42 -0400
+In-Reply-To: <20160722151327.GP3122@ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
 
-Am 28.06.2015 um 12:21 schrieb SF Markus Elfring:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sun, 28 Jun 2015 12:14:43 +0200
+On Friday, July 22, 2016 08:13:27 AM Viresh Kumar wrote:
+> On 21-07-16, 17:34, Steve Muckle wrote:
+> > On Fri, Jul 22, 2016 at 02:18:54AM +0200, Rafael J. Wysocki wrote:
+> > > > My thinking was that one of these two would be preferable:
+> > > >
+> > > > - Forcing ->target() drivers to install a ->resolve_freq callback,
+> > > >   enforcing this at cpufreq driver init time.
+> > > 
+> > > That would have been possible, but your series didn't do that.
+> > > 
+> > > >   My understanding is
+> > > >   ->target() drivers are deprecated anyway
+> > > 
+> > > No, they aren't.
+> > 
+> > Ok. I didn't follow Documentation/cpu-freq/cpu-drivers.txt section 1.5
+> > then - it suggests something about target() is deprecated, perhaps it's
+> > out of date.
 > 
-> The functions dev_pm_disarm_wake_irq() and wakeup_source_unregister() test
-> whether their argument is NULL and then return immediately.
-> Thus the test around the calls is not needed.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  drivers/base/power/wakeup.c | 10 +++-------
->  1 file changed, 3 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index 40f7160..3741bc2 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -341,8 +341,7 @@ void device_wakeup_arm_wake_irqs(void)
->  
->  	rcu_read_lock();
->  	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-> -		if (ws->wakeirq)
-> -			dev_pm_arm_wake_irq(ws->wakeirq);
-> +		dev_pm_arm_wake_irq(ws->wakeirq);
->  	}
->  	rcu_read_unlock();
->  }
-> @@ -358,8 +357,7 @@ void device_wakeup_disarm_wake_irqs(void)
->  
->  	rcu_read_lock();
->  	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
-> -		if (ws->wakeirq)
-> -			dev_pm_disarm_wake_irq(ws->wakeirq);
-> +		dev_pm_disarm_wake_irq(ws->wakeirq);
->  	}
->  	rcu_read_unlock();
->  }
-> @@ -396,9 +394,7 @@ int device_wakeup_disable(struct device *dev)
->  		return -EINVAL;
->  
->  	ws = device_wakeup_detach(dev);
-> -	if (ws)
-> -		wakeup_source_unregister(ws);
-> -
-> +	wakeup_source_unregister(ws);
->  	return 0;
->  }
->  EXPORT_SYMBOL_GPL(device_wakeup_disable);
-> 
+> They are kind of deprecated for the new uesrs, but we still have
+> handful of users of it.
 
-How do you think about to integrate this update suggestion
-into another source code repository?
+No, they aren't deprecated, not even sort of.
 
-Regards,
-Markus
+Of course, stuff that can use frequency tables should implement ->target_index,
+because there's no valid reason for it not to do that.
+
+However, there are cases (and not legacy) where frequency tables are simply
+impractical and those drivers have no choice but to implement ->target.
+
+And if you want to try to force them into the frequency tables model
+regardless, then think twice, because I'm not going to let you do that.
+
+> > Sorry, that should've been "check that either ->target_index() or
+> > ->resolve_freq() is implemented." 
+> > 
+> > Implementing resolve_freq for the target() drivers and requiring it at
+> > driver init time is probably the better way to go though. Perhaps I can
+> > work on this at some point.
+> 
+> As I said earlier as well in one of the emails, if you are worried
+> about the extra 'if' check in the hot path, then wouldn't this fix it
+> for you?
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 3dd4884c6f9e..91d8ec4c8eb7 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -517,7 +517,7 @@ unsigned int cpufreq_driver_resolve_freq(struct cpufreq_policy *policy,
+>                 return policy->freq_table[idx].frequency;
+>         }
+>  
+> -       if (cpufreq_driver->resolve_freq)
+> +       if (likely(cpufreq_driver->resolve_freq))
+>                 return cpufreq_driver->resolve_freq(policy, target_freq);
+>  
+>         return target_freq;
+
+A CPU with good enough branch prediction logic should be able to figure out
+whether or not the test is "likely" after a few repetitions of it.
+
+Thanks,
+Rafael
+
