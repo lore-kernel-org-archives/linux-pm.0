@@ -1,40 +1,104 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] Revert "cpufreq: pcc-cpufreq: update default value of
- cpuinfo_transition_latency"
-Date: Fri, 22 Jul 2016 16:50:29 -0700
-Message-ID: <20160722235029.GA5174@ubuntu>
-References: <20160722151411.GB11711@suselix.suse.de>
- <3431802.ZZWypmTthK@vostro.rjw.lan>
- <20160722212852.GE3122@ubuntu>
- <3860863.MLaNBM27lJ@vostro.rjw.lan>
- <20160722233042.GI3122@ubuntu>
- <CAJZ5v0g3_QrVD3rwjdcWKcDb5SpA11n9C_2Jpk6qMsXg3pxfOg@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v4 7/7] power_supply: make use of new strcpytoupper()
+ function
+Date: Sat, 23 Jul 2016 02:00:49 +0200
+Message-ID: <20160723000048.GB31677@earth>
+References: <1469230269-1644-1-git-send-email-mmayer@broadcom.com>
+ <1469230269-1644-8-git-send-email-mmayer@broadcom.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="NMuMz9nt05w80d4+"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:34388 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752276AbcGVXub (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 22 Jul 2016 19:50:31 -0400
-Received: by mail-pa0-f42.google.com with SMTP id fi15so43679335pac.1
-        for <linux-pm@vger.kernel.org>; Fri, 22 Jul 2016 16:50:31 -0700 (PDT)
+Received: from mail.kernel.org ([198.145.29.136]:34666 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752334AbcGWAAy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 22 Jul 2016 20:00:54 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g3_QrVD3rwjdcWKcDb5SpA11n9C_2Jpk6qMsXg3pxfOg@mail.gmail.com>
+In-Reply-To: <1469230269-1644-8-git-send-email-mmayer@broadcom.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andreas Herrmann <aherrmann@suse.com>, Jacob Tanenbaum <jtanenba@redhat.com>, Stable <stable@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Markus Mayer <mmayer@broadcom.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 23-07-16, 01:47, Rafael J. Wysocki wrote:
-> I'll apply the revert with a "Cc: stable" tag.
 
-That will work.
+--NMuMz9nt05w80d4+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Question is what to do about the other drivers setting
-> cpuinfo.transition_latency to CPUFREQ_ETERNAL.
+Hi,
 
-Perhaps leave them as is unless someone comes and reports a problem, they don't
-seem to have any problem right now anyway :)
+On Fri, Jul 22, 2016 at 04:31:09PM -0700, Markus Mayer wrote:
+> Call strcpytoupper() rather than walking the string explicitly to
+> convert it to uppercase.
+>=20
+> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+> ---
+>  drivers/power/power_supply_sysfs.c | 13 +++++--------
+>  1 file changed, 5 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/drivers/power/power_supply_sysfs.c b/drivers/power/power_sup=
+ply_sysfs.c
+> index 80fed98..20fdcc5 100644
+> --- a/drivers/power/power_supply_sysfs.c
+> +++ b/drivers/power/power_supply_sysfs.c
+> @@ -256,19 +256,16 @@ void power_supply_init_attrs(struct device_type *de=
+v_type)
+> =20
+>  static char *kstruprdup(const char *str, gfp_t gfp)
+>  {
+> -	char *ret, *ustr;
+> +	char *ustr;
+> =20
+> -	ustr =3D ret =3D kmalloc(strlen(str) + 1, gfp);
+> +	ustr =3D kmalloc(strlen(str) + 1, gfp);
+> =20
+> -	if (!ret)
+> +	if (!ustr)
+>  		return NULL;
+> =20
+> -	while (*str)
+> -		*ustr++ =3D toupper(*str++);
+> +	strcpytoupper(ustr, str);
+> =20
+> -	*ustr =3D 0;
+> -
+> -	return ret;
+> +	return ustr;
+>  }
+> =20
+>  int power_supply_uevent(struct device *dev, struct kobj_uevent_env *env)
 
--- 
-viresh
+Acked-By: Sebastian Reichel <sre@kernel.org>
+
+Note: I plan to merge [0] (Move power supply subsystem to
+drivers/power/supply) directly after 4.8-rc1, which will
+result in merge conflicts if this goes into the kernel via
+some other subsystem.
+
+[0] https://marc.info/?l=3Dlinux-pm&m=3D146617051028786&w=3D2
+
+-- Sebastian
+
+--NMuMz9nt05w80d4+
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJXkrOsAAoJENju1/PIO/qaj5kQAJE/G2sSXqA2pQiwN5ePW2qF
+73njoECG8dd8TYC/k5UWuXTPKSJZn/7PP1V7o9yFbrNsbRu9WEFpYo9+vmAU3hOD
+ILtMpoHDY3OJxGN06OZEQqe+JWilAfRwff1Wcr17jDFbR9nxuYzVunZ+iTdkG+q/
+Ul2yL2R8Bhisa9wLMUoejT5YHFh5K5vqQMy1VkiyYgIusS/mNw1ZKejIZ6cANbCM
+saDq/NUyQNPLD9wKulmErxaxlgQwaNwUoH628eyfpMaRaMW9i/09imp0Mdb4vyl2
+/hjLx8i35K7ZWo2zACW0v/ONUo9bHw24YPAM4qETMS98Byiwr7a7wF/yQndorBZy
+fDmAgzhkijleqLYgDZpTi1oCb6/T6veRbhlRvAESU/CiG65hqblj4fIqCvK9q83z
+IdAtXFcsCgv91v/el5Wibhraxt9NJ101T9krYsUULmDrM9NMYKcJwyIcVwmmy9ZU
+reNbMoz/v2no3Jsx37ihQ84sTIfH+rI73UHBcPX5r1Be0oPdS4cXMBWjGDiiofLR
+mhNYbRcuhm6/MYOIFLbMTqgvuyTAyUWwhPDvMCdR55/NAKATj2t7ABaBpncVqIje
+PvrTy5hL5blxgWpJimbHrUi+6JHwbClUUCKKfO/WFd+u0sSuYXlIEtyy4sJQZgdh
+gxxtnbwvP7QxB2x2M93t
+=Mvph
+-----END PGP SIGNATURE-----
+
+--NMuMz9nt05w80d4+--
