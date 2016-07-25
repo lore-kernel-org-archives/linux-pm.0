@@ -1,13 +1,13 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 7/9] hwmon: (core) Add fan attribute support to new API
-Date: Sun, 24 Jul 2016 20:32:30 -0700
-Message-ID: <1469417552-9749-8-git-send-email-linux@roeck-us.net>
+Subject: [PATCH v3 3/9] hwmon: (core) Add voltage attribute support to new API
+Date: Sun, 24 Jul 2016 20:32:26 -0700
+Message-ID: <1469417552-9749-4-git-send-email-linux@roeck-us.net>
 References: <1469417552-9749-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:54187 "EHLO
+Received: from bh-25.webhostbox.net ([208.91.199.152]:54278 "EHLO
 	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752734AbcGYDc7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 24 Jul 2016 23:32:59 -0400
+	with ESMTP id S1752736AbcGYDdF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 24 Jul 2016 23:33:05 -0400
 In-Reply-To: <1469417552-9749-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -21,92 +21,106 @@ Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 v3: No change
 v2: No change
 
- drivers/hwmon/hwmon.c | 16 ++++++++++++++++
- include/linux/hwmon.h | 27 +++++++++++++++++++++++++++
- 2 files changed, 43 insertions(+)
+ drivers/hwmon/hwmon.c | 21 +++++++++++++++++++++
+ include/linux/hwmon.h | 35 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 56 insertions(+)
 
 diff --git a/drivers/hwmon/hwmon.c b/drivers/hwmon/hwmon.c
-index 2dd4e0acfe12..4729d4742ab7 100644
+index 3e4cc442a089..7697dfa92558 100644
 --- a/drivers/hwmon/hwmon.c
 +++ b/drivers/hwmon/hwmon.c
-@@ -372,6 +372,20 @@ static const char * const hwmon_humidity_attr_templates[] = {
- 	[hwmon_humidity_fault] = "humidity%d_fault",
+@@ -259,6 +259,7 @@ static struct attribute *hwmon_genattr(struct device *dev,
+ 
+ static const char * const hwmon_chip_attr_templates[] = {
+ 	[hwmon_chip_temp_reset_history] = "temp_reset_history",
++	[hwmon_chip_in_reset_history] = "in_reset_history",
+ 	[hwmon_chip_update_interval] = "update_interval",
+ 	[hwmon_chip_alarms] = "alarms",
+ };
+@@ -290,14 +291,34 @@ static const char * const hwmon_temp_attr_templates[] = {
+ 	[hwmon_temp_reset_history] = "temp%d_reset_history",
  };
  
-+static const char * const hwmon_fan_attr_templates[] = {
-+	[hwmon_fan_input] = "fan%d_input",
-+	[hwmon_fan_label] = "fan%d_label",
-+	[hwmon_fan_min] = "fan%d_min",
-+	[hwmon_fan_max] = "fan%d_max",
-+	[hwmon_fan_div] = "fan%d_div",
-+	[hwmon_fan_pulses] = "fan%d_pulses",
-+	[hwmon_fan_target] = "fan%d_target",
-+	[hwmon_fan_alarm] = "fan%d_alarm",
-+	[hwmon_fan_min_alarm] = "fan%d_min_alarm",
-+	[hwmon_fan_max_alarm] = "fan%d_max_alarm",
-+	[hwmon_fan_fault] = "fan%d_fault",
++static const char * const hwmon_in_attr_templates[] = {
++	[hwmon_in_input] = "in%d_input",
++	[hwmon_in_min] = "in%d_min",
++	[hwmon_in_max] = "in%d_max",
++	[hwmon_in_lcrit] = "in%d_lcrit",
++	[hwmon_in_crit] = "in%d_crit",
++	[hwmon_in_average] = "in%d_average",
++	[hwmon_in_lowest] = "in%d_lowest",
++	[hwmon_in_highest] = "in%d_highest",
++	[hwmon_in_reset_history] = "in%d_reset_history",
++	[hwmon_in_label] = "in%d_label",
++	[hwmon_in_alarm] = "in%d_alarm",
++	[hwmon_in_min_alarm] = "in%d_min_alarm",
++	[hwmon_in_max_alarm] = "in%d_max_alarm",
++	[hwmon_in_lcrit_alarm] = "in%d_lcrit_alarm",
++	[hwmon_in_crit_alarm] = "in%d_crit_alarm",
 +};
 +
  static const char * const *__templates[] = {
  	[hwmon_chip] = hwmon_chip_attr_templates,
  	[hwmon_temp] = hwmon_temp_attr_templates,
-@@ -380,6 +394,7 @@ static const char * const *__templates[] = {
- 	[hwmon_power] = hwmon_power_attr_templates,
- 	[hwmon_energy] = hwmon_energy_attr_templates,
- 	[hwmon_humidity] = hwmon_humidity_attr_templates,
-+	[hwmon_fan] = hwmon_fan_attr_templates,
++	[hwmon_in] = hwmon_in_attr_templates,
  };
  
  static const int __templates_size[] = {
-@@ -390,6 +405,7 @@ static const int __templates_size[] = {
- 	[hwmon_power] = ARRAY_SIZE(hwmon_power_attr_templates),
- 	[hwmon_energy] = ARRAY_SIZE(hwmon_energy_attr_templates),
- 	[hwmon_humidity] = ARRAY_SIZE(hwmon_humidity_attr_templates),
-+	[hwmon_fan] = ARRAY_SIZE(hwmon_fan_attr_templates),
+ 	[hwmon_chip] = ARRAY_SIZE(hwmon_chip_attr_templates),
+ 	[hwmon_temp] = ARRAY_SIZE(hwmon_temp_attr_templates),
++	[hwmon_in] = ARRAY_SIZE(hwmon_in_attr_templates),
  };
  
  static int hwmon_num_channel_attrs(const struct hwmon_channel_info *info)
 diff --git a/include/linux/hwmon.h b/include/linux/hwmon.h
-index 57d92f1d779b..74e89d45ff67 100644
+index 52e56d71d742..a01b8e3fc6f3 100644
 --- a/include/linux/hwmon.h
 +++ b/include/linux/hwmon.h
-@@ -27,6 +27,7 @@ enum hwmon_sensor_types {
- 	hwmon_power,
- 	hwmon_energy,
- 	hwmon_humidity,
-+	hwmon_fan,
- };
+@@ -30,6 +30,7 @@ enum hwmon_sensor_types {
  
  enum hwmon_chip_attributes {
-@@ -245,6 +246,32 @@ enum hwmon_humidity_attributes {
- #define HWMON_H_ALARM			BIT(hwmon_humidity_alarm)
- #define HWMON_H_FAULT			BIT(hwmon_humidity_fault)
+ 	hwmon_chip_temp_reset_history,
++	hwmon_chip_in_reset_history,
+ 	hwmon_chip_register_tz,
+ 	hwmon_chip_update_interval,
+ 	hwmon_chip_alarms,
+@@ -91,6 +92,40 @@ enum hwmon_temp_attributes {
+ #define HWMON_T_HIGHEST		BIT(hwmon_temp_highest)
+ #define HWMON_T_RESET_HISTORY	BIT(hwmon_temp_reset_history)
  
-+enum hwmon_fan_attributes {
-+	hwmon_fan_input,
-+	hwmon_fan_label,
-+	hwmon_fan_min,
-+	hwmon_fan_max,
-+	hwmon_fan_div,
-+	hwmon_fan_pulses,
-+	hwmon_fan_target,
-+	hwmon_fan_alarm,
-+	hwmon_fan_min_alarm,
-+	hwmon_fan_max_alarm,
-+	hwmon_fan_fault,
++enum hwmon_in_attributes {
++	hwmon_in_input,
++	hwmon_in_min,
++	hwmon_in_max,
++	hwmon_in_lcrit,
++	hwmon_in_crit,
++	hwmon_in_average,
++	hwmon_in_lowest,
++	hwmon_in_highest,
++	hwmon_in_reset_history,
++	hwmon_in_label,
++	hwmon_in_alarm,
++	hwmon_in_min_alarm,
++	hwmon_in_max_alarm,
++	hwmon_in_lcrit_alarm,
++	hwmon_in_crit_alarm,
 +};
 +
-+#define HWMON_F_INPUT			BIT(hwmon_fan_input)
-+#define HWMON_F_LABEL			BIT(hwmon_fan_label)
-+#define HWMON_F_MIN			BIT(hwmon_fan_min)
-+#define HWMON_F_MAX			BIT(hwmon_fan_max)
-+#define HWMON_F_DIV			BIT(hwmon_fan_div)
-+#define HWMON_F_PULSES			BIT(hwmon_fan_pulses)
-+#define HWMON_F_TARGET			BIT(hwmon_fan_target)
-+#define HWMON_F_ALARM			BIT(hwmon_fan_alarm)
-+#define HWMON_F_MIN_ALARM		BIT(hwmon_fan_min_alarm)
-+#define HWMON_F_MAX_ALARM		BIT(hwmon_fan_max_alarm)
-+#define HWMON_F_FAULT			BIT(hwmon_fan_fault)
++#define HWMON_I_INPUT		BIT(hwmon_in_input)
++#define HWMON_I_MIN		BIT(hwmon_in_min)
++#define HWMON_I_MAX		BIT(hwmon_in_max)
++#define HWMON_I_LCRIT		BIT(hwmon_in_lcrit)
++#define HWMON_I_CRIT		BIT(hwmon_in_crit)
++#define HWMON_I_AVERAGE		BIT(hwmon_in_average)
++#define HWMON_I_LOWEST		BIT(hwmon_in_lowest)
++#define HWMON_I_HIGHEST		BIT(hwmon_in_highest)
++#define HWMON_I_RESET_HISTORY	BIT(hwmon_in_reset_history)
++#define HWMON_I_LABEL		BIT(hwmon_in_label)
++#define HWMON_I_ALARM		BIT(hwmon_in_alarm)
++#define HWMON_I_MIN_ALARM	BIT(hwmon_in_min_alarm)
++#define HWMON_I_MAX_ALARM	BIT(hwmon_in_max_alarm)
++#define HWMON_I_LCRIT_ALARM	BIT(hwmon_in_lcrit_alarm)
++#define HWMON_I_CRIT_ALARM	BIT(hwmon_in_crit_alarm)
 +
  /**
   * struct hwmon_ops - hwmon device operations
