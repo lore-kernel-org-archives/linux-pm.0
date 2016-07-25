@@ -1,116 +1,112 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: [PATCH v3 6/9] hwmon: (core) Add energy and humidity attribute support to new API
-Date: Sun, 24 Jul 2016 20:32:29 -0700
-Message-ID: <1469417552-9749-7-git-send-email-linux@roeck-us.net>
+From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Subject: [PATCH v3 9/9] hwmon: (core) Add basic pwm attribute support to new API
+Date: Sun, 24 Jul 2016 20:32:32 -0700
+Message-ID: <1469417552-9749-10-git-send-email-linux@roeck-us.net>
 References: <1469417552-9749-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-hwmon-owner@vger.kernel.org>
-In-Reply-To: <1469417552-9749-1-git-send-email-linux@roeck-us.net>
-Sender: linux-hwmon-owner@vger.kernel.org
-To: Jean Delvare <jdelvare@suse.com>
-Cc: Jonathan Cameron <jic23@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Punit Agrawal <punit.agrawal@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1469417552-9749-1-git-send-email-linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>
+Cc: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hwmon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Acked-by: Punit Agrawal <punit.agrawal@arm.com>
-Reviewed-by: Jonathan Cameron <jic23@kernel.org>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Add basic pwm attribute support (no auto attributes) to new API.
+
+Reviewed-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
 ---
-v3: No change
+v2: No change
+v2: Added patch
 
- drivers/hwmon/hwmon.c | 20 ++++++++++++++++++++
- include/linux/hwmon.h | 29 +++++++++++++++++++++++++++++
- 2 files changed, 49 insertions(+)
+ Documentation/hwmon/hwmon-kernel-api.txt |  2 ++
+ drivers/hwmon/hwmon.c                    |  9 +++++++++
+ include/linux/hwmon.h                    | 13 +++++++++++++
+ 3 files changed, 24 insertions(+)
 
+diff --git a/Documentation/hwmon/hwmon-kernel-api.txt b/Documentation/hwmon/hwmon-kernel-api.txt
+index f60a29ce7592..ef9d74947f5c 100644
+--- a/Documentation/hwmon/hwmon-kernel-api.txt
++++ b/Documentation/hwmon/hwmon-kernel-api.txt
+@@ -168,6 +168,7 @@ It contains following fields:
+   * hwmon_energy	Energy sensor
+   * hwmon_humidity	Humidity sensor
+   * hwmon_fan		Fan speed sensor
++  * hwmon_pwm		PWM control
+ 
+ * config: Pointer to a 0-terminated list of configuration values for each
+   sensor of the given type. Each value is a combination of bit values
+@@ -230,6 +231,7 @@ HWMON_P_xxxx	Power attributes, for use with hwmon_power.
+ HWMON_E_xxxx	Energy attributes, for use with hwmon_energy.
+ HWMON_H_xxxx	Humidity attributes, for use with hwmon_humidity.
+ HWMON_F_xxxx	Fan speed attributes, for use with hwmon_fan.
++HWMON_PWM_xxxx	PWM control attributes, for use with hwmon_pwm.
+ 
+ Driver callback functions
+ -------------------------
 diff --git a/drivers/hwmon/hwmon.c b/drivers/hwmon/hwmon.c
-index 85f4e27548cb..2dd4e0acfe12 100644
+index 4729d4742ab7..fade170977e8 100644
 --- a/drivers/hwmon/hwmon.c
 +++ b/drivers/hwmon/hwmon.c
-@@ -356,12 +356,30 @@ static const char * const hwmon_power_attr_templates[] = {
- 	[hwmon_power_crit_alarm] = "power%d_crit_alarm",
+@@ -386,6 +386,13 @@ static const char * const hwmon_fan_attr_templates[] = {
+ 	[hwmon_fan_fault] = "fan%d_fault",
  };
  
-+static const char * const hwmon_energy_attr_templates[] = {
-+	[hwmon_energy_input] = "energy%d_input",
-+	[hwmon_energy_label] = "energy%d_label",
-+};
-+
-+static const char * const hwmon_humidity_attr_templates[] = {
-+	[hwmon_humidity_input] = "humidity%d_input",
-+	[hwmon_humidity_label] = "humidity%d_label",
-+	[hwmon_humidity_min] = "humidity%d_min",
-+	[hwmon_humidity_min_hyst] = "humidity%d_min_hyst",
-+	[hwmon_humidity_max] = "humidity%d_max",
-+	[hwmon_humidity_max_hyst] = "humidity%d_max_hyst",
-+	[hwmon_humidity_alarm] = "humidity%d_alarm",
-+	[hwmon_humidity_fault] = "humidity%d_fault",
++static const char * const hwmon_pwm_attr_templates[] = {
++	[hwmon_pwm_input] = "pwm%d",
++	[hwmon_pwm_enable] = "pwm%d_enable",
++	[hwmon_pwm_mode] = "pwm%d_mode",
++	[hwmon_pwm_freq] = "pwm%d_freq",
 +};
 +
  static const char * const *__templates[] = {
  	[hwmon_chip] = hwmon_chip_attr_templates,
  	[hwmon_temp] = hwmon_temp_attr_templates,
- 	[hwmon_in] = hwmon_in_attr_templates,
- 	[hwmon_curr] = hwmon_curr_attr_templates,
- 	[hwmon_power] = hwmon_power_attr_templates,
-+	[hwmon_energy] = hwmon_energy_attr_templates,
-+	[hwmon_humidity] = hwmon_humidity_attr_templates,
+@@ -395,6 +402,7 @@ static const char * const *__templates[] = {
+ 	[hwmon_energy] = hwmon_energy_attr_templates,
+ 	[hwmon_humidity] = hwmon_humidity_attr_templates,
+ 	[hwmon_fan] = hwmon_fan_attr_templates,
++	[hwmon_pwm] = hwmon_pwm_attr_templates,
  };
  
  static const int __templates_size[] = {
-@@ -370,6 +388,8 @@ static const int __templates_size[] = {
- 	[hwmon_in] = ARRAY_SIZE(hwmon_in_attr_templates),
- 	[hwmon_curr] = ARRAY_SIZE(hwmon_curr_attr_templates),
- 	[hwmon_power] = ARRAY_SIZE(hwmon_power_attr_templates),
-+	[hwmon_energy] = ARRAY_SIZE(hwmon_energy_attr_templates),
-+	[hwmon_humidity] = ARRAY_SIZE(hwmon_humidity_attr_templates),
+@@ -406,6 +414,7 @@ static const int __templates_size[] = {
+ 	[hwmon_energy] = ARRAY_SIZE(hwmon_energy_attr_templates),
+ 	[hwmon_humidity] = ARRAY_SIZE(hwmon_humidity_attr_templates),
+ 	[hwmon_fan] = ARRAY_SIZE(hwmon_fan_attr_templates),
++	[hwmon_pwm] = ARRAY_SIZE(hwmon_pwm_attr_templates),
  };
  
  static int hwmon_num_channel_attrs(const struct hwmon_channel_info *info)
 diff --git a/include/linux/hwmon.h b/include/linux/hwmon.h
-index d7e432ef7c2a..57d92f1d779b 100644
+index 74e89d45ff67..9d2f8bde7d12 100644
 --- a/include/linux/hwmon.h
 +++ b/include/linux/hwmon.h
-@@ -26,6 +26,7 @@ enum hwmon_sensor_types {
- 	hwmon_curr,
- 	hwmon_power,
+@@ -28,6 +28,7 @@ enum hwmon_sensor_types {
  	hwmon_energy,
-+	hwmon_humidity,
+ 	hwmon_humidity,
+ 	hwmon_fan,
++	hwmon_pwm,
  };
  
  enum hwmon_chip_attributes {
-@@ -216,6 +217,34 @@ enum hwmon_power_attributes {
- #define HWMON_P_MAX_ALARM		BIT(hwmon_power_max_alarm)
- #define HWMON_P_CRIT_ALARM		BIT(hwmon_power_crit_alarm)
+@@ -272,6 +273,18 @@ enum hwmon_fan_attributes {
+ #define HWMON_F_MAX_ALARM		BIT(hwmon_fan_max_alarm)
+ #define HWMON_F_FAULT			BIT(hwmon_fan_fault)
  
-+enum hwmon_energy_attributes {
-+	hwmon_energy_input,
-+	hwmon_energy_label,
++enum hwmon_pwm_attributes {
++	hwmon_pwm_input,
++	hwmon_pwm_enable,
++	hwmon_pwm_mode,
++	hwmon_pwm_freq,
 +};
 +
-+#define HWMON_E_INPUT			BIT(hwmon_energy_input)
-+#define HWMON_E_LABEL			BIT(hwmon_energy_label)
-+
-+enum hwmon_humidity_attributes {
-+	hwmon_humidity_input,
-+	hwmon_humidity_label,
-+	hwmon_humidity_min,
-+	hwmon_humidity_min_hyst,
-+	hwmon_humidity_max,
-+	hwmon_humidity_max_hyst,
-+	hwmon_humidity_alarm,
-+	hwmon_humidity_fault,
-+};
-+
-+#define HWMON_H_INPUT			BIT(hwmon_humidity_input)
-+#define HWMON_H_LABEL			BIT(hwmon_humidity_label)
-+#define HWMON_H_MIN			BIT(hwmon_humidity_min)
-+#define HWMON_H_MIN_HYST		BIT(hwmon_humidity_min_hyst)
-+#define HWMON_H_MAX			BIT(hwmon_humidity_max)
-+#define HWMON_H_MAX_HYST		BIT(hwmon_humidity_max_hyst)
-+#define HWMON_H_ALARM			BIT(hwmon_humidity_alarm)
-+#define HWMON_H_FAULT			BIT(hwmon_humidity_fault)
++#define HWMON_PWM_INPUT			BIT(hwmon_pwm_input)
++#define HWMON_PWM_ENABLE		BIT(hwmon_pwm_enable)
++#define HWMON_PWM_MODE			BIT(hwmon_pwm_mode)
++#define HWMON_PWM_FREQ			BIT(hwmon_pwm_freq)
 +
  /**
   * struct hwmon_ops - hwmon device operations
   * @is_visible: Callback to return attribute visibility. Mandatory.
 -- 
 2.5.0
-
