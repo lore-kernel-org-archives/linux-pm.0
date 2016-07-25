@@ -1,135 +1,116 @@
-From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Subject: [PATCH v3 4/9] hwmon: (core) Add current attribute support to new API
-Date: Sun, 24 Jul 2016 20:32:27 -0700
-Message-ID: <1469417552-9749-5-git-send-email-linux@roeck-us.net>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH v3 6/9] hwmon: (core) Add energy and humidity attribute support to new API
+Date: Sun, 24 Jul 2016 20:32:29 -0700
+Message-ID: <1469417552-9749-7-git-send-email-linux@roeck-us.net>
 References: <1469417552-9749-1-git-send-email-linux@roeck-us.net>
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1469417552-9749-1-git-send-email-linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>
-Cc: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hwmon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Return-path: <linux-hwmon-owner@vger.kernel.org>
+In-Reply-To: <1469417552-9749-1-git-send-email-linux@roeck-us.net>
+Sender: linux-hwmon-owner@vger.kernel.org
+To: Jean Delvare <jdelvare@suse.com>
+Cc: Jonathan Cameron <jic23@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Punit Agrawal <punit.agrawal@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
 List-Id: linux-pm@vger.kernel.org
 
-Acked-by: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
-Reviewed-by: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Acked-by: Punit Agrawal <punit.agrawal@arm.com>
+Reviewed-by: Jonathan Cameron <jic23@kernel.org>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 ---
 v3: No change
-v2: No change
 
- drivers/hwmon/hwmon.c | 21 +++++++++++++++++++++
- include/linux/hwmon.h | 36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 57 insertions(+)
+ drivers/hwmon/hwmon.c | 20 ++++++++++++++++++++
+ include/linux/hwmon.h | 29 +++++++++++++++++++++++++++++
+ 2 files changed, 49 insertions(+)
 
 diff --git a/drivers/hwmon/hwmon.c b/drivers/hwmon/hwmon.c
-index 7697dfa92558..9229229a99a5 100644
+index 85f4e27548cb..2dd4e0acfe12 100644
 --- a/drivers/hwmon/hwmon.c
 +++ b/drivers/hwmon/hwmon.c
-@@ -260,6 +260,7 @@ static struct attribute *hwmon_genattr(struct device *dev,
- static const char * const hwmon_chip_attr_templates[] = {
- 	[hwmon_chip_temp_reset_history] = "temp_reset_history",
- 	[hwmon_chip_in_reset_history] = "in_reset_history",
-+	[hwmon_chip_curr_reset_history] = "curr_reset_history",
- 	[hwmon_chip_update_interval] = "update_interval",
- 	[hwmon_chip_alarms] = "alarms",
- };
-@@ -309,16 +310,36 @@ static const char * const hwmon_in_attr_templates[] = {
- 	[hwmon_in_crit_alarm] = "in%d_crit_alarm",
+@@ -356,12 +356,30 @@ static const char * const hwmon_power_attr_templates[] = {
+ 	[hwmon_power_crit_alarm] = "power%d_crit_alarm",
  };
  
-+static const char * const hwmon_curr_attr_templates[] = {
-+	[hwmon_curr_input] = "curr%d_input",
-+	[hwmon_curr_min] = "curr%d_min",
-+	[hwmon_curr_max] = "curr%d_max",
-+	[hwmon_curr_lcrit] = "curr%d_lcrit",
-+	[hwmon_curr_crit] = "curr%d_crit",
-+	[hwmon_curr_average] = "curr%d_average",
-+	[hwmon_curr_lowest] = "curr%d_lowest",
-+	[hwmon_curr_highest] = "curr%d_highest",
-+	[hwmon_curr_reset_history] = "curr%d_reset_history",
-+	[hwmon_curr_label] = "curr%d_label",
-+	[hwmon_curr_alarm] = "curr%d_alarm",
-+	[hwmon_curr_min_alarm] = "curr%d_min_alarm",
-+	[hwmon_curr_max_alarm] = "curr%d_max_alarm",
-+	[hwmon_curr_lcrit_alarm] = "curr%d_lcrit_alarm",
-+	[hwmon_curr_crit_alarm] = "curr%d_crit_alarm",
++static const char * const hwmon_energy_attr_templates[] = {
++	[hwmon_energy_input] = "energy%d_input",
++	[hwmon_energy_label] = "energy%d_label",
++};
++
++static const char * const hwmon_humidity_attr_templates[] = {
++	[hwmon_humidity_input] = "humidity%d_input",
++	[hwmon_humidity_label] = "humidity%d_label",
++	[hwmon_humidity_min] = "humidity%d_min",
++	[hwmon_humidity_min_hyst] = "humidity%d_min_hyst",
++	[hwmon_humidity_max] = "humidity%d_max",
++	[hwmon_humidity_max_hyst] = "humidity%d_max_hyst",
++	[hwmon_humidity_alarm] = "humidity%d_alarm",
++	[hwmon_humidity_fault] = "humidity%d_fault",
 +};
 +
  static const char * const *__templates[] = {
  	[hwmon_chip] = hwmon_chip_attr_templates,
  	[hwmon_temp] = hwmon_temp_attr_templates,
  	[hwmon_in] = hwmon_in_attr_templates,
-+	[hwmon_curr] = hwmon_curr_attr_templates,
+ 	[hwmon_curr] = hwmon_curr_attr_templates,
+ 	[hwmon_power] = hwmon_power_attr_templates,
++	[hwmon_energy] = hwmon_energy_attr_templates,
++	[hwmon_humidity] = hwmon_humidity_attr_templates,
  };
  
  static const int __templates_size[] = {
- 	[hwmon_chip] = ARRAY_SIZE(hwmon_chip_attr_templates),
- 	[hwmon_temp] = ARRAY_SIZE(hwmon_temp_attr_templates),
+@@ -370,6 +388,8 @@ static const int __templates_size[] = {
  	[hwmon_in] = ARRAY_SIZE(hwmon_in_attr_templates),
-+	[hwmon_curr] = ARRAY_SIZE(hwmon_curr_attr_templates),
+ 	[hwmon_curr] = ARRAY_SIZE(hwmon_curr_attr_templates),
+ 	[hwmon_power] = ARRAY_SIZE(hwmon_power_attr_templates),
++	[hwmon_energy] = ARRAY_SIZE(hwmon_energy_attr_templates),
++	[hwmon_humidity] = ARRAY_SIZE(hwmon_humidity_attr_templates),
  };
  
  static int hwmon_num_channel_attrs(const struct hwmon_channel_info *info)
 diff --git a/include/linux/hwmon.h b/include/linux/hwmon.h
-index a01b8e3fc6f3..8781c2253b1d 100644
+index d7e432ef7c2a..57d92f1d779b 100644
 --- a/include/linux/hwmon.h
 +++ b/include/linux/hwmon.h
-@@ -31,6 +31,7 @@ enum hwmon_sensor_types {
+@@ -26,6 +26,7 @@ enum hwmon_sensor_types {
+ 	hwmon_curr,
+ 	hwmon_power,
+ 	hwmon_energy,
++	hwmon_humidity,
+ };
+ 
  enum hwmon_chip_attributes {
- 	hwmon_chip_temp_reset_history,
- 	hwmon_chip_in_reset_history,
-+	hwmon_chip_curr_reset_history,
- 	hwmon_chip_register_tz,
- 	hwmon_chip_update_interval,
- 	hwmon_chip_alarms,
-@@ -38,6 +39,7 @@ enum hwmon_chip_attributes {
+@@ -216,6 +217,34 @@ enum hwmon_power_attributes {
+ #define HWMON_P_MAX_ALARM		BIT(hwmon_power_max_alarm)
+ #define HWMON_P_CRIT_ALARM		BIT(hwmon_power_crit_alarm)
  
- #define HWMON_C_TEMP_RESET_HISTORY	BIT(hwmon_chip_temp_reset_history)
- #define HWMON_C_IN_RESET_HISTORY	BIT(hwmon_chip_in_reset_history)
-+#define HWMON_C_CURR_RESET_HISTORY	BIT(hwmon_chip_curr_reset_history)
- #define HWMON_C_REGISTER_TZ		BIT(hwmon_chip_register_tz)
- #define HWMON_C_UPDATE_INTERVAL		BIT(hwmon_chip_update_interval)
- #define HWMON_C_ALARMS			BIT(hwmon_chip_alarms)
-@@ -126,6 +128,40 @@ enum hwmon_in_attributes {
- #define HWMON_I_LCRIT_ALARM	BIT(hwmon_in_lcrit_alarm)
- #define HWMON_I_CRIT_ALARM	BIT(hwmon_in_crit_alarm)
- 
-+enum hwmon_curr_attributes {
-+	hwmon_curr_input,
-+	hwmon_curr_min,
-+	hwmon_curr_max,
-+	hwmon_curr_lcrit,
-+	hwmon_curr_crit,
-+	hwmon_curr_average,
-+	hwmon_curr_lowest,
-+	hwmon_curr_highest,
-+	hwmon_curr_reset_history,
-+	hwmon_curr_label,
-+	hwmon_curr_alarm,
-+	hwmon_curr_min_alarm,
-+	hwmon_curr_max_alarm,
-+	hwmon_curr_lcrit_alarm,
-+	hwmon_curr_crit_alarm,
++enum hwmon_energy_attributes {
++	hwmon_energy_input,
++	hwmon_energy_label,
 +};
 +
-+#define HWMON_C_INPUT		BIT(hwmon_curr_input)
-+#define HWMON_C_MIN		BIT(hwmon_curr_min)
-+#define HWMON_C_MAX		BIT(hwmon_curr_max)
-+#define HWMON_C_LCRIT		BIT(hwmon_curr_lcrit)
-+#define HWMON_C_CRIT		BIT(hwmon_curr_crit)
-+#define HWMON_C_AVERAGE		BIT(hwmon_curr_average)
-+#define HWMON_C_LOWEST		BIT(hwmon_curr_lowest)
-+#define HWMON_C_HIGHEST		BIT(hwmon_curr_highest)
-+#define HWMON_C_RESET_HISTORY	BIT(hwmon_curr_reset_history)
-+#define HWMON_C_LABEL		BIT(hwmon_curr_label)
-+#define HWMON_C_ALARM		BIT(hwmon_curr_alarm)
-+#define HWMON_C_MIN_ALARM	BIT(hwmon_curr_min_alarm)
-+#define HWMON_C_MAX_ALARM	BIT(hwmon_curr_max_alarm)
-+#define HWMON_C_LCRIT_ALARM	BIT(hwmon_curr_lcrit_alarm)
-+#define HWMON_C_CRIT_ALARM	BIT(hwmon_curr_crit_alarm)
++#define HWMON_E_INPUT			BIT(hwmon_energy_input)
++#define HWMON_E_LABEL			BIT(hwmon_energy_label)
++
++enum hwmon_humidity_attributes {
++	hwmon_humidity_input,
++	hwmon_humidity_label,
++	hwmon_humidity_min,
++	hwmon_humidity_min_hyst,
++	hwmon_humidity_max,
++	hwmon_humidity_max_hyst,
++	hwmon_humidity_alarm,
++	hwmon_humidity_fault,
++};
++
++#define HWMON_H_INPUT			BIT(hwmon_humidity_input)
++#define HWMON_H_LABEL			BIT(hwmon_humidity_label)
++#define HWMON_H_MIN			BIT(hwmon_humidity_min)
++#define HWMON_H_MIN_HYST		BIT(hwmon_humidity_min_hyst)
++#define HWMON_H_MAX			BIT(hwmon_humidity_max)
++#define HWMON_H_MAX_HYST		BIT(hwmon_humidity_max_hyst)
++#define HWMON_H_ALARM			BIT(hwmon_humidity_alarm)
++#define HWMON_H_FAULT			BIT(hwmon_humidity_fault)
 +
  /**
   * struct hwmon_ops - hwmon device operations
   * @is_visible: Callback to return attribute visibility. Mandatory.
 -- 
 2.5.0
+
