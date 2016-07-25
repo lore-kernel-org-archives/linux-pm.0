@@ -1,35 +1,74 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH 0/1] power: sbs-manager: Add interrupt support and battery detect gpios
-Date: Mon, 25 Jul 2016 15:50:02 +0800
-Message-ID: <1469433003-68564-1-git-send-email-preid@electromag.com.au>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: [PATCH v3] thermal: tango: add resume support
+Date: Mon, 25 Jul 2016 10:18:22 +0200
+Message-ID: <5795CB4E.4000909@free.fr>
+References: <57726196.5060909@free.fr> <578CC9C9.3050806@free.fr>
+ <m2wpkd1gfg.fsf@baylibre.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 203-59-230-133.perm.iinet.net.au ([203.59.230.133]:48556 "EHLO
-	preid-centos7.electromag.com.au" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752264AbcGYHuL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jul 2016 03:50:11 -0400
+Received: from smtp4-g21.free.fr ([212.27.42.4]:48437 "EHLO smtp4-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752403AbcGYISp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 25 Jul 2016 04:18:45 -0400
+In-Reply-To: <m2wpkd1gfg.fsf@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, preid@electromag.com.au, karl-heinz@schneider-inet.de, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@baylibre.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Sebastian Frias <sf84@laposte.net>, Thierry Reding <thierry.reding@gmail.com>, Arnd Bergmann <arnd@arndb.de>
 
-Adds SMBALERT interupt support fo AC present and battery insertation / removal.
+On 23/07/2016 00:00, Kevin Hilman wrote:
 
-This patch is dependent on karl-heinz@schneider-inet.de patch series:
-[PATCH v3] Add support for Smart Battery System Manager
+> Mason wrote:
+> 
+>> +#ifdef CONFIG_PM_SLEEP
+>> +static int tango_thermal_resume(struct device *dev)
+>> +{
+>> +	tango_thermal_init(dev_get_drvdata(dev));
+>> +	return 0;
+>> +}
+>> +
+>> +static SIMPLE_DEV_PM_OPS(tango_thermal_pm, NULL, tango_thermal_resume);
+>> +#endif
+> 
+> #else
+> #define tango_thermal_resume NULL
+> #endif
+> 
+> And then move the SIMPLE_DEV_PM_OPS here...
 
-Tested with my patches to the sbs-battery driver applied:
-[PATCH v2] power: sbs-battery fixup gpio detect irq handling
+Moving the SIMPLE_DEV_PM_OPS macro outside the CONFIG_PM_SLEEP guard
+would unconditionally define a struct dev_pm_ops, which just wastes
+space when CONFIG_PM_SLEEP is undefined (if I'm not mistaken).
 
-sbs-battery driver patch  can be applied before or after this series without
-breaking anything.
+That's why I put SIMPLE_DEV_PM_OPS inside the CONFIG_PM_SLEEP guard.
 
+>> +
+>>  static const struct of_device_id tango_sensor_ids[] = {
+>>  	{
+>>  		.compatible = "sigma,smp8758-thermal",
+>> @@ -99,6 +115,9 @@ static struct platform_driver tango_thermal_driver = {
+>>  	.driver	= {
+>>  		.name		= "tango-thermal",
+>>  		.of_match_table	= tango_sensor_ids,
+>> +#ifdef CONFIG_PM_SLEEP
+>> +		.pm		= &tango_thermal_pm,
+>> +#endif
+> 
+> ... which allows you to get rid of the ugly ifdef here.
+> (c.f. CodingStyle, Chapter 20,)
 
-Phil Reid (1):
-  power: sbs-manager: Add interrupt support and battery detect gpios
+The previous solution (v2) avoided duplicating the ifdef block,
+but Arnd and Thierry objected to the code. Later, they agreed
+that it should work; but if they didn't catch the code's intent
+at a glance, maybe there is a problem with it anyway.
 
- .../devicetree/bindings/power/sbs,sbs-manager.txt  |  29 ++++
- drivers/power/sbs-manager.c                        | 157 +++++++++++++++++++++
- 2 files changed, 186 insertions(+)
+What do you think?
 
--- 
-1.8.3.1
+I copied the DEV_PM_OPS "trick" from drivers/thermal/ti-soc-thermal/ti-bandgap.c
+(which was done by Eduardo, a thermal maintainer, so maybe he
+prefers that solution after all? commit 8feaf0ce1a043)
+
+Regards.
 
