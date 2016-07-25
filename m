@@ -1,105 +1,98 @@
 From: Jisheng Zhang <jszhang@marvell.com>
-Subject: [PATCH v2] PM / OPP: optimize dev_pm_opp_set_rate() performance a bit
-Date: Mon, 25 Jul 2016 13:11:21 +0800
-Message-ID: <1469423481-1621-1-git-send-email-jszhang@marvell.com>
+Subject: Re: [PATCH] PM / OPP: optimize dev_pm_opp_set_rate() a bit
+Date: Mon, 25 Jul 2016 13:19:47 +0800
+Message-ID: <20160725131947.644e6166@xhacker>
+References: <1469191370-1285-1-git-send-email-jszhang@marvell.com>
+	<201607222230.DZObarhu%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:12499 "EHLO
+Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:40324 "EHLO
 	mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752271AbcGYFRx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jul 2016 01:17:53 -0400
+	by vger.kernel.org with ESMTP id S1751869AbcGYFYa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 25 Jul 2016 01:24:30 -0400
+In-Reply-To: <201607222230.DZObarhu%fengguang.wu@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Jisheng Zhang <jszhang@marvell.com>
+To: kbuild test robot <lkp@intel.com>, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, gregkh@linuxfoundation.org, Arnd Bergmann <arnd@arndb.de>
+Cc: kbuild-all@01.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-In dev_pm_opp_set_rate(), _find_opp_table() is called 4 times: once by
-_get_opp_clk(), once by dev_pm_opp_set_rate() itself, and twice by
-dev_pm_opp_find_freq_ceil(). If there are several opp_tables in the
-system, three times of opp table finding is a big waste. This patch
-reduced the call of _find_opp_table() to twice.
+Dear all,
 
-Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
----
-Since v1:
- - avoid opp_table pointer usage after the rcu_read_unlock() as pointed
-   out by Viresh, thus we can only reduced the call of _find_opp_table
-   to twice.
+On Fri, 22 Jul 2016 22:30:53 +0800 kbuild test robot wrote:
 
- drivers/base/power/opp/core.c | 31 +++++++++++++++++++------------
- 1 file changed, 19 insertions(+), 12 deletions(-)
+> Hi,
+> 
+> [auto build test WARNING on pm/linux-next]
+> [also build test WARNING on v4.7-rc7 next-20160722]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+> 
+> url:    https://github.com/0day-ci/linux/commits/Jisheng-Zhang/PM-OPP-optimize-dev_pm_opp_set_rate-a-bit/20160722-205339
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+> config: x86_64-allmodconfig (attached as .config)
+> compiler: gcc-6 (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>         # save the attached .config to linux build tree
+>         make ARCH=x86_64 
+> 
+> Note: it may well be a FALSE warning. FWIW you are at least aware of it now.
+> http://gcc.gnu.org/wiki/Better_Uninitialized_Warnings
+> 
+> All warnings (new ones prefixed by >>):
+> 
+>    drivers/base/power/opp/core.c: In function 'dev_pm_opp_set_rate':
+> >> drivers/base/power/opp/core.c:666:3: warning: 'ou_volt_max' may be used uninitialized in this function [-Wmaybe-uninitialized]  
+>       _set_opp_voltage(dev, reg, ou_volt, ou_volt_min, ou_volt_max);
+>       ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> >> drivers/base/power/opp/core.c:666:3: warning: 'ou_volt_min' may be used uninitialized in this function [-Wmaybe-uninitialized]
+> >> drivers/base/power/opp/core.c:666:3: warning: 'ou_volt' may be used uninitialized in this function [-Wmaybe-uninitialized]  
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 7c04c87..cde7514 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -402,6 +402,22 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_exact);
- 
-+static struct dev_pm_opp *_find_freq_ceil(struct opp_table *opp_table,
-+					  unsigned long *freq)
-+{
-+	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
-+
-+	list_for_each_entry_rcu(temp_opp, &opp_table->opp_list, node) {
-+		if (temp_opp->available && temp_opp->rate >= *freq) {
-+			opp = temp_opp;
-+			*freq = opp->rate;
-+			break;
-+		}
-+	}
-+
-+	return opp;
-+}
-+
- /**
-  * dev_pm_opp_find_freq_ceil() - Search for an rounded ceil freq
-  * @dev:	device for which we do this operation
-@@ -427,7 +443,6 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 					     unsigned long *freq)
- {
- 	struct opp_table *opp_table;
--	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
- 
- 	opp_rcu_lockdep_assert();
- 
-@@ -440,15 +455,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 	if (IS_ERR(opp_table))
- 		return ERR_CAST(opp_table);
- 
--	list_for_each_entry_rcu(temp_opp, &opp_table->opp_list, node) {
--		if (temp_opp->available && temp_opp->rate >= *freq) {
--			opp = temp_opp;
--			*freq = opp->rate;
--			break;
--		}
--	}
--
--	return opp;
-+	return _find_freq_ceil(opp_table, freq);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_ceil);
- 
-@@ -612,7 +619,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 		return PTR_ERR(opp_table);
- 	}
- 
--	old_opp = dev_pm_opp_find_freq_ceil(dev, &old_freq);
-+	old_opp = _find_freq_ceil(opp_table, &old_freq);
- 	if (!IS_ERR(old_opp)) {
- 		ou_volt = old_opp->u_volt;
- 		ou_volt_min = old_opp->u_volt_min;
-@@ -622,7 +629,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 			__func__, old_freq, PTR_ERR(old_opp));
- 	}
- 
--	opp = dev_pm_opp_find_freq_ceil(dev, &freq);
-+	opp = _find_freq_ceil(opp_table, &freq);
- 	if (IS_ERR(opp)) {
- 		ret = PTR_ERR(opp);
- 		dev_err(dev, "%s: failed to find OPP for freq %lu (%d)\n",
--- 
-2.8.1
+These warnings seem weired. We only use them when !IS_ERR(old_opp), and we
+should already set them if !IS_ERR(old_opp). Another weired thing is if
+we add something, printk e.g in _find_freq_ceil(), then these warnings disappear
+
+Could you please kindly give some suggestions about how to fix these warnings?
+
+Thanks,
+Jisheng
+
+> 
+> vim +/ou_volt_max +666 drivers/base/power/opp/core.c
+> 
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  650  	if (freq < old_freq) {
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  651  		ret = _set_opp_voltage(dev, reg, u_volt, u_volt_min,
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  652  				       u_volt_max);
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  653  		if (ret)
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  654  			goto restore_freq;
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  655  	}
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  656  
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  657  	return 0;
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  658  
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  659  restore_freq:
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  660  	if (clk_set_rate(clk, old_freq))
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  661  		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  662  			__func__, old_freq);
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  663  restore_voltage:
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  664  	/* This shouldn't harm even if the voltages weren't updated earlier */
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  665  	if (!IS_ERR(old_opp))
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09 @666  		_set_opp_voltage(dev, reg, ou_volt, ou_volt_min, ou_volt_max);
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  667  
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  668  	return ret;
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  669  }
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  670  EXPORT_SYMBOL_GPL(dev_pm_opp_set_rate);
+> 6a0712f6 drivers/base/power/opp/core.c Viresh Kumar 2016-02-09  671  
+> 2c2709dc drivers/base/power/opp/core.c Viresh Kumar 2016-02-16  672  /* OPP-dev Helpers */
+> 2c2709dc drivers/base/power/opp/core.c Viresh Kumar 2016-02-16  673  static void _kfree_opp_dev_rcu(struct rcu_head *head)
+> 06441658 drivers/base/power/opp.c      Viresh Kumar 2015-07-29  674  {
+> 
+> :::::: The code at line 666 was first introduced by commit
+> :::::: 6a0712f6f199e737aa5913d28ec4bd3a25de9660 PM / OPP: Add dev_pm_opp_set_rate()
+> 
+> :::::: TO: Viresh Kumar <viresh.kumar@linaro.org>
+> :::::: CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
