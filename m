@@ -1,66 +1,38 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
 Subject: Re: [PATCH] power:bq27xxx: 27000/10 read FLAGS register as single
-Date: Tue, 26 Jul 2016 08:08:57 +0200
-Message-ID: <D019AEBF-8DE0-4496-943A-DB526C84BEE1@goldelico.com>
+Date: Tue, 26 Jul 2016 09:27:29 +0200
+Message-ID: <20160726072729.GB29844@pali>
 References: <6ff28e18f78d1b9581cba5fd214fcc00e4a6d23a.1468858328.git.hns@goldelico.com>
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.218]:36018 "EHLO
-	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751418AbcGZGJM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jul 2016 02:09:12 -0400
+Received: from mail-wm0-f50.google.com ([74.125.82.50]:37314 "EHLO
+	mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbcGZH1c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jul 2016 03:27:32 -0400
+Content-Disposition: inline
 In-Reply-To: <6ff28e18f78d1b9581cba5fd214fcc00e4a6d23a.1468858328.git.hns@goldelico.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F . Davis" <afd@ti.com>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Andrzej Hajda <a.hajda@samsung.com>, =?utf-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, letux-kernel@openphoenux.org
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: "Andrew F . Davis" <afd@ti.com>, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, Andrzej Hajda <a.hajda@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, letux-kernel@openphoenux.org
 
-ping
-
-> Am 18.07.2016 um 18:12 schrieb H. Nikolaus Schaller <hns@goldelico.com>:
-> 
+On Monday 18 July 2016 18:12:09 H. Nikolaus Schaller wrote:
 > The bq27000 and bq27010 have a single byte FLAGS register.
 > Other gauges have 16 bit FLAGS registers.
-> 
+>=20
 > For reading the FLAGS register it is sufficient to read the single
 > register instead of reading RSOC at the next higher address as
 > well and then ignore the high byte.
-> 
+>=20
 > This does not change functionality but optimizes i2c and hdq
 > traffic.
-> 
+>=20
 > Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
-> ---
-> drivers/power/bq27xxx_battery.c | 5 +++--
-> 1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
-> index 45f6ebf..56712b2 100644
-> --- a/drivers/power/bq27xxx_battery.c
-> +++ b/drivers/power/bq27xxx_battery.c
-> @@ -656,8 +656,9 @@ static bool bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 flags)
-> static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
-> {
-> 	int flags;
-> +	bool has_singe_flag = di->chip == BQ27000 || di->chip == BQ27010;
-> 
-> -	flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
-> +	flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, has_singe_flag);
-> 	if (flags < 0) {
-> 		dev_err(di->dev, "error reading flag register:%d\n", flags);
-> 		return flags;
-> @@ -760,7 +761,7 @@ static int bq27xxx_battery_current(struct bq27xxx_device_info *di,
-> 	}
-> 
-> 	if (di->chip == BQ27000 || di->chip == BQ27010) {
-> -		flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
-> +		flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, true);
-> 		if (flags & BQ27000_FLAG_CHGS) {
-> 			dev_dbg(di->dev, "negative current!\n");
-> 			curr = -curr;
-> -- 
-> 2.7.3
-> 
 
+Looks good, add my Acked-by.
+
+--=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
