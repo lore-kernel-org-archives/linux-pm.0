@@ -1,44 +1,41 @@
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-Subject: Re: Fwd: [Bug 150021] New: kernel panic: "kernel tried to execute
- NX-protected page" when resuming from hibernate to disk
-Date: Tue, 26 Jul 2016 09:39:05 -0500
-Message-ID: <20160726143905.xyiryey7weymscix@treble>
-References: <16541580.dFLT14ScxF@vostro.rjw.lan>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Subject: [PATCH] power_supply: tps65217-charger: fix missing platform_set_drvdata()
+Date: Tue, 26 Jul 2016 14:49:04 +0000
+Message-ID: <1469544544-31749-1-git-send-email-weiyj.lk@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <16541580.dFLT14ScxF@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ingo Molnar <mingo@kernel.org>, Borislav Petkov <bp@suse.de>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, shuzzle@mailbox.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:33748 "EHLO
+	mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756549AbcGZOto (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jul 2016 10:49:44 -0400
+Received: by mail-pf0-f193.google.com with SMTP id i6so115804pfe.0
+        for <linux-pm@vger.kernel.org>; Tue, 26 Jul 2016 07:49:44 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Wei Yongjun <weiyj.lk@gmail.com>, linux-pm@vger.kernel.org
 
-On Tue, Jul 26, 2016 at 01:32:28PM +0200, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> The following commit:
-> 
-> commit 13523309495cdbd57a0d344c0d5d574987af007f
-> Author: Josh Poimboeuf <jpoimboe@redhat.com>
-> Date:   Thu Jan 21 16:49:21 2016 -0600
-> 
->     x86/asm/acpi: Create a stack frame in do_suspend_lowlevel()
->     
->     do_suspend_lowlevel() is a callable non-leaf function which doesn't
->     honor CONFIG_FRAME_POINTER, which can result in bad stack traces.
->     
->     Create a stack frame for it when CONFIG_FRAME_POINTER is enabled.
-> 
-> is reported to cause a resume-from-hibernation regression due to an attempt
-> to execute an NX page (we've seen quite a bit of that recently).
-> 
-> I'm asking the reporter to try 4.7, but if the problem is still there, we'll
-> need to revert the above I'm afraid.
+Add missing platform_set_drvdata() in tps65217_charger_probe(), otherwise
+calling platform_get_drvdata() in remove returns NULL.
 
-Hi Rafael,
+This is detected by Coccinelle semantic patch.
 
-Is the oops output available somewhere?
+Signed-off-by: Wei Yongjun <weiyj.lk@gmail.com>
+---
+ drivers/power/tps65217_charger.c | 1 +
+ 1 file changed, 1 insertion(+)
 
--- 
-Josh
+diff --git a/drivers/power/tps65217_charger.c b/drivers/power/tps65217_charger.c
+index 73dfae4..4c56e54 100644
+--- a/drivers/power/tps65217_charger.c
++++ b/drivers/power/tps65217_charger.c
+@@ -206,6 +206,7 @@ static int tps65217_charger_probe(struct platform_device *pdev)
+ 	if (!charger)
+ 		return -ENOMEM;
+ 
++	platform_set_drvdata(pdev, charger);
+ 	charger->tps = tps;
+ 	charger->dev = &pdev->dev;
+
