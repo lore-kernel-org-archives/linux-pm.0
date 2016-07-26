@@ -1,97 +1,57 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH 08/14] timer: Export next wake up of a CPU
-Date: Tue, 26 Jul 2016 11:26:48 -0700
-Message-ID: <m24m7cw907.fsf@baylibre.com>
-References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
-	<1466624209-27432-9-git-send-email-lina.iyer@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Fwd: [Bug 150021] New: kernel panic: "kernel tried to execute NX-protected page" when resuming from hibernate to disk
+Date: Tue, 26 Jul 2016 22:15:39 +0200
+Message-ID: <1931457.H9nCOt9KIt@vostro.rjw.lan>
+References: <16541580.dFLT14ScxF@vostro.rjw.lan> <20160726143905.xyiryey7weymscix@treble>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1466624209-27432-9-git-send-email-lina.iyer@linaro.org> (Lina
-	Iyer's message of "Wed, 22 Jun 2016 13:36:43 -0600")
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:65272 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753251AbcGZUKi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jul 2016 16:10:38 -0400
+In-Reply-To: <20160726143905.xyiryey7weymscix@treble>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Josh Poimboeuf <jpoimboe@redhat.com>, Ingo Molnar <mingo@kernel.org>
+Cc: Borislav Petkov <bp@suse.de>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, shuzzle@mailbox.org
 
-Lina Iyer <lina.iyer@linaro.org> writes:
+On Tuesday, July 26, 2016 09:39:05 AM Josh Poimboeuf wrote:
+> On Tue, Jul 26, 2016 at 01:32:28PM +0200, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > The following commit:
+> > 
+> > commit 13523309495cdbd57a0d344c0d5d574987af007f
+> > Author: Josh Poimboeuf <jpoimboe@redhat.com>
+> > Date:   Thu Jan 21 16:49:21 2016 -0600
+> > 
+> >     x86/asm/acpi: Create a stack frame in do_suspend_lowlevel()
+> >     
+> >     do_suspend_lowlevel() is a callable non-leaf function which doesn't
+> >     honor CONFIG_FRAME_POINTER, which can result in bad stack traces.
+> >     
+> >     Create a stack frame for it when CONFIG_FRAME_POINTER is enabled.
+> > 
+> > is reported to cause a resume-from-hibernation regression due to an attempt
+> > to execute an NX page (we've seen quite a bit of that recently).
+> > 
+> > I'm asking the reporter to try 4.7, but if the problem is still there, we'll
+> > need to revert the above I'm afraid.
 
-> Knowing the sleep length of the CPU is useful for the power state
-> determination on idle. However, when the common sleep time between
-> multiple CPUs is needed, the sleep length of a CPU is not useful.
+So the bug is still there in 4.7 and it goes away after reverting the above
+commit.  I guess I'll send a revert then.
 
-You need more about "why" it's not useful.  e.g. CPU sleep length is
-relative to when that CPU entered idle, whereas when trying to determine
-cluster sleep time, absolute times are needed, like dev->next_event.
+> Hi Rafael,
+> 
+> Is the oops output available somewhere?
 
-> By reading the next wake up event of a CPU, governors can determine the
-> first CPU to wake up (due to timer) amongst a cluster of CPUs and the
-> sleep time available between the last CPU to idle and the first CPU to
-> resume. This information is useful to determine if the caches and other
-> common hardware blocks can also be put in idle during this common period
-> of inactivity.
->
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Not yet, but I've just ask the reporter to attach it to the $subject BZ entry.
 
-Otherwise, looks OK to me.
+In any case, this is nasty stuff and the reason why we made that change was
+relatively weak IMO.
 
-Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+Thanks,
+Rafael
 
-> ---
->  include/linux/tick.h     | 10 ++++++++++
->  kernel/time/tick-sched.c | 13 +++++++++++++
->  2 files changed, 23 insertions(+)
->
-> diff --git a/include/linux/tick.h b/include/linux/tick.h
-> index 62be0786..9535141 100644
-> --- a/include/linux/tick.h
-> +++ b/include/linux/tick.h
-> @@ -117,6 +117,7 @@ extern void tick_nohz_idle_enter(void);
->  extern void tick_nohz_idle_exit(void);
->  extern void tick_nohz_irq_exit(void);
->  extern ktime_t tick_nohz_get_sleep_length(void);
-> +extern ktime_t tick_nohz_get_next_wakeup(int cpu);
->  extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
->  extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
->  #else /* !CONFIG_NO_HZ_COMMON */
-> @@ -131,6 +132,15 @@ static inline ktime_t tick_nohz_get_sleep_length(void)
->  
->  	return len;
->  }
-> +
-> +static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
-> +{
-> +	ktime_t len = { .tv64 = NSEC_PER_SEC/HZ };
-> +
-> +	/* Next wake up is the tick period, assume it starts now */
-> +	return ktime_add(len, ktime_get());
-> +}
-> +
->  static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
->  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
->  #endif /* !CONFIG_NO_HZ_COMMON */
-> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> index 536ada8..addf3235 100644
-> --- a/kernel/time/tick-sched.c
-> +++ b/kernel/time/tick-sched.c
-> @@ -979,6 +979,19 @@ ktime_t tick_nohz_get_sleep_length(void)
->  	return ts->sleep_length;
->  }
->  
-> +/**
-> + * tick_nohz_get_next_wakeup - return the next wake up of the CPU
-> + *
-> + * Called with interrupts disabled on the cpu
-> + */
-> +ktime_t tick_nohz_get_next_wakeup(int cpu)
-> +{
-> +	struct clock_event_device *dev =
-> +			per_cpu(tick_cpu_device.evtdev, cpu);
-> +
-> +	return dev->next_event;
-> +}
-> +
->  static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
->  {
->  #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
