@@ -1,41 +1,97 @@
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Subject: [PATCH] power_supply: tps65217-charger: fix missing platform_set_drvdata()
-Date: Tue, 26 Jul 2016 14:49:04 +0000
-Message-ID: <1469544544-31749-1-git-send-email-weiyj.lk@gmail.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH 08/14] timer: Export next wake up of a CPU
+Date: Tue, 26 Jul 2016 11:26:48 -0700
+Message-ID: <m24m7cw907.fsf@baylibre.com>
+References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org>
+	<1466624209-27432-9-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:33748 "EHLO
-	mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756549AbcGZOto (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 26 Jul 2016 10:49:44 -0400
-Received: by mail-pf0-f193.google.com with SMTP id i6so115804pfe.0
-        for <linux-pm@vger.kernel.org>; Tue, 26 Jul 2016 07:49:44 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1466624209-27432-9-git-send-email-lina.iyer@linaro.org> (Lina
+	Iyer's message of "Wed, 22 Jun 2016 13:36:43 -0600")
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: Wei Yongjun <weiyj.lk@gmail.com>, linux-pm@vger.kernel.org
 
-Add missing platform_set_drvdata() in tps65217_charger_probe(), otherwise
-calling platform_get_drvdata() in remove returns NULL.
+Lina Iyer <lina.iyer@linaro.org> writes:
 
-This is detected by Coccinelle semantic patch.
+> Knowing the sleep length of the CPU is useful for the power state
+> determination on idle. However, when the common sleep time between
+> multiple CPUs is needed, the sleep length of a CPU is not useful.
 
-Signed-off-by: Wei Yongjun <weiyj.lk@gmail.com>
----
- drivers/power/tps65217_charger.c | 1 +
- 1 file changed, 1 insertion(+)
+You need more about "why" it's not useful.  e.g. CPU sleep length is
+relative to when that CPU entered idle, whereas when trying to determine
+cluster sleep time, absolute times are needed, like dev->next_event.
 
-diff --git a/drivers/power/tps65217_charger.c b/drivers/power/tps65217_charger.c
-index 73dfae4..4c56e54 100644
---- a/drivers/power/tps65217_charger.c
-+++ b/drivers/power/tps65217_charger.c
-@@ -206,6 +206,7 @@ static int tps65217_charger_probe(struct platform_device *pdev)
- 	if (!charger)
- 		return -ENOMEM;
- 
-+	platform_set_drvdata(pdev, charger);
- 	charger->tps = tps;
- 	charger->dev = &pdev->dev;
+> By reading the next wake up event of a CPU, governors can determine the
+> first CPU to wake up (due to timer) amongst a cluster of CPUs and the
+> sleep time available between the last CPU to idle and the first CPU to
+> resume. This information is useful to determine if the caches and other
+> common hardware blocks can also be put in idle during this common period
+> of inactivity.
+>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 
+Otherwise, looks OK to me.
+
+Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+
+> ---
+>  include/linux/tick.h     | 10 ++++++++++
+>  kernel/time/tick-sched.c | 13 +++++++++++++
+>  2 files changed, 23 insertions(+)
+>
+> diff --git a/include/linux/tick.h b/include/linux/tick.h
+> index 62be0786..9535141 100644
+> --- a/include/linux/tick.h
+> +++ b/include/linux/tick.h
+> @@ -117,6 +117,7 @@ extern void tick_nohz_idle_enter(void);
+>  extern void tick_nohz_idle_exit(void);
+>  extern void tick_nohz_irq_exit(void);
+>  extern ktime_t tick_nohz_get_sleep_length(void);
+> +extern ktime_t tick_nohz_get_next_wakeup(int cpu);
+>  extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+>  extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+>  #else /* !CONFIG_NO_HZ_COMMON */
+> @@ -131,6 +132,15 @@ static inline ktime_t tick_nohz_get_sleep_length(void)
+>  
+>  	return len;
+>  }
+> +
+> +static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
+> +{
+> +	ktime_t len = { .tv64 = NSEC_PER_SEC/HZ };
+> +
+> +	/* Next wake up is the tick period, assume it starts now */
+> +	return ktime_add(len, ktime_get());
+> +}
+> +
+>  static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+>  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+>  #endif /* !CONFIG_NO_HZ_COMMON */
+> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> index 536ada8..addf3235 100644
+> --- a/kernel/time/tick-sched.c
+> +++ b/kernel/time/tick-sched.c
+> @@ -979,6 +979,19 @@ ktime_t tick_nohz_get_sleep_length(void)
+>  	return ts->sleep_length;
+>  }
+>  
+> +/**
+> + * tick_nohz_get_next_wakeup - return the next wake up of the CPU
+> + *
+> + * Called with interrupts disabled on the cpu
+> + */
+> +ktime_t tick_nohz_get_next_wakeup(int cpu)
+> +{
+> +	struct clock_event_device *dev =
+> +			per_cpu(tick_cpu_device.evtdev, cpu);
+> +
+> +	return dev->next_event;
+> +}
+> +
+>  static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
+>  {
+>  #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
