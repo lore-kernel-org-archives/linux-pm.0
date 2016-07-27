@@ -1,69 +1,177 @@
-From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Subject: Re: [PATCH 1/1] power: sbs-manager: Add interrupt support and
- battery detect gpios
-Date: Wed, 27 Jul 2016 23:08:27 +0200
-Message-ID: <1469653707.27666.22.camel@amnesix>
-References: <1469433003-68564-1-git-send-email-preid@electromag.com.au>
-	 <1469433003-68564-2-git-send-email-preid@electromag.com.au>
-	 <20160727144609.GA12462@rob-hp-laptop>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Fwd: [Bug 150021] New: kernel panic: "kernel tried to execute NX-protected page" when resuming from hibernate to disk
+Date: Thu, 28 Jul 2016 00:12:15 +0200
+Message-ID: <2037077.DPom3MoXJk@vostro.rjw.lan>
+References: <16541580.dFLT14ScxF@vostro.rjw.lan> <CAJZ5v0hDuYZXHsK3G0CrQwnKpO0DVa3sNxKpWNHkh8vofJUT8Q@mail.gmail.com> <20160727175918.5uvo4p54iuhuw7ss@treble>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from schneider-inet.de ([85.214.76.205]:55323 "EHLO
-	h1714509.stratoserver.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751817AbcG0VIn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2016 17:08:43 -0400
-In-Reply-To: <20160727144609.GA12462@rob-hp-laptop>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58027 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1162423AbcG0WHN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2016 18:07:13 -0400
+In-Reply-To: <20160727175918.5uvo4p54iuhuw7ss@treble>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Phil Reid <preid@electromag.com.au>, mark.rutland@arm.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>, Borislav Petkov <bp@suse.de>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, shuzzle@mailbox.org
 
-Am Mittwoch, den 27.07.2016, 09:46 -0500 schrieb Rob Herring:
-> On Mon, Jul 25, 2016 at 03:50:03PM +0800, Phil Reid wrote:
-> > This patch added irq support for the SMBALERT pin and notification of
-> > the battery removal / insertion. The sbs manager would typically be
-> > used with the corresponding sbs-battery driver that currently uses a
-> > gpio input for battery presence and interrupt. To remain compatible with
-> > that existing driver this patch implements GPIO inputs with interrupt
-> > support. IRQ masking is performed in software as the hardware does not
-> > support masking of notifications from each battery.
-> > In addition a power_supply change notification is generated for the sbs
-> > manager device when the AC present flag is changed.
-> > Tested with LTC1760 and dual sbs compatible batteries.
+On Wednesday, July 27, 2016 12:59:18 PM Josh Poimboeuf wrote:
+> On Wed, Jul 27, 2016 at 01:08:21AM +0200, Rafael J. Wysocki wrote:
+> > On Wed, Jul 27, 2016 at 12:42 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > On Tuesday, July 26, 2016 04:53:19 PM Josh Poimboeuf wrote:
+> > >> On Tue, Jul 26, 2016 at 10:15:39PM +0200, Rafael J. Wysocki wrote:
+> > >> > On Tuesday, July 26, 2016 09:39:05 AM Josh Poimboeuf wrote:
+> > >> > > On Tue, Jul 26, 2016 at 01:32:28PM +0200, Rafael J. Wysocki wrote:
+> > >> > > > Hi,
+> > >> > > >
+> > >> > > > The following commit:
+> > >> > > >
+> > >> > > > commit 13523309495cdbd57a0d344c0d5d574987af007f
+> > >> > > > Author: Josh Poimboeuf <jpoimboe@redhat.com>
+> > >> > > > Date:   Thu Jan 21 16:49:21 2016 -0600
+> > >> > > >
+> > >> > > >     x86/asm/acpi: Create a stack frame in do_suspend_lowlevel()
+> > >> > > >
+> > >> > > >     do_suspend_lowlevel() is a callable non-leaf function which doesn't
+> > >> > > >     honor CONFIG_FRAME_POINTER, which can result in bad stack traces.
+> > >> > > >
+> > >> > > >     Create a stack frame for it when CONFIG_FRAME_POINTER is enabled.
+> > >> > > >
+> > >> > > > is reported to cause a resume-from-hibernation regression due to an attempt
+> > >> > > > to execute an NX page (we've seen quite a bit of that recently).
+> > >> > > >
+> > >> > > > I'm asking the reporter to try 4.7, but if the problem is still there, we'll
+> > >> > > > need to revert the above I'm afraid.
+> > >> >
+> > >> > So the bug is still there in 4.7 and it goes away after reverting the above
+> > >> > commit.  I guess I'll send a revert then.
+> > >>
+> > >> Hm, the code in wakeup_64.S seems quite magical, but I can't figure out
+> > >> why this change causes a panic.  Is it really causing the panic or is it
+> > >> uncovering some other bug?
+> > >
+> > > It doesn't matter really.
+> > >
+> > > It surely interacts with something in a really odd way, but that only means
+> > > that its impact goes far beyond what was expected when it was applied.  Its
+> > > changelog is inadequate as a result and so on.
+> > >
+> > >> Maybe we should hold off on reverting until we understand the issue.
+> > >
+> > > Which very well may take forever.
+> > >
+> > > And AFAICS this is a fix for a theoretical issue and it *reliably* triggers a
+> > > very practical kernel panic for this particular reporter.  I'd rather live
+> > > with the theoretical issue unfixed to be honest.
+> > 
+> > Well, actually, the best part is that do_suspend_lowlevel() is not
+> > even called during hibernation or resume from it.  It only is called
+> > during suspend-to-RAM.
+> > 
+> > Question now is how the change made by the commit in question can
+> > affect hibernation which is an unrelated code path.  We know for a
+> > fact that it does affect it, but how?
 > 
-> Please don't submit a binding and immediately turn around and add to it. 
-> While that is often preferred for drivers or kernel features, bindings 
-> should be complete as possible and not evolve. Combine this with your 
-> previous patch add sbs-mgr if that hasn't been accepted yet.
+> Hm... I have a theory, but I'm not sure about it.  I noticed that
+> x86_acpi_enter_sleep_state(),
+
+I think you mean x86_acpi_suspend_lowlevel().
+
+> which is involved in suspend, overwrites
+> several global variables (e.g, initial_code) which are used by the CPU
+> boot code in head_64.S.  But surprisingly, it doesn't restore those
+> variables to their original values after it resumes.
+
+Is the head_64.S code also used to bring up offline CPUs?
+
+If not, then this is not the problem, because hibernation doesn't use it
+for the boot CPU anyway.
+
+> So if a suspend and resume were done before the hibernate, those
+> variables would presumably have suspend-centric values, and the first
+> time a CPU is brought up during the hibernation restore operation, it
+> would jump to wakeup_long64() (the suspend resume function) instead of
+> start_secondary (which is the normal CPU boot function).
 > 
-> IMO, the sbs-bat should just be a interrupt and making it and this 
-> binding a GPIO is overkill. Since batteries nodes using this will be 
-> new, there's no reason the driver can't be updated to support 
-> interrupts.
+> So, if true, that would explain why my patch triggers a bug:
+> wakeup_long64() always[*] jumps to .Lresume_point, which my patch
+> affected.  Because of the FRAME_END, it would pop an extra value off the
+> stack.  So when restore_processor_state() returns, it would return to
+> whatever random address is on the stack after the real RIP.  Which is
+> consistent with the oops from the bug.  It had a bad instruction
+> pointer, which looked like a stack address.
+
+OK, so why doesn't it break resume from suspend to RAM?  wakeup_long64 is
+invoked by the CPU startup code then and doesn't the FRAME_END affect
+that too?
+
+> But then again, maybe there's a hole in that theory, because how could
+> hibernate after suspend/resume possibly even work today if the CPU boot
+> goes to wakeup_long64() instead of start_secondary?
+
+Right.
+
+> So I could be missing something, or even completely off base.  But the
+> missing restore of those variables does seem like a pretty huge
+> oversight.  I wonder if the following patch would fix it?
+
+We'll need to ask the reporter. :-)
+
 > 
-> Also, I'm not even convinced you need the sbs-mgr to be an 
-> interrupt-controller. Is this anything more that just wire-OR'ed 
-> interrupt lines which can be handled as shared irq? Does reading 
-> SBSM_CMD_BATSYSSTATE have a side effect for example?
-Yes, according to the Datasheed it clears SMBALERT#.
-> 
-> Rob
-SMBALERT is electrically an active low line which is pulled down by one
-or more devices needing attention, isn't it? The I2C host driver or some
-other instance need to implement support for it, the device driver may
-register some sort of handler function (e.g by implementing struct
-i2c_driver.alert function)
-
-That's my understanding of the SMBALERT.
-
-I once tried to implement the alert function and see if it get's called.
-It didn't. At that point I didn't investigate further.
-
-So, do I miss something or is that part incomplete/broken? I can only
-find lm90 and ipmi_ssif which implement the callback.
--- 
-Karl-Heinz
-
+> diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
+> index adb3eaf..cd76fc5 100644
+> --- a/arch/x86/kernel/acpi/sleep.c
+> +++ b/arch/x86/kernel/acpi/sleep.c
+> @@ -45,6 +45,12 @@ acpi_status asmlinkage __visible x86_acpi_enter_sleep_state(u8 state)
+>   */
+>  int x86_acpi_suspend_lowlevel(void)
+>  {
+> +#ifdef CONFIG_64BIT
+> +	unsigned long prev_initial_code;
+> +#ifdef CONFIG_SMP
+> +	unsigned long prev_stack_start, prev_gdt_address, prev_initial_gs;
+> +#endif
+> +#endif
+>  	struct wakeup_header *header =
+>  		(struct wakeup_header *) __va(real_mode_header->wakeup_header);
+>  
+> @@ -99,13 +105,18 @@ int x86_acpi_suspend_lowlevel(void)
+>  	saved_magic = 0x12345678;
+>  #else /* CONFIG_64BIT */
+>  #ifdef CONFIG_SMP
+> +	prev_stack_start = stack_start;
+> +	prev_gdt_address = early_gdt_descr.address;
+> +	prev_initial_gs = initial_gs;
+> +
+>  	stack_start = (unsigned long)temp_stack + sizeof(temp_stack);
+>  	early_gdt_descr.address =
+>  			(unsigned long)get_cpu_gdt_table(smp_processor_id());
+>  	initial_gs = per_cpu_offset(smp_processor_id());
+>  #endif
+> +	prev_initial_code = initial_code;
+>  	initial_code = (unsigned long)wakeup_long64;
+> -       saved_magic = 0x123456789abcdef0L;
+> +	saved_magic = 0x123456789abcdef0L;
+>  #endif /* CONFIG_64BIT */
+>  
+>  	/*
+> @@ -115,6 +126,16 @@ int x86_acpi_suspend_lowlevel(void)
+>  	pause_graph_tracing();
+>  	do_suspend_lowlevel();
+>  	unpause_graph_tracing();
+> +
+> +#ifdef CONFIG_64BIT
+> +	initial_code = prev_initial_code;
+> +#ifdef CONFIG_SMP
+> +	initial_gs = prev_initial_gs;
+> +	early_gdt_descr.address = prev_gdt_address;
+> +	stack_start = prev_stack_start;
+> +#endif
+> +#endif
+> +
+>  	return 0;
+>  }
+>  
 
