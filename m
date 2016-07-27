@@ -1,66 +1,118 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 08/14] timer: Export next wake up of a CPU
-Date: Wed, 27 Jul 2016 11:14:30 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1607271110140.19896@nanos>
-References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org> <1466624209-27432-9-git-send-email-lina.iyer@linaro.org>
+From: Marcin Niestroj <m.niestroj@grinn-global.com>
+Subject: Re: [PATCH v4 3/5] power_supply: tps65217-charger: Add support for
+ IRQs
+Date: Wed, 27 Jul 2016 11:14:27 +0200
+Message-ID: <e70d4f16-e727-6729-b3f2-fad2dd7847cb@grinn-global.com>
+References: <20160620105056.25843-1-m.niestroj@grinn-global.com>
+ <20160620105056.25843-4-m.niestroj@grinn-global.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:45497 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752821AbcG0JRA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2016 05:17:00 -0400
-In-Reply-To: <1466624209-27432-9-git-send-email-lina.iyer@linaro.org>
+Received: from smtp2.megiteam.pl ([213.189.52.193]:38211 "EHLO
+	smtp2.megiteam.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754636AbcG0J7W (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2016 05:59:22 -0400
+In-Reply-To: <20160620105056.25843-4-m.niestroj@grinn-global.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 
-On Wed, 22 Jun 2016, Lina Iyer wrote:
-> +static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
-> +{
-> +	ktime_t len = { .tv64 = NSEC_PER_SEC/HZ };
+ping
+
+On 20.06.2016 12:50, Marcin Niestroj wrote:
+> Make use of IRQ resources defined in tps65217 mfd code. If they are valid
+> we use them instead separate poll task, in order to define AC power state.
+>
+> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+> ---
+> Depends on patch 1 and 2 in series
+>
+> Changes v1 -> v4: none
+>
+>  drivers/power/tps65217_charger.c | 40 +++++++++++++++++++++++++++++++++-------
+>  1 file changed, 33 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/power/tps65217_charger.c b/drivers/power/tps65217_charger.c
+> index 73dfae4..c8c4a0c 100644
+> --- a/drivers/power/tps65217_charger.c
+> +++ b/drivers/power/tps65217_charger.c
+> @@ -46,6 +46,8 @@ struct tps65217_charger {
+>  	int	prev_ac_online;
+>
+>  	struct task_struct	*poll_task;
 > +
-> +	/* Next wake up is the tick period, assume it starts now */
-> +	return ktime_add(len, ktime_get());
-
-  return tick_next_period;
-
-Will tell you the point where the next tick interrupt is due.
-
-> +}
+> +	int	irq;
+>  };
+>
+>  static enum power_supply_property tps65217_ac_props[] = {
+> @@ -198,6 +200,7 @@ static int tps65217_charger_probe(struct platform_device *pdev)
+>  	struct tps65217 *tps = dev_get_drvdata(pdev->dev.parent);
+>  	struct tps65217_charger *charger;
+>  	struct power_supply_config cfg = {};
+> +	int irq;
+>  	int ret;
+>
+>  	dev_dbg(&pdev->dev, "%s\n", __func__);
+> @@ -220,18 +223,40 @@ static int tps65217_charger_probe(struct platform_device *pdev)
+>  		return PTR_ERR(charger->ac);
+>  	}
+>
+> +	irq = platform_get_irq_byname(pdev, "AC");
+> +	if (irq < 0)
+> +		irq = -ENXIO;
+> +	charger->irq = irq;
 > +
->  static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
->  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
->  #endif /* !CONFIG_NO_HZ_COMMON */
-> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> index 536ada8..addf3235 100644
-> --- a/kernel/time/tick-sched.c
-> +++ b/kernel/time/tick-sched.c
-> @@ -979,6 +979,19 @@ ktime_t tick_nohz_get_sleep_length(void)
->  	return ts->sleep_length;
+>  	ret = tps65217_config_charger(charger);
+>  	if (ret < 0) {
+>  		dev_err(charger->dev, "charger config failed, err %d\n", ret);
+>  		return ret;
+>  	}
+>
+> -	charger->poll_task = kthread_run(tps65217_charger_poll_task,
+> -				      charger, "ktps65217charger");
+> -	if (IS_ERR(charger->poll_task)) {
+> -		ret = PTR_ERR(charger->poll_task);
+> -		dev_err(charger->dev, "Unable to run kthread err %d\n", ret);
+> -		return ret;
+> +	if (irq != -ENXIO) {
+> +		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+> +						tps65217_charger_irq,
+> +						0, "tps65217-charger",
+> +						charger);
+> +		if (ret) {
+> +			dev_err(charger->dev,
+> +				"Unable to register irq %d err %d\n", irq,
+> +				ret);
+> +			return ret;
+> +		}
+> +
+> +		/* Check current state */
+> +		tps65217_charger_irq(irq, charger);
+> +	} else {
+> +		charger->poll_task = kthread_run(tps65217_charger_poll_task,
+> +						charger, "ktps65217charger");
+> +		if (IS_ERR(charger->poll_task)) {
+> +			ret = PTR_ERR(charger->poll_task);
+> +			dev_err(charger->dev,
+> +				"Unable to run kthread err %d\n", ret);
+> +			return ret;
+> +		}
+>  	}
+>
+>  	return 0;
+> @@ -241,7 +266,8 @@ static int tps65217_charger_remove(struct platform_device *pdev)
+>  {
+>  	struct tps65217_charger *charger = platform_get_drvdata(pdev);
+>
+> -	kthread_stop(charger->poll_task);
+> +	if (charger->irq == -ENXIO)
+> +		kthread_stop(charger->poll_task);
+>
+>  	return 0;
 >  }
->  
-> +/**
-> + * tick_nohz_get_next_wakeup - return the next wake up of the CPU
-> + *
-> + * Called with interrupts disabled on the cpu
+>
 
-So why are you handing in the (undocumented) cpu argument if its called on
-that cpu anyway?
-
-> + */
-> +ktime_t tick_nohz_get_next_wakeup(int cpu)
-> +{
-> +	struct clock_event_device *dev =
-> +			per_cpu(tick_cpu_device.evtdev, cpu);
-> +
-> +	return dev->next_event;
-
-Then this becomes
-
-     return __this_cpu_read(tick_cpu_device.evtdev)->nextevt;
-
-Thanks,
-
-	tglx
+-- 
+Marcin Niestroj
