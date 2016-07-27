@@ -1,118 +1,62 @@
-From: Marcin Niestroj <m.niestroj@grinn-global.com>
-Subject: Re: [PATCH v4 3/5] power_supply: tps65217-charger: Add support for
- IRQs
-Date: Wed, 27 Jul 2016 11:14:27 +0200
-Message-ID: <e70d4f16-e727-6729-b3f2-fad2dd7847cb@grinn-global.com>
-References: <20160620105056.25843-1-m.niestroj@grinn-global.com>
- <20160620105056.25843-4-m.niestroj@grinn-global.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2.megiteam.pl ([213.189.52.193]:38211 "EHLO
-	smtp2.megiteam.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754636AbcG0J7W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2016 05:59:22 -0400
-In-Reply-To: <20160620105056.25843-4-m.niestroj@grinn-global.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH 1/2] thermal: rockchip: enhance the tsadc's bandgap feature for rk3399
+Date: Wed, 27 Jul 2016 22:10:42 +0800
+Message-ID: <1469628643-29661-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: smbarber@chromium.org, dianders@chromium.org, briannorris@chromium.org, Rocky Hao <rocky.hao@rock-chips.com>, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 
-ping
+From: Rocky Hao <rocky.hao@rock-chips.com>
 
-On 20.06.2016 12:50, Marcin Niestroj wrote:
-> Make use of IRQ resources defined in tps65217 mfd code. If they are valid
-> we use them instead separate poll task, in order to define AC power state.
->
-> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
-> ---
-> Depends on patch 1 and 2 in series
->
-> Changes v1 -> v4: none
->
->  drivers/power/tps65217_charger.c | 40 +++++++++++++++++++++++++++++++++-------
->  1 file changed, 33 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/power/tps65217_charger.c b/drivers/power/tps65217_charger.c
-> index 73dfae4..c8c4a0c 100644
-> --- a/drivers/power/tps65217_charger.c
-> +++ b/drivers/power/tps65217_charger.c
-> @@ -46,6 +46,8 @@ struct tps65217_charger {
->  	int	prev_ac_online;
->
->  	struct task_struct	*poll_task;
-> +
-> +	int	irq;
->  };
->
->  static enum power_supply_property tps65217_ac_props[] = {
-> @@ -198,6 +200,7 @@ static int tps65217_charger_probe(struct platform_device *pdev)
->  	struct tps65217 *tps = dev_get_drvdata(pdev->dev.parent);
->  	struct tps65217_charger *charger;
->  	struct power_supply_config cfg = {};
-> +	int irq;
->  	int ret;
->
->  	dev_dbg(&pdev->dev, "%s\n", __func__);
-> @@ -220,18 +223,40 @@ static int tps65217_charger_probe(struct platform_device *pdev)
->  		return PTR_ERR(charger->ac);
->  	}
->
-> +	irq = platform_get_irq_byname(pdev, "AC");
-> +	if (irq < 0)
-> +		irq = -ENXIO;
-> +	charger->irq = irq;
-> +
->  	ret = tps65217_config_charger(charger);
->  	if (ret < 0) {
->  		dev_err(charger->dev, "charger config failed, err %d\n", ret);
->  		return ret;
->  	}
->
-> -	charger->poll_task = kthread_run(tps65217_charger_poll_task,
-> -				      charger, "ktps65217charger");
-> -	if (IS_ERR(charger->poll_task)) {
-> -		ret = PTR_ERR(charger->poll_task);
-> -		dev_err(charger->dev, "Unable to run kthread err %d\n", ret);
-> -		return ret;
-> +	if (irq != -ENXIO) {
-> +		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-> +						tps65217_charger_irq,
-> +						0, "tps65217-charger",
-> +						charger);
-> +		if (ret) {
-> +			dev_err(charger->dev,
-> +				"Unable to register irq %d err %d\n", irq,
-> +				ret);
-> +			return ret;
-> +		}
-> +
-> +		/* Check current state */
-> +		tps65217_charger_irq(irq, charger);
-> +	} else {
-> +		charger->poll_task = kthread_run(tps65217_charger_poll_task,
-> +						charger, "ktps65217charger");
-> +		if (IS_ERR(charger->poll_task)) {
-> +			ret = PTR_ERR(charger->poll_task);
-> +			dev_err(charger->dev,
-> +				"Unable to run kthread err %d\n", ret);
-> +			return ret;
-> +		}
->  	}
->
->  	return 0;
-> @@ -241,7 +266,8 @@ static int tps65217_charger_remove(struct platform_device *pdev)
->  {
->  	struct tps65217_charger *charger = platform_get_drvdata(pdev);
->
-> -	kthread_stop(charger->poll_task);
-> +	if (charger->irq == -ENXIO)
-> +		kthread_stop(charger->poll_task);
->
->  	return 0;
->  }
->
+Due to the voltage ripple, the sensing data of the tsadc is not accurate.
+And in this patch, the bandgap feature is enhanced to remove the voltage
+ripple, and then the tsadc can sense the temperature more precisely.
 
+Obsolete codes are removed as well.
+
+Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Heiko Stuebner <heiko@sntech.de>
+Cc: linux-pm@vger.kernel.org
+---
+
+ drivers/thermal/rockchip_thermal.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index db5ecc5..a90423d 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -222,10 +222,10 @@ struct rockchip_thermal_data {
+ #define GRF_TSADC_TESTBIT_L			0x0e648
+ #define GRF_TSADC_TESTBIT_H			0x0e64c
+ 
+-#define GRF_TSADC_TSEN_PD_ON			(0x30003 << 0)
+-#define GRF_TSADC_TSEN_PD_OFF			(0x30000 << 0)
+ #define GRF_SARADC_TESTBIT_ON			(0x10001 << 2)
+ #define GRF_TSADC_TESTBIT_H_ON			(0x10001 << 2)
++#define GRF_TSADC_VCM_EN_L			(0x10001 << 7)
++#define GRF_TSADC_VCM_EN_H			(0x10001 << 7)
+ 
+ /**
+  * struct tsadc_table - code to temperature conversion table
+@@ -567,9 +567,10 @@ static void rk_tsadcv3_initialize(struct regmap *grf, void __iomem *regs,
+ 			       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
+ 
+ 	} else {
+-		regmap_write(grf, GRF_TSADC_TESTBIT_L, GRF_TSADC_TSEN_PD_ON);
+-		mdelay(10);
+-		regmap_write(grf, GRF_TSADC_TESTBIT_L, GRF_TSADC_TSEN_PD_OFF);
++		/* Enable the voltage common mode feature */
++		regmap_write(grf, GRF_TSADC_TESTBIT_L, GRF_TSADC_VCM_EN_L);
++		regmap_write(grf, GRF_TSADC_TESTBIT_H, GRF_TSADC_VCM_EN_H);
++
+ 		usleep_range(15, 100); /* The spec note says at least 15 us */
+ 		regmap_write(grf, GRF_SARADC_TESTBIT, GRF_SARADC_TESTBIT_ON);
+ 		regmap_write(grf, GRF_TSADC_TESTBIT_H, GRF_TSADC_TESTBIT_H_ON);
 -- 
-Marcin Niestroj
+1.9.1
