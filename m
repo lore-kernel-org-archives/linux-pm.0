@@ -1,242 +1,188 @@
-From: Joshua Clayton <stillcompiling@gmail.com>
-Subject: Re: [PATCH v3 4/6] usb: core: add power sequence handling for USB
- devices
-Date: Wed, 27 Jul 2016 09:25:11 -0700
-Message-ID: <5798E067.90207@gmail.com>
-References: <1469007629-31757-1-git-send-email-peter.chen@nxp.com>
- <1469007629-31757-5-git-send-email-peter.chen@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+From: fu.wei@linaro.org
+Subject: [PATCH v11] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Thu, 28 Jul 2016 01:29:05 +0800
+Message-ID: <1469640545-5848-1-git-send-email-fu.wei@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f68.google.com ([209.85.220.68]:35004 "EHLO
-	mail-pa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754200AbcG0QZQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2016 12:25:16 -0400
-In-Reply-To: <1469007629-31757-5-git-send-email-peter.chen@nxp.com>
+Received: from mx1.redhat.com ([209.132.183.28]:43984 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754160AbcG0R3i (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 27 Jul 2016 13:29:38 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
-Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tn@semihalf.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, catalin.marinas@arm.com, will.deacon@arm.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, graeme.gregory@linaro.org, al.stone@linaro.org, hanjun.guo@linaro.org, mark.rutland@arm.com, Marc.Zyngier@arm.com, lorenzo.pieralisi@arm.com, rruigrok@codeaurora.org, harba@qti.qualcomm.com, tbaicar@codeaurora.org, jcm@redhat.com, msalter@redhat.com, grant.likely@linaro.org, rrichter@cavium.com, jarkko.nikula@linux.intel.com, jon.zhixiong.zhang@gmail.com, Tomasz Nowicki <tomasz.nowicki@linaro.org>, Fu Wei <fu.wei@linaro.org>
 
+From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
 
+This commit provides APEI arch-specific bits for aarch64
 
-On 07/20/2016 02:40 AM, Peter Chen wrote:
-> Some hard-wired USB devices need to do power sequence to let the
-> device work normally, the typical power sequence like: enable USB
-> PHY clock, toggle reset pin, etc. But current Linux USB driver
-> lacks of such code to do it, it may cause some hard-wired USB devices
-> works abnormal or can't be recognized by controller at all.
->
-> In this patch, it calls power sequence library APIs to finish
-> the power sequence events. At first, it calls pwrseq_alloc_generic
-> to create a generic power sequence instance, then it will do power
-> on sequence at hub's probe for all devices under this hub
-> (includes root hub).
->
-> At hub_disconnect, it will do power off sequence which is at powered
-> on list.
->
-> Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> ---
->  drivers/usb/core/Makefile |   1 +
->  drivers/usb/core/hub.c    |  12 ++++--
->  drivers/usb/core/hub.h    |  12 ++++++
->  drivers/usb/core/pwrseq.c | 100 ++++++++++++++++++++++++++++++++++++++++++++++
->  4 files changed, 122 insertions(+), 3 deletions(-)
->  create mode 100644 drivers/usb/core/pwrseq.c
->
-> diff --git a/drivers/usb/core/Makefile b/drivers/usb/core/Makefile
-> index da36b78..5fd2f54 100644
-> --- a/drivers/usb/core/Makefile
-> +++ b/drivers/usb/core/Makefile
-> @@ -10,5 +10,6 @@ usbcore-y += port.o
->  usbcore-$(CONFIG_OF)		+= of.o
->  usbcore-$(CONFIG_PCI)		+= hcd-pci.o
->  usbcore-$(CONFIG_ACPI)		+= usb-acpi.o
-> +usbcore-$(CONFIG_PWRSEQ_GENERIC) += pwrseq.o
->  
->  obj-$(CONFIG_USB)		+= usbcore.o
-> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-> index bee1351..a346a8b 100644
-> --- a/drivers/usb/core/hub.c
-> +++ b/drivers/usb/core/hub.c
-> @@ -1700,6 +1700,7 @@ static void hub_disconnect(struct usb_interface *intf)
->  	hub->error = 0;
->  	hub_quiesce(hub, HUB_DISCONNECT);
->  
-> +	hub_pwrseq_off(hub);
->  	mutex_lock(&usb_port_peer_mutex);
->  
->  	/* Avoid races with recursively_mark_NOTATTACHED() */
-> @@ -1733,6 +1734,7 @@ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
->  	struct usb_endpoint_descriptor *endpoint;
->  	struct usb_device *hdev;
->  	struct usb_hub *hub;
-> +	int ret = -ENODEV;
->  
->  	desc = intf->cur_altsetting;
->  	hdev = interface_to_usbdev(intf);
-> @@ -1839,6 +1841,7 @@ descriptor_error:
->  	INIT_DELAYED_WORK(&hub->leds, led_work);
->  	INIT_DELAYED_WORK(&hub->init_work, NULL);
->  	INIT_WORK(&hub->events, hub_event);
-> +	INIT_LIST_HEAD(&hub->pwrseq_on_list);
->  	usb_get_intf(intf);
->  	usb_get_dev(hdev);
->  
-> @@ -1852,11 +1855,14 @@ descriptor_error:
->  	if (id->driver_info & HUB_QUIRK_CHECK_PORT_AUTOSUSPEND)
->  		hub->quirk_check_port_auto_suspend = 1;
->  
-> -	if (hub_configure(hub, endpoint) >= 0)
-> -		return 0;
-> +	if (hub_configure(hub, endpoint) >= 0) {
-> +		ret = hub_pwrseq_on(hub);
-> +		if (!ret)
-> +			return 0;
-> +	}
->  
->  	hub_disconnect(intf);
-> -	return -ENODEV;
-> +	return ret;
->  }
->  
->  static int
-> diff --git a/drivers/usb/core/hub.h b/drivers/usb/core/hub.h
-> index 34c1a7e..9473f6f 100644
-> --- a/drivers/usb/core/hub.h
-> +++ b/drivers/usb/core/hub.h
-> @@ -78,6 +78,7 @@ struct usb_hub {
->  	struct delayed_work	init_work;
->  	struct work_struct      events;
->  	struct usb_port		**ports;
-> +	struct list_head	pwrseq_on_list; /* powered pwrseq node list */
->  };
->  
->  /**
-> @@ -166,3 +167,14 @@ static inline int hub_port_debounce_be_stable(struct usb_hub *hub,
->  {
->  	return hub_port_debounce(hub, port1, false);
->  }
-> +
-> +#if IS_ENABLED(CONFIG_PWRSEQ_GENERIC)
-> +int hub_pwrseq_on(struct usb_hub *hub);
-> +void hub_pwrseq_off(struct usb_hub *hub);
-> +#else
-> +static inline int hub_pwrseq_on(struct usb_hub *hub)
-> +{
-> +	return 0;
-> +}
-> +static inline void hub_pwrseq_off(struct usb_hub *hub) {}
-> +#endif /* CONFIG_PWRSEQ_GENERIC */
-> diff --git a/drivers/usb/core/pwrseq.c b/drivers/usb/core/pwrseq.c
-> new file mode 100644
-> index 0000000..837fe66
-> --- /dev/null
-> +++ b/drivers/usb/core/pwrseq.c
-> @@ -0,0 +1,100 @@
-> +/*
-> + * pwrseq.c	USB device power sequence management
-> + *
-> + * Copyright (C) 2016 Freescale Semiconductor, Inc.
-> + * Author: Peter Chen <peter.chen@nxp.com>
-> + *
-> + * This program is free software: you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2  of
-> + * the License as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-> + */
-> +
-> +#include <linux/list.h>
-> +#include <linux/of.h>
-> +#include <linux/power/pwrseq.h>
-> +#include <linux/slab.h>
-> +#include <linux/usb.h>
-> +#include <linux/usb/hcd.h>
-> +
-> +#include "hub.h"
-> +
-> +struct usb_pwrseq_node {
-> +	struct pwrseq *pwrseq;
-> +	struct list_head list;
-> +};
-> +
-> +static int hub_of_pwrseq_on(struct device_node *np, struct usb_hub *hub)
-> +{
-> +	struct pwrseq *pwrseq;
-> +	struct usb_pwrseq_node *pwrseq_node;
-> +	int ret;
-> +
-> +	pwrseq = pwrseq_alloc_generic();
-> +	if (IS_ERR(pwrseq))
-> +		return PTR_ERR(pwrseq);
-> +
-> +	ret = pwrseq_get(np, pwrseq);
-> +	if (ret)
-> +		goto pwr_free;
-> +
-> +	ret = pwrseq_on(np, pwrseq);
-> +	if (ret)
-> +		goto pwr_put;
-> +
-> +	pwrseq_node = kzalloc(sizeof(*pwrseq_node), GFP_KERNEL);
-> +	pwrseq_node->pwrseq = pwrseq;
-> +	list_add(&pwrseq_node->list, &hub->pwrseq_on_list);
-> +
-> +	return 0;
-> +
-> +pwr_put:
-> +	pwrseq_put(pwrseq);
-> +pwr_free:
-> +	pwrseq_free(pwrseq);
-> +	return ret;
-> +}
-> +
-> +int hub_pwrseq_on(struct usb_hub *hub)
-> +{
-> +	struct device *parent;
-> +	struct usb_device *hdev = hub->hdev;
-> +	struct device_node *np;
-> +	int ret;
-> +
-> +	if (hdev->parent)
-> +		parent = &hdev->dev;
-> +	else
-> +		parent = bus_to_hcd(hdev->bus)->self.controller;
-> +
-> +	for_each_child_of_node(parent->of_node, np) {
-> +		ret = hub_of_pwrseq_on(np, hub);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +void hub_pwrseq_off(struct usb_hub *hub)
-> +{
-> +	struct pwrseq *pwrseq;
-> +	struct usb_pwrseq_node *pwrseq_node, *tmp_node;
-> +
-> +	list_for_each_entry_safe(pwrseq_node, tmp_node,
-> +			&hub->pwrseq_on_list, list) {
-> +		pwrseq = pwrseq_node->pwrseq;
-> +		pwrseq_off(pwrseq);
-> +		pwrseq_put(pwrseq);
-> +		pwrseq_free(pwrseq);
-> +		list_del(&pwrseq_node->list);
-> +		kfree(pwrseq_node);
-> +	}
-> +}
-Patch 4 does not apply for me
-(The Makefile has  a "usbcore-$(CONFIG_OF) += of.o"
-line which I don't see in 4.7 or linux/next master).
-Is there another patch set this series depends on?
+Meanwhile,
+(1)add a new subfunction "hest_ia32_init" for
+"acpi_disable_cmcff" which is used by IA-32 Architecture
+Corrected Machine Check (CMC).
+(2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+a generic place.
+(3)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
+because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
+
+[Fu Wei: improve && upstream]
+
+Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
+Signed-off-by: Fu Wei <fu.wei@linaro.org>
+Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
+Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
+Acked-by: Will Deacon <will.deacon@arm.com>
+---
+Changelog:
+v11:https://lkml.org/lkml/2016/7
+    Rebase to v4.7-0e06f5c0
+
+v10:https://lkml.org/lkml/2016/4/14
+    Fix the Alphabetical order problem in arch/arm64/Kconfig
+
+v9: https://lkml.org/lkml/2016/4/5/522
+    Improve the comment for arch_apei_flush_tlb_one.
+    Using select "HAVE_ACPI_APEI if (ACPI && EFI)" to fix the EFI dependence
+    problem.
+
+v8: https://lkml.org/lkml/2016/3/29/132
+    Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
+    on ARM64.
+
+v7: https://lkml.org/lkml/2016/3/17/183
+    Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h
+
+v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
+    Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+    a generic place.
+    Delete HAVE_ACPI_APEI_HEST_IA32.
+
+v5: https://lkml.org/lkml/2015/12/10/131
+    Add "HAVE_ACPI_APEI_HEST_IA32" instead of
+    "#if defined(__i386__) || defined(__x86_64__)".
+
+v4: https://lkml.org/lkml/2015/12/8/188
+    Rebase to latest kernel version(4.4-rc4).
+    Move arch_apei_flush_tlb_one into header file as a inline function
+    Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
+
+v3: https://lkml.org/lkml/2015/12/3/521
+    Remove "acpi_disable_cmcff" from arm64 code,
+    and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
+
+v2: https://lkml.org/lkml/2015/12/2/432
+    Rebase to latest kernel version(4.4-rc3).
+    Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
+
+v1: https://lkml.org/lkml/2015/8/14/199
+    Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
+    Delete arch/arm64/kernel/apei.c.
+    Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
+
+ arch/arm64/Kconfig            |  1 +
+ arch/arm64/include/asm/acpi.h | 16 +++++++++++++++-
+ arch/x86/kernel/acpi/apei.c   |  3 ---
+ drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
+ 4 files changed, 31 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 20d5a60..a301765 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -49,6 +49,7 @@ config ARM64
+ 	select GENERIC_TIME_VSYSCALL
+ 	select HANDLE_DOMAIN_IRQ
+ 	select HARDIRQS_SW_RESEND
++	select HAVE_ACPI_APEI if (ACPI && EFI)
+ 	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select HAVE_ARCH_BITREVERSE
+diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+index 5420cb0..d3d02dc 100644
+--- a/arch/arm64/include/asm/acpi.h
++++ b/arch/arm64/include/asm/acpi.h
+@@ -17,6 +17,7 @@
+ 
+ #include <asm/cputype.h>
+ #include <asm/smp_plat.h>
++#include <asm/tlbflush.h>
+ 
+ /* Macros for consistency checks of the GICC subtable of MADT */
+ #define ACPI_MADT_GICC_LENGTH	\
+@@ -110,8 +111,21 @@ static inline const char *acpi_get_enable_method(int cpu)
+ }
+ 
+ #ifdef	CONFIG_ACPI_APEI
++#define acpi_disable_cmcff 1
+ pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
+-#endif
++
++/*
++ * Despite its name, this function must still broadcast the TLB
++ * invalidation in order to ensure other CPUs don't up with with junk
++ * entries as a result of speculation. Unusually, its also called in
++ * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
++ * TLB broadcasting, then we're in trouble here.
++ */
++static inline void arch_apei_flush_tlb_one(unsigned long addr)
++{
++	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
++}
++#endif /* CONFIG_ACPI_APEI */
+ 
+ #ifdef CONFIG_ACPI_NUMA
+ int arm64_acpi_numa_init(void);
+diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
+index c280df6..ea3046e 100644
+--- a/arch/x86/kernel/acpi/apei.c
++++ b/arch/x86/kernel/acpi/apei.c
+@@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
+ 	struct acpi_hest_ia_corrected *cmc;
+ 	struct acpi_hest_ia_error_bank *mc_bank;
+ 
+-	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
+-		return 0;
+-
+ 	cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
+ 	if (!cmc->enabled)
+ 		return 0;
+diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
+index 20b3fcf..792a0d9 100644
+--- a/drivers/acpi/apei/hest.c
++++ b/drivers/acpi/apei/hest.c
+@@ -123,7 +123,18 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
+  */
+ static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
+ {
+-	return arch_apei_enable_cmcff(hest_hdr, data);
++	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
++		return 0;
++
++	if (!acpi_disable_cmcff)
++		return !arch_apei_enable_cmcff(hest_hdr, data);
++
++	return 0;
++}
++
++static inline int __init hest_ia32_init(void)
++{
++	return apei_hest_parse(hest_parse_cmc, NULL);
+ }
+ 
+ struct ghes_arr {
+@@ -232,8 +243,9 @@ void __init acpi_hest_init(void)
+ 		goto err;
+ 	}
+ 
+-	if (!acpi_disable_cmcff)
+-		apei_hest_parse(hest_parse_cmc, NULL);
++	rc = hest_ia32_init();
++	if (rc)
++		goto err;
+ 
+ 	if (!ghes_disable) {
+ 		rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
+-- 
+2.5.5
+
