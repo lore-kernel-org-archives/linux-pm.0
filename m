@@ -1,49 +1,49 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 2/2] thermal: rockchip: optimize sensor auto accessing period
-Date: Wed, 27 Jul 2016 22:10:43 +0800
-Message-ID: <1469628643-29661-2-git-send-email-wxt@rock-chips.com>
-References: <1469628643-29661-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1469628643-29661-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: smbarber@chromium.org, dianders@chromium.org, briannorris@chromium.org, Rocky Hao <rocky.hao@rock-chips.com>, Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 1/1] power: sbs-manager: Add interrupt support and
+ battery detect gpios
+Date: Wed, 27 Jul 2016 09:46:09 -0500
+Message-ID: <20160727144609.GA12462@rob-hp-laptop>
+References: <1469433003-68564-1-git-send-email-preid@electromag.com.au>
+ <1469433003-68564-2-git-send-email-preid@electromag.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:34332 "EHLO
+	mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753142AbcG0OqN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2016 10:46:13 -0400
+Content-Disposition: inline
+In-Reply-To: <1469433003-68564-2-git-send-email-preid@electromag.com.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Phil Reid <preid@electromag.com.au>
+Cc: mark.rutland@arm.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, karl-heinz@schneider-inet.de, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Rocky Hao <rocky.hao@rock-chips.com>
+On Mon, Jul 25, 2016 at 03:50:03PM +0800, Phil Reid wrote:
+> This patch added irq support for the SMBALERT pin and notification of
+> the battery removal / insertion. The sbs manager would typically be
+> used with the corresponding sbs-battery driver that currently uses a
+> gpio input for battery presence and interrupt. To remain compatible with
+> that existing driver this patch implements GPIO inputs with interrupt
+> support. IRQ masking is performed in software as the hardware does not
+> support masking of notifications from each battery.
+> In addition a power_supply change notification is generated for the sbs
+> manager device when the AC present flag is changed.
+> Tested with LTC1760 and dual sbs compatible batteries.
 
-In less than 10 ms, the temperature of soc will arise 10 degree. 250 ms
-is too big for soc tempeture control. Setting 2.5 ms will speed up
-temperature accessing speed but introduce no more cpu's computing overhead.
-We set AUTO_PERIOD_TIME and TSADCV3_AUTO_PERIOD_HT_TIME the same value,
-because normal temperature update speed is also our consern in IPA.
+Please don't submit a binding and immediately turn around and add to it. 
+While that is often preferred for drivers or kernel features, bindings 
+should be complete as possible and not evolve. Combine this with your 
+previous patch add sbs-mgr if that hasn't been accepted yet.
 
-Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Heiko Stuebner <heiko@sntech.de>
-Cc: linux-pm@vger.kernel.org
+IMO, the sbs-bat should just be a interrupt and making it and this 
+binding a GPIO is overkill. Since batteries nodes using this will be 
+new, there's no reason the driver can't be updated to support 
+interrupts.
 
----
+Also, I'm not even convinced you need the sbs-mgr to be an 
+interrupt-controller. Is this anything more that just wire-OR'ed 
+interrupt lines which can be handled as shared irq? Does reading 
+SBSM_CMD_BATSYSSTATE have a side effect for example?
 
- drivers/thermal/rockchip_thermal.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index a90423d..1f165c9 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -213,8 +213,8 @@ struct rockchip_thermal_data {
- #define TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT	4
- #define TSADCV2_AUTO_PERIOD_TIME		250 /* 250ms */
- #define TSADCV2_AUTO_PERIOD_HT_TIME		50  /* 50ms */
--#define TSADCV3_AUTO_PERIOD_TIME		187500 /* 250ms */
--#define TSADCV3_AUTO_PERIOD_HT_TIME		37500  /* 50ms */
-+#define TSADCV3_AUTO_PERIOD_TIME		1875 /* 2.5ms */
-+#define TSADCV3_AUTO_PERIOD_HT_TIME		1875 /* 2.5ms */
- 
- #define TSADCV2_USER_INTER_PD_SOC		0x340 /* 13 clocks */
- 
--- 
-1.9.1
+Rob
