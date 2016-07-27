@@ -1,48 +1,66 @@
-From: Borislav Petkov <bp@suse.de>
-Subject: Re: Fwd: [Bug 150021] New: kernel panic: "kernel tried to execute
- NX-protected page" when resuming from hibernate to disk
-Date: Wed, 27 Jul 2016 07:39:28 +0200
-Message-ID: <20160727053928.GA3142@nazgul.tnic>
-References: <16541580.dFLT14ScxF@vostro.rjw.lan>
- <2437449.FpDj7DlX4Y@vostro.rjw.lan>
- <CAGXu5jLEbETSntwVQnNt4MZsHiU3E0OCN51VgBScvVAjCP7auA@mail.gmail.com>
- <2264716.77pSArDZvG@vostro.rjw.lan>
- <CAGXu5jLPN4N1f19OXJboepVuJhnXeeWQghanqDwh4bU=SQXZJw@mail.gmail.com>
- <CAJcbSZE0YGP1mpyvRU-3c6jUQsuAhpB5wcyg10hKrNneUtgiPg@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 08/14] timer: Export next wake up of a CPU
+Date: Wed, 27 Jul 2016 11:14:30 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1607271110140.19896@nanos>
+References: <1466624209-27432-1-git-send-email-lina.iyer@linaro.org> <1466624209-27432-9-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:51940 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758554AbcG0Fjk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 27 Jul 2016 01:39:40 -0400
-Content-Disposition: inline
-In-Reply-To: <CAJcbSZE0YGP1mpyvRU-3c6jUQsuAhpB5wcyg10hKrNneUtgiPg@mail.gmail.com>
+Received: from Galois.linutronix.de ([146.0.238.70]:45497 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752821AbcG0JRA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2016 05:17:00 -0400
+In-Reply-To: <1466624209-27432-9-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Kees Cook <keescook@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Borislav Petkov <bp@suse.de>, Ingo Molnar <mingo@kernel.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, shuzzle@mailbox.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com
 
-On Tue, Jul 26, 2016 at 02:17:29PM -0700, Thomas Garnier wrote:
-> I am sorry, there has been parallel work between KASLR memory
-> randomization and hibernation support. That's why hibernation was not
-> tested, it was not supported when the feature was created.
-> Communication will be better next time.
->=20
-> I will work on identifying the problem and pushing a fix.
+On Wed, 22 Jun 2016, Lina Iyer wrote:
+> +static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
+> +{
+> +	ktime_t len = { .tv64 = NSEC_PER_SEC/HZ };
+> +
+> +	/* Next wake up is the tick period, assume it starts now */
+> +	return ktime_add(len, ktime_get());
 
-Would you please do me a favor and stop top-posting. It really disrupts
-reading the thread.
+  return tick_next_period;
 
-Thanks.
+Will tell you the point where the next tick interrupt is due.
 
---=20
-Regards/Gruss,
-    Boris.
+> +}
+> +
+>  static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+>  static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+>  #endif /* !CONFIG_NO_HZ_COMMON */
+> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> index 536ada8..addf3235 100644
+> --- a/kernel/time/tick-sched.c
+> +++ b/kernel/time/tick-sched.c
+> @@ -979,6 +979,19 @@ ktime_t tick_nohz_get_sleep_length(void)
+>  	return ts->sleep_length;
+>  }
+>  
+> +/**
+> + * tick_nohz_get_next_wakeup - return the next wake up of the CPU
+> + *
+> + * Called with interrupts disabled on the cpu
 
-ECO tip #101: Trim your mails when you reply.
+So why are you handing in the (undocumented) cpu argument if its called on
+that cpu anyway?
 
-SUSE Linux GmbH, GF: Felix Imend=C3=B6rffer, Jane Smithard, Graham Nort=
-on, HRB 21284 (AG N=C3=BCrnberg)
---
+> + */
+> +ktime_t tick_nohz_get_next_wakeup(int cpu)
+> +{
+> +	struct clock_event_device *dev =
+> +			per_cpu(tick_cpu_device.evtdev, cpu);
+> +
+> +	return dev->next_event;
+
+Then this becomes
+
+     return __this_cpu_read(tick_cpu_device.evtdev)->nextevt;
+
+Thanks,
+
+	tglx
