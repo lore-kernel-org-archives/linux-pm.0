@@ -1,56 +1,69 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4 3/5] power_supply: tps65217-charger: Add support for
- IRQs
-Date: Wed, 27 Jul 2016 22:04:51 +0200
-Message-ID: <20160727200450.GA14663@earth>
-References: <20160620105056.25843-1-m.niestroj@grinn-global.com>
- <20160620105056.25843-4-m.niestroj@grinn-global.com>
- <e70d4f16-e727-6729-b3f2-fad2dd7847cb@grinn-global.com>
+From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Subject: Re: [PATCH 1/1] power: sbs-manager: Add interrupt support and
+ battery detect gpios
+Date: Wed, 27 Jul 2016 23:08:27 +0200
+Message-ID: <1469653707.27666.22.camel@amnesix>
+References: <1469433003-68564-1-git-send-email-preid@electromag.com.au>
+	 <1469433003-68564-2-git-send-email-preid@electromag.com.au>
+	 <20160727144609.GA12462@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="7AUc2qLy4jB3hD7Z"
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <e70d4f16-e727-6729-b3f2-fad2dd7847cb@grinn-global.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Marcin Niestroj <m.niestroj@grinn-global.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Tony Lindgren <tony@atomide.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from schneider-inet.de ([85.214.76.205]:55323 "EHLO
+	h1714509.stratoserver.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbcG0VIn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 27 Jul 2016 17:08:43 -0400
+In-Reply-To: <20160727144609.GA12462@rob-hp-laptop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Phil Reid <preid@electromag.com.au>, mark.rutland@arm.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+
+Am Mittwoch, den 27.07.2016, 09:46 -0500 schrieb Rob Herring:
+> On Mon, Jul 25, 2016 at 03:50:03PM +0800, Phil Reid wrote:
+> > This patch added irq support for the SMBALERT pin and notification of
+> > the battery removal / insertion. The sbs manager would typically be
+> > used with the corresponding sbs-battery driver that currently uses a
+> > gpio input for battery presence and interrupt. To remain compatible with
+> > that existing driver this patch implements GPIO inputs with interrupt
+> > support. IRQ masking is performed in software as the hardware does not
+> > support masking of notifications from each battery.
+> > In addition a power_supply change notification is generated for the sbs
+> > manager device when the AC present flag is changed.
+> > Tested with LTC1760 and dual sbs compatible batteries.
+> 
+> Please don't submit a binding and immediately turn around and add to it. 
+> While that is often preferred for drivers or kernel features, bindings 
+> should be complete as possible and not evolve. Combine this with your 
+> previous patch add sbs-mgr if that hasn't been accepted yet.
+> 
+> IMO, the sbs-bat should just be a interrupt and making it and this 
+> binding a GPIO is overkill. Since batteries nodes using this will be 
+> new, there's no reason the driver can't be updated to support 
+> interrupts.
+> 
+> Also, I'm not even convinced you need the sbs-mgr to be an 
+> interrupt-controller. Is this anything more that just wire-OR'ed 
+> interrupt lines which can be handled as shared irq? Does reading 
+> SBSM_CMD_BATSYSSTATE have a side effect for example?
+Yes, according to the Datasheed it clears SMBALERT#.
+> 
+> Rob
+SMBALERT is electrically an active low line which is pulled down by one
+or more devices needing attention, isn't it? The I2C host driver or some
+other instance need to implement support for it, the device driver may
+register some sort of handler function (e.g by implementing struct
+i2c_driver.alert function)
+
+That's my understanding of the SMBALERT.
+
+I once tried to implement the alert function and see if it get's called.
+It didn't. At that point I didn't investigate further.
+
+So, do I miss something or is that part incomplete/broken? I can only
+find lm90 and ipmi_ssif which implement the callback.
+-- 
+Karl-Heinz
 
 
---7AUc2qLy4jB3hD7Z
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-Hi,
-
-On Wed, Jul 27, 2016 at 11:14:27AM +0200, Marcin Niestroj wrote:
-> ping
-
-I missed this one. We are currently in the merge window. I will have
-a look after 4.8-rc1 has been released.
-
--- Sebastian
-
---7AUc2qLy4jB3hD7Z
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJXmRPfAAoJENju1/PIO/qa2isP+wfS1bY1onLzQTObSas+JKIk
-UuN0x/HSiyOUauI8+V33K7UAjioQm5AlB/a/XXGjtj9W5KmgRKZyCz7Pomyjebol
-ifSypuanXuT4NjHHYH6xtu60R8Wq0ibnmeLAImJlei6jTE+xuex8U9Ztmo9c5fHm
-9S2sqV8T9819m380YHUuzf5kVl9X1WUyATOrdWGJ0H6az56tiLG3Bd3PLCgkw6IK
-127/NWCm4dNpL0XS4EFD4NyQAj75V4f+4TgoX57Ov/d9M3mqNuXfNqCScutlD2Rs
-EJp0T81sItQDU8ilC5/u1Gr9pxmYTGTuoL5l94Xv7M/4dRMwytFzjwfpEbvY7edA
-iIAvWqLzeUFpcrXaxLxctZPbNZot5E/TdkdJbFaRWwJMUdoyxGqWpuMyTairq/72
-QACWuhZfTghVYaozT9lpZEmuInjv6TdUKL1cu4zXx4l565FF2O7H+kwzdC8g55Hs
-+cyryykp0dqF50ryh1gUy15IPwt5ep22HbO1/FDIOFl9TYBvF1Sk+F67fCEr1rlZ
-LnbM1LxbFzTtI/nqy0+gHwWgBfcOyuH+8spdIiwExKIqaHCdka70ufR3UEmL/kKh
-4lNnHTnvrUDkgiQJQQDoTM5QxsNPUpH4ise4uSLh4/ZYdF6S4IGO2dVaTu90LUer
-jIP8V7dbXgt/jDWYnpLL
-=JdyA
------END PGP SIGNATURE-----
-
---7AUc2qLy4jB3hD7Z--
