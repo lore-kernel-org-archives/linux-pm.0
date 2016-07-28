@@ -1,138 +1,256 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 02/10] driver core: Functional dependencies tracking support
-Date: Thu, 28 Jul 2016 02:30:31 +0200
-Message-ID: <2841548.NIYVpJFBcH@vostro.rjw.lan>
-References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com> <4258432.JNKr9zJtMp@vostro.rjw.lan> <20160724224832.GB9516@wunner.de>
+From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v3 4/6] usb: core: add power sequence handling for USB
+ devices
+Date: Thu, 28 Jul 2016 09:45:21 +0800
+Message-ID: <20160728014521.GB26186@shlinux2>
+References: <1469007629-31757-1-git-send-email-peter.chen@nxp.com>
+ <1469007629-31757-5-git-send-email-peter.chen@nxp.com>
+ <5798E067.90207@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20160724224832.GB9516@wunner.de>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:AMD IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>, linux-samsung-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <5798E067.90207-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, July 25, 2016 12:48:32 AM Lukas Wunner wrote:
-> On Thu, Jul 21, 2016 at 02:25:15AM +0200, Rafael J. Wysocki wrote:
-> > On Thursday, July 21, 2016 01:25:53 AM Lukas Wunner wrote:
-> > > On Thu, Jul 21, 2016 at 12:51:31AM +0200, Rafael J. Wysocki wrote:
-> > > > On Wednesday, July 20, 2016 05:23:40 PM Lukas Wunner wrote:
-> > > > > On Wed, Jul 20, 2016 at 02:52:42PM +0200, Rafael J. Wysocki wrote:
-> > > > > > On Wednesday, July 20, 2016 08:24:50 AM Lukas Wunner wrote:
-> > > > > > > On Wed, Jul 20, 2016 at 02:33:18AM +0200, Rafael J. Wysocki wrote:
-> > > > > > > > On Friday, June 17, 2016 04:07:38 PM Lukas Wunner wrote:
-> > > > > > > > > On Fri, Jun 17, 2016 at 02:54:56PM +0200, Rafael J. Wysocki wrote:
-> > > > > > > > > > On Fri, Jun 17, 2016 at 12:36 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> > > > > > > > > > > On Fri, Jun 17, 2016 at 08:26:52AM +0200, Marek Szyprowski wrote:
-> > > > > > > > > > > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> > > > > > > > > > > We also have such a functional dependency for Thunderbolt on Macs:
-> > > > > > > > > > > On resume from system sleep, the PCIe hotplug ports may not resume
-> > > > > > > > > > > before the thunderbolt driver has reestablished the PCI tunnels.
-> > > > > > > > > > > Currently this is enforced by quirk_apple_wait_for_thunderbolt()
-> > > > > > > > > > > in drivers/pci/quirks.c. It would be good if we could represent
-> > > > > > > > > > > this dependency using something like Rafael's approach instead of
-> > > > > > > > > > > open coding it, however one detail in Rafael's patches is problematic:
-> > > > > > > > > > >
-> > > > > > > > > > > > New links are added by calling device_link_add() which may happen
-> > > > > > > > > > > > either before the consumer device is probed or when probing it, in
-> > > > > > > > > > > > which case the caller needs to ensure that the driver of the
-> > > > > > > > > > > > supplier device is present and functional and the DEVICE_LINK_PROBE_TIME
-> > > > > > > > > > > > flag should be passed to device_link_add() to reflect that.
-> > > > > > > > > > >
-> > > > > > > > > > > The thunderbolt driver cannot call device_link_add() before the
-> > > > > > > > > > > PCIe hotplug ports are bound to a driver unless we amend portdrv
-> > > > > > > > > > > to return -EPROBE_DEFER for Thunderbolt hotplug ports on Macs
-> > > > > > > > > > > if the thunderbolt driver isn't loaded.
-> > > > > > > > > > >
-> > > > > > > > > > > It would therefore be beneficial if device_link_add() can be
-> > > > > > > > > > > called even *after* the consumer is bound.
-> > > > > > > > > > 
-> > > > > > > > > > I don't quite follow.
-> > > > > > > > > > 
-> > > > > > > > > > Who's the provider and who's the consumer here?
-> > > > > > > > > 
-> > > > > > > > > thunderbolt.ko is the supplier.
-> > > > > > > > 
-> > > > > > > > But it binds to the children of the ports that are supposed to be its
-> > > > > > > > consumers?
-> > > > > > > > 
-> > > > > > > > Why is that even expected to work?
-> > > > > > > 
-> > > > > > > No, the consumers are aunts (or uncles) of the supplier, if you will. :-)
-> > > > > > > 
-> > > > > > > The consumers are the hotplug ports (named "Downstream Bridge 1 / 2" in
-> > > > > > > the drawing below). The supplier is the NHI:
-> > > > > > > 
-> > > > > > >       (Root Port) ---- Upstream Bridge --+-- Downstream Bridge 0 ---- NHI
-> > > > > > >                                          +-- Downstream Bridge 1 --
-> > > > > > >                                          +-- Downstream Bridge 2 --
-> > > > > > >                                          ...
-> > > > > > > 
-> > > > > > > We're calling pci_power_up() and pci_restore_state() from
-> > > > > > > pci_pm_resume_noirq(). And that will fail for devices below
-> > > > > > > the hotplug ports if the PCI tunnels haven't been re-established
-> > > > > > > yet by the NHI.
-> > > > > > 
-> > > > > > So the NHI is a PCIe device, right?
-> > > > > > 
-> > > > > > Does the Thunderbolt driver bind to that device?
-> > > > > 
-> > > > > The NHI is a PCI device but not a bridge. It has class 0x88000.
-> > > > > Yes, thunderbolt.ko binds to the NHI.
-> > > > > 
-> > > > > And portdrv binds to the upstream bridge and downstream bridges.
-> > > > > Those have class 0x60400.
-> > > > 
-> > > > OK, so why would there be a problem with creating links from the NHI
-> > > > (producer) to the ports (consumers) before binding portdrv to them?
-> > > 
-> > > Because the ordering in which drivers bind isn't guaranteed. At least
-> > > on my machine (Debian), portdrv always binds before thunderbolt.
-> > 
-> > But what drivers have to do with that really?  Do you need drivers to
-> > know that the dependency is there?
-> > 
-> > Just add likns *before* even probing for drivers (yes, you can do that)
-> > and the core will handle that for you.
+On Wed, Jul 27, 2016 at 09:25:11AM -0700, Joshua Clayton wrote:
 > 
-> Forgive me for being dense: How do you suggest to add links before
-> probing drivers? Only way I could think of is with a PCI quirk.
 > 
-> Which is what we're already doing right now (see drivers/pci/quirk.c:
-> quirk_apple_wait_for_thunderbolt()). And it ain't pretty.
+> On 07/20/2016 02:40 AM, Peter Chen wrote:
+> > Some hard-wired USB devices need to do power sequence to let the
+> > device work normally, the typical power sequence like: enable USB
+> > PHY clock, toggle reset pin, etc. But current Linux USB driver
+> > lacks of such code to do it, it may cause some hard-wired USB devices
+> > works abnormal or can't be recognized by controller at all.
+> >
+> > In this patch, it calls power sequence library APIs to finish
+> > the power sequence events. At first, it calls pwrseq_alloc_generic
+> > to create a generic power sequence instance, then it will do power
+> > on sequence at hub's probe for all devices under this hub
+> > (includes root hub).
+> >
+> > At hub_disconnect, it will do power off sequence which is at powered
+> > on list.
+> >
+> > Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+> > ---
+> >  drivers/usb/core/Makefile |   1 +
+> >  drivers/usb/core/hub.c    |  12 ++++--
+> >  drivers/usb/core/hub.h    |  12 ++++++
+> >  drivers/usb/core/pwrseq.c | 100 ++++++++++++++++++++++++++++++++++++++++++++++
+> >  4 files changed, 122 insertions(+), 3 deletions(-)
+> >  create mode 100644 drivers/usb/core/pwrseq.c
+> >
+> > diff --git a/drivers/usb/core/Makefile b/drivers/usb/core/Makefile
+> > index da36b78..5fd2f54 100644
+> > --- a/drivers/usb/core/Makefile
+> > +++ b/drivers/usb/core/Makefile
+> > @@ -10,5 +10,6 @@ usbcore-y += port.o
+> >  usbcore-$(CONFIG_OF)		+= of.o
+> >  usbcore-$(CONFIG_PCI)		+= hcd-pci.o
+> >  usbcore-$(CONFIG_ACPI)		+= usb-acpi.o
+> > +usbcore-$(CONFIG_PWRSEQ_GENERIC) += pwrseq.o
+> >  
+> >  obj-$(CONFIG_USB)		+= usbcore.o
+> > diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+> > index bee1351..a346a8b 100644
+> > --- a/drivers/usb/core/hub.c
+> > +++ b/drivers/usb/core/hub.c
+> > @@ -1700,6 +1700,7 @@ static void hub_disconnect(struct usb_interface *intf)
+> >  	hub->error = 0;
+> >  	hub_quiesce(hub, HUB_DISCONNECT);
+> >  
+> > +	hub_pwrseq_off(hub);
+> >  	mutex_lock(&usb_port_peer_mutex);
+> >  
+> >  	/* Avoid races with recursively_mark_NOTATTACHED() */
+> > @@ -1733,6 +1734,7 @@ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
+> >  	struct usb_endpoint_descriptor *endpoint;
+> >  	struct usb_device *hdev;
+> >  	struct usb_hub *hub;
+> > +	int ret = -ENODEV;
+> >  
+> >  	desc = intf->cur_altsetting;
+> >  	hdev = interface_to_usbdev(intf);
+> > @@ -1839,6 +1841,7 @@ descriptor_error:
+> >  	INIT_DELAYED_WORK(&hub->leds, led_work);
+> >  	INIT_DELAYED_WORK(&hub->init_work, NULL);
+> >  	INIT_WORK(&hub->events, hub_event);
+> > +	INIT_LIST_HEAD(&hub->pwrseq_on_list);
+> >  	usb_get_intf(intf);
+> >  	usb_get_dev(hdev);
+> >  
+> > @@ -1852,11 +1855,14 @@ descriptor_error:
+> >  	if (id->driver_info & HUB_QUIRK_CHECK_PORT_AUTOSUSPEND)
+> >  		hub->quirk_check_port_auto_suspend = 1;
+> >  
+> > -	if (hub_configure(hub, endpoint) >= 0)
+> > -		return 0;
+> > +	if (hub_configure(hub, endpoint) >= 0) {
+> > +		ret = hub_pwrseq_on(hub);
+> > +		if (!ret)
+> > +			return 0;
+> > +	}
+> >  
+> >  	hub_disconnect(intf);
+> > -	return -ENODEV;
+> > +	return ret;
+> >  }
+> >  
+> >  static int
+> > diff --git a/drivers/usb/core/hub.h b/drivers/usb/core/hub.h
+> > index 34c1a7e..9473f6f 100644
+> > --- a/drivers/usb/core/hub.h
+> > +++ b/drivers/usb/core/hub.h
+> > @@ -78,6 +78,7 @@ struct usb_hub {
+> >  	struct delayed_work	init_work;
+> >  	struct work_struct      events;
+> >  	struct usb_port		**ports;
+> > +	struct list_head	pwrseq_on_list; /* powered pwrseq node list */
+> >  };
+> >  
+> >  /**
+> > @@ -166,3 +167,14 @@ static inline int hub_port_debounce_be_stable(struct usb_hub *hub,
+> >  {
+> >  	return hub_port_debounce(hub, port1, false);
+> >  }
+> > +
+> > +#if IS_ENABLED(CONFIG_PWRSEQ_GENERIC)
+> > +int hub_pwrseq_on(struct usb_hub *hub);
+> > +void hub_pwrseq_off(struct usb_hub *hub);
+> > +#else
+> > +static inline int hub_pwrseq_on(struct usb_hub *hub)
+> > +{
+> > +	return 0;
+> > +}
+> > +static inline void hub_pwrseq_off(struct usb_hub *hub) {}
+> > +#endif /* CONFIG_PWRSEQ_GENERIC */
+> > diff --git a/drivers/usb/core/pwrseq.c b/drivers/usb/core/pwrseq.c
+> > new file mode 100644
+> > index 0000000..837fe66
+> > --- /dev/null
+> > +++ b/drivers/usb/core/pwrseq.c
+> > @@ -0,0 +1,100 @@
+> > +/*
+> > + * pwrseq.c	USB device power sequence management
+> > + *
+> > + * Copyright (C) 2016 Freescale Semiconductor, Inc.
+> > + * Author: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+> > + *
+> > + * This program is free software: you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License version 2  of
+> > + * the License as published by the Free Software Foundation.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + *
+> > + * You should have received a copy of the GNU General Public License
+> > + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+> > + */
+> > +
+> > +#include <linux/list.h>
+> > +#include <linux/of.h>
+> > +#include <linux/power/pwrseq.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/usb.h>
+> > +#include <linux/usb/hcd.h>
+> > +
+> > +#include "hub.h"
+> > +
+> > +struct usb_pwrseq_node {
+> > +	struct pwrseq *pwrseq;
+> > +	struct list_head list;
+> > +};
+> > +
+> > +static int hub_of_pwrseq_on(struct device_node *np, struct usb_hub *hub)
+> > +{
+> > +	struct pwrseq *pwrseq;
+> > +	struct usb_pwrseq_node *pwrseq_node;
+> > +	int ret;
+> > +
+> > +	pwrseq = pwrseq_alloc_generic();
+> > +	if (IS_ERR(pwrseq))
+> > +		return PTR_ERR(pwrseq);
+> > +
+> > +	ret = pwrseq_get(np, pwrseq);
+> > +	if (ret)
+> > +		goto pwr_free;
+> > +
+> > +	ret = pwrseq_on(np, pwrseq);
+> > +	if (ret)
+> > +		goto pwr_put;
+> > +
+> > +	pwrseq_node = kzalloc(sizeof(*pwrseq_node), GFP_KERNEL);
+> > +	pwrseq_node->pwrseq = pwrseq;
+> > +	list_add(&pwrseq_node->list, &hub->pwrseq_on_list);
+> > +
+> > +	return 0;
+> > +
+> > +pwr_put:
+> > +	pwrseq_put(pwrseq);
+> > +pwr_free:
+> > +	pwrseq_free(pwrseq);
+> > +	return ret;
+> > +}
+> > +
+> > +int hub_pwrseq_on(struct usb_hub *hub)
+> > +{
+> > +	struct device *parent;
+> > +	struct usb_device *hdev = hub->hdev;
+> > +	struct device_node *np;
+> > +	int ret;
+> > +
+> > +	if (hdev->parent)
+> > +		parent = &hdev->dev;
+> > +	else
+> > +		parent = bus_to_hcd(hdev->bus)->self.controller;
+> > +
+> > +	for_each_child_of_node(parent->of_node, np) {
+> > +		ret = hub_of_pwrseq_on(np, hub);
+> > +		if (ret)
+> > +			return ret;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +void hub_pwrseq_off(struct usb_hub *hub)
+> > +{
+> > +	struct pwrseq *pwrseq;
+> > +	struct usb_pwrseq_node *pwrseq_node, *tmp_node;
+> > +
+> > +	list_for_each_entry_safe(pwrseq_node, tmp_node,
+> > +			&hub->pwrseq_on_list, list) {
+> > +		pwrseq = pwrseq_node->pwrseq;
+> > +		pwrseq_off(pwrseq);
+> > +		pwrseq_put(pwrseq);
+> > +		pwrseq_free(pwrseq);
+> > +		list_del(&pwrseq_node->list);
+> > +		kfree(pwrseq_node);
+> > +	}
+> > +}
+> Patch 4 does not apply for me
+> (The Makefile has  a "usbcore-$(CONFIG_OF) += of.o"
+> line which I don't see in 4.7 or linux/next master).
+> Is there another patch set this series depends on?
 
-Well, maybe not, but doing it once during enumeration would be better than
-on every resume.
+It seems below patch has not been queued:
 
-Plus there is runtime PM to cover.
+https://git.kernel.org/cgit/linux/kernel/git/peter.chen/usb.git/commit/?h=add_pwrseq_for_usb&id=2efd73d0f935ffbc66135553da0ac807c0b4c3fe
 
-> > > I guess I could amend portdrv to return -EPROBE_DEFER on Macs if
-> > > no driver is bound to the NHI. Doesn't feel pretty to me though.
-> > > 
-> > > Ultimately this seems to be the same issue as with calling
-> > > dev_pm_domain_set() for a bound device. Perhaps device_link_add()
-> > > can likewise be allowed if a runtime PM ref is held for the devices
-> > > and the call happens under lock_system_sleep()?
-> > 
-> > No, the whole synchronization scheme in the links code would have had to be
-> > changed for that to really work.
-> > 
-> > And it really is about what is needed (at least in principle) to run your
-> > device.  If you think you need device X with a driver to handle device Y
-> > correctly, then either you need it all the time, from probe to remove, or
-> > you just don't really need it at all.
-> 
-> Real life isn't as simple as that.
-> 
-> In this case, we have consumers (hotplug ports) which are doing fine
-> if the driver for the supplier (NHI) is not loaded. But once it loads,
-> the links must be in place.
+This pwrseq-lib patch set does not depend on it, I will send patch set
+on top of a clean mainline next time, sorry for confusing. 
 
-Hmm.
+-- 
 
-What if it is not loaded and the system suspends.  Will everything work
-as expected after the subsequent resume?
-
-Thanks,
-Rafael
+Best Regards,
+Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
