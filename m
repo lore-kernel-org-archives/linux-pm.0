@@ -1,49 +1,41 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][v6] PM / hibernate: Introduce test_resume mode for
- hibernation
-Date: Thu, 28 Jul 2016 21:32:06 +0200
-Message-ID: <20160728193206.GC8837@amd>
-References: <1469154647-5860-1-git-send-email-yu.c.chen@intel.com>
+Subject: Re: [PATCH] PM-wakeup: Delete unnecessary checks before three
+ function calls
+Date: Thu, 28 Jul 2016 21:33:34 +0200
+Message-ID: <20160728193334.GB11657@amd>
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <5786434.e97HVzPjpI@vostro.rjw.lan>
+ <b243d2ba-a359-998d-1dd8-43ff444074a8@users.sourceforge.net>
+ <1722549.jyvuK0dZRm@vostro.rjw.lan>
+ <88d6d524-c093-4fcd-35ba-ff19f7b21fe2@users.sourceforge.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48928 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756713AbcG1TcL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 15:32:11 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1469154647-5860-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <88d6d524-c093-4fcd-35ba-ff19f7b21fe2@users.sourceforge.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Linux Kernel Mail List <linux-kernel@vger.kernel.org>
 
-On Fri 2016-07-22 10:30:47, Chen Yu wrote:
-> test_resume mode is to verify if the snapshot data
-> written to swap device can be successfully restored
-> to memory. It is useful to ease the debugging process
-> on hibernation, since this mode can not only bypass
-> the BIOSes/bootloader, but also the system re-initialization.
+On Sat 2016-07-23 17:14:00, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sat, 23 Jul 2016 17:04:00 +0200
 > 
-> To avoid the risk to break the filesystm on persistent storage,
-> this patch resumes the image with tasks frozen.
+> The following functions test whether their argument is NULL
+> and then return immediately.
+> * dev_pm_arm_wake_irq
+> * dev_pm_disarm_wake_irq
+> * wakeup_source_unregister
 > 
-> For example:
-> echo test_resume > /sys/power/disk
-> echo disk > /sys/power/state
+> Thus the test around the calls is not needed.
 > 
+> This issue was detected by using the Coccinelle software.
 > 
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
 Acked-by: Pavel Machek <pavel@ucw.cz>
 
-(And yes, I'd still like documentation patch for this, but that can be
-done in separate patch.)
-
-Thanks,
-								Pavel
-								
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
