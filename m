@@ -1,57 +1,61 @@
-From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
-Subject: RE: [PATCH v2 0/7] power: act8945a_charger: Improvements
-Date: Thu, 28 Jul 2016 09:36:35 +0000
-Message-ID: <B256D81BAE5131468A838E5D7A243641018CCCBFB3@penmbx01>
-References: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
+From: Suzuki K Poulose <Suzuki.Poulose@arm.com>
+Subject: Re: [PATCH v11] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Thu, 28 Jul 2016 10:39:51 +0100
+Message-ID: <f018fd18-03e7-3247-7d65-af430092230e@arm.com>
+References: <1469640545-5848-1-git-send-email-fu.wei@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nasmtp01.atmel.com ([192.199.1.245]:22401 "EHLO
-	ussmtp01.atmel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752782AbcG1Jia convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 05:38:30 -0400
-In-Reply-To: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1469640545-5848-1-git-send-email-fu.wei@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: fu.wei@linaro.org, tn@semihalf.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, catalin.marinas@arm.com, will.deacon@arm.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, graeme.gregory@linaro.org, al.stone@linaro.org, hanjun.guo@linaro.org, mark.rutland@arm.com, Marc.Zyngier@arm.com, lorenzo.pieralisi@arm.com, rruigrok@codeaurora.org, harba@qti.qualcomm.com, tbaicar@codeaurora.org, jcm@redhat.com, msalter@redhat.com, grant.likely@linaro.org, rrichter@cavium.com, jarkko.nikula@linux.intel.com, jon.zhixiong.zhang@gmail.com, Tomasz Nowicki <tomasz.nowicki@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hello everyone
+On 27/07/16 18:29, fu.wei@linaro.org wrote:
+> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+>
+> This commit provides APEI arch-specific bits for aarch64
+>
+> Meanwhile,
+> (1)add a new subfunction "hest_ia32_init" for
+> "acpi_disable_cmcff" which is used by IA-32 Architecture
+> Corrected Machine Check (CMC).
+> (2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+> a generic place.
+> (3)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
+> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
+>
+> [Fu Wei: improve && upstream]
+>
 
-Do you have any comments for this patch set?
 
-Best Regards,
-Wenyou Yang
-________________________________________
-From: Wenyou Yang [wenyou.yang@atmel.com]
-Sent: Tuesday, June 28, 2016 9:22
-To: Sebastian Reichel; Dmitry Eremin-Solenikov; David Woodhouse; Rob Herring; Pawel Moll; Mark Brown; Ian Campbell; Kumar Gala
-Cc: linux-kernel@vger.kernel.org; devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org; Ferre, Nicolas; linux-pm@vger.kernel.org; Yang, Wenyou
-Subject: [PATCH v2 0/7] power: act8945a_charger: Improvements
+> diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+> index 5420cb0..d3d02dc 100644
+> --- a/arch/arm64/include/asm/acpi.h
+> +++ b/arch/arm64/include/asm/acpi.h
+> @@ -17,6 +17,7 @@
+>
+>  #include <asm/cputype.h>
+>  #include <asm/smp_plat.h>
+> +#include <asm/tlbflush.h>
+>
+>  /* Macros for consistency checks of the GICC subtable of MADT */
+>  #define ACPI_MADT_GICC_LENGTH	\
+> @@ -110,8 +111,21 @@ static inline const char *acpi_get_enable_method(int cpu)
+>  }
+>
+>  #ifdef	CONFIG_ACPI_APEI
+> +#define acpi_disable_cmcff 1
+>  pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
+> -#endif
+> +
+> +/*
+> + * Despite its name, this function must still broadcast the TLB
+> + * invalidation in order to ensure other CPUs don't up with with junk
 
-This patch series is used to improve the act8945a-charger, such as
-improve the way to check the status, fix the power supply type
-property, add the status change update, and add more properties:
-capacity level property and max current property.
+Please fix the comment above ^^^.
 
-Changes in v2:
- - Add missing ret declaration.
 
-Wenyou Yang (7):
-  power: act8945a_charger: Remove "battery_temperature"
-  power: act8945a_charger: Improve
-  power: act8945a_charger: Add status change update support
-  power: act8945a_charger: Fix the power supply type
-  power: act8945a_charger: Add capacity level property
-  power: act8945a_charger: Add max current property
-  doc: bindings: act8945a-charger: Update properties
-
- .../devicetree/bindings/power/act8945a-charger.txt |   6 +-
- drivers/power/act8945a_charger.c                   | 371 ++++++++++++++++++---
- 2 files changed, 337 insertions(+), 40 deletions(-)
-
---
-2.7.4
-
+Suzuki
