@@ -1,41 +1,83 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH v3 0/6] power: add power sequence library
-Date: Thu, 28 Jul 2016 13:41:23 -0300
-Message-ID: <CAOMZO5Dv_X-u6qKqAWtysAqmMw91bVoAaRvnc81yUGDxbd27rA@mail.gmail.com>
-References: <1469007629-31757-1-git-send-email-peter.chen@nxp.com> <579A2B38.3000202@gmail.com>
+From: Sven Van Asbroeck <thesven73@gmail.com>
+Subject: [PATCH] max17042_battery: fix model download bug.
+Date: Thu, 28 Jul 2016 14:07:17 -0400
+Message-ID: <CAGngYiULgg3Dzgu4q==wqefNBa4aL7Ai7b0-LDKNE2TjSBebKQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f194.google.com ([209.85.217.194]:33475 "EHLO
+Received: from mail-ua0-f194.google.com ([209.85.217.194]:32823 "EHLO
 	mail-ua0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932580AbcG1QlZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 12:41:25 -0400
-In-Reply-To: <579A2B38.3000202@gmail.com>
+	with ESMTP id S1752686AbcG1SHS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 14:07:18 -0400
+Received: by mail-ua0-f194.google.com with SMTP id 39so2866373uah.0
+        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2016 11:07:18 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joshua Clayton <stillcompiling@gmail.com>
-Cc: Peter Chen <peter.chen@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Philipp Zabel <p.zabel@pengutronix.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, USB list <linux-usb@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sascha Hauer <s.hauer@pengutronix.de>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, Troy
+To: linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>
 
-Hi Joshua,
+The device's model download function returns the model data as
+an array of u32s, which is later compared to the reference
+model data. However, since the latter is an array of u16s,
+the comparison does not happen correctly, and model verification
+fails. This in turn breaks the POR initialization sequence.
 
-On Thu, Jul 28, 2016 at 12:56 PM, Joshua Clayton
-<stillcompiling@gmail.com> wrote:
+Signed-off-by: Sven Van Asbroeck <TheSven73@googlemail.com>
+---
+ drivers/power/max17042_battery.c | 15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
 
-> I assume there is a v4 coming due to rmk's comments on patch 5.
-> I couldn't figure out where to null the of_node in error paths, but in testing
-> we did put a line of code to null the of_node on release.
->
-> but...
-> As an aside,
-> I was hoping this series would magically fix a problem
-> with the imx6q-evi which has forced us to disable
-> runtime power management. But it did not. :(
+diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_battery.c
+index 9c65f13..da7a75f 100644
+--- a/drivers/power/max17042_battery.c
++++ b/drivers/power/max17042_battery.c
+@@ -457,13 +457,16 @@ static inline void
+max17042_write_model_data(struct max17042_chip *chip,
+ }
 
-I also see a similar problem on a mx28 board with a hub.
+ static inline void max17042_read_model_data(struct max17042_chip *chip,
+- u8 addr, u32 *data, int size)
++ u8 addr, u16 *data, int size)
+ {
+  struct regmap *map = chip->regmap;
+  int i;
++ u32 tmp;
 
-Does it help in your case if you pass 'usbcore.autosuspend=-1' in the
-kernel command line?
+- for (i = 0; i < size; i++)
+- regmap_read(map, addr + i, &data[i]);
++ for (i = 0; i < size; i++) {
++ regmap_read(map, addr + i, &tmp);
++ data[i] = (u16)tmp;
++ }
+ }
 
-Regards,
+ static inline int max17042_model_data_compare(struct max17042_chip *chip,
+@@ -486,7 +489,7 @@ static int max17042_init_model(struct max17042_chip *chip)
+ {
+  int ret;
+  int table_size = ARRAY_SIZE(chip->pdata->config_data->cell_char_tbl);
+- u32 *temp_data;
++ u16 *temp_data;
 
-Fabio Estevam
+  temp_data = kcalloc(table_size, sizeof(*temp_data), GFP_KERNEL);
+  if (!temp_data)
+@@ -501,7 +504,7 @@ static int max17042_init_model(struct max17042_chip *chip)
+  ret = max17042_model_data_compare(
+  chip,
+  chip->pdata->config_data->cell_char_tbl,
+- (u16 *)temp_data,
++ temp_data,
+  table_size);
+
+  max10742_lock_model(chip);
+@@ -514,7 +517,7 @@ static int max17042_verify_model_lock(struct
+max17042_chip *chip)
+ {
+  int i;
+  int table_size = ARRAY_SIZE(chip->pdata->config_data->cell_char_tbl);
+- u32 *temp_data;
++ u16 *temp_data;
+  int ret = 0;
+
+  temp_data = kcalloc(table_size, sizeof(*temp_data), GFP_KERNEL);
+-- 
+1.9.1
