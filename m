@@ -1,89 +1,145 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/1] power: sbs-manager: Add interrupt support and battery
- detect gpios
-Date: Thu, 28 Jul 2016 10:45:14 -0500
-Message-ID: <CAL_JsqL0+b5GRMMtK7PmECatR7aayiv-Of05HahGWSHHQ-vrYg@mail.gmail.com>
-References: <1469433003-68564-1-git-send-email-preid@electromag.com.au>
- <1469433003-68564-2-git-send-email-preid@electromag.com.au>
- <20160727144609.GA12462@rob-hp-laptop> <1469653707.27666.22.camel@amnesix>
- <4553a3f5-55cc-807d-7f34-11b4c7e11a0b@electromag.com.au> <e2ca7188-03e4-978d-9c10-9498117acb8e@electromag.com.au>
+From: Joshua Clayton <stillcompiling@gmail.com>
+Subject: Re: [PATCH v3 0/6] power: add power sequence library
+Date: Thu, 28 Jul 2016 08:56:40 -0700
+Message-ID: <579A2B38.3000202@gmail.com>
+References: <1469007629-31757-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40024 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757245AbcG1Ppj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 28 Jul 2016 11:45:39 -0400
-In-Reply-To: <e2ca7188-03e4-978d-9c10-9498117acb8e@electromag.com.au>
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:34812 "EHLO
+	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758868AbcG1P4p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 11:56:45 -0400
+In-Reply-To: <1469007629-31757-1-git-send-email-peter.chen@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Fabio Estevam <fabio.estevam@nxp.com>
 
-On Thu, Jul 28, 2016 at 4:01 AM, Phil Reid <preid@electromag.com.au> wrote:
-> G'day Rob,
+Hi, Peter
+
+On 07/20/2016 02:40 AM, Peter Chen wrote:
+> Hi all,
 >
-> Just another thought.
+> This is a follow-up for my last power sequence framework patch set [1].
+> According to Rob Herring and Ulf Hansson's comments[2], I use a generic
+> power sequence library for parsing the power sequence elements on DT,
+> and implement generic power sequence on library. The host driver
+> can allocate power sequence instance, and calls pwrseq APIs accordingly.
 >
-> On 28/07/2016 10:11, Phil Reid wrote:
->>
->> G'day Karl / Rob,
->>
->> On 28/07/2016 05:08, Karl-Heinz Schneider wrote:
->>>
->>> Am Mittwoch, den 27.07.2016, 09:46 -0500 schrieb Rob Herring:
->>>>
->>>> On Mon, Jul 25, 2016 at 03:50:03PM +0800, Phil Reid wrote:
->>>>>
->>>>> This patch added irq support for the SMBALERT pin and notification of
->>>>> the battery removal / insertion. The sbs manager would typically be
->>>>> used with the corresponding sbs-battery driver that currently uses a
->>>>> gpio input for battery presence and interrupt. To remain compatible
->>>>> with
->>>>> that existing driver this patch implements GPIO inputs with interrupt
->>>>> support. IRQ masking is performed in software as the hardware does not
->>>>> support masking of notifications from each battery.
->>>>> In addition a power_supply change notification is generated for the sbs
->>>>> manager device when the AC present flag is changed.
->>>>> Tested with LTC1760 and dual sbs compatible batteries.
->>>>
->>>>
->>>> Please don't submit a binding and immediately turn around and add to it.
->>>> While that is often preferred for drivers or kernel features, bindings
->>>> should be complete as possible and not evolve. Combine this with your
->>>> previous patch add sbs-mgr if that hasn't been accepted yet.
->>
->> That was from Karl. I'm happy to have this combined if he is.
-
-Indeed it was. Still, it should be combined. You can leave the driver
-implementation as multiple patches, just combine all the binding to a
-single patch by itself.
-
->>>> IMO, the sbs-bat should just be a interrupt and making it and this
->>>> binding a GPIO is overkill. Since batteries nodes using this will be
->>>> new, there's no reason the driver can't be updated to support
->>>> interrupts.
+> In future, if there are special power sequence requirements, the special
+> power sequence library can be created.
 >
-> I did consider this and didn't go that way as:
-> 1) the current sbs-battery driver didn't support it.
-> 2) Then there's also the problem of reporting  the presence of the battery
-> to the battery driver.
-> Without the GPIO support you resort to polling and looking for a NACK. Which
-> didn't seem that nice.
+> This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+> two hot-plug devices to simulate this use case, the related binding
+> change is updated at patch [1/6], The udoo board changes were tested
+> using my last power sequence patch set.[3]
+>
+> Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+> need to power on itself before it can be found by ULPI bus.
+>
+> [1] http://www.spinics.net/lists/linux-usb/msg142755.html
+> [2] http://www.spinics.net/lists/linux-usb/msg143106.html
+> [3] http://www.spinics.net/lists/linux-usb/msg142815.html
+>
+> Changes for v3:
+> - Delete "power-sequence" property at binding-doc, and change related code
+>   at both library and user code.
+> - Change binding-doc example node name with Rob's comments
+> - of_get_named_gpio_flags only gets the gpio, but without setting gpio flags,
+>   add additional code request gpio with proper gpio flags
+> - Add Philipp Zabel's Ack and MAINTAINER's entry
+>
+> Changes for v2:
+> - Delete "pwrseq" prefix and clock-names for properties at dt binding
+> - Should use structure not but its pointer for kzalloc
+> - Since chipidea core has no of_node, let core's of_node equals glue
+>   layer's at core's probe
+>
+> Peter Chen (6):
+>   binding-doc: power: pwrseq-generic: add binding doc for generic power
+>     sequence library
+>   power: add power sequence library
+>   binding-doc: usb: usb-device: add optional properties for power
+>     sequencediff --git a/drivers/usb/core/Makefile b/drivers/usb/core/Makefile
+> index 9780877..da36b78 100644
+> --- a/drivers/usb/core/Makefile
+> +++ b/drivers/usb/core/Makefile
+> @@ -5,8 +5,9 @@
+>  usbcore-y := usb.o hub.o hcd.o urb.o message.o driver.o
+>  usbcore-y += config.o file.o buffer.o sysfs.o endpoint.o
+>  usbcore-y += devio.o notify.o generic.o quirks.o devices.o
+> -usbcore-y += port.o of.o
+> +usbcore-y += port.o
+>  
+> +usbcore-$(CONFIG_OF)		+= of.o
+>  usbcore-$(CONFIG_PCI)		+= hcd-pci.o
+>  usbcore-$(CONFIG_ACPI)		+= usb-acpi.o
+>  
+> diff --git a/drivers/usb/core/of.c b/drivers/usb/core/of.c
+> index 2289700..3de4f88 100644
+> --- a/drivers/usb/core/of.c
+> +++ b/drivers/usb/core/of.c
+> @@ -18,6 +18,7 @@
+>   */
+>  
+>  #include <linux/of.h>
+> +#include <linux/usb/of.h>
+>   usb: core: add power sequence handling for USB devices
+>   usb: chipidea: let chipidea core device of_node equal's glue layer
+>     device of_node
+>   ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+>
+>  .../bindings/power/pwrseq/pwrseq-generic.txt       |  48 +++++++
+>  .../devicetree/bindings/usb/usb-device.txt         |  10 +-
+>  MAINTAINERS                                        |   9 ++
+>  arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  26 ++--
+>  drivers/power/Kconfig                              |   1 +
+>  drivers/power/Makefile                             |   1 +
+>  drivers/power/pwrseq/Kconfig                       |  20 +++
+>  drivers/power/pwrseq/Makefile                      |   2 +
+>  drivers/power/pwrseq/core.c                        |  71 ++++++++++
+>  drivers/power/pwrseq/pwrseq_generic.c              | 151 +++++++++++++++++++++
+>  drivers/usb/chipidea/core.c                        |  10 ++
+>  drivers/usb/core/Makefile                          |   1 +
+>  drivers/usb/core/hub.c                             |  12 +-
+>  drivers/usb/core/hub.h                             |  12 ++
+>  drivers/usb/core/pwrseq.c                          | 100 ++++++++++++++
+>  include/linux/power/pwrseq.h                       |  50 +++++++
+>  16 files changed, 507 insertions(+), 17 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+>  create mode 100644 drivers/power/pwrseq/Kconfig
+>  create mode 100644 drivers/power/pwrseq/Makefile
+>  create mode 100644 drivers/power/pwrseq/core.c
+>  create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
+>  create mode 100644 drivers/usb/core/pwrseq.c
+>  create mode 100644 include/linux/power/pwrseq.h
+>
 
-The ability to read the current irq signal state with the irq api
-would be nice. Of course you can't really count on being able to on
-all irqs. Anyway, we shouldn't really design the binding around kernel
-limitations.
+With these patches our on-board USB hub,
+a Microchip USB2513BI-AEZG,  works exactly as it does
+with the fake regulator kludge, so...
+Tested-by Joshua Clayton <stillcompiling@gmail.com>
 
-As I understand how SMBALERT works, you have to poll the devices
-anyway to determine which device is asserting the irq and to ack the
-irq. Of course, here you are doing point to point connections, but you
-still need to know which batteries are present by reading the sbs-mgr
-registers.
+I assume there is a v4 coming due to rmk's comments on patch 5.
+I couldn't figure out where to null the of_node in error paths, but in testing
+we did put a line of code to null the of_node on release.
 
-Wouldn't switching the driver to level irq allow you to get the state
-immediately without a gpio read? After all, the gpio read and irq
-handler are reading the same register.
+but...
+As an aside,
+I was hoping this series would magically fix a problem
+with the imx6q-evi which has forced us to disable
+runtime power management. But it did not. :(
 
-Rob
+If runtime power management is enabled,  when nothing is
+connected to the hub it disconnects and immediately reconnects
+about every 2 seconds, and after some seemingly random number
+of these events the whole system hangs (possibly udev related?).
+
+Our board has the vbus detect on the hub connected directly to 3.3v,
+rather than to the imx6's usbh1_vbus line. This is listed as a supported
+configuration, but might be the source of the problem.
+
+Thanks,
+Joshua
