@@ -1,71 +1,128 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] x86 / hibernate: Use hlt_play_dead() when resuming
- from hibernation
-Date: Thu, 28 Jul 2016 21:34:02 +0200
-Message-ID: <20160728193402.GD11657@amd>
-References: <1467105403-5085-1-git-send-email-yu.c.chen@intel.com>
- <12570565.xIMhLmhDgj@vostro.rjw.lan>
- <2496371.r57m45JVIP@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] x86/asm/power: Fix hibernation return address corruption
+Date: Thu, 28 Jul 2016 23:36:39 +0200
+Message-ID: <1760536.lNRnLG8nBr@vostro.rjw.lan>
+References: <16541580.dFLT14ScxF@vostro.rjw.lan> <1670639.GCDubuBUSI@vostro.rjw.lan> <20160728151707.nmtkzri4jtumaq6h@treble>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48987 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755745AbcG1TeJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 15:34:09 -0400
-Content-Disposition: inline
-In-Reply-To: <2496371.r57m45JVIP@vostro.rjw.lan>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55950 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757742AbcG1Vbf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 17:31:35 -0400
+In-Reply-To: <20160728151707.nmtkzri4jtumaq6h@treble>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, x86@kernel.org, Chen Yu <yu.c.chen@intel.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org, James Morse <james.morse@arm.com>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>, Borislav Petkov <bp@suse.de>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, shuzzle@mailbox.org
 
-On Thu 2016-07-14 03:55:23, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thursday, July 28, 2016 10:17:07 AM Josh Poimboeuf wrote:
+> On Thu, Jul 28, 2016 at 01:29:49AM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, July 28, 2016 01:20:53 AM Rafael J. Wysocki wrote:
+> > > On Wednesday, July 27, 2016 05:17:38 PM Josh Poimboeuf wrote:
+> > > > On Thu, Jul 28, 2016 at 12:12:15AM +0200, Rafael J. Wysocki wrote:
+> > > > > On Wednesday, July 27, 2016 12:59:18 PM Josh Poimboeuf wrote:
+> > > > > > Hm... I have a theory, but I'm not sure about it.  I noticed that
+> > > > > > x86_acpi_enter_sleep_state(),
+> > > > > 
+> > > > > I think you mean x86_acpi_suspend_lowlevel().
+> > > > 
+> > > > Oops!
+> > > > 
+> > > > > > which is involved in suspend, overwrites
+> > > > > > several global variables (e.g, initial_code) which are used by the CPU
+> > > > > > boot code in head_64.S.  But surprisingly, it doesn't restore those
+> > > > > > variables to their original values after it resumes.
+> > > > > 
+> > > > > Is the head_64.S code also used to bring up offline CPUs?
+> > > > 
+> > > > Yes.
+> > > 
+> > > OK
+> > > 
+> > > So it is really interesting why and how that stuff works for everybody.
+> > > 
+> > > Basically, CPU online should fail after a suspend-resume cycle, but it
+> > > doesn't most of the time AFAICS.
+> > 
+> > do_boot_cpu() restores those values, so I think we're safe from that angle.
+> > 
+> > That should apply to the CPU online during resume from hibernation too.
 > 
-> On Intel hardware, native_play_dead() uses mwait_play_dead() by
-> default and only falls back to the other methods if that fails.
-> That also happens during resume from hibernation, when the restore
-> (boot) kernel runs disable_nonboot_cpus() to take all of the CPUs
-> except for the boot one offline.
+> Yeah, my theory was bogus.  And as it turns out, the bug reporter made a
+> mistake in the bisect.  The actual offending commit was apparently:
 > 
-> However, that is problematic, because the address passed to
-> __monitor() in mwait_play_dead() is likely to be written to in the
-> last phase of hibernate image restoration and that causes the "dead"
-> CPU to start executing instructions again.  Unfortunately, the page
-> containing the address in that CPU's instruction pointer may not be
-> valid any more at that point.
+>   ef0f3ed5a4ac ("x86/asm/power: Create stack frames in hibernate_asm_64.S")
 > 
-> First, that page may have been overwritten with image kernel memory
-> contents already, so the instructions the CPU attempts to execute may
-> simply be invalid.  Second, the page tables previously used by that
-> CPU may have been overwritten by image kernel memory contents, so the
-> address in its instruction pointer is impossible to resolve then.
+> Amazingly enough, I authored that patch as well.  I think "git bisect"
+> doesn't like me!
 > 
-> A report from Varun Koyyalagunta and investigation carried out by
-> Chen Yu show that the latter sometimes happens in practice.
+> Here's the fix:
 > 
-> To prevent it from happening, temporarily change the smp_ops.play_dead
-> pointer during resume from hibernation so that it points to a special
-> "play dead" routine which uses hlt_play_dead() and avoids the
-> inadvertent "revivals" of "dead" CPUs this way.
+> ----
 > 
-> A slightly unpleasant consequence of this change is that if the
-> system is hibernated with one or more CPUs offline, it will generally
-> draw more power after resume than it did before hibernation, because
-> the physical state entered by CPUs via hlt_play_dead() is higher-power
-> than the mwait_play_dead() one in the majority of cases.  It is
-> possible to work around this, but it is unclear how much of a problem
-> that's going to be in practice, so the workaround will be implemented
-> later if it turns out to be necessary.
+> From: Josh Poimboeuf <jpoimboe@redhat.com>
+> Subject: [PATCH] x86/asm/power: Fix hibernation return address corruption
 > 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=106371
-> Reported-by: Varun Koyyalagunta <cpudebug@centtech.com>
-> Original-by: Chen Yu <yu.c.chen@intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> In kernel bug 150021, a kernel panic was reported when restoring a
+> hibernate image.  Only a picture of the oops was reported, so I can't
+> paste the whole thing here.  But here are the most interesting parts:
+> 
+>   kernel tried to execute NX-protected page - exploit attempt? (uid: 0)
+>   BUG: unable to handle kernel paging request at ffff8804615cfd78
+>   ...
+>   RIP: ffff8804615cfd78
+>   RSP: ffff8804615f0000
+>   RBP: ffff8804615cfdc0
+>   ...
+>   Call Trace:
+>    do_signal+0x23
+>    exit_to_usermode_loop+0x64
+>    ...
+> 
+> The RIP is on the same page as RBP, so it apparently started executing
+> on the stack.
+> 
+> The bug was bisected to commit ef0f3ed5a4ac ("x86/asm/power: Create
+> stack frames in hibernate_asm_64.S"), which in retrospect seems quite
+> dangerous, since that code saves and restores the stack pointer from a
+> global variable ('saved_context').
+> 
+> There are a lot of moving parts in the hibernate save and restore paths,
+> so I don't know exactly what caused the panic.  Presumably, a FRAME_END
+> was executed without the corresponding FRAME_BEGIN, or vice versa.  That
+> would corrupt the return address on the stack and would be consistent
+> with the details of the above panic.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+One problem that I can see immediately is that the stack pointer may not
+be valid any more by the time the FRAME_BEGIN in restore_registers() is
+executed.  The memory it points to (which used to be a stack area of the
+restore kernel) may have been overwritten by some image memory contents
+from before hibernation and that page frame may now be used for whatever
+different purpose it had been allocated for before hibernation.  If that
+happens, the FRAME_BEGIN will corrupt that memory.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Embarrassingly enough, I have looked at that piece of code for tens of
+times recently, but somehow I've never translated that FRAME_BEGIN into
+a push instruction. :-/
+
+> Instead of doing the frame pointer save/restore around the bounds of the
+> affected functions, instead just do it around the call to swsusp_save().
+> That has the same effect of ensuring that if swsusp_save() sleeps, the
+> frame pointers will be correct.  It's also a much more obviously safe
+> way to do it than the original patch.  And objtool still doesn't report
+> any warnings.
+> 
+> Fixes: ef0f3ed5a4ac ("x86/asm/power: Create stack frames in hibernate_asm_64.S")
+> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=150021
+> Reported-by: <shuzzle@mailbox.org>
+> Tested-by: <shuzzle@mailbox.org>
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+
+I've queued this up as an urgent fix.  I hope there are no objections.
+
+Thanks,
+Rafael
+
