@@ -1,43 +1,41 @@
-From: Joshua Clayton <stillcompiling@gmail.com>
-Subject: Re: [PATCH v3 4/6] usb: core: add power sequence handling for USB
- devices
-Date: Thu, 28 Jul 2016 09:18:45 -0700
-Message-ID: <579A3065.2080402@gmail.com>
-References: <1469007629-31757-1-git-send-email-peter.chen@nxp.com>
- <1469007629-31757-5-git-send-email-peter.chen@nxp.com>
- <5798E067.90207@gmail.com> <20160728014521.GB26186@shlinux2>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH v3 0/6] power: add power sequence library
+Date: Thu, 28 Jul 2016 13:41:23 -0300
+Message-ID: <CAOMZO5Dv_X-u6qKqAWtysAqmMw91bVoAaRvnc81yUGDxbd27rA@mail.gmail.com>
+References: <1469007629-31757-1-git-send-email-peter.chen@nxp.com> <579A2B38.3000202@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f67.google.com ([209.85.220.67]:33419 "EHLO
-	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932506AbcG1QSy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 12:18:54 -0400
-In-Reply-To: <20160728014521.GB26186@shlinux2>
+Received: from mail-ua0-f194.google.com ([209.85.217.194]:33475 "EHLO
+	mail-ua0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932580AbcG1QlZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 12:41:25 -0400
+In-Reply-To: <579A2B38.3000202@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Joshua Clayton <stillcompiling@gmail.com>
+Cc: Peter Chen <peter.chen@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, "robh+dt@kernel.org" <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Philipp Zabel <p.zabel@pengutronix.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, USB list <linux-usb@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sascha Hauer <s.hauer@pengutronix.de>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, Troy
 
-Peter,
+Hi Joshua,
 
-On 07/27/2016 06:45 PM, Peter Chen wrote:
-> On Wed, Jul 27, 2016 at 09:25:11AM -0700, Joshua Clayton wrote:
->> Patch 4 does not apply for me
->> (The Makefile has  a "usbcore-$(CONFIG_OF) += of.o"
->> line which I don't see in 4.7 or linux/next master).
->> Is there another patch set this series depends on?
-> It seems below patch has not been queued:
+On Thu, Jul 28, 2016 at 12:56 PM, Joshua Clayton
+<stillcompiling@gmail.com> wrote:
+
+> I assume there is a v4 coming due to rmk's comments on patch 5.
+> I couldn't figure out where to null the of_node in error paths, but in testing
+> we did put a line of code to null the of_node on release.
 >
-> https://git.kernel.org/cgit/linux/kernel/git/peter.chen/usb.git/commit/?h=add_pwrseq_for_usb&id=2efd73d0f935ffbc66135553da0ac807c0b4c3fe
->
-> This pwrseq-lib patch set does not depend on it, I will send patch set
-> on top of a clean mainline next time, sorry for confusing. 
->
-Good to know.
-I just wanted to make sure I wasn't missing something important.
+> but...
+> As an aside,
+> I was hoping this series would magically fix a problem
+> with the imx6q-evi which has forced us to disable
+> runtime power management. But it did not. :(
 
-Thanks,
+I also see a similar problem on a mx28 board with a hub.
 
-Joshua Clayton
+Does it help in your case if you pass 'usbcore.autosuspend=-1' in the
+kernel command line?
+
+Regards,
+
+Fabio Estevam
