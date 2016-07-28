@@ -1,104 +1,57 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [PATCH 1/1] power: sbs-manager: Add interrupt support and battery
- detect gpios
-Date: Thu, 28 Jul 2016 17:01:15 +0800
-Message-ID: <e2ca7188-03e4-978d-9c10-9498117acb8e@electromag.com.au>
-References: <1469433003-68564-1-git-send-email-preid@electromag.com.au>
- <1469433003-68564-2-git-send-email-preid@electromag.com.au>
- <20160727144609.GA12462@rob-hp-laptop> <1469653707.27666.22.camel@amnesix>
- <4553a3f5-55cc-807d-7f34-11b4c7e11a0b@electromag.com.au>
+From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
+Subject: RE: [PATCH v2 0/7] power: act8945a_charger: Improvements
+Date: Thu, 28 Jul 2016 09:36:35 +0000
+Message-ID: <B256D81BAE5131468A838E5D7A243641018CCCBFB3@penmbx01>
+References: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy1.45ru.net.au ([203.30.46.145]:53511 "EHLO
-	anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752186AbcG1JBW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 05:01:22 -0400
-In-Reply-To: <4553a3f5-55cc-807d-7f34-11b4c7e11a0b@electromag.com.au>
+Received: from nasmtp01.atmel.com ([192.199.1.245]:22401 "EHLO
+	ussmtp01.atmel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752782AbcG1Jia convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 05:38:30 -0400
+In-Reply-To: <1467076970-12206-1-git-send-email-wenyou.yang@atmel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>, Rob Herring <robh@kernel.org>
-Cc: mark.rutland@arm.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-G'day Rob,
+Hello everyone
 
-Just another thought.
+Do you have any comments for this patch set?
 
-On 28/07/2016 10:11, Phil Reid wrote:
-> G'day Karl / Rob,
->
-> On 28/07/2016 05:08, Karl-Heinz Schneider wrote:
->> Am Mittwoch, den 27.07.2016, 09:46 -0500 schrieb Rob Herring:
->>> On Mon, Jul 25, 2016 at 03:50:03PM +0800, Phil Reid wrote:
->>>> This patch added irq support for the SMBALERT pin and notification of
->>>> the battery removal / insertion. The sbs manager would typically be
->>>> used with the corresponding sbs-battery driver that currently uses a
->>>> gpio input for battery presence and interrupt. To remain compatible with
->>>> that existing driver this patch implements GPIO inputs with interrupt
->>>> support. IRQ masking is performed in software as the hardware does not
->>>> support masking of notifications from each battery.
->>>> In addition a power_supply change notification is generated for the sbs
->>>> manager device when the AC present flag is changed.
->>>> Tested with LTC1760 and dual sbs compatible batteries.
->>>
->>> Please don't submit a binding and immediately turn around and add to it.
->>> While that is often preferred for drivers or kernel features, bindings
->>> should be complete as possible and not evolve. Combine this with your
->>> previous patch add sbs-mgr if that hasn't been accepted yet.
-> That was from Karl. I'm happy to have this combined if he is.
->
->>>
->>> IMO, the sbs-bat should just be a interrupt and making it and this
->>> binding a GPIO is overkill. Since batteries nodes using this will be
->>> new, there's no reason the driver can't be updated to support
->>> interrupts.
-I did consider this and didn't go that way as:
-1) the current sbs-battery driver didn't support it.
-2) Then there's also the problem of reporting  the presence of the battery to the battery driver.
-Without the GPIO support you resort to polling and looking for a NACK. Which didn't seem that nice.
+Best Regards,
+Wenyou Yang
+________________________________________
+From: Wenyou Yang [wenyou.yang@atmel.com]
+Sent: Tuesday, June 28, 2016 9:22
+To: Sebastian Reichel; Dmitry Eremin-Solenikov; David Woodhouse; Rob Herring; Pawel Moll; Mark Brown; Ian Campbell; Kumar Gala
+Cc: linux-kernel@vger.kernel.org; devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org; Ferre, Nicolas; linux-pm@vger.kernel.org; Yang, Wenyou
+Subject: [PATCH v2 0/7] power: act8945a_charger: Improvements
 
+This patch series is used to improve the act8945a-charger, such as
+improve the way to check the status, fix the power supply type
+property, add the status change update, and add more properties:
+capacity level property and max current property.
 
->>>
->>> Also, I'm not even convinced you need the sbs-mgr to be an
->>> interrupt-controller. Is this anything more that just wire-OR'ed
->>> interrupt lines which can be handled as shared irq? Does reading
->>> SBSM_CMD_BATSYSSTATE have a side effect for example?
->> Yes, according to the Datasheed it clears SMBALERT#.
->
-> Yes you need to service the Ltc1760 for the irq to clear. reading the batteries does nothing.
-> Even without any batteries present  you may get an irq and need to service it.
-> eg: I have a system with 2 ltc1760 with a total of 4 batteries.
-> So if only one battery is present and AC power is connected then both ltc1760 will generate
-> a notification on SMBALERT. One which has no batteries present.
->
->>>
->>> Rob
->> SMBALERT is electrically an active low line which is pulled down by one
->> or more devices needing attention, isn't it? The I2C host driver or some
->> other instance need to implement support for it, the device driver may
->> register some sort of handler function (e.g by implementing struct
->> i2c_driver.alert function)
->>
->> That's my understanding of the SMBALERT.
->>
->> I once tried to implement the alert function and see if it get's called.
->> It didn't. At that point I didn't investigate further.
->>
->> So, do I miss something or is that part incomplete/broken? I can only
->> find lm90 and ipmi_ssif which implement the callback.
->>
-> I wasn't aware of that functionality. Most devices seem to use a GPIO to
-> obtain irq support. Which I guess is the most flexible solution.
-> I think SMBALERT also support a mechanism to query all devices on the bus to determine
-> which device address is asserting the irq. Not sure how this would work with multiplexed
-> address buses (eg dual ltc1760) and devices with the same address.
->
-> Open to suggestions
->
+Changes in v2:
+ - Add missing ret declaration.
 
+Wenyou Yang (7):
+  power: act8945a_charger: Remove "battery_temperature"
+  power: act8945a_charger: Improve
+  power: act8945a_charger: Add status change update support
+  power: act8945a_charger: Fix the power supply type
+  power: act8945a_charger: Add capacity level property
+  power: act8945a_charger: Add max current property
+  doc: bindings: act8945a-charger: Update properties
 
--- 
-Regards
-Phil Reid
+ .../devicetree/bindings/power/act8945a-charger.txt |   6 +-
+ drivers/power/act8945a_charger.c                   | 371 ++++++++++++++++++---
+ 2 files changed, 337 insertions(+), 40 deletions(-)
+
+--
+2.7.4
 
