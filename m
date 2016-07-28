@@ -1,154 +1,101 @@
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-Subject: [PATCH] x86/asm/power: Fix hibernation return address corruption
-Date: Thu, 28 Jul 2016 10:17:07 -0500
-Message-ID: <20160728151707.nmtkzri4jtumaq6h@treble>
-References: <16541580.dFLT14ScxF@vostro.rjw.lan>
- <20160727221738.ilmm6mnvlmzmvfnt@treble>
- <1703386.0Oti4h65x8@vostro.rjw.lan>
- <1670639.GCDubuBUSI@vostro.rjw.lan>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2 02/10] driver core: Functional dependencies tracking
+ support
+Date: Thu, 28 Jul 2016 17:28:31 +0200
+Message-ID: <20160728152831.GA1929@wunner.de>
+References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
+ <4258432.JNKr9zJtMp@vostro.rjw.lan>
+ <20160724224832.GB9516@wunner.de>
+ <2841548.NIYVpJFBcH@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:45478 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751660AbcG1PRL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 28 Jul 2016 11:17:11 -0400
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1670639.GCDubuBUSI@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <2841548.NIYVpJFBcH@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@kernel.org>, Borislav Petkov <bp@suse.de>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, shuzzle@mailbox.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:AMD IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>, linux-samsung-soc@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 28, 2016 at 01:29:49AM +0200, Rafael J. Wysocki wrote:
-> On Thursday, July 28, 2016 01:20:53 AM Rafael J. Wysocki wrote:
-> > On Wednesday, July 27, 2016 05:17:38 PM Josh Poimboeuf wrote:
-> > > On Thu, Jul 28, 2016 at 12:12:15AM +0200, Rafael J. Wysocki wrote:
-> > > > On Wednesday, July 27, 2016 12:59:18 PM Josh Poimboeuf wrote:
-> > > > > Hm... I have a theory, but I'm not sure about it.  I noticed that
-> > > > > x86_acpi_enter_sleep_state(),
+On Thu, Jul 28, 2016 at 02:30:31AM +0200, Rafael J. Wysocki wrote:
+> On Monday, July 25, 2016 12:48:32 AM Lukas Wunner wrote:
+> > On Thu, Jul 21, 2016 at 02:25:15AM +0200, Rafael J. Wysocki wrote:
+> > > On Thursday, July 21, 2016 01:25:53 AM Lukas Wunner wrote:
+> > > > I guess I could amend portdrv to return -EPROBE_DEFER on Macs if
+> > > > no driver is bound to the NHI. Doesn't feel pretty to me though.
 > > > > 
-> > > > I think you mean x86_acpi_suspend_lowlevel().
+> > > > Ultimately this seems to be the same issue as with calling
+> > > > dev_pm_domain_set() for a bound device. Perhaps device_link_add()
+> > > > can likewise be allowed if a runtime PM ref is held for the devices
+> > > > and the call happens under lock_system_sleep()?
 > > > 
-> > > Oops!
+> > > No, the whole synchronization scheme in the links code would have had to be
+> > > changed for that to really work.
 > > > 
-> > > > > which is involved in suspend, overwrites
-> > > > > several global variables (e.g, initial_code) which are used by the CPU
-> > > > > boot code in head_64.S.  But surprisingly, it doesn't restore those
-> > > > > variables to their original values after it resumes.
-> > > > 
-> > > > Is the head_64.S code also used to bring up offline CPUs?
-> > > 
-> > > Yes.
+> > > And it really is about what is needed (at least in principle) to run your
+> > > device.  If you think you need device X with a driver to handle device Y
+> > > correctly, then either you need it all the time, from probe to remove, or
+> > > you just don't really need it at all.
 > > 
-> > OK
+> > Real life isn't as simple as that.
 > > 
-> > So it is really interesting why and how that stuff works for everybody.
-> > 
-> > Basically, CPU online should fail after a suspend-resume cycle, but it
-> > doesn't most of the time AFAICS.
+> > In this case, we have consumers (hotplug ports) which are doing fine
+> > if the driver for the supplier (NHI) is not loaded. But once it loads,
+> > the links must be in place.
 > 
-> do_boot_cpu() restores those values, so I think we're safe from that angle.
+> Hmm.
 > 
-> That should apply to the CPU online during resume from hibernation too.
+> What if it is not loaded and the system suspends.  Will everything work
+> as expected after the subsequent resume?
 
-Yeah, my theory was bogus.  And as it turns out, the bug reporter made a
-mistake in the bisect.  The actual offending commit was apparently:
+The short answer is yes.
 
-  ef0f3ed5a4ac ("x86/asm/power: Create stack frames in hibernate_asm_64.S")
+Long answer:
 
-Amazingly enough, I authored that patch as well.  I think "git bisect"
-doesn't like me!
+With Thunderbolt, the switch fabric is told to set up PCI tunnels
+through the NHI (Native Host Interface). Once set up, the tunnels
+stay as they are and attached devices are reachable. However after
+a power cycle of the controller (suspend/resume), the tunnels are
+gone and need to be re-established.
 
-Here's the fix:
+On Macs, there are two software components communicating with the
+NHI: The first one is an EFI driver which sets up tunnels to all
+devices present on boot and lights up all attached DP-over-Thunderbolt
+displays. Once ExitBootServices is called, the EFI driver is shut
+down but the configured tunnels stay as they are. The kernel is thus
+able to enumerate attached PCI devices.
 
-----
+The second component is the OS driver, thunderbolt.ko. It is needed
+to set up tunnels to hot-plugged devices (i.e., not present at boot).
+It is also needed to re-establish tunnels after suspend/resume.
 
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-Subject: [PATCH] x86/asm/power: Fix hibernation return address corruption
+The necessity of quirk_apple_wait_for_thunderbolt() arises because
+we walk the entire PCI hierarchy during ->resume_noirq and call
+pci_power_up() and pci_restore_state() for each device. Now remember,
+the PCI tunnels are gone after a power cycle, so the attached devices
+aren't reachable. Waking them and restoring their state will fail
+unless the thunderbolt driver reconfigures the switch fabric first.
 
-In kernel bug 150021, a kernel panic was reported when restoring a
-hibernate image.  Only a picture of the oops was reported, so I can't
-paste the whole thing here.  But here are the most interesting parts:
+=> So if there are no devices attached and thunderbolt.ko isn't loaded,
+   everything is fine. No device link needed.
 
-  kernel tried to execute NX-protected page - exploit attempt? (uid: 0)
-  BUG: unable to handle kernel paging request at ffff8804615cfd78
-  ...
-  RIP: ffff8804615cfd78
-  RSP: ffff8804615f0000
-  RBP: ffff8804615cfdc0
-  ...
-  Call Trace:
-   do_signal+0x23
-   exit_to_usermode_loop+0x64
-   ...
+=> If devices are attached and thunderbolt.ko is loaded, then the hotplug
+   ports need to wait for re-establishment of the PCI tunnels.
+   Device link is needed.
 
-The RIP is on the same page as RBP, so it apparently started executing
-on the stack.
+=> If devices were attached on boot and thunderbolt.ko isn't loaded, they
+   will be unreachable after resume. Nothing we can do about that.
+   No device link needed.
 
-The bug was bisected to commit ef0f3ed5a4ac ("x86/asm/power: Create
-stack frames in hibernate_asm_64.S"), which in retrospect seems quite
-dangerous, since that code saves and restores the stack pointer from a
-global variable ('saved_context').
+So this is a case of a "weak" device link, "weak" referring to the fact
+that it's only needed if the supplier is bound.
 
-There are a lot of moving parts in the hibernate save and restore paths,
-so I don't know exactly what caused the panic.  Presumably, a FRAME_END
-was executed without the corresponding FRAME_BEGIN, or vice versa.  That
-would corrupt the return address on the stack and would be consistent
-with the details of the above panic.
+All that said, I don't know if this case exists often enough that it's
+worth making allowances for it in the driver core.
 
-Instead of doing the frame pointer save/restore around the bounds of the
-affected functions, instead just do it around the call to swsusp_save().
-That has the same effect of ensuring that if swsusp_save() sleeps, the
-frame pointers will be correct.  It's also a much more obviously safe
-way to do it than the original patch.  And objtool still doesn't report
-any warnings.
+Sorry for the wall of text, just want to make sure we're on the same page
+and all possible use cases of device links are discussed and considered.
 
-Fixes: ef0f3ed5a4ac ("x86/asm/power: Create stack frames in hibernate_asm_64.S")
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=150021
-Reported-by: <shuzzle@mailbox.org>
-Tested-by: <shuzzle@mailbox.org>
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
----
- arch/x86/power/hibernate_asm_64.S | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+Thanks,
 
-diff --git a/arch/x86/power/hibernate_asm_64.S b/arch/x86/power/hibernate_asm_64.S
-index 3177c2b..8eee0e9 100644
---- a/arch/x86/power/hibernate_asm_64.S
-+++ b/arch/x86/power/hibernate_asm_64.S
-@@ -24,7 +24,6 @@
- #include <asm/frame.h>
- 
- ENTRY(swsusp_arch_suspend)
--	FRAME_BEGIN
- 	movq	$saved_context, %rax
- 	movq	%rsp, pt_regs_sp(%rax)
- 	movq	%rbp, pt_regs_bp(%rax)
-@@ -48,6 +47,7 @@ ENTRY(swsusp_arch_suspend)
- 	movq	%cr3, %rax
- 	movq	%rax, restore_cr3(%rip)
- 
-+	FRAME_BEGIN
- 	call swsusp_save
- 	FRAME_END
- 	ret
-@@ -104,7 +104,6 @@ ENTRY(core_restore_code)
- 	 /* code below belongs to the image kernel */
- 	.align PAGE_SIZE
- ENTRY(restore_registers)
--	FRAME_BEGIN
- 	/* go back to the original page tables */
- 	movq    %r9, %cr3
- 
-@@ -145,6 +144,5 @@ ENTRY(restore_registers)
- 	/* tell the hibernation core that we've just restored the memory */
- 	movq	%rax, in_suspend(%rip)
- 
--	FRAME_END
- 	ret
- ENDPROC(restore_registers)
--- 
-2.7.4
-
+Lukas
