@@ -1,41 +1,47 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] x86/asm/power: Fix hibernation return address corruption
-Date: Fri, 29 Jul 2016 09:16:27 +0200
-Message-ID: <20160729071627.GA29186@gmail.com>
-References: <16541580.dFLT14ScxF@vostro.rjw.lan>
- <1670639.GCDubuBUSI@vostro.rjw.lan>
- <20160728151707.nmtkzri4jtumaq6h@treble>
- <1760536.lNRnLG8nBr@vostro.rjw.lan>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH][v6] PM / hibernate: Introduce test_resume mode for
+ hibernation
+Date: Fri, 29 Jul 2016 16:22:10 +0800
+Message-ID: <20160729082210.GA8125@sharon>
+References: <1469154647-5860-1-git-send-email-yu.c.chen@intel.com>
+ <20160728193206.GC8837@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:34223 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750835AbcG2HQc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 29 Jul 2016 03:16:32 -0400
+Received: from mga04.intel.com ([192.55.52.120]:7287 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750806AbcG2IOQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 29 Jul 2016 04:14:16 -0400
 Content-Disposition: inline
-In-Reply-To: <1760536.lNRnLG8nBr@vostro.rjw.lan>
+In-Reply-To: <20160728193206.GC8837@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Josh Poimboeuf <jpoimboe@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Borislav Petkov <bp@suse.de>, Pavel Machek <pavel@ucw.cz>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, shuzzle@mailbox.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Linux Kernel Mail List <linux-kernel@vger.kernel.org>
 
-
-* Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-
-> > Fixes: ef0f3ed5a4ac ("x86/asm/power: Create stack frames in hibernate_asm_64.S")
-> > Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=150021
-> > Reported-by: <shuzzle@mailbox.org>
-> > Tested-by: <shuzzle@mailbox.org>
-> > Cc: <stable@vger.kernel.org>
-> > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+On Thu, Jul 28, 2016 at 09:32:06PM +0200, Pavel Machek wrote:
+> On Fri 2016-07-22 10:30:47, Chen Yu wrote:
+> > test_resume mode is to verify if the snapshot data
+> > written to swap device can be successfully restored
+> > to memory. It is useful to ease the debugging process
+> > on hibernation, since this mode can not only bypass
+> > the BIOSes/bootloader, but also the system re-initialization.
+> > 
+> > To avoid the risk to break the filesystm on persistent storage,
+> > this patch resumes the image with tasks frozen.
+> > 
+> > For example:
+> > echo test_resume > /sys/power/disk
+> > echo disk > /sys/power/state
+> > 
+> > 
+> > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 > 
-> I've queued this up as an urgent fix.  I hope there are no objections.
-
-Looks good to me too!
-
-Acked-by: Ingo Molnar <mingo@kernel.org>
-
-Thanks,
-
-	Ingo
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> 
+> (And yes, I'd still like documentation patch for this, but that can be
+> done in separate patch.)
+>
+Thanks! Will update the doc in another patch.
+Yu 
