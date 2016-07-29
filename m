@@ -1,64 +1,57 @@
-From: Stephen Barber <smbarber@chromium.org>
-Subject: Re: [PATCH 2/2] thermal: rockchip: optimize sensor auto accessing period
-Date: Thu, 28 Jul 2016 14:53:28 -0700
-Message-ID: <CADR9n4__hcQosSOM5w0PMw8ck_gPi4Sc5ixbN6CiKKGia2gd7A@mail.gmail.com>
-References: <1469628643-29661-1-git-send-email-wxt@rock-chips.com> <1469628643-29661-2-git-send-email-wxt@rock-chips.com>
+From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
+Subject: RE: [PATCH] power: act8945a_charger: fix semicolon.cocci warnings
+Date: Fri, 29 Jul 2016 00:57:20 +0000
+Message-ID: <B256D81BAE5131468A838E5D7A243641018CCCD07D@penmbx01>
+References: <201606242015.gipMOaF7%fengguang.wu@intel.com>,<20160624124305.GA11000@ivytown2>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f49.google.com ([209.85.214.49]:38783 "EHLO
-	mail-it0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbcG1Vxs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 28 Jul 2016 17:53:48 -0400
-Received: by mail-it0-f49.google.com with SMTP id j124so92973043ith.1
-        for <linux-pm@vger.kernel.org>; Thu, 28 Jul 2016 14:53:48 -0700 (PDT)
-In-Reply-To: <1469628643-29661-2-git-send-email-wxt@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160624124305.GA11000@ivytown2>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: kbuild test robot <lkp@intel.com>
+Cc: "kbuild-all@01.org" <kbuild-all@01.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Rocky Hao <rocky.hao@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On Wed, Jul 27, 2016 at 7:10 AM, Caesar Wang <wxt@rock-chips.com> wrote:
-> From: Rocky Hao <rocky.hao@rock-chips.com>
->
-> In less than 10 ms, the temperature of soc will arise 10 degree. 250 ms
-> is too big for soc tempeture control. Setting 2.5 ms will speed up
-> temperature accessing speed but introduce no more cpu's computing overhead.
-> We set AUTO_PERIOD_TIME and TSADCV3_AUTO_PERIOD_HT_TIME the same value,
-> because normal temperature update speed is also our consern in IPA.
->
-> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
-> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: linux-pm@vger.kernel.org
->
-> ---
->
->  drivers/thermal/rockchip_thermal.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-> index a90423d..1f165c9 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -213,8 +213,8 @@ struct rockchip_thermal_data {
->  #define TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT     4
->  #define TSADCV2_AUTO_PERIOD_TIME               250 /* 250ms */
->  #define TSADCV2_AUTO_PERIOD_HT_TIME            50  /* 50ms */
-> -#define TSADCV3_AUTO_PERIOD_TIME               187500 /* 250ms */
-> -#define TSADCV3_AUTO_PERIOD_HT_TIME            37500  /* 50ms */
-> +#define TSADCV3_AUTO_PERIOD_TIME               1875 /* 2.5ms */
-> +#define TSADCV3_AUTO_PERIOD_HT_TIME            1875 /* 2.5ms */
->
->  #define TSADCV2_USER_INTER_PD_SOC              0x340 /* 13 clocks */
->
-> --
-> 1.9.1
->
+Hi Fengguang,
+
+I would like to merge this patch and add your Signed-off-by, do you agree?
+
+I think it is better.
+
+Best Regards,
+Wenyou Yang
+
+________________________________________
+From: kbuild test robot [lkp@intel.com]
+Sent: Friday, June 24, 2016 20:43
+To: Yang, Wenyou
+Cc: kbuild-all@01.org; Sebastian Reichel; Dmitry Eremin-Solenikov; David Woodhouse; Rob Herring; Pawel Moll; Mark Brown; Ian Campbell; Kumar Gala; linux-kernel@vger.kernel.org; devicetree@vger.kernel.org; linux-arm-kernel@lists.infradead.org; Ferre, Nicolas; linux-pm@vger.kernel.org; Yang, Wenyou
+Subject: [PATCH] power: act8945a_charger: fix semicolon.cocci warnings
+
+drivers/power/act8945a_charger.c:115:2-3: Unneeded semicolon
 
 
-Tested-by: Stephen Barber <smbarber@chromium.org>
+ Remove unneeded semicolon.
 
-Steve
+Generated by: scripts/coccinelle/misc/semicolon.cocci
+
+CC: Wenyou Yang <wenyou.yang@atmel.com>
+Signed-off-by: Fengguang Wu <fengguang.wu@intel.com>
+---
+
+ act8945a_charger.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/power/act8945a_charger.c
++++ b/drivers/power/act8945a_charger.c
+@@ -112,7 +112,7 @@ static int act8945a_get_charger_state(st
+                else
+                        *val = POWER_SUPPLY_STATUS_NOT_CHARGING;
+                break;
+-       };
++       }
+
+        return 0;
+ }
