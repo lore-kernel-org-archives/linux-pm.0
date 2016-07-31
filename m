@@ -1,56 +1,71 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC][PATCH 0/7] cpufreq / sched: cpufreq_update_util() flags and iowait boosting
-Date: Mon, 01 Aug 2016 01:31:38 +0200
-Message-ID: <3752826.3sXAQIvcIA@vostro.rjw.lan>
+Subject: [RFC][PATCH 5/7] cpufreq / sched: UUF_IO flag to indicate iowait condition
+Date: Mon, 01 Aug 2016 01:37:23 +0200
+Message-ID: <3009663.9YcxTKseiO@vostro.rjw.lan>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61879 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59792 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752161AbcGaXkh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 Jul 2016 19:40:37 -0400
+	by vger.kernel.org with SMTP id S1751209AbcGaXke (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 Jul 2016 19:40:34 -0400
+In-Reply-To: <3752826.3sXAQIvcIA@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Admittedly, this hasn't been tested yet, so no promises and you have been
-warned.  It builds, though (on x86-64 at least).
+Testing indicates that it is possible to improve performace
+significantly without increasing energy consumption too much by
+teaching cpufreq governors to bump up the CPU performance level if
+the in_iowait flag is set for the task in enqueue_task_fair().
 
-At this point I'm looking for general feedback mostly: does the direction make
-sense or is there any reason why it can't work (that I'm not seeing), is it
-acceptable and if not, how can it be improved?
+For this purpose, define a new cpufreq_update_util() flag
+UUF_IO and modify enqueue_task_fair() to pass that flag to
+cpufreq_update_util() in the in_iowait case.  That generally
+requires cpufreq_update_util() to be called directly from there,
+because update_load_avg() is not likely to be invoked in that
+case.
 
-Of course, if you don't like the details, please let me know too. :-)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ include/linux/sched.h |    1 +
+ kernel/sched/fair.c   |    8 ++++++++
+ 2 files changed, 9 insertions(+)
 
-This is based on Peter's suggestions and Srinivas's research.
+Index: linux-pm/kernel/sched/fair.c
+===================================================================
+--- linux-pm.orig/kernel/sched/fair.c
++++ linux-pm/kernel/sched/fair.c
+@@ -4459,6 +4459,14 @@ enqueue_task_fair(struct rq *rq, struct
+ 	struct cfs_rq *cfs_rq;
+ 	struct sched_entity *se = &p->se;
+ 
++	/*
++	 * If in_iowait is set, it is likely that the loops below will not
++	 * trigger any cpufreq utilization updates, so do it here explicitly
++	 * with the IO flag passed.
++	 */
++	if (p->in_iowait)
++		cpufreq_update_util(rq, UUF_IO);
++
+ 	for_each_sched_entity(se) {
+ 		if (se->on_rq)
+ 			break;
+Index: linux-pm/include/linux/sched.h
+===================================================================
+--- linux-pm.orig/include/linux/sched.h
++++ linux-pm/include/linux/sched.h
+@@ -3376,6 +3376,7 @@ static inline unsigned long rlimit_max(u
+ }
+ 
+ #define UUF_RT	0x01
++#define UUF_IO	0x02
+ 
+ #ifdef CONFIG_CPU_FREQ
+ struct update_util_data {
 
-The ultimate goal is to improve performance for tasks that have been waiting
-on I/O in the schedutil governor and to provide a better default P-state
-selection algorithm for intel_pstate (which also involves taking the "iowait"
-into account).  The steps to get there are the following:
-
-[1] Drop the util and max arguments from cpufreq_update_util() and the ->func()
-    callback in struct update_util_data and make the schedutil governor access
-    the scheduler's utilization data directly (this one is originally from Peter,
-    I did my best to avoid breaking it).
-[2] Drop cpufreq_trigger_update() as it is the same as cpufreq_update_util()
-    after [1].
-[3] Pass rq to cpufreq_update_util() (instead of the time) and make it do the
-    smp_processor_id() check.
-[4] Add a flags argument to cpufreq_update_util() and the ->func() callback in
-    struct update_util_data, update their users accordingly and use the flags
-    to clean up the handling of util updates from the RT sched class a bit.
-[5] Make enqueue_task_fair() pass a new "IO" flag to cpufreq_update_util()
-    if p->in_iowait is set.
-[6] Modify the schedutil governor to use the new "IO" flag for boosting CPU
-    frequency temporarily (in order to improve performance for tasks that
-    have been waiting on I/O).
-[7] Add a new P-state selection algorithm, based on "busy fraction" computation
-    and "IO" boosting, and use it by default for Core processors.
-
-Thanks,
-Rafael
