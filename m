@@ -1,124 +1,168 @@
-From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Subject: Re: [PATCH 1/1] power: sbs-manager: Add interrupt support and
- battery detect gpios
-Date: Sun, 31 Jul 2016 16:04:33 +0200
-Message-ID: <1469973873.5299.9.camel@schneider-inet.de>
-References: <1469433003-68564-1-git-send-email-preid@electromag.com.au>
-	 <1469433003-68564-2-git-send-email-preid@electromag.com.au>
-	 <20160727144609.GA12462@rob-hp-laptop> <1469653707.27666.22.camel@amnesix>
-	 <4553a3f5-55cc-807d-7f34-11b4c7e11a0b@electromag.com.au>
-	 <e2ca7188-03e4-978d-9c10-9498117acb8e@electromag.com.au>
-	 <CAL_JsqL0+b5GRMMtK7PmECatR7aayiv-Of05HahGWSHHQ-vrYg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFC][PATCH 6/7] cpufreq: schedutil: Add iowait boosting
+Date: Mon, 01 Aug 2016 01:37:59 +0200
+Message-ID: <1572483.euTsoFDNE9@vostro.rjw.lan>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from schneider-inet.de ([85.214.76.205]:39767 "EHLO
-	h1714509.stratoserver.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752822AbcGaOHW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 Jul 2016 10:07:22 -0400
-In-Reply-To: <CAL_JsqL0+b5GRMMtK7PmECatR7aayiv-Of05HahGWSHHQ-vrYg@mail.gmail.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53966 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750997AbcGaXkd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 Jul 2016 19:40:33 -0400
+In-Reply-To: <3752826.3sXAQIvcIA@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, Phil Reid <preid@electromag.com.au>
-Cc: Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-Am Donnerstag, den 28.07.2016, 10:45 -0500 schrieb Rob Herring:
-> On Thu, Jul 28, 2016 at 4:01 AM, Phil Reid <preid@electromag.com.au>
-> wrote:
-> > 
-> > G'day Rob,
-> > 
-> > Just another thought.
-> > 
-> > On 28/07/2016 10:11, Phil Reid wrote:
-> > > 
-> > > 
-> > > G'day Karl / Rob,
-> > > 
-> > > On 28/07/2016 05:08, Karl-Heinz Schneider wrote:
-> > > > 
-> > > > 
-> > > > Am Mittwoch, den 27.07.2016, 09:46 -0500 schrieb Rob Herring:
-> > > > > 
-> > > > > 
-> > > > > On Mon, Jul 25, 2016 at 03:50:03PM +0800, Phil Reid wrote:
-> > > > > > 
-> > > > > > 
-> > > > > > This patch added irq support for the SMBALERT pin and
-> > > > > > notification of
-> > > > > > the battery removal / insertion. The sbs manager would
-> > > > > > typically be
-> > > > > > used with the corresponding sbs-battery driver that
-> > > > > > currently uses a
-> > > > > > gpio input for battery presence and interrupt. To remain
-> > > > > > compatible
-> > > > > > with
-> > > > > > that existing driver this patch implements GPIO inputs with
-> > > > > > interrupt
-> > > > > > support. IRQ masking is performed in software as the
-> > > > > > hardware does not
-> > > > > > support masking of notifications from each battery.
-> > > > > > In addition a power_supply change notification is generated
-> > > > > > for the sbs
-> > > > > > manager device when the AC present flag is changed.
-> > > > > > Tested with LTC1760 and dual sbs compatible batteries.
-> > > > > 
-> > > > > Please don't submit a binding and immediately turn around and
-> > > > > add to it.
-> > > > > While that is often preferred for drivers or kernel features,
-> > > > > bindings
-> > > > > should be complete as possible and not evolve. Combine this
-> > > > > with your
-> > > > > previous patch add sbs-mgr if that hasn't been accepted yet.
-> > > That was from Karl. I'm happy to have this combined if he is.Me
-> Indeed it was. Still, it should be combined. You can leave the driver
-> implementation as multiple patches, just combine all the binding to a
-> single patch by itself.
-Will do that.
-> > 
-> > > 
-> > > > 
-> > > > > 
-> > > > > IMO, the sbs-bat should just be a interrupt and making it and
-> > > > > this
-> > > > > binding a GPIO is overkill. Since batteries nodes using this
-> > > > > will be
-> > > > > new, there's no reason the driver can't be updated to support
-> > > > > interrupts.
-> > I did consider this and didn't go that way as:
-> > 1) the current sbs-battery driver didn't support it.
-> > 2) Then there's also the problem of reporting  the presence of the
-> > battery
-> > to the battery driver.
-> > Without the GPIO support you resort to polling and looking for a
-> > NACK. Which
-> > didn't seem that nice.
-> The ability to read the current irq signal state with the irq api
-> would be nice. Of course you can't really count on being able to on
-> all irqs. Anyway, we shouldn't really design the binding around
-> kernel
-> limitations.
-> 
-> As I understand how SMBALERT works, you have to poll the devices
-> anyway to determine which device is asserting the irq and to ack the
-> irq. Of course, here you are doing point to point connections, but
-> you
-> still need to know which batteries are present by reading the sbs-mgr
-> registers.
-The more interesting point for me is, that SMBALERT seems to provide an
-easy to use driver side interface. The code Registering the IRQ would
-vanish...
-Anyways I'm not very familiar with Linux IRQ handling, so I will follow
-your advise.
-> 
-> Wouldn't switching the driver to level irq allow you to get the state
-> immediately without a gpio read? After all, the gpio read and irq
-> handler are reading the same register.
-> 
-> Rob
--- 
-Karl-Heinz
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+Modify the schedutil cpufreq governor to boost the CPU frequency
+if the UUF_IO flag is passed to it via cpufreq_update_util().
 
+If that happens, the frequency is set to the maximum during
+the first update after receiving the UUF_IO flag and then the
+boost is reduced by half during each following update.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/sched/cpufreq_schedutil.c |   61 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 54 insertions(+), 7 deletions(-)
+
+Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+===================================================================
+--- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
++++ linux-pm/kernel/sched/cpufreq_schedutil.c
+@@ -48,11 +48,13 @@ struct sugov_cpu {
+ 	struct sugov_policy *sg_policy;
+ 
+ 	unsigned int cached_raw_freq;
++	unsigned long iowait_boost;
++	unsigned long iowait_boost_max;
++	u64 last_update;
+ 
+ 	/* The fields below are only needed when sharing a policy. */
+ 	unsigned long util;
+ 	unsigned long max;
+-	u64 last_update;
+ 	unsigned int flags;
+ };
+ 
+@@ -172,22 +174,58 @@ static void sugov_get_util(unsigned long
+ 	}
+ }
+ 
++static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
++				   unsigned int flags)
++{
++	if (flags & UUF_IO) {
++		sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
++	} else if (sg_cpu->iowait_boost) {
++		s64 delta_ns = time - sg_cpu->last_update;
++
++		/* Clear iowait_boost if the CPU apprears to have been idle. */
++		if (delta_ns > TICK_NSEC)
++			sg_cpu->iowait_boost = 0;
++	}
++}
++
++static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
++			       unsigned long *max)
++{
++	unsigned long boost_util = sg_cpu->iowait_boost;
++	unsigned long boost_max = sg_cpu->iowait_boost_max;
++
++	if (!boost_util)
++		return;
++
++	if (*util * boost_max < *max * boost_util) {
++		*util = boost_util;
++		*max = boost_max;
++	}
++	sg_cpu->iowait_boost >>= 1;
++}
++
+ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 				unsigned int flags)
+ {
+ 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
+ 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+-	struct cpufreq_policy *policy = sg_policy->policy;
+ 	unsigned long util, max;
+ 	unsigned int next_f;
+ 
++	sugov_set_iowait_boost(sg_cpu, time, flags);
++	sg_cpu->last_update = time;
++
+ 	if (!sugov_should_update_freq(sg_policy, time))
+ 		return;
+ 
+ 	sugov_get_util(&util, &max, flags);
+ 
+-	next_f = flags & UUF_RT ? policy->cpuinfo.max_freq :
+-				  get_next_freq(sg_cpu, util, max);
++	if (flags & UUF_RT) {
++		next_f = sg_policy->policy->cpuinfo.max_freq;
++	} else {
++		sugov_iowait_boost(sg_cpu, &util, &max);
++		next_f = get_next_freq(sg_cpu, util, max);
++	}
+ 	sugov_update_commit(sg_policy, time, next_f);
+ }
+ 
+@@ -204,6 +242,8 @@ static unsigned int sugov_next_freq_shar
+ 	if (flags & UUF_RT)
+ 		return max_f;
+ 
++	sugov_iowait_boost(sg_cpu, &util, &max);
++
+ 	for_each_cpu(j, policy->cpus) {
+ 		struct sugov_cpu *j_sg_cpu;
+ 		unsigned long j_util, j_max;
+@@ -218,12 +258,13 @@ static unsigned int sugov_next_freq_shar
+ 		 * frequency update and the time elapsed between the last update
+ 		 * of the CPU utilization and the last frequency update is long
+ 		 * enough, don't take the CPU into account as it probably is
+-		 * idle now.
++		 * idle now (and clear iowait_boost for it).
+ 		 */
+ 		delta_ns = last_freq_update_time - j_sg_cpu->last_update;
+-		if (delta_ns > TICK_NSEC)
++		if (delta_ns > TICK_NSEC) {
++			j_sg_cpu->iowait_boost = 0;
+ 			continue;
+-
++		}
+ 		if (j_sg_cpu->flags & UUF_RT)
+ 			return max_f;
+ 
+@@ -233,6 +274,8 @@ static unsigned int sugov_next_freq_shar
+ 			util = j_util;
+ 			max = j_max;
+ 		}
++
++		sugov_iowait_boost(j_sg_cpu, &util, &max);
+ 	}
+ 
+ 	return get_next_freq(sg_cpu, util, max);
+@@ -253,6 +296,8 @@ static void sugov_update_shared(struct u
+ 	sg_cpu->util = util;
+ 	sg_cpu->max = max;
+ 	sg_cpu->flags = flags;
++
++	sugov_set_iowait_boost(sg_cpu, time, flags);
+ 	sg_cpu->last_update = time;
+ 
+ 	if (sugov_should_update_freq(sg_policy, time)) {
+@@ -485,6 +530,8 @@ static int sugov_start(struct cpufreq_po
+ 			sg_cpu->flags = UUF_RT;
+ 			sg_cpu->last_update = 0;
+ 			sg_cpu->cached_raw_freq = 0;
++			sg_cpu->iowait_boost = 0;
++			sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq;
+ 			cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util,
+ 						     sugov_update_shared);
+ 		} else {
 
