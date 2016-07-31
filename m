@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC][PATCH 6/7] cpufreq: schedutil: Add iowait boosting
-Date: Mon, 01 Aug 2016 01:37:59 +0200
-Message-ID: <1572483.euTsoFDNE9@vostro.rjw.lan>
+Subject: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection algorithm for Core
+Date: Mon, 01 Aug 2016 01:38:34 +0200
+Message-ID: <1572483.RZjvRFdxPx@vostro.rjw.lan>
 References: <3752826.3sXAQIvcIA@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53966 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58771 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750997AbcGaXkd (ORCPT
+	by vger.kernel.org with SMTP id S1751092AbcGaXkd (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Sun, 31 Jul 2016 19:40:33 -0400
 In-Reply-To: <3752826.3sXAQIvcIA@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
@@ -19,150 +19,171 @@ Cc: Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruv
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Modify the schedutil cpufreq governor to boost the CPU frequency
-if the UUF_IO flag is passed to it via cpufreq_update_util().
+The PID-base P-state selection algorithm used by intel_pstate for
+Core processors is based on very weak foundations.  Namely, its
+decisions are mostly based on the values of the APERF and MPERF
+feedback registers and it only estimates the actual utilization to
+check if it is not extremely low (in order to avoid getting stuck
+in the highest P-state in that case).
 
-If that happens, the frequency is set to the maximum during
-the first update after receiving the UUF_IO flag and then the
-boost is reduced by half during each following update.
+Since it generally causes the CPU P-state to ramp up quickly, it
+leads to satisfactory performance, but the metric used by it is only
+really valid when the CPU changes P-states by itself (ie. in the turbo
+range) and if the P-state value set by the driver is treated by the
+CPU as the upper limit on turbo P-states selected by it.
 
+As a result, the only case when P-states are reduced by that
+algorithm is when the CPU has just come out of idle, but in that
+particular case it would have been better to bump up the P-state
+instead.  That causes some benchmarks to behave erratically and
+attempts to improve the situation lead to excessive energy
+consumption, because they make the CPU stay in very high P-states
+almost all the time.
+
+Consequently, the only viable way to fix that is to replace the
+erroneous algorithm entirely with a better one.
+
+To that end, notice that setting the P-state proportional to the
+actual CPU utilization (measured with the help of MPERF and TSC)
+generally leads to reasonable behavior, but it does not reflect
+the "performance boosting" nature of the current P-state
+selection algorithm.  It may be made more similar to that
+algorithm, though, by adding iowait boosting to it.
+
+Specifically, if the P-state is bumped up to the maximum after
+receiving the UUF_IO flag via cpufreq_update_util(), it will
+allow tasks that were previously waiting on I/O to get the full
+capacity of the CPU when they are ready to process data again and
+that should lead to the desired performance increase overall
+without sacrificing too much energy.
+
+For this reason, use the above approach for Core processors in
+intel_pstate.
+
+Original-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- kernel/sched/cpufreq_schedutil.c |   61 ++++++++++++++++++++++++++++++++++-----
- 1 file changed, 54 insertions(+), 7 deletions(-)
+ drivers/cpufreq/intel_pstate.c |   43 +++++++++++++++++++++++++++++++++++++++--
+ include/linux/sched.h          |    3 ++
+ kernel/sched/sched.h           |    3 --
+ 3 files changed, 44 insertions(+), 5 deletions(-)
 
-Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
---- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-+++ linux-pm/kernel/sched/cpufreq_schedutil.c
-@@ -48,11 +48,13 @@ struct sugov_cpu {
- 	struct sugov_policy *sg_policy;
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -181,6 +181,8 @@ struct _pid {
+  * @cpu:		CPU number for this instance data
+  * @update_util:	CPUFreq utility callback information
+  * @update_util_set:	CPUFreq utility callback is set
++ * @iowait_boost:	iowait-related boost fraction
++ * @last_update:	Time of the last update.
+  * @pstate:		Stores P state limits for this CPU
+  * @vid:		Stores VID limits for this CPU
+  * @pid:		Stores PID parameters for this CPU
+@@ -206,6 +208,7 @@ struct cpudata {
+ 	struct vid_data vid;
+ 	struct _pid pid;
  
- 	unsigned int cached_raw_freq;
-+	unsigned long iowait_boost;
-+	unsigned long iowait_boost_max;
-+	u64 last_update;
- 
- 	/* The fields below are only needed when sharing a policy. */
- 	unsigned long util;
- 	unsigned long max;
--	u64 last_update;
- 	unsigned int flags;
++	u64	last_update;
+ 	u64	last_sample_time;
+ 	u64	prev_aperf;
+ 	u64	prev_mperf;
+@@ -216,6 +219,7 @@ struct cpudata {
+ 	struct acpi_processor_performance acpi_perf_data;
+ 	bool valid_pss_table;
+ #endif
++	unsigned int iowait_boost;
  };
  
-@@ -172,22 +174,58 @@ static void sugov_get_util(unsigned long
- 	}
+ static struct cpudata **all_cpu_data;
+@@ -229,6 +233,7 @@ static struct cpudata **all_cpu_data;
+  * @p_gain_pct:		PID proportional gain
+  * @i_gain_pct:		PID integral gain
+  * @d_gain_pct:		PID derivative gain
++ * @boost_iowait:	Whether or not to use iowait boosting.
+  *
+  * Stores per CPU model static PID configuration data.
+  */
+@@ -240,6 +245,7 @@ struct pstate_adjust_policy {
+ 	int p_gain_pct;
+ 	int d_gain_pct;
+ 	int i_gain_pct;
++	bool boost_iowait;
+ };
+ 
+ /**
+@@ -277,6 +283,7 @@ struct cpu_defaults {
+ 	struct pstate_funcs funcs;
+ };
+ 
++static inline int32_t get_target_pstate_default(struct cpudata *cpu);
+ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu);
+ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu);
+ 
+@@ -1017,6 +1024,7 @@ static struct cpu_defaults core_params =
+ 		.p_gain_pct = 20,
+ 		.d_gain_pct = 0,
+ 		.i_gain_pct = 0,
++		.boost_iowait = true,
+ 	},
+ 	.funcs = {
+ 		.get_max = core_get_max_pstate,
+@@ -1025,7 +1033,7 @@ static struct cpu_defaults core_params =
+ 		.get_turbo = core_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+ 		.get_val = core_get_val,
+-		.get_target_pstate = get_target_pstate_use_performance,
++		.get_target_pstate = get_target_pstate_default,
+ 	},
+ };
+ 
+@@ -1290,6 +1298,24 @@ static inline int32_t get_target_pstate_
+ 	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, perf_scaled);
  }
  
-+static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
-+				   unsigned int flags)
++static inline int32_t get_target_pstate_default(struct cpudata *cpu)
 +{
-+	if (flags & UUF_IO) {
-+		sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
-+	} else if (sg_cpu->iowait_boost) {
-+		s64 delta_ns = time - sg_cpu->last_update;
++	struct sample *sample = &cpu->sample;
++	int32_t busy_frac;
++	int pstate;
 +
-+		/* Clear iowait_boost if the CPU apprears to have been idle. */
-+		if (delta_ns > TICK_NSEC)
-+			sg_cpu->iowait_boost = 0;
-+	}
++	busy_frac = div_fp(sample->mperf, sample->tsc);
++	sample->busy_scaled = busy_frac * 100;
++
++	if (busy_frac < cpu->iowait_boost)
++		busy_frac = cpu->iowait_boost;
++
++	cpu->iowait_boost >>= 1;
++
++	pstate = cpu->pstate.turbo_pstate;
++	return fp_toint((pstate + (pstate >> 2)) * busy_frac);
 +}
 +
-+static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
-+			       unsigned long *max)
-+{
-+	unsigned long boost_util = sg_cpu->iowait_boost;
-+	unsigned long boost_max = sg_cpu->iowait_boost_max;
-+
-+	if (!boost_util)
-+		return;
-+
-+	if (*util * boost_max < *max * boost_util) {
-+		*util = boost_util;
-+		*max = boost_max;
-+	}
-+	sg_cpu->iowait_boost >>= 1;
-+}
-+
- static void sugov_update_single(struct update_util_data *hook, u64 time,
- 				unsigned int flags)
+ static inline void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
  {
- 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
--	struct cpufreq_policy *policy = sg_policy->policy;
- 	unsigned long util, max;
- 	unsigned int next_f;
- 
-+	sugov_set_iowait_boost(sg_cpu, time, flags);
-+	sg_cpu->last_update = time;
+ 	int max_perf, min_perf;
+@@ -1332,8 +1358,21 @@ static void intel_pstate_update_util(str
+ 				     unsigned int flags)
+ {
+ 	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
+-	u64 delta_ns = time - cpu->sample.time;
++	u64 delta_ns;
 +
- 	if (!sugov_should_update_freq(sg_policy, time))
- 		return;
- 
- 	sugov_get_util(&util, &max, flags);
- 
--	next_f = flags & UUF_RT ? policy->cpuinfo.max_freq :
--				  get_next_freq(sg_cpu, util, max);
-+	if (flags & UUF_RT) {
-+		next_f = sg_policy->policy->cpuinfo.max_freq;
-+	} else {
-+		sugov_iowait_boost(sg_cpu, &util, &max);
-+		next_f = get_next_freq(sg_cpu, util, max);
-+	}
- 	sugov_update_commit(sg_policy, time, next_f);
- }
- 
-@@ -204,6 +242,8 @@ static unsigned int sugov_next_freq_shar
- 	if (flags & UUF_RT)
- 		return max_f;
- 
-+	sugov_iowait_boost(sg_cpu, &util, &max);
-+
- 	for_each_cpu(j, policy->cpus) {
- 		struct sugov_cpu *j_sg_cpu;
- 		unsigned long j_util, j_max;
-@@ -218,12 +258,13 @@ static unsigned int sugov_next_freq_shar
- 		 * frequency update and the time elapsed between the last update
- 		 * of the CPU utilization and the last frequency update is long
- 		 * enough, don't take the CPU into account as it probably is
--		 * idle now.
-+		 * idle now (and clear iowait_boost for it).
- 		 */
- 		delta_ns = last_freq_update_time - j_sg_cpu->last_update;
--		if (delta_ns > TICK_NSEC)
-+		if (delta_ns > TICK_NSEC) {
-+			j_sg_cpu->iowait_boost = 0;
- 			continue;
--
++	if (pid_params.boost_iowait) {
++		if (flags & UUF_IO) {
++			cpu->iowait_boost = int_tofp(1);
++		} else if (cpu->iowait_boost) {
++			/* Clear iowait_boost if the CPU may have been idle. */
++			delta_ns = time - cpu->last_update;
++			if (delta_ns > TICK_NSEC)
++				cpu->iowait_boost = 0;
 +		}
- 		if (j_sg_cpu->flags & UUF_RT)
- 			return max_f;
++		cpu->last_update = time;
++	}
  
-@@ -233,6 +274,8 @@ static unsigned int sugov_next_freq_shar
- 			util = j_util;
- 			max = j_max;
- 		}
-+
-+		sugov_iowait_boost(j_sg_cpu, &util, &max);
- 	}
++	delta_ns = time - cpu->sample.time;
+ 	if ((s64)delta_ns >= pid_params.sample_rate_ns) {
+ 		bool sample_taken = intel_pstate_sample(cpu, time);
  
- 	return get_next_freq(sg_cpu, util, max);
-@@ -253,6 +296,8 @@ static void sugov_update_shared(struct u
- 	sg_cpu->util = util;
- 	sg_cpu->max = max;
- 	sg_cpu->flags = flags;
-+
-+	sugov_set_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
- 
- 	if (sugov_should_update_freq(sg_policy, time)) {
-@@ -485,6 +530,8 @@ static int sugov_start(struct cpufreq_po
- 			sg_cpu->flags = UUF_RT;
- 			sg_cpu->last_update = 0;
- 			sg_cpu->cached_raw_freq = 0;
-+			sg_cpu->iowait_boost = 0;
-+			sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq;
- 			cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util,
- 						     sugov_update_shared);
- 		} else {
 
