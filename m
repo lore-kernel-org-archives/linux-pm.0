@@ -1,196 +1,138 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5] Force cppc_cpufreq to report values in KHz to fix
- user space reporting
-Date: Mon, 1 Aug 2016 13:31:56 -0700
-Message-ID: <20160801203156.GV4605@ubuntu>
-References: <1469049004-19069-1-git-send-email-ahs3@redhat.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v2 02/14] dt/bindings: update binding for PM domain idle
+ states
+Date: Mon, 1 Aug 2016 15:00:32 -0600
+Message-ID: <20160801210032.GI1369@linaro.org>
+References: <1469829385-11511-1-git-send-email-lina.iyer@linaro.org>
+ <1469829385-11511-3-git-send-email-lina.iyer@linaro.org>
+ <20160801163003.GA17592@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:34826 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752336AbcHAUc1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2016 16:32:27 -0400
-Received: by mail-pa0-f41.google.com with SMTP id iw10so55807911pac.2
-        for <linux-pm@vger.kernel.org>; Mon, 01 Aug 2016 13:31:59 -0700 (PDT)
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1469049004-19069-1-git-send-email-ahs3@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160801163003.GA17592@rob-hp-laptop>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, khilman@kernel.org, rjw@rjwysocki.net, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Al Stone <ahs3@redhat.com>, ashwinch@google.com
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Prashanth Prakash <pprakash@codeaurora.org>
 
-[+ Ashwin's new email id..]
+On Mon, Aug 01 2016 at 10:30 -0600, Rob Herring wrote:
+>On Fri, Jul 29, 2016 at 03:56:13PM -0600, Lina Iyer wrote:
+>> From: Axel Haslam <ahaslam+renesas@baylibre.com>
+>>
+>> Update DT bindings to describe idle states of PM domains.
+>>
+>> Cc: <devicetree@vger.kernel.org>
+>> Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> [Lina: Added state properties, removed state names, wakeup-latency,
+>> added of_pm_genpd_init() API, pruned commit text]
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> [Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
+>> ---
+>>  .../devicetree/bindings/power/power_domain.txt     | 39 ++++++++++++++++++++++
+>>  1 file changed, 39 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+>> index 025b5e7..69aa4e2 100644
+>> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+>> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+>> @@ -29,6 +29,10 @@ Optional properties:
+>>     specified by this binding. More details about power domain specifier are
+>>     available in the next section.
+>>
+>> +- domain-idle-states : A phandle of an idle-state that shall be soaked into a
+>> +                generic domain power state. The idle state definitions are
+>> +                compatible with arm,idle-state specified in [1].
+>> +
+>>  Example:
+>>
+>>  	power: power-controller@12340000 {
+>> @@ -55,6 +59,39 @@ Example 2:
+>>  		#power-domain-cells = <1>;
+>>  	};
+>>
+>> +Example 3:
+>> +
+>> +	pm-domains {
+>> +		a57_pd: a57_pd@ {
+>
+>The trailing '@' is not valid. If dtc doesn't complain about that, it
+>should.
+>
+Will remove it.
 
-On 20-07-16, 15:10, Al Stone wrote:
-> When CPPC is being used by ACPI on arm64, user space tools such as
-> cpupower report CPU frequency values from sysfs that are incorrect.
-> 
-> What the driver was doing was reporting the values given by ACPI tables
-> in whatever scale was used to provide them.  However, the ACPI spec
-> defines the CPPC values as unitless abstract numbers.  Internal kernel
-> structures such as struct perf_cap, in contrast, expect these values
-> to be in KHz.  When these struct values get reported via sysfs, the
-> user space tools also assume they are in KHz, causing them to report
-> incorrect values (for example, reporting a CPU frequency of 1MHz when
-> it should be 1.8GHz).
-> 
-> The downside is that this approach has some assumptions:
-> 
->    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
->    value for a processor is set to a non-zero value.
-> 
->    (2) It assumes that all processors run at the same speed, or that
->    the CPPC values have all been scaled to reflect relative speed.
->    This patch retrieves the largest CPU Max Frequency from a type 4 DMI
->    record that it can find.  This may not be an issue, however, as a
->    sampling of DMI data on x86 and arm64 indicates there is often only
->    one such record regardless.  Since CPPC is relatively new, it is
->    unclear if the ACPI ASL will always be written to reflect any sort
->    of relative performance of processors of differing speeds.
-> 
->    (3) It assumes that performance and frequency both scale linearly.
-> 
-> For arm64 servers, this may be sufficient, but it does rely on
-> firmware values being set correctly.  Hence, other approaches will
-> be considered in the future.
-> 
-> This has been tested on three arm64 servers, with and without DMI, with
-> and without CPPC support.
-> 
-> Changes for v5:
->     -- Move code to cpufreq/cppc_cpufreq.c from acpi/cppc_acpi.c to keep
->        frequency-related code together, and keep the CPPC abstract scale
->        in ACPI (Prashanth Prakash)
->     -- Fix the scaling to remove the incorrect assumption that frequency
->        was always a range from zero to max; as a practical matter, it is
->        not (Prasanth Prakash); this also allowed us to remove an over-
->        engineered function to do this math.
-> 
-> Changes for v4:
->     -- Replaced magic constants with #defines (Rafael Wysocki)
->     -- Renamed cppc_unitless_to_khz() to cppc_to_khz() (Rafael Wysocki)
->     -- Replaced hidden initialization with a clearer form (Rafael Wysocki)
->     -- Instead of picking up the first Max Speed value from DMI, we will
->        now get the largest Max Speed; still an approximation, but slightly
->        less subject to error (Rafael Wysocki)
->     -- Kconfig for cppc_cpufreq now depends on DMI, instead of selecting
->        it, in order to make sure DMI is set up properly (Rafael Wysocki)
-> 
-> Changes for v3:
->     -- Added clarifying commentary re short-term vs long-term fix (Alexey
->        Klimov)
->     -- Added range checking code to ensure proper arithmetic occurs,
->        especially no division by zero (Alexey Klimov)
-> 
-> Changes for v2:
->     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
->        not SELECT DMI (found by build daemon)
-> 
-> Signed-off-by: Al Stone <ahs3@redhat.com>
-> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 53 ++++++++++++++++++++++++++++++++++++++----
->  1 file changed, 49 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 8882b8e..6debc18 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -19,10 +19,19 @@
->  #include <linux/delay.h>
->  #include <linux/cpu.h>
->  #include <linux/cpufreq.h>
-> +#include <linux/dmi.h>
->  #include <linux/vmalloc.h>
->  
-> +#include <asm/unaligned.h>
-> +
->  #include <acpi/cppc_acpi.h>
->  
-> +/* Minimum struct length needed for the DMI processor entry we want */
-> +#define DMI_ENTRY_PROCESSOR_MIN_LENGTH	48
-> +
-> +/* Offest in the DMI processor structure for the max frequency */
-> +#define DMI_PROCESSOR_MAX_SPEED  0x14
-> +
->  /*
->   * These structs contain information parsed from per CPU
->   * ACPI _CPC structures.
-> @@ -32,6 +41,39 @@
->   */
->  static struct cpudata **all_cpu_data;
->  
-> +/* Capture the max KHz from DMI */
-> +static u64 cppc_dmi_max_khz;
-> +
-> +/* Callback function used to retrieve the max frequency from DMI */
-> +static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
-> +{
-> +	const u8 *dmi_data = (const u8 *)dm;
-> +	u16 *mhz = (u16 *)private;
-> +
-> +	if (dm->type == DMI_ENTRY_PROCESSOR &&
-> +	    dm->length >= DMI_ENTRY_PROCESSOR_MIN_LENGTH) {
-> +		u16 val = (u16)get_unaligned((const u16 *)
-> +				(dmi_data + DMI_PROCESSOR_MAX_SPEED));
-> +		*mhz = val > *mhz ? val : *mhz;
-> +	}
-> +}
-> +
-> +/* Look up the max frequency in DMI */
-> +static u64 cppc_get_dmi_max_khz(void)
-> +{
-> +	u16 mhz = 0;
-> +
-> +	dmi_walk(cppc_find_dmi_mhz, &mhz);
-> +
-> +	/*
-> +	 * Real stupid fallback value, just in case there is no
-> +	 * actual value set.
-> +	 */
-> +	mhz = mhz ? mhz : 1;
-> +
-> +	return (1000 * mhz);
-> +}
-> +
->  static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
->  		unsigned int target_freq,
->  		unsigned int relation)
-> @@ -42,7 +84,7 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
->  
->  	cpu = all_cpu_data[policy->cpu];
->  
-> -	cpu->perf_ctrls.desired_perf = target_freq;
-> +	cpu->perf_ctrls.desired_perf = target_freq * policy->max / cppc_dmi_max_khz;
->  	freqs.old = policy->cur;
->  	freqs.new = target_freq;
->  
-> @@ -94,8 +136,10 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  		return ret;
->  	}
->  
-> -	policy->min = cpu->perf_caps.lowest_perf;
-> -	policy->max = cpu->perf_caps.highest_perf;
-> +	cppc_dmi_max_khz = cppc_get_dmi_max_khz();
-> +
-> +	policy->min = cpu->perf_caps.lowest_perf * cppc_dmi_max_khz / cpu->perf_caps.highest_perf;
-> +	policy->max = cppc_dmi_max_khz;
->  	policy->cpuinfo.min_freq = policy->min;
->  	policy->cpuinfo.max_freq = policy->max;
->  	policy->shared_type = cpu->shared_type;
-> @@ -112,7 +156,8 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	cpu->cur_policy = policy;
->  
->  	/* Set policy->cur to max now. The governors will adjust later. */
-> -	policy->cur = cpu->perf_ctrls.desired_perf = cpu->perf_caps.highest_perf;
-> +	policy->cur = cppc_dmi_max_khz;
-> +	cpu->perf_ctrls.desired_perf = cpu->perf_caps.highest_perf;
->  
->  	ret = cppc_set_perf(cpu_num, &cpu->perf_ctrls);
->  	if (ret)
-> -- 
-> 2.7.4
+>> +			/* will have a57 platform ARM_PD_METHOD_OF_DECLARE*/
+>> +			compatible = "arm,pd","arm,cortex-a57";
+>> +			#power-domain-cells = <0>;
+>> +			idle-states = <&CLUSTER_SLEEP_0>;
+>
+>Is this supposed to be 'domain-idle-states'? The domain part is
+>pointless IMO given these are power domain nodes.
+>
+It should domain-idle-states property. Well, the CPU's idle states are
+called cpu-idle-states in the CPU node, so I named this
+domain-idle-states to be in line.
 
--- 
-viresh
+
+>> +		};
+>> +
+>> +		a53_pd: a53_pd@ {
+>> +			/* will have a a53 platform ARM_PD_METHOD_OF_DECLARE*/
+>> +			compatible = "arm,pd","arm,cortex-a53";
+>> +			#power-domain-cells = <0>;
+>> +			idle-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
+>> +		};
+>> +
+>> +		CLUSTER_SLEEP_0: idle-state@0 {
+>
+>A unit-address should have a matching reg value or be dropped. A reg
+>property would be fine here, but I think it should correspond to MPIDR
+>values.
+>
+Will drop it in my next submission.
+
+Thanks Rob.
+
+-- Lina
+
+>> +			compatible = "arm,idle-state";
+>> +			entry-latency-us = <1000>;
+>> +			exit-latency-us = <2000>;
+>> +			residency-us = <10000>;
+>> +		};
+>> +
+>> +		CLUSTER_SLEEP_1: idle-state@1 {
+>> +			compatible = "arm,idle-state";
+>> +			entry-latency-us = <5000>;
+>> +			exit-latency-us = <5000>;
+>> +			residency-us = <100000>;
+>> +		};
+>> +	};
+>> +
+>> +
+>>  The nodes above define two power controllers: 'parent' and 'child'.
+>>  Domains created by the 'child' power controller are subdomains of '0' power
+>>  domain provided by the 'parent' power controller.
+>> @@ -76,3 +113,5 @@ Example:
+>>  The node above defines a typical PM domain consumer device, which is located
+>>  inside a PM domain with index 0 of a power controller represented by a node
+>>  with the label "power".
+>> +
+>> +[1]. Documentation/devicetree/bindings/arm/idle-states.txt
+>> --
+>> 2.7.4
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
