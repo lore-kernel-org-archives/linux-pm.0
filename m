@@ -1,54 +1,45 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: [PATCH v1 2/2] x86/power/64: Fix __PAGE_OFFSET usage on restore
-Date: Mon,  1 Aug 2016 10:08:00 -0700
-Message-ID: <1470071280-78706-3-git-send-email-thgarnie@google.com>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Do not default-yes CPU_FREQ_STAT
+Date: Mon, 1 Aug 2016 10:02:25 -0700
+Message-ID: <20160801170225.GM4605@ubuntu>
+References: <20160801093455.12676-1-bp@alien8.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1470071280-78706-1-git-send-email-thgarnie@google.com>
+Content-Disposition: inline
+In-Reply-To: <20160801093455.12676-1-bp@alien8.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Thomas Garnier <thgarnie@google.com>, Yinghai Lu <yinghai@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kernel-hardening@lists.openwall.com
+To: Borislav Petkov <bp@alien8.de>
+Cc: linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-When KASLR memory randomization is used, __PAGE_OFFSET is a global
-variable changed during boot. The assembly code was using the variable
-as an immediate value to calculate the cr3 physical address. The
-physical address was incorrect resulting to a GP fault.
+On 01-08-16, 11:34, Borislav Petkov wrote:
+> From: Borislav Petkov <bp@suse.de>
+> 
+> CPU frequency transition statistics are not absolutely required for
+> proper cpufreq operation on the system AFAICT so remove the default-yes
+> setting in Kconfig.
+> 
+> Signed-off-by: Borislav Petkov <bp@suse.de>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/Kconfig | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index c822d72629d5..74919aa81dcb 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -32,7 +32,6 @@ config CPU_FREQ_BOOST_SW
+>  
+>  config CPU_FREQ_STAT
+>  	bool "CPU frequency transition statistics"
+> -	default y
+>  	help
+>  	  Export CPU frequency statistics information through sysfs.
 
-Signed-off-by: Thomas Garnier <thgarnie@google.com>
----
- arch/x86/power/hibernate_asm_64.S | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/arch/x86/power/hibernate_asm_64.S b/arch/x86/power/hibernate_asm_64.S
-index 8eee0e9..8db4905 100644
---- a/arch/x86/power/hibernate_asm_64.S
-+++ b/arch/x86/power/hibernate_asm_64.S
-@@ -23,6 +23,16 @@
- #include <asm/processor-flags.h>
- #include <asm/frame.h>
- 
-+/*
-+ * A global variable holds the page_offset when KASLR memory randomization
-+ * is enabled.
-+ */
-+#ifdef CONFIG_RANDOMIZE_MEMORY
-+#define __PAGE_OFFSET_REF __PAGE_OFFSET
-+#else
-+#define __PAGE_OFFSET_REF $__PAGE_OFFSET
-+#endif
-+
- ENTRY(swsusp_arch_suspend)
- 	movq	$saved_context, %rax
- 	movq	%rsp, pt_regs_sp(%rax)
-@@ -72,7 +82,7 @@ ENTRY(restore_image)
- 	/* code below has been relocated to a safe page */
- ENTRY(core_restore_code)
- 	/* switch to temporary page tables */
--	movq	$__PAGE_OFFSET, %rcx
-+	movq	__PAGE_OFFSET_REF, %rcx
- 	subq	%rcx, %rax
- 	movq	%rax, %cr3
- 	/* flush TLB */
 -- 
-2.8.0.rc3.226.g39d4020
+viresh
