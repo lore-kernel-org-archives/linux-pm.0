@@ -1,138 +1,41 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v2 02/14] dt/bindings: update binding for PM domain idle
- states
-Date: Mon, 1 Aug 2016 15:00:32 -0600
-Message-ID: <20160801210032.GI1369@linaro.org>
-References: <1469829385-11511-1-git-send-email-lina.iyer@linaro.org>
- <1469829385-11511-3-git-send-email-lina.iyer@linaro.org>
- <20160801163003.GA17592@rob-hp-laptop>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v1 0/2] x86/power/64: Make KASLR memory randomization compatible with hibernation
+Date: Tue, 02 Aug 2016 01:48:13 +0200
+Message-ID: <6770834.oEI2u9Z85J@vostro.rjw.lan>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20160801163003.GA17592@rob-hp-laptop>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, khilman@kernel.org, rjw@rjwysocki.net, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <kernel-hardening-return-4186-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <1470071280-78706-1-git-send-email-thgarnie@google.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kernel-hardening@lists.openwall.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 01 2016 at 10:30 -0600, Rob Herring wrote:
->On Fri, Jul 29, 2016 at 03:56:13PM -0600, Lina Iyer wrote:
->> From: Axel Haslam <ahaslam+renesas@baylibre.com>
->>
->> Update DT bindings to describe idle states of PM domains.
->>
->> Cc: <devicetree@vger.kernel.org>
->> Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> [Lina: Added state properties, removed state names, wakeup-latency,
->> added of_pm_genpd_init() API, pruned commit text]
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> [Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
->> ---
->>  .../devicetree/bindings/power/power_domain.txt     | 39 ++++++++++++++++++++++
->>  1 file changed, 39 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->> index 025b5e7..69aa4e2 100644
->> --- a/Documentation/devicetree/bindings/power/power_domain.txt
->> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
->> @@ -29,6 +29,10 @@ Optional properties:
->>     specified by this binding. More details about power domain specifier are
->>     available in the next section.
->>
->> +- domain-idle-states : A phandle of an idle-state that shall be soaked into a
->> +                generic domain power state. The idle state definitions are
->> +                compatible with arm,idle-state specified in [1].
->> +
->>  Example:
->>
->>  	power: power-controller@12340000 {
->> @@ -55,6 +59,39 @@ Example 2:
->>  		#power-domain-cells = <1>;
->>  	};
->>
->> +Example 3:
->> +
->> +	pm-domains {
->> +		a57_pd: a57_pd@ {
->
->The trailing '@' is not valid. If dtc doesn't complain about that, it
->should.
->
-Will remove it.
+On Monday, August 01, 2016 10:07:58 AM Thomas Garnier wrote:
+> ***Background:
+> KASLR memory randomization for x86_64 was added when KASLR did not support hibernation. Now that it does, some changes are needed.
+> 
+> ***Problems that needed solving:
+> Hibernation was failing on reboot with a GP fault when CONFIG_RANDOMIZE_MEMORY was enabled. Two issues were identified.
+> 
+> The original fault was due to a wrong physical address assigned to cr3. The problem was introduced with __PAGE_OFFSET becoming a global variable when randomized. The fix uses a define to use the glbobal or immediate value based on config settings.
+> 
+> The second isssue was that the temporary page table mapping did not support virtual addresses not aligned on PGD level. KASLR memory randomization will generated a random address aligned on PUD level. The fix correctly calculates the offset on all levels of the temporary page table.
+> 
+> ***Parts:
+>  - 01/02: Support unaligned addresses (second issue)
+>  - 02/02: Fix __PAGE_OFFSET usage on assembly (first issue)
 
->> +			/* will have a57 platform ARM_PD_METHOD_OF_DECLARE*/
->> +			compatible = "arm,pd","arm,cortex-a57";
->> +			#power-domain-cells = <0>;
->> +			idle-states = <&CLUSTER_SLEEP_0>;
->
->Is this supposed to be 'domain-idle-states'? The domain part is
->pointless IMO given these are power domain nodes.
->
-It should domain-idle-states property. Well, the CPU's idle states are
-called cpu-idle-states in the CPU node, so I named this
-domain-idle-states to be in line.
+Thanks a lot for taking care of this!
 
+Patch [2/2] looks good to me, but I'd to the [1/2] differently (more details
+will follow).
 
->> +		};
->> +
->> +		a53_pd: a53_pd@ {
->> +			/* will have a a53 platform ARM_PD_METHOD_OF_DECLARE*/
->> +			compatible = "arm,pd","arm,cortex-a53";
->> +			#power-domain-cells = <0>;
->> +			idle-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
->> +		};
->> +
->> +		CLUSTER_SLEEP_0: idle-state@0 {
->
->A unit-address should have a matching reg value or be dropped. A reg
->property would be fine here, but I think it should correspond to MPIDR
->values.
->
-Will drop it in my next submission.
-
-Thanks Rob.
-
--- Lina
-
->> +			compatible = "arm,idle-state";
->> +			entry-latency-us = <1000>;
->> +			exit-latency-us = <2000>;
->> +			residency-us = <10000>;
->> +		};
->> +
->> +		CLUSTER_SLEEP_1: idle-state@1 {
->> +			compatible = "arm,idle-state";
->> +			entry-latency-us = <5000>;
->> +			exit-latency-us = <5000>;
->> +			residency-us = <100000>;
->> +		};
->> +	};
->> +
->> +
->>  The nodes above define two power controllers: 'parent' and 'child'.
->>  Domains created by the 'child' power controller are subdomains of '0' power
->>  domain provided by the 'parent' power controller.
->> @@ -76,3 +113,5 @@ Example:
->>  The node above defines a typical PM domain consumer device, which is located
->>  inside a PM domain with index 0 of a power controller represented by a node
->>  with the label "power".
->> +
->> +[1]. Documentation/devicetree/bindings/arm/idle-states.txt
->> --
->> 2.7.4
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe devicetree" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
