@@ -1,30 +1,110 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 4/7] cpufreq / sched: Add flags argument to cpufreq_update_util()
-Date: Mon, 01 Aug 2016 16:57:18 +0200
-Message-ID: <1874381.hHx7HlTjB3@vostro.rjw.lan>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1797214.I7CKAT8Nb2@vostro.rjw.lan> <20160801073312.GB4220@light.dominikbrodowski.net>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v2 14/14] ARM64: dts: Define CPU power domain for MSM8916
+Date: Mon, 1 Aug 2016 08:53:03 -0600
+Message-ID: <20160801145303.GH1369@linaro.org>
+References: <1469829385-11511-1-git-send-email-lina.iyer@linaro.org>
+ <1469829385-11511-15-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64124 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752366AbcHAOyX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2016 10:54:23 -0400
-In-Reply-To: <20160801073312.GB4220@light.dominikbrodowski.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1469829385-11511-15-git-send-email-lina.iyer@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: andy.gross@linaro.org, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-On Monday, August 01, 2016 09:33:12 AM Dominik Brodowski wrote:
-> On Mon, Aug 01, 2016 at 01:36:46AM +0200, Rafael J. Wysocki wrote:
-> > +#define UUF_RT	0x01
-> 
-> What does UUF stand for?
+On Fri, Jul 29 2016 at 15:57 -0600, Lina Iyer wrote:
+>Define power domain and the power states for the domain as defined by
+>the PSCI firmware. The 8916 firmware supports OS initiated method of
+>powering off the CPU clusters.
+>
+>Cc: <devicetree@vger.kernel.org>
+>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>---
+> arch/arm64/boot/dts/qcom/msm8916.dtsi | 27 +++++++++++++++++++++++++++
+> 1 file changed, 27 insertions(+)
+>
+>diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+>index 3029773..d122fa1 100644
+>--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
+>+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+>@@ -64,6 +64,7 @@
+> 			next-level-cache = <&L2_0>;
+> 			enable-method = "psci";
+> 			cpu-idle-states = <&CPU_SPC>;
+>+			power-domains = <&CPU_PD>;
+> 		};
+>
+> 		CPU1: cpu@1 {
+>@@ -73,6 +74,7 @@
+> 			next-level-cache = <&L2_0>;
+> 			enable-method = "psci";
+> 			cpu-idle-states = <&CPU_SPC>;
+>+			power-domains = <&CPU_PD>;
+> 		};
+>
+> 		CPU2: cpu@2 {
+>@@ -82,6 +84,7 @@
+> 			next-level-cache = <&L2_0>;
+> 			enable-method = "psci";
+> 			cpu-idle-states = <&CPU_SPC>;
+>+			power-domains = <&CPU_PD>;
+> 		};
+>
+> 		CPU3: cpu@3 {
+>@@ -91,6 +94,7 @@
+> 			next-level-cache = <&L2_0>;
+> 			enable-method = "psci";
+> 			cpu-idle-states = <&CPU_SPC>;
+>+			power-domains = <&CPU_PD>;
+> 		};
+>
+> 		L2_0: l2-cache {
+>@@ -110,6 +114,29 @@
+> 		};
+> 	};
+>
+>+	CPU_PD: cpu-pd@0 {
+>+		#power-domain-cells = <0>;
+>+		domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
+>+	};
+>+
+>+	cpu-domain-states {
+I think, these state nodes should be a child of the psci node.
 
-"Utilization upadte flag".
+Mark, do you think, that makes sense?
 
-Thanks,
-Rafael
-
+-- Lina
+>+		CLUSTER_RET: domain_ret {
+>+			compatible = "arm,idle-state";
+>+			arm,psci-suspend-param = <0x1000010>;
+>+			entry-latency-us = <500>;
+>+			exit-latency-us = <500>;
+>+			residency-us = <2000>;
+>+		 };
+>+
+>+		CLUSTER_PWR_DWN: domain_gdhs {
+>+			compatible = "arm,idle-state";
+>+			arm,psci-suspend-param = <0x1000030>;
+>+			entry-latency-us = <2000>;
+>+			exit-latency-us = <2000>;
+>+			residency-us = <6000>;
+>+		};
+>+	};
+>+
+> 	psci {
+> 		compatible = "arm,psci-1.0";
+> 		method = "smc";
+>-- 
+>2.7.4
+>
