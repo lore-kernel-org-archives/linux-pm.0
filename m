@@ -1,51 +1,30 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: am33xx: Use generic platdev driver
-Date: Mon, 1 Aug 2016 10:04:56 -0700
-Message-ID: <20160801170435.GN4605@ubuntu>
-References: <1470062332-4616-1-git-send-email-matwey@sai.msu.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Thomas Garnier <thgarnie@google.com>
+Subject: [PATCH v1 0/2] x86/power/64: Make KASLR memory randomization compatible with hibernation
+Date: Mon,  1 Aug 2016 10:07:58 -0700
+Message-ID: <1470071280-78706-1-git-send-email-thgarnie@google.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:33951 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754526AbcHARE6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2016 13:04:58 -0400
-Received: by mail-pa0-f51.google.com with SMTP id fi15so54627712pac.1
-        for <linux-pm@vger.kernel.org>; Mon, 01 Aug 2016 10:04:58 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1470062332-4616-1-git-send-email-matwey@sai.msu.ru>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:33559 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754200AbcHARIm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2016 13:08:42 -0400
+Received: by mail-pa0-f47.google.com with SMTP id b2so1866214pat.0
+        for <linux-pm@vger.kernel.org>; Mon, 01 Aug 2016 10:08:19 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Matwey V. Kornilov" <matwey@sai.msu.ru>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, iippolitov@gmail.com, stable@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Thomas Garnier <thgarnie@google.com>, Yinghai Lu <yinghai@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kernel-hardening@lists.openwall.com
 
-On 01-08-16, 17:38, Matwey V. Kornilov wrote:
-> TI am33xx based platforms (i.e. BeagleBone) rely on
-> platform:cpufreq-dt creation in arch/arm/mach-omap2/pm.c
-> 
-> Add missed ti,am33xx compatible to cpufreq-dt-platdev
-> 
-> Fixes: 7694ca6e1d6f ("cpufreq: omap: Use generic platdev driver")
-> Signed-off-by: Matwey V. Kornilov <matwey@sai.msu.ru>
-> Cc: stable@vger.kernel.org # 4.7
-> ---
->  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 0bb44d5..7a590b4 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -68,6 +68,7 @@ static const struct of_device_id machines[] __initconst = {
->  
->  	{ .compatible = "sigma,tango4" },
->  
-> +	{ .compatible = "ti,am33xx", },
->  	{ .compatible = "ti,omap2", },
->  	{ .compatible = "ti,omap3", },
->  	{ .compatible = "ti,omap4", },
+***Background:
+KASLR memory randomization for x86_64 was added when KASLR did not support hibernation. Now that it does, some changes are needed.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+***Problems that needed solving:
+Hibernation was failing on reboot with a GP fault when CONFIG_RANDOMIZE_MEMORY was enabled. Two issues were identified.
 
--- 
-viresh
+The original fault was due to a wrong physical address assigned to cr3. The problem was introduced with __PAGE_OFFSET becoming a global variable when randomized. The fix uses a define to use the glbobal or immediate value based on config settings.
+
+The second isssue was that the temporary page table mapping did not support virtual addresses not aligned on PGD level. KASLR memory randomization will generated a random address aligned on PUD level. The fix correctly calculates the offset on all levels of the temporary page table.
+
+***Parts:
+ - 01/02: Support unaligned addresses (second issue)
+ - 02/02: Fix __PAGE_OFFSET usage on assembly (first issue)
+
