@@ -1,118 +1,34 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 02/14] dt/bindings: update binding for PM domain idle
- states
-Date: Mon, 1 Aug 2016 11:30:03 -0500
-Message-ID: <20160801163003.GA17592@rob-hp-laptop>
-References: <1469829385-11511-1-git-send-email-lina.iyer@linaro.org>
- <1469829385-11511-3-git-send-email-lina.iyer@linaro.org>
+From: Fabio Estevam <festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v3 0/6] power: add power sequence library
+Date: Mon, 1 Aug 2016 13:29:26 -0300
+Message-ID: <CAOMZO5C-mD=uiCML5W9sxBQOK2a_JEhJvJOQBzuhZxcWPnzexw@mail.gmail.com>
+References: <1469007629-31757-1-git-send-email-peter.chen@nxp.com>
+ <579A2B38.3000202@gmail.com> <CAOMZO5Dv_X-u6qKqAWtysAqmMw91bVoAaRvnc81yUGDxbd27rA@mail.gmail.com>
+ <579F62CE.1050900@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:36773 "EHLO
-	mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754006AbcHAQa1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2016 12:30:27 -0400
-Content-Disposition: inline
-In-Reply-To: <1469829385-11511-3-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <579F62CE.1050900-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, "Maciej S. Szmigiero" <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>, Troy
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-On Fri, Jul 29, 2016 at 03:56:13PM -0600, Lina Iyer wrote:
-> From: Axel Haslam <ahaslam+renesas@baylibre.com>
-> 
-> Update DT bindings to describe idle states of PM domains.
-> 
-> Cc: <devicetree@vger.kernel.org>
-> Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> [Lina: Added state properties, removed state names, wakeup-latency,
-> added of_pm_genpd_init() API, pruned commit text]
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> [Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
-> ---
->  .../devicetree/bindings/power/power_domain.txt     | 39 ++++++++++++++++++++++
->  1 file changed, 39 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> index 025b5e7..69aa4e2 100644
-> --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -29,6 +29,10 @@ Optional properties:
->     specified by this binding. More details about power domain specifier are
->     available in the next section.
->  
-> +- domain-idle-states : A phandle of an idle-state that shall be soaked into a
-> +                generic domain power state. The idle state definitions are
-> +                compatible with arm,idle-state specified in [1].
-> +
->  Example:
->  
->  	power: power-controller@12340000 {
-> @@ -55,6 +59,39 @@ Example 2:
->  		#power-domain-cells = <1>;
->  	};
->  
-> +Example 3:
-> +
-> +	pm-domains {
-> +		a57_pd: a57_pd@ {
+On Mon, Aug 1, 2016 at 11:55 AM, Joshua Clayton
+<stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
 
-The trailing '@' is not valid. If dtc doesn't complain about that, it 
-should.
+> Thanks a million, Fabio!
+>
+> 'usbcore.autosuspend=-1' quiets the errors.
+>
+> ~joshua
+>
+> P.S. I guess this technically is a bug in chipidea usb.
+> I'll give it a quick once over, though I am not very familiar
+> with USB core or the CI driver.
 
-> +			/* will have a57 platform ARM_PD_METHOD_OF_DECLARE*/
-> +			compatible = "arm,pd","arm,cortex-a57";
-> +			#power-domain-cells = <0>;
-> +			idle-states = <&CLUSTER_SLEEP_0>;
-
-Is this supposed to be 'domain-idle-states'? The domain part is 
-pointless IMO given these are power domain nodes.
-
-> +		};
-> +
-> +		a53_pd: a53_pd@ {
-> +			/* will have a a53 platform ARM_PD_METHOD_OF_DECLARE*/
-> +			compatible = "arm,pd","arm,cortex-a53";
-> +			#power-domain-cells = <0>;
-> +			idle-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
-> +		};
-> +
-> +		CLUSTER_SLEEP_0: idle-state@0 {
-
-A unit-address should have a matching reg value or be dropped. A reg 
-property would be fine here, but I think it should correspond to MPIDR 
-values. 
-
-> +			compatible = "arm,idle-state";
-> +			entry-latency-us = <1000>;
-> +			exit-latency-us = <2000>;
-> +			residency-us = <10000>;
-> +		};
-> +
-> +		CLUSTER_SLEEP_1: idle-state@1 {
-> +			compatible = "arm,idle-state";
-> +			entry-latency-us = <5000>;
-> +			exit-latency-us = <5000>;
-> +			residency-us = <100000>;
-> +		};
-> +	};
-> +
-> +
->  The nodes above define two power controllers: 'parent' and 'child'.
->  Domains created by the 'child' power controller are subdomains of '0' power
->  domain provided by the 'parent' power controller.
-> @@ -76,3 +113,5 @@ Example:
->  The node above defines a typical PM domain consumer device, which is located
->  inside a PM domain with index 0 of a power controller represented by a node
->  with the label "power".
-> +
-> +[1]. Documentation/devicetree/bindings/arm/idle-states.txt
-> -- 
-> 2.7.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Yes, it would be really nice if we can get a proper fix for this bug.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
