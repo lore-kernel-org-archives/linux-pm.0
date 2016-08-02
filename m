@@ -1,12 +1,12 @@
 From: Baole Ni <baolex.ni@intel.com>
-Subject: [PATCH 0119/1285] Replace numeric parameter like 0444 with macro
-Date: Tue,  2 Aug 2016 18:42:05 +0800
-Message-ID: <20160802104205.21683-1-baolex.ni@intel.com>
+Subject: [PATCH 0117/1285] Replace numeric parameter like 0444 with macro
+Date: Tue,  2 Aug 2016 18:41:56 +0800
+Message-ID: <20160802104156.21551-1-baolex.ni@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:36088 "EHLO mga04.intel.com"
+Received: from mga03.intel.com ([134.134.136.65]:36015 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754920AbcHBLTs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Aug 2016 07:19:48 -0400
+	id S1755211AbcHBLTo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Aug 2016 07:19:44 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net, viresh.kumar@linaro.org, jarkko.sakkinen@linux.intel.com, jgunthorpe@obsidianresearch.com, hpa@zytor.com, x86@kernel.org
@@ -21,31 +21,33 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/cpufreq/gx-suspmod.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/cpufreq/e_powersaver.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/gx-suspmod.c b/drivers/cpufreq/gx-suspmod.c
-index 3488c9c..25a4e48 100644
---- a/drivers/cpufreq/gx-suspmod.c
-+++ b/drivers/cpufreq/gx-suspmod.c
-@@ -126,7 +126,7 @@ static int stock_freq;
+diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+index cdf097b..65467d0 100644
+--- a/drivers/cpufreq/e_powersaver.c
++++ b/drivers/cpufreq/e_powersaver.c
+@@ -414,15 +414,15 @@ static void __exit eps_exit(void)
  
- /* PCI bus clock - defaults to 30.000 if cpu_khz is not available */
- static int pci_busclk;
--module_param(pci_busclk, int, 0444);
-+module_param(pci_busclk, int, S_IRUSR | S_IRGRP | S_IROTH);
+ /* Allow user to overclock his machine or to change frequency to higher after
+  * unloading module */
+-module_param(freq_failsafe_off, int, 0644);
++module_param(freq_failsafe_off, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(freq_failsafe_off, "Disable current vs max frequency check");
+-module_param(voltage_failsafe_off, int, 0644);
++module_param(voltage_failsafe_off, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(voltage_failsafe_off, "Disable current vs max voltage check");
+ #if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
+-module_param(ignore_acpi_limit, int, 0644);
++module_param(ignore_acpi_limit, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(ignore_acpi_limit, "Don't check ACPI's processor speed limit");
+ #endif
+-module_param(set_max_voltage, int, 0644);
++module_param(set_max_voltage, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(set_max_voltage, "Set maximum CPU voltage (mV) C7-M only");
  
- /* maximum duration for which the cpu may be suspended
-  * (32us * MAX_DURATION). If no parameter is given, this defaults
-@@ -135,7 +135,7 @@ module_param(pci_busclk, int, 0444);
-  * is suspended -- processing power is just 0.39% of what it used to be,
-  * though. 781.25 kHz(!) for a 200 MHz processor -- wow. */
- static int max_duration = 255;
--module_param(max_duration, int, 0444);
-+module_param(max_duration, int, S_IRUSR | S_IRGRP | S_IROTH);
- 
- /* For the default policy, we want at least some processing power
-  * - let's say 5%. (min = maxfreq / POLICY_MIN_DIV)
+ MODULE_AUTHOR("Rafal Bilski <rafalbilski@interia.pl>");
 -- 
 2.9.2
 
