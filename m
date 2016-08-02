@@ -1,44 +1,37 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [RFC][PATCH 1/7] cpufreq / sched: Make schedutil access
- utilization data directly
-Date: Tue, 2 Aug 2016 07:28:43 -0700
-Message-ID: <20160802142843.GF9332@graphite.smuckle.net>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan>
- <9887668.FEg7fVruKQ@vostro.rjw.lan>
- <20160801192850.GX19455@graphite.smuckle.net>
- <5472075.XX6bKsbQPI@vostro.rjw.lan>
- <20160802103817.GZ22472@e106622-lin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: Baole Ni <baolex.ni@intel.com>
+Subject: [PATCH 0960/1285] Replace numeric parameter like 0444 with macro
+Date: Tue,  2 Aug 2016 20:02:57 +0800
+Message-ID: <20160802120257.14058-1-baolex.ni@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160802103817.GZ22472@e106622-lin>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>
+To: rui.zhang@intel.com, edubezval@gmail.com, gregkh@linuxfoundation.org, m.chehab@samsung.com, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, heiko@sntech.de, s.hauer@pengutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 02, 2016 at 11:38:17AM +0100, Juri Lelli wrote:
-> > > Anyway one way that my patch differed was that I had used the flags
-> > > field to keep the behavior the same for both RT and DL.
-> 
-> Do you mean "go to max" policy for both, until proper policies will be
-> implemented in the future?
+I find that the developers often just specified the numeric value
+when calling a macro which is defined with a parameter for access permission.
+As we know, these numeric value for access permission have had the corresponding macro,
+and that using macro can improve the robustness and readability of the code,
+thus, I suggest replacing the numeric parameter with the macro.
 
-Yep.
+Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+Signed-off-by: Baole Ni <baolex.ni@intel.com>
+---
+ drivers/thermal/intel_quark_dts_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> > That happens
-> > > later on in this series for RT but the DL policy is modified as above.
-> > > Can the DL policy be left as-is and discussed/modified in a separate
-> > > series?
-> 
-> Not that we want to start discussing this point now, if we postpone the
-> change for later, but I just wanted to point out a difference w.r.t.
-> what the schedfreq thing was doing: it used to sum contributions from
-> the different classes, instead of taking the max. We probably never
-> really discussed on the list what is the right thing to do, though.
-
-Yeah I figured that was worth deferring into its own patchset/thread.
-
-cheers,
-Steve
+diff --git a/drivers/thermal/intel_quark_dts_thermal.c b/drivers/thermal/intel_quark_dts_thermal.c
+index 5d33b35..4f4b51c 100644
+--- a/drivers/thermal/intel_quark_dts_thermal.c
++++ b/drivers/thermal/intel_quark_dts_thermal.c
+@@ -113,7 +113,7 @@ struct soc_sensor_entry {
+ static struct soc_sensor_entry *soc_dts;
+ 
+ static int polling_delay = DEFAULT_POLL_DELAY;
+-module_param(polling_delay, int, 0644);
++module_param(polling_delay, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(polling_delay,
+ 	"Polling interval for checking trip points (in milliseconds)");
+ 
+-- 
+2.9.2
