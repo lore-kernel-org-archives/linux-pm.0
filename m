@@ -1,75 +1,77 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v3 0/6] power: add power sequence library
-Date: Tue, 2 Aug 2016 09:08:13 +0800
-Message-ID: <20160802010812.GA26831@shlinux2>
-References: <1469007629-31757-1-git-send-email-peter.chen@nxp.com>
- <579A2B38.3000202@gmail.com>
- <CAOMZO5Dv_X-u6qKqAWtysAqmMw91bVoAaRvnc81yUGDxbd27rA@mail.gmail.com>
- <579F62CE.1050900@gmail.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC][PATCH 5/7] cpufreq / sched: UUF_IO flag to indicate iowait
+ condition
+Date: Mon, 1 Aug 2016 18:22:09 -0700
+Message-ID: <20160802012209.GB9332@graphite.smuckle.net>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan>
+ <3009663.9YcxTKseiO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:36305 "EHLO
+	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755495AbcHBBXd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2016 21:23:33 -0400
+Received: by mail-pf0-f173.google.com with SMTP id h186so60362218pfg.3
+        for <linux-pm@vger.kernel.org>; Mon, 01 Aug 2016 18:22:13 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <579F62CE.1050900@gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Joshua Clayton <stillcompiling@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Peter Chen <peter.chen@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>, stephen.boyd@linaro.org, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, David Woodhouse <dwmw2@infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Troy Kisky <troy.kisky@boundarydevices.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Oscar Curero <oscar@naiandei.net>, Greg
+In-Reply-To: <3009663.9YcxTKseiO@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-On Mon, Aug 01, 2016 at 07:55:10AM -0700, Joshua Clayton wrote:
+On Mon, Aug 01, 2016 at 01:37:23AM +0200, Rafael J. Wysocki wrote:
+...
+> For this purpose, define a new cpufreq_update_util() flag
+> UUF_IO and modify enqueue_task_fair() to pass that flag to
+> cpufreq_update_util() in the in_iowait case.  That generally
+> requires cpufreq_update_util() to be called directly from there,
+> because update_load_avg() is not likely to be invoked in that
+> case.
+
+I didn't follow why the cpufreq hook won't likely be called if
+in_iowait is set? AFAICS update_load_avg() gets called in the second loop
+and calls update_cfs_rq_load_avg (triggers the hook).
+
 > 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  include/linux/sched.h |    1 +
+>  kernel/sched/fair.c   |    8 ++++++++
+>  2 files changed, 9 insertions(+)
 > 
-> On 07/28/2016 09:41 AM, Fabio Estevam wrote:
-> > Hi Joshua,
-> >
-> > On Thu, Jul 28, 2016 at 12:56 PM, Joshua Clayton
-> > <stillcompiling@gmail.com> wrote:
-> >
-> >> I assume there is a v4 coming due to rmk's comments on patch 5.
-> >> I couldn't figure out where to null the of_node in error paths, but in testing
-> >> we did put a line of code to null the of_node on release.
-> >>
-> >> but...
-> >> As an aside,
-> >> I was hoping this series would magically fix a problem
-> >> with the imx6q-evi which has forced us to disable
-> >> runtime power management. But it did not. :(
-> > I also see a similar problem on a mx28 board with a hub.
-> >
-> > Does it help in your case if you pass 'usbcore.autosuspend=-1' in the
-> > kernel command line?
-> >
-> > Regards,
-> >
-> > Fabio Estevam
-> Thanks a million, Fabio!
-> 
-> 'usbcore.autosuspend=-1' quiets the errors.
-> 
-> ~joshua
-> 
+> Index: linux-pm/kernel/sched/fair.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/fair.c
+> +++ linux-pm/kernel/sched/fair.c
+> @@ -4459,6 +4459,14 @@ enqueue_task_fair(struct rq *rq, struct
+>  	struct cfs_rq *cfs_rq;
+>  	struct sched_entity *se = &p->se;
+>  
+> +	/*
+> +	 * If in_iowait is set, it is likely that the loops below will not
+> +	 * trigger any cpufreq utilization updates, so do it here explicitly
+> +	 * with the IO flag passed.
+> +	 */
+> +	if (p->in_iowait)
+> +		cpufreq_update_util(rq, UUF_IO);
+> +
+>  	for_each_sched_entity(se) {
+>  		if (se->on_rq)
+>  			break;
+> Index: linux-pm/include/linux/sched.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/sched.h
+> +++ linux-pm/include/linux/sched.h
+> @@ -3376,6 +3376,7 @@ static inline unsigned long rlimit_max(u
+>  }
+>  
+>  #define UUF_RT	0x01
+> +#define UUF_IO	0x02
+>  
+>  #ifdef CONFIG_CPU_FREQ
+>  struct update_util_data {
 
-If you are using imx6q, there are some patches which is not upstreamed
-to workaround one SoC problem.
-
-http://www.spinics.net/lists/linux-usb/msg98682.html
-
-Try to implement the design for notify_suspend/resume at
-drivers/usb/phy/phy-mxs-usb.c and drivers/usb/chipidea/host.c
-
-You can refer to the code at:
-http://git.freescale.com/git/cgit.cgi/imx/linux-2.6-imx.git/tree/?h=imx_4.1.15_1.0.0_ga
-
--- 
-
-Best Regards,
-Peter Chen
+thanks,
+Steve
