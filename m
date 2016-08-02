@@ -1,38 +1,47 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC][PATCH 5/7] cpufreq / sched: UUF_IO flag to indicate iowait condition
-Date: Tue, 2 Aug 2016 03:37:02 +0200
-Message-ID: <CAJZ5v0hJL0qL6nYCWzyN4O0cqzjKCC0pprfo0tD8MZCtEj1==A@mail.gmail.com>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <3009663.9YcxTKseiO@vostro.rjw.lan>
- <20160802012209.GB9332@graphite.smuckle.net>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC][PATCH 4/7] cpufreq / sched: Add flags argument to
+ cpufreq_update_util()
+Date: Mon, 1 Aug 2016 18:36:49 -0700
+Message-ID: <20160802013649.GD9332@graphite.smuckle.net>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan>
+ <1874381.hHx7HlTjB3@vostro.rjw.lan>
+ <20160801195930.GZ19455@graphite.smuckle.net>
+ <3202429.X9nACUOoOm@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:33157 "EHLO
-	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755596AbcHBBj1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2016 21:39:27 -0400
-In-Reply-To: <20160802012209.GB9332@graphite.smuckle.net>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:35881 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755510AbcHBBqk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2016 21:46:40 -0400
+Received: by mail-pa0-f46.google.com with SMTP id pp5so57904385pac.3
+        for <linux-pm@vger.kernel.org>; Mon, 01 Aug 2016 18:44:56 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <3202429.X9nACUOoOm@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-On Tue, Aug 2, 2016 at 3:22 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> On Mon, Aug 01, 2016 at 01:37:23AM +0200, Rafael J. Wysocki wrote:
-> ...
->> For this purpose, define a new cpufreq_update_util() flag
->> UUF_IO and modify enqueue_task_fair() to pass that flag to
->> cpufreq_update_util() in the in_iowait case.  That generally
->> requires cpufreq_update_util() to be called directly from there,
->> because update_load_avg() is not likely to be invoked in that
->> case.
->
-> I didn't follow why the cpufreq hook won't likely be called if
-> in_iowait is set? AFAICS update_load_avg() gets called in the second loop
-> and calls update_cfs_rq_load_avg (triggers the hook).
+On Tue, Aug 02, 2016 at 01:44:41AM +0200, Rafael J. Wysocki wrote:
+> On Monday, August 01, 2016 12:59:30 PM Steve Muckle wrote:
+> > On Mon, Aug 01, 2016 at 04:57:18PM +0200, Rafael J. Wysocki wrote:
+> > > On Monday, August 01, 2016 09:33:12 AM Dominik Brodowski wrote:
+> > > > On Mon, Aug 01, 2016 at 01:36:46AM +0200, Rafael J. Wysocki wrote:
+> > > > > +#define UUF_RT	0x01
+> > > > 
+> > > > What does UUF stand for?
+> > > 
+> > > "Utilization upadte flag".
+> > 
+> > I had wondered the same - in my patchset I used CPUFREQ_SCHED_UPDATE_* for the
+> > prefixes, though I guess some may object to the length.
+> 
+> Well, OK.
+> 
+> I guess something like SCHED_CPUFREQ_RT etc would be sufficient?
 
-In practice it turns out that in the majority of cases when in_iowait
-is set the second loop will not run.
+Yeah I think that would work.
 
-Thanks,
-Rafael
+thanks,
+Steve
