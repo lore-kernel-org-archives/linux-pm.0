@@ -1,79 +1,84 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
+From: Thomas Garnier <thgarnie@google.com>
 Subject: Re: [PATCH v1 2/2] x86/power/64: Fix __PAGE_OFFSET usage on restore
-Date: Tue, 2 Aug 2016 22:47:27 +0200
-Message-ID: <CAJZ5v0gKGhymb-53_hRCMRuRCkdAcqyGSOkVzg=pULc7Nyqd7w@mail.gmail.com>
+Date: Tue, 2 Aug 2016 13:59:01 -0700
+Message-ID: <CAJcbSZFC-qeEySJYO9DFs=HfE087QHROW=opDRCmZo2WXB1gqw@mail.gmail.com>
 References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
  <1470071280-78706-3-git-send-email-thgarnie@google.com> <1771166.6Dy2cXd33p@vostro.rjw.lan>
- <CAJcbSZGUEg-udR3jG2V=16xmG3z_jE1V4WcDbbrV854E5WrT8g@mail.gmail.com>
-Reply-To: kernel-hardening@lists.openwall.com
+ <CAJcbSZGUEg-udR3jG2V=16xmG3z_jE1V4WcDbbrV854E5WrT8g@mail.gmail.com> <CAJZ5v0gKGhymb-53_hRCMRuRCkdAcqyGSOkVzg=pULc7Nyqd7w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <kernel-hardening-return-4212-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: rjwysocki@gmail.com
-In-Reply-To: <CAJcbSZGUEg-udR3jG2V=16xmG3z_jE1V4WcDbbrV854E5WrT8g@mail.gmail.com>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, kernel-hardening@lists.openwall.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f180.google.com ([209.85.161.180]:36637 "EHLO
+	mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756121AbcHBU7E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Aug 2016 16:59:04 -0400
+Received: by mail-yw0-f180.google.com with SMTP id u134so210023605ywg.3
+        for <linux-pm@vger.kernel.org>; Tue, 02 Aug 2016 13:59:03 -0700 (PDT)
+In-Reply-To: <CAJZ5v0gKGhymb-53_hRCMRuRCkdAcqyGSOkVzg=pULc7Nyqd7w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, kernel-hardening@lists.openwall.com
 
-On Tue, Aug 2, 2016 at 4:34 PM, Thomas Garnier <thgarnie@google.com> wrote:
-> On Mon, Aug 1, 2016 at 5:38 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Monday, August 01, 2016 10:08:00 AM Thomas Garnier wrote:
->>> When KASLR memory randomization is used, __PAGE_OFFSET is a global
->>> variable changed during boot. The assembly code was using the variable
->>> as an immediate value to calculate the cr3 physical address. The
->>> physical address was incorrect resulting to a GP fault.
+On Tue, Aug 2, 2016 at 1:47 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Tue, Aug 2, 2016 at 4:34 PM, Thomas Garnier <thgarnie@google.com> wrote:
+>> On Mon, Aug 1, 2016 at 5:38 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> On Monday, August 01, 2016 10:08:00 AM Thomas Garnier wrote:
+>>>> When KASLR memory randomization is used, __PAGE_OFFSET is a global
+>>>> variable changed during boot. The assembly code was using the variable
+>>>> as an immediate value to calculate the cr3 physical address. The
+>>>> physical address was incorrect resulting to a GP fault.
+>>>>
+>>>> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+>>>> ---
+>>>>  arch/x86/power/hibernate_asm_64.S | 12 +++++++++++-
+>>>>  1 file changed, 11 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/arch/x86/power/hibernate_asm_64.S b/arch/x86/power/hibernate_asm_64.S
+>>>> index 8eee0e9..8db4905 100644
+>>>> --- a/arch/x86/power/hibernate_asm_64.S
+>>>> +++ b/arch/x86/power/hibernate_asm_64.S
+>>>> @@ -23,6 +23,16 @@
+>>>>  #include <asm/processor-flags.h>
+>>>>  #include <asm/frame.h>
+>>>>
+>>>> +/*
+>>>> + * A global variable holds the page_offset when KASLR memory randomization
+>>>> + * is enabled.
+>>>> + */
+>>>> +#ifdef CONFIG_RANDOMIZE_MEMORY
+>>>> +#define __PAGE_OFFSET_REF __PAGE_OFFSET
+>>>> +#else
+>>>> +#define __PAGE_OFFSET_REF $__PAGE_OFFSET
+>>>> +#endif
+>>>> +
+>>>>  ENTRY(swsusp_arch_suspend)
+>>>>       movq    $saved_context, %rax
+>>>>       movq    %rsp, pt_regs_sp(%rax)
+>>>> @@ -72,7 +82,7 @@ ENTRY(restore_image)
+>>>>       /* code below has been relocated to a safe page */
+>>>>  ENTRY(core_restore_code)
+>>>>       /* switch to temporary page tables */
+>>>> -     movq    $__PAGE_OFFSET, %rcx
+>>>> +     movq    __PAGE_OFFSET_REF, %rcx
+>>>>       subq    %rcx, %rax
+>>>>       movq    %rax, %cr3
+>>>>       /* flush TLB */
+>>>>
 >>>
->>> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->>> ---
->>>  arch/x86/power/hibernate_asm_64.S | 12 +++++++++++-
->>>  1 file changed, 11 insertions(+), 1 deletion(-)
+>>> I'm not particularly liking the #ifdefs and they won't be really
+>>> necessary if the subtraction is carried out by the C code IMO.
 >>>
->>> diff --git a/arch/x86/power/hibernate_asm_64.S b/arch/x86/power/hibernate_asm_64.S
->>> index 8eee0e9..8db4905 100644
->>> --- a/arch/x86/power/hibernate_asm_64.S
->>> +++ b/arch/x86/power/hibernate_asm_64.S
->>> @@ -23,6 +23,16 @@
->>>  #include <asm/processor-flags.h>
->>>  #include <asm/frame.h>
->>>
->>> +/*
->>> + * A global variable holds the page_offset when KASLR memory randomization
->>> + * is enabled.
->>> + */
->>> +#ifdef CONFIG_RANDOMIZE_MEMORY
->>> +#define __PAGE_OFFSET_REF __PAGE_OFFSET
->>> +#else
->>> +#define __PAGE_OFFSET_REF $__PAGE_OFFSET
->>> +#endif
->>> +
->>>  ENTRY(swsusp_arch_suspend)
->>>       movq    $saved_context, %rax
->>>       movq    %rsp, pt_regs_sp(%rax)
->>> @@ -72,7 +82,7 @@ ENTRY(restore_image)
->>>       /* code below has been relocated to a safe page */
->>>  ENTRY(core_restore_code)
->>>       /* switch to temporary page tables */
->>> -     movq    $__PAGE_OFFSET, %rcx
->>> +     movq    __PAGE_OFFSET_REF, %rcx
->>>       subq    %rcx, %rax
->>>       movq    %rax, %cr3
->>>       /* flush TLB */
+>>> What about the patch below instead?
 >>>
 >>
->> I'm not particularly liking the #ifdefs and they won't be really
->> necessary if the subtraction is carried out by the C code IMO.
->>
->> What about the patch below instead?
->>
+>> Yes, I think that's a good idea. I will test it and send PATCH v2.
 >
-> Yes, I think that's a good idea. I will test it and send PATCH v2.
+> No need to send this patch again.  Please just let me know if it works
+> for you. :-)
+>
 
-No need to send this patch again.  Please just let me know if it works
-for you. :-)
+It worked well when I tested it and I agree that's a better approach.
 
-Thanks,
-Rafael
+> Thanks,
+> Rafael
