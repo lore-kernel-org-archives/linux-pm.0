@@ -1,39 +1,91 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 4/7] cpufreq / sched: Add flags argument to cpufreq_update_util()
-Date: Tue, 02 Aug 2016 01:44:41 +0200
-Message-ID: <3202429.X9nACUOoOm@vostro.rjw.lan>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1874381.hHx7HlTjB3@vostro.rjw.lan> <20160801195930.GZ19455@graphite.smuckle.net>
+Subject: Re: [PATCH v1 1/2] x86/power/64: Support unaligned addresses for temporary mapping
+Date: Tue, 02 Aug 2016 02:36:25 +0200
+Message-ID: <2005875.PA9bTzjxie@vostro.rjw.lan>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com> <1470071280-78706-2-git-send-email-thgarnie@google.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54713 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755407AbcHAXqZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2016 19:46:25 -0400
-In-Reply-To: <20160801195930.GZ19455@graphite.smuckle.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <kernel-hardening-return-4187-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <1470071280-78706-2-git-send-email-thgarnie@google.com>
+To: Thomas Garnier <thgarnie@google.com>, Ingo Molnar <mingo@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kernel-hardening@lists.openwall.com
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-On Monday, August 01, 2016 12:59:30 PM Steve Muckle wrote:
-> On Mon, Aug 01, 2016 at 04:57:18PM +0200, Rafael J. Wysocki wrote:
-> > On Monday, August 01, 2016 09:33:12 AM Dominik Brodowski wrote:
-> > > On Mon, Aug 01, 2016 at 01:36:46AM +0200, Rafael J. Wysocki wrote:
-> > > > +#define UUF_RT	0x01
-> > > 
-> > > What does UUF stand for?
-> > 
-> > "Utilization upadte flag".
+On Monday, August 01, 2016 10:07:59 AM Thomas Garnier wrote:
+> Correctly setup the temporary mapping for hibernation. Previous
+> implementation assumed the address was aligned on the PGD level. With
+> KASLR memory randomization enabled, the address is randomized on the PUD
+> level. This change supports unaligned address up to PMD.
 > 
-> I had wondered the same - in my patchset I used CPUFREQ_SCHED_UPDATE_* for the
-> prefixes, though I guess some may object to the length.
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
 
-Well, OK.
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I guess something like SCHED_CPUFREQ_RT etc would be sufficient?
+This code is shared with kexec AFAICS, so it likely is better to push it
+through tip rather than through the PM tree.
 
-Thanks,
-Rafael
-
+> ---
+>  arch/x86/mm/ident_map.c | 18 ++++++++++--------
+>  1 file changed, 10 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/x86/mm/ident_map.c b/arch/x86/mm/ident_map.c
+> index ec21796..ea1ebf1 100644
+> --- a/arch/x86/mm/ident_map.c
+> +++ b/arch/x86/mm/ident_map.c
+> @@ -3,15 +3,16 @@
+>   * included by both the compressed kernel and the regular kernel.
+>   */
+>  
+> -static void ident_pmd_init(unsigned long pmd_flag, pmd_t *pmd_page,
+> +static void ident_pmd_init(struct x86_mapping_info *info, pmd_t *pmd_page,
+>  			   unsigned long addr, unsigned long end)
+>  {
+> -	addr &= PMD_MASK;
+> -	for (; addr < end; addr += PMD_SIZE) {
+> -		pmd_t *pmd = pmd_page + pmd_index(addr);
+> +	int off = info->kernel_mapping ? pmd_index(__PAGE_OFFSET) : 0;
+> +
+> +	for (addr &= PMD_MASK; addr < end; addr += PMD_SIZE) {
+> +		pmd_t *pmd = pmd_page + pmd_index(addr) + off;
+>  
+>  		if (!pmd_present(*pmd))
+> -			set_pmd(pmd, __pmd(addr | pmd_flag));
+> +			set_pmd(pmd, __pmd(addr | info->pmd_flag));
+>  	}
+>  }
+>  
+> @@ -19,9 +20,10 @@ static int ident_pud_init(struct x86_mapping_info *info, pud_t *pud_page,
+>  			  unsigned long addr, unsigned long end)
+>  {
+>  	unsigned long next;
+> +	int off = info->kernel_mapping ? pud_index(__PAGE_OFFSET) : 0;
+>  
+>  	for (; addr < end; addr = next) {
+> -		pud_t *pud = pud_page + pud_index(addr);
+> +		pud_t *pud = pud_page + pud_index(addr) + off;
+>  		pmd_t *pmd;
+>  
+>  		next = (addr & PUD_MASK) + PUD_SIZE;
+> @@ -30,13 +32,13 @@ static int ident_pud_init(struct x86_mapping_info *info, pud_t *pud_page,
+>  
+>  		if (pud_present(*pud)) {
+>  			pmd = pmd_offset(pud, 0);
+> -			ident_pmd_init(info->pmd_flag, pmd, addr, next);
+> +			ident_pmd_init(info, pmd, addr, next);
+>  			continue;
+>  		}
+>  		pmd = (pmd_t *)info->alloc_pgt_page(info->context);
+>  		if (!pmd)
+>  			return -ENOMEM;
+> -		ident_pmd_init(info->pmd_flag, pmd, addr, next);
+> +		ident_pmd_init(info, pmd, addr, next);
+>  		set_pud(pud, __pud(__pa(pmd) | _KERNPG_TABLE));
+>  	}
+>  
+> 
