@@ -1,115 +1,40 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2 07/13] PCI: pciehp: Ignore interrupts during D3cold
-Date: Tue, 2 Aug 2016 18:27:40 +0200
-Message-ID: <20160802162740.GA4036@wunner.de>
-References: <cover.1463134231.git.lukas@wunner.de>
- <98a243badc295903ec4cf7de5e2985b468c45907.1463134231.git.lukas@wunner.de>
- <20160617225204.GC10416@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Baole Ni <baolex.ni@intel.com>
+Subject: [PATCH 0125/1285] Replace numeric parameter like 0444 with macro
+Date: Tue,  2 Aug 2016 18:42:33 +0800
+Message-ID: <20160802104233.22085-1-baolex.ni@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:49781 "EHLO
-	mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935458AbcHBQfp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Aug 2016 12:35:45 -0400
-Content-Disposition: inline
-In-Reply-To: <20160617225204.GC10416@localhost>
+Received: from mga04.intel.com ([192.55.52.120]:32557 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933692AbcHBMCF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Aug 2016 08:02:05 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: rjw@rjwysocki.net, daniel.lezcano@linaro.org, jarkko.sakkinen@linux.intel.com, jgunthorpe@obsidianresearch.com, hpa@zytor.com, x86@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, jslaby@suse.cz, peter@korsgaard.com, lee.jones@linaro.org
 
-On Fri, Jun 17, 2016 at 05:52:04PM -0500, Bjorn Helgaas wrote:
-> On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
-> > If a hotplug port is suspended to D3cold, its slot status register
-> > cannot be read.  If that hotplug port happens to share its IRQ with
-> > other devices, then whenever an interrupt occurs for one of these
-> > devices, a "no response from device" message is logged with level
-> > KERN_INFO.  Apart from this annoyance, CPU time is needlessly spent
-> > trying to read the slot status register even though we know in advance
-> > that it will fail.
-> 
-> I guess this is a pretty generic problem that could affect any device
-> that shares an IRQ.
-> 
-> I think I'll queue this on my pci/pm branch, since it seems closely
-> related to Mika's "PCI: Add runtime PM support for PCIe ports".
-> 
-> Did you check for the same issue in other likely places, e.g., AER,
-> PME, etc.?
+I find that the developers often just specified the numeric value
+when calling a macro which is defined with a parameter for access permission.
+As we know, these numeric value for access permission have had the corresponding macro,
+and that using macro can improve the robustness and readability of the code,
+thus, I suggest replacing the numeric parameter with the macro.
 
-Apologies for the delay, I've checked all other port services now:
+Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+Signed-off-by: Baole Ni <baolex.ni@intel.com>
+---
+ drivers/cpuidle/cpuidle.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-- Our AER and PME drivers bind only to root ports and I can't imagine
-  how those could go to D3cold, they're part of the root complex or
-  PCH and I'm not aware of a chipset that would allow turning off the
-  power well for individual PCIe ports.
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index a4d0059..38b2378 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -664,5 +664,5 @@ static int __init cpuidle_init(void)
+ 	return 0;
+ }
+ 
+-module_param(off, int, 0444);
++module_param(off, int, S_IRUSR | S_IRGRP | S_IROTH);
+ core_initcall(cpuidle_init);
+-- 
+2.9.2
 
-- DPC on the other hand also binds to downstream ports. I do have
-  downstream ports in my machine (as part of the Thunderbolt switch)
-  but they do not have the DPC capability. I've never seen devices
-  with that capability and cannot estimate what the chances are of them
-  going to D3cold and sharing an IRQ with other devices. It's probably
-  not worth preparing for such a situation without knowing its likelihood.
-
-- VC: We allocate a port service for this but do not have a driver.
-
-Bottom line is that the patch for the PCIe hotplug driver seems to be
-sufficient.
-
-FWIW, on my machine I see numerous devices with AER, PME and VC
-capabilities. The Nvidia GPU as well as network, Firewire and
-Thunderbolt controllers all have those. AFAICS we ignore them
-because their specific drivers do not care for the capabilities
-and portdrv only binds to root ports.
-
-This seems to support your argument that the PCIe capabilities
-should be handled by the core rather than portdrv, as we could
-then make use of the capabilities on endpoint devices in a
-universal manner.
-
-On the other hand, I think we cannot use a separate MSI for
-AER, PME et al, can we? If we cannot, then AER and PME would
-share the IRQ with an endpoint device's regular interrupt handler,
-and that might ruin performance. E.g. the Broadcom wireless card
-generates millions of interrupts on a sufficiently active WiFi.
-Accessing the device's config space on every interrupt just to
-check for AER or PME seems like a bad idea. So at the very least
-we'd need some kind of opt-out.
-
-Best regards,
-
-Lukas
-
-> > On MacBook Pros introduced 2011 and 2012, the IRQ of a Thunderbolt
-> > hotplug port is unfortunately shared with a wireless card, an audio card
-> > and an SDXC controller.  When the Thunderbolt controller is powered
-> > down, the machine carries out at least one unneeded slot status register
-> > read for each wireless packet received and prints a corresponding error
-> > message to the system log.
-> > 
-> > The hotplug port's current_state will be D3cold when it's powered down,
-> > so ignore interrupts that occur during that power state.
-> > 
-> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > ---
-> >  drivers/pci/hotplug/pciehp_hpc.c | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> > 
-> > diff --git a/drivers/pci/hotplug/pciehp_hpc.c b/drivers/pci/hotplug/pciehp_hpc.c
-> > index 5c24e93..08e84d6 100644
-> > --- a/drivers/pci/hotplug/pciehp_hpc.c
-> > +++ b/drivers/pci/hotplug/pciehp_hpc.c
-> > @@ -546,6 +546,10 @@ static irqreturn_t pcie_isr(int irq, void *dev_id)
-> >  	u8 present;
-> >  	bool link;
-> >  
-> > +	/* Interrupts cannot originate from a controller that's asleep */
-> > +	if (pdev->current_state == PCI_D3cold)
-> > +		return IRQ_NONE;
-> > +
-> >  	/*
-> >  	 * In order to guarantee that all interrupt events are
-> >  	 * serviced, we need to re-inspect Slot Status register after
-> > -- 
-> > 2.8.1
