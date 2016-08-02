@@ -1,12 +1,16 @@
 From: Baole Ni <baolex.ni@intel.com>
-Subject: [PATCH 0962/1285] Replace numeric parameter like 0444 with macro
-Date: Tue,  2 Aug 2016 20:03:06 +0800
-Message-ID: <20160802120306.14192-1-baolex.ni@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH 0959/1285] Replace numeric parameter like 0444 with macro
+Date: Tue,  2 Aug 2016 20:02:53 +0800
+Message-ID: <20160802120253.13992-1-baolex.ni@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:49929 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966131AbcHBNNk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Aug 2016 09:13:40 -0400
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com, gregkh@linuxfoundation.org, m.chehab@samsung.com, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, heiko@sntech.de, s.hauer@pengutronix.de
-List-Id: linux-pm@vger.kernel.org
 
 I find that the developers often just specified the numeric value
 when calling a macro which is defined with a parameter for access permission.
@@ -17,37 +21,31 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/thermal/thermal_core.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/thermal/intel_powerclamp.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 5133cd1..de6d349 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1099,9 +1099,9 @@ int power_actor_set_power(struct thermal_cooling_device *cdev,
- 	return 0;
- }
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index 015ce2e..6954a82 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -125,7 +125,7 @@ static const struct kernel_param_ops duration_ops = {
+ };
  
--static DEVICE_ATTR(type, 0444, type_show, NULL);
--static DEVICE_ATTR(temp, 0444, temp_show, NULL);
--static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
-+static DEVICE_ATTR(type, S_IRUSR | S_IRGRP | S_IROTH, type_show, NULL);
-+static DEVICE_ATTR(temp, S_IRUSR | S_IRGRP | S_IROTH, temp_show, NULL);
-+static DEVICE_ATTR(mode, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH, mode_show, mode_store);
- static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
- static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
- static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
-@@ -1170,9 +1170,9 @@ thermal_cooling_device_cur_state_store(struct device *dev,
  
- static struct device_attribute dev_attr_cdev_type =
- __ATTR(type, 0444, thermal_cooling_device_type_show, NULL);
--static DEVICE_ATTR(max_state, 0444,
-+static DEVICE_ATTR(max_state, S_IRUSR | S_IRGRP | S_IROTH,
- 		   thermal_cooling_device_max_state_show, NULL);
--static DEVICE_ATTR(cur_state, 0644,
-+static DEVICE_ATTR(cur_state, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH,
- 		   thermal_cooling_device_cur_state_show,
- 		   thermal_cooling_device_cur_state_store);
+-module_param_cb(duration, &duration_ops, &duration, 0644);
++module_param_cb(duration, &duration_ops, &duration, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(duration, "forced idle time for each attempt in msec.");
  
+ struct powerclamp_calibration_data {
+@@ -172,7 +172,7 @@ static const struct kernel_param_ops window_size_ops = {
+ 	.get = param_get_int,
+ };
+ 
+-module_param_cb(window_size, &window_size_ops, &window_size, 0644);
++module_param_cb(window_size, &window_size_ops, &window_size, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(window_size, "sliding window in number of clamping cycles\n"
+ 	"\tpowerclamp controls idle ratio within this window. larger\n"
+ 	"\twindow size results in slower response time but more smooth\n"
 -- 
 2.9.2
+
