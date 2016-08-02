@@ -1,103 +1,79 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH v1 1/2] x86/power/64: Support unaligned addresses for
- temporary mapping
-Date: Tue, 2 Aug 2016 12:55:44 -0700
-Message-ID: <CAE9FiQVtD+eBoHEeNWGUnNAtJkDCEsq2JLg0RC9grSG7Eje3tQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v1 2/2] x86/power/64: Fix __PAGE_OFFSET usage on restore
+Date: Tue, 2 Aug 2016 22:47:27 +0200
+Message-ID: <CAJZ5v0gKGhymb-53_hRCMRuRCkdAcqyGSOkVzg=pULc7Nyqd7w@mail.gmail.com>
 References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
- <1470071280-78706-2-git-send-email-thgarnie@google.com> <CAE9FiQXPnXa_Ep2nk+y5boZ9Csdk_yoH5Ws8SaExn0-VHU9bBg@mail.gmail.com>
- <CAJcbSZE1kPpL_hWLK70fGhgjP3xRBaZ=r32E9q1SBwhCbqOp5Q@mail.gmail.com>
+ <1470071280-78706-3-git-send-email-thgarnie@google.com> <1771166.6Dy2cXd33p@vostro.rjw.lan>
+ <CAJcbSZGUEg-udR3jG2V=16xmG3z_jE1V4WcDbbrV854E5WrT8g@mail.gmail.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=94eb2c191fd64ea62405391c1a2f
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f173.google.com ([209.85.217.173]:36066 "EHLO
-	mail-ua0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753291AbcHBTzr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Aug 2016 15:55:47 -0400
-In-Reply-To: <CAJcbSZE1kPpL_hWLK70fGhgjP3xRBaZ=r32E9q1SBwhCbqOp5Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
-
---94eb2c191fd64ea62405391c1a2f
 Content-Type: text/plain; charset=UTF-8
+Return-path: <kernel-hardening-return-4212-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: rjwysocki@gmail.com
+In-Reply-To: <CAJcbSZGUEg-udR3jG2V=16xmG3z_jE1V4WcDbbrV854E5WrT8g@mail.gmail.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, kernel-hardening@lists.openwall.com
+List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 2, 2016 at 10:48 AM, Thomas Garnier <thgarnie@google.com> wrote:
-> On Tue, Aug 2, 2016 at 10:36 AM, Yinghai Lu <yinghai@kernel.org> wrote:
+On Tue, Aug 2, 2016 at 4:34 PM, Thomas Garnier <thgarnie@google.com> wrote:
+> On Mon, Aug 1, 2016 at 5:38 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Monday, August 01, 2016 10:08:00 AM Thomas Garnier wrote:
+>>> When KASLR memory randomization is used, __PAGE_OFFSET is a global
+>>> variable changed during boot. The assembly code was using the variable
+>>> as an immediate value to calculate the cr3 physical address. The
+>>> physical address was incorrect resulting to a GP fault.
+>>>
+>>> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+>>> ---
+>>>  arch/x86/power/hibernate_asm_64.S | 12 +++++++++++-
+>>>  1 file changed, 11 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/x86/power/hibernate_asm_64.S b/arch/x86/power/hibernate_asm_64.S
+>>> index 8eee0e9..8db4905 100644
+>>> --- a/arch/x86/power/hibernate_asm_64.S
+>>> +++ b/arch/x86/power/hibernate_asm_64.S
+>>> @@ -23,6 +23,16 @@
+>>>  #include <asm/processor-flags.h>
+>>>  #include <asm/frame.h>
+>>>
+>>> +/*
+>>> + * A global variable holds the page_offset when KASLR memory randomization
+>>> + * is enabled.
+>>> + */
+>>> +#ifdef CONFIG_RANDOMIZE_MEMORY
+>>> +#define __PAGE_OFFSET_REF __PAGE_OFFSET
+>>> +#else
+>>> +#define __PAGE_OFFSET_REF $__PAGE_OFFSET
+>>> +#endif
+>>> +
+>>>  ENTRY(swsusp_arch_suspend)
+>>>       movq    $saved_context, %rax
+>>>       movq    %rsp, pt_regs_sp(%rax)
+>>> @@ -72,7 +82,7 @@ ENTRY(restore_image)
+>>>       /* code below has been relocated to a safe page */
+>>>  ENTRY(core_restore_code)
+>>>       /* switch to temporary page tables */
+>>> -     movq    $__PAGE_OFFSET, %rcx
+>>> +     movq    __PAGE_OFFSET_REF, %rcx
+>>>       subq    %rcx, %rax
+>>>       movq    %rax, %cr3
+>>>       /* flush TLB */
+>>>
 >>
->> Looks like we need to change the loop from phys address to virtual
->> address instead.
->> to avoid the overflow.
+>> I'm not particularly liking the #ifdefs and they won't be really
+>> necessary if the subtraction is carried out by the C code IMO.
+>>
+>> What about the patch below instead?
+>>
+>
+> Yes, I think that's a good idea. I will test it and send PATCH v2.
 
-something like attached.
+No need to send this patch again.  Please just let me know if it works
+for you. :-)
 
---94eb2c191fd64ea62405391c1a2f
-Content-Type: text/x-patch; charset=US-ASCII; name="fix_ident_off.patch"
-Content-Disposition: attachment; filename="fix_ident_off.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_irdvwo4y0
-
-LS0tCiBhcmNoL3g4Ni9tbS9pZGVudF9tYXAuYyB8ICAgNTQgKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKy0tLS0tLS0tLS0tLS0tLS0tLS0tCiAxIGZpbGUgY2hhbmdlZCwgMzIgaW5zZXJ0aW9u
-cygrKSwgMjIgZGVsZXRpb25zKC0pCgpJbmRleDogbGludXgtMi42L2FyY2gveDg2L21tL2lkZW50
-X21hcC5jCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIuNi5vcmlnL2FyY2gveDg2L21tL2lkZW50X21h
-cC5jCisrKyBsaW51eC0yLjYvYXJjaC94ODYvbW0vaWRlbnRfbWFwLmMKQEAgLTMsNDAgKzMsNDcg
-QEAKICAqIGluY2x1ZGVkIGJ5IGJvdGggdGhlIGNvbXByZXNzZWQga2VybmVsIGFuZCB0aGUgcmVn
-dWxhciBrZXJuZWwuCiAgKi8KIAotc3RhdGljIHZvaWQgaWRlbnRfcG1kX2luaXQodW5zaWduZWQg
-bG9uZyBwbWRfZmxhZywgcG1kX3QgKnBtZF9wYWdlLAorc3RhdGljIHZvaWQgaWRlbnRfcG1kX2lu
-aXQoc3RydWN0IHg4Nl9tYXBwaW5nX2luZm8gKmluZm8sIHBtZF90ICpwbWRfcGFnZSwKIAkJCSAg
-IHVuc2lnbmVkIGxvbmcgYWRkciwgdW5zaWduZWQgbG9uZyBlbmQpCiB7Ci0JYWRkciAmPSBQTURf
-TUFTSzsKLQlmb3IgKDsgYWRkciA8IGVuZDsgYWRkciArPSBQTURfU0laRSkgewotCQlwbWRfdCAq
-cG1kID0gcG1kX3BhZ2UgKyBwbWRfaW5kZXgoYWRkcik7CisJdW5zaWduZWQgbG9uZyBvZmYgPSBp
-bmZvLT5rZXJuZWxfbWFwcGluZyA/IF9fUEFHRV9PRkZTRVQgOiAwOworCXVuc2lnbmVkIGxvbmcg
-dmFkZHIgPSBhZGRyICsgb2ZmOworCXVuc2lnbmVkIGxvbmcgdmVuZCA9IGVuZCArIG9mZjsKKwor
-CXZhZGRyICY9IFBNRF9NQVNLOworCWZvciAoOyB2YWRkciA8IHZlbmQ7IHZhZGRyICs9IFBNRF9T
-SVpFKSB7CisJCXBtZF90ICpwbWQgPSBwbWRfcGFnZSArIHBtZF9pbmRleCh2YWRkcik7CiAKIAkJ
-aWYgKCFwbWRfcHJlc2VudCgqcG1kKSkKLQkJCXNldF9wbWQocG1kLCBfX3BtZChhZGRyIHwgcG1k
-X2ZsYWcpKTsKKwkJCXNldF9wbWQocG1kLCBfX3BtZCh2YWRkciAtIG9mZiB8IGluZm8tPnBtZF9m
-bGFnKSk7CiAJfQogfQogCiBzdGF0aWMgaW50IGlkZW50X3B1ZF9pbml0KHN0cnVjdCB4ODZfbWFw
-cGluZ19pbmZvICppbmZvLCBwdWRfdCAqcHVkX3BhZ2UsCiAJCQkgIHVuc2lnbmVkIGxvbmcgYWRk
-ciwgdW5zaWduZWQgbG9uZyBlbmQpCiB7Ci0JdW5zaWduZWQgbG9uZyBuZXh0OworCXVuc2lnbmVk
-IGxvbmcgb2ZmID0gaW5mby0+a2VybmVsX21hcHBpbmcgPyBfX1BBR0VfT0ZGU0VUIDogMDsKKwl1
-bnNpZ25lZCBsb25nIHZhZGRyID0gYWRkciArIG9mZjsKKwl1bnNpZ25lZCBsb25nIHZlbmQgPSBl
-bmQgKyBvZmY7CisJdW5zaWduZWQgbG9uZyB2bmV4dDsKIAotCWZvciAoOyBhZGRyIDwgZW5kOyBh
-ZGRyID0gbmV4dCkgewotCQlwdWRfdCAqcHVkID0gcHVkX3BhZ2UgKyBwdWRfaW5kZXgoYWRkcik7
-CisJZm9yICg7IHZhZGRyIDwgdmVuZDsgdmFkZHIgPSB2bmV4dCkgeworCQlwdWRfdCAqcHVkID0g
-cHVkX3BhZ2UgKyBwdWRfaW5kZXgodmFkZHIpOwogCQlwbWRfdCAqcG1kOwogCi0JCW5leHQgPSAo
-YWRkciAmIFBVRF9NQVNLKSArIFBVRF9TSVpFOwotCQlpZiAobmV4dCA+IGVuZCkKLQkJCW5leHQg
-PSBlbmQ7CisJCXZuZXh0ID0gKHZhZGRyICYgUFVEX01BU0spICsgUFVEX1NJWkU7CisJCWlmICh2
-bmV4dCA+IHZlbmQpCisJCQl2bmV4dCA9IHZlbmQ7CiAKIAkJaWYgKHB1ZF9wcmVzZW50KCpwdWQp
-KSB7CiAJCQlwbWQgPSBwbWRfb2Zmc2V0KHB1ZCwgMCk7Ci0JCQlpZGVudF9wbWRfaW5pdChpbmZv
-LT5wbWRfZmxhZywgcG1kLCBhZGRyLCBuZXh0KTsKKwkJCWlkZW50X3BtZF9pbml0KGluZm8sIHBt
-ZCwgdmFkZHIgLSBvZmYsIHZuZXh0IC0gb2ZmKTsKIAkJCWNvbnRpbnVlOwogCQl9CiAJCXBtZCA9
-IChwbWRfdCAqKWluZm8tPmFsbG9jX3BndF9wYWdlKGluZm8tPmNvbnRleHQpOwogCQlpZiAoIXBt
-ZCkKIAkJCXJldHVybiAtRU5PTUVNOwotCQlpZGVudF9wbWRfaW5pdChpbmZvLT5wbWRfZmxhZywg
-cG1kLCBhZGRyLCBuZXh0KTsKKwkJaWRlbnRfcG1kX2luaXQoaW5mbywgcG1kLCB2YWRkciAtIG9m
-Ziwgdm5leHQgLSBvZmYpOwogCQlzZXRfcHVkKHB1ZCwgX19wdWQoX19wYShwbWQpIHwgX0tFUk5Q
-R19UQUJMRSkpOwogCX0KIApAQCAtNDYsMjEgKzUzLDI0IEBAIHN0YXRpYyBpbnQgaWRlbnRfcHVk
-X2luaXQoc3RydWN0IHg4Nl9tYXAKIGludCBrZXJuZWxfaWRlbnRfbWFwcGluZ19pbml0KHN0cnVj
-dCB4ODZfbWFwcGluZ19pbmZvICppbmZvLCBwZ2RfdCAqcGdkX3BhZ2UsCiAJCQkgICAgICB1bnNp
-Z25lZCBsb25nIGFkZHIsIHVuc2lnbmVkIGxvbmcgZW5kKQogewotCXVuc2lnbmVkIGxvbmcgbmV4
-dDsKIAlpbnQgcmVzdWx0OwotCWludCBvZmYgPSBpbmZvLT5rZXJuZWxfbWFwcGluZyA/IHBnZF9p
-bmRleChfX1BBR0VfT0ZGU0VUKSA6IDA7CisJdW5zaWduZWQgbG9uZyBvZmYgPSBpbmZvLT5rZXJu
-ZWxfbWFwcGluZyA/IF9fUEFHRV9PRkZTRVQgOiAwOworCXVuc2lnbmVkIGxvbmcgdmFkZHIgPSBh
-ZGRyICsgb2ZmOworCXVuc2lnbmVkIGxvbmcgdmVuZCA9IGVuZCArIG9mZjsKKwl1bnNpZ25lZCBs
-b25nIHZuZXh0OwogCi0JZm9yICg7IGFkZHIgPCBlbmQ7IGFkZHIgPSBuZXh0KSB7Ci0JCXBnZF90
-ICpwZ2QgPSBwZ2RfcGFnZSArIHBnZF9pbmRleChhZGRyKSArIG9mZjsKKwlmb3IgKDsgdmFkZHIg
-PCB2ZW5kOyB2YWRkciA9IHZuZXh0KSB7CisJCXBnZF90ICpwZ2QgPSBwZ2RfcGFnZSArIHBnZF9p
-bmRleCh2YWRkcik7CiAJCXB1ZF90ICpwdWQ7CiAKLQkJbmV4dCA9IChhZGRyICYgUEdESVJfTUFT
-SykgKyBQR0RJUl9TSVpFOwotCQlpZiAobmV4dCA+IGVuZCkKLQkJCW5leHQgPSBlbmQ7CisJCXZu
-ZXh0ID0gKHZhZGRyICYgUEdESVJfTUFTSykgKyBQR0RJUl9TSVpFOworCQlpZiAodm5leHQgPiB2
-ZW5kKQorCQkJdm5leHQgPSB2ZW5kOwogCiAJCWlmIChwZ2RfcHJlc2VudCgqcGdkKSkgewogCQkJ
-cHVkID0gcHVkX29mZnNldChwZ2QsIDApOwotCQkJcmVzdWx0ID0gaWRlbnRfcHVkX2luaXQoaW5m
-bywgcHVkLCBhZGRyLCBuZXh0KTsKKwkJCXJlc3VsdCA9IGlkZW50X3B1ZF9pbml0KGluZm8sIHB1
-ZCwgdmFkZHIgLSBvZmYsCisJCQkJCQl2bmV4dCAtIG9mZik7CiAJCQlpZiAocmVzdWx0KQogCQkJ
-CXJldHVybiByZXN1bHQ7CiAJCQljb250aW51ZTsKQEAgLTY5LDcgKzc5LDcgQEAgaW50IGtlcm5l
-bF9pZGVudF9tYXBwaW5nX2luaXQoc3RydWN0IHg4NgogCQlwdWQgPSAocHVkX3QgKilpbmZvLT5h
-bGxvY19wZ3RfcGFnZShpbmZvLT5jb250ZXh0KTsKIAkJaWYgKCFwdWQpCiAJCQlyZXR1cm4gLUVO
-T01FTTsKLQkJcmVzdWx0ID0gaWRlbnRfcHVkX2luaXQoaW5mbywgcHVkLCBhZGRyLCBuZXh0KTsK
-KwkJcmVzdWx0ID0gaWRlbnRfcHVkX2luaXQoaW5mbywgcHVkLCB2YWRkciAtIG9mZiwgdm5leHQg
-LSBvZmYpOwogCQlpZiAocmVzdWx0KQogCQkJcmV0dXJuIHJlc3VsdDsKIAkJc2V0X3BnZChwZ2Qs
-IF9fcGdkKF9fcGEocHVkKSB8IF9LRVJOUEdfVEFCTEUpKTsK
---94eb2c191fd64ea62405391c1a2f--
+Thanks,
+Rafael
