@@ -1,47 +1,75 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v1 0/2] x86/power/64: Make KASLR memory randomization compatible with hibernation
-Date: Tue, 02 Aug 2016 02:47:59 +0200
-Message-ID: <6309751.RADTnUFYN6@vostro.rjw.lan>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com> <6770834.oEI2u9Z85J@vostro.rjw.lan>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v3 0/6] power: add power sequence library
+Date: Tue, 2 Aug 2016 09:08:13 +0800
+Message-ID: <20160802010812.GA26831@shlinux2>
+References: <1469007629-31757-1-git-send-email-peter.chen@nxp.com>
+ <579A2B38.3000202@gmail.com>
+ <CAOMZO5Dv_X-u6qKqAWtysAqmMw91bVoAaRvnc81yUGDxbd27rA@mail.gmail.com>
+ <579F62CE.1050900@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50777 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751426AbcHBAmt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 1 Aug 2016 20:42:49 -0400
-In-Reply-To: <6770834.oEI2u9Z85J@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <579F62CE.1050900@gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Joshua Clayton <stillcompiling@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Peter Chen <peter.chen@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>, stephen.boyd@linaro.org, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, linux-kernel <linux-kernel@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, David Woodhouse <dwmw2@infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Troy Kisky <troy.kisky@boundarydevices.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Oscar Curero <oscar@naiandei.net>, Greg
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kernel-hardening@lists.openwall.com
 
-On Tuesday, August 02, 2016 01:48:13 AM Rafael J. Wysocki wrote:
-> On Monday, August 01, 2016 10:07:58 AM Thomas Garnier wrote:
-> > ***Background:
-> > KASLR memory randomization for x86_64 was added when KASLR did not support hibernation. Now that it does, some changes are needed.
-> > 
-> > ***Problems that needed solving:
-> > Hibernation was failing on reboot with a GP fault when CONFIG_RANDOMIZE_MEMORY was enabled. Two issues were identified.
-> > 
-> > The original fault was due to a wrong physical address assigned to cr3. The problem was introduced with __PAGE_OFFSET becoming a global variable when randomized. The fix uses a define to use the glbobal or immediate value based on config settings.
-> > 
-> > The second isssue was that the temporary page table mapping did not support virtual addresses not aligned on PGD level. KASLR memory randomization will generated a random address aligned on PUD level. The fix correctly calculates the offset on all levels of the temporary page table.
-> > 
-> > ***Parts:
-> >  - 01/02: Support unaligned addresses (second issue)
-> >  - 02/02: Fix __PAGE_OFFSET usage on assembly (first issue)
+On Mon, Aug 01, 2016 at 07:55:10AM -0700, Joshua Clayton wrote:
 > 
-> Thanks a lot for taking care of this!
 > 
-> Patch [2/2] looks good to me, but I'd to the [1/2] differently (more details
-> will follow).
+> On 07/28/2016 09:41 AM, Fabio Estevam wrote:
+> > Hi Joshua,
+> >
+> > On Thu, Jul 28, 2016 at 12:56 PM, Joshua Clayton
+> > <stillcompiling@gmail.com> wrote:
+> >
+> >> I assume there is a v4 coming due to rmk's comments on patch 5.
+> >> I couldn't figure out where to null the of_node in error paths, but in testing
+> >> we did put a line of code to null the of_node on release.
+> >>
+> >> but...
+> >> As an aside,
+> >> I was hoping this series would magically fix a problem
+> >> with the imx6q-evi which has forced us to disable
+> >> runtime power management. But it did not. :(
+> > I also see a similar problem on a mx28 board with a hub.
+> >
+> > Does it help in your case if you pass 'usbcore.autosuspend=-1' in the
+> > kernel command line?
+> >
+> > Regards,
+> >
+> > Fabio Estevam
+> Thanks a million, Fabio!
+> 
+> 'usbcore.autosuspend=-1' quiets the errors.
+> 
+> ~joshua
+> 
 
-Well, I got this the other way around, sorry.
+If you are using imx6q, there are some patches which is not upstreamed
+to workaround one SoC problem.
 
-I've just sent an ACK for the [1/2] and an alternative patch for the [2/2].
+http://www.spinics.net/lists/linux-usb/msg98682.html
 
-Thanks,
-Rafael
+Try to implement the design for notify_suspend/resume at
+drivers/usb/phy/phy-mxs-usb.c and drivers/usb/chipidea/host.c
 
+You can refer to the code at:
+http://git.freescale.com/git/cgit.cgi/imx/linux-2.6-imx.git/tree/?h=imx_4.1.15_1.0.0_ga
+
+-- 
+
+Best Regards,
+Peter Chen
