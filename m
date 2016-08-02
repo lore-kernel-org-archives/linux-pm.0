@@ -1,16 +1,12 @@
 From: Baole Ni <baolex.ni@intel.com>
-Subject: [PATCH 0123/1285] Replace numeric parameter like 0444 with macro
-Date: Tue,  2 Aug 2016 18:42:24 +0800
-Message-ID: <20160802104224.21949-1-baolex.ni@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:36618 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933817AbcHBMHq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 2 Aug 2016 08:07:46 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH 0863/1285] Replace numeric parameter like 0444 with macro
+Date: Tue,  2 Aug 2016 19:53:16 +0800
+Message-ID: <20160802115316.7516-1-baolex.ni@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, m.chehab@samsung.com, pawel@osciak.com, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, jarkko.sakkinen@linux.intel.com, jgunthorpe@obsidianresearch.com, hpa@zytor.com, x86@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, jslaby@suse.cz, peter@korsgaard.com, lee.jones@linaro.org
 
 I find that the developers often just specified the numeric value
 when calling a macro which is defined with a parameter for access permission.
@@ -21,22 +17,21 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/cpufreq/speedstep-lib.c | 2 +-
+ drivers/power/intel_mid_battery.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/speedstep-lib.c b/drivers/cpufreq/speedstep-lib.c
-index 1b80621..9a375de 100644
---- a/drivers/cpufreq/speedstep-lib.c
-+++ b/drivers/cpufreq/speedstep-lib.c
-@@ -470,7 +470,7 @@ out:
- EXPORT_SYMBOL_GPL(speedstep_get_freqs);
+diff --git a/drivers/power/intel_mid_battery.c b/drivers/power/intel_mid_battery.c
+index 9fa4acc..a9de393 100644
+--- a/drivers/power/intel_mid_battery.c
++++ b/drivers/power/intel_mid_battery.c
+@@ -43,7 +43,7 @@
+  *********************************************************************/
  
- #ifdef CONFIG_X86_SPEEDSTEP_RELAXED_CAP_CHECK
--module_param(relaxed_check, int, 0444);
-+module_param(relaxed_check, int, S_IRUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(relaxed_check,
- 		"Don't do all checks for speedstep capability.");
- #endif
+ static int debug;
+-module_param(debug, int, 0444);
++module_param(debug, int, S_IRUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(debug, "Flag to enable PMIC Battery debug messages.");
+ 
+ #define PMIC_BATT_DRV_INFO_UPDATED	1
 -- 
 2.9.2
-
