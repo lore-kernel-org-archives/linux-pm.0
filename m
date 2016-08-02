@@ -1,86 +1,58 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v1 2/2] x86/power/64: Fix __PAGE_OFFSET usage on restore
-Date: Tue, 2 Aug 2016 23:08:03 +0200
-Message-ID: <CAJZ5v0hiZwugdV6OjA7hAHAv5jhjgJM1vPAW-RHUHud0F=5KsQ@mail.gmail.com>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
- <1470071280-78706-3-git-send-email-thgarnie@google.com> <1771166.6Dy2cXd33p@vostro.rjw.lan>
- <CAJcbSZGUEg-udR3jG2V=16xmG3z_jE1V4WcDbbrV854E5WrT8g@mail.gmail.com>
- <CAJZ5v0gKGhymb-53_hRCMRuRCkdAcqyGSOkVzg=pULc7Nyqd7w@mail.gmail.com> <CAJcbSZFC-qeEySJYO9DFs=HfE087QHROW=opDRCmZo2WXB1gqw@mail.gmail.com>
-Reply-To: kernel-hardening@lists.openwall.com
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC][PATCH 5/7] cpufreq / sched: UUF_IO flag to indicate iowait
+ condition
+Date: Tue, 2 Aug 2016 15:02:45 -0700
+Message-ID: <20160802220245.GA26555@graphite.smuckle.net>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan>
+ <3009663.9YcxTKseiO@vostro.rjw.lan>
+ <20160802012209.GB9332@graphite.smuckle.net>
+ <CAJZ5v0hJL0qL6nYCWzyN4O0cqzjKCC0pprfo0tD8MZCtEj1==A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <kernel-hardening-return-4216-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: rjwysocki@gmail.com
-In-Reply-To: <CAJcbSZFC-qeEySJYO9DFs=HfE087QHROW=opDRCmZo2WXB1gqw@mail.gmail.com>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, kernel-hardening@lists.openwall.com
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:36301 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754915AbcHBWIq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 2 Aug 2016 18:08:46 -0400
+Received: by mail-pa0-f54.google.com with SMTP id pp5so67030548pac.3
+        for <linux-pm@vger.kernel.org>; Tue, 02 Aug 2016 15:07:59 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hJL0qL6nYCWzyN4O0cqzjKCC0pprfo0tD8MZCtEj1==A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-On Tue, Aug 2, 2016 at 10:59 PM, Thomas Garnier <thgarnie@google.com> wrote:
-> On Tue, Aug 2, 2016 at 1:47 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Tue, Aug 2, 2016 at 4:34 PM, Thomas Garnier <thgarnie@google.com> wrote:
->>> On Mon, Aug 1, 2016 at 5:38 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>> On Monday, August 01, 2016 10:08:00 AM Thomas Garnier wrote:
->>>>> When KASLR memory randomization is used, __PAGE_OFFSET is a global
->>>>> variable changed during boot. The assembly code was using the variable
->>>>> as an immediate value to calculate the cr3 physical address. The
->>>>> physical address was incorrect resulting to a GP fault.
->>>>>
->>>>> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->>>>> ---
->>>>>  arch/x86/power/hibernate_asm_64.S | 12 +++++++++++-
->>>>>  1 file changed, 11 insertions(+), 1 deletion(-)
->>>>>
->>>>> diff --git a/arch/x86/power/hibernate_asm_64.S b/arch/x86/power/hibernate_asm_64.S
->>>>> index 8eee0e9..8db4905 100644
->>>>> --- a/arch/x86/power/hibernate_asm_64.S
->>>>> +++ b/arch/x86/power/hibernate_asm_64.S
->>>>> @@ -23,6 +23,16 @@
->>>>>  #include <asm/processor-flags.h>
->>>>>  #include <asm/frame.h>
->>>>>
->>>>> +/*
->>>>> + * A global variable holds the page_offset when KASLR memory randomization
->>>>> + * is enabled.
->>>>> + */
->>>>> +#ifdef CONFIG_RANDOMIZE_MEMORY
->>>>> +#define __PAGE_OFFSET_REF __PAGE_OFFSET
->>>>> +#else
->>>>> +#define __PAGE_OFFSET_REF $__PAGE_OFFSET
->>>>> +#endif
->>>>> +
->>>>>  ENTRY(swsusp_arch_suspend)
->>>>>       movq    $saved_context, %rax
->>>>>       movq    %rsp, pt_regs_sp(%rax)
->>>>> @@ -72,7 +82,7 @@ ENTRY(restore_image)
->>>>>       /* code below has been relocated to a safe page */
->>>>>  ENTRY(core_restore_code)
->>>>>       /* switch to temporary page tables */
->>>>> -     movq    $__PAGE_OFFSET, %rcx
->>>>> +     movq    __PAGE_OFFSET_REF, %rcx
->>>>>       subq    %rcx, %rax
->>>>>       movq    %rax, %cr3
->>>>>       /* flush TLB */
->>>>>
->>>>
->>>> I'm not particularly liking the #ifdefs and they won't be really
->>>> necessary if the subtraction is carried out by the C code IMO.
->>>>
->>>> What about the patch below instead?
->>>>
->>>
->>> Yes, I think that's a good idea. I will test it and send PATCH v2.
->>
->> No need to send this patch again.  Please just let me know if it works
->> for you. :-)
->>
->
-> It worked well when I tested it and I agree that's a better approach.
+On Tue, Aug 02, 2016 at 03:37:02AM +0200, Rafael J. Wysocki wrote:
+> On Tue, Aug 2, 2016 at 3:22 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
+> > On Mon, Aug 01, 2016 at 01:37:23AM +0200, Rafael J. Wysocki wrote:
+> > ...
+> >> For this purpose, define a new cpufreq_update_util() flag
+> >> UUF_IO and modify enqueue_task_fair() to pass that flag to
+> >> cpufreq_update_util() in the in_iowait case.  That generally
+> >> requires cpufreq_update_util() to be called directly from there,
+> >> because update_load_avg() is not likely to be invoked in that
+> >> case.
+> >
+> > I didn't follow why the cpufreq hook won't likely be called if
+> > in_iowait is set? AFAICS update_load_avg() gets called in the second loop
+> > and calls update_cfs_rq_load_avg (triggers the hook).
+> 
+> In practice it turns out that in the majority of cases when in_iowait
+> is set the second loop will not run.
 
-OK, thanks!
+My understanding of enqueue_task_fair() is that the first loop walks up
+the portion of the sched_entity hierarchy that needs to be enqueued, and
+the second loop updates the rest of the hierarchy that was already
+enqueued.
 
-Let me add a changelog to it then.
+Even if the se corresponding to the root cfs_rq needs to be enqueued
+(meaning the whole hierarchy is traversed in the first loop and the
+second loop does nothing), enqueue_entity() on the root cfs_rq should
+result in the cpufreq hook being called, via enqueue_entity() ->
+enqueue_entity_load_avg() -> update_cfs_rq_load_avg().
+
+I'll keep looking to see if I've misunderstood something in here.
+
+thanks,
+Steve
