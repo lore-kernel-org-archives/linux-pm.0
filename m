@@ -1,12 +1,16 @@
 From: Baole Ni <baolex.ni@intel.com>
-Subject: [PATCH 0963/1285] Replace numeric parameter like 0444 with macro
-Date: Tue,  2 Aug 2016 20:03:11 +0800
-Message-ID: <20160802120311.14259-1-baolex.ni@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, gregkh@linuxfoundation.org, m.chehab@samsung.com, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, heiko@sntech.de, s.hauer@pengutronix.de
+Subject: [PATCH 0861/1285] Replace numeric parameter like 0444 with macro
+Date: Tue,  2 Aug 2016 19:53:07 +0800
+Message-ID: <20160802115307.7384-1-baolex.ni@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:42242 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965004AbcHBMey (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Aug 2016 08:34:54 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: afd@ti.com, pali.rohar@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, m.chehab@samsung.com, pawel@osciak.com, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com
 
 I find that the developers often just specified the numeric value
 when calling a macro which is defined with a parameter for access permission.
@@ -17,21 +21,22 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/thermal/thermal_hwmon.c | 2 +-
+ drivers/power/bq27xxx_battery.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
-index 06fd2ed9..c678ac4 100644
---- a/drivers/thermal/thermal_hwmon.c
-+++ b/drivers/thermal/thermal_hwmon.c
-@@ -64,7 +64,7 @@ name_show(struct device *dev, struct device_attribute *attr, char *buf)
- 	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
- 	return sprintf(buf, "%s\n", hwmon->type);
- }
--static DEVICE_ATTR(name, 0444, name_show, NULL);
-+static DEVICE_ATTR(name, S_IRUSR | S_IRGRP | S_IROTH, name_show, NULL);
+diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
+index 45f6ebf..4975c73 100644
+--- a/drivers/power/bq27xxx_battery.c
++++ b/drivers/power/bq27xxx_battery.c
+@@ -403,7 +403,7 @@ static struct {
+ };
  
- static ssize_t
- temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
+ static unsigned int poll_interval = 360;
+-module_param(poll_interval, uint, 0644);
++module_param(poll_interval, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(poll_interval,
+ 		 "battery poll interval in seconds - 0 disables polling");
+ 
 -- 
 2.9.2
+
