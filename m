@@ -1,155 +1,44 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v1 2/2] x86/power/64: Fix __PAGE_OFFSET usage on restore
-Date: Tue, 2 Aug 2016 07:34:26 -0700
-Message-ID: <CAJcbSZGUEg-udR3jG2V=16xmG3z_jE1V4WcDbbrV854E5WrT8g@mail.gmail.com>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
- <1470071280-78706-3-git-send-email-thgarnie@google.com> <1771166.6Dy2cXd33p@vostro.rjw.lan>
-Reply-To: kernel-hardening@lists.openwall.com
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC][PATCH 1/7] cpufreq / sched: Make schedutil access
+ utilization data directly
+Date: Tue, 2 Aug 2016 07:28:43 -0700
+Message-ID: <20160802142843.GF9332@graphite.smuckle.net>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan>
+ <9887668.FEg7fVruKQ@vostro.rjw.lan>
+ <20160801192850.GX19455@graphite.smuckle.net>
+ <5472075.XX6bKsbQPI@vostro.rjw.lan>
+ <20160802103817.GZ22472@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <kernel-hardening-return-4199-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <1771166.6Dy2cXd33p@vostro.rjw.lan>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, Pavel Machek <pavel@ucw.cz>, x86@kernel.org, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, kernel-hardening@lists.openwall.com
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160802103817.GZ22472@e106622-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Steve Muckle <steve.muckle@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 1, 2016 at 5:38 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Monday, August 01, 2016 10:08:00 AM Thomas Garnier wrote:
->> When KASLR memory randomization is used, __PAGE_OFFSET is a global
->> variable changed during boot. The assembly code was using the variable
->> as an immediate value to calculate the cr3 physical address. The
->> physical address was incorrect resulting to a GP fault.
->>
->> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->> ---
->>  arch/x86/power/hibernate_asm_64.S | 12 +++++++++++-
->>  1 file changed, 11 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/x86/power/hibernate_asm_64.S b/arch/x86/power/hibernate_asm_64.S
->> index 8eee0e9..8db4905 100644
->> --- a/arch/x86/power/hibernate_asm_64.S
->> +++ b/arch/x86/power/hibernate_asm_64.S
->> @@ -23,6 +23,16 @@
->>  #include <asm/processor-flags.h>
->>  #include <asm/frame.h>
->>
->> +/*
->> + * A global variable holds the page_offset when KASLR memory randomization
->> + * is enabled.
->> + */
->> +#ifdef CONFIG_RANDOMIZE_MEMORY
->> +#define __PAGE_OFFSET_REF __PAGE_OFFSET
->> +#else
->> +#define __PAGE_OFFSET_REF $__PAGE_OFFSET
->> +#endif
->> +
->>  ENTRY(swsusp_arch_suspend)
->>       movq    $saved_context, %rax
->>       movq    %rsp, pt_regs_sp(%rax)
->> @@ -72,7 +82,7 @@ ENTRY(restore_image)
->>       /* code below has been relocated to a safe page */
->>  ENTRY(core_restore_code)
->>       /* switch to temporary page tables */
->> -     movq    $__PAGE_OFFSET, %rcx
->> +     movq    __PAGE_OFFSET_REF, %rcx
->>       subq    %rcx, %rax
->>       movq    %rax, %cr3
->>       /* flush TLB */
->>
->
-> I'm not particularly liking the #ifdefs and they won't be really
-> necessary if the subtraction is carried out by the C code IMO.
->
-> What about the patch below instead?
->
+On Tue, Aug 02, 2016 at 11:38:17AM +0100, Juri Lelli wrote:
+> > > Anyway one way that my patch differed was that I had used the flags
+> > > field to keep the behavior the same for both RT and DL.
+> 
+> Do you mean "go to max" policy for both, until proper policies will be
+> implemented in the future?
 
-Yes, I think that's a good idea. I will test it and send PATCH v2.
+Yep.
 
-Thanks for the quick feedback.
+> > That happens
+> > > later on in this series for RT but the DL policy is modified as above.
+> > > Can the DL policy be left as-is and discussed/modified in a separate
+> > > series?
+> 
+> Not that we want to start discussing this point now, if we postpone the
+> change for later, but I just wanted to point out a difference w.r.t.
+> what the schedfreq thing was doing: it used to sum contributions from
+> the different classes, instead of taking the max. We probably never
+> really discussed on the list what is the right thing to do, though.
 
-> ---
->  arch/x86/power/hibernate_64.c     |   18 +++++++++---------
->  arch/x86/power/hibernate_asm_64.S |    2 --
->  2 files changed, 9 insertions(+), 11 deletions(-)
->
-> Index: linux-pm/arch/x86/power/hibernate_asm_64.S
-> ===================================================================
-> --- linux-pm.orig/arch/x86/power/hibernate_asm_64.S
-> +++ linux-pm/arch/x86/power/hibernate_asm_64.S
-> @@ -72,8 +72,6 @@ ENTRY(restore_image)
->         /* code below has been relocated to a safe page */
->  ENTRY(core_restore_code)
->         /* switch to temporary page tables */
-> -       movq    $__PAGE_OFFSET, %rcx
-> -       subq    %rcx, %rax
->         movq    %rax, %cr3
->         /* flush TLB */
->         movq    %rbx, %rcx
-> Index: linux-pm/arch/x86/power/hibernate_64.c
-> ===================================================================
-> --- linux-pm.orig/arch/x86/power/hibernate_64.c
-> +++ linux-pm/arch/x86/power/hibernate_64.c
-> @@ -37,11 +37,11 @@ unsigned long jump_address_phys;
->   */
->  unsigned long restore_cr3 __visible;
->
-> -pgd_t *temp_level4_pgt __visible;
-> +unsigned long temp_level4_pgt __visible;
->
->  unsigned long relocated_restore_code __visible;
->
-> -static int set_up_temporary_text_mapping(void)
-> +static int set_up_temporary_text_mapping(pgd_t *pgd)
->  {
->         pmd_t *pmd;
->         pud_t *pud;
-> @@ -71,7 +71,7 @@ static int set_up_temporary_text_mapping
->                 __pmd((jump_address_phys & PMD_MASK) | __PAGE_KERNEL_LARGE_EXEC));
->         set_pud(pud + pud_index(restore_jump_address),
->                 __pud(__pa(pmd) | _KERNPG_TABLE));
-> -       set_pgd(temp_level4_pgt + pgd_index(restore_jump_address),
-> +       set_pgd(pgd + pgd_index(restore_jump_address),
->                 __pgd(__pa(pud) | _KERNPG_TABLE));
->
->         return 0;
-> @@ -90,15 +90,16 @@ static int set_up_temporary_mappings(voi
->                 .kernel_mapping = true,
->         };
->         unsigned long mstart, mend;
-> +       pgd_t *pgd;
->         int result;
->         int i;
->
-> -       temp_level4_pgt = (pgd_t *)get_safe_page(GFP_ATOMIC);
-> -       if (!temp_level4_pgt)
-> +       pgd = (pgd_t *)get_safe_page(GFP_ATOMIC);
-> +       if (!pgd)
->                 return -ENOMEM;
->
->         /* Prepare a temporary mapping for the kernel text */
-> -       result = set_up_temporary_text_mapping();
-> +       result = set_up_temporary_text_mapping(pgd);
->         if (result)
->                 return result;
->
-> @@ -107,13 +108,12 @@ static int set_up_temporary_mappings(voi
->                 mstart = pfn_mapped[i].start << PAGE_SHIFT;
->                 mend   = pfn_mapped[i].end << PAGE_SHIFT;
->
-> -               result = kernel_ident_mapping_init(&info, temp_level4_pgt,
-> -                                                  mstart, mend);
-> -
-> +               result = kernel_ident_mapping_init(&info, pgd, mstart, mend);
->                 if (result)
->                         return result;
->         }
->
-> +       temp_level4_pgt = (unsigned long)pgd - __PAGE_OFFSET;
->         return 0;
->  }
->
->
+Yeah I figured that was worth deferring into its own patchset/thread.
+
+cheers,
+Steve
