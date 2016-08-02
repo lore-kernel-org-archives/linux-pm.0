@@ -1,35 +1,80 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH 0122/1285] Replace numeric parameter like 0444 with macro
-Date: Tue, 2 Aug 2016 19:05:48 +0200
-Message-ID: <335df7ab-6663-b14a-de33-7a485489c20e@suse.cz>
-References: <Pine.LNX.4.44L0.1608020955530.1940-100000@iolanthe.rowland.org>
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH v1 1/2] x86/power/64: Support unaligned addresses for
+ temporary mapping
+Date: Tue, 2 Aug 2016 10:36:27 -0700
+Message-ID: <CAE9FiQXPnXa_Ep2nk+y5boZ9Csdk_yoH5Ws8SaExn0-VHU9bBg@mail.gmail.com>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com> <1470071280-78706-2-git-send-email-thgarnie@google.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1608020955530.1940-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>, Baole Ni <baolex.ni@intel.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, jarkko.sakkinen@linux.intel.com, jgunthorpe@obsidianresearch.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, peter@korsgaard.com, lee.jones@linaro.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <kernel-hardening-return-4205-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <1470071280-78706-2-git-send-email-thgarnie@google.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/02/2016, 03:57 PM, Alan Stern wrote:
->> --- a/drivers/cpufreq/powernow-k7.c
->> +++ b/drivers/cpufreq/powernow-k7.c
->> @@ -683,7 +683,7 @@ static void __exit powernow_exit(void)
->>  	cpufreq_unregister_driver(&powernow_driver);
->>  }
->>  
->> -module_param(acpi_force,  int, 0444);
->> +module_param(acpi_force,  int, S_IRUSR | S_IRGRP | S_IROTH);
-> 
-> This is an excellent example.  To me, 0444 is _much_ more readable and 
-> understandable than S_IRUSR | S_IRGRP | S_IROTH.
+On Mon, Aug 1, 2016 at 10:07 AM, Thomas Garnier <thgarnie@google.com> wrote:
+> Correctly setup the temporary mapping for hibernation. Previous
+> implementation assumed the address was aligned on the PGD level. With
+> KASLR memory randomization enabled, the address is randomized on the PUD
+> level. This change supports unaligned address up to PMD.
+>
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+> ---
+>  arch/x86/mm/ident_map.c | 18 ++++++++++--------
+>  1 file changed, 10 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/x86/mm/ident_map.c b/arch/x86/mm/ident_map.c
+> index ec21796..ea1ebf1 100644
+> --- a/arch/x86/mm/ident_map.c
+> +++ b/arch/x86/mm/ident_map.c
+> @@ -3,15 +3,16 @@
+>   * included by both the compressed kernel and the regular kernel.
+>   */
+>
+> -static void ident_pmd_init(unsigned long pmd_flag, pmd_t *pmd_page,
+> +static void ident_pmd_init(struct x86_mapping_info *info, pmd_t *pmd_page,
+>                            unsigned long addr, unsigned long end)
+>  {
+> -       addr &= PMD_MASK;
+> -       for (; addr < end; addr += PMD_SIZE) {
+> -               pmd_t *pmd = pmd_page + pmd_index(addr);
+> +       int off = info->kernel_mapping ? pmd_index(__PAGE_OFFSET) : 0;
+> +
+> +       for (addr &= PMD_MASK; addr < end; addr += PMD_SIZE) {
+> +               pmd_t *pmd = pmd_page + pmd_index(addr) + off;
+>
+>                 if (!pmd_present(*pmd))
+> -                       set_pmd(pmd, __pmd(addr | pmd_flag));
+> +                       set_pmd(pmd, __pmd(addr | info->pmd_flag));
+>         }
+>  }
+>
+> @@ -19,9 +20,10 @@ static int ident_pud_init(struct x86_mapping_info *info, pud_t *pud_page,
+>                           unsigned long addr, unsigned long end)
+>  {
+>         unsigned long next;
+> +       int off = info->kernel_mapping ? pud_index(__PAGE_OFFSET) : 0;
+>
+>         for (; addr < end; addr = next) {
+> -               pud_t *pud = pud_page + pud_index(addr);
+> +               pud_t *pud = pud_page + pud_index(addr) + off;
+>                 pmd_t *pmd;
+>
+>                 next = (addr & PUD_MASK) + PUD_SIZE;
 
-If anything, that should be S_IRUGO. However, I personally prefer
-numbers over macros too.
+Is there any chance for (pud_index(addr) + off) or (pmd_index(addr) + off)
+bigger than 512?
 
-thanks,
--- 
-js
-suse labs
+Looks like we need to change the loop from phys address to virtual
+address instead.
+to avoid the overflow.
+
+Thanks
+
+Yinghai
