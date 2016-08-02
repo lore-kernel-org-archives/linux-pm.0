@@ -1,41 +1,42 @@
-From: Baole Ni <baolex.ni@intel.com>
-Subject: [PATCH 0124/1285] Replace numeric parameter like 0444 with macro
-Date: Tue,  2 Aug 2016 18:42:28 +0800
-Message-ID: <20160802104228.22018-1-baolex.ni@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, jarkko.sakkinen@linux.intel.com, jgunthorpe@obsidianresearch.com, hpa@zytor.com, x86@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, jslaby@suse.cz, peter@korsgaard.com, lee.jones@linaro.org
+From: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH v1 1/2] x86/power/64: Support unaligned addresses for
+ temporary mapping
+Date: Tue, 2 Aug 2016 11:01:50 -0700
+Message-ID: <CAE9FiQU2+Omiy9SUWDOvaE3gjVvJjMcVk_h4E8bHeg-vym-2KA@mail.gmail.com>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
+ <1470071280-78706-2-git-send-email-thgarnie@google.com> <2005875.PA9bTzjxie@vostro.rjw.lan>
+Reply-To: kernel-hardening@lists.openwall.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <kernel-hardening-return-4207-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <2005875.PA9bTzjxie@vostro.rjw.lan>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Garnier <thgarnie@google.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
 
-I find that the developers often just specified the numeric value
-when calling a macro which is defined with a parameter for access permission.
-As we know, these numeric value for access permission have had the corresponding macro,
-and that using macro can improve the robustness and readability of the code,
-thus, I suggest replacing the numeric parameter with the macro.
+On Mon, Aug 1, 2016 at 5:36 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, August 01, 2016 10:07:59 AM Thomas Garnier wrote:
+>> Correctly setup the temporary mapping for hibernation. Previous
+>> implementation assumed the address was aligned on the PGD level. With
+>> KASLR memory randomization enabled, the address is randomized on the PUD
+>> level. This change supports unaligned address up to PMD.
+>
+> This code is shared with kexec AFAICS, so it likely is better to push it
+> through tip rather than through the PM tree.
 
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-Signed-off-by: Baole Ni <baolex.ni@intel.com>
----
- drivers/cpufreq/speedstep-smi.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Only calling path via arch/x86/power/hibernate_64.c have
+   kernel_mapping = true;
+other two paths: arch/x86/boot/compressed/pagetable.c and
+arch/x86/kernel/machine_kexec_64.c
+all have kernel_mapping as false.
 
-diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
-index 770a9ae..dffd887 100644
---- a/drivers/cpufreq/speedstep-smi.c
-+++ b/drivers/cpufreq/speedstep-smi.c
-@@ -378,9 +378,9 @@ static void __exit speedstep_exit(void)
- 	cpufreq_unregister_driver(&speedstep_driver);
- }
- 
--module_param(smi_port, int, 0444);
--module_param(smi_cmd,  int, 0444);
--module_param(smi_sig, uint, 0444);
-+module_param(smi_port, int, S_IRUSR | S_IRGRP | S_IROTH);
-+module_param(smi_cmd,  int, S_IRUSR | S_IRGRP | S_IROTH);
-+module_param(smi_sig, uint, S_IRUSR | S_IRGRP | S_IROTH);
- 
- MODULE_PARM_DESC(smi_port, "Override the BIOS-given IST port with this value "
- 		"-- Intel's default setting is 0xb2");
--- 
-2.9.2
+maybe that path need simplified kernel_physical_mapping_init() instead?
+
+Thanks
+
+Yinghai
