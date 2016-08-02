@@ -1,84 +1,41 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v1 1/2] x86/power/64: Support unaligned addresses for
- temporary mapping
-Date: Tue, 2 Aug 2016 10:48:01 -0700
-Message-ID: <CAJcbSZE1kPpL_hWLK70fGhgjP3xRBaZ=r32E9q1SBwhCbqOp5Q@mail.gmail.com>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
- <1470071280-78706-2-git-send-email-thgarnie@google.com> <CAE9FiQXPnXa_Ep2nk+y5boZ9Csdk_yoH5Ws8SaExn0-VHU9bBg@mail.gmail.com>
-Reply-To: kernel-hardening@lists.openwall.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <kernel-hardening-return-4206-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAE9FiQXPnXa_Ep2nk+y5boZ9Csdk_yoH5Ws8SaExn0-VHU9bBg@mail.gmail.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+From: Baole Ni <baolex.ni@intel.com>
+Subject: [PATCH 0124/1285] Replace numeric parameter like 0444 with macro
+Date: Tue,  2 Aug 2016 18:42:28 +0800
+Message-ID: <20160802104228.22018-1-baolex.ni@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, jarkko.sakkinen@linux.intel.com, jgunthorpe@obsidianresearch.com, hpa@zytor.com, x86@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, jslaby@suse.cz, peter@korsgaard.com, lee.jones@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 2, 2016 at 10:36 AM, Yinghai Lu <yinghai@kernel.org> wrote:
-> On Mon, Aug 1, 2016 at 10:07 AM, Thomas Garnier <thgarnie@google.com> wrote:
->> Correctly setup the temporary mapping for hibernation. Previous
->> implementation assumed the address was aligned on the PGD level. With
->> KASLR memory randomization enabled, the address is randomized on the PUD
->> level. This change supports unaligned address up to PMD.
->>
->> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->> ---
->>  arch/x86/mm/ident_map.c | 18 ++++++++++--------
->>  1 file changed, 10 insertions(+), 8 deletions(-)
->>
->> diff --git a/arch/x86/mm/ident_map.c b/arch/x86/mm/ident_map.c
->> index ec21796..ea1ebf1 100644
->> --- a/arch/x86/mm/ident_map.c
->> +++ b/arch/x86/mm/ident_map.c
->> @@ -3,15 +3,16 @@
->>   * included by both the compressed kernel and the regular kernel.
->>   */
->>
->> -static void ident_pmd_init(unsigned long pmd_flag, pmd_t *pmd_page,
->> +static void ident_pmd_init(struct x86_mapping_info *info, pmd_t *pmd_page,
->>                            unsigned long addr, unsigned long end)
->>  {
->> -       addr &= PMD_MASK;
->> -       for (; addr < end; addr += PMD_SIZE) {
->> -               pmd_t *pmd = pmd_page + pmd_index(addr);
->> +       int off = info->kernel_mapping ? pmd_index(__PAGE_OFFSET) : 0;
->> +
->> +       for (addr &= PMD_MASK; addr < end; addr += PMD_SIZE) {
->> +               pmd_t *pmd = pmd_page + pmd_index(addr) + off;
->>
->>                 if (!pmd_present(*pmd))
->> -                       set_pmd(pmd, __pmd(addr | pmd_flag));
->> +                       set_pmd(pmd, __pmd(addr | info->pmd_flag));
->>         }
->>  }
->>
->> @@ -19,9 +20,10 @@ static int ident_pud_init(struct x86_mapping_info *info, pud_t *pud_page,
->>                           unsigned long addr, unsigned long end)
->>  {
->>         unsigned long next;
->> +       int off = info->kernel_mapping ? pud_index(__PAGE_OFFSET) : 0;
->>
->>         for (; addr < end; addr = next) {
->> -               pud_t *pud = pud_page + pud_index(addr);
->> +               pud_t *pud = pud_page + pud_index(addr) + off;
->>                 pmd_t *pmd;
->>
->>                 next = (addr & PUD_MASK) + PUD_SIZE;
->
-> Is there any chance for (pud_index(addr) + off) or (pmd_index(addr) + off)
-> bigger than 512?
->
-> Looks like we need to change the loop from phys address to virtual
-> address instead.
-> to avoid the overflow.
->
+I find that the developers often just specified the numeric value
+when calling a macro which is defined with a parameter for access permission.
+As we know, these numeric value for access permission have had the corresponding macro,
+and that using macro can improve the robustness and readability of the code,
+thus, I suggest replacing the numeric parameter with the macro.
 
-That's a good point. I will take a look at it.
+Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+Signed-off-by: Baole Ni <baolex.ni@intel.com>
+---
+ drivers/cpufreq/speedstep-smi.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> Thanks
->
-> Yinghai
+diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
+index 770a9ae..dffd887 100644
+--- a/drivers/cpufreq/speedstep-smi.c
++++ b/drivers/cpufreq/speedstep-smi.c
+@@ -378,9 +378,9 @@ static void __exit speedstep_exit(void)
+ 	cpufreq_unregister_driver(&speedstep_driver);
+ }
+ 
+-module_param(smi_port, int, 0444);
+-module_param(smi_cmd,  int, 0444);
+-module_param(smi_sig, uint, 0444);
++module_param(smi_port, int, S_IRUSR | S_IRGRP | S_IROTH);
++module_param(smi_cmd,  int, S_IRUSR | S_IRGRP | S_IROTH);
++module_param(smi_sig, uint, S_IRUSR | S_IRGRP | S_IROTH);
+ 
+ MODULE_PARM_DESC(smi_port, "Override the BIOS-given IST port with this value "
+ 		"-- Intel's default setting is 0xb2");
+-- 
+2.9.2
