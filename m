@@ -1,12 +1,16 @@
 From: Baole Ni <baolex.ni@intel.com>
-Subject: [PATCH 0864/1285] Replace numeric parameter like 0444 with macro
-Date: Tue,  2 Aug 2016 19:53:20 +0800
-Message-ID: <20160802115320.7582-1-baolex.ni@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH 0862/1285] Replace numeric parameter like 0444 with macro
+Date: Tue,  2 Aug 2016 19:53:11 +0800
+Message-ID: <20160802115311.7450-1-baolex.ni@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:6327 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964912AbcHBMeu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 2 Aug 2016 08:34:50 -0400
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, m.chehab@samsung.com, pawel@osciak.com, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com
-List-Id: linux-pm@vger.kernel.org
 
 I find that the developers often just specified the numeric value
 when calling a macro which is defined with a parameter for access permission.
@@ -17,53 +21,37 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/power/test_power.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/power/ds2760_battery.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/test_power.c b/drivers/power/test_power.c
-index 57246cd..ef97fe1 100644
---- a/drivers/power/test_power.c
-+++ b/drivers/power/test_power.c
-@@ -500,32 +500,32 @@ static const struct kernel_param_ops param_ops_battery_voltage = {
- #define param_check_battery_voltage(name, p) __param_check(name, p, void);
+diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
+index 80f73cc..37b1097 100644
+--- a/drivers/power/ds2760_battery.c
++++ b/drivers/power/ds2760_battery.c
+@@ -62,19 +62,19 @@ struct ds2760_device_info {
+ };
  
+ static unsigned int cache_time = 1000;
+-module_param(cache_time, uint, 0644);
++module_param(cache_time, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(cache_time, "cache time in milliseconds");
  
--module_param(ac_online, ac_online, 0644);
-+module_param(ac_online, ac_online, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(ac_online, "AC charging state <on|off>");
+ static bool pmod_enabled;
+-module_param(pmod_enabled, bool, 0644);
++module_param(pmod_enabled, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(pmod_enabled, "PMOD enable bit");
  
--module_param(usb_online, usb_online, 0644);
-+module_param(usb_online, usb_online, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(usb_online, "USB charging state <on|off>");
+ static unsigned int rated_capacity;
+-module_param(rated_capacity, uint, 0644);
++module_param(rated_capacity, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(rated_capacity, "rated battery capacity, 10*mAh or index");
  
--module_param(battery_status, battery_status, 0644);
-+module_param(battery_status, battery_status, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(battery_status,
- 	"battery status <charging|discharging|not-charging|full>");
+ static unsigned int current_accum;
+-module_param(current_accum, uint, 0644);
++module_param(current_accum, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(current_accum, "current accumulator value");
  
--module_param(battery_present, battery_present, 0644);
-+module_param(battery_present, battery_present, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(battery_present,
- 	"battery presence state <good|overheat|dead|overvoltage|failure>");
- 
--module_param(battery_technology, battery_technology, 0644);
-+module_param(battery_technology, battery_technology, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(battery_technology,
- 	"battery technology <NiMH|LION|LIPO|LiFe|NiCd|LiMn>");
- 
--module_param(battery_health, battery_health, 0644);
-+module_param(battery_health, battery_health, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(battery_health,
- 	"battery health state <good|overheat|dead|overvoltage|failure>");
- 
--module_param(battery_capacity, battery_capacity, 0644);
-+module_param(battery_capacity, battery_capacity, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(battery_capacity, "battery capacity (percentage)");
- 
--module_param(battery_voltage, battery_voltage, 0644);
-+module_param(battery_voltage, battery_voltage, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(battery_voltage, "battery voltage (millivolts)");
- 
- MODULE_DESCRIPTION("Power supply driver for testing");
+ /* Some batteries have their rated capacity stored a N * 10 mAh, while
 -- 
 2.9.2
+
