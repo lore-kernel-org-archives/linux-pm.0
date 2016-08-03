@@ -1,47 +1,42 @@
-From: Michael Walle <michael@walle.cc>
-Subject: of-thermal and hwmon sensors
-Date: Wed, 03 Aug 2016 16:37:50 +0200
-Message-ID: <0d0a0779f82247923fed4fb1ea3e7769@walle.cc>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: [PATCH v1 1/2] x86/power/64: Support unaligned addresses for
+ temporary mapping
+Date: Wed, 3 Aug 2016 08:29:42 -0700
+Message-ID: <CAJcbSZGcL9G4edsa3LEr-f0srpZPtsDTOeOjCC_nJddn6SOskg@mail.gmail.com>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
+ <1470071280-78706-2-git-send-email-thgarnie@google.com> <CAE9FiQXPnXa_Ep2nk+y5boZ9Csdk_yoH5Ws8SaExn0-VHU9bBg@mail.gmail.com>
+ <CAJcbSZE1kPpL_hWLK70fGhgjP3xRBaZ=r32E9q1SBwhCbqOp5Q@mail.gmail.com> <CAE9FiQVtD+eBoHEeNWGUnNAtJkDCEsq2JLg0RC9grSG7Eje3tQ@mail.gmail.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ssl.serverraum.org ([213.133.101.245]:34047 "EHLO
-	ssl.serverraum.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755227AbcHCPDK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Aug 2016 11:03:10 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <kernel-hardening-return-4227-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <CAE9FiQVtD+eBoHEeNWGUnNAtJkDCEsq2JLg0RC9grSG7Eje3tQ@mail.gmail.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>
 
-Hi,
+On Tue, Aug 2, 2016 at 12:55 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+> On Tue, Aug 2, 2016 at 10:48 AM, Thomas Garnier <thgarnie@google.com> wro=
+te:
+>> On Tue, Aug 2, 2016 at 10:36 AM, Yinghai Lu <yinghai@kernel.org> wrote:
+>>>
+>>> Looks like we need to change the loop from phys address to virtual
+>>> address instead.
+>>> to avoid the overflow.
+>
+> something like attached.
 
-as far as I understand it, there isn't a possibility to expose the 
-thermal temperature sensors to the hwmon subsystem if the thermal zones 
-are configured via device tree. Because the of-thermal driver hardcodes 
-the following:
+I tested it and it worked well. I just got this warning on build:
 
-   /* No hwmon because there might be hwmon drivers registering */
-   tzp->no_hwmon = true;
+In file included from arch/x86/mm/init_64.c:60:0:
+arch/x86/mm/ident_map.c: In function =E2=80=98ident_pmd_init=E2=80=99:
+arch/x86/mm/ident_map.c:18:29: warning: suggest parentheses around
+arithmetic in operand of =E2=80=98|=E2=80=99 [-Wparentheses]
+    set_pmd(pmd, __pmd(vaddr - off | info->pmd_flag));
 
-I guess this has to be set to true, because if not no (future) hwmon 
-driver will work at all. But as far as I see, the most OF enabled 
-thermal drivers don't have corresponding hwmon drivers and therefore 
-can't be exposed as hwmon devices.
-
-There was already a small discussion back in 2015:
-    https://lkml.org/lkml/2015/4/20/665
-
-but it didn't end in a solution.
-
-Are there any new ideas from your side how to solve this? I'm not really 
-into device trees and if I understand it correctly, Robs argument was 
-that it should not be upon the device tree to decide which driver should 
-be used (if there are multiple ones for one device). Could it be a new 
-device node in the device tree with a compatible property like the 
-following:
-   compatible = "preferred-device", "generic-thermal-hwmon";
-
--michael
+Do you want to resend your version for integration?
