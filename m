@@ -1,96 +1,47 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for
- system sleep
-Date: Wed, 3 Aug 2016 14:28:48 +0200
-Message-ID: <20160803122848.GA4415@wunner.de>
-References: <cover.1463134231.git.lukas@wunner.de>
- <20160617210924.GA12254@localhost>
- <20160617221407.GB1927@wunner.de>
- <2339231.tBO8VQgPAo@vostro.rjw.lan>
+From: Michael Walle <michael@walle.cc>
+Subject: of-thermal and hwmon sensors
+Date: Wed, 03 Aug 2016 16:37:50 +0200
+Message-ID: <0d0a0779f82247923fed4fb1ea3e7769@walle.cc>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2339231.tBO8VQgPAo@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ssl.serverraum.org ([213.133.101.245]:34047 "EHLO
+	ssl.serverraum.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755227AbcHCPDK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Aug 2016 11:03:10 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>
 
-On Mon, Jul 18, 2016 at 03:39:15PM +0200, Rafael J. Wysocki wrote:
-> On Saturday, June 18, 2016 12:14:07 AM Lukas Wunner wrote:
-> > On Fri, Jun 17, 2016 at 04:09:24PM -0500, Bjorn Helgaas wrote:
-> > > On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
-> > > > There are devices wich are not power-managed by the platform, yet can be
-> > > > runtime suspended to D3cold with some other mechanism.  When putting the
-> > > > system to sleep, we currently handle such devices improperly by trying
-> > > > to transition them from D3cold to D3hot (the default power state defined
-> > > > at the beginning of pci_target_state()).  Avoid that.
-> > > > 
-> > > > An example for devices affected by this are Thunderbolt controllers
-> > > > built into Macs which can be put into D3cold with nonstandard ACPI
-> > > > methods.
-> > > > 
-> > > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > > 
-> > > This needs an ack from Rafael.
-> > > 
-> > > > ---
-> > > >  drivers/pci/pci.c | 2 ++
-> > > >  1 file changed, 2 insertions(+)
-> > > > 
-> > > > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> > > > index 791dfe7..6af9911 100644
-> > > > --- a/drivers/pci/pci.c
-> > > > +++ b/drivers/pci/pci.c
-> > > > @@ -1943,6 +1943,8 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
-> > > >  			      && !(dev->pme_support & (1 << target_state)))
-> > > >  				target_state--;
-> > > >  		}
-> > > > +	} else if (dev->current_state == PCI_D3cold) {
-> > > > +		target_state = PCI_D3cold;
-> > > >  	}
-> > > 
-> > > This only covers the case of !device_may_wakeup().  So I guess
-> > > device_may_wakeup() is false for these Thunderbolt controllers.
-> > > Is there a reason you don't want to do this check for devices that
-> > > may wakeup?
-> > 
-> > Fear of breaking things. It would mean that a device would be left in
-> > D3cold even though it may not be able to signal wakeup from that power
-> > state.
-> 
-> Then it should not be put into D3_cold at run time too if it is wakeup-
-> capable.
-> 
-> > That's a change of behaviour the consequences of which I cannot
-> > estimate. Intuitively, I would expect breakage from such a change.
-> 
-> That would have been the case if the device had been capable of signaling
-> wakeup from D3_cold at run time, but not from system sleep.  However, that
-> can only happen when platform_pci_power_manageable() is true AFAICS.
-> 
-> So I'd change the switch () under the platform_pci_power_manageable() check
-> to return "state" in the default case and then do
-> 
-> 	return dev->current_state < target_state ? target_state : dev->current_state;
-> 
-> at the end of the function.
+Hi,
 
-That suggestion doesn't seem to be correct because there's another
-value besides PCI_D3cold which is also greater than PCI_D3hot,
-namely PCI_UNKNOWN. (If the device is in that state, e.g. after
-pci_device_remove() has been called, and the system goes to sleep,
-we'd leave the device as is and not put it into D3hot as we do now.)
+as far as I understand it, there isn't a possibility to expose the 
+thermal temperature sensors to the hwmon subsystem if the thermal zones 
+are configured via device tree. Because the of-thermal driver hardcodes 
+the following:
 
-I will update this patch with Bjorn's suggestion to also leave the
-device in D3cold if it is wakeup-capable. The idea is to just change
-the default state in the first line of the function like this:
+   /* No hwmon because there might be hwmon drivers registering */
+   tzp->no_hwmon = true;
 
--	pci_power_t target_state = PCI_D3hot;
-+	pci_power_t target_state =
-+		dev->current_state == PCI_D3cold ? PCI_D3cold : PCI_D3hot;
+I guess this has to be set to true, because if not no (future) hwmon 
+driver will work at all. But as far as I see, the most OF enabled 
+thermal drivers don't have corresponding hwmon drivers and therefore 
+can't be exposed as hwmon devices.
 
-Thanks,
+There was already a small discussion back in 2015:
+    https://lkml.org/lkml/2015/4/20/665
 
-Lukas
+but it didn't end in a solution.
+
+Are there any new ideas from your side how to solve this? I'm not really 
+into device trees and if I understand it correctly, Robs argument was 
+that it should not be upon the device tree to decide which driver should 
+be used (if there are multiple ones for one device). Could it be a new 
+device node in the device tree with a compatible property like the 
+following:
+   compatible = "preferred-device", "generic-thermal-hwmon";
+
+-michael
