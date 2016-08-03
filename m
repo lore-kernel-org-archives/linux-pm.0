@@ -1,137 +1,57 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: [PATCH v2] x86/power/64: Support unaligned addresses for temporary mapping
-Date: Wed,  3 Aug 2016 11:23:08 -0700
-Message-ID: <20160803182308.19227-1-yinghai@kernel.org>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com> <1470071280-78706-2-git-send-email-thgarnie@google.com> <CAE9FiQXPnXa_Ep2nk+y5boZ9Csdk_yoH5Ws8SaExn0-VHU9bBg@mail.gmail.com> <CAJcbSZE1kPpL_hWLK70fGhgjP3xRBaZ=r32E9q1SBwhCbqOp5Q@mail.gmail.com> <CAE9FiQVtD+eBoHEeNWGUnNAtJkDCEsq2JLg0RC9grSG7Eje3tQ@mail.gmail.com>
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: Possible regression caused by commit 1bd047be37d9 ("tpm_crb: Use
+ devm_ioremap_resource")
+Date: Wed, 3 Aug 2016 12:37:25 -0600
+Message-ID: <20160803183725.GA4308@obsidianresearch.com>
+References: <1469933246.2361.7.camel@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:20919 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751460AbcHCS0a (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Aug 2016 14:26:30 -0400
-In-Reply-To: <CAE9FiQVtD+eBoHEeNWGUnNAtJkDCEsq2JLg0RC9grSG7Eje3tQ@mail.gmail.com>
+Received: from quartz.orcorp.ca ([184.70.90.242]:52315 "EHLO quartz.orcorp.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753319AbcHCSiA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 3 Aug 2016 14:38:00 -0400
+Content-Disposition: inline
+In-Reply-To: <1469933246.2361.7.camel@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
-Cc: the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, kernel-hardening@lists.openwall.com, Thomas Garnier <thgarnie@google.com>, Yinghai Lu <yinghai@kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-From: Thomas Garnier <thgarnie@google.com>
+On Sun, Jul 31, 2016 at 10:47:26AM +0800, Zhang Rui wrote:
+> Hi, Jason,
+> 
+> we got a bug report complaining that the system can not enter deeper
+> package c-states than pc2, and the git bisect result points to commit
+> 1bd047be37d9 ("tpm_crb: Use devm_ioremap_resource").
+> 
+> can you take a look at this issue?
+> 
+> Bugzilla link: https://bugzilla.kernel.org/show_bug.cgi?id=118451
 
-Correctly setup the temporary mapping for hibernation. Previous
-implementation assumed the offset between KVA and PA was aligned on the PGD level.
-With KASLR memory randomization enabled, the offset is randomized on the PUD
-level. This change supports unaligned up to PMD.
+The tagged commit basically swiches devm_ioremap_nocache for
+devm_ioremap_resource - AFAIK the only external difference being that the
+TPM driver is now part of the resource tree.
 
-Signed-off-by: Thomas Garnier <thgarnie@google.com>
-[yinghai: change loop to virtual address]
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
----
- arch/x86/mm/ident_map.c |   54 ++++++++++++++++++++++++++++--------------------
- 1 file changed, 32 insertions(+), 22 deletions(-)
+I didn't think resource tree interacted with Intel PM at all?
 
-Index: linux-2.6/arch/x86/mm/ident_map.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/ident_map.c
-+++ linux-2.6/arch/x86/mm/ident_map.c
-@@ -3,40 +3,47 @@
-  * included by both the compressed kernel and the regular kernel.
-  */
- 
--static void ident_pmd_init(unsigned long pmd_flag, pmd_t *pmd_page,
-+static void ident_pmd_init(struct x86_mapping_info *info, pmd_t *pmd_page,
- 			   unsigned long addr, unsigned long end)
- {
--	addr &= PMD_MASK;
--	for (; addr < end; addr += PMD_SIZE) {
--		pmd_t *pmd = pmd_page + pmd_index(addr);
-+	unsigned long off = info->kernel_mapping ? __PAGE_OFFSET : 0;
-+	unsigned long vaddr = addr + off;
-+	unsigned long vend = end + off;
-+
-+	vaddr &= PMD_MASK;
-+	for (; vaddr < vend; vaddr += PMD_SIZE) {
-+		pmd_t *pmd = pmd_page + pmd_index(vaddr);
- 
- 		if (!pmd_present(*pmd))
--			set_pmd(pmd, __pmd(addr | pmd_flag));
-+			set_pmd(pmd, __pmd((vaddr - off) | info->pmd_flag));
- 	}
- }
- 
- static int ident_pud_init(struct x86_mapping_info *info, pud_t *pud_page,
- 			  unsigned long addr, unsigned long end)
- {
--	unsigned long next;
-+	unsigned long off = info->kernel_mapping ? __PAGE_OFFSET : 0;
-+	unsigned long vaddr = addr + off;
-+	unsigned long vend = end + off;
-+	unsigned long vnext;
- 
--	for (; addr < end; addr = next) {
--		pud_t *pud = pud_page + pud_index(addr);
-+	for (; vaddr < vend; vaddr = vnext) {
-+		pud_t *pud = pud_page + pud_index(vaddr);
- 		pmd_t *pmd;
- 
--		next = (addr & PUD_MASK) + PUD_SIZE;
--		if (next > end)
--			next = end;
-+		vnext = (vaddr & PUD_MASK) + PUD_SIZE;
-+		if (vnext > vend)
-+			vnext = vend;
- 
- 		if (pud_present(*pud)) {
- 			pmd = pmd_offset(pud, 0);
--			ident_pmd_init(info->pmd_flag, pmd, addr, next);
-+			ident_pmd_init(info, pmd, vaddr - off, vnext - off);
- 			continue;
- 		}
- 		pmd = (pmd_t *)info->alloc_pgt_page(info->context);
- 		if (!pmd)
- 			return -ENOMEM;
--		ident_pmd_init(info->pmd_flag, pmd, addr, next);
-+		ident_pmd_init(info, pmd, vaddr - off, vnext - off);
- 		set_pud(pud, __pud(__pa(pmd) | _KERNPG_TABLE));
- 	}
- 
-@@ -46,21 +53,24 @@ static int ident_pud_init(struct x86_map
- int kernel_ident_mapping_init(struct x86_mapping_info *info, pgd_t *pgd_page,
- 			      unsigned long addr, unsigned long end)
- {
--	unsigned long next;
- 	int result;
--	int off = info->kernel_mapping ? pgd_index(__PAGE_OFFSET) : 0;
-+	unsigned long off = info->kernel_mapping ? __PAGE_OFFSET : 0;
-+	unsigned long vaddr = addr + off;
-+	unsigned long vend = end + off;
-+	unsigned long vnext;
- 
--	for (; addr < end; addr = next) {
--		pgd_t *pgd = pgd_page + pgd_index(addr) + off;
-+	for (; vaddr < vend; vaddr = vnext) {
-+		pgd_t *pgd = pgd_page + pgd_index(vaddr);
- 		pud_t *pud;
- 
--		next = (addr & PGDIR_MASK) + PGDIR_SIZE;
--		if (next > end)
--			next = end;
-+		vnext = (vaddr & PGDIR_MASK) + PGDIR_SIZE;
-+		if (vnext > vend)
-+			vnext = vend;
- 
- 		if (pgd_present(*pgd)) {
- 			pud = pud_offset(pgd, 0);
--			result = ident_pud_init(info, pud, addr, next);
-+			result = ident_pud_init(info, pud, vaddr - off,
-+						vnext - off);
- 			if (result)
- 				return result;
- 			continue;
-@@ -69,7 +79,7 @@ int kernel_ident_mapping_init(struct x86
- 		pud = (pud_t *)info->alloc_pgt_page(info->context);
- 		if (!pud)
- 			return -ENOMEM;
--		result = ident_pud_init(info, pud, addr, next);
-+		result = ident_pud_init(info, pud, vaddr - off, vnext - off);
- 		if (result)
- 			return result;
- 		set_pgd(pgd, __pgd(__pa(pud) | _KERNPG_TABLE));
+One thing we know about is that the TPM driver fails to load on some
+systems due to resource conflicts. Is it possible Yrjan's is seeing
+TPM load failures in one kernel? Presumably not loading the tpm driver
+would impact PM somehow??
+
+I recommend checking for the issue solved in this patch:
+
+commit 422eac3f7deae34dbaffd08e03e27f37a5394a56
+Author: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+Date:   Tue Apr 19 12:54:18 2016 +0300
+
+    tpm_crb: fix mapping of the buffers
+    
+    On my Lenovo x250 the following situation occurs:
+    
+    [18697.813871] tpm_crb MSFT0101:00: can't request region for resource
+    [mem 0xacdff080-0xacdfffff]
+
+Jason
