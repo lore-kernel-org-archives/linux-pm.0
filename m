@@ -1,31 +1,96 @@
-From: Michal Kubecek <mkubecek@suse.cz>
-Subject: Re: [PATCH 0077/1285] Replace numeric parameter like 0444 with macro
-Date: Wed, 3 Aug 2016 09:29:27 +0200
-Message-ID: <20160803072926.GA2921@unicorn.suse.cz>
-References: <20160802103855.18883-1-baolex.ni@intel.com>
- <20160802124256.GA25315@amd>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for
+ system sleep
+Date: Wed, 3 Aug 2016 14:28:48 +0200
+Message-ID: <20160803122848.GA4415@wunner.de>
+References: <cover.1463134231.git.lukas@wunner.de>
+ <20160617210924.GA12254@localhost>
+ <20160617221407.GB1927@wunner.de>
+ <2339231.tBO8VQgPAo@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:35863 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753714AbcHCH3g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 3 Aug 2016 03:29:36 -0400
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160802124256.GA25315@amd>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <2339231.tBO8VQgPAo@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Baole Ni <baolex.ni@intel.com>, rjw@rjwysocki.net, len.brown@intel.com, gregkh@linuxfoundation.org, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com
 
-On Tue, Aug 02, 2016 at 02:42:56PM +0200, Pavel Machek wrote:
+On Mon, Jul 18, 2016 at 03:39:15PM +0200, Rafael J. Wysocki wrote:
+> On Saturday, June 18, 2016 12:14:07 AM Lukas Wunner wrote:
+> > On Fri, Jun 17, 2016 at 04:09:24PM -0500, Bjorn Helgaas wrote:
+> > > On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
+> > > > There are devices wich are not power-managed by the platform, yet can be
+> > > > runtime suspended to D3cold with some other mechanism.  When putting the
+> > > > system to sleep, we currently handle such devices improperly by trying
+> > > > to transition them from D3cold to D3hot (the default power state defined
+> > > > at the beginning of pci_target_state()).  Avoid that.
+> > > > 
+> > > > An example for devices affected by this are Thunderbolt controllers
+> > > > built into Macs which can be put into D3cold with nonstandard ACPI
+> > > > methods.
+> > > > 
+> > > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> > > 
+> > > This needs an ack from Rafael.
+> > > 
+> > > > ---
+> > > >  drivers/pci/pci.c | 2 ++
+> > > >  1 file changed, 2 insertions(+)
+> > > > 
+> > > > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > > > index 791dfe7..6af9911 100644
+> > > > --- a/drivers/pci/pci.c
+> > > > +++ b/drivers/pci/pci.c
+> > > > @@ -1943,6 +1943,8 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
+> > > >  			      && !(dev->pme_support & (1 << target_state)))
+> > > >  				target_state--;
+> > > >  		}
+> > > > +	} else if (dev->current_state == PCI_D3cold) {
+> > > > +		target_state = PCI_D3cold;
+> > > >  	}
+> > > 
+> > > This only covers the case of !device_may_wakeup().  So I guess
+> > > device_may_wakeup() is false for these Thunderbolt controllers.
+> > > Is there a reason you don't want to do this check for devices that
+> > > may wakeup?
+> > 
+> > Fear of breaking things. It would mean that a device would be left in
+> > D3cold even though it may not be able to signal wakeup from that power
+> > state.
 > 
-> Sorry, the macros just make it _less_ readable, because you do chmod
-> 666, not chmod S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH.
+> Then it should not be put into D3_cold at run time too if it is wakeup-
+> capable.
+> 
+> > That's a change of behaviour the consequences of which I cannot
+> > estimate. Intuitively, I would expect breakage from such a change.
+> 
+> That would have been the case if the device had been capable of signaling
+> wakeup from D3_cold at run time, but not from system sleep.  However, that
+> can only happen when platform_pci_power_manageable() is true AFAICS.
+> 
+> So I'd change the switch () under the platform_pci_power_manageable() check
+> to return "state" in the default case and then do
+> 
+> 	return dev->current_state < target_state ? target_state : dev->current_state;
+> 
+> at the end of the function.
 
-Actually, you can do "chmod a=rw ..." or "chmod u=rw,go=r ..." but very
-few people use that syntax (the "+" or "-" variants come handy at times,
-though).
+That suggestion doesn't seem to be correct because there's another
+value besides PCI_D3cold which is also greater than PCI_D3hot,
+namely PCI_UNKNOWN. (If the device is in that state, e.g. after
+pci_device_remove() has been called, and the system goes to sleep,
+we'd leave the device as is and not put it into D3hot as we do now.)
 
-                                                         Michal Kubecek
+I will update this patch with Bjorn's suggestion to also leave the
+device in D3cold if it is wakeup-capable. The idea is to just change
+the default state in the first line of the function like this:
 
+-	pci_power_t target_state = PCI_D3hot;
++	pci_power_t target_state =
++		dev->current_state == PCI_D3cold ? PCI_D3cold : PCI_D3hot;
+
+Thanks,
+
+Lukas
