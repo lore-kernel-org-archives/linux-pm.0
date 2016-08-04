@@ -1,169 +1,66 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v2 06/14] PM / cpu_domains: Setup PM domains for
- CPUs/clusters
-Date: Thu, 4 Aug 2016 10:32:16 -0600
-Message-ID: <20160804163216.GD1207@linaro.org>
-References: <1469829385-11511-1-git-send-email-lina.iyer@linaro.org>
- <1469829385-11511-7-git-send-email-lina.iyer@linaro.org>
- <20160804155947.GD1732@brendan-thinkstation>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: powernv: Fix crash in gpstate_timer_handler
+Date: Thu, 4 Aug 2016 09:47:11 -0700
+Message-ID: <20160804164711.GE10348@ubuntu>
+References: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:32879 "EHLO
-	mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934033AbcHDQcT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 12:32:19 -0400
-Received: by mail-pf0-f177.google.com with SMTP id y134so88128194pfg.0
-        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2016 09:32:19 -0700 (PDT)
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160804155947.GD1732@brendan-thinkstation>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: Brendan Jackman <brendan.jackman@arm.com>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On Thu, Aug 04 2016 at 09:59 -0600, Brendan Jackman wrote:
->Hi Lina,
->
->I spotted a couple more nits..
->
->> +static struct generic_pm_domain *of_init_cpu_pm_domain(struct device_node *dn,
->> +				const struct cpu_pd_ops *ops)
->> +{
->> +	struct cpu_pm_domain *pd = NULL;
->> +	struct generic_pm_domain *genpd = NULL;
->> +	int ret = -ENOMEM;
->> +
->> +	if (!of_device_is_available(dn))
->> +		return ERR_PTR(-ENODEV);
->> +
->> +	genpd = kzalloc(sizeof(*genpd), GFP_KERNEL);
->> +	if (!genpd)
->> +		goto fail;
->> +
->> +	genpd->name = kstrndup(dn->full_name, CPU_PD_NAME_MAX, GFP_KERNEL);
->> +	if (!genpd->name)
->> +		goto fail;
->> +
->> +	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
->> +	if (!pd)
->> +		goto fail;
->> +
->> +	if (!zalloc_cpumask_var(&pd->cpus, GFP_KERNEL))
->> +		goto fail;
->> +
->> +	genpd->power_off = cpu_pd_power_off;
->> +	genpd->power_on = cpu_pd_power_on;
->> +	genpd->flags |= GENPD_FLAG_IRQ_SAFE;
->> +	genpd->of_node = dn;
->> +	pd->genpd = genpd;
->> +	pd->ops.power_on = ops->power_on;
->> +	pd->ops.power_off = ops->power_off;
->> +
->> +	INIT_LIST_HEAD_RCU(&pd->link);
->> +	mutex_lock(&cpu_pd_list_lock);
->> +	list_add_rcu(&pd->link, &of_cpu_pd_list);
->> +	mutex_unlock(&cpu_pd_list_lock);
->> +
->> +	/* Populate platform specific states from DT */
->> +	if (ops->populate_state_data) {
->> +		struct device_node *np;
->> +		int i;
->> +
->> +		/* Initialize the arm,idle-state properties */
->> +		ret = pm_genpd_of_parse_power_states(genpd);
->> +		if (ret) {
->> +			pr_warn("%s domain states not initialized (%d)\n",
->> +					dn->full_name, ret);
->> +			goto fail;
->> +		}
->> +		for (i = 0; i < genpd->state_count; i++) {
->> +			np = of_parse_phandle(dn, "domain-idle-states", i);
->> +			ret = ops->populate_state_data(np,
->> +					&genpd->states[i].param);
->> +			of_node_put(np);
->> +			if (ret)
->> +				goto fail;
->> +		}
->> +	}
->
->It seems a bit unfortunate to do of_parse_phandle for "domain-idle-states"
->again, when pm_genpd_of_parse_power_states has just done that. Maybe we could
->could add an `of_node` member to `struct genpd_power_state` and have
->pm_genpd_of_parse_power_states populate that?
->
-Hmm.. that could be done.
+On 04-08-16, 20:59, Akshay Adiga wrote:
+> 'commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with
+> frequency table index")' changes calc_global_pstate() to use
+> cpufreq_table index instead of pstate_id.
+> 
+> But in gpstate_timer_handler() pstate_id was being passed instead
+> of cpufreq_table index, which caused the index_to_pstate() to access
+> out of bound indices, leading to this crash.
+> 
+> Adding sanity check for index and pstate, to ensure only valid pstate
+> and index values are returned.
+> 
+> Call Trace:
+> [c00000078d66b130] [c00000000011d224] __free_irq+0x234/0x360
+> (unreliable)
+> [c00000078d66b1c0] [c00000000011d44c] free_irq+0x6c/0xa0
+> [c00000078d66b1f0] [c00000000006c4f8] opal_event_shutdown+0x88/0xd0
+> [c00000078d66b230] [c000000000067a4c] opal_shutdown+0x1c/0x90
+> [c00000078d66b260] [c000000000063a00] pnv_shutdown+0x20/0x40
+> [c00000078d66b280] [c000000000021538] machine_restart+0x38/0x90
+> [c0000000078d66b310] [c000000000965ea0] panic+0x284/0x300
+> [c00000078d66b3a0] [c00000000001f508] die+0x388/0x450
+> [c00000078d66b430] [c000000000045a50] bad_page_fault+0xd0/0x140
+> [c00000078d66b4a0] [c000000000008964] handle_page_fault+0x2c/0x30
+>    interrupt: 300 at gpstate_timer_handler+0x150/0x260
+>     LR = gpstate_timer_handler+0x130/0x260
+> [c00000078d66b7f0] [c000000000132b58] call_timer_fn+0x58/0x1c0
+> [c00000078d66b880] [c000000000132e20] expire_timers+0x130/0x1d0
+> [c00000078d66b8f0] [c000000000133068] run_timer_softirq+0x1a8/0x230
+> [c00000078d66b980] [c0000000000b535c] __do_softirq+0x18c/0x400
+> [c00000078d66ba70] [c0000000000b5828] irq_exit+0xc8/0x100
+> [c00000078d66ba90] [c00000000001e214] timer_interrupt+0xa4/0xe0
+> [c00000078d66bac0] [c0000000000027d0] decrementer_common+0x150/0x180
+>    interrupt: 901 at arch_local_irq_restore+0x74/0x90
+>   0] [c000000000106b34] call_cpuidle+0x44/0x90
+> [c00000078d66be50] [c00000000010708c] cpu_startup_entry+0x38c/0x460
+> [c00000078d66bf20] [c00000000003d930] start_secondary+0x330/0x380
+> [c00000078d66bf90] [c000000000008e6c] start_secondary_prolog+0x10/0x14
+> 
+> Fixes: 08d27eb ("cpufreq: powernv: Replacing pstate_id with
+> frequency table index")
+> Reported-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++++++-
+>  1 file changed, 20 insertions(+), 1 deletion(-)
 
->> +
->> +	/* Register the CPU genpd */
->> +	pr_debug("adding %s as CPU PM domain\n", pd->genpd->name);
->> +	ret = pm_genpd_init(pd->genpd, &simple_qos_governor, false);
->> +	if (ret) {
->> +		pr_err("Unable to initialize domain %s\n", dn->full_name);
->> +		goto fail;
->> +	}
->> +
->> +	ret = of_genpd_add_provider_simple(dn, pd->genpd);
->> +	if (ret)
->> +		pr_warn("Unable to add genpd %s as provider\n",
->> +				pd->genpd->name);
->> +
->> +	return pd->genpd;
->> +fail:
->> +
->> +	kfree(genpd->name);
->> +	kfree(genpd);
->> +	if (pd)
->> +		kfree(pd->cpus);
->> +	kfree(pd);
->> +	return ERR_PTR(ret);
->> +}
->> +
->
->
->> +int of_setup_cpu_pd_single(int cpu, const struct cpu_pd_ops *ops)
->> +{
->> +
->> +	struct device_node *dn;
->> +	struct generic_pm_domain *genpd;
->> +	struct cpu_pm_domain *cpu_pd;
->> +
->> +	dn = of_get_cpu_node(cpu, NULL);
->> +	if (!dn)
->> +		return -ENODEV;
->
->of_get_cpu_node increments the refcount so we need an of_node_put at some point.
->
->There are loads of instances around the kernel of of_get_cpu_node without
->corresponding of_node_put, though, I could be misunderstanding...
->
-It should be done. An easily missed statementr, I suppose.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Thanks for all the nits. This is the best time for that.
-
-Thanks,
-Lina
-
->> +
->> +	dn = of_parse_phandle(dn, "power-domains", 0);
->> +	if (!dn)
->> +		return -ENODEV;
->> +
->> +	/* Find the genpd for this CPU, create if not found */
->> +	genpd = of_get_cpu_domain(dn, ops, cpu);
->> +	if (IS_ERR(genpd))
->> +		return PTR_ERR(genpd);
->> +
->> +	of_node_put(dn);
->> +	cpu_pd = to_cpu_pd(genpd);
->> +	if (!cpu_pd) {
->> +		pr_err("%s: Genpd was created outside CPU PM domains\n",
->> +				__func__);
->> +		return -ENOENT;
->> +	}
->> +
->> +	return cpu_pd_attach_cpu(cpu_pd, cpu);
->> +}
->
->Cheers,
->Brendan
+-- 
+viresh
