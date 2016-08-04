@@ -1,47 +1,117 @@
-From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH] PM / devfreq: event: remove duplicate
- devfreq_event_get_drvdata()
-Date: Thu, 04 Aug 2016 17:40:05 +0900
-Message-ID: <57A2FF65.80704@samsung.com>
-References: <CGME20160804060219epcas1p2543bf871e76403f90d47f352251074fa@epcas1p2.samsung.com>
- <1470290508-19178-1-git-send-email-hl@rock-chips.com>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v12] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Thu, 4 Aug 2016 11:48:38 +0200
+Message-ID: <20160804094838.GB8093@nazgul.tnic>
+References: <1469782664-12611-1-git-send-email-fu.wei@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-reply-to: <1470290508-19178-1-git-send-email-hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, =?UTF-8?B?Iu2VqOuqheyjvCAoc2Ftc3VuZy4=?= =?UTF-8?B?Y29tKSI=?= <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1469782664-12611-1-git-send-email-fu.wei@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: fu.wei@linaro.org
+Cc: tn@semihalf.com, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, bp@suse.de, hanjun.guo@linaro.org, jon.zhixiong.zhang@gmail.com, jcm@redhat.com, catalin.marinas@arm.com, will.deacon@arm.com, mark.rutland@arm.com, Marc.Zyngier@arm.com, lorenzo.pieralisi@arm.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, matt.fleming@intel.com, tony.luck@intel.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Tomasz Nowicki <tomasz.nowicki@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-KyBNeXVuZ2pvbyBIYW0sCgpIaSBMaW4gSHVhbmcsCgpPbiAyMDE264WEIDA47JuUIDA07J28IDE1
-OjAxLCBMaW4gSHVhbmcgd3JvdGU6Cj4gdGhlcmUgZGVmaW5lIHR3byBkZXZmcmVxX2V2ZW50X2dl
-dF9kcnZkYXRhKCkgZnVuY3Rpb24gaW4gZGV2ZnJlcS1ldmVudC5oCj4gd2hlbiBkaXNhYmxlIENP
-TkZJR19QTV9ERVZGUkVRX0VWRU5ULCBpdCB3aWxsIGxlYWQgdG8gYnVpbGQgZmFpbC4gU28KPiBy
-ZW1vdmUgZGV2ZnJlcV9ldmVudF9nZXRfZHJ2ZGF0YSgpIGZ1bmN0aW9uLgo+IAo+IFNpZ25lZC1v
-ZmYtYnk6IExpbiBIdWFuZyA8aGxAcm9jay1jaGlwcy5jb20+Cj4gLS0tCj4gIGluY2x1ZGUvbGlu
-dXgvZGV2ZnJlcS1ldmVudC5oIHwgNSAtLS0tLQo+ICAxIGZpbGUgY2hhbmdlZCwgNSBkZWxldGlv
-bnMoLSkKPiAKPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9kZXZmcmVxLWV2ZW50LmggYi9p
-bmNsdWRlL2xpbnV4L2RldmZyZXEtZXZlbnQuaAo+IGluZGV4IDBhODNhMWUuLjRkYjAwYjAgMTAw
-NjQ0Cj4gLS0tIGEvaW5jbHVkZS9saW51eC9kZXZmcmVxLWV2ZW50LmgKPiArKysgYi9pbmNsdWRl
-L2xpbnV4L2RldmZyZXEtZXZlbnQuaAo+IEBAIC0xNDgsMTEgKzE0OCw2IEBAIHN0YXRpYyBpbmxp
-bmUgaW50IGRldmZyZXFfZXZlbnRfcmVzZXRfZXZlbnQoc3RydWN0IGRldmZyZXFfZXZlbnRfZGV2
-ICplZGV2KQo+ICAJcmV0dXJuIC1FSU5WQUw7Cj4gIH0KPiAgCj4gLXN0YXRpYyBpbmxpbmUgdm9p
-ZCAqZGV2ZnJlcV9ldmVudF9nZXRfZHJ2ZGF0YShzdHJ1Y3QgZGV2ZnJlcV9ldmVudF9kZXYgKmVk
-ZXYpCj4gLXsKPiAtCXJldHVybiBFUlJfUFRSKC1FSU5WQUwpOwo+IC19Cj4gLQo+ICBzdGF0aWMg
-aW5saW5lIHN0cnVjdCBkZXZmcmVxX2V2ZW50X2RldiAqZGV2ZnJlcV9ldmVudF9nZXRfZWRldl9i
-eV9waGFuZGxlKAo+ICAJCQkJCXN0cnVjdCBkZXZpY2UgKmRldiwgaW50IGluZGV4KQo+ICB7Cj4g
-CgpMb29rcyBnb29kIHRvIG1lLgoKQWNrZWQtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNh
-bXN1bmcuY29tPgoKUmVnYXJkcywKQ2hhbndvbyBDaG9pCgpfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1yb2NrY2hpcCBtYWlsaW5nIGxpc3QKTGlu
-dXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJvY2tjaGlwCg==
+On Fri, Jul 29, 2016 at 04:57:44PM +0800, fu.wei@linaro.org wrote:
+> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+> 
+> This commit provides APEI arch-specific bits for aarch64
+> 
+> Meanwhile,
+> (1)add a new subfunction "hest_ia32_init" for
+> "acpi_disable_cmcff" which is used by IA-32 Architecture
+> Corrected Machine Check (CMC).
+> (2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+> a generic place.
+> (3)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
+> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
+> 
+> [Fu Wei: improve && upstream]
+> 
+> Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+> Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
+> Signed-off-by: Fu Wei <fu.wei@linaro.org>
+> Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
+> Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
+> Acked-by: Will Deacon <will.deacon@arm.com>
+> ---
+
+...
+
+> @@ -110,8 +111,21 @@ static inline const char *acpi_get_enable_method(int cpu)
+>  }
+>  
+>  #ifdef	CONFIG_ACPI_APEI
+> +#define acpi_disable_cmcff 1
+
+What does that mean? ARM doesn't have firmware-first mode?
+
+A piece of comment please.
+
+>  pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
+> -#endif
+> +
+> +/*
+> + * Despite its name, this function must still broadcast the TLB
+> + * invalidation in order to ensure other CPUs don't up with junk
+						      ^
+						     end
+
+> + * entries as a result of speculation. Unusually, its also called in
+> + * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
+> + * TLB broadcasting, then we're in trouble here.
+> + */
+> +static inline void arch_apei_flush_tlb_one(unsigned long addr)
+> +{
+> +	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+> +}
+> +#endif /* CONFIG_ACPI_APEI */
+>  
+>  #ifdef CONFIG_ACPI_NUMA
+>  int arm64_acpi_numa_init(void);
+> diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
+> index c280df6..ea3046e 100644
+> --- a/arch/x86/kernel/acpi/apei.c
+> +++ b/arch/x86/kernel/acpi/apei.c
+
+...
+
+> diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
+> index 20b3fcf..792a0d9 100644
+> --- a/drivers/acpi/apei/hest.c
+> +++ b/drivers/acpi/apei/hest.c
+> @@ -232,8 +243,9 @@ void __init acpi_hest_init(void)
+>  		goto err;
+>  	}
+>  
+> -	if (!acpi_disable_cmcff)
+> -		apei_hest_parse(hest_parse_cmc, NULL);
+> +	rc = hest_ia32_init();
+
+Why do you need a separate hest_ia32_init() here?
+
+You can do
+
+	rc = apei_hest_parse(hest_parse_cmc, NULL);
+
+directly here AFAICT.
+
+> +	if (rc)
+> +		goto err;
+>  
+>  	if (!ghes_disable) {
+>  		rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
+> -- 
+> 2.5.5
+> 
+
+-- 
+Regards/Gruss,
+    Boris.
+
+ECO tip #101: Trim your mails when you reply.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+--
