@@ -1,123 +1,150 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] thermal/powerclamp: Prevent division by zero when
- counting interval
-Date: Thu, 4 Aug 2016 10:32:00 -0700
-Message-ID: <20160804103200.486fb236@jacob-builder>
-References: <1470322606-12435-1-git-send-email-pmladek@suse.com>
+From: Brendan Jackman <brendan.jackman@arm.com>
+Subject: Re: [PATCH v2 02/14] dt/bindings: update binding for PM domain idle
+ states
+Date: Thu, 4 Aug 2016 19:15:00 +0100
+Message-ID: <20160804181500.GE1732@brendan-thinkstation>
+References: <1469829385-11511-1-git-send-email-lina.iyer@linaro.org>
+ <1469829385-11511-3-git-send-email-lina.iyer@linaro.org>
+ <20160804152453.GB1732@brendan-thinkstation>
+ <20160804162844.GC1207@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1470322606-12435-1-git-send-email-pmladek@suse.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Petr Mladek <pmladek@suse.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160804162844.GC1207@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu,  4 Aug 2016 16:56:46 +0200
-Petr Mladek <pmladek@suse.com> wrote:
+On Thu, Aug 04, 2016 at 10:28:44AM -0600, Lina Iyer wrote:
+> Hi Brenden,
+>
+> On Thu, Aug 04 2016 at 09:24 -0600, Brendan Jackman wrote:
+> >Hi Lina,
+> >
+> >These bindings are the reason for my interest in this patchset; I'm hoping to be
+> >able to do some work based on them in order to generically describe the cost of
+> >idle states for use in the Energy Aware Scheduling (EAS)[1] energy model.
+> >
+> I think that's a fair idea - idle states accounting their own cost.
+>
+> >Mark Rutland expressed concern [2] in the thread for the previous version of
+> >this patchset that there are now two possible locations for the list of idle
+> >states; that hasn't been addressed. My own instinct is that this is OK: in the
+> >real world, power domain (e.g. cluster) idle states are a property of the power
+> >domain and not of the CPU it contains - the DT should reflect this.
+> >
+> Absolutely.
+>
+> >However, since there are existing platform DTs with cluster-level suspend states
+> >(which are platform-coordinated rather than OS-initiated) in cpu-idle-states, do
+> >we have a backwards-compatibility issue? e.g. say we have a platform with a DT
+> >like this:
+> >
+> Your concern is very valid and this is the exactly the difference
+> between Platform coordinated (PC) mode and OS-Initiated (OSI) mode. In
+> PC, the domain state is an extension of the CPU state and rightful place
+> for that is the cpu-idle-states property. Just like the example you
+> have.
+>
+> >	cpu@0 {
+> >		/*...*/
+> >		cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
+> >	};
+> >
+> >	idle-states {
+> >		CPU_SLEEP: cpu-sleep {
+> >			/*...*/
+> >		};
+> >		CLUSTER_SLEEP: cluster-sleep {
+> >			/*...*/
+> >		};
+> >	};
+> >
+> >and in order to enable OS-initiated cluster suspend it changes to this:
+> >
+> Platforms that have OSI will have this format you mention below. If the
+> platform supports the OSI it will respond to the PSCI_FEATURES and
+> PSCI_SET_SUSPEND mode (patch 10 of this series). If the OSI mode is
+> available snd if the DT has the domains defined for the CPU, then the
+> OSI mode is chosen otherwise, it reverts to using PC mode. This code
+> snippet from my patches does exactly that -
+>
+> if (psci_has_osi_pd) {
+>        int ret;
+>        const struct cpu_pd_ops psci_pd_ops = {
+>                .populate_state_data = psci_pd_populate_state_data,
+>                .power_off = psci_pd_power_off,
+>        };
+>
+>        ret = of_setup_cpu_pd_single(cpu, &psci_pd_ops);
+>        if (!ret)
+>                ret = psci_set_suspend_mode_osi(true);
+>        if (ret)
+>                pr_warn("CPU%d: Error setting PSCI OSI mode\n", cpu);
+> }
+>
+> >	cpu@0 {
+> >		/*...*/
+> >		cpu-idle-states = <&CPU_SLEEP>;
+> >		power-domains = <CPU_PD>;
+> >	};
+> >
+> >	idle-states {
+> >		CPU_SLEEP: cpu-sleep {
+> >			/*...*/
+> >		};
+> >	};
+> >
+> >	/*... elsewhere ... */
+> >
+> >	CLUSTER_SLEEP: cluster-sleep {
+> >		/*...*/
+> >	};
+> >
+> >	CPU_PD {
+> >	/*...*/
+> >		idle-states = <&CLUSTER_SLEEP>;
+> >	};
+> >
+> >Then old kernels which don't have CPU PM Domains will lose the ability to
+> >suspend clusters. I've phrased this as a question because I'm not clear on what
+> >we require in terms of backwards/forwards compatibility with DTs - excuse my
+> >ignorance. What are your thoughts on this?
+> >
+> So, if the DT has only support for cluster modes in cpu-idle-states and
+> not the OSI specific representation, then it would continue to use only
+> PC mode to power down the cluster, even though the firmware may have
+> been updated to support OSI.
+>
+> That means, all the existing platforms will continue to work the way
+> they do even with these patches in place.
+>
+> Moreover, the way the PSCI state ids are for PC and OS intiated fall in
+> line with how we represent in the DT. PC cluster states are represented
+> in the original format and the OSI follow the extended state format. The
+> composite is made by an OR of the CPU state and the cluster idle state.
+>
 
-> I have got a zero division error when disabling the forced
-> idle injection from the intel powerclamp. I did
-> 
->   echo 0 >/sys/class/thermal/cooling_device48/cur_state
-> 
-> and got
-> 
-> [  986.072632] divide error: 0000 [#1] PREEMPT SMP
-> [  986.078989] Modules linked in:
-> [  986.083618] CPU: 17 PID: 24967 Comm: kidle_inject/17 Not tainted
-> 4.7.0-1-default+ #3055 [  986.093781] Hardware name: Intel
-> Corporation S2600CP/S2600CP, BIOS RMLSDP.86I.R3.27.D685.1305151734
-> 05/15/2013 [  986.106227] task: ffff880430e1c080 task.stack:
-> ffff880427ef0000 [  986.114122] RIP: 0010:[<ffffffff81794859>]
-> [<ffffffff81794859>] clamp_thread+0x1d9/0x600 [  986.124609] RSP:
-> 0018:ffff880427ef3e20  EFLAGS: 00010246 [  986.131860] RAX:
-> 0000000000000258 RBX: 0000000000000006 RCX: 0000000000000001
-> [  986.141179] RDX: 0000000000000000 RSI: 0000000000000000 RDI:
-> 0000000000000018 [  986.150478] RBP: ffff880427ef3ec8 R08:
-> ffff880427ef0000 R09: 0000000000000002 [  986.159779] R10:
-> 0000000000003df2 R11: 0000000000000018 R12: 0000000000000002
-> [  986.169089] R13: 0000000000000000 R14: ffff880427ef0000 R15:
-> ffff880427ef0000 [  986.178388] FS:  0000000000000000(0000)
-> GS:ffff880435940000(0000) knlGS:0000000000000000 [  986.188785] CS:
-> 0010 DS: 0000 ES: 0000 CR0: 0000000080050033 [  986.196559] CR2:
-> 00007f1d0caf0000 CR3: 0000000002006000 CR4: 00000000001406e0
-> [  986.205909] Stack: [  986.209524]  ffff8802be897b00
-> ffff880430e1c080 0000000000000011 0000006a35959780 [  986.219236]
-> 0000000000000011 ffff880427ef0008 0000000000000000 ffff8804359503d0
-> [  986.228966]  0000000100029d93 ffffffff81794140 0000000000000000
-> ffffffff05000011 [  986.238686] Call Trace: [  986.242825]
-> [<ffffffff81794140>] ? pkg_state_counter+0x80/0x80 [  986.250866]
-> [<ffffffff81794680>] ? powerclamp_set_cur_state+0x180/0x180
-> [  986.259797]  [<ffffffff8111d1a9>] kthread+0xc9/0xe0
-> [  986.266682]  [<ffffffff8193d69f>] ret_from_fork+0x1f/0x40
-> [  986.274142]  [<ffffffff8111d0e0>] ?
-> kthread_create_on_node+0x180/0x180 [  986.282869] Code: d1 ea 48 89
-> d6 80 3d 6a d0 d4 00 00 ba 64 00 00 00 89 d8 41 0f 45 f5 0f af c2 42
-> 8d 14 2e be 31 00 00 00 83 fa 31 0f 42 f2 31 d2 <f7> f6 48 8b 15 9e
-> 07 87 00 48 8b 3d 97 07 87 00 48 63 f0 83 e8 [  986.307806] RIP
-> [<ffffffff81794859>] clamp_thread+0x1d9/0x600 [  986.315871]  RSP
-> <ffff880427ef3e20>
-> 
-> RIP points to the following lines:
-> 
-> 	compensation = get_compensation(target_ratio);
-> 	interval = duration_jiffies*100/(target_ratio+compensation);
-> 
-> A solution would be to switch the following two commands in
-> powerclamp_set_cur_state():
-> 
-> 	set_target_ratio = 0;
-> 	end_power_clamp();
-> 
-I see, there is race condition, clamping threads should be stopped if
-target ratio is 0.
-> But I think that the zero division might happen also when target_ratio
-> is non-zero because the compensation might be negative. Therefore
-> it is better to check the sum of target_ratio and compensation
-> explicitly.
-> 
-compensation should never be negative. since it is the additional idle
-ratio added on top of requested ratio. If actual idle is more than
-requested, we will skip injection period.
-So i prefer to have both changes.
-> Also the compensated_ratio variable is always set. Therefore there
-> is no need to initialize it.
-> 
-> Signed-off-by: Petr Mladek <pmladek@suse.com>
-> ---
->  drivers/thermal/intel_powerclamp.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/thermal/intel_powerclamp.c
-> b/drivers/thermal/intel_powerclamp.c index 015ce2eb6eb7..65b865184990
-> 100644 --- a/drivers/thermal/intel_powerclamp.c
-> +++ b/drivers/thermal/intel_powerclamp.c
-> @@ -388,7 +388,7 @@ static int clamp_thread(void *arg)
->  		int sleeptime;
->  		unsigned long target_jiffies;
->  		unsigned int guard;
-> -		unsigned int compensation = 0;
-> +		unsigned int compensated_ratio;
->  		int interval; /* jiffies to sleep for each attempt */
->  		unsigned int duration_jiffies =
-> msecs_to_jiffies(duration); unsigned int window_size_now;
-> @@ -409,8 +409,11 @@ static int clamp_thread(void *arg)
->  		 * c-states, thus we need to compensate the injected
-> idle ratio
->  		 * to achieve the actual target reported by the HW.
->  		 */
-> -		compensation = get_compensation(target_ratio);
-> -		interval =
-> duration_jiffies*100/(target_ratio+compensation);
-> +		compensated_ratio = target_ratio +
-> +			get_compensation(target_ratio);
-> +		if (compensated_ratio <= 0)
-> +			compensated_ratio = 1;
-> +		interval = duration_jiffies * 100 /
-> compensated_ratio; 
->  		/* align idle time */
->  		target_jiffies = roundup(jiffies, interval);
+OK, this makes sense - I understand that these patches will not affect the
+behaviour if the DT stays the same. My question, though is what happens when a
+new DT with the new OSI structure is given to an older kernel without these
+patches applied.
 
-[Jacob Pan]
+Example: right now we support PC cluster suspend on the Juno platform (see
+juno*.dts). Let's say Juno's firmware comes to support OSI suspend and we want
+to use that in Linux. We apply these patches then update the .dts, adding a CPU
+power domain tree, removing CLUSTER_SLEEP_0 from cpu-idle-states and adding it
+to the relevant power domain node's idle-states. Now we have OSI suspend on
+Juno. But then if we take our new DTB and feed it to a v4.7 kernel it will not
+be able to enter CLUSTER_SLEEP_0 because it is not in cpu-idle-states. Before we
+modified the DTB, v4.7 kernels were capable of entering CLUSTER_SLEEP_0 in PC
+mode.
+
+Does that make sense - do we expect newer DTBs to be compatible with older
+kernels, and if so how can we add OSI support to existing platforms without
+breaking older kernels?
+
+Thanks,
+Brendan
