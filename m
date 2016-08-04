@@ -1,85 +1,57 @@
-From: Brendan Jackman <brendan.jackman@arm.com>
-Subject: Re: [PATCH v2 06/14] PM / cpu_domains: Setup PM domains for
- CPUs/clusters
-Date: Thu, 4 Aug 2016 11:15:15 +0100
-Message-ID: <20160804101515.GA29537@brendan-thinkstation>
-References: <1469829385-11511-1-git-send-email-lina.iyer@linaro.org>
- <1469829385-11511-7-git-send-email-lina.iyer@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: event: remove duplicate
+ devfreq_event_get_drvdata()
+Date: Thu, 04 Aug 2016 19:30:26 +0900
+Message-ID: <57A31942.2060507@samsung.com>
+References: <CGME20160804102847epcas1p498c32c32d5aaec87e607ff4adb07070a@epcas1p4.samsung.com>
+ <1470306525-5515-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:49995 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751604AbcHDKPU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Aug 2016 06:15:20 -0400
-Content-Disposition: inline
-In-Reply-To: <1469829385-11511-7-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1470306525-5515-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, linux-kernel@vger.kernel.org, Lin Huang <hl@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-Hi Lina,
+Dear all,
 
-On Fri, Jul 29, 2016 at 03:56:17PM -0600, Lina Iyer wrote:
-> +static struct generic_pm_domain *of_get_cpu_domain(struct device_node *dn,
-> +		const struct cpu_pd_ops *ops, int cpu)
-> +{
-> +	struct of_phandle_args args;
-> +	struct generic_pm_domain *genpd, *parent;
-> +	struct cpu_pm_domain *cpu_pd, *parent_cpu_pd;
-> +	int ret;
-> +
-> +	/* Do we have this domain? If not, create the domain */
-> +	args.np = dn;
-> +	args.args_count = 0;
-> +
-> +	genpd = of_genpd_get_from_provider(&args);
-> +	if (!IS_ERR(genpd))
-> +		return genpd;
-> +
-> +	genpd = of_init_cpu_pm_domain(dn, ops);
-> +	if (IS_ERR(genpd))
-> +		return genpd;
-> +
-> +	/* Is there a domain provider for this domain? */
-> +	ret = of_parse_phandle_with_args(dn, "power-domains",
-> +			"#power-domain-cells", 0, &args);
-> +	if (ret < 0)
-> +		goto skip_parent;
-> +
-> +	/* Find its parent and attach this domain to it, recursively */
-> +	parent = of_get_cpu_domain(args.np, ops, cpu);
-> +	if (IS_ERR(parent))
-> +		goto skip_parent;
-> +
-> +	ret = pm_genpd_add_subdomain(genpd, parent);
+Please ignore this patch. This patch fix the bug.
+So, I should send it on stable@verger.kernel.org. 
+But the stable mailing list is missing. So, I'll resend it.
 
-Looks like the arguments are the wrong way around here, it should be:
+Regards,
+Chanwoo Choi
 
-	ret = pm_genpd_add_subdomain(parent, genpd);
-
-> +	if (ret) {
-> +		pr_err("%s: Unable to add sub-domain (%s)\n err: %d",
-> +				__func__, genpd->name, ret);
-> +		return ERR_PTR(ret);
-> +	}
-> +
-> +	/*
-> +	 * Reference parent domain for easy access.
-> +	 * Note: We could be attached to a domain that is not a
-> +	 * CPU PM domain in that case don't reference the parent.
-> +	 */
-> +	cpu_pd = to_cpu_pd(genpd);
-> +	parent_cpu_pd = to_cpu_pd(parent);
-> +
-> +	if (cpu_pd && parent_cpu_pd)
-> +		cpu_pd->parent = parent_cpu_pd;
-> +
-> +skip_parent:
-> +	of_node_put(dn);
-> +	return genpd;
-> +}
-
-Cheers,
-Brendan
+On 2016년 08월 04일 19:28, Chanwoo Choi wrote:
+> From: Lin Huang <hl@rock-chips.com>
+> 
+> there define two devfreq_event_get_drvdata() function in devfreq-event.h
+> when disable CONFIG_PM_DEVFREQ_EVENT, it will lead to build fail. So
+> remove devfreq_event_get_drvdata() function.
+> 
+> Fixes: f262f28c1470 ("PM / devfreq: event: Add devfreq_event class")
+> Signed-off-by: Lin Huang <hl@rock-chips.com>
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>  include/linux/devfreq-event.h | 5 -----
+>  1 file changed, 5 deletions(-)
+> 
+> diff --git a/include/linux/devfreq-event.h b/include/linux/devfreq-event.h
+> index 0a83a1e648b0..4db00b02ca3f 100644
+> --- a/include/linux/devfreq-event.h
+> +++ b/include/linux/devfreq-event.h
+> @@ -148,11 +148,6 @@ static inline int devfreq_event_reset_event(struct devfreq_event_dev *edev)
+>  	return -EINVAL;
+>  }
+>  
+> -static inline void *devfreq_event_get_drvdata(struct devfreq_event_dev *edev)
+> -{
+> -	return ERR_PTR(-EINVAL);
+> -}
+> -
+>  static inline struct devfreq_event_dev *devfreq_event_get_edev_by_phandle(
+>  					struct device *dev, int index)
+>  {
+> 
