@@ -1,52 +1,199 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v3 05/15] PM / doc: Update device documentation for devices in IRQ safe PM domains
-Date: Thu,  4 Aug 2016 17:04:52 -0600
-Message-ID: <1470351902-43103-6-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v3 12/15] drivers: firmware: psci: Support cluster idle states for OS-Initiated
+Date: Thu,  4 Aug 2016 17:04:59 -0600
+Message-ID: <1470351902-43103-13-git-send-email-lina.iyer@linaro.org>
 References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:33456 "EHLO
-	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759363AbcHDXFq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 19:05:46 -0400
-Received: by mail-pf0-f179.google.com with SMTP id y134so90786353pfg.0
-        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2016 16:05:46 -0700 (PDT)
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:35085 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759377AbcHDXGD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 19:06:03 -0400
+Received: by mail-pf0-f180.google.com with SMTP id x72so90843044pfd.2
+        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2016 16:06:03 -0700 (PDT)
 In-Reply-To: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>
 
-Update documentation to reflect the changes made to support IRQ safe PM
-domains.
+PSCI OS initiated firmware may allow Linux to determine the state of the
+CPU cluster and the cluster at coherency level to enter idle states when
+there are no active CPUs. Since Linux has a better idea of the QoS and
+the wakeup pattern of the CPUs, the cluster idle states may be better
+determined by the OS instead of the firmware.
 
+The last CPU entering idle in a cluster, is responsible for selecting
+the state of the cluster. Only one CPU in a cluster may provide the
+cluster idle state to the firmware. Similarly, the last CPU in the
+system may provide the state of the coherency domain along with the
+cluster and the CPU state IDs.
+
+Utilize the CPU PM domain framework's helper functions to build up the
+hierarchy of cluster topology using Generic PM domains. We provide
+callbacks for domain power_on and power_off. By appending the state IDs
+at each domain level in the -power_off() callbacks, we build up a
+composite state ID that can be passed onto the firmware to idle the CPU,
+the cluster and the coherency interface.
+
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- Documentation/power/devices.txt | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/firmware/psci.c | 89 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 86 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
-index 8ba6625..a622136 100644
---- a/Documentation/power/devices.txt
-+++ b/Documentation/power/devices.txt
-@@ -607,7 +607,17 @@ individually.  Instead, a set of devices sharing a power resource can be put
- into a low-power state together at the same time by turning off the shared
- power resource.  Of course, they also need to be put into the full-power state
- together, by turning the shared power resource on.  A set of devices with this
--property is often referred to as a power domain.
-+property is often referred to as a power domain. A power domain may also be
-+nested inside another power domain.
-+
-+Devices, by default, operate in process context. If a device can operate in
-+IRQ safe context that has to be explicitly indicated by setting the irq_safe
-+boolean inside struct generic_pm_domain to be true. Power domains by default,
-+operate in process context but could have devices that are IRQ safe. Such
-+power domains cannot be powered on/off during runtime PM. On the other hand,
-+IRQ safe PM domains that have IRQ safe devices may be powered off when all
-+the devices are in idle. An IRQ safe domain may only be attached as a
-+subdomain to another IRQ safe domain.
+diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+index 3920aba..3a1e5a7 100644
+--- a/drivers/firmware/psci.c
++++ b/drivers/firmware/psci.c
+@@ -15,6 +15,7 @@
  
- Support for power domains is provided through the pm_domain field of struct
- device.  This field is a pointer to an object of type struct dev_pm_domain,
+ #include <linux/arm-smccc.h>
+ #include <linux/cpuidle.h>
++#include <linux/cpu_domains.h>
+ #include <linux/errno.h>
+ #include <linux/linkage.h>
+ #include <linux/of.h>
+@@ -53,6 +54,17 @@
+  */
+ static int resident_cpu = -1;
+ static bool psci_has_osi_pd;
++static DEFINE_PER_CPU(u32, cluster_state_id);
++
++static inline u32 psci_get_composite_state_id(u32 cpu_state)
++{
++	return cpu_state | this_cpu_read(cluster_state_id);
++}
++
++static inline void psci_reset_composite_state_id(void)
++{
++	this_cpu_write(cluster_state_id, 0);
++}
+ 
+ bool psci_tos_resident_on(int cpu)
+ {
+@@ -179,6 +191,8 @@ static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
+ 
+ 	fn = psci_function_id[PSCI_FN_CPU_ON];
+ 	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
++	/* Reset CPU cluster states */
++	psci_reset_composite_state_id();
+ 	return psci_to_linux_errno(err);
+ }
+ 
+@@ -250,6 +264,52 @@ static int __init psci_features(u32 psci_func_id)
+ 
+ #ifdef CONFIG_CPU_IDLE
+ static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
++static bool psci_suspend_mode_is_osi;
++
++static int psci_set_suspend_mode_osi(bool enable)
++{
++	int ret;
++	int mode;
++
++	if (enable && !psci_has_osi_pd)
++		return -ENODEV;
++
++	if (enable == psci_suspend_mode_is_osi)
++		return 0;
++
++	mode = enable ? PSCI_1_0_SUSPEND_MODE_OSI : PSCI_1_0_SUSPEND_MODE_PC;
++	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			     mode, 0, 0);
++	if (!ret)
++		psci_suspend_mode_is_osi = enable;
++
++	return psci_to_linux_errno(ret);
++}
++
++static const struct of_device_id psci_osi_match[] = {
++	{ .compatible = "arm,psci-1.0",	},
++	{},
++};
++
++static int psci_pd_populate_state_data(struct device_node *np, u32 *param)
++{
++	struct device_node *dn = of_get_next_parent(np);
++
++	/* Check if we are inside in the psci node */
++	for (; dn; dn = of_get_next_parent(dn))
++		if (of_match_node(psci_osi_match, dn))
++			return of_property_read_u32(np,
++					"arm,psci-suspend-param", param);
++
++	return -EINVAL;
++}
++
++static int psci_pd_power_off(u32 state_idx, u32 param,
++		const struct cpumask *mask)
++{
++	__this_cpu_add(cluster_state_id, param);
++	return 0;
++}
+ 
+ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ {
+@@ -304,6 +364,21 @@ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ 	}
+ 	/* Idle states parsed correctly, initialize per-cpu pointer */
+ 	per_cpu(psci_power_state, cpu) = psci_states;
++
++	if (psci_has_osi_pd) {
++		int ret;
++		const struct cpu_pd_ops psci_pd_ops = {
++			.populate_state_data = psci_pd_populate_state_data,
++			.power_off = psci_pd_power_off,
++		};
++
++		ret = of_setup_cpu_pd_single(cpu, &psci_pd_ops);
++		if (!ret)
++			ret = psci_set_suspend_mode_osi(true);
++		if (ret)
++			pr_warn("CPU%d: Error setting PSCI OSI mode\n", cpu);
++	}
++
+ 	return 0;
+ 
+ free_mem:
+@@ -330,15 +405,17 @@ int psci_cpu_init_idle(unsigned int cpu)
+ static int psci_suspend_finisher(unsigned long index)
+ {
+ 	u32 *state = __this_cpu_read(psci_power_state);
++	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
+ 
+-	return psci_ops.cpu_suspend(state[index - 1],
+-				    virt_to_phys(cpu_resume));
++	return psci_ops.cpu_suspend(ext_state, virt_to_phys(cpu_resume));
+ }
+ 
+ int psci_cpu_suspend_enter(unsigned long index)
+ {
+ 	int ret;
+ 	u32 *state = __this_cpu_read(psci_power_state);
++	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
++
+ 	/*
+ 	 * idle state index 0 corresponds to wfi, should never be called
+ 	 * from the cpu_suspend operations
+@@ -347,10 +424,16 @@ int psci_cpu_suspend_enter(unsigned long index)
+ 		return -EINVAL;
+ 
+ 	if (!psci_power_state_loses_context(state[index - 1]))
+-		ret = psci_ops.cpu_suspend(state[index - 1], 0);
++		ret = psci_ops.cpu_suspend(ext_state, 0);
+ 	else
+ 		ret = cpu_suspend(index, psci_suspend_finisher);
+ 
++	/*
++	 * Clear the CPU's cluster states, we start afresh after coming
++	 * out of idle.
++	 */
++	psci_reset_composite_state_id();
++
+ 	return ret;
+ }
+ 
 -- 
 2.7.4
 
