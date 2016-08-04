@@ -1,99 +1,88 @@
-From: Petr Mladek <pmladek@suse.com>
-Subject: [PATCH] thermal/powerclamp: Prevent division by zero when counting interval
-Date: Thu,  4 Aug 2016 16:56:46 +0200
-Message-ID: <1470322606-12435-1-git-send-email-pmladek@suse.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Petr Mladek <pmladek@suse.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v2 06/14] PM / cpu_domains: Setup PM domains for
+ CPUs/clusters
+Date: Thu, 4 Aug 2016 09:06:24 -0600
+Message-ID: <20160804150624.GA1207@linaro.org>
+References: <1469829385-11511-1-git-send-email-lina.iyer@linaro.org>
+ <1469829385-11511-7-git-send-email-lina.iyer@linaro.org>
+ <20160804101515.GA29537@brendan-thinkstation>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160804101515.GA29537@brendan-thinkstation>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Brendan Jackman <brendan.jackman@arm.com>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-I have got a zero division error when disabling the forced
-idle injection from the intel powerclamp. I did
+On Thu, Aug 04 2016 at 04:15 -0600, Brendan Jackman wrote:
+>Hi Lina,
+>
+>On Fri, Jul 29, 2016 at 03:56:17PM -0600, Lina Iyer wrote:
+>> +static struct generic_pm_domain *of_get_cpu_domain(struct device_node *dn,
+>> +		const struct cpu_pd_ops *ops, int cpu)
+>> +{
+>> +	struct of_phandle_args args;
+>> +	struct generic_pm_domain *genpd, *parent;
+>> +	struct cpu_pm_domain *cpu_pd, *parent_cpu_pd;
+>> +	int ret;
+>> +
+>> +	/* Do we have this domain? If not, create the domain */
+>> +	args.np = dn;
+>> +	args.args_count = 0;
+>> +
+>> +	genpd = of_genpd_get_from_provider(&args);
+>> +	if (!IS_ERR(genpd))
+>> +		return genpd;
+>> +
+>> +	genpd = of_init_cpu_pm_domain(dn, ops);
+>> +	if (IS_ERR(genpd))
+>> +		return genpd;
+>> +
+>> +	/* Is there a domain provider for this domain? */
+>> +	ret = of_parse_phandle_with_args(dn, "power-domains",
+>> +			"#power-domain-cells", 0, &args);
+>> +	if (ret < 0)
+>> +		goto skip_parent;
+>> +
+>> +	/* Find its parent and attach this domain to it, recursively */
+>> +	parent = of_get_cpu_domain(args.np, ops, cpu);
+>> +	if (IS_ERR(parent))
+>> +		goto skip_parent;
+>> +
+>> +	ret = pm_genpd_add_subdomain(genpd, parent);
+>
+>Looks like the arguments are the wrong way around here, it should be:
+>
+>	ret = pm_genpd_add_subdomain(parent, genpd);
+>
+Right. Thanks, will fix.
 
-  echo 0 >/sys/class/thermal/cooling_device48/cur_state
+Thanks,
+Lina
 
-and got
-
-[  986.072632] divide error: 0000 [#1] PREEMPT SMP
-[  986.078989] Modules linked in:
-[  986.083618] CPU: 17 PID: 24967 Comm: kidle_inject/17 Not tainted 4.7.0-1-default+ #3055
-[  986.093781] Hardware name: Intel Corporation S2600CP/S2600CP, BIOS RMLSDP.86I.R3.27.D685.1305151734 05/15/2013
-[  986.106227] task: ffff880430e1c080 task.stack: ffff880427ef0000
-[  986.114122] RIP: 0010:[<ffffffff81794859>]  [<ffffffff81794859>] clamp_thread+0x1d9/0x600
-[  986.124609] RSP: 0018:ffff880427ef3e20  EFLAGS: 00010246
-[  986.131860] RAX: 0000000000000258 RBX: 0000000000000006 RCX: 0000000000000001
-[  986.141179] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000018
-[  986.150478] RBP: ffff880427ef3ec8 R08: ffff880427ef0000 R09: 0000000000000002
-[  986.159779] R10: 0000000000003df2 R11: 0000000000000018 R12: 0000000000000002
-[  986.169089] R13: 0000000000000000 R14: ffff880427ef0000 R15: ffff880427ef0000
-[  986.178388] FS:  0000000000000000(0000) GS:ffff880435940000(0000) knlGS:0000000000000000
-[  986.188785] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[  986.196559] CR2: 00007f1d0caf0000 CR3: 0000000002006000 CR4: 00000000001406e0
-[  986.205909] Stack:
-[  986.209524]  ffff8802be897b00 ffff880430e1c080 0000000000000011 0000006a35959780
-[  986.219236]  0000000000000011 ffff880427ef0008 0000000000000000 ffff8804359503d0
-[  986.228966]  0000000100029d93 ffffffff81794140 0000000000000000 ffffffff05000011
-[  986.238686] Call Trace:
-[  986.242825]  [<ffffffff81794140>] ? pkg_state_counter+0x80/0x80
-[  986.250866]  [<ffffffff81794680>] ? powerclamp_set_cur_state+0x180/0x180
-[  986.259797]  [<ffffffff8111d1a9>] kthread+0xc9/0xe0
-[  986.266682]  [<ffffffff8193d69f>] ret_from_fork+0x1f/0x40
-[  986.274142]  [<ffffffff8111d0e0>] ? kthread_create_on_node+0x180/0x180
-[  986.282869] Code: d1 ea 48 89 d6 80 3d 6a d0 d4 00 00 ba 64 00 00 00 89 d8 41 0f 45 f5 0f af c2 42 8d 14 2e be 31 00 00 00 83 fa 31 0f 42 f2 31 d2 <f7> f6 48 8b 15 9e 07 87 00 48 8b 3d 97 07 87 00 48 63 f0 83 e8
-[  986.307806] RIP  [<ffffffff81794859>] clamp_thread+0x1d9/0x600
-[  986.315871]  RSP <ffff880427ef3e20>
-
-RIP points to the following lines:
-
-	compensation = get_compensation(target_ratio);
-	interval = duration_jiffies*100/(target_ratio+compensation);
-
-A solution would be to switch the following two commands in
-powerclamp_set_cur_state():
-
-	set_target_ratio = 0;
-	end_power_clamp();
-
-But I think that the zero division might happen also when target_ratio
-is non-zero because the compensation might be negative. Therefore
-it is better to check the sum of target_ratio and compensation
-explicitly.
-
-Also the compensated_ratio variable is always set. Therefore there
-is no need to initialize it.
-
-Signed-off-by: Petr Mladek <pmladek@suse.com>
----
- drivers/thermal/intel_powerclamp.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index 015ce2eb6eb7..65b865184990 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -388,7 +388,7 @@ static int clamp_thread(void *arg)
- 		int sleeptime;
- 		unsigned long target_jiffies;
- 		unsigned int guard;
--		unsigned int compensation = 0;
-+		unsigned int compensated_ratio;
- 		int interval; /* jiffies to sleep for each attempt */
- 		unsigned int duration_jiffies = msecs_to_jiffies(duration);
- 		unsigned int window_size_now;
-@@ -409,8 +409,11 @@ static int clamp_thread(void *arg)
- 		 * c-states, thus we need to compensate the injected idle ratio
- 		 * to achieve the actual target reported by the HW.
- 		 */
--		compensation = get_compensation(target_ratio);
--		interval = duration_jiffies*100/(target_ratio+compensation);
-+		compensated_ratio = target_ratio +
-+			get_compensation(target_ratio);
-+		if (compensated_ratio <= 0)
-+			compensated_ratio = 1;
-+		interval = duration_jiffies * 100 / compensated_ratio;
- 
- 		/* align idle time */
- 		target_jiffies = roundup(jiffies, interval);
--- 
-1.8.5.6
+>> +	if (ret) {
+>> +		pr_err("%s: Unable to add sub-domain (%s)\n err: %d",
+>> +				__func__, genpd->name, ret);
+>> +		return ERR_PTR(ret);
+>> +	}
+>> +
+>> +	/*
+>> +	 * Reference parent domain for easy access.
+>> +	 * Note: We could be attached to a domain that is not a
+>> +	 * CPU PM domain in that case don't reference the parent.
+>> +	 */
+>> +	cpu_pd = to_cpu_pd(genpd);
+>> +	parent_cpu_pd = to_cpu_pd(parent);
+>> +
+>> +	if (cpu_pd && parent_cpu_pd)
+>> +		cpu_pd->parent = parent_cpu_pd;
+>> +
+>> +skip_parent:
+>> +	of_node_put(dn);
+>> +	return genpd;
+>> +}
+>
+>Cheers,
+>Brendan
