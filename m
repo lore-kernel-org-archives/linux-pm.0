@@ -1,91 +1,166 @@
-From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v4 2/6] power: add power sequence library
-Date: Thu, 4 Aug 2016 14:04:57 +0800
-Message-ID: <20160804060457.GA27272@shlinux2>
-References: <1470108652-16812-1-git-send-email-peter.chen@nxp.com>
- <1470108652-16812-3-git-send-email-peter.chen@nxp.com>
- <20160803221658.GD1405@google.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection algorithm for Core
+Date: Wed, 3 Aug 2016 23:53:23 -0700
+Message-ID: <001b01d1ee1c$e6a6a170$b3f3e450$@net>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1572483.RZjvRFdxPx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160803221658.GD1405-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta18.telus.net ([209.171.16.91]:41176 "EHLO cmta18.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751470AbcHDGxa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 4 Aug 2016 02:53:30 -0400
+In-Reply-To: 
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Peter Zijlstra' <peterz@infradead.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
 
-On Wed, Aug 03, 2016 at 03:16:58PM -0700, Matthias Kaehlcke wrote:
-> El Tue, Aug 02, 2016 at 11:30:48AM +0800 Peter Chen ha dit:
-> 
-> > diff --git a/drivers/power/pwrseq/core.c b/drivers/power/pwrseq/core.c
-> >
-> > ...
-> >
-> > +static DEFINE_MUTEX(pwrseq_list_mutex);
-> > +static LIST_HEAD(pwrseq_list);
-> > +
-> > +int pwrseq_get(struct device_node *np, struct pwrseq *p)
-> > +{
-> > +	if (p && p->get)
-> > +		return p->get(np, p);
-> > +
-> > +	return -ENOTSUPP;
-> > +}
-> > +
-> > +int pwrseq_on(struct device_node *np, struct pwrseq *p)
-> > +{
-> > +	if (p && p->on)
-> > +		return p->on(np, p);
-> > +
-> > +	return -ENOTSUPP;
-> > +}
-> > +
-> > +void pwrseq_off(struct pwrseq *p)
-> > +{
-> > +	if (p && p->off)
-> > +		p->off(p);
-> > +}
-> > +
-> > +void pwrseq_put(struct pwrseq *p)
-> > +{
-> > +	if (p && p->put)
-> > +		p->put(p);
-> > +}
-> > +
-> > +void pwrseq_free(struct pwrseq *p)
-> > +{
-> > +	if (p && p->free)
-> > +		p->free(p);
-> > +}
-> > +
-> > +void pwrseq_register(struct pwrseq *pwrseq)
-> > +{
-> > +	mutex_lock(&pwrseq_list_mutex);
-> > +	list_add(&pwrseq->node, &pwrseq_list);
-> > +	mutex_unlock(&pwrseq_list_mutex);
-> > +}
-> > +
-> > +void pwrseq_unregister(struct pwrseq *pwrseq)
-> > +{
-> > +	mutex_lock(&pwrseq_list_mutex);
-> > +	list_del(&pwrseq->node);
-> > +	mutex_unlock(&pwrseq_list_mutex);
-> > +}
-> 
-> What is the purpose of pwrseq_register/unregister()? The pwrseq
-> structs are added and removed from pwrseq_list, but besides that
-> pwrseq_list is not used.
-> 
+On 2016.08.03 21:19 Doug Smythies wrote:
 
-I had thought we may need to dump the pwrseq list in future for debug
-purpose. I will delete this unnecessary code.
+Re-sending without the previously attached graph.
 
--- 
+Hi Rafael,
 
-Best Regards,
-Peter Chen
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Hope this feedback and test results help.
+
+On 2016.07.31 16:49 Rafael J. Wysocki wrote:
+
+> The PID-base P-state selection algorithm used by intel_pstate for
+> Core processors is based on very weak foundations.
+
+Agree, very very much.
+
+...[cut]...
+
+> Consequently, the only viable way to fix that is to replace the
+> erroneous algorithm entirely with a better one.
+
+Agree, very very much.
+
+> To that end, notice that setting the P-state proportional to the
+> actual CPU utilization (measured with the help of MPERF and TSC)
+> generally leads to reasonable behavior, but it does not reflect
+> the "performance boosting" nature of the current P-state
+> selection algorithm. It may be made more similar to that
+> algorithm, though, by adding iowait boosting to it.
+
+Which is good and does help a lot for the IO case, but issues
+remain for the compute case.
+
+...[cut]...
+
+> +static inline int32_t get_target_pstate_default(struct cpudata *cpu)
+> +{
+> +	struct sample *sample = &cpu->sample;
+> +	int32_t busy_frac;
+> +	int pstate;
+> +
+> +	busy_frac = div_fp(sample->mperf, sample->tsc);
+> +	sample->busy_scaled = busy_frac * 100;
+> +
+> +	if (busy_frac < cpu->iowait_boost)
+> +		busy_frac = cpu->iowait_boost;
+> +
+> +	cpu->iowait_boost >>= 1;
+> +
+> +	pstate = cpu->pstate.turbo_pstate;
+> +	return fp_toint((pstate + (pstate >> 2)) * busy_frac);
+> +}
+> +
+
+The response curve is not normalized on the lower end to the minimum
+pstate for the processor, meaning the overall response will vary
+between processors as a function of minimum pstate.
+
+The clamping at maximum pstate at about 80% load seems at little high
+to me. Work I have done in various attempts to bring back the use of actual load
+has always ended up achieving maximum pstate before 80% load for best results.
+Even the get_target_pstate_cpu_load people reach the max pstate faster, and they
+are more about energy than performance.
+What was the criteria for the decision here? Are test results available for review
+and/or duplication by others?
+
+
+Several tests were done with this patch set.
+The patch set would not apply to kernel 4.7, but did apply fine to a 4.7+ kernel
+(I did as of 7a66ecf) from a few days ago.
+
+Test 1: Phoronix ffmpeg test (less time is better):
+Reason: Because it suffers from rotating amongst CPUs in an odd way, challenging for CPU frequency scaling drivers.
+This test tends to be an indicator of potential troubles with some games.
+Criteria: (Dirk Brandewie): Must match or better acpi_cpufreq - ondemand.
+With patch set: 15.8 Seconds average and 24.51 package watts.
+Without patch set: 11.61 Seconds average and 27.59 watts.
+Conclusion: Significant reduction in performance with proposed patch set.
+
+Tests 2, 3, 4: Phoronix apache, kernel compile, and postmark tests.
+Conclusion: All were similar with and without the patch set, with perhaps a slight
+improvement in power consumption for the postmark test with the patch set.
+
+Test 5: Random reads within a largish (50 gigabytes) file.
+Reason: Because it was a test I used to use with other include or not include IOWAIT work.
+Conclusion: no difference with and without the patch set, likely due to domination by 
+long seek times (the file is on a normal disk, not an SSD).
+
+Test 6: Sequential read of a largish (50 gigabytes) file.
+Reason: Because it was a test I used to use with other include or not include IOWAIT work.
+With patch set: 288.38 Seconds; 177.544 MB/Sec; 6.83 Watts.
+Without patch set: 292.38 Seconds; 174.99 MB/Sec; 7.08 Watts.
+Conclusion: Better performance and better power with the patch set.
+
+Test 7: Compile the kernel 9 times.
+Reason: Just because it was a very revealing test during the
+"intel_pstate: Increase hold-off time before busyness is scaled"
+discussion / thread(s).
+Conclusion: no difference with and without the patch set.
+
+Test 8: pipe-test between cores.
+Reason: Just because it was so useful during the
+"cross core scheduling frequency drop bisected to 0c313cb20732"
+discussion / thread(s).
+With patch set: 73.166 Sec; 3.6576 usec/loop; 2278.53 Joules.
+Without Patch set: 74.444 Sec; 3.7205 usec/loop; 2338.79 Joules.
+Conclusion: Slightly better performance and better energy with the patch set.
+
+Test 9: Dougs_specpower simulator (20% load):
+Time is fixed, less energy is better.
+Reason: During the long
+"[intel-pstate driver regression] processor frequency very high even if in idle"
+and subsequent https://bugzilla.kernel.org/show_bug.cgi?id=115771
+discussion / thread(s), some sort of test was needed to try to mimic what Srinivas
+was getting on his fancy SpecPower test platform. So far at least, this test does that.
+Only the 20% load case was created, because that was the biggest problem case back then.
+With patch set: 4 tests at an average of 7197 Joules per test, relatively high CPU frequencies.
+Without the patch set: 4 tests at an average of 5956 Joules per test, relatively low CPU frequencies.
+Conclusion: 21% energy regression with the patch set.
+Note: Newer processors might do better than my older i7-2600K.
+
+Test 10: measure the frequency response curve, fixed work packet method,
+75 hertz work / sleep frequency (all CPU, no IOWAIT):
+Reason: To compare to some older data and observe overall.
+png graph attached - might get stripped from the distribution lists.
+Conclusions: Tends to oscillate, suggesting some sort of damping is needed.
+However, any filtering tends to increase the step function load rise time
+(see test 11 below, I think there is some wiggle room here).
+See also graph which has: with and without patch set; performance mode (for reference);
+Philippe Longepe's cpu_load method also with setpoint 40 (for reference); one of my previous
+attempts at a load related patch set from quite sometime ago (for reference).
+
+Test 11: Look at the step function load response. From no load to 100% on one CPU (CPU load only, no IO).
+While there is a graph, it is not attached:
+Conclusion: The step function response is greatly improved (virtually one sample time max).
+It would probably be O.K. to slow it down a little with a filter so as to reduce the
+tendency to oscillate under periodic load conditions (to a point, at least. A low enough frequency will
+always oscillate) (see the graph for test10).
+ 
+Questions:
+Is there a migration plan? i.e. will there be an attempt to merge the current cpu_load method
+and this method into one method? Then possibly the PID controller could be eliminated.
+
+... Doug
+
+
