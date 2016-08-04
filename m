@@ -1,13 +1,17 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2] PM / devfreq: event: remove duplicate
+Subject: [PATCH] PM / devfreq: event: remove duplicate
  devfreq_event_get_drvdata()
-Date: Thu, 04 Aug 2016 19:32:33 +0900
-Message-ID: <1470306753-5721-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, linux-kernel@vger.kernel.org, Lin Huang <hl@rock-chips.com>, stable@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+Date: Thu, 04 Aug 2016 19:28:45 +0900
+Message-ID: <1470306525-5515-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:43244 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751183AbcHDKlR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 06:41:17 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, linux-kernel@vger.kernel.org, Lin Huang <hl@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>
 
 From: Lin Huang <hl@rock-chips.com>
 
@@ -16,13 +20,9 @@ when disable CONFIG_PM_DEVFREQ_EVENT, it will lead to build fail. So
 remove devfreq_event_get_drvdata() function.
 
 Fixes: f262f28c1470 ("PM / devfreq: event: Add devfreq_event class")
-Cc: stable@vger.kernel.org
 Signed-off-by: Lin Huang <hl@rock-chips.com>
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
-Changes from v1:
-- Add <stable@vger.kernel.org>
-
  include/linux/devfreq-event.h | 5 -----
  1 file changed, 5 deletions(-)
 
@@ -44,3 +44,4 @@ index 0a83a1e648b0..4db00b02ca3f 100644
  {
 -- 
 1.9.1
+
