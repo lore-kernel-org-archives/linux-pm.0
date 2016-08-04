@@ -1,91 +1,139 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v2 01/14] PM / Domains: Allow domain power states to be
- read from DT
-Date: Thu, 4 Aug 2016 09:08:54 -0600
-Message-ID: <20160804150854.GB1207@linaro.org>
+From: Brendan Jackman <brendan.jackman@arm.com>
+Subject: Re: [PATCH v2 02/14] dt/bindings: update binding for PM domain idle
+ states
+Date: Thu, 4 Aug 2016 16:24:53 +0100
+Message-ID: <20160804152453.GB1732@brendan-thinkstation>
 References: <1469829385-11511-1-git-send-email-lina.iyer@linaro.org>
- <1469829385-11511-2-git-send-email-lina.iyer@linaro.org>
- <20160804132407.GA1732@brendan-thinkstation>
+ <1469829385-11511-3-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:35991 "EHLO
-	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964853AbcHDPI5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 11:08:57 -0400
-Received: by mail-pf0-f180.google.com with SMTP id h186so87413351pfg.3
-        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2016 08:08:57 -0700 (PDT)
+Received: from foss.arm.com ([217.140.101.70]:51900 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751820AbcHDPZp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 4 Aug 2016 11:25:45 -0400
 Content-Disposition: inline
-In-Reply-To: <20160804132407.GA1732@brendan-thinkstation>
+In-Reply-To: <1469829385-11511-3-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Brendan Jackman <brendan.jackman@arm.com>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>, Mark Rutland <mark.rutland@arm.com>
 
-On Thu, Aug 04 2016 at 07:24 -0600, Brendan Jackman wrote:
->Hi Lina,
->
->Couple of nitpicks here:
->
->On Fri, Jul 29, 2016 at 03:56:12PM -0600, Lina Iyer wrote:
->> From: Axel Haslam <ahaslam+renesas@baylibre.com>
->>
->> This patch allows domains to define idle states in the DT. SoC's can
->> define domain idle states in DT using the "power-states" property of the
->> domain provider. Calling of_pm_genpd_init() will  read the idle states
->> and initialize the genpd for the domain.
->>
->
->The commit message got out of sync here, the idle states property is not
->"power-states" but "domain-idle-states" now.
->
-Ah, yes. Will amend the comit text.
->> In addition to the entry and exit latency for idle state, also add
->> residency and state-param properties. A domain idling in a state is only
->> power effecient if it stays idle for a certain period in that state. The
->> residency provides this minimum time for the idle state to provide power
->> benefits. The state-param is a state specific u32 value that the
->> platform may use for that idle state.
->>
->
->And "state-param" isn't used any more, since the patchset switched to using
->arm,idle-state.
->
-Ok.
+Hi Lina,
 
->> [snip]
->> +int pm_genpd_of_parse_power_states(struct generic_pm_domain *genpd)
->> +{
->> +	struct device_node *np;
->> +	int i, err = 0;
->> +
->> +	for (i = 0; i < GENPD_MAX_NUM_STATES; i++) {
->> +		np = of_parse_phandle(genpd->of_node, "domain-idle-states", i);
->> +		if (!np)
->> +			break;
->> +
->> +		err = genpd_of_get_power_state(&genpd->states[i], np);
->> +		if (err) {
->> +			pr_err
->> +			    ("Parsing idle state node %s failed with err %d\n",
->> +			     np->full_name, err);
->> +			err = -EINVAL;
->
->I guess there should be an of_node_put here.
->
-Right. Will add it in.
+These bindings are the reason for my interest in this patchset; I'm hoping to be
+able to do some work based on them in order to generically describe the cost of
+idle states for use in the Energy Aware Scheduling (EAS)[1] energy model.
 
-Thanks,
-Lina
+Mark Rutland expressed concern [2] in the thread for the previous version of
+this patchset that there are now two possible locations for the list of idle
+states; that hasn't been addressed. My own instinct is that this is OK: in the
+real world, power domain (e.g. cluster) idle states are a property of the power
+domain and not of the CPU it contains - the DT should reflect this.
 
->> +			break;
->> +		}
->> +		of_node_put(np);
->> +	}
->> +
->> +	if (err)
->> +		return err;
->> +
->> +	genpd->state_count = i;
->> +	return 0;
->> +}
+However, since there are existing platform DTs with cluster-level suspend states
+(which are platform-coordinated rather than OS-initiated) in cpu-idle-states, do
+we have a backwards-compatibility issue? e.g. say we have a platform with a DT
+like this:
+
+	cpu@0 {
+		/*...*/
+		cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
+	};
+
+	idle-states {
+		CPU_SLEEP: cpu-sleep {
+			/*...*/
+		};
+		CLUSTER_SLEEP: cluster-sleep {
+			/*...*/
+		};
+	};
+
+and in order to enable OS-initiated cluster suspend it changes to this:
+
+	cpu@0 {
+		/*...*/
+		cpu-idle-states = <&CPU_SLEEP>;
+		power-domains = <CPU_PD>;
+	};
+
+	idle-states {
+		CPU_SLEEP: cpu-sleep {
+			/*...*/
+		};
+	};
+
+	/*... elsewhere ... */
+
+	CLUSTER_SLEEP: cluster-sleep {
+		/*...*/
+	};
+
+	CPU_PD {
+	/*...*/
+		idle-states = <&CLUSTER_SLEEP>;
+	};
+
+Then old kernels which don't have CPU PM Domains will lose the ability to
+suspend clusters. I've phrased this as a question because I'm not clear on what
+we require in terms of backwards/forwards compatibility with DTs - excuse my
+ignorance. What are your thoughts on this?
+
+A couple of notes:
+
+On Fri, Jul 29, 2016 at 03:56:13PM -0600, Lina Iyer wrote:
+> +Example 3:
+> +
+> +	pm-domains {
+> +		a57_pd: a57_pd@ {
+> +			/* will have a57 platform ARM_PD_METHOD_OF_DECLARE*/
+> +			compatible = "arm,pd","arm,cortex-a57";
+> +			#power-domain-cells = <0>;
+> +			idle-states = <&CLUSTER_SLEEP_0>;
+> +		};
+> +
+> +		a53_pd: a53_pd@ {
+> +			/* will have a a53 platform ARM_PD_METHOD_OF_DECLARE*/
+> +			compatible = "arm,pd","arm,cortex-a53";
+> +			#power-domain-cells = <0>;
+> +			idle-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
+> +		};
+> +
+> +		CLUSTER_SLEEP_0: idle-state@0 {
+> +			compatible = "arm,idle-state";
+> +			entry-latency-us = <1000>;
+> +			exit-latency-us = <2000>;
+> +			residency-us = <10000>;
+> +		};
+> +
+> +		CLUSTER_SLEEP_1: idle-state@1 {
+> +			compatible = "arm,idle-state";
+> +			entry-latency-us = <5000>;
+> +			exit-latency-us = <5000>;
+> +			residency-us = <100000>;
+> +		};
+
+I'm confused about the location of the idle state nodes. In this example,
+they're under the pm-domains node which seems wrong to me. In your later patch
+for msm8916.dsti they come under cpu-domain-states. I'm inexperienced here so
+please excuse me again if I'm being ignorant.
+
+idle-states.txt (to which this file refers) says that idle state nodes must come
+under /cpus/idle-states. I don't think power domain idle states belong there, so
+the documentation should be updated to reflect that.
+
+> +	};
+> +
+> +
+>  The nodes above define two power controllers: 'parent' and 'child'.
+>  Domains created by the 'child' power controller are subdomains of '0' power
+>  domain provided by the 'parent' power controller.
+
+This block refers to Example 2 - the hunk you added should be below.
+
+[1] https://lwn.net/Articles/650426/
+[2] https://patchwork.kernel.org/patch/9193651/
+
+Regards,
+Brendan
