@@ -1,66 +1,123 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: powernv: Fix crash in gpstate_timer_handler
-Date: Thu, 4 Aug 2016 09:47:11 -0700
-Message-ID: <20160804164711.GE10348@ubuntu>
-References: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] thermal/powerclamp: Prevent division by zero when
+ counting interval
+Date: Thu, 4 Aug 2016 10:32:00 -0700
+Message-ID: <20160804103200.486fb236@jacob-builder>
+References: <1470322606-12435-1-git-send-email-pmladek@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+In-Reply-To: <1470322606-12435-1-git-send-email-pmladek@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: Petr Mladek <pmladek@suse.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-On 04-08-16, 20:59, Akshay Adiga wrote:
-> 'commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with
-> frequency table index")' changes calc_global_pstate() to use
-> cpufreq_table index instead of pstate_id.
+On Thu,  4 Aug 2016 16:56:46 +0200
+Petr Mladek <pmladek@suse.com> wrote:
+
+> I have got a zero division error when disabling the forced
+> idle injection from the intel powerclamp. I did
 > 
-> But in gpstate_timer_handler() pstate_id was being passed instead
-> of cpufreq_table index, which caused the index_to_pstate() to access
-> out of bound indices, leading to this crash.
+>   echo 0 >/sys/class/thermal/cooling_device48/cur_state
 > 
-> Adding sanity check for index and pstate, to ensure only valid pstate
-> and index values are returned.
+> and got
 > 
-> Call Trace:
-> [c00000078d66b130] [c00000000011d224] __free_irq+0x234/0x360
-> (unreliable)
-> [c00000078d66b1c0] [c00000000011d44c] free_irq+0x6c/0xa0
-> [c00000078d66b1f0] [c00000000006c4f8] opal_event_shutdown+0x88/0xd0
-> [c00000078d66b230] [c000000000067a4c] opal_shutdown+0x1c/0x90
-> [c00000078d66b260] [c000000000063a00] pnv_shutdown+0x20/0x40
-> [c00000078d66b280] [c000000000021538] machine_restart+0x38/0x90
-> [c0000000078d66b310] [c000000000965ea0] panic+0x284/0x300
-> [c00000078d66b3a0] [c00000000001f508] die+0x388/0x450
-> [c00000078d66b430] [c000000000045a50] bad_page_fault+0xd0/0x140
-> [c00000078d66b4a0] [c000000000008964] handle_page_fault+0x2c/0x30
->    interrupt: 300 at gpstate_timer_handler+0x150/0x260
->     LR = gpstate_timer_handler+0x130/0x260
-> [c00000078d66b7f0] [c000000000132b58] call_timer_fn+0x58/0x1c0
-> [c00000078d66b880] [c000000000132e20] expire_timers+0x130/0x1d0
-> [c00000078d66b8f0] [c000000000133068] run_timer_softirq+0x1a8/0x230
-> [c00000078d66b980] [c0000000000b535c] __do_softirq+0x18c/0x400
-> [c00000078d66ba70] [c0000000000b5828] irq_exit+0xc8/0x100
-> [c00000078d66ba90] [c00000000001e214] timer_interrupt+0xa4/0xe0
-> [c00000078d66bac0] [c0000000000027d0] decrementer_common+0x150/0x180
->    interrupt: 901 at arch_local_irq_restore+0x74/0x90
->   0] [c000000000106b34] call_cpuidle+0x44/0x90
-> [c00000078d66be50] [c00000000010708c] cpu_startup_entry+0x38c/0x460
-> [c00000078d66bf20] [c00000000003d930] start_secondary+0x330/0x380
-> [c00000078d66bf90] [c000000000008e6c] start_secondary_prolog+0x10/0x14
+> [  986.072632] divide error: 0000 [#1] PREEMPT SMP
+> [  986.078989] Modules linked in:
+> [  986.083618] CPU: 17 PID: 24967 Comm: kidle_inject/17 Not tainted
+> 4.7.0-1-default+ #3055 [  986.093781] Hardware name: Intel
+> Corporation S2600CP/S2600CP, BIOS RMLSDP.86I.R3.27.D685.1305151734
+> 05/15/2013 [  986.106227] task: ffff880430e1c080 task.stack:
+> ffff880427ef0000 [  986.114122] RIP: 0010:[<ffffffff81794859>]
+> [<ffffffff81794859>] clamp_thread+0x1d9/0x600 [  986.124609] RSP:
+> 0018:ffff880427ef3e20  EFLAGS: 00010246 [  986.131860] RAX:
+> 0000000000000258 RBX: 0000000000000006 RCX: 0000000000000001
+> [  986.141179] RDX: 0000000000000000 RSI: 0000000000000000 RDI:
+> 0000000000000018 [  986.150478] RBP: ffff880427ef3ec8 R08:
+> ffff880427ef0000 R09: 0000000000000002 [  986.159779] R10:
+> 0000000000003df2 R11: 0000000000000018 R12: 0000000000000002
+> [  986.169089] R13: 0000000000000000 R14: ffff880427ef0000 R15:
+> ffff880427ef0000 [  986.178388] FS:  0000000000000000(0000)
+> GS:ffff880435940000(0000) knlGS:0000000000000000 [  986.188785] CS:
+> 0010 DS: 0000 ES: 0000 CR0: 0000000080050033 [  986.196559] CR2:
+> 00007f1d0caf0000 CR3: 0000000002006000 CR4: 00000000001406e0
+> [  986.205909] Stack: [  986.209524]  ffff8802be897b00
+> ffff880430e1c080 0000000000000011 0000006a35959780 [  986.219236]
+> 0000000000000011 ffff880427ef0008 0000000000000000 ffff8804359503d0
+> [  986.228966]  0000000100029d93 ffffffff81794140 0000000000000000
+> ffffffff05000011 [  986.238686] Call Trace: [  986.242825]
+> [<ffffffff81794140>] ? pkg_state_counter+0x80/0x80 [  986.250866]
+> [<ffffffff81794680>] ? powerclamp_set_cur_state+0x180/0x180
+> [  986.259797]  [<ffffffff8111d1a9>] kthread+0xc9/0xe0
+> [  986.266682]  [<ffffffff8193d69f>] ret_from_fork+0x1f/0x40
+> [  986.274142]  [<ffffffff8111d0e0>] ?
+> kthread_create_on_node+0x180/0x180 [  986.282869] Code: d1 ea 48 89
+> d6 80 3d 6a d0 d4 00 00 ba 64 00 00 00 89 d8 41 0f 45 f5 0f af c2 42
+> 8d 14 2e be 31 00 00 00 83 fa 31 0f 42 f2 31 d2 <f7> f6 48 8b 15 9e
+> 07 87 00 48 8b 3d 97 07 87 00 48 63 f0 83 e8 [  986.307806] RIP
+> [<ffffffff81794859>] clamp_thread+0x1d9/0x600 [  986.315871]  RSP
+> <ffff880427ef3e20>
 > 
-> Fixes: 08d27eb ("cpufreq: powernv: Replacing pstate_id with
-> frequency table index")
-> Reported-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> RIP points to the following lines:
+> 
+> 	compensation = get_compensation(target_ratio);
+> 	interval = duration_jiffies*100/(target_ratio+compensation);
+> 
+> A solution would be to switch the following two commands in
+> powerclamp_set_cur_state():
+> 
+> 	set_target_ratio = 0;
+> 	end_power_clamp();
+> 
+I see, there is race condition, clamping threads should be stopped if
+target ratio is 0.
+> But I think that the zero division might happen also when target_ratio
+> is non-zero because the compensation might be negative. Therefore
+> it is better to check the sum of target_ratio and compensation
+> explicitly.
+> 
+compensation should never be negative. since it is the additional idle
+ratio added on top of requested ratio. If actual idle is more than
+requested, we will skip injection period.
+So i prefer to have both changes.
+> Also the compensated_ratio variable is always set. Therefore there
+> is no need to initialize it.
+> 
+> Signed-off-by: Petr Mladek <pmladek@suse.com>
 > ---
->  drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++++++-
->  1 file changed, 20 insertions(+), 1 deletion(-)
+>  drivers/thermal/intel_powerclamp.c | 9 ++++++---
+>  1 file changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/intel_powerclamp.c
+> b/drivers/thermal/intel_powerclamp.c index 015ce2eb6eb7..65b865184990
+> 100644 --- a/drivers/thermal/intel_powerclamp.c
+> +++ b/drivers/thermal/intel_powerclamp.c
+> @@ -388,7 +388,7 @@ static int clamp_thread(void *arg)
+>  		int sleeptime;
+>  		unsigned long target_jiffies;
+>  		unsigned int guard;
+> -		unsigned int compensation = 0;
+> +		unsigned int compensated_ratio;
+>  		int interval; /* jiffies to sleep for each attempt */
+>  		unsigned int duration_jiffies =
+> msecs_to_jiffies(duration); unsigned int window_size_now;
+> @@ -409,8 +409,11 @@ static int clamp_thread(void *arg)
+>  		 * c-states, thus we need to compensate the injected
+> idle ratio
+>  		 * to achieve the actual target reported by the HW.
+>  		 */
+> -		compensation = get_compensation(target_ratio);
+> -		interval =
+> duration_jiffies*100/(target_ratio+compensation);
+> +		compensated_ratio = target_ratio +
+> +			get_compensation(target_ratio);
+> +		if (compensated_ratio <= 0)
+> +			compensated_ratio = 1;
+> +		interval = duration_jiffies * 100 /
+> compensated_ratio; 
+>  		/* align idle time */
+>  		target_jiffies = roundup(jiffies, interval);
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+[Jacob Pan]
