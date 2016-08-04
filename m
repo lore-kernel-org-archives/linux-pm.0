@@ -1,116 +1,97 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for system sleep
-Date: Thu, 4 Aug 2016 03:07:56 +0200
-Message-ID: <CAJZ5v0h55MCiSzJz_weEGX7nUsy_TLumssyoXz=f2_b0h_BkQQ@mail.gmail.com>
-References: <cover.1463134231.git.lukas@wunner.de> <20160617210924.GA12254@localhost>
- <20160617221407.GB1927@wunner.de> <2339231.tBO8VQgPAo@vostro.rjw.lan>
- <20160803122848.GA4415@wunner.de> <CAJZ5v0jxQHM=uuvFrpPw0vLbVjF0EQsm=XEZNdtQeYsO0ZobtQ@mail.gmail.com>
- <20160804004538.GA4564@wunner.de>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC][PATCH 5/7] cpufreq / sched: UUF_IO flag to indicate iowait
+ condition
+Date: Wed, 3 Aug 2016 19:24:18 -0700
+Message-ID: <20160804022418.GD26555@graphite.smuckle.net>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan>
+ <3009663.9YcxTKseiO@vostro.rjw.lan>
+ <20160802012209.GB9332@graphite.smuckle.net>
+ <CAJZ5v0hJL0qL6nYCWzyN4O0cqzjKCC0pprfo0tD8MZCtEj1==A@mail.gmail.com>
+ <20160802220245.GA26555@graphite.smuckle.net>
+ <CAJZ5v0j_MrarqdXh8DHHnMm4EbzEksJ8f=BD_=VzPfSD00qRKg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:35210 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752115AbcHDBIF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 3 Aug 2016 21:08:05 -0400
-In-Reply-To: <20160804004538.GA4564@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0j_MrarqdXh8DHHnMm4EbzEksJ8f=BD_=VzPfSD00qRKg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
 
-On Thu, Aug 4, 2016 at 2:45 AM, Lukas Wunner <lukas@wunner.de> wrote:
-> On Thu, Aug 04, 2016 at 01:50:39AM +0200, Rafael J. Wysocki wrote:
->> On Wed, Aug 3, 2016 at 2:28 PM, Lukas Wunner <lukas@wunner.de> wrote:
->> > On Mon, Jul 18, 2016 at 03:39:15PM +0200, Rafael J. Wysocki wrote:
->> >> On Saturday, June 18, 2016 12:14:07 AM Lukas Wunner wrote:
->> >> > On Fri, Jun 17, 2016 at 04:09:24PM -0500, Bjorn Helgaas wrote:
->> >> > > On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
->> >> > > > There are devices wich are not power-managed by the platform, yet can be
->> >> > > > runtime suspended to D3cold with some other mechanism.  When putting the
->> >> > > > system to sleep, we currently handle such devices improperly by trying
->> >> > > > to transition them from D3cold to D3hot (the default power state defined
->> >> > > > at the beginning of pci_target_state()).  Avoid that.
->> >> > > >
->> >> > > > An example for devices affected by this are Thunderbolt controllers
->> >> > > > built into Macs which can be put into D3cold with nonstandard ACPI
->> >> > > > methods.
->> >> > > >
->> >> > > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
->> >> > >
->> >> > > This needs an ack from Rafael.
->> >> > >
->> >> > > > ---
->> >> > > >  drivers/pci/pci.c | 2 ++
->> >> > > >  1 file changed, 2 insertions(+)
->> >> > > >
->> >> > > > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
->> >> > > > index 791dfe7..6af9911 100644
->> >> > > > --- a/drivers/pci/pci.c
->> >> > > > +++ b/drivers/pci/pci.c
->> >> > > > @@ -1943,6 +1943,8 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
->> >> > > >                               && !(dev->pme_support & (1 << target_state)))
->> >> > > >                                 target_state--;
->> >> > > >                 }
->> >> > > > +       } else if (dev->current_state == PCI_D3cold) {
->> >> > > > +               target_state = PCI_D3cold;
->> >> > > >         }
->> >> > >
->> >> > > This only covers the case of !device_may_wakeup().  So I guess
->> >> > > device_may_wakeup() is false for these Thunderbolt controllers.
->> >> > > Is there a reason you don't want to do this check for devices that
->> >> > > may wakeup?
->> >> >
->> >> > Fear of breaking things. It would mean that a device would be left in
->> >> > D3cold even though it may not be able to signal wakeup from that power
->> >> > state.
->> >>
->> >> Then it should not be put into D3_cold at run time too if it is wakeup-
->> >> capable.
->> >>
->> >> > That's a change of behaviour the consequences of which I cannot
->> >> > estimate. Intuitively, I would expect breakage from such a change.
->> >>
->> >> That would have been the case if the device had been capable of signaling
->> >> wakeup from D3_cold at run time, but not from system sleep.  However, that
->> >> can only happen when platform_pci_power_manageable() is true AFAICS.
->> >>
->> >> So I'd change the switch () under the platform_pci_power_manageable() check
->> >> to return "state" in the default case and then do
->> >>
->> >>       return dev->current_state < target_state ? target_state : dev->current_state;
->> >>
->> >> at the end of the function.
->> >
->> > That suggestion doesn't seem to be correct because there's another
->> > value besides PCI_D3cold which is also greater than PCI_D3hot,
->> > namely PCI_UNKNOWN. (If the device is in that state, e.g. after
->> > pci_device_remove() has been called, and the system goes to sleep,
->> > we'd leave the device as is and not put it into D3hot as we do now.)
->>
->> Right, I obviously forgot about PCI_UNKNOWN.
->>
->> > I will update this patch with Bjorn's suggestion to also leave the
->> > device in D3cold if it is wakeup-capable. The idea is to just change
->> > the default state in the first line of the function like this:
->> >
->> > -       pci_power_t target_state = PCI_D3hot;
->> > +       pci_power_t target_state =
->> > +               dev->current_state == PCI_D3cold ? PCI_D3cold : PCI_D3hot;
->>
->> That should work (even though it is a little clumsy IMO).
->
-> Not sure why that is clumsy but happy to use something else if you
-> have a suggestion?
+On Wed, Aug 03, 2016 at 12:38:20AM +0200, Rafael J. Wysocki wrote:
+> On Wed, Aug 3, 2016 at 12:02 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
+> > On Tue, Aug 02, 2016 at 03:37:02AM +0200, Rafael J. Wysocki wrote:
+> >> On Tue, Aug 2, 2016 at 3:22 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
+> >> > On Mon, Aug 01, 2016 at 01:37:23AM +0200, Rafael J. Wysocki wrote:
+> >> > ...
+> >> >> For this purpose, define a new cpufreq_update_util() flag
+> >> >> UUF_IO and modify enqueue_task_fair() to pass that flag to
+> >> >> cpufreq_update_util() in the in_iowait case.  That generally
+> >> >> requires cpufreq_update_util() to be called directly from there,
+> >> >> because update_load_avg() is not likely to be invoked in that
+> >> >> case.
+> >> >
+> >> > I didn't follow why the cpufreq hook won't likely be called if
+> >> > in_iowait is set? AFAICS update_load_avg() gets called in the second loop
+> >> > and calls update_cfs_rq_load_avg (triggers the hook).
+> >>
+> >> In practice it turns out that in the majority of cases when in_iowait
+> >> is set the second loop will not run.
+> >
+> > My understanding of enqueue_task_fair() is that the first loop walks up
+> > the portion of the sched_entity hierarchy that needs to be enqueued, and
+> > the second loop updates the rest of the hierarchy that was already
+> > enqueued.
+> >
+> > Even if the se corresponding to the root cfs_rq needs to be enqueued
+> > (meaning the whole hierarchy is traversed in the first loop and the
+> > second loop does nothing), enqueue_entity() on the root cfs_rq should
+> > result in the cpufreq hook being called, via enqueue_entity() ->
+> > enqueue_entity_load_avg() -> update_cfs_rq_load_avg().
+> 
+> But then it's rather difficult to pass the IO flag to this one, isn't it?
+> 
+> Essentially, the problem is to pass "IO" to cpufreq_update_util() when
+> p->in_iowait is set.
+> 
+> If you can find a clever way to do it without adding an extra call
+> site, that's fine by me, but in any case the extra
+> cpufreq_update_util() invocation should not be too expensive.
 
-The clumsy thing is that we'd take the target_state as D3cold only if
-the device already was in that state.
+I was under the impression that function pointer calls were more
+expensive, and in the shared policy case there is a nontrivial amount of
+code that is run in schedutil (including taking a spinlock) before we'd
+see sugov_should_update_freq() return false and bail.
 
-Otherwise, we'd take D3hot as the target state for the same device,
-which doesn't seem particularly consistent to me.
+Agreed that getting knowledge of p->in_iowait down to the existing hook
+is not easy. I spent some time fiddling with that. It seemed doable but
+somewhat gross due to the required flag passing and modifications
+to enqueue_entity, update_load_avg, etc. If it is decided that it is worth
+pursuing I can keep working on it and post a draft.
 
-Not that I have better ideas ATM, but then the current code works for
-my use cases. :-)
+But I also wonder if the hooks are in the best location.  They are
+currently deep in the PELT code. This may make sense from a theoretical
+standpoint, calling them whenever a root cfs_rq utilization changes, but
+it also makes the hooks difficult to correlate (for policy purposes such
+as this iowait change) with higher level logical events like a task
+wakeup. Or load balance where we probably want to call the hook just
+once after a load balance is complete.
 
-Thanks,
-Rafael
+This is also an issue for the remote wakeup case where I currently have
+another invocation of the hook in check_preempt_curr(), so I can know if
+preemption was triggered and skip a remote schedutil update in that case
+to avoid a duplicate IPI.
+
+It seems to me worth evaluating if a higher level set of hook locations
+could be used. One possibility is higher up in CFS:
+- enqueue_task_fair, dequeue_task_fair
+- scheduler_tick
+- active_load_balance_cpu_stop, load_balance
+
+Though this wouldn't solve my issue with check_preempt_curr. That would
+probably require going further up the stack to try_to_wake_up() etc. Not
+yet sure what the other hook locations would be at that level.
+
+thanks,
+Steve
