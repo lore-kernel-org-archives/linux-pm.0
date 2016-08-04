@@ -1,22 +1,15 @@
 From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH 2/2] power: reset: syscon-reboot-mode: Use managed resource API
-Date: Wed,  3 Aug 2016 22:04:06 -0700
-Message-ID: <1470287046-17437-2-git-send-email-bjorn.andersson@linaro.org>
-References: <1470287046-17437-1-git-send-email-bjorn.andersson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:32927 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751446AbcHDFLT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 01:11:19 -0400
-Received: by mail-pa0-f47.google.com with SMTP id ti13so1760775pac.0
-        for <linux-pm@vger.kernel.org>; Wed, 03 Aug 2016 22:11:02 -0700 (PDT)
-In-Reply-To: <1470287046-17437-1-git-send-email-bjorn.andersson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/2] power: reset: reboot-mode: Add managed resource API
+Date: Wed,  3 Aug 2016 22:04:05 -0700
+Message-ID: <1470287046-17437-1-git-send-email-bjorn.andersson@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, John Stultz <john.stultz@linaro.org>
 Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Use the managed resource version of reboot_mode_register().
+Provide managed resource version of reboot_mode_register() and
+reboot_mode_unregister() to simplify implementations.
 
 Cc: John Stultz <john.stultz@linaro.org>
 Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
@@ -25,52 +18,109 @@ Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 John, here's a "pointer" to what I meant with my comment on your
 sram-reboot-mode patch. Only compile tested though.
 
- drivers/power/reset/syscon-reboot-mode.c | 12 +-----------
- 1 file changed, 1 insertion(+), 11 deletions(-)
+ Documentation/driver-model/devres.txt |  4 +++
+ drivers/power/reset/reboot-mode.c     | 59 +++++++++++++++++++++++++++++++++++
+ drivers/power/reset/reboot-mode.h     |  4 +++
+ 3 files changed, 67 insertions(+)
 
-diff --git a/drivers/power/reset/syscon-reboot-mode.c b/drivers/power/reset/syscon-reboot-mode.c
-index 9e1cba5dd58e..1ecb51d67149 100644
---- a/drivers/power/reset/syscon-reboot-mode.c
-+++ b/drivers/power/reset/syscon-reboot-mode.c
-@@ -53,8 +53,6 @@ static int syscon_reboot_mode_probe(struct platform_device *pdev)
- 	syscon_rbm->reboot.write = syscon_reboot_mode_write;
- 	syscon_rbm->mask = 0xffffffff;
+diff --git a/Documentation/driver-model/devres.txt b/Documentation/driver-model/devres.txt
+index f5e522342ee5..fbb9fde1aad3 100644
+--- a/Documentation/driver-model/devres.txt
++++ b/Documentation/driver-model/devres.txt
+@@ -342,6 +342,10 @@ PINCTRL
+   devm_pinctrl_register()
+   devm_pinctrl_unregister()
  
--	dev_set_drvdata(&pdev->dev, syscon_rbm);
--
- 	syscon_rbm->map = syscon_node_to_regmap(pdev->dev.parent->of_node);
- 	if (IS_ERR(syscon_rbm->map))
- 		return PTR_ERR(syscon_rbm->map);
-@@ -65,20 +63,13 @@ static int syscon_reboot_mode_probe(struct platform_device *pdev)
- 
- 	of_property_read_u32(pdev->dev.of_node, "mask", &syscon_rbm->mask);
- 
--	ret = reboot_mode_register(&syscon_rbm->reboot);
-+	ret = devm_reboot_mode_register(&pdev->dev, &syscon_rbm->reboot);
- 	if (ret)
- 		dev_err(&pdev->dev, "can't register reboot mode\n");
- 
- 	return ret;
++POWER
++  devm_reboot_mode_register()
++  devm_reboot_mode_unregister()
++
+ PWM
+   devm_pwm_get()
+   devm_pwm_put()
+diff --git a/drivers/power/reset/reboot-mode.c b/drivers/power/reset/reboot-mode.c
+index 2dfbbce0f817..fb512183ace3 100644
+--- a/drivers/power/reset/reboot-mode.c
++++ b/drivers/power/reset/reboot-mode.c
+@@ -135,6 +135,65 @@ int reboot_mode_unregister(struct reboot_mode_driver *reboot)
  }
+ EXPORT_SYMBOL_GPL(reboot_mode_unregister);
  
--static int syscon_reboot_mode_remove(struct platform_device *pdev)
--{
--	struct syscon_reboot_mode *syscon_rbm = dev_get_drvdata(&pdev->dev);
--
--	return reboot_mode_unregister(&syscon_rbm->reboot);
--}
--
- static const struct of_device_id syscon_reboot_mode_of_match[] = {
- 	{ .compatible = "syscon-reboot-mode" },
- 	{}
-@@ -86,7 +77,6 @@ static const struct of_device_id syscon_reboot_mode_of_match[] = {
++static void devm_reboot_mode_release(struct device *dev, void *res)
++{
++	reboot_mode_unregister(*(struct reboot_mode_driver **)res);
++}
++
++/**
++ * devm_reboot_mode_register() - resource managed reboot_mode_register()
++ * @dev: device to associate this resource with
++ * @reboot: reboot mode driver
++ *
++ * Returns: 0 on success or a negative error code on failure.
++ */
++int devm_reboot_mode_register(struct device *dev,
++			      struct reboot_mode_driver *reboot)
++{
++	struct reboot_mode_driver **dr;
++	int rc;
++
++	dr = devres_alloc(devm_reboot_mode_release, sizeof(*dr), GFP_KERNEL);
++	if (!dr)
++		return -ENOMEM;
++
++	rc = reboot_mode_register(reboot);
++	if (rc) {
++		devres_free(dr);
++		return rc;
++	}
++
++	*dr = reboot;
++	devres_add(dev, dr);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(devm_reboot_mode_register);
++
++static int devm_reboot_mode_match(struct device *dev, void *res, void *data)
++{
++	struct reboot_mode_driver **p = res;
++
++	if (WARN_ON(!p || !*p))
++		return 0;
++
++	return *p == data;
++}
++
++/**
++ * devm_reboot_mode_unregister() - resource managed reboot_mode_unregister()
++ * @dev: device to associate this resource with
++ * @reboot: reboot mode driver
++ */
++void devm_reboot_mode_unregister(struct device *dev,
++				 struct reboot_mode_driver *reboot)
++{
++	WARN_ON(devres_release(dev,
++			       devm_reboot_mode_release,
++			       devm_reboot_mode_match, reboot));
++}
++EXPORT_SYMBOL_GPL(devm_reboot_mode_unregister);
++
+ MODULE_AUTHOR("Andy Yan <andy.yan@rock-chips.com");
+ MODULE_DESCRIPTION("System reboot mode core library");
+ MODULE_LICENSE("GPL v2");
+diff --git a/drivers/power/reset/reboot-mode.h b/drivers/power/reset/reboot-mode.h
+index 2491bb71f591..75f7fe5c881f 100644
+--- a/drivers/power/reset/reboot-mode.h
++++ b/drivers/power/reset/reboot-mode.h
+@@ -10,5 +10,9 @@ struct reboot_mode_driver {
  
- static struct platform_driver syscon_reboot_mode_driver = {
- 	.probe = syscon_reboot_mode_probe,
--	.remove = syscon_reboot_mode_remove,
- 	.driver = {
- 		.name = "syscon-reboot-mode",
- 		.of_match_table = syscon_reboot_mode_of_match,
+ int reboot_mode_register(struct reboot_mode_driver *reboot);
+ int reboot_mode_unregister(struct reboot_mode_driver *reboot);
++int devm_reboot_mode_register(struct device *dev,
++			      struct reboot_mode_driver *reboot);
++void devm_reboot_mode_unregister(struct device *dev,
++				 struct reboot_mode_driver *reboot);
+ 
+ #endif
 -- 
 2.5.0
-
