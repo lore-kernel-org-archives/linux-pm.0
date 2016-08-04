@@ -1,84 +1,99 @@
-From: Brendan Jackman <brendan.jackman@arm.com>
-Subject: Re: [PATCH v2 01/14] PM / Domains: Allow domain power states to be
- read from DT
-Date: Thu, 4 Aug 2016 14:24:07 +0100
-Message-ID: <20160804132407.GA1732@brendan-thinkstation>
-References: <1469829385-11511-1-git-send-email-lina.iyer@linaro.org>
- <1469829385-11511-2-git-send-email-lina.iyer@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1469829385-11511-2-git-send-email-lina.iyer@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, khilman@kernel.org, rjw@rjwysocki.net, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
+From: Petr Mladek <pmladek@suse.com>
+Subject: [PATCH] thermal/powerclamp: Prevent division by zero when counting interval
+Date: Thu,  4 Aug 2016 16:56:46 +0200
+Message-ID: <1470322606-12435-1-git-send-email-pmladek@suse.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Petr Mladek <pmladek@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lina,
+I have got a zero division error when disabling the forced
+idle injection from the intel powerclamp. I did
 
-Couple of nitpicks here:
+  echo 0 >/sys/class/thermal/cooling_device48/cur_state
 
-On Fri, Jul 29, 2016 at 03:56:12PM -0600, Lina Iyer wrote:
-> From: Axel Haslam <ahaslam+renesas@baylibre.com>
->
-> This patch allows domains to define idle states in the DT. SoC's can
-> define domain idle states in DT using the "power-states" property of the
-> domain provider. Calling of_pm_genpd_init() will  read the idle states
-> and initialize the genpd for the domain.
->
+and got
 
-The commit message got out of sync here, the idle states property is not
-"power-states" but "domain-idle-states" now.
+[  986.072632] divide error: 0000 [#1] PREEMPT SMP
+[  986.078989] Modules linked in:
+[  986.083618] CPU: 17 PID: 24967 Comm: kidle_inject/17 Not tainted 4.7.0-1-default+ #3055
+[  986.093781] Hardware name: Intel Corporation S2600CP/S2600CP, BIOS RMLSDP.86I.R3.27.D685.1305151734 05/15/2013
+[  986.106227] task: ffff880430e1c080 task.stack: ffff880427ef0000
+[  986.114122] RIP: 0010:[<ffffffff81794859>]  [<ffffffff81794859>] clamp_thread+0x1d9/0x600
+[  986.124609] RSP: 0018:ffff880427ef3e20  EFLAGS: 00010246
+[  986.131860] RAX: 0000000000000258 RBX: 0000000000000006 RCX: 0000000000000001
+[  986.141179] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000018
+[  986.150478] RBP: ffff880427ef3ec8 R08: ffff880427ef0000 R09: 0000000000000002
+[  986.159779] R10: 0000000000003df2 R11: 0000000000000018 R12: 0000000000000002
+[  986.169089] R13: 0000000000000000 R14: ffff880427ef0000 R15: ffff880427ef0000
+[  986.178388] FS:  0000000000000000(0000) GS:ffff880435940000(0000) knlGS:0000000000000000
+[  986.188785] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  986.196559] CR2: 00007f1d0caf0000 CR3: 0000000002006000 CR4: 00000000001406e0
+[  986.205909] Stack:
+[  986.209524]  ffff8802be897b00 ffff880430e1c080 0000000000000011 0000006a35959780
+[  986.219236]  0000000000000011 ffff880427ef0008 0000000000000000 ffff8804359503d0
+[  986.228966]  0000000100029d93 ffffffff81794140 0000000000000000 ffffffff05000011
+[  986.238686] Call Trace:
+[  986.242825]  [<ffffffff81794140>] ? pkg_state_counter+0x80/0x80
+[  986.250866]  [<ffffffff81794680>] ? powerclamp_set_cur_state+0x180/0x180
+[  986.259797]  [<ffffffff8111d1a9>] kthread+0xc9/0xe0
+[  986.266682]  [<ffffffff8193d69f>] ret_from_fork+0x1f/0x40
+[  986.274142]  [<ffffffff8111d0e0>] ? kthread_create_on_node+0x180/0x180
+[  986.282869] Code: d1 ea 48 89 d6 80 3d 6a d0 d4 00 00 ba 64 00 00 00 89 d8 41 0f 45 f5 0f af c2 42 8d 14 2e be 31 00 00 00 83 fa 31 0f 42 f2 31 d2 <f7> f6 48 8b 15 9e 07 87 00 48 8b 3d 97 07 87 00 48 63 f0 83 e8
+[  986.307806] RIP  [<ffffffff81794859>] clamp_thread+0x1d9/0x600
+[  986.315871]  RSP <ffff880427ef3e20>
 
-> In addition to the entry and exit latency for idle state, also add
-> residency and state-param properties. A domain idling in a state is only
-> power effecient if it stays idle for a certain period in that state. The
-> residency provides this minimum time for the idle state to provide power
-> benefits. The state-param is a state specific u32 value that the
-> platform may use for that idle state.
->
+RIP points to the following lines:
 
-And "state-param" isn't used any more, since the patchset switched to using
-arm,idle-state.
+	compensation = get_compensation(target_ratio);
+	interval = duration_jiffies*100/(target_ratio+compensation);
 
-> [snip]
-> +int pm_genpd_of_parse_power_states(struct generic_pm_domain *genpd)
-> +{
-> +	struct device_node *np;
-> +	int i, err = 0;
-> +
-> +	for (i = 0; i < GENPD_MAX_NUM_STATES; i++) {
-> +		np = of_parse_phandle(genpd->of_node, "domain-idle-states", i);
-> +		if (!np)
-> +			break;
-> +
-> +		err = genpd_of_get_power_state(&genpd->states[i], np);
-> +		if (err) {
-> +			pr_err
-> +			    ("Parsing idle state node %s failed with err %d\n",
-> +			     np->full_name, err);
-> +			err = -EINVAL;
+A solution would be to switch the following two commands in
+powerclamp_set_cur_state():
 
-I guess there should be an of_node_put here.
+	set_target_ratio = 0;
+	end_power_clamp();
 
-> +			break;
-> +		}
-> +		of_node_put(np);
-> +	}
-> +
-> +	if (err)
-> +		return err;
-> +
-> +	genpd->state_count = i;
-> +	return 0;
-> +}
+But I think that the zero division might happen also when target_ratio
+is non-zero because the compensation might be negative. Therefore
+it is better to check the sum of target_ratio and compensation
+explicitly.
+
+Also the compensated_ratio variable is always set. Therefore there
+is no need to initialize it.
+
+Signed-off-by: Petr Mladek <pmladek@suse.com>
+---
+ drivers/thermal/intel_powerclamp.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index 015ce2eb6eb7..65b865184990 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -388,7 +388,7 @@ static int clamp_thread(void *arg)
+ 		int sleeptime;
+ 		unsigned long target_jiffies;
+ 		unsigned int guard;
+-		unsigned int compensation = 0;
++		unsigned int compensated_ratio;
+ 		int interval; /* jiffies to sleep for each attempt */
+ 		unsigned int duration_jiffies = msecs_to_jiffies(duration);
+ 		unsigned int window_size_now;
+@@ -409,8 +409,11 @@ static int clamp_thread(void *arg)
+ 		 * c-states, thus we need to compensate the injected idle ratio
+ 		 * to achieve the actual target reported by the HW.
+ 		 */
+-		compensation = get_compensation(target_ratio);
+-		interval = duration_jiffies*100/(target_ratio+compensation);
++		compensated_ratio = target_ratio +
++			get_compensation(target_ratio);
++		if (compensated_ratio <= 0)
++			compensated_ratio = 1;
++		interval = duration_jiffies * 100 / compensated_ratio;
+ 
+ 		/* align idle time */
+ 		target_jiffies = roundup(jiffies, interval);
+-- 
+1.8.5.6
