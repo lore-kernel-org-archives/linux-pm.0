@@ -1,124 +1,108 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [RFC][PATCH 5/7] cpufreq / sched: UUF_IO flag to indicate iowait
- condition
-Date: Thu, 4 Aug 2016 15:09:08 -0700
-Message-ID: <20160804220908.GF26555@graphite.smuckle.net>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan>
- <CAJZ5v0j_MrarqdXh8DHHnMm4EbzEksJ8f=BD_=VzPfSD00qRKg@mail.gmail.com>
- <20160804022418.GD26555@graphite.smuckle.net>
- <11865228.rNvS61kIxv@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:36855 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934243AbcHDWJN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 18:09:13 -0400
-Received: by mail-pa0-f54.google.com with SMTP id pp5so86297789pac.3
-        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2016 15:09:12 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <11865228.rNvS61kIxv@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v3 02/15] dt/bindings: Update binding for PM domain idle states
+Date: Thu,  4 Aug 2016 17:04:49 -0600
+Message-ID: <1470351902-43103-3-git-send-email-lina.iyer@linaro.org>
+References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
 
-On Thu, Aug 04, 2016 at 11:19:00PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, August 03, 2016 07:24:18 PM Steve Muckle wrote:
-> > On Wed, Aug 03, 2016 at 12:38:20AM +0200, Rafael J. Wysocki wrote:
-> > > On Wed, Aug 3, 2016 at 12:02 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> > > > On Tue, Aug 02, 2016 at 03:37:02AM +0200, Rafael J. Wysocki wrote:
-> > > >> On Tue, Aug 2, 2016 at 3:22 AM, Steve Muckle <steve.muckle@linaro.org> wrote:
-> > > >> > On Mon, Aug 01, 2016 at 01:37:23AM +0200, Rafael J. Wysocki wrote:
-> > > >> > ...
-> > > >> >> For this purpose, define a new cpufreq_update_util() flag
-> > > >> >> UUF_IO and modify enqueue_task_fair() to pass that flag to
-> > > >> >> cpufreq_update_util() in the in_iowait case.  That generally
-> > > >> >> requires cpufreq_update_util() to be called directly from there,
-> > > >> >> because update_load_avg() is not likely to be invoked in that
-> > > >> >> case.
-> > > >> >
-> > > >> > I didn't follow why the cpufreq hook won't likely be called if
-> > > >> > in_iowait is set? AFAICS update_load_avg() gets called in the second loop
-> > > >> > and calls update_cfs_rq_load_avg (triggers the hook).
-> > > >>
-> > > >> In practice it turns out that in the majority of cases when in_iowait
-> > > >> is set the second loop will not run.
-> > > >
-> > > > My understanding of enqueue_task_fair() is that the first loop walks up
-> > > > the portion of the sched_entity hierarchy that needs to be enqueued, and
-> > > > the second loop updates the rest of the hierarchy that was already
-> > > > enqueued.
-> > > >
-> > > > Even if the se corresponding to the root cfs_rq needs to be enqueued
-> > > > (meaning the whole hierarchy is traversed in the first loop and the
-> > > > second loop does nothing), enqueue_entity() on the root cfs_rq should
-> > > > result in the cpufreq hook being called, via enqueue_entity() ->
-> > > > enqueue_entity_load_avg() -> update_cfs_rq_load_avg().
-> > > 
-> > > But then it's rather difficult to pass the IO flag to this one, isn't it?
-> > > 
-> > > Essentially, the problem is to pass "IO" to cpufreq_update_util() when
-> > > p->in_iowait is set.
-> > > 
-> > > If you can find a clever way to do it without adding an extra call
-> > > site, that's fine by me, but in any case the extra
-> > > cpufreq_update_util() invocation should not be too expensive.
-> > 
-> > I was under the impression that function pointer calls were more
-> > expensive, and in the shared policy case there is a nontrivial amount of
-> > code that is run in schedutil (including taking a spinlock) before we'd
-> > see sugov_should_update_freq() return false and bail.
-> 
-> That's correct in principle, but we only do that if p->in_iowait is set,
-> which is somewhat special anyway and doesn't happen every time for sure.
-> 
-> So while there is overhead theoretically, I'm not even sure if it is measurable.
+From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Ok my worry was if there were IO-heavy workloads that would
-hammer this path, but I don't know of any specifically or how often this
-path can be taken.
+Update DT bindings to describe idle states of PM domains.
 
-> 
-> > Agreed that getting knowledge of p->in_iowait down to the existing hook
-> > is not easy. I spent some time fiddling with that. It seemed doable but
-> > somewhat gross due to the required flag passing and modifications
-> > to enqueue_entity, update_load_avg, etc. If it is decided that it is worth
-> > pursuing I can keep working on it and post a draft.
-> 
-> Well, that's a Peter's call. :-)
-> 
-> > But I also wonder if the hooks are in the best location.  They are
-> > currently deep in the PELT code. This may make sense from a theoretical
-> > standpoint, calling them whenever a root cfs_rq utilization changes, but
-> > it also makes the hooks difficult to correlate (for policy purposes such
-> > as this iowait change) with higher level logical events like a task
-> > wakeup. Or load balance where we probably want to call the hook just
-> > once after a load balance is complete.
-> 
-> I generally agree.  We still need to ensure that the hools will be invoked
-> frequently enough, though, even if HZ is 100.
-> 
-> > This is also an issue for the remote wakeup case where I currently have
-> > another invocation of the hook in check_preempt_curr(), so I can know if
-> > preemption was triggered and skip a remote schedutil update in that case
-> > to avoid a duplicate IPI.
-> > 
-> > It seems to me worth evaluating if a higher level set of hook locations
-> > could be used. One possibility is higher up in CFS:
-> > - enqueue_task_fair, dequeue_task_fair
-> > - scheduler_tick
-> > - active_load_balance_cpu_stop, load_balance
-> 
-> Agreed, that's worth checking.
-> 
-> > Though this wouldn't solve my issue with check_preempt_curr. That would
-> > probably require going further up the stack to try_to_wake_up() etc. Not
-> > yet sure what the other hook locations would be at that level.
-> 
-> That's probably too far away from the root cfs_rq utilization changes IMO.
+Cc: <devicetree@vger.kernel.org>
+Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+[Lina: Added state properties, removed state names, wakeup-latency,
+added of_pm_genpd_init() API, pruned commit text]
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+[Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
+---
+ .../devicetree/bindings/power/power_domain.txt     | 57 ++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-Is your concern that the rate of hook calls would be decreased?
-
-thanks,
-Steve
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 025b5e7..4960486 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -29,6 +29,10 @@ Optional properties:
+    specified by this binding. More details about power domain specifier are
+    available in the next section.
+ 
++- domain-idle-states : A phandle of an idle-state that shall be soaked into a
++                generic domain power state. The idle state definitions are
++                compatible with arm,idle-state specified in [1].
++
+ Example:
+ 
+ 	power: power-controller@12340000 {
+@@ -59,6 +63,57 @@ The nodes above define two power controllers: 'parent' and 'child'.
+ Domains created by the 'child' power controller are subdomains of '0' power
+ domain provided by the 'parent' power controller.
+ 
++Example 3: ARM v7 style CPU PM domains (Linux domain controller)
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		CPU0: cpu@0 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a7", "arm,armv7";
++			reg = <0x0>;
++			power-domains = <&a7_pd>;
++		};
++
++		CPU1: cpu@1 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a15", "arm,armv7";
++			reg = <0x0>;
++			power-domains = <&a15_pd>;
++		};
++	};
++
++	pm-domains {
++		a15_pd: a15_pd {
++			/* will have A15 platform ARM_PD_METHOD_OF_DECLARE*/
++			compatible = "arm,cortex-a15";
++			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_SLEEP_0>;
++		};
++
++		a7_pd: a7_pd {
++			/* will have a A7 platform ARM_PD_METHOD_OF_DECLARE*/
++			compatible = "arm,cortex-a7";
++			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
++		};
++
++		CLUSTER_SLEEP_0: state0 {
++			compatible = "arm,idle-state";
++			entry-latency-us = <1000>;
++			exit-latency-us = <2000>;
++			min-residency-us = <10000>;
++		};
++
++		CLUSTER_SLEEP_1: state1 {
++			compatible = "arm,idle-state";
++			entry-latency-us = <5000>;
++			exit-latency-us = <5000>;
++			min-residency-us = <100000>;
++		};
++	};
++
+ ==PM domain consumers==
+ 
+ Required properties:
+@@ -76,3 +131,5 @@ Example:
+ The node above defines a typical PM domain consumer device, which is located
+ inside a PM domain with index 0 of a power controller represented by a node
+ with the label "power".
++
++[1]. Documentation/devicetree/bindings/arm/idle-states.txt
+-- 
+2.7.4
