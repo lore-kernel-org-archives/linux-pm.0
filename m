@@ -1,111 +1,155 @@
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: [PATCH] cpufreq: powernv: Fix crash in gpstate_timer_handler
-Date: Thu,  4 Aug 2016 20:59:17 +0530
-Message-ID: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for system sleep
+Date: Thu, 4 Aug 2016 17:30:47 +0200
+Message-ID: <CAJZ5v0hPbeaUotiFxg_BbkS86HEz=u0ThkdwJju5WyXOuDgd6A@mail.gmail.com>
+References: <cover.1463134231.git.lukas@wunner.de> <20160617210924.GA12254@localhost>
+ <20160617221407.GB1927@wunner.de> <2339231.tBO8VQgPAo@vostro.rjw.lan>
+ <20160803122848.GA4415@wunner.de> <CAJZ5v0jxQHM=uuvFrpPw0vLbVjF0EQsm=XEZNdtQeYsO0ZobtQ@mail.gmail.com>
+ <20160804004538.GA4564@wunner.de> <CAJZ5v0h55MCiSzJz_weEGX7nUsy_TLumssyoXz=f2_b0h_BkQQ@mail.gmail.com>
+ <20160804081446.GA4576@wunner.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:33609 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964822AbcHDPau (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 11:30:50 -0400
+In-Reply-To: <20160804081446.GA4576@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
 
-'commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with
-frequency table index")' changes calc_global_pstate() to use
-cpufreq_table index instead of pstate_id.
+On Thu, Aug 4, 2016 at 10:14 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> On Thu, Aug 04, 2016 at 03:07:56AM +0200, Rafael J. Wysocki wrote:
+>> On Thu, Aug 4, 2016 at 2:45 AM, Lukas Wunner <lukas@wunner.de> wrote:
+>> > On Thu, Aug 04, 2016 at 01:50:39AM +0200, Rafael J. Wysocki wrote:
+>> >> On Wed, Aug 3, 2016 at 2:28 PM, Lukas Wunner <lukas@wunner.de> wrote:
+>> >> > On Mon, Jul 18, 2016 at 03:39:15PM +0200, Rafael J. Wysocki wrote:
+>> >> >> On Saturday, June 18, 2016 12:14:07 AM Lukas Wunner wrote:
+>> >> >> > On Fri, Jun 17, 2016 at 04:09:24PM -0500, Bjorn Helgaas wrote:
+>> >> >> > > On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
+>> >> >> > > > There are devices wich are not power-managed by the platform, yet can be
+>> >> >> > > > runtime suspended to D3cold with some other mechanism.  When putting the
+>> >> >> > > > system to sleep, we currently handle such devices improperly by trying
+>> >> >> > > > to transition them from D3cold to D3hot (the default power state defined
+>> >> >> > > > at the beginning of pci_target_state()).  Avoid that.
+>> >> >> > > >
+>> >> >> > > > An example for devices affected by this are Thunderbolt controllers
+>> >> >> > > > built into Macs which can be put into D3cold with nonstandard ACPI
+>> >> >> > > > methods.
+>> >> >> > > >
+>> >> >> > > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+>> >> >> > > > ---
+>> >> >> > > >  drivers/pci/pci.c | 2 ++
+>> >> >> > > >  1 file changed, 2 insertions(+)
+>> >> >> > > >
+>> >> >> > > > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>> >> >> > > > index 791dfe7..6af9911 100644
+>> >> >> > > > --- a/drivers/pci/pci.c
+>> >> >> > > > +++ b/drivers/pci/pci.c
+>> >> >> > > > @@ -1943,6 +1943,8 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
+>> >> >> > > >                               && !(dev->pme_support & (1 << target_state)))
+>> >> >> > > >                                 target_state--;
+>> >> >> > > >                 }
+>> >> >> > > > +       } else if (dev->current_state == PCI_D3cold) {
+>> >> >> > > > +               target_state = PCI_D3cold;
+>> >> >> > > >         }
+>> >> >> > >
+>> >> > I will update this patch with Bjorn's suggestion to also leave the
+>> >> > device in D3cold if it is wakeup-capable. The idea is to just change
+>> >> > the default state in the first line of the function like this:
+>> >> >
+>> >> > -       pci_power_t target_state = PCI_D3hot;
+>> >> > +       pci_power_t target_state =
+>> >> > +               dev->current_state == PCI_D3cold ? PCI_D3cold : PCI_D3hot;
+>> >>
+>> >> That should work (even though it is a little clumsy IMO).
+>> >
+>> > Not sure why that is clumsy but happy to use something else if you
+>> > have a suggestion?
+>>
+>> The clumsy thing is that we'd take the target_state as D3cold only if
+>> the device already was in that state.
+>>
+>> Otherwise, we'd take D3hot as the target state for the same device,
+>> which doesn't seem particularly consistent to me.
+>>
+>> Not that I have better ideas ATM, but then the current code works for
+>> my use cases. :-)
+>
+> The goal is to afford direct-complete to devices which are not power-
+> manageable by the platform but can still be runtime suspended to D3cold.
 
-But in gpstate_timer_handler() pstate_id was being passed instead
-of cpufreq_table index, which caused the index_to_pstate() to access
-out of bound indices, leading to this crash.
+Well, this is a bit misleading.
 
-Adding sanity check for index and pstate, to ensure only valid pstate
-and index values are returned.
+According to the PCI spec there are two ways to put a device into
+D3cold: either by putting its bus into B3 (which for PCIe means
+turning the link off IIRC) which happens when the bridge goes into
+D3hot, or through the platform.
 
-Call Trace:
-[c00000078d66b130] [c00000000011d224] __free_irq+0x234/0x360
-(unreliable)
-[c00000078d66b1c0] [c00000000011d44c] free_irq+0x6c/0xa0
-[c00000078d66b1f0] [c00000000006c4f8] opal_event_shutdown+0x88/0xd0
-[c00000078d66b230] [c000000000067a4c] opal_shutdown+0x1c/0x90
-[c00000078d66b260] [c000000000063a00] pnv_shutdown+0x20/0x40
-[c00000078d66b280] [c000000000021538] machine_restart+0x38/0x90
-[c0000000078d66b310] [c000000000965ea0] panic+0x284/0x300
-[c00000078d66b3a0] [c00000000001f508] die+0x388/0x450
-[c00000078d66b430] [c000000000045a50] bad_page_fault+0xd0/0x140
-[c00000078d66b4a0] [c000000000008964] handle_page_fault+0x2c/0x30
-   interrupt: 300 at gpstate_timer_handler+0x150/0x260
-    LR = gpstate_timer_handler+0x130/0x260
-[c00000078d66b7f0] [c000000000132b58] call_timer_fn+0x58/0x1c0
-[c00000078d66b880] [c000000000132e20] expire_timers+0x130/0x1d0
-[c00000078d66b8f0] [c000000000133068] run_timer_softirq+0x1a8/0x230
-[c00000078d66b980] [c0000000000b535c] __do_softirq+0x18c/0x400
-[c00000078d66ba70] [c0000000000b5828] irq_exit+0xc8/0x100
-[c00000078d66ba90] [c00000000001e214] timer_interrupt+0xa4/0xe0
-[c00000078d66bac0] [c0000000000027d0] decrementer_common+0x150/0x180
-   interrupt: 901 at arch_local_irq_restore+0x74/0x90
-  0] [c000000000106b34] call_cpuidle+0x44/0x90
-[c00000078d66be50] [c00000000010708c] cpu_startup_entry+0x38c/0x460
-[c00000078d66bf20] [c00000000003d930] start_secondary+0x330/0x380
-[c00000078d66bf90] [c000000000008e6c] start_secondary_prolog+0x10/0x14
+You aren't talking about any of those cases, though, so we go outside
+of the spec here.
 
-Fixes: 08d27eb ("cpufreq: powernv: Replacing pstate_id with
-frequency table index")
-Reported-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+> Right now we wake those devices up from D3cold to D3hot before going to
+> sleep, which is a waste of energy and prolongs the suspend sequence
+> (waking up the Thunderbolt controller takes 2 seconds).
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 87796e0..d3ffde8 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -145,11 +145,30 @@ static struct powernv_pstate_info {
- /* Use following macros for conversions between pstate_id and index */
- static inline int idx_to_pstate(unsigned int i)
- {
-+	if (unlikely(i >= powernv_pstate_info.nr_pstates)) {
-+		pr_warn_once("index %u is out of bound\n", i);
-+		return powernv_freqs[powernv_pstate_info.nominal].driver_data;
-+	}
-+
- 	return powernv_freqs[i].driver_data;
- }
- 
- static inline unsigned int pstate_to_idx(int pstate)
- {
-+	int min = powernv_freqs[powernv_pstate_info.min].driver_data;
-+	int max = powernv_freqs[powernv_pstate_info.max].driver_data;
-+
-+	if (min > 0) {
-+		if (unlikely((pstate < max) || (pstate > min))) {
-+			pr_warn_once("pstate %d is out of bound\n", pstate);
-+			return powernv_pstate_info.nominal;
-+		}
-+	} else {
-+		if (unlikely((pstate > max) || (pstate < min))) {
-+			pr_warn_once("pstate %d is out of bound\n", pstate);
-+			return powernv_pstate_info.nominal;
-+		}
-+	}
- 	/*
- 	 * abs() is deliberately used so that is works with
- 	 * both monotonically increasing and decreasing
-@@ -593,7 +612,7 @@ void gpstate_timer_handler(unsigned long data)
- 	} else {
- 		gpstate_idx = calc_global_pstate(gpstates->elapsed_time,
- 						 gpstates->highest_lpstate_idx,
--						 freq_data.pstate_id);
-+						 gpstates->last_lpstate_idx);
- 	}
- 
- 	/*
--- 
-2.1.4
+Understood.
+
+> The de facto standard to power manage such devices seems to be with
+> dev_pm_domain_set(). That's what vga_switcheroo does and I'll move
+> to that as well for v3 of this series.
+
+OK
+
+> I could add a "bool can_power_off" to struct dev_pm_domain.
+
+I'm not sure if dev_pm_domain is the right level.  The "can_power_off"
+thing would be sort of specific to your particular use case.
+
+Say you have something like
+
+struct pci_pm_domain {
+        struct dev_pm_domain pd;
+        ...
+};
+
+> Then I could change pci_target_state() like this:
+>
+>         pci_power_t target_state = PCI_D3hot;
+>
+>         if (platform_pci_power_manageable(dev)) {
+>                 [...]
+> +       } else if (dev->dev.pm_domain && dev->dev.pm_domain.can_power_off) {
+
+so you can do something like
+
+          } else if (dev->dev.pm_domain) {
+                    struct pci_pm_domain *pci_pd =
+to_pci_pm_domain(dev->dev.pm_domain);
+
+                    ....
+          } else if [...]
+
+and it may be a bit more PCI-oriented without expanding generic data types.
+
+> +               target_state = PCI_D3cold;
+>         } else if [...]
+>
+> Another idea would be to add a ->choose_state hook to dev_pm_domain,
+> but that would have to return a PCI-specific power state, so we'd be
+> in clumsy territory again.
+
+Right.
+
+> Thoughts?
+
+Essentially, the PCI PM code needs to be told that there is a way to
+put the device into D3cold by non-standard means.  There are a couple
+of ways to do that (a new flag in struct pci_dev, the above, probably
+more), but in any case it needs to be clear that this is non-standard
+IMO.
+
+Thanks,
+Rafael
