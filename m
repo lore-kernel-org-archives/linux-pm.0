@@ -1,166 +1,109 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection algorithm for Core
-Date: Wed, 3 Aug 2016 23:53:23 -0700
-Message-ID: <001b01d1ee1c$e6a6a170$b3f3e450$@net>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1572483.RZjvRFdxPx@vostro.rjw.lan>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for
+ system sleep
+Date: Thu, 4 Aug 2016 10:14:46 +0200
+Message-ID: <20160804081446.GA4576@wunner.de>
+References: <cover.1463134231.git.lukas@wunner.de>
+ <20160617210924.GA12254@localhost>
+ <20160617221407.GB1927@wunner.de>
+ <2339231.tBO8VQgPAo@vostro.rjw.lan>
+ <20160803122848.GA4415@wunner.de>
+ <CAJZ5v0jxQHM=uuvFrpPw0vLbVjF0EQsm=XEZNdtQeYsO0ZobtQ@mail.gmail.com>
+ <20160804004538.GA4564@wunner.de>
+ <CAJZ5v0h55MCiSzJz_weEGX7nUsy_TLumssyoXz=f2_b0h_BkQQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta18.telus.net ([209.171.16.91]:41176 "EHLO cmta18.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751470AbcHDGxa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Aug 2016 02:53:30 -0400
-In-Reply-To: 
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0h55MCiSzJz_weEGX7nUsy_TLumssyoXz=f2_b0h_BkQQ@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Peter Zijlstra' <peterz@infradead.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
 
-On 2016.08.03 21:19 Doug Smythies wrote:
+On Thu, Aug 04, 2016 at 03:07:56AM +0200, Rafael J. Wysocki wrote:
+> On Thu, Aug 4, 2016 at 2:45 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> > On Thu, Aug 04, 2016 at 01:50:39AM +0200, Rafael J. Wysocki wrote:
+> >> On Wed, Aug 3, 2016 at 2:28 PM, Lukas Wunner <lukas@wunner.de> wrote:
+> >> > On Mon, Jul 18, 2016 at 03:39:15PM +0200, Rafael J. Wysocki wrote:
+> >> >> On Saturday, June 18, 2016 12:14:07 AM Lukas Wunner wrote:
+> >> >> > On Fri, Jun 17, 2016 at 04:09:24PM -0500, Bjorn Helgaas wrote:
+> >> >> > > On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
+> >> >> > > > There are devices wich are not power-managed by the platform, yet can be
+> >> >> > > > runtime suspended to D3cold with some other mechanism.  When putting the
+> >> >> > > > system to sleep, we currently handle such devices improperly by trying
+> >> >> > > > to transition them from D3cold to D3hot (the default power state defined
+> >> >> > > > at the beginning of pci_target_state()).  Avoid that.
+> >> >> > > >
+> >> >> > > > An example for devices affected by this are Thunderbolt controllers
+> >> >> > > > built into Macs which can be put into D3cold with nonstandard ACPI
+> >> >> > > > methods.
+> >> >> > > >
+> >> >> > > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> >> >> > > > ---
+> >> >> > > >  drivers/pci/pci.c | 2 ++
+> >> >> > > >  1 file changed, 2 insertions(+)
+> >> >> > > >
+> >> >> > > > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> >> >> > > > index 791dfe7..6af9911 100644
+> >> >> > > > --- a/drivers/pci/pci.c
+> >> >> > > > +++ b/drivers/pci/pci.c
+> >> >> > > > @@ -1943,6 +1943,8 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
+> >> >> > > >                               && !(dev->pme_support & (1 << target_state)))
+> >> >> > > >                                 target_state--;
+> >> >> > > >                 }
+> >> >> > > > +       } else if (dev->current_state == PCI_D3cold) {
+> >> >> > > > +               target_state = PCI_D3cold;
+> >> >> > > >         }
+> >> >> > >
+> >> > I will update this patch with Bjorn's suggestion to also leave the
+> >> > device in D3cold if it is wakeup-capable. The idea is to just change
+> >> > the default state in the first line of the function like this:
+> >> >
+> >> > -       pci_power_t target_state = PCI_D3hot;
+> >> > +       pci_power_t target_state =
+> >> > +               dev->current_state == PCI_D3cold ? PCI_D3cold : PCI_D3hot;
+> >>
+> >> That should work (even though it is a little clumsy IMO).
+> >
+> > Not sure why that is clumsy but happy to use something else if you
+> > have a suggestion?
+> 
+> The clumsy thing is that we'd take the target_state as D3cold only if
+> the device already was in that state.
+> 
+> Otherwise, we'd take D3hot as the target state for the same device,
+> which doesn't seem particularly consistent to me.
+> 
+> Not that I have better ideas ATM, but then the current code works for
+> my use cases. :-)
 
-Re-sending without the previously attached graph.
+The goal is to afford direct-complete to devices which are not power-
+manageable by the platform but can still be runtime suspended to D3cold.
+Right now we wake those devices up from D3cold to D3hot before going to
+sleep, which is a waste of energy and prolongs the suspend sequence
+(waking up the Thunderbolt controller takes 2 seconds).
 
-Hi Rafael,
+The de facto standard to power manage such devices seems to be with
+dev_pm_domain_set(). That's what vga_switcheroo does and I'll move
+to that as well for v3 of this series.
 
-Hope this feedback and test results help.
+I could add a "bool can_power_off" to struct dev_pm_domain.
 
-On 2016.07.31 16:49 Rafael J. Wysocki wrote:
+Then I could change pci_target_state() like this:
 
-> The PID-base P-state selection algorithm used by intel_pstate for
-> Core processors is based on very weak foundations.
-
-Agree, very very much.
-
-...[cut]...
-
-> Consequently, the only viable way to fix that is to replace the
-> erroneous algorithm entirely with a better one.
-
-Agree, very very much.
-
-> To that end, notice that setting the P-state proportional to the
-> actual CPU utilization (measured with the help of MPERF and TSC)
-> generally leads to reasonable behavior, but it does not reflect
-> the "performance boosting" nature of the current P-state
-> selection algorithm. It may be made more similar to that
-> algorithm, though, by adding iowait boosting to it.
-
-Which is good and does help a lot for the IO case, but issues
-remain for the compute case.
-
-...[cut]...
-
-> +static inline int32_t get_target_pstate_default(struct cpudata *cpu)
-> +{
-> +	struct sample *sample = &cpu->sample;
-> +	int32_t busy_frac;
-> +	int pstate;
-> +
-> +	busy_frac = div_fp(sample->mperf, sample->tsc);
-> +	sample->busy_scaled = busy_frac * 100;
-> +
-> +	if (busy_frac < cpu->iowait_boost)
-> +		busy_frac = cpu->iowait_boost;
-> +
-> +	cpu->iowait_boost >>= 1;
-> +
-> +	pstate = cpu->pstate.turbo_pstate;
-> +	return fp_toint((pstate + (pstate >> 2)) * busy_frac);
-> +}
-> +
-
-The response curve is not normalized on the lower end to the minimum
-pstate for the processor, meaning the overall response will vary
-between processors as a function of minimum pstate.
-
-The clamping at maximum pstate at about 80% load seems at little high
-to me. Work I have done in various attempts to bring back the use of actual load
-has always ended up achieving maximum pstate before 80% load for best results.
-Even the get_target_pstate_cpu_load people reach the max pstate faster, and they
-are more about energy than performance.
-What was the criteria for the decision here? Are test results available for review
-and/or duplication by others?
-
-
-Several tests were done with this patch set.
-The patch set would not apply to kernel 4.7, but did apply fine to a 4.7+ kernel
-(I did as of 7a66ecf) from a few days ago.
-
-Test 1: Phoronix ffmpeg test (less time is better):
-Reason: Because it suffers from rotating amongst CPUs in an odd way, challenging for CPU frequency scaling drivers.
-This test tends to be an indicator of potential troubles with some games.
-Criteria: (Dirk Brandewie): Must match or better acpi_cpufreq - ondemand.
-With patch set: 15.8 Seconds average and 24.51 package watts.
-Without patch set: 11.61 Seconds average and 27.59 watts.
-Conclusion: Significant reduction in performance with proposed patch set.
-
-Tests 2, 3, 4: Phoronix apache, kernel compile, and postmark tests.
-Conclusion: All were similar with and without the patch set, with perhaps a slight
-improvement in power consumption for the postmark test with the patch set.
-
-Test 5: Random reads within a largish (50 gigabytes) file.
-Reason: Because it was a test I used to use with other include or not include IOWAIT work.
-Conclusion: no difference with and without the patch set, likely due to domination by 
-long seek times (the file is on a normal disk, not an SSD).
-
-Test 6: Sequential read of a largish (50 gigabytes) file.
-Reason: Because it was a test I used to use with other include or not include IOWAIT work.
-With patch set: 288.38 Seconds; 177.544 MB/Sec; 6.83 Watts.
-Without patch set: 292.38 Seconds; 174.99 MB/Sec; 7.08 Watts.
-Conclusion: Better performance and better power with the patch set.
-
-Test 7: Compile the kernel 9 times.
-Reason: Just because it was a very revealing test during the
-"intel_pstate: Increase hold-off time before busyness is scaled"
-discussion / thread(s).
-Conclusion: no difference with and without the patch set.
-
-Test 8: pipe-test between cores.
-Reason: Just because it was so useful during the
-"cross core scheduling frequency drop bisected to 0c313cb20732"
-discussion / thread(s).
-With patch set: 73.166 Sec; 3.6576 usec/loop; 2278.53 Joules.
-Without Patch set: 74.444 Sec; 3.7205 usec/loop; 2338.79 Joules.
-Conclusion: Slightly better performance and better energy with the patch set.
-
-Test 9: Dougs_specpower simulator (20% load):
-Time is fixed, less energy is better.
-Reason: During the long
-"[intel-pstate driver regression] processor frequency very high even if in idle"
-and subsequent https://bugzilla.kernel.org/show_bug.cgi?id=115771
-discussion / thread(s), some sort of test was needed to try to mimic what Srinivas
-was getting on his fancy SpecPower test platform. So far at least, this test does that.
-Only the 20% load case was created, because that was the biggest problem case back then.
-With patch set: 4 tests at an average of 7197 Joules per test, relatively high CPU frequencies.
-Without the patch set: 4 tests at an average of 5956 Joules per test, relatively low CPU frequencies.
-Conclusion: 21% energy regression with the patch set.
-Note: Newer processors might do better than my older i7-2600K.
-
-Test 10: measure the frequency response curve, fixed work packet method,
-75 hertz work / sleep frequency (all CPU, no IOWAIT):
-Reason: To compare to some older data and observe overall.
-png graph attached - might get stripped from the distribution lists.
-Conclusions: Tends to oscillate, suggesting some sort of damping is needed.
-However, any filtering tends to increase the step function load rise time
-(see test 11 below, I think there is some wiggle room here).
-See also graph which has: with and without patch set; performance mode (for reference);
-Philippe Longepe's cpu_load method also with setpoint 40 (for reference); one of my previous
-attempts at a load related patch set from quite sometime ago (for reference).
-
-Test 11: Look at the step function load response. From no load to 100% on one CPU (CPU load only, no IO).
-While there is a graph, it is not attached:
-Conclusion: The step function response is greatly improved (virtually one sample time max).
-It would probably be O.K. to slow it down a little with a filter so as to reduce the
-tendency to oscillate under periodic load conditions (to a point, at least. A low enough frequency will
-always oscillate) (see the graph for test10).
+ 	pci_power_t target_state = PCI_D3hot;
  
-Questions:
-Is there a migration plan? i.e. will there be an attempt to merge the current cpu_load method
-and this method into one method? Then possibly the PID controller could be eliminated.
+ 	if (platform_pci_power_manageable(dev)) {
+ 		[...]
++	} else if (dev->dev.pm_domain && dev->dev.pm_domain.can_power_off) {
++		target_state = PCI_D3cold;
+ 	} else if [...]
 
-... Doug
+Another idea would be to add a ->choose_state hook to dev_pm_domain,
+but that would have to return a PCI-specific power state, so we'd be
+in clumsy territory again.
 
+Thoughts?
 
+Lukas
