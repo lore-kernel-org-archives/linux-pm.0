@@ -1,49 +1,42 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [GIT PULL] Thermal SoC management updates for v4.8-rc1
-Date: Thu, 04 Aug 2016 13:21:59 +0800
-Message-ID: <1470288119.26646.5.camel@intel.com>
-References: <1470265127-22631-1-git-send-email-edubezval@gmail.com>
-	 <20160803232638.GA25554@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+From: Lin Huang <hl@rock-chips.com>
+Subject: [PATCH] PM / devfreq: event: remove duplicate devfreq_event_get_drvdata()
+Date: Thu,  4 Aug 2016 14:01:48 +0800
+Message-ID: <1470290508-19178-1-git-send-email-hl@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:53872 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbcHDFXT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 4 Aug 2016 01:23:19 -0400
-In-Reply-To: <20160803232638.GA25554@localhost.localdomain>
+Received: from mail-pa0-f67.google.com ([209.85.220.67]:33533 "EHLO
+	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750710AbcHDGB6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 02:01:58 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: cw00.choi@samsung.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, Lin Huang <hl@rock-chips.com>
 
-On 三, 2016-08-03 at 16:26 -0700, Eduardo Valentin wrote:
-> On Wed, Aug 03, 2016 at 03:58:47PM -0700, Eduardo Valentin wrote:
-> > 
-> > Hello Rui,
-> > 
-> > Please pull from
-> So, forgot to mention that I have been away from upstream work for
-> some
-> time now, and I am still catching up on my emails.
-> 
-> I've just realized that this may be a bit too late for the pull. I
-> saw
-> that you had some comments on the thermal subsystem reorg. Let me
-> know
-> if this pull still causes troubles. We can always post pone to next
-> merge window.
-> 
-Yes, there are two updated patch from me to fix two different problems,
-which are not included in your pull request, plus, I believe there is
-still another problem reported by lkp, which is not addressed yet.
-> 
-> Let me know how you want to handle this one.
-> 
-I believe a new pull request without the thermal reorg and locking
-changes is needed.
+there define two devfreq_event_get_drvdata() function in devfreq-event.h
+when disable CONFIG_PM_DEVFREQ_EVENT, it will lead to build fail. So
+remove devfreq_event_get_drvdata() function.
 
-thanks,
-rui
+Signed-off-by: Lin Huang <hl@rock-chips.com>
+---
+ include/linux/devfreq-event.h | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/include/linux/devfreq-event.h b/include/linux/devfreq-event.h
+index 0a83a1e..4db00b0 100644
+--- a/include/linux/devfreq-event.h
++++ b/include/linux/devfreq-event.h
+@@ -148,11 +148,6 @@ static inline int devfreq_event_reset_event(struct devfreq_event_dev *edev)
+ 	return -EINVAL;
+ }
+ 
+-static inline void *devfreq_event_get_drvdata(struct devfreq_event_dev *edev)
+-{
+-	return ERR_PTR(-EINVAL);
+-}
+-
+ static inline struct devfreq_event_dev *devfreq_event_get_edev_by_phandle(
+ 					struct device *dev, int index)
+ {
+-- 
+1.9.1
 
