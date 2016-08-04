@@ -1,208 +1,52 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v3 01/15] PM / Domains: Allow domain power states to be read from DT
-Date: Thu,  4 Aug 2016 17:04:48 -0600
-Message-ID: <1470351902-43103-2-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v3 05/15] PM / doc: Update device documentation for devices in IRQ safe PM domains
+Date: Thu,  4 Aug 2016 17:04:52 -0600
+Message-ID: <1470351902-43103-6-git-send-email-lina.iyer@linaro.org>
 References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:34474 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758590AbcHDXFg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 19:05:36 -0400
-Received: by mail-pa0-f48.google.com with SMTP id fi15so86805567pac.1
-        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2016 16:05:35 -0700 (PDT)
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:33456 "EHLO
+	mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759363AbcHDXFq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 4 Aug 2016 19:05:46 -0400
+Received: by mail-pf0-f179.google.com with SMTP id y134so90786353pfg.0
+        for <linux-pm@vger.kernel.org>; Thu, 04 Aug 2016 16:05:46 -0700 (PDT)
 In-Reply-To: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, Lina Iyer <lina.iyer@linaro.org>
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
 
-From: Axel Haslam <ahaslam+renesas@baylibre.com>
+Update documentation to reflect the changes made to support IRQ safe PM
+domains.
 
-This patch allows domains to define idle states in the DT. SoC's can
-define domain idle states in DT using the "domain-idle-states" property
-of the domain provider. Calling of_pm_genpd_init() will  read the idle
-states and initialize the genpd for the domain.
-
-In addition to the entry and exit latency for idle state, also add
-residency_ns, param and of_node property to each state. A domain idling
-in a state is only power effecient if it stays idle for a certain period
-in that state. The residency provides this minimum time for the idle
-state to provide power benefits. The param is a state specific u32 value
-that the platform may use for that idle state.
-
-Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-[Lina: Added state properties, removed state names, wakeup-latency,
-added of_pm_genpd_init() API, pruned commit text]
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-[Ulf: Moved around code to make it compile properly, rebased on top of multiple
-state support,changed to use pm_genpd_init()]
 ---
- drivers/base/power/domain.c | 92 ++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/pm_domain.h   | 11 +++++-
- 2 files changed, 101 insertions(+), 2 deletions(-)
+ Documentation/power/devices.txt | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index a1f2aff..3aecac3 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1253,6 +1253,90 @@ out:
- }
- EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
+diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
+index 8ba6625..a622136 100644
+--- a/Documentation/power/devices.txt
++++ b/Documentation/power/devices.txt
+@@ -607,7 +607,17 @@ individually.  Instead, a set of devices sharing a power resource can be put
+ into a low-power state together at the same time by turning off the shared
+ power resource.  Of course, they also need to be put into the full-power state
+ together, by turning the shared power resource on.  A set of devices with this
+-property is often referred to as a power domain.
++property is often referred to as a power domain. A power domain may also be
++nested inside another power domain.
++
++Devices, by default, operate in process context. If a device can operate in
++IRQ safe context that has to be explicitly indicated by setting the irq_safe
++boolean inside struct generic_pm_domain to be true. Power domains by default,
++operate in process context but could have devices that are IRQ safe. Such
++power domains cannot be powered on/off during runtime PM. On the other hand,
++IRQ safe PM domains that have IRQ safe devices may be powered off when all
++the devices are in idle. An IRQ safe domain may only be attached as a
++subdomain to another IRQ safe domain.
  
-+static const struct of_device_id arm_idle_state_match[] = {
-+	{ .compatible = "arm,idle-state", },
-+	{ }
-+};
-+
-+static int genpd_of_get_power_state(struct genpd_power_state *genpd_state,
-+				    struct device_node *state_node)
-+{
-+	int err = 0;
-+	u32 latency;
-+	u32 residency;
-+	u32 entry_latency, exit_latency;
-+	const struct of_device_id *match_id;
-+
-+	match_id = of_match_node(arm_idle_state_match, state_node);
-+	if (!match_id)
-+		return -EINVAL;
-+
-+	err = of_property_read_u32(state_node, "entry-latency-us",
-+				   &entry_latency);
-+	if (err) {
-+		pr_debug(" * %s missing entry-latency-us property\n",
-+			 state_node->full_name);
-+		return -EINVAL;
-+	}
-+
-+	err = of_property_read_u32(state_node, "exit-latency-us",
-+				   &exit_latency);
-+	if (err) {
-+		pr_debug(" * %s missing exit-latency-us property\n",
-+			 state_node->full_name);
-+		return -EINVAL;
-+	}
-+
-+	err = of_property_read_u32(state_node, "min-residency-us", &residency);
-+	if (!err)
-+		genpd_state->residency_ns = 1000 * residency;
-+
-+	latency = entry_latency + exit_latency;
-+	genpd_state->power_on_latency_ns = 1000 * latency;
-+	genpd_state->power_off_latency_ns = 1000 * entry_latency;
-+	genpd_state->of_node = state_node;
-+
-+	return 0;
-+}
-+
-+int pm_genpd_of_parse_power_states(struct generic_pm_domain *genpd)
-+{
-+	struct device_node *np;
-+	int i, err = 0;
-+
-+	for (i = 0; i < GENPD_MAX_NUM_STATES; i++) {
-+		np = of_parse_phandle(genpd->of_node, "domain-idle-states", i);
-+		if (!np)
-+			break;
-+
-+		err = genpd_of_get_power_state(&genpd->states[i], np);
-+		if (err) {
-+			pr_err
-+			    ("Parsing idle state node %s failed with err %d\n",
-+			     np->full_name, err);
-+			err = -EINVAL;
-+			of_node_put(np);
-+			break;
-+		}
-+		of_node_put(np);
-+	}
-+
-+	if (err)
-+		return err;
-+
-+	genpd->state_count = i;
-+	return 0;
-+}
-+EXPORT_SYMBOL(pm_genpd_of_parse_power_states);
-+
-+static int genpd_of_parse(struct generic_pm_domain *genpd)
-+{
-+	if (!genpd->of_node || (genpd->state_count > 0))
-+		return 0;
-+
-+	return pm_genpd_of_parse_power_states(genpd);
-+}
-+
- /**
-  * pm_genpd_init - Initialize a generic I/O PM domain object.
-  * @genpd: PM domain object to initialize.
-@@ -1262,8 +1346,10 @@ EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
-  * Returns 0 on successful initialization, else a negative error code.
-  */
- int pm_genpd_init(struct generic_pm_domain *genpd,
--		  struct dev_power_governor *gov, bool is_off)
-+		   struct dev_power_governor *gov, bool is_off)
- {
-+	int ret;
-+
- 	if (IS_ERR_OR_NULL(genpd))
- 		return -EINVAL;
- 
-@@ -1306,6 +1392,10 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
- 		genpd->dev_ops.start = pm_clk_resume;
- 	}
- 
-+	ret = genpd_of_parse(genpd);
-+	if (ret)
-+		return ret;
-+
- 	if (genpd->state_idx >= GENPD_MAX_NUM_STATES) {
- 		pr_warn("Initial state index out of bounds.\n");
- 		genpd->state_idx = GENPD_MAX_NUM_STATES - 1;
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 31fec85..c5d14b9 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -40,6 +40,9 @@ struct gpd_dev_ops {
- struct genpd_power_state {
- 	s64 power_off_latency_ns;
- 	s64 power_on_latency_ns;
-+	s64 residency_ns;
-+	u32 param;
-+	struct device_node *of_node;
- };
- 
- struct generic_pm_domain {
-@@ -51,6 +54,7 @@ struct generic_pm_domain {
- 	struct mutex lock;
- 	struct dev_power_governor *gov;
- 	struct work_struct power_off_work;
-+	struct device_node *of_node;	/* Device node of the PM domain */
- 	const char *name;
- 	atomic_t sd_count;	/* Number of subdomains with power "on" */
- 	enum gpd_status status;	/* Current state of the domain */
-@@ -129,7 +133,7 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 				     struct generic_pm_domain *target);
- extern int pm_genpd_init(struct generic_pm_domain *genpd,
- 			 struct dev_power_governor *gov, bool is_off);
--
-+extern int pm_genpd_of_parse_power_states(struct generic_pm_domain *genpd);
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
- #else
-@@ -168,6 +172,11 @@ static inline int pm_genpd_init(struct generic_pm_domain *genpd,
- {
- 	return -ENOSYS;
- }
-+static inline int pm_genpd_of_parse_power_states(
-+				struct generic_pm_domain *genpd)
-+{
-+	return -ENODEV;
-+}
- #endif
- 
- static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+ Support for power domains is provided through the pm_domain field of struct
+ device.  This field is a pointer to an object of type struct dev_pm_domain,
 -- 
 2.7.4
 
