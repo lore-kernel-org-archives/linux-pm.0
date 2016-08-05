@@ -1,36 +1,50 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / hibernate: Image data protection during restoration
-Date: Fri, 5 Aug 2016 15:40:10 +0200
-Message-ID: <20160805134010.GC26852@amd>
-References: <2964021.nluHKyP5cW@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] x86/power/64: Do not refer to __PAGE_OFFSET from assembly code
+Date: Fri, 05 Aug 2016 16:44:07 +0200
+Message-ID: <1601227.1rWnhT6gJp@vostro.rjw.lan>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com> <2464745.UmGP58NeXC@vostro.rjw.lan> <20160805103713.GA8106@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2964021.nluHKyP5cW@vostro.rjw.lan>
+In-Reply-To: <20160805103713.GA8106@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@denx.de>
+Cc: the arch/x86 maintainers <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>, kernel-hardening@lists.openwall.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2016-07-05 14:34:38, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Friday, August 05, 2016 12:37:13 PM Pavel Machek wrote:
+> On Wed 2016-08-03 01:19:26, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > When CONFIG_RANDOMIZE_MEMORY is set on x86-64, __PAGE_OFFSET becomes
+> > a variable and using it as a symbol in the image memory restoration
+> > assembly code under core_restore_code is not correct any more.
 > 
-> Make it possible to protect all pages holding image data during
-> hibernate image restoration by marking them read-only (so as to
-> catch attempts to write to those pages after image data have been
-> stored in them).
+> On a related note... we should really have page_offset variable in
+> such case, and use that -- having __FOO_BAR not being a constant is
+> ugly/confusing/dangerous.
 > 
-> This adds overhead to image restoration code (it may cause large
-> page mappings to be split as a result of page flags changes) and
-> the errors it protects against should never happen in theory, so
-> the feature is only active after passing hibernate=protect_image
-> to the command line of the restore kernel.
+> > To avoid that problem, modify set_up_temporary_mappings() to compute
+> > the physical address of the temporary page tables and store it in
+> > temp_level4_pgt, so that the value of that variable is ready to be
+> > written into CR3.  Then, the assembly code doesn't have to worry
+> > about converting that value into a physical address and things work
+> > regardless of whether or not CONFIG_RANDOMIZE_MEMORY is set.
+> > 
+> > Reported-and-tested-by: Thomas Garnier <thgarnie@google.com>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> 
+> Is similar patch needed for i386?
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Yes, it is, in general, for i386 hibernation to work with ASLR.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+But it doesn't work with it for other reasons ATM, AFAICS.
+
+Unfortunately, I won't really have the time to take care of this any time
+soon.
+
+Thanks,
+Rafael
