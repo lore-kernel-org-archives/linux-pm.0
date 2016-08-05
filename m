@@ -1,78 +1,55 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/4] mfd: axp20x: add adc volatile ranges
- for axp22x
-Date: Fri, 5 Aug 2016 08:46:22 +0100
-Message-ID: <20160805074622.GL5243@dell>
-References: <20160701092926.32005-1-icenowy@aosc.xyz>
-Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+From: Pavel Machek <pavel@denx.de>
+Subject: Re: [PATCH] x86/power/64: Do not refer to __PAGE_OFFSET from
+ assembly code
+Date: Fri, 5 Aug 2016 12:37:13 +0200
+Message-ID: <20160805103713.GA8106@amd>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
+ <CAJcbSZFC-qeEySJYO9DFs=HfE087QHROW=opDRCmZo2WXB1gqw@mail.gmail.com>
+ <CAJZ5v0hiZwugdV6OjA7hAHAv5jhjgJM1vPAW-RHUHud0F=5KsQ@mail.gmail.com>
+ <2464745.UmGP58NeXC@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBB6UHSG6QKGQEZ6AXJSQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43435 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbcHEKhQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Aug 2016 06:37:16 -0400
 Content-Disposition: inline
-In-Reply-To: <20160701092926.32005-1-icenowy-ymACFijhrKM@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Icenowy Zheng <icenowy-ymACFijhrKM@public.gmane.org>
-Cc: wens-jdAy2FN1RRM@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <2464745.UmGP58NeXC@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: the arch/x86 maintainers <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>, kernel-hardening@lists.openwall.com
 
-On Fri, 01 Jul 2016, Icenowy Zheng wrote:
+On Wed 2016-08-03 01:19:26, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> When CONFIG_RANDOMIZE_MEMORY is set on x86-64, __PAGE_OFFSET becomes
+> a variable and using it as a symbol in the image memory restoration
+> assembly code under core_restore_code is not correct any more.
 
-> AXP22x has also some different register map than axp20x, they're also
-> added here.
->=20
-> Signed-off-by: Icenowy Zheng <icenowy-ymACFijhrKM@public.gmane.org>
-> ---
->  drivers/mfd/axp20x.c       | 1 +
->  include/linux/mfd/axp20x.h | 4 ++++
->  2 files changed, 5 insertions(+)
+On a related note... we should really have page_offset variable in
+such case, and use that -- having __FOO_BAR not being a constant is
+ugly/confusing/dangerous.
 
-Applied, thanks.
+> To avoid that problem, modify set_up_temporary_mappings() to compute
+> the physical address of the temporary page tables and store it in
+> temp_level4_pgt, so that the value of that variable is ready to be
+> written into CR3.  Then, the assembly code doesn't have to worry
+> about converting that value into a physical address and things work
+> regardless of whether or not CONFIG_RANDOMIZE_MEMORY is set.
+> 
+> Reported-and-tested-by: Thomas Garnier <thgarnie@google.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> index d62209d..cee5288 100644
-> --- a/drivers/mfd/axp20x.c
-> +++ b/drivers/mfd/axp20x.c
-> @@ -96,6 +96,7 @@ static const struct regmap_range axp22x_volatile_ranges=
-[] =3D {
->  	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
->  	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
->  	regmap_reg_range(AXP22X_GPIO_STATE, AXP22X_GPIO_STATE),
-> +	regmap_reg_range(AXP22X_PMIC_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
->  	regmap_reg_range(AXP20X_FG_RES, AXP20X_FG_RES),
->  };
-> =20
-> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-> index 0be4982..ad3d9c7 100644
-> --- a/include/linux/mfd/axp20x.h
-> +++ b/include/linux/mfd/axp20x.h
-> @@ -201,6 +201,10 @@ enum {
->  #define AXP20X_OCV_MAX			0xf
-> =20
->  /* AXP22X specific registers */
-> +#define AXP22X_PMIC_ADC_H		0x56
-> +#define AXP22X_PMIC_ADC_L		0x57
-> +#define AXP22X_TS_ADC_H			0x58
-> +#define AXP22X_TS_ADC_L			0x59
->  #define AXP22X_BATLOW_THRES1		0xe6
-> =20
->  /* AXP288 specific registers */
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Is similar patch needed for i386?
 
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+Best regards,
+								Pavel
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
