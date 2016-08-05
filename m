@@ -1,94 +1,67 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH] PM / Domains: Replace -ENOSYS with -ENODEV
-Date: Fri, 5 Aug 2016 21:43:29 +0200
-Message-ID: <20160805194329.GA5020@wunner.de>
-References: <1470416816-53336-1-git-send-email-lina.iyer@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] x86/power/64: Do not refer to __PAGE_OFFSET from assembly code
+Date: Sat, 06 Aug 2016 01:12:30 +0200
+Message-ID: <3091490.MoJzMOfeFu@vostro.rjw.lan>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com> <1601227.1rWnhT6gJp@vostro.rjw.lan> <CAJcbSZFTA8v6KEdWZ9rj8qMQUREhpexExO0BxmaWBmW2_f2TxA@mail.gmail.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:34313 "EHLO
-	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992935AbcHETnD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Aug 2016 15:43:03 -0400
-Content-Disposition: inline
-In-Reply-To: <1470416816-53336-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <kernel-hardening-return-4270-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <CAJcbSZFTA8v6KEdWZ9rj8qMQUREhpexExO0BxmaWBmW2_f2TxA@mail.gmail.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Pavel Machek <pavel@denx.de>, the arch/x86 maintainers <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>, kernel-hardening@lists.openwall.com
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
 
-On Fri, Aug 05, 2016 at 11:06:56AM -0600, Lina Iyer wrote:
-> ENOSYS is for syscalls that are not supported. ENODEV is a better return
-> value when the PM Domains are not available.
+On Friday, August 05, 2016 08:21:31 AM Thomas Garnier wrote:
+> On Fri, Aug 5, 2016 at 7:44 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Friday, August 05, 2016 12:37:13 PM Pavel Machek wrote:
+> >> On Wed 2016-08-03 01:19:26, Rafael J. Wysocki wrote:
+> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> >
+> >> > When CONFIG_RANDOMIZE_MEMORY is set on x86-64, __PAGE_OFFSET becomes
+> >> > a variable and using it as a symbol in the image memory restoration
+> >> > assembly code under core_restore_code is not correct any more.
+> >>
+> >> On a related note... we should really have page_offset variable in
+> >> such case, and use that -- having __FOO_BAR not being a constant is
+> >> ugly/confusing/dangerous.
+> >>
+> >> > To avoid that problem, modify set_up_temporary_mappings() to compute
+> >> > the physical address of the temporary page tables and store it in
+> >> > temp_level4_pgt, so that the value of that variable is ready to be
+> >> > written into CR3.  Then, the assembly code doesn't have to worry
+> >> > about converting that value into a physical address and things work
+> >> > regardless of whether or not CONFIG_RANDOMIZE_MEMORY is set.
+> >> >
+> >> > Reported-and-tested-by: Thomas Garnier <thgarnie@google.com>
+> >> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>
+> >> Acked-by: Pavel Machek <pavel@ucw.cz>
+> >>
+> >> Is similar patch needed for i386?
+> >
+> > Yes, it is, in general, for i386 hibernation to work with ASLR.
+> >
+> > But it doesn't work with it for other reasons ATM, AFAICS.
+> >
+> > Unfortunately, I won't really have the time to take care of this any time
+> > soon.
+> >
 > 
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> KASLR memory randomization is only available for x64 right now. I plan
+> on porting to 32bit eventually and will test/adapt hibernation as part
+> of it.
 
-I have no opinion on this, but would like to point out that other parts
-in the PM core use -ENOSYS as well (e.g. see drivers/base/power/core.c).
-For consistency, if pm_domain.h is changed, the rest should probably be
-changed as well. It should also be kept in mind that functions might
-check the return code and react specifically to the currently used -ENOSYS.
-(I've written code like that just yesterday, for the (unmerged) thunderbolt
-runtime pm.)
+Great to hear that, but you need to be aware that the i386 hibernate code has
+not been touched for a long time and it makes some heavy assumptions that
+are not made on x86-64.
+
+Please keep me and Pavel in the loop, though.
 
 Thanks,
-
-Lukas
-
-> ---
->  include/linux/pm_domain.h | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 688dc57..8a63406 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -151,7 +151,7 @@ extern struct dev_power_governor pm_domain_always_on_gov;
->  
->  static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
->  {
-> -	return ERR_PTR(-ENOSYS);
-> +	return ERR_PTR(-ENODEV);
->  }
->  static inline struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev)
->  {
-> @@ -161,27 +161,27 @@ static inline int __pm_genpd_add_device(struct generic_pm_domain *genpd,
->  					struct device *dev,
->  					struct gpd_timing_data *td)
->  {
-> -	return -ENOSYS;
-> +	return -ENODEV;
->  }
->  static inline int pm_genpd_remove_device(struct generic_pm_domain *genpd,
->  					 struct device *dev)
->  {
-> -	return -ENOSYS;
-> +	return -ENODEV;
->  }
->  static inline int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
->  					 struct generic_pm_domain *new_sd)
->  {
-> -	return -ENOSYS;
-> +	return -ENODEV;
->  }
->  static inline int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
->  					    struct generic_pm_domain *target)
->  {
-> -	return -ENOSYS;
-> +	return -ENODEV;
->  }
->  static inline int pm_genpd_init(struct generic_pm_domain *genpd,
->  				struct dev_power_governor *gov, bool is_off)
->  {
-> -	return -ENOSYS;
-> +	return -ENODEV;
->  }
->  static inline int pm_genpd_of_parse_power_states(
->  				struct generic_pm_domain *genpd)
-> -- 
-> 2.7.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Rafael
