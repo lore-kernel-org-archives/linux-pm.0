@@ -1,138 +1,73 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH v2] thermal/powerclamp: Prevent division by zero when
- counting interval
-Date: Fri, 5 Aug 2016 08:42:27 -0700
-Message-ID: <20160805084227.085fd84d@jacob-builder>
-References: <20160805131242.GA10099@pathway.suse.cz>
-	<1470403241-5428-1-git-send-email-pmladek@suse.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH] PM / Domains: Replace -ENOSYS with -ENODEV
+Date: Fri,  5 Aug 2016 11:06:56 -0600
+Message-ID: <1470416816-53336-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:37970 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753297AbcHEPlg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 5 Aug 2016 11:41:36 -0400
-In-Reply-To: <1470403241-5428-1-git-send-email-pmladek@suse.com>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:35961 "EHLO
+	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752141AbcHERHC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Aug 2016 13:07:02 -0400
+Received: by mail-pf0-f180.google.com with SMTP id h186so98726835pfg.3
+        for <linux-pm@vger.kernel.org>; Fri, 05 Aug 2016 10:07:01 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Petr Mladek <pmladek@suse.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com
+To: ulf.hansson@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Cc: Lina Iyer <lina.iyer@linaro.org>
 
-On Fri,  5 Aug 2016 15:20:41 +0200
-Petr Mladek <pmladek@suse.com> wrote:
+ENOSYS is for syscalls that are not supported. ENODEV is a better return
+value when the PM Domains are not available.
 
-> I have got a zero division error when disabling the forced
-> idle injection from the intel powerclamp. I did
-> 
->   echo 0 >/sys/class/thermal/cooling_device48/cur_state
-> 
-> and got
-> 
-> [  986.072632] divide error: 0000 [#1] PREEMPT SMP
-> [  986.078989] Modules linked in:
-> [  986.083618] CPU: 17 PID: 24967 Comm: kidle_inject/17 Not tainted
-> 4.7.0-1-default+ #3055 [  986.093781] Hardware name: Intel
-> Corporation S2600CP/S2600CP, BIOS RMLSDP.86I.R3.27.D685.1305151734
-> 05/15/2013 [  986.106227] task: ffff880430e1c080 task.stack:
-> ffff880427ef0000 [  986.114122] RIP: 0010:[<ffffffff81794859>]
-> [<ffffffff81794859>] clamp_thread+0x1d9/0x600 [  986.124609] RSP:
-> 0018:ffff880427ef3e20  EFLAGS: 00010246 [  986.131860] RAX:
-> 0000000000000258 RBX: 0000000000000006 RCX: 0000000000000001
-> [  986.141179] RDX: 0000000000000000 RSI: 0000000000000000 RDI:
-> 0000000000000018 [  986.150478] RBP: ffff880427ef3ec8 R08:
-> ffff880427ef0000 R09: 0000000000000002 [  986.159779] R10:
-> 0000000000003df2 R11: 0000000000000018 R12: 0000000000000002
-> [  986.169089] R13: 0000000000000000 R14: ffff880427ef0000 R15:
-> ffff880427ef0000 [  986.178388] FS:  0000000000000000(0000)
-> GS:ffff880435940000(0000) knlGS:0000000000000000 [  986.188785] CS:
-> 0010 DS: 0000 ES: 0000 CR0: 0000000080050033 [  986.196559] CR2:
-> 00007f1d0caf0000 CR3: 0000000002006000 CR4: 00000000001406e0
-> [  986.205909] Stack: [  986.209524]  ffff8802be897b00
-> ffff880430e1c080 0000000000000011 0000006a35959780 [  986.219236]
-> 0000000000000011 ffff880427ef0008 0000000000000000 ffff8804359503d0
-> [  986.228966]  0000000100029d93 ffffffff81794140 0000000000000000
-> ffffffff05000011 [  986.238686] Call Trace: [  986.242825]
-> [<ffffffff81794140>] ? pkg_state_counter+0x80/0x80 [  986.250866]
-> [<ffffffff81794680>] ? powerclamp_set_cur_state+0x180/0x180
-> [  986.259797]  [<ffffffff8111d1a9>] kthread+0xc9/0xe0
-> [  986.266682]  [<ffffffff8193d69f>] ret_from_fork+0x1f/0x40
-> [  986.274142]  [<ffffffff8111d0e0>] ?
-> kthread_create_on_node+0x180/0x180 [  986.282869] Code: d1 ea 48 89
-> d6 80 3d 6a d0 d4 00 00 ba 64 00 00 00 89 d8 41 0f 45 f5 0f af c2 42
-> 8d 14 2e be 31 00 00 00 83 fa 31 0f 42 f2 31 d2 <f7> f6 48 8b 15 9e
-> 07 87 00 48 8b 3d 97 07 87 00 48 63 f0 83 e8 [  986.307806] RIP
-> [<ffffffff81794859>] clamp_thread+0x1d9/0x600 [  986.315871]  RSP
-> <ffff880427ef3e20>
-> 
-> RIP points to the following lines:
-> 
-> 	compensation = get_compensation(target_ratio);
-> 	interval = duration_jiffies*100/(target_ratio+compensation);
-> 
-> A solution would be to switch the following two commands in
-> powerclamp_set_cur_state():
-> 
-> 	set_target_ratio = 0;
-> 	end_power_clamp();
-> 
-> But I think that the zero division might happen also when target_ratio
-> is non-zero because the compensation might be negative. Therefore
-> we also check the sum of target_ratio and compensation explicitly.
-> 
-> Also the compensated_ratio variable is always set. Therefore there
-> is no need to initialize it.
-> 
-> Signed-off-by: Petr Mladek <pmladek@suse.com>
-Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+---
+ include/linux/pm_domain.h | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Thanks
-> ---
-> Changes against v1:
-> 
-> 	+ Also set_target_ratio to 0 after the threads are stopped.
-> 
->  drivers/thermal/intel_powerclamp.c | 11 +++++++----
->  1 file changed, 7 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/thermal/intel_powerclamp.c
-> b/drivers/thermal/intel_powerclamp.c index 015ce2eb6eb7..0e4dc0afcfd2
-> 100644 --- a/drivers/thermal/intel_powerclamp.c
-> +++ b/drivers/thermal/intel_powerclamp.c
-> @@ -388,7 +388,7 @@ static int clamp_thread(void *arg)
->  		int sleeptime;
->  		unsigned long target_jiffies;
->  		unsigned int guard;
-> -		unsigned int compensation = 0;
-> +		unsigned int compensated_ratio;
->  		int interval; /* jiffies to sleep for each attempt */
->  		unsigned int duration_jiffies =
-> msecs_to_jiffies(duration); unsigned int window_size_now;
-> @@ -409,8 +409,11 @@ static int clamp_thread(void *arg)
->  		 * c-states, thus we need to compensate the injected
-> idle ratio
->  		 * to achieve the actual target reported by the HW.
->  		 */
-> -		compensation = get_compensation(target_ratio);
-> -		interval =
-> duration_jiffies*100/(target_ratio+compensation);
-> +		compensated_ratio = target_ratio +
-> +			get_compensation(target_ratio);
-> +		if (compensated_ratio <= 0)
-> +			compensated_ratio = 1;
-> +		interval = duration_jiffies * 100 /
-> compensated_ratio; 
->  		/* align idle time */
->  		target_jiffies = roundup(jiffies, interval);
-> @@ -647,8 +650,8 @@ static int powerclamp_set_cur_state(struct
-> thermal_cooling_device *cdev, goto exit_set;
->  	} else	if (set_target_ratio > 0 && new_target_ratio
-> == 0) { pr_info("Stop forced idle injection\n");
-> -		set_target_ratio = 0;
->  		end_power_clamp();
-> +		set_target_ratio = 0;
->  	} else	/* adjust currently running */ {
->  		set_target_ratio = new_target_ratio;
->  		/* make new set_target_ratio visible to other cpus */
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 688dc57..8a63406 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -151,7 +151,7 @@ extern struct dev_power_governor pm_domain_always_on_gov;
+ 
+ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
+ {
+-	return ERR_PTR(-ENOSYS);
++	return ERR_PTR(-ENODEV);
+ }
+ static inline struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev)
+ {
+@@ -161,27 +161,27 @@ static inline int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+ 					struct device *dev,
+ 					struct gpd_timing_data *td)
+ {
+-	return -ENOSYS;
++	return -ENODEV;
+ }
+ static inline int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+ 					 struct device *dev)
+ {
+-	return -ENOSYS;
++	return -ENODEV;
+ }
+ static inline int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+ 					 struct generic_pm_domain *new_sd)
+ {
+-	return -ENOSYS;
++	return -ENODEV;
+ }
+ static inline int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
+ 					    struct generic_pm_domain *target)
+ {
+-	return -ENOSYS;
++	return -ENODEV;
+ }
+ static inline int pm_genpd_init(struct generic_pm_domain *genpd,
+ 				struct dev_power_governor *gov, bool is_off)
+ {
+-	return -ENOSYS;
++	return -ENODEV;
+ }
+ static inline int pm_genpd_of_parse_power_states(
+ 				struct generic_pm_domain *genpd)
+-- 
+2.7.4
 
-[Jacob Pan]
