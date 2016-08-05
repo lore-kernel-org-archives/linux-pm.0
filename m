@@ -1,187 +1,119 @@
-From: Michele DiGiorgio <michele.digiorgio@arm.com>
-Subject: Re: [PATCH] thermal: fix race condition when updating cooling device
-Date: Fri, 5 Aug 2016 14:21:21 +0100
-Message-ID: <57A492D1.4020500@arm.com>
-References: <1469007991-15245-1-git-send-email-michele.digiorgio@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1469007991-15245-1-git-send-email-michele.digiorgio@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Peter Feuerer <peter@piie.net>
+From: Petr Mladek <pmladek@suse.com>
+Subject: [PATCH v2] thermal/powerclamp: Prevent division by zero when counting interval
+Date: Fri,  5 Aug 2016 15:20:41 +0200
+Message-ID: <1470403241-5428-1-git-send-email-pmladek@suse.com>
+References: <20160805131242.GA10099@pathway.suse.cz>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:47420 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161167AbcHENVV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 5 Aug 2016 09:21:21 -0400
+In-Reply-To: <20160805131242.GA10099@pathway.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Petr Mladek <pmladek@suse.com>
 
-Hi Eduardo, Rui,
+I have got a zero division error when disabling the forced
+idle injection from the intel powerclamp. I did
 
-On 20/07/16 10:46, Michele Di Giorgio wrote:
-> When multiple thermal zones are bound to the same cooling device, multiple
-> kernel threads may want to update the cooling device state by calling
-> thermal_cdev_update(). Having cdev not protected by a mutex can lead to a race
-> condition. Consider the following situation with two kernel threads k1 and k2:
->
->           Thread k1                           Thread k2
->                                      ||
->                                      ||  call thermal_cdev_update()
->                                      ||      ...
->                                      ||      set_cur_state(cdev, target);
->      call power_actor_set_power()    ||
->          ...                         ||
->          instance->target = state;   ||
->          cdev->updated = false;      ||
->                                      ||      cdev->updated = true;
->                                      ||      // completes execution
->      call thermal_cdev_update()      ||
->          // cdev->updated == true    ||
->          return;                     ||
->                                      \/
->                                      time
->
-> k2 has already looped through the thermal instances looking for the deepest
-> cooling device state and is preempted right before setting cdev->updated to
-> true. Now, k1 runs, modifies the thermal instance state and sets cdev->updated
-> to false. Then, k1 is preempted and k2 continues the execution by setting
-> cdev->updated to true, therefore preventing k1 from performing the update.
-> Notice that this is not an issue if k2 looks at the instance->target modified by
-> k1 "after" it is assigned by k1. In fact, in this case the update will happen
-> anyway and k1 can safely return immediately from thermal_cdev_update().
->
-> This may lead to a situation where a thermal governor never updates the cooling
-> device. For example, this is the case for the step_wise governor: when calling
-> the function thermal_zone_trip_update(), the governor may always get a new state
-> equal to the old one (which, however, wasn't notified to the cooling device) and
-> will therefore skip the update.
->
-> CC: Zhang Rui <rui.zhang@intel.com>
-> CC: Eduardo Valentin <edubezval@gmail.com>
-> CC: Peter Feuerer <peter@piie.net>
-> Reported-by: Toby Huang <toby.huang@arm.com>
-> Signed-off-by: Michele Di Giorgio <michele.digiorgio@arm.com>
-> ---
-> Protecting only the assignment of cdev->updated with mutexes may look
-> suspicious, but it is necessary to guarantee synchronization and avoiding the
-> situation described in the commit message.
->
-> There are other two possible solutions.
->
-> Moving the cdev->lock mutex outside thermal_cdev_update() and protect both the
-> assignment and the function. This would work, but will probably cause many
-> issues when updating all the modules that use thermal_cdev_update().
->
-> The other solution is to make cdev->updated an atomic_t, change the if
-> condition to an atomic_cmpxchg and extend the critical section to include the
-> call to cdev->ops->set_cur_state().
->
->   drivers/thermal/fair_share.c      |  2 ++
->   drivers/thermal/gov_bang_bang.c   |  2 ++
->   drivers/thermal/power_allocator.c |  2 ++
->   drivers/thermal/step_wise.c       |  2 ++
->   drivers/thermal/thermal_core.c    | 10 +++++++---
->   5 files changed, 15 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/thermal/fair_share.c b/drivers/thermal/fair_share.c
-> index 34fe365..68bd1b5 100644
-> --- a/drivers/thermal/fair_share.c
-> +++ b/drivers/thermal/fair_share.c
-> @@ -116,7 +116,9 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
->               instance->target = get_target_state(tz, cdev, percentage,
->                                                   cur_trip_level);
->
-> +             mutex_lock(&instance->cdev->lock);
->               instance->cdev->updated = false;
-> +             mutex_unlock(&instance->cdev->lock);
->               thermal_cdev_update(cdev);
->       }
->       return 0;
-> diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
-> index 70836c5..39d1519 100644
-> --- a/drivers/thermal/gov_bang_bang.c
-> +++ b/drivers/thermal/gov_bang_bang.c
-> @@ -65,7 +65,9 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
->               dev_dbg(&instance->cdev->device, "target=%d\n",
->                                       (int)instance->target);
->
-> +             mutex_lock(&instance->cdev->lock);
->               instance->cdev->updated = false; /* cdev needs update */
-> +             mutex_unlock(&instance->cdev->lock);
->       }
->
->       mutex_unlock(&tz->lock);
-> diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-> index 1246aa6..2cc5616 100644
-> --- a/drivers/thermal/power_allocator.c
-> +++ b/drivers/thermal/power_allocator.c
-> @@ -529,7 +529,9 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
->                       continue;
->
->               instance->target = 0;
-> +             mutex_lock(&instance->cdev->lock);
->               instance->cdev->updated = false;
-> +             mutex_unlock(&instance->cdev->lock);
->               thermal_cdev_update(instance->cdev);
->       }
->   }
-> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-> index ea9366a..bcef2e7 100644
-> --- a/drivers/thermal/step_wise.c
-> +++ b/drivers/thermal/step_wise.c
-> @@ -175,7 +175,9 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
->                       update_passive_instance(tz, trip_type, -1);
->
->               instance->initialized = true;
-> +             mutex_lock(&instance->cdev->lock);
->               instance->cdev->updated = false; /* cdev needs update */
-> +             mutex_unlock(&instance->cdev->lock);
->       }
->
->       mutex_unlock(&tz->lock);
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index a0a8fd1..9d23109 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1089,7 +1089,9 @@ int power_actor_set_power(struct thermal_cooling_device *cdev,
->               return ret;
->
->       instance->target = state;
-> +     mutex_lock(&cdev->lock);
->       cdev->updated = false;
-> +     mutex_unlock(&cdev->lock);
->       thermal_cdev_update(cdev);
->
->       return 0;
-> @@ -1619,11 +1621,13 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
->       struct thermal_instance *instance;
->       unsigned long target = 0;
->
-> +     mutex_lock(&cdev->lock);
->       /* cooling device is updated*/
-> -     if (cdev->updated)
-> +     if (cdev->updated) {
-> +             mutex_unlock(&cdev->lock);
->               return;
-> +     }
->
-> -     mutex_lock(&cdev->lock);
->       /* Make sure cdev enters the deepest cooling state */
->       list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) {
->               dev_dbg(&cdev->device, "zone%d->target=%lu\n",
-> @@ -1633,9 +1637,9 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
->               if (instance->target > target)
->                       target = instance->target;
->       }
-> -     mutex_unlock(&cdev->lock);
->       cdev->ops->set_cur_state(cdev, target);
->       cdev->updated = true;
-> +     mutex_unlock(&cdev->lock);
->       trace_cdev_update(cdev, target);
->       dev_dbg(&cdev->device, "set to state %lu\n", target);
->   }
->
+  echo 0 >/sys/class/thermal/cooling_device48/cur_state
 
-If there are no comments/issues, could you please consider this for next
-merge window?
+and got
 
-Thanks,
-Michele
-IMPORTANT NOTICE: The contents of this email and any attachments are confidential and may also be privileged. If you are not the intended recipient, please notify the sender immediately and do not disclose the contents to any other person, use it for any purpose, or store or copy the information in any medium. Thank you.
+[  986.072632] divide error: 0000 [#1] PREEMPT SMP
+[  986.078989] Modules linked in:
+[  986.083618] CPU: 17 PID: 24967 Comm: kidle_inject/17 Not tainted 4.7.0-1-default+ #3055
+[  986.093781] Hardware name: Intel Corporation S2600CP/S2600CP, BIOS RMLSDP.86I.R3.27.D685.1305151734 05/15/2013
+[  986.106227] task: ffff880430e1c080 task.stack: ffff880427ef0000
+[  986.114122] RIP: 0010:[<ffffffff81794859>]  [<ffffffff81794859>] clamp_thread+0x1d9/0x600
+[  986.124609] RSP: 0018:ffff880427ef3e20  EFLAGS: 00010246
+[  986.131860] RAX: 0000000000000258 RBX: 0000000000000006 RCX: 0000000000000001
+[  986.141179] RDX: 0000000000000000 RSI: 0000000000000000 RDI: 0000000000000018
+[  986.150478] RBP: ffff880427ef3ec8 R08: ffff880427ef0000 R09: 0000000000000002
+[  986.159779] R10: 0000000000003df2 R11: 0000000000000018 R12: 0000000000000002
+[  986.169089] R13: 0000000000000000 R14: ffff880427ef0000 R15: ffff880427ef0000
+[  986.178388] FS:  0000000000000000(0000) GS:ffff880435940000(0000) knlGS:0000000000000000
+[  986.188785] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  986.196559] CR2: 00007f1d0caf0000 CR3: 0000000002006000 CR4: 00000000001406e0
+[  986.205909] Stack:
+[  986.209524]  ffff8802be897b00 ffff880430e1c080 0000000000000011 0000006a35959780
+[  986.219236]  0000000000000011 ffff880427ef0008 0000000000000000 ffff8804359503d0
+[  986.228966]  0000000100029d93 ffffffff81794140 0000000000000000 ffffffff05000011
+[  986.238686] Call Trace:
+[  986.242825]  [<ffffffff81794140>] ? pkg_state_counter+0x80/0x80
+[  986.250866]  [<ffffffff81794680>] ? powerclamp_set_cur_state+0x180/0x180
+[  986.259797]  [<ffffffff8111d1a9>] kthread+0xc9/0xe0
+[  986.266682]  [<ffffffff8193d69f>] ret_from_fork+0x1f/0x40
+[  986.274142]  [<ffffffff8111d0e0>] ? kthread_create_on_node+0x180/0x180
+[  986.282869] Code: d1 ea 48 89 d6 80 3d 6a d0 d4 00 00 ba 64 00 00 00 89 d8 41 0f 45 f5 0f af c2 42 8d 14 2e be 31 00 00 00 83 fa 31 0f 42 f2 31 d2 <f7> f6 48 8b 15 9e 07 87 00 48 8b 3d 97 07 87 00 48 63 f0 83 e8
+[  986.307806] RIP  [<ffffffff81794859>] clamp_thread+0x1d9/0x600
+[  986.315871]  RSP <ffff880427ef3e20>
+
+RIP points to the following lines:
+
+	compensation = get_compensation(target_ratio);
+	interval = duration_jiffies*100/(target_ratio+compensation);
+
+A solution would be to switch the following two commands in
+powerclamp_set_cur_state():
+
+	set_target_ratio = 0;
+	end_power_clamp();
+
+But I think that the zero division might happen also when target_ratio
+is non-zero because the compensation might be negative. Therefore
+we also check the sum of target_ratio and compensation explicitly.
+
+Also the compensated_ratio variable is always set. Therefore there
+is no need to initialize it.
+
+Signed-off-by: Petr Mladek <pmladek@suse.com>
+---
+Changes against v1:
+
+	+ Also set_target_ratio to 0 after the threads are stopped.
+
+ drivers/thermal/intel_powerclamp.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index 015ce2eb6eb7..0e4dc0afcfd2 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -388,7 +388,7 @@ static int clamp_thread(void *arg)
+ 		int sleeptime;
+ 		unsigned long target_jiffies;
+ 		unsigned int guard;
+-		unsigned int compensation = 0;
++		unsigned int compensated_ratio;
+ 		int interval; /* jiffies to sleep for each attempt */
+ 		unsigned int duration_jiffies = msecs_to_jiffies(duration);
+ 		unsigned int window_size_now;
+@@ -409,8 +409,11 @@ static int clamp_thread(void *arg)
+ 		 * c-states, thus we need to compensate the injected idle ratio
+ 		 * to achieve the actual target reported by the HW.
+ 		 */
+-		compensation = get_compensation(target_ratio);
+-		interval = duration_jiffies*100/(target_ratio+compensation);
++		compensated_ratio = target_ratio +
++			get_compensation(target_ratio);
++		if (compensated_ratio <= 0)
++			compensated_ratio = 1;
++		interval = duration_jiffies * 100 / compensated_ratio;
+ 
+ 		/* align idle time */
+ 		target_jiffies = roundup(jiffies, interval);
+@@ -647,8 +650,8 @@ static int powerclamp_set_cur_state(struct thermal_cooling_device *cdev,
+ 		goto exit_set;
+ 	} else	if (set_target_ratio > 0 && new_target_ratio == 0) {
+ 		pr_info("Stop forced idle injection\n");
+-		set_target_ratio = 0;
+ 		end_power_clamp();
++		set_target_ratio = 0;
+ 	} else	/* adjust currently running */ {
+ 		set_target_ratio = new_target_ratio;
+ 		/* make new set_target_ratio visible to other cpus */
+-- 
+1.8.5.6
+
