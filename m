@@ -1,57 +1,138 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH] x86/power/64: Do not refer to __PAGE_OFFSET from assembly code
-Date: Fri, 5 Aug 2016 08:21:31 -0700
-Message-ID: <CAJcbSZFTA8v6KEdWZ9rj8qMQUREhpexExO0BxmaWBmW2_f2TxA@mail.gmail.com>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
- <2464745.UmGP58NeXC@vostro.rjw.lan> <20160805103713.GA8106@amd> <1601227.1rWnhT6gJp@vostro.rjw.lan>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH v2] thermal/powerclamp: Prevent division by zero when
+ counting interval
+Date: Fri, 5 Aug 2016 08:42:27 -0700
+Message-ID: <20160805084227.085fd84d@jacob-builder>
+References: <20160805131242.GA10099@pathway.suse.cz>
+	<1470403241-5428-1-git-send-email-pmladek@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1601227.1rWnhT6gJp@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@denx.de>, the arch/x86 maintainers <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>, kernel-hardening@lists.openwall.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:37970 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753297AbcHEPlg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 5 Aug 2016 11:41:36 -0400
+In-Reply-To: <1470403241-5428-1-git-send-email-pmladek@suse.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Petr Mladek <pmladek@suse.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com
 
-On Fri, Aug 5, 2016 at 7:44 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Friday, August 05, 2016 12:37:13 PM Pavel Machek wrote:
->> On Wed 2016-08-03 01:19:26, Rafael J. Wysocki wrote:
->> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >
->> > When CONFIG_RANDOMIZE_MEMORY is set on x86-64, __PAGE_OFFSET becomes
->> > a variable and using it as a symbol in the image memory restoration
->> > assembly code under core_restore_code is not correct any more.
->>
->> On a related note... we should really have page_offset variable in
->> such case, and use that -- having __FOO_BAR not being a constant is
->> ugly/confusing/dangerous.
->>
->> > To avoid that problem, modify set_up_temporary_mappings() to compute
->> > the physical address of the temporary page tables and store it in
->> > temp_level4_pgt, so that the value of that variable is ready to be
->> > written into CR3.  Then, the assembly code doesn't have to worry
->> > about converting that value into a physical address and things work
->> > regardless of whether or not CONFIG_RANDOMIZE_MEMORY is set.
->> >
->> > Reported-and-tested-by: Thomas Garnier <thgarnie@google.com>
->> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Acked-by: Pavel Machek <pavel@ucw.cz>
->>
->> Is similar patch needed for i386?
->
-> Yes, it is, in general, for i386 hibernation to work with ASLR.
->
-> But it doesn't work with it for other reasons ATM, AFAICS.
->
-> Unfortunately, I won't really have the time to take care of this any time
-> soon.
->
+On Fri,  5 Aug 2016 15:20:41 +0200
+Petr Mladek <pmladek@suse.com> wrote:
 
-KASLR memory randomization is only available for x64 right now. I plan
-on porting to 32bit eventually and will test/adapt hibernation as part
-of it.
+> I have got a zero division error when disabling the forced
+> idle injection from the intel powerclamp. I did
+> 
+>   echo 0 >/sys/class/thermal/cooling_device48/cur_state
+> 
+> and got
+> 
+> [  986.072632] divide error: 0000 [#1] PREEMPT SMP
+> [  986.078989] Modules linked in:
+> [  986.083618] CPU: 17 PID: 24967 Comm: kidle_inject/17 Not tainted
+> 4.7.0-1-default+ #3055 [  986.093781] Hardware name: Intel
+> Corporation S2600CP/S2600CP, BIOS RMLSDP.86I.R3.27.D685.1305151734
+> 05/15/2013 [  986.106227] task: ffff880430e1c080 task.stack:
+> ffff880427ef0000 [  986.114122] RIP: 0010:[<ffffffff81794859>]
+> [<ffffffff81794859>] clamp_thread+0x1d9/0x600 [  986.124609] RSP:
+> 0018:ffff880427ef3e20  EFLAGS: 00010246 [  986.131860] RAX:
+> 0000000000000258 RBX: 0000000000000006 RCX: 0000000000000001
+> [  986.141179] RDX: 0000000000000000 RSI: 0000000000000000 RDI:
+> 0000000000000018 [  986.150478] RBP: ffff880427ef3ec8 R08:
+> ffff880427ef0000 R09: 0000000000000002 [  986.159779] R10:
+> 0000000000003df2 R11: 0000000000000018 R12: 0000000000000002
+> [  986.169089] R13: 0000000000000000 R14: ffff880427ef0000 R15:
+> ffff880427ef0000 [  986.178388] FS:  0000000000000000(0000)
+> GS:ffff880435940000(0000) knlGS:0000000000000000 [  986.188785] CS:
+> 0010 DS: 0000 ES: 0000 CR0: 0000000080050033 [  986.196559] CR2:
+> 00007f1d0caf0000 CR3: 0000000002006000 CR4: 00000000001406e0
+> [  986.205909] Stack: [  986.209524]  ffff8802be897b00
+> ffff880430e1c080 0000000000000011 0000006a35959780 [  986.219236]
+> 0000000000000011 ffff880427ef0008 0000000000000000 ffff8804359503d0
+> [  986.228966]  0000000100029d93 ffffffff81794140 0000000000000000
+> ffffffff05000011 [  986.238686] Call Trace: [  986.242825]
+> [<ffffffff81794140>] ? pkg_state_counter+0x80/0x80 [  986.250866]
+> [<ffffffff81794680>] ? powerclamp_set_cur_state+0x180/0x180
+> [  986.259797]  [<ffffffff8111d1a9>] kthread+0xc9/0xe0
+> [  986.266682]  [<ffffffff8193d69f>] ret_from_fork+0x1f/0x40
+> [  986.274142]  [<ffffffff8111d0e0>] ?
+> kthread_create_on_node+0x180/0x180 [  986.282869] Code: d1 ea 48 89
+> d6 80 3d 6a d0 d4 00 00 ba 64 00 00 00 89 d8 41 0f 45 f5 0f af c2 42
+> 8d 14 2e be 31 00 00 00 83 fa 31 0f 42 f2 31 d2 <f7> f6 48 8b 15 9e
+> 07 87 00 48 8b 3d 97 07 87 00 48 63 f0 83 e8 [  986.307806] RIP
+> [<ffffffff81794859>] clamp_thread+0x1d9/0x600 [  986.315871]  RSP
+> <ffff880427ef3e20>
+> 
+> RIP points to the following lines:
+> 
+> 	compensation = get_compensation(target_ratio);
+> 	interval = duration_jiffies*100/(target_ratio+compensation);
+> 
+> A solution would be to switch the following two commands in
+> powerclamp_set_cur_state():
+> 
+> 	set_target_ratio = 0;
+> 	end_power_clamp();
+> 
+> But I think that the zero division might happen also when target_ratio
+> is non-zero because the compensation might be negative. Therefore
+> we also check the sum of target_ratio and compensation explicitly.
+> 
+> Also the compensated_ratio variable is always set. Therefore there
+> is no need to initialize it.
+> 
+> Signed-off-by: Petr Mladek <pmladek@suse.com>
+Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-> Thanks,
-> Rafael
->
+Thanks
+> ---
+> Changes against v1:
+> 
+> 	+ Also set_target_ratio to 0 after the threads are stopped.
+> 
+>  drivers/thermal/intel_powerclamp.c | 11 +++++++----
+>  1 file changed, 7 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/thermal/intel_powerclamp.c
+> b/drivers/thermal/intel_powerclamp.c index 015ce2eb6eb7..0e4dc0afcfd2
+> 100644 --- a/drivers/thermal/intel_powerclamp.c
+> +++ b/drivers/thermal/intel_powerclamp.c
+> @@ -388,7 +388,7 @@ static int clamp_thread(void *arg)
+>  		int sleeptime;
+>  		unsigned long target_jiffies;
+>  		unsigned int guard;
+> -		unsigned int compensation = 0;
+> +		unsigned int compensated_ratio;
+>  		int interval; /* jiffies to sleep for each attempt */
+>  		unsigned int duration_jiffies =
+> msecs_to_jiffies(duration); unsigned int window_size_now;
+> @@ -409,8 +409,11 @@ static int clamp_thread(void *arg)
+>  		 * c-states, thus we need to compensate the injected
+> idle ratio
+>  		 * to achieve the actual target reported by the HW.
+>  		 */
+> -		compensation = get_compensation(target_ratio);
+> -		interval =
+> duration_jiffies*100/(target_ratio+compensation);
+> +		compensated_ratio = target_ratio +
+> +			get_compensation(target_ratio);
+> +		if (compensated_ratio <= 0)
+> +			compensated_ratio = 1;
+> +		interval = duration_jiffies * 100 /
+> compensated_ratio; 
+>  		/* align idle time */
+>  		target_jiffies = roundup(jiffies, interval);
+> @@ -647,8 +650,8 @@ static int powerclamp_set_cur_state(struct
+> thermal_cooling_device *cdev, goto exit_set;
+>  	} else	if (set_target_ratio > 0 && new_target_ratio
+> == 0) { pr_info("Stop forced idle injection\n");
+> -		set_target_ratio = 0;
+>  		end_power_clamp();
+> +		set_target_ratio = 0;
+>  	} else	/* adjust currently running */ {
+>  		set_target_ratio = new_target_ratio;
+>  		/* make new set_target_ratio visible to other cpus */
+
+[Jacob Pan]
