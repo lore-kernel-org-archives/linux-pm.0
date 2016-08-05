@@ -1,55 +1,119 @@
-From: Pavel Machek <pavel@denx.de>
-Subject: Re: [PATCH] x86/power/64: Do not refer to __PAGE_OFFSET from
- assembly code
-Date: Fri, 5 Aug 2016 12:37:13 +0200
-Message-ID: <20160805103713.GA8106@amd>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
- <CAJcbSZFC-qeEySJYO9DFs=HfE087QHROW=opDRCmZo2WXB1gqw@mail.gmail.com>
- <CAJZ5v0hiZwugdV6OjA7hAHAv5jhjgJM1vPAW-RHUHud0F=5KsQ@mail.gmail.com>
- <2464745.UmGP58NeXC@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH 6/8] PM / Domains: Remove a provider by referencing
+ the data pointer
+Date: Fri, 5 Aug 2016 13:55:31 +0200
+Message-ID: <CAPDyKFovC07Z9y-4RQ4MKGtjJx5w1D8er3Fv-8HF2qyTKgVViQ@mail.gmail.com>
+References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
+ <1457090634-14785-7-git-send-email-jonathanh@nvidia.com> <CAPDyKFpLcnLvQmpQgzhOExq67XrbaW9Nf1Gk2Y+CND8dn_cmyA@mail.gmail.com>
+ <5769455C.9010809@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43435 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751799AbcHEKhQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 5 Aug 2016 06:37:16 -0400
-Content-Disposition: inline
-In-Reply-To: <2464745.UmGP58NeXC@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5769455C.9010809-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: the arch/x86 maintainers <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Garnier <thgarnie@google.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>, kernel-hardening@lists.openwall.com
 
-On Wed 2016-08-03 01:19:26, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> When CONFIG_RANDOMIZE_MEMORY is set on x86-64, __PAGE_OFFSET becomes
-> a variable and using it as a symbol in the image memory restoration
-> assembly code under core_restore_code is not correct any more.
-
-On a related note... we should really have page_offset variable in
-such case, and use that -- having __FOO_BAR not being a constant is
-ugly/confusing/dangerous.
-
-> To avoid that problem, modify set_up_temporary_mappings() to compute
-> the physical address of the temporary page tables and store it in
-> temp_level4_pgt, so that the value of that variable is ready to be
-> written into CR3.  Then, the assembly code doesn't have to worry
-> about converting that value into a physical address and things work
-> regardless of whether or not CONFIG_RANDOMIZE_MEMORY is set.
-> 
-> Reported-and-tested-by: Thomas Garnier <thgarnie@google.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
-Is similar patch needed for i386?
-
-Best regards,
-								Pavel
+On 21 June 2016 at 15:47, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>
+> On 15/06/16 15:38, Ulf Hansson wrote:
+>> On 4 March 2016 at 12:23, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>> To remove a PM domain from the system, it is necessary to ensure
+>>> that any PM domain providers associated with the PM domain have
+>>> been removed. Otherwise it could be possible to obtain a pointer
+>>> to a PM domain structure that has been removed.
+>>>
+>>> PM domains now have a reference to the pointer for the PM domain
+>>> provider's data variable. Add a function so that a PM domain can
+>>> remove a PM domain provider by referencing the data pointer.
 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>>>
+>>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>> ---
+>>>  drivers/base/power/domain.c | 24 ++++++++++++++++++++++++
+>>>  include/linux/pm_domain.h   |  2 ++
+>>>  2 files changed, 26 insertions(+)
+>>>
+>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>> index 72055fef6256..438885f2455f 100644
+>>> --- a/drivers/base/power/domain.c
+>>> +++ b/drivers/base/power/domain.c
+>>> @@ -1738,6 +1738,30 @@ void of_genpd_del_provider(struct device_node *np)
+>>>  EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+>>>
+>>>  /**
+>>> + * of_genpd_del_provider_by_data() - Remove a registered PM domain provider
+>>> + * @data: Pointer to the data associated with the PM domain provider
+>>> + *
+>>> + * Look up a PM domain provider based upon a pointer to it's data and
+>>> + * remove the PM domain provider from the list of providers.
+>>> + */
+>>> +void of_genpd_del_provider_by_data(void *data)
+>>> +{
+>>> +       struct of_genpd_provider *c, *cp;
+>>> +
+>>> +       mutex_lock(&of_genpd_mutex);
+>>> +       list_for_each_entry_safe(cp, c, &of_genpd_providers, link) {
+>>> +               if (cp->data == data) {
+>>> +                       list_del(&cp->link);
+>>> +                       of_node_put(cp->node);
+>>> +                       kfree(cp);
+>>> +                       break;
+>>> +               }
+>>> +       }
+>>> +       mutex_unlock(&of_genpd_mutex);
+>>> +}
+>>> +EXPORT_SYMBOL_GPL(of_genpd_del_provider_by_data);
+>>> +
+>>> +/**
+>>>   * of_genpd_get_from_provider() - Look-up PM domain
+>>>   * @genpdspec: OF phandle args to use for look-up
+>>>   *
+>>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>>> index bed84413546f..7b7921a65cb0 100644
+>>> --- a/include/linux/pm_domain.h
+>>> +++ b/include/linux/pm_domain.h
+>>> @@ -199,6 +199,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
+>>>  int of_genpd_add_provider_onecell(struct device_node *np,
+>>>                                   struct genpd_onecell_data *data);
+>>>  void of_genpd_del_provider(struct device_node *np);
+>>
+>> There's currently only one user of of_genpd_del_provider().
+>>
+>> Could this patch just convert that user to the new API, so we don't
+>> need to keep both the legacy and new one?
+>>
+>> I guess we could then just stick to the name "of_genpd_del_provider()".
+>
+> I had a look at this and to do that we would end up with
+> of_genpd_del_provider(struct device_node *np, void *data) where the user
+> should only pass one of the arguments. It seems a bit odd. However,
+> unless I have forgotten something, I wonder if we should just make
+> of_genpd_del_provider_by_name() a local function and not export this at
+> all? It seems more natural for users to delete a provider by the
+> device_node than by name rather than the data argument.
+>
+> The only problem I see with making of_genpd_del_provider_by_name() local
+> is that I need to add a prototype for the function at the top of the
+> domain.c source file so that it builds because __pm_genpd_remove() is
+> defined above it. Yes I could move __pm_genpd_remove() to the bottom of
+> the file but then it is not located next to pm_genpd_init() which seems odd.
+>
+> Let me know what you think.
+
+Sorry for delay! I have now looked into this in more detail.
+
+When an genpd provider is added today, it's supposed to get a
+corresponding *unique* OF device node associated with it, right!?
+
+If we store this OF device node from the provider in the struct
+generic_pm_domain, instead of the "provider_data pointer", we wouldn't
+need to the add of_genpd_del_provider_by_data() at all. Because we can
+use the currently available of_genpd_del_provider(), right!?
+
+Or what am I missing? :-)
+
+Kind regards
+Uffe
