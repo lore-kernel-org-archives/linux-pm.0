@@ -1,140 +1,94 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v3 10/15] doc / cpu_domains: Describe CPU PM domains setup and governor
-Date: Thu,  4 Aug 2016 17:04:57 -0600
-Message-ID: <1470351902-43103-11-git-send-email-lina.iyer@linaro.org>
-References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Lina Iyer <lina.iyer@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 07/13] PCI: pciehp: Ignore interrupts during D3cold
+Date: Fri, 05 Aug 2016 02:29:33 +0200
+Message-ID: <2207683.SCJbZF619B@vostro.rjw.lan>
+References: <cover.1463134231.git.lukas@wunner.de> <20160617225204.GC10416@localhost> <20160802162740.GA4036@wunner.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160802162740.GA4036@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-A generic CPU PM domain functionality is provided by
-drivers/base/power/cpu_domains.c. This document describes the generic
-usecase of CPU's PM domains, the setup of such domains and a CPU
-specific genpd governor.
+On Tuesday, August 02, 2016 06:27:40 PM Lukas Wunner wrote:
+> On Fri, Jun 17, 2016 at 05:52:04PM -0500, Bjorn Helgaas wrote:
+> > On Fri, May 13, 2016 at 01:15:31PM +0200, Lukas Wunner wrote:
+> > > If a hotplug port is suspended to D3cold, its slot status register
+> > > cannot be read.  If that hotplug port happens to share its IRQ with
+> > > other devices, then whenever an interrupt occurs for one of these
+> > > devices, a "no response from device" message is logged with level
+> > > KERN_INFO.  Apart from this annoyance, CPU time is needlessly spent
+> > > trying to read the slot status register even though we know in advance
+> > > that it will fail.
+> > 
+> > I guess this is a pretty generic problem that could affect any device
+> > that shares an IRQ.
+> > 
+> > I think I'll queue this on my pci/pm branch, since it seems closely
+> > related to Mika's "PCI: Add runtime PM support for PCIe ports".
+> > 
+> > Did you check for the same issue in other likely places, e.g., AER,
+> > PME, etc.?
+> 
+> Apologies for the delay, I've checked all other port services now:
+> 
+> - Our AER and PME drivers bind only to root ports and I can't imagine
+>   how those could go to D3cold, they're part of the root complex or
+>   PCH and I'm not aware of a chipset that would allow turning off the
+>   power well for individual PCIe ports.
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- Documentation/power/cpu_domains.txt | 109 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 109 insertions(+)
- create mode 100644 Documentation/power/cpu_domains.txt
+No, they don't go into D3cold.  They can go into D3hot, however.
 
-diff --git a/Documentation/power/cpu_domains.txt b/Documentation/power/cpu_domains.txt
-new file mode 100644
-index 0000000..6a39a64
---- /dev/null
-+++ b/Documentation/power/cpu_domains.txt
-@@ -0,0 +1,109 @@
-+CPU PM domains
-+==============
-+
-+Newer CPUs are grouped in SoCs as clusters. A cluster in addition to the CPUs
-+may have caches, floating point units and other architecture specific power
-+controller that share resources when any of the CPUs are active. When the CPUs
-+are in idle, some of these cluster components may also idle. A cluster may
-+also be nested inside another cluster that provides common coherency
-+interfaces to share data between the clusters. The organization of such
-+clusters and CPU may be descibed in DT, since they are SoC specific.
-+
-+CPUIdle framework enables the CPUs to determine the sleep time and enter low
-+power state to save power during periods of idle. CPUs in a cluster may enter
-+and exit idle state independently of each other. During the time when all the
-+CPUs are in idle state, the cluster may safely put some of the shared
-+resources in their idle state. The time between the last CPU to enter idle and
-+the first CPU to wake up is the time available for the cluster to enter its
-+idle state.
-+
-+When SoCs power down the CPU during cpuidle, they generally have supplemental
-+hardware that can handshake with the CPU with a signal that indicates that the
-+CPU has stopped execution. The hardware is also responsible for warm booting
-+the CPU on receiving an interrupt. In a cluster architecture, common resources
-+that are shared by a cluster may also be powered down by an external
-+microcontroller or a processor. The microcontroller may be programmed in
-+advance to put the hardware blocks in a low power state, when the last active
-+CPU sends the idle signal. When the signal is received, the microcontroller
-+may trigger the hardware blocks to enter their low power state. When an
-+interrupt to wakeup the processor is received, the microcontroller is
-+responsible for bringing up the hardware blocks to its active state, before
-+waking up the CPU. The timelines for such operations should be in the
-+acceptable range for for CPU idle to get power benefits.
-+
-+CPU PM Domain Setup
-+-------------------
-+
-+PM domains are represented in the DT as domain consumers and providers. A
-+device may have a domain provider and a domain provider may support multiple
-+domain consumers. Domains like clusters, may also be nested inside one
-+another. A domain that has no active consumer, may be powered off and any
-+resuming consumer would trigger the domain back to active. Parent domains may
-+be powered off when the child domains are powered off. The CPU cluster can be
-+fashioned as a PM domain. When the CPU devices are powered off, the PM domain
-+may be powered off.
-+
-+Device idle is reference counted by runtime PM. When there is no active need
-+for the device, runtime PM invokes callbacks to suspend the parent domain.
-+Generic PM domain (genpd) handles the hierarchy of devices, domains and the
-+reference counting of objects leading to last man down and first man up in the
-+domain. The CPU domains helper functions defines PM domains for each CPU
-+cluster and attaches the CPU devices to the respective PM domains.
-+
-+Platform drivers may use the following API to register their CPU PM domains.
-+
-+of_setup_cpu_pd() -
-+Provides a single step registration of the CPU PM domain and attach CPUs to
-+the genpd. Platform drivers may additionally register callbacks for power_on
-+and power_off operations for the PM domain.
-+
-+of_setup_cpu_pd_single() -
-+Define PM domain for a single CPU and attach the CPU to its domain.
-+
-+
-+CPU PM Domain governor
-+----------------------
-+
-+CPUs have a unique ability to determine their next wakeup. CPUs may wake up
-+for known timer interrupts and unknown interrupts from idle. Prediction
-+algorithms and heuristic based algorithms like the Menu governor for cpuidle
-+can determine the next wakeup of the CPU. However, determining the wakeup
-+across a group of CPUs is a tough problem to solve.
-+
-+A simplistic approach would be to resort to known wakeups of the CPUs in
-+determining the next wakeup of any CPU in the cluster. The CPU PM domain
-+governor does just that. By looking into the tick device of the CPUs, the
-+governor can determine the sleep time between the last CPU and the first
-+scheduled wakeup of any CPU in that domain. This combined with the PM QoS
-+requirement for CPU_DMA_LATENCY can be used to determine the deepest possible
-+idle state of the CPU domain.
-+
-+
-+PSCI based CPU PM Domains
-+-------------------------
-+
-+ARM PSCI v1.0 supports PM domains for CPU clusters like in big.Little
-+architecture. It is supported as part of the OS-Initiated (OSI) mode of the
-+PSCI firmware. Since the control of domains is abstracted in the firmware,
-+Linux does not need even a driver to control these domains. The complexity of
-+determining the idle state of the PM domain is handled by the CPU PM domains.
-+
-+Every PSCI CPU PM domain idle state has a unique PSCI state id. The state id
-+is read from the DT and specified using the arm,psci-suspend-param property.
-+This makes it easy for big.Little SoCs to just specify the PM domain idle
-+states for the CPU along with the psci-suspend-param and everything else is
-+handled by the PSCI fimrware drivers and the firmware.
-+
-+
-+DT definitions for PSCI CPU PM Domains
-+--------------------------------------
-+
-+A PM domain's idle state can be defined in DT, the description of which is
-+available in [1]. PSCI based CPU PM domains may define their idle states as
-+part of the psci node. The additional parameter arm,psci-suspend-param is used
-+to indicate to the firmwware the addition cluster state that would be achieved
-+after the last CPU makes the PSCI call to suspend the CPU. The description of
-+PSCI domain states is available in [2].
-+
-+[1]. Documentation/devicetree/bindings/arm/idle-states.txt
-+[2]. Documentation/devicetree/bindings/arm/psci.txt
--- 
-2.7.4
+> - DPC on the other hand also binds to downstream ports. I do have
+>   downstream ports in my machine (as part of the Thunderbolt switch)
+>   but they do not have the DPC capability. I've never seen devices
+>   with that capability and cannot estimate what the chances are of them
+>   going to D3cold and sharing an IRQ with other devices. It's probably
+>   not worth preparing for such a situation without knowing its likelihood.
+> 
+> - VC: We allocate a port service for this but do not have a driver.
+> 
+> Bottom line is that the patch for the PCIe hotplug driver seems to be
+> sufficient.
+> 
+> FWIW, on my machine I see numerous devices with AER, PME and VC
+> capabilities. The Nvidia GPU as well as network, Firewire and
+> Thunderbolt controllers all have those. AFAICS we ignore them
+> because their specific drivers do not care for the capabilities
+> and portdrv only binds to root ports.
+> 
+> This seems to support your argument that the PCIe capabilities
+> should be handled by the core rather than portdrv, as we could
+> then make use of the capabilities on endpoint devices in a
+> universal manner.
+
+PME, for one, is not an endpoint capability.  It very specifically is
+defined as a port capability AFAICS, and the whole idea here is that
+endpoints will not use their in-band interrupts to signal PME.  That
+is supposed to be done by ports.
+
+> On the other hand, I think we cannot use a separate MSI for
+> AER, PME et al, can we?
+
+We can, at least in principle.
+
+More precisely, the spec requires PME and hotplug to use the same interrupt
+(please see the comment in pcie_port_enable_msix() on that), but AER can use
+a different one.
+
+> If we cannot, then AER and PME would
+> share the IRQ with an endpoint device's regular interrupt handler,
+> and that might ruin performance. E.g. the Broadcom wireless card
+> generates millions of interrupts on a sufficiently active WiFi.
+> Accessing the device's config space on every interrupt just to
+> check for AER or PME seems like a bad idea. So at the very least
+> we'd need some kind of opt-out.
+
+That is why AER, PME and hotplug are all supposed to be signaled by ports,
+possibly among other things.
+
+Thanks,
+Rafael
