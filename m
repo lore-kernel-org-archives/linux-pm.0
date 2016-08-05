@@ -1,46 +1,47 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / Domains: Replace -ENOSYS with -ENODEV
-Date: Sat, 6 Aug 2016 00:17:58 +0200
-Message-ID: <CAJZ5v0hXNDRCztvDDii+qKEDz26W16e=eq9yDB+59G-AVrKhMw@mail.gmail.com>
-References: <1470416816-53336-1-git-send-email-lina.iyer@linaro.org> <20160805194329.GA5020@wunner.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH 5/7] cpufreq / sched: UUF_IO flag to indicate iowait condition
+Date: Sat, 06 Aug 2016 01:36:12 +0200
+Message-ID: <15658239.PaGHkd0aLz@vostro.rjw.lan>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <11865228.rNvS61kIxv@vostro.rjw.lan> <20160804220908.GF26555@graphite.smuckle.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f52.google.com ([74.125.82.52]:35654 "EHLO
-	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbcHFUZd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 6 Aug 2016 16:25:33 -0400
-Received: by mail-wm0-f52.google.com with SMTP id f65so67903225wmi.0
-        for <linux-pm@vger.kernel.org>; Sat, 06 Aug 2016 13:25:33 -0700 (PDT)
-In-Reply-To: <20160805194329.GA5020@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160804220908.GF26555@graphite.smuckle.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
 
-On Fri, Aug 5, 2016 at 9:43 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> On Fri, Aug 05, 2016 at 11:06:56AM -0600, Lina Iyer wrote:
->> ENOSYS is for syscalls that are not supported. ENODEV is a better return
->> value when the PM Domains are not available.
->>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->
-> I have no opinion on this, but would like to point out that other parts
-> in the PM core use -ENOSYS as well (e.g. see drivers/base/power/core.c).
-> For consistency, if pm_domain.h is changed, the rest should probably be
-> changed as well.
+On Thursday, August 04, 2016 03:09:08 PM Steve Muckle wrote:
+> On Thu, Aug 04, 2016 at 11:19:00PM +0200, Rafael J. Wysocki wrote:
 
-I agree here.  Changing one piece only is likely to result in confusion.
+[cut]
+ 
+> > > This is also an issue for the remote wakeup case where I currently have
+> > > another invocation of the hook in check_preempt_curr(), so I can know if
+> > > preemption was triggered and skip a remote schedutil update in that case
+> > > to avoid a duplicate IPI.
+> > > 
+> > > It seems to me worth evaluating if a higher level set of hook locations
+> > > could be used. One possibility is higher up in CFS:
+> > > - enqueue_task_fair, dequeue_task_fair
+> > > - scheduler_tick
+> > > - active_load_balance_cpu_stop, load_balance
+> > 
+> > Agreed, that's worth checking.
+> > 
+> > > Though this wouldn't solve my issue with check_preempt_curr. That would
+> > > probably require going further up the stack to try_to_wake_up() etc. Not
+> > > yet sure what the other hook locations would be at that level.
+> > 
+> > That's probably too far away from the root cfs_rq utilization changes IMO.
+> 
+> Is your concern that the rate of hook calls would be decreased?
 
-Also I'm not sure if ENODEV is a good replacement at all.  ENOTSUPP
-was suggested instead last time a similar patch was discussed.
-
-> It should also be kept in mind that functions might
-> check the return code and react specifically to the currently used -ENOSYS.
-> (I've written code like that just yesterday, for the (unmerged) thunderbolt
-> runtime pm.)
-
-But I wouldn't write code doing something like this.
+It might be decreased, but also we might end up using utilization values
+that wouldn't reflect the current situation (eg. if the hook is called before
+update_load_avg(), the util value used by the governor may not be adequate).
 
 Thanks,
 Rafael
