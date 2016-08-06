@@ -1,67 +1,80 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] x86/power/64: Do not refer to __PAGE_OFFSET from assembly code
-Date: Sat, 06 Aug 2016 01:12:30 +0200
-Message-ID: <3091490.MoJzMOfeFu@vostro.rjw.lan>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com> <1601227.1rWnhT6gJp@vostro.rjw.lan> <CAJcbSZFTA8v6KEdWZ9rj8qMQUREhpexExO0BxmaWBmW2_f2TxA@mail.gmail.com>
-Reply-To: kernel-hardening@lists.openwall.com
+From: Oscar <oscar@naiandei.net>
+Subject: Re: [PATCH v4 0/6] power: add power sequence library
+Date: Sat, 06 Aug 2016 14:00:08 +0200
+Message-ID: <d7c11574a1218263c02b117d79b59601@naiandei.net>
+References: <1470108652-16812-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <kernel-hardening-return-4270-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAJcbSZFTA8v6KEdWZ9rj8qMQUREhpexExO0BxmaWBmW2_f2TxA@mail.gmail.com>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Pavel Machek <pavel@denx.de>, the arch/x86 maintainers <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>, kernel-hardening@lists.openwall.com
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1470108652-16812-1-git-send-email-peter.chen@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Peter Chen <peter.chen@nxp.com>
+Cc: mark.rutland@arm.com, ulf.hansson@linaro.org, stephen.boyd@linaro.org, k.kozlowski@samsung.com, linux-kernel@vger.kernel.org, festevam@gmail.com, stillcompiling@gmail.com, pawel.moll@arm.com, dbaryshkov@gmail.com, mka@chromium.org, stern@rowland.harvard.edu, dwmw3@infradead.org, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, arnd@arndb.de, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, sre@kernel.org, broonie@kernel.org, p.zabel@pengutronix.de, shawnguo@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 05, 2016 08:21:31 AM Thomas Garnier wrote:
-> On Fri, Aug 5, 2016 at 7:44 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Friday, August 05, 2016 12:37:13 PM Pavel Machek wrote:
-> >> On Wed 2016-08-03 01:19:26, Rafael J. Wysocki wrote:
-> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> >
-> >> > When CONFIG_RANDOMIZE_MEMORY is set on x86-64, __PAGE_OFFSET becomes
-> >> > a variable and using it as a symbol in the image memory restoration
-> >> > assembly code under core_restore_code is not correct any more.
-> >>
-> >> On a related note... we should really have page_offset variable in
-> >> such case, and use that -- having __FOO_BAR not being a constant is
-> >> ugly/confusing/dangerous.
-> >>
-> >> > To avoid that problem, modify set_up_temporary_mappings() to compute
-> >> > the physical address of the temporary page tables and store it in
-> >> > temp_level4_pgt, so that the value of that variable is ready to be
-> >> > written into CR3.  Then, the assembly code doesn't have to worry
-> >> > about converting that value into a physical address and things work
-> >> > regardless of whether or not CONFIG_RANDOMIZE_MEMORY is set.
-> >> >
-> >> > Reported-and-tested-by: Thomas Garnier <thgarnie@google.com>
-> >> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>
-> >> Acked-by: Pavel Machek <pavel@ucw.cz>
-> >>
-> >> Is similar patch needed for i386?
-> >
-> > Yes, it is, in general, for i386 hibernation to work with ASLR.
-> >
-> > But it doesn't work with it for other reasons ATM, AFAICS.
-> >
-> > Unfortunately, I won't really have the time to take care of this any time
-> > soon.
-> >
-> 
-> KASLR memory randomization is only available for x64 right now. I plan
-> on porting to 32bit eventually and will test/adapt hibernation as part
-> of it.
-
-Great to hear that, but you need to be aware that the i386 hibernate code has
-not been touched for a long time and it makes some heavy assumptions that
-are not made on x86-64.
-
-Please keep me and Pavel in the loop, though.
-
-Thanks,
-Rafael
+RWwgMjAxNi0wOC0wMiAwNTozMCwgUGV0ZXIgQ2hlbiBlc2NyaWJpw7M6Cj4gSGkgYWxsLAo+Cj4g
+VGhpcyBpcyBhIGZvbGxvdy11cCBmb3IgbXkgbGFzdCBwb3dlciBzZXF1ZW5jZSBmcmFtZXdvcmsg
+cGF0Y2ggc2V0IAo+IFsxXS4KPiBBY2NvcmRpbmcgdG8gUm9iIEhlcnJpbmcgYW5kIFVsZiBIYW5z
+c29uJ3MgY29tbWVudHNbMl0sIEkgdXNlIGEgCj4gZ2VuZXJpYwo+IHBvd2VyIHNlcXVlbmNlIGxp
+YnJhcnkgZm9yIHBhcnNpbmcgdGhlIHBvd2VyIHNlcXVlbmNlIGVsZW1lbnRzIG9uIERULAo+IGFu
+ZCBpbXBsZW1lbnQgZ2VuZXJpYyBwb3dlciBzZXF1ZW5jZSBvbiBsaWJyYXJ5LiBUaGUgaG9zdCBk
+cml2ZXIKPiBjYW4gYWxsb2NhdGUgcG93ZXIgc2VxdWVuY2UgaW5zdGFuY2UsIGFuZCBjYWxscyBw
+d3JzZXEgQVBJcyAKPiBhY2NvcmRpbmdseS4KPgo+IEluIGZ1dHVyZSwgaWYgdGhlcmUgYXJlIHNw
+ZWNpYWwgcG93ZXIgc2VxdWVuY2UgcmVxdWlyZW1lbnRzLCB0aGUgCj4gc3BlY2lhbAo+IHBvd2Vy
+IHNlcXVlbmNlIGxpYnJhcnkgY2FuIGJlIGNyZWF0ZWQuCj4KPiBUaGlzIHBhdGNoIHNldCBpcyB0
+ZXN0ZWQgb24gaS5teDYgc2FicmVzeCBldmsgdXNpbmcgYSBkdHMgY2hhbmdlLCBJIAo+IHVzZQo+
+IHR3byBob3QtcGx1ZyBkZXZpY2VzIHRvIHNpbXVsYXRlIHRoaXMgdXNlIGNhc2UsIHRoZSByZWxh
+dGVkIGJpbmRpbmcKPiBjaGFuZ2UgaXMgdXBkYXRlZCBhdCBwYXRjaCBbMS82XSwgVGhlIHVkb28g
+Ym9hcmQgY2hhbmdlcyB3ZXJlIHRlc3RlZAo+IHVzaW5nIG15IGxhc3QgcG93ZXIgc2VxdWVuY2Ug
+cGF0Y2ggc2V0LlszXQo+Cj4gRXhjZXB0IGZvciBoYXJkLXdpcmVkIE1NQyBhbmQgVVNCIGRldmlj
+ZXMsIEkgZmluZCB0aGUgVVNCIFVMUEkgUEhZIAo+IGFsc28KPiBuZWVkIHRvIHBvd2VyIG9uIGl0
+c2VsZiBiZWZvcmUgaXQgY2FuIGJlIGZvdW5kIGJ5IFVMUEkgYnVzLgo+Cj4gWzFdIGh0dHA6Ly93
+d3cuc3Bpbmljcy5uZXQvbGlzdHMvbGludXgtdXNiL21zZzE0Mjc1NS5odG1sCj4gWzJdIGh0dHA6
+Ly93d3cuc3Bpbmljcy5uZXQvbGlzdHMvbGludXgtdXNiL21zZzE0MzEwNi5odG1sCj4gWzNdIGh0
+dHA6Ly93d3cuc3Bpbmljcy5uZXQvbGlzdHMvbGludXgtdXNiL21zZzE0MjgxNS5odG1sCj4KPiBD
+aGFuZ2VzIGZvciB2NDoKPiAtIENyZWF0ZSB0aGUgcGF0Y2ggb24gbmV4dC0yMDE2MDcyMgo+IC0g
+Rml4IHRoZSBvZl9ub2RlIGlzIG5vdCBOVUxMIGFmdGVyIGNoaXBpZGVhIGRyaXZlciBpcyB1bmJp
+bmRlZCAKPiBbUGF0Y2ggNS82XQo+IC0gVXNpbmcgbW9yZSBmcmllbmRseSB3YWl0IG1ldGhvZCBm
+b3IgcmVzZXQgZ3BpbyBbUGF0Y2ggMi82XQo+IC0gU3VwcG9ydCBtdWx0aXBsZSBpbnB1dCBjbG9j
+a3MgW1BhdGNoIDIvNl0KPiAtIEFkZCBSb2IgSGVycmluZydzIGFjayBmb3IgRFQgY2hhbmdlcwo+
+IC0gQWRkIEpvc2h1YSBDbGF5dG9uJ3MgVGVzdGVkLWJ5Cj4KPiBDaGFuZ2VzIGZvciB2MzoKPiAt
+IERlbGV0ZSAicG93ZXItc2VxdWVuY2UiIHByb3BlcnR5IGF0IGJpbmRpbmctZG9jLCBhbmQgY2hh
+bmdlIHJlbGF0ZWQgCj4gY29kZQo+ICAgYXQgYm90aCBsaWJyYXJ5IGFuZCB1c2VyIGNvZGUuCj4g
+LSBDaGFuZ2UgYmluZGluZy1kb2MgZXhhbXBsZSBub2RlIG5hbWUgd2l0aCBSb2IncyBjb21tZW50
+cwo+IC0gb2ZfZ2V0X25hbWVkX2dwaW9fZmxhZ3Mgb25seSBnZXRzIHRoZSBncGlvLCBidXQgd2l0
+aG91dCBzZXR0aW5nIAo+IGdwaW8gZmxhZ3MsCj4gICBhZGQgYWRkaXRpb25hbCBjb2RlIHJlcXVl
+c3QgZ3BpbyB3aXRoIHByb3BlciBncGlvIGZsYWdzCj4gLSBBZGQgUGhpbGlwcCBaYWJlbCdzIEFj
+ayBhbmQgTUFJTlRBSU5FUidzIGVudHJ5Cj4KPiBDaGFuZ2VzIGZvciB2MjoKPiAtIERlbGV0ZSAi
+cHdyc2VxIiBwcmVmaXggYW5kIGNsb2NrLW5hbWVzIGZvciBwcm9wZXJ0aWVzIGF0IGR0IGJpbmRp
+bmcKPiAtIFNob3VsZCB1c2Ugc3RydWN0dXJlIG5vdCBidXQgaXRzIHBvaW50ZXIgZm9yIGt6YWxs
+b2MKPiAtIFNpbmNlIGNoaXBpZGVhIGNvcmUgaGFzIG5vIG9mX25vZGUsIGxldCBjb3JlJ3Mgb2Zf
+bm9kZSBlcXVhbHMgZ2x1ZQo+ICAgbGF5ZXIncyBhdCBjb3JlJ3MgcHJvYmUKPgo+IFBldGVyIENo
+ZW4gKDYpOgo+ICAgYmluZGluZy1kb2M6IHBvd2VyOiBwd3JzZXEtZ2VuZXJpYzogYWRkIGJpbmRp
+bmcgZG9jIGZvciBnZW5lcmljIAo+IHBvd2VyCj4gICAgIHNlcXVlbmNlIGxpYnJhcnkKPiAgIHBv
+d2VyOiBhZGQgcG93ZXIgc2VxdWVuY2UgbGlicmFyeQo+ICAgYmluZGluZy1kb2M6IHVzYjogdXNi
+LWRldmljZTogYWRkIG9wdGlvbmFsIHByb3BlcnRpZXMgZm9yIHBvd2VyCj4gICAgIHNlcXVlbmNl
+Cj4gICB1c2I6IGNvcmU6IGFkZCBwb3dlciBzZXF1ZW5jZSBoYW5kbGluZyBmb3IgVVNCIGRldmlj
+ZXMKPiAgIHVzYjogY2hpcGlkZWE6IGxldCBjaGlwaWRlYSBjb3JlIGRldmljZSBvZl9ub2RlIGVx
+dWFsJ3MgZ2x1ZSBsYXllcgo+ICAgICBkZXZpY2Ugb2Zfbm9kZQo+ICAgQVJNOiBkdHM6IGlteDZx
+ZGwtdWRvby5kdHNpOiBmaXggb25ib2FyZCBVU0IgSFVCIHByb3BlcnR5Cj4KCkhpIFBldGVyLAoK
+SSB0cmllZCB0aGUgbGFzdCB2ZXJzaW9uIG9uIG15IHVkb28gYm9hcmQgYnV0IEkgZ290IHRoZXNl
+IGNvbXBpbGUgCmVycm9yczoKClsyMTMzMHNdIEVSUk9SOiAicHdyc2VxX2dldCIgW2RyaXZlcnMv
+dXNiL2NvcmUvdXNiY29yZS5rb10gdW5kZWZpbmVkIQpbMjEzMzBzXSBFUlJPUjogInB3cnNlcV9m
+cmVlIiBbZHJpdmVycy91c2IvY29yZS91c2Jjb3JlLmtvXSB1bmRlZmluZWQhClsyMTMzMHNdIEVS
+Uk9SOiAicHdyc2VxX3B1dCIgW2RyaXZlcnMvdXNiL2NvcmUvdXNiY29yZS5rb10gdW5kZWZpbmVk
+IQpbMjEzMzBzXSBFUlJPUjogInB3cnNlcV9vZmYiIFtkcml2ZXJzL3VzYi9jb3JlL3VzYmNvcmUu
+a29dIHVuZGVmaW5lZCEKWzIxMzMwc10gRVJST1I6ICJwd3JzZXFfb24iIFtkcml2ZXJzL3VzYi9j
+b3JlL3VzYmNvcmUua29dIHVuZGVmaW5lZCEKCldpbGwgeW91IGRvIGFub3RoZXIgdmVyc2lvbj8K
+ClRoYW5rcyEKLS0KT3NjYXIKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxA
+bGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xp
+c3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
