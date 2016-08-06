@@ -1,183 +1,96 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection algorithm for Core
-Date: Sat, 06 Aug 2016 02:02:12 +0200
-Message-ID: <10156236.RI1knH5Wfs@vostro.rjw.lan>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1572483.RZjvRFdxPx@vostro.rjw.lan> <001b01d1ee1c$e6a6a170$b3f3e450$@net>
+Subject: Re: [Ksummit-discuss] Self nomination
+Date: Sat, 06 Aug 2016 02:20:24 +0200
+Message-ID: <2095093.rkXOZ187BN@vostro.rjw.lan>
+References: <20160726223054.GA30993@dtor-ws> <4207317.8s4bUitgDu@vostro.rjw.lan> <b339d512-afc6-8f2d-4c26-e6ff997f75c4@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <001b01d1ee1c$e6a6a170$b3f3e450$@net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Peter Zijlstra' <peterz@infradead.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:43725 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751059AbcHFWBt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 6 Aug 2016 18:01:49 -0400
+In-Reply-To: <b339d512-afc6-8f2d-4c26-e6ff997f75c4@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "ksummit-discuss@lists.linuxfoundation.org" <ksummit-discuss@lists.linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wednesday, August 03, 2016 11:53:23 PM Doug Smythies wrote:
-> On 2016.08.03 21:19 Doug Smythies wrote:
+On Wednesday, August 03, 2016 10:12:00 AM Marek Szyprowski wrote:
+> Dear All,
 > 
-> Re-sending without the previously attached graph.
 > 
-> Hi Rafael,
+> On 2016-08-03 01:00, Rafael J. Wysocki wrote:
+> > On Tuesday, August 02, 2016 10:09:17 AM Linus Walleij wrote:
+> >> On Thu, Jul 28, 2016 at 12:14 PM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+> >>> On 26/07/16 23:30, Dmitry Torokhov wrote:
+> >>>> - I would like to sync up with people and discuss [lack of] progress
+> >>>>    on topic of device probe ordering (including handling of deferred
+> >>>>    probes, asynchronous probes, etc).
+> >>> I'm extremely interested in discussing this.
+> >> I've also tried to pitch in on it in the past but I just feel stupid
+> >> whenever we try to come up with something better than what
+> >> we have :(
+> >>
+> >>> It has wide reaching consequences as (with my irqchip maintainer hat on)
+> >>> we've had to pretend that some bits of HW (timers, interrupt
+> >>> controllers) are not "devices". Not a massive issue for most, except
+> >>> when your interrupt controller has requirements that are very similar to
+> >>> the DMA mapping API (which you cannot use because "not a device"). Other
+> >>> problems are introduced by things like wire-MSI bridges, and most people
+> >>> end-up resorting to hacks like ad-hoc initcalls and sprinkling deferred
+> >>> probes in specific drivers.
+> >> Same feeling here. I'm accepting patches for random initcall
+> >> reordering because there is nothing else I can do, people need to
+> >> have their systems running. But it feels really fragile.
+> >>
+> >> Deferred probe alleviated the problem, but I remember saying at
+> >> the time that what we really need to do is build a dependency
+> >> graph and resolve it the same way e.g. systemd does. (Someone
+> >> may have called me BS on that, either for being wrong about everything
+> >> as usual or because of mentioning systemd, I don't know which one.)
+> >>
+> >> The latest proposal I saw came from Rafael and he had a scratch
+> >> idea for a dependency graph that I really liked, but I guess he's been
+> >> sidetracked since. Rafael, what happened with that?
+> > I got distracted, but Marek Szyprowski has revived it recently.
+> >
+> > It needs to be cleaned up somewhat, but other than that I think it's in
+> > a good enough shape to make some progress in that direction, at least in
+> > principle.
 > 
-> Hope this feedback and test results help.
+> I really like the idea of pm dependencies between device and the patches
+> prepared by Rafael. They are exactly what we need for our case (PM for
+> Exynos IOMMU), but they will also help solving PM issues with complex
+> devices (like DRM for SoCs and ASoC audio).
 > 
-> On 2016.07.31 16:49 Rafael J. Wysocki wrote:
-> 
-> > The PID-base P-state selection algorithm used by intel_pstate for
-> > Core processors is based on very weak foundations.
-> 
-> Agree, very very much.
-> 
-> ...[cut]...
-> 
-> > Consequently, the only viable way to fix that is to replace the
-> > erroneous algorithm entirely with a better one.
-> 
-> Agree, very very much.
-> 
-> > To that end, notice that setting the P-state proportional to the
-> > actual CPU utilization (measured with the help of MPERF and TSC)
-> > generally leads to reasonable behavior, but it does not reflect
-> > the "performance boosting" nature of the current P-state
-> > selection algorithm. It may be made more similar to that
-> > algorithm, though, by adding iowait boosting to it.
-> 
-> Which is good and does help a lot for the IO case, but issues
-> remain for the compute case.
-> 
-> ...[cut]...
-> 
-> > +static inline int32_t get_target_pstate_default(struct cpudata *cpu)
-> > +{
-> > +	struct sample *sample = &cpu->sample;
-> > +	int32_t busy_frac;
-> > +	int pstate;
-> > +
-> > +	busy_frac = div_fp(sample->mperf, sample->tsc);
-> > +	sample->busy_scaled = busy_frac * 100;
-> > +
-> > +	if (busy_frac < cpu->iowait_boost)
-> > +		busy_frac = cpu->iowait_boost;
-> > +
-> > +	cpu->iowait_boost >>= 1;
-> > +
-> > +	pstate = cpu->pstate.turbo_pstate;
-> > +	return fp_toint((pstate + (pstate >> 2)) * busy_frac);
-> > +}
-> > +
-> 
-> The response curve is not normalized on the lower end to the minimum
-> pstate for the processor, meaning the overall response will vary
-> between processors as a function of minimum pstate.
+> Rafael: do you plan to do any update on them?
 
-But that's OK IMO.
+Yes, I do, but to make some cosmetic changes rather.
 
-Mapping busy_frac = 0 to the minimum P-state would over-provision workloads
-with small values of busy_frac.
+> Some time ago you wrote, that you had such plan, but real life proved
+> something else.
 
-> The clamping at maximum pstate at about 80% load seems at little high
-> to me. Work I have done in various attempts to bring back the use of actual load
-> has always ended up achieving maximum pstate before 80% load for best results.
-> Even the get_target_pstate_cpu_load people reach the max pstate faster, and they
-> are more about energy than performance.
-> What was the criteria for the decision here? Are test results available for review
-> and/or duplication by others?
+Well, I was working on other things in the meantime, but I still had that
+plan. :-)
 
-This follows the coefficient used by the schedutil governor, but then the
-metric is different, so quite possibly a different value may work better here.
+> If needed I can continue works on them, but I need some directions what has
+> to be improved and fixed.
 
-We'll test other values before applying this for sure. :-)
+Thanks so much!
 
-> 
-> Several tests were done with this patch set.
-> The patch set would not apply to kernel 4.7, but did apply fine to a 4.7+ kernel
-> (I did as of 7a66ecf) from a few days ago.
-> 
-> Test 1: Phoronix ffmpeg test (less time is better):
-> Reason: Because it suffers from rotating amongst CPUs in an odd way, challenging for CPU frequency scaling drivers.
-> This test tends to be an indicator of potential troubles with some games.
-> Criteria: (Dirk Brandewie): Must match or better acpi_cpufreq - ondemand.
-> With patch set: 15.8 Seconds average and 24.51 package watts.
-> Without patch set: 11.61 Seconds average and 27.59 watts.
-> Conclusion: Significant reduction in performance with proposed patch set.
-> 
-> Tests 2, 3, 4: Phoronix apache, kernel compile, and postmark tests.
-> Conclusion: All were similar with and without the patch set, with perhaps a slight
-> improvement in power consumption for the postmark test with the patch set.
-> 
-> Test 5: Random reads within a largish (50 gigabytes) file.
-> Reason: Because it was a test I used to use with other include or not include IOWAIT work.
-> Conclusion: no difference with and without the patch set, likely due to domination by 
-> long seek times (the file is on a normal disk, not an SSD).
-> 
-> Test 6: Sequential read of a largish (50 gigabytes) file.
-> Reason: Because it was a test I used to use with other include or not include IOWAIT work.
-> With patch set: 288.38 Seconds; 177.544 MB/Sec; 6.83 Watts.
-> Without patch set: 292.38 Seconds; 174.99 MB/Sec; 7.08 Watts.
-> Conclusion: Better performance and better power with the patch set.
-> 
-> Test 7: Compile the kernel 9 times.
-> Reason: Just because it was a very revealing test during the
-> "intel_pstate: Increase hold-off time before busyness is scaled"
-> discussion / thread(s).
-> Conclusion: no difference with and without the patch set.
-> 
-> Test 8: pipe-test between cores.
-> Reason: Just because it was so useful during the
-> "cross core scheduling frequency drop bisected to 0c313cb20732"
-> discussion / thread(s).
-> With patch set: 73.166 Sec; 3.6576 usec/loop; 2278.53 Joules.
-> Without Patch set: 74.444 Sec; 3.7205 usec/loop; 2338.79 Joules.
-> Conclusion: Slightly better performance and better energy with the patch set.
-> 
-> Test 9: Dougs_specpower simulator (20% load):
-> Time is fixed, less energy is better.
-> Reason: During the long
-> "[intel-pstate driver regression] processor frequency very high even if in idle"
-> and subsequent https://bugzilla.kernel.org/show_bug.cgi?id=115771
-> discussion / thread(s), some sort of test was needed to try to mimic what Srinivas
-> was getting on his fancy SpecPower test platform. So far at least, this test does that.
-> Only the 20% load case was created, because that was the biggest problem case back then.
-> With patch set: 4 tests at an average of 7197 Joules per test, relatively high CPU frequencies.
-> Without the patch set: 4 tests at an average of 5956 Joules per test, relatively low CPU frequencies.
-> Conclusion: 21% energy regression with the patch set.
-> Note: Newer processors might do better than my older i7-2600K.
-> 
-> Test 10: measure the frequency response curve, fixed work packet method,
-> 75 hertz work / sleep frequency (all CPU, no IOWAIT):
-> Reason: To compare to some older data and observe overall.
-> png graph attached - might get stripped from the distribution lists.
-> Conclusions: Tends to oscillate, suggesting some sort of damping is needed.
-> However, any filtering tends to increase the step function load rise time
-> (see test 11 below, I think there is some wiggle room here).
-> See also graph which has: with and without patch set; performance mode (for reference);
-> Philippe Longepe's cpu_load method also with setpoint 40 (for reference); one of my previous
-> attempts at a load related patch set from quite sometime ago (for reference).
-> 
-> Test 11: Look at the step function load response. From no load to 100% on one CPU (CPU load only, no IO).
-> While there is a graph, it is not attached:
-> Conclusion: The step function response is greatly improved (virtually one sample time max).
-> It would probably be O.K. to slow it down a little with a filter so as to reduce the
-> tendency to oscillate under periodic load conditions (to a point, at least. A low enough frequency will
-> always oscillate) (see the graph for test10).
+First off, the networking people claimed the "devlink" term in the meantime
+and it's better to avoid confusion here, so I'd change it to "devdep" or
+similar in the patches.
 
-All of the above is useful information, thanks for taking the time to do that
-work!
+In addition to that Tomeu Vizoso complained that the supplier_links and
+consumer_links list heads in struct device were confusing and I see why that
+could be the case, so I'd change them to something more direct, like maybe
+links_to_suppliers and links_to_consumers.
 
-> Questions:
-> Is there a migration plan?
-
-Not yet.  We have quite a lot of testing to do first.
-
-> i.e. will there be an attempt to merge the current cpu_load method
-> and this method into one method?
-
-Quite possibly if the results are good enough.
-
-> Then possibly the PID controller could be eliminated.
-
-Right.
+Please let me know what you think.
 
 Thanks,
 Rafael
+
