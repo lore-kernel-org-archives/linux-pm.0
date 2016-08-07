@@ -1,163 +1,152 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH v2] x86/power/64: Support unaligned addresses for
- temporary mapping
-Date: Sat, 6 Aug 2016 21:53:50 -0700
-Message-ID: <CAE9FiQW5tSXPZLKB_3xh4TNVgU=vHiMOeUmN9h+nzkg3VTqDXw@mail.gmail.com>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
- <20160803182308.19227-1-yinghai@kernel.org> <CAJZ5v0iOiLaox4CNnqRFXsY9N=+0oNfP0SD1kCNzhU1Xpxv1YA@mail.gmail.com>
- <2213000.eZV9GAcFWG@vostro.rjw.lan>
-Reply-To: kernel-hardening@lists.openwall.com
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for
+ system sleep
+Date: Sun, 7 Aug 2016 11:03:47 +0200
+Message-ID: <20160807090347.GA5679@wunner.de>
+References: <cover.1463134231.git.lukas@wunner.de>
+ <20160617210924.GA12254@localhost>
+ <20160617221407.GB1927@wunner.de>
+ <2339231.tBO8VQgPAo@vostro.rjw.lan>
+ <20160803122848.GA4415@wunner.de>
+ <CAJZ5v0jxQHM=uuvFrpPw0vLbVjF0EQsm=XEZNdtQeYsO0ZobtQ@mail.gmail.com>
+ <20160804004538.GA4564@wunner.de>
+ <CAJZ5v0h55MCiSzJz_weEGX7nUsy_TLumssyoXz=f2_b0h_BkQQ@mail.gmail.com>
+ <20160804081446.GA4576@wunner.de>
+ <CAJZ5v0hPbeaUotiFxg_BbkS86HEz=u0ThkdwJju5WyXOuDgd6A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <kernel-hardening-return-4273-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: yhlu.kernel@gmail.com
-In-Reply-To: <2213000.eZV9GAcFWG@vostro.rjw.lan>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Garnier <thgarnie@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.hostsharing.net ([83.223.90.233]:46619 "EHLO
+	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751485AbcHGJDU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Aug 2016 05:03:20 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hPbeaUotiFxg_BbkS86HEz=u0ThkdwJju5WyXOuDgd6A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
 
-On Sat, Aug 6, 2016 at 6:03 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, August 03, 2016 11:28:48 PM Rafael J. Wysocki wrote:
->
-> On a second thought, it seems to be better to follow your suggestion to simply
-> provide a special version of kernel_ident_mapping_init() for hibernation,
-> because it is sufficiently distinct from the other users of the code in
-> ident_map.c.
->
-> The patch below does just that (lightly tested).
->
->
-> ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] x86/power/64: Always create temporary identity mapping correctly
->
-> The low-level resume-from-hibernation code on x86-64 uses
-> kernel_ident_mapping_init() to create the temoprary identity mapping,
-> but that function assumes that the offset between kernel virtual
-> addresses and physical addresses is aligned on the PGD level.
->
-> However, with a randomized identity mapping base, it may be aligned
-> on the PUD level and if that happens, the temporary identity mapping
-> created by set_up_temporary_mappings() will not reflect the actual
-> kernel identity mapping and the image restoration will fail as a
-> result (leading to a kernel panic most of the time).
->
-> To fix this problem, provide simplified routines for creating the
-> temporary identity mapping during resume from hibernation on x86-64
-> that support unaligned offsets between KVA and PA up to the PMD
-> level.
->
-> Although kernel_ident_mapping_init() might be made work in that
-> case too, using hibernation-specific code for that is way simpler.
->
-> Reported-by: Thomas Garnier <thgarnie@google.com>
-> Suggested-by: Yinghai Lu <yinghai@kernel.org>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  arch/x86/power/hibernate_64.c |   61 ++++++++++++++++++++++++++++++++++++------
->  1 file changed, 53 insertions(+), 8 deletions(-)
->
-> Index: linux-pm/arch/x86/power/hibernate_64.c
-> ===================================================================
-> --- linux-pm.orig/arch/x86/power/hibernate_64.c
-> +++ linux-pm/arch/x86/power/hibernate_64.c
-> @@ -77,18 +77,63 @@ static int set_up_temporary_text_mapping
->         return 0;
->  }
->
-> -static void *alloc_pgt_page(void *context)
-> +static void ident_pmd_init(pmd_t *pmd, unsigned long addr, unsigned long end)
->  {
-> -       return (void *)get_safe_page(GFP_ATOMIC);
-> +       for (; addr < end; addr += PMD_SIZE)
-> +               set_pmd(pmd + pmd_index(addr),
-> +                       __pmd((addr - __PAGE_OFFSET) | __PAGE_KERNEL_LARGE_EXEC));
-> +}
-> +
-> +static int ident_pud_init(pud_t *pud, unsigned long addr, unsigned long end)
-> +{
-> +       unsigned long next;
-> +
-> +       for (; addr < end; addr = next) {
-> +               pmd_t *pmd;
-> +
-> +               pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
-> +               if (!pmd)
-> +                       return -ENOMEM;
-> +
-> +               next = (addr & PUD_MASK) + PUD_SIZE;
-> +               if (next > end)
-> +                       next = end;
-> +
-> +               ident_pmd_init(pmd, addr & PMD_MASK, next);
-> +               set_pud(pud + pud_index(addr), __pud(__pa(pmd) | _KERNPG_TABLE));
-> +       }
-> +       return 0;
-> +}
-> +
-> +static int ident_mapping_init(pgd_t *pgd, unsigned long mstart, unsigned long mend)
-> +{
-> +       unsigned long addr = mstart + __PAGE_OFFSET;
-> +       unsigned long end = mend + __PAGE_OFFSET;
-> +       unsigned long next;
-> +
-> +       for (; addr < end; addr = next) {
-> +               pud_t *pud;
-> +               int result;
-> +
-> +               pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-> +               if (!pud)
-> +                       return -ENOMEM;
-> +
-> +               next = (addr & PGDIR_MASK) + PGDIR_SIZE;
-> +               if (next > end)
-> +                       next = end;
-> +
-> +               result = ident_pud_init(pud, addr, next);
-> +               if (result)
-> +                       return result;
-> +
-> +               set_pgd(pgd + pgd_index(addr), __pgd(__pa(pud) | _KERNPG_TABLE));
-> +       }
-> +       return 0;
->  }
->
->  static int set_up_temporary_mappings(void)
->  {
-> -       struct x86_mapping_info info = {
-> -               .alloc_pgt_page = alloc_pgt_page,
-> -               .pmd_flag       = __PAGE_KERNEL_LARGE_EXEC,
-> -               .kernel_mapping = true,
-> -       };
->         unsigned long mstart, mend;
->         pgd_t *pgd;
->         int result;
-> @@ -108,7 +153,7 @@ static int set_up_temporary_mappings(voi
->                 mstart = pfn_mapped[i].start << PAGE_SHIFT;
->                 mend   = pfn_mapped[i].end << PAGE_SHIFT;
->
-> -               result = kernel_ident_mapping_init(&info, pgd, mstart, mend);
-> +               result = ident_mapping_init(pgd, mstart, mend);
->                 if (result)
->                         return result;
->         }
->
+On Thu, Aug 04, 2016 at 05:30:47PM +0200, Rafael J. Wysocki wrote:
+> On Thu, Aug 4, 2016 at 10:14 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> > On Thu, Aug 04, 2016 at 03:07:56AM +0200, Rafael J. Wysocki wrote:
+> >> On Thu, Aug 4, 2016 at 2:45 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> >> > On Thu, Aug 04, 2016 at 01:50:39AM +0200, Rafael J. Wysocki wrote:
+> >> >> On Wed, Aug 3, 2016 at 2:28 PM, Lukas Wunner <lukas@wunner.de> wrote:
+> >> >> > I will update this patch with Bjorn's suggestion to also leave the
+> >> >> > device in D3cold if it is wakeup-capable. The idea is to just change
+> >> >> > the default state in the first line of the function like this:
+> >> >> >
+> >> >> > -       pci_power_t target_state = PCI_D3hot;
+> >> >> > +       pci_power_t target_state =
+> >> >> > +               dev->current_state == PCI_D3cold ? PCI_D3cold : PCI_D3hot;
+> >> >>
+> >> >> That should work (even though it is a little clumsy IMO).
+> >> >
+> >> > Not sure why that is clumsy but happy to use something else if you
+> >> > have a suggestion?
+> >>
+> >> The clumsy thing is that we'd take the target_state as D3cold only if
+> >> the device already was in that state.
+> >>
+> >> Otherwise, we'd take D3hot as the target state for the same device,
+> >> which doesn't seem particularly consistent to me.
+> >>
+> >> Not that I have better ideas ATM, but then the current code works for
+> >> my use cases. :-)
+> >
+> > The goal is to afford direct-complete to devices which are not power-
+> > manageable by the platform but can still be runtime suspended to D3cold.
+> 
+> Well, this is a bit misleading.
+> 
+> According to the PCI spec there are two ways to put a device into
+> D3cold: either by putting its bus into B3 (which for PCIe means
+> turning the link off IIRC) which happens when the bridge goes into
+> D3hot, or through the platform.
+> 
+> You aren't talking about any of those cases, though, so we go outside
+> of the spec here.
 
-Hi Rafael,
+Yes. With Nvidia Optimus / AMD PowerXpress hybrid graphics on non-Macs
+and Thunderbolt on Macs, it could still be argued that D3cold is
+facilitated by the platform, albeit with custom methods instead of _PS3.
 
-Your version seems not considering different pfn_mapped range could
-share same PGD (512G) or even PUD(1G), or even same PMD (2M) range.
+With hybrid graphics on Macs, the discrete GPU is turned off by
+a gmux controller on the LPC bus which is controlled via I/O ports.
+So the ACPI platform isn't involved at all and at least then we're
+in completely nonstandard territory.
 
-so just keep on using kernel_ident_mapping_init() for that.
+> > Right now we wake those devices up from D3cold to D3hot before going to
+> > sleep, which is a waste of energy and prolongs the suspend sequence
+> > (waking up the Thunderbolt controller takes 2 seconds).
+> 
+> Understood.
+> 
+> > The de facto standard to power manage such devices seems to be with
+> > dev_pm_domain_set(). That's what vga_switcheroo does and I'll move
+> > to that as well for v3 of this series.
+> 
+> OK
+> 
+> > I could add a "bool can_power_off" to struct dev_pm_domain.
+> 
+> I'm not sure if dev_pm_domain is the right level.  The "can_power_off"
+> thing would be sort of specific to your particular use case.
+> 
+> Say you have something like
+> 
+> struct pci_pm_domain {
+>         struct dev_pm_domain pd;
+>         ...
+> };
+> 
+> > Then I could change pci_target_state() like this:
+> >
+> >         pci_power_t target_state = PCI_D3hot;
+> >
+> >         if (platform_pci_power_manageable(dev)) {
+> >                 [...]
+> > +       } else if (dev->dev.pm_domain && dev->dev.pm_domain.can_power_off) {
+> 
+> so you can do something like
+> 
+>           } else if (dev->dev.pm_domain) {
+>                     struct pci_pm_domain *pci_pd =
+> to_pci_pm_domain(dev->dev.pm_domain);
+> 
+>                     ....
+>           } else if [...]
+> 
+> and it may be a bit more PCI-oriented without expanding generic data types.
+> 
+> > +               target_state = PCI_D3cold;
+> >         } else if [...]
+> >
+> > Another idea would be to add a ->choose_state hook to dev_pm_domain,
+> > but that would have to return a PCI-specific power state, so we'd be
+> > in clumsy territory again.
+> 
+> Right.
+> 
+> > Thoughts?
+> 
+> Essentially, the PCI PM code needs to be told that there is a way to
+> put the device into D3cold by non-standard means.  There are a couple
+> of ways to do that (a new flag in struct pci_dev, the above, probably
+> more), but in any case it needs to be clear that this is non-standard
+> IMO.
 
-At the same time, set_up_temporary_text_mapping could be replaced with
-kernel_ident_mapping_init() too if restore_jump_address is KVA for
-jump_address_phys.
+The more I think about it, the more I lean towards the one-line change
+at the top of this e-mail, even though you found it clumsy. It's small
+and simple and fixes the problem without overengineering things.
 
-Thanks
+The reasoning is that going from D3cold to D3hot before system sleep
+just never makes sense, no matter if the device got there by standard
+or nonstandard means. So the default target state should be D3cold if
+the device is already there, and D3hot otherwise. I could perhaps try
+to make this clearer by adding a comment.
 
-Yinghai
+Thanks,
+
+Lukas
