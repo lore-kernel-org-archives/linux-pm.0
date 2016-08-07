@@ -1,152 +1,129 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for
- system sleep
-Date: Sun, 7 Aug 2016 11:03:47 +0200
-Message-ID: <20160807090347.GA5679@wunner.de>
+Subject: Re: [PATCH v2 11/13] PM / sleep: Allow opt-out from runtime resume
+ after direct-complete
+Date: Sun, 7 Aug 2016 11:56:27 +0200
+Message-ID: <20160807095627.GB5679@wunner.de>
 References: <cover.1463134231.git.lukas@wunner.de>
- <20160617210924.GA12254@localhost>
- <20160617221407.GB1927@wunner.de>
- <2339231.tBO8VQgPAo@vostro.rjw.lan>
- <20160803122848.GA4415@wunner.de>
- <CAJZ5v0jxQHM=uuvFrpPw0vLbVjF0EQsm=XEZNdtQeYsO0ZobtQ@mail.gmail.com>
- <20160804004538.GA4564@wunner.de>
- <CAJZ5v0h55MCiSzJz_weEGX7nUsy_TLumssyoXz=f2_b0h_BkQQ@mail.gmail.com>
- <20160804081446.GA4576@wunner.de>
- <CAJZ5v0hPbeaUotiFxg_BbkS86HEz=u0ThkdwJju5WyXOuDgd6A@mail.gmail.com>
+ <9f0713b23baf7c6139a4b476cd9637d96e18cc95.1463134232.git.lukas@wunner.de>
+ <10830072.vubE73bdx4@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:46619 "EHLO
-	mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751485AbcHGJDU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Aug 2016 05:03:20 -0400
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hPbeaUotiFxg_BbkS86HEz=u0ThkdwJju5WyXOuDgd6A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <10830072.vubE73bdx4@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, Alan Stern <stern@rowland.harvard.edu>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
 
-On Thu, Aug 04, 2016 at 05:30:47PM +0200, Rafael J. Wysocki wrote:
-> On Thu, Aug 4, 2016 at 10:14 AM, Lukas Wunner <lukas@wunner.de> wrote:
-> > On Thu, Aug 04, 2016 at 03:07:56AM +0200, Rafael J. Wysocki wrote:
-> >> On Thu, Aug 4, 2016 at 2:45 AM, Lukas Wunner <lukas@wunner.de> wrote:
-> >> > On Thu, Aug 04, 2016 at 01:50:39AM +0200, Rafael J. Wysocki wrote:
-> >> >> On Wed, Aug 3, 2016 at 2:28 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> >> >> > I will update this patch with Bjorn's suggestion to also leave the
-> >> >> > device in D3cold if it is wakeup-capable. The idea is to just change
-> >> >> > the default state in the first line of the function like this:
-> >> >> >
-> >> >> > -       pci_power_t target_state = PCI_D3hot;
-> >> >> > +       pci_power_t target_state =
-> >> >> > +               dev->current_state == PCI_D3cold ? PCI_D3cold : PCI_D3hot;
-> >> >>
-> >> >> That should work (even though it is a little clumsy IMO).
-> >> >
-> >> > Not sure why that is clumsy but happy to use something else if you
-> >> > have a suggestion?
-> >>
-> >> The clumsy thing is that we'd take the target_state as D3cold only if
-> >> the device already was in that state.
-> >>
-> >> Otherwise, we'd take D3hot as the target state for the same device,
-> >> which doesn't seem particularly consistent to me.
-> >>
-> >> Not that I have better ideas ATM, but then the current code works for
-> >> my use cases. :-)
-> >
-> > The goal is to afford direct-complete to devices which are not power-
-> > manageable by the platform but can still be runtime suspended to D3cold.
+On Mon, Jul 18, 2016 at 03:18:25PM +0200, Rafael J. Wysocki wrote:
+> On Friday, May 13, 2016 01:15:31 PM Lukas Wunner wrote:
+> > Since commit aae4518b3124 ("PM / sleep: Mechanism to avoid resuming
+> > runtime-suspended devices unnecessarily"), we no longer wake up devices
+> > which are already runtime suspended upon entering system sleep
+> > ("direct-complete").
+> > 
+> > However commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might
+> > have been reset by firmware") changed this to mandatorily runtime resume
+> > such devices after the system is woken.  The motivation was to ensure
+> > that devices do not remain in a reset-power-on state after system
+> > resume, potentially preventing deep SoC-wide low-power states from being
+> > entered on idle.
+> > 
+> > This is counter-productive for devices of which we know that the
+> > mandatory runtime resume is unnecessary.  Thunderbolt on the Mac is a
+> > case in point: Runtime resume not just powers up the controller, but
+> > multiple adjacent chips, including a 15V boost converter, multiplexers
+> > and an eeprom.  Gratuitously powering this up after every system sleep
+> > burns a not insignificant amount of energy and needlessly strains the
+> > hardware.
+> > 
+> > Perhaps it would have been better to carry out the mandatory runtime
+> > resume only for those devices that actually need it, but at least we
+> > should allow an opt-out.
+> > 
+> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Cc: Alan Stern <stern@rowland.harvard.edu>
+> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
 > 
-> Well, this is a bit misleading.
+> I don't like this patch and especially adding a new dev_pm_ops flag to
+> work around something that you're seeing as an issue in the generic ops.
 > 
-> According to the PCI spec there are two ways to put a device into
-> D3cold: either by putting its bus into B3 (which for PCIe means
-> turning the link off IIRC) which happens when the bridge goes into
-> D3hot, or through the platform.
+> It is sort of like saying "the generic ops don't work for me, so modify
+> them as well as struct dev_pm_ops", but maybe it's better to change the
+> PCI bus type to do something different from calling the generic function?
 > 
-> You aren't talking about any of those cases, though, so we go outside
-> of the spec here.
+> Or you can add a ->complete callback to your driver that will clear
+> power.direct_complete for the device in question.
 
-Yes. With Nvidia Optimus / AMD PowerXpress hybrid graphics on non-Macs
-and Thunderbolt on Macs, it could still be argued that D3cold is
-facilitated by the platform, albeit with custom methods instead of _PS3.
+First of all, the direct_complete flag is marked "Owned by the PM core"
+in include/linux/pm.h. So I would have expected that a driver is not
+supposed to fudge it.
 
-With hybrid graphics on Macs, the discrete GPU is turned off by
-a gmux controller on the LPC bus which is controlled via I/O ports.
-So the ACPI platform isn't involved at all and at least then we're
-in completely nonstandard territory.
+Second, yes it's possible to make it work by clearing direct_complete
+in the ->complete callback, but there's a catch: The device tree is
+traversed bottom-up in dpm_complete(). Recall that a Thunderbolt
+controller consists of multiple devices and that power control is
+governed by its top-most device (upstream bridge). But because we're
+going bottom-up, clearing the direct_complete flag must be done by
+the bottom-most device (NHI)! So I've got all the power management
+stuff nicely separated in functions executed for the upstream bridge,
+but a small portion needs to be executed for the NHI. That's ugly.
 
-> > Right now we wake those devices up from D3cold to D3hot before going to
-> > sleep, which is a waste of energy and prolongs the suspend sequence
-> > (waking up the Thunderbolt controller takes 2 seconds).
-> 
-> Understood.
-> 
-> > The de facto standard to power manage such devices seems to be with
-> > dev_pm_domain_set(). That's what vga_switcheroo does and I'll move
-> > to that as well for v3 of this series.
-> 
-> OK
-> 
-> > I could add a "bool can_power_off" to struct dev_pm_domain.
-> 
-> I'm not sure if dev_pm_domain is the right level.  The "can_power_off"
-> thing would be sort of specific to your particular use case.
-> 
-> Say you have something like
-> 
-> struct pci_pm_domain {
->         struct dev_pm_domain pd;
->         ...
-> };
-> 
-> > Then I could change pci_target_state() like this:
-> >
-> >         pci_power_t target_state = PCI_D3hot;
-> >
-> >         if (platform_pci_power_manageable(dev)) {
-> >                 [...]
-> > +       } else if (dev->dev.pm_domain && dev->dev.pm_domain.can_power_off) {
-> 
-> so you can do something like
-> 
->           } else if (dev->dev.pm_domain) {
->                     struct pci_pm_domain *pci_pd =
-> to_pci_pm_domain(dev->dev.pm_domain);
-> 
->                     ....
->           } else if [...]
-> 
-> and it may be a bit more PCI-oriented without expanding generic data types.
-> 
-> > +               target_state = PCI_D3cold;
-> >         } else if [...]
-> >
-> > Another idea would be to add a ->choose_state hook to dev_pm_domain,
-> > but that would have to return a PCI-specific power state, so we'd be
-> > in clumsy territory again.
-> 
-> Right.
-> 
-> > Thoughts?
-> 
-> Essentially, the PCI PM code needs to be told that there is a way to
-> put the device into D3cold by non-standard means.  There are a couple
-> of ways to do that (a new flag in struct pci_dev, the above, probably
-> more), but in any case it needs to be clear that this is non-standard
-> IMO.
+Normally the device hierarchy is traversed bottom-up during suspend
+and top-down during resume. However ->prepare and ->complete do it
+the other way round. In the case of ->prepare, this is even documented
+in Documentation/power/devices.txt but the reason thereof is not.
+Could you explain this please?
 
-The more I think about it, the more I lean towards the one-line change
-at the top of this e-mail, even though you found it clumsy. It's small
-and simple and fixes the problem without overengineering things.
+Third, I'm irritated by your question "maybe it's better to change the
+PCI bus type to do something different from calling the generic function".
+What should that be? Under which circumstances can we leave a PCI device
+asleep after direct-complete?
 
-The reasoning is that going from D3cold to D3hot before system sleep
-just never makes sense, no matter if the device got there by standard
-or nonstandard means. So the default target state should be D3cold if
-the device is already there, and D3hot otherwise. I could perhaps try
-to make this clearer by adding a comment.
+I'm generally irritated by commit 58a1fbbb2ee8, it's a significant change
+to mandatorily wake all devices, it wastes a not insignificant amount of
+energy, yet the reasoning in the commit message sounds vague and handwavy
+("There is a concern [...] devices that are most likely to be affected").
+
+Are there clear indications for or against a device requiring a resume?
+E.g. the commit message names SoCs, perhaps those can be recognized by
+having child devices of certain types?
 
 Thanks,
 
 Lukas
+
+> 
+> > ---
+> >  drivers/base/power/generic_ops.c | 3 ++-
+> >  include/linux/pm.h               | 1 +
+> >  2 files changed, 3 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/base/power/generic_ops.c b/drivers/base/power/generic_ops.c
+> > index 07c3c4a..6e88f55 100644
+> > --- a/drivers/base/power/generic_ops.c
+> > +++ b/drivers/base/power/generic_ops.c
+> > @@ -316,7 +316,8 @@ void pm_complete_with_resume_check(struct device *dev)
+> >  	 * the sleep state it is going out of and it has never been resumed till
+> >  	 * now, resume it in case the firmware powered it up.
+> >  	 */
+> > -	if (dev->power.direct_complete && pm_resume_via_firmware())
+> > +	if (dev->power.direct_complete && pm_resume_via_firmware() &&
+> > +	    !dev->power.direct_complete_noresume)
+> >  		pm_request_resume(dev);
+> >  }
+> >  EXPORT_SYMBOL_GPL(pm_complete_with_resume_check);
+> > diff --git a/include/linux/pm.h b/include/linux/pm.h
+> > index 6a5d654..023de94 100644
+> > --- a/include/linux/pm.h
+> > +++ b/include/linux/pm.h
+> > @@ -596,6 +596,7 @@ struct dev_pm_info {
+> >  	unsigned int		use_autosuspend:1;
+> >  	unsigned int		timer_autosuspends:1;
+> >  	unsigned int		memalloc_noio:1;
+> > +	unsigned int		direct_complete_noresume:1;
+> >  	enum rpm_request	request;
+> >  	enum rpm_status		runtime_status;
+> >  	int			runtime_error;
+> > 
