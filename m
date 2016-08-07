@@ -1,96 +1,157 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Ksummit-discuss] Self nomination
-Date: Sat, 06 Aug 2016 02:20:24 +0200
-Message-ID: <2095093.rkXOZ187BN@vostro.rjw.lan>
-References: <20160726223054.GA30993@dtor-ws> <4207317.8s4bUitgDu@vostro.rjw.lan> <b339d512-afc6-8f2d-4c26-e6ff997f75c4@samsung.com>
+Subject: Re: [PATCH v2] x86/power/64: Support unaligned addresses for temporary mapping
+Date: Sun, 07 Aug 2016 03:03:26 +0200
+Message-ID: <2213000.eZV9GAcFWG@vostro.rjw.lan>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com> <20160803182308.19227-1-yinghai@kernel.org> <CAJZ5v0iOiLaox4CNnqRFXsY9N=+0oNfP0SD1kCNzhU1Xpxv1YA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:43725 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751059AbcHFWBt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 6 Aug 2016 18:01:49 -0400
-In-Reply-To: <b339d512-afc6-8f2d-4c26-e6ff997f75c4@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0iOiLaox4CNnqRFXsY9N=+0oNfP0SD1kCNzhU1Xpxv1YA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Yinghai Lu <yinghai@kernel.org>, Thomas Garnier <thgarnie@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, kernel-hardening@lists.openwall.com
 List-Id: linux-pm@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "ksummit-discuss@lists.linuxfoundation.org" <ksummit-discuss@lists.linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wednesday, August 03, 2016 10:12:00 AM Marek Szyprowski wrote:
-> Dear All,
-> 
-> 
-> On 2016-08-03 01:00, Rafael J. Wysocki wrote:
-> > On Tuesday, August 02, 2016 10:09:17 AM Linus Walleij wrote:
-> >> On Thu, Jul 28, 2016 at 12:14 PM, Marc Zyngier <marc.zyngier@arm.com> wrote:
-> >>> On 26/07/16 23:30, Dmitry Torokhov wrote:
-> >>>> - I would like to sync up with people and discuss [lack of] progress
-> >>>>    on topic of device probe ordering (including handling of deferred
-> >>>>    probes, asynchronous probes, etc).
-> >>> I'm extremely interested in discussing this.
-> >> I've also tried to pitch in on it in the past but I just feel stupid
-> >> whenever we try to come up with something better than what
-> >> we have :(
-> >>
-> >>> It has wide reaching consequences as (with my irqchip maintainer hat on)
-> >>> we've had to pretend that some bits of HW (timers, interrupt
-> >>> controllers) are not "devices". Not a massive issue for most, except
-> >>> when your interrupt controller has requirements that are very similar to
-> >>> the DMA mapping API (which you cannot use because "not a device"). Other
-> >>> problems are introduced by things like wire-MSI bridges, and most people
-> >>> end-up resorting to hacks like ad-hoc initcalls and sprinkling deferred
-> >>> probes in specific drivers.
-> >> Same feeling here. I'm accepting patches for random initcall
-> >> reordering because there is nothing else I can do, people need to
-> >> have their systems running. But it feels really fragile.
-> >>
-> >> Deferred probe alleviated the problem, but I remember saying at
-> >> the time that what we really need to do is build a dependency
-> >> graph and resolve it the same way e.g. systemd does. (Someone
-> >> may have called me BS on that, either for being wrong about everything
-> >> as usual or because of mentioning systemd, I don't know which one.)
-> >>
-> >> The latest proposal I saw came from Rafael and he had a scratch
-> >> idea for a dependency graph that I really liked, but I guess he's been
-> >> sidetracked since. Rafael, what happened with that?
-> > I got distracted, but Marek Szyprowski has revived it recently.
+On Wednesday, August 03, 2016 11:28:48 PM Rafael J. Wysocki wrote:
+> On Wed, Aug 3, 2016 at 8:23 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+> > From: Thomas Garnier <thgarnie@google.com>
 > >
-> > It needs to be cleaned up somewhat, but other than that I think it's in
-> > a good enough shape to make some progress in that direction, at least in
-> > principle.
+> > Correctly setup the temporary mapping for hibernation. Previous
+> > implementation assumed the offset between KVA and PA was aligned on the PGD level.
+> > With KASLR memory randomization enabled, the offset is randomized on the PUD
+> > level. This change supports unaligned up to PMD.
+> >
+> > Signed-off-by: Thomas Garnier <thgarnie@google.com>
+> > [yinghai: change loop to virtual address]
+> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 > 
-> I really like the idea of pm dependencies between device and the patches
-> prepared by Rafael. They are exactly what we need for our case (PM for
-> Exynos IOMMU), but they will also help solving PM issues with complex
-> devices (like DRM for SoCs and ASoC audio).
-> 
-> Rafael: do you plan to do any update on them?
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Yes, I do, but to make some cosmetic changes rather.
+On a second thought, it seems to be better to follow your suggestion to simply
+provide a special version of kernel_ident_mapping_init() for hibernation,
+because it is sufficiently distinct from the other users of the code in
+ident_map.c.
 
-> Some time ago you wrote, that you had such plan, but real life proved
-> something else.
+The patch below does just that (lightly tested).
 
-Well, I was working on other things in the meantime, but I still had that
-plan. :-)
-
-> If needed I can continue works on them, but I need some directions what has
-> to be improved and fixed.
-
-Thanks so much!
-
-First off, the networking people claimed the "devlink" term in the meantime
-and it's better to avoid confusion here, so I'd change it to "devdep" or
-similar in the patches.
-
-In addition to that Tomeu Vizoso complained that the supplier_links and
-consumer_links list heads in struct device were confusing and I see why that
-could be the case, so I'd change them to something more direct, like maybe
-links_to_suppliers and links_to_consumers.
-
-Please let me know what you think.
+Thomas, can you please test this one too?
 
 Thanks,
 Rafael
 
+
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] x86/power/64: Always create temporary identity mapping correctly
+
+The low-level resume-from-hibernation code on x86-64 uses
+kernel_ident_mapping_init() to create the temoprary identity mapping,
+but that function assumes that the offset between kernel virtual
+addresses and physical addresses is aligned on the PGD level.
+
+However, with a randomized identity mapping base, it may be aligned
+on the PUD level and if that happens, the temporary identity mapping
+created by set_up_temporary_mappings() will not reflect the actual
+kernel identity mapping and the image restoration will fail as a
+result (leading to a kernel panic most of the time).
+
+To fix this problem, provide simplified routines for creating the
+temporary identity mapping during resume from hibernation on x86-64
+that support unaligned offsets between KVA and PA up to the PMD
+level.
+
+Although kernel_ident_mapping_init() might be made work in that
+case too, using hibernation-specific code for that is way simpler.
+
+Reported-by: Thomas Garnier <thgarnie@google.com>
+Suggested-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ arch/x86/power/hibernate_64.c |   61 ++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 53 insertions(+), 8 deletions(-)
+
+Index: linux-pm/arch/x86/power/hibernate_64.c
+===================================================================
+--- linux-pm.orig/arch/x86/power/hibernate_64.c
++++ linux-pm/arch/x86/power/hibernate_64.c
+@@ -77,18 +77,63 @@ static int set_up_temporary_text_mapping
+ 	return 0;
+ }
+ 
+-static void *alloc_pgt_page(void *context)
++static void ident_pmd_init(pmd_t *pmd, unsigned long addr, unsigned long end)
+ {
+-	return (void *)get_safe_page(GFP_ATOMIC);
++	for (; addr < end; addr += PMD_SIZE)
++		set_pmd(pmd + pmd_index(addr),
++			__pmd((addr - __PAGE_OFFSET) | __PAGE_KERNEL_LARGE_EXEC));
++}
++
++static int ident_pud_init(pud_t *pud, unsigned long addr, unsigned long end)
++{
++	unsigned long next;
++
++	for (; addr < end; addr = next) {
++		pmd_t *pmd;
++
++		pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
++		if (!pmd)
++			return -ENOMEM;
++
++		next = (addr & PUD_MASK) + PUD_SIZE;
++		if (next > end)
++			next = end;
++
++		ident_pmd_init(pmd, addr & PMD_MASK, next);
++		set_pud(pud + pud_index(addr), __pud(__pa(pmd) | _KERNPG_TABLE));
++	}
++	return 0;
++}
++
++static int ident_mapping_init(pgd_t *pgd, unsigned long mstart, unsigned long mend)
++{
++	unsigned long addr = mstart + __PAGE_OFFSET;
++	unsigned long end = mend + __PAGE_OFFSET;
++	unsigned long next;
++
++	for (; addr < end; addr = next) {
++		pud_t *pud;
++		int result;
++
++		pud = (pud_t *)get_safe_page(GFP_ATOMIC);
++		if (!pud)
++			return -ENOMEM;
++
++		next = (addr & PGDIR_MASK) + PGDIR_SIZE;
++		if (next > end)
++			next = end;
++
++		result = ident_pud_init(pud, addr, next);
++		if (result)
++			return result;
++
++		set_pgd(pgd + pgd_index(addr), __pgd(__pa(pud) | _KERNPG_TABLE));
++	}
++	return 0;
+ }
+ 
+ static int set_up_temporary_mappings(void)
+ {
+-	struct x86_mapping_info info = {
+-		.alloc_pgt_page	= alloc_pgt_page,
+-		.pmd_flag	= __PAGE_KERNEL_LARGE_EXEC,
+-		.kernel_mapping = true,
+-	};
+ 	unsigned long mstart, mend;
+ 	pgd_t *pgd;
+ 	int result;
+@@ -108,7 +153,7 @@ static int set_up_temporary_mappings(voi
+ 		mstart = pfn_mapped[i].start << PAGE_SHIFT;
+ 		mend   = pfn_mapped[i].end << PAGE_SHIFT;
+ 
+-		result = kernel_ident_mapping_init(&info, pgd, mstart, mend);
++		result = ident_mapping_init(pgd, mstart, mend);
+ 		if (result)
+ 			return result;
+ 	}
