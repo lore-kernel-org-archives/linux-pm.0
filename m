@@ -1,45 +1,288 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2 11/13] PM / sleep: Allow opt-out from runtime resume
- after direct-complete
-Date: Sun, 7 Aug 2016 11:33:17 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1608071105360.31680-100000@netrider.rowland.org>
-References: <20160807095627.GB5679@wunner.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] x86/power/64: Support unaligned addresses for temporary mapping
+Date: Mon, 08 Aug 2016 01:23:09 +0200
+Message-ID: <2869477.o6QceH2ItE@vostro.rjw.lan>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com> <2213000.eZV9GAcFWG@vostro.rjw.lan> <CAE9FiQW5tSXPZLKB_3xh4TNVgU=vHiMOeUmN9h+nzkg3VTqDXw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:53095 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751633AbcHGPeB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Aug 2016 11:34:01 -0400
-In-Reply-To: <20160807095627.GB5679@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAE9FiQW5tSXPZLKB_3xh4TNVgU=vHiMOeUmN9h+nzkg3VTqDXw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Yinghai Lu <yinghai@kernel.org>, Thomas Garnier <thgarnie@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>
 
-On Sun, 7 Aug 2016, Lukas Wunner wrote:
+On Saturday, August 06, 2016 09:53:50 PM Yinghai Lu wrote:
+> On Sat, Aug 6, 2016 at 6:03 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Wednesday, August 03, 2016 11:28:48 PM Rafael J. Wysocki wrote:
+> >
+> > On a second thought, it seems to be better to follow your suggestion to simply
+> > provide a special version of kernel_ident_mapping_init() for hibernation,
+> > because it is sufficiently distinct from the other users of the code in
+> > ident_map.c.
+> >
+> > The patch below does just that (lightly tested).
+> >
+> >
+> > ---
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Subject: [PATCH] x86/power/64: Always create temporary identity mapping correctly
+> >
+> > The low-level resume-from-hibernation code on x86-64 uses
+> > kernel_ident_mapping_init() to create the temoprary identity mapping,
+> > but that function assumes that the offset between kernel virtual
+> > addresses and physical addresses is aligned on the PGD level.
+> >
+> > However, with a randomized identity mapping base, it may be aligned
+> > on the PUD level and if that happens, the temporary identity mapping
+> > created by set_up_temporary_mappings() will not reflect the actual
+> > kernel identity mapping and the image restoration will fail as a
+> > result (leading to a kernel panic most of the time).
+> >
+> > To fix this problem, provide simplified routines for creating the
+> > temporary identity mapping during resume from hibernation on x86-64
+> > that support unaligned offsets between KVA and PA up to the PMD
+> > level.
+> >
+> > Although kernel_ident_mapping_init() might be made work in that
+> > case too, using hibernation-specific code for that is way simpler.
+> >
+> > Reported-by: Thomas Garnier <thgarnie@google.com>
+> > Suggested-by: Yinghai Lu <yinghai@kernel.org>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  arch/x86/power/hibernate_64.c |   61 ++++++++++++++++++++++++++++++++++++------
+> >  1 file changed, 53 insertions(+), 8 deletions(-)
+> >
+> > Index: linux-pm/arch/x86/power/hibernate_64.c
+> > ===================================================================
+> > --- linux-pm.orig/arch/x86/power/hibernate_64.c
+> > +++ linux-pm/arch/x86/power/hibernate_64.c
+> > @@ -77,18 +77,63 @@ static int set_up_temporary_text_mapping
+> >         return 0;
+> >  }
+> >
+> > -static void *alloc_pgt_page(void *context)
+> > +static void ident_pmd_init(pmd_t *pmd, unsigned long addr, unsigned long end)
+> >  {
+> > -       return (void *)get_safe_page(GFP_ATOMIC);
+> > +       for (; addr < end; addr += PMD_SIZE)
+> > +               set_pmd(pmd + pmd_index(addr),
+> > +                       __pmd((addr - __PAGE_OFFSET) | __PAGE_KERNEL_LARGE_EXEC));
+> > +}
+> > +
+> > +static int ident_pud_init(pud_t *pud, unsigned long addr, unsigned long end)
+> > +{
+> > +       unsigned long next;
+> > +
+> > +       for (; addr < end; addr = next) {
+> > +               pmd_t *pmd;
+> > +
+> > +               pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
+> > +               if (!pmd)
+> > +                       return -ENOMEM;
+> > +
+> > +               next = (addr & PUD_MASK) + PUD_SIZE;
+> > +               if (next > end)
+> > +                       next = end;
+> > +
+> > +               ident_pmd_init(pmd, addr & PMD_MASK, next);
+> > +               set_pud(pud + pud_index(addr), __pud(__pa(pmd) | _KERNPG_TABLE));
+> > +       }
+> > +       return 0;
+> > +}
+> > +
+> > +static int ident_mapping_init(pgd_t *pgd, unsigned long mstart, unsigned long mend)
+> > +{
+> > +       unsigned long addr = mstart + __PAGE_OFFSET;
+> > +       unsigned long end = mend + __PAGE_OFFSET;
+> > +       unsigned long next;
+> > +
+> > +       for (; addr < end; addr = next) {
+> > +               pud_t *pud;
+> > +               int result;
+> > +
+> > +               pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> > +               if (!pud)
+> > +                       return -ENOMEM;
+> > +
+> > +               next = (addr & PGDIR_MASK) + PGDIR_SIZE;
+> > +               if (next > end)
+> > +                       next = end;
+> > +
+> > +               result = ident_pud_init(pud, addr, next);
+> > +               if (result)
+> > +                       return result;
+> > +
+> > +               set_pgd(pgd + pgd_index(addr), __pgd(__pa(pud) | _KERNPG_TABLE));
+> > +       }
+> > +       return 0;
+> >  }
+> >
+> >  static int set_up_temporary_mappings(void)
+> >  {
+> > -       struct x86_mapping_info info = {
+> > -               .alloc_pgt_page = alloc_pgt_page,
+> > -               .pmd_flag       = __PAGE_KERNEL_LARGE_EXEC,
+> > -               .kernel_mapping = true,
+> > -       };
+> >         unsigned long mstart, mend;
+> >         pgd_t *pgd;
+> >         int result;
+> > @@ -108,7 +153,7 @@ static int set_up_temporary_mappings(voi
+> >                 mstart = pfn_mapped[i].start << PAGE_SHIFT;
+> >                 mend   = pfn_mapped[i].end << PAGE_SHIFT;
+> >
+> > -               result = kernel_ident_mapping_init(&info, pgd, mstart, mend);
+> > +               result = ident_mapping_init(pgd, mstart, mend);
+> >                 if (result)
+> >                         return result;
+> >         }
+> >
+> 
+> Hi Rafael,
+> 
+> Your version seems not considering different pfn_mapped range could
+> share same PGD (512G) or even PUD(1G), or even same PMD (2M) range.
 
-> Normally the device hierarchy is traversed bottom-up during suspend
-> and top-down during resume. However ->prepare and ->complete do it
-> the other way round. In the case of ->prepare, this is even documented
-> in Documentation/power/devices.txt but the reason thereof is not.
-> Could you explain this please?
+Good point!
 
-The purpose of ->prepare is to tell drivers that a system sleep is
-beginning and accordingly they should stop registering new children.  
-This is necessary for the PM core to be able to traverse the entire
-device tree safely; we want to avoid races where a new child is added
-below a device concurrently with that device being suspended.  (Or if
-you want to be more precise, races in which a new child is added below
-a device while the PM core is acquiring the device's lock just prior to
-invoking its ->suspend callback.)
+> so just keep on using kernel_ident_mapping_init() for that.
 
-Telling drivers to stop registering new children below a device has to
-be done top-down, because if it were done bottom-up then it would be
-subject to the same race described above.  Doing it top-down avoids 
-problems; if a device registers new children while the PM core is 
-acquiring its lock prior to invoking ->prepare, it doesn't matter.  The 
-new children will be handled later, right along with the existing ones.
+But then playing with offsets in ident_pud_init() is not necessary,
+because that function works on virtual addresses only, so the appended patch
+should be sufficient to fix the problem, shouldn't it?
 
-Alan Stern
+> At the same time, set_up_temporary_text_mapping could be replaced with
+> kernel_ident_mapping_init() too if restore_jump_address is KVA for
+> jump_address_phys.
 
+I see no reason to do that.
+
+First, it is not guaranteed that restore_jump_address will always be a KVA for
+jump_address_phys and second, it really is only necessary to map one PMD in
+there.
+
+Thanks,
+Rafael
+
+
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH v2] x86/power/64: Always create temporary identity mapping correctly
+
+The low-level resume-from-hibernation code on x86-64 uses
+kernel_ident_mapping_init() to create the temoprary identity mapping,
+but that function assumes that the offset between kernel virtual
+addresses and physical addresses is aligned on the PGD level.
+
+However, with a randomized identity mapping base, it may be aligned
+on the PUD level and if that happens, the temporary identity mapping
+created by set_up_temporary_mappings() will not reflect the actual
+kernel identity mapping and the image restoration will fail as a
+result (leading to a kernel panic most of the time).
+
+To fix this problem, rework kernel_ident_mapping_init() to support
+unaligned offsets between KVA and PA up to the PMD level and make
+set_up_temporary_mappings() use it as approprtiate.
+
+Reported-by: Thomas Garnier <thgarnie@google.com>
+Suggested-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ arch/x86/include/asm/init.h   |    4 ++--
+ arch/x86/mm/ident_map.c       |   19 +++++++++++--------
+ arch/x86/power/hibernate_64.c |    2 +-
+ 3 files changed, 14 insertions(+), 11 deletions(-)
+
+Index: linux-pm/arch/x86/include/asm/init.h
+===================================================================
+--- linux-pm.orig/arch/x86/include/asm/init.h
++++ linux-pm/arch/x86/include/asm/init.h
+@@ -5,10 +5,10 @@ struct x86_mapping_info {
+ 	void *(*alloc_pgt_page)(void *); /* allocate buf for page table */
+ 	void *context;			 /* context for alloc_pgt_page */
+ 	unsigned long pmd_flag;		 /* page flag for PMD entry */
+-	bool kernel_mapping;		 /* kernel mapping or ident mapping */
++	unsigned long offset;		 /* ident mapping offset */
+ };
+ 
+ int kernel_ident_mapping_init(struct x86_mapping_info *info, pgd_t *pgd_page,
+-				unsigned long addr, unsigned long end);
++				unsigned long pstart, unsigned long pend);
+ 
+ #endif /* _ASM_X86_INIT_H */
+Index: linux-pm/arch/x86/mm/ident_map.c
+===================================================================
+--- linux-pm.orig/arch/x86/mm/ident_map.c
++++ linux-pm/arch/x86/mm/ident_map.c
+@@ -3,15 +3,17 @@
+  * included by both the compressed kernel and the regular kernel.
+  */
+ 
+-static void ident_pmd_init(unsigned long pmd_flag, pmd_t *pmd_page,
++static void ident_pmd_init(struct x86_mapping_info *info, pmd_t *pmd_page,
+ 			   unsigned long addr, unsigned long end)
+ {
+ 	addr &= PMD_MASK;
+ 	for (; addr < end; addr += PMD_SIZE) {
+ 		pmd_t *pmd = pmd_page + pmd_index(addr);
+ 
+-		if (!pmd_present(*pmd))
+-			set_pmd(pmd, __pmd(addr | pmd_flag));
++		if (pmd_present(*pmd))
++			continue;
++
++		set_pmd(pmd, __pmd((addr - info->offset) | info->pmd_flag));
+ 	}
+ }
+ 
+@@ -30,13 +32,13 @@ static int ident_pud_init(struct x86_map
+ 
+ 		if (pud_present(*pud)) {
+ 			pmd = pmd_offset(pud, 0);
+-			ident_pmd_init(info->pmd_flag, pmd, addr, next);
++			ident_pmd_init(info, pmd, addr, next);
+ 			continue;
+ 		}
+ 		pmd = (pmd_t *)info->alloc_pgt_page(info->context);
+ 		if (!pmd)
+ 			return -ENOMEM;
+-		ident_pmd_init(info->pmd_flag, pmd, addr, next);
++		ident_pmd_init(info, pmd, addr, next);
+ 		set_pud(pud, __pud(__pa(pmd) | _KERNPG_TABLE));
+ 	}
+ 
+@@ -44,14 +46,15 @@ static int ident_pud_init(struct x86_map
+ }
+ 
+ int kernel_ident_mapping_init(struct x86_mapping_info *info, pgd_t *pgd_page,
+-			      unsigned long addr, unsigned long end)
++			      unsigned long pstart, unsigned long pend)
+ {
++	unsigned long addr = pstart + info->offset;
++	unsigned long end = pend + info->offset;
+ 	unsigned long next;
+ 	int result;
+-	int off = info->kernel_mapping ? pgd_index(__PAGE_OFFSET) : 0;
+ 
+ 	for (; addr < end; addr = next) {
+-		pgd_t *pgd = pgd_page + pgd_index(addr) + off;
++		pgd_t *pgd = pgd_page + pgd_index(addr);
+ 		pud_t *pud;
+ 
+ 		next = (addr & PGDIR_MASK) + PGDIR_SIZE;
+Index: linux-pm/arch/x86/power/hibernate_64.c
+===================================================================
+--- linux-pm.orig/arch/x86/power/hibernate_64.c
++++ linux-pm/arch/x86/power/hibernate_64.c
+@@ -87,7 +87,7 @@ static int set_up_temporary_mappings(voi
+ 	struct x86_mapping_info info = {
+ 		.alloc_pgt_page	= alloc_pgt_page,
+ 		.pmd_flag	= __PAGE_KERNEL_LARGE_EXEC,
+-		.kernel_mapping = true,
++		.offset		= __PAGE_OFFSET,
+ 	};
+ 	unsigned long mstart, mend;
+ 	pgd_t *pgd;
