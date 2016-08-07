@@ -1,44 +1,45 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: [PATCH] power: reset: reboot mode: fix build error of missing ioremap/iounmap on UM
-Date: Sun,  7 Aug 2016 21:14:21 +0800
-Message-ID: <1470575661-22325-1-git-send-email-andy.yan@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: richard@nod.at, matthias.bgg@gmail.com, moritz.fischer@ettus.com, fengguang.wu@intel.com, alexandre.belloni@free-electrons.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dbaryshkov@gmail.com, k.kozlowski@samsung.com, dwmw2@infradead.org, nicolas.ferre@atmel.com, Andy Yan <andy.yan@rock-chips.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v2 11/13] PM / sleep: Allow opt-out from runtime resume
+ after direct-complete
+Date: Sun, 7 Aug 2016 11:33:17 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1608071105360.31680-100000@netrider.rowland.org>
+References: <20160807095627.GB5679@wunner.de>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from netrider.rowland.org ([192.131.102.5]:53095 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751633AbcHGPeB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Aug 2016 11:34:01 -0400
+In-Reply-To: <20160807095627.GB5679@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>
 
-Add missing HAS_IOMEM dependency for MFD_SYSCON to fix the um-allyesconfig
-build error:
+On Sun, 7 Aug 2016, Lukas Wunner wrote:
 
-drivers/mfd/syscon.c: In function 'of_syscon_register':
-drivers/mfd/syscon.c:67:9: error: implicit declaration of function 'ioremap' [-Werror=implicit-function-declaration]
-  base = ioremap(res.start, resource_size(&res));
-         ^
-drivers/mfd/syscon.c:67:7: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
-  base = ioremap(res.start, resource_size(&res));
-       ^
-drivers/mfd/syscon.c:109:2: error: implicit declaration of function 'iounmap' [-Werror=implicit-function-declaration]
-  iounmap(base);
-  ^
+> Normally the device hierarchy is traversed bottom-up during suspend
+> and top-down during resume. However ->prepare and ->complete do it
+> the other way round. In the case of ->prepare, this is even documented
+> in Documentation/power/devices.txt but the reason thereof is not.
+> Could you explain this please?
 
-Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
----
+The purpose of ->prepare is to tell drivers that a system sleep is
+beginning and accordingly they should stop registering new children.  
+This is necessary for the PM core to be able to traverse the entire
+device tree safely; we want to avoid races where a new child is added
+below a device concurrently with that device being suspended.  (Or if
+you want to be more precise, races in which a new child is added below
+a device while the PM core is acquiring the device's lock just prior to
+invoking its ->suspend callback.)
 
- drivers/power/reset/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+Telling drivers to stop registering new children below a device has to
+be done top-down, because if it were done bottom-up then it would be
+subject to the same race described above.  Doing it top-down avoids 
+problems; if a device registers new children while the PM core is 
+acquiring its lock prior to invoking ->prepare, it doesn't matter.  The 
+new children will be handled later, right along with the existing ones.
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 7053abc..1388be3 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -190,6 +190,7 @@ config REBOOT_MODE
- config SYSCON_REBOOT_MODE
- 	tristate "Generic SYSCON regmap reboot mode driver"
- 	depends on OF
-+	depends on HAS_IOMEM
- 	select REBOOT_MODE
- 	select MFD_SYSCON
- 	help
--- 
-2.7.4
+Alan Stern
+
