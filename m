@@ -1,64 +1,137 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Domains: Replace -ENOSYS with -ENODEV
-Date: Mon, 08 Aug 2016 15:04:06 +0200
-Message-ID: <1621597.SvhxW48HpN@vostro.rjw.lan>
-References: <1470416816-53336-1-git-send-email-lina.iyer@linaro.org> <CAJZ5v0hXNDRCztvDDii+qKEDz26W16e=eq9yDB+59G-AVrKhMw@mail.gmail.com> <CAMuHMdWKKEt2qq1pMt8YBtgq4DuSV6BJhAemVdNv34p8A44Z9Q@mail.gmail.com>
+Subject: Re: [PATCH v2] x86/power/64: Support unaligned addresses for temporary mapping
+Date: Mon, 08 Aug 2016 15:16:41 +0200
+Message-ID: <86530854.uEH6qIGyWZ@vostro.rjw.lan>
+References: <1470071280-78706-1-git-send-email-thgarnie@google.com> <CAE9FiQXMOc_df4V9SZjoy0BymG0hy8=KnsRetFP7Wi=jZXt8yg@mail.gmail.com> <CAE9FiQXMJB4rxAanWxAFtXKYUG6WhDbDq+VHQ7eeEuUuy6oD3w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54365 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53275 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752014AbcHHM6s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2016 08:58:48 -0400
-In-Reply-To: <CAMuHMdWKKEt2qq1pMt8YBtgq4DuSV6BJhAemVdNv34p8A44Z9Q@mail.gmail.com>
+	by vger.kernel.org with SMTP id S1752116AbcHHNLX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2016 09:11:23 -0400
+In-Reply-To: <CAE9FiQXMJB4rxAanWxAFtXKYUG6WhDbDq+VHQ7eeEuUuy6oD3w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Garnier <thgarnie@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
 
-On Monday, August 08, 2016 11:11:11 AM Geert Uytterhoeven wrote:
-> Hi Rafael,
-> 
-> On Sat, Aug 6, 2016 at 12:17 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Fri, Aug 5, 2016 at 9:43 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> >> On Fri, Aug 05, 2016 at 11:06:56AM -0600, Lina Iyer wrote:
-> >>> ENOSYS is for syscalls that are not supported. ENODEV is a better return
-> >>> value when the PM Domains are not available.
-> >>>
-> >>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+On Monday, August 08, 2016 12:23:33 AM Yinghai Lu wrote:
+> On Mon, Aug 8, 2016 at 12:06 AM, Yinghai Lu <yinghai@kernel.org> wrote:
 > >>
-> >> I have no opinion on this, but would like to point out that other parts
-> >> in the PM core use -ENOSYS as well (e.g. see drivers/base/power/core.c).
-> >> For consistency, if pm_domain.h is changed, the rest should probably be
-> >> changed as well.
-> 
-> ENOSYS has been used to indicate "functionality not supported" all over the
-> place...
-> 
-> > I agree here.  Changing one piece only is likely to result in confusion.
+> >>> At the same time, set_up_temporary_text_mapping could be replaced with
+> >>> kernel_ident_mapping_init() too if restore_jump_address is KVA for
+> >>> jump_address_phys.
+> >>
+> >> I see no reason to do that.
+> >>
+> >> First, it is not guaranteed that restore_jump_address will always be a KVA for
+> >> jump_address_phys and second, it really is only necessary to map one PMD in
+> >> there.
 > >
-> > Also I'm not sure if ENODEV is a good replacement at all.  ENOTSUPP
-> > was suggested instead last time a similar patch was discussed.
+> > With your v2 version, you could pass difference between restore_jump_address and
+> > jump_address_phys as info->off ?
+> > With that, we can kill more lines if replace with
+> > set_up_temporary_text_mapping with
+> > kernel_ident_mapping_init() and make code more readable.
 > >
-> >> It should also be kept in mind that functions might
-> >> check the return code and react specifically to the currently used -ENOSYS.
-> >> (I've written code like that just yesterday, for the (unmerged) thunderbolt
-> >> runtime pm.)
-> >
-> > But I wouldn't write code doing something like this.
+> > But just keep that in separated patch after your v2 patch.
 > 
-> (in the general case, not limited to PM) What to do instead, if you know a
-> dummy function returns -ENOSYS and you need to react on that?
+> like:
+> 
+> ---
+>  arch/x86/power/hibernate_64.c |   55 ++++++++++++------------------------------
+>  1 file changed, 17 insertions(+), 38 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/power/hibernate_64.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/power/hibernate_64.c
+> +++ linux-2.6/arch/x86/power/hibernate_64.c
+> @@ -41,42 +41,6 @@ unsigned long temp_level4_pgt __visible;
+> 
+>  unsigned long relocated_restore_code __visible;
+> 
+> -static int set_up_temporary_text_mapping(pgd_t *pgd)
+> -{
+> -    pmd_t *pmd;
+> -    pud_t *pud;
+> -
+> -    /*
+> -     * The new mapping only has to cover the page containing the image
+> -     * kernel's entry point (jump_address_phys), because the switch over to
+> -     * it is carried out by relocated code running from a page allocated
+> -     * specifically for this purpose and covered by the identity mapping, so
+> -     * the temporary kernel text mapping is only needed for the final jump.
+> -     * Moreover, in that mapping the virtual address of the image kernel's
+> -     * entry point must be the same as its virtual address in the image
+> -     * kernel (restore_jump_address), so the image kernel's
+> -     * restore_registers() code doesn't find itself in a different area of
+> -     * the virtual address space after switching over to the original page
+> -     * tables used by the image kernel.
+> -     */
+> -    pud = (pud_t *)get_safe_page(GFP_ATOMIC);
+> -    if (!pud)
+> -        return -ENOMEM;
+> -
+> -    pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
+> -    if (!pmd)
+> -        return -ENOMEM;
+> -
+> -    set_pmd(pmd + pmd_index(restore_jump_address),
+> -        __pmd((jump_address_phys & PMD_MASK) | __PAGE_KERNEL_LARGE_EXEC));
+> -    set_pud(pud + pud_index(restore_jump_address),
+> -        __pud(__pa(pmd) | _KERNPG_TABLE));
+> -    set_pgd(pgd + pgd_index(restore_jump_address),
+> -        __pgd(__pa(pud) | _KERNPG_TABLE));
+> -
+> -    return 0;
+> -}
+> -
+>  static void *alloc_pgt_page(void *context)
+>  {
+>      return (void *)get_safe_page(GFP_ATOMIC);
+> @@ -87,7 +51,6 @@ static int set_up_temporary_mappings(voi
+>      struct x86_mapping_info info = {
+>          .alloc_pgt_page    = alloc_pgt_page,
+>          .pmd_flag    = __PAGE_KERNEL_LARGE_EXEC,
+> -        .offset        = __PAGE_OFFSET,
+>      };
+>      unsigned long mstart, mend;
+>      pgd_t *pgd;
+> @@ -99,11 +62,27 @@ static int set_up_temporary_mappings(voi
+>          return -ENOMEM;
+> 
+>      /* Prepare a temporary mapping for the kernel text */
+> -    result = set_up_temporary_text_mapping(pgd);
+> +    /*
+> +     * The new mapping only has to cover the page containing the image
+> +     * kernel's entry point (jump_address_phys), because the switch over to
+> +     * it is carried out by relocated code running from a page allocated
+> +     * specifically for this purpose and covered by the identity mapping, so
+> +     * the temporary kernel text mapping is only needed for the final jump.
+> +     * Moreover, in that mapping the virtual address of the image kernel's
+> +     * entry point must be the same as its virtual address in the image
+> +     * kernel (restore_jump_address), so the image kernel's
+> +     * restore_registers() code doesn't find itself in a different area of
+> +     * the virtual address space after switching over to the original page
+> +     * tables used by the image kernel.
+> +     */
+> +    info.offset = restore_jump_address - jump_address_phys;
+> +    result = kernel_ident_mapping_init(&info, pgd, jump_address_phys,
+> +                       jump_address_phys + PMD_SIZE);
+>      if (result)
+>          return result;
+> 
+>      /* Set up the direct mapping from scratch */
+> +    info.offset = __PAGE_OFFSET;
+>      for (i = 0; i < nr_pfn_mapped; i++) {
+>          mstart = pfn_mapped[i].start << PAGE_SHIFT;
+>          mend   = pfn_mapped[i].end << PAGE_SHIFT;
 
-Use IS_ENABLED()?
+OK, I see what you mean.
 
-That at least will make the intention clear to an occasional reader of the code.
-
-> In these cases the exact error code is a contract between caller and
-> callee.
-
-That's fair enough.
+Looks like a good idea to me.
 
 Thanks,
 Rafael
