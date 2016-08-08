@@ -1,68 +1,46 @@
-From: <Wenyou.Yang@microchip.com>
-Subject: RE: [PATCH v3 7/7] doc: bindings: act8945a-charger: Update
- properties
-Date: Mon, 8 Aug 2016 06:05:09 +0000
-Message-ID: <F9F4555C4E01D7469D37975B62D0EFBB395A8A@CHN-SV-EXMX07.mchp-main.com>
-References: <1469755528-8413-1-git-send-email-wenyou.yang@atmel.com>
- <1469755528-8413-8-git-send-email-wenyou.yang@atmel.com>
- <20160729214020.GA18140@rob-hp-laptop>
+From: Wenyou Yang <wenyou.yang@atmel.com>
+Subject: [PATCH v4 0/7] power: act8945a_charger: Improvements
+Date: Mon, 8 Aug 2016 14:08:42 +0800
+Message-ID: <1470636529-16387-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160729214020.GA18140@rob-hp-laptop>
-Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: robh@kernel.org, wenyou.yang@atmel.com
-Cc: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, pawel.moll@arm.com, broonie@kernel.org, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, nicolas.ferre@atmel.com, linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUm9iLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJvYiBIZXJy
-aW5nIFttYWlsdG86cm9iaEBrZXJuZWwub3JnXQ0KPiBTZW50OiAyMDE2xOo31MIzMMjVIDU6NDAN
-Cj4gVG86IFdlbnlvdSBZYW5nIDx3ZW55b3UueWFuZ0BhdG1lbC5jb20+DQo+IENjOiBTZWJhc3Rp
-YW4gUmVpY2hlbCA8c3JlQGtlcm5lbC5vcmc+OyBEbWl0cnkgRXJlbWluLVNvbGVuaWtvdg0KPiA8
-ZGJhcnlzaGtvdkBnbWFpbC5jb20+OyBEYXZpZCBXb29kaG91c2UgPGR3bXcyQGluZnJhZGVhZC5v
-cmc+OyBQYXdlbA0KPiBNb2xsIDxwYXdlbC5tb2xsQGFybS5jb20+OyBNYXJrIEJyb3duIDxicm9v
-bmllQGtlcm5lbC5vcmc+OyBJYW4gQ2FtcGJlbGwNCj4gPGlqYytkZXZpY2V0cmVlQGhlbGxpb24u
-b3JnLnVrPjsgS3VtYXIgR2FsYSA8Z2FsYWtAY29kZWF1cm9yYS5vcmc+OyBsaW51eC0NCj4ga2Vy
-bmVsQHZnZXIua2VybmVsLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFy
-bS0NCj4ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IE5pY29sYXMgRmVycmUgPG5pY29sYXMu
-ZmVycmVAYXRtZWwuY29tPjsgbGludXgtDQo+IHBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0
-OiBSZTogW1BBVENIIHYzIDcvN10gZG9jOiBiaW5kaW5nczogYWN0ODk0NWEtY2hhcmdlcjogVXBk
-YXRlIHByb3BlcnRpZXMNCj4gDQo+IE9uIEZyaSwgSnVsIDI5LCAyMDE2IGF0IDA5OjI1OjI4QU0g
-KzA4MDAsIFdlbnlvdSBZYW5nIHdyb3RlOg0KPiA+IER1ZSB0aGUgZHJpdmVyIGltcHJvdmVtZW50
-cywgdXBkYXRlIHRoZSBwcm9wZXJ0aWVzLA0KPiA+ICAtIFJlbW92ZSAiYWN0aXZlLXNlbWksY2hl
-Y2stYmF0dGVyeS10ZW1wZXJhdHVyZSIgcHJvcGVydHkuDQo+ID4gIC0gQWRkIHRoZSBwcm9wZXJ0
-aWVzLCAiYWN0aXZlLXNlbWksaXJxX2dwaW8iDQo+ID4gICAgYW5kICJhY3RpdmUtc2VtaSxsYm8t
-Z3Bpb3MiLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogV2VueW91IFlhbmcgPHdlbnlvdS55YW5n
-QGF0bWVsLmNvbT4NCj4gPiAtLS0NCj4gPg0KPiA+IENoYW5nZXMgaW4gdjM6IE5vbmUNCj4gPiBD
-aGFuZ2VzIGluIHYyOiBOb25lDQo+ID4NCj4gPiAgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL3Bvd2VyL2FjdDg5NDVhLWNoYXJnZXIudHh0IHwgNiArKysrLS0NCj4gPiAgMSBmaWxl
-IGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYg
-LS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvYWN0ODk0NWEt
-Y2hhcmdlci50eHQNCj4gYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIv
-YWN0ODk0NWEtY2hhcmdlci50eHQNCj4gPiBpbmRleCBiZWEyNTRjLi5kN2NmMDViIDEwMDY0NA0K
-PiA+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9hY3Q4OTQ1
-YS1jaGFyZ2VyLnR4dA0KPiA+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
-cy9wb3dlci9hY3Q4OTQ1YS1jaGFyZ2VyLnR4dA0KPiA+IEBAIC00LDEwICs0LDEyIEBAIFJlcXVp
-cmVkIHByb3BlcnRpZXM6DQo+ID4gICAtIGNvbXBhdGlibGU6ICJhY3RpdmUtc2VtaSxhY3Q4OTQ1
-YSIsIHBsZWFzZSByZWZlciB0byAuLi9tZmQvYWN0ODk0NWEudHh0Lg0KPiA+ICAgLSBhY3RpdmUt
-c2VtaSxjaGdsZXYtZ3Bpb3M6IGNoYXJnZSBjdXJyZW50IGxldmVsIHBoYW5kbGUgd2l0aCBhcmdz
-DQo+ID4gICAgIGFzIGRlc2NyaWJlZCBpbiAuLi9ncGlvL2dwaW8udHh0Lg0KPiA+ICsgLSBhY3Rp
-dmUtc2VtaSxpcnFfZ3Bpb3M6IHNwZWNpZnkgdGhlIGNoYXJnZXIgaW50ZXJydXB0IGlucHV0IHBo
-YW5sZQ0KPiA+ICsgICB3aXRoIGFyZ3MgYXMgYXMgZGVzY3JpYmVkIGluIC4uL2dwaW8vZ3Bpby50
-eHQuDQo+IA0KPiBBcyBJIHNhaWQgaW4gdjIsIHRoaXMgc2hvdWxkIGJlIGFuIGludGVycnVwdCBw
-cm9wZXJ0eSBpbnN0ZWFkLg0KDQpTb3JyeSBmb3IgZm9yZ2V0dGluZyB0byBjaGFuZ2UuDQoNCkFj
-Y2VwdGVkLCB3aWxsIGJlIGluIG5leHQgdmVyc2lvbi4gVGhhbmtzLg0KDQo+IA0KPiA+ICsgLSBh
-Y3RpdmUtc2VtaSxsYm8tZ3Bpb3M6IHNwZWNpZnkgdGhlIGxvdyBiYXR0ZXJ5IHZvbHRhZ2UgZGV0
-ZWN0IHBoYW5kbGUNCj4gPiArICAgd2l0aCBhcmdzIGFzIGFzIGRlc2NyaWJlZCBpbiAuLi9ncGlv
-L2dwaW8udHh0Lg0KPiANCj4gTWF5YmUgdGhpcyBvbmUgdG9vLg0KDQpUaGUgY2FwYWNpdHkgbGV2
-ZWwgZnVuY3Rpb24gbmVlZCB0byByZWFkIHRoaXMgcGluIGxldmVsLCBzbyB0aGlzIG9uZSBzaG91
-bGQgbm90DQp1c2UgImludGVycnVwdHMiIHByb3BlcnR5Lg0KDQo+IA0KPiA+DQo+ID4gIE9wdGlv
-bmFsIHByb3BlcnRpZXM6DQo+ID4gLSAtIGFjdGl2ZS1zZW1pLGNoZWNrLWJhdHRlcnktdGVtcGVy
-YXR1cmU6IGJvb2xlYW4gdG8gY2hlY2sgdGhlIGJhdHRlcnkNCj4gPiAtICAgdGVtcGVyYXR1cmUg
-b3Igbm90Lg0KPiA+ICAgLSBhY3RpdmUtc2VtaSxpbnB1dC12b2x0YWdlLXRocmVzaG9sZC1taWNy
-b3ZvbHQ6IHVuaXQ6IG1WOw0KPiA+ICAgICBTcGVjaWZpZXMgdGhlIGNoYXJnZXIncyBpbnB1dCBv
-dmVyLXZvbHRhZ2UgdGhyZXNob2xkIHZhbHVlOw0KPiA+ICAgICBUaGUgdmFsdWUgY2FuIGJlOiA2
-NjAwLCA3MDAwLCA3NTAwLCA4MDAwOyBkZWZhdWx0OiA2NjAwDQo+ID4gLS0NCj4gPiAyLjcuNA0K
-PiA+DQoNCkJlc3QgUmVnYXJkcywNCldlbnlvdSBZYW5nDQo=
+This patch series is to improve the implementation of act8945a-charger
+driver, such as improve the way to check the status, fix the power
+supply type property, add the status change update, and add more
+properties: capacity level property and max current property.
+
+Changes in v4:
+ - Use "interrupts" property, instead of "active-semi,lbo-gpios"
+   for irq.
+ - Change devname of devm_request_irq() from "lbo-detect" to
+   "act8945a, lbo-detect".
+ - Fix wrong gpio assignment for chglev_pin.
+ - Update the doc/binding for using "interrupts" property.
+
+Changes in v3:
+ - Remove unneeded semicolon to fix semicolon.cocci warning.
+
+Changes in v2:
+ - Add missing ret declaration.
+
+Wenyou Yang (7):
+  power: act8945a_charger: Remove "battery_temperature"
+  power: act8945a_charger: Improve
+  power: act8945a_charger: Add status change update support
+  power: act8945a_charger: Fix the power supply type
+  power: act8945a_charger: Add capacity level property
+  power: act8945a_charger: Add max current property
+  doc: bindings: act8945a-charger: Update properties
+
+ .../devicetree/bindings/power/act8945a-charger.txt |  16 +-
+ drivers/power/act8945a_charger.c                   | 373 ++++++++++++++++++---
+ 2 files changed, 348 insertions(+), 41 deletions(-)
+
+-- 
+2.7.4
