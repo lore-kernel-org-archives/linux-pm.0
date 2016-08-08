@@ -1,67 +1,72 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] power: reset: reboot mode: fix build error of missing
- ioremap/iounmap on UM
-Date: Mon, 8 Aug 2016 18:54:10 +0200
-Message-ID: <20160808165410.GA5959@kozik-book>
-References: <1470575661-22325-1-git-send-email-andy.yan@rock-chips.com>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
+ mapping correctly
+Date: Mon, 8 Aug 2016 11:00:40 -0700
+Message-ID: <CAJcbSZFkDjaYq=-J-Vs84zKdKQFskjkie-6fa6tC9Mm=h3Eu1w@mail.gmail.com>
+References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <20160808134001.GC29757@nazgul.tnic>
+ <CAJZ5v0hE7ND5y-q+o-M9ck05VFDKWkBYJ-=3C2ZRn_aw5o4y+Q@mail.gmail.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1470575661-22325-1-git-send-email-andy.yan@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>
-Cc: sre@kernel.org, richard@nod.at, matthias.bgg@gmail.com, moritz.fischer@ettus.com, fengguang.wu@intel.com, alexandre.belloni@free-electrons.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dbaryshkov@gmail.com, k.kozlowski@samsung.com, dwmw2@infradead.org, nicolas.ferre@atmel.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <kernel-hardening-return-4281-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <CAJZ5v0hE7ND5y-q+o-M9ck05VFDKWkBYJ-=3C2ZRn_aw5o4y+Q@mail.gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Borislav Petkov <bpetkov@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 07, 2016 at 09:14:21PM +0800, Andy Yan wrote:
-> Add missing HAS_IOMEM dependency for MFD_SYSCON to fix the um-allyesconfig
-> build error:
-> 
-> drivers/mfd/syscon.c: In function 'of_syscon_register':
-> drivers/mfd/syscon.c:67:9: error: implicit declaration of function 'ioremap' [-Werror=implicit-function-declaration]
->   base = ioremap(res.start, resource_size(&res));
->          ^
-> drivers/mfd/syscon.c:67:7: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
->   base = ioremap(res.start, resource_size(&res));
->        ^
-> drivers/mfd/syscon.c:109:2: error: implicit declaration of function 'iounmap' [-Werror=implicit-function-declaration]
->   iounmap(base);
->   ^
-> 
-> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+On Mon, Aug 8, 2016 at 6:54 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Mon, Aug 8, 2016 at 3:40 PM, Borislav Petkov <bp@suse.de> wrote:
+>> On Mon, Aug 08, 2016 at 03:31:31PM +0200, Rafael J. Wysocki wrote:
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>
+>>> The low-level resume-from-hibernation code on x86-64 uses
+>>> kernel_ident_mapping_init() to create the temoprary identity mapping,
+>>> but that function assumes that the offset between kernel virtual
+>>> addresses and physical addresses is aligned on the PGD level.
+>>>
+>>> However, with a randomized identity mapping base, it may be aligned
+>>> on the PUD level and if that happens, the temporary identity mapping
+>>> created by set_up_temporary_mappings() will not reflect the actual
+>>> kernel identity mapping and the image restoration will fail as a
+>>> result (leading to a kernel panic most of the time).
+>>>
+>>> To fix this problem, rework kernel_ident_mapping_init() to support
+>>> unaligned offsets between KVA and PA up to the PMD level and make
+>>> set_up_temporary_mappings() use it as approprtiate.
+>>>
+>>> Reported-by: Thomas Garnier <thgarnie@google.com>
+>>
+>> Reported-by: Borislav Petkov <bp@suse.de>
+>>
+>>> Suggested-by: Yinghai Lu <yinghai@kernel.org>
+>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>> Acked-by: Yinghai Lu <yinghai@kernel.org>
+>>> ---
+>>>
+>>> This is sort of urgent, because hibernation doesn't work with KASLR on x86-64
+>>> in 4.8-rc1 AFAICS and this should make them work together again.
+>>>
+>>> Unless anyone sees any problems with it, I'll queue it up for 4.8-rc2.
+>>>
+>>> Thomas, would it be possible to test it with KASLR enabled, please?
+>>
 
-Missing credits for reported by.
+I tested it on my setup couple times. Worked well.
 
-That does not look proper... The driver itself is not using ioremap.
-Error is triggered by selecting MFD_SYSCON... Some time ago I sent a
-bulk of similar fixes for stuff like this but there were some comments
-against. Finally the fixes were merged but ultimately the COMPILE_TEST
-was changed to !UM. Here it happens even without COMPILE_TEST... Maybe
-it should just depend on MFD_SYSCON?
-
-Best regards,
-Krzysztof
-
-
-> ---
-> 
->  drivers/power/reset/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index 7053abc..1388be3 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -190,6 +190,7 @@ config REBOOT_MODE
->  config SYSCON_REBOOT_MODE
->  	tristate "Generic SYSCON regmap reboot mode driver"
->  	depends on OF
-> +	depends on HAS_IOMEM
->  	select REBOOT_MODE
->  	select MFD_SYSCON
->  	help
-> -- 
-> 2.7.4
-> 
-> 
+>> Is that the only patch which needs to be tested? Ontop of which tree?
+>
+> That should be the only one on top of plain 4.8-rc1.
+>
+> If it doesn't help, we need more work to do. :-)
+>
+>> CONFIG_RANDOMIZE_MEMORY blew up s2d on my laptop here so I'll run it
+>> once I have the required info from you :)
+>
+> Thanks!
+>
+> Best,
+> Rafael
