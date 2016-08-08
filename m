@@ -1,127 +1,67 @@
-From: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH v2] x86/power/64: Support unaligned addresses for
- temporary mapping
-Date: Mon, 8 Aug 2016 00:23:33 -0700
-Message-ID: <CAE9FiQXMJB4rxAanWxAFtXKYUG6WhDbDq+VHQ7eeEuUuy6oD3w@mail.gmail.com>
-References: <1470071280-78706-1-git-send-email-thgarnie@google.com>
- <2213000.eZV9GAcFWG@vostro.rjw.lan> <CAE9FiQW5tSXPZLKB_3xh4TNVgU=vHiMOeUmN9h+nzkg3VTqDXw@mail.gmail.com>
- <2869477.o6QceH2ItE@vostro.rjw.lan> <CAE9FiQXMOc_df4V9SZjoy0BymG0hy8=KnsRetFP7Wi=jZXt8yg@mail.gmail.com>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH] power: reset: reboot mode: fix build error of missing ioremap/iounmap on UM
+Date: Mon, 08 Aug 2016 09:25:27 +0200
+Message-ID: <32A6A724-2EDF-4371-A248-CF5B950160A8@gmail.com>
+References: <1470575661-22325-1-git-send-email-andy.yan@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAE9FiQXMOc_df4V9SZjoy0BymG0hy8=KnsRetFP7Wi=jZXt8yg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Garnier <thgarnie@google.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain;
+ charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:32917 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751150AbcHHHZe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2016 03:25:34 -0400
+In-Reply-To: <1470575661-22325-1-git-send-email-andy.yan@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Yan <andy.yan@rock-chips.com>, sre@kernel.org
+Cc: richard@nod.at, moritz.fischer@ettus.com, fengguang.wu@intel.com, alexandre.belloni@free-electrons.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dbaryshkov@gmail.com, k.kozlowski@samsung.com, dwmw2@infradead.org, nicolas.ferre@atmel.com
 
-On Mon, Aug 8, 2016 at 12:06 AM, Yinghai Lu <yinghai@kernel.org> wrote:
->>
->>> At the same time, set_up_temporary_text_mapping could be replaced with
->>> kernel_ident_mapping_init() too if restore_jump_address is KVA for
->>> jump_address_phys.
->>
->> I see no reason to do that.
->>
->> First, it is not guaranteed that restore_jump_address will always be a KVA for
->> jump_address_phys and second, it really is only necessary to map one PMD in
->> there.
+
+
+On August 7, 2016 3:14:21 PM CEST, Andy Yan <andy.yan@rock-chips.com> wrote:
+>Add missing HAS_IOMEM dependency for MFD_SYSCON to fix the
+>um-allyesconfig
+>build error:
 >
-> With your v2 version, you could pass difference between restore_jump_address and
-> jump_address_phys as info->off ?
-> With that, we can kill more lines if replace with
-> set_up_temporary_text_mapping with
-> kernel_ident_mapping_init() and make code more readable.
+>drivers/mfd/syscon.c: In function 'of_syscon_register':
+>drivers/mfd/syscon.c:67:9: error: implicit declaration of function
+>'ioremap' [-Werror=implicit-function-declaration]
+>  base = ioremap(res.start, resource_size(&res));
+>         ^
+>drivers/mfd/syscon.c:67:7: warning: assignment makes pointer from
+>integer without a cast [-Wint-conversion]
+>  base = ioremap(res.start, resource_size(&res));
+>       ^
+>drivers/mfd/syscon.c:109:2: error: implicit declaration of function
+>'iounmap' [-Werror=implicit-function-declaration]
+>  iounmap(base);
+>  ^
 >
-> But just keep that in separated patch after your v2 patch.
+>Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
 
-like:
+Normally when sending a fix you specify:
+commit sha ("commit subject")
 
----
- arch/x86/power/hibernate_64.c |   55 ++++++++++++------------------------------
- 1 file changed, 17 insertions(+), 38 deletions(-)
+regards,
+Matthias
 
-Index: linux-2.6/arch/x86/power/hibernate_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/power/hibernate_64.c
-+++ linux-2.6/arch/x86/power/hibernate_64.c
-@@ -41,42 +41,6 @@ unsigned long temp_level4_pgt __visible;
+>---
+>
+> drivers/power/reset/Kconfig | 1 +
+> 1 file changed, 1 insertion(+)
+>
+>diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+>index 7053abc..1388be3 100644
+>--- a/drivers/power/reset/Kconfig
+>+++ b/drivers/power/reset/Kconfig
+>@@ -190,6 +190,7 @@ config REBOOT_MODE
+> config SYSCON_REBOOT_MODE
+> 	tristate "Generic SYSCON regmap reboot mode driver"
+> 	depends on OF
+>+	depends on HAS_IOMEM
+> 	select REBOOT_MODE
+> 	select MFD_SYSCON
+> 	help
 
- unsigned long relocated_restore_code __visible;
-
--static int set_up_temporary_text_mapping(pgd_t *pgd)
--{
--    pmd_t *pmd;
--    pud_t *pud;
--
--    /*
--     * The new mapping only has to cover the page containing the image
--     * kernel's entry point (jump_address_phys), because the switch over to
--     * it is carried out by relocated code running from a page allocated
--     * specifically for this purpose and covered by the identity mapping, so
--     * the temporary kernel text mapping is only needed for the final jump.
--     * Moreover, in that mapping the virtual address of the image kernel's
--     * entry point must be the same as its virtual address in the image
--     * kernel (restore_jump_address), so the image kernel's
--     * restore_registers() code doesn't find itself in a different area of
--     * the virtual address space after switching over to the original page
--     * tables used by the image kernel.
--     */
--    pud = (pud_t *)get_safe_page(GFP_ATOMIC);
--    if (!pud)
--        return -ENOMEM;
--
--    pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
--    if (!pmd)
--        return -ENOMEM;
--
--    set_pmd(pmd + pmd_index(restore_jump_address),
--        __pmd((jump_address_phys & PMD_MASK) | __PAGE_KERNEL_LARGE_EXEC));
--    set_pud(pud + pud_index(restore_jump_address),
--        __pud(__pa(pmd) | _KERNPG_TABLE));
--    set_pgd(pgd + pgd_index(restore_jump_address),
--        __pgd(__pa(pud) | _KERNPG_TABLE));
--
--    return 0;
--}
--
- static void *alloc_pgt_page(void *context)
- {
-     return (void *)get_safe_page(GFP_ATOMIC);
-@@ -87,7 +51,6 @@ static int set_up_temporary_mappings(voi
-     struct x86_mapping_info info = {
-         .alloc_pgt_page    = alloc_pgt_page,
-         .pmd_flag    = __PAGE_KERNEL_LARGE_EXEC,
--        .offset        = __PAGE_OFFSET,
-     };
-     unsigned long mstart, mend;
-     pgd_t *pgd;
-@@ -99,11 +62,27 @@ static int set_up_temporary_mappings(voi
-         return -ENOMEM;
-
-     /* Prepare a temporary mapping for the kernel text */
--    result = set_up_temporary_text_mapping(pgd);
-+    /*
-+     * The new mapping only has to cover the page containing the image
-+     * kernel's entry point (jump_address_phys), because the switch over to
-+     * it is carried out by relocated code running from a page allocated
-+     * specifically for this purpose and covered by the identity mapping, so
-+     * the temporary kernel text mapping is only needed for the final jump.
-+     * Moreover, in that mapping the virtual address of the image kernel's
-+     * entry point must be the same as its virtual address in the image
-+     * kernel (restore_jump_address), so the image kernel's
-+     * restore_registers() code doesn't find itself in a different area of
-+     * the virtual address space after switching over to the original page
-+     * tables used by the image kernel.
-+     */
-+    info.offset = restore_jump_address - jump_address_phys;
-+    result = kernel_ident_mapping_init(&info, pgd, jump_address_phys,
-+                       jump_address_phys + PMD_SIZE);
-     if (result)
-         return result;
-
-     /* Set up the direct mapping from scratch */
-+    info.offset = __PAGE_OFFSET;
-     for (i = 0; i < nr_pfn_mapped; i++) {
-         mstart = pfn_mapped[i].start << PAGE_SHIFT;
-         mend   = pfn_mapped[i].end << PAGE_SHIFT;
