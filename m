@@ -1,150 +1,68 @@
-From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v4 0/6] power: add power sequence library
-Date: Mon, 8 Aug 2016 09:57:22 +0800
-Message-ID: <20160808015722.GA17680@shlinux2>
-References: <1470108652-16812-1-git-send-email-peter.chen@nxp.com>
- <d7c11574a1218263c02b117d79b59601@naiandei.net>
+From: <Wenyou.Yang@microchip.com>
+Subject: RE: [PATCH v3 7/7] doc: bindings: act8945a-charger: Update
+ properties
+Date: Mon, 8 Aug 2016 06:05:09 +0000
+Message-ID: <F9F4555C4E01D7469D37975B62D0EFBB395A8A@CHN-SV-EXMX07.mchp-main.com>
+References: <1469755528-8413-1-git-send-email-wenyou.yang@atmel.com>
+ <1469755528-8413-8-git-send-email-wenyou.yang@atmel.com>
+ <20160729214020.GA18140@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <d7c11574a1218263c02b117d79b59601-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Oscar <oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org>
-Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160729214020.GA18140@rob-hp-laptop>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: robh@kernel.org, wenyou.yang@atmel.com
+Cc: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, pawel.moll@arm.com, broonie@kernel.org, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, nicolas.ferre@atmel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 06, 2016 at 02:00:08PM +0200, Oscar wrote:
-> El 2016-08-02 05:30, Peter Chen escribió:
-> >Hi all,
-> >
-> >This is a follow-up for my last power sequence framework patch set
-> >[1].
-> >According to Rob Herring and Ulf Hansson's comments[2], I use a
-> >generic
-> >power sequence library for parsing the power sequence elements on DT,
-> >and implement generic power sequence on library. The host driver
-> >can allocate power sequence instance, and calls pwrseq APIs
-> >accordingly.
-> >
-> >In future, if there are special power sequence requirements, the
-> >special
-> >power sequence library can be created.
-> >
-> >This patch set is tested on i.mx6 sabresx evk using a dts change,
-> >I use
-> >two hot-plug devices to simulate this use case, the related binding
-> >change is updated at patch [1/6], The udoo board changes were tested
-> >using my last power sequence patch set.[3]
-> >
-> >Except for hard-wired MMC and USB devices, I find the USB ULPI PHY
-> >also
-> >need to power on itself before it can be found by ULPI bus.
-> >
-> >[1] http://www.spinics.net/lists/linux-usb/msg142755.html
-> >[2] http://www.spinics.net/lists/linux-usb/msg143106.html
-> >[3] http://www.spinics.net/lists/linux-usb/msg142815.html
-> >
-> >Changes for v4:
-> >- Create the patch on next-20160722
-> >- Fix the of_node is not NULL after chipidea driver is unbinded
-> >[Patch 5/6]
-> >- Using more friendly wait method for reset gpio [Patch 2/6]
-> >- Support multiple input clocks [Patch 2/6]
-> >- Add Rob Herring's ack for DT changes
-> >- Add Joshua Clayton's Tested-by
-> >
-> >Changes for v3:
-> >- Delete "power-sequence" property at binding-doc, and change
-> >related code
-> >  at both library and user code.
-> >- Change binding-doc example node name with Rob's comments
-> >- of_get_named_gpio_flags only gets the gpio, but without setting
-> >gpio flags,
-> >  add additional code request gpio with proper gpio flags
-> >- Add Philipp Zabel's Ack and MAINTAINER's entry
-> >
-> >Changes for v2:
-> >- Delete "pwrseq" prefix and clock-names for properties at dt binding
-> >- Should use structure not but its pointer for kzalloc
-> >- Since chipidea core has no of_node, let core's of_node equals glue
-> >  layer's at core's probe
-> >
-> >Peter Chen (6):
-> >  binding-doc: power: pwrseq-generic: add binding doc for generic
-> >power
-> >    sequence library
-> >  power: add power sequence library
-> >  binding-doc: usb: usb-device: add optional properties for power
-> >    sequence
-> >  usb: core: add power sequence handling for USB devices
-> >  usb: chipidea: let chipidea core device of_node equal's glue layer
-> >    device of_node
-> >  ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
-> >
-> 
-> Hi Peter,
-> 
-> I tried the last version on my udoo board but I got these compile
-> errors:
-> 
-> [21330s] ERROR: "pwrseq_get" [drivers/usb/core/usbcore.ko] undefined!
-> [21330s] ERROR: "pwrseq_free" [drivers/usb/core/usbcore.ko] undefined!
-> [21330s] ERROR: "pwrseq_put" [drivers/usb/core/usbcore.ko] undefined!
-> [21330s] ERROR: "pwrseq_off" [drivers/usb/core/usbcore.ko] undefined!
-> [21330s] ERROR: "pwrseq_on" [drivers/usb/core/usbcore.ko] undefined!
-> 
-> Will you do another version?
-> 
-
-Thanks, I forgot to export above symbols, I will fix it at next
-version. Below fix should work for you, I have tested.
-
-diff --git a/drivers/power/pwrseq/core.c b/drivers/power/pwrseq/core.c
-index 60f1e4e..6861a21 100644
---- a/drivers/power/pwrseq/core.c
-+++ b/drivers/power/pwrseq/core.c
-@@ -29,6 +29,7 @@ int pwrseq_get(struct device_node *np, struct pwrseq *p)
- 
- 	return -ENOTSUPP;
- }
-+EXPORT_SYMBOL(pwrseq_get);
- 
- int pwrseq_on(struct device_node *np, struct pwrseq *p)
- {
-@@ -37,24 +38,28 @@ int pwrseq_on(struct device_node *np, struct pwrseq *p)
- 
- 	return -ENOTSUPP;
- }
-+EXPORT_SYMBOL(pwrseq_on);
- 
- void pwrseq_off(struct pwrseq *p)
- {
- 	if (p && p->off)
- 		p->off(p);
- }
-+EXPORT_SYMBOL(pwrseq_off);
- 
- void pwrseq_put(struct pwrseq *p)
- {
- 	if (p && p->put)
- 		p->put(p);
- }
-+EXPORT_SYMBOL(pwrseq_put);
- 
- void pwrseq_free(struct pwrseq *p)
- {
- 	if (p && p->free)
- 		p->free(p);
- }
-+EXPORT_SYMBOL(pwrseq_free);
-
--- 
-
-Best Regards,
-Peter Chen
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+SGkgUm9iLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJvYiBIZXJy
+aW5nIFttYWlsdG86cm9iaEBrZXJuZWwub3JnXQ0KPiBTZW50OiAyMDE2xOo31MIzMMjVIDU6NDAN
+Cj4gVG86IFdlbnlvdSBZYW5nIDx3ZW55b3UueWFuZ0BhdG1lbC5jb20+DQo+IENjOiBTZWJhc3Rp
+YW4gUmVpY2hlbCA8c3JlQGtlcm5lbC5vcmc+OyBEbWl0cnkgRXJlbWluLVNvbGVuaWtvdg0KPiA8
+ZGJhcnlzaGtvdkBnbWFpbC5jb20+OyBEYXZpZCBXb29kaG91c2UgPGR3bXcyQGluZnJhZGVhZC5v
+cmc+OyBQYXdlbA0KPiBNb2xsIDxwYXdlbC5tb2xsQGFybS5jb20+OyBNYXJrIEJyb3duIDxicm9v
+bmllQGtlcm5lbC5vcmc+OyBJYW4gQ2FtcGJlbGwNCj4gPGlqYytkZXZpY2V0cmVlQGhlbGxpb24u
+b3JnLnVrPjsgS3VtYXIgR2FsYSA8Z2FsYWtAY29kZWF1cm9yYS5vcmc+OyBsaW51eC0NCj4ga2Vy
+bmVsQHZnZXIua2VybmVsLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWFy
+bS0NCj4ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7IE5pY29sYXMgRmVycmUgPG5pY29sYXMu
+ZmVycmVAYXRtZWwuY29tPjsgbGludXgtDQo+IHBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0
+OiBSZTogW1BBVENIIHYzIDcvN10gZG9jOiBiaW5kaW5nczogYWN0ODk0NWEtY2hhcmdlcjogVXBk
+YXRlIHByb3BlcnRpZXMNCj4gDQo+IE9uIEZyaSwgSnVsIDI5LCAyMDE2IGF0IDA5OjI1OjI4QU0g
+KzA4MDAsIFdlbnlvdSBZYW5nIHdyb3RlOg0KPiA+IER1ZSB0aGUgZHJpdmVyIGltcHJvdmVtZW50
+cywgdXBkYXRlIHRoZSBwcm9wZXJ0aWVzLA0KPiA+ICAtIFJlbW92ZSAiYWN0aXZlLXNlbWksY2hl
+Y2stYmF0dGVyeS10ZW1wZXJhdHVyZSIgcHJvcGVydHkuDQo+ID4gIC0gQWRkIHRoZSBwcm9wZXJ0
+aWVzLCAiYWN0aXZlLXNlbWksaXJxX2dwaW8iDQo+ID4gICAgYW5kICJhY3RpdmUtc2VtaSxsYm8t
+Z3Bpb3MiLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogV2VueW91IFlhbmcgPHdlbnlvdS55YW5n
+QGF0bWVsLmNvbT4NCj4gPiAtLS0NCj4gPg0KPiA+IENoYW5nZXMgaW4gdjM6IE5vbmUNCj4gPiBD
+aGFuZ2VzIGluIHYyOiBOb25lDQo+ID4NCj4gPiAgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
+bmRpbmdzL3Bvd2VyL2FjdDg5NDVhLWNoYXJnZXIudHh0IHwgNiArKysrLS0NCj4gPiAgMSBmaWxl
+IGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYg
+LS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvYWN0ODk0NWEt
+Y2hhcmdlci50eHQNCj4gYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIv
+YWN0ODk0NWEtY2hhcmdlci50eHQNCj4gPiBpbmRleCBiZWEyNTRjLi5kN2NmMDViIDEwMDY0NA0K
+PiA+IC0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9hY3Q4OTQ1
+YS1jaGFyZ2VyLnR4dA0KPiA+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
+cy9wb3dlci9hY3Q4OTQ1YS1jaGFyZ2VyLnR4dA0KPiA+IEBAIC00LDEwICs0LDEyIEBAIFJlcXVp
+cmVkIHByb3BlcnRpZXM6DQo+ID4gICAtIGNvbXBhdGlibGU6ICJhY3RpdmUtc2VtaSxhY3Q4OTQ1
+YSIsIHBsZWFzZSByZWZlciB0byAuLi9tZmQvYWN0ODk0NWEudHh0Lg0KPiA+ICAgLSBhY3RpdmUt
+c2VtaSxjaGdsZXYtZ3Bpb3M6IGNoYXJnZSBjdXJyZW50IGxldmVsIHBoYW5kbGUgd2l0aCBhcmdz
+DQo+ID4gICAgIGFzIGRlc2NyaWJlZCBpbiAuLi9ncGlvL2dwaW8udHh0Lg0KPiA+ICsgLSBhY3Rp
+dmUtc2VtaSxpcnFfZ3Bpb3M6IHNwZWNpZnkgdGhlIGNoYXJnZXIgaW50ZXJydXB0IGlucHV0IHBo
+YW5sZQ0KPiA+ICsgICB3aXRoIGFyZ3MgYXMgYXMgZGVzY3JpYmVkIGluIC4uL2dwaW8vZ3Bpby50
+eHQuDQo+IA0KPiBBcyBJIHNhaWQgaW4gdjIsIHRoaXMgc2hvdWxkIGJlIGFuIGludGVycnVwdCBw
+cm9wZXJ0eSBpbnN0ZWFkLg0KDQpTb3JyeSBmb3IgZm9yZ2V0dGluZyB0byBjaGFuZ2UuDQoNCkFj
+Y2VwdGVkLCB3aWxsIGJlIGluIG5leHQgdmVyc2lvbi4gVGhhbmtzLg0KDQo+IA0KPiA+ICsgLSBh
+Y3RpdmUtc2VtaSxsYm8tZ3Bpb3M6IHNwZWNpZnkgdGhlIGxvdyBiYXR0ZXJ5IHZvbHRhZ2UgZGV0
+ZWN0IHBoYW5kbGUNCj4gPiArICAgd2l0aCBhcmdzIGFzIGFzIGRlc2NyaWJlZCBpbiAuLi9ncGlv
+L2dwaW8udHh0Lg0KPiANCj4gTWF5YmUgdGhpcyBvbmUgdG9vLg0KDQpUaGUgY2FwYWNpdHkgbGV2
+ZWwgZnVuY3Rpb24gbmVlZCB0byByZWFkIHRoaXMgcGluIGxldmVsLCBzbyB0aGlzIG9uZSBzaG91
+bGQgbm90DQp1c2UgImludGVycnVwdHMiIHByb3BlcnR5Lg0KDQo+IA0KPiA+DQo+ID4gIE9wdGlv
+bmFsIHByb3BlcnRpZXM6DQo+ID4gLSAtIGFjdGl2ZS1zZW1pLGNoZWNrLWJhdHRlcnktdGVtcGVy
+YXR1cmU6IGJvb2xlYW4gdG8gY2hlY2sgdGhlIGJhdHRlcnkNCj4gPiAtICAgdGVtcGVyYXR1cmUg
+b3Igbm90Lg0KPiA+ICAgLSBhY3RpdmUtc2VtaSxpbnB1dC12b2x0YWdlLXRocmVzaG9sZC1taWNy
+b3ZvbHQ6IHVuaXQ6IG1WOw0KPiA+ICAgICBTcGVjaWZpZXMgdGhlIGNoYXJnZXIncyBpbnB1dCBv
+dmVyLXZvbHRhZ2UgdGhyZXNob2xkIHZhbHVlOw0KPiA+ICAgICBUaGUgdmFsdWUgY2FuIGJlOiA2
+NjAwLCA3MDAwLCA3NTAwLCA4MDAwOyBkZWZhdWx0OiA2NjAwDQo+ID4gLS0NCj4gPiAyLjcuNA0K
+PiA+DQoNCkJlc3QgUmVnYXJkcywNCldlbnlvdSBZYW5nDQo=
