@@ -1,33 +1,65 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 0/7] cpufreq / sched: cpufreq_update_util() flags and iowait boosting
-Date: Mon, 08 Aug 2016 15:01:04 +0200
-Message-ID: <2893698.pXQui9Dkv5@vostro.rjw.lan>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <2815658.F6xEHcjr3t@vostro.rjw.lan> <20160808110822.GC6879@twins.programming.kicks-ass.net>
+Subject: Re: [PATCH] PM / Domains: Replace -ENOSYS with -ENODEV
+Date: Mon, 08 Aug 2016 15:04:06 +0200
+Message-ID: <1621597.SvhxW48HpN@vostro.rjw.lan>
+References: <1470416816-53336-1-git-send-email-lina.iyer@linaro.org> <CAJZ5v0hXNDRCztvDDii+qKEDz26W16e=eq9yDB+59G-AVrKhMw@mail.gmail.com> <CAMuHMdWKKEt2qq1pMt8YBtgq4DuSV6BJhAemVdNv34p8A44Z9Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160808110822.GC6879@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Doug Smythies <dsmythies@telus.net>, 'Linux PM list' <linux-pm@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Ingo Molnar' <mingo@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54365 "HELO
+	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752014AbcHHM6s (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2016 08:58:48 -0400
+In-Reply-To: <CAMuHMdWKKEt2qq1pMt8YBtgq4DuSV6BJhAemVdNv34p8A44Z9Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Monday, August 08, 2016 01:08:22 PM Peter Zijlstra wrote:
-> On Mon, Aug 01, 2016 at 06:30:27PM +0200, Rafael J. Wysocki wrote:
-> > >  CPU_FREQ_GOV_SCHEDUTIL m -> y
+On Monday, August 08, 2016 11:11:11 AM Geert Uytterhoeven wrote:
+> Hi Rafael,
 > 
-> > > ERROR: "runqueues" [kernel/sched/cpufreq_schedutil.ko] undefined!
+> On Sat, Aug 6, 2016 at 12:17 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > On Fri, Aug 5, 2016 at 9:43 PM, Lukas Wunner <lukas@wunner.de> wrote:
+> >> On Fri, Aug 05, 2016 at 11:06:56AM -0600, Lina Iyer wrote:
+> >>> ENOSYS is for syscalls that are not supported. ENODEV is a better return
+> >>> value when the PM Domains are not available.
+> >>>
+> >>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> >>
+> >> I have no opinion on this, but would like to point out that other parts
+> >> in the PM core use -ENOSYS as well (e.g. see drivers/base/power/core.c).
+> >> For consistency, if pm_domain.h is changed, the rest should probably be
+> >> changed as well.
 > 
-> > There are some export_symbol declarations missing, I'll fix that up.
+> ENOSYS has been used to indicate "functionality not supported" all over the
+> place...
 > 
-> Do you really need that thing to be a module? I would raelly like to not
-> export runqueues. People have had 'crazy' ideas in the past.
+> > I agree here.  Changing one piece only is likely to result in confusion.
+> >
+> > Also I'm not sure if ENODEV is a good replacement at all.  ENOTSUPP
+> > was suggested instead last time a similar patch was discussed.
+> >
+> >> It should also be kept in mind that functions might
+> >> check the return code and react specifically to the currently used -ENOSYS.
+> >> (I've written code like that just yesterday, for the (unmerged) thunderbolt
+> >> runtime pm.)
+> >
+> > But I wouldn't write code doing something like this.
+> 
+> (in the general case, not limited to PM) What to do instead, if you know a
+> dummy function returns -ENOSYS and you need to react on that?
 
-It doesn't have to be a module, but it is today.
+Use IS_ENABLED()?
 
-Well, I guess accessing scheduler data directly is a good enough resone for
-making it non-modular. :-)
+That at least will make the intention clear to an occasional reader of the code.
+
+> In these cases the exact error code is a contract between caller and
+> callee.
+
+That's fair enough.
 
 Thanks,
 Rafael
+
