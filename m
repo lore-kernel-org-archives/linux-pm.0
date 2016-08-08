@@ -1,231 +1,59 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v5 4/6] usb: core: add power sequence handling for USB devices
-Date: Mon, 8 Aug 2016 16:52:09 +0800
-Message-ID: <1470646331-23227-5-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH v5 3/6] binding-doc: usb: usb-device: add optional properties for power sequence
+Date: Mon, 8 Aug 2016 16:52:08 +0800
+Message-ID: <1470646331-23227-4-git-send-email-peter.chen@nxp.com>
 References: <1470646331-23227-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-by2nam01on0089.outbound.protection.outlook.com ([104.47.34.89]:3754
+	"EHLO NAM01-BY2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752429AbcHHJBu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 8 Aug 2016 05:01:50 -0400
 In-Reply-To: <1470646331-23227-1-git-send-email-peter.chen@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org
 Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, Peter Chen <peter.chen@nxp.com>
-List-Id: linux-pm@vger.kernel.org
 
-Some hard-wired USB devices need to do power sequence to let the
-device work normally, the typical power sequence like: enable USB
-PHY clock, toggle reset pin, etc. But current Linux USB driver
-lacks of such code to do it, it may cause some hard-wired USB devices
-works abnormal or can't be recognized by controller at all.
-
-In this patch, it calls power sequence library APIs to finish
-the power sequence events. At first, it calls pwrseq_alloc_generic
-to create a generic power sequence instance, then it will do power
-on sequence at hub's probe for all devices under this hub
-(includes root hub).
-
-At hub_disconnect, it will do power off sequence which is at powered
-on list.
+Add optional properties for power sequence.
 
 Signed-off-by: Peter Chen <peter.chen@nxp.com>
-Tested-by Joshua Clayton <stillcompiling@gmail.com>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- drivers/usb/core/Makefile |   1 +
- drivers/usb/core/hub.c    |  12 ++++--
- drivers/usb/core/hub.h    |  12 ++++++
- drivers/usb/core/pwrseq.c | 100 ++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 122 insertions(+), 3 deletions(-)
- create mode 100644 drivers/usb/core/pwrseq.c
+ Documentation/devicetree/bindings/usb/usb-device.txt | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/usb/core/Makefile b/drivers/usb/core/Makefile
-index 9780877..39f2149 100644
---- a/drivers/usb/core/Makefile
-+++ b/drivers/usb/core/Makefile
-@@ -9,5 +9,6 @@ usbcore-y += port.o of.o
+diff --git a/Documentation/devicetree/bindings/usb/usb-device.txt b/Documentation/devicetree/bindings/usb/usb-device.txt
+index 1c35e7b..3661dd2 100644
+--- a/Documentation/devicetree/bindings/usb/usb-device.txt
++++ b/Documentation/devicetree/bindings/usb/usb-device.txt
+@@ -13,6 +13,10 @@ Required properties:
+ - reg: the port number which this device is connecting to, the range
+   is 1-31.
  
- usbcore-$(CONFIG_PCI)		+= hcd-pci.o
- usbcore-$(CONFIG_ACPI)		+= usb-acpi.o
-+usbcore-$(CONFIG_PWRSEQ_GENERIC) += pwrseq.o
++Optional properties:
++power sequence properties, see
++Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt for detail
++
+ Example:
  
- obj-$(CONFIG_USB)		+= usbcore.o
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index bee1351..a346a8b 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -1700,6 +1700,7 @@ static void hub_disconnect(struct usb_interface *intf)
- 	hub->error = 0;
- 	hub_quiesce(hub, HUB_DISCONNECT);
+ &usb1 {
+@@ -21,8 +25,12 @@ Example:
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
  
-+	hub_pwrseq_off(hub);
- 	mutex_lock(&usb_port_peer_mutex);
- 
- 	/* Avoid races with recursively_mark_NOTATTACHED() */
-@@ -1733,6 +1734,7 @@ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
- 	struct usb_endpoint_descriptor *endpoint;
- 	struct usb_device *hdev;
- 	struct usb_hub *hub;
-+	int ret = -ENODEV;
- 
- 	desc = intf->cur_altsetting;
- 	hdev = interface_to_usbdev(intf);
-@@ -1839,6 +1841,7 @@ descriptor_error:
- 	INIT_DELAYED_WORK(&hub->leds, led_work);
- 	INIT_DELAYED_WORK(&hub->init_work, NULL);
- 	INIT_WORK(&hub->events, hub_event);
-+	INIT_LIST_HEAD(&hub->pwrseq_on_list);
- 	usb_get_intf(intf);
- 	usb_get_dev(hdev);
- 
-@@ -1852,11 +1855,14 @@ descriptor_error:
- 	if (id->driver_info & HUB_QUIRK_CHECK_PORT_AUTOSUSPEND)
- 		hub->quirk_check_port_auto_suspend = 1;
- 
--	if (hub_configure(hub, endpoint) >= 0)
--		return 0;
-+	if (hub_configure(hub, endpoint) >= 0) {
-+		ret = hub_pwrseq_on(hub);
-+		if (!ret)
-+			return 0;
-+	}
- 
- 	hub_disconnect(intf);
--	return -ENODEV;
-+	return ret;
+-	hub: genesys@1 {
++	genesys: hub@1 {
+ 		compatible = "usb5e3,608";
+ 		reg = <1>;
++
++		clocks = <&clks IMX6SX_CLK_CKO>;
++		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
++		reset-duration-us = <10>;
+ 	};
  }
- 
- static int
-diff --git a/drivers/usb/core/hub.h b/drivers/usb/core/hub.h
-index 34c1a7e..9473f6f 100644
---- a/drivers/usb/core/hub.h
-+++ b/drivers/usb/core/hub.h
-@@ -78,6 +78,7 @@ struct usb_hub {
- 	struct delayed_work	init_work;
- 	struct work_struct      events;
- 	struct usb_port		**ports;
-+	struct list_head	pwrseq_on_list; /* powered pwrseq node list */
- };
- 
- /**
-@@ -166,3 +167,14 @@ static inline int hub_port_debounce_be_stable(struct usb_hub *hub,
- {
- 	return hub_port_debounce(hub, port1, false);
- }
-+
-+#if IS_ENABLED(CONFIG_PWRSEQ_GENERIC)
-+int hub_pwrseq_on(struct usb_hub *hub);
-+void hub_pwrseq_off(struct usb_hub *hub);
-+#else
-+static inline int hub_pwrseq_on(struct usb_hub *hub)
-+{
-+	return 0;
-+}
-+static inline void hub_pwrseq_off(struct usb_hub *hub) {}
-+#endif /* CONFIG_PWRSEQ_GENERIC */
-diff --git a/drivers/usb/core/pwrseq.c b/drivers/usb/core/pwrseq.c
-new file mode 100644
-index 0000000..837fe66
---- /dev/null
-+++ b/drivers/usb/core/pwrseq.c
-@@ -0,0 +1,100 @@
-+/*
-+ * pwrseq.c	USB device power sequence management
-+ *
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Author: Peter Chen <peter.chen@nxp.com>
-+ *
-+ * This program is free software: you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2  of
-+ * the License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/list.h>
-+#include <linux/of.h>
-+#include <linux/power/pwrseq.h>
-+#include <linux/slab.h>
-+#include <linux/usb.h>
-+#include <linux/usb/hcd.h>
-+
-+#include "hub.h"
-+
-+struct usb_pwrseq_node {
-+	struct pwrseq *pwrseq;
-+	struct list_head list;
-+};
-+
-+static int hub_of_pwrseq_on(struct device_node *np, struct usb_hub *hub)
-+{
-+	struct pwrseq *pwrseq;
-+	struct usb_pwrseq_node *pwrseq_node;
-+	int ret;
-+
-+	pwrseq = pwrseq_alloc_generic();
-+	if (IS_ERR(pwrseq))
-+		return PTR_ERR(pwrseq);
-+
-+	ret = pwrseq_get(np, pwrseq);
-+	if (ret)
-+		goto pwr_free;
-+
-+	ret = pwrseq_on(np, pwrseq);
-+	if (ret)
-+		goto pwr_put;
-+
-+	pwrseq_node = kzalloc(sizeof(*pwrseq_node), GFP_KERNEL);
-+	pwrseq_node->pwrseq = pwrseq;
-+	list_add(&pwrseq_node->list, &hub->pwrseq_on_list);
-+
-+	return 0;
-+
-+pwr_put:
-+	pwrseq_put(pwrseq);
-+pwr_free:
-+	pwrseq_free(pwrseq);
-+	return ret;
-+}
-+
-+int hub_pwrseq_on(struct usb_hub *hub)
-+{
-+	struct device *parent;
-+	struct usb_device *hdev = hub->hdev;
-+	struct device_node *np;
-+	int ret;
-+
-+	if (hdev->parent)
-+		parent = &hdev->dev;
-+	else
-+		parent = bus_to_hcd(hdev->bus)->self.controller;
-+
-+	for_each_child_of_node(parent->of_node, np) {
-+		ret = hub_of_pwrseq_on(np, hub);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+void hub_pwrseq_off(struct usb_hub *hub)
-+{
-+	struct pwrseq *pwrseq;
-+	struct usb_pwrseq_node *pwrseq_node, *tmp_node;
-+
-+	list_for_each_entry_safe(pwrseq_node, tmp_node,
-+			&hub->pwrseq_on_list, list) {
-+		pwrseq = pwrseq_node->pwrseq;
-+		pwrseq_off(pwrseq);
-+		pwrseq_put(pwrseq);
-+		pwrseq_free(pwrseq);
-+		list_del(&pwrseq_node->list);
-+		kfree(pwrseq_node);
-+	}
-+}
 -- 
 1.9.1
+
