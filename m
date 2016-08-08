@@ -1,61 +1,49 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
- mapping correctly
-Date: Mon, 8 Aug 2016 22:01:41 +0200
-Message-ID: <CAJZ5v0je3XLEScBAsUYo=neV5Yd2sfa8yQqPx483sXTPbdm9YA@mail.gmail.com>
-References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <20160808134001.GC29757@nazgul.tnic>
- <CAJZ5v0hE7ND5y-q+o-M9ck05VFDKWkBYJ-=3C2ZRn_aw5o4y+Q@mail.gmail.com> <CAJcbSZFkDjaYq=-J-Vs84zKdKQFskjkie-6fa6tC9Mm=h3Eu1w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Baoquan He <bhe@redhat.com>
+Subject: [PATCH 2/2] x86, ACPI: Fix the wrong assignment when Handle apic/x2apic entries
+Date: Tue,  9 Aug 2016 07:01:51 +0800
+Message-ID: <1470697311-1292-2-git-send-email-bhe@redhat.com>
+References: <1470697311-1292-1-git-send-email-bhe@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:36439 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752320AbcHHUBo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 8 Aug 2016 16:01:44 -0400
-In-Reply-To: <CAJcbSZFkDjaYq=-J-Vs84zKdKQFskjkie-6fa6tC9Mm=h3Eu1w@mail.gmail.com>
+Received: from mx1.redhat.com ([209.132.183.28]:52590 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752143AbcHHXCC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 8 Aug 2016 19:02:02 -0400
+In-Reply-To: <1470697311-1292-1-git-send-email-bhe@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Garnier <thgarnie@google.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Borislav Petkov <bpetkov@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Baoquan He <bhe@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
 
-On Mon, Aug 8, 2016 at 8:00 PM, Thomas Garnier <thgarnie@google.com> wrote:
-> On Mon, Aug 8, 2016 at 6:54 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Mon, Aug 8, 2016 at 3:40 PM, Borislav Petkov <bp@suse.de> wrote:
->>> On Mon, Aug 08, 2016 at 03:31:31PM +0200, Rafael J. Wysocki wrote:
->>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>
->>>> The low-level resume-from-hibernation code on x86-64 uses
->>>> kernel_ident_mapping_init() to create the temoprary identity mapping,
->>>> but that function assumes that the offset between kernel virtual
->>>> addresses and physical addresses is aligned on the PGD level.
->>>>
->>>> However, with a randomized identity mapping base, it may be aligned
->>>> on the PUD level and if that happens, the temporary identity mapping
->>>> created by set_up_temporary_mappings() will not reflect the actual
->>>> kernel identity mapping and the image restoration will fail as a
->>>> result (leading to a kernel panic most of the time).
->>>>
->>>> To fix this problem, rework kernel_ident_mapping_init() to support
->>>> unaligned offsets between KVA and PA up to the PMD level and make
->>>> set_up_temporary_mappings() use it as approprtiate.
->>>>
->>>> Reported-by: Thomas Garnier <thgarnie@google.com>
->>>
->>> Reported-by: Borislav Petkov <bp@suse.de>
->>>
->>>> Suggested-by: Yinghai Lu <yinghai@kernel.org>
->>>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>> Acked-by: Yinghai Lu <yinghai@kernel.org>
->>>> ---
->>>>
->>>> This is sort of urgent, because hibernation doesn't work with KASLR on x86-64
->>>> in 4.8-rc1 AFAICS and this should make them work together again.
->>>>
->>>> Unless anyone sees any problems with it, I'll queue it up for 4.8-rc2.
->>>>
->>>> Thomas, would it be possible to test it with KASLR enabled, please?
->>>
->
-> I tested it on my setup couple times. Worked well.
+It won't impact the result, we still should fix the code bug.
 
-Thanks!
+Signed-off-by: Baoquan He <bhe@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: linux-pm@vger.kernel.org
+---
+ arch/x86/kernel/acpi/boot.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 90d84c3..2b25d3f 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -1031,8 +1031,8 @@ static int __init acpi_parse_madt_lapic_entries(void)
+ 			return ret;
+ 		}
+ 
+-		x2count = madt_proc[0].count;
+-		count = madt_proc[1].count;
++		count = madt_proc[0].count;
++		x2count = madt_proc[1].count;
+ 	}
+ 	if (!count && !x2count) {
+ 		printk(KERN_ERR PREFIX "No LAPIC entries present\n");
+-- 
+2.5.5
+
