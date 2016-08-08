@@ -1,168 +1,150 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for system sleep
-Date: Mon, 08 Aug 2016 01:32:54 +0200
-Message-ID: <2182119.Z8Tk7onsTO@vostro.rjw.lan>
-References: <cover.1463134231.git.lukas@wunner.de> <CAJZ5v0hPbeaUotiFxg_BbkS86HEz=u0ThkdwJju5WyXOuDgd6A@mail.gmail.com> <20160807090347.GA5679@wunner.de>
+From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v4 0/6] power: add power sequence library
+Date: Mon, 8 Aug 2016 09:57:22 +0800
+Message-ID: <20160808015722.GA17680@shlinux2>
+References: <1470108652-16812-1-git-send-email-peter.chen@nxp.com>
+ <d7c11574a1218263c02b117d79b59601@naiandei.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55629 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751579AbcHGX1g (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 7 Aug 2016 19:27:36 -0400
-In-Reply-To: <20160807090347.GA5679@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <d7c11574a1218263c02b117d79b59601-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Oscar <oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org>
+Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
 
-On Sunday, August 07, 2016 11:03:47 AM Lukas Wunner wrote:
-> On Thu, Aug 04, 2016 at 05:30:47PM +0200, Rafael J. Wysocki wrote:
-> > On Thu, Aug 4, 2016 at 10:14 AM, Lukas Wunner <lukas@wunner.de> wrote:
-> > > On Thu, Aug 04, 2016 at 03:07:56AM +0200, Rafael J. Wysocki wrote:
-> > >> On Thu, Aug 4, 2016 at 2:45 AM, Lukas Wunner <lukas@wunner.de> wrote:
-> > >> > On Thu, Aug 04, 2016 at 01:50:39AM +0200, Rafael J. Wysocki wrote:
-> > >> >> On Wed, Aug 3, 2016 at 2:28 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> > >> >> > I will update this patch with Bjorn's suggestion to also leave the
-> > >> >> > device in D3cold if it is wakeup-capable. The idea is to just change
-> > >> >> > the default state in the first line of the function like this:
-> > >> >> >
-> > >> >> > -       pci_power_t target_state = PCI_D3hot;
-> > >> >> > +       pci_power_t target_state =
-> > >> >> > +               dev->current_state == PCI_D3cold ? PCI_D3cold : PCI_D3hot;
-> > >> >>
-> > >> >> That should work (even though it is a little clumsy IMO).
-> > >> >
-> > >> > Not sure why that is clumsy but happy to use something else if you
-> > >> > have a suggestion?
-> > >>
-> > >> The clumsy thing is that we'd take the target_state as D3cold only if
-> > >> the device already was in that state.
-> > >>
-> > >> Otherwise, we'd take D3hot as the target state for the same device,
-> > >> which doesn't seem particularly consistent to me.
-> > >>
-> > >> Not that I have better ideas ATM, but then the current code works for
-> > >> my use cases. :-)
-> > >
-> > > The goal is to afford direct-complete to devices which are not power-
-> > > manageable by the platform but can still be runtime suspended to D3cold.
-> > 
-> > Well, this is a bit misleading.
-> > 
-> > According to the PCI spec there are two ways to put a device into
-> > D3cold: either by putting its bus into B3 (which for PCIe means
-> > turning the link off IIRC) which happens when the bridge goes into
-> > D3hot, or through the platform.
-> > 
-> > You aren't talking about any of those cases, though, so we go outside
-> > of the spec here.
+On Sat, Aug 06, 2016 at 02:00:08PM +0200, Oscar wrote:
+> El 2016-08-02 05:30, Peter Chen escribió:
+> >Hi all,
+> >
+> >This is a follow-up for my last power sequence framework patch set
+> >[1].
+> >According to Rob Herring and Ulf Hansson's comments[2], I use a
+> >generic
+> >power sequence library for parsing the power sequence elements on DT,
+> >and implement generic power sequence on library. The host driver
+> >can allocate power sequence instance, and calls pwrseq APIs
+> >accordingly.
+> >
+> >In future, if there are special power sequence requirements, the
+> >special
+> >power sequence library can be created.
+> >
+> >This patch set is tested on i.mx6 sabresx evk using a dts change,
+> >I use
+> >two hot-plug devices to simulate this use case, the related binding
+> >change is updated at patch [1/6], The udoo board changes were tested
+> >using my last power sequence patch set.[3]
+> >
+> >Except for hard-wired MMC and USB devices, I find the USB ULPI PHY
+> >also
+> >need to power on itself before it can be found by ULPI bus.
+> >
+> >[1] http://www.spinics.net/lists/linux-usb/msg142755.html
+> >[2] http://www.spinics.net/lists/linux-usb/msg143106.html
+> >[3] http://www.spinics.net/lists/linux-usb/msg142815.html
+> >
+> >Changes for v4:
+> >- Create the patch on next-20160722
+> >- Fix the of_node is not NULL after chipidea driver is unbinded
+> >[Patch 5/6]
+> >- Using more friendly wait method for reset gpio [Patch 2/6]
+> >- Support multiple input clocks [Patch 2/6]
+> >- Add Rob Herring's ack for DT changes
+> >- Add Joshua Clayton's Tested-by
+> >
+> >Changes for v3:
+> >- Delete "power-sequence" property at binding-doc, and change
+> >related code
+> >  at both library and user code.
+> >- Change binding-doc example node name with Rob's comments
+> >- of_get_named_gpio_flags only gets the gpio, but without setting
+> >gpio flags,
+> >  add additional code request gpio with proper gpio flags
+> >- Add Philipp Zabel's Ack and MAINTAINER's entry
+> >
+> >Changes for v2:
+> >- Delete "pwrseq" prefix and clock-names for properties at dt binding
+> >- Should use structure not but its pointer for kzalloc
+> >- Since chipidea core has no of_node, let core's of_node equals glue
+> >  layer's at core's probe
+> >
+> >Peter Chen (6):
+> >  binding-doc: power: pwrseq-generic: add binding doc for generic
+> >power
+> >    sequence library
+> >  power: add power sequence library
+> >  binding-doc: usb: usb-device: add optional properties for power
+> >    sequence
+> >  usb: core: add power sequence handling for USB devices
+> >  usb: chipidea: let chipidea core device of_node equal's glue layer
+> >    device of_node
+> >  ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+> >
 > 
-> Yes. With Nvidia Optimus / AMD PowerXpress hybrid graphics on non-Macs
-> and Thunderbolt on Macs, it could still be argued that D3cold is
-> facilitated by the platform, albeit with custom methods instead of _PS3.
-
-So you'd need a custom set of callbacks for that "platform", but that's
-only a few devices in the system, so you would also need normal ACPI callbacks
-for the rest.
-
-Conceivably, that could be addressed with per-device platform callbacks,
-but that is conceptually equivalent to adding a pm_domain pointer to the
-devices in question.
-
-> With hybrid graphics on Macs, the discrete GPU is turned off by
-> a gmux controller on the LPC bus which is controlled via I/O ports.
-> So the ACPI platform isn't involved at all and at least then we're
-> in completely nonstandard territory.
+> Hi Peter,
 > 
-> > > Right now we wake those devices up from D3cold to D3hot before going to
-> > > sleep, which is a waste of energy and prolongs the suspend sequence
-> > > (waking up the Thunderbolt controller takes 2 seconds).
-> > 
-> > Understood.
-> > 
-> > > The de facto standard to power manage such devices seems to be with
-> > > dev_pm_domain_set(). That's what vga_switcheroo does and I'll move
-> > > to that as well for v3 of this series.
-> > 
-> > OK
-> > 
-> > > I could add a "bool can_power_off" to struct dev_pm_domain.
-> > 
-> > I'm not sure if dev_pm_domain is the right level.  The "can_power_off"
-> > thing would be sort of specific to your particular use case.
-> > 
-> > Say you have something like
-> > 
-> > struct pci_pm_domain {
-> >         struct dev_pm_domain pd;
-> >         ...
-> > };
-> > 
-> > > Then I could change pci_target_state() like this:
-> > >
-> > >         pci_power_t target_state = PCI_D3hot;
-> > >
-> > >         if (platform_pci_power_manageable(dev)) {
-> > >                 [...]
-> > > +       } else if (dev->dev.pm_domain && dev->dev.pm_domain.can_power_off) {
-> > 
-> > so you can do something like
-> > 
-> >           } else if (dev->dev.pm_domain) {
-> >                     struct pci_pm_domain *pci_pd =
-> > to_pci_pm_domain(dev->dev.pm_domain);
-> > 
-> >                     ....
-> >           } else if [...]
-> > 
-> > and it may be a bit more PCI-oriented without expanding generic data types.
-> > 
-> > > +               target_state = PCI_D3cold;
-> > >         } else if [...]
-> > >
-> > > Another idea would be to add a ->choose_state hook to dev_pm_domain,
-> > > but that would have to return a PCI-specific power state, so we'd be
-> > > in clumsy territory again.
-> > 
-> > Right.
-> > 
-> > > Thoughts?
-> > 
-> > Essentially, the PCI PM code needs to be told that there is a way to
-> > put the device into D3cold by non-standard means.  There are a couple
-> > of ways to do that (a new flag in struct pci_dev, the above, probably
-> > more), but in any case it needs to be clear that this is non-standard
-> > IMO.
+> I tried the last version on my udoo board but I got these compile
+> errors:
 > 
-> The more I think about it, the more I lean towards the one-line change
-> at the top of this e-mail, even though you found it clumsy. It's small
-> and simple and fixes the problem without overengineering things.
+> [21330s] ERROR: "pwrseq_get" [drivers/usb/core/usbcore.ko] undefined!
+> [21330s] ERROR: "pwrseq_free" [drivers/usb/core/usbcore.ko] undefined!
+> [21330s] ERROR: "pwrseq_put" [drivers/usb/core/usbcore.ko] undefined!
+> [21330s] ERROR: "pwrseq_off" [drivers/usb/core/usbcore.ko] undefined!
+> [21330s] ERROR: "pwrseq_on" [drivers/usb/core/usbcore.ko] undefined!
+> 
+> Will you do another version?
+> 
 
-I still would like the default D3cold to only apply if the device has no
-platform support, though.
+Thanks, I forgot to export above symbols, I will fix it at next
+version. Below fix should work for you, I have tested.
 
-> The reasoning is that going from D3cold to D3hot before system sleep
-> just never makes sense, no matter if the device got there by standard
-> or nonstandard means.
+diff --git a/drivers/power/pwrseq/core.c b/drivers/power/pwrseq/core.c
+index 60f1e4e..6861a21 100644
+--- a/drivers/power/pwrseq/core.c
++++ b/drivers/power/pwrseq/core.c
+@@ -29,6 +29,7 @@ int pwrseq_get(struct device_node *np, struct pwrseq *p)
+ 
+ 	return -ENOTSUPP;
+ }
++EXPORT_SYMBOL(pwrseq_get);
+ 
+ int pwrseq_on(struct device_node *np, struct pwrseq *p)
+ {
+@@ -37,24 +38,28 @@ int pwrseq_on(struct device_node *np, struct pwrseq *p)
+ 
+ 	return -ENOTSUPP;
+ }
++EXPORT_SYMBOL(pwrseq_on);
+ 
+ void pwrseq_off(struct pwrseq *p)
+ {
+ 	if (p && p->off)
+ 		p->off(p);
+ }
++EXPORT_SYMBOL(pwrseq_off);
+ 
+ void pwrseq_put(struct pwrseq *p)
+ {
+ 	if (p && p->put)
+ 		p->put(p);
+ }
++EXPORT_SYMBOL(pwrseq_put);
+ 
+ void pwrseq_free(struct pwrseq *p)
+ {
+ 	if (p && p->free)
+ 		p->free(p);
+ }
++EXPORT_SYMBOL(pwrseq_free);
 
-That may not be true in theory.
+-- 
 
-If this is a wakeup device, it may not be able to generate wakeup signals
-from D3cold while the system is in the target system state, although it might
-be able to generate those signals when the system is in S0 (in the ACPI case).
-
-That's why I'd leave the platform support case as is.
-
-> So the default target state should be D3cold if the device is already there,
-> and D3hot otherwise. I could perhaps try to make this clearer by adding a
-> comment.
-
-A comment would certainly be useful.  In particular, about how the device can
-get into D3cold at all if the default is D3cold only when the device is already
-there.
-
-Thanks,
-Rafael
-
+Best Regards,
+Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
