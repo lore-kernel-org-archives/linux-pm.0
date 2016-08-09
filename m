@@ -1,42 +1,62 @@
-From: Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH v5 2/6] power: add power sequence library
-Date: Mon, 8 Aug 2016 17:25:01 -0700
-Message-ID: <20160809002501.GA125064@google.com>
-References: <1470646331-23227-1-git-send-email-peter.chen@nxp.com>
- <1470646331-23227-3-git-send-email-peter.chen@nxp.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH v6 00/11] qcom: Add support for TSENS driver
+Date: Tue, 09 Aug 2016 09:21:05 +0530
+Message-ID: <57A95329.9080804@codeaurora.org>
+References: <1462438309-11196-1-git-send-email-rnayak@codeaurora.org> <575A57F8.6060004@codeaurora.org> <576391B3.7090508@codeaurora.org> <57749F20.4010700@codeaurora.org> <1469694828.2367.102.camel@intel.com> <1469696120.2367.107.camel@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1470646331-23227-3-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1469696120.2367.107.camel@intel.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, edubezval@gmail.com, andy.gross@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, punit.agrawal@arm.com, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org, nrajan@codeaurora.org, lina.iyer@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-El Mon, Aug 08, 2016 at 04:52:07PM +0800 Peter Chen ha dit:
 
-> We have an well-known problem that the device needs to do some power
-> sequence before it can be recognized by related host, the typical
-> example like hard-wired mmc devices and usb devices.
-> 
-> This power sequence is hard to be described at device tree and handled by
-> related host driver, so we have created a common power sequence
-> library to cover this requirement. The core code has supplied
-> some common helpers for host driver, and individual power sequence
-> libraries handle kinds of power sequence for devices.
-> 
-> pwrseq_generic is intended for general purpose of power sequence, which
-> handles gpios and clocks currently, and can cover regulator and pinctrl
-> in future. The host driver calls pwrseq_alloc_generic to create
-> an generic pwrseq instance.
-> 
-> Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-> Tested-by Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+[]..
 
-Reviewed-by: Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Tested-by: Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>>>>
+>>>>>> Current set of patches apply on 4.6-rc6. Fixes for the nvmem
+>>>>>> apis
+>>>>>> are now posted [1] and queued in -next [2]
+>>>>>> Patches [1-6] will need to be merged via thermal
+>>>>>> tree/Eduardo.
+>>>>> Any plans to pull these in for 4.8?
+>>>> These patches have been on the list for quite a while, and they
+>>>> do not have any outstanding dependencies or comments to be
+>>>> addressed. I would really hope to see these in for 4.8.
+>>>> Let me know if there is something you want me to address before
+>>>> you pull them in.
+>>> Would you be able to pull this driver in? I haven't heard back
+>>> anything from Eduardo despite multiple pings.
+>>> These patches (v6) have been on the list for a couple months now,
+>>> which address all issues/concerns that were raised by Eduardo
+>>> in his previous reviews.
+>>>
+>> Sorry for my late response as I took medical leave earlier this month
+>> for a noise surgery and I'm just back to work.
+>>
+>> I synced with Eduardo yesterday, he was also really busy recently,
+>> but
+>> he will go through the pending patches soon.
+>> So, for this patch set, I still prefer to let Eduardo to take it if
+>> he
+>> has time, and I will take them if you still don't get feedback from
+>> Eduardo after the merge window, does this sound okay for you?
+>>
+> Hah, it seems that Eduardo has already took your patches, sorry for the
+> noise. :)
+
+Hey Rui, yes, thanks, I was out the last couple weeks too so could not
+respond.
+
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
