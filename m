@@ -1,51 +1,40 @@
-From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v6 0/8] CPUs capacity information for heterogeneous
- systems
-Date: Tue, 9 Aug 2016 11:08:57 +0100
-Message-ID: <20160809100857.GB23236@e106622-lin>
-References: <1468932048-31635-1-git-send-email-juri.lelli@arm.com>
- <20160808164937.GH6879@twins.programming.kicks-ass.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
+ mapping correctly
+Date: Tue, 9 Aug 2016 13:47:34 +0200
+Message-ID: <CAJZ5v0iBMt6=39Rdm3gN606bB+6Ctv7a_XPaKScMcnFuhucRwA@mail.gmail.com>
+References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <20160808134001.GC29757@nazgul.tnic>
+ <CAJZ5v0hE7ND5y-q+o-M9ck05VFDKWkBYJ-=3C2ZRn_aw5o4y+Q@mail.gmail.com> <20160809070232.GA3767@nazgul.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160808164937.GH6879-ndre7Fmf5hadTX5a5knrm8zTDFooKrT+cvkQGrU6aU0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Zijlstra <peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160809070232.GA3767@nazgul.tnic>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Borislav Petkov <bp@suse.de>, Thomas Garnier <thgarnie@google.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Tue, Aug 9, 2016 at 9:02 AM, Borislav Petkov <bp@suse.de> wrote:
+> On Mon, Aug 08, 2016 at 03:54:48PM +0200, Rafael J. Wysocki wrote:
+>> That should be the only one on top of plain 4.8-rc1.
+>>
+>> If it doesn't help, we need more work to do. :-)
+>
+> Yes, we do.
+>
+> The machine triple-faults *after* reading up the hibernation image.
+> It hits 100%, then tries to switch to the boot kernel and BOOM, BIOS
+> screen.
+>
+> I'm attaching the .config in case you want to reproduce it. The machine
+> is an IVB thinkpad x230.
 
-On 08/08/16 18:49, Peter Zijlstra wrote:
-> On Tue, Jul 19, 2016 at 01:40:40PM +0100, Juri Lelli wrote:
-> > Patches high level description:
-> > 
-> >  o 01/08 introduces documentation for the new optional DT binding
-> >  o [02-06]/08 add cpu-capacity attribute to TC2, Juno and Juno r2 DTs and
-> >    provide parsing of such information at boot time
-> >  o [07-08]/08 introduce sysfs attribute
-> > 
-> 
-> So generally ok with me;
+Yes, I'm going to try to reproduce it.
 
-Thanks for reviewing.
+I'm wondering what the difference between your .config and the Thomas'
+.config is, as he has CONFIG_RANDOMIZE_MEMORY=y set too.
 
-> there does seem to be an unfortunate
-> duplication of code between arm and arm64 but other than that it looks
-> fine.
-> 
+Thomas, can you attach your .config, please?
 
-Yes, I know. I'm failing to see how we can cleanly remove that
-duplication, though (sysfs interface and callback functions being good
-candidates for a common place).
-
-Anyone any ideas?
-
-Best,
-
-- Juri
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
