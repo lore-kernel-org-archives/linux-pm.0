@@ -1,55 +1,90 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
- mapping correctly
-Date: Tue, 9 Aug 2016 23:23:31 +0200
-Message-ID: <CAJZ5v0hWRH0zVjNDH6cjNn8kSSXSW0qc-aQZ8p_5EVS3cajcQA@mail.gmail.com>
-References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <alpine.LRH.2.00.1608091121120.19185@gjva.wvxbf.pm>
- <CAJZ5v0iAiQwpBgY=4hH-RsBB54tD8FY4C8pWbjNNRmAjJ9Xg+Q@mail.gmail.com>
- <alpine.LNX.2.00.1608091457370.22028@cbobk.fhfr.pm> <alpine.LNX.2.00.1608091525540.22028@cbobk.fhfr.pm>
- <CAJcbSZHdTJC8ys-rhi19k+gmxe+U3m_e+i4aRTuuyV18r6ukCA@mail.gmail.com>
- <alpine.LNX.2.00.1608091702240.22028@cbobk.fhfr.pm> <CAJZ5v0hciyV01GMxBV6fQmdXRrZYbkDb9_JUoLPh1+EwG0oRow@mail.gmail.com>
- <alpine.LNX.2.00.1608092119260.22028@cbobk.fhfr.pm>
+From: Joshua Clayton <stillcompiling@gmail.com>
+Subject: Re: [PATCH v5 6/6] ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB
+ property
+Date: Tue, 9 Aug 2016 16:33:35 -0700
+Message-ID: <57AA684F.4020004@gmail.com>
+References: <1470646331-23227-1-git-send-email-peter.chen@nxp.com>
+ <1470646331-23227-7-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:35443 "EHLO
-	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932338AbcHIVXe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Aug 2016 17:23:34 -0400
-In-Reply-To: <alpine.LNX.2.00.1608092119260.22028@cbobk.fhfr.pm>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1470646331-23227-7-git-send-email-peter.chen@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org
+Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mka@chromium.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Kosina <jikos@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Garnier <thgarnie@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Borislav Petkov <bpetkov@suse.de>
 
-On Tue, Aug 9, 2016 at 10:02 PM, Jiri Kosina <jikos@kernel.org> wrote:
-> On Tue, 9 Aug 2016, Rafael J. Wysocki wrote:
+Hi Peter,
+
+On 08/08/2016 01:52 AM, Peter Chen wrote:
+> The current dts describes USB HUB's property at USB controller's
+> entry, it is improper. The USB HUB should be the child node
+> under USB controller, and power sequence properties are under
+> it.
 >
->> I have a murky suspicion, but it is really weird.  Namely, what if
->> restore_jump_address in set_up_temporary_text_mapping() happens to be
->> covered by the restore kernel's identity mapping?  Then, the image
->> kernel's entry point may get overwritten by something else in
->> core_restore_code().
+> Signed-off-by: Peter Chen <peter.chen@nxp.com>
+> ---
+>  arch/arm/boot/dts/imx6qdl-udoo.dtsi | 26 +++++++++++++-------------
+>  1 file changed, 13 insertions(+), 13 deletions(-)
 >
-> So this made me to actually test a scenario where I'd suspend a kernel
-> that's known-broken (i.e. contains 021182e52fe), and then have it resumed
-> by a kernel that has 021182e52fe reverted. It resumed successfully.
->
-> Just a datapoint.
-
-That indicates the problem is somewhere in the restore kernel and no
-surprises there.
-
-I am able to reproduce the original problem (a triple fault on resume
-with CONFIG_RANDOMIZE_MEMORY set) without the $subject patch, but the
-patch fixes it for me.
-
-Question is why it is not sufficient for you and Boris and the above
-theory is about the only one I can come up with ATM.
-
-I'm going to compare the configs etc, but I guess I just end up
-writing a patch to test that theory unless someone has any other idea
-in the meantime.
-
-Thanks,
-Rafael
+> diff --git a/arch/arm/boot/dts/imx6qdl-udoo.dtsi b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+> index 3bee2f9..f29a72c2f 100644
+> --- a/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+> +++ b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+> @@ -9,6 +9,8 @@
+>   *
+>   */
+>  
+> +#include <dt-bindings/gpio/gpio.h>
+> +
+>  / {
+>  	aliases {
+>  		backlight = &backlight;
+> @@ -58,17 +60,6 @@
+>  		#address-cells = <1>;
+>  		#size-cells = <0>;
+>  
+> -		reg_usb_h1_vbus: regulator@0 {
+> -			compatible = "regulator-fixed";
+> -			reg = <0>;
+> -			regulator-name = "usb_h1_vbus";
+> -			regulator-min-microvolt = <5000000>;
+> -			regulator-max-microvolt = <5000000>;
+> -			enable-active-high;
+> -			startup-delay-us = <2>; /* USB2415 requires a POR of 1 us minimum */
+> -			gpio = <&gpio7 12 0>;
+> -		};
+> -
+>  		reg_panel: regulator@1 {
+>  			compatible = "regulator-fixed";
+>  			reg = <1>;
+> @@ -259,9 +250,18 @@
+>  &usbh1 {
+>  	pinctrl-names = "default";
+>  	pinctrl-0 = <&pinctrl_usbh>;
+> -	vbus-supply = <&reg_usb_h1_vbus>;
+> -	clocks = <&clks IMX6QDL_CLK_CKO>;
+>  	status = "okay";
+> +
+> +	#address-cells = <1>;
+> +	#size-cells = <0>;
+Assuming they are needed,
+#address-cells and #size-cells should go in imx6qdl.dtsi,
+rather than in board dts files, shouldn't they?
+> +	usb2415: hub@1 {
+> +		compatible = "usb424,2514";
+> +		reg = <1>;
+Does <reg>  have any effect?
+I couldn't find any reference to it in the patches.
+(so apologies if it is in core code)
+Does it matter? Would it be possible to connect
+more than one hub to the same usb phy?
+> +
+> +		clocks = <&clks IMX6QDL_CLK_CKO>;
+> +		reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
+> +		reset-duration-us = <3000>;
+> +	};
+>  };
+>  
+>  &usdhc3 {
