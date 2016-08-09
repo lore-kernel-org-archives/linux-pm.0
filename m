@@ -1,44 +1,60 @@
 From: Jiri Kosina <jikos@kernel.org>
-Subject: Re: 4.8-rc1: resume from hibernation doesn't work
-Date: Tue, 9 Aug 2016 10:54:15 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1608091051470.22028@cbobk.fhfr.pm>
-References: <alpine.LNX.2.00.1608091038220.22028@cbobk.fhfr.pm>
+Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
+ mapping correctly
+Date: Tue, 9 Aug 2016 11:23:07 +0200 (CEST)
+Message-ID: <alpine.LRH.2.00.1608091121120.19185@gjva.wvxbf.pm>
+References: <2206547.eDj3RJQyE5@vostro.rjw.lan>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:38005 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751454AbcHIIyR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 9 Aug 2016 04:54:17 -0400
-In-Reply-To: <alpine.LNX.2.00.1608091038220.22028@cbobk.fhfr.pm>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <kernel-hardening-return-4289-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <2206547.eDj3RJQyE5@vostro.rjw.lan>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Thomas Garnier <thgarnie@google.com>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Borislav Petkov <bpetkov@suse.de>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Garnier <thgarnie@google.com>
 
-On Tue, 9 Aug 2016, Jiri Kosina wrote:
+On Mon, 8 Aug 2016, Rafael J. Wysocki wrote:
 
-> current Linus' tree (HEAD 65ea11ec6, so basically 4.8-rc1+) has broken 
-> resume from hibernation on my x200s.
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Suspend works correctly, resuming proceeds up to the point where it 
-> reports 100% of reading of the hibernation image, and afterwards the 
-> machine reboots (tripple fault ... dunno, I don't really see any kernel 
-> messages between the report of reading the hibernation image and reboot).
+> The low-level resume-from-hibernation code on x86-64 uses
+> kernel_ident_mapping_init() to create the temoprary identity mapping,
+> but that function assumes that the offset between kernel virtual
+> addresses and physical addresses is aligned on the PGD level.
 > 
-> 4.7-rc4 is fine on this machine, so I thought I'd bisect it, but 
-> unfortunately at some point in the bisection process, the hibernation 
-> itself breaks, so there is not really a way for me to bisect it.
+> However, with a randomized identity mapping base, it may be aligned
+> on the PUD level and if that happens, the temporary identity mapping
+> created by set_up_temporary_mappings() will not reflect the actual
+> kernel identity mapping and the image restoration will fail as a
+> result (leading to a kernel panic most of the time).
 > 
-> Any ideas which patches to try to revert?
+> To fix this problem, rework kernel_ident_mapping_init() to support
+> unaligned offsets between KVA and PA up to the PMD level and make
+> set_up_temporary_mappings() use it as approprtiate.
+> 
+> Reported-by: Thomas Garnier <thgarnie@google.com>
+> Suggested-by: Yinghai Lu <yinghai@kernel.org>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Yinghai Lu <yinghai@kernel.org>
+> ---
+> 
+> This is sort of urgent, because hibernation doesn't work with KASLR on x86-64
+> in 4.8-rc1 AFAICS and this should make them work together again.
+> 
+> Unless anyone sees any problems with it, I'll queue it up for 4.8-rc2.
+> 
+> Thomas, would it be possible to test it with KASLR enabled, please?
 
-Okay, turning off CONFIG_RANDOMIZE_MEMORY makes the problem go away and 
-machine resumes properly (and yes, I am running a kernel that already 
-contains c226fab474).
+Unfortunately this applied on top of -rc1 still doesn't solve the reboot 
+after reading hibernation image (I'd guess due to triple fault) with 
+CONFIG_RANDOMIZE_MEMORY=y on my system.
 
-Adding Thomas Garnier to CC as well.
+With CONFIG_RANDOMIZE_MEMORY=n, the system resumes correctly.
 
 -- 
 Jiri Kosina
 SUSE Labs
-
