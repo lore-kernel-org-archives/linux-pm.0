@@ -1,129 +1,38 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] max17042_battery: fix model download bug.
-Date: Tue, 9 Aug 2016 20:54:29 +0200
-Message-ID: <20160809185429.GB19946@earth>
-References: <CAGngYiVv=+RKDcuwqPxyg5GpU6iCBkuR2v7EFmnDM3Xf+w0b_g@mail.gmail.com>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
+ mapping correctly
+Date: Tue, 9 Aug 2016 22:02:25 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1608092119260.22028@cbobk.fhfr.pm>
+References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <alpine.LRH.2.00.1608091121120.19185@gjva.wvxbf.pm> <CAJZ5v0iAiQwpBgY=4hH-RsBB54tD8FY4C8pWbjNNRmAjJ9Xg+Q@mail.gmail.com> <alpine.LNX.2.00.1608091457370.22028@cbobk.fhfr.pm> <alpine.LNX.2.00.1608091525540.22028@cbobk.fhfr.pm>
+ <CAJcbSZHdTJC8ys-rhi19k+gmxe+U3m_e+i4aRTuuyV18r6ukCA@mail.gmail.com> <alpine.LNX.2.00.1608091702240.22028@cbobk.fhfr.pm> <CAJZ5v0hciyV01GMxBV6fQmdXRrZYbkDb9_JUoLPh1+EwG0oRow@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="7iMSBzlTiPOCCT2k"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:50610 "EHLO mail.kernel.org"
+Received: from mx2.suse.de ([195.135.220.15]:45029 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932207AbcHISyf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 9 Aug 2016 14:54:35 -0400
-Content-Disposition: inline
-In-Reply-To: <CAGngYiVv=+RKDcuwqPxyg5GpU6iCBkuR2v7EFmnDM3Xf+w0b_g@mail.gmail.com>
+	id S1752429AbcHIUC3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Aug 2016 16:02:29 -0400
+In-Reply-To: <CAJZ5v0hciyV01GMxBV6fQmdXRrZYbkDb9_JUoLPh1+EwG0oRow@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sven Van Asbroeck <thesven73@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jonghwa Lee <jonghwa3.lee@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Thomas Garnier <thgarnie@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Borislav Petkov <bpetkov@suse.de>
 
+On Tue, 9 Aug 2016, Rafael J. Wysocki wrote:
 
---7iMSBzlTiPOCCT2k
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> I have a murky suspicion, but it is really weird.  Namely, what if
+> restore_jump_address in set_up_temporary_text_mapping() happens to be
+> covered by the restore kernel's identity mapping?  Then, the image
+> kernel's entry point may get overwritten by something else in
+> core_restore_code().
 
-Hi,
+So this made me to actually test a scenario where I'd suspend a kernel 
+that's known-broken (i.e. contains 021182e52fe), and then have it resumed 
+by a kernel that has 021182e52fe reverted. It resumed successfully.
 
-[adding some people to CC]
+Just a datapoint.
 
-On Wed, Aug 03, 2016 at 10:03:46AM -0400, Sven Van Asbroeck wrote:
-> The device's model download function returns the model data as
-> an array of u32s, which is later compared to the reference
-> model data. However, since the latter is an array of u16s,
-> the comparison does not happen correctly, and model verification
-> fails. This in turn breaks the POR initialization sequence.
+-- 
+Jiri Kosina
+SUSE Labs
 
-Patch looks ok, except for missing Fixes. I guess it should be
-"Fixes: 39e7213edc4f3". I will wait with queuing it for a few
-days giving Samsung people a chance to reply.
-
--- Sebastian
-
->  drivers/power/max17042_battery.c | 15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_ba=
-ttery.c
-> index 9c65f13..da7a75f 100644
-> --- a/drivers/power/max17042_battery.c
-> +++ b/drivers/power/max17042_battery.c
-> @@ -457,13 +457,16 @@ static inline void
-> max17042_write_model_data(struct max17042_chip *chip,
->  }
->=20
->  static inline void max17042_read_model_data(struct max17042_chip *chip,
-> -                    u8 addr, u32 *data, int size)
-> +                    u8 addr, u16 *data, int size)
->  {
->      struct regmap *map =3D chip->regmap;
->      int i;
-> +    u32 tmp;
->=20
-> -    for (i =3D 0; i < size; i++)
-> -        regmap_read(map, addr + i, &data[i]);
-> +    for (i =3D 0; i < size; i++) {
-> +        regmap_read(map, addr + i, &tmp);
-> +        data[i] =3D (u16)tmp;
-> +    }
->  }
->=20
->  static inline int max17042_model_data_compare(struct max17042_chip *chip,
-> @@ -486,7 +489,7 @@ static int max17042_init_model(struct max17042_chip *=
-chip)
->  {
->      int ret;
->      int table_size =3D ARRAY_SIZE(chip->pdata->config_data->cell_char_tb=
-l);
-> -    u32 *temp_data;
-> +    u16 *temp_data;
->=20
->      temp_data =3D kcalloc(table_size, sizeof(*temp_data), GFP_KERNEL);
->      if (!temp_data)
-> @@ -501,7 +504,7 @@ static int max17042_init_model(struct max17042_chip *=
-chip)
->      ret =3D max17042_model_data_compare(
->          chip,
->          chip->pdata->config_data->cell_char_tbl,
-> -        (u16 *)temp_data,
-> +        temp_data,
->          table_size);
->=20
->      max10742_lock_model(chip);
-> @@ -514,7 +517,7 @@ static int max17042_verify_model_lock(struct
-> max17042_chip *chip)
->  {
->      int i;
->      int table_size =3D ARRAY_SIZE(chip->pdata->config_data->cell_char_tb=
-l);
-> -    u32 *temp_data;
-> +    u16 *temp_data;
->      int ret =3D 0;
->=20
->      temp_data =3D kcalloc(table_size, sizeof(*temp_data), GFP_KERNEL);
-> --=20
-> 1.9.1
-
---7iMSBzlTiPOCCT2k
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJXqibjAAoJENju1/PIO/qai88P/2IWdsxeu2OxhWdvUHacPV0H
-ylBh6ByMyHw1hhEz462D3qvVq6pvFlaEWSiLM3VnK8JopqFQ5l/PG9209GECWEvv
-HITP/dQyl1pzNqtc2Rh/JPwytUNcNwRBEtWbTUDp83hbtxvveAw/Y/p4+lp5JXyw
-oDfx7dg9QK7QnxV7CRSb2Fj2YBFgd9JOHo4hEv9t3DL2d3b+DFOBFEhQXI5Lqd4R
-PWH1dVbKo0f3QyRtGuaVotlkCsN4gSupUFzXqiUF2uAuBr364sEuFTjGAePV79w6
-Uihum5tFW1lxhUuEHNn3FogI14gfu3jWsEGli+UFc3hDretwC5ZaqQiuY1MEP/f7
-C0yjOX8CP9xY/xxpTYWPQbYlgs/ay9FpTudWMabKxMPdMM9YLmDLakwPDqCC+H/H
-U79tXXOgZ2yQlVQ6ibk588ppRqhZ2PjRt1YV1R8Ewv1emJ3hzFbLYT1SXcxi4cim
-cm8tFDAGnF7aMEGUFXoIaHaGqoSNPmnxO+7dfbMitsMtdoYpKmh18oHQvP7A9d7C
-4xwIuROxOrSt2XBOwoqJggaVydMO5EIoz1FanXoI9oVfhrRYoeGdnaqKCGr0srwI
-DZ1waa7UF6dlKIVdGTIl48z76R6UQhhXe+yGggFt3GNOoYlE4mIQ/bBX7gnVtMnW
-shGIBR+eIt3AndH4jLW1
-=7/Ap
------END PGP SIGNATURE-----
-
---7iMSBzlTiPOCCT2k--
