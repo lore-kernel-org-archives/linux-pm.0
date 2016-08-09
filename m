@@ -1,120 +1,149 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
- mapping correctly
-Date: Tue, 9 Aug 2016 09:27:41 -0700
-Message-ID: <CAJcbSZExj2bGY5iN-2B8zOAYqhRZA-Gzbmc8NZzJzMsZ7LorLA@mail.gmail.com>
-References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <alpine.LRH.2.00.1608091121120.19185@gjva.wvxbf.pm>
- <CAJZ5v0iAiQwpBgY=4hH-RsBB54tD8FY4C8pWbjNNRmAjJ9Xg+Q@mail.gmail.com>
- <alpine.LNX.2.00.1608091457370.22028@cbobk.fhfr.pm> <alpine.LNX.2.00.1608091525540.22028@cbobk.fhfr.pm>
- <CAJcbSZHdTJC8ys-rhi19k+gmxe+U3m_e+i4aRTuuyV18r6ukCA@mail.gmail.com>
- <alpine.LNX.2.00.1608091702240.22028@cbobk.fhfr.pm> <CAJZ5v0hciyV01GMxBV6fQmdXRrZYbkDb9_JUoLPh1+EwG0oRow@mail.gmail.com>
-Reply-To: kernel-hardening@lists.openwall.com
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection algorithm for Core
+Date: Tue, 9 Aug 2016 10:16:56 -0700
+Message-ID: <000801d1f261$d69fc740$83df55c0$@net>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1572483.RZjvRFdxPx@vostro.rjw.lan> <001b01d1ee1c$e6a6a170$b3f3e450$@net> <10156236.RI1knH5Wfs@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <kernel-hardening-return-4301-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAJZ5v0hciyV01GMxBV6fQmdXRrZYbkDb9_JUoLPh1+EwG0oRow@mail.gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Jiri Kosina <jikos@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Borislav Petkov <bpetkov@suse.de>
+Content-Type: text/plain;
+	charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta19.telus.net ([209.171.16.92]:57673 "EHLO cmta19.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752200AbcHIRRC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 9 Aug 2016 13:17:02 -0400
+In-Reply-To: <10156236.RI1knH5Wfs@vostro.rjw.lan>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Peter Zijlstra' <peterz@infradead.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
 
-On Tue, Aug 9, 2016 at 9:18 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Tue, Aug 9, 2016 at 5:05 PM, Jiri Kosina <jikos@kernel.org> wrote:
->> On Tue, 9 Aug 2016, Thomas Garnier wrote:
+On 2016.08.05 17:02 Rafael J. Wysocki wrote:
+> On 2016.08.03 21:19 Doug Smythies wrote:
+>> On 2016.07.31 16:49 Rafael J. Wysocki wrote:
 >>
->>> >> Okay, I did one-by-one reverts, and the one above, i.e.
->>> >>
->>> >>       commit 021182e52fe01c1f7b126f97fd6ba048dc4234fd
->>> >>       Author: Thomas Garnier <thgarnie@google.com>
->>> >>       Date:   Tue Jun 21 17:47:03 2016 -0700
->>> >>
->>> >>           x86/mm: Enable KASLR for physical mapping memory regions
->>> >>
->>> >> is the one that is the culprit on my machine. With this one reverted,
->>> >> resume hibernation doesn't reboot (tripple fault?), but proceeds
->>> >> succesfully.
->>>
->>> My .config is attached. It is basically defconfig (x86_64) + kvmconfig
->>> plus the following:
->>>
->>> CONFIG_PHYSICAL_START=0x1000000
->>> CONFIG_RELOCATABLE=y
->>> CONFIG_RANDOMIZE_BASE=y
->>> CONFIG_X86_NEED_RELOCS=y
->>> CONFIG_PHYSICAL_ALIGN=0x1000000
->>> CONFIG_RANDOMIZE_MEMORY=y
->>> CONFIG_RANDOMIZE_MEMORY_PHYSICAL_PADDING=0xa
->>> CONFIG_X86_PTDUMP_CORE=y
->>> CONFIG_X86_PTDUMP=y
->>> CONFIG_KALLSYMS=y
->>> CONFIG_KALLSYMS_ALL=y
->>> CONFIG_KALLSYMS_ABSOLUTE_PERCPU=y
->>> CONFIG_KALLSYMS_BASE_RELATIVE=y
->>> CONFIG_PANIC_ON_OOPS=y
->>> CONFIG_KGDB=y
->>> CONFIG_EARLY_PRINTK=y
->>> CONFIG_EARLY_PRINTK_DBGP=y
->>> CONFIG_DEBUG_INFO=y
->>> CONFIG_DEBUG_INFO_DWARF4=y
->>
->> The config I am reproducing the bug with (on thinkpad x200s) can be found
->> at
->>
->>         http://www.jikos.cz/jikos/junk/.config
->>
->> Either later today or tomorrow I could test with the same physical start
->> and align values you're using to see whether that'd make any difference.
->>
->>> > As discussed with Rafael privately, I also tried this very patch
->>> > (x86/power/64: Always create temporary identity mapping correctly) on top
->>> > of the reverted revert of 021182e52fe01c1f7b1 (see the full log below),
->>> > but such kernel triple faults on resume as well.
->>> >
->>> > 87c38d2 x86/power/64: Always create temporary identity mapping correctly
->>> > 3cb504a Revert "Revert "x86/mm: Enable KASLR for physical mapping memory regions""
->>> > 758850d Revert "x86/mm: Enable KASLR for physical mapping memory regions"
->>> > 4a02dfb Revert "x86/mm: Enable KASLR for vmalloc memory regions"
->>> > 037863f Revert "x86/mm: Add memory hotplug support for KASLR memory randomization"
->>> > 3416a21 Revert "x86/mm: Do not reference phys addr beyond kernel"
->>> > 69227be Revert "mm: reorganize SLAB freelist randomization"
->>> > a1d8d71 Revert "mm: SLUB freelist randomization"
->>> >
->>> > IOW, 021182e52f introduces a bug for which there is no existing fix yet.
->>>
->>> You mean it is something different from the previous KASLR bugs we saw?
->>
->> No, I just wanted to explicitly point out that "x86/power/64: Always
->> create temporary identity mapping correctly" is not a fix for this issue.
->
-> It is better to say that the $subject patch is not sufficient to fix
-> it, because I'm quite confident that it is necessary for that. :-)
->
-> Without the $subject patch kernel_ident_mapping_init() makes
-> assumptions that simply are not met in the randomized identity mapping
-> base case.  Moreover, hibernation works for Thomas with $subject patch
-> applied, but it doesn't without it.
->
-> So there is something else that we are missing.
->
-> I have a murky suspicion, but it is really weird.  Namely, what if
-> restore_jump_address in set_up_temporary_text_mapping() happens to be
-> covered by the restore kernel's identity mapping?  Then, the image
-> kernel's entry point may get overwritten by something else in
-> core_restore_code().
->
-> But is this possible even?  Thomas?
+>> 
+>>> +static inline int32_t get_target_pstate_default(struct cpudata *cpu)
+>>> +{
+>>> +	struct sample *sample = &cpu->sample;
+>>> +	int32_t busy_frac;
+>>> +	int pstate;
+>>> +
+>>> +	busy_frac = div_fp(sample->mperf, sample->tsc);
+>>> +	sample->busy_scaled = busy_frac * 100;
+>>> +
+>>> +	if (busy_frac < cpu->iowait_boost)
+>>> +		busy_frac = cpu->iowait_boost;
+>>> +
+>>> +	cpu->iowait_boost >>= 1;
+>>> +
+>>> +	pstate = cpu->pstate.turbo_pstate;
+>>> +	return fp_toint((pstate + (pstate >> 2)) * busy_frac);
+>>> +}
+>>> +
+>> 
+>> The response curve is not normalized on the lower end to the minimum
+>> pstate for the processor, meaning the overall response will vary
+>> between processors as a function of minimum pstate.
 
-I had a similar theory before when I was investigating the original
-crash. How is it avoided even without KASLR?
-
-Given the space for the physical memory mapping, I doubt this issue
-would happen all the time though.
-
+> But that's OK IMO.
 >
-> Anyway, I'll try to reproduce this issue later today.
+> Mapping busy_frac = 0 to the minimum P-state would over-provision workloads
+> with small values of busy_frac.
+
+Agreed, mapping busy_frac = 0 to the minimum Pstate would be a bad thing to do.
+
+However, that is not what I meant. I meant that the mapping of busy-frac = N to
+the minimum pstate for the processor should give the same "N" (within granularity),
+regardless of the processor.
+
+Example, my processor, i7-2600K: max pstate = 38; min pstate = 16.
+Load before going to pstate, 17:  17 = (38 + 38/4) * load
+Load = N = 35.8 %
+
+Example, something like, i5-3337U (I think, I don't actually have one):
+max pstate = 27; min pstate = 8.
+Load before going to pstate, 9: 9 = (27 + 27/4) * load
+Load =  N = 26.7 %
+
+It was a couple of years ago, so I should re-do the sensitivity
+analysis/testing, but I concluded that the performance / energy tradeoff
+was somewhat sensitive to "N".
+ 
+I am suggesting that the response curve, or transfer function,
+needs to be normalized, for any processor, to:
+
+  Max pstate |              __________
+             |             /
+             |            /
+             |           /
+             |          /
+             |         /
+   Min pstate| _______/
+             |__________________________
+              |       |     |          |
+              0%      N     M         100%
+                      CPU load
+
+Currently M ~= 80%
+
+One time (not re-based since kernel 4.3) I did have a proposed solution [1],
+but it was expensive in terms of extra multiplies and divides.
+
+[1]: http://marc.info/?l=linux-pm&m=142881187323474&w=2
+
+>> The clamping at maximum pstate at about 80% load seems at little high
+>> to me. Work I have done in various attempts to bring back the use of actual load
+>> has always ended up achieving maximum pstate before 80% load for best results.
+>> Even the get_target_pstate_cpu_load people reach the max pstate faster, and they
+>> are more about energy than performance.
+>> What was the criteria for the decision here? Are test results available for review
+>> and/or duplication by others?
+
+> This follows the coefficient used by the schedutil governor, but then the
+> metric is different, so quite possibly a different value may work better here.
+> 
+> We'll test other values before applying this for sure. :-)
+
+I am now testing this change to the code (for M ~= 67%; N ~= 30% (my CPU); N ~= 22% (i5-3337U)):
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 8b2bdb7..909d441 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1313,7 +1313,7 @@ static inline int32_t get_target_pstate_default(struct cpudata *cpu)
+        cpu->iowait_boost >>= 1;
+
+        pstate = cpu->pstate.turbo_pstate;
+-       return fp_toint((pstate + (pstate >> 2)) * busy_frac);
++       return fp_toint((pstate + (pstate >> 1)) * busy_frac);
+ }
+
+ static inline void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
+
+> 
+> Several tests were done with this patch set.
+...[cut]...
+
+>> Questions:
+>> Is there a migration plan?
 >
-> Thanks,
-> Rafael
+> Not yet.  We have quite a lot of testing to do first.
+>
+>> i.e. will there be an attempt to merge the current cpu_load method
+>> and this method into one method?
+>
+> Quite possibly if the results are good enough.
+>
+>> Then possibly the PID controller could be eliminated.
+>
+> Right.
+
+I think this change is important, and I'll help with it as best as I can.
+
+... Doug
+
+A related CPU frequency Vs. Load graph will be sent to Rafael and Srinivas off-list.
+
+
