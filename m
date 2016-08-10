@@ -1,104 +1,70 @@
-From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v5 6/6] ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB
- property
-Date: Wed, 10 Aug 2016 11:02:54 +0800
-Message-ID: <20160810030254.GD1879@shlinux2>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v5 5/6] usb: chipidea: let chipidea core device of_node
+ equal's glue layer device of_node
+Date: Wed, 10 Aug 2016 11:11:46 +0800
+Message-ID: <20160810031146.GE1879@shlinux2>
 References: <1470646331-23227-1-git-send-email-peter.chen@nxp.com>
- <1470646331-23227-7-git-send-email-peter.chen@nxp.com>
- <57AA684F.4020004@gmail.com>
+ <1470646331-23227-6-git-send-email-peter.chen@nxp.com>
+ <147078813636.20133.1120685098868481913@sboyd-linaro>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f67.google.com ([209.85.220.67]:36079 "EHLO
+	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932669AbcHJDVI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Aug 2016 23:21:08 -0400
 Content-Disposition: inline
-In-Reply-To: <57AA684F.4020004-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+In-Reply-To: <147078813636.20133.1120685098868481913@sboyd-linaro>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <stephen.boyd@linaro.org>
+Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, Peter Chen <peter.chen@freescale.com>
 
-On Tue, Aug 09, 2016 at 04:33:35PM -0700, Joshua Clayton wrote:
-> Hi Peter,
-> 
-> On 08/08/2016 01:52 AM, Peter Chen wrote:
-> > The current dts describes USB HUB's property at USB controller's
-> > entry, it is improper. The USB HUB should be the child node
-> > under USB controller, and power sequence properties are under
-> > it.
-> >
-> > Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+On Tue, Aug 09, 2016 at 05:15:36PM -0700, Stephen Boyd wrote:
+> Quoting Peter Chen (2016-08-08 01:52:10)
+> > From: Peter Chen <peter.chen@freescale.com>
+> > 
+> > At device tree, we have no device node for chipidea core,
+> > the glue layer's node is the parent node for host and udc
+> > device. But in related driver, the parent device is chipidea
+> > core. So, in order to let the common driver get parent's node,
+> > we let the core's device node equals glue layer device node.
+> > 
+> > Signed-off-by: Peter Chen <peter.chen@freescale.com>
+> > Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+> > Tested-by Joshua Clayton <stillcompiling@gmail.com>
 > > ---
-> >  arch/arm/boot/dts/imx6qdl-udoo.dtsi | 26 +++++++++++++-------------
-> >  1 file changed, 13 insertions(+), 13 deletions(-)
-> >
-> > diff --git a/arch/arm/boot/dts/imx6qdl-udoo.dtsi b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
-> > index 3bee2f9..f29a72c2f 100644
-> > --- a/arch/arm/boot/dts/imx6qdl-udoo.dtsi
-> > +++ b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
-> > @@ -9,6 +9,8 @@
-> >   *
-> >   */
-> >  
-> > +#include <dt-bindings/gpio/gpio.h>
-> > +
-> >  / {
-> >  	aliases {
-> >  		backlight = &backlight;
-> > @@ -58,17 +60,6 @@
-> >  		#address-cells = <1>;
-> >  		#size-cells = <0>;
-> >  
-> > -		reg_usb_h1_vbus: regulator@0 {
-> > -			compatible = "regulator-fixed";
-> > -			reg = <0>;
-> > -			regulator-name = "usb_h1_vbus";
-> > -			regulator-min-microvolt = <5000000>;
-> > -			regulator-max-microvolt = <5000000>;
-> > -			enable-active-high;
-> > -			startup-delay-us = <2>; /* USB2415 requires a POR of 1 us minimum */
-> > -			gpio = <&gpio7 12 0>;
-> > -		};
-> > -
-> >  		reg_panel: regulator@1 {
-> >  			compatible = "regulator-fixed";
-> >  			reg = <1>;
-> > @@ -259,9 +250,18 @@
-> >  &usbh1 {
-> >  	pinctrl-names = "default";
-> >  	pinctrl-0 = <&pinctrl_usbh>;
-> > -	vbus-supply = <&reg_usb_h1_vbus>;
-> > -	clocks = <&clks IMX6QDL_CLK_CKO>;
-> >  	status = "okay";
-> > +
-> > +	#address-cells = <1>;
-> > +	#size-cells = <0>;
-> Assuming they are needed,
-> #address-cells and #size-cells should go in imx6qdl.dtsi,
-> rather than in board dts files, shouldn't they?
+> >  drivers/usb/chipidea/core.c | 11 +++++++++++
+> >  1 file changed, 11 insertions(+)
+> > 
+> > diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
+> > index 69426e6..b189dc7 100644
+> > --- a/drivers/usb/chipidea/core.c
+> > +++ b/drivers/usb/chipidea/core.c
+> > @@ -954,6 +954,15 @@ static int ci_hdrc_probe(struct platform_device *pdev)
+> >                 dev_err(dev, "unable to init phy: %d\n", ret);
+> >                 return ret;
+> >         }
+> > +       /*
+> > +        * At device tree, we have no device node for chipidea core,
+> > +        * the glue layer's node is the parent node for host and udc
+> > +        * device. But in related driver, the parent device is chipidea
+> > +        * core. So, in order to let the common driver get parent's node,
+> > +        * we let the core's device node equals glue layer's node.
+> > +        */
+> > +       if (dev->parent && dev->parent->of_node)
+> > +               dev->of_node = dev->parent->of_node;
+> 
+> Can this be done earlier? Perhaps after hw_device_init() in this probe
+> routine? That would allow me to remove the awkward parent searching in
+> my ULPI DT awareness patch.
 
-Yes, you are right. All imx USB controller has only one port.
+The reason why I locate it there is to avoid "goto label" for error
+path during PHY's get and initialization operation.
 
-
-> > +	usb2415: hub@1 {
-> > +		compatible = "usb424,2514";
-> > +		reg = <1>;
-> Does <reg>  have any effect?
-> I couldn't find any reference to it in the patches.
-> (so apologies if it is in core code)
-> Does it matter?
-
-Please see 69bec7259853 ("USB: core: let USB device know device node")
-for detail.
-
-> Would it be possible to connect
-> more than one hub to the same usb phy?
-
-No possible for current imx, but possible for other SoCs.
+Ok, to simplify your work, I will change it at next version.
 
 -- 
 
 Best Regards,
 Peter Chen
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
