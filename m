@@ -1,648 +1,161 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v5 7/8] PM / devfreq: rockchip: add devfreq driver for
- rk3399 dmc
-Date: Wed, 10 Aug 2016 14:01:17 +0900
-Message-ID: <57AAB51D.5070001@samsung.com>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v5 8/8] drm/rockchip: Add dmc notifier in vop driver
+Date: Wed, 10 Aug 2016 14:07:39 +0900
+Message-ID: <57AAB69B.2000102@samsung.com>
 References: <1470799604-12877-1-git-send-email-hl@rock-chips.com>
- <CGME20160810033621epcas1p1fd40c334d4dfb273b334225126a93dfc@epcas1p1.samsung.com>
- <1470799604-12877-8-git-send-email-hl@rock-chips.com>
+ <CGME20160810033621epcas1p26873372f80ae42734717547aa86c64de@epcas1p2.samsung.com>
+ <1470799604-12877-9-git-send-email-hl@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:59193 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbcHJFB3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Aug 2016 01:01:29 -0400
-In-reply-to: <1470799604-12877-8-git-send-email-hl@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-reply-to: <1470799604-12877-9-git-send-email-hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org
+Cc: tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Lin Huang <hl@rock-chips.com>, heiko@sntech.de
-Cc: myungjoo.ham@samsung.com, mark.yao@rock-chips.com, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, linux-arm-kernel@lists.infradead.org, tixy@linaro.org, typ@rock-chips.com, sudeep.holla@arm.com, mark.rutland@arm.com, linux-pm@vger.kernel.org
 
-Hi Lin,
-
-I add the some comment on below.
-
-If you modify them, feel free to add the my reviewed tag on next version:
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-
-On 2016년 08월 10일 12:26, Lin Huang wrote:
-> base on dfi result, we do ddr frequency scaling, register
-> dmc driver to devfreq framework, and use simple-ondemand
-> policy.
-> 
-> Signed-off-by: Lin Huang <hl@rock-chips.com>
-> ---
-> Changes in v5:
-> - improve dmc driver suggest by Chanwoo Choi
-> 
-> Changes in v4:
-> - use arm_smccc_smc() function talk to bl31
-> - delete rockchip_dmc.c file and config
-> - delete dmc_notify
-> - adjust probe order
-> 
-> Changes in v3:
-> - operate dram setting through sip call
-> - imporve set rate flow
-> 
-> Changes in v2:
-> - None
-> 
-> Changes in v1:
-> - move dfi controller to event
-> - fix set voltage sequence when set rate fail
-> - change Kconfig type from tristate to bool
-> - move unuse EXPORT_SYMBOL_GPL()
-> 
->  drivers/devfreq/Kconfig      |   9 +
->  drivers/devfreq/Makefile     |   1 +
->  drivers/devfreq/rk3399_dmc.c | 512 +++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 522 insertions(+)
->  create mode 100644 drivers/devfreq/rk3399_dmc.c
-> 
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index a5be56e..749499d 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -100,6 +100,15 @@ config ARM_TEGRA_DEVFREQ
->           It reads ACTMON counters of memory controllers and adjusts the
->           operating frequencies and voltages with OPP support.
->  
-> +config ARM_RK3399_DMC_DEVFREQ
-> +	tristate "ARM RK3399 DMC DEVFREQ Driver"
-
-depend on ARCH_ROCKCHIP ?
-
-> +	select PM_OPP
-> +	select DEVFREQ_GOV_SIMPLE_ONDEMAND
-
-This entry needs the following command in Kconfig:
-	select DEVFREQ_EVENT_ROCKCHIP_DFI
-
-> +	help
-> +          This adds the DEVFREQ driver for the RK3399 dmc(Dynamic Memory Controller).
-
-Use a capital letter for and abbreviation.
-
-s/dmc -> DMC
-
-> +          It sets the frequency for the memory controller and reads the usage counts
-> +          from hardware.
-> +
->  source "drivers/devfreq/event/Kconfig"
->  
->  endif # PM_DEVFREQ
-> diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-> index 09f11d9..70d9549 100644
-> --- a/drivers/devfreq/Makefile
-> +++ b/drivers/devfreq/Makefile
-> @@ -9,6 +9,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
->  # DEVFREQ Drivers
->  obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
->  obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
-> +obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
-
-The  entry would be positioned
-The position of CONFIG_ARM_RK3399_DMC_DEVFREQ would be good on
-between EXYNOS_BUS_DEVFREQ and TEGRA_DEVFREQ because of the alphabetical order.
-
->  
->  # DEVFREQ Event Drivers
->  obj-$(CONFIG_PM_DEVFREQ_EVENT)		+= event/
-> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-> new file mode 100644
-> index 0000000..c1157ba
-> --- /dev/null
-> +++ b/drivers/devfreq/rk3399_dmc.c
-> @@ -0,0 +1,512 @@
-> +/*
-> + * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd.
-> + * Author: Lin Huang <hl@rock-chips.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms and conditions of the GNU General Public License,
-> + * version 2, as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + */
-> +
-> +#include <linux/arm-smccc.h>
-> +#include <linux/clk.h>
-> +#include <linux/delay.h>
-> +#include <linux/devfreq.h>
-> +#include <linux/devfreq-event.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_opp.h>
-> +#include <linux/regulator/consumer.h>
-> +#include <linux/rwsem.h>
-> +#include <linux/suspend.h>
-> +
-> +#include <soc/rockchip/rockchip_sip.h>
-> +
-> +struct dram_timing {
-> +	unsigned int ddr3_speed_bin;
-> +	unsigned int pd_idle;
-> +	unsigned int sr_idle;
-> +	unsigned int sr_mc_gate_idle;
-> +	unsigned int srpd_lite_idle;
-> +	unsigned int standby_idle;
-> +	unsigned int dram_dll_dis_freq;
-> +	unsigned int phy_dll_dis_freq;
-> +	unsigned int ddr3_odt_dis_freq;
-> +	unsigned int ddr3_drv;
-> +	unsigned int ddr3_odt;
-> +	unsigned int phy_ddr3_ca_drv;
-> +	unsigned int phy_ddr3_dq_drv;
-> +	unsigned int phy_ddr3_odt;
-> +	unsigned int lpddr3_odt_dis_freq;
-> +	unsigned int lpddr3_drv;
-> +	unsigned int lpddr3_odt;
-> +	unsigned int phy_lpddr3_ca_drv;
-> +	unsigned int phy_lpddr3_dq_drv;
-> +	unsigned int phy_lpddr3_odt;
-> +	unsigned int lpddr4_odt_dis_freq;
-> +	unsigned int lpddr4_drv;
-> +	unsigned int lpddr4_dq_odt;
-> +	unsigned int lpddr4_ca_odt;
-> +	unsigned int phy_lpddr4_ca_drv;
-> +	unsigned int phy_lpddr4_ck_cs_drv;
-> +	unsigned int phy_lpddr4_dq_drv;
-> +	unsigned int phy_lpddr4_odt;
-> +};
-> +
-> +struct rk3399_dmcfreq {
-> +	struct device *dev;
-> +	struct devfreq *devfreq;
-> +	struct devfreq_simple_ondemand_data ondemand_data;
-> +	struct clk *dmc_clk;
-> +	struct devfreq_event_dev *edev;
-> +	struct mutex lock;
-> +	struct dram_timing *timing;
-> +
-> +	/*
-> +	 * DDR Converser of Frequency (DCF) is used to implement DDR frequency
-> +	 * conversion without the participation of CPU, we will implement and
-> +	 * control it in arm trust firmware.
-> +	 */
-> +	wait_queue_head_t	wait_dcf_queue;
-> +	int irq;
-> +	int wait_dcf_flag;
-> +	struct regulator *vdd_center;
-> +	unsigned long rate, target_rate;
-> +	unsigned long volt, target_volt;
-> +	struct dev_pm_opp *curr_opp;
-> +};
-> +
-> +static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
-> +				 u32 flags)
-> +{
-> +	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
-> +	struct dev_pm_opp *opp;
-> +	unsigned long old_clk_rate = dmcfreq->rate;
-> +	unsigned long target_volt, target_rate;
-> +	int err;
-> +
-> +	rcu_read_lock();
-> +	opp = devfreq_recommended_opp(dev, freq, flags);
-> +	if (IS_ERR(opp)) {
-> +		rcu_read_unlock();
-> +		return PTR_ERR(opp);
-> +	}
-> +
-> +	target_rate = dev_pm_opp_get_freq(opp);
-> +	target_volt = dev_pm_opp_get_voltage(opp);
-> +
-> +	dmcfreq->rate = dev_pm_opp_get_freq(dmcfreq->curr_opp);
-> +	dmcfreq->volt = dev_pm_opp_get_voltage(dmcfreq->curr_opp);
-> +
-> +	rcu_read_unlock();
-> +
-> +	if (dmcfreq->rate == target_rate)
-> +		return 0;
-> +
-> +	mutex_lock(&dmcfreq->lock);
-> +
-> +	/*
-> +	 * If frequency scaling from low to high, adjust voltage first.
-> +	 * If frequency scaling from high to low, adjust frequency first.
-> +	 */
-> +	if (old_clk_rate < target_rate) {
-> +		err = regulator_set_voltage(dmcfreq->vdd_center, target_volt,
-> +					    target_volt);
-> +		if (err) {
-> +			dev_err(dev, "Cannot to set voltage %lu uV\n",
-> +				target_volt);
-> +			goto out;
-> +		}
-> +	}
-> +	dmcfreq->wait_dcf_flag = 1;
-> +
-> +	err = clk_set_rate(dmcfreq->dmc_clk, target_rate);
-> +	if (err) {
-> +		dev_err(dev, "Cannot to set frequency %lu (%d)\n",
-> +			target_rate, err);
-> +		regulator_set_voltage(dmcfreq->vdd_center, dmcfreq->volt,
-> +				      dmcfreq->volt);
-> +		goto out;
-> +	}
-> +
-> +	/*
-> +	 * Wait until bcf irq happen, it means freq scaling finish in
-> +	 * arm trust firmware, use 100ms as timeout time.
-> +	 */
-> +	if (!wait_event_timeout(dmcfreq->wait_dcf_queue,
-> +				!dmcfreq->wait_dcf_flag, HZ / 10))
-> +		dev_warn(dev, "Timeout waiting for dcf interrupt\n");
-> +
-> +	/*
-> +	 * Check the dpll rate,
-> +	 * There only two result we will get,
-> +	 * 1. Ddr frequency scaling fail, we still get the old rate.
-> +	 * 2. Ddr frequency scaling sucessful, we get the rate we set.
-> +	 */
-> +	dmcfreq->rate = clk_get_rate(dmcfreq->dmc_clk);
-> +
-> +	/* If get the incorrect rate, set voltage to old value. */
-> +	if (dmcfreq->rate != target_rate) {
-> +		dev_err(dev, "Get wrong ddr frequency, Request frequency %lu,\
-> +			Current frequency %lu\n", target_rate, dmcfreq->rate);
-> +		regulator_set_voltage(dmcfreq->vdd_center, dmcfreq->volt,
-> +				      dmcfreq->volt);
-> +		goto out;
-> +	} else if (old_clk_rate > target_rate)
-> +		err = regulator_set_voltage(dmcfreq->vdd_center, target_volt,
-> +					    target_volt);
-> +	if (err)
-> +		dev_err(dev, "Cannot to set vol %lu uV\n", target_volt);
-> +
-> +	dmcfreq->curr_opp = opp;
-> +out:
-> +	mutex_unlock(&dmcfreq->lock);
-> +	return err;
-> +}
-> +
-> +static int rk3399_dmcfreq_get_dev_status(struct device *dev,
-> +					 struct devfreq_dev_status *stat)
-> +{
-> +	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
-> +	struct devfreq_event_data edata;
-> +	int ret = 0;
-> +
-> +	ret = devfreq_event_get_event(dmcfreq->edev, &edata);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	stat->current_frequency = dmcfreq->rate;
-> +	stat->busy_time = edata.load_count;
-> +	stat->total_time = edata.total_count;
-> +
-> +	return ret;
-> +}
-> +
-> +static int rk3399_dmcfreq_get_cur_freq(struct device *dev, unsigned long *freq)
-> +{
-> +	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
-> +
-> +	*freq = dmcfreq->rate;
-> +
-> +	return 0;
-> +}
-> +
-> +static void rk3399_dmcfreq_exit(struct device *dev)
-> +{
-> +	struct platform_device *pdev = container_of(dev,
-> +						    struct platform_device,
-> +						    dev);
-> +	struct rk3399_dmcfreq *dmcfreq = platform_get_drvdata(pdev);
-> +
-> +	devfreq_unregister_opp_notifier(dev, dmcfreq->devfreq);
-
-As I mentioned on previous patches on v4,
-You'd better to use the devm_devfreq_register_opp_notifier().
-If you use devm_devfreq_register_opp_notifier(), you don't need
-to handle the unregistration operation.
-
-
-> +}
-> +
-> +static struct devfreq_dev_profile rk3399_devfreq_dmc_profile = {
-> +	.polling_ms	= 200,
-> +	.target		= rk3399_dmcfreq_target,
-> +	.get_dev_status	= rk3399_dmcfreq_get_dev_status,
-> +	.get_cur_freq	= rk3399_dmcfreq_get_cur_freq,
-> +	.exit		= rk3399_dmcfreq_exit,
-> +};
-> +
-> +static __maybe_unused int rk3399_dmcfreq_suspend(struct device *dev)
-> +{
-> +	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
-> +	int ret = 0;
-> +
-> +	ret = devfreq_event_disable_edev(dmcfreq->edev);
-> +	if (ret < 0) {
-> +		dev_err(dev, "failed to disable the devfreq-event devices\n");
-> +		return ret;
-> +	}
-> +
-> +	ret = devfreq_suspend_device(dmcfreq->devfreq);
-> +	if (ret < 0) {
-> +		dev_err(dev, "failed to suspend the devfreq devices\n");
-> +		return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static __maybe_unused int rk3399_dmcfreq_resume(struct device *dev)
-> +{
-> +	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
-> +	int ret = 0;
-> +
-> +	ret = devfreq_event_enable_edev(dmcfreq->edev);
-> +	if (ret < 0) {
-> +		dev_err(dev, "failed to enable the devfreq-event devices\n");
-> +		return ret;
-> +	}
-> +
-> +	ret = devfreq_resume_device(dmcfreq->devfreq);
-> +	if (ret < 0) {
-> +		dev_err(dev, "failed to resume the devfreq devices\n");
-> +		return ret;
-> +	}
-> +	return ret;
-> +}
-> +
-> +static SIMPLE_DEV_PM_OPS(rk3399_dmcfreq_pm, rk3399_dmcfreq_suspend,
-> +			 rk3399_dmcfreq_resume);
-> +
-> +static irqreturn_t rk3399_dmc_irq(int irq, void *dev_id)
-> +{
-> +	struct rk3399_dmcfreq *dmcfreq = dev_id;
-> +	struct arm_smccc_res res;
-> +
-> +	dmcfreq->wait_dcf_flag = 0;
-> +	wake_up(&dmcfreq->wait_dcf_queue);
-> +
-> +	/* Clear the DCF interrupt */
-> +	arm_smccc_smc(SIP_DDR_FREQ, 0, 0, CONFIG_DRAM_CLR_IRQ,
-> +		      0, 0, 0, 0, &res);
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +static struct dram_timing *of_get_ddr_timings(struct device *dev,
-> +					      struct device_node *np)
-> +{
-> +	struct dram_timing	*timing = NULL;
-> +	struct device_node	*np_tim;
-> +	int ret;
-> +
-> +	np_tim = of_parse_phandle(np, "ddr_timing", 0);
-> +	if (np_tim) {
-> +		timing = devm_kzalloc(dev, sizeof(*timing), GFP_KERNEL);
-> +		if (!timing)
-> +			goto err;
-> +
-> +		ret = of_property_read_u32(np_tim, "ddr3_speed_bin",
-> +					   &timing->ddr3_speed_bin);
-> +		ret |= of_property_read_u32(np_tim, "pd_idle",
-> +					    &timing->pd_idle);
-> +		ret |= of_property_read_u32(np_tim, "sr_idle",
-> +					    &timing->sr_idle);
-> +		ret |= of_property_read_u32(np_tim, "sr_mc_gate_idle",
-> +					    &timing->sr_mc_gate_idle);
-> +		ret |= of_property_read_u32(np_tim, "srpd_lite_idle",
-> +					    &timing->srpd_lite_idle);
-> +		ret |= of_property_read_u32(np_tim, "standby_idle",
-> +					    &timing->standby_idle);
-> +		ret |= of_property_read_u32(np_tim, "dram_dll_dis_freq",
-> +					    &timing->dram_dll_dis_freq);
-> +		ret |= of_property_read_u32(np_tim, "phy_dll_dis_freq",
-> +					    &timing->phy_dll_dis_freq);
-> +		ret |= of_property_read_u32(np_tim, "ddr3_odt_dis_freq",
-> +					    &timing->ddr3_odt_dis_freq);
-> +		ret |= of_property_read_u32(np_tim, "ddr3_drv",
-> +					    &timing->ddr3_drv);
-> +		ret |= of_property_read_u32(np_tim, "ddr3_odt",
-> +					    &timing->ddr3_odt);
-> +		ret |= of_property_read_u32(np_tim, "phy_ddr3_ca_drv",
-> +					    &timing->phy_ddr3_ca_drv);
-> +		ret |= of_property_read_u32(np_tim, "phy_ddr3_dq_drv",
-> +					    &timing->phy_ddr3_dq_drv);
-> +		ret |= of_property_read_u32(np_tim, "phy_ddr3_odt",
-> +					    &timing->phy_ddr3_odt);
-> +		ret |= of_property_read_u32(np_tim, "lpddr3_odt_dis_freq",
-> +					    &timing->lpddr3_odt_dis_freq);
-> +		ret |= of_property_read_u32(np_tim, "lpddr3_drv",
-> +					    &timing->lpddr3_drv);
-> +		ret |= of_property_read_u32(np_tim, "lpddr3_odt",
-> +					    &timing->lpddr3_odt);
-> +		ret |= of_property_read_u32(np_tim, "phy_lpddr3_ca_drv",
-> +					    &timing->phy_lpddr3_ca_drv);
-> +		ret |= of_property_read_u32(np_tim, "phy_lpddr3_dq_drv",
-> +					    &timing->phy_lpddr3_dq_drv);
-> +		ret |= of_property_read_u32(np_tim, "phy_lpddr3_odt",
-> +					    &timing->phy_lpddr3_odt);
-> +		ret |= of_property_read_u32(np_tim, "lpddr4_odt_dis_freq",
-> +					    &timing->lpddr4_odt_dis_freq);
-> +		ret |= of_property_read_u32(np_tim, "lpddr4_drv",
-> +					    &timing->lpddr4_drv);
-> +		ret |= of_property_read_u32(np_tim, "lpddr4_dq_odt",
-> +					    &timing->lpddr4_dq_odt);
-> +		ret |= of_property_read_u32(np_tim, "lpddr4_ca_odt",
-> +					    &timing->lpddr4_ca_odt);
-> +		ret |= of_property_read_u32(np_tim, "phy_lpddr4_ca_drv",
-> +					    &timing->phy_lpddr4_ca_drv);
-> +		ret |= of_property_read_u32(np_tim, "phy_lpddr4_ck_cs_drv",
-> +					    &timing->phy_lpddr4_ck_cs_drv);
-> +		ret |= of_property_read_u32(np_tim, "phy_lpddr4_dq_drv",
-> +					    &timing->phy_lpddr4_dq_drv);
-> +		ret |= of_property_read_u32(np_tim, "phy_lpddr4_odt",
-> +					    &timing->phy_lpddr4_odt);
-> +		if (ret) {
-> +			devm_kfree(dev, timing);
-> +			goto err;
-> +		}
-> +		of_node_put(np_tim);
-> +		return timing;
-> +	}
-> +
-> +err:
-> +	if (timing) {
-> +		devm_kfree(dev, timing);
-> +		timing = NULL;
-> +	}
-> +	of_node_put(np_tim);
-> +	return timing;
-> +}
-> +
-> +static int rk3399_dmcfreq_probe(struct platform_device *pdev)
-> +{
-> +	struct arm_smccc_res res;
-> +	struct device *dev = &pdev->dev;
-> +	struct device_node *np = pdev->dev.of_node;
-> +	uint64_t param = 0;
-> +	struct rk3399_dmcfreq *data;
-> +	int ret, irq, index, size;
-> +	uint32_t *timing;
-> +	struct dev_pm_opp *opp;
-> +
-> +	irq = platform_get_irq(pdev, 0);
-> +	if (irq < 0) {
-> +		dev_err(&pdev->dev, "Cannot get the dmc interrupt resource\n");
-> +		return -EINVAL;
-> +	}
-> +	data = devm_kzalloc(dev, sizeof(struct rk3399_dmcfreq), GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	mutex_init(&data->lock);
-> +
-> +	data->vdd_center = devm_regulator_get(dev, "center");
-> +	if (IS_ERR(data->vdd_center)) {
-> +		dev_err(dev, "Cannot get the regulator \"center\"\n");
-> +		return PTR_ERR(data->vdd_center);
-> +	}
-> +
-> +	data->dmc_clk = devm_clk_get(dev, "dmc_clk");
-> +	if (IS_ERR(data->dmc_clk)) {
-> +		dev_err(dev, "Cannot get the clk dmc_clk\n");
-> +		return PTR_ERR(data->dmc_clk);
-> +	};
-> +
-> +	data->irq = irq;
-> +	ret = devm_request_irq(dev, irq, rk3399_dmc_irq, 0,
-> +			       dev_name(dev), data);
-> +	if (ret) {
-> +		dev_err(dev, "Failed to request dmc irq: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	/*
-> +	 * Get dram timing and pass it to arm trust firmware,
-> +	 * the dram drvier in arm trust firmware will get these
-> +	 * timing and to do dram initial.
-> +	 */
-> +	data->timing = of_get_ddr_timings(dev, np);
-> +	if (data->timing) {
-> +		timing = (uint32_t *)data->timing;
-> +		size = sizeof(struct dram_timing) / 4;
-> +		for (index = 0; index < size; index++) {
-> +			param = index;
-> +			param = param << 32 | *timing++;
-> +			arm_smccc_smc(SIP_DDR_FREQ, param, 0,
-> +				      CONFIG_DRAM_SET_PARAM, 0, 0, 0, 0, &res);
-> +			if (res.a0) {
-> +				dev_err(dev, "Failed to set dram param: %ld\n",
-> +					res.a0);
-> +				return -EINVAL;
-> +			}
-> +			param = 0;
-> +		}
-> +	}
-> +
-> +	arm_smccc_smc(SIP_DDR_FREQ, 0, 0, CONFIG_DRAM_INIT,
-> +		      0, 0, 0, 0, &res);
-> +
-> +	init_waitqueue_head(&data->wait_dcf_queue);
-> +	data->wait_dcf_flag = 0;
-> +
-> +	data->edev = devfreq_event_get_edev_by_phandle(dev, 0);
-> +	if (IS_ERR(data->edev))
-> +		return -EPROBE_DEFER;
-> +
-> +	ret = devfreq_event_enable_edev(data->edev);
-> +	if (ret < 0) {
-> +		dev_err(dev, "failed to enable devfreq-event devices\n");
-> +		return ret;
-> +	}
-> +
-> +	/*
-> +	 * We add a devfreq driver to our parent since it has a device tree node
-> +	 * with operating points.
-> +	 */
-> +	if (dev_pm_opp_of_add_table(dev)) {
-> +		dev_err(dev, "Invalid operating-points in device tree.\n");
-> +		rcu_read_unlock();
-> +		return -EINVAL;
-> +	}
-> +
-> +	of_property_read_u32(np, "upthreshold",
-> +			     &data->ondemand_data.upthreshold);
-> +	of_property_read_u32(np, "downdifferential",
-> +			     &data->ondemand_data.downdifferential);
-> +
-> +	data->rate = clk_get_rate(data->dmc_clk);
-> +
-> +	rcu_read_lock();
-> +	opp = devfreq_recommended_opp(dev, &data->rate, 0);
-> +	if (IS_ERR(opp)) {
-> +		rcu_read_unlock();
-> +		return PTR_ERR(opp);
-> +	}
-> +	rcu_read_unlock();
-> +	data->curr_opp = opp;
-> +
-> +	rk3399_devfreq_dmc_profile.initial_freq = data->rate;
-> +
-> +	data->devfreq = devfreq_add_device(dev,
-> +					   &rk3399_devfreq_dmc_profile,
-> +					   "simple_ondemand",
-> +					   &data->ondemand_data);
-> +	if (IS_ERR(data->devfreq))
-> +		return PTR_ERR(data->devfreq);
-> +	devfreq_register_opp_notifier(dev, data->devfreq);
-
-ditto. devm_devfreq_register_opp_notifier()
-
-> +
-> +	data->dev = dev;
-> +	platform_set_drvdata(pdev, data);
-> +
-> +	return 0;
-> +}
-> +
-> +static int rk3399_dmcfreq_remove(struct platform_device *pdev)
-> +{
-> +	struct rk3399_dmcfreq *dmcfreq = platform_get_drvdata(pdev);
-> +
-> +	devfreq_remove_device(dmcfreq->devfreq);
-
-I think that you don't need to call this function. 
-
-> +	regulator_put(dmcfreq->vdd_center);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id rk3399dmc_devfreq_of_match[] = {
-> +	{ .compatible = "rockchip,rk3399-dmc" },
-> +	{ },
-> +};
-> +
-> +static struct platform_driver rk3399_dmcfreq_driver = {
-> +	.probe	= rk3399_dmcfreq_probe,
-> +	.remove	= rk3399_dmcfreq_remove,
-> +	.driver = {
-> +		.name	= "rk3399-dmc-freq",
-> +		.pm	= &rk3399_dmcfreq_pm,
-> +		.of_match_table = rk3399dmc_devfreq_of_match,
-> +	},
-> +};
-> +module_platform_driver(rk3399_dmcfreq_driver);
-> +
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_AUTHOR("Lin Huang <hl@rock-chips.com>");
-> +MODULE_DESCRIPTION("RK3399 dmcfreq driver with devfreq framework");
-> 
-
-Regards,
-Chanwoo Choi
+SGkgTGluLAoKTG9va3MgZ29vZCB0byBtZSBhYm91dCB0aGUgZGV2ZnJlcS9kZXZmcmVxLWV2ZW50
+IHVzYWdlLgoKW1VzYWdlIG9mIHRoZSBkZXZmcmVxL2RldmZyZXEtZXZlbnQgQVBJc10KUmV2aWV3
+ZWQtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcuY29tPgoKUmVnYXJkcywKQ2hh
+bndvbyBDaG9pCgpPbiAyMDE264WEIDA47JuUIDEw7J28IDEyOjI2LCBMaW4gSHVhbmcgd3JvdGU6
+Cj4gd2hlbiBpbiBkZHIgZnJlcXVlbmN5IHNjYWxpbmcgcHJvY2Vzcywgdm9wIGNhbiBub3QgZG8K
+PiBlbmFibGUgb3IgZGlzYWJsZSBvcGVyYXRpb24sIHNpbmNlIGRjZiB3aWxsIGJhc2Ugb24gdm9w
+IHZibGFuawo+IHRpbWUgdG8gZG8gZnJlcXVlbmN5IHNjYWxpbmcgYW5kIG5lZWQgdG8gZ2V0IHZv
+cCBpcnEgaWYgdGhlcmUKPiBoYXZlIHZvcCBlbmFibGVkLiBTbyBuZWVkIHJlZ2lzdGVyIHRvIGRl
+dmZyZXEgbm90aWZpZXIsIGFuZCB3ZSBjYW4KPiBnZXQgdGhlIGRtYyBzdGF0dXMuIEFsc28sIHdo
+ZW4gdGhlcmUgaGF2ZSB0d28gdm9wIGVuYWJsZWQsIHdlIG5lZWQKPiB0byBkaXNhYmxlIGRtYywg
+c2luY2UgZGNmIG9ubHkgYmFzZSBvbiBvbmUgdm9wIHZibGFuayB0aW1lLCBzbyB0aGUKPiBvdGhl
+ciBwYW5lbCB3aWxsIGZsaWNrZXIgd2hlbiBkbyBkZHIgZnJlcXVlbmN5IHNjYWxpbmcuCj4gCj4g
+U2lnbmVkLW9mZi1ieTogTGluIEh1YW5nIDxobEByb2NrLWNoaXBzLmNvbT4KPiAtLS0KPiBDaGFu
+Z2VzIGluIHY1Ogo+IC0gaW1wcm92ZSBzb21lIG5pdHMKPiAKPiBDaGFuZ2VzIGluIHY0Ogo+IC0g
+cmVnaXN0ZXIgbm90aWZpZXIgdG8gZGV2ZnJlcV9yZWdpc3Rlcl9ub3RpZmllcgo+IC0gdXNlIERF
+VkZSRVFfUFJFQ0hBTkdFIGFuZCBERVZGUkVRX1BPU1RDSEFOR0UgdG8gZ2V0IGRtYyBzdGF0dXMK
+PiAtIHdoZW4gdHdvIHZvcCBlbmFibGUsIGRpc2FibGUgZG1jCj4gLSB3aGVuIHR3byB2b3AgYmFj
+ayB0byBvbmUgdm9wLCBlbmFibGUgZG1jCj4gCj4gQ2hhbmdlcyBpbiB2MzoKPiAtIHdoZW4gZG8g
+dm9wIGVhbmJsZS9kaXNhYmxlLCBkbWMgd2lsbCB3YWl0IHVudGlsIGl0IGZpbmlzaAo+IAo+IENo
+YW5nZXMgaW4gdjI6Cj4gLSBOb25lCj4gCj4gQ2hhbmdlcyBpbiB2MToKPiAtIHVzZSB3YWl0X2V2
+ZW50IGluc3RlYWQgdXNsZWVwCj4gCj4gIGRyaXZlcnMvZ3B1L2RybS9yb2NrY2hpcC9yb2NrY2hp
+cF9kcm1fdm9wLmMgfCAxMjggKysrKysrKysrKysrKysrKysrKysrKysrKysrLQo+ICAxIGZpbGUg
+Y2hhbmdlZCwgMTI1IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCj4gCj4gZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvZ3B1L2RybS9yb2NrY2hpcC9yb2NrY2hpcF9kcm1fdm9wLmMgYi9kcml2ZXJz
+L2dwdS9kcm0vcm9ja2NoaXAvcm9ja2NoaXBfZHJtX3ZvcC5jCj4gaW5kZXggMzE3NDRmZS4uN2Nl
+Mzg5MCAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vcm9ja2NoaXAvcm9ja2NoaXBfZHJt
+X3ZvcC5jCj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL3JvY2tjaGlwL3JvY2tjaGlwX2RybV92b3Au
+Ywo+IEBAIC0xMiw2ICsxMiw4IEBACj4gICAqIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGZv
+ciBtb3JlIGRldGFpbHMuCj4gICAqLwo+ICAKPiArI2luY2x1ZGUgPGxpbnV4L2RldmZyZXEuaD4K
+PiArI2luY2x1ZGUgPGxpbnV4L2RldmZyZXEtZXZlbnQuaD4KPiAgI2luY2x1ZGUgPGRybS9kcm0u
+aD4KPiAgI2luY2x1ZGUgPGRybS9kcm1QLmg+Cj4gICNpbmNsdWRlIDxkcm0vZHJtX2F0b21pYy5o
+Pgo+IEBAIC0xMTgsNiArMTIwLDEzIEBAIHN0cnVjdCB2b3Agewo+ICAKPiAgCWNvbnN0IHN0cnVj
+dCB2b3BfZGF0YSAqZGF0YTsKPiAgCj4gKwlzdHJ1Y3QgZGV2ZnJlcSAqZGV2ZnJlcTsKPiArCXN0
+cnVjdCBkZXZmcmVxX2V2ZW50X2RldiAqZGV2ZnJlcV9ldmVudF9kZXY7Cj4gKwlzdHJ1Y3Qgbm90
+aWZpZXJfYmxvY2sgZG1jX25iOwo+ICsJaW50IGRtY19pbl9wcm9jZXNzOwo+ICsJaW50IHZvcF9z
+d2l0Y2hfc3RhdHVzOwo+ICsJd2FpdF9xdWV1ZV9oZWFkX3Qgd2FpdF9kbWNfcXVldWU7Cj4gKwl3
+YWl0X3F1ZXVlX2hlYWRfdCB3YWl0X3ZvcF9zd2l0Y2hfcXVldWU7Cj4gIAl1aW50MzJfdCAqcmVn
+c2JhazsKPiAgCXZvaWQgX19pb21lbSAqcmVnczsKPiAgCj4gQEAgLTQyOCwyMSArNDM3LDU5IEBA
+IHN0YXRpYyB2b2lkIHZvcF9kc3BfaG9sZF92YWxpZF9pcnFfZGlzYWJsZShzdHJ1Y3Qgdm9wICp2
+b3ApCj4gIAlzcGluX3VubG9ja19pcnFyZXN0b3JlKCZ2b3AtPmlycV9sb2NrLCBmbGFncyk7Cj4g
+IH0KPiAgCj4gK3N0YXRpYyBpbnQgZG1jX25vdGlmeShzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgKm5i
+LCB1bnNpZ25lZCBsb25nIGV2ZW50LAo+ICsJCSAgICAgIHZvaWQgKmRhdGEpCj4gK3sKPiArCXN0
+cnVjdCB2b3AgKnZvcCA9IGNvbnRhaW5lcl9vZihuYiwgc3RydWN0IHZvcCwgZG1jX25iKTsKPiAr
+Cj4gKwlpZiAoZXZlbnQgPT0gREVWRlJFUV9QUkVDSEFOR0UpIHsKPiArCQkvKgo+ICsJCSAqIGNo
+ZWNrIGlmIHZvcCBpbiBlbmFibGUgb3IgZGlzYWJsZSBwcm9jZXNzLAo+ICsJCSAqIGlmIHllcywg
+d2FpdCB1bnRpbCBpdCBmaW5pc2hlcywgdXNlIDIwMG1zIGFzCj4gKwkJICogdGltZW91dC4KPiAr
+CQkgKi8KPiArCQlpZiAoIXdhaXRfZXZlbnRfdGltZW91dCh2b3AtPndhaXRfdm9wX3N3aXRjaF9x
+dWV1ZSwKPiArCQkJCQkhdm9wLT52b3Bfc3dpdGNoX3N0YXR1cywgSFogLyA1KSkKPiArCQkJZGV2
+X3dhcm4odm9wLT5kZXYsCj4gKwkJCQkgIlRpbWVvdXQgd2FpdGluZyBmb3Igdm9wIHN3dGljaCBz
+dGF0dXNcbiIpOwo+ICsJCXZvcC0+ZG1jX2luX3Byb2Nlc3MgPSAxOwo+ICsJfSBlbHNlIGlmIChl
+dmVudCA9PSBERVZGUkVRX1BPU1RDSEFOR0UpIHsKPiArCQl2b3AtPmRtY19pbl9wcm9jZXNzID0g
+MDsKPiArCQl3YWtlX3VwKCZ2b3AtPndhaXRfZG1jX3F1ZXVlKTsKPiArCX0KPiArCj4gKwlyZXR1
+cm4gTk9USUZZX09LOwo+ICt9Cj4gKwo+ICBzdGF0aWMgdm9pZCB2b3BfZW5hYmxlKHN0cnVjdCBk
+cm1fY3J0YyAqY3J0YykKPiAgewo+ICAJc3RydWN0IHZvcCAqdm9wID0gdG9fdm9wKGNydGMpOwo+
+ICsJaW50IG51bV9lbmFibGVkX2NydGMgPSAwOwo+ICAJaW50IHJldDsKPiAgCj4gKwlpZiAodm9w
+LT5pc19lbmFibGVkKQo+ICsJCXJldHVybjsKPiArCj4gKwkvKgo+ICsJICogaWYgaW4gZG1jIHNj
+YWxpbmcgZnJlcXVlbmN5IHByb2Nlc3MsIHdhaXQgdW50aWwgaXQgZmluaXNoZXMKPiArCSAqIHVz
+ZSAxMDBtcyBhcyB0aW1lb3V0IHRpbWUuCj4gKwkgKi8KPiArCWlmICghd2FpdF9ldmVudF90aW1l
+b3V0KHZvcC0+d2FpdF9kbWNfcXVldWUsCj4gKwkJCQkhdm9wLT5kbWNfaW5fcHJvY2VzcywgSFog
+LyA1KSkKPiArCQlkZXZfd2Fybih2b3AtPmRldiwKPiArCQkJICJUaW1lb3V0IHdhaXRpbmcgZm9y
+IGRtYyB3aGVuIHZvcCBlbmFibGVcbiIpOwo+ICsKPiArCXZvcC0+dm9wX3N3aXRjaF9zdGF0dXMg
+PSAxOwo+ICAJcmV0ID0gcG1fcnVudGltZV9nZXRfc3luYyh2b3AtPmRldik7Cj4gIAlpZiAocmV0
+IDwgMCkgewo+ICAJCWRldl9lcnIodm9wLT5kZXYsICJmYWlsZWQgdG8gZ2V0IHBtIHJ1bnRpbWU6
+ICVkXG4iLCByZXQpOwo+IC0JCXJldHVybjsKPiArCQlnb3RvIGVycjsKPiAgCX0KPiAgCj4gIAly
+ZXQgPSBjbGtfZW5hYmxlKHZvcC0+aGNsayk7Cj4gIAlpZiAocmV0IDwgMCkgewo+ICAJCWRldl9l
+cnIodm9wLT5kZXYsICJmYWlsZWQgdG8gZW5hYmxlIGhjbGsgLSAlZFxuIiwgcmV0KTsKPiAtCQly
+ZXR1cm47Cj4gKwkJZ290byBlcnI7Cj4gIAl9Cj4gIAo+ICAJcmV0ID0gY2xrX2VuYWJsZSh2b3At
+PmRjbGspOwo+IEBAIC00NTYsNyArNTAzLDYgQEAgc3RhdGljIHZvaWQgdm9wX2VuYWJsZShzdHJ1
+Y3QgZHJtX2NydGMgKmNydGMpCj4gIAkJZGV2X2Vycih2b3AtPmRldiwgImZhaWxlZCB0byBlbmFi
+bGUgYWNsayAtICVkXG4iLCByZXQpOwo+ICAJCWdvdG8gZXJyX2Rpc2FibGVfZGNsazsKPiAgCX0K
+PiAtCj4gIAkvKgo+ICAJICogU2xhdmUgaW9tbXUgc2hhcmVzIHBvd2VyLCBpcnEgYW5kIGNsb2Nr
+IHdpdGggdm9wLiAgSXQgd2FzIGFzc29jaWF0ZWQKPiAgCSAqIGF1dG9tYXRpY2FsbHkgd2l0aCB0
+aGlzIG1hc3RlciBkZXZpY2UgdmlhIGNvbW1vbiBkcml2ZXIgY29kZS4KPiBAQCAtNDg1LDYgKzUz
+MSwyMSBAQCBzdGF0aWMgdm9pZCB2b3BfZW5hYmxlKHN0cnVjdCBkcm1fY3J0YyAqY3J0YykKPiAg
+Cj4gIAlkcm1fY3J0Y192Ymxhbmtfb24oY3J0Yyk7Cj4gIAo+ICsJdm9wLT52b3Bfc3dpdGNoX3N0
+YXR1cyA9IDA7Cj4gKwl3YWtlX3VwKCZ2b3AtPndhaXRfdm9wX3N3aXRjaF9xdWV1ZSk7Cj4gKwo+
+ICsJLyogY2hlY2sgaG93IG1hbnkgdm9wIHdlIHVzZSBub3cgKi8KPiArCWRybV9mb3JfZWFjaF9j
+cnRjKGNydGMsIHZvcC0+ZHJtX2Rldikgewo+ICsJCWlmIChjcnRjLT5zdGF0ZS0+ZW5hYmxlKQo+
+ICsJCQludW1fZW5hYmxlZF9jcnRjKys7Cj4gKwl9Cj4gKwo+ICsJLyogaWYgZW5hYmxlIHR3byB2
+b3AsIG5lZWQgdG8gZGlzYWJsZSBkbWMgKi8KPiArCWlmICgobnVtX2VuYWJsZWRfY3J0YyA+IDEp
+ICYmIHZvcC0+ZGV2ZnJlcSkgewo+ICsJCWlmICh2b3AtPmRldmZyZXFfZXZlbnRfZGV2KQo+ICsJ
+CQlkZXZmcmVxX2V2ZW50X2Rpc2FibGVfZWRldih2b3AtPmRldmZyZXFfZXZlbnRfZGV2KTsKPiAr
+CQlkZXZmcmVxX3N1c3BlbmRfZGV2aWNlKHZvcC0+ZGV2ZnJlcSk7Cj4gKwl9Cj4gIAlyZXR1cm47
+Cj4gIAo+ICBlcnJfZGlzYWJsZV9hY2xrOgo+IEBAIC00OTMsMTYgKzU1NCwzMiBAQCBlcnJfZGlz
+YWJsZV9kY2xrOgo+ICAJY2xrX2Rpc2FibGUodm9wLT5kY2xrKTsKPiAgZXJyX2Rpc2FibGVfaGNs
+azoKPiAgCWNsa19kaXNhYmxlKHZvcC0+aGNsayk7Cj4gK2VycjoKPiArCXZvcC0+dm9wX3N3aXRj
+aF9zdGF0dXMgPSAwOwo+ICsJd2FrZV91cCgmdm9wLT53YWl0X3ZvcF9zd2l0Y2hfcXVldWUpOwo+
+ICsJcmV0dXJuOwo+ICB9Cj4gIAo+ICBzdGF0aWMgdm9pZCB2b3BfY3J0Y19kaXNhYmxlKHN0cnVj
+dCBkcm1fY3J0YyAqY3J0YykKPiAgewo+ICAJc3RydWN0IHZvcCAqdm9wID0gdG9fdm9wKGNydGMp
+Owo+ICsJaW50IG51bV9lbmFibGVkX2NydGMgPSAwOwo+ICAJaW50IGk7Cj4gIAo+ICAJV0FSTl9P
+Tih2b3AtPmV2ZW50KTsKPiAgCj4gIAkvKgo+ICsJICogaWYgaW4gZG1jIHNjYWxpbmcgZnJlcXVl
+bmN5IHByb2Nlc3MsIHdhaXQgdW50aWwgaXQgZmluaXNoCj4gKwkgKiB1c2UgMTAwbXMgYXMgdGlt
+ZW91dCB0aW1lLgo+ICsJICovCj4gKwlpZiAoIXdhaXRfZXZlbnRfdGltZW91dCh2b3AtPndhaXRf
+ZG1jX3F1ZXVlLAo+ICsJCQkJIXZvcC0+ZG1jX2luX3Byb2Nlc3MsIEhaIC8gNSkpCj4gKwkJZGV2
+X3dhcm4odm9wLT5kZXYsCj4gKwkJCSAiVGltZW91dCB3YWl0aW5nIGZvciBkbWMgd2hlbiB2b3Ag
+ZGlzYWJsZVxuIik7Cj4gKwo+ICsJdm9wLT52b3Bfc3dpdGNoX3N0YXR1cyA9IDE7Cj4gKwo+ICsJ
+LyoKPiAgCSAqIFdlIG5lZWQgdG8gbWFrZSBzdXJlIHRoYXQgYWxsIHdpbmRvd3MgYXJlIGRpc2Fi
+bGVkIGJlZm9yZSB3ZQo+ICAJICogZGlzYWJsZSB0aGF0IGNydGMuIE90aGVyd2lzZSB3ZSBtaWdo
+dCB0cnkgdG8gc2NhbiBmcm9tIGEgZGVzdHJveWVkCj4gIAkgKiBidWZmZXIgbGF0ZXIuCj4gQEAg
+LTU1OSw2ICs2MzYsMjUgQEAgc3RhdGljIHZvaWQgdm9wX2NydGNfZGlzYWJsZShzdHJ1Y3QgZHJt
+X2NydGMgKmNydGMpCj4gIAo+ICAJCWNydGMtPnN0YXRlLT5ldmVudCA9IE5VTEw7Cj4gIAl9Cj4g
+Kwo+ICsJdm9wLT52b3Bfc3dpdGNoX3N0YXR1cyA9IDA7Cj4gKwl3YWtlX3VwKCZ2b3AtPndhaXRf
+dm9wX3N3aXRjaF9xdWV1ZSk7Cj4gKwo+ICsJLyogY2hlY2sgaG93IG1hbnkgdm9wIHVzZSBub3cg
+Ki8KPiArCWRybV9mb3JfZWFjaF9jcnRjKGNydGMsIHZvcC0+ZHJtX2Rldikgewo+ICsJCWlmIChj
+cnRjLT5zdGF0ZS0+ZW5hYmxlKQo+ICsJCQludW1fZW5hYmxlZF9jcnRjKys7Cj4gKwl9Cj4gKwo+
+ICsJLyoKPiArCSAqIGlmIG51bV9lbmFibGVkX2NydGMgPSAxIG5vdywgaXQgbWVhbnMgMiB2b3Ag
+ZW5hYmxlZAo+ICsJICogY2hhbmdlIHRvIDEgdm9wIGVuYWJsZWQgIG5lZWQgdG8gZW5hYmxlIGRt
+YyBhZ2Fpbi4KPiArCSAqLwo+ICsJaWYgKChudW1fZW5hYmxlZF9jcnRjID09IDEpICYmIHZvcC0+
+ZGV2ZnJlcSkgewo+ICsJCWlmICh2b3AtPmRldmZyZXFfZXZlbnRfZGV2KQo+ICsJCQlkZXZmcmVx
+X2V2ZW50X2VuYWJsZV9lZGV2KHZvcC0+ZGV2ZnJlcV9ldmVudF9kZXYpOwo+ICsJCWRldmZyZXFf
+cmVzdW1lX2RldmljZSh2b3AtPmRldmZyZXEpOwo+ICsJfQo+ICB9Cj4gIAo+ICBzdGF0aWMgdm9p
+ZCB2b3BfcGxhbmVfZGVzdHJveShzdHJ1Y3QgZHJtX3BsYW5lICpwbGFuZSkKPiBAQCAtMTQwNiw2
+ICsxNTAyLDggQEAgc3RhdGljIGludCB2b3BfYmluZChzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0cnVj
+dCBkZXZpY2UgKm1hc3Rlciwgdm9pZCAqZGF0YSkKPiAgCXN0cnVjdCBkcm1fZGV2aWNlICpkcm1f
+ZGV2ID0gZGF0YTsKPiAgCXN0cnVjdCB2b3AgKnZvcDsKPiAgCXN0cnVjdCByZXNvdXJjZSAqcmVz
+Owo+ICsJc3RydWN0IGRldmZyZXEgKmRldmZyZXE7Cj4gKwlzdHJ1Y3QgZGV2ZnJlcV9ldmVudF9k
+ZXYgKmV2ZW50X2RldjsKPiAgCXNpemVfdCBhbGxvY19zaXplOwo+ICAJaW50IHJldCwgaXJxOwo+
+ICAKPiBAQCAtMTQ2Nyw2ICsxNTY1LDMwIEBAIHN0YXRpYyBpbnQgdm9wX2JpbmQoc3RydWN0IGRl
+dmljZSAqZGV2LCBzdHJ1Y3QgZGV2aWNlICptYXN0ZXIsIHZvaWQgKmRhdGEpCj4gIAkJcmV0dXJu
+IHJldDsKPiAgCj4gIAlwbV9ydW50aW1lX2VuYWJsZSgmcGRldi0+ZGV2KTsKPiArCj4gKwl2b3At
+PnBzcl9lbmFibGVkID0gZmFsc2U7Cj4gKwlJTklUX0RFTEFZRURfV09SSygmdm9wLT5wc3Jfd29y
+aywgdm9wX3Bzcl93b3JrKTsKPiArCj4gKwlpbml0X3dhaXRxdWV1ZV9oZWFkKCZ2b3AtPndhaXRf
+dm9wX3N3aXRjaF9xdWV1ZSk7Cj4gKwl2b3AtPnZvcF9zd2l0Y2hfc3RhdHVzID0gMDsKPiArCWlu
+aXRfd2FpdHF1ZXVlX2hlYWQoJnZvcC0+d2FpdF9kbWNfcXVldWUpOwo+ICsJdm9wLT5kbWNfaW5f
+cHJvY2VzcyA9IDA7Cj4gKwo+ICsJZGV2ZnJlcSA9IGRldmZyZXFfZ2V0X2RldmZyZXFfYnlfcGhh
+bmRsZShkZXYsIDApOwo+ICsJaWYgKElTX0VSUihkZXZmcmVxKSkKPiArCQlnb3RvIG91dDsKPiAr
+Cj4gKwl2b3AtPmRldmZyZXEgPSBkZXZmcmVxOwo+ICsJdm9wLT5kbWNfbmIubm90aWZpZXJfY2Fs
+bCA9IGRtY19ub3RpZnk7Cj4gKwlkZXZmcmVxX3JlZ2lzdGVyX25vdGlmaWVyKHZvcC0+ZGV2ZnJl
+cSwgJnZvcC0+ZG1jX25iLAo+ICsJCQkJICBERVZGUkVRX1RSQU5TSVRJT05fTk9USUZJRVIpOwo+
+ICsKPiArCWV2ZW50X2RldiA9IGRldmZyZXFfZXZlbnRfZ2V0X2VkZXZfYnlfcGhhbmRsZSh2b3At
+PmRldmZyZXEtPmRldi5wYXJlbnQsCj4gKwkJCQkJCSAgICAgIDApOwo+ICsJaWYgKElTX0VSUihl
+dmVudF9kZXYpKQo+ICsJCWdvdG8gb3V0Owo+ICsJdm9wLT5kZXZmcmVxX2V2ZW50X2RldiA9IGV2
+ZW50X2RldjsKPiArb3V0Ogo+ICAJcmV0dXJuIDA7Cj4gIH0KPiAgCj4gCgoKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXgtcm9ja2NoaXAgbWFpbGlu
+ZyBsaXN0CkxpbnV4LXJvY2tjaGlwQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmlu
+ZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1yb2NrY2hpcAo=
