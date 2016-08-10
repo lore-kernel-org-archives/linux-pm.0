@@ -1,19 +1,11 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v5 5/6] usb: chipidea: let chipidea core device of_node
- equal's glue layer device of_node
-Date: Wed, 10 Aug 2016 17:19:30 +0800
-Message-ID: <20160810091930.GB30158@shlinux2>
-References: <1470646331-23227-1-git-send-email-peter.chen@nxp.com>
- <1470646331-23227-6-git-send-email-peter.chen@nxp.com>
- <147078813636.20133.1120685098868481913@sboyd-linaro>
- <20160810031146.GE1879@shlinux2>
- <AM4PR04MB2130F9E9E9E304D47C44AC46891D0@AM4PR04MB2130.eurprd04.prod.outlook.com>
+From: fu.wei@linaro.org
+Subject: [PATCH v13] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Wed, 10 Aug 2016 18:06:43 +0800
+Message-ID: <1470823603-26294-1-git-send-email-fu.wei@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <AM4PR04MB2130F9E9E9E304D47C44AC46891D0@AM4PR04MB2130.eurprd04.prod.outlook.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,93 +15,195 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jun Li <jun.li@nxp.com>
-Cc: "mark.rutland@arm.com" <mark.rutland@arm.com>, Peter Chen <peter.chen@nxp.com>, "ulf.hansson@linaro.org" <ulf.hansson@linaro.org>, Stephen Boyd <stephen.boyd@linaro.org>, "k.kozlowski@samsung.com" <k.kozlowski@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "festevam@gmail.com" <festevam@gmail.com>, "stillcompiling@gmail.com" <stillcompiling@gmail.com>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "mka@chromium.org" <mka@chromium.org>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, Peter Chen <peter.chen@freescale.com>, "dwmw3@infradead.org" <dwmw3@infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "mail@maciej.szmigiero.name" <mail@maciej.szmigiero.name>, "arnd@arndb.de" <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, s.hauer@pengutro
+To: tn@semihalf.com, tony.luck@intel.com, bp@suse.de, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 10, 2016 at 09:00:15AM +0000, Jun Li wrote:
-> Hi, Peter
-> 
-> > -----Original Message-----
-> > From: linux-usb-owner@vger.kernel.org [mailto:linux-usb-
-> > owner@vger.kernel.org] On Behalf Of Peter Chen
-> > Sent: Wednesday, August 10, 2016 11:12 AM
-> > To: Stephen Boyd <stephen.boyd@linaro.org>
-> > Cc: Peter Chen <peter.chen@nxp.com>; gregkh@linuxfoundation.org;
-> > stern@rowland.harvard.edu; ulf.hansson@linaro.org; broonie@kernel.org;
-> > sre@kernel.org; robh+dt@kernel.org; shawnguo@kernel.org;
-> > dbaryshkov@gmail.com; dwmw3@infradead.org; k.kozlowski@samsung.com; linux-
-> > arm-kernel@lists.infradead.org; p.zabel@pengutronix.de;
-> > devicetree@vger.kernel.org; pawel.moll@arm.com; mark.rutland@arm.com;
-> > linux-usb@vger.kernel.org; arnd@arndb.de; s.hauer@pengutronix.de;
-> > mail@maciej.szmigiero.name; troy.kisky@boundarydevices.com;
-> > festevam@gmail.com; oscar@naiandei.net; linux-pm@vger.kernel.org;
-> > stillcompiling@gmail.com; linux-kernel@vger.kernel.org; mka@chromium.org;
-> > Peter Chen <peter.chen@freescale.com>
-> > Subject: Re: [PATCH v5 5/6] usb: chipidea: let chipidea core device
-> > of_node equal's glue layer device of_node
-> > 
-> > On Tue, Aug 09, 2016 at 05:15:36PM -0700, Stephen Boyd wrote:
-> > > Quoting Peter Chen (2016-08-08 01:52:10)
-> > > > From: Peter Chen <peter.chen@freescale.com>
-> > > >
-> > > > At device tree, we have no device node for chipidea core, the glue
-> > > > layer's node is the parent node for host and udc device. But in
-> > > > related driver, the parent device is chipidea core. So, in order to
-> > > > let the common driver get parent's node, we let the core's device
-> > > > node equals glue layer device node.
-> > > >
-> > > > Signed-off-by: Peter Chen <peter.chen@freescale.com>
-> > > > Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-> > > > Tested-by Joshua Clayton <stillcompiling@gmail.com>
-> > > > ---
-> > > >  drivers/usb/chipidea/core.c | 11 +++++++++++
-> > > >  1 file changed, 11 insertions(+)
-> > > >
-> > > > diff --git a/drivers/usb/chipidea/core.c
-> > > > b/drivers/usb/chipidea/core.c index 69426e6..b189dc7 100644
-> > > > --- a/drivers/usb/chipidea/core.c
-> > > > +++ b/drivers/usb/chipidea/core.c
-> > > > @@ -954,6 +954,15 @@ static int ci_hdrc_probe(struct platform_device
-> > *pdev)
-> > > >                 dev_err(dev, "unable to init phy: %d\n", ret);
-> > > >                 return ret;
-> > > >         }
-> > > > +       /*
-> > > > +        * At device tree, we have no device node for chipidea core,
-> > > > +        * the glue layer's node is the parent node for host and udc
-> > > > +        * device. But in related driver, the parent device is
-> > chipidea
-> > > > +        * core. So, in order to let the common driver get parent's
-> > node,
-> > > > +        * we let the core's device node equals glue layer's node.
-> > > > +        */
-> > > > +       if (dev->parent && dev->parent->of_node)
-> > > > +               dev->of_node = dev->parent->of_node;
-> > >
-> > > Can this be done earlier? Perhaps after hw_device_init() in this probe
-> > > routine? That would allow me to remove the awkward parent searching in
-> > > my ULPI DT awareness patch.
-> > 
-> > The reason why I locate it there is to avoid "goto label" for error path
-> > during PHY's get and initialization operation.
-> > 
-> > Ok, to simplify your work, I will change it at next version.
-> 
-> As iommu need this to be done even more earlier, will you consider to
-> put it before adding the core's platform device?
-> 
+From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
 
-I can't do it, it will introduce another issue that the pinctrl has
-already requested by parents. The warning is similar like below, but
-occurs at the probe.
+This patch provides APEI arch-specific bits for aarch64
 
-http://lkml.iu.edu/hypermail/linux/kernel/1607.2/03150.html
+Meanwhile,
+(1)add a new subfunction "hest_ia32_init" for
+"acpi_disable_cmcff" which is used by IA-32 Architecture
+Corrected Machine Check (CMC).
+(2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+a generic place.
+(3)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
+because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
 
-I will see how iommu support can be added for platform devices which
-are created by runtime (like chipidea core device).
+[Fu Wei: improve && upstream]
 
+Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
+Signed-off-by: Fu Wei <fu.wei@linaro.org>
+Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
+Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
+Acked-by: Will Deacon <will.deacon@arm.com>
+---
+Changelog:
+v13:https://lkml.org/lkml/2016/8/10/
+    Fix a comment problem(add a "end").
+    Add a comment for the definition of acpi_disable_cmcff.
+    Rebase to 4.8.0-rc1-g372734a
+
+v12:https://lkml.org/lkml/2016/7/29/97
+    Fix a comment problem(redundant "with").
+    Rebase to 4.7.0-g680eee2.
+
+v11:https://lkml.org/lkml/2016/7/27/427
+    Rebase to v4.7-0e06f5c0.
+
+v10:https://lkml.org/lkml/2016/4/14
+    Fix the Alphabetical order problem in arch/arm64/Kconfig.
+
+v9: https://lkml.org/lkml/2016/4/5/522
+    Improve the comment for arch_apei_flush_tlb_one.
+    Using select "HAVE_ACPI_APEI if (ACPI && EFI)" to fix the EFI dependence
+    problem.
+
+v8: https://lkml.org/lkml/2016/3/29/132
+    Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
+    on ARM64.
+
+v7: https://lkml.org/lkml/2016/3/17/183
+    Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h.
+
+v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
+    Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+    a generic place.
+    Delete HAVE_ACPI_APEI_HEST_IA32.
+
+v5: https://lkml.org/lkml/2015/12/10/131
+    Add "HAVE_ACPI_APEI_HEST_IA32" instead of
+    "#if defined(__i386__) || defined(__x86_64__)".
+
+v4: https://lkml.org/lkml/2015/12/8/188
+    Rebase to latest kernel version(4.4-rc4).
+    Move arch_apei_flush_tlb_one into header file as a inline function
+    Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
+
+v3: https://lkml.org/lkml/2015/12/3/521
+    Remove "acpi_disable_cmcff" from arm64 code,
+    and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
+
+v2: https://lkml.org/lkml/2015/12/2/432
+    Rebase to latest kernel version(4.4-rc3).
+    Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
+
+v1: https://lkml.org/lkml/2015/8/14/199
+    Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
+    Delete arch/arm64/kernel/apei.c.
+    Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
+
+ arch/arm64/Kconfig            |  1 +
+ arch/arm64/include/asm/acpi.h | 22 +++++++++++++++++++++-
+ arch/x86/kernel/acpi/apei.c   |  3 ---
+ drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
+ 4 files changed, 37 insertions(+), 7 deletions(-)
+
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index bc3f00f..385cf13 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -51,6 +51,7 @@ config ARM64
+ 	select GENERIC_TIME_VSYSCALL
+ 	select HANDLE_DOMAIN_IRQ
+ 	select HARDIRQS_SW_RESEND
++	select HAVE_ACPI_APEI if (ACPI && EFI)
+ 	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
+ 	select HAVE_ARCH_AUDITSYSCALL
+ 	select HAVE_ARCH_BITREVERSE
+diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+index 5420cb0..f435967 100644
+--- a/arch/arm64/include/asm/acpi.h
++++ b/arch/arm64/include/asm/acpi.h
+@@ -17,6 +17,7 @@
+ 
+ #include <asm/cputype.h>
+ #include <asm/smp_plat.h>
++#include <asm/tlbflush.h>
+ 
+ /* Macros for consistency checks of the GICC subtable of MADT */
+ #define ACPI_MADT_GICC_LENGTH	\
+@@ -110,8 +111,27 @@ static inline const char *acpi_get_enable_method(int cpu)
+ }
+ 
+ #ifdef	CONFIG_ACPI_APEI
++/*
++ * acpi_disable_cmcff is used in drivers/acpi/apei/hest.c for disabling
++ * IA-32 Architecture Corrected Machine Checkx(cmc) FIRMWARE_FIRST mode by
++ * boot parameter(acpi=nocmcff). But we don't have this IA-32 specific
++ * feature on ARM64, this definition is only for compatibility.
++ */
++#define acpi_disable_cmcff 1
+ pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
+-#endif
++
++/*
++ * Despite its name, this function must still broadcast the TLB
++ * invalidation in order to ensure other CPUs don't end up with junk
++ * entries as a result of speculation. Unusually, its also called in
++ * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
++ * TLB broadcasting, then we're in trouble here.
++ */
++static inline void arch_apei_flush_tlb_one(unsigned long addr)
++{
++	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
++}
++#endif /* CONFIG_ACPI_APEI */
+ 
+ #ifdef CONFIG_ACPI_NUMA
+ int arm64_acpi_numa_init(void);
+diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
+index c280df6..ea3046e 100644
+--- a/arch/x86/kernel/acpi/apei.c
++++ b/arch/x86/kernel/acpi/apei.c
+@@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
+ 	struct acpi_hest_ia_corrected *cmc;
+ 	struct acpi_hest_ia_error_bank *mc_bank;
+ 
+-	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
+-		return 0;
+-
+ 	cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
+ 	if (!cmc->enabled)
+ 		return 0;
+diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
+index 20b3fcf..792a0d9 100644
+--- a/drivers/acpi/apei/hest.c
++++ b/drivers/acpi/apei/hest.c
+@@ -123,7 +123,18 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
+  */
+ static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
+ {
+-	return arch_apei_enable_cmcff(hest_hdr, data);
++	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
++		return 0;
++
++	if (!acpi_disable_cmcff)
++		return !arch_apei_enable_cmcff(hest_hdr, data);
++
++	return 0;
++}
++
++static inline int __init hest_ia32_init(void)
++{
++	return apei_hest_parse(hest_parse_cmc, NULL);
+ }
+ 
+ struct ghes_arr {
+@@ -232,8 +243,9 @@ void __init acpi_hest_init(void)
+ 		goto err;
+ 	}
+ 
+-	if (!acpi_disable_cmcff)
+-		apei_hest_parse(hest_parse_cmc, NULL);
++	rc = hest_ia32_init();
++	if (rc)
++		goto err;
+ 
+ 	if (!ghes_disable) {
+ 		rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
 -- 
-
-Best Regards,
-Peter Chen
+2.5.5
