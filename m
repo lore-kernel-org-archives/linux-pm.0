@@ -1,59 +1,38 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
+From: Jiri Kosina <jikos@kernel.org>
 Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
  mapping correctly
-Date: Wed, 10 Aug 2016 23:58:29 +0200
-Message-ID: <CAJZ5v0iEEb2ZqsLjvvm0XoGaBiZ5MBD+PRGNqD-_MtkOqdGKeg@mail.gmail.com>
-References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <2010434.TyoHiO9eal@vostro.rjw.lan>
- <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm> <1779906.DOHeuFCiDy@vostro.rjw.lan>
- <alpine.LNX.2.00.1608101517380.22028@cbobk.fhfr.pm> <CAJcbSZHGH8G01zXSE6y9A19ZxFYY0bzeqcfHBEAYZcn8ZeX3+g@mail.gmail.com>
- <alpine.LNX.2.00.1608101658070.22028@cbobk.fhfr.pm> <20160810163500.GA9424@nazgul.tnic>
- <CAJcbSZF6k0=NXvqMGedcSPiMLwGBG3tZGBwCMJWgMm2AXDY9hQ@mail.gmail.com> <alpine.LNX.2.00.1608102351140.22028@cbobk.fhfr.pm>
+Date: Wed, 10 Aug 2016 23:59:32 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1608102358320.22028@cbobk.fhfr.pm>
+References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <2010434.TyoHiO9eal@vostro.rjw.lan> <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm> <1779906.DOHeuFCiDy@vostro.rjw.lan> <alpine.LNX.2.00.1608101517380.22028@cbobk.fhfr.pm>
+ <CAJcbSZHGH8G01zXSE6y9A19ZxFYY0bzeqcfHBEAYZcn8ZeX3+g@mail.gmail.com> <alpine.LNX.2.00.1608101658070.22028@cbobk.fhfr.pm> <20160810163500.GA9424@nazgul.tnic> <CAJZ5v0h_N5KvjUZjDDdoXMP3UoMmyYKOrHUpyGH14EYWMbxvPA@mail.gmail.com>
+ <CAJZ5v0icnK4jBGkmHb7jJFEcusQyjJGYEG8yhOzMDa_hMQSj_w@mail.gmail.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:36787 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752564AbcHJV6c (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Aug 2016 17:58:32 -0400
-In-Reply-To: <alpine.LNX.2.00.1608102351140.22028@cbobk.fhfr.pm>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <kernel-hardening-return-4334-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <CAJZ5v0icnK4jBGkmHb7jJFEcusQyjJGYEG8yhOzMDa_hMQSj_w@mail.gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Borislav Petkov <bp@suse.de>, Thomas Garnier <thgarnie@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Kosina <jikos@kernel.org>
-Cc: Thomas Garnier <thgarnie@google.com>, Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>
 
-On Wed, Aug 10, 2016 at 11:52 PM, Jiri Kosina <jikos@kernel.org> wrote:
-> On Wed, 10 Aug 2016, Thomas Garnier wrote:
->
->> Ok, I want to know if the problem is the PUD alignment or the change
->> of PAGE_OFFSET based all together. Can you test the following change?
->> (on top of everything else with KASLR enabled). It will randomize the
->> memory sections only on PGD level.
->>
->> diff --git a/arch/x86/mm/kaslr.c b/arch/x86/mm/kaslr.c
->> index ec8654f..a8477b0 100644
->> --- a/arch/x86/mm/kaslr.c
->> +++ b/arch/x86/mm/kaslr.c
->> @@ -120,7 +120,7 @@ void __init kernel_randomize_memory(void)
->>                  */
->>                 entropy = remain_entropy / (ARRAY_SIZE(kaslr_regions) - i);
->>                 prandom_bytes_state(&rand_state, &rand, sizeof(rand));
->> -               entropy = (rand % (entropy + 1)) & PUD_MASK;
->> +               entropy = (rand % (entropy + 1)) & PGDIR_MASK;
->>                 vaddr += entropy;
->>                 *kaslr_regions[i].base = vaddr;
->>
->> @@ -129,7 +129,7 @@ void __init kernel_randomize_memory(void)
->>                  * randomization alignment.
->>                  */
->>                 vaddr += get_padding(&kaslr_regions[i]);
->> -               vaddr = round_up(vaddr + 1, PUD_SIZE);
->> +               vaddr = round_up(vaddr + 1, PGDIR_SIZE);
->>                 remain_entropy -= entropy;
->>         }
->>  }
->
-> I applied this on top of both fixes from Rafael from this thread; still no
-> change in behavior, i.e. reboot immediately after reading the hibernation
-> image.
+On Wed, 10 Aug 2016, Rafael J. Wysocki wrote:
 
-Same for me on the box where I can reproduce the problem now.
+> So I used your .config to generate one for my test machine and with
+> that I can reproduce.
+
+Was that the config I've sent, or did Boris provide one as well? Which one 
+are you able to reproduce with please?
+
+> The hardware configuration doesn't matter, then, the issue is config-related.
+
+How big is the diff between the two configs? Could you please share it?
+
+Thanks,
+
+-- 
+Jiri Kosina
+SUSE Labs
