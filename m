@@ -1,92 +1,43 @@
-From: Fu Wei <fu.wei@linaro.org>
-Subject: Re: [PATCH v12] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Wed, 10 Aug 2016 14:22:06 +0800
-Message-ID: <CADyBb7syoK4_iH55gh9w8ShsZ4be3iLTeJz3g1yMCAKbYxWy1w@mail.gmail.com>
-References: <1469782664-12611-1-git-send-email-fu.wei@linaro.org>
- <20160804094838.GB8093@nazgul.tnic> <20160804103028.GA8152@nazgul.tnic>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
+ mapping correctly
+Date: Wed, 10 Aug 2016 09:50:15 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm>
+References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <alpine.LNX.2.00.1608092119260.22028@cbobk.fhfr.pm> <CAJZ5v0hWRH0zVjNDH6cjNn8kSSXSW0qc-aQZ8p_5EVS3cajcQA@mail.gmail.com> <2010434.TyoHiO9eal@vostro.rjw.lan>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160804103028.GA8152@nazgul.tnic>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Borislav Petkov <bp@suse.de>
-Cc: Mark Rutland <mark.rutland@arm.com>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, pavel@ucw.cz, hpa@zytor.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Tomasz Nowicki <tn@semihalf.com>, x86@kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, mingo@redhat.com, len.brown@intel.com, linux-pm@vger.kernel.org, Marc Zyngier <Marc.Zyngier@arm.com>, Jon Masters <jcm@redhat.com>, matt.fleming@intel.com, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Hanjun Guo <hanjun.guo@linaro.org>, Jonathan Zhang <jon.zhixiong.zhang@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <kernel-hardening-return-4315-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <2010434.TyoHiO9eal@vostro.rjw.lan>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Garnier <thgarnie@google.com>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Borislav Petkov <bpetkov@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgQm9yaXNsYXYuCgpPbiA0IEF1Z3VzdCAyMDE2IGF0IDE4OjMwLCBCb3Jpc2xhdiBQZXRrb3Yg
-PGJwQHN1c2UuZGU+IHdyb3RlOgo+IFRvbWFzeidzIGxpbmFybyBhZGRyZXNzIGJvdW5jZXMsIGFk
-ZGluZyBvbmUgSSd2ZSBmb3VuZCBvbiBsa21sIHRvIENDCj4gaW5zdGVhZC4KClRoYW5rcyBmb3Ig
-cmVtaW5kaW5nIG1lLCBJIGhhdmUgYWRkZWQgaGltKHRuQHNlbWloYWxmLmNvbSkgaW4gVE8gbGlz
-dC4KVGhlIGRhdGVkIGVtYWlsIGFkZHJlc3ModG9tYXN6Lm5vd2lja2lAbGluYXJvLm9yZykgd2Fz
-IGFkZGVkIGJ5ICJnaXQKc2VuZC1lbWFpbCIuCkkgaGF2ZSBkaXNhYmxlZCBpdCBieSAiLS1uby1z
-aWduZWQtb2ZmLWJ5LWNjIgoKPgo+IE9uIFRodSwgQXVnIDA0LCAyMDE2IGF0IDExOjQ4OjM4QU0g
-KzAyMDAsIEJvcmlzbGF2IFBldGtvdiB3cm90ZToKPj4gT24gRnJpLCBKdWwgMjksIDIwMTYgYXQg
-MDQ6NTc6NDRQTSArMDgwMCwgZnUud2VpQGxpbmFyby5vcmcgd3JvdGU6Cj4+ID4gRnJvbTogVG9t
-YXN6IE5vd2lja2kgPHRvbWFzei5ub3dpY2tpQGxpbmFyby5vcmc+Cj4+ID4KPj4gPiBUaGlzIGNv
-bW1pdCBwcm92aWRlcyBBUEVJIGFyY2gtc3BlY2lmaWMgYml0cyBmb3IgYWFyY2g2NAo+PiA+Cj4+
-ID4gTWVhbndoaWxlLAo+PiA+ICgxKWFkZCBhIG5ldyBzdWJmdW5jdGlvbiAiaGVzdF9pYTMyX2lu
-aXQiIGZvcgo+PiA+ICJhY3BpX2Rpc2FibGVfY21jZmYiIHdoaWNoIGlzIHVzZWQgYnkgSUEtMzIg
-QXJjaGl0ZWN0dXJlCj4+ID4gQ29ycmVjdGVkIE1hY2hpbmUgQ2hlY2sgKENNQykuCj4+ID4gKDIp
-bW92ZSBIRVNUIHR5cGUgKEFDUElfSEVTVF9UWVBFX0lBMzJfQ09SUkVDVEVEX0NIRUNLKSBjaGVj
-a2luZyB0bwo+PiA+IGEgZ2VuZXJpYyBwbGFjZS4KPj4gPiAoMylzZWxlY3QgSEFWRV9BQ1BJX0FQ
-RUkgd2hlbiBFRkkgYW5kIEFDUEkgaXMgc2V0IG9uIEFSTTY0LAo+PiA+IGJlY2F1c2UgYXJjaF9h
-cGVpX2dldF9tZW1fYXR0cmlidXRlIGlzIHVzaW5nIGVmaV9tZW1fYXR0cmlidXRlcyBvbiBBUk02
-NC4KPj4gPgo+PiA+IFtGdSBXZWk6IGltcHJvdmUgJiYgdXBzdHJlYW1dCj4+ID4KPj4gPiBTaWdu
-ZWQtb2ZmLWJ5OiBUb21hc3ogTm93aWNraSA8dG9tYXN6Lm5vd2lja2lAbGluYXJvLm9yZz4KPj4g
-PiBUZXN0ZWQtYnk6IEpvbmF0aGFuIChaaGl4aW9uZykgWmhhbmcgPHpqemhhbmdAY29kZWF1cm9y
-YS5vcmc+Cj4+ID4gU2lnbmVkLW9mZi1ieTogRnUgV2VpIDxmdS53ZWlAbGluYXJvLm9yZz4KPj4g
-PiBBY2tlZC1ieTogSGFuanVuIEd1byA8aGFuanVuLmd1b0BsaW5hcm8ub3JnPgo+PiA+IFRlc3Rl
-ZC1ieTogVHlsZXIgQmFpY2FyIDx0YmFpY2FyQGNvZGVhdXJvcmEub3JnPgo+PiA+IEFja2VkLWJ5
-OiBXaWxsIERlYWNvbiA8d2lsbC5kZWFjb25AYXJtLmNvbT4KPj4gPiAtLS0KPj4KPj4gLi4uCj4+
-Cj4+ID4gQEAgLTExMCw4ICsxMTEsMjEgQEAgc3RhdGljIGlubGluZSBjb25zdCBjaGFyICphY3Bp
-X2dldF9lbmFibGVfbWV0aG9kKGludCBjcHUpCj4+ID4gIH0KPj4gPgo+PiA+ICAjaWZkZWYgICAg
-IENPTkZJR19BQ1BJX0FQRUkKPj4gPiArI2RlZmluZSBhY3BpX2Rpc2FibGVfY21jZmYgMQo+Pgo+
-PiBXaGF0IGRvZXMgdGhhdCBtZWFuPyBBUk0gZG9lc24ndCBoYXZlIGZpcm13YXJlLWZpcnN0IG1v
-ZGU/Cj4+Cj4+IEEgcGllY2Ugb2YgY29tbWVudCBwbGVhc2UuCj4+Cj4+ID4gIHBncHJvdF90IGFy
-Y2hfYXBlaV9nZXRfbWVtX2F0dHJpYnV0ZShwaHlzX2FkZHJfdCBhZGRyKTsKPj4gPiAtI2VuZGlm
-Cj4+ID4gKwo+PiA+ICsvKgo+PiA+ICsgKiBEZXNwaXRlIGl0cyBuYW1lLCB0aGlzIGZ1bmN0aW9u
-IG11c3Qgc3RpbGwgYnJvYWRjYXN0IHRoZSBUTEIKPj4gPiArICogaW52YWxpZGF0aW9uIGluIG9y
-ZGVyIHRvIGVuc3VyZSBvdGhlciBDUFVzIGRvbid0IHVwIHdpdGgganVuawo+PiAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXgo+PiAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBlbmQKPj4KPj4gPiArICog
-ZW50cmllcyBhcyBhIHJlc3VsdCBvZiBzcGVjdWxhdGlvbi4gVW51c3VhbGx5LCBpdHMgYWxzbyBj
-YWxsZWQgaW4KPj4gPiArICogSVJRIGNvbnRleHQgKGdoZXNfaW91bm1hcF9pcnEpIHNvIGlmIHdl
-IGV2ZXIgbmVlZCB0byB1c2UgSVBJcyBmb3IKPj4gPiArICogVExCIGJyb2FkY2FzdGluZywgdGhl
-biB3ZSdyZSBpbiB0cm91YmxlIGhlcmUuCj4+ID4gKyAqLwo+PiA+ICtzdGF0aWMgaW5saW5lIHZv
-aWQgYXJjaF9hcGVpX2ZsdXNoX3RsYl9vbmUodW5zaWduZWQgbG9uZyBhZGRyKQo+PiA+ICt7Cj4+
-ID4gKyAgIGZsdXNoX3RsYl9rZXJuZWxfcmFuZ2UoYWRkciwgYWRkciArIFBBR0VfU0laRSk7Cj4+
-ID4gK30KPj4gPiArI2VuZGlmIC8qIENPTkZJR19BQ1BJX0FQRUkgKi8KPj4gPgo+PiA+ICAjaWZk
-ZWYgQ09ORklHX0FDUElfTlVNQQo+PiA+ICBpbnQgYXJtNjRfYWNwaV9udW1hX2luaXQodm9pZCk7
-Cj4+ID4gZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tlcm5lbC9hY3BpL2FwZWkuYyBiL2FyY2gveDg2
-L2tlcm5lbC9hY3BpL2FwZWkuYwo+PiA+IGluZGV4IGMyODBkZjYuLmVhMzA0NmUgMTAwNjQ0Cj4+
-ID4gLS0tIGEvYXJjaC94ODYva2VybmVsL2FjcGkvYXBlaS5jCj4+ID4gKysrIGIvYXJjaC94ODYv
-a2VybmVsL2FjcGkvYXBlaS5jCj4+Cj4+IC4uLgo+Pgo+PiA+IGRpZmYgLS1naXQgYS9kcml2ZXJz
-L2FjcGkvYXBlaS9oZXN0LmMgYi9kcml2ZXJzL2FjcGkvYXBlaS9oZXN0LmMKPj4gPiBpbmRleCAy
-MGIzZmNmLi43OTJhMGQ5IDEwMDY0NAo+PiA+IC0tLSBhL2RyaXZlcnMvYWNwaS9hcGVpL2hlc3Qu
-Ywo+PiA+ICsrKyBiL2RyaXZlcnMvYWNwaS9hcGVpL2hlc3QuYwo+PiA+IEBAIC0yMzIsOCArMjQz
-LDkgQEAgdm9pZCBfX2luaXQgYWNwaV9oZXN0X2luaXQodm9pZCkKPj4gPiAgICAgICAgICAgICBn
-b3RvIGVycjsKPj4gPiAgICAgfQo+PiA+Cj4+ID4gLSAgIGlmICghYWNwaV9kaXNhYmxlX2NtY2Zm
-KQo+PiA+IC0gICAgICAgICAgIGFwZWlfaGVzdF9wYXJzZShoZXN0X3BhcnNlX2NtYywgTlVMTCk7
-Cj4+ID4gKyAgIHJjID0gaGVzdF9pYTMyX2luaXQoKTsKPj4KPj4gV2h5IGRvIHlvdSBuZWVkIGEg
-c2VwYXJhdGUgaGVzdF9pYTMyX2luaXQoKSBoZXJlPwo+Pgo+PiBZb3UgY2FuIGRvCj4+Cj4+ICAg
-ICAgIHJjID0gYXBlaV9oZXN0X3BhcnNlKGhlc3RfcGFyc2VfY21jLCBOVUxMKTsKPj4KPj4gZGly
-ZWN0bHkgaGVyZSBBRkFJQ1QuCj4+Cj4+ID4gKyAgIGlmIChyYykKPj4gPiArICAgICAgICAgICBn
-b3RvIGVycjsKPj4gPgo+PiA+ICAgICBpZiAoIWdoZXNfZGlzYWJsZSkgewo+PiA+ICAgICAgICAg
-ICAgIHJjID0gYXBlaV9oZXN0X3BhcnNlKGhlc3RfcGFyc2VfZ2hlc19jb3VudCwgJmdoZXNfY291
-bnQpOwo+PiA+IC0tCj4+ID4gMi41LjUKPj4gPgo+Cj4gLS0KPiBSZWdhcmRzL0dydXNzLAo+ICAg
-ICBCb3Jpcy4KPgo+IEVDTyB0aXAgIzEwMTogVHJpbSB5b3VyIG1haWxzIHdoZW4geW91IHJlcGx5
-Lgo+Cj4gU1VTRSBMaW51eCBHbWJILCBHRjogRmVsaXggSW1lbmTDtnJmZmVyLCBKYW5lIFNtaXRo
-YXJkLCBHcmFoYW0gTm9ydG9uLCBIUkIgMjEyODQgKEFHIE7DvHJuYmVyZykKPiAtLQoKCgotLSAK
-QmVzdCByZWdhcmRzLAoKRnUgV2VpClNvZnR3YXJlIEVuZ2luZWVyClJlZCBIYXQKCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwg
-bWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8v
-bGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+On Wed, 10 Aug 2016, Rafael J. Wysocki wrote:
+
+> For the lack of better ideas, below is a patch to try.
+> 
+> It avoids the possible issue with the restore kernel's identity mapping overlap
+> with restore_jump_address by creating special super-simple page tables just
+> for the final jump to the image kernel.
+> 
+> It is on top of the $subject patch.  My test box still works with this applied,
+> but then it worked without it as well.
+> 
+> If it doesn't help, the identity mapping created by set_up_temporary_mappings()
+> is still not adequate for some reason most likely and we'll need to find out
+> why.
+
+Unfortunately, still with $subject patch + this one, triple fault and 
+reboot after reading the hibernation image.
+
+Due to being slightly out of ideas currently, I'll play a little bit more 
+with the relocation offsets to see whether that makes any difference.
+
+-- 
+Jiri Kosina
+SUSE Labs
