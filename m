@@ -1,99 +1,122 @@
-From: Jiri Kosina <jikos@kernel.org>
-Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
- mapping correctly
-Date: Wed, 10 Aug 2016 16:59:40 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1608101658070.22028@cbobk.fhfr.pm>
-References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <2010434.TyoHiO9eal@vostro.rjw.lan> <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm> <1779906.DOHeuFCiDy@vostro.rjw.lan> <alpine.LNX.2.00.1608101517380.22028@cbobk.fhfr.pm>
- <CAJcbSZHGH8G01zXSE6y9A19ZxFYY0bzeqcfHBEAYZcn8ZeX3+g@mail.gmail.com>
-Reply-To: kernel-hardening@lists.openwall.com
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v3 02/15] dt/bindings: Update binding for PM domain idle
+ states
+Date: Wed, 10 Aug 2016 16:14:59 +0100
+Message-ID: <99e35b6c-6698-6d27-f4d7-fa032796869e@arm.com>
+References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
+ <1470351902-43103-3-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <kernel-hardening-return-4322-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAJcbSZHGH8G01zXSE6y9A19ZxFYY0bzeqcfHBEAYZcn8ZeX3+g@mail.gmail.com>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Borislav Petkov <bpetkov@suse.de>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1470351902-43103-3-git-send-email-lina.iyer@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lina Iyer <lina.iyer@linaro.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, khilman@kernel.org, rjw@rjwysocki.net, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, Brendan Jackman <Brendan.Jackman@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, andy.gross@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 10 Aug 2016, Thomas Garnier wrote:
+Hi Lina,
 
-> What type of machines are you testing it on? What is the memory size? 
-> Processor generation?
+I have few concerns mainly due to the lack of description and not the 
+binding per say.
 
-Mine is Lenovo thinkpad x200s; I think Boris has been testing it on x230s, 
-but not sure whether any of the latest patches didn't actually fix it for 
-him.
+On 05/08/16 00:04, Lina Iyer wrote:
+> From: Axel Haslam <ahaslam+renesas@baylibre.com>
+>
+> Update DT bindings to describe idle states of PM domains.
+>
+> Cc: <devicetree@vger.kernel.org>
+> Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> [Lina: Added state properties, removed state names, wakeup-latency,
+> added of_pm_genpd_init() API, pruned commit text]
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> [Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
+> ---
+>  .../devicetree/bindings/power/power_domain.txt     | 57 ++++++++++++++++++++++
+>  1 file changed, 57 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> index 025b5e7..4960486 100644
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -29,6 +29,10 @@ Optional properties:
+>     specified by this binding. More details about power domain specifier are
+>     available in the next section.
+>
+> +- domain-idle-states : A phandle of an idle-state that shall be soaked into a
+> +                generic domain power state. The idle state definitions are
+> +                compatible with arm,idle-state specified in [1].
+> +
 
-The machine I am seeing the issue on, has 2G RAM, with this e820 map:
+So I assume these can be used for the genpd states. Either we rename it 
+domain-power-states or make it clear that these domain-idle-states can 
+also represent the power-states for normal devices.
 
- BIOS-e820: [mem 0x0000000000000000-0x000000000009ebff] usable
- BIOS-e820: [mem 0x000000000009ec00-0x000000000009ffff] reserved
- BIOS-e820: [mem 0x00000000000dc000-0x00000000000fffff] reserved
- BIOS-e820: [mem 0x0000000000100000-0x000000007c4a0fff] usable
- BIOS-e820: [mem 0x000000007c4a1000-0x000000007c4a6fff] reserved
- BIOS-e820: [mem 0x000000007c4a7000-0x000000007c5b6fff] usable
- BIOS-e820: [mem 0x000000007c5b7000-0x000000007c60efff] reserved
- BIOS-e820: [mem 0x000000007c60f000-0x000000007c6c5fff] usable
- BIOS-e820: [mem 0x000000007c6c6000-0x000000007c6d0fff] ACPI NVS
- BIOS-e820: [mem 0x000000007c6d1000-0x000000007c6d3fff] ACPI data
- BIOS-e820: [mem 0x000000007c6d4000-0x000000007c6d7fff] reserved
- BIOS-e820: [mem 0x000000007c6d8000-0x000000007c6dbfff] ACPI NVS
- BIOS-e820: [mem 0x000000007c6dc000-0x000000007c6defff] reserved
- BIOS-e820: [mem 0x000000007c6df000-0x000000007c705fff] ACPI NVS
- BIOS-e820: [mem 0x000000007c706000-0x000000007c707fff] ACPI data
- BIOS-e820: [mem 0x000000007c708000-0x000000007c90efff] reserved
- BIOS-e820: [mem 0x000000007c90f000-0x000000007c99efff] ACPI NVS
- BIOS-e820: [mem 0x000000007c99f000-0x000000007c9fefff] ACPI data
- BIOS-e820: [mem 0x000000007c9ff000-0x000000007c9fffff] usable
- BIOS-e820: [mem 0x000000007cc00000-0x000000007effffff] reserved
- BIOS-e820: [mem 0x00000000e0000000-0x00000000efffffff] reserved
- BIOS-e820: [mem 0x00000000fec00000-0x00000000fec0ffff] reserved
- BIOS-e820: [mem 0x00000000fed00000-0x00000000fed003ff] reserved
- BIOS-e820: [mem 0x00000000fed10000-0x00000000fed13fff] reserved
- BIOS-e820: [mem 0x00000000fed18000-0x00000000fed19fff] reserved
- BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed8ffff] reserved
- BIOS-e820: [mem 0x00000000fee00000-0x00000000fee00fff] reserved
- BIOS-e820: [mem 0x00000000ff800000-0x00000000ffffffff] reserved
- NX (Execute Disable) protection: active
- SMBIOS 2.4 present.
- DMI: LENOVO 7470BN2/7470BN2, BIOS 6DET38WW (2.02 ) 12/19/2008
- e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
- e820: remove [mem 0x000a0000-0x000fffff] usable
- e820: last_pfn = 0x7ca00 max_arch_pfn = 0x400000000
+>  Example:
+>
+>  	power: power-controller@12340000 {
+> @@ -59,6 +63,57 @@ The nodes above define two power controllers: 'parent' and 'child'.
+>  Domains created by the 'child' power controller are subdomains of '0' power
+>  domain provided by the 'parent' power controller.
+>
+> +Example 3: ARM v7 style CPU PM domains (Linux domain controller)
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		CPU0: cpu@0 {
+> +			device_type = "cpu";
+> +			compatible = "arm,cortex-a7", "arm,armv7";
+> +			reg = <0x0>;
+> +			power-domains = <&a7_pd>;
 
+This example doesn't consider how do we deal with the presence off
+cpu-idle-states property in CPU nodes.
 
-CPU:
+IMO we need move even the cpu/core level idle states into its own power
+domain. It also helps to solve other usecases like PMU, debug/coresight
+devices attached to the core power domain(in most of the cases) while
+they may be in separate PD like PMUs on OMAP. That will help OS whether
+to save/restore the states on idle-entry.
 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 6
-model		: 23
-model name	: Intel(R) Core(TM)2 Duo CPU     L9400  @ 1.86GHz
-stepping	: 6
-microcode	: 0x60c
-cpu MHz		: 800.000
-cache size	: 6144 KB
-physical id	: 0
-siblings	: 2
-core id		: 0
-cpu cores	: 2
-apicid		: 0
-initial apicid	: 0
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 10
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx lm constant_tsc arch_perfmon pebs bts nopl aperfmperf eagerfpu pni dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm sse4_1 lahf_lm tpr_shadow vnmi flexpriority dtherm ida
-bugs		:
-bogomips	: 3723.69
-clflush size	: 64
-cache_alignment	: 64
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
+In [PATCH v3 15/15] ARM64: dts: Define CPU power domain for MSM8916, the
+idle-states are split across the cpu cpu-idle-states and pd
+domain-idle-states property. That looks like a really mess to me.
+
+We need to have all the idle state information at one place and in this
+case PD seems more appropriate instead of splitting them across.
+
+We can also keep the code clean and not break compatibility. Whenever
+both PD and CPU contains idle-states, PD must take precedence.
+
+Also these needs to be documented clearly in the binding.
+
+> +		};
+> +
+> +		CPU1: cpu@1 {
+> +			device_type = "cpu";
+> +			compatible = "arm,cortex-a15", "arm,armv7";
+> +			reg = <0x0>;
+> +			power-domains = <&a15_pd>;
+> +		};
+> +	};
+> +
+> +	pm-domains {
+> +		a15_pd: a15_pd {
+> +			/* will have A15 platform ARM_PD_METHOD_OF_DECLARE*/
+
+the above comment make no sense in the binding document, remove it
 
 -- 
-Jiri Kosina
-SUSE Labs
+Regards,
+Sudeep
