@@ -1,39 +1,58 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v4 7/7] doc: bindings: act8945a-charger: Update properties
-Date: Wed, 10 Aug 2016 16:49:56 -0500
-Message-ID: <20160810214956.GA14844@rob-hp-laptop>
-References: <1470636529-16387-1-git-send-email-wenyou.yang@atmel.com>
- <1470636529-16387-8-git-send-email-wenyou.yang@atmel.com>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
+ mapping correctly
+Date: Wed, 10 Aug 2016 23:52:38 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1608102351140.22028@cbobk.fhfr.pm>
+References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <2010434.TyoHiO9eal@vostro.rjw.lan> <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm> <1779906.DOHeuFCiDy@vostro.rjw.lan> <alpine.LNX.2.00.1608101517380.22028@cbobk.fhfr.pm>
+ <CAJcbSZHGH8G01zXSE6y9A19ZxFYY0bzeqcfHBEAYZcn8ZeX3+g@mail.gmail.com> <alpine.LNX.2.00.1608101658070.22028@cbobk.fhfr.pm> <20160810163500.GA9424@nazgul.tnic> <CAJcbSZF6k0=NXvqMGedcSPiMLwGBG3tZGBwCMJWgMm2AXDY9hQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1470636529-16387-8-git-send-email-wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:57292 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751432AbcHJVwk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 10 Aug 2016 17:52:40 -0400
+In-Reply-To: <CAJcbSZF6k0=NXvqMGedcSPiMLwGBG3tZGBwCMJWgMm2AXDY9hQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>
 
-On Mon, Aug 08, 2016 at 02:08:49PM +0800, Wenyou Yang wrote:
-> Due the driver improvements, update the properties,
->  - Remove "active-semi,check-battery-temperature" property.
->  - Add the properties, "active-semi,irq_gpio"
->    and "active-semi,lbo-gpios".
-> 
-> Signed-off-by: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
-> ---
-> 
-> Changes in v4:
->  - Update the doc/binding for using "interrupts" property.
-> 
-> Changes in v3: None
-> Changes in v2: None
-> 
->  .../devicetree/bindings/power/act8945a-charger.txt       | 16 +++++++++++++---
->  1 file changed, 13 insertions(+), 3 deletions(-)
+On Wed, 10 Aug 2016, Thomas Garnier wrote:
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Ok, I want to know if the problem is the PUD alignment or the change
+> of PAGE_OFFSET based all together. Can you test the following change?
+> (on top of everything else with KASLR enabled). It will randomize the
+> memory sections only on PGD level.
+> 
+> diff --git a/arch/x86/mm/kaslr.c b/arch/x86/mm/kaslr.c
+> index ec8654f..a8477b0 100644
+> --- a/arch/x86/mm/kaslr.c
+> +++ b/arch/x86/mm/kaslr.c
+> @@ -120,7 +120,7 @@ void __init kernel_randomize_memory(void)
+>                  */
+>                 entropy = remain_entropy / (ARRAY_SIZE(kaslr_regions) - i);
+>                 prandom_bytes_state(&rand_state, &rand, sizeof(rand));
+> -               entropy = (rand % (entropy + 1)) & PUD_MASK;
+> +               entropy = (rand % (entropy + 1)) & PGDIR_MASK;
+>                 vaddr += entropy;
+>                 *kaslr_regions[i].base = vaddr;
+> 
+> @@ -129,7 +129,7 @@ void __init kernel_randomize_memory(void)
+>                  * randomization alignment.
+>                  */
+>                 vaddr += get_padding(&kaslr_regions[i]);
+> -               vaddr = round_up(vaddr + 1, PUD_SIZE);
+> +               vaddr = round_up(vaddr + 1, PGDIR_SIZE);
+>                 remain_entropy -= entropy;
+>         }
+>  }
+
+I applied this on top of both fixes from Rafael from this thread; still no 
+change in behavior, i.e. reboot immediately after reading the hibernation 
+image.
+
+-- 
+Jiri Kosina
+SUSE Labs
+
