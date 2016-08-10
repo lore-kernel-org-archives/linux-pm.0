@@ -1,58 +1,179 @@
-From: Fu Wei <fu.wei@linaro.org>
-Subject: Re: [PATCH v12] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Wed, 10 Aug 2016 21:05:27 +0800
-Message-ID: <CADyBb7vPhbhGZU+UB7JcP_okA0XV+-yPZe0ass67TZWBMpNRBA@mail.gmail.com>
-References: <1469782664-12611-1-git-send-email-fu.wei@linaro.org>
- <20160804094838.GB8093@nazgul.tnic>
- <CADyBb7ujfaXPP_CUB66_E53fY9MeEbt6EhOaCzf+hoDCGYD+dw@mail.gmail.com>
- <20160810104513.GB16664@nazgul.tnic>
- <CADyBb7uW2-jh8UBLXZ03p1y9SMP7M3z6eULwV2DYhWXEqTm2Rw@mail.gmail.com>
- <20160810111005.GD16664@nazgul.tnic>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity mapping correctly
+Date: Wed, 10 Aug 2016 15:11:17 +0200
+Message-ID: <1779906.DOHeuFCiDy@vostro.rjw.lan>
+References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <2010434.TyoHiO9eal@vostro.rjw.lan> <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160810111005.GD16664@nazgul.tnic>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Borislav Petkov <bp@suse.de>
-Cc: Mark Rutland <mark.rutland@arm.com>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, pavel@ucw.cz, hpa@zytor.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Tomasz Nowicki <tn@semihalf.com>, x86@kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, mingo@redhat.com, len.brown@intel.com, linux-pm@vger.kernel.org, Marc Zyngier <Marc.Zyngier@arm.com>, Jon Masters <jcm@redhat.com>, matt.fleming@intel.com, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Hanjun Guo <hanjun.guo@linaro.org>, Jonathan Zhang <jon.zhixiong.zhang@gmail.com>
+Content-Transfer-Encoding: 7Bit
+Return-path: <kernel-hardening-return-4319-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm>
+To: Jiri Kosina <jikos@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Garnier <thgarnie@google.com>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Borislav Petkov <bpetkov@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgQm9yaXNsYXYsCgpPbiAxMCBBdWd1c3QgMjAxNiBhdCAxOToxMCwgQm9yaXNsYXYgUGV0a292
-IDxicEBzdXNlLmRlPiB3cm90ZToKPiBPbiBXZWQsIEF1ZyAxMCwgMjAxNiBhdCAwNzowMTowNVBN
-ICswODAwLCBGdSBXZWkgd3JvdGU6Cj4+IC0gaWYgKCFhY3BpX2Rpc2FibGVfY21jZmYpCj4+IC0g
-YXBlaV9oZXN0X3BhcnNlKGhlc3RfcGFyc2VfY21jLCBOVUxMKTsKPj4gKyByYyA9YXBlaV9oZXN0
-X3BhcnNlKGhlc3RfcGFyc2VfY21jLCBOVUxMKTsKPj4gKyBpZiAocmMpCj4+ICsgZ290byBlcnI7
-Cj4+Cj4+ICAgaWYgKCFnaGVzX2Rpc2FibGUpIHsKPj4gICByYyA9IGFwZWlfaGVzdF9wYXJzZSho
-ZXN0X3BhcnNlX2doZXNfY291bnQsICZnaGVzX2NvdW50KTsKPj4KPj4gRG8geW91IGhhdmUgb3Ro
-ZXIgc3VnZ2VzdGlvbj8gdGhlbiBJIGNhbiBwb3N0IHYxNCB0byBmaXggaXQgOi0pCj4KPiBOYWgs
-IGxvb2tzIGdvb2QgOikKPgo+IExldCdzIGtlZXAgaXQgc2ltcGxlIGFuZCBhZGQgbW9yZSBpbnZv
-bHZlZCBoYW5kbGluZyB3aGVuIGl0IGlzIHJlYWxseQo+IG5lZWRlZC4gVGhhbmtzIQoKVGhhbmtz
-IGZvciB5b3VyIGhlbHAsIHRoaXMgaGF2ZSBiZWVuIGZpeGVkIGluIHYxNChqdXN0IHBvc3RlZCku
-Cgo+Cj4gQnR3LCB0aGF0IGNvbW1lbnQ6Cj4KPiArLyoKPiArICogYWNwaV9kaXNhYmxlX2NtY2Zm
-IGlzIHVzZWQgaW4gZHJpdmVycy9hY3BpL2FwZWkvaGVzdC5jIGZvciBkaXNhYmxpbmcKPiArICog
-SUEtMzIgQXJjaGl0ZWN0dXJlIENvcnJlY3RlZCBNYWNoaW5lIENoZWNreChjbWMpIEZJUk1XQVJF
-X0ZJUlNUIG1vZGUgYnkKPiArICogYm9vdCBwYXJhbWV0ZXIoYWNwaT1ub2NtY2ZmKS4gQnV0IHdl
-IGRvbid0IGhhdmUgdGhpcyBJQS0zMiBzcGVjaWZpYwo+ICsgKiBmZWF0dXJlIG9uIEFSTTY0LCB0
-aGlzIGRlZmluaXRpb24gaXMgb25seSBmb3IgY29tcGF0aWJpbGl0eS4KPiArICovCj4gKyNkZWZp
-bmUgYWNwaV9kaXNhYmxlX2NtY2ZmIDEKPgo+IGxvb2tzIG9rLCBleGNlcHQgdGhlIHNtYWxsIHR5
-cG86Cj4KPiBBcmNoaXRlY3R1cmUgQ29ycmVjdGVkIE1hY2hpbmUgQ2hlY2t4KGNtYykKPiAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBeCj4gTWFrZSB0aGF0Cj4KPiAiSUEtMzIg
-QXJjaGl0ZWN0dXJlIENvcnJlY3RlZCBNYWNoaW5lIENoZWNrIChDTUMpIEZpcm13YXJlLUZpcnN0
-IG1vZGUiCgpEb25lISBUaGFua3MgOi0pCgo+Cj4gVGhhbmtzLgo+Cj4gLS0KPiBSZWdhcmRzL0dy
-dXNzLAo+ICAgICBCb3Jpcy4KPgo+IEVDTyB0aXAgIzEwMTogVHJpbSB5b3VyIG1haWxzIHdoZW4g
-eW91IHJlcGx5Lgo+Cj4gU1VTRSBMaW51eCBHbWJILCBHRjogRmVsaXggSW1lbmTDtnJmZmVyLCBK
-YW5lIFNtaXRoYXJkLCBHcmFoYW0gTm9ydG9uLCBIUkIgMjEyODQgKEFHIE7DvHJuYmVyZykKPiAt
-LQoKCgotLSAKQmVzdCByZWdhcmRzLAoKRnUgV2VpClNvZnR3YXJlIEVuZ2luZWVyClJlZCBIYXQK
-Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFy
-bS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9y
-ZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1r
-ZXJuZWwK
+On Wednesday, August 10, 2016 09:50:15 AM Jiri Kosina wrote:
+> On Wed, 10 Aug 2016, Rafael J. Wysocki wrote:
+> 
+> > For the lack of better ideas, below is a patch to try.
+> > 
+> > It avoids the possible issue with the restore kernel's identity mapping overlap
+> > with restore_jump_address by creating special super-simple page tables just
+> > for the final jump to the image kernel.
+> > 
+> > It is on top of the $subject patch.  My test box still works with this applied,
+> > but then it worked without it as well.
+> > 
+> > If it doesn't help, the identity mapping created by set_up_temporary_mappings()
+> > is still not adequate for some reason most likely and we'll need to find out
+> > why.
+> 
+> Unfortunately, still with $subject patch + this one, triple fault and 
+> reboot after reading the hibernation image.
+
+The last patch I sent had a problem, because if restore_jump_address really
+overlapped with the identity mapping of the restore kernel, it might share
+PGD or PUD entries with that mapping and that should have been taken into
+account.
+
+Here goes an update.  Again, this works on my test machine, but then the
+previous version worked on it too ...
+
+---
+ arch/x86/power/hibernate_64.c     |   53 ++++++++++++++++++++++++++++++--------
+ arch/x86/power/hibernate_asm_64.S |   10 +++++++
+ 2 files changed, 53 insertions(+), 10 deletions(-)
+
+Index: linux-pm/arch/x86/power/hibernate_64.c
+===================================================================
+--- linux-pm.orig/arch/x86/power/hibernate_64.c
++++ linux-pm/arch/x86/power/hibernate_64.c
+@@ -38,14 +38,22 @@ unsigned long jump_address_phys;
+ unsigned long restore_cr3 __visible;
+ 
+ unsigned long temp_level4_pgt __visible;
++unsigned long jump_level4_pgt __visible;
+ 
+ unsigned long relocated_restore_code __visible;
+ 
+-static int set_up_temporary_text_mapping(pgd_t *pgd)
++static int set_up_temporary_text_mapping(void)
+ {
++	unsigned long pgd_idx = pgd_index(restore_jump_address);
++	unsigned long pud_idx = pud_index(restore_jump_address);
++	pgd_t *pgd;
+ 	pmd_t *pmd;
+ 	pud_t *pud;
+ 
++	pgd = (pgd_t *)get_safe_page(GFP_ATOMIC);
++	if (!pgd)
++		return -ENOMEM;
++
+ 	/*
+ 	 * The new mapping only has to cover the page containing the image
+ 	 * kernel's entry point (jump_address_phys), because the switch over to
+@@ -69,10 +77,32 @@ static int set_up_temporary_text_mapping
+ 
+ 	set_pmd(pmd + pmd_index(restore_jump_address),
+ 		__pmd((jump_address_phys & PMD_MASK) | __PAGE_KERNEL_LARGE_EXEC));
+-	set_pud(pud + pud_index(restore_jump_address),
++	set_pud(pud + pud_idx, __pud(__pa(pmd) | _KERNPG_TABLE));
++	set_pgd(pgd + pgd_idx, __pgd(__pa(pud) | _KERNPG_TABLE));
++
++	if (pgd_idx != pgd_index(relocated_restore_code)) {
++		pud = (pud_t *)get_safe_page(GFP_ATOMIC);
++		if (!pud)
++			return -ENOMEM;
++
++		set_pgd(pgd + pgd_index(relocated_restore_code),
++			__pgd(__pa(pud) | _KERNPG_TABLE));
++	} else if (pud_idx == pud_index(relocated_restore_code)) {
++		goto set_pmd;
++	}
++
++	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
++	if (!pmd)
++		return -ENOMEM;
++
++	set_pud(pud + pud_index(relocated_restore_code),
+ 		__pud(__pa(pmd) | _KERNPG_TABLE));
+-	set_pgd(pgd + pgd_index(restore_jump_address),
+-		__pgd(__pa(pud) | _KERNPG_TABLE));
++
++ set_pmd:
++	set_pmd(pmd + pmd_index(relocated_restore_code),
++		__pmd((__pa(relocated_restore_code) & PMD_MASK) | __PAGE_KERNEL_LARGE_EXEC));
++
++	jump_level4_pgt = __pa(pgd);
+ 
+ 	return 0;
+ }
+@@ -98,11 +128,6 @@ static int set_up_temporary_mappings(voi
+ 	if (!pgd)
+ 		return -ENOMEM;
+ 
+-	/* Prepare a temporary mapping for the kernel text */
+-	result = set_up_temporary_text_mapping(pgd);
+-	if (result)
+-		return result;
+-
+ 	/* Set up the direct mapping from scratch */
+ 	for (i = 0; i < nr_pfn_mapped; i++) {
+ 		mstart = pfn_mapped[i].start << PAGE_SHIFT;
+@@ -122,7 +147,10 @@ static int relocate_restore_code(void)
+ 	pgd_t *pgd;
+ 	pud_t *pud;
+ 
+-	relocated_restore_code = get_safe_page(GFP_ATOMIC);
++	do
++		relocated_restore_code = get_safe_page(GFP_ATOMIC);
++	while ((relocated_restore_code & PMD_MASK) == (restore_jump_address & PMD_MASK));
++
+ 	if (!relocated_restore_code)
+ 		return -ENOMEM;
+ 
+@@ -162,6 +190,11 @@ int swsusp_arch_resume(void)
+ 	if (error)
+ 		return error;
+ 
++	/* Prepare a temporary mapping for the jump to the image kernel */
++	error = set_up_temporary_text_mapping();
++	if (error)
++		return error;
++
+ 	restore_image();
+ 	return 0;
+ }
+Index: linux-pm/arch/x86/power/hibernate_asm_64.S
+===================================================================
+--- linux-pm.orig/arch/x86/power/hibernate_asm_64.S
++++ linux-pm/arch/x86/power/hibernate_asm_64.S
+@@ -57,6 +57,7 @@ ENTRY(restore_image)
+ 	/* prepare to jump to the image kernel */
+ 	movq	restore_jump_address(%rip), %r8
+ 	movq	restore_cr3(%rip), %r9
++	movq	jump_level4_pgt(%rip), %r10
+ 
+ 	/* prepare to switch to temporary page tables */
+ 	movq	temp_level4_pgt(%rip), %rax
+@@ -96,6 +97,15 @@ ENTRY(core_restore_code)
+ 	jmp	.Lloop
+ 
+ .Ldone:
++	/* switch to jump page tables */
++	movq	%r10, %cr3
++	/* flush TLB */
++	movq	%rbx, %rcx
++	andq	$~(X86_CR4_PGE), %rcx
++	movq	%rcx, %cr4;  # turn off PGE
++	movq	%cr3, %rcx;  # flush TLB
++	movq	%rcx, %cr3;
++	movq	%rbx, %cr4;  # turn PGE back on
+ 	/* jump to the restore_registers address from the image header */
+ 	jmpq	*%r8
+ 
