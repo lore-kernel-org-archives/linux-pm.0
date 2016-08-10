@@ -1,60 +1,112 @@
-From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v5 4/8] Documentation: bindings: add dt documentation for
- dfi controller
-Date: Wed, 10 Aug 2016 13:29:14 +0900
-Message-ID: <57AAAD9A.1090201@samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v5 6/8] Documentation: bindings: add dt documentation for
+ rk3399 dmc
+Date: Wed, 10 Aug 2016 13:38:02 +0900
+Message-ID: <57AAAFAA.8060200@samsung.com>
 References: <1470799604-12877-1-git-send-email-hl@rock-chips.com>
- <CGME20160810033623epcas1p127d334061fbe7874195033c6bec44509@epcas1p1.samsung.com>
- <1470799604-12877-5-git-send-email-hl@rock-chips.com>
+ <CGME20160810033623epcas1p2f57a2c6060ad8ba062751d133bd8afec@epcas1p2.samsung.com>
+ <1470799604-12877-7-git-send-email-hl@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-reply-to: <1470799604-12877-5-git-send-email-hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org
-Cc: tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:34164 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750877AbcHJEiF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Aug 2016 00:38:05 -0400
+In-reply-to: <1470799604-12877-7-git-send-email-hl@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lin Huang <hl@rock-chips.com>, heiko@sntech.de
+Cc: myungjoo.ham@samsung.com, mark.yao@rock-chips.com, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, linux-arm-kernel@lists.infradead.org, tixy@linaro.org, typ@rock-chips.com, sudeep.holla@arm.com, mark.rutland@arm.com, linux-pm@vger.kernel.org
 
-SGkgTGluLAoKT24gMjAxNuuFhCAwOOyblCAxMOydvCAxMjoyNiwgTGluIEh1YW5nIHdyb3RlOgo+
-IFRoaXMgcGF0Y2ggYWRkcyB0aGUgZG9jdW1lbnRhdGlvbiBmb3Igcm9ja2NoaXAgZGZpIGRldmZy
-ZXEtZXZlbnQgZHJpdmVyLgo+IAo+IFNpZ25lZC1vZmYtYnk6IExpbiBIdWFuZyA8aGxAcm9jay1j
-aGlwcy5jb20+Cj4gLS0tCj4gQ2hhbmdlcyBpbiB2NToKPiAtTm9uZQo+IAo+IENoYW5nZXMgaW4g
-djQ6Cj4gLU5vbmUKPiAKPiBDaGFuZ2VzIGluIHYzOgo+IC1Ob25lCj4gCj4gQ2hhbmdlcyBpbiB2
-MjoKPiAtTm9uZSAKPiAKPiBDaGFuZ2VzIGluIHYxOgo+IC1Ob25lCj4gCj4gIC4uLi9iaW5kaW5n
-cy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRmaS50eHQgICAgICAgICAgfCAyMCArKysrKysrKysr
-KysrKysrKysrKwo+ICAxIGZpbGUgY2hhbmdlZCwgMjAgaW5zZXJ0aW9ucygrKQo+ICBjcmVhdGUg
-bW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvZXZl
-bnQvcm9ja2NoaXAtZGZpLnR4dAo+IAo+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rldmlj
-ZXRyZWUvYmluZGluZ3MvZGV2ZnJlcS9ldmVudC9yb2NrY2hpcC1kZmkudHh0IGIvRG9jdW1lbnRh
-dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvZXZlbnQvcm9ja2NoaXAtZGZpLnR4dAo+
-IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4gaW5kZXggMDAwMDAwMC4uYmY0MjI1NQo+IC0tLSAvZGV2
-L251bGwKPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGV2ZnJlcS9l
-dmVudC9yb2NrY2hpcC1kZmkudHh0Cj4gQEAgLTAsMCArMSwyMCBAQAo+ICsKPiArKiBSb2NrY2hp
-cCByazMzOTkgREZJIGRldmljZQo+ICsKPiArUmVxdWlyZWQgcHJvcGVydGllczoKPiArLSBjb21w
-YXRpYmxlOiBNdXN0IGJlICJyb2NrY2hpcCxyazMzOTktZGZpIi4KPiArLSByZWc6IHBoeXNpY2Fs
-IGJhc2UgYWRkcmVzcyBvZiBlYWNoIERGSSBhbmQgbGVuZ3RoIG9mIG1lbW9yeSBtYXBwZWQgcmVn
-aW9uCj4gKy0gcm9ja2NoaXAscG11OiBwaGFuZGxlIHRvIHRoZSBzeXNjb24gbWFuYWdpbmcgdGhl
-ICJwbXUgZ2VuZXJhbCByZWdpc3RlciBmaWxlcyIKPiArLSBjbG9ja3M6IHBoYW5kbGVzIGZvciBj
-bG9jayBzcGVjaWZpZWQgaW4gImNsb2NrLW5hbWVzIiBwcm9wZXJ0eQo+ICstIGNsb2NrLW5hbWVz
-IDogdGhlIG5hbWUgb2YgY2xvY2sgdXNlZCBieSB0aGUgREZJLCBtdXN0IGJlICJwY2xrX2Rkcl9t
-b24iOwo+ICsKPiArRXhhbXBsZToKPiArCWRmaTogZGZpQDB4ZmY2MzAwMDAgewo+ICsJCXJlZyA9
-IDwweDAwIDB4ZmY2MzAwMDAgMHgwMCAweDQwMDA+Owo+ICsJCWNvbXBhdGlibGUgPSAicm9ja2No
-aXAscmszMzk5LWRmaSI7CgpVc3VhbGx5LCB0aGUgY29tcGF0aWJsZSBpcyBmaXJzdCBlbnRyeSB3
-aXRoaW4gRGV2aWNlLXRyZWUgbm9kZS4KCj4gKwkJcm9ja2NoaXAscG11ID0gPCZwbXVncmY+Owo+
-ICsJCWNsb2NrcyA9IDwmY3J1IFBDTEtfRERSX01PTj47Cj4gKwkJY2xvY2stbmFtZXMgPSAicGNs
-a19kZHJfbW9uIjsKPiArCQlzdGF0dXMgPSAiZGlzYWJsZWQiOwo+ICsJfTsKPiArCj4gCgpMb29r
-cyBnb29kIHRvIG1lLiBKdXN0IEkgd2FudCB0byBjaGFuZ2UgdGhlIHNlcXVlbmNlCmJldHdlZW4g
-J2NvbXBhdGlibGUnIGFuZCAncmVnJyBwcm9wZXJ0eS4KCkFja2VkLWJ5OiBDaGFud29vIENob2kg
-PGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4KClJlZ2FyZHMsCkNoYXdub28gQ2hvaQoKCl9fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LXJvY2tjaGlwIG1h
-aWxpbmcgbGlzdApMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
-cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9ja2NoaXAK
+Hi Lin,
+
+On 2016년 08월 10일 12:26, Lin Huang wrote:
+> This patch adds the documentation for rockchip rk3399 dmc driver.
+> 
+> Signed-off-by: Lin Huang <hl@rock-chips.com>
+> ---
+> Changes in v5:
+> -None
+> 
+> Changes in v4:
+> -None
+> 
+> Changes in v3:
+> -None
+> 
+> Changes in v2:
+> -None 
+> 
+> Changes in v1:
+> -None
+> 
+>  .../devicetree/bindings/devfreq/rk3399_dmc.txt     | 35 ++++++++++++++++++++++
+>  1 file changed, 35 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+> new file mode 100644
+> index 0000000..90e9581
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+> @@ -0,0 +1,35 @@
+> +* Rockchip rk3399 dmc device
+
+dmc -> DMC(Dynamic Memory Controller ?)
+
+> +
+> +Required properties:
+> +- compatible: Must be "rockchip,rk3399-dmc".
+> +- devfreq-events: Node to get ddr loading, Refer to
+> +		  Documentation/devicetree/bindings/devfreq/rockchip-dif.txt
+> +- interrupts: The interrupt number to the cpu. The interrupt specifier format
+> +	      depends on the interrupt controller. 
+
+If you add the specific role of this interrupt, it would be better
+to understand the operation of interrupt.
+
+> +- clocks: Phandles for clock specified in "clock-names" property
+> +- clock-names : The name of clock used by the DFI, must be "pclk_ddr_mon";
+
+"pclk_ddr_mon" -> "dmc_clk"
+
+> +- operating-points-v2: Refer to Documentation/devicetree/bindings/power/opp.txt
+> +		       for details.
+> +- center-supply: Dmc supply node.
+> +- status: Marks the node enabled/disabled.
+> +
+> +Optional properties:
+> +- ddr_timing: ddr timing need to pass to arm trust firmware
+> +- upthreshold: the upthreshold to simpleondeamnd policy
+> +- downdifferential: The downdifferential to simpleondeamnd policy
+> +
+> +Example:
+> +	dmc: dmc {
+> +		compatible = "rockchip,rk3399-dmc";
+> +		devfreq-events = <&dfi>;
+> +		interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
+> +		clocks = <&cru SCLK_DDRCLK>;
+> +		clock-names = "dmc_clk";
+> +		ddr_timing = <&ddr_timing>;
+
+I think that you should add the detailed document for 
+'ddr_timing' because we don't understand the 'ddr_timing' easily
+, it depends on the trust firmware.
+
+> +		operating-points-v2 = <&dmc_opp_table>;
+
+I think that you better to add the example of 'dmc_opp_table' 
+in the documentation.
+
+> +		center-supply = <&ppvar_centerlogic>;
+> +		upthreshold = <15>;
+> +		downdifferential = <10>;
+> +		status = "disabled";
+> +	};
+> +
+> 
+
+Regards,
+Chanwoo Choi
