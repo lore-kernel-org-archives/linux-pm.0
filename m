@@ -1,186 +1,129 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity mapping correctly
-Date: Wed, 10 Aug 2016 02:21:18 +0200
-Message-ID: <2010434.TyoHiO9eal@vostro.rjw.lan>
-References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <alpine.LNX.2.00.1608092119260.22028@cbobk.fhfr.pm> <CAJZ5v0hWRH0zVjNDH6cjNn8kSSXSW0qc-aQZ8p_5EVS3cajcQA@mail.gmail.com>
+Subject: [PATCH 2/2] cpufreq / sched: Check cpu_of(rq) in cpufreq_update_util()
+Date: Wed, 10 Aug 2016 03:11:17 +0200
+Message-ID: <2203967.KPfYM1XZ4Q@vostro.rjw.lan>
+References: <4498725.ix9jPCHteg@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53429 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41323 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932593AbcHJAP7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Aug 2016 20:15:59 -0400
-In-Reply-To: <CAJZ5v0hWRH0zVjNDH6cjNn8kSSXSW0qc-aQZ8p_5EVS3cajcQA@mail.gmail.com>
+	by vger.kernel.org with SMTP id S932556AbcHJBGt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 9 Aug 2016 21:06:49 -0400
+In-Reply-To: <4498725.ix9jPCHteg@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Kosina <jikos@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Garnier <thgarnie@google.com>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Borislav Petkov <bpetkov@suse.de>
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-On Tuesday, August 09, 2016 11:23:31 PM Rafael J. Wysocki wrote:
-> On Tue, Aug 9, 2016 at 10:02 PM, Jiri Kosina <jikos@kernel.org> wrote:
-> > On Tue, 9 Aug 2016, Rafael J. Wysocki wrote:
-> >
-> >> I have a murky suspicion, but it is really weird.  Namely, what if
-> >> restore_jump_address in set_up_temporary_text_mapping() happens to be
-> >> covered by the restore kernel's identity mapping?  Then, the image
-> >> kernel's entry point may get overwritten by something else in
-> >> core_restore_code().
-> >
-> > So this made me to actually test a scenario where I'd suspend a kernel
-> > that's known-broken (i.e. contains 021182e52fe), and then have it resumed
-> > by a kernel that has 021182e52fe reverted. It resumed successfully.
-> >
-> > Just a datapoint.
-> 
-> That indicates the problem is somewhere in the restore kernel and no
-> surprises there.
-> 
-> I am able to reproduce the original problem (a triple fault on resume
-> with CONFIG_RANDOMIZE_MEMORY set) without the $subject patch, but the
-> patch fixes it for me.
-> 
-> Question is why it is not sufficient for you and Boris and the above
-> theory is about the only one I can come up with ATM.
-> 
-> I'm going to compare the configs etc, but I guess I just end up
-> writing a patch to test that theory unless someone has any other idea
-> in the meantime.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-For the lack of better ideas, below is a patch to try.
+All of the callers of cpufreq_update_util() check whether or not
+cpu_of(rq) is equal to smp_processor_id() before calling it and pass
+rq_clock(rq) to it as the time argument, so rework it to take a
+runqueue pointer as the argument and move the cpu_of(rq) check and
+the rq_clock(rq) evaluation into it.
 
-It avoids the possible issue with the restore kernel's identity mapping overlap
-with restore_jump_address by creating special super-simple page tables just
-for the final jump to the image kernel.
-
-It is on top of the $subject patch.  My test box still works with this applied,
-but then it worked without it as well.
-
-If it doesn't help, the identity mapping created by set_up_temporary_mappings()
-is still not adequate for some reason most likely and we'll need to find out
-why.
-
-Thanks,
-Rafael
-
-
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- arch/x86/power/hibernate_64.c     |   40 +++++++++++++++++++++++++++++++-------
- arch/x86/power/hibernate_asm_64.S |   10 +++++++++
- 2 files changed, 43 insertions(+), 7 deletions(-)
+ kernel/sched/deadline.c |    3 +--
+ kernel/sched/fair.c     |    5 +----
+ kernel/sched/rt.c       |    3 +--
+ kernel/sched/sched.h    |   15 +++++++++------
+ 4 files changed, 12 insertions(+), 14 deletions(-)
 
-Index: linux-pm/arch/x86/power/hibernate_64.c
+Index: linux-pm/kernel/sched/deadline.c
 ===================================================================
---- linux-pm.orig/arch/x86/power/hibernate_64.c
-+++ linux-pm/arch/x86/power/hibernate_64.c
-@@ -38,14 +38,20 @@ unsigned long jump_address_phys;
- unsigned long restore_cr3 __visible;
+--- linux-pm.orig/kernel/sched/deadline.c
++++ linux-pm/kernel/sched/deadline.c
+@@ -733,8 +733,7 @@ static void update_curr_dl(struct rq *rq
+ 	}
  
- unsigned long temp_level4_pgt __visible;
-+unsigned long jump_level4_pgt __visible;
+ 	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
+-	if (cpu_of(rq) == smp_processor_id())
+-		cpufreq_update_util(rq_clock(rq), SCHED_CPUFREQ_DL);
++	cpufreq_update_util(rq, SCHED_CPUFREQ_DL);
  
- unsigned long relocated_restore_code __visible;
- 
--static int set_up_temporary_text_mapping(pgd_t *pgd)
-+static int set_up_temporary_text_mapping(void)
+ 	schedstat_set(curr->se.statistics.exec_max,
+ 		      max(curr->se.statistics.exec_max, delta_exec));
+Index: linux-pm/kernel/sched/fair.c
+===================================================================
+--- linux-pm.orig/kernel/sched/fair.c
++++ linux-pm/kernel/sched/fair.c
+@@ -2876,8 +2876,6 @@ static inline void update_tg_load_avg(st
+ static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq)
  {
-+	pgd_t *pgd;
- 	pmd_t *pmd;
- 	pud_t *pud;
- 
-+	pgd = (pgd_t *)get_safe_page(GFP_ATOMIC);
-+	if (!pgd)
-+		return -ENOMEM;
-+
- 	/*
- 	 * The new mapping only has to cover the page containing the image
- 	 * kernel's entry point (jump_address_phys), because the switch over to
-@@ -74,6 +80,23 @@ static int set_up_temporary_text_mapping
- 	set_pgd(pgd + pgd_index(restore_jump_address),
- 		__pgd(__pa(pud) | _KERNPG_TABLE));
- 
-+	pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-+	if (!pud)
-+		return -ENOMEM;
-+
-+	pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
-+	if (!pmd)
-+		return -ENOMEM;
-+
-+	set_pmd(pmd + pmd_index(relocated_restore_code),
-+		__pmd((__pa(relocated_restore_code) & PMD_MASK) | __PAGE_KERNEL_LARGE_EXEC));
-+	set_pud(pud + pud_index(relocated_restore_code),
-+		__pud(__pa(pmd) | _KERNPG_TABLE));
-+	set_pgd(pgd + pgd_index(relocated_restore_code),
-+		__pgd(__pa(pud) | _KERNPG_TABLE));
-+
-+	jump_level4_pgt = __pa(pgd);
-+
- 	return 0;
- }
- 
-@@ -98,11 +121,6 @@ static int set_up_temporary_mappings(voi
- 	if (!pgd)
- 		return -ENOMEM;
- 
--	/* Prepare a temporary mapping for the kernel text */
--	result = set_up_temporary_text_mapping(pgd);
--	if (result)
--		return result;
+ 	if (&this_rq()->cfs == cfs_rq) {
+-		struct rq *rq = rq_of(cfs_rq);
 -
- 	/* Set up the direct mapping from scratch */
- 	for (i = 0; i < nr_pfn_mapped; i++) {
- 		mstart = pfn_mapped[i].start << PAGE_SHIFT;
-@@ -122,7 +140,10 @@ static int relocate_restore_code(void)
- 	pgd_t *pgd;
- 	pud_t *pud;
- 
--	relocated_restore_code = get_safe_page(GFP_ATOMIC);
-+	do
-+		relocated_restore_code = get_safe_page(GFP_ATOMIC);
-+	while ((relocated_restore_code & PMD_MASK) == (restore_jump_address & PMD_MASK));
-+
- 	if (!relocated_restore_code)
- 		return -ENOMEM;
- 
-@@ -162,6 +183,11 @@ int swsusp_arch_resume(void)
- 	if (error)
- 		return error;
- 
-+	/* Prepare a temporary mapping for the jump to the image kernel */
-+	error = set_up_temporary_text_mapping();
-+	if (error)
-+		return error;
-+
- 	restore_image();
- 	return 0;
+ 		/*
+ 		 * There are a few boundary cases this might miss but it should
+ 		 * get called often enough that that should (hopefully) not be
+@@ -2894,8 +2892,7 @@ static inline void cfs_rq_util_change(st
+ 		 *
+ 		 * See cpu_util().
+ 		 */
+-		if (cpu_of(rq) == smp_processor_id())
+-			cpufreq_update_util(rq_clock(rq), 0);
++		cpufreq_update_util(rq_of(cfs_rq), 0);
+ 	}
  }
-Index: linux-pm/arch/x86/power/hibernate_asm_64.S
+ 
+Index: linux-pm/kernel/sched/rt.c
 ===================================================================
---- linux-pm.orig/arch/x86/power/hibernate_asm_64.S
-+++ linux-pm/arch/x86/power/hibernate_asm_64.S
-@@ -57,6 +57,7 @@ ENTRY(restore_image)
- 	/* prepare to jump to the image kernel */
- 	movq	restore_jump_address(%rip), %r8
- 	movq	restore_cr3(%rip), %r9
-+	movq	jump_level4_pgt(%rip), %r10
+--- linux-pm.orig/kernel/sched/rt.c
++++ linux-pm/kernel/sched/rt.c
+@@ -958,8 +958,7 @@ static void update_curr_rt(struct rq *rq
+ 		return;
  
- 	/* prepare to switch to temporary page tables */
- 	movq	temp_level4_pgt(%rip), %rax
-@@ -96,6 +97,15 @@ ENTRY(core_restore_code)
- 	jmp	.Lloop
+ 	/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
+-	if (cpu_of(rq) == smp_processor_id())
+-		cpufreq_update_util(rq_clock(rq), SCHED_CPUFREQ_RT);
++	cpufreq_update_util(rq, SCHED_CPUFREQ_RT);
  
- .Ldone:
-+	/* switch to jump page tables */
-+	movq	%r10, %cr3
-+	/* flush TLB */
-+	movq	%rbx, %rcx
-+	andq	$~(X86_CR4_PGE), %rcx
-+	movq	%rcx, %cr4;  # turn off PGE
-+	movq	%cr3, %rcx;  # flush TLB
-+	movq	%rcx, %cr3;
-+	movq	%rbx, %cr4;  # turn PGE back on
- 	/* jump to the restore_registers address from the image header */
- 	jmpq	*%r8
+ 	schedstat_set(curr->se.statistics.exec_max,
+ 		      max(curr->se.statistics.exec_max, delta_exec));
+Index: linux-pm/kernel/sched/sched.h
+===================================================================
+--- linux-pm.orig/kernel/sched/sched.h
++++ linux-pm/kernel/sched/sched.h
+@@ -1763,11 +1763,11 @@ DECLARE_PER_CPU(struct update_util_data
  
+ /**
+  * cpufreq_update_util - Take a note about CPU utilization changes.
+- * @time: Current time.
++ * @rq: Runqueue to carry out the update for.
+  * @flags: Update reason flags.
+  *
+- * This function is called by the scheduler on the CPU whose utilization is
+- * being updated.
++ * This function is called by the scheduler to invoke the CPU frequency
++ * governor.
+  *
+  * It can only be called from RCU-sched read-side critical sections.
+  *
+@@ -1783,16 +1783,19 @@ DECLARE_PER_CPU(struct update_util_data
+  * but that really is a band-aid.  Going forward it should be replaced with
+  * solutions targeted more specifically at RT and DL tasks.
+  */
+-static inline void cpufreq_update_util(u64 time, unsigned int flags)
++static inline void cpufreq_update_util(struct rq *rq, unsigned int flags)
+ {
+ 	struct update_util_data *data;
+ 
++	if (cpu_of(rq) != smp_processor_id())
++		return;
++
+ 	data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
+ 	if (data)
+-		data->func(data, time, flags);
++		data->func(data, rq_clock(rq), flags);
+ }
+ #else
+-static inline void cpufreq_update_util(u64 time, unsigned int flags) {}
++static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
+ #endif /* CONFIG_CPU_FREQ */
+ 
+ #ifdef arch_scale_freq_capacity
 
