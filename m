@@ -1,78 +1,72 @@
-From: Lin Huang <hl@rock-chips.com>
-Subject: [PATCH v5 6/8] Documentation: bindings: add dt documentation for rk3399 dmc
-Date: Wed, 10 Aug 2016 11:26:42 +0800
-Message-ID: <1470799604-12877-7-git-send-email-hl@rock-chips.com>
-References: <1470799604-12877-1-git-send-email-hl@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1470799604-12877-1-git-send-email-hl@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: heiko@sntech.de
-Cc: myungjoo.ham@samsung.com, mark.yao@rock-chips.com, cw00.choi@samsung.com, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, linux-arm-kernel@lists.infradead.org, tixy@linaro.org, typ@rock-chips.com, sudeep.holla@arm.com, mark.rutland@arm.com, linux-pm@vger.kernel.org, Lin Huang <hl@rock-chips.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] cpufreq: powernv: Fix crash in gpstate_timer_handler
+Date: Wed, 10 Aug 2016 14:28:47 +1000
+Message-ID: <87oa51tfgg.fsf@concordia.ellerman.id.au>
+References: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com> <20160804164711.GE10348@ubuntu>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ozlabs.org ([103.22.144.67]:47922 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751176AbcHJE2t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 10 Aug 2016 00:28:49 -0400
+In-Reply-To: <20160804164711.GE10348@ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-This patch adds the documentation for rockchip rk3399 dmc driver.
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
-Signed-off-by: Lin Huang <hl@rock-chips.com>
----
-Changes in v5:
--None
+> On 04-08-16, 20:59, Akshay Adiga wrote:
+>> 'commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with
+>> frequency table index")' changes calc_global_pstate() to use
+>> cpufreq_table index instead of pstate_id.
+>> 
+>> But in gpstate_timer_handler() pstate_id was being passed instead
+>> of cpufreq_table index, which caused the index_to_pstate() to access
+>> out of bound indices, leading to this crash.
+>> 
+>> Adding sanity check for index and pstate, to ensure only valid pstate
+>> and index values are returned.
+>> 
+>> Call Trace:
+>> [c00000078d66b130] [c00000000011d224] __free_irq+0x234/0x360
+>> (unreliable)
+>> [c00000078d66b1c0] [c00000000011d44c] free_irq+0x6c/0xa0
+>> [c00000078d66b1f0] [c00000000006c4f8] opal_event_shutdown+0x88/0xd0
+>> [c00000078d66b230] [c000000000067a4c] opal_shutdown+0x1c/0x90
+>> [c00000078d66b260] [c000000000063a00] pnv_shutdown+0x20/0x40
+>> [c00000078d66b280] [c000000000021538] machine_restart+0x38/0x90
+>> [c0000000078d66b310] [c000000000965ea0] panic+0x284/0x300
+>> [c00000078d66b3a0] [c00000000001f508] die+0x388/0x450
+>> [c00000078d66b430] [c000000000045a50] bad_page_fault+0xd0/0x140
+>> [c00000078d66b4a0] [c000000000008964] handle_page_fault+0x2c/0x30
+>>    interrupt: 300 at gpstate_timer_handler+0x150/0x260
+>>     LR = gpstate_timer_handler+0x130/0x260
+>> [c00000078d66b7f0] [c000000000132b58] call_timer_fn+0x58/0x1c0
+>> [c00000078d66b880] [c000000000132e20] expire_timers+0x130/0x1d0
+>> [c00000078d66b8f0] [c000000000133068] run_timer_softirq+0x1a8/0x230
+>> [c00000078d66b980] [c0000000000b535c] __do_softirq+0x18c/0x400
+>> [c00000078d66ba70] [c0000000000b5828] irq_exit+0xc8/0x100
+>> [c00000078d66ba90] [c00000000001e214] timer_interrupt+0xa4/0xe0
+>> [c00000078d66bac0] [c0000000000027d0] decrementer_common+0x150/0x180
+>>    interrupt: 901 at arch_local_irq_restore+0x74/0x90
+>>   0] [c000000000106b34] call_cpuidle+0x44/0x90
+>> [c00000078d66be50] [c00000000010708c] cpu_startup_entry+0x38c/0x460
+>> [c00000078d66bf20] [c00000000003d930] start_secondary+0x330/0x380
+>> [c00000078d66bf90] [c000000000008e6c] start_secondary_prolog+0x10/0x14
+>> 
+>> Fixes: 08d27eb ("cpufreq: powernv: Replacing pstate_id with
+>> frequency table index")
+>> Reported-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+>> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+>> ---
+>>  drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++++++-
+>>  1 file changed, 20 insertions(+), 1 deletion(-)
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Changes in v4:
--None
+Who's merging this?
 
-Changes in v3:
--None
-
-Changes in v2:
--None 
-
-Changes in v1:
--None
-
- .../devicetree/bindings/devfreq/rk3399_dmc.txt     | 35 ++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-
-diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-new file mode 100644
-index 0000000..90e9581
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-@@ -0,0 +1,35 @@
-+* Rockchip rk3399 dmc device
-+
-+Required properties:
-+- compatible: Must be "rockchip,rk3399-dmc".
-+- devfreq-events: Node to get ddr loading, Refer to
-+		  Documentation/devicetree/bindings/devfreq/rockchip-dif.txt
-+- interrupts: The interrupt number to the cpu. The interrupt specifier format
-+	      depends on the interrupt controller. 
-+- clocks: Phandles for clock specified in "clock-names" property
-+- clock-names : The name of clock used by the DFI, must be "pclk_ddr_mon";
-+- operating-points-v2: Refer to Documentation/devicetree/bindings/power/opp.txt
-+		       for details.
-+- center-supply: Dmc supply node.
-+- status: Marks the node enabled/disabled.
-+
-+Optional properties:
-+- ddr_timing: ddr timing need to pass to arm trust firmware
-+- upthreshold: the upthreshold to simpleondeamnd policy
-+- downdifferential: The downdifferential to simpleondeamnd policy
-+
-+Example:
-+	dmc: dmc {
-+		compatible = "rockchip,rk3399-dmc";
-+		devfreq-events = <&dfi>;
-+		interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&cru SCLK_DDRCLK>;
-+		clock-names = "dmc_clk";
-+		ddr_timing = <&ddr_timing>;
-+		operating-points-v2 = <&dmc_opp_table>;
-+		center-supply = <&ppvar_centerlogic>;
-+		upthreshold = <15>;
-+		downdifferential = <10>;
-+		status = "disabled";
-+	};
-+
--- 
-1.9.1
+cheers
