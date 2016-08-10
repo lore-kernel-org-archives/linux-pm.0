@@ -1,145 +1,160 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
- mapping correctly
-Date: Wed, 10 Aug 2016 09:44:44 -0700
-Message-ID: <CAJcbSZF6k0=NXvqMGedcSPiMLwGBG3tZGBwCMJWgMm2AXDY9hQ@mail.gmail.com>
-References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <2010434.TyoHiO9eal@vostro.rjw.lan>
- <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm> <1779906.DOHeuFCiDy@vostro.rjw.lan>
- <alpine.LNX.2.00.1608101517380.22028@cbobk.fhfr.pm> <CAJcbSZHGH8G01zXSE6y9A19ZxFYY0bzeqcfHBEAYZcn8ZeX3+g@mail.gmail.com>
- <alpine.LNX.2.00.1608101658070.22028@cbobk.fhfr.pm> <20160810163500.GA9424@nazgul.tnic>
-Reply-To: kernel-hardening@lists.openwall.com
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v3 15/15] ARM64: dts: Define CPU power domain for MSM8916
+Date: Wed, 10 Aug 2016 11:35:43 -0600
+Message-ID: <20160810173543.GB1401@linaro.org>
+References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
+ <1470351902-43103-16-git-send-email-lina.iyer@linaro.org>
+ <aae203cd-35ee-958f-bc59-b9d53c32aeb2@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <kernel-hardening-return-4324-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <20160810163500.GA9424@nazgul.tnic>
-To: Borislav Petkov <bp@suse.de>
-Cc: Jiri Kosina <jikos@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <aae203cd-35ee-958f-bc59-b9d53c32aeb2@arm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, khilman@kernel.org, sboyd@codeaurora.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, Brendan Jackman <Brendan.Jackman@arm.com>, linux-arm-msm@vger.kernel.org, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 10, 2016 at 9:35 AM, Borislav Petkov <bp@suse.de> wrote:
-> On Wed, Aug 10, 2016 at 04:59:40PM +0200, Jiri Kosina wrote:
->> Mine is Lenovo thinkpad x200s; I think Boris has been testing it on x230=
-s,
+On Wed, Aug 10 2016 at 09:27 -0600, Sudeep Holla wrote:
 >
-> It says "X230" here under the screen.
 >
->> but not sure whether any of the latest patches didn't actually fix it fo=
-r
->> him.
+>On 05/08/16 00:05, Lina Iyer wrote:
+>>Define power domain and the power states for the domain as defined by
+>>the PSCI firmware.
 >
-> Haven't tested them yet. I'm waiting for you to test them first since
-> this is the only machine I have right now and I need it for work.
+>>The 8916 firmware supports OS initiated method of
+>>powering off the CPU clusters.
 >
->> The machine I am seeing the issue on, has 2G RAM, with this e820 map:
+>How is that related to the this DTS change, more details below ?
 >
-> 8G here:
+>>
+>>Cc: <devicetree@vger.kernel.org>
+>>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>>---
+>> arch/arm64/boot/dts/qcom/msm8916.dtsi | 27 +++++++++++++++++++++++++++
+>> 1 file changed, 27 insertions(+)
+>>
+>>diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+>>index 3029773..eb0aaed 100644
+>>--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
+>>+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+>>@@ -64,6 +64,7 @@
+>> 			next-level-cache = <&L2_0>;
+>> 			enable-method = "psci";
+>> 			cpu-idle-states = <&CPU_SPC>;
+>>+			power-domains = <&CPU_PD>;
 >
-> e820: BIOS-provided physical RAM map:
-> BIOS-e820: [mem 0x0000000000000000-0x000000000009d7ff] usable
-> BIOS-e820: [mem 0x000000000009d800-0x000000000009ffff] reserved
-> BIOS-e820: [mem 0x00000000000e0000-0x00000000000fffff] reserved
-> BIOS-e820: [mem 0x0000000000100000-0x000000001fffffff] usable
-> BIOS-e820: [mem 0x0000000020000000-0x00000000201fffff] reserved
-> BIOS-e820: [mem 0x0000000020200000-0x0000000040003fff] usable
-> BIOS-e820: [mem 0x0000000040004000-0x0000000040004fff] reserved
-> BIOS-e820: [mem 0x0000000040005000-0x00000000cec2ffff] usable
-> BIOS-e820: [mem 0x00000000cec30000-0x00000000dae9efff] reserved
-> BIOS-e820: [mem 0x00000000dae9f000-0x00000000daf9efff] ACPI NVS
-> BIOS-e820: [mem 0x00000000daf9f000-0x00000000daffefff] ACPI data
-> BIOS-e820: [mem 0x00000000dafff000-0x00000000df9fffff] reserved
-> BIOS-e820: [mem 0x00000000f8000000-0x00000000fbffffff] reserved
-> BIOS-e820: [mem 0x00000000fec00000-0x00000000fec00fff] reserved
-> BIOS-e820: [mem 0x00000000fed08000-0x00000000fed08fff] reserved
-> BIOS-e820: [mem 0x00000000fed10000-0x00000000fed19fff] reserved
-> BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed1ffff] reserved
-> BIOS-e820: [mem 0x00000000fee00000-0x00000000fee00fff] reserved
-> BIOS-e820: [mem 0x00000000ffc00000-0x00000000ffffffff] reserved
-> BIOS-e820: [mem 0x0000000100000000-0x000000021e5fffff] usable
-> BIOS-e820: [mem 0x000000021e600000-0x000000021e7fffff] reserved
-> debug: ignoring loglevel setting.
-> NX (Execute Disable) protection: active
-> SMBIOS 2.7 present.
-> DMI: LENOVO 2320CTO/2320CTO, BIOS G2ET86WW (2.06 ) 11/13/2012
-> e820: update [mem 0x00000000-0x00000fff] usable =3D=3D> reserved
-> e820: remove [mem 0x000a0000-0x000fffff] usable
-> e820: last_pfn =3D 0x21e600 max_arch_pfn =3D 0x400000000
+>This is really messy. We need to have idle state information at one 
+>place. I prefer to have a hierarchal representation of power-domains
+>for CPU with idle-states at each level.
 >
->> CPU:
->
-> processor       : 0
-> vendor_id       : GenuineIntel
-> cpu family      : 6
-> model           : 58
-> model name      : Intel(R) Core(TM) i7-3520M CPU @ 2.90GHz
-> stepping        : 9
-> microcode       : 0x1c
-> cpu MHz         : 1257.421
-> cache size      : 4096 KB
-> physical id     : 0
-> siblings        : 4
-> core id         : 0
-> cpu cores       : 2
-> apicid          : 0
-> initial apicid  : 0
-> fpu             : yes
-> fpu_exception   : yes
-> cpuid level     : 13
-> wp              : yes
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mc=
-a cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx=
- rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonst=
-op_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est =
-tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_time=
-r aes xsave avx f16c rdrand lahf_lm epb tpr_shadow vnmi flexpriority ept vp=
-id fsgsbase smep erms xsaveopt dtherm ida arat pln pts
-> bugs            :
-> bogomips        : 5786.68
-> clflush size    : 64
-> cache_alignment : 64
-> address sizes   : 36 bits physical, 48 bits virtual
-> power management:
->
+>> 		};
+I see where are going with that. We need to then isolate idle states
+from all devices (including CPU) and put them under the umberella of the
+domain/parent idle states.
 
-Ok, I want to know if the problem is the PUD alignment or the change
-of PAGE_OFFSET based all together. Can you test the following change?
-(on top of everything else with KASLR enabled). It will randomize the
-memory sections only on PGD level.
+We also need to remember that domain idle states are not just for CPU
+domains. There are generic PM domains that also define their idle
+states. For some, that hierarchy may not make sense. So forcing it on
+all domains is not correct as well.
 
-diff --git a/arch/x86/mm/kaslr.c b/arch/x86/mm/kaslr.c
-index ec8654f..a8477b0 100644
---- a/arch/x86/mm/kaslr.c
-+++ b/arch/x86/mm/kaslr.c
-@@ -120,7 +120,7 @@ void __init kernel_randomize_memory(void)
-                 */
-                entropy =3D remain_entropy / (ARRAY_SIZE(kaslr_regions) - i=
-);
-                prandom_bytes_state(&rand_state, &rand, sizeof(rand));
--               entropy =3D (rand % (entropy + 1)) & PUD_MASK;
-+               entropy =3D (rand % (entropy + 1)) & PGDIR_MASK;
-                vaddr +=3D entropy;
-                *kaslr_regions[i].base =3D vaddr;
-
-@@ -129,7 +129,7 @@ void __init kernel_randomize_memory(void)
-                 * randomization alignment.
-                 */
-                vaddr +=3D get_padding(&kaslr_regions[i]);
--               vaddr =3D round_up(vaddr + 1, PUD_SIZE);
-+               vaddr =3D round_up(vaddr + 1, PGDIR_SIZE);
-                remain_entropy -=3D entropy;
-        }
- }
-
-> --
-> Regards/Gruss,
->     Boris.
+>>
+>> 		CPU1: cpu@1 {
+>>@@ -73,6 +74,7 @@
+>> 			next-level-cache = <&L2_0>;
+>> 			enable-method = "psci";
+>> 			cpu-idle-states = <&CPU_SPC>;
+>>+			power-domains = <&CPU_PD>;
+>> 		};
+>>
+>> 		CPU2: cpu@2 {
+>>@@ -82,6 +84,7 @@
+>> 			next-level-cache = <&L2_0>;
+>> 			enable-method = "psci";
+>> 			cpu-idle-states = <&CPU_SPC>;
+>>+			power-domains = <&CPU_PD>;
+>> 		};
+>>
+>> 		CPU3: cpu@3 {
+>>@@ -91,6 +94,7 @@
+>> 			next-level-cache = <&L2_0>;
+>> 			enable-method = "psci";
+>> 			cpu-idle-states = <&CPU_SPC>;
+>>+			power-domains = <&CPU_PD>;
+>> 		};
+>>
+>> 		L2_0: l2-cache {
+>>@@ -113,6 +117,29 @@
+>> 	psci {
+>> 		compatible = "arm,psci-1.0";
+>> 		method = "smc";
 >
-> ECO tip #101: Trim your mails when you reply.
+>Why is it inside PSCI node ? I don't see a need for that.
+>If it needs to be here, then amend the binding document.
 >
-> SUSE Linux GmbH, GF: Felix Imend=C3=B6rffer, Jane Smithard, Graham Norton=
-, HRB 21284 (AG N=C3=BCrnberg)
-> --
+It is described in patch 13/15.
+
+It is inside PSCI node, because PSCI has the domain controller.
+
+>>+
+>>+		CPU_PD: cpu-pd@0 {
+>>+			#power-domain-cells = <0>;
+>>+			domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
+>>+		};
+>>+
+>>+		domain-states {
+>>+			CLUSTER_RET: domain_ret {
+>>+				compatible = "arm,idle-state";
+>>+				arm,psci-suspend-param = <0x1000010>;
+>>+				entry-latency-us = <500>;
+>>+				exit-latency-us = <500>;
+>>+				min-residency-us = <2000>;
+>>+			};
+>>+
+>>+			CLUSTER_PWR_DWN: domain_gdhs {
+>>+				compatible = "arm,idle-state";
+>>+				arm,psci-suspend-param = <0x1000030>;
+>>+				entry-latency-us = <2000>;
+>>+				exit-latency-us = <2000>;
+>>+				min-residency-us = <6000>;
+>>+			};
+>>+		};
+>
+>So how do you collapse these states into the cpu level states ?
+Why do you have to collapse?
+
+>We should be able to cope up with platform co-ordinated mode of idle.
+>For me, this binding and the representation here is designed only to
+>address OS co-ordinated mode of idle support but it should be other way
+>around. Design the bindings that can cater any mode (platform and OS
+>co-ordinated)
+As explained to Brendan on the version2 of the series, OSI and PC are
+orthagonal to each other. The idle state definition in the devicetree
+exactly matches the unique approaches of these 2 modes.
+
+In platform coordinated, the CPU determines the idle state of the domain
+and selects the state, hence it makes sense to extend the
+cpu-idle-states to cover those domain states.
+
+In OSI, the CPUs only determine their idle states. When they are done
+with their idle state, they bubble up and let the domain choose its idle
+state and therefore the domain-idle-states is part of the domain
+controller.
+
+With this addition platform coordinated representation is not broken. If
+your SoC supports both platform and os modes, then you can specify the
+idle states of both of them in the DT. The clause in firmware/psci.c
+will however, choose OSI if its available. I am not sure we want to
+dynamically switch betweeen OSI and PC at runtime.
+
+Thanks,
+Lina
