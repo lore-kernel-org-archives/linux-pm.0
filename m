@@ -1,15 +1,15 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v6 5/8] arm64, dts: add Juno cpu capacity-dmips-mhz
+Subject: Re: [PATCH v6 6/8] arm64, dts: add Juno r2 cpu capacity-dmips-mhz
  information
-Date: Wed, 10 Aug 2016 16:38:05 +0100
-Message-ID: <e6d18eb9-8de2-2f7f-943d-bbe087aee032@arm.com>
+Date: Wed, 10 Aug 2016 16:41:09 +0100
+Message-ID: <fedd8373-7cc4-5dc3-3b15-7f4e6129f156@arm.com>
 References: <1468932048-31635-1-git-send-email-juri.lelli@arm.com>
- <1468932048-31635-6-git-send-email-juri.lelli@arm.com>
+ <1468932048-31635-7-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1468932048-31635-6-git-send-email-juri.lelli@arm.com>
+In-Reply-To: <1468932048-31635-7-git-send-email-juri.lelli@arm.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -26,11 +26,8 @@ List-Id: linux-pm@vger.kernel.org
 
 
 On 19/07/16 13:40, Juri Lelli wrote:
-> Add Juno cpu capacity-dmips-mhz bindings information.
+> Add Juno r2 cpu capacity-dmips-mhz bindings information.
 >
-
-s/bindings// (if you repost)
-
 > Cc: Rob Herring <robh+dt@kernel.org>
 > Cc: Pawel Moll <pawel.moll@arm.com>
 > Cc: Mark Rutland <mark.rutland@arm.com>
@@ -42,8 +39,10 @@ s/bindings// (if you repost)
 > Cc: Sudeep Holla <sudeep.holla@arm.com>
 
 Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-(again let us know if this needs to be picked by separately,
-  generally preferred to avoid conflicts)
+
+(reluctantly :), though I agree the bindings are approved to allow this,
+  it seems odd to see capacity-dmips-mhz = <485> here and <578> on R0
+  for the A53 CPUs)
 
 -- 
 Regards,
