@@ -1,39 +1,66 @@
-From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH v5 7/8] PM / devfreq: rockchip: add devfreq driver for
- rk3399 dmc
-Date: Wed, 10 Aug 2016 12:39:00 +0800
-Message-ID: <201608101247.hUgF749P%fengguang.wu@intel.com>
-References: <1470799604-12877-8-git-send-email-hl@rock-chips.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH -next] thermal: qcom: tsens: Fix return value check in
+ init_common()
+Date: Wed, 10 Aug 2016 10:29:32 +0530
+Message-ID: <57AAB4B4.4090907@codeaurora.org>
+References: <1469860357-2773-1-git-send-email-weiyj.lk@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-Content-Disposition: inline
-In-Reply-To: <1470799604-12877-8-git-send-email-hl@rock-chips.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-Cc: tixy@linaro.org, mark.rutland@arm.com, Lin Huang <hl@rock-chips.com>, typ@rock-chips.com, linux-rockchip@lists.infradead.org, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, kbuild-all@01.org, sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:57287 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbcHJE7i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 10 Aug 2016 00:59:38 -0400
+In-Reply-To: <1469860357-2773-1-git-send-email-weiyj.lk@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wei Yongjun <weiyj.lk@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lina Iyer <lina.iyer@linaro.org>
+Cc: linux-pm@vger.kernel.org
 
-SGkgTGluLAoKW2F1dG8gYnVpbGQgdGVzdCBXQVJOSU5HIG9uIHY0LjgtcmMxXQpbYWxzbyBidWls
-ZCB0ZXN0IFdBUk5JTkcgb24gbmV4dC0yMDE2MDgwOV0KW2Nhbm5vdCBhcHBseSB0byByb2NrY2hp
-cC9mb3ItbmV4dCBkZXZmcmVxL2Zvci1yYWZhZWwgbGludXgvbWFzdGVyXQpbaWYgeW91ciBwYXRj
-aCBpcyBhcHBsaWVkIHRvIHRoZSB3cm9uZyBnaXQgdHJlZSwgcGxlYXNlIGRyb3AgdXMgYSBub3Rl
-IHRvIGhlbHAgaW1wcm92ZSB0aGUgc3lzdGVtXQoKdXJsOiAgICBodHRwczovL2dpdGh1Yi5jb20v
-MGRheS1jaS9saW51eC9jb21taXRzL0xpbi1IdWFuZy9yazMzOTktc3VwcG9ydC1kZHItZnJlcXVl
-bmN5LXNjYWxpbmcvMjAxNjA4MTAtMTE0NDMzCgoKY29jY2luZWxsZSB3YXJuaW5nczogKG5ldyBv
-bmVzIHByZWZpeGVkIGJ5ID4+KQoKPj4gZHJpdmVycy9kZXZmcmVxL3JrMzM5OV9kbWMuYzozOTM6
-Mi0zOiBVbm5lZWRlZCBzZW1pY29sb24KClBsZWFzZSByZXZpZXcgYW5kIHBvc3NpYmx5IGZvbGQg
-dGhlIGZvbGxvd3VwIHBhdGNoLgoKLS0tCjAtREFZIGtlcm5lbCB0ZXN0IGluZnJhc3RydWN0dXJl
-ICAgICAgICAgICAgICAgIE9wZW4gU291cmNlIFRlY2hub2xvZ3kgQ2VudGVyCmh0dHBzOi8vbGlz
-dHMuMDEub3JnL3BpcGVybWFpbC9rYnVpbGQtYWxsICAgICAgICAgICAgICAgICAgIEludGVsIENv
-cnBvcmF0aW9uCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CmRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpo
-dHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+
+On 07/30/2016 12:02 PM, Wei Yongjun wrote:
+> In case of error, the function of_iomap() returns NULL pointer
+> not ERR_PTR(). The IS_ERR() test in the return value check
+> should be replaced with NULL test.
+> And the function devm_regmap_init_mmio() returns ERR_PTR()
+> and never returns NULL. The NULL test in the return value
+> check should be replaced with IS_ERR().
+
+Thanks for fixing this, I seem to have mixed up the return types
+for the two functions
+
+Acked-by: Rajendra Nayak <rnayak@codeaurora.org>
+
+> 
+> Signed-off-by: Wei Yongjun <weiyj.lk@gmail.com>
+> ---
+>  drivers/thermal/qcom/tsens-common.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+> index 4a1af15..b1449ad 100644
+> --- a/drivers/thermal/qcom/tsens-common.c
+> +++ b/drivers/thermal/qcom/tsens-common.c
+> @@ -128,13 +128,13 @@ int __init init_common(struct tsens_device *tmdev)
+>  	void __iomem *base;
+>  
+>  	base = of_iomap(tmdev->dev->of_node, 0);
+> -	if (IS_ERR(base))
+> +	if (!base)
+>  		return -EINVAL;
+>  
+>  	tmdev->map = devm_regmap_init_mmio(tmdev->dev, base, &tsens_config);
+> -	if (!tmdev->map) {
+> +	if (IS_ERR(tmdev->map)) {
+>  		iounmap(base);
+> -		return -ENODEV;
+> +		return PTR_ERR(tmdev->map);
+>  	}
+>  
+>  	return 0;
+> 
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
