@@ -1,84 +1,98 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
- mapping correctly
-Date: Wed, 10 Aug 2016 22:56:34 +0200
-Message-ID: <CAJZ5v0h_N5KvjUZjDDdoXMP3UoMmyYKOrHUpyGH14EYWMbxvPA@mail.gmail.com>
-References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <2010434.TyoHiO9eal@vostro.rjw.lan>
- <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm> <1779906.DOHeuFCiDy@vostro.rjw.lan>
- <alpine.LNX.2.00.1608101517380.22028@cbobk.fhfr.pm> <CAJcbSZHGH8G01zXSE6y9A19ZxFYY0bzeqcfHBEAYZcn8ZeX3+g@mail.gmail.com>
- <alpine.LNX.2.00.1608101658070.22028@cbobk.fhfr.pm> <20160810163500.GA9424@nazgul.tnic>
-Reply-To: kernel-hardening@lists.openwall.com
+From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v5 0/7] lib: string: add functions to case-convert
+	strings
+Date: Wed, 10 Aug 2016 14:04:50 -0700
+Message-ID: <1470863097-21138-1-git-send-email-mmayer@broadcom.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <kernel-hardening-return-4329-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: rjwysocki@gmail.com
-In-Reply-To: <20160810163500.GA9424@nazgul.tnic>
-To: Borislav Petkov <bp@suse.de>, Thomas Garnier <thgarnie@google.com>
-Cc: Jiri Kosina <jikos@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/nouveau>
+List-Post: <mailto:nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+List-Help: <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/nouveau>,
+ <mailto:nouveau-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
+Errors-To: nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
+Sender: "Nouveau" <nouveau-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
+To: Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Al Viro <viro-RmSDqhL/yNMiFSDQTTA3OLVCufUGDwFn@public.gmane.org>, Rasmus Villemoes <linux-qQsb+v5E8BnlAoU/VqSP6n9LOBIZ5rWg@public.gmane.org>, Chris Metcalf <cmetcalf-d5a29ZRxExrQT0dZR+AlfA@public.gmane.org>, Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, speakup-UPO/6gOIxNZglr+F8WMZYdi2O/JbrIOy@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, target-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 10, 2016 at 6:35 PM, Borislav Petkov <bp@suse.de> wrote:
-> On Wed, Aug 10, 2016 at 04:59:40PM +0200, Jiri Kosina wrote:
->> Mine is Lenovo thinkpad x200s; I think Boris has been testing it on x230s,
->
-> It says "X230" here under the screen.
->
->> but not sure whether any of the latest patches didn't actually fix it for
->> him.
->
-> Haven't tested them yet. I'm waiting for you to test them first since
-> this is the only machine I have right now and I need it for work.
->
->> The machine I am seeing the issue on, has 2G RAM, with this e820 map:
->
-> 8G here:
->
-> e820: BIOS-provided physical RAM map:
-> BIOS-e820: [mem 0x0000000000000000-0x000000000009d7ff] usable
-> BIOS-e820: [mem 0x000000000009d800-0x000000000009ffff] reserved
-> BIOS-e820: [mem 0x00000000000e0000-0x00000000000fffff] reserved
-> BIOS-e820: [mem 0x0000000000100000-0x000000001fffffff] usable
-> BIOS-e820: [mem 0x0000000020000000-0x00000000201fffff] reserved
-> BIOS-e820: [mem 0x0000000020200000-0x0000000040003fff] usable
-> BIOS-e820: [mem 0x0000000040004000-0x0000000040004fff] reserved
-> BIOS-e820: [mem 0x0000000040005000-0x00000000cec2ffff] usable
-> BIOS-e820: [mem 0x00000000cec30000-0x00000000dae9efff] reserved
-> BIOS-e820: [mem 0x00000000dae9f000-0x00000000daf9efff] ACPI NVS
-> BIOS-e820: [mem 0x00000000daf9f000-0x00000000daffefff] ACPI data
-> BIOS-e820: [mem 0x00000000dafff000-0x00000000df9fffff] reserved
-> BIOS-e820: [mem 0x00000000f8000000-0x00000000fbffffff] reserved
-> BIOS-e820: [mem 0x00000000fec00000-0x00000000fec00fff] reserved
-> BIOS-e820: [mem 0x00000000fed08000-0x00000000fed08fff] reserved
-> BIOS-e820: [mem 0x00000000fed10000-0x00000000fed19fff] reserved
-> BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed1ffff] reserved
-> BIOS-e820: [mem 0x00000000fee00000-0x00000000fee00fff] reserved
-> BIOS-e820: [mem 0x00000000ffc00000-0x00000000ffffffff] reserved
-> BIOS-e820: [mem 0x0000000100000000-0x000000021e5fffff] usable
-> BIOS-e820: [mem 0x000000021e600000-0x000000021e7fffff] reserved
-> debug: ignoring loglevel setting.
-> NX (Execute Disable) protection: active
-> SMBIOS 2.7 present.
-> DMI: LENOVO 2320CTO/2320CTO, BIOS G2ET86WW (2.06 ) 11/13/2012
-> e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
-> e820: remove [mem 0x000a0000-0x000fffff] usable
-> e820: last_pfn = 0x21e600 max_arch_pfn = 0x400000000
-
-So far, I'm unable to reproduce the problem (with the $subject patch
-applied) on two different Intel-base machines with 4 Gig and 8 Gig of
-RAM.
-
-One thing that's clearly different on my machines is that they both
-have usable memory at the end of the e820 map (and the one where Jiri
-can reproduce the problem has reserved memory at the end of it, just
-like yours).
-
-Thomas, what about the e820 map on your machine?
-
-I'm not sure why that would matter, though.
-
-Thanks,
-Rafael
+VGhpcyBzZXJpZXMgaW50cm9kdWNlcyBhIGZhbWlseSBvZiBnZW5lcmljIHN0cmluZyBjYXNlIGNv
+bnZlcnNpb24KZnVuY3Rpb25zLiBUaGlzIGtpbmQgb2YgZnVuY3Rpb25hbGl0eSBpcyBuZWVkZWQg
+aW4gc2V2ZXJhbCBwbGFjZXMgaW4KdGhlIGtlcm5lbC4gUmlnaHQgbm93LCBldmVyeWJvZHkgc2Vl
+bXMgdG8gYmUgaW1wbGVtZW50aW5nIHRoZWlyIG93bgpjb3B5IG9mIHRoaXMgZnVuY3Rpb25hbGl0
+eS4KCkJhc2VkIG9uIHRoZSBkaXNjdXNzaW9uIG9mIHRoZSBwcmV2aW91cyB2ZXJzaW9uIG9mIHRo
+aXMgc2VyaWVzWzFdIGFuZAp0aGUgdXNlIGNhc2VzIGZvdW5kIGluIHRoZSBrZXJuZWwsIGl0IGRv
+ZXMgbG9vayBsaWtlIGhhdmluZyBzZXZlcmFsCmZsYXZvdXJzIG9mIGNhc2UgY29udmVyc2lvbiBm
+dW5jdGlvbnMgaXMgYmVuZWZpY2lhbC4gVGhlIHVzZSBjYXNlcyBmYWxsCmludG8gdGhyZWUgY2F0
+ZWdvcmllczoKICAgIC0gY29weWluZyBhIHN0cmluZyBhbmQgY29udmVydGluZyB0aGUgY2FzZSB3
+aGlsZSBzcGVjaWZ5aW5nIGEKICAgICAgbWF4aW11bSBsZW5ndGggdG8gbWltaWMgc3RybGNweSgp
+CiAgICAtIGNvcHlpbmcgYSBzdHJpbmcgYW5kIGNvbnZlcnRpbmcgdGhlIGNhc2Ugd2l0aG91dCBz
+cGVjaWZ5aW5nIGEKICAgICAgbGVuZ3RoIHRvIG1pbWljIHN0cmNweSgpCiAgICAtIGNvbnZlcnRp
+bmcgdGhlIGNhc2Ugb2YgYSBzdHJpbmcgaW4tcGxhY2UgKGkuZS4gbW9kaWZ5aW5nIHRoZQogICAg
+ICBzdHJpbmcgdGhhdCB3YXMgcGFzc2VkIGluKQoKQ29uc2VxdWVudGx5LCBJIGFtIHByb3Bvc2lu
+ZyB0aGVzZSBuZXcgZnVuY3Rpb25zOgogICAgaW50IHN0cmxjcHl0b3VwcGVyKGNoYXIgKmRzdCwg
+Y29uc3QgY2hhciAqc3JjLCBzaXplX3QgbGVuKTsKICAgIGludCBzdHJsY3B5dG9sb3dlcihjaGFy
+ICpkc3QsIGNvbnN0IGNoYXIgKnNyYywgc2l6ZV90IGxlbik7CiAgICB2b2lkIHN0cmNweXRvdXBw
+ZXIoY2hhciAqZHN0LCBjb25zdCBjaGFyICpzcmMpOwogICAgdm9pZCBzdHJjcHl0b2xvd2VyKGNo
+YXIgKmRzdCwgY29uc3QgY2hhciAqc3JjKTsKICAgIHZvaWQgc3RydG91cHBlcihjaGFyICpzKTsK
+ICAgIHZvaWQgc3RydG9sb3dlcihjaGFyICpzKTsKClNldmVyYWwgZHJpdmVycyBhcmUgYmVpbmcg
+bW9kaWZpZWQgdG8gbWFrZSB1c2Ugb2YgdGhlIGZ1bmN0aW9ucyBhYm92ZS4KQW5vdGhlciBkcml2
+ZXIgdGhhdCBhbHNvIG1ha2VzIHVzZSBvZiB0aGlzIGZ1bmN0aW9uYWxpdHkgd2lsbCBiZQpzdWJt
+aXR0ZWQgdXBzdHJlYW0gc2hvcnRseSwgd2hpY2ggcHJvbXB0ZWQgdGhpcyB3aG9sZSBleGVyY2lz
+ZS4KClRoZSBjaGFuZ2VzIG1hZGUgaGVyZSBoYXZlIGJlZW4gY29tcGlsZS10ZXN0ZWQsIGJ1dCBu
+b3QgdHJpZWQgb3V0LCBkdWUKdG8gbGFjayBvZiByZXF1aXJlZCBoYXJkd2FyZS4KCkNoYW5nZXMg
+c2luY2UgdjQ6CiAgLSByZWJhc2VkIG9uIDQuOC1yYzE7IHRoaXMgb25seSBhZmZlY3RzIHBhdGNo
+IDYvNyAoZ2sxMDQpIGFuZCBvbmx5IHRoZQogICAgcGF0Y2ggY29udGV4dCwgbm90IHRoZSBwYXRj
+aCBpdHNlbGYKICAtIGFkZGVkIGFuIEFDSyB0byBwYXRjaCA0LzcgKHNwZWFrdXApCiAgLSBhZGRl
+ZCBhbiBBQ0sgdG8gcGF0Y2ggNy83IChwb3dlcl9zdXBwbHkpCgpDaGFuZ2VzIHNpbmNlIHYzOgog
+IC0gc3RybGNweXRvdXBwZXIoKSBhbmQgc3RybGNweXRvbG93ZXIoKSByZXR1cm4gbGVuZ3RoIG9m
+IGRlc3RpbmF0aW9uCiAgICBvciAtRTJCSUcgKHNlZSBbMl0pCiAgLSB3ZSB1c2UgfihzaXplX3Qp
+MCBpbnN0ZWFkIG9mIC0xIHRvIGNvcHkgc3RyaW5ncyBvZiBhcmJpdHJhcnkgbGVuZ3RoCiAgICBp
+biBzdHJjcHl0byooKSBhbmQgc3RydG8qKCkKICAtIEEgZmV3IEFDS3MgYWRkZWQKCkNoYW5nZXMg
+c2luY2UgdjI6CiAgLSB1c2Ugc3RybGNweSgpIHNlbWFudGljcyBub3Qgc3RybmNweSgpIHNlbWFu
+dGljcywgaS5lLiBndWFyYW50ZWUKICAgIE5VTEwgdGVybWluYXRpb24KICAtIGFzIGEgcmVzdWx0
+IHN0cm5jcHl0bzx1cHBlcnxsb3dlcj4gYXJlIG5vdyBjYWxsZWQKICAgIHN0cmxjcHl0bzx1cHBl
+cnxsb3dlcj4KICAtIG1ha2UgZnVuY3Rpb25zIHZvaWQKICAtIHVzZSBsZW4gPT0gLTEgKFNJWkVf
+TUFYKSBhcyBuby1saW1pdCBpbmRpY2F0b3IgcmF0aGVyIHRoZW4gbGVuID09IDAKICAtIGNoYW5n
+ZSBQQVRDSCAyLzcgdG8gbWF0Y2ggc3RybGNweSgpIHNlbWFudGljcwogIC0gY2hhbmdlIFBBVENI
+IDQvNyB0byBtYXRjaCBzdHJsY3B5KCkgc2VtYW50aWNzCgpDaGFuZ2VzIHNpbmNlIHYxOgogIC0g
+ZXhwYW5kZWQgc3RydG9sb3dlcigpIGludG8gYSBmYW1pbHkgb2YgZnVuY3Rpb25zIHRoYXQgY292
+ZXIgdXNlCiAgICBjYXNlcyB3aGVuIGEgbGVuZ3RoIGFyZ3VtZW50IGlzIG9yIGlzbid0IHJlcXVp
+cmVkIGFuZCB0aGF0IHN1cHBvcnQKICAgIGNvcHlpbmcgdGhlIHN0cmluZyBpbnRvIGEgbmV3IGJ1
+ZmZlciBvciBjaGFuZ2luZyBpdCBpbi1wbGFjZSAKICAtIGNoYW5nZWQgdGhlIGZ1bmN0aW9uIHNl
+bWFudGljcyB0byByZXR1cm4gYSBwb2ludGVyIHRvIHRoZQogICAgdGVybWluYXRpbmcgJ1wwJyBj
+aGFyYWN0ZXIgb2YgdGhlIG1vZGlmaWVkIHN0cmluZwogIC0gYWRkZWQgc3RydG91cHBlcigpIGZ1
+bmN0aW9uYWxpdHkgbWlycm9yaW5nIHRoZSBhYm92ZQogIC0gZHJvcHBlZCB0aGUgQUNQSUNBIHBh
+dGNoLCBzaW5jZSB0aGF0IGNvZGUgaXMgT1MgaW5kZXBlbmRlbnQgYW5kCiAgICBjYW4ndCByZWx5
+IG9uIGEgTGludXggbGlicmFyeSBmdW5jdGlvbiAoc2VlIFszXSkKICAtIEFkZGVkIHR3byBuZXcg
+cGF0Y2hlcyByZXBsYWNpbmcgc3RydG91cHBlcigpIGltcGxlbWVudGF0aW9ucwoKWzFdIGh0dHBz
+Oi8vbGttbC5vcmcvbGttbC8yMDE2LzYvMzAvNzI3ClsyXSBodHRwczovL2xrbWwub3JnL2xrbWwv
+MjAxNi83LzEwLzQKWzNdIGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDE2LzcvMS85CgpNYXJrdXMg
+TWF5ZXIgKDcpOgogIGxpYjogc3RyaW5nOiBhZGQgZnVuY3Rpb25zIHRvIGNhc2UtY29udmVydCBz
+dHJpbmdzCiAgZHJtL25vdXZlYXUvY29yZTogbWFrZSB1c2Ugb2YgbmV3IHN0cmxjcHl0b2xvd2Vy
+KCkgZnVuY3Rpb24KICBBQ1BJIC8gZGV2aWNlX3N5c2ZzOiBtYWtlIHVzZSBvZiBuZXcgc3RydG9s
+b3dlcigpIGZ1bmN0aW9uCiAgc3RhZ2luZzogc3BlYWt1cDogcmVwbGFjZSBzcGtfc3RybHdyKCkg
+d2l0aCBzdHJsY3B5dG9sb3dlcigpCiAgaXNjc2ktdGFyZ2V0OiByZXBsYWNlIGlzY3NpX2luaXRp
+YXRvcm5hbWVfdG9sb3dlcigpIHdpdGggc3RydG9sb3dlcigpCiAgZHJtL25vdXZlYXUvZmlmby9n
+azEwNDogbWFrZSB1c2Ugb2YgbmV3IHN0cmNweXRvdXBwZXIoKSBmdW5jdGlvbgogIHBvd2VyX3N1
+cHBseTogbWFrZSB1c2Ugb2YgbmV3IHN0cmNweXRvdXBwZXIoKSBmdW5jdGlvbgoKIGRyaXZlcnMv
+YWNwaS9kZXZpY2Vfc3lzZnMuYyAgICAgICAgICAgICAgICAgICAgICB8ICA0ICstLQogZHJpdmVy
+cy9ncHUvZHJtL25vdXZlYXUvbnZrbS9jb3JlL2Zpcm13YXJlLmMgICAgIHwgIDkgKy0tLS0KIGRy
+aXZlcnMvZ3B1L2RybS9ub3V2ZWF1L252a20vZW5naW5lL2ZpZm8vZ2sxMDQuYyB8ICA1ICstLQog
+ZHJpdmVycy9wb3dlci9wb3dlcl9zdXBwbHlfc3lzZnMuYyAgICAgICAgICAgICAgIHwgMTMgKysr
+LS0tLQogZHJpdmVycy9zdGFnaW5nL3NwZWFrdXAva29iamVjdHMuYyAgICAgICAgICAgICAgIHwg
+IDMgKy0KIGRyaXZlcnMvc3RhZ2luZy9zcGVha3VwL21haW4uYyAgICAgICAgICAgICAgICAgICB8
+ICAzICstCiBkcml2ZXJzL3N0YWdpbmcvc3BlYWt1cC9zcGVha3VwLmggICAgICAgICAgICAgICAg
+fCAgMSAtCiBkcml2ZXJzL3N0YWdpbmcvc3BlYWt1cC92YXJoYW5kbGVycy5jICAgICAgICAgICAg
+fCAxMiAtLS0tLS0tCiBkcml2ZXJzL3RhcmdldC9pc2NzaS9pc2NzaV90YXJnZXRfbmVnby5jICAg
+ICAgICAgfCAxNyArLS0tLS0tLS0KIGluY2x1ZGUvbGludXgvc3RyaW5nLmggICAgICAgICAgICAg
+ICAgICAgICAgICAgICB8IDQwICsrKysrKysrKysrKysrKysrKysrKwogbGliL3N0cmluZy5jICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgNDYgKysrKysrKysrKysrKysrKysr
+KysrKysrCiAxMSBmaWxlcyBjaGFuZ2VkLCA5OCBpbnNlcnRpb25zKCspLCA1NSBkZWxldGlvbnMo
+LSkKCi0tIAoyLjcuNAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KTm91dmVhdSBtYWlsaW5nIGxpc3QKTm91dmVhdUBsaXN0cy5mcmVlZGVza3RvcC5vcmcK
+aHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9ub3V2ZWF1Cg==
