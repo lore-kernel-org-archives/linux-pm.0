@@ -1,52 +1,83 @@
-From: Borislav Petkov <bp@suse.de>
-Subject: Re: [PATCH v12] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Wed, 10 Aug 2016 13:10:05 +0200
-Message-ID: <20160810111005.GD16664@nazgul.tnic>
-References: <1469782664-12611-1-git-send-email-fu.wei@linaro.org>
- <20160804094838.GB8093@nazgul.tnic>
- <CADyBb7ujfaXPP_CUB66_E53fY9MeEbt6EhOaCzf+hoDCGYD+dw@mail.gmail.com>
- <20160810104513.GB16664@nazgul.tnic>
- <CADyBb7uW2-jh8UBLXZ03p1y9SMP7M3z6eULwV2DYhWXEqTm2Rw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: powernv: Fix crash in gpstate_timer_handler
+Date: Wed, 10 Aug 2016 13:57:47 +0200
+Message-ID: <9902339.J95Mxqndi6@vostro.rjw.lan>
+References: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <20160804164711.GE10348@ubuntu> <87oa51tfgg.fsf@concordia.ellerman.id.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <CADyBb7uW2-jh8UBLXZ03p1y9SMP7M3z6eULwV2DYhWXEqTm2Rw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Fu Wei <fu.wei@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, pavel@ucw.cz, hpa@zytor.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Tomasz Nowicki <tn@semihalf.com>, x86@kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, mingo@redhat.com, len.brown@intel.com, linux-pm@vger.kernel.org, Marc Zyngier <Marc.Zyngier@arm.com>, Jon Masters <jcm@redhat.com>, matt.fleming@intel.com, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Hanjun Guo <hanjun.guo@linaro.org>, Jonathan Zhang <jon.zhixiong.zhang@gmail.com>
+Content-Transfer-Encoding: 7Bit
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <87oa51tfgg.fsf@concordia.ellerman.id.au>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBBdWcgMTAsIDIwMTYgYXQgMDc6MDE6MDVQTSArMDgwMCwgRnUgV2VpIHdyb3RlOgo+
-IC0gaWYgKCFhY3BpX2Rpc2FibGVfY21jZmYpCj4gLSBhcGVpX2hlc3RfcGFyc2UoaGVzdF9wYXJz
-ZV9jbWMsIE5VTEwpOwo+ICsgcmMgPWFwZWlfaGVzdF9wYXJzZShoZXN0X3BhcnNlX2NtYywgTlVM
-TCk7Cj4gKyBpZiAocmMpCj4gKyBnb3RvIGVycjsKPiAKPiAgIGlmICghZ2hlc19kaXNhYmxlKSB7
-Cj4gICByYyA9IGFwZWlfaGVzdF9wYXJzZShoZXN0X3BhcnNlX2doZXNfY291bnQsICZnaGVzX2Nv
-dW50KTsKPiAKPiBEbyB5b3UgaGF2ZSBvdGhlciBzdWdnZXN0aW9uPyB0aGVuIEkgY2FuIHBvc3Qg
-djE0IHRvIGZpeCBpdCA6LSkKCk5haCwgbG9va3MgZ29vZCA6KQoKTGV0J3Mga2VlcCBpdCBzaW1w
-bGUgYW5kIGFkZCBtb3JlIGludm9sdmVkIGhhbmRsaW5nIHdoZW4gaXQgaXMgcmVhbGx5Cm5lZWRl
-ZC4gVGhhbmtzIQoKQnR3LCB0aGF0IGNvbW1lbnQ6CgorLyoKKyAqIGFjcGlfZGlzYWJsZV9jbWNm
-ZiBpcyB1c2VkIGluIGRyaXZlcnMvYWNwaS9hcGVpL2hlc3QuYyBmb3IgZGlzYWJsaW5nCisgKiBJ
-QS0zMiBBcmNoaXRlY3R1cmUgQ29ycmVjdGVkIE1hY2hpbmUgQ2hlY2t4KGNtYykgRklSTVdBUkVf
-RklSU1QgbW9kZSBieQorICogYm9vdCBwYXJhbWV0ZXIoYWNwaT1ub2NtY2ZmKS4gQnV0IHdlIGRv
-bid0IGhhdmUgdGhpcyBJQS0zMiBzcGVjaWZpYworICogZmVhdHVyZSBvbiBBUk02NCwgdGhpcyBk
-ZWZpbml0aW9uIGlzIG9ubHkgZm9yIGNvbXBhdGliaWxpdHkuCisgKi8KKyNkZWZpbmUgYWNwaV9k
-aXNhYmxlX2NtY2ZmIDEKCmxvb2tzIG9rLCBleGNlcHQgdGhlIHNtYWxsIHR5cG86CgpBcmNoaXRl
-Y3R1cmUgQ29ycmVjdGVkIE1hY2hpbmUgQ2hlY2t4KGNtYykKCQkJCSAgICBeCk1ha2UgdGhhdAoK
-IklBLTMyIEFyY2hpdGVjdHVyZSBDb3JyZWN0ZWQgTWFjaGluZSBDaGVjayAoQ01DKSBGaXJtd2Fy
-ZS1GaXJzdCBtb2RlIgoKVGhhbmtzLgoKLS0gClJlZ2FyZHMvR3J1c3MsCiAgICBCb3Jpcy4KCkVD
-TyB0aXAgIzEwMTogVHJpbSB5b3VyIG1haWxzIHdoZW4geW91IHJlcGx5LgoKU1VTRSBMaW51eCBH
-bWJILCBHRjogRmVsaXggSW1lbmTDtnJmZmVyLCBKYW5lIFNtaXRoYXJkLCBHcmFoYW0gTm9ydG9u
-LCBIUkIgMjEyODQgKEFHIE7DvHJuYmVyZykKLS0KCl9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4
-LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9y
-Zy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
+On Wednesday, August 10, 2016 02:28:47 PM Michael Ellerman wrote:
+> Viresh Kumar <viresh.kumar@linaro.org> writes:
+> 
+> > On 04-08-16, 20:59, Akshay Adiga wrote:
+> >> 'commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with
+> >> frequency table index")' changes calc_global_pstate() to use
+> >> cpufreq_table index instead of pstate_id.
+> >> 
+> >> But in gpstate_timer_handler() pstate_id was being passed instead
+> >> of cpufreq_table index, which caused the index_to_pstate() to access
+> >> out of bound indices, leading to this crash.
+> >> 
+> >> Adding sanity check for index and pstate, to ensure only valid pstate
+> >> and index values are returned.
+> >> 
+> >> Call Trace:
+> >> [c00000078d66b130] [c00000000011d224] __free_irq+0x234/0x360
+> >> (unreliable)
+> >> [c00000078d66b1c0] [c00000000011d44c] free_irq+0x6c/0xa0
+> >> [c00000078d66b1f0] [c00000000006c4f8] opal_event_shutdown+0x88/0xd0
+> >> [c00000078d66b230] [c000000000067a4c] opal_shutdown+0x1c/0x90
+> >> [c00000078d66b260] [c000000000063a00] pnv_shutdown+0x20/0x40
+> >> [c00000078d66b280] [c000000000021538] machine_restart+0x38/0x90
+> >> [c0000000078d66b310] [c000000000965ea0] panic+0x284/0x300
+> >> [c00000078d66b3a0] [c00000000001f508] die+0x388/0x450
+> >> [c00000078d66b430] [c000000000045a50] bad_page_fault+0xd0/0x140
+> >> [c00000078d66b4a0] [c000000000008964] handle_page_fault+0x2c/0x30
+> >>    interrupt: 300 at gpstate_timer_handler+0x150/0x260
+> >>     LR = gpstate_timer_handler+0x130/0x260
+> >> [c00000078d66b7f0] [c000000000132b58] call_timer_fn+0x58/0x1c0
+> >> [c00000078d66b880] [c000000000132e20] expire_timers+0x130/0x1d0
+> >> [c00000078d66b8f0] [c000000000133068] run_timer_softirq+0x1a8/0x230
+> >> [c00000078d66b980] [c0000000000b535c] __do_softirq+0x18c/0x400
+> >> [c00000078d66ba70] [c0000000000b5828] irq_exit+0xc8/0x100
+> >> [c00000078d66ba90] [c00000000001e214] timer_interrupt+0xa4/0xe0
+> >> [c00000078d66bac0] [c0000000000027d0] decrementer_common+0x150/0x180
+> >>    interrupt: 901 at arch_local_irq_restore+0x74/0x90
+> >>   0] [c000000000106b34] call_cpuidle+0x44/0x90
+> >> [c00000078d66be50] [c00000000010708c] cpu_startup_entry+0x38c/0x460
+> >> [c00000078d66bf20] [c00000000003d930] start_secondary+0x330/0x380
+> >> [c00000078d66bf90] [c000000000008e6c] start_secondary_prolog+0x10/0x14
+> >> 
+> >> Fixes: 08d27eb ("cpufreq: powernv: Replacing pstate_id with
+> >> frequency table index")
+> >> Reported-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+> >> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> >> ---
+> >>  drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++++++-
+> >>  1 file changed, 20 insertions(+), 1 deletion(-)
+> >
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Who's merging this?
+
+I am.
+
+Thanks,
+Rafael
