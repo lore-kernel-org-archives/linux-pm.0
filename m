@@ -1,44 +1,56 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] max17042_battery: fix model download bug.
-Date: Wed, 10 Aug 2016 10:27:07 +0200
-Message-ID: <6db1eb24-d659-e424-9da7-39cabd6ad5ee@samsung.com>
-References: <CAGngYiVv=+RKDcuwqPxyg5GpU6iCBkuR2v7EFmnDM3Xf+w0b_g@mail.gmail.com>
- <20160809185429.GB19946@earth>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 2/2] x86, ACPI: Fix the wrong assignment when Handle
+ apic/x2apic entries
+Date: Wed, 10 Aug 2016 14:53:33 +0200
+Message-ID: <20160810125333.GB9028@gmail.com>
+References: <1470697311-1292-1-git-send-email-bhe@redhat.com>
+ <1470697311-1292-2-git-send-email-bhe@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20160809185429.GB19946@earth>
+Content-Disposition: inline
+In-Reply-To: <1470697311-1292-2-git-send-email-bhe@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Sven Van Asbroeck <thesven73@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jonghwa Lee <jonghwa3.lee@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>
+To: Baoquan He <bhe@redhat.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08/09/2016 08:54 PM, Sebastian Reichel wrote:
-> Hi,
+
+* Baoquan He <bhe@redhat.com> wrote:
+
+> It won't impact the result, we still should fix the code bug.
 > 
-> [adding some people to CC]
+> Signed-off-by: Baoquan He <bhe@redhat.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  arch/x86/kernel/acpi/boot.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> On Wed, Aug 03, 2016 at 10:03:46AM -0400, Sven Van Asbroeck wrote:
->> The device's model download function returns the model data as
->> an array of u32s, which is later compared to the reference
->> model data. However, since the latter is an array of u16s,
->> the comparison does not happen correctly, and model verification
->> fails. This in turn breaks the POR initialization sequence.
-> 
-> Patch looks ok, except for missing Fixes. I guess it should be
-> "Fixes: 39e7213edc4f3". I will wait with queuing it for a few
-> days giving Samsung people a chance to reply.
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index 90d84c3..2b25d3f 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -1031,8 +1031,8 @@ static int __init acpi_parse_madt_lapic_entries(void)
+>  			return ret;
+>  		}
+>  
+> -		x2count = madt_proc[0].count;
+> -		count = madt_proc[1].count;
+> +		count = madt_proc[0].count;
+> +		x2count = madt_proc[1].count;
+>  	}
+>  	if (!count && !x2count) {
+>  		printk(KERN_ERR PREFIX "No LAPIC entries present\n");
 
-Looks correct.
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Why does this bug have no effect?
 
-Also:
-Cc: <stable@vger.kernel.org>
+Thanks,
 
-And how about:
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-https://www.marc.info/?l=linux-pm&m=143954612610000&w=4
-
-Best regards,
-Krzysztof
+	Ingo
