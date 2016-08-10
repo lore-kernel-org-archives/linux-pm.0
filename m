@@ -1,72 +1,60 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] cpufreq: powernv: Fix crash in gpstate_timer_handler
-Date: Wed, 10 Aug 2016 14:28:47 +1000
-Message-ID: <87oa51tfgg.fsf@concordia.ellerman.id.au>
-References: <1470324557-20711-1-git-send-email-akshay.adiga@linux.vnet.ibm.com> <20160804164711.GE10348@ubuntu>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v5 4/8] Documentation: bindings: add dt documentation for
+ dfi controller
+Date: Wed, 10 Aug 2016 13:29:14 +0900
+Message-ID: <57AAAD9A.1090201@samsung.com>
+References: <1470799604-12877-1-git-send-email-hl@rock-chips.com>
+ <CGME20160810033623epcas1p127d334061fbe7874195033c6bec44509@epcas1p1.samsung.com>
+ <1470799604-12877-5-git-send-email-hl@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ozlabs.org ([103.22.144.67]:47922 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751176AbcHJE2t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 10 Aug 2016 00:28:49 -0400
-In-Reply-To: <20160804164711.GE10348@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-reply-to: <1470799604-12877-5-git-send-email-hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org
+Cc: tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
-
-> On 04-08-16, 20:59, Akshay Adiga wrote:
->> 'commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with
->> frequency table index")' changes calc_global_pstate() to use
->> cpufreq_table index instead of pstate_id.
->> 
->> But in gpstate_timer_handler() pstate_id was being passed instead
->> of cpufreq_table index, which caused the index_to_pstate() to access
->> out of bound indices, leading to this crash.
->> 
->> Adding sanity check for index and pstate, to ensure only valid pstate
->> and index values are returned.
->> 
->> Call Trace:
->> [c00000078d66b130] [c00000000011d224] __free_irq+0x234/0x360
->> (unreliable)
->> [c00000078d66b1c0] [c00000000011d44c] free_irq+0x6c/0xa0
->> [c00000078d66b1f0] [c00000000006c4f8] opal_event_shutdown+0x88/0xd0
->> [c00000078d66b230] [c000000000067a4c] opal_shutdown+0x1c/0x90
->> [c00000078d66b260] [c000000000063a00] pnv_shutdown+0x20/0x40
->> [c00000078d66b280] [c000000000021538] machine_restart+0x38/0x90
->> [c0000000078d66b310] [c000000000965ea0] panic+0x284/0x300
->> [c00000078d66b3a0] [c00000000001f508] die+0x388/0x450
->> [c00000078d66b430] [c000000000045a50] bad_page_fault+0xd0/0x140
->> [c00000078d66b4a0] [c000000000008964] handle_page_fault+0x2c/0x30
->>    interrupt: 300 at gpstate_timer_handler+0x150/0x260
->>     LR = gpstate_timer_handler+0x130/0x260
->> [c00000078d66b7f0] [c000000000132b58] call_timer_fn+0x58/0x1c0
->> [c00000078d66b880] [c000000000132e20] expire_timers+0x130/0x1d0
->> [c00000078d66b8f0] [c000000000133068] run_timer_softirq+0x1a8/0x230
->> [c00000078d66b980] [c0000000000b535c] __do_softirq+0x18c/0x400
->> [c00000078d66ba70] [c0000000000b5828] irq_exit+0xc8/0x100
->> [c00000078d66ba90] [c00000000001e214] timer_interrupt+0xa4/0xe0
->> [c00000078d66bac0] [c0000000000027d0] decrementer_common+0x150/0x180
->>    interrupt: 901 at arch_local_irq_restore+0x74/0x90
->>   0] [c000000000106b34] call_cpuidle+0x44/0x90
->> [c00000078d66be50] [c00000000010708c] cpu_startup_entry+0x38c/0x460
->> [c00000078d66bf20] [c00000000003d930] start_secondary+0x330/0x380
->> [c00000078d66bf90] [c000000000008e6c] start_secondary_prolog+0x10/0x14
->> 
->> Fixes: 08d27eb ("cpufreq: powernv: Replacing pstate_id with
->> frequency table index")
->> Reported-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
->> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
->> ---
->>  drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++++++-
->>  1 file changed, 20 insertions(+), 1 deletion(-)
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Who's merging this?
-
-cheers
+SGkgTGluLAoKT24gMjAxNuuFhCAwOOyblCAxMOydvCAxMjoyNiwgTGluIEh1YW5nIHdyb3RlOgo+
+IFRoaXMgcGF0Y2ggYWRkcyB0aGUgZG9jdW1lbnRhdGlvbiBmb3Igcm9ja2NoaXAgZGZpIGRldmZy
+ZXEtZXZlbnQgZHJpdmVyLgo+IAo+IFNpZ25lZC1vZmYtYnk6IExpbiBIdWFuZyA8aGxAcm9jay1j
+aGlwcy5jb20+Cj4gLS0tCj4gQ2hhbmdlcyBpbiB2NToKPiAtTm9uZQo+IAo+IENoYW5nZXMgaW4g
+djQ6Cj4gLU5vbmUKPiAKPiBDaGFuZ2VzIGluIHYzOgo+IC1Ob25lCj4gCj4gQ2hhbmdlcyBpbiB2
+MjoKPiAtTm9uZSAKPiAKPiBDaGFuZ2VzIGluIHYxOgo+IC1Ob25lCj4gCj4gIC4uLi9iaW5kaW5n
+cy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRmaS50eHQgICAgICAgICAgfCAyMCArKysrKysrKysr
+KysrKysrKysrKwo+ICAxIGZpbGUgY2hhbmdlZCwgMjAgaW5zZXJ0aW9ucygrKQo+ICBjcmVhdGUg
+bW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvZXZl
+bnQvcm9ja2NoaXAtZGZpLnR4dAo+IAo+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3MvZGV2ZnJlcS9ldmVudC9yb2NrY2hpcC1kZmkudHh0IGIvRG9jdW1lbnRh
+dGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvZXZlbnQvcm9ja2NoaXAtZGZpLnR4dAo+
+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4gaW5kZXggMDAwMDAwMC4uYmY0MjI1NQo+IC0tLSAvZGV2
+L251bGwKPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGV2ZnJlcS9l
+dmVudC9yb2NrY2hpcC1kZmkudHh0Cj4gQEAgLTAsMCArMSwyMCBAQAo+ICsKPiArKiBSb2NrY2hp
+cCByazMzOTkgREZJIGRldmljZQo+ICsKPiArUmVxdWlyZWQgcHJvcGVydGllczoKPiArLSBjb21w
+YXRpYmxlOiBNdXN0IGJlICJyb2NrY2hpcCxyazMzOTktZGZpIi4KPiArLSByZWc6IHBoeXNpY2Fs
+IGJhc2UgYWRkcmVzcyBvZiBlYWNoIERGSSBhbmQgbGVuZ3RoIG9mIG1lbW9yeSBtYXBwZWQgcmVn
+aW9uCj4gKy0gcm9ja2NoaXAscG11OiBwaGFuZGxlIHRvIHRoZSBzeXNjb24gbWFuYWdpbmcgdGhl
+ICJwbXUgZ2VuZXJhbCByZWdpc3RlciBmaWxlcyIKPiArLSBjbG9ja3M6IHBoYW5kbGVzIGZvciBj
+bG9jayBzcGVjaWZpZWQgaW4gImNsb2NrLW5hbWVzIiBwcm9wZXJ0eQo+ICstIGNsb2NrLW5hbWVz
+IDogdGhlIG5hbWUgb2YgY2xvY2sgdXNlZCBieSB0aGUgREZJLCBtdXN0IGJlICJwY2xrX2Rkcl9t
+b24iOwo+ICsKPiArRXhhbXBsZToKPiArCWRmaTogZGZpQDB4ZmY2MzAwMDAgewo+ICsJCXJlZyA9
+IDwweDAwIDB4ZmY2MzAwMDAgMHgwMCAweDQwMDA+Owo+ICsJCWNvbXBhdGlibGUgPSAicm9ja2No
+aXAscmszMzk5LWRmaSI7CgpVc3VhbGx5LCB0aGUgY29tcGF0aWJsZSBpcyBmaXJzdCBlbnRyeSB3
+aXRoaW4gRGV2aWNlLXRyZWUgbm9kZS4KCj4gKwkJcm9ja2NoaXAscG11ID0gPCZwbXVncmY+Owo+
+ICsJCWNsb2NrcyA9IDwmY3J1IFBDTEtfRERSX01PTj47Cj4gKwkJY2xvY2stbmFtZXMgPSAicGNs
+a19kZHJfbW9uIjsKPiArCQlzdGF0dXMgPSAiZGlzYWJsZWQiOwo+ICsJfTsKPiArCj4gCgpMb29r
+cyBnb29kIHRvIG1lLiBKdXN0IEkgd2FudCB0byBjaGFuZ2UgdGhlIHNlcXVlbmNlCmJldHdlZW4g
+J2NvbXBhdGlibGUnIGFuZCAncmVnJyBwcm9wZXJ0eS4KCkFja2VkLWJ5OiBDaGFud29vIENob2kg
+PGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4KClJlZ2FyZHMsCkNoYXdub28gQ2hvaQoKCl9fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LXJvY2tjaGlwIG1h
+aWxpbmcgbGlzdApMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
+cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9ja2NoaXAK
