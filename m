@@ -1,11 +1,14 @@
-From: fu.wei@linaro.org
-Subject: [PATCH v13] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Wed, 10 Aug 2016 18:06:43 +0800
-Message-ID: <1470823603-26294-1-git-send-email-fu.wei@linaro.org>
+From: Fu Wei <fu.wei@linaro.org>
+Subject: Re: [PATCH v12] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Wed, 10 Aug 2016 18:40:53 +0800
+Message-ID: <CADyBb7ujfaXPP_CUB66_E53fY9MeEbt6EhOaCzf+hoDCGYD+dw@mail.gmail.com>
+References: <1469782664-12611-1-git-send-email-fu.wei@linaro.org>
+ <20160804094838.GB8093@nazgul.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20160804094838.GB8093@nazgul.tnic>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -15,195 +18,90 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: tn@semihalf.com, tony.luck@intel.com, bp@suse.de, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Borislav Petkov <bp@suse.de>
+Cc: Mark Rutland <mark.rutland@arm.com>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, pavel@ucw.cz, hpa@zytor.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Tomasz Nowicki <tn@semihalf.com>, x86@kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, mingo@redhat.com, len.brown@intel.com, linux-pm@vger.kernel.org, Marc Zyngier <Marc.Zyngier@arm.com>, Jon Masters <jcm@redhat.com>, matt.fleming@intel.com, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, Tony Luck <tony.luck@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Hanjun Guo <hanjun.guo@linaro.org>, Jonathan Zhang <jon.zhixiong.zhang@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
-
-This patch provides APEI arch-specific bits for aarch64
-
-Meanwhile,
-(1)add a new subfunction "hest_ia32_init" for
-"acpi_disable_cmcff" which is used by IA-32 Architecture
-Corrected Machine Check (CMC).
-(2)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
-a generic place.
-(3)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
-because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
-
-[Fu Wei: improve && upstream]
-
-Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
-Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
-Signed-off-by: Fu Wei <fu.wei@linaro.org>
-Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
-Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
-Acked-by: Will Deacon <will.deacon@arm.com>
----
-Changelog:
-v13:https://lkml.org/lkml/2016/8/10/
-    Fix a comment problem(add a "end").
-    Add a comment for the definition of acpi_disable_cmcff.
-    Rebase to 4.8.0-rc1-g372734a
-
-v12:https://lkml.org/lkml/2016/7/29/97
-    Fix a comment problem(redundant "with").
-    Rebase to 4.7.0-g680eee2.
-
-v11:https://lkml.org/lkml/2016/7/27/427
-    Rebase to v4.7-0e06f5c0.
-
-v10:https://lkml.org/lkml/2016/4/14
-    Fix the Alphabetical order problem in arch/arm64/Kconfig.
-
-v9: https://lkml.org/lkml/2016/4/5/522
-    Improve the comment for arch_apei_flush_tlb_one.
-    Using select "HAVE_ACPI_APEI if (ACPI && EFI)" to fix the EFI dependence
-    problem.
-
-v8: https://lkml.org/lkml/2016/3/29/132
-    Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
-    on ARM64.
-
-v7: https://lkml.org/lkml/2016/3/17/183
-    Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h.
-
-v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
-    Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
-    a generic place.
-    Delete HAVE_ACPI_APEI_HEST_IA32.
-
-v5: https://lkml.org/lkml/2015/12/10/131
-    Add "HAVE_ACPI_APEI_HEST_IA32" instead of
-    "#if defined(__i386__) || defined(__x86_64__)".
-
-v4: https://lkml.org/lkml/2015/12/8/188
-    Rebase to latest kernel version(4.4-rc4).
-    Move arch_apei_flush_tlb_one into header file as a inline function
-    Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
-
-v3: https://lkml.org/lkml/2015/12/3/521
-    Remove "acpi_disable_cmcff" from arm64 code,
-    and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
-
-v2: https://lkml.org/lkml/2015/12/2/432
-    Rebase to latest kernel version(4.4-rc3).
-    Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
-
-v1: https://lkml.org/lkml/2015/8/14/199
-    Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
-    Delete arch/arm64/kernel/apei.c.
-    Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
-
- arch/arm64/Kconfig            |  1 +
- arch/arm64/include/asm/acpi.h | 22 +++++++++++++++++++++-
- arch/x86/kernel/acpi/apei.c   |  3 ---
- drivers/acpi/apei/hest.c      | 18 +++++++++++++++---
- 4 files changed, 37 insertions(+), 7 deletions(-)
-
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index bc3f00f..385cf13 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -51,6 +51,7 @@ config ARM64
- 	select GENERIC_TIME_VSYSCALL
- 	select HANDLE_DOMAIN_IRQ
- 	select HARDIRQS_SW_RESEND
-+	select HAVE_ACPI_APEI if (ACPI && EFI)
- 	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
- 	select HAVE_ARCH_AUDITSYSCALL
- 	select HAVE_ARCH_BITREVERSE
-diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
-index 5420cb0..f435967 100644
---- a/arch/arm64/include/asm/acpi.h
-+++ b/arch/arm64/include/asm/acpi.h
-@@ -17,6 +17,7 @@
- 
- #include <asm/cputype.h>
- #include <asm/smp_plat.h>
-+#include <asm/tlbflush.h>
- 
- /* Macros for consistency checks of the GICC subtable of MADT */
- #define ACPI_MADT_GICC_LENGTH	\
-@@ -110,8 +111,27 @@ static inline const char *acpi_get_enable_method(int cpu)
- }
- 
- #ifdef	CONFIG_ACPI_APEI
-+/*
-+ * acpi_disable_cmcff is used in drivers/acpi/apei/hest.c for disabling
-+ * IA-32 Architecture Corrected Machine Checkx(cmc) FIRMWARE_FIRST mode by
-+ * boot parameter(acpi=nocmcff). But we don't have this IA-32 specific
-+ * feature on ARM64, this definition is only for compatibility.
-+ */
-+#define acpi_disable_cmcff 1
- pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
--#endif
-+
-+/*
-+ * Despite its name, this function must still broadcast the TLB
-+ * invalidation in order to ensure other CPUs don't end up with junk
-+ * entries as a result of speculation. Unusually, its also called in
-+ * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
-+ * TLB broadcasting, then we're in trouble here.
-+ */
-+static inline void arch_apei_flush_tlb_one(unsigned long addr)
-+{
-+	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
-+}
-+#endif /* CONFIG_ACPI_APEI */
- 
- #ifdef CONFIG_ACPI_NUMA
- int arm64_acpi_numa_init(void);
-diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
-index c280df6..ea3046e 100644
---- a/arch/x86/kernel/acpi/apei.c
-+++ b/arch/x86/kernel/acpi/apei.c
-@@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
- 	struct acpi_hest_ia_corrected *cmc;
- 	struct acpi_hest_ia_error_bank *mc_bank;
- 
--	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
--		return 0;
--
- 	cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
- 	if (!cmc->enabled)
- 		return 0;
-diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
-index 20b3fcf..792a0d9 100644
---- a/drivers/acpi/apei/hest.c
-+++ b/drivers/acpi/apei/hest.c
-@@ -123,7 +123,18 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
-  */
- static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
- {
--	return arch_apei_enable_cmcff(hest_hdr, data);
-+	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
-+		return 0;
-+
-+	if (!acpi_disable_cmcff)
-+		return !arch_apei_enable_cmcff(hest_hdr, data);
-+
-+	return 0;
-+}
-+
-+static inline int __init hest_ia32_init(void)
-+{
-+	return apei_hest_parse(hest_parse_cmc, NULL);
- }
- 
- struct ghes_arr {
-@@ -232,8 +243,9 @@ void __init acpi_hest_init(void)
- 		goto err;
- 	}
- 
--	if (!acpi_disable_cmcff)
--		apei_hest_parse(hest_parse_cmc, NULL);
-+	rc = hest_ia32_init();
-+	if (rc)
-+		goto err;
- 
- 	if (!ghes_disable) {
- 		rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
--- 
-2.5.5
+SGkgQm9yaXNsYXYKCk9uIDQgQXVndXN0IDIwMTYgYXQgMTc6NDgsIEJvcmlzbGF2IFBldGtvdiA8
+YnBAc3VzZS5kZT4gd3JvdGU6Cj4gT24gRnJpLCBKdWwgMjksIDIwMTYgYXQgMDQ6NTc6NDRQTSAr
+MDgwMCwgZnUud2VpQGxpbmFyby5vcmcgd3JvdGU6Cj4+IEZyb206IFRvbWFzeiBOb3dpY2tpIDx0
+b21hc3oubm93aWNraUBsaW5hcm8ub3JnPgo+Pgo+PiBUaGlzIGNvbW1pdCBwcm92aWRlcyBBUEVJ
+IGFyY2gtc3BlY2lmaWMgYml0cyBmb3IgYWFyY2g2NAo+Pgo+PiBNZWFud2hpbGUsCj4+ICgxKWFk
+ZCBhIG5ldyBzdWJmdW5jdGlvbiAiaGVzdF9pYTMyX2luaXQiIGZvcgo+PiAiYWNwaV9kaXNhYmxl
+X2NtY2ZmIiB3aGljaCBpcyB1c2VkIGJ5IElBLTMyIEFyY2hpdGVjdHVyZQo+PiBDb3JyZWN0ZWQg
+TWFjaGluZSBDaGVjayAoQ01DKS4KPj4gKDIpbW92ZSBIRVNUIHR5cGUgKEFDUElfSEVTVF9UWVBF
+X0lBMzJfQ09SUkVDVEVEX0NIRUNLKSBjaGVja2luZyB0bwo+PiBhIGdlbmVyaWMgcGxhY2UuCj4+
+ICgzKXNlbGVjdCBIQVZFX0FDUElfQVBFSSB3aGVuIEVGSSBhbmQgQUNQSSBpcyBzZXQgb24gQVJN
+NjQsCj4+IGJlY2F1c2UgYXJjaF9hcGVpX2dldF9tZW1fYXR0cmlidXRlIGlzIHVzaW5nIGVmaV9t
+ZW1fYXR0cmlidXRlcyBvbiBBUk02NC4KPj4KPj4gW0Z1IFdlaTogaW1wcm92ZSAmJiB1cHN0cmVh
+bV0KPj4KPj4gU2lnbmVkLW9mZi1ieTogVG9tYXN6IE5vd2lja2kgPHRvbWFzei5ub3dpY2tpQGxp
+bmFyby5vcmc+Cj4+IFRlc3RlZC1ieTogSm9uYXRoYW4gKFpoaXhpb25nKSBaaGFuZyA8emp6aGFu
+Z0Bjb2RlYXVyb3JhLm9yZz4KPj4gU2lnbmVkLW9mZi1ieTogRnUgV2VpIDxmdS53ZWlAbGluYXJv
+Lm9yZz4KPj4gQWNrZWQtYnk6IEhhbmp1biBHdW8gPGhhbmp1bi5ndW9AbGluYXJvLm9yZz4KPj4g
+VGVzdGVkLWJ5OiBUeWxlciBCYWljYXIgPHRiYWljYXJAY29kZWF1cm9yYS5vcmc+Cj4+IEFja2Vk
+LWJ5OiBXaWxsIERlYWNvbiA8d2lsbC5kZWFjb25AYXJtLmNvbT4KPj4gLS0tCj4KPiAuLi4KPgo+
+PiBAQCAtMTEwLDggKzExMSwyMSBAQCBzdGF0aWMgaW5saW5lIGNvbnN0IGNoYXIgKmFjcGlfZ2V0
+X2VuYWJsZV9tZXRob2QoaW50IGNwdSkKPj4gIH0KPj4KPj4gICNpZmRlZiAgICAgICBDT05GSUdf
+QUNQSV9BUEVJCj4+ICsjZGVmaW5lIGFjcGlfZGlzYWJsZV9jbWNmZiAxCj4KPiBXaGF0IGRvZXMg
+dGhhdCBtZWFuPyBBUk0gZG9lc24ndCBoYXZlIGZpcm13YXJlLWZpcnN0IG1vZGU/Cj4KPiBBIHBp
+ZWNlIG9mIGNvbW1lbnQgcGxlYXNlLgoKVGhhbmtzIEkgaGF2ZSBhZGRlZCBhIGNvbW1lbnQgb24g
+djEzLCBwbGVhc2UgY2hlY2suCgo+Cj4+ICBwZ3Byb3RfdCBhcmNoX2FwZWlfZ2V0X21lbV9hdHRy
+aWJ1dGUocGh5c19hZGRyX3QgYWRkcik7Cj4+IC0jZW5kaWYKPj4gKwo+PiArLyoKPj4gKyAqIERl
+c3BpdGUgaXRzIG5hbWUsIHRoaXMgZnVuY3Rpb24gbXVzdCBzdGlsbCBicm9hZGNhc3QgdGhlIFRM
+Qgo+PiArICogaW52YWxpZGF0aW9uIGluIG9yZGVyIHRvIGVuc3VyZSBvdGhlciBDUFVzIGRvbid0
+IHVwIHdpdGgganVuawo+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIF4KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIGVuZAoKRml4ZWQsIHRoYW5rcyA6LSkKCj4KPj4gKyAqIGVudHJpZXMgYXMg
+YSByZXN1bHQgb2Ygc3BlY3VsYXRpb24uIFVudXN1YWxseSwgaXRzIGFsc28gY2FsbGVkIGluCj4+
+ICsgKiBJUlEgY29udGV4dCAoZ2hlc19pb3VubWFwX2lycSkgc28gaWYgd2UgZXZlciBuZWVkIHRv
+IHVzZSBJUElzIGZvcgo+PiArICogVExCIGJyb2FkY2FzdGluZywgdGhlbiB3ZSdyZSBpbiB0cm91
+YmxlIGhlcmUuCj4+ICsgKi8KPj4gK3N0YXRpYyBpbmxpbmUgdm9pZCBhcmNoX2FwZWlfZmx1c2hf
+dGxiX29uZSh1bnNpZ25lZCBsb25nIGFkZHIpCj4+ICt7Cj4+ICsgICAgIGZsdXNoX3RsYl9rZXJu
+ZWxfcmFuZ2UoYWRkciwgYWRkciArIFBBR0VfU0laRSk7Cj4+ICt9Cj4+ICsjZW5kaWYgLyogQ09O
+RklHX0FDUElfQVBFSSAqLwo+Pgo+PiAgI2lmZGVmIENPTkZJR19BQ1BJX05VTUEKPj4gIGludCBh
+cm02NF9hY3BpX251bWFfaW5pdCh2b2lkKTsKPj4gZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tlcm5l
+bC9hY3BpL2FwZWkuYyBiL2FyY2gveDg2L2tlcm5lbC9hY3BpL2FwZWkuYwo+PiBpbmRleCBjMjgw
+ZGY2Li5lYTMwNDZlIDEwMDY0NAo+PiAtLS0gYS9hcmNoL3g4Ni9rZXJuZWwvYWNwaS9hcGVpLmMK
+Pj4gKysrIGIvYXJjaC94ODYva2VybmVsL2FjcGkvYXBlaS5jCj4KPiAuLi4KPgo+PiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9hY3BpL2FwZWkvaGVzdC5jIGIvZHJpdmVycy9hY3BpL2FwZWkvaGVzdC5j
+Cj4+IGluZGV4IDIwYjNmY2YuLjc5MmEwZDkgMTAwNjQ0Cj4+IC0tLSBhL2RyaXZlcnMvYWNwaS9h
+cGVpL2hlc3QuYwo+PiArKysgYi9kcml2ZXJzL2FjcGkvYXBlaS9oZXN0LmMKPj4gQEAgLTIzMiw4
+ICsyNDMsOSBAQCB2b2lkIF9faW5pdCBhY3BpX2hlc3RfaW5pdCh2b2lkKQo+PiAgICAgICAgICAg
+ICAgIGdvdG8gZXJyOwo+PiAgICAgICB9Cj4+Cj4+IC0gICAgIGlmICghYWNwaV9kaXNhYmxlX2Nt
+Y2ZmKQo+PiAtICAgICAgICAgICAgIGFwZWlfaGVzdF9wYXJzZShoZXN0X3BhcnNlX2NtYywgTlVM
+TCk7Cj4+ICsgICAgIHJjID0gaGVzdF9pYTMyX2luaXQoKTsKPgo+IFdoeSBkbyB5b3UgbmVlZCBh
+IHNlcGFyYXRlIGhlc3RfaWEzMl9pbml0KCkgaGVyZT8KPgo+IFlvdSBjYW4gZG8KPgo+ICAgICAg
+ICAgcmMgPSBhcGVpX2hlc3RfcGFyc2UoaGVzdF9wYXJzZV9jbWMsIE5VTEwpOwo+Cj4gZGlyZWN0
+bHkgaGVyZSBBRkFJQ1QuCgp5ZXMsIHdlIGNhbiBkbyB0aGF0LgoKQnV0IHRoZSByZWFzb24gZm9y
+IGEgIHNlcGFyYXRlIGhlc3RfaWEzMl9pbml0KCkgaXM6CkZvciBub3coQUNQSSA2LjEpLCB3ZSBo
+YXZlIHRocmVlIElBLTMyIEFyY2hpdGVjdHVyZS1zcGVjaWZpYyBlcnJvcgpzb3VyY2Ugc3RydWN0
+dXJlcywgbWF5YmUgd2Ugd2lsbCBwYXJzZSB0aGVtIGxhdGVyLgpTbyBJIG1hZGUgdGhpcyBoZXN0
+X2lhMzJfaW5pdCgpIGZvciBhbGwgdGhlc2Ugc3RydWN0dXJlcy4gbWF5YmUgd2UgY2FuIGRvIDoK
+LS0tCiBzdGF0aWMgaW50IF9faW5pdCBoZXN0X3BhcnNlX2NtYyhzdHJ1Y3QgYWNwaV9oZXN0X2hl
+YWRlciAqaGVzdF9oZHIsIHZvaWQgKmRhdGEpCiB7CiBpZiAoaGVzdF9oZHItPnR5cGUgIT0gQUNQ
+SV9IRVNUX1RZUEVfSUEzMl9DT1JSRUNURURfQ0hFQ0spCiByZXR1cm4gMDsKCiBpZiAoIWFjcGlf
+ZGlzYWJsZV9jbWNmZikKIHJldHVybiAhYXJjaF9hcGVpX2VuYWJsZV9jbWNmZihoZXN0X2hkciwg
+ZGF0YSk7CgogcmV0dXJuIDA7Cn0KCiBzdGF0aWMgaW50IF9faW5pdCBoZXN0X3BhcnNlX21jZShz
+dHJ1Y3QgYWNwaV9oZXN0X2hlYWRlciAqaGVzdF9oZHIsIHZvaWQgKmRhdGEpCiB7CiBpZiAoaGVz
+dF9oZHItPnR5cGUgIT0gQUNQSV9IRVNUX1RZUEVfSUEzMl9DSEVDSykKIHJldHVybiAwOwoKLy8g
+ZG8gc29tZXRoaW5nCgogcmV0dXJuIDA7Cn0KCiBzdGF0aWMgaW50IF9faW5pdCBoZXN0X3BhcnNl
+X25taShzdHJ1Y3QgYWNwaV9oZXN0X2hlYWRlciAqaGVzdF9oZHIsIHZvaWQgKmRhdGEpCiB7CiBp
+ZiAoaGVzdF9oZHItPnR5cGUgIT0gQUNQSV9IRVNUX1RZUEVfSUEzMl9OTUkpCiByZXR1cm4gMDsK
+Ci8vIGRvIHNvbWV0aGluZwoKIHJldHVybiAwOwp9CgpzdGF0aWMgaW5saW5lIGludCBfX2luaXQg
+aGVzdF9pYTMyX2luaXQodm9pZCkKewogIGludCByZXQgPSBhcGVpX2hlc3RfcGFyc2UoaGVzdF9w
+YXJzZV9ubWksIE5VTEwpOwogIGlmIChyZXQpCiAgICAgcmV0dXJuIHJldDsKCiAgcmV0ID0gYXBl
+aV9oZXN0X3BhcnNlKGhlc3RfcGFyc2VfbWNlLCBOVUxMKTsKICBpZiAocmV0KQogICAgIHJldHVy
+biByZXQ7CgogICByZXR1cm4gYXBlaV9oZXN0X3BhcnNlKGhlc3RfcGFyc2VfY21jLCBOVUxMKTsK
+fQotLS0KCkJ1dCBpdCBpcyBqdXN0IG15IHRob3VnaHQsIHBsZWFzZSBjb3JyZWN0IG1lIGlmIEkg
+bWlzdW5kZXJzdGFuZApzb21ldGhpbmcuIFRoYW5rcyA6LSkKCj4KPj4gKyAgICAgaWYgKHJjKQo+
+PiArICAgICAgICAgICAgIGdvdG8gZXJyOwo+Pgo+PiAgICAgICBpZiAoIWdoZXNfZGlzYWJsZSkg
+ewo+PiAgICAgICAgICAgICAgIHJjID0gYXBlaV9oZXN0X3BhcnNlKGhlc3RfcGFyc2VfZ2hlc19j
+b3VudCwgJmdoZXNfY291bnQpOwo+PiAtLQo+PiAyLjUuNQo+Pgo+Cj4gLS0KPiBSZWdhcmRzL0dy
+dXNzLAo+ICAgICBCb3Jpcy4KPgo+IEVDTyB0aXAgIzEwMTogVHJpbSB5b3VyIG1haWxzIHdoZW4g
+eW91IHJlcGx5Lgo+Cj4gU1VTRSBMaW51eCBHbWJILCBHRjogRmVsaXggSW1lbmTDtnJmZmVyLCBK
+YW5lIFNtaXRoYXJkLCBHcmFoYW0gTm9ydG9uLCBIUkIgMjEyODQgKEFHIE7DvHJuYmVyZykKPiAt
+LQoKCgotLSAKQmVzdCByZWdhcmRzLAoKRnUgV2VpClNvZnR3YXJlIEVuZ2luZWVyClJlZCBIYXQK
+Cl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFy
+bS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9y
+ZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1r
+ZXJuZWwK
