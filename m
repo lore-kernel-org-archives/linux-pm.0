@@ -1,82 +1,75 @@
-From: Lin Huang <hl@rock-chips.com>
-Subject: [PATCH v5 3/8] clk: rockchip: rk3399: add ddrc clock support
-Date: Wed, 10 Aug 2016 11:26:39 +0800
-Message-ID: <1470799604-12877-4-git-send-email-hl@rock-chips.com>
+From: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH v5 4/8] Documentation: bindings: add dt documentation for dfi
+ controller
+Date: Wed, 10 Aug 2016 11:26:40 +0800
+Message-ID: <1470799604-12877-5-git-send-email-hl@rock-chips.com>
 References: <1470799604-12877-1-git-send-email-hl@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1470799604-12877-1-git-send-email-hl@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: heiko@sntech.de
-Cc: myungjoo.ham@samsung.com, mark.yao@rock-chips.com, cw00.choi@samsung.com, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, linux-arm-kernel@lists.infradead.org, tixy@linaro.org, typ@rock-chips.com, sudeep.holla@arm.com, mark.rutland@arm.com, linux-pm@vger.kernel.org, Lin Huang <hl@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1470799604-12877-1-git-send-email-hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org
+Cc: tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-add ddrc clock setting, so we can do ddr frequency
-scaling on rk3399 platform in future.
+This patch adds the documentation for rockchip dfi devfreq-event driver.
 
-Signed-off-by: Lin Huang <hl@rock-chips.com>
+Signed-off-by: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 ---
 Changes in v5:
-- fit for the ddr type
+-None
 
 Changes in v4:
-- None
+-None
 
 Changes in v3:
-- None
+-None
 
 Changes in v2:
-- remove clk_ddrc_dpll_src from critical clock list
+-None 
 
 Changes in v1:
-- remove ddrc source CLK_IGNORE_UNUSED flag
-- move clk_ddrc and clk_ddrc_dpll_src to critical
+-None
 
- drivers/clk/rockchip/clk-rk3399.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ .../bindings/devfreq/event/rockchip-dfi.txt          | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
 
-diff --git a/drivers/clk/rockchip/clk-rk3399.c b/drivers/clk/rockchip/clk-rk3399.c
-index c109d80..b962aeb 100644
---- a/drivers/clk/rockchip/clk-rk3399.c
-+++ b/drivers/clk/rockchip/clk-rk3399.c
-@@ -118,6 +118,10 @@ PNAME(mux_armclkb_p)				= { "clk_core_b_lpll_src",
- 						    "clk_core_b_bpll_src",
- 						    "clk_core_b_dpll_src",
- 						    "clk_core_b_gpll_src" };
-+PNAME(mux_ddrclk_p)				= { "clk_ddrc_lpll_src",
-+						    "clk_ddrc_bpll_src",
-+						    "clk_ddrc_dpll_src",
-+						    "clk_ddrc_gpll_src" };
- PNAME(mux_aclk_cci_p)				= { "cpll_aclk_cci_src",
- 						    "gpll_aclk_cci_src",
- 						    "npll_aclk_cci_src",
-@@ -1377,6 +1381,18 @@ static struct rockchip_clk_branch rk3399_clk_branches[] __initdata = {
- 	COMPOSITE_NOMUX(0, "clk_test", "clk_test_pre", CLK_IGNORE_UNUSED,
- 			RK3368_CLKSEL_CON(58), 0, 5, DFLAGS,
- 			RK3368_CLKGATE_CON(13), 11, GFLAGS),
+diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt b/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+new file mode 100644
+index 0000000..bf42255
+--- /dev/null
++++ b/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+@@ -0,0 +1,20 @@
 +
-+	/* ddrc */
-+	GATE(0, "clk_ddrc_lpll_src", "lpll", 0, RK3399_CLKGATE_CON(3),
-+	     0, GFLAGS),
-+	GATE(0, "clk_ddrc_bpll_src", "bpll", 0, RK3399_CLKGATE_CON(3),
-+	     1, GFLAGS),
-+	GATE(0, "clk_ddrc_dpll_src", "dpll", 0, RK3399_CLKGATE_CON(3),
-+	     2, GFLAGS),
-+	GATE(0, "clk_ddrc_gpll_src", "gpll", 0, RK3399_CLKGATE_CON(3),
-+	     3, GFLAGS),
-+	COMPOSITE_DDRCLK(SCLK_DDRC, "clk_ddrc", mux_ddrclk_p, 0,
-+		       RK3399_CLKSEL_CON(6), 4, 2, 0, 0, ROCKCHIP_DDRCLK_SIP),
- };
- 
- static struct rockchip_clk_branch rk3399_clk_pmu_branches[] __initdata = {
-@@ -1487,6 +1503,9 @@ static const char *const rk3399_cru_critical_clocks[] __initconst = {
- 	"gpll_hclk_perilp1_src",
- 	"gpll_aclk_perilp0_src",
- 	"gpll_aclk_perihp_src",
++* Rockchip rk3399 DFI device
 +
-+	/* ddrc */
-+	"clk_ddrc"
- };
- 
- static const char *const rk3399_pmucru_critical_clocks[] __initconst = {
++Required properties:
++- compatible: Must be "rockchip,rk3399-dfi".
++- reg: physical base address of each DFI and length of memory mapped region
++- rockchip,pmu: phandle to the syscon managing the "pmu general register files"
++- clocks: phandles for clock specified in "clock-names" property
++- clock-names : the name of clock used by the DFI, must be "pclk_ddr_mon";
++
++Example:
++	dfi: dfi@0xff630000 {
++		reg = <0x00 0xff630000 0x00 0x4000>;
++		compatible = "rockchip,rk3399-dfi";
++		rockchip,pmu = <&pmugrf>;
++		clocks = <&cru PCLK_DDR_MON>;
++		clock-names = "pclk_ddr_mon";
++		status = "disabled";
++	};
++
 -- 
 1.9.1
