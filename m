@@ -1,75 +1,109 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH v6 3/8] arm, dts: add TC2 cpu capacity-dmips-mhz
- information
-Date: Wed, 10 Aug 2016 17:06:34 +0100
-Message-ID: <20160810160634.GL3540@e106622-lin>
-References: <1468932048-31635-1-git-send-email-juri.lelli@arm.com>
- <1468932048-31635-4-git-send-email-juri.lelli@arm.com>
- <7ac935dc-9f8b-8af0-e67b-ef1c469d76f1@arm.com>
- <20160810154324.GJ3540@e106622-lin>
- <08d9e2ff-3c66-5129-1c82-df314e2204db@arm.com>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
+ mapping correctly
+Date: Wed, 10 Aug 2016 18:35:00 +0200
+Message-ID: <20160810163500.GA9424@nazgul.tnic>
+References: <2206547.eDj3RJQyE5@vostro.rjw.lan>
+ <2010434.TyoHiO9eal@vostro.rjw.lan>
+ <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm>
+ <1779906.DOHeuFCiDy@vostro.rjw.lan>
+ <alpine.LNX.2.00.1608101517380.22028@cbobk.fhfr.pm>
+ <CAJcbSZHGH8G01zXSE6y9A19ZxFYY0bzeqcfHBEAYZcn8ZeX3+g@mail.gmail.com>
+ <alpine.LNX.2.00.1608101658070.22028@cbobk.fhfr.pm>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <kernel-hardening-return-4323-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
 Content-Disposition: inline
-In-Reply-To: <08d9e2ff-3c66-5129-1c82-df314e2204db@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, broonie@kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, will.deacon@arm.com, linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com, robh+dt@kernel.org, Kumar Gala <galak@codeaurora.org>, linux@arm.linux.org.uk, Liviu Dudau <liviu.dudau@arm.com>, morten.rasmussen@arm.com, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <alpine.LNX.2.00.1608101658070.22028@cbobk.fhfr.pm>
+To: Jiri Kosina <jikos@kernel.org>
+Cc: Thomas Garnier <thgarnie@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/08/16 16:52, Sudeep Holla wrote:
-> 
-> 
-> On 10/08/16 16:43, Juri Lelli wrote:
-> >Hi,
-> >
-> >On 10/08/16 16:33, Sudeep Holla wrote:
-> >>Hi Juri,
-> >>
-> >>On 19/07/16 13:40, Juri Lelli wrote:
-> >>>Add TC2 cpu capacity binding information.
-> >>>
-> >>
-> >>If you repost it,
-> >>
-> >>s/binding//
-> >>
-> >
-> >Yes, I think I'll need to repost, squashing the arm64 fix in the
-> >appropriate patch. Thanks.
-> >
-> >>>Cc: Liviu Dudau <liviu.dudau@arm.com>
-> >>>Cc: Sudeep Holla <sudeep.holla@arm.com>
-> >>
-> >>Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-> >
-> >Thanks!
-> >
-> >>(assuming you take it via some other tree, let us know if it's
-> >> OK to merge the DTS separately and you want us to pick them)
-> >>
-> >
-> >As per off-line discussion with Russell, binding doc and arm bits should
-> >go via his patch system. While arm64 bits could go separately via aarch64.
-> >
-> >Does this make sense?
-> 
-> Yes, we can pick up the juno and tc2 dts changes and send it via
-> arm-soc.
+On Wed, Aug 10, 2016 at 04:59:40PM +0200, Jiri Kosina wrote:
+> Mine is Lenovo thinkpad x200s; I think Boris has been testing it on x230s,
 
-If this works better for you it is fine by me! I'll only use Russell's
-system for docs and arm parsing/sysfs implementation then.
+It says "X230" here under the screen.
 
-Thanks,
+> but not sure whether any of the latest patches didn't actually fix it for 
+> him.
 
-- Juri
+Haven't tested them yet. I'm waiting for you to test them first since
+this is the only machine I have right now and I need it for work.
+
+> The machine I am seeing the issue on, has 2G RAM, with this e820 map:
+
+8G here:
+
+e820: BIOS-provided physical RAM map:
+BIOS-e820: [mem 0x0000000000000000-0x000000000009d7ff] usable
+BIOS-e820: [mem 0x000000000009d800-0x000000000009ffff] reserved
+BIOS-e820: [mem 0x00000000000e0000-0x00000000000fffff] reserved
+BIOS-e820: [mem 0x0000000000100000-0x000000001fffffff] usable
+BIOS-e820: [mem 0x0000000020000000-0x00000000201fffff] reserved
+BIOS-e820: [mem 0x0000000020200000-0x0000000040003fff] usable
+BIOS-e820: [mem 0x0000000040004000-0x0000000040004fff] reserved
+BIOS-e820: [mem 0x0000000040005000-0x00000000cec2ffff] usable
+BIOS-e820: [mem 0x00000000cec30000-0x00000000dae9efff] reserved
+BIOS-e820: [mem 0x00000000dae9f000-0x00000000daf9efff] ACPI NVS
+BIOS-e820: [mem 0x00000000daf9f000-0x00000000daffefff] ACPI data
+BIOS-e820: [mem 0x00000000dafff000-0x00000000df9fffff] reserved
+BIOS-e820: [mem 0x00000000f8000000-0x00000000fbffffff] reserved
+BIOS-e820: [mem 0x00000000fec00000-0x00000000fec00fff] reserved
+BIOS-e820: [mem 0x00000000fed08000-0x00000000fed08fff] reserved
+BIOS-e820: [mem 0x00000000fed10000-0x00000000fed19fff] reserved
+BIOS-e820: [mem 0x00000000fed1c000-0x00000000fed1ffff] reserved
+BIOS-e820: [mem 0x00000000fee00000-0x00000000fee00fff] reserved
+BIOS-e820: [mem 0x00000000ffc00000-0x00000000ffffffff] reserved
+BIOS-e820: [mem 0x0000000100000000-0x000000021e5fffff] usable
+BIOS-e820: [mem 0x000000021e600000-0x000000021e7fffff] reserved
+debug: ignoring loglevel setting.
+NX (Execute Disable) protection: active
+SMBIOS 2.7 present.
+DMI: LENOVO 2320CTO/2320CTO, BIOS G2ET86WW (2.06 ) 11/13/2012
+e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
+e820: remove [mem 0x000a0000-0x000fffff] usable
+e820: last_pfn = 0x21e600 max_arch_pfn = 0x400000000
+
+> CPU:
+
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 58
+model name      : Intel(R) Core(TM) i7-3520M CPU @ 2.90GHz
+stepping        : 9
+microcode       : 0x1c
+cpu MHz         : 1257.421
+cache size      : 4096 KB
+physical id     : 0
+siblings        : 4
+core id         : 0
+cpu cores       : 2
+apicid          : 0
+initial apicid  : 0
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 13
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm epb tpr_shadow vnmi flexpriority ept vpid fsgsbase smep erms xsaveopt dtherm ida arat pln pts
+bugs            :
+bogomips        : 5786.68
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
+
+-- 
+Regards/Gruss,
+    Boris.
+
+ECO tip #101: Trim your mails when you reply.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+--
