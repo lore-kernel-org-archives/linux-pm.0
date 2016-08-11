@@ -1,181 +1,53 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 3/5] acpi: cppc: Add support for function fixed hardware address
-Date: Wed, 10 Aug 2016 17:17:24 -0700
-Message-ID: <1470874646-70570-4-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [Resend][PATCH] x86/power/64: Always create temporary identity
+ mapping correctly
+Date: Thu, 11 Aug 2016 02:35:48 +0200
+Message-ID: <CAJZ5v0iAuDYZhmXqG12ZtEpQ5FEzP9Wp4a=EqApwwCc1VBvbLg@mail.gmail.com>
+References: <2206547.eDj3RJQyE5@vostro.rjw.lan> <2010434.TyoHiO9eal@vostro.rjw.lan>
+ <alpine.LNX.2.00.1608100948560.22028@cbobk.fhfr.pm> <1779906.DOHeuFCiDy@vostro.rjw.lan>
+ <alpine.LNX.2.00.1608101517380.22028@cbobk.fhfr.pm> <CAJcbSZHGH8G01zXSE6y9A19ZxFYY0bzeqcfHBEAYZcn8ZeX3+g@mail.gmail.com>
+ <alpine.LNX.2.00.1608101658070.22028@cbobk.fhfr.pm> <20160810163500.GA9424@nazgul.tnic>
+ <CAJZ5v0h_N5KvjUZjDDdoXMP3UoMmyYKOrHUpyGH14EYWMbxvPA@mail.gmail.com>
+ <CAJZ5v0icnK4jBGkmHb7jJFEcusQyjJGYEG8yhOzMDa_hMQSj_w@mail.gmail.com> <alpine.LNX.2.00.1608102358320.22028@cbobk.fhfr.pm>
+Reply-To: kernel-hardening@lists.openwall.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <kernel-hardening-return-4338-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: rjwysocki@gmail.com
+In-Reply-To: <alpine.LNX.2.00.1608102358320.22028@cbobk.fhfr.pm>
+To: Jiri Kosina <jikos@kernel.org>, Thomas Garnier <thgarnie@google.com>
+Cc: Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>, Kernel Hardening <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
 
-The CPPC registers can also be accessed via function fixed hardware
-addresses in X86. Add support by modifying cpc_read and cpc_write
-to be able to read/write MSRs on x86 platform. Also with this change,
-acpi_cppc_processor_probe doesn't bail out if space id is not equal to
-PCC or memory address space.
+On Wed, Aug 10, 2016 at 11:59 PM, Jiri Kosina <jikos@kernel.org> wrote:
+> On Wed, 10 Aug 2016, Rafael J. Wysocki wrote:
+>
+>> So I used your .config to generate one for my test machine and with
+>> that I can reproduce.
+>
+> Was that the config I've sent, or did Boris provide one as well? Which one
+> are you able to reproduce with please?
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/acpi/cppc_acpi.c | 77 +++++++++++++++++++++++++++++++++++++++++-------
- 1 file changed, 66 insertions(+), 11 deletions(-)
+It's the Boris' one.
 
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 34209f5..939fb5c 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -42,6 +42,10 @@
- #include <linux/ktime.h>
- 
- #include <acpi/cppc_acpi.h>
-+#ifdef CONFIG_X86
-+#include <asm/msr.h>
-+#endif
-+
- /*
-  * Lock to provide mutually exclusive access to the PCC
-  * channel. e.g. When the remote updates the shared region
-@@ -585,8 +589,9 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 					pr_debug("Mismatched PCC ids.\n");
- 					goto out_free;
- 				}
--			} else if (gas_t->space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY) {
--				/* Support only PCC and SYS MEM type regs */
-+			} else if (gas_t->space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY &&
-+				   gas_t->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) {
-+				/* Support only PCC, FFH and SYS MEM type regs */
- 				pr_debug("Unsupported register type: %d\n", gas_t->space_id);
- 				goto out_free;
- 			}
-@@ -645,13 +650,59 @@ void acpi_cppc_processor_exit(struct acpi_processor *pr)
- }
- EXPORT_SYMBOL_GPL(acpi_cppc_processor_exit);
- 
-+#ifdef CONFIG_X86
-+static int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val)
-+{
-+	int err;
-+
-+	err = rdmsrl_on_cpu(cpunum, reg->address, val);
-+	if (!err) {
-+		u64 mask = GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
-+				       reg->bit_offset);
-+
-+		*val &= mask;
-+		*val >>= reg->bit_offset;
-+	}
-+	return err;
-+}
-+
-+static int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
-+{
-+	u64 rd_val;
-+	int err;
-+
-+	err = rdmsrl_on_cpu(cpunum, reg->address, &rd_val);
-+	if (!err) {
-+		u64 mask = GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
-+				       reg->bit_offset);
-+
-+		val <<= reg->bit_offset;
-+		val &= mask;
-+		rd_val &= ~mask;
-+		rd_val |= val;
-+		err = wrmsrl_on_cpu(cpunum, reg->address, rd_val);
-+	}
-+	return err;
-+}
-+#else
-+static int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val)
-+{
-+	return -EINVAL;
-+}
-+static int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
-+{
-+	return -EINVAL;
-+
-+}
-+#endif
-+
- /*
-  * Since cpc_read and cpc_write are called while holding pcc_lock, it should be
-  * as fast as possible. We have already mapped the PCC subspace during init, so
-  * we can directly write to it.
-  */
- 
--static int cpc_read(struct cpc_register_resource *res, u64 *val)
-+static int cpc_read(int cpunum, struct cpc_register_resource *res, u64 *val)
- {
- 	struct cpc_reg *reg = &res->cpc_entry.reg;
- 	int ret_val = 0;
-@@ -684,13 +735,15 @@ static int cpc_read(struct cpc_register_resource *res, u64 *val)
- 				reg->bit_width);
- 			ret_val = -EFAULT;
- 		}
-+	} else if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE) {
-+		ret_val = cpc_read_ffh(cpunum, reg, val);
- 	} else
- 		ret_val = acpi_os_read_memory((acpi_physical_address)reg->address,
- 					val, reg->bit_width);
- 	return ret_val;
- }
- 
--static int cpc_write(struct cpc_reg *reg, u64 val)
-+static int cpc_write(int cpunum, struct cpc_reg *reg, u64 val)
- {
- 	int ret_val = 0;
- 
-@@ -716,6 +769,8 @@ static int cpc_write(struct cpc_reg *reg, u64 val)
- 			ret_val = -EFAULT;
- 			break;
- 		}
-+	} else if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE) {
-+		ret_val = cpc_write_ffh(cpunum, reg, val);
- 	} else
- 		ret_val = acpi_os_write_memory((acpi_physical_address)reg->address,
- 				val, reg->bit_width);
-@@ -761,16 +816,16 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
- 		}
- 	}
- 
--	cpc_read(highest_reg, &high);
-+	cpc_read(cpunum, highest_reg, &high);
- 	perf_caps->highest_perf = high;
- 
--	cpc_read(lowest_reg, &low);
-+	cpc_read(cpunum, lowest_reg, &low);
- 	perf_caps->lowest_perf = low;
- 
--	cpc_read(ref_perf, &ref);
-+	cpc_read(cpunum, ref_perf, &ref);
- 	perf_caps->reference_perf = ref;
- 
--	cpc_read(nom_perf, &nom);
-+	cpc_read(cpunum, nom_perf, &nom);
- 	perf_caps->nominal_perf = nom;
- 
- 	if (!ref)
-@@ -819,8 +874,8 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
- 		}
- 	}
- 
--	cpc_read(delivered_reg, &delivered);
--	cpc_read(reference_reg, &reference);
-+	cpc_read(cpunum, delivered_reg, &delivered);
-+	cpc_read(cpunum, reference_reg, &reference);
- 
- 	if (!delivered || !reference) {
- 		ret = -EFAULT;
-@@ -875,7 +930,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	 * Skip writing MIN/MAX until Linux knows how to come up with
- 	 * useful values.
- 	 */
--	cpc_write(&desired_reg->cpc_entry.reg, perf_ctrls->desired_perf);
-+	cpc_write(cpu, &desired_reg->cpc_entry.reg, perf_ctrls->desired_perf);
- 
- 	/* Is this a PCC reg ?*/
- 	if (desired_reg->cpc_entry.reg.space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
--- 
-2.7.4
+Moreover, I have found the options that make the difference: unsetting
+CONFIG_PROVE_LOCKING and CONFIG_DEBUG_LOCK_ALLOC (which also will
+unset CONFIG_LOCKDEP AFAICS) in it makes hibernation work again with
+CONFIG_RANDOMIZE_MEMORY set and with the $subject patch applied.
 
+Unbelievable, but that's what I'm seeing.
+
+Now, that leads to a few questions:
+
+- How does lockdep change the picture so it matters for hibernation?
+- Why is hibernation the only piece that's affected?
+- Why is RANDOMIZE_MEMORY necessary to make this breakage show up?
+
+Thomas, any ideas?
+
+Thanks,
+Rafael
