@@ -1,85 +1,83 @@
-From: Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH 3/3] ARM: dts: imx6q-evi: Fix onboard hub reset line
-Date: Thu, 11 Aug 2016 09:40:32 -0700
-Message-ID: <1470933632-22133-4-git-send-email-stillcompiling@gmail.com>
+From: Joshua Clayton <stillcompiling@gmail.com>
+Subject: [PATCH 2/3] ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+Date: Thu, 11 Aug 2016 09:40:31 -0700
+Message-ID: <1470933632-22133-3-git-send-email-stillcompiling@gmail.com>
 References: <20160810030254.GD1879@shlinux2>
  <1470933632-22133-1-git-send-email-stillcompiling@gmail.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1470933632-22133-1-git-send-email-stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f67.google.com ([209.85.220.67]:34285 "EHLO
+	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932840AbcHKQks (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2016 12:40:48 -0400
+In-Reply-To: <1470933632-22133-1-git-send-email-stillcompiling@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Chen <hzpeterchen@gmail.com>, Shawn Guo <shawnguo@kernel.org>
+Cc: Joshua Clayton <stillcompiling@gmail.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mka@chromium.org, Peter Chen <peter.chen@nxp.com>
 
-Previously the onboard hub was made to work by treating its
-reset gpio as a regulator enable.
-Get rid of that kludge now that pwseq has added reset gpio support
-Move pin muxing the hub reset pin into the usbh1 group
+From: Peter Chen <peter.chen@nxp.com>
 
-Signed-off-by: Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+The current dts describes USB HUB's property at USB controller's
+entry, it is improper. The USB HUB should be the child node
+under USB controller, and power sequence properties are under
+it.
+
+Signed-off-by: Peter Chen <peter.chen@nxp.com>
+Signed-off-by: Joshua Clayton <stillcompiling@gmail.com>
 ---
- arch/arm/boot/dts/imx6q-evi.dts | 25 +++++++------------------
- 1 file changed, 7 insertions(+), 18 deletions(-)
+ arch/arm/boot/dts/imx6qdl-udoo.dtsi | 24 +++++++++++-------------
+ 1 file changed, 11 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx6q-evi.dts b/arch/arm/boot/dts/imx6q-evi.dts
-index 4fa5601..49c6f61 100644
---- a/arch/arm/boot/dts/imx6q-evi.dts
-+++ b/arch/arm/boot/dts/imx6q-evi.dts
-@@ -54,18 +54,6 @@
- 		reg = <0x10000000 0x40000000>;
- 	};
+diff --git a/arch/arm/boot/dts/imx6qdl-udoo.dtsi b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+index 3bee2f9..44b2a24 100644
+--- a/arch/arm/boot/dts/imx6qdl-udoo.dtsi
++++ b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+@@ -9,6 +9,8 @@
+  *
+  */
  
--	reg_usbh1_vbus: regulator-usbhubreset {
--		compatible = "regulator-fixed";
--		regulator-name = "usbh1_vbus";
--		regulator-min-microvolt = <5000000>;
--		regulator-max-microvolt = <5000000>;
--		enable-active-high;
--		startup-delay-us = <2>;
--		pinctrl-names = "default";
--		pinctrl-0 = <&pinctrl_usbh1_hubreset>;
--		gpio = <&gpio7 12 GPIO_ACTIVE_HIGH>;
--	};
++#include <dt-bindings/gpio/gpio.h>
++
+ / {
+ 	aliases {
+ 		backlight = &backlight;
+@@ -58,17 +60,6 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 
+-		reg_usb_h1_vbus: regulator@0 {
+-			compatible = "regulator-fixed";
+-			reg = <0>;
+-			regulator-name = "usb_h1_vbus";
+-			regulator-min-microvolt = <5000000>;
+-			regulator-max-microvolt = <5000000>;
+-			enable-active-high;
+-			startup-delay-us = <2>; /* USB2415 requires a POR of 1 us minimum */
+-			gpio = <&gpio7 12 0>;
+-		};
 -
- 	reg_usb_otg_vbus: regulator-usbotgvbus {
- 		compatible = "regulator-fixed";
- 		regulator-name = "usb_otg_vbus";
-@@ -204,12 +192,18 @@
- };
- 
+ 		reg_panel: regulator@1 {
+ 			compatible = "regulator-fixed";
+ 			reg = <1>;
+@@ -259,9 +250,16 @@
  &usbh1 {
--	vbus-supply = <&reg_usbh1_vbus>;
  	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_usbh1>;
- 	dr_mode = "host";
- 	disable-over-current;
+ 	pinctrl-0 = <&pinctrl_usbh>;
+-	vbus-supply = <&reg_usb_h1_vbus>;
+-	clocks = <&clks IMX6QDL_CLK_CKO>;
  	status = "okay";
 +
-+	usb2415host: hub@1 {
-+		compatible = "usb424,2513";
++	usb2415: hub@1 {
++		compatible = "usb424,2514";
 +		reg = <1>;
++
++		clocks = <&clks IMX6QDL_CLK_CKO>;
 +		reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
 +		reset-duration-us = <3000>;
 +	};
  };
  
- &usbotg {
-@@ -467,11 +461,6 @@
- 			MX6QDL_PAD_GPIO_3__USB_H1_OC 0x1b0b0
- 			/* usbh1_b OC */
- 			MX6QDL_PAD_GPIO_0__GPIO1_IO00 0x1b0b0
--		>;
--	};
--
--	pinctrl_usbh1_hubreset: usbh1hubresetgrp {
--		fsl,pins = <
- 			MX6QDL_PAD_GPIO_17__GPIO7_IO12 0x1b0b0
- 		>;
- 	};
+ &usdhc3 {
 -- 
 2.7.4
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
