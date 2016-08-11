@@ -1,32 +1,49 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH] ARM: cpuidle: Fix error return code
-Date: Thu, 11 Aug 2016 14:39:02 +0100
-Message-ID: <20160811133902.GC26202@red-moon>
-References: <1470920550-21625-1-git-send-email-christophe.jaillet@wanadoo.fr>
+From: Baoquan He <bhe@redhat.com>
+Subject: Re: [PATCH 2/2] x86, ACPI: Fix the wrong assignment when Handle
+ apic/x2apic entries
+Date: Thu, 11 Aug 2016 22:20:26 +0800
+Message-ID: <20160811142026.GA26981@x1.redhat.com>
+References: <1470697311-1292-1-git-send-email-bhe@redhat.com>
+ <1470697311-1292-2-git-send-email-bhe@redhat.com>
+ <20160810125333.GB9028@gmail.com>
+ <20160810130333.GA5598@x1.redhat.com>
+ <20160811084652.GA4249@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:54118 "EHLO foss.arm.com"
+Received: from mx1.redhat.com ([209.132.183.28]:54548 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751148AbcHKNjG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Aug 2016 09:39:06 -0400
+	id S1750832AbcHKOUd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Aug 2016 10:20:33 -0400
 Content-Disposition: inline
-In-Reply-To: <1470920550-21625-1-git-send-email-christophe.jaillet@wanadoo.fr>
+In-Reply-To: <20160811084652.GA4249@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
 
-On Thu, Aug 11, 2016 at 03:02:30PM +0200, Christophe JAILLET wrote:
-> We know that 'ret = 0' because it has been tested a few lines above.
-> So, if 'kzalloc' fails, 0 will be returned instead of an error code.
-> Return -ENOMEM instead.
+On 08/11/16 at 10:46am, Ingo Molnar wrote:
+> > > > -		count = madt_proc[1].count;
+> > > > +		count = madt_proc[0].count;
+> > > > +		x2count = madt_proc[1].count;
+> > > >  	}
+> > > >  	if (!count && !x2count) {
+> >           ~~~~~~~~~~~~~~~~~~~~~
+> > I mean here the value checking won't be impacted by the wrong
+> > assignment.
 > 
-> Fixes: a0d46a3dfdc3 ("ARM: cpuidle: Register per cpuidle device")
+> Indeed!
 > 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
->  drivers/cpuidle/cpuidle-arm.c | 1 +
->  1 file changed, 1 insertion(+)
+> Mind putting that into the changelog? Something like:
+> 
+> "By pure accident the bug makes no functional difference, because the only 
+>  expression where we are using these values is (!count && !x2count), in which
+>  the variables are interchangeable, but it makes sense to fix the bug 
+>  nevertheless."
 
-Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Sure, this is much clearer. Will use this and repost. Thanks a lot, will
+try to do each post using patch log like this.
+
+Thanks
+Baoquan
+
