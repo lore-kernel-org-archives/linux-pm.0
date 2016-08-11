@@ -1,92 +1,60 @@
-From: Joshua Clayton <stillcompiling@gmail.com>
-Subject: [PATCH 1/1] sbs-battery: add ability to get battery capacity
-Date: Thu, 11 Aug 2016 09:59:12 -0700
-Message-ID: <1470934752-22719-1-git-send-email-stillcompiling@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Joshua Clayton <stillcompiling@gmail.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [Update][PATCH 1/2] cpufreq / sched: Pass flags to
+ cpufreq_update_util()
+Date: Thu, 11 Aug 2016 11:03:47 -0700
+Message-ID: <20160811180347.GB14324@graphite.smuckle.net>
+References: <4498725.ix9jPCHteg@vostro.rjw.lan>
+ <14590530.PIp5juoJ7q@vostro.rjw.lan>
+ <1878295.pk6FjfzjrR@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:35276 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbcHKSDv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2016 14:03:51 -0400
+Received: by mail-pa0-f49.google.com with SMTP id i5so798979pat.2
+        for <linux-pm@vger.kernel.org>; Thu, 11 Aug 2016 11:03:51 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1878295.pk6FjfzjrR@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-Battery capacity level is a standard feature of sbs battery
-That can be used to tell what the remainig battery capacity is, and
-can tell if the battery has not been calibrated/initialized, which makes
-the capacity and charging/discharging percentages invalid.
+On Wed, Aug 10, 2016 at 03:49:07AM +0200, Rafael J. Wysocki wrote:
+> Index: linux-pm/kernel/sched/fair.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/fair.c
+> +++ linux-pm/kernel/sched/fair.c
+> @@ -2875,11 +2875,8 @@ static inline void update_tg_load_avg(st
+>  
+>  static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq)
+>  {
+> -	struct rq *rq = rq_of(cfs_rq);
+> -	int cpu = cpu_of(rq);
+> -
+> -	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
+> -		unsigned long max = rq->cpu_capacity_orig;
+> +	if (&this_rq()->cfs == cfs_rq) {
+> +		struct rq *rq = rq_of(cfs_rq);
+>  
+>  		/*
+>  		 * There are a few boundary cases this might miss but it should
+> @@ -2897,8 +2894,8 @@ static inline void cfs_rq_util_change(st
+>  		 *
+>  		 * See cpu_util().
+>  		 */
+> -		cpufreq_update_util(rq_clock(rq),
+> -				    min(cfs_rq->avg.util_avg, max), max);
+> +		if (cpu_of(rq) == smp_processor_id())
 
-Signed-off-by: Joshua Clayton <stillcompiling@gmail.com>
----
- drivers/power/sbs-battery.c | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+Isn't this test against smp_processor_id() redundant since
+this_rq()->cfs == cfs_rq?
 
-diff --git a/drivers/power/sbs-battery.c b/drivers/power/sbs-battery.c
-index 768b9fc..4f913b6 100644
---- a/drivers/power/sbs-battery.c
-+++ b/drivers/power/sbs-battery.c
-@@ -41,6 +41,7 @@ enum {
- 	REG_TIME_TO_EMPTY,
- 	REG_TIME_TO_FULL,
- 	REG_STATUS,
-+	REG_CAPACITY_LEVEL,
- 	REG_CYCLE_COUNT,
- 	REG_SERIAL_NUMBER,
- 	REG_REMAINING_CAPACITY,
-@@ -68,6 +69,7 @@ enum sbs_battery_mode {
- #define MANUFACTURER_ACCESS_SLEEP	0x0011
- 
- /* battery status value bits */
-+#define BATTERY_INITIALIZED		0x80
- #define BATTERY_DISCHARGING		0x40
- #define BATTERY_FULL_CHARGED		0x20
- #define BATTERY_FULL_DISCHARGED		0x10
-@@ -110,6 +112,8 @@ static const struct chip_data {
- 		SBS_DATA(POWER_SUPPLY_PROP_TIME_TO_FULL_AVG, 0x13, 0, 65535),
- 	[REG_STATUS] =
- 		SBS_DATA(POWER_SUPPLY_PROP_STATUS, 0x16, 0, 65535),
-+	[REG_CAPACITY_LEVEL] =
-+		SBS_DATA(POWER_SUPPLY_PROP_CAPACITY_LEVEL, 0x16, 0, 65535),
- 	[REG_CYCLE_COUNT] =
- 		SBS_DATA(POWER_SUPPLY_PROP_CYCLE_COUNT, 0x17, 0, 65535),
- 	[REG_DESIGN_CAPACITY] =
-@@ -131,6 +135,7 @@ static const struct chip_data {
- 
- static enum power_supply_property sbs_properties[] = {
- 	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
- 	POWER_SUPPLY_PROP_HEALTH,
- 	POWER_SUPPLY_PROP_PRESENT,
- 	POWER_SUPPLY_PROP_TECHNOLOGY,
-@@ -377,8 +382,23 @@ static int sbs_get_battery_property(struct i2c_client *client,
- 	if (ret >= sbs_data[reg_offset].min_value &&
- 	    ret <= sbs_data[reg_offset].max_value) {
- 		val->intval = ret;
--		if (psp != POWER_SUPPLY_PROP_STATUS)
-+		if (psp == POWER_SUPPLY_PROP_CAPACITY_LEVEL) {
-+			if (!(ret & BATTERY_INITIALIZED))
-+				val->intval =
-+					POWER_SUPPLY_CAPACITY_LEVEL_UNKNOWN;
-+			else if (ret & BATTERY_FULL_CHARGED)
-+				val->intval =
-+					POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-+			else if (ret & BATTERY_FULL_DISCHARGED)
-+				val->intval =
-+					POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
-+			else
-+				val->intval =
-+					POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
- 			return 0;
-+		} else if (psp != POWER_SUPPLY_PROP_STATUS) {
-+			return 0;
-+		}
- 
- 		if (ret & BATTERY_FULL_CHARGED)
- 			val->intval = POWER_SUPPLY_STATUS_FULL;
-@@ -590,6 +610,7 @@ static int sbs_get_property(struct power_supply *psy,
- 		break;
- 
- 	case POWER_SUPPLY_PROP_STATUS:
-+	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
- 	case POWER_SUPPLY_PROP_CYCLE_COUNT:
- 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
--- 
-2.7.4
+> +			cpufreq_update_util(rq_clock(rq), 0);
+
+All else looked good to me.
+
+thanks,
+Steve
