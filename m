@@ -1,64 +1,47 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/2][RFC] PM / sleep: Expose DPM watchdog timeout to sysfs
-Date: Thu, 11 Aug 2016 20:54:42 +0200
-Message-ID: <20160811185441.GA15813@amd>
-References: <cover.1470908324.git.yu.c.chen@intel.com>
+Subject: Re: [PATCH v2 3/3] PM / hibernate: Recycle safe pages after image
+ restoration
+Date: Thu, 11 Aug 2016 23:06:15 +0200
+Message-ID: <20160811210615.GA28618@amd>
+References: <2260927.OOWMYX738E@vostro.rjw.lan>
+ <2448424.sR3JM3oiG3@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54718 "EHLO
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58152 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbcHKSyp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2016 14:54:45 -0400
+	with ESMTP id S932444AbcHKVGW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2016 17:06:22 -0400
 Content-Disposition: inline
-In-Reply-To: <cover.1470908324.git.yu.c.chen@intel.com>
+In-Reply-To: <2448424.sR3JM3oiG3@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: Linux PM List <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>, Takashi Iwai <tiwai@suse.de>, Benoit Goby <benoit@android.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 Hi!
 
-> Recently we have a new report that, the harddisk can not
-> resume on time due to firmware issues, and got a kernel
-> panic because of DPM watchdog timeout. Since the default
-> timeout has once been modified from 12 to 60 seconds, we
-> might still encounter new case which requires a longer timeout,
-> so expose the value to sysfs and let the users decide which
-> value is appropriate, meanwhile this can also ease the debugging
-> process.
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> The first patch is to force DPM watchdog depending on CONFIG_PM_SLEEP,
-> thus the second patch which does the actual work, can use
-> CONFIG_DPM_WATCHDOG safely without checking CONFIG_PM_SLEEP.
-
-Kernel should just work. User should not have to configure random
-knobs to have working suspend/hibernation.
-
-We do not want "CONFIG_BREAK_SUSPEND" so I believe we don't want
-"CONFIG_DPM_WATCHDOG". If normal users select it and it breaks their
-system, make it depend on "CONFIG_EXPERT" or hide it in some other
-way or maybe remove it from Kconfig altogether. 
-
-Or maybe CONFIG_DPM_WATCHDOG should contain numeric value that user
-has to select?
-
-And I'm pretty certain new user interfaces need to be documented.
-
-NAK.
-							Pavel
-
-> Chen Yu (2):
->   PM / sleep: Make DPM watchdog depend on PM_SLEEP
->   PM / Sleep: Expose DPM watchdog timeout to sysfs
+> One of the memory bitmaps used by the hibernation image restoration
+> code is freed after the image has been loaded.
 > 
->  drivers/base/power/main.c    |  4 +++-
->  include/linux/sched/sysctl.h |  4 ++++
->  kernel/power/Kconfig         |  2 +-
->  kernel/sysctl.c              | 16 ++++++++++++++++
->  4 files changed, 24 insertions(+), 2 deletions(-)
+> That is not quite efficient, though, because the memory pages used
+> for building that bitmap are known to be safe (ie. they were not
+> used by the image kernel before hibernation) and the arch-specific
+> code finalizing the image restoration may need them.  In that case
+> it needs to allocate those pages again via the memory management
+> subsystem, check if they are really safe again by consulting the
+> other bitmaps and so on.
 > 
+> To avoid that, recycle those pages by putting them into the global
+> list of known safe pages so that they can be given to the arch code
+> right away when necessary.
 
+Ok, so you are trying to gain speed here? How much is the speedup?
+
+Best regards,
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
