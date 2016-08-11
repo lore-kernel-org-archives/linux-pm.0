@@ -1,43 +1,109 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH] ARM: cpuidle: Fix error return code
-Date: Thu, 11 Aug 2016 15:02:30 +0200
-Message-ID: <1470920550-21625-1-git-send-email-christophe.jaillet@wanadoo.fr>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for
+ system sleep
+Date: Thu, 11 Aug 2016 15:20:03 +0200
+Message-ID: <20160811132003.GA7369@wunner.de>
+References: <cover.1463134231.git.lukas@wunner.de>
+ <CAJZ5v0hPbeaUotiFxg_BbkS86HEz=u0ThkdwJju5WyXOuDgd6A@mail.gmail.com>
+ <20160807090347.GA5679@wunner.de>
+ <2182119.Z8Tk7onsTO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, daniel.lezcano@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2182119.Z8Tk7onsTO@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-We know that 'ret = 0' because it has been tested a few lines above.
-So, if 'kzalloc' fails, 0 will be returned instead of an error code.
-Return -ENOMEM instead.
+On Mon, Aug 08, 2016 at 01:32:54AM +0200, Rafael J. Wysocki wrote:
+> On Sunday, August 07, 2016 11:03:47 AM Lukas Wunner wrote:
+> > On Thu, Aug 04, 2016 at 05:30:47PM +0200, Rafael J. Wysocki wrote:
+> > > On Thu, Aug 4, 2016 at 10:14 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> > > > On Thu, Aug 04, 2016 at 03:07:56AM +0200, Rafael J. Wysocki wrote:
+> > > >> On Thu, Aug 4, 2016 at 2:45 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> > > >> > On Thu, Aug 04, 2016 at 01:50:39AM +0200, Rafael J. Wysocki wrote:
+> > > >> >> On Wed, Aug 3, 2016 at 2:28 PM, Lukas Wunner <lukas@wunner.de> wrote:
+> > > >> >> > I will update this patch with Bjorn's suggestion to also leave the
+> > > >> >> > device in D3cold if it is wakeup-capable. The idea is to just change
+> > > >> >> > the default state in the first line of the function like this:
+> > > >> >> >
+> > > >> >> > -       pci_power_t target_state = PCI_D3hot;
+> > > >> >> > +       pci_power_t target_state =
+> > > >> >> > +               dev->current_state == PCI_D3cold ? PCI_D3cold : PCI_D3hot;
+> > > >> >>
+> > > >> >> That should work (even though it is a little clumsy IMO).
+> > > >> >
+> > > >> > Not sure why that is clumsy but happy to use something else if you
+> > > >> > have a suggestion?
+> > > >>
+> > > >> The clumsy thing is that we'd take the target_state as D3cold only if
+> > > >> the device already was in that state.
+> > > >>
+> > > >> Otherwise, we'd take D3hot as the target state for the same device,
+> > > >> which doesn't seem particularly consistent to me.
+> > > >>
+> > > >> Not that I have better ideas ATM, but then the current code works for
+> > > >> my use cases. :-)
+> > > >
+> > > > The goal is to afford direct-complete to devices which are not power-
+> > > > manageable by the platform but can still be runtime suspended to D3cold.
+> > > 
+> > > Well, this is a bit misleading.
+> > > 
+> > > According to the PCI spec there are two ways to put a device into
+> > > D3cold: either by putting its bus into B3 (which for PCIe means
+> > > turning the link off IIRC) which happens when the bridge goes into
+> > > D3hot, or through the platform.
+> > > 
+> > > You aren't talking about any of those cases, though, so we go outside
+> > > of the spec here.
+> > 
+> > Yes. With Nvidia Optimus / AMD PowerXpress hybrid graphics on non-Macs
+> > and Thunderbolt on Macs, it could still be argued that D3cold is
+> > facilitated by the platform, albeit with custom methods instead of _PS3.
+> 
+> So you'd need a custom set of callbacks for that "platform", but that's
+> only a few devices in the system, so you would also need normal ACPI callbacks
+> for the rest.
+> 
+> Conceivably, that could be addressed with per-device platform callbacks,
+> but that is conceptually equivalent to adding a pm_domain pointer to the
+> devices in question.
 
-Fixes: a0d46a3dfdc3 ("ARM: cpuidle: Register per cpuidle device")
+Precisely.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
- drivers/cpuidle/cpuidle-arm.c | 1 +
- 1 file changed, 1 insertion(+)
+> > > > The de facto standard to power manage such devices seems to be with
+> > > > dev_pm_domain_set(). That's what vga_switcheroo does and I'll move
+> > > > to that as well for v3 of this series.
+> > > 
+> > > OK
+> > > 
+> > > > I could add a "bool can_power_off" to struct dev_pm_domain.
+> > > 
+> > > I'm not sure if dev_pm_domain is the right level.  The "can_power_off"
+> > > thing would be sort of specific to your particular use case.
+> > > 
+> > > Say you have something like
+> > > 
+> > > struct pci_pm_domain {
+> > >         struct dev_pm_domain pd;
+> > >         ...
+> > > };
 
-diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-index 4ba3d3fe142f..f440d385ed34 100644
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -121,6 +121,7 @@ static int __init arm_idle_init(void)
- 		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
- 		if (!dev) {
- 			pr_err("Failed to allocate cpuidle device\n");
-+			ret = -ENOMEM;
- 			goto out_fail;
- 		}
- 		dev->cpu = cpu;
--- 
-2.7.4
+So I would like to find a common ground and something you feel
+comfortable to ack. The problem I see with your suggested approach
+of subclassing struct dev_pm_domain in a struct pci_pm_domain is
+that I can easily envision Apple putting some custom methods in the
+DSDT to power a non-PCI device up and down. They're starting to use
+SPI and UART to attach devices in newer machines.
 
+Hence my suggestion to add a flag to struct dev_pm_domain, even
+though at the moment that flag would only be queried by the PCI core.
+I don't care if this is called can_power_off or power_manageable or
+whatever.
 
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-https://www.avast.com/antivirus
+Thanks,
+
+Lukas
