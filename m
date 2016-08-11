@@ -1,198 +1,52 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v3 15/15] ARM64: dts: Define CPU power domain for MSM8916
-Date: Thu, 11 Aug 2016 10:30:57 +0100
-Message-ID: <3307b0e2-5ad3-8e56-05e6-ed0297a0b8ce@arm.com>
-References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
- <1470351902-43103-16-git-send-email-lina.iyer@linaro.org>
- <aae203cd-35ee-958f-bc59-b9d53c32aeb2@arm.com>
- <20160810173543.GB1401@linaro.org>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: [PATCH] PM / Domains: Always enable debugfs support if available
+Date: Thu, 11 Aug 2016 11:40:05 +0100
+Message-ID: <1470912005-10914-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160810173543.GB1401@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, khilman@kernel.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, Brendan Jackman <Brendan.Jackman@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:16129 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751572AbcHKKkV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2016 06:40:21 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
+Debugfs support for PM domains is only enabled if both CONFIG_PM_DEBUG
+and CONFIG_PM_ADVANCED_DEBUG are enabled. CONFIG_PM_ADVANCED_DEBUG is
+described as "extra PM attributes in sysfs for low-level
+debugging/testing" which does not seem related.
 
+Given that the debugfs for PM domains only allows users to view the
+state of the PM domains, always enable debugfs support for PM domains
+if PM domains and debugfs support is enabled.
 
-On 10/08/16 18:35, Lina Iyer wrote:
-> On Wed, Aug 10 2016 at 09:27 -0600, Sudeep Holla wrote:
->>
->>
->> On 05/08/16 00:05, Lina Iyer wrote:
->>> Define power domain and the power states for the domain as defined by
->>> the PSCI firmware.
->>
->>> The 8916 firmware supports OS initiated method of
->>> powering off the CPU clusters.
->>
->> How is that related to the this DTS change, more details below ?
->>
->>>
->>> Cc: <devicetree@vger.kernel.org>
->>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->>> ---
->>> arch/arm64/boot/dts/qcom/msm8916.dtsi | 27 +++++++++++++++++++++++++++
->>> 1 file changed, 27 insertions(+)
->>>
->>> diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi
->>> b/arch/arm64/boot/dts/qcom/msm8916.dtsi
->>> index 3029773..eb0aaed 100644
->>> --- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
->>> +++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
->>> @@ -64,6 +64,7 @@
->>>             next-level-cache = <&L2_0>;
->>>             enable-method = "psci";
->>>             cpu-idle-states = <&CPU_SPC>;
->>> +            power-domains = <&CPU_PD>;
->>
->> This is really messy. We need to have idle state information at one
->> place. I prefer to have a hierarchal representation of power-domains
->> for CPU with idle-states at each level.
->>
->>>         };
-> I see where are going with that. We need to then isolate idle states
-> from all devices (including CPU) and put them under the umberella of the
-> domain/parent idle states.
->
-> We also need to remember that domain idle states are not just for CPU
-> domains. There are generic PM domains that also define their idle
-> states. For some, that hierarchy may not make sense. So forcing it on
-> all domains is not correct as well.
->
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+---
+ drivers/base/power/domain.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Yes again I absolutely agree with that. But just represent the hierarchy
-present in the hardware in the DT. If it doesn't exist in the hardware
-for some device, then it won't be represented.
-
->>>
->>>         CPU1: cpu@1 {
->>> @@ -73,6 +74,7 @@
->>>             next-level-cache = <&L2_0>;
->>>             enable-method = "psci";
->>>             cpu-idle-states = <&CPU_SPC>;
->>> +            power-domains = <&CPU_PD>;
->>>         };
->>>
->>>         CPU2: cpu@2 {
->>> @@ -82,6 +84,7 @@
->>>             next-level-cache = <&L2_0>;
->>>             enable-method = "psci";
->>>             cpu-idle-states = <&CPU_SPC>;
->>> +            power-domains = <&CPU_PD>;
->>>         };
->>>
->>>         CPU3: cpu@3 {
->>> @@ -91,6 +94,7 @@
->>>             next-level-cache = <&L2_0>;
->>>             enable-method = "psci";
->>>             cpu-idle-states = <&CPU_SPC>;
->>> +            power-domains = <&CPU_PD>;
->>>         };
->>>
->>>         L2_0: l2-cache {
->>> @@ -113,6 +117,29 @@
->>>     psci {
->>>         compatible = "arm,psci-1.0";
->>>         method = "smc";
->>
->> Why is it inside PSCI node ? I don't see a need for that.
->> If it needs to be here, then amend the binding document.
->>
-> It is described in patch 13/15.
->
-> It is inside PSCI node, because PSCI has the domain controller.
->
-
-OK, I haven't gone through all the patches, I was just interested in
-the binding. Sorry for that.
-
->>> +
->>> +        CPU_PD: cpu-pd@0 {
->>> +            #power-domain-cells = <0>;
->>> +            domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
->>> +        };
->>> +
->>> +        domain-states {
->>> +            CLUSTER_RET: domain_ret {
->>> +                compatible = "arm,idle-state";
->>> +                arm,psci-suspend-param = <0x1000010>;
->>> +                entry-latency-us = <500>;
->>> +                exit-latency-us = <500>;
->>> +                min-residency-us = <2000>;
->>> +            };
->>> +
->>> +            CLUSTER_PWR_DWN: domain_gdhs {
->>> +                compatible = "arm,idle-state";
->>> +                arm,psci-suspend-param = <0x1000030>;
->>> +                entry-latency-us = <2000>;
->>> +                exit-latency-us = <2000>;
->>> +                min-residency-us = <6000>;
->>> +            };
->>> +        };
->>
->> So how do you collapse these states into the cpu level states ?
-> Why do you have to collapse?
->
-
-To deal with platform co-ordinated mode of cpu idle support. I think I
-gave an example in the other email.
-
->> We should be able to cope up with platform co-ordinated mode of idle.
->> For me, this binding and the representation here is designed only to
->> address OS co-ordinated mode of idle support but it should be other way
->> around. Design the bindings that can cater any mode (platform and OS
->> co-ordinated)
-> As explained to Brendan on the version2 of the series, OSI and PC are
-> orthagonal to each other. The idle state definition in the devicetree
-> exactly matches the unique approaches of these 2 modes.
->
-
-We don't design bindings that depend on the software approaches or
-configurations. It should represent the hardware.
-
-> In platform coordinated, the CPU determines the idle state of the domain
-> and selects the state, hence it makes sense to extend the
-> cpu-idle-states to cover those domain states.
->
-
-So, are you saying that old bindings are for platform co-ordinated mode
-and these new ones are for OS co-ordinated mode. Make it clear in the
-binding document and get explicit approval from the DT maintainers for
-that. I really don't like that approach.
-
-> In OSI, the CPUs only determine their idle states. When they are done
-> with their idle state, they bubble up and let the domain choose its idle
-> state and therefore the domain-idle-states is part of the domain
-> controller.
->
-
-I understand that, but I don't like the approach taken to define the DT
-bindings. DT should have one or the other form and any mode can be used
-as long as firmware is queried and put into appropriate mode of operation.
-
-> With this addition platform coordinated representation is not broken. If
-> your SoC supports both platform and os modes, then you can specify the
-> idle states of both of them in the DT. The clause in firmware/psci.c
-> will however, choose OSI if its available. I am not sure we want to
-> dynamically switch betweeen OSI and PC at runtime.
->
-
-How ? cpu-idle-states in CPU node can't have both:
-1. just it's idles states, and
-2. complete list of flattened idle states as it' is present today.
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index a1f2aff33997..058c8b6d2871 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1636,7 +1636,7 @@ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+ 
+ /***        debugfs support        ***/
+ 
+-#ifdef CONFIG_PM_ADVANCED_DEBUG
++#ifdef CONFIG_DEBUG_FS
+ #include <linux/pm.h>
+ #include <linux/device.h>
+ #include <linux/debugfs.h>
+@@ -1784,4 +1784,4 @@ static void __exit pm_genpd_debug_exit(void)
+ 	debugfs_remove_recursive(pm_genpd_debugfs_dir);
+ }
+ __exitcall(pm_genpd_debug_exit);
+-#endif /* CONFIG_PM_ADVANCED_DEBUG */
++#endif /* CONFIG_DEBUG_FS */
 -- 
-Regards,
-Sudeep
+2.1.4
+
