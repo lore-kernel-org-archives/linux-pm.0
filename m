@@ -1,64 +1,71 @@
-From: Grzegorz Jaszczyk <jaz@semihalf.com>
-Subject: Re: [PATCH] thermal: armada: add support for suspend/resume
-Date: Thu, 11 Aug 2016 10:40:19 +0200
-Message-ID: <CAH76GKNBSmF=46eO+sjxtdFidsg+xZJhPZhZnC0r3V7SzM5aqQ@mail.gmail.com>
-References: <1469097807-17748-1-git-send-email-jaz@semihalf.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 2/2] x86, ACPI: Fix the wrong assignment when Handle
+ apic/x2apic entries
+Date: Thu, 11 Aug 2016 10:46:52 +0200
+Message-ID: <20160811084652.GA4249@gmail.com>
+References: <1470697311-1292-1-git-send-email-bhe@redhat.com>
+ <1470697311-1292-2-git-send-email-bhe@redhat.com>
+ <20160810125333.GB9028@gmail.com>
+ <20160810130333.GA5598@x1.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1469097807-17748-1-git-send-email-jaz@semihalf.com>
+Content-Disposition: inline
+In-Reply-To: <20160810130333.GA5598@x1.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Marcin Wojtas <mw@semihalf.com>, Grzegorz Jaszczyk <jaz@semihalf.com>, Lior Amsalem <alior@marvell.com>, Eduardo Valentin <edubezval@gmail.com>, rui.zhang@intel.com, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>
+To: Baoquan He <bhe@redhat.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-I just wanted to kindly remind about this patch.
+* Baoquan He <bhe@redhat.com> wrote:
 
-Best regards,
-Grzegorz
+> On 08/10/16 at 02:53pm, Ingo Molnar wrote:
+> > 
+> > * Baoquan He <bhe@redhat.com> wrote:
+> > 
+> > > It won't impact the result, we still should fix the code bug.
+> > > 
+> > > Signed-off-by: Baoquan He <bhe@redhat.com>
+> > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > > Cc: Len Brown <len.brown@intel.com>
+> > > Cc: Pavel Machek <pavel@ucw.cz>
+> > > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > > Cc: Ingo Molnar <mingo@redhat.com>
+> > > Cc: "H. Peter Anvin" <hpa@zytor.com>
+> > > Cc: x86@kernel.org
+> > > Cc: linux-pm@vger.kernel.org
+> > > ---
+> > >  arch/x86/kernel/acpi/boot.c | 4 ++--
+> > >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> > > index 90d84c3..2b25d3f 100644
+> > > --- a/arch/x86/kernel/acpi/boot.c
+> > > +++ b/arch/x86/kernel/acpi/boot.c
+> > > @@ -1031,8 +1031,8 @@ static int __init acpi_parse_madt_lapic_entries(void)
+> > >  			return ret;
+> > >  		}
+> > >  
+> > > -		x2count = madt_proc[0].count;
+> > > -		count = madt_proc[1].count;
+> > > +		count = madt_proc[0].count;
+> > > +		x2count = madt_proc[1].count;
+> > >  	}
+> > >  	if (!count && !x2count) {
+>           ~~~~~~~~~~~~~~~~~~~~~
+> I mean here the value checking won't be impacted by the wrong
+> assignment.
 
-2016-07-21 12:43 GMT+02:00 Grzegorz Jaszczyk <jaz@semihalf.com>:
-> There is no need to implement subroutine for suspend since there is no
-> data to store before suspending.
->
-> Signed-off-by: Grzegorz Jaszczyk <jaz@semihalf.com>
-> ---
->  drivers/thermal/armada_thermal.c | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
->
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index ae75328..65f9838 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -304,12 +304,26 @@ static int armada_thermal_exit(struct platform_device *pdev)
->         return 0;
->  }
->
-> +static int armada_thermal_resume(struct device *dev)
-> +{
-> +       struct thermal_zone_device *thermal =
-> +               dev_get_drvdata(dev);
-> +       struct armada_thermal_priv *priv = thermal->devdata;
-> +
-> +       priv->data->init_sensor(to_platform_device(dev), priv);
-> +
-> +       return 0;
-> +}
-> +
-> +static SIMPLE_DEV_PM_OPS(armada_thermal_pm_ops, NULL, armada_thermal_resume);
-> +
->  static struct platform_driver armada_thermal_driver = {
->         .probe = armada_thermal_probe,
->         .remove = armada_thermal_exit,
->         .driver = {
->                 .name = "armada_thermal",
->                 .of_match_table = armada_thermal_id_table,
-> +               .pm = &armada_thermal_pm_ops,
->         },
->  };
->
-> --
-> 1.8.3.1
->
+Indeed!
+
+Mind putting that into the changelog? Something like:
+
+"By pure accident the bug makes no functional difference, because the only 
+ expression where we are using these values is (!count && !x2count), in which
+ the variables are interchangeable, but it makes sense to fix the bug 
+ nevertheless."
+
+Thanks,
+
+	Ingo
