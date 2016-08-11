@@ -1,49 +1,67 @@
-From: Baoquan He <bhe@redhat.com>
-Subject: Re: [PATCH 2/2] x86, ACPI: Fix the wrong assignment when Handle
- apic/x2apic entries
-Date: Thu, 11 Aug 2016 22:20:26 +0800
-Message-ID: <20160811142026.GA26981@x1.redhat.com>
-References: <1470697311-1292-1-git-send-email-bhe@redhat.com>
- <1470697311-1292-2-git-send-email-bhe@redhat.com>
- <20160810125333.GB9028@gmail.com>
- <20160810130333.GA5598@x1.redhat.com>
- <20160811084652.GA4249@gmail.com>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH 1/3] dt-bindings: thermal: Add binding document for
+ Mediatek thermal controller
+Date: Thu, 11 Aug 2016 17:48:50 +0200
+Message-ID: <8886eba0-7f3d-edf8-c6fb-a6535b3717da@gmail.com>
+References: <1467882386-40544-1-git-send-email-dawei.chien@mediatek.com>
+ <1467882386-40544-2-git-send-email-dawei.chien@mediatek.com>
+ <577E385C.9080501@ti.com> <1468227124.15776.29.camel@mtksdaap41>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:54548 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750832AbcHKOUd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 11 Aug 2016 10:20:33 -0400
-Content-Disposition: inline
-In-Reply-To: <20160811084652.GA4249@gmail.com>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:32903 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932267AbcHKPsy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2016 11:48:54 -0400
+In-Reply-To: <1468227124.15776.29.camel@mtksdaap41>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org
+To: dawei chien <dawei.chien@mediatek.com>, Keerthy <a0393675@ti.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@armlinux.org.uk>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Fan Chen <fan.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Yingjoe Chen <yingjoe.chen@mediatek.com>, Erin Lo <erin.lo@mediatek.com>
 
-On 08/11/16 at 10:46am, Ingo Molnar wrote:
-> > > > -		count = madt_proc[1].count;
-> > > > +		count = madt_proc[0].count;
-> > > > +		x2count = madt_proc[1].count;
-> > > >  	}
-> > > >  	if (!count && !x2count) {
-> >           ~~~~~~~~~~~~~~~~~~~~~
-> > I mean here the value checking won't be impacted by the wrong
-> > assignment.
-> 
-> Indeed!
-> 
-> Mind putting that into the changelog? Something like:
-> 
-> "By pure accident the bug makes no functional difference, because the only 
->  expression where we are using these values is (!count && !x2count), in which
->  the variables are interchangeable, but it makes sense to fix the bug 
->  nevertheless."
 
-Sure, this is much clearer. Will use this and repost. Thanks a lot, will
-try to do each post using patch log like this.
 
-Thanks
-Baoquan
+On 11/07/16 10:52, dawei chien wrote:
+> Dear Keerthy,
+>
+> On Thu, 2016-07-07 at 16:39 +0530, Keerthy wrote:
+>>
+>> On Thursday 07 July 2016 02:36 PM, Dawei Chien wrote:
+>>> This adds the device tree binding documentation for the mediatek thermal
+>>> controller found on Mediatek MT2701.
+>>>
+>>> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+>>> ---
+>>>   .../bindings/thermal/mediatek-thermal.txt          |    2 +-
+>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+>>> index 81f9a51..bb55e79 100644
+>>> --- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+>>> +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+>>> @@ -8,7 +8,7 @@ apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
+>>>   is also needed.
+>>>
+>>>   Required properties:
+>>> -- compatible: "mediatek,mt8173-thermal"
+>>> +- compatible: "mediatek,mt8173-thermal" or "mediatek,mt2701-thermal"
+>>
+>> - compatible :
+>>   - "mediatek,mt8173-thermal" : For MT8173 family of SoCs
+>>   - "mediatek,mt2701-thermal" : For MT2701 family of SoCs
+>
+> Thank you, I will update it on next version.
+>
 
+Do you know about the compability to older SoCs (e.g. mt6589)?
+It might make sense to add mediatek,mtk-thermal if they are compatible 
+or nearly compatible.
+
+>>
+>>>   - reg: Address range of the thermal controller
+>>>   - interrupts: IRQ for the thermal controller
+>>>   - clocks, clock-names: Clocks needed for the thermal controller. required
+>>>
+>
+>
