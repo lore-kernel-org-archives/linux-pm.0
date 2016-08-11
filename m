@@ -1,7 +1,7 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 4/5] acpi: cppc: Add prefix cppc to cpudata structure name
-Date: Wed, 10 Aug 2016 17:17:25 -0700
-Message-ID: <1470874646-70570-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 2/5] acpi: cpcc: Add integer read support
+Date: Wed, 10 Aug 2016 17:17:23 -0700
+Message-ID: <1470874646-70570-3-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
@@ -10,123 +10,70 @@ To: rjw@rjwysocki.net, viresh.kumar@linaro.org
 Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Since struct cpudata is defined in a header file, add prefix cppc_ to
-make it not a generic name. Otherwise it causes compile issue in locally
-define structure with the same name.
+The _CPC performance limits can also be simple integer not just buffer
+with register information. Add support for integer read via cpc_read.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/acpi/cppc_acpi.c       |  4 ++--
- drivers/cpufreq/cppc_cpufreq.c | 14 +++++++-------
- include/acpi/cppc_acpi.h       |  4 ++--
- 3 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/acpi/cppc_acpi.c | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 939fb5c..5ca517d 100644
+index 2e98173..34209f5 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -276,13 +276,13 @@ end:
-  *
-  *	Return: 0 for success or negative value for err.
+@@ -651,11 +651,18 @@ EXPORT_SYMBOL_GPL(acpi_cppc_processor_exit);
+  * we can directly write to it.
   */
--int acpi_get_psd_map(struct cpudata **all_cpu_data)
-+int acpi_get_psd_map(struct cppc_cpudata **all_cpu_data)
+ 
+-static int cpc_read(struct cpc_reg *reg, u64 *val)
++static int cpc_read(struct cpc_register_resource *res, u64 *val)
  {
- 	int count_target;
- 	int retval = 0;
- 	unsigned int i, j;
- 	cpumask_var_t covered_cpus;
--	struct cpudata *pr, *match_pr;
-+	struct cppc_cpudata *pr, *match_pr;
- 	struct acpi_psd_package *pdomain;
- 	struct acpi_psd_package *match_pdomain;
- 	struct cpc_desc *cpc_ptr, *match_cpc_ptr;
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 8882b8e..b1b3549 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -30,13 +30,13 @@
-  * performance capabilities, desired performance level
-  * requested etc.
-  */
--static struct cpudata **all_cpu_data;
-+static struct cppc_cpudata **all_cpu_data;
++	struct cpc_reg *reg = &res->cpc_entry.reg;
+ 	int ret_val = 0;
  
- static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
- 		unsigned int target_freq,
- 		unsigned int relation)
- {
--	struct cpudata *cpu;
-+	struct cppc_cpudata *cpu;
- 	struct cpufreq_freqs freqs;
- 	int ret = 0;
+ 	*val = 0;
++
++	if (res->type == ACPI_TYPE_INTEGER) {
++		*val = res->cpc_entry.int_value;
++		return 0;
++	}
++
+ 	if (reg->space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
+ 		void __iomem *vaddr = GET_PCC_VADDR(reg->address);
  
-@@ -66,7 +66,7 @@ static int cppc_verify_policy(struct cpufreq_policy *policy)
- static void cppc_cpufreq_stop_cpu(struct cpufreq_policy *policy)
- {
- 	int cpu_num = policy->cpu;
--	struct cpudata *cpu = all_cpu_data[cpu_num];
-+	struct cppc_cpudata *cpu = all_cpu_data[cpu_num];
- 	int ret;
+@@ -754,16 +761,16 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 		}
+ 	}
  
- 	cpu->perf_ctrls.desired_perf = cpu->perf_caps.lowest_perf;
-@@ -79,7 +79,7 @@ static void cppc_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+-	cpc_read(&highest_reg->cpc_entry.reg, &high);
++	cpc_read(highest_reg, &high);
+ 	perf_caps->highest_perf = high;
  
- static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	struct cpudata *cpu;
-+	struct cppc_cpudata *cpu;
- 	unsigned int cpu_num = policy->cpu;
- 	int ret = 0;
+-	cpc_read(&lowest_reg->cpc_entry.reg, &low);
++	cpc_read(lowest_reg, &low);
+ 	perf_caps->lowest_perf = low;
  
-@@ -134,7 +134,7 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
- static int __init cppc_cpufreq_init(void)
- {
- 	int i, ret = 0;
--	struct cpudata *cpu;
-+	struct cppc_cpudata *cpu;
+-	cpc_read(&ref_perf->cpc_entry.reg, &ref);
++	cpc_read(ref_perf, &ref);
+ 	perf_caps->reference_perf = ref;
  
- 	if (acpi_disabled)
- 		return -ENODEV;
-@@ -144,7 +144,7 @@ static int __init cppc_cpufreq_init(void)
- 		return -ENOMEM;
+-	cpc_read(&nom_perf->cpc_entry.reg, &nom);
++	cpc_read(nom_perf, &nom);
+ 	perf_caps->nominal_perf = nom;
  
- 	for_each_possible_cpu(i) {
--		all_cpu_data[i] = kzalloc(sizeof(struct cpudata), GFP_KERNEL);
-+		all_cpu_data[i] = kzalloc(sizeof(struct cppc_cpudata), GFP_KERNEL);
- 		if (!all_cpu_data[i])
- 			goto out;
+ 	if (!ref)
+@@ -812,8 +819,8 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
+ 		}
+ 	}
  
-@@ -175,7 +175,7 @@ out:
+-	cpc_read(&delivered_reg->cpc_entry.reg, &delivered);
+-	cpc_read(&reference_reg->cpc_entry.reg, &reference);
++	cpc_read(delivered_reg, &delivered);
++	cpc_read(reference_reg, &reference);
  
- static void __exit cppc_cpufreq_exit(void)
- {
--	struct cpudata *cpu;
-+	struct cppc_cpudata *cpu;
- 	int i;
- 
- 	cpufreq_unregister_driver(&cppc_cpufreq_driver);
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index 284965c..b7816c2 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -114,7 +114,7 @@ struct cppc_perf_fb_ctrs {
- };
- 
- /* Per CPU container for runtime CPPC management. */
--struct cpudata {
-+struct cppc_cpudata {
- 	int cpu;
- 	struct cppc_perf_caps perf_caps;
- 	struct cppc_perf_ctrls perf_ctrls;
-@@ -127,6 +127,6 @@ struct cpudata {
- extern int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_ctrs);
- extern int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
- extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
--extern int acpi_get_psd_map(struct cpudata **);
-+extern int acpi_get_psd_map(struct cppc_cpudata **);
- 
- #endif /* _CPPC_ACPI_H*/
+ 	if (!delivered || !reference) {
+ 		ret = -EFAULT;
 -- 
 2.7.4
 
