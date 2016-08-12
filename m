@@ -1,69 +1,88 @@
-From: Alexey Klimov <alexey.klimov@arm.com>
-Subject: Re: [PATCH 1/5] acpi: cppc: Allow build with ACPI_CPU_FREQ_PSS config
-Date: Fri, 12 Aug 2016 10:13:37 +0100
-Message-ID: <20160812091337.GA7017@arm.com>
-References: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1470874646-70570-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: [PATCH v1] x86/power/64: Restore processor state before using
+ per-cpu variables
+Date: Fri, 12 Aug 2016 11:23:23 +0200 (CEST)
+Message-ID: <alpine.LNX.2.00.1608121044120.22028@cbobk.fhfr.pm>
+References: <1470952169-39061-1-git-send-email-thgarnie@google.com> <alpine.LNX.2.00.1608120800100.22028@cbobk.fhfr.pm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1470874646-70570-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org, pprakash@codeaurora.org, sudeep.holla@arm.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:38878 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbcHLJXZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 12 Aug 2016 05:23:25 -0400
+In-Reply-To: <alpine.LNX.2.00.1608120800100.22028@cbobk.fhfr.pm>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Garnier <thgarnie@google.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, keescook@chromium.org, kernel-hardening@lists.openwall.com, bpetkov@suse.de, yinghai@kernel.org
 
+On Fri, 12 Aug 2016, Jiri Kosina wrote:
 
-(adding Sudeep and Prashanth in c/c)
+> One thing is still beyond me though ... how the heck this doesn't happen 
+> without DEBUG_LOCK_ALLOC? The percpu area pointer should be corrupted 
+> nevertheless, shouldn't it?
 
-On Wed, Aug 10, 2016 at 05:17:22PM -0700, Srinivas Pandruvada wrote:
-> Some newer x86 platforms have support for both _CPC and _PSS object. So
-> kernel config can have both ACPI_CPU_FREQ_PSS and ACPI_CPPC_LIB. So remove
-> restriction for ACPI_CPPC_LIB to build only when ACPI_CPU_FREQ_PSS is not
-> defined.
-> Also for legacy systems with only _PSS, we shouldn't bail out if
-> acpi_cppc_processor_probe() fails, if ACPI_CPU_FREQ_PSS is also defined.
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/acpi/Kconfig            | 1 -
->  drivers/acpi/processor_driver.c | 5 ++++-
->  2 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-> index 445ce28..c6bb6aa 100644
-> --- a/drivers/acpi/Kconfig
-> +++ b/drivers/acpi/Kconfig
-> @@ -227,7 +227,6 @@ config ACPI_MCFG
->  config ACPI_CPPC_LIB
->  	bool
->  	depends on ACPI_PROCESSOR
-> -	depends on !ACPI_CPU_FREQ_PSS
->  	select MAILBOX
->  	select PCC
->  	help
-> diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-> index 0553aee..0e0b629 100644
-> --- a/drivers/acpi/processor_driver.c
-> +++ b/drivers/acpi/processor_driver.c
-> @@ -245,8 +245,11 @@ static int __acpi_processor_start(struct acpi_device *device)
->  		return 0;
->  
->  	result = acpi_cppc_processor_probe(pr);
-> -	if (result)
-> +	if (result) {
-> +#ifndef CONFIG_ACPI_CPU_FREQ_PSS
->  		return -ENODEV;
-> +#endif
-> +	}
->  
->  	if (!cpuidle_get_driver() || cpuidle_get_driver() == &acpi_idle_driver)
->  		acpi_processor_power_init(pr);
+The reason is that turning DEBUG_LOCK_ALLOC changing 
+trace_suspend_resume() from
 
-If PSS is not defined and kernel fails to probe CPPC then why we should not
-execute acpi_processor_power_init()?
+ffffffff810c7280 <trace_suspend_resume>:
+ffffffff810c7280:       55                      push   %rbp
+ffffffff810c7281:       48 89 e5                mov    %rsp,%rbp
+ffffffff810c7284:       41 56                   push   %r14
+ffffffff810c7286:       41 55                   push   %r13
+ffffffff810c7288:       41 54                   push   %r12
+ffffffff810c728a:       53                      push   %rbx
+ffffffff810c728b:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+ffffffff810c7290:       65 8b 05 59 2f f4 7e    mov    %gs:0x7ef42f59(%rip),%eax        # a1f0 <cpu_number>
+ffffffff810c7297:       89 c0                   mov    %eax,%eax
+ffffffff810c7299:       48 0f a3 05 9f 2f c4    bt     %rax,0xc42f9f(%rip)        # ffffffff81d0a240 <__cpu_online_mask>
 
-Best regards,
-Alexey
+to
+
+ffffffff810ad150 <trace_suspend_resume>:
+ffffffff810ad150:       0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+ffffffff810ad155:       c3                      retq   
+ffffffff810ad156:       65 8b 05 93 d0 f5 7e    mov    %gs:0x7ef5d093(%rip),%eax        # a1f0 <cpu_number>
+ffffffff810ad15d:       89 c0                   mov    %eax,%eax
+ffffffff810ad15f:       48 0f a3 05 59 0b c4    bt     %rax,0xc40b59(%rip)        # ffffffff81cedcc0 <__cpu_online_mask>
+ffffffff810ad166:       00
+
+IOW, with the config change, trace_suspend_resume() returns immediately 
+without trying to get the current SMP id. And it's because of 
+DEBUG_LOCK_ALLOC implies LOCKDEP, and that does this to __DECLARE_TRACE()
+
+	 * When lockdep is enabled, we make sure to always do the RCU portions of
+	 * the tracepoint code, regardless of whether tracing is on. However,
+	 * don't check if the condition is false, due to interaction with idle
+	 * instrumentation. This lets us find RCU issues triggered with tracepoints
+	 * even when this tracepoint is off. This code has no purpose other than
+	 * poking RCU a bit.
+	 */
+	#define __DECLARE_TRACE(name, proto, args, cond, data_proto, data_args) \
+		extern struct tracepoint __tracepoint_##name;                   \
+		static inline void trace_##name(proto)                          \
+		{                                                               \
+			if (static_key_false(&__tracepoint_##name.key))         \
+				__DO_TRACE(&__tracepoint_##name,                \
+					TP_PROTO(data_proto),                   \
+					TP_ARGS(data_args),                     \
+					TP_CONDITION(cond),,);                  \
+			if (IS_ENABLED(CONFIG_LOCKDEP) && (cond)) {             \
+				rcu_read_lock_sched_notrace();                  \
+				rcu_dereference_sched(__tracepoint_##name.funcs);\
+				rcu_read_unlock_sched_notrace();                \
+			}                                                       \
+		} 
+
+That's pretty nasty, as turning LOCKDEP on has sideffects on the code 
+that'd normally not be expected to be run at all (tracepoint off).
+
+Oh well.
+
+Thanks again,
+
+-- 
+Jiri Kosina
+SUSE Labs
 
