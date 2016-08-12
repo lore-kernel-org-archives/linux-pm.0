@@ -1,48 +1,67 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v1] x86/power/64: Restore processor state before using
- per-cpu variables
-Date: Fri, 12 Aug 2016 13:14:49 +0200
-Message-ID: <CAJZ5v0hC28BMqgurck0oiQGxf=XhYwseiVs+DeLdv9wKHFCa7w@mail.gmail.com>
-References: <1470952169-39061-1-git-send-email-thgarnie@google.com> <20160812054913.GA24303@nazgul.tnic>
+Subject: Re: [PATCH 0/2][RFC] PM / sleep: Expose DPM watchdog timeout to sysfs
+Date: Fri, 12 Aug 2016 13:25:04 +0200
+Message-ID: <CAJZ5v0jgiPsSV3ZRVeM+D7KD7wJudPD+0Fq0BoJGT1mZ3yryxg@mail.gmail.com>
+References: <cover.1470908324.git.yu.c.chen@intel.com> <20160811185441.GA15813@amd>
+ <20160812025225.GA12238@sharon> <20160812063312.GD30992@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160812054913.GA24303@nazgul.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@suse.de>
-Cc: Thomas Garnier <thgarnie@google.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kees Cook <keescook@chromium.org>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Jiri Kosina <jikos@kernel.org>, Yinghai Lu <yinghai@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:36780 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752902AbcHLLZH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Aug 2016 07:25:07 -0400
+Received: by mail-wm0-f68.google.com with SMTP id i138so2284355wmf.3
+        for <linux-pm@vger.kernel.org>; Fri, 12 Aug 2016 04:25:06 -0700 (PDT)
+In-Reply-To: <20160812063312.GD30992@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Chen Yu <yu.c.chen@intel.com>, Linux PM List <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>, Takashi Iwai <tiwai@suse.de>, Benoit Goby <benoit@android.com>
 
-On Fri, Aug 12, 2016 at 7:49 AM, Borislav Petkov <bp@suse.de> wrote:
-> On Thu, Aug 11, 2016 at 02:49:29PM -0700, Thomas Garnier wrote:
->> Restore the processor state before calling any other function to ensure
->> per-cpu variables can be used with KASLR memory randomization.
->>
->> Tracing functions use per-cpu variables (gs based) and one was called
->> just before restoring the processor state fully. It resulted in a double
->> fault when both the tracing & the exception handler functions tried to
->> use a per-cpu variable.
->>
->> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->> ---
->> Based on next-20160808
+On Fri, Aug 12, 2016 at 8:33 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
 >
-> Ok, I believe before I test this, I need to apply another patch from
-> Rafael. I think it is the "Always create temporary identity mapping
-> correctly" thing.
+>> > > Recently we have a new report that, the harddisk can not
+>> > > resume on time due to firmware issues, and got a kernel
+>> > > panic because of DPM watchdog timeout. Since the default
+>> > > timeout has once been modified from 12 to 60 seconds, we
+>> > > might still encounter new case which requires a longer timeout,
+>> > > so expose the value to sysfs and let the users decide which
+>> > > value is appropriate, meanwhile this can also ease the debugging
+>> > > process.
+>> > >
+>> > > The first patch is to force DPM watchdog depending on CONFIG_PM_SLEEP,
+>> > > thus the second patch which does the actual work, can use
+>> > > CONFIG_DPM_WATCHDOG safely without checking CONFIG_PM_SLEEP.
+>> >
+>> > Kernel should just work. User should not have to configure random
+>> > knobs to have working suspend/hibernation.
+>> >
+>> > We do not want "CONFIG_BREAK_SUSPEND" so I believe we don't want
+>> > "CONFIG_DPM_WATCHDOG". If normal users select it and it breaks their
+>> > system, make it depend on "CONFIG_EXPERT" or hide it in some other
+>> > way or maybe remove it from Kconfig altogether.
+>> >
+>> > Or maybe CONFIG_DPM_WATCHDOG should contain numeric value that user
+>> > has to select?
+>> >
+>> Yes, if people select it then they have the risk to break their system,
+>> and the original thought of the patch is to behave like a diagnosis to
+>> make it easier for the users to figure it out, how much time it takes
+>> to suspend/resume a bogus peripheral, without recomping the kernel.
+>> -- currently the timeout value for CONFIG_DPM_WATCHDOG can be adjusted
+>> by menuconfig, but bug reporter might have to recompile the kernel
+>> to confirm, and it takes some time to get a feedback from them, so...
 >
-> Yes, no?
+> Please don't add sysfs knobs for this. People should not need to
+> adjust sysfs files to get working kernel.
+>
+> You can for example make the default 120 seconds.
 
-Yes.
-
-> Rafael, can you please apply everything on a test branch for us to run?
-
-You can simply test my linux-next branch:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
-linux-next
-
-That's 4.8-rc1 plus 3 fixes on top of it.
+Plus, IMO it would be good to be able to disable this thing from the
+kernel command line entirely in case 2 minutes is still too little
+time for somebody.
 
 Thanks,
 Rafael
