@@ -1,118 +1,58 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for system sleep
-Date: Fri, 12 Aug 2016 02:50:04 +0200
-Message-ID: <CAJZ5v0g86L+nL6SxfBMQ84NNpUzz0X83bvP=E5WdSs1TozpY8w@mail.gmail.com>
-References: <cover.1463134231.git.lukas@wunner.de> <CAJZ5v0hPbeaUotiFxg_BbkS86HEz=u0ThkdwJju5WyXOuDgd6A@mail.gmail.com>
- <20160807090347.GA5679@wunner.de> <2182119.Z8Tk7onsTO@vostro.rjw.lan> <20160811132003.GA7369@wunner.de>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH 0/2][RFC] PM / sleep: Expose DPM watchdog timeout to sysfs
+Date: Fri, 12 Aug 2016 10:52:25 +0800
+Message-ID: <20160812025225.GA12238@sharon>
+References: <cover.1470908324.git.yu.c.chen@intel.com>
+ <20160811185441.GA15813@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f48.google.com ([74.125.82.48]:37409 "EHLO
-	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbcHLAuG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2016 20:50:06 -0400
-In-Reply-To: <20160811132003.GA7369@wunner.de>
+Received: from mga14.intel.com ([192.55.52.115]:11826 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751258AbcHLCoe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 11 Aug 2016 22:44:34 -0400
+Content-Disposition: inline
+In-Reply-To: <20160811185441.GA15813@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux PM List <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>, Takashi Iwai <tiwai@suse.de>, Benoit Goby <benoit@android.com>
 
-On Thu, Aug 11, 2016 at 3:20 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> On Mon, Aug 08, 2016 at 01:32:54AM +0200, Rafael J. Wysocki wrote:
->> On Sunday, August 07, 2016 11:03:47 AM Lukas Wunner wrote:
->> > On Thu, Aug 04, 2016 at 05:30:47PM +0200, Rafael J. Wysocki wrote:
->> > > On Thu, Aug 4, 2016 at 10:14 AM, Lukas Wunner <lukas@wunner.de> wrote:
->> > > > On Thu, Aug 04, 2016 at 03:07:56AM +0200, Rafael J. Wysocki wrote:
->> > > >> On Thu, Aug 4, 2016 at 2:45 AM, Lukas Wunner <lukas@wunner.de> wrote:
->> > > >> > On Thu, Aug 04, 2016 at 01:50:39AM +0200, Rafael J. Wysocki wrote:
->> > > >> >> On Wed, Aug 3, 2016 at 2:28 PM, Lukas Wunner <lukas@wunner.de> wrote:
->> > > >> >> > I will update this patch with Bjorn's suggestion to also leave the
->> > > >> >> > device in D3cold if it is wakeup-capable. The idea is to just change
->> > > >> >> > the default state in the first line of the function like this:
->> > > >> >> >
->> > > >> >> > -       pci_power_t target_state = PCI_D3hot;
->> > > >> >> > +       pci_power_t target_state =
->> > > >> >> > +               dev->current_state == PCI_D3cold ? PCI_D3cold : PCI_D3hot;
->> > > >> >>
->> > > >> >> That should work (even though it is a little clumsy IMO).
->> > > >> >
->> > > >> > Not sure why that is clumsy but happy to use something else if you
->> > > >> > have a suggestion?
->> > > >>
->> > > >> The clumsy thing is that we'd take the target_state as D3cold only if
->> > > >> the device already was in that state.
->> > > >>
->> > > >> Otherwise, we'd take D3hot as the target state for the same device,
->> > > >> which doesn't seem particularly consistent to me.
->> > > >>
->> > > >> Not that I have better ideas ATM, but then the current code works for
->> > > >> my use cases. :-)
->> > > >
->> > > > The goal is to afford direct-complete to devices which are not power-
->> > > > manageable by the platform but can still be runtime suspended to D3cold.
->> > >
->> > > Well, this is a bit misleading.
->> > >
->> > > According to the PCI spec there are two ways to put a device into
->> > > D3cold: either by putting its bus into B3 (which for PCIe means
->> > > turning the link off IIRC) which happens when the bridge goes into
->> > > D3hot, or through the platform.
->> > >
->> > > You aren't talking about any of those cases, though, so we go outside
->> > > of the spec here.
->> >
->> > Yes. With Nvidia Optimus / AMD PowerXpress hybrid graphics on non-Macs
->> > and Thunderbolt on Macs, it could still be argued that D3cold is
->> > facilitated by the platform, albeit with custom methods instead of _PS3.
->>
->> So you'd need a custom set of callbacks for that "platform", but that's
->> only a few devices in the system, so you would also need normal ACPI callbacks
->> for the rest.
->>
->> Conceivably, that could be addressed with per-device platform callbacks,
->> but that is conceptually equivalent to adding a pm_domain pointer to the
->> devices in question.
+Hi,
+On Thu, Aug 11, 2016 at 08:54:42PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > Recently we have a new report that, the harddisk can not
+> > resume on time due to firmware issues, and got a kernel
+> > panic because of DPM watchdog timeout. Since the default
+> > timeout has once been modified from 12 to 60 seconds, we
+> > might still encounter new case which requires a longer timeout,
+> > so expose the value to sysfs and let the users decide which
+> > value is appropriate, meanwhile this can also ease the debugging
+> > process.
+> > 
+> > The first patch is to force DPM watchdog depending on CONFIG_PM_SLEEP,
+> > thus the second patch which does the actual work, can use
+> > CONFIG_DPM_WATCHDOG safely without checking CONFIG_PM_SLEEP.
+> 
+> Kernel should just work. User should not have to configure random
+> knobs to have working suspend/hibernation.
+> 
+> We do not want "CONFIG_BREAK_SUSPEND" so I believe we don't want
+> "CONFIG_DPM_WATCHDOG". If normal users select it and it breaks their
+> system, make it depend on "CONFIG_EXPERT" or hide it in some other
+> way or maybe remove it from Kconfig altogether. 
 >
-> Precisely.
->
->> > > > The de facto standard to power manage such devices seems to be with
->> > > > dev_pm_domain_set(). That's what vga_switcheroo does and I'll move
->> > > > to that as well for v3 of this series.
->> > >
->> > > OK
->> > >
->> > > > I could add a "bool can_power_off" to struct dev_pm_domain.
->> > >
->> > > I'm not sure if dev_pm_domain is the right level.  The "can_power_off"
->> > > thing would be sort of specific to your particular use case.
->> > >
->> > > Say you have something like
->> > >
->> > > struct pci_pm_domain {
->> > >         struct dev_pm_domain pd;
->> > >         ...
->> > > };
->
-> So I would like to find a common ground and something you feel
-> comfortable to ack. The problem I see with your suggested approach
-> of subclassing struct dev_pm_domain in a struct pci_pm_domain is
-> that I can easily envision Apple putting some custom methods in the
-> DSDT to power a non-PCI device up and down. They're starting to use
-> SPI and UART to attach devices in newer machines.
+> Or maybe CONFIG_DPM_WATCHDOG should contain numeric value that user
+> has to select?
+> 
+Yes, if people select it then they have the risk to break their system,
+and the original thought of the patch is to behave like a diagnosis to
+make it easier for the users to figure it out, how much time it takes
+to suspend/resume a bogus peripheral, without recomping the kernel.
+-- currently the timeout value for CONFIG_DPM_WATCHDOG can be adjusted
+by menuconfig, but bug reporter might have to recompile the kernel
+to confirm, and it takes some time to get a feedback from them, so...
 
-Those devices have no standard power state definitions.
-
-The problem you have here really is PCI-specific, because you want to
-use PCI PM along with the non-standard methods.
-
-> Hence my suggestion to add a flag to struct dev_pm_domain, even
-> though at the moment that flag would only be queried by the PCI core.
-> I don't care if this is called can_power_off or power_manageable or
-> whatever.
-
-struct dev_pm_domain is way too generic for that though, as I'm sure
-there are users of it where the can_power_off thing wouldn't make any
-sense whatever.
-
-Thanks,
-Rafael
+thanks,
+Yu
