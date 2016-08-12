@@ -1,423 +1,130 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 1/2] cpufreq / sched: Pass flags to cpufreq_update_util()
-Date: Fri, 12 Aug 2016 02:04:42 +0200
-Message-ID: <2163011.yGXeHau4eM@vostro.rjw.lan>
-References: <6346523.ZooER3FGDH@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH 6/8] PM / Domains: Remove a provider by referencing
+ the data pointer
+Date: Fri, 12 Aug 2016 02:24:03 +0200
+Message-ID: <CAJZ5v0j9axtg2vhyxb-5sYSXPCEb+xu=d9tKYdA4g6aHASthNQ@mail.gmail.com>
+References: <1457090634-14785-1-git-send-email-jonathanh@nvidia.com>
+ <1457090634-14785-7-git-send-email-jonathanh@nvidia.com> <CAPDyKFpLcnLvQmpQgzhOExq67XrbaW9Nf1Gk2Y+CND8dn_cmyA@mail.gmail.com>
+ <5769455C.9010809@nvidia.com> <CAPDyKFovC07Z9y-4RQ4MKGtjJx5w1D8er3Fv-8HF2qyTKgVViQ@mail.gmail.com>
+ <18ad702c-83fe-fd6d-89ae-57e6f2715860@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6346523.ZooER3FGDH@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <18ad702c-83fe-fd6d-89ae-57e6f2715860-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Aug 11, 2016 at 6:39 PM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>
+> On 05/08/16 12:55, Ulf Hansson wrote:
+>> On 21 June 2016 at 15:47, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>>
+>>> On 15/06/16 15:38, Ulf Hansson wrote:
+>>>> On 4 March 2016 at 12:23, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>>>> To remove a PM domain from the system, it is necessary to ensure
+>>>>> that any PM domain providers associated with the PM domain have
+>>>>> been removed. Otherwise it could be possible to obtain a pointer
+>>>>> to a PM domain structure that has been removed.
+>>>>>
+>>>>> PM domains now have a reference to the pointer for the PM domain
+>>>>> provider's data variable. Add a function so that a PM domain can
+>>>>> remove a PM domain provider by referencing the data pointer.
+>>
+>>
+>>>>>
+>>>>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>>>> ---
+>>>>>  drivers/base/power/domain.c | 24 ++++++++++++++++++++++++
+>>>>>  include/linux/pm_domain.h   |  2 ++
+>>>>>  2 files changed, 26 insertions(+)
+>>>>>
+>>>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>>>> index 72055fef6256..438885f2455f 100644
+>>>>> --- a/drivers/base/power/domain.c
+>>>>> +++ b/drivers/base/power/domain.c
+>>>>> @@ -1738,6 +1738,30 @@ void of_genpd_del_provider(struct device_node *np)
+>>>>>  EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+>>>>>
+>>>>>  /**
+>>>>> + * of_genpd_del_provider_by_data() - Remove a registered PM domain provider
+>>>>> + * @data: Pointer to the data associated with the PM domain provider
+>>>>> + *
+>>>>> + * Look up a PM domain provider based upon a pointer to it's data and
+>>>>> + * remove the PM domain provider from the list of providers.
+>>>>> + */
+>>>>> +void of_genpd_del_provider_by_data(void *data)
+>>>>> +{
+>>>>> +       struct of_genpd_provider *c, *cp;
+>>>>> +
+>>>>> +       mutex_lock(&of_genpd_mutex);
+>>>>> +       list_for_each_entry_safe(cp, c, &of_genpd_providers, link) {
+>>>>> +               if (cp->data == data) {
+>>>>> +                       list_del(&cp->link);
+>>>>> +                       of_node_put(cp->node);
+>>>>> +                       kfree(cp);
+>>>>> +                       break;
+>>>>> +               }
+>>>>> +       }
+>>>>> +       mutex_unlock(&of_genpd_mutex);
+>>>>> +}
+>>>>> +EXPORT_SYMBOL_GPL(of_genpd_del_provider_by_data);
+>>>>> +
+>>>>> +/**
+>>>>>   * of_genpd_get_from_provider() - Look-up PM domain
+>>>>>   * @genpdspec: OF phandle args to use for look-up
+>>>>>   *
+>>>>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>>>>> index bed84413546f..7b7921a65cb0 100644
+>>>>> --- a/include/linux/pm_domain.h
+>>>>> +++ b/include/linux/pm_domain.h
+>>>>> @@ -199,6 +199,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
+>>>>>  int of_genpd_add_provider_onecell(struct device_node *np,
+>>>>>                                   struct genpd_onecell_data *data);
+>>>>>  void of_genpd_del_provider(struct device_node *np);
+>>>>
+>>>> There's currently only one user of of_genpd_del_provider().
+>>>>
+>>>> Could this patch just convert that user to the new API, so we don't
+>>>> need to keep both the legacy and new one?
+>>>>
+>>>> I guess we could then just stick to the name "of_genpd_del_provider()".
+>>>
+>>> I had a look at this and to do that we would end up with
+>>> of_genpd_del_provider(struct device_node *np, void *data) where the user
+>>> should only pass one of the arguments. It seems a bit odd. However,
+>>> unless I have forgotten something, I wonder if we should just make
+>>> of_genpd_del_provider_by_name() a local function and not export this at
+>>> all? It seems more natural for users to delete a provider by the
+>>> device_node than by name rather than the data argument.
+>>>
+>>> The only problem I see with making of_genpd_del_provider_by_name() local
+>>> is that I need to add a prototype for the function at the top of the
+>>> domain.c source file so that it builds because __pm_genpd_remove() is
+>>> defined above it. Yes I could move __pm_genpd_remove() to the bottom of
+>>> the file but then it is not located next to pm_genpd_init() which seems odd.
+>>>
+>>> Let me know what you think.
+>>
+>> Sorry for delay! I have now looked into this in more detail.
+>
+> No problem. Thanks!
+>
+>> When an genpd provider is added today, it's supposed to get a
+>> corresponding *unique* OF device node associated with it, right!?
+>>
+>> If we store this OF device node from the provider in the struct
+>> generic_pm_domain, instead of the "provider_data pointer", we wouldn't
+>> need to the add of_genpd_del_provider_by_data() at all. Because we can
+>> use the currently available of_genpd_del_provider(), right!?
+>>
+>> Or what am I missing? :-)
 
-It is useful to know the reason why cpufreq_update_util() has just
-been called and that can be passed as flags to cpufreq_update_util()
-and to the ->func() callback in struct update_util_data.  However,
-doing that in addition to passing the util and max arguments they
-already take would be clumsy, so avoid it.
+Please don't store device_node pointers in generic data structures at
+least in the code that I maintain (some other people may not care).
 
-Instead, use the observation that the schedutil governor is part
-of the scheduler proper, so it can access scheduler data directly.
-This allows the util and max arguments of cpufreq_update_util()
-and the ->func() callback in struct update_util_data to be replaced
-with a flags one, but schedutil has to be modified to follow.
+Store struct fwnode_handle pointers instead if you have to.
 
-Thus make the schedutil governor obtain the CFS utilization
-information from the scheduler and use the "RT" and "DL" flags
-instead of the special utilization value of ULONG_MAX to track
-updates from the RT and DL sched classes.  Make it non-modular
-too to avoid having to export scheduler variables to modules at
-large.
-
-Next, update all of the other users of cpufreq_update_util()
-and the ->func() callback in struct update_util_data accordingly.
-
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-v1 -> v2: Do not check cpu_of(rq) against smp_processor_id() in
-          cfs_rq_util_change().
-
----
- drivers/cpufreq/Kconfig            |    5 --
- drivers/cpufreq/cpufreq_governor.c |    2 -
- drivers/cpufreq/intel_pstate.c     |    2 -
- include/linux/sched.h              |   12 ++++--
- kernel/sched/cpufreq.c             |    2 -
- kernel/sched/cpufreq_schedutil.c   |   67 ++++++++++++++++++++-----------------
- kernel/sched/deadline.c            |    4 +-
- kernel/sched/fair.c                |   10 +----
- kernel/sched/rt.c                  |    4 +-
- kernel/sched/sched.h               |   31 +++++------------
- 10 files changed, 66 insertions(+), 73 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -260,7 +260,7 @@ static void dbs_irq_work(struct irq_work
- }
- 
- static void dbs_update_util_handler(struct update_util_data *data, u64 time,
--				    unsigned long util, unsigned long max)
-+				    unsigned int flags)
- {
- 	struct cpu_dbs_info *cdbs = container_of(data, struct cpu_dbs_info, update_util);
- 	struct policy_dbs_info *policy_dbs = cdbs->policy_dbs;
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1329,7 +1329,7 @@ static inline void intel_pstate_adjust_b
- }
- 
- static void intel_pstate_update_util(struct update_util_data *data, u64 time,
--				     unsigned long util, unsigned long max)
-+				     unsigned int flags)
- {
- 	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
- 	u64 delta_ns = time - cpu->sample.time;
-Index: linux-pm/include/linux/sched.h
-===================================================================
---- linux-pm.orig/include/linux/sched.h
-+++ linux-pm/include/linux/sched.h
-@@ -3469,15 +3469,19 @@ static inline unsigned long rlimit_max(u
- 	return task_rlimit_max(current, limit);
- }
- 
-+#define SCHED_CPUFREQ_RT	(1U << 0)
-+#define SCHED_CPUFREQ_DL	(1U << 1)
-+
-+#define SCHED_CPUFREQ_RT_DL	(SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
-+
- #ifdef CONFIG_CPU_FREQ
- struct update_util_data {
--	void (*func)(struct update_util_data *data,
--		     u64 time, unsigned long util, unsigned long max);
-+       void (*func)(struct update_util_data *data, u64 time, unsigned int flags);
- };
- 
- void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
--			void (*func)(struct update_util_data *data, u64 time,
--				     unsigned long util, unsigned long max));
-+                       void (*func)(struct update_util_data *data, u64 time,
-+				    unsigned int flags));
- void cpufreq_remove_update_util_hook(int cpu);
- #endif /* CONFIG_CPU_FREQ */
- 
-Index: linux-pm/kernel/sched/cpufreq.c
-===================================================================
---- linux-pm.orig/kernel/sched/cpufreq.c
-+++ linux-pm/kernel/sched/cpufreq.c
-@@ -33,7 +33,7 @@ DEFINE_PER_CPU(struct update_util_data *
-  */
- void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
- 			void (*func)(struct update_util_data *data, u64 time,
--				     unsigned long util, unsigned long max))
-+				     unsigned int flags))
- {
- 	if (WARN_ON(!data || !func))
- 		return;
-Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-===================================================================
---- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-+++ linux-pm/kernel/sched/cpufreq_schedutil.c
-@@ -12,7 +12,6 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/cpufreq.h>
--#include <linux/module.h>
- #include <linux/slab.h>
- #include <trace/events/power.h>
- 
-@@ -53,6 +52,7 @@ struct sugov_cpu {
- 	unsigned long util;
- 	unsigned long max;
- 	u64 last_update;
-+	unsigned int flags;
- };
- 
- static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
-@@ -144,24 +144,39 @@ static unsigned int get_next_freq(struct
- 	return cpufreq_driver_resolve_freq(policy, freq);
- }
- 
-+static void sugov_get_util(unsigned long *util, unsigned long *max)
-+{
-+	struct rq *rq = this_rq();
-+	unsigned long cfs_max = rq->cpu_capacity_orig;
-+
-+	*util = min(rq->cfs.avg.util_avg, cfs_max);
-+	*max = cfs_max;
-+}
-+
- static void sugov_update_single(struct update_util_data *hook, u64 time,
--				unsigned long util, unsigned long max)
-+				unsigned int flags)
- {
- 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
- 	struct cpufreq_policy *policy = sg_policy->policy;
-+	unsigned long util, max;
- 	unsigned int next_f;
- 
- 	if (!sugov_should_update_freq(sg_policy, time))
- 		return;
- 
--	next_f = util == ULONG_MAX ? policy->cpuinfo.max_freq :
--			get_next_freq(sg_cpu, util, max);
-+	if (flags & SCHED_CPUFREQ_RT_DL) {
-+		next_f = policy->cpuinfo.max_freq;
-+	} else {
-+		sugov_get_util(&util, &max);
-+		next_f = get_next_freq(sg_cpu, util, max);
-+	}
- 	sugov_update_commit(sg_policy, time, next_f);
- }
- 
- static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
--					   unsigned long util, unsigned long max)
-+					   unsigned long util, unsigned long max,
-+					   unsigned int flags)
- {
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
- 	struct cpufreq_policy *policy = sg_policy->policy;
-@@ -169,7 +184,7 @@ static unsigned int sugov_next_freq_shar
- 	u64 last_freq_update_time = sg_policy->last_freq_update_time;
- 	unsigned int j;
- 
--	if (util == ULONG_MAX)
-+	if (flags & SCHED_CPUFREQ_RT_DL)
- 		return max_f;
- 
- 	for_each_cpu(j, policy->cpus) {
-@@ -192,10 +207,10 @@ static unsigned int sugov_next_freq_shar
- 		if (delta_ns > TICK_NSEC)
- 			continue;
- 
--		j_util = j_sg_cpu->util;
--		if (j_util == ULONG_MAX)
-+		if (j_sg_cpu->flags & SCHED_CPUFREQ_RT_DL)
- 			return max_f;
- 
-+		j_util = j_sg_cpu->util;
- 		j_max = j_sg_cpu->max;
- 		if (j_util * max > j_max * util) {
- 			util = j_util;
-@@ -207,20 +222,24 @@ static unsigned int sugov_next_freq_shar
- }
- 
- static void sugov_update_shared(struct update_util_data *hook, u64 time,
--				unsigned long util, unsigned long max)
-+				unsigned int flags)
- {
- 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
-+	unsigned long util, max;
- 	unsigned int next_f;
- 
-+	sugov_get_util(&util, &max);
-+
- 	raw_spin_lock(&sg_policy->update_lock);
- 
- 	sg_cpu->util = util;
- 	sg_cpu->max = max;
-+	sg_cpu->flags = flags;
- 	sg_cpu->last_update = time;
- 
- 	if (sugov_should_update_freq(sg_policy, time)) {
--		next_f = sugov_next_freq_shared(sg_cpu, util, max);
-+		next_f = sugov_next_freq_shared(sg_cpu, util, max, flags);
- 		sugov_update_commit(sg_policy, time, next_f);
- 	}
- 
-@@ -444,8 +463,9 @@ static int sugov_start(struct cpufreq_po
- 
- 		sg_cpu->sg_policy = sg_policy;
- 		if (policy_is_shared(policy)) {
--			sg_cpu->util = ULONG_MAX;
-+			sg_cpu->util = 0;
- 			sg_cpu->max = 0;
-+			sg_cpu->flags = SCHED_CPUFREQ_RT;
- 			sg_cpu->last_update = 0;
- 			sg_cpu->cached_raw_freq = 0;
- 			cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util,
-@@ -495,28 +515,15 @@ static struct cpufreq_governor schedutil
- 	.limits = sugov_limits,
- };
- 
--static int __init sugov_module_init(void)
--{
--	return cpufreq_register_governor(&schedutil_gov);
--}
--
--static void __exit sugov_module_exit(void)
--{
--	cpufreq_unregister_governor(&schedutil_gov);
--}
--
--MODULE_AUTHOR("Rafael J. Wysocki <rafael.j.wysocki@intel.com>");
--MODULE_DESCRIPTION("Utilization-based CPU frequency selection");
--MODULE_LICENSE("GPL");
--
- #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
- struct cpufreq_governor *cpufreq_default_governor(void)
- {
- 	return &schedutil_gov;
- }
--
--fs_initcall(sugov_module_init);
--#else
--module_init(sugov_module_init);
- #endif
--module_exit(sugov_module_exit);
-+
-+static int __init sugov_register(void)
-+{
-+	return cpufreq_register_governor(&schedutil_gov);
-+}
-+fs_initcall(sugov_register);
-Index: linux-pm/kernel/sched/fair.c
-===================================================================
---- linux-pm.orig/kernel/sched/fair.c
-+++ linux-pm/kernel/sched/fair.c
-@@ -2875,11 +2875,8 @@ static inline void update_tg_load_avg(st
- 
- static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq)
- {
--	struct rq *rq = rq_of(cfs_rq);
--	int cpu = cpu_of(rq);
--
--	if (cpu == smp_processor_id() && &rq->cfs == cfs_rq) {
--		unsigned long max = rq->cpu_capacity_orig;
-+	if (&this_rq()->cfs == cfs_rq) {
-+		struct rq *rq = rq_of(cfs_rq);
- 
- 		/*
- 		 * There are a few boundary cases this might miss but it should
-@@ -2897,8 +2894,7 @@ static inline void cfs_rq_util_change(st
- 		 *
- 		 * See cpu_util().
- 		 */
--		cpufreq_update_util(rq_clock(rq),
--				    min(cfs_rq->avg.util_avg, max), max);
-+		cpufreq_update_util(rq_clock(rq), 0);
- 	}
- }
- 
-Index: linux-pm/kernel/sched/sched.h
-===================================================================
---- linux-pm.orig/kernel/sched/sched.h
-+++ linux-pm/kernel/sched/sched.h
-@@ -1764,26 +1764,12 @@ DECLARE_PER_CPU(struct update_util_data
- /**
-  * cpufreq_update_util - Take a note about CPU utilization changes.
-  * @time: Current time.
-- * @util: Current utilization.
-- * @max: Utilization ceiling.
-+ * @flags: Update reason flags.
-  *
-- * This function is called by the scheduler on every invocation of
-- * update_load_avg() on the CPU whose utilization is being updated.
-+ * This function is called by the scheduler on the CPU whose utilization is
-+ * being updated.
-  *
-  * It can only be called from RCU-sched read-side critical sections.
-- */
--static inline void cpufreq_update_util(u64 time, unsigned long util, unsigned long max)
--{
--       struct update_util_data *data;
--
--       data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
--       if (data)
--               data->func(data, time, util, max);
--}
--
--/**
-- * cpufreq_trigger_update - Trigger CPU performance state evaluation if needed.
-- * @time: Current time.
-  *
-  * The way cpufreq is currently arranged requires it to evaluate the CPU
-  * performance state (frequency/voltage) on a regular basis to prevent it from
-@@ -1797,13 +1783,16 @@ static inline void cpufreq_update_util(u
-  * but that really is a band-aid.  Going forward it should be replaced with
-  * solutions targeted more specifically at RT and DL tasks.
-  */
--static inline void cpufreq_trigger_update(u64 time)
-+static inline void cpufreq_update_util(u64 time, unsigned int flags)
- {
--	cpufreq_update_util(time, ULONG_MAX, 0);
-+	struct update_util_data *data;
-+
-+	data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
-+	if (data)
-+		data->func(data, time, flags);
- }
- #else
--static inline void cpufreq_update_util(u64 time, unsigned long util, unsigned long max) {}
--static inline void cpufreq_trigger_update(u64 time) {}
-+static inline void cpufreq_update_util(u64 time, unsigned int flags) {}
- #endif /* CONFIG_CPU_FREQ */
- 
- #ifdef arch_scale_freq_capacity
-Index: linux-pm/kernel/sched/deadline.c
-===================================================================
---- linux-pm.orig/kernel/sched/deadline.c
-+++ linux-pm/kernel/sched/deadline.c
-@@ -732,9 +732,9 @@ static void update_curr_dl(struct rq *rq
- 		return;
- 	}
- 
--	/* kick cpufreq (see the comment in linux/cpufreq.h). */
-+	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
- 	if (cpu_of(rq) == smp_processor_id())
--		cpufreq_trigger_update(rq_clock(rq));
-+		cpufreq_update_util(rq_clock(rq), SCHED_CPUFREQ_DL);
- 
- 	schedstat_set(curr->se.statistics.exec_max,
- 		      max(curr->se.statistics.exec_max, delta_exec));
-Index: linux-pm/kernel/sched/rt.c
-===================================================================
---- linux-pm.orig/kernel/sched/rt.c
-+++ linux-pm/kernel/sched/rt.c
-@@ -957,9 +957,9 @@ static void update_curr_rt(struct rq *rq
- 	if (unlikely((s64)delta_exec <= 0))
- 		return;
- 
--	/* Kick cpufreq (see the comment in linux/cpufreq.h). */
-+	/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
- 	if (cpu_of(rq) == smp_processor_id())
--		cpufreq_trigger_update(rq_clock(rq));
-+		cpufreq_update_util(rq_clock(rq), SCHED_CPUFREQ_RT);
- 
- 	schedstat_set(curr->se.statistics.exec_max,
- 		      max(curr->se.statistics.exec_max, delta_exec));
-Index: linux-pm/drivers/cpufreq/Kconfig
-===================================================================
---- linux-pm.orig/drivers/cpufreq/Kconfig
-+++ linux-pm/drivers/cpufreq/Kconfig
-@@ -194,7 +194,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
- 	  If in doubt, say N.
- 
- config CPU_FREQ_GOV_SCHEDUTIL
--	tristate "'schedutil' cpufreq policy governor"
-+	bool "'schedutil' cpufreq policy governor"
- 	depends on CPU_FREQ && SMP
- 	select CPU_FREQ_GOV_ATTR_SET
- 	select IRQ_WORK
-@@ -208,9 +208,6 @@ config CPU_FREQ_GOV_SCHEDUTIL
- 	  frequency tipping point is at utilization/capacity equal to 80% in
- 	  both cases.
- 
--	  To compile this driver as a module, choose M here: the module will
--	  be called cpufreq_schedutil.
--
- 	  If in doubt, say N.
- 
- comment "CPU frequency scaling drivers"
+Thanks,
+Rafael
