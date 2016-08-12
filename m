@@ -1,55 +1,46 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH 1/5] acpi: cppc: Allow build with ACPI_CPU_FREQ_PSS
- config
-Date: Fri, 12 Aug 2016 05:34:43 -0700
-Message-ID: <1471005283.22284.7.camel@linux.intel.com>
-References: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <1470874646-70570-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <20160812091337.GA7017@arm.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v3 2/9] hwmon: (core) New hwmon registration API
+Date: Fri, 12 Aug 2016 05:40:25 -0700
+Message-ID: <ccf1b5d0-0dd0-cc9f-40e6-27f3bbae3bbf@roeck-us.net>
+References: <1469417552-9749-1-git-send-email-linux@roeck-us.net>
+ <1469417552-9749-3-git-send-email-linux@roeck-us.net>
+ <57AD85C4.5020409@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160812091337.GA7017@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Alexey Klimov <alexey.klimov@arm.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org, pprakash@codeaurora.org, sudeep.holla@arm.com
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <57AD85C4.5020409@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Keerthy <a0393675@ti.com>, Jean Delvare <jdelvare@suse.com>
+Cc: Jonathan Cameron <jic23@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Punit Agrawal <punit.agrawal@arm.com>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "R, Vignesh" <vigneshr@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2016-08-12 at 10:13 +0100, Alexey Klimov wrote:
-> > 
-> (adding Sudeep and Prashanth in c/c)
-> 
-> On Wed, Aug 10, 2016 at 05:17:22PM -0700, Srinivas Pandruvada wrote:
+On 08/12/2016 01:16 AM, Keerthy wrote:
+> On Monday 25 July 2016 09:02 AM, Guenter Roeck wrote:
+>> Up to now, each hwmon driver has to implement its own sysfs attributes.
+>> This requires a lot of template code, and distracts from the driver's core
+>> function to read and write chip registers.
+>>
+>> To be able to reduce driver complexity, move sensor attribute handling
+>> and thermal zone registration into hwmon core. By using the new API,
+>> driver code and data size is typically reduced by 20-70%, depending
+>> on driver complexity and the number of sysfs attributes supported.
+>>
+>> With this patch, the new API only supports thermal sensors. Support for
+>> other sensor types will be added with subsequent patches.
+>>
+> Hi Guenter,
+>
+> Seems like this patch introduces a cycling dependency between
+> thermal_sys and hwmon:
+>
+> DEPMOD 4.8.0-rc1-next-20160811-00001-g2f84cf7854e7
+> depmod: ERROR: Found 2 modules in dependency cycles!
+> depmod: ERROR: Cycle detected: hwmon -> thermal_sys -> hwmon
+>
+> As reported by R, Vignesh <vigneshr@ti.com>.
+>
 
-[...]
+Hmm ... interesting. Thanks for letting me know. I'll have to think about that.
 
-> >  	result = acpi_cppc_processor_probe(pr);
-> > -	if (result)
-> > +	if (result) {
-> > +#ifndef CONFIG_ACPI_CPU_FREQ_PSS
-> >  		return -ENODEV;
-> > +#endif
-> > +	}
-> >  
-> >  	if (!cpuidle_get_driver() || cpuidle_get_driver() ==
-> > &acpi_idle_driver)
-> >  		acpi_processor_power_init(pr);
-> If PSS is not defined and kernel fails to probe CPPC then why we
-> should not
-> execute acpi_processor_power_init()?
-Did I change the current behavior? Currently when 
-acpi_cppc_processor_probe() fails, then -ENODEV is returned.
-
-Thanks,
-Srinivas
-
-> 
-> Best regards,
-> Alexey
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Guenter
