@@ -1,144 +1,43 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH 1/5] acpi: cppc: Allow build with ACPI_CPU_FREQ_PSS
- config
-Date: Fri, 12 Aug 2016 10:16:21 -0700
-Message-ID: <1471022181.3745.13.camel@linux.intel.com>
-References: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <1470874646-70570-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <CAFHUOYx55WhrwaqpB7Jh8V_fnR1xVW=RWf9ZsCnJZFJt_JbpBw@mail.gmail.com>
-	 <1471020739.3745.10.camel@linux.intel.com>
-	 <CAFHUOYzXd-cP0G8BiScyH-EykK0D9RJD9eFKGP9Ok12NAgpRnA@mail.gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v2 11/13] PM / sleep: Allow opt-out from runtime resume
+ after direct-complete
+Date: Fri, 12 Aug 2016 13:30:04 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1608121314590.2361-100000@iolanthe.rowland.org>
+References: <20160812163910.GA8111@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAFHUOYzXd-cP0G8BiScyH-EykK0D9RJD9eFKGP9Ok12NAgpRnA@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Hoan Tran <hotran@apm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, viresh.kumar@linaro.org, linux acpi <linux-acpi@vger.kernel.org>, linux-pm@vger.kernel.org, Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160812163910.GA8111@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2016-08-12 at 09:58 -0700, Hoan Tran wrote:
-> Hi Srinivas,
-> 
-> On Fri, Aug 12, 2016 at 9:52 AM, Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com> wrote:
-> > 
-> > On Fri, 2016-08-12 at 09:35 -0700, Hoan Tran wrote:
-> > > 
-> > > Hi Srinivas,
-> > > 
-> > > On Wed, Aug 10, 2016 at 5:17 PM, Srinivas Pandruvada
-> > > <srinivas.pandruvada@linux.intel.com> wrote:
-> > > > 
-> > > > 
-> > > > Some newer x86 platforms have support for both _CPC and _PSS
-> > > > object. So
-> > > > kernel config can have both ACPI_CPU_FREQ_PSS and
-> > > > ACPI_CPPC_LIB. So
-> > > > remove
-> > > > restriction for ACPI_CPPC_LIB to build only when
-> > > > ACPI_CPU_FREQ_PSS
-> > > > is not
-> > > > defined.
-> > > > Also for legacy systems with only _PSS, we shouldn't bail out
-> > > > if
-> > > > acpi_cppc_processor_probe() fails, if ACPI_CPU_FREQ_PSS is also
-> > > > defined.
-> > > > 
-> > > > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.i
-> > > > ntel
-> > > > .com>
-> > > > ---
-> > > >  drivers/acpi/Kconfig            | 1 -
-> > > >  drivers/acpi/processor_driver.c | 5 ++++-
-> > > >  2 files changed, 4 insertions(+), 2 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-> > > > index 445ce28..c6bb6aa 100644
-> > > > --- a/drivers/acpi/Kconfig
-> > > > +++ b/drivers/acpi/Kconfig
-> > > > @@ -227,7 +227,6 @@ config ACPI_MCFG
-> > > >  config ACPI_CPPC_LIB
-> > > >         bool
-> > > >         depends on ACPI_PROCESSOR
-> > > > -       depends on !ACPI_CPU_FREQ_PSS
-> > > From ACPI 6.1 spec, if _CPC is present, its use supersedes the
-> > > use of
-> > > PSS. So I think, config ACPI_CPU_FREQ_PSS should depend on
-> > > !ACPI_CPPC_LIB.
-> > > 
-> > Distro want to have a single binary kernel image, so they will turn
-> > on
-> > all configs. So this is not a compile time decision.
-> > On runtime if the ACPI contains both tables than _CPC should be
-> > used
-> > (but that also if the kernel is capable of handling _CPC, as legacy
-> > kernel will not).
-> Agreed. If so, this "depends on" is not need, right ? And a runtime
-> code will be added to decide which is used instead ?
-Yes, _CPC will be used if present. 
+On Fri, 12 Aug 2016, Lukas Wunner wrote:
 
-Thanks,
-Srinivas
+> Thank you for explaining the motivation to carry out ->prepare top-down.
+> However my problem is really that ->complete is carried out bottom-up.
+> What's the motivation for that? Merely to mirror the behaviour of
+> ->prepare? Would it be possible to change it to top-down? Note that
+> re-enablement of device addition is already allowed in ->resume,
+> which is called top-down.
 
-> 
-> Thanks
-> Hoan
-> 
-> > 
-> > 
-> > Thanks,
-> > Srinivas
-> > 
-> > > 
-> > > Thanks
-> > > Hoan
-> > > 
-> > > > 
-> > > > 
-> > > >         select MAILBOX
-> > > >         select PCC
-> > > >         help
-> > > > diff --git a/drivers/acpi/processor_driver.c
-> > > > b/drivers/acpi/processor_driver.c
-> > > > index 0553aee..0e0b629 100644
-> > > > --- a/drivers/acpi/processor_driver.c
-> > > > +++ b/drivers/acpi/processor_driver.c
-> > > > @@ -245,8 +245,11 @@ static int __acpi_processor_start(struct
-> > > > acpi_device *device)
-> > > >                 return 0;
-> > > > 
-> > > >         result = acpi_cppc_processor_probe(pr);
-> > > > -       if (result)
-> > > > +       if (result) {
-> > > > +#ifndef CONFIG_ACPI_CPU_FREQ_PSS
-> > > >                 return -ENODEV;
-> > > > +#endif
-> > > > +       }
-> > > > 
-> > > >         if (!cpuidle_get_driver() || cpuidle_get_driver() ==
-> > > > &acpi_idle_driver)
-> > > >                 acpi_processor_power_init(pr);
-> > > > --
-> > > > 2.7.4
-> > > > 
-> > > > --
-> > > > To unsubscribe from this list: send the line "unsubscribe
-> > > > linux-
-> > > > acpi" in
-> > > > the body of a message to majordomo@vger.kernel.org
-> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.h
-> > > > tml
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-
-> > > pm"
-> > > in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.htm
-> > > l
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I'm not aware of any particular reason why making ->complete run
+top-down wouldn't work.  Of course, if you did then the environment at
+the start of the ->complete callback wouldn't be the same as it was at
+the end of the ->prepare callback.
+
+I think originally the idea was just to mirror ->prepare.  Perhaps
+Rafael will remember something that has escaped me.
+
+> By the way, neither the PCI nor USB bus-level ->prepare callbacks perform
+> any action that would stop device addition. Same for the pciehp driver
+> (we don't even have a ->prepare callback defined for PCIe port services.
+> So it *is* possible to hotplug PCI devices after ->prepare.
+
+I don't know about PCI (although what you describe sounds like a bug).  
+
+USB relies on a freezable workqueue for adding child devices, so it
+stops adding children even before the prepare phase begins.
+
+Alan Stern
