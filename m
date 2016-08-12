@@ -1,67 +1,54 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/2][RFC] PM / sleep: Expose DPM watchdog timeout to sysfs
-Date: Fri, 12 Aug 2016 13:25:04 +0200
-Message-ID: <CAJZ5v0jgiPsSV3ZRVeM+D7KD7wJudPD+0Fq0BoJGT1mZ3yryxg@mail.gmail.com>
-References: <cover.1470908324.git.yu.c.chen@intel.com> <20160811185441.GA15813@amd>
- <20160812025225.GA12238@sharon> <20160812063312.GD30992@amd>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][RFC] Documentation/: update hibernation debug
+ documentation
+Date: Fri, 12 Aug 2016 11:46:56 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE64028786F22@shsmsx102.ccr.corp.intel.com>
+References: <1470917891-8386-1-git-send-email-yu.c.chen@intel.com>
+ <20160812062241.GB30992@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:36780 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752902AbcHLLZH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Aug 2016 07:25:07 -0400
-Received: by mail-wm0-f68.google.com with SMTP id i138so2284355wmf.3
-        for <linux-pm@vger.kernel.org>; Fri, 12 Aug 2016 04:25:06 -0700 (PDT)
-In-Reply-To: <20160812063312.GD30992@amd>
+Received: from mga09.intel.com ([134.134.136.24]:47230 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752113AbcHLLq7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 12 Aug 2016 07:46:59 -0400
+In-Reply-To: <20160812062241.GB30992@amd>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Chen Yu <yu.c.chen@intel.com>, Linux PM List <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>, Takashi Iwai <tiwai@suse.de>, Benoit Goby <benoit@android.com>
+Cc: Linux PM List <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Fri, Aug 12, 2016 at 8:33 AM, Pavel Machek <pavel@ucw.cz> wrote:
+Hi Pavel,
+
+> -----Original Message-----
+> From: Pavel Machek [mailto:pavel@ucw.cz]
+> Sent: Friday, August 12, 2016 2:23 PM
+> To: Chen, Yu C
+> Cc: Linux PM List; Rafael J. Wysocki; Len Brown; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH][RFC] Documentation/: update hibernation debug
+> documentation
+> 
 > Hi!
->
->> > > Recently we have a new report that, the harddisk can not
->> > > resume on time due to firmware issues, and got a kernel
->> > > panic because of DPM watchdog timeout. Since the default
->> > > timeout has once been modified from 12 to 60 seconds, we
->> > > might still encounter new case which requires a longer timeout,
->> > > so expose the value to sysfs and let the users decide which
->> > > value is appropriate, meanwhile this can also ease the debugging
->> > > process.
->> > >
->> > > The first patch is to force DPM watchdog depending on CONFIG_PM_SLEEP,
->> > > thus the second patch which does the actual work, can use
->> > > CONFIG_DPM_WATCHDOG safely without checking CONFIG_PM_SLEEP.
->> >
->> > Kernel should just work. User should not have to configure random
->> > knobs to have working suspend/hibernation.
->> >
->> > We do not want "CONFIG_BREAK_SUSPEND" so I believe we don't want
->> > "CONFIG_DPM_WATCHDOG". If normal users select it and it breaks their
->> > system, make it depend on "CONFIG_EXPERT" or hide it in some other
->> > way or maybe remove it from Kconfig altogether.
->> >
->> > Or maybe CONFIG_DPM_WATCHDOG should contain numeric value that user
->> > has to select?
->> >
->> Yes, if people select it then they have the risk to break their system,
->> and the original thought of the patch is to behave like a diagnosis to
->> make it easier for the users to figure it out, how much time it takes
->> to suspend/resume a bogus peripheral, without recomping the kernel.
->> -- currently the timeout value for CONFIG_DPM_WATCHDOG can be adjusted
->> by menuconfig, but bug reporter might have to recompile the kernel
->> to confirm, and it takes some time to get a feedback from them, so...
->
-> Please don't add sysfs knobs for this. People should not need to
-> adjust sysfs files to get working kernel.
->
-> You can for example make the default 120 seconds.
+> 
+> > Update the description of test_resume mode for hibernation.
+> >
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > ---
+> >  Documentation/power/basic-pm-debugging.txt | 7 +++++++
+> >  1 file changed, 7 insertions(+)
+> 
+> That's certainly step in the right direction, but I guess it should be mentioned in
+> the other places, too. Something like this?
+> 
+> Additionally, we have testproc. Should we move it to test_proc for consistency
+> (or replace test_resume with simple "resume"? That's what it does... it is
+> hibernate+resume...
+It looks like testproc has been removed in 
+commit 48580ab8729865c81e148d59159fbe2aa7865511,
+so I think we can replace 'testproc/test' with 'resume' in interface.txt and add some description in it,
+I'll do that, thanks.
 
-Plus, IMO it would be good to be able to disable this thing from the
-kernel command line entirely in case 2 minutes is still too little
-time for somebody.
+Yu
 
-Thanks,
-Rafael
