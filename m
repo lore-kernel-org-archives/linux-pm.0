@@ -1,73 +1,95 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.8-rc2
-Date: Fri, 12 Aug 2016 23:25:10 +0200
-Message-ID: <CAJZ5v0hi=vv1QxKZC=AFMBvKU_fiSEBX-ZbeOhkL75OjUUAViA@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH][RFC] Documentation/: update hibernation debug
+ documentation
+Date: Fri, 12 Aug 2016 23:56:20 +0200
+Message-ID: <20160812215620.GB10803@amd>
+References: <1470917891-8386-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0jo3r+XFCkh1oH726bwu0CfMnq7xr-seT1Cq_0r6BcTFg@mail.gmail.com>
+ <36DF59CE26D8EE47B0655C516E9CE64028786F3F@shsmsx102.ccr.corp.intel.com>
+ <1760965.g7WzOE9Hrf@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:35014 "EHLO
-	mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752395AbcHLVZM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 12 Aug 2016 17:25:12 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1760965.g7WzOE9Hrf@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Chen, Yu C" <yu.c.chen@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM List <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>
 
-Hi Linus,
+Hi!
 
-Please pull from the tag
+> Index: linux-pm/Documentation/power/interface.txt
+> ===================================================================
+> --- linux-pm.orig/Documentation/power/interface.txt
+> +++ linux-pm/Documentation/power/interface.txt
+...
+> -CAUTION: Using it will cause your machine's real-time (CMOS) clock to be
+> -set to a random invalid time after a resume.
+> +'freeze' (Suspend-to-Idle)
+> +'standby' (Power-On Suspend)
+> +'mem' (Suspend-to-RAM)
+> +'disk' (Suspend-to-Disk)
+> +
+> +Suspend-to-Idle is always supported.  Suspend-to-Disk is always supported
+> +too as long the kernel has been configured to support hibernation at all
+> +(ie. CONFIG_HIBERNATION is set in the kernel configuration file).  Support
+> +for Suspend-to-RAM and Power-On Suspend depends on the capabilities of the
+> +platform.
+> +
+> +If one of the strings listed in /sys/power/state is writtent to it, the system
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.8-rc2
+Typo at writtent.
 
-with top-most commit 0aeeb3e73f5fd7faef3dce8cb590effd6ee51571
+> +will attempt to transition into the corresponding sleep state.  Refer to
+> +Documentation/power/states.txt for a description of each of those states.
+> +
+> +/sys/power/disk controls the operating mode of hibernation (Suspend-to-Disk).
+> +Specifically, it tells the kernel what to do after creating a hibernation image.
+> +
+> +Reading from it returs a list of supported options encoded as:
+> +
+> +'platform' (put the system into sleep using a platform-provided method)
+> +'shutdown' (shut the system down)
+> +'reboot' (reboot the system)
+> +'suspend' (trigger a Suspend-to-RAM transition)
+> +'test_resume' (resume-after-hibernation test mode)
+> +
+> +The currently selected option is printed in brackets.
 
- Merge branches 'pm-sleep' and 'pm-cpufreq'
+-> in square brackets ("[]")?
 
-on top of commit 29b4817d4018df78086157ea3a55c1d9424a7cfc
+> +The 'platform' option is only available if the platform provides a special
+> +mechanism to put the system to sleep after creating a hibernation image (ACPI
+> +does that, for example).  The 'suspend' option is available if Suspend-to-RAM
+> +is supported.  Refer to Documentation/power/basic_pm_debugging.txt for the
+> +description of the 'test_resume' option.
+> +
+> +To select an option, write the string representing it to /sys/power/disk.
+> +
+> +/sys/power/image_size controls the size of hibernation images.
+> +
+> +It can be written a string representing a non-negative integer that will be
+> +used as a best-effort upper limit of the image size, in bytes.  The hibernation
+> +core will do its best to ensure that the image size will not exceed that number.
+> +However, if that turns out to be impossible to achieve, a hibernation image will
+> +still be created and its size will be as small as possible.  In particular,
+> +writing '0' to this file will enforce hibernation images to be possibly small.
 
- Linux 4.8-rc1
+-> as small as possible.
 
-to receive power management fixes for v4.8-rc2.
+> +On architectures and platforms that support using different kernels to restore
+> +hibernation images (that is, the kernel used to read the image from storage and
+> +load it into memory is different from the one included in the image) or support
+> +kernel address space randomization, it also can be used to check if failures
+> +to resume may be related to the differences between the restore and image
+> +kernels.
 
-Two hibernation fixes allowing it to work with the recently added
-randomization of the kernel identity mapping base on x86-64 and
-one cpufreq driver regression fix.
+Hmm. Actually we should document which architectures support suspend &
+restore in different kernel... somewhere.
 
-Specifics:
-
- - Fix the x86 identity mapping creation helpers to avoid the
-   assumption that the base address of the mapping will always be
-   aligned at the PGD level, as it may be aligned at the PUD level
-   if address space randomization is enabled (Rafael Wysocki).
-
- - Fix the hibernation core to avoid executing tracing functions
-   before restoring the processor state completely during resume
-   (Thomas Garnier).
-
- - Fix a recently introduced regression in the powernv cpufreq
-   driver that causes it to crash due to an out-of-bounds array
-   access (Akshay Adiga).
-
-Thanks!
-
----------------
-
-Akshay Adiga (1):
-      cpufreq: powernv: Fix crash in gpstate_timer_handler()
-
-Rafael J. Wysocki (1):
-      x86/power/64: Always create temporary identity mapping correctly
-
-Thomas Garnier (1):
-      PM / hibernate: Restore processor state before using per-CPU variables
-
----------------
-
- arch/x86/include/asm/init.h       |  4 ++--
- arch/x86/mm/ident_map.c           | 19 +++++++++++--------
- arch/x86/power/hibernate_64.c     |  2 +-
- drivers/cpufreq/powernv-cpufreq.c | 21 ++++++++++++++++++++-
- kernel/power/hibernate.c          |  4 ++--
- 5 files changed, 36 insertions(+), 14 deletions(-)
+Acked-by: Pavel Machek <pavel@ucw.cz>
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
