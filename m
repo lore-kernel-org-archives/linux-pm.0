@@ -1,95 +1,136 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][RFC] Documentation/: update hibernation debug
- documentation
-Date: Fri, 12 Aug 2016 23:56:20 +0200
-Message-ID: <20160812215620.GB10803@amd>
-References: <1470917891-8386-1-git-send-email-yu.c.chen@intel.com>
- <CAJZ5v0jo3r+XFCkh1oH726bwu0CfMnq7xr-seT1Cq_0r6BcTFg@mail.gmail.com>
- <36DF59CE26D8EE47B0655C516E9CE64028786F3F@shsmsx102.ccr.corp.intel.com>
- <1760965.g7WzOE9Hrf@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for system sleep
+Date: Sat, 13 Aug 2016 00:18:26 +0200
+Message-ID: <2003407.8XLAPPsQTe@vostro.rjw.lan>
+References: <cover.1463134231.git.lukas@wunner.de> <CAJZ5v0g86L+nL6SxfBMQ84NNpUzz0X83bvP=E5WdSs1TozpY8w@mail.gmail.com> <20160812161609.GA8060@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1760965.g7WzOE9Hrf@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Chen, Yu C" <yu.c.chen@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM List <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160812161609.GA8060@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On Friday, August 12, 2016 06:16:09 PM Lukas Wunner wrote:
+> On Fri, Aug 12, 2016 at 02:50:04AM +0200, Rafael J. Wysocki wrote:
+> > On Thu, Aug 11, 2016 at 3:20 PM, Lukas Wunner <lukas@wunner.de> wrote:
+> > > So I would like to find a common ground and something you feel
+> > > comfortable to ack. The problem I see with your suggested approach
+> > > of subclassing struct dev_pm_domain in a struct pci_pm_domain is
+> > > that I can easily envision Apple putting some custom methods in the
+> > > DSDT to power a non-PCI device up and down. They're starting to use
+> > > SPI and UART to attach devices in newer machines.
+> > 
+> > Those devices have no standard power state definitions.
+> > 
+> > The problem you have here really is PCI-specific, because you want to
+> > use PCI PM along with the non-standard methods.
+> 
+> If I introduce a struct pci_pm_domain like you suggested, it would mean
+> that *all* PCI devices using dev_pm_domain_set() have to be changed,
+> else the container_of() wouldn't work. The resulting code bloat alone
+> inhibits me from implementing this. Plus, it's a tripwire for anyone
+> wishing to assign a dev_pm_domain to their PCI device.
+> 
+> > > Hence my suggestion to add a flag to struct dev_pm_domain, even
+> > > though at the moment that flag would only be queried by the PCI core.
+> > > I don't care if this is called can_power_off or power_manageable or
+> > > whatever.
+> > 
+> > struct dev_pm_domain is way too generic for that though, as I'm sure
+> > there are users of it where the can_power_off thing wouldn't make any
+> > sense whatever.
+> 
+> That seems like a small tradeoff compared to introducing a struct
+> pci_pm_domain.
 
-> Index: linux-pm/Documentation/power/interface.txt
-> ===================================================================
-> --- linux-pm.orig/Documentation/power/interface.txt
-> +++ linux-pm/Documentation/power/interface.txt
-...
-> -CAUTION: Using it will cause your machine's real-time (CMOS) clock to be
-> -set to a random invalid time after a resume.
-> +'freeze' (Suspend-to-Idle)
-> +'standby' (Power-On Suspend)
-> +'mem' (Suspend-to-RAM)
-> +'disk' (Suspend-to-Disk)
-> +
-> +Suspend-to-Idle is always supported.  Suspend-to-Disk is always supported
-> +too as long the kernel has been configured to support hibernation at all
-> +(ie. CONFIG_HIBERNATION is set in the kernel configuration file).  Support
-> +for Suspend-to-RAM and Power-On Suspend depends on the capabilities of the
-> +platform.
-> +
-> +If one of the strings listed in /sys/power/state is writtent to it, the system
+I'm not going to apply any patches addding can_power_off or similar flags to
+struct dev_pm_domain.
 
-Typo at writtent.
+> If you dislike a can_power_off flag in struct dev_pm_domain, that only
+> leaves the option to add a one-liner to pci_target_state(), unless I'm
+> missing something.
 
-> +will attempt to transition into the corresponding sleep state.  Refer to
-> +Documentation/power/states.txt for a description of each of those states.
-> +
-> +/sys/power/disk controls the operating mode of hibernation (Suspend-to-Disk).
-> +Specifically, it tells the kernel what to do after creating a hibernation image.
-> +
-> +Reading from it returs a list of supported options encoded as:
-> +
-> +'platform' (put the system into sleep using a platform-provided method)
-> +'shutdown' (shut the system down)
-> +'reboot' (reboot the system)
-> +'suspend' (trigger a Suspend-to-RAM transition)
-> +'test_resume' (resume-after-hibernation test mode)
-> +
-> +The currently selected option is printed in brackets.
+I'm not sure why you are insisting on setting target_state to D3cold
+before taking the platform_pci_power_manageable() branch.  Why don't
+you simply rearrange the routine like
 
--> in square brackets ("[]")?
+	pci_power_t target_state = PCI_D3hot;
 
-> +The 'platform' option is only available if the platform provides a special
-> +mechanism to put the system to sleep after creating a hibernation image (ACPI
-> +does that, for example).  The 'suspend' option is available if Suspend-to-RAM
-> +is supported.  Refer to Documentation/power/basic_pm_debugging.txt for the
-> +description of the 'test_resume' option.
-> +
-> +To select an option, write the string representing it to /sys/power/disk.
-> +
-> +/sys/power/image_size controls the size of hibernation images.
-> +
-> +It can be written a string representing a non-negative integer that will be
-> +used as a best-effort upper limit of the image size, in bytes.  The hibernation
-> +core will do its best to ensure that the image size will not exceed that number.
-> +However, if that turns out to be impossible to achieve, a hibernation image will
-> +still be created and its size will be as small as possible.  In particular,
-> +writing '0' to this file will enforce hibernation images to be possibly small.
+	if (platform_pci_power_manageable(dev)) {
+		...
+		return target_state;
+	}
 
--> as small as possible.
+	if (!dev->pm_cap)
+		return PCI_D0;
 
-> +On architectures and platforms that support using different kernels to restore
-> +hibernation images (that is, the kernel used to read the image from storage and
-> +load it into memory is different from the one included in the image) or support
-> +kernel address space randomization, it also can be used to check if failures
-> +to resume may be related to the differences between the restore and image
-> +kernels.
+	if (dev->current_state == PCI_D3cold)
+		target_state = PCI_D3cold;
 
-Hmm. Actually we should document which architectures support suspend &
-restore in different kernel... somewhere.
+	if (device_may_wakeup(&dev->dev)) {
+		...
+	}
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	return target_state;
+
+And that would be fine by me.
+
+That said I'm not sure why you want to use pci_target_state() so badly?
+
+If you are going to use a PM domain, why do you still need that function?
+
+> BTW there seems to be a contradiction in your statements on wakeup devices:
+> 
+> On Mon, Aug 08, 2016 at 01:32:54AM +0200, Rafael J. Wysocki wrote:
+> > On Sunday, August 07, 2016 11:03:47 AM Lukas Wunner wrote:
+> > > The reasoning is that going from D3cold to D3hot before system sleep
+> > > just never makes sense, no matter if the device got there by standard
+> > > or nonstandard means.
+> >
+> > That may not be true in theory.
+> >
+> > If this is a wakeup device, it may not be able to generate wakeup signals
+> > from D3cold while the system is in the target system state, although it might
+> > be able to generate those signals when the system is in S0 (in the ACPI case).
+> 
+> However earlier you wrote:
+> 
+> On Mon, Jul 18, 2016 at 03:39:15PM +0200, Rafael J. Wysocki wrote:
+> > On Saturday, June 18, 2016 12:14:07 AM Lukas Wunner wrote:
+> > > On Fri, Jun 17, 2016 at 04:09:24PM -0500, Bjorn Helgaas wrote:
+> > > > Is there a reason you don't want to do this check for devices that
+> > > > may wakeup?
+> > >
+> > > Fear of breaking things. It would mean that a device would be left in
+> > > D3cold even though it may not be able to signal wakeup from that power
+> > > state.
+> >
+> > Then it should not be put into D3_cold at run time too if it is wakeup-capable.
+> 
+> So on the one hand, you warn that a wakeup-capable device may have been
+> put into D3cold at runtime but needs to be woken before system sleep
+> because it might otherwise not be able to signal wakeup.
+
+Yes, so specifically I'm concerned about the pci_target_state() invocation in
+pci_dev_keep_suspended() which is done exactly for this purpose.
+
+If you apply the "keep it in D3cold if already there" logic to that case, it
+may lead to a wrong decision in theory.  Say the device is in D3cold and
+platform_pci_choose_state() returns D1, but pci_no_d1d2() returns true,
+the device will end up in D3cold, but it may not be able to signal wakeup
+from that state after the system has been suspended.
+
+> On the other hand you say that such devices should not be put into D3cold
+> at runtime at all.
+>
+> Which one is it?
+
+I said the latter under the assumption that the device would not be able to
+signal wakeup from D3cold at all (including at run time).  I may have not
+understand the context of your conversation with Bjorn correctly.
+
+Thanks,
+Rafael
