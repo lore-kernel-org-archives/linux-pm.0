@@ -1,95 +1,52 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH 3/3] ARM: dts: imx6q-evi: Fix onboard hub reset line
-Date: Fri, 12 Aug 2016 11:11:58 +0800
-Message-ID: <20160812031158.GH18967@shlinux2>
-References: <20160810030254.GD1879@shlinux2>
- <1470933632-22133-1-git-send-email-stillcompiling@gmail.com>
- <1470933632-22133-4-git-send-email-stillcompiling@gmail.com>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v1] x86/power/64: Restore processor state before using
+ per-cpu variables
+Date: Fri, 12 Aug 2016 07:49:13 +0200
+Message-ID: <20160812054913.GA24303@nazgul.tnic>
+References: <1470952169-39061-1-git-send-email-thgarnie@google.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <kernel-hardening-return-4350-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
 Content-Disposition: inline
-In-Reply-To: <1470933632-22133-4-git-send-email-stillcompiling@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Joshua Clayton <stillcompiling@gmail.com>
-Cc: Shawn Guo <shawnguo@kernel.org>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mka@chromium.org
+In-Reply-To: <1470952169-39061-1-git-send-email-thgarnie@google.com>
+To: Thomas Garnier <thgarnie@google.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, keescook@chromium.org, kernel-hardening@lists.openwall.com, jikos@kernel.org, yinghai@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 11, 2016 at 09:40:32AM -0700, Joshua Clayton wrote:
-> Previously the onboard hub was made to work by treating its
-> reset gpio as a regulator enable.
-> Get rid of that kludge now that pwseq has added reset gpio support
-> Move pin muxing the hub reset pin into the usbh1 group
+On Thu, Aug 11, 2016 at 02:49:29PM -0700, Thomas Garnier wrote:
+> Restore the processor state before calling any other function to ensure
+> per-cpu variables can be used with KASLR memory randomization.
 > 
-> Signed-off-by: Joshua Clayton <stillcompiling@gmail.com>
+> Tracing functions use per-cpu variables (gs based) and one was called
+> just before restoring the processor state fully. It resulted in a double
+> fault when both the tracing & the exception handler functions tried to
+> use a per-cpu variable.
+> 
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
 > ---
->  arch/arm/boot/dts/imx6q-evi.dts | 25 +++++++------------------
->  1 file changed, 7 insertions(+), 18 deletions(-)
-> 
-> diff --git a/arch/arm/boot/dts/imx6q-evi.dts b/arch/arm/boot/dts/imx6q-evi.dts
-> index 4fa5601..49c6f61 100644
-> --- a/arch/arm/boot/dts/imx6q-evi.dts
-> +++ b/arch/arm/boot/dts/imx6q-evi.dts
-> @@ -54,18 +54,6 @@
->  		reg = <0x10000000 0x40000000>;
->  	};
->  
-> -	reg_usbh1_vbus: regulator-usbhubreset {
-> -		compatible = "regulator-fixed";
-> -		regulator-name = "usbh1_vbus";
-> -		regulator-min-microvolt = <5000000>;
-> -		regulator-max-microvolt = <5000000>;
-> -		enable-active-high;
-> -		startup-delay-us = <2>;
-> -		pinctrl-names = "default";
-> -		pinctrl-0 = <&pinctrl_usbh1_hubreset>;
-> -		gpio = <&gpio7 12 GPIO_ACTIVE_HIGH>;
-> -	};
-> -
->  	reg_usb_otg_vbus: regulator-usbotgvbus {
->  		compatible = "regulator-fixed";
->  		regulator-name = "usb_otg_vbus";
-> @@ -204,12 +192,18 @@
->  };
->  
->  &usbh1 {
-> -	vbus-supply = <&reg_usbh1_vbus>;
->  	pinctrl-names = "default";
->  	pinctrl-0 = <&pinctrl_usbh1>;
->  	dr_mode = "host";
->  	disable-over-current;
->  	status = "okay";
-> +
-> +	usb2415host: hub@1 {
-> +		compatible = "usb424,2513";
-> +		reg = <1>;
-> +		reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
-> +		reset-duration-us = <3000>;
-> +	};
->  };
->  
->  &usbotg {
-> @@ -467,11 +461,6 @@
->  			MX6QDL_PAD_GPIO_3__USB_H1_OC 0x1b0b0
->  			/* usbh1_b OC */
+> Based on next-20160808
 
-This comment should be for above pin, do you mind I change it in
-this patch?
+Ok, I believe before I test this, I need to apply another patch from
+Rafael. I think it is the "Always create temporary identity mapping
+correctly" thing.
 
->  			MX6QDL_PAD_GPIO_0__GPIO1_IO00 0x1b0b0
-> -		>;
-> -	};
-> -
-> -	pinctrl_usbh1_hubreset: usbh1hubresetgrp {
-> -		fsl,pins = <
->  			MX6QDL_PAD_GPIO_17__GPIO7_IO12 0x1b0b0
->  		>;
->  	};
+Yes, no?
 
-This changes remind me that I need to change the same thing for udoo
-board.
+Rafael, can you please apply everything on a test branch for us to run?
+
+Thanks.
 
 -- 
+Regards/Gruss,
+    Boris.
 
-Best Regards,
-Peter Chen
+ECO tip #101: Trim your mails when you reply.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+--
