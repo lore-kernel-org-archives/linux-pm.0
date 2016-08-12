@@ -1,134 +1,42 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 2/2] cpufreq / sched: Pass runqueue pointer to cpufreq_update_util()
-Date: Fri, 12 Aug 2016 02:06:44 +0200
-Message-ID: <6457758.OIoE6g3rfd@vostro.rjw.lan>
-References: <6346523.ZooER3FGDH@vostro.rjw.lan>
+Subject: [PATCH v2 0/2] cpufreq / sched: Rework of cpufreq_update_util() arguments
+Date: Fri, 12 Aug 2016 02:01:29 +0200
+Message-ID: <6346523.ZooER3FGDH@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41315 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64773 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750708AbcHLABb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2016 20:01:31 -0400
-In-Reply-To: <6346523.ZooER3FGDH@vostro.rjw.lan>
+	by vger.kernel.org with SMTP id S1751204AbcHLABc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 11 Aug 2016 20:01:32 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
 
-All of the callers of cpufreq_update_util() pass rq_clock(rq) to it
-as the time argument and some of them check whether or not cpu_of(rq)
-is equal to smp_processor_id() before calling it, so rework it to
-take a runqueue pointer as the argument and move the rq_clock(rq)
-evaluation into it.
+There were some comments on the "cpufreq / sched: cpufreq_update_util() flags
+and iowait boosting" series I sent some time ago and I wanted to address them,
+but for this purpose I had to combine patches [1-2,4/7] from that series
+into one and make some changes on top of that.
 
-Additionally, provide a wrapper checking cpu_of(rq) against
-smp_processor_id() for the cpufreq_update_util() callers that
-need it.
+Then I thought it would be better to send that separately from the iowait
+boost part of that series, so here it goes.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+[1/2] Removes the util and max args from cpufreq_update_util() and governor
+      callbacks and adds a flags argument instead of them.  That argument
+      is then used to handle RT and DL in schedutil and the utilization data
+      are accessed by it directly (so it is non-modular now to avoid exporting
+      the scheduler internals to modules).
+[2/2] Replaces the time argument of cpufreq_update_util() with an rq pointer
+      which allows some simplifications to be made.
 
-This is a new patch based on the [2/2] from v1.
+There should be no changes in behavior as a result of this.
 
----
- kernel/sched/deadline.c |    3 +--
- kernel/sched/fair.c     |    4 +---
- kernel/sched/rt.c       |    3 +--
- kernel/sched/sched.h    |   15 +++++++++++----
- 4 files changed, 14 insertions(+), 11 deletions(-)
+The v2 is to address comments from Steve.
 
-Index: linux-pm/kernel/sched/deadline.c
-===================================================================
---- linux-pm.orig/kernel/sched/deadline.c
-+++ linux-pm/kernel/sched/deadline.c
-@@ -733,8 +733,7 @@ static void update_curr_dl(struct rq *rq
- 	}
- 
- 	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
--	if (cpu_of(rq) == smp_processor_id())
--		cpufreq_update_util(rq_clock(rq), SCHED_CPUFREQ_DL);
-+	cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_DL);
- 
- 	schedstat_set(curr->se.statistics.exec_max,
- 		      max(curr->se.statistics.exec_max, delta_exec));
-Index: linux-pm/kernel/sched/fair.c
-===================================================================
---- linux-pm.orig/kernel/sched/fair.c
-+++ linux-pm/kernel/sched/fair.c
-@@ -2876,8 +2876,6 @@ static inline void update_tg_load_avg(st
- static inline void cfs_rq_util_change(struct cfs_rq *cfs_rq)
- {
- 	if (&this_rq()->cfs == cfs_rq) {
--		struct rq *rq = rq_of(cfs_rq);
--
- 		/*
- 		 * There are a few boundary cases this might miss but it should
- 		 * get called often enough that that should (hopefully) not be
-@@ -2894,7 +2892,7 @@ static inline void cfs_rq_util_change(st
- 		 *
- 		 * See cpu_util().
- 		 */
--		cpufreq_update_util(rq_clock(rq), 0);
-+		cpufreq_update_util(rq_of(cfs_rq), 0);
- 	}
- }
- 
-Index: linux-pm/kernel/sched/rt.c
-===================================================================
---- linux-pm.orig/kernel/sched/rt.c
-+++ linux-pm/kernel/sched/rt.c
-@@ -958,8 +958,7 @@ static void update_curr_rt(struct rq *rq
- 		return;
- 
- 	/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
--	if (cpu_of(rq) == smp_processor_id())
--		cpufreq_update_util(rq_clock(rq), SCHED_CPUFREQ_RT);
-+	cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_RT);
- 
- 	schedstat_set(curr->se.statistics.exec_max,
- 		      max(curr->se.statistics.exec_max, delta_exec));
-Index: linux-pm/kernel/sched/sched.h
-===================================================================
---- linux-pm.orig/kernel/sched/sched.h
-+++ linux-pm/kernel/sched/sched.h
-@@ -1763,7 +1763,7 @@ DECLARE_PER_CPU(struct update_util_data
- 
- /**
-  * cpufreq_update_util - Take a note about CPU utilization changes.
-- * @time: Current time.
-+ * @rq: Runqueue to carry out the update for.
-  * @flags: Update reason flags.
-  *
-  * This function is called by the scheduler on the CPU whose utilization is
-@@ -1783,16 +1783,23 @@ DECLARE_PER_CPU(struct update_util_data
-  * but that really is a band-aid.  Going forward it should be replaced with
-  * solutions targeted more specifically at RT and DL tasks.
-  */
--static inline void cpufreq_update_util(u64 time, unsigned int flags)
-+static inline void cpufreq_update_util(struct rq *rq, unsigned int flags)
- {
- 	struct update_util_data *data;
- 
- 	data = rcu_dereference_sched(*this_cpu_ptr(&cpufreq_update_util_data));
- 	if (data)
--		data->func(data, time, flags);
-+		data->func(data, rq_clock(rq), flags);
-+}
-+
-+static inline void cpufreq_update_this_cpu(struct rq *rq, unsigned int flags)
-+{
-+	if (cpu_of(rq) == smp_processor_id())
-+		cpufreq_update_util(rq, flags);
- }
- #else
--static inline void cpufreq_update_util(u64 time, unsigned int flags) {}
-+static inline void cpufreq_update_util(struct rq *rq, unsigned int flags) {}
-+static inline void cpufreq_update_this_cpu(struct rq *rq, unsigned int flags) {}
- #endif /* CONFIG_CPU_FREQ */
- 
- #ifdef arch_scale_freq_capacity
+Thanks,
+Rafael
 
