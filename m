@@ -1,53 +1,72 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v1] x86/power/64: Restore processor state before using
- per-cpu variables
-Date: Fri, 12 Aug 2016 09:03:52 -0700
-Message-ID: <CAJcbSZEAyS6Lp=Cuz=-4yL39yz=Z_FpVuY2NiYjM=fchFtpTEg@mail.gmail.com>
-References: <1470952169-39061-1-git-send-email-thgarnie@google.com>
- <20160812054913.GA24303@nazgul.tnic> <CAJZ5v0hC28BMqgurck0oiQGxf=XhYwseiVs+DeLdv9wKHFCa7w@mail.gmail.com>
-Reply-To: kernel-hardening@lists.openwall.com
+From: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Subject: Re: [PATCH 1/5] acpi: cppc: Allow build with ACPI_CPU_FREQ_PSS config
+Date: Fri, 12 Aug 2016 10:04:25 -0600
+Message-ID: <44dbbac5-92e6-d4f9-df92-50e1129d2734@codeaurora.org>
+References: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <1470874646-70570-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20160812091337.GA7017@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <kernel-hardening-return-4365-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAJZ5v0hC28BMqgurck0oiQGxf=XhYwseiVs+DeLdv9wKHFCa7w@mail.gmail.com>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Kees Cook <keescook@chromium.org>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Jiri Kosina <jikos@kernel.org>, Yinghai Lu <yinghai@kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20160812091337.GA7017@arm.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Alexey Klimov <alexey.klimov@arm.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org, sudeep.holla@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 12, 2016 at 4:14 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, Aug 12, 2016 at 7:49 AM, Borislav Petkov <bp@suse.de> wrote:
->> On Thu, Aug 11, 2016 at 02:49:29PM -0700, Thomas Garnier wrote:
->>> Restore the processor state before calling any other function to ensure
->>> per-cpu variables can be used with KASLR memory randomization.
->>>
->>> Tracing functions use per-cpu variables (gs based) and one was called
->>> just before restoring the processor state fully. It resulted in a double
->>> fault when both the tracing & the exception handler functions tried to
->>> use a per-cpu variable.
->>>
->>> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->>> ---
->>> Based on next-20160808
->>
->> Ok, I believe before I test this, I need to apply another patch from
->> Rafael. I think it is the "Always create temporary identity mapping
->> correctly" thing.
->>
->> Yes, no?
->
-> Yes.
->
->> Rafael, can you please apply everything on a test branch for us to run?
->
-> You can simply test my linux-next branch:
->
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
-> linux-next
->
-> That's 4.8-rc1 plus 3 fixes on top of it.
+Hi Alexey,
 
-Borislav, let me know once you tested it and I will send a v2 with acked/tested.
+On 8/12/2016 3:13 AM, Alexey Klimov wrote:
+> (adding Sudeep and Prashanth in c/c)
+>
+> On Wed, Aug 10, 2016 at 05:17:22PM -0700, Srinivas Pandruvada wrote:
+>> Some newer x86 platforms have support for both _CPC and _PSS object. So
+>> kernel config can have both ACPI_CPU_FREQ_PSS and ACPI_CPPC_LIB. So remove
+>> restriction for ACPI_CPPC_LIB to build only when ACPI_CPU_FREQ_PSS is not
+>> defined.
+>> Also for legacy systems with only _PSS, we shouldn't bail out if
+>> acpi_cppc_processor_probe() fails, if ACPI_CPU_FREQ_PSS is also defined.
+>>
+>> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+>> ---
+>>  drivers/acpi/Kconfig            | 1 -
+>>  drivers/acpi/processor_driver.c | 5 ++++-
+>>  2 files changed, 4 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+>> index 445ce28..c6bb6aa 100644
+>> --- a/drivers/acpi/Kconfig
+>> +++ b/drivers/acpi/Kconfig
+>> @@ -227,7 +227,6 @@ config ACPI_MCFG
+>>  config ACPI_CPPC_LIB
+>>  	bool
+>>  	depends on ACPI_PROCESSOR
+>> -	depends on !ACPI_CPU_FREQ_PSS
+>>  	select MAILBOX
+>>  	select PCC
+>>  	help
+>> diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+>> index 0553aee..0e0b629 100644
+>> --- a/drivers/acpi/processor_driver.c
+>> +++ b/drivers/acpi/processor_driver.c
+>> @@ -245,8 +245,11 @@ static int __acpi_processor_start(struct acpi_device *device)
+>>  		return 0;
+>>  
+>>  	result = acpi_cppc_processor_probe(pr);
+>> -	if (result)
+>> +	if (result) {
+>> +#ifndef CONFIG_ACPI_CPU_FREQ_PSS
+>>  		return -ENODEV;
+>> +#endif
+>> +	}
+>>  
+>>  	if (!cpuidle_get_driver() || cpuidle_get_driver() == &acpi_idle_driver)
+>>  		acpi_processor_power_init(pr);
+> If PSS is not defined and kernel fails to probe CPPC then why we should not
+> execute acpi_processor_power_init()?
+Returning on cppc probe failure looks like a bug. We can just print
+a warning and continue to acpi_processor_power_init().
+
+Thanks,
+Prashanth
