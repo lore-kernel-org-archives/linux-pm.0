@@ -1,16 +1,16 @@
 From: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
-Subject: [PATCH 5/8] power: ab8500_charger: Remove deprecated
+Subject: [PATCH 6/8] power: ipaq_micro_battery: Remove deprecated
  create_singlethread_workqueue
-Date: Sat, 13 Aug 2016 21:51:23 +0530
-Message-ID: <f65116933c18b483cfc79a93590fdf8aa127ec73.1471104868.git.bhaktipriya96@gmail.com>
+Date: Sat, 13 Aug 2016 22:03:53 +0530
+Message-ID: <7013fe0c94c6d67d63828aac522a6c2cb147dbec.1471104868.git.bhaktipriya96@gmail.com>
 References: <cover.1471104867.git.bhaktipriya96@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:34238 "EHLO
-	mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752704AbcHMQWP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 13 Aug 2016 12:22:15 -0400
+Received: from mail-pa0-f68.google.com ([209.85.220.68]:32848 "EHLO
+	mail-pa0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752672AbcHMQd6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 13 Aug 2016 12:33:58 -0400
 Content-Disposition: inline
 In-Reply-To: <cover.1471104867.git.bhaktipriya96@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -18,42 +18,36 @@ List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
 
-alloc_ordered_workqueue() with WQ_MEM_RECLAIM set replaces
-deprecated create_singlethread_workqueue(). This is the identity
-conversion.
+The workqueue "wq" is used for handling battery related tasks.
 
-The workqueue "charger_wq" is used for the IRQs and checking HW state of
-the charger. It has been identity converted.
+It has a single work item viz &mb->update and hence it doesn't require
+execution ordering. Hence, alloc_workqueue has been used to replace the
+deprecated create_singlethread_workqueue instance.
 
-It has multiple work items viz usb_charger_attached_work, kick_wd_work,
-check_vbat_work, check_hw_failure_work, usb_charger_attached_work,
-ac_work, ac_charger_attached_work, attach_work and check_usbchgnotok_work,
-which require execution ordering. Hence, a dedicated ordered workqueue
-has been used here.
+The WQ_MEM_RECLAIM flag has been set to ensure forward progress under
+memory pressure.
 
-The WQ_MEM_RECLAIM flag has also been set to ensure
-forward progress under memory pressure.
+Since there is a single work item, explicit concurrency
+limit is unnecessary here.
 
 Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
 ---
- drivers/power/ab8500_charger.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/power/ipaq_micro_battery.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/ab8500_charger.c b/drivers/power/ab8500_charger.c
-index 30de5d4..5cee9aa 100644
---- a/drivers/power/ab8500_charger.c
-+++ b/drivers/power/ab8500_charger.c
-@@ -3540,8 +3540,8 @@ static int ab8500_charger_probe(struct platform_device *pdev)
- 	di->usb_state.usb_current = -1;
-
- 	/* Create a work queue for the charger */
--	di->charger_wq =
--		create_singlethread_workqueue("ab8500_charger_wq");
-+	di->charger_wq = alloc_ordered_workqueue("ab8500_charger_wq",
-+						 WQ_MEM_RECLAIM);
- 	if (di->charger_wq == NULL) {
- 		dev_err(di->dev, "failed to create work queue\n");
+diff --git a/drivers/power/ipaq_micro_battery.c b/drivers/power/ipaq_micro_battery.c
+index 35b01c7..4af7b77 100644
+--- a/drivers/power/ipaq_micro_battery.c
++++ b/drivers/power/ipaq_micro_battery.c
+@@ -235,7 +235,7 @@ static int micro_batt_probe(struct platform_device *pdev)
  		return -ENOMEM;
+
+ 	mb->micro = dev_get_drvdata(pdev->dev.parent);
+-	mb->wq = create_singlethread_workqueue("ipaq-battery-wq");
++	mb->wq = alloc_workqueue("ipaq-battery-wq", WQ_MEM_RECLAIM, 0);
+ 	if (!mb->wq)
+ 		return -ENOMEM;
+
 --
 2.1.4
 
