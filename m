@@ -1,50 +1,81 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] x86/power/64: Use __pa() for physical address computation
-Date: Mon, 15 Aug 2016 07:10:42 +0200
-Message-ID: <20160815051042.GC16267@gmail.com>
-References: <5387760.qC5CG883jv@vostro.rjw.lan>
+From: dawei chien <dawei.chien@mediatek.com>
+Subject: Re: [PATCH 1/3] dt-bindings: thermal: Add binding document for
+ Mediatek thermal controller
+Date: Mon, 15 Aug 2016 15:07:01 +0800
+Message-ID: <1471244821.14287.8.camel@mtksdaap41>
+References: <1467882386-40544-1-git-send-email-dawei.chien@mediatek.com>
+	 <1467882386-40544-2-git-send-email-dawei.chien@mediatek.com>
+	 <577E385C.9080501@ti.com> <1468227124.15776.29.camel@mtksdaap41>
+	 <8886eba0-7f3d-edf8-c6fb-a6535b3717da@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:33456 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750995AbcHOFKr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2016 01:10:47 -0400
-Content-Disposition: inline
-In-Reply-To: <5387760.qC5CG883jv@vostro.rjw.lan>
+Received: from mailgw02.mediatek.com ([210.61.82.184]:55703 "EHLO
+	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751375AbcHOHHG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2016 03:07:06 -0400
+In-Reply-To: <8886eba0-7f3d-edf8-c6fb-a6535b3717da@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: Keerthy <a0393675@ti.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@armlinux.org.uk>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Fan Chen <fan.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Yingjoe Chen <yingjoe.chen@mediatek.com>, Erin Lo <erin.lo@mediatek.com>
 
+Hi Matthias,
 
-* Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, 2016-08-11 at 17:48 +0200, Matthias Brugger wrote:
 > 
-> The value of temp_level4_pgt is the physical address of the
-> top-level page directory, so use __pa() to compute it.
+> On 11/07/16 10:52, dawei chien wrote:
+> > Dear Keerthy,
+> >
+> > On Thu, 2016-07-07 at 16:39 +0530, Keerthy wrote:
+> >>
+> >> On Thursday 07 July 2016 02:36 PM, Dawei Chien wrote:
+> >>> This adds the device tree binding documentation for the mediatek thermal
+> >>> controller found on Mediatek MT2701.
+> >>>
+> >>> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+> >>> ---
+> >>>   .../bindings/thermal/mediatek-thermal.txt          |    2 +-
+> >>>   1 file changed, 1 insertion(+), 1 deletion(-)
+> >>>
+> >>> diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+> >>> index 81f9a51..bb55e79 100644
+> >>> --- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+> >>> +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+> >>> @@ -8,7 +8,7 @@ apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
+> >>>   is also needed.
+> >>>
+> >>>   Required properties:
+> >>> -- compatible: "mediatek,mt8173-thermal"
+> >>> +- compatible: "mediatek,mt8173-thermal" or "mediatek,mt2701-thermal"
+> >>
+> >> - compatible :
+> >>   - "mediatek,mt8173-thermal" : For MT8173 family of SoCs
+> >>   - "mediatek,mt2701-thermal" : For MT2701 family of SoCs
+> >
+> > Thank you, I will update it on next version.
+> >
 > 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  arch/x86/power/hibernate_64.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-pm/arch/x86/power/hibernate_64.c
-> ===================================================================
-> --- linux-pm.orig/arch/x86/power/hibernate_64.c
-> +++ linux-pm/arch/x86/power/hibernate_64.c
-> @@ -113,7 +113,7 @@ static int set_up_temporary_mappings(voi
->  			return result;
->  	}
->  
-> -	temp_level4_pgt = (unsigned long)pgd - __PAGE_OFFSET;
-> +	temp_level4_pgt = __pa(pgd);
->  	return 0;
->  }
+> Do you know about the compability to older SoCs (e.g. mt6589)?
+> It might make sense to add mediatek,mtk-thermal if they are compatible 
+> or nearly compatible.
 
-Acked-by: Ingo Molnar <mingo@kernel.org>
+I agree with you that we should add mediatek,mtk-thermal for compatible
+or nearly compatible SoC.
+However, there is no more compatible SoC so far. Once we have such new
+nearly compatible SoC, we would update it on this binding document soon,
+thank you.
 
-Thanks,
+BR,
+Dawei
 
-	Ingo
+> >>
+> >>>   - reg: Address range of the thermal controller
+> >>>   - interrupts: IRQ for the thermal controller
+> >>>   - clocks, clock-names: Clocks needed for the thermal controller. required
+> >>>
+> >
+> >
+
+
