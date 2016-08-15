@@ -1,129 +1,67 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for system sleep
-Date: Tue, 16 Aug 2016 01:05:19 +0200
-Message-ID: <1873481.EQGQ3iSLFq@vostro.rjw.lan>
-References: <cover.1463134231.git.lukas@wunner.de> <2003407.8XLAPPsQTe@vostro.rjw.lan> <20160814102725.GA8634@wunner.de>
+Subject: Re: [PATCH v2 3/3] PM / hibernate: Recycle safe pages after image restoration
+Date: Tue, 16 Aug 2016 01:16:11 +0200
+Message-ID: <11338171.RrOnHImtez@vostro.rjw.lan>
+References: <2260927.OOWMYX738E@vostro.rjw.lan> <3432840.yEuDW8huOO@vostro.rjw.lan> <20160815143349.GB29447@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57625 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41451 "HELO
 	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752365AbcHOW7v (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2016 18:59:51 -0400
-In-Reply-To: <20160814102725.GA8634@wunner.de>
+	by vger.kernel.org with SMTP id S932201AbcHOXKn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2016 19:10:43 -0400
+In-Reply-To: <20160815143349.GB29447@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Sunday, August 14, 2016 12:27:25 PM Lukas Wunner wrote:
-> On Sat, Aug 13, 2016 at 12:18:26AM +0200, Rafael J. Wysocki wrote:
-> > Yes, so specifically I'm concerned about the pci_target_state() invocation
-> > in pci_dev_keep_suspended() which is done exactly for this purpose.
+On Monday, August 15, 2016 04:33:49 PM Pavel Machek wrote:
+> On Thu 2016-08-11 23:23:20, Rafael J. Wysocki wrote:
+> > On Thursday, August 11, 2016 11:06:15 PM Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > 
+> > > > One of the memory bitmaps used by the hibernation image restoration
+> > > > code is freed after the image has been loaded.
+> > > > 
+> > > > That is not quite efficient, though, because the memory pages used
+> > > > for building that bitmap are known to be safe (ie. they were not
+> > > > used by the image kernel before hibernation) and the arch-specific
+> > > > code finalizing the image restoration may need them.  In that case
+> > > > it needs to allocate those pages again via the memory management
+> > > > subsystem, check if they are really safe again by consulting the
+> > > > other bitmaps and so on.
+> > > > 
+> > > > To avoid that, recycle those pages by putting them into the global
+> > > > list of known safe pages so that they can be given to the arch code
+> > > > right away when necessary.
+> > > 
+> > > Ok, so you are trying to gain speed here? How much is the speedup?
 > > 
-> > If you apply the "keep it in D3cold if already there" logic to that case,
-> > it may lead to a wrong decision in theory. Say the device is in D3cold and
-> > platform_pci_choose_state() returns D1, but pci_no_d1d2() returns true,
-> > the device will end up in D3cold, but it may not be able to signal wakeup
-> > from that state after the system has been suspended.
+> > This is more about making it easier to debug than about speed, TBH.
+> > 
+> > Avoiding bitmap operations and the mm subsystem involvement reduces
+> > complexity and the number of places to look into in case something goes
+> > wrong.
 > 
-> Ugh, I had missed those break statements in the platform-case.
-> I must be blind. You're right of course, that wouldn't be correct.
-> 
-> > Of course, I guess you'll say that it may not be able to signal wakeup from
-> > D3hot as well in that case, which is correct. :-)
-> 
-> Hm, what would be the correct power state in that case then? PCI_D0?
+> Well, it looked like 3/3 just added code and did not remove anything,
+> so I fail to see how it makes code easier to follow...
 
-D0 may not be a good choice here too.
+With the patch what it takes to release a safe page and re-use it is to
+(a) put it into the list of safe pages and (b) take it back from that list
+when needed.
 
-The problem in this case is the discrepancy between what the platform firmware
-tells us and what we know from other sources, so this way or another, something
-may be broken.
+Without it what that takes is to (a) clear bitmap bits corresponding to the
+page in two bitmaps, (b) free it, (c) allocate it again (which may involve
+allocating a number of other pages that aren't "safe") and (d) set bits
+corresponding to it in the bitmaps.  Clearly, more complicated.
 
-I guess the safest option is to just keep the current behavior. :-)
-
-> > Why don't you simply rearrange the routine like
-> > 
-> > 	pci_power_t target_state = PCI_D3hot;
-> > 
-> > 	if (platform_pci_power_manageable(dev)) {
-> > 		...
-> > 		return target_state;
-> > 	}
-> > 
-> > 	if (!dev->pm_cap)
-> > 		return PCI_D0;
-> > 
-> > 	if (dev->current_state == PCI_D3cold)
-> > 		target_state = PCI_D3cold;
-> > 
-> > 	if (device_may_wakeup(&dev->dev)) {
-> > 		...
-> > 	}
-> > 
-> > 	return target_state;
-> > 
-> > And that would be fine by me.
-> 
-> Looks good, I'll give that a try.
-> 
-> If the correct power state in the pci_no_d1d2() case is PCI_D0,
-> I could fix that up as well.
-> 
-> > That said I'm not sure why you want to use pci_target_state() so badly?
-> > 
-> > If you are going to use a PM domain, why do you still need that function?
-> 
-> The dev_pm_domain is only assigned to the topmost device exposed by
-> the Thunderbolt controller (the upstream bridge). I would like to avoid
-> having to assign separate dev_pm_domains to the downstream bridges.
-> 
-> So I let the NHI and downstream bridges go to D3hot. And when the
-> upstream bridge cuts power, it iterates over all child devices
-> and changes their current_state to D3cold to reflect reality.
-> 
-> When the system is later put to sleep, this patch ensures that the
-> NHI and downstream bridges are not unnecessarily resumed to D3hot.
-> 
-> So why change the current_state of the children at all? I could just
-> leave the (incorrect) PCI_D3hot and everything would be peachy, right?
-> Well, there's another problem: The first few Thunderbolt chips had
-> broken MSI, they have to use INTx to signal hotplug. Unfortunately on
-> some Macs built 2011/2012, the IRQ is shared with multiple other devices,
-> most importantly the wireless card which can generate thousands of
-> interrupts on a crowded WLAN. If power is cut to the Thunderbolt
-> controller, reading from the hotplug ports' config space in pcie_isr()
-> fails and results in a "no response from device" message logged with
-> KERN_INFO. Getting thousands of such messages is annoying, not to
-> mention the giant waste of CPU cycles to read from the config space
-> of a device which we *know* is powered down.
-> 
-> The solution I came up with is to add a tiny two-liner to pcie_isr()
-> with commit ed91de7e14fb ("PCI: pciehp: Ignore interrupts during D3cold").
-> But that requires that I update the children's current_state to D3cold,
-> and necessitates that pci_target_state() doesn't resume them to D3hot
-> for system sleep. Hence the need for this patch.
-> 
-> The approach has the additional benefit that hybrid graphics devices
-> are implicitly also afforded direct-complete without having to add a
-> ->prepare hook that returns a positive int. They only need to set their
-> current_state to D3cold, which they already do, see azx_vs_set_state(),
-> nouveau_pmops_runtime_suspend(), radeon_pmops_runtime_suspend(),
-> amdgpu_pmops_runtime_suspend().
-
-Sounds reasonable to me.
-
-> However this also means that adding a can_power_off flag to struct
-> dev_pm_domain wouldn't be a viable solution because then I'd have to
-> assign a dev_pm_domain to the downstream bridges. Another thing I've
-> missed. Ugh. This is so complicated it's easy to get tangled up in
-> all these intricate little details.
-> 
-> Thanks for your patience in dealing with these issues,
-
-No problem.
+And now if there's a memory corruption bug that looks like it might be
+related to that code, in the "with the patch" case we know that the bitmaps
+were not involved, for example.
 
 Thanks,
 Rafael
