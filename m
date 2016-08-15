@@ -1,117 +1,64 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v3 02/15] dt/bindings: Update binding for PM domain idle
- states
-Date: Mon, 15 Aug 2016 16:40:14 -0600
-Message-ID: <20160815224014.GF1401@linaro.org>
-References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
- <1470351902-43103-3-git-send-email-lina.iyer@linaro.org>
- <99e35b6c-6698-6d27-f4d7-fa032796869e@arm.com>
- <20160810164034.GA1401@linaro.org>
- <5e59874c-bbb7-270a-199c-da1ff5932554@arm.com>
- <20160811211023.GC1401@linaro.org>
- <697d8ac2-34ee-db3e-940b-5ce3365c5aa1@arm.com>
- <20160815160857.GE1401@linaro.org>
- <2033f384-7ea3-6713-4def-80bf4251fd67@arm.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power-z2_battery: Delete owner assignment
+Date: Tue, 16 Aug 2016 00:42:12 +0200
+Message-ID: <20160815224212.tpvl3yyvdk5dzul3@earth>
+References: <53c4710a-6e68-8eb2-b636-adaf9bccce2b@users.sourceforge.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="csz4ulepqron37io"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:34866 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932237AbcHOWkS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2016 18:40:18 -0400
-Received: by mail-pa0-f49.google.com with SMTP id i5so19798121pat.2
-        for <linux-pm@vger.kernel.org>; Mon, 15 Aug 2016 15:40:18 -0700 (PDT)
+Received: from mail.kernel.org ([198.145.29.136]:57796 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752258AbcHOWmR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Aug 2016 18:42:17 -0400
 Content-Disposition: inline
-In-Reply-To: <2033f384-7ea3-6713-4def-80bf4251fd67@arm.com>
+In-Reply-To: <53c4710a-6e68-8eb2-b636-adaf9bccce2b@users.sourceforge.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Brendan Jackman <Brendan.Jackman@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-On Mon, Aug 15 2016 at 10:14 -0600, Sudeep Holla wrote:
->
->
->On 15/08/16 17:08, Lina Iyer wrote:
->>On Fri, Aug 12 2016 at 04:08 -0600, Sudeep Holla wrote:
->>>
->>>
->>>On 11/08/16 22:10, Lina Iyer wrote:
->>>>On Wed, Aug 10 2016 at 12:09 -0600, Sudeep Holla wrote:
->>>>>
->>>
->>>[...]
->>>
->>>>>cluster0
->>>>>   CLUSTER_RET(Retention)
->>>>>   CLUSTER_PG(Power Gate)
->>>>>   core0
->>>>>       CORE_RET
->>>>>       CORE_PG
->>>>>   core1
->>>>>       CORE_RET
->>>>>       CORE_PG
->>>>>
->>>>>cluster1
->>>>>   CLUSTER_RET
->>>>>   CLUSTER_PG
->>>>>   core0
->>>>>       CORE_RET
->>>>>       CORE_PG
->>>>>   core1
->>>>>       CORE_RET
->>>>>       CORE_PG
->>>>>
->>>>>Platform Co-ordinate supports the following states and we should be
->>>>>able to determine that from the binding:
->>>>>
->>>>>CORE_RET
->>>>>CORE_PG
->>>>>CORE_RET + CLUSTER_RET
->>>>
->>>>The problem that we have to sove here is knowing that CORE_RET +
->>>>CLUSTER_PG (hypothetically) an invalid combination. Kevin and
->>>>I debated it in the earlier RFC and we dont have a good way to solve
->>>>this generically for all devices.
->>>>
->>>
->>>Yes, I agree it's complex. But that needs to be solved IMO.
->>>
->>>I can think of 2 possible solutions:
->>>
->>>1. Index the states(which people have not liked, but as along as we
->>>  don't use it in the code as it for any other purpose, it should be
->>>  fine) and then have each state mentioning what parent state can be
->>>  entered at this child state(i.e. starting index and all states below
->>>  it)
->>>
->>This is how QCOM solved it downstream.
->>
->
->Yes even ACPI has indices to solve this.
->
->>>2. Something similar to (1) but without index instead phandles.
->>>
->>
->>The problem is when you have non-CPU devices in the device tree and
->>since they do not have a way to represent states like CPU, we did not
->>have a clear path to that. Hence we punted that to later. Whatever we
->>do, we should solve it for a generic PM domain, not just CPU domains.
->>
->
->Yes bindings defined here should be applicable for devices to, but only
->CPU's will have this hierarchy while the devices need not bother about
->hierarchy. However the parent power domain can ever the state which is
->least common denominator of all it's children power domain. That's my
->understanding. No ?
->
-That is correct. But say if all the CPUs choose CORE_RET + CLUSTER_PG,
-which is invalid and the firmware has to ignore it and does CORE_RET +
-CLUSTER_RET instead, then Linux may have an inconsistent view of the
-state selection.
 
-Thanks,
-Lina
+--csz4ulepqron37io
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
->-- 
->Regards,
->Sudeep
+Hi Markus,
+
+On Mon, Aug 15, 2016 at 10:05:48AM +0200, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Mon, 15 Aug 2016 10:00:03 +0200
+>=20
+> The field "owner" is set by core. Thus delete an extra initialisation.
+>=20
+> Generated by: scripts/coccinelle/api/platform_no_drv_owner.cocci
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+
+I queued the patch from Wei Yongjun instead, who sent this a bit
+faster than you.
+
+-- Sebastian
+
+--csz4ulepqron37io
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJXskVEAAoJENju1/PIO/qamHQP/iE6jIOjWktYPmII9wCzIkf/
+g5BQHZW7kphYjDQLGFbA52w3YIh0kaGAVFgyTDFDth8bsv2nuT1ay2AGQK4HuZSU
+2A6mBxmJjTprDFKGDEsyGE9ubhy4Z0IFrlx/plNx75M3ZHpFHlDy8IhnplcptQH3
+jzeZxgBM7lfCXf5da6I4Q1kJNX9vHNI9jYndzbujbY2W9K5Kue9Xv4VjR8AZpSQv
+avbTvK/Ixk3fuuEO5eXzqfQS7WeHsRwPKNEGdpbCznfRtsSNlB5RYKVOOf5u8mut
+6zkvUjp8NSjf8KQlKWRrZf0dCgKPVwc8uzS+x2SQLBzXE2eOe2nKTNPPJ327Ywk+
+Db7JOFn102UsSrXWK5aKFK8wIRXe9NJqTEfCmMPiwIFBDWd/r9zk0qDcQqUafK8F
+ztaTJ9vWUeOp6sLP0bok8+wcMQ4WPrcw+FFWvmwrv7Lkq8VIzNHCOqGu0kYAMRIy
+wac1z6qejNMxbDooESff48l4f9vn9F9tXwwnsYhM3pDjy1Vdvz+DUiZuBGusuhUM
+ar0j+4U4P3icAjudIaTKwy8tA5cJIakbkdbt+0sevY64Bxcn5EEWQn87W/5dTKaM
+1Ia/V6wgy08e2F7ZrTE0tPbs8omQX7q5MefQHN3TicbzWC8PrbqVXUar/5jEhDir
++Dz8iydRr27EXsuB+grJ
+=x9ca
+-----END PGP SIGNATURE-----
+
+--csz4ulepqron37io--
