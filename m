@@ -1,60 +1,62 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/1] sbs-battery: add ability to get battery capacity
-Date: Mon, 15 Aug 2016 23:16:00 +0200
-Message-ID: <20160815211559.7wr633at523pdxcx@earth>
-References: <1470934752-22719-1-git-send-email-stillcompiling@gmail.com>
+Subject: Re: [PATCH 2/2] power: surface3_power: MSHW0011 rev-eng
+ implementation
+Date: Mon, 15 Aug 2016 23:58:50 +0200
+Message-ID: <20160815215850.3g7mvrquvooojr7x@earth>
+References: <1469807366-24642-1-git-send-email-benjamin.tissoires@redhat.com>
+ <1469807366-24642-3-git-send-email-benjamin.tissoires@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="jeruisovivvznbim"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:50020 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932232AbcHOVQG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Aug 2016 17:16:06 -0400
+	protocol="application/pgp-signature"; boundary="pubkjadzdhgfcvxh"
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1470934752-22719-1-git-send-email-stillcompiling@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1469807366-24642-3-git-send-email-benjamin.tissoires@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Benjamin Tissoires <benjamin.tissoires@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>
+Cc: Stephen Just <stephenjust@gmail.com>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, linux-acpi@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joshua Clayton <stillcompiling@gmail.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
 
---jeruisovivvznbim
+--pubkjadzdhgfcvxh
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Aug 11, 2016 at 09:59:12AM -0700, Joshua Clayton wrote:
-> Battery capacity level is a standard feature of sbs battery
-> That can be used to tell what the remainig battery capacity is, and
-> can tell if the battery has not been calibrated/initialized, which makes
-> the capacity and charging/discharging percentages invalid.
+On Fri, Jul 29, 2016 at 05:49:26PM +0200, Benjamin Tissoires wrote:
+> MSHW0011 replaces the battery firmware by using ACPI operation regions.
+> The values have been obtained by reverse engineering, and are subject to
+> errors. Looks like it works on overall pretty well.
+>=20
+> I couldn't manage to get the IRQ correctly triggered, so I am using a
+> good old polling thread to check for changes.
 
-Patch looks fine to me. I queued it in power-supply's for-next
-branch.
+With CONFIG_ACPI_BATTERY being in drivers/acpi/ and this not
+using the power-supply subsystem's framework at all, I wonder
+if this driver should also go to drivers/acpi/.
 
 -- Sebastian
 
---jeruisovivvznbim
+--pubkjadzdhgfcvxh
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJXsjEPAAoJENju1/PIO/qauB0P/0s98mquO9Hq9N8UKxGBprW1
-uVyzxDspguvGimehd0lNj9Kf28fv92KVg1gNswztqqPA/2b8Rvz8TsxsHnjN2NcA
-gfsA86zkH6mlkAA1qCqaQ144NZ5Zcfa4C88QPOQCO5nMqc7Z7LzTRwuxp+b7AWwh
-0KRLXQuQOC2CHNsmH9RhT+1mkRkA22uEY8zZ0C6eGmf7rdvO5aMQY1ulLT4UUfrt
-a1LAHVerIqwNXcOVsC8YbXAj18XF6kDMng6hCYfuz3VMv9jSOee7CM1UdQJuZiTH
-Uudrrntdm97+T2V3teTWkHaygRtkvWFi/a77Z8ysRXZ7Xbis0C2H1GHmSf541tE5
-xnPxri9eYGKPClyobMNPUQ06e0uiY9egjK7yXqK9m1ZU6daYnY54sHC2Z9ZZcMdP
-hqEsfjZ+xdWrYZY05bZsvXoPRK0ub9Ifk3sKeYr/41G4KIugblbybTUp2HZwKvLW
-d9A/PpU14F2ABdv/wycQoEWIeMOflMMeG+KmETs6GhmfaOxN9w5evLkr4a4yXTGt
-luF/H/v++GYD1L3z7DOu8xRdALTTQlFkLGJIDtrQWc3wtHwGEOJT00Nvwv90KoBh
-Q09eD20POV3SF03w0mBj62GbR5hjmpGIbwVos+T7AmOVQeQ1wlEC/Bd2XuwFxOr5
-mnqpkE7iEoUaAotQj8Dc
-=zR4y
+iQIcBAEBCgAGBQJXsjsXAAoJENju1/PIO/qaC0EQAJbtOgztd3Pjaff1FpJsXY8S
+Qjmg5QVfJKgN2GPNN6EgfdCH0pWDRbvBCh0mRuLy2uaSChWFirsSRoAdwuqHbQOr
+y5VRwVMlHBpcPiXilh5FBdCGfP4c0W0Fhx9lzd0Smzj5js+CO7HQuTR0GLAaYMOG
++S7b6gSiGSBVvL0qdPvEsGf7ajuaVbHWrhLd3L2OC96DLINziZmH3nai9izKIvq7
+SqZ/pzeutYEcGYr+ZEyl62COYsE7ILAaz/T3iD3WPO2IjsL65ueZpQIsFUoC4irr
+4nh5iEqVCdOir6hmOLdIQIQCENq7zQPS8csIDoco99DyGwIDA22/yLigLOOLsiOg
+H5zSJ47qsUO4yMBrsgXPX1Yxg+LoQzzO2lqAMG0SWc5dTCQ8ej/Iqyxs78O/qswl
+DbNJ6/4BM+tGOop2SBXXEdHm2wGBNkL/7cr6ZDKKpPLpkrIGQfN7XHGOWSMp4Mv2
+uwSgHnB0Thccg13KXHYn9Sian1yqtafgjUBjXZuQATLIZSGZaMhUohyBIUymqZAm
+6d3taQSIDQMvcPBKOAljxe9Rj2wBkYSIpCyZe6rAb93Q262vL2Zosk5pWw6WpvT4
+H6NQ7QDGghvH/YiNoOx4cpgLeIjb8dNa+Pivg4ePYBf6tfbYgRY5z58R/gQi9WJf
+bfJyNjau2Ysu75lt0rr6
+=9ziK
 -----END PGP SIGNATURE-----
 
---jeruisovivvznbim--
+--pubkjadzdhgfcvxh--
