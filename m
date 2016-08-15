@@ -1,119 +1,73 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2 10/13] PCI: Avoid going from D3cold to D3hot for
- system sleep
-Date: Sun, 14 Aug 2016 12:27:25 +0200
-Message-ID: <20160814102725.GA8634@wunner.de>
-References: <cover.1463134231.git.lukas@wunner.de>
- <CAJZ5v0g86L+nL6SxfBMQ84NNpUzz0X83bvP=E5WdSs1TozpY8w@mail.gmail.com>
- <20160812161609.GA8060@wunner.de>
- <2003407.8XLAPPsQTe@vostro.rjw.lan>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL]  Thermal management updates for v4.8-rc2
+Date: Mon, 15 Aug 2016 09:52:20 +0800
+Message-ID: <1471225940.2859.4.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.hostsharing.net ([176.9.242.54]:59001 "EHLO
-	mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752729AbcHNK0q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 14 Aug 2016 06:26:46 -0400
-Content-Disposition: inline
-In-Reply-To: <2003407.8XLAPPsQTe@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>
 
-On Sat, Aug 13, 2016 at 12:18:26AM +0200, Rafael J. Wysocki wrote:
-> Yes, so specifically I'm concerned about the pci_target_state() invocation
-> in pci_dev_keep_suspended() which is done exactly for this purpose.
-> 
-> If you apply the "keep it in D3cold if already there" logic to that case,
-> it may lead to a wrong decision in theory. Say the device is in D3cold and
-> platform_pci_choose_state() returns D1, but pci_no_d1d2() returns true,
-> the device will end up in D3cold, but it may not be able to signal wakeup
-> from that state after the system has been suspended.
+Hi, Linus,
 
-Ugh, I had missed those break statements in the platform-case.
-I must be blind. You're right of course, that wouldn't be correct.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-> Of course, I guess you'll say that it may not be able to signal wakeup from
-> D3hot as well in that case, which is correct. :-)
+to receive the latest Thermal Management updates for v4.8-rc2 with
+top-most commit 1577ddfac75ff9690ebd0d210bc7f1345c9d29ef:
 
-Hm, what would be the correct power state in that case then? PCI_D0?
+  Merge branches 'thermal-intel' and 'thermal-core' into next (2016-08-
+08 10:59:35 +0800)
 
-> Why don't you simply rearrange the routine like
-> 
-> 	pci_power_t target_state = PCI_D3hot;
-> 
-> 	if (platform_pci_power_manageable(dev)) {
-> 		...
-> 		return target_state;
-> 	}
-> 
-> 	if (!dev->pm_cap)
-> 		return PCI_D0;
-> 
-> 	if (dev->current_state == PCI_D3cold)
-> 		target_state = PCI_D3cold;
-> 
-> 	if (device_may_wakeup(&dev->dev)) {
-> 		...
-> 	}
-> 
-> 	return target_state;
-> 
-> And that would be fine by me.
+on top of commit 29b4817d4018df78086157ea3a55c1d9424a7cfc:
 
-Looks good, I'll give that a try.
+  Linux 4.8-rc1 (2016-08-07 18:18:00 -0700)
 
-If the correct power state in the pci_no_d1d2() case is PCI_D0,
-I could fix that up as well.
+Specifics:
+- Fix a race condition when updating cooling device, which may lead to
+a situation where a thermal governor never updates the cooling device.
+From Michele Di Giorgio.
+- Fix a zero division error when disabling the forced idle injection
+from the intel powerclamp. From: Petr Mladek.
+- Add suspend/resume callback for intel_pch_thermal thermal driver.
+From Srinivas Pandruvada.
+- Another two fixes for clocking cooling driver and hwmon sysfs I/F.
+>From Michele Di Giorgio and Kuninori Morimoto.
 
-> That said I'm not sure why you want to use pci_target_state() so badly?
-> 
-> If you are going to use a PM domain, why do you still need that function?
+thanks,
+rui
 
-The dev_pm_domain is only assigned to the topmost device exposed by
-the Thunderbolt controller (the upstream bridge). I would like to avoid
-having to assign separate dev_pm_domains to the downstream bridges.
+----------------------------------------------------------------
+Kuninori Morimoto (1):
+      thermal: hwmon: EXPORT_SYMBOL_GPL for thermal hwmon sysfs
 
-So I let the NHI and downstream bridges go to D3hot. And when the
-upstream bridge cuts power, it iterates over all child devices
-and changes their current_state to D3cold to reflect reality.
+Michele Di Giorgio (1):
+      thermal: fix race condition when updating cooling device
 
-When the system is later put to sleep, this patch ensures that the
-NHI and downstream bridges are not unnecessarily resumed to D3hot.
+Petr Mladek (1):
+      thermal/powerclamp: Prevent division by zero when counting
+interval
 
-So why change the current_state of the children at all? I could just
-leave the (incorrect) PCI_D3hot and everything would be peachy, right?
-Well, there's another problem: The first few Thunderbolt chips had
-broken MSI, they have to use INTx to signal hotplug. Unfortunately on
-some Macs built 2011/2012, the IRQ is shared with multiple other devices,
-most importantly the wireless card which can generate thousands of
-interrupts on a crowded WLAN. If power is cut to the Thunderbolt
-controller, reading from the hotplug ports' config space in pcie_isr()
-fails and results in a "no response from device" message logged with
-KERN_INFO. Getting thousands of such messages is annoying, not to
-mention the giant waste of CPU cycles to read from the config space
-of a device which we *know* is powered down.
+Srinivas Pandruvada (1):
+      thermal: intel_pch_thermal: Add suspend/resume callback
 
-The solution I came up with is to add a tiny two-liner to pcie_isr()
-with commit ed91de7e14fb ("PCI: pciehp: Ignore interrupts during D3cold").
-But that requires that I update the children's current_state to D3cold,
-and necessitates that pci_target_state() doesn't resume them to D3hot
-for system sleep. Hence the need for this patch.
+Wei Yongjun (1):
+      thermal: clock_cooling: Fix missing mutex_init()
 
-The approach has the additional benefit that hybrid graphics devices
-are implicitly also afforded direct-complete without having to add a
-->prepare hook that returns a positive int. They only need to set their
-current_state to D3cold, which they already do, see azx_vs_set_state(),
-nouveau_pmops_runtime_suspend(), radeon_pmops_runtime_suspend(),
-amdgpu_pmops_runtime_suspend().
+Zhang Rui (1):
+      Merge branches 'thermal-intel' and 'thermal-core' into next
 
-However this also means that adding a can_power_off flag to struct
-dev_pm_domain wouldn't be a viable solution because then I'd have to
-assign a dev_pm_domain to the downstream bridges. Another thing I've
-missed. Ugh. This is so complicated it's easy to get tangled up in
-all these intricate little details.
-
-Thanks for your patience in dealing with these issues,
-
-Lukas
+ drivers/thermal/clock_cooling.c     |  1 +
+ drivers/thermal/fair_share.c        |  2 ++
+ drivers/thermal/gov_bang_bang.c     |  2 ++
+ drivers/thermal/intel_pch_thermal.c | 60
+++++++++++++++++++++++++++++++++++++-
+ drivers/thermal/intel_powerclamp.c  | 11 ++++---
+ drivers/thermal/power_allocator.c   |  2 ++
+ drivers/thermal/step_wise.c         |  2 ++
+ drivers/thermal/thermal_core.c      | 10 +++++--
+ drivers/thermal/thermal_hwmon.c     |  2 ++
+ 9 files changed, 84 insertions(+), 8 deletions(-)
