@@ -1,33 +1,59 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH -next] power: axp288_fuel_gauge: remove duplicated include
- from axp288_fuel_gauge.c
-Date: Mon, 15 Aug 2016 21:41:35 +0800
-Message-ID: <CAGb2v64pUv4F-Q5du5ki_OWv47LyW1fkP1bh8Fhq9g=_WnxEFw@mail.gmail.com>
-References: <1471079207-9668-1-git-send-email-weiyj.lk@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2 3/3] PM / hibernate: Recycle safe pages after image
+ restoration
+Date: Mon, 15 Aug 2016 16:33:49 +0200
+Message-ID: <20160815143349.GB29447@amd>
+References: <2260927.OOWMYX738E@vostro.rjw.lan>
+ <2448424.sR3JM3oiG3@vostro.rjw.lan>
+ <20160811210615.GA28618@amd>
+ <3432840.yEuDW8huOO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:40336 "EHLO
-	smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753151AbcHONmF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2016 09:42:05 -0400
-Received: from mail-io0-f176.google.com (mail-io0-f176.google.com [209.85.223.176])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	(Authenticated sender: b93043)
-	by smtp.csie.ntu.edu.tw (Postfix) with ESMTPSA id 64D77230B5
-	for <linux-pm@vger.kernel.org>; Mon, 15 Aug 2016 20:45:52 +0800 (CST)
-Received: by mail-io0-f176.google.com with SMTP id b62so79560098iod.3
-        for <linux-pm@vger.kernel.org>; Mon, 15 Aug 2016 06:41:57 -0700 (PDT)
-In-Reply-To: <1471079207-9668-1-git-send-email-weiyj.lk@gmail.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50036 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752621AbcHOOeB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2016 10:34:01 -0400
+Content-Disposition: inline
+In-Reply-To: <3432840.yEuDW8huOO@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Chen-Yu Tsai <wens@csie.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Sat, Aug 13, 2016 at 5:06 PM, Wei Yongjun <weiyj.lk@gmail.com> wrote:
-> Remove duplicated include.
->
-> Signed-off-by: Wei Yongjun <weiyj.lk@gmail.com>
+On Thu 2016-08-11 23:23:20, Rafael J. Wysocki wrote:
+> On Thursday, August 11, 2016 11:06:15 PM Pavel Machek wrote:
+> > Hi!
+> > 
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > 
+> > > One of the memory bitmaps used by the hibernation image restoration
+> > > code is freed after the image has been loaded.
+> > > 
+> > > That is not quite efficient, though, because the memory pages used
+> > > for building that bitmap are known to be safe (ie. they were not
+> > > used by the image kernel before hibernation) and the arch-specific
+> > > code finalizing the image restoration may need them.  In that case
+> > > it needs to allocate those pages again via the memory management
+> > > subsystem, check if they are really safe again by consulting the
+> > > other bitmaps and so on.
+> > > 
+> > > To avoid that, recycle those pages by putting them into the global
+> > > list of known safe pages so that they can be given to the arch code
+> > > right away when necessary.
+> > 
+> > Ok, so you are trying to gain speed here? How much is the speedup?
+> 
+> This is more about making it easier to debug than about speed, TBH.
+> 
+> Avoiding bitmap operations and the mm subsystem involvement reduces
+> complexity and the number of places to look into in case something goes
+> wrong.
 
-Acked-by: Chen-Yu Tsai <wens@csie.org>
+Well, it looked like 3/3 just added code and did not remove anything,
+so I fail to see how it makes code easier to follow...
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
