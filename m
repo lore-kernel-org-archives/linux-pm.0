@@ -1,81 +1,108 @@
-From: dawei chien <dawei.chien@mediatek.com>
-Subject: Re: [PATCH 1/3] dt-bindings: thermal: Add binding document for
- Mediatek thermal controller
-Date: Mon, 15 Aug 2016 15:07:01 +0800
-Message-ID: <1471244821.14287.8.camel@mtksdaap41>
+From: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH 3/3] arm: dts: thermal: add thermal/auxadc node.
+Date: Mon, 15 Aug 2016 15:14:28 +0800
+Message-ID: <1471245268.14287.14.camel@mtksdaap41>
 References: <1467882386-40544-1-git-send-email-dawei.chien@mediatek.com>
-	 <1467882386-40544-2-git-send-email-dawei.chien@mediatek.com>
-	 <577E385C.9080501@ti.com> <1468227124.15776.29.camel@mtksdaap41>
-	 <8886eba0-7f3d-edf8-c6fb-a6535b3717da@gmail.com>
+	 <1467882386-40544-4-git-send-email-dawei.chien@mediatek.com>
+	 <fd3f0c2f-f0ad-dd0f-cf2b-eb658f72d735@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw02.mediatek.com ([210.61.82.184]:55703 "EHLO
-	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751375AbcHOHHG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2016 03:07:06 -0400
-In-Reply-To: <8886eba0-7f3d-edf8-c6fb-a6535b3717da@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <fd3f0c2f-f0ad-dd0f-cf2b-eb658f72d735-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Fan Chen <fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Yingjoe Chen <yingjoe.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Erin Lo <erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Matthias Brugger <matthias.bgg@gmail.com>
-Cc: Keerthy <a0393675@ti.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@armlinux.org.uk>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Fan Chen <fan.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Yingjoe Chen <yingjoe.chen@mediatek.com>, Erin Lo <erin.lo@mediatek.com>
 
 Hi Matthias,
 
-On Thu, 2016-08-11 at 17:48 +0200, Matthias Brugger wrote:
+On Thu, 2016-08-11 at 17:51 +0200, Matthias Brugger wrote:
 > 
-> On 11/07/16 10:52, dawei chien wrote:
-> > Dear Keerthy,
+> On 07/07/16 11:06, Dawei Chien wrote:
+> > This adds the thermal controller and auxadc nodes
+> > to the Mediatek MT2701 dtsi file.
 > >
-> > On Thu, 2016-07-07 at 16:39 +0530, Keerthy wrote:
-> >>
-> >> On Thursday 07 July 2016 02:36 PM, Dawei Chien wrote:
-> >>> This adds the device tree binding documentation for the mediatek thermal
-> >>> controller found on Mediatek MT2701.
-> >>>
-> >>> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
-> >>> ---
-> >>>   .../bindings/thermal/mediatek-thermal.txt          |    2 +-
-> >>>   1 file changed, 1 insertion(+), 1 deletion(-)
-> >>>
-> >>> diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> >>> index 81f9a51..bb55e79 100644
-> >>> --- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> >>> +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> >>> @@ -8,7 +8,7 @@ apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
-> >>>   is also needed.
-> >>>
-> >>>   Required properties:
-> >>> -- compatible: "mediatek,mt8173-thermal"
-> >>> +- compatible: "mediatek,mt8173-thermal" or "mediatek,mt2701-thermal"
-> >>
-> >> - compatible :
-> >>   - "mediatek,mt8173-thermal" : For MT8173 family of SoCs
-> >>   - "mediatek,mt2701-thermal" : For MT2701 family of SoCs
+> > Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> > ---
+> > This patch depned on:
+> > https://patchwork.kernel.org/patch/9213545/
+> > ---
+> >  arch/arm/boot/dts/mt2701.dtsi |   43 +++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 43 insertions(+)
 > >
-> > Thank you, I will update it on next version.
+> > diff --git a/arch/arm/boot/dts/mt2701.dtsi b/arch/arm/boot/dts/mt2701.dtsi
+> > index 2ac8b50..0834a23 100644
+> > --- a/arch/arm/boot/dts/mt2701.dtsi
+> > +++ b/arch/arm/boot/dts/mt2701.dtsi
+> > @@ -77,6 +77,36 @@
+> >  		#clock-cells = <0>;
+> >  	};
+> >
+> > +	thermal-zones {
+> > +		cpu_thermal: cpu_thermal {
+> > +			polling-delay-passive = <1000>; /* milliseconds */
+> > +			polling-delay = <1000>; /* milliseconds */
+> > +
+> > +			thermal-sensors = <&thermal 0>;
+> > +			sustainable-power = <1000>;
+> > +
+> > +			trips {
+> > +				threshold: trip-point@0 {
+> > +					temperature = <68000>;
+> > +					hysteresis = <2000>;
+> > +					type = "passive";
+> > +				};
+> > +
+> > +				target: trip-point@1 {
+> > +					temperature = <85000>;
+> > +					hysteresis = <2000>;
+> > +					type = "passive";
+> > +				};
+> > +
+> > +				cpu_crit: cpu_crit@0 {
+> > +					temperature = <115000>;
+> > +					hysteresis = <2000>;
+> > +					type = "critical";
+> > +				};
+> > +			};
+> > +		};
+> > +	};
+> > +
+> >  	timer {
+> >  		compatible = "arm,armv7-timer";
+> >  		interrupt-parent = <&gic>;
+> > @@ -183,4 +213,17 @@
+> >  		clocks = <&uart_clk>;
+> >  		status = "disabled";
+> >  	};
+> > +
+> > +	thermal: thermal@1100b000 {
+> > +		#thermal-sensor-cells = <0>;
+> > +		compatible = "mediatek,mt2701-thermal";
+> > +		reg = <0 0x1100b000 0 0x1000>;
+> > +		interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_LOW>;
+> > +		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
+> > +		clock-names = "therm", "auxadc";
+> > +		resets = <&pericfg 0x10>;
+> > +		reset-names = "therm";
+> > +		mediatek,auxadc = <&auxadc>;
+> > +		mediatek,apmixedsys = <&apmixedsys>;
+> > +	};
+> >  };
 > >
 > 
-> Do you know about the compability to older SoCs (e.g. mt6589)?
-> It might make sense to add mediatek,mtk-thermal if they are compatible 
-> or nearly compatible.
+> what about:
+> status = "disabled"; ?
 
-I agree with you that we should add mediatek,mtk-thermal for compatible
-or nearly compatible SoC.
-However, there is no more compatible SoC so far. Once we have such new
-nearly compatible SoC, we would update it on this binding document soon,
-thank you.
+Since thermal driver would protect our platform by shutdown method once
+SoC temperature over critical point, I prefer keep this rather than
+disabling, how do you think, thank you.
 
 BR,
 Dawei
 
-> >>
-> >>>   - reg: Address range of the thermal controller
-> >>>   - interrupts: IRQ for the thermal controller
-> >>>   - clocks, clock-names: Clocks needed for the thermal controller. required
-> >>>
-> >
-> >
-
-
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
