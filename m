@@ -1,73 +1,50 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL]  Thermal management updates for v4.8-rc2
-Date: Mon, 15 Aug 2016 09:52:20 +0800
-Message-ID: <1471225940.2859.4.camel@intel.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH] x86/power/64: Use __pa() for physical address computation
+Date: Mon, 15 Aug 2016 07:10:42 +0200
+Message-ID: <20160815051042.GC16267@gmail.com>
+References: <5387760.qC5CG883jv@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:33456 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbcHOFKr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 15 Aug 2016 01:10:47 -0400
+Content-Disposition: inline
+In-Reply-To: <5387760.qC5CG883jv@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi, Linus,
 
-Please pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+* Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 
-to receive the latest Thermal Management updates for v4.8-rc2 with
-top-most commit 1577ddfac75ff9690ebd0d210bc7f1345c9d29ef:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The value of temp_level4_pgt is the physical address of the
+> top-level page directory, so use __pa() to compute it.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  arch/x86/power/hibernate_64.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-pm/arch/x86/power/hibernate_64.c
+> ===================================================================
+> --- linux-pm.orig/arch/x86/power/hibernate_64.c
+> +++ linux-pm/arch/x86/power/hibernate_64.c
+> @@ -113,7 +113,7 @@ static int set_up_temporary_mappings(voi
+>  			return result;
+>  	}
+>  
+> -	temp_level4_pgt = (unsigned long)pgd - __PAGE_OFFSET;
+> +	temp_level4_pgt = __pa(pgd);
+>  	return 0;
+>  }
 
-  Merge branches 'thermal-intel' and 'thermal-core' into next (2016-08-
-08 10:59:35 +0800)
+Acked-by: Ingo Molnar <mingo@kernel.org>
 
-on top of commit 29b4817d4018df78086157ea3a55c1d9424a7cfc:
+Thanks,
 
-  Linux 4.8-rc1 (2016-08-07 18:18:00 -0700)
-
-Specifics:
-- Fix a race condition when updating cooling device, which may lead to
-a situation where a thermal governor never updates the cooling device.
-From Michele Di Giorgio.
-- Fix a zero division error when disabling the forced idle injection
-from the intel powerclamp. From: Petr Mladek.
-- Add suspend/resume callback for intel_pch_thermal thermal driver.
-From Srinivas Pandruvada.
-- Another two fixes for clocking cooling driver and hwmon sysfs I/F.
->From Michele Di Giorgio and Kuninori Morimoto.
-
-thanks,
-rui
-
-----------------------------------------------------------------
-Kuninori Morimoto (1):
-      thermal: hwmon: EXPORT_SYMBOL_GPL for thermal hwmon sysfs
-
-Michele Di Giorgio (1):
-      thermal: fix race condition when updating cooling device
-
-Petr Mladek (1):
-      thermal/powerclamp: Prevent division by zero when counting
-interval
-
-Srinivas Pandruvada (1):
-      thermal: intel_pch_thermal: Add suspend/resume callback
-
-Wei Yongjun (1):
-      thermal: clock_cooling: Fix missing mutex_init()
-
-Zhang Rui (1):
-      Merge branches 'thermal-intel' and 'thermal-core' into next
-
- drivers/thermal/clock_cooling.c     |  1 +
- drivers/thermal/fair_share.c        |  2 ++
- drivers/thermal/gov_bang_bang.c     |  2 ++
- drivers/thermal/intel_pch_thermal.c | 60
-++++++++++++++++++++++++++++++++++++-
- drivers/thermal/intel_powerclamp.c  | 11 ++++---
- drivers/thermal/power_allocator.c   |  2 ++
- drivers/thermal/step_wise.c         |  2 ++
- drivers/thermal/thermal_core.c      | 10 +++++--
- drivers/thermal/thermal_hwmon.c     |  2 ++
- 9 files changed, 84 insertions(+), 8 deletions(-)
+	Ingo
