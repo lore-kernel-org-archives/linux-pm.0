@@ -1,116 +1,80 @@
-From: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Subject: [PATCH v6 0/8] power: add power sequence library
-Date: Mon, 15 Aug 2016 17:13:10 +0800
-Message-ID: <1471252398-957-1-git-send-email-peter.chen@nxp.com>
+From: Peter Chen <peter.chen@nxp.com>
+Subject: [PATCH v6 1/8] binding-doc: power: pwrseq-generic: add binding doc for generic power sequence library
+Date: Mon, 15 Aug 2016 17:13:11 +0800
+Message-ID: <1471252398-957-2-git-send-email-peter.chen@nxp.com>
+References: <1471252398-957-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
-Cc: k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1471252398-957-1-git-send-email-peter.chen@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org
+Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, Peter Chen <peter.chen@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+Add binding doc for generic power sequence library.
 
-This is a follow-up for my last power sequence framework patch set [1].
-According to Rob Herring and Ulf Hansson's comments[2], I use a generic
-power sequence library for parsing the power sequence elements on DT,
-and implement generic power sequence on library. The host driver
-can allocate power sequence instance, and calls pwrseq APIs accordingly.
-
-In future, if there are special power sequence requirements, the special
-power sequence library can be created.
-
-This patch set is tested on i.mx6 sabresx evk using a dts change, I use
-two hot-plug devices to simulate this use case, the related binding
-change is updated at patch [1/6], The udoo board changes were tested
-using my last power sequence patch set.[3]
-
-Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
-need to power on itself before it can be found by ULPI bus.
-
-[1] http://www.spinics.net/lists/linux-usb/msg142755.html
-[2] http://www.spinics.net/lists/linux-usb/msg143106.html
-[3] http://www.spinics.net/lists/linux-usb/msg142815.html
-
-Changes for v6:
-- Add Matthias Kaehlcke's Reviewed-by and Tested-by. (patch [2/6])
-- Change chipidea core of_node assignment for coming user. (patch [5/6])
-- Applies Joshua Clayton's three dts changes for two boards,
-  the USB device's reg has only #address-cells, but without #size-cells.
-
-Changes for v5:
-- Delete pwrseq_register/pwrseq_unregister, which is useless currently
-- Fix the linker error when the pwrseq user is compiled as module
-
-Changes for v4:
-- Create the patch on next-20160722 
-- Fix the of_node is not NULL after chipidea driver is unbinded [Patch 5/6]
-- Using more friendly wait method for reset gpio [Patch 2/6]
-- Support multiple input clocks [Patch 2/6]
-- Add Rob Herring's ack for DT changes
-- Add Joshua Clayton's Tested-by
-
-Changes for v3:
-- Delete "power-sequence" property at binding-doc, and change related code
-  at both library and user code.
-- Change binding-doc example node name with Rob's comments
-- of_get_named_gpio_flags only gets the gpio, but without setting gpio flags,
-  add additional code request gpio with proper gpio flags
-- Add Philipp Zabel's Ack and MAINTAINER's entry
-
-Changes for v2:
-- Delete "pwrseq" prefix and clock-names for properties at dt binding
-- Should use structure not but its pointer for kzalloc
-- Since chipidea core has no of_node, let core's of_node equals glue
-  layer's at core's probe
-
-Joshua Clayton (2):
-  ARM: dts: imx6qdl: Enable usb node children with <reg>
-  ARM: dts: imx6q-evi: Fix onboard hub reset line
-
-Peter Chen (6):
-  binding-doc: power: pwrseq-generic: add binding doc for generic power
-    sequence library
-  power: add power sequence library
-  binding-doc: usb: usb-device: add optional properties for power
-    sequence
-  usb: core: add power sequence handling for USB devices
-  usb: chipidea: let chipidea core device of_node equal's glue layer
-    device of_node
-  ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
-
- .../bindings/power/pwrseq/pwrseq-generic.txt       |  48 ++++++
- .../devicetree/bindings/usb/usb-device.txt         |  10 +-
- MAINTAINERS                                        |   9 ++
- arch/arm/boot/dts/imx6q-evi.dts                    |  25 +--
- arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  26 ++--
- arch/arm/boot/dts/imx6qdl.dtsi                     |   6 +
- drivers/power/Kconfig                              |   1 +
- drivers/power/Makefile                             |   1 +
- drivers/power/pwrseq/Kconfig                       |  20 +++
- drivers/power/pwrseq/Makefile                      |   2 +
- drivers/power/pwrseq/core.c                        |  62 ++++++++
- drivers/power/pwrseq/pwrseq_generic.c              | 168 +++++++++++++++++++++
- drivers/usb/chipidea/core.c                        |  27 +++-
- drivers/usb/core/Makefile                          |   1 +
- drivers/usb/core/hub.c                             |  12 +-
- drivers/usb/core/hub.h                             |  12 ++
- drivers/usb/core/pwrseq.c                          | 100 ++++++++++++
- include/linux/power/pwrseq.h                       |  47 ++++++
- 18 files changed, 536 insertions(+), 41 deletions(-)
+Signed-off-by: Peter Chen <peter.chen@nxp.com>
+Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
+Acked-by: Rob Herring <robh@kernel.org>
+---
+ .../bindings/power/pwrseq/pwrseq-generic.txt       | 48 ++++++++++++++++++++++
+ 1 file changed, 48 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
- create mode 100644 drivers/power/pwrseq/Kconfig
- create mode 100644 drivers/power/pwrseq/Makefile
- create mode 100644 drivers/power/pwrseq/core.c
- create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
- create mode 100644 drivers/usb/core/pwrseq.c
- create mode 100644 include/linux/power/pwrseq.h
 
+diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+new file mode 100644
+index 0000000..ebf0d47
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+@@ -0,0 +1,48 @@
++The generic power sequence library
++
++Some hard-wired devices (eg USB/MMC) need to do power sequence before
++the device can be enumerated on the bus, the typical power sequence
++like: enable USB PHY clock, toggle reset pin, etc. But current
++Linux device driver lacks of such code to do it, it may cause some
++hard-wired devices works abnormal or can't be recognized by
++controller at all. The power sequence will be done before this device
++can be found at the bus.
++
++The power sequence properties is under the device node.
++
++Optional properties:
++- clocks: the input clocks for device.
++- reset-gpios: Should specify the GPIO for reset.
++- reset-duration-us: the duration in microsecond for assert reset signal.
++
++Below is the example of USB power sequence properties on USB device
++nodes which have two level USB hubs.
++
++&usbotg1 {
++	vbus-supply = <&reg_usb_otg1_vbus>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_usb_otg1_id>;
++	status = "okay";
++
++	#address-cells = <1>;
++	#size-cells = <0>;
++	genesys: hub@1 {
++		compatible = "usb5e3,608";
++		reg = <1>;
++
++		clocks = <&clks IMX6SX_CLK_CKO>;
++		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
++		reset-duration-us = <10>;
++
++		#address-cells = <1>;
++		#size-cells = <0>;
++		asix: ethernet@1 {
++			compatible = "usbb95,1708";
++			reg = <1>;
++
++			clocks = <&clks IMX6SX_CLK_IPG>;
++			reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
++			reset-duration-us = <15>;
++		};
++	};
++};
 -- 
 1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
