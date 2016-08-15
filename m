@@ -1,63 +1,60 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power_supply: tps65217-charger: fix missing
- platform_set_drvdata()
-Date: Mon, 15 Aug 2016 23:11:43 +0200
-Message-ID: <20160815211143.rg5rfydyaujfuvze@earth>
-References: <1469544544-31749-1-git-send-email-weiyj.lk@gmail.com>
+Subject: Re: [PATCH 1/1] sbs-battery: add ability to get battery capacity
+Date: Mon, 15 Aug 2016 23:16:00 +0200
+Message-ID: <20160815211559.7wr633at523pdxcx@earth>
+References: <1470934752-22719-1-git-send-email-stillcompiling@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="3ahcpbxtagbp4jmu"
+	protocol="application/pgp-signature"; boundary="jeruisovivvznbim"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:49666 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:50020 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932115AbcHOVLv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 15 Aug 2016 17:11:51 -0400
+	id S932232AbcHOVQG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 15 Aug 2016 17:16:06 -0400
 Content-Disposition: inline
-In-Reply-To: <1469544544-31749-1-git-send-email-weiyj.lk@gmail.com>
+In-Reply-To: <1470934752-22719-1-git-send-email-stillcompiling@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
+To: Joshua Clayton <stillcompiling@gmail.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
 
---3ahcpbxtagbp4jmu
+--jeruisovivvznbim
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Jul 26, 2016 at 02:49:04PM +0000, Wei Yongjun wrote:
-> Add missing platform_set_drvdata() in tps65217_charger_probe(), otherwise
-> calling platform_get_drvdata() in remove returns NULL.
->=20
-> This is detected by Coccinelle semantic patch.
->=20
-> Signed-off-by: Wei Yongjun <weiyj.lk@gmail.com>
+On Thu, Aug 11, 2016 at 09:59:12AM -0700, Joshua Clayton wrote:
+> Battery capacity level is a standard feature of sbs battery
+> That can be used to tell what the remainig battery capacity is, and
+> can tell if the battery has not been calibrated/initialized, which makes
+> the capacity and charging/discharging percentages invalid.
 
-Thanks, queued into power-supply's -fixes branch.
+Patch looks fine to me. I queued it in power-supply's for-next
+branch.
 
 -- Sebastian
 
---3ahcpbxtagbp4jmu
+--jeruisovivvznbim
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJXsjAPAAoJENju1/PIO/qa8cwP/AreytEYgw7zZYaoZcp+QgQe
-CauzuqPYmL+uui7E9RDi3qD7/YIjmLQLiFDokmgOfAFxM1HOYnIytdpBGZtB6EAO
-tVyxA9C2yra+4C1lXsy3oL3mFnvl01xOcW23Vu9YlxRv10Nzq95bkdOhEXXIV2Hj
-PLgsypRlR0C77z6uvkxlu0TRvhglL9yZrlM1Ivg4rM5H9CRADHJ5UtA5i3e0INLd
-HDlMLlsv/6EWwHJy19rtb3G+tXlOFzMOdCD7GbiyeMdiV+xQEWrBhNPu1auHK1Yl
-ZHAUB2MVC4GzDjqZMQw2lriMbVZv6umChRwILy+/cZjq9zewNCIknKyFT/7QzfMg
-cA+Si9JqdD7BiYk3D+xEqXrqjnTY3/YbQvy1unnCtSiI1mEWS9yWvmLdSITzbtn8
-t3y8uAJXsZHkrD1ZRVpD6IXD3hreb7O19tXlS+nr2OQuMaFBqqbhEnidoCqZl++O
-gySlc/rzQwtLxSaONW1EdflANRbfLvsq9a+40MOpR2wRmVlz+vkIDACJJ8mCDPp+
-wdkuOmWkOi8f5YrJO47cXNuxbf7RvNyp5vt9ytl63jwoN7CThQunrTyHNFKt6gIu
-ucEMjunvor9O7EAjZsukmXjfmsbvsYxPvGzacBAtht9GO+LriJVRcVM6QrYd+/Di
-LMjV/f+yoVN5IqvgwNN7
-=egbP
+iQIcBAEBCgAGBQJXsjEPAAoJENju1/PIO/qauB0P/0s98mquO9Hq9N8UKxGBprW1
+uVyzxDspguvGimehd0lNj9Kf28fv92KVg1gNswztqqPA/2b8Rvz8TsxsHnjN2NcA
+gfsA86zkH6mlkAA1qCqaQ144NZ5Zcfa4C88QPOQCO5nMqc7Z7LzTRwuxp+b7AWwh
+0KRLXQuQOC2CHNsmH9RhT+1mkRkA22uEY8zZ0C6eGmf7rdvO5aMQY1ulLT4UUfrt
+a1LAHVerIqwNXcOVsC8YbXAj18XF6kDMng6hCYfuz3VMv9jSOee7CM1UdQJuZiTH
+Uudrrntdm97+T2V3teTWkHaygRtkvWFi/a77Z8ysRXZ7Xbis0C2H1GHmSf541tE5
+xnPxri9eYGKPClyobMNPUQ06e0uiY9egjK7yXqK9m1ZU6daYnY54sHC2Z9ZZcMdP
+hqEsfjZ+xdWrYZY05bZsvXoPRK0ub9Ifk3sKeYr/41G4KIugblbybTUp2HZwKvLW
+d9A/PpU14F2ABdv/wycQoEWIeMOflMMeG+KmETs6GhmfaOxN9w5evLkr4a4yXTGt
+luF/H/v++GYD1L3z7DOu8xRdALTTQlFkLGJIDtrQWc3wtHwGEOJT00Nvwv90KoBh
+Q09eD20POV3SF03w0mBj62GbR5hjmpGIbwVos+T7AmOVQeQ1wlEC/Bd2XuwFxOr5
+mnqpkE7iEoUaAotQj8Dc
+=zR4y
 -----END PGP SIGNATURE-----
 
---3ahcpbxtagbp4jmu--
+--jeruisovivvznbim--
