@@ -1,116 +1,134 @@
-From: James Morse <james.morse@arm.com>
-Subject: [PATCH] PM / hibernate: Fix rtree_next_node() not to walk off the end of the node/zone lists
-Date: Tue, 16 Aug 2016 10:46:38 +0100
-Message-ID: <1471340798-27968-1-git-send-email-james.morse@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:45689 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751950AbcHPJq5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Aug 2016 05:46:57 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: [PATCH 01/10] PM / Domains: Add new helper functions for device-tree
+Date: Tue, 16 Aug 2016 10:49:27 +0100
+Message-ID: <1471340976-5379-2-git-send-email-jonathanh@nvidia.com>
+References: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, Alexander Aring <alex.aring@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, James Morse <james.morse@arm.com>, Joerg Roedel <jroedel@suse.de>
 
-rtree_next_node() walks the linked list of leaf nodes to find the next
-block of pages in the struct memory_bitmap. If it walks off the end of
-the list of nodes, it walks the list of memory zones to find the next
-region of memory. If it walks off the end of the list of zones, it
-returns false.
+Ideally, if we are returning a reference to a PM domain via a call to
+of_genpd_get_from_provider(), then we should keep track of such
+references via a reference count. The reference count could then be used
+to determine if a PM domain can be safely removed. Alternatively, it is
+possible to avoid such external references by providing APIs to access
+the PM domain and hence, eliminate any calls to
+of_genpd_get_from_provider().
 
-This leaves the struct bm_position's node and zone pointers pointing
-at their respective struct list_heads in struct mem_zone_bm_rtree.
+Add new helper functions for adding a device and a subdomain to a PM
+domain when using device-tree, so that external calls to
+of_genpd_get_from_provider() can be removed.
 
-memory_bm_find_bit() uses struct bm_position's node and zone pointers
-to avoid walking lists and trees if the next bit appears in the same
-node/zone. It handles these values being stale.
-
-Swap rtree_next_node()s 'step then test' to 'test-next then step',
-this means if we reach the end of memory we return false and leave
-the node and zone pointers as they were.
-
-This fixes a panic on resume using AMD Seattle with 64K pages:
-[    6.868732] Freezing user space processes ... (elapsed 0.000 seconds) done.
-[    6.875753] Double checking all user space processes after OOM killer disable... (elapsed 0.000 seconds)
-[    6.896453] PM: Using 3 thread(s) for decompression.
-[    6.896453] PM: Loading and decompressing image data (5339 pages)...
-[    7.318890] PM: Image loading progress:   0%
-[    7.323395] Unable to handle kernel paging request at virtual address 00800040
-[    7.330611] pgd = ffff000008df0000
-[    7.334003] [00800040] *pgd=00000083fffe0003, *pud=00000083fffe0003, *pmd=00000083fffd0003, *pte=0000000000000000
-[    7.344266] Internal error: Oops: 96000005 [#1] PREEMPT SMP
-[    7.349825] Modules linked in:
-[    7.352871] CPU: 2 PID: 1 Comm: swapper/0 Tainted: G        W I     4.8.0-rc1 #4737
-[    7.360512] Hardware name: AMD Overdrive/Supercharger/Default string, BIOS ROD1002C 04/08/2016
-[    7.369109] task: ffff8003c0220000 task.stack: ffff8003c0280000
-[    7.375020] PC is at set_bit+0x18/0x30
-[    7.378758] LR is at memory_bm_set_bit+0x24/0x30
-[    7.383362] pc : [<ffff00000835bbc8>] lr : [<ffff0000080faf18>] pstate: 60000045
-[    7.390743] sp : ffff8003c0283b00
-[    7.473551]
-[    7.475031] Process swapper/0 (pid: 1, stack limit = 0xffff8003c0280020)
-[    7.481718] Stack: (0xffff8003c0283b00 to 0xffff8003c0284000)
-[    7.800075] Call trace:
-[    7.887097] [<ffff00000835bbc8>] set_bit+0x18/0x30
-[    7.891876] [<ffff0000080fb038>] duplicate_memory_bitmap.constprop.38+0x54/0x70
-[    7.899172] [<ffff0000080fcc40>] snapshot_write_next+0x22c/0x47c
-[    7.905166] [<ffff0000080fe1b4>] load_image_lzo+0x754/0xa88
-[    7.910725] [<ffff0000080ff0a8>] swsusp_read+0x144/0x230
-[    7.916025] [<ffff0000080fa338>] load_image_and_restore+0x58/0x90
-[    7.922105] [<ffff0000080fa660>] software_resume+0x2f0/0x338
-[    7.927752] [<ffff000008083350>] do_one_initcall+0x38/0x11c
-[    7.933314] [<ffff000008b40cc0>] kernel_init_freeable+0x14c/0x1ec
-[    7.939395] [<ffff0000087ce564>] kernel_init+0x10/0xfc
-[    7.944520] [<ffff000008082e90>] ret_from_fork+0x10/0x40
-[    7.949820] Code: d2800022 8b400c21 f9800031 9ac32043 (c85f7c22)
-[    7.955909] ---[ end trace 0024a5986e6ff323 ]---
-[    7.960529] Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
-
-Here struct mem_zone_bm_rtree's start_pfn has been returned instead of
-struct rtree_node's addr as the node/zone pointers are corrupt after we
-walked off the end of the lists during mark_unsafe_pages().
-
-This behaviour was exposed by
-6dbecfd345a6 ("PM / hibernate: Simplify mark_unsafe_pages()"), which
-caused mark_unsafe_pages() to call duplicate_memory_bitmap(), which
-uses memory_bm_find_bit() after walking off the end of the memory bitmap.
-
-Fixes: 3a20cb177961 ("PM / Hibernate: Implement position keeping in radix tree")
-Signed-off-by: James Morse <james.morse@arm.com>
-Cc: Joerg Roedel <jroedel@suse.de>
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 ---
- kernel/power/snapshot.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ drivers/base/power/domain.c | 46 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   | 16 ++++++++++++++++
+ 2 files changed, 62 insertions(+)
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 9a0178c2ac1d..b02228411d57 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -835,9 +835,9 @@ static bool memory_bm_pfn_present(struct memory_bitmap *bm, unsigned long pfn)
-  */
- static bool rtree_next_node(struct memory_bitmap *bm)
- {
--	bm->cur.node = list_entry(bm->cur.node->list.next,
--				  struct rtree_node, list);
--	if (&bm->cur.node->list != &bm->cur.zone->leaves) {
-+	if (!list_is_last(&bm->cur.node->list, &bm->cur.zone->leaves)) {
-+		bm->cur.node = list_entry(bm->cur.node->list.next,
-+					  struct rtree_node, list);
- 		bm->cur.node_pfn += BM_BITS_PER_BLOCK;
- 		bm->cur.node_bit  = 0;
- 		touch_softlockup_watchdog();
-@@ -845,9 +845,9 @@ static bool rtree_next_node(struct memory_bitmap *bm)
- 	}
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index a1f2aff33997..43c2a959a7bf 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1502,6 +1502,52 @@ struct generic_pm_domain *of_genpd_get_from_provider(
+ EXPORT_SYMBOL_GPL(of_genpd_get_from_provider);
  
- 	/* No more nodes, goto next zone */
--	bm->cur.zone = list_entry(bm->cur.zone->list.next,
-+	if (!list_is_last(&bm->cur.zone->list, &bm->zones)) {
-+		bm->cur.zone = list_entry(bm->cur.zone->list.next,
- 				  struct mem_zone_bm_rtree, list);
--	if (&bm->cur.zone->list != &bm->zones) {
- 		bm->cur.node = list_entry(bm->cur.zone->leaves.next,
- 					  struct rtree_node, list);
- 		bm->cur.node_pfn = 0;
+ /**
++ * of_genpd_add_device() - Add a device to an I/O PM domain
++ * @genpdspec: OF phandle args to use for look-up PM domain
++ * @dev: Device to be added.
++ *
++ * Looks-up an I/O PM domain based upon phandle args provided and adds
++ * the device to the PM domain. Returns a negative error code on failure.
++ */
++int of_genpd_add_device(struct of_phandle_args *genpdspec, struct device *dev)
++{
++	struct generic_pm_domain *genpd;
++
++	genpd = of_genpd_get_from_provider(genpdspec);
++	if (IS_ERR(genpd))
++		return PTR_ERR(genpd);
++
++	return pm_genpd_add_device(genpd, dev);
++}
++EXPORT_SYMBOL_GPL(of_genpd_add_device);
++
++/**
++ * of_genpd_add_subdomain - Add a subdomain to an I/O PM domain.
++ * @parent_spec: OF phandle args to use for parent PM domain look-up
++ * @subdomain_spec: OF phandle args to use for subdomain look-up
++ *
++ * Looks-up a parent PM domain and subdomain based upon phandle args
++ * provided and adds the subdomain to the parent PM domain. Returns a
++ * negative error code on failure.
++ */
++int of_genpd_add_subdomain(struct of_phandle_args *parent_spec,
++			   struct of_phandle_args *subdomain_spec)
++{
++	struct generic_pm_domain *parent, *subdomain;
++
++	parent = of_genpd_get_from_provider(parent_spec);
++	if (IS_ERR(parent))
++		return PTR_ERR(parent);
++
++	subdomain = of_genpd_get_from_provider(subdomain_spec);
++	if (IS_ERR(subdomain))
++		return PTR_ERR(subdomain);
++
++	return pm_genpd_add_subdomain(parent, subdomain);
++}
++EXPORT_SYMBOL_GPL(of_genpd_add_subdomain);
++
++/**
+  * genpd_dev_pm_detach - Detach a device from its PM domain.
+  * @dev: Device to detach.
+  * @power_off: Currently not used
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 31fec858088c..e1964a242389 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -208,6 +208,10 @@ struct generic_pm_domain *__of_genpd_xlate_simple(
+ struct generic_pm_domain *__of_genpd_xlate_onecell(
+ 					struct of_phandle_args *genpdspec,
+ 					void *data);
++extern int of_genpd_add_device(struct of_phandle_args *args,
++			       struct device *dev);
++extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
++				  struct of_phandle_args *new_subdomain);
+ 
+ int genpd_dev_pm_attach(struct device *dev);
+ #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+@@ -227,6 +231,18 @@ static inline struct generic_pm_domain *of_genpd_get_from_provider(
+ #define __of_genpd_xlate_simple		NULL
+ #define __of_genpd_xlate_onecell	NULL
+ 
++static inline int of_genpd_add_device(struct of_phandle_args *args,
++				      struct device *dev)
++{
++	return -ENODEV;
++}
++
++static inline int of_genpd_add_subdomain(struct of_phandle_args *parent,
++					 struct of_phandle_args *new_subdomain)
++{
++	return -ENODEV;
++}
++
+ static inline int genpd_dev_pm_attach(struct device *dev)
+ {
+ 	return -ENODEV;
 -- 
-2.8.0.rc3
-
+2.1.4
