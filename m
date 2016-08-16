@@ -1,92 +1,99 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / hibernate: Fix rtree_next_node() not to walk off the end of the node/zone lists
-Date: Tue, 16 Aug 2016 22:58:20 +0200
-Message-ID: <1601930.NYHCpKpZQK@vostro.rjw.lan>
-References: <1471340798-27968-1-git-send-email-james.morse@arm.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v1] power: reset: reboot mode: fix build error of missing
+ ioremap/iounmap on UM
+Date: Wed, 17 Aug 2016 00:07:45 +0200
+Message-ID: <20160816220745.okcvpcgflejlehha@earth>
+References: <1470996110-8550-1-git-send-email-andy.yan@rock-chips.com>
+ <df657519-da7b-dbf3-1096-54253cb289c1@samsung.com>
+ <082e9630-26cb-6587-6f9f-f97c334407ca@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="x5fhmwnt6rcvjrat"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52213 "HELO
-	cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751953AbcHPUwu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2016 16:52:50 -0400
-In-Reply-To: <1471340798-27968-1-git-send-email-james.morse@arm.com>
+Received: from mail.kernel.org ([198.145.29.136]:35564 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752152AbcHPWHv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Aug 2016 18:07:51 -0400
+Content-Disposition: inline
+In-Reply-To: <082e9630-26cb-6587-6f9f-f97c334407ca@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Joerg Roedel <jroedel@suse.de>
+To: Andy Yan <andy.yan@rock-chips.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, matthias.bgg@gmail.com, dbaryshkov@gmail.com, richard@nod.at, alexandre.belloni@free-electrons.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dwmw2@infradead.org, nicolas.ferre@atmel.com
 
-On Tuesday, August 16, 2016 10:46:38 AM James Morse wrote:
-> rtree_next_node() walks the linked list of leaf nodes to find the next
-> block of pages in the struct memory_bitmap. If it walks off the end of
-> the list of nodes, it walks the list of memory zones to find the next
-> region of memory. If it walks off the end of the list of zones, it
-> returns false.
-> 
-> This leaves the struct bm_position's node and zone pointers pointing
-> at their respective struct list_heads in struct mem_zone_bm_rtree.
-> 
-> memory_bm_find_bit() uses struct bm_position's node and zone pointers
-> to avoid walking lists and trees if the next bit appears in the same
-> node/zone. It handles these values being stale.
-> 
-> Swap rtree_next_node()s 'step then test' to 'test-next then step',
-> this means if we reach the end of memory we return false and leave
-> the node and zone pointers as they were.
-> 
-> This fixes a panic on resume using AMD Seattle with 64K pages:
-> [    6.868732] Freezing user space processes ... (elapsed 0.000 seconds) done.
-> [    6.875753] Double checking all user space processes after OOM killer disable... (elapsed 0.000 seconds)
-> [    6.896453] PM: Using 3 thread(s) for decompression.
-> [    6.896453] PM: Loading and decompressing image data (5339 pages)...
-> [    7.318890] PM: Image loading progress:   0%
-> [    7.323395] Unable to handle kernel paging request at virtual address 00800040
-> [    7.330611] pgd = ffff000008df0000
-> [    7.334003] [00800040] *pgd=00000083fffe0003, *pud=00000083fffe0003, *pmd=00000083fffd0003, *pte=0000000000000000
-> [    7.344266] Internal error: Oops: 96000005 [#1] PREEMPT SMP
-> [    7.349825] Modules linked in:
-> [    7.352871] CPU: 2 PID: 1 Comm: swapper/0 Tainted: G        W I     4.8.0-rc1 #4737
-> [    7.360512] Hardware name: AMD Overdrive/Supercharger/Default string, BIOS ROD1002C 04/08/2016
-> [    7.369109] task: ffff8003c0220000 task.stack: ffff8003c0280000
-> [    7.375020] PC is at set_bit+0x18/0x30
-> [    7.378758] LR is at memory_bm_set_bit+0x24/0x30
-> [    7.383362] pc : [<ffff00000835bbc8>] lr : [<ffff0000080faf18>] pstate: 60000045
-> [    7.390743] sp : ffff8003c0283b00
-> [    7.473551]
-> [    7.475031] Process swapper/0 (pid: 1, stack limit = 0xffff8003c0280020)
-> [    7.481718] Stack: (0xffff8003c0283b00 to 0xffff8003c0284000)
-> [    7.800075] Call trace:
-> [    7.887097] [<ffff00000835bbc8>] set_bit+0x18/0x30
-> [    7.891876] [<ffff0000080fb038>] duplicate_memory_bitmap.constprop.38+0x54/0x70
-> [    7.899172] [<ffff0000080fcc40>] snapshot_write_next+0x22c/0x47c
-> [    7.905166] [<ffff0000080fe1b4>] load_image_lzo+0x754/0xa88
-> [    7.910725] [<ffff0000080ff0a8>] swsusp_read+0x144/0x230
-> [    7.916025] [<ffff0000080fa338>] load_image_and_restore+0x58/0x90
-> [    7.922105] [<ffff0000080fa660>] software_resume+0x2f0/0x338
-> [    7.927752] [<ffff000008083350>] do_one_initcall+0x38/0x11c
-> [    7.933314] [<ffff000008b40cc0>] kernel_init_freeable+0x14c/0x1ec
-> [    7.939395] [<ffff0000087ce564>] kernel_init+0x10/0xfc
-> [    7.944520] [<ffff000008082e90>] ret_from_fork+0x10/0x40
-> [    7.949820] Code: d2800022 8b400c21 f9800031 9ac32043 (c85f7c22)
-> [    7.955909] ---[ end trace 0024a5986e6ff323 ]---
-> [    7.960529] Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
-> 
-> Here struct mem_zone_bm_rtree's start_pfn has been returned instead of
-> struct rtree_node's addr as the node/zone pointers are corrupt after we
-> walked off the end of the lists during mark_unsafe_pages().
-> 
-> This behaviour was exposed by
-> 6dbecfd345a6 ("PM / hibernate: Simplify mark_unsafe_pages()"), which
-> caused mark_unsafe_pages() to call duplicate_memory_bitmap(), which
-> uses memory_bm_find_bit() after walking off the end of the memory bitmap.
-> 
-> Fixes: 3a20cb177961 ("PM / Hibernate: Implement position keeping in radix tree")
-> Signed-off-by: James Morse <james.morse@arm.com>
-> Cc: Joerg Roedel <jroedel@suse.de>
 
-Applied, thanks!
+--x5fhmwnt6rcvjrat
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Best,
-Rafael
+Hi Andy,
 
+On Tue, Aug 16, 2016 at 06:55:49PM +0800, Andy Yan wrote:
+> On 2016=E5=B9=B408=E6=9C=8812=E6=97=A5 20:48, Krzysztof Kozlowski wrote:
+> > On 08/12/2016 12:01 PM, Andy Yan wrote:
+> > > commit 4fcd504edbf7 ("power: reset: add reboot mode driver") uses api=
+ from
+> > > syscon, and syscon uses ioremap/iounmap which depends on HAS_IOMEM, so
+> > > let's depend on MFD_SYSCON instead of selecting it directly to avoid =
+the
+> > > um-allyesconfig like build error on archs that without iomem:
+> > >=20
+> > > drivers/mfd/syscon.c: In function 'of_syscon_register':
+> > > drivers/mfd/syscon.c:67:9: error: implicit declaration of function 'i=
+oremap' [-Werror=3Dimplicit-function-declaration]
+> > >    base =3D ioremap(res.start, resource_size(&res));
+> > >           ^
+> > > drivers/mfd/syscon.c:67:7: warning: assignment makes pointer from int=
+eger without a cast [-Wint-conversion]
+> > >    base =3D ioremap(res.start, resource_size(&res));
+> > >         ^
+> > > drivers/mfd/syscon.c:109:2: error: implicit declaration of function '=
+iounmap' [-Werror=3Dimplicit-function-declaration]
+> > >    iounmap(base);
+> > >    ^
+> > >=20
+> > > Reported-by: Kbuild test robot <fengguang.wu@intel.com>
+> > > Fixes: 4fcd504edbf7("power: reset: add reboot mode driver")
+> > > Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+> > >=20
+> > > ---
+> > >=20
+> > > Changes in v1:
+> > > - let this driver depend on MFD_SYSCON
+> > > - add Reported-by tag, which suggested by Krzysztof Kozlowski
+> > > - add Fixes tag, which suggested by Matthias Brugger
+> > >=20
+> > >   drivers/power/reset/Kconfig | 2 +-
+> > >   1 file changed, 1 insertion(+), 1 deletion(-)
+> > Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>
+>  Will you please take this patch to avoid the Kbuild test robot warning ?
+
+https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/com=
+mit/?h=3Dfixes&id=3D7a4947cf6f26b7d0a5db260d212f6df41a563d23
+
+-- Sebastian
+
+--x5fhmwnt6rcvjrat
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJXs46uAAoJENju1/PIO/qa6GkQAIzxfTIRKV3KxPOP9csepilf
+zDqgOEPXW4IhYDLd/i//r4i/fL+jEIMKj1JQKZ9DzYoXi+aq24Smf9bQKF0Xb774
+TxzN5Zd+1pyXHIr7JqLiW6LlHSKgjtLs2tvaIvoVVg3F4g4UYcIEGdDM0Op/NxEV
+xOouURS7xPInEImRpXo9Y5YpQAky1jMS+tyrR3WuTeqngSNAhytrrzR+6g9QFCiX
+DWJawR5UOvSXSavq0dl4K0nvlMwlliqqxlYVnliW/4NZWlfOkxHm+oP26OY+AlMO
+K3YbWW4WD0aBJ/AVKIL27V2guX/Y+CE+MZoc/hqOFcEsMA2oyQNOsWVW2QZHZpYm
+WATKm644P6qnUarjr2glgdNcrBiQBjsuV9O6oSNi+VrhqurGBN7SrcSDxRa0f7XG
+LVP71kCztOxgIYs5bOzVulDmQem/kp5mHt5xqUH/a51HkDLnKZqNpoly+U/6BbvP
+64UgMSafdqfJZ2Bf+6dfue5Ni4QLIHftsjaNBQg9HVRbt0SHOGS1FKHCUFRo4LCp
+SAiRQDzDQ/lkzwYYOzDxlDct/knpeKvp+wjkoIVRPBAkgg3uQQW+40g+RY4HwL8s
+IQLMYjhTRSoHZtNH/PjgZGGSNusBzOg4AXWbjzCQ1NgoHeMk8o55Qlz5M04/ryvc
+Ple5vv6mOzCNJKdv8fhd
+=5tDS
+-----END PGP SIGNATURE-----
+
+--x5fhmwnt6rcvjrat--
