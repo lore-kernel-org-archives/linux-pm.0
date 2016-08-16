@@ -1,56 +1,116 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [PATCH v2 4/4] power: sbs-battery: Use gpio_desc and sleeping
- calls for battery detect
-Date: Tue, 16 Aug 2016 17:35:09 +0800
-Message-ID: <b25aaed0-59ec-e5b8-0096-67d8118f8b79@electromag.com.au>
-References: <1469414580-14121-1-git-send-email-preid@electromag.com.au>
- <1469414580-14121-5-git-send-email-preid@electromag.com.au>
- <20160815210850.hd7p6blg7rbuzd7d@earth>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+From: James Morse <james.morse@arm.com>
+Subject: [PATCH] PM / hibernate: Fix rtree_next_node() not to walk off the end of the node/zone lists
+Date: Tue, 16 Aug 2016 10:46:38 +0100
+Message-ID: <1471340798-27968-1-git-send-email-james.morse@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy3.45ru.net.au ([203.30.46.155]:33148 "EHLO
-	anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752221AbcHPJfP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2016 05:35:15 -0400
-In-Reply-To: <20160815210850.hd7p6blg7rbuzd7d@earth>
+Received: from foss.arm.com ([217.140.101.70]:45689 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751950AbcHPJq5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Aug 2016 05:46:57 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, James Morse <james.morse@arm.com>, Joerg Roedel <jroedel@suse.de>
 
-On 16/08/2016 05:08, Sebastian Reichel wrote:
-> Hi Phil,
->
-> On Mon, Jul 25, 2016 at 10:43:00AM +0800, Phil Reid wrote:
->> Switch to using new gpio_desc interface and devm gpio get calls to
->> automatically manage gpio resource. Use gpiod_get_value which handles
->> active high / low calls.
->>
->> If gpio_detect is set then force loading of the driver as it is
->> reasonable to assume that the battery may not be present.
->>
->> Update the is_present flag immediately in the IRQ.
->
-> I queued PATCH 1-3. Please send a new revision for PATCH 4 (this
-> one) with the following changes:
->
->  * add the correct gpiod include: <include/linux/gpio/consumer.h>
->  * rebase on power-supply's next branch
->  * remove battery_detect and battery_detect_present from the
->    struct sbs_platform_data and always use the gpiod API. It's
->    data can also come from platform data, see
->    Documentation/gpio/board.txt and Documentation/gpio/consumer.txt
->
-> -- Sebastian
->
-G'day Sebastian,
+rtree_next_node() walks the linked list of leaf nodes to find the next
+block of pages in the struct memory_bitmap. If it walks off the end of
+the list of nodes, it walks the list of memory zones to find the next
+region of memory. If it walks off the end of the list of zones, it
+returns false.
 
-Thanks, I'll have a look at how that works.
-I wasn't sure it was acceptable to change the interface to sbs_platform_data.
+This leaves the struct bm_position's node and zone pointers pointing
+at their respective struct list_heads in struct mem_zone_bm_rtree.
 
+memory_bm_find_bit() uses struct bm_position's node and zone pointers
+to avoid walking lists and trees if the next bit appears in the same
+node/zone. It handles these values being stale.
+
+Swap rtree_next_node()s 'step then test' to 'test-next then step',
+this means if we reach the end of memory we return false and leave
+the node and zone pointers as they were.
+
+This fixes a panic on resume using AMD Seattle with 64K pages:
+[    6.868732] Freezing user space processes ... (elapsed 0.000 seconds) done.
+[    6.875753] Double checking all user space processes after OOM killer disable... (elapsed 0.000 seconds)
+[    6.896453] PM: Using 3 thread(s) for decompression.
+[    6.896453] PM: Loading and decompressing image data (5339 pages)...
+[    7.318890] PM: Image loading progress:   0%
+[    7.323395] Unable to handle kernel paging request at virtual address 00800040
+[    7.330611] pgd = ffff000008df0000
+[    7.334003] [00800040] *pgd=00000083fffe0003, *pud=00000083fffe0003, *pmd=00000083fffd0003, *pte=0000000000000000
+[    7.344266] Internal error: Oops: 96000005 [#1] PREEMPT SMP
+[    7.349825] Modules linked in:
+[    7.352871] CPU: 2 PID: 1 Comm: swapper/0 Tainted: G        W I     4.8.0-rc1 #4737
+[    7.360512] Hardware name: AMD Overdrive/Supercharger/Default string, BIOS ROD1002C 04/08/2016
+[    7.369109] task: ffff8003c0220000 task.stack: ffff8003c0280000
+[    7.375020] PC is at set_bit+0x18/0x30
+[    7.378758] LR is at memory_bm_set_bit+0x24/0x30
+[    7.383362] pc : [<ffff00000835bbc8>] lr : [<ffff0000080faf18>] pstate: 60000045
+[    7.390743] sp : ffff8003c0283b00
+[    7.473551]
+[    7.475031] Process swapper/0 (pid: 1, stack limit = 0xffff8003c0280020)
+[    7.481718] Stack: (0xffff8003c0283b00 to 0xffff8003c0284000)
+[    7.800075] Call trace:
+[    7.887097] [<ffff00000835bbc8>] set_bit+0x18/0x30
+[    7.891876] [<ffff0000080fb038>] duplicate_memory_bitmap.constprop.38+0x54/0x70
+[    7.899172] [<ffff0000080fcc40>] snapshot_write_next+0x22c/0x47c
+[    7.905166] [<ffff0000080fe1b4>] load_image_lzo+0x754/0xa88
+[    7.910725] [<ffff0000080ff0a8>] swsusp_read+0x144/0x230
+[    7.916025] [<ffff0000080fa338>] load_image_and_restore+0x58/0x90
+[    7.922105] [<ffff0000080fa660>] software_resume+0x2f0/0x338
+[    7.927752] [<ffff000008083350>] do_one_initcall+0x38/0x11c
+[    7.933314] [<ffff000008b40cc0>] kernel_init_freeable+0x14c/0x1ec
+[    7.939395] [<ffff0000087ce564>] kernel_init+0x10/0xfc
+[    7.944520] [<ffff000008082e90>] ret_from_fork+0x10/0x40
+[    7.949820] Code: d2800022 8b400c21 f9800031 9ac32043 (c85f7c22)
+[    7.955909] ---[ end trace 0024a5986e6ff323 ]---
+[    7.960529] Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
+
+Here struct mem_zone_bm_rtree's start_pfn has been returned instead of
+struct rtree_node's addr as the node/zone pointers are corrupt after we
+walked off the end of the lists during mark_unsafe_pages().
+
+This behaviour was exposed by
+6dbecfd345a6 ("PM / hibernate: Simplify mark_unsafe_pages()"), which
+caused mark_unsafe_pages() to call duplicate_memory_bitmap(), which
+uses memory_bm_find_bit() after walking off the end of the memory bitmap.
+
+Fixes: 3a20cb177961 ("PM / Hibernate: Implement position keeping in radix tree")
+Signed-off-by: James Morse <james.morse@arm.com>
+Cc: Joerg Roedel <jroedel@suse.de>
+---
+ kernel/power/snapshot.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 9a0178c2ac1d..b02228411d57 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -835,9 +835,9 @@ static bool memory_bm_pfn_present(struct memory_bitmap *bm, unsigned long pfn)
+  */
+ static bool rtree_next_node(struct memory_bitmap *bm)
+ {
+-	bm->cur.node = list_entry(bm->cur.node->list.next,
+-				  struct rtree_node, list);
+-	if (&bm->cur.node->list != &bm->cur.zone->leaves) {
++	if (!list_is_last(&bm->cur.node->list, &bm->cur.zone->leaves)) {
++		bm->cur.node = list_entry(bm->cur.node->list.next,
++					  struct rtree_node, list);
+ 		bm->cur.node_pfn += BM_BITS_PER_BLOCK;
+ 		bm->cur.node_bit  = 0;
+ 		touch_softlockup_watchdog();
+@@ -845,9 +845,9 @@ static bool rtree_next_node(struct memory_bitmap *bm)
+ 	}
+ 
+ 	/* No more nodes, goto next zone */
+-	bm->cur.zone = list_entry(bm->cur.zone->list.next,
++	if (!list_is_last(&bm->cur.zone->list, &bm->zones)) {
++		bm->cur.zone = list_entry(bm->cur.zone->list.next,
+ 				  struct mem_zone_bm_rtree, list);
+-	if (&bm->cur.zone->list != &bm->zones) {
+ 		bm->cur.node = list_entry(bm->cur.zone->leaves.next,
+ 					  struct rtree_node, list);
+ 		bm->cur.node_pfn = 0;
 -- 
-Regards
-Phil Reid
+2.8.0.rc3
 
