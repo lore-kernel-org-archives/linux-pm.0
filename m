@@ -1,8 +1,8 @@
 From: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
-Subject: [PATCH v2 4/8] power: intel_mid_battery: Remove deprecated
+Subject: [PATCH v2 5/8] power: ab8500_charger: Remove deprecated
  create_singlethread_workqueue
-Date: Tue, 16 Aug 2016 10:52:56 +0530
-Message-ID: <0fb5c3eed5df732a7a4689c28b467b656cdb5814.1471324750.git.bhaktipriya96@gmail.com>
+Date: Tue, 16 Aug 2016 10:53:16 +0530
+Message-ID: <1e5233916d018583925bd52354d50157165b3f8b.1471324750.git.bhaktipriya96@gmail.com>
 References: <cover.1471324749.git.bhaktipriya96@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -14,36 +14,41 @@ To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmai
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The workqueue "monitor_wqueue" is used to monitor the PMIC battery status.
-It queues a single work item (pbi->monitor_battery) and hence doesn't
-require ordering. Hence, alloc_workqueue has been used to replace the
-deprecated create_singlethread_workqueue instance.
+alloc_ordered_workqueue() with WQ_MEM_RECLAIM set replaces
+deprecated create_singlethread_workqueue(). This is the identity
+conversion.
 
-Since PMIC battery status needs to be monitored for any change, the
-WQ_MEM_RECLAIM flag has been set to ensure forward progress under memory
-pressure.
+The workqueue "charger_wq" is used for the IRQs and checking HW state of
+the charger. It has been identity converted.
 
-Since there is a single work item, explicit concurrency
-limit is unnecessary here.
+It has multiple work items viz usb_charger_attached_work, kick_wd_work,
+check_vbat_work, check_hw_failure_work, usb_charger_attached_work,
+ac_work, ac_charger_attached_work, attach_work and check_usbchgnotok_work,
+which require execution ordering. Hence, a dedicated ordered workqueue
+has been used here.
+
+The WQ_MEM_RECLAIM flag has also been set to ensure
+forward progress under memory pressure.
 
 Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
 ---
- drivers/power/intel_mid_battery.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/power/ab8500_charger.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/intel_mid_battery.c b/drivers/power/intel_mid_battery.c
-index 9fa4acc..dc7feef 100644
---- a/drivers/power/intel_mid_battery.c
-+++ b/drivers/power/intel_mid_battery.c
-@@ -689,8 +689,7 @@ static int probe(int irq, struct device *dev)
- 	/* initialize all required framework before enabling interrupts */
- 	INIT_WORK(&pbi->handler, pmic_battery_handle_intrpt);
- 	INIT_DELAYED_WORK(&pbi->monitor_battery, pmic_battery_monitor);
--	pbi->monitor_wqueue =
--			create_singlethread_workqueue(dev_name(dev));
-+	pbi->monitor_wqueue = alloc_workqueue(dev_name(dev), WQ_MEM_RECLAIM, 0);
- 	if (!pbi->monitor_wqueue) {
- 		dev_err(dev, "%s(): wqueue init failed\n", __func__);
- 		retval = -ESRCH;
+diff --git a/drivers/power/ab8500_charger.c b/drivers/power/ab8500_charger.c
+index 30de5d4..5cee9aa 100644
+--- a/drivers/power/ab8500_charger.c
++++ b/drivers/power/ab8500_charger.c
+@@ -3540,8 +3540,8 @@ static int ab8500_charger_probe(struct platform_device *pdev)
+ 	di->usb_state.usb_current = -1;
+
+ 	/* Create a work queue for the charger */
+-	di->charger_wq =
+-		create_singlethread_workqueue("ab8500_charger_wq");
++	di->charger_wq = alloc_ordered_workqueue("ab8500_charger_wq",
++						 WQ_MEM_RECLAIM);
+ 	if (di->charger_wq == NULL) {
+ 		dev_err(di->dev, "failed to create work queue\n");
+ 		return -ENOMEM;
 --
 2.1.4
