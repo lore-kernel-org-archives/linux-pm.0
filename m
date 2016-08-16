@@ -1,79 +1,37 @@
-From: <piwet_sokolow@wp.pl>
-Subject: (unknown)
-Date: Tue, 17 Aug 2016 00:13:35 0000
-Message-ID: <000101d1f81c$32317bac$c0a80001@axtel.net>
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH 02/10] ARM: EXYNOS: Remove calls to
+ of_genpd_get_from_provider()
+Date: Tue, 16 Aug 2016 21:26:22 +0200
+Message-ID: <20160816192622.GA18141@kozik-lap>
+References: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
+ <1471340976-5379-3-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: application/zip; name="yjalinux-pm.zip"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 189-211-181-204.static.axtel.net ([189.211.181.204]:44657 "HELO
-	axtel.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751490AbcHPSO6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Aug 2016 14:14:58 -0400
-Subject: 
-Content-Disposition: attachment
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1471340976-5379-3-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
 
-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
-AQABADsAAAAZDQAAAAA=
+On Tue, Aug 16, 2016 at 10:49:28AM +0100, Jon Hunter wrote:
+> Update the EXYNOS PM domain code to use the of_genpd_add_subdomain()
+> and remove any calls to of_genpd_get_from_provider().
+> 
+> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+>  drivers/soc/samsung/pm_domains.c | 23 ++++++++---------------
+>  1 file changed, 8 insertions(+), 15 deletions(-)
+
+Looks correct:
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+
+I understand this will go along with patch #1 to PM tree. There might be
+some more commits around Exynos PM domain code coming soon. To avoid possible
+conflicts, could you put it in a separate branch with patch #1 so a
+stable tag could be easily created? I don't see direct necessity now but
+it might be needed quite soon.
+
+Best regards,
+Krzysztof
