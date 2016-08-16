@@ -1,151 +1,85 @@
 From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v5 5/7] power: act8945a_charger: Add capacity level property
-Date: Tue, 16 Aug 2016 16:59:56 +0800
-Message-ID: <1471337998-6467-6-git-send-email-wenyou.yang@atmel.com>
+Subject: [PATCH v5 7/7] doc: bindings: act8945a-charger: Update properties
+Date: Tue, 16 Aug 2016 16:59:58 +0800
+Message-ID: <1471337998-6467-8-git-send-email-wenyou.yang@atmel.com>
 References: <1471337998-6467-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1471337998-6467-1-git-send-email-wenyou.yang@atmel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar
+ Gala <galak@codeaurora.org>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add the power supply capacity level property, it corresponds to
-POWER_SUPPLY_CAPACITY_LEVEL_*.
-
-It also utilizes the precision voltage detector function module
-to catch the low battery voltage.
+Due the driver improvements, update the properties,
+ - Remove "active-semi,check-battery-temperature" property.
+ - Add the properties, "active-semi,irq_gpio"
+   and "active-semi,lbo-gpios".
 
 Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
 
-Changes in v5: None
+Changes in v5:
+ - Add Acked-by tag.
+
 Changes in v4:
- - Change devname of devm_request_irq() from "lbo-detect" to
-   "act8945a, lbo-detect".
+ - Update the doc/binding for using "interrupts" property.
 
 Changes in v3: None
 Changes in v2: None
 
- drivers/power/supply/act8945a_charger.c | 78 +++++++++++++++++++++++++++++++++
- 1 file changed, 78 insertions(+)
+ .../bindings/power/supply/act8945a-charger.txt           | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
-index a3d89be..2321796 100644
---- a/drivers/power/supply/act8945a_charger.c
-+++ b/drivers/power/supply/act8945a_charger.c
-@@ -83,6 +83,7 @@ struct act8945a_charger {
- 	struct work_struct work;
+diff --git a/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt b/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
+index bea254c..f9866c4 100644
+--- a/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
++++ b/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
+@@ -4,10 +4,15 @@ Required properties:
+  - compatible: "active-semi,act8945a", please refer to ../mfd/act8945a.txt.
+  - active-semi,chglev-gpios: charge current level phandle with args
+    as described in ../gpio/gpio.txt.
++ - active-semi,lbo-gpios: specify the low battery voltage detect phandle
++   with args as as described in ../gpio/gpio.txt.
++ - interrupts: <a b> where a is the interrupt number and b is a
++   field that represents an encoding of the sense and level
++   information for the interrupt.
++ - interrupt-parent: the phandle for the interrupt controller that
++   services interrupts for this device.
  
- 	bool init_done;
-+	int lbo_pin;
- };
+ Optional properties:
+- - active-semi,check-battery-temperature: boolean to check the battery
+-   temperature or not.
+  - active-semi,input-voltage-threshold-microvolt: unit: mV;
+    Specifies the charger's input over-voltage threshold value;
+    The value can be: 6600, 7000, 7500, 8000; default: 6600
+@@ -27,9 +32,14 @@ Example:
+ 		status = "okay";
  
- static int act8945a_get_charger_state(struct regmap *regmap, int *val)
-@@ -208,11 +209,70 @@ static int act8945a_get_battery_health(struct regmap *regmap, int *val)
- 	return 0;
- }
- 
-+static int act8945a_get_capacity_level(struct act8945a_charger *charger,
-+				       struct regmap *regmap, int *val)
-+{
-+	int ret;
-+	unsigned int status, state, config;
-+	int lbo_level = 1;
+ 		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_charger_chglev>;
++		pinctrl-0 = <&pinctrl_charger_chglev &pinctrl_charger_lbo &pinctrl_charger_irq>;
 +
-+	if (gpio_is_valid(charger->lbo_pin))
-+		lbo_level = gpio_get_value(charger->lbo_pin);
+ 		active-semi,chglev-gpios = <&pioA 12 GPIO_ACTIVE_HIGH>;
++		active-semi,lbo-gpios = <&pioA 72 GPIO_ACTIVE_LOW>;
+ 		active-semi,input-voltage-threshold-microvolt = <6600>;
+ 		active-semi,precondition-timeout = <40>;
+ 		active-semi,total-timeout = <3>;
++		interrupt-parent = <&pioA>;
++		interrupts = <45 GPIO_ACTIVE_LOW>;
 +
-+	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = regmap_read(regmap, ACT8945A_APCH_CFG, &config);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
-+	if (ret < 0)
-+		return ret;
-+
-+	state &= APCH_STATE_CSTATE;
-+	state >>= APCH_STATE_CSTATE_SHIFT;
-+
-+	switch (state) {
-+	case APCH_STATE_CSTATE_PRE:
-+		*val = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
-+		break;
-+	case APCH_STATE_CSTATE_FAST:
-+		if (lbo_level)
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_HIGH;
-+		else
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
-+		break;
-+	case APCH_STATE_CSTATE_EOC:
-+		if (status & APCH_STATUS_CHGDAT)
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-+		else
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-+		break;
-+	case APCH_STATE_CSTATE_DISABLED:
-+	default:
-+		if (config & APCH_CFG_SUSCHG) {
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_UNKNOWN;
-+		} else {
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-+			if (!(status & APCH_STATUS_INDAT)) {
-+				if (!lbo_level)
-+					*val = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
-+			}
-+		}
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
- static enum power_supply_property act8945a_charger_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_CHARGE_TYPE,
- 	POWER_SUPPLY_PROP_TECHNOLOGY,
- 	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_MANUFACTURER
- };
-@@ -238,6 +298,10 @@ static int act8945a_charger_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_HEALTH:
- 		ret = act8945a_get_battery_health(regmap, &val->intval);
- 		break;
-+	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
-+		ret = act8945a_get_capacity_level(charger,
-+						  regmap, &val->intval);
-+		break;
- 	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		val->strval = act8945a_charger_model;
- 		break;
-@@ -352,6 +416,20 @@ static int act8945a_charger_config(struct device *dev,
- 	if (tmp & APCH_CFG_SUSCHG)
- 		value |= APCH_CFG_SUSCHG;
- 
-+	charger->lbo_pin = of_get_named_gpio(np, "active-semi,lbo-gpios", 0);
-+	if (gpio_is_valid(charger->lbo_pin)) {
-+		if (!devm_gpio_request(dev, charger->lbo_pin, "lbo-detect")) {
-+			ret = devm_request_irq(dev,
-+					       gpio_to_irq(charger->lbo_pin),
-+					       act8945a_status_changed,
-+					       IRQF_TRIGGER_FALLING |
-+					       IRQF_TRIGGER_RISING,
-+					       "act8945a, lbo-detect", charger);
-+			if (ret)
-+				dev_dbg(dev, "failed to request LBO pin IRQ\n");
-+		}
-+	}
-+
- 	chglev_pin = of_get_named_gpio_flags(np,
- 				"active-semi,chglev-gpios", 0, &flags);
- 
+ 	};
 -- 
 2.7.4
