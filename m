@@ -1,44 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/7] cpufreq: dt: Add exynos5433 compatible to use
- generic cpufreq driver
-Date: Tue, 16 Aug 2016 14:19:03 +0530
-Message-ID: <20160816084903.GC21099@ubuntu>
-References: <1471328843-26653-1-git-send-email-cw00.choi@samsung.com>
- <1471328843-26653-4-git-send-email-cw00.choi@samsung.com>
- <1476eab3-48e2-2894-cc2a-e5a201b107cf@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1476eab3-48e2-2894-cc2a-e5a201b107cf@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, kgene@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, krzk@kernel.org, jh80.chung@samsung.com, sw0312.kim@samsung.com, jy0922.shim@samsung.com, inki.dae@samsung.com, jonghwa3.lee@samsung.com, beomho.seo@samsung.com, jaewon02.kim@samsung.com, human.hwang@samsung.com, ideal.song@samsung.com, ingi2.kim@samsung.com, m.szyprowski@samsung.com, a.hajda@samsung.com, s.nawrocki@samsung.com, chanwoo@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+From: LABBE Corentin <clabbe.montjoie@gmail.com>
+Subject: [PATCH] thermal: imx: fix a possible NULL dereference
+Date: Tue, 16 Aug 2016 10:51:38 +0200
+Message-ID: <1471337498-6382-1-git-send-email-clabbe.montjoie@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:36236 "EHLO
+	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751269AbcHPIvn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2016 04:51:43 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, LABBE Corentin <clabbe.montjoie@gmail.com>
 
-On 16-08-16, 09:47, Krzysztof Kozlowski wrote:
-> On 08/16/2016 08:27 AM, Chanwoo Choi wrote:
-> > This patch adds the exynos5433 compatible string for supporting
-> > the generic cpufreq driver on Exynos5433.
-> > 
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: linux-pm@vger.kernel.org
-> > Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> > ---
-> >  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> 
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> 
-> I guess this does not depend on the rest and can go through PM/cpufreq tree?
-> 
-> Viresh, Rafael,
-> If you wish me to take it, let me know.
+of_match_device could return NULL, and so cause a NULL pointer
+dereference later at line 472:
+data->socdata = of_id->data;
 
-I will prefer it going through PM tree.
+For fixing this problem, we use of_device_get_match_data(), this will
+simplify the code a little by using a standard function for
+getting the match data.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reported-by: coverity (CID 1324128)
+Signed-off-by: LABBE Corentin <clabbe.montjoie@gmail.com>
+---
+ drivers/thermal/imx_thermal.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index c5547bd..e473548b 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -471,8 +471,6 @@ MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
+ 
+ static int imx_thermal_probe(struct platform_device *pdev)
+ {
+-	const struct of_device_id *of_id =
+-		of_match_device(of_imx_thermal_match, &pdev->dev);
+ 	struct imx_thermal_data *data;
+ 	struct regmap *map;
+ 	int measure_freq;
+@@ -490,7 +488,7 @@ static int imx_thermal_probe(struct platform_device *pdev)
+ 	}
+ 	data->tempmon = map;
+ 
+-	data->socdata = of_id->data;
++	data->socdata = of_device_get_match_data(&pdev->dev);
+ 
+ 	/* make sure the IRQ flag is clear before enabling irq on i.MX6SX */
+ 	if (data->socdata->version == TEMPMON_IMX6SX) {
 -- 
-viresh
+2.7.3
+
