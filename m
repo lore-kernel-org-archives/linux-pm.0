@@ -1,92 +1,68 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 4/4] power: sbs-battery: Use gpio_desc and sleeping
- calls for battery detect
-Date: Tue, 16 Aug 2016 12:26:34 +0200
-Message-ID: <20160816102634.74drhjmmy2pfytqg@earth>
-References: <1469414580-14121-1-git-send-email-preid@electromag.com.au>
- <1469414580-14121-5-git-send-email-preid@electromag.com.au>
- <20160815210850.hd7p6blg7rbuzd7d@earth>
- <b25aaed0-59ec-e5b8-0096-67d8118f8b79@electromag.com.au>
+Subject: Re: [PATCH v2 0/8] power: Remove deprecated
+ create_singlethread_workqueue
+Date: Tue, 16 Aug 2016 12:30:20 +0200
+Message-ID: <20160816103020.l4hdrimmwj7h53yx@earth>
+References: <cover.1471324749.git.bhaktipriya96@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="2lyvued6w5uvppxm"
+	protocol="application/pgp-signature"; boundary="byggkx5buypql2l4"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:37780 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:38800 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752985AbcHPK0j (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Aug 2016 06:26:39 -0400
+	id S1753136AbcHPKaZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Aug 2016 06:30:25 -0400
 Content-Disposition: inline
-In-Reply-To: <b25aaed0-59ec-e5b8-0096-67d8118f8b79@electromag.com.au>
+In-Reply-To: <cover.1471324749.git.bhaktipriya96@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org
+To: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tejun Heo <tj@kernel.org>
 
 
---2lyvued6w5uvppxm
+--byggkx5buypql2l4
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Phil,
+Hi Bhaktipriya,
 
-On Tue, Aug 16, 2016 at 05:35:09PM +0800, Phil Reid wrote:
-> On 16/08/2016 05:08, Sebastian Reichel wrote:
-> > Hi Phil,
-> >=20
-> > On Mon, Jul 25, 2016 at 10:43:00AM +0800, Phil Reid wrote:
-> > > Switch to using new gpio_desc interface and devm gpio get calls to
-> > > automatically manage gpio resource. Use gpiod_get_value which handles
-> > > active high / low calls.
-> > >=20
-> > > If gpio_detect is set then force loading of the driver as it is
-> > > reasonable to assume that the battery may not be present.
-> > >=20
-> > > Update the is_present flag immediately in the IRQ.
-> >=20
-> > I queued PATCH 1-3. Please send a new revision for PATCH 4 (this
-> > one) with the following changes:
-> >=20
-> >  * add the correct gpiod include: <include/linux/gpio/consumer.h>
-> >  * rebase on power-supply's next branch
-> >  * remove battery_detect and battery_detect_present from the
-> >    struct sbs_platform_data and always use the gpiod API. It's
-> >    data can also come from platform data, see
-> >    Documentation/gpio/board.txt and Documentation/gpio/consumer.txt
-> >=20
-> > -- Sebastian
-> >=20
-> G'day Sebastian,
->=20
-> Thanks, I'll have a look at how that works.
-> I wasn't sure it was acceptable to change the interface to
-> sbs_platform_data.
+On Tue, Aug 16, 2016 at 10:51:30AM +0530, Bhaktipriya Shridhar wrote:
+> This patch set removes the instances of deprecated
+> create_singlethread_workqueues in drivers/power by making the
+> appropriate conversions.
 
-Yes, that API is not exposed by the kernel, so it can be changed.
-Since there are no users as far as I can see, changing it should
-be quite simple. Thanks for the driver cleanup.
+Sorry, I was unclear in my mail: I already queued the last revision,
+there was no need to resend it. The tip regarding the subsystem
+prefix and broken thread was for any new patchsets written by you.
+Actually I have one more request now: If you send new versions of a
+patchset, please add a changelog. E.g. for this one:
+
+Changes since v1:
+ * add "power:" prefix to PATCH0 subject
+
+Anyways your patches are already in linux-next.
 
 -- Sebastian
 
---2lyvued6w5uvppxm
+--byggkx5buypql2l4
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJXsupXAAoJENju1/PIO/qaEPUP/1H5wRbGtDEqTQeZAC9SNRcc
-FUrOBDzDXlWtg0wXH/oRoUdzZSdYgbOjQUNKslC3MkNASurwhpSxjVDLeqThaLc5
-lCCrNFzoasE1CDYEXV80Du4RpgleGw796vjlWrPKfEGhBfoSQnHaBpO4uOFN11gt
-r7U5Mh/hThCvFlxNe6Sv1elBWNUcAWTE8GFjs5S36rOARrbm7EkiXHsolZA4zD91
-+fRQn7GLo1034QhadEG4sctehQTxZIWIaEoh6Zat8hf7BrxgOIUsAxPkVXzoArSh
-5b53HctmZ/alx+Y4QohkRq72gei/07cGoLKpDd8ZKuqJbdRUOwYyd4I3ow7m3WP0
-M4CfRtStc/7esUH6k7urFhsUZrZ8PTFvobxjvjwi30Qte4dn7Fh9m19F1H1BMNqx
-HyB0/fpcPCh4HTVA6dMMxcHcKS36dvVewIh+h3RoSrudfl4l9WMT9pZTMr/QpQ+V
-/eOTXvGcD3N5MVAkgP/hsBxauPzuR0WYK7dEiENDSK2EQrZht3AZQVi9dtbOvXUu
-fzZIjNHvvz/ZwdNlH4BtK4SqbTCDj4wp7ql/X0qk6jJxJeaWu3uX2YXIBuFHHs5c
-vd9V37B6K70f4aufjS9OCzRB/4aHXOxzaFsZbnBX4DRWGG7NOebvw2rx0LCRILQz
-QKuBFJ+aVdezbXz3U7R9
-=iglT
+iQIcBAEBCgAGBQJXsus8AAoJENju1/PIO/qa2iIP/0uRL1nxnKvO4DSCtWYSWziq
+4QcOJLw+AevEw78GbU0L63lYEd5bUAktQvLYHE92m8v6o0spmROE/Axt75X6oV79
+ya7r9eDFh/3TFUSxEZANO9iRGBnvKIKABVFKFETa1GuiId0FUnmcqonRXxgRBT3t
+KXGcSnvX3LhqusWYoBhyReKXLpRbwo3pBnAGbPmi2F0buiq11LtgkPH8No6sLXsd
+nqbRfDRjG+valDqq4QWo1gNdkIq+WBEiggNQ2yf7KaGbjztfGhFOyhVpGzjUwi29
+YCsTOQ9boZfSL07DqzYlxXNBUTTK24BzUq39g5O/7fNPJ66bhblX0MSQSQgmol06
+7nFRSgejGGUfXRfp0Gt9SFKXZEvXBj42KdOOgXk7WNMFTocgFsAiuNMu09AGkJuQ
+pr7GRWitMbyj6W1+Al/gPqeBVPjKX801xZXOwdjxknj47RNhN3HOJerz+Sv7bIeU
+/8n+L0pu4T35RGVUfAIpnmmJcETKKZyZG3+Vsvj/D80ulRJQDMl7KgnyX4pVy0p5
+7uVNTf1mpFHstxzQGo9NIa0ykDg4YbIXpsAFMlkLnA+KfJl2ZMe9qhnMbeSo0Mdt
+31RKH9tG38t7IHXB41AbUG3yi76kym1tYtn0cyKwLHrW7j9Htb6ayIyTY4hs5FPD
+eyR1/zR0V/es5yLlWlT0
+=jjka
 -----END PGP SIGNATURE-----
 
---2lyvued6w5uvppxm--
+--byggkx5buypql2l4--
