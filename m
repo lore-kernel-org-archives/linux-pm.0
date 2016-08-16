@@ -1,43 +1,27 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 0/2] cpufreq / sched: Rework of cpufreq_update_util()
- arguments
-Date: Tue, 16 Aug 2016 15:21:27 +0530
-Message-ID: <20160816095127.GF21099@ubuntu>
-References: <6346523.ZooER3FGDH@vostro.rjw.lan>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH 2/2] power: surface3_power: MSHW0011 rev-eng
+ implementation
+Date: Tue, 16 Aug 2016 13:02:36 +0300
+Message-ID: <20160816100236.GF1751@lahna.fi.intel.com>
+References: <1469807366-24642-1-git-send-email-benjamin.tissoires@redhat.com>
+ <1469807366-24642-3-git-send-email-benjamin.tissoires@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <6346523.ZooER3FGDH@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
+In-Reply-To: <1469807366-24642-3-git-send-email-benjamin.tissoires@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Cc: Stephen Just <stephenjust@gmail.com>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-acpi@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12-08-16, 02:01, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> There were some comments on the "cpufreq / sched: cpufreq_update_util() flags
-> and iowait boosting" series I sent some time ago and I wanted to address them,
-> but for this purpose I had to combine patches [1-2,4/7] from that series
-> into one and make some changes on top of that.
-> 
-> Then I thought it would be better to send that separately from the iowait
-> boost part of that series, so here it goes.
-> 
-> [1/2] Removes the util and max args from cpufreq_update_util() and governor
->       callbacks and adds a flags argument instead of them.  That argument
->       is then used to handle RT and DL in schedutil and the utilization data
->       are accessed by it directly (so it is non-modular now to avoid exporting
->       the scheduler internals to modules).
-> [2/2] Replaces the time argument of cpufreq_update_util() with an rq pointer
->       which allows some simplifications to be made.
-> 
-> There should be no changes in behavior as a result of this.
-> 
-> The v2 is to address comments from Steve.
+On Fri, Jul 29, 2016 at 05:49:26PM +0200, Benjamin Tissoires wrote:
+> +static const struct i2c_device_id mshw0011_id[] = {
+> +	{ "MSHW0011:00", 0 },
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+You should not use ACPI device names in non-ACPI matching table. I think
+you can just leave this table empty.
 
--- 
-viresh
+> +	{ }
+> +};
+> +MODULE_DEVICE_TABLE(i2c, mshw0011_id);
