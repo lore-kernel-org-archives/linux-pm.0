@@ -1,99 +1,73 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v1] power: reset: reboot mode: fix build error of missing
- ioremap/iounmap on UM
-Date: Wed, 17 Aug 2016 00:07:45 +0200
-Message-ID: <20160816220745.okcvpcgflejlehha@earth>
-References: <1470996110-8550-1-git-send-email-andy.yan@rock-chips.com>
- <df657519-da7b-dbf3-1096-54253cb289c1@samsung.com>
- <082e9630-26cb-6587-6f9f-f97c334407ca@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="x5fhmwnt6rcvjrat"
+From: Lin Huang <hl@rock-chips.com>
+Subject: [PATCH v6 0/8] rk3399 support ddr frequency scaling
+Date: Wed, 17 Aug 2016 06:36:21 +0800
+Message-ID: <1471386989-9541-1-git-send-email-hl@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:35564 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752152AbcHPWHv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 16 Aug 2016 18:07:51 -0400
-Content-Disposition: inline
-In-Reply-To: <082e9630-26cb-6587-6f9f-f97c334407ca@rock-chips.com>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:35946 "EHLO
+	mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752867AbcHPWgf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2016 18:36:35 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, matthias.bgg@gmail.com, dbaryshkov@gmail.com, richard@nod.at, alexandre.belloni@free-electrons.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dwmw2@infradead.org, nicolas.ferre@atmel.com
+To: heiko@sntech.de, myungjoo.ham@samsung.com
+Cc: tixy@linaro.org, mark.rutland@arm.com, typ@rock-chips.com, linux-rockchip@lists.infradead.org, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, mark.yao@rock-chips.com, Lin Huang <hl@rock-chips.com>
 
+rk3399 platform have dfi controller can monitor ddr load,
+and dcf controller to handle ddr register so we can get the
+right ddr frequency and make ddr controller happy work(which
+will implement in bl31). So we do ddr frequency scaling with
+following flow:
 
---x5fhmwnt6rcvjrat
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+             kernel                                bl31
 
-Hi Andy,
+        monitor ddr load
+                |
+                |
+        get_target_rate
+                |
+                |           pass rate to bl31
+        clk_set_rate(ddr) --------------------->run dcf flow
+                |                                   |
+                |                                   |
+        wait dcf interrupt<-------------------trigger dcf interrupt
+                |
+                |
+              return
 
-On Tue, Aug 16, 2016 at 06:55:49PM +0800, Andy Yan wrote:
-> On 2016=E5=B9=B408=E6=9C=8812=E6=97=A5 20:48, Krzysztof Kozlowski wrote:
-> > On 08/12/2016 12:01 PM, Andy Yan wrote:
-> > > commit 4fcd504edbf7 ("power: reset: add reboot mode driver") uses api=
- from
-> > > syscon, and syscon uses ioremap/iounmap which depends on HAS_IOMEM, so
-> > > let's depend on MFD_SYSCON instead of selecting it directly to avoid =
-the
-> > > um-allyesconfig like build error on archs that without iomem:
-> > >=20
-> > > drivers/mfd/syscon.c: In function 'of_syscon_register':
-> > > drivers/mfd/syscon.c:67:9: error: implicit declaration of function 'i=
-oremap' [-Werror=3Dimplicit-function-declaration]
-> > >    base =3D ioremap(res.start, resource_size(&res));
-> > >           ^
-> > > drivers/mfd/syscon.c:67:7: warning: assignment makes pointer from int=
-eger without a cast [-Wint-conversion]
-> > >    base =3D ioremap(res.start, resource_size(&res));
-> > >         ^
-> > > drivers/mfd/syscon.c:109:2: error: implicit declaration of function '=
-iounmap' [-Werror=3Dimplicit-function-declaration]
-> > >    iounmap(base);
-> > >    ^
-> > >=20
-> > > Reported-by: Kbuild test robot <fengguang.wu@intel.com>
-> > > Fixes: 4fcd504edbf7("power: reset: add reboot mode driver")
-> > > Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
-> > >=20
-> > > ---
-> > >=20
-> > > Changes in v1:
-> > > - let this driver depend on MFD_SYSCON
-> > > - add Reported-by tag, which suggested by Krzysztof Kozlowski
-> > > - add Fixes tag, which suggested by Matthias Brugger
-> > >=20
-> > >   drivers/power/reset/Kconfig | 2 +-
-> > >   1 file changed, 1 insertion(+), 1 deletion(-)
-> > Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->
->  Will you please take this patch to avoid the Kbuild test robot warning ?
+Lin Huang (8):
+  clk: rockchip: add new clock-type for the ddrclk
+  clk: rockchip: rk3399: add SCLK_DDRCLK ID for ddrc
+  clk: rockchip: rk3399: add ddrc clock support
+  Documentation: bindings: add dt documentation for dfi controller
+  PM / devfreq: event: support rockchip dfi controller
+  Documentation: bindings: add dt documentation for rk3399 dmc
+  PM / devfreq: rockchip: add devfreq driver for rk3399 dmc
+  drm/rockchip: Add dmc notifier in vop driver
 
-https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/com=
-mit/?h=3Dfixes&id=3D7a4947cf6f26b7d0a5db260d212f6df41a563d23
+ .../bindings/devfreq/event/rockchip-dfi.txt        |  20 +
+ .../devicetree/bindings/devfreq/rk3399_dmc.txt     |  84 ++++
+ drivers/clk/rockchip/Makefile                      |   1 +
+ drivers/clk/rockchip/clk-ddr.c                     | 150 +++++++
+ drivers/clk/rockchip/clk-rk3399.c                  |  19 +
+ drivers/clk/rockchip/clk.c                         |   9 +
+ drivers/clk/rockchip/clk.h                         |  33 ++
+ drivers/devfreq/Kconfig                            |  11 +
+ drivers/devfreq/Makefile                           |   1 +
+ drivers/devfreq/event/Kconfig                      |   7 +
+ drivers/devfreq/event/Makefile                     |   1 +
+ drivers/devfreq/event/rockchip-dfi.c               | 253 +++++++++++
+ drivers/devfreq/rk3399_dmc.c                       | 497 +++++++++++++++++++++
+ drivers/gpu/drm/rockchip/rockchip_drm_vop.c        | 121 ++++-
+ include/dt-bindings/clock/rk3399-cru.h             |   1 +
+ include/soc/rockchip/rockchip_sip.h                |  27 ++
+ 16 files changed, 1233 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+ create mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+ create mode 100644 drivers/clk/rockchip/clk-ddr.c
+ create mode 100644 drivers/devfreq/event/rockchip-dfi.c
+ create mode 100644 drivers/devfreq/rk3399_dmc.c
+ create mode 100644 include/soc/rockchip/rockchip_sip.h
 
--- Sebastian
-
---x5fhmwnt6rcvjrat
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJXs46uAAoJENju1/PIO/qa6GkQAIzxfTIRKV3KxPOP9csepilf
-zDqgOEPXW4IhYDLd/i//r4i/fL+jEIMKj1JQKZ9DzYoXi+aq24Smf9bQKF0Xb774
-TxzN5Zd+1pyXHIr7JqLiW6LlHSKgjtLs2tvaIvoVVg3F4g4UYcIEGdDM0Op/NxEV
-xOouURS7xPInEImRpXo9Y5YpQAky1jMS+tyrR3WuTeqngSNAhytrrzR+6g9QFCiX
-DWJawR5UOvSXSavq0dl4K0nvlMwlliqqxlYVnliW/4NZWlfOkxHm+oP26OY+AlMO
-K3YbWW4WD0aBJ/AVKIL27V2guX/Y+CE+MZoc/hqOFcEsMA2oyQNOsWVW2QZHZpYm
-WATKm644P6qnUarjr2glgdNcrBiQBjsuV9O6oSNi+VrhqurGBN7SrcSDxRa0f7XG
-LVP71kCztOxgIYs5bOzVulDmQem/kp5mHt5xqUH/a51HkDLnKZqNpoly+U/6BbvP
-64UgMSafdqfJZ2Bf+6dfue5Ni4QLIHftsjaNBQg9HVRbt0SHOGS1FKHCUFRo4LCp
-SAiRQDzDQ/lkzwYYOzDxlDct/knpeKvp+wjkoIVRPBAkgg3uQQW+40g+RY4HwL8s
-IQLMYjhTRSoHZtNH/PjgZGGSNusBzOg4AXWbjzCQ1NgoHeMk8o55Qlz5M04/ryvc
-Ple5vv6mOzCNJKdv8fhd
-=5tDS
------END PGP SIGNATURE-----
-
---x5fhmwnt6rcvjrat--
+-- 
+2.6.6
+*
