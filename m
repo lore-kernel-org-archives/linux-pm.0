@@ -1,242 +1,144 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v6 2/8] arm: parse cpu capacity-dmips-mhz from DT
-Date: Tue, 16 Aug 2016 10:20:57 +0200
-Message-ID: <CAKfTPtBy7LGCW2T4AGoqL5L_1AHtW6KxHigxFVFVc_EU4oUO0g@mail.gmail.com>
-References: <1468932048-31635-1-git-send-email-juri.lelli@arm.com> <1468932048-31635-3-git-send-email-juri.lelli@arm.com>
+From: Brendan Jackman <brendan.jackman-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v3 02/15] dt/bindings: Update binding for PM domain idle
+ states
+Date: Tue, 16 Aug 2016 09:34:28 +0100
+Message-ID: <57B2D014.8000502@arm.com>
+References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
+ <1470351902-43103-3-git-send-email-lina.iyer@linaro.org>
+ <99e35b6c-6698-6d27-f4d7-fa032796869e@arm.com>
+ <20160810164034.GA1401@linaro.org>
+ <5e59874c-bbb7-270a-199c-da1ff5932554@arm.com>
+ <20160811211023.GC1401@linaro.org>
+ <697d8ac2-34ee-db3e-940b-5ce3365c5aa1@arm.com>
+ <20160815160857.GE1401@linaro.org>
+ <2033f384-7ea3-6713-4def-80bf4251fd67@arm.com>
+ <20160815224014.GF1401@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1468932048-31635-3-git-send-email-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Mark Brown <broonie@kernel.org>
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+Content-Transfer-Encoding: quoted-printable
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160815224014.GF1401-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi-5wv7dgnIgG8@public.gmane.org>, Juri Lelli <Juri.Lelli-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Juri,
 
 
-On 19 July 2016 at 14:40, Juri Lelli <juri.lelli@arm.com> wrote:
-> With the introduction of cpu capacity-dmips-mhz bindings, CPU capacities
-> can now be calculated from values extracted from DT and information
-> coming from cpufreq. Add parsing of DT information at boot time, and
-> complement it with cpufreq information. We keep code that can produce
-> same information, based on different DT properties and hard-coded
-> values, as fall-back for backward compatibility.
->
-> Caveat: the information provided by this patch will start to be used in
-> the future. We need to #define arch_scale_cpu_capacity to something
-> provided in arch, so that scheduler's default implementation (which gets
-> used if arch_scale_cpu_capacity is not defined) is overwritten.
->
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> ---
->
-> Changes from v1:
->   - normalize w.r.t. highest capacity found in DT
->   - bailout conditions (all-or-nothing)
->
-> Changes from v4:
->   - parsing modified to reflect change in binding (capacity-dmips-mhz)
->
-> Changes from v5:
->   - allocate raw_capacity array with kcalloc()
->   - pr_err() only for partial capacity information
-> ---
->  arch/arm/kernel/topology.c | 145 ++++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 144 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-> index ec279d161b32..b3094e6eb1f5 100644
-> --- a/arch/arm/kernel/topology.c
-> +++ b/arch/arm/kernel/topology.c
-> @@ -78,6 +78,134 @@ static unsigned long *__cpu_capacity;
->  #define cpu_capacity(cpu)      __cpu_capacity[cpu]
->
->  static unsigned long middle_capacity = 1;
-> +static bool cap_from_dt = true;
-> +static u32 *raw_capacity;
-> +static bool cap_parsing_failed;
-> +static u32 capacity_scale;
-> +
-> +static int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
-> +{
-> +       int ret = 1;
-> +       u32 cpu_capacity;
-> +
-> +       if (cap_parsing_failed)
-> +               return !ret;
-> +
-> +       ret = of_property_read_u32(cpu_node,
-> +                                  "capacity-dmips-mhz",
-> +                                  &cpu_capacity);
-> +       if (!ret) {
-> +               if (!raw_capacity) {
-> +                       raw_capacity = kcalloc(num_possible_cpus(),
-> +                                              sizeof(*raw_capacity),
-> +                                              GFP_KERNEL);
-> +                       if (!raw_capacity) {
-> +                               pr_err("cpu_capacity: failed to allocate memory for raw capacities\n");
-> +                               cap_parsing_failed = true;
-> +                               return !ret;
-> +                       }
-> +               }
-> +               capacity_scale = max(cpu_capacity, capacity_scale);
-> +               raw_capacity[cpu] = cpu_capacity;
-> +               pr_debug("cpu_capacity: %s cpu_capacity=%u (raw)\n",
-> +                       cpu_node->full_name, raw_capacity[cpu]);
-> +       } else {
-> +               if (raw_capacity) {
-> +                       pr_err("cpu_capacity: missing %s raw capacity\n",
-> +                               cpu_node->full_name);
-> +                       pr_err("cpu_capacity: partial information: fallback to 1024 for all CPUs\n");
-> +               }
-> +               cap_parsing_failed = true;
-> +               kfree(raw_capacity);
-> +       }
-> +
-> +       return !ret;
-> +}
-> +
-> +static void normalize_cpu_capacity(void)
-> +{
-> +       u64 capacity;
-> +       int cpu;
-> +
-> +       if (!raw_capacity || cap_parsing_failed)
-> +               return;
-> +
-> +       pr_debug("cpu_capacity: capacity_scale=%u\n", capacity_scale);
-> +       for_each_possible_cpu(cpu) {
-> +               capacity = (raw_capacity[cpu] << SCHED_CAPACITY_SHIFT)
-> +                       / capacity_scale;
-> +               set_capacity_scale(cpu, capacity);
-> +               pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
-> +                       cpu, arch_scale_cpu_capacity(NULL, cpu));
-> +       }
-> +}
-> +
-> +#ifdef CONFIG_CPU_FREQ
-> +static cpumask_var_t cpus_to_visit;
-> +static bool cap_parsing_done;
-> +
-> +static int
-> +init_cpu_capacity_callback(struct notifier_block *nb,
-> +                          unsigned long val,
-> +                          void *data)
-> +{
-> +       struct cpufreq_policy *policy = data;
-> +       int cpu;
-> +
-> +       if (cap_parsing_failed || cap_parsing_done)
-> +               return 0;
-> +
-> +       switch (val) {
-> +       case CPUFREQ_NOTIFY:
-> +               pr_debug("cpu_capacity: init cpu capacity for CPUs [%*pbl] (to_visit=%*pbl)\n",
-> +                               cpumask_pr_args(policy->related_cpus),
-> +                               cpumask_pr_args(cpus_to_visit));
-> +               cpumask_andnot(cpus_to_visit,
-> +                              cpus_to_visit,
-> +                              policy->related_cpus);
-> +               for_each_cpu(cpu, policy->related_cpus) {
-> +                       raw_capacity[cpu] = arch_scale_cpu_capacity(NULL, cpu) *
-> +                                           policy->max / 1000UL;
+On 15/08/16 23:40, Lina Iyer wrote:
+> On Mon, Aug 15 2016 at 10:14 -0600, Sudeep Holla wrote:
+>>
+>>
+>> On 15/08/16 17:08, Lina Iyer wrote:
+>>> On Fri, Aug 12 2016 at 04:08 -0600, Sudeep Holla wrote:
+>>>>
+>>>>
+>>>> On 11/08/16 22:10, Lina Iyer wrote:
+>>>>> On Wed, Aug 10 2016 at 12:09 -0600, Sudeep Holla wrote:
+>>>>>>
+>>>>
+>>>> [...]
+>>>>
+>>>>>> cluster0
+>>>>>>   CLUSTER_RET(Retention)
+>>>>>>   CLUSTER_PG(Power Gate)
+>>>>>>   core0
+>>>>>>       CORE_RET
+>>>>>>       CORE_PG
+>>>>>>   core1
+>>>>>>       CORE_RET
+>>>>>>       CORE_PG
+>>>>>>
+>>>>>> cluster1
+>>>>>>   CLUSTER_RET
+>>>>>>   CLUSTER_PG
+>>>>>>   core0
+>>>>>>       CORE_RET
+>>>>>>       CORE_PG
+>>>>>>   core1
+>>>>>>       CORE_RET
+>>>>>>       CORE_PG
+>>>>>>
+>>>>>> Platform Co-ordinate supports the following states and we should be
+>>>>>> able to determine that from the binding:
+>>>>>>
+>>>>>> CORE_RET
+>>>>>> CORE_PG
+>>>>>> CORE_RET + CLUSTER_RET
+>>>>>
+>>>>> The problem that we have to sove here is knowing that CORE_RET +
+>>>>> CLUSTER_PG (hypothetically) an invalid combination. Kevin and
+>>>>> I debated it in the earlier RFC and we dont have a good way to solve
+>>>>> this generically for all devices.
+>>>>>
+>>>>
+>>>> Yes, I agree it's complex. But that needs to be solved IMO.
+>>>>
+>>>> I can think of 2 possible solutions:
+>>>>
+>>>> 1. Index the states(which people have not liked, but as along as we
+>>>>  don't use it in the code as it for any other purpose, it should be
+>>>>  fine) and then have each state mentioning what parent state can be
+>>>>  entered at this child state(i.e. starting index and all states below
+>>>>  it)
+>>>>
+>>> This is how QCOM solved it downstream.
+>>>
+>>
+>> Yes even ACPI has indices to solve this.
+>>
+>>>> 2. Something similar to (1) but without index instead phandles.
+>>>>
+>>>
+>>> The problem is when you have non-CPU devices in the device tree and
+>>> since they do not have a way to represent states like CPU, we did not
+>>> have a clear path to that. Hence we punted that to later. Whatever we
+>>> do, we should solve it for a generic PM domain, not just CPU domains.
+>>>
+>>
+>> Yes bindings defined here should be applicable for devices to, but only
+>> CPU's will have this hierarchy while the devices need not bother about
+>> hierarchy. However the parent power domain can ever the state which is
+>> least common denominator of all it's children power domain. That's my
+>> understanding. No ?
+>>
 
-Should it be policy->cpuinfo.max_freq instead of policy->max ?
+Are you saying that the parent can enter the shallowest idle state that
+all its children are in (I.e if all its children are in "retention" then
+it can enter "retention")? I don't know what the reality is on existing
+platforms but it doesn't sound like 100% safe assumption to make. Also I
+don't think you can necessarily correlate idle states at different
+domain levels - i.e. here we've matched up the idea of "retention" at
+core level with that of "retention" at cluster level. I may have
+misunderstood you there..
 
-> +                       capacity_scale = max(raw_capacity[cpu], capacity_scale);
-> +               }
-> +               if (cpumask_empty(cpus_to_visit)) {
-> +                       normalize_cpu_capacity();
-> +                       kfree(raw_capacity);
-> +                       pr_debug("cpu_capacity: parsing done\n");
-> +                       cap_parsing_done = true;
+> That is correct. But say if all the CPUs choose CORE_RET + CLUSTER_PG,
+> which is invalid and the firmware has to ignore it and does CORE_RET +
+> CLUSTER_RET instead, then Linux may have an inconsistent view of the
+> state selection.
+>
+Perhaps a better starting point would be to go with the assumption that
+a parent PD can only enter any idle state once its children are in their
+deepest idle states.
 
-ok so you do that once with the 1st governor that will be registered
-for the CPU. Can't you unregister the notifier then ?
+That is, we'd miss out on CORE_RET + CLUSTER_RET but have no invalid ones.
 
-> +               }
-> +       }
-> +       return 0;
-> +}
-> +
-> +static struct notifier_block init_cpu_capacity_notifier = {
-> +       .notifier_call = init_cpu_capacity_callback,
-> +};
-> +
-> +static int __init register_cpufreq_notifier(void)
-> +{
-> +       if (cap_parsing_failed)
-> +               return -EINVAL;
-> +
-> +       if (!alloc_cpumask_var(&cpus_to_visit, GFP_KERNEL)) {
-> +               pr_err("cpu_capacity: failed to allocate memory for cpus_to_visit\n");
-> +               return -ENOMEM;
-> +       }
-> +       cpumask_copy(cpus_to_visit, cpu_possible_mask);
-> +
-> +       return cpufreq_register_notifier(&init_cpu_capacity_notifier,
-> +                                        CPUFREQ_POLICY_NOTIFIER);
-> +}
-> +core_initcall(register_cpufreq_notifier);
-> +#else
-> +static int __init free_raw_capacity(void)
-> +{
-> +       kfree(raw_capacity);
-> +
-> +       return 0;
-> +}
-> +core_initcall(free_raw_capacity);
-> +#endif
+Then a later addition to the bindings as discussed above could enable
+the possibility of those combinations to be expressed.
+> Thanks,
+> Lina
 >
->  /*
->   * Iterate all CPUs' descriptor in DT and compute the efficiency
-> @@ -99,6 +227,12 @@ static void __init parse_dt_topology(void)
->         __cpu_capacity = kcalloc(nr_cpu_ids, sizeof(*__cpu_capacity),
->                                  GFP_NOWAIT);
+>> --
+>> Regards,
+>> Sudeep
 >
-> +       cn = of_find_node_by_path("/cpus");
-> +       if (!cn) {
-> +               pr_err("No CPU information found in DT\n");
-> +               return;
-> +       }
-> +
->         for_each_possible_cpu(cpu) {
->                 const u32 *rate;
->                 int len;
-> @@ -110,6 +244,13 @@ static void __init parse_dt_topology(void)
->                         continue;
->                 }
->
-> +               if (parse_cpu_capacity(cn, cpu)) {
-> +                       of_node_put(cn);
-> +                       continue;
-> +               }
-> +
-> +               cap_from_dt = false;
-> +
->                 for (cpu_eff = table_efficiency; cpu_eff->compatible; cpu_eff++)
->                         if (of_device_is_compatible(cn, cpu_eff->compatible))
->                                 break;
-> @@ -151,6 +292,8 @@ static void __init parse_dt_topology(void)
->                 middle_capacity = ((max_capacity / 3)
->                                 >> (SCHED_CAPACITY_SHIFT-1)) + 1;
->
-> +       if (cap_from_dt && !cap_parsing_failed)
-> +               normalize_cpu_capacity();
->  }
->
->  /*
-> @@ -160,7 +303,7 @@ static void __init parse_dt_topology(void)
->   */
->  static void update_cpu_capacity(unsigned int cpu)
->  {
-> -       if (!cpu_capacity(cpu))
-> +       if (!cpu_capacity(cpu) || cap_from_dt)
->                 return;
->
->         set_capacity_scale(cpu, cpu_capacity(cpu) / middle_capacity);
-> --
-> 2.7.0
->
+IMPORTANT NOTICE: The contents of this email and any attachments are confid=
+ential and may also be privileged. If you are not the intended recipient, p=
+lease notify the sender immediately and do not disclose the contents to any=
+ other person, use it for any purpose, or store or copy the information in =
+any medium. Thank you.
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
