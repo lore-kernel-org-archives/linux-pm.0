@@ -1,73 +1,90 @@
 From: Lin Huang <hl@rock-chips.com>
-Subject: [PATCH v6 0/8] rk3399 support ddr frequency scaling
-Date: Wed, 17 Aug 2016 06:36:21 +0800
-Message-ID: <1471386989-9541-1-git-send-email-hl@rock-chips.com>
+Subject: [PATCH v6 3/8] clk: rockchip: rk3399: add ddrc clock support
+Date: Wed, 17 Aug 2016 06:36:24 +0800
+Message-ID: <1471386989-9541-4-git-send-email-hl@rock-chips.com>
+References: <1471386989-9541-1-git-send-email-hl@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:35946 "EHLO
-	mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbcHPWgf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2016 18:36:35 -0400
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:35788 "EHLO
+	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752867AbcHPWgj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2016 18:36:39 -0400
+In-Reply-To: <1471386989-9541-1-git-send-email-hl@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: heiko@sntech.de, myungjoo.ham@samsung.com
 Cc: tixy@linaro.org, mark.rutland@arm.com, typ@rock-chips.com, linux-rockchip@lists.infradead.org, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, mark.yao@rock-chips.com, Lin Huang <hl@rock-chips.com>
 
-rk3399 platform have dfi controller can monitor ddr load,
-and dcf controller to handle ddr register so we can get the
-right ddr frequency and make ddr controller happy work(which
-will implement in bl31). So we do ddr frequency scaling with
-following flow:
+add ddrc clock setting, so we can do ddr frequency
+scaling on rk3399 platform in future.
 
-             kernel                                bl31
+Signed-off-by: Lin Huang <hl@rock-chips.com>
+---
+Changes in v6:
+- None
 
-        monitor ddr load
-                |
-                |
-        get_target_rate
-                |
-                |           pass rate to bl31
-        clk_set_rate(ddr) --------------------->run dcf flow
-                |                                   |
-                |                                   |
-        wait dcf interrupt<-------------------trigger dcf interrupt
-                |
-                |
-              return
+Changes in v5:
+- fit for the ddr type
 
-Lin Huang (8):
-  clk: rockchip: add new clock-type for the ddrclk
-  clk: rockchip: rk3399: add SCLK_DDRCLK ID for ddrc
-  clk: rockchip: rk3399: add ddrc clock support
-  Documentation: bindings: add dt documentation for dfi controller
-  PM / devfreq: event: support rockchip dfi controller
-  Documentation: bindings: add dt documentation for rk3399 dmc
-  PM / devfreq: rockchip: add devfreq driver for rk3399 dmc
-  drm/rockchip: Add dmc notifier in vop driver
+Changes in v4:
+- None
 
- .../bindings/devfreq/event/rockchip-dfi.txt        |  20 +
- .../devicetree/bindings/devfreq/rk3399_dmc.txt     |  84 ++++
- drivers/clk/rockchip/Makefile                      |   1 +
- drivers/clk/rockchip/clk-ddr.c                     | 150 +++++++
- drivers/clk/rockchip/clk-rk3399.c                  |  19 +
- drivers/clk/rockchip/clk.c                         |   9 +
- drivers/clk/rockchip/clk.h                         |  33 ++
- drivers/devfreq/Kconfig                            |  11 +
- drivers/devfreq/Makefile                           |   1 +
- drivers/devfreq/event/Kconfig                      |   7 +
- drivers/devfreq/event/Makefile                     |   1 +
- drivers/devfreq/event/rockchip-dfi.c               | 253 +++++++++++
- drivers/devfreq/rk3399_dmc.c                       | 497 +++++++++++++++++++++
- drivers/gpu/drm/rockchip/rockchip_drm_vop.c        | 121 ++++-
- include/dt-bindings/clock/rk3399-cru.h             |   1 +
- include/soc/rockchip/rockchip_sip.h                |  27 ++
- 16 files changed, 1233 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
- create mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
- create mode 100644 drivers/clk/rockchip/clk-ddr.c
- create mode 100644 drivers/devfreq/event/rockchip-dfi.c
- create mode 100644 drivers/devfreq/rk3399_dmc.c
- create mode 100644 include/soc/rockchip/rockchip_sip.h
+Changes in v3:
+- None
 
+Changes in v2:
+- remove clk_ddrc_dpll_src from critical clock list
+
+Changes in v1:
+- remove ddrc source CLK_IGNORE_UNUSED flag
+- move clk_ddrc and clk_ddrc_dpll_src to critical
+
+ drivers/clk/rockchip/clk-rk3399.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/drivers/clk/rockchip/clk-rk3399.c b/drivers/clk/rockchip/clk-rk3399.c
+index e445cd6..01d4945 100644
+--- a/drivers/clk/rockchip/clk-rk3399.c
++++ b/drivers/clk/rockchip/clk-rk3399.c
+@@ -120,6 +120,10 @@ PNAME(mux_armclkb_p)				= { "clk_core_b_lpll_src",
+ 						    "clk_core_b_bpll_src",
+ 						    "clk_core_b_dpll_src",
+ 						    "clk_core_b_gpll_src" };
++PNAME(mux_ddrclk_p)				= { "clk_ddrc_lpll_src",
++						    "clk_ddrc_bpll_src",
++						    "clk_ddrc_dpll_src",
++						    "clk_ddrc_gpll_src" };
+ PNAME(mux_aclk_cci_p)				= { "cpll_aclk_cci_src",
+ 						    "gpll_aclk_cci_src",
+ 						    "npll_aclk_cci_src",
+@@ -1379,6 +1383,18 @@ static struct rockchip_clk_branch rk3399_clk_branches[] __initdata = {
+ 	COMPOSITE_NOMUX(0, "clk_test", "clk_test_pre", CLK_IGNORE_UNUSED,
+ 			RK3368_CLKSEL_CON(58), 0, 5, DFLAGS,
+ 			RK3368_CLKGATE_CON(13), 11, GFLAGS),
++
++	/* ddrc */
++	GATE(0, "clk_ddrc_lpll_src", "lpll", 0, RK3399_CLKGATE_CON(3),
++	     0, GFLAGS),
++	GATE(0, "clk_ddrc_bpll_src", "bpll", 0, RK3399_CLKGATE_CON(3),
++	     1, GFLAGS),
++	GATE(0, "clk_ddrc_dpll_src", "dpll", 0, RK3399_CLKGATE_CON(3),
++	     2, GFLAGS),
++	GATE(0, "clk_ddrc_gpll_src", "gpll", 0, RK3399_CLKGATE_CON(3),
++	     3, GFLAGS),
++	COMPOSITE_DDRCLK(SCLK_DDRC, "clk_ddrc", mux_ddrclk_p, 0,
++		       RK3399_CLKSEL_CON(6), 4, 2, 0, 0, ROCKCHIP_DDRCLK_SIP),
+ };
+ 
+ static struct rockchip_clk_branch rk3399_clk_pmu_branches[] __initdata = {
+@@ -1493,6 +1509,9 @@ static const char *const rk3399_cru_critical_clocks[] __initconst = {
+ 	"gpll_aclk_perilp0_src",
+ 	"gpll_aclk_perihp_src",
+ 	"aclk_vio_noc",
++
++	/* ddrc */
++	"clk_ddrc"
+ };
+ 
+ static const char *const rk3399_pmucru_critical_clocks[] __initconst = {
 -- 
 2.6.6
-*
+
