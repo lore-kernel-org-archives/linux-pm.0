@@ -1,71 +1,73 @@
-From: Alexey Klimov <alexey.klimov@arm.com>
-Subject: Re: [PATCH 5/5] acpi: bus: Enable HWP CPPC objects
-Date: Tue, 16 Aug 2016 15:32:57 +0100
-Message-ID: <20160816143257.GA22533@arm.com>
-References: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1470874646-70570-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 153221] New: failing to set governor with
+ cpupower-frequency-set
+Date: Tue, 16 Aug 2016 14:34:21 +0000
+Message-ID: <bug-153221-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1470874646-70570-6-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:43374 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752434AbcHPOeY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Aug 2016 10:34:24 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id BBC35201C8
+	for <linux-pm@vger.kernel.org>; Tue, 16 Aug 2016 14:34:22 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+	by mail.kernel.org (Postfix) with ESMTP id B8906201C0
+	for <linux-pm@vger.kernel.org>; Tue, 16 Aug 2016 14:34:21 +0000 (UTC)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Hi Srinivas,
+https://bugzilla.kernel.org/show_bug.cgi?id=153221
 
-On Wed, Aug 10, 2016 at 05:17:26PM -0700, Srinivas Pandruvada wrote:
-> Need to set platform wide _OSC bits CPC version 1 and version 2 bits
-> so that BIOS presents CPPC objects.
-> Even though the cppc_acpi supports only version 2, need to set both
-> _OSC bits for version 1 and version 2, otherwise BIOS ignore _OSC
-> settings.
+            Bug ID: 153221
+           Summary: failing to set governor with cpupower-frequency-set
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 4.7.0-1-ARCH
+          Hardware: Intel
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: linux-pm@vger.kernel.org
+          Reporter: foudil.newbie+linux@gmail.com
+        Regression: No
 
-Does such behaviour go against ACPI specs?
-If yes, it's better to add comment in the code.
- 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/acpi/bus.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-> index 85b7d07..61643a5 100644
-> --- a/drivers/acpi/bus.c
-> +++ b/drivers/acpi/bus.c
-> @@ -330,6 +330,13 @@ static void acpi_bus_osc_support(void)
->  	capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_HOTPLUG_OST_SUPPORT;
->  	capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_PCLPI_SUPPORT;
->  
-> +#ifdef CONFIG_X86
-> +	if (boot_cpu_has(X86_FEATURE_HWP)) {
-> +		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPC_SUPPORT;
-> +		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPCV2_SUPPORT;
-> +	}
-> +#endif
+Created attachment 229121
+  --> https://bugzilla.kernel.org/attachment.cgi?id=229121&action=edit
+cpupower-frequency-set patch
 
-Just to check if I understand things correctly.
-I thought that OSC method is kind of 'handshake'. OS describes features
-that it supports and then platform indicates back what features it can
-provide/support.
-Here in this patch I see only first part and I don't see where you check
-confirmation from platform that it supports/enabled CPPC.
-You don't need that, do you?
-It will be nice to see explanation.
+cpupower frequency-set -g performance
 
-Best regards,
-Alexey.
+has no effect.
+I think this is due to a bug introduced by ac5a181d065d74fb:
 
->  	if (!ghes_disable)
->  		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_APEI_SUPPORT;
->  	if (ACPI_FAILURE(acpi_get_handle(NULL, "\\_SB", &handle)))
-> -- 
-> 2.7.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+@@ -298,3 +298,3 @@ int cmd_freq_set(int argc, char **argv)
+                        if (!bitmask_isbitset(cpus_chosen, cpu) ||
+-                           cpufreq_cpu_exists(cpu))
++                           cpupower_is_cpu_online(cpu))
+                                continue;
+@@ -318,6 +318,6 @@ int cmd_freq_set(int argc, char **argv)
+                if (!bitmask_isbitset(cpus_chosen, cpu) ||
+-                   cpufreq_cpu_exists(cpu))
++                   cpupower_is_cpu_online(cpu))
+                        continue;
+
+-               if (sysfs_is_cpu_online(cpu) != 1)
++               if (cpupower_is_cpu_online(cpu) != 1)
+                        continue;
+
+The two functions cpufreq_cpu_exists() and sysfs_is_cpu_online() were replaced
+by cpupower_is_cpu_online(), which is misused in the first test.
+
+I'm proposing a patch in attachment.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
