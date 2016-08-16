@@ -1,45 +1,55 @@
-From: Finlye Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v1 0/3] PM / AVS: add Rockchip cpu avs
-Date: Tue, 16 Aug 2016 10:38:56 +0800
-Message-ID: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com>
+From: Finlye Xiao <finley.xiao@rock-chips.com>
+Subject: [PATCH v1 1/3] nvmem: rockchip-efuse: Change initcall to subsys
+Date: Tue, 16 Aug 2016 10:38:57 +0800
+Message-ID: <1471315139-28285-2-git-send-email-finley.xiao@rock-chips.com>
+References: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: srinivas.kandagatla@linaro.org, maxime.ripard@free-electrons.com, heiko@sntech.de, robh+dt@kernel.org, frowand.list@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, mark.rutland@arm.com, khilman@kernel.org, nm@ti.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, sboyd@codeaurora.org
+Cc: devicetree@vger.kernel.org, tim.chen@rock-chips.com, linux-pm@vger.kernel.org, lin.huang@rock-chips.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, tony.xie@rock-chips.com, Finley Xiao <finley.xiao@rock-chips.com>, ulysses.huang@rock-chips.com, rocky.hao@rock-chips.com, jay.xu@rock-chips.com, linux-arm-kernel@lists.infradead.org, wxt@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+From: Finley Xiao <finley.xiao@rock-chips.com>
 
-Under the same frequency, the operating voltage tends to decrease with
-increasing leakage. so it is necessary to adjust opp's voltage according
-to leakage for power.
+We will register a cpufreq notifier for adjusting opp's voltage, and it
+need to fetch cpu's leakage from efuse in the notifier_call. so the efuse
+driver should probe before cpufreq driver.
 
-Finley Xiao (3):
-  nvmem: rockchip-efuse: Change initcall to subsys
-  of: Add support for reading a s32 from a multi-value property.
-  PM / AVS: rockchip-cpu-avs: add driver handling Rockchip cpu avs
+Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+---
+ drivers/nvmem/rockchip-efuse.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
- .../devicetree/bindings/power/rockchip-cpu-avs.txt |  37 +++
- drivers/nvmem/rockchip-efuse.c                     |   9 +-
- drivers/of/base.c                                  |  23 ++
- drivers/power/avs/Kconfig                          |   8 +
- drivers/power/avs/Makefile                         |   1 +
- drivers/power/avs/rockchip-cpu-avs.c               | 314 +++++++++++++++++++++
- include/linux/of.h                                 |  10 +
- 7 files changed, 401 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
- create mode 100644 drivers/power/avs/rockchip-cpu-avs.c
-
+diff --git a/drivers/nvmem/rockchip-efuse.c b/drivers/nvmem/rockchip-efuse.c
+index 4d3f391..378993d 100644
+--- a/drivers/nvmem/rockchip-efuse.c
++++ b/drivers/nvmem/rockchip-efuse.c
+@@ -144,6 +144,13 @@ static struct platform_driver rockchip_efuse_driver = {
+ 	},
+ };
+ 
+-module_platform_driver(rockchip_efuse_driver);
++static int __init rockchip_efuse_module_init(void)
++{
++	return platform_driver_probe(&rockchip_efuse_driver,
++				     rockchip_efuse_probe);
++}
++
++subsys_initcall(rockchip_efuse_module_init);
++
+ MODULE_DESCRIPTION("rockchip_efuse driver");
+ MODULE_LICENSE("GPL v2");
 -- 
 1.9.1
