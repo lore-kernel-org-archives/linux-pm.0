@@ -1,11 +1,14 @@
 From: Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH 00/10] PM / Domains: Add support for removing PM domains
-Date: Tue, 16 Aug 2016 10:49:26 +0100
-Message-ID: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
+Subject: [PATCH 02/10] ARM: EXYNOS: Remove calls to
+ of_genpd_get_from_provider()
+Date: Tue, 16 Aug 2016 10:49:28 +0100
+Message-ID: <1471340976-5379-3-git-send-email-jonathanh@nvidia.com>
+References: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,41 +22,55 @@ To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, 
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, Alexander Aring <alex.aring@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-In order to safely remove PM domains there are a few changes that need to be
-made to ensure that no one is holding an external reference to a PM domain
-after it has been removed. One solution, implemented here, solves this by
-eliminating external references to PM domain.
+Update the EXYNOS PM domain code to use the of_genpd_add_subdomain()
+and remove any calls to of_genpd_get_from_provider().
 
-This is a follow-up to the initial RFC I sent out [0].
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+---
+ drivers/soc/samsung/pm_domains.c | 23 ++++++++---------------
+ 1 file changed, 8 insertions(+), 15 deletions(-)
 
-Changes from initial RFC:
-- Renamed functions made static per Ulf's feedback.
-- Added patch to clean-up provider/xlate APIs per Ulf's feedback
-- Re-worked and simplified the association between PM domains and PM
-  domain providers. Dropped the 'provider_data' variable from the
-  generic_pm_domain structure in favour of using the fwnode_handle.
-- Split patch for removing PM domains into multiple patches per Ulf's
-  feedback.
-
-[0] http://marc.info/?l=linux-pm&m=145709064407085&w=2
-
-Jon Hunter (10):
-  PM / Domains: Add new helper functions for device-tree
-  ARM: EXYNOS: Remove calls to of_genpd_get_from_provider()
-  staging: board: Remove calls to of_genpd_get_from_provider()
-  PM / Domains: Don't expose generic_pm_domain structure to clients
-  PM / Domains: Don't expose xlate and provider helper functions
-  PM / Domains: Verify the PM domain is present when adding a provider
-  PM / Domains: Prepare for adding support to remove PM domains
-  PM / Domains: Add support for removing PM domains
-  PM / Domains: Store the provider in the PM domain structure
-  PM / Domains: Add support for removing nested PM domains by provider
-
- drivers/base/power/domain.c      | 361 +++++++++++++++++++++++++++++++++++----
- drivers/soc/samsung/pm_domains.c |  23 +--
- drivers/staging/board/board.c    |   9 +-
- include/linux/pm_domain.h        |  73 ++++----
- 4 files changed, 371 insertions(+), 95 deletions(-)
-
+diff --git a/drivers/soc/samsung/pm_domains.c b/drivers/soc/samsung/pm_domains.c
+index 4822346aadc6..7112004b8032 100644
+--- a/drivers/soc/samsung/pm_domains.c
++++ b/drivers/soc/samsung/pm_domains.c
+@@ -215,29 +215,22 @@ no_clk:
+ 
+ 	/* Assign the child power domains to their parents */
+ 	for_each_matching_node(np, exynos_pm_domain_of_match) {
+-		struct generic_pm_domain *child_domain, *parent_domain;
+-		struct of_phandle_args args;
++		struct of_phandle_args child, parent;
+ 
+-		args.np = np;
+-		args.args_count = 0;
+-		child_domain = of_genpd_get_from_provider(&args);
+-		if (IS_ERR(child_domain))
+-			continue;
++		child.np = np;
++		child.args_count = 0;
+ 
+ 		if (of_parse_phandle_with_args(np, "power-domains",
+-					 "#power-domain-cells", 0, &args) != 0)
+-			continue;
+-
+-		parent_domain = of_genpd_get_from_provider(&args);
+-		if (IS_ERR(parent_domain))
++					       "#power-domain-cells", 0,
++					       &parent) != 0)
+ 			continue;
+ 
+-		if (pm_genpd_add_subdomain(parent_domain, child_domain))
++		if (of_genpd_add_subdomain(&parent, &child))
+ 			pr_warn("%s failed to add subdomain: %s\n",
+-				parent_domain->name, child_domain->name);
++				parent.np->name, child.np->name);
+ 		else
+ 			pr_info("%s has as child subdomain: %s.\n",
+-				parent_domain->name, child_domain->name);
++				parent.np->name, child.np->name);
+ 	}
+ 
+ 	return 0;
 -- 
 2.1.4
