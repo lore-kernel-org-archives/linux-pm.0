@@ -1,24 +1,13 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v3 02/15] dt/bindings: Update binding for PM domain idle
- states
-Date: Tue, 16 Aug 2016 10:19:36 +0100
-Message-ID: <edc76f32-7e8f-4301-1345-ef9944ae9a51@arm.com>
-References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
- <1470351902-43103-3-git-send-email-lina.iyer@linaro.org>
- <99e35b6c-6698-6d27-f4d7-fa032796869e@arm.com>
- <20160810164034.GA1401@linaro.org>
- <5e59874c-bbb7-270a-199c-da1ff5932554@arm.com>
- <20160811211023.GC1401@linaro.org>
- <697d8ac2-34ee-db3e-940b-5ce3365c5aa1@arm.com>
- <20160815160857.GE1401@linaro.org>
- <2033f384-7ea3-6713-4def-80bf4251fd67@arm.com>
- <20160815224014.GF1401@linaro.org>
- <20160816084127.GA24657@brendan-thinkstation>
+From: Wenyou Yang <wenyou.yang@atmel.com>
+Subject: [PATCH v5 6/7] power: act8945a_charger: Add max current property
+Date: Tue, 16 Aug 2016 16:59:57 +0800
+Message-ID: <1471337998-6467-7-git-send-email-wenyou.yang@atmel.com>
+References: <1471337998-6467-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160816084127.GA24657@brendan-thinkstation>
+In-Reply-To: <1471337998-6467-1-git-send-email-wenyou.yang@atmel.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -28,102 +17,143 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Brendan Jackman <brendan.jackman@arm.com>, Lina Iyer <lina.iyer@linaro.org>
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, khilman@kernel.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, Sudeep Holla <sudeep.holla@arm.com>, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar
+ Gala <galak@codeaurora.org>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+Add the power supply's current max property,
+POWER_SUPPLY_PROP_CURRENT_MAX.
 
+Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
+---
 
-On 16/08/16 09:41, Brendan Jackman wrote:
-> Hi Lina,
-> On Mon, Aug 15, 2016 at 04:40:14PM -0600, Lina Iyer wrote:
->> On Mon, Aug 15 2016 at 10:14 -0600, Sudeep Holla wrote:
-[,,,]
+Changes in v5: None
+Changes in v4:
+ - Fix wrong gpio assignment for chglev_pin.
 
+Changes in v3: None
+Changes in v2: None
 
->>>
->>> Yes even ACPI has indices to solve this.
->>>
->>>>> 2. Something similar to (1) but without index instead phandles.
->>>>>
->>>>
->>>> The problem is when you have non-CPU devices in the device tree and
->>>> since they do not have a way to represent states like CPU, we did not
->>>> have a clear path to that. Hence we punted that to later. Whatever we
->>>> do, we should solve it for a generic PM domain, not just CPU domains.
->>>>
->>>
->>> Yes bindings defined here should be applicable for devices to, but only
->>> CPU's will have this hierarchy while the devices need not bother about
->>> hierarchy. However the parent power domain can ever the state which is
->>> least common denominator of all it's children power domain. That's my
->>> understanding. No?
->>>
->
->
-> Are you saying that the parent can enter the shallowest idle state that all its
-> children are in (I.e if all its children are in "retention" then it can enter
-> "retention")? I don't know what the reality is on existing platforms but it
-> doesn't sound like 100% safe assumption to make.
+ drivers/power/supply/act8945a_charger.c | 79 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 77 insertions(+), 2 deletions(-)
 
-I was referring to non-CPU/device power states above. For CPU we do need
-a mechanism in place to indicate the dependency.
-
-> Also I don't think you can
-> necessarily correlate idle states at different domain levels - i.e. here we've
-> matched up the idea of "retention" at core level with that of "retention" at
-> cluster level. I may have misunderstood you there..
->
-
-Correct for CPUs. For normal devices and their power domains, it could
-straight forward. E.g if many devices are at-least at state D1(few may
-be at state D2 or above), the parent can enter D1.(D0-runnning and D1-D3
-are low power states in the above example)
-
->> That is correct. But say if all the CPUs choose CORE_RET + CLUSTER_PG,
->> which is invalid and the firmware has to ignore it and does CORE_RET +
->> CLUSTER_RET instead, then Linux may have an inconsistent view of the
->> state selection.
->>
-
-1. First, CORE_RET + CLUSTER_PG should not be registered as valid idle
-    state.
-2. We do have inconsistent view already for platform co-ordinated idle
-    In-fact it could happen even with OSC mode I believe. Platform can
-    always demote the state, so OS can never get the exact view unless it
-    queries the firmware for that explicitly(e.g. PSCI_STATS)
-
->
-> Perhaps a better starting point would be to go with the assumption that a parent
-> PD can only enter any idle state once its children are in their deepest idle
-> states.
->
-> So in the example above we'd end up with
->
-> CORE_RET
-> CORE_PG
-> CORE_PG + CLUSTER_RET
-> CORE_PG + CLUSTER_PG
->
-
-Yes this assumption seems good enough to me. At-least no invalid
-combination is ensured.
-
-> (Missing out on CORE_RET + CLUSTER_RET, even though that's a valid combination
-> from the hardware's perspective)
->
-
-Yes, if it's a real issue then we need proper bindings to deal with
-that. Otherwise we can manage without the extra information.
-
-> Then a later addition to the bindings as discussed above could enable the
-> possibility of those combinations to be expressed.
->
-
-Seems feasible solution to me, but better to make this explicit in the
-binding and check with few others. It looks fair enough assumption IMO.
-
+diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
+index 2321796..9bfbc87 100644
+--- a/drivers/power/supply/act8945a_charger.c
++++ b/drivers/power/supply/act8945a_charger.c
+@@ -84,6 +84,7 @@ struct act8945a_charger {
+ 
+ 	bool init_done;
+ 	int lbo_pin;
++	int chgin_level;
+ };
+ 
+ static int act8945a_get_charger_state(struct regmap *regmap, int *val)
+@@ -267,12 +268,79 @@ static int act8945a_get_capacity_level(struct act8945a_charger *charger,
+ 	return 0;
+ }
+ 
++#define MAX_CURRENT_USB_HIGH	450000
++#define MAX_CURRENT_USB_LOW	90000
++#define MAX_CURRENT_USB_PRE	45000
++/*
++ * Riset(K) = 2336 * (1V/Ichg(mA)) - 0.205
++ * Riset = 2.43K
++ */
++#define MAX_CURRENT_AC_HIGH		886527
++#define MAX_CURRENT_AC_LOW		117305
++#define MAX_CURRENT_AC_HIGH_PRE		88653
++#define MAX_CURRENT_AC_LOW_PRE		11731
++
++static int act8945a_get_current_max(struct act8945a_charger *charger,
++				    struct regmap *regmap, int *val)
++{
++	int ret;
++	unsigned int status, state;
++	unsigned int acin_state;
++
++	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
++	if (ret < 0)
++		return ret;
++
++	ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
++	if (ret < 0)
++		return ret;
++
++	acin_state = (state & APCH_STATE_ACINSTAT) >> 1;
++
++	state &= APCH_STATE_CSTATE;
++	state >>= APCH_STATE_CSTATE_SHIFT;
++
++	switch (state) {
++	case APCH_STATE_CSTATE_PRE:
++		if (acin_state) {
++			if (charger->chgin_level)
++				*val = MAX_CURRENT_AC_HIGH_PRE;
++			else
++				*val = MAX_CURRENT_AC_LOW_PRE;
++		} else {
++			*val = MAX_CURRENT_USB_PRE;
++		}
++		break;
++	case APCH_STATE_CSTATE_FAST:
++		if (acin_state) {
++			if (charger->chgin_level)
++				*val = MAX_CURRENT_AC_HIGH;
++			else
++				*val = MAX_CURRENT_AC_LOW;
++		} else {
++			if (charger->chgin_level)
++				*val = MAX_CURRENT_USB_HIGH;
++			else
++				*val = MAX_CURRENT_USB_LOW;
++		}
++		break;
++	case APCH_STATE_CSTATE_EOC:
++	case APCH_STATE_CSTATE_DISABLED:
++	default:
++		*val = 0;
++		break;
++	}
++
++	return 0;
++}
++
+ static enum power_supply_property act8945a_charger_props[] = {
+ 	POWER_SUPPLY_PROP_STATUS,
+ 	POWER_SUPPLY_PROP_CHARGE_TYPE,
+ 	POWER_SUPPLY_PROP_TECHNOLOGY,
+ 	POWER_SUPPLY_PROP_HEALTH,
+ 	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
++	POWER_SUPPLY_PROP_CURRENT_MAX,
+ 	POWER_SUPPLY_PROP_MODEL_NAME,
+ 	POWER_SUPPLY_PROP_MANUFACTURER
+ };
+@@ -302,6 +370,10 @@ static int act8945a_charger_get_property(struct power_supply *psy,
+ 		ret = act8945a_get_capacity_level(charger,
+ 						  regmap, &val->intval);
+ 		break;
++	case POWER_SUPPLY_PROP_CURRENT_MAX:
++		ret = act8945a_get_current_max(charger,
++					       regmap, &val->intval);
++		break;
+ 	case POWER_SUPPLY_PROP_MODEL_NAME:
+ 		val->strval = act8945a_charger_model;
+ 		break;
+@@ -434,8 +506,11 @@ static int act8945a_charger_config(struct device *dev,
+ 				"active-semi,chglev-gpios", 0, &flags);
+ 
+ 	if (gpio_is_valid(chglev_pin)) {
+-		gpio_set_value(chglev_pin,
+-			       ((flags == OF_GPIO_ACTIVE_LOW) ? 0 : 1));
++		if (!devm_gpio_request(dev, chglev_pin, "chglev-pin")) {
++			charger->chgin_level =
++					(flags == OF_GPIO_ACTIVE_LOW) ? 0 : 1;
++			gpio_set_value(chglev_pin, charger->chgin_level);
++		}
+ 	}
+ 
+ 	if (of_property_read_u32(np,
 -- 
--- 
-Regards,
-Sudeep
+2.7.4
