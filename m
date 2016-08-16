@@ -1,159 +1,56 @@
-From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v5 6/7] power: act8945a_charger: Add max current property
-Date: Tue, 16 Aug 2016 16:59:57 +0800
-Message-ID: <1471337998-6467-7-git-send-email-wenyou.yang@atmel.com>
-References: <1471337998-6467-1-git-send-email-wenyou.yang@atmel.com>
+From: Phil Reid <preid@electromag.com.au>
+Subject: Re: [PATCH v2 4/4] power: sbs-battery: Use gpio_desc and sleeping
+ calls for battery detect
+Date: Tue, 16 Aug 2016 17:35:09 +0800
+Message-ID: <b25aaed0-59ec-e5b8-0096-67d8118f8b79@electromag.com.au>
+References: <1469414580-14121-1-git-send-email-preid@electromag.com.au>
+ <1469414580-14121-5-git-send-email-preid@electromag.com.au>
+ <20160815210850.hd7p6blg7rbuzd7d@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1471337998-6467-1-git-send-email-wenyou.yang@atmel.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar
- Gala <galak@codeaurora.org>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from anchovy3.45ru.net.au ([203.30.46.155]:33148 "EHLO
+	anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752221AbcHPJfP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2016 05:35:15 -0400
+In-Reply-To: <20160815210850.hd7p6blg7rbuzd7d@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org
 
-Add the power supply's current max property,
-POWER_SUPPLY_PROP_CURRENT_MAX.
+On 16/08/2016 05:08, Sebastian Reichel wrote:
+> Hi Phil,
+>
+> On Mon, Jul 25, 2016 at 10:43:00AM +0800, Phil Reid wrote:
+>> Switch to using new gpio_desc interface and devm gpio get calls to
+>> automatically manage gpio resource. Use gpiod_get_value which handles
+>> active high / low calls.
+>>
+>> If gpio_detect is set then force loading of the driver as it is
+>> reasonable to assume that the battery may not be present.
+>>
+>> Update the is_present flag immediately in the IRQ.
+>
+> I queued PATCH 1-3. Please send a new revision for PATCH 4 (this
+> one) with the following changes:
+>
+>  * add the correct gpiod include: <include/linux/gpio/consumer.h>
+>  * rebase on power-supply's next branch
+>  * remove battery_detect and battery_detect_present from the
+>    struct sbs_platform_data and always use the gpiod API. It's
+>    data can also come from platform data, see
+>    Documentation/gpio/board.txt and Documentation/gpio/consumer.txt
+>
+> -- Sebastian
+>
+G'day Sebastian,
 
-Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
----
+Thanks, I'll have a look at how that works.
+I wasn't sure it was acceptable to change the interface to sbs_platform_data.
 
-Changes in v5: None
-Changes in v4:
- - Fix wrong gpio assignment for chglev_pin.
-
-Changes in v3: None
-Changes in v2: None
-
- drivers/power/supply/act8945a_charger.c | 79 ++++++++++++++++++++++++++++++++-
- 1 file changed, 77 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
-index 2321796..9bfbc87 100644
---- a/drivers/power/supply/act8945a_charger.c
-+++ b/drivers/power/supply/act8945a_charger.c
-@@ -84,6 +84,7 @@ struct act8945a_charger {
- 
- 	bool init_done;
- 	int lbo_pin;
-+	int chgin_level;
- };
- 
- static int act8945a_get_charger_state(struct regmap *regmap, int *val)
-@@ -267,12 +268,79 @@ static int act8945a_get_capacity_level(struct act8945a_charger *charger,
- 	return 0;
- }
- 
-+#define MAX_CURRENT_USB_HIGH	450000
-+#define MAX_CURRENT_USB_LOW	90000
-+#define MAX_CURRENT_USB_PRE	45000
-+/*
-+ * Riset(K) = 2336 * (1V/Ichg(mA)) - 0.205
-+ * Riset = 2.43K
-+ */
-+#define MAX_CURRENT_AC_HIGH		886527
-+#define MAX_CURRENT_AC_LOW		117305
-+#define MAX_CURRENT_AC_HIGH_PRE		88653
-+#define MAX_CURRENT_AC_LOW_PRE		11731
-+
-+static int act8945a_get_current_max(struct act8945a_charger *charger,
-+				    struct regmap *regmap, int *val)
-+{
-+	int ret;
-+	unsigned int status, state;
-+	unsigned int acin_state;
-+
-+	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
-+	if (ret < 0)
-+		return ret;
-+
-+	acin_state = (state & APCH_STATE_ACINSTAT) >> 1;
-+
-+	state &= APCH_STATE_CSTATE;
-+	state >>= APCH_STATE_CSTATE_SHIFT;
-+
-+	switch (state) {
-+	case APCH_STATE_CSTATE_PRE:
-+		if (acin_state) {
-+			if (charger->chgin_level)
-+				*val = MAX_CURRENT_AC_HIGH_PRE;
-+			else
-+				*val = MAX_CURRENT_AC_LOW_PRE;
-+		} else {
-+			*val = MAX_CURRENT_USB_PRE;
-+		}
-+		break;
-+	case APCH_STATE_CSTATE_FAST:
-+		if (acin_state) {
-+			if (charger->chgin_level)
-+				*val = MAX_CURRENT_AC_HIGH;
-+			else
-+				*val = MAX_CURRENT_AC_LOW;
-+		} else {
-+			if (charger->chgin_level)
-+				*val = MAX_CURRENT_USB_HIGH;
-+			else
-+				*val = MAX_CURRENT_USB_LOW;
-+		}
-+		break;
-+	case APCH_STATE_CSTATE_EOC:
-+	case APCH_STATE_CSTATE_DISABLED:
-+	default:
-+		*val = 0;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
- static enum power_supply_property act8945a_charger_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_CHARGE_TYPE,
- 	POWER_SUPPLY_PROP_TECHNOLOGY,
- 	POWER_SUPPLY_PROP_HEALTH,
- 	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
-+	POWER_SUPPLY_PROP_CURRENT_MAX,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_MANUFACTURER
- };
-@@ -302,6 +370,10 @@ static int act8945a_charger_get_property(struct power_supply *psy,
- 		ret = act8945a_get_capacity_level(charger,
- 						  regmap, &val->intval);
- 		break;
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		ret = act8945a_get_current_max(charger,
-+					       regmap, &val->intval);
-+		break;
- 	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		val->strval = act8945a_charger_model;
- 		break;
-@@ -434,8 +506,11 @@ static int act8945a_charger_config(struct device *dev,
- 				"active-semi,chglev-gpios", 0, &flags);
- 
- 	if (gpio_is_valid(chglev_pin)) {
--		gpio_set_value(chglev_pin,
--			       ((flags == OF_GPIO_ACTIVE_LOW) ? 0 : 1));
-+		if (!devm_gpio_request(dev, chglev_pin, "chglev-pin")) {
-+			charger->chgin_level =
-+					(flags == OF_GPIO_ACTIVE_LOW) ? 0 : 1;
-+			gpio_set_value(chglev_pin, charger->chgin_level);
-+		}
- 	}
- 
- 	if (of_property_read_u32(np,
 -- 
-2.7.4
+Regards
+Phil Reid
+
