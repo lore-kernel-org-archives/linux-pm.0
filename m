@@ -1,44 +1,80 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 0/2] cpufreq / sched: Rework of cpufreq_update_util()
- arguments
-Date: Tue, 16 Aug 2016 14:00:24 +0200
-Message-ID: <20160816120024.GI30192@twins.programming.kicks-ass.net>
-References: <6346523.ZooER3FGDH@vostro.rjw.lan>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Subject: Re: [PATCH v1 2/3] of: Add support for reading a s32 from a multi-value property.
+Date: Tue, 16 Aug 2016 14:09:52 +0200
+Message-ID: <23748508.K8gp1eOYRv@diego>
+References: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com> <1471315139-28285-3-git-send-email-finley.xiao@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:57766 "EHLO
-	merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751861AbcHPMCy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2016 08:02:54 -0400
-Content-Disposition: inline
-In-Reply-To: <6346523.ZooER3FGDH@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1471315139-28285-3-git-send-email-finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Finlye Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-On Fri, Aug 12, 2016 at 02:01:29AM +0200, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> There were some comments on the "cpufreq / sched: cpufreq_update_util() flags
-> and iowait boosting" series I sent some time ago and I wanted to address them,
-> but for this purpose I had to combine patches [1-2,4/7] from that series
-> into one and make some changes on top of that.
-> 
-> Then I thought it would be better to send that separately from the iowait
-> boost part of that series, so here it goes.
-> 
-> [1/2] Removes the util and max args from cpufreq_update_util() and governor
->       callbacks and adds a flags argument instead of them.  That argument
->       is then used to handle RT and DL in schedutil and the utilization data
->       are accessed by it directly (so it is non-modular now to avoid exporting
->       the scheduler internals to modules).
-> [2/2] Replaces the time argument of cpufreq_update_util() with an rq pointer
->       which allows some simplifications to be made.
-> 
-> There should be no changes in behavior as a result of this.
-> 
-> The v2 is to address comments from Steve.
+Hi Finley,
 
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Am Dienstag, 16. August 2016, 10:38:58 schrieb Finlye Xiao:
+> From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+> 
+> This patch adds an of_property_read_s32_index() function to allow
+> reading a single indexed s32 value from a property containing multiple
+> s32 values.
+>
+> Signed-off-by: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+
+for people reading along, this simply duplicates what of_property_read_s32 
+already does, only for indexed properties.
+
+But I do have one issue below.
+
+> ---
+>  drivers/of/base.c  | 23 +++++++++++++++++++++++
+>  include/linux/of.h | 10 ++++++++++
+>  2 files changed, 33 insertions(+)
+> 
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 7792266..346457d 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -1200,6 +1200,29 @@ int of_property_read_u32_index(const struct
+> device_node *np, EXPORT_SYMBOL_GPL(of_property_read_u32_index);
+> 
+>  /**
+> + * of_property_read_s32_index - Find and read a s32 from a multi-value
+> property. + *
+> + * @np:		device node from which the property value is to be read.
+> + * @propname:	name of the property to be searched.
+> + * @index:	index of the u32 in the list of values
+> + * @out_value:	pointer to return value, modified only if no error.
+> + *
+> + * Search for a property in a device node and read nth 32-bit value from
+> + * it. Returns 0 on success, -EINVAL if the property does not exist,
+> + * -ENODATA if property does not have a value, and -EOVERFLOW if the
+> + * property data isn't large enough.
+> + *
+> + * The out_value is modified only if a valid s32 value can be decoded.
+> + */
+> +int of_property_read_s32_index(const struct device_node *np,
+> +			       const char *propname, u32 index, s32 *out_value)
+> +{
+> +	return of_property_read_u32_index(np, propname, index,
+> +		(u32 *)out_value);
+> +}
+> +EXPORT_SYMBOL_GPL(of_property_read_s32_index);
+
+I think this could very well live directly in the of.h header below 
+of_property_read_s32 or so.
+
+As this also only calls the more generic u32 variant, it can be just a static 
+inline there and does not need to duplicate the whole stub voodoo, as the 
+of_property_read_u32_index will also generate the -ENOSYS error in the !OF 
+case.
+
+
+Heiko
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
