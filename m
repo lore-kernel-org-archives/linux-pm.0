@@ -1,220 +1,213 @@
 From: Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH 10/10] PM / Domains: Add support for removing nested PM domains by provider
-Date: Tue, 16 Aug 2016 10:49:36 +0100
-Message-ID: <1471340976-5379-11-git-send-email-jonathanh@nvidia.com>
+Subject: [PATCH 07/10] PM / Domains: Prepare for adding support to remove PM domains
+Date: Tue, 16 Aug 2016 10:49:33 +0100
+Message-ID: <1471340976-5379-8-git-send-email-jonathanh@nvidia.com>
 References: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:11984 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753181AbcHPJug (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2016 05:50:36 -0400
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:4375 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753211AbcHPJui (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 16 Aug 2016 05:50:38 -0400
 In-Reply-To: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Thierry Reding <thierry.reding@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Alexander Aring <alex.aring@gmail.com>, Eric Anholt <eric@anholt.net>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
-If a device supports PM domains that are subdomains of another PM
-domain, then the PM domains should be removed in reverse order to
-ensure that the subdomains are removed first. Furthermore, if there is
-more than one provider, then there needs to be a way to remove the
-domains in reverse order for a specific provider.
+In order to remove PM domains safely from the list of PM domains,
+it is necessary to adding locking for the PM domain list around any
+places where devices or subdomains are added to a PM domain.
 
-Add the function of_genpd_remove_tail() to remove the last PM domain
-added by a given PM domain provider and return the generic_pm_domain
-structure for the PM domain that was removed.
-
-A PM domain should only be removed once the associated PM domain
-provider has been removed from the list of providers. Otherwise, it
-could be possible for a client to be associated with a PM domain that
-could have been removed. Add a helper function to verify if the PM
-domain provider is present and only allow a PM domain to be removed if
-the provider has been removed.
-
-The function of_genpd_remove_tail() must hold the gpd_list_lock while
-finding and removing a PM domain. It is natural for
-of_genpd_remove_tail() to call pm_genpd_remove() once the appropriate
-PM domain is found to remove it. However, pm_genpd_remove(), also
-acquires the gpd_list_lock. Therefore, move the core of the function
-pm_genpd_remove() to a new function genpd_remove() which does not
-acquire the gpd_list_lock so this can be used by both pm_genpd_remove()
-and of_genpd_remove_tail().
+There are places where a reference to a PM domain is obtained via
+calling of_genpd_get_from_provider() before adding the device or the
+subdomain. In these cases a lock for the PM domain list needs to be
+held around the call to of_genpd_get_from_provider() and the call to
+add the device/subdomain. To avoid deadlocks by multiple attempts to
+obtain the PM domain list lock, add functions genpd_add_device() and
+genpd_add_subdomain() which require the user to hold the PM domain
+list lock when calling.
 
 Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 ---
- drivers/base/power/domain.c | 87 +++++++++++++++++++++++++++++++++++++++++----
- include/linux/pm_domain.h   |  7 ++++
- 2 files changed, 88 insertions(+), 6 deletions(-)
+ drivers/base/power/domain.c | 97 ++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 73 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 0bc145e8e902..b6d1d0441a2d 100644
+index 50223ae0c9a7..7ce4608bbbe0 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -1357,7 +1357,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
- EXPORT_SYMBOL_GPL(pm_genpd_init);
+@@ -1060,14 +1060,8 @@ static void genpd_free_dev_data(struct device *dev,
+ 	dev_pm_put_subsys_data(dev);
+ }
  
- /**
-- * pm_genpd_remove - Remove a generic I/O PM domain
-+ * genpd_remove - Remove a generic I/O PM domain
-  * @genpd: Pointer to PM domain that is to be removed.
-  *
-  * To remove the PM domain, this function:
-@@ -1366,9 +1366,10 @@ EXPORT_SYMBOL_GPL(pm_genpd_init);
-  *  - Removes the PM domain from the list of registered PM domains.
-  *
-  * The PM domain will only be removed, if it is not a parent to any
-- * other PM domain and has no devices associated with it.
-+ * other PM domain and has no devices associated with it. Must be called
-+ * with the gpd_list_lock held.
-  */
--int pm_genpd_remove(struct generic_pm_domain *genpd)
-+static int genpd_remove(struct generic_pm_domain *genpd)
+-/**
+- * __pm_genpd_add_device - Add a device to an I/O PM domain.
+- * @genpd: PM domain to add the device to.
+- * @dev: Device to be added.
+- * @td: Set of PM QoS timing parameters to attach to the device.
+- */
+-int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+-			  struct gpd_timing_data *td)
++static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
++			    struct gpd_timing_data *td)
  {
- 	struct gpd_link *l, *link;
+ 	struct generic_pm_domain_data *gpd_data;
  	int ret = 0;
-@@ -1376,12 +1377,10 @@ int pm_genpd_remove(struct generic_pm_domain *genpd)
- 	if (IS_ERR_OR_NULL(genpd))
- 		return -EINVAL;
- 
--	mutex_lock(&gpd_list_lock);
- 	mutex_lock(&genpd->lock);
- 
- 	if (!list_empty(&genpd->master_links) || genpd->device_count) {
- 		mutex_unlock(&genpd->lock);
--		mutex_unlock(&gpd_list_lock);
- 		pr_err("%s: unable to remove %s\n", __func__, genpd->name);
- 		return -EBUSY;
- 	}
-@@ -1395,11 +1394,25 @@ int pm_genpd_remove(struct generic_pm_domain *genpd)
- 	list_del(&genpd->gpd_list_node);
- 	mutex_unlock(&genpd->lock);
- 	cancel_work_sync(&genpd->power_off_work);
--	mutex_unlock(&gpd_list_lock);
- 	pr_debug("%s: removed %s\n", __func__, genpd->name);
+@@ -1107,6 +1101,24 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
  
  	return ret;
  }
 +
 +/**
-+ * pm_genpd_remove - Remove a generic I/O PM domain
-+ * @genpd: Pointer to PM domain that is to be removed.
++ * __pm_genpd_add_device - Add a device to an I/O PM domain.
++ * @genpd: PM domain to add the device to.
++ * @dev: Device to be added.
++ * @td: Set of PM QoS timing parameters to attach to the device.
 + */
-+int pm_genpd_remove(struct generic_pm_domain *genpd)
++int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
++			  struct gpd_timing_data *td)
 +{
 +	int ret;
 +
 +	mutex_lock(&gpd_list_lock);
-+	ret = genpd_remove(genpd);
++	ret = genpd_add_device(genpd, dev, td);
 +	mutex_unlock(&gpd_list_lock);
 +
 +	return ret;
 +}
- EXPORT_SYMBOL_GPL(pm_genpd_remove);
- 
- #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
-@@ -1610,6 +1623,26 @@ void of_genpd_del_provider(struct device_node *np)
- EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+ EXPORT_SYMBOL_GPL(__pm_genpd_add_device);
  
  /**
-+ * genpd_provider_present() - Verify if a PM domain provider is present
-+ * @np: Device node pointer associated with the PM domain provider
-+ */
-+static bool genpd_provider_present(struct device_node *np)
-+{
-+	struct of_genpd_provider *cp;
-+
-+	mutex_lock(&of_genpd_mutex);
-+	list_for_each_entry(cp, &of_genpd_providers, link) {
-+		if (cp->node == np) {
-+			mutex_unlock(&of_genpd_mutex);
-+			return true;
-+		}
-+	}
-+	mutex_unlock(&of_genpd_mutex);
-+
-+	return false;
-+}
-+
-+/**
-  * genpd_get_from_provider() - Look-up PM domain
-  * @genpdspec: OF phandle args to use for look-up
-  *
-@@ -1713,6 +1746,48 @@ out:
- EXPORT_SYMBOL_GPL(of_genpd_add_subdomain);
+@@ -1160,13 +1172,8 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+ }
+ EXPORT_SYMBOL_GPL(pm_genpd_remove_device);
  
- /**
-+ * of_genpd_remove_tail - Remove the last PM domain registered for a provider
-+ * @provider: Pointer to device structure associated with provider
-+ *
-+ * Find the last PM domain that was added by a particular provider and
-+ * remove this PM domain from the list of PM domains. The provider is
-+ * identified by the 'provider' device structure that is passed. The PM
-+ * domain will only be removed, if the provider associated with domain
-+ * has been removed.
-+ *
-+ * Returns a valid pointer to struct generic_pm_domain on success or
-+ * ERR_PTR() on failure.
-+ */
-+struct generic_pm_domain *of_genpd_remove_tail(struct device_node *np)
-+{
-+	struct generic_pm_domain *gpd, *genpd = ERR_PTR(-ENOENT);
-+	int ret;
-+
-+	if (IS_ERR_OR_NULL(np))
-+		return ERR_PTR(-EINVAL);
-+
-+	mutex_lock(&gpd_list_lock);
-+	list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
-+		if (gpd->provider == &np->fwnode) {
-+			if (!genpd_provider_present(np)) {
-+				ret = genpd_remove(gpd);
-+				genpd = ret ? ERR_PTR(ret) : gpd;
-+				break;
-+			}
-+
-+			pr_warn("Provider maybe present, unable to remove %s\n",
-+				genpd->name);
-+			genpd = ERR_PTR(-EBUSY);
-+			break;
-+		}
-+	}
-+	mutex_unlock(&gpd_list_lock);
-+
-+	return genpd;
-+}
-+EXPORT_SYMBOL_GPL(of_genpd_remove_tail);
-+
-+/**
-  * genpd_dev_pm_detach - Detach a device from its PM domain.
-  * @dev: Device to detach.
-  * @power_off: Currently not used
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 4aa285e44eb0..253f348b0ee9 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -203,6 +203,7 @@ extern int of_genpd_add_device(struct of_phandle_args *args,
- 			       struct device *dev);
- extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
- 				  struct of_phandle_args *new_subdomain);
-+extern struct generic_pm_domain *of_genpd_remove_tail(struct device_node *np);
- 
- int genpd_dev_pm_attach(struct device *dev);
- #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
-@@ -236,6 +237,12 @@ static inline int genpd_dev_pm_attach(struct device *dev)
+-/**
+- * pm_genpd_add_subdomain - Add a subdomain to an I/O PM domain.
+- * @genpd: Master PM domain to add the subdomain to.
+- * @subdomain: Subdomain to be added.
+- */
+-int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+-			   struct generic_pm_domain *subdomain)
++static int genpd_add_subdomain(struct generic_pm_domain *genpd,
++			       struct generic_pm_domain *subdomain)
  {
- 	return -ENODEV;
+ 	struct gpd_link *link, *itr;
+ 	int ret = 0;
+@@ -1209,6 +1216,23 @@ int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+ 		kfree(link);
+ 	return ret;
  }
 +
-+static inline
-+struct generic_pm_domain *of_genpd_remove_tail(struct device_node *np)
++/**
++ * pm_genpd_add_subdomain - Add a subdomain to an I/O PM domain.
++ * @genpd: Master PM domain to add the subdomain to.
++ * @subdomain: Subdomain to be added.
++ */
++int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
++			   struct generic_pm_domain *subdomain)
 +{
-+	return ERR_PTR(-ENOTSUPP);
++	int ret;
++
++	mutex_lock(&gpd_list_lock);
++	ret = genpd_add_subdomain(genpd, subdomain);
++	mutex_unlock(&gpd_list_lock);
++
++	return ret;
 +}
- #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+ EXPORT_SYMBOL_GPL(pm_genpd_add_subdomain);
  
- #ifdef CONFIG_PM
+ /**
+@@ -1575,12 +1599,22 @@ static struct generic_pm_domain *genpd_get_from_provider(
+ int of_genpd_add_device(struct of_phandle_args *genpdspec, struct device *dev)
+ {
+ 	struct generic_pm_domain *genpd;
++	int ret;
++
++	mutex_lock(&gpd_list_lock);
+ 
+ 	genpd = genpd_get_from_provider(genpdspec);
+-	if (IS_ERR(genpd))
+-		return PTR_ERR(genpd);
++	if (IS_ERR(genpd)) {
++		ret = PTR_ERR(genpd);
++		goto out;
++	}
+ 
+-	return pm_genpd_add_device(genpd, dev);
++	ret = genpd_add_device(genpd, dev, NULL);
++
++out:
++	mutex_unlock(&gpd_list_lock);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(of_genpd_add_device);
+ 
+@@ -1597,16 +1631,28 @@ int of_genpd_add_subdomain(struct of_phandle_args *parent_spec,
+ 			   struct of_phandle_args *subdomain_spec)
+ {
+ 	struct generic_pm_domain *parent, *subdomain;
++	int ret;
++
++	mutex_lock(&gpd_list_lock);
+ 
+ 	parent = genpd_get_from_provider(parent_spec);
+-	if (IS_ERR(parent))
+-		return PTR_ERR(parent);
++	if (IS_ERR(parent)) {
++		ret = PTR_ERR(parent);
++		goto out;
++	}
+ 
+ 	subdomain = genpd_get_from_provider(subdomain_spec);
+-	if (IS_ERR(subdomain))
+-		return PTR_ERR(subdomain);
++	if (IS_ERR(subdomain)) {
++		ret = PTR_ERR(subdomain);
++		goto out;
++	}
++
++	ret = genpd_add_subdomain(parent, subdomain);
++
++out:
++	mutex_unlock(&gpd_list_lock);
+ 
+-	return pm_genpd_add_subdomain(parent, subdomain);
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(of_genpd_add_subdomain);
+ 
+@@ -1705,9 +1751,11 @@ int genpd_dev_pm_attach(struct device *dev)
+ 			return -ENOENT;
+ 	}
+ 
++	mutex_lock(&gpd_list_lock);
+ 	pd = genpd_get_from_provider(&pd_args);
+ 	of_node_put(pd_args.np);
+ 	if (IS_ERR(pd)) {
++		mutex_unlock(&gpd_list_lock);
+ 		dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+ 			__func__, PTR_ERR(pd));
+ 		return -EPROBE_DEFER;
+@@ -1716,13 +1764,14 @@ int genpd_dev_pm_attach(struct device *dev)
+ 	dev_dbg(dev, "adding to PM domain %s\n", pd->name);
+ 
+ 	for (i = 1; i < GENPD_RETRY_MAX_MS; i <<= 1) {
+-		ret = pm_genpd_add_device(pd, dev);
++		ret = genpd_add_device(pd, dev, NULL);
+ 		if (ret != -EAGAIN)
+ 			break;
+ 
+ 		mdelay(i);
+ 		cond_resched();
+ 	}
++	mutex_unlock(&gpd_list_lock);
+ 
+ 	if (ret < 0) {
+ 		dev_err(dev, "failed to add to PM domain %s: %d",
 -- 
 2.1.4
 
