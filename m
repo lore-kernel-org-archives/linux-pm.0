@@ -1,13 +1,24 @@
-From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v5 7/7] doc: bindings: act8945a-charger: Update properties
-Date: Tue, 16 Aug 2016 16:59:58 +0800
-Message-ID: <1471337998-6467-8-git-send-email-wenyou.yang@atmel.com>
-References: <1471337998-6467-1-git-send-email-wenyou.yang@atmel.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v3 02/15] dt/bindings: Update binding for PM domain idle
+ states
+Date: Tue, 16 Aug 2016 10:19:36 +0100
+Message-ID: <edc76f32-7e8f-4301-1345-ef9944ae9a51@arm.com>
+References: <1470351902-43103-1-git-send-email-lina.iyer@linaro.org>
+ <1470351902-43103-3-git-send-email-lina.iyer@linaro.org>
+ <99e35b6c-6698-6d27-f4d7-fa032796869e@arm.com>
+ <20160810164034.GA1401@linaro.org>
+ <5e59874c-bbb7-270a-199c-da1ff5932554@arm.com>
+ <20160811211023.GC1401@linaro.org>
+ <697d8ac2-34ee-db3e-940b-5ce3365c5aa1@arm.com>
+ <20160815160857.GE1401@linaro.org>
+ <2033f384-7ea3-6713-4def-80bf4251fd67@arm.com>
+ <20160815224014.GF1401@linaro.org>
+ <20160816084127.GA24657@brendan-thinkstation>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1471337998-6467-1-git-send-email-wenyou.yang@atmel.com>
+In-Reply-To: <20160816084127.GA24657@brendan-thinkstation>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -17,69 +28,102 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar
- Gala <galak@codeaurora.org>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>, linux-arm-kernel@lists.infradead.org
+To: Brendan Jackman <brendan.jackman@arm.com>, Lina Iyer <lina.iyer@linaro.org>
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, khilman@kernel.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, Sudeep Holla <sudeep.holla@arm.com>, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Due the driver improvements, update the properties,
- - Remove "active-semi,check-battery-temperature" property.
- - Add the properties, "active-semi,irq_gpio"
-   and "active-semi,lbo-gpios".
 
-Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
-Acked-by: Rob Herring <robh@kernel.org>
----
 
-Changes in v5:
- - Add Acked-by tag.
+On 16/08/16 09:41, Brendan Jackman wrote:
+> Hi Lina,
+> On Mon, Aug 15, 2016 at 04:40:14PM -0600, Lina Iyer wrote:
+>> On Mon, Aug 15 2016 at 10:14 -0600, Sudeep Holla wrote:
+[,,,]
 
-Changes in v4:
- - Update the doc/binding for using "interrupts" property.
 
-Changes in v3: None
-Changes in v2: None
+>>>
+>>> Yes even ACPI has indices to solve this.
+>>>
+>>>>> 2. Something similar to (1) but without index instead phandles.
+>>>>>
+>>>>
+>>>> The problem is when you have non-CPU devices in the device tree and
+>>>> since they do not have a way to represent states like CPU, we did not
+>>>> have a clear path to that. Hence we punted that to later. Whatever we
+>>>> do, we should solve it for a generic PM domain, not just CPU domains.
+>>>>
+>>>
+>>> Yes bindings defined here should be applicable for devices to, but only
+>>> CPU's will have this hierarchy while the devices need not bother about
+>>> hierarchy. However the parent power domain can ever the state which is
+>>> least common denominator of all it's children power domain. That's my
+>>> understanding. No?
+>>>
+>
+>
+> Are you saying that the parent can enter the shallowest idle state that all its
+> children are in (I.e if all its children are in "retention" then it can enter
+> "retention")? I don't know what the reality is on existing platforms but it
+> doesn't sound like 100% safe assumption to make.
 
- .../bindings/power/supply/act8945a-charger.txt           | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+I was referring to non-CPU/device power states above. For CPU we do need
+a mechanism in place to indicate the dependency.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt b/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
-index bea254c..f9866c4 100644
---- a/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
-+++ b/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
-@@ -4,10 +4,15 @@ Required properties:
-  - compatible: "active-semi,act8945a", please refer to ../mfd/act8945a.txt.
-  - active-semi,chglev-gpios: charge current level phandle with args
-    as described in ../gpio/gpio.txt.
-+ - active-semi,lbo-gpios: specify the low battery voltage detect phandle
-+   with args as as described in ../gpio/gpio.txt.
-+ - interrupts: <a b> where a is the interrupt number and b is a
-+   field that represents an encoding of the sense and level
-+   information for the interrupt.
-+ - interrupt-parent: the phandle for the interrupt controller that
-+   services interrupts for this device.
- 
- Optional properties:
-- - active-semi,check-battery-temperature: boolean to check the battery
--   temperature or not.
-  - active-semi,input-voltage-threshold-microvolt: unit: mV;
-    Specifies the charger's input over-voltage threshold value;
-    The value can be: 6600, 7000, 7500, 8000; default: 6600
-@@ -27,9 +32,14 @@ Example:
- 		status = "okay";
- 
- 		pinctrl-names = "default";
--		pinctrl-0 = <&pinctrl_charger_chglev>;
-+		pinctrl-0 = <&pinctrl_charger_chglev &pinctrl_charger_lbo &pinctrl_charger_irq>;
-+
- 		active-semi,chglev-gpios = <&pioA 12 GPIO_ACTIVE_HIGH>;
-+		active-semi,lbo-gpios = <&pioA 72 GPIO_ACTIVE_LOW>;
- 		active-semi,input-voltage-threshold-microvolt = <6600>;
- 		active-semi,precondition-timeout = <40>;
- 		active-semi,total-timeout = <3>;
-+		interrupt-parent = <&pioA>;
-+		interrupts = <45 GPIO_ACTIVE_LOW>;
-+
- 	};
+> Also I don't think you can
+> necessarily correlate idle states at different domain levels - i.e. here we've
+> matched up the idea of "retention" at core level with that of "retention" at
+> cluster level. I may have misunderstood you there..
+>
+
+Correct for CPUs. For normal devices and their power domains, it could
+straight forward. E.g if many devices are at-least at state D1(few may
+be at state D2 or above), the parent can enter D1.(D0-runnning and D1-D3
+are low power states in the above example)
+
+>> That is correct. But say if all the CPUs choose CORE_RET + CLUSTER_PG,
+>> which is invalid and the firmware has to ignore it and does CORE_RET +
+>> CLUSTER_RET instead, then Linux may have an inconsistent view of the
+>> state selection.
+>>
+
+1. First, CORE_RET + CLUSTER_PG should not be registered as valid idle
+    state.
+2. We do have inconsistent view already for platform co-ordinated idle
+    In-fact it could happen even with OSC mode I believe. Platform can
+    always demote the state, so OS can never get the exact view unless it
+    queries the firmware for that explicitly(e.g. PSCI_STATS)
+
+>
+> Perhaps a better starting point would be to go with the assumption that a parent
+> PD can only enter any idle state once its children are in their deepest idle
+> states.
+>
+> So in the example above we'd end up with
+>
+> CORE_RET
+> CORE_PG
+> CORE_PG + CLUSTER_RET
+> CORE_PG + CLUSTER_PG
+>
+
+Yes this assumption seems good enough to me. At-least no invalid
+combination is ensured.
+
+> (Missing out on CORE_RET + CLUSTER_RET, even though that's a valid combination
+> from the hardware's perspective)
+>
+
+Yes, if it's a real issue then we need proper bindings to deal with
+that. Otherwise we can manage without the extra information.
+
+> Then a later addition to the bindings as discussed above could enable the
+> possibility of those combinations to be expressed.
+>
+
+Seems feasible solution to me, but better to make this explicit in the
+binding and check with few others. It looks fair enough assumption IMO.
+
 -- 
-2.7.4
+-- 
+Regards,
+Sudeep
