@@ -1,67 +1,141 @@
-From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v6 4/8] Documentation: bindings: add dt documentation for
- dfi controller
-Date: Wed, 17 Aug 2016 09:41:26 +0900
-Message-ID: <57B3B2B6.3020201@samsung.com>
-References: <1471386989-9541-1-git-send-email-hl@rock-chips.com>
- <CGME20160816223902epcas1p1c7f4bd3bfcc7081cc741392bf6a4afe3@epcas1p1.samsung.com>
- <1471386989-9541-5-git-send-email-hl@rock-chips.com>
- <57B3B06C.1040109@samsung.com>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH 0/2][RFC] PM / sleep: Expose DPM watchdog timeout to sysfs
+Date: Wed, 17 Aug 2016 11:43:48 +0800
+Message-ID: <20160817034347.GA15682@sharon>
+References: <cover.1470908324.git.yu.c.chen@intel.com>
+ <20160811185441.GA15813@amd>
+ <20160812025225.GA12238@sharon>
+ <20160812063312.GD30992@amd>
+ <CAJZ5v0jgiPsSV3ZRVeM+D7KD7wJudPD+0Fq0BoJGT1mZ3yryxg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-reply-to: <57B3B06C.1040109-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
-Cc: tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:16183 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751499AbcHQDfr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 16 Aug 2016 23:35:47 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jgiPsSV3ZRVeM+D7KD7wJudPD+0Fq0BoJGT1mZ3yryxg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Linux PM List <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>, Takashi Iwai <tiwai@suse.de>, Benoit Goby <benoit@android.com>
 
-SGkgTGluLAoKSSBhZGQgdGhlIGFkZGl0aW9uYWwgY29tbWVudC4KCk9uIDIwMTbrhYQgMDjsm5Qg
-MTfsnbwgMDk6MzEsIENoYW53b28gQ2hvaSB3cm90ZToKPiBIaSBMaW4sCj4gCj4gSSBhZGQgb25l
-IG1pbm9yIGNvbW1lbnQuCj4gCj4gQWZ0ZXIgZml4aW5nIGl0LCBsb29rcyBnb29kIHRvIG1lLgo+
-IEFja2VkLWJ5OiBDaGFud29vIENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4KPiAKPiBPbiAy
-MDE264WEIDA47JuUIDE37J28IDA3OjM2LCBMaW4gSHVhbmcgd3JvdGU6Cj4+IFRoaXMgcGF0Y2gg
-YWRkcyB0aGUgZG9jdW1lbnRhdGlvbiBmb3Igcm9ja2NoaXAgZGZpIGRldmZyZXEtZXZlbnQgZHJp
-dmVyLgo+Pgo+PiBTaWduZWQtb2ZmLWJ5OiBMaW4gSHVhbmcgPGhsQHJvY2stY2hpcHMuY29tPgo+
-PiAtLS0KPj4gQ2hhbmdlcyBpbiB2NjoKPj4gLU5vbmUKPj4KPj4gQ2hhbmdlcyBpbiB2NToKPj4g
-LU5vbmUKPj4KPj4gQ2hhbmdlcyBpbiB2NDoKPj4gLU5vbmUKPj4KPj4gQ2hhbmdlcyBpbiB2MzoK
-Pj4gLU5vbmUKPj4KPj4gQ2hhbmdlcyBpbiB2MjoKPj4gLU5vbmUgCj4+Cj4+IENoYW5nZXMgaW4g
-djE6Cj4+IC1Ob25lCj4+Cj4+ICAuLi4vYmluZGluZ3MvZGV2ZnJlcS9ldmVudC9yb2NrY2hpcC1k
-ZmkudHh0ICAgICAgICAgIHwgMjAgKysrKysrKysrKysrKysrKysrKysKPj4gIDEgZmlsZSBjaGFu
-Z2VkLCAyMCBpbnNlcnRpb25zKCspCj4+ICBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlv
-bi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvZXZlbnQvcm9ja2NoaXAtZGZpLnR4dAo+Pgo+
-PiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEv
-ZXZlbnQvcm9ja2NoaXAtZGZpLnR4dCBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
-cy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRmaS50eHQKPj4gbmV3IGZpbGUgbW9kZSAxMDA2NDQK
-Pj4gaW5kZXggMDAwMDAwMC4uYmY0MjI1NQo+PiAtLS0gL2Rldi9udWxsCj4+ICsrKyBiL0RvY3Vt
-ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRmaS50
-eHQKPj4gQEAgLTAsMCArMSwyMCBAQAo+PiArCj4+ICsqIFJvY2tjaGlwIHJrMzM5OSBERkkgZGV2
-aWNlCj4+ICsKPj4gK1JlcXVpcmVkIHByb3BlcnRpZXM6Cj4+ICstIGNvbXBhdGlibGU6IE11c3Qg
-YmUgInJvY2tjaGlwLHJrMzM5OS1kZmkiLgo+PiArLSByZWc6IHBoeXNpY2FsIGJhc2UgYWRkcmVz
-cyBvZiBlYWNoIERGSSBhbmQgbGVuZ3RoIG9mIG1lbW9yeSBtYXBwZWQgcmVnaW9uCj4+ICstIHJv
-Y2tjaGlwLHBtdTogcGhhbmRsZSB0byB0aGUgc3lzY29uIG1hbmFnaW5nIHRoZSAicG11IGdlbmVy
-YWwgcmVnaXN0ZXIgZmlsZXMiCj4+ICstIGNsb2NrczogcGhhbmRsZXMgZm9yIGNsb2NrIHNwZWNp
-ZmllZCBpbiAiY2xvY2stbmFtZXMiIHByb3BlcnR5Cj4+ICstIGNsb2NrLW5hbWVzIDogdGhlIG5h
-bWUgb2YgY2xvY2sgdXNlZCBieSB0aGUgREZJLCBtdXN0IGJlICJwY2xrX2Rkcl9tb24iOwo+PiAr
-Cj4+ICtFeGFtcGxlOgo+PiArCWRmaTogZGZpQDB4ZmY2MzAwMDAgewo+PiArCQlyZWcgPSA8MHgw
-MCAweGZmNjMwMDAwIDB4MDAgMHg0MDAwPjsKPj4gKwkJY29tcGF0aWJsZSA9ICJyb2NrY2hpcCxy
-azMzOTktZGZpIjsKCkFzIEkgc2FpZCBvbiBwcmV2aW91cyBtYWlsLXRocmVhZCwgdGhlICdjb21w
-YXRpYmxlJyBwcm9wZXJ0eQppcyBmaXJzdCB1c3VhbGx5LiBZb3UgYmV0dGVyIHRvIGNoYW5nZSB0
-aGUgb3JkZXIgYXMgZm9sbG93aW5nOgoKCQljb21wYXRpYmxlID0gInJvY2tjaGlwLHJrMzM5OS1k
-ZmkiOwoJCXJlZyA9IDwweDAwIDB4ZmY2MzAwMDAgMHgwMCAweDQwMDA+OwoKPj4gKwkJcm9ja2No
-aXAscG11ID0gPCZwbXVncmY+Owo+PiArCQljbG9ja3MgPSA8JmNydSBQQ0xLX0REUl9NT04+Owo+
-PiArCQljbG9jay1uYW1lcyA9ICJwY2xrX2Rkcl9tb24iOwo+PiArCQlzdGF0dXMgPSAiZGlzYWJs
-ZWQiOwo+PiArCX07Cj4+ICsKPiAKPiBSZW1vdmUgdGhlIGJsYW5rIGxpbmUuCj4gCj4gVGhhbmtz
-LAo+IENoYW53b28gQ2hvaQoKVGhhbmtzLApDaGFud29vIENob2kKCgpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1yb2NrY2hpcCBtYWlsaW5nIGxp
-c3QKTGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
-ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJvY2tjaGlwCg==
+On Fri, Aug 12, 2016 at 01:25:04PM +0200, Rafael J. Wysocki wrote:
+> On Fri, Aug 12, 2016 at 8:33 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > Hi!
+> >
+> >> > > Recently we have a new report that, the harddisk can not
+> >> > > resume on time due to firmware issues, and got a kernel
+> >> > > panic because of DPM watchdog timeout. Since the default
+> >> > > timeout has once been modified from 12 to 60 seconds, we
+> >> > > might still encounter new case which requires a longer timeout,
+> >> > > so expose the value to sysfs and let the users decide which
+> >> > > value is appropriate, meanwhile this can also ease the debugging
+> >> > > process.
+> >> > >
+> >> > > The first patch is to force DPM watchdog depending on CONFIG_PM_SLEEP,
+> >> > > thus the second patch which does the actual work, can use
+> >> > > CONFIG_DPM_WATCHDOG safely without checking CONFIG_PM_SLEEP.
+> >> >
+> >> > Kernel should just work. User should not have to configure random
+> >> > knobs to have working suspend/hibernation.
+> >> >
+> >> > We do not want "CONFIG_BREAK_SUSPEND" so I believe we don't want
+> >> > "CONFIG_DPM_WATCHDOG". If normal users select it and it breaks their
+> >> > system, make it depend on "CONFIG_EXPERT" or hide it in some other
+> >> > way or maybe remove it from Kconfig altogether.
+> >> >
+> >> > Or maybe CONFIG_DPM_WATCHDOG should contain numeric value that user
+> >> > has to select?
+> >> >
+> >> Yes, if people select it then they have the risk to break their system,
+> >> and the original thought of the patch is to behave like a diagnosis to
+> >> make it easier for the users to figure it out, how much time it takes
+> >> to suspend/resume a bogus peripheral, without recomping the kernel.
+> >> -- currently the timeout value for CONFIG_DPM_WATCHDOG can be adjusted
+> >> by menuconfig, but bug reporter might have to recompile the kernel
+> >> to confirm, and it takes some time to get a feedback from them, so...
+> >
+> > Please don't add sysfs knobs for this. People should not need to
+> > adjust sysfs files to get working kernel.
+> >
+> > You can for example make the default 120 seconds.
+> 
+> Plus, IMO it would be good to be able to disable this thing from the
+> kernel command line entirely in case 2 minutes is still too little
+> time for somebody.
+>
+OK, I've modified the patch to the following version, Rafael, Pavel could
+you take a glance at it, thanks:
+ 
+Index: linux/kernel/power/Kconfig
+===================================================================
+--- linux.orig/kernel/power/Kconfig
++++ linux/kernel/power/Kconfig
+@@ -197,7 +197,7 @@ config DPM_WATCHDOG
+ config DPM_WATCHDOG_TIMEOUT
+ 	int "Watchdog timeout in seconds"
+ 	range 1 120
+-	default 60
++	default 120
+ 	depends on DPM_WATCHDOG
+ 
+ config PM_TRACE
+Index: linux/drivers/base/power/main.c
+===================================================================
+--- linux.orig/drivers/base/power/main.c
++++ linux/drivers/base/power/main.c
+@@ -407,6 +407,8 @@ struct dpm_watchdog {
+ #define DECLARE_DPM_WATCHDOG_ON_STACK(wd) \
+ 	struct dpm_watchdog wd
+ 
++static unsigned long __read_mostly dpm_wd_disabled;
++
+ /**
+  * dpm_watchdog_handler - Driver suspend / resume watchdog handler.
+  * @data: Watchdog object address.
+@@ -434,6 +436,9 @@ static void dpm_watchdog_set(struct dpm_
+ {
+ 	struct timer_list *timer = &wd->timer;
+ 
++	if (dpm_wd_disabled)
++		return;
++
+ 	wd->dev = dev;
+ 	wd->tsk = current;
+ 
+@@ -453,9 +458,20 @@ static void dpm_watchdog_clear(struct dp
+ {
+ 	struct timer_list *timer = &wd->timer;
+ 
++	if (dpm_wd_disabled)
++		return;
++
+ 	del_timer_sync(timer);
+ 	destroy_timer_on_stack(timer);
+ }
++
++static int __init no_dpm_wd_setup(char *str)
++{
++	dpm_wd_disabled = 1;
++	return 1;
++}
++__setup("no_dpm_watchdog", no_dpm_wd_setup);
++
+ #else
+ #define DECLARE_DPM_WATCHDOG_ON_STACK(wd)
+ #define dpm_watchdog_set(x, y)
+Index: linux/Documentation/kernel-parameters.txt
+===================================================================
+--- linux.orig/Documentation/kernel-parameters.txt
++++ linux/Documentation/kernel-parameters.txt
+@@ -2749,6 +2749,8 @@ bytes respectively. Such letter suffixes
+ 	nowatchdog	[KNL] Disable both lockup detectors, i.e.
+                         soft-lockup and NMI watchdog (hard-lockup).
+ 
++	no_dpm_watchdog	[KNL] Disable the device suspend/resume watchdog.
++
+ 	nowb		[ARM]
+ 
+ 	nox2apic	[X86-64,APIC] Do not enable x2APIC mode.
