@@ -1,89 +1,119 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: [PATCH] timekeeping: Cap array access in timekeeping_debug to protect against invalid sleep times
-Date: Wed, 17 Aug 2016 12:18:50 -0700
-Message-ID: <1471461530-19575-1-git-send-email-john.stultz@linaro.org>
-References: <1469892465-15853-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1469892465-15853-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Janek Kozicki <cosurgi@gmail.com>, Xunlei Pang <xpang@redhat.com>, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] thermal: cpu_cooling: Fix NULL dereference in
+ cpufreq_state2power
+Date: Thu, 18 Aug 2016 04:35:07 +0530
+Message-ID: <20160817230507.GC24396@ubuntu>
+References: <20160817151459.10948-1-brendan.jackman@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:36310 "EHLO
+	mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752651AbcHQXFM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Aug 2016 19:05:12 -0400
+Received: by mail-pf0-f176.google.com with SMTP id h186so673033pfg.3
+        for <linux-pm@vger.kernel.org>; Wed, 17 Aug 2016 16:05:11 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20160817151459.10948-1-brendan.jackman@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Brendan Jackman <brendan.jackman@arm.com>
+Cc: linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@arm.com>
 
-It was reported that hibernation could fail on the 2nd attempt,
-where the system hangs at hibernate() -> syscore_resume() ->
-i8237A_resume() -> claim_dma_lock(), because the lock has
-already been taken.
+On 17-08-16, 16:14, Brendan Jackman wrote:
+> Currently all CPU cooling devices share a
+> `struct thermal_cooling_device_ops` instance. The thermal core uses the
+> presence of functions in this struct to determine if a cooling device
+> has a power model (see cdev_is_power_actor). cpu_cooling.c adds the
+> power model functions to the shared struct when a device is registered
+> with a power model.
+> 
+> Therefore, if a CPU cooling device is registered using
+> [of_]cpufreq_power_cooling_register, _all_ devices will be determined to
+> have a power model, including any registered with
+> [of_]cpufreq_cooling_register. This can result in cpufreq_state2power
+> being called on a device where dyn_power_table is NULL.
+> 
+> With this commit, instead of having a shared thermal_cooling_device_ops
+> which is mutated, we have two versions: one with the power functions and
+> one without.
+> 
+> Signed-off-by: Brendan Jackman <brendan.jackman@arm.com>
+> Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Javi Merino <javi.merino@arm.com>
+> 
+> ---
+>  drivers/thermal/cpu_cooling.c | 21 ++++++++++++++++-----
+>  1 file changed, 16 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 3788ed7..a32b417 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -740,12 +740,22 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
+>  }
+> 
+>  /* Bind cpufreq callbacks to thermal cooling device ops */
+> +
+>  static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
+>  	.get_max_state = cpufreq_get_max_state,
+>  	.get_cur_state = cpufreq_get_cur_state,
+>  	.set_cur_state = cpufreq_set_cur_state,
+>  };
+> 
+> +static struct thermal_cooling_device_ops cpufreq_power_cooling_ops = {
+> +	.get_max_state		= cpufreq_get_max_state,
+> +	.get_cur_state		= cpufreq_get_cur_state,
+> +	.set_cur_state		= cpufreq_set_cur_state,
+> +	.get_requested_power	= cpufreq_get_requested_power,
+> +	.state2power		= cpufreq_state2power,
+> +	.power2state		= cpufreq_power2state,
+> +};
+> +
+>  /* Notifier for cpufreq policy change */
+>  static struct notifier_block thermal_cpufreq_notifier_block = {
+>  	.notifier_call = cpufreq_thermal_notifier,
+> @@ -795,6 +805,7 @@ __cpufreq_cooling_register(struct device_node *np,
+>  	struct cpumask temp_mask;
+>  	unsigned int freq, i, num_cpus;
+>  	int ret;
+> +	struct thermal_cooling_device_ops *cooling_ops;
+> 
+>  	cpumask_and(&temp_mask, clip_cpus, cpu_online_mask);
+>  	policy = cpufreq_cpu_get(cpumask_first(&temp_mask));
+> @@ -850,10 +861,6 @@ __cpufreq_cooling_register(struct device_node *np,
+>  	cpumask_copy(&cpufreq_dev->allowed_cpus, clip_cpus);
+> 
+>  	if (capacitance) {
+> -		cpufreq_cooling_ops.get_requested_power =
+> -			cpufreq_get_requested_power;
+> -		cpufreq_cooling_ops.state2power = cpufreq_state2power;
+> -		cpufreq_cooling_ops.power2state = cpufreq_power2state;
+>  		cpufreq_dev->plat_get_static_power = plat_static_func;
+> 
+>  		ret = build_dyn_power_table(cpufreq_dev, capacitance);
+> @@ -861,6 +868,10 @@ __cpufreq_cooling_register(struct device_node *np,
+>  			cool_dev = ERR_PTR(ret);
+>  			goto free_table;
+>  		}
+> +
+> +		cooling_ops = &cpufreq_power_cooling_ops;
+> +	} else {
+> +		cooling_ops = &cpufreq_cooling_ops;
+>  	}
+> 
+>  	ret = get_idr(&cpufreq_idr, &cpufreq_dev->id);
+> @@ -885,7 +896,7 @@ __cpufreq_cooling_register(struct device_node *np,
+>  		 cpufreq_dev->id);
+> 
+>  	cool_dev = thermal_of_cooling_device_register(np, dev_name, cpufreq_dev,
+> -						      &cpufreq_cooling_ops);
+> +						      cooling_ops);
+>  	if (IS_ERR(cool_dev))
+>  		goto remove_idr;
 
-However there is actually no other process would like to grab
-this lock on that problematic platform.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Further investigation showed that the problem is triggered by
-setting /sys/power/pm_trace to 1 before the 1st hibernation.
-
-Since once pm_trace is enabled, the rtc becomes unmeaningful
-after suspend, and meanwhile some BIOSes would like to adjust
-the 'invalid' tsc(e.g, smaller than 1970) to the release date
-of that motherboard during POST stage, thus after resumed, it
-may seem that the system had a significant long sleep time might
-due to meaningless tsc or RTC delta.
-
-Then in timekeeping_resume -> tk_debug_account_sleep_time, if
-the bit31 of the sleep time happened to be set to 1, the fls
-returns 32 and then we add 1 to sleep_time_bin[32], which
-caused a memory overwritten.
-
-As depicted by System.map:
-ffffffff81c9d080 b sleep_time_bin
-ffffffff81c9d100 B dma_spin_lock
-the dma_spin_lock.val is set to 1, which caused this problem.
-
-This patch adds a sanity check in tk_debug_account_sleep_time()
-to ensure we don't index past the sleep_time_bin array.
-
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Janek Kozicki <cosurgi@gmail.com>
-Cc: Chen Yu <yu.c.chen@intel.com>
-Cc: Xunlei Pang <xpang@redhat.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Reported-by: Janek Kozicki <cosurgi@gmail.com>
-Reported-by: Chen Yu <yu.c.chen@intel.com>
-[jstultz: Problem diagnosed and original patch by Chen Yu, I've
- solved the issue slightly differently, but borrowed his excelent
- explanation of of the issue here.]
-Signed-off-by: John Stultz <john.stultz@linaro.org>
----
- kernel/time/timekeeping_debug.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/time/timekeeping_debug.c b/kernel/time/timekeeping_debug.c
-index f6bd652..107310a6 100644
---- a/kernel/time/timekeeping_debug.c
-+++ b/kernel/time/timekeeping_debug.c
-@@ -23,7 +23,9 @@
- 
- #include "timekeeping_internal.h"
- 
--static unsigned int sleep_time_bin[32] = {0};
-+#define NUM_BINS 32
-+
-+static unsigned int sleep_time_bin[NUM_BINS] = {0};
- 
- static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
- {
-@@ -69,6 +71,9 @@ late_initcall(tk_debug_sleep_time_init);
- 
- void tk_debug_account_sleep_time(struct timespec64 *t)
- {
--	sleep_time_bin[fls(t->tv_sec)]++;
-+	/* Cap bin index so we don't overflow the array */
-+	int bin = min(fls(t->tv_sec), NUM_BINS-1);
-+
-+	sleep_time_bin[bin]++;
- }
- 
 -- 
-1.9.1
+viresh
