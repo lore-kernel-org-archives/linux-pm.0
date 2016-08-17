@@ -1,287 +1,79 @@
-From: hl <hl@rock-chips.com>
-Subject: Re: [PATCH v6 8/8] drm/rockchip: Add dmc notifier in vop driver
-Date: Thu, 18 Aug 2016 02:51:14 +0800
-Message-ID: <57B4B222.5070103@rock-chips.com>
-References: <1471386989-9541-1-git-send-email-hl@rock-chips.com>
- <1471386989-9541-9-git-send-email-hl@rock-chips.com>
- <CAOw6vbJr7t4SHRk0A3dFDUFcSp2VbQHFEkOghVMhUTr8=EFz=A@mail.gmail.com>
+From: John Stultz <john.stultz@linaro.org>
+Subject: Re: [RFC,v3] timekeeping: Limit the sleep time to avoid overflow
+Date: Wed, 17 Aug 2016 12:13:18 -0700
+Message-ID: <CALAqxLUU4-zvv6AGTSrOCKuxbdnJWpfUu7yxnCS1_Hiahac2OQ@mail.gmail.com>
+References: <1469892465-15853-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lucky1.263xmail.com ([211.157.147.131]:34976 "EHLO
-	lucky1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752870AbcHQSvg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Aug 2016 14:51:36 -0400
-In-Reply-To: <CAOw6vbJr7t4SHRk0A3dFDUFcSp2VbQHFEkOghVMhUTr8=EFz=A@mail.gmail.com>
+Received: from mail-oi0-f45.google.com ([209.85.218.45]:33087 "EHLO
+	mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752469AbcHQTNT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Aug 2016 15:13:19 -0400
+Received: by mail-oi0-f45.google.com with SMTP id c15so149933015oig.0
+        for <linux-pm@vger.kernel.org>; Wed, 17 Aug 2016 12:13:19 -0700 (PDT)
+In-Reply-To: <1469892465-15853-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sean Paul <seanpaul@chromium.org>
-Cc: =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>, ??? <myungjoo.ham@samsung.com>, tixy@linaro.org, Mark Rutland <mark.rutland@arm.com>, typ@rock-chips.com, linux-rockchip@lists.infradead.org, Dave Airlie <airlied@linux.ie>, mturquette@baylibre.com, dbasehore@chromium.org, Stephen Boyd <sboyd@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Douglas Anderson <dianders@chromium.org>, cw00.choi@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, sudeep.holla@arm.com, linux-pm@vger.kernel.org, Linux ARM Kernel <linux-arm-kernel@lists.infradead.org>, =?UTF-8?B?5aea5pm65oOF?= <mark.yao@rock-chips.com>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Stable # 3 . 17+" <stable@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Xunlei Pang <xpang@redhat.com>, Zhang Rui <rui.zhang@intel.com>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-
-Hi,
-
-On 2016年08月18日 02:14, Sean Paul wrote:
-> On Tue, Aug 16, 2016 at 3:36 PM, Lin Huang <hl@rock-chips.com> wrote:
->> when in ddr frequency scaling process, vop can not do
->> enable or disable operation, since dcf will base on vop vblank
->> time to do frequency scaling and need to get vop irq if there
->> have vop enabled.
-> I'm a little confused by this. Does this mean you need vblank irq to
-> be enabled all the time when vop is enabled? We regularly disable it
-> when there aren't new fbs coming in.
-     maybe the commit message lead to misunderstanding, in dcf it will
-     read the vop register to check whether is it in vblank status, if 
-not, it
-     will wait until it into vblank status. When vop enable, we need the vop
-     clock enable, so we can read the vop register.
+On Sat, Jul 30, 2016 at 8:27 AM, Chen Yu <yu.c.chen@intel.com> wrote:
+> It is reported the hibernation fails at 2nd attempt, which
+> hangs at hibernate() -> syscore_resume() -> i8237A_resume()
+> -> claim_dma_lock(), because the lock has already been taken.
+> However there is actually no other process would like to grab
+> this lock on that problematic platform.
 >
->
->> So need register to devfreq notifier, and we can
->> get the dmc status.
->> Also, when there have two vop enabled, we need
->> to disable dmc, since dcf only base on one vop vblank time, so the
->> other panel will flicker when do ddr frequency scaling.
->>
->> Signed-off-by: Lin Huang <hl@rock-chips.com>
->> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->> Changes in v6:
->> - fix a build error
->>
->> Changes in v5:
->> - improve some nits
->>
->> Changes in v4:
->> - register notifier to devfreq_register_notifier
->> - use DEVFREQ_PRECHANGE and DEVFREQ_POSTCHANGE to get dmc status
->> - when two vop enable, disable dmc
->> - when two vop back to one vop, enable dmc
->>
->> Changes in v3:
->> - when do vop eanble/disable, dmc will wait until it finish
->>
->> Changes in v2:
->> - None
->>
->> Changes in v1:
->> - use wait_event instead usleep
->>
->>   drivers/gpu/drm/rockchip/rockchip_drm_vop.c | 121 +++++++++++++++++++++++++++-
->>   1 file changed, 119 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
->> index 31744fe..199529e 100644
->> --- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
->> +++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
->> @@ -12,6 +12,8 @@
->>    * GNU General Public License for more details.
->>    */
->>
->> +#include <linux/devfreq.h>
->> +#include <linux/devfreq-event.h>
->>   #include <drm/drm.h>
->>   #include <drm/drmP.h>
->>   #include <drm/drm_atomic.h>
->> @@ -118,6 +120,13 @@ struct vop {
->>
->>          const struct vop_data *data;
->>
->> +       struct devfreq *devfreq;
->> +       struct devfreq_event_dev *devfreq_event_dev;
->> +       struct notifier_block dmc_nb;
->> +       int dmc_in_process;
->> +       int vop_switch_status;
->> +       wait_queue_head_t wait_dmc_queue;
->> +       wait_queue_head_t wait_vop_switch_queue;
->>          uint32_t *regsbak;
->>          void __iomem *regs;
->>
->> @@ -428,21 +437,56 @@ static void vop_dsp_hold_valid_irq_disable(struct vop *vop)
->>          spin_unlock_irqrestore(&vop->irq_lock, flags);
->>   }
->>
->> +static int dmc_notify(struct notifier_block *nb, unsigned long event,
->> +                     void *data)
->> +{
->> +       struct vop *vop = container_of(nb, struct vop, dmc_nb);
->> +
->> +       if (event == DEVFREQ_PRECHANGE) {
->> +               /*
->> +                * check if vop in enable or disable process,
->> +                * if yes, wait until it finishes, use 200ms as
->> +                * timeout.
->> +                */
->> +               if (!wait_event_timeout(vop->wait_vop_switch_queue,
->> +                                       !vop->vop_switch_status, HZ / 5))
->> +                       dev_warn(vop->dev,
->> +                                "Timeout waiting for vop swtich status\n");
->> +               vop->dmc_in_process = 1;
->> +       } else if (event == DEVFREQ_POSTCHANGE) {
->> +               vop->dmc_in_process = 0;
->> +               wake_up(&vop->wait_dmc_queue);
->> +       }
->> +
->> +       return NOTIFY_OK;
->> +}
->> +
->>   static void vop_enable(struct drm_crtc *crtc)
->>   {
->>          struct vop *vop = to_vop(crtc);
->> +       int num_enabled_crtc = 0;
->>          int ret;
->>
->> +       /*
->> +        * if in dmc scaling frequency process, wait until it finishes
->> +        * use 100ms as timeout time.
->> +        */
->> +       if (!wait_event_timeout(vop->wait_dmc_queue,
->> +                               !vop->dmc_in_process, HZ / 5))
->> +               dev_warn(vop->dev,
->> +                        "Timeout waiting for dmc when vop enable\n");
->> +
->> +       vop->vop_switch_status = 1;
->>          ret = pm_runtime_get_sync(vop->dev);
->>          if (ret < 0) {
->>                  dev_err(vop->dev, "failed to get pm runtime: %d\n", ret);
->> -               return;
->> +               goto err;
->>          }
->>
->>          ret = clk_enable(vop->hclk);
->>          if (ret < 0) {
->>                  dev_err(vop->dev, "failed to enable hclk - %d\n", ret);
->> -               return;
->> +               goto err;
->>          }
->>
->>          ret = clk_enable(vop->dclk);
->> @@ -485,6 +529,21 @@ static void vop_enable(struct drm_crtc *crtc)
->>
->>          drm_crtc_vblank_on(crtc);
->>
->> +       vop->vop_switch_status = 0;
->> +       wake_up(&vop->wait_vop_switch_queue);
->> +
->> +       /* check how many vop we use now */
->> +       drm_for_each_crtc(crtc, vop->drm_dev) {
->> +               if (crtc->state->enable)
->> +                       num_enabled_crtc++;
->> +       }
->> +
->> +       /* if enable two vop, need to disable dmc */
->> +       if ((num_enabled_crtc > 1) && vop->devfreq) {
->> +               if (vop->devfreq_event_dev)
->> +                       devfreq_event_disable_edev(vop->devfreq_event_dev);
->> +               devfreq_suspend_device(vop->devfreq);
->> +       }
->>          return;
->>
->>   err_disable_aclk:
->> @@ -493,16 +552,32 @@ err_disable_dclk:
->>          clk_disable(vop->dclk);
->>   err_disable_hclk:
->>          clk_disable(vop->hclk);
->> +err:
->> +       vop->vop_switch_status = 0;
->> +       wake_up(&vop->wait_vop_switch_queue);
->> +       return;
->>   }
->>
->>   static void vop_crtc_disable(struct drm_crtc *crtc)
->>   {
->>          struct vop *vop = to_vop(crtc);
->> +       int num_enabled_crtc = 0;
->>          int i;
->>
->>          WARN_ON(vop->event);
->>
->>          /*
->> +        * if in dmc scaling frequency process, wait until it finish
->> +        * use 100ms as timeout time.
->> +        */
->> +       if (!wait_event_timeout(vop->wait_dmc_queue,
->> +                               !vop->dmc_in_process, HZ / 5))
->> +               dev_warn(vop->dev,
->> +                        "Timeout waiting for dmc when vop disable\n");
->> +
->> +       vop->vop_switch_status = 1;
->> +
->> +       /*
->>           * We need to make sure that all windows are disabled before we
->>           * disable that crtc. Otherwise we might try to scan from a destroyed
->>           * buffer later.
->> @@ -559,6 +634,25 @@ static void vop_crtc_disable(struct drm_crtc *crtc)
->>
->>                  crtc->state->event = NULL;
->>          }
->> +
->> +       vop->vop_switch_status = 0;
->> +       wake_up(&vop->wait_vop_switch_queue);
->> +
->> +       /* check how many vop use now */
->> +       drm_for_each_crtc(crtc, vop->drm_dev) {
->> +               if (crtc->state->enable)
->> +                       num_enabled_crtc++;
->> +       }
->> +
->> +       /*
->> +        * if num_enabled_crtc = 1 now, it means 2 vop enabled
->> +        * change to 1 vop enabled  need to enable dmc again.
->> +        */
->> +       if ((num_enabled_crtc == 1) && vop->devfreq) {
->> +               if (vop->devfreq_event_dev)
->> +                       devfreq_event_enable_edev(vop->devfreq_event_dev);
->> +               devfreq_resume_device(vop->devfreq);
->> +       }
->>   }
->>
->>   static void vop_plane_destroy(struct drm_plane *plane)
->> @@ -1406,6 +1500,8 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
->>          struct drm_device *drm_dev = data;
->>          struct vop *vop;
->>          struct resource *res;
->> +       struct devfreq *devfreq;
->> +       struct devfreq_event_dev *event_dev;
->>          size_t alloc_size;
->>          int ret, irq;
->>
->> @@ -1467,6 +1563,27 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
->>                  return ret;
->>
->>          pm_runtime_enable(&pdev->dev);
->> +
->> +       init_waitqueue_head(&vop->wait_vop_switch_queue);
->> +       vop->vop_switch_status = 0;
->> +       init_waitqueue_head(&vop->wait_dmc_queue);
->> +       vop->dmc_in_process = 0;
->> +
->> +       devfreq = devfreq_get_devfreq_by_phandle(dev, 0);
->> +       if (IS_ERR(devfreq))
->> +               goto out;
->> +
->> +       vop->devfreq = devfreq;
->> +       vop->dmc_nb.notifier_call = dmc_notify;
->> +       devfreq_register_notifier(vop->devfreq, &vop->dmc_nb,
->> +                                 DEVFREQ_TRANSITION_NOTIFIER);
->> +
->> +       event_dev = devfreq_event_get_edev_by_phandle(vop->devfreq->dev.parent,
->> +                                                     0);
->> +       if (IS_ERR(event_dev))
->> +               goto out;
->> +       vop->devfreq_event_dev = event_dev;
->> +out:
->>          return 0;
->>   }
->>
->> --
->> 2.6.6
->>
->
->
+> Further investigation shows that, the problem is triggered by
+> setting /sys/power/pm_trace to 1 before the 1st hibernation.
+> Since once pm_trace is enabled, the rtc becomes unmeaningful
+> after suspend, and meanwhile some BIOSes would like to adjust
+> the 'invalid' tsc(e.g, smaller than 1970) to the release date
+> of that motherboard during POST stage, thus after resumed, a
+> significant long sleep time might be generated due to meaningless
+> tsc delta, thus in timekeeping_resume -> tk_debug_account_sleep_time,
+> if the bit31 happened to be set to 1, the fls returns 32 and then we
+> add 1 to sleep_time_bin[32], which caused a memory overwritten.
 
--- 
-Lin Huang
+Sorry for taking awhile to get to this.
 
+So this bit seems like its actually the problematic thing. If fls()
+returns 32, but the max value in sleep_time_bin[] is 31, then that's
+the real broken issue, and that's where memory is being corrupted.
 
+Adding a check on the fls() value used, or defining the the
+sleep_time_bin[] as 33 entries seems like the proper fix.
+
+And actually looking closer, since its a timespec64, the fls() could
+return something as large as 64, so capping it is probably more sane.
+
+> As depicted by System.map:
+>
+> ffffffff81c9d080 b sleep_time_bin
+> ffffffff81c9d100 B dma_spin_lock
+>
+> the dma_spin_lock.val is set to 1, which caused this problem.
+>
+> In theory we can avoid the overflow by ignoring the idle injection
+> if pm_trace is enabled, but we might still miss other cases which
+> might also break the rtc, e.g, buggy clocksoure/rtc driver,
+> or even user space tool such as hwclock -- so there is no generic
+> method to dertermin whether we should trust the tsc.
+>
+> A simpler way is to set the threshold for the sleep time, and
+> ignore those abnormal ones. This patch sets the upper limit of
+> sleep seconds to 0x7fffffff, since no one is likely to sleep
+> that long(68 years).
+
+Having validity sanity check is probably a good idea as well, but this
+papers over the real problem.
+
+I'll send out a version of the above I think makes the most sense, and
+if there's no objections I'll queue it. I am also happy to add a patch
+like this one, but the commit message would need to be simplified to
+just say out of paranoia we want to cap the maximum valid sleep time
+to 68 years.
+
+thanks
+-john
