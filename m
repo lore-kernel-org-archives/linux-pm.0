@@ -1,83 +1,73 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v6 4/8] Documentation: bindings: add dt documentation for
- dfi controller
-Date: Wed, 17 Aug 2016 09:31:40 +0900
-Message-ID: <57B3B06C.1040109@samsung.com>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v6 7/8] PM / devfreq: rockchip: add devfreq driver for
+ rk3399 dmc
+Date: Wed, 17 Aug 2016 09:37:54 +0900
+Message-ID: <57B3B1E2.3040505@samsung.com>
 References: <1471386989-9541-1-git-send-email-hl@rock-chips.com>
- <CGME20160816223902epcas1p1c7f4bd3bfcc7081cc741392bf6a4afe3@epcas1p1.samsung.com>
- <1471386989-9541-5-git-send-email-hl@rock-chips.com>
+ <CGME20160816223901epcas1p3a2e8b0d0c0ca7e01643bcce90729de5a@epcas1p3.samsung.com>
+ <1471386989-9541-8-git-send-email-hl@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1471386989-9541-5-git-send-email-hl@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lin Huang <hl@rock-chips.com>, heiko@sntech.de, myungjoo.ham@samsung.com
-Cc: tixy@linaro.org, mark.rutland@arm.com, typ@rock-chips.com, linux-rockchip@lists.infradead.org, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, kyungmin.park@samsung.com, sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, mark.yao@rock-chips.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-reply-to: <1471386989-9541-8-git-send-email-hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lin,
-
-I add one minor comment.
-
-After fixing it, looks good to me.
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-
-On 2016년 08월 17일 07:36, Lin Huang wrote:
-> This patch adds the documentation for rockchip dfi devfreq-event driver.
-> 
-> Signed-off-by: Lin Huang <hl@rock-chips.com>
-> ---
-> Changes in v6:
-> -None
-> 
-> Changes in v5:
-> -None
-> 
-> Changes in v4:
-> -None
-> 
-> Changes in v3:
-> -None
-> 
-> Changes in v2:
-> -None 
-> 
-> Changes in v1:
-> -None
-> 
->  .../bindings/devfreq/event/rockchip-dfi.txt          | 20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt b/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
-> new file mode 100644
-> index 0000000..bf42255
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
-> @@ -0,0 +1,20 @@
-> +
-> +* Rockchip rk3399 DFI device
-> +
-> +Required properties:
-> +- compatible: Must be "rockchip,rk3399-dfi".
-> +- reg: physical base address of each DFI and length of memory mapped region
-> +- rockchip,pmu: phandle to the syscon managing the "pmu general register files"
-> +- clocks: phandles for clock specified in "clock-names" property
-> +- clock-names : the name of clock used by the DFI, must be "pclk_ddr_mon";
-> +
-> +Example:
-> +	dfi: dfi@0xff630000 {
-> +		reg = <0x00 0xff630000 0x00 0x4000>;
-> +		compatible = "rockchip,rk3399-dfi";
-> +		rockchip,pmu = <&pmugrf>;
-> +		clocks = <&cru PCLK_DDR_MON>;
-> +		clock-names = "pclk_ddr_mon";
-> +		status = "disabled";
-> +	};
-> +
-
-Remove the blank line.
-
-Thanks,
-Chanwoo Choi
+SGkgTGluLAoKSSBhZGQganVzdCBvbmUgY29tbWVudCB0byByZW1vdmUgdGhlIGJsYW5rIGxpbmUu
+CgpPbiAyMDE264WEIDA47JuUIDE37J28IDA3OjM2LCBMaW4gSHVhbmcgd3JvdGU6Cj4gYmFzZSBv
+biBkZmkgcmVzdWx0LCB3ZSBkbyBkZHIgZnJlcXVlbmN5IHNjYWxpbmcsIHJlZ2lzdGVyCj4gZG1j
+IGRyaXZlciB0byBkZXZmcmVxIGZyYW1ld29yaywgYW5kIHVzZSBzaW1wbGUtb25kZW1hbmQKPiBw
+b2xpY3kuCj4gCj4gU2lnbmVkLW9mZi1ieTogTGluIEh1YW5nIDxobEByb2NrLWNoaXBzLmNvbT4K
+PiBSZXZpZXdlZC1ieTogQ2hhbndvbyBDaG9pIDxjdzAwLmNob2lAc2Ftc3VuZy5jb20+Cj4gLS0t
+Cj4gQ2hhbmdlcyBpbiB2NjoKPiAtIGZpeCBzb21lIG5pdCBzdWdnZXN0IGJ5IENoYW53b28gQ2hv
+aQo+IAo+IENoYW5nZXMgaW4gdjU6Cj4gLSBpbXByb3ZlIGRtYyBkcml2ZXIgc3VnZ2VzdCBieSBD
+aGFud29vIENob2kKPiAKPiBDaGFuZ2VzIGluIHY0Ogo+IC0gdXNlIGFybV9zbWNjY19zbWMoKSBm
+dW5jdGlvbiB0YWxrIHRvIGJsMzEKPiAtIGRlbGV0ZSByb2NrY2hpcF9kbWMuYyBmaWxlIGFuZCBj
+b25maWcKPiAtIGRlbGV0ZSBkbWNfbm90aWZ5Cj4gLSBhZGp1c3QgcHJvYmUgb3JkZXIKPiAKPiBD
+aGFuZ2VzIGluIHYzOgo+IC0gb3BlcmF0ZSBkcmFtIHNldHRpbmcgdGhyb3VnaCBzaXAgY2FsbAo+
+IC0gaW1wb3J2ZSBzZXQgcmF0ZSBmbG93Cj4gCj4gQ2hhbmdlcyBpbiB2MjoKPiAtIE5vbmUKPiAK
+PiBDaGFuZ2VzIGluIHYxOgo+IC0gbW92ZSBkZmkgY29udHJvbGxlciB0byBldmVudAo+IC0gZml4
+IHNldCB2b2x0YWdlIHNlcXVlbmNlIHdoZW4gc2V0IHJhdGUgZmFpbAo+IC0gY2hhbmdlIEtjb25m
+aWcgdHlwZSBmcm9tIHRyaXN0YXRlIHRvIGJvb2wKPiAtIG1vdmUgdW51c2UgRVhQT1JUX1NZTUJP
+TF9HUEwoKQo+IAo+ICBkcml2ZXJzL2RldmZyZXEvS2NvbmZpZyAgICAgIHwgIDExICsKPiAgZHJp
+dmVycy9kZXZmcmVxL01ha2VmaWxlICAgICB8ICAgMSArCj4gIGRyaXZlcnMvZGV2ZnJlcS9yazMz
+OTlfZG1jLmMgfCA0OTcgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+Kwo+ICAzIGZpbGVzIGNoYW5nZWQsIDUwOSBpbnNlcnRpb25zKCspCj4gIGNyZWF0ZSBtb2RlIDEw
+MDY0NCBkcml2ZXJzL2RldmZyZXEvcmszMzk5X2RtYy5jCj4gCgpbc25pcF0KCj4gKwo+ICtzdGF0
+aWMgaW50IHJrMzM5OV9kbWNmcmVxX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYp
+Cj4gK3sKPiArCXN0cnVjdCBhcm1fc21jY2NfcmVzIHJlczsKPiArCXN0cnVjdCBkZXZpY2UgKmRl
+diA9ICZwZGV2LT5kZXY7Cj4gKwlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wID0gcGRldi0+ZGV2Lm9m
+X25vZGU7Cj4gKwlzdHJ1Y3QgcmszMzk5X2RtY2ZyZXEgKmRhdGE7Cj4gKwlpbnQgcmV0LCBpcnEs
+IGluZGV4LCBzaXplOwo+ICsJdWludDMyX3QgKnRpbWluZzsKPiArCXN0cnVjdCBkZXZfcG1fb3Bw
+ICpvcHA7Cj4gKwo+ICsJaXJxID0gcGxhdGZvcm1fZ2V0X2lycShwZGV2LCAwKTsKPiArCWlmIChp
+cnEgPCAwKSB7Cj4gKwkJZGV2X2VycigmcGRldi0+ZGV2LCAiQ2Fubm90IGdldCB0aGUgZG1jIGlu
+dGVycnVwdCByZXNvdXJjZVxuIik7Cj4gKwkJcmV0dXJuIC1FSU5WQUw7Cj4gKwl9Cj4gKwlkYXRh
+ID0gZGV2bV9remFsbG9jKGRldiwgc2l6ZW9mKHN0cnVjdCByazMzOTlfZG1jZnJlcSksIEdGUF9L
+RVJORUwpOwo+ICsJaWYgKCFkYXRhKQo+ICsJCXJldHVybiAtRU5PTUVNOwo+ICsKPiArCW11dGV4
+X2luaXQoJmRhdGEtPmxvY2spOwo+ICsKPiArCWRhdGEtPnZkZF9jZW50ZXIgPSBkZXZtX3JlZ3Vs
+YXRvcl9nZXQoZGV2LCAiY2VudGVyIik7Cj4gKwlpZiAoSVNfRVJSKGRhdGEtPnZkZF9jZW50ZXIp
+KSB7Cj4gKwkJZGV2X2VycihkZXYsICJDYW5ub3QgZ2V0IHRoZSByZWd1bGF0b3IgXCJjZW50ZXJc
+IlxuIik7Cj4gKwkJcmV0dXJuIFBUUl9FUlIoZGF0YS0+dmRkX2NlbnRlcik7Cj4gKwl9Cj4gKwo+
+ICsJZGF0YS0+ZG1jX2NsayA9IGRldm1fY2xrX2dldChkZXYsICJkbWNfY2xrIik7Cj4gKwlpZiAo
+SVNfRVJSKGRhdGEtPmRtY19jbGspKSB7Cj4gKwkJZGV2X2VycihkZXYsICJDYW5ub3QgZ2V0IHRo
+ZSBjbGsgZG1jX2Nsa1xuIik7Cj4gKwkJcmV0dXJuIFBUUl9FUlIoZGF0YS0+ZG1jX2Nsayk7Cj4g
+Kwl9Owo+ICsKPiArCWRhdGEtPmlycSA9IGlycTsKPiArCXJldCA9IGRldm1fcmVxdWVzdF9pcnEo
+ZGV2LCBpcnEsIHJrMzM5OV9kbWNfaXJxLCAwLAo+ICsJCQkgICAgICAgZGV2X25hbWUoZGV2KSwg
+ZGF0YSk7Cj4gKwlpZiAocmV0KSB7Cj4gKwkJZGV2X2VycihkZXYsICJGYWlsZWQgdG8gcmVxdWVz
+dCBkbWMgaXJxOiAlZFxuIiwgcmV0KTsKPiArCQlyZXR1cm4gcmV0Owo+ICsJfQo+ICsKPiArCQoK
+UmVtb3ZlIHRoZSB1bm5lZWRlZCBibGFuayBsaW5lLgoKW3NuaXBdCgpSZWdhcmRzLApDaGFud29v
+IENob2kKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxp
+bnV4LXJvY2tjaGlwIG1haWxpbmcgbGlzdApMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQu
+b3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9j
+a2NoaXAK
