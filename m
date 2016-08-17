@@ -1,54 +1,52 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v5 6/7] power: act8945a_charger: Add max current property
-Date: Wed, 17 Aug 2016 13:51:37 +0200
-Message-ID: <20160817115137.sldoet7dfxeusoxm@earth>
-References: <1471337998-6467-1-git-send-email-wenyou.yang@atmel.com>
- <1471337998-6467-7-git-send-email-wenyou.yang@atmel.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="pvyxxmfpsqa35p34"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1471337998-6467-7-git-send-email-wenyou.yang@atmel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wenyou Yang <wenyou.yang@atmel.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH 0/5] Change my email to kernel.org
+Date: Wed, 17 Aug 2016 14:07:41 +0200
+Message-ID: <1471435666-11880-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-
-
---pvyxxmfpsqa35p34
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
 Hi,
 
-On Tue, Aug 16, 2016 at 04:59:57PM +0800, Wenyou Yang wrote:
-> Add the power supply's current max property,
-> POWER_SUPPLY_PROP_CURRENT_MAX.
 
-Please also switch chgin_level to gpiod API.
+I will be leaving Samsung R&D Institute Poland soon so the Samsung
+email will stop working at some point.  Change it to kernel.org in case
+someone would like to reach the author of the code.
 
--- Sebastian
+Maintainers are updated separately [1].
 
---pvyxxmfpsqa35p34
-Content-Type: application/pgp-signature; name="signature.asc"
+There are no dependencies between patches, please pick up freely
+as you wish.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
 
-iQIcBAEBCgAGBQJXtE/JAAoJENju1/PIO/qaLwgP/RLAzaLDgmQ2Q0Rzkr/aEpOg
-7BCKO3T8I2uniVAhnAiX8UiO6TUgV6nglRJqkj3cCOW28UNd01gvlvKrxDBp/zRF
-4aR/CMhjceJExgjekEXXtP5Ae2nX5O4PVZL57c1mZQVMUb2KK1/9Nm98USZQZfA5
-YSBKXi7thfJ/wpFNT5b+3IphBkJrtnBOboquhDkPv+/TXYIYyGDQLl+fFcO196qa
-nouJfqVbWF2uztaPgjSMmUQBfezKbOQIEn0fPIyvnkM9QnTAE1lGK3PorGakxejE
-1tCquIp4GequcBizI/vZlwpTNSikg1bGQDNjNrd3+ux2raVydGRP5xM8hu5tmyzG
-OUrU1/iR8SECdk8UhkHS8i+5KTaxEzWkiIyCzicP/1Gw1KwXnn8n1olcQECLJcLS
-04Dt9XXAv5X6ue5uckCRDVzDbgONHPXN9BI4ugZtu/8s4aLLmQlzZ34IMO+BoM7Q
-9iYUxL/7tQUZa5/0OIIgSPRjj/h/VjxuhtuSXBH14rr7pv1VonsZ8/8ZEhAMdicG
-U5WF0oeEW6rvTz7r5PjJh+8pJjBRkkdMaG40m61ROid8u4w8PQagx9e4lrOpNZAh
-yJRIy2mF6Xg9785KD4wOI6NnNoXB9JyQP2unUfaQ2yDZKUwzaF3KLXAmCps7wBme
-QarjXF3g+cz2FoEWowKp
-=LMRf
------END PGP SIGNATURE-----
+Best regards,
+Krzysztof
 
---pvyxxmfpsqa35p34--
+[1] https://git.kernel.org/cgit/linux/kernel/git/krzk/linux.git/commit/?h=fixes&id=d6479b2422f6ef83aba5810d3b1f06bcc42294e6
+
+
+Krzysztof Kozlowski (5):
+  mfd: max14577: Change Krzysztof Kozlowski's email to kernel.org
+  power: supply: Change Krzysztof Kozlowski's email to kernel.org
+  extcon: max14577: Change Krzysztof Kozlowski's email to kernel.org
+  input: misc: max77693: Change Krzysztof Kozlowski's email to
+    kernel.org
+  regulator: Change Krzysztof Kozlowski's email to kernel.org
+
+ Documentation/ABI/testing/sysfs-class-power | 8 ++++----
+ drivers/extcon/extcon-max14577.c            | 4 ++--
+ drivers/input/misc/max77693-haptic.c        | 4 ++--
+ drivers/mfd/max14577.c                      | 4 ++--
+ drivers/power/supply/max14577_charger.c     | 4 ++--
+ drivers/power/supply/max77693_charger.c     | 4 ++--
+ drivers/regulator/max14577-regulator.c      | 4 ++--
+ drivers/regulator/max77693-regulator.c      | 4 ++--
+ include/linux/mfd/max14577-private.h        | 2 +-
+ include/linux/mfd/max14577.h                | 2 +-
+ 10 files changed, 20 insertions(+), 20 deletions(-)
+
+-- 
+1.9.1
+
