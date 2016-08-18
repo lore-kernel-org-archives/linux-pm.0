@@ -1,7 +1,7 @@
 From: Finlye Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v2 1/4] nvmem: rockchip-efuse: Change initcall to subsys
-Date: Thu, 18 Aug 2016 16:52:18 +0800
-Message-ID: <1471510341-63926-2-git-send-email-finley.xiao@rock-chips.com>
+Subject: [PATCH v2 2/4] of: introduce of_property_read_s32_index
+Date: Thu, 18 Aug 2016 16:52:19 +0800
+Message-ID: <1471510341-63926-3-git-send-email-finley.xiao@rock-chips.com>
 References: <1471510341-63926-1-git-send-email-finley.xiao@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,33 +23,31 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 
-We will register a cpufreq notifier for adjusting opp's voltage, and it
-need to fetch cpu's leakage from efuse in the notifier_call. so the efuse
-driver should probe before cpufreq driver.
+Introduce single indexed signed 32bit integer of_property_read method.
 
 Signed-off-by: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 ---
- drivers/nvmem/rockchip-efuse.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ include/linux/of.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/nvmem/rockchip-efuse.c b/drivers/nvmem/rockchip-efuse.c
-index 4d3f391..378993d 100644
---- a/drivers/nvmem/rockchip-efuse.c
-+++ b/drivers/nvmem/rockchip-efuse.c
-@@ -144,6 +144,13 @@ static struct platform_driver rockchip_efuse_driver = {
- 	},
- };
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 3d9ff8e..8ef775e 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -929,6 +929,14 @@ static inline int of_property_read_s32(const struct device_node *np,
+ 	return of_property_read_u32(np, propname, (u32*) out_value);
+ }
  
--module_platform_driver(rockchip_efuse_driver);
-+static int __init rockchip_efuse_module_init(void)
++static inline int of_property_read_s32_index(const struct device_node *np,
++					     const char *propname, u32 index,
++					     s32 *out_value)
 +{
-+	return platform_driver_probe(&rockchip_efuse_driver,
-+				     rockchip_efuse_probe);
++	return of_property_read_u32_index(np, propname, index,
++		(u32 *)out_value);
 +}
 +
-+subsys_initcall(rockchip_efuse_module_init);
-+
- MODULE_DESCRIPTION("rockchip_efuse driver");
- MODULE_LICENSE("GPL v2");
+ #define of_for_each_phandle(it, err, np, ln, cn, cc)			\
+ 	for (of_phandle_iterator_init((it), (np), (ln), (cn), (cc)),	\
+ 	     err = of_phandle_iterator_next(it);			\
 -- 
 1.9.1
