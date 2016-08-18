@@ -1,144 +1,92 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: [PATCH 12/16] cpuidle: coupled: Convert to hotplug state machine
-Date: Thu, 18 Aug 2016 14:57:27 +0200
-Message-ID: <20160818125731.27256-13-bigeasy@linutronix.de>
-References: <20160818125731.27256-1-bigeasy@linutronix.de>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] PM / sleep: enable suspend-to-idle even without
+ registered suspend_ops
+Date: Thu, 18 Aug 2016 14:10:48 +0100
+Message-ID: <ba04a8b2-3d31-fff4-dd24-b5220fd0059a@arm.com>
+References: <1471511964-6341-1-git-send-email-sudeep.holla@arm.com>
+ <1549989.BLB0oyvVbJ@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160818125731.27256-1-bigeasy@linutronix.de>
+In-Reply-To: <1549989.BLB0oyvVbJ@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Gross <andy.gross@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Install the callbacks via the state machine.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
- drivers/cpuidle/coupled.c  | 81 +++++++++++++++++++++-------------------------
- include/linux/cpuhotplug.h |  1 +
- 2 files changed, 38 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-index d5657d50ac40..11efd9743e88 100644
---- a/drivers/cpuidle/coupled.c
-+++ b/drivers/cpuidle/coupled.c
-@@ -749,65 +749,58 @@ static void cpuidle_coupled_allow_idle(struct cpuidle_coupled *coupled)
- 	put_cpu();
- }
- 
--/**
-- * cpuidle_coupled_cpu_notify - notifier called during hotplug transitions
-- * @nb: notifier block
-- * @action: hotplug transition
-- * @hcpu: target cpu number
-- *
-- * Called when a cpu is brought on or offline using hotplug.  Updates the
-- * coupled cpu set appropriately
-- */
--static int cpuidle_coupled_cpu_notify(struct notifier_block *nb,
--		unsigned long action, void *hcpu)
-+static int coupled_cpu_online(unsigned int cpu)
- {
--	int cpu = (unsigned long)hcpu;
- 	struct cpuidle_device *dev;
- 
--	switch (action & ~CPU_TASKS_FROZEN) {
--	case CPU_UP_PREPARE:
--	case CPU_DOWN_PREPARE:
--	case CPU_ONLINE:
--	case CPU_DEAD:
--	case CPU_UP_CANCELED:
--	case CPU_DOWN_FAILED:
--		break;
--	default:
--		return NOTIFY_OK;
--	}
--
- 	mutex_lock(&cpuidle_lock);
- 
- 	dev = per_cpu(cpuidle_devices, cpu);
- 	if (!dev || !dev->coupled)
- 		goto out;
- 
--	switch (action & ~CPU_TASKS_FROZEN) {
--	case CPU_UP_PREPARE:
--	case CPU_DOWN_PREPARE:
--		cpuidle_coupled_prevent_idle(dev->coupled);
--		break;
--	case CPU_ONLINE:
--	case CPU_DEAD:
--		cpuidle_coupled_update_online_cpus(dev->coupled);
--		/* Fall through */
--	case CPU_UP_CANCELED:
--	case CPU_DOWN_FAILED:
--		cpuidle_coupled_allow_idle(dev->coupled);
--		break;
--	}
--
-+	cpuidle_coupled_update_online_cpus(dev->coupled);
-+	cpuidle_coupled_allow_idle(dev->coupled);
- out:
- 	mutex_unlock(&cpuidle_lock);
--	return NOTIFY_OK;
-+	return 0;
- }
- 
--static struct notifier_block cpuidle_coupled_cpu_notifier = {
--	.notifier_call = cpuidle_coupled_cpu_notify,
--};
-+static int coupled_cpu_up_prepare(unsigned int cpu)
-+{
-+	struct cpuidle_device *dev;
-+
-+	mutex_lock(&cpuidle_lock);
-+
-+	dev = per_cpu(cpuidle_devices, cpu);
-+	if (!dev || !dev->coupled)
-+		goto out;
-+
-+	cpuidle_coupled_prevent_idle(dev->coupled);
-+out:
-+	mutex_unlock(&cpuidle_lock);
-+	return 0;
-+}
- 
- static int __init cpuidle_coupled_init(void)
- {
--	return register_cpu_notifier(&cpuidle_coupled_cpu_notifier);
-+	int ret;
-+
-+	ret = cpuhp_setup_state_nocalls(CPUHP_CPUIDLE_COUPLED_PREPARE,
-+					"CPUIDLE_COUPLED_PREPARE",
-+					coupled_cpu_up_prepare,
-+					coupled_cpu_online);
-+	if (ret)
-+		goto err;
-+	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
-+					"CPUIDLE_COUPLED_ONLINE",
-+					coupled_cpu_online,
-+					coupled_cpu_up_prepare);
-+	if (ret < 0)
-+		goto err;
-+	return 0;
-+err:
-+	cpuhp_remove_state_nocalls(CPUHP_CPUIDLE_COUPLED_PREPARE);
-+	return ret;
- }
- core_initcall(cpuidle_coupled_init);
-diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-index 6a08fd142b8c..9e50a7b3bbcd 100644
---- a/include/linux/cpuhotplug.h
-+++ b/include/linux/cpuhotplug.h
-@@ -31,6 +31,7 @@ enum cpuhp_state {
- 	CPUHP_SLAB_PREPARE,
- 	CPUHP_RCUTREE_PREP,
- 	CPUHP_MD_RAID5_PREPARE,
-+	CPUHP_CPUIDLE_COUPLED_PREPARE,
- 	CPUHP_NOTIFY_PREPARE,
- 	CPUHP_TIMERS_DEAD,
- 	CPUHP_BRINGUP_CPU,
+On 18/08/16 12:06, Rafael J. Wysocki wrote:
+> On Thursday, August 18, 2016 10:19:24 AM Sudeep Holla wrote:
+>> Suspend-to-idle (aka the "freeze" sleep state) is a system sleep state
+>> in which all of the processors enter deepest possible idle state and
+>> wait for interrupts right after suspending all the devices.
+>>
+>> There is no hard requirement for a platform to support and register
+>> platform specific suspend_ops to enter suspend-to-idle/freeze state.
+>> Only deeper system sleep states like PM_SUSPEND_STANDBY and
+>> PM_SUSPEND_MEM rely on such low level support/implementation.
+>>
+>> suspend-to-idle can be entered as along as all the devices can be
+>> suspended. This patch enables the support for suspend-to-idle even on
+>> systems that don't have any low level support for deeper system sleep
+>> states and/or don't register any platform specific suspend_ops.
+>>
+>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+>> ---
+>>  kernel/power/main.c    | 5 +++++
+>>  kernel/power/suspend.c | 8 +++++---
+>>  2 files changed, 10 insertions(+), 3 deletions(-)
+>>
+>> Hi Rafael,
+>>
+>> I am not sure if you like this approach. I found this to be the simplest
+>> but I may have missed to consider all possible corner cases especially
+>> for x86 and other platforms. I don't see any such issues/cases with ARM
+>> systems.
+>>
+>> diff --git a/kernel/power/main.c b/kernel/power/main.c
+>> index 5ea50b1b7595..0f0fd9184f39 100644
+>> --- a/kernel/power/main.c
+>> +++ b/kernel/power/main.c
+>> @@ -651,6 +651,11 @@ static int __init pm_init(void)
+>>  	if (error)
+>>  		return error;
+>>  	pm_print_times_init();
+>> +	/*
+>> +	 * freeze state should be supported even without any suspend_ops,
+>> +	 * calling suspend_set_ops without any ops will setup freeze state
+>> +	 */
+>> +	suspend_set_ops(NULL);
+>
+> Well, this is a core initcall, so suspend_set_ops() invocations from platforms
+> really should happen after that, so something like this should be sufficient here:
+>
+> 	pm_state[PM_SUSPEND_FREEZE] = pm_labels[relative_states ? PM_SUSPEND_MEM : PM_SUSPEND_FREEZE];
+>
+> if I'm not mistaken.
+>
+
+But won't this show up as "standby" state in /sys/power/state ?
+Or did you mean:
+	pm_state[PM_SUSPEND_FREEZE] = pm_labels[relative_states ? 0 : 2];
+
+which will be "mem" or "freeze" based on relative_states.
+
+In-fact, I did exactly this when I first hacked. Since it exposed
+incorrectly to sysfs and I was not sure of these relative_states and
+it's usage, I preferred re-using suspend_set_ops for this.
+
+IIUC showing freeze state as "mem" in sysfs is fine as that's the
+deepest possible state when relative_states=1. But showing it as freeze
+as "standby" in sysfs when relative_states=0 looked wrong to me though
+it works as freeze state.
+
+As a side-note with psci, it get called quite early before
+core_initcall. But that can be fixed if needed and is different issue.
+
 -- 
-2.9.3
+Regards,
+Sudeep
