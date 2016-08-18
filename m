@@ -1,69 +1,64 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management updates for v4.8-rc3
-Date: Thu, 18 Aug 2016 13:13:44 +0200
-Message-ID: <CAJZ5v0hWFcwacHpHfaLWG1v_P8QzgfRwu48YqM0aYi8PJzpi_g@mail.gmail.com>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH][RFC v4] timekeeping: ignore the bogus sleep time if
+ pm_trace is enabled
+Date: Thu, 18 Aug 2016 19:24:34 +0800
+Message-ID: <20160818112434.GA15646@sharon>
+References: <1471517019-15216-1-git-send-email-yu.c.chen@intel.com>
+ <1471516611.2157.22.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:33247 "EHLO
-	mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752898AbcHRLNr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Aug 2016 07:13:47 -0400
+Received: from mga11.intel.com ([192.55.52.93]:46140 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752648AbcHRLSA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 18 Aug 2016 07:18:00 -0400
+Content-Disposition: inline
+In-Reply-To: <1471516611.2157.22.camel@suse.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>
+To: Oliver Neukum <oneukum@suse.com>
+Cc: linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Xunlei Pang <xlpang@redhat.com>, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hi Oliver,
+On Thu, Aug 18, 2016 at 12:36:51PM +0200, Oliver Neukum wrote:
+> On Thu, 2016-08-18 at 18:43 +0800, Chen Yu wrote:
+> > Previously we encountered some memory overflow issues due to
+> > the bogus sleep time brought by inconsistent rtc, which is
+> > triggered when pm_trace is enabled, please refer to:
+> > https://patchwork.kernel.org/patch/9286365/
+> > It's improper in the first place to call __timekeeping_inject_sleeptime()
+> > in case that pm_trace is enabled simply because that "hash" time value
+> > will wreckage the timekeeping subsystem.
+> 
+> Hi,
+> 
+> do you know since when this bug exists?
+> 
+I think as Xunlei mentioned, the memory overflow issue should exist since
+we changed timespec to timespec64 in timekeeping_debug, which should be
+in 3.17. But the bogus sleep time caused by pm_trace should always be there as
+long as we use rtc for sleep compensation.
+> >  /**
+> > @@ -1662,6 +1668,12 @@ void timekeeping_resume(void)
+> >  	} else if (timespec64_compare(&ts_new, &timekeeping_suspend_time) > 0) {
+> >  		ts_delta = timespec64_sub(ts_new, timekeeping_suspend_time);
+> >  		sleeptime_injected = true;
+> > +		/*
+> > +		 * If rtc is used as persist clock thus it
+> > +		 * would be bogus when pm_trace is enabled.
+> > +		 */
+> > +		if (!persistent_clock_is_usable())
+> > +			sleeptime_injected = false;
+> >  	}
+> >  
+> >  	if (sleeptime_injected)
+> 
+> How about
+> 
+> sleeptime_injected = persistent_clock_is_usable();
+> 
+OK, this is simpler, will do in next version.
 
-Please pull from the tag
-
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.8-rc3
-
-with top-most commit 6c16f42a4e01ef1543fb21e594c2b25d00697649
-
- Merge branch 'pm-sleep'
-
-on top of commit 694d0d0bb2030d2e36df73e2d23d5770511dbc8d
-
- Linux 4.8-rc2
-
-to receive power management updates for v4.8-rc3.
-
-More hibernation-related material: one fix for a recent regression
-in the core, one small cleanup of the x86-64 resume code and a
-documentation update.
-
-Specifics:
-
- - Fix a hibernate core regression resulting from uncovering a
-   latent bug in its implementation of memory bitmaps by a recent
-   commit (James Morse).
-
- - Use __pa() to compute a physical address in the x86-64 code
-   finalizing resume from hibernation (Rafael Wysocki).
-
- - Update power management documentation related to system sleep
-   states to remove outdated information from it and to add a
-   description of a recently introduced hibernation debug feature
-   to it (Rafael Wysocki).
-
-Thanks!
-
----------------
-
-James Morse (1):
-      PM / hibernate: Fix rtree_next_node() to avoid walking off list ends
-
-Rafael J. Wysocki (2):
-      PM / sleep: Update some system sleep documentation
-      x86/power/64: Use __pa() for physical address computation
-
----------------
-
- Documentation/power/basic-pm-debugging.txt |  27 +++++-
- Documentation/power/interface.txt          | 151 +++++++++++++++--------------
- arch/x86/power/hibernate_64.c              |   2 +-
- kernel/power/snapshot.c                    |  10 +-
- 4 files changed, 108 insertions(+), 82 deletions(-)
+thanks,
+Yu
+> 
