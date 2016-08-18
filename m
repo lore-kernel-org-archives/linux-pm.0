@@ -1,53 +1,78 @@
-From: Finlye Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v2 2/4] of: introduce of_property_read_s32_index
-Date: Thu, 18 Aug 2016 16:52:19 +0800
-Message-ID: <1471510341-63926-3-git-send-email-finley.xiao@rock-chips.com>
+From: Finlye Xiao <finley.xiao@rock-chips.com>
+Subject: [PATCH v2 3/4] dt-bindings: add binding document for Rockchip cpu avs
+Date: Thu, 18 Aug 2016 16:52:20 +0800
+Message-ID: <1471510341-63926-4-git-send-email-finley.xiao@rock-chips.com>
 References: <1471510341-63926-1-git-send-email-finley.xiao@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1471510341-63926-1-git-send-email-finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1471510341-63926-1-git-send-email-finley.xiao@rock-chips.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: srinivas.kandagatla@linaro.org, maxime.ripard@free-electrons.com, heiko@sntech.de, robh+dt@kernel.org, frowand.list@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, mark.rutland@arm.com, khilman@kernel.org, nm@ti.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, sboyd@codeaurora.org
+Cc: devicetree@vger.kernel.org, tim.chen@rock-chips.com, linux-pm@vger.kernel.org, lin.huang@rock-chips.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, tony.xie@rock-chips.com, Finley Xiao <finley.xiao@rock-chips.com>, ulysses.huang@rock-chips.com, rocky.hao@rock-chips.com, jay.xu@rock-chips.com, linux-arm-kernel@lists.infradead.org, wxt@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+From: Finley Xiao <finley.xiao@rock-chips.com>
 
-Introduce single indexed signed 32bit integer of_property_read method.
+This patch documents the Rockchip cpu avs device tree binding.
 
-Signed-off-by: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
 ---
- include/linux/of.h | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ .../devicetree/bindings/power/rockchip-cpu-avs.txt | 37 ++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
 
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 3d9ff8e..8ef775e 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -929,6 +929,14 @@ static inline int of_property_read_s32(const struct device_node *np,
- 	return of_property_read_u32(np, propname, (u32*) out_value);
- }
- 
-+static inline int of_property_read_s32_index(const struct device_node *np,
-+					     const char *propname, u32 index,
-+					     s32 *out_value)
-+{
-+	return of_property_read_u32_index(np, propname, index,
-+		(u32 *)out_value);
-+}
+diff --git a/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt b/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
+new file mode 100644
+index 0000000..705f516
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
+@@ -0,0 +1,37 @@
++Rockchip cpu avs device tree bindings
++-------------------------------------
 +
- #define of_for_each_phandle(it, err, np, ln, cn, cc)			\
- 	for (of_phandle_iterator_init((it), (np), (ln), (cn), (cc)),	\
- 	     err = of_phandle_iterator_next(it);			\
++Under the same frequency, the operating voltage tends to decrease with
++increasing leakage. so it is necessary to adjust opp's voltage according
++to leakage for power.
++
++
++Required properties:
++- compatible: Should be one of the following.
++  - "rockchip,rk3399-cpu-avs" - for RK3399 SoCs.
++- leakage-volt-<name>: Named leakage-volt property. At runtime, the
++  platform can find a cpu's cluster_id according to it's cpu_id and match
++  leakage-volt-<name> property. The property is an array of 3-tuples
++  items, and each item consists of leakage and voltage like
++  <min-leakage-mA max-leakage-mA volt-uV>.
++	min-leakage: minimum leakage in mA, ranges from 0 to 254.
++	max-leakage: maximum leakage in mA, ranges from 0 to 254.
++	volt: voltage offset in mV to apply to the opp table entries.
++
++Example:
++
++	cpu_avs: cpu-avs {
++		compatible = "rockchip,rk3399-cpu-avs";
++		leakage-volt-cluster0 = <
++		/*  mA        mA         uV*/
++		    0         100        0
++		    101       200        (-25000)
++		    201       254        (-50000)
++		>;
++		leakage-volt-cluster1 = <
++		/*  mA        mA         uV*/
++		    0         100        0
++		    101       200        (-25000)
++		    201       254        (-50000)
++		>;
++	};
 -- 
 1.9.1
