@@ -1,63 +1,101 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: how to enable suspend to ram for arm-64 bits
-Date: Thu, 18 Aug 2016 09:47:58 +0100
-Message-ID: <82ddd0e1-9ecc-5e54-e8ee-86f947fc0ecd@arm.com>
-References: <CADUS3onCMDThNK2ZwSSjGZhPE0M6cybjgCHJR2wVVeK09GC6ng@mail.gmail.com>
- <06a4f0d7-9022-578d-99e0-ddcde31ed895@arm.com>
- <CADUS3onUDk_=UpRoZy1m0hV1VGZYSf22ea8D10MpDbqJCfTkqw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: WEN Pingbo <pingbo.wen@linaro.org>
+Subject: [PATCH] cpufreq: schedutil: set cpu freq to min in idle state
+Date: Thu, 18 Aug 2016 16:55:31 +0800
+Message-ID: <1471510531-7330-1-git-send-email-pingbo.wen@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56486 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753650AbcHRIsH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Aug 2016 04:48:07 -0400
-In-Reply-To: <CADUS3onUDk_=UpRoZy1m0hV1VGZYSf22ea8D10MpDbqJCfTkqw@mail.gmail.com>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:35447 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbcHRIzp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Aug 2016 04:55:45 -0400
+Received: by mail-pa0-f49.google.com with SMTP id i5so4669373pat.2
+        for <linux-pm@vger.kernel.org>; Thu, 18 Aug 2016 01:55:44 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: yoma sophian <sophian.yoma@gmail.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, steve.muckle@linaro.org, WEN Pingbo <pingbo.wen@linaro.org>
 
-Hi Yoma,
+The schedutil will keep the frequency high until next thread is arrived,
+when the cpu/cluster enter idle state, which is obviously abnormal and
+inefficient.
 
-On 18/08/16 03:07, yoma sophian wrote:
-> hi Sudeep
->
->> Correct. What's the cpu enable method on your platform ? Is it PSCI  ?
-> No, the enable method is "spin-table"
->
+This patch added a idle_timer, which will re-feed in every util
+callback. When cpu enter idle state, the idle_timer expires, and will
+pull down the frequency.
 
-Generally spin-table is used for the initial bring up. If one is
-interested in full power management support on a platform, PSCI is the
-recommended standard on ARM64.
+Signed-off-by: WEN Pingbo <pingbo.wen@linaro.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
->> If yes, does you PSCI implementation support SYSTEM_SUSPEND ? If
->> yes, it should work. Check your PSCI implementation otherwise.
->
-> if so, there are 2 things make me curious: a. I trace
-> arch/arm64/kernel/psci.c even arch/arm64/*, but I sill cannot find
-> where it create global suspend method table with suspend_set_ops. #
-> grep -rnw 'suspend_set_ops' ../linux-4.1/arch/arm64/ #
-
-drivers/firmware/psci.c
-
-> except arch/xxx folder, there are
-> ../linux-4.1/drivers/macintosh/via-pmu.c:2276:
-> suspend_set_ops(&pmu_pm_ops); ../linux-4.1/drivers/acpi/sleep.c:666:
-> suspend_set_ops(old_suspend_ordering ? Does that mean aarch64
-> register suspend_set_ops by apci flow when adopt PSCI
-> implementation?
->
-Not yet, but may choose that from ACPI boot.
-
-
-> b. in arm64, if some platform has its own suspend flow,  couldn't it
-> adopts arm/match-xxx to register its own global suspend method?
->
-
-No, PSCI is highly recommended.
-
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index a84641b..41cd74e 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -34,6 +34,7 @@ struct sugov_policy {
+ 	s64 freq_update_delay_ns;
+ 	unsigned int next_freq;
+ 
++	struct timer_list idle_timer;
+ 	/* The next fields are only needed if fast switch cannot be used. */
+ 	struct irq_work irq_work;
+ 	struct work_struct work;
+@@ -152,6 +153,8 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 	struct cpufreq_policy *policy = sg_policy->policy;
+ 	unsigned int next_f;
+ 
++	mod_timer(&sg_policy->idle_timer, jiffies + 1);
++
+ 	if (!sugov_should_update_freq(sg_policy, time))
+ 		return;
+ 
+@@ -215,6 +218,8 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+ 
+ 	raw_spin_lock(&sg_policy->update_lock);
+ 
++	mod_timer(&sg_policy->idle_timer, jiffies + 1);
++
+ 	sg_cpu->util = util;
+ 	sg_cpu->max = max;
+ 	sg_cpu->last_update = time;
+@@ -247,6 +252,18 @@ static void sugov_irq_work(struct irq_work *irq_work)
+ 	schedule_work_on(smp_processor_id(), &sg_policy->work);
+ }
+ 
++static void sugov_idle_timer(unsigned long data)
++{
++	struct sugov_policy *sg_policy = (struct sugov_policy *)data;
++	struct cpufreq_policy *policy = sg_policy->policy;
++	struct sugov_cpu *sg_cpu = &per_cpu(sugov_cpu, smp_processor_id());
++
++	/* CPU is in idle state, set to min directly to save power. */
++	if (!sg_policy->work_in_progress && (policy->min != policy->cur))
++		sugov_update_commit(sg_policy, sg_cpu->last_update,
++				policy->min);
++}
++
+ /************************** sysfs interface ************************/
+ 
+ static struct sugov_tunables *global_tunables;
+@@ -310,6 +327,11 @@ static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy *policy)
+ 	init_irq_work(&sg_policy->irq_work, sugov_irq_work);
+ 	INIT_WORK(&sg_policy->work, sugov_work);
+ 	mutex_init(&sg_policy->work_lock);
++
++	init_timer_pinned(&sg_policy->idle_timer);
++	sg_policy->idle_timer.function = sugov_idle_timer;
++	sg_policy->idle_timer.data = (unsigned long)sg_policy;
++
+ 	raw_spin_lock_init(&sg_policy->update_lock);
+ 	return sg_policy;
+ }
+@@ -468,6 +490,7 @@ static void sugov_stop(struct cpufreq_policy *policy)
+ 
+ 	synchronize_sched();
+ 
++	del_timer_sync(&sg_policy->idle_timer);
+ 	irq_work_sync(&sg_policy->irq_work);
+ 	cancel_work_sync(&sg_policy->work);
+ }
 -- 
-Regards,
-Sudeep
+1.9.1
+
