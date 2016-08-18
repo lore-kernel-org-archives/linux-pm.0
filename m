@@ -1,112 +1,111 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/2][RFC] PM / sleep: Expose DPM watchdog timeout to sysfs
-Date: Thu, 18 Aug 2016 14:06:41 +0200
-Message-ID: <20160818120641.GA12732@amd>
-References: <cover.1470908324.git.yu.c.chen@intel.com>
- <20160811185441.GA15813@amd>
- <20160812025225.GA12238@sharon>
- <20160812063312.GD30992@amd>
- <CAJZ5v0jgiPsSV3ZRVeM+D7KD7wJudPD+0Fq0BoJGT1mZ3yryxg@mail.gmail.com>
- <20160817034347.GA15682@sharon>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55807 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbcHRMGp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Aug 2016 08:06:45 -0400
-Content-Disposition: inline
-In-Reply-To: <20160817034347.GA15682@sharon>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: [PATCH 10/16] cpuidle: pseries: Convert to hotplug state machine
+Date: Thu, 18 Aug 2016 14:57:25 +0200
+Message-ID: <20160818125731.27256-11-bigeasy@linutronix.de>
+References: <20160818125731.27256-1-bigeasy@linutronix.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160818125731.27256-1-bigeasy@linutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM List <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>, Takashi Iwai <tiwai@suse.de>, Benoit Goby <benoit@android.com>
 
-On Wed 2016-08-17 11:43:48, Chen Yu wrote:
-> On Fri, Aug 12, 2016 at 01:25:04PM +0200, Rafael J. Wysocki wrote:
-> > On Fri, Aug 12, 2016 at 8:33 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> > > Hi!
-> > >
-> > >> > > Recently we have a new report that, the harddisk can not
-> > >> > > resume on time due to firmware issues, and got a kernel
-> > >> > > panic because of DPM watchdog timeout. Since the default
-> > >> > > timeout has once been modified from 12 to 60 seconds, we
-> > >> > > might still encounter new case which requires a longer timeout,
-> > >> > > so expose the value to sysfs and let the users decide which
-> > >> > > value is appropriate, meanwhile this can also ease the debugging
-> > >> > > process.
-> > >> > >
-> > >> > > The first patch is to force DPM watchdog depending on CONFIG_PM_SLEEP,
-> > >> > > thus the second patch which does the actual work, can use
-> > >> > > CONFIG_DPM_WATCHDOG safely without checking CONFIG_PM_SLEEP.
-> > >> >
-> > >> > Kernel should just work. User should not have to configure random
-> > >> > knobs to have working suspend/hibernation.
-> > >> >
-> > >> > We do not want "CONFIG_BREAK_SUSPEND" so I believe we don't want
-> > >> > "CONFIG_DPM_WATCHDOG". If normal users select it and it breaks their
-> > >> > system, make it depend on "CONFIG_EXPERT" or hide it in some other
-> > >> > way or maybe remove it from Kconfig altogether.
-> > >> >
-> > >> > Or maybe CONFIG_DPM_WATCHDOG should contain numeric value that user
-> > >> > has to select?
-> > >> >
-> > >> Yes, if people select it then they have the risk to break their system,
-> > >> and the original thought of the patch is to behave like a diagnosis to
-> > >> make it easier for the users to figure it out, how much time it takes
-> > >> to suspend/resume a bogus peripheral, without recomping the kernel.
-> > >> -- currently the timeout value for CONFIG_DPM_WATCHDOG can be adjusted
-> > >> by menuconfig, but bug reporter might have to recompile the kernel
-> > >> to confirm, and it takes some time to get a feedback from them, so...
-> > >
-> > > Please don't add sysfs knobs for this. People should not need to
-> > > adjust sysfs files to get working kernel.
-> > >
-> > > You can for example make the default 120 seconds.
-> > 
-> > Plus, IMO it would be good to be able to disable this thing from the
-> > kernel command line entirely in case 2 minutes is still too little
-> > time for somebody.
-> >
-> OK, I've modified the patch to the following version, Rafael, Pavel could
-> you take a glance at it, thanks:
+Install the callbacks via the state machine.
 
-Certainly looks better.
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+ drivers/cpuidle/cpuidle-pseries.c | 50 +++++++++++++++++----------------------
+ include/linux/cpuhotplug.h        |  1 +
+ 2 files changed, 23 insertions(+), 28 deletions(-)
 
-> Index: linux/kernel/power/Kconfig
-> ===================================================================
-> --- linux.orig/kernel/power/Kconfig
-> +++ linux/kernel/power/Kconfig
-> @@ -197,7 +197,7 @@ config DPM_WATCHDOG
->  config DPM_WATCHDOG_TIMEOUT
->  	int "Watchdog timeout in seconds"
->  	range 1 120
-> -	default 60
-> +	default 120
->  	depends on DPM_WATCHDOG
->
-
-I like this part.
-
-> +++ linux/Documentation/kernel-parameters.txt
-> @@ -2749,6 +2749,8 @@ bytes respectively. Such letter suffixes
->  	nowatchdog	[KNL] Disable both lockup detectors, i.e.
->                          soft-lockup and NMI watchdog (hard-lockup).
->  
-> +	no_dpm_watchdog	[KNL] Disable the device suspend/resume watchdog.
-> +
->  	nowb		[ARM]
->  
->  	nox2apic	[X86-64,APIC] Do not enable x2APIC mode.
-
-Do we really need the new cmdline option? Can we just tell people to
-disable DPM_WATCHDOG completely?
-
-Is there reason to keep the DPM_WATCHDOG? Did it find some real bugs
-lately?
-
-Thanks,
-									Pavel
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index 07135e009d8b..10c4c51cd840 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -171,39 +171,29 @@ static struct cpuidle_state shared_states[] = {
+ 		.enter = &shared_cede_loop },
+ };
+ 
+-static int pseries_cpuidle_add_cpu_notifier(struct notifier_block *n,
+-			unsigned long action, void *hcpu)
++static int pseries_cpuidle_cpu_online(unsigned int cpu)
+ {
+-	int hotcpu = (unsigned long)hcpu;
+-	struct cpuidle_device *dev =
+-				per_cpu(cpuidle_devices, hotcpu);
++	struct cpuidle_device *dev = per_cpu(cpuidle_devices, cpu);
+ 
+ 	if (dev && cpuidle_get_driver()) {
+-		switch (action) {
+-		case CPU_ONLINE:
+-		case CPU_ONLINE_FROZEN:
+-			cpuidle_pause_and_lock();
+-			cpuidle_enable_device(dev);
+-			cpuidle_resume_and_unlock();
+-			break;
+-
+-		case CPU_DEAD:
+-		case CPU_DEAD_FROZEN:
+-			cpuidle_pause_and_lock();
+-			cpuidle_disable_device(dev);
+-			cpuidle_resume_and_unlock();
+-			break;
+-
+-		default:
+-			return NOTIFY_DONE;
+-		}
++		cpuidle_pause_and_lock();
++		cpuidle_enable_device(dev);
++		cpuidle_resume_and_unlock();
+ 	}
+-	return NOTIFY_OK;
++	return 0;
+ }
+ 
+-static struct notifier_block setup_hotplug_notifier = {
+-	.notifier_call = pseries_cpuidle_add_cpu_notifier,
+-};
++static int pseries_cpuidle_cpu_dead(unsigned int cpu)
++{
++	struct cpuidle_device *dev = per_cpu(cpuidle_devices, cpu);
++
++	if (dev && cpuidle_get_driver()) {
++		cpuidle_pause_and_lock();
++		cpuidle_disable_device(dev);
++		cpuidle_resume_and_unlock();
++	}
++	return 0;
++}
+ 
+ /*
+  * pseries_cpuidle_driver_init()
+@@ -273,7 +263,11 @@ static int __init pseries_processor_idle_init(void)
+ 		return retval;
+ 	}
+ 
+-	register_cpu_notifier(&setup_hotplug_notifier);
++	cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "CPUIDLE_PSERIES_ONLINE",
++				  pseries_cpuidle_cpu_online, NULL);
++	cpuhp_setup_state_nocalls(CPUHP_CPUIDLE_PSERIES_DEAD,
++				  "CPUIDLE_PSERIES_DEAD", NULL,
++				  pseries_cpuidle_cpu_dead);
+ 	printk(KERN_DEBUG "pseries_idle_driver registered\n");
+ 	return 0;
+ }
+diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+index 5811954809af..baecc4faf028 100644
+--- a/include/linux/cpuhotplug.h
++++ b/include/linux/cpuhotplug.h
+@@ -19,6 +19,7 @@ enum cpuhp_state {
+ 	CPUHP_MM_WRITEBACK_DEAD,
+ 	CPUHP_SOFTIRQ_DEAD,
+ 	CPUHP_NET_MVNETA_DEAD,
++	CPUHP_CPUIDLE_PSERIES_DEAD,
+ 	CPUHP_WORKQUEUE_PREP,
+ 	CPUHP_POWER_NUMA_PREPARE,
+ 	CPUHP_HRTIMERS_PREPARE,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.9.3
