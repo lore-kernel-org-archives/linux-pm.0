@@ -1,12 +1,8 @@
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [RFC/PATCH 1/2] cpuidle: Allow idle-states to be disabled at start
-Date: Fri, 19 Aug 2016 03:56:54 +0530
-Message-ID: <48afad7788300482c047fc35e70ca8e4bf31a5ac.1471557381.git.ego@linux.vnet.ibm.com>
-References: <cover.1471557381.git.ego@linux.vnet.ibm.com>
+Subject: [RFC/PATCH 0/2] powernv:cpuidle: Enable winkle idle state
+Date: Fri, 19 Aug 2016 03:56:53 +0530
+Message-ID: <cover.1471557381.git.ego@linux.vnet.ibm.com>
 Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <cover.1471557381.git.ego@linux.vnet.ibm.com>
-In-Reply-To: <cover.1471557381.git.ego@linux.vnet.ibm.com>
-References: <cover.1471557381.git.ego@linux.vnet.ibm.com>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
 List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
@@ -23,57 +19,42 @@ List-Id: linux-pm@vger.kernel.org
 
 From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Currently all the idle states registered by a cpu-idle driver are
-enabled by default. This patch adds a mechanism which allows the
-driver to hint if an idle-state should start in a disabled state. The
-cpu-idle core will use this hint to appropriately initialize the
-usage->disable knob of the CPU device idle state.
+Hi,
 
-The state can be enabled at run time by echo'ing a zero to the sysfs
-"disable" control file.
+The patches in these series enable support for Winkle idle state in
+CPU-Idle.
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle.c | 7 +++++++
- include/linux/cpuidle.h   | 7 ++++++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
+The first patch is a platform-independent CPU-Idle patch that allows
+CPU-Idle states to be  disabled at start (Currently they are all
+enabled by default).
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index c73207a..b4debc7 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -439,7 +439,14 @@ static void __cpuidle_unregister_device(struct cpuidle_device *dev)
- 
- static void __cpuidle_device_init(struct cpuidle_device *dev)
- {
-+	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
-+	int i;
-+
- 	memset(dev->states_usage, 0, sizeof(dev->states_usage));
-+	for (i = 0; i < drv->state_count; i++) {
-+		if (drv->states[i].disable_use_at_start)
-+			dev->states_usage[i].disable = 1;
-+	}
- 	dev->last_residency = 0;
- }
- 
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index bb31373..f3fe855 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -44,7 +44,12 @@ struct cpuidle_state {
- 	int		power_usage; /* in mW */
- 	unsigned int	target_residency; /* in US */
- 	bool		disabled; /* disabled on all CPUs */
--
-+	/*
-+	 * disable_use_at_start: If true, then this idle state will be
-+	 * disabled by default. It can be enabled at runtime using the
-+	 * per-cpu cpuidle sysfs control file named "disable".
-+	 */
-+	bool            disable_use_at_start;
- 	int (*enter)	(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			int index);
+The second patch adds the winkle enablement for powernv-cpuidle. By
+default, the winkle idle-state is disabled. It can be enabled by
+writing zero to the per-cpu cpuidle sysfs control file named
+"disable".
+
+This series has been lightly tested on a 2-socket POWER8 system and
+the machine was pretty stable while running kernbench and ebizzy. I
+didn't see any regressions with those.
+
+I haven't yet evaluated the impact that these patches might have
+on latency sensitive workloads. I hope to do that in a day or two.
+
+On the power-savings front, I could observe 6-8% additional
+power-savings when winkle state was enabled on an idle system with
+SMT=on. With SMT=off, additional idle power-savings observed with
+winkle enabled were greater than 15%.  The numbers indicate that it
+might be worth the while to pursue this!
+
+
+Gautham R. Shenoy (2):
+  cpuidle: Allow idle-states to be disabled at start
+  powernv:cpuidle: Enable winkle idle state in CPU-Idle.
+
+ drivers/cpuidle/cpuidle-powernv.c | 44 ++++++++++++++++++++++++++++++++-------
+ drivers/cpuidle/cpuidle.c         |  7 +++++++
+ include/linux/cpuidle.h           |  7 ++++++-
+ 3 files changed, 49 insertions(+), 9 deletions(-)
+
 -- 
 1.9.4
