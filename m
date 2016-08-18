@@ -1,76 +1,43 @@
-From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v6 7/7] doc: bindings: act8945a-charger: Update properties
-Date: Fri, 19 Aug 2016 09:13:35 +0800
-Message-ID: <1471569215-6046-8-git-send-email-wenyou.yang@atmel.com>
-References: <1471569215-6046-1-git-send-email-wenyou.yang@atmel.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: Power driver patches to avoid lockdep complaints
+Date: Thu, 18 Aug 2016 15:51:52 -0700
+Message-ID: <20160818225152.d2tvla4l3avoss2n@atomide.com>
+References: <20160615211344.GA31850@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1471569215-6046-1-git-send-email-wenyou.yang@atmel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:45913 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754180AbcHSBSX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 18 Aug 2016 21:18:23 -0400
+Content-Disposition: inline
+In-Reply-To: <20160615211344.GA31850@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, pavel@ucw.cz, linux@roeck-us.net, rostedt@goodmis.org, linux-pm@vger.kernel.org
 
-Due the driver improvements, update the properties,
- - Remove "active-semi,check-battery-temperature" property.
- - Add the properties, "active-semi,irq_gpio"
-   and "active-semi,lbo-gpios".
+Hi,
 
-Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
-Acked-by: Rob Herring <robh@kernel.org>
----
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> [160615 14:16]:
+> Hello!
+> 
+> Ingo was not comfortable taking these through -tip, which is understandable,
+> given that they don't depend on each other or on anything else not already
+> in mainline, and that they don't have anything to do with -tip.
+> 
+> So what would you guys like to do with these?
+> 
+> They may be pulled from 13e698e68f75 (power: Use _rcuidle for
+> suspend/resume tracepoints) in my -rcu tree:
+> 
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
+> 
 
-Changes in v6: None
-Changes in v5:
- - Add Acked-by tag.
+Rafael, looks like commit 13e698e68f75 is still missing from the
+mainline tree. Care to merge it to your fixes so I don't have to
+keep looking at that splat on daily basis?
 
-Changes in v4:
- - Update the doc/binding for using "interrupts" property.
+Regards,
 
-Changes in v3: None
-Changes in v2: None
-
- .../bindings/power/supply/act8945a-charger.txt           | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt b/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
-index bea254c..f9866c4 100644
---- a/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
-+++ b/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
-@@ -4,10 +4,15 @@ Required properties:
-  - compatible: "active-semi,act8945a", please refer to ../mfd/act8945a.txt.
-  - active-semi,chglev-gpios: charge current level phandle with args
-    as described in ../gpio/gpio.txt.
-+ - active-semi,lbo-gpios: specify the low battery voltage detect phandle
-+   with args as as described in ../gpio/gpio.txt.
-+ - interrupts: <a b> where a is the interrupt number and b is a
-+   field that represents an encoding of the sense and level
-+   information for the interrupt.
-+ - interrupt-parent: the phandle for the interrupt controller that
-+   services interrupts for this device.
- 
- Optional properties:
-- - active-semi,check-battery-temperature: boolean to check the battery
--   temperature or not.
-  - active-semi,input-voltage-threshold-microvolt: unit: mV;
-    Specifies the charger's input over-voltage threshold value;
-    The value can be: 6600, 7000, 7500, 8000; default: 6600
-@@ -27,9 +32,14 @@ Example:
- 		status = "okay";
- 
- 		pinctrl-names = "default";
--		pinctrl-0 = <&pinctrl_charger_chglev>;
-+		pinctrl-0 = <&pinctrl_charger_chglev &pinctrl_charger_lbo &pinctrl_charger_irq>;
-+
- 		active-semi,chglev-gpios = <&pioA 12 GPIO_ACTIVE_HIGH>;
-+		active-semi,lbo-gpios = <&pioA 72 GPIO_ACTIVE_LOW>;
- 		active-semi,input-voltage-threshold-microvolt = <6600>;
- 		active-semi,precondition-timeout = <40>;
- 		active-semi,total-timeout = <3>;
-+		interrupt-parent = <&pioA>;
-+		interrupts = <45 GPIO_ACTIVE_LOW>;
-+
- 	};
--- 
-2.7.4
+Tony
