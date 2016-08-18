@@ -1,192 +1,40 @@
-From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v6 2/7] power: act8945a_charger: Improve
-Date: Fri, 19 Aug 2016 09:13:30 +0800
-Message-ID: <1471569215-6046-3-git-send-email-wenyou.yang@atmel.com>
-References: <1471569215-6046-1-git-send-email-wenyou.yang@atmel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1471569215-6046-1-git-send-email-wenyou.yang@atmel.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar
- Gala <galak@codeaurora.org>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>, Fengguang Wu <fengguang.wu@intel.com>, linux-arm-kernel@lists.infradead.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 09/11] acpi: bus: Enable HWP CPPC objects
+Date: Thu, 18 Aug 2016 15:36:50 -0700
+Message-ID: <1471559812-19967-10-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, peterz@infradead.org
+Cc: x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, tim.c.chen@linux.intel.com, srinivas.pandruvada@linux.intel.com, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-When get the property, first check the charger state machine,
-then check the status bit to decide what value is assigned to
-the corresponding property.
+Need to set platform wide _OSC bits to enable CPPC and CPPC version 2.
+If platform supports CPPC, then BIOS exposess CPPC tables.
 
-Retain the SUSCHG bit of REG 0x71 when configure the timers to
-avoid losting the charger suspending info after boot.
-
-Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
-Signed-off-by: Fengguang Wu <fengguang.wu@intel.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
+ drivers/acpi/bus.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Changes in v6: None
-Changes in v5: None
-Changes in v4: None
-Changes in v3:
- - Remove unneeded semicolon to fix semicolon.cocci warning.
-
-Changes in v2:
- - Add missing ret declaration.
-
- drivers/power/supply/act8945a_charger.c | 84 ++++++++++++++++++++++++++-------
- 1 file changed, 68 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
-index 72d39ba..6ddfc1d 100644
---- a/drivers/power/supply/act8945a_charger.c
-+++ b/drivers/power/supply/act8945a_charger.c
-@@ -94,16 +94,24 @@ static int act8945a_get_charger_state(struct regmap *regmap, int *val)
- 	state &= APCH_STATE_CSTATE;
- 	state >>= APCH_STATE_CSTATE_SHIFT;
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index 85b7d07..61643a5 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -330,6 +330,13 @@ static void acpi_bus_osc_support(void)
+ 	capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_HOTPLUG_OST_SUPPORT;
+ 	capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_PCLPI_SUPPORT;
  
--	if (state == APCH_STATE_CSTATE_EOC) {
-+	switch (state) {
-+	case APCH_STATE_CSTATE_PRE:
-+	case APCH_STATE_CSTATE_FAST:
-+		*val = POWER_SUPPLY_STATUS_CHARGING;
-+		break;
-+	case APCH_STATE_CSTATE_EOC:
- 		if (status & APCH_STATUS_CHGDAT)
- 			*val = POWER_SUPPLY_STATUS_FULL;
- 		else
-+			*val = POWER_SUPPLY_STATUS_CHARGING;
-+		break;
-+	case APCH_STATE_CSTATE_DISABLED:
-+	default:
-+		if (!(status & APCH_STATUS_INDAT))
-+			*val = POWER_SUPPLY_STATUS_DISCHARGING;
-+		else
- 			*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
--	} else if ((state == APCH_STATE_CSTATE_FAST) ||
--		   (state == APCH_STATE_CSTATE_PRE)) {
--		*val = POWER_SUPPLY_STATUS_CHARGING;
--	} else {
--		*val = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
- 	}
- 
- 	return 0;
-@@ -112,7 +120,11 @@ static int act8945a_get_charger_state(struct regmap *regmap, int *val)
- static int act8945a_get_charge_type(struct regmap *regmap, int *val)
- {
- 	int ret;
--	unsigned int state;
-+	unsigned int status, state;
-+
-+	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
-+	if (ret < 0)
-+		return ret;
- 
- 	ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
- 	if (ret < 0)
-@@ -129,9 +141,15 @@ static int act8945a_get_charge_type(struct regmap *regmap, int *val)
- 		*val = POWER_SUPPLY_CHARGE_TYPE_FAST;
- 		break;
- 	case APCH_STATE_CSTATE_EOC:
-+		*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
-+		break;
- 	case APCH_STATE_CSTATE_DISABLED:
- 	default:
--		*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
-+		if (!(status & APCH_STATUS_INDAT))
-+			*val = POWER_SUPPLY_CHARGE_TYPE_NONE;
-+		else
-+			*val = POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
-+		break;
- 	}
- 
- 	return 0;
-@@ -140,20 +158,45 @@ static int act8945a_get_charge_type(struct regmap *regmap, int *val)
- static int act8945a_get_battery_health(struct regmap *regmap, int *val)
- {
- 	int ret;
--	unsigned int status;
-+	unsigned int status, state, config;
- 
- 	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
- 	if (ret < 0)
- 		return ret;
- 
--	if (status & APCH_STATUS_TEMPDAT)
--		*val = POWER_SUPPLY_HEALTH_OVERHEAT;
--	else if (!(status & APCH_STATUS_INDAT))
--		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
--	else if (status & APCH_STATUS_TIMRDAT)
--		*val = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
--	else
-+	ret = regmap_read(regmap, ACT8945A_APCH_CFG, &config);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
-+	if (ret < 0)
-+		return ret;
-+
-+	state &= APCH_STATE_CSTATE;
-+	state >>= APCH_STATE_CSTATE_SHIFT;
-+
-+	switch (state) {
-+	case APCH_STATE_CSTATE_DISABLED:
-+		if (config & APCH_CFG_SUSCHG) {
-+			*val = POWER_SUPPLY_HEALTH_UNKNOWN;
-+		} else if (status & APCH_STATUS_INDAT) {
-+			if (!(status & APCH_STATUS_TEMPDAT))
-+				*val = POWER_SUPPLY_HEALTH_OVERHEAT;
-+			else if (status & APCH_STATUS_TIMRDAT)
-+				*val = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
-+			else
-+				*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+		} else {
-+			*val = POWER_SUPPLY_HEALTH_GOOD;
-+		}
-+		break;
-+	case APCH_STATE_CSTATE_PRE:
-+	case APCH_STATE_CSTATE_FAST:
-+	case APCH_STATE_CSTATE_EOC:
-+	default:
- 		*val = POWER_SUPPLY_HEALTH_GOOD;
-+		break;
++#ifdef CONFIG_X86
++	if (boot_cpu_has(X86_FEATURE_HWP)) {
++		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPC_SUPPORT;
++		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPCV2_SUPPORT;
 +	}
- 
- 	return 0;
- }
-@@ -224,7 +267,9 @@ static int act8945a_charger_config(struct device *dev,
- 	u32 pre_time_out;
- 	u32 input_voltage_threshold;
- 	int chglev_pin;
-+	int ret;
- 
-+	unsigned int tmp;
- 	unsigned int value = 0;
- 
- 	if (!np) {
-@@ -232,6 +277,13 @@ static int act8945a_charger_config(struct device *dev,
- 		return -EINVAL;
- 	}
- 
-+	ret = regmap_read(regmap, ACT8945A_APCH_CFG, &tmp);
-+	if (ret)
-+		return ret;
++#endif
 +
-+	if (tmp & APCH_CFG_SUSCHG)
-+		value |= APCH_CFG_SUSCHG;
-+
- 	chglev_pin = of_get_named_gpio_flags(np,
- 				"active-semi,chglev-gpios", 0, &flags);
- 
+ 	if (!ghes_disable)
+ 		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_APEI_SUPPORT;
+ 	if (ACPI_FAILURE(acpi_get_handle(NULL, "\\_SB", &handle)))
 -- 
 2.7.4
