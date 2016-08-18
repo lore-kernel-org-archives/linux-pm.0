@@ -1,97 +1,120 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH] PM / sleep: enable suspend-to-idle even without registered suspend_ops
-Date: Thu, 18 Aug 2016 10:19:24 +0100
-Message-ID: <1471511964-6341-1-git-send-email-sudeep.holla@arm.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: Fix NULL dereference in
+ cpufreq_state2power
+Date: Thu, 18 Aug 2016 10:30:42 +0100
+Message-ID: <20160818093042.GA3154@e104805>
+References: <20160817151459.10948-1-brendan.jackman@arm.com>
+ <20160817230507.GC24396@ubuntu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56693 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:56737 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbcHRJTb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Aug 2016 05:19:31 -0400
+	id S1753135AbcHRJap (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 18 Aug 2016 05:30:45 -0400
+Content-Disposition: inline
+In-Reply-To: <20160817230507.GC24396@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Andy Gross <andy.gross@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Brendan Jackman <brendan.jackman@arm.com>, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
 
-Suspend-to-idle (aka the "freeze" sleep state) is a system sleep state
-in which all of the processors enter deepest possible idle state and
-wait for interrupts right after suspending all the devices.
+On Thu, Aug 18, 2016 at 04:35:07AM +0530, Viresh Kumar wrote:
+> On 17-08-16, 16:14, Brendan Jackman wrote:
+> > Currently all CPU cooling devices share a
+> > `struct thermal_cooling_device_ops` instance. The thermal core uses the
+> > presence of functions in this struct to determine if a cooling device
+> > has a power model (see cdev_is_power_actor). cpu_cooling.c adds the
+> > power model functions to the shared struct when a device is registered
+> > with a power model.
+> > 
+> > Therefore, if a CPU cooling device is registered using
+> > [of_]cpufreq_power_cooling_register, _all_ devices will be determined to
+> > have a power model, including any registered with
+> > [of_]cpufreq_cooling_register. This can result in cpufreq_state2power
+> > being called on a device where dyn_power_table is NULL.
+> > 
+> > With this commit, instead of having a shared thermal_cooling_device_ops
+> > which is mutated, we have two versions: one with the power functions and
+> > one without.
+> > 
+> > Signed-off-by: Brendan Jackman <brendan.jackman@arm.com>
+> > Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
+> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > Cc: Javi Merino <javi.merino@arm.com>
+> > 
+> > ---
+> >  drivers/thermal/cpu_cooling.c | 21 ++++++++++++++++-----
+> >  1 file changed, 16 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> > index 3788ed7..a32b417 100644
+> > --- a/drivers/thermal/cpu_cooling.c
+> > +++ b/drivers/thermal/cpu_cooling.c
+> > @@ -740,12 +740,22 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
+> >  }
+> > 
+> >  /* Bind cpufreq callbacks to thermal cooling device ops */
+> > +
+> >  static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
+> >  	.get_max_state = cpufreq_get_max_state,
+> >  	.get_cur_state = cpufreq_get_cur_state,
+> >  	.set_cur_state = cpufreq_set_cur_state,
+> >  };
+> > 
+> > +static struct thermal_cooling_device_ops cpufreq_power_cooling_ops = {
+> > +	.get_max_state		= cpufreq_get_max_state,
+> > +	.get_cur_state		= cpufreq_get_cur_state,
+> > +	.set_cur_state		= cpufreq_set_cur_state,
+> > +	.get_requested_power	= cpufreq_get_requested_power,
+> > +	.state2power		= cpufreq_state2power,
+> > +	.power2state		= cpufreq_power2state,
+> > +};
+> > +
+> >  /* Notifier for cpufreq policy change */
+> >  static struct notifier_block thermal_cpufreq_notifier_block = {
+> >  	.notifier_call = cpufreq_thermal_notifier,
+> > @@ -795,6 +805,7 @@ __cpufreq_cooling_register(struct device_node *np,
+> >  	struct cpumask temp_mask;
+> >  	unsigned int freq, i, num_cpus;
+> >  	int ret;
+> > +	struct thermal_cooling_device_ops *cooling_ops;
+> > 
+> >  	cpumask_and(&temp_mask, clip_cpus, cpu_online_mask);
+> >  	policy = cpufreq_cpu_get(cpumask_first(&temp_mask));
+> > @@ -850,10 +861,6 @@ __cpufreq_cooling_register(struct device_node *np,
+> >  	cpumask_copy(&cpufreq_dev->allowed_cpus, clip_cpus);
+> > 
+> >  	if (capacitance) {
+> > -		cpufreq_cooling_ops.get_requested_power =
+> > -			cpufreq_get_requested_power;
+> > -		cpufreq_cooling_ops.state2power = cpufreq_state2power;
+> > -		cpufreq_cooling_ops.power2state = cpufreq_power2state;
+> >  		cpufreq_dev->plat_get_static_power = plat_static_func;
+> > 
+> >  		ret = build_dyn_power_table(cpufreq_dev, capacitance);
+> > @@ -861,6 +868,10 @@ __cpufreq_cooling_register(struct device_node *np,
+> >  			cool_dev = ERR_PTR(ret);
+> >  			goto free_table;
+> >  		}
+> > +
+> > +		cooling_ops = &cpufreq_power_cooling_ops;
+> > +	} else {
+> > +		cooling_ops = &cpufreq_cooling_ops;
+> >  	}
+> > 
+> >  	ret = get_idr(&cpufreq_idr, &cpufreq_dev->id);
+> > @@ -885,7 +896,7 @@ __cpufreq_cooling_register(struct device_node *np,
+> >  		 cpufreq_dev->id);
+> > 
+> >  	cool_dev = thermal_of_cooling_device_register(np, dev_name, cpufreq_dev,
+> > -						      &cpufreq_cooling_ops);
+> > +						      cooling_ops);
+> >  	if (IS_ERR(cool_dev))
+> >  		goto remove_idr;
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-There is no hard requirement for a platform to support and register
-platform specific suspend_ops to enter suspend-to-idle/freeze state.
-Only deeper system sleep states like PM_SUSPEND_STANDBY and
-PM_SUSPEND_MEM rely on such low level support/implementation.
+Yep, looks good to me.
 
-suspend-to-idle can be entered as along as all the devices can be
-suspended. This patch enables the support for suspend-to-idle even on
-systems that don't have any low level support for deeper system sleep
-states and/or don't register any platform specific suspend_ops.
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- kernel/power/main.c    | 5 +++++
- kernel/power/suspend.c | 8 +++++---
- 2 files changed, 10 insertions(+), 3 deletions(-)
-
-Hi Rafael,
-
-I am not sure if you like this approach. I found this to be the simplest
-but I may have missed to consider all possible corner cases especially
-for x86 and other platforms. I don't see any such issues/cases with ARM
-systems.
-
-Regards,
-Sudeep
-
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 5ea50b1b7595..0f0fd9184f39 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -651,6 +651,11 @@ static int __init pm_init(void)
- 	if (error)
- 		return error;
- 	pm_print_times_init();
-+	/*
-+	 * freeze state should be supported even without any suspend_ops,
-+	 * calling suspend_set_ops without any ops will setup freeze state
-+	 */
-+	suspend_set_ops(NULL);
- 	return pm_autosleep_init();
- }
-
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 0acab9d7f96f..37d64f811ecd 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -138,7 +138,9 @@ void suspend_set_ops(const struct platform_suspend_ops *ops)
-
- 	lock_system_sleep();
-
--	suspend_ops = ops;
-+	WARN_ONCE(ops && suspend_ops, "overriding suspend_ops");
-+	if (ops)
-+		suspend_ops = ops;
- 	for (i = PM_SUSPEND_MEM; i >= PM_SUSPEND_STANDBY; i--)
- 		if (valid_state(i)) {
- 			pm_states[i] = pm_labels[j++];
-@@ -211,7 +213,7 @@ static int platform_suspend_begin(suspend_state_t state)
- {
- 	if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->begin)
- 		return freeze_ops->begin();
--	else if (suspend_ops->begin)
-+	else if (suspend_ops && suspend_ops->begin)
- 		return suspend_ops->begin(state);
- 	else
- 		return 0;
-@@ -221,7 +223,7 @@ static void platform_resume_end(suspend_state_t state)
- {
- 	if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->end)
- 		freeze_ops->end();
--	else if (suspend_ops->end)
-+	else if (suspend_ops && suspend_ops->end)
- 		suspend_ops->end();
- }
-
---
-2.7.4
-
+Acked-by: Javi Merino <javi.merino@arm.com>
