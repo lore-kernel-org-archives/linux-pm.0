@@ -1,168 +1,272 @@
-From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v6 5/7] power: act8945a_charger: Add capacity level property
-Date: Fri, 19 Aug 2016 09:13:33 +0800
-Message-ID: <1471569215-6046-6-git-send-email-wenyou.yang@atmel.com>
-References: <1471569215-6046-1-git-send-email-wenyou.yang@atmel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1471569215-6046-1-git-send-email-wenyou.yang@atmel.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar
- Gala <galak@codeaurora.org>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>, linux-arm-kernel@lists.infradead.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 04/11] sched,x86: Enable Turbo Boost Max Technology
+Date: Thu, 18 Aug 2016 15:36:45 -0700
+Message-ID: <1471559812-19967-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:43018 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755026AbcHSBRh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 18 Aug 2016 21:17:37 -0400
+In-Reply-To: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, peterz@infradead.org
+Cc: x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, tim.c.chen@linux.intel.com, srinivas.pandruvada@linux.intel.com, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
 
-Add the power supply capacity level property, it corresponds to
-POWER_SUPPLY_CAPACITY_LEVEL_*.
+From: Tim Chen <tim.c.chen@linux.intel.com>
 
-It also utilizes the precision voltage detector function module
-to catch the low battery voltage.
+On some Intel cores, they can boosted to a higher turbo frequency than
+the other cores on the same die.  So we prefer processes to be run on
+them vs other lower frequency ones for extra performance.
 
-Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
+We extend the asym packing feature in the scheduler to support packing
+task to the higher frequency core at the core sched domain level.
+
+We set up a core priority metric to abstract the core preferences based
+on the maximum boost frequency.  The priority is instantiated such that
+the core with a higher priority is favored over the core with lower
+priority when making scheduling decision using ASYM_PACKING.  The smt
+threads that are of higher number are discounted in their priority so
+we will not try to pack tasks onto all the threads of a favored core
+before using other cpu cores.  The cpu that's of the highese priority
+in a sched_group is recorded in sched_group->asym_prefer_cpu during
+initialization to save lookup during load balancing.
+
+A sysctl variable /proc/sys/kernel/sched_itmt_enabled is provided so
+the scheduling based on favored core can be turned on or off at run time.
+
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
+ arch/x86/Kconfig                |   9 +++
+ arch/x86/include/asm/topology.h |  26 +++++++
+ arch/x86/kernel/Makefile        |   1 +
+ arch/x86/kernel/itmt.c          | 147 ++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 183 insertions(+)
+ create mode 100644 arch/x86/kernel/itmt.c
 
-Changes in v6:
- - For 'lbo-gpios', use gpiod API instead of old gpio API to handle.
-
-Changes in v5: None
-Changes in v4:
- - Change devname of devm_request_irq() from "lbo-detect" to
-   "act8945a, lbo-detect".
-
-Changes in v3: None
-Changes in v2: None
-
- drivers/power/supply/act8945a_charger.c | 75 +++++++++++++++++++++++++++++++++
- 1 file changed, 75 insertions(+)
-
-diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
-index 2ff2f8d..de7ad48 100644
---- a/drivers/power/supply/act8945a_charger.c
-+++ b/drivers/power/supply/act8945a_charger.c
-@@ -18,6 +18,7 @@
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/regmap.h>
-+#include <linux/gpio/consumer.h>
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index c580d8c..c1d36db 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -928,6 +928,15 @@ config SCHED_MC
+ 	  making when dealing with multi-core CPU chips at a cost of slightly
+ 	  increased overhead in some places. If unsure say N here.
  
- static const char *act8945a_charger_model = "ACT8945A";
- static const char *act8945a_charger_manufacturer = "Active-semi";
-@@ -83,6 +84,7 @@ struct act8945a_charger {
- 	struct work_struct work;
++config SCHED_ITMT
++	bool "Intel Turbo Boost Max Technology (ITMT) scheduler support"
++	depends on SCHED_MC && CPU_SUP_INTEL && X86_INTEL_PSTATE
++	---help---
++	  ITMT enabled scheduler support improves the CPU scheduler's decision
++	  to move tasks to cpu core that can be boosted to a higher frequency
++	  than others. It will have better performance at a cost of slightly
++	  increased overhead in task migrations. If unsure say N here.
++
+ source "kernel/Kconfig.preempt"
  
- 	bool init_done;
-+	struct gpio_desc *lbo_gpio;
- };
+ config UP_LATE_INIT
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index cf75871..f148843 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -146,4 +146,30 @@ struct pci_bus;
+ int x86_pci_root_bus_node(int bus);
+ void x86_pci_root_bus_resources(int bus, struct list_head *resources);
  
- static int act8945a_get_charger_state(struct regmap *regmap, int *val)
-@@ -208,11 +210,67 @@ static int act8945a_get_battery_health(struct regmap *regmap, int *val)
- 	return 0;
- }
- 
-+static int act8945a_get_capacity_level(struct act8945a_charger *charger,
-+				       struct regmap *regmap, int *val)
++#ifdef CONFIG_SCHED_ITMT
++DECLARE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
++
++static inline bool sched_asym_prefer(int a, int b)
 +{
-+	int ret;
-+	unsigned int status, state, config;
-+	int lbo_level = gpiod_get_value(charger->lbo_gpio);
-+
-+	ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = regmap_read(regmap, ACT8945A_APCH_CFG, &config);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
-+	if (ret < 0)
-+		return ret;
-+
-+	state &= APCH_STATE_CSTATE;
-+	state >>= APCH_STATE_CSTATE_SHIFT;
-+
-+	switch (state) {
-+	case APCH_STATE_CSTATE_PRE:
-+		*val = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
-+		break;
-+	case APCH_STATE_CSTATE_FAST:
-+		if (lbo_level)
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_HIGH;
-+		else
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
-+		break;
-+	case APCH_STATE_CSTATE_EOC:
-+		if (status & APCH_STATUS_CHGDAT)
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-+		else
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-+		break;
-+	case APCH_STATE_CSTATE_DISABLED:
-+	default:
-+		if (config & APCH_CFG_SUSCHG) {
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_UNKNOWN;
-+		} else {
-+			*val = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-+			if (!(status & APCH_STATUS_INDAT)) {
-+				if (!lbo_level)
-+					*val = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
-+			}
-+		}
-+		break;
-+	}
-+
-+	return 0;
++	return per_cpu(sched_core_priority, a) > per_cpu(sched_core_priority, b);
 +}
 +
- static enum power_supply_property act8945a_charger_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_CHARGE_TYPE,
- 	POWER_SUPPLY_PROP_TECHNOLOGY,
- 	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_MANUFACTURER
- };
-@@ -238,6 +296,10 @@ static int act8945a_charger_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_HEALTH:
- 		ret = act8945a_get_battery_health(regmap, &val->intval);
- 		break;
-+	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
-+		ret = act8945a_get_capacity_level(charger,
-+						  regmap, &val->intval);
-+		break;
- 	case POWER_SUPPLY_PROP_MODEL_NAME:
- 		val->strval = act8945a_charger_model;
- 		break;
-@@ -352,6 +414,19 @@ static int act8945a_charger_config(struct device *dev,
- 	if (tmp & APCH_CFG_SUSCHG)
- 		value |= APCH_CFG_SUSCHG;
- 
-+	charger->lbo_gpio = devm_gpiod_get(dev, "active-semi,lbo", GPIOD_IN);
-+	if (IS_ERR(charger->lbo_gpio)) {
-+		dev_err(dev, "unable to claim gpio \"lbo\"\n");
-+		charger->lbo_gpio = NULL;
-+	};
++#define sched_asym_prefer sched_asym_prefer
 +
-+	ret = devm_request_irq(dev, gpiod_to_irq(charger->lbo_gpio),
-+			       act8945a_status_changed,
-+			       (IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING),
-+			       "act8945a_lbo_detect", charger);
-+	if (ret)
-+		dev_dbg(dev, "failed to request \"lbo\" pin IRQ\n");
++/* Interface to set priority of a cpu */
++void sched_set_itmt_core_prio(int prio, int core_cpu);
 +
- 	chglev_pin = of_get_named_gpio_flags(np,
- 				"active-semi,chglev-gpios", 0, &flags);
++/* Interface to notify scheduler that system supports ITMT */
++void set_sched_itmt(bool support_itmt);
++
++#else /* CONFIG_SCHED_ITMT */
++
++static inline void set_sched_itmt(bool support_itmt)
++{
++}
++static inline void sched_set_itmt_core_prio(int prio, int core_cpu)
++{
++}
++#endif /* CONFIG_SCHED_ITMT */
++
+ #endif /* _ASM_X86_TOPOLOGY_H */
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 0503f5b..2008335 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -124,6 +124,7 @@ obj-$(CONFIG_EFI)			+= sysfb_efi.o
  
+ obj-$(CONFIG_PERF_EVENTS)		+= perf_regs.o
+ obj-$(CONFIG_TRACING)			+= tracepoint.o
++obj-$(CONFIG_SCHED_ITMT)		+= itmt.o
+ 
+ ###
+ # 64 bit specific files
+diff --git a/arch/x86/kernel/itmt.c b/arch/x86/kernel/itmt.c
+new file mode 100644
+index 0000000..a9470f5
+--- /dev/null
++++ b/arch/x86/kernel/itmt.c
+@@ -0,0 +1,147 @@
++/*
++ * itmt.c: Functions and data structures for enabling
++ * 	   scheduler to favor scheduling on cores that
++ *	   can be boosted to a higher frequency using
++ *	   Intel Turbo Boost Max Technology 3.0
++ *
++ * (C) Copyright 2016 Intel Corporation
++ * Author: Tim Chen <tim.c.chen@linux.intel.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; version 2
++ * of the License.
++ */
++
++#include <linux/sched.h>
++#include <linux/cpumask.h>
++#include <linux/cpuset.h>
++#include <asm/mutex.h>
++#include <linux/sched.h>
++#include <linux/sysctl.h>
++
++DEFINE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
++static DEFINE_MUTEX(itmt_update_mutex);
++
++static unsigned int zero = 0;
++static unsigned int one = 1;
++
++/*
++ * Boolean to control whether we want to move processes to cpu capable
++ * of higher turbo frequency for cpus supporting Intel Turbo Boost Max
++ * Technology 3.0.
++ *
++ * It can be set via /proc/sys/kernel/sched_itmt_enabled
++ */
++unsigned int __read_mostly sysctl_sched_itmt_enabled = 0;
++
++/*
++ * The pstate_driver calls set_sched_itmt to indicate if the system
++ * is ITMT capable.
++ */
++static bool __read_mostly sched_itmt_capable;
++
++static void enable_sched_itmt(bool enable_itmt)
++{
++	mutex_lock(&itmt_update_mutex);
++
++	sysctl_sched_itmt_enabled = enable_itmt;
++	regenerate_sched_domains();
++
++	mutex_unlock(&itmt_update_mutex);
++}
++
++static int sched_itmt_update_handler(struct ctl_table *table, int write,
++			      void __user *buffer, size_t *lenp, loff_t *ppos)
++{
++	int ret;
++
++	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
++
++	if (ret || !write)
++		return ret;
++
++	enable_sched_itmt(sysctl_sched_itmt_enabled);
++
++	return ret;
++}
++
++static struct ctl_table itmt_kern_table[] = {
++	{
++		.procname	= "sched_itmt_enabled",
++		.data		= &sysctl_sched_itmt_enabled,
++		.maxlen		= sizeof(unsigned int),
++		.mode		= 0644,
++		.proc_handler	= sched_itmt_update_handler,
++		.extra1		= &zero,
++		.extra2		= &one,
++	},
++	{}
++};
++
++static struct ctl_table itmt_root_table[] = {
++	{
++		.procname	= "kernel",
++		.mode		= 0555,
++		.child		= itmt_kern_table,
++	},
++	{}
++};
++
++static struct ctl_table_header *itmt_sysctl_header;
++
++/*
++ * The boot code will find out the max boost frequency
++ * and call this function to set a priority proportional
++ * to the max boost frequency. CPU with higher boost
++ * frequency will receive higher priority.
++ */
++void sched_set_itmt_core_prio(int prio, int core_cpu)
++{
++	int cpu, i = 1;
++
++	for_each_cpu(cpu, topology_sibling_cpumask(core_cpu)) {
++		int smt_prio;
++
++		/*
++		 * Discount the priority of sibling so that we don't
++		 * pack all loads to the same core before using other cores.
++		 */
++		smt_prio = prio * smp_num_siblings / i;
++		i++;
++		per_cpu(sched_core_priority, cpu) = smt_prio;
++	}
++}
++
++/*
++ * During boot up, boot code will detect if the system
++ * is ITMT capable and call set_sched_itmt.
++ *
++ * This should be call after sched_set_itmt_core_prio
++ * has been called to set the cpus' priorities.
++ *
++ * This function should be called without cpu hot plug lock
++ * as we need to acquire the lock to rebuild sched domains
++ * later.
++ */
++void set_sched_itmt(bool itmt_capable)
++{
++	mutex_lock(&itmt_update_mutex);
++
++	if (itmt_capable != sched_itmt_capable) {
++
++		if (itmt_capable) {
++			itmt_sysctl_header =
++				register_sysctl_table(itmt_root_table);
++		} else {
++			if (itmt_sysctl_header)
++				unregister_sysctl_table(itmt_sysctl_header);
++			sysctl_sched_itmt_enabled = false;
++		}
++
++		sched_itmt_capable = itmt_capable;
++		regenerate_sched_domains();
++	}
++
++	mutex_unlock(&itmt_update_mutex);
++}
 -- 
 2.7.4
+
