@@ -1,56 +1,36 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [PATCH][RFC v4] timekeeping: ignore the bogus sleep time if
- pm_trace is enabled
-Date: Thu, 18 Aug 2016 12:36:51 +0200
-Message-ID: <1471516611.2157.22.camel@suse.com>
-References: <1471517019-15216-1-git-send-email-yu.c.chen@intel.com>
+From: yoma sophian <sophian.yoma@gmail.com>
+Subject: Re: how to enable suspend to ram for arm-64 bits
+Date: Thu, 18 Aug 2016 18:43:53 +0800
+Message-ID: <CADUS3omw=WYhGF00S3DY8mkg_c-59WvD2AHYs4SQSzCYoHQraQ@mail.gmail.com>
+References: <CADUS3onCMDThNK2ZwSSjGZhPE0M6cybjgCHJR2wVVeK09GC6ng@mail.gmail.com>
+ <06a4f0d7-9022-578d-99e0-ddcde31ed895@arm.com> <CADUS3onUDk_=UpRoZy1m0hV1VGZYSf22ea8D10MpDbqJCfTkqw@mail.gmail.com>
+ <82ddd0e1-9ecc-5e54-e8ee-86f947fc0ecd@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:36005 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752435AbcHRKlm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Aug 2016 06:41:42 -0400
-In-Reply-To: <1471517019-15216-1-git-send-email-yu.c.chen@intel.com>
+Received: from mail-io0-f193.google.com ([209.85.223.193]:32958 "EHLO
+	mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752990AbcHRKnz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 18 Aug 2016 06:43:55 -0400
+Received: by mail-io0-f193.google.com with SMTP id y195so2596969iod.0
+        for <linux-pm@vger.kernel.org>; Thu, 18 Aug 2016 03:43:54 -0700 (PDT)
+In-Reply-To: <82ddd0e1-9ecc-5e54-e8ee-86f947fc0ecd@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Xunlei Pang <xlpang@redhat.com>, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Thu, 2016-08-18 at 18:43 +0800, Chen Yu wrote:
-> Previously we encountered some memory overflow issues due to
-> the bogus sleep time brought by inconsistent rtc, which is
-> triggered when pm_trace is enabled, please refer to:
-> https://patchwork.kernel.org/patch/9286365/
-> It's improper in the first place to call __timekeeping_inject_sleeptime()
-> in case that pm_trace is enabled simply because that "hash" time value
-> will wreckage the timekeeping subsystem.
+hi Sudeep:
 
-Hi,
+2016-08-18 16:47 GMT+08:00 Sudeep Holla <sudeep.holla@arm.com>:
+>
+>> b. in arm64, if some platform has its own suspend flow,  couldn't it
+>> adopts arm/match-xxx to register its own global suspend method?
+>>
+>
+> No, PSCI is highly recommended.
+Yes, I agree with you.
+But it may not mean the ONLY way for all armv8 platform that support
+suspend method is PSCI.
 
-do you know since when this bug exists?
-
->  /**
-> @@ -1662,6 +1668,12 @@ void timekeeping_resume(void)
->  	} else if (timespec64_compare(&ts_new, &timekeeping_suspend_time) > 0) {
->  		ts_delta = timespec64_sub(ts_new, timekeeping_suspend_time);
->  		sleeptime_injected = true;
-> +		/*
-> +		 * If rtc is used as persist clock thus it
-> +		 * would be bogus when pm_trace is enabled.
-> +		 */
-> +		if (!persistent_clock_is_usable())
-> +			sleeptime_injected = false;
->  	}
->  
->  	if (sleeptime_injected)
-
-How about
-
-sleeptime_injected = persistent_clock_is_usable();
-
-	Regards
-		Oliver
-
-
+Sincerely appreciate your kind help,
