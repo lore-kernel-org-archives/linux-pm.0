@@ -1,45 +1,44 @@
-From: yoma sophian <sophian.yoma@gmail.com>
-Subject: Re: how to enable suspend to ram for arm-64 bits
-Date: Thu, 18 Aug 2016 10:07:59 +0800
-Message-ID: <CADUS3onUDk_=UpRoZy1m0hV1VGZYSf22ea8D10MpDbqJCfTkqw@mail.gmail.com>
-References: <CADUS3onCMDThNK2ZwSSjGZhPE0M6cybjgCHJR2wVVeK09GC6ng@mail.gmail.com>
- <06a4f0d7-9022-578d-99e0-ddcde31ed895@arm.com>
+From: Dawei Chien <dawei.chien@mediatek.com>
+Subject: [PATCH v2 1/3] dt-bindings: thermal: Add binding document for Mediatek thermal controller
+Date: Thu, 18 Aug 2016 11:50:51 +0800
+Message-ID: <1471492253-7185-2-git-send-email-dawei.chien@mediatek.com>
+References: <1471492253-7185-1-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f67.google.com ([209.85.214.67]:34236 "EHLO
-	mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753480AbcHRCIU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Aug 2016 22:08:20 -0400
-Received: by mail-it0-f67.google.com with SMTP id e63so1360407ith.1
-        for <linux-pm@vger.kernel.org>; Wed, 17 Aug 2016 19:08:00 -0700 (PDT)
-In-Reply-To: <06a4f0d7-9022-578d-99e0-ddcde31ed895@arm.com>
+Received: from mailgw01.mediatek.com ([210.61.82.183]:26702 "EHLO
+	mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753542AbcHRDvr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 17 Aug 2016 23:51:47 -0400
+In-Reply-To: <1471492253-7185-1-git-send-email-dawei.chien@mediatek.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@armlinux.org.uk>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Fan Chen <fan.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Yingjoe Chen <yingjoe.chen@mediatek.com>, Erin Lo <erin.lo@mediatek.com>, Dawei Chien <dawei.chien@mediatek.com>
 
-hi Sudeep
+This adds the device tree binding documentation for the mediatek thermal
+controller found on Mediatek MT2701.
 
-> Correct. What's the cpu enable method on your platform ? Is it PSCI ?
-No, the enable method is "spin-table"
+Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+---
+ .../bindings/thermal/mediatek-thermal.txt          |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-> If yes, does you PSCI implementation support SYSTEM_SUSPEND ? If yes,
-> it should work. Check your PSCI implementation otherwise.
+diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+index 81f9a51..e2f494d 100644
+--- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+@@ -8,7 +8,9 @@ apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
+ is also needed.
+ 
+ Required properties:
+-- compatible: "mediatek,mt8173-thermal"
++- compatible:
++  - "mediatek,mt8173-thermal" : For MT8173 family of SoCs
++  - "mediatek,mt2701-thermal" : For MT2701 family of SoCs
+ - reg: Address range of the thermal controller
+ - interrupts: IRQ for the thermal controller
+ - clocks, clock-names: Clocks needed for the thermal controller. required
+-- 
+1.7.9.5
 
-if so, there are 2 things make me curious:
-a. I trace arch/arm64/kernel/psci.c even arch/arm64/*, but I sill
-cannot find where it create global suspend method table with
-suspend_set_ops.
-# grep -rnw 'suspend_set_ops' ../linux-4.1/arch/arm64/
-#
-except arch/xxx folder, there are
-../linux-4.1/drivers/macintosh/via-pmu.c:2276:    suspend_set_ops(&pmu_pm_ops);
-../linux-4.1/drivers/acpi/sleep.c:666:    suspend_set_ops(old_suspend_ordering ?
-Does that mean aarch64 register suspend_set_ops by apci flow when
-adopt PSCI implementation?
-
-b. in arm64, if some platform has its own suspend flow,  couldn't it
-adopts arm/match-xxx to register its own global suspend method?
-
-appreciate your kind help,
