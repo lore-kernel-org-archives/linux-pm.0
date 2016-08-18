@@ -1,80 +1,159 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/2][RFC] PM / sleep: Expose DPM watchdog timeout to sysfs
-Date: Fri, 19 Aug 2016 00:22:14 +0200
-Message-ID: <CAJZ5v0joOobOPUT21M=A-=B7FD3D=08VJbt+k+9wXwwT7jiMVw@mail.gmail.com>
-References: <cover.1470908324.git.yu.c.chen@intel.com> <20160811185441.GA15813@amd>
- <20160812025225.GA12238@sharon> <20160812063312.GD30992@amd>
- <CAJZ5v0jgiPsSV3ZRVeM+D7KD7wJudPD+0Fq0BoJGT1mZ3yryxg@mail.gmail.com>
- <20160817034347.GA15682@sharon> <20160818120641.GA12732@amd>
- <36DF59CE26D8EE47B0655C516E9CE6402878801E@shsmsx102.ccr.corp.intel.com> <20160818184238.GA25515@amd>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f51.google.com ([74.125.82.51]:38355 "EHLO
-        mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754437AbcHSBWJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Aug 2016 21:22:09 -0400
-Received: by mail-wm0-f51.google.com with SMTP id o80so19220293wme.1
-        for <linux-pm@vger.kernel.org>; Thu, 18 Aug 2016 18:22:09 -0700 (PDT)
-In-Reply-To: <20160818184238.GA25515@amd>
-Sender: linux-pm-owner@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 02/11] sched, x86: Add SD_ASYM_PACKING flags to x86 cpu topology for cpus supporting Intel Turbo Boost Max Technology
+Date: Thu, 18 Aug 2016 15:36:43 -0700
+Message-ID: <1471559812-19967-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, peterz@infradead.org
+Cc: x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, tim.c.chen@linux.intel.com, srinivas.pandruvada@linux.intel.com, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Chen, Yu C" <yu.c.chen@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM List <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>, Takashi Iwai <tiwai@suse.de>, Benoit Goby <benoit@android.com>
 
-On Thu, Aug 18, 2016 at 8:42 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->> > > OK, I've modified the patch to the following version, Rafael, Pavel
->> > > could you take a glance at it, thanks:
->> >
->> > Certainly looks better.
->> >
->> > > Index: linux/kernel/power/Kconfig
->> > >
->> > ================================================================
->> > ===
->> > > --- linux.orig/kernel/power/Kconfig
->> > > +++ linux/kernel/power/Kconfig
->> > > @@ -197,7 +197,7 @@ config DPM_WATCHDOG  config
->> > DPM_WATCHDOG_TIMEOUT
->> > >   int "Watchdog timeout in seconds"
->> > >   range 1 120
->> > > - default 60
->> > > + default 120
->> > >   depends on DPM_WATCHDOG
->> > >
->> >
->> > I like this part.
->> >
->> > > +++ linux/Documentation/kernel-parameters.txt
->> > > @@ -2749,6 +2749,8 @@ bytes respectively. Such letter suffixes
->> > >   nowatchdog      [KNL] Disable both lockup detectors, i.e.
->> > >                          soft-lockup and NMI watchdog (hard-lockup).
->> > >
->> > > + no_dpm_watchdog [KNL] Disable the device suspend/resume
->> > watchdog.
->> > > +
->> > >   nowb            [ARM]
->> > >
->> > >   nox2apic        [X86-64,APIC] Do not enable x2APIC mode.
->> >
->> > Do we really need the new cmdline option? Can we just tell people to disable
->> > DPM_WATCHDOG completely?
->> >
->> > Is there reason to keep the DPM_WATCHDOG? Did it find some real bugs lately?
->> >
->> We can tell users to disable the DPM_WATCHDOG, maybe some android people would like
->> to use this feature to track/confirm hardware/firmware issues.
->> I'm ok with only adjusting the timeout from 60 to 120.
->
-> I believe that's the best solution for now. (Android people often
-> claim commandline is hard for them to use...)
+From: Tim Chen <tim.c.chen@linux.intel.com>
 
-So maybe DPM_WATCHDOG should depend on EXPERT?
+We uses ASYM_PACKING feature in the scheduler to move tasks to more
+capable cpus that can be boosted to higher frequency.  We mark the sched
+domain topology level with SD_ASYM_PACKING flag for such systems.
 
-I really don't want the general-purpose distros to enable it and leave
-users without a way to turn it off.
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ arch/x86/kernel/smpboot.c | 77 ++++++++++++++++++++++++++++++++++++-----------
+ kernel/sched/core.c       |  3 ++
+ 2 files changed, 62 insertions(+), 18 deletions(-)
 
-Thanks,
-Rafael
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 2a6e84a..255f64e 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -464,31 +464,59 @@ static bool match_die(struct cpuinfo_x86 *c, struct cpuinfo_x86 *o)
+ 	return false;
+ }
+ 
+-static struct sched_domain_topology_level numa_inside_package_topology[] = {
++#ifdef CONFIG_SCHED_ITMT
++extern unsigned int sysctl_sched_itmt_enabled;
++
++static int x86_core_flags(void)
++{
++	int flags = cpu_core_flags();
++
++	if (sysctl_sched_itmt_enabled)
++		flags |= SD_ASYM_PACKING;
++
++	return flags;
++}
++
++static int x86_smt_flags(void)
++{
++	int flags = cpu_smt_flags();
++
++	if (sysctl_sched_itmt_enabled)
++		flags |= SD_ASYM_PACKING;
++
++	return flags;
++}
++#else
++#define x86_core_flags cpu_core_flags
++#define x86_smt_flags cpu_smt_flags
++#endif
++
++static struct sched_domain_topology_level x86_topology[] = {
++#ifdef CONFIG_SCHED_SMT
++	{ cpu_smt_mask, x86_smt_flags, SD_INIT_NAME(SMT) },
++#endif
++#ifdef CONFIG_SCHED_MC
++	{ cpu_coregroup_mask, x86_core_flags, SD_INIT_NAME(MC) },
++#endif
++	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
++	{ NULL, },
++};
++
++static struct sched_domain_topology_level x86_numa_in_package_topology[] = {
+ #ifdef CONFIG_SCHED_SMT
+-	{ cpu_smt_mask, cpu_smt_flags, SD_INIT_NAME(SMT) },
++	{ cpu_smt_mask, x86_smt_flags, SD_INIT_NAME(SMT) },
+ #endif
+ #ifdef CONFIG_SCHED_MC
+-	{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
++	{ cpu_coregroup_mask, x86_core_flags, SD_INIT_NAME(MC) },
+ #endif
+ 	{ NULL, },
+ };
++
+ /*
+- * set_sched_topology() sets the topology internal to a CPU.  The
+- * NUMA topologies are layered on top of it to build the full
+- * system topology.
+- *
+- * If NUMA nodes are observed to occur within a CPU package, this
+- * function should be called.  It forces the sched domain code to
+- * only use the SMT level for the CPU portion of the topology.
+- * This essentially falls back to relying on NUMA information
+- * from the SRAT table to describe the entire system topology
+- * (except for hyperthreads).
++ * Set if a package/die has multiple NUMA nodes inside.
++ * AMD Magny-Cours and Intel Cluster-on-Die have this.
+  */
+-static void primarily_use_numa_for_topology(void)
+-{
+-	set_sched_topology(numa_inside_package_topology);
+-}
++static bool x86_has_numa_in_package = false;
+ 
+ void set_cpu_sibling_map(int cpu)
+ {
+@@ -551,7 +579,7 @@ void set_cpu_sibling_map(int cpu)
+ 				c->booted_cores = cpu_data(i).booted_cores;
+ 		}
+ 		if (match_die(c, o) && !topology_same_node(c, o))
+-			primarily_use_numa_for_topology();
++			x86_has_numa_in_package = true;
+ 	}
+ 
+ 	threads = cpumask_weight(topology_sibling_cpumask(cpu));
+@@ -1297,6 +1325,16 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 		zalloc_cpumask_var(&per_cpu(cpu_core_map, i), GFP_KERNEL);
+ 		zalloc_cpumask_var(&per_cpu(cpu_llc_shared_map, i), GFP_KERNEL);
+ 	}
++
++	/*
++	 * Set 'default' x86 topology, this matches default_topology() in that
++	 * it has NUMA nodes as a topology level. See also
++	 * native_smp_cpus_done().
++	 *
++	 * Must be done before set_cpus_sibling_map() is ran.
++	 */
++	set_sched_topology(x86_topology);
++
+ 	set_cpu_sibling_map(0);
+ 
+ 	switch (smp_sanity_check(max_cpus)) {
+@@ -1363,6 +1401,9 @@ void __init native_smp_cpus_done(unsigned int max_cpus)
+ {
+ 	pr_debug("Boot done\n");
+ 
++	if (x86_has_numa_in_package)
++		set_sched_topology(x86_numa_in_package_topology);
++
+ 	nmi_selftest();
+ 	impress_friends();
+ 	setup_ioapic_dest();
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index ec752da..342eca9 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6487,6 +6487,9 @@ static struct sched_domain_topology_level *sched_domain_topology =
+ 
+ void set_sched_topology(struct sched_domain_topology_level *tl)
+ {
++	if (WARN_ON_ONCE(sched_smp_initialized))
++		return;
++
+ 	sched_domain_topology = tl;
+ }
+ 
+-- 
+2.7.4
