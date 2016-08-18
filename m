@@ -1,44 +1,63 @@
-From: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Subject: Re: [PATCH v2 1/4] nvmem: rockchip-efuse: Change initcall to subsys
-Date: Fri, 19 Aug 2016 00:29:55 +0200
-Message-ID: <2844104.lMUOkH8YJy@phil>
-References: <1471510341-63926-1-git-send-email-finley.xiao@rock-chips.com>
- <1471510341-63926-2-git-send-email-finley.xiao@rock-chips.com>
- <m2mvkaq6c5.fsf@baylibre.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/2][RFC] PM / sleep: Expose DPM watchdog timeout to sysfs
+Date: Fri, 19 Aug 2016 00:32:26 +0200
+Message-ID: <20160818223226.GA5055@amd>
+References: <cover.1470908324.git.yu.c.chen@intel.com>
+ <20160811185441.GA15813@amd>
+ <20160812025225.GA12238@sharon>
+ <20160812063312.GD30992@amd>
+ <CAJZ5v0jgiPsSV3ZRVeM+D7KD7wJudPD+0Fq0BoJGT1mZ3yryxg@mail.gmail.com>
+ <20160817034347.GA15682@sharon>
+ <20160818120641.GA12732@amd>
+ <36DF59CE26D8EE47B0655C516E9CE6402878801E@shsmsx102.ccr.corp.intel.com>
+ <20160818184238.GA25515@amd>
+ <CAJZ5v0joOobOPUT21M=A-=B7FD3D=08VJbt+k+9wXwwT7jiMVw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <m2mvkaq6c5.fsf-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Finlye Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46238 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754534AbcHSA7s (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Aug 2016 20:59:48 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0joOobOPUT21M=A-=B7FD3D=08VJbt+k+9wXwwT7jiMVw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Chen, Yu C" <yu.c.chen@intel.com>, Linux PM List <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>, Takashi Iwai <tiwai@suse.de>, Benoit Goby <benoit@android.com>
 
-Am Donnerstag, 18. August 2016, 13:28:58 CEST schrieb Kevin Hilman:
-> Finlye Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org> writes:
-> > From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-> > 
-> > We will register a cpufreq notifier for adjusting opp's voltage, and it
-> > need to fetch cpu's leakage from efuse in the notifier_call. so the efuse
-> > driver should probe before cpufreq driver.
-> > 
-> > Signed-off-by: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Hi!
+
+> >> > > +++ linux/Documentation/kernel-parameters.txt
+> >> > > @@ -2749,6 +2749,8 @@ bytes respectively. Such letter suffixes
+> >> > >   nowatchdog      [KNL] Disable both lockup detectors, i.e.
+> >> > >                          soft-lockup and NMI watchdog (hard-lockup).
+> >> > >
+> >> > > + no_dpm_watchdog [KNL] Disable the device suspend/resume
+> >> > watchdog.
+> >> > > +
+> >> > >   nowb            [ARM]
+> >> > >
+> >> > >   nox2apic        [X86-64,APIC] Do not enable x2APIC mode.
+> >> >
+> >> > Do we really need the new cmdline option? Can we just tell people to disable
+> >> > DPM_WATCHDOG completely?
+> >> >
+> >> > Is there reason to keep the DPM_WATCHDOG? Did it find some real bugs lately?
+> >> >
+> >> We can tell users to disable the DPM_WATCHDOG, maybe some android people would like
+> >> to use this feature to track/confirm hardware/firmware issues.
+> >> I'm ok with only adjusting the timeout from 60 to 120.
+> >
+> > I believe that's the best solution for now. (Android people often
+> > claim commandline is hard for them to use...)
 > 
-> Why can't this be handled with deferred probling?  initcall ordering is
-> a can of worms.
+> So maybe DPM_WATCHDOG should depend on EXPERT?
 
-I think the issue is less between efuse and avs driver, but more between avs 
-driver and cpufreq. The avs driver aims to modify the opp table and thus wants 
-to do that / register the notifier before cpufreq starts.
+I'd say so, yes.
 
-And as there is no direct connection between cpufreq and the avs driver, 
-making cpufreq defer probing is probably not really easy.
+Best regards,
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
