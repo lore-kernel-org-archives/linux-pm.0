@@ -1,130 +1,180 @@
-From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v6 4/7] power: act8945a_charger: Fix the power supply type
-Date: Fri, 19 Aug 2016 09:13:32 +0800
-Message-ID: <1471569215-6046-5-git-send-email-wenyou.yang@atmel.com>
-References: <1471569215-6046-1-git-send-email-wenyou.yang@atmel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1471569215-6046-1-git-send-email-wenyou.yang@atmel.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar
- Gala <galak@codeaurora.org>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>, linux-arm-kernel@lists.infradead.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 07/11] acpi: cppc: Add support for function fixed hardware address
+Date: Thu, 18 Aug 2016 15:36:48 -0700
+Message-ID: <1471559812-19967-8-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, peterz@infradead.org
+Cc: x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, tim.c.chen@linux.intel.com, srinivas.pandruvada@linux.intel.com, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-The power supply type property is varying as the external power
-supply changes. It is not a constant.
+The CPPC registers can also be accessed via function fixed hardware
+addresses in X86. Add support by modifying cpc_read and cpc_write
+to be able to read/write MSRs on x86 platform. Also with this change,
+acpi_cppc_processor_probe doesn't bail out if space id is not equal to
+PCC or memory address space.
 
-Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
+ drivers/acpi/cppc_acpi.c | 77 +++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 66 insertions(+), 11 deletions(-)
 
-Changes in v6: None
-Changes in v5: None
-Changes in v4: None
-Changes in v3: None
-Changes in v2: None
-
- drivers/power/supply/act8945a_charger.c | 48 ++++++++++++++++++++++++++-------
- 1 file changed, 39 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
-index e5bc237..2ff2f8d 100644
---- a/drivers/power/supply/act8945a_charger.c
-+++ b/drivers/power/supply/act8945a_charger.c
-@@ -78,6 +78,7 @@ static const char *act8945a_charger_manufacturer = "Active-semi";
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index 34209f5..939fb5c 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -42,6 +42,10 @@
+ #include <linux/ktime.h>
  
- struct act8945a_charger {
- 	struct power_supply *psy;
-+	struct power_supply_desc desc;
- 	struct regmap *regmap;
- 	struct work_struct work;
- 
-@@ -250,14 +251,6 @@ static int act8945a_charger_get_property(struct power_supply *psy,
- 	return ret;
+ #include <acpi/cppc_acpi.h>
++#ifdef CONFIG_X86
++#include <asm/msr.h>
++#endif
++
+ /*
+  * Lock to provide mutually exclusive access to the PCC
+  * channel. e.g. When the remote updates the shared region
+@@ -585,8 +589,9 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 					pr_debug("Mismatched PCC ids.\n");
+ 					goto out_free;
+ 				}
+-			} else if (gas_t->space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY) {
+-				/* Support only PCC and SYS MEM type regs */
++			} else if (gas_t->space_id != ACPI_ADR_SPACE_SYSTEM_MEMORY &&
++				   gas_t->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) {
++				/* Support only PCC, FFH and SYS MEM type regs */
+ 				pr_debug("Unsupported register type: %d\n", gas_t->space_id);
+ 				goto out_free;
+ 			}
+@@ -645,13 +650,59 @@ void acpi_cppc_processor_exit(struct acpi_processor *pr)
  }
+ EXPORT_SYMBOL_GPL(acpi_cppc_processor_exit);
  
--static const struct power_supply_desc act8945a_charger_desc = {
--	.name		= "act8945a-charger",
--	.type		= POWER_SUPPLY_TYPE_BATTERY,
--	.get_property	= act8945a_charger_get_property,
--	.properties	= act8945a_charger_props,
--	.num_properties	= ARRAY_SIZE(act8945a_charger_props),
--};
--
- static int act8945a_enable_interrupt(struct act8945a_charger *charger)
- {
- 	struct regmap *regmap = charger->regmap;
-@@ -281,11 +274,39 @@ static int act8945a_enable_interrupt(struct act8945a_charger *charger)
- 	return 0;
- }
- 
-+static unsigned int act8945a_set_supply_type(struct act8945a_charger *charger,
-+					     unsigned int *type)
++#ifdef CONFIG_X86
++static int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val)
 +{
-+	unsigned int status, state;
-+	int ret;
++	int err;
 +
-+	ret = regmap_read(charger->regmap, ACT8945A_APCH_STATUS, &status);
-+	if (ret < 0)
-+		return ret;
++	err = rdmsrl_on_cpu(cpunum, reg->address, val);
++	if (!err) {
++		u64 mask = GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
++				       reg->bit_offset);
 +
-+	ret = regmap_read(charger->regmap, ACT8945A_APCH_STATE, &state);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (status & APCH_STATUS_INDAT) {
-+		if (state & APCH_STATE_ACINSTAT)
-+			*type = POWER_SUPPLY_TYPE_MAINS;
-+		else
-+			*type = POWER_SUPPLY_TYPE_USB;
-+	} else {
-+		*type = POWER_SUPPLY_TYPE_BATTERY;
++		*val &= mask;
++		*val >>= reg->bit_offset;
 +	}
-+
-+	return 0;
++	return err;
 +}
 +
- static void act8945a_work(struct work_struct *work)
- {
- 	struct act8945a_charger *charger =
- 			container_of(work, struct act8945a_charger, work);
- 
-+	act8945a_set_supply_type(charger, &charger->desc.type);
++static int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
++{
++	u64 rd_val;
++	int err;
 +
- 	power_supply_changed(charger->psy);
++	err = rdmsrl_on_cpu(cpunum, reg->address, &rd_val);
++	if (!err) {
++		u64 mask = GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
++				       reg->bit_offset);
++
++		val <<= reg->bit_offset;
++		val &= mask;
++		rd_val &= ~mask;
++		rd_val |= val;
++		err = wrmsrl_on_cpu(cpunum, reg->address, rd_val);
++	}
++	return err;
++}
++#else
++static int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val)
++{
++	return -EINVAL;
++}
++static int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
++{
++	return -EINVAL;
++
++}
++#endif
++
+ /*
+  * Since cpc_read and cpc_write are called while holding pcc_lock, it should be
+  * as fast as possible. We have already mapped the PCC subspace during init, so
+  * we can directly write to it.
+  */
+ 
+-static int cpc_read(struct cpc_register_resource *res, u64 *val)
++static int cpc_read(int cpunum, struct cpc_register_resource *res, u64 *val)
+ {
+ 	struct cpc_reg *reg = &res->cpc_entry.reg;
+ 	int ret_val = 0;
+@@ -684,13 +735,15 @@ static int cpc_read(struct cpc_register_resource *res, u64 *val)
+ 				reg->bit_width);
+ 			ret_val = -EFAULT;
+ 		}
++	} else if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE) {
++		ret_val = cpc_read_ffh(cpunum, reg, val);
+ 	} else
+ 		ret_val = acpi_os_read_memory((acpi_physical_address)reg->address,
+ 					val, reg->bit_width);
+ 	return ret_val;
  }
  
-@@ -438,11 +459,20 @@ static int act8945a_charger_probe(struct platform_device *pdev)
- 		return ret;
+-static int cpc_write(struct cpc_reg *reg, u64 val)
++static int cpc_write(int cpunum, struct cpc_reg *reg, u64 val)
+ {
+ 	int ret_val = 0;
+ 
+@@ -716,6 +769,8 @@ static int cpc_write(struct cpc_reg *reg, u64 val)
+ 			ret_val = -EFAULT;
+ 			break;
+ 		}
++	} else if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE) {
++		ret_val = cpc_write_ffh(cpunum, reg, val);
+ 	} else
+ 		ret_val = acpi_os_write_memory((acpi_physical_address)reg->address,
+ 				val, reg->bit_width);
+@@ -761,16 +816,16 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 		}
  	}
  
-+	charger->desc.name = "act8945a-charger";
-+	charger->desc.get_property = act8945a_charger_get_property;
-+	charger->desc.properties = act8945a_charger_props;
-+	charger->desc.num_properties = ARRAY_SIZE(act8945a_charger_props);
-+
-+	ret = act8945a_set_supply_type(charger, &charger->desc.type);
-+	if (ret)
-+		return -EINVAL;
-+
- 	psy_cfg.of_node	= pdev->dev.parent->of_node;
- 	psy_cfg.drv_data = charger;
+-	cpc_read(highest_reg, &high);
++	cpc_read(cpunum, highest_reg, &high);
+ 	perf_caps->highest_perf = high;
  
- 	charger->psy = devm_power_supply_register(&pdev->dev,
--						  &act8945a_charger_desc,
-+						  &charger->desc,
- 						  &psy_cfg);
- 	if (IS_ERR(charger->psy)) {
- 		dev_err(&pdev->dev, "failed to register power supply\n");
+-	cpc_read(lowest_reg, &low);
++	cpc_read(cpunum, lowest_reg, &low);
+ 	perf_caps->lowest_perf = low;
+ 
+-	cpc_read(ref_perf, &ref);
++	cpc_read(cpunum, ref_perf, &ref);
+ 	perf_caps->reference_perf = ref;
+ 
+-	cpc_read(nom_perf, &nom);
++	cpc_read(cpunum, nom_perf, &nom);
+ 	perf_caps->nominal_perf = nom;
+ 
+ 	if (!ref)
+@@ -819,8 +874,8 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
+ 		}
+ 	}
+ 
+-	cpc_read(delivered_reg, &delivered);
+-	cpc_read(reference_reg, &reference);
++	cpc_read(cpunum, delivered_reg, &delivered);
++	cpc_read(cpunum, reference_reg, &reference);
+ 
+ 	if (!delivered || !reference) {
+ 		ret = -EFAULT;
+@@ -875,7 +930,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	 * Skip writing MIN/MAX until Linux knows how to come up with
+ 	 * useful values.
+ 	 */
+-	cpc_write(&desired_reg->cpc_entry.reg, perf_ctrls->desired_perf);
++	cpc_write(cpu, &desired_reg->cpc_entry.reg, perf_ctrls->desired_perf);
+ 
+ 	/* Is this a PCC reg ?*/
+ 	if (desired_reg->cpc_entry.reg.space_id == ACPI_ADR_SPACE_PLATFORM_COMM) {
 -- 
 2.7.4
