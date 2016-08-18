@@ -1,40 +1,53 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH] smartreflex: Neaten logging
-Date: Thu, 18 Aug 2016 13:26:57 -0500
-Message-ID: <m2r39mq6fi.fsf@baylibre.com>
-References: <8dd34715bc267a29cade4ceec193ca1066f18db4.1470986036.git.joe@perches.com>
-        <ef0d3152-a01a-9359-bfb5-3fb8ab1b6041@ti.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 0/5] x86 CPPC usage
+Date: Thu, 18 Aug 2016 14:14:20 -0700
+Message-ID: <1471554860.1602.17.camel@linux.intel.com>
+References: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ef0d3152-a01a-9359-bfb5-3fb8ab1b6041@ti.com> (Nishanth Menon's
-        message of "Fri, 12 Aug 2016 07:46:30 -0500")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Joe Perches <joe@perches.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:63278 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754885AbcHSBpY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 18 Aug 2016 21:45:24 -0400
+In-Reply-To: <1470874646-70570-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org
 
-Nishanth Menon <nm@ti.com> writes:
+On Wed, 2016-08-10 at 17:17 -0700, Srinivas Pandruvada wrote:
+> The x86 HWP (Hardware Controlled Performance States) is an
+> implementation
+> of the ACPI-defined Collaborative Processor Performance Control
+> (CPPC).
+> The current implementation of HWP doesn't use CPPC, but CPPC brings
+> in
+> some advanced features. So we will be submitting changes to use CPPC.
+> 
+> The first series only contains ACPI CPPC changes required for x86.
+> 
+Since I didn't see any major objection to this series, I will resubmit
+these changes along with the use case of CPPC on x86 to support turbo
+feature.
 
-> On 08/12/2016 02:14 AM, Joe Perches wrote:
->> Use a more common logging style.
->>
->> Miscellanea:
->>
->> o Use pr_warn
->> o Coalesce formats adding missing spaces
->> o Argument alignment
->> o Remove unnecessary OOM messages as k.alloc does stack dumps
->>
->> Signed-off-by: Joe Perches <joe@perches.com>
->
-> Acked-by: Nishanth Menon <nm@ti.com>
->
-> Kevin, would you be able to pick this up?
+Thanks,
+Srinivas
 
-Acked-by: Kevin Hilman <khilman@baylibre.com>
-
-Rafael, please apply directly.  I don't have any other smartreflex
-changes for this cycle.
-
-Kevin
+> Srinivas Pandruvada (5):
+>   acpi: cppc: Allow build with ACPI_CPU_FREQ_PSS config
+>   acpi: cpcc: Add integer read support
+>   acpi: cppc: Add support for function fixed hardware address
+>   acpi: cppc: Add prefix cppc to cpudata structure name
+>   acpi: bus: Enable HWP CPPC objects
+> 
+>  drivers/acpi/Kconfig            |  1 -
+>  drivers/acpi/bus.c              |  7 ++++
+>  drivers/acpi/cppc_acpi.c        | 88
+> +++++++++++++++++++++++++++++++++++------
+>  drivers/acpi/processor_driver.c |  5 ++-
+>  drivers/cpufreq/cppc_cpufreq.c  | 14 +++----
+>  include/acpi/cppc_acpi.h        |  4 +-
+>  6 files changed, 95 insertions(+), 24 deletions(-)
+> 
