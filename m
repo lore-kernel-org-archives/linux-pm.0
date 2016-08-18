@@ -1,71 +1,155 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: =?UTF-8?q?=5BPATCH=2000/11=5D=20Support=20Intel=C2=AE=20Turbo=20Boost=20Max=20Technology=203=2E0?=
-Date: Thu, 18 Aug 2016 15:36:41 -0700
-Message-ID: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH 03/11] sched: Extend scheduler's asym packing
+Date: Thu, 18 Aug 2016 15:36:44 -0700
+Message-ID: <1471559812-19967-4-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, peterz@infradead.org
 Cc: x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, tim.c.chen@linux.intel.com, srinivas.pandruvada@linux.intel.com, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-With Intel® Turbo Boost Max Technology 3.0 (ITMT), single-threaded performance is
-optimized by identifying processor's fastest core and running critical workloads
-on it.
-Refere to:
-http://www.intel.com/content/www/us/en/architecture-and-technology/turbo-boost/turbo-boost-max-technology.html
+From: Tim Chen <tim.c.chen@linux.intel.com>
 
-This patchset consist of all changes required to support ITMT feature:
-- Enhance CPPC ACPI lib to support x86
-- Use CPPC information in Intel P-State driver to get performance information
-- Scheduler enhancements
+We generalize the scheduler's asym packing to provide an
+ordering of the cpu beyond just the cpu number.  This allows
+the use of the ASYM_PACKING scheduler machinery to move
+loads to prefered CPU in a sched domain based on a preference
+defined by sched_asym_prefer function.
 
-By default this feature is OFF, to turn on:
+We also record the most preferred cpu in a sched group when
+we build the cpu's capacity for fast lookup of preferred cpu
+during load balancing.
 
-# echo 1 > /proc/sys/kernel/sched_itmt_enabled
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ kernel/sched/core.c  | 18 ++++++++++++++++++
+ kernel/sched/fair.c  | 25 ++++++++++++++-----------
+ kernel/sched/sched.h | 17 +++++++++++++++++
+ 3 files changed, 49 insertions(+), 11 deletions(-)
 
-
-Srinivas Pandruvada (7):
-  acpi: cppc: Allow build with ACPI_CPU_FREQ_PSS config
-  acpi: cpcc: Add integer read support
-  acpi: cppc: Add support for function fixed hardware address
-  acpi: cppc: Add prefix cppc to cpudata structure name
-  acpi: bus: Enable HWP CPPC objects
-  acpi: bus: Set _OSC for diverse core support
-  cpufreq: intel_pstate: Use CPPC to get max performance
-
-Tim Chen (4):
-  sched, cpuset: Add regenerate_sched_domains function to rebuild all
-    sched domains
-  sched, x86: Add SD_ASYM_PACKING flags to x86 cpu topology for cpus
-    supporting Intel Turbo Boost Max Technology
-  sched: Extend scheduler's asym packing
-  sched,x86: Enable Turbo Boost Max Technology
-
- arch/x86/Kconfig                |   9 +++
- arch/x86/include/asm/topology.h |  26 +++++++
- arch/x86/kernel/Makefile        |   1 +
- arch/x86/kernel/itmt.c          | 147 ++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/smpboot.c       |  77 ++++++++++++++++-----
- drivers/acpi/Kconfig            |   1 -
- drivers/acpi/bus.c              |   9 +++
- drivers/acpi/cppc_acpi.c        |  88 ++++++++++++++++++++----
- drivers/acpi/processor_driver.c |   5 +-
- drivers/cpufreq/Kconfig.x86     |   1 +
- drivers/cpufreq/cppc_cpufreq.c  |  14 ++--
- drivers/cpufreq/intel_pstate.c  |  75 +++++++++++++++++++-
- include/acpi/cppc_acpi.h        |   4 +-
- include/linux/acpi.h            |   1 +
- include/linux/cpuset.h          |   2 +
- include/linux/sched.h           |   3 +
- kernel/cpuset.c                 |  32 +++++++--
- kernel/sched/core.c             |  46 ++++++++++++-
- kernel/sched/fair.c             |  25 ++++---
- kernel/sched/sched.h            |  17 +++++
- 20 files changed, 517 insertions(+), 66 deletions(-)
- create mode 100644 arch/x86/kernel/itmt.c
-
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 342eca9..2ca99a1 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6237,7 +6237,25 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
+ 	WARN_ON(!sg);
+ 
+ 	do {
++		int cpu, max_cpu = -1, prev_cpu = -1;
++
+ 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
++
++		if (!(sd->flags & SD_ASYM_PACKING))
++			goto next;
++
++		for_each_cpu(cpu, sched_group_cpus(sg)) {
++			if (prev_cpu < 0) {
++				prev_cpu = cpu;
++				max_cpu = cpu;
++			} else {
++				if (sched_asym_prefer(cpu, max_cpu))
++					max_cpu = cpu;
++			}
++		}
++		sg->asym_prefer_cpu = max_cpu;
++
++next:
+ 		sg = sg->next;
+ 	} while (sg != sd->groups);
+ 
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 039de34..37a30d6 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -6862,16 +6862,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
+ 	if (env->idle == CPU_NOT_IDLE)
+ 		return true;
+ 	/*
+-	 * ASYM_PACKING needs to move all the work to the lowest
+-	 * numbered CPUs in the group, therefore mark all groups
+-	 * higher than ourself as busy.
++	 * ASYM_PACKING needs to move all the work to the highest
++	 * prority CPUs in the group, therefore mark all groups
++	 * of lower priority than ourself as busy.
+ 	 */
+-	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
++	if (sgs->sum_nr_running &&
++	    sched_asym_prefer(env->dst_cpu, group_priority_cpu(sg))) {
+ 		if (!sds->busiest)
+ 			return true;
+ 
+-		/* Prefer to move from highest possible cpu's work */
+-		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
++		/* Prefer to move from lowest priority cpu's work */
++		if (sched_asym_prefer(group_priority_cpu(sds->busiest),
++				      group_priority_cpu(sg)))
+ 			return true;
+ 	}
+ 
+@@ -7023,8 +7025,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
+ 	if (!sds->busiest)
+ 		return 0;
+ 
+-	busiest_cpu = group_first_cpu(sds->busiest);
+-	if (env->dst_cpu > busiest_cpu)
++	busiest_cpu = group_priority_cpu(sds->busiest);
++	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
+ 		return 0;
+ 
+ 	env->imbalance = DIV_ROUND_CLOSEST(
+@@ -7365,10 +7367,11 @@ static int need_active_balance(struct lb_env *env)
+ 
+ 		/*
+ 		 * ASYM_PACKING needs to force migrate tasks from busy but
+-		 * higher numbered CPUs in order to pack all tasks in the
+-		 * lowest numbered CPUs.
++		 * lower priority CPUs in order to pack all tasks in the
++		 * highest priority CPUs.
+ 		 */
+-		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
++		if ((sd->flags & SD_ASYM_PACKING) &&
++		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
+ 			return 1;
+ 	}
+ 
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index c64fc51..75e1002 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -532,6 +532,22 @@ struct dl_rq {
+ 
+ #ifdef CONFIG_SMP
+ 
++#ifndef sched_asym_prefer
++
++/* For default ASYM_PACKING, lower numbered cpu is prefered */
++static inline bool sched_asym_prefer(int a, int b)
++{
++	return a < b;
++}
++
++#endif /* sched_asym_prefer */
++
++/*
++ * Return lowest numbered cpu in the group as the most prefered cpu
++ * for ASYM_PACKING for default case.
++ */
++#define group_priority_cpu(group) group->asym_prefer_cpu
++
+ /*
+  * We add the notion of a root-domain which will be used to define per-domain
+  * variables. Each exclusive cpuset essentially defines an island domain by
+@@ -884,6 +900,7 @@ struct sched_group {
+ 
+ 	unsigned int group_weight;
+ 	struct sched_group_capacity *sgc;
++	int asym_prefer_cpu;		/* cpu of highest priority in group */
+ 
+ 	/*
+ 	 * The CPUs this group covers.
 -- 
 2.7.4
