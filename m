@@ -1,120 +1,117 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: cpu_cooling: Fix NULL dereference in
- cpufreq_state2power
-Date: Thu, 18 Aug 2016 10:30:42 +0100
-Message-ID: <20160818093042.GA3154@e104805>
-References: <20160817151459.10948-1-brendan.jackman@arm.com>
- <20160817230507.GC24396@ubuntu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][RFC v4] timekeeping: ignore the bogus sleep time if pm_trace is enabled
+Date: Thu, 18 Aug 2016 18:43:39 +0800
+Message-ID: <1471517019-15216-1-git-send-email-yu.c.chen@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56737 "EHLO foss.arm.com"
+Received: from mga11.intel.com ([192.55.52.93]:5785 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753135AbcHRJap (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 18 Aug 2016 05:30:45 -0400
-Content-Disposition: inline
-In-Reply-To: <20160817230507.GC24396@ubuntu>
+	id S1751442AbcHRKgs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 18 Aug 2016 06:36:48 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Brendan Jackman <brendan.jackman@arm.com>, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
+To: linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Chen Yu <yu.c.chen@intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Xunlei Pang <xlpang@redhat.com>, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
 
-On Thu, Aug 18, 2016 at 04:35:07AM +0530, Viresh Kumar wrote:
-> On 17-08-16, 16:14, Brendan Jackman wrote:
-> > Currently all CPU cooling devices share a
-> > `struct thermal_cooling_device_ops` instance. The thermal core uses the
-> > presence of functions in this struct to determine if a cooling device
-> > has a power model (see cdev_is_power_actor). cpu_cooling.c adds the
-> > power model functions to the shared struct when a device is registered
-> > with a power model.
-> > 
-> > Therefore, if a CPU cooling device is registered using
-> > [of_]cpufreq_power_cooling_register, _all_ devices will be determined to
-> > have a power model, including any registered with
-> > [of_]cpufreq_cooling_register. This can result in cpufreq_state2power
-> > being called on a device where dyn_power_table is NULL.
-> > 
-> > With this commit, instead of having a shared thermal_cooling_device_ops
-> > which is mutated, we have two versions: one with the power functions and
-> > one without.
-> > 
-> > Signed-off-by: Brendan Jackman <brendan.jackman@arm.com>
-> > Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: Javi Merino <javi.merino@arm.com>
-> > 
-> > ---
-> >  drivers/thermal/cpu_cooling.c | 21 ++++++++++++++++-----
-> >  1 file changed, 16 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> > index 3788ed7..a32b417 100644
-> > --- a/drivers/thermal/cpu_cooling.c
-> > +++ b/drivers/thermal/cpu_cooling.c
-> > @@ -740,12 +740,22 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
-> >  }
-> > 
-> >  /* Bind cpufreq callbacks to thermal cooling device ops */
-> > +
-> >  static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
-> >  	.get_max_state = cpufreq_get_max_state,
-> >  	.get_cur_state = cpufreq_get_cur_state,
-> >  	.set_cur_state = cpufreq_set_cur_state,
-> >  };
-> > 
-> > +static struct thermal_cooling_device_ops cpufreq_power_cooling_ops = {
-> > +	.get_max_state		= cpufreq_get_max_state,
-> > +	.get_cur_state		= cpufreq_get_cur_state,
-> > +	.set_cur_state		= cpufreq_set_cur_state,
-> > +	.get_requested_power	= cpufreq_get_requested_power,
-> > +	.state2power		= cpufreq_state2power,
-> > +	.power2state		= cpufreq_power2state,
-> > +};
-> > +
-> >  /* Notifier for cpufreq policy change */
-> >  static struct notifier_block thermal_cpufreq_notifier_block = {
-> >  	.notifier_call = cpufreq_thermal_notifier,
-> > @@ -795,6 +805,7 @@ __cpufreq_cooling_register(struct device_node *np,
-> >  	struct cpumask temp_mask;
-> >  	unsigned int freq, i, num_cpus;
-> >  	int ret;
-> > +	struct thermal_cooling_device_ops *cooling_ops;
-> > 
-> >  	cpumask_and(&temp_mask, clip_cpus, cpu_online_mask);
-> >  	policy = cpufreq_cpu_get(cpumask_first(&temp_mask));
-> > @@ -850,10 +861,6 @@ __cpufreq_cooling_register(struct device_node *np,
-> >  	cpumask_copy(&cpufreq_dev->allowed_cpus, clip_cpus);
-> > 
-> >  	if (capacitance) {
-> > -		cpufreq_cooling_ops.get_requested_power =
-> > -			cpufreq_get_requested_power;
-> > -		cpufreq_cooling_ops.state2power = cpufreq_state2power;
-> > -		cpufreq_cooling_ops.power2state = cpufreq_power2state;
-> >  		cpufreq_dev->plat_get_static_power = plat_static_func;
-> > 
-> >  		ret = build_dyn_power_table(cpufreq_dev, capacitance);
-> > @@ -861,6 +868,10 @@ __cpufreq_cooling_register(struct device_node *np,
-> >  			cool_dev = ERR_PTR(ret);
-> >  			goto free_table;
-> >  		}
-> > +
-> > +		cooling_ops = &cpufreq_power_cooling_ops;
-> > +	} else {
-> > +		cooling_ops = &cpufreq_cooling_ops;
-> >  	}
-> > 
-> >  	ret = get_idr(&cpufreq_idr, &cpufreq_dev->id);
-> > @@ -885,7 +896,7 @@ __cpufreq_cooling_register(struct device_node *np,
-> >  		 cpufreq_dev->id);
-> > 
-> >  	cool_dev = thermal_of_cooling_device_register(np, dev_name, cpufreq_dev,
-> > -						      &cpufreq_cooling_ops);
-> > +						      cooling_ops);
-> >  	if (IS_ERR(cool_dev))
-> >  		goto remove_idr;
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Previously we encountered some memory overflow issues due to
+the bogus sleep time brought by inconsistent rtc, which is
+triggered when pm_trace is enabled, please refer to:
+https://patchwork.kernel.org/patch/9286365/
+It's improper in the first place to call __timekeeping_inject_sleeptime()
+in case that pm_trace is enabled simply because that "hash" time value
+will wreckage the timekeeping subsystem.
 
-Yep, looks good to me.
+So this patch ignores the sleep time if pm_trace is enabled in
+the following situation:
+1. rtc is used as persist clock to compensate for sleep time,
+   (because system does not have a nonstop clocksource) or
+2. rtc is used to calculate the sleep time in rtc_resume.
 
-Acked-by: Javi Merino <javi.merino@arm.com>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Xunlei Pang <xlpang@redhat.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Reported-by: Janek Kozicki <cosurgi@gmail.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ arch/x86/kernel/rtc.c     |  7 +++++++
+ kernel/time/timekeeping.c | 14 +++++++++++++-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
+index 79c6311c..6039138 100644
+--- a/arch/x86/kernel/rtc.c
++++ b/arch/x86/kernel/rtc.c
+@@ -8,6 +8,7 @@
+ #include <linux/export.h>
+ #include <linux/pnp.h>
+ #include <linux/of.h>
++#include <linux/pm-trace.h>
+ 
+ #include <asm/vsyscall.h>
+ #include <asm/x86_init.h>
+@@ -146,6 +147,12 @@ void read_persistent_clock(struct timespec *ts)
+ 	x86_platform.get_wallclock(ts);
+ }
+ 
++bool persistent_clock_is_usable(void)
++{
++	/* Unusable if pm_trace is enabled. */
++	return !((x86_platform.get_wallclock == mach_get_cmos_time) &&
++		 pm_trace_is_enabled());
++}
+ 
+ static struct resource rtc_resources[] = {
+ 	[0] = {
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 3b65746..3122bd2b 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -23,6 +23,7 @@
+ #include <linux/stop_machine.h>
+ #include <linux/pvclock_gtod.h>
+ #include <linux/compiler.h>
++#include <linux/pm-trace.h>
+ 
+ #include "tick-internal.h"
+ #include "ntp_internal.h"
+@@ -1450,6 +1451,11 @@ void __weak read_boot_clock64(struct timespec64 *ts)
+ 	ts->tv_nsec = 0;
+ }
+ 
++bool __weak persistent_clock_is_usable(void)
++{
++	return true;
++}
++
+ /* Flag for if timekeeping_resume() has injected sleeptime */
+ static bool sleeptime_injected;
+ 
+@@ -1551,7 +1557,7 @@ static void __timekeeping_inject_sleeptime(struct timekeeper *tk,
+  */
+ bool timekeeping_rtc_skipresume(void)
+ {
+-	return sleeptime_injected;
++	return sleeptime_injected || pm_trace_is_enabled();
+ }
+ 
+ /**
+@@ -1662,6 +1668,12 @@ void timekeeping_resume(void)
+ 	} else if (timespec64_compare(&ts_new, &timekeeping_suspend_time) > 0) {
+ 		ts_delta = timespec64_sub(ts_new, timekeeping_suspend_time);
+ 		sleeptime_injected = true;
++		/*
++		 * If rtc is used as persist clock thus it
++		 * would be bogus when pm_trace is enabled.
++		 */
++		if (!persistent_clock_is_usable())
++			sleeptime_injected = false;
+ 	}
+ 
+ 	if (sleeptime_injected)
+-- 
+2.7.4
+
