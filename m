@@ -1,91 +1,96 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [RESEND PATCH] devfreq: Add COMPILE_TEST for build coverage
-Date: Fri, 19 Aug 2016 15:46:37 +0900
-Message-ID: <57B6AB4D.1030702@samsung.com>
-References: <CGME20160819063707epcas1p23ba811c669f34548a0556354a8363ff1@epcas1p2.samsung.com>
- <1471588615-22630-1-git-send-email-k.kozlowski@samsung.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v5 00/11] Add HW throttle for Tegra soctherm
+Date: Fri, 19 Aug 2016 15:15:24 +0800
+Message-ID: <1471590924.2691.34.camel@intel.com>
+References: <1462962026-19653-1-git-send-email-wni@nvidia.com>
+         <5746C4FD.9070909@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:39900 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753835AbcHSGqk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Aug 2016 02:46:40 -0400
-In-reply-to: <1471588615-22630-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5746C4FD.9070909@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Wei Ni <wni@nvidia.com>, edubezval@gmail.com, thierry.reding@gmail.com, robh+dt@kernel.org
+Cc: MLongnecker@nvidia.com, swarren@wwwdotorg.org, mikko.perttunen@kapsi.fi, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Hi Krzysztof,
-
-Looks good to me.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-
-Dear Myungjoo,
-you made the 'testing/kozlowski' branch[1] for this patch.
-I think that this branch should be rebased on v4.8-rc1
-because Krzysztof's patch[2] was already merged to v4.8-rc1.
-[1] https://git.kernel.org/cgit/linux/kernel/git/mzx/devfreq.git/commit/?h=testing/kozlowski
-[2] https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/commit/?id=e81b87d22a8fed6bac24197972c9c394a2b92b5d
-
-Regards,
-Chanwoo Choi
-
-'On 2016년 08월 19일 15:36, Krzysztof Kozlowski wrote:
-> The SoC-specific devfreq and devfreq-event drivers can be build tested
-> on all architectures.
+On 四, 2016-05-26 at 17:42 +0800, Wei Ni wrote:
+> Hi,
+> Does there have any comments on this series?
+> Let me know if someone has suggestions.
 > 
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> ---
->  drivers/devfreq/Kconfig       | 4 ++--
->  drivers/devfreq/event/Kconfig | 4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index a5be56ec57f2..8766cbaf20e2 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -76,7 +76,7 @@ comment "DEVFREQ Drivers"
->  
->  config ARM_EXYNOS_BUS_DEVFREQ
->  	tristate "ARM EXYNOS Generic Memory Bus DEVFREQ Driver"
-> -	depends on ARCH_EXYNOS
-> +	depends on ARCH_EXYNOS || COMPILE_TEST
->  	select DEVFREQ_GOV_SIMPLE_ONDEMAND
->  	select DEVFREQ_GOV_PASSIVE
->  	select DEVFREQ_EVENT_EXYNOS_PPMU
-> @@ -92,7 +92,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
->  
->  config ARM_TEGRA_DEVFREQ
->         tristate "Tegra DEVFREQ Driver"
-> -       depends on ARCH_TEGRA_124_SOC
-> +       depends on ARCH_TEGRA_124_SOC || COMPILE_TEST
->         select DEVFREQ_GOV_SIMPLE_ONDEMAND
->         select PM_OPP
->         help
-> diff --git a/drivers/devfreq/event/Kconfig b/drivers/devfreq/event/Kconfig
-> index eb6f74a2b6b9..1d1cd781e386 100644
-> --- a/drivers/devfreq/event/Kconfig
-> +++ b/drivers/devfreq/event/Kconfig
-> @@ -15,7 +15,7 @@ if PM_DEVFREQ_EVENT
->  
->  config DEVFREQ_EVENT_EXYNOS_NOCP
->  	tristate "EXYNOS NoC (Network On Chip) Probe DEVFREQ event Driver"
-> -	depends on ARCH_EXYNOS
-> +	depends on ARCH_EXYNOS || COMPILE_TEST
->  	select PM_OPP
->  	help
->  	  This add the devfreq-event driver for Exynos SoC. It provides NoC
-> @@ -23,7 +23,7 @@ config DEVFREQ_EVENT_EXYNOS_NOCP
->  
->  config DEVFREQ_EVENT_EXYNOS_PPMU
->  	tristate "EXYNOS PPMU (Platform Performance Monitoring Unit) DEVFREQ event Driver"
-> -	depends on ARCH_EXYNOS
-> +	depends on ARCH_EXYNOS || COMPILE_TEST
->  	select PM_OPP
->  	help
->  	  This add the devfreq-event driver for Exynos SoC. It provides PPMU
-> 
+I have no objections to this patch set.
+As 10 patches out of 11, in this patch series, contain changes out of
+thermal scope, if you prefer this patch set go through thermal tree, I
+still need ACKs for the changes out of thermal scope.
 
+thanks,
+rui
+
+> Thanks.
+> Wei.
+> 
+> On 05/11/2016 06:20 PM, Wei Ni wrote:
+> > 
+> > This series add following functions for Tegra soctherm:
+> > 1. add HW throttle function.
+> > 2. enable soctherm node for Tegra124, Tegra132, Tegra210, and
+> > set "critical", "hot" trips for them.
+> > 
+> > Main changes from v4:
+> > 1. drop the "nvidia" prefix from the node name, per Rob's comments.
+> > 
+> > Main changes from v3:
+> > 1. change some properties'name and descriptions, per Rob's
+> > comments.
+> > 2. change the corresponding driver codes.
+> > 
+> > Main changes from v2:
+> > 1. improve the of-binding, per Eduardo's comments, and
+> > change the corresponding driver codes.
+> > 2. move two setting critical trip patches in this series,
+> > 3. fix some bugs in dts changes.
+> > 
+> > Main changes from v1:
+> > 1. use readl/writel instead of __raw_readl/__raw_writel.
+> > 2. rebase on the linux-next.
+> > 
+> > The v1 series is in:
+> > https://lkml.org/lkml/2016/3/31/230
+> > 
+> > The v2 series is in:
+> > https://lkml.org/lkml/2016/4/26/1577
+> > 
+> > The v3 series is in:
+> > https://lkml.org/lkml/2016/5/3/274
+> > 
+> > The v4 series is in:
+> > https://lkml.org/lkml/2016/5/9/45
+> > 
+> > Wei Ni (11):
+> >   of: Add bindings of hw throttle for Tegra soctherm
+> >   thermal: tegra: add hw-throttle function
+> >   thermal: tegra: add hw-throttle for Tegra132
+> >   arm: tegra: set critical trips for Tegra124
+> >   arm: tegra: set hot trips for Tegra124
+> >   arm64: tegra: use tegra132-soctherm for Tegra132
+> >   arm64: tegra: set critical trips for Tegra132
+> >   arm64: tegra: set hot trips for Tegra132
+> >   arm64: tegra: add soctherm node for Tegra210
+> >   arm64: tegra: set critical trips for Tegra210
+> >   arm64: tegra: set hot trips for Tegra210
+> > 
+> >  .../bindings/thermal/nvidia,tegra124-soctherm.txt  | 121 ++-
+> >  arch/arm/boot/dts/tegra124-jetson-tk1.dts          |  18 +-
+> >  arch/arm/boot/dts/tegra124.dtsi                    |  83 +-
+> >  arch/arm64/boot/dts/nvidia/tegra132.dtsi           | 119 ++-
+> >  arch/arm64/boot/dts/nvidia/tegra210.dtsi           | 127 ++++
+> >  drivers/thermal/tegra/soctherm.c                   | 842
+> > ++++++++++++++++++++-
+> >  drivers/thermal/tegra/soctherm.h                   |  10 +
+> >  drivers/thermal/tegra/tegra124-soctherm.c          |  18 +
+> >  drivers/thermal/tegra/tegra132-soctherm.c          |  18 +
+> >  drivers/thermal/tegra/tegra210-soctherm.c          |  18 +
+> >  include/dt-bindings/thermal/tegra124-soctherm.h    |   5 +
+> >  11 files changed, 1344 insertions(+), 35 deletions(-)
+> > 
