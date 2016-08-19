@@ -1,107 +1,64 @@
-From: Andreas Herrmann <aherrmann@suse.com>
-Subject: [PATCH 1/1] cpufreq: pcc-cpufreq: Re-introduce deadband effect to
- reduce number of frequency changes
-Date: Fri, 19 Aug 2016 14:21:01 +0200
-Message-ID: <20160819122101.GB17296@suselix.suse.de>
-References: <20160819121814.GA17296@suselix.suse.de>
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: Re: [PATCH v6 3/8] clk: rockchip: rk3399: add ddrc clock support
+Date: Fri, 19 Aug 2016 14:26:34 +0200
+Message-ID: <3094872.dpWUHq2nPG@phil>
+References: <1471386989-9541-1-git-send-email-hl@rock-chips.com>
+ <1471386989-9541-4-git-send-email-hl@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160819121814.GA17296@suselix.suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <1471386989-9541-4-git-send-email-hl@rock-chips.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Lin Huang <hl@rock-chips.com>
+Cc: tixy@linaro.org, mark.rutland@arm.com, dbasehore@chromium.org, cw00.choi@samsung.com, mturquette@baylibre.com, typ@rock-chips.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-
-Commit 6393d6a102 (cpufreq: ondemand: Eliminate the deadband effect)
-introduced a performance regression for systems using pcc-cpufreq and
-ondemand governor. This is measurable with different workloads. E.g.
-wall-clock time for kernel compilation significantly increased.
-
-The elimination of the deadband effect significantly increased the
-number of frequency changes with pcc-cpufreq.
-
-Instead of reverting commit 6393d6a102 I suggest to add a workaround
-in pcc-cpufreq to re-introduce the deadband effect for this driver
-only - to restore the old performance behaviour with pcc-cpufreq with
-ondemand governor.
-
-Following some performance numbers for similar kernel compilations to
-illustrate the effect of commit 6393d6a102 and the proposed fix.
-
-Following typical numbers of kernel compilation tests with varying number of
-compile jobs:
-
-                     v4.8.0-rc2               4.8.0-rc2-pcc-cpufreq-deadband
- # of jobst   user     sys   elapsed   CPU     user     sys   elapsed   CPU
-       2     440.39  116.49  4:33.35   203%   404.85  109.10  4:10.35   205%
-       4     436.87  133.39  2:22.88   399%   381.83  128.00  2:06.84   401%
-       8     475.49  157.68  1:22.24   769%   344.36  149.08  1:04.29   767%
-      16     620.69  188.33  0:54.74  1477%   374.60  157.40  0:36.76  1447%
-      32     815.79  209.58  0:37.22  2754%   490.46  160.22  0:24.87  2616%
-      64     394.13   60.55  0:13.54  3355%   386.54   60.33  0:12.79  3493%
-     120     398.24   61.55  0:14.60  3148%   390.44   61.19  0:13.07  3453%
-
-(HP ProLiant DL580 Gen8 system, 60 CPUs @ 2.80GHz)
-
-Link: http://marc.info/?l=linux-pm&m=147160912625600
-Signed-off-by: Andreas Herrmann <aherrmann@suse.com>
----
- drivers/cpufreq/pcc-cpufreq.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
-
-If this change is accepted maybe it's a good idea to tag it also for
-stable kernels, e.g. starting with v4.4.
-
-
-Thanks,
-
-Andreas
-
-
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index 3f0ce2a..d2e2963 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -200,10 +200,26 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
- {
- 	struct pcc_cpu *pcc_cpu_data;
- 	struct cpufreq_freqs freqs;
-+	static u32 limit = 0;
-+
- 	u16 status;
- 	u32 input_buffer;
- 	int cpu;
- 
-+	if (!limit) {
-+		u32 f_min = policy->cpuinfo.min_freq / 1000;
-+		u32 f_max = policy->cpuinfo.max_freq / 1000;
-+		limit = (f_max - f_min) * f_min;
-+		limit /= f_max;
-+		limit *= 1000;
-+		limit += f_min * 1000;
-+		pr_debug("pcc-cpufreq: setting deadband limit to %u kHz\n",
-+			limit);
-+	}
-+
-+	if (target_freq < limit)
-+		target_freq = policy->min;
-+
- 	cpu = policy->cpu;
- 	pcc_cpu_data = per_cpu_ptr(pcc_cpu_info, cpu);
- 
-@@ -214,6 +230,10 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
- 
- 	freqs.old = policy->cur;
- 	freqs.new = target_freq;
-+
-+	if (freqs.new == freqs.old)
-+		return 0;
-+
- 	cpufreq_freq_transition_begin(policy, &freqs);
- 	spin_lock(&pcc_lock);
- 
--- 
-2.1.4
+QW0gTWl0dHdvY2gsIDE3LiBBdWd1c3QgMjAxNiwgMDY6MzY6MjQgQ0VTVCBzY2hyaWViIExpbiBI
+dWFuZzoKPiBhZGQgZGRyYyBjbG9jayBzZXR0aW5nLCBzbyB3ZSBjYW4gZG8gZGRyIGZyZXF1ZW5j
+eQo+IHNjYWxpbmcgb24gcmszMzk5IHBsYXRmb3JtIGluIGZ1dHVyZS4KPiAKPiBTaWduZWQtb2Zm
+LWJ5OiBMaW4gSHVhbmcgPGhsQHJvY2stY2hpcHMuY29tPgo+IC0tLQo+IENoYW5nZXMgaW4gdjY6
+Cj4gLSBOb25lCj4gCj4gQ2hhbmdlcyBpbiB2NToKPiAtIGZpdCBmb3IgdGhlIGRkciB0eXBlCj4g
+Cj4gQ2hhbmdlcyBpbiB2NDoKPiAtIE5vbmUKPiAKPiBDaGFuZ2VzIGluIHYzOgo+IC0gTm9uZQo+
+IAo+IENoYW5nZXMgaW4gdjI6Cj4gLSByZW1vdmUgY2xrX2RkcmNfZHBsbF9zcmMgZnJvbSBjcml0
+aWNhbCBjbG9jayBsaXN0Cj4gCj4gQ2hhbmdlcyBpbiB2MToKPiAtIHJlbW92ZSBkZHJjIHNvdXJj
+ZSBDTEtfSUdOT1JFX1VOVVNFRCBmbGFnCj4gLSBtb3ZlIGNsa19kZHJjIGFuZCBjbGtfZGRyY19k
+cGxsX3NyYyB0byBjcml0aWNhbAo+IAo+ICBkcml2ZXJzL2Nsay9yb2NrY2hpcC9jbGstcmszMzk5
+LmMgfCAxOSArKysrKysrKysrKysrKysrKysrCj4gIDEgZmlsZSBjaGFuZ2VkLCAxOSBpbnNlcnRp
+b25zKCspCj4gCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvY2xrL3JvY2tjaGlwL2Nsay1yazMzOTku
+Ywo+IGIvZHJpdmVycy9jbGsvcm9ja2NoaXAvY2xrLXJrMzM5OS5jIGluZGV4IGU0NDVjZDYuLjAx
+ZDQ5NDUgMTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9jbGsvcm9ja2NoaXAvY2xrLXJrMzM5OS5jCj4g
+KysrIGIvZHJpdmVycy9jbGsvcm9ja2NoaXAvY2xrLXJrMzM5OS5jCj4gQEAgLTEyMCw2ICsxMjAs
+MTAgQEAgUE5BTUUobXV4X2FybWNsa2JfcCkJCQkJPSB7IAoiY2xrX2NvcmVfYl9scGxsX3NyYyIs
+Cj4gIAkJCQkJCSAgICAiY2xrX2NvcmVfYl9icGxsX3NyYyIsCj4gIAkJCQkJCSAgICAiY2xrX2Nv
+cmVfYl9kcGxsX3NyYyIsCj4gIAkJCQkJCSAgICAiY2xrX2NvcmVfYl9ncGxsX3NyYyIgfTsKPiAr
+UE5BTUUobXV4X2RkcmNsa19wKQkJCQk9IHsgImNsa19kZHJjX2xwbGxfc3JjIiwKPiArCQkJCQkJ
+ICAgICJjbGtfZGRyY19icGxsX3NyYyIsCj4gKwkJCQkJCSAgICAiY2xrX2RkcmNfZHBsbF9zcmMi
+LAo+ICsJCQkJCQkgICAgImNsa19kZHJjX2dwbGxfc3JjIiB9Owo+ICBQTkFNRShtdXhfYWNsa19j
+Y2lfcCkJCQkJPSB7ICJjcGxsX2FjbGtfY2NpX3NyYyIsCj4gIAkJCQkJCSAgICAiZ3BsbF9hY2xr
+X2NjaV9zcmMiLAo+ICAJCQkJCQkgICAgIm5wbGxfYWNsa19jY2lfc3JjIiwKPiBAQCAtMTM3OSw2
+ICsxMzgzLDE4IEBAIHN0YXRpYyBzdHJ1Y3Qgcm9ja2NoaXBfY2xrX2JyYW5jaAo+IHJrMzM5OV9j
+bGtfYnJhbmNoZXNbXSBfX2luaXRkYXRhID0geyBDT01QT1NJVEVfTk9NVVgoMCwgImNsa190ZXN0
+IiwKPiAiY2xrX3Rlc3RfcHJlIiwgQ0xLX0lHTk9SRV9VTlVTRUQsIFJLMzM2OF9DTEtTRUxfQ09O
+KDU4KSwgMCwgNSwgREZMQUdTLAo+ICAJCQlSSzMzNjhfQ0xLR0FURV9DT04oMTMpLCAxMSwgR0ZM
+QUdTKSwKPiArCj4gKwkvKiBkZHJjICovCj4gKwlHQVRFKDAsICJjbGtfZGRyY19scGxsX3NyYyIs
+ICJscGxsIiwgMCwgUkszMzk5X0NMS0dBVEVfQ09OKDMpLAo+ICsJICAgICAwLCBHRkxBR1MpLAo+
+ICsJR0FURSgwLCAiY2xrX2RkcmNfYnBsbF9zcmMiLCAiYnBsbCIsIDAsIFJLMzM5OV9DTEtHQVRF
+X0NPTigzKSwKPiArCSAgICAgMSwgR0ZMQUdTKSwKPiArCUdBVEUoMCwgImNsa19kZHJjX2RwbGxf
+c3JjIiwgImRwbGwiLCAwLCBSSzMzOTlfQ0xLR0FURV9DT04oMyksCj4gKwkgICAgIDIsIEdGTEFH
+UyksCj4gKwlHQVRFKDAsICJjbGtfZGRyY19ncGxsX3NyYyIsICJncGxsIiwgMCwgUkszMzk5X0NM
+S0dBVEVfQ09OKDMpLAo+ICsJICAgICAzLCBHRkxBR1MpLAo+ICsJQ09NUE9TSVRFX0REUkNMSyhT
+Q0xLX0REUkMsICJjbGtfZGRyYyIsIG11eF9kZHJjbGtfcCwgMCwKCkkgdGhpbmsgSSdkIGxpa2Ug
+dG8gaGF2ZSB0aGUgY2xvY2sgYWxzbyBuYW1lZCBzY2xrX2RkcmMgOi0pCgpPdGhlcndpc2UgdGhh
+dCBsb29rcyBmaW5lCgoKSGVpa28KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRl
+c2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8v
+ZHJpLWRldmVsCg==
