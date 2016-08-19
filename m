@@ -1,74 +1,124 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v1 3/3] PM / AVS: rockchip-cpu-avs: add driver handling
- Rockchip cpu avs
-Date: Fri, 19 Aug 2016 08:36:36 -0500
-Message-ID: <20160819133636.GA26913@rob-hp-laptop>
-References: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com>
- <1471315139-28285-4-git-send-email-finley.xiao@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1471315139-28285-4-git-send-email-finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Finlye Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v3] PM / sleep: enable suspend-to-idle even without registered suspend_ops
+Date: Fri, 19 Aug 2016 14:41:00 +0100
+Message-ID: <1471614060-15120-1-git-send-email-sudeep.holla@arm.com>
+References: <1471538554-28315-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:36315 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752088AbcHSNlI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Aug 2016 09:41:08 -0400
+In-Reply-To: <1471538554-28315-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Andy Gross <andy.gross@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On Tue, Aug 16, 2016 at 10:38:59AM +0800, Finlye Xiao wrote:
-> From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-> 
-> This patch supports adjusting opp's voltage according to leakage
-> 
-> Signed-off-by: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-> ---
->  .../devicetree/bindings/power/rockchip-cpu-avs.txt |  37 +++
->  drivers/power/avs/Kconfig                          |   8 +
->  drivers/power/avs/Makefile                         |   1 +
->  drivers/power/avs/rockchip-cpu-avs.c               | 314 +++++++++++++++++++++
->  4 files changed, 360 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
->  create mode 100644 drivers/power/avs/rockchip-cpu-avs.c
-> 
-> diff --git a/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt b/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
-> new file mode 100644
-> index 0000000..90f6b08
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
-> @@ -0,0 +1,37 @@
-> +Rockchip cpu avs device tree bindings
-> +-------------------------------------
-> +
-> +Under the same frequency, the operating voltage tends to decrease with
-> +increasing leakage. so it is necessary to adjust opp's voltage according
-> +to leakage for power.
-> +
-> +
-> +Required properties:
-> +- compatible: Should be one of the following.
-> +  - "rockchip,rk3399-cpu-avs" - for RK3399 SoCs.
-> +- leakage-volt-<name>: Named leakage-volt property. At runtime, the
-> +  platform can find a cpu's cluster_id according to it's cpu_id and match
-> +  leakage-volt-<name> property. The property is an array of 3-tuples
-> +  items, and each item consists of leakage and voltage like
-> +  <min-leakage-mA max-leakage-mA vol-uV>.
-> +	min-leakage: minimum leakage in mA.
-> +	max-leakage: maximum leakage in mA.
-> +	vol: voltage in microvolt.
+Suspend-to-idle (aka the "freeze" sleep state) is a system sleep state
+in which all of the processors enter deepest possible idle state and
+wait for interrupts right after suspending all the devices.
 
-How do you determine these values? When do they vary?
+There is no hard requirement for a platform to support and register
+platform specific suspend_ops to enter suspend-to-idle/freeze state.
+Only deeper system sleep states like PM_SUSPEND_STANDBY and
+PM_SUSPEND_MEM rely on such low level support/implementation.
 
-> +
-> +Example:
-> +
-> +	cpu_avs: cpu-avs {
-> +		compatible = "rockchip,rk3399-cpu-avs";
+suspend-to-idle can be entered as along as all the devices can be
+suspended. This patch enables the support for suspend-to-idle even on
+systems that don't have any low level support for deeper system sleep
+states and/or don't register any platform specific suspend_ops.
 
-This isn't really a hardware block. For the same reasons we don't have 
-cpufreq nodes. So I don't think this belongs in DT.
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ include/linux/suspend.h |  2 ++
+ kernel/power/main.c     |  1 +
+ kernel/power/suspend.c  | 14 +++++++++++---
+ 3 files changed, 14 insertions(+), 3 deletions(-)
 
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+v2->v3:
+	- Renamed pm_freeze_init to pm_states_init
+	- Moved pm_states_init earlier in pm_init
+
+v1->v2:
+	- Introduced pm_freeze_init instead of (mis/re)using suspend_set_ops
+	  to setup freeze state in absense of registered platform suspend_ops
+
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 7693e39b14fe..d9718378a8be 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -245,6 +245,7 @@ static inline bool idle_should_freeze(void)
+ 	return unlikely(suspend_freeze_state == FREEZE_STATE_ENTER);
+ }
+
++extern void __init pm_states_init(void);
+ extern void freeze_set_ops(const struct platform_freeze_ops *ops);
+ extern void freeze_wake(void);
+
+@@ -279,6 +280,7 @@ static inline bool pm_resume_via_firmware(void) { return false; }
+ static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
+ static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
+ static inline bool idle_should_freeze(void) { return false; }
++static inline void __init pm_states_init(void) {}
+ static inline void freeze_set_ops(const struct platform_freeze_ops *ops) {}
+ static inline void freeze_wake(void) {}
+ #endif /* !CONFIG_SUSPEND */
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 5ea50b1b7595..281a697fd458 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -644,6 +644,7 @@ static int __init pm_init(void)
+ 		return error;
+ 	hibernate_image_size_init();
+ 	hibernate_reserved_size_init();
++	pm_states_init();
+ 	power_kobj = kobject_create_and_add("power", NULL);
+ 	if (!power_kobj)
+ 		return -ENOMEM;
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 0acab9d7f96f..1e7f5da648d9 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -118,10 +118,18 @@ static bool valid_state(suspend_state_t state)
+  */
+ static bool relative_states;
+
++void __init pm_states_init(void)
++{
++	/*
++	 * freeze state should be supported even without any suspend_ops,
++	 * initialize pm_states accordingly here
++	 */
++	pm_states[PM_SUSPEND_FREEZE] = pm_labels[relative_states ? 0 : 2];
++}
++
+ static int __init sleep_states_setup(char *str)
+ {
+ 	relative_states = !strncmp(str, "1", 1);
+-	pm_states[PM_SUSPEND_FREEZE] = pm_labels[relative_states ? 0 : 2];
+ 	return 1;
+ }
+
+@@ -211,7 +219,7 @@ static int platform_suspend_begin(suspend_state_t state)
+ {
+ 	if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->begin)
+ 		return freeze_ops->begin();
+-	else if (suspend_ops->begin)
++	else if (suspend_ops && suspend_ops->begin)
+ 		return suspend_ops->begin(state);
+ 	else
+ 		return 0;
+@@ -221,7 +229,7 @@ static void platform_resume_end(suspend_state_t state)
+ {
+ 	if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->end)
+ 		freeze_ops->end();
+-	else if (suspend_ops->end)
++	else if (suspend_ops && suspend_ops->end)
+ 		suspend_ops->end();
+ }
+
+-
+
+2.7.4
+
