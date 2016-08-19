@@ -1,50 +1,130 @@
-From: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH v2 1/4] nvmem: rockchip-efuse: Change initcall to subsys
-Date: Fri, 19 Aug 2016 11:19:13 -0500
-Message-ID: <m2a8g8n33y.fsf@baylibre.com>
-References: <1471510341-63926-1-git-send-email-finley.xiao@rock-chips.com>
-        <1471510341-63926-2-git-send-email-finley.xiao@rock-chips.com>
-        <m2mvkaq6c5.fsf@baylibre.com> <2844104.lMUOkH8YJy@phil>
+From: Russell King <rmk+kernel@armlinux.org.uk>
+Subject: [PATCH] ARM: sa1100: move StrongARM CPU ID checks to cputype.h
+Date: Fri, 19 Aug 2016 17:28:56 +0100
+Message-ID: <E1bamfA-0002W7-Sb@rmk-PC.armlinux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <2844104.lMUOkH8YJy@phil> (Heiko Stuebner's message of "Fri, 19
-        Aug 2016 00:29:55 +0200")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: Finlye Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.armlinux.org.uk ([78.32.30.218]:34961 "EHLO
+        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752067AbcHSQ3W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Aug 2016 12:29:22 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org> writes:
+Move the StrongARM CPU ID checks out of the platform's hardware.h
+file into asm/cputype.h
 
-> Am Donnerstag, 18. August 2016, 13:28:58 CEST schrieb Kevin Hilman:
->> Finlye Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org> writes:
->> > From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
->> > 
->> > We will register a cpufreq notifier for adjusting opp's voltage, and it
->> > need to fetch cpu's leakage from efuse in the notifier_call. so the efuse
->> > driver should probe before cpufreq driver.
->> > 
->> > Signed-off-by: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
->> 
->> Why can't this be handled with deferred probling?  initcall ordering is
->> a can of worms.
->
-> I think the issue is less between efuse and avs driver, but more between avs 
-> driver and cpufreq. The avs driver aims to modify the opp table and thus wants 
-> to do that / register the notifier before cpufreq starts.
->
-> And as there is no direct connection between cpufreq and the avs driver, 
-> making cpufreq defer probing is probably not really easy.
+Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+---
+ arch/arm/include/asm/cputype.h               | 21 +++++++++++++++++++++
+ arch/arm/mach-sa1100/include/mach/hardware.h | 18 ------------------
+ drivers/cpufreq/sa1110-cpufreq.c             |  2 +-
+ 3 files changed, 22 insertions(+), 19 deletions(-)
 
-Thanks for the explanation.
+diff --git a/arch/arm/include/asm/cputype.h b/arch/arm/include/asm/cputype.h
+index 1ee94c716a7f..d6a4902a75d7 100644
+--- a/arch/arm/include/asm/cputype.h
++++ b/arch/arm/include/asm/cputype.h
+@@ -60,6 +60,7 @@
+ 	((mpidr >> (MPIDR_LEVEL_BITS * level)) & MPIDR_LEVEL_MASK)
+ 
+ #define ARM_CPU_IMP_ARM			0x41
++#define ARM_CPU_IMP_DEC			0x44
+ #define ARM_CPU_IMP_INTEL		0x69
+ 
+ /* ARM implemented processors */
+@@ -76,6 +77,17 @@
+ #define ARM_CPU_PART_CORTEX_A15		0x4100c0f0
+ #define ARM_CPU_PART_MASK		0xff00fff0
+ 
++/* DEC implemented cores */
++#define ARM_CPU_PART_SA1100		0x4400a110
++
++/* Intel implemented cores */
++#define ARM_CPU_PART_SA1110		0x6900b110
++#define ARM_CPU_REV_SA1110_A0		0
++#define ARM_CPU_REV_SA1110_B0		4
++#define ARM_CPU_REV_SA1110_B1		5
++#define ARM_CPU_REV_SA1110_B2		6
++#define ARM_CPU_REV_SA1110_B4		8
++
+ #define ARM_CPU_XSCALE_ARCH_MASK	0xe000
+ #define ARM_CPU_XSCALE_ARCH_V1		0x2000
+ #define ARM_CPU_XSCALE_ARCH_V2		0x4000
+@@ -173,6 +185,11 @@ static inline unsigned int __attribute_const__ read_cpuid_implementor(void)
+ 	return (read_cpuid_id() & 0xFF000000) >> 24;
+ }
+ 
++static inline unsigned int __attribute_const__ read_cpuid_revision(void)
++{
++	return read_cpuid_id() & 0x0000000f;
++}
++
+ /*
+  * The CPU part number is meaningless without referring to the CPU
+  * implementer: implementers are free to define their own part numbers
+@@ -208,6 +225,10 @@ static inline unsigned int __attribute_const__ read_cpuid_mpidr(void)
+ 	return read_cpuid(CPUID_MPIDR);
+ }
+ 
++/* StrongARM-11x0 CPUs */
++#define cpu_is_sa1100() (read_cpuid_part() == ARM_CPU_PART_SA1100)
++#define cpu_is_sa1110() (read_cpuid_part() == ARM_CPU_PART_SA1110)
++
+ /*
+  * Intel's XScale3 core supports some v6 features (supersections, L2)
+  * but advertises itself as v5 as it does not support the v6 ISA.  For
+diff --git a/arch/arm/mach-sa1100/include/mach/hardware.h b/arch/arm/mach-sa1100/include/mach/hardware.h
+index cbedd75a9d65..55c85ce7010d 100644
+--- a/arch/arm/mach-sa1100/include/mach/hardware.h
++++ b/arch/arm/mach-sa1100/include/mach/hardware.h
+@@ -36,28 +36,10 @@
+ #define io_v2p( x )             \
+    ( (((x)&0x00ffffff) | (((x)&(0x30000000>>VIO_SHIFT))<<VIO_SHIFT)) + PIO_START )
+ 
+-#define CPU_SA1110_A0	(0)
+-#define CPU_SA1110_B0	(4)
+-#define CPU_SA1110_B1	(5)
+-#define CPU_SA1110_B2	(6)
+-#define CPU_SA1110_B4	(8)
+-
+-#define CPU_SA1100_ID	(0x4401a110)
+-#define CPU_SA1100_MASK	(0xfffffff0)
+-#define CPU_SA1110_ID	(0x6901b110)
+-#define CPU_SA1110_MASK	(0xfffffff0)
+-
+ #define __MREG(x)	IOMEM(io_p2v(x))
+ 
+ #ifndef __ASSEMBLY__
+ 
+-#include <asm/cputype.h>
+-
+-#define CPU_REVISION	(read_cpuid_id() & 15)
+-
+-#define cpu_is_sa1100()	((read_cpuid_id() & CPU_SA1100_MASK) == CPU_SA1100_ID)
+-#define cpu_is_sa1110()	((read_cpuid_id() & CPU_SA1110_MASK) == CPU_SA1110_ID)
+-
+ # define __REG(x)	(*((volatile unsigned long __iomem *)io_p2v(x)))
+ # define __PREG(x)	(io_v2p((unsigned long)&(x)))
+ 
+diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
+index b5befc211172..2bac9b6cfeea 100644
+--- a/drivers/cpufreq/sa1110-cpufreq.c
++++ b/drivers/cpufreq/sa1110-cpufreq.c
+@@ -159,7 +159,7 @@ sdram_calculate_timing(struct sdram_info *sd, u_int cpu_khz,
+ 	 * half speed or use delayed read latching (errata 13).
+ 	 */
+ 	if ((ns_to_cycles(sdram->tck, sd_khz) > 1) ||
+-	    (CPU_REVISION < CPU_SA1110_B2 && sd_khz < 62000))
++	    (read_cpuid_revision() < ARM_CPU_REV_SA1110_B2 && sd_khz < 62000))
+ 		sd_khz /= 2;
+ 
+ 	sd->mdcnfg = MDCNFG & 0x007f007f;
+-- 
+2.1.0
 
-Sounds like something that belongs in the changelog.
-
-Kevin
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
