@@ -1,75 +1,105 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: qcom: tsens-8916: mark PM functions
- __maybe_unused
-Date: Fri, 19 Aug 2016 20:44:28 +0800
-Message-ID: <1471610668.2691.64.camel@intel.com>
-References: <20160704131318.990672-1-arnd@arndb.de>
+From: Andreas Herrmann <aherrmann@suse.com>
+Subject: Re: [PATCH 0/1] cpufreq: pcc-cpufreq: Re-introduce deadband effect
+ to reduce number of frequency changes
+Date: Fri, 19 Aug 2016 14:40:28 +0200
+Message-ID: <20160819124028.GC17296@suselix.suse.de>
+References: <20160819121814.GA17296@suselix.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160704131318.990672-1-arnd@arndb.de>
+Content-Disposition: inline
+In-Reply-To: <20160819121814.GA17296@suselix.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 一, 2016-07-04 at 15:12 +0200, Arnd Bergmann wrote:
-> The newly added tsens-8916 driver produces warnings when CONFIG_PM
-> is disabled:
+On Fri, Aug 19, 2016 at 02:18:14PM +0200, Andreas Herrmann wrote:
+> Hello,
 > 
-> drivers/thermal/qcom/tsens.c:53:12: error: 'tsens_resume' defined but
-> not used [-Werror=unused-function]
->  static int tsens_resume(struct device *dev)
->             ^~~~~~~~~~~~
-> drivers/thermal/qcom/tsens.c:43:12: error: 'tsens_suspend' defined
-> but not used [-Werror=unused-function]
->  static int tsens_suspend(struct device *dev)
->             ^~~~~~~~~~~~~
+> I've observed performance degradation with different workloads on HP
+> ProLiant systems that use pcc-cpufreq driver between older and more
+> recent kernels. Bisection showed that commit 6393d6a102 (cpufreq:
+> ondemand: Eliminate the deadband effect) caused a significant
+> performance drop. This patch was introduced in v3.17.
 > 
-> This marks both functions __maybe_unused to let the compiler
-> know that they might be used in other configurations, without
-> adding ugly #ifdef logic.
+> I am not too familiar with the PCC stuff but I think that elimination
+> of the deadband effect causes a significant increase of requested
+> frequency changes which in turn will have to be served by pcc-cpufreq
+> and slow down corresponding systems significantly.
 > 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-Patch queued for 4.9, with a minor fix for the following checkpatch
-error,
-
-ERROR: "foo __maybe_unused  bar" should be "foo __maybe_unused bar"
-#54: FILE: drivers/thermal/qcom/tsens.c:53:
-+static int __maybe_unused  tsens_resume(struct device *dev)
-
-total: 1 errors, 0 warnings, 16 lines checked
-
-thanks,
-rui
-
-> ---
->  drivers/thermal/qcom/tsens.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> AFAIK there is no frequency table for this driver, instead the driver
+> just asks firmware to set any requested frequency for a CPU (if its in
+> the min-max-range of allowed frequencies). Thus I think the
+> probability that a requested target frequency is matching the current
+> frequency of a CPU is lower in comparison to drivers that use a
+> fixed set of frequencies.
 > 
-> diff --git a/drivers/thermal/qcom/tsens.c
-> b/drivers/thermal/qcom/tsens.c
-> index 446f70b5dbb2..e4fca3350d26 100644
-> --- a/drivers/thermal/qcom/tsens.c
-> +++ b/drivers/thermal/qcom/tsens.c
-> @@ -40,7 +40,7 @@ static int tsens_get_trend(void *p, int trip, enum
-> thermal_trend *trend)
->  	return -ENOTSUPP;
->  }
->  
-> -static int tsens_suspend(struct device *dev)
-> +static int  __maybe_unused tsens_suspend(struct device *dev)
->  {
->  	struct tsens_device *tmdev = dev_get_drvdata(dev);
->  
-> @@ -50,7 +50,7 @@ static int tsens_suspend(struct device *dev)
->  	return 0;
->  }
->  
-> -static int tsens_resume(struct device *dev)
-> +static int __maybe_unused  tsens_resume(struct device *dev)
->  {
->  	struct tsens_device *tmdev = dev_get_drvdata(dev);
->  
+> This is with two exceptions:
+> 
+> (1) when a CPU is under full load -- maximum frequency already set and
+>     maximum frequency is requested.
+> 
+> (2) CPU has just "minor load" -- minimum frequency already set and
+>     minimum frequency is requested.
+> 
+> I think what commit 6393d6a102 caused is, that case (2) occurs only if
+> the CPU is fully idle. Whereas before commit 6393d6a102 this case
+> occurred in all situations when
+> 
+> 	load < freq_min/freq_max * 100
+> 
+> I suggest to introduce the old behaviour (re-introduce the deadband effect)
+> for pcc-cpufreq with the patch that follows.
+> 
+> Here are typical numbers from kernel compilation tests with varying
+> number of compile jobs:
+> 
+>                      v4.8.0-rc2               4.8.0-rc2-pcc-cpufreq-deadband
+>  # of jobst   user     sys   elapsed   CPU     user     sys   elapsed   CPU
+>        2     440.39  116.49  4:33.35   203%   404.85  109.10  4:10.35   205%
+>        4     436.87  133.39  2:22.88   399%   381.83  128.00  2:06.84   401%
+>        8     475.49  157.68  1:22.24   769%   344.36  149.08  1:04.29   767%
+>       16     620.69  188.33  0:54.74  1477%   374.60  157.40  0:36.76  1447%
+>       32     815.79  209.58  0:37.22  2754%   490.46  160.22  0:24.87  2616%
+>       64     394.13   60.55  0:13.54  3355%   386.54   60.33  0:12.79  3493%
+>      120     398.24   61.55  0:14.60  3148%   390.44   61.19  0:13.07  3453%
+> 
+> As expected under full load (64, 120 jobs) performance is "almost"
+> comparable. But with partial load (esp. 32 jobs) length of kernel
+> build is just 2/3 with patched kernel in comparison to current
+> mainline. Similar behaviour is observable since introduction of commit
+> 6393d6a102 (ie. since v3.17).
+> 
+> Numbers are from an HP ProLiant DL580 Gen8 system:
+>  	- Intel(R) Xeon(R) CPU E7-4890 v2 @ 2.80GHz
+>         - 60 CPUs, 128GB RAM
+> 
+> PCC info of this system
+> 
+>   PCCH header (virtual) addr: 0xffffc9000d840000
+>   PCCH header is at physical address: 0x7ac59000, signature: 0x24504343,
+>     length: 64 bytes, major: 1, minor: 0, supported features: 0x1,
+>     command field: 0x1, status field: 0x0, nominal latency: 300 us
+>     min time between commands: 50000 us, max time between commands: 1000000 us,
+>     nominal CPU frequency: 2800 MHz, minimum CPU frequency: 150 MHz,
+>     minimum CPU frequency without throttling: 1200 MHz
+> 
+> Kernel message when driver loads:
+>   pcc-cpufreq: (v1.10.00) driver loaded with frequency limits: 1200 MHz, 2800 MHz
+> 
+> My patch adds a debug message, which on this system looks like
+>   pcc-cpufreq: setting deadband limit to 1885000 kHz
+
+BTW, I've forgotten to point out that my proposed change does not
+fully restore the old behaviour (before v3.17).
+
+The difference is that the combination of commit 6393d6a102 and my
+change still maps frequencies previously requested between
+[min_freq,max_freq] to the range [limit,max_freq].
+
+So on above system pcc-cpufreq will only request freqencies that
+are either 1200 MHz or between [1885 MHz, 2800 MHz].
+
+
+Andreas
