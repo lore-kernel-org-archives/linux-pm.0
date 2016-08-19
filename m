@@ -1,105 +1,70 @@
-From: Andreas Herrmann <aherrmann@suse.com>
-Subject: Re: [PATCH 0/1] cpufreq: pcc-cpufreq: Re-introduce deadband effect
- to reduce number of frequency changes
-Date: Fri, 19 Aug 2016 14:40:28 +0200
-Message-ID: <20160819124028.GC17296@suselix.suse.de>
-References: <20160819121814.GA17296@suselix.suse.de>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: armada: add support for suspend/resume
+Date: Fri, 19 Aug 2016 21:06:34 +0800
+Message-ID: <1471611994.2691.72.camel@intel.com>
+References: <1469097807-17748-1-git-send-email-jaz@semihalf.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160819121814.GA17296@suselix.suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:10779 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754174AbcHSNGj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Aug 2016 09:06:39 -0400
+In-Reply-To: <1469097807-17748-1-git-send-email-jaz@semihalf.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Grzegorz Jaszczyk <jaz@semihalf.com>, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, thomas.petazzoni@free-electrons.com, gregory.clement@free-electrons.com, ezequiel.garcia@free-electrons.com
+Cc: mw@semihalf.com, alior@marvell.com
 
-On Fri, Aug 19, 2016 at 02:18:14PM +0200, Andreas Herrmann wrote:
-> Hello,
+On 四, 2016-07-21 at 12:43 +0200, Grzegorz Jaszczyk wrote:
+> There is no need to implement subroutine for suspend since there is
+> no
+> data to store before suspending.
 > 
-> I've observed performance degradation with different workloads on HP
-> ProLiant systems that use pcc-cpufreq driver between older and more
-> recent kernels. Bisection showed that commit 6393d6a102 (cpufreq:
-> ondemand: Eliminate the deadband effect) caused a significant
-> performance drop. This patch was introduced in v3.17.
-> 
-> I am not too familiar with the PCC stuff but I think that elimination
-> of the deadband effect causes a significant increase of requested
-> frequency changes which in turn will have to be served by pcc-cpufreq
-> and slow down corresponding systems significantly.
-> 
-> AFAIK there is no frequency table for this driver, instead the driver
-> just asks firmware to set any requested frequency for a CPU (if its in
-> the min-max-range of allowed frequencies). Thus I think the
-> probability that a requested target frequency is matching the current
-> frequency of a CPU is lower in comparison to drivers that use a
-> fixed set of frequencies.
-> 
-> This is with two exceptions:
-> 
-> (1) when a CPU is under full load -- maximum frequency already set and
->     maximum frequency is requested.
-> 
-> (2) CPU has just "minor load" -- minimum frequency already set and
->     minimum frequency is requested.
-> 
-> I think what commit 6393d6a102 caused is, that case (2) occurs only if
-> the CPU is fully idle. Whereas before commit 6393d6a102 this case
-> occurred in all situations when
-> 
-> 	load < freq_min/freq_max * 100
-> 
-> I suggest to introduce the old behaviour (re-introduce the deadband effect)
-> for pcc-cpufreq with the patch that follows.
-> 
-> Here are typical numbers from kernel compilation tests with varying
-> number of compile jobs:
-> 
->                      v4.8.0-rc2               4.8.0-rc2-pcc-cpufreq-deadband
->  # of jobst   user     sys   elapsed   CPU     user     sys   elapsed   CPU
->        2     440.39  116.49  4:33.35   203%   404.85  109.10  4:10.35   205%
->        4     436.87  133.39  2:22.88   399%   381.83  128.00  2:06.84   401%
->        8     475.49  157.68  1:22.24   769%   344.36  149.08  1:04.29   767%
->       16     620.69  188.33  0:54.74  1477%   374.60  157.40  0:36.76  1447%
->       32     815.79  209.58  0:37.22  2754%   490.46  160.22  0:24.87  2616%
->       64     394.13   60.55  0:13.54  3355%   386.54   60.33  0:12.79  3493%
->      120     398.24   61.55  0:14.60  3148%   390.44   61.19  0:13.07  3453%
-> 
-> As expected under full load (64, 120 jobs) performance is "almost"
-> comparable. But with partial load (esp. 32 jobs) length of kernel
-> build is just 2/3 with patched kernel in comparison to current
-> mainline. Similar behaviour is observable since introduction of commit
-> 6393d6a102 (ie. since v3.17).
-> 
-> Numbers are from an HP ProLiant DL580 Gen8 system:
->  	- Intel(R) Xeon(R) CPU E7-4890 v2 @ 2.80GHz
->         - 60 CPUs, 128GB RAM
-> 
-> PCC info of this system
-> 
->   PCCH header (virtual) addr: 0xffffc9000d840000
->   PCCH header is at physical address: 0x7ac59000, signature: 0x24504343,
->     length: 64 bytes, major: 1, minor: 0, supported features: 0x1,
->     command field: 0x1, status field: 0x0, nominal latency: 300 us
->     min time between commands: 50000 us, max time between commands: 1000000 us,
->     nominal CPU frequency: 2800 MHz, minimum CPU frequency: 150 MHz,
->     minimum CPU frequency without throttling: 1200 MHz
-> 
-> Kernel message when driver loads:
->   pcc-cpufreq: (v1.10.00) driver loaded with frequency limits: 1200 MHz, 2800 MHz
-> 
-> My patch adds a debug message, which on this system looks like
->   pcc-cpufreq: setting deadband limit to 1885000 kHz
+> Signed-off-by: Grzegorz Jaszczyk <jaz@semihalf.com>
 
-BTW, I've forgotten to point out that my proposed change does not
-fully restore the old behaviour (before v3.17).
+Ezequiel,
 
-The difference is that the combination of commit 6393d6a102 and my
-change still maps frequencies previously requested between
-[min_freq,max_freq] to the range [limit,max_freq].
+what do you think of this patch?
 
-So on above system pcc-cpufreq will only request freqencies that
-are either 1200 MHz or between [1885 MHz, 2800 MHz].
-
-
-Andreas
+thanks,
+rui
+> ---
+>  drivers/thermal/armada_thermal.c | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+> 
+> diff --git a/drivers/thermal/armada_thermal.c
+> b/drivers/thermal/armada_thermal.c
+> index ae75328..65f9838 100644
+> --- a/drivers/thermal/armada_thermal.c
+> +++ b/drivers/thermal/armada_thermal.c
+> @@ -304,12 +304,26 @@ static int armada_thermal_exit(struct
+> platform_device *pdev)
+>  	return 0;
+>  }
+>  
+> +static int armada_thermal_resume(struct device *dev)
+> +{
+> +	struct thermal_zone_device *thermal =
+> +		dev_get_drvdata(dev);
+> +	struct armada_thermal_priv *priv = thermal->devdata;
+> +
+> +	priv->data->init_sensor(to_platform_device(dev), priv);
+> +
+> +	return 0;
+> +}
+> +
+> +static SIMPLE_DEV_PM_OPS(armada_thermal_pm_ops, NULL,
+> armada_thermal_resume);
+> +
+>  static struct platform_driver armada_thermal_driver = {
+>  	.probe = armada_thermal_probe,
+>  	.remove = armada_thermal_exit,
+>  	.driver = {
+>  		.name = "armada_thermal",
+>  		.of_match_table = armada_thermal_id_table,
+> +		.pm = &armada_thermal_pm_ops,
+>  	},
+>  };
+>  
