@@ -1,79 +1,42 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 0/2][RFC] PM / sleep: Expose DPM watchdog timeout to sysfs
-Date: Thu, 18 Aug 2016 20:42:38 +0200
-Message-ID: <20160818184238.GA25515@amd>
-References: <cover.1470908324.git.yu.c.chen@intel.com>
- <20160811185441.GA15813@amd>
- <20160812025225.GA12238@sharon>
- <20160812063312.GD30992@amd>
- <CAJZ5v0jgiPsSV3ZRVeM+D7KD7wJudPD+0Fq0BoJGT1mZ3yryxg@mail.gmail.com>
- <20160817034347.GA15682@sharon>
- <20160818120641.GA12732@amd>
- <36DF59CE26D8EE47B0655C516E9CE6402878801E@shsmsx102.ccr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46945 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932190AbcHSBts (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Aug 2016 21:49:48 -0400
-Content-Disposition: inline
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE6402878801E@shsmsx102.ccr.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: [PATCH] sched: fix incorrect PELT values on SMT
+Date: Thu, 18 Aug 2016 18:55:41 -0700
+Message-ID: <1471571741-19504-1-git-send-email-smuckle@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM List <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <lenb@kernel.org>, Takashi Iwai <tiwai@suse.de>, Benoit Goby <benoit@android.com>
 
-Hi!
+PELT scales its util_sum and util_avg values via
+arch_scale_cpu_capacity(). If that function is passed the CPU's sched
+domain then it will reduce the scaling capacity if SD_SHARE_CPUCAPACITY
+is set. PELT does not pass in the sd however. The other caller of
+arch_scale_cpu_capacity, update_cpu_capacity(), does. This means
+util_sum and util_avg scale beyond the CPU capacity on SMT.
 
-> > > OK, I've modified the patch to the following version, Rafael, Pavel
-> > > could you take a glance at it, thanks:
-> > 
-> > Certainly looks better.
-> > 
-> > > Index: linux/kernel/power/Kconfig
-> > >
-> > ================================================================
-> > ===
-> > > --- linux.orig/kernel/power/Kconfig
-> > > +++ linux/kernel/power/Kconfig
-> > > @@ -197,7 +197,7 @@ config DPM_WATCHDOG  config
-> > DPM_WATCHDOG_TIMEOUT
-> > >  	int "Watchdog timeout in seconds"
-> > >  	range 1 120
-> > > -	default 60
-> > > +	default 120
-> > >  	depends on DPM_WATCHDOG
-> > >
-> > 
-> > I like this part.
-> > 
-> > > +++ linux/Documentation/kernel-parameters.txt
-> > > @@ -2749,6 +2749,8 @@ bytes respectively. Such letter suffixes
-> > >  	nowatchdog	[KNL] Disable both lockup detectors, i.e.
-> > >                          soft-lockup and NMI watchdog (hard-lockup).
-> > >
-> > > +	no_dpm_watchdog	[KNL] Disable the device suspend/resume
-> > watchdog.
-> > > +
-> > >  	nowb		[ARM]
-> > >
-> > >  	nox2apic	[X86-64,APIC] Do not enable x2APIC mode.
-> > 
-> > Do we really need the new cmdline option? Can we just tell people to disable
-> > DPM_WATCHDOG completely?
-> > 
-> > Is there reason to keep the DPM_WATCHDOG? Did it find some real bugs lately?
-> > 
-> We can tell users to disable the DPM_WATCHDOG, maybe some android people would like
-> to use this feature to track/confirm hardware/firmware issues.
-> I'm ok with only adjusting the timeout from 60 to 120. 
+On an Intel i7-3630QM for example rq->cpu_capacity_orig is 589 but
+util_avg scales up to 1024.
 
-I believe that's the best solution for now. (Android people often
-claim commandline is hard for them to use...)
+Fix this by passing in the sd in __update_load_avg() as well.
 
-Thanks,
-									Pavel
+Signed-off-by: Steve Muckle <smuckle@linaro.org>
+---
+ kernel/sched/fair.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 61d485421bed..95d34b337152 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -2731,7 +2731,7 @@ __update_load_avg(u64 now, int cpu, struct sched_avg *sa,
+ 	sa->last_update_time = now;
+ 
+ 	scale_freq = arch_scale_freq_capacity(NULL, cpu);
+-	scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
++	scale_cpu = arch_scale_cpu_capacity(cpu_rq(cpu)->sd, cpu);
+ 
+ 	/* delta_w is the amount already accumulated against our next period */
+ 	delta_w = sa->period_contrib;
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.7.3
