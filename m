@@ -1,62 +1,54 @@
-From: Wanpeng Li <kernellwp@gmail.com>
-Subject: Re: [PATCH] sched: fix incorrect PELT values on SMT
-Date: Fri, 19 Aug 2016 10:30:36 +0800
-Message-ID: <CANRm+CwDNDNEDjtgooFVvdDfzBwC+akopOss9J0nhmT8Vt94Mg@mail.gmail.com>
-References: <1471571741-19504-1-git-send-email-smuckle@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][v2] PM / sleep: Increase default DPM watchdog timeout to 120
+Date: Fri, 19 Aug 2016 12:37:23 +0800
+Message-ID: <1471581443-22184-1-git-send-email-yu.c.chen@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:33967 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932393AbcHSCao (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Aug 2016 22:30:44 -0400
-In-Reply-To: <1471571741-19504-1-git-send-email-smuckle@linaro.org>
+Received: from mga14.intel.com ([192.55.52.115]:55001 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751701AbcHSE3X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Aug 2016 00:29:23 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 
-2016-08-19 9:55 GMT+08:00 Steve Muckle <steve.muckle@linaro.org>:
-> PELT scales its util_sum and util_avg values via
-> arch_scale_cpu_capacity(). If that function is passed the CPU's sched
-> domain then it will reduce the scaling capacity if SD_SHARE_CPUCAPACITY
-> is set. PELT does not pass in the sd however. The other caller of
-> arch_scale_cpu_capacity, update_cpu_capacity(), does. This means
-> util_sum and util_avg scale beyond the CPU capacity on SMT.
->
-> On an Intel i7-3630QM for example rq->cpu_capacity_orig is 589 but
-> util_avg scales up to 1024.
->
-> Fix this by passing in the sd in __update_load_avg() as well.
+Recently we have a new report that, the harddisk can not
+resume on time due to firmware issues, and got a kernel
+panic because of DPM watchdog timeout. So adjust the
+default timeout from 60 to 120 to survive on this platform,
+and make DPM_WATCHDOG depending on EXPERT.
 
-I believe we notice this at least several months ago.
-https://lkml.org/lkml/2016/5/25/228
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=117971
+Suggested-by: Pavel Machek <pavel@ucw.cz>
+Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
+Reported-by: Higuita <higuita@gmx.net>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ kernel/power/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
->
-> Signed-off-by: Steve Muckle <smuckle@linaro.org>
-> ---
->  kernel/sched/fair.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 61d485421bed..95d34b337152 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -2731,7 +2731,7 @@ __update_load_avg(u64 now, int cpu, struct sched_avg *sa,
->         sa->last_update_time = now;
->
->         scale_freq = arch_scale_freq_capacity(NULL, cpu);
-> -       scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
-> +       scale_cpu = arch_scale_cpu_capacity(cpu_rq(cpu)->sd, cpu);
->
->         /* delta_w is the amount already accumulated against our next period */
->         delta_w = sa->period_contrib;
-> --
-> 2.7.3
->
-
-
-
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index 68d3ebc..e8517b6 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -186,7 +186,7 @@ config PM_SLEEP_DEBUG
+ 
+ config DPM_WATCHDOG
+ 	bool "Device suspend/resume watchdog"
+-	depends on PM_DEBUG && PSTORE
++	depends on PM_DEBUG && PSTORE && EXPERT
+ 	---help---
+ 	  Sets up a watchdog timer to capture drivers that are
+ 	  locked up attempting to suspend/resume a device.
+@@ -197,7 +197,7 @@ config DPM_WATCHDOG
+ config DPM_WATCHDOG_TIMEOUT
+ 	int "Watchdog timeout in seconds"
+ 	range 1 120
+-	default 60
++	default 120
+ 	depends on DPM_WATCHDOG
+ 
+ config PM_TRACE
 -- 
-Regards,
-Wanpeng Li
+2.7.4
+
