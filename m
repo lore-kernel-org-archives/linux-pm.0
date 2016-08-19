@@ -1,33 +1,103 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][v2] PM / sleep: Increase default DPM watchdog timeout to
- 120
-Date: Fri, 19 Aug 2016 09:19:55 +0200
-Message-ID: <20160819071955.GA2450@amd>
-References: <1471581443-22184-1-git-send-email-yu.c.chen@intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH V3 2/5] thermal: bcm2835: add thermal driver for bcm2835
+ soc
+Date: Fri, 19 Aug 2016 15:28:14 +0800
+Message-ID: <1471591694.2691.39.camel@intel.com>
+References: <1463495753-967-1-git-send-email-kernel@martin.sperl.org>
+         <1463495753-967-3-git-send-email-kernel@martin.sperl.org>
+         <87mvn6qa2x.fsf@eliezer.anholt.net> <87r39lvs4v.fsf@eliezer.anholt.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1471581443-22184-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:45091 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755490AbcHSH2l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Aug 2016 03:28:41 -0400
+In-Reply-To: <87r39lvs4v.fsf@eliezer.anholt.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eric Anholt <eric@anholt.net>, kernel@martin.sperl.org, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Russell King <linux@arm.linux.org.uk>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-On Fri 2016-08-19 12:37:23, Chen Yu wrote:
-> Recently we have a new report that, the harddisk can not
-> resume on time due to firmware issues, and got a kernel
-> panic because of DPM watchdog timeout. So adjust the
-> default timeout from 60 to 120 to survive on this platform,
-> and make DPM_WATCHDOG depending on EXPERT.
+On 四, 2016-08-18 at 11:39 -0700, Eric Anholt wrote:
+> Eric Anholt <eric@anholt.net> writes:
 > 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=117971
+> > 
+> > kernel@martin.sperl.org writes:
+> > 
+> > > 
+> > > From: Martin Sperl <kernel@martin.sperl.org>
+> > > 
+> > > Add basic thermal driver for bcm2835 SOC.
+> > > 
+> > > This driver currently relies on the firmware setting up the
+> > > tsense HW block and does not set it up itself.
+> > > 
+> > > Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+> > > 
+> > > ChangeLog:
+> > >  V1 -> V2: added specific settings depending on compatiblity
+> > > 	   added trip point based on register
+> > > 	   setting up ctrl-register if HW is not enabled by firmware
+> > > 	     as per recommendation of Eric (untested)
+> > > 	   check that clock frequency is in range
+> > > 	     (1.9 - 5MHz - as per comment in clk-bcm2835.c)
+> > > ---
+> > > 
+> > > diff --git a/drivers/thermal/bcm/Makefile
+> > > b/drivers/thermal/bcm/Makefile
+> > > new file mode 100644
+> > > index 0000000..13456d2
+> > > --- /dev/null
+> > > +++ b/drivers/thermal/bcm/Makefile
+> > > @@ -0,0 +1 @@
+> > > +obj-$(CONFIG_BCM2835_THERMAL)		:=
+> > > bcm2835_thermal.o
+> > > diff --git a/drivers/thermal/bcm/bcm2835_thermal.c
+> > > b/drivers/thermal/bcm/bcm2835_thermal.c
+> > > new file mode 100644
+> > > index 0000000..73138cb
+> > > --- /dev/null
+> > > +++ b/drivers/thermal/bcm/bcm2835_thermal.c
+> > > 
+> > > +static const struct of_device_id
+> > > bcm2835_thermal_of_match_table[];
+> > > +static int bcm2835_thermal_probe(struct platform_device *pdev)
+> > > +{
+> > > 
+> > > +	/* enable clock and check rate */
+> > > +	clk_prepare_enable(data->clk);
+> > > +	rate = clk_get_rate(data->clk);
+> > > +	if ((rate < 1920000) || (rate > 5000000)) {
+> > > +		dev_warn(&pdev->dev,
+> > > +			 "Clock %pCn is running at %pCr Hz,
+> > > which is outside the recommended range of 1.9 to 5.0 MHz\n",
+> > > +			 data->clk, data->clk);
+> > > +	}
+> > > +
+> > > +	/* register it */
+> > > +	tz = thermal_zone_device_register("bcm2835_thermal",
+> > > +					  1, 0, data,
+> > > +					  &bcm2835_thermal_ops,
+> > > +					  NULL, 0, 0);
+> > I notice that the polling_delay is set to 0, but we're not using
+> > interrupts to trigger the trip.  Is it valid to expose a trip
+> > without a
+> > polling_delay or interrupts?  Should passive_delay be set as well?
+> > 
+> > This is up to the thermal maintainers.  As far as I'm concerned,
+> > it's:
+> > 
+> > Acked-by: Eric Anholt <eric@anholt.net>
+> > 
+> > One it lands I'll pull the defconfig and DT bits.
+> Ping on this question to thermal maintainers.  I'd still love to see
+> this driver land.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+hmmm, how is this driver supposed to work?
+With this patch set, I think the only benefit is that we can get the
+temperature and trip point information via thermal sysfs interface, but
+kernel thermal control is a no-op here, right?
 
-Thanks!
-								Pavel
-								
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+thanks,
+rui
