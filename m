@@ -1,154 +1,75 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: cpu_cooling: Fix NULL dereference in
- cpufreq_state2power
-Date: Fri, 19 Aug 2016 21:19:41 +0800
-Message-ID: <1471612781.2691.77.camel@intel.com>
-References: <20160817151459.10948-1-brendan.jackman@arm.com>
-         <20160817230507.GC24396@ubuntu> <20160818093042.GA3154@e104805>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v2 1/2] cpufreq / sched: Pass flags to cpufreq_update_util()
+Date: Fri, 19 Aug 2016 15:26:21 +0200
+Message-ID: <CAJKOXPdjkO4ZvQ1kijfVCMKaNBaoYDEOZpQ-+ZmyWVpL1jdPpg@mail.gmail.com>
+References: <6346523.ZooER3FGDH@vostro.rjw.lan> <2163011.yGXeHau4eM@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:33378 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752088AbcHSNT6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 19 Aug 2016 09:19:58 -0400
-In-Reply-To: <20160818093042.GA3154@e104805>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2163011.yGXeHau4eM@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Brendan Jackman <brendan.jackman@arm.com>, linux-pm@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>
 
-On 四, 2016-08-18 at 10:30 +0100, Javi Merino wrote:
-> On Thu, Aug 18, 2016 at 04:35:07AM +0530, Viresh Kumar wrote:
-> > 
-> > On 17-08-16, 16:14, Brendan Jackman wrote:
-> > > 
-> > > Currently all CPU cooling devices share a
-> > > `struct thermal_cooling_device_ops` instance. The thermal core
-> > > uses the
-> > > presence of functions in this struct to determine if a cooling
-> > > device
-> > > has a power model (see cdev_is_power_actor). cpu_cooling.c adds
-> > > the
-> > > power model functions to the shared struct when a device is
-> > > registered
-> > > with a power model.
-> > > 
-> > > Therefore, if a CPU cooling device is registered using
-> > > [of_]cpufreq_power_cooling_register, _all_ devices will be
-> > > determined to
-> > > have a power model, including any registered with
-> > > [of_]cpufreq_cooling_register. This can result in
-> > > cpufreq_state2power
-> > > being called on a device where dyn_power_table is NULL.
-> > > 
-> > > With this commit, instead of having a shared
-> > > thermal_cooling_device_ops
-> > > which is mutated, we have two versions: one with the power
-> > > functions and
-> > > one without.
-> > > 
-> > > Signed-off-by: Brendan Jackman <brendan.jackman@arm.com>
-> > > Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
-> > > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > > Cc: Javi Merino <javi.merino@arm.com>
-> > > 
-> > > ---
-> > >  drivers/thermal/cpu_cooling.c | 21 ++++++++++++++++-----
-> > >  1 file changed, 16 insertions(+), 5 deletions(-)
-> > > 
-> > > diff --git a/drivers/thermal/cpu_cooling.c
-> > > b/drivers/thermal/cpu_cooling.c
-> > > index 3788ed7..a32b417 100644
-> > > --- a/drivers/thermal/cpu_cooling.c
-> > > +++ b/drivers/thermal/cpu_cooling.c
-> > > @@ -740,12 +740,22 @@ static int cpufreq_power2state(struct
-> > > thermal_cooling_device *cdev,
-> > >  }
-> > > 
-> > >  /* Bind cpufreq callbacks to thermal cooling device ops */
-> > > +
-> > >  static struct thermal_cooling_device_ops cpufreq_cooling_ops = {
-> > >  	.get_max_state = cpufreq_get_max_state,
-> > >  	.get_cur_state = cpufreq_get_cur_state,
-> > >  	.set_cur_state = cpufreq_set_cur_state,
-> > >  };
-> > > 
-> > > +static struct thermal_cooling_device_ops
-> > > cpufreq_power_cooling_ops = {
-> > > +	.get_max_state		= cpufreq_get_max_state,
-> > > +	.get_cur_state		= cpufreq_get_cur_state,
-> > > +	.set_cur_state		= cpufreq_set_cur_state,
-> > > +	.get_requested_power	=
-> > > cpufreq_get_requested_power,
-> > > +	.state2power		= cpufreq_state2power,
-> > > +	.power2state		= cpufreq_power2state,
-> > > +};
-> > > +
-> > >  /* Notifier for cpufreq policy change */
-> > >  static struct notifier_block thermal_cpufreq_notifier_block = {
-> > >  	.notifier_call = cpufreq_thermal_notifier,
-> > > @@ -795,6 +805,7 @@ __cpufreq_cooling_register(struct device_node
-> > > *np,
-> > >  	struct cpumask temp_mask;
-> > >  	unsigned int freq, i, num_cpus;
-> > >  	int ret;
-> > > +	struct thermal_cooling_device_ops *cooling_ops;
-> > > 
-> > >  	cpumask_and(&temp_mask, clip_cpus, cpu_online_mask);
-> > >  	policy = cpufreq_cpu_get(cpumask_first(&temp_mask));
-> > > @@ -850,10 +861,6 @@ __cpufreq_cooling_register(struct
-> > > device_node *np,
-> > >  	cpumask_copy(&cpufreq_dev->allowed_cpus, clip_cpus);
-> > > 
-> > >  	if (capacitance) {
-> > > -		cpufreq_cooling_ops.get_requested_power =
-> > > -			cpufreq_get_requested_power;
-> > > -		cpufreq_cooling_ops.state2power =
-> > > cpufreq_state2power;
-> > > -		cpufreq_cooling_ops.power2state =
-> > > cpufreq_power2state;
-> > >  		cpufreq_dev->plat_get_static_power =
-> > > plat_static_func;
-> > > 
-> > >  		ret = build_dyn_power_table(cpufreq_dev,
-> > > capacitance);
-> > > @@ -861,6 +868,10 @@ __cpufreq_cooling_register(struct
-> > > device_node *np,
-> > >  			cool_dev = ERR_PTR(ret);
-> > >  			goto free_table;
-> > >  		}
-> > > +
-> > > +		cooling_ops = &cpufreq_power_cooling_ops;
-> > > +	} else {
-> > > +		cooling_ops = &cpufreq_cooling_ops;
-> > >  	}
-> > > 
-> > >  	ret = get_idr(&cpufreq_idr, &cpufreq_dev->id);
-> > > @@ -885,7 +896,7 @@ __cpufreq_cooling_register(struct device_node
-> > > *np,
-> > >  		 cpufreq_dev->id);
-> > > 
-> > >  	cool_dev = thermal_of_cooling_device_register(np,
-> > > dev_name, cpufreq_dev,
-> > > -						      &cpufreq_c
-> > > ooling_ops);
-> > > +						      cooling_op
-> > > s);
-> > >  	if (IS_ERR(cool_dev))
-> > >  		goto remove_idr;
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Yep, looks good to me.
-> 
-> Acked-by: Javi Merino <javi.merino@arm.com>
+On Fri, Aug 12, 2016 at 2:04 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> It is useful to know the reason why cpufreq_update_util() has just
+> been called and that can be passed as flags to cpufreq_update_util()
+> and to the ->func() callback in struct update_util_data.  However,
+> doing that in addition to passing the util and max arguments they
+> already take would be clumsy, so avoid it.
+>
+> Instead, use the observation that the schedutil governor is part
+> of the scheduler proper, so it can access scheduler data directly.
+> This allows the util and max arguments of cpufreq_update_util()
+> and the ->func() callback in struct update_util_data to be replaced
+> with a flags one, but schedutil has to be modified to follow.
+>
+> Thus make the schedutil governor obtain the CFS utilization
+> information from the scheduler and use the "RT" and "DL" flags
+> instead of the special utilization value of ULONG_MAX to track
+> updates from the RT and DL sched classes.  Make it non-modular
+> too to avoid having to export scheduler variables to modules at
+> large.
+>
+> Next, update all of the other users of cpufreq_update_util()
+> and the ->func() callback in struct update_util_data accordingly.
+>
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>
+> v1 -> v2: Do not check cpu_of(rq) against smp_processor_id() in
+>           cfs_rq_util_change().
+>
+> ---
+>  drivers/cpufreq/Kconfig            |    5 --
+>  drivers/cpufreq/cpufreq_governor.c |    2 -
+>  drivers/cpufreq/intel_pstate.c     |    2 -
+>  include/linux/sched.h              |   12 ++++--
+>  kernel/sched/cpufreq.c             |    2 -
+>  kernel/sched/cpufreq_schedutil.c   |   67 ++++++++++++++++++++-----------------
+>  kernel/sched/deadline.c            |    4 +-
+>  kernel/sched/fair.c                |   10 +----
+>  kernel/sched/rt.c                  |    4 +-
+>  kernel/sched/sched.h               |   31 +++++------------
+>  10 files changed, 66 insertions(+), 73 deletions(-)
 
-Patch applied.
+(...)
 
-thanks,
-rui
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --- linux-pm.orig/drivers/cpufreq/Kconfig
+> +++ linux-pm/drivers/cpufreq/Kconfig
+> @@ -194,7 +194,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
+>           If in doubt, say N.
+>
+>  config CPU_FREQ_GOV_SCHEDUTIL
+> -       tristate "'schedutil' cpufreq policy governor"
+> +       bool "'schedutil' cpufreq policy governor"
+
+If you change such symbols please remember to update also all the
+defconfigs. Without the update they start to show errors.
+
+Best regards,
+Krzysztof
