@@ -1,116 +1,57 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/2] thermal: rcar-thermal: enable hwmon when
- thermal_zone
-Date: Fri, 19 Aug 2016 19:35:24 +0800
-Message-ID: <1471606524.2691.59.camel@intel.com>
-References: <874m7mlzto.wl%kuninori.morimoto.gx@renesas.com>
-         <871t2qlzr5.wl%kuninori.morimoto.gx@renesas.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Domains: Always enable debugfs support if available
+Date: Fri, 19 Aug 2016 13:32:51 +0200
+Message-ID: <CAPDyKFp_MunWh4nR1MV8F_An9QctJnxyE1=U-m8DVEaL_gz=jg@mail.gmail.com>
+References: <1470912005-10914-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:18473 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750889AbcHSLf3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 19 Aug 2016 07:35:29 -0400
-In-Reply-To: <871t2qlzr5.wl%kuninori.morimoto.gx@renesas.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1470912005-10914-1-git-send-email-jonathanh@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, "edubezval@gmail.com" <edubezval@gmail.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>, "cm-hiep@jinso.co.jp" <cm-hiep@jinso.co.jp>, hucBui <bd-phuc@jinso.co.jp>
 
-On 二, 2016-07-19 at 10:01 +0000, Kuninori Morimoto wrote:
-> From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> 
-> rcar-thermal is supporting both thermal_zone_of_sensor_register() and
-> thermal_zone_device_register(). But thermal_zone_of_sensor_register()
-> doesn't enable hwmon as default.
-> This patch enables it to keep compatibility
-> 
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+On 11 August 2016 at 12:40, Jon Hunter <jonathanh@nvidia.com> wrote:
+> Debugfs support for PM domains is only enabled if both CONFIG_PM_DEBUG
+> and CONFIG_PM_ADVANCED_DEBUG are enabled. CONFIG_PM_ADVANCED_DEBUG is
+> described as "extra PM attributes in sysfs for low-level
+> debugging/testing" which does not seem related.
+>
+> Given that the debugfs for PM domains only allows users to view the
+> state of the PM domains, always enable debugfs support for PM domains
+> if PM domains and debugfs support is enabled.
+>
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 
-Queued for 4.9
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-thanks,
-rui
+Kind regards
+Uffe
+
 > ---
->  drivers/thermal/rcar_thermal.c | 20 ++++++++++++++++++--
->  1 file changed, 18 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_thermal.c
-> b/drivers/thermal/rcar_thermal.c
-> index 71a3392..4d07644 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -31,6 +31,8 @@
->  #include <linux/spinlock.h>
->  #include <linux/thermal.h>
->  
-> +#include "thermal_hwmon.h"
-> +
->  #define IDLE_INTERVAL	5000
->  
->  #define COMMON_STR	0x00
-> @@ -75,6 +77,8 @@ struct rcar_thermal_priv {
->  #define rcar_priv_to_dev(priv)		((priv)->common->dev)
->  #define rcar_has_irq_support(priv)	((priv)->common->base)
->  #define rcar_id_to_shift(priv)		((priv)->id * 8)
-> +#define rcar_of_data(dev)		((unsigned
-> long)of_device_get_match_data(dev))
-> +#define rcar_use_of_thermal(dev)	(rcar_of_data(dev) ==
-> USE_OF_THERMAL)
->  
->  #define USE_OF_THERMAL	1
->  static const struct of_device_id rcar_thermal_dt_ids[] = {
-> @@ -416,6 +420,8 @@ static int rcar_thermal_remove(struct
-> platform_device *pdev)
->  	rcar_thermal_for_each_priv(priv, common) {
->  		rcar_thermal_irq_disable(priv);
->  		thermal_zone_device_unregister(priv->zone);
-> +		if (rcar_use_of_thermal(dev))
-> +			thermal_remove_hwmon_sysfs(priv->zone);
->  	}
->  
->  	pm_runtime_put(dev);
-> @@ -430,7 +436,6 @@ static int rcar_thermal_probe(struct
-> platform_device *pdev)
->  	struct rcar_thermal_priv *priv;
->  	struct device *dev = &pdev->dev;
->  	struct resource *res, *irq;
-> -	unsigned long of_data = (unsigned
-> long)of_device_get_match_data(dev);
->  	int mres = 0;
->  	int i;
->  	int ret = -ENODEV;
-> @@ -491,7 +496,7 @@ static int rcar_thermal_probe(struct
-> platform_device *pdev)
->  		if (ret < 0)
->  			goto error_unregister;
->  
-> -		if (of_data == USE_OF_THERMAL)
-> +		if (rcar_use_of_thermal(dev))
->  			priv->zone =
-> devm_thermal_zone_of_sensor_register(
->  						dev, i, priv,
->  						&rcar_thermal_zone_o
-> f_ops);
-> @@ -507,6 +512,17 @@ static int rcar_thermal_probe(struct
-> platform_device *pdev)
->  			goto error_unregister;
->  		}
->  
-> +		if (rcar_use_of_thermal(dev)) {
-> +			/*
-> +			 * thermal_zone doesn't enable hwmon as
-> default,
-> +			 * but, enable it here to keep compatible
-> +			 */
-> +			priv->zone->tzp->no_hwmon = false;
-> +			ret = thermal_add_hwmon_sysfs(priv->zone);
-> +			if (ret)
-> +				goto error_unregister;
-> +		}
-> +
->  		rcar_thermal_irq_enable(priv);
->  
->  		list_move_tail(&priv->list, &common->head);
+>  drivers/base/power/domain.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index a1f2aff33997..058c8b6d2871 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1636,7 +1636,7 @@ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+>
+>  /***        debugfs support        ***/
+>
+> -#ifdef CONFIG_PM_ADVANCED_DEBUG
+> +#ifdef CONFIG_DEBUG_FS
+>  #include <linux/pm.h>
+>  #include <linux/device.h>
+>  #include <linux/debugfs.h>
+> @@ -1784,4 +1784,4 @@ static void __exit pm_genpd_debug_exit(void)
+>         debugfs_remove_recursive(pm_genpd_debugfs_dir);
+>  }
+>  __exitcall(pm_genpd_debug_exit);
+> -#endif /* CONFIG_PM_ADVANCED_DEBUG */
+> +#endif /* CONFIG_DEBUG_FS */
+> --
+> 2.1.4
+>
