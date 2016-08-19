@@ -1,7 +1,7 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH 4/5] firmware: ti_sci: Add support for Clock control
-Date: Fri, 19 Aug 2016 17:51:58 -0500
-Message-ID: <20160819225159.10758-5-nm@ti.com>
+Subject: [PATCH 3/5] firmware: ti_sci: Add support for Device control
+Date: Fri, 19 Aug 2016 17:51:57 -0500
+Message-ID: <20160819225159.10758-4-nm@ti.com>
 References: <20160819225159.10758-1-nm@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -18,50 +18,56 @@ in keystone family K2G SoC to communicate between various compute
 processors with a central system controller entity.
 
 TI-SCI message protocol provides support for management of various
-hardware entities within the SoC. Add support driver to allow
+hardware entitites within the SoC. Add support driver to allow
 communication with system controller entity within the SoC using the
 mailbox client.
 
-In general, we expect to function at a device level of abstraction,
-however, for proper operation of hardware blocks, many clocks directly
-supplying the hardware block needs to be queried or configured.
+We introduce the fundamental device management capability support to
+the driver protocol as part of this change.
 
-Introduce support for the set of SCI message protocol support that
-provide us with this capability.
-
+[d-gerlach@ti.com: Contributed device reset handling]
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
 Signed-off-by: Nishanth Menon <nm@ti.com>
 ---
- drivers/firmware/ti_sci.c              | 685 +++++++++++++++++++++++++++++++++
- drivers/firmware/ti_sci.h              | 289 ++++++++++++++
- include/linux/soc/ti/ti_sci_protocol.h |  78 ++++
- 3 files changed, 1052 insertions(+)
+ drivers/firmware/ti_sci.c              | 433 +++++++++++++++++++++++++++++++++
+ drivers/firmware/ti_sci.h              |  98 ++++++++
+ include/linux/soc/ti/ti_sci_protocol.h |  91 +++++++
+ 3 files changed, 622 insertions(+)
 
 diff --git a/drivers/firmware/ti_sci.c b/drivers/firmware/ti_sci.c
-index e0e286e76095..97b2f2af827e 100644
+index 4580c29dcb52..e0e286e76095 100644
 --- a/drivers/firmware/ti_sci.c
 +++ b/drivers/firmware/ti_sci.c
-@@ -903,6 +903,675 @@ static int ti_sci_cmd_get_device_resets(const struct ti_sci_handle *handle,
- 				       NULL);
+@@ -496,6 +496,437 @@ fail:
  }
  
+ /**
++ * tis_sci_is_response_ack() - Generic ACK/NACK message checkup
++ * @r:	pointer to response buffer
++ *
++ * Return: true if the response was an ACK, else returns false.
++ */
++static inline bool tis_sci_is_response_ack(void *r)
++{
++	struct ti_sci_msg_hdr *hdr = r;
++
++	return hdr->flags & TI_SCI_FLAG_RESP_GENERIC_ACK ? true : false;
++}
++
 +/**
-+ * ti_sci_set_clock_state() - Set clock state helper
++ * ti_sci_set_device_state() - Set device state helper
 + * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @flags:	Header flags as needed
-+ * @state:	State to request for the clock.
++ * @id:		Device identifier
++ * @flags:	flags to setup for the device
++ * @state:	State to move the device to
 + *
 + * Return: 0 if all went well, else returns appropriate error value.
 + */
-+static int ti_sci_set_clock_state(const struct ti_sci_handle *handle,
-+				  u32 dev_id, u8 clk_id,
-+				  u32 flags, u8 state)
++static int ti_sci_set_device_state(const struct ti_sci_handle *handle,
++				   u32 id, u32 flags, u8 state)
 +{
 +	struct ti_sci_info *info;
-+	struct ti_sci_msg_req_set_clock_state *req;
++	struct ti_sci_msg_req_set_device_state *req;
 +	struct ti_sci_msg_hdr *resp;
 +	struct ti_sci_xfer *xfer;
 +	struct device *dev;
@@ -75,7 +81,7 @@ index e0e286e76095..97b2f2af827e 100644
 +	info = handle_to_ti_sci_info(handle);
 +	dev = info->dev;
 +
-+	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_SET_CLOCK_STATE,
++	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_SET_DEVICE_STATE,
 +				   flags | TI_SCI_FLAG_REQ_ACK_ON_PROCESSED,
 +				   sizeof(*req), sizeof(*resp));
 +	if (IS_ERR(xfer)) {
@@ -83,10 +89,9 @@ index e0e286e76095..97b2f2af827e 100644
 +		dev_err(dev, "Message alloc failed(%d)\n", ret);
 +		return ret;
 +	}
-+	req = (struct ti_sci_msg_req_set_clock_state *)xfer->xfer_buf;
-+	req->dev_id = dev_id;
-+	req->clk_id = clk_id;
-+	req->request_state = state;
++	req = (struct ti_sci_msg_req_set_device_state *)xfer->xfer_buf;
++	req->id = id;
++	req->state = state;
 +
 +	ret = ti_sci_do_xfer(info, xfer);
 +	if (ret) {
@@ -105,24 +110,23 @@ index e0e286e76095..97b2f2af827e 100644
 +}
 +
 +/**
-+ * ti_sci_cmd_get_clock_state() - Get clock state helper
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @programmed_state:	State requested for clock to move to
-+ * @current_state:	State that the clock is currently in
++ * ti_sci_get_device_state() - Get device state helper
++ * @handle:	Handle to the device
++ * @id:		Device Identifier
++ * @clcnt:	Pointer to Context Loss Count
++ * @resets:	pointer to resets
++ * @p_state:	pointer to p_state
++ * @c_state:	pointer to c_state
 + *
-+ * Return: 0 if all went well, else returns appropriate error value.
++ * Return: 0 if all went fine, else return appropriate error.
 + */
-+static int ti_sci_cmd_get_clock_state(const struct ti_sci_handle *handle,
-+				      u32 dev_id, u8 clk_id,
-+				      u8 *programmed_state, u8 *current_state)
++static int ti_sci_get_device_state(const struct ti_sci_handle *handle,
++				   u32 id,  u32 *clcnt,  u32 *resets,
++				    u8 *p_state,  u8 *c_state)
 +{
 +	struct ti_sci_info *info;
-+	struct ti_sci_msg_req_get_clock_state *req;
-+	struct ti_sci_msg_resp_get_clock_state *resp;
++	struct ti_sci_msg_req_get_device_state *req;
++	struct ti_sci_msg_resp_get_device_state *resp;
 +	struct ti_sci_xfer *xfer;
 +	struct device *dev;
 +	int ret = 0;
@@ -132,23 +136,22 @@ index e0e286e76095..97b2f2af827e 100644
 +	if (!handle)
 +		return -EINVAL;
 +
-+	if (!programmed_state && !current_state)
++	if (!clcnt && !resets && !p_state && !c_state)
 +		return -EINVAL;
 +
 +	info = handle_to_ti_sci_info(handle);
 +	dev = info->dev;
 +
-+	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_GET_CLOCK_STATE,
-+				   TI_SCI_FLAG_REQ_ACK_ON_PROCESSED,
-+				   sizeof(*req), sizeof(*resp));
++	/* Response is expected, so need of any flags */
++	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_GET_DEVICE_STATE,
++				   0, sizeof(*req), sizeof(*resp));
 +	if (IS_ERR(xfer)) {
 +		ret = PTR_ERR(xfer);
 +		dev_err(dev, "Message alloc failed(%d)\n", ret);
 +		return ret;
 +	}
-+	req = (struct ti_sci_msg_req_get_clock_state *)xfer->xfer_buf;
-+	req->dev_id = dev_id;
-+	req->clk_id = clk_id;
++	req = (struct ti_sci_msg_req_get_device_state *)xfer->xfer_buf;
++	req->id = id;
 +
 +	ret = ti_sci_do_xfer(info, xfer);
 +	if (ret) {
@@ -156,18 +159,20 @@ index e0e286e76095..97b2f2af827e 100644
 +		goto fail;
 +	}
 +
-+	resp = (struct ti_sci_msg_resp_get_clock_state *)xfer->xfer_buf;
-+
++	resp = (struct ti_sci_msg_resp_get_device_state *)xfer->xfer_buf;
 +	if (!tis_sci_is_response_ack(resp)) {
 +		ret = -ENODEV;
 +		goto fail;
 +	}
 +
-+	if (programmed_state)
-+		*programmed_state = resp->programmed_state;
-+	if (current_state)
-+		*current_state = resp->current_state;
-+
++	if (clcnt)
++		*clcnt = resp->context_loss_count;
++	if (resets)
++		*resets = resp->resets;
++	if (p_state)
++		*p_state = resp->programmed_state;
++	if (c_state)
++		*c_state = resp->current_state;
 +fail:
 +	ti_sci_put_one_xfer(&info->minfo, xfer);
 +
@@ -175,180 +180,218 @@ index e0e286e76095..97b2f2af827e 100644
 +}
 +
 +/**
-+ * ti_sci_cmd_get_clock() - Get control of a clock from TI SCI
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @needs_ssc: 'true' if Spread Spectrum clock is desired, else 'false'
-+ * @can_change_freq: 'true' if frequency change is desired, else 'false'
-+ * @enable_input_term: 'true' if input termination is desired, else 'false'
++ * ti_sci_cmd_get_device() - command to request for device managed by TISCI
++ * @handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * @id:		Device Identifier
 + *
-+ * Return: 0 if all went well, else returns appropriate error value.
++ * Request for the device - NOTE: the client MUST maintain integrity of
++ * usage count by balancing get_device with put_device. No refcounting is
++ * managed by driver for that purpose.
++ *
++ * NOTE: The request is for exclusive access for the processor.
++ *
++ * Return: 0 if all went fine, else return appropriate error.
 + */
-+static int ti_sci_cmd_get_clock(const struct ti_sci_handle *handle, u32 dev_id,
-+				u8 clk_id, bool needs_ssc, bool can_change_freq,
-+				bool enable_input_term)
++static int ti_sci_cmd_get_device(const struct ti_sci_handle *handle, u32 id)
 +{
-+	u32 flags = 0;
-+
-+	flags |= needs_ssc ? MSG_FLAG_CLOCK_ALLOW_SSC : 0;
-+	flags |= can_change_freq ? MSG_FLAG_CLOCK_ALLOW_FREQ_CHANGE : 0;
-+	flags |= enable_input_term ? MSG_FLAG_CLOCK_INPUT_TERM : 0;
-+
-+	return ti_sci_set_clock_state(handle, dev_id, clk_id, flags,
-+				      MSG_CLOCK_SW_STATE_REQ);
++	return ti_sci_set_device_state(handle, id,
++				       MSG_FLAG_DEVICE_EXCLUSIVE,
++				       MSG_DEVICE_SW_STATE_ON);
 +}
 +
 +/**
-+ * ti_sci_cmd_idle_clock() - Idle a clock which is in our control
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
++ * ti_sci_cmd_idle_device() - Command to idle a device managed by TISCI
++ * @handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * @id:		Device Identifier
 + *
-+ * NOTE: This clock must have been requested by get_clock previously.
++ * Request for the device - NOTE: the client MUST maintain integrity of
++ * usage count by balancing get_device with put_device. No refcounting is
++ * managed by driver for that purpose.
 + *
-+ * Return: 0 if all went well, else returns appropriate error value.
++ * Return: 0 if all went fine, else return appropriate error.
 + */
-+static int ti_sci_cmd_idle_clock(const struct ti_sci_handle *handle,
-+				 u32 dev_id, u8 clk_id)
++static int ti_sci_cmd_idle_device(const struct ti_sci_handle *handle, u32 id)
 +{
-+	return ti_sci_set_clock_state(handle, dev_id, clk_id, 0,
-+				      MSG_CLOCK_SW_STATE_UNREQ);
++	return ti_sci_set_device_state(handle, id,
++				       MSG_FLAG_DEVICE_EXCLUSIVE,
++				       MSG_DEVICE_SW_STATE_RETENTION);
 +}
 +
 +/**
-+ * ti_sci_cmd_put_clock() - Release a clock from our control back to TISCI
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
++ * ti_sci_cmd_put_device() - command to release a device managed by TISCI
++ * @handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * @id:		Device Identifier
 + *
-+ * NOTE: This clock must have been requested by get_clock previously.
++ * Request for the device - NOTE: the client MUST maintain integrity of
++ * usage count by balancing get_device with put_device. No refcounting is
++ * managed by driver for that purpose.
 + *
-+ * Return: 0 if all went well, else returns appropriate error value.
++ * Return: 0 if all went fine, else return appropriate error.
 + */
-+static int ti_sci_cmd_put_clock(const struct ti_sci_handle *handle,
-+				u32 dev_id, u8 clk_id)
++static int ti_sci_cmd_put_device(const struct ti_sci_handle *handle, u32 id)
 +{
-+	return ti_sci_set_clock_state(handle, dev_id, clk_id, 0,
-+				      MSG_CLOCK_SW_STATE_AUTO);
++	return ti_sci_set_device_state(handle, id,
++				       0, MSG_DEVICE_SW_STATE_AUTO_OFF);
 +}
 +
 +/**
-+ * ti_sci_cmd_clk_is_auto() - Is the clock being auto managed
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @req_state: state indicating if the clock is auto managed
++ * ti_sci_cmd_dev_is_valid() - Is the device valid
++ * @handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * @id:		Device Identifier
 + *
-+ * Return: 0 if all went well, else returns appropriate error value.
++ * Return: 0 if all went fine and the device ID is valid, else return
++ * appropriate error.
 + */
-+static int ti_sci_cmd_clk_is_auto(const struct ti_sci_handle *handle,
-+				  u32 dev_id, u8 clk_id, bool *req_state)
++static int ti_sci_cmd_dev_is_valid(const struct ti_sci_handle *handle, u32 id)
 +{
-+	u8 state = 0;
++	u8 unused;
++
++	/* check the device state which will also tell us if the ID is valid */
++	return ti_sci_get_device_state(handle, id, NULL, NULL, NULL, &unused);
++}
++
++/**
++ * ti_sci_cmd_dev_get_clcnt() - Get context loss counter
++ * @handle:	Pointer to TISCI handle
++ * @id:		Device Identifier
++ * @count:	Pointer to Context Loss counter to populate
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_dev_get_clcnt(const struct ti_sci_handle *handle, u32 id,
++				    u32 *count)
++{
++	return ti_sci_get_device_state(handle, id, count, NULL, NULL, NULL);
++}
++
++/**
++ * ti_sci_cmd_dev_is_idle() - Check if the device is requested to be idle
++ * @handle:	Pointer to TISCI handle
++ * @id:		Device Identifier
++ * @r_state:	true if requested to be idle
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_dev_is_idle(const struct ti_sci_handle *handle, u32 id,
++				  bool *r_state)
++{
 +	int ret;
++	u8 state;
 +
-+	if (!req_state)
++	if (!r_state)
 +		return -EINVAL;
 +
-+	ret = ti_sci_cmd_get_clock_state(handle, dev_id, clk_id, &state, NULL);
++	ret = ti_sci_get_device_state(handle, id, NULL, NULL, &state, NULL);
 +	if (ret)
 +		return ret;
 +
-+	*req_state = (state == MSG_CLOCK_SW_STATE_AUTO);
++	*r_state = (state == MSG_DEVICE_SW_STATE_RETENTION);
++
 +	return 0;
 +}
 +
 +/**
-+ * ti_sci_cmd_clk_is_on() - Is the clock ON
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @req_state: state indicating if the clock is managed by us and enabled
-+ * @curr_state: state indicating if the clock is ready for operation
++ * ti_sci_cmd_dev_is_stop() - Check if the device is requested to be stopped
++ * @handle:	Pointer to TISCI handle
++ * @id:		Device Identifier
++ * @r_state:	true if requested to be stopped
++ * @curr_state:	true if currently stopped.
 + *
-+ * Return: 0 if all went well, else returns appropriate error value.
++ * Return: 0 if all went fine, else return appropriate error.
 + */
-+static int ti_sci_cmd_clk_is_on(const struct ti_sci_handle *handle, u32 dev_id,
-+				u8 clk_id, bool *req_state, bool *curr_state)
++static int ti_sci_cmd_dev_is_stop(const struct ti_sci_handle *handle, u32 id,
++				  bool *r_state,  bool *curr_state)
 +{
-+	u8 c_state = 0, r_state = 0;
 +	int ret;
++	u8 p_state, c_state;
 +
-+	if (!req_state && !curr_state)
++	if (!r_state && !curr_state)
 +		return -EINVAL;
 +
-+	ret = ti_sci_cmd_get_clock_state(handle, dev_id, clk_id,
-+					 &r_state, &c_state);
++	ret =
++	    ti_sci_get_device_state(handle, id, NULL, NULL, &p_state, &c_state);
 +	if (ret)
 +		return ret;
 +
-+	if (req_state)
-+		*req_state = (r_state == MSG_CLOCK_SW_STATE_REQ);
++	if (r_state)
++		*r_state = (p_state == MSG_DEVICE_SW_STATE_AUTO_OFF);
 +	if (curr_state)
-+		*curr_state = (c_state == MSG_CLOCK_HW_STATE_READY);
++		*curr_state = (c_state == MSG_DEVICE_HW_STATE_OFF);
++
 +	return 0;
 +}
 +
 +/**
-+ * ti_sci_cmd_clk_is_off() - Is the clock OFF
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @req_state: state indicating if the clock is managed by us and disabled
-+ * @curr_state: state indicating if the clock is NOT ready for operation
++ * ti_sci_cmd_dev_is_on() - Check if the device is requested to be ON
++ * @handle:	Pointer to TISCI handle
++ * @id:		Device Identifier
++ * @r_state:	true if requested to be ON
++ * @curr_state:	true if currently ON and active
 + *
-+ * Return: 0 if all went well, else returns appropriate error value.
++ * Return: 0 if all went fine, else return appropriate error.
 + */
-+static int ti_sci_cmd_clk_is_off(const struct ti_sci_handle *handle, u32 dev_id,
-+				 u8 clk_id, bool *req_state, bool *curr_state)
++static int ti_sci_cmd_dev_is_on(const struct ti_sci_handle *handle, u32 id,
++				bool *r_state,  bool *curr_state)
 +{
-+	u8 c_state = 0, r_state = 0;
 +	int ret;
++	u8 p_state, c_state;
 +
-+	if (!req_state && !curr_state)
++	if (!r_state && !curr_state)
 +		return -EINVAL;
 +
-+	ret = ti_sci_cmd_get_clock_state(handle, dev_id, clk_id,
-+					 &r_state, &c_state);
++	ret =
++	    ti_sci_get_device_state(handle, id, NULL, NULL, &p_state, &c_state);
 +	if (ret)
 +		return ret;
 +
-+	if (req_state)
-+		*req_state = (r_state == MSG_CLOCK_SW_STATE_UNREQ);
++	if (r_state)
++		*r_state = (p_state == MSG_DEVICE_SW_STATE_ON);
 +	if (curr_state)
-+		*curr_state = (c_state == MSG_CLOCK_HW_STATE_NOT_READY);
++		*curr_state = (c_state == MSG_DEVICE_HW_STATE_ON);
++
 +	return 0;
 +}
 +
 +/**
-+ * ti_sci_cmd_clk_set_parent() - Set the clock source of a specific device clock
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @parent_id:	Parent clock identifier to set
++ * ti_sci_cmd_dev_is_trans() - Check if the device is currently transitioning
++ * @handle:	Pointer to TISCI handle
++ * @id:		Device Identifier
++ * @curr_state:	true if currently transitioning.
 + *
-+ * Return: 0 if all went well, else returns appropriate error value.
++ * Return: 0 if all went fine, else return appropriate error.
 + */
-+static int ti_sci_cmd_clk_set_parent(const struct ti_sci_handle *handle,
-+				     u32 dev_id, u8 clk_id, u8 parent_id)
++static int ti_sci_cmd_dev_is_trans(const struct ti_sci_handle *handle, u32 id,
++				   bool *curr_state)
++{
++	int ret;
++	u8 state;
++
++	if (!curr_state)
++		return -EINVAL;
++
++	ret = ti_sci_get_device_state(handle, id, NULL, NULL, NULL, &state);
++	if (ret)
++		return ret;
++
++	*curr_state = (state == MSG_DEVICE_HW_STATE_TRANS);
++
++	return 0;
++}
++
++/**
++ * ti_sci_cmd_set_device_resets() - command to set resets for device managed
++ *				    by TISCI
++ * @handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * @id:		Device Identifier
++ * @reset_state: Device specific reset bit field
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_set_device_resets(const struct ti_sci_handle *handle,
++					u32 id, u32 reset_state)
 +{
 +	struct ti_sci_info *info;
-+	struct ti_sci_msg_req_set_clock_parent *req;
++	struct ti_sci_msg_req_set_device_resets *req;
 +	struct ti_sci_msg_hdr *resp;
 +	struct ti_sci_xfer *xfer;
 +	struct device *dev;
@@ -362,7 +405,7 @@ index e0e286e76095..97b2f2af827e 100644
 +	info = handle_to_ti_sci_info(handle);
 +	dev = info->dev;
 +
-+	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_SET_CLOCK_PARENT,
++	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_SET_DEVICE_RESETS,
 +				   TI_SCI_FLAG_REQ_ACK_ON_PROCESSED,
 +				   sizeof(*req), sizeof(*resp));
 +	if (IS_ERR(xfer)) {
@@ -370,10 +413,9 @@ index e0e286e76095..97b2f2af827e 100644
 +		dev_err(dev, "Message alloc failed(%d)\n", ret);
 +		return ret;
 +	}
-+	req = (struct ti_sci_msg_req_set_clock_parent *)xfer->xfer_buf;
-+	req->dev_id = dev_id;
-+	req->clk_id = clk_id;
-+	req->parent_id = parent_id;
++	req = (struct ti_sci_msg_req_set_device_resets *)xfer->xfer_buf;
++	req->id = id;
++	req->resets = reset_state;
 +
 +	ret = ti_sci_do_xfer(info, xfer);
 +	if (ret) {
@@ -392,758 +434,278 @@ index e0e286e76095..97b2f2af827e 100644
 +}
 +
 +/**
-+ * ti_sci_cmd_clk_get_parent() - Get current parent clock source
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @parent_id:	Current clock parent
++ * ti_sci_cmd_get_device_resets() - Get reset state for device managed
++ *				    by TISCI
++ * @handle:		Pointer to TISCI handle
++ * @id:			Device Identifier
++ * @reset_state:	Pointer to reset state to populate
 + *
-+ * Return: 0 if all went well, else returns appropriate error value.
++ * Return: 0 if all went fine, else return appropriate error.
 + */
-+static int ti_sci_cmd_clk_get_parent(const struct ti_sci_handle *handle,
-+				     u32 dev_id, u8 clk_id, u8 *parent_id)
++static int ti_sci_cmd_get_device_resets(const struct ti_sci_handle *handle,
++					u32 id, u32 *reset_state)
 +{
-+	struct ti_sci_info *info;
-+	struct ti_sci_msg_req_get_clock_parent *req;
-+	struct ti_sci_msg_resp_get_clock_parent *resp;
-+	struct ti_sci_xfer *xfer;
-+	struct device *dev;
-+	int ret = 0;
++	return ti_sci_get_device_state(handle, id, NULL, reset_state, NULL,
++				       NULL);
++}
 +
-+	if (IS_ERR(handle))
-+		return PTR_ERR(handle);
-+	if (!handle || !parent_id)
-+		return -EINVAL;
++/*
++ * ti_sci_setup_ops() - Setup the operations structures
++ * @info:	pointer to TISCI pointer
++ */
++static void ti_sci_setup_ops(struct ti_sci_info *info)
++{
++	struct ti_sci_ops *ops = &info->handle.ops;
++	struct ti_sci_dev_ops *dops = &ops->dev_ops;
 +
-+	info = handle_to_ti_sci_info(handle);
-+	dev = info->dev;
++	dops->get_device = ti_sci_cmd_get_device;
++	dops->idle_device = ti_sci_cmd_idle_device;
++	dops->put_device = ti_sci_cmd_put_device;
 +
-+	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_GET_CLOCK_PARENT,
-+				   TI_SCI_FLAG_REQ_ACK_ON_PROCESSED,
-+				   sizeof(*req), sizeof(*resp));
-+	if (IS_ERR(xfer)) {
-+		ret = PTR_ERR(xfer);
-+		dev_err(dev, "Message alloc failed(%d)\n", ret);
-+		return ret;
-+	}
-+	req = (struct ti_sci_msg_req_get_clock_parent *)xfer->xfer_buf;
-+	req->dev_id = dev_id;
-+	req->clk_id = clk_id;
-+
-+	ret = ti_sci_do_xfer(info, xfer);
-+	if (ret) {
-+		dev_err(dev, "Mbox send fail %d\n", ret);
-+		goto fail;
-+	}
-+
-+	resp = (struct ti_sci_msg_resp_get_clock_parent *)xfer->xfer_buf;
-+
-+	if (!tis_sci_is_response_ack(resp))
-+		ret = -ENODEV;
-+	else
-+		*parent_id = resp->parent_id;
-+
-+fail:
-+	ti_sci_put_one_xfer(&info->minfo, xfer);
-+
-+	return ret;
++	dops->is_valid = ti_sci_cmd_dev_is_valid;
++	dops->get_context_loss_count = ti_sci_cmd_dev_get_clcnt;
++	dops->is_idle = ti_sci_cmd_dev_is_idle;
++	dops->is_stop = ti_sci_cmd_dev_is_stop;
++	dops->is_on = ti_sci_cmd_dev_is_on;
++	dops->is_transitioning = ti_sci_cmd_dev_is_trans;
++	dops->set_device_resets = ti_sci_cmd_set_device_resets;
++	dops->get_device_resets = ti_sci_cmd_get_device_resets;
 +}
 +
 +/**
-+ * ti_sci_cmd_clk_get_num_parents() - Get num parents of the current clk source
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @num_parents: Returns he number of parents to the current clock.
-+ *
-+ * Return: 0 if all went well, else returns appropriate error value.
-+ */
-+static int ti_sci_cmd_clk_get_num_parents(const struct ti_sci_handle *handle,
-+					  u32 dev_id, u8 clk_id,
-+					  u8 *num_parents)
-+{
-+	struct ti_sci_info *info;
-+	struct ti_sci_msg_req_get_clock_num_parents *req;
-+	struct ti_sci_msg_resp_get_clock_num_parents *resp;
-+	struct ti_sci_xfer *xfer;
-+	struct device *dev;
-+	int ret = 0;
-+
-+	if (IS_ERR(handle))
-+		return PTR_ERR(handle);
-+	if (!handle || !num_parents)
-+		return -EINVAL;
-+
-+	info = handle_to_ti_sci_info(handle);
-+	dev = info->dev;
-+
-+	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_GET_NUM_CLOCK_PARENTS,
-+				   TI_SCI_FLAG_REQ_ACK_ON_PROCESSED,
-+				   sizeof(*req), sizeof(*resp));
-+	if (IS_ERR(xfer)) {
-+		ret = PTR_ERR(xfer);
-+		dev_err(dev, "Message alloc failed(%d)\n", ret);
-+		return ret;
-+	}
-+	req = (struct ti_sci_msg_req_get_clock_num_parents *)xfer->xfer_buf;
-+	req->dev_id = dev_id;
-+	req->clk_id = clk_id;
-+
-+	ret = ti_sci_do_xfer(info, xfer);
-+	if (ret) {
-+		dev_err(dev, "Mbox send fail %d\n", ret);
-+		goto fail;
-+	}
-+
-+	resp = (struct ti_sci_msg_resp_get_clock_num_parents *)xfer->xfer_buf;
-+
-+	if (!tis_sci_is_response_ack(resp))
-+		ret = -ENODEV;
-+	else
-+		*num_parents = resp->num_parents;
-+
-+fail:
-+	ti_sci_put_one_xfer(&info->minfo, xfer);
-+
-+	return ret;
-+}
-+
-+/**
-+ * ti_sci_cmd_clk_get_match_freq() - Find a good match for frequency
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @min_freq:	The minimum allowable frequency in Hz. This is the minimum
-+ *		allowable programmed frequency and does not account for clock
-+ *		tolerances and jitter.
-+ * @target_freq: The target clock frequency in Hz. A frequency will be
-+ *		processed as close to this target frequency as possible.
-+ * @max_freq:	The maximum allowable frequency in Hz. This is the maximum
-+ *		allowable programmed frequency and does not account for clock
-+ *		tolerances and jitter.
-+ * @match_freq:	Frequency match in Hz response.
-+ *
-+ * Return: 0 if all went well, else returns appropriate error value.
-+ */
-+static int ti_sci_cmd_clk_get_match_freq(const struct ti_sci_handle *handle,
-+					 u32 dev_id, u8 clk_id, u64 min_freq,
-+					 u64 target_freq, u64 max_freq,
-+					 u64 *match_freq)
-+{
-+	struct ti_sci_info *info;
-+	struct ti_sci_msg_req_query_clock_freq *req;
-+	struct ti_sci_msg_resp_query_clock_freq *resp;
-+	struct ti_sci_xfer *xfer;
-+	struct device *dev;
-+	int ret = 0;
-+
-+	if (IS_ERR(handle))
-+		return PTR_ERR(handle);
-+	if (!handle || !match_freq)
-+		return -EINVAL;
-+
-+	info = handle_to_ti_sci_info(handle);
-+	dev = info->dev;
-+
-+	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_QUERY_CLOCK_FREQ,
-+				   TI_SCI_FLAG_REQ_ACK_ON_PROCESSED,
-+				   sizeof(*req), sizeof(*resp));
-+	if (IS_ERR(xfer)) {
-+		ret = PTR_ERR(xfer);
-+		dev_err(dev, "Message alloc failed(%d)\n", ret);
-+		return ret;
-+	}
-+	req = (struct ti_sci_msg_req_query_clock_freq *)xfer->xfer_buf;
-+	req->dev_id = dev_id;
-+	req->clk_id = clk_id;
-+	req->min_freq_hz = min_freq;
-+	req->target_freq_hz = target_freq;
-+	req->max_freq_hz = max_freq;
-+
-+	ret = ti_sci_do_xfer(info, xfer);
-+	if (ret) {
-+		dev_err(dev, "Mbox send fail %d\n", ret);
-+		goto fail;
-+	}
-+
-+	resp = (struct ti_sci_msg_resp_query_clock_freq *)xfer->xfer_buf;
-+
-+	if (!tis_sci_is_response_ack(resp))
-+		ret = -ENODEV;
-+	else
-+		*match_freq = resp->freq_hz;
-+
-+fail:
-+	ti_sci_put_one_xfer(&info->minfo, xfer);
-+
-+	return ret;
-+}
-+
-+/**
-+ * ti_sci_cmd_clk_set_freq() - Set a frequency for clock
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @min_freq:	The minimum allowable frequency in Hz. This is the minimum
-+ *		allowable programmed frequency and does not account for clock
-+ *		tolerances and jitter.
-+ * @target_freq: The target clock frequency in Hz. A frequency will be
-+ *		processed as close to this target frequency as possible.
-+ * @max_freq:	The maximum allowable frequency in Hz. This is the maximum
-+ *		allowable programmed frequency and does not account for clock
-+ *		tolerances and jitter.
-+ *
-+ * Return: 0 if all went well, else returns appropriate error value.
-+ */
-+static int ti_sci_cmd_clk_set_freq(const struct ti_sci_handle *handle,
-+				   u32 dev_id, u8 clk_id, u64 min_freq,
-+				   u64 target_freq, u64 max_freq)
-+{
-+	struct ti_sci_info *info;
-+	struct ti_sci_msg_req_set_clock_freq *req;
-+	struct ti_sci_msg_hdr *resp;
-+	struct ti_sci_xfer *xfer;
-+	struct device *dev;
-+	int ret = 0;
-+
-+	if (IS_ERR(handle))
-+		return PTR_ERR(handle);
-+	if (!handle)
-+		return -EINVAL;
-+
-+	info = handle_to_ti_sci_info(handle);
-+	dev = info->dev;
-+
-+	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_SET_CLOCK_FREQ,
-+				   TI_SCI_FLAG_REQ_ACK_ON_PROCESSED,
-+				   sizeof(*req), sizeof(*resp));
-+	if (IS_ERR(xfer)) {
-+		ret = PTR_ERR(xfer);
-+		dev_err(dev, "Message alloc failed(%d)\n", ret);
-+		return ret;
-+	}
-+	req = (struct ti_sci_msg_req_set_clock_freq *)xfer->xfer_buf;
-+	req->dev_id = dev_id;
-+	req->clk_id = clk_id;
-+	req->min_freq_hz = min_freq;
-+	req->target_freq_hz = target_freq;
-+	req->max_freq_hz = max_freq;
-+
-+	ret = ti_sci_do_xfer(info, xfer);
-+	if (ret) {
-+		dev_err(dev, "Mbox send fail %d\n", ret);
-+		goto fail;
-+	}
-+
-+	resp = (struct ti_sci_msg_hdr *)xfer->xfer_buf;
-+
-+	ret = tis_sci_is_response_ack(resp) ? 0 : -ENODEV;
-+
-+fail:
-+	ti_sci_put_one_xfer(&info->minfo, xfer);
-+
-+	return ret;
-+}
-+
-+/**
-+ * ti_sci_cmd_clk_get_freq() - Get current frequency
-+ * @handle:	pointer to TI SCI handle
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @freq:	Currently frequency in Hz
-+ *
-+ * Return: 0 if all went well, else returns appropriate error value.
-+ */
-+static int ti_sci_cmd_clk_get_freq(const struct ti_sci_handle *handle,
-+				   u32 dev_id, u8 clk_id, u64 *freq)
-+{
-+	struct ti_sci_info *info;
-+	struct ti_sci_msg_req_get_clock_freq *req;
-+	struct ti_sci_msg_resp_get_clock_freq *resp;
-+	struct ti_sci_xfer *xfer;
-+	struct device *dev;
-+	int ret = 0;
-+
-+	if (IS_ERR(handle))
-+		return PTR_ERR(handle);
-+	if (!handle || !freq)
-+		return -EINVAL;
-+
-+	info = handle_to_ti_sci_info(handle);
-+	dev = info->dev;
-+
-+	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_GET_CLOCK_FREQ,
-+				   TI_SCI_FLAG_REQ_ACK_ON_PROCESSED,
-+				   sizeof(*req), sizeof(*resp));
-+	if (IS_ERR(xfer)) {
-+		ret = PTR_ERR(xfer);
-+		dev_err(dev, "Message alloc failed(%d)\n", ret);
-+		return ret;
-+	}
-+	req = (struct ti_sci_msg_req_get_clock_freq *)xfer->xfer_buf;
-+	req->dev_id = dev_id;
-+	req->clk_id = clk_id;
-+
-+	ret = ti_sci_do_xfer(info, xfer);
-+	if (ret) {
-+		dev_err(dev, "Mbox send fail %d\n", ret);
-+		goto fail;
-+	}
-+
-+	resp = (struct ti_sci_msg_resp_get_clock_freq *)xfer->xfer_buf;
-+
-+	if (!tis_sci_is_response_ack(resp))
-+		ret = -ENODEV;
-+	else
-+		*freq = resp->freq_hz;
-+
-+fail:
-+	ti_sci_put_one_xfer(&info->minfo, xfer);
-+
-+	return ret;
-+}
-+
- /*
-  * ti_sci_setup_ops() - Setup the operations structures
-  * @info:	pointer to TISCI pointer
-@@ -911,6 +1580,7 @@ static void ti_sci_setup_ops(struct ti_sci_info *info)
- {
- 	struct ti_sci_ops *ops = &info->handle.ops;
- 	struct ti_sci_dev_ops *dops = &ops->dev_ops;
-+	struct ti_sci_clk_ops *cops = &ops->clk_ops;
+  * ti_sci_get_handle() - Get the TI SCI handle for a device
+  * @dev:	Pointer to device for which we want SCI handle
+  *
+@@ -735,6 +1166,8 @@ static int ti_sci_probe(struct platform_device *pdev)
+ 		goto out;
+ 	}
  
- 	dops->get_device = ti_sci_cmd_get_device;
- 	dops->idle_device = ti_sci_cmd_idle_device;
-@@ -924,6 +1594,21 @@ static void ti_sci_setup_ops(struct ti_sci_info *info)
- 	dops->is_transitioning = ti_sci_cmd_dev_is_trans;
- 	dops->set_device_resets = ti_sci_cmd_set_device_resets;
- 	dops->get_device_resets = ti_sci_cmd_get_device_resets;
++	ti_sci_setup_ops(info);
 +
-+	cops->get_clock = ti_sci_cmd_get_clock;
-+	cops->idle_clock = ti_sci_cmd_idle_clock;
-+	cops->put_clock = ti_sci_cmd_put_clock;
-+	cops->is_auto = ti_sci_cmd_clk_is_auto;
-+	cops->is_on = ti_sci_cmd_clk_is_on;
-+	cops->is_off = ti_sci_cmd_clk_is_off;
-+
-+	cops->set_parent = ti_sci_cmd_clk_set_parent;
-+	cops->get_parent = ti_sci_cmd_clk_get_parent;
-+	cops->get_num_parents = ti_sci_cmd_clk_get_num_parents;
-+
-+	cops->get_best_match_freq = ti_sci_cmd_clk_get_match_freq;
-+	cops->set_freq = ti_sci_cmd_clk_set_freq;
-+	cops->get_freq = ti_sci_cmd_clk_get_freq;
- }
- 
- /**
+ 	dev_info(dev, "ABI: %d.%d (firmware rev 0x%04x '%s')\n",
+ 		 info->handle.version.abi_major, info->handle.version.abi_minor,
+ 		 info->handle.version.firmware_revision,
 diff --git a/drivers/firmware/ti_sci.h b/drivers/firmware/ti_sci.h
-index 29ce0532a7ca..f69907cfc128 100644
+index e9dc53f26e0e..29ce0532a7ca 100644
 --- a/drivers/firmware/ti_sci.h
 +++ b/drivers/firmware/ti_sci.h
-@@ -52,6 +52,16 @@
- #define TI_SCI_MSG_GET_DEVICE_STATE	0x0201
- #define TI_SCI_MSG_SET_DEVICE_RESETS	0x0202
+@@ -47,6 +47,11 @@
+ #define TI_SCI_MSG_WAKE_REASON	0x0003
+ #define TI_SCI_MSG_GOODBYE	0x0004
  
-+/* Clock requests */
-+#define TI_SCI_MSG_SET_CLOCK_STATE	0x0100
-+#define TI_SCI_MSG_GET_CLOCK_STATE	0x0101
-+#define TI_SCI_MSG_SET_CLOCK_PARENT	0x0102
-+#define TI_SCI_MSG_GET_CLOCK_PARENT	0x0103
-+#define TI_SCI_MSG_GET_NUM_CLOCK_PARENTS 0x0104
-+#define TI_SCI_MSG_SET_CLOCK_FREQ	0x010c
-+#define TI_SCI_MSG_QUERY_CLOCK_FREQ	0x010d
-+#define TI_SCI_MSG_GET_CLOCK_FREQ	0x010e
++/* Device requests */
++#define TI_SCI_MSG_SET_DEVICE_STATE	0x0200
++#define TI_SCI_MSG_GET_DEVICE_STATE	0x0201
++#define TI_SCI_MSG_SET_DEVICE_RESETS	0x0202
 +
  /**
   * struct ti_sci_msg_hdr - Generic Message Header for All messages and responses
   * @type:	Type of messages: One of TI_SCI_MSG* values
-@@ -188,4 +198,283 @@ struct ti_sci_msg_req_set_device_resets {
- 	u32 resets;
+@@ -90,4 +95,97 @@ struct ti_sci_msg_resp_version {
+ 	u8 abi_minor;
  } __packed;
  
 +/**
-+ * struct ti_sci_msg_req_set_clock_state - Request to setup a Clock state
-+ * @hdr:	Generic Header, Certain flags can be set specific to the clocks:
-+ *		MSG_FLAG_CLOCK_ALLOW_SSC: Allow this clock to be modified
-+ *		via spread spectrum clocking.
-+ *		MSG_FLAG_CLOCK_ALLOW_FREQ_CHANGE: Allow this clock's
-+ *		frequency to be changed while it is running so long as it
-+ *		is within the min/max limits.
-+ *		MSG_FLAG_CLOCK_INPUT_TERM: Enable input termination, this
-+ *		is only applicable to clock inputs on the SoC pseudo-device.
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @request_state: Request the state for the clock to be set to.
-+ *		MSG_CLOCK_SW_STATE_UNREQ: The IP does not require this clock,
-+ *		it can be disabled, regardless of the state of the device
-+ *		MSG_CLOCK_SW_STATE_AUTO: Allow the System Controller to
-+ *		automatically manage the state of this clock. If the device
-+ *		is enabled, then the clock is enabled. If the device is set
-+ *		to off or retention, then the clock is internally set as not
-+ *		being required by the device.(default)
-+ *		MSG_CLOCK_SW_STATE_REQ:  Configure the clock to be enabled,
-+ *		regardless of the state of the device.
++ * struct ti_sci_msg_req_set_device_state - Set the desired state of the device
++ * @hdr:		Generic header
++ * @id:	Indicates which device to modify
++ * @reserved: Reserved space in message, must be 0 for backward compatibility
++ * @state: The desired state of the device.
 + *
-+ * Normally, all required clocks are managed by TISCI entity, this is used
-+ * only for specific control *IF* required. Auto managed state is
-+ * MSG_CLOCK_SW_STATE_AUTO, in other states, TISCI entity assume remote
-+ * will explicitly control.
++ * Certain flags can also be set to alter the device state:
++ * + MSG_FLAG_DEVICE_WAKE_ENABLED - Configure the device to be a wake source.
++ * The meaning of this flag will vary slightly from device to device and from
++ * SoC to SoC but it generally allows the device to wake the SoC out of deep
++ * suspend states.
++ * + MSG_FLAG_DEVICE_RESET_ISO - Enable reset isolation for this device.
++ * + MSG_FLAG_DEVICE_EXCLUSIVE - Claim this device exclusively. When passed
++ * with STATE_RETENTION or STATE_ON, it will claim the device exclusively.
++ * If another host already has this device set to STATE_RETENTION or STATE_ON,
++ * the message will fail. Once successful, other hosts attempting to set
++ * STATE_RETENTION or STATE_ON will fail.
 + *
-+ * Request type is TI_SCI_MSG_SET_CLOCK_STATE, response is a generic
-+ * ACK or NACK message.
++ * Request type is TI_SCI_MSG_SET_DEVICE_STATE, responded with a generic
++ * ACK/NACK message.
 + */
-+struct ti_sci_msg_req_set_clock_state {
++struct ti_sci_msg_req_set_device_state {
 +	/* Additional hdr->flags options */
-+#define MSG_FLAG_CLOCK_ALLOW_SSC		TI_SCI_MSG_FLAG(8)
-+#define MSG_FLAG_CLOCK_ALLOW_FREQ_CHANGE	TI_SCI_MSG_FLAG(9)
-+#define MSG_FLAG_CLOCK_INPUT_TERM		TI_SCI_MSG_FLAG(10)
++#define MSG_FLAG_DEVICE_WAKE_ENABLED	TI_SCI_MSG_FLAG(8)
++#define MSG_FLAG_DEVICE_RESET_ISO	TI_SCI_MSG_FLAG(9)
++#define MSG_FLAG_DEVICE_EXCLUSIVE	TI_SCI_MSG_FLAG(10)
 +	struct ti_sci_msg_hdr hdr;
-+	u32 dev_id;
-+	u8 clk_id;
-+#define MSG_CLOCK_SW_STATE_UNREQ	0
-+#define MSG_CLOCK_SW_STATE_AUTO		1
-+#define MSG_CLOCK_SW_STATE_REQ		2
-+	u8 request_state;
++	u32 id;
++	u32 reserved;
++
++#define MSG_DEVICE_SW_STATE_AUTO_OFF	0
++#define MSG_DEVICE_SW_STATE_RETENTION	1
++#define MSG_DEVICE_SW_STATE_ON		2
++	u8 state;
 +} __packed;
 +
 +/**
-+ * struct ti_sci_msg_req_get_clock_state - Request for clock state
-+ * @hdr:	Generic Header
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to get state of.
++ * struct ti_sci_msg_req_get_device_state - Request to get device.
++ * @hdr:		Generic header
++ * @id:		Device Identifier
 + *
-+ * Request type is TI_SCI_MSG_GET_CLOCK_STATE, response is state
-+ * of the clock
++ * Request type is TI_SCI_MSG_GET_DEVICE_STATE, responded device state
++ * information
 + */
-+struct ti_sci_msg_req_get_clock_state {
++struct ti_sci_msg_req_get_device_state {
 +	struct ti_sci_msg_hdr hdr;
-+	u32 dev_id;
-+	u8 clk_id;
++	u32 id;
 +} __packed;
 +
 +/**
-+ * struct ti_sci_msg_resp_get_clock_state - Response to get clock state
-+ * @hdr:	Generic Header
-+ * @programmed_state: Any programmed state of the clock. This is one of
-+ *		MSG_CLOCK_SW_STATE* values.
-+ * @current_state: Current state of the clock. This is one of:
-+ *		MSG_CLOCK_HW_STATE_NOT_READY: Clock is not ready
-+ *		MSG_CLOCK_HW_STATE_READY: Clock is ready
++ * struct ti_sci_msg_resp_get_device_state - Response to get device request.
++ * @hdr:		Generic header
++ * @context_loss_count: Indicates how many times the device has lost context. A
++ *	driver can use this monotonic counter to determine if the device has
++ *	lost context since the last time this message was exchanged.
++ * @resets: Programmed state of the reset lines.
++ * @programmed_state:	The state as programmed by set_device.
++ *			- Uses the MSG_DEVICE_SW_* macros
++ * @current_state:	The actual state of the hardware.
 + *
-+ * Response to TI_SCI_MSG_GET_CLOCK_STATE.
++ * Response to request TI_SCI_MSG_GET_DEVICE_STATE.
 + */
-+struct ti_sci_msg_resp_get_clock_state {
++struct ti_sci_msg_resp_get_device_state {
 +	struct ti_sci_msg_hdr hdr;
++	u32 context_loss_count;
++	u32 resets;
 +	u8 programmed_state;
-+#define MSG_CLOCK_HW_STATE_NOT_READY	0
-+#define MSG_CLOCK_HW_STATE_READY	1
++#define MSG_DEVICE_HW_STATE_OFF		0
++#define MSG_DEVICE_HW_STATE_ON		1
++#define MSG_DEVICE_HW_STATE_TRANS	2
 +	u8 current_state;
 +} __packed;
 +
 +/**
-+ * struct ti_sci_msg_req_set_clock_parent - Set the clock parent
-+ * @hdr:	Generic Header
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * @parent_id:	The new clock parent is selectable by an index via this
-+ *		parameter.
-+ *
-+ * Request type is TI_SCI_MSG_SET_CLOCK_PARENT, response is generic
-+ * ACK / NACK message.
-+ */
-+struct ti_sci_msg_req_set_clock_parent {
-+	struct ti_sci_msg_hdr hdr;
-+	u32 dev_id;
-+	u8 clk_id;
-+	u8 parent_id;
-+} __packed;
-+
-+/**
-+ * struct ti_sci_msg_req_get_clock_parent - Get the clock parent
-+ * @hdr:	Generic Header
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to get the parent for.
-+ *
-+ * Request type is TI_SCI_MSG_GET_CLOCK_PARENT, response is parent information
-+ */
-+struct ti_sci_msg_req_get_clock_parent {
-+	struct ti_sci_msg_hdr hdr;
-+	u32 dev_id;
-+	u8 clk_id;
-+} __packed;
-+
-+/**
-+ * struct ti_sci_msg_resp_get_clock_parent - Response with clock parent
-+ * @hdr:	Generic Header
-+ * @parent_id:	The current clock parent
-+ *
-+ * Response to TI_SCI_MSG_GET_CLOCK_PARENT.
-+ */
-+struct ti_sci_msg_resp_get_clock_parent {
-+	struct ti_sci_msg_hdr hdr;
-+	u8 parent_id;
-+} __packed;
-+
-+/**
-+ * struct ti_sci_msg_req_get_clock_num_parents - Request to get clock parents
-+ * @hdr:	Generic header
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *
-+ * This request provides information about how many clock parent options
-+ * are available for a given clock to a device. This is typically used
-+ * for input clocks.
-+ *
-+ * Request type is TI_SCI_MSG_GET_NUM_CLOCK_PARENTS, response is appropriate
-+ * message, or NACK in case of inability to satisfy request.
-+ */
-+struct ti_sci_msg_req_get_clock_num_parents {
-+	struct ti_sci_msg_hdr hdr;
-+	u32 dev_id;
-+	u8 clk_id;
-+} __packed;
-+
-+/**
-+ * struct ti_sci_msg_resp_get_clock_num_parents - Response for get clk parents
++ * struct ti_sci_msg_req_set_device_resets - Set the desired resets
++ *				configuration of the device
 + * @hdr:		Generic header
-+ * @num_parents:	Number of clock parents
++ * @id:	Indicates which device to modify
++ * @resets: A bit field of resets for the device. The meaning, behavior,
++ *	and usage of the reset flags are device specific. 0 for a bit
++ *	indicates releasing the reset represented by that bit while 1
++ *	indicates keeping it held.
 + *
-+ * Response to TI_SCI_MSG_GET_NUM_CLOCK_PARENTS
++ * Request type is TI_SCI_MSG_SET_DEVICE_RESETS, responded with a generic
++ * ACK/NACK message.
 + */
-+struct ti_sci_msg_resp_get_clock_num_parents {
++struct ti_sci_msg_req_set_device_resets {
 +	struct ti_sci_msg_hdr hdr;
-+	u8 num_parents;
-+} __packed;
-+
-+/**
-+ * struct ti_sci_msg_req_query_clock_freq - Request to query a frequency
-+ * @hdr:	Generic Header
-+ * @dev_id:	Device identifier this request is for
-+ * @min_freq_hz: The minimum allowable frequency in Hz. This is the minimum
-+ *		allowable programmed frequency and does not account for clock
-+ *		tolerances and jitter.
-+ * @target_freq_hz: The target clock frequency. A frequency will be found
-+ *		as close to this target frequency as possible.
-+ * @max_freq_hz: The maximum allowable frequency in Hz. This is the maximum
-+ *		allowable programmed frequency and does not account for clock
-+ *		tolerances and jitter.
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *
-+ * NOTE: Normally clock frequency management is automatically done by TISCI
-+ * entity. In case of specific requests, TISCI evaluates capability to achieve
-+ * requested frequency within provided range and responds with
-+ * result message.
-+ *
-+ * Request type is TI_SCI_MSG_QUERY_CLOCK_FREQ, response is appropriate message,
-+ * or NACK in case of inability to satisfy request.
-+ */
-+struct ti_sci_msg_req_query_clock_freq {
-+	struct ti_sci_msg_hdr hdr;
-+	u32 dev_id;
-+	u64 min_freq_hz;
-+	u64 target_freq_hz;
-+	u64 max_freq_hz;
-+	u8 clk_id;
-+} __packed;
-+
-+/**
-+ * struct ti_sci_msg_resp_query_clock_freq - Response to a clock frequency query
-+ * @hdr:	Generic Header
-+ * @freq_hz:	Frequency that is the best match in Hz.
-+ *
-+ * Response to request type TI_SCI_MSG_QUERY_CLOCK_FREQ. NOTE: if the request
-+ * cannot be satisfied, the message will be of type NACK.
-+ */
-+struct ti_sci_msg_resp_query_clock_freq {
-+	struct ti_sci_msg_hdr hdr;
-+	u64 freq_hz;
-+} __packed;
-+
-+/**
-+ * struct ti_sci_msg_req_set_clock_freq - Request to setup a clock frequency
-+ * @hdr:	Generic Header
-+ * @dev_id:	Device identifier this request is for
-+ * @min_freq_hz: The minimum allowable frequency in Hz. This is the minimum
-+ *		allowable programmed frequency and does not account for clock
-+ *		tolerances and jitter.
-+ * @target_freq_hz: The target clock frequency. The clock will be programmed
-+ *		at a rate as close to this target frequency as possible.
-+ * @max_freq_hz: The maximum allowable frequency in Hz. This is the maximum
-+ *		allowable programmed frequency and does not account for clock
-+ *		tolerances and jitter.
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *
-+ * NOTE: Normally clock frequency management is automatically done by TISCI
-+ * entity. In case of specific requests, TISCI evaluates capability to achieve
-+ * requested range and responds with success/failure message.
-+ *
-+ * This sets the desired frequency for a clock within an allowable
-+ * range. This message will fail on an enabled clock unless
-+ * MSG_FLAG_CLOCK_ALLOW_FREQ_CHANGE is set for the clock. Additionally,
-+ * if other clocks have their frequency modified due to this message,
-+ * they also must have the MSG_FLAG_CLOCK_ALLOW_FREQ_CHANGE or be disabled.
-+ *
-+ * Calling set frequency on a clock input to the SoC pseudo-device will
-+ * inform the PMMC of that clock's frequency. Setting a frequency of
-+ * zero will indicate the clock is disabled.
-+ *
-+ * Calling set frequency on clock outputs from the SoC pseudo-device will
-+ * function similarly to setting the clock frequency on a device.
-+ *
-+ * Request type is TI_SCI_MSG_SET_CLOCK_FREQ, response is a generic ACK/NACK
-+ * message.
-+ */
-+struct ti_sci_msg_req_set_clock_freq {
-+	struct ti_sci_msg_hdr hdr;
-+	u32 dev_id;
-+	u64 min_freq_hz;
-+	u64 target_freq_hz;
-+	u64 max_freq_hz;
-+	u8 clk_id;
-+} __packed;
-+
-+/**
-+ * struct ti_sci_msg_req_get_clock_freq - Request to get the clock frequency
-+ * @hdr:	Generic Header
-+ * @dev_id:	Device identifier this request is for
-+ * @clk_id:	Clock identifier for the device for this request.
-+ *
-+ * NOTE: Normally clock frequency management is automatically done by TISCI
-+ * entity. In some cases, clock frequencies are configured by host.
-+ *
-+ * Request type is TI_SCI_MSG_GET_CLOCK_FREQ, responded with clock frequency
-+ * that the clock is currently at.
-+ */
-+struct ti_sci_msg_req_get_clock_freq {
-+	struct ti_sci_msg_hdr hdr;
-+	u32 dev_id;
-+	u8 clk_id;
-+} __packed;
-+
-+/**
-+ * struct ti_sci_msg_resp_get_clock_freq - Response of clock frequency request
-+ * @hdr:	Generic Header
-+ * @freq_hz:	Frequency that the clock is currently on, in Hz.
-+ *
-+ * Response to request type TI_SCI_MSG_GET_CLOCK_FREQ.
-+ */
-+struct ti_sci_msg_resp_get_clock_freq {
-+	struct ti_sci_msg_hdr hdr;
-+	u64 freq_hz;
++	u32 id;
++	u32 resets;
 +} __packed;
 +
  #endif /* __TI_SCI_H */
 diff --git a/include/linux/soc/ti/ti_sci_protocol.h b/include/linux/soc/ti/ti_sci_protocol.h
-index 87fa73851471..76378fddf609 100644
+index e73483fd5327..87fa73851471 100644
 --- a/include/linux/soc/ti/ti_sci_protocol.h
 +++ b/include/linux/soc/ti/ti_sci_protocol.h
-@@ -115,11 +115,89 @@ struct ti_sci_dev_ops {
+@@ -33,12 +33,103 @@ struct ti_sci_version_info {
+ 	char firmware_description[32];
  };
  
- /**
-+ * struct ti_sci_clk_ops - Clock control operations
-+ * @get_clock:	Request for activation of clock and manage by processor
-+ *		- needs_ssc: 'true' if Spread Spectrum clock is desired.
-+ *		- can_change_freq: 'true' if frequency change is desired.
-+ *		- enable_input_term: 'true' if input termination is desired.
-+ * @idle_clock:	Request for Idling a clock managed by processor
-+ * @put_clock:	Release the clock to be auto managed by TISCI
-+ * @is_auto:	Is the clock being auto managed
-+ *		- req_state: state indicating if the clock is auto managed
-+ * @is_on:	Is the clock ON
-+ *		- req_state: if the clock is requested to be forced ON
-+ *		- current_state: if the clock is currently ON
-+ * @is_off:	Is the clock OFF
-+ *		- req_state: if the clock is requested to be forced OFF
-+ *		- current_state: if the clock is currently Gated
-+ * @set_parent:	Set the clock source of a specific device clock
-+ *		- parent_id: Parent clock identifier to set.
-+ * @get_parent:	Get the current clock source of a specific device clock
-+ *		- parent_id: Parent clock identifier which is the parent.
-+ * @get_num_parents: Get the number of parents of the current clock source
-+ *		- num_parents: returns the number of parent clocks.
-+ * @get_best_match_freq: Find a best matching frequency for a frequency
-+ *		range.
-+ *		- match_freq: Best matching frequency in Hz.
-+ * @set_freq:	Set the Clock frequency
-+ * @get_freq:	Get the Clock frequency
-+ *		- current_freq: Frequency in Hz that the clock is at.
++struct ti_sci_handle;
++
++/**
++ * struct ti_sci_dev_ops - Device control operations
++ * @get_device: Command to request for device managed by TISCI
++ *		Returns 0 for successful exclusive request, else returns
++ *		corresponding error message.
++ * @idle_device: Command to idle a device managed by TISCI
++ *		Returns 0 for successful exclusive request, else returns
++ *		corresponding error message.
++ * @put_device:	Command to release a device managed by TISCI
++ *		Returns 0 for successful release, else returns corresponding
++ *		error message.
++ * @is_valid:	Check if the device ID is a valid ID.
++ *		Returns 0 if the ID is valid, else returns corresponding error.
++ * @get_context_loss_count: Command to retrieve context loss counter - this
++ *		increments every time the device looses context. Overflow
++ *		is possible.
++ *		- count: pointer to u32 which will retrieve counter
++ *		Returns 0 for successful information request and count has
++ *		proper data, else returns corresponding error message.
++ * @is_idle:	Reports back about device idle state
++ *		- req_state: Returns requested idle state
++ *		Returns 0 for successful information request and req_state and
++ *		current_state has proper data, else returns corresponding error
++ *		message.
++ * @is_stop:	Reports back about device stop state
++ *		- req_state: Returns requested stop state
++ *		- current_state: Returns current stop state
++ *		Returns 0 for successful information request and req_state and
++ *		current_state has proper data, else returns corresponding error
++ *		message.
++ * @is_on:	Reports back about device ON(or active) state
++ *		- req_state: Returns requested ON state
++ *		- current_state: Returns current ON state
++ *		Returns 0 for successful information request and req_state and
++ *		current_state has proper data, else returns corresponding error
++ *		message.
++ * @is_transitioning: Reports back if the device is in the middle of transition
++ *		of state.
++ *		-current_state: Returns 'true' if currently transitioning.
++ * @set_device_resets: Command to configure resets for device managed by TISCI.
++ *		-reset_state: Device specific reset bit field
++ *		Returns 0 for successful request, else returns
++ *		corresponding error message.
++ * @get_device_resets: Command to read state of resets for device managed
++ *		by TISCI.
++ *		-reset_state: pointer to u32 which will retrieve resets
++ *		Returns 0 for successful request, else returns
++ *		corresponding error message.
 + *
 + * NOTE: for all these functions, the following parameters are generic in
 + * nature:
 + * -handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
-+ * -did:	Device identifier this request is for
-+ * -cid:	Clock identifier for the device for this request.
-+ *		Each device has it's own set of clock inputs. This indexes
-+ *		which clock input to modify.
-+ * -min_freq:	The minimum allowable frequency in Hz. This is the minimum
-+ *		allowable programmed frequency and does not account for clock
-+ *		tolerances and jitter.
-+ * -target_freq: The target clock frequency in Hz. A frequency will be
-+ *		processed as close to this target frequency as possible.
-+ * -max_freq:	The maximum allowable frequency in Hz. This is the maximum
-+ *		allowable programmed frequency and does not account for clock
-+ *		tolerances and jitter.
++ * -id:		Device Identifier
 + *
-+ * Request for the clock - NOTE: the client MUST maintain integrity of
-+ * usage count by balancing get_clock with put_clock. No refcounting is
++ * Request for the device - NOTE: the client MUST maintain integrity of
++ * usage count by balancing get_device with put_device. No refcounting is
 + * managed by driver for that purpose.
 + */
-+struct ti_sci_clk_ops {
-+	int (*get_clock)(const struct ti_sci_handle *handle, u32 did, u8 cid,
-+			 bool needs_ssc, bool can_change_freq,
-+			 bool enable_input_term);
-+	int (*idle_clock)(const struct ti_sci_handle *handle, u32 did, u8 cid);
-+	int (*put_clock)(const struct ti_sci_handle *handle, u32 did, u8 cid);
-+	int (*is_auto)(const struct ti_sci_handle *handle, u32 did, u8 cid,
-+		       bool *req_state);
-+	int (*is_on)(const struct ti_sci_handle *handle, u32 did, u8 cid,
++struct ti_sci_dev_ops {
++	int (*get_device)(const struct ti_sci_handle *handle, u32 id);
++	int (*idle_device)(const struct ti_sci_handle *handle, u32 id);
++	int (*put_device)(const struct ti_sci_handle *handle, u32 id);
++	int (*is_valid)(const struct ti_sci_handle *handle, u32 id);
++	int (*get_context_loss_count)(const struct ti_sci_handle *handle,
++				      u32 id, u32 *count);
++	int (*is_idle)(const struct ti_sci_handle *handle, u32 id,
++		       bool *requested_state);
++	int (*is_stop)(const struct ti_sci_handle *handle, u32 id,
++		       bool *req_state, bool *current_state);
++	int (*is_on)(const struct ti_sci_handle *handle, u32 id,
 +		     bool *req_state, bool *current_state);
-+	int (*is_off)(const struct ti_sci_handle *handle, u32 did, u8 cid,
-+		      bool *req_state, bool *current_state);
-+	int (*set_parent)(const struct ti_sci_handle *handle, u32 did, u8 cid,
-+			  u8 parent_id);
-+	int (*get_parent)(const struct ti_sci_handle *handle, u32 did, u8 cid,
-+			  u8 *parent_id);
-+	int (*get_num_parents)(const struct ti_sci_handle *handle, u32 did,
-+			       u8 cid, u8 *num_parents);
-+	int (*get_best_match_freq)(const struct ti_sci_handle *handle, u32 did,
-+				   u8 cid, u64 min_freq, u64 target_freq,
-+				   u64 max_freq, u64 *match_freq);
-+	int (*set_freq)(const struct ti_sci_handle *handle, u32 did, u8 cid,
-+			u64 min_freq, u64 target_freq, u64 max_freq);
-+	int (*get_freq)(const struct ti_sci_handle *handle, u32 did, u8 cid,
-+			u64 *current_freq);
++	int (*is_transitioning)(const struct ti_sci_handle *handle, u32 id,
++				bool *current_state);
++	int (*set_device_resets)(const struct ti_sci_handle *handle, u32 id,
++				 u32 reset_state);
++	int (*get_device_resets)(const struct ti_sci_handle *handle, u32 id,
++				 u32 *reset_state);
 +};
 +
 +/**
-  * struct ti_sci_ops - Function support for TI SCI
-  * @dev_ops:	Device specific operations
-+ * @clk_ops:	Clock specific operations
++ * struct ti_sci_ops - Function support for TI SCI
++ * @dev_ops:	Device specific operations
++ */
++struct ti_sci_ops {
++	struct ti_sci_dev_ops dev_ops;
++};
++
+ /**
+  * struct ti_sci_handle - Handle returned to TI SCI clients for usage.
+  * @version:	structure containing version information
++ * @ops:	operations that are made available to TI SCI clients
   */
- struct ti_sci_ops {
- 	struct ti_sci_dev_ops dev_ops;
-+	struct ti_sci_clk_ops clk_ops;
+ struct ti_sci_handle {
+ 	struct ti_sci_version_info version;
++	struct ti_sci_ops ops;
  };
  
- /**
+ #if IS_ENABLED(CONFIG_TI_SCI_PROTOCOL)
 -- 
 2.9.1.200.gb1ec08f
