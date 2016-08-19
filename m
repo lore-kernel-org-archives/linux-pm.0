@@ -1,63 +1,60 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH -next] thermal: qcom: tsens: Fix return value check in
- init_common()
-Date: Fri, 19 Aug 2016 21:12:58 +0800
-Message-ID: <1471612378.2691.74.camel@intel.com>
-References: <1469860357-2773-1-git-send-email-weiyj.lk@gmail.com>
+Subject: Re: [PATCH] thermal: imx: fix a possible NULL dereference
+Date: Fri, 19 Aug 2016 21:17:34 +0800
+Message-ID: <1471612654.2691.76.camel@intel.com>
+References: <1471337498-6382-1-git-send-email-clabbe.montjoie@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:60055 "EHLO mga09.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754931AbcHSNQL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 19 Aug 2016 09:16:11 -0400
-In-Reply-To: <1469860357-2773-1-git-send-email-weiyj.lk@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1471337498-6382-1-git-send-email-clabbe.montjoie@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: LABBE Corentin <clabbe.montjoie@gmail.com>, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Yongjun <weiyj.lk@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 六, 2016-07-30 at 00:32 -0600, Wei Yongjun wrote:
-> In case of error, the function of_iomap() returns NULL pointer
-> not ERR_PTR(). The IS_ERR() test in the return value check
-> should be replaced with NULL test.
-> And the function devm_regmap_init_mmio() returns ERR_PTR()
-> and never returns NULL. The NULL test in the return value
-> check should be replaced with IS_ERR().
+On 二, 2016-08-16 at 10:51 +0200, LABBE Corentin wrote:
+> of_match_device could return NULL, and so cause a NULL pointer
+> dereference later at line 472:
+> data->socdata = of_id->data;
 > 
-> Signed-off-by: Wei Yongjun <weiyj.lk@gmail.com>
+> For fixing this problem, we use of_device_get_match_data(), this will
+> simplify the code a little by using a standard function for
+> getting the match data.
+> 
+> Reported-by: coverity (CID 1324128)
+> Signed-off-by: LABBE Corentin <clabbe.montjoie@gmail.com>
 
-Patch applied.
+patch applied.
 
 thanks,
 rui
 > ---
->  drivers/thermal/qcom/tsens-common.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+>  drivers/thermal/imx_thermal.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
 > 
-> diff --git a/drivers/thermal/qcom/tsens-common.c
-> b/drivers/thermal/qcom/tsens-common.c
-> index 4a1af15..b1449ad 100644
-> --- a/drivers/thermal/qcom/tsens-common.c
-> +++ b/drivers/thermal/qcom/tsens-common.c
-> @@ -128,13 +128,13 @@ int __init init_common(struct tsens_device
-> *tmdev)
->  	void __iomem *base;
+> diff --git a/drivers/thermal/imx_thermal.c
+> b/drivers/thermal/imx_thermal.c
+> index c5547bd..e473548b 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -471,8 +471,6 @@ MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
 >  
->  	base = of_iomap(tmdev->dev->of_node, 0);
-> -	if (IS_ERR(base))
-> +	if (!base)
->  		return -EINVAL;
->  
->  	tmdev->map = devm_regmap_init_mmio(tmdev->dev, base,
-> &tsens_config);
-> -	if (!tmdev->map) {
-> +	if (IS_ERR(tmdev->map)) {
->  		iounmap(base);
-> -		return -ENODEV;
-> +		return PTR_ERR(tmdev->map);
+>  static int imx_thermal_probe(struct platform_device *pdev)
+>  {
+> -	const struct of_device_id *of_id =
+> -		of_match_device(of_imx_thermal_match, &pdev->dev);
+>  	struct imx_thermal_data *data;
+>  	struct regmap *map;
+>  	int measure_freq;
+> @@ -490,7 +488,7 @@ static int imx_thermal_probe(struct
+> platform_device *pdev)
 >  	}
+>  	data->tempmon = map;
 >  
->  	return 0;
-> 
+> -	data->socdata = of_id->data;
+> +	data->socdata = of_device_get_match_data(&pdev->dev);
+>  
+>  	/* make sure the IRQ flag is clear before enabling irq on
+> i.MX6SX */
+>  	if (data->socdata->version == TEMPMON_IMX6SX) {
