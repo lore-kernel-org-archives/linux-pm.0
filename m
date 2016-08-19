@@ -1,49 +1,47 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH] sched: fix incorrect PELT values on SMT
-Date: Fri, 19 Aug 2016 13:13:59 -0700
-Message-ID: <20160819201359.GF11114@graphite.smuckle.net>
-References: <1471571741-19504-1-git-send-email-smuckle@linaro.org>
- <02391a39-b785-6056-49c4-c0ff34b3b780@arm.com>
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: Re: [PATCH v1 2/3] of: Add support for reading a s32 from a multi-value property.
+Date: Fri, 19 Aug 2016 22:41:24 +0200
+Message-ID: <4975010.IL95Y3Sj1J@phil>
+References: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com> <1471315139-28285-3-git-send-email-finley.xiao@rock-chips.com> <1471616119.61594.465.camel@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:35194 "EHLO
-        mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754611AbcHSUOD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Aug 2016 16:14:03 -0400
-Received: by mail-pa0-f42.google.com with SMTP id hb8so482435pac.2
-        for <linux-pm@vger.kernel.org>; Fri, 19 Aug 2016 13:14:02 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <02391a39-b785-6056-49c4-c0ff34b3b780@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1471616119.61594.465.camel@infradead.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Finlye Xiao <finley.xiao@rock-chips.com>, srinivas.kandagatla@linaro.org, maxime.ripard@free-electrons.com, robh+dt@kernel.org, frowand.list@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, mark.rutland@arm.com, khilman@kernel.org, nm@ti.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, jay.xu@rock-chips.com, rocky.hao@rock-chips.com, tim.chen@rock-chips.com, tony.xie@rock-chips.com, ulysses.huang@rock-chips.com, lin.huang@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
 
-On Fri, Aug 19, 2016 at 04:00:57PM +0100, Dietmar Eggemann wrote:
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 61d485421bed..95d34b337152 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -2731,7 +2731,7 @@ __update_load_avg(u64 now, int cpu, struct sched_avg *sa,
-> >  	sa->last_update_time = now;
-> >  
-> >  	scale_freq = arch_scale_freq_capacity(NULL, cpu);
-> > -	scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
-> > +	scale_cpu = arch_scale_cpu_capacity(cpu_rq(cpu)->sd, cpu);
+Am Freitag, 19. August 2016, 15:15:19 CEST schrieb David Woodhouse:
+> On Tue, 2016-08-16 at 10:38 +0800, Finlye Xiao wrote:
+> > From: Finley Xiao <finley.xiao@rock-chips.com>
+> > 
+> > This patch adds an of_property_read_s32_index() function to allow
+> > reading a single indexed s32 value from a property containing multiple
+> > s32 values.
+> > 
+> > Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
 > 
-> Wouldn't you have to subscribe to this rcu pointer rq->sd w/ something
-> like 'rcu_dereference(cpu_rq(cpu)->sd)'?
+> NAK.
 > 
-> IMHO, __update_load_avg() is called outside existing RCU read-side
-> critical sections as well so there would be a pair of
-> rcu_read_lock()/rcu_read_unlock() required in this case.
+> Nobody should be using the old of_property_* functions any more anyway.
+> You should be using the generic device_propery_* functions which work
+> regardless of where the information comes from (actual DT vs. ACPI
+> _DSD).
+>
+> So no, don't *add* any more of these functions. Only add the generic
+> version. And if your driver isn't using the generic property
+> functions... fix it.
 
-Thanks Dietmar for the review.
+As far as I can see, all the device_property_* functions are grounded on their
+of_property_*, acpi_property_* etc counterparts and functions reading specific
+elements (the _index variants) are currently not available at all.
 
-Yeah I didn't consider that this was protected with rcu. It looks like
-I'm abandoning this approach anyway though and doing something limited
-just to schedutil.
+drivers/base/property.c:
+#define OF_DEV_PROP_READ_ARRAY(node, propname, type, val, nval)				\
+	(val) ? of_property_read_##type##_array((node), (propname), (val), (nval))	\
+	      : of_property_count_elems_of_size((node), (propname), sizeof(type))
 
-thanks,
-Steve
+So even if you're using the device_property_* functions you'd still need
+a match in the underlying functions or am I missing something?
