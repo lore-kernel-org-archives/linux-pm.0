@@ -1,63 +1,55 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [PATCH] sched: fix incorrect PELT values on SMT
-Date: Fri, 19 Aug 2016 16:30:39 +0100
-Message-ID: <20160819153038.GB25262@e105550-lin.cambridge.arm.com>
-References: <1471571741-19504-1-git-send-email-smuckle@linaro.org>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v6 1/7] power: act8945a_charger: Remove
+ "battery_temperature"
+Date: Fri, 19 Aug 2016 17:43:36 +0200
+Message-ID: <20160819154336.e6etmygoxnxnngd6@earth>
+References: <1471569215-6046-1-git-send-email-wenyou.yang@atmel.com>
+ <1471569215-6046-2-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:36954 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755466AbcHSPae (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 19 Aug 2016 11:30:34 -0400
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="dd5nxqelj5ii35pz"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1471571741-19504-1-git-send-email-smuckle@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1471569215-6046-2-git-send-email-wenyou.yang@atmel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Wenyou Yang <wenyou.yang@atmel.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
 
-Hi Steve,
 
-On Thu, Aug 18, 2016 at 06:55:41PM -0700, Steve Muckle wrote:
-> PELT scales its util_sum and util_avg values via
-> arch_scale_cpu_capacity(). If that function is passed the CPU's sched
-> domain then it will reduce the scaling capacity if SD_SHARE_CPUCAPACITY
-> is set. PELT does not pass in the sd however. The other caller of
-> arch_scale_cpu_capacity, update_cpu_capacity(), does. This means
-> util_sum and util_avg scale beyond the CPU capacity on SMT.
-> 
-> On an Intel i7-3630QM for example rq->cpu_capacity_orig is 589 but
-> util_avg scales up to 1024.
+--dd5nxqelj5ii35pz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I can't convince myself whether this is the right thing to do. SMT is a
-bit 'special' and it depends on how you model SMT capacity.
+Hi,
 
-I'm no SMT expert, but the way I understand the current SMT capacity
-model is that capacity_orig represents the capacity of the SMT-thread
-when all its thread-siblings are busy. The true capacity of an
-SMT-thread where all thread-siblings are idle is actually 1024, but we
-don't model this (it would be nightmare to track when the capacity
-should change). The capacity of a core with two or more SMT-threads is
-chosen to be 1024 + smt_gain, where smt_gain is supposed represent the
-additional throughput we gain for the additional SMT-threads. The reason
-why we don't have 1024 per thread is that we would prefer to have only
-one task per core if possible.
+On Fri, Aug 19, 2016 at 09:13:29AM +0800, Wenyou Yang wrote:
+> -	if (charger->battery_temperature && !(status & APCH_STATUS_TEMPDAT))
+> +	if (status & APCH_STATUS_TEMPDAT)
 
-With util_avg scaling to 1024 a core (capacity = 2*589) would be nearly
-'full' with just one always-running task. If we change util_avg to max
-out at 589, it would take two always-running tasks for the combined
-utilization to match the core capacity. So we may loose some bias
-towards spreading for SMT systems.
+This is still wrong. You removed the negation.
 
-AFAICT, group_is_overloaded() and group_has_capacity() would both be
-affected by this patch.
+-- Sebastian
 
-Interestingly, Vincent recently proposed to set the SMT-thread capacity
-to 1024 which would affectively make all the current SMT code redundant.
-It would make things a lot simpler, but I'm not sure if we can get away
-with it. It would need discussion at least.
+--dd5nxqelj5ii35pz
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Opinions?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Morten
+iQIcBAEBCgAGBQJXtykoAAoJENju1/PIO/qa9HgP/Aghb7YDvdH1I2+3ujzKlSIZ
+Aq4iDx/gJeVdaIiU5Z0jHx7NPbZBpWerRwGDmN2gcmKLBqM0DPn+OqqCT/5OBQW1
+ZxtlK1XlxfSyCG08xkpqpIJr7a09ZutqZQymmxmZrepxsvsM3kqcZ5YR6sk4tJ0y
+i6WI77kEzJMJhSJ56jesQRIsSmCi7GL7iwvNkVXbi2Rq+wsc8WcQCDIBOPUiYDBm
+KckqPuil0ExATKtxO8g/dmKQ9gkfHvu/Nw2blzmKdnpjZ2tduEitjPMT0VKt521O
+djV747UALJd9WFVjKLmHmU2Iirfkwl5B/etak8i0JPdyshkDg/H0V47K6ksT++zX
+/nHDuy9YhV0NtXT04+1gkoH5sAUAyR3S89jr2KbJBLp6H9rYOdVy2TV/kuEX7Yh4
+72zKkfIiJMjb2CNIBqIumHolkma2xWnQiUYJIh9Z3B13q8iMs3yN2VXCmi3MsFn4
+167Uc8z29QAp6xflED2sjJDn7qAQRIgGHHvDGg40+gWIUcsEdqWvdJv8gtUPMuE0
+7wt/egAWaDK9XtC5NNAEtK8Xza3FG9rV3+XuBNPqBliqe6CVkX2nksoqEjlVM3uF
+G6mKI9iwCfaymsoAdgHbznDgG0/TRIrX9g48MCS39ue4vp4cZELSoox0qTKnefrS
+Rjll7POZro4gB2yQiAke
+=O+ff
+-----END PGP SIGNATURE-----
+
+--dd5nxqelj5ii35pz--
