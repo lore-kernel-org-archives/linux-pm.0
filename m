@@ -1,61 +1,38 @@
 From: Andreas Herrmann <aherrmann@suse.com>
-Subject: [PATCH 0/1] cpufreq: pcc-cpufreq: Re-introduce deadband effect to
+Subject: [PATCH 1/1] cpufreq: pcc-cpufreq: Re-introduce deadband effect to
  reduce number of frequency changes
-Date: Fri, 19 Aug 2016 14:18:14 +0200
-Message-ID: <20160819121814.GA17296@suselix.suse.de>
+Date: Fri, 19 Aug 2016 14:21:01 +0200
+Message-ID: <20160819122101.GB17296@suselix.suse.de>
+References: <20160819121814.GA17296@suselix.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:60348 "EHLO
-        smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750721AbcHSMSo (ORCPT
-        <rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
-        Fri, 19 Aug 2016 08:18:44 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <20160819121814.GA17296@suselix.suse.de>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hello,
 
-I've observed performance degradation with different workloads on HP
-ProLiant systems that use pcc-cpufreq driver between older and more
-recent kernels. Bisection showed that commit 6393d6a102 (cpufreq:
-ondemand: Eliminate the deadband effect) caused a significant
-performance drop. This patch was introduced in v3.17.
+Commit 6393d6a102 (cpufreq: ondemand: Eliminate the deadband effect)
+introduced a performance regression for systems using pcc-cpufreq and
+ondemand governor. This is measurable with different workloads. E.g.
+wall-clock time for kernel compilation significantly increased.
 
-I am not too familiar with the PCC stuff but I think that elimination
-of the deadband effect causes a significant increase of requested
-frequency changes which in turn will have to be served by pcc-cpufreq
-and slow down corresponding systems significantly.
+The elimination of the deadband effect significantly increased the
+number of frequency changes with pcc-cpufreq.
 
-AFAIK there is no frequency table for this driver, instead the driver
-just asks firmware to set any requested frequency for a CPU (if its in
-the min-max-range of allowed frequencies). Thus I think the
-probability that a requested target frequency is matching the current
-frequency of a CPU is lower in comparison to drivers that use a
-fixed set of frequencies.
+Instead of reverting commit 6393d6a102 I suggest to add a workaround
+in pcc-cpufreq to re-introduce the deadband effect for this driver
+only - to restore the old performance behaviour with pcc-cpufreq with
+ondemand governor.
 
-This is with two exceptions:
+Following some performance numbers for similar kernel compilations to
+illustrate the effect of commit 6393d6a102 and the proposed fix.
 
-(1) when a CPU is under full load -- maximum frequency already set and
-    maximum frequency is requested.
-
-(2) CPU has just "minor load" -- minimum frequency already set and
-    minimum frequency is requested.
-
-I think what commit 6393d6a102 caused is, that case (2) occurs only if
-the CPU is fully idle. Whereas before commit 6393d6a102 this case
-occurred in all situations when
-
-	load < freq_min/freq_max * 100
-
-I suggest to introduce the old behaviour (re-introduce the deadband effect)
-for pcc-cpufreq with the patch that follows.
-
-Here are typical numbers from kernel compilation tests with varying
-number of compile jobs:
+Following typical numbers of kernel compilation tests with varying number of
+compile jobs:
 
                      v4.8.0-rc2               4.8.0-rc2-pcc-cpufreq-deadband
  # of jobst   user     sys   elapsed   CPU     user     sys   elapsed   CPU
@@ -67,33 +44,64 @@ number of compile jobs:
       64     394.13   60.55  0:13.54  3355%   386.54   60.33  0:12.79  3493%
      120     398.24   61.55  0:14.60  3148%   390.44   61.19  0:13.07  3453%
 
-As expected under full load (64, 120 jobs) performance is "almost"
-comparable. But with partial load (esp. 32 jobs) length of kernel
-build is just 2/3 with patched kernel in comparison to current
-mainline. Similar behaviour is observable since introduction of commit
-6393d6a102 (ie. since v3.17).
+(HP ProLiant DL580 Gen8 system, 60 CPUs @ 2.80GHz)
 
-Numbers are from an HP ProLiant DL580 Gen8 system:
- 	- Intel(R) Xeon(R) CPU E7-4890 v2 @ 2.80GHz
-        - 60 CPUs, 128GB RAM
+Link: http://marc.info/?l=linux-pm&m=147160912625600
+Signed-off-by: Andreas Herrmann <aherrmann@suse.com>
+---
+ drivers/cpufreq/pcc-cpufreq.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-PCC info of this system
-
-  PCCH header (virtual) addr: 0xffffc9000d840000
-  PCCH header is at physical address: 0x7ac59000, signature: 0x24504343,
-    length: 64 bytes, major: 1, minor: 0, supported features: 0x1,
-    command field: 0x1, status field: 0x0, nominal latency: 300 us
-    min time between commands: 50000 us, max time between commands: 1000000 us,
-    nominal CPU frequency: 2800 MHz, minimum CPU frequency: 150 MHz,
-    minimum CPU frequency without throttling: 1200 MHz
-
-Kernel message when driver loads:
-  pcc-cpufreq: (v1.10.00) driver loaded with frequency limits: 1200 MHz, 2800 MHz
-
-My patch adds a debug message, which on this system looks like
-  pcc-cpufreq: setting deadband limit to 1885000 kHz
+If this change is accepted maybe it's a good idea to tag it also for
+stable kernels, e.g. starting with v4.4.
 
 
-Regards,
+Thanks,
 
 Andreas
+
+
+diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
+index 3f0ce2a..d2e2963 100644
+--- a/drivers/cpufreq/pcc-cpufreq.c
++++ b/drivers/cpufreq/pcc-cpufreq.c
+@@ -200,10 +200,26 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
+ {
+ 	struct pcc_cpu *pcc_cpu_data;
+ 	struct cpufreq_freqs freqs;
++	static u32 limit = 0;
++
+ 	u16 status;
+ 	u32 input_buffer;
+ 	int cpu;
+ 
++	if (!limit) {
++		u32 f_min = policy->cpuinfo.min_freq / 1000;
++		u32 f_max = policy->cpuinfo.max_freq / 1000;
++		limit = (f_max - f_min) * f_min;
++		limit /= f_max;
++		limit *= 1000;
++		limit += f_min * 1000;
++		pr_debug("pcc-cpufreq: setting deadband limit to %u kHz\n",
++			limit);
++	}
++
++	if (target_freq < limit)
++		target_freq = policy->min;
++
+ 	cpu = policy->cpu;
+ 	pcc_cpu_data = per_cpu_ptr(pcc_cpu_info, cpu);
+ 
+@@ -214,6 +230,10 @@ static int pcc_cpufreq_target(struct cpufreq_policy *policy,
+ 
+ 	freqs.old = policy->cur;
+ 	freqs.new = target_freq;
++
++	if (freqs.new == freqs.old)
++		return 0;
++
+ 	cpufreq_freq_transition_begin(policy, &freqs);
+ 	spin_lock(&pcc_lock);
+ 
+-- 
+2.1.4
