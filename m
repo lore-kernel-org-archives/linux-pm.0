@@ -1,96 +1,40 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection algorithm for Core
-Date: Fri, 19 Aug 2016 23:40:04 -0700
-Message-ID: <003f01d1faad$b15aa910$140ffb30$@net>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1572483.RZjvRFdxPx@vostro.rjw.lan> <001b01d1ee1c$e6a6a170$b3f3e450$@net> <10156236.RI1knH5Wfs@vostro.rjw.lan> <000301d1f57b$9e1fed10$da5fc730$@net> <20160819144729.GL10121@twins.programming.kicks-ass.net>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/2] minor x86 PM source file cleanup
+Date: Sat, 20 Aug 2016 12:55:37 +0200
+Message-ID: <20160820105537.GA12556@amd>
+References: <1471649042-19418-1-git-send-email-ahs3@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta20.telus.net ([209.171.16.93]:50925 "EHLO cmta20.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751164AbcHTGkK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 20 Aug 2016 02:40:10 -0400
-In-Reply-To: <20160819144729.GL10121@twins.programming.kicks-ass.net>
-Content-Language: en-ca
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53298 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753656AbcHTKzm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 20 Aug 2016 06:55:42 -0400
+Content-Disposition: inline
+In-Reply-To: <1471649042-19418-1-git-send-email-ahs3@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Peter Zijlstra' <peterz@infradead.org>
-Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
+To: Al Stone <ahs3@redhat.com>
+Cc: x86@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, trivial@kernel.org
 
-On 2016.08.19 07:47 Peter Zijlstra wrote:
-> On Sat, Aug 13, 2016 at 08:59:01AM -0700, Doug Smythies wrote:
->> My previous replies (and see below) have suggested that some filtering
->> is needed on the target pstate, otherwise, and dependant on the type of
->> workload, it tends to oscillate.
->> 
->> I added the IIR (Infinite Impulse Response) filter that I have suggested in the past:
->
-> One question though; why is this filter intel_pstate specific? Should we
-> not do this in generic code?
+On Fri 2016-08-19 17:24:00, Al Stone wrote:
+> Really minor patches: one to cleanup whitespace, the second just makes
+> the code a wee bit more maintainable by correcting some variable names
+> without changing functionality.
 
-I wouldn't know. I'm not familiar with the other CPU frequency scaling drivers
-or what filtering, if any, they already have.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->> index c43ef55..262ec5f 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -1313,7 +1318,74 @@ static inline int32_t get_target_pstate_default(struct cpudata *cpu)
->>         cpu->iowait_boost >>= 1;
->> 
->>         pstate = cpu->pstate.turbo_pstate;
->> +       unfiltered_target = (pstate + (pstate >> 2)) * busy_frac;
->> +       duration_ns = cpu->sample.time - cpu->last_sample_time;
->> +
->> +       scaled_gain = div_u64(int_tofp(duration_ns) *
->> +               int_tofp(pid_params.p_gain_pct), int_tofp(pid_params.sample_rate_ns));
->
-> Drop int_to_fp() on one of the dividend terms and in the divisor. Same
-> end result since they divide away against one another but reduces the
-> risk of overflow.
+(for both)
 
-Yes of course. Thanks.
+> Al Stone (2):
+>   x86: ACPI: remove extraneous white space after semicolon
+>   x86: ACPI: make variable names clearer in
+>     acpi_parse_madt_lapic_entries()
+> 
+>  arch/x86/kernel/acpi/boot.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
 
-> Also, sample_rate_ns, really!? A rate is in [1/s], should that thing be
-> called period_ns ?
-
-Agreed (strongly), however and as Rafael mentioned on his reply, this stuff
-has been around for a long time, including the externally available:
-
-/sys/kernel/debug/pstate_snb/sample_rate_ms
-
-Which be referenced by some documentation and scripts (I have some).
-Myself, I'd be O.K. to change it all to "period".
-
->> +       if (scaled_gain > int_tofp(100))
->> +               scaled_gain = int_tofp(100);
->> +       if (scaled_gain < int_tofp(pid_params.p_gain_pct))
->> +               scaled_gain = int_tofp(pid_params.p_gain_pct);
->> +
->> +       /*
->> +        * Bandwidth limit the output. For now, re-task p_gain_pct for this purpose.
->> +        * Use a smple IIR (Infinite Impulse Response) filter.
->> +        */
->> +       cpu->sample.target = div_u64((int_tofp(100) - scaled_gain) *
->> +                       cpu->sample.target + scaled_gain *
->> +                       unfiltered_target, int_tofp(100));
->
-> Really hard to read that stuff, maybe cure with a comment:
->
->	/*
->	 *       g = dt*p / period
->	 *
->	 * target' = (1 - g)*target  +  g*input
->	 */
-
-Yes, O.K. I'll add more comments if this continues towards a formal
-patch submission.
-
->> +
->> +       return fp_toint(cpu->sample.target + (1 << (FRAC_BITS-1)));
->>  }
-
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
