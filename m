@@ -1,84 +1,124 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 1/2] cpufreq / sched: Pass flags to cpufreq_update_util()
-Date: Sat, 20 Aug 2016 03:08:01 +0200
-Message-ID: <25822023.SGCZQcEZuy@vostro.rjw.lan>
-References: <6346523.ZooER3FGDH@vostro.rjw.lan> <2163011.yGXeHau4eM@vostro.rjw.lan> <CAJKOXPdjkO4ZvQ1kijfVCMKaNBaoYDEOZpQ-+ZmyWVpL1jdPpg@mail.gmail.com>
+Subject: Re: Kernel warning in cpufreq_add_dev()
+Date: Sat, 20 Aug 2016 03:29:27 +0200
+Message-ID: <1601399.OxUAWWKTJN@vostro.rjw.lan>
+References: <20160819110032.GM1041@n2100.armlinux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:65381 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1755223AbcHTBC1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Aug 2016 21:02:27 -0400
-In-Reply-To: <CAJKOXPdjkO4ZvQ1kijfVCMKaNBaoYDEOZpQ-+ZmyWVpL1jdPpg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20160819110032.GM1041@n2100.armlinux.org.uk>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-On Friday, August 19, 2016 03:26:21 PM Krzysztof Kozlowski wrote:
-> On Fri, Aug 12, 2016 at 2:04 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > It is useful to know the reason why cpufreq_update_util() has just
-> > been called and that can be passed as flags to cpufreq_update_util()
-> > and to the ->func() callback in struct update_util_data.  However,
-> > doing that in addition to passing the util and max arguments they
-> > already take would be clumsy, so avoid it.
-> >
-> > Instead, use the observation that the schedutil governor is part
-> > of the scheduler proper, so it can access scheduler data directly.
-> > This allows the util and max arguments of cpufreq_update_util()
-> > and the ->func() callback in struct update_util_data to be replaced
-> > with a flags one, but schedutil has to be modified to follow.
-> >
-> > Thus make the schedutil governor obtain the CFS utilization
-> > information from the scheduler and use the "RT" and "DL" flags
-> > instead of the special utilization value of ULONG_MAX to track
-> > updates from the RT and DL sched classes.  Make it non-modular
-> > too to avoid having to export scheduler variables to modules at
-> > large.
-> >
-> > Next, update all of the other users of cpufreq_update_util()
-> > and the ->func() callback in struct update_util_data accordingly.
-> >
-> > Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >
-> > v1 -> v2: Do not check cpu_of(rq) against smp_processor_id() in
-> >           cfs_rq_util_change().
-> >
-> > ---
-> >  drivers/cpufreq/Kconfig            |    5 --
-> >  drivers/cpufreq/cpufreq_governor.c |    2 -
-> >  drivers/cpufreq/intel_pstate.c     |    2 -
-> >  include/linux/sched.h              |   12 ++++--
-> >  kernel/sched/cpufreq.c             |    2 -
-> >  kernel/sched/cpufreq_schedutil.c   |   67 ++++++++++++++++++++-----------------
-> >  kernel/sched/deadline.c            |    4 +-
-> >  kernel/sched/fair.c                |   10 +----
-> >  kernel/sched/rt.c                  |    4 +-
-> >  kernel/sched/sched.h               |   31 +++++------------
-> >  10 files changed, 66 insertions(+), 73 deletions(-)
+On Friday, August 19, 2016 12:00:32 PM Russell King - ARM Linux wrote:
+> While checking the kernel on SA1110 Assabet, CPUFREQ issues a warning:
 > 
-> (...)
+> ------------[ cut here ]------------
+> WARNING: CPU: 0 PID: 1 at /home/rmk/git/linux-rmk/drivers/cpufreq/cpufreq.c:1080 cpufreq_add_dev+0x140/0x62c
+> Modules linked in:
+> CPU: 0 PID: 1 Comm: swapper Not tainted 4.8.0-rc2+ #883
+> Hardware name: Intel-Assabet
+> Backtrace:
+> [<c0212190>] (dump_backtrace) from [<c021249c>] (show_stack+0x18/0x1c)
+>  r6:00000000 r5:c05e87c3 r4:00000000
+> [<c0212484>] (show_stack) from [<c037260c>] (dump_stack+0x20/0x28)
+> [<c03725ec>] (dump_stack) from [<c021f4cc>] (__warn+0xd0/0xfc)
+> [<c021f3fc>] (__warn) from [<c021f520>] (warn_slowpath_null+0x28/0x30)
+>  r10:00000000 r8:00000000 r7:00000000 r6:c064525c r5:00000000 r4:00000000
+> [<c021f4f8>] (warn_slowpath_null) from [<c04343a8>] (cpufreq_add_dev+0x140/0x62c)
+> [<c0434268>] (cpufreq_add_dev) from [<c03d83f4>] (bus_probe_device+0x5c/0x84)
+>  r10:00000000 r8:00000000 r7:00000000 r6:c064525c r5:c0657d60 r4:c065a9f8
+> [<c03d8398>] (bus_probe_device) from [<c03d677c>] (device_add+0x390/0x520)
+>  r6:c0645264 r5:00000000 r4:c064525c
+> [<c03d63ec>] (device_add) from [<c03d6a90>] (device_register+0x1c/0x20)
+>  r10:c0639848 r8:c061e524 r7:00000001 r6:00000000 r5:c064525c r4:c064525c
+> [<c03d6a74>] (device_register) from [<c03db5a0>] (register_cpu+0x88/0xac)
+>  r4:c0645254
+> [<c03db518>] (register_cpu) from [<c061e544>] (topology_init+0x20/0x2c)
+>  r7:c0660b20 r6:c063f4a0 r5:c0639834 r4:00000000
+> [<c061e524>] (topology_init) from [<c020974c>] (do_one_initcall+0xc0/0x178)
+>  r4:00000004
+> [<c020968c>] (do_one_initcall) from [<c061be70>] (kernel_init_freeable+0xfc/0x1c4)
+>  r10:c0639848 r9:00000000 r8:00000088 r7:c0660b20 r6:c063f4a0 r5:c0639834
+>  r4:00000004
+> [<c061bd74>] (kernel_init_freeable) from [<c050d730>] (kernel_init+0x10/0xf4)
+>  r10:00000000 r8:00000000 r7:00000000 r6:00000000 r5:c050d720 r4:00000000
+> [<c050d720>] (kernel_init) from [<c020fcf0>] (ret_from_fork+0x14/0x24)
+>  r4:00000000
+> ---[ end trace df94656649275917 ]---
 > 
-> > --- linux-pm.orig/drivers/cpufreq/Kconfig
-> > +++ linux-pm/drivers/cpufreq/Kconfig
-> > @@ -194,7 +194,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
-> >           If in doubt, say N.
-> >
-> >  config CPU_FREQ_GOV_SCHEDUTIL
-> > -       tristate "'schedutil' cpufreq policy governor"
-> > +       bool "'schedutil' cpufreq policy governor"
+> This is because of an incompatibility between the expectations of cpufreq
+> and how register_cpu() works:
 > 
-> If you change such symbols please remember to update also all the
-> defconfigs. Without the update they start to show errors.
+> int register_cpu(struct cpu *cpu, int num)
+> {
+> ...
+>         error = device_register(&cpu->dev);
+>         if (!error)
+>                 per_cpu(cpu_sys_devices, num) = &cpu->dev;
+> 
+> When the device is registered via device_register(), any subsystems
+> registered for the cpu_subsys will have their "add_dev" method called.
+> 
+> The cpufreq add_dev, via cpufreq_online() and cpufreq_policy_alloc(),
+> tries to get the CPU device:
+> 
+> static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+> {
+>         struct device *dev = get_cpu_device(cpu);
+>         if (WARN_ON(!dev))
+>                 return NULL;
+> 
+> but this fails:
+> 
+> struct device *get_cpu_device(unsigned cpu)
+> {
+>         if (cpu < nr_cpu_ids && cpu_possible(cpu))
+>                 return per_cpu(cpu_sys_devices, cpu);
+> 
+> because the percpu data has not yet been written - it'll be written
+> after a successful device registration.  So, using get_cpu_device()
+> from within cpufreq_add_dev() is broken, and results in the above
+> kernel warning.
 
-Are there defconfigs that use this particular one?
+Ironically enough, cpufreq_policy_alloc() doesn't even use the value of dev
+for anything other than the check, so we can simply get rid of it (as per the
+appended patch).
 
-Thanks,
-Rafael
+add_cpu_dev_symlink() will still be problematic, though, if I'm not mistaken.
 
+I wonder how that works on other platforms.
+
+---
+ drivers/cpufreq/cpufreq.c |    4 ----
+ 1 file changed, 4 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -1073,13 +1073,9 @@ static void handle_update(struct work_st
+ 
+ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+ {
+-	struct device *dev = get_cpu_device(cpu);
+ 	struct cpufreq_policy *policy;
+ 	int ret;
+ 
+-	if (WARN_ON(!dev))
+-		return NULL;
+-
+ 	policy = kzalloc(sizeof(*policy), GFP_KERNEL);
+ 	if (!policy)
+ 		return NULL;
