@@ -1,62 +1,61 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 10/11] acpi: bus: Set _OSC for diverse core support
-Date: Sat, 20 Aug 2016 02:51:14 +0200
-Message-ID: <3394418.ZE72EMLDjL@vostro.rjw.lan>
-References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1471559812-19967-11-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection algorithm for Core
+Date: Sat, 20 Aug 2016 03:06:06 +0200
+Message-ID: <15494617.fGGDIpuQfN@vostro.rjw.lan>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <000301d1f57b$9e1fed10$da5fc730$@net> <20160819144729.GL10121@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1471559812-19967-11-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, peterz@infradead.org, x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, tim.c.chen@linux.intel.com, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42396 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1754781AbcHTBAc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Aug 2016 21:00:32 -0400
+In-Reply-To: <20160819144729.GL10121@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Doug Smythies <dsmythies@telus.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
 
-On Thursday, August 18, 2016 03:36:51 PM Srinivas Pandruvada wrote:
-> Set the OSC_SB_CPC_DIVERSE_HIGH_SUPPORT (bit 12) to enable diverse
-> core support.
+On Friday, August 19, 2016 04:47:29 PM Peter Zijlstra wrote:
+> On Sat, Aug 13, 2016 at 08:59:01AM -0700, Doug Smythies wrote:
+> > My previous replies (and see below) have suggested that some filtering
+> > is needed on the target pstate, otherwise, and dependant on the type of
+> > workload, it tends to oscillate.
+> > 
+> > I added the IIR (Infinite Impulse Response) filter that I have suggested in the past:
 > 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/acpi/bus.c   | 4 +++-
->  include/linux/acpi.h | 1 +
->  2 files changed, 4 insertions(+), 1 deletion(-)
+> One question though; why is this filter intel_pstate specific? Should we
+> not do this in generic code?
+
+The intel_pstate algorithm is based on the feedback registers and I'm not sure
+if the same effect appears if utilization is computed in a different way.
+
+> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > index c43ef55..262ec5f 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -1313,7 +1318,74 @@ static inline int32_t get_target_pstate_default(struct cpudata *cpu)
+> >         cpu->iowait_boost >>= 1;
+> > 
+> >         pstate = cpu->pstate.turbo_pstate;
 > 
-> diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-> index 61643a5..fbd3b7c 100644
-> --- a/drivers/acpi/bus.c
-> +++ b/drivers/acpi/bus.c
-> @@ -336,7 +336,9 @@ static void acpi_bus_osc_support(void)
->  		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPCV2_SUPPORT;
->  	}
->  #endif
-> -
-> +#ifdef CONFIG_SCHED_ITMT
-> +	capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPC_DIVERSE_HIGH_SUPPORT;
-> +#endif
-
-	if (IS_ENABLED(CONFIG_SCHED_ITMT))
-		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPC_DIVERSE_HIGH_SUPPORT;
-
-pretty please.
-
->  	if (!ghes_disable)
->  		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_APEI_SUPPORT;
->  	if (ACPI_FAILURE(acpi_get_handle(NULL, "\\_SB", &handle)))
-> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-> index 4d8452c..17f6e08 100644
-> --- a/include/linux/acpi.h
-> +++ b/include/linux/acpi.h
-> @@ -460,6 +460,7 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context);
->  #define OSC_SB_CPCV2_SUPPORT			0x00000040
->  #define OSC_SB_PCLPI_SUPPORT			0x00000080
->  #define OSC_SB_OSLPI_SUPPORT			0x00000100
-> +#define OSC_SB_CPC_DIVERSE_HIGH_SUPPORT		0x00001000
->  
->  extern bool osc_sb_apei_support_acked;
->  extern bool osc_pc_lpi_support_confirmed;
+> > +       unfiltered_target = (pstate + (pstate >> 2)) * busy_frac;
 > 
+> > +       duration_ns = cpu->sample.time - cpu->last_sample_time;
+> > +
+> > +       scaled_gain = div_u64(int_tofp(duration_ns) *
+> > +               int_tofp(pid_params.p_gain_pct), int_tofp(pid_params.sample_rate_ns));
+> 
+> Drop int_to_fp() on one of the dividend terms and in the divisor. Same
+> end result since they divide away against one another but reduces the
+> risk of overflow.
+> 
+> Also, sample_rate_ns, really!? A rate is in [1/s], should that thing be
+> called period_ns ?
+
+That's an old name that hasn't been changed for quite a while.  That said
+"period" or "interval" would be better.
 
 Thanks,
 Rafael
