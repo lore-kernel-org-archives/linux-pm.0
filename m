@@ -1,61 +1,83 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection algorithm for Core
-Date: Sat, 20 Aug 2016 03:06:06 +0200
-Message-ID: <15494617.fGGDIpuQfN@vostro.rjw.lan>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <000301d1f57b$9e1fed10$da5fc730$@net> <20160819144729.GL10121@twins.programming.kicks-ass.net>
+Subject: Re: [PATCH v2 1/2] cpufreq / sched: Pass flags to cpufreq_update_util()
+Date: Sat, 20 Aug 2016 03:08:01 +0200
+Message-ID: <25822023.SGCZQcEZuy@vostro.rjw.lan>
+References: <6346523.ZooER3FGDH@vostro.rjw.lan> <2163011.yGXeHau4eM@vostro.rjw.lan> <CAJKOXPdjkO4ZvQ1kijfVCMKaNBaoYDEOZpQ-+ZmyWVpL1jdPpg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42396 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:65381 "HELO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1754781AbcHTBAc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Aug 2016 21:00:32 -0400
-In-Reply-To: <20160819144729.GL10121@twins.programming.kicks-ass.net>
+        by vger.kernel.org with SMTP id S1755223AbcHTBC1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Aug 2016 21:02:27 -0400
+In-Reply-To: <CAJKOXPdjkO4ZvQ1kijfVCMKaNBaoYDEOZpQ-+ZmyWVpL1jdPpg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Doug Smythies <dsmythies@telus.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-On Friday, August 19, 2016 04:47:29 PM Peter Zijlstra wrote:
-> On Sat, Aug 13, 2016 at 08:59:01AM -0700, Doug Smythies wrote:
-> > My previous replies (and see below) have suggested that some filtering
-> > is needed on the target pstate, otherwise, and dependant on the type of
-> > workload, it tends to oscillate.
-> > 
-> > I added the IIR (Infinite Impulse Response) filter that I have suggested in the past:
+On Friday, August 19, 2016 03:26:21 PM Krzysztof Kozlowski wrote:
+> On Fri, Aug 12, 2016 at 2:04 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > It is useful to know the reason why cpufreq_update_util() has just
+> > been called and that can be passed as flags to cpufreq_update_util()
+> > and to the ->func() callback in struct update_util_data.  However,
+> > doing that in addition to passing the util and max arguments they
+> > already take would be clumsy, so avoid it.
+> >
+> > Instead, use the observation that the schedutil governor is part
+> > of the scheduler proper, so it can access scheduler data directly.
+> > This allows the util and max arguments of cpufreq_update_util()
+> > and the ->func() callback in struct update_util_data to be replaced
+> > with a flags one, but schedutil has to be modified to follow.
+> >
+> > Thus make the schedutil governor obtain the CFS utilization
+> > information from the scheduler and use the "RT" and "DL" flags
+> > instead of the special utilization value of ULONG_MAX to track
+> > updates from the RT and DL sched classes.  Make it non-modular
+> > too to avoid having to export scheduler variables to modules at
+> > large.
+> >
+> > Next, update all of the other users of cpufreq_update_util()
+> > and the ->func() callback in struct update_util_data accordingly.
+> >
+> > Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >
+> > v1 -> v2: Do not check cpu_of(rq) against smp_processor_id() in
+> >           cfs_rq_util_change().
+> >
+> > ---
+> >  drivers/cpufreq/Kconfig            |    5 --
+> >  drivers/cpufreq/cpufreq_governor.c |    2 -
+> >  drivers/cpufreq/intel_pstate.c     |    2 -
+> >  include/linux/sched.h              |   12 ++++--
+> >  kernel/sched/cpufreq.c             |    2 -
+> >  kernel/sched/cpufreq_schedutil.c   |   67 ++++++++++++++++++++-----------------
+> >  kernel/sched/deadline.c            |    4 +-
+> >  kernel/sched/fair.c                |   10 +----
+> >  kernel/sched/rt.c                  |    4 +-
+> >  kernel/sched/sched.h               |   31 +++++------------
+> >  10 files changed, 66 insertions(+), 73 deletions(-)
 > 
-> One question though; why is this filter intel_pstate specific? Should we
-> not do this in generic code?
+> (...)
+> 
+> > --- linux-pm.orig/drivers/cpufreq/Kconfig
+> > +++ linux-pm/drivers/cpufreq/Kconfig
+> > @@ -194,7 +194,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
+> >           If in doubt, say N.
+> >
+> >  config CPU_FREQ_GOV_SCHEDUTIL
+> > -       tristate "'schedutil' cpufreq policy governor"
+> > +       bool "'schedutil' cpufreq policy governor"
+> 
+> If you change such symbols please remember to update also all the
+> defconfigs. Without the update they start to show errors.
 
-The intel_pstate algorithm is based on the feedback registers and I'm not sure
-if the same effect appears if utilization is computed in a different way.
-
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index c43ef55..262ec5f 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -1313,7 +1318,74 @@ static inline int32_t get_target_pstate_default(struct cpudata *cpu)
-> >         cpu->iowait_boost >>= 1;
-> > 
-> >         pstate = cpu->pstate.turbo_pstate;
-> 
-> > +       unfiltered_target = (pstate + (pstate >> 2)) * busy_frac;
-> 
-> > +       duration_ns = cpu->sample.time - cpu->last_sample_time;
-> > +
-> > +       scaled_gain = div_u64(int_tofp(duration_ns) *
-> > +               int_tofp(pid_params.p_gain_pct), int_tofp(pid_params.sample_rate_ns));
-> 
-> Drop int_to_fp() on one of the dividend terms and in the divisor. Same
-> end result since they divide away against one another but reduces the
-> risk of overflow.
-> 
-> Also, sample_rate_ns, really!? A rate is in [1/s], should that thing be
-> called period_ns ?
-
-That's an old name that hasn't been changed for quite a while.  That said
-"period" or "interval" would be better.
+Are there defconfigs that use this particular one?
 
 Thanks,
 Rafael
