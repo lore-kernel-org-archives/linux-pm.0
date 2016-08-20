@@ -1,100 +1,69 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH 1/3] Documentation: dt: Add TI SCI clock driver
-Date: Fri, 19 Aug 2016 19:33:40 -0500
-Message-ID: <20160820003342.13599-2-nm@ti.com>
-References: <20160820003342.13599-1-nm@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 05/11] acpi: cppc: Allow build with ACPI_CPU_FREQ_PSS config
+Date: Sat, 20 Aug 2016 02:46:06 +0200
+Message-ID: <18399184.AAFNDR2hqb@vostro.rjw.lan>
+References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1471559812-19967-6-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160820003342.13599-1-nm@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Dave Gerlach <d-gerlach@ti.com>, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, Nishanth Menon <nm@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1471559812-19967-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, peterz@infradead.org, x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, tim.c.chen@linux.intel.com, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Tero Kristo <t-kristo@ti.com>
+On Thursday, August 18, 2016 03:36:46 PM Srinivas Pandruvada wrote:
+> Some newer x86 platforms have support for both _CPC and _PSS object. So
+> kernel config can have both ACPI_CPU_FREQ_PSS and ACPI_CPPC_LIB. So remove
+> restriction for ACPI_CPPC_LIB to build only when ACPI_CPU_FREQ_PSS is not
+> defined.
+> Also for legacy systems with only _PSS, we shouldn't bail out if
+> acpi_cppc_processor_probe() fails, if ACPI_CPU_FREQ_PSS is also defined.
+> 
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+>  drivers/acpi/Kconfig            | 1 -
+>  drivers/acpi/processor_driver.c | 5 ++++-
+>  2 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index 445ce28..c6bb6aa 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -227,7 +227,6 @@ config ACPI_MCFG
+>  config ACPI_CPPC_LIB
+>  	bool
+>  	depends on ACPI_PROCESSOR
+> -	depends on !ACPI_CPU_FREQ_PSS
+>  	select MAILBOX
+>  	select PCC
+>  	help
+> diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+> index 0553aee..0e0b629 100644
+> --- a/drivers/acpi/processor_driver.c
+> +++ b/drivers/acpi/processor_driver.c
+> @@ -245,8 +245,11 @@ static int __acpi_processor_start(struct acpi_device *device)
+>  		return 0;
+>  
+>  	result = acpi_cppc_processor_probe(pr);
+> -	if (result)
+> +	if (result) {
+> +#ifndef CONFIG_ACPI_CPU_FREQ_PSS
+>  		return -ENODEV;
+> +#endif
+> +	}
 
-Add a clock implementation, TI SCI clock, that will hook to the common
-clock framework, and allow each clock to be controlled via TI SCI
-protocol.
+	if (result && !IS_ENABLED(CONFIG_ACPI_CPU_FREQ_PSS))
+		return -ENODEV;
 
-Signed-off-by: Tero Kristo <t-kristo@ti.com>
-Tested-by: Dave Gerlach <d-gerlach@ti.com>
-Signed-off-by: Nishanth Menon <nm@ti.com>
----
- .../devicetree/bindings/clock/ti,sci-clk.txt       | 51 ++++++++++++++++++++++
- MAINTAINERS                                        |  1 +
- 2 files changed, 52 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/clock/ti,sci-clk.txt
+would look better.
 
-diff --git a/Documentation/devicetree/bindings/clock/ti,sci-clk.txt b/Documentation/devicetree/bindings/clock/ti,sci-clk.txt
-new file mode 100644
-index 000000000000..231cb80a058e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/clock/ti,sci-clk.txt
-@@ -0,0 +1,51 @@
-+Texas Instruments TI-SCI Clocks
-+===============================
-+
-+All clocks on Texas Instruments' SoCs that contain a System Controller,
-+are only controlled by this entity. Communication between a host processor
-+running an OS and the System Controller happens through a protocol known
-+as TI-SCI[1]. This clock implementation plugs into the common clock
-+framework and makes use of the TI-SCI protocol on clock API requests.
-+
-+[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-+
-+Required properties:
-+-------------------
-+- compatible: Must be "ti,sci-clk"
-+- #clock-cells: Shall be 2.
-+  In clock consumers, this cell represents the device ID and clock ID
-+  exposed by the PM firmware. The assignments can be found in the header
-+  files <dt-bindings/genpd/<soc>.h> (which covers the device IDs) and
-+  <dt-bindings/clock/<soc>.h> (which covers the clock IDs), where <soc>
-+  is the SoC involved, for example 'k2g'.
-+- ti,sci: Phandle to the TI SCI device to use for managing the clocks
-+
-+Optional properties:
-+-------------------
-+- ti,ssc-clocks: Array of phandle clocks that shall enable spread spectrum
-+		 clocking while enabled
-+- ti,allow-freq-change-clocks: Array of phandle clocks that shall allow
-+			       dynamic clock frequency changes by firmware
-+- ti,input-term-clocks: Array of phandle clocks that shall enable input
-+			termination
-+
-+Examples:
-+--------
-+
-+k2g_clks: k2g_clks {
-+	compatible = "ti,sci-clk";
-+	ti,sci = <&pmmc>;
-+	#clock-cells = <2>;
-+};
-+
-+dummy_node@1234 {
-+	clocks = <&k2g_clks K2G_DEV_DUMMY K2G_DEV_DUMMY_FCK>;
-+};
-+
-+dummy_node2@2345 {
-+	clocks = <&k2g_clks K2G_DEV_DUMMY2 K2G_DEV_DUMMY_X1_CLK>;
-+};
-+
-+&k2g_clks {
-+	ti,ssc-clocks = <&k2g_clks K2G_DEV_DUMMY K2G_DEV_DUMMY_FCK>;
-+};
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 448f6801bd78..1837b98d96a9 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -11576,6 +11576,7 @@ F:	include/linux/soc/ti/ti_sci_protocol.h
- F:	Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
- F:	include/dt-bindings/genpd/k2g.h
- F:	drivers/soc/ti/ti_sci_pm_domains.c
-+F:	Documentation/devicetree/bindings/clock/ti,sci-clk.txt
- 
- THANKO'S RAREMONO AM/FM/SW RADIO RECEIVER USB DRIVER
- M:	Hans Verkuil <hverkuil@xs4all.nl>
--- 
-2.9.1.200.gb1ec08f
+>  
+>  	if (!cpuidle_get_driver() || cpuidle_get_driver() == &acpi_idle_driver)
+>  		acpi_processor_power_init(pr);
+> 
+
+Thanks,
+Rafael
+
