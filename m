@@ -1,139 +1,96 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] ARM: sa1100: move StrongARM CPU ID checks to cputype.h
-Date: Sat, 20 Aug 2016 07:22:36 +0530
-Message-ID: <20160820015236.GC25143@ubuntu>
-References: <E1bamfA-0002W7-Sb@rmk-PC.armlinux.org.uk>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection algorithm for Core
+Date: Fri, 19 Aug 2016 23:40:04 -0700
+Message-ID: <003f01d1faad$b15aa910$140ffb30$@net>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1572483.RZjvRFdxPx@vostro.rjw.lan> <001b01d1ee1c$e6a6a170$b3f3e450$@net> <10156236.RI1knH5Wfs@vostro.rjw.lan> <000301d1f57b$9e1fed10$da5fc730$@net> <20160819144729.GL10121@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+        charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <E1bamfA-0002W7-Sb@rmk-PC.armlinux.org.uk>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Russell King <rmk+kernel@armlinux.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta20.telus.net ([209.171.16.93]:50925 "EHLO cmta20.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751164AbcHTGkK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 20 Aug 2016 02:40:10 -0400
+In-Reply-To: <20160819144729.GL10121@twins.programming.kicks-ass.net>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Peter Zijlstra' <peterz@infradead.org>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Steve Muckle' <steve.muckle@linaro.org>, 'Juri Lelli' <juri.lelli@arm.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
 
-On 19-08-16, 17:28, Russell King wrote:
-> Move the StrongARM CPU ID checks out of the platform's hardware.h
-> file into asm/cputype.h
-> 
-> Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
-> ---
->  arch/arm/include/asm/cputype.h               | 21 +++++++++++++++++++++
->  arch/arm/mach-sa1100/include/mach/hardware.h | 18 ------------------
->  drivers/cpufreq/sa1110-cpufreq.c             |  2 +-
->  3 files changed, 22 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/arm/include/asm/cputype.h b/arch/arm/include/asm/cputype.h
-> index 1ee94c716a7f..d6a4902a75d7 100644
-> --- a/arch/arm/include/asm/cputype.h
-> +++ b/arch/arm/include/asm/cputype.h
-> @@ -60,6 +60,7 @@
->  	((mpidr >> (MPIDR_LEVEL_BITS * level)) & MPIDR_LEVEL_MASK)
->  
->  #define ARM_CPU_IMP_ARM			0x41
-> +#define ARM_CPU_IMP_DEC			0x44
->  #define ARM_CPU_IMP_INTEL		0x69
->  
->  /* ARM implemented processors */
-> @@ -76,6 +77,17 @@
->  #define ARM_CPU_PART_CORTEX_A15		0x4100c0f0
->  #define ARM_CPU_PART_MASK		0xff00fff0
->  
-> +/* DEC implemented cores */
-> +#define ARM_CPU_PART_SA1100		0x4400a110
-> +
-> +/* Intel implemented cores */
-> +#define ARM_CPU_PART_SA1110		0x6900b110
-> +#define ARM_CPU_REV_SA1110_A0		0
-> +#define ARM_CPU_REV_SA1110_B0		4
-> +#define ARM_CPU_REV_SA1110_B1		5
-> +#define ARM_CPU_REV_SA1110_B2		6
-> +#define ARM_CPU_REV_SA1110_B4		8
-> +
->  #define ARM_CPU_XSCALE_ARCH_MASK	0xe000
->  #define ARM_CPU_XSCALE_ARCH_V1		0x2000
->  #define ARM_CPU_XSCALE_ARCH_V2		0x4000
-> @@ -173,6 +185,11 @@ static inline unsigned int __attribute_const__ read_cpuid_implementor(void)
->  	return (read_cpuid_id() & 0xFF000000) >> 24;
->  }
->  
-> +static inline unsigned int __attribute_const__ read_cpuid_revision(void)
-> +{
-> +	return read_cpuid_id() & 0x0000000f;
-> +}
-> +
->  /*
->   * The CPU part number is meaningless without referring to the CPU
->   * implementer: implementers are free to define their own part numbers
-> @@ -208,6 +225,10 @@ static inline unsigned int __attribute_const__ read_cpuid_mpidr(void)
->  	return read_cpuid(CPUID_MPIDR);
->  }
->  
-> +/* StrongARM-11x0 CPUs */
-> +#define cpu_is_sa1100() (read_cpuid_part() == ARM_CPU_PART_SA1100)
-> +#define cpu_is_sa1110() (read_cpuid_part() == ARM_CPU_PART_SA1110)
-> +
->  /*
->   * Intel's XScale3 core supports some v6 features (supersections, L2)
->   * but advertises itself as v5 as it does not support the v6 ISA.  For
-> diff --git a/arch/arm/mach-sa1100/include/mach/hardware.h b/arch/arm/mach-sa1100/include/mach/hardware.h
-> index cbedd75a9d65..55c85ce7010d 100644
-> --- a/arch/arm/mach-sa1100/include/mach/hardware.h
-> +++ b/arch/arm/mach-sa1100/include/mach/hardware.h
-> @@ -36,28 +36,10 @@
->  #define io_v2p( x )             \
->     ( (((x)&0x00ffffff) | (((x)&(0x30000000>>VIO_SHIFT))<<VIO_SHIFT)) + PIO_START )
->  
-> -#define CPU_SA1110_A0	(0)
-> -#define CPU_SA1110_B0	(4)
-> -#define CPU_SA1110_B1	(5)
-> -#define CPU_SA1110_B2	(6)
-> -#define CPU_SA1110_B4	(8)
-> -
-> -#define CPU_SA1100_ID	(0x4401a110)
-> -#define CPU_SA1100_MASK	(0xfffffff0)
-> -#define CPU_SA1110_ID	(0x6901b110)
-> -#define CPU_SA1110_MASK	(0xfffffff0)
-> -
->  #define __MREG(x)	IOMEM(io_p2v(x))
->  
->  #ifndef __ASSEMBLY__
->  
-> -#include <asm/cputype.h>
-> -
-> -#define CPU_REVISION	(read_cpuid_id() & 15)
-> -
-> -#define cpu_is_sa1100()	((read_cpuid_id() & CPU_SA1100_MASK) == CPU_SA1100_ID)
-> -#define cpu_is_sa1110()	((read_cpuid_id() & CPU_SA1110_MASK) == CPU_SA1110_ID)
-> -
->  # define __REG(x)	(*((volatile unsigned long __iomem *)io_p2v(x)))
->  # define __PREG(x)	(io_v2p((unsigned long)&(x)))
->  
-> diff --git a/drivers/cpufreq/sa1110-cpufreq.c b/drivers/cpufreq/sa1110-cpufreq.c
-> index b5befc211172..2bac9b6cfeea 100644
-> --- a/drivers/cpufreq/sa1110-cpufreq.c
-> +++ b/drivers/cpufreq/sa1110-cpufreq.c
-> @@ -159,7 +159,7 @@ sdram_calculate_timing(struct sdram_info *sd, u_int cpu_khz,
->  	 * half speed or use delayed read latching (errata 13).
->  	 */
->  	if ((ns_to_cycles(sdram->tck, sd_khz) > 1) ||
-> -	    (CPU_REVISION < CPU_SA1110_B2 && sd_khz < 62000))
-> +	    (read_cpuid_revision() < ARM_CPU_REV_SA1110_B2 && sd_khz < 62000))
->  		sd_khz /= 2;
->  
->  	sd->mdcnfg = MDCNFG & 0x007f007f;
+On 2016.08.19 07:47 Peter Zijlstra wrote:
+> On Sat, Aug 13, 2016 at 08:59:01AM -0700, Doug Smythies wrote:
+>> My previous replies (and see below) have suggested that some filtering
+>> is needed on the target pstate, otherwise, and dependant on the type of
+>> workload, it tends to oscillate.
+>> 
+>> I added the IIR (Infinite Impulse Response) filter that I have suggested in the past:
+>
+> One question though; why is this filter intel_pstate specific? Should we
+> not do this in generic code?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I wouldn't know. I'm not familiar with the other CPU frequency scaling drivers
+or what filtering, if any, they already have.
 
--- 
-viresh
+>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+>> index c43ef55..262ec5f 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -1313,7 +1318,74 @@ static inline int32_t get_target_pstate_default(struct cpudata *cpu)
+>>         cpu->iowait_boost >>= 1;
+>> 
+>>         pstate = cpu->pstate.turbo_pstate;
+>> +       unfiltered_target = (pstate + (pstate >> 2)) * busy_frac;
+>> +       duration_ns = cpu->sample.time - cpu->last_sample_time;
+>> +
+>> +       scaled_gain = div_u64(int_tofp(duration_ns) *
+>> +               int_tofp(pid_params.p_gain_pct), int_tofp(pid_params.sample_rate_ns));
+>
+> Drop int_to_fp() on one of the dividend terms and in the divisor. Same
+> end result since they divide away against one another but reduces the
+> risk of overflow.
+
+Yes of course. Thanks.
+
+> Also, sample_rate_ns, really!? A rate is in [1/s], should that thing be
+> called period_ns ?
+
+Agreed (strongly), however and as Rafael mentioned on his reply, this stuff
+has been around for a long time, including the externally available:
+
+/sys/kernel/debug/pstate_snb/sample_rate_ms
+
+Which be referenced by some documentation and scripts (I have some).
+Myself, I'd be O.K. to change it all to "period".
+
+>> +       if (scaled_gain > int_tofp(100))
+>> +               scaled_gain = int_tofp(100);
+>> +       if (scaled_gain < int_tofp(pid_params.p_gain_pct))
+>> +               scaled_gain = int_tofp(pid_params.p_gain_pct);
+>> +
+>> +       /*
+>> +        * Bandwidth limit the output. For now, re-task p_gain_pct for this purpose.
+>> +        * Use a smple IIR (Infinite Impulse Response) filter.
+>> +        */
+>> +       cpu->sample.target = div_u64((int_tofp(100) - scaled_gain) *
+>> +                       cpu->sample.target + scaled_gain *
+>> +                       unfiltered_target, int_tofp(100));
+>
+> Really hard to read that stuff, maybe cure with a comment:
+>
+>	/*
+>	 *       g = dt*p / period
+>	 *
+>	 * target' = (1 - g)*target  +  g*input
+>	 */
+
+Yes, O.K. I'll add more comments if this continues towards a formal
+patch submission.
+
+>> +
+>> +       return fp_toint(cpu->sample.target + (1 << (FRAC_BITS-1)));
+>>  }
+
+
+
