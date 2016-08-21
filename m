@@ -1,262 +1,101 @@
-From: Lokesh Vutla <lokeshvutla@ti.com>
-Subject: Re: [PATCH 2/5] firmware: Add basic support for TI System Control
- Interface (TI-SCI) protocol
-Date: Sun, 21 Aug 2016 21:50:04 +0530
-Message-ID: <5d03a04f-9184-10e4-43c9-8834e8a39545@ti.com>
-References: <20160819225159.10758-1-nm@ti.com>
- <20160819225159.10758-3-nm@ti.com>
-Mime-Version: 1.0
+From: Martin Sperl <kernel@martin.sperl.org>
+Subject: Re: [PATCH V3 2/5] thermal: bcm2835: add thermal driver for bcm2835
+ soc
+Date: Sun, 21 Aug 2016 19:21:42 +0200
+Message-ID: <46FE06A3-5A7D-41D7-827B-C7B35E42E2C5@martin.sperl.org>
+References: <1463495753-967-1-git-send-email-kernel@martin.sperl.org>
+ <1463495753-967-3-git-send-email-kernel@martin.sperl.org>
+ <87mvn6qa2x.fsf@eliezer.anholt.net> <87r39lvs4v.fsf@eliezer.anholt.net>
+ <1471591694.2691.39.camel@intel.com> <87inuwd1p4.fsf@eliezer.anholt.net>
+ <1471786649.2188.4.camel@intel.com>
+Mime-Version: 1.0 (1.0)
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([198.47.19.12]:41313 "EHLO arroyo.ext.ti.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751515AbcHUQV1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 21 Aug 2016 12:21:27 -0400
-In-Reply-To: <20160819225159.10758-3-nm@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1471786649.2188.4.camel@intel.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, linux-pm@vger.kernel.org, Lee Jones <lee@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>
-Cc: Russ Dill <Russ.Dill@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, "Andrew F . Davis" <afd@ti.com>, Suman Anna <s-anna@ti.com>, Tero Kristo <t-kristo@ti.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-
-
-On 8/20/2016 4:21 AM, Nishanth Menon wrote:
-> Texas Instrument's System Control Interface (TI-SCI) Message Protocol
-> is used in Texas Instrument's System on Chip (SoC) such as those
-> in keystone family K2G SoC to communicate between various compute
-> processors with a central system controller entity.
-> 
-> TI-SCI message protocol provides support for management of various
-> hardware entities within the SoC. Add support driver to allow
-> communication with system controller entity within the SoC using the
-> mailbox client.
-> 
-> We introduce the basic registration and query capability for the
-> driver protocol as part of this change. Subsequent patches add in
-> functionality specific to the TI-SCI features.
-> 
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-> ---
-
-[..snip..]
-
-> +
-> +static int ti_sci_remove(struct platform_device *pdev)
-> +{
-> +	struct ti_sci_info *info;
-> +	int ret = 0;
-> +
-> +	info = platform_get_drvdata(pdev);
-> +
-> +	mutex_lock(&ti_sci_list_mutex);
-> +	if (info->users)
-> +		ret = -EBUSY;
-> +	else
-> +		list_del(&info->node);
-> +	mutex_unlock(&ti_sci_list_mutex);
-
-shouldn't the mbox channels be freed in remove?
-
-mbox_free_channel(info->chan_tx);
-mbox_free_channel(info->chan_rx);
-
-Thanks and regards,
-Lokesh
-
-> +
-> +	if (!ret)
-> +		ti_sci_debugfs_destroy(pdev, info);
-> +
-> +	return ret;
-> +}
-> +
-> +static struct platform_driver ti_sci_driver = {
-> +	.probe = ti_sci_probe,
-> +	.remove = ti_sci_remove,
-> +	.driver = {
-> +		   .name = "ti-sci",
-> +		   .of_match_table = of_match_ptr(ti_sci_of_match),
-> +	},
-> +};
-> +module_platform_driver(ti_sci_driver);
-> +
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_DESCRIPTION("TI System Control Interface(SCI) driver");
-> +MODULE_AUTHOR("Nishanth Menon");
-> +MODULE_ALIAS("platform:ti-sci");
-> diff --git a/drivers/firmware/ti_sci.h b/drivers/firmware/ti_sci.h
-> new file mode 100644
-> index 000000000000..e9dc53f26e0e
-> --- /dev/null
-> +++ b/drivers/firmware/ti_sci.h
-> @@ -0,0 +1,93 @@
-> +/*
-> + * Texas Instruments System Control Interface (TISCI) Protocol
-> + *
-> + * Communication protocol with TI SCI hardware
-> + * The system works in a message response protocol
-> + * See: http://processors.wiki.ti.com/index.php/TISCI for details
-> + *
-> + * Copyright (C)  2015-2016 Texas Instruments Incorporated - http://www.ti.com/
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions
-> + * are met:
-> + *
-> + *   Redistributions of source code must retain the above copyright
-> + *   notice, this list of conditions and the following disclaimer.
-> + *
-> + *   Redistributions in binary form must reproduce the above copyright
-> + *   notice, this list of conditions and the following disclaimer in the
-> + *   documentation and/or other materials provided with the
-> + *   distribution.
-> + *
-> + *   Neither the name of Texas Instruments Incorporated nor the names of
-> + *   its contributors may be used to endorse or promote products derived
-> + *   from this software without specific prior written permission.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-> + * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-> + * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-> + * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-> + * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-> + * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-> + * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-> + * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-> + * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-> + * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + *
-> + */
-> +
-> +#ifndef __TI_SCI_H
-> +#define __TI_SCI_H
-> +
-> +/* Generic Messages */
-> +#define TI_SCI_MSG_ENABLE_WDT	0x0000
-> +#define TI_SCI_MSG_WAKE_RESET	0x0001
-> +#define TI_SCI_MSG_VERSION	0x0002
-> +#define TI_SCI_MSG_WAKE_REASON	0x0003
-> +#define TI_SCI_MSG_GOODBYE	0x0004
-> +
-> +/**
-> + * struct ti_sci_msg_hdr - Generic Message Header for All messages and responses
-> + * @type:	Type of messages: One of TI_SCI_MSG* values
-> + * @host:	Host of the message
-> + * @seq:	Message identifier indicating a transfer sequence
-> + * @flags:	Flag for the message
-> + */
-> +struct ti_sci_msg_hdr {
-> +	u16 type;
-> +	u8 host;
-> +	u8 seq;
-> +#define TI_SCI_MSG_FLAG(val)			(1 << (val))
-> +#define TI_SCI_FLAG_REQ_GENERIC_NORESPONSE	0x0
-> +#define TI_SCI_FLAG_REQ_ACK_ON_RECEIVED		TI_SCI_MSG_FLAG(0)
-> +#define TI_SCI_FLAG_REQ_ACK_ON_PROCESSED	TI_SCI_MSG_FLAG(1)
-> +#define TI_SCI_FLAG_RESP_GENERIC_NACK		0x0
-> +#define TI_SCI_FLAG_RESP_GENERIC_ACK		TI_SCI_MSG_FLAG(1)
-> +	/* Additional Flags */
-> +	u32 flags;
-> +} __packed;
-> +
-> +/**
-> + * struct ti_sci_msg_resp_version - Response for a message
-> + * @hdr:		Generic header
-> + * @firmware_description: String describing the firmware
-> + * @firmware_revision:	Firmware revision
-> + * @abi_major:		Major version of the ABI that firmware supports
-> + * @abi_minor:		Minor version of the ABI that firmware supports
-> + *
-> + * In general, ABI version changes follow the rule that minor version increments
-> + * are backward compatible. Major revision changes in ABI may not be
-> + * backward compatible.
-> + *
-> + * Response to a generic message with message type TI_SCI_MSG_VERSION
-> + */
-> +struct ti_sci_msg_resp_version {
-> +	struct ti_sci_msg_hdr hdr;
-> +	char firmware_description[32];
-> +	u16 firmware_revision;
-> +	u8 abi_major;
-> +	u8 abi_minor;
-> +} __packed;
-> +
-> +#endif /* __TI_SCI_H */
-> diff --git a/include/linux/soc/ti/ti_sci_protocol.h b/include/linux/soc/ti/ti_sci_protocol.h
-> new file mode 100644
-> index 000000000000..e73483fd5327
-> --- /dev/null
-> +++ b/include/linux/soc/ti/ti_sci_protocol.h
-> @@ -0,0 +1,69 @@
-> +/*
-> + * Texas Instruments System Control Interface Protocol
-> + *
-> + * Copyright (C) 2015-2016 Texas Instruments Incorporated - http://www.ti.com/
-> + *	Nishanth Menon
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> + * kind, whether express or implied; without even the implied warranty
-> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#ifndef __TISCI_PROTOCOL_H
-> +#define __TISCI_PROTOCOL_H
-> +
-> +/**
-> + * struct ti_sci_version_info - version information structure
-> + * @abi_major:	Major ABI version. Change here implies risk of backward
-> + *		compatibility break.
-> + * @abi_minor:	Minor ABI version. Change here implies new feature addition,
-> + *		or compatible change in ABI.
-> + * @firmware_revision:	Firmware revision (not usually used).
-> + * @firmware_description: Firmware description (not usually used).
-> + */
-> +struct ti_sci_version_info {
-> +	u8 abi_major;
-> +	u8 abi_minor;
-> +	u16 firmware_revision;
-> +	char firmware_description[32];
-> +};
-> +
-> +/**
-> + * struct ti_sci_handle - Handle returned to TI SCI clients for usage.
-> + * @version:	structure containing version information
-> + */
-> +struct ti_sci_handle {
-> +	struct ti_sci_version_info version;
-> +};
-> +
-> +#if IS_ENABLED(CONFIG_TI_SCI_PROTOCOL)
-> +const struct ti_sci_handle *ti_sci_get_handle(struct device *dev);
-> +int ti_sci_put_handle(const struct ti_sci_handle *handle);
-> +const struct ti_sci_handle *devm_ti_sci_get_handle(struct device *dev);
-> +
-> +#else	/* CONFIG_TI_SCI_PROTOCOL */
-> +
-> +static inline const struct ti_sci_handle *ti_sci_get_handle(struct device *dev)
-> +{
-> +	return ERR_PTR(-EINVAL);
-> +}
-> +
-> +static inline int ti_sci_put_handle(const struct ti_sci_handle *handle)
-> +{
-> +	return -EINVAL;
-> +}
-> +
-> +static inline
-> +const struct ti_sci_handle *devm_ti_sci_get_handle(struct device *dev)
-> +{
-> +	return ERR_PTR(-EINVAL);
-> +}
-> +
-> +#endif	/* CONFIG_TI_SCI_PROTOCOL */
-> +
-> +#endif	/* __TISCI_PROTOCOL_H */
-> 
+Cj4gT24gMjEuMDguMjAxNiwgYXQgMTU6MzcsIFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNv
+bT4gd3JvdGU6Cj4gCj4+IE9uIOS6lCwgMjAxNi0wOC0xOSBhdCAxMTo1OSAtMDcwMCwgRXJpYyBB
+bmhvbHQgd3JvdGU6Cj4+IFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT4gd3JpdGVzOgo+
+PiAKPj4+IAo+Pj4+IE9uIOWbmywgMjAxNi0wOC0xOCBhdCAxMTozOSAtMDcwMCwgRXJpYyBBbmhv
+bHQgd3JvdGU6Cj4+Pj4gCj4+Pj4gRXJpYyBBbmhvbHQgPGVyaWNAYW5ob2x0Lm5ldD4gd3JpdGVz
+Ogo+Pj4+IAo+Pj4+PiAKPj4+Pj4gCj4+Pj4+IGtlcm5lbEBtYXJ0aW4uc3Blcmwub3JnIHdyaXRl
+czoKPj4+Pj4gCj4+Pj4+PiAKPj4+Pj4+IAo+Pj4+Pj4gRnJvbTogTWFydGluIFNwZXJsIDxrZXJu
+ZWxAbWFydGluLnNwZXJsLm9yZz4KPj4+Pj4+IAo+Pj4+Pj4gQWRkIGJhc2ljIHRoZXJtYWwgZHJp
+dmVyIGZvciBiY20yODM1IFNPQy4KPj4+Pj4+IAo+Pj4+Pj4gVGhpcyBkcml2ZXIgY3VycmVudGx5
+IHJlbGllcyBvbiB0aGUgZmlybXdhcmUgc2V0dGluZyB1cCB0aGUKPj4+Pj4+IHRzZW5zZSBIVyBi
+bG9jayBhbmQgZG9lcyBub3Qgc2V0IGl0IHVwIGl0c2VsZi4KPj4+Pj4+IAo+Pj4+Pj4gU2lnbmVk
+LW9mZi1ieTogTWFydGluIFNwZXJsIDxrZXJuZWxAbWFydGluLnNwZXJsLm9yZz4KPj4+Pj4+IAo+
+Pj4+Pj4gQ2hhbmdlTG9nOgo+Pj4+Pj4gIFYxIC0+IFYyOiBhZGRlZCBzcGVjaWZpYyBzZXR0aW5n
+cyBkZXBlbmRpbmcgb24gY29tcGF0aWJsaXR5Cj4+Pj4+PiAgICAgICBhZGRlZCB0cmlwIHBvaW50
+IGJhc2VkIG9uIHJlZ2lzdGVyCj4+Pj4+PiAgICAgICBzZXR0aW5nIHVwIGN0cmwtcmVnaXN0ZXIg
+aWYgSFcgaXMgbm90IGVuYWJsZWQgYnkKPj4+Pj4+IGZpcm13YXJlCj4+Pj4+PiAgICAgICAgIGFz
+IHBlciByZWNvbW1lbmRhdGlvbiBvZiBFcmljICh1bnRlc3RlZCkKPj4+Pj4+ICAgICAgIGNoZWNr
+IHRoYXQgY2xvY2sgZnJlcXVlbmN5IGlzIGluIHJhbmdlCj4+Pj4+PiAgICAgICAgICgxLjkgLSA1
+TUh6IC0gYXMgcGVyIGNvbW1lbnQgaW4gY2xrLWJjbTI4MzUuYykKPj4+Pj4+IC0tLQo+Pj4+Pj4g
+Cj4+Pj4+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL2JjbS9NYWtlZmlsZQo+Pj4+Pj4g
+Yi9kcml2ZXJzL3RoZXJtYWwvYmNtL01ha2VmaWxlCj4+Pj4+PiBuZXcgZmlsZSBtb2RlIDEwMDY0
+NAo+Pj4+Pj4gaW5kZXggMDAwMDAwMC4uMTM0NTZkMgo+Pj4+Pj4gLS0tIC9kZXYvbnVsbAo+Pj4+
+Pj4gKysrIGIvZHJpdmVycy90aGVybWFsL2JjbS9NYWtlZmlsZQo+Pj4+Pj4gQEAgLTAsMCArMSBA
+QAo+Pj4+Pj4gK29iai0kKENPTkZJR19CQ00yODM1X1RIRVJNQUwpICAgICAgICA6PQo+Pj4+Pj4g
+YmNtMjgzNV90aGVybWFsLm8KPj4+Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvYmNt
+L2JjbTI4MzVfdGhlcm1hbC5jCj4+Pj4+PiBiL2RyaXZlcnMvdGhlcm1hbC9iY20vYmNtMjgzNV90
+aGVybWFsLmMKPj4+Pj4+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4+Pj4+PiBpbmRleCAwMDAwMDAw
+Li43MzEzOGNiCj4+Pj4+PiAtLS0gL2Rldi9udWxsCj4+Pj4+PiArKysgYi9kcml2ZXJzL3RoZXJt
+YWwvYmNtL2JjbTI4MzVfdGhlcm1hbC5jCj4+Pj4+PiAKPj4+Pj4+ICtzdGF0aWMgY29uc3Qgc3Ry
+dWN0IG9mX2RldmljZV9pZAo+Pj4+Pj4gYmNtMjgzNV90aGVybWFsX29mX21hdGNoX3RhYmxlW107
+Cj4+Pj4+PiArc3RhdGljIGludCBiY20yODM1X3RoZXJtYWxfcHJvYmUoc3RydWN0IHBsYXRmb3Jt
+X2RldmljZQo+Pj4+Pj4gKnBkZXYpCj4+Pj4+PiArewo+Pj4+Pj4gCj4+Pj4+PiArICAgIC8qIGVu
+YWJsZSBjbG9jayBhbmQgY2hlY2sgcmF0ZSAqLwo+Pj4+Pj4gKyAgICBjbGtfcHJlcGFyZV9lbmFi
+bGUoZGF0YS0+Y2xrKTsKPj4+Pj4+ICsgICAgcmF0ZSA9IGNsa19nZXRfcmF0ZShkYXRhLT5jbGsp
+Owo+Pj4+Pj4gKyAgICBpZiAoKHJhdGUgPCAxOTIwMDAwKSB8fCAocmF0ZSA+IDUwMDAwMDApKSB7
+Cj4+Pj4+PiArICAgICAgICBkZXZfd2FybigmcGRldi0+ZGV2LAo+Pj4+Pj4gKyAgICAgICAgICAg
+ICAiQ2xvY2sgJXBDbiBpcyBydW5uaW5nIGF0ICVwQ3IgSHosCj4+Pj4+PiB3aGljaCBpcyBvdXRz
+aWRlIHRoZSByZWNvbW1lbmRlZCByYW5nZSBvZiAxLjkgdG8gNS4wIE1IelxuIiwKPj4+Pj4+ICsg
+ICAgICAgICAgICAgZGF0YS0+Y2xrLCBkYXRhLT5jbGspOwo+Pj4+Pj4gKyAgICB9Cj4+Pj4+PiAr
+Cj4+Pj4+PiArICAgIC8qIHJlZ2lzdGVyIGl0ICovCj4+Pj4+PiArICAgIHR6ID0gdGhlcm1hbF96
+b25lX2RldmljZV9yZWdpc3RlcigiYmNtMjgzNV90aGVybWFsIiwKPj4+Pj4+ICsgICAgICAgICAg
+ICAgICAgICAgICAgMSwgMCwgZGF0YSwKPj4+Pj4+ICsgICAgICAgICAgICAgICAgICAgICAgJmJj
+bTI4MzVfdGhlcm1hbF9vCj4+Pj4+PiBwcywKPj4+Pj4+ICsgICAgICAgICAgICAgICAgICAgICAg
+TlVMTCwgMCwgMCk7Cj4+Pj4+IEkgbm90aWNlIHRoYXQgdGhlIHBvbGxpbmdfZGVsYXkgaXMgc2V0
+IHRvIDAsIGJ1dCB3ZSdyZSBub3QKPj4+Pj4gdXNpbmcKPj4+Pj4gaW50ZXJydXB0cyB0byB0cmln
+Z2VyIHRoZSB0cmlwLiAgSXMgaXQgdmFsaWQgdG8gZXhwb3NlIGEgdHJpcAo+Pj4+PiB3aXRob3V0
+IGEKPj4+Pj4gcG9sbGluZ19kZWxheSBvciBpbnRlcnJ1cHRzPyAgU2hvdWxkIHBhc3NpdmVfZGVs
+YXkgYmUgc2V0IGFzCj4+Pj4+IHdlbGw/Cj4+Pj4+IAo+Pj4+PiBUaGlzIGlzIHVwIHRvIHRoZSB0
+aGVybWFsIG1haW50YWluZXJzLiAgQXMgZmFyIGFzIEknbQo+Pj4+PiBjb25jZXJuZWQsCj4+Pj4+
+IGl0J3M6Cj4+Pj4+IAo+Pj4+PiBBY2tlZC1ieTogRXJpYyBBbmhvbHQgPGVyaWNAYW5ob2x0Lm5l
+dD4KPj4+Pj4gCj4+Pj4+IE9uZSBpdCBsYW5kcyBJJ2xsIHB1bGwgdGhlIGRlZmNvbmZpZyBhbmQg
+RFQgYml0cy4KPj4+PiBQaW5nIG9uIHRoaXMgcXVlc3Rpb24gdG8gdGhlcm1hbCBtYWludGFpbmVy
+cy4gIEknZCBzdGlsbCBsb3ZlIHRvCj4+Pj4gc2VlCj4+Pj4gdGhpcyBkcml2ZXIgbGFuZC4KPj4+
+IGhtbW0sIGhvdyBpcyB0aGlzIGRyaXZlciBzdXBwb3NlZCB0byB3b3JrPwo+Pj4gV2l0aCB0aGlz
+IHBhdGNoIHNldCwgSSB0aGluayB0aGUgb25seSBiZW5lZml0IGlzIHRoYXQgd2UgY2FuIGdldAo+
+Pj4gdGhlCj4+PiB0ZW1wZXJhdHVyZSBhbmQgdHJpcCBwb2ludCBpbmZvcm1hdGlvbiB2aWEgdGhl
+cm1hbCBzeXNmcyBpbnRlcmZhY2UsCj4+PiBidXQKPj4+IGtlcm5lbCB0aGVybWFsIGNvbnRyb2wg
+aXMgYSBuby1vcCBoZXJlLCByaWdodD8KPj4gWWVhaC4gIEl0IHNlZW1zIHVzZWZ1bCB0byBiZSBh
+YmxlIHRvIGdldCB0aGUgaW5mb3JtYXRpb24uICBPbmNlIHdlCj4+IGxhbmQKPj4gdGhpcywgSSBo
+b3BlIHNvbWVvbmUgY2FuIGFkZCBpbnRlcnJ1cHQgc3VwcG9ydCBzbyB0aGF0IHRoZXJlIGFyZQo+
+PiBhY3R1YWwKPj4gdHJpcCBwb2ludHMuCj4gCj4gc291bmRzIHJlYXNvbmFibGUgdG8gbWUuCj4g
+QW5vdGhlciBxdWVzdGlvbiwgd2h5IHlvdSBuZWVkIGEgc2VwYXJhdGUgZGlyZWN0b3J5IGZvciBh
+IHNpbmdsZQo+IGZpbGUsIGJjbTI4MzVfdGhlcm1hbC5jPwoKTG90cyBvZiBvdGhlciBzdWJzeXN0
+ZW1zIChjbGssIHNvdW5kL3NvYywgLi4uKSBhcmUgdXNpbmcgdmVuZG9yIHNwZWNpZmljCnN1YiBk
+aXJlY3Rvcmllcy4KSW4gdGhlcm1hbCB0aGVyZSBhcmUgYWxyZWFkeSBzdWJkaXJlY3RvcmllcyBm
+b3IgU2Ftc3VuZyBvciBzdC4KU28gdGhpcyB3YXMgZG9uZSBpbiB0aGlzIGNhc2UgYXMgd2VsbCB0
+byBzdXBwb3J0IEJyb2FkY29tIGltbWVkaWF0ZWx5CmZvbGxvd2luZyB0aGlzIHBhdHRlcm4uCgpZ
+b3Ugd2FudCBhIG5ldyB2ZXJzaW9uIHRvIGtlZXAgaXQgaW4gdGhlcm1hbCBkaXJlY3RseSBJIGNh
+biBjcmVhdGUgYQpuZXcgdmVyc2lvbiBvZiB0aGUgcGF0Y2guCgpUaGFua3MsIE1hcnRpbgoKX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtl
+cm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0
+dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5l
+bAo=
