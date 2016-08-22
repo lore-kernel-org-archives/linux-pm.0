@@ -1,7 +1,7 @@
 From: Lin Huang <hl@rock-chips.com>
-Subject: [PATCH v7 8/8] drm/rockchip: Add dmc notifier in vop driver
-Date: Mon, 22 Aug 2016 11:36:24 +0800
-Message-ID: <1471836984-6316-9-git-send-email-hl@rock-chips.com>
+Subject: [PATCH v7 7/8] PM / devfreq: rockchip: add devfreq driver for rk3399 dmc
+Date: Mon, 22 Aug 2016 11:36:23 +0800
+Message-ID: <1471836984-6316-8-git-send-email-hl@rock-chips.com>
 References: <1471836984-6316-1-git-send-email-hl@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1471836984-6316-1-git-send-email-hl@rock-chips.com>
@@ -10,281 +10,585 @@ To: heiko@sntech.de, myungjoo.ham@samsung.com
 Cc: tixy@linaro.org, mark.rutland@arm.com, typ@rock-chips.com, linux-rockchip@lists.infradead.org, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, mark.yao@rock-chips.com, Lin Huang <hl@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-when in ddr frequency scaling process, vop can not do enable or
-disable operation, since in dcf we check vop clock to see whether
-vop work. If vop work, dcf do ddr frequency scaling when vop
-in vblank status, and we need to read vop register to check whether
-vop go into vblank status. If vop not work, dcf can do ddr frequency
-any time. So when do ddr frequency scaling, you disabled or enable
-vop, there may two bad thing happen: 1, the panel flicker(when vop from
-disable status change to enable). 2, kernel hang (when vop from enable
-status change to disable, dcf need to read vblank status, but if you disable
-vop clock, it can not get the status, it will lead soc dead) So we need
-register to devfreq notifier, and we can get the dmc status. Also, when
-there have two vop enabled, we need to disable dmc, since dcf only base
-on one vop vblank time, so the other panel will flicker when do ddr
-frequency scaling.
+base on dfi result, we do ddr frequency scaling, register
+dmc driver to devfreq framework, and use simple-ondemand
+policy.
 
 Signed-off-by: Lin Huang <hl@rock-chips.com>
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
 Changes in v7:
-- None
+- remove a blank line
 
 Changes in v6:
-- fix a build error
+- fix some nit suggest by Chanwoo Choi
 
 Changes in v5:
-- improve some nits
+- improve dmc driver suggest by Chanwoo Choi
 
 Changes in v4:
-- register notifier to devfreq_register_notifier
-- use DEVFREQ_PRECHANGE and DEVFREQ_POSTCHANGE to get dmc status
-- when two vop enable, disable dmc
-- when two vop back to one vop, enable dmc
+- use arm_smccc_smc() function talk to bl31
+- delete rockchip_dmc.c file and config
+- delete dmc_notify
+- adjust probe order
 
 Changes in v3:
-- when do vop eanble/disable, dmc will wait until it finish
+- operate dram setting through sip call
+- imporve set rate flow
 
 Changes in v2:
 - None
 
 Changes in v1:
-- use wait_event instead usleep
+- move dfi controller to event
+- fix set voltage sequence when set rate fail
+- change Kconfig type from tristate to bool
+- move unuse EXPORT_SYMBOL_GPL()
 
- drivers/gpu/drm/rockchip/rockchip_drm_vop.c | 127 ++++++++++++++++++++++++++--
- 1 file changed, 122 insertions(+), 5 deletions(-)
+ drivers/devfreq/Kconfig      |  11 +
+ drivers/devfreq/Makefile     |   1 +
+ drivers/devfreq/rk3399_dmc.c | 499 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 511 insertions(+)
+ create mode 100644 drivers/devfreq/rk3399_dmc.c
 
-diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
-index ec8ad00..a76e70c 100644
---- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
-+++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
-@@ -12,6 +12,8 @@
-  * GNU General Public License for more details.
-  */
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index a5be56e..e848121 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -100,6 +100,17 @@ config ARM_TEGRA_DEVFREQ
+          It reads ACTMON counters of memory controllers and adjusts the
+          operating frequencies and voltages with OPP support.
  
++config ARM_RK3399_DMC_DEVFREQ
++	tristate "ARM RK3399 DMC DEVFREQ Driver"
++	depends on ARCH_ROCKCHIP
++	select DEVFREQ_EVENT_ROCKCHIP_DFI
++	select DEVFREQ_GOV_SIMPLE_ONDEMAND
++	select PM_OPP
++	help
++          This adds the DEVFREQ driver for the RK3399 DMC(Dynamic Memory Controller).
++          It sets the frequency for the memory controller and reads the usage counts
++          from hardware.
++
+ source "drivers/devfreq/event/Kconfig"
+ 
+ endif # PM_DEVFREQ
+diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+index 09f11d9..fbff40a 100644
+--- a/drivers/devfreq/Makefile
++++ b/drivers/devfreq/Makefile
+@@ -8,6 +8,7 @@ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
+ 
+ # DEVFREQ Drivers
+ obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
++obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
+ obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra-devfreq.o
+ 
+ # DEVFREQ Event Drivers
+diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+new file mode 100644
+index 0000000..b73a73c
+--- /dev/null
++++ b/drivers/devfreq/rk3399_dmc.c
+@@ -0,0 +1,499 @@
++/*
++ * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd.
++ * Author: Lin Huang <hl@rock-chips.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ */
++
++#include <linux/arm-smccc.h>
++#include <linux/clk.h>
++#include <linux/delay.h>
 +#include <linux/devfreq.h>
 +#include <linux/devfreq-event.h>
- #include <drm/drm.h>
- #include <drm/drmP.h>
- #include <drm/drm_atomic.h>
-@@ -118,6 +120,13 @@ struct vop {
- 
- 	const struct vop_data *data;
- 
-+	struct devfreq *devfreq;
-+	struct devfreq_event_dev *devfreq_event_dev;
-+	struct notifier_block dmc_nb;
-+	int dmc_in_process;
-+	int vop_switch_status;
-+	wait_queue_head_t wait_dmc_queue;
-+	wait_queue_head_t wait_vop_switch_queue;
- 	uint32_t *regsbak;
- 	void __iomem *regs;
- 
-@@ -428,21 +437,59 @@ static void vop_dsp_hold_valid_irq_disable(struct vop *vop)
- 	spin_unlock_irqrestore(&vop->irq_lock, flags);
- }
- 
-+static int dmc_notify(struct notifier_block *nb, unsigned long event,
-+		      void *data)
-+{
-+	struct vop *vop = container_of(nb, struct vop, dmc_nb);
++#include <linux/interrupt.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/regulator/consumer.h>
++#include <linux/rwsem.h>
++#include <linux/suspend.h>
 +
-+	if (event == DEVFREQ_PRECHANGE) {
-+		/*
-+		 * check if vop in enable or disable process,
-+		 * if yes, wait until it finishes, use 200ms as
-+		 * timeout.
-+		 */
-+		if (!wait_event_timeout(vop->wait_vop_switch_queue,
-+					!vop->vop_switch_status, HZ / 5))
-+			dev_warn(vop->dev,
-+				 "Timeout waiting for vop swtich status\n");
-+		vop->dmc_in_process = 1;
-+	} else if (event == DEVFREQ_POSTCHANGE) {
-+		vop->dmc_in_process = 0;
-+		wake_up(&vop->wait_dmc_queue);
++#include <soc/rockchip/rockchip_sip.h>
++
++struct dram_timing {
++	unsigned int ddr3_speed_bin;
++	unsigned int pd_idle;
++	unsigned int sr_idle;
++	unsigned int sr_mc_gate_idle;
++	unsigned int srpd_lite_idle;
++	unsigned int standby_idle;
++	unsigned int dram_dll_dis_freq;
++	unsigned int phy_dll_dis_freq;
++	unsigned int ddr3_odt_dis_freq;
++	unsigned int ddr3_drv;
++	unsigned int ddr3_odt;
++	unsigned int phy_ddr3_ca_drv;
++	unsigned int phy_ddr3_dq_drv;
++	unsigned int phy_ddr3_odt;
++	unsigned int lpddr3_odt_dis_freq;
++	unsigned int lpddr3_drv;
++	unsigned int lpddr3_odt;
++	unsigned int phy_lpddr3_ca_drv;
++	unsigned int phy_lpddr3_dq_drv;
++	unsigned int phy_lpddr3_odt;
++	unsigned int lpddr4_odt_dis_freq;
++	unsigned int lpddr4_drv;
++	unsigned int lpddr4_dq_odt;
++	unsigned int lpddr4_ca_odt;
++	unsigned int phy_lpddr4_ca_drv;
++	unsigned int phy_lpddr4_ck_cs_drv;
++	unsigned int phy_lpddr4_dq_drv;
++	unsigned int phy_lpddr4_odt;
++};
++
++struct rk3399_dmcfreq {
++	struct device *dev;
++	struct devfreq *devfreq;
++	struct devfreq_simple_ondemand_data ondemand_data;
++	struct clk *dmc_clk;
++	struct devfreq_event_dev *edev;
++	struct mutex lock;
++	struct dram_timing *timing;
++
++	/*
++	 * DDR Converser of Frequency (DCF) is used to implement DDR frequency
++	 * conversion without the participation of CPU, we will implement and
++	 * control it in arm trust firmware.
++	 */
++	wait_queue_head_t	wait_dcf_queue;
++	int irq;
++	int wait_dcf_flag;
++	struct regulator *vdd_center;
++	unsigned long rate, target_rate;
++	unsigned long volt, target_volt;
++	struct dev_pm_opp *curr_opp;
++};
++
++static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
++				 u32 flags)
++{
++	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
++	struct dev_pm_opp *opp;
++	unsigned long old_clk_rate = dmcfreq->rate;
++	unsigned long target_volt, target_rate;
++	int err;
++
++	rcu_read_lock();
++	opp = devfreq_recommended_opp(dev, freq, flags);
++	if (IS_ERR(opp)) {
++		rcu_read_unlock();
++		return PTR_ERR(opp);
 +	}
 +
-+	return NOTIFY_OK;
++	target_rate = dev_pm_opp_get_freq(opp);
++	target_volt = dev_pm_opp_get_voltage(opp);
++
++	dmcfreq->rate = dev_pm_opp_get_freq(dmcfreq->curr_opp);
++	dmcfreq->volt = dev_pm_opp_get_voltage(dmcfreq->curr_opp);
++
++	rcu_read_unlock();
++
++	if (dmcfreq->rate == target_rate)
++		return 0;
++
++	mutex_lock(&dmcfreq->lock);
++
++	/*
++	 * If frequency scaling from low to high, adjust voltage first.
++	 * If frequency scaling from high to low, adjust frequency first.
++	 */
++	if (old_clk_rate < target_rate) {
++		err = regulator_set_voltage(dmcfreq->vdd_center, target_volt,
++					    target_volt);
++		if (err) {
++			dev_err(dev, "Cannot to set voltage %lu uV\n",
++				target_volt);
++			goto out;
++		}
++	}
++	dmcfreq->wait_dcf_flag = 1;
++
++	err = clk_set_rate(dmcfreq->dmc_clk, target_rate);
++	if (err) {
++		dev_err(dev, "Cannot to set frequency %lu (%d)\n",
++			target_rate, err);
++		regulator_set_voltage(dmcfreq->vdd_center, dmcfreq->volt,
++				      dmcfreq->volt);
++		goto out;
++	}
++
++	/*
++	 * Wait until bcf irq happen, it means freq scaling finish in
++	 * arm trust firmware, use 100ms as timeout time.
++	 */
++	if (!wait_event_timeout(dmcfreq->wait_dcf_queue,
++				!dmcfreq->wait_dcf_flag, HZ / 10))
++		dev_warn(dev, "Timeout waiting for dcf interrupt\n");
++
++	/*
++	 * Check the dpll rate,
++	 * There only two result we will get,
++	 * 1. Ddr frequency scaling fail, we still get the old rate.
++	 * 2. Ddr frequency scaling sucessful, we get the rate we set.
++	 */
++	dmcfreq->rate = clk_get_rate(dmcfreq->dmc_clk);
++
++	/* If get the incorrect rate, set voltage to old value. */
++	if (dmcfreq->rate != target_rate) {
++		dev_err(dev, "Get wrong ddr frequency, Request frequency %lu,\
++			Current frequency %lu\n", target_rate, dmcfreq->rate);
++		regulator_set_voltage(dmcfreq->vdd_center, dmcfreq->volt,
++				      dmcfreq->volt);
++		goto out;
++	} else if (old_clk_rate > target_rate)
++		err = regulator_set_voltage(dmcfreq->vdd_center, target_volt,
++					    target_volt);
++	if (err)
++		dev_err(dev, "Cannot to set vol %lu uV\n", target_volt);
++
++	dmcfreq->curr_opp = opp;
++out:
++	mutex_unlock(&dmcfreq->lock);
++	return err;
 +}
 +
- static void vop_enable(struct drm_crtc *crtc)
- {
- 	struct vop *vop = to_vop(crtc);
-+	int num_enabled_crtc = 0;
- 	int ret;
- 
-+	if (vop->is_enabled)
-+		return;
++static int rk3399_dmcfreq_get_dev_status(struct device *dev,
++					 struct devfreq_dev_status *stat)
++{
++	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
++	struct devfreq_event_data edata;
++	int ret = 0;
 +
-+	/*
-+	 * if in dmc scaling frequency process, wait until it finishes
-+	 * use 100ms as timeout time.
-+	 */
-+	if (!wait_event_timeout(vop->wait_dmc_queue,
-+				!vop->dmc_in_process, HZ / 5))
-+		dev_warn(vop->dev,
-+			 "Timeout waiting for dmc when vop enable\n");
++	ret = devfreq_event_get_event(dmcfreq->edev, &edata);
++	if (ret < 0)
++		return ret;
 +
-+	vop->vop_switch_status = 1;
- 	ret = pm_runtime_get_sync(vop->dev);
- 	if (ret < 0) {
- 		dev_err(vop->dev, "failed to get pm runtime: %d\n", ret);
--		return;
-+		goto err;
- 	}
- 
- 	ret = clk_enable(vop->hclk);
- 	if (ret < 0) {
- 		dev_err(vop->dev, "failed to enable hclk - %d\n", ret);
--		return;
-+		goto err;
- 	}
- 
- 	ret = clk_enable(vop->dclk);
-@@ -456,7 +503,6 @@ static void vop_enable(struct drm_crtc *crtc)
- 		dev_err(vop->dev, "failed to enable aclk - %d\n", ret);
- 		goto err_disable_dclk;
- 	}
--
- 	/*
- 	 * Slave iommu shares power, irq and clock with vop.  It was associated
- 	 * automatically with this master device via common driver code.
-@@ -485,6 +531,21 @@ static void vop_enable(struct drm_crtc *crtc)
- 
- 	drm_crtc_vblank_on(crtc);
- 
-+	vop->vop_switch_status = 0;
-+	wake_up(&vop->wait_vop_switch_queue);
++	stat->current_frequency = dmcfreq->rate;
++	stat->busy_time = edata.load_count;
++	stat->total_time = edata.total_count;
 +
-+	/* check how many vop we use now */
-+	drm_for_each_crtc(crtc, vop->drm_dev) {
-+		if (crtc->state->enable)
-+			num_enabled_crtc++;
++	return ret;
++}
++
++static int rk3399_dmcfreq_get_cur_freq(struct device *dev, unsigned long *freq)
++{
++	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
++
++	*freq = dmcfreq->rate;
++
++	return 0;
++}
++
++static struct devfreq_dev_profile rk3399_devfreq_dmc_profile = {
++	.polling_ms	= 200,
++	.target		= rk3399_dmcfreq_target,
++	.get_dev_status	= rk3399_dmcfreq_get_dev_status,
++	.get_cur_freq	= rk3399_dmcfreq_get_cur_freq,
++};
++
++static __maybe_unused int rk3399_dmcfreq_suspend(struct device *dev)
++{
++	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
++	int ret = 0;
++
++	ret = devfreq_event_disable_edev(dmcfreq->edev);
++	if (ret < 0) {
++		dev_err(dev, "failed to disable the devfreq-event devices\n");
++		return ret;
 +	}
 +
-+	/* if enable two vop, need to disable dmc */
-+	if ((num_enabled_crtc > 1) && vop->devfreq) {
-+		if (vop->devfreq_event_dev)
-+			devfreq_event_disable_edev(vop->devfreq_event_dev);
-+		devfreq_suspend_device(vop->devfreq);
++	ret = devfreq_suspend_device(dmcfreq->devfreq);
++	if (ret < 0) {
++		dev_err(dev, "failed to suspend the devfreq devices\n");
++		return ret;
 +	}
- 	return;
- 
- err_disable_aclk:
-@@ -493,16 +554,32 @@ err_disable_dclk:
- 	clk_disable(vop->dclk);
- err_disable_hclk:
- 	clk_disable(vop->hclk);
++
++	return 0;
++}
++
++static __maybe_unused int rk3399_dmcfreq_resume(struct device *dev)
++{
++	struct rk3399_dmcfreq *dmcfreq = dev_get_drvdata(dev);
++	int ret = 0;
++
++	ret = devfreq_event_enable_edev(dmcfreq->edev);
++	if (ret < 0) {
++		dev_err(dev, "failed to enable the devfreq-event devices\n");
++		return ret;
++	}
++
++	ret = devfreq_resume_device(dmcfreq->devfreq);
++	if (ret < 0) {
++		dev_err(dev, "failed to resume the devfreq devices\n");
++		return ret;
++	}
++	return ret;
++}
++
++static SIMPLE_DEV_PM_OPS(rk3399_dmcfreq_pm, rk3399_dmcfreq_suspend,
++			 rk3399_dmcfreq_resume);
++
++static irqreturn_t rk3399_dmc_irq(int irq, void *dev_id)
++{
++	struct rk3399_dmcfreq *dmcfreq = dev_id;
++	struct arm_smccc_res res;
++
++	dmcfreq->wait_dcf_flag = 0;
++	wake_up(&dmcfreq->wait_dcf_queue);
++
++	/* Clear the DCF interrupt */
++	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, 0, 0,
++		      ROCKCHIP_SIP_CONFIG_DRAM_CLR_IRQ,
++		      0, 0, 0, 0, &res);
++
++	return IRQ_HANDLED;
++}
++
++static struct dram_timing *of_get_ddr_timings(struct device *dev,
++					      struct device_node *np)
++{
++	struct dram_timing	*timing = NULL;
++	struct device_node	*np_tim;
++	int ret;
++
++	np_tim = of_parse_phandle(np, "ddr_timing", 0);
++	if (np_tim) {
++		timing = devm_kzalloc(dev, sizeof(*timing), GFP_KERNEL);
++		if (!timing)
++			goto err;
++
++		ret = of_property_read_u32(np_tim, "ddr3_speed_bin",
++					   &timing->ddr3_speed_bin);
++		ret |= of_property_read_u32(np_tim, "pd_idle",
++					    &timing->pd_idle);
++		ret |= of_property_read_u32(np_tim, "sr_idle",
++					    &timing->sr_idle);
++		ret |= of_property_read_u32(np_tim, "sr_mc_gate_idle",
++					    &timing->sr_mc_gate_idle);
++		ret |= of_property_read_u32(np_tim, "srpd_lite_idle",
++					    &timing->srpd_lite_idle);
++		ret |= of_property_read_u32(np_tim, "standby_idle",
++					    &timing->standby_idle);
++		ret |= of_property_read_u32(np_tim, "dram_dll_dis_freq",
++					    &timing->dram_dll_dis_freq);
++		ret |= of_property_read_u32(np_tim, "phy_dll_dis_freq",
++					    &timing->phy_dll_dis_freq);
++		ret |= of_property_read_u32(np_tim, "ddr3_odt_dis_freq",
++					    &timing->ddr3_odt_dis_freq);
++		ret |= of_property_read_u32(np_tim, "ddr3_drv",
++					    &timing->ddr3_drv);
++		ret |= of_property_read_u32(np_tim, "ddr3_odt",
++					    &timing->ddr3_odt);
++		ret |= of_property_read_u32(np_tim, "phy_ddr3_ca_drv",
++					    &timing->phy_ddr3_ca_drv);
++		ret |= of_property_read_u32(np_tim, "phy_ddr3_dq_drv",
++					    &timing->phy_ddr3_dq_drv);
++		ret |= of_property_read_u32(np_tim, "phy_ddr3_odt",
++					    &timing->phy_ddr3_odt);
++		ret |= of_property_read_u32(np_tim, "lpddr3_odt_dis_freq",
++					    &timing->lpddr3_odt_dis_freq);
++		ret |= of_property_read_u32(np_tim, "lpddr3_drv",
++					    &timing->lpddr3_drv);
++		ret |= of_property_read_u32(np_tim, "lpddr3_odt",
++					    &timing->lpddr3_odt);
++		ret |= of_property_read_u32(np_tim, "phy_lpddr3_ca_drv",
++					    &timing->phy_lpddr3_ca_drv);
++		ret |= of_property_read_u32(np_tim, "phy_lpddr3_dq_drv",
++					    &timing->phy_lpddr3_dq_drv);
++		ret |= of_property_read_u32(np_tim, "phy_lpddr3_odt",
++					    &timing->phy_lpddr3_odt);
++		ret |= of_property_read_u32(np_tim, "lpddr4_odt_dis_freq",
++					    &timing->lpddr4_odt_dis_freq);
++		ret |= of_property_read_u32(np_tim, "lpddr4_drv",
++					    &timing->lpddr4_drv);
++		ret |= of_property_read_u32(np_tim, "lpddr4_dq_odt",
++					    &timing->lpddr4_dq_odt);
++		ret |= of_property_read_u32(np_tim, "lpddr4_ca_odt",
++					    &timing->lpddr4_ca_odt);
++		ret |= of_property_read_u32(np_tim, "phy_lpddr4_ca_drv",
++					    &timing->phy_lpddr4_ca_drv);
++		ret |= of_property_read_u32(np_tim, "phy_lpddr4_ck_cs_drv",
++					    &timing->phy_lpddr4_ck_cs_drv);
++		ret |= of_property_read_u32(np_tim, "phy_lpddr4_dq_drv",
++					    &timing->phy_lpddr4_dq_drv);
++		ret |= of_property_read_u32(np_tim, "phy_lpddr4_odt",
++					    &timing->phy_lpddr4_odt);
++		if (ret) {
++			devm_kfree(dev, timing);
++			goto err;
++		}
++		of_node_put(np_tim);
++		return timing;
++	}
++
 +err:
-+	vop->vop_switch_status = 0;
-+	wake_up(&vop->wait_vop_switch_queue);
-+	return;
- }
- 
- static void vop_crtc_disable(struct drm_crtc *crtc)
- {
- 	struct vop *vop = to_vop(crtc);
-+	int num_enabled_crtc = 0;
- 	int i;
- 
- 	WARN_ON(vop->event);
- 
- 	/*
-+	 * if in dmc scaling frequency process, wait until it finish
-+	 * use 100ms as timeout time.
-+	 */
-+	if (!wait_event_timeout(vop->wait_dmc_queue,
-+				!vop->dmc_in_process, HZ / 5))
-+		dev_warn(vop->dev,
-+			 "Timeout waiting for dmc when vop disable\n");
++	if (timing) {
++		devm_kfree(dev, timing);
++		timing = NULL;
++	}
++	of_node_put(np_tim);
++	return timing;
++}
 +
-+	vop->vop_switch_status = 1;
++static int rk3399_dmcfreq_probe(struct platform_device *pdev)
++{
++	struct arm_smccc_res res;
++	struct device *dev = &pdev->dev;
++	struct device_node *np = pdev->dev.of_node;
++	struct rk3399_dmcfreq *data;
++	int ret, irq, index, size;
++	uint32_t *timing;
++	struct dev_pm_opp *opp;
 +
-+	/*
- 	 * We need to make sure that all windows are disabled before we
- 	 * disable that crtc. Otherwise we might try to scan from a destroyed
- 	 * buffer later.
-@@ -515,7 +592,6 @@ static void vop_crtc_disable(struct drm_crtc *crtc)
- 		VOP_WIN_SET(vop, win, enable, 0);
- 		spin_unlock(&vop->reg_lock);
- 	}
--
- 	drm_crtc_vblank_off(crtc);
- 
- 	/*
-@@ -546,7 +622,6 @@ static void vop_crtc_disable(struct drm_crtc *crtc)
- 	 * vop standby complete, so iommu detach is safe.
- 	 */
- 	rockchip_drm_dma_detach_device(vop->drm_dev, vop->dev);
--
- 	clk_disable(vop->dclk);
- 	clk_disable(vop->aclk);
- 	clk_disable(vop->hclk);
-@@ -559,6 +634,25 @@ static void vop_crtc_disable(struct drm_crtc *crtc)
- 
- 		crtc->state->event = NULL;
- 	}
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0) {
++		dev_err(&pdev->dev, "Cannot get the dmc interrupt resource\n");
++		return -EINVAL;
++	}
++	data = devm_kzalloc(dev, sizeof(struct rk3399_dmcfreq), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
 +
-+	vop->vop_switch_status = 0;
-+	wake_up(&vop->wait_vop_switch_queue);
++	mutex_init(&data->lock);
 +
-+	/* check how many vop use now */
-+	drm_for_each_crtc(crtc, vop->drm_dev) {
-+		if (crtc->state->enable)
-+			num_enabled_crtc++;
++	data->vdd_center = devm_regulator_get(dev, "center");
++	if (IS_ERR(data->vdd_center)) {
++		dev_err(dev, "Cannot get the regulator \"center\"\n");
++		return PTR_ERR(data->vdd_center);
++	}
++
++	data->dmc_clk = devm_clk_get(dev, "dmc_clk");
++	if (IS_ERR(data->dmc_clk)) {
++		dev_err(dev, "Cannot get the clk dmc_clk\n");
++		return PTR_ERR(data->dmc_clk);
++	};
++
++	data->irq = irq;
++	ret = devm_request_irq(dev, irq, rk3399_dmc_irq, 0,
++			       dev_name(dev), data);
++	if (ret) {
++		dev_err(dev, "Failed to request dmc irq: %d\n", ret);
++		return ret;
++	}
++
++	init_waitqueue_head(&data->wait_dcf_queue);
++	data->wait_dcf_flag = 0;
++
++	data->edev = devfreq_event_get_edev_by_phandle(dev, 0);
++	if (IS_ERR(data->edev))
++		return -EPROBE_DEFER;
++
++	ret = devfreq_event_enable_edev(data->edev);
++	if (ret < 0) {
++		dev_err(dev, "failed to enable devfreq-event devices\n");
++		return ret;
 +	}
 +
 +	/*
-+	 * if num_enabled_crtc = 1 now, it means 2 vop enabled
-+	 * change to 1 vop enabled  need to enable dmc again.
++	 * Get dram timing and pass it to arm trust firmware,
++	 * the dram drvier in arm trust firmware will get these
++	 * timing and to do dram initial.
 +	 */
-+	if ((num_enabled_crtc == 1) && vop->devfreq) {
-+		if (vop->devfreq_event_dev)
-+			devfreq_event_enable_edev(vop->devfreq_event_dev);
-+		devfreq_resume_device(vop->devfreq);
++	data->timing = of_get_ddr_timings(dev, np);
++	if (data->timing) {
++		timing = (uint32_t *)data->timing;
++		size = sizeof(struct dram_timing) / 4;
++		for (index = 0; index < size; index++) {
++			arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, *timing++, index,
++				      ROCKCHIP_SIP_CONFIG_DRAM_SET_PARAM,
++				      0, 0, 0, 0, &res);
++			if (res.a0) {
++				dev_err(dev, "Failed to set dram param: %ld\n",
++					res.a0);
++				return -EINVAL;
++			}
++		}
 +	}
- }
- 
- static void vop_plane_destroy(struct drm_plane *plane)
-@@ -1410,6 +1504,8 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
- 	struct drm_device *drm_dev = data;
- 	struct vop *vop;
- 	struct resource *res;
-+	struct devfreq *devfreq;
-+	struct devfreq_event_dev *event_dev;
- 	size_t alloc_size;
- 	int ret, irq;
- 
-@@ -1471,6 +1567,27 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
- 		return ret;
- 
- 	pm_runtime_enable(&pdev->dev);
 +
-+	init_waitqueue_head(&vop->wait_vop_switch_queue);
-+	vop->vop_switch_status = 0;
-+	init_waitqueue_head(&vop->wait_dmc_queue);
-+	vop->dmc_in_process = 0;
++	arm_smccc_smc(ROCKCHIP_SIP_DRAM_FREQ, 0, 0,
++		      ROCKCHIP_SIP_CONFIG_DRAM_INIT,
++		      0, 0, 0, 0, &res);
 +
-+	devfreq = devfreq_get_devfreq_by_phandle(dev, 0);
-+	if (IS_ERR(devfreq))
-+		goto out;
++	/*
++	 * We add a devfreq driver to our parent since it has a device tree node
++	 * with operating points.
++	 */
++	if (dev_pm_opp_of_add_table(dev)) {
++		dev_err(dev, "Invalid operating-points in device tree.\n");
++		rcu_read_unlock();
++		return -EINVAL;
++	}
 +
-+	vop->devfreq = devfreq;
-+	vop->dmc_nb.notifier_call = dmc_notify;
-+	devfreq_register_notifier(vop->devfreq, &vop->dmc_nb,
-+				  DEVFREQ_TRANSITION_NOTIFIER);
++	of_property_read_u32(np, "upthreshold",
++			     &data->ondemand_data.upthreshold);
++	of_property_read_u32(np, "downdifferential",
++			     &data->ondemand_data.downdifferential);
 +
-+	event_dev = devfreq_event_get_edev_by_phandle(vop->devfreq->dev.parent,
-+						      0);
-+	if (IS_ERR(event_dev))
-+		goto out;
-+	vop->devfreq_event_dev = event_dev;
-+out:
- 	return 0;
- }
- 
++	data->rate = clk_get_rate(data->dmc_clk);
++
++	rcu_read_lock();
++	opp = devfreq_recommended_opp(dev, &data->rate, 0);
++	if (IS_ERR(opp)) {
++		rcu_read_unlock();
++		return PTR_ERR(opp);
++	}
++	rcu_read_unlock();
++	data->curr_opp = opp;
++
++	rk3399_devfreq_dmc_profile.initial_freq = data->rate;
++
++	data->devfreq = devfreq_add_device(dev,
++					   &rk3399_devfreq_dmc_profile,
++					   "simple_ondemand",
++					   &data->ondemand_data);
++	if (IS_ERR(data->devfreq))
++		return PTR_ERR(data->devfreq);
++	devm_devfreq_register_opp_notifier(dev, data->devfreq);
++
++	data->dev = dev;
++	platform_set_drvdata(pdev, data);
++
++	return 0;
++}
++
++static int rk3399_dmcfreq_remove(struct platform_device *pdev)
++{
++	struct rk3399_dmcfreq *dmcfreq = platform_get_drvdata(pdev);
++
++	regulator_put(dmcfreq->vdd_center);
++
++	return 0;
++}
++
++static const struct of_device_id rk3399dmc_devfreq_of_match[] = {
++	{ .compatible = "rockchip,rk3399-dmc" },
++	{ },
++};
++
++static struct platform_driver rk3399_dmcfreq_driver = {
++	.probe	= rk3399_dmcfreq_probe,
++	.remove	= rk3399_dmcfreq_remove,
++	.driver = {
++		.name	= "rk3399-dmc-freq",
++		.pm	= &rk3399_dmcfreq_pm,
++		.of_match_table = rk3399dmc_devfreq_of_match,
++	},
++};
++module_platform_driver(rk3399_dmcfreq_driver);
++
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Lin Huang <hl@rock-chips.com>");
++MODULE_DESCRIPTION("RK3399 dmcfreq driver with devfreq framework");
 -- 
 2.6.6
