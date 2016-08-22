@@ -1,77 +1,92 @@
-From: Wenyou Yang <wenyou.yang@atmel.com>
-Subject: [PATCH v7 0/7] power: act8945a_charger: Improvements
-Date: Mon, 22 Aug 2016 14:49:10 +0800
-Message-ID: <1471848557-27278-1-git-send-email-wenyou.yang@atmel.com>
+From: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH v7 1/7] power: act8945a_charger: Remove "battery_temperature"
+Date: Mon, 22 Aug 2016 14:49:11 +0800
+Message-ID: <1471848557-27278-2-git-send-email-wenyou.yang@atmel.com>
+References: <1471848557-27278-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nasmtp01.atmel.com ([192.199.1.246]:3687 "EHLO
-        ussmtp01.atmel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751284AbcHVGtg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2016 02:49:36 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1471848557-27278-1-git-send-email-wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 
-This patch series is to improve the implementation of act8945a-charger
-driver, such as improve the way to check the status, fix the power
-supply type property, add the status change update, and add more
-properties: capacity level property and max current property.
+Remove "battery_temperature" member, it is redundant, it is the
+hardware's responsibility to handle TH pin properly.
+It is unnecessary to use the dt property to check if there is
+a battery temperature monitor or not.
+
+Signed-off-by: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+---
 
 Changes in v7:
  - Fix the missing negation sign.
- - Add a prompt information if the charger suspended.
- - Fix the wrong using devm_request_irq() with with parent
-   device as *dev.
- - For "lbo-gpios", use gpiod_get() to fix devm_gpiod_get() wrong use
-   with parent device as *dev argument.
- - Add the handle -EPROBE_DEFER returned from gpiod_get "lbo-gpios".
- - Use dev_info() to print log if the lbo irq request failed.
- - Remove unneeded semicolon.
- - Add depends on GPIOLIB for use gpiod.
- - For "chglev-gpios", use gpiod_get() to fix devm_gpiod_get() wrong use
-   with parent device as *dev argument.
- - Add the handle -EPROBE_DEFER returned from gpiod_get "chglev_gpio".
- - Remove unneeded semicolon.
 
-Changes in v6:
- - Add .remove callback function.
- - Fix the 'dev' argument of devm_request_irq() to pdev->dev.parent.
- - For "lbo-gpios", use gpiod API instead of old gpio API to handle.
- - For "chglev-gpios", use gpiod API instead of old gpio API to handle.
+Changes in v6: None
+Changes in v5: None
+Changes in v4: None
+Changes in v3: None
+Changes in v2: None
 
-Changes in v5:
- - Add Acked-by tag.
+ drivers/power/supply/act8945a_charger.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-Changes in v4:
- - Use "interrupts" property, instead of "active-semi,irq-gpios"
-   for irq.
- - Change devname of devm_request_irq() from "lbo-detect" to
-   "act8945a, lbo-detect".
- - Fix wrong gpio assignment for chglev_pin.
- - Update the doc/binding for using "interrupts" property.
-
-Changes in v3:
- - Remove unneeded semicolon to fix semicolon.cocci warning.
-
-Changes in v2:
- - Add missing ret declaration.
-
-Wenyou Yang (7):
-  power: act8945a_charger: Remove "battery_temperature"
-  power: act8945a_charger: Improve
-  power: act8945a_charger: Add status change update support
-  power: act8945a_charger: Fix the power supply type
-  power: act8945a_charger: Add capacity level property
-  power: act8945a_charger: Add max current property
-  doc: bindings: act8945a-charger: Update properties
-
- .../bindings/power/supply/act8945a-charger.txt     |  16 +-
- drivers/power/supply/Kconfig                       |   2 +-
- drivers/power/supply/act8945a_charger.c            | 418 ++++++++++++++++++---
- 3 files changed, 386 insertions(+), 50 deletions(-)
-
+diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
+index b5c00e4..9894577 100644
+--- a/drivers/power/supply/act8945a_charger.c
++++ b/drivers/power/supply/act8945a_charger.c
+@@ -76,7 +76,6 @@ static const char *act8945a_charger_manufacturer = "Active-semi";
+ 
+ struct act8945a_charger {
+ 	struct regmap *regmap;
+-	bool battery_temperature;
+ };
+ 
+ static int act8945a_get_charger_state(struct regmap *regmap, int *val)
+@@ -138,8 +137,7 @@ static int act8945a_get_charge_type(struct regmap *regmap, int *val)
+ 	return 0;
+ }
+ 
+-static int act8945a_get_battery_health(struct act8945a_charger *charger,
+-				       struct regmap *regmap, int *val)
++static int act8945a_get_battery_health(struct regmap *regmap, int *val)
+ {
+ 	int ret;
+ 	unsigned int status;
+@@ -148,7 +146,7 @@ static int act8945a_get_battery_health(struct act8945a_charger *charger,
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	if (charger->battery_temperature && !(status & APCH_STATUS_TEMPDAT))
++	if (!(status & APCH_STATUS_TEMPDAT))
+ 		*val = POWER_SUPPLY_HEALTH_OVERHEAT;
+ 	else if (!(status & APCH_STATUS_INDAT))
+ 		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+@@ -188,8 +186,7 @@ static int act8945a_charger_get_property(struct power_supply *psy,
+ 		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
+ 		break;
+ 	case POWER_SUPPLY_PROP_HEALTH:
+-		ret = act8945a_get_battery_health(charger,
+-						  regmap, &val->intval);
++		ret = act8945a_get_battery_health(regmap, &val->intval);
+ 		break;
+ 	case POWER_SUPPLY_PROP_MODEL_NAME:
+ 		val->strval = act8945a_charger_model;
+@@ -235,9 +232,6 @@ static int act8945a_charger_config(struct device *dev,
+ 		return -EINVAL;
+ 	}
+ 
+-	charger->battery_temperature = of_property_read_bool(np,
+-				"active-semi,check-battery-temperature");
+-
+ 	chglev_pin = of_get_named_gpio_flags(np,
+ 				"active-semi,chglev-gpios", 0, &flags);
+ 
 -- 
 2.7.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
