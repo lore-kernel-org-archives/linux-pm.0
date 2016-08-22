@@ -1,61 +1,43 @@
-From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [PATCH v1 2/3] of: Add support for reading a s32 from a
- multi-value property.
-Date: Mon, 22 Aug 2016 22:07:40 +0800
-Message-ID: <5e7a7b9f-44c2-82c2-eb17-ee54efd15503@rock-chips.com>
-References: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com>
- <1471315139-28285-3-git-send-email-finley.xiao@rock-chips.com>
- <1471616119.61594.465.camel@infradead.org> <4975010.IL95Y3Sj1J@phil>
- <1471639654.4611.2.camel@infradead.org>
+From: yoma sophian <sophian.yoma@gmail.com>
+Subject: Re: how to enable suspend to ram for arm-64 bits
+Date: Mon, 22 Aug 2016 22:41:15 +0800
+Message-ID: <CADUS3on-Y63EgUUudhH1cbgihnMmHe_aXra0CG2WEQWRQTo+AA@mail.gmail.com>
+References: <CADUS3onCMDThNK2ZwSSjGZhPE0M6cybjgCHJR2wVVeK09GC6ng@mail.gmail.com>
+ <06a4f0d7-9022-578d-99e0-ddcde31ed895@arm.com> <CADUS3onUDk_=UpRoZy1m0hV1VGZYSf22ea8D10MpDbqJCfTkqw@mail.gmail.com>
+ <82ddd0e1-9ecc-5e54-e8ee-86f947fc0ecd@arm.com> <CADUS3omw=WYhGF00S3DY8mkg_c-59WvD2AHYs4SQSzCYoHQraQ@mail.gmail.com>
+ <62cbf1a0-268a-f9f5-09af-c155a8a77508@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1471639654.4611.2.camel-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f54.google.com ([209.85.214.54]:35525 "EHLO
+        mail-it0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756087AbcHVOlQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2016 10:41:16 -0400
+Received: by mail-it0-f54.google.com with SMTP id x131so91602285ite.0
+        for <linux-pm@vger.kernel.org>; Mon, 22 Aug 2016 07:41:16 -0700 (PDT)
+In-Reply-To: <62cbf1a0-268a-f9f5-09af-c155a8a77508@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-CgrlnKggMjAxNi84LzIwIDQ6NDcsIERhdmlkIFdvb2Rob3VzZSDlhpnpgZM6Cj4gT24gRnJpLCAy
-MDE2LTA4LTE5IGF0IDIyOjQxICswMjAwLCBIZWlrbyBTdHVlYm5lciB3cm90ZToKPj4+IFNvIG5v
-LCBkb24ndCAqYWRkKiBhbnkgbW9yZSBvZiB0aGVzZSBmdW5jdGlvbnMuIE9ubHkgYWRkIHRoZSBn
-ZW5lcmljCj4+PiB2ZXJzaW9uLiBBbmQgaWYgeW91ciBkcml2ZXIgaXNuJ3QgdXNpbmcgdGhlIGdl
-bmVyaWMgcHJvcGVydHkKPj4+IGZ1bmN0aW9ucy4uLiBmaXggaXQuCj4+IEFzIGZhciBhcyBJIGNh
-biBzZWUsIGFsbCB0aGUgZGV2aWNlX3Byb3BlcnR5XyogZnVuY3Rpb25zIGFyZSBncm91bmRlZCBv
-biB0aGVpcgo+PiBvZl9wcm9wZXJ0eV8qLCBhY3BpX3Byb3BlcnR5XyogZXRjIGNvdW50ZXJwYXJ0
-cyBhbmQgZnVuY3Rpb25zIHJlYWRpbmcgc3BlY2lmaWMKPj4gZWxlbWVudHMgKHRoZSBfaW5kZXgg
-dmFyaWFudHMpIGFyZSBjdXJyZW50bHkgbm90IGF2YWlsYWJsZSBhdCBhbGwuCj4+Cj4+IGRyaXZl
-cnMvYmFzZS9wcm9wZXJ0eS5jOgo+PiAjZGVmaW5lIE9GX0RFVl9QUk9QX1JFQURfQVJSQVkobm9k
-ZSwgcHJvcG5hbWUsIHR5cGUsIHZhbCwgbnZhbCkgICAgICAgICAgICAgICAgICAgICAgICAgXAo+
-PiAgICAgICAgICAodmFsKSA/IG9mX3Byb3BlcnR5X3JlYWRfIyN0eXBlIyNfYXJyYXkoKG5vZGUp
-LCAocHJvcG5hbWUpLCAodmFsKSwgKG52YWwpKSAgICAgIFwKPj4gICAgICAgICAgICAgICAgOiBv
-Zl9wcm9wZXJ0eV9jb3VudF9lbGVtc19vZl9zaXplKChub2RlKSwgKHByb3BuYW1lKSwgc2l6ZW9m
-KHR5cGUpKQo+Pgo+PiBTbyBldmVuIGlmIHlvdSdyZSB1c2luZyB0aGUgZGV2aWNlX3Byb3BlcnR5
-XyogZnVuY3Rpb25zIHlvdSdkIHN0aWxsIG5lZWQKPj4gYSBtYXRjaCBpbiB0aGUgdW5kZXJseWlu
-ZyBmdW5jdGlvbnMgb3IgYW0gSSBtaXNzaW5nIHNvbWV0aGluZz8KPiBZZXMsIGJ1dCB0aGUgdW5k
-ZXJseWluZyBmdW5jdGlvbiBzaG91bGQgbmV2ZXIgYmUgdXNlZCBkaXJlY3RseSBieQo+IGRyaXZl
-cnMuIEFuZCBzaG91bGQgcHJvYmFibHkgYmUgcHJlZml4ZWQgd2l0aCBfXyBvciBtYXJrZWQgZGVw
-cmVjYXRlZAo+ICh3aXRoIGFuIG92ZXJyaWRlIGluIGl0cyBvbmUgZ2VudWluZSBjYWxsIHNpdGUp
-Lgo+CgpTbyBjYW4gSSBhZGQgYSBkZXZpY2VfcHJvcGVydHlfcmVhZF9zMzJfYXJyYXkgZnVuY3Rp
-b24gaW4gcHJvcGVydHkuaD8KCi0tLSBhL2luY2x1ZGUvbGludXgvcHJvcGVydHkuaAorKysgYi9p
-bmNsdWRlL2xpbnV4L3Byb3BlcnR5LmgKQEAgLTEwOCw2ICsxMDgsMTMgQEAgc3RhdGljIGlubGlu
-ZSBpbnQgZGV2aWNlX3Byb3BlcnR5X3JlYWRfdTMyKHN0cnVjdCAKZGV2aWNlICpkZXYsCiAgICAg
-ICAgIHJldHVybiBkZXZpY2VfcHJvcGVydHlfcmVhZF91MzJfYXJyYXkoZGV2LCBwcm9wbmFtZSwg
-dmFsLCAxKTsKICB9Cgorc3RhdGljIGlubGluZSBpbnQgZGV2aWNlX3Byb3BlcnR5X3JlYWRfczMy
-X2FycmF5KHN0cnVjdCBkZXZpY2UgKmRldiwgCmNvbnN0IGNoYXIgKnByb3BuYW1lLAorICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHMzMiAqdmFsLCBzaXplX3QgbnZhbCkKK3sKKyAg
-ICAgICByZXR1cm4gZGV2aWNlX3Byb3BlcnR5X3JlYWRfdTMyX2FycmF5KHN0cnVjdCBkZXZpY2Ug
-KmRldiwgY29uc3QgCmNoYXIgKnByb3BuYW1lLAorICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICh1MzIgKil2YWwsIHNpemVfdCBudmFsKTsKK30KCi0tIApGaW5sZXkKCgoKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXgtcm9ja2NoaXAg
-bWFpbGluZyBsaXN0CkxpbnV4LXJvY2tjaGlwQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xp
-c3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1yb2NrY2hpcAo=
+hi Sudeep:
+
+>> Yes, I agree with you.
+>> But it may not mean the ONLY way for all armv8 platform that support
+>> suspend method is PSCI.
+>
+> I would say yes but if you have a real good reason not to adopt PSCI on
+> your platform then you can try present that. It should be convincing
+> enough to deviate from the standards :)
+
+Since we don't implement full features of PSCI on our platform, that
+is why we wants to know whether there is registration of platform
+suspend method.
+
+BTW, from the git log, it seems psci.c doesn't register system suspend
+until Linux 4.4.
+if so, before 4.4, how aarch64 support such as str, echo mem >
+/sys/power/state , suspend flow?
+
+appreciate your kind explanation.
