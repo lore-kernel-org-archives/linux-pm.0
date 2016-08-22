@@ -1,58 +1,66 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v1 2/3] of: Add support for reading a s32 from a
- multi-value property.
-Date: Mon, 22 Aug 2016 15:51:57 +0100
-Message-ID: <20160822145157.GD30850@leverpostej>
-References: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com>
- <1471315139-28285-3-git-send-email-finley.xiao@rock-chips.com>
- <1471616119.61594.465.camel@infradead.org>
- <4975010.IL95Y3Sj1J@phil>
- <1471639654.4611.2.camel@infradead.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: how to enable suspend to ram for arm-64 bits
+Date: Mon, 22 Aug 2016 16:00:46 +0100
+Message-ID: <6fa7fdb7-7b8d-f955-75e6-75647a6d57a3@arm.com>
+References: <CADUS3onCMDThNK2ZwSSjGZhPE0M6cybjgCHJR2wVVeK09GC6ng@mail.gmail.com>
+ <06a4f0d7-9022-578d-99e0-ddcde31ed895@arm.com>
+ <CADUS3onUDk_=UpRoZy1m0hV1VGZYSf22ea8D10MpDbqJCfTkqw@mail.gmail.com>
+ <82ddd0e1-9ecc-5e54-e8ee-86f947fc0ecd@arm.com>
+ <CADUS3omw=WYhGF00S3DY8mkg_c-59WvD2AHYs4SQSzCYoHQraQ@mail.gmail.com>
+ <62cbf1a0-268a-f9f5-09af-c155a8a77508@arm.com>
+ <CADUS3on-Y63EgUUudhH1cbgihnMmHe_aXra0CG2WEQWRQTo+AA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1471639654.4611.2.camel@infradead.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Heiko Stuebner <heiko@sntech.de>, Finlye Xiao <finley.xiao@rock-chips.com>, srinivas.kandagatla@linaro.org, maxime.ripard@free-electrons.com, robh+dt@kernel.org, frowand.list@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, khilman@kernel.org, nm@ti.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, jay.xu@rock-chips.com, rocky.hao@rock-chips.com, tim.chen@rock-chips.com, tony.xie@rock-chips.com, ulysses.huang@rock-chips.com, lin.huang@rock-chips.com
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:54005 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754906AbcHVPAu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 22 Aug 2016 11:00:50 -0400
+In-Reply-To: <CADUS3on-Y63EgUUudhH1cbgihnMmHe_aXra0CG2WEQWRQTo+AA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: yoma sophian <sophian.yoma@gmail.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Fri, Aug 19, 2016 at 09:47:34PM +0100, David Woodhouse wrote:
-> On Fri, 2016-08-19 at 22:41 +0200, Heiko Stuebner wrote:
-> > 
-> > > So no, don't *add* any more of these functions. Only add the generic
-> > > version. And if your driver isn't using the generic property
-> > > functions... fix it.
-> > 
-> > As far as I can see, all the device_property_* functions are grounded on their
-> > of_property_*, acpi_property_* etc counterparts and functions reading specific
-> > elements (the _index variants) are currently not available at all.
-> > 
-> > drivers/base/property.c:
-> > #define OF_DEV_PROP_READ_ARRAY(node, propname, type, val, nval)                         \
-> >         (val) ? of_property_read_##type##_array((node), (propname), (val), (nval))      \
-> >               : of_property_count_elems_of_size((node), (propname), sizeof(type))
-> > 
-> > So even if you're using the device_property_* functions you'd still need
-> > a match in the underlying functions or am I missing something?
-> 
-> Yes, but the underlying function should never be used directly by
-> drivers. 
 
-There are properties which never make sense with ACPI, and there are
-drivers which shouldn't exist in the case of ACPI (due to clashes with
-core ACPI functionality). So using of_property_* for those, and not
-matching any ACPI tables is perfectly fine.
 
-IMO, an of_property_read_s32_index() function is perfectly fine (as is
-an ACPI-specific variant, or a unified helper, if that's useful to some
-driver).
+On 22/08/16 15:41, yoma sophian wrote:
+> hi Sudeep:
+>
+>>> Yes, I agree with you.
+>>> But it may not mean the ONLY way for all armv8 platform that support
+>>> suspend method is PSCI.
+>>
+>> I would say yes but if you have a real good reason not to adopt PSCI on
+>> your platform then you can try present that. It should be convincing
+>> enough to deviate from the standards :)
+>
+> Since we don't implement full features of PSCI on our platform, that
+> is why we wants to know whether there is registration of platform
+> suspend method.
+>
 
-There is no need to force drivers to superficially appear to support
-ACPI when they have not been designed with ACPI in mind, and are
-unlikely to function in an ACPI environment.
+For adding support for your platform in the mainline kernel, you need to
+support SYSTEM_SUSPEND in psci. There's no other way currently with the
+mainline.
 
-Thanks,
-Mark.
+> BTW, from the git log, it seems psci.c doesn't register system suspend
+> until Linux 4.4.
+
+Correct.
+
+> if so, before 4.4, how aarch64 support such as str, echo mem >
+> /sys/power/state , suspend flow?
+>
+
+You can back-port those patches, they are quite trivial if you need
+it on pre-v4.4 kernel.
+
+Moreover, how do you plan to support system system without PSCI ?
+How will you let the higher exception softwares know that you are
+entering system suspend. How will their context resumed back ?
+
+-- 
+Regards,
+Sudeep
