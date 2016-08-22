@@ -1,56 +1,99 @@
-From: Lin Huang <hl@rock-chips.com>
-Subject: [PATCH v7 2/8] clk: rockchip: rk3399: add SCLK_DDRCLK ID for ddrc
-Date: Mon, 22 Aug 2016 11:36:18 +0800
-Message-ID: <1471836984-6316-3-git-send-email-hl@rock-chips.com>
+From: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH v7 3/8] clk: rockchip: rk3399: add ddrc clock support
+Date: Mon, 22 Aug 2016 11:36:19 +0800
+Message-ID: <1471836984-6316-4-git-send-email-hl@rock-chips.com>
 References: <1471836984-6316-1-git-send-email-hl@rock-chips.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f67.google.com ([209.85.220.67]:35002 "EHLO
-        mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751532AbcHVDgk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Aug 2016 23:36:40 -0400
-In-Reply-To: <1471836984-6316-1-git-send-email-hl@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1471836984-6316-1-git-send-email-hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: heiko@sntech.de, myungjoo.ham@samsung.com
-Cc: tixy@linaro.org, mark.rutland@arm.com, typ@rock-chips.com, linux-rockchip@lists.infradead.org, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, mark.yao@rock-chips.com, Lin Huang <hl@rock-chips.com>
 
-Signed-off-by: Lin Huang <hl@rock-chips.com>
+add ddrc clock setting, so we can do ddr frequency
+scaling on rk3399 platform in future.
+
+Signed-off-by: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 ---
 Changes in v7:
--None
+- change SCLK_DDRC name from clk_ddrc to sclk_ddrc
 
 Changes in v6:
--None
+- None
 
 Changes in v5:
--None
+- fit for the ddr type
+
 Changes in v4:
--None
+- None
 
 Changes in v3:
--None
+- None
 
 Changes in v2:
--None 
+- remove clk_ddrc_dpll_src from critical clock list
 
 Changes in v1:
--None
+- remove ddrc source CLK_IGNORE_UNUSED flag
+- move clk_ddrc and clk_ddrc_dpll_src to critical
 
- include/dt-bindings/clock/rk3399-cru.h | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/clk/rockchip/clk-rk3399.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/include/dt-bindings/clock/rk3399-cru.h b/include/dt-bindings/clock/rk3399-cru.h
-index 50a44cf..ce5f3e9 100644
---- a/include/dt-bindings/clock/rk3399-cru.h
-+++ b/include/dt-bindings/clock/rk3399-cru.h
-@@ -131,6 +131,7 @@
- #define SCLK_DPHY_RX0_CFG		165
- #define SCLK_RMII_SRC			166
- #define SCLK_PCIEPHY_REF100M		167
-+#define SCLK_DDRC			168
+diff --git a/drivers/clk/rockchip/clk-rk3399.c b/drivers/clk/rockchip/clk-rk3399.c
+index e445cd6..134bd18 100644
+--- a/drivers/clk/rockchip/clk-rk3399.c
++++ b/drivers/clk/rockchip/clk-rk3399.c
+@@ -120,6 +120,10 @@ PNAME(mux_armclkb_p)				= { "clk_core_b_lpll_src",
+ 						    "clk_core_b_bpll_src",
+ 						    "clk_core_b_dpll_src",
+ 						    "clk_core_b_gpll_src" };
++PNAME(mux_ddrclk_p)				= { "clk_ddrc_lpll_src",
++						    "clk_ddrc_bpll_src",
++						    "clk_ddrc_dpll_src",
++						    "clk_ddrc_gpll_src" };
+ PNAME(mux_aclk_cci_p)				= { "cpll_aclk_cci_src",
+ 						    "gpll_aclk_cci_src",
+ 						    "npll_aclk_cci_src",
+@@ -1379,6 +1383,18 @@ static struct rockchip_clk_branch rk3399_clk_branches[] __initdata = {
+ 	COMPOSITE_NOMUX(0, "clk_test", "clk_test_pre", CLK_IGNORE_UNUSED,
+ 			RK3368_CLKSEL_CON(58), 0, 5, DFLAGS,
+ 			RK3368_CLKGATE_CON(13), 11, GFLAGS),
++
++	/* ddrc */
++	GATE(0, "clk_ddrc_lpll_src", "lpll", 0, RK3399_CLKGATE_CON(3),
++	     0, GFLAGS),
++	GATE(0, "clk_ddrc_bpll_src", "bpll", 0, RK3399_CLKGATE_CON(3),
++	     1, GFLAGS),
++	GATE(0, "clk_ddrc_dpll_src", "dpll", 0, RK3399_CLKGATE_CON(3),
++	     2, GFLAGS),
++	GATE(0, "clk_ddrc_gpll_src", "gpll", 0, RK3399_CLKGATE_CON(3),
++	     3, GFLAGS),
++	COMPOSITE_DDRCLK(SCLK_DDRC, "sclk_ddrc", mux_ddrclk_p, 0,
++		       RK3399_CLKSEL_CON(6), 4, 2, 0, 0, ROCKCHIP_DDRCLK_SIP),
+ };
  
- #define DCLK_VOP0			180
- #define DCLK_VOP1			181
+ static struct rockchip_clk_branch rk3399_clk_pmu_branches[] __initdata = {
+@@ -1493,6 +1509,9 @@ static const char *const rk3399_cru_critical_clocks[] __initconst = {
+ 	"gpll_aclk_perilp0_src",
+ 	"gpll_aclk_perihp_src",
+ 	"aclk_vio_noc",
++
++	/* ddrc */
++	"sclk_ddrc"
+ };
+ 
+ static const char *const rk3399_pmucru_critical_clocks[] __initconst = {
 -- 
 2.6.6
-
