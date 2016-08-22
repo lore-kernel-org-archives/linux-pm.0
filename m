@@ -1,219 +1,95 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v5] Force cppc_cpufreq to report values in KHz to fix user
- space reporting
-Date: Mon, 22 Aug 2016 11:16:18 -0600
-Message-ID: <406534f5-5e45-237e-cc68-2b57631e26d1@redhat.com>
-References: <1469049004-19069-1-git-send-email-ahs3@redhat.com>
- <20160801203156.GV4605@ubuntu>
- <872a4dd4-a752-507b-e720-ec2e6003bd8c@redhat.com>
-Reply-To: ahs3@redhat.com
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 1/2] cpufreq / sched: Pass flags to cpufreq_update_util()
+Date: Mon, 22 Aug 2016 19:30:36 +0200
+Message-ID: <92003780.FE55FOzMhP@vostro.rjw.lan>
+References: <6346523.ZooER3FGDH@vostro.rjw.lan> <25822023.SGCZQcEZuy@vostro.rjw.lan> <20160820154049.GA6344@kozik-book>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <872a4dd4-a752-507b-e720-ec2e6003bd8c@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, ashwinch@google.com
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Prashanth Prakash <pprakash@codeaurora.org>"Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52734 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1751774AbcHVRZA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2016 13:25:00 -0400
+In-Reply-To: <20160820154049.GA6344@kozik-book>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-Maybe a top-post will get attention....
-
-Yet another ping; this was first submitted on 20 July, and has received
-no comments.  It has now been a month and other architectures are starting
-to use CPPC so they will run into the same errors that this fixes.  Can
-I get an ACK, NAK, or further instructions, please?
-
-Also adding Rafael on the ACPI side, just in case, since he's also reviewing
-the Intel patches on the linux-acpi mailing list that are adding CPPC usage.
-
-On 08/11/2016 12:15 PM, Al Stone wrote:
-> On 08/01/2016 02:31 PM, Viresh Kumar wrote:
->> [+ Ashwin's new email id..]
->>
->> On 20-07-16, 15:10, Al Stone wrote:
->>> When CPPC is being used by ACPI on arm64, user space tools such as
->>> cpupower report CPU frequency values from sysfs that are incorrect.
->>>
->>> What the driver was doing was reporting the values given by ACPI tables
->>> in whatever scale was used to provide them.  However, the ACPI spec
->>> defines the CPPC values as unitless abstract numbers.  Internal kernel
->>> structures such as struct perf_cap, in contrast, expect these values
->>> to be in KHz.  When these struct values get reported via sysfs, the
->>> user space tools also assume they are in KHz, causing them to report
->>> incorrect values (for example, reporting a CPU frequency of 1MHz when
->>> it should be 1.8GHz).
->>>
->>> The downside is that this approach has some assumptions:
->>>
->>>    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
->>>    value for a processor is set to a non-zero value.
->>>
->>>    (2) It assumes that all processors run at the same speed, or that
->>>    the CPPC values have all been scaled to reflect relative speed.
->>>    This patch retrieves the largest CPU Max Frequency from a type 4 DMI
->>>    record that it can find.  This may not be an issue, however, as a
->>>    sampling of DMI data on x86 and arm64 indicates there is often only
->>>    one such record regardless.  Since CPPC is relatively new, it is
->>>    unclear if the ACPI ASL will always be written to reflect any sort
->>>    of relative performance of processors of differing speeds.
->>>
->>>    (3) It assumes that performance and frequency both scale linearly.
->>>
->>> For arm64 servers, this may be sufficient, but it does rely on
->>> firmware values being set correctly.  Hence, other approaches will
->>> be considered in the future.
->>>
->>> This has been tested on three arm64 servers, with and without DMI, with
->>> and without CPPC support.
->>>
->>> Changes for v5:
->>>     -- Move code to cpufreq/cppc_cpufreq.c from acpi/cppc_acpi.c to keep
->>>        frequency-related code together, and keep the CPPC abstract scale
->>>        in ACPI (Prashanth Prakash)
->>>     -- Fix the scaling to remove the incorrect assumption that frequency
->>>        was always a range from zero to max; as a practical matter, it is
->>>        not (Prasanth Prakash); this also allowed us to remove an over-
->>>        engineered function to do this math.
->>>
->>> Changes for v4:
->>>     -- Replaced magic constants with #defines (Rafael Wysocki)
->>>     -- Renamed cppc_unitless_to_khz() to cppc_to_khz() (Rafael Wysocki)
->>>     -- Replaced hidden initialization with a clearer form (Rafael Wysocki)
->>>     -- Instead of picking up the first Max Speed value from DMI, we will
->>>        now get the largest Max Speed; still an approximation, but slightly
->>>        less subject to error (Rafael Wysocki)
->>>     -- Kconfig for cppc_cpufreq now depends on DMI, instead of selecting
->>>        it, in order to make sure DMI is set up properly (Rafael Wysocki)
->>>
->>> Changes for v3:
->>>     -- Added clarifying commentary re short-term vs long-term fix (Alexey
->>>        Klimov)
->>>     -- Added range checking code to ensure proper arithmetic occurs,
->>>        especially no division by zero (Alexey Klimov)
->>>
->>> Changes for v2:
->>>     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
->>>        not SELECT DMI (found by build daemon)
->>>
->>> Signed-off-by: Al Stone <ahs3@redhat.com>
->>> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
->>> ---
->>>  drivers/cpufreq/cppc_cpufreq.c | 53 ++++++++++++++++++++++++++++++++++++++----
->>>  1 file changed, 49 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->>> index 8882b8e..6debc18 100644
->>> --- a/drivers/cpufreq/cppc_cpufreq.c
->>> +++ b/drivers/cpufreq/cppc_cpufreq.c
->>> @@ -19,10 +19,19 @@
->>>  #include <linux/delay.h>
->>>  #include <linux/cpu.h>
->>>  #include <linux/cpufreq.h>
->>> +#include <linux/dmi.h>
->>>  #include <linux/vmalloc.h>
->>>  
->>> +#include <asm/unaligned.h>
->>> +
->>>  #include <acpi/cppc_acpi.h>
->>>  
->>> +/* Minimum struct length needed for the DMI processor entry we want */
->>> +#define DMI_ENTRY_PROCESSOR_MIN_LENGTH	48
->>> +
->>> +/* Offest in the DMI processor structure for the max frequency */
->>> +#define DMI_PROCESSOR_MAX_SPEED  0x14
->>> +
->>>  /*
->>>   * These structs contain information parsed from per CPU
->>>   * ACPI _CPC structures.
->>> @@ -32,6 +41,39 @@
->>>   */
->>>  static struct cpudata **all_cpu_data;
->>>  
->>> +/* Capture the max KHz from DMI */
->>> +static u64 cppc_dmi_max_khz;
->>> +
->>> +/* Callback function used to retrieve the max frequency from DMI */
->>> +static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
->>> +{
->>> +	const u8 *dmi_data = (const u8 *)dm;
->>> +	u16 *mhz = (u16 *)private;
->>> +
->>> +	if (dm->type == DMI_ENTRY_PROCESSOR &&
->>> +	    dm->length >= DMI_ENTRY_PROCESSOR_MIN_LENGTH) {
->>> +		u16 val = (u16)get_unaligned((const u16 *)
->>> +				(dmi_data + DMI_PROCESSOR_MAX_SPEED));
->>> +		*mhz = val > *mhz ? val : *mhz;
->>> +	}
->>> +}
->>> +
->>> +/* Look up the max frequency in DMI */
->>> +static u64 cppc_get_dmi_max_khz(void)
->>> +{
->>> +	u16 mhz = 0;
->>> +
->>> +	dmi_walk(cppc_find_dmi_mhz, &mhz);
->>> +
->>> +	/*
->>> +	 * Real stupid fallback value, just in case there is no
->>> +	 * actual value set.
->>> +	 */
->>> +	mhz = mhz ? mhz : 1;
->>> +
->>> +	return (1000 * mhz);
->>> +}
->>> +
->>>  static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
->>>  		unsigned int target_freq,
->>>  		unsigned int relation)
->>> @@ -42,7 +84,7 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
->>>  
->>>  	cpu = all_cpu_data[policy->cpu];
->>>  
->>> -	cpu->perf_ctrls.desired_perf = target_freq;
->>> +	cpu->perf_ctrls.desired_perf = target_freq * policy->max / cppc_dmi_max_khz;
->>>  	freqs.old = policy->cur;
->>>  	freqs.new = target_freq;
->>>  
->>> @@ -94,8 +136,10 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>>  		return ret;
->>>  	}
->>>  
->>> -	policy->min = cpu->perf_caps.lowest_perf;
->>> -	policy->max = cpu->perf_caps.highest_perf;
->>> +	cppc_dmi_max_khz = cppc_get_dmi_max_khz();
->>> +
->>> +	policy->min = cpu->perf_caps.lowest_perf * cppc_dmi_max_khz / cpu->perf_caps.highest_perf;
->>> +	policy->max = cppc_dmi_max_khz;
->>>  	policy->cpuinfo.min_freq = policy->min;
->>>  	policy->cpuinfo.max_freq = policy->max;
->>>  	policy->shared_type = cpu->shared_type;
->>> @@ -112,7 +156,8 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->>>  	cpu->cur_policy = policy;
->>>  
->>>  	/* Set policy->cur to max now. The governors will adjust later. */
->>> -	policy->cur = cpu->perf_ctrls.desired_perf = cpu->perf_caps.highest_perf;
->>> +	policy->cur = cppc_dmi_max_khz;
->>> +	cpu->perf_ctrls.desired_perf = cpu->perf_caps.highest_perf;
->>>  
->>>  	ret = cppc_set_perf(cpu_num, &cpu->perf_ctrls);
->>>  	if (ret)
->>> -- 
->>> 2.7.4
->>
+On Saturday, August 20, 2016 05:40:49 PM Krzysztof Kozlowski wrote:
+> On Sat, Aug 20, 2016 at 03:08:01AM +0200, Rafael J. Wysocki wrote:
+> > On Friday, August 19, 2016 03:26:21 PM Krzysztof Kozlowski wrote:
+> > > On Fri, Aug 12, 2016 at 2:04 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > >
+> > > > It is useful to know the reason why cpufreq_update_util() has just
+> > > > been called and that can be passed as flags to cpufreq_update_util()
+> > > > and to the ->func() callback in struct update_util_data.  However,
+> > > > doing that in addition to passing the util and max arguments they
+> > > > already take would be clumsy, so avoid it.
+> > > >
+> > > > Instead, use the observation that the schedutil governor is part
+> > > > of the scheduler proper, so it can access scheduler data directly.
+> > > > This allows the util and max arguments of cpufreq_update_util()
+> > > > and the ->func() callback in struct update_util_data to be replaced
+> > > > with a flags one, but schedutil has to be modified to follow.
+> > > >
+> > > > Thus make the schedutil governor obtain the CFS utilization
+> > > > information from the scheduler and use the "RT" and "DL" flags
+> > > > instead of the special utilization value of ULONG_MAX to track
+> > > > updates from the RT and DL sched classes.  Make it non-modular
+> > > > too to avoid having to export scheduler variables to modules at
+> > > > large.
+> > > >
+> > > > Next, update all of the other users of cpufreq_update_util()
+> > > > and the ->func() callback in struct update_util_data accordingly.
+> > > >
+> > > > Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > ---
+> > > >
+> > > > v1 -> v2: Do not check cpu_of(rq) against smp_processor_id() in
+> > > >           cfs_rq_util_change().
+> > > >
+> > > > ---
+> > > >  drivers/cpufreq/Kconfig            |    5 --
+> > > >  drivers/cpufreq/cpufreq_governor.c |    2 -
+> > > >  drivers/cpufreq/intel_pstate.c     |    2 -
+> > > >  include/linux/sched.h              |   12 ++++--
+> > > >  kernel/sched/cpufreq.c             |    2 -
+> > > >  kernel/sched/cpufreq_schedutil.c   |   67 ++++++++++++++++++++-----------------
+> > > >  kernel/sched/deadline.c            |    4 +-
+> > > >  kernel/sched/fair.c                |   10 +----
+> > > >  kernel/sched/rt.c                  |    4 +-
+> > > >  kernel/sched/sched.h               |   31 +++++------------
+> > > >  10 files changed, 66 insertions(+), 73 deletions(-)
+> > > 
+> > > (...)
+> > > 
+> > > > --- linux-pm.orig/drivers/cpufreq/Kconfig
+> > > > +++ linux-pm/drivers/cpufreq/Kconfig
+> > > > @@ -194,7 +194,7 @@ config CPU_FREQ_GOV_CONSERVATIVE
+> > > >           If in doubt, say N.
+> > > >
+> > > >  config CPU_FREQ_GOV_SCHEDUTIL
+> > > > -       tristate "'schedutil' cpufreq policy governor"
+> > > > +       bool "'schedutil' cpufreq policy governor"
+> > > 
+> > > If you change such symbols please remember to update also all the
+> > > defconfigs. Without the update they start to show errors.
+> > 
+> > Are there defconfigs that use this particular one?
 > 
-> Another gentle ping -- any comments?  Can this get pulled in now?
+> Yes, ARM/multi_v7 and exynos were using this as module. Javier sent a
+> patch for that and should be switched to builtin in upcoming next [1].
 > 
-> Thanks.
-> 
+> If you would like to base on top of that, let me know, so I would
+> prepare a tag.
 
+I wouldn't like to rebase, but I can pull that branch depending on how
+much more material there is on it.
 
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+Thanks,
+Rafael
+
