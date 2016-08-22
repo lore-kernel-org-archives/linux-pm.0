@@ -1,233 +1,52 @@
-From: hl <hl@rock-chips.com>
-Subject: Re: [PATCH v6 6/8] Documentation: bindings: add dt documentation for
- rk3399 dmc
-Date: Mon, 22 Aug 2016 06:16:20 +0800
-Message-ID: <57BA2834.6090409@rock-chips.com>
-References: <1471386989-9541-1-git-send-email-hl@rock-chips.com>
- <CGME20160816223730epcas1p32cabad067157428ffee1a2f9c62d9798@epcas1p3.samsung.com>
- <1471386989-9541-7-git-send-email-hl@rock-chips.com>
- <57B3ED11.20003@samsung.com>
+From: Wanpeng Li <kernellwp@gmail.com>
+Subject: Re: [PATCH] sched: fix incorrect PELT values on SMT
+Date: Mon, 22 Aug 2016 10:31:40 +0800
+Message-ID: <CANRm+Czabiyv2donHAzGw-fqhEgdkcTgpaqSB4AapY0qTQARkQ@mail.gmail.com>
+References: <1471571741-19504-1-git-send-email-smuckle@linaro.org> <20160819153038.GB25262@e105550-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lucky1.263xmail.com ([211.157.147.131]:34242 "EHLO
-        lucky1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752821AbcHUWQk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Aug 2016 18:16:40 -0400
-In-Reply-To: <57B3ED11.20003@samsung.com>
+Received: from mail-wm0-f46.google.com ([74.125.82.46]:36445 "EHLO
+        mail-wm0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753600AbcHVCbn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Aug 2016 22:31:43 -0400
+In-Reply-To: <20160819153038.GB25262@e105550-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, heiko@sntech.de, myungjoo.ham@samsung.com
-Cc: tixy@linaro.org, mark.rutland@arm.com, dbasehore@chromium.org, linux-pm@vger.kernel.org, airlied@linux.ie, mturquette@baylibre.com, typ@rock-chips.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, sudeep.holla@arm.com, linux-arm-kernel@lists.infradead.org, mark.yao@rock-chips.com
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
 
-Hi Chanwoo Choi,
+2016-08-19 23:30 GMT+08:00 Morten Rasmussen <morten.rasmussen@arm.com>:
+> Hi Steve,
+>
+> On Thu, Aug 18, 2016 at 06:55:41PM -0700, Steve Muckle wrote:
+>> PELT scales its util_sum and util_avg values via
+>> arch_scale_cpu_capacity(). If that function is passed the CPU's sched
+>> domain then it will reduce the scaling capacity if SD_SHARE_CPUCAPACITY
+>> is set. PELT does not pass in the sd however. The other caller of
+>> arch_scale_cpu_capacity, update_cpu_capacity(), does. This means
+>> util_sum and util_avg scale beyond the CPU capacity on SMT.
+>>
+>> On an Intel i7-3630QM for example rq->cpu_capacity_orig is 589 but
+>> util_avg scales up to 1024.
+>
+> I can't convince myself whether this is the right thing to do. SMT is a
+> bit 'special' and it depends on how you model SMT capacity.
+>
+> I'm no SMT expert, but the way I understand the current SMT capacity
+> model is that capacity_orig represents the capacity of the SMT-thread
+> when all its thread-siblings are busy. The true capacity of an
+> SMT-thread where all thread-siblings are idle is actually 1024, but we
+> don't model this (it would be nightmare to track when the capacity
+> should change). The capacity of a core with two or more SMT-threads is
+> chosen to be 1024 + smt_gain, where smt_gain is supposed represent the
+> additional throughput we gain for the additional SMT-threads. The reason
+> why we don't have 1024 per thread is that we would prefer to have only
+> one task per core if possible.
 
-On 2016年08月17日 12:50, Chanwoo Choi wrote:
-> Hi Lin,
->
-> On 2016년 08월 17일 07:36, Lin Huang wrote:
->> This patch adds the documentation for rockchip rk3399 dmc driver.
->>
->> Signed-off-by: Lin Huang <hl@rock-chips.com>
->> ---
->> Changes in v6:
->> -Add more detail in Documentation
->>
->> Changes in v5:
->> -None
->>
->> Changes in v4:
->> -None
->>
->> Changes in v3:
->> -None
->>
->> Changes in v2:
->> -None
->>
->> Changes in v1:
->> -None
->>   .../devicetree/bindings/devfreq/rk3399_dmc.txt     | 84 ++++++++++++++++++++++
->>   1 file changed, 84 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
->>
->> diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
->> new file mode 100644
->> index 0000000..e73067c
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
->> @@ -0,0 +1,84 @@
->> +* Rockchip rk3399 DMC(Dynamic Memory Controller) device
->> +
->> +Required properties:
->> +- compatible: Must be "rockchip,rk3399-dmc".
->> +- devfreq-events: Node to get ddr loading, Refer to
->> +		  Documentation/devicetree/bindings/devfreq/rockchip-dif.txt
->> +- interrupts: The interrupt number to the cpu. The interrupt specifier format
->> +	      depends on the interrupt controller. it should be dcf interrupts,
->> +	      when ddr dvfs finish, it will happen.
-> If possible, you better to keep the indentation with other properties.
-> s/it->It, dcf->DCF, ddr->DDR
->
->
->> +- clocks: Phandles for clock specified in "clock-names" property
->> +- clock-names : The name of clock used by the DFI, must be "pclk_ddr_mon";
->> +- operating-points-v2: Refer to Documentation/devicetree/bindings/power/opp.txt
->> +		       for details.
-> ditto.
->
->> +- center-supply: Dmc supply node.
-> s/Dmc/DMC becaue DMC an abbreviation.
->
->> +- status: Marks the node enabled/disabled.
->> +
->> +Optional properties:
->> +- ddr_timing: ddr timing need to pass to arm trust firmware
->> +- upthreshold: the upthreshold to simpleondeamnd policy
->> +- downdifferential: The downdifferential to simpleondeamnd policy
->> +
->> +Example:
->> +	ddr_timing: ddr_timing {
->> +		compatible = "rockchip,ddr-timing";
-> I can't find the 'rockchip,ddr-timing' driver on linux-next git repo (20160816).
-> If ddr_timing includes the only properties for ddr_timing,
-> I recommend you make the separate a .dtsi file including
-> the ddr timing configuration. I add the reference and an example on below.
->
->> +		ddr3_speed_bin = <21>;
->> +		pd_idle = <0>;
->> +		sr_idle = <0>;
->> +		sr_mc_gate_idle = <0>;
->> +		srpd_lite_idle	= <0>;
->> +		standby_idle = <0>;
->> +		dram_dll_dis_freq = <300>;
->> +		phy_dll_dis_freq = <125>;
->> +
->> +		ddr3_odt_dis_freq = <333>;
->> +		ddr3_drv = <DDR3_DS_40ohm>;
->> +		ddr3_odt = <DDR3_ODT_120ohm>;
->> +		phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
->> +		phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
->> +		phy_ddr3_odt = <PHY_DRV_ODT_240>;
->> +
->> +		lpddr3_odt_dis_freq = <333>;
->> +		lpddr3_drv = <LP3_DS_34ohm>;
->> +		lpddr3_odt = <LP3_ODT_240ohm>;
->> +		phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
->> +		phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
->> +		phy_lpddr3_odt = <PHY_DRV_ODT_240>;
->> +
->> +		lpddr4_odt_dis_freq = <333>;
->> +		lpddr4_drv = <LP4_PDDS_60ohm>;
->> +		lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
->> +		lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
->> +		phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
->> +		phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
->> +		phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
->> +		phy_lpddr4_odt = <PHY_DRV_ODT_60>;
->> +	};
->> +
->> +	dmc_opp_table: dmc_opp_table {
->> +		compatible = "operating-points-v2";
->> +
->> +		opp00 {
->> +			opp-hz = /bits/ 64 <300000000>;
->> +			opp-microvolt = <900000>;
->> +		};
->> +		opp01 {
->> +			opp-hz = /bits/ 64 <666000000>;
->> +			opp-microvolt = <900000>;
->> +		};
->> +	};
->> +
->> +	dmc: dmc {
->> +		compatible = "rockchip,rk3399-dmc";
->> +		devfreq-events = <&dfi>;
->> +		interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
->> +		clocks = <&cru SCLK_DDRCLK>;
->> +		clock-names = "dmc_clk";
->> +		ddr_timing = <&ddr_timing>;
-> You can use the following '#include' instead of 'ddr_timing'
-> because the ddr_timing is not a device driver. Instead,
-> the rk3399-dmc must need the ddr timing configuration.
->
-> 		#include "rk3399-dmc-timing-conf.dtsi"
->
-> You can refer the similar usage case[1].
-> The *.conf.dtsi is used on exynos3250 tmu dt node[2].
->
-> [1] arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
-> [2] arch/arm/boot/dts/exynos3250.dtsi, 224 line.
->
->> +		operating-points-v2 = <&dmc_opp_table>;
->> +		center-supply = <&ppvar_centerlogic>;
->> +		upthreshold = <15>;
->> +		downdifferential = <10>;
->> +		status = "disabled";
->> +	};
->> +
->>
-> For example,
-> I think that you can add the following timing .dtsi file.
-> - arch/arm/boot/dts/rk3399-dmc-timing-conf.dtsi
->
-> /*
->   * Device tree sources for RK3399 DDR timing configuration
->   *
->   * Copyright (c) 2016 Lin Huang <hl@rock-chips.com>
->   *
->   * This program is free software; you can redistribute it and/or modify
->   * it under the terms of the GNU General Public License version 2 as
->   * published by the Free Software Foundation.
->   */
->
-> rockchip,ddr3_speed_bin = <21>;
-> rockchip,pd_idle = <0>;
-> rockchip,sr_idle = <0>;
-> rockchip,sr_mc_gate_idle = <0>;
-> rockchip,srpd_lite_idle	= <0>;
-> rockchip,standby_idle = <0>;
-> rockchip,dram_dll_dis_freq = <300>;
-> rockchip,phy_dll_dis_freq = <125>;
->
-> rockchip,ddr3_odt_dis_freq = <333>;
-> rockchip,ddr3_drv = <DDR3_DS_40ohm>;
-> rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
-> rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
-> rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
-> rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
->
-> rockchip,lpddr3_odt_dis_freq = <333>;
-> rockchip,lpddr3_drv = <LP3_DS_34ohm>;
-> rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
-> rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
-> rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
-> rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
->
-> rockchip,lpddr4_odt_dis_freq = <333>;
-> rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
-> rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
-> rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
-> rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
-> rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
-> rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
-> rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
-Actually, i am doing like it on my downstream dtsi, but how to explain 
-it in rk3399_dmc Documentation?
-Creat a new ddr_timing Documentation? But it is not a driver, just a 
-dtsi, that why i put it on rk3399_dmc.txt
-now, do you have a better idea?
->
-> Regards,
-> Chanwoo Choi
->
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+Agreed, maybe the capacity of an SMP-thread where all thread-siblings
+are idle can be 1024 + smt_gain after latest IA technology.
+http://www.intel.com/content/www/us/en/architecture-and-technology/turbo-boost/turbo-boost-max-technology.html
 
--- 
-Lin Huang
-
-
+Regards,
+Wanpeng Li
