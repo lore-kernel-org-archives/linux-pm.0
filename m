@@ -1,50 +1,61 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [PATCH 01/11] sched, cpuset: Add regenerate_sched_domains
- function to rebuild all sched domains
-Date: Mon, 22 Aug 2016 14:52:48 +0100
-Message-ID: <20160822135247.GD25262@e105550-lin.cambridge.arm.com>
-References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1471559812-19967-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: Re: [PATCH v1 2/3] of: Add support for reading a s32 from a
+ multi-value property.
+Date: Mon, 22 Aug 2016 22:07:40 +0800
+Message-ID: <5e7a7b9f-44c2-82c2-eb17-ee54efd15503@rock-chips.com>
+References: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com>
+ <1471315139-28285-3-git-send-email-finley.xiao@rock-chips.com>
+ <1471616119.61594.465.camel@infradead.org> <4975010.IL95Y3Sj1J@phil>
+ <1471639654.4611.2.camel@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1471559812-19967-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, peterz@infradead.org, x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, tim.c.chen@linux.intel.com, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1471639654.4611.2.camel-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 18, 2016 at 03:36:42PM -0700, Srinivas Pandruvada wrote:
-> From: Tim Chen <tim.c.chen@linux.intel.com>
-> 
-> The current rebuild_sched_domains will only rebuild the sched domains
-> unless the cpumask changes.  However, in some scenarios when the
-> topology flag value changes, it will not rebuild the sched domain.
-> 
-> We create a regenerate_sched_domains function that will always
-> rebuild all the sched domains to take care of this scenario.
-
-[...]
-
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -7081,7 +7082,7 @@ void partition_sched_domains(int ndoms_new, cpumask_var_t doms_new[],
->  	unregister_sched_domain_sysctl();
->  
->  	/* Let architecture update cpu core mappings. */
-> -	new_topology = arch_update_cpu_topology();
-> +	new_topology = arch_update_cpu_topology() | need_domain_rebuild;
-
-You can force rebuild_sched_domains() to rebuild the sched_domain
-hierarchy by just implementing arch_update_cpu_topology(). Make it
-return 1 when you want the hierarchy to be updated.
-
-Implementing another forcing mechanism seems redundant. I must be
-missing something?
-
-I just did exactly that to set the SD_ASYM_CPUCAPACITY flag for
-big.LITTLE platforms on arm/arm64 as we don't know if the flag should be
-set until cpufreq has initialized.
-
-Morten
+CgrlnKggMjAxNi84LzIwIDQ6NDcsIERhdmlkIFdvb2Rob3VzZSDlhpnpgZM6Cj4gT24gRnJpLCAy
+MDE2LTA4LTE5IGF0IDIyOjQxICswMjAwLCBIZWlrbyBTdHVlYm5lciB3cm90ZToKPj4+IFNvIG5v
+LCBkb24ndCAqYWRkKiBhbnkgbW9yZSBvZiB0aGVzZSBmdW5jdGlvbnMuIE9ubHkgYWRkIHRoZSBn
+ZW5lcmljCj4+PiB2ZXJzaW9uLiBBbmQgaWYgeW91ciBkcml2ZXIgaXNuJ3QgdXNpbmcgdGhlIGdl
+bmVyaWMgcHJvcGVydHkKPj4+IGZ1bmN0aW9ucy4uLiBmaXggaXQuCj4+IEFzIGZhciBhcyBJIGNh
+biBzZWUsIGFsbCB0aGUgZGV2aWNlX3Byb3BlcnR5XyogZnVuY3Rpb25zIGFyZSBncm91bmRlZCBv
+biB0aGVpcgo+PiBvZl9wcm9wZXJ0eV8qLCBhY3BpX3Byb3BlcnR5XyogZXRjIGNvdW50ZXJwYXJ0
+cyBhbmQgZnVuY3Rpb25zIHJlYWRpbmcgc3BlY2lmaWMKPj4gZWxlbWVudHMgKHRoZSBfaW5kZXgg
+dmFyaWFudHMpIGFyZSBjdXJyZW50bHkgbm90IGF2YWlsYWJsZSBhdCBhbGwuCj4+Cj4+IGRyaXZl
+cnMvYmFzZS9wcm9wZXJ0eS5jOgo+PiAjZGVmaW5lIE9GX0RFVl9QUk9QX1JFQURfQVJSQVkobm9k
+ZSwgcHJvcG5hbWUsIHR5cGUsIHZhbCwgbnZhbCkgICAgICAgICAgICAgICAgICAgICAgICAgXAo+
+PiAgICAgICAgICAodmFsKSA/IG9mX3Byb3BlcnR5X3JlYWRfIyN0eXBlIyNfYXJyYXkoKG5vZGUp
+LCAocHJvcG5hbWUpLCAodmFsKSwgKG52YWwpKSAgICAgIFwKPj4gICAgICAgICAgICAgICAgOiBv
+Zl9wcm9wZXJ0eV9jb3VudF9lbGVtc19vZl9zaXplKChub2RlKSwgKHByb3BuYW1lKSwgc2l6ZW9m
+KHR5cGUpKQo+Pgo+PiBTbyBldmVuIGlmIHlvdSdyZSB1c2luZyB0aGUgZGV2aWNlX3Byb3BlcnR5
+XyogZnVuY3Rpb25zIHlvdSdkIHN0aWxsIG5lZWQKPj4gYSBtYXRjaCBpbiB0aGUgdW5kZXJseWlu
+ZyBmdW5jdGlvbnMgb3IgYW0gSSBtaXNzaW5nIHNvbWV0aGluZz8KPiBZZXMsIGJ1dCB0aGUgdW5k
+ZXJseWluZyBmdW5jdGlvbiBzaG91bGQgbmV2ZXIgYmUgdXNlZCBkaXJlY3RseSBieQo+IGRyaXZl
+cnMuIEFuZCBzaG91bGQgcHJvYmFibHkgYmUgcHJlZml4ZWQgd2l0aCBfXyBvciBtYXJrZWQgZGVw
+cmVjYXRlZAo+ICh3aXRoIGFuIG92ZXJyaWRlIGluIGl0cyBvbmUgZ2VudWluZSBjYWxsIHNpdGUp
+Lgo+CgpTbyBjYW4gSSBhZGQgYSBkZXZpY2VfcHJvcGVydHlfcmVhZF9zMzJfYXJyYXkgZnVuY3Rp
+b24gaW4gcHJvcGVydHkuaD8KCi0tLSBhL2luY2x1ZGUvbGludXgvcHJvcGVydHkuaAorKysgYi9p
+bmNsdWRlL2xpbnV4L3Byb3BlcnR5LmgKQEAgLTEwOCw2ICsxMDgsMTMgQEAgc3RhdGljIGlubGlu
+ZSBpbnQgZGV2aWNlX3Byb3BlcnR5X3JlYWRfdTMyKHN0cnVjdCAKZGV2aWNlICpkZXYsCiAgICAg
+ICAgIHJldHVybiBkZXZpY2VfcHJvcGVydHlfcmVhZF91MzJfYXJyYXkoZGV2LCBwcm9wbmFtZSwg
+dmFsLCAxKTsKICB9Cgorc3RhdGljIGlubGluZSBpbnQgZGV2aWNlX3Byb3BlcnR5X3JlYWRfczMy
+X2FycmF5KHN0cnVjdCBkZXZpY2UgKmRldiwgCmNvbnN0IGNoYXIgKnByb3BuYW1lLAorICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIHMzMiAqdmFsLCBzaXplX3QgbnZhbCkKK3sKKyAg
+ICAgICByZXR1cm4gZGV2aWNlX3Byb3BlcnR5X3JlYWRfdTMyX2FycmF5KHN0cnVjdCBkZXZpY2Ug
+KmRldiwgY29uc3QgCmNoYXIgKnByb3BuYW1lLAorICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICh1MzIgKil2YWwsIHNpemVfdCBudmFsKTsKK30KCi0tIApGaW5sZXkKCgoKX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXgtcm9ja2NoaXAg
+bWFpbGluZyBsaXN0CkxpbnV4LXJvY2tjaGlwQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xp
+c3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1yb2NrY2hpcAo=
