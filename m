@@ -1,115 +1,219 @@
-From: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 3/3] arm: dts: thermal: add thermal/auxadc node.
-Date: Mon, 22 Aug 2016 19:09:56 +0200
-Message-ID: <7a7684dc-aea5-15f8-04fb-494b2085a3fe@gmail.com>
-References: <1467882386-40544-1-git-send-email-dawei.chien@mediatek.com>
- <1467882386-40544-4-git-send-email-dawei.chien@mediatek.com>
- <fd3f0c2f-f0ad-dd0f-cf2b-eb658f72d735@gmail.com>
- <1471245268.14287.14.camel@mtksdaap41>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [PATCH v5] Force cppc_cpufreq to report values in KHz to fix user
+ space reporting
+Date: Mon, 22 Aug 2016 11:16:18 -0600
+Message-ID: <406534f5-5e45-237e-cc68-2b57631e26d1@redhat.com>
+References: <1469049004-19069-1-git-send-email-ahs3@redhat.com>
+ <20160801203156.GV4605@ubuntu>
+ <872a4dd4-a752-507b-e720-ec2e6003bd8c@redhat.com>
+Reply-To: ahs3@redhat.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1471245268.14287.14.camel@mtksdaap41>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Erin Lo <erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Fan Chen <fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Yingjoe Chen <yingjoe.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <872a4dd4-a752-507b-e720-ec2e6003bd8c@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, ashwinch@google.com
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Prashanth Prakash <pprakash@codeaurora.org>"Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
+Maybe a top-post will get attention....
 
+Yet another ping; this was first submitted on 20 July, and has received
+no comments.  It has now been a month and other architectures are starting
+to use CPPC so they will run into the same errors that this fixes.  Can
+I get an ACK, NAK, or further instructions, please?
 
-On 15/08/16 09:14, dawei chien wrote:
-> Hi Matthias,
->
-> On Thu, 2016-08-11 at 17:51 +0200, Matthias Brugger wrote:
+Also adding Rafael on the ACPI side, just in case, since he's also reviewing
+the Intel patches on the linux-acpi mailing list that are adding CPPC usage.
+
+On 08/11/2016 12:15 PM, Al Stone wrote:
+> On 08/01/2016 02:31 PM, Viresh Kumar wrote:
+>> [+ Ashwin's new email id..]
 >>
->> On 07/07/16 11:06, Dawei Chien wrote:
->>> This adds the thermal controller and auxadc nodes
->>> to the Mediatek MT2701 dtsi file.
+>> On 20-07-16, 15:10, Al Stone wrote:
+>>> When CPPC is being used by ACPI on arm64, user space tools such as
+>>> cpupower report CPU frequency values from sysfs that are incorrect.
 >>>
->>> Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+>>> What the driver was doing was reporting the values given by ACPI tables
+>>> in whatever scale was used to provide them.  However, the ACPI spec
+>>> defines the CPPC values as unitless abstract numbers.  Internal kernel
+>>> structures such as struct perf_cap, in contrast, expect these values
+>>> to be in KHz.  When these struct values get reported via sysfs, the
+>>> user space tools also assume they are in KHz, causing them to report
+>>> incorrect values (for example, reporting a CPU frequency of 1MHz when
+>>> it should be 1.8GHz).
+>>>
+>>> The downside is that this approach has some assumptions:
+>>>
+>>>    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
+>>>    value for a processor is set to a non-zero value.
+>>>
+>>>    (2) It assumes that all processors run at the same speed, or that
+>>>    the CPPC values have all been scaled to reflect relative speed.
+>>>    This patch retrieves the largest CPU Max Frequency from a type 4 DMI
+>>>    record that it can find.  This may not be an issue, however, as a
+>>>    sampling of DMI data on x86 and arm64 indicates there is often only
+>>>    one such record regardless.  Since CPPC is relatively new, it is
+>>>    unclear if the ACPI ASL will always be written to reflect any sort
+>>>    of relative performance of processors of differing speeds.
+>>>
+>>>    (3) It assumes that performance and frequency both scale linearly.
+>>>
+>>> For arm64 servers, this may be sufficient, but it does rely on
+>>> firmware values being set correctly.  Hence, other approaches will
+>>> be considered in the future.
+>>>
+>>> This has been tested on three arm64 servers, with and without DMI, with
+>>> and without CPPC support.
+>>>
+>>> Changes for v5:
+>>>     -- Move code to cpufreq/cppc_cpufreq.c from acpi/cppc_acpi.c to keep
+>>>        frequency-related code together, and keep the CPPC abstract scale
+>>>        in ACPI (Prashanth Prakash)
+>>>     -- Fix the scaling to remove the incorrect assumption that frequency
+>>>        was always a range from zero to max; as a practical matter, it is
+>>>        not (Prasanth Prakash); this also allowed us to remove an over-
+>>>        engineered function to do this math.
+>>>
+>>> Changes for v4:
+>>>     -- Replaced magic constants with #defines (Rafael Wysocki)
+>>>     -- Renamed cppc_unitless_to_khz() to cppc_to_khz() (Rafael Wysocki)
+>>>     -- Replaced hidden initialization with a clearer form (Rafael Wysocki)
+>>>     -- Instead of picking up the first Max Speed value from DMI, we will
+>>>        now get the largest Max Speed; still an approximation, but slightly
+>>>        less subject to error (Rafael Wysocki)
+>>>     -- Kconfig for cppc_cpufreq now depends on DMI, instead of selecting
+>>>        it, in order to make sure DMI is set up properly (Rafael Wysocki)
+>>>
+>>> Changes for v3:
+>>>     -- Added clarifying commentary re short-term vs long-term fix (Alexey
+>>>        Klimov)
+>>>     -- Added range checking code to ensure proper arithmetic occurs,
+>>>        especially no division by zero (Alexey Klimov)
+>>>
+>>> Changes for v2:
+>>>     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
+>>>        not SELECT DMI (found by build daemon)
+>>>
+>>> Signed-off-by: Al Stone <ahs3@redhat.com>
+>>> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
 >>> ---
->>> This patch depned on:
->>> https://patchwork.kernel.org/patch/9213545/
->>> ---
->>>  arch/arm/boot/dts/mt2701.dtsi |   43 +++++++++++++++++++++++++++++++++++++++++
->>>  1 file changed, 43 insertions(+)
+>>>  drivers/cpufreq/cppc_cpufreq.c | 53 ++++++++++++++++++++++++++++++++++++++----
+>>>  1 file changed, 49 insertions(+), 4 deletions(-)
 >>>
->>> diff --git a/arch/arm/boot/dts/mt2701.dtsi b/arch/arm/boot/dts/mt2701.dtsi
->>> index 2ac8b50..0834a23 100644
->>> --- a/arch/arm/boot/dts/mt2701.dtsi
->>> +++ b/arch/arm/boot/dts/mt2701.dtsi
->>> @@ -77,6 +77,36 @@
->>>  		#clock-cells = <0>;
->>>  	};
->>>
->>> +	thermal-zones {
->>> +		cpu_thermal: cpu_thermal {
->>> +			polling-delay-passive = <1000>; /* milliseconds */
->>> +			polling-delay = <1000>; /* milliseconds */
+>>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+>>> index 8882b8e..6debc18 100644
+>>> --- a/drivers/cpufreq/cppc_cpufreq.c
+>>> +++ b/drivers/cpufreq/cppc_cpufreq.c
+>>> @@ -19,10 +19,19 @@
+>>>  #include <linux/delay.h>
+>>>  #include <linux/cpu.h>
+>>>  #include <linux/cpufreq.h>
+>>> +#include <linux/dmi.h>
+>>>  #include <linux/vmalloc.h>
+>>>  
+>>> +#include <asm/unaligned.h>
 >>> +
->>> +			thermal-sensors = <&thermal 0>;
->>> +			sustainable-power = <1000>;
+>>>  #include <acpi/cppc_acpi.h>
+>>>  
+>>> +/* Minimum struct length needed for the DMI processor entry we want */
+>>> +#define DMI_ENTRY_PROCESSOR_MIN_LENGTH	48
 >>> +
->>> +			trips {
->>> +				threshold: trip-point@0 {
->>> +					temperature = <68000>;
->>> +					hysteresis = <2000>;
->>> +					type = "passive";
->>> +				};
+>>> +/* Offest in the DMI processor structure for the max frequency */
+>>> +#define DMI_PROCESSOR_MAX_SPEED  0x14
 >>> +
->>> +				target: trip-point@1 {
->>> +					temperature = <85000>;
->>> +					hysteresis = <2000>;
->>> +					type = "passive";
->>> +				};
+>>>  /*
+>>>   * These structs contain information parsed from per CPU
+>>>   * ACPI _CPC structures.
+>>> @@ -32,6 +41,39 @@
+>>>   */
+>>>  static struct cpudata **all_cpu_data;
+>>>  
+>>> +/* Capture the max KHz from DMI */
+>>> +static u64 cppc_dmi_max_khz;
 >>> +
->>> +				cpu_crit: cpu_crit@0 {
->>> +					temperature = <115000>;
->>> +					hysteresis = <2000>;
->>> +					type = "critical";
->>> +				};
->>> +			};
->>> +		};
->>> +	};
+>>> +/* Callback function used to retrieve the max frequency from DMI */
+>>> +static void cppc_find_dmi_mhz(const struct dmi_header *dm, void *private)
+>>> +{
+>>> +	const u8 *dmi_data = (const u8 *)dm;
+>>> +	u16 *mhz = (u16 *)private;
 >>> +
->>>  	timer {
->>>  		compatible = "arm,armv7-timer";
->>>  		interrupt-parent = <&gic>;
->>> @@ -183,4 +213,17 @@
->>>  		clocks = <&uart_clk>;
->>>  		status = "disabled";
->>>  	};
+>>> +	if (dm->type == DMI_ENTRY_PROCESSOR &&
+>>> +	    dm->length >= DMI_ENTRY_PROCESSOR_MIN_LENGTH) {
+>>> +		u16 val = (u16)get_unaligned((const u16 *)
+>>> +				(dmi_data + DMI_PROCESSOR_MAX_SPEED));
+>>> +		*mhz = val > *mhz ? val : *mhz;
+>>> +	}
+>>> +}
 >>> +
->>> +	thermal: thermal@1100b000 {
->>> +		#thermal-sensor-cells = <0>;
->>> +		compatible = "mediatek,mt2701-thermal";
->>> +		reg = <0 0x1100b000 0 0x1000>;
->>> +		interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_LOW>;
->>> +		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
->>> +		clock-names = "therm", "auxadc";
->>> +		resets = <&pericfg 0x10>;
->>> +		reset-names = "therm";
->>> +		mediatek,auxadc = <&auxadc>;
->>> +		mediatek,apmixedsys = <&apmixedsys>;
->>> +	};
->>>  };
->>>
+>>> +/* Look up the max frequency in DMI */
+>>> +static u64 cppc_get_dmi_max_khz(void)
+>>> +{
+>>> +	u16 mhz = 0;
+>>> +
+>>> +	dmi_walk(cppc_find_dmi_mhz, &mhz);
+>>> +
+>>> +	/*
+>>> +	 * Real stupid fallback value, just in case there is no
+>>> +	 * actual value set.
+>>> +	 */
+>>> +	mhz = mhz ? mhz : 1;
+>>> +
+>>> +	return (1000 * mhz);
+>>> +}
+>>> +
+>>>  static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
+>>>  		unsigned int target_freq,
+>>>  		unsigned int relation)
+>>> @@ -42,7 +84,7 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
+>>>  
+>>>  	cpu = all_cpu_data[policy->cpu];
+>>>  
+>>> -	cpu->perf_ctrls.desired_perf = target_freq;
+>>> +	cpu->perf_ctrls.desired_perf = target_freq * policy->max / cppc_dmi_max_khz;
+>>>  	freqs.old = policy->cur;
+>>>  	freqs.new = target_freq;
+>>>  
+>>> @@ -94,8 +136,10 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>>  		return ret;
+>>>  	}
+>>>  
+>>> -	policy->min = cpu->perf_caps.lowest_perf;
+>>> -	policy->max = cpu->perf_caps.highest_perf;
+>>> +	cppc_dmi_max_khz = cppc_get_dmi_max_khz();
+>>> +
+>>> +	policy->min = cpu->perf_caps.lowest_perf * cppc_dmi_max_khz / cpu->perf_caps.highest_perf;
+>>> +	policy->max = cppc_dmi_max_khz;
+>>>  	policy->cpuinfo.min_freq = policy->min;
+>>>  	policy->cpuinfo.max_freq = policy->max;
+>>>  	policy->shared_type = cpu->shared_type;
+>>> @@ -112,7 +156,8 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>>  	cpu->cur_policy = policy;
+>>>  
+>>>  	/* Set policy->cur to max now. The governors will adjust later. */
+>>> -	policy->cur = cpu->perf_ctrls.desired_perf = cpu->perf_caps.highest_perf;
+>>> +	policy->cur = cppc_dmi_max_khz;
+>>> +	cpu->perf_ctrls.desired_perf = cpu->perf_caps.highest_perf;
+>>>  
+>>>  	ret = cppc_set_perf(cpu_num, &cpu->perf_ctrls);
+>>>  	if (ret)
+>>> -- 
+>>> 2.7.4
 >>
->> what about:
->> status = "disabled"; ?
->
-> Since thermal driver would protect our platform by shutdown method once
-> SoC temperature over critical point, I prefer keep this rather than
-> disabling, how do you think, thank you.
->
+> 
+> Another gentle ping -- any comments?  Can this get pulled in now?
+> 
+> Thanks.
+> 
 
-Sounds reasonable. Thanks
+
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
