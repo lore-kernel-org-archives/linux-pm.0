@@ -1,44 +1,115 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 10/16] cpuidle: pseries: Convert to hotplug state machine
-Date: Mon, 22 Aug 2016 18:09:47 +0200
-Message-ID: <57BB23CB.2080908@linaro.org>
-References: <20160818125731.27256-1-bigeasy@linutronix.de>
- <20160818125731.27256-11-bigeasy@linutronix.de>
+From: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 3/3] arm: dts: thermal: add thermal/auxadc node.
+Date: Mon, 22 Aug 2016 19:09:56 +0200
+Message-ID: <7a7684dc-aea5-15f8-04fb-494b2085a3fe@gmail.com>
+References: <1467882386-40544-1-git-send-email-dawei.chien@mediatek.com>
+ <1467882386-40544-4-git-send-email-dawei.chien@mediatek.com>
+ <fd3f0c2f-f0ad-dd0f-cf2b-eb658f72d735@gmail.com>
+ <1471245268.14287.14.camel@mtksdaap41>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160818125731.27256-11-bigeasy@linutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linux-kernel@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1471245268.14287.14.camel@mtksdaap41>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Erin Lo <erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Fan Chen <fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Yingjoe Chen <yingjoe.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08/18/2016 02:57 PM, Sebastian Andrzej Siewior wrote:
-> Install the callbacks via the state machine.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> ---
-> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-> index 5811954809af..baecc4faf028 100644
-> --- a/include/linux/cpuhotplug.h
-> +++ b/include/linux/cpuhotplug.h
-> @@ -19,6 +19,7 @@ enum cpuhp_state {
->  	CPUHP_MM_WRITEBACK_DEAD,
->  	CPUHP_SOFTIRQ_DEAD,
->  	CPUHP_NET_MVNETA_DEAD,
-> +	CPUHP_CPUIDLE_PSERIES_DEAD,
-
-Can't we directly merge these into CPUHP_CPUIDLE_DEAD instead ? Or is it
-planned to be done separately ?
 
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+On 15/08/16 09:14, dawei chien wrote:
+> Hi Matthias,
+>
+> On Thu, 2016-08-11 at 17:51 +0200, Matthias Brugger wrote:
+>>
+>> On 07/07/16 11:06, Dawei Chien wrote:
+>>> This adds the thermal controller and auxadc nodes
+>>> to the Mediatek MT2701 dtsi file.
+>>>
+>>> Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+>>> ---
+>>> This patch depned on:
+>>> https://patchwork.kernel.org/patch/9213545/
+>>> ---
+>>>  arch/arm/boot/dts/mt2701.dtsi |   43 +++++++++++++++++++++++++++++++++++++++++
+>>>  1 file changed, 43 insertions(+)
+>>>
+>>> diff --git a/arch/arm/boot/dts/mt2701.dtsi b/arch/arm/boot/dts/mt2701.dtsi
+>>> index 2ac8b50..0834a23 100644
+>>> --- a/arch/arm/boot/dts/mt2701.dtsi
+>>> +++ b/arch/arm/boot/dts/mt2701.dtsi
+>>> @@ -77,6 +77,36 @@
+>>>  		#clock-cells = <0>;
+>>>  	};
+>>>
+>>> +	thermal-zones {
+>>> +		cpu_thermal: cpu_thermal {
+>>> +			polling-delay-passive = <1000>; /* milliseconds */
+>>> +			polling-delay = <1000>; /* milliseconds */
+>>> +
+>>> +			thermal-sensors = <&thermal 0>;
+>>> +			sustainable-power = <1000>;
+>>> +
+>>> +			trips {
+>>> +				threshold: trip-point@0 {
+>>> +					temperature = <68000>;
+>>> +					hysteresis = <2000>;
+>>> +					type = "passive";
+>>> +				};
+>>> +
+>>> +				target: trip-point@1 {
+>>> +					temperature = <85000>;
+>>> +					hysteresis = <2000>;
+>>> +					type = "passive";
+>>> +				};
+>>> +
+>>> +				cpu_crit: cpu_crit@0 {
+>>> +					temperature = <115000>;
+>>> +					hysteresis = <2000>;
+>>> +					type = "critical";
+>>> +				};
+>>> +			};
+>>> +		};
+>>> +	};
+>>> +
+>>>  	timer {
+>>>  		compatible = "arm,armv7-timer";
+>>>  		interrupt-parent = <&gic>;
+>>> @@ -183,4 +213,17 @@
+>>>  		clocks = <&uart_clk>;
+>>>  		status = "disabled";
+>>>  	};
+>>> +
+>>> +	thermal: thermal@1100b000 {
+>>> +		#thermal-sensor-cells = <0>;
+>>> +		compatible = "mediatek,mt2701-thermal";
+>>> +		reg = <0 0x1100b000 0 0x1000>;
+>>> +		interrupts = <GIC_SPI 70 IRQ_TYPE_LEVEL_LOW>;
+>>> +		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
+>>> +		clock-names = "therm", "auxadc";
+>>> +		resets = <&pericfg 0x10>;
+>>> +		reset-names = "therm";
+>>> +		mediatek,auxadc = <&auxadc>;
+>>> +		mediatek,apmixedsys = <&apmixedsys>;
+>>> +	};
+>>>  };
+>>>
+>>
+>> what about:
+>> status = "disabled"; ?
+>
+> Since thermal driver would protect our platform by shutdown method once
+> SoC temperature over critical point, I prefer keep this rather than
+> disabling, how do you think, thank you.
+>
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Sounds reasonable. Thanks
