@@ -1,54 +1,55 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH 10/16] cpuidle: pseries: Convert to hotplug state machine
-Date: Mon, 22 Aug 2016 21:04:04 +0200
-Message-ID: <20160822190404.i56qlimrqkhozacn@linutronix.de>
-References: <20160818125731.27256-1-bigeasy@linutronix.de>
- <20160818125731.27256-11-bigeasy@linutronix.de>
- <57BB23CB.2080908@linaro.org>
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: Re: [PATCH 04/11] sched,x86: Enable Turbo Boost Max Technology
+Date: Mon, 22 Aug 2016 12:04:12 -0700
+Message-ID: <20160822190412.GA27546@linux.intel.com>
+References: <1471559812-19967-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <201608221707.jlJguIhg%fengguang.wu@intel.com>
+Reply-To: tim.c.chen@linux.intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:54420 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754650AbcHVTEO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2016 15:04:14 -0400
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <57BB23CB.2080908@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <201608221707.jlJguIhg%fengguang.wu@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: kbuild test robot <lkp@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, kbuild-all@01.org, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, peterz@infradead.org, x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On 2016-08-22 18:09:47 [+0200], Daniel Lezcano wrote:
-> On 08/18/2016 02:57 PM, Sebastian Andrzej Siewior wrote:
-> > Install the callbacks via the state machine.
-> > 
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > Cc: linux-pm@vger.kernel.org
-> > Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> > ---
-> > diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-> > index 5811954809af..baecc4faf028 100644
-> > --- a/include/linux/cpuhotplug.h
-> > +++ b/include/linux/cpuhotplug.h
-> > @@ -19,6 +19,7 @@ enum cpuhp_state {
-> >  	CPUHP_MM_WRITEBACK_DEAD,
-> >  	CPUHP_SOFTIRQ_DEAD,
-> >  	CPUHP_NET_MVNETA_DEAD,
-> > +	CPUHP_CPUIDLE_PSERIES_DEAD,
+On Mon, Aug 22, 2016 at 05:01:15PM +0800, kbuild test robot wrote:
+> Hi Tim,
 > 
-> Can't we directly merge these into CPUHP_CPUIDLE_DEAD instead ? Or is it
-> planned to be done separately ?
+> [auto build test ERROR on pm/linux-next]
+> [also build test ERROR on v4.8-rc3 next-20160822]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+> [Suggest to use git(>=2.9.0) format-patch --base=<commit> (or --base=auto for convenience) to record what (public, well-known) commit your patch series was built on]
+> [Check https://git-scm.com/docs/git-format-patch for more information]
+> 
+> url:    https://github.com/0day-ci/linux/commits/Srinivas-Pandruvada/Support-Intel-Turbo-Boost-Max-Technology-3-0/20160819-101955
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+> config: i386-allyesconfig (attached as .config)
+> compiler: gcc-6 (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>         # save the attached .config to linux build tree
+>         make ARCH=i386 
+> 
 
-You mean CPUHP_CPUIDLE_DEAD instead of _PSERIES_DEAD and _POWERNV_DEAD?
-We could do that but you would have to ensure that only one CPUIDLE
-driver registers itself at a time and for those powerpc drivers it looks
-like you could have two registered (not sure about ARM's little/big (if
-you could have two of those later at run-time)).
-For the ONLINE state we have dynamic allocation of IDs. If it is
-possible to rework the code to use only ONLINE & PRE_DOWN instead of
-DEAD then we wouldn't have this. I can't say at this point if we do
-dynamic allocation of the DEAD IDs.
+Should be fixed by the patch below.  Will incorporate the fix in next
+rev of the patch series.
 
-Sebastian
+Tim
+
+---
+
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index f148843..bcf3e85 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -147,6 +147,8 @@ int x86_pci_root_bus_node(int bus);
+ void x86_pci_root_bus_resources(int bus, struct list_head *resources);
+ 
+ #ifdef CONFIG_SCHED_ITMT
++#include <asm/percpu.h>
++
+ DECLARE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
+ 
+ static inline bool sched_asym_prefer(int a, int b)
