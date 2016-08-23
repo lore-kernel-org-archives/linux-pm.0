@@ -1,55 +1,38 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 2/5] firmware: Add basic support for TI System Control
- Interface (TI-SCI) protocol
-Date: Tue, 23 Aug 2016 13:38:14 -0500
-Message-ID: <CAGo_u6oAU-4Gab2H5S6mRET8AoUMc+wGHofnK3BaZQzR-340JA@mail.gmail.com>
-References: <20160819225159.10758-1-nm@ti.com>
- <20160819225159.10758-3-nm@ti.com>
- <5d03a04f-9184-10e4-43c9-8834e8a39545@ti.com>
+From: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH 3/5] firmware: ti_sci: Add support for Device control
+Date: Tue, 23 Aug 2016 13:45:05 -0500
+Message-ID: <CAGo_u6p3Bm+zGDtxpOyT+DeGN8_XPWWE0zhCYuxsH47n41Z8jg@mail.gmail.com>
+References: <20160819225159.10758-1-nm@ti.com> <20160819225159.10758-4-nm@ti.com>
+ <9a6a8663-a3f7-7875-253f-98232d56b860@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <5d03a04f-9184-10e4-43c9-8834e8a39545@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lokesh Vutla <lokeshvutla@ti.com>
-Cc: Tero Kristo <t-kristo@ti.com>, Dave Gerlach <d-gerlach@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, lkml <linux-kernel@vger.kernel.org>, "Andrew F . Davis" <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Santosh Shilimkar <ssantosh@kernel.org>, dt list <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <9a6a8663-a3f7-7875-253f-98232d56b860-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lokesh Vutla <lokeshvutla-l0cyMroinI0@public.gmane.org>
+Cc: Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Andrew F . Davis" <afd-l0cyMroinI0@public.gmane.org>, dt list <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Russ Dill <Russ.Dill-l0cyMroinI0@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Aug 21, 2016 at 11:20 AM, Lokesh Vutla <lokeshvutla@ti.com> wrote:
-[...]
-
->> +
->> +static int ti_sci_remove(struct platform_device *pdev)
->> +{
->> +     struct ti_sci_info *info;
->> +     int ret = 0;
->> +
->> +     info = platform_get_drvdata(pdev);
->> +
->> +     mutex_lock(&ti_sci_list_mutex);
->> +     if (info->users)
->> +             ret = -EBUSY;
->> +     else
->> +             list_del(&info->node);
->> +     mutex_unlock(&ti_sci_list_mutex);
+On Sun, Aug 21, 2016 at 10:56 PM, Lokesh Vutla <lokeshvutla-l0cyMroinI0@public.gmane.org> wrote:
+>>  /**
+>> + * tis_sci_is_response_ack() - Generic ACK/NACK message checkup
+>> + * @r:       pointer to response buffer
+>> + *
+>> + * Return: true if the response was an ACK, else returns false.
+>> + */
+>> +static inline bool tis_sci_is_response_ack(void *r)
 >
-> shouldn't the mbox channels be freed in remove?
->
-> mbox_free_channel(info->chan_tx);
-> mbox_free_channel(info->chan_rx);
+> May be just ti_sci_is_response_ack() to be consistent? or you wanted to
+> keep it tis_sci* ?
 
-Uggh.. yes.. my bad. thanks for catching this. will fix with a v2 next
-week if there are no further comments.
 
---
+Uggh.. Fat fingered that one.. thanks for catching.. fixed and will
+post a v2 next week if there is no further comments
+
+---
 Regards,
-NIshanth Menon
+Nishanth Menon
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
