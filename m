@@ -1,73 +1,63 @@
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Subject: [PATCH -next] thermal: qoriq: Remove unnecessary platform_set_drvdata()
-Date: Tue, 23 Aug 2016 15:01:28 +0000
-Message-ID: <1471964488-28313-1-git-send-email-weiyj.lk@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v6 4/8] usb: core: add power sequence handling for USB
+ devices
+Date: Tue, 23 Aug 2016 11:37:20 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1608231130330.2093-100000@iolanthe.rowland.org>
+References: <20160823031021.GB13986@shlinux2>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:34118 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751722AbcHWPBz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2016 11:01:55 -0400
-Received: by mail-pf0-f195.google.com with SMTP id g202so8441036pfb.1
-        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2016 08:01:54 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20160823031021.GB13986@shlinux2>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Peter Chen <hzpeterchen@gmail.com>
+Cc: mark.rutland@arm.com, Peter Chen <peter.chen@nxp.com>, ulf.hansson@linaro.org, stephen.boyd@linaro.org, k.kozlowski@samsung.com, Kernel development list <linux-kernel@vger.kernel.org>, festevam@gmail.com, stillcompiling@gmail.com, pawel.moll@arm.com, dbaryshkov@gmail.com, mka@chromium.org, dwmw3@infradead.org, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, arnd@arndb.de, Linux-pm mailing list <linux-pm@vger.kernel.org>, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, oscar@naiandei.net, gregkh@linuxfoundation.org, USB list <linux-usb@vger.kernel.org>, sre@kernel.org, broonie@kernel.org, p.zabel@pengutronix.de, shawnguo@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Wei Yongjun <weiyongjun1@huawei.com>, linux-pm@vger.kernel.org
 
-From: Wei Yongjun <weiyongjun1@huawei.com>
+On Tue, 23 Aug 2016, Peter Chen wrote:
 
-The driver core clears the driver data to NULL after device_release
-or on probe failure. Thus, it is not needed to manually clear the
-device driver data to NULL.
+> I will add #ifdef CONFIG_OF for related code. And put the content at
+> hub_pwrseq_on at hub_probe directly, how about below?
+> 
+> hub_probe() {
+> 
+> 	...
+> 
+> 	if (hub_configure(hub, endpoint) >= 0) {
+> #ifdef CONFIG_OF
+> 		for_each_child_of_node(parent->of_node, np) {
+> 			ret = generic_pwrseq_on(np, hub);
+> 			if (ret)
+> 				return ret;
+> 		}
+> #else
+> 		return 0;
+> #endif
+> 	}
 
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
----
- drivers/thermal/qoriq_thermal.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+Please make this a separate subroutine like you had before, but now in 
+hub.c:
 
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-index 644ba52..d01eca0 100644
---- a/drivers/thermal/qoriq_thermal.c
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -217,15 +217,13 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- 	data->sensor_id = qoriq_tmu_get_sensor_id();
- 	if (data->sensor_id < 0) {
- 		dev_err(&pdev->dev, "Failed to get sensor id\n");
--		ret = -ENODEV;
--		goto err_iomap;
-+		return -ENODEV;
- 	}
- 
- 	data->regs = of_iomap(np, 0);
- 	if (!data->regs) {
- 		dev_err(&pdev->dev, "Failed to get memory region\n");
--		ret = -ENODEV;
--		goto err_iomap;
-+		return -ENODEV;
- 	}
- 
- 	qoriq_tmu_init_device(data);	/* TMU initialization */
-@@ -254,9 +252,6 @@ static int qoriq_tmu_probe(struct platform_device *pdev)
- err_tmu:
- 	iounmap(data->regs);
- 
--err_iomap:
--	platform_set_drvdata(pdev, NULL);
--
- 	return ret;
- }
- 
-@@ -270,7 +265,6 @@ static int qoriq_tmu_remove(struct platform_device *pdev)
- 	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
- 
- 	iounmap(data->regs);
--	platform_set_drvdata(pdev, NULL);
- 
- 	return 0;
- }
+#ifdef CONFIG_OF
+static int hub_of_pwrseq_on(struct usb_hub *hub)
+{
+...
+}
+
+#else
+static inline int hub_of_pwrseq_on(struct usb_hub *hub)
+{
+	return 0;
+}
+#endif /* CONFIG_OF */
 
 
-
+Alan Stern
