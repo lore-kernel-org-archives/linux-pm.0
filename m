@@ -1,55 +1,50 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection algorithm for Core
-Date: Tue, 23 Aug 2016 19:30:46 +0200
-Message-ID: <1919195.z1pHchloxg@vostro.rjw.lan>
-References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1471925285.5747.5.camel@linux.intel.com> <CANRm+Cw1bVObw44akr0ofTyN=LDy-aoXYxNuSNmDQcg4byo3Ww@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 5/5] firmware: ti_sci: Add support for reboot core service
+Date: Tue, 23 Aug 2016 12:48:41 -0500
+Message-ID: <20160823174841.GA23677@rob-hp-laptop>
+References: <20160819225159.10758-1-nm@ti.com>
+ <20160819225159.10758-6-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CANRm+Cw1bVObw44akr0ofTyN=LDy-aoXYxNuSNmDQcg4byo3Ww@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20160819225159.10758-6-nm@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Wanpeng Li <kernellwp@gmail.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
+To: Nishanth Menon <nm@ti.com>
+Cc: Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, Russ Dill <Russ.Dill@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, "Andrew F . Davis" <afd@ti.com>, Suman Anna <s-anna@ti.com>, Tero Kristo <t-kristo@ti.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 23, 2016 12:50:14 PM Wanpeng Li wrote:
-> 2016-08-23 12:08 GMT+08:00 Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com>:
-> > On Tue, 2016-08-23 at 11:48 +0800, Wanpeng Li wrote:
-> >> Hi Rafael,
-> >> 2016-08-01 7:38 GMT+08:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
-> >> >
-> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> >
-> >> > The PID-base P-state selection algorithm used by intel_pstate for
-> >> > Core processors is based on very weak foundations.  Namely, its
-> >> > decisions are mostly based on the values of the APERF and MPERF
-> >> > feedback registers and it only estimates the actual utilization to
-> >> > check if it is not extremely low (in order to avoid getting stuck
-> >> > in the highest P-state in that case).
-> >> >
-> >> > Since it generally causes the CPU P-state to ramp up quickly, it
-> >> > leads to satisfactory performance, but the metric used by it is
-> >> > only
-> >> > really valid when the CPU changes P-states by itself (ie. in the
-> >> > turbo
-> >> > range) and if the P-state value set by the driver is treated by the
-> >> > CPU as the upper limit on turbo P-states selected by it.
-> >>
-> >> Do you mean CPU will ignore the request value which is submitted by
-> >> intel_pstate driver in the turbo range, but respect the upper limit
-> >> on
-> >> the turbo P-states which is submitted by intel_pstate driver?
-> > Any request to request a P-state even upper limit can be totally
-> > ignored in turbo range.
+On Fri, Aug 19, 2016 at 05:51:59PM -0500, Nishanth Menon wrote:
+> Since system controller now has control over SoC power management, it
+> needs to be explicitly requested to reboot the SoC. Add support for
+> it.
 > 
-> How to understand Rafael's description "if the P-state value set by
-> the driver is treated by the CPU as the upper limit on the turbo
-> P-states selected by it"? The upper limit will be totally ignored in
-> turbo range.
+> In some systems however, SoC needs to toggle a GPIO or send event to an
+> external entity (like a PMIC) for a system reboot to take place. To
+> facilitate that, we allow for a DT property to determine if the reboot
+> handler will be registered and further, the service is also made
+> available to other drivers (such as PMIC driver) to sequence the
+> additional operation and trigger the SoC reboot as the last step.
+> 
+> Tested-by: Lokesh Vutla <lokeshvutla@ti.com>
+> Signed-off-by: Nishanth Menon <nm@ti.com>
+> ---
+>  .../devicetree/bindings/arm/keystone/ti,sci.txt    |  1 +
+>  drivers/firmware/ti_sci.c                          | 85 ++++++++++++++++++++++
+>  drivers/firmware/ti_sci.h                          | 12 +++
+>  include/linux/soc/ti/ti_sci_protocol.h             | 11 +++
+>  4 files changed, 109 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt b/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
+> index 965d45e313b1..ed5b8fc185f1 100644
+> --- a/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
+> +++ b/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
+> @@ -38,6 +38,7 @@ Optional Properties:
+>  - reg-names:
+>  	debug_messages - Map the Debug message region
+>  - reg:  register space corresponding to the debug_messages
+> +- ti,system-reboot-controller: If system reboot can be triggered by SoC reboot
 
-It wasn't ignored, though, by some older CPU models.
+Don't define bindings incrementally. But all the binding in one patch.
 
-Thanks,
-Rafael
+Rob
