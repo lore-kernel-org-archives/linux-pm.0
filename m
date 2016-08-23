@@ -1,50 +1,55 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 5/5] firmware: ti_sci: Add support for reboot core service
-Date: Tue, 23 Aug 2016 12:48:41 -0500
-Message-ID: <20160823174841.GA23677@rob-hp-laptop>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH 2/5] firmware: Add basic support for TI System Control
+ Interface (TI-SCI) protocol
+Date: Tue, 23 Aug 2016 13:38:14 -0500
+Message-ID: <CAGo_u6oAU-4Gab2H5S6mRET8AoUMc+wGHofnK3BaZQzR-340JA@mail.gmail.com>
 References: <20160819225159.10758-1-nm@ti.com>
- <20160819225159.10758-6-nm@ti.com>
+ <20160819225159.10758-3-nm@ti.com>
+ <5d03a04f-9184-10e4-43c9-8834e8a39545@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160819225159.10758-6-nm@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, Russ Dill <Russ.Dill@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, "Andrew F . Davis" <afd@ti.com>, Suman Anna <s-anna@ti.com>, Tero Kristo <t-kristo@ti.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <5d03a04f-9184-10e4-43c9-8834e8a39545@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lokesh Vutla <lokeshvutla@ti.com>
+Cc: Tero Kristo <t-kristo@ti.com>, Dave Gerlach <d-gerlach@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, lkml <linux-kernel@vger.kernel.org>, "Andrew F . Davis" <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Santosh Shilimkar <ssantosh@kernel.org>, dt list <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 19, 2016 at 05:51:59PM -0500, Nishanth Menon wrote:
-> Since system controller now has control over SoC power management, it
-> needs to be explicitly requested to reboot the SoC. Add support for
-> it.
-> 
-> In some systems however, SoC needs to toggle a GPIO or send event to an
-> external entity (like a PMIC) for a system reboot to take place. To
-> facilitate that, we allow for a DT property to determine if the reboot
-> handler will be registered and further, the service is also made
-> available to other drivers (such as PMIC driver) to sequence the
-> additional operation and trigger the SoC reboot as the last step.
-> 
-> Tested-by: Lokesh Vutla <lokeshvutla@ti.com>
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-> ---
->  .../devicetree/bindings/arm/keystone/ti,sci.txt    |  1 +
->  drivers/firmware/ti_sci.c                          | 85 ++++++++++++++++++++++
->  drivers/firmware/ti_sci.h                          | 12 +++
->  include/linux/soc/ti/ti_sci_protocol.h             | 11 +++
->  4 files changed, 109 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt b/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-> index 965d45e313b1..ed5b8fc185f1 100644
-> --- a/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-> +++ b/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-> @@ -38,6 +38,7 @@ Optional Properties:
->  - reg-names:
->  	debug_messages - Map the Debug message region
->  - reg:  register space corresponding to the debug_messages
-> +- ti,system-reboot-controller: If system reboot can be triggered by SoC reboot
+On Sun, Aug 21, 2016 at 11:20 AM, Lokesh Vutla <lokeshvutla@ti.com> wrote:
+[...]
 
-Don't define bindings incrementally. But all the binding in one patch.
+>> +
+>> +static int ti_sci_remove(struct platform_device *pdev)
+>> +{
+>> +     struct ti_sci_info *info;
+>> +     int ret = 0;
+>> +
+>> +     info = platform_get_drvdata(pdev);
+>> +
+>> +     mutex_lock(&ti_sci_list_mutex);
+>> +     if (info->users)
+>> +             ret = -EBUSY;
+>> +     else
+>> +             list_del(&info->node);
+>> +     mutex_unlock(&ti_sci_list_mutex);
+>
+> shouldn't the mbox channels be freed in remove?
+>
+> mbox_free_channel(info->chan_tx);
+> mbox_free_channel(info->chan_rx);
 
-Rob
+Uggh.. yes.. my bad. thanks for catching this. will fix with a v2 next
+week if there are no further comments.
+
+--
+Regards,
+NIshanth Menon
