@@ -1,125 +1,156 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Power driver patches to avoid lockdep complaints
-Date: Tue, 23 Aug 2016 03:16:00 -0700
-Message-ID: <20160823101600.GA3482@linux.vnet.ibm.com>
-References: <20160615211344.GA31850@linux.vnet.ibm.com>
- <20160823004549.b66jru7ogyfifunf@atomide.com>
- <20160823005917.GY3482@linux.vnet.ibm.com>
- <3368049.VBoKnTMGvK@vostro.rjw.lan>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Vaibhav Hiremath <vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 0/6] power: add power sequence library
+Date: Tue, 23 Aug 2016 15:52:57 +0530
+Message-ID: <887e1002-40f3-8ed6-a2d7-79d13fb64c22@linaro.org>
+References: <1468375610-18625-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:52999 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1753656AbcHWKP6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2016 06:15:58 -0400
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u7NADqsm129132
-        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2016 06:15:50 -0400
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 24ybqvtj3f-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2016 06:15:50 -0400
-Received: from localhost
-        by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-        Tue, 23 Aug 2016 04:15:49 -0600
-Content-Disposition: inline
-In-Reply-To: <3368049.VBoKnTMGvK@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1468375610-18625-1-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tony Lindgren <tony@atomide.com>, pavel@ucw.cz, linux@roeck-us.net, rostedt@goodmis.org, linux-pm@vger.kernel.org
 
-On Tue, Aug 23, 2016 at 03:52:12AM +0200, Rafael J. Wysocki wrote:
-> On Monday, August 22, 2016 05:59:17 PM Paul E. McKenney wrote:
-> > On Mon, Aug 22, 2016 at 05:45:49PM -0700, Tony Lindgren wrote:
-> > > * Rafael J. Wysocki <rjw@rjwysocki.net> [160822 10:30]:
-> > > > On Saturday, August 20, 2016 07:28:37 AM Tony Lindgren wrote:
-> > > > > * Rafael J. Wysocki <rjw@rjwysocki.net> [160819 18:35]:
-> > > > > > On Thursday, August 18, 2016 03:51:52 PM Tony Lindgren wrote:
-> > > > > > > Hi,
-> > > > > > > 
-> > > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> [160615 14:16]:
-> > > > > > > > Hello!
-> > > > > > > > 
-> > > > > > > > Ingo was not comfortable taking these through -tip, which is understandable,
-> > > > > > > > given that they don't depend on each other or on anything else not already
-> > > > > > > > in mainline, and that they don't have anything to do with -tip.
-> > > > > > > > 
-> > > > > > > > So what would you guys like to do with these?
-> > > > > > > > 
-> > > > > > > > They may be pulled from 13e698e68f75 (power: Use _rcuidle for
-> > > > > > > > suspend/resume tracepoints) in my -rcu tree:
-> > > > > > > > 
-> > > > > > > > 	git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
-> > > > > > > > 
-> > > > > > > 
-> > > > > > > Rafael, looks like commit 13e698e68f75 is still missing from the
-> > > > > > > mainline tree. Care to merge it to your fixes so I don't have to
-> > > > > > > keep looking at that splat on daily basis?
-> > > > > > 
-> > > > > > I could pull it if I knew where to pull it from.  The above gives me
-> > > > > > "Already up-to-date."
-> > > > > 
-> > > > > Here are the ones still missing:
-> > > > > 
-> > > > > $ git log --pretty=oneline v4.7-rc2..13e698e68f75
-> > > > > 13e698e68f75708c45241a2dad23cd6b65181056 power: Use _rcuidle for suspend/resume tracepoints
-> > > > > 320e2a2d081b6c519f80fca9377b8fb90db7bb9c power: Add _rcuidle suffix to allow rpm_resume() to be called from idle
-> > > > > b72aadb1d082d3935cbffd60e979238252045971 power: Add _rcuidle suffix to allow rpm_idle() use from idle
-> > > > > 
-> > > > > So maybe just git merge 13e698e68f75 if you have the linux-rcu.git
-> > > > > fetched and the above look OK to you?
-> > > > 
-> > > > If I do
-> > > > 
-> > > > $ git fetch git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
-> > > > 
-> > > > and then
-> > > > 
-> > > > $ git show 13e698e68f75
-> > > > 
-> > > > then it tells me
-> > > > 
-> > > > fatal: ambiguous argument '13e698e68f75': unknown revision or path not in the working tree.
-> > > > 
-> > > > Do I need to fetch it in any special way or something?
-> > > 
-> > > Well I usuall add things to my .git/config like:
-> > > 
-> > > [remote "rcu"]
-> > > 	url = git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
-> > > 	fetch = refs/heads/*:refs/remotes/rcu/*
-> > > 
-> > > And then do git fetch --no-tags on what I need. There's probably
-> > > some easy way to do that temporarily too :)
-> > > 
-> > > But now doing git fetch --no-tags rcu here with produces this
-> > > for me:
-> > > ...
-> > >  ! [rejected]        rcu/dev    -> rcu/rcu/dev  (non-fast-forward)
-> > >  ! [rejected]        rcu/next   -> rcu/rcu/next  (non-fast-forward)
-> > > 
-> > > So maybe that branch got trashed and the commit is there no more.
-> > 
-> > The trick is that rcu/dev and rcu/next simply mark my current development
-> > branch and the stuff I want Stephen Rothwell to pull into -next,
-> > respectively.
-> > 
-> > > Paul, do you have 13e698e68f75 still somewhere or want me to push
-> > > out a branch with that?
-> > 
-> > The permanent branch name for those changes is power.2016.06.15a,
-> > so those should be pullable from anywhere.
-> > 
-> > Or please do feel free to push from your tree if that works better.
-> > However they get where they need to go, I am good!  ;-)
-> 
-> I guess I'll just apply the patches you've sent directly then.
 
-Works for me!
 
-							Thanx, Paul
+On Wednesday 13 July 2016 07:36 AM, Peter Chen wrote:
+> Hi all,
+>
+> This is a follow-up for my last power sequence framework patch set [1].
+> According to Rob Herring and Ulf Hansson's comments[2], I use a generic
+> power sequence library for parsing the power sequence elements on DT,
+> and implement generic power sequence on library. The host driver
+> can allocate power sequence instance, and calls pwrseq APIs accordingly.
+>
+> In future, if there are special power sequence requirements, the special
+> power sequence library can be created.
+>
+> This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+> two hot-plug devices to simulate this use case, the related binding
+> change is updated at patch[1/6], The udoo board changes were tested
+> using my last power sequence patch set.[3]
+>
+> Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+> need to power on itself before it can be found by ULPI bus.
 
+Sorry being so late in the discussion...
+
+If I am not missing anything, then I am afraid to say that the generic 
+library
+implementation in this patch series is not going to solve many of the custom
+requirement of power on, off, etc...
+I know you mentioned about adding another library when we come
+across such platforms, but should we not keep provision (or easy hooks/path)
+to enable that ?
+
+Let me bring in the use case I am dealing with,
+
+
+                               Host
+                                  ||
+                                  V
+                            USB port
+------------------------------------------------------------
+                                  ||
+                                  V
+                       USB HUB device (May need custom on/off seq)
+                                  ||
+                                  V
+               ==================
+              ||                                              ||
+              V                                              V
+         Device-1                                Device-2
+(Needs special power               (Needs special power
+  on/off sequence.                       on/off sequence.
+Also may need custom              Also, may need custom
+sequence for                             sequence for
+suspend/resume)                      suspend/resume).
+
+
+Note: Both Devices are connected to HUB via HSIC and may differ
+           in terms of functionality, features they support.
+
+In the above case, both Device-1 and Device-2, need separate
+power on/off sequence. So generic library currently we have in this
+patch series is not going to satisfy the need here.
+
+I looked at all 6 revisions of this patch-series, went through the
+review comments, and looked at MMC power sequence code;
+what I can say here is, we need something similar to
+MMC power sequence here, where every device can have its own
+power sequence (if needed).
+
+I know Rob is not in favor of creating platform device for
+this, and I understand his comment.
+If not platform device, but atleast we need mechanism to
+connect each device back to its of_node and its respective
+driver/library fns. For example, the Devices may support different
+boot modes, and platform driver needs to make sure that
+the right sequence is followed for booting.
+
+Peter, My apologies for taking you back again on this series.
+I am OK, if you wish to address this in incremental addition,
+but my point is, we know that the current generic way is not
+enough for us, so I think we should try to fix it in initial phase only.
+
+
+Thanks,
+Vaibhav
+
+> [1] http://www.spinics.net/lists/linux-usb/msg142755.html
+> [2] http://www.spinics.net/lists/linux-usb/msg143106.html
+> [3] http://www.spinics.net/lists/linux-usb/msg142815.html
+>
+> Changes for v2:
+> - Delete "pwrseq" prefix and clock-names for properties at dt binding
+> - Should use structure not but its pointer for kzalloc
+> - Since chipidea core has no of_node, let core's of_node equals glue
+>    layer's at core's probe
+>
+>
+> Peter Chen (6):
+>    binding-doc: power: pwrseq-generic: add binding doc for generic power
+>      sequence library
+>    power: add power sequence library
+>    binding-doc: usb: usb-device: add optional properties for power
+>      sequence
+>    usb: core: add power sequence handling for USB devices
+>    usb: chipidea: let chipidea core device of_node equal's glue layer
+>      device of_node
+>    ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+>
+>   .../bindings/power/pwrseq/pwrseq-generic.txt       |  53 ++++++++
+>   .../devicetree/bindings/usb/usb-device.txt         |   9 ++
+>   arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  27 +++--
+>   drivers/power/Kconfig                              |   1 +
+>   drivers/power/Makefile                             |   1 +
+>   drivers/power/pwrseq/Kconfig                       |  20 +++
+>   drivers/power/pwrseq/Makefile                      |   2 +
+>   drivers/power/pwrseq/core.c                        |  79 ++++++++++++
+>   drivers/power/pwrseq/pwrseq_generic.c              | 134 +++++++++++++++++++++
+>   drivers/usb/chipidea/core.c                        |  10 ++
+>   drivers/usb/core/Makefile                          |   1 +
+>   drivers/usb/core/hub.c                             |  12 +-
+>   drivers/usb/core/hub.h                             |  12 ++
+>   drivers/usb/core/pwrseq.c                          | 102 ++++++++++++++++
+>   include/linux/power/pwrseq.h                       |  55 +++++++++
+>   15 files changed, 502 insertions(+), 16 deletions(-)
+>   create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+>   create mode 100644 drivers/power/pwrseq/Kconfig
+>   create mode 100644 drivers/power/pwrseq/Makefile
+>   create mode 100644 drivers/power/pwrseq/core.c
+>   create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
+>   create mode 100644 drivers/usb/core/pwrseq.c
+>   create mode 100644 include/linux/power/pwrseq.h
+>
+
+-- 
+Thanks,
+Vaibhav
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
