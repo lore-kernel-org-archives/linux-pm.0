@@ -1,108 +1,75 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Power driver patches to avoid lockdep complaints
-Date: Tue, 23 Aug 2016 03:52:12 +0200
-Message-ID: <3368049.VBoKnTMGvK@vostro.rjw.lan>
-References: <20160615211344.GA31850@linux.vnet.ibm.com> <20160823004549.b66jru7ogyfifunf@atomide.com> <20160823005917.GY3482@linux.vnet.ibm.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v7 5/7] power: act8945a_charger: Add capacity level
+ property
+Date: Tue, 23 Aug 2016 04:40:59 +0200
+Message-ID: <20160823024059.i7mvsef4t7flskcv@earth>
+References: <1471848557-27278-1-git-send-email-wenyou.yang@atmel.com>
+ <1471848557-27278-6-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46994 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1753423AbcHWBqg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2016 21:46:36 -0400
-In-Reply-To: <20160823005917.GY3482@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="3uxmj6q6l4ms5ysd"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1471848557-27278-6-git-send-email-wenyou.yang@atmel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Wenyou Yang <wenyou.yang@atmel.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: paulmck@linux.vnet.ibm.com
-Cc: Tony Lindgren <tony@atomide.com>, pavel@ucw.cz, linux@roeck-us.net, rostedt@goodmis.org, linux-pm@vger.kernel.org
 
-On Monday, August 22, 2016 05:59:17 PM Paul E. McKenney wrote:
-> On Mon, Aug 22, 2016 at 05:45:49PM -0700, Tony Lindgren wrote:
-> > * Rafael J. Wysocki <rjw@rjwysocki.net> [160822 10:30]:
-> > > On Saturday, August 20, 2016 07:28:37 AM Tony Lindgren wrote:
-> > > > * Rafael J. Wysocki <rjw@rjwysocki.net> [160819 18:35]:
-> > > > > On Thursday, August 18, 2016 03:51:52 PM Tony Lindgren wrote:
-> > > > > > Hi,
-> > > > > > 
-> > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> [160615 14:16]:
-> > > > > > > Hello!
-> > > > > > > 
-> > > > > > > Ingo was not comfortable taking these through -tip, which is understandable,
-> > > > > > > given that they don't depend on each other or on anything else not already
-> > > > > > > in mainline, and that they don't have anything to do with -tip.
-> > > > > > > 
-> > > > > > > So what would you guys like to do with these?
-> > > > > > > 
-> > > > > > > They may be pulled from 13e698e68f75 (power: Use _rcuidle for
-> > > > > > > suspend/resume tracepoints) in my -rcu tree:
-> > > > > > > 
-> > > > > > > 	git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
-> > > > > > > 
-> > > > > > 
-> > > > > > Rafael, looks like commit 13e698e68f75 is still missing from the
-> > > > > > mainline tree. Care to merge it to your fixes so I don't have to
-> > > > > > keep looking at that splat on daily basis?
-> > > > > 
-> > > > > I could pull it if I knew where to pull it from.  The above gives me
-> > > > > "Already up-to-date."
-> > > > 
-> > > > Here are the ones still missing:
-> > > > 
-> > > > $ git log --pretty=oneline v4.7-rc2..13e698e68f75
-> > > > 13e698e68f75708c45241a2dad23cd6b65181056 power: Use _rcuidle for suspend/resume tracepoints
-> > > > 320e2a2d081b6c519f80fca9377b8fb90db7bb9c power: Add _rcuidle suffix to allow rpm_resume() to be called from idle
-> > > > b72aadb1d082d3935cbffd60e979238252045971 power: Add _rcuidle suffix to allow rpm_idle() use from idle
-> > > > 
-> > > > So maybe just git merge 13e698e68f75 if you have the linux-rcu.git
-> > > > fetched and the above look OK to you?
-> > > 
-> > > If I do
-> > > 
-> > > $ git fetch git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
-> > > 
-> > > and then
-> > > 
-> > > $ git show 13e698e68f75
-> > > 
-> > > then it tells me
-> > > 
-> > > fatal: ambiguous argument '13e698e68f75': unknown revision or path not in the working tree.
-> > > 
-> > > Do I need to fetch it in any special way or something?
-> > 
-> > Well I usuall add things to my .git/config like:
-> > 
-> > [remote "rcu"]
-> > 	url = git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
-> > 	fetch = refs/heads/*:refs/remotes/rcu/*
-> > 
-> > And then do git fetch --no-tags on what I need. There's probably
-> > some easy way to do that temporarily too :)
-> > 
-> > But now doing git fetch --no-tags rcu here with produces this
-> > for me:
-> > ...
-> >  ! [rejected]        rcu/dev    -> rcu/rcu/dev  (non-fast-forward)
-> >  ! [rejected]        rcu/next   -> rcu/rcu/next  (non-fast-forward)
-> > 
-> > So maybe that branch got trashed and the commit is there no more.
-> 
-> The trick is that rcu/dev and rcu/next simply mark my current development
-> branch and the stuff I want Stephen Rothwell to pull into -next,
-> respectively.
-> 
-> > Paul, do you have 13e698e68f75 still somewhere or want me to push
-> > out a branch with that?
-> 
-> The permanent branch name for those changes is power.2016.06.15a,
-> so those should be pullable from anywhere.
-> 
-> Or please do feel free to push from your tree if that works better.
-> However they get where they need to go, I am good!  ;-)
 
-I guess I'll just apply the patches you've sent directly then.
+--3uxmj6q6l4ms5ysd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks,
-Rafael
+Hi,
 
+On Mon, Aug 22, 2016 at 02:49:15PM +0800, Wenyou Yang wrote:
+> [...]
+>
+> +	charger->lbo_gpio = gpiod_get(dev->parent, "active-semi,lbo", GPIOD_IN);
+> +	if (PTR_ERR(charger->lbo_gpio) == -EPROBE_DEFER) {
+> +		dev_info(dev, "probe retry requested for gpio \"lbo\"\n");
+> +	} else if (IS_ERR(charger->lbo_gpio)) {
+> +		dev_err(dev, "unable to claim gpio \"lbo\"\n");
+> +		charger->lbo_gpio = NULL;
+> +	}
+> +
+> +	ret = devm_request_irq(dev, gpiod_to_irq(charger->lbo_gpio),
+> +			       act8945a_status_changed,
+> +			       (IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING),
+> +			       "act8945a_lbo_detect", charger);
+> +	if (ret)
+> +		dev_info(dev, "failed to request gpio \"lbo\" IRQ\n");
+
+that does not work, since you need to release the irq before
+releasing the gpio. So if the gpio is not requested via devm_
+than you can't request the irq via devm_ (actually you can by
+using devm_free_irq in remove(), but then you can also drop
+the devm_ alltogether).
+
+> [...]
+
+-- Sebastian
+
+--3uxmj6q6l4ms5ysd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJXu7e5AAoJENju1/PIO/qaYhUQAID/SVnEw6uRXPeV6Cb4+evU
+x1RZrga2tU7lOXrW2oVT94wBkXQwO4MLIuxfXRbU2OJF9cUlBdYa5+ZGCKLzssbO
+stzO3EwIch5JfMA4nLPTzW1PD2qM1MBIkySo5x+zxKgw+YCiqJO3S9ZOSu+/H5mk
+COs2CxHEAJFaRb2F+HMYgnDwq7BNMCBFISyB8cjyvTlqeNi3XT2jAPwAyySswV1M
+uNjh6Ecuk/xXmsDfMWWDrNKiVoZ+014AC2xXJBqUjKw365qmVCgKQyqd/wtXdiop
+WUIm6nEsFesQNu5H9gSI1FS9ayi5+RFu073FF0XRtYqz3iQ/q86l8K97wu3Q3BTX
+q+NoXF4joVqIa/3Oqi28cXPS5vm5nneOCz/OFJbKN+PSqTyQb85510GFZNUgkRfs
+UqgpW56FBorghoJz3JQXs+ivKldGXg39ttrpz2Oejyx68QnQ0JkyimBJlK74Y2u2
+SI1uu5f5pe5W94uqTp8S01CHGBbTH2nw54qJQpm7CU1FbRf+UmyiaPZMI9ycefLm
+qD8IEaiVyAz9Nu+WJxkrZ5Jp6rjpiVReoDaMDc1cO6gbvBGvIeembthI1g6HDf0Z
+ZJFiuxh8gQtRoXMzRpHb4KvCpq09/D5CCWcRyXc7DlgflGHfseOICycuACi3uQgm
+oe0Cs1QApT1WOYWjOn9Y
+=BT+b
+-----END PGP SIGNATURE-----
+
+--3uxmj6q6l4ms5ysd--
