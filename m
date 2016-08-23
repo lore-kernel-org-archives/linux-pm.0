@@ -1,107 +1,38 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v6 4/8] usb: core: add power sequence handling for USB
- devices
-Date: Tue, 23 Aug 2016 11:10:21 +0800
-Message-ID: <20160823031021.GB13986@shlinux2>
-References: <20160822065335.GC4362@shlinux2>
- <Pine.LNX.4.44L0.1608221156210.1543-100000@iolanthe.rowland.org>
+From: Wanpeng Li <kernellwp@gmail.com>
+Subject: Re: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection
+ algorithm for Core
+Date: Tue, 23 Aug 2016 11:48:04 +0800
+Message-ID: <CANRm+Cxzm9xoLpddNdkXYahQMHUwsvkn4d-CObvApRhxU-GjWg@mail.gmail.com>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1572483.RZjvRFdxPx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1608221156210.1543-100000@iolanthe.rowland.org>
+In-Reply-To: <1572483.RZjvRFdxPx@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Aug 22, 2016 at 12:09:54PM -0400, Alan Stern wrote:
-> > > +
-> > > +static int hub_of_pwrseq_on(struct device_node *np, struct usb_hub *hub)
-> > > +{
-> > > +	struct pwrseq *pwrseq;
-> > > +	struct usb_pwrseq_node *pwrseq_node;
-> > > +	int ret;
-> > > +
-> > > +	pwrseq = pwrseq_alloc_generic();
-> > > +	if (IS_ERR(pwrseq))
-> > > +		return PTR_ERR(pwrseq);
-> > > +
-> > > +	ret = pwrseq_get(np, pwrseq);
-> > > +	if (ret)
-> > > +		goto pwr_free;
-> > > +
-> > > +	ret = pwrseq_on(np, pwrseq);
-> > > +	if (ret)
-> > > +		goto pwr_put;
-> > > +
-> > > +	pwrseq_node = kzalloc(sizeof(*pwrseq_node), GFP_KERNEL);
-> 
-> You need to check that the kzalloc succeeded.
+Hi Rafael,
+2016-08-01 7:38 GMT+08:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> The PID-base P-state selection algorithm used by intel_pstate for
+> Core processors is based on very weak foundations.  Namely, its
+> decisions are mostly based on the values of the APERF and MPERF
+> feedback registers and it only estimates the actual utilization to
+> check if it is not extremely low (in order to avoid getting stuck
+> in the highest P-state in that case).
+>
+> Since it generally causes the CPU P-state to ramp up quickly, it
+> leads to satisfactory performance, but the metric used by it is only
+> really valid when the CPU changes P-states by itself (ie. in the turbo
+> range) and if the P-state value set by the driver is treated by the
+> CPU as the upper limit on turbo P-states selected by it.
 
-Ok.
+Do you mean CPU will ignore the request value which is submitted by
+intel_pstate driver in the turbo range, but respect the upper limit on
+the turbo P-states which is submitted by intel_pstate driver?
 
-> 
-> > > +	pwrseq_node->pwrseq = pwrseq;
-> > > +	list_add(&pwrseq_node->list, &hub->pwrseq_on_list);
-> > > +
-> > > +	return 0;
-> > > +
-> > > +pwr_put:
-> > > +	pwrseq_put(pwrseq);
-> > > +pwr_free:
-> > > +	pwrseq_free(pwrseq);
-> > > +	return ret;
-> > > +}
-> 
-> This subroutine looks very generic.  The only place where it cares that
-> it was called for a USB hub is the list_add(), and that could easily
-> become generic also (make this function take &hub->pwrseq_on_list as
-> its second argument, instead of hub).
-> 
-> It looks like this routine really belongs in the power sequence 
-> library.
-> 
-
-I will export below two generic functions at pwrseq library:
-
-int generic_pwrseq_on(struct device_node *np, struct list_head *head)
-void generic_pwrseq_off(struct list_head *head)
-
-delete this file, and call above APIs at hub.c.
-
-> > > +
-> > > +int hub_pwrseq_on(struct usb_hub *hub)
-> > > +{
-> 
-> The names of this routine and the subroutine above are too similar.  
-> After all, both functions require OF support.
-> 
-
-I will add #ifdef CONFIG_OF for related code. And put the content at
-hub_pwrseq_on at hub_probe directly, how about below?
-
-hub_probe() {
-
-	...
-
-	if (hub_configure(hub, endpoint) >= 0) {
-#ifdef CONFIG_OF
-		for_each_child_of_node(parent->of_node, np) {
-			ret = generic_pwrseq_on(np, hub);
-			if (ret)
-				return ret;
-		}
-#else
-		return 0;
-#endif
-	}
-
-	hub_disconnect(intf);
-	return ret;
-}
-
--- 
-
-Best Regards,
-Peter Chen
+Regards,
+Wanpeng Li
