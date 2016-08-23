@@ -1,78 +1,133 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 10/16] cpuidle: pseries: Convert to hotplug state machine
-Date: Tue, 23 Aug 2016 16:16:12 +0200
-Message-ID: <57BC5AAC.7070707@linaro.org>
+Subject: Re: [PATCH 12/16] cpuidle: coupled: Convert to hotplug state machine
+Date: Tue, 23 Aug 2016 16:24:52 +0200
+Message-ID: <57BC5CB4.409@linaro.org>
 References: <20160818125731.27256-1-bigeasy@linutronix.de>
- <20160818125731.27256-11-bigeasy@linutronix.de> <57BB23CB.2080908@linaro.org>
- <20160822190404.i56qlimrqkhozacn@linutronix.de>
+ <20160818125731.27256-13-bigeasy@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160822190404.i56qlimrqkhozacn@linutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f47.google.com ([74.125.82.47]:36951 "EHLO
+        mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757968AbcHWOY5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2016 10:24:57 -0400
+Received: by mail-wm0-f47.google.com with SMTP id i5so198587097wmg.0
+        for <linux-pm@vger.kernel.org>; Tue, 23 Aug 2016 07:24:56 -0700 (PDT)
+In-Reply-To: <20160818125731.27256-13-bigeasy@linutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On 08/22/2016 09:04 PM, Sebastian Andrzej Siewior wrote:
-> On 2016-08-22 18:09:47 [+0200], Daniel Lezcano wrote:
->> On 08/18/2016 02:57 PM, Sebastian Andrzej Siewior wrote:
->>> Install the callbacks via the state machine.
->>>
->>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> Cc: linux-pm@vger.kernel.org
->>> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->>> ---
->>> diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
->>> index 5811954809af..baecc4faf028 100644
->>> --- a/include/linux/cpuhotplug.h
->>> +++ b/include/linux/cpuhotplug.h
->>> @@ -19,6 +19,7 @@ enum cpuhp_state {
->>>  	CPUHP_MM_WRITEBACK_DEAD,
->>>  	CPUHP_SOFTIRQ_DEAD,
->>>  	CPUHP_NET_MVNETA_DEAD,
->>> +	CPUHP_CPUIDLE_PSERIES_DEAD,
->>
->> Can't we directly merge these into CPUHP_CPUIDLE_DEAD instead ? Or is it
->> planned to be done separately ?
+On 08/18/2016 02:57 PM, Sebastian Andrzej Siewior wrote:
+> Install the callbacks via the state machine.
 > 
-> You mean CPUHP_CPUIDLE_DEAD instead of _PSERIES_DEAD and _POWERNV_DEAD?
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> ---
 
-Yes. If we can limit the number of duplicating enum for the same purpose
-right now, it would be nice.
+[ ... ]
 
-> We could do that but you would have to ensure that only one CPUIDLE
-> driver registers itself at a time and for those powerpc drivers it looks
-> like you could have two registered (not sure about ARM's little/big (if
-> you could have two of those later at run-time)).
+> -
+>  	mutex_lock(&cpuidle_lock);
+>  
+>  	dev = per_cpu(cpuidle_devices, cpu);
+>  	if (!dev || !dev->coupled)
+>  		goto out;
+>  
+> -	switch (action & ~CPU_TASKS_FROZEN) {
+> -	case CPU_UP_PREPARE:
+> -	case CPU_DOWN_PREPARE:
+> -		cpuidle_coupled_prevent_idle(dev->coupled);
+> -		break;
+> -	case CPU_ONLINE:
+> -	case CPU_DEAD:
+> -		cpuidle_coupled_update_online_cpus(dev->coupled);
+> -		/* Fall through */
+> -	case CPU_UP_CANCELED:
+> -	case CPU_DOWN_FAILED:
+> -		cpuidle_coupled_allow_idle(dev->coupled);
+> -		break;
+> -	}
+> -
+> +	cpuidle_coupled_update_online_cpus(dev->coupled);
+> +	cpuidle_coupled_allow_idle(dev->coupled);
+>  out:
+>  	mutex_unlock(&cpuidle_lock);
+> -	return NOTIFY_OK;
+> +	return 0;
 
-At the first glance, I don't think it is possible to register the cpu
-hotplug callback twice because the cpuidle drivers are doing:
+You can remove the useless label 'out':
 
-...
-        retval = cpuidle_register(&pseries_idle_driver, NULL);
-        if (retval) {
-                printk(KERN_DEBUG "Registration of pseries driver
-failed.\n");
-                return retval;
-        }
+if (dev && dev->coupled) {
+	cpuidle_coupled_update_online_cpus(dev->coupled);
+	cpuidle_coupled_allow_idle(dev->coupled);
+}
 
-        register_cpu_notifier(&setup_hotplug_notifier);
+>  }
+>  
+> -static struct notifier_block cpuidle_coupled_cpu_notifier = {
+> -	.notifier_call = cpuidle_coupled_cpu_notify,
+> -};
+> +static int coupled_cpu_up_prepare(unsigned int cpu)
+> +{
+> +	struct cpuidle_device *dev;
+> +
+> +	mutex_lock(&cpuidle_lock);
+> +
+> +	dev = per_cpu(cpuidle_devices, cpu);
+> +	if (!dev || !dev->coupled)
+> +		goto out;
+> +
+> +	cpuidle_coupled_prevent_idle(dev->coupled);
+> +out:
+> +	mutex_unlock(&cpuidle_lock);
+> +	return 0;
 
-So if a previous driver was already registered, cpuidle_register will
-fail and register_cpu_notifier won't be hit.
+Same comment here.
 
-There is the same scenario for intel_idle and processor_idle (acpi).
+> +}
+>  
+>  static int __init cpuidle_coupled_init(void)
+>  {
+> -	return register_cpu_notifier(&cpuidle_coupled_cpu_notifier);
+> +	int ret;
+> +
+> +	ret = cpuhp_setup_state_nocalls(CPUHP_CPUIDLE_COUPLED_PREPARE,
+> +					"CPUIDLE_COUPLED_PREPARE",
+> +					coupled_cpu_up_prepare,
+> +					coupled_cpu_online);
+> +	if (ret)
+> +		goto err;
 
-> For the ONLINE state we have dynamic allocation of IDs. If it is
-> possible to rework the code to use only ONLINE & PRE_DOWN instead of
-> DEAD then we wouldn't have this. I can't say at this point if we do
-> dynamic allocation of the DEAD IDs.
-> 
-> Sebastian
-> 
+There is nothing to undo here.
+
+	if (ret)
+		return ret;
+
+> +	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
+> +					"CPUIDLE_COUPLED_ONLINE",
+> +					coupled_cpu_online,
+> +					coupled_cpu_up_prepare);
+> +	if (ret < 0)
+> +		goto err;
+
+	if (ret)
+		cpuhp_remove_state_nocalls(
+			CPUHP_CPUIDLE_COUPLED_PREPARE);
+		
+	return ret;
+
+> +	return 0;
+> +err:
+> +	cpuhp_remove_state_nocalls(CPUHP_CPUIDLE_COUPLED_PREPARE);
+> +	return ret;
+
+  ^^^^^ zaaap !
+
 
 
 -- 
@@ -81,3 +136,4 @@ There is the same scenario for intel_idle and processor_idle (acpi).
 Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
+
