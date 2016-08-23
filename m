@@ -1,111 +1,57 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH v5] Force cppc_cpufreq to report values in KHz to fix
- user space reporting
-Date: Tue, 23 Aug 2016 04:31:26 +0000
-Message-ID: <1471926684.5747.13.camel@intel.com>
-References: <1469049004-19069-1-git-send-email-ahs3@redhat.com>
-         <20160801203156.GV4605@ubuntu>
-         <872a4dd4-a752-507b-e720-ec2e6003bd8c@redhat.com>
-         <406534f5-5e45-237e-cc68-2b57631e26d1@redhat.com>
-         <CANYZqRv6pLCK+oaWxyzr3YPxs0VytupWD7oPfX4tA7STxWNGOg@mail.gmail.com>
-         <6a0079da-2f81-a58b-0a71-3564d79ad61b@redhat.com>
+From: Wanpeng Li <kernellwp@gmail.com>
+Subject: Re: [RFC][PATCH 7/7] cpufreq: intel_pstate: Change P-state selection
+ algorithm for Core
+Date: Tue, 23 Aug 2016 12:50:14 +0800
+Message-ID: <CANRm+Cw1bVObw44akr0ofTyN=LDy-aoXYxNuSNmDQcg4byo3Ww@mail.gmail.com>
+References: <3752826.3sXAQIvcIA@vostro.rjw.lan> <1572483.RZjvRFdxPx@vostro.rjw.lan>
+ <CANRm+Cxzm9xoLpddNdkXYahQMHUwsvkn4d-CObvApRhxU-GjWg@mail.gmail.com> <1471925285.5747.5.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:64973 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751977AbcHWEb3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 23 Aug 2016 00:31:29 -0400
-In-Reply-To: <6a0079da-2f81-a58b-0a71-3564d79ad61b@redhat.com>
-Content-Language: en-US
-Content-ID: <A2283C797606AC4B88A6B076BF3FD1E3@intel.com>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:33243 "EHLO
+        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753379AbcHWEui (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2016 00:50:38 -0400
+In-Reply-To: <1471925285.5747.5.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "ahs3@redhat.com" <ahs3@redhat.com>, "ashwinch@google.com" <ashwinch@google.com>
-Cc: "pprakash@codeaurora.org" <pprakash@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steve Muckle <steve.muckle@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 
-T24gTW9uLCAyMDE2LTA4LTIyIGF0IDEyOjEyIC0wNjAwLCBBbCBTdG9uZSB3cm90ZToNCj4gT24g
-MDgvMjIvMjAxNiAxMTo0NSBBTSwgQXNod2luIENoYXVndWxlIHdyb3RlOg0KPiA+IA0KPiA+IEhp
-IEFsLA0KPiA+IA0KPiA+IE9uIE1vbiwgQXVnIDIyLCAyMDE2IGF0IDEwOjE2IEFNLCBBbCBTdG9u
-ZSA8YWhzM0ByZWRoYXQuY29tPiB3cm90ZToNCj4gPiA+IA0KPiA+ID4gTWF5YmUgYSB0b3AtcG9z
-dCB3aWxsIGdldCBhdHRlbnRpb24uLi4uDQo+ID4gPiANCj4gPiA+IFlldCBhbm90aGVyIHBpbmc7
-IHRoaXMgd2FzIGZpcnN0IHN1Ym1pdHRlZCBvbiAyMCBKdWx5LCBhbmQgaGFzDQo+ID4gPiByZWNl
-aXZlZA0KPiA+ID4gbm8gY29tbWVudHMuwqDCoEl0IGhhcyBub3cgYmVlbiBhIG1vbnRoIGFuZCBv
-dGhlciBhcmNoaXRlY3R1cmVzIGFyZQ0KPiA+ID4gc3RhcnRpbmcNCj4gPiA+IHRvIHVzZSBDUFBD
-IHNvIHRoZXkgd2lsbCBydW4gaW50byB0aGUgc2FtZSBlcnJvcnMgdGhhdCB0aGlzDQo+ID4gPiBm
-aXhlcy7CoMKgQ2FuDQo+ID4gPiBJIGdldCBhbiBBQ0ssIE5BSywgb3IgZnVydGhlciBpbnN0cnVj
-dGlvbnMsIHBsZWFzZT8NCj4gPiA+IA0KPiA+IA0KPiA+IEFwb2xvZ2llcyBmb3IgdGhlIGRlbGF5
-LiBJIHRob3VnaHQgdGhpcyBwYXRjaCB3YXMgbWVyZ2VkIGFscmVhZHkuDQo+IA0KPiBJJ3ZlIGxv
-b2tlZCBpbiBsaW51eC1uZXh0IGFuZCBsaW51eC1wbTsgSSBjb3VsZCBoYXZlIG1pc3NlZCBpdCwg
-YnV0IEkNCj4gZGlkbid0DQo+IHNlZSBpdC4uLm15IGJhZCwgaWYgSSBkaWQuDQo+IA0KPiA+IA0K
-PiA+ID4gDQo+ID4gPiBBbHNvIGFkZGluZyBSYWZhZWwgb24gdGhlIEFDUEkgc2lkZSwganVzdCBp
-biBjYXNlLCBzaW5jZSBoZSdzDQo+ID4gPiBhbHNvIHJldmlld2luZw0KPiA+ID4gdGhlIEludGVs
-IHBhdGNoZXMgb24gdGhlIGxpbnV4LWFjcGkgbWFpbGluZyBsaXN0IHRoYXQgYXJlIGFkZGluZw0K
-PiA+ID4gQ1BQQyB1c2FnZS4NCj4gPiA+IA0KPiA+ID4gT24gMDgvMTEvMjAxNiAxMjoxNSBQTSwg
-QWwgU3RvbmUgd3JvdGU6DQo+ID4gPiA+IA0KPiA+ID4gPiBPbiAwOC8wMS8yMDE2IDAyOjMxIFBN
-LCBWaXJlc2ggS3VtYXIgd3JvdGU6DQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gWysgQXNod2luJ3Mg
-bmV3IGVtYWlsIGlkLi5dDQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gT24gMjAtMDctMTYsIDE1OjEw
-LCBBbCBTdG9uZSB3cm90ZToNCj4gPiA+ID4gPiA+IA0KPiA+ID4gPiA+ID4gV2hlbiBDUFBDIGlz
-IGJlaW5nIHVzZWQgYnkgQUNQSSBvbiBhcm02NCwgdXNlciBzcGFjZSB0b29scw0KPiA+ID4gPiA+
-ID4gc3VjaCBhcw0KPiA+ID4gPiA+ID4gY3B1cG93ZXIgcmVwb3J0IENQVSBmcmVxdWVuY3kgdmFs
-dWVzIGZyb20gc3lzZnMgdGhhdCBhcmUNCj4gPiA+ID4gPiA+IGluY29ycmVjdC4NCj4gPiA+ID4g
-PiA+IA0KPiA+ID4gPiA+ID4gV2hhdCB0aGUgZHJpdmVyIHdhcyBkb2luZyB3YXMgcmVwb3J0aW5n
-IHRoZSB2YWx1ZXMgZ2l2ZW4gYnkNCj4gPiA+ID4gPiA+IEFDUEkgdGFibGVzDQo+ID4gPiA+ID4g
-PiBpbiB3aGF0ZXZlciBzY2FsZSB3YXMgdXNlZCB0byBwcm92aWRlIHRoZW0uwqDCoEhvd2V2ZXIs
-IHRoZQ0KPiA+ID4gPiA+ID4gQUNQSSBzcGVjDQo+ID4gPiA+ID4gPiBkZWZpbmVzIHRoZSBDUFBD
-IHZhbHVlcyBhcyB1bml0bGVzcyBhYnN0cmFjdA0KPiA+ID4gPiA+ID4gbnVtYmVycy7CoMKgSW50
-ZXJuYWwga2VybmVsDQo+ID4gPiA+ID4gPiBzdHJ1Y3R1cmVzIHN1Y2ggYXMgc3RydWN0IHBlcmZf
-Y2FwLCBpbiBjb250cmFzdCwgZXhwZWN0DQo+ID4gPiA+ID4gPiB0aGVzZSB2YWx1ZXMNCj4gPiA+
-ID4gPiA+IHRvIGJlIGluIEtIei7CoMKgV2hlbiB0aGVzZSBzdHJ1Y3QgdmFsdWVzIGdldCByZXBv
-cnRlZCB2aWENCj4gPiA+ID4gPiA+IHN5c2ZzLCB0aGUNCj4gPiA+ID4gPiA+IHVzZXIgc3BhY2Ug
-dG9vbHMgYWxzbyBhc3N1bWUgdGhleSBhcmUgaW4gS0h6LCBjYXVzaW5nIHRoZW0NCj4gPiA+ID4g
-PiA+IHRvIHJlcG9ydA0KPiA+ID4gPiA+ID4gaW5jb3JyZWN0IHZhbHVlcyAoZm9yIGV4YW1wbGUs
-IHJlcG9ydGluZyBhIENQVSBmcmVxdWVuY3kgb2YNCj4gPiA+ID4gPiA+IDFNSHogd2hlbg0KPiA+
-ID4gPiA+ID4gaXQgc2hvdWxkIGJlIDEuOEdIeikuDQo+ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+
-IFRoZSBkb3duc2lkZSBpcyB0aGF0IHRoaXMgYXBwcm9hY2ggaGFzIHNvbWUgYXNzdW1wdGlvbnM6
-DQo+ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+IMKgwqDCoCgxKSBJdCByZWxpZXMgb24gU01CSU9T
-MyBiZWluZyB1c2VkLCAqYW5kKiB0aGF0IHRoZSBNYXgNCj4gPiA+ID4gPiA+IEZyZXF1ZW5jeQ0K
-PiA+ID4gPiA+ID4gwqDCoMKgdmFsdWUgZm9yIGEgcHJvY2Vzc29yIGlzIHNldCB0byBhIG5vbi16
-ZXJvIHZhbHVlLg0KPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiDCoMKgwqAoMikgSXQgYXNzdW1l
-cyB0aGF0IGFsbCBwcm9jZXNzb3JzIHJ1biBhdCB0aGUgc2FtZQ0KPiA+ID4gPiA+ID4gc3BlZWQs
-IG9yIHRoYXQNCj4gPiA+ID4gPiA+IMKgwqDCoHRoZSBDUFBDIHZhbHVlcyBoYXZlIGFsbCBiZWVu
-IHNjYWxlZCB0byByZWZsZWN0IHJlbGF0aXZlDQo+ID4gPiA+ID4gPiBzcGVlZC4NCj4gPiA+ID4g
-PiA+IMKgwqDCoFRoaXMgcGF0Y2ggcmV0cmlldmVzIHRoZSBsYXJnZXN0IENQVSBNYXggRnJlcXVl
-bmN5IGZyb20NCj4gPiA+ID4gPiA+IGEgdHlwZSA0IERNSQ0KPiA+ID4gPiA+ID4gwqDCoMKgcmVj
-b3JkIHRoYXQgaXQgY2FuIGZpbmQuwqDCoFRoaXMgbWF5IG5vdCBiZSBhbiBpc3N1ZSwNCj4gPiA+
-ID4gPiA+IGhvd2V2ZXIsIGFzIGENCj4gPiA+ID4gPiA+IMKgwqDCoHNhbXBsaW5nIG9mIERNSSBk
-YXRhIG9uIHg4NiBhbmQgYXJtNjQgaW5kaWNhdGVzIHRoZXJlIGlzDQo+ID4gPiA+ID4gPiBvZnRl
-biBvbmx5DQo+ID4gPiA+ID4gPiDCoMKgwqBvbmUgc3VjaCByZWNvcmQgcmVnYXJkbGVzcy7CoMKg
-U2luY2UgQ1BQQyBpcyByZWxhdGl2ZWx5DQo+ID4gPiA+ID4gPiBuZXcsIGl0IGlzDQo+ID4gPiA+
-ID4gPiDCoMKgwqB1bmNsZWFyIGlmIHRoZSBBQ1BJIEFTTCB3aWxsIGFsd2F5cyBiZSB3cml0dGVu
-IHRvDQo+ID4gPiA+ID4gPiByZWZsZWN0IGFueSBzb3J0DQo+ID4gPiA+ID4gPiDCoMKgwqBvZiBy
-ZWxhdGl2ZSBwZXJmb3JtYW5jZSBvZiBwcm9jZXNzb3JzIG9mIGRpZmZlcmluZw0KPiA+ID4gPiA+
-ID4gc3BlZWRzLg0KPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiDCoMKgwqAoMykgSXQgYXNzdW1l
-cyB0aGF0IHBlcmZvcm1hbmNlIGFuZCBmcmVxdWVuY3kgYm90aCBzY2FsZQ0KPiA+ID4gPiA+ID4g
-bGluZWFybHkuDQo+ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+IEZvciBhcm02NCBzZXJ2ZXJzLCB0
-aGlzIG1heSBiZSBzdWZmaWNpZW50LCBidXQgaXQgZG9lcyByZWx5DQo+ID4gPiA+ID4gPiBvbg0K
-PiA+ID4gPiA+ID4gZmlybXdhcmUgdmFsdWVzIGJlaW5nIHNldCBjb3JyZWN0bHkuwqDCoEhlbmNl
-LCBvdGhlcg0KPiA+ID4gPiA+ID4gYXBwcm9hY2hlcyB3aWxsDQo+ID4gPiA+ID4gPiBiZSBjb25z
-aWRlcmVkIGluIHRoZSBmdXR1cmUuDQo+ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+IFRoaXMgaGFz
-IGJlZW4gdGVzdGVkIG9uIHRocmVlIGFybTY0IHNlcnZlcnMsIHdpdGggYW5kDQo+ID4gPiA+ID4g
-PiB3aXRob3V0IERNSSwgd2l0aA0KPiA+ID4gPiA+ID4gYW5kIHdpdGhvdXQgQ1BQQyBzdXBwb3J0
-Lg0KPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiBDaGFuZ2VzIGZvciB2NToNCj4gPiA+ID4gPiA+
-IMKgwqDCoMKgLS0gTW92ZSBjb2RlIHRvIGNwdWZyZXEvY3BwY19jcHVmcmVxLmMgZnJvbQ0KPiA+
-ID4gPiA+ID4gYWNwaS9jcHBjX2FjcGkuYyB0byBrZWVwDQo+ID4gPiA+ID4gPiDCoMKgwqDCoMKg
-wqDCoGZyZXF1ZW5jeS1yZWxhdGVkIGNvZGUgdG9nZXRoZXIsIGFuZCBrZWVwIHRoZSBDUFBDDQo+
-ID4gPiA+ID4gPiBhYnN0cmFjdCBzY2FsZQ0KPiA+ID4gPiA+ID4gwqDCoMKgwqDCoMKgwqBpbiBB
-Q1BJIChQcmFzaGFudGggUHJha2FzaCkNCj4gPiA+ID4gPiA+IMKgwqDCoMKgLS0gRml4IHRoZSBz
-Y2FsaW5nIHRvIHJlbW92ZSB0aGUgaW5jb3JyZWN0IGFzc3VtcHRpb24NCj4gPiA+ID4gPiA+IHRo
-YXQgZnJlcXVlbmN5DQo+ID4gPiA+ID4gPiDCoMKgwqDCoMKgwqDCoHdhcyBhbHdheXMgYSByYW5n
-ZSBmcm9tIHplcm8gdG8gbWF4OyBhcyBhIHByYWN0aWNhbA0KPiA+ID4gPiA+ID4gbWF0dGVyLCBp
-dCBpcw0KPiA+ID4gPiA+ID4gwqDCoMKgwqDCoMKgwqBub3QgKFByYXNhbnRoIFByYWthc2gpOyB0
-aGlzIGFsc28gYWxsb3dlZCB1cyB0bw0KPiA+ID4gPiA+ID4gcmVtb3ZlIGFuIG92ZXItDQo+ID4g
-PiA+ID4gPiDCoMKgwqDCoMKgwqDCoGVuZ2luZWVyZWQgZnVuY3Rpb24gdG8gZG8gdGhpcyBtYXRo
-Lg0KPiA+ID4gPiA+ID4gDQoNCkluIHg4NiB3aGVuIENQUEMgaXMgdXNlZCwgdGhlIHVuaXQgaXMg
-cmVhbGx5IHVuaXQtbGVzcyBpbiBDUFBDIHRhYmxlcy4NClRoaXMgbWVhbnMgdGhhdMKgY3B1LT5w
-ZXJmX2NhcHMuaGlnaGVzdF9wZXJmIGNhbiBiZSBqdXN0IDB4ZmYsIGluc3RlYWQNCm9mIHNvbWUg
-c2NhbGVkIGNwcGMgbWF4IHBlcmZvcm1hbmNlIGNvcnJlc3BvbmRpbmcgdG8gbWF4IE1IWiB0aGUN
-CnByb2Nlc3NvciBjYW4gc3VwcG9ydC4gVGhpcyBhbGxvd3MgdGhlIHByb2Nlc3NvciB0byBjYXAg
-YXQgbWF4IHdoaWNoIGl0DQpjYW4gZGVsaXZlci4NCklzIHRoaXMgY2FzZSBub3QgcG9zc2libGUg
-Zm9yIEFSTSBTb0NzPw0KDQpUaGFua3MsDQpTcmluaXZhcw0K
+2016-08-23 12:08 GMT+08:00 Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com>:
+> On Tue, 2016-08-23 at 11:48 +0800, Wanpeng Li wrote:
+>> Hi Rafael,
+>> 2016-08-01 7:38 GMT+08:00 Rafael J. Wysocki <rjw@rjwysocki.net>:
+>> >
+>> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >
+>> > The PID-base P-state selection algorithm used by intel_pstate for
+>> > Core processors is based on very weak foundations.  Namely, its
+>> > decisions are mostly based on the values of the APERF and MPERF
+>> > feedback registers and it only estimates the actual utilization to
+>> > check if it is not extremely low (in order to avoid getting stuck
+>> > in the highest P-state in that case).
+>> >
+>> > Since it generally causes the CPU P-state to ramp up quickly, it
+>> > leads to satisfactory performance, but the metric used by it is
+>> > only
+>> > really valid when the CPU changes P-states by itself (ie. in the
+>> > turbo
+>> > range) and if the P-state value set by the driver is treated by the
+>> > CPU as the upper limit on turbo P-states selected by it.
+>>
+>> Do you mean CPU will ignore the request value which is submitted by
+>> intel_pstate driver in the turbo range, but respect the upper limit
+>> on
+>> the turbo P-states which is submitted by intel_pstate driver?
+> Any request to request a P-state even upper limit can be totally
+> ignored in turbo range.
+
+How to understand Rafael's description "if the P-state value set by
+the driver is treated by the CPU as the upper limit on the turbo
+P-states selected by it"? The upper limit will be totally ignored in
+turbo range.
+
+Regards,
+Wanpeng Li
