@@ -1,138 +1,111 @@
-From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [PATCH v1 3/3] PM / AVS: rockchip-cpu-avs: add driver handling
- Rockchip cpu avs
-Date: Tue, 23 Aug 2016 12:10:27 +0800
-Message-ID: <c853c8fd-285a-603d-b294-750cdbf7f200@rock-chips.com>
-References: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com>
- <1471315139-28285-4-git-send-email-finley.xiao@rock-chips.com>
- <20160819133636.GA26913@rob-hp-laptop>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH v5] Force cppc_cpufreq to report values in KHz to fix
+ user space reporting
+Date: Tue, 23 Aug 2016 04:31:26 +0000
+Message-ID: <1471926684.5747.13.camel@intel.com>
+References: <1469049004-19069-1-git-send-email-ahs3@redhat.com>
+         <20160801203156.GV4605@ubuntu>
+         <872a4dd4-a752-507b-e720-ec2e6003bd8c@redhat.com>
+         <406534f5-5e45-237e-cc68-2b57631e26d1@redhat.com>
+         <CANYZqRv6pLCK+oaWxyzr3YPxs0VytupWD7oPfX4tA7STxWNGOg@mail.gmail.com>
+         <6a0079da-2f81-a58b-0a71-3564d79ad61b@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160819133636.GA26913@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:64973 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751977AbcHWEb3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 Aug 2016 00:31:29 -0400
+In-Reply-To: <6a0079da-2f81-a58b-0a71-3564d79ad61b@redhat.com>
+Content-Language: en-US
+Content-ID: <A2283C797606AC4B88A6B076BF3FD1E3@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "ahs3@redhat.com" <ahs3@redhat.com>, "ashwinch@google.com" <ashwinch@google.com>
+Cc: "pprakash@codeaurora.org" <pprakash@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
 
-
-
-在 2016/8/19 21:36, Rob Herring 写道:
-> On Tue, Aug 16, 2016 at 10:38:59AM +0800, Finlye Xiao wrote:
->> From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
->>
->> This patch supports adjusting opp's voltage according to leakage
->>
->> Signed-off-by: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
->> ---
->>   .../devicetree/bindings/power/rockchip-cpu-avs.txt |  37 +++
->>   drivers/power/avs/Kconfig                          |   8 +
->>   drivers/power/avs/Makefile                         |   1 +
->>   drivers/power/avs/rockchip-cpu-avs.c               | 314 +++++++++++++++++++++
->>   4 files changed, 360 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
->>   create mode 100644 drivers/power/avs/rockchip-cpu-avs.c
->>
->> diff --git a/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt b/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
->> new file mode 100644
->> index 0000000..90f6b08
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
->> @@ -0,0 +1,37 @@
->> +Rockchip cpu avs device tree bindings
->> +-------------------------------------
->> +
->> +Under the same frequency, the operating voltage tends to decrease with
->> +increasing leakage. so it is necessary to adjust opp's voltage according
->> +to leakage for power.
->> +
->> +
->> +Required properties:
->> +- compatible: Should be one of the following.
->> +  - "rockchip,rk3399-cpu-avs" - for RK3399 SoCs.
->> +- leakage-volt-<name>: Named leakage-volt property. At runtime, the
->> +  platform can find a cpu's cluster_id according to it's cpu_id and match
->> +  leakage-volt-<name> property. The property is an array of 3-tuples
->> +  items, and each item consists of leakage and voltage like
->> +  <min-leakage-mA max-leakage-mA vol-uV>.
->> +	min-leakage: minimum leakage in mA.
->> +	max-leakage: maximum leakage in mA.
->> +	vol: voltage in microvolt.
-> How do you determine these values? When do they vary?
-
-How do you determine these values?
-
-run antutu-benchmark
-leakage     freq 	min_volt
-30mA 	    1608MHz 	1025mV
-40mA 	    1608MHz 	1000mV
-50mA 	    1608MHz 	975mV
-
- From the table, we see the min_volt decrease with increasing leakage.
-So we can set the default opp-microvolt 1025mV for 1608MHz,
-and add an leakage_volt_cluster0 property as follows.
-leakage_volt_cluster0 = <
-		/*  min(mA)   max(mA)    volt(uV)*/
-		    0         40        0
-		    41        50        (-25000)
-		    51        254       (-50000)
->;
-If the leakage is between 41mA and 50mA，the opp-microvolt will subtract 25mV。
-If the leakage is between 41mA and 50mA，the opp-microvolt will subtract 50mV。
-  
-When do they vary?
-
- From the code,
-cpufreq_online
---cpufreq_driver->init(policy);  /* add new opp table */
---blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-CPUFREQ_START, policy);
---cpufreq_init_policy
-----cpufreq_set_policy
---------__cpufreq_governor(policy, CPUFREQ_GOV_START);
-
-The cpu's opp table is added in the init function(cpufreq_init)，and I will
-register a cpufreq notifier, once the first cpu of cluster is onlined,
-my notifer will be called, and if the event is CPUFREQ_START，it will modify
-the opp-microvolt according to leakage_volt_cluster0.
-
->> +
->> +Example:
->> +
->> +	cpu_avs: cpu-avs {
->> +		compatible = "rockchip,rk3399-cpu-avs";
-> This isn't really a hardware block. For the same reasons we don't have
-> cpufreq nodes. So I don't think this belongs in DT.
-
-if I delete the compatible property like the thermal-zones node, is it allowed?
-cpu_avs: cpu-avs {
-	leakage_volt_cluster0 = <
-		/*  min(mA)   max(mA)    volt(uV)*/
-		    0         40        0
-		    41        50        (-25000)
-		    51        254       (-50000)
-	>;
-	leakage_volt_cluster1 = <
-		/*  min(mA)   max(mA)    volt(uV)*/
-		    0         40        0
-		    41        50        (-25000)
-		    51        254       (-50000)
-	>;
-}
-
-
->
-> Rob
->
->
->
-
--- 
-Finley
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+T24gTW9uLCAyMDE2LTA4LTIyIGF0IDEyOjEyIC0wNjAwLCBBbCBTdG9uZSB3cm90ZToNCj4gT24g
+MDgvMjIvMjAxNiAxMTo0NSBBTSwgQXNod2luIENoYXVndWxlIHdyb3RlOg0KPiA+IA0KPiA+IEhp
+IEFsLA0KPiA+IA0KPiA+IE9uIE1vbiwgQXVnIDIyLCAyMDE2IGF0IDEwOjE2IEFNLCBBbCBTdG9u
+ZSA8YWhzM0ByZWRoYXQuY29tPiB3cm90ZToNCj4gPiA+IA0KPiA+ID4gTWF5YmUgYSB0b3AtcG9z
+dCB3aWxsIGdldCBhdHRlbnRpb24uLi4uDQo+ID4gPiANCj4gPiA+IFlldCBhbm90aGVyIHBpbmc7
+IHRoaXMgd2FzIGZpcnN0IHN1Ym1pdHRlZCBvbiAyMCBKdWx5LCBhbmQgaGFzDQo+ID4gPiByZWNl
+aXZlZA0KPiA+ID4gbm8gY29tbWVudHMuwqDCoEl0IGhhcyBub3cgYmVlbiBhIG1vbnRoIGFuZCBv
+dGhlciBhcmNoaXRlY3R1cmVzIGFyZQ0KPiA+ID4gc3RhcnRpbmcNCj4gPiA+IHRvIHVzZSBDUFBD
+IHNvIHRoZXkgd2lsbCBydW4gaW50byB0aGUgc2FtZSBlcnJvcnMgdGhhdCB0aGlzDQo+ID4gPiBm
+aXhlcy7CoMKgQ2FuDQo+ID4gPiBJIGdldCBhbiBBQ0ssIE5BSywgb3IgZnVydGhlciBpbnN0cnVj
+dGlvbnMsIHBsZWFzZT8NCj4gPiA+IA0KPiA+IA0KPiA+IEFwb2xvZ2llcyBmb3IgdGhlIGRlbGF5
+LiBJIHRob3VnaHQgdGhpcyBwYXRjaCB3YXMgbWVyZ2VkIGFscmVhZHkuDQo+IA0KPiBJJ3ZlIGxv
+b2tlZCBpbiBsaW51eC1uZXh0IGFuZCBsaW51eC1wbTsgSSBjb3VsZCBoYXZlIG1pc3NlZCBpdCwg
+YnV0IEkNCj4gZGlkbid0DQo+IHNlZSBpdC4uLm15IGJhZCwgaWYgSSBkaWQuDQo+IA0KPiA+IA0K
+PiA+ID4gDQo+ID4gPiBBbHNvIGFkZGluZyBSYWZhZWwgb24gdGhlIEFDUEkgc2lkZSwganVzdCBp
+biBjYXNlLCBzaW5jZSBoZSdzDQo+ID4gPiBhbHNvIHJldmlld2luZw0KPiA+ID4gdGhlIEludGVs
+IHBhdGNoZXMgb24gdGhlIGxpbnV4LWFjcGkgbWFpbGluZyBsaXN0IHRoYXQgYXJlIGFkZGluZw0K
+PiA+ID4gQ1BQQyB1c2FnZS4NCj4gPiA+IA0KPiA+ID4gT24gMDgvMTEvMjAxNiAxMjoxNSBQTSwg
+QWwgU3RvbmUgd3JvdGU6DQo+ID4gPiA+IA0KPiA+ID4gPiBPbiAwOC8wMS8yMDE2IDAyOjMxIFBN
+LCBWaXJlc2ggS3VtYXIgd3JvdGU6DQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gWysgQXNod2luJ3Mg
+bmV3IGVtYWlsIGlkLi5dDQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gT24gMjAtMDctMTYsIDE1OjEw
+LCBBbCBTdG9uZSB3cm90ZToNCj4gPiA+ID4gPiA+IA0KPiA+ID4gPiA+ID4gV2hlbiBDUFBDIGlz
+IGJlaW5nIHVzZWQgYnkgQUNQSSBvbiBhcm02NCwgdXNlciBzcGFjZSB0b29scw0KPiA+ID4gPiA+
+ID4gc3VjaCBhcw0KPiA+ID4gPiA+ID4gY3B1cG93ZXIgcmVwb3J0IENQVSBmcmVxdWVuY3kgdmFs
+dWVzIGZyb20gc3lzZnMgdGhhdCBhcmUNCj4gPiA+ID4gPiA+IGluY29ycmVjdC4NCj4gPiA+ID4g
+PiA+IA0KPiA+ID4gPiA+ID4gV2hhdCB0aGUgZHJpdmVyIHdhcyBkb2luZyB3YXMgcmVwb3J0aW5n
+IHRoZSB2YWx1ZXMgZ2l2ZW4gYnkNCj4gPiA+ID4gPiA+IEFDUEkgdGFibGVzDQo+ID4gPiA+ID4g
+PiBpbiB3aGF0ZXZlciBzY2FsZSB3YXMgdXNlZCB0byBwcm92aWRlIHRoZW0uwqDCoEhvd2V2ZXIs
+IHRoZQ0KPiA+ID4gPiA+ID4gQUNQSSBzcGVjDQo+ID4gPiA+ID4gPiBkZWZpbmVzIHRoZSBDUFBD
+IHZhbHVlcyBhcyB1bml0bGVzcyBhYnN0cmFjdA0KPiA+ID4gPiA+ID4gbnVtYmVycy7CoMKgSW50
+ZXJuYWwga2VybmVsDQo+ID4gPiA+ID4gPiBzdHJ1Y3R1cmVzIHN1Y2ggYXMgc3RydWN0IHBlcmZf
+Y2FwLCBpbiBjb250cmFzdCwgZXhwZWN0DQo+ID4gPiA+ID4gPiB0aGVzZSB2YWx1ZXMNCj4gPiA+
+ID4gPiA+IHRvIGJlIGluIEtIei7CoMKgV2hlbiB0aGVzZSBzdHJ1Y3QgdmFsdWVzIGdldCByZXBv
+cnRlZCB2aWENCj4gPiA+ID4gPiA+IHN5c2ZzLCB0aGUNCj4gPiA+ID4gPiA+IHVzZXIgc3BhY2Ug
+dG9vbHMgYWxzbyBhc3N1bWUgdGhleSBhcmUgaW4gS0h6LCBjYXVzaW5nIHRoZW0NCj4gPiA+ID4g
+PiA+IHRvIHJlcG9ydA0KPiA+ID4gPiA+ID4gaW5jb3JyZWN0IHZhbHVlcyAoZm9yIGV4YW1wbGUs
+IHJlcG9ydGluZyBhIENQVSBmcmVxdWVuY3kgb2YNCj4gPiA+ID4gPiA+IDFNSHogd2hlbg0KPiA+
+ID4gPiA+ID4gaXQgc2hvdWxkIGJlIDEuOEdIeikuDQo+ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+
+IFRoZSBkb3duc2lkZSBpcyB0aGF0IHRoaXMgYXBwcm9hY2ggaGFzIHNvbWUgYXNzdW1wdGlvbnM6
+DQo+ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+IMKgwqDCoCgxKSBJdCByZWxpZXMgb24gU01CSU9T
+MyBiZWluZyB1c2VkLCAqYW5kKiB0aGF0IHRoZSBNYXgNCj4gPiA+ID4gPiA+IEZyZXF1ZW5jeQ0K
+PiA+ID4gPiA+ID4gwqDCoMKgdmFsdWUgZm9yIGEgcHJvY2Vzc29yIGlzIHNldCB0byBhIG5vbi16
+ZXJvIHZhbHVlLg0KPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiDCoMKgwqAoMikgSXQgYXNzdW1l
+cyB0aGF0IGFsbCBwcm9jZXNzb3JzIHJ1biBhdCB0aGUgc2FtZQ0KPiA+ID4gPiA+ID4gc3BlZWQs
+IG9yIHRoYXQNCj4gPiA+ID4gPiA+IMKgwqDCoHRoZSBDUFBDIHZhbHVlcyBoYXZlIGFsbCBiZWVu
+IHNjYWxlZCB0byByZWZsZWN0IHJlbGF0aXZlDQo+ID4gPiA+ID4gPiBzcGVlZC4NCj4gPiA+ID4g
+PiA+IMKgwqDCoFRoaXMgcGF0Y2ggcmV0cmlldmVzIHRoZSBsYXJnZXN0IENQVSBNYXggRnJlcXVl
+bmN5IGZyb20NCj4gPiA+ID4gPiA+IGEgdHlwZSA0IERNSQ0KPiA+ID4gPiA+ID4gwqDCoMKgcmVj
+b3JkIHRoYXQgaXQgY2FuIGZpbmQuwqDCoFRoaXMgbWF5IG5vdCBiZSBhbiBpc3N1ZSwNCj4gPiA+
+ID4gPiA+IGhvd2V2ZXIsIGFzIGENCj4gPiA+ID4gPiA+IMKgwqDCoHNhbXBsaW5nIG9mIERNSSBk
+YXRhIG9uIHg4NiBhbmQgYXJtNjQgaW5kaWNhdGVzIHRoZXJlIGlzDQo+ID4gPiA+ID4gPiBvZnRl
+biBvbmx5DQo+ID4gPiA+ID4gPiDCoMKgwqBvbmUgc3VjaCByZWNvcmQgcmVnYXJkbGVzcy7CoMKg
+U2luY2UgQ1BQQyBpcyByZWxhdGl2ZWx5DQo+ID4gPiA+ID4gPiBuZXcsIGl0IGlzDQo+ID4gPiA+
+ID4gPiDCoMKgwqB1bmNsZWFyIGlmIHRoZSBBQ1BJIEFTTCB3aWxsIGFsd2F5cyBiZSB3cml0dGVu
+IHRvDQo+ID4gPiA+ID4gPiByZWZsZWN0IGFueSBzb3J0DQo+ID4gPiA+ID4gPiDCoMKgwqBvZiBy
+ZWxhdGl2ZSBwZXJmb3JtYW5jZSBvZiBwcm9jZXNzb3JzIG9mIGRpZmZlcmluZw0KPiA+ID4gPiA+
+ID4gc3BlZWRzLg0KPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiDCoMKgwqAoMykgSXQgYXNzdW1l
+cyB0aGF0IHBlcmZvcm1hbmNlIGFuZCBmcmVxdWVuY3kgYm90aCBzY2FsZQ0KPiA+ID4gPiA+ID4g
+bGluZWFybHkuDQo+ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+IEZvciBhcm02NCBzZXJ2ZXJzLCB0
+aGlzIG1heSBiZSBzdWZmaWNpZW50LCBidXQgaXQgZG9lcyByZWx5DQo+ID4gPiA+ID4gPiBvbg0K
+PiA+ID4gPiA+ID4gZmlybXdhcmUgdmFsdWVzIGJlaW5nIHNldCBjb3JyZWN0bHkuwqDCoEhlbmNl
+LCBvdGhlcg0KPiA+ID4gPiA+ID4gYXBwcm9hY2hlcyB3aWxsDQo+ID4gPiA+ID4gPiBiZSBjb25z
+aWRlcmVkIGluIHRoZSBmdXR1cmUuDQo+ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+IFRoaXMgaGFz
+IGJlZW4gdGVzdGVkIG9uIHRocmVlIGFybTY0IHNlcnZlcnMsIHdpdGggYW5kDQo+ID4gPiA+ID4g
+PiB3aXRob3V0IERNSSwgd2l0aA0KPiA+ID4gPiA+ID4gYW5kIHdpdGhvdXQgQ1BQQyBzdXBwb3J0
+Lg0KPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiBDaGFuZ2VzIGZvciB2NToNCj4gPiA+ID4gPiA+
+IMKgwqDCoMKgLS0gTW92ZSBjb2RlIHRvIGNwdWZyZXEvY3BwY19jcHVmcmVxLmMgZnJvbQ0KPiA+
+ID4gPiA+ID4gYWNwaS9jcHBjX2FjcGkuYyB0byBrZWVwDQo+ID4gPiA+ID4gPiDCoMKgwqDCoMKg
+wqDCoGZyZXF1ZW5jeS1yZWxhdGVkIGNvZGUgdG9nZXRoZXIsIGFuZCBrZWVwIHRoZSBDUFBDDQo+
+ID4gPiA+ID4gPiBhYnN0cmFjdCBzY2FsZQ0KPiA+ID4gPiA+ID4gwqDCoMKgwqDCoMKgwqBpbiBB
+Q1BJIChQcmFzaGFudGggUHJha2FzaCkNCj4gPiA+ID4gPiA+IMKgwqDCoMKgLS0gRml4IHRoZSBz
+Y2FsaW5nIHRvIHJlbW92ZSB0aGUgaW5jb3JyZWN0IGFzc3VtcHRpb24NCj4gPiA+ID4gPiA+IHRo
+YXQgZnJlcXVlbmN5DQo+ID4gPiA+ID4gPiDCoMKgwqDCoMKgwqDCoHdhcyBhbHdheXMgYSByYW5n
+ZSBmcm9tIHplcm8gdG8gbWF4OyBhcyBhIHByYWN0aWNhbA0KPiA+ID4gPiA+ID4gbWF0dGVyLCBp
+dCBpcw0KPiA+ID4gPiA+ID4gwqDCoMKgwqDCoMKgwqBub3QgKFByYXNhbnRoIFByYWthc2gpOyB0
+aGlzIGFsc28gYWxsb3dlZCB1cyB0bw0KPiA+ID4gPiA+ID4gcmVtb3ZlIGFuIG92ZXItDQo+ID4g
+PiA+ID4gPiDCoMKgwqDCoMKgwqDCoGVuZ2luZWVyZWQgZnVuY3Rpb24gdG8gZG8gdGhpcyBtYXRo
+Lg0KPiA+ID4gPiA+ID4gDQoNCkluIHg4NiB3aGVuIENQUEMgaXMgdXNlZCwgdGhlIHVuaXQgaXMg
+cmVhbGx5IHVuaXQtbGVzcyBpbiBDUFBDIHRhYmxlcy4NClRoaXMgbWVhbnMgdGhhdMKgY3B1LT5w
+ZXJmX2NhcHMuaGlnaGVzdF9wZXJmIGNhbiBiZSBqdXN0IDB4ZmYsIGluc3RlYWQNCm9mIHNvbWUg
+c2NhbGVkIGNwcGMgbWF4IHBlcmZvcm1hbmNlIGNvcnJlc3BvbmRpbmcgdG8gbWF4IE1IWiB0aGUN
+CnByb2Nlc3NvciBjYW4gc3VwcG9ydC4gVGhpcyBhbGxvd3MgdGhlIHByb2Nlc3NvciB0byBjYXAg
+YXQgbWF4IHdoaWNoIGl0DQpjYW4gZGVsaXZlci4NCklzIHRoaXMgY2FzZSBub3QgcG9zc2libGUg
+Zm9yIEFSTSBTb0NzPw0KDQpUaGFua3MsDQpTcmluaXZhcw0K
