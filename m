@@ -1,257 +1,114 @@
-From: Laxman Dewangan <ldewangan@nvidia.com>
-Subject: [PATCH V6 2/2] thermal: max77620: Add thermal driver for reporting junction temp
-Date: Tue, 23 Aug 2016 13:50:27 +0530
-Message-ID: <1471940427-2063-2-git-send-email-ldewangan@nvidia.com>
-References: <1471940427-2063-1-git-send-email-ldewangan@nvidia.com>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH v1 3/3] PM / AVS: rockchip-cpu-avs: add driver handling Rockchip cpu avs
+Date: Tue, 23 Aug 2016 11:03:44 +0200
+Message-ID: <3008348.gWNc8j0KGA@diego>
+References: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com> <20160819133636.GA26913@rob-hp-laptop> <c853c8fd-285a-603d-b294-750cdbf7f200@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:16162 "EHLO
-        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757186AbcHWIhG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2016 04:37:06 -0400
-In-Reply-To: <1471940427-2063-1-git-send-email-ldewangan@nvidia.com>
+Received: from gloria.sntech.de ([95.129.55.99]:60796 "EHLO gloria.sntech.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1757114AbcHWJES (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 Aug 2016 05:04:18 -0400
+In-Reply-To: <c853c8fd-285a-603d-b294-750cdbf7f200@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>
+To: Finley Xiao <finley.xiao@rock-chips.com>
+Cc: Rob Herring <robh@kernel.org>, srinivas.kandagatla@linaro.org, maxime.ripard@free-electrons.com, frowand.list@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, mark.rutland@arm.com, khilman@kernel.org, nm@ti.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, jay.xu@rock-chips.com, rocky.hao@rock-chips.com, tim.chen@rock-chips.com, tony.xie@rock-chips.com, ulysses.huang@rock-chips.com, lin.huang@rock-chips.com
 
-Maxim Semiconductor Max77620 supports alarm interrupts when
-its die temperature crosses 120C and 140C. These threshold
-temperatures are not configurable.
+Hi Finley,
 
-Add thermal driver to register PMIC die temperature as thermal
-zone sensor and capture the die temperature warning interrupts
-to notifying the client.
+Am Dienstag, 23. August 2016, 12:10:27 schrieb Finley Xiao:
+> 在 2016/8/19 21:36, Rob Herring 写道:
+> > On Tue, Aug 16, 2016 at 10:38:59AM +0800, Finlye Xiao wrote:
+> >> From: Finley Xiao <finley.xiao@rock-chips.com>
+> >> 
+> >> This patch supports adjusting opp's voltage according to leakage
+> >> 
+> >> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+> >> ---
+> >> 
+> >>   .../devicetree/bindings/power/rockchip-cpu-avs.txt |  37 +++
+> >>   drivers/power/avs/Kconfig                          |   8 +
+> >>   drivers/power/avs/Makefile                         |   1 +
+> >>   drivers/power/avs/rockchip-cpu-avs.c               | 314
+> >>   +++++++++++++++++++++ 4 files changed, 360 insertions(+)
+> >>   create mode 100644
+> >>   Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt create
+> >>   mode 100644 drivers/power/avs/rockchip-cpu-avs.c
+> >> 
+> >> diff --git a/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
+> >> b/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt new file
+> >> mode 100644
+> >> index 0000000..90f6b08
+> >> --- /dev/null
+> >> +++ b/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
+> >> @@ -0,0 +1,37 @@
+> >> +Rockchip cpu avs device tree bindings
+> >> +-------------------------------------
+> >> +
+> >> +Under the same frequency, the operating voltage tends to decrease with
+> >> +increasing leakage. so it is necessary to adjust opp's voltage according
+> >> +to leakage for power.
+> >> +
+> >> +
+> >> +Required properties:
+> >> +- compatible: Should be one of the following.
+> >> +  - "rockchip,rk3399-cpu-avs" - for RK3399 SoCs.
+> >> +- leakage-volt-<name>: Named leakage-volt property. At runtime, the
+> >> +  platform can find a cpu's cluster_id according to it's cpu_id and
+> >> match
+> >> +  leakage-volt-<name> property. The property is an array of 3-tuples
+> >> +  items, and each item consists of leakage and voltage like
+> >> +  <min-leakage-mA max-leakage-mA vol-uV>.
+> >> +	min-leakage: minimum leakage in mA.
+> >> +	max-leakage: maximum leakage in mA.
+> >> +	vol: voltage in microvolt.
+> > 
+> > How do you determine these values? When do they vary?
+> 
+> How do you determine these values?
+> 
+> run antutu-benchmark
+> leakage     freq 	min_volt
+> 30mA 	    1608MHz 	1025mV
+> 40mA 	    1608MHz 	1000mV
+> 50mA 	    1608MHz 	975mV
+> 
+>  From the table, we see the min_volt decrease with increasing leakage.
+> So we can set the default opp-microvolt 1025mV for 1608MHz,
+> and add an leakage_volt_cluster0 property as follows.
+> leakage_volt_cluster0 = <
+> 		/*  min(mA)   max(mA)    volt(uV)*/
+> 		    0         40        0
+> 		    41        50        (-25000)
+> 		    51        254       (-50000)
+> 
+> >;
+> 
+> If the leakage is between 41mA and 50mA，the opp-microvolt will subtract
+> 25mV。 If the leakage is between 41mA and 50mA，the opp-microvolt will
+> subtract 50mV。
+> 
+> When do they vary?
+> 
+>  From the code,
+> cpufreq_online
+> --cpufreq_driver->init(policy);  /* add new opp table */
+> --blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
+> CPUFREQ_START, policy);
+> --cpufreq_init_policy
+> ----cpufreq_set_policy
+> --------__cpufreq_governor(policy, CPUFREQ_GOV_START);
+> 
+> The cpu's opp table is added in the init function(cpufreq_init)，and I will
+> register a cpufreq notifier, once the first cpu of cluster is onlined,
+> my notifer will be called, and if the event is CPUFREQ_START，it will modify
+> the opp-microvolt according to leakage_volt_cluster0.
 
-Signed-off-by: Laxman Dewangan <ldewangan@nvidia.com>
+I think what Rob was asking with "when do they vary" is, are these leakage 
+values the same for each and every rk3399 soc or are they determined 
+separately for each board-type using the rk3399.
 
----
-The patch was sent earlier but dependent mfd header file was not
-available on tree and hence it was not applied.
-The mfd patches are in rc-4.7 and hence resending again this patch.
-
-Changes from V3:
-- Added comment on the function get_temp() that absolute temp can not be
-  available.
-
-Changes from V4:
-- Rename the file thermal-max77620 to max77620_thermal.c
-
-Changes from V5:
-- Allocate memory before using it. It was by mistake on V5 due to
-  moving line.
----
- drivers/thermal/Kconfig            |  10 +++
- drivers/thermal/Makefile           |   1 +
- drivers/thermal/max77620_thermal.c | 165 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 176 insertions(+)
- create mode 100644 drivers/thermal/max77620_thermal.c
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 5cba072..626c465 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -196,6 +196,16 @@ config IMX_THERMAL
- 	  cpufreq is used as the cooling device to throttle CPUs when the
- 	  passive trip is crossed.
- 
-+config MAX77620_THERMAL
-+	tristate "Temperature sensor driver for Maxim MAX77620 PMIC"
-+	depends on MFD_MAX77620
-+	depends on OF
-+	help
-+	  Support for die junction temperature warning alarm for Maxim
-+	  Semiconductor PMIC MAX77620 device. Device generates two alarm
-+	  interrupts when PMIC die temperature cross the threshold of
-+	  120 degC and 140 degC.
-+
- config QORIQ_THERMAL
- 	tristate "QorIQ Thermal Monitoring Unit"
- 	depends on THERMAL_OF
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index d091134..dac6d4f 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -38,6 +38,7 @@ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
- obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
- obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
-+obj-$(CONFIG_MAX77620_THERMAL)	+= max77620_thermal.o
- obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
- obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
- obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
-diff --git a/drivers/thermal/max77620_thermal.c b/drivers/thermal/max77620_thermal.c
-new file mode 100644
-index 0000000..8d61626
---- /dev/null
-+++ b/drivers/thermal/max77620_thermal.c
-@@ -0,0 +1,165 @@
-+/*
-+ * Junction temperature thermal driver for Maxim Max77620.
-+ *
-+ * Copyright (c) 2016, NVIDIA CORPORATION.  All rights reserved.
-+ *
-+ * Author: Laxman Dewangan <ldewangan@nvidia.com>
-+ *	   Mallikarjun Kasoju <mkasoju@nvidia.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ */
-+
-+#include <linux/irq.h>
-+#include <linux/interrupt.h>
-+#include <linux/mfd/max77620.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+#include <linux/thermal.h>
-+
-+#define MAX77620_NORMAL_OPERATING_TEMP	100000
-+#define MAX77620_TJALARM1_TEMP		120000
-+#define MAX77620_TJALARM2_TEMP		140000
-+
-+struct max77620_therm_info {
-+	struct device			*dev;
-+	struct regmap			*rmap;
-+	struct thermal_zone_device	*tz_device;
-+	int				irq_tjalarm1;
-+	int				irq_tjalarm2;
-+};
-+
-+/**
-+ * max77620_thermal_read_temp: Read PMIC die temperatue.
-+ * @data:	Device specific data.
-+ * temp:	Temperature in millidegrees Celsius
-+ *
-+ * The actual temperature of PMIC die is not available from PMIC.
-+ * PMIC only tells the status if it has crossed or not the threshold level
-+ * of 120degC or 140degC.
-+ * If threshold has not been crossed then assume die temperature as 100degC
-+ * else 120degC or 140deG based on the PMIC die temp threshold status.
-+ *
-+ * Return 0 on success otherwise error number to show reason of failure.
-+ */
-+
-+static int max77620_thermal_read_temp(void *data, int *temp)
-+{
-+	struct max77620_therm_info *mtherm = data;
-+	unsigned int val;
-+	int ret;
-+
-+	ret = regmap_read(mtherm->rmap, MAX77620_REG_STATLBT, &val);
-+	if (ret < 0) {
-+		dev_err(mtherm->dev, "Failed to read STATLBT: %d\n", ret);
-+		return ret;
-+	}
-+
-+	if (val & MAX77620_IRQ_TJALRM2_MASK)
-+		*temp = MAX77620_TJALARM2_TEMP;
-+	else if (val & MAX77620_IRQ_TJALRM1_MASK)
-+		*temp = MAX77620_TJALARM1_TEMP;
-+	else
-+		*temp = MAX77620_NORMAL_OPERATING_TEMP;
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops max77620_thermal_ops = {
-+	.get_temp = max77620_thermal_read_temp,
-+};
-+
-+static irqreturn_t max77620_thermal_irq(int irq, void *data)
-+{
-+	struct max77620_therm_info *mtherm = data;
-+
-+	if (irq == mtherm->irq_tjalarm1)
-+		dev_warn(mtherm->dev, "Junction Temp Alarm1(120C) occurred\n");
-+	else if (irq == mtherm->irq_tjalarm2)
-+		dev_crit(mtherm->dev, "Junction Temp Alarm2(140C) occurred\n");
-+
-+	thermal_zone_device_update(mtherm->tz_device);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int max77620_thermal_probe(struct platform_device *pdev)
-+{
-+	struct max77620_therm_info *mtherm;
-+	int ret;
-+
-+	mtherm = devm_kzalloc(&pdev->dev, sizeof(*mtherm), GFP_KERNEL);
-+	if (!mtherm)
-+		return -ENOMEM;
-+
-+	mtherm->irq_tjalarm1 = platform_get_irq(pdev, 0);
-+	mtherm->irq_tjalarm2 = platform_get_irq(pdev, 1);
-+	if ((mtherm->irq_tjalarm1 < 0) || (mtherm->irq_tjalarm2 < 0)) {
-+		dev_err(&pdev->dev, "Alarm irq number not available\n");
-+		return -EINVAL;
-+	}
-+
-+	pdev->dev.of_node = pdev->dev.parent->of_node;
-+
-+	mtherm->dev = &pdev->dev;
-+	mtherm->rmap = dev_get_regmap(pdev->dev.parent, NULL);
-+	if (!mtherm->rmap) {
-+		dev_err(&pdev->dev, "Failed to get parent regmap\n");
-+		return -ENODEV;
-+	}
-+
-+	mtherm->tz_device = devm_thermal_zone_of_sensor_register(&pdev->dev, 0,
-+				mtherm, &max77620_thermal_ops);
-+	if (IS_ERR(mtherm->tz_device)) {
-+		ret = PTR_ERR(mtherm->tz_device);
-+		dev_err(&pdev->dev, "Failed to register thermal zone: %d\n",
-+			ret);
-+		return ret;
-+	}
-+
-+	ret = devm_request_threaded_irq(&pdev->dev, mtherm->irq_tjalarm1, NULL,
-+					max77620_thermal_irq,
-+					IRQF_ONESHOT | IRQF_SHARED,
-+					dev_name(&pdev->dev), mtherm);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Failed to request irq1: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = devm_request_threaded_irq(&pdev->dev, mtherm->irq_tjalarm2, NULL,
-+					max77620_thermal_irq,
-+					IRQF_ONESHOT | IRQF_SHARED,
-+					dev_name(&pdev->dev), mtherm);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Failed to request irq2: %d\n", ret);
-+		return ret;
-+	}
-+
-+	platform_set_drvdata(pdev, mtherm);
-+
-+	return 0;
-+}
-+
-+static struct platform_device_id max77620_thermal_devtype[] = {
-+	{ .name = "max77620-thermal", },
-+	{},
-+};
-+
-+static struct platform_driver max77620_thermal_driver = {
-+	.driver = {
-+		.name = "max77620-thermal",
-+	},
-+	.probe = max77620_thermal_probe,
-+	.id_table = max77620_thermal_devtype,
-+};
-+
-+module_platform_driver(max77620_thermal_driver);
-+
-+MODULE_DESCRIPTION("Max77620 Junction temperature Thermal driver");
-+MODULE_AUTHOR("Laxman Dewangan <ldewangan@nvidia.com>");
-+MODULE_AUTHOR("Mallikarjun Kasoju <mkasoju@nvidia.com>");
-+MODULE_LICENSE("GPL v2");
--- 
-2.1.4
 
