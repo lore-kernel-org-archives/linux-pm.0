@@ -1,120 +1,75 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: Power driver patches to avoid lockdep complaints
-Date: Mon, 22 Aug 2016 17:59:17 -0700
-Message-ID: <20160823005917.GY3482@linux.vnet.ibm.com>
-References: <20160615211344.GA31850@linux.vnet.ibm.com>
- <1883021.VkIzpAuQoG@vostro.rjw.lan>
- <20160820142837.dqh3kmem4o3ca54t@atomide.com>
- <1585052.xToFB1dsV6@vostro.rjw.lan>
- <20160823004549.b66jru7ogyfifunf@atomide.com>
-Reply-To: paulmck@linux.vnet.ibm.com
+From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v6 2/8] power: add power sequence library
+Date: Tue, 23 Aug 2016 09:25:25 +0800
+Message-ID: <20160823012525.GA13986@shlinux2>
+References: <1471252398-957-1-git-send-email-peter.chen@nxp.com>
+ <1471252398-957-3-git-send-email-peter.chen@nxp.com>
+ <20160822065158.GB4362@shlinux2>
+ <20160822102331.bimz22w6z2v65jd7@earth>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:46275 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1753301AbcHWA7K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Aug 2016 20:59:10 -0400
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.11/8.16.0.11) with SMTP id u7N0wZIL062275
-        for <linux-pm@vger.kernel.org>; Mon, 22 Aug 2016 20:59:09 -0400
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 24y8r9ku9b-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Mon, 22 Aug 2016 20:59:09 -0400
-Received: from localhost
-        by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <paulmck@linux.vnet.ibm.com>;
-        Mon, 22 Aug 2016 18:59:08 -0600
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20160823004549.b66jru7ogyfifunf@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160822102331.bimz22w6z2v65jd7@earth>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, pavel@ucw.cz, linux@roeck-us.net, rostedt@goodmis.org, linux-pm@vger.kernel.org
 
-On Mon, Aug 22, 2016 at 05:45:49PM -0700, Tony Lindgren wrote:
-> * Rafael J. Wysocki <rjw@rjwysocki.net> [160822 10:30]:
-> > On Saturday, August 20, 2016 07:28:37 AM Tony Lindgren wrote:
-> > > * Rafael J. Wysocki <rjw@rjwysocki.net> [160819 18:35]:
-> > > > On Thursday, August 18, 2016 03:51:52 PM Tony Lindgren wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> [160615 14:16]:
-> > > > > > Hello!
-> > > > > > 
-> > > > > > Ingo was not comfortable taking these through -tip, which is understandable,
-> > > > > > given that they don't depend on each other or on anything else not already
-> > > > > > in mainline, and that they don't have anything to do with -tip.
-> > > > > > 
-> > > > > > So what would you guys like to do with these?
-> > > > > > 
-> > > > > > They may be pulled from 13e698e68f75 (power: Use _rcuidle for
-> > > > > > suspend/resume tracepoints) in my -rcu tree:
-> > > > > > 
-> > > > > > 	git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
-> > > > > > 
-> > > > > 
-> > > > > Rafael, looks like commit 13e698e68f75 is still missing from the
-> > > > > mainline tree. Care to merge it to your fixes so I don't have to
-> > > > > keep looking at that splat on daily basis?
-> > > > 
-> > > > I could pull it if I knew where to pull it from.  The above gives me
-> > > > "Already up-to-date."
+On Mon, Aug 22, 2016 at 12:23:31PM +0200, Sebastian Reichel wrote:
+> Hi Peter,
+> 
+> On Mon, Aug 22, 2016 at 02:51:58PM +0800, Peter Chen wrote:
+> > On Mon, Aug 15, 2016 at 05:13:12PM +0800, Peter Chen wrote:
+> > > We have an well-known problem that the device needs to do some power
+> > > sequence before it can be recognized by related host, the typical
+> > > example like hard-wired mmc devices and usb devices.
 > > > 
-> > > Here are the ones still missing:
+> > > This power sequence is hard to be described at device tree and handled by
+> > > related host driver, so we have created a common power sequence
+> > > library to cover this requirement. The core code has supplied
+> > > some common helpers for host driver, and individual power sequence
+> > > libraries handle kinds of power sequence for devices.
 > > > 
-> > > $ git log --pretty=oneline v4.7-rc2..13e698e68f75
-> > > 13e698e68f75708c45241a2dad23cd6b65181056 power: Use _rcuidle for suspend/resume tracepoints
-> > > 320e2a2d081b6c519f80fca9377b8fb90db7bb9c power: Add _rcuidle suffix to allow rpm_resume() to be called from idle
-> > > b72aadb1d082d3935cbffd60e979238252045971 power: Add _rcuidle suffix to allow rpm_idle() use from idle
+> > > pwrseq_generic is intended for general purpose of power sequence, which
+> > > handles gpios and clocks currently, and can cover regulator and pinctrl
+> > > in future. The host driver calls pwrseq_alloc_generic to create
+> > > an generic pwrseq instance.
 > > > 
-> > > So maybe just git merge 13e698e68f75 if you have the linux-rcu.git
-> > > fetched and the above look OK to you?
+> > > Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+> > > Tested-by Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> > > Reviewed-by: Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> > > Tested-by: Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 > > 
-> > If I do
+> > Hi Greg, Sebastian, Dmitry, and David
 > > 
-> > $ git fetch git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
-> > 
-> > and then
-> > 
-> > $ git show 13e698e68f75
-> > 
-> > then it tells me
-> > 
-> > fatal: ambiguous argument '13e698e68f75': unknown revision or path not in the working tree.
-> > 
-> > Do I need to fetch it in any special way or something?
+> > I find the code under drivers/power have several subsystems.
+> > Does this power sequence patch set can go git://git.infradead.org/battery-2.6.git?
+> > Or can go the Greg's tree?
 > 
-> Well I usuall add things to my .git/config like:
+> I think this does not really fit into the power-supply tree.
+> I would expect this to go through Rafael's linux-pm tree.
+
+Ok, thanks. Rafael, would you agree with that? If you agree, I will
+update MAINTAINER file.
+
 > 
-> [remote "rcu"]
-> 	url = git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
-> 	fetch = refs/heads/*:refs/remotes/rcu/*
+> Note: I moved all the power-supply code into drivers/power/supply/
+> in linux-next, among other things because of this patchset. To avoid
+> merge conflicts in drivers/power/Makefile and drivers/power/Kconfig
+> the tree pulling this patchset should also pull a (yet to be
+> created) immutable branch containing
+> https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/commit/drivers/power?h=for-next&id=8c0984e5a75337df513047ec92a6c09d78e3e5cd
 > 
-> And then do git fetch --no-tags on what I need. There's probably
-> some easy way to do that temporarily too :)
-> 
-> But now doing git fetch --no-tags rcu here with produces this
-> for me:
-> ...
->  ! [rejected]        rcu/dev    -> rcu/rcu/dev  (non-fast-forward)
->  ! [rejected]        rcu/next   -> rcu/rcu/next  (non-fast-forward)
-> 
-> So maybe that branch got trashed and the commit is there no more.
 
-The trick is that rcu/dev and rcu/next simply mark my current development
-branch and the stuff I want Stephen Rothwell to pull into -next,
-respectively.
+Yes, I found the rebase conflict with it, I will fix it at next
+revision.
 
-> Paul, do you have 13e698e68f75 still somewhere or want me to push
-> out a branch with that?
+-- 
 
-The permanent branch name for those changes is power.2016.06.15a,
-so those should be pullable from anywhere.
-
-Or please do feel free to push from your tree if that works better.
-However they get where they need to go, I am good!  ;-)
-
-							Thanx, Paul
-
+Best Regards,
+Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
