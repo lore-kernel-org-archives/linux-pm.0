@@ -1,243 +1,180 @@
-From: hl <hl@rock-chips.com>
-Subject: Re: [PATCH v6 6/8] Documentation: bindings: add dt documentation for
- rk3399 dmc
-Date: Wed, 24 Aug 2016 02:53:53 +0800
-Message-ID: <57BC9BC1.2040100@rock-chips.com>
-References: <1471386989-9541-1-git-send-email-hl@rock-chips.com>
- <CGME20160816223730epcas1p32cabad067157428ffee1a2f9c62d9798@epcas1p3.samsung.com>
- <1471386989-9541-7-git-send-email-hl@rock-chips.com>
- <57B3ED11.20003@samsung.com> <57BA2834.6090409@rock-chips.com>
- <57BBD9A7.7090603@samsung.com>
+From: Karl-Heinz Schneider <karl-heinz-X5L7DgJ4l23oE99TX8zNy7NAH6kLmebB@public.gmane.org>
+Subject: Re: [PATCH 1/1] power: sbs-manager: Add interrupt support and
+ battery detect gpios
+Date: Tue, 23 Aug 2016 21:58:20 +0200
+Message-ID: <1471982300.5080.17.camel@schneider-inet.de>
+References: <1469433003-68564-1-git-send-email-preid@electromag.com.au>
+         <1469433003-68564-2-git-send-email-preid@electromag.com.au>
+         <20160727144609.GA12462@rob-hp-laptop> <1469653707.27666.22.camel@amnesix>
+         <4553a3f5-55cc-807d-7f34-11b4c7e11a0b@electromag.com.au>
+         <e2ca7188-03e4-978d-9c10-9498117acb8e@electromag.com.au>
+         <CAL_JsqL0+b5GRMMtK7PmECatR7aayiv-Of05HahGWSHHQ-vrYg@mail.gmail.com>
+         <1469973873.5299.9.camel@schneider-inet.de>
+         <ade6f7b9-dbaf-fd45-fd82-c3d69125ca8c@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lucky1.263xmail.com ([211.157.147.133]:34328 "EHLO
-        lucky1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752302AbcHWSyW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Aug 2016 14:54:22 -0400
-In-Reply-To: <57BBD9A7.7090603@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <ade6f7b9-dbaf-fd45-fd82-c3d69125ca8c-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, andrea.merello-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, heiko@sntech.de, myungjoo.ham@samsung.com
-Cc: tixy@linaro.org, mark.rutland@arm.com, dbasehore@chromium.org, linux-pm@vger.kernel.org, airlied@linux.ie, mturquette@baylibre.com, typ@rock-chips.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, sudeep.holla@arm.com, linux-arm-kernel@lists.infradead.org, mark.yao@rock-chips.com
 
-Hi Chanwoo Choi,
+Hi Phil, Hi Rob,
 
+Am Montag, den 01.08.2016, 14:52 +0800 schrieb Phil Reid:
+> On 31/07/2016 22:04, Karl-Heinz Schneider wrote:
+> > 
+> > Am Donnerstag, den 28.07.2016, 10:45 -0500 schrieb Rob Herring:
+> > > 
+> > > On Thu, Jul 28, 2016 at 4:01 AM, Phil Reid <preid-qgqNFa1JUf/iIABC8yteiw@public.gmane.org
+> > > au>
+> > > wrote:
+> > > > 
+> > > > On 28/07/2016 10:11, Phil Reid wrote:
+> > > > > 
+> > > > > G'day Karl / Rob,
+> > > > > On 28/07/2016 05:08, Karl-Heinz Schneider wrote:
+> > > > > > 
+> > > > > > Am Mittwoch, den 27.07.2016, 09:46 -0500 schrieb Rob
+> > > > > > Herring:
+> > > > > > > 
+> > > > > > > On Mon, Jul 25, 2016 at 03:50:03PM +0800, Phil Reid
+> > > > > > > wrote:
+> > > > > > > > 
+> > > > > > > > This patch added irq support for the SMBALERT pin and
+> > > > > > > > notification of
+> > > > > > > > the battery removal / insertion. The sbs manager would
+> > > > > > > > typically be
+> > > > > > > > used with the corresponding sbs-battery driver that
+> > > > > > > > currently uses a
+> > > > > > > > gpio input for battery presence and interrupt. To
+> > > > > > > > remain
+> > > > > > > > compatible
+> > > > > > > > with
+> > > > > > > > that existing driver this patch implements GPIO inputs
+> > > > > > > > with
+> > > > > > > > interrupt
+> > > > > > > > support. IRQ masking is performed in software as the
+> > > > > > > > hardware does not
+> > > > > > > > support masking of notifications from each battery.
+> > > > > > > > In addition a power_supply change notification is
+> > > > > > > > generated
+> > > > > > > > for the sbs
+> > > > > > > > manager device when the AC present flag is changed.
+> > > > > > > > Tested with LTC1760 and dual sbs compatible batteries.
+> > > > > > > Please don't submit a binding and immediately turn around
+> > > > > > > and
+> > > > > > > add to it.
+> > > > > > > While that is often preferred for drivers or kernel
+> > > > > > > features,
+> > > > > > > bindings
+> > > > > > > should be complete as possible and not evolve. Combine
+> > > > > > > this
+> > > > > > > with your
+> > > > > > > previous patch add sbs-mgr if that hasn't been accepted
+> > > > > > > yet.
+> > > > > That was from Karl. I'm happy to have this combined if he
+> > > > > is.Me
+> > > Indeed it was. Still, it should be combined. You can leave the
+> > > driver
+> > > implementation as multiple patches, just combine all the binding
+> > > to a
+> > > single patch by itself.
+> > Will do that.
+> > > 
+> > > > 
+> > > > > 
+> > > > > > 
+> > > > > > > 
+> > > > > > > IMO, the sbs-bat should just be a interrupt and making it
+> > > > > > > and
+> > > > > > > this
+> > > > > > > binding a GPIO is overkill. Since batteries nodes using
+> > > > > > > this
+> > > > > > > will be
+> > > > > > > new, there's no reason the driver can't be updated to
+> > > > > > > support
+> > > > > > > interrupts.
+> > > > I did consider this and didn't go that way as:
+> > > > 1) the current sbs-battery driver didn't support it.
+> > > > 2) Then there's also the problem of reporting  the presence of
+> > > > the
+> > > > battery
+> > > > to the battery driver.
+> > > > Without the GPIO support you resort to polling and looking for
+> > > > a
+> > > > NACK. Which
+> > > > didn't seem that nice.
+> > > The ability to read the current irq signal state with the irq api
+> > > would be nice. Of course you can't really count on being able to
+> > > on
+> > > all irqs. Anyway, we shouldn't really design the binding around
+> > > kernel
+> > > limitations.
+> > > 
+> > > As I understand how SMBALERT works, you have to poll the devices
+> > > anyway to determine which device is asserting the irq and to ack
+> > > the
+> > > irq. Of course, here you are doing point to point connections,
+> > > but
+> > > you
+> > > still need to know which batteries are present by reading the
+> > > sbs-mgr
+> > > registers.
+> > The more interesting point for me is, that SMBALERT seems to
+> > provide an
+> > easy to use driver side interface. The code Registering the IRQ
+> > would
+> > vanish...
+> > Anyways I'm not very familiar with Linux IRQ handling, so I will
+> > follow
+> > your advise.
+> Just had a look at driver/i2c/i2c-smbus.c
+> This appears to be a generic driver to handle smbalert. Currently
+> used by the i2c-parport driver.
+> Doesn't look to support device trees at the moment thou.
+> Patch series "RFC: I2C: i2c-smbus: add device tree support" from
+> Andrea Merello looked to be adding generic support for it.
+> https://lkml.org/lkml/2016/4/13/157
+> Not sure where that's got to thou.
+Did see this one.
+> 
+> > 
+> > > 
+> > > 
+> > > Wouldn't switching the driver to level irq allow you to get the
+> > > state
+> > > immediately without a gpio read? After all, the gpio read and irq
+> > > handler are reading the same register.
+> If it's asserted continuously how do you stop the irq firing all the
+> time?
+> I guess you could register a high and low level irq and disable them
+> alternatively.
+> Unless I'm missing something.
+> 
+> Keeping the gpio functionality also allows the battery detect to work
+> without the irq
+> connected to the sbsm thru polling.
+> 
+So what to do now? I can simply take Phil's patch to add IRQ and GPIO
+support to the sbsm driver. It needs some fixups though, at least
+Kconfig things.
 
-On 2016年08月23日 13:05, Chanwoo Choi wrote:
-> Hi Lin,
->
-> On 2016년 08월 22일 07:16, hl wrote:
->> Hi Chanwoo Choi,
->>
->> On 2016年08月17日 12:50, Chanwoo Choi wrote:
->>> Hi Lin,
->>>
->>> On 2016년 08월 17일 07:36, Lin Huang wrote:
->>>> This patch adds the documentation for rockchip rk3399 dmc driver.
->>>>
->>>> Signed-off-by: Lin Huang <hl@rock-chips.com>
->>>> ---
->>>> Changes in v6:
->>>> -Add more detail in Documentation
->>>>
->>>> Changes in v5:
->>>> -None
->>>>
->>>> Changes in v4:
->>>> -None
->>>>
->>>> Changes in v3:
->>>> -None
->>>>
->>>> Changes in v2:
->>>> -None
->>>>
->>>> Changes in v1:
->>>> -None
->>>>    .../devicetree/bindings/devfreq/rk3399_dmc.txt     | 84 ++++++++++++++++++++++
->>>>    1 file changed, 84 insertions(+)
->>>>    create mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
->>>>
->>>> diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
->>>> new file mode 100644
->>>> index 0000000..e73067c
->>>> --- /dev/null
->>>> +++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
->>>> @@ -0,0 +1,84 @@
->>>> +* Rockchip rk3399 DMC(Dynamic Memory Controller) device
->>>> +
->>>> +Required properties:
->>>> +- compatible: Must be "rockchip,rk3399-dmc".
->>>> +- devfreq-events: Node to get ddr loading, Refer to
->>>> +          Documentation/devicetree/bindings/devfreq/rockchip-dif.txt
->>>> +- interrupts: The interrupt number to the cpu. The interrupt specifier format
->>>> +          depends on the interrupt controller. it should be dcf interrupts,
->>>> +          when ddr dvfs finish, it will happen.
->>> If possible, you better to keep the indentation with other properties.
->>> s/it->It, dcf->DCF, ddr->DDR
->>>
->>>
->>>> +- clocks: Phandles for clock specified in "clock-names" property
->>>> +- clock-names : The name of clock used by the DFI, must be "pclk_ddr_mon";
->>>> +- operating-points-v2: Refer to Documentation/devicetree/bindings/power/opp.txt
->>>> +               for details.
->>> ditto.
->>>
->>>> +- center-supply: Dmc supply node.
->>> s/Dmc/DMC becaue DMC an abbreviation.
->>>
->>>> +- status: Marks the node enabled/disabled.
->>>> +
->>>> +Optional properties:
->>>> +- ddr_timing: ddr timing need to pass to arm trust firmware
->>>> +- upthreshold: the upthreshold to simpleondeamnd policy
->>>> +- downdifferential: The downdifferential to simpleondeamnd policy
->>>> +
->>>> +Example:
->>>> +    ddr_timing: ddr_timing {
->>>> +        compatible = "rockchip,ddr-timing";
->>> I can't find the 'rockchip,ddr-timing' driver on linux-next git repo (20160816).
->>> If ddr_timing includes the only properties for ddr_timing,
->>> I recommend you make the separate a .dtsi file including
->>> the ddr timing configuration. I add the reference and an example on below.
->>>
->>>> +        ddr3_speed_bin = <21>;
->>>> +        pd_idle = <0>;
->>>> +        sr_idle = <0>;
->>>> +        sr_mc_gate_idle = <0>;
->>>> +        srpd_lite_idle    = <0>;
->>>> +        standby_idle = <0>;
->>>> +        dram_dll_dis_freq = <300>;
->>>> +        phy_dll_dis_freq = <125>;
->>>> +
->>>> +        ddr3_odt_dis_freq = <333>;
->>>> +        ddr3_drv = <DDR3_DS_40ohm>;
->>>> +        ddr3_odt = <DDR3_ODT_120ohm>;
->>>> +        phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
->>>> +        phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
->>>> +        phy_ddr3_odt = <PHY_DRV_ODT_240>;
->>>> +
->>>> +        lpddr3_odt_dis_freq = <333>;
->>>> +        lpddr3_drv = <LP3_DS_34ohm>;
->>>> +        lpddr3_odt = <LP3_ODT_240ohm>;
->>>> +        phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
->>>> +        phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
->>>> +        phy_lpddr3_odt = <PHY_DRV_ODT_240>;
->>>> +
->>>> +        lpddr4_odt_dis_freq = <333>;
->>>> +        lpddr4_drv = <LP4_PDDS_60ohm>;
->>>> +        lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
->>>> +        lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
->>>> +        phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
->>>> +        phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
->>>> +        phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
->>>> +        phy_lpddr4_odt = <PHY_DRV_ODT_60>;
->>>> +    };
->>>> +
->>>> +    dmc_opp_table: dmc_opp_table {
->>>> +        compatible = "operating-points-v2";
->>>> +
->>>> +        opp00 {
->>>> +            opp-hz = /bits/ 64 <300000000>;
->>>> +            opp-microvolt = <900000>;
->>>> +        };
->>>> +        opp01 {
->>>> +            opp-hz = /bits/ 64 <666000000>;
->>>> +            opp-microvolt = <900000>;
->>>> +        };
->>>> +    };
->>>> +
->>>> +    dmc: dmc {
->>>> +        compatible = "rockchip,rk3399-dmc";
->>>> +        devfreq-events = <&dfi>;
->>>> +        interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
->>>> +        clocks = <&cru SCLK_DDRCLK>;
->>>> +        clock-names = "dmc_clk";
->>>> +        ddr_timing = <&ddr_timing>;
->>> You can use the following '#include' instead of 'ddr_timing'
->>> because the ddr_timing is not a device driver. Instead,
->>> the rk3399-dmc must need the ddr timing configuration.
->>>
->>>          #include "rk3399-dmc-timing-conf.dtsi"
->>>
->>> You can refer the similar usage case[1].
->>> The *.conf.dtsi is used on exynos3250 tmu dt node[2].
->>>
->>> [1] arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
->>> [2] arch/arm/boot/dts/exynos3250.dtsi, 224 line.
->>>
->>>> +        operating-points-v2 = <&dmc_opp_table>;
->>>> +        center-supply = <&ppvar_centerlogic>;
->>>> +        upthreshold = <15>;
->>>> +        downdifferential = <10>;
->>>> +        status = "disabled";
->>>> +    };
->>>> +
->>>>
->>> For example,
->>> I think that you can add the following timing .dtsi file.
->>> - arch/arm/boot/dts/rk3399-dmc-timing-conf.dtsi
->>>
->>> /*
->>>    * Device tree sources for RK3399 DDR timing configuration
->>>    *
->>>    * Copyright (c) 2016 Lin Huang <hl@rock-chips.com>
->>>    *
->>>    * This program is free software; you can redistribute it and/or modify
->>>    * it under the terms of the GNU General Public License version 2 as
->>>    * published by the Free Software Foundation.
->>>    */
->>>
->>> rockchip,ddr3_speed_bin = <21>;
->>> rockchip,pd_idle = <0>;
->>> rockchip,sr_idle = <0>;
->>> rockchip,sr_mc_gate_idle = <0>;
->>> rockchip,srpd_lite_idle    = <0>;
->>> rockchip,standby_idle = <0>;
->>> rockchip,dram_dll_dis_freq = <300>;
->>> rockchip,phy_dll_dis_freq = <125>;
->>>
->>> rockchip,ddr3_odt_dis_freq = <333>;
->>> rockchip,ddr3_drv = <DDR3_DS_40ohm>;
->>> rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
->>> rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
->>> rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
->>> rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
->>>
->>> rockchip,lpddr3_odt_dis_freq = <333>;
->>> rockchip,lpddr3_drv = <LP3_DS_34ohm>;
->>> rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
->>> rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
->>> rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
->>> rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
->>>
->>> rockchip,lpddr4_odt_dis_freq = <333>;
->>> rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
->>> rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
->>> rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
->>> rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
->>> rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
->>> rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
->>> rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
->> Actually, i am doing like it on my downstream dtsi, but how to explain it in rk3399_dmc Documentation?
->> Creat a new ddr_timing Documentation? But it is not a driver, just a dtsi, that why i put it on rk3399_dmc.txt
->> now, do you have a better idea?
-> I think that you don't need to add the new ddr_timing document.
->
-> The ddr_timing value are only used in the rk3399_dmc.c driver.
-> So, the description of ddr_timing information should be
-> included in rk3399_dmc.txt.
->
-> As I already mentioned, please refer the the similiar case[1][2].
-> The exynos-thermal.txt[2] include the description of propertis[1].
->
-> [1] arch/arm/boot/dts/exynos4412-tmu-sensor-conf.dtsi
-> [2] Documentation/devicetree/bindings/tmu/exynos-thermal.txt
-Got it, will reference it next version, thanks.
+IMHO adding irq support adds complexity to the driver as well as to the
+device tree binding, which shouldn't be necessary. Could also be true
+for the GPIO part, though (sbsm could issue a call to .notify() for
+it's slaves).
 
+So anyway. Will take Phils patch and resubmit the sbs-manager patch
+series if making the sbsm an IRQ and GPIO controller is really desired.
 -- 
-Lin Huang
+Karl-Heinz
 
 
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
