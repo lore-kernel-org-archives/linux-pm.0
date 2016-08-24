@@ -1,147 +1,59 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: [PATCH 12/16 v2] cpuidle: coupled: Convert to hotplug state machine
-Date: Wed, 24 Aug 2016 11:14:44 +0200
-Message-ID: <20160824091444.brdr5zpbxjvh6n3f@linutronix.de>
-References: <20160818125731.27256-1-bigeasy@linutronix.de>
- <20160818125731.27256-13-bigeasy@linutronix.de>
- <57BC5CB4.409@linaro.org>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 04/11] sched,x86: Enable Turbo Boost Max Technology
+Date: Wed, 24 Aug 2016 12:18:53 +0200
+Message-ID: <20160824101853.GA25705@gmail.com>
+References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <1471559812-19967-5-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <57BC5CB4.409@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+In-Reply-To: <1471559812-19967-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, peterz@infradead.org, x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, tim.c.chen@linux.intel.com, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: linux-pm@vger.kernel.org
 
-Install the callbacks via the state machine.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
-v1…v2: - refactor the code to drop the out label.
-       - make error path in cpuidle_coupled_init() simpler
+* Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> wrote:
 
- drivers/cpuidle/coupled.c  | 75 +++++++++++++++++++---------------------------
- include/linux/cpuhotplug.h |  1 +
- 2 files changed, 32 insertions(+), 44 deletions(-)
+> From: Tim Chen <tim.c.chen@linux.intel.com>
+> 
+> On some Intel cores, they can boosted to a higher turbo frequency than
+> the other cores on the same die.  So we prefer processes to be run on
+> them vs other lower frequency ones for extra performance.
+> 
+> We extend the asym packing feature in the scheduler to support packing
+> task to the higher frequency core at the core sched domain level.
+> 
+> We set up a core priority metric to abstract the core preferences based
+> on the maximum boost frequency.  The priority is instantiated such that
+> the core with a higher priority is favored over the core with lower
+> priority when making scheduling decision using ASYM_PACKING.  The smt
+> threads that are of higher number are discounted in their priority so
+> we will not try to pack tasks onto all the threads of a favored core
+> before using other cpu cores.  The cpu that's of the highese priority
+> in a sched_group is recorded in sched_group->asym_prefer_cpu during
+> initialization to save lookup during load balancing.
+> 
+> A sysctl variable /proc/sys/kernel/sched_itmt_enabled is provided so
+> the scheduling based on favored core can be turned on or off at run time.
 
-diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-index d5657d50ac40..5ba1a8913421 100644
---- a/drivers/cpuidle/coupled.c
-+++ b/drivers/cpuidle/coupled.c
-@@ -749,65 +749,52 @@ static void cpuidle_coupled_allow_idle(struct cpuidle_coupled *coupled)
- 	put_cpu();
- }
- 
--/**
-- * cpuidle_coupled_cpu_notify - notifier called during hotplug transitions
-- * @nb: notifier block
-- * @action: hotplug transition
-- * @hcpu: target cpu number
-- *
-- * Called when a cpu is brought on or offline using hotplug.  Updates the
-- * coupled cpu set appropriately
-- */
--static int cpuidle_coupled_cpu_notify(struct notifier_block *nb,
--		unsigned long action, void *hcpu)
-+static int coupled_cpu_online(unsigned int cpu)
- {
--	int cpu = (unsigned long)hcpu;
- 	struct cpuidle_device *dev;
- 
--	switch (action & ~CPU_TASKS_FROZEN) {
--	case CPU_UP_PREPARE:
--	case CPU_DOWN_PREPARE:
--	case CPU_ONLINE:
--	case CPU_DEAD:
--	case CPU_UP_CANCELED:
--	case CPU_DOWN_FAILED:
--		break;
--	default:
--		return NOTIFY_OK;
--	}
--
- 	mutex_lock(&cpuidle_lock);
- 
- 	dev = per_cpu(cpuidle_devices, cpu);
--	if (!dev || !dev->coupled)
--		goto out;
--
--	switch (action & ~CPU_TASKS_FROZEN) {
--	case CPU_UP_PREPARE:
--	case CPU_DOWN_PREPARE:
--		cpuidle_coupled_prevent_idle(dev->coupled);
--		break;
--	case CPU_ONLINE:
--	case CPU_DEAD:
-+	if (dev && dev->coupled) {
- 		cpuidle_coupled_update_online_cpus(dev->coupled);
--		/* Fall through */
--	case CPU_UP_CANCELED:
--	case CPU_DOWN_FAILED:
- 		cpuidle_coupled_allow_idle(dev->coupled);
--		break;
- 	}
- 
--out:
- 	mutex_unlock(&cpuidle_lock);
--	return NOTIFY_OK;
-+	return 0;
- }
- 
--static struct notifier_block cpuidle_coupled_cpu_notifier = {
--	.notifier_call = cpuidle_coupled_cpu_notify,
--};
-+static int coupled_cpu_up_prepare(unsigned int cpu)
-+{
-+	struct cpuidle_device *dev;
-+
-+	mutex_lock(&cpuidle_lock);
-+
-+	dev = per_cpu(cpuidle_devices, cpu);
-+	if (dev && dev->coupled)
-+		cpuidle_coupled_prevent_idle(dev->coupled);
-+
-+	mutex_unlock(&cpuidle_lock);
-+	return 0;
-+}
- 
- static int __init cpuidle_coupled_init(void)
- {
--	return register_cpu_notifier(&cpuidle_coupled_cpu_notifier);
-+	int ret;
-+
-+	ret = cpuhp_setup_state_nocalls(CPUHP_CPUIDLE_COUPLED_PREPARE,
-+					"CPUIDLE_COUPLED_PREPARE",
-+					coupled_cpu_up_prepare,
-+					coupled_cpu_online);
-+	if (ret)
-+		return ret;
-+	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
-+					"CPUIDLE_COUPLED_ONLINE",
-+					coupled_cpu_online,
-+					coupled_cpu_up_prepare);
-+	if (ret < 0)
-+		cpuhp_remove_state_nocalls(CPUHP_CPUIDLE_COUPLED_PREPARE);
-+	return ret;
- }
- core_initcall(cpuidle_coupled_init);
-diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-index 14b58a9d1450..965acec06d4e 100644
---- a/include/linux/cpuhotplug.h
-+++ b/include/linux/cpuhotplug.h
-@@ -30,6 +30,7 @@ enum cpuhp_state {
- 	CPUHP_SLAB_PREPARE,
- 	CPUHP_RCUTREE_PREP,
- 	CPUHP_MD_RAID5_PREPARE,
-+	CPUHP_CPUIDLE_COUPLED_PREPARE,
- 	CPUHP_NOTIFY_PREPARE,
- 	CPUHP_TIMERS_DEAD,
- 	CPUHP_BRINGUP_CPU,
--- 
-2.9.3
+> +/*
+> + * Boolean to control whether we want to move processes to cpu capable
+> + * of higher turbo frequency for cpus supporting Intel Turbo Boost Max
+> + * Technology 3.0.
+> + *
+> + * It can be set via /proc/sys/kernel/sched_itmt_enabled
+> + */
+> +unsigned int __read_mostly sysctl_sched_itmt_enabled = 0;
+
+Ugh, no.
+
+We don't add features to the scheduler in the hope that they might or might not 
+help. We either enable a new feature by default (and make damn sure it helps!),
+or don't add the feature at all.
+
+Thanks,
+
+	Ingo
