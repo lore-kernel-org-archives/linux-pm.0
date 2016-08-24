@@ -1,113 +1,29 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH][v6] PM / hibernate: Print the possible panic reason when
- resuming with inconsistent e820 map
-Date: Wed, 24 Aug 2016 09:36:10 +0800
-Message-ID: <20160824013610.GA26119@linux-rxt1.site>
-References: <1445404900-29702-1-git-send-email-yu.c.chen@intel.com>
- <20160823094527.GG7276@linux-rxt1.site>
- <20160823100155.GA12738@sharon>
+From: John Stultz <john.stultz@linaro.org>
+Subject: Re: [PATCH 2/2] timekeeping: Cap array access in timekeeping_debug to
+ protect against invalid sleep times
+Date: Tue, 23 Aug 2016 19:54:25 -0700
+Message-ID: <CALAqxLUrB1ZwBRk2-Ajkquhsa6_ztV8uXPq+-f7nBb1GnBd3Og@mail.gmail.com>
+References: <1471993702-29148-1-git-send-email-john.stultz@linaro.org>
+ <1471993702-29148-3-git-send-email-john.stultz@linaro.org> <20160824005830.GA16827@sharon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:58841 "EHLO
-        smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754748AbcHXB6P (ORCPT
-        <rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
-        Tue, 23 Aug 2016 21:58:15 -0400
-Content-Disposition: inline
-In-Reply-To: <20160823100155.GA12738@sharon>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20160824005830.GA16827@sharon>
+Sender: stable-owner@vger.kernel.org
 To: Chen Yu <yu.c.chen@intel.com>
-Cc: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Janek Kozicki <cosurgi@gmail.com>, Xunlei Pang <xpang@redhat.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, stable <stable@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 23, 2016 at 06:01:55PM +0800, Chen Yu wrote:
-> Hi,
-> thanks for your interest :)
-> On Tue, Aug 23, 2016 at 05:45:27PM +0800, joeyli wrote:
-> > Hi all, 
-> > 
-> > On Wed, Oct 21, 2015 at 01:21:40PM +0800, Chen Yu wrote:
-> > > On some platforms, there is occasional panic triggered when trying to
-> > > resume from hibernation, a typical panic looks like:
-> > > 
-> > > "BUG: unable to handle kernel paging request at ffff880085894000
-> > > IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
-> > > 
-> > > This is because e820 map has been changed by BIOS before/after
-> > > hibernation, and one of the page frames from first kernel
-> > > is right located in second kernel's unmapped region, so panic
-> > > comes out when accessing unmapped kernel address.
-> > > 
-> > > In order to tell the user why this happeneded, and for scalability,
-> > > we introduce a framework(a new file named hibernation_e820.c) to
-> > > compare the e820 maps before/after hibernation. If these two
-> > > e820 maps are not compatible with each other, we will print
-> > > warning about the first corrupt e820 entry's information
-> > > (there might be more than one broken e820 entries) once the
-> > > system goes into panic, for example:
-> > > 
-> > > BUG: unable to handle kernel paging request at ffff8800a9688000
-> > > IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70
-> > > PM: Hibernation Caution! Oops might be due to inconsistent e820 table.
-> > > PM: mem [0xa963b000-0xa963d000][ACPI Table] is an invalid old e820 region.
-> > > PM: Inconsistent with current [mem 0xa963b000-0xa963e000][ACPI Table].
-> > > PM: Please update your BIOS, or do not use hibernation on this machine.
-> > > 
-> > > The following kind of e820 entries will be regarded as invalid ones:
-> > > 1.E820_RAM:  old region is not a subset of any current region.
-> > > 2.E820_ACPI: old region is not strictly the same as any current
-> > >              region(example above).
-> > > 
-> > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > > ---
-> > > v6:
-> > >  - Fix some compiling errors reported by 0day/LKP, adjust
-> > >    Kconfig/variable namings.
-> > > v5:
-> > >  - Rewrite this patch to just warn user of the broken BIOS
-> > >    when panic.
-> > > v4:
-> > >  - Add __attribute__ ((unused)) for swsusp_page_is_valid,
-> > >    to eliminate the warnning of:
-> > >    'swsusp_page_is_valid' defined but not used
-> > >    on non-x86 platforms.
-> > > 
-> > > v3:
-> > >  - Adjust the logic to exclude the end_pfn boundary in pfn_mapped
-> > >    when invoking mark_valid_pages, because the end_pfn is not
-> > >    a mapped page frame, we should not regard it as a valid page.
-> > > 
-> > >    Move the sanity check of valid pages to a early stage in resuming
-> > >    process(moved to mark_unsafe_pages), in this way, we can avoid
-> > >    unnecessarily accessing these invalid pages in later stage(yes,
-> > >    move to the original position Joey once introduced in:
-> > >    Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820
-> > >    reserved regions")
-> > > 
-> > >    With v3 patch applied, I did 30 cycles on my problematic platform,
-> > >    no panic triggered anymore(50% reproducible before patched, by
-> > >    plugging/unplugging memory peripheral during hibernation), and it
-> > >    just warns of invalid pages.
-> > >    
-> > > v2:
-> > >  - According to Ingo's suggestion, rewrite this patch.
-> > > 
-> > >    New version just checks each page frame according to pfn_mapped array.
-> > >    So that we do not need to touch existing code related to
-> > >    E820_RESERVED_KERN. And this method can naturely guarantee
-> > >    that the system before/after hibernation do not need to be of
-> > >    the same memory size on x86_64.
-> > 
-> > What's the progress of this patch? Looks already have experts review it.
-> > Why this patch didn't accept?
-> This patch is a little overkilled, and I have saved another simpler
-> version to only check the md5 hash (as people suggested) for it. I can post it later.
-> 
-> thanks,
-> Yu
+On Tue, Aug 23, 2016 at 5:58 PM, Chen Yu <yu.c.chen@intel.com> wrote:
+> Hi John, some small typos below, others should be OK.
 
-I am happy to test and review it.
+Thanks. I realize you mailed me before on this, but I forgot to
+integrate the changes. Apologies.
 
-Thanks a lot!
-Joey Lee
+I've now integrated the changes and updated the git branch.  The HEAD
+for the pull request is now: 4efd3c8faf189674eeafb0c14ff4c556ed6adcf7.
+
+I'll send an updated v2 patch here shortly.
+
+thanks
+-john
