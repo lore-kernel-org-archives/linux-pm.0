@@ -1,30 +1,45 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 04/11] sched,x86: Enable Turbo Boost Max Technology
-Date: Wed, 24 Aug 2016 20:22:55 +0200
-Message-ID: <20160824182255.GC10153@twins.programming.kicks-ass.net>
-References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1471559812-19967-5-git-send-email-srinivas.pandruvada@linux.intel.com>
- <20160824101853.GA25705@gmail.com>
- <20160824175057.GA5032@linux.intel.com>
- <20160824180854.GA1398@gmail.com>
+From: lists@ssl-mail.com
+Subject: Re: Can't enable/switch to 'schedutil' governor with kernel 4.7.2 ?
+Date: Wed, 24 Aug 2016 13:00:41 -0700
+Message-ID: <1472068841.1982612.705147345.1DDE879C@webmail.messagingengine.com>
+References: <1471969523.3010993.703762385.6A0277B5@webmail.messagingengine.com>
+ <000f01d1fd84$9fd127d0$df737770$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160824180854.GA1398@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Tim Chen <tim.c.chen@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from out2-smtp.messagingengine.com ([66.111.4.26]:47179 "EHLO
+        out2-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750899AbcHXUIC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Aug 2016 16:08:02 -0400
+In-Reply-To: <000f01d1fd84$9fd127d0$df737770$@net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: linux-pm@vger.kernel.org
 
-On Wed, Aug 24, 2016 at 08:08:54PM +0200, Ingo Molnar wrote:
-> > 
-> > So if we take the approach to enable this feature by default for only
-> > single node system (using that as a criteria for client), will that seem
-> > reasonable to you?
+
+
+On Tue, Aug 23, 2016, at 02:23 PM, Doug Smythies wrote:
+> On 2016.08.23 09:25 lists@ssl-mail.com wrote:
 > 
-> I suppose that would work. Peter, any objections to such an approach?
+> > Can't enable/switch to 'schedutil' governor
+> > I'm running 
+> >	uname -rm
+> >		4.7.2-1.g34ba8d6-default x86_64
+> >
+> > I'm trying to set/use the 'schedutil' governor.
+> 
+> ...[cut]...
+> 
+> Please try not using cpupower or any other utility.
+> Please try using the primitive commands directly.
 
-Works for me.
+as a general rule? or in this case?
 
-Thanks!
+IT appears the problem's actually a kernel bug:
+
+Bug 135391 - cpupower does not change the governor anymore 
+https://bugzilla.kernel.org/show_bug.cgi?id=135391
+
+AFAICT the fix isn't in the 4.7.X tree, just in the 4.8.X one.
