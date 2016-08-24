@@ -1,60 +1,85 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] devfreq_cooling: no need to check state with negative
- number
-Date: Wed, 24 Aug 2016 14:10:00 +0800
-Message-ID: <1472019000.2682.0.camel@intel.com>
-References: <CGME20160822081333epcas1p1d61dc80a90c8961ac5fca0686bc79b48@epcas1p1.samsung.com>
-         <1471853286-10432-1-git-send-email-shawn.lin@rock-chips.com>
-         <57BBDA4A.3030805@samsung.com>
+Subject: Re: [PATCH -next] thermal: qoriq: Remove unnecessary
+ platform_set_drvdata()
+Date: Wed, 24 Aug 2016 14:41:01 +0800
+Message-ID: <1472020861.2682.2.camel@intel.com>
+References: <1471964488-28313-1-git-send-email-weiyj.lk@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:16533 "EHLO mga06.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:10406 "EHLO mga01.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750947AbcHXGKU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 24 Aug 2016 02:10:20 -0400
-In-Reply-To: <57BBDA4A.3030805@samsung.com>
+        id S1752805AbcHXGlC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 24 Aug 2016 02:41:02 -0400
+In-Reply-To: <1471964488-28313-1-git-send-email-weiyj.lk@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Shawn Lin <shawn.lin@rock-chips.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org
+To: Wei Yongjun <weiyj.lk@gmail.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Wei Yongjun <weiyongjun1@huawei.com>, linux-pm@vger.kernel.org, hongtao.jia@nxp.com
 
-On 二, 2016-08-23 at 14:08 +0900, Chanwoo Choi wrote:
-> Hi,
+On 二, 2016-08-23 at 15:01 +0000, Wei Yongjun wrote:
+> From: Wei Yongjun <weiyongjun1@huawei.com>
 > 
-> On 2016년 08월 22일 17:08, Shawn Lin wrote:
-> > 
-> > We could see that state is defined as unsigned type, so it
-> > should never be less than zero. Let' remove this check.
-> > 
-> > Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
-> > ---
-> > 
-> >  drivers/thermal/devfreq_cooling.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/thermal/devfreq_cooling.c
-> > b/drivers/thermal/devfreq_cooling.c
-> > index 01f0015..81631b1 100644
-> > --- a/drivers/thermal/devfreq_cooling.c
-> > +++ b/drivers/thermal/devfreq_cooling.c
-> > @@ -312,7 +312,7 @@ static int devfreq_cooling_state2power(struct
-> > thermal_cooling_device *cdev,
-> >  	unsigned long freq;
-> >  	u32 static_power;
-> >  
-> > -	if (state < 0 || state >= dfc->freq_table_size)
-> > +	if (state >= dfc->freq_table_size)
-> >  		return -EINVAL;
-> >  
-> >  	freq = dfc->freq_table[state];
-> > 
-> As the description, the 'state' variable is unsigned type.
+> The driver core clears the driver data to NULL after device_release
+> or on probe failure. Thus, it is not needed to manually clear the
+> device driver data to NULL.
 > 
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-> 
+> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+
 Patch applied.
 
 thanks,
 rui
+> ---
+>  drivers/thermal/qoriq_thermal.c | 10 ++--------
+>  1 file changed, 2 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/thermal/qoriq_thermal.c
+> b/drivers/thermal/qoriq_thermal.c
+> index 644ba52..d01eca0 100644
+> --- a/drivers/thermal/qoriq_thermal.c
+> +++ b/drivers/thermal/qoriq_thermal.c
+> @@ -217,15 +217,13 @@ static int qoriq_tmu_probe(struct
+> platform_device *pdev)
+>  	data->sensor_id = qoriq_tmu_get_sensor_id();
+>  	if (data->sensor_id < 0) {
+>  		dev_err(&pdev->dev, "Failed to get sensor id\n");
+> -		ret = -ENODEV;
+> -		goto err_iomap;
+> +		return -ENODEV;
+>  	}
+>  
+>  	data->regs = of_iomap(np, 0);
+>  	if (!data->regs) {
+>  		dev_err(&pdev->dev, "Failed to get memory
+> region\n");
+> -		ret = -ENODEV;
+> -		goto err_iomap;
+> +		return -ENODEV;
+>  	}
+>  
+>  	qoriq_tmu_init_device(data);	/* TMU initialization */
+> @@ -254,9 +252,6 @@ static int qoriq_tmu_probe(struct platform_device
+> *pdev)
+>  err_tmu:
+>  	iounmap(data->regs);
+>  
+> -err_iomap:
+> -	platform_set_drvdata(pdev, NULL);
+> -
+>  	return ret;
+>  }
+>  
+> @@ -270,7 +265,6 @@ static int qoriq_tmu_remove(struct
+> platform_device *pdev)
+>  	tmu_write(data, TMR_DISABLE, &data->regs->tmr);
+>  
+>  	iounmap(data->regs);
+> -	platform_set_drvdata(pdev, NULL);
+>  
+>  	return 0;
+>  }
+> 
+> 
+> 
