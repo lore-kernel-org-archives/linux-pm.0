@@ -1,29 +1,93 @@
 From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH 2/2] timekeeping: Cap array access in timekeeping_debug to
- protect against invalid sleep times
-Date: Tue, 23 Aug 2016 19:54:25 -0700
-Message-ID: <CALAqxLUrB1ZwBRk2-Ajkquhsa6_ztV8uXPq+-f7nBb1GnBd3Og@mail.gmail.com>
-References: <1471993702-29148-1-git-send-email-john.stultz@linaro.org>
- <1471993702-29148-3-git-send-email-john.stultz@linaro.org> <20160824005830.GA16827@sharon>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20160824005830.GA16827@sharon>
-Sender: stable-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Janek Kozicki <cosurgi@gmail.com>, Xunlei Pang <xpang@redhat.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, stable <stable@vger.kernel.org>
+Subject: [RFC][PATCH v2] timekeeping: Cap array access in timekeeping_debug to protect against invalid sleep times
+Date: Tue, 23 Aug 2016 19:56:40 -0700
+Message-ID: <1472007400-26563-1-git-send-email-john.stultz@linaro.org>
+References: <1471993702-29148-3-git-send-email-john.stultz@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1471993702-29148-3-git-send-email-john.stultz@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Janek Kozicki <cosurgi@gmail.com>, Chen Yu <yu.c.chen@intel.com>, Xunlei Pang <xpang@redhat.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, stable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 23, 2016 at 5:58 PM, Chen Yu <yu.c.chen@intel.com> wrote:
-> Hi John, some small typos below, others should be OK.
+It was reported that hibernation could fail on the 2nd attempt,
+where the system hangs at hibernate() -> syscore_resume() ->
+i8237A_resume() -> claim_dma_lock(), because the lock has
+already been taken.
 
-Thanks. I realize you mailed me before on this, but I forgot to
-integrate the changes. Apologies.
+However there is actually no other process would like to grab
+this lock on that problematic platform.
 
-I've now integrated the changes and updated the git branch.  The HEAD
-for the pull request is now: 4efd3c8faf189674eeafb0c14ff4c556ed6adcf7.
+Further investigation showed that the problem is triggered by
+setting /sys/power/pm_trace to 1 before the 1st hibernation.
 
-I'll send an updated v2 patch here shortly.
+Since once pm_trace is enabled, the RTC becomes unmeaningful
+after suspend, and meanwhile some BIOSes would like to adjust
+the 'invalid' RTC (e.g, smaller than 1970) to the release date
+of that motherboard during POST stage, thus after resumed, it
+may seem that the system had a significant long sleep time might
+due to meaningless RTC delta.
 
-thanks
--john
+Then in timekeeping_resume -> tk_debug_account_sleep_time, if
+the bit31 of the sleep time happened to be set to 1, the fls
+returns 32 and then we add 1 to sleep_time_bin[32], which
+caused a memory overwritten.
+
+As depicted by System.map:
+0xffffffff81c9d080 b sleep_time_bin
+0xffffffff81c9d100 B dma_spin_lock
+the dma_spin_lock.val is set to 1, which caused this problem.
+
+This patch adds a sanity check in tk_debug_account_sleep_time()
+to ensure we don't index past the sleep_time_bin array.
+
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Janek Kozicki <cosurgi@gmail.com>
+Cc: Chen Yu <yu.c.chen@intel.com>
+Cc: Xunlei Pang <xpang@redhat.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: stable <stable@vger.kernel.org>
+Reported-by: Janek Kozicki <cosurgi@gmail.com>
+Reported-by: Chen Yu <yu.c.chen@intel.com>
+[jstultz: Problem diagnosed and original patch by Chen Yu, I've
+ solved the issue slightly differently, but borrowed his excelent
+ explanation of of the issue here.]
+Signed-off-by: John Stultz <john.stultz@linaro.org>
+---
+v2: Minor tweaks to the commit message
+
+ kernel/time/timekeeping_debug.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/time/timekeeping_debug.c b/kernel/time/timekeeping_debug.c
+index f6bd652..107310a6 100644
+--- a/kernel/time/timekeeping_debug.c
++++ b/kernel/time/timekeeping_debug.c
+@@ -23,7 +23,9 @@
+ 
+ #include "timekeeping_internal.h"
+ 
+-static unsigned int sleep_time_bin[32] = {0};
++#define NUM_BINS 32
++
++static unsigned int sleep_time_bin[NUM_BINS] = {0};
+ 
+ static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
+ {
+@@ -69,6 +71,9 @@ late_initcall(tk_debug_sleep_time_init);
+ 
+ void tk_debug_account_sleep_time(struct timespec64 *t)
+ {
+-	sleep_time_bin[fls(t->tv_sec)]++;
++	/* Cap bin index so we don't overflow the array */
++	int bin = min(fls(t->tv_sec), NUM_BINS-1);
++
++	sleep_time_bin[bin]++;
+ }
+ 
+-- 
+1.9.1
