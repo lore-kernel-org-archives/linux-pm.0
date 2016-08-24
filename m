@@ -1,52 +1,61 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC/PATCH 1/2] cpuidle: Allow idle-states to be disabled at
- start
-Date: Wed, 24 Aug 2016 17:06:31 +0200
-Message-ID: <57BDB7F7.3090502@linaro.org>
-References: <cover.1471557381.git.ego@linux.vnet.ibm.com>
- <48afad7788300482c047fc35e70ca8e4bf31a5ac.1471557381.git.ego@linux.vnet.ibm.com>
- <57BDB2D8.4080507@linaro.org>
- <fe9a9667-cbbb-8fa2-5db0-2edd3220ca7b@gmail.com>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V8 4/4] ARM64: tegra: select PM_GENERIC_DOMAINS
+Date: Wed, 24 Aug 2016 17:09:14 +0200
+Message-ID: <20160824150914.GI6887@ulmo.ba.sec>
+References: <1459329316-27293-1-git-send-email-jonathanh@nvidia.com>
+ <1459329316-27293-5-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <fe9a9667-cbbb-8fa2-5db0-2edd3220ca7b@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Balbir Singh <bsingharora@gmail.com>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Neuling <michael.neuling@au1.ibm.com>, Paul Mackerras <paulus@samba.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>, linux-pm@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="cf0hFtnykp6aONGL"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1459329316-27293-5-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08/24/2016 04:48 PM, Balbir Singh wrote:
-> 
-> 
-> On 25/08/16 00:44, Daniel Lezcano wrote:
->> On 08/19/2016 12:26 AM, Gautham R. Shenoy wrote:
->>> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->>>
->>> Currently all the idle states registered by a cpu-idle driver are
->>> enabled by default. This patch adds a mechanism which allows the
->>> driver to hint if an idle-state should start in a disabled state. The
->>> cpu-idle core will use this hint to appropriately initialize the
->>> usage->disable knob of the CPU device idle state.
->>
->> Why do you need to do that ?
->>
-> 
-> I think patch 2/2 explains the reason as it uses this infrastructure
 
-Ok, let me elaborate the question, I was not clear.
+--cf0hFtnykp6aONGL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Why the userspace can't setup the system environment at boot time by
-disabling the state instead of adding extra code to disable it at boot
-time in the kernel and then re-enable it from userspace ?
+On Wed, Mar 30, 2016 at 10:15:16AM +0100, Jon Hunter wrote:
+> Enable PM_GENERIC_DOMAINS for tegra 64-bit devices. To ensure that devices
+> dependent upon a particular power-domain are only probed when that power
+> domain has been powered up, requires that PM is made mandatory for tegra
+> 64-bit devices and so select this option for tegra as well.
+>=20
+> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> Reviewed-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  arch/arm64/Kconfig.platforms | 2 ++
+>  1 file changed, 2 insertions(+)
 
-  -- Daniel
+Applied, thanks.
 
+Thierry
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+--cf0hFtnykp6aONGL
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJXvbiYAAoJEN0jrNd/PrOhWjYP/0+m9/aIEDJIz7kRlFRsS2Jx
+C9pFN1yuHrCy8XojRsN7nDo0RlRgycj1rvF51Yc0CS96UDNXxXzSPDr6WnhDCpDo
+qJmZpNtllqPGkkW9/cBMsYqftx/wjVR+rML01eGlfwuocfb8Ilbg3/otE2N5C16/
+T77rjDrbG2qTH3cnR2FYmWcDFGblWVcfWN19o6zEHQKObgXCi0jD1ctu4PE3rekl
+T3X+iqKV/FP4VXX+L2xFwCAVkS46eNZyCG4wIeiA1S8h62Q/KHFp4QnnDkZUUXnL
+MucA7cNIr+JuU5x3Ry3DyhetMBUKXgB3xqL66UsePKhnMeMI23/xfZeXxNuRUeiC
+XOdW1wTxTIha3ELBgy7c3iB9yOW+6uIbQ1K3fmuuo555G4RCdjrSWJ2QU9cf5eqZ
+QBcne3QUtaQjVJBK5xVZd5Re0xjAWbmbyA2hifpNSdk3nRCVnqdnP0946Gv7COlF
+ZdVuBCtgMZxy2/9xOZXe3H4H4O6/S2aHuGusQUyximzHepNLMz/WtvJA1to6rWFy
+E8TiaVqVeVVio0p5TzJJXVmTQdoObfj3CgkGI6POPvLoqOHpOX7zLrp3momMO87i
+23l4jH6rVfbguWQvncR0JkrdIuQEDoS78raKyCxDaRDQd4bPRg5asd4MizLr4XO7
+qHjJK2lrbhZ3i2Ql6TMO
+=TSIN
+-----END PGP SIGNATURE-----
+
+--cf0hFtnykp6aONGL--
