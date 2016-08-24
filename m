@@ -1,59 +1,125 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH 04/11] sched,x86: Enable Turbo Boost Max Technology
-Date: Wed, 24 Aug 2016 12:18:53 +0200
-Message-ID: <20160824101853.GA25705@gmail.com>
-References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1471559812-19967-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [Ksummit-discuss] Self nomination
+Date: Wed, 24 Aug 2016 14:12:18 +0200
+Message-ID: <243fdf0c-22c1-e56e-ab01-b2a44bc91da2@samsung.com>
+References: <20160726223054.GA30993@dtor-ws>
+ <4207317.8s4bUitgDu@vostro.rjw.lan>
+ <b339d512-afc6-8f2d-4c26-e6ff997f75c4@samsung.com>
+ <2095093.rkXOZ187BN@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1471559812-19967-5-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, peterz@infradead.org, x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, tim.c.chen@linux.intel.com, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:47834 "EHLO
+        mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753141AbcHXMX6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Aug 2016 08:23:58 -0400
+Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
+ by mailout3.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OCE008OOXWJ4D70@mailout3.w1.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 24 Aug 2016 13:12:19 +0100 (BST)
+In-reply-to: <2095093.rkXOZ187BN@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Marc Zyngier <marc.zyngier@arm.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "ksummit-discuss@lists.linuxfoundation.org" <ksummit-discuss@lists.linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>
+
+Hi Rafael,
 
 
-* Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> wrote:
+On 2016-08-06 02:20, Rafael J. Wysocki wrote:
+> On Wednesday, August 03, 2016 10:12:00 AM Marek Szyprowski wrote:
+>> Dear All,
+>>
+>>
+>> On 2016-08-03 01:00, Rafael J. Wysocki wrote:
+>>> On Tuesday, August 02, 2016 10:09:17 AM Linus Walleij wrote:
+>>>> On Thu, Jul 28, 2016 at 12:14 PM, Marc Zyngier <marc.zyngier@arm.com> wrote:
+>>>>> On 26/07/16 23:30, Dmitry Torokhov wrote:
+>>>>>> - I would like to sync up with people and discuss [lack of] progress
+>>>>>>     on topic of device probe ordering (including handling of deferred
+>>>>>>     probes, asynchronous probes, etc).
+>>>>> I'm extremely interested in discussing this.
+>>>> I've also tried to pitch in on it in the past but I just feel stupid
+>>>> whenever we try to come up with something better than what
+>>>> we have :(
+>>>>
+>>>>> It has wide reaching consequences as (with my irqchip maintainer hat on)
+>>>>> we've had to pretend that some bits of HW (timers, interrupt
+>>>>> controllers) are not "devices". Not a massive issue for most, except
+>>>>> when your interrupt controller has requirements that are very similar to
+>>>>> the DMA mapping API (which you cannot use because "not a device"). Other
+>>>>> problems are introduced by things like wire-MSI bridges, and most people
+>>>>> end-up resorting to hacks like ad-hoc initcalls and sprinkling deferred
+>>>>> probes in specific drivers.
+>>>> Same feeling here. I'm accepting patches for random initcall
+>>>> reordering because there is nothing else I can do, people need to
+>>>> have their systems running. But it feels really fragile.
+>>>>
+>>>> Deferred probe alleviated the problem, but I remember saying at
+>>>> the time that what we really need to do is build a dependency
+>>>> graph and resolve it the same way e.g. systemd does. (Someone
+>>>> may have called me BS on that, either for being wrong about everything
+>>>> as usual or because of mentioning systemd, I don't know which one.)
+>>>>
+>>>> The latest proposal I saw came from Rafael and he had a scratch
+>>>> idea for a dependency graph that I really liked, but I guess he's been
+>>>> sidetracked since. Rafael, what happened with that?
+>>> I got distracted, but Marek Szyprowski has revived it recently.
+>>>
+>>> It needs to be cleaned up somewhat, but other than that I think it's in
+>>> a good enough shape to make some progress in that direction, at least in
+>>> principle.
+>> I really like the idea of pm dependencies between device and the patches
+>> prepared by Rafael. They are exactly what we need for our case (PM for
+>> Exynos IOMMU), but they will also help solving PM issues with complex
+>> devices (like DRM for SoCs and ASoC audio).
+>>
+>> Rafael: do you plan to do any update on them?
+> Yes, I do, but to make some cosmetic changes rather.
+>
+>> Some time ago you wrote, that you had such plan, but real life proved
+>> something else.
+> Well, I was working on other things in the meantime, but I still had that
+> plan. :-)
+>
+>> If needed I can continue works on them, but I need some directions what has
+>> to be improved and fixed.
+> Thanks so much!
+>
+> First off, the networking people claimed the "devlink" term in the meantime
+> and it's better to avoid confusion here, so I'd change it to "devdep" or
+> similar in the patches.
+>
+> In addition to that Tomeu Vizoso complained that the supplier_links and
+> consumer_links list heads in struct device were confusing and I see why that
+> could be the case, so I'd change them to something more direct, like maybe
+> links_to_suppliers and links_to_consumers.
+>
+> Please let me know what you think.
 
-> From: Tim Chen <tim.c.chen@linux.intel.com>
-> 
-> On some Intel cores, they can boosted to a higher turbo frequency than
-> the other cores on the same die.  So we prefer processes to be run on
-> them vs other lower frequency ones for extra performance.
-> 
-> We extend the asym packing feature in the scheduler to support packing
-> task to the higher frequency core at the core sched domain level.
-> 
-> We set up a core priority metric to abstract the core preferences based
-> on the maximum boost frequency.  The priority is instantiated such that
-> the core with a higher priority is favored over the core with lower
-> priority when making scheduling decision using ASYM_PACKING.  The smt
-> threads that are of higher number are discounted in their priority so
-> we will not try to pack tasks onto all the threads of a favored core
-> before using other cpu cores.  The cpu that's of the highese priority
-> in a sched_group is recorded in sched_group->asym_prefer_cpu during
-> initialization to save lookup during load balancing.
-> 
-> A sysctl variable /proc/sys/kernel/sched_itmt_enabled is provided so
-> the scheduling based on favored core can be turned on or off at run time.
+I think that both name changes (devlink -> devdep and adding "_to_") 
+make sense
+and such change will make the code easier to understand.
 
-> +/*
-> + * Boolean to control whether we want to move processes to cpu capable
-> + * of higher turbo frequency for cpus supporting Intel Turbo Boost Max
-> + * Technology 3.0.
-> + *
-> + * It can be set via /proc/sys/kernel/sched_itmt_enabled
-> + */
-> +unsigned int __read_mostly sysctl_sched_itmt_enabled = 0;
+I've also managed to find what is the source of the problem with reboot 
+hang that
+Tobias reported. It was my fault of incorrect use of device links. 
+Adding a link
+to not-yet-fully-registered device results in trashing devices_kset and 
+dpm lists.
+I will check if it is possible to a warning or proper support for such case
+(iommu support for given device is initialized before given device's 
+struct device
+is added to the system by device_add() function).
 
-Ugh, no.
+Do you want me to resend the patches with the above mentioned name 
+changes or do
+you want to do it on your own and then I will send my updated patches?
 
-We don't add features to the scheduler in the hope that they might or might not 
-help. We either enable a new feature by default (and make damn sure it helps!),
-or don't add the feature at all.
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
-Thanks,
-
-	Ingo
