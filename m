@@ -1,113 +1,147 @@
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: [PATCH 11/16] cpuidle: powernv: Convert to hotplug state machine
-Date: Wed, 24 Aug 2016 11:12:59 +0200
-Message-ID: <20160824091259.ozyslcopxvbfdqzy@linutronix.de>
+Subject: [PATCH 12/16 v2] cpuidle: coupled: Convert to hotplug state machine
+Date: Wed, 24 Aug 2016 11:14:44 +0200
+Message-ID: <20160824091444.brdr5zpbxjvh6n3f@linutronix.de>
 References: <20160818125731.27256-1-bigeasy@linutronix.de>
- <20160818125731.27256-12-bigeasy@linutronix.de>
+ <20160818125731.27256-13-bigeasy@linutronix.de>
+ <57BC5CB4.409@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:59160 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753211AbcHXJNF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Aug 2016 05:13:05 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160818125731.27256-12-bigeasy@linutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <57BC5CB4.409@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
 Install the callbacks via the state machine.
-
-v1…v2: - Use only CPUHP_CPUIDLE_DEAD (requested by Daniel Lezcano)
 
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- drivers/cpuidle/cpuidle-powernv.c | 53 ++++++++++++++++++---------------------
- 1 file changed, 25 insertions(+), 28 deletions(-)
+v1…v2: - refactor the code to drop the out label.
+       - make error path in cpuidle_coupled_init() simpler
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index f7ca891b5b59..5eb1ee70a5f8 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -119,39 +119,29 @@ static struct cpuidle_state powernv_states[CPUIDLE_STATE_MAX] = {
- 		.enter = snooze_loop },
- };
+ drivers/cpuidle/coupled.c  | 75 +++++++++++++++++++---------------------------
+ include/linux/cpuhotplug.h |  1 +
+ 2 files changed, 32 insertions(+), 44 deletions(-)
+
+diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+index d5657d50ac40..5ba1a8913421 100644
+--- a/drivers/cpuidle/coupled.c
++++ b/drivers/cpuidle/coupled.c
+@@ -749,65 +749,52 @@ static void cpuidle_coupled_allow_idle(struct cpuidle_coupled *coupled)
+ 	put_cpu();
+ }
  
--static int powernv_cpuidle_add_cpu_notifier(struct notifier_block *n,
--			unsigned long action, void *hcpu)
-+static int powernv_cpuidle_cpu_online(unsigned int cpu)
+-/**
+- * cpuidle_coupled_cpu_notify - notifier called during hotplug transitions
+- * @nb: notifier block
+- * @action: hotplug transition
+- * @hcpu: target cpu number
+- *
+- * Called when a cpu is brought on or offline using hotplug.  Updates the
+- * coupled cpu set appropriately
+- */
+-static int cpuidle_coupled_cpu_notify(struct notifier_block *nb,
+-		unsigned long action, void *hcpu)
++static int coupled_cpu_online(unsigned int cpu)
  {
--	int hotcpu = (unsigned long)hcpu;
--	struct cpuidle_device *dev =
--				per_cpu(cpuidle_devices, hotcpu);
-+	struct cpuidle_device *dev = per_cpu(cpuidle_devices, cpu);
+-	int cpu = (unsigned long)hcpu;
+ 	struct cpuidle_device *dev;
  
- 	if (dev && cpuidle_get_driver()) {
--		switch (action) {
--		case CPU_ONLINE:
--		case CPU_ONLINE_FROZEN:
--			cpuidle_pause_and_lock();
--			cpuidle_enable_device(dev);
--			cpuidle_resume_and_unlock();
--			break;
+-	switch (action & ~CPU_TASKS_FROZEN) {
+-	case CPU_UP_PREPARE:
+-	case CPU_DOWN_PREPARE:
+-	case CPU_ONLINE:
+-	case CPU_DEAD:
+-	case CPU_UP_CANCELED:
+-	case CPU_DOWN_FAILED:
+-		break;
+-	default:
+-		return NOTIFY_OK;
+-	}
 -
--		case CPU_DEAD:
--		case CPU_DEAD_FROZEN:
--			cpuidle_pause_and_lock();
--			cpuidle_disable_device(dev);
--			cpuidle_resume_and_unlock();
--			break;
+ 	mutex_lock(&cpuidle_lock);
+ 
+ 	dev = per_cpu(cpuidle_devices, cpu);
+-	if (!dev || !dev->coupled)
+-		goto out;
 -
--		default:
--			return NOTIFY_DONE;
--		}
-+		cpuidle_pause_and_lock();
-+		cpuidle_enable_device(dev);
-+		cpuidle_resume_and_unlock();
+-	switch (action & ~CPU_TASKS_FROZEN) {
+-	case CPU_UP_PREPARE:
+-	case CPU_DOWN_PREPARE:
+-		cpuidle_coupled_prevent_idle(dev->coupled);
+-		break;
+-	case CPU_ONLINE:
+-	case CPU_DEAD:
++	if (dev && dev->coupled) {
+ 		cpuidle_coupled_update_online_cpus(dev->coupled);
+-		/* Fall through */
+-	case CPU_UP_CANCELED:
+-	case CPU_DOWN_FAILED:
+ 		cpuidle_coupled_allow_idle(dev->coupled);
+-		break;
  	}
+ 
+-out:
+ 	mutex_unlock(&cpuidle_lock);
 -	return NOTIFY_OK;
 +	return 0;
  }
  
--static struct notifier_block setup_hotplug_notifier = {
--	.notifier_call = powernv_cpuidle_add_cpu_notifier,
+-static struct notifier_block cpuidle_coupled_cpu_notifier = {
+-	.notifier_call = cpuidle_coupled_cpu_notify,
 -};
-+static int powernv_cpuidle_cpu_dead(unsigned int cpu)
++static int coupled_cpu_up_prepare(unsigned int cpu)
 +{
-+	struct cpuidle_device *dev = per_cpu(cpuidle_devices, cpu);
++	struct cpuidle_device *dev;
 +
-+	if (dev && cpuidle_get_driver()) {
-+		cpuidle_pause_and_lock();
-+		cpuidle_disable_device(dev);
-+		cpuidle_resume_and_unlock();
-+	}
++	mutex_lock(&cpuidle_lock);
++
++	dev = per_cpu(cpuidle_devices, cpu);
++	if (dev && dev->coupled)
++		cpuidle_coupled_prevent_idle(dev->coupled);
++
++	mutex_unlock(&cpuidle_lock);
 +	return 0;
 +}
  
- /*
-  * powernv_cpuidle_driver_init()
-@@ -355,7 +345,14 @@ static int __init powernv_processor_idle_init(void)
- 		return retval;
- 	}
- 
--	register_cpu_notifier(&setup_hotplug_notifier);
-+	retval = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
-+					   "CPUIDLE_POWERNV_ONLINE",
-+					   powernv_cpuidle_cpu_online, NULL);
-+	WARN_ON(retval < 0);
-+	retval = cpuhp_setup_state_nocalls(CPUHP_CPUIDLE_DEAD,
-+					   "CPUIDLE_POWERNV_DEAD", NULL,
-+					   powernv_cpuidle_cpu_dead);
-+	WARN_ON(retval < 0);
- 	printk(KERN_DEBUG "powernv_idle_driver registered\n");
- 	return 0;
+ static int __init cpuidle_coupled_init(void)
+ {
+-	return register_cpu_notifier(&cpuidle_coupled_cpu_notifier);
++	int ret;
++
++	ret = cpuhp_setup_state_nocalls(CPUHP_CPUIDLE_COUPLED_PREPARE,
++					"CPUIDLE_COUPLED_PREPARE",
++					coupled_cpu_up_prepare,
++					coupled_cpu_online);
++	if (ret)
++		return ret;
++	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
++					"CPUIDLE_COUPLED_ONLINE",
++					coupled_cpu_online,
++					coupled_cpu_up_prepare);
++	if (ret < 0)
++		cpuhp_remove_state_nocalls(CPUHP_CPUIDLE_COUPLED_PREPARE);
++	return ret;
  }
+ core_initcall(cpuidle_coupled_init);
+diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+index 14b58a9d1450..965acec06d4e 100644
+--- a/include/linux/cpuhotplug.h
++++ b/include/linux/cpuhotplug.h
+@@ -30,6 +30,7 @@ enum cpuhp_state {
+ 	CPUHP_SLAB_PREPARE,
+ 	CPUHP_RCUTREE_PREP,
+ 	CPUHP_MD_RAID5_PREPARE,
++	CPUHP_CPUIDLE_COUPLED_PREPARE,
+ 	CPUHP_NOTIFY_PREPARE,
+ 	CPUHP_TIMERS_DEAD,
+ 	CPUHP_BRINGUP_CPU,
 -- 
 2.9.3
-
