@@ -1,57 +1,88 @@
-From: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH v8 02/11] power: act8945a_charger: Achieve properties from its node
-Date: Thu, 25 Aug 2016 15:19:50 +0800
-Message-ID: <1472109599-21915-3-git-send-email-wenyou.yang@atmel.com>
+From: Wenyou Yang <wenyou.yang@atmel.com>
+Subject: [PATCH v8 03/11] power: act8945a_charger: Remove "battery_temperature"
+Date: Thu, 25 Aug 2016 15:19:51 +0800
+Message-ID: <1472109599-21915-4-git-send-email-wenyou.yang@atmel.com>
 References: <1472109599-21915-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1472109599-21915-1-git-send-email-wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1472109599-21915-1-git-send-email-wenyou.yang@atmel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Wenyou Yang <wenyou.yang@atmel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Since the act8945a_charger is regarded as a sub-device, all properties will
-be assigned to its own device node. All properties can be achieved from its
-own node, instead of from its parent device.
+Remove "battery_temperature" member, it is redundant, it is the
+hardware's responsibility to handle TH pin properly.
+It is unnecessary to use the dt property to check if there is
+a battery temperature monitor or not.
 
-Signed-off-by: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
 ---
 
 Changes in v8: None
-Changes in v7: None
+Changes in v7:
+ - Fix the missing negation sign.
+
 Changes in v6: None
 Changes in v5: None
 Changes in v4: None
 Changes in v3: None
 Changes in v2: None
 
- drivers/power/supply/act8945a_charger.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/power/supply/act8945a_charger.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
-index b5c00e4..3f486c9 100644
+index 3f486c9..af00668 100644
 --- a/drivers/power/supply/act8945a_charger.c
 +++ b/drivers/power/supply/act8945a_charger.c
-@@ -328,11 +328,11 @@ static int act8945a_charger_probe(struct platform_device *pdev)
+@@ -76,7 +76,6 @@ static const char *act8945a_charger_manufacturer = "Active-semi";
+ 
+ struct act8945a_charger {
+ 	struct regmap *regmap;
+-	bool battery_temperature;
+ };
+ 
+ static int act8945a_get_charger_state(struct regmap *regmap, int *val)
+@@ -138,8 +137,7 @@ static int act8945a_get_charge_type(struct regmap *regmap, int *val)
+ 	return 0;
+ }
+ 
+-static int act8945a_get_battery_health(struct act8945a_charger *charger,
+-				       struct regmap *regmap, int *val)
++static int act8945a_get_battery_health(struct regmap *regmap, int *val)
+ {
+ 	int ret;
+ 	unsigned int status;
+@@ -148,7 +146,7 @@ static int act8945a_get_battery_health(struct act8945a_charger *charger,
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	if (charger->battery_temperature && !(status & APCH_STATUS_TEMPDAT))
++	if (!(status & APCH_STATUS_TEMPDAT))
+ 		*val = POWER_SUPPLY_HEALTH_OVERHEAT;
+ 	else if (!(status & APCH_STATUS_INDAT))
+ 		*val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+@@ -188,8 +186,7 @@ static int act8945a_charger_get_property(struct power_supply *psy,
+ 		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
+ 		break;
+ 	case POWER_SUPPLY_PROP_HEALTH:
+-		ret = act8945a_get_battery_health(charger,
+-						  regmap, &val->intval);
++		ret = act8945a_get_battery_health(regmap, &val->intval);
+ 		break;
+ 	case POWER_SUPPLY_PROP_MODEL_NAME:
+ 		val->strval = act8945a_charger_model;
+@@ -235,9 +232,6 @@ static int act8945a_charger_config(struct device *dev,
  		return -EINVAL;
  	}
  
--	ret = act8945a_charger_config(pdev->dev.parent, charger);
-+	ret = act8945a_charger_config(&pdev->dev, charger);
- 	if (ret)
- 		return ret;
+-	charger->battery_temperature = of_property_read_bool(np,
+-				"active-semi,check-battery-temperature");
+-
+ 	chglev_pin = of_get_named_gpio_flags(np,
+ 				"active-semi,chglev-gpios", 0, &flags);
  
--	psy_cfg.of_node	= pdev->dev.parent->of_node;
-+	psy_cfg.of_node	= pdev->dev.of_node;
- 	psy_cfg.drv_data = charger;
- 
- 	psy = devm_power_supply_register(&pdev->dev,
 -- 
 2.7.4
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
