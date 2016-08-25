@@ -1,82 +1,147 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC][PATCH 8 of 7] cpufreq: intel_pstate: add iir filter to pstate.
-Date: Thu, 25 Aug 2016 10:00:40 -0700
-Message-ID: <000d01d1fef2$36ff5960$a4fe0c20$@net>
-References: <1471907493-26639-1-git-send-email-dsmythies@telus.net>
-Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v4 11/16] doc / cpu_domains: Describe CPU PM domains setup and governor
+Date: Thu, 25 Aug 2016 13:51:41 -0600
+Message-ID: <1472154706-40119-12-git-send-email-lina.iyer@linaro.org>
+References: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta20.telus.net ([209.171.16.93]:55930 "EHLO cmta20.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754739AbcHYRAr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 25 Aug 2016 13:00:47 -0400
-In-Reply-To: <1471907493-26639-1-git-send-email-dsmythies@telus.net>
-Content-Language: en-ca
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:33627 "EHLO
+        mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756875AbcHYTw0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Aug 2016 15:52:26 -0400
+Received: by mail-pa0-f45.google.com with SMTP id ti13so19689820pac.0
+        for <linux-pm@vger.kernel.org>; Thu, 25 Aug 2016 12:52:21 -0700 (PDT)
+In-Reply-To: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: srinivas.pandruvada@linux.intel.com
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
 
-Hi Srinivas:
+A generic CPU PM domain functionality is provided by
+drivers/base/power/cpu_domains.c. This document describes the generic
+usecase of CPU's PM domains, the setup of such domains and a CPU
+specific genpd governor.
 
-On 2016.08.22 16:12 Doug Smythies wrote:
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+---
+ Documentation/power/cpu_domains.txt | 109 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 109 insertions(+)
+ create mode 100644 Documentation/power/cpu_domains.txt
 
-...[cut]...
-+	 *
-+	 * no clamps. Pre-filter clamping was needed in past implementations.
-+	 * To Do: Is any pre-filter clamping needed here? */
-
-Yes, clamping is needed, otherwise, and for example, the target pstate
-can "stick" low at high load for a few sample periods, until the filtered
-value gets high enough. For the fix, I clamped the post-filter output value
-(perhaps not in the best way, but for now):
-
-doug@s15:~/temp-k-git/linux/drivers/cpufreq$ git diff
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index ab5c004..56c09ef8f 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1307,6 +1307,7 @@ static inline int32_t get_target_pstate_default(struct cpudata *cpu)
-        int64_t scaled_gain, unfiltered_target;
-        int32_t busy_frac;
-        int pstate;
-+       int max_perf, min_perf;
-        u64 duration_ns;
-
-        busy_frac = div_fp(sample->mperf, sample->tsc);
-@@ -1399,6 +1400,14 @@ static inline int32_t get_target_pstate_default(struct cpudata *cpu)
-        cpu->sample.target = div_u64((int_tofp(100) - scaled_gain) *
-                        cpu->sample.target + scaled_gain *
-                        unfiltered_target, int_tofp(100));
-+       /*
-+        * Clamp the filtered value.
-+        */
-+       intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
-+       if (cpu->sample.target < int_tofp(min_perf))
-+               cpu->sample.target = int_tofp(min_perf);
-+        if (cpu->sample.target > int_tofp(max_perf))
-+                cpu->sample.target = int_tofp(max_perf);
-
-        return fp_toint(cpu->sample.target + (1 << (FRAC_BITS-1)));
- }
-
-I'll send an updated patch in a few hours.
-
-...[cut]... 
-
-+	 *
-+	 * To Do: Often the actual pstate the system ran at over the last
-+	 * 	  interval is not what was asked for, due to influence from
-+	 *	  other CPUs. It might make sense to use the average pstate
-+	 *	  (get_avg_pstate) as the old_output here (as per previous
-+	 *	  work by Philippe Longepe and Stephane Gasparini on the
-+	 *	  get_target_pstate_use_cpu_load method). Test it.
-+	 */
-
-I have a version of this working. More on that it at a later date.
-
-... Doug
-
+diff --git a/Documentation/power/cpu_domains.txt b/Documentation/power/cpu_domains.txt
+new file mode 100644
+index 0000000..6a39a64
+--- /dev/null
++++ b/Documentation/power/cpu_domains.txt
+@@ -0,0 +1,109 @@
++CPU PM domains
++==============
++
++Newer CPUs are grouped in SoCs as clusters. A cluster in addition to the CPUs
++may have caches, floating point units and other architecture specific power
++controller that share resources when any of the CPUs are active. When the CPUs
++are in idle, some of these cluster components may also idle. A cluster may
++also be nested inside another cluster that provides common coherency
++interfaces to share data between the clusters. The organization of such
++clusters and CPU may be descibed in DT, since they are SoC specific.
++
++CPUIdle framework enables the CPUs to determine the sleep time and enter low
++power state to save power during periods of idle. CPUs in a cluster may enter
++and exit idle state independently of each other. During the time when all the
++CPUs are in idle state, the cluster may safely put some of the shared
++resources in their idle state. The time between the last CPU to enter idle and
++the first CPU to wake up is the time available for the cluster to enter its
++idle state.
++
++When SoCs power down the CPU during cpuidle, they generally have supplemental
++hardware that can handshake with the CPU with a signal that indicates that the
++CPU has stopped execution. The hardware is also responsible for warm booting
++the CPU on receiving an interrupt. In a cluster architecture, common resources
++that are shared by a cluster may also be powered down by an external
++microcontroller or a processor. The microcontroller may be programmed in
++advance to put the hardware blocks in a low power state, when the last active
++CPU sends the idle signal. When the signal is received, the microcontroller
++may trigger the hardware blocks to enter their low power state. When an
++interrupt to wakeup the processor is received, the microcontroller is
++responsible for bringing up the hardware blocks to its active state, before
++waking up the CPU. The timelines for such operations should be in the
++acceptable range for for CPU idle to get power benefits.
++
++CPU PM Domain Setup
++-------------------
++
++PM domains are represented in the DT as domain consumers and providers. A
++device may have a domain provider and a domain provider may support multiple
++domain consumers. Domains like clusters, may also be nested inside one
++another. A domain that has no active consumer, may be powered off and any
++resuming consumer would trigger the domain back to active. Parent domains may
++be powered off when the child domains are powered off. The CPU cluster can be
++fashioned as a PM domain. When the CPU devices are powered off, the PM domain
++may be powered off.
++
++Device idle is reference counted by runtime PM. When there is no active need
++for the device, runtime PM invokes callbacks to suspend the parent domain.
++Generic PM domain (genpd) handles the hierarchy of devices, domains and the
++reference counting of objects leading to last man down and first man up in the
++domain. The CPU domains helper functions defines PM domains for each CPU
++cluster and attaches the CPU devices to the respective PM domains.
++
++Platform drivers may use the following API to register their CPU PM domains.
++
++of_setup_cpu_pd() -
++Provides a single step registration of the CPU PM domain and attach CPUs to
++the genpd. Platform drivers may additionally register callbacks for power_on
++and power_off operations for the PM domain.
++
++of_setup_cpu_pd_single() -
++Define PM domain for a single CPU and attach the CPU to its domain.
++
++
++CPU PM Domain governor
++----------------------
++
++CPUs have a unique ability to determine their next wakeup. CPUs may wake up
++for known timer interrupts and unknown interrupts from idle. Prediction
++algorithms and heuristic based algorithms like the Menu governor for cpuidle
++can determine the next wakeup of the CPU. However, determining the wakeup
++across a group of CPUs is a tough problem to solve.
++
++A simplistic approach would be to resort to known wakeups of the CPUs in
++determining the next wakeup of any CPU in the cluster. The CPU PM domain
++governor does just that. By looking into the tick device of the CPUs, the
++governor can determine the sleep time between the last CPU and the first
++scheduled wakeup of any CPU in that domain. This combined with the PM QoS
++requirement for CPU_DMA_LATENCY can be used to determine the deepest possible
++idle state of the CPU domain.
++
++
++PSCI based CPU PM Domains
++-------------------------
++
++ARM PSCI v1.0 supports PM domains for CPU clusters like in big.Little
++architecture. It is supported as part of the OS-Initiated (OSI) mode of the
++PSCI firmware. Since the control of domains is abstracted in the firmware,
++Linux does not need even a driver to control these domains. The complexity of
++determining the idle state of the PM domain is handled by the CPU PM domains.
++
++Every PSCI CPU PM domain idle state has a unique PSCI state id. The state id
++is read from the DT and specified using the arm,psci-suspend-param property.
++This makes it easy for big.Little SoCs to just specify the PM domain idle
++states for the CPU along with the psci-suspend-param and everything else is
++handled by the PSCI fimrware drivers and the firmware.
++
++
++DT definitions for PSCI CPU PM Domains
++--------------------------------------
++
++A PM domain's idle state can be defined in DT, the description of which is
++available in [1]. PSCI based CPU PM domains may define their idle states as
++part of the psci node. The additional parameter arm,psci-suspend-param is used
++to indicate to the firmwware the addition cluster state that would be achieved
++after the last CPU makes the PSCI call to suspend the CPU. The description of
++PSCI domain states is available in [2].
++
++[1]. Documentation/devicetree/bindings/arm/idle-states.txt
++[2]. Documentation/devicetree/bindings/arm/psci.txt
+-- 
+2.7.4
 
