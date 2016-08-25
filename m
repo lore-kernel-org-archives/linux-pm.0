@@ -1,303 +1,222 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 06/16] PM / cpu_domains: Setup PM domains for CPUs/clusters
-Date: Thu, 25 Aug 2016 13:51:36 -0600
-Message-ID: <1472154706-40119-7-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v4 13/16] drivers: firmware: psci: Support cluster idle states for OS-Initiated
+Date: Thu, 25 Aug 2016 13:51:43 -0600
+Message-ID: <1472154706-40119-14-git-send-email-lina.iyer@linaro.org>
 References: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:34824 "EHLO
+        mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756915AbcHYTw0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Aug 2016 15:52:26 -0400
+Received: by mail-pa0-f44.google.com with SMTP id hb8so19692428pac.2
+        for <linux-pm@vger.kernel.org>; Thu, 25 Aug 2016 12:52:26 -0700 (PDT)
 In-Reply-To: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>
 
-Define and add Generic PM domains (genpd) for CPU clusters. Many new
-SoCs group CPUs as clusters. Clusters share common resources like power
-rails, caches, VFP, Coresight etc. When all CPUs in the cluster are
-idle, these shared resources may also be put in their idle state.
+PSCI OS initiated firmware may allow Linux to determine the state of the
+CPU cluster and the cluster at coherency level to enter idle states when
+there are no active CPUs. Since Linux has a better idea of the QoS and
+the wakeup pattern of the CPUs, the cluster idle states may be better
+determined by the OS instead of the firmware.
 
-CPUs may be associated with their domain providers. The domains in
-turn may be associated with their providers. This is clean way to model
-the cluster hierarchy like that of ARM's big.little architecture.
+The last CPU entering idle in a cluster, is responsible for selecting
+the state of the cluster. Only one CPU in a cluster may provide the
+cluster idle state to the firmware. Similarly, the last CPU in the
+system may provide the state of the coherency domain along with the
+cluster and the CPU state IDs.
 
-Platform drivers may initialize generic PM domains and setup the CPU PM
-domains for the genpd and attach CPUs to the domain. In the following
-patches, the CPUs are hooked up to runtime PM framework which helps
-power down the domain, when all the CPUs in the domain are idle.
+Utilize the CPU PM domain framework's helper functions to build up the
+hierarchy of cluster topology using Generic PM domains. We provide
+callbacks for domain power_on and power_off. By appending the state IDs
+at each domain level in the -power_off() callbacks, we build up a
+composite state ID that can be passed onto the firmware to idle the CPU,
+the cluster and the coherency interface.
 
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Suggested-by: Kevin Hilman <khilman@kernel.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/base/power/Makefile      |   1 +
- drivers/base/power/cpu_domains.c | 191 +++++++++++++++++++++++++++++++++++++++
- include/linux/cpu_domains.h      |  49 ++++++++++
- 3 files changed, 241 insertions(+)
- create mode 100644 drivers/base/power/cpu_domains.c
- create mode 100644 include/linux/cpu_domains.h
+ drivers/firmware/psci.c | 93 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 90 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index 5998c53..9883e89 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -3,6 +3,7 @@ obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
- obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
- obj-$(CONFIG_PM_OPP)	+= opp/
- obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o domain_governor.o
-+obj-$(CONFIG_PM_GENERIC_DOMAINS_OF)	+= cpu_domains.o
- obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
+diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+index 759b134..431385a 100644
+--- a/drivers/firmware/psci.c
++++ b/drivers/firmware/psci.c
+@@ -15,6 +15,7 @@
  
- ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
-diff --git a/drivers/base/power/cpu_domains.c b/drivers/base/power/cpu_domains.c
-new file mode 100644
-index 0000000..73e493b
---- /dev/null
-+++ b/drivers/base/power/cpu_domains.c
-@@ -0,0 +1,191 @@
-+/*
-+ * drivers/base/power/cpu_domains.c - Helper functions to create CPU PM domains.
-+ *
-+ * Copyright (C) 2016 Linaro Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/cpu.h>
-+#include <linux/cpumask.h>
+ #include <linux/arm-smccc.h>
+ #include <linux/cpuidle.h>
 +#include <linux/cpu_domains.h>
-+#include <linux/cpu_pm.h>
-+#include <linux/device.h>
-+#include <linux/kernel.h>
-+#include <linux/list.h>
-+#include <linux/pm_domain.h>
-+#include <linux/rculist.h>
-+#include <linux/rcupdate.h>
-+#include <linux/slab.h>
+ #include <linux/errno.h>
+ #include <linux/linkage.h>
+ #include <linux/of.h>
+@@ -53,6 +54,18 @@
+  */
+ static int resident_cpu = -1;
+ static bool psci_has_osi;
++static bool psci_has_osi_pd;
++static DEFINE_PER_CPU(u32, cluster_state_id);
 +
-+#define CPU_PD_NAME_MAX 36
-+
-+struct cpu_pm_domain {
-+	struct list_head link;
-+	struct cpu_pd_ops ops;
-+	struct generic_pm_domain *genpd;
-+	struct cpu_pm_domain *parent;
-+	cpumask_var_t cpus;
-+};
-+
-+/* List of CPU PM domains we care about */
-+static LIST_HEAD(of_cpu_pd_list);
-+static DEFINE_MUTEX(cpu_pd_list_lock);
-+
-+static inline struct cpu_pm_domain *to_cpu_pd(struct generic_pm_domain *d)
++static inline u32 psci_get_composite_state_id(u32 cpu_state)
 +{
-+	struct cpu_pm_domain *pd;
-+	struct cpu_pm_domain *res = NULL;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(pd, &of_cpu_pd_list, link)
-+		if (pd->genpd == d) {
-+			res = pd;
-+			break;
-+		}
-+	rcu_read_unlock();
-+
-+	return res;
++	return cpu_state | this_cpu_read(cluster_state_id);
 +}
 +
-+static int cpu_pd_power_on(struct generic_pm_domain *genpd)
++static inline void psci_reset_composite_state_id(void)
 +{
-+	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
-+
-+	return pd->ops.power_on ? pd->ops.power_on() : 0;
++	this_cpu_write(cluster_state_id, 0);
 +}
+ 
+ bool psci_tos_resident_on(int cpu)
+ {
+@@ -179,6 +192,8 @@ static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
+ 
+ 	fn = psci_function_id[PSCI_FN_CPU_ON];
+ 	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
++	/* Reset CPU cluster states */
++	psci_reset_composite_state_id();
+ 	return psci_to_linux_errno(err);
+ }
+ 
+@@ -250,6 +265,27 @@ static int __init psci_features(u32 psci_func_id)
+ 
+ #ifdef CONFIG_CPU_IDLE
+ static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
++static bool psci_suspend_mode_is_osi;
 +
-+static int cpu_pd_power_off(struct generic_pm_domain *genpd)
-+{
-+	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
-+
-+	return pd->ops.power_off ? pd->ops.power_off(genpd->state_idx,
-+					genpd->states[genpd->state_idx].param,
-+					pd->cpus) : 0;
-+}
-+
-+/**
-+ * cpu_pd_attach_domain:  Attach a child CPU PM to its parent
-+ *
-+ * @parent: The parent generic PM domain
-+ * @child: The child generic PM domain
-+ *
-+ * Generally, the child PM domain is the one to which CPUs are attached.
-+ */
-+int cpu_pd_attach_domain(struct generic_pm_domain *parent,
-+				struct generic_pm_domain *child)
-+{
-+	struct cpu_pm_domain *cpu_pd, *parent_cpu_pd;
-+	int ret;
-+
-+	ret = pm_genpd_add_subdomain(parent, child);
-+	if (ret) {
-+		pr_err("%s: Unable to add sub-domain (%s) to %s.\n err=%d",
-+				__func__, child->name, parent->name, ret);
-+		return ret;
-+	}
-+
-+	cpu_pd = to_cpu_pd(child);
-+	parent_cpu_pd = to_cpu_pd(parent);
-+
-+	if (cpu_pd && parent_cpu_pd)
-+		cpu_pd->parent = parent_cpu_pd;
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(cpu_pd_attach_domain);
-+
-+/**
-+ * cpu_pd_attach_cpu:  Attach a CPU to its CPU PM domain.
-+ *
-+ * @genpd: The parent generic PM domain
-+ * @cpu: The CPU number
-+ */
-+int cpu_pd_attach_cpu(struct generic_pm_domain *genpd, int cpu)
++static int psci_set_suspend_mode_osi(bool enable)
 +{
 +	int ret;
-+	struct device *cpu_dev;
-+	struct cpu_pm_domain *cpu_pd = to_cpu_pd(genpd);
++	int mode;
 +
-+	cpu_dev = get_cpu_device(cpu);
-+	if (!cpu_dev) {
-+		pr_warn("%s: Unable to get device for CPU%d\n",
-+				__func__, cpu);
++	if (enable && !psci_has_osi)
 +		return -ENODEV;
++
++	if (enable == psci_suspend_mode_is_osi)
++		return 0;
++
++	mode = enable ? PSCI_1_0_SUSPEND_MODE_OSI : PSCI_1_0_SUSPEND_MODE_PC;
++	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
++			     mode, 0, 0);
++	if (!ret)
++		psci_suspend_mode_is_osi = enable;
++
++	return psci_to_linux_errno(ret);
++}
+ 
+ static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
+ {
+@@ -311,11 +347,48 @@ free_mem:
+ 	return ret;
+ }
+ 
++static int psci_pd_populate_state_data(struct device_node *np, u32 *param)
++{
++	return of_property_read_u32(np, "arm,psci-suspend-param", param);
++}
++
++static int psci_pd_power_off(u32 idx, u32 param, const struct cpumask *mask)
++{
++	__this_cpu_add(cluster_state_id, param);
++	return 0;
++}
++
++const struct cpu_pd_ops psci_pd_ops = {
++	.populate_state_data = psci_pd_populate_state_data,
++	.power_off = psci_pd_power_off,
++};
++
++static int psci_cpu_osi_pd_init(int cpu)
++{
++	int ret;
++
++	if (!psci_has_osi_pd)
++		return 0;
++
++	ret = of_setup_cpu_pd_single(cpu, &psci_pd_ops);
++	if (!ret) {
++		ret = psci_set_suspend_mode_osi(true);
++		if (ret)
++			pr_warn("CPU%d: Error setting PSCI OSI mode\n", cpu);
 +	}
-+
-+	ret = genpd_dev_pm_attach(cpu_dev);
-+	if (ret)
-+		dev_warn(cpu_dev,
-+			"%s: Unable to attach to power-domain: %d\n",
-+			__func__, ret);
-+	else
-+		dev_dbg(cpu_dev, "Attached to domain\n");
-+
-+	while (!ret && cpu_pd) {
-+		cpumask_set_cpu(cpu, cpu_pd->cpus);
-+		cpu_pd = cpu_pd->parent;
-+	};
 +
 +	return ret;
 +}
-+EXPORT_SYMBOL(cpu_pd_attach_cpu);
 +
-+/**
-+ * cpu_pd_init: Initialize a CPU PM domain for a genpd
-+ *
-+ * @genpd: The initialized generic PM domain object.
-+ * @ops: The power_on/power_off ops for the domain controller.
-+ *
-+ * Initialize a CPU PM domain based on a generic PM domain. The platform driver
-+ * is expected to setup the genpd object and the states associated with the
-+ * generic PM domain, before calling this function.
-+ */
-+struct generic_pm_domain *cpu_pd_init(struct generic_pm_domain *genpd,
-+				const struct cpu_pd_ops *ops)
-+{
-+	int ret = -ENOMEM;
-+	struct cpu_pm_domain *pd;
+ int psci_cpu_init_idle(unsigned int cpu)
+ {
+ 	struct device_node *cpu_node;
+ 	int ret;
+ 
++	ret = psci_cpu_osi_pd_init(cpu);
++	if (ret)
++		return ret;
 +
-+	if (IS_ERR_OR_NULL(genpd))
-+		return ERR_PTR(-EINVAL);
+ 	cpu_node = of_get_cpu_node(cpu, NULL);
+ 	if (!cpu_node)
+ 		return -ENODEV;
+@@ -330,15 +403,17 @@ int psci_cpu_init_idle(unsigned int cpu)
+ static int psci_suspend_finisher(unsigned long index)
+ {
+ 	u32 *state = __this_cpu_read(psci_power_state);
++	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
+ 
+-	return psci_ops.cpu_suspend(state[index - 1],
+-				    virt_to_phys(cpu_resume));
++	return psci_ops.cpu_suspend(ext_state, virt_to_phys(cpu_resume));
+ }
+ 
+ int psci_cpu_suspend_enter(unsigned long index)
+ {
+ 	int ret;
+ 	u32 *state = __this_cpu_read(psci_power_state);
++	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
 +
-+	pd = kzalloc(sizeof(*pd), GFP_KERNEL);
-+	if (!pd)
-+		goto fail;
+ 	/*
+ 	 * idle state index 0 corresponds to wfi, should never be called
+ 	 * from the cpu_suspend operations
+@@ -347,10 +422,16 @@ int psci_cpu_suspend_enter(unsigned long index)
+ 		return -EINVAL;
+ 
+ 	if (!psci_power_state_loses_context(state[index - 1]))
+-		ret = psci_ops.cpu_suspend(state[index - 1], 0);
++		ret = psci_ops.cpu_suspend(ext_state, 0);
+ 	else
+ 		ret = cpu_suspend(index, psci_suspend_finisher);
+ 
++	/*
++	 * Clear the CPU's cluster states, we start afresh after coming
++	 * out of idle.
++	 */
++	psci_reset_composite_state_id();
 +
-+	if (!zalloc_cpumask_var(&pd->cpus, GFP_KERNEL))
-+		goto fail;
-+
-+	genpd->power_off = cpu_pd_power_off;
-+	genpd->power_on = cpu_pd_power_on;
-+	genpd->flags |= GENPD_FLAG_IRQ_SAFE;
-+	pd->genpd = genpd;
-+	pd->ops.power_on = ops->power_on;
-+	pd->ops.power_off = ops->power_off;
-+
-+	INIT_LIST_HEAD_RCU(&pd->link);
-+	mutex_lock(&cpu_pd_list_lock);
-+	list_add_rcu(&pd->link, &of_cpu_pd_list);
-+	mutex_unlock(&cpu_pd_list_lock);
-+
-+	ret = pm_genpd_init(genpd, &simple_qos_governor, false);
-+	if (ret) {
-+		pr_err("Unable to initialize domain %s\n", genpd->name);
-+		goto fail;
-+	}
-+
-+	pr_debug("adding %s as CPU PM domain\n", pd->genpd->name);
-+
-+	return genpd;
-+fail:
-+	kfree(genpd->name);
-+	kfree(genpd);
-+	if (pd)
-+		kfree(pd->cpus);
-+	kfree(pd);
-+	return ERR_PTR(ret);
-+}
-+EXPORT_SYMBOL(cpu_pd_init);
-diff --git a/include/linux/cpu_domains.h b/include/linux/cpu_domains.h
-new file mode 100644
-index 0000000..3a0a027
---- /dev/null
-+++ b/include/linux/cpu_domains.h
-@@ -0,0 +1,49 @@
-+/*
-+ * include/linux/cpu_domains.h
-+ *
-+ * Copyright (C) 2016 Linaro Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef __CPU_DOMAINS_H__
-+#define __CPU_DOMAINS_H__
-+
-+#include <linux/types.h>
-+
-+struct cpumask;
-+
-+struct cpu_pd_ops {
-+	int (*power_off)(u32 state_idx, u32 param, const struct cpumask *mask);
-+	int (*power_on)(void);
-+};
-+
-+#ifdef CONFIG_PM_GENERIC_DOMAINS
-+
-+struct generic_pm_domain *cpu_pd_init(struct generic_pm_domain *genpd,
-+				const struct cpu_pd_ops *ops);
-+
-+int cpu_pd_attach_domain(struct generic_pm_domain *parent,
-+				struct generic_pm_domain *child);
-+
-+int cpu_pd_attach_cpu(struct generic_pm_domain *genpd, int cpu);
-+
-+#else
-+
-+static inline
-+struct generic_pm_domain *cpu_pd_init(struct generic_pm_domain *genpd,
-+				const struct cpu_pd_ops *ops)
-+{ return ERR_PTR(-ENODEV); }
-+
-+static inline int cpu_pd_attach_domain(struct generic_pm_domain *parent,
-+				struct generic_pm_domain *child)
-+{ return -ENODEV; }
-+
-+static inline int cpu_pd_attach_cpu(struct generic_pm_domain *genpd, int cpu)
-+{ return -ENODEV; }
-+
-+#endif /* CONFIG_PM_GENERIC_DOMAINS */
-+
-+#endif /* __CPU_DOMAINS_H__ */
+ 	return ret;
+ }
+ 
+@@ -558,6 +639,7 @@ static int __init psci_0_1_init(struct device_node *np)
+ 
+ static int __init psci_1_0_init(struct device_node *np)
+ {
++	struct device_node *dn;
+ 	int ret;
+ 
+ 	ret = psci_0_2_init(np);
+@@ -569,6 +651,11 @@ static int __init psci_1_0_init(struct device_node *np)
+ 	if (ret & PSCI_1_0_OS_INITIATED) {
+ 		if (!psci_features(PSCI_1_0_FN_SET_SUSPEND_MODE))
+ 			psci_has_osi = true;
++		/* Check if we power domains defined in the PSCI node */
++		dn = of_find_node_with_property(np, "#power-domain-cells");
++		if (dn)
++			psci_has_osi_pd = true;
++		of_node_put(dn);
+ 	}
+ 
+ 	return 0;
 -- 
 2.7.4
+
