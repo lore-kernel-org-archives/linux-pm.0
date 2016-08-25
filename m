@@ -1,169 +1,115 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 12/16] drivers: firmware: psci: Allow OS Initiated suspend mode
-Date: Thu, 25 Aug 2016 13:51:42 -0600
-Message-ID: <1472154706-40119-13-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v4 14/16] dt/bindings: Add PSCI OS-Initiated PM Domains bindings
+Date: Thu, 25 Aug 2016 13:51:44 -0600
+Message-ID: <1472154706-40119-15-git-send-email-lina.iyer@linaro.org>
 References: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:34394 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756897AbcHYTw0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Aug 2016 15:52:26 -0400
-Received: by mail-pf0-f174.google.com with SMTP id p64so20705629pfb.1
-        for <linux-pm@vger.kernel.org>; Thu, 25 Aug 2016 12:52:24 -0700 (PDT)
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-PSCI firmware v1.0 onwards may support 2 different modes for
-CPU_SUSPEND. Platform coordinated mode is the default and every firmware
-should support it. OS Initiated mode is optional for the firmware to
-implement and allow Linux to make an better decision on the state of
-the CPU cluster heirarchy.
+Add bindings for defining a OS-Initiated based CPU PM domain.
 
-With the kernel capable of deciding the state for CPU cluster and
-coherency domains, the OS Initiated mode may now be used by the kernel,
-provided the firmware supports it. SET_SUSPEND_MODE is a PSCI function
-available on v1.0 onwards and can be used to set the mode in the
-firmware.
-
+Cc: <devicetree@vger.kernel.org>
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-[Ulf: Rebased on 4.7 rc1]
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/psci.c   | 42 +++++++++++++++++++++++++++++-------------
- include/uapi/linux/psci.h |  5 +++++
- 2 files changed, 34 insertions(+), 13 deletions(-)
+ Documentation/devicetree/bindings/arm/psci.txt | 79 ++++++++++++++++++++++++++
+ 1 file changed, 79 insertions(+)
 
-diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
-index 03e0458..759b134 100644
---- a/drivers/firmware/psci.c
-+++ b/drivers/firmware/psci.c
-@@ -52,6 +52,7 @@
-  * require cooperation with a Trusted OS driver.
-  */
- static int resident_cpu = -1;
-+static bool psci_has_osi;
+diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation/devicetree/bindings/arm/psci.txt
+index a2c4f1d..63a229b 100644
+--- a/Documentation/devicetree/bindings/arm/psci.txt
++++ b/Documentation/devicetree/bindings/arm/psci.txt
+@@ -105,7 +105,86 @@ Case 3: PSCI v0.2 and PSCI v0.1.
+ 		...
+ 	};
  
- bool psci_tos_resident_on(int cpu)
- {
-@@ -506,9 +507,8 @@ static int __init psci_0_2_init(struct device_node *np)
- 	int err;
- 
- 	err = get_set_conduit_method(np);
--
- 	if (err)
--		goto out_put_node;
-+		return err;
- 	/*
- 	 * Starting with v0.2, the PSCI specification introduced a call
- 	 * (PSCI_VERSION) that allows probing the firmware version, so
-@@ -516,11 +516,7 @@ static int __init psci_0_2_init(struct device_node *np)
- 	 * can be carried out according to the specific version reported
- 	 * by firmware
- 	 */
--	err = psci_probe();
--
--out_put_node:
--	of_node_put(np);
--	return err;
-+	return psci_probe();
- }
- 
- /*
-@@ -532,9 +528,8 @@ static int __init psci_0_1_init(struct device_node *np)
- 	int err;
- 
- 	err = get_set_conduit_method(np);
--
- 	if (err)
--		goto out_put_node;
-+		return err;
- 
- 	pr_info("Using PSCI v0.1 Function IDs from DT\n");
- 
-@@ -558,15 +553,31 @@ static int __init psci_0_1_init(struct device_node *np)
- 		psci_ops.migrate = psci_migrate;
- 	}
- 
--out_put_node:
--	of_node_put(np);
- 	return err;
- }
- 
-+static int __init psci_1_0_init(struct device_node *np)
-+{
-+	int ret;
++PSCI v1.0 onwards, supports OS-Initiated mode for powering off CPU domains
++from the firmware. Such PM domains for which the PSCI firmware driver acts as
++pseudo-controller, may also be specified in the DT under the psci node. The
++domain definitions must follow the domain idle state specifications per [3].
++The domain states themselves must be compatible with 'arm,idle-state' defined
++in [1] and need to specify the arm,psci-suspend-param property for each idle
++state.
 +
-+	ret = psci_0_2_init(np);
-+	if (ret)
-+		return ret;
++More information on defining CPU PM domains is available in [4].
 +
-+	/* Check if PSCI OSI mode is available */
-+	ret = psci_features(psci_function_id[PSCI_FN_CPU_SUSPEND]);
-+	if (ret & PSCI_1_0_OS_INITIATED) {
-+		if (!psci_features(PSCI_1_0_FN_SET_SUSPEND_MODE))
-+			psci_has_osi = true;
-+	}
++Example: OS-Iniated PSCI based PM domains with 1 CPU in each domain
 +
-+	return 0;
-+}
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
- static const struct of_device_id psci_of_match[] __initconst = {
- 	{ .compatible = "arm,psci",	.data = psci_0_1_init},
- 	{ .compatible = "arm,psci-0.2",	.data = psci_0_2_init},
--	{ .compatible = "arm,psci-1.0",	.data = psci_0_2_init},
-+	{ .compatible = "arm,psci-1.0",	.data = psci_1_0_init},
- 	{},
- };
- 
-@@ -575,6 +586,7 @@ int __init psci_dt_init(void)
- 	struct device_node *np;
- 	const struct of_device_id *matched_np;
- 	psci_initcall_t init_fn;
-+	int ret;
- 
- 	np = of_find_matching_node_and_match(NULL, psci_of_match, &matched_np);
- 
-@@ -582,7 +594,11 @@ int __init psci_dt_init(void)
- 		return -ENODEV;
- 
- 	init_fn = (psci_initcall_t)matched_np->data;
--	return init_fn(np);
-+	ret = init_fn(np);
++		CPU0: cpu@0 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a53", "arm,armv8";
++			reg = <0x0>;
++			enable-method = "psci";
++			cpu-idle-states = <&CPU_PWRDN>;
++			power-domains = <&CPU_PD0>;
++		};
 +
-+	of_node_put(np);
++		CPU1: cpu@1 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a57", "arm,armv8";
++			reg = <0x100>;
++			enable-method = "psci";
++			cpu-idle-states = <&CPU_PWRDN>;
++			power-domains = <&CPU_PD1>;
++		};
 +
-+	return ret;
- }
- 
- #ifdef CONFIG_ACPI
-diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
-index 3d7a0fc..7dd778e 100644
---- a/include/uapi/linux/psci.h
-+++ b/include/uapi/linux/psci.h
-@@ -48,6 +48,7 @@
- 
- #define PSCI_1_0_FN_PSCI_FEATURES		PSCI_0_2_FN(10)
- #define PSCI_1_0_FN_SYSTEM_SUSPEND		PSCI_0_2_FN(14)
-+#define PSCI_1_0_FN_SET_SUSPEND_MODE		PSCI_0_2_FN(15)
- 
- #define PSCI_1_0_FN64_SYSTEM_SUSPEND		PSCI_0_2_FN64(14)
- 
-@@ -93,6 +94,10 @@
- #define PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK	\
- 			(0x1 << PSCI_1_0_FEATURES_CPU_SUSPEND_PF_SHIFT)
- 
-+#define PSCI_1_0_OS_INITIATED			BIT(0)
-+#define PSCI_1_0_SUSPEND_MODE_PC		0
-+#define PSCI_1_0_SUSPEND_MODE_OSI		1
++		idle-states {
++			CPU_PWRDN: cpu_power_down{
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x000001>;
++				entry-latency-us = <10>;
++				exit-latency-us = <10>;
++				min-residency-us = <100>;
++			};
 +
- /* PSCI return values (inclusive of all PSCI versions) */
- #define PSCI_RET_SUCCESS			0
- #define PSCI_RET_NOT_SUPPORTED			-1
++			CLUSTER_RET: domain_ret {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x1000010>;
++				entry-latency-us = <500>;
++				exit-latency-us = <500>;
++				min-residency-us = <2000>;
++			};
++
++			CLUSTER_PWR_DWN: domain_gdhs {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x1000030>;
++				entry-latency-us = <2000>;
++				exit-latency-us = <2000>;
++				min-residency-us = <6000>;
++			};
++	};
++
++	psci {
++		compatible = "arm,psci-1.0";
++		method = "smc";
++
++		CPU_PD0: cpu-pd@0 {
++			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
++		};
++
++		CPU_PD1: cpu-pd@1 {
++			#power-domain-cells = <0>;
++			domain-idle-states =  <&CLUSTER_PWR_DWN>;
++		};
++	};
++
+ [1] Kernel documentation - ARM idle states bindings
+     Documentation/devicetree/bindings/arm/idle-states.txt
+ [2] Power State Coordination Interface (PSCI) specification
+     http://infocenter.arm.com/help/topic/com.arm.doc.den0022c/DEN0022C_Power_State_Coordination_Interface.pdf
++[3]. PM Domains description
++    Documentation/devicetree/bindings/power/power_domain.txt
++[4]. CPU PM Domains description
++    Documentation/power/cpu_domains.txt
 -- 
 2.7.4
-
