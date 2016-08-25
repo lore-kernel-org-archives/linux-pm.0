@@ -1,64 +1,154 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 3/3] soc: ti: Add ti_sci_pm_domains driver
-Date: Thu, 25 Aug 2016 09:27:39 +0200
-Message-ID: <CAPDyKFooDUOPT9dP8HaW3YBO9PsX-1+96PPE7CRMyjEkra7cBQ@mail.gmail.com>
-References: <20160819235653.26355-1-nm@ti.com>
- <20160819235653.26355-4-nm@ti.com>
+Subject: Re: [PATCH 2/3] dt-bindings: genpd: Add K2G device definitions
+Date: Thu, 25 Aug 2016 09:32:47 +0200
+Message-ID: <CAPDyKFq2XjO5Tzsp-1EMYp=EWdMLwWmA_ZneGntrGR6LtyHFmw@mail.gmail.com>
+References: <20160819235653.26355-1-nm@ti.com> <20160819235653.26355-3-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160819235653.26355-4-nm@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160819235653.26355-3-nm@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Nishanth Menon <nm@ti.com>
-Cc: Tero Kristo <t-kristo@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>, Dave Gerlach <d-gerlach@ti.com>, Keerthy <j-keerthy@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>, Russell King <rmk+kernel@armlinux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sudeep Holla <sudeep.holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dave Gerlach <d-gerlach@ti.com>, Keerthy <j-keerthy@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-+ Jon
+On 20 August 2016 at 01:56, Nishanth Menon <nm@ti.com> wrote:
+> From: Dave Gerlach <d-gerlach@ti.com>
+>
+> Provide macros representing each devices index as understood by TI
+> SCI to be used in the device node power-domain references. These
+> are identifiers for the K2G devices managed by the PMMC. Includes
+> contributions from Peter Ujfalusi <peter.ujfalusi@ti.com>
+>
+> Signed-off-by: Keerthy <j-keerthy@ti.com>
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+> Signed-off-by: Nishanth Menon <nm@ti.com>
 
-[...]
+I would squash this change into patch 1/3, as the DT documentation
+patch refers to dt-bindings/genpd/k2g.h which is added in @subject
+patch.
 
-> +
-> +static int ti_sci_pm_domains_probe(struct platform_device *pdev)
-> +{
-> +       struct device *dev = &pdev->dev;
-> +       struct device_node *np = dev->of_node;
-> +       struct ti_sci_genpd_data *ti_sci_genpd;
-> +
-> +       ti_sci_genpd = devm_kzalloc(dev, sizeof(*ti_sci_genpd), GFP_KERNEL);
-> +       if (!ti_sci_genpd)
-> +               return -ENOMEM;
-> +
-> +       ti_sci_genpd->ti_sci = devm_ti_sci_get_handle(dev);
-> +       if (IS_ERR(ti_sci_genpd->ti_sci))
-> +               return PTR_ERR(ti_sci_genpd->ti_sci);
-> +
-> +       ti_sci_genpd->dev = dev;
-> +
-> +       INIT_LIST_HEAD(&ti_sci_genpd->pd_list);
-> +       mutex_init(&ti_sci_genpd->pd_list_mutex);
-> +
-> +       return __of_genpd_add_provider(np, of_ti_sci_genpd_xlate_onecell,
-> +                                      ti_sci_genpd);
+Otherwise feel free to add my tag below, which applied to patch 1/3 as well.
 
-Jon Hunter are working on adding robust method to be able to remove
-initialized genpds [1].
-
-In that series we intend to remove the __of_genpd_add_provider() API,
-and instead only have of_genpd_add_provider_onecell() and
-of_genpd_add_provider_simple(). Could you please convert to use any of
-these APIs instead?
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Kind regards
 Uffe
 
-[1]
-http://www.spinics.net/lists/arm-kernel/msg524151.html
+> ---
+>  MAINTAINERS                     |  1 +
+>  include/dt-bindings/genpd/k2g.h | 90 +++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 91 insertions(+)
+>  create mode 100644 include/dt-bindings/genpd/k2g.h
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 657fb6a10286..ea14b08c30bb 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -11574,6 +11574,7 @@ F:      Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
+>  F:     drivers/firmware/ti_sci*
+>  F:     include/linux/soc/ti/ti_sci_protocol.h
+>  F:     Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+> +F:     include/dt-bindings/genpd/k2g.h
+>
+>  THANKO'S RAREMONO AM/FM/SW RADIO RECEIVER USB DRIVER
+>  M:     Hans Verkuil <hverkuil@xs4all.nl>
+> diff --git a/include/dt-bindings/genpd/k2g.h b/include/dt-bindings/genpd/k2g.h
+> new file mode 100644
+> index 000000000000..91ad827e0ca1
+> --- /dev/null
+> +++ b/include/dt-bindings/genpd/k2g.h
+> @@ -0,0 +1,90 @@
+> +/*
+> + * TI K2G SoC Device definitions
+> + *
+> + * Copyright (C) 2015-2016 Texas Instruments Incorporated - http://www.ti.com/
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#ifndef _DT_BINDINGS_GENPD_K2G_H
+> +#define _DT_BINDINGS_GENPD_K2G_H
+> +
+> +/* Documented in http://processors.wiki.ti.com/index.php/TISCI */
+> +
+> +#define K2G_DEV_PMMC0                  0x0000
+> +#define K2G_DEV_MLB0                   0x0001
+> +#define K2G_DEV_DSS0                   0x0002
+> +#define K2G_DEV_MCBSP0                 0x0003
+> +#define K2G_DEV_MCASP0                 0x0004
+> +#define K2G_DEV_MCASP1                 0x0005
+> +#define K2G_DEV_MCASP2                 0x0006
+> +#define K2G_DEV_DCAN0                  0x0008
+> +#define K2G_DEV_DCAN1                  0x0009
+> +#define K2G_DEV_EMIF0                  0x000a
+> +#define K2G_DEV_MMCHS0                 0x000b
+> +#define K2G_DEV_MMCHS1                 0x000c
+> +#define K2G_DEV_GPMC0                  0x000d
+> +#define K2G_DEV_ELM0                   0x000e
+> +#define K2G_DEV_SPI0                   0x0010
+> +#define K2G_DEV_SPI1                   0x0011
+> +#define K2G_DEV_SPI2                   0x0012
+> +#define K2G_DEV_SPI3                   0x0013
+> +#define K2G_DEV_ICSS0                  0x0014
+> +#define K2G_DEV_ICSS1                  0x0015
+> +#define K2G_DEV_USB0                   0x0016
+> +#define K2G_DEV_USB1                   0x0017
+> +#define K2G_DEV_NSS0                   0x0018
+> +#define K2G_DEV_PCIE0                  0x0019
+> +#define K2G_DEV_GPIO0                  0x001b
+> +#define K2G_DEV_GPIO1                  0x001c
+> +#define K2G_DEV_TIMER64_0              0x001d
+> +#define K2G_DEV_TIMER64_1              0x001e
+> +#define K2G_DEV_TIMER64_2              0x001f
+> +#define K2G_DEV_TIMER64_3              0x0020
+> +#define K2G_DEV_TIMER64_4              0x0021
+> +#define K2G_DEV_TIMER64_5              0x0022
+> +#define K2G_DEV_TIMER64_6              0x0023
+> +#define K2G_DEV_MSGMGR0                        0x0025
+> +#define K2G_DEV_BOOTCFG0               0x0026
+> +#define K2G_DEV_ARM_BOOTROM0           0x0027
+> +#define K2G_DEV_DSP_BOOTROM0           0x0029
+> +#define K2G_DEV_DEBUGSS0               0x002b
+> +#define K2G_DEV_UART0                  0x002c
+> +#define K2G_DEV_UART1                  0x002d
+> +#define K2G_DEV_UART2                  0x002e
+> +#define K2G_DEV_EHRPWM0                        0x002f
+> +#define K2G_DEV_EHRPWM1                        0x0030
+> +#define K2G_DEV_EHRPWM2                        0x0031
+> +#define K2G_DEV_EHRPWM3                        0x0032
+> +#define K2G_DEV_EHRPWM4                        0x0033
+> +#define K2G_DEV_EHRPWM5                        0x0034
+> +#define K2G_DEV_EQEP0                  0x0035
+> +#define K2G_DEV_EQEP1                  0x0036
+> +#define K2G_DEV_EQEP2                  0x0037
+> +#define K2G_DEV_ECAP0                  0x0038
+> +#define K2G_DEV_ECAP1                  0x0039
+> +#define K2G_DEV_I2C0                   0x003a
+> +#define K2G_DEV_I2C1                   0x003b
+> +#define K2G_DEV_I2C2                   0x003c
+> +#define K2G_DEV_EDMA0                  0x003f
+> +#define K2G_DEV_SEMAPHORE0             0x0040
+> +#define K2G_DEV_INTC0                  0x0041
+> +#define K2G_DEV_GIC0                   0x0042
+> +#define K2G_DEV_QSPI0                  0x0043
+> +#define K2G_DEV_ARM_64B_COUNTER0       0x0044
+> +#define K2G_DEV_TETRIS0                        0x0045
+> +#define K2G_DEV_CGEM0                  0x0046
+> +#define K2G_DEV_MSMC0                  0x0047
+> +#define K2G_DEV_CBASS0                 0x0049
+> +#define K2G_DEV_BOARD0                 0x004c
+> +#define K2G_DEV_EDMA1                  0x004f
+> +
+> +#endif
+> --
+> 2.9.1.200.gb1ec08f
+>
