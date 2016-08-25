@@ -1,222 +1,87 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 13/16] drivers: firmware: psci: Support cluster idle states for OS-Initiated
-Date: Thu, 25 Aug 2016 13:51:43 -0600
-Message-ID: <1472154706-40119-14-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v4 09/16] timer: Export next wake up of a CPU
+Date: Thu, 25 Aug 2016 13:51:39 -0600
+Message-ID: <1472154706-40119-10-git-send-email-lina.iyer@linaro.org>
 References: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:34824 "EHLO
-        mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756915AbcHYTw0 (ORCPT
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:34374 "EHLO
+        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756857AbcHYTw0 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Aug 2016 15:52:26 -0400
-Received: by mail-pa0-f44.google.com with SMTP id hb8so19692428pac.2
-        for <linux-pm@vger.kernel.org>; Thu, 25 Aug 2016 12:52:26 -0700 (PDT)
+Received: by mail-pf0-f174.google.com with SMTP id p64so20704907pfb.1
+        for <linux-pm@vger.kernel.org>; Thu, 25 Aug 2016 12:52:17 -0700 (PDT)
 In-Reply-To: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Thomas Gleixner <tglx@linutronix.de>
 
-PSCI OS initiated firmware may allow Linux to determine the state of the
-CPU cluster and the cluster at coherency level to enter idle states when
-there are no active CPUs. Since Linux has a better idea of the QoS and
-the wakeup pattern of the CPUs, the cluster idle states may be better
-determined by the OS instead of the firmware.
+Knowing the sleep length of the CPU is useful for the power state
+determination on idle. The value is relative to the time when the call
+was invoked by the CPU. This doesn't work well when there is a need to
+know when the actual wakeup is.
 
-The last CPU entering idle in a cluster, is responsible for selecting
-the state of the cluster. Only one CPU in a cluster may provide the
-cluster idle state to the firmware. Similarly, the last CPU in the
-system may provide the state of the coherency domain along with the
-cluster and the CPU state IDs.
+By reading the next wake up event of a CPU, governors can determine the
+first CPU to wake up (due to timer) amongst a cluster of CPUs and the
+sleep time available between the last CPU to idle and the first CPU to
+resume. This information is useful to determine if the caches and other
+common hardware blocks can also be put in idle during this common period
+of inactivity.
 
-Utilize the CPU PM domain framework's helper functions to build up the
-hierarchy of cluster topology using Generic PM domains. We provide
-callbacks for domain power_on and power_off. By appending the state IDs
-at each domain level in the -power_off() callbacks, we build up a
-composite state ID that can be passed onto the firmware to idle the CPU,
-the cluster and the coherency interface.
-
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/firmware/psci.c | 93 +++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 90 insertions(+), 3 deletions(-)
+ include/linux/tick.h     |  7 +++++++
+ kernel/time/tick-sched.c | 11 +++++++++++
+ 2 files changed, 18 insertions(+)
 
-diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
-index 759b134..431385a 100644
---- a/drivers/firmware/psci.c
-+++ b/drivers/firmware/psci.c
-@@ -15,6 +15,7 @@
+diff --git a/include/linux/tick.h b/include/linux/tick.h
+index 62be0786..92fa4b0 100644
+--- a/include/linux/tick.h
++++ b/include/linux/tick.h
+@@ -117,6 +117,7 @@ extern void tick_nohz_idle_enter(void);
+ extern void tick_nohz_idle_exit(void);
+ extern void tick_nohz_irq_exit(void);
+ extern ktime_t tick_nohz_get_sleep_length(void);
++extern ktime_t tick_nohz_get_next_wakeup(int cpu);
+ extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+ extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+ #else /* !CONFIG_NO_HZ_COMMON */
+@@ -131,6 +132,12 @@ static inline ktime_t tick_nohz_get_sleep_length(void)
  
- #include <linux/arm-smccc.h>
- #include <linux/cpuidle.h>
-+#include <linux/cpu_domains.h>
- #include <linux/errno.h>
- #include <linux/linkage.h>
- #include <linux/of.h>
-@@ -53,6 +54,18 @@
-  */
- static int resident_cpu = -1;
- static bool psci_has_osi;
-+static bool psci_has_osi_pd;
-+static DEFINE_PER_CPU(u32, cluster_state_id);
+ 	return len;
+ }
 +
-+static inline u32 psci_get_composite_state_id(u32 cpu_state)
++static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
 +{
-+	return cpu_state | this_cpu_read(cluster_state_id);
++	return tick_next_period;
 +}
 +
-+static inline void psci_reset_composite_state_id(void)
-+{
-+	this_cpu_write(cluster_state_id, 0);
-+}
- 
- bool psci_tos_resident_on(int cpu)
- {
-@@ -179,6 +192,8 @@ static int psci_cpu_on(unsigned long cpuid, unsigned long entry_point)
- 
- 	fn = psci_function_id[PSCI_FN_CPU_ON];
- 	err = invoke_psci_fn(fn, cpuid, entry_point, 0);
-+	/* Reset CPU cluster states */
-+	psci_reset_composite_state_id();
- 	return psci_to_linux_errno(err);
+ static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+ static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+ #endif /* !CONFIG_NO_HZ_COMMON */
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 536ada8..5c7ac17 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -979,6 +979,17 @@ ktime_t tick_nohz_get_sleep_length(void)
+ 	return ts->sleep_length;
  }
  
-@@ -250,6 +265,27 @@ static int __init psci_features(u32 psci_func_id)
- 
- #ifdef CONFIG_CPU_IDLE
- static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
-+static bool psci_suspend_mode_is_osi;
-+
-+static int psci_set_suspend_mode_osi(bool enable)
++/**
++ * tick_nohz_get_next_wakeup - return the next wake up of the CPU
++ */
++ktime_t tick_nohz_get_next_wakeup(int cpu)
 +{
-+	int ret;
-+	int mode;
++	struct clock_event_device *dev =
++			per_cpu(tick_cpu_device.evtdev, cpu);
 +
-+	if (enable && !psci_has_osi)
-+		return -ENODEV;
-+
-+	if (enable == psci_suspend_mode_is_osi)
-+		return 0;
-+
-+	mode = enable ? PSCI_1_0_SUSPEND_MODE_OSI : PSCI_1_0_SUSPEND_MODE_PC;
-+	ret = invoke_psci_fn(PSCI_1_0_FN_SET_SUSPEND_MODE,
-+			     mode, 0, 0);
-+	if (!ret)
-+		psci_suspend_mode_is_osi = enable;
-+
-+	return psci_to_linux_errno(ret);
-+}
- 
- static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
- {
-@@ -311,11 +347,48 @@ free_mem:
- 	return ret;
- }
- 
-+static int psci_pd_populate_state_data(struct device_node *np, u32 *param)
-+{
-+	return of_property_read_u32(np, "arm,psci-suspend-param", param);
++	return dev->next_event;
 +}
 +
-+static int psci_pd_power_off(u32 idx, u32 param, const struct cpumask *mask)
-+{
-+	__this_cpu_add(cluster_state_id, param);
-+	return 0;
-+}
-+
-+const struct cpu_pd_ops psci_pd_ops = {
-+	.populate_state_data = psci_pd_populate_state_data,
-+	.power_off = psci_pd_power_off,
-+};
-+
-+static int psci_cpu_osi_pd_init(int cpu)
-+{
-+	int ret;
-+
-+	if (!psci_has_osi_pd)
-+		return 0;
-+
-+	ret = of_setup_cpu_pd_single(cpu, &psci_pd_ops);
-+	if (!ret) {
-+		ret = psci_set_suspend_mode_osi(true);
-+		if (ret)
-+			pr_warn("CPU%d: Error setting PSCI OSI mode\n", cpu);
-+	}
-+
-+	return ret;
-+}
-+
- int psci_cpu_init_idle(unsigned int cpu)
+ static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
  {
- 	struct device_node *cpu_node;
- 	int ret;
- 
-+	ret = psci_cpu_osi_pd_init(cpu);
-+	if (ret)
-+		return ret;
-+
- 	cpu_node = of_get_cpu_node(cpu, NULL);
- 	if (!cpu_node)
- 		return -ENODEV;
-@@ -330,15 +403,17 @@ int psci_cpu_init_idle(unsigned int cpu)
- static int psci_suspend_finisher(unsigned long index)
- {
- 	u32 *state = __this_cpu_read(psci_power_state);
-+	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
- 
--	return psci_ops.cpu_suspend(state[index - 1],
--				    virt_to_phys(cpu_resume));
-+	return psci_ops.cpu_suspend(ext_state, virt_to_phys(cpu_resume));
- }
- 
- int psci_cpu_suspend_enter(unsigned long index)
- {
- 	int ret;
- 	u32 *state = __this_cpu_read(psci_power_state);
-+	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
-+
- 	/*
- 	 * idle state index 0 corresponds to wfi, should never be called
- 	 * from the cpu_suspend operations
-@@ -347,10 +422,16 @@ int psci_cpu_suspend_enter(unsigned long index)
- 		return -EINVAL;
- 
- 	if (!psci_power_state_loses_context(state[index - 1]))
--		ret = psci_ops.cpu_suspend(state[index - 1], 0);
-+		ret = psci_ops.cpu_suspend(ext_state, 0);
- 	else
- 		ret = cpu_suspend(index, psci_suspend_finisher);
- 
-+	/*
-+	 * Clear the CPU's cluster states, we start afresh after coming
-+	 * out of idle.
-+	 */
-+	psci_reset_composite_state_id();
-+
- 	return ret;
- }
- 
-@@ -558,6 +639,7 @@ static int __init psci_0_1_init(struct device_node *np)
- 
- static int __init psci_1_0_init(struct device_node *np)
- {
-+	struct device_node *dn;
- 	int ret;
- 
- 	ret = psci_0_2_init(np);
-@@ -569,6 +651,11 @@ static int __init psci_1_0_init(struct device_node *np)
- 	if (ret & PSCI_1_0_OS_INITIATED) {
- 		if (!psci_features(PSCI_1_0_FN_SET_SUSPEND_MODE))
- 			psci_has_osi = true;
-+		/* Check if we power domains defined in the PSCI node */
-+		dn = of_find_node_with_property(np, "#power-domain-cells");
-+		if (dn)
-+			psci_has_osi_pd = true;
-+		of_node_put(dn);
- 	}
- 
- 	return 0;
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
 -- 
 2.7.4
 
