@@ -1,7 +1,7 @@
 From: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH v8 01/11] mfd: act8945a: Add .of_compatible for act8945a-charger
-Date: Thu, 25 Aug 2016 15:19:49 +0800
-Message-ID: <1472109599-21915-2-git-send-email-wenyou.yang@atmel.com>
+Subject: [PATCH v8 02/11] power: act8945a_charger: Achieve properties from its node
+Date: Thu, 25 Aug 2016 15:19:50 +0800
+Message-ID: <1472109599-21915-3-git-send-email-wenyou.yang@atmel.com>
 References: <1472109599-21915-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,8 +12,9 @@ To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Erem
 Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-To regard the act8945a-charger as a sub-device, add .of_compatible for
-act8945a-charger cell.
+Since the act8945a_charger is regarded as a sub-device, all properties will
+be assigned to its own device node. All properties can be achieved from its
+own node, instead of from its parent device.
 
 Signed-off-by: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
 ---
@@ -26,21 +27,27 @@ Changes in v4: None
 Changes in v3: None
 Changes in v2: None
 
- drivers/mfd/act8945a.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/power/supply/act8945a_charger.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mfd/act8945a.c b/drivers/mfd/act8945a.c
-index 10c6d2d..a4024d9 100644
---- a/drivers/mfd/act8945a.c
-+++ b/drivers/mfd/act8945a.c
-@@ -23,6 +23,7 @@ static const struct mfd_cell act8945a_devs[] = {
- 	},
- 	{
- 		.name = "act8945a-charger",
-+		.of_compatible = "active-semi,act8945a-charger",
- 	},
- };
+diff --git a/drivers/power/supply/act8945a_charger.c b/drivers/power/supply/act8945a_charger.c
+index b5c00e4..3f486c9 100644
+--- a/drivers/power/supply/act8945a_charger.c
++++ b/drivers/power/supply/act8945a_charger.c
+@@ -328,11 +328,11 @@ static int act8945a_charger_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
  
+-	ret = act8945a_charger_config(pdev->dev.parent, charger);
++	ret = act8945a_charger_config(&pdev->dev, charger);
+ 	if (ret)
+ 		return ret;
+ 
+-	psy_cfg.of_node	= pdev->dev.parent->of_node;
++	psy_cfg.of_node	= pdev->dev.of_node;
+ 	psy_cfg.drv_data = charger;
+ 
+ 	psy = devm_power_supply_register(&pdev->dev,
 -- 
 2.7.4
 
