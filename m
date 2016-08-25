@@ -1,33 +1,56 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH v6 20/20] thermal/intel_powerclamp: Convert the kthread
- to kthread worker API
-Date: Thu, 25 Aug 2016 10:33:17 +0200
-Message-ID: <20160825083316.myqbas7d6gtv62c6@linutronix.de>
-References: <1460646879-617-1-git-send-email-pmladek@suse.com>
- <1460646879-617-21-git-send-email-pmladek@suse.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <1460646879-617-21-git-send-email-pmladek@suse.com>
-Sender: owner-linux-mm@kvack.org
-To: Petr Mladek <pmladek@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett <josh@joshtriplett.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@suse.de>, Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org, Vlastimil Babka <vbabka@suse.cz>, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, linux-pm@vger.kernel.org
+From: Alex Shi <alex.shi@linaro.org>
+Subject: [PATCH 1/4] cpu: clean up register_cpu func
+Date: Thu, 25 Aug 2016 16:42:39 +0800
+Message-ID: <1472114562-2736-1-git-send-email-alex.shi@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:35563 "EHLO
+        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933610AbcHYInk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Aug 2016 04:43:40 -0400
+Received: by mail-pf0-f181.google.com with SMTP id x72so15906151pfd.2
+        for <linux-pm@vger.kernel.org>; Thu, 25 Aug 2016 01:42:49 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
+Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 2016-04-14 17:14:39 [+0200], Petr Mladek wrote:
-> Kthreads are currently implemented as an infinite loop. Each
-> has its own variant of checks for terminating, freezing,
-> awakening. In many cases it is unclear to say in which state
-> it is and sometimes it is done a wrong way.
+This patch could reduce one branch in this function. Also
+make the code more readble.
 
-What is the status of this? This is the last email I received and it is
-from April.
+Signed-off-by: Alex Shi <alex.shi@linaro.org>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+To: linux-kernel@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/base/cpu.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-Sebastian
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 691eeea..4c28e1a 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -371,12 +371,13 @@ int register_cpu(struct cpu *cpu, int num)
+ 	if (cpu->hotpluggable)
+ 		cpu->dev.groups = hotplugable_cpu_attr_groups;
+ 	error = device_register(&cpu->dev);
+-	if (!error)
+-		per_cpu(cpu_sys_devices, num) = &cpu->dev;
+-	if (!error)
+-		register_cpu_under_node(num, cpu_to_node(num));
++	if (error)
++		return error;
+ 
+-	return error;
++	per_cpu(cpu_sys_devices, num) = &cpu->dev;
++	register_cpu_under_node(num, cpu_to_node(num));
++
++	return 0;
+ }
+ 
+ struct device *get_cpu_device(unsigned cpu)
+-- 
+2.8.1.101.g72d917a
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
