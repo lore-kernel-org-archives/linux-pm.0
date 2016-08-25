@@ -1,159 +1,119 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 08/16] ARM: cpuidle: Add runtime PM support for CPUs
-Date: Thu, 25 Aug 2016 14:03:17 -0600
-Message-ID: <1472155405-41841-9-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v4 02/16] dt/bindings: Update binding for PM domain idle states
+Date: Thu, 25 Aug 2016 14:03:11 -0600
+Message-ID: <1472155405-41841-3-git-send-email-lina.iyer@linaro.org>
 References: <1472155405-41841-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:33497 "EHLO
-        mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757590AbcHYUEX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Aug 2016 16:04:23 -0400
-Received: by mail-pa0-f44.google.com with SMTP id ti13so19767234pac.0
-        for <linux-pm@vger.kernel.org>; Thu, 25 Aug 2016 13:04:02 -0700 (PDT)
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1472155405-41841-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Lina Iyer <lina.iyer@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Notify runtime PM when the CPU is going to be powered off in the idle
-state. This allows for runtime PM suspend/resume of the CPU as well as
-its PM domain.
+From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
-We do not call into runtime PM for ARM WFI to keep the default state
-simple and faster.
+Update DT bindings to describe idle states of PM domains.
 
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: <devicetree@vger.kernel.org>
+Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+[Lina: Added state properties, removed state names, wakeup-latency,
+added of_pm_genpd_init() API, pruned commit text]
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+[Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
 ---
- drivers/cpuidle/cpuidle-arm.c | 55 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 55 insertions(+)
+ .../devicetree/bindings/power/power_domain.txt     | 57 ++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-index e342565e..3abd145 100644
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -11,12 +11,14 @@
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 025b5e7..4960486 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -29,6 +29,10 @@ Optional properties:
+    specified by this binding. More details about power domain specifier are
+    available in the next section.
  
- #define pr_fmt(fmt) "CPUidle arm: " fmt
- 
-+#include <linux/cpu.h>
- #include <linux/cpuidle.h>
- #include <linux/cpumask.h>
- #include <linux/cpu_pm.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/pm_runtime.h>
- #include <linux/slab.h>
- 
- #include <asm/cpuidle.h>
-@@ -37,6 +39,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
- 				struct cpuidle_driver *drv, int idx)
- {
- 	int ret;
-+	struct device *cpu_dev = get_cpu_device(dev->cpu);
- 
- 	if (!idx) {
- 		cpu_do_idle();
-@@ -46,12 +49,20 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
- 	ret = cpu_pm_enter();
- 	if (!ret) {
- 		/*
-+		 * Call runtime PM suspend on our device
-+		 * Notify RCU to pay attention to critical sections
-+		 * called from within runtime PM.
-+		 */
-+		RCU_NONIDLE(pm_runtime_put_sync_suspend(cpu_dev));
++- domain-idle-states : A phandle of an idle-state that shall be soaked into a
++                generic domain power state. The idle state definitions are
++                compatible with arm,idle-state specified in [1].
 +
-+		/*
- 		 * Pass idle state index to cpu_suspend which in turn will
- 		 * call the CPU ops suspend protocol with idle index as a
- 		 * parameter.
- 		 */
- 		ret = arm_cpuidle_suspend(idx);
+ Example:
  
-+		RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
- 		cpu_pm_exit();
- 	}
+ 	power: power-controller@12340000 {
+@@ -59,6 +63,57 @@ The nodes above define two power controllers: 'parent' and 'child'.
+ Domains created by the 'child' power controller are subdomains of '0' power
+ domain provided by the 'parent' power controller.
  
-@@ -84,6 +95,34 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
- 	{ },
- };
++Example 3: ARM v7 style CPU PM domains (Linux domain controller)
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		CPU0: cpu@0 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a7", "arm,armv7";
++			reg = <0x0>;
++			power-domains = <&a7_pd>;
++		};
++
++		CPU1: cpu@1 {
++			device_type = "cpu";
++			compatible = "arm,cortex-a15", "arm,armv7";
++			reg = <0x0>;
++			power-domains = <&a15_pd>;
++		};
++	};
++
++	pm-domains {
++		a15_pd: a15_pd {
++			/* will have A15 platform ARM_PD_METHOD_OF_DECLARE*/
++			compatible = "arm,cortex-a15";
++			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_SLEEP_0>;
++		};
++
++		a7_pd: a7_pd {
++			/* will have a A7 platform ARM_PD_METHOD_OF_DECLARE*/
++			compatible = "arm,cortex-a7";
++			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
++		};
++
++		CLUSTER_SLEEP_0: state0 {
++			compatible = "arm,idle-state";
++			entry-latency-us = <1000>;
++			exit-latency-us = <2000>;
++			min-residency-us = <10000>;
++		};
++
++		CLUSTER_SLEEP_1: state1 {
++			compatible = "arm,idle-state";
++			entry-latency-us = <5000>;
++			exit-latency-us = <5000>;
++			min-residency-us = <100000>;
++		};
++	};
++
+ ==PM domain consumers==
  
-+#ifdef CONFIG_HOTPLUG_CPU
-+static int arm_idle_cpu_hotplug(struct notifier_block *nb,
-+			unsigned long action, void *data)
-+{
-+	struct device *cpu_dev = get_cpu_device(smp_processor_id());
+ Required properties:
+@@ -76,3 +131,5 @@ Example:
+ The node above defines a typical PM domain consumer device, which is located
+ inside a PM domain with index 0 of a power controller represented by a node
+ with the label "power".
 +
-+	/* Execute CPU runtime PM on that CPU */
-+	switch (action & ~CPU_TASKS_FROZEN) {
-+	case CPU_DYING:
-+		pm_runtime_put_sync_suspend(cpu_dev);
-+		break;
-+	case CPU_STARTING:
-+		pm_runtime_get_sync(cpu_dev);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+#else
-+static int arm_idle_cpu_hotplug(struct notifier_block *nb,
-+			unsigned long action, void *data)
-+{
-+	return NOTIFY_OK;
-+}
-+#endif
-+
- /*
-  * arm_idle_init
-  *
-@@ -96,6 +135,7 @@ static int __init arm_idle_init(void)
- 	int cpu, ret;
- 	struct cpuidle_driver *drv = &arm_idle_driver;
- 	struct cpuidle_device *dev;
-+	struct device *cpu_dev;
- 
- 	/*
- 	 * Initialize idle states data, starting at index 1.
-@@ -118,6 +158,16 @@ static int __init arm_idle_init(void)
- 	 * idle states suspend back-end specific data
- 	 */
- 	for_each_possible_cpu(cpu) {
-+
-+		/* Initialize Runtime PM for the CPU */
-+		cpu_dev = get_cpu_device(cpu);
-+		pm_runtime_irq_safe(cpu_dev);
-+		pm_runtime_enable(cpu_dev);
-+		if (cpu_online(cpu)) {
-+			pm_runtime_get_noresume(cpu_dev);
-+			pm_runtime_set_active(cpu_dev);
-+		}
-+
- 		ret = arm_cpuidle_init(cpu);
- 
- 		/*
-@@ -148,10 +198,15 @@ static int __init arm_idle_init(void)
- 		}
- 	}
- 
-+	/* Register for hotplug notifications for runtime PM */
-+	hotcpu_notifier(arm_idle_cpu_hotplug, 0);
-+
- 	return 0;
- out_fail:
- 	while (--cpu >= 0) {
- 		dev = per_cpu(cpuidle_devices, cpu);
-+		cpu_dev = get_cpu_device(cpu);
-+		__pm_runtime_disable(cpu_dev, false);
- 		cpuidle_unregister_device(dev);
- 		kfree(dev);
- 	}
++[1]. Documentation/devicetree/bindings/arm/idle-states.txt
 -- 
 2.7.4
-
