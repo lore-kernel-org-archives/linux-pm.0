@@ -1,119 +1,45 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 02/16] dt/bindings: Update binding for PM domain idle states
-Date: Thu, 25 Aug 2016 13:51:32 -0600
-Message-ID: <1472154706-40119-3-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v4 05/16] PM / doc: Update device documentation for devices in IRQ safe PM domains
+Date: Thu, 25 Aug 2016 13:51:35 -0600
+Message-ID: <1472154706-40119-6-git-send-email-lina.iyer@linaro.org>
 References: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Lina Iyer <lina.iyer@linaro.org>
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Axel Haslam <ahaslam+renesas@baylibre.com>
+Update documentation to reflect the changes made to support IRQ safe PM
+domains.
 
-Update DT bindings to describe idle states of PM domains.
-
-Cc: <devicetree@vger.kernel.org>
-Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-[Lina: Added state properties, removed state names, wakeup-latency,
-added of_pm_genpd_init() API, pruned commit text]
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-[Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
 ---
- .../devicetree/bindings/power/power_domain.txt     | 57 ++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+ Documentation/power/devices.txt | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index 025b5e7..4960486 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -29,6 +29,10 @@ Optional properties:
-    specified by this binding. More details about power domain specifier are
-    available in the next section.
+diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
+index 8ba6625..a622136 100644
+--- a/Documentation/power/devices.txt
++++ b/Documentation/power/devices.txt
+@@ -607,7 +607,17 @@ individually.  Instead, a set of devices sharing a power resource can be put
+ into a low-power state together at the same time by turning off the shared
+ power resource.  Of course, they also need to be put into the full-power state
+ together, by turning the shared power resource on.  A set of devices with this
+-property is often referred to as a power domain.
++property is often referred to as a power domain. A power domain may also be
++nested inside another power domain.
++
++Devices, by default, operate in process context. If a device can operate in
++IRQ safe context that has to be explicitly indicated by setting the irq_safe
++boolean inside struct generic_pm_domain to be true. Power domains by default,
++operate in process context but could have devices that are IRQ safe. Such
++power domains cannot be powered on/off during runtime PM. On the other hand,
++IRQ safe PM domains that have IRQ safe devices may be powered off when all
++the devices are in idle. An IRQ safe domain may only be attached as a
++subdomain to another IRQ safe domain.
  
-+- domain-idle-states : A phandle of an idle-state that shall be soaked into a
-+                generic domain power state. The idle state definitions are
-+                compatible with arm,idle-state specified in [1].
-+
- Example:
- 
- 	power: power-controller@12340000 {
-@@ -59,6 +63,57 @@ The nodes above define two power controllers: 'parent' and 'child'.
- Domains created by the 'child' power controller are subdomains of '0' power
- domain provided by the 'parent' power controller.
- 
-+Example 3: ARM v7 style CPU PM domains (Linux domain controller)
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		CPU0: cpu@0 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a7", "arm,armv7";
-+			reg = <0x0>;
-+			power-domains = <&a7_pd>;
-+		};
-+
-+		CPU1: cpu@1 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a15", "arm,armv7";
-+			reg = <0x0>;
-+			power-domains = <&a15_pd>;
-+		};
-+	};
-+
-+	pm-domains {
-+		a15_pd: a15_pd {
-+			/* will have A15 platform ARM_PD_METHOD_OF_DECLARE*/
-+			compatible = "arm,cortex-a15";
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&CLUSTER_SLEEP_0>;
-+		};
-+
-+		a7_pd: a7_pd {
-+			/* will have a A7 platform ARM_PD_METHOD_OF_DECLARE*/
-+			compatible = "arm,cortex-a7";
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
-+		};
-+
-+		CLUSTER_SLEEP_0: state0 {
-+			compatible = "arm,idle-state";
-+			entry-latency-us = <1000>;
-+			exit-latency-us = <2000>;
-+			min-residency-us = <10000>;
-+		};
-+
-+		CLUSTER_SLEEP_1: state1 {
-+			compatible = "arm,idle-state";
-+			entry-latency-us = <5000>;
-+			exit-latency-us = <5000>;
-+			min-residency-us = <100000>;
-+		};
-+	};
-+
- ==PM domain consumers==
- 
- Required properties:
-@@ -76,3 +131,5 @@ Example:
- The node above defines a typical PM domain consumer device, which is located
- inside a PM domain with index 0 of a power controller represented by a node
- with the label "power".
-+
-+[1]. Documentation/devicetree/bindings/arm/idle-states.txt
+ Support for power domains is provided through the pm_domain field of struct
+ device.  This field is a pointer to an object of type struct dev_pm_domain,
 -- 
 2.7.4
