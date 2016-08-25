@@ -1,101 +1,162 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 16/16] ARM64: dts: Define CPU power domain for MSM8916
-Date: Thu, 25 Aug 2016 14:03:25 -0600
-Message-ID: <1472155405-41841-17-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v4 12/16] drivers: firmware: psci: Allow OS Initiated suspend mode
+Date: Thu, 25 Aug 2016 14:03:21 -0600
+Message-ID: <1472155405-41841-13-git-send-email-lina.iyer@linaro.org>
 References: <1472155405-41841-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:36478 "EHLO
-        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757665AbcHYUEY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Aug 2016 16:04:24 -0400
-Received: by mail-pf0-f179.google.com with SMTP id h186so20681498pfg.3
-        for <linux-pm@vger.kernel.org>; Thu, 25 Aug 2016 13:04:21 -0700 (PDT)
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1472155405-41841-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-Define power domain and the power states for the domain as defined by
-the PSCI firmware. The 8916 firmware supports OS initiated method of
-powering off the CPU clusters.
+PSCI firmware v1.0 onwards may support 2 different modes for
+CPU_SUSPEND. Platform coordinated mode is the default and every firmware
+should support it. OS Initiated mode is optional for the firmware to
+implement and allow Linux to make an better decision on the state of
+the CPU cluster heirarchy.
 
-Cc: <devicetree@vger.kernel.org>
+With the kernel capable of deciding the state for CPU cluster and
+coherency domains, the OS Initiated mode may now be used by the kernel,
+provided the firmware supports it. SET_SUSPEND_MODE is a PSCI function
+available on v1.0 onwards and can be used to set the mode in the
+firmware.
+
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+[Ulf: Rebased on 4.7 rc1]
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/msm8916.dtsi | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/firmware/psci.c   | 42 +++++++++++++++++++++++++++++-------------
+ include/uapi/linux/psci.h |  5 +++++
+ 2 files changed, 34 insertions(+), 13 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index 3029773..506c712 100644
---- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -64,6 +64,7 @@
- 			next-level-cache = <&L2_0>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
+diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+index 03e0458..759b134 100644
+--- a/drivers/firmware/psci.c
++++ b/drivers/firmware/psci.c
+@@ -52,6 +52,7 @@
+  * require cooperation with a Trusted OS driver.
+  */
+ static int resident_cpu = -1;
++static bool psci_has_osi;
  
- 		CPU1: cpu@1 {
-@@ -73,6 +74,7 @@
- 			next-level-cache = <&L2_0>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
+ bool psci_tos_resident_on(int cpu)
+ {
+@@ -506,9 +507,8 @@ static int __init psci_0_2_init(struct device_node *np)
+ 	int err;
  
- 		CPU2: cpu@2 {
-@@ -82,6 +84,7 @@
- 			next-level-cache = <&L2_0>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
+ 	err = get_set_conduit_method(np);
+-
+ 	if (err)
+-		goto out_put_node;
++		return err;
+ 	/*
+ 	 * Starting with v0.2, the PSCI specification introduced a call
+ 	 * (PSCI_VERSION) that allows probing the firmware version, so
+@@ -516,11 +516,7 @@ static int __init psci_0_2_init(struct device_node *np)
+ 	 * can be carried out according to the specific version reported
+ 	 * by firmware
+ 	 */
+-	err = psci_probe();
+-
+-out_put_node:
+-	of_node_put(np);
+-	return err;
++	return psci_probe();
+ }
  
- 		CPU3: cpu@3 {
-@@ -91,6 +94,7 @@
- 			next-level-cache = <&L2_0>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SPC>;
-+			power-domains = <&CPU_PD>;
- 		};
+ /*
+@@ -532,9 +528,8 @@ static int __init psci_0_1_init(struct device_node *np)
+ 	int err;
  
- 		L2_0: l2-cache {
-@@ -107,12 +111,33 @@
- 				min-residency-us = <2000>;
- 				local-timer-stop;
- 			};
+ 	err = get_set_conduit_method(np);
+-
+ 	if (err)
+-		goto out_put_node;
++		return err;
+ 
+ 	pr_info("Using PSCI v0.1 Function IDs from DT\n");
+ 
+@@ -558,15 +553,31 @@ static int __init psci_0_1_init(struct device_node *np)
+ 		psci_ops.migrate = psci_migrate;
+ 	}
+ 
+-out_put_node:
+-	of_node_put(np);
+ 	return err;
+ }
+ 
++static int __init psci_1_0_init(struct device_node *np)
++{
++	int ret;
 +
-+			CLUSTER_RET: cluster_retention {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x1000010>;
-+				entry-latency-us = <500>;
-+				exit-latency-us = <500>;
-+				min-residency-us = <2000>;
-+			};
++	ret = psci_0_2_init(np);
++	if (ret)
++		return ret;
 +
-+			CLUSTER_PWR_DWN: cluster_gdhs {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x1000030>;
-+				entry-latency-us = <2000>;
-+				exit-latency-us = <2000>;
-+				min-residency-us = <6000>;
-+			};
- 		};
- 	};
- 
- 	psci {
- 		compatible = "arm,psci-1.0";
- 		method = "smc";
++	/* Check if PSCI OSI mode is available */
++	ret = psci_features(psci_function_id[PSCI_FN_CPU_SUSPEND]);
++	if (ret & PSCI_1_0_OS_INITIATED) {
++		if (!psci_features(PSCI_1_0_FN_SET_SUSPEND_MODE))
++			psci_has_osi = true;
++	}
 +
-+		CPU_PD: cpu-pd@0 {
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
-+		};
- 	};
++	return 0;
++}
++
+ static const struct of_device_id psci_of_match[] __initconst = {
+ 	{ .compatible = "arm,psci",	.data = psci_0_1_init},
+ 	{ .compatible = "arm,psci-0.2",	.data = psci_0_2_init},
+-	{ .compatible = "arm,psci-1.0",	.data = psci_0_2_init},
++	{ .compatible = "arm,psci-1.0",	.data = psci_1_0_init},
+ 	{},
+ };
  
- 	timer {
+@@ -575,6 +586,7 @@ int __init psci_dt_init(void)
+ 	struct device_node *np;
+ 	const struct of_device_id *matched_np;
+ 	psci_initcall_t init_fn;
++	int ret;
+ 
+ 	np = of_find_matching_node_and_match(NULL, psci_of_match, &matched_np);
+ 
+@@ -582,7 +594,11 @@ int __init psci_dt_init(void)
+ 		return -ENODEV;
+ 
+ 	init_fn = (psci_initcall_t)matched_np->data;
+-	return init_fn(np);
++	ret = init_fn(np);
++
++	of_node_put(np);
++
++	return ret;
+ }
+ 
+ #ifdef CONFIG_ACPI
+diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
+index 3d7a0fc..7dd778e 100644
+--- a/include/uapi/linux/psci.h
++++ b/include/uapi/linux/psci.h
+@@ -48,6 +48,7 @@
+ 
+ #define PSCI_1_0_FN_PSCI_FEATURES		PSCI_0_2_FN(10)
+ #define PSCI_1_0_FN_SYSTEM_SUSPEND		PSCI_0_2_FN(14)
++#define PSCI_1_0_FN_SET_SUSPEND_MODE		PSCI_0_2_FN(15)
+ 
+ #define PSCI_1_0_FN64_SYSTEM_SUSPEND		PSCI_0_2_FN64(14)
+ 
+@@ -93,6 +94,10 @@
+ #define PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK	\
+ 			(0x1 << PSCI_1_0_FEATURES_CPU_SUSPEND_PF_SHIFT)
+ 
++#define PSCI_1_0_OS_INITIATED			BIT(0)
++#define PSCI_1_0_SUSPEND_MODE_PC		0
++#define PSCI_1_0_SUSPEND_MODE_OSI		1
++
+ /* PSCI return values (inclusive of all PSCI versions) */
+ #define PSCI_RET_SUCCESS			0
+ #define PSCI_RET_NOT_SUPPORTED			-1
 -- 
 2.7.4
-
