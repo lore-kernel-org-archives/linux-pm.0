@@ -1,122 +1,159 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 14/16] dt/bindings: Add PSCI OS-Initiated PM Domains bindings
-Date: Thu, 25 Aug 2016 14:03:23 -0600
-Message-ID: <1472155405-41841-15-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v4 08/16] ARM: cpuidle: Add runtime PM support for CPUs
+Date: Thu, 25 Aug 2016 14:03:17 -0600
+Message-ID: <1472155405-41841-9-git-send-email-lina.iyer@linaro.org>
 References: <1472155405-41841-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:36536 "EHLO
-        mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757641AbcHYUEY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Aug 2016 16:04:24 -0400
-Received: by mail-pa0-f52.google.com with SMTP id di2so19725482pad.3
-        for <linux-pm@vger.kernel.org>; Thu, 25 Aug 2016 13:04:17 -0700 (PDT)
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:33497 "EHLO
+        mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757590AbcHYUEX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Aug 2016 16:04:23 -0400
+Received: by mail-pa0-f44.google.com with SMTP id ti13so19767234pac.0
+        for <linux-pm@vger.kernel.org>; Thu, 25 Aug 2016 13:04:02 -0700 (PDT)
 In-Reply-To: <1472155405-41841-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Add bindings for defining a OS-Initiated based CPU PM domain.
+Notify runtime PM when the CPU is going to be powered off in the idle
+state. This allows for runtime PM suspend/resume of the CPU as well as
+its PM domain.
 
-Cc: <devicetree@vger.kernel.org>
+We do not call into runtime PM for ARM WFI to keep the default state
+simple and faster.
+
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- Documentation/devicetree/bindings/arm/psci.txt | 79 ++++++++++++++++++++++++++
- 1 file changed, 79 insertions(+)
+ drivers/cpuidle/cpuidle-arm.c | 55 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation/devicetree/bindings/arm/psci.txt
-index a2c4f1d..63a229b 100644
---- a/Documentation/devicetree/bindings/arm/psci.txt
-+++ b/Documentation/devicetree/bindings/arm/psci.txt
-@@ -105,7 +105,86 @@ Case 3: PSCI v0.2 and PSCI v0.1.
- 		...
- 	};
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index e342565e..3abd145 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -11,12 +11,14 @@
  
-+PSCI v1.0 onwards, supports OS-Initiated mode for powering off CPU domains
-+from the firmware. Such PM domains for which the PSCI firmware driver acts as
-+pseudo-controller, may also be specified in the DT under the psci node. The
-+domain definitions must follow the domain idle state specifications per [3].
-+The domain states themselves must be compatible with 'arm,idle-state' defined
-+in [1] and need to specify the arm,psci-suspend-param property for each idle
-+state.
+ #define pr_fmt(fmt) "CPUidle arm: " fmt
+ 
++#include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ 
+ #include <asm/cpuidle.h>
+@@ -37,6 +39,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv, int idx)
+ {
+ 	int ret;
++	struct device *cpu_dev = get_cpu_device(dev->cpu);
+ 
+ 	if (!idx) {
+ 		cpu_do_idle();
+@@ -46,12 +49,20 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ 	ret = cpu_pm_enter();
+ 	if (!ret) {
+ 		/*
++		 * Call runtime PM suspend on our device
++		 * Notify RCU to pay attention to critical sections
++		 * called from within runtime PM.
++		 */
++		RCU_NONIDLE(pm_runtime_put_sync_suspend(cpu_dev));
 +
-+More information on defining CPU PM domains is available in [4].
++		/*
+ 		 * Pass idle state index to cpu_suspend which in turn will
+ 		 * call the CPU ops suspend protocol with idle index as a
+ 		 * parameter.
+ 		 */
+ 		ret = arm_cpuidle_suspend(idx);
+ 
++		RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
+ 		cpu_pm_exit();
+ 	}
+ 
+@@ -84,6 +95,34 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
+ 	{ },
+ };
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++static int arm_idle_cpu_hotplug(struct notifier_block *nb,
++			unsigned long action, void *data)
++{
++	struct device *cpu_dev = get_cpu_device(smp_processor_id());
 +
-+Example: OS-Iniated PSCI based PM domains with 1 CPU in each domain
++	/* Execute CPU runtime PM on that CPU */
++	switch (action & ~CPU_TASKS_FROZEN) {
++	case CPU_DYING:
++		pm_runtime_put_sync_suspend(cpu_dev);
++		break;
++	case CPU_STARTING:
++		pm_runtime_get_sync(cpu_dev);
++		break;
++	default:
++		break;
++	}
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++	return NOTIFY_OK;
++}
++#else
++static int arm_idle_cpu_hotplug(struct notifier_block *nb,
++			unsigned long action, void *data)
++{
++	return NOTIFY_OK;
++}
++#endif
 +
-+		CPU0: cpu@0 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a53", "arm,armv8";
-+			reg = <0x0>;
-+			enable-method = "psci";
-+			cpu-idle-states = <&CPU_PWRDN>;
-+			power-domains = <&CPU_PD0>;
-+		};
+ /*
+  * arm_idle_init
+  *
+@@ -96,6 +135,7 @@ static int __init arm_idle_init(void)
+ 	int cpu, ret;
+ 	struct cpuidle_driver *drv = &arm_idle_driver;
+ 	struct cpuidle_device *dev;
++	struct device *cpu_dev;
+ 
+ 	/*
+ 	 * Initialize idle states data, starting at index 1.
+@@ -118,6 +158,16 @@ static int __init arm_idle_init(void)
+ 	 * idle states suspend back-end specific data
+ 	 */
+ 	for_each_possible_cpu(cpu) {
 +
-+		CPU1: cpu@1 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a57", "arm,armv8";
-+			reg = <0x100>;
-+			enable-method = "psci";
-+			cpu-idle-states = <&CPU_PWRDN>;
-+			power-domains = <&CPU_PD1>;
-+		};
++		/* Initialize Runtime PM for the CPU */
++		cpu_dev = get_cpu_device(cpu);
++		pm_runtime_irq_safe(cpu_dev);
++		pm_runtime_enable(cpu_dev);
++		if (cpu_online(cpu)) {
++			pm_runtime_get_noresume(cpu_dev);
++			pm_runtime_set_active(cpu_dev);
++		}
 +
-+		idle-states {
-+			CPU_PWRDN: cpu_power_down{
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x000001>;
-+				entry-latency-us = <10>;
-+				exit-latency-us = <10>;
-+				min-residency-us = <100>;
-+			};
+ 		ret = arm_cpuidle_init(cpu);
+ 
+ 		/*
+@@ -148,10 +198,15 @@ static int __init arm_idle_init(void)
+ 		}
+ 	}
+ 
++	/* Register for hotplug notifications for runtime PM */
++	hotcpu_notifier(arm_idle_cpu_hotplug, 0);
 +
-+			CLUSTER_RET: domain_ret {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x1000010>;
-+				entry-latency-us = <500>;
-+				exit-latency-us = <500>;
-+				min-residency-us = <2000>;
-+			};
-+
-+			CLUSTER_PWR_DWN: domain_gdhs {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x1000030>;
-+				entry-latency-us = <2000>;
-+				exit-latency-us = <2000>;
-+				min-residency-us = <6000>;
-+			};
-+	};
-+
-+	psci {
-+		compatible = "arm,psci-1.0";
-+		method = "smc";
-+
-+		CPU_PD0: cpu-pd@0 {
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
-+		};
-+
-+		CPU_PD1: cpu-pd@1 {
-+			#power-domain-cells = <0>;
-+			domain-idle-states =  <&CLUSTER_PWR_DWN>;
-+		};
-+	};
-+
- [1] Kernel documentation - ARM idle states bindings
-     Documentation/devicetree/bindings/arm/idle-states.txt
- [2] Power State Coordination Interface (PSCI) specification
-     http://infocenter.arm.com/help/topic/com.arm.doc.den0022c/DEN0022C_Power_State_Coordination_Interface.pdf
-+[3]. PM Domains description
-+    Documentation/devicetree/bindings/power/power_domain.txt
-+[4]. CPU PM Domains description
-+    Documentation/power/cpu_domains.txt
+ 	return 0;
+ out_fail:
+ 	while (--cpu >= 0) {
+ 		dev = per_cpu(cpuidle_devices, cpu);
++		cpu_dev = get_cpu_device(cpu);
++		__pm_runtime_disable(cpu_dev, false);
+ 		cpuidle_unregister_device(dev);
+ 		kfree(dev);
+ 	}
 -- 
 2.7.4
 
