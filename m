@@ -1,140 +1,152 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 10/16] PM / cpu_domains: Add PM Domain governor for CPUs
-Date: Thu, 25 Aug 2016 13:51:40 -0600
-Message-ID: <1472154706-40119-11-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v4 08/16] ARM: cpuidle: Add runtime PM support for CPUs
+Date: Thu, 25 Aug 2016 13:51:38 -0600
+Message-ID: <1472154706-40119-9-git-send-email-lina.iyer@linaro.org>
 References: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-A PM domain comprising of CPUs may be powered off when all the CPUs in
-the domain are powered down. Powering down a CPU domain is generally a
-expensive operation and therefore the power performance trade offs
-should be considered. The time between the last CPU powering down and
-the first CPU powering up in a domain, is the time available for the
-domain to sleep. Ideally, the sleep time of the domain should fulfill
-the residency requirement of the domains' idle state.
+Notify runtime PM when the CPU is going to be powered off in the idle
+state. This allows for runtime PM suspend/resume of the CPU as well as
+its PM domain.
 
-To do this effectively, read the time before the wakeup of the cluster's
-CPUs and ensure that the domain's idle state sleep time guarantees the
-QoS requirements of each of the CPU, the PM QoS CPU_DMA_LATENCY and the
-state's residency.
+We do not call into runtime PM for ARM WFI to keep the default state
+simple and faster.
 
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/base/power/cpu_domains.c | 80 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 79 insertions(+), 1 deletion(-)
+ drivers/cpuidle/cpuidle-arm.c | 55 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
 
-diff --git a/drivers/base/power/cpu_domains.c b/drivers/base/power/cpu_domains.c
-index 8bf61e2..79fa4ae 100644
---- a/drivers/base/power/cpu_domains.c
-+++ b/drivers/base/power/cpu_domains.c
-@@ -17,9 +17,12 @@
- #include <linux/list.h>
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index e342565e..3abd145 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -11,12 +11,14 @@
+ 
+ #define pr_fmt(fmt) "CPUidle arm: " fmt
+ 
++#include <linux/cpu.h>
+ #include <linux/cpuidle.h>
+ #include <linux/cpumask.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
  #include <linux/of.h>
- #include <linux/pm_domain.h>
-+#include <linux/pm_qos.h>
 +#include <linux/pm_runtime.h>
- #include <linux/rculist.h>
- #include <linux/rcupdate.h>
  #include <linux/slab.h>
-+#include <linux/tick.h>
  
- #define CPU_PD_NAME_MAX 36
- 
-@@ -51,6 +54,81 @@ static inline struct cpu_pm_domain *to_cpu_pd(struct generic_pm_domain *d)
- 	return res;
- }
- 
-+static bool cpu_pd_down_ok(struct dev_pm_domain *pd)
-+{
-+	struct generic_pm_domain *genpd = pd_to_genpd(pd);
-+	struct cpu_pm_domain *cpu_pd = to_cpu_pd(genpd);
-+	int qos_ns = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
-+	u64 sleep_ns;
-+	ktime_t earliest, next_wakeup;
-+	int cpu;
-+	int i;
-+
-+	/* Reset the last set genpd state, default to index 0 */
-+	genpd->state_idx = 0;
-+
-+	/* We don't want to power down, if QoS is 0 */
-+	if (!qos_ns)
-+		return false;
-+
-+	/*
-+	 * Find the sleep time for the cluster.
-+	 * The time between now and the first wake up of any CPU that
-+	 * are in this domain hierarchy is the time available for the
-+	 * domain to be idle.
-+	 *
-+	 * We only care about the next wakeup for any online CPU in that
-+	 * cluster. Hotplug off any of the CPUs that we care about will
-+	 * wait on the genpd lock, until we are done. Any other CPU hotplug
-+	 * is not of consequence to our sleep time.
-+	 */
-+	earliest = ktime_set(KTIME_SEC_MAX, 0);
-+	for_each_cpu_and(cpu, cpu_pd->cpus, cpu_online_mask) {
-+		next_wakeup = tick_nohz_get_next_wakeup(cpu);
-+		if (earliest.tv64 > next_wakeup.tv64)
-+			earliest = next_wakeup;
-+	}
-+
-+	sleep_ns = ktime_to_ns(ktime_sub(earliest, ktime_get()));
-+	if (sleep_ns <= 0)
-+		return false;
-+
-+	/*
-+	 * Find the deepest sleep state that satisfies the residency
-+	 * requirement and the QoS constraint
-+	 */
-+	for (i = genpd->state_count - 1; i >= 0; i--) {
-+		u64 state_sleep_ns;
-+
-+		state_sleep_ns = genpd->states[i].power_off_latency_ns +
-+			genpd->states[i].power_on_latency_ns +
-+			genpd->states[i].residency_ns;
-+
-+		/*
-+		 * If we can't sleep to save power in the state, move on
-+		 * to the next lower idle state.
-+		 */
-+		if (state_sleep_ns > sleep_ns)
-+			continue;
-+
-+		/*
-+		 * We also don't want to sleep more than we should to
-+		 * gaurantee QoS.
-+		 */
-+		if (state_sleep_ns < (qos_ns * NSEC_PER_USEC))
-+			break;
-+	}
-+
-+	if (i >= 0)
-+		genpd->state_idx = i;
-+
-+	return (i >= 0);
-+}
-+
-+static struct dev_power_governor cpu_pd_gov = {
-+	.power_down_ok = cpu_pd_down_ok,
-+};
-+
- static int cpu_pd_power_on(struct generic_pm_domain *genpd)
+ #include <asm/cpuidle.h>
+@@ -37,6 +39,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv, int idx)
  {
- 	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
-@@ -172,7 +250,7 @@ struct generic_pm_domain *cpu_pd_init(struct generic_pm_domain *genpd,
- 	list_add_rcu(&pd->link, &of_cpu_pd_list);
- 	mutex_unlock(&cpu_pd_list_lock);
+ 	int ret;
++	struct device *cpu_dev = get_cpu_device(dev->cpu);
  
--	ret = pm_genpd_init(genpd, &simple_qos_governor, false);
-+	ret = pm_genpd_init(genpd, &cpu_pd_gov, false);
- 	if (ret) {
- 		pr_err("Unable to initialize domain %s\n", genpd->name);
- 		goto fail;
+ 	if (!idx) {
+ 		cpu_do_idle();
+@@ -46,12 +49,20 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+ 	ret = cpu_pm_enter();
+ 	if (!ret) {
+ 		/*
++		 * Call runtime PM suspend on our device
++		 * Notify RCU to pay attention to critical sections
++		 * called from within runtime PM.
++		 */
++		RCU_NONIDLE(pm_runtime_put_sync_suspend(cpu_dev));
++
++		/*
+ 		 * Pass idle state index to cpu_suspend which in turn will
+ 		 * call the CPU ops suspend protocol with idle index as a
+ 		 * parameter.
+ 		 */
+ 		ret = arm_cpuidle_suspend(idx);
+ 
++		RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
+ 		cpu_pm_exit();
+ 	}
+ 
+@@ -84,6 +95,34 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
+ 	{ },
+ };
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++static int arm_idle_cpu_hotplug(struct notifier_block *nb,
++			unsigned long action, void *data)
++{
++	struct device *cpu_dev = get_cpu_device(smp_processor_id());
++
++	/* Execute CPU runtime PM on that CPU */
++	switch (action & ~CPU_TASKS_FROZEN) {
++	case CPU_DYING:
++		pm_runtime_put_sync_suspend(cpu_dev);
++		break;
++	case CPU_STARTING:
++		pm_runtime_get_sync(cpu_dev);
++		break;
++	default:
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++#else
++static int arm_idle_cpu_hotplug(struct notifier_block *nb,
++			unsigned long action, void *data)
++{
++	return NOTIFY_OK;
++}
++#endif
++
+ /*
+  * arm_idle_init
+  *
+@@ -96,6 +135,7 @@ static int __init arm_idle_init(void)
+ 	int cpu, ret;
+ 	struct cpuidle_driver *drv = &arm_idle_driver;
+ 	struct cpuidle_device *dev;
++	struct device *cpu_dev;
+ 
+ 	/*
+ 	 * Initialize idle states data, starting at index 1.
+@@ -118,6 +158,16 @@ static int __init arm_idle_init(void)
+ 	 * idle states suspend back-end specific data
+ 	 */
+ 	for_each_possible_cpu(cpu) {
++
++		/* Initialize Runtime PM for the CPU */
++		cpu_dev = get_cpu_device(cpu);
++		pm_runtime_irq_safe(cpu_dev);
++		pm_runtime_enable(cpu_dev);
++		if (cpu_online(cpu)) {
++			pm_runtime_get_noresume(cpu_dev);
++			pm_runtime_set_active(cpu_dev);
++		}
++
+ 		ret = arm_cpuidle_init(cpu);
+ 
+ 		/*
+@@ -148,10 +198,15 @@ static int __init arm_idle_init(void)
+ 		}
+ 	}
+ 
++	/* Register for hotplug notifications for runtime PM */
++	hotcpu_notifier(arm_idle_cpu_hotplug, 0);
++
+ 	return 0;
+ out_fail:
+ 	while (--cpu >= 0) {
+ 		dev = per_cpu(cpuidle_devices, cpu);
++		cpu_dev = get_cpu_device(cpu);
++		__pm_runtime_disable(cpu_dev, false);
+ 		cpuidle_unregister_device(dev);
+ 		kfree(dev);
+ 	}
 -- 
 2.7.4
