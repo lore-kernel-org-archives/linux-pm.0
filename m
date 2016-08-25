@@ -1,53 +1,74 @@
-From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Subject: [PATCH v4 0/2] Add support for Smart Battery System Manager
-Date: Thu, 25 Aug 2016 22:20:59 +0200
-Message-ID: <1472156461-25180-1-git-send-email-karl-heinz@schneider-inet.de>
-References: <1bIiDr-0004G1-0P>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1bIiDr-0004G1-0P>
-Sender: linux-acpi-owner@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>, Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH v5] Force cppc_cpufreq to report values in KHz to fix
+ user space reporting
+Date: Thu, 25 Aug 2016 22:00:41 +0000
+Message-ID: <1472162436.13076.21.camel@intel.com>
+References: <1469049004-19069-1-git-send-email-ahs3@redhat.com>
+         <20160801203156.GV4605@ubuntu>
+         <872a4dd4-a752-507b-e720-ec2e6003bd8c@redhat.com>
+         <406534f5-5e45-237e-cc68-2b57631e26d1@redhat.com>
+         <CANYZqRv6pLCK+oaWxyzr3YPxs0VytupWD7oPfX4tA7STxWNGOg@mail.gmail.com>
+         <6a0079da-2f81-a58b-0a71-3564d79ad61b@redhat.com>
+         <1471926684.5747.13.camel@intel.com>
+         <8012e614-885a-0445-44aa-63d92de5cd1f@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:62919 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751033AbcHYWFb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 Aug 2016 18:05:31 -0400
+In-Reply-To: <8012e614-885a-0445-44aa-63d92de5cd1f@redhat.com>
+Content-Language: en-US
+Content-ID: <87A4ECFC17C7BF4FB5FC928DB35F9C80@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "ahs3@redhat.com" <ahs3@redhat.com>, "ashwinch@google.com" <ashwinch@google.com>
+Cc: "pprakash@codeaurora.org" <pprakash@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
 
-This patch series adds support for Smart Battery System Manager.
-A SBSM is a device listening at I2C/SMBus address 0x0a and is capable of
-communicating up to four I2C smart battery devices. All smart battery
-devices are listening at address 0x0b, so the SBSM muliplexes between
-them. The driver makes use of the I2C-Mux framework to allow smart
-batteries to be bound via device tree, i.e. the sbs-battery driver.
-
-Via sysfs interface the online state and charge type are presented. If
-the driver is bound as ltc1760 (a Dual Smart Battery System Manager)
-the charge type can also be changed from trickle to fast.
-
-Changes:
-V2:
-* Fixed sample node names and compatible strings in binding documentaton.
-* Removed optional property "sbsm,i2c-retry-count"
-* Retry count hardcoded. Removed no longer needed OF readout function
-* Rebased onto v4.7rc-5
-
-V3:
-* Changed enumeration sheme
-* Rebased onto v4.7rc-7
-
-V4:
-* removed .owner field as advised by kbuild test robot
-* removed print on ENOMEM
-* added reference to i2c-mux documentation in binding doc
-
-Karl-Heinz Schneider (2):
-  Documentation: Add sbs-manager device tree node documentation
-  power: Adds support for Smart Battery System Manager
-
- .../devicetree/bindings/power/sbs,sbs-manager.txt  |  53 ++++
- drivers/power/Kconfig                              |  13 +
- drivers/power/Makefile                             |   1 +
- drivers/power/sbs-manager.c                        | 323 +++++++++++++++++++++
- 4 files changed, 390 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
- create mode 100644 drivers/power/sbs-manager.c
-
---
-2.7.4
+T24gVHVlLCAyMDE2LTA4LTIzIGF0IDEwOjE0IC0wNjAwLCBBbCBTdG9uZSB3cm90ZToNCj4gPiA+
+IA0KDQpbLi4uXQ0KDQo+ID4gSW4geDg2IHdoZW4gQ1BQQyBpcyB1c2VkLCB0aGUgdW5pdCBpcyBy
+ZWFsbHkgdW5pdC1sZXNzIGluIENQUEMNCj4gPiB0YWJsZXMuDQo+ID4gVGhpcyBtZWFucyB0aGF0
+IGNwdS0+cGVyZl9jYXBzLmhpZ2hlc3RfcGVyZiBjYW4gYmUganVzdCAweGZmLA0KPiA+IGluc3Rl
+YWQNCj4gPiBvZiBzb21lIHNjYWxlZCBjcHBjIG1heCBwZXJmb3JtYW5jZSBjb3JyZXNwb25kaW5n
+IHRvIG1heCBNSFogdGhlDQo+ID4gcHJvY2Vzc29yIGNhbiBzdXBwb3J0LiBUaGlzIGFsbG93cyB0
+aGUgcHJvY2Vzc29yIHRvIGNhcCBhdCBtYXgNCj4gPiB3aGljaCBpdA0KPiA+IGNhbiBkZWxpdmVy
+Lg0KPiA+IElzIHRoaXMgY2FzZSBub3QgcG9zc2libGUgZm9yIEFSTSBTb0NzPw0KPiA+IA0KWy4u
+Ll0NCj4gSWYgSSB1bmRlcnN0YW5kIHRoZSBxdWVzdGlvbiBwcm9wZXJseSwgSSBkb24ndCB0aGlu
+ayBpdCBtYXR0ZXJzLCBhbmQNCj4gSSBkb24ndA0KPiB0aGluayB0aGF0IHdpbGwgd29yayBmb3Ig
+eDg2IGVpdGhlci4NCj4gDQo+IFRoaXMgcGF0Y2ggaXMgbWVhbnQgdG8gYWxsb3cgQ1BQQyB0byBj
+b250aW51ZSBvcGVyYXRpbmcgc29sZWx5IGJhc2VkDQo+IG9uIHRoZQ0KPiBhYnN0cmFjdCBzY2Fs
+ZSBwcm92aWRlZCBieSB0aGUgQUNQSSB0YWJsZXM7IHRoaXMgc2hvdWxkIGJlIHRydWUNCj4gcmVn
+YXJkbGVzcw0KPiBvZiBhcmNoaXRlY3R1cmUuwqDCoEFueSBhY3R1YWwgcHJvY2Vzc29yIHBlcmZv
+cm1hbmNlIGNoYW5nZXMgYXJlIHN0aWxsDQo+IGd1aWRlZA0KPiBzb2xlbHkgYnkgdGhlIENQUEMg
+c2NhbGUgcHJvdmlkZWQgaW4gdGhlIHRhYmxlcywgYW5kIG5vdCB0aGUgdmFsdWVzDQo+IGluIHRo
+ZQ0KPiBjcHUtPnBlcmZfY2FwcyBzdHJ1Y3QuDQo+IA0KPiBBc3N1bWluZyBJIHVuZGVyc3RhbmQg
+dGhlIGtlcm5lbCBjb2RlLCB0aGUgdmFsdWVzIGluIGNwdS0+cGVyZl9jYXBzDQo+IC0tIGluIHRo
+aXMNCj4gY2FzZSAtLSBhcmUgcmVhbGx5IGp1c3QgZm9yIHJlcG9ydGluZyB0byB1c2VyIHNwYWNl
+IHZpYSBzeXNmcywgd2hpY2gNCj4gaXMgdGhlDQo+IHJvb3Qgb2YgdGhlIHByb2JsZW06IHVzZXIg
+c3BhY2UgZXhwZWN0cyBmcmVxdWVuY2llcywgYW5kIHdlIGhhdmUgbm9uZQ0KPiB3aGVuIHVzaW5n
+DQo+IENQUEMgc28gd2UgaGF2ZSB0byBwcm92aWRlIGFuIGFwcHJveGltYXRpb24uwqDCoEluIHRo
+b3NlIGNpcmN1bXN0YW5jZXMsDQo+IEkgdGhpbmsgYQ0KPiB2YWx1ZSBvZiAweGZmIHdvdWxkIGJl
+IGtpbmQgb2YgY29uZnVzaW5nIGluIHN5c2ZzLCBzaW5jZSBpdCdzDQo+IGJhc2ljYWxseSBzYXlp
+bmcNCj4gdGhlIENQVSBpcyBvcGVyYXRpbmcgYXQgYSBmcmVxdWVuY3kgZXF1YWwgdG8gdGhlIGxh
+cmdlc3QgaW50ZWdlcg0KPiB2YWx1ZS4NCj4gDQo+IFRvIGJlIGZhaXIsIHRoaXMgaXMgaG93IHRo
+ZSBBUk0gcHJvY2Vzc29yIGltcGxlbWVudHMgQ1BQQzsgSSBoYXZlIG5vdA0KPiBleGFtaW5lZA0K
+PiBpbiBkZXRhaWwgdGhlIG5ld2x5IHN1Ym1pdHRlZCB4ODYgcGF0Y2hlcyB0byB1c2UgQ1BQQyBz
+byBJIGNhbm5vdA0KPiBjb21tZW50IG9uDQo+IHRob3NlLsKgwqBUaGlzIHBhdGNoIHdhcyB3cml0
+dGVuIHdlbGwgYmVmb3JlIHRob3NlIHNob3dlZCB1cC4NCkN1cnJlbnRseSB3ZSBhcmUgbm90IHVz
+aW5nIGNwcGMtY3B1ZnJlcSBkcml2ZXIsIHNvIG5vdCB3aWxsIG5vdA0KZGlyZWN0bHkgaW1wYWN0
+ICh5b3UgYXJlIMKgbm90IGNoYW5naW5nIGFjcGktY3B1ZnJlcSBzb3VyY2UsIHdoaWNoIHdlDQph
+cmUgdXNpbmcpLg0KeDg2IGhhcyBvdGhlciB3YXkgdG8gZ2V0IG1heC9taW4gY3B1ZnJlcSBwb2xp
+Y3kgZnJlcXVlbmNpZXMgdXNpbmcgTVNScy4NClNvIHlvdSBtYXkgY2hvb3NlIHRvIGlnbm9yZSBt
+eSBjb21tZW50cyBoZXJlLCBhcyBsb25nIGFzIHlvdXIgY2hhbmdlcw0KYXJlIGxpbWl0ZWQgdG8g
+ZHJpdmVycy9jcHVmcmVxL2NwcGNfY3B1ZnJlcS5jDQoNCldoZW4geW91IGFyZSBkb2luZzoNCnBv
+bGljeS0+bWluID0gY3B1LT5wZXJmX2NhcHMubG93ZXN0X3BlcmYgKiBjcHBjX2RtaV9tYXhfa2h6
+IC8gY3B1LQ0KPnBlcmZfY2Fwcy5oaWdoZXN0X3BlcmY7DQoNCkFyZW4ndCB5b3UgYXNzdW1pbmcg
+dGhhdCBzY2FsZSBmcm9tIG1heCB0byBtaW4gcGVyZm9ybWFuY2UgaXMgb25seQ0KcmVsYXRlZCB0
+byBmcmVxdWVuY3k/IEl0IGlzIHBvc3NpYmxlIHRoYXQgbWFueSBwb2ludHMgaW4gYmV0d2VlbiBj
+YW4gYmUNCnNhbWUgZnJlcXVlbmN5IHdpdGggbXVsdGlwbGUgdm9sdGFnZXMuDQpBcyBwZXIgc3Bl
+YyAiIFRoZSBwbGF0Zm9ybSBtYXkgY2hvb3NlIHRvIHVzZSBhIHNpbmdsZSBtZXRyaWMgc3VjaCBh
+cw0KcHJvY2Vzc29yIGZyZXF1ZW5jeSwgb3IgaXQgbWF5IGNob29zZSB0byBibGVuZCBtdWx0aXBs
+ZSBoYXJkd2FyZQ0KbWV0cmljcyB0byBjcmVhdGUgYSBzeW50aGV0aWMgbWVhc3VyZSBvZiBwZXJm
+b3JtYW5jZSIuDQoNClRoYW5rcywNClNyaW5pdmFzwqANCg0KDQo+IA==
