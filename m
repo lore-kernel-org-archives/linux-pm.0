@@ -1,76 +1,82 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC/PATCH 1/2] cpuidle: Allow idle-states to be disabled at start
-Date: Thu, 25 Aug 2016 16:07:58 +0200
-Message-ID: <57BEFBBE.8050601@linaro.org>
-References: <cover.1471557381.git.ego@linux.vnet.ibm.com>
- <48afad7788300482c047fc35e70ca8e4bf31a5ac.1471557381.git.ego@linux.vnet.ibm.com>
- <57BDB2D8.4080507@linaro.org>
- <fe9a9667-cbbb-8fa2-5db0-2edd3220ca7b@gmail.com>
- <57BDB7F7.3090502@linaro.org>
- <adaebfb8-239c-8a0b-21b4-47150e6f2035@gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC][PATCH 8 of 7] cpufreq: intel_pstate: add iir filter to pstate.
+Date: Thu, 25 Aug 2016 10:00:40 -0700
+Message-ID: <000d01d1fef2$36ff5960$a4fe0c20$@net>
+References: <1471907493-26639-1-git-send-email-dsmythies@telus.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <adaebfb8-239c-8a0b-21b4-47150e6f2035@gmail.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Balbir Singh <bsingharora@gmail.com>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Neuling <michael.neuling@au1.ibm.com>, Paul Mackerras <paulus@samba.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta20.telus.net ([209.171.16.93]:55930 "EHLO cmta20.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754739AbcHYRAr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 25 Aug 2016 13:00:47 -0400
+In-Reply-To: <1471907493-26639-1-git-send-email-dsmythies@telus.net>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: srinivas.pandruvada@linux.intel.com
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org
 
-On 08/25/2016 03:46 PM, Balbir Singh wrote:
-> 
-> 
-> On 25/08/16 01:06, Daniel Lezcano wrote:
->> On 08/24/2016 04:48 PM, Balbir Singh wrote:
->>>
->>>
->>> On 25/08/16 00:44, Daniel Lezcano wrote:
->>>> On 08/19/2016 12:26 AM, Gautham R. Shenoy wrote:
->>>>> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->>>>>
->>>>> Currently all the idle states registered by a cpu-idle driver are
->>>>> enabled by default. This patch adds a mechanism which allows the
->>>>> driver to hint if an idle-state should start in a disabled state. The
->>>>> cpu-idle core will use this hint to appropriately initialize the
->>>>> usage->disable knob of the CPU device idle state.
->>>>
->>>> Why do you need to do that ?
->>>>
->>>
->>> I think patch 2/2 explains the reason as it uses this infrastructure
->>
->> Ok, let me elaborate the question, I was not clear.
->>
->> Why the userspace can't setup the system environment at boot time by
->> disabling the state instead of adding extra code to disable it at boot
->> time in the kernel and then re-enable it from userspace ?
-> 
-> Gautham's patches don't want to have those states enabled by default.
-> They are unlikely to be what production systems need, but likely
-> what a knowledgeable person can look into selectively enable for
-> experimentation.
+Hi Srinivas:
 
-Why not invert the logic ?
+On 2016.08.22 16:12 Doug Smythies wrote:
 
-A knowledgeable person can look into selectively disable for production.
+...[cut]...
++	 *
++	 * no clamps. Pre-filter clamping was needed in past implementations.
++	 * To Do: Is any pre-filter clamping needed here? */
 
-In addition, a kernel command line option to specify which state to
-disable would be appropriate and beneficial for all existing drivers.
+Yes, clamping is needed, otherwise, and for example, the target pstate
+can "stick" low at high load for a few sample periods, until the filtered
+value gets high enough. For the fix, I clamped the post-filter output value
+(perhaps not in the best way, but for now):
+
+doug@s15:~/temp-k-git/linux/drivers/cpufreq$ git diff
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index ab5c004..56c09ef8f 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1307,6 +1307,7 @@ static inline int32_t get_target_pstate_default(struct cpudata *cpu)
+        int64_t scaled_gain, unfiltered_target;
+        int32_t busy_frac;
+        int pstate;
++       int max_perf, min_perf;
+        u64 duration_ns;
+
+        busy_frac = div_fp(sample->mperf, sample->tsc);
+@@ -1399,6 +1400,14 @@ static inline int32_t get_target_pstate_default(struct cpudata *cpu)
+        cpu->sample.target = div_u64((int_tofp(100) - scaled_gain) *
+                        cpu->sample.target + scaled_gain *
+                        unfiltered_target, int_tofp(100));
++       /*
++        * Clamp the filtered value.
++        */
++       intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
++       if (cpu->sample.target < int_tofp(min_perf))
++               cpu->sample.target = int_tofp(min_perf);
++        if (cpu->sample.target > int_tofp(max_perf))
++                cpu->sample.target = int_tofp(max_perf);
+
+        return fp_toint(cpu->sample.target + (1 << (FRAC_BITS-1)));
+ }
+
+I'll send an updated patch in a few hours.
+
+...[cut]... 
+
++	 *
++	 * To Do: Often the actual pstate the system ran at over the last
++	 * 	  interval is not what was asked for, due to influence from
++	 *	  other CPUs. It might make sense to use the average pstate
++	 *	  (get_avg_pstate) as the old_output here (as per previous
++	 *	  work by Philippe Longepe and Stephane Gasparini on the
++	 *	  get_target_pstate_use_cpu_load method). Test it.
++	 */
+
+I have a version of this working. More on that it at a later date.
+
+... Doug
 
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
