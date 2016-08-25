@@ -1,14 +1,11 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 01/16] PM / Domains: Allow domain power states to be read
- from DT
-Date: Thu, 25 Aug 2016 13:51:31 -0600
-Message-ID: <1472154706-40119-2-git-send-email-lina.iyer@linaro.org>
-References: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v4 00/16] PM: SoC idle support using PM domains
+Date: Thu, 25 Aug 2016 13:51:30 -0600
+Message-ID: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,195 +16,106 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Lina Iyer <lina.iyer@linaro.org>
+Cc: lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Axel Haslam <ahaslam+renesas@baylibre.com>
+Hi all,
 
-This patch allows domains to define idle states in the DT. SoC's can
-define domain idle states in DT using the "domain-idle-states" property
-of the domain provider. Calling of_pm_genpd_init() will  read the idle
-states and initialize the genpd for the domain.
+Changes since v3 [7]:
+- Mostly refactoring and reorganization, no functional changes.
+- Refactored DT support for CPU PM domains into a separate patch.
+  (Suggested by Ulf)
+- Reorganized domain idle state into DT binding, to be more in line
+  with the discussions that followed the last patch submission.
+  (Thanks Brendan, Sudeep, Lorenzo for some really good discussions.)
 
-In addition to the entry and exit latency for idle state, also add
-residency_ns, param and of_node property to each state. A domain idling
-in a state is only power effecient if it stays idle for a certain period
-in that state. The residency provides this minimum time for the idle
-state to provide power benefits. The param is a state specific u32 value
-that the platform may use for that idle state.
+Changes since v2 [5]:
+- Update PSCI documentation to define OS-Initiated PM domains.
+- Nifty updates and bug fixes. Thanks Brendan!
+- Define PSCI PM domains under psci node in 8916 DT.
+- Documentation updates for domain definitions.
+- Updated series is at [4].
 
-Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-[Lina: Added state properties, removed state names, wakeup-latency,
-added of_pm_genpd_init() API, pruned commit text]
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-[Ulf: Moved around code to make it compile properly, rebased on top of multiple
-state support,changed to use pm_genpd_init()]
----
- drivers/base/power/domain.c | 92 ++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/pm_domain.h   | 11 +++++-
- 2 files changed, 101 insertions(+), 2 deletions(-)
+Changes since v1 [6]:
+- Use arm,idle-state as the DT binding for domain idle state.
+- OS-Initated changes to support that and to read arm,psci-suspend-param
+(Thanks Mark Rutland and Kevin Hilman)
+- tick_nohz_get_next_wakeup() - suggestions from Thomas Gleixner.
+- The updated series is at [3].
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index a1f2aff..3aecac3 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1253,6 +1253,90 @@ out:
- }
- EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
- 
-+static const struct of_device_id arm_idle_state_match[] = {
-+	{ .compatible = "arm,idle-state", },
-+	{ }
-+};
-+
-+static int genpd_of_get_power_state(struct genpd_power_state *genpd_state,
-+				    struct device_node *state_node)
-+{
-+	int err = 0;
-+	u32 latency;
-+	u32 residency;
-+	u32 entry_latency, exit_latency;
-+	const struct of_device_id *match_id;
-+
-+	match_id = of_match_node(arm_idle_state_match, state_node);
-+	if (!match_id)
-+		return -EINVAL;
-+
-+	err = of_property_read_u32(state_node, "entry-latency-us",
-+				   &entry_latency);
-+	if (err) {
-+		pr_debug(" * %s missing entry-latency-us property\n",
-+			 state_node->full_name);
-+		return -EINVAL;
-+	}
-+
-+	err = of_property_read_u32(state_node, "exit-latency-us",
-+				   &exit_latency);
-+	if (err) {
-+		pr_debug(" * %s missing exit-latency-us property\n",
-+			 state_node->full_name);
-+		return -EINVAL;
-+	}
-+
-+	err = of_property_read_u32(state_node, "min-residency-us", &residency);
-+	if (!err)
-+		genpd_state->residency_ns = 1000 * residency;
-+
-+	latency = entry_latency + exit_latency;
-+	genpd_state->power_on_latency_ns = 1000 * latency;
-+	genpd_state->power_off_latency_ns = 1000 * entry_latency;
-+	genpd_state->of_node = state_node;
-+
-+	return 0;
-+}
-+
-+int pm_genpd_of_parse_power_states(struct generic_pm_domain *genpd)
-+{
-+	struct device_node *np;
-+	int i, err = 0;
-+
-+	for (i = 0; i < GENPD_MAX_NUM_STATES; i++) {
-+		np = of_parse_phandle(genpd->of_node, "domain-idle-states", i);
-+		if (!np)
-+			break;
-+
-+		err = genpd_of_get_power_state(&genpd->states[i], np);
-+		if (err) {
-+			pr_err
-+			    ("Parsing idle state node %s failed with err %d\n",
-+			     np->full_name, err);
-+			err = -EINVAL;
-+			of_node_put(np);
-+			break;
-+		}
-+		of_node_put(np);
-+	}
-+
-+	if (err)
-+		return err;
-+
-+	genpd->state_count = i;
-+	return 0;
-+}
-+EXPORT_SYMBOL(pm_genpd_of_parse_power_states);
-+
-+static int genpd_of_parse(struct generic_pm_domain *genpd)
-+{
-+	if (!genpd->of_node || (genpd->state_count > 0))
-+		return 0;
-+
-+	return pm_genpd_of_parse_power_states(genpd);
-+}
-+
- /**
-  * pm_genpd_init - Initialize a generic I/O PM domain object.
-  * @genpd: PM domain object to initialize.
-@@ -1262,8 +1346,10 @@ EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
-  * Returns 0 on successful initialization, else a negative error code.
-  */
- int pm_genpd_init(struct generic_pm_domain *genpd,
--		  struct dev_power_governor *gov, bool is_off)
-+		   struct dev_power_governor *gov, bool is_off)
- {
-+	int ret;
-+
- 	if (IS_ERR_OR_NULL(genpd))
- 		return -EINVAL;
- 
-@@ -1306,6 +1392,10 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
- 		genpd->dev_ops.start = pm_clk_resume;
- 	}
- 
-+	ret = genpd_of_parse(genpd);
-+	if (ret)
-+		return ret;
-+
- 	if (genpd->state_idx >= GENPD_MAX_NUM_STATES) {
- 		pr_warn("Initial state index out of bounds.\n");
- 		genpd->state_idx = GENPD_MAX_NUM_STATES - 1;
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 31fec85..c5d14b9 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -40,6 +40,9 @@ struct gpd_dev_ops {
- struct genpd_power_state {
- 	s64 power_off_latency_ns;
- 	s64 power_on_latency_ns;
-+	s64 residency_ns;
-+	u32 param;
-+	struct device_node *of_node;
- };
- 
- struct generic_pm_domain {
-@@ -51,6 +54,7 @@ struct generic_pm_domain {
- 	struct mutex lock;
- 	struct dev_power_governor *gov;
- 	struct work_struct power_off_work;
-+	struct device_node *of_node;	/* Device node of the PM domain */
- 	const char *name;
- 	atomic_t sd_count;	/* Number of subdomains with power "on" */
- 	enum gpd_status status;	/* Current state of the domain */
-@@ -129,7 +133,7 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 				     struct generic_pm_domain *target);
- extern int pm_genpd_init(struct generic_pm_domain *genpd,
- 			 struct dev_power_governor *gov, bool is_off);
--
-+extern int pm_genpd_of_parse_power_states(struct generic_pm_domain *genpd);
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
- #else
-@@ -168,6 +172,11 @@ static inline int pm_genpd_init(struct generic_pm_domain *genpd,
- {
- 	return -ENOSYS;
- }
-+static inline int pm_genpd_of_parse_power_states(
-+				struct generic_pm_domain *genpd)
-+{
-+	return -ENODEV;
-+}
- #endif
- 
- static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+Changes since RFC-v3 [1]:
+- Reorganize the patches. Documentations have their own patch.
+- Moved code around with PSCI OS initiated so they would not have compiler
+  errors in other configuration.
+- Minor bug fixes with genpd power_on functionality.
+- Rebased on top of 4.7-rc1
+
+This is the submission of the SoC idle support in the kernel for CPU domains
+using genpd. The patches were submitted as RFC's earlier, the last of them is
+[1]. Since the RFC, multiple discussions have happened around making the
+patches generic across all architectures. For now, the patches address the
+needs of the ARM community, but sure enough can be extended to support other
+architectures. Some of the limitations in making this patch generic is the lack
+of device idle state description in the DT, but that in itself is a bigger
+topic for a future discussion.
+
+The patch has been tested on the 410c Dragonboard and the MTK EVB boards. Both
+show good power savings when used with OS Initiated PSCI f/w.
+
+This entire series can be found at [8].
+
+Thanks,
+Lina
+
+[1]. http://lists.infradead.org/pipermail/linux-arm-kernel/2016-March/412934.html
+[2]. https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-psci-v1
+[3]. https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-psci-v2
+[4]. https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-psci-v3
+[5]. https://lwn.net/Articles/695987/
+[6]. https://lwn.net/Articles/675674/
+[7]. http://www.spinics.net/lists/arm-kernel/msg522021.html
+[8]. https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-psci-v4
+
+Axel Haslam (2):
+  PM / Domains: Allow domain power states to be read from DT
+  dt/bindings: Update binding for PM domain idle states
+
+Lina Iyer (14):
+  PM / Domains: Abstract genpd locking
+  PM / Domains: Support IRQ safe PM domains
+  PM / doc: Update device documentation for devices in IRQ safe PM
+    domains
+  PM / cpu_domains: Setup PM domains for CPUs/clusters
+  PM / cpu_domains: Initialize CPU PM domains from DT
+  ARM: cpuidle: Add runtime PM support for CPUs
+  timer: Export next wake up of a CPU
+  PM / cpu_domains: Add PM Domain governor for CPUs
+  doc / cpu_domains: Describe CPU PM domains setup and governor
+  drivers: firmware: psci: Allow OS Initiated suspend mode
+  drivers: firmware: psci: Support cluster idle states for OS-Initiated
+  dt/bindings: Add PSCI OS-Initiated PM Domains bindings
+  ARM64: dts: Add PSCI cpuidle support for MSM8916
+  ARM64: dts: Define CPU power domain for MSM8916
+
+ Documentation/devicetree/bindings/arm/psci.txt     |  79 ++++
+ .../devicetree/bindings/power/power_domain.txt     |  57 +++
+ Documentation/power/cpu_domains.txt                | 109 +++++
+ Documentation/power/devices.txt                    |  12 +-
+ arch/arm64/boot/dts/qcom/msm8916.dtsi              |  49 +++
+ drivers/base/power/Makefile                        |   1 +
+ drivers/base/power/cpu_domains.c                   | 459 +++++++++++++++++++++
+ drivers/base/power/domain.c                        | 308 ++++++++++++--
+ drivers/cpuidle/cpuidle-arm.c                      |  55 +++
+ drivers/firmware/psci.c                            | 135 +++++-
+ include/linux/cpu_domains.h                        |  67 +++
+ include/linux/pm_domain.h                          |  24 +-
+ include/linux/tick.h                               |   7 +
+ include/uapi/linux/psci.h                          |   5 +
+ kernel/time/tick-sched.c                           |  11 +
+ 15 files changed, 1314 insertions(+), 64 deletions(-)
+ create mode 100644 Documentation/power/cpu_domains.txt
+ create mode 100644 drivers/base/power/cpu_domains.c
+ create mode 100644 include/linux/cpu_domains.h
+
 -- 
 2.7.4
