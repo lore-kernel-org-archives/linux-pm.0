@@ -1,121 +1,99 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 00/16] PM: SoC idle support using PM domains
-Date: Thu, 25 Aug 2016 13:51:30 -0600
-Message-ID: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Lina Iyer <lina.iyer@linaro.org>
+From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v4 16/16] ARM64: dts: Define CPU power domain for MSM8916
+Date: Thu, 25 Aug 2016 13:51:46 -0600
+Message-ID: <1472154706-40119-17-git-send-email-lina.iyer@linaro.org>
+References: <1472154706-40119-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1472154706-40119-1-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, brendan.jackman-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, Juri.Lelli-5wv7dgnIgG8@public.gmane.org, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+Define power domain and the power states for the domain as defined by
+the PSCI firmware. The 8916 firmware supports OS initiated method of
+powering off the CPU clusters.
 
-Changes since v3 [7]:
-- Mostly refactoring and reorganization, no functional changes.
-- Refactored DT support for CPU PM domains into a separate patch.
-  (Suggested by Ulf)
-- Reorganized domain idle state into DT binding, to be more in line
-  with the discussions that followed the last patch submission.
-  (Thanks Brendan, Sudeep, Lorenzo for some really good discussions.)
+Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+---
+ arch/arm64/boot/dts/qcom/msm8916.dtsi | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-Changes since v2 [5]:
-- Update PSCI documentation to define OS-Initiated PM domains.
-- Nifty updates and bug fixes. Thanks Brendan!
-- Define PSCI PM domains under psci node in 8916 DT.
-- Documentation updates for domain definitions.
-- Updated series is at [4].
-
-Changes since v1 [6]:
-- Use arm,idle-state as the DT binding for domain idle state.
-- OS-Initated changes to support that and to read arm,psci-suspend-param
-(Thanks Mark Rutland and Kevin Hilman)
-- tick_nohz_get_next_wakeup() - suggestions from Thomas Gleixner.
-- The updated series is at [3].
-
-Changes since RFC-v3 [1]:
-- Reorganize the patches. Documentations have their own patch.
-- Moved code around with PSCI OS initiated so they would not have compiler
-  errors in other configuration.
-- Minor bug fixes with genpd power_on functionality.
-- Rebased on top of 4.7-rc1
-
-This is the submission of the SoC idle support in the kernel for CPU domains
-using genpd. The patches were submitted as RFC's earlier, the last of them is
-[1]. Since the RFC, multiple discussions have happened around making the
-patches generic across all architectures. For now, the patches address the
-needs of the ARM community, but sure enough can be extended to support other
-architectures. Some of the limitations in making this patch generic is the lack
-of device idle state description in the DT, but that in itself is a bigger
-topic for a future discussion.
-
-The patch has been tested on the 410c Dragonboard and the MTK EVB boards. Both
-show good power savings when used with OS Initiated PSCI f/w.
-
-This entire series can be found at [8].
-
-Thanks,
-Lina
-
-[1]. http://lists.infradead.org/pipermail/linux-arm-kernel/2016-March/412934.html
-[2]. https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-psci-v1
-[3]. https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-psci-v2
-[4]. https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-psci-v3
-[5]. https://lwn.net/Articles/695987/
-[6]. https://lwn.net/Articles/675674/
-[7]. http://www.spinics.net/lists/arm-kernel/msg522021.html
-[8]. https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-psci-v4
-
-Axel Haslam (2):
-  PM / Domains: Allow domain power states to be read from DT
-  dt/bindings: Update binding for PM domain idle states
-
-Lina Iyer (14):
-  PM / Domains: Abstract genpd locking
-  PM / Domains: Support IRQ safe PM domains
-  PM / doc: Update device documentation for devices in IRQ safe PM
-    domains
-  PM / cpu_domains: Setup PM domains for CPUs/clusters
-  PM / cpu_domains: Initialize CPU PM domains from DT
-  ARM: cpuidle: Add runtime PM support for CPUs
-  timer: Export next wake up of a CPU
-  PM / cpu_domains: Add PM Domain governor for CPUs
-  doc / cpu_domains: Describe CPU PM domains setup and governor
-  drivers: firmware: psci: Allow OS Initiated suspend mode
-  drivers: firmware: psci: Support cluster idle states for OS-Initiated
-  dt/bindings: Add PSCI OS-Initiated PM Domains bindings
-  ARM64: dts: Add PSCI cpuidle support for MSM8916
-  ARM64: dts: Define CPU power domain for MSM8916
-
- Documentation/devicetree/bindings/arm/psci.txt     |  79 ++++
- .../devicetree/bindings/power/power_domain.txt     |  57 +++
- Documentation/power/cpu_domains.txt                | 109 +++++
- Documentation/power/devices.txt                    |  12 +-
- arch/arm64/boot/dts/qcom/msm8916.dtsi              |  49 +++
- drivers/base/power/Makefile                        |   1 +
- drivers/base/power/cpu_domains.c                   | 459 +++++++++++++++++++++
- drivers/base/power/domain.c                        | 308 ++++++++++++--
- drivers/cpuidle/cpuidle-arm.c                      |  55 +++
- drivers/firmware/psci.c                            | 135 +++++-
- include/linux/cpu_domains.h                        |  67 +++
- include/linux/pm_domain.h                          |  24 +-
- include/linux/tick.h                               |   7 +
- include/uapi/linux/psci.h                          |   5 +
- kernel/time/tick-sched.c                           |  11 +
- 15 files changed, 1314 insertions(+), 64 deletions(-)
- create mode 100644 Documentation/power/cpu_domains.txt
- create mode 100644 drivers/base/power/cpu_domains.c
- create mode 100644 include/linux/cpu_domains.h
-
+diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+index 3029773..506c712 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -64,6 +64,7 @@
+ 			next-level-cache = <&L2_0>;
+ 			enable-method = "psci";
+ 			cpu-idle-states = <&CPU_SPC>;
++			power-domains = <&CPU_PD>;
+ 		};
+ 
+ 		CPU1: cpu@1 {
+@@ -73,6 +74,7 @@
+ 			next-level-cache = <&L2_0>;
+ 			enable-method = "psci";
+ 			cpu-idle-states = <&CPU_SPC>;
++			power-domains = <&CPU_PD>;
+ 		};
+ 
+ 		CPU2: cpu@2 {
+@@ -82,6 +84,7 @@
+ 			next-level-cache = <&L2_0>;
+ 			enable-method = "psci";
+ 			cpu-idle-states = <&CPU_SPC>;
++			power-domains = <&CPU_PD>;
+ 		};
+ 
+ 		CPU3: cpu@3 {
+@@ -91,6 +94,7 @@
+ 			next-level-cache = <&L2_0>;
+ 			enable-method = "psci";
+ 			cpu-idle-states = <&CPU_SPC>;
++			power-domains = <&CPU_PD>;
+ 		};
+ 
+ 		L2_0: l2-cache {
+@@ -107,12 +111,33 @@
+ 				min-residency-us = <2000>;
+ 				local-timer-stop;
+ 			};
++
++			CLUSTER_RET: cluster_retention {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x1000010>;
++				entry-latency-us = <500>;
++				exit-latency-us = <500>;
++				min-residency-us = <2000>;
++			};
++
++			CLUSTER_PWR_DWN: cluster_gdhs {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x1000030>;
++				entry-latency-us = <2000>;
++				exit-latency-us = <2000>;
++				min-residency-us = <6000>;
++			};
+ 		};
+ 	};
+ 
+ 	psci {
+ 		compatible = "arm,psci-1.0";
+ 		method = "smc";
++
++		CPU_PD: cpu-pd@0 {
++			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
++		};
+ 	};
+ 
+ 	timer {
 -- 
 2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
