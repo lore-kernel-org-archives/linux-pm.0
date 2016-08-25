@@ -1,77 +1,75 @@
-From: Alex Shi <alex.shi@linaro.org>
-Subject: [PATCH 4/4] cpuidle/menu: add per cpu pm_qos_resume_latency consideration
-Date: Thu, 25 Aug 2016 16:42:42 +0800
-Message-ID: <1472114562-2736-4-git-send-email-alex.shi@linaro.org>
-References: <1472114562-2736-1-git-send-email-alex.shi@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1472114562-2736-1-git-send-email-alex.shi@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: open list <linux-kernel@vger.kernel.org>
-Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arjan van de Ven <arjan@linux.intel.com>, Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v8 00/11] power: act8945a_charger: Improvements
+Date: Thu, 25 Aug 2016 09:59:35 +0100
+Message-ID: <20160825085935.GH22076@sirena.org.uk>
+References: <1472109599-21915-1-git-send-email-wenyou.yang@atmel.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============7575142902590356206=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1472109599-21915-1-git-send-email-wenyou.yang@atmel.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Wenyou Yang <wenyou.yang@atmel.com>
+Cc: devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Kumar Gala <galak@codeaurora.org>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Kernel or user may have special requirement on cpu response time, like
-if a interrupt is pinned to a cpu, we don't want the cpu goes too deep
-sleep. This patch can prevent this thing happen by consider per cpu
-resume_latency setting in cpu sleep state selection in menu governor.
 
-The pm_qos_resume_latency ask device to give reponse in this time. That's
-similar with cpu cstates' entry_latency + exit_latency. But since
-most of cpu cstate either has no entry_latency or add it into exit_latency
-So, we just can restrict this time requirement as states exit_latency.
+--===============7575142902590356206==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="+E165xXSMiO4rFaE"
+Content-Disposition: inline
 
-The 0 value of pm_qos_resume_latency is for no limitation according ABI
-definition. So set the value 1 could get the 0 latency if it's needed.
 
-Signed-off-by: Alex Shi <alex.shi@linaro.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Alex Shi <alex.shi@linaro.org>
-Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/governors/menu.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+--+E165xXSMiO4rFaE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index bb58e2a..e354880 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -12,6 +12,7 @@
- 
- #include <linux/kernel.h>
- #include <linux/cpuidle.h>
-+#include <linux/cpu.h>
- #include <linux/pm_qos.h>
- #include <linux/time.h>
- #include <linux/ktime.h>
-@@ -281,17 +282,23 @@ again:
- static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- {
- 	struct menu_device *data = this_cpu_ptr(&menu_devices);
-+	struct device *device = get_cpu_device(dev->cpu);
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
- 	int i;
- 	unsigned int interactivity_req;
- 	unsigned int expected_interval;
- 	unsigned long nr_iowaiters, cpu_load;
-+	int resume_latency = dev_pm_qos_read_value(device);
- 
- 	if (data->needs_update) {
- 		menu_update(drv, dev);
- 		data->needs_update = 0;
- 	}
- 
-+	/* resume_latency is 0 means no restriction */
-+	if (resume_latency && resume_latency < latency_req)
-+		latency_req = resume_latency;
-+
- 	/* Special case when user has set very strict latency requirement */
- 	if (unlikely(latency_req == 0))
- 		return 0;
--- 
-2.8.1.101.g72d917a
+On Thu, Aug 25, 2016 at 03:19:48PM +0800, Wenyou Yang wrote:
+> This patch series is to improve the implementation of act8945a-charger
+> driver, such as regard the act8945-charger as a sub-device, improve
+> the way to check the status, fix the power supply type property,
+> add the status change update, and add more properties: capacity level
+> property and max current property.
+
+I don't know why you're copying me on this series but can you please
+either stop or let me know what you're looking for me to do with it?
+It's quite large, is getting resent regularly with frequent replies and
+I'm never quite sure why it's there.
+
+--+E165xXSMiO4rFaE
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJXvrN2AAoJECTWi3JdVIfQbf8H/0tbDEoLn+WNe9KsmcI0HM1L
+ToBlyDkG+Zgr6vBw5XOlGQd8uC5ZPSEOLJqRiiMukhmfY1tXuflGkaURP2Zhstag
+qAA16mJO6e5c6LpP30MHHtBNIO+vdgjcYTDV8Yz4UrPmYRJqPGR7c9gIc+cZIoFb
+dvEy4HSmCo6xOWPOLJa/Qi9h8MHZrwMl4tvu1YxWh7Hp9CRfikwsQy1baHGzDofb
+16LW6+77nVvL5sUNDDD5xUF0XS0x9EKpD2kHHJ4tMlxA5+p3V/R7uZXcf+eeoC5J
+jtznTpePFipWYn+CaeezrvlKufv2/NvLcfc7O5YlNnaKcj2IwgWGyc68xv6tVjE=
+=029Y
+-----END PGP SIGNATURE-----
+
+--+E165xXSMiO4rFaE--
+
+
+--===============7575142902590356206==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============7575142902590356206==--
