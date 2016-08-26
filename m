@@ -1,102 +1,93 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [PATCH 2/2] sched: cpufreq: use rt_avg as estimate of required RT CPU capacity
-Date: Fri, 26 Aug 2016 11:40:48 -0700
-Message-ID: <1472236848-17038-3-git-send-email-smuckle@linaro.org>
-References: <1472236848-17038-1-git-send-email-smuckle@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1472236848-17038-1-git-send-email-smuckle@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH][v6] PM / hibernate: Print the possible panic reason when
+ resuming with inconsistent e820 map
+Date: Fri, 26 Aug 2016 21:56:54 +0200
+Message-ID: <20160826195654.GD21442@amd>
+References: <1445404900-29702-1-git-send-email-yu.c.chen@intel.com>
+ <20160823094527.GG7276@linux-rxt1.site>
+ <20160823100155.GA12738@sharon>
+ <20160824013610.GA26119@linux-rxt1.site>
+ <20160825110748.GA22104@sharon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42789 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751135AbcHZT5L (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Aug 2016 15:57:11 -0400
+Content-Disposition: inline
+In-Reply-To: <20160825110748.GA22104@sharon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: joeyli <jlee@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-A policy of going to fmax on any RT activity will be detrimental
-for power on many platforms. Often RT accounts for only a small amount
-of CPU activity so sending the CPU frequency to fmax is overkill. Worse
-still, some platforms may not be able to even complete the CPU frequency
-change before the RT activity has already completed.
+Hi!
 
-Cpufreq governors have not treated RT activity this way in the past so
-it is not part of the expected semantics of the RT scheduling class. The
-DL class offers guarantees about task completion and could be used for
-this purpose.
+> > > > What's the progress of this patch? Looks already have experts review it.
+> > > > Why this patch didn't accept?
+> > > This patch is a little overkilled, and I have saved another simpler
+> > > version to only check the md5 hash (as people suggested) for it. I can post it later.
+> > > 
+> > 
+> > I am happy to test and review it.
+> >
+> Here it is. As Rafael is on travel, it would be grateful
+> if you can give some advance on this, thanks!
 
-Modify the schedutil algorithm to instead use rt_avg as an estimate of
-RT utilization of the CPU.
+Better than last one.
 
-Based on previous work by Vincent Guittot <vincent.guittot@linaro.org>.
+> +#ifdef CONFIG_HIBERNATION_CHECK_E820
+> +#define MD5_HASH_SIZE 128
+> +
+> +/**
+> + *	get_e820_md5 - calculate md5 according to struct e820map
+> + *
+> + *	@map: the e820 map to be calculated
+> + *	@buf: the md5 result to be stored to
+> + */
+> +static int get_e820_md5(struct e820map *map, void *buf)
+> +{
+> +	struct scatterlist sg;
+> +	struct crypto_ahash *tfm;
+> +	struct ahash_request *req;
+> +	int ret = 0;
+> +
+> +	tfm = crypto_alloc_ahash("md5", 0, CRYPTO_ALG_ASYNC);
+> +	if (IS_ERR(tfm))
+> +		return -ENOMEM;
+> +
+> +	req = ahash_request_alloc(tfm, GFP_ATOMIC);
 
-Signed-off-by: Steve Muckle <smuckle@linaro.org>
----
- kernel/sched/cpufreq_schedutil.c | 26 +++++++++++++++++---------
- 1 file changed, 17 insertions(+), 9 deletions(-)
+what context is this called from? GFP_ATOMIC allocations like to fail...
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index cb8a77b1ef1b..89094a466250 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -146,13 +146,21 @@ static unsigned int get_next_freq(struct sugov_cpu *sg_cpu, unsigned long util,
- 
- static void sugov_get_util(unsigned long *util, unsigned long *max)
- {
--	struct rq *rq = this_rq();
--	unsigned long cfs_max;
-+	int cpu = smp_processor_id();
-+	struct rq *rq = cpu_rq(cpu);
-+	unsigned long max_cap, rt;
-+	s64 delta;
- 
--	cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
-+	max_cap = arch_scale_cpu_capacity(NULL, cpu);
- 
--	*util = min(rq->cfs.avg.util_avg, cfs_max);
--	*max = cfs_max;
-+	delta = rq_clock(rq) - rq->age_stamp;
-+	if (unlikely(delta < 0))
-+		delta = 0;
-+	rt = div64_u64(rq->rt_avg, sched_avg_period() + delta);
-+	rt = (rt * max_cap) >> SCHED_CAPACITY_SHIFT;
-+
-+	*util = min(rq->cfs.avg.util_avg + rt, max_cap);
-+	*max = max_cap;
- }
- 
- static void sugov_update_single(struct update_util_data *hook, u64 time,
-@@ -167,7 +175,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 	if (!sugov_should_update_freq(sg_policy, time))
- 		return;
- 
--	if (flags & SCHED_CPUFREQ_RT_DL) {
-+	if (flags & SCHED_CPUFREQ_DL) {
- 		next_f = policy->cpuinfo.max_freq;
- 	} else {
- 		sugov_get_util(&util, &max);
-@@ -186,7 +194,7 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
- 	u64 last_freq_update_time = sg_policy->last_freq_update_time;
- 	unsigned int j;
- 
--	if (flags & SCHED_CPUFREQ_RT_DL)
-+	if (flags & SCHED_CPUFREQ_DL)
- 		return max_f;
- 
- 	for_each_cpu(j, policy->cpus) {
-@@ -209,7 +217,7 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
- 		if (delta_ns > TICK_NSEC)
- 			continue;
- 
--		if (j_sg_cpu->flags & SCHED_CPUFREQ_RT_DL)
-+		if (j_sg_cpu->flags & SCHED_CPUFREQ_DL)
- 			return max_f;
- 
- 		j_util = j_sg_cpu->util;
-@@ -467,7 +475,7 @@ static int sugov_start(struct cpufreq_policy *policy)
- 		if (policy_is_shared(policy)) {
- 			sg_cpu->util = 0;
- 			sg_cpu->max = 0;
--			sg_cpu->flags = SCHED_CPUFREQ_RT;
-+			sg_cpu->flags = SCHED_CPUFREQ_DL;
- 			sg_cpu->last_update = 0;
- 			sg_cpu->cached_raw_freq = 0;
- 			cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util,
+> +static int hibernation_e820_check(void *buf)
+> +{
+> +	int ret;
+> +	char result[MD5_HASH_SIZE] = {0};
+> +
+> +	ret = get_e820_md5(&e820_saved, result);
+> +	if (ret)
+> +		return ret;
+> +
+> +	if (memcmp(result, buf, MD5_HASH_SIZE))
+> +		e820_conflict = true;
+
+Passing return value using global variable is ugly. Can you just print
+the warning and kill the box here?
+> +
+
+> +	/*
+> +	 * A page has been allocated previously to store the hibernation
+> +	 * image header, so we can safely store the md5 result behind
+> +	 * struct restore_data_record, with size of 128 bytes.
+> +	 */
+> +	hibernation_e820_save(addr + sizeof(struct restore_data_record));
+> +
+
+Please just allocate space in struct restore_data_record . And I don't
+think md5 sum is 128 _bytes_.
+
 -- 
-2.7.3
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
