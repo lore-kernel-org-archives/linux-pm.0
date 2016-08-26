@@ -1,74 +1,28 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH v5] Force cppc_cpufreq to report values in KHz to fix
- user space reporting
-Date: Thu, 25 Aug 2016 22:00:41 +0000
-Message-ID: <1472162436.13076.21.camel@intel.com>
-References: <1469049004-19069-1-git-send-email-ahs3@redhat.com>
-         <20160801203156.GV4605@ubuntu>
-         <872a4dd4-a752-507b-e720-ec2e6003bd8c@redhat.com>
-         <406534f5-5e45-237e-cc68-2b57631e26d1@redhat.com>
-         <CANYZqRv6pLCK+oaWxyzr3YPxs0VytupWD7oPfX4tA7STxWNGOg@mail.gmail.com>
-         <6a0079da-2f81-a58b-0a71-3564d79ad61b@redhat.com>
-         <1471926684.5747.13.camel@intel.com>
-         <8012e614-885a-0445-44aa-63d92de5cd1f@redhat.com>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?UkU6IFtQQVRDSF0gUE0gLyBkZXZmcmVxOiBmaXggS2NvbmZp?=
+ =?UTF-8?B?ZyBpbmRlbnQgc3R5bGU=?=
+Date: Fri, 26 Aug 2016 01:30:08 +0000
+Message-ID: <1348447315.48450.1472175008187.JavaMail.weblogic@ep2ml101a>
+References: <CGME20160825121032epcas1p43f3290ba0047692fde5256503badb5bd@epcas1p4.samsung.com>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:62919 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751033AbcHYWFb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 25 Aug 2016 18:05:31 -0400
-In-Reply-To: <8012e614-885a-0445-44aa-63d92de5cd1f@redhat.com>
-Content-Language: en-US
-Content-ID: <87A4ECFC17C7BF4FB5FC928DB35F9C80@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/related;
+ boundary="----=_Part_48449_1379519361.1472175008187"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?UTF-8?B?SmlzaGVuZyBaaGFuZw==?= <jszhang@marvell.com>, =?UTF-8?B?S3l1bmdtaW4gUGFyaw==?= <kyungmin.park@samsung.com>
+Cc: =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw==?= <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "ahs3@redhat.com" <ahs3@redhat.com>, "ashwinch@google.com" <ashwinch@google.com>
-Cc: "pprakash@codeaurora.org" <pprakash@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
 
-T24gVHVlLCAyMDE2LTA4LTIzIGF0IDEwOjE0IC0wNjAwLCBBbCBTdG9uZSB3cm90ZToNCj4gPiA+
-IA0KDQpbLi4uXQ0KDQo+ID4gSW4geDg2IHdoZW4gQ1BQQyBpcyB1c2VkLCB0aGUgdW5pdCBpcyBy
-ZWFsbHkgdW5pdC1sZXNzIGluIENQUEMNCj4gPiB0YWJsZXMuDQo+ID4gVGhpcyBtZWFucyB0aGF0
-IGNwdS0+cGVyZl9jYXBzLmhpZ2hlc3RfcGVyZiBjYW4gYmUganVzdCAweGZmLA0KPiA+IGluc3Rl
-YWQNCj4gPiBvZiBzb21lIHNjYWxlZCBjcHBjIG1heCBwZXJmb3JtYW5jZSBjb3JyZXNwb25kaW5n
-IHRvIG1heCBNSFogdGhlDQo+ID4gcHJvY2Vzc29yIGNhbiBzdXBwb3J0LiBUaGlzIGFsbG93cyB0
-aGUgcHJvY2Vzc29yIHRvIGNhcCBhdCBtYXgNCj4gPiB3aGljaCBpdA0KPiA+IGNhbiBkZWxpdmVy
-Lg0KPiA+IElzIHRoaXMgY2FzZSBub3QgcG9zc2libGUgZm9yIEFSTSBTb0NzPw0KPiA+IA0KWy4u
-Ll0NCj4gSWYgSSB1bmRlcnN0YW5kIHRoZSBxdWVzdGlvbiBwcm9wZXJseSwgSSBkb24ndCB0aGlu
-ayBpdCBtYXR0ZXJzLCBhbmQNCj4gSSBkb24ndA0KPiB0aGluayB0aGF0IHdpbGwgd29yayBmb3Ig
-eDg2IGVpdGhlci4NCj4gDQo+IFRoaXMgcGF0Y2ggaXMgbWVhbnQgdG8gYWxsb3cgQ1BQQyB0byBj
-b250aW51ZSBvcGVyYXRpbmcgc29sZWx5IGJhc2VkDQo+IG9uIHRoZQ0KPiBhYnN0cmFjdCBzY2Fs
-ZSBwcm92aWRlZCBieSB0aGUgQUNQSSB0YWJsZXM7IHRoaXMgc2hvdWxkIGJlIHRydWUNCj4gcmVn
-YXJkbGVzcw0KPiBvZiBhcmNoaXRlY3R1cmUuwqDCoEFueSBhY3R1YWwgcHJvY2Vzc29yIHBlcmZv
-cm1hbmNlIGNoYW5nZXMgYXJlIHN0aWxsDQo+IGd1aWRlZA0KPiBzb2xlbHkgYnkgdGhlIENQUEMg
-c2NhbGUgcHJvdmlkZWQgaW4gdGhlIHRhYmxlcywgYW5kIG5vdCB0aGUgdmFsdWVzDQo+IGluIHRo
-ZQ0KPiBjcHUtPnBlcmZfY2FwcyBzdHJ1Y3QuDQo+IA0KPiBBc3N1bWluZyBJIHVuZGVyc3RhbmQg
-dGhlIGtlcm5lbCBjb2RlLCB0aGUgdmFsdWVzIGluIGNwdS0+cGVyZl9jYXBzDQo+IC0tIGluIHRo
-aXMNCj4gY2FzZSAtLSBhcmUgcmVhbGx5IGp1c3QgZm9yIHJlcG9ydGluZyB0byB1c2VyIHNwYWNl
-IHZpYSBzeXNmcywgd2hpY2gNCj4gaXMgdGhlDQo+IHJvb3Qgb2YgdGhlIHByb2JsZW06IHVzZXIg
-c3BhY2UgZXhwZWN0cyBmcmVxdWVuY2llcywgYW5kIHdlIGhhdmUgbm9uZQ0KPiB3aGVuIHVzaW5n
-DQo+IENQUEMgc28gd2UgaGF2ZSB0byBwcm92aWRlIGFuIGFwcHJveGltYXRpb24uwqDCoEluIHRo
-b3NlIGNpcmN1bXN0YW5jZXMsDQo+IEkgdGhpbmsgYQ0KPiB2YWx1ZSBvZiAweGZmIHdvdWxkIGJl
-IGtpbmQgb2YgY29uZnVzaW5nIGluIHN5c2ZzLCBzaW5jZSBpdCdzDQo+IGJhc2ljYWxseSBzYXlp
-bmcNCj4gdGhlIENQVSBpcyBvcGVyYXRpbmcgYXQgYSBmcmVxdWVuY3kgZXF1YWwgdG8gdGhlIGxh
-cmdlc3QgaW50ZWdlcg0KPiB2YWx1ZS4NCj4gDQo+IFRvIGJlIGZhaXIsIHRoaXMgaXMgaG93IHRo
-ZSBBUk0gcHJvY2Vzc29yIGltcGxlbWVudHMgQ1BQQzsgSSBoYXZlIG5vdA0KPiBleGFtaW5lZA0K
-PiBpbiBkZXRhaWwgdGhlIG5ld2x5IHN1Ym1pdHRlZCB4ODYgcGF0Y2hlcyB0byB1c2UgQ1BQQyBz
-byBJIGNhbm5vdA0KPiBjb21tZW50IG9uDQo+IHRob3NlLsKgwqBUaGlzIHBhdGNoIHdhcyB3cml0
-dGVuIHdlbGwgYmVmb3JlIHRob3NlIHNob3dlZCB1cC4NCkN1cnJlbnRseSB3ZSBhcmUgbm90IHVz
-aW5nIGNwcGMtY3B1ZnJlcSBkcml2ZXIsIHNvIG5vdCB3aWxsIG5vdA0KZGlyZWN0bHkgaW1wYWN0
-ICh5b3UgYXJlIMKgbm90IGNoYW5naW5nIGFjcGktY3B1ZnJlcSBzb3VyY2UsIHdoaWNoIHdlDQph
-cmUgdXNpbmcpLg0KeDg2IGhhcyBvdGhlciB3YXkgdG8gZ2V0IG1heC9taW4gY3B1ZnJlcSBwb2xp
-Y3kgZnJlcXVlbmNpZXMgdXNpbmcgTVNScy4NClNvIHlvdSBtYXkgY2hvb3NlIHRvIGlnbm9yZSBt
-eSBjb21tZW50cyBoZXJlLCBhcyBsb25nIGFzIHlvdXIgY2hhbmdlcw0KYXJlIGxpbWl0ZWQgdG8g
-ZHJpdmVycy9jcHVmcmVxL2NwcGNfY3B1ZnJlcS5jDQoNCldoZW4geW91IGFyZSBkb2luZzoNCnBv
-bGljeS0+bWluID0gY3B1LT5wZXJmX2NhcHMubG93ZXN0X3BlcmYgKiBjcHBjX2RtaV9tYXhfa2h6
-IC8gY3B1LQ0KPnBlcmZfY2Fwcy5oaWdoZXN0X3BlcmY7DQoNCkFyZW4ndCB5b3UgYXNzdW1pbmcg
-dGhhdCBzY2FsZSBmcm9tIG1heCB0byBtaW4gcGVyZm9ybWFuY2UgaXMgb25seQ0KcmVsYXRlZCB0
-byBmcmVxdWVuY3k/IEl0IGlzIHBvc3NpYmxlIHRoYXQgbWFueSBwb2ludHMgaW4gYmV0d2VlbiBj
-YW4gYmUNCnNhbWUgZnJlcXVlbmN5IHdpdGggbXVsdGlwbGUgdm9sdGFnZXMuDQpBcyBwZXIgc3Bl
-YyAiIFRoZSBwbGF0Zm9ybSBtYXkgY2hvb3NlIHRvIHVzZSBhIHNpbmdsZSBtZXRyaWMgc3VjaCBh
-cw0KcHJvY2Vzc29yIGZyZXF1ZW5jeSwgb3IgaXQgbWF5IGNob29zZSB0byBibGVuZCBtdWx0aXBs
-ZSBoYXJkd2FyZQ0KbWV0cmljcyB0byBjcmVhdGUgYSBzeW50aGV0aWMgbWVhc3VyZSBvZiBwZXJm
-b3JtYW5jZSIuDQoNClRoYW5rcywNClNyaW5pdmFzwqANCg0KDQo+IA==
+------=_Part_48449_1379519361.1472175008187
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
+
+PiBVc2UgdGFiIHJhdGhlciB0aGFuIHNwYWNlIHRvIGluZGVudCwgYW5kIHRhYiArIHR3byBzcGFj
+ZXMgdG8gaW5kZW50DQo+IGhlbHAgbWVzc2FnZS4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEppc2hl
+bmcgWmhhbmcgPGpzemhhbmdAbWFydmVsbC5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy9kZXZmcmVx
+L0tjb25maWcgfCAxNiArKysrKysrKy0tLS0tLS0tDQo+ICAxIGZpbGUgY2hhbmdlZCwgOCBpbnNl
+cnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQ0KPiANCg0KVGhhbmtzIQ0KDQpTaWduZWQtb2ZmLWJ5
+OiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4NCg0KDQoNCkNoZWVycywN
+Ck15dW5nSm9v
+------=_Part_48449_1379519361.1472175008187--
