@@ -1,27 +1,46 @@
 From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [PATCH 0/2] utilization changes for schedutil
-Date: Fri, 26 Aug 2016 11:40:46 -0700
-Message-ID: <1472236848-17038-1-git-send-email-smuckle@linaro.org>
+Subject: [PATCH 1/2] sched: cpufreq: ignore SMT when determining max cpu capacity
+Date: Fri, 26 Aug 2016 11:40:47 -0700
+Message-ID: <1472236848-17038-2-git-send-email-smuckle@linaro.org>
+References: <1472236848-17038-1-git-send-email-smuckle@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1472236848-17038-1-git-send-email-smuckle@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The first patch (which is a re-send) corrects an issue with utilization on SMT
-platforms. Currently CFS utilization is being roughly doubled on these
-platforms due to differences in the way PELT and overall max CPU capacity are
-calculated.
+PELT does not consider SMT when scaling its utilization values via
+arch_scale_cpu_capacity(). The value in rq->cpu_capacity_orig does
+take SMT into consideration though and therefore may be smaller than
+the utilization reported by PELT.
 
-The second patch moves away from the policy of going to fmax during RT task
-activity, instead using rt_avg as an estimate of RT utilization.
+On an Intel i7-3630QM for example rq->cpu_capacity_orig is 589 but
+util_avg scales up to 1024. This means that a 50% utilized CPU will show
+up in schedutil as ~86% busy.
 
-Steve Muckle (2):
-  sched: cpufreq: ignore SMT when determining max cpu capacity
-  sched: cpufreq: use rt_avg as estimate of required RT CPU capacity
+Fix this by using the same CPU scaling value in schedutil as that which
+is used by PELT.
 
- kernel/sched/cpufreq_schedutil.c | 26 ++++++++++++++++++--------
- 1 file changed, 18 insertions(+), 8 deletions(-)
+Signed-off-by: Steve Muckle <smuckle@linaro.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 60d985f4dc47..cb8a77b1ef1b 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -147,7 +147,9 @@ static unsigned int get_next_freq(struct sugov_cpu *sg_cpu, unsigned long util,
+ static void sugov_get_util(unsigned long *util, unsigned long *max)
+ {
+ 	struct rq *rq = this_rq();
+-	unsigned long cfs_max = rq->cpu_capacity_orig;
++	unsigned long cfs_max;
++
++	cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
+ 
+ 	*util = min(rq->cfs.avg.util_avg, cfs_max);
+ 	*max = cfs_max;
 -- 
 2.7.3
