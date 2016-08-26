@@ -1,37 +1,71 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?UkU6IFtQQVRDSCB2NyA1LzhdIFBNIC8gZGV2ZnJlcTogZXZl?=
- =?UTF-8?B?bnQ6IHN1cHBvcnQgcm9ja2NoaXAgZGZpIGNvbnRyb2xsZXI=?=
-Date: Fri, 26 Aug 2016 02:00:11 +0000
-Message-ID: <1219636920.54924.1472176811493.JavaMail.weblogic@ep2ml101a>
-References: <1471836984-6316-1-git-send-email-hl@rock-chips.com>
- <CGME20160822033648epcas1p2dde23978d690bc38b34233c0abaf7363@epcas1p2.samsung.com>
-Reply-To: myungjoo.ham@samsung.com
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: fix Kconfig indent style
+Date: Fri, 26 Aug 2016 11:22:10 +0900
+Message-ID: <57BFA7D2.4000807@samsung.com>
+References: <CGME20160825121110epcas1p4e388645a033341ce2a85e39115e9bb57@epcas1p4.samsung.com>
+ <20160825120614.511-1-jszhang@marvell.com>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_54923_1251610755.1472176811493"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:44444 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751388AbcHZCAP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 25 Aug 2016 22:00:15 -0400
-Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
- by mailout3.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OCH0241VUWBOK10@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 26 Aug 2016 11:00:12 +0900 (KST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20160825120614.511-1-jszhang@marvell.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jisheng Zhang <jszhang@marvell.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?TGluIEh1YW5n?= <hl@rock-chips.com>, =?UTF-8?B?aGVpa29Ac250ZWNoLmRl?= <heiko@sntech.de>
-Cc: =?UTF-8?B?dGl4eUBsaW5hcm8ub3Jn?= <tixy@linaro.org>, =?UTF-8?B?bWFyay5ydXRsYW5kQGFybS5jb20=?= <mark.rutland@arm.com>, =?UTF-8?B?dHlwQHJvY2stY2hpcHMuY29t?= <typ@rock-chips.com>, =?UTF-8?B?bGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZw==?= <linux-rockchip@lists.infradead.org>, =?UTF-8?B?YWlybGllZEBsaW51eC5pZQ==?= <airlied@linux.ie>, =?UTF-8?B?bXR1cnF1ZXR0ZUBiYXlsaWJyZS5jb20=?= <mturquette@baylibre.com>, =?UTF-8?B?ZGJhc2Vob3JlQGNocm9taXVtLm9yZw==?= <dbasehore@chromium.org>, =?UTF-8?B?c2JveWRAY29kZWF1cm9yYS5vcmc=?= <sboyd@codeaurora.org>, =?UTF-8?B?bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw==?= <linux-kernel@vger.kernel.org>, =?UTF-8?B?ZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZw==?= <dri-devel@lists.freedesktop.org>, =?UTF-8?B?ZGlhbmRlcnNAY2hyb21pdW0ub3Jn?= <dianders@chr>
 
-------=_Part_54923_1251610755.1472176811493
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+Hi Jisheng,
 
-PiBvbiByazMzOTkgcGxhdGZvcm0sIHRoZXJlIGlzIGRmaSBjb25yb2xsZXIgY2FuIG1vbml0b3IN
-Cj4gZGRyIGxvYWQsIGJhc2Ugb24gdGhpcyByZXN1bHQsIHdlIGNhbiBkbyBkZHIgZnJlcWVuY3kN
-Cj4gc2NhbGluZy4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IExpbiBIdWFuZyA8aGxAcm9jay1jaGlw
-cy5jb20+DQo+IEFja2VkLWJ5OiBDaGFud29vIENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4N
-Cg0KTEdUTQ0KDQpTaWduZWQtb2ZmLWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1z
-dW5nLmNvbT4NCg0KDQo=
-------=_Part_54923_1251610755.1472176811493--
+Looks good to me. But, you need to rebase it
+on latest devfreq.git because the related patch
+is already merged[1] for COMPILE_TEST.
+So, the merge conflict may happen.
+
+[1] https://git.kernel.org/cgit/linux/kernel/git/mzx/devfreq.git/commit/?h=for-rc&id=c2f9bf4e49c12a3d9fcbee2cd48c9f5d769d8cc8
+
+If you resend it with rebase on devfreq.git,
+Feel free to add my reviewed-by tag:
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+On 2016년 08월 25일 21:06, Jisheng Zhang wrote:
+> Use tab rather than space to indent, and tab + two spaces to indent
+> help message.
+> 
+> Signed-off-by: Jisheng Zhang <jszhang@marvell.com>
+> ---
+>  drivers/devfreq/Kconfig | 16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> index a5be56e..86d06ab 100644
+> --- a/drivers/devfreq/Kconfig
+> +++ b/drivers/devfreq/Kconfig
+> @@ -91,14 +91,14 @@ config ARM_EXYNOS_BUS_DEVFREQ
+>  	  This does not yet operate with optimal voltages.
+>  
+>  config ARM_TEGRA_DEVFREQ
+> -       tristate "Tegra DEVFREQ Driver"
+> -       depends on ARCH_TEGRA_124_SOC
+> -       select DEVFREQ_GOV_SIMPLE_ONDEMAND
+> -       select PM_OPP
+> -       help
+> -         This adds the DEVFREQ driver for the Tegra family of SoCs.
+> -         It reads ACTMON counters of memory controllers and adjusts the
+> -         operating frequencies and voltages with OPP support.
+> +	tristate "Tegra DEVFREQ Driver"
+> +	depends on ARCH_TEGRA_124_SOC
+> +	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+> +	select PM_OPP
+> +	help
+> +	  This adds the DEVFREQ driver for the Tegra family of SoCs.
+> +	  It reads ACTMON counters of memory controllers and adjusts the
+> +	  operating frequencies and voltages with OPP support.
+>  
+>  source "drivers/devfreq/event/Kconfig"
+>  
+> 
+
+
+-- 
+Best Regards,
+Chanwoo Choi
