@@ -1,318 +1,434 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: Re: [PATCH 03/11] sched: Extend scheduler's asym packing
-Date: Fri, 26 Aug 2016 16:14:58 -0700
-Message-ID: <20160826231458.GA11568@linux.intel.com>
-References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1471559812-19967-4-git-send-email-srinivas.pandruvada@linux.intel.com>
- <20160825112251.GA1323@e105550-lin.cambridge.arm.com>
- <20160825114522.GD10138@twins.programming.kicks-ass.net>
- <20160825131836.GB1323@e105550-lin.cambridge.arm.com>
- <20160825134503.GH10138@twins.programming.kicks-ass.net>
- <20160826103945.GC1323@e105550-lin.cambridge.arm.com>
- <20160826124207.GM10121@twins.programming.kicks-ass.net>
- <1472232338.2916.58.camel@linux.intel.com>
-Reply-To: tim.c.chen@linux.intel.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1472232338.2916.58.camel@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 1/4] thermal: Enhance thermal_zone_device_update for events
+Date: Fri, 26 Aug 2016 16:21:16 -0700
+Message-ID: <1472253679-15084-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1472253679-15084-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:35062 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752118AbcHZXVb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 26 Aug 2016 19:21:31 -0400
+In-Reply-To: <1472253679-15084-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Fri, Aug 26, 2016 at 10:25:38AM -0700, Tim Chen wrote:
-> On Fri, 2016-08-26 at 14:42 +0200, Peter Zijlstra wrote:
-> > On Fri, Aug 26, 2016 at 11:39:46AM +0100, Morten Rasmussen wrote:
-> > > 
-> > > On Thu, Aug 25, 2016 at 03:45:03PM +0200, Peter Zijlstra wrote:
-> > > > 
-> > > > On Thu, Aug 25, 2016 at 02:18:37PM +0100, Morten Rasmussen wrote:
-> > > > 
-> > > > > 
-> > > > > But why not just pass the customized list into the scheduler? Seems
-> > > > > simpler?
-> > > > Mostly because I didn't want to regress Power I suppose. The ITMT stuff
-> > > > needs an extra load, whereas the Power stuff can use the CPU number we
-> > > > already have.
-> > > The customized list wouldn't have to be mandatory. You could easily
-> > > create a default list that would match current behaviour for Power.
-> > Sure, but then you have the extra load.. probably not an issue but
-> > still.
-> > 
-> > > 
-> > > What is the 'extra load' needed for ITMT? Isn't it just a priority list,
-> > > or does the absolute priority value have a meaning? I only saw it used
-> > > for less_than comparison, maybe I missed it.
-> > LOAD as in a memop, we need to go fetch the priority from wherever we
-> > put it in memory, be it rq->cpu_priority or a percpu variable on its
-> > own.
-> > 
-> > > 
-> > > If you need to express the difference in compute capability, why not use
-> > > capacity?
-> > Doesn't work, capacity is actually equal with these things.
-> > 
-> > Think of one core having more turbo range when thermals allow it. But
-> > the moment you run multiple cores the thermal head-room dissipates and
-> > they all end up running at more or less the same (lower) frequency.
-> > 
-> > All of this asym/prio stuff only matters when cores (Power) / packages
-> > (Intel) are mostly idle.
-> > 
-> > On Power SMT0 can go faster than SMT7 when all other siblings are idle,
-> > with ITMT some core can go faster than other when the rest is idle.
-> > 
-> > I suppose we _could_ model it with a dynamic capacity value, but last
-> > time I looked at that it made my head hurt.
-> > 
-> > > 
-> > > > 
-> > > > Also, since we need an interface to pass in this custom list, I don't
-> > > > see the distinction, you can do the same manipulation by constantly
-> > > > updating the prio list.
-> > > Sure, but the overhead of rebuilding the sched_domain hierarchy is huge
-> > > compared to just tweaking the result of the less_than operator that get
-> > > called from the scheduler frequently. However, updating
-> > > group_priority_cpu() would require a rebuild too in this patch set.
-> > You don't actually need to rebuild the domains to change the priorities.
-> > We only need to rebuild the domains when we add/remove SD_ASYM_PACKING.
-> > 
-> > Yes, the sched_group::asym_prefer_cpu thing is tedious, but you could
-> > actually update that without a rebuild if one wanted.
-> > 
-> > Note that there's actually a semi useful use case for dynamically
-> > updating the cpu priorities: core hopping.
-> > 
-> >   https://www.researchgate.net/publication/279915789_Evaluation_of_Core_Hopping_on_POWER7
-> > 
-> > Again, that's something only relevant to mostly idle packages.
-> > 
-> > > 
-> > > > 
-> > > > But not of this stuff should be EXPORT'ed, so its only available to the
-> > > > core kernel, which greatly limits the potential for abuse. We can see
-> > > > arch code just fine.
-> > > I don't see why it can't be wired up to be controlled by entities
-> > > outside arch code, e.g. cpufreq or the thermal framework, or even code
-> > > outside the kernel (firmware).
-> > I suppose an arch could do that, but then we'd see that, wouldn't we?
-> > 
-> > The firmware and kernel would need to co-ordinate where the prio value
-> > lives, which is not something trivially done. And even if the value
-> > lives in rq->cpu_priority, it _could_ do that.
-> > 
-> > 
-> > In any case, I don't feel too strongly about this, if you want to stick
-> > the value in rq->cpu_priority and have Power use that we can do that I
-> > suppose.
-> 
-> This will mean increasing the rq structure for power pc.
-> 
-> I guess some compile flag to decide if this cpu_priority field should be
-> in rq. Something like
-> COFIG_SCHED_ITMT || ((CONFIG_PPC64 || CONFIG_PPC32) && CONFIG_SCHED_SMT))?
-> 
-> And I will need code to power pc to instantiate rp->cpu_priority on boot.
-> 
-> This gets somewhat ugly.
-> 
-> I prefer the other alternative Morten suggested by
-> having an arch_cpu_asym_priority() function. It is cleaner
-> without increasing size or rq structure.
-> 
-> I can define for default lower cpu having higher priority:
-> 
-> int __weak arch_cpu_asym_priority(int cpu)
-> {
->         return -cpu;
-> }
-> 
-> and then define it appropriately for x86 when ITMT is used.
-> 
-> Tim
-> 
+Added one additional parameter to thermal_zone_device_update() to provide
+caller with an optional capability to specify reason.
+Currently this event is used by user space governor to trigger different
+processing based on event code. Also it saves an additional call to read
+temperature when the event is received.
+The following events are cuurently defined:
+- Unspecified event
+- New temperature sample
+- Trip point violated
+- Trip point changed
+- thermal device up and down
+- thermal device power capability changed
 
-Morten & Peter,
-
-If the patch is updated as below to use arch_asym_cpu_priority,
-will that be okay with you?
-
-Tim
-
----cut---
-Subject: sched: Extend scheduler's asym packing
-
-We generalize the scheduler's asym packing to provide an ordering
-of the cpu beyond just the cpu number.  This allows the use of the
-ASYM_PACKING scheduler machinery to move loads to prefered CPU in a
-sched domain. The preference is defined with the cpu priority
-given by arch_asym_cpu_priority(cpu).
-
-We also record the most preferred cpu in a sched group when
-we build the cpu's capacity for fast lookup of preferred cpu
-during load balancing.
-
-v2:
-1. Use arch_asym_cpu_priority() to provide cpu priority
-value used for asym packing to the scheduler.
-
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- include/linux/sched.h |  2 ++
- kernel/sched/core.c   | 18 ++++++++++++++++++
- kernel/sched/fair.c   | 35 ++++++++++++++++++++++++-----------
- kernel/sched/sched.h  | 12 ++++++++++++
- 4 files changed, 56 insertions(+), 11 deletions(-)
+ drivers/acpi/thermal.c                              |  3 ++-
+ drivers/platform/x86/acerhdf.c                      |  2 +-
+ drivers/regulator/max8973-regulator.c               |  3 ++-
+ drivers/thermal/db8500_thermal.c                    |  2 +-
+ drivers/thermal/hisi_thermal.c                      |  3 ++-
+ drivers/thermal/imx_thermal.c                       |  4 ++--
+ .../thermal/int340x_thermal/int340x_thermal_zone.h  |  2 +-
+ drivers/thermal/intel_soc_dts_iosf.c                |  3 ++-
+ drivers/thermal/of-thermal.c                        |  2 +-
+ drivers/thermal/qcom-spmi-temp-alarm.c              |  2 +-
+ drivers/thermal/rcar_thermal.c                      |  3 ++-
+ drivers/thermal/rockchip_thermal.c                  |  3 ++-
+ drivers/thermal/samsung/exynos_tmu.c                |  2 +-
+ drivers/thermal/st/st_thermal_memmap.c              |  3 ++-
+ drivers/thermal/thermal_core.c                      | 21 +++++++++++++--------
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c  |  4 ++--
+ drivers/thermal/x86_pkg_temp_thermal.c              |  3 ++-
+ include/linux/thermal.h                             | 19 +++++++++++++++++--
+ 18 files changed, 56 insertions(+), 28 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 62c68e5..aeea288 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1052,6 +1052,8 @@ static inline int cpu_numa_flags(void)
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index f4ebe39..35e8fbc 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -520,7 +520,8 @@ static void acpi_thermal_check(void *data)
+ 	if (!tz->tz_enabled)
+ 		return;
+ 
+-	thermal_zone_device_update(tz->thermal_zone);
++	thermal_zone_device_update(tz->thermal_zone,
++				   THERMAL_EVENT_UNSPECIFIED);
  }
+ 
+ /* sys I/F for generic thermal sysfs support */
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 460fa67..2acdb0d 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -405,7 +405,7 @@ static inline void acerhdf_enable_kernelmode(void)
+ 	kernelmode = 1;
+ 
+ 	thz_dev->polling_delay = interval*1000;
+-	thermal_zone_device_update(thz_dev);
++	thermal_zone_device_update(thz_dev, THERMAL_EVENT_UNSPECIFIED);
+ 	pr_notice("kernel mode fan control ON\n");
+ }
+ 
+diff --git a/drivers/regulator/max8973-regulator.c b/drivers/regulator/max8973-regulator.c
+index 3958f50..e0c747a 100644
+--- a/drivers/regulator/max8973-regulator.c
++++ b/drivers/regulator/max8973-regulator.c
+@@ -495,7 +495,8 @@ static irqreturn_t max8973_thermal_irq(int irq, void *data)
+ {
+ 	struct max8973_chip *mchip = data;
+ 
+-	thermal_zone_device_update(mchip->tz_device);
++	thermal_zone_device_update(mchip->tz_device,
++				   THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/thermal/db8500_thermal.c b/drivers/thermal/db8500_thermal.c
+index 652acd8..e776cea 100644
+--- a/drivers/thermal/db8500_thermal.c
++++ b/drivers/thermal/db8500_thermal.c
+@@ -306,7 +306,7 @@ static void db8500_thermal_work(struct work_struct *work)
+ 	if (cur_mode == THERMAL_DEVICE_DISABLED)
+ 		return;
+ 
+-	thermal_zone_device_update(pzone->therm_dev);
++	thermal_zone_device_update(pzone->therm_dev, THERMAL_EVENT_UNSPECIFIED);
+ 	dev_dbg(&pzone->therm_dev->device, "thermal work finished.\n");
+ }
+ 
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index 97fad8f..f642966 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -237,7 +237,8 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+ 		if (!data->sensors[i].tzd)
+ 			continue;
+ 
+-		thermal_zone_device_update(data->sensors[i].tzd);
++		thermal_zone_device_update(data->sensors[i].tzd,
++					   THERMAL_EVENT_UNSPECIFIED);
+ 	}
+ 
+ 	return IRQ_HANDLED;
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index c5547bd..307737a 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -246,7 +246,7 @@ static int imx_set_mode(struct thermal_zone_device *tz,
+ 	}
+ 
+ 	data->mode = mode;
+-	thermal_zone_device_update(tz);
++	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return 0;
+ }
+@@ -457,7 +457,7 @@ static irqreturn_t imx_thermal_alarm_irq_thread(int irq, void *dev)
+ 	dev_dbg(&data->tz->device, "THERMAL ALARM: T > %d\n",
+ 		data->alarm_temp / 1000);
+ 
+-	thermal_zone_device_update(data->tz);
++	thermal_zone_device_update(data->tz, THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/thermal/int340x_thermal/int340x_thermal_zone.h b/drivers/thermal/int340x_thermal/int340x_thermal_zone.h
+index aaadf72..65116b1 100644
+--- a/drivers/thermal/int340x_thermal/int340x_thermal_zone.h
++++ b/drivers/thermal/int340x_thermal/int340x_thermal_zone.h
+@@ -62,7 +62,7 @@ static inline void *int340x_thermal_zone_get_priv_data(
+ static inline void int340x_thermal_zone_device_update(
+ 			struct int34x_thermal_zone *tzone)
+ {
+-	thermal_zone_device_update(tzone->zone);
++	thermal_zone_device_update(tzone->zone, THERMAL_EVENT_UNSPECIFIED);
+ }
+ 
  #endif
+diff --git a/drivers/thermal/intel_soc_dts_iosf.c b/drivers/thermal/intel_soc_dts_iosf.c
+index f72e1db..e0813df 100644
+--- a/drivers/thermal/intel_soc_dts_iosf.c
++++ b/drivers/thermal/intel_soc_dts_iosf.c
+@@ -391,7 +391,8 @@ void intel_soc_dts_iosf_interrupt_handler(struct intel_soc_dts_sensors *sensors)
  
-+int arch_asym_cpu_priority(int cpu);
+ 		for (i = 0; i < SOC_MAX_DTS_SENSORS; ++i) {
+ 			pr_debug("TZD update for zone %d\n", i);
+-			thermal_zone_device_update(sensors->soc_dts[i].tzone);
++			thermal_zone_device_update(sensors->soc_dts[i].tzone,
++						   THERMAL_EVENT_UNSPECIFIED);
+ 		}
+ 	} else
+ 		spin_unlock_irqrestore(&sensors->intr_notify_lock, flags);
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index b8e509c..f73b9f3 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -292,7 +292,7 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
+ 	mutex_unlock(&tz->lock);
+ 
+ 	data->mode = mode;
+-	thermal_zone_device_update(tz);
++	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
+index f8a3c60..819c6d5 100644
+--- a/drivers/thermal/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom-spmi-temp-alarm.c
+@@ -150,7 +150,7 @@ static irqreturn_t qpnp_tm_isr(int irq, void *data)
+ {
+ 	struct qpnp_tm_chip *chip = data;
+ 
+-	thermal_zone_device_update(chip->tz_dev);
++	thermal_zone_device_update(chip->tz_dev, THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 71a3392..a34c8de 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -354,7 +354,8 @@ static void rcar_thermal_work(struct work_struct *work)
+ 		return;
+ 
+ 	if (nctemp != cctemp)
+-		thermal_zone_device_update(priv->zone);
++		thermal_zone_device_update(priv->zone,
++					   THERMAL_EVENT_UNSPECIFIED);
+ }
+ 
+ static u32 rcar_thermal_had_changed(struct rcar_thermal_priv *priv, u32 status)
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index 5d491f1..f60f101 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -821,7 +821,8 @@ static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
+ 	thermal->chip->irq_ack(thermal->regs);
+ 
+ 	for (i = 0; i < thermal->chip->chn_num; i++)
+-		thermal_zone_device_update(thermal->sensors[i].tzd);
++		thermal_zone_device_update(thermal->sensors[i].tzd,
++					   THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index f3ce94e..ad1186d 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -225,7 +225,7 @@ static void exynos_report_trigger(struct exynos_tmu_data *p)
+ 		return;
+ 	}
+ 
+-	thermal_zone_device_update(tz);
++	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	mutex_lock(&tz->lock);
+ 	/* Find the level for which trip happened */
+diff --git a/drivers/thermal/st/st_thermal_memmap.c b/drivers/thermal/st/st_thermal_memmap.c
+index fc0c9e1..91d4231 100644
+--- a/drivers/thermal/st/st_thermal_memmap.c
++++ b/drivers/thermal/st/st_thermal_memmap.c
+@@ -42,7 +42,8 @@ static irqreturn_t st_mmap_thermal_trip_handler(int irq, void *sdata)
+ {
+ 	struct st_thermal_sensor *sensor = sdata;
+ 
+-	thermal_zone_device_update(sensor->thermal_dev);
++	thermal_zone_device_update(sensor->thermal_dev,
++				   THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index e2fc616..0ffc1cd 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -557,7 +557,8 @@ static void thermal_zone_device_reset(struct thermal_zone_device *tz)
+ 		pos->initialized = false;
+ }
+ 
+-void thermal_zone_device_update(struct thermal_zone_device *tz)
++void thermal_zone_device_update(struct thermal_zone_device *tz,
++				enum thermal_notify_event event)
+ {
+ 	int count;
+ 
+@@ -569,6 +570,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ 
+ 	update_temperature(tz);
+ 
++	tz->notify_event = event;
 +
- struct sched_domain_attr {
- 	int relax_domain_level;
+ 	for (count = 0; count < tz->trips; count++)
+ 		handle_thermal_trip(tz, count);
+ }
+@@ -579,7 +582,7 @@ static void thermal_zone_device_check(struct work_struct *work)
+ 	struct thermal_zone_device *tz = container_of(work, struct
+ 						      thermal_zone_device,
+ 						      poll_queue.work);
+-	thermal_zone_device_update(tz);
++	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ }
+ 
+ /* sys I/F for thermal zone */
+@@ -703,7 +706,7 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+ 	if (ret)
+ 		return ret;
+ 
+-	thermal_zone_device_update(tz);
++	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return count;
+ }
+@@ -822,7 +825,7 @@ passive_store(struct device *dev, struct device_attribute *attr,
+ 
+ 	tz->forced_passive = state;
+ 
+-	thermal_zone_device_update(tz);
++	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return count;
+ }
+@@ -913,7 +916,7 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
+ 	}
+ 
+ 	if (!ret)
+-		thermal_zone_device_update(tz);
++		thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return ret ? ret : count;
+ }
+@@ -1509,7 +1512,8 @@ __thermal_cooling_device_register(struct device_node *np,
+ 	mutex_lock(&thermal_list_lock);
+ 	list_for_each_entry(pos, &thermal_tz_list, node)
+ 		if (atomic_cmpxchg(&pos->need_update, 1, 0))
+-			thermal_zone_device_update(pos);
++			thermal_zone_device_update(pos,
++						   THERMAL_EVENT_UNSPECIFIED);
+ 	mutex_unlock(&thermal_list_lock);
+ 
+ 	return cdev;
+@@ -1952,7 +1956,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	thermal_zone_device_reset(tz);
+ 	/* Update the new thermal zone and mark it as already updated. */
+ 	if (atomic_cmpxchg(&tz->need_update, 1, 0))
+-		thermal_zone_device_update(tz);
++		thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	return tz;
+ 
+@@ -2209,7 +2213,8 @@ static int thermal_pm_notify(struct notifier_block *nb,
+ 		atomic_set(&in_suspend, 0);
+ 		list_for_each_entry(tz, &thermal_tz_list, node) {
+ 			thermal_zone_device_reset(tz);
+-			thermal_zone_device_update(tz);
++			thermal_zone_device_update(tz,
++						   THERMAL_EVENT_UNSPECIFIED);
+ 		}
+ 		break;
+ 	default:
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index 15c0a9a..6598a25 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -52,7 +52,7 @@ static void ti_thermal_work(struct work_struct *work)
+ 	struct ti_thermal_data *data = container_of(work,
+ 					struct ti_thermal_data, thermal_wq);
+ 
+-	thermal_zone_device_update(data->ti_thermal);
++	thermal_zone_device_update(data->ti_thermal, THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	dev_dbg(&data->ti_thermal->device, "updated thermal zone %s\n",
+ 		data->ti_thermal->type);
+@@ -205,7 +205,7 @@ static int ti_thermal_set_mode(struct thermal_zone_device *thermal,
+ 	data->mode = mode;
+ 	ti_bandgap_write_update_interval(bgp, data->sensor_id,
+ 					data->ti_thermal->polling_delay);
+-	thermal_zone_device_update(data->ti_thermal);
++	thermal_zone_device_update(data->ti_thermal, THERMAL_EVENT_UNSPECIFIED);
+ 	dev_dbg(&thermal->device, "thermal polling set for duration=%d msec\n",
+ 		data->ti_thermal->polling_delay);
+ 
+diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
+index 97f0a2b..95f4c1b 100644
+--- a/drivers/thermal/x86_pkg_temp_thermal.c
++++ b/drivers/thermal/x86_pkg_temp_thermal.c
+@@ -348,7 +348,8 @@ static void pkg_temp_thermal_threshold_work_fn(struct work_struct *work)
+ 	}
+ 	if (notify) {
+ 		pr_debug("thermal_zone_device_update\n");
+-		thermal_zone_device_update(phdev->tzone);
++		thermal_zone_device_update(phdev->tzone,
++					   THERMAL_EVENT_UNSPECIFIED);
+ 	}
+ }
+ 
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index ee517be..6b13e48 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -92,6 +92,17 @@ enum thermal_trend {
+ 	THERMAL_TREND_DROP_FULL, /* apply lowest cooling action */
  };
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index e86c4a5..08135ca 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6237,7 +6237,25 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
- 	WARN_ON(!sg);
  
- 	do {
-+		int cpu, max_cpu = -1, prev_cpu = -1;
++/* Thermal notification reason */
++enum thermal_notify_event {
++	THERMAL_EVENT_UNSPECIFIED, /* Unspecified event */
++	THERMAL_EVENT_TEMP_SAMPLE, /* New Temperature sample */
++	THERMAL_TRIP_VIOLATED, /* TRIP Point violation */
++	THERMAL_TRIP_CHANGED, /* TRIP Point temperature changed */
++	THERMAL_DEVICE_DOWN, /* Thermal device is down */
++	THERMAL_DEVICE_UP, /* Thermal device is up after a down event */
++	THERMAL_DEVICE_POWER_CAPABILITY_CHANGED, /* power capability changed */
++};
 +
- 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
-+
-+		if (!(sd->flags & SD_ASYM_PACKING))
-+			goto next;
-+
-+		for_each_cpu(cpu, sched_group_cpus(sg)) {
-+			if (prev_cpu < 0) {
-+				prev_cpu = cpu;
-+				max_cpu = cpu;
-+			} else {
-+				if (sched_asym_prefer(cpu, max_cpu))
-+					max_cpu = cpu;
-+			}
-+		}
-+		sg->asym_prefer_cpu = max_cpu;
-+
-+next:
- 		sg = sg->next;
- 	} while (sg != sd->groups);
- 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 039de34..4976b99 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -100,6 +100,16 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
+ struct thermal_zone_device_ops {
+ 	int (*bind) (struct thermal_zone_device *,
+ 		     struct thermal_cooling_device *);
+@@ -182,6 +193,7 @@ struct thermal_attr {
+  * @lock:	lock to protect thermal_instances list
+  * @node:	node in thermal_tz_list (in thermal_core.c)
+  * @poll_queue:	delayed work for polling
++ * @notify_event: Last notification event
   */
- unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
+ struct thermal_zone_device {
+ 	int id;
+@@ -210,6 +222,7 @@ struct thermal_zone_device {
+ 	struct mutex lock;
+ 	struct list_head node;
+ 	struct delayed_work poll_queue;
++	enum thermal_notify_event notify_event;
+ };
  
-+#ifdef CONFIG_SMP
-+/*
-+ * For asym packing, by default the lower numbered cpu has higher priority.
-+ */
-+int __weak arch_asym_cpu_priority(int cpu)
-+{
-+	return -cpu;
-+}
-+#endif
-+
- #ifdef CONFIG_CFS_BANDWIDTH
- /*
-  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
-@@ -6862,16 +6872,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
- 	if (env->idle == CPU_NOT_IDLE)
- 		return true;
- 	/*
--	 * ASYM_PACKING needs to move all the work to the lowest
--	 * numbered CPUs in the group, therefore mark all groups
--	 * higher than ourself as busy.
-+	 * ASYM_PACKING needs to move all the work to the highest
-+	 * prority CPUs in the group, therefore mark all groups
-+	 * of lower priority than ourself as busy.
- 	 */
--	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
-+	if (sgs->sum_nr_running &&
-+	    sched_asym_prefer(env->dst_cpu, group_priority_cpu(sg))) {
- 		if (!sds->busiest)
- 			return true;
+ /**
+@@ -425,7 +438,8 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
+ 				     unsigned int);
+ int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
+ 				       struct thermal_cooling_device *);
+-void thermal_zone_device_update(struct thermal_zone_device *);
++void thermal_zone_device_update(struct thermal_zone_device *,
++				enum thermal_notify_event);
  
--		/* Prefer to move from highest possible cpu's work */
--		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
-+		/* Prefer to move from lowest priority cpu's work */
-+		if (sched_asym_prefer(group_priority_cpu(sds->busiest),
-+				      group_priority_cpu(sg)))
- 			return true;
- 	}
- 
-@@ -7023,8 +7035,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
- 	if (!sds->busiest)
- 		return 0;
- 
--	busiest_cpu = group_first_cpu(sds->busiest);
--	if (env->dst_cpu > busiest_cpu)
-+	busiest_cpu = group_priority_cpu(sds->busiest);
-+	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
- 		return 0;
- 
- 	env->imbalance = DIV_ROUND_CLOSEST(
-@@ -7365,10 +7377,11 @@ static int need_active_balance(struct lb_env *env)
- 
- 		/*
- 		 * ASYM_PACKING needs to force migrate tasks from busy but
--		 * higher numbered CPUs in order to pack all tasks in the
--		 * lowest numbered CPUs.
-+		 * lower priority CPUs in order to pack all tasks in the
-+		 * highest priority CPUs.
- 		 */
--		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
-+		if ((sd->flags & SD_ASYM_PACKING) &&
-+		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
- 			return 1;
- 	}
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index c64fc51..cc2d35f 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -532,6 +532,17 @@ struct dl_rq {
- 
- #ifdef CONFIG_SMP
- 
-+static inline bool sched_asym_prefer(int a, int b)
-+{
-+	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
-+}
-+
-+/*
-+ * Return lowest numbered cpu in the group as the most prefered cpu
-+ * for ASYM_PACKING for default case.
-+ */
-+#define group_priority_cpu(group) group->asym_prefer_cpu
-+
- /*
-  * We add the notion of a root-domain which will be used to define per-domain
-  * variables. Each exclusive cpuset essentially defines an island domain by
-@@ -884,6 +895,7 @@ struct sched_group {
- 
- 	unsigned int group_weight;
- 	struct sched_group_capacity *sgc;
-+	int asym_prefer_cpu;		/* cpu of highest priority in group */
- 
- 	/*
- 	 * The CPUs this group covers.
+ struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
+ 		const struct thermal_cooling_device_ops *);
+@@ -473,7 +487,8 @@ static inline int thermal_zone_unbind_cooling_device(
+ 	struct thermal_zone_device *tz, int trip,
+ 	struct thermal_cooling_device *cdev)
+ { return -ENODEV; }
+-static inline void thermal_zone_device_update(struct thermal_zone_device *tz)
++static inline void thermal_zone_device_update(struct thermal_zone_device *tz,
++					      enum thermal_notify_event event)
+ { }
+ static inline struct thermal_cooling_device *
+ thermal_cooling_device_register(char *type, void *devdata,
 -- 
-2.5.5
+2.7.4
+
