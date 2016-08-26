@@ -1,133 +1,27 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: Re: [PATCH 03/11] sched: Extend scheduler's asym packing
-Date: Fri, 26 Aug 2016 10:25:38 -0700
-Message-ID: <1472232338.2916.58.camel@linux.intel.com>
-References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <1471559812-19967-4-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <20160825112251.GA1323@e105550-lin.cambridge.arm.com>
-         <20160825114522.GD10138@twins.programming.kicks-ass.net>
-         <20160825131836.GB1323@e105550-lin.cambridge.arm.com>
-         <20160825134503.GH10138@twins.programming.kicks-ass.net>
-         <20160826103945.GC1323@e105550-lin.cambridge.arm.com>
-         <20160826124207.GM10121@twins.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160826124207.GM10121@twins.programming.kicks-ass.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: [PATCH 0/2] utilization changes for schedutil
+Date: Fri, 26 Aug 2016 11:40:46 -0700
+Message-ID: <1472236848-17038-1-git-send-email-smuckle@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2016-08-26 at 14:42 +0200, Peter Zijlstra wrote:
-> On Fri, Aug 26, 2016 at 11:39:46AM +0100, Morten Rasmussen wrote:
-> > 
-> > On Thu, Aug 25, 2016 at 03:45:03PM +0200, Peter Zijlstra wrote:
-> > > 
-> > > On Thu, Aug 25, 2016 at 02:18:37PM +0100, Morten Rasmussen wrote:
-> > > 
-> > > > 
-> > > > But why not just pass the customized list into the scheduler? Seems
-> > > > simpler?
-> > > Mostly because I didn't want to regress Power I suppose. The ITMT stuff
-> > > needs an extra load, whereas the Power stuff can use the CPU number we
-> > > already have.
-> > The customized list wouldn't have to be mandatory. You could easily
-> > create a default list that would match current behaviour for Power.
-> Sure, but then you have the extra load.. probably not an issue but
-> still.
-> 
-> > 
-> > What is the 'extra load' needed for ITMT? Isn't it just a priority list,
-> > or does the absolute priority value have a meaning? I only saw it used
-> > for less_than comparison, maybe I missed it.
-> LOAD as in a memop, we need to go fetch the priority from wherever we
-> put it in memory, be it rq->cpu_priority or a percpu variable on its
-> own.
-> 
-> > 
-> > If you need to express the difference in compute capability, why not use
-> > capacity?
-> Doesn't work, capacity is actually equal with these things.
-> 
-> Think of one core having more turbo range when thermals allow it. But
-> the moment you run multiple cores the thermal head-room dissipates and
-> they all end up running at more or less the same (lower) frequency.
-> 
-> All of this asym/prio stuff only matters when cores (Power) / packages
-> (Intel) are mostly idle.
-> 
-> On Power SMT0 can go faster than SMT7 when all other siblings are idle,
-> with ITMT some core can go faster than other when the rest is idle.
-> 
-> I suppose we _could_ model it with a dynamic capacity value, but last
-> time I looked at that it made my head hurt.
-> 
-> > 
-> > > 
-> > > Also, since we need an interface to pass in this custom list, I don't
-> > > see the distinction, you can do the same manipulation by constantly
-> > > updating the prio list.
-> > Sure, but the overhead of rebuilding the sched_domain hierarchy is huge
-> > compared to just tweaking the result of the less_than operator that get
-> > called from the scheduler frequently. However, updating
-> > group_priority_cpu() would require a rebuild too in this patch set.
-> You don't actually need to rebuild the domains to change the priorities.
-> We only need to rebuild the domains when we add/remove SD_ASYM_PACKING.
-> 
-> Yes, the sched_group::asym_prefer_cpu thing is tedious, but you could
-> actually update that without a rebuild if one wanted.
-> 
-> Note that there's actually a semi useful use case for dynamically
-> updating the cpu priorities: core hopping.
-> 
->   https://www.researchgate.net/publication/279915789_Evaluation_of_Core_Hopping_on_POWER7
-> 
-> Again, that's something only relevant to mostly idle packages.
-> 
-> > 
-> > > 
-> > > But not of this stuff should be EXPORT'ed, so its only available to the
-> > > core kernel, which greatly limits the potential for abuse. We can see
-> > > arch code just fine.
-> > I don't see why it can't be wired up to be controlled by entities
-> > outside arch code, e.g. cpufreq or the thermal framework, or even code
-> > outside the kernel (firmware).
-> I suppose an arch could do that, but then we'd see that, wouldn't we?
-> 
-> The firmware and kernel would need to co-ordinate where the prio value
-> lives, which is not something trivially done. And even if the value
-> lives in rq->cpu_priority, it _could_ do that.
-> 
-> 
-> In any case, I don't feel too strongly about this, if you want to stick
-> the value in rq->cpu_priority and have Power use that we can do that I
-> suppose.
+The first patch (which is a re-send) corrects an issue with utilization on SMT
+platforms. Currently CFS utilization is being roughly doubled on these
+platforms due to differences in the way PELT and overall max CPU capacity are
+calculated.
 
-This will mean increasing the rq structure for power pc.
+The second patch moves away from the policy of going to fmax during RT task
+activity, instead using rt_avg as an estimate of RT utilization.
 
-I guess some compile flag to decide if this cpu_priority field should be
-in rq. Something like
-COFIG_SCHED_ITMT || ((CONFIG_PPC64 || CONFIG_PPC32) && CONFIG_SCHED_SMT))?
+Steve Muckle (2):
+  sched: cpufreq: ignore SMT when determining max cpu capacity
+  sched: cpufreq: use rt_avg as estimate of required RT CPU capacity
 
-And I will need code to power pc to instantiate rp->cpu_priority on boot.
+ kernel/sched/cpufreq_schedutil.c | 26 ++++++++++++++++++--------
+ 1 file changed, 18 insertions(+), 8 deletions(-)
 
-This gets somewhat ugly.
-
-I prefer the other alternative Morten suggested by
-having an arch_cpu_asym_priority() function. It is cleaner
-without increasing size or rq structure.
-
-I can define for default lower cpu having higher priority:
-
-int __weak arch_cpu_asym_priority(int cpu)
-{
-        return -cpu;
-}
-
-and then define it appropriately for x86 when ITMT is used.
-
-Tim
-
-
+-- 
+2.7.3
