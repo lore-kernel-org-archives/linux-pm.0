@@ -1,60 +1,43 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC/PATCH] dt: bindings: Define bindings for device idle states
-Date: Fri, 26 Aug 2016 15:58:42 +0200
-Message-ID: <20160826135842.GA9303@amd>
-References: <1472207073-4901-1-git-send-email-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33951 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751014AbcHZN6q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Aug 2016 09:58:46 -0400
-Content-Disposition: inline
-In-Reply-To: <1472207073-4901-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] thermal: hisilicon: fix COMPILE_TEST dependencies
+Date: Fri, 26 Aug 2016 17:44:21 +0200
+Message-ID: <20160826154434.992160-1-arnd@arndb.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Amit Kucheria <amit.kucheria@linaro.org>, Leo Yan <leo.yan@linaro.org>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robh+dt@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Brendan Jackman <Brendan.Jackman@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Axel Haslam <ahaslam@baylibre.com>, linux-pm@vger.kernel.org
 
-Hi!
+As we now 'select STUB_CLK_HI6220', all dependencies for that driver have
+to be present in order to enable HISI_THERMAL, as pointed out by
+Kconfig:
 
-> @@ -0,0 +1,102 @@
-> +Device idle states
-> +========================
-> +
-> +A device are often capable of entering a low power state(s) when it becomes
-> +idle, hence the terminology of device idle states. Entering an idle state for a
-> +device helps it to avoid wasting power and reduces the leakage of current.
+warning: (HISI_THERMAL) selects STUB_CLK_HI6220 which has unmet direct dependencies (COMMON_CLK && COMMON_CLK_HI6220 && MAILBOX)
 
-First things first: what do these states _really_ represent? We have
-GPIOs in device tree, we have clock domains. What are these?
+This rearranges the dependencies for this symbol, so all the dependencies
+aside from ARCH_HISI are always met when building it for compile testing.
+This mainly helps for randconfig testing, as an "allmodconfig" kernel will
+enable them anyway.
 
-Actually I don't think I like this. We should describe the hardware,
-not particular use case.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Fixes: 5f63581ce68e ("thermal: hisilicon: Add dependency on the clock driver to allow frequency scaling")
+---
+ drivers/thermal/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-On what hardware would you use these new bindings?
-
-> +Required properties:
-> +- compatible:		Must contain "simple-dev, idle-state".
-> +- entry-latency-ns:	An u32 value in nano-seconds representing the worst case
-> +			latency required for the device to enter the idle state.
-> +- exit-latency-ns:	An u32 value in nano-seconds representing the worst case
-> +			wakeup latency of the device, after entry-latency-ns has
-> +			passed.
-
-u32 nanoseconds have 4sec limit, right? So anything with spinning
-harddrive is out?
-
-> +== Assigning idle states to devices ==
-> +
-> +Required properties:
-> + - dev-idle-states:	A list of phandles pointing to the supported
-> +			device idle states nodes. The list must be ordered as
-> +			the shallower state - the earlier in the list.
-
-Does such ordering really neccessarily exist?
-
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 5cba072c3a62..3c8607c07352 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -177,7 +177,8 @@ config THERMAL_EMULATION
+ 
+ config HISI_THERMAL
+ 	tristate "Hisilicon thermal driver"
+-	depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
++	depends on ARCH_HISI || COMPILE_TEST
++	depends on CPU_THERMAL && OF && COMMON_CLK_HI6220 && MAILBOX
+ 	depends on HAS_IOMEM
+ 	select STUB_CLK_HI6220
+ 	help
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.9.0
