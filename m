@@ -1,42 +1,88 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH 00/10] PM / Domains: Add support for removing PM domains
-Date: Fri, 26 Aug 2016 14:12:43 +0100
-Message-ID: <fd3ea080-2ec5-e22d-b0cc-8cdc4155af3c@nvidia.com>
-References: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: [RFC PATCH  2/4] devfreq_cooling: pass a pointer to devfreq in the power model callbacks
+Date: Fri, 26 Aug 2016 14:18:03 +0100
+Message-ID: <20160826131805.14820-3-lukasz.luba@arm.com>
+References: <20160826131805.14820-1-lukasz.luba@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1471340976-5379-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:39229 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751559AbcHZNTY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 26 Aug 2016 09:19:24 -0400
+In-Reply-To: <20160826131805.14820-1-lukasz.luba@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: rui.zhang@intel.com, edubezval@gmail.com, lukasz.luba@arm.com, javi.merino@arm.com, orjan.eide@arm.com
 
-Hi Ulf,
+From: Javi Merino <javi.merino@arm.com>
 
-On 16/08/16 10:49, Jon Hunter wrote:
-> In order to safely remove PM domains there are a few changes that need to be
-> made to ensure that no one is holding an external reference to a PM domain
-> after it has been removed. One solution, implemented here, solves this by
-> eliminating external references to PM domain.
-> 
-> This is a follow-up to the initial RFC I sent out [0].
-> 
-> Changes from initial RFC:
-> - Renamed functions made static per Ulf's feedback.
-> - Added patch to clean-up provider/xlate APIs per Ulf's feedback
-> - Re-worked and simplified the association between PM domains and PM
->   domain providers. Dropped the 'provider_data' variable from the
->   generic_pm_domain structure in favour of using the fwnode_handle.
-> - Split patch for removing PM domains into multiple patches per Ulf's
->   feedback.
+When the devfreq cooling device was designed, it was an oversight not to
+pass a pointer to the struct devfreq as the first parameters of the
+callbacks.  The design patterns of the kernel suggest it for a good
+reason.
 
-Let me know if you have any feedback on this. Please note I will be out
-next week.
+By passing a pointer to struct devfreq, the driver can register one
+function that works with multiple devices.  With the current
+implementation, a driver that can work with multiple devices has to
+create multiple copies of the same function with different parameters so
+that each devfreq_cooling_device can use the appropriate one.  By
+passing a pointer to struct devfreq, the driver can identify which
+device it's referring to.
 
-Cheers
-Jon
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Reviewed-by: Punit Agrawal <punit.agrawal@arm.com>
+Reviewed-by: Ørjan Eide <orjan.eide@arm.com>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
+ drivers/thermal/devfreq_cooling.c | 5 +++--
+ include/linux/devfreq_cooling.h   | 6 ++++--
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+index 01f0015..c549d83 100644
+--- a/drivers/thermal/devfreq_cooling.c
++++ b/drivers/thermal/devfreq_cooling.c
+@@ -238,7 +238,7 @@ get_static_power(struct devfreq_cooling_device *dfc, unsigned long freq)
+ 		return 0;
+ 	}
+ 
+-	return dfc->power_ops->get_static_power(voltage);
++	return dfc->power_ops->get_static_power(df, voltage);
+ }
+ 
+ /**
+@@ -262,7 +262,8 @@ get_dynamic_power(struct devfreq_cooling_device *dfc, unsigned long freq,
+ 	struct devfreq_cooling_power *dfc_power = dfc->power_ops;
+ 
+ 	if (dfc_power->get_dynamic_power)
+-		return dfc_power->get_dynamic_power(freq, voltage);
++		return dfc_power->get_dynamic_power(dfc->devfreq, freq,
++						    voltage);
+ 
+ 	freq_mhz = freq / 1000000;
+ 	power = (u64)dfc_power->dyn_power_coeff * freq_mhz * voltage * voltage;
+diff --git a/include/linux/devfreq_cooling.h b/include/linux/devfreq_cooling.h
+index 3049f94..c35d0c0 100644
+--- a/include/linux/devfreq_cooling.h
++++ b/include/linux/devfreq_cooling.h
+@@ -36,8 +36,10 @@
+  *			@dyn_power_coeff * frequency * voltage^2
+  */
+ struct devfreq_cooling_power {
+-	unsigned long (*get_static_power)(unsigned long voltage);
+-	unsigned long (*get_dynamic_power)(unsigned long freq,
++	unsigned long (*get_static_power)(struct devfreq *devfreq,
++					  unsigned long voltage);
++	unsigned long (*get_dynamic_power)(struct devfreq *devfreq,
++					   unsigned long freq,
+ 					   unsigned long voltage);
+ 	unsigned long dyn_power_coeff;
+ };
 -- 
-nvpublic
+2.9.2
+
