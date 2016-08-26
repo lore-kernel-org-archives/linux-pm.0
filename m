@@ -1,162 +1,52 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v5 13/16] drivers: firmware: psci: Allow OS Initiated suspend mode
-Date: Fri, 26 Aug 2016 14:17:55 -0600
-Message-ID: <1472242678-33700-14-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v5 05/16] PM / doc: Update device documentation for devices in IRQ safe PM domains
+Date: Fri, 26 Aug 2016 14:17:47 -0600
+Message-ID: <1472242678-33700-6-git-send-email-lina.iyer@linaro.org>
 References: <1472242678-33700-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:33536 "EHLO
+        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751610AbcHZUS1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Aug 2016 16:18:27 -0400
+Received: by mail-pf0-f181.google.com with SMTP id y134so31665978pfg.0
+        for <linux-pm@vger.kernel.org>; Fri, 26 Aug 2016 13:18:27 -0700 (PDT)
 In-Reply-To: <1472242678-33700-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Mark Rutland <mark.rutland@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
 
-PSCI firmware v1.0 onwards may support 2 different modes for
-CPU_SUSPEND. Platform coordinated mode is the default and every firmware
-should support it. OS Initiated mode is optional for the firmware to
-implement and allow Linux to make an better decision on the state of
-the CPU cluster heirarchy.
+Update documentation to reflect the changes made to support IRQ safe PM
+domains.
 
-With the kernel capable of deciding the state for CPU cluster and
-coherency domains, the OS Initiated mode may now be used by the kernel,
-provided the firmware supports it. SET_SUSPEND_MODE is a PSCI function
-available on v1.0 onwards and can be used to set the mode in the
-firmware.
-
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-[Ulf: Rebased on 4.7 rc1]
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/firmware/psci.c   | 42 +++++++++++++++++++++++++++++-------------
- include/uapi/linux/psci.h |  5 +++++
- 2 files changed, 34 insertions(+), 13 deletions(-)
+ Documentation/power/devices.txt | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
-index 8263429..a2edd91 100644
---- a/drivers/firmware/psci.c
-+++ b/drivers/firmware/psci.c
-@@ -53,6 +53,7 @@
-  * require cooperation with a Trusted OS driver.
-  */
- static int resident_cpu = -1;
-+static bool psci_has_osi;
- 
- bool psci_tos_resident_on(int cpu)
- {
-@@ -558,9 +559,8 @@ static int __init psci_0_2_init(struct device_node *np)
- 	int err;
- 
- 	err = get_set_conduit_method(np);
--
- 	if (err)
--		goto out_put_node;
-+		return err;
- 	/*
- 	 * Starting with v0.2, the PSCI specification introduced a call
- 	 * (PSCI_VERSION) that allows probing the firmware version, so
-@@ -568,11 +568,7 @@ static int __init psci_0_2_init(struct device_node *np)
- 	 * can be carried out according to the specific version reported
- 	 * by firmware
- 	 */
--	err = psci_probe();
--
--out_put_node:
--	of_node_put(np);
--	return err;
-+	return psci_probe();
- }
- 
- /*
-@@ -584,9 +580,8 @@ static int __init psci_0_1_init(struct device_node *np)
- 	int err;
- 
- 	err = get_set_conduit_method(np);
--
- 	if (err)
--		goto out_put_node;
-+		return err;
- 
- 	pr_info("Using PSCI v0.1 Function IDs from DT\n");
- 
-@@ -610,15 +605,31 @@ static int __init psci_0_1_init(struct device_node *np)
- 		psci_ops.migrate = psci_migrate;
- 	}
- 
--out_put_node:
--	of_node_put(np);
- 	return err;
- }
- 
-+static int __init psci_1_0_init(struct device_node *np)
-+{
-+	int ret;
+diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
+index 8ba6625..a622136 100644
+--- a/Documentation/power/devices.txt
++++ b/Documentation/power/devices.txt
+@@ -607,7 +607,17 @@ individually.  Instead, a set of devices sharing a power resource can be put
+ into a low-power state together at the same time by turning off the shared
+ power resource.  Of course, they also need to be put into the full-power state
+ together, by turning the shared power resource on.  A set of devices with this
+-property is often referred to as a power domain.
++property is often referred to as a power domain. A power domain may also be
++nested inside another power domain.
 +
-+	ret = psci_0_2_init(np);
-+	if (ret)
-+		return ret;
-+
-+	/* Check if PSCI OSI mode is available */
-+	ret = psci_features(psci_function_id[PSCI_FN_CPU_SUSPEND]);
-+	if (ret & PSCI_1_0_OS_INITIATED) {
-+		if (!psci_features(PSCI_1_0_FN_SET_SUSPEND_MODE))
-+			psci_has_osi = true;
-+	}
-+
-+	return 0;
-+}
-+
- static const struct of_device_id psci_of_match[] __initconst = {
- 	{ .compatible = "arm,psci",	.data = psci_0_1_init},
- 	{ .compatible = "arm,psci-0.2",	.data = psci_0_2_init},
--	{ .compatible = "arm,psci-1.0",	.data = psci_0_2_init},
-+	{ .compatible = "arm,psci-1.0",	.data = psci_1_0_init},
- 	{},
- };
++Devices, by default, operate in process context. If a device can operate in
++IRQ safe context that has to be explicitly indicated by setting the irq_safe
++boolean inside struct generic_pm_domain to be true. Power domains by default,
++operate in process context but could have devices that are IRQ safe. Such
++power domains cannot be powered on/off during runtime PM. On the other hand,
++IRQ safe PM domains that have IRQ safe devices may be powered off when all
++the devices are in idle. An IRQ safe domain may only be attached as a
++subdomain to another IRQ safe domain.
  
-@@ -627,6 +638,7 @@ int __init psci_dt_init(void)
- 	struct device_node *np;
- 	const struct of_device_id *matched_np;
- 	psci_initcall_t init_fn;
-+	int ret;
- 
- 	np = of_find_matching_node_and_match(NULL, psci_of_match, &matched_np);
- 
-@@ -634,7 +646,11 @@ int __init psci_dt_init(void)
- 		return -ENODEV;
- 
- 	init_fn = (psci_initcall_t)matched_np->data;
--	return init_fn(np);
-+	ret = init_fn(np);
-+
-+	of_node_put(np);
-+
-+	return ret;
- }
- 
- #ifdef CONFIG_ACPI
-diff --git a/include/uapi/linux/psci.h b/include/uapi/linux/psci.h
-index 3d7a0fc..7dd778e 100644
---- a/include/uapi/linux/psci.h
-+++ b/include/uapi/linux/psci.h
-@@ -48,6 +48,7 @@
- 
- #define PSCI_1_0_FN_PSCI_FEATURES		PSCI_0_2_FN(10)
- #define PSCI_1_0_FN_SYSTEM_SUSPEND		PSCI_0_2_FN(14)
-+#define PSCI_1_0_FN_SET_SUSPEND_MODE		PSCI_0_2_FN(15)
- 
- #define PSCI_1_0_FN64_SYSTEM_SUSPEND		PSCI_0_2_FN64(14)
- 
-@@ -93,6 +94,10 @@
- #define PSCI_1_0_FEATURES_CPU_SUSPEND_PF_MASK	\
- 			(0x1 << PSCI_1_0_FEATURES_CPU_SUSPEND_PF_SHIFT)
- 
-+#define PSCI_1_0_OS_INITIATED			BIT(0)
-+#define PSCI_1_0_SUSPEND_MODE_PC		0
-+#define PSCI_1_0_SUSPEND_MODE_OSI		1
-+
- /* PSCI return values (inclusive of all PSCI versions) */
- #define PSCI_RET_SUCCESS			0
- #define PSCI_RET_NOT_SUPPORTED			-1
+ Support for power domains is provided through the pm_domain field of struct
+ device.  This field is a pointer to an object of type struct dev_pm_domain,
 -- 
 2.7.4
+
