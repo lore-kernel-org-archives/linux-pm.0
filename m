@@ -1,58 +1,133 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH] thermal: hisilicon: fix COMPILE_TEST dependencies
-Date: Fri, 26 Aug 2016 22:42:36 +0530
-Message-ID: <CAP245DWoQA+dqa09T+FpLRhH5P57pV15X5graazR=aJnqE9haA@mail.gmail.com>
-References: <20160826154434.992160-1-arnd@arndb.de>
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: Re: [PATCH 03/11] sched: Extend scheduler's asym packing
+Date: Fri, 26 Aug 2016 10:25:38 -0700
+Message-ID: <1472232338.2916.58.camel@linux.intel.com>
+References: <1471559812-19967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <1471559812-19967-4-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <20160825112251.GA1323@e105550-lin.cambridge.arm.com>
+         <20160825114522.GD10138@twins.programming.kicks-ass.net>
+         <20160825131836.GB1323@e105550-lin.cambridge.arm.com>
+         <20160825134503.GH10138@twins.programming.kicks-ass.net>
+         <20160826103945.GC1323@e105550-lin.cambridge.arm.com>
+         <20160826124207.GM10121@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f53.google.com ([209.85.214.53]:35072 "EHLO
-        mail-it0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753301AbcHZRMh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Aug 2016 13:12:37 -0400
-Received: by mail-it0-f53.google.com with SMTP id x131so1901273ite.0
-        for <linux-pm@vger.kernel.org>; Fri, 26 Aug 2016 10:12:37 -0700 (PDT)
-In-Reply-To: <20160826154434.992160-1-arnd@arndb.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20160826124207.GM10121@twins.programming.kicks-ass.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, rjw@rjwysocki.net, x86@kernel.org, bp@suse.de, sudeep.holla@arm.com, ak@linux.intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, alexey.klimov@arm.com, viresh.kumar@linaro.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, lenb@kernel.org, paul.gortmaker@windriver.com, jpoimboe@redhat.com, mcgrof@kernel.org, jgross@suse.com, robert.moore@intel.com, dvyukov@google.com, jeyu@redhat.com
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Leo Yan <leo.yan@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, Aug 26, 2016 at 9:14 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> As we now 'select STUB_CLK_HI6220', all dependencies for that driver have
-> to be present in order to enable HISI_THERMAL, as pointed out by
-> Kconfig:
->
-> warning: (HISI_THERMAL) selects STUB_CLK_HI6220 which has unmet direct dependencies (COMMON_CLK && COMMON_CLK_HI6220 && MAILBOX)
->
-> This rearranges the dependencies for this symbol, so all the dependencies
-> aside from ARCH_HISI are always met when building it for compile testing.
-> This mainly helps for randconfig testing, as an "allmodconfig" kernel will
-> enable them anyway.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 5f63581ce68e ("thermal: hisilicon: Add dependency on the clock driver to allow frequency scaling")
+On Fri, 2016-08-26 at 14:42 +0200, Peter Zijlstra wrote:
+> On Fri, Aug 26, 2016 at 11:39:46AM +0100, Morten Rasmussen wrote:
+> > 
+> > On Thu, Aug 25, 2016 at 03:45:03PM +0200, Peter Zijlstra wrote:
+> > > 
+> > > On Thu, Aug 25, 2016 at 02:18:37PM +0100, Morten Rasmussen wrote:
+> > > 
+> > > > 
+> > > > But why not just pass the customized list into the scheduler? Seems
+> > > > simpler?
+> > > Mostly because I didn't want to regress Power I suppose. The ITMT stuff
+> > > needs an extra load, whereas the Power stuff can use the CPU number we
+> > > already have.
+> > The customized list wouldn't have to be mandatory. You could easily
+> > create a default list that would match current behaviour for Power.
+> Sure, but then you have the extra load.. probably not an issue but
+> still.
+> 
+> > 
+> > What is the 'extra load' needed for ITMT? Isn't it just a priority list,
+> > or does the absolute priority value have a meaning? I only saw it used
+> > for less_than comparison, maybe I missed it.
+> LOAD as in a memop, we need to go fetch the priority from wherever we
+> put it in memory, be it rq->cpu_priority or a percpu variable on its
+> own.
+> 
+> > 
+> > If you need to express the difference in compute capability, why not use
+> > capacity?
+> Doesn't work, capacity is actually equal with these things.
+> 
+> Think of one core having more turbo range when thermals allow it. But
+> the moment you run multiple cores the thermal head-room dissipates and
+> they all end up running at more or less the same (lower) frequency.
+> 
+> All of this asym/prio stuff only matters when cores (Power) / packages
+> (Intel) are mostly idle.
+> 
+> On Power SMT0 can go faster than SMT7 when all other siblings are idle,
+> with ITMT some core can go faster than other when the rest is idle.
+> 
+> I suppose we _could_ model it with a dynamic capacity value, but last
+> time I looked at that it made my head hurt.
+> 
+> > 
+> > > 
+> > > Also, since we need an interface to pass in this custom list, I don't
+> > > see the distinction, you can do the same manipulation by constantly
+> > > updating the prio list.
+> > Sure, but the overhead of rebuilding the sched_domain hierarchy is huge
+> > compared to just tweaking the result of the less_than operator that get
+> > called from the scheduler frequently. However, updating
+> > group_priority_cpu() would require a rebuild too in this patch set.
+> You don't actually need to rebuild the domains to change the priorities.
+> We only need to rebuild the domains when we add/remove SD_ASYM_PACKING.
+> 
+> Yes, the sched_group::asym_prefer_cpu thing is tedious, but you could
+> actually update that without a rebuild if one wanted.
+> 
+> Note that there's actually a semi useful use case for dynamically
+> updating the cpu priorities: core hopping.
+> 
+>   https://www.researchgate.net/publication/279915789_Evaluation_of_Core_Hopping_on_POWER7
+> 
+> Again, that's something only relevant to mostly idle packages.
+> 
+> > 
+> > > 
+> > > But not of this stuff should be EXPORT'ed, so its only available to the
+> > > core kernel, which greatly limits the potential for abuse. We can see
+> > > arch code just fine.
+> > I don't see why it can't be wired up to be controlled by entities
+> > outside arch code, e.g. cpufreq or the thermal framework, or even code
+> > outside the kernel (firmware).
+> I suppose an arch could do that, but then we'd see that, wouldn't we?
+> 
+> The firmware and kernel would need to co-ordinate where the prio value
+> lives, which is not something trivially done. And even if the value
+> lives in rq->cpu_priority, it _could_ do that.
+> 
+> 
+> In any case, I don't feel too strongly about this, if you want to stick
+> the value in rq->cpu_priority and have Power use that we can do that I
+> suppose.
 
-Acked-by: Amit Kucheria <amit.kucheria@linaro.org>
+This will mean increasing the rq structure for power pc.
 
-> ---
->  drivers/thermal/Kconfig | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 5cba072c3a62..3c8607c07352 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -177,7 +177,8 @@ config THERMAL_EMULATION
->
->  config HISI_THERMAL
->         tristate "Hisilicon thermal driver"
-> -       depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
-> +       depends on ARCH_HISI || COMPILE_TEST
-> +       depends on CPU_THERMAL && OF && COMMON_CLK_HI6220 && MAILBOX
->         depends on HAS_IOMEM
->         select STUB_CLK_HI6220
->         help
-> --
-> 2.9.0
->
+I guess some compile flag to decide if this cpu_priority field should be
+in rq. Something like
+COFIG_SCHED_ITMT || ((CONFIG_PPC64 || CONFIG_PPC32) && CONFIG_SCHED_SMT))?
+
+And I will need code to power pc to instantiate rp->cpu_priority on boot.
+
+This gets somewhat ugly.
+
+I prefer the other alternative Morten suggested by
+having an arch_cpu_asym_priority() function. It is cleaner
+without increasing size or rq structure.
+
+I can define for default lower cpu having higher priority:
+
+int __weak arch_cpu_asym_priority(int cpu)
+{
+        return -cpu;
+}
+
+and then define it appropriately for x86 when ITMT is used.
+
+Tim
+
+
