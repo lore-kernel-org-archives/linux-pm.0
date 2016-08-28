@@ -1,100 +1,64 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][RFC v5] timekeeping: Ignore the bogus sleep time if pm_trace is enabled
-Date: Mon, 29 Aug 2016 00:40:39 +0800
-Message-ID: <1472402439-1146-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:14231 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755754AbcH1Qct (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 28 Aug 2016 12:32:49 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH][v8] PM / hibernate: Verify the consistent of e820 memory
+ map by md5 value
+Date: Sun, 28 Aug 2016 18:36:59 +0200
+Message-ID: <20160828163659.GA19306@amd>
+References: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Lee@amd.karlin.mff.cuni.cz, Chun-Yi <jlee@suse.com>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
-To: x86@kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <john.stultz@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, Xunlei Pang <xlpang@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Chen Yu <yu.c.chen@intel.com>, "3.17+" <stable@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-Previously we encountered some memory overflow issues due to
-the bogus sleep time brought by inconsistent rtc, which is
-triggered when pm_trace is enabled, and we have fixed it
-in recent kernel. However it's improper in the first place
-to call __timekeeping_inject_sleeptime() in case that pm_trace
-is enabled simply because that "hash" time value will wreckage
-the timekeeping subsystem.
+On Mon 2016-08-29 00:35:40, Chen Yu wrote:
+> On some platforms, there is occasional panic triggered when trying to
+> resume from hibernation, a typical panic looks like:
+> 
+> "BUG: unable to handle kernel paging request at ffff880085894000
+> IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
+> 
+> This is because e820 map has been changed by BIOS across
+> hibernation, and one of the page frames from first kernel
+> is right located in second kernel's unmapped region, so panic
+> comes out when accessing unmapped kernel address.
+> 
+> In order to expose this issue earlier, the md5 hash of e820 map
+> is passed from suspend kernel to resume kernel, and the system will
+> trigger panic once it finds the md5 value of previous kernel is not
+> the same as current resume kernel.
+> 
+> Note:
+> 1. Without this patch applied, it is possible that BIOS has
+>    provided an inconsistent memory map, but the resume kernel is still
+>    able to restore the image anyway(e.g.,  E820_RAM region is the subset
+>    of the previous one), although the system might be unstable. So this
+>    patch tries to treat any inconsistent e820 as illegal.
+> 
+> 2. Another case is, this patch replies on comparing the e820_saved, but
+>    currently the e820_save might not be strictly the same across
+>    hibernation, even if BIOS has provided consistent e820 map - In
+>    theory mptable might modify the BIOS-provided e820_saved dynamically
+>    in early_reserve_e820_mpc_new, which would allocate a buffer from
+>    E820_RAM, and marks it from E820_RAM to E820_RESERVED). 
+>    This is a potential and rare case we need to deal with in OS in
+>    the future.
+> 
+> Suggested-by: Pavel Machek <pavel@ucw.cz>
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Lee, Chun-Yi <jlee@suse.com>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 
-So this patch ignores the sleep time if pm_trace is enabled in
-the following situation:
-1. rtc is used as persist clock to compensate for sleep time,
-   or
-2. rtc is used to calculate the sleep time in rtc_resume.
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Cc: stable@vger.kernel.org  (3.17+)
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: John Stultz <john.stultz@linaro.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Xunlei Pang <xlpang@redhat.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Suggested-by: Xunlei Pang <xlpang@redhat.com>
-Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Suggested-by: Thomas Gleixner <tglx@linutronix.de>
-Reported-by: Janek Kozicki <cosurgi@gmail.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- arch/x86/kernel/rtc.c     | 12 ++++++++++++
- kernel/time/timekeeping.c |  3 ++-
- 2 files changed, 14 insertions(+), 1 deletion(-)
+You might want to verify that panic is actually visible on affected
+platform. Thanks for your patience ;-).
 
-diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
-index 79c6311c..5c28197 100644
---- a/arch/x86/kernel/rtc.c
-+++ b/arch/x86/kernel/rtc.c
-@@ -8,6 +8,7 @@
- #include <linux/export.h>
- #include <linux/pnp.h>
- #include <linux/of.h>
-+#include <linux/pm-trace.h>
- 
- #include <asm/vsyscall.h>
- #include <asm/x86_init.h>
-@@ -144,6 +145,17 @@ int update_persistent_clock(struct timespec now)
- void read_persistent_clock(struct timespec *ts)
- {
- 	x86_platform.get_wallclock(ts);
-+
-+	/*
-+	 * Make rtc-based persistent clock unusable
-+	 * if pm_trace is enabled, only take effect
-+	 * for timekeeping_suspend/resume.
-+	 */
-+	if (pm_trace_is_enabled() &&
-+	    x86_platform.get_wallclock == mach_get_cmos_time) {
-+		ts->tv_sec = 0;
-+		ts->tv_nsec = 0;
-+	}
- }
- 
- 
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 3b65746..9af885d 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -23,6 +23,7 @@
- #include <linux/stop_machine.h>
- #include <linux/pvclock_gtod.h>
- #include <linux/compiler.h>
-+#include <linux/pm-trace.h>
- 
- #include "tick-internal.h"
- #include "ntp_internal.h"
-@@ -1551,7 +1552,7 @@ static void __timekeeping_inject_sleeptime(struct timekeeper *tk,
-  */
- bool timekeeping_rtc_skipresume(void)
- {
--	return sleeptime_injected;
-+	return sleeptime_injected || pm_trace_is_enabled();
- }
- 
- /**
+									Pavel
 -- 
-2.7.4
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
