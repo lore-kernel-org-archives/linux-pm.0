@@ -1,64 +1,47 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][v8] PM / hibernate: Verify the consistent of e820 memory
- map by md5 value
-Date: Sun, 28 Aug 2016 18:36:59 +0200
-Message-ID: <20160828163659.GA19306@amd>
-References: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Lee@amd.karlin.mff.cuni.cz, Chun-Yi <jlee@suse.com>, Borislav Petkov <bp@alien8.de>
+From: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
+Subject: [PATCH 2/2] power: bq24735-charger: Assume not charging when charger is missing
+Date: Sun, 28 Aug 2016 19:34:46 +0200
+Message-ID: <20160828173446.32728-2-contact@paulk.fr>
+References: <20160828173446.32728-1-contact@paulk.fr>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160828173446.32728-1-contact-W9ppeneeCTY@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2016-08-29 00:35:40, Chen Yu wrote:
-> On some platforms, there is occasional panic triggered when trying to
-> resume from hibernation, a typical panic looks like:
-> 
-> "BUG: unable to handle kernel paging request at ffff880085894000
-> IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
-> 
-> This is because e820 map has been changed by BIOS across
-> hibernation, and one of the page frames from first kernel
-> is right located in second kernel's unmapped region, so panic
-> comes out when accessing unmapped kernel address.
-> 
-> In order to expose this issue earlier, the md5 hash of e820 map
-> is passed from suspend kernel to resume kernel, and the system will
-> trigger panic once it finds the md5 value of previous kernel is not
-> the same as current resume kernel.
-> 
-> Note:
-> 1. Without this patch applied, it is possible that BIOS has
->    provided an inconsistent memory map, but the resume kernel is still
->    able to restore the image anyway(e.g.,  E820_RAM region is the subset
->    of the previous one), although the system might be unstable. So this
->    patch tries to treat any inconsistent e820 as illegal.
-> 
-> 2. Another case is, this patch replies on comparing the e820_saved, but
->    currently the e820_save might not be strictly the same across
->    hibernation, even if BIOS has provided consistent e820 map - In
->    theory mptable might modify the BIOS-provided e820_saved dynamically
->    in early_reserve_e820_mpc_new, which would allocate a buffer from
->    E820_RAM, and marks it from E820_RAM to E820_RESERVED). 
->    This is a potential and rare case we need to deal with in OS in
->    the future.
-> 
-> Suggested-by: Pavel Machek <pavel@ucw.cz>
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Lee, Chun-Yi <jlee@suse.com>
-> Cc: Borislav Petkov <bp@alien8.de>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+When the charger is missing (disconnected), it is safe to assume that
+the charger chip is no charging.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+This is especially relevant when a status GPIO is present and the
+charger is getting disconnected. bq24735_charger_is_charging will be
+triggered due to the interrupt then, it will attempt to read whether it
+is charging through i2c, which will fail as the charger is disconnected.
 
-You might want to verify that panic is actually visible on affected
-platform. Thanks for your patience ;-).
+This also fixes that specific issue.
 
-									Pavel
+Signed-off-by: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
+---
+ drivers/power/bq24735-charger.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/power/bq24735-charger.c b/drivers/power/bq24735-charger.c
+index 361a047..0b5b247 100644
+--- a/drivers/power/bq24735-charger.c
++++ b/drivers/power/bq24735-charger.c
+@@ -201,8 +201,12 @@ static bool bq24735_charger_is_present(struct bq24735 *charger)
+ 
+ static int bq24735_charger_is_charging(struct bq24735 *charger)
+ {
+-	int ret = bq24735_read_word(charger->client, BQ24735_CHG_OPT);
++	int ret;
++
++	if (!bq24735_charger_is_present(charger))
++		return 0;
+ 
++	ret  = bq24735_read_word(charger->client, BQ24735_CHG_OPT);
+ 	if (ret < 0)
+ 		return ret;
+ 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.9.3
