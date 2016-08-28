@@ -1,47 +1,42 @@
-From: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
-Subject: [PATCH 2/2] power: bq24735-charger: Assume not charging when charger is missing
-Date: Sun, 28 Aug 2016 19:34:46 +0200
-Message-ID: <20160828173446.32728-2-contact@paulk.fr>
-References: <20160828173446.32728-1-contact@paulk.fr>
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160828173446.32728-1-contact-W9ppeneeCTY@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
+From: Paul Kocialkowski <contact@paulk.fr>
+Subject: [PATCH 1/2] power: bq24735-charger: Request status GPIO with initial input setup
+Date: Sun, 28 Aug 2016 19:34:45 +0200
+Message-ID: <20160828173446.32728-1-contact@paulk.fr>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-tegra@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>
 List-Id: linux-pm@vger.kernel.org
 
-When the charger is missing (disconnected), it is safe to assume that
-the charger chip is no charging.
+This requests the status GPIO with initial input setup. it is required
+to read the GPIO status at probe time and thus correctly avoid sending
+i2c messages when AC is not plugged.
 
-This is especially relevant when a status GPIO is present and the
-charger is getting disconnected. bq24735_charger_is_charging will be
-triggered due to the interrupt then, it will attempt to read whether it
-is charging through i2c, which will fail as the charger is disconnected.
+When requesting the GPIO without initial input setup, it always reads 0
+which causes probe to fail as it assumes the charger is connected, sends
+i2c messages and fails.
 
-This also fixes that specific issue.
-
-Signed-off-by: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
+Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
 ---
- drivers/power/bq24735-charger.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/power/bq24735-charger.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/power/bq24735-charger.c b/drivers/power/bq24735-charger.c
-index 361a047..0b5b247 100644
+index fa454c1..361a047 100644
 --- a/drivers/power/bq24735-charger.c
 +++ b/drivers/power/bq24735-charger.c
-@@ -201,8 +201,12 @@ static bool bq24735_charger_is_present(struct bq24735 *charger)
+@@ -393,9 +393,9 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 	i2c_set_clientdata(client, charger);
  
- static int bq24735_charger_is_charging(struct bq24735 *charger)
- {
--	int ret = bq24735_read_word(charger->client, BQ24735_CHG_OPT);
-+	int ret;
-+
-+	if (!bq24735_charger_is_present(charger))
-+		return 0;
- 
-+	ret  = bq24735_read_word(charger->client, BQ24735_CHG_OPT);
- 	if (ret < 0)
- 		return ret;
- 
+ 	if (gpio_is_valid(charger->pdata->status_gpio)) {
+-		ret = devm_gpio_request(&client->dev,
+-					charger->pdata->status_gpio,
+-					name);
++		ret = devm_gpio_request_one(&client->dev,
++						charger->pdata->status_gpio,
++						GPIOF_IN, name);
+ 		if (ret) {
+ 			dev_err(&client->dev,
+ 				"Failed GPIO request for GPIO %d: %d\n",
 -- 
 2.9.3
