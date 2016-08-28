@@ -1,68 +1,81 @@
 From: Chen Yu <yu.c.chen@intel.com>
-Subject: Re: [PATCH][RFC v4] timekeeping: ignore the bogus sleep time if
- pm_trace is enabled
-Date: Sun, 28 Aug 2016 09:57:31 +0800
-Message-ID: <20160828015731.GA5941@sharon>
-References: <1471517019-15216-1-git-send-email-yu.c.chen@intel.com>
- <57C13C88.3000208@redhat.com>
+Subject: Re: [PATCH][v6] PM / hibernate: Print the possible panic reason when
+ resuming with inconsistent e820 map
+Date: Sun, 28 Aug 2016 10:07:10 +0800
+Message-ID: <20160828020710.GB5941@sharon>
+References: <1445404900-29702-1-git-send-email-yu.c.chen@intel.com>
+ <20160823094527.GG7276@linux-rxt1.site>
+ <20160823100155.GA12738@sharon>
+ <20160824013610.GA26119@linux-rxt1.site>
+ <20160825110748.GA22104@sharon>
+ <20160826195654.GD21442@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:11121 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753105AbcH1B7J (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 27 Aug 2016 21:59:09 -0400
 Content-Disposition: inline
-In-Reply-To: <57C13C88.3000208@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: xlpang@redhat.com
-Cc: linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20160826195654.GD21442@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: joeyli <jlee@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sat, Aug 27, 2016 at 03:08:56PM +0800, Xunlei Pang wrote:
-> On 2016/08/18 at 18:43, Chen Yu wrote:
-> > Previously we encountered some memory overflow issues due to
-> > the bogus sleep time brought by inconsistent rtc, which is
-> > triggered when pm_trace is enabled, please refer to:
-> > https://patchwork.kernel.org/patch/9286365/
-> > It's improper in the first place to call __timekeeping_inject_sleeptime()
-> > in case that pm_trace is enabled simply because that "hash" time value
-> > will wreckage the timekeeping subsystem.
-> >
-> > So this patch ignores the sleep time if pm_trace is enabled in
-> > the following situation:
-> > 1. rtc is used as persist clock to compensate for sleep time,
-> >    (because system does not have a nonstop clocksource) or
-> > 2. rtc is used to calculate the sleep time in rtc_resume.
-> >
-> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > Cc: John Stultz <john.stultz@linaro.org>
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: Xunlei Pang <xlpang@redhat.com>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: linux-kernel@vger.kernel.org
-> > Cc: linux-pm@vger.kernel.org
-> > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Reported-by: Janek Kozicki <cosurgi@gmail.com>
-> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > ---
+Hi,
+On Fri, Aug 26, 2016 at 09:56:54PM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> I suddenly think of a way to avoid adding this ugly __weak auxiliary function.
+> > > > > What's the progress of this patch? Looks already have experts review it.
+> > > > > Why this patch didn't accept?
+> > > > This patch is a little overkilled, and I have saved another simpler
+> > > > version to only check the md5 hash (as people suggested) for it. I can post it later.
+> > > > 
+> > > 
+> > > I am happy to test and review it.
+> > >
+> > Here it is. As Rafael is on travel, it would be grateful
+> > if you can give some advance on this, thanks!
 > 
-> Add a special treatment for read_persistent_clock() in arch/x86/kernel/rtc.c as follows,
-> void read_persistent_clock(struct timespec *ts)
-> {
->     x86_platform.get_wallclock(ts);
+> Better than last one.
 > 
->     /* Make rtc-based persistent clock unusable if pm_trace is enabled. */
->     if (pm_trace_is_enabled() &&
->         x86_platform.get_wallclock == mach_get_cmos_time) {
->         ts->tv_sec = 0;
->         ts->tv_nsec = 0;
->     }
-> }
+> > +		return -ENOMEM;
+> > +
+> > +	req = ahash_request_alloc(tfm, GFP_ATOMIC);
 > 
-> In this way, we can avoid the touch of timekeeping core, after all ptrace is currently x86-specific.
-> 
-> What do you think?
+> what context is this called from? GFP_ATOMIC allocations like to fail...
 >
-Good point! Will send another version based on this idea.
+It is in normal process context, OK, I'll change it to GFP_KERNEL.
+> > +static int hibernation_e820_check(void *buf)
+> > +{
+> > +	int ret;
+> > +	char result[MD5_HASH_SIZE] = {0};
+> > +
+> > +	ret = get_e820_md5(&e820_saved, result);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	if (memcmp(result, buf, MD5_HASH_SIZE))
+> > +		e820_conflict = true;
+> 
+> Passing return value using global variable is ugly. Can you just print
+> the warning and kill the box here?
+Do you mean get rid of the panic hooker and just print the warning here?
+> > +
+> 
+> > +	/*
+> > +	 * A page has been allocated previously to store the hibernation
+> > +	 * image header, so we can safely store the md5 result behind
+> > +	 * struct restore_data_record, with size of 128 bytes.
+> > +	 */
+> > +	hibernation_e820_save(addr + sizeof(struct restore_data_record));
+> > +
+> 
+> Please just allocate space in struct restore_data_record . And I don't
+> think md5 sum is 128 _bytes_.
+>
+OK. The md5 sum should be 128 bits thus 16 bytes.
 
-Thanks,
-Yu
+Thanks!
+Yu 
