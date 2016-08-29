@@ -1,123 +1,58 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v6 0/8] power: add power sequence library
-Date: Mon, 29 Aug 2016 19:10:45 +0800
-Message-ID: <20160829111045.GB3736@b29397-desktop>
-References: <1471252398-957-1-git-send-email-peter.chen@nxp.com>
- <b1848eb2-9298-9089-ee4d-5356998c6c08@linaro.org>
- <20160824085335.GB27233@shlinux2>
+From: Borislav Petkov <bp@alien8.de>
+Subject: Re: [PATCH][v8] PM / hibernate: Verify the consistent of e820 memory
+ map by md5 value
+Date: Mon, 29 Aug 2016 06:59:42 +0200
+Message-ID: <20160829045942.GA6163@nazgul.tnic>
+References: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.skyhub.de ([78.46.96.112]:39246 "EHLO mail.skyhub.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750730AbcH2FAC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Aug 2016 01:00:02 -0400
 Content-Disposition: inline
-In-Reply-To: <20160824085335.GB27233@shlinux2>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vaibhav Hiremath <vaibhav.hiremath@linaro.org>, robh+dt@kernel.org
-Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, linux-usb@vger.kernel.org, oscar@naiandei.net, pawel.moll@arm.com, arnd@arndb.de, linux-pm@vger.kernel.org, festevam@gmail.com, s.hauer@pengutronix.de, stephen.boyd@linaro.org, linux-kernel@vger.kernel.org, troy.kisky@boundarydevices.com, stillcompiling@gmail.com, p.zabel@pengutronix.de, mail@maciej.szmigiero.name, mka@chromium.org, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Lee@nazgul.tnic, Chun-Yi <jlee@suse.com>
 
-On Wed, Aug 24, 2016 at 04:53:35PM +0800, Peter Chen wrote:
-> On Tue, Aug 23, 2016 at 04:02:48PM +0530, Vaibhav Hiremath wrote:
-> > 
-> > 
-> > On Monday 15 August 2016 02:43 PM, Peter Chen wrote:
-> > >Hi all,
-> > >
-> > >This is a follow-up for my last power sequence framework patch set [1].
-> > >According to Rob Herring and Ulf Hansson's comments[2], I use a generic
-> > >power sequence library for parsing the power sequence elements on DT,
-> > >and implement generic power sequence on library. The host driver
-> > >can allocate power sequence instance, and calls pwrseq APIs accordingly.
-> > >
-> > >In future, if there are special power sequence requirements, the special
-> > >power sequence library can be created.
-> > >
-> > >This patch set is tested on i.mx6 sabresx evk using a dts change, I use
-> > >two hot-plug devices to simulate this use case, the related binding
-> > >change is updated at patch [1/6], The udoo board changes were tested
-> > >using my last power sequence patch set.[3]
-> > >
-> > >Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
-> > >need to power on itself before it can be found by ULPI bus.
-> > >
-> > >[1] http://www.spinics.net/lists/linux-usb/msg142755.html
-> > >[2] http://www.spinics.net/lists/linux-usb/msg143106.html
-> > >[3] http://www.spinics.net/lists/linux-usb/msg142815.html
-> > (Please ignore my response on V2)
-> > 
-> > Sorry being so late in the discussion...
-> > 
-> > If I am not missing anything, then I am afraid to say that the
-> > generic library
-> > implementation in this patch series is not going to solve many of
-> > the custom
-> > requirement of power on, off, etc...
-> > I know you mentioned about adding another library when we come
-> > across such platforms, but should we not keep provision (or easy
-> > hooks/path)
-> > to enable that ?
-> > 
-> > Let me bring in the use case I am dealing with,
-> > 
-> > 
-> >                               Host
-> >                                |
-> >                                V
-> >                            USB port
-> > ------------------------------------------------------------
-> >                                |
-> >                                V
-> >                       USB HUB device (May need custom on/off seq)
-> >                                |
-> >                                V
-> >               =============================
-> >              |                             |
-> >              V                             V
-> >          Device-1                       Device-2
-> > (Needs special power               (Needs special power
-> >  on/off sequence.                   on/off sequence.
-> >  Also may need custom               Also, may need custom
-> >  sequence for                       sequence for
-> >  suspend/resume)                    suspend/resume)
-> > 
-> > 
-> > Note: Both Devices are connected to HUB via HSIC and may differ
-> >           in terms of functionality, features they support.
-> > 
-> > In the above case, both Device-1 and Device-2, need separate
-> > power on/off sequence. So generic library currently we have in this
-> > patch series is not going to satisfy the need here.
-> > 
-> > I looked at all 6 revisions of this patch-series, went through the
-> > review comments, and looked at MMC power sequence code;
-> > what I can say here is, we need something similar to
-> > MMC power sequence here, where every device can have its own
-> > power sequence (if needed).
-> > 
-> > I know Rob is not in favor of creating platform device for
-> > this, and I understand his comment.
-> > If not platform device, but atleast we need mechanism to
-> > connect each device back to its of_node and its respective
-> > driver/library fns. For example, the Devices may support different
-> > boot modes, and platform driver needs to make sure that
-> > the right sequence is followed for booting.
-> > 
-> > Peter, My apologies for taking you back again on this series.
-> > I am OK, if you wish to address this in incremental addition,
-> > but my point is, we know that the current generic way is not
-> > enough for us, so I think we should try to fix it in initial phase only.
-> > 
+On Mon, Aug 29, 2016 at 12:35:40AM +0800, Chen Yu wrote:
+> On some platforms, there is occasional panic triggered when trying to
+> resume from hibernation, a typical panic looks like:
 > 
-> Rob, it seems generic power sequence can't cover all cases.
-> Without information from DT, we can't know which power sequence
-> for which device.
+> "BUG: unable to handle kernel paging request at ffff880085894000
+> IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
 > 
+> This is because e820 map has been changed by BIOS across
+> hibernation, and one of the page frames from first kernel
+> is right located in second kernel's unmapped region, so panic
+> comes out when accessing unmapped kernel address.
+> 
+> In order to expose this issue earlier, the md5 hash of e820 map
+> is passed from suspend kernel to resume kernel, and the system will
+> trigger panic once it finds the md5 value of previous kernel is not
+> the same as current resume kernel.
 
-Vaibhav, do you agree that I create pwrseq library list using postcore_initcall
-for each library, and choose pwrseq library according to compatible
-string first, if there is no compatible string for this library, just
-use generic pwrseq library.
+... so basically now even the cases where it managed to resume would
+panic because the digests differ, even if the original panic condition
+doesn't trigger the bug, i.e. your Note 1 below.
+
+The more important question IMHO would be, can we resume our system
+successfully *even* if BIOS fiddled with the e820 map?
+
+We'd still warn the hell out of it and even make that the md5 digest
+comparison a default-enabled thing without even having a config option
+to disable it but can we try harder not to panic and deal with this next
+BIOS f*ckup more intelligently than throwing our hands in the air and
+giving up?
+
+Thanks.
 
 -- 
+Regards/Gruss,
+    Boris.
 
-Best Regards,
-Peter Chen
+ECO tip #101: Trim your mails when you reply.
+--
