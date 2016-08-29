@@ -1,63 +1,60 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/2] power: bq24735-charger: Assume not charging when
- charger is missing
-Date: Mon, 29 Aug 2016 02:40:51 +0200
-Message-ID: <20160829004050.qtyth34v6xijk5sx@earth>
-References: <20160828173446.32728-1-contact@paulk.fr>
- <20160828173446.32728-2-contact@paulk.fr>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: hisilicon: fix COMPILE_TEST dependencies
+Date: Mon, 29 Aug 2016 10:00:52 +0800
+Message-ID: <1472436052.3996.1.camel@intel.com>
+References: <20160826154434.992160-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="gggmw2kvrcrwmr4b"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160828173446.32728-2-contact-W9ppeneeCTY@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160826154434.992160-1-arnd@arndb.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Amit Kucheria <amit.kucheria@linaro.org>, Leo Yan <leo.yan@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 五, 2016-08-26 at 17:44 +0200, Arnd Bergmann wrote:
+> As we now 'select STUB_CLK_HI6220', all dependencies for that driver
+> have
+> to be present in order to enable HISI_THERMAL, as pointed out by
+> Kconfig:
+> 
+> warning: (HISI_THERMAL) selects STUB_CLK_HI6220 which has unmet
+> direct dependencies (COMMON_CLK && COMMON_CLK_HI6220 && MAILBOX)
+> 
+> This rearranges the dependencies for this symbol, so all the
+> dependencies
+> aside from ARCH_HISI are always met when building it for compile
+> testing.
+> This mainly helps for randconfig testing, as an "allmodconfig" kernel
+> will
+> enable them anyway.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Fixes: 5f63581ce68e ("thermal: hisilicon: Add dependency on the clock
+> driver to allow frequency scaling")
 
---gggmw2kvrcrwmr4b
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+As commit 5f63581ce68e has not been shipped in upstream yet, please
+fold this patch into the original one. I'd prefer one good patch
+instead of a broken patch + a fix.
 
-Hi,
-
-On Sun, Aug 28, 2016 at 07:34:46PM +0200, Paul Kocialkowski wrote:
-> When the charger is missing (disconnected), it is safe to assume that
-> the charger chip is no charging.
->=20
-> This is especially relevant when a status GPIO is present and the
-> charger is getting disconnected. bq24735_charger_is_charging will be
-> triggered due to the interrupt then, it will attempt to read whether it
-> is charging through i2c, which will fail as the charger is disconnected.
->=20
-> This also fixes that specific issue.
-
-Thanks, I queued this one into my for-next branch.
-
--- Sebastian
-
---gggmw2kvrcrwmr4b
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJXw4SSAAoJENju1/PIO/qatrIQAKTe3GrxKQDDBCSX7Ax0Xvw9
-Gk99WTVInwsDM0PhZmuuiA/pbz7HlNuYCqitiMfc39FaksSmHU3g9/EPRkIZTtPQ
-E9wXHnLO/y/PbfzqIKi7/jTFXz9lY80ah5WF2UGjus/JnC/St8I4YKLLgLhr+rII
-QqvPDhyoqUDM/K0pUbJw8UBzeVwG+UR1eYfeYwG+VHh6L4qXcQKoz15KUPn8eF/U
-STIycPfMP4npqwPP32ldZpbUNvZq2zLcq0wAG0A8eerCZrJxqGz+kXL7AOCVgBxE
-KzG6vlM/a48DxiA1P0KHtCceCn7WNiD6SarYrlgnQtkq4fi4eBeUrAuSuSmOkhYi
-/eXBQ6DQhp9DMc0moJHeU7VzVJfVyq4Yoei7niHnIEWOWUkeUxCO0vFE5juqkLhL
-tgj3TGnuBorIhkl+ylxNpXl039ck/9oS/gSl1OmhyhJfAaGT2BGE7PN3gFx8SCkc
-3ekRIiebh8V0LQRvWhuEoCg47rCJ2WDk4OVIQsFT1YbzdlDyQ1zY5vJ2Nxa1d8x9
-DNR335GO25gOxLcQzxBOnLtbSg/3gkts2moyzQJRdwGZadtkM+ZDW/pBVxSZAHvX
-KC3ao5aAbwXCKky0sGi9DgLprHGJUtZOmArsVWeGbx+aoOlOrKziVbzWEdmlK0p5
-4ObZ181K3Vq45rLEMVnt
-=//OK
------END PGP SIGNATURE-----
-
---gggmw2kvrcrwmr4b--
+thanks,
+rui
+> ---
+>  drivers/thermal/Kconfig | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 5cba072c3a62..3c8607c07352 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -177,7 +177,8 @@ config THERMAL_EMULATION
+>  
+>  config HISI_THERMAL
+>  	tristate "Hisilicon thermal driver"
+> -	depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
+> +	depends on ARCH_HISI || COMPILE_TEST
+> +	depends on CPU_THERMAL && OF && COMMON_CLK_HI6220 && MAILBOX
+>  	depends on HAS_IOMEM
+>  	select STUB_CLK_HI6220
+>  	help
