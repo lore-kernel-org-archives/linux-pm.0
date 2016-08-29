@@ -1,72 +1,73 @@
-From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Subject: Re: [RFC/PATCH] dt: bindings: Define bindings for device idle states
-Date: Mon, 29 Aug 2016 12:40:19 +0200
-Message-ID: <20160829104019.GA16212@amd>
+Date: Mon, 29 Aug 2016 13:55:56 +0200
+Message-ID: <CAPDyKFpwDR25G=9RTsEZ5nzMMuRKpEPTK=V1E5mMXKfWA-yvEw@mail.gmail.com>
 References: <1472207073-4901-1-git-send-email-ulf.hansson@linaro.org>
- <20160826135842.GA9303@amd>
- <CAPDyKFpQ-kG0jkOXwVWJkwT41JjTg=KwNv4z-E7UUBqfKMNHgg@mail.gmail.com>
+ <20160826135842.GA9303@amd> <CAPDyKFpQ-kG0jkOXwVWJkwT41JjTg=KwNv4z-E7UUBqfKMNHgg@mail.gmail.com>
+ <20160829104019.GA16212@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFpQ-kG0jkOXwVWJkwT41JjTg=KwNv4z-E7UUBqfKMNHgg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+In-Reply-To: <20160829104019.GA16212@amd>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
 Cc: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi-5wv7dgnIgG8@public.gmane.org>, Brendan Jackman <Brendan.Jackman-5wv7dgnIgG8@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Axel Haslam <ahaslam-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon 2016-08-29 11:34:34, Ulf Hansson wrote:
-> On 26 August 2016 at 15:58, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org> wrote:
-> > Hi!
-> >
-> >> @@ -0,0 +1,102 @@
-> >> +Device idle states
-> >> +========================
-> >> +
-> >> +A device are often capable of entering a low power state(s) when it becomes
-> >> +idle, hence the terminology of device idle states. Entering an idle state for a
-> >> +device helps it to avoid wasting power and reduces the leakage of current.
-> >
-> > First things first: what do these states _really_ represent? We have
-> > GPIOs in device tree, we have clock domains. What are these?
-> 
-> On most ARM SoCs which I am familiar of and which isn't using ACPI,
-> these kind of resources may can be considered as "power resources"
-> connected to a generic device. Although it's of course highly
-> dependent on the SoC. Other typical resources are clocks, pinctrls,
-> regulators etc.
-> 
-> To enter a low power state, these devices may not explicitly have to
-> change some internal logic, but instead relies on external "power
-> resources " to be put into low power mode.
-> 
-> I guess one could compare this to what can be described in the ACPI's
-> Device Power Management.
+On 29 August 2016 at 12:40, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org> wrote:
+> On Mon 2016-08-29 11:34:34, Ulf Hansson wrote:
+>> On 26 August 2016 at 15:58, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org> wrote:
+>> > Hi!
+>> >
+>> >> @@ -0,0 +1,102 @@
+>> >> +Device idle states
+>> >> +========================
+>> >> +
+>> >> +A device are often capable of entering a low power state(s) when it becomes
+>> >> +idle, hence the terminology of device idle states. Entering an idle state for a
+>> >> +device helps it to avoid wasting power and reduces the leakage of current.
+>> >
+>> > First things first: what do these states _really_ represent? We have
+>> > GPIOs in device tree, we have clock domains. What are these?
+>>
+>> On most ARM SoCs which I am familiar of and which isn't using ACPI,
+>> these kind of resources may can be considered as "power resources"
+>> connected to a generic device. Although it's of course highly
+>> dependent on the SoC. Other typical resources are clocks, pinctrls,
+>> regulators etc.
+>>
+>> To enter a low power state, these devices may not explicitly have to
+>> change some internal logic, but instead relies on external "power
+>> resources " to be put into low power mode.
+>>
+>> I guess one could compare this to what can be described in the ACPI's
+>> Device Power Management.
+>
+> If they are clocks, describe them as clocks, DT supports that. If they
+> are regulators, describe them as regulators.
+>
+> We don't want to have "we have these magic somethings here". We want
+> to know whether it is clock, regulator, or what.
 
-If they are clocks, describe them as clocks, DT supports that. If they
-are regulators, describe them as regulators. 
+This isn't something that will *replace* clocks etc. If those
+resources are needed, of course those needs to be described.
 
-We don't want to have "we have these magic somethings here". We want
-to know whether it is clock, regulator, or what.
+What is missing in DT, and what I suggest to add, is to be able to
+describe the actual idle states of a device and the HW characteristics
+related to that.
+In this RFC, I picked the most common properties that I could think
+of, which ought to be latencies for enter and wakeup from a low power
+state.
 
-> > Actually I don't think I like this. We should describe the hardware,
-> > not particular use case.
-> 
-> I am not describing use cases, but I am trying invent a generic
-> binding that describes a generic device's idle states. At least to me,
-> this is characteristics of the HW.
-> 
-> Rob requested a flexible future proof binding, but perhaps you think
-> this became too generic/flexible?
+And... we also have devices that have internal logics that must be
+changed to enter and wakeup from a low power state. For example WLAN
+circuits, PCI devices, etc. So this isn't all about clocks/regulators
+etc, but devices in general.
 
-I believe this is no longer describing hardware.
+[...]
 
-Best regards,
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Kind regards
+Uffe
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
