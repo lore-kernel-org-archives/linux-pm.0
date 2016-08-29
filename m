@@ -1,100 +1,60 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v16 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Mon, 29 Aug 2016 17:02:23 +0800
-Message-ID: <CAMz4ku+pkRT70NcZEDepfshH7z7+Fm3yo-C2+ccWgJwDJE4C-Q@mail.gmail.com>
-References: <cover.1470034830.git.baolin.wang@linaro.org> <CAMz4kuLotLs1ASuZaMRXf29khmQUfEQc+jFV8Fxp+fHFn90Z9g@mail.gmail.com>
+From: Marcin Niestroj <m.niestroj@grinn-global.com>
+Subject: Re: [PATCH v4 1/5] mfd: tps65217: Add support for IRQs
+Date: Mon, 29 Aug 2016 11:05:34 +0200
+Message-ID: <c339a5bb-7e0d-bda4-2d76-38808977d3f6@grinn-global.com>
+References: <20160620105056.25843-1-m.niestroj@grinn-global.com>
+ <20160620105056.25843-2-m.niestroj@grinn-global.com>
+ <576D0437.1020800@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMz4kuLotLs1ASuZaMRXf29khmQUfEQc+jFV8Fxp+fHFn90Z9g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Baolin Wang <baolin.wang@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <576D0437.1020800@ti.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Felipe,
+ping
 
-On 11 August 2016 at 11:14, Baolin Wang <baolin.wang@linaro.org> wrote:
-> Hi Felipe,
+On 24.06.2016 11:58, Grygorii Strashko wrote:
+> On 06/20/2016 01:50 PM, Marcin Niestroj wrote:
+>> Add support for handling IRQs: power button, AC and USB power state
+>> changes. Mask and interrupt bits are shared within one register, which
+>> prevents us to use regmap_irq implementation. New irq_domain is
+>> created in
+>> order to add interrupt handling for each tps65217's subsystem. IRQ
+>> resources have been added for charger subsystem to be able to notify
+>> about
+>> AC and USB state changes.
+>>
+>> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+>> Acked-by: Lee Jones <lee.jones@linaro.org>
+>> ---
+>> Changes v3 -> v4 (suggested by Grygorii):
+>>   * Add irq_set_parent() during irq init
+>>   * Remove hardcoded IRQ trigger type, rely on DT bindings instead
+>>
+>> Changes v2 -> v3 (suggested by Lee):
+>>   * Alphabetical reorder of includes
+>>   * Rename enum tps65217_irqs -> tps65217_irq_type, so we won't confuse
+>>     it with structure object with the same name.
+>>   * Fix inconsistent order of irq_enable and irq_disable
+>>   * Remove redundant 'else' when returning from tps65217_irq_thread
+>>
+>> Changes v1 -> v2: none
+>>
+>>   drivers/mfd/Kconfig          |   1 +
+>>   drivers/mfd/tps65217.c       | 195
+>> +++++++++++++++++++++++++++++++++++++++++--
+>>   include/linux/mfd/tps65217.h |  12 +++
+>>   3 files changed, 200 insertions(+), 8 deletions(-)
+>>
 >
-> On 1 August 2016 at 15:09, Baolin Wang <baolin.wang@linaro.org> wrote:
->> Currently the Linux kernel does not provide any standard integration of this
->> feature that integrates the USB subsystem with the system power regulation
->> provided by PMICs meaning that either vendors must add this in their kernels
->> or USB gadget devices based on Linux (such as mobile phones) may not behave
->> as they should. Thus provide a standard framework for doing this in kernel.
->>
->> Now introduce one user with wm831x_power to support and test the usb charger,
->> which is pending testing. Moreover there may be other potential users will use
->> it in future.
->
-> Could you please apply this patchset into your 'next' branch if you
-> have no comments about it? Thank you.
-
-Since there are no other comments about this patchset for a long time,
-could you please apply this patchset? Thanks.
-
->
->>
->> CHanges since v15:
->>  - Add charger state checking to avoid sending out duplicate notifies to users.
->>  - Add one work to notify power users the current has been changed.
->>
->> Changes since v14:
->>  - Add kernel documentation for struct usb_cahrger.
->>  - Remove some redundant WARN() functions.
->>
->> Changes since v13:
->>  - Remove the charger checking in usb_gadget_vbus_draw() function.
->>  - Rename some functions in charger.c file.
->>  - Rebase on git://git.kernel.org/pub/scm/linux/kernel/git/balbi/usb.git tags/usb-for-v4.8
->>
->> Changes since v12:
->>  - Remove the class and device things.
->>  - Link usb charger to udc-core.ko.
->>  - Create one "charger" subdirectory which holds all charger-related attributes.
->>
->> Changes since v11:
->>  - Reviewed and tested by Li Jun.
->>
->> Changes since v10:
->>  - Introduce usb_charger_get_state() function to check charger state.
->>  - Remove the mutex lock in usb_charger_set_cur_limit_by_type() function
->>  in case will be issued in atomic context.
->>
->> Baolin Wang (4):
->>   usb: gadget: Introduce the usb charger framework
->>   usb: gadget: Support for the usb charger framework
->>   usb: gadget: Integrate with the usb gadget supporting for usb charger
->>   power: wm831x_power: Support USB charger current limit management
->>
->>  drivers/power/wm831x_power.c     |   69 ++++
->>  drivers/usb/gadget/Kconfig       |    8 +
->>  drivers/usb/gadget/udc/Makefile  |    1 +
->>  drivers/usb/gadget/udc/charger.c |  780 ++++++++++++++++++++++++++++++++++++++
->>  drivers/usb/gadget/udc/core.c    |   17 +
->>  include/linux/mfd/wm831x/pdata.h |    3 +
->>  include/linux/usb/charger.h      |  186 +++++++++
->>  include/linux/usb/gadget.h       |    3 +
->>  include/uapi/linux/usb/charger.h |   31 ++
->>  9 files changed, 1098 insertions(+)
->>  create mode 100644 drivers/usb/gadget/udc/charger.c
->>  create mode 100644 include/linux/usb/charger.h
->>  create mode 100644 include/uapi/linux/usb/charger.h
->>
->> --
->> 1.7.9.5
->>
+> Reviewed-by: Grygorii Strashko <grygorii.strashko@ti.com>
 >
 >
 >
-> --
-> Baolin.wang
-> Best Regards
-
-
 
 -- 
-Baolin.wang
-Best Regards
+Marcin Niestroj
