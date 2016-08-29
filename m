@@ -1,72 +1,385 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][v8] PM / hibernate: Verify the consistent of e820 memory
- map by md5 value
-Date: Mon, 29 Aug 2016 17:13:34 +0200
-Message-ID: <20160829151334.GA21313@amd>
-References: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
- <20160829045942.GA6163@nazgul.tnic>
- <CAJZ5v0gBTjZjvS7iCKAQCvaYH-szObtExtV3B4ai4srow_kNMg@mail.gmail.com>
+From: Bin Gao <bin.gao@linux.intel.com>
+Subject: [PATCH v5] thermal: add Intel BXT WhiskeyCove PMIC thermal driver
+Date: Mon, 29 Aug 2016 09:55:04 -0700
+Message-ID: <20160829165504.GA60378@worksta>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41792 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751983AbcH2PNi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Aug 2016 11:13:38 -0400
+Received: from mga05.intel.com ([192.55.52.43]:63789 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751008AbcH2QuG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Aug 2016 12:50:06 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gBTjZjvS7iCKAQCvaYH-szObtExtV3B4ai4srow_kNMg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Borislav Petkov <bp@alien8.de>, Chen Yu <yu.c.chen@intel.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lee@nazgul.tnic, Chun-Yi <jlee@suse.com>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: ysiyer <yegnesh.s.iyer@intel.com>, Bin Gao <bin.gao@intel.com>, Julia Lawall <julia.lawall@lip6.fr>, Joe Perches <joe@perches.com>
 
-On Mon 2016-08-29 15:41:34, Rafael J. Wysocki wrote:
-> On Mon, Aug 29, 2016 at 6:59 AM, Borislav Petkov <bp@alien8.de> wrote:
-> > On Mon, Aug 29, 2016 at 12:35:40AM +0800, Chen Yu wrote:
-> >> On some platforms, there is occasional panic triggered when trying to
-> >> resume from hibernation, a typical panic looks like:
-> >>
-> >> "BUG: unable to handle kernel paging request at ffff880085894000
-> >> IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
-> >>
-> >> This is because e820 map has been changed by BIOS across
-> >> hibernation, and one of the page frames from first kernel
-> >> is right located in second kernel's unmapped region, so panic
-> >> comes out when accessing unmapped kernel address.
-> >>
-> >> In order to expose this issue earlier, the md5 hash of e820 map
-> >> is passed from suspend kernel to resume kernel, and the system will
-> >> trigger panic once it finds the md5 value of previous kernel is not
-> >> the same as current resume kernel.
-> >
-> > ... so basically now even the cases where it managed to resume would
-> > panic because the digests differ, even if the original panic condition
-> > doesn't trigger the bug, i.e. your Note 1 below.
-> >
-> > The more important question IMHO would be, can we resume our system
-> > successfully *even* if BIOS fiddled with the e820 map?
-> >
-> > We'd still warn the hell out of it and even make that the md5 digest
-> > comparison a default-enabled thing without even having a config option
-> > to disable it but can we try harder not to panic and deal with this next
-> > BIOS f*ckup more intelligently than throwing our hands in the air and
-> > giving up?
-> 
-> We need not panic in principle and I wouldn't do that.
-> 
-> I would warn and try to continue regardless (which was the original
-> plan here AFAICS), or we change a possible data loss into a guaranteed
-> one.
-> 
-> IMO it is sufficient to give up when a PFN we have image data for is
-> not pfn_valid() during resume, which we do already.
+This change adds support for Intel BXT Whiskey Cove PMIC thermal
+driver which is intended to handle the alert interrupts triggered
+upon thermal trip point cross and notify the thermal framework
+appropriately with the zone, temp, crossed trip and event details.
 
-Well... can you guarantee what will be effect of resuming with
-different memory map?
+Signed-off-by: Yegnesh S Iyer <yegnesh.s.iyer@intel.com>
+Signed-off-by: Bin Gao <bin.gao@intel.com>
+---
+Changes in v5:
+ - Applied patch Joe Perches <joe@perches.com> and reduced data
+   segment size
+ - Applied patch from Julia Lawall <julia.lawall@lip6.fr> and fixed
+   the platform_device_id to NULL entry terminated error
+Changes in v4:
+ - Fixed copyright year and changed GPL to GPL v2
+Changes in v3:
+ - Moved driver data from mfd domain to the driver
+ - Minor coding style related cleanup
+Changes in v2:
+ - Removed unnecessary request_threaded_irq() - we should be only
+   using devm_request_threaded_irq() with virq
+ drivers/thermal/Kconfig                  |  10 ++
+ drivers/thermal/Makefile                 |   1 +
+ drivers/thermal/intel_bxt_pmic_thermal.c | 299 +++++++++++++++++++++++++++++++
+ 3 files changed, 310 insertions(+)
+ create mode 100644 drivers/thermal/intel_bxt_pmic_thermal.c
 
-Because there's big difference between panic and trying to continue
-with corrupted memory.
-								Pavel
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 2d702ca..9bdd624 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -332,6 +332,16 @@ menu "ACPI INT340X thermal drivers"
+ source drivers/thermal/int340x_thermal/Kconfig
+ endmenu
+ 
++config INTEL_BXT_PMIC_THERMAL
++	tristate "Intel Broxton PMIC thermal driver"
++	depends on X86 && INTEL_SOC_PMIC && REGMAP
++	help
++	  Select this driver for Intel Broxton PMIC with ADC channels monitoring
++	  system temperature measurements and alerts.
++	  This driver is used for monitoring the ADC channels of PMIC and handles
++	  the alert trip point interrupts and notifies the thermal framework with
++	  the trip point and temperature details of the zone.
++
+ config INTEL_PCH_THERMAL
+ 	tristate "Intel PCH Thermal Reporting Driver"
+ 	depends on X86 && PCI
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 10b07c1..7aa7f4c 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -45,6 +45,7 @@ obj-$(CONFIG_INTEL_SOC_DTS_THERMAL)	+= intel_soc_dts_thermal.o
+ obj-$(CONFIG_INTEL_QUARK_DTS_THERMAL)	+= intel_quark_dts_thermal.o
+ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
+ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
++obj-$(CONFIG_INTEL_BXT_PMIC_THERMAL) += intel_bxt_pmic_thermal.o
+ obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
+ obj-$(CONFIG_ST_THERMAL)	+= st/
+ obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra/
+diff --git a/drivers/thermal/intel_bxt_pmic_thermal.c b/drivers/thermal/intel_bxt_pmic_thermal.c
+new file mode 100644
+index 0000000..4ae3e0c
+--- /dev/null
++++ b/drivers/thermal/intel_bxt_pmic_thermal.c
+@@ -0,0 +1,299 @@
++/*
++ * Intel Broxton PMIC thermal driver
++ *
++ * Copyright (C) 2016 Intel Corporation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version
++ * 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/slab.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/device.h>
++#include <linux/thermal.h>
++#include <linux/platform_device.h>
++#include <linux/sched.h>
++#include <linux/mfd/intel_soc_pmic.h>
++
++#define BXTWC_THRM0IRQ		0x4E04
++#define BXTWC_THRM1IRQ		0x4E05
++#define BXTWC_THRM2IRQ		0x4E06
++#define BXTWC_MTHRM0IRQ		0x4E12
++#define BXTWC_MTHRM1IRQ		0x4E13
++#define BXTWC_MTHRM2IRQ		0x4E14
++#define BXTWC_STHRM0IRQ		0x4F19
++#define BXTWC_STHRM1IRQ		0x4F1A
++#define BXTWC_STHRM2IRQ		0x4F1B
++
++struct trip_config_map {
++	u16 irq_reg;
++	u16 irq_en;
++	u16 evt_stat;
++	u8 irq_mask;
++	u8 irq_en_mask;
++	u8 evt_mask;
++	u8 trip_num;
++};
++
++struct thermal_irq_map {
++	char handle[20];
++	int num_trips;
++	const struct trip_config_map *trip_config;
++};
++
++struct pmic_thermal_data {
++	const struct thermal_irq_map *maps;
++	int num_maps;
++};
++
++static const struct trip_config_map bxtwc_str0_trip_config[] = {
++	{
++		.irq_reg = BXTWC_THRM0IRQ,
++		.irq_mask = 0x01,
++		.irq_en = BXTWC_MTHRM0IRQ,
++		.irq_en_mask = 0x01,
++		.evt_stat = BXTWC_STHRM0IRQ,
++		.evt_mask = 0x01,
++		.trip_num = 0
++	},
++	{
++		.irq_reg = BXTWC_THRM0IRQ,
++		.irq_mask = 0x10,
++		.irq_en = BXTWC_MTHRM0IRQ,
++		.irq_en_mask = 0x10,
++		.evt_stat = BXTWC_STHRM0IRQ,
++		.evt_mask = 0x10,
++		.trip_num = 1
++	}
++};
++
++static const struct trip_config_map bxtwc_str1_trip_config[] = {
++	{
++		.irq_reg = BXTWC_THRM0IRQ,
++		.irq_mask = 0x02,
++		.irq_en = BXTWC_MTHRM0IRQ,
++		.irq_en_mask = 0x02,
++		.evt_stat = BXTWC_STHRM0IRQ,
++		.evt_mask = 0x02,
++		.trip_num = 0
++	},
++	{
++		.irq_reg = BXTWC_THRM0IRQ,
++		.irq_mask = 0x20,
++		.irq_en = BXTWC_MTHRM0IRQ,
++		.irq_en_mask = 0x20,
++		.evt_stat = BXTWC_STHRM0IRQ,
++		.evt_mask = 0x20,
++		.trip_num = 1
++	},
++};
++
++static const struct trip_config_map bxtwc_str2_trip_config[] = {
++	{
++		.irq_reg = BXTWC_THRM0IRQ,
++		.irq_mask = 0x04,
++		.irq_en = BXTWC_MTHRM0IRQ,
++		.irq_en_mask = 0x04,
++		.evt_stat = BXTWC_STHRM0IRQ,
++		.evt_mask = 0x04,
++		.trip_num = 0
++	},
++	{
++		.irq_reg = BXTWC_THRM0IRQ,
++		.irq_mask = 0x40,
++		.irq_en = BXTWC_MTHRM0IRQ,
++		.irq_en_mask = 0x40,
++		.evt_stat = BXTWC_STHRM0IRQ,
++		.evt_mask = 0x40,
++		.trip_num = 1
++	},
++};
++
++static const struct trip_config_map bxtwc_str3_trip_config[] = {
++	{
++		.irq_reg = BXTWC_THRM2IRQ,
++		.irq_mask = 0x10,
++		.irq_en = BXTWC_MTHRM2IRQ,
++		.irq_en_mask = 0x10,
++		.evt_stat = BXTWC_STHRM2IRQ,
++		.evt_mask = 0x10,
++		.trip_num = 0
++	},
++};
++
++static const struct thermal_irq_map bxtwc_thermal_irq_map[] = {
++	{
++		.handle = "STR0",
++		.trip_config = bxtwc_str0_trip_config,
++		.num_trips = ARRAY_SIZE(bxtwc_str0_trip_config),
++	},
++	{
++		.handle = "STR1",
++		.trip_config = bxtwc_str1_trip_config,
++		.num_trips = ARRAY_SIZE(bxtwc_str1_trip_config),
++	},
++	{
++		.handle = "STR2",
++		.trip_config = bxtwc_str2_trip_config,
++		.num_trips = ARRAY_SIZE(bxtwc_str2_trip_config),
++	},
++	{
++		.handle = "STR3",
++		.trip_config = bxtwc_str3_trip_config,
++		.num_trips = ARRAY_SIZE(bxtwc_str3_trip_config),
++	},
++};
++
++static const struct pmic_thermal_data bxtwc_thermal_data = {
++	.maps = bxtwc_thermal_irq_map,
++	.num_maps = ARRAY_SIZE(bxtwc_thermal_irq_map),
++};
++
++static irqreturn_t pmic_thermal_irq_handler(int irq, void *data)
++{
++	struct platform_device *pdev = data;
++	struct thermal_zone_device *tzd;
++	struct pmic_thermal_data *td;
++	struct intel_soc_pmic *pmic;
++	struct regmap *regmap;
++	u8 reg_val, mask, irq_stat, trip;
++	u16 reg, evt_stat_reg;
++	int i, j, ret;
++
++	pmic = dev_get_drvdata(pdev->dev.parent);
++	regmap = pmic->regmap;
++	td = (struct pmic_thermal_data *)
++		platform_get_device_id(pdev)->driver_data;
++
++	/* Resolve thermal irqs */
++	for (i = 0; i < td->num_maps; i++) {
++		for (j = 0; j < td->maps[i].num_trips; j++) {
++			reg = td->maps[i].trip_config[j].irq_reg;
++			mask = td->maps[i].trip_config[j].irq_mask;
++			/*
++			 * Read the irq register to resolve whether the
++			 * interrupt was triggered for this sensor
++			 */
++			if (regmap_read(regmap, reg, &ret))
++				return IRQ_HANDLED;
++
++			reg_val = (u8)ret;
++			irq_stat = ((u8)ret & mask);
++
++			if (!irq_stat)
++				continue;
++
++			/*
++			 * Read the status register to find out what
++			 * event occurred i.e a high or a low
++			 */
++			evt_stat_reg = td->maps[i].trip_config[j].evt_stat;
++			if (regmap_read(regmap, evt_stat_reg, &ret))
++				return IRQ_HANDLED;
++
++			trip = td->maps[i].trip_config[j].trip_num;
++			tzd = thermal_zone_get_zone_by_name(td->maps[i].handle);
++			if (!IS_ERR(tzd))
++				thermal_zone_device_update(tzd);
++
++			/* Clear the appropriate irq */
++			regmap_write(regmap, reg, reg_val & mask);
++		}
++	}
++
++	return IRQ_HANDLED;
++}
++
++static int pmic_thermal_probe(struct platform_device *pdev)
++{
++	struct regmap_irq_chip_data *regmap_irq_chip;
++	struct pmic_thermal_data *thermal_data;
++	int ret, irq, virq, i, j, pmic_irq_count;
++	struct intel_soc_pmic *pmic;
++	struct regmap *regmap;
++	struct device *dev;
++	u16 reg;
++	u8 mask;
++
++	dev = &pdev->dev;
++	pmic = dev_get_drvdata(pdev->dev.parent);
++	if (!pmic) {
++		dev_err(dev, "Failed to get struct intel_soc_pmic pointer\n");
++		return -ENODEV;
++	}
++
++	thermal_data = (struct pmic_thermal_data *)
++				platform_get_device_id(pdev)->driver_data;
++	if (!thermal_data) {
++		dev_err(dev, "No thermal data initialized!!\n");
++		return -ENODEV;
++	}
++
++	regmap = pmic->regmap;
++	regmap_irq_chip = pmic->irq_chip_data_level2;
++
++	pmic_irq_count = 0;
++	while ((irq = platform_get_irq(pdev, pmic_irq_count)) != -ENXIO) {
++		virq = regmap_irq_get_virq(regmap_irq_chip, irq);
++		if (virq < 0) {
++			dev_err(dev, "failed to get virq by irq %d\n", irq);
++			return virq;
++		}
++
++		ret = devm_request_threaded_irq(&pdev->dev, virq,
++				NULL, pmic_thermal_irq_handler,
++				IRQF_ONESHOT, "pmic_thermal", pdev);
++
++		if (ret) {
++			dev_err(dev, "request irq(%d) failed: %d\n", virq, ret);
++			return ret;
++		}
++		pmic_irq_count++;
++	}
++
++	/* Enable thermal interrupts */
++	for (i = 0; i < thermal_data->num_maps; i++) {
++		for (j = 0; j < thermal_data->maps[i].num_trips; j++) {
++			reg = thermal_data->maps[i].trip_config[j].irq_en;
++			mask = thermal_data->maps[i].trip_config[j].irq_en_mask;
++			ret = regmap_update_bits(regmap, reg, mask, 0x00);
++			if (ret)
++				return ret;
++		}
++	}
++
++	return 0;
++}
++
++static const struct platform_device_id pmic_thermal_id_table[] = {
++	{
++		.name = "bxt_wcove_thermal",
++		.driver_data = (kernel_ulong_t)&bxtwc_thermal_data,
++	},
++	{},
++};
++
++static struct platform_driver pmic_thermal_driver = {
++	.probe = pmic_thermal_probe,
++	.driver = {
++		.name = "pmic_thermal",
++	},
++	.id_table = pmic_thermal_id_table,
++};
++
++MODULE_DEVICE_TABLE(platform, pmic_thermal_id_table);
++module_platform_driver(pmic_thermal_driver);
++
++MODULE_AUTHOR("Yegnesh S Iyer <yegnesh.s.iyer@intel.com>");
++MODULE_DESCRIPTION("Intel Broxton PMIC Thermal Driver");
++MODULE_LICENSE("GPL v2");
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.9.1
+
