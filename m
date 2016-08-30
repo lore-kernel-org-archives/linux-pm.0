@@ -1,119 +1,119 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v5] Force cppc_cpufreq to report values in KHz to fix user
- space reporting
-Date: Tue, 30 Aug 2016 11:09:13 -0600
-Message-ID: <4cc91494-fe77-0954-1b6c-c394130614f9@redhat.com>
-References: <1469049004-19069-1-git-send-email-ahs3@redhat.com>
- <20160801203156.GV4605@ubuntu>
- <872a4dd4-a752-507b-e720-ec2e6003bd8c@redhat.com>
- <406534f5-5e45-237e-cc68-2b57631e26d1@redhat.com>
- <CANYZqRv6pLCK+oaWxyzr3YPxs0VytupWD7oPfX4tA7STxWNGOg@mail.gmail.com>
- <6a0079da-2f81-a58b-0a71-3564d79ad61b@redhat.com>
- <1471926684.5747.13.camel@intel.com>
- <8012e614-885a-0445-44aa-63d92de5cd1f@redhat.com>
- <1472162436.13076.21.camel@intel.com>
-Reply-To: ahs3@redhat.com
+From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH 3/3] soc: ti: Add ti_sci_pm_domains driver
+Date: Tue, 30 Aug 2016 14:43:22 -0500
+Message-ID: <57C5E1DA.2040405@ti.com>
+References: <20160819235653.26355-1-nm@ti.com>
+ <20160819235653.26355-4-nm@ti.com>
+ <CAPDyKFooDUOPT9dP8HaW3YBO9PsX-1+96PPE7CRMyjEkra7cBQ@mail.gmail.com>
+ <57C0D2C9.1030801@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1472162436.13076.21.camel@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "ashwinch@google.com" <ashwinch@google.com>
-Cc: "pprakash@codeaurora.org" <pprakash@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <57C0D2C9.1030801-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Cc: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Peter Ujfalusi <peter.ujfalusi-l0cyMroinI0@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/25/2016 04:00 PM, Pandruvada, Srinivas wrote:
-> On Tue, 2016-08-23 at 10:14 -0600, Al Stone wrote:
->>>>
-> 
-> [...]
-> 
->>> In x86 when CPPC is used, the unit is really unit-less in CPPC
->>> tables.
->>> This means that cpu->perf_caps.highest_perf can be just 0xff,
->>> instead
->>> of some scaled cppc max performance corresponding to max MHZ the
->>> processor can support. This allows the processor to cap at max
->>> which it
->>> can deliver.
->>> Is this case not possible for ARM SoCs?
->>>
-> [...]
->> If I understand the question properly, I don't think it matters, and
->> I don't
->> think that will work for x86 either.
+Jon, Ulf,
+On 08/26/2016 06:37 PM, Dave Gerlach wrote:
+> Hi,
+> On 08/25/2016 02:27 AM, Ulf Hansson wrote:
+>> + Jon
 >>
->> This patch is meant to allow CPPC to continue operating solely based
->> on the
->> abstract scale provided by the ACPI tables; this should be true
->> regardless
->> of architecture.  Any actual processor performance changes are still
->> guided
->> solely by the CPPC scale provided in the tables, and not the values
->> in the
->> cpu->perf_caps struct.
+>> [...]
 >>
->> Assuming I understand the kernel code, the values in cpu->perf_caps
->> -- in this
->> case -- are really just for reporting to user space via sysfs, which
->> is the
->> root of the problem: user space expects frequencies, and we have none
->> when using
->> CPPC so we have to provide an approximation.  In those circumstances,
->> I think a
->> value of 0xff would be kind of confusing in sysfs, since it's
->> basically saying
->> the CPU is operating at a frequency equal to the largest integer
->> value.
+>>> +
+>>> +static int ti_sci_pm_domains_probe(struct platform_device *pdev)
+>>> +{
+>>> +       struct device *dev = &pdev->dev;
+>>> +       struct device_node *np = dev->of_node;
+>>> +       struct ti_sci_genpd_data *ti_sci_genpd;
+>>> +
+>>> +       ti_sci_genpd = devm_kzalloc(dev, sizeof(*ti_sci_genpd), GFP_KERNEL);
+>>> +       if (!ti_sci_genpd)
+>>> +               return -ENOMEM;
+>>> +
+>>> +       ti_sci_genpd->ti_sci = devm_ti_sci_get_handle(dev);
+>>> +       if (IS_ERR(ti_sci_genpd->ti_sci))
+>>> +               return PTR_ERR(ti_sci_genpd->ti_sci);
+>>> +
+>>> +       ti_sci_genpd->dev = dev;
+>>> +
+>>> +       INIT_LIST_HEAD(&ti_sci_genpd->pd_list);
+>>> +       mutex_init(&ti_sci_genpd->pd_list_mutex);
+>>> +
+>>> +       return __of_genpd_add_provider(np, of_ti_sci_genpd_xlate_onecell,
+>>> +                                      ti_sci_genpd);
 >>
->> To be fair, this is how the ARM processor implements CPPC; I have not
->> examined
->> in detail the newly submitted x86 patches to use CPPC so I cannot
->> comment on
->> those.  This patch was written well before those showed up.
-> Currently we are not using cppc-cpufreq driver, so not will not
-> directly impact (you are  not changing acpi-cpufreq source, which we
-> are using).
-> x86 has other way to get max/min cpufreq policy frequencies using MSRs.
-> So you may choose to ignore my comments here, as long as your changes
-> are limited to drivers/cpufreq/cppc_cpufreq.c
+>> Jon Hunter are working on adding robust method to be able to remove
+>> initialized genpds [1].
+>>
+>> In that series we intend to remove the __of_genpd_add_provider() API,
+>> and instead only have of_genpd_add_provider_onecell() and
+>> of_genpd_add_provider_simple(). Could you please convert to use any of
+>> these APIs instead?
+>
+> Thanks for pointing this out. I took at look at the series you've linked and the
+> short answer is that I see no good way to directly convert what we've done to
+> use those APIs.
+>
+> On this platform each device has it's power state controlled through the SCI
+> protocol described in the cover letter. The system makes a request for powering
+> on or off the device using a unique ID number for each device, as provided in
+> patches 1 and 2. These operations map to those of a genpd, so we decided to do a
+> 1:1 device to genpd mapping, where each device has it's own genpd.
+>
+> The split that we took from the provided simple and onecell xlate functions
+> arises from this mapping. The IDs are not necessarily linear and also they are
+> not necessarily defined in a fixed way for all SoCs, they are entirely data
+> driven based on the provided device ID. To make use of these IDs, I created a
+> new xlate function that takes a onecell value but instead dynamically allocates
+> a new genpd, at probe time, to give us a genpd that contains the necessary SoC
+> specific data for that device that probed and is mapped directly to the device.
+> This lets us only create the genpds we need without having to redefine a static
+> list of all possible genpds and duplicate the data.
+>
+> So my question back would be, how critical is it to be able to drop the ability
+> to provide custom xlate functions?
 
-Ah, okay.  Yes, the changes are intentionaly limited to cppc_cpufreq.c.
+After thinking about this a bit more, I believe I see a way we can use 
+the of_genpd_add_provider_onecell, although not optimally. The device 
+IDs, and therefore the genpd IDs (in the last email I mentioned we are 
+doing a 1:1 device to genpd mapping) are fixed and defined by the 
+hardware, and are not linear, there can be gaps and we won't necessarily 
+always start at 0 even though we do on this SoC. However, we could build 
+an array of genpds that map to our IDs similar to how several have done 
+it, like in drivers/soc/bcm/raspberrypi-power.c, but because our IDs can 
+have gaps, there will be unused struct generic_pm_domains that get 
+allocated and are never touched because the index of the element doesn't 
+correspond to a genpd ID.
 
-> When you are doing:
-> policy->min = cpu->perf_caps.lowest_perf * cppc_dmi_max_khz / cpu-
->> perf_caps.highest_perf;
-> 
-> Aren't you assuming that scale from max to min performance is only
-> related to frequency? It is possible that many points in between can be
-> same frequency with multiple voltages.
-> As per spec " The platform may choose to use a single metric such as
-> processor frequency, or it may choose to blend multiple hardware
-> metrics to create a synthetic measure of performance".
+Based on the ID set provided in patch 2 of this series I see 12 gaps, so 
+we'd be wasting space the size of 12 genpds. The ID mapping will change 
+on future SoCs, so this number could be larger. Do you think this is an 
+acceptable solution? It allows us to play nice with the new genpd 
+framework changes at the cost of wasting some space allocated to filler 
+genpds.
 
-There are a couple of assumptions: (1) that the CPPC scale is a linear
-scale, and that (2) there is a direct correlation to the frequency.  And
-this is why longer term, we have to separate performance reporting from
-the frequency -- any correlation between them is suspect on most modern
-processors.  We know a priori that these assumptions are only approximations,
-at best.
+Regards,
+Dave
 
-However, this is the only information we currently have, so we have to make
-a best guess...um, I mean, "apply heuristics".  I'm treating this as two
-problems, really: the first is the immediate term where we need to make sure
-user space tools don't report complete garbage, which this patch tries to
-address.  The second is the much larger problem of changing the way the kernel
-reports performance in general, and fixing the user space tools that rely on
-the info being reported; I'm still thinking through those patches (suggestions
-are always welcome).
+>
+> Regards,
+> Dave
+>
+>>
+>> Kind regards
+>> Uffe
+>>
+>> [1]
+>> http://www.spinics.net/lists/arm-kernel/msg524151.html
+>>
+>
 
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
