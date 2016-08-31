@@ -1,7 +1,8 @@
 From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH 2/3] thermal: hisilicon: fix for dependency
-Date: Wed, 31 Aug 2016 16:50:16 +0800
-Message-ID: <1472633417-9330-3-git-send-email-leo.yan@linaro.org>
+Subject: [PATCH 3/3] arm64: defconfig: enable two common modules for power
+ management
+Date: Wed, 31 Aug 2016 16:50:17 +0800
+Message-ID: <1472633417-9330-4-git-send-email-leo.yan@linaro.org>
 References: <1472633417-9330-1-git-send-email-leo.yan@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,34 +22,38 @@ To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>
 Cc: Guodong Xu <guodong.xu@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Leo Yan <leo.yan@linaro.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The thermal driver is standalone driver which is used to enable
-thermal sensors, so it can be used with any cooling device and
-should not bind with CPU cooling device driver.
+Enable two common modules for power management, one is to enable
+CPUFREQ_DT driver; this CPUFreq driver is used by many platforms by
+passing OPP table from device tree.
 
-This original patch is suggested by Amit Kucheria; so it's to
-polish the dependency in Kconfig, and remove the dependency with
-CPU_THERMAL.
+Also enables CPU_THERMAL for CPU cooling device driver; so after we
+enabled thermal framework and can bind thermal zone with CPU cooling
+device driver.
 
 Signed-off-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/Kconfig | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/arm64/configs/defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 2d702ca..91ebab3 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -177,8 +177,10 @@ config THERMAL_EMULATION
- 
- config HISI_THERMAL
- 	tristate "Hisilicon thermal driver"
--	depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
-+	depends on ARCH_HISI || COMPILE_TEST
- 	depends on HAS_IOMEM
-+	depends on OF
-+	default y
- 	help
- 	  Enable this to plug hisilicon's thermal sensor driver into the Linux
- 	  thermal framework. cpufreq is used as the cooling device to throttle
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index eadf485..9fd2681 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -82,6 +82,7 @@ CONFIG_COMPAT=y
+ CONFIG_CPU_IDLE=y
+ CONFIG_ARM_CPUIDLE=y
+ CONFIG_CPU_FREQ=y
++CONFIG_CPUFREQ_DT=y
+ CONFIG_ARM_BIG_LITTLE_CPUFREQ=y
+ CONFIG_ARM_SCPI_CPUFREQ=y
+ CONFIG_NET=y
+@@ -252,6 +253,7 @@ CONFIG_SENSORS_INA2XX=m
+ CONFIG_SENSORS_ARM_SCPI=y
+ CONFIG_THERMAL=y
+ CONFIG_THERMAL_EMULATION=y
++CONFIG_CPU_THERMAL=y
+ CONFIG_EXYNOS_THERMAL=y
+ CONFIG_WATCHDOG=y
+ CONFIG_RENESAS_WDT=y
 -- 
 1.9.1
