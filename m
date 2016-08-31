@@ -1,57 +1,46 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Drop unnecessary check from
- cpufreq_policy_alloc()
-Date: Wed, 31 Aug 2016 09:26:54 +0530
-Message-ID: <20160831035654.GD5539@vireshk-i7>
-References: <3010935.IpTCVVCXDt@vostro.rjw.lan>
+Subject: Re: Kernel warning in cpufreq_add_dev()
+Date: Wed, 31 Aug 2016 09:41:37 +0530
+Message-ID: <20160831041137.GE5539@vireshk-i7>
+References: <20160819110032.GM1041@n2100.armlinux.org.uk>
+ <2310664.2BksGViL4r@vostro.rjw.lan>
+ <20160824131316.GI25143@ubuntu>
+ <1496109.Jd9MGDryNS@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:35698 "EHLO
-        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756892AbcHaD47 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Aug 2016 23:56:59 -0400
-Received: by mail-pf0-f176.google.com with SMTP id x72so14689990pfd.2
-        for <linux-pm@vger.kernel.org>; Tue, 30 Aug 2016 20:56:58 -0700 (PDT)
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:33467 "EHLO
+        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750914AbcHaEMS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2016 00:12:18 -0400
+Received: by mail-pf0-f170.google.com with SMTP id y134so14836119pfg.0
+        for <linux-pm@vger.kernel.org>; Tue, 30 Aug 2016 21:11:41 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <3010935.IpTCVVCXDt@vostro.rjw.lan>
+In-Reply-To: <1496109.Jd9MGDryNS@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Russell King - ARM Linux <linux@armlinux.org.uk>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 31-08-16, 03:11, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 31-08-16, 03:26, Rafael J. Wysocki wrote:
+> On Wednesday, August 24, 2016 06:43:16 PM Viresh Kumar wrote:
+> > On 22-08-16, 19:32, Rafael J. Wysocki wrote:
+> > > But it will be called in that path during physical CPU hot-add, won't it?
+> > 
+> > What about something like this instead (completely untested) ?
 > 
-> Since cpufreq_policy_alloc() doesn't use its dev variable for
-> anything useful, drop that variable from there along with the
-> NULL check against it.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c |    4 ----
->  1 file changed, 4 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -1073,13 +1073,9 @@ static void handle_update(struct work_st
->  
->  static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
->  {
-> -	struct device *dev = get_cpu_device(cpu);
->  	struct cpufreq_policy *policy;
->  	int ret;
->  
-> -	if (WARN_ON(!dev))
-> -		return NULL;
-> -
->  	policy = kzalloc(sizeof(*policy), GFP_KERNEL);
->  	if (!policy)
->  		return NULL;
+> Inline, please?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I am not sure what that means. I pasted that inline in my previous mail only.
+
+> > @Russell: Can you please try this ??
+> 
+> I was thinking about something similar, but won't the WARN_ON()s in
+> cpufreq_add/remove_dev_symlink() still trigger, say if there's more
+> than one CPU in a policy and both happen to be online initially?
+
+real CPUs should already be online and their device structure should be
+available, isn't it ?
 
 -- 
 viresh
