@@ -1,90 +1,80 @@
-From: Alex Shi <alex.shi@linaro.org>
-Subject: Re: [PATCH 4/4] cpuidle/menu: add per cpu pm_qos_resume_latency
- consideration
-Date: Wed, 31 Aug 2016 18:46:10 +0800
-Message-ID: <57C6B572.80106@linaro.org>
-References: <1472114562-2736-1-git-send-email-alex.shi@linaro.org>
- <1472114562-2736-4-git-send-email-alex.shi@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH][v8] PM / hibernate: Verify the consistent of e820 memory
+ map by md5 value
+Date: Wed, 31 Aug 2016 13:03:30 +0200
+Message-ID: <20160831110330.GB12296@amd>
+References: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0gBTjZjvS7iCKAQCvaYH-szObtExtV3B4ai4srow_kNMg@mail.gmail.com>
+ <20160829151334.GA21313@amd>
+ <7552351.MYV7GZcH0A@vostro.rjw.lan>
+ <20160830195323.GA9937@amd>
+ <CAJZ5v0iFub00x72-eZJT1H9Sp28wZ-VG=unfp5iTtf0tnmjHaA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1472114562-2736-4-git-send-email-alex.shi@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: open list <linux-kernel@vger.kernel.org>
-Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arjan van de Ven <arjan@linux.intel.com>, Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60784 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752294AbcHaLDe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2016 07:03:34 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iFub00x72-eZJT1H9Sp28wZ-VG=unfp5iTtf0tnmjHaA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Borislav Petkov <bp@alien8.de>, Chen Yu <yu.c.chen@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lee@nazgul.tnic, Chun-Yi <jlee@suse.com>
 
-Hi,
+Hi!
 
-Is there any concern on this patch?
+> >> There may be problems going forward, but whether or not they actually happen
+> >> depends on what the differences are.  So while an e820 mismatch indicates that
+> >> things may go wrong, it doesn't necessarily mean that they will.
+> >
+> > Well "memory won't get corrupted right away" seems like good reason to
+> > panic the machine ASAP.
+> >
+> > You can flip some bits in memory, and it may not cause problems. Still
+> > if you know some bits in memory were flipped, you'd better panic the
+> > machine. Continuing is unsafe.
+> >
+> > If you could guarantee that machine will panic down the line, and not
+> > something worse, you'd be right.
+> >
+> > But at least the case where there is _less_ memory available after
+> > resume, kernel will write into BIOS reserved memory and bad things
+> > will happen. Yes, it usually panics, but it is quite clear it could
+> > corrupt memory, too.
+> 
+> That depends a good deal on what those ranges were reserved for.
+> There very well may not be anything vital in there.
 
-Regards
-Alex
+Umm. Yes, you can also flip some bits in memory, and not hit anything
+vital.
 
+> >> Also, that panic() may cause hibernation to stop working in a sort of hard and
+> >> nasty way where it used to work flawlessly previously and that would be a
+> >> regression, so not really acceptable.
+> >
+> > Well, turning memory corruption bug into panic is an improvement, not
+> > a regression.
+> 
+> Since we don't do anything about these problems today and presumably
+> people use hibernation on the affected systems, there are reasons to
+> think that the problem is not quite as grave as you're painting it.
+> 
+> But that aside, adding a panic() like in this patch isn't particularly
+> useful anyway, because it panics the restore kernel.  It is sufficient
+> to make arch_hibernation_header_restore() return an error to actually
+> fail the resume and cause the restore kernel to discard the image.
+> And that would preserve the information about the failure in the
+> kernel log at least.
 
-On 08/25/2016 04:42 PM, Alex Shi wrote:
-> Kernel or user may have special requirement on cpu response time, like
-> if a interrupt is pinned to a cpu, we don't want the cpu goes too deep
-> sleep. This patch can prevent this thing happen by consider per cpu
-> resume_latency setting in cpu sleep state selection in menu governor.
-> 
-> The pm_qos_resume_latency ask device to give reponse in this time. That's
-> similar with cpu cstates' entry_latency + exit_latency. But since
-> most of cpu cstate either has no entry_latency or add it into exit_latency
-> So, we just can restrict this time requirement as states exit_latency.
-> 
-> The 0 value of pm_qos_resume_latency is for no limitation according ABI
-> definition. So set the value 1 could get the 0 latency if it's needed.
-> 
-> Signed-off-by: Alex Shi <alex.shi@linaro.org>
-> To: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Alex Shi <alex.shi@linaro.org>
-> Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> Cc: Arjan van de Ven <arjan@linux.intel.com>
-> Cc: Rik van Riel <riel@redhat.com>
-> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpuidle/governors/menu.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-> index bb58e2a..e354880 100644
-> --- a/drivers/cpuidle/governors/menu.c
-> +++ b/drivers/cpuidle/governors/menu.c
-> @@ -12,6 +12,7 @@
->  
->  #include <linux/kernel.h>
->  #include <linux/cpuidle.h>
-> +#include <linux/cpu.h>
->  #include <linux/pm_qos.h>
->  #include <linux/time.h>
->  #include <linux/ktime.h>
-> @@ -281,17 +282,23 @@ again:
->  static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->  {
->  	struct menu_device *data = this_cpu_ptr(&menu_devices);
-> +	struct device *device = get_cpu_device(dev->cpu);
->  	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
->  	int i;
->  	unsigned int interactivity_req;
->  	unsigned int expected_interval;
->  	unsigned long nr_iowaiters, cpu_load;
-> +	int resume_latency = dev_pm_qos_read_value(device);
->  
->  	if (data->needs_update) {
->  		menu_update(drv, dev);
->  		data->needs_update = 0;
->  	}
->  
-> +	/* resume_latency is 0 means no restriction */
-> +	if (resume_latency && resume_latency < latency_req)
-> +		latency_req = resume_latency;
-> +
->  	/* Special case when user has set very strict latency requirement */
->  	if (unlikely(latency_req == 0))
->  		return 0;
-> 
+I don't think people are using hibernation today on affected systems
+they are getting random oopses/panics, that's how this thread started.
+
+Anyway, I agree that failing the resume is preferable to panic().
+
+Thanks and best regards,
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
