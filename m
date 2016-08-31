@@ -1,72 +1,51 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH][v8] PM / hibernate: Verify the consistent of e820 memory
- map by md5 value
-Date: Wed, 31 Aug 2016 13:54:04 +0200
-Message-ID: <CAJZ5v0gOg-UygD6VmCEX4PHSbPvxcZ4bb-oiVSWAp5SyfJdqeQ@mail.gmail.com>
-References: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
- <4324101.BrknapGkIi@vostro.rjw.lan> <20160831110731.GC12296@amd> <20160831114341.GA14890@amd>
+Subject: Re: Kernel warning in cpufreq_add_dev()
+Date: Wed, 31 Aug 2016 13:58:05 +0200
+Message-ID: <CAJZ5v0hyJrVgCR+ziZokug7hoMvj-Y9AEtZUB32_UAeMvrjZrQ@mail.gmail.com>
+References: <20160819110032.GM1041@n2100.armlinux.org.uk> <2310664.2BksGViL4r@vostro.rjw.lan>
+ <20160824131316.GI25143@ubuntu> <1496109.Jd9MGDryNS@vostro.rjw.lan> <20160831041137.GE5539@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:35786 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933573AbcHaLyG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2016 07:54:06 -0400
-In-Reply-To: <20160831114341.GA14890@amd>
+Received: from mail-it0-f49.google.com ([209.85.214.49]:36916 "EHLO
+        mail-it0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932341AbcHaL6G (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2016 07:58:06 -0400
+Received: by mail-it0-f49.google.com with SMTP id e124so2901225ith.0
+        for <linux-pm@vger.kernel.org>; Wed, 31 Aug 2016 04:58:06 -0700 (PDT)
+In-Reply-To: <20160831041137.GE5539@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Chen Yu <yu.c.chen@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lee@vger.kernel.org, Chun-Yi <jlee@suse.com>, Borislav Petkov <bp@alien8.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King - ARM Linux <linux@armlinux.org.uk>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Aug 31, 2016 at 1:43 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Wed 2016-08-31 13:07:31, Pavel Machek wrote:
->> On Wed 2016-08-31 02:27:53, Rafael J. Wysocki wrote:
->> > On Monday, August 29, 2016 12:35:40 AM Chen Yu wrote:
-
-[cut]
-
->> > >
->> > > +#define MD5_DIGEST_SIZE 16
->> > > +
->> > >  struct restore_data_record {
->> > >   unsigned long jump_address;
->> > >   unsigned long jump_address_phys;
->> > >   unsigned long cr3;
->> > >   unsigned long magic;
->> > > + u8 e820_digest[MD5_DIGEST_SIZE];
->> > >  };
->> > >
->> > >  #define RESTORE_MAGIC    0x123456789ABCDEF0UL
+On Wed, Aug 31, 2016 at 6:11 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 31-08-16, 03:26, Rafael J. Wysocki wrote:
+>> On Wednesday, August 24, 2016 06:43:16 PM Viresh Kumar wrote:
+>> > On 22-08-16, 19:32, Rafael J. Wysocki wrote:
+>> > > But it will be called in that path during physical CPU hot-add, won't it?
 >> >
->> > You're changing the image header format, so RESTORE_MAGIC needs to be updated
->> > too.
+>> > What about something like this instead (completely untested) ?
 >>
->> With !CONFIG_HIBERNATION_CHECK_E820, magic nothing changes in on-disk
->> format. (Unused space is now used).
->>
->> If there's hibernation kernel is CONFIG_HIBERNATION_CHECK_E820, and
->> restore kernel is !CONFIG_HIBERNATION_CHECK_E820, we won't check the
->> E820, and that should be acceptable.
->>
->> If there's hibernation kernel is !CONFIG_HIBERNATION_CHECK_E820, and
->> restore kernel is CONFIG_HIBERNATION_CHECK_E820, we'll fail the E820
->> check, and refuse to resume. That is also acceptable (and similar
->> result we'd get with RESTORE_MAGIC).. but the message will be
->> confusing.
->>
->> Ok, so I guess we should change the magic.
+>> Inline, please?
 >
-> Actually, no, simply changing the magic is not enough. I guess we
-> should change the magic, and either add "e820_digest_available" field,
-> or specify that e820_digest == {0,} means that no digest is
-> available. We should either ignore the digest in
-> CONFIG_HIBERNATION_CHECK_E820 case if it is not available, or fail
-> with different message.
+> I am not sure what that means. I pasted that inline in my previous mail only.
 
-Something like that.
+I wanted to say that I'd prefer patches to be sent in the message
+proper instead of as inline attachments.  It is easier to respond to
+them this way (to me at least).
 
-Kernels with the same RESTORE_MAGIC have to use the same header format
-and interpret all of the fields in it in the same way.
+>> > @Russell: Can you please try this ??
+>>
+>> I was thinking about something similar, but won't the WARN_ON()s in
+>> cpufreq_add/remove_dev_symlink() still trigger, say if there's more
+>> than one CPU in a policy and both happen to be online initially?
+>
+> real CPUs should already be online and their device structure should be
+> available, isn't it ?
+
+Not if the driver has already been registered when cpufreq_add_dev()
+runs AFAICS (which is the case in question).
 
 Thanks,
 Rafael
