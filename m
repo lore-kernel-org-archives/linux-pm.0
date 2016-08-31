@@ -1,32 +1,45 @@
-From: John williams <terezaintrovini@gmail.com>
-Subject: Dear Sir/Madam
-Date: Wed, 31 Aug 2016 07:14:46 -1200
-Message-ID: <CACw7J-UiT67Eg9KFnFuU5+B5Jm5BTzN78fvkNgKwQAOFHSjeTA__14636.7626767189$1472670902$gmane$org@mail.gmail.com>
-Reply-To: william-john92@hotmail.com
+From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Subject: Re: [PATCH v4 0/2] Add support for Smart Battery System Manager
+Date: Wed, 31 Aug 2016 21:54:16 +0200
+Message-ID: <1472673256.5102.13.camel@schneider-inet.de>
+References: <1bIiDr-0004G1-0P>
+         <1472156461-25180-1-git-send-email-karl-heinz@schneider-inet.de>
+         <20160831151044.xftg6k5f66n53jem@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f196.google.com ([209.85.161.196]:35765 "EHLO
-        mail-yw0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753019AbcHaTOs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2016 15:14:48 -0400
-Received: by mail-yw0-f196.google.com with SMTP id r9so2314742ywg.2
-        for <linux-pm@vger.kernel.org>; Wed, 31 Aug 2016 12:14:48 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20160831151044.xftg6k5f66n53jem@earth>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Sebastian,
+
+Am Mittwoch, den 31.08.2016, 17:10 +0200 schrieb Sebastian Reichel:
+> Hi,
+> 
+> On Thu, Aug 25, 2016 at 10:20:59PM +0200, Karl-Heinz Schneider wrote:
+> > 
+> > This patch series adds support for Smart Battery System Manager.
+> > A SBSM is a device listening at I2C/SMBus address 0x0a and is
+> > capable of
+> > communicating up to four I2C smart battery devices. All smart
+> > battery
+> > devices are listening at address 0x0b, so the SBSM muliplexes
+> > between
+> > them. The driver makes use of the I2C-Mux framework to allow smart
+> > batteries to be bound via device tree, i.e. the sbs-battery driver.
+> > 
+> > Via sysfs interface the online state and charge type are presented.
+> > If
+> > the driver is bound as ltc1760 (a Dual Smart Battery System
+> > Manager)
+> > the charge type can also be changed from trickle to fast.
+> Driver looks fine to me. Waiting for Rob's ACK on the DT bindings.
+> 
+> -- Sebastian
+Thanks
 -- 
-
-
-Dear Sir/Madam, we would like to see your company latest catalogs.
-Your early reply is highly appreciated.
-Thank You !
-Best Regards,
-Mr. John williams
-(Purchasing Manager)
-*****************************************************
-Trade Company limited.
-2755 lake pine path apt 122,
-St Joseph, Trade Square Centre MI United States
-Telephone: +1 (248) 854 5480
-E-mail: william-john92@hotmail.com
+Karl-Heinz
