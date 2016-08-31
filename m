@@ -1,7 +1,7 @@
 From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH 1/3] clk: Hi6220: enable stub clock driver for ARCH_HISI
-Date: Wed, 31 Aug 2016 16:50:15 +0800
-Message-ID: <1472633417-9330-2-git-send-email-leo.yan@linaro.org>
+Subject: [PATCH 2/3] thermal: hisilicon: fix for dependency
+Date: Wed, 31 Aug 2016 16:50:16 +0800
+Message-ID: <1472633417-9330-3-git-send-email-leo.yan@linaro.org>
 References: <1472633417-9330-1-git-send-email-leo.yan@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,28 +21,34 @@ To: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>
 Cc: Guodong Xu <guodong.xu@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Leo Yan <leo.yan@linaro.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-In current kernel config 'CONFIG_STUB_CLK_HI6220' is disabled by
-default, as result stub clock driver has not been registered and
-CPUFreq driver cannot work.
+The thermal driver is standalone driver which is used to enable
+thermal sensors, so it can be used with any cooling device and
+should not bind with CPU cooling device driver.
 
-This patch is to enable stub clock driver in config for ARCH_HISI.
+This original patch is suggested by Amit Kucheria; so it's to
+polish the dependency in Kconfig, and remove the dependency with
+CPU_THERMAL.
 
-Reported-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Signed-off-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/clk/hisilicon/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/thermal/Kconfig | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/clk/hisilicon/Kconfig b/drivers/clk/hisilicon/Kconfig
-index 3f537a0..9e0a95e 100644
---- a/drivers/clk/hisilicon/Kconfig
-+++ b/drivers/clk/hisilicon/Kconfig
-@@ -23,5 +23,6 @@ config RESET_HISI
- config STUB_CLK_HI6220
- 	bool "Hi6220 Stub Clock Driver"
- 	depends on COMMON_CLK_HI6220 && MAILBOX
-+	default ARCH_HISI
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 2d702ca..91ebab3 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -177,8 +177,10 @@ config THERMAL_EMULATION
+ 
+ config HISI_THERMAL
+ 	tristate "Hisilicon thermal driver"
+-	depends on (ARCH_HISI && CPU_THERMAL && OF) || COMPILE_TEST
++	depends on ARCH_HISI || COMPILE_TEST
+ 	depends on HAS_IOMEM
++	depends on OF
++	default y
  	help
- 	  Build the Hisilicon Hi6220 stub clock driver.
+ 	  Enable this to plug hisilicon's thermal sensor driver into the Linux
+ 	  thermal framework. cpufreq is used as the cooling device to throttle
 -- 
 1.9.1
