@@ -1,51 +1,61 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Kernel warning in cpufreq_add_dev()
-Date: Wed, 31 Aug 2016 13:58:05 +0200
-Message-ID: <CAJZ5v0hyJrVgCR+ziZokug7hoMvj-Y9AEtZUB32_UAeMvrjZrQ@mail.gmail.com>
-References: <20160819110032.GM1041@n2100.armlinux.org.uk> <2310664.2BksGViL4r@vostro.rjw.lan>
- <20160824131316.GI25143@ubuntu> <1496109.Jd9MGDryNS@vostro.rjw.lan> <20160831041137.GE5539@vireshk-i7>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v8 01/11] mfd: act8945a: Add .of_compatible for
+ act8945a-charger
+Date: Wed, 31 Aug 2016 13:28:49 +0100
+Message-ID: <20160831122849.GF9415@dell>
+References: <1472109599-21915-1-git-send-email-wenyou.yang@atmel.com>
+ <1472109599-21915-2-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f49.google.com ([209.85.214.49]:36916 "EHLO
-        mail-it0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932341AbcHaL6G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2016 07:58:06 -0400
-Received: by mail-it0-f49.google.com with SMTP id e124so2901225ith.0
-        for <linux-pm@vger.kernel.org>; Wed, 31 Aug 2016 04:58:06 -0700 (PDT)
-In-Reply-To: <20160831041137.GE5539@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1472109599-21915-2-git-send-email-wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King - ARM Linux <linux@armlinux.org.uk>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Aug 31, 2016 at 6:11 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 31-08-16, 03:26, Rafael J. Wysocki wrote:
->> On Wednesday, August 24, 2016 06:43:16 PM Viresh Kumar wrote:
->> > On 22-08-16, 19:32, Rafael J. Wysocki wrote:
->> > > But it will be called in that path during physical CPU hot-add, won't it?
->> >
->> > What about something like this instead (completely untested) ?
->>
->> Inline, please?
->
-> I am not sure what that means. I pasted that inline in my previous mail only.
+On Thu, 25 Aug 2016, Wenyou Yang wrote:
 
-I wanted to say that I'd prefer patches to be sent in the message
-proper instead of as inline attachments.  It is easier to respond to
-them this way (to me at least).
+> To regard the act8945a-charger as a sub-device, add .of_compatible for
+> act8945a-charger cell.
+> 
+> Signed-off-by: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+> ---
+> 
+> Changes in v8: None
+> Changes in v7: None
+> Changes in v6: None
+> Changes in v5: None
+> Changes in v4: None
+> Changes in v3: None
+> Changes in v2: None
+> 
+>  drivers/mfd/act8945a.c | 1 +
+>  1 file changed, 1 insertion(+)
 
->> > @Russell: Can you please try this ??
->>
->> I was thinking about something similar, but won't the WARN_ON()s in
->> cpufreq_add/remove_dev_symlink() still trigger, say if there's more
->> than one CPU in a policy and both happen to be online initially?
->
-> real CPUs should already be online and their device structure should be
-> available, isn't it ?
+Applied, thanks.
 
-Not if the driver has already been registered when cpufreq_add_dev()
-runs AFAICS (which is the case in question).
+> diff --git a/drivers/mfd/act8945a.c b/drivers/mfd/act8945a.c
+> index 10c6d2d..a4024d9 100644
+> --- a/drivers/mfd/act8945a.c
+> +++ b/drivers/mfd/act8945a.c
+> @@ -23,6 +23,7 @@ static const struct mfd_cell act8945a_devs[] = {
+>  	},
+>  	{
+>  		.name = "act8945a-charger",
+> +		.of_compatible = "active-semi,act8945a-charger",
+>  	},
+>  };
+>  
 
-Thanks,
-Rafael
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
