@@ -1,74 +1,63 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH 1/4] PCI: Afford direct-complete to devices with nonstandard
- PM
+Subject: [PATCH 0/4] PCI PM refinements
 Date: Wed, 31 Aug 2016 08:15:18 +0200
-Message-ID: <885bb1c3a5cebbc2c22e1f77426d54cde2a4867c.1472554278.git.lukas@wunner.de>
-References: <cover.1472554278.git.lukas@wunner.de>
+Message-ID: <cover.1472554278.git.lukas@wunner.de>
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <cover.1472554278.git.lukas@wunner.de>
 Sender: linux-acpi-owner@vger.kernel.org
 To: linux-pci@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-There are devices not power-manageable by the platform, but still able
-to runtime suspend to D3cold with a nonstandard mechanism.  One example
-is laptop hybrid graphics where the discrete GPU and its built-in HDA
-controller are power-managed either with a _DSM (AMD PowerXpress, Nvidia
-Optimus) or a separate gmux controller (MacBook Pro).  Another example
-is Thunderbolt on Macs which is power-managed with custom ACPI methods.
+The following patches are part of my Thunderbolt Runtime PM series.
+I'm posting them separately to split the series into digestible chunks.
 
-When putting the system to sleep, we currently handle such devices
-improperly by transitioning them from D3cold to D3hot (the default power
-state defined at the top of pci_target_state()).  This wastes energy and
-prolongs the suspend sequence (powering up the Thunderbolt controller
-takes 2 seconds).
+They benefit everyone, not just Thunderbolt, and Thunderbolt works fine
+without them (just not with the same degree of perfection).
 
-Avoid that by assuming that a nonstandard PM mechanism is at work if the
-device is not platform-power-manageable but currently in D3cold.
+Patch [1/4] affords direct-complete to devices which are not platform-
+power-manageable, yet can be suspended to D3cold with a nonstandard
+mechanism. It does so using a heuristic: If a device's current_state
+is D3cold and it is not power-manageable, it is assumed that a
+nonstandard PM mechanism is at work and the device is left asleep.
+The patch is the outcome of a discussion with Rafael and Alan on
+linux-pci@ and I would like to thank both for tirelessly responding
+to my questions.
 
-If the device is wakeup enabled, we might still have to wake it up from
-D3cold if PME cannot be signaled from that power state.
+Patch [3/4] replaces the unconditional resume after direct-complete with
+a conditional resume by determining if the platform firmware has put the
+device in reset-power-on or not.
 
-The check for devices without PM capability comes before the check for
-D3cold since such devices could in theory also be powered down by
-nonstandard means and should then be afforded direct-complete as well.
+Because the D3cold state cannot be determined from the PMCSR, patch [2/4]
+adds a hook to query the platform firmware for its opinion on the device's
+power state.
 
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
- drivers/pci/pci.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+Finally, patch [4/4] changes the shutdown handling of PCI devices such
+that they are no longer woken without reason.
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index aab9d51..72a9d3a 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1959,9 +1959,22 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
- 		default:
- 			target_state = state;
- 		}
--	} else if (!dev->pm_cap) {
-+
-+		return target_state;
-+	}
-+
-+	if (!dev->pm_cap)
- 		target_state = PCI_D0;
--	} else if (device_may_wakeup(&dev->dev)) {
-+
-+	/*
-+	 * If the device is in D3cold even though it's not power-manageable by
-+	 * the platform, it may have been powered down by nonstandard means.
-+	 * Best to let it slumber.
-+	 */
-+	if (dev->current_state == PCI_D3cold)
-+		target_state = PCI_D3cold;
-+
-+	if (device_may_wakeup(&dev->dev)) {
- 		/*
- 		 * Find the deepest state from which the device can generate
- 		 * wake-up events, make it the target state and enable device
+The result of these patches should be a speedup and decreased power
+consumption for system sleep and system shutdown (both for devices that
+are platform-power-manageable and those that aren't).
+
+If you prefer point & click interfaces, the patches are browsable here:
+https://github.com/l1k/linux/commits/thunderbolt_runpm_v3
+
+Thanks,
+
+Lukas
+
+
+Lukas Wunner (4):
+  PCI: Afford direct-complete to devices with nonstandard pm
+  PCI: Query platform firmware for device power state
+  PCI: Avoid unnecessary resume after direct-complete
+  PCI: Avoid unnecessary resume on shutdown
+
+ drivers/pci/pci-acpi.c   | 23 +++++++++++++++++++++++
+ drivers/pci/pci-driver.c | 20 ++++++++++++++++++--
+ drivers/pci/pci.c        | 38 +++++++++++++++++++++++++++++++-------
+ drivers/pci/pci.h        |  3 +++
+ 4 files changed, 75 insertions(+), 9 deletions(-)
+
 -- 
 2.8.1
 
