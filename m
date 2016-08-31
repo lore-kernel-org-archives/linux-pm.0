@@ -1,164 +1,124 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][v8] PM / hibernate: Verify the consistent of e820 memory
- map by md5 value
-Date: Wed, 31 Aug 2016 13:07:31 +0200
-Message-ID: <20160831110731.GC12296@amd>
-References: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
- <4324101.BrknapGkIi@vostro.rjw.lan>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 4/5] mfd: tps65217: Add power button as subdevice
+Date: Wed, 31 Aug 2016 12:17:24 +0100
+Message-ID: <20160831111724.GH27357@dell>
+References: <20160620105056.25843-1-m.niestroj@grinn-global.com>
+ <20160620105056.25843-5-m.niestroj@grinn-global.com>
+ <c849849f-ba1d-3263-9941-b346ef9eef59@grinn-global.com>
+ <20160830090329.GD1661@dell>
+ <9fafa9b0-cc45-6fe9-ddb9-5c933064261c@grinn-global.com>
+ <20160830095034.GI1661@dell>
+ <fe1fd5ea-5fce-61d0-d607-e4d527b51d4c@grinn-global.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60900 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1759402AbcHaLHe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2016 07:07:34 -0400
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-input-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <4324101.BrknapGkIi@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <fe1fd5ea-5fce-61d0-d607-e4d527b51d4c@grinn-global.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Marcin Niestroj <m.niestroj@grinn-global.com>
+Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Chen Yu <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Lee@vger.kernel.org, Chun-Yi <jlee@suse.com>, Borislav Petkov <bp@alien8.de>
 
-On Wed 2016-08-31 02:27:53, Rafael J. Wysocki wrote:
-> On Monday, August 29, 2016 12:35:40 AM Chen Yu wrote:
-> > On some platforms, there is occasional panic triggered when trying to
-> > resume from hibernation, a typical panic looks like:
+On Wed, 31 Aug 2016, Marcin Niestroj wrote:
+
+> On 30.08.2016 11:50, Lee Jones wrote:
+> > On Tue, 30 Aug 2016, Marcin Niestroj wrote:
 > > 
-> > "BUG: unable to handle kernel paging request at ffff880085894000
-> > IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
+> > > On 30.08.2016 11:03, Lee Jones wrote:
+> > > > On Mon, 29 Aug 2016, Marcin Niestroj wrote:
+> > > > 
+> > > > > ping
+> > > > 
+> > > > Don't do that!
+> > > > 
+> > > > If you think the patch hasn't attracted attention in >2 weeks, then
+> > > > it's probably slipped through the gaps and you need to send a
+> > > > [RESEND].
+> > > 
+> > > Clear.
+> > > 
+> > > > 
+> > > > However ...
+> > > > 
+> > > > > On 20.06.2016 12:50, Marcin Niestroj wrote:
+> > > > > > Add tps65217 power buttor subdevice with assigned IRQ resources.
+> > > > > > 
+> > > > > > Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+> > > > > > Acked-by: Lee Jones <lee.jones@linaro.org>
+> > > > 
+> > > > This patch has a maintainer Ack, so why are you pinging?
+> > > 
+> > > Because I didn't see it applied anywhere and there were no new
+> > > comments, so I thought it slipped somewhere.
+> > > 
+> > > So my question is: what happens with the patch after maintainer Ack?
+> > > Are we still waiting for some comments from the community? Do I still
+> > > need to worry, that the patch might slipped? What is author's role now?
 > > 
-> > This is because e820 map has been changed by BIOS across
-> > hibernation, and one of the page frames from first kernel
-> > is right located in second kernel's unmapped region, so panic
-> > comes out when accessing unmapped kernel address.
+> > Since you sent the patches as a set, it is assumed there are some
+> > dependencies between them, or they are at least in some way related.
+> > To that end, it is normal for Maintainers (especially for me as the
+> > MFD Maintainer, since there often some complex ties into the leaf
+> > driver's changes) to wait until *all* of the patches have either been
+> > accepted or have acquired an Ack of their own to proceed.
 > > 
-> > In order to expose this issue earlier, the md5 hash of e820 map
-> > is passed from suspend kernel to resume kernel, and the system will
-> > trigger panic once it finds the md5 value of previous kernel is not
-> > the same as current resume kernel.
-> > 
-> > Note:
-> > 1. Without this patch applied, it is possible that BIOS has
-> >    provided an inconsistent memory map, but the resume kernel is still
-> >    able to restore the image anyway(e.g.,  E820_RAM region is the subset
-> >    of the previous one), although the system might be unstable. So this
-> >    patch tries to treat any inconsistent e820 as illegal.
-> > 
-> > 2. Another case is, this patch replies on comparing the e820_saved, but
-> >    currently the e820_save might not be strictly the same across
-> >    hibernation, even if BIOS has provided consistent e820 map - In
-> >    theory mptable might modify the BIOS-provided e820_saved dynamically
-> >    in early_reserve_e820_mpc_new, which would allocate a buffer from
-> >    E820_RAM, and marks it from E820_RAM to E820_RESERVED). 
-> >    This is a potential and rare case we need to deal with in OS in
-> >    the future.
-> > 
-> > Suggested-by: Pavel Machek <pavel@ucw.cz>
-> > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: Lee, Chun-Yi <jlee@suse.com>
-> > Cc: Borislav Petkov <bp@alien8.de>
-> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> > ---
-> > v8:
-> >  - Panic the system once the e820 is found to be inconsistent
-> >    during resume.
-> >    Fix the md5 hash len from 128 bytes to 16 bytes.
-> > v7:
-> >  - Use md5 hash to compare the e820 map.
-> > v6:
-> >  - Fix some compiling errors reported by 0day/LKP, adjust
-> >    Kconfig/variable namings.
-> > v5:
-> >  - Rewrite this patch to just warn user of the broken BIOS
-> >    when panic.
-> > v4:
-> >  - Add __attribute__ ((unused)) for swsusp_page_is_valid,
-> >    to eliminate the warnning of:
-> >    'swsusp_page_is_valid' defined but not used
-> >    on non-x86 platforms.
-> > 
-> > v3:
-> >  - Adjust the logic to exclude the end_pfn boundary in pfn_mapped
-> >    when invoking mark_valid_pages, because the end_pfn is not
-> >    a mapped page frame, we should not regard it as a valid page.
-> > 
-> >    Move the sanity check of valid pages to a early stage in resuming
-> >    process(moved to mark_unsafe_pages), in this way, we can avoid
-> >    unnecessarily accessing these invalid pages in later stage(yes,
-> >    move to the original position Joey once introduced in:
-> >    Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820
-> >    reserved regions")
-> > 
-> >    With v3 patch applied, I did 30 cycles on my problematic platform,
-> >    no panic triggered anymore(50% reproducible before patched, by
-> >    plugging/unplugging memory peripheral during hibernation), and it
-> >    just warns of invalid pages.
-> > 
-> > v2:
-> >  - According to Ingo's suggestion, rewrite this patch.
-> > 
-> >    New version just checks each page frame according to pfn_mapped array.
-> >    So that we do not need to touch existing code related to
-> >    E820_RESERVED_KERN. And this method can naturely guarantee
-> >    that the system before/after hibernation do not need to be of
-> >    the same memory size on x86_64.
-> > 
-> > ---
-> >  arch/x86/power/hibernate_64.c | 98 +++++++++++++++++++++++++++++++++++++++++++
-> >  kernel/power/Kconfig          |  9 ++++
-> >  2 files changed, 107 insertions(+)
-> > 
-> > diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-> > index 9634557..7eb27afd 100644
-> > --- a/arch/x86/power/hibernate_64.c
-> > +++ b/arch/x86/power/hibernate_64.c
-> > @@ -11,6 +11,10 @@
-> >  #include <linux/gfp.h>
-> >  #include <linux/smp.h>
-> >  #include <linux/suspend.h>
-> > +#include <linux/scatterlist.h>
-> > +#include <linux/kdebug.h>
-> > +
-> > +#include <crypto/hash.h>
-> >  
-> >  #include <asm/init.h>
-> >  #include <asm/proto.h>
-> > @@ -177,15 +181,100 @@ int pfn_is_nosave(unsigned long pfn)
-> >  	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
-> >  }
-> >  
-> > +#define MD5_DIGEST_SIZE 16
-> > +
-> >  struct restore_data_record {
-> >  	unsigned long jump_address;
-> >  	unsigned long jump_address_phys;
-> >  	unsigned long cr3;
-> >  	unsigned long magic;
-> > +	u8 e820_digest[MD5_DIGEST_SIZE];
-> >  };
-> >  
-> >  #define RESTORE_MAGIC	0x123456789ABCDEF0UL
+> > I believe we are still waiting on other patches to be reviewed, no?
 > 
-> You're changing the image header format, so RESTORE_MAGIC needs to be updated
-> too.
+> I've just noticed, that patch 5 was only partially Acked.
+> 
+> I will send a RESEND. However patch 2 is already in mainline. Should I
+> contain this patch or remove it from the patch set? Additionally
+> patch 3 has been queued into power-supply's -next branch.
 
-With !CONFIG_HIBERNATION_CHECK_E820, magic nothing changes in on-disk
-format. (Unused space is now used).
+You should rebase the set and drop any patches which have already been
+applied.
 
-If there's hibernation kernel is CONFIG_HIBERNATION_CHECK_E820, and
-restore kernel is !CONFIG_HIBERNATION_CHECK_E820, we won't check the
-E820, and that should be acceptable.
+> > > > > > ---
+> > > > > > Depends on patch 1 in series
+> > > > > > 
+> > > > > > Changes v1 -> v4: none
+> > > > > > 
+> > > > > >  drivers/mfd/tps65217.c | 10 ++++++++++
+> > > > > >  1 file changed, 10 insertions(+)
+> > > > > > 
+> > > > > > diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
+> > > > > > index 41b5d59..57c8741 100644
+> > > > > > --- a/drivers/mfd/tps65217.c
+> > > > > > +++ b/drivers/mfd/tps65217.c
+> > > > > > @@ -38,6 +38,10 @@ static struct resource charger_resources[] = {
+> > > > > >  	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
+> > > > > >  };
+> > > > > > 
+> > > > > > +static struct resource pb_resources[] = {
+> > > > > > +	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
+> > > > > > +};
+> > > > > > +
+> > > > > >  struct tps65217_irq {
+> > > > > >  	int mask;
+> > > > > >  	int interrupt;
+> > > > > > @@ -122,6 +126,12 @@ static struct mfd_cell tps65217s[] = {
+> > > > > >  		.resources = charger_resources,
+> > > > > >  		.of_compatible = "ti,tps65217-charger",
+> > > > > >  	},
+> > > > > > +	{
+> > > > > > +		.name = "tps65217-pwrbutton",
+> > > > > > +		.num_resources = ARRAY_SIZE(pb_resources),
+> > > > > > +		.resources = pb_resources,
+> > > > > > +		.of_compatible = "ti,tps65217-pwrbutton",
+> > > > > > +	},
+> > > > > >  };
+> > > > > > 
+> > > > > >  static irqreturn_t tps65217_irq_thread(int irq, void *data)
+> > > > > > 
+> > > > > 
+> > > > 
+> > > 
+> > 
+> 
 
-If there's hibernation kernel is !CONFIG_HIBERNATION_CHECK_E820, and
-restore kernel is CONFIG_HIBERNATION_CHECK_E820, we'll fail the E820
-check, and refuse to resume. That is also acceptable (and similar
-result we'd get with RESTORE_MAGIC).. but the message will be
-confusing.
-
-Ok, so I guess we should change the magic.
-
-Best regards,
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
