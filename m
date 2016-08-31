@@ -1,103 +1,73 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v8 07/11] power: act8945a_charger: Add capacity level
+Subject: Re: [PATCH v8 08/11] power: act8945a_charger: Add max current
  property
-Date: Wed, 31 Aug 2016 16:56:23 +0200
-Message-ID: <20160831145622.a5pmhddb5fqpzy5z@earth>
+Date: Wed, 31 Aug 2016 16:58:02 +0200
+Message-ID: <20160831145802.hmbnddaaif6y522t@earth>
 References: <1472109599-21915-1-git-send-email-wenyou.yang@atmel.com>
- <1472109599-21915-8-git-send-email-wenyou.yang@atmel.com>
+ <1472109599-21915-9-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="sr2c5r4qnkz35osj"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:50602 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934021AbcHaO46 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 31 Aug 2016 10:56:58 -0400
+        protocol="application/pgp-signature"; boundary="y3aswb4shmajpbku"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1472109599-21915-8-git-send-email-wenyou.yang@atmel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1472109599-21915-9-git-send-email-wenyou.yang@atmel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Wenyou Yang <wenyou.yang@atmel.com>
 Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Brown <broonie@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---sr2c5r4qnkz35osj
+--y3aswb4shmajpbku
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Aug 25, 2016 at 03:19:55PM +0800, Wenyou Yang wrote:
-> Add the power supply capacity level property, it corresponds to
-> POWER_SUPPLY_CAPACITY_LEVEL_*.
->=20
-> It also utilizes the precision voltage detector function module
-> to catch the low battery voltage.
+On Thu, Aug 25, 2016 at 03:19:56PM +0800, Wenyou Yang wrote:
+> Add the power supply's current max property,
+> POWER_SUPPLY_PROP_CURRENT_MAX.
 
 [...]
-
-> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-> index 76806a0..a983de2 100644
-> --- a/drivers/power/supply/Kconfig
-> +++ b/drivers/power/supply/Kconfig
-> @@ -77,7 +77,7 @@ config BATTERY_88PM860X
-> =20
->  config BATTERY_ACT8945A
->  	tristate "Active-semi ACT8945A charger driver"
-> -	depends on MFD_ACT8945A || COMPILE_TEST
-> +	depends on MFD_ACT8945A || GPIOLIB || COMPILE_TEST
-
-This looks wrong. You probably wanted (MFD_ACT8945A && GPIOLIB).
-But since the gpio consumer headers defines stubs for the !GPIOLIB
-case just drop the dependency.
-
->  	help
->  	  Say Y here to enable support for power supply provided by
->  	  Active-semi ActivePath ACT8945A charger.
-
-[...]
-
-> +	charger->lbo_gpio =3D devm_gpiod_get(dev, "active-semi,lbo", GPIOD_IN);
-> +	if (PTR_ERR(charger->lbo_gpio) =3D=3D -EPROBE_DEFER) {
-> +		dev_info(dev, "probe retry requested for gpio \"lbo\"\n");
+ =20
+> -	chglev_pin =3D of_get_named_gpio_flags(np,
+> -				"active-semi,chglev-gpios", 0, &flags);
+> -
+> -	if (gpio_is_valid(chglev_pin)) {
+> -		gpio_set_value(chglev_pin,
+> -			       ((flags =3D=3D OF_GPIO_ACTIVE_LOW) ? 0 : 1));
+> +	charger->chglev_gpio =3D devm_gpiod_get(dev,
+> +					      "active-semi,chglev", GPIOD_IN);
+> +	if (PTR_ERR(charger->chglev_gpio) =3D=3D -EPROBE_DEFER) {
+> +		dev_info(dev, "probe retry requested for gpio \"chglev\"\n");
 > +		return -EPROBE_DEFER;
-> +	} else if (IS_ERR(charger->lbo_gpio)) {
-> +		dev_err(dev, "unable to claim gpio \"lbo\"\n");
-> +		charger->lbo_gpio =3D NULL;
-> +	}
+> +	} else if (IS_ERR(charger->chglev_gpio)) {
+> +		dev_err(dev, "unable to claim gpio \"chglev\"\n");
+> +		charger->chglev_gpio =3D NULL;
 
-Please use devm_gpiod_get_optional():
-
-charger->lbo_gpio =3D devm_gpiod_get_optional(dev, "active-semi,lbo", GPIOD=
-_IN);
-if (IS_ERR(charger->lbo_gpio)) {
-    err =3D PTR_ERR(charger->lbo_gpio)
-    dev_err(dev, "unable to claim gpio \"lbo\": %ld\n", err);
-    return err;
-}
+Please also use devm_gpiod_get_optional() here (see previous patch).
 
 -- Sebastian
 
---sr2c5r4qnkz35osj
+--y3aswb4shmajpbku
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJXxvAWAAoJENju1/PIO/qabzsP/RyOlhVt5NvTTPjYLIjj1KNr
-OMqi2ya5id9Nr5EUU8w57BAncW7q+qbB0gDjRR9JjbhfU2ZFJporD87DpOKYFPbZ
-0UWS8kvN6Yj5COW+pvd1dm1jsrncAMMNJwaRajV2MdZDq6gNVs9I6VjQdXOqb9lX
-3pYgeEeBYYp23DY0adx94LtdCCEaLn+pqqJ5/t08M/EmATUR1bGy1rlQJexj85xV
-x2U0mTBAq60OEtxkJOMXazwaw4WqIHK6D9kWY+gtCaNSBy6p3AvKSh7MtG8hjtqE
-U3bt+OenJLSMfYSVtY4RPMhlZaWy4hEoqoKP6nWhvOraM2b6vwUNuNTb8n62Us2q
-5FVdBQx9s6WOeTT/2H5fUDNUsdQPy0mNEm8fYxLo6Ba4ofFjeB9TYqkIAKIAzPuV
-OxtZywtEDPIz+HUzOitpOx5K8BCQyhqnTRMdhFLdiCQTd8cxxGhWm6+b/AeOZ6T8
-P1FqgXLqQd5Onv7Dk9LGu8kGQ8L/z7GrFhjZ+3MCV1oBx6JUNS1xMdC4F1AlsIxg
-HS1xj9Ki5AR/IGpjsICAsFpzL5Wm81s45G5hdhpAvcd4xzoD+ZyJIuvQhivhoLTv
-hAVJvU5zj4+D2NCMTGHmEUF6ecBFeIIZKvtmj6BocnoPJWxZ0aQDqg9u01il6aAs
-jKYeaUVE2ppMOSOFkFL3
-=w4ku
+iQIcBAEBCgAGBQJXxvB6AAoJENju1/PIO/qaAEYQAIeKE6G8O7vUTIlrmcYtoW5k
+VQs0ALkuS8Gl/Kyj/57ByTA5OiDIC3HeqKNIY+o2IGdx47H+yO9cZnlGQNdp1sd4
+djk3bliSyN5ftllTorkQs9IOrtO4mPnoxcDfqV50IkapnTrGl5n0WYvLXygMhknC
+H5JufHcwYE4JjDgI3gIstuB4bdaYJz6jQNB8hfsb5HEH0kfDJ7Mp4p2n4OGH6YHM
+syFpvzaruBEHj8Ecd9puEkpcn+qXMJj2DiDkztBozyZwzCV/8bBl8b4oP7cE4PFj
+tyjb/tqjdH+aVes39CY4crj6/r6HP80G4ZOwQcPiokQGscpA9TmKT6de4aygvr44
+o7CLNvPX0q9kBvt6jzXGGHzsaA0bcLJYvPYUleDkn4mlPfS32exqBDEh+wlUSLjN
+VsXYfC1RInlFq+w4Y+VYkms+FO6Ox7GuoFK/qSeBvkICnaMtkltMui7D6z/yrM9y
+Fdrdw72QyqYKO9GdpxKMPmt7Ns9pK35RAe5yjnJwsqdjqzWTZP/5+6mnvcqFgsuP
+CNggL2+9pWYmAz0bQ4aUbUG3z1dTPGWTD2whnbZjU3buBLHQoL13DJikbPuBaw2C
+ntFAiZhm7lsoPJIEwfFqMFVpnFLVlatqrL3ebBlGF0lfYsBfi3+7kmCQT8EgjHav
+AuqNvkUnf+Vctkov7SLe
+=8Qj8
 -----END PGP SIGNATURE-----
 
---sr2c5r4qnkz35osj--
+--y3aswb4shmajpbku--
