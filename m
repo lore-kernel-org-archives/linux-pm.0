@@ -1,114 +1,87 @@
-From: Marcin Niestroj <m.niestroj@grinn-global.com>
-Subject: Re: [PATCH v4 4/5] mfd: tps65217: Add power button as subdevice
-Date: Wed, 31 Aug 2016 09:41:57 +0200
-Message-ID: <fe1fd5ea-5fce-61d0-d607-e4d527b51d4c@grinn-global.com>
-References: <20160620105056.25843-1-m.niestroj@grinn-global.com>
- <20160620105056.25843-5-m.niestroj@grinn-global.com>
- <c849849f-ba1d-3263-9941-b346ef9eef59@grinn-global.com>
- <20160830090329.GD1661@dell>
- <9fafa9b0-cc45-6fe9-ddb9-5c933064261c@grinn-global.com>
- <20160830095034.GI1661@dell>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v6 2/8] arm: parse cpu capacity-dmips-mhz from DT
+Date: Wed, 31 Aug 2016 10:14:24 +0200
+Message-ID: <CAKfTPtDAjedxh9J2rqOwafrmubN6+-wDyTRdNQh6fCAb2HS4RQ@mail.gmail.com>
+References: <1468932048-31635-1-git-send-email-juri.lelli@arm.com>
+ <1468932048-31635-3-git-send-email-juri.lelli@arm.com> <CAKfTPtBy7LGCW2T4AGoqL5L_1AHtW6KxHigxFVFVc_EU4oUO0g@mail.gmail.com>
+ <20160830162853.GF9337@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <20160830095034.GI1661@dell>
-Sender: linux-input-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f50.google.com ([209.85.215.50]:35085 "EHLO
+        mail-lf0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1759063AbcHaIOr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2016 04:14:47 -0400
+Received: by mail-lf0-f50.google.com with SMTP id f93so31034944lfi.2
+        for <linux-pm@vger.kernel.org>; Wed, 31 Aug 2016 01:14:46 -0700 (PDT)
+In-Reply-To: <20160830162853.GF9337@e106622-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Mark Brown <broonie@kernel.org>
 
-On 30.08.2016 11:50, Lee Jones wrote:
-> On Tue, 30 Aug 2016, Marcin Niestroj wrote:
+On 30 August 2016 at 18:28, Juri Lelli <juri.lelli@arm.com> wrote:
+> Hi Vincent,
 >
->> On 30.08.2016 11:03, Lee Jones wrote:
->>> On Mon, 29 Aug 2016, Marcin Niestroj wrote:
->>>
->>>> ping
->>>
->>> Don't do that!
->>>
->>> If you think the patch hasn't attracted attention in >2 weeks, then
->>> it's probably slipped through the gaps and you need to send a
->>> [RESEND].
+> On 16/08/16 10:20, Vincent Guittot wrote:
+>> Hi Juri,
 >>
->> Clear.
 >>
->>>
->>> However ...
->>>
->>>> On 20.06.2016 12:50, Marcin Niestroj wrote:
->>>>> Add tps65217 power buttor subdevice with assigned IRQ resources.
->>>>>
->>>>> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
->>>>> Acked-by: Lee Jones <lee.jones@linaro.org>
->>>
->>> This patch has a maintainer Ack, so why are you pinging?
->>
->> Because I didn't see it applied anywhere and there were no new
->> comments, so I thought it slipped somewhere.
->>
->> So my question is: what happens with the patch after maintainer Ack?
->> Are we still waiting for some comments from the community? Do I still
->> need to worry, that the patch might slipped? What is author's role now?
+>> On 19 July 2016 at 14:40, Juri Lelli <juri.lelli@arm.com> wrote:
 >
-> Since you sent the patches as a set, it is assumed there are some
-> dependencies between them, or they are at least in some way related.
-> To that end, it is normal for Maintainers (especially for me as the
-> MFD Maintainer, since there often some complex ties into the leaf
-> driver's changes) to wait until *all* of the patches have either been
-> accepted or have acquired an Ack of their own to proceed.
+> [...]
 >
-> I believe we are still waiting on other patches to be reviewed, no?
-
-I've just noticed, that patch 5 was only partially Acked.
-
-I will send a RESEND. However patch 2 is already in mainline. Should I
-contain this patch or remove it from the patch set? Additionally
-patch 3 has been queued into power-supply's -next branch.
-
->
->>>>> ---
->>>>> Depends on patch 1 in series
->>>>>
->>>>> Changes v1 -> v4: none
->>>>>
->>>>>  drivers/mfd/tps65217.c | 10 ++++++++++
->>>>>  1 file changed, 10 insertions(+)
->>>>>
->>>>> diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
->>>>> index 41b5d59..57c8741 100644
->>>>> --- a/drivers/mfd/tps65217.c
->>>>> +++ b/drivers/mfd/tps65217.c
->>>>> @@ -38,6 +38,10 @@ static struct resource charger_resources[] = {
->>>>>  	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
->>>>>  };
->>>>>
->>>>> +static struct resource pb_resources[] = {
->>>>> +	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
->>>>> +};
->>>>> +
->>>>>  struct tps65217_irq {
->>>>>  	int mask;
->>>>>  	int interrupt;
->>>>> @@ -122,6 +126,12 @@ static struct mfd_cell tps65217s[] = {
->>>>>  		.resources = charger_resources,
->>>>>  		.of_compatible = "ti,tps65217-charger",
->>>>>  	},
->>>>> +	{
->>>>> +		.name = "tps65217-pwrbutton",
->>>>> +		.num_resources = ARRAY_SIZE(pb_resources),
->>>>> +		.resources = pb_resources,
->>>>> +		.of_compatible = "ti,tps65217-pwrbutton",
->>>>> +	},
->>>>>  };
->>>>>
->>>>>  static irqreturn_t tps65217_irq_thread(int irq, void *data)
->>>>>
->>>>
->>>
+>> > +static int
+>> > +init_cpu_capacity_callback(struct notifier_block *nb,
+>> > +                          unsigned long val,
+>> > +                          void *data)
+>> > +{
+>> > +       struct cpufreq_policy *policy = data;
+>> > +       int cpu;
+>> > +
+>> > +       if (cap_parsing_failed || cap_parsing_done)
+>> > +               return 0;
+>> > +
+>> > +       switch (val) {
+>> > +       case CPUFREQ_NOTIFY:
+>> > +               pr_debug("cpu_capacity: init cpu capacity for CPUs [%*pbl] (to_visit=%*pbl)\n",
+>> > +                               cpumask_pr_args(policy->related_cpus),
+>> > +                               cpumask_pr_args(cpus_to_visit));
+>> > +               cpumask_andnot(cpus_to_visit,
+>> > +                              cpus_to_visit,
+>> > +                              policy->related_cpus);
+>> > +               for_each_cpu(cpu, policy->related_cpus) {
+>> > +                       raw_capacity[cpu] = arch_scale_cpu_capacity(NULL, cpu) *
+>> > +                                           policy->max / 1000UL;
+>>
+>> Should it be policy->cpuinfo.max_freq instead of policy->max ?
 >>
 >
+> Right. I'll fix the arm64 bits as well.
+>
+>> > +                       capacity_scale = max(raw_capacity[cpu], capacity_scale);
+>> > +               }
+>> > +               if (cpumask_empty(cpus_to_visit)) {
+>> > +                       normalize_cpu_capacity();
+>> > +                       kfree(raw_capacity);
+>> > +                       pr_debug("cpu_capacity: parsing done\n");
+>> > +                       cap_parsing_done = true;
+>>
+>> ok so you do that once with the 1st governor that will be registered
+>> for the CPU. Can't you unregister the notifier then ?
+>>
+>
+> I tried, but the only place I could find to unregister it is from the
+> callback itself; and it is not possible to do so AFAIK. Suggestions?
 
--- 
-Marcin Niestroj
+yes, you're right
+Can't you queue a work to unregister your callback ?
+That's may be overkill but it seems weird to keep this notifier that
+will do nothing, registered for the whole life of the system
+
+>
+> Thanks for the review.
+>
+> Best,
+>
+> - Juri
