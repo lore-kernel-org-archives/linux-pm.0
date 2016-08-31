@@ -1,81 +1,62 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] sched: cpufreq: use rt_avg as estimate of required RT CPU capacity
-Date: Wed, 31 Aug 2016 03:31:07 +0200
-Message-ID: <1779842.1JHXT67au9@vostro.rjw.lan>
-References: <1472236848-17038-1-git-send-email-smuckle@linaro.org> <1472236848-17038-3-git-send-email-smuckle@linaro.org>
+Subject: Re: [PATCH 1/2] sched: cpufreq: ignore SMT when determining max cpu capacity
+Date: Wed, 31 Aug 2016 03:27:30 +0200
+Message-ID: <2411837.FJm8ec21FH@vostro.rjw.lan>
+References: <1472236848-17038-1-git-send-email-smuckle@linaro.org> <1472236848-17038-2-git-send-email-smuckle@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1472236848-17038-3-git-send-email-smuckle@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58915 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1751154AbcHaB2V (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Aug 2016 21:28:21 -0400
+In-Reply-To: <1472236848-17038-2-git-send-email-smuckle@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
 
-On Friday, August 26, 2016 11:40:48 AM Steve Muckle wrote:
-> A policy of going to fmax on any RT activity will be detrimental
-> for power on many platforms. Often RT accounts for only a small amount
-> of CPU activity so sending the CPU frequency to fmax is overkill. Worse
-> still, some platforms may not be able to even complete the CPU frequency
-> change before the RT activity has already completed.
+On Friday, August 26, 2016 11:40:47 AM Steve Muckle wrote:
+> PELT does not consider SMT when scaling its utilization values via
+> arch_scale_cpu_capacity(). The value in rq->cpu_capacity_orig does
+> take SMT into consideration though and therefore may be smaller than
+> the utilization reported by PELT.
 > 
-> Cpufreq governors have not treated RT activity this way in the past so
-> it is not part of the expected semantics of the RT scheduling class. The
-> DL class offers guarantees about task completion and could be used for
-> this purpose.
+> On an Intel i7-3630QM for example rq->cpu_capacity_orig is 589 but
+> util_avg scales up to 1024. This means that a 50% utilized CPU will show
+> up in schedutil as ~86% busy.
 > 
-> Modify the schedutil algorithm to instead use rt_avg as an estimate of
-> RT utilization of the CPU.
+> Fix this by using the same CPU scaling value in schedutil as that which
+> is used by PELT.
 > 
-> Based on previous work by Vincent Guittot <vincent.guittot@linaro.org>.
-
-If we do it for RT, why not to do a similar thing for DL?  As in the
-original patch from Peter, for example?
-
 > Signed-off-by: Steve Muckle <smuckle@linaro.org>
+
+This is fine by me.
+
+Peter, any objections?
+
 > ---
->  kernel/sched/cpufreq_schedutil.c | 26 +++++++++++++++++---------
->  1 file changed, 17 insertions(+), 9 deletions(-)
+>  kernel/sched/cpufreq_schedutil.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
 > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index cb8a77b1ef1b..89094a466250 100644
+> index 60d985f4dc47..cb8a77b1ef1b 100644
 > --- a/kernel/sched/cpufreq_schedutil.c
 > +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -146,13 +146,21 @@ static unsigned int get_next_freq(struct sugov_cpu *sg_cpu, unsigned long util,
->  
+> @@ -147,7 +147,9 @@ static unsigned int get_next_freq(struct sugov_cpu *sg_cpu, unsigned long util,
 >  static void sugov_get_util(unsigned long *util, unsigned long *max)
 >  {
-> -	struct rq *rq = this_rq();
-> -	unsigned long cfs_max;
-> +	int cpu = smp_processor_id();
-> +	struct rq *rq = cpu_rq(cpu);
-> +	unsigned long max_cap, rt;
-> +	s64 delta;
->  
-> -	cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
-> +	max_cap = arch_scale_cpu_capacity(NULL, cpu);
->  
-> -	*util = min(rq->cfs.avg.util_avg, cfs_max);
-> -	*max = cfs_max;
-> +	delta = rq_clock(rq) - rq->age_stamp;
-> +	if (unlikely(delta < 0))
-> +		delta = 0;
-> +	rt = div64_u64(rq->rt_avg, sched_avg_period() + delta);
-> +	rt = (rt * max_cap) >> SCHED_CAPACITY_SHIFT;
-
-These computations are rather heavy, so I wonder if they are avoidable based
-on the flags, for example?
-
-Plus is SCHED_CAPACITY_SHIFT actually defined for all architectures?
-
-One more ugly thing is about using rq_clock(rq) directly from here whereas we
-pass it around as the 'time' argument elsewhere.
-
+>  	struct rq *rq = this_rq();
+> -	unsigned long cfs_max = rq->cpu_capacity_orig;
+> +	unsigned long cfs_max;
 > +
-> +	*util = min(rq->cfs.avg.util_avg + rt, max_cap);
-> +	*max = max_cap;
->  }
+> +	cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
+>  
+>  	*util = min(rq->cfs.avg.util_avg, cfs_max);
+>  	*max = cfs_max;
+> 
 
 Thanks,
 Rafael
+
