@@ -1,49 +1,114 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH 4/4] PCI: Avoid unnecessary resume on shutdown
-Date: Wed, 31 Aug 2016 08:15:18 +0200
-Message-ID: <9f9152c11c6178bbac53fd3d0ef0d38173ad4b0b.1472554278.git.lukas@wunner.de>
-References: <cover.1472554278.git.lukas@wunner.de>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <cover.1472554278.git.lukas@wunner.de>
-Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pci@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
+From: Marcin Niestroj <m.niestroj@grinn-global.com>
+Subject: Re: [PATCH v4 4/5] mfd: tps65217: Add power button as subdevice
+Date: Wed, 31 Aug 2016 09:41:57 +0200
+Message-ID: <fe1fd5ea-5fce-61d0-d607-e4d527b51d4c@grinn-global.com>
+References: <20160620105056.25843-1-m.niestroj@grinn-global.com>
+ <20160620105056.25843-5-m.niestroj@grinn-global.com>
+ <c849849f-ba1d-3263-9941-b346ef9eef59@grinn-global.com>
+ <20160830090329.GD1661@dell>
+ <9fafa9b0-cc45-6fe9-ddb9-5c933064261c@grinn-global.com>
+ <20160830095034.GI1661@dell>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20160830095034.GI1661@dell>
+Sender: linux-input-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-We currently perform a mandatory runtime resume of all PCI devices on
-->shutdown.  However it is pointless to wake devices only to immediately
-power them down afterwards.  (Or have the firmware reset them, in case
-of a reboot.)
+On 30.08.2016 11:50, Lee Jones wrote:
+> On Tue, 30 Aug 2016, Marcin Niestroj wrote:
+>
+>> On 30.08.2016 11:03, Lee Jones wrote:
+>>> On Mon, 29 Aug 2016, Marcin Niestroj wrote:
+>>>
+>>>> ping
+>>>
+>>> Don't do that!
+>>>
+>>> If you think the patch hasn't attracted attention in >2 weeks, then
+>>> it's probably slipped through the gaps and you need to send a
+>>> [RESEND].
+>>
+>> Clear.
+>>
+>>>
+>>> However ...
+>>>
+>>>> On 20.06.2016 12:50, Marcin Niestroj wrote:
+>>>>> Add tps65217 power buttor subdevice with assigned IRQ resources.
+>>>>>
+>>>>> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+>>>>> Acked-by: Lee Jones <lee.jones@linaro.org>
+>>>
+>>> This patch has a maintainer Ack, so why are you pinging?
+>>
+>> Because I didn't see it applied anywhere and there were no new
+>> comments, so I thought it slipped somewhere.
+>>
+>> So my question is: what happens with the patch after maintainer Ack?
+>> Are we still waiting for some comments from the community? Do I still
+>> need to worry, that the patch might slipped? What is author's role now?
+>
+> Since you sent the patches as a set, it is assumed there are some
+> dependencies between them, or they are at least in some way related.
+> To that end, it is normal for Maintainers (especially for me as the
+> MFD Maintainer, since there often some complex ties into the leaf
+> driver's changes) to wait until *all* of the patches have either been
+> accepted or have acquired an Ack of their own to proceed.
+>
+> I believe we are still waiting on other patches to be reviewed, no?
 
-It seems there are only two cases when a runtime resume is actually
-necessary:  If the driver has declared a ->shutdown callback or if kexec
-is in progress.
+I've just noticed, that patch 5 was only partially Acked.
 
-Constrain resume of a device to these cases and let it slumber
-otherwise, thereby conserving energy and speeding up shutdown.
+I will send a RESEND. However patch 2 is already in mainline. Should I
+contain this patch or remove it from the patch set? Additionally
+patch 3 has been queued into power-supply's -next branch.
 
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
- drivers/pci/pci-driver.c | 5 +++++
- 1 file changed, 5 insertions(+)
+>
+>>>>> ---
+>>>>> Depends on patch 1 in series
+>>>>>
+>>>>> Changes v1 -> v4: none
+>>>>>
+>>>>>  drivers/mfd/tps65217.c | 10 ++++++++++
+>>>>>  1 file changed, 10 insertions(+)
+>>>>>
+>>>>> diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
+>>>>> index 41b5d59..57c8741 100644
+>>>>> --- a/drivers/mfd/tps65217.c
+>>>>> +++ b/drivers/mfd/tps65217.c
+>>>>> @@ -38,6 +38,10 @@ static struct resource charger_resources[] = {
+>>>>>  	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
+>>>>>  };
+>>>>>
+>>>>> +static struct resource pb_resources[] = {
+>>>>> +	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
+>>>>> +};
+>>>>> +
+>>>>>  struct tps65217_irq {
+>>>>>  	int mask;
+>>>>>  	int interrupt;
+>>>>> @@ -122,6 +126,12 @@ static struct mfd_cell tps65217s[] = {
+>>>>>  		.resources = charger_resources,
+>>>>>  		.of_compatible = "ti,tps65217-charger",
+>>>>>  	},
+>>>>> +	{
+>>>>> +		.name = "tps65217-pwrbutton",
+>>>>> +		.num_resources = ARRAY_SIZE(pb_resources),
+>>>>> +		.resources = pb_resources,
+>>>>> +		.of_compatible = "ti,tps65217-pwrbutton",
+>>>>> +	},
+>>>>>  };
+>>>>>
+>>>>>  static irqreturn_t tps65217_irq_thread(int irq, void *data)
+>>>>>
+>>>>
+>>>
+>>
+>
 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index fd4b9c4..09a4e56 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -459,6 +459,11 @@ static void pci_device_shutdown(struct device *dev)
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct pci_driver *drv = pci_dev->driver;
- 
-+	/* Fast path for suspended devices */
-+	if (pm_runtime_suspended(dev) && (!drv || !drv->shutdown) &&
-+	    !kexec_in_progress)
-+		return;
-+
- 	pm_runtime_resume(dev);
- 
- 	if (drv && drv->shutdown)
 -- 
-2.8.1
-
+Marcin Niestroj
