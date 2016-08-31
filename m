@@ -1,63 +1,64 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH 0/4] PCI PM refinements
+Subject: [PATCH 3/4] PCI: Avoid unnecessary resume after direct-complete
 Date: Wed, 31 Aug 2016 08:15:18 +0200
-Message-ID: <cover.1472554278.git.lukas@wunner.de>
+Message-ID: <4935437e0bfbab9079db2c8b1fbac66cef7dc569.1472554278.git.lukas@wunner.de>
+References: <cover.1472554278.git.lukas@wunner.de>
 Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <cover.1472554278.git.lukas@wunner.de>
 Sender: linux-acpi-owner@vger.kernel.org
 To: linux-pci@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The following patches are part of my Thunderbolt Runtime PM series.
-I'm posting them separately to split the series into digestible chunks.
+Commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have been
+reset by firmware") added a runtime resume for devices that were runtime
+suspended when the system entered sleep.
 
-They benefit everyone, not just Thunderbolt, and Thunderbolt works fine
-without them (just not with the same degree of perfection).
+The motivation was that devices might be in a reset-power-on state after
+waking from system sleep, so their power state as perceived by Linux
+(stored in pci_dev->current_state) would no longer reflect reality.
+By resuming such devices, we allow them to return to a low-power state
+via autosuspend and also bring their current_state in sync with reality.
 
-Patch [1/4] affords direct-complete to devices which are not platform-
-power-manageable, yet can be suspended to D3cold with a nonstandard
-mechanism. It does so using a heuristic: If a device's current_state
-is D3cold and it is not power-manageable, it is assumed that a
-nonstandard PM mechanism is at work and the device is left asleep.
-The patch is the outcome of a discussion with Rafael and Alan on
-linux-pci@ and I would like to thank both for tirelessly responding
-to my questions.
+However for devices that are *not* in a reset-power-on state, doing an
+unconditional resume wastes energy.  A more refined approach is called
+for which issues a runtime resume only if the power state after
+direct-complete is shallower than it was before. To achieve this, update
+the device's current_state by querying the platform firmware and reading
+its PMCSR.
 
-Patch [3/4] replaces the unconditional resume after direct-complete with
-a conditional resume by determining if the platform firmware has put the
-device in reset-power-on or not.
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/pci-driver.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-Because the D3cold state cannot be determined from the PMCSR, patch [2/4]
-adds a hook to query the platform firmware for its opinion on the device's
-power state.
-
-Finally, patch [4/4] changes the shutdown handling of PCI devices such
-that they are no longer woken without reason.
-
-The result of these patches should be a speedup and decreased power
-consumption for system sleep and system shutdown (both for devices that
-are platform-power-manageable and those that aren't).
-
-If you prefer point & click interfaces, the patches are browsable here:
-https://github.com/l1k/linux/commits/thunderbolt_runpm_v3
-
-Thanks,
-
-Lukas
-
-
-Lukas Wunner (4):
-  PCI: Afford direct-complete to devices with nonstandard pm
-  PCI: Query platform firmware for device power state
-  PCI: Avoid unnecessary resume after direct-complete
-  PCI: Avoid unnecessary resume on shutdown
-
- drivers/pci/pci-acpi.c   | 23 +++++++++++++++++++++++
- drivers/pci/pci-driver.c | 20 ++++++++++++++++++--
- drivers/pci/pci.c        | 38 +++++++++++++++++++++++++++++++-------
- drivers/pci/pci.h        |  3 +++
- 4 files changed, 75 insertions(+), 9 deletions(-)
-
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index e39a67c..fd4b9c4 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -684,8 +684,19 @@ static int pci_pm_prepare(struct device *dev)
+ 
+ static void pci_pm_complete(struct device *dev)
+ {
+-	pci_dev_complete_resume(to_pci_dev(dev));
+-	pm_complete_with_resume_check(dev);
++	struct pci_dev *pci_dev = to_pci_dev(dev);
++
++	pci_dev_complete_resume(pci_dev);
++	pm_generic_complete(dev);
++
++	/* Resume device if platform firmware has put it in reset-power-on */
++	if (dev->power.direct_complete && pm_resume_via_firmware()) {
++		pci_power_t pre_sleep_state = pci_dev->current_state;
++
++		pci_update_current_state(pci_dev, pci_dev->current_state);
++		if (pci_dev->current_state < pre_sleep_state)
++			pm_request_resume(dev);
++	}
+ }
+ 
+ #else /* !CONFIG_PM_SLEEP */
 -- 
 2.8.1
 
