@@ -1,36 +1,101 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/2] sched: cpufreq: use rt_avg as estimate of required
- RT CPU capacity
-Date: Wed, 31 Aug 2016 16:39:07 +0200
-Message-ID: <20160831143907.GX10121@twins.programming.kicks-ass.net>
-References: <1472236848-17038-1-git-send-email-smuckle@linaro.org>
- <1472236848-17038-3-git-send-email-smuckle@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 1/2] Documentation: Add sbs-manager device tree node
+ documentation
+Date: Wed, 31 Aug 2016 09:43:49 -0500
+Message-ID: <20160831144349.GA18510@rob-hp-laptop>
+References: <1bIiDr-0004G1-0P>
+ <1472156461-25180-1-git-send-email-karl-heinz@schneider-inet.de>
+ <1472156461-25180-2-git-send-email-karl-heinz@schneider-inet.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1472236848-17038-3-git-send-email-smuckle@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
+In-Reply-To: <1472156461-25180-2-git-send-email-karl-heinz@schneider-inet.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-i2c@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Peter Rosin <peda@axentia.se>, Phil Reid <preid@electromag.com.au>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 26, 2016 at 11:40:48AM -0700, Steve Muckle wrote:
-> A policy of going to fmax on any RT activity will be detrimental
-> for power on many platforms. Often RT accounts for only a small amount
-> of CPU activity so sending the CPU frequency to fmax is overkill. Worse
-> still, some platforms may not be able to even complete the CPU frequency
-> change before the RT activity has already completed.
+On Thu, Aug 25, 2016 at 10:21:00PM +0200, Karl-Heinz Schneider wrote:
+> This patch adds device tree documentation for the sbs-manager
 > 
-> Cpufreq governors have not treated RT activity this way in the past so
-> it is not part of the expected semantics of the RT scheduling class. The
-> DL class offers guarantees about task completion and could be used for
-> this purpose.
+> Reviewed-by: Phil Reid <preid@electromag.com.au>
+> Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+> ---
+>  .../devicetree/bindings/power/sbs,sbs-manager.txt  | 53 ++++++++++++++++++++++
+>  1 file changed, 53 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+> new file mode 100644
+> index 0000000..6b1a87ce
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+> @@ -0,0 +1,53 @@
+> +Binding for sbs-manager
+> +
+> +Required properties:
+> +- compatible: should be "lltc,ltc1760" or use "sbs,sbs-manager" as fallback.
+> +- reg: integer, i2c address of the device. Should be <0xa>.
 
-Not entirely true. People have simply disabled cpufreq because of this.
+What happened to adding Phil's interrupt support into this? You don't 
+have to add the whole patch, just the binding part. The driver support 
+can come later.
 
-Yes, RR/FIFO are a pain, but they should still be deterministic, and
-variable cpufreq destroys that.
+> +
+> +From OS view the device is basically an i2c-mux used to communicate with up to
+> +four smart battery devices at address 0xb. The driver actually implements this
+> +behaviour. So standard i2c-mux nodes can be used to register up to four slave
+> +batteries. See Documentation/devicetree/bindings/i2c/i2c-mux.txt for more
+> +information on i2c-mux nodes. Channels will be numerated starting from 1 to 4.
+> +
+> +Example:
+> +
+> +batman@0a {
 
-I realize that the fmax thing is annoying, but I'm not seeing how rt_avg
-is much better.
+drop leading 0.
+
+> +    compatible = "lltc,ltc1760";
+> +    reg = <0x0a>;
+> +    #address-cells = <1>;
+> +    #size-cells = <0>;
+> +
+> +    i2c@1 {
+> +        #address-cells = <1>;
+> +        #size-cells = <0>;
+> +        reg = <1>;
+> +
+> +        battery@0b {
+
+and here...
+
+> +            compatible = "ti,bq2060", "sbs,sbs-battery";
+> +            reg = <0x0b>;
+> +        };
+> +    };
+> +
+> +    i2c@2 {
+> +        #address-cells = <1>;
+> +        #size-cells = <0>;
+> +        reg = <2>;
+> +
+> +        battery@0b {
+> +            compatible = "ti,bq2060", "sbs,sbs-battery";
+> +            reg = <0x0b>;
+> +        };
+> +    };
+> +
+> +    i2c@3 {
+> +        #address-cells = <1>;
+> +        #size-cells = <0>;
+> +        reg = <3>;
+> +
+> +        battery@0b {
+> +            compatible = "ti,bq2060", "sbs,sbs-battery";
+> +            reg = <0x0b>;
+> +        };
+> +    };
+> +};
+> -- 
+> 2.7.4
+> 
