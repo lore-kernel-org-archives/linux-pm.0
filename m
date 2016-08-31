@@ -1,36 +1,81 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Kernel warning in cpufreq_add_dev()
-Date: Wed, 31 Aug 2016 03:26 +0200
-Message-ID: <1496109.Jd9MGDryNS@vostro.rjw.lan>
-References: <20160819110032.GM1041@n2100.armlinux.org.uk> <2310664.2BksGViL4r@vostro.rjw.lan> <20160824131316.GI25143@ubuntu>
+Subject: Re: [PATCH 2/2] sched: cpufreq: use rt_avg as estimate of required RT CPU capacity
+Date: Wed, 31 Aug 2016 03:31:07 +0200
+Message-ID: <1779842.1JHXT67au9@vostro.rjw.lan>
+References: <1472236848-17038-1-git-send-email-smuckle@linaro.org> <1472236848-17038-3-git-send-email-smuckle@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57434 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1757337AbcHaBUM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Aug 2016 21:20:12 -0400
-In-Reply-To: <20160824131316.GI25143@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1472236848-17038-3-git-send-email-smuckle@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Russell King - ARM Linux <linux@armlinux.org.uk>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wednesday, August 24, 2016 06:43:16 PM Viresh Kumar wrote:
-> On 22-08-16, 19:32, Rafael J. Wysocki wrote:
-> > But it will be called in that path during physical CPU hot-add, won't it?
+On Friday, August 26, 2016 11:40:48 AM Steve Muckle wrote:
+> A policy of going to fmax on any RT activity will be detrimental
+> for power on many platforms. Often RT accounts for only a small amount
+> of CPU activity so sending the CPU frequency to fmax is overkill. Worse
+> still, some platforms may not be able to even complete the CPU frequency
+> change before the RT activity has already completed.
 > 
-> What about something like this instead (completely untested) ?
+> Cpufreq governors have not treated RT activity this way in the past so
+> it is not part of the expected semantics of the RT scheduling class. The
+> DL class offers guarantees about task completion and could be used for
+> this purpose.
+> 
+> Modify the schedutil algorithm to instead use rt_avg as an estimate of
+> RT utilization of the CPU.
+> 
+> Based on previous work by Vincent Guittot <vincent.guittot@linaro.org>.
 
-Inline, please?
+If we do it for RT, why not to do a similar thing for DL?  As in the
+original patch from Peter, for example?
 
-> @Russell: Can you please try this ??
+> Signed-off-by: Steve Muckle <smuckle@linaro.org>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 26 +++++++++++++++++---------
+>  1 file changed, 17 insertions(+), 9 deletions(-)
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index cb8a77b1ef1b..89094a466250 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -146,13 +146,21 @@ static unsigned int get_next_freq(struct sugov_cpu *sg_cpu, unsigned long util,
+>  
+>  static void sugov_get_util(unsigned long *util, unsigned long *max)
+>  {
+> -	struct rq *rq = this_rq();
+> -	unsigned long cfs_max;
+> +	int cpu = smp_processor_id();
+> +	struct rq *rq = cpu_rq(cpu);
+> +	unsigned long max_cap, rt;
+> +	s64 delta;
+>  
+> -	cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
+> +	max_cap = arch_scale_cpu_capacity(NULL, cpu);
+>  
+> -	*util = min(rq->cfs.avg.util_avg, cfs_max);
+> -	*max = cfs_max;
+> +	delta = rq_clock(rq) - rq->age_stamp;
+> +	if (unlikely(delta < 0))
+> +		delta = 0;
+> +	rt = div64_u64(rq->rt_avg, sched_avg_period() + delta);
+> +	rt = (rt * max_cap) >> SCHED_CAPACITY_SHIFT;
 
-I was thinking about something similar, but won't the WARN_ON()s in
-cpufreq_add/remove_dev_symlink() still trigger, say if there's more
-than one CPU in a policy and both happen to be online initially?
+These computations are rather heavy, so I wonder if they are avoidable based
+on the flags, for example?
+
+Plus is SCHED_CAPACITY_SHIFT actually defined for all architectures?
+
+One more ugly thing is about using rq_clock(rq) directly from here whereas we
+pass it around as the 'time' argument elsewhere.
+
+> +
+> +	*util = min(rq->cfs.avg.util_avg + rt, max_cap);
+> +	*max = max_cap;
+>  }
 
 Thanks,
 Rafael
-
