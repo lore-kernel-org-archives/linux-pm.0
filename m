@@ -1,116 +1,58 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [PATCH 2/2] sched: cpufreq: use rt_avg as estimate of required
- RT CPU capacity
-Date: Wed, 31 Aug 2016 07:49:39 -0700
-Message-ID: <20160831144939.GM5599@graphite.smuckle.net>
-References: <1472236848-17038-1-git-send-email-smuckle@linaro.org>
- <1472236848-17038-3-git-send-email-smuckle@linaro.org>
- <1779842.1JHXT67au9@vostro.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v8 09/11] doc: bindings: mfd: act8945a: Update the example
+Date: Wed, 31 Aug 2016 16:50:35 +0200
+Message-ID: <20160831145035.uec3xkdavwuysxsa@earth>
+References: <1472109599-21915-1-git-send-email-wenyou.yang@atmel.com>
+ <1472110715-22242-1-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="yieq3wx66ozfxfhl"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:35826 "EHLO
-        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934968AbcHaOto (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2016 10:49:44 -0400
-Received: by mail-pf0-f175.google.com with SMTP id x72so20312535pfd.2
-        for <linux-pm@vger.kernel.org>; Wed, 31 Aug 2016 07:49:43 -0700 (PDT)
+Received: from mail.kernel.org ([198.145.29.136]:49788 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934853AbcHaOuo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 31 Aug 2016 10:50:44 -0400
 Content-Disposition: inline
-In-Reply-To: <1779842.1JHXT67au9@vostro.rjw.lan>
+In-Reply-To: <1472110715-22242-1-git-send-email-wenyou.yang@atmel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Wenyou Yang <wenyou.yang@atmel.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Wed, Aug 31, 2016 at 03:31:07AM +0200, Rafael J. Wysocki wrote:
-> On Friday, August 26, 2016 11:40:48 AM Steve Muckle wrote:
-> > A policy of going to fmax on any RT activity will be detrimental
-> > for power on many platforms. Often RT accounts for only a small amount
-> > of CPU activity so sending the CPU frequency to fmax is overkill. Worse
-> > still, some platforms may not be able to even complete the CPU frequency
-> > change before the RT activity has already completed.
-> > 
-> > Cpufreq governors have not treated RT activity this way in the past so
-> > it is not part of the expected semantics of the RT scheduling class. The
-> > DL class offers guarantees about task completion and could be used for
-> > this purpose.
-> > 
-> > Modify the schedutil algorithm to instead use rt_avg as an estimate of
-> > RT utilization of the CPU.
-> > 
-> > Based on previous work by Vincent Guittot <vincent.guittot@linaro.org>.
-> 
-> If we do it for RT, why not to do a similar thing for DL?  As in the
-> original patch from Peter, for example?
 
-Agreed DL should have a similar change. I think that could be done in a
-separate patch. I also would need to discuss it with the deadline sched
-devs to fully understand the metric used there.
+--yieq3wx66ozfxfhl
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> 
-> > Signed-off-by: Steve Muckle <smuckle@linaro.org>
-> > ---
-> >  kernel/sched/cpufreq_schedutil.c | 26 +++++++++++++++++---------
-> >  1 file changed, 17 insertions(+), 9 deletions(-)
-> > 
-> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > index cb8a77b1ef1b..89094a466250 100644
-> > --- a/kernel/sched/cpufreq_schedutil.c
-> > +++ b/kernel/sched/cpufreq_schedutil.c
-> > @@ -146,13 +146,21 @@ static unsigned int get_next_freq(struct sugov_cpu *sg_cpu, unsigned long util,
-> >  
-> >  static void sugov_get_util(unsigned long *util, unsigned long *max)
-> >  {
-> > -	struct rq *rq = this_rq();
-> > -	unsigned long cfs_max;
-> > +	int cpu = smp_processor_id();
-> > +	struct rq *rq = cpu_rq(cpu);
-> > +	unsigned long max_cap, rt;
-> > +	s64 delta;
-> >  
-> > -	cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
-> > +	max_cap = arch_scale_cpu_capacity(NULL, cpu);
-> >  
-> > -	*util = min(rq->cfs.avg.util_avg, cfs_max);
-> > -	*max = cfs_max;
-> > +	delta = rq_clock(rq) - rq->age_stamp;
-> > +	if (unlikely(delta < 0))
-> > +		delta = 0;
-> > +	rt = div64_u64(rq->rt_avg, sched_avg_period() + delta);
-> > +	rt = (rt * max_cap) >> SCHED_CAPACITY_SHIFT;
-> 
-> These computations are rather heavy, so I wonder if they are avoidable based
-> on the flags, for example?
+Hi Lee,
 
-Yeah the div is bad. I don't know that we can avoid it based on the
-flags because rt_avg will decay during CFS activity and you'd want to
-take note of that.
+On Thu, Aug 25, 2016 at 03:38:35PM +0800, Wenyou Yang wrote:
+> Since the act8945a-charger is regarded as a sub-device and it using
+> "interrupts" property, update the examples section.
 
-One way to make this a little better is to ssume that the divisor,
-sched_avg_period() + delta, fits into 32 bits so that div_u64 can be
-used, which I believe is less bad. Doing that means placing a
-restriction on how large sysctl_sched_time_avg (which determines
-sched_avg_period()) can be, a max of 4.2 seconds I think. I don't know
-that anyone uses a value that large anyway but there's currently no
-limit on it.
+I assume, that this will go through your tree.
 
-Another option would be just adding another separate metric to track rt
-activity that is more mathematically favorable to deal with.
+-- Sebastian
 
-Both these seemed potentially heavy handed so I figured I'd just start
-with the obvious, if suboptimal, solution...
+--yieq3wx66ozfxfhl
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> Plus is SCHED_CAPACITY_SHIFT actually defined for all architectures?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Yes.
+iQIcBAEBCgAGBQJXxu67AAoJENju1/PIO/qabDEP/19Zx98EaQ/yKJHG7KEz0JSZ
+5AA6IC0n7100zzmP45LP+iDz3raJ/t+L7CBQnfXFss9gXJyvaze74KxRmaBnKpBk
+kb7ON0/EHo/ZSl8lG00KJkM8YWyMhYSqHTydiw1v+Kkrn+8FznjVi92heBElh+DN
+x2hG48ICVahm9Ix3rOqBDPCZ+7R8vkzMOxVs3Zo10+YSC4pe2mR7oVbQLQkD/zdH
+d3O+7hLzUu+gq0jR0rADYY72YByOxoFBAxbxVITfDGlP79BtlsZBghDY5doYgNEf
+Fvo/Sg8MQ0LPYYCpdea5XFBaGdGk9V/9kzN6/0Tq/wYWDmA+1KJgoC64Phoj+VtN
+FsHRASw4c4rBRa2d3iQtZNc82liv6tAU62sSb7l4dPfqXZOA6Bsmc+rETDmkHVsJ
+XmFejgwTDt7wqzL8ZDAddify7lcUrrVTJWIvoNBvVfgT3T8ZQjx9ulsDSRFiXumq
+ArQTbkTKPd7LiWzlFaSFDJgC3GgGpW5/ofEjwP7OCZLFNVjK++K1l5qz1kwb0yhn
+BPlrTJGdS4uLpX1yXWMVwztjg3Kz3ltooiMJMqOssTQoDg/LAMNqBnwXToGIjTSC
+u4b5+xMbT+EVaVdywB7sWoLzOj32XVelRKLRyPFJYutG12o9IDz4Fbqxeyr+VqDG
+0MhsreYUFTUTCHOY+dMi
+=7EGn
+-----END PGP SIGNATURE-----
 
-> One more ugly thing is about using rq_clock(rq) directly from here whereas we
-> pass it around as the 'time' argument elsewhere.
-
-Sure I'll clean this up.
-
-> 
-> > +
-> > +	*util = min(rq->cfs.avg.util_avg + rt, max_cap);
-> > +	*max = max_cap;
-> >  }
+--yieq3wx66ozfxfhl--
