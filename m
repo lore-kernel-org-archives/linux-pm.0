@@ -1,90 +1,54 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH][v8] PM / hibernate: Verify the consistent of e820 memory
- map by md5 value
-Date: Tue, 30 Aug 2016 23:50:08 +0200
-Message-ID: <CAJZ5v0iFub00x72-eZJT1H9Sp28wZ-VG=unfp5iTtf0tnmjHaA@mail.gmail.com>
-References: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
- <CAJZ5v0gBTjZjvS7iCKAQCvaYH-szObtExtV3B4ai4srow_kNMg@mail.gmail.com>
- <20160829151334.GA21313@amd> <7552351.MYV7GZcH0A@vostro.rjw.lan> <20160830195323.GA9937@amd>
+From: Nicolas Porcel <nicolasporcel06@gmail.com>
+Subject: Re: Hibernate: Partition table corruption after resume
+Date: Wed, 31 Aug 2016 02:10:12 +0200
+Message-ID: <20160831001012.62acvt5szqy6v3jh@nicolas-laptop>
+References: <20160829235941.qycbzs3jqkpjed2t@nicolas-laptop>
+ <CADjb_WQ1ya51v7xMhqYVDBq7UqBefbvJkt+KVT5vQ_7xzUdGWA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f67.google.com ([209.85.214.67]:33356 "EHLO
-        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753048AbcH3VuJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Aug 2016 17:50:09 -0400
-In-Reply-To: <20160830195323.GA9937@amd>
+Received: from mail-wm0-f43.google.com ([74.125.82.43]:33388 "EHLO
+        mail-wm0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751301AbcHaAKP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 30 Aug 2016 20:10:15 -0400
+Received: by mail-wm0-f43.google.com with SMTP id d196so25804855wmd.0
+        for <linux-pm@vger.kernel.org>; Tue, 30 Aug 2016 17:10:15 -0700 (PDT)
+Received: from localhost (htr06-1-82-227-229-91.fbx.proxad.net. [82.227.229.91])
+        by smtp.gmail.com with ESMTPSA id r16sm20900119wme.16.2016.08.30.17.10.12
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 30 Aug 2016 17:10:13 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CADjb_WQ1ya51v7xMhqYVDBq7UqBefbvJkt+KVT5vQ_7xzUdGWA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Borislav Petkov <bp@alien8.de>, Chen Yu <yu.c.chen@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lee@nazgul.tnic, Chun-Yi <jlee@suse.com>
+To: Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, Aug 30, 2016 at 9:53 PM, Pavel Machek <pavel@ucw.cz> wrote:
->
->> > > I would warn and try to continue regardless (which was the original
->> > > plan here AFAICS), or we change a possible data loss into a guaranteed
->> > > one.
->> > >
->> > > IMO it is sufficient to give up when a PFN we have image data for is
->> > > not pfn_valid() during resume, which we do already.
->> >
->> > Well... can you guarantee what will be effect of resuming with
->> > different memory map?
->> >
->> > Because there's big difference between panic and trying to continue
->> > with corrupted memory.
->>
->> If all of the page frames the image kernel used before hibernation are
->> available during resume as well, memory won't really get corrupted, at least
->> not right away.
->>
->> There may be problems going forward, but whether or not they actually happen
->> depends on what the differences are.  So while an e820 mismatch indicates that
->> things may go wrong, it doesn't necessarily mean that they will.
->
-> Well "memory won't get corrupted right away" seems like good reason to
-> panic the machine ASAP.
->
-> You can flip some bits in memory, and it may not cause problems. Still
-> if you know some bits in memory were flipped, you'd better panic the
-> machine. Continuing is unsafe.
->
-> If you could guarantee that machine will panic down the line, and not
-> something worse, you'd be right.
->
-> But at least the case where there is _less_ memory available after
-> resume, kernel will write into BIOS reserved memory and bad things
-> will happen. Yes, it usually panics, but it is quite clear it could
-> corrupt memory, too.
+On Tue, Aug 30, 2016 at 09:44:07AM +0800, Yu Chen wrote:
+> I've no idea why this happened, as hibernation should not touch partition table
+> AFAIK,  is there any lvm daemon thread running when hibernation
+> is saving its pages? I'd try to create a swap file, and disable the
+> original swap
+> partion, and use swap file as the new swap partition
+> to see if it can be reproduced by echo test_resume > /sys/power/disk,
+> echo disk > /sys/power/state.
+> Let's see if other people has more suggestions.
 
-That depends a good deal on what those ranges were reserved for.
-There very well may not be anything vital in there.
+Thank you for your suggestions.
 
-> So I believe we should take the patch, and let users update their
-> BIOSes. [And I believe it is not too widespread, either.]
->
-> If you want to try to cook a patch that determines if new e820 map is
-> superset of the old one... well... I believe the resulting complexity
-> will be obviously unreasonable but I guess you (or some interested
-> person) can try.
-L
->> Also, that panic() may cause hibernation to stop working in a sort of hard and
->> nasty way where it used to work flawlessly previously and that would be a
->> regression, so not really acceptable.
->
-> Well, turning memory corruption bug into panic is an improvement, not
-> a regression.
+Yes, a LVM daemon was running. Do you think LVM can be responsible for
+the corruption? It is only running on a small partition of my drive, but
+I use it for KVM virtual machines, so it might also be possible that one
+of them was running when I hibernated.
 
-Since we don't do anything about these problems today and presumably
-people use hibernation on the affected systems, there are reasons to
-think that the problem is not quite as grave as you're painting it.
+I can't create any swap file as all my filesystems are BTRFS but I
+created a LVM swap volume instead. I then tried to echo test_resume
+but this option is not available in my kernel:
 
-But that aside, adding a panic() like in this patch isn't particularly
-useful anyway, because it panics the restore kernel.  It is sufficient
-to make arch_hibernation_header_restore() return an error to actually
-fail the resume and cause the restore kernel to discard the image.
-And that would preserve the information about the failure in the
-kernel log at least.
+# cat /sys/power/disk
+[platform] shutdown reboot suspend 
 
-Thanks,
-Rafael
+I found in this documentation page that I can try reboot, shutdown and
+then platform: Documentation/power/drivers-testing.txt. I tested all 3
+without reboot in between. I saved the dmesg output in case anyone is
+interested, but I didn't find anything abnormal.
