@@ -1,265 +1,186 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 3/4] acpi: cppc: Add support for functional fixed hardware address
-Date: Thu,  1 Sep 2016 13:37:10 -0700
-Message-ID: <1472762231-88923-4-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1472762231-88923-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1472762231-88923-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, peterz@infradead.org
-Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com, alexey.klimov@arm.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 2/8] sched: Extend scheduler's asym packing
+Date: Thu,  1 Sep 2016 13:33:38 -0700
+Message-ID: <1472762024-88771-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga05.intel.com ([192.55.52.43]:33986 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750713AbcIAVGu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 1 Sep 2016 17:06:50 -0400
+In-Reply-To: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, peterz@infradead.org
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-The CPPC registers can also be accessed via functional fixed hardware
-addresse(FFH) in X86. Add support by modifying cpc_read and cpc_write to
-be able to read/write MSRs on x86 platform on per cpu basis.
-Also with this change, acpi_cppc_processor_probe doesn't bail out if
-address space id is not equal to PCC or memory address space and FFH
-is supported on the system.
+From: Tim Chen <tim.c.chen@linux.intel.com>
 
+We generalize the scheduler's asym packing to provide an ordering
+of the cpu beyond just the cpu number.  This allows the use of the
+ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
+sched domain. The preference is defined with the cpu priority
+given by arch_asym_cpu_priority(cpu).
+
+We also record the most preferred cpu in a sched group when
+we build the cpu's capacity for fast lookup of preferred cpu
+during load balancing.
+
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- arch/x86/kernel/acpi/Makefile   |  1 +
- arch/x86/kernel/acpi/cppc_msr.c | 58 +++++++++++++++++++++++++++++++
- drivers/acpi/cppc_acpi.c        | 75 ++++++++++++++++++++++++++++++++++-------
- 3 files changed, 121 insertions(+), 13 deletions(-)
- create mode 100644 arch/x86/kernel/acpi/cppc_msr.c
+ include/linux/sched.h |  2 ++
+ kernel/sched/core.c   | 18 ++++++++++++++++++
+ kernel/sched/fair.c   | 35 ++++++++++++++++++++++++-----------
+ kernel/sched/sched.h  | 12 ++++++++++++
+ 4 files changed, 56 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/Makefile b/arch/x86/kernel/acpi/Makefile
-index 3242e59..26b78d8 100644
---- a/arch/x86/kernel/acpi/Makefile
-+++ b/arch/x86/kernel/acpi/Makefile
-@@ -1,6 +1,7 @@
- obj-$(CONFIG_ACPI)		+= boot.o
- obj-$(CONFIG_ACPI_SLEEP)	+= sleep.o wakeup_$(BITS).o
- obj-$(CONFIG_ACPI_APEI)		+= apei.o
-+obj-$(CONFIG_ACPI_CPPC_LIB)	+= cppc_msr.o
- 
- ifneq ($(CONFIG_ACPI_PROCESSOR),)
- obj-y				+= cstate.o
-diff --git a/arch/x86/kernel/acpi/cppc_msr.c b/arch/x86/kernel/acpi/cppc_msr.c
-new file mode 100644
-index 0000000..6fb478b
---- /dev/null
-+++ b/arch/x86/kernel/acpi/cppc_msr.c
-@@ -0,0 +1,58 @@
-+/*
-+ * cppc_msr.c:  MSR Interface for CPPC
-+ * Copyright (c) 2016, Intel Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ */
-+
-+#include <acpi/cppc_acpi.h>
-+#include <asm/msr.h>
-+
-+/* Refer to drivers/acpi/cppc_acpi.c for the description of functions */
-+
-+bool cpc_ffh_supported(void)
-+{
-+	return true;
-+}
-+
-+int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val)
-+{
-+	int err;
-+
-+	err = rdmsrl_safe_on_cpu(cpunum, reg->address, val);
-+	if (!err) {
-+		u64 mask = GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
-+				       reg->bit_offset);
-+
-+		*val &= mask;
-+		*val >>= reg->bit_offset;
-+	}
-+	return err;
-+}
-+
-+int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
-+{
-+	u64 rd_val;
-+	int err;
-+
-+	err = rdmsrl_safe_on_cpu(cpunum, reg->address, &rd_val);
-+	if (!err) {
-+		u64 mask = GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
-+				       reg->bit_offset);
-+
-+		val <<= reg->bit_offset;
-+		val &= mask;
-+		rd_val &= ~mask;
-+		rd_val |= val;
-+		err = wrmsrl_safe_on_cpu(cpunum, reg->address, rd_val);
-+	}
-+	return err;
-+}
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index ed58883..715fe80 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -579,6 +579,19 @@ static int register_pcc_channel(int pcc_subspace_idx)
- 	return 0;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b0fa726..15d3f29 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1052,6 +1052,8 @@ static inline int cpu_numa_flags(void)
  }
+ #endif
  
-+/**
-+ * cpc_ffh_supported() - check if FFH reading supported
-+ *
-+ * Check if the architecture has support for functional fixed hardware
-+ * read/write capability.
-+ *
-+ * Return: true for supported, false for not supported
-+ */
-+bool __weak cpc_ffh_supported(void)
-+{
-+	return false;
-+}
++int arch_asym_cpu_priority(int cpu);
 +
- /*
-  * An example CPC table looks like the following.
-  *
-@@ -728,9 +741,11 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 					cpc_ptr->cpc_regs[i-2].sys_mem_vaddr = addr;
- 				}
- 			} else {
--				/* Support only PCC and SYS MEM type regs */
--				pr_debug("Unsupported register type: %d\n", gas_t->space_id);
--				goto out_free;
-+				if (gas_t->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE || !cpc_ffh_supported()) {
-+					/* Support only PCC ,SYS MEM and FFH type regs */
-+					pr_debug("Unsupported register type: %d\n", gas_t->space_id);
-+					goto out_free;
-+				}
- 			}
+ struct sched_domain_attr {
+ 	int relax_domain_level;
+ };
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index e86c4a5..08135ca 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6237,7 +6237,25 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
+ 	WARN_ON(!sg);
  
- 			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_BUFFER;
-@@ -819,13 +834,43 @@ void acpi_cppc_processor_exit(struct acpi_processor *pr)
- }
- EXPORT_SYMBOL_GPL(acpi_cppc_processor_exit);
+ 	do {
++		int cpu, max_cpu = -1, prev_cpu = -1;
++
+ 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
++
++		if (!(sd->flags & SD_ASYM_PACKING))
++			goto next;
++
++		for_each_cpu(cpu, sched_group_cpus(sg)) {
++			if (prev_cpu < 0) {
++				prev_cpu = cpu;
++				max_cpu = cpu;
++			} else {
++				if (sched_asym_prefer(cpu, max_cpu))
++					max_cpu = cpu;
++			}
++		}
++		sg->asym_prefer_cpu = max_cpu;
++
++next:
+ 		sg = sg->next;
+ 	} while (sg != sd->groups);
  
-+/**
-+ * cpc_read_ffh() - Read FFH register
-+ * @cpunum:	cpu number to read
-+ * @reg:	cppc register information
-+ * @val:	place holder for return value
-+ *
-+ * Read bit_width bits from a specified address and bit_offset
-+ *
-+ * Return: 0 for success and error code
-+ */
-+int __weak cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val)
-+{
-+	return -ENOTSUPP;
-+}
-+
-+/**
-+ * cpc_write_ffh() - Write FFH register
-+ * @cpunum:	cpu number to write
-+ * @reg:	cppc register information
-+ * @val:	value to write
-+ *
-+ * Write value of bit_width bits to a specified address and bit_offset
-+ *
-+ * Return: 0 for success and error code
-+ */
-+int __weak cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
-+{
-+	return -ENOTSUPP;
-+}
-+
- /*
-  * Since cpc_read and cpc_write are called while holding pcc_lock, it should be
-  * as fast as possible. We have already mapped the PCC subspace during init, so
-  * we can directly write to it.
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 5d558cc..d8f51d9 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -100,6 +100,16 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
   */
+ unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
  
--static int cpc_read(struct cpc_register_resource *reg_res, u64 *val)
-+static int cpc_read(int cpu, struct cpc_register_resource *reg_res, u64 *val)
- {
- 	int ret_val = 0;
- 	void __iomem *vaddr = 0;
-@@ -841,6 +886,8 @@ static int cpc_read(struct cpc_register_resource *reg_res, u64 *val)
- 		vaddr = GET_PCC_VADDR(reg->address);
- 	else if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY)
- 		vaddr = reg_res->sys_mem_vaddr;
-+	else if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE)
-+		return cpc_read_ffh(cpu, reg, val);
- 	else
- 		return acpi_os_read_memory((acpi_physical_address)reg->address,
- 				val, reg->bit_width);
-@@ -867,7 +914,7 @@ static int cpc_read(struct cpc_register_resource *reg_res, u64 *val)
- 	return ret_val;
- }
++#ifdef CONFIG_SMP
++/*
++ * For asym packing, by default the lower numbered cpu has higher priority.
++ */
++int __weak arch_asym_cpu_priority(int cpu)
++{
++	return -cpu;
++}
++#endif
++
+ #ifdef CONFIG_CFS_BANDWIDTH
+ /*
+  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
+@@ -6853,16 +6863,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
+ 	if (env->idle == CPU_NOT_IDLE)
+ 		return true;
+ 	/*
+-	 * ASYM_PACKING needs to move all the work to the lowest
+-	 * numbered CPUs in the group, therefore mark all groups
+-	 * higher than ourself as busy.
++	 * ASYM_PACKING needs to move all the work to the highest
++	 * prority CPUs in the group, therefore mark all groups
++	 * of lower priority than ourself as busy.
+ 	 */
+-	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
++	if (sgs->sum_nr_running &&
++	    sched_asym_prefer(env->dst_cpu, group_priority_cpu(sg))) {
+ 		if (!sds->busiest)
+ 			return true;
  
--static int cpc_write(struct cpc_register_resource *reg_res, u64 val)
-+static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
- {
- 	int ret_val = 0;
- 	void __iomem *vaddr = 0;
-@@ -877,6 +924,8 @@ static int cpc_write(struct cpc_register_resource *reg_res, u64 val)
- 		vaddr = GET_PCC_VADDR(reg->address);
- 	else if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY)
- 		vaddr = reg_res->sys_mem_vaddr;
-+	else if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE)
-+		return cpc_write_ffh(cpu, reg, val);
- 	else
- 		return acpi_os_write_memory((acpi_physical_address)reg->address,
- 				val, reg->bit_width);
-@@ -941,13 +990,13 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
- 		}
+-		/* Prefer to move from highest possible cpu's work */
+-		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
++		/* Prefer to move from lowest priority cpu's work */
++		if (sched_asym_prefer(group_priority_cpu(sds->busiest),
++				      group_priority_cpu(sg)))
+ 			return true;
  	}
  
--	cpc_read(highest_reg, &high);
-+	cpc_read(cpunum, highest_reg, &high);
- 	perf_caps->highest_perf = high;
+@@ -7014,8 +7026,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
+ 	if (!sds->busiest)
+ 		return 0;
  
--	cpc_read(lowest_reg, &low);
-+	cpc_read(cpunum, lowest_reg, &low);
- 	perf_caps->lowest_perf = low;
+-	busiest_cpu = group_first_cpu(sds->busiest);
+-	if (env->dst_cpu > busiest_cpu)
++	busiest_cpu = group_priority_cpu(sds->busiest);
++	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
+ 		return 0;
  
--	cpc_read(nom_perf, &nom);
-+	cpc_read(cpunum, nom_perf, &nom);
- 	perf_caps->nominal_perf = nom;
+ 	env->imbalance = DIV_ROUND_CLOSEST(
+@@ -7356,10 +7368,11 @@ static int need_active_balance(struct lb_env *env)
  
- 	if (!high || !low || !nom)
-@@ -1004,9 +1053,9 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
- 		}
+ 		/*
+ 		 * ASYM_PACKING needs to force migrate tasks from busy but
+-		 * higher numbered CPUs in order to pack all tasks in the
+-		 * lowest numbered CPUs.
++		 * lower priority CPUs in order to pack all tasks in the
++		 * highest priority CPUs.
+ 		 */
+-		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
++		if ((sd->flags & SD_ASYM_PACKING) &&
++		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
+ 			return 1;
  	}
  
--	cpc_read(delivered_reg, &delivered);
--	cpc_read(reference_reg, &reference);
--	cpc_read(ref_perf_reg, &ref_perf);
-+	cpc_read(cpunum, delivered_reg, &delivered);
-+	cpc_read(cpunum, reference_reg, &reference);
-+	cpc_read(cpunum, ref_perf_reg, &ref_perf);
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index b7fc1ce..f338934 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -532,6 +532,17 @@ struct dl_rq {
+ 
+ #ifdef CONFIG_SMP
+ 
++static inline bool sched_asym_prefer(int a, int b)
++{
++	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
++}
++
++/*
++ * Return lowest numbered cpu in the group as the most preferred cpu
++ * for ASYM_PACKING for default case.
++ */
++#define group_priority_cpu(group) group->asym_prefer_cpu
++
+ /*
+  * We add the notion of a root-domain which will be used to define per-domain
+  * variables. Each exclusive cpuset essentially defines an island domain by
+@@ -884,6 +895,7 @@ struct sched_group {
+ 
+ 	unsigned int group_weight;
+ 	struct sched_group_capacity *sgc;
++	int asym_prefer_cpu;		/* cpu of highest priority in group */
  
  	/*
- 	 * Per spec, if ctr_wrap_time optional register is unsupported, then the
-@@ -1015,7 +1064,7 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
- 	 */
- 	ctr_wrap_time = (u64)(~((u64)0));
- 	if (CPC_SUPPORTED(ctr_wrap_reg))
--		cpc_read(ctr_wrap_reg, &ctr_wrap_time);
-+		cpc_read(cpunum, ctr_wrap_reg, &ctr_wrap_time);
- 
- 	if (!delivered || !reference ||	!ref_perf) {
- 		ret = -EFAULT;
-@@ -1082,7 +1131,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
- 	 * Skip writing MIN/MAX until Linux knows how to come up with
- 	 * useful values.
- 	 */
--	cpc_write(desired_reg, perf_ctrls->desired_perf);
-+	cpc_write(cpu, desired_reg, perf_ctrls->desired_perf);
- 
- 	if (CPC_IN_PCC(desired_reg))
- 		up_read(&pcc_data.pcc_lock);	/* END Phase-I */
+ 	 * The CPUs this group covers.
 -- 
 2.7.4
 
