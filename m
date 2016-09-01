@@ -1,132 +1,167 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH v6 2/8] arm: parse cpu capacity-dmips-mhz from DT
-Date: Thu, 1 Sep 2016 09:50:52 +0100
-Message-ID: <20160901085052.GN9337@e106622-lin>
-References: <1468932048-31635-1-git-send-email-juri.lelli@arm.com>
- <1468932048-31635-3-git-send-email-juri.lelli@arm.com>
- <CAKfTPtBy7LGCW2T4AGoqL5L_1AHtW6KxHigxFVFVc_EU4oUO0g@mail.gmail.com>
- <20160830162853.GF9337@e106622-lin>
- <CAKfTPtDAjedxh9J2rqOwafrmubN6+-wDyTRdNQh6fCAb2HS4RQ@mail.gmail.com>
- <20160831170835.GL9337@e106622-lin>
- <CAKfTPtAuo+d=NspXRjZuaHHmi70Ky+gNCoVcQBa1aGxkMP+F1g@mail.gmail.com>
+From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Subject: Re: [PATCH v4 1/2] Documentation: Add sbs-manager device tree node
+ documentation
+Date: Thu, 1 Sep 2016 17:00:32 +0800
+Message-ID: <e8912f2d-66f9-75c5-e0b7-8a33845e8aa2@electromag.com.au>
+References: <1bIiDr-0004G1-0P>
+ <1472156461-25180-1-git-send-email-karl-heinz@schneider-inet.de>
+ <1472156461-25180-2-git-send-email-karl-heinz@schneider-inet.de>
+ <20160831144349.GA18510@rob-hp-laptop>
+ <1472673151.5102.12.camel@schneider-inet.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtAuo+d=NspXRjZuaHHmi70Ky+gNCoVcQBa1aGxkMP+F1g@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Brown <broonie@kernel.org>, Will Deacon <will.deacon@arm.com>, linux-kernel <linux-kernel@vger.kernel.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Rob Herring <robh+dt@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, LAK <linux-arm-kernel@lists.infradead.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1472673151.5102.12.camel-X5L7DgJ4l23oE99TX8zNy7NAH6kLmebB@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Karl-Heinz Schneider <karl-heinz-X5L7DgJ4l23oE99TX8zNy7NAH6kLmebB@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/09/16 10:22, Vincent Guittot wrote:
-> On 31 August 2016 at 19:08, Juri Lelli <juri.lelli@arm.com> wrote:
-> > On 31/08/16 10:14, Vincent Guittot wrote:
-> >> On 30 August 2016 at 18:28, Juri Lelli <juri.lelli@arm.com> wrote:
-> >> > Hi Vincent,
-> >> >
-> >> > On 16/08/16 10:20, Vincent Guittot wrote:
-> >> >> Hi Juri,
-> >> >>
-> >> >>
-> >> >> On 19 July 2016 at 14:40, Juri Lelli <juri.lelli@arm.com> wrote:
-> >> >
-> >> > [...]
-> >> >
-> >> >> > +static int
-> >> >> > +init_cpu_capacity_callback(struct notifier_block *nb,
-> >> >> > +                          unsigned long val,
-> >> >> > +                          void *data)
-> >> >> > +{
-> >> >> > +       struct cpufreq_policy *policy = data;
-> >> >> > +       int cpu;
-> >> >> > +
-> >> >> > +       if (cap_parsing_failed || cap_parsing_done)
-> >> >> > +               return 0;
-> >> >> > +
-> >> >> > +       switch (val) {
-> >> >> > +       case CPUFREQ_NOTIFY:
-> >> >> > +               pr_debug("cpu_capacity: init cpu capacity for CPUs [%*pbl] (to_visit=%*pbl)\n",
-> >> >> > +                               cpumask_pr_args(policy->related_cpus),
-> >> >> > +                               cpumask_pr_args(cpus_to_visit));
-> >> >> > +               cpumask_andnot(cpus_to_visit,
-> >> >> > +                              cpus_to_visit,
-> >> >> > +                              policy->related_cpus);
-> >> >> > +               for_each_cpu(cpu, policy->related_cpus) {
-> >> >> > +                       raw_capacity[cpu] = arch_scale_cpu_capacity(NULL, cpu) *
-> >> >> > +                                           policy->max / 1000UL;
-> >> >>
-> >> >> Should it be policy->cpuinfo.max_freq instead of policy->max ?
-> >> >>
-> >> >
-> >> > Right. I'll fix the arm64 bits as well.
-> >> >
-> >> >> > +                       capacity_scale = max(raw_capacity[cpu], capacity_scale);
-> >> >> > +               }
-> >> >> > +               if (cpumask_empty(cpus_to_visit)) {
-> >> >> > +                       normalize_cpu_capacity();
-> >> >> > +                       kfree(raw_capacity);
-> >> >> > +                       pr_debug("cpu_capacity: parsing done\n");
-> >> >> > +                       cap_parsing_done = true;
-> >> >>
-> >> >> ok so you do that once with the 1st governor that will be registered
-> >> >> for the CPU. Can't you unregister the notifier then ?
-> >> >>
-> >> >
-> >> > I tried, but the only place I could find to unregister it is from the
-> >> > callback itself; and it is not possible to do so AFAIK. Suggestions?
-> >>
-> >> yes, you're right
-> >> Can't you queue a work to unregister your callback ?
-> >
-> > You mean something like this? I guess I thought it would be much more
-> > ugly. :)
-> 
-> Yes something like below.
-> 
-> >
-> > If it looks OK, I'll add the same for arm64 and test it a bit more.
-> >
-> > --->8---
-> >  arch/arm/kernel/topology.c | 14 +++++++++++---
-> >  1 file changed, 11 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-> > index cbc57c287145..672ae22e2768 100644
-> > --- a/arch/arm/kernel/topology.c
-> > +++ b/arch/arm/kernel/topology.c
-> > @@ -215,7 +215,8 @@ static void normalize_cpu_capacity(void)
-> >
-> >  #ifdef CONFIG_CPU_FREQ
-> >  static cpumask_var_t cpus_to_visit;
-> > -static bool cap_parsing_done;
-> > +static void parsing_done_workfn(struct work_struct *work);
-> > +static DECLARE_WORK(parsing_done_work, parsing_done_workfn);
-> >
-> >  static int
-> >  init_cpu_capacity_callback(struct notifier_block *nb,
-> > @@ -225,7 +226,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
-> >         struct cpufreq_policy *policy = data;
-> >         int cpu;
-> >
-> > -       if (cap_parsing_failed || cap_parsing_done)
-> > +       if (cap_parsing_failed)
-> 
-> you probably need to keep cap_parsing_done to prevent spurious
-> notification until the work is scheduled
-> 
+On 1/09/2016 03:52, Karl-Heinz Schneider wrote:
+> Hi Rob,
+>
+> Am Mittwoch, den 31.08.2016, 09:43 -0500 schrieb Rob Herring:
+>> On Thu, Aug 25, 2016 at 10:21:00PM +0200, Karl-Heinz Schneider wrote:
+>>>
+>>> This patch adds device tree documentation for the sbs-manager
+>>>
+>>> Reviewed-by: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+>>> Signed-off-by: Karl-Heinz Schneider <karl-heinz-X5L7DgJ4l23oE99TX8zNy7NAH6kLmebB@public.gmane.org>
+>>> ---
+>>>  .../devicetree/bindings/power/sbs,sbs-manager.txt  | 53
+>>> ++++++++++++++++++++++
+>>>  1 file changed, 53 insertions(+)
+>>>  create mode 100644
+>>> Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+>>>
+>>> diff --git a/Documentation/devicetree/bindings/power/sbs,sbs-
+>>> manager.txt b/Documentation/devicetree/bindings/power/sbs,sbs-
+>>> manager.txt
+>>> new file mode 100644
+>>> index 0000000..6b1a87ce
+>>> --- /dev/null
+>>> +++ b/Documentation/devicetree/bindings/power/sbs,sbs-manager.txt
+>>> @@ -0,0 +1,53 @@
+>>> +Binding for sbs-manager
+>>> +
+>>> +Required properties:
+>>> +- compatible: should be "lltc,ltc1760" or use "sbs,sbs-manager" as
+>>> fallback.
+>>> +- reg: integer, i2c address of the device. Should be <0xa>.
+>> What happened to adding Phil's interrupt support into this? You
+>> don't
+>> have to add the whole patch, just the binding part. The driver
+>> support
+>> can come later.
+>
+> Phil revoked his patch. Right now it's not clear how the interrupt/gpio
+> solution will look like and if they will need an device tree binding at
+> all...
 
-OK. Thanks.
+I'm getting back to this now.
+I think we can use the smbalert driver to handle the source interrupt.
+Which I think doesn't need anything in the dt binding. Driver just needs to
+implement the alert callback.
 
-Best,
+I haven't figured out if the smb_alert could be used for the sbs-battery
+driver interrupt or if this would make sense. However I think it would still need
+to be a gpio controller in either case so that it can report the presence of the
+batteries in a manner suitable for the sbs-battery driver to use.
+I think the gpio controller approach is the simpler method.
 
-- Juri
+It looks like the smbalert_driver driver needs some updates to work with device trees.
+I need a bit more time to investigate this option.
+
+
+>
+>>
+>>>
+>>> +
+>>> +From OS view the device is basically an i2c-mux used to
+>>> communicate with up to
+>>> +four smart battery devices at address 0xb. The driver actually
+>>> implements this
+>>> +behaviour. So standard i2c-mux nodes can be used to register up to
+>>> four slave
+>>> +batteries. See Documentation/devicetree/bindings/i2c/i2c-mux.txt
+>>> for more
+>>> +information on i2c-mux nodes. Channels will be numerated starting
+>>> from 1 to 4.
+>>> +
+>>> +Example:
+>>> +
+>>> +batman@0a {
+>> drop leading 0.
+>
+> OK.
+>
+>>>
+>>> +    compatible = "lltc,ltc1760";
+>>> +    reg = <0x0a>;
+>
+> Will remove leading 0 at this places too.
+>
+>>> +    #address-cells = <1>;
+>>> +    #size-cells = <0>;
+>>> +
+>>> +    i2c@1 {
+>>> +        #address-cells = <1>;
+>>> +        #size-cells = <0>;
+>>> +        reg = <1>;
+>>> +
+>>> +        battery@0b {
+>> and here...
+>
+> OK.
+>
+>>>
+>>> +            compatible = "ti,bq2060", "sbs,sbs-battery";
+>>> +            reg = <0x0b>;
+>>> +        };
+>>> +    };
+>>> +
+>>> +    i2c@2 {
+>>> +        #address-cells = <1>;
+>>> +        #size-cells = <0>;
+>>> +        reg = <2>;
+>>> +
+>>> +        battery@0b {
+>>> +            compatible = "ti,bq2060", "sbs,sbs-battery";
+>>> +            reg = <0x0b>;
+>>> +        };
+>>> +    };
+>>> +
+>>> +    i2c@3 {
+>>> +        #address-cells = <1>;
+>>> +        #size-cells = <0>;
+>>> +        reg = <3>;
+>>> +
+>>> +        battery@0b {
+>>> +            compatible = "ti,bq2060", "sbs,sbs-battery";
+>>> +            reg = <0x0b>;
+>>> +        };
+>>> +    };
+>>> +};
+>
+>
+> Thanks for review Rob.
+>
+
+
+-- 
+Regards
+Phil Reid
+
+ElectroMagnetic Imaging Technology Pty Ltd
+Development of Geophysical Instrumentation & Software
+www.electromag.com.au
+
+3 The Avenue, Midland WA 6056, AUSTRALIA
+Ph: +61 8 9250 8100
+Fax: +61 8 9250 7100
+Email: preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
