@@ -1,53 +1,120 @@
-From: <Wenyou.Yang-UWL1GkI3JZL3oGB3hsPCZA@public.gmane.org>
-Subject: RE: [PATCH v9 3/4] doc: bindings: mfd: act8945a: Update the example
-Date: Thu, 1 Sep 2016 12:52:51 +0000
-Message-ID: <F9F4555C4E01D7469D37975B62D0EFBB3B600E@CHN-SV-EXMX07.mchp-main.com>
-References: <1472722201-31872-1-git-send-email-wenyou.yang@atmel.com>
- <1472722201-31872-4-git-send-email-wenyou.yang@atmel.com>
- <20160901112251.GK4921@dell> <20160901124746.vbhrz4f53vb63d7t@earth>
+From: Andreas Herrmann <aherrmann@suse.com>
+Subject: Re: [PATCH 1/1] cpufreq: pcc-cpufreq: Re-introduce deadband effect
+ to reduce number of frequency changes
+Date: Thu, 1 Sep 2016 15:21:40 +0200
+Message-ID: <20160901132140.GA10183@suselix.suse.de>
+References: <20160819121814.GA17296@suselix.suse.de>
+ <20160819122101.GB17296@suselix.suse.de>
+ <20160829060153.GA5094@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160901124746.vbhrz4f53vb63d7t@earth>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org, alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160829060153.GA5094@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2ViYXN0aWFuIFJlaWNo
-ZWwgW21haWx0bzpzcmVAa2VybmVsLm9yZ10NCj4gU2VudDogMjAxNsTqOdTCMcjVIDIwOjQ4DQo+
-IFRvOiBMZWUgSm9uZXMgPGxlZS5qb25lc0BsaW5hcm8ub3JnPg0KPiBDYzogV2VueW91IFlhbmcg
-LSBBNDE1MzUgPFdlbnlvdS5ZYW5nQG1pY3JvY2hpcC5jb20+OyBEbWl0cnkgRXJlbWluLQ0KPiBT
-b2xlbmlrb3YgPGRiYXJ5c2hrb3ZAZ21haWwuY29tPjsgRGF2aWQgV29vZGhvdXNlDQo+IDxkd213
-MkBpbmZyYWRlYWQub3JnPjsgUm9iIEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9yZz47IFBhd2Vs
-IE1vbGwNCj4gPHBhd2VsLm1vbGxAYXJtLmNvbT47IE1hcmsgUnV0bGFuZCA8bWFyay5ydXRsYW5k
-QGFybS5jb20+OyBJYW4gQ2FtcGJlbGwNCj4gPGlqYytkZXZpY2V0cmVlQGhlbGxpb24ub3JnLnVr
-PjsgS3VtYXIgR2FsYSA8Z2FsYWtAY29kZWF1cm9yYS5vcmc+OyBOaWNvbGFzDQo+IEZlcnJlIDxu
-aWNvbGFzLmZlcnJlQGF0bWVsLmNvbT47IEFsZXhhbmRyZSBCZWxsb25pIDxhbGV4YW5kcmUuYmVs
-bG9uaUBmcmVlLQ0KPiBlbGVjdHJvbnMuY29tPjsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
-ZzsgV2VueW91IFlhbmcgLSBBNDE1MzUNCj4gPFdlbnlvdS5ZYW5nQG1pY3JvY2hpcC5jb20+OyBk
-ZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLQ0KPiBrZXJuZWxAbGlzdHMuaW5m
-cmFkZWFkLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0ggdjkgMy80XSBkb2M6IGJpbmRpbmdzOiBtZmQ6IGFjdDg5NDVhOiBVcGRhdGUgdGhlIGV4YW1w
-bGUNCj4gDQo+IEhpIExlZSwNCj4gDQo+IE9uIFRodSwgU2VwIDAxLCAyMDE2IGF0IDEyOjIyOjUx
-UE0gKzAxMDAsIExlZSBKb25lcyB3cm90ZToNCj4gPiBPbiBUaHUsIDAxIFNlcCAyMDE2LCBXZW55
-b3UgWWFuZyB3cm90ZToNCj4gPg0KPiA+ID4gU2luY2UgdGhlIGFjdDg5NDVhLWNoYXJnZXIgaXMg
-cmVnYXJkZWQgYXMgYSBzdWItZGV2aWNlIGFuZCBpdCB1c2luZw0KPiA+ID4gImludGVycnVwdHMi
-IHByb3BlcnR5LCB1cGRhdGUgdGhlIGV4YW1wbGVzIHNlY3Rpb24uDQo+ID4gPg0KPiA+ID4gU2ln
-bmVkLW9mZi1ieTogV2VueW91IFlhbmcgPHdlbnlvdS55YW5nQGF0bWVsLmNvbT4NCj4gPiA+IC0t
-LQ0KPiA+ID4NCj4gPiA+IENoYW5nZXMgaW4gdjk6IE5vbmUNCj4gPiA+IENoYW5nZXMgaW4gdjg6
-IE5vbmUNCj4gPiA+IENoYW5nZXMgaW4gdjc6IE5vbmUNCj4gPiA+IENoYW5nZXMgaW4gdjY6IE5v
-bmUNCj4gPiA+IENoYW5nZXMgaW4gdjQ6IE5vbmUNCj4gPiA+DQo+ID4gPiAgRG9jdW1lbnRhdGlv
-bi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9hY3Q4OTQ1YS50eHQgfCAyMg0KPiA+ID4gKysrKysr
-KysrKysrKysrLS0tLS0tLQ0KPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxNSBpbnNlcnRpb25zKCsp
-LCA3IGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gVGhpcyBpcyBhIGZ1bmN0aW9uYWwgY2hhbmdlLiAg
-SSdsbCByZXF1aXJlIGEgRFQgQWNrLg0KPiANCj4gV2VueW91IFlhbmcgZm9yZ290IHRvIHRha2Ug
-b3ZlciBSb2IncyBBY2tlZC1CeSBmcm9tIHRoZSBwcmV2aW91cw0KPiB2ZXJzaW9uOiBodHRwczov
-L3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzkyOTg4NzEvDQoNClllcywgc29ycnkuIEkgZm9y
-Z290Lg0KDQoNCkJlc3QgUmVnYXJkcywNCldlbnlvdSBZYW5nDQo=
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Mon, Aug 29, 2016 at 11:31:53AM +0530, Viresh Kumar wrote:
+> On 19-08-16, 14:21, Andreas Herrmann wrote:
+> > 
+> > Commit 6393d6a102 (cpufreq: ondemand: Eliminate the deadband effect)
+> > introduced a performance regression for systems using pcc-cpufreq and
+> > ondemand governor. This is measurable with different workloads. E.g.
+> > wall-clock time for kernel compilation significantly increased.
+> > 
+> > The elimination of the deadband effect significantly increased the
+> > number of frequency changes with pcc-cpufreq.
+> > 
+> > Instead of reverting commit 6393d6a102 I suggest to add a workaround
+> > in pcc-cpufreq to re-introduce the deadband effect for this driver
+> > only - to restore the old performance behaviour with pcc-cpufreq with
+> > ondemand governor.
+> > 
+> > Following some performance numbers for similar kernel compilations to
+> > illustrate the effect of commit 6393d6a102 and the proposed fix.
+> > 
+> > Following typical numbers of kernel compilation tests with varying number of
+> > compile jobs:
+> > 
+> >                      v4.8.0-rc2               4.8.0-rc2-pcc-cpufreq-deadband
+> >  # of jobst   user     sys   elapsed   CPU     user     sys   elapsed   CPU
+> >        2     440.39  116.49  4:33.35   203%   404.85  109.10  4:10.35   205%
+> >        4     436.87  133.39  2:22.88   399%   381.83  128.00  2:06.84   401%
+> >        8     475.49  157.68  1:22.24   769%   344.36  149.08  1:04.29   767%
+> >       16     620.69  188.33  0:54.74  1477%   374.60  157.40  0:36.76  1447%
+> >       32     815.79  209.58  0:37.22  2754%   490.46  160.22  0:24.87  2616%
+> >       64     394.13   60.55  0:13.54  3355%   386.54   60.33  0:12.79  3493%
+> >      120     398.24   61.55  0:14.60  3148%   390.44   61.19  0:13.07  3453%
+> > 
+> > (HP ProLiant DL580 Gen8 system, 60 CPUs @ 2.80GHz)
+> > 
+> > Link: http://marc.info/?l=linux-pm&m=147160912625600
+> > Signed-off-by: Andreas Herrmann <aherrmann@suse.com>
+> > ---
+> >  drivers/cpufreq/pcc-cpufreq.c | 20 ++++++++++++++++++++
+> >  1 file changed, 20 insertions(+)
+> > 
+> > If this change is accepted maybe it's a good idea to tag it also for
+> > stable kernels, e.g. starting with v4.4.
+
+> I am _really_ worried about such hacks in drivers to negate the effect of a
+> patch, that was actually good.
+
+> Did you try to increase the sampling period of ondemand governor to see if that
+> helps without this patch.
+
+With an older kernel I've modified transition_latency of the driver
+which in turn is used to calculate the sampling rate.
+
+I started with the value return as "nominal latency" for PCC.  This
+was 300000 ns on the test system and made things worse.  I've tested
+other values as well unitl I've found a local optimium at 45000ns but
+performance was lower in comparison to when I've applied my hack.
+
+> Also, it is important to understand why is the performance going
+> down, while the original commit should have made it better.
+
+My understanding is that the original commit was tested with certain
+combinations of hardware and cpufreq-drivers and the claim was that
+for those (two?) tested combinations performance increased and power
+consumption was lower. So I am not so sure what to expect from all
+other cpufreq-driver/hardware combinations.
+
+> Is it only about more transitions ?
+
+I think this is the main issue.
+
+In an older kernel version I activated/added debug output in
+__cpufreq_driver_target(). Of course this creates a huge amount of
+messages. But with original patch reverted it was like:
+
+[   29.489677] cpufreq: target for CPU 0: 1760000 kHz (1200000 kHz), relation 2, requested 1760000 kHz
+[   29.570364] cpufreq: target for CPU 0: 1216000 kHz (1760000 kHz), relation 2, requested 1216000 kHz
+[   29.571055] cpufreq: target for CPU 1: 1200000 kHz (1148000 kHz), relation 0, requested 1200000 kHz
+[   29.571483] cpufreq: target for CPU 1: 1200000 kHz (1200000 kHz), relation 2, requested 1200000 kHz
+[   29.572042] cpufreq: target for CPU 2: 1200000 kHz (1064000 kHz), relation 0, requested 1200000 kHz
+[   29.572503] cpufreq: target for CPU 2: 1200000 kHz (1200000 kHz), relation 2, requested 1200000 kHz
+
+a lot of stuff, but system could still handle it and booted to the
+prompt.
+
+With the original patch applied the system was really flooded and
+eventually became unresponsive:
+
+** 459 printk messages dropped ** [   29.838689] cpufreq: target for CPU 43: 1408000 kHz (2384000 kHz), relation 2, requested 1408000 kHz
+** 480 printk messages dropped ** [   29.993849] cpufreq: target for CPU 54: 1200000 kHz (1248000 kHz), relation 2, requested 1200000 kHz
+** 413 printk messages dropped ** [   30.113921] cpufreq: target for CPU 59: 2064000 kHz (1248000 kHz), relation 2, requested 2064000 kHz
+** 437 printk messages dropped ** [   30.245846] cpufreq: target for CPU 21: 1296000 kHz (1296000 kHz), relation 2, requested 1296000 kHz
+** 435 printk messages dropped ** [   30.397748] cpufreq: target for CPU 13: 1280000 kHz (2640000 kHz), relation 2, requested 1280000 kHz
+** 480 printk messages dropped ** [   30.541846] cpufreq: target for CPU 58: 2112000 kHz (1632000 kHz), relation 2, requested 2112000 kHz
+
+
+Of course, ideas to further debug this are welcome, or suggestions
+to fix the issue in another way.
+
+
+Thanks,
+
+Andreas
