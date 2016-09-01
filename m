@@ -1,74 +1,93 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH 4/5] PM / devfreq: rockchip: add devfreq driver for rk3399
- dmc
-Date: Fri, 02 Sep 2016 01:17:41 +0200
-Message-ID: <8339852.vAWNvCSMju@diego>
-References: <1472769085-20715-1-git-send-email-hl@rock-chips.com>
- <1472769085-20715-5-git-send-email-hl@rock-chips.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v2 6/8] acpi: bus: Enable HWP CPPC objects
+Date: Thu, 01 Sep 2016 16:46:17 -0700
+Message-ID: <1472773577.5025.47.camel@linux.intel.com>
+References: <201609020709.8zHryPZ7%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <1472769085-20715-5-git-send-email-hl@rock-chips.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Lin Huang <hl@rock-chips.com>
-Cc: tixy@linaro.org, mark.rutland@arm.com, devicetree@vger.kernel.org, typ@rock-chips.com, linux-rockchip@lists.infradead.org, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, MyngJoo Ham <myngjoo.ham@samsung.com>, sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:6839 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750697AbcIAXqS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 1 Sep 2016 19:46:18 -0400
+In-Reply-To: <201609020709.8zHryPZ7%fengguang.wu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kbuild test robot <lkp@intel.com>
+Cc: kbuild-all@01.org, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, peterz@infradead.org, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com
 
-QW0gRnJlaXRhZywgMi4gU2VwdGVtYmVyIDIwMTYsIDA2OjMxOjI0IHNjaHJpZWIgTGluIEh1YW5n
-Ogo+IGJhc2Ugb24gZGZpIHJlc3VsdCwgd2UgZG8gZGRyIGZyZXF1ZW5jeSBzY2FsaW5nLCByZWdp
-c3Rlcgo+IGRtYyBkcml2ZXIgdG8gZGV2ZnJlcSBmcmFtZXdvcmssIGFuZCB1c2Ugc2ltcGxlLW9u
-ZGVtYW5kCj4gcG9saWN5Lgo+IAo+IFNpZ25lZC1vZmYtYnk6IExpbiBIdWFuZyA8aGxAcm9jay1j
-aGlwcy5jb20+Cj4gU2lnbmVkLW9mZi1ieTogTXluZ0pvbyBIYW0gPG15bmdqb28uaGFtQHNhbXN1
-bmcuY29tPgo+IFJldmlld2VkLWJ5OiBDaGFud29vIENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNv
-bT4KPiAtLS0KClsuLi5dCgo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEvcmszMzk5X2Rt
-Yy5jIGIvZHJpdmVycy9kZXZmcmVxL3JrMzM5OV9kbWMuYwo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0
-Cj4gaW5kZXggMDAwMDAwMC4uNTRkNjVmMgo+IC0tLSAvZGV2L251bGwKPiArKysgYi9kcml2ZXJz
-L2RldmZyZXEvcmszMzk5X2RtYy5jCj4gQEAgLTAsMCArMSw0ODAgQEAKPiArLyoKPiArICogQ29w
-eXJpZ2h0IChjKSAyMDE2LCBGdXpob3UgUm9ja2NoaXAgRWxlY3Ryb25pY3MgQ28uLCBMdGQuCj4g
-KyAqIEF1dGhvcjogTGluIEh1YW5nIDxobEByb2NrLWNoaXBzLmNvbT4KPiArICoKPiArICogVGhp
-cyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFuZC9v
-ciBtb2RpZnkgaXQKPiArICogdW5kZXIgdGhlIHRlcm1zIGFuZCBjb25kaXRpb25zIG9mIHRoZSBH
-TlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSwKPiArICogdmVyc2lvbiAyLCBhcyBwdWJsaXNoZWQg
-YnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbi4KPiArICoKPiArICogVGhpcyBwcm9ncmFt
-IGlzIGRpc3RyaWJ1dGVkIGluIHRoZSBob3BlIGl0IHdpbGwgYmUgdXNlZnVsLCBidXQgV0lUSE9V
-VAo+ICsgKiBBTlkgV0FSUkFOVFk7IHdpdGhvdXQgZXZlbiB0aGUgaW1wbGllZCB3YXJyYW50eSBv
-ZiBNRVJDSEFOVEFCSUxJVFkgb3IKPiArICogRklUTkVTUyBGT1IgQSBQQVJUSUNVTEFSIFBVUlBP
-U0UuICBTZWUgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlCj4gZm9yICsgKiBtb3JlIGRl
-dGFpbHMuCj4gKyAqLwo+ICsKPiArI2luY2x1ZGUgPGxpbnV4L2FybS1zbWNjYy5oPgo+ICsjaW5j
-bHVkZSA8bGludXgvY2xrLmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9kZWxheS5oPgo+ICsjaW5jbHVk
-ZSA8bGludXgvZGV2ZnJlcS5oPgo+ICsjaW5jbHVkZSA8bGludXgvZGV2ZnJlcS1ldmVudC5oPgo+
-ICsjaW5jbHVkZSA8bGludXgvaW50ZXJydXB0Lmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9tb2R1bGUu
-aD4KPiArI2luY2x1ZGUgPGxpbnV4L29mLmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9k
-ZXZpY2UuaD4KPiArI2luY2x1ZGUgPGxpbnV4L3BtX29wcC5oPgo+ICsjaW5jbHVkZSA8bGludXgv
-cmVndWxhdG9yL2NvbnN1bWVyLmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9yd3NlbS5oPgo+ICsjaW5j
-bHVkZSA8bGludXgvc3VzcGVuZC5oPgo+ICsKPiArI2luY2x1ZGUgPHNvYy9yb2NrY2hpcC9yb2Nr
-Y2hpcF9zaXAuaD4KCihSZXBlYXRlZCBmcm9tIHByZXZpb3VzIHZlcnNpb24pCkZvciB0aGUgc2hh
-cmVkIHNpcC1pbnRlcmZhY2UgaGVhZGVyIEkndmUgcHJlcGFyZWQgYSBzaWduZWQsIHN0YWJsZSB0
-YWcKd2hpY2ggY2FuIGJlIHB1bGxlZCBmcm9tCgpUaGUgZm9sbG93aW5nIGNoYW5nZXMgc2luY2Ug
-Y29tbWl0IDI5YjQ4MTdkNDAxOGRmNzgwODYxNTdlYTNhNTVjMWQ5NDI0YTdjZmM6CgogIExpbnV4
-IDQuOC1yYzEgKDIwMTYtMDgtMDcgMTg6MTg6MDAgLTA3MDApCgphcmUgYXZhaWxhYmxlIGluIHRo
-ZSBnaXQgcmVwb3NpdG9yeSBhdDoKCiAgZ2l0Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51
-eC9rZXJuZWwvZ2l0L21taW5kL2xpbnV4LXJvY2tjaGlwLmdpdCB0YWdzL3JvY2tjaGlwLWRkci1z
-aXAKCmZvciB5b3UgdG8gZmV0Y2ggY2hhbmdlcyB1cCB0byA5N2RkODI2ODJmMWE2MTc0Njk4ZmJl
-YTE0OWEwNGI0Y2FiYzU4YzRmOgoKICBzb2M6IHJvY2tjaGlwOiBhZGQgaGVhZGVyIGZvciBkZHIg
-cmF0ZSBTSVAgaW50ZXJmYWNlICgyMDE2LTA4LTMxIDE4OjUzOjI0ICswMjAwKQoKLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpI
-ZWFkZXIgZmlsZSBkZWZpbmluZyB0aGUgU0lQLWludGVyZmFjZSB0byB0aGUgQVRGIGZvciBERFIg
-ZnJlcXVlbmN5IGNoYW5nZXMKCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KTGluIEh1YW5nICgxKToKICAgICAgc29jOiByb2Nr
-Y2hpcDogYWRkIGhlYWRlciBmb3IgZGRyIHJhdGUgU0lQIGludGVyZmFjZQoKIGluY2x1ZGUvc29j
-L3JvY2tjaGlwL3JvY2tjaGlwX3NpcC5oIHwgMjcgKysrKysrKysrKysrKysrKysrKysrKysrKysr
-CiAxIGZpbGUgY2hhbmdlZCwgMjcgaW5zZXJ0aW9ucygrKQogY3JlYXRlIG1vZGUgMTAwNjQ0IGlu
-Y2x1ZGUvc29jL3JvY2tjaGlwL3JvY2tjaGlwX3NpcC5oCl9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJpLWRldmVs
-QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+On Fri, 2016-09-02 at 07:15 +0800, kbuild test robot wrote:
+> Hi Srinivas,
+> 
+> [auto build test ERROR on tip/sched/core]
+> [also build test ERROR on v4.8-rc4 next-20160825]
+> [cannot apply to tip/x86/core]
+> [if your patch is applied to the wrong git tree, please drop us a
+> note to help improve the system]
+> [Suggest to use git(>=2.9.0) format-patch --base=<commit> (or --
+> base=auto for convenience) to record what (public, well-known) commit
+> your patch series was built on]
+> [Check https://git-scm.com/docs/git-format-patch for more
+> information]
+> 
+> url:    https://github.com/0day-ci/linux/commits/Srinivas-Pandruvada/
+> Support-Intel-Turbo-Boost-Max-Technology-3-0/20160902-053224
+> config: arm64-allmodconfig (attached as .config)
+> compiler: aarch64-linux-gnu-gcc (Debian 5.4.0-6) 5.4.0 20160609
+> reproduce:
+>         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tes
+> ts.git/plain/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=arm64 
+> 
+> All errors (new ones prefixed by >>):
+> 
+>    drivers/acpi/bus.c: In function 'acpi_bus_osc_support':
+> > 
+> > > 
+> > > drivers/acpi/bus.c:333:32: error: implicit declaration of
+> > > function 'boot_cpu_has' [-Werror=implicit-function-declaration]
+>      if (IS_ENABLED(CONFIG_X86) && boot_cpu_has(X86_FEATURE_HWP)) {
+>                                    ^
+I have to change back to 
+#ifdef CONFIG_X86
+ if (boot_cpu_has(X86_FEATURE_HWP)) {
+
+I will submit an update.
+
+> > 
+> > > 
+> > > drivers/acpi/bus.c:333:45: error: 'X86_FEATURE_HWP' undeclared
+> > > (first use in this function)
+>      if (IS_ENABLED(CONFIG_X86) && boot_cpu_has(X86_FEATURE_HWP)) {
+>                                                 ^
+>    drivers/acpi/bus.c:333:45: note: each undeclared identifier is
+> reported only once for each function it appears in
+>    cc1: some warnings being treated as errors
+> 
+> vim +/boot_cpu_has +333 drivers/acpi/bus.c
+> 
+>    327		if (IS_ENABLED(CONFIG_ACPI_PROCESSOR))
+>    328			capbuf[OSC_SUPPORT_DWORD] |=
+> OSC_SB_PPC_OST_SUPPORT;
+>    329	
+>    330		capbuf[OSC_SUPPORT_DWORD] |=
+> OSC_SB_HOTPLUG_OST_SUPPORT;
+>    331		capbuf[OSC_SUPPORT_DWORD] |=
+> OSC_SB_PCLPI_SUPPORT;
+>    332	
+>  > 333		if (IS_ENABLED(CONFIG_X86) &&
+> boot_cpu_has(X86_FEATURE_HWP)) {
+>    334			capbuf[OSC_SUPPORT_DWORD] |=
+> OSC_SB_CPC_SUPPORT;
+>    335			capbuf[OSC_SUPPORT_DWORD] |=
+> OSC_SB_CPCV2_SUPPORT;
+>    336		}
+> 
+> ---
+> 0-DAY kernel test infrastructure                Open Source
+> Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel
+> Corporation
