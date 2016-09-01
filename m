@@ -1,43 +1,133 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 6/8] acpi: bus: Enable HWP CPPC objects
-Date: Thu,  1 Sep 2016 13:33:42 -0700
-Message-ID: <1472762024-88771-7-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:44332 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753793AbcIAVHu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 1 Sep 2016 17:07:50 -0400
-In-Reply-To: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v2 4/4] acpi: cppc: Add prefix cppc to cpudata structure name
+Date: Thu,  1 Sep 2016 13:37:11 -0700
+Message-ID: <1472762231-88923-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1472762231-88923-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1472762231-88923-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
 To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, peterz@infradead.org
-Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com, alexey.klimov@arm.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-Need to set platform wide _OSC bits to enable CPPC and CPPC version 2.
-If platform supports CPPC, then BIOS exposess CPPC tables.
+Since struct cpudata is defined in a header file, add prefix cppc_ to
+make it not a generic name. Otherwise it causes compile issue in locally
+define structure with the same name.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/acpi/bus.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/acpi/cppc_acpi.c       |  4 ++--
+ drivers/cpufreq/cppc_cpufreq.c | 14 +++++++-------
+ include/acpi/cppc_acpi.h       |  4 ++--
+ 3 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index 85b7d07..1001b92 100644
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -330,6 +330,11 @@ static void acpi_bus_osc_support(void)
- 	capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_HOTPLUG_OST_SUPPORT;
- 	capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_PCLPI_SUPPORT;
+diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+index 715fe80..3d1ae6d 100644
+--- a/drivers/acpi/cppc_acpi.c
++++ b/drivers/acpi/cppc_acpi.c
+@@ -409,13 +409,13 @@ end:
+  *
+  *	Return: 0 for success or negative value for err.
+  */
+-int acpi_get_psd_map(struct cpudata **all_cpu_data)
++int acpi_get_psd_map(struct cppc_cpudata **all_cpu_data)
+ {
+ 	int count_target;
+ 	int retval = 0;
+ 	unsigned int i, j;
+ 	cpumask_var_t covered_cpus;
+-	struct cpudata *pr, *match_pr;
++	struct cppc_cpudata *pr, *match_pr;
+ 	struct acpi_psd_package *pdomain;
+ 	struct acpi_psd_package *match_pdomain;
+ 	struct cpc_desc *cpc_ptr, *match_cpc_ptr;
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index e6a3359..6588ec5 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -30,13 +30,13 @@
+  * performance capabilities, desired performance level
+  * requested etc.
+  */
+-static struct cpudata **all_cpu_data;
++static struct cppc_cpudata **all_cpu_data;
  
-+	if (IS_ENABLED(CONFIG_X86) && boot_cpu_has(X86_FEATURE_HWP)) {
-+		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPC_SUPPORT;
-+		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPCV2_SUPPORT;
-+	}
-+
- 	if (!ghes_disable)
- 		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_APEI_SUPPORT;
- 	if (ACPI_FAILURE(acpi_get_handle(NULL, "\\_SB", &handle)))
+ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
+ 		unsigned int target_freq,
+ 		unsigned int relation)
+ {
+-	struct cpudata *cpu;
++	struct cppc_cpudata *cpu;
+ 	struct cpufreq_freqs freqs;
+ 	int ret = 0;
+ 
+@@ -66,7 +66,7 @@ static int cppc_verify_policy(struct cpufreq_policy *policy)
+ static void cppc_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+ {
+ 	int cpu_num = policy->cpu;
+-	struct cpudata *cpu = all_cpu_data[cpu_num];
++	struct cppc_cpudata *cpu = all_cpu_data[cpu_num];
+ 	int ret;
+ 
+ 	cpu->perf_ctrls.desired_perf = cpu->perf_caps.lowest_perf;
+@@ -79,7 +79,7 @@ static void cppc_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+ 
+ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	struct cpudata *cpu;
++	struct cppc_cpudata *cpu;
+ 	unsigned int cpu_num = policy->cpu;
+ 	int ret = 0;
+ 
+@@ -135,7 +135,7 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
+ static int __init cppc_cpufreq_init(void)
+ {
+ 	int i, ret = 0;
+-	struct cpudata *cpu;
++	struct cppc_cpudata *cpu;
+ 
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+@@ -145,7 +145,7 @@ static int __init cppc_cpufreq_init(void)
+ 		return -ENOMEM;
+ 
+ 	for_each_possible_cpu(i) {
+-		all_cpu_data[i] = kzalloc(sizeof(struct cpudata), GFP_KERNEL);
++		all_cpu_data[i] = kzalloc(sizeof(struct cppc_cpudata), GFP_KERNEL);
+ 		if (!all_cpu_data[i])
+ 			goto out;
+ 
+@@ -176,7 +176,7 @@ out:
+ 
+ static void __exit cppc_cpufreq_exit(void)
+ {
+-	struct cpudata *cpu;
++	struct cppc_cpudata *cpu;
+ 	int i;
+ 
+ 	cpufreq_unregister_driver(&cppc_cpufreq_driver);
+diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
+index 0e83cc3..427a7c3 100644
+--- a/include/acpi/cppc_acpi.h
++++ b/include/acpi/cppc_acpi.h
+@@ -119,7 +119,7 @@ struct cppc_perf_fb_ctrs {
+ };
+ 
+ /* Per CPU container for runtime CPPC management. */
+-struct cpudata {
++struct cppc_cpudata {
+ 	int cpu;
+ 	struct cppc_perf_caps perf_caps;
+ 	struct cppc_perf_ctrls perf_ctrls;
+@@ -132,7 +132,7 @@ struct cpudata {
+ extern int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_ctrs);
+ extern int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
+ extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
+-extern int acpi_get_psd_map(struct cpudata **);
++extern int acpi_get_psd_map(struct cppc_cpudata **);
+ extern unsigned int cppc_get_transition_latency(int cpu);
+ 
+ #endif /* _CPPC_ACPI_H*/
 -- 
 2.7.4
 
