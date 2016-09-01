@@ -1,7 +1,7 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 4/8] sched, x86: use arch_update_cpu_topology to indicate x86 need sched domain rebuild
-Date: Thu,  1 Sep 2016 13:33:40 -0700
-Message-ID: <1472762024-88771-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 7/8] acpi: bus: Set _OSC for diverse core support
+Date: Thu,  1 Sep 2016 13:33:43 -0700
+Message-ID: <1472762024-88771-8-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
@@ -10,55 +10,41 @@ To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, peterz@
 Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Tim Chen <tim.c.chen@linux.intel.com>
+Set the OSC_SB_CPC_DIVERSE_HIGH_SUPPORT (bit 12) to enable diverse
+core support.
 
-Provides x86 with arch_update_cpu_topology function. This function
-allows us to indicate that a condition is detected that the sched
-domain of x86 needs a complete rebuild.  This is done by setting the
-x86_topology_update flag.
-
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- arch/x86/include/asm/topology.h |  2 ++
- arch/x86/kernel/smpboot.c       | 11 +++++++++++
- 2 files changed, 13 insertions(+)
+ drivers/acpi/bus.c   | 3 +++
+ include/linux/acpi.h | 1 +
+ 2 files changed, 4 insertions(+)
 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 0bcf3b7..8d6df77 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -147,6 +147,8 @@ struct pci_bus;
- int x86_pci_root_bus_node(int bus);
- void x86_pci_root_bus_resources(int bus, struct list_head *resources);
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index 1001b92..eacd4be 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -335,6 +335,9 @@ static void acpi_bus_osc_support(void)
+ 		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPCV2_SUPPORT;
+ 	}
  
-+extern bool x86_topology_update;
++	if (IS_ENABLED(CONFIG_SCHED_ITMT))
++		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPC_DIVERSE_HIGH_SUPPORT;
 +
- #ifdef CONFIG_SCHED_ITMT
- extern unsigned int __read_mostly sysctl_sched_itmt_enabled;
- #endif /* CONFIG_SCHED_ITMT */
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 292df31..737b9edf 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -110,6 +110,17 @@ static bool logical_packages_frozen __read_mostly;
- int __max_smt_threads __read_mostly;
+ 	if (!ghes_disable)
+ 		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_APEI_SUPPORT;
+ 	if (ACPI_FAILURE(acpi_get_handle(NULL, "\\_SB", &handle)))
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index e746552..53841a2 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -462,6 +462,7 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context);
+ #define OSC_SB_CPCV2_SUPPORT			0x00000040
+ #define OSC_SB_PCLPI_SUPPORT			0x00000080
+ #define OSC_SB_OSLPI_SUPPORT			0x00000100
++#define OSC_SB_CPC_DIVERSE_HIGH_SUPPORT		0x00001000
  
- unsigned int __read_mostly sysctl_sched_itmt_enabled;
-+/* Flag to indicate if a complete sched domain rebuild is required */
-+bool x86_topology_update;
-+
-+int arch_update_cpu_topology(void)
-+{
-+	if (x86_topology_update) {
-+		x86_topology_update = false;
-+		return 1;
-+	} else
-+		return 0;
-+}
- 
- static inline void smpboot_setup_warm_reset_vector(unsigned long start_eip)
- {
+ extern bool osc_sb_apei_support_acked;
+ extern bool osc_pc_lpi_support_confirmed;
 -- 
 2.7.4
 
