@@ -1,73 +1,84 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH v7 7/8] PM / devfreq: rockchip: add devfreq driver for
- rk3399 dmc
-Date: Thu, 01 Sep 2016 11:41:36 +0200
-Message-ID: <30074677.9Zzyj4RHs6@diego>
-References: <1471836984-6316-1-git-send-email-hl@rock-chips.com>
- <1471836984-6316-8-git-send-email-hl@rock-chips.com>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v9 3/4] doc: bindings: mfd: act8945a: Update the example
+Date: Thu, 1 Sep 2016 12:22:51 +0100
+Message-ID: <20160901112251.GK4921@dell>
+References: <1472722201-31872-1-git-send-email-wenyou.yang@atmel.com>
+ <1472722201-31872-4-git-send-email-wenyou.yang@atmel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <1471836984-6316-8-git-send-email-hl@rock-chips.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Lin Huang <hl@rock-chips.com>
-Cc: tixy@linaro.org, mark.rutland@arm.com, dbasehore@chromium.org, cw00.choi@samsung.com, mturquette@baylibre.com, typ@rock-chips.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1472722201-31872-4-git-send-email-wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Wenyou Yang <wenyou.yang-UWL1GkI3JZL3oGB3hsPCZA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-SGksCgpBbSBNb250YWcsIDIyLiBBdWd1c3QgMjAxNiwgMTE6MzY6MjMgc2NocmllYiBMaW4gSHVh
-bmc6Cj4gYmFzZSBvbiBkZmkgcmVzdWx0LCB3ZSBkbyBkZHIgZnJlcXVlbmN5IHNjYWxpbmcsIHJl
-Z2lzdGVyCj4gZG1jIGRyaXZlciB0byBkZXZmcmVxIGZyYW1ld29yaywgYW5kIHVzZSBzaW1wbGUt
-b25kZW1hbmQKPiBwb2xpY3kuCj4gCj4gU2lnbmVkLW9mZi1ieTogTGluIEh1YW5nIDxobEByb2Nr
-LWNoaXBzLmNvbT4KPiBSZXZpZXdlZC1ieTogQ2hhbndvbyBDaG9pIDxjdzAwLmNob2lAc2Ftc3Vu
-Zy5jb20+Cj4gLS0tCgpbLi4uXQoKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVxL3JrMzM5
-OV9kbWMuYyBiL2RyaXZlcnMvZGV2ZnJlcS9yazMzOTlfZG1jLmMKPiBuZXcgZmlsZSBtb2RlIDEw
-MDY0NAo+IGluZGV4IDAwMDAwMDAuLmI3M2E3M2MKPiAtLS0gL2Rldi9udWxsCj4gKysrIGIvZHJp
-dmVycy9kZXZmcmVxL3JrMzM5OV9kbWMuYwo+IEBAIC0wLDAgKzEsNDk5IEBACj4gKy8qCj4gKyAq
-IENvcHlyaWdodCAoYykgMjAxNiwgRnV6aG91IFJvY2tjaGlwIEVsZWN0cm9uaWNzIENvLiwgTHRk
-Lgo+ICsgKiBBdXRob3I6IExpbiBIdWFuZyA8aGxAcm9jay1jaGlwcy5jb20+Cj4gKyAqCj4gKyAq
-IFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBh
-bmQvb3IgbW9kaWZ5IGl0Cj4gKyAqIHVuZGVyIHRoZSB0ZXJtcyBhbmQgY29uZGl0aW9ucyBvZiB0
-aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UsCj4gKyAqIHZlcnNpb24gMiwgYXMgcHVibGlz
-aGVkIGJ5IHRoZSBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb24uCj4gKyAqCj4gKyAqIFRoaXMgcHJv
-Z3JhbSBpcyBkaXN0cmlidXRlZCBpbiB0aGUgaG9wZSBpdCB3aWxsIGJlIHVzZWZ1bCwgYnV0IFdJ
-VEhPVVQKPiArICogQU5ZIFdBUlJBTlRZOyB3aXRob3V0IGV2ZW4gdGhlIGltcGxpZWQgd2FycmFu
-dHkgb2YgTUVSQ0hBTlRBQklMSVRZIG9yCj4gKyAqIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQ
-VVJQT1NFLiAgU2VlIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZQo+IGZvciArICogbW9y
-ZSBkZXRhaWxzLgo+ICsgKi8KPiArCj4gKyNpbmNsdWRlIDxsaW51eC9hcm0tc21jY2MuaD4KPiAr
-I2luY2x1ZGUgPGxpbnV4L2Nsay5oPgo+ICsjaW5jbHVkZSA8bGludXgvZGVsYXkuaD4KPiArI2lu
-Y2x1ZGUgPGxpbnV4L2RldmZyZXEuaD4KPiArI2luY2x1ZGUgPGxpbnV4L2RldmZyZXEtZXZlbnQu
-aD4KPiArI2luY2x1ZGUgPGxpbnV4L2ludGVycnVwdC5oPgo+ICsjaW5jbHVkZSA8bGludXgvbW9k
-dWxlLmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9vZi5oPgo+ICsjaW5jbHVkZSA8bGludXgvcGxhdGZv
-cm1fZGV2aWNlLmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9wbV9vcHAuaD4KPiArI2luY2x1ZGUgPGxp
-bnV4L3JlZ3VsYXRvci9jb25zdW1lci5oPgo+ICsjaW5jbHVkZSA8bGludXgvcndzZW0uaD4KPiAr
-I2luY2x1ZGUgPGxpbnV4L3N1c3BlbmQuaD4KPiArCj4gKyNpbmNsdWRlIDxzb2Mvcm9ja2NoaXAv
-cm9ja2NoaXBfc2lwLmg+CgpJJ3ZlIHNwbGl0IG91dCB0aGUgbmVlZGVkIHNpcCBpbnRlcmZhY2Ut
-aGVhZGVyIGZyb20gcGF0Y2gxIGFuZCBwcm92aWRlCmEgc3RhYmxlIHNpZ25lZCB0YWcgeW91IGNh
-biBwdWxsIGludG8gdGhlIGRldmZyZXEgdHJlZS4KCgpIZWlrbwoKClRoZSBmb2xsb3dpbmcgY2hh
-bmdlcyBzaW5jZSBjb21taXQgMjliNDgxN2Q0MDE4ZGY3ODA4NjE1N2VhM2E1NWMxZDk0MjRhN2Nm
-YzoKCiAgTGludXggNC44LXJjMSAoMjAxNi0wOC0wNyAxODoxODowMCAtMDcwMCkKCmFyZSBhdmFp
-bGFibGUgaW4gdGhlIGdpdCByZXBvc2l0b3J5IGF0OgoKICBnaXQ6Ly9naXQua2VybmVsLm9yZy9w
-dWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbW1pbmQvbGludXgtcm9ja2NoaXAuZ2l0IHRhZ3Mvcm9j
-a2NoaXAtZGRyLXNpcAoKZm9yIHlvdSB0byBmZXRjaCBjaGFuZ2VzIHVwIHRvIDk3ZGQ4MjY4MmYx
-YTYxNzQ2OThmYmVhMTQ5YTA0YjRjYWJjNThjNGY6CgogIHNvYzogcm9ja2NoaXA6IGFkZCBoZWFk
-ZXIgZm9yIGRkciByYXRlIFNJUCBpbnRlcmZhY2UgKDIwMTYtMDgtMzEgMTg6NTM6MjQgKzAyMDAp
-CgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tCkhlYWRlciBmaWxlIGRlZmluaW5nIHRoZSBTSVAtaW50ZXJmYWNlIHRvIHRoZSBB
-VEYgZm9yIEREUiBmcmVxdWVuY3kgY2hhbmdlcwoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQpMaW4gSHVhbmcgKDEpOgogICAg
-ICBzb2M6IHJvY2tjaGlwOiBhZGQgaGVhZGVyIGZvciBkZHIgcmF0ZSBTSVAgaW50ZXJmYWNlCgog
-aW5jbHVkZS9zb2Mvcm9ja2NoaXAvcm9ja2NoaXBfc2lwLmggfCAyNyArKysrKysrKysrKysrKysr
-KysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2VkLCAyNyBpbnNlcnRpb25zKCspCiBjcmVhdGUgbW9k
-ZSAxMDA2NDQgaW5jbHVkZS9zb2Mvcm9ja2NoaXAvcm9ja2NoaXBfc2lwLmgKCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxp
-c3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNr
-dG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+On Thu, 01 Sep 2016, Wenyou Yang wrote:
+
+> Since the act8945a-charger is regarded as a sub-device and it using
+> "interrupts" property, update the examples section.
+> 
+> Signed-off-by: Wenyou Yang <wenyou.yang-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>
+> ---
+> 
+> Changes in v9: None
+> Changes in v8: None
+> Changes in v7: None
+> Changes in v6: None
+> Changes in v4: None
+> 
+>  Documentation/devicetree/bindings/mfd/act8945a.txt | 22 +++++++++++++++-------
+>  1 file changed, 15 insertions(+), 7 deletions(-)
+
+This is a functional change.  I'll require a DT Ack.
+
+> diff --git a/Documentation/devicetree/bindings/mfd/act8945a.txt b/Documentation/devicetree/bindings/mfd/act8945a.txt
+> index f712830..462819a 100644
+> --- a/Documentation/devicetree/bindings/mfd/act8945a.txt
+> +++ b/Documentation/devicetree/bindings/mfd/act8945a.txt
+> @@ -14,13 +14,6 @@ Example:
+>  		reg = <0x5b>;
+>  		status = "okay";
+>  
+> -		pinctrl-names = "default";
+> -		pinctrl-0 = <&pinctrl_charger_chglev>;
+> -		active-semi,chglev-gpio = <&pioA 12 GPIO_ACTIVE_HIGH>;
+> -		active-semi,input-voltage-threshold-microvolt = <6600>;
+> -		active-semi,precondition-timeout = <40>;
+> -		active-semi,total-timeout = <3>;
+> -
+>  		active-semi,vsel-high;
+>  
+>  		regulators {
+> @@ -73,4 +66,19 @@ Example:
+>  				regulator-always-on;
+>  			};
+>  		};
+> +
+> +		charger {
+> +			compatible = "active-semi,act8945a-charger";
+> +			pinctrl-names = "default";
+> +			pinctrl-0 = <&pinctrl_charger_chglev &pinctrl_charger_lbo &pinctrl_charger_irq>;
+> +			interrupt-parent = <&pioA>;
+> +			interrupts = <45 GPIO_ACTIVE_LOW>;
+> +
+> +			active-semi,chglev-gpios = <&pioA 12 GPIO_ACTIVE_HIGH>;
+> +			active-semi,lbo-gpios = <&pioA 72 GPIO_ACTIVE_LOW>;
+> +			active-semi,input-voltage-threshold-microvolt = <6600>;
+> +			active-semi,precondition-timeout = <40>;
+> +			active-semi,total-timeout = <3>;
+> +			status = "okay";
+> +		};
+>  	};
+
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
