@@ -1,131 +1,184 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 5/5] clocks: exynos5433: add runtime pm support
-Date: Thu, 01 Sep 2016 18:55:38 +0200
-Message-ID: <2519946.fIx2ZfLU7C@amdc1976>
-References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
- <1472737551-15272-6-git-send-email-m.szyprowski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1472737551-15272-6-git-send-email-m.szyprowski@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Inki Dae <inki.dae@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 1/8] sched, x86: Add SD_ASYM_PACKING flags to x86 cpu topology for ITMT
+Date: Thu,  1 Sep 2016 13:33:37 -0700
+Message-ID: <1472762024-88771-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, peterz@infradead.org
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+From: Tim Chen <tim.c.chen@linux.intel.com>
 
-Hi,
+We uses ASYM_PACKING feature in the scheduler to move tasks to more
+capable cpus that can be boosted to higher frequency. This is enabled by
+Intel Turbo Boost Max Technology 3.0 (ITMT).  We mark the sched domain
+topology level with SD_ASYM_PACKING flag for such systems to indicate
+scheduler can use the ASYM_PACKING feature to move load to the
+more capable cpus.
 
-On Thursday, September 01, 2016 03:45:51 PM Marek Szyprowski wrote:
-> Add runtime pm support for all clock controller units (CMU), which belongs
-> to power domains and require special handling during on/off operations.
-> Typically special values has to be written to MUX registers to change
-> internal clocks parents to OSC clock before turning power off. During such
-> operation all clocks, which enters CMU has to be enabled to let MUX to
-> stabilize. Also for each CMU there is one special parent clock, which has
-> to be enabled all the time when any access to CMU registers is done.
-> 
-> This patch solves most of the mysterious external abort and freeze issues
-> caused by a lack of proper parent CMU clock enabled or incorrect turn off
-> procedure.
-> 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> ---
->  drivers/clk/samsung/clk-exynos5433.c | 462 +++++++++++++++++++++++++++--------
->  1 file changed, 363 insertions(+), 99 deletions(-)
-> 
-> diff --git a/drivers/clk/samsung/clk-exynos5433.c b/drivers/clk/samsung/clk-exynos5433.c
-> index ea1608682d7f..9fb896b56ddf 100644
-> --- a/drivers/clk/samsung/clk-exynos5433.c
-> +++ b/drivers/clk/samsung/clk-exynos5433.c
-> @@ -9,9 +9,14 @@
->   * Common Clock Framework support for Exynos5443 SoC.
->   */
->  
-> +#include <linux/clk.h>
->  #include <linux/clk-provider.h>
->  #include <linux/of.h>
->  #include <linux/of_address.h>
-> +#include <linux/of_device.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_runtime.h>
-> +#include <linux/slab.h>
->  
->  #include <dt-bindings/clock/exynos5433.h>
->  
-> @@ -19,6 +24,37 @@
->  #include "clk-cpu.h"
->  #include "clk-pll.h"
->  
-> +struct exynos5433_cmu_info {
-> +	/* total number of clocks with IDs assigned*/
-> +	unsigned int nr_clk_ids;
-> +	/* list of pll clocks and respective count */
-> +	const struct samsung_pll_clock *pll_clks;
-> +	unsigned int nr_pll_clks;
-> +	/* list of mux clocks and respective count */
-> +	const struct samsung_mux_clock *mux_clks;
-> +	unsigned int nr_mux_clks;
-> +	/* list of div clocks and respective count */
-> +	const struct samsung_div_clock *div_clks;
-> +	unsigned int nr_div_clks;
-> +	/* list of gate clocks and respective count */
-> +	const struct samsung_gate_clock *gate_clks;
-> +	unsigned int nr_gate_clks;
-> +	/* list of fixed clocks and respective count */
-> +	const struct samsung_fixed_rate_clock *fixed_clks;
-> +	unsigned int nr_fixed_clks;
-> +	/* list of fixed factor clocks and respective count */
-> +	const struct samsung_fixed_factor_clock *fixed_factor_clks;
-> +	unsigned int nr_fixed_factor_clks;
-> +	/* list and number of clocks registers */
-> +	const unsigned long *clk_regs;
-> +	unsigned int nr_clk_regs;
-> +	/* list and number of clocks registers to set before suspend */
-> +	const struct samsung_clk_reg_dump *suspend_regs;
-> +	unsigned int nr_suspend_regs;
-> +	/* name of the parent clock needed for CMU register access */
-> +	const char *clk_name;
-> +};
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ arch/x86/include/asm/topology.h |  4 +++
+ arch/x86/kernel/smpboot.c       | 77 +++++++++++++++++++++++++++++++----------
+ kernel/sched/core.c             |  3 ++
+ 3 files changed, 66 insertions(+), 18 deletions(-)
 
-Have you considered extending struct samsung_cmu_info instead
-(all instances are __initdata anyway so slight increase of struct's
-size shouldn't be a problem)?
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index cf75871..98b669d 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -146,4 +146,8 @@ struct pci_bus;
+ int x86_pci_root_bus_node(int bus);
+ void x86_pci_root_bus_resources(int bus, struct list_head *resources);
+ 
++#ifdef CONFIG_SCHED_ITMT
++extern unsigned int __read_mostly sysctl_sched_itmt_enabled;
++#endif /* CONFIG_SCHED_ITMT */
++
+ #endif /* _ASM_X86_TOPOLOGY_H */
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 4296beb..3782bd4 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -109,6 +109,8 @@ static bool logical_packages_frozen __read_mostly;
+ /* Maximum number of SMT threads on any online core */
+ int __max_smt_threads __read_mostly;
+ 
++unsigned int __read_mostly sysctl_sched_itmt_enabled;
++
+ static inline void smpboot_setup_warm_reset_vector(unsigned long start_eip)
+ {
+ 	unsigned long flags;
+@@ -471,31 +473,57 @@ static bool match_die(struct cpuinfo_x86 *c, struct cpuinfo_x86 *o)
+ 	return false;
+ }
+ 
+-static struct sched_domain_topology_level numa_inside_package_topology[] = {
++#ifdef CONFIG_SCHED_ITMT
++static int x86_core_flags(void)
++{
++	int flags = cpu_core_flags();
++
++	if (sysctl_sched_itmt_enabled)
++		flags |= SD_ASYM_PACKING;
++
++	return flags;
++}
++
++static int x86_smt_flags(void)
++{
++	int flags = cpu_smt_flags();
++
++	if (sysctl_sched_itmt_enabled)
++		flags |= SD_ASYM_PACKING;
++
++	return flags;
++}
++#else
++#define x86_core_flags cpu_core_flags
++#define x86_smt_flags cpu_smt_flags
++#endif
++
++static struct sched_domain_topology_level x86_topology[] = {
++#ifdef CONFIG_SCHED_SMT
++	{ cpu_smt_mask, x86_smt_flags, SD_INIT_NAME(SMT) },
++#endif
++#ifdef CONFIG_SCHED_MC
++	{ cpu_coregroup_mask, x86_core_flags, SD_INIT_NAME(MC) },
++#endif
++	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
++	{ NULL, },
++};
++
++static struct sched_domain_topology_level x86_numa_in_package_topology[] = {
+ #ifdef CONFIG_SCHED_SMT
+-	{ cpu_smt_mask, cpu_smt_flags, SD_INIT_NAME(SMT) },
++	{ cpu_smt_mask, x86_smt_flags, SD_INIT_NAME(SMT) },
+ #endif
+ #ifdef CONFIG_SCHED_MC
+-	{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
++	{ cpu_coregroup_mask, x86_core_flags, SD_INIT_NAME(MC) },
+ #endif
+ 	{ NULL, },
+ };
++
+ /*
+- * set_sched_topology() sets the topology internal to a CPU.  The
+- * NUMA topologies are layered on top of it to build the full
+- * system topology.
+- *
+- * If NUMA nodes are observed to occur within a CPU package, this
+- * function should be called.  It forces the sched domain code to
+- * only use the SMT level for the CPU portion of the topology.
+- * This essentially falls back to relying on NUMA information
+- * from the SRAT table to describe the entire system topology
+- * (except for hyperthreads).
++ * Set if a package/die has multiple NUMA nodes inside.
++ * AMD Magny-Cours and Intel Cluster-on-Die have this.
+  */
+-static void primarily_use_numa_for_topology(void)
+-{
+-	set_sched_topology(numa_inside_package_topology);
+-}
++static bool x86_has_numa_in_package;
+ 
+ void set_cpu_sibling_map(int cpu)
+ {
+@@ -558,7 +586,7 @@ void set_cpu_sibling_map(int cpu)
+ 				c->booted_cores = cpu_data(i).booted_cores;
+ 		}
+ 		if (match_die(c, o) && !topology_same_node(c, o))
+-			primarily_use_numa_for_topology();
++			x86_has_numa_in_package = true;
+ 	}
+ 
+ 	threads = cpumask_weight(topology_sibling_cpumask(cpu));
+@@ -1304,6 +1332,16 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 		zalloc_cpumask_var(&per_cpu(cpu_core_map, i), GFP_KERNEL);
+ 		zalloc_cpumask_var(&per_cpu(cpu_llc_shared_map, i), GFP_KERNEL);
+ 	}
++
++	/*
++	 * Set 'default' x86 topology, this matches default_topology() in that
++	 * it has NUMA nodes as a topology level. See also
++	 * native_smp_cpus_done().
++	 *
++	 * Must be done before set_cpus_sibling_map() is ran.
++	 */
++	set_sched_topology(x86_topology);
++
+ 	set_cpu_sibling_map(0);
+ 
+ 	switch (smp_sanity_check(max_cpus)) {
+@@ -1370,6 +1408,9 @@ void __init native_smp_cpus_done(unsigned int max_cpus)
+ {
+ 	pr_debug("Boot done\n");
+ 
++	if (x86_has_numa_in_package)
++		set_sched_topology(x86_numa_in_package_topology);
++
+ 	nmi_selftest();
+ 	impress_friends();
+ 	setup_ioapic_dest();
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 2a906f2..e86c4a5 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6487,6 +6487,9 @@ static struct sched_domain_topology_level *sched_domain_topology =
+ 
+ void set_sched_topology(struct sched_domain_topology_level *tl)
+ {
++	if (WARN_ON_ONCE(sched_smp_initialized))
++		return;
++
+ 	sched_domain_topology = tl;
+ }
+ 
+-- 
+2.7.4
 
-> +static const struct samsung_clk_reg_dump g2d_suspend_regs[] = {
-> +	{MUX_SEL_G2D0, 0},
-
-Minor nit: preferred CodingStyle is:
-
-	{ MUX_SEL_G2D0, 0 },
-
-( ditto for other struct samsung_clk_reg_dump instances )
-
-> +	clk_table = devm_kcalloc(dev, info->nr_clk_ids, sizeof(struct clk *),
-> +				 GFP_KERNEL);
-> +	if (!clk_table) {
-> +		dev_err(dev, "could not allocate clock lookup table\n");
-> +		return -ENOMEM;
-> +	}
-
-checkpatch.pl complains with:
-
-WARNING: Possible unnecessary 'out of memory' message
-#681: FILE: drivers/clk/samsung/clk-exynos5433.c:5541:
-+       if (!clk_table) {
-+               dev_err(dev, "could not allocate clock lookup table\n");
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
