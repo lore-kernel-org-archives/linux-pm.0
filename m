@@ -1,7 +1,7 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 4/4] acpi: cppc: Add prefix cppc to cpudata structure name
-Date: Thu,  1 Sep 2016 13:37:11 -0700
-Message-ID: <1472762231-88923-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 3/4] acpi: cppc: Add support for functional fixed hardware address
+Date: Thu,  1 Sep 2016 13:37:10 -0700
+Message-ID: <1472762231-88923-4-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1472762231-88923-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1472762231-88923-1-git-send-email-srinivas.pandruvada@linux.intel.com>
@@ -10,124 +10,256 @@ To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, peterz@
 Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com, alexey.klimov@arm.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Since struct cpudata is defined in a header file, add prefix cppc_ to
-make it not a generic name. Otherwise it causes compile issue in locally
-define structure with the same name.
+The CPPC registers can also be accessed via functional fixed hardware
+addresse(FFH) in X86. Add support by modifying cpc_read and cpc_write to
+be able to read/write MSRs on x86 platform on per cpu basis.
+Also with this change, acpi_cppc_processor_probe doesn't bail out if
+address space id is not equal to PCC or memory address space and FFH
+is supported on the system.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/acpi/cppc_acpi.c       |  4 ++--
- drivers/cpufreq/cppc_cpufreq.c | 14 +++++++-------
- include/acpi/cppc_acpi.h       |  4 ++--
- 3 files changed, 11 insertions(+), 11 deletions(-)
+ arch/x86/kernel/acpi/Makefile   |  1 +
+ arch/x86/kernel/acpi/cppc_msr.c | 58 +++++++++++++++++++++++++++++++
+ drivers/acpi/cppc_acpi.c        | 75 ++++++++++++++++++++++++++++++++++-------
+ 3 files changed, 121 insertions(+), 13 deletions(-)
+ create mode 100644 arch/x86/kernel/acpi/cppc_msr.c
 
+diff --git a/arch/x86/kernel/acpi/Makefile b/arch/x86/kernel/acpi/Makefile
+index 3242e59..26b78d8 100644
+--- a/arch/x86/kernel/acpi/Makefile
++++ b/arch/x86/kernel/acpi/Makefile
+@@ -1,6 +1,7 @@
+ obj-$(CONFIG_ACPI)		+= boot.o
+ obj-$(CONFIG_ACPI_SLEEP)	+= sleep.o wakeup_$(BITS).o
+ obj-$(CONFIG_ACPI_APEI)		+= apei.o
++obj-$(CONFIG_ACPI_CPPC_LIB)	+= cppc_msr.o
+ 
+ ifneq ($(CONFIG_ACPI_PROCESSOR),)
+ obj-y				+= cstate.o
+diff --git a/arch/x86/kernel/acpi/cppc_msr.c b/arch/x86/kernel/acpi/cppc_msr.c
+new file mode 100644
+index 0000000..6fb478b
+--- /dev/null
++++ b/arch/x86/kernel/acpi/cppc_msr.c
+@@ -0,0 +1,58 @@
++/*
++ * cppc_msr.c:  MSR Interface for CPPC
++ * Copyright (c) 2016, Intel Corporation.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms and conditions of the GNU General Public License,
++ * version 2, as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ */
++
++#include <acpi/cppc_acpi.h>
++#include <asm/msr.h>
++
++/* Refer to drivers/acpi/cppc_acpi.c for the description of functions */
++
++bool cpc_ffh_supported(void)
++{
++	return true;
++}
++
++int cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val)
++{
++	int err;
++
++	err = rdmsrl_safe_on_cpu(cpunum, reg->address, val);
++	if (!err) {
++		u64 mask = GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
++				       reg->bit_offset);
++
++		*val &= mask;
++		*val >>= reg->bit_offset;
++	}
++	return err;
++}
++
++int cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
++{
++	u64 rd_val;
++	int err;
++
++	err = rdmsrl_safe_on_cpu(cpunum, reg->address, &rd_val);
++	if (!err) {
++		u64 mask = GENMASK_ULL(reg->bit_offset + reg->bit_width - 1,
++				       reg->bit_offset);
++
++		val <<= reg->bit_offset;
++		val &= mask;
++		rd_val &= ~mask;
++		rd_val |= val;
++		err = wrmsrl_safe_on_cpu(cpunum, reg->address, rd_val);
++	}
++	return err;
++}
 diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 715fe80..3d1ae6d 100644
+index ed58883..715fe80 100644
 --- a/drivers/acpi/cppc_acpi.c
 +++ b/drivers/acpi/cppc_acpi.c
-@@ -409,13 +409,13 @@ end:
+@@ -579,6 +579,19 @@ static int register_pcc_channel(int pcc_subspace_idx)
+ 	return 0;
+ }
+ 
++/**
++ * cpc_ffh_supported() - check if FFH reading supported
++ *
++ * Check if the architecture has support for functional fixed hardware
++ * read/write capability.
++ *
++ * Return: true for supported, false for not supported
++ */
++bool __weak cpc_ffh_supported(void)
++{
++	return false;
++}
++
+ /*
+  * An example CPC table looks like the following.
   *
-  *	Return: 0 for success or negative value for err.
+@@ -728,9 +741,11 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
+ 					cpc_ptr->cpc_regs[i-2].sys_mem_vaddr = addr;
+ 				}
+ 			} else {
+-				/* Support only PCC and SYS MEM type regs */
+-				pr_debug("Unsupported register type: %d\n", gas_t->space_id);
+-				goto out_free;
++				if (gas_t->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE || !cpc_ffh_supported()) {
++					/* Support only PCC ,SYS MEM and FFH type regs */
++					pr_debug("Unsupported register type: %d\n", gas_t->space_id);
++					goto out_free;
++				}
+ 			}
+ 
+ 			cpc_ptr->cpc_regs[i-2].type = ACPI_TYPE_BUFFER;
+@@ -819,13 +834,43 @@ void acpi_cppc_processor_exit(struct acpi_processor *pr)
+ }
+ EXPORT_SYMBOL_GPL(acpi_cppc_processor_exit);
+ 
++/**
++ * cpc_read_ffh() - Read FFH register
++ * @cpunum:	cpu number to read
++ * @reg:	cppc register information
++ * @val:	place holder for return value
++ *
++ * Read bit_width bits from a specified address and bit_offset
++ *
++ * Return: 0 for success and error code
++ */
++int __weak cpc_read_ffh(int cpunum, struct cpc_reg *reg, u64 *val)
++{
++	return -ENOTSUPP;
++}
++
++/**
++ * cpc_write_ffh() - Write FFH register
++ * @cpunum:	cpu number to write
++ * @reg:	cppc register information
++ * @val:	value to write
++ *
++ * Write value of bit_width bits to a specified address and bit_offset
++ *
++ * Return: 0 for success and error code
++ */
++int __weak cpc_write_ffh(int cpunum, struct cpc_reg *reg, u64 val)
++{
++	return -ENOTSUPP;
++}
++
+ /*
+  * Since cpc_read and cpc_write are called while holding pcc_lock, it should be
+  * as fast as possible. We have already mapped the PCC subspace during init, so
+  * we can directly write to it.
   */
--int acpi_get_psd_map(struct cpudata **all_cpu_data)
-+int acpi_get_psd_map(struct cppc_cpudata **all_cpu_data)
+ 
+-static int cpc_read(struct cpc_register_resource *reg_res, u64 *val)
++static int cpc_read(int cpu, struct cpc_register_resource *reg_res, u64 *val)
  {
- 	int count_target;
- 	int retval = 0;
- 	unsigned int i, j;
- 	cpumask_var_t covered_cpus;
--	struct cpudata *pr, *match_pr;
-+	struct cppc_cpudata *pr, *match_pr;
- 	struct acpi_psd_package *pdomain;
- 	struct acpi_psd_package *match_pdomain;
- 	struct cpc_desc *cpc_ptr, *match_cpc_ptr;
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index e6a3359..6588ec5 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -30,13 +30,13 @@
-  * performance capabilities, desired performance level
-  * requested etc.
-  */
--static struct cpudata **all_cpu_data;
-+static struct cppc_cpudata **all_cpu_data;
+ 	int ret_val = 0;
+ 	void __iomem *vaddr = 0;
+@@ -841,6 +886,8 @@ static int cpc_read(struct cpc_register_resource *reg_res, u64 *val)
+ 		vaddr = GET_PCC_VADDR(reg->address);
+ 	else if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY)
+ 		vaddr = reg_res->sys_mem_vaddr;
++	else if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE)
++		return cpc_read_ffh(cpu, reg, val);
+ 	else
+ 		return acpi_os_read_memory((acpi_physical_address)reg->address,
+ 				val, reg->bit_width);
+@@ -867,7 +914,7 @@ static int cpc_read(struct cpc_register_resource *reg_res, u64 *val)
+ 	return ret_val;
+ }
  
- static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
- 		unsigned int target_freq,
- 		unsigned int relation)
+-static int cpc_write(struct cpc_register_resource *reg_res, u64 val)
++static int cpc_write(int cpu, struct cpc_register_resource *reg_res, u64 val)
  {
--	struct cpudata *cpu;
-+	struct cppc_cpudata *cpu;
- 	struct cpufreq_freqs freqs;
- 	int ret = 0;
+ 	int ret_val = 0;
+ 	void __iomem *vaddr = 0;
+@@ -877,6 +924,8 @@ static int cpc_write(struct cpc_register_resource *reg_res, u64 val)
+ 		vaddr = GET_PCC_VADDR(reg->address);
+ 	else if (reg->space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY)
+ 		vaddr = reg_res->sys_mem_vaddr;
++	else if (reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE)
++		return cpc_write_ffh(cpu, reg, val);
+ 	else
+ 		return acpi_os_write_memory((acpi_physical_address)reg->address,
+ 				val, reg->bit_width);
+@@ -941,13 +990,13 @@ int cppc_get_perf_caps(int cpunum, struct cppc_perf_caps *perf_caps)
+ 		}
+ 	}
  
-@@ -66,7 +66,7 @@ static int cppc_verify_policy(struct cpufreq_policy *policy)
- static void cppc_cpufreq_stop_cpu(struct cpufreq_policy *policy)
- {
- 	int cpu_num = policy->cpu;
--	struct cpudata *cpu = all_cpu_data[cpu_num];
-+	struct cppc_cpudata *cpu = all_cpu_data[cpu_num];
- 	int ret;
+-	cpc_read(highest_reg, &high);
++	cpc_read(cpunum, highest_reg, &high);
+ 	perf_caps->highest_perf = high;
  
- 	cpu->perf_ctrls.desired_perf = cpu->perf_caps.lowest_perf;
-@@ -79,7 +79,7 @@ static void cppc_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+-	cpc_read(lowest_reg, &low);
++	cpc_read(cpunum, lowest_reg, &low);
+ 	perf_caps->lowest_perf = low;
  
- static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	struct cpudata *cpu;
-+	struct cppc_cpudata *cpu;
- 	unsigned int cpu_num = policy->cpu;
- 	int ret = 0;
+-	cpc_read(nom_perf, &nom);
++	cpc_read(cpunum, nom_perf, &nom);
+ 	perf_caps->nominal_perf = nom;
  
-@@ -135,7 +135,7 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
- static int __init cppc_cpufreq_init(void)
- {
- 	int i, ret = 0;
--	struct cpudata *cpu;
-+	struct cppc_cpudata *cpu;
+ 	if (!high || !low || !nom)
+@@ -1004,9 +1053,9 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
+ 		}
+ 	}
  
- 	if (acpi_disabled)
- 		return -ENODEV;
-@@ -145,7 +145,7 @@ static int __init cppc_cpufreq_init(void)
- 		return -ENOMEM;
+-	cpc_read(delivered_reg, &delivered);
+-	cpc_read(reference_reg, &reference);
+-	cpc_read(ref_perf_reg, &ref_perf);
++	cpc_read(cpunum, delivered_reg, &delivered);
++	cpc_read(cpunum, reference_reg, &reference);
++	cpc_read(cpunum, ref_perf_reg, &ref_perf);
  
- 	for_each_possible_cpu(i) {
--		all_cpu_data[i] = kzalloc(sizeof(struct cpudata), GFP_KERNEL);
-+		all_cpu_data[i] = kzalloc(sizeof(struct cppc_cpudata), GFP_KERNEL);
- 		if (!all_cpu_data[i])
- 			goto out;
+ 	/*
+ 	 * Per spec, if ctr_wrap_time optional register is unsupported, then the
+@@ -1015,7 +1064,7 @@ int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
+ 	 */
+ 	ctr_wrap_time = (u64)(~((u64)0));
+ 	if (CPC_SUPPORTED(ctr_wrap_reg))
+-		cpc_read(ctr_wrap_reg, &ctr_wrap_time);
++		cpc_read(cpunum, ctr_wrap_reg, &ctr_wrap_time);
  
-@@ -176,7 +176,7 @@ out:
+ 	if (!delivered || !reference ||	!ref_perf) {
+ 		ret = -EFAULT;
+@@ -1082,7 +1131,7 @@ int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls)
+ 	 * Skip writing MIN/MAX until Linux knows how to come up with
+ 	 * useful values.
+ 	 */
+-	cpc_write(desired_reg, perf_ctrls->desired_perf);
++	cpc_write(cpu, desired_reg, perf_ctrls->desired_perf);
  
- static void __exit cppc_cpufreq_exit(void)
- {
--	struct cpudata *cpu;
-+	struct cppc_cpudata *cpu;
- 	int i;
- 
- 	cpufreq_unregister_driver(&cppc_cpufreq_driver);
-diff --git a/include/acpi/cppc_acpi.h b/include/acpi/cppc_acpi.h
-index 0e83cc3..427a7c3 100644
---- a/include/acpi/cppc_acpi.h
-+++ b/include/acpi/cppc_acpi.h
-@@ -119,7 +119,7 @@ struct cppc_perf_fb_ctrs {
- };
- 
- /* Per CPU container for runtime CPPC management. */
--struct cpudata {
-+struct cppc_cpudata {
- 	int cpu;
- 	struct cppc_perf_caps perf_caps;
- 	struct cppc_perf_ctrls perf_ctrls;
-@@ -132,7 +132,7 @@ struct cpudata {
- extern int cppc_get_perf_ctrs(int cpu, struct cppc_perf_fb_ctrs *perf_fb_ctrs);
- extern int cppc_set_perf(int cpu, struct cppc_perf_ctrls *perf_ctrls);
- extern int cppc_get_perf_caps(int cpu, struct cppc_perf_caps *caps);
--extern int acpi_get_psd_map(struct cpudata **);
-+extern int acpi_get_psd_map(struct cppc_cpudata **);
- extern unsigned int cppc_get_transition_latency(int cpu);
- 
- #endif /* _CPPC_ACPI_H*/
+ 	if (CPC_IN_PCC(desired_reg))
+ 		up_read(&pcc_data.pcc_lock);	/* END Phase-I */
 -- 
 2.7.4
 
