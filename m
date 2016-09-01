@@ -1,104 +1,144 @@
-From: Vaibhav Hiremath <vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v6 1/8] binding-doc: power: pwrseq-generic: add binding
- doc for generic power sequence library
-Date: Thu, 1 Sep 2016 13:33:22 +0530
-Message-ID: <6832cc55-831a-1188-4878-bbbf0b3c3be8@linaro.org>
-References: <1471252398-957-1-git-send-email-peter.chen@nxp.com>
- <1471252398-957-2-git-send-email-peter.chen@nxp.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v6 2/8] arm: parse cpu capacity-dmips-mhz from DT
+Date: Thu, 1 Sep 2016 10:22:31 +0200
+Message-ID: <CAKfTPtAuo+d=NspXRjZuaHHmi70Ky+gNCoVcQBa1aGxkMP+F1g@mail.gmail.com>
+References: <1468932048-31635-1-git-send-email-juri.lelli@arm.com>
+ <1468932048-31635-3-git-send-email-juri.lelli@arm.com> <CAKfTPtBy7LGCW2T4AGoqL5L_1AHtW6KxHigxFVFVc_EU4oUO0g@mail.gmail.com>
+ <20160830162853.GF9337@e106622-lin> <CAKfTPtDAjedxh9J2rqOwafrmubN6+-wDyTRdNQh6fCAb2HS4RQ@mail.gmail.com>
+ <20160831170835.GL9337@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1471252398-957-2-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
-Cc: k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f41.google.com ([209.85.215.41]:35186 "EHLO
+        mail-lf0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751011AbcIAIWy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Sep 2016 04:22:54 -0400
+Received: by mail-lf0-f41.google.com with SMTP id e198so21137050lfb.2
+        for <linux-pm@vger.kernel.org>; Thu, 01 Sep 2016 01:22:53 -0700 (PDT)
+In-Reply-To: <20160831170835.GL9337@e106622-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Mark Brown <broonie@kernel.org>
 
-
-
-On Monday 15 August 2016 02:43 PM, Peter Chen wrote:
-> Add binding doc for generic power sequence library.
+On 31 August 2016 at 19:08, Juri Lelli <juri.lelli@arm.com> wrote:
+> On 31/08/16 10:14, Vincent Guittot wrote:
+>> On 30 August 2016 at 18:28, Juri Lelli <juri.lelli@arm.com> wrote:
+>> > Hi Vincent,
+>> >
+>> > On 16/08/16 10:20, Vincent Guittot wrote:
+>> >> Hi Juri,
+>> >>
+>> >>
+>> >> On 19 July 2016 at 14:40, Juri Lelli <juri.lelli@arm.com> wrote:
+>> >
+>> > [...]
+>> >
+>> >> > +static int
+>> >> > +init_cpu_capacity_callback(struct notifier_block *nb,
+>> >> > +                          unsigned long val,
+>> >> > +                          void *data)
+>> >> > +{
+>> >> > +       struct cpufreq_policy *policy = data;
+>> >> > +       int cpu;
+>> >> > +
+>> >> > +       if (cap_parsing_failed || cap_parsing_done)
+>> >> > +               return 0;
+>> >> > +
+>> >> > +       switch (val) {
+>> >> > +       case CPUFREQ_NOTIFY:
+>> >> > +               pr_debug("cpu_capacity: init cpu capacity for CPUs [%*pbl] (to_visit=%*pbl)\n",
+>> >> > +                               cpumask_pr_args(policy->related_cpus),
+>> >> > +                               cpumask_pr_args(cpus_to_visit));
+>> >> > +               cpumask_andnot(cpus_to_visit,
+>> >> > +                              cpus_to_visit,
+>> >> > +                              policy->related_cpus);
+>> >> > +               for_each_cpu(cpu, policy->related_cpus) {
+>> >> > +                       raw_capacity[cpu] = arch_scale_cpu_capacity(NULL, cpu) *
+>> >> > +                                           policy->max / 1000UL;
+>> >>
+>> >> Should it be policy->cpuinfo.max_freq instead of policy->max ?
+>> >>
+>> >
+>> > Right. I'll fix the arm64 bits as well.
+>> >
+>> >> > +                       capacity_scale = max(raw_capacity[cpu], capacity_scale);
+>> >> > +               }
+>> >> > +               if (cpumask_empty(cpus_to_visit)) {
+>> >> > +                       normalize_cpu_capacity();
+>> >> > +                       kfree(raw_capacity);
+>> >> > +                       pr_debug("cpu_capacity: parsing done\n");
+>> >> > +                       cap_parsing_done = true;
+>> >>
+>> >> ok so you do that once with the 1st governor that will be registered
+>> >> for the CPU. Can't you unregister the notifier then ?
+>> >>
+>> >
+>> > I tried, but the only place I could find to unregister it is from the
+>> > callback itself; and it is not possible to do so AFAIK. Suggestions?
+>>
+>> yes, you're right
+>> Can't you queue a work to unregister your callback ?
 >
-> Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-> Acked-by: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> ---
->   .../bindings/power/pwrseq/pwrseq-generic.txt       | 48 ++++++++++++++++++++++
->   1 file changed, 48 insertions(+)
->   create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+> You mean something like this? I guess I thought it would be much more
+> ugly. :)
+
+Yes something like below.
+
 >
-> diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
-> new file mode 100644
-> index 0000000..ebf0d47
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
-> @@ -0,0 +1,48 @@
-> +The generic power sequence library
-> +
-> +Some hard-wired devices (eg USB/MMC) need to do power sequence before
-> +the device can be enumerated on the bus, the typical power sequence
-> +like: enable USB PHY clock, toggle reset pin, etc. But current
-> +Linux device driver lacks of such code to do it, it may cause some
-> +hard-wired devices works abnormal or can't be recognized by
-> +controller at all. The power sequence will be done before this device
-> +can be found at the bus.
-> +
-> +The power sequence properties is under the device node.
-> +
-> +Optional properties:
-> +- clocks: the input clocks for device.
-> +- reset-gpios: Should specify the GPIO for reset.
-> +- reset-duration-us: the duration in microsecond for assert reset signal.
-> +
-> +Below is the example of USB power sequence properties on USB device
-> +nodes which have two level USB hubs.
-> +
-> +&usbotg1 {
-> +	vbus-supply = <&reg_usb_otg1_vbus>;
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&pinctrl_usb_otg1_id>;
-> +	status = "okay";
-> +
-> +	#address-cells = <1>;
-> +	#size-cells = <0>;
-> +	genesys: hub@1 {
-> +		compatible = "usb5e3,608";
-> +		reg = <1>;
-> +
-> +		clocks = <&clks IMX6SX_CLK_CKO>;
-> +		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
-> +		reset-duration-us = <10>;
-> +
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +		asix: ethernet@1 {
-> +			compatible = "usbb95,1708";
+> If it looks OK, I'll add the same for arm64 and test it a bit more.
+>
+> --->8---
+>  arch/arm/kernel/topology.c | 14 +++++++++++---
+>  1 file changed, 11 insertions(+), 3 deletions(-)
+>
+> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+> index cbc57c287145..672ae22e2768 100644
+> --- a/arch/arm/kernel/topology.c
+> +++ b/arch/arm/kernel/topology.c
+> @@ -215,7 +215,8 @@ static void normalize_cpu_capacity(void)
+>
+>  #ifdef CONFIG_CPU_FREQ
+>  static cpumask_var_t cpus_to_visit;
+> -static bool cap_parsing_done;
+> +static void parsing_done_workfn(struct work_struct *work);
+> +static DECLARE_WORK(parsing_done_work, parsing_done_workfn);
+>
+>  static int
+>  init_cpu_capacity_callback(struct notifier_block *nb,
+> @@ -225,7 +226,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+>         struct cpufreq_policy *policy = data;
+>         int cpu;
+>
+> -       if (cap_parsing_failed || cap_parsing_done)
+> +       if (cap_parsing_failed)
 
-So I assume, with our recent discussion and the change
-we are proposing, the library would have some knowledge
-about this compatible string, right?
+you probably need to keep cap_parsing_done to prevent spurious
+notification until the work is scheduled
 
-what I was asking on other email was, how are you connecting
-multiple power sequence libraries to their respective consumers ?
-
-Thanks,
-Vaibhav
-
-> +			reg = <1>;
+>                 return 0;
+>
+>         switch (val) {
+> @@ -245,7 +246,7 @@ init_cpu_capacity_callback(struct notifier_block *nb,
+>                         normalize_cpu_capacity();
+>                         kfree(raw_capacity);
+>                         pr_debug("cpu_capacity: parsing done\n");
+> -                       cap_parsing_done = true;
+> +                       schedule_work(&parsing_done_work);
+>                 }
+>         }
+>         return 0;
+> @@ -270,6 +271,13 @@ static int __init register_cpufreq_notifier(void)
+>                                          CPUFREQ_POLICY_NOTIFIER);
+>  }
+>  core_initcall(register_cpufreq_notifier);
 > +
-> +			clocks = <&clks IMX6SX_CLK_IPG>;
-> +			reset-gpios = <&gpio4 6 GPIO_ACTIVE_LOW>; /* ethernet_rst */
-> +			reset-duration-us = <15>;
-> +		};
-> +	};
-> +};
-
--- 
-Thanks,
-Vaibhav
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> +static void parsing_done_workfn(struct work_struct *work)
+> +{
+> +       cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
+> +                                        CPUFREQ_POLICY_NOTIFIER);
+> +}
+> +
+>  #else
+>  static int __init free_raw_capacity(void)
+>  {
