@@ -1,59 +1,86 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] sched: cpufreq: use rt_avg as estimate of required RT CPU capacity
-Date: Thu, 01 Sep 2016 00:50:53 +0200
-Message-ID: <4540932.qeAxWElPNp@vostro.rjw.lan>
-References: <1472236848-17038-1-git-send-email-smuckle@linaro.org> <alpine.DEB.2.20.1608311812040.5647@nanos> <20160831164009.GF10153@twins.programming.kicks-ass.net>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: Re: [PATCH 0/8] ARM: dts: Add operating-points-v2 tables for TI platforms
+Date: Wed, 31 Aug 2016 21:46:05 -0500
+Message-ID: <57C7966D.2000800@ti.com>
+References: <cover.1463606963.git.d-gerlach@ti.com> <20160519044744.GE32001@vireshk-i7> <20160610110414.GX22406@atomide.com> <575AD3A0.1050203@ti.com> <20160611024400.GE27439@vireshk-i7> <5768206A.5050501@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56860 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1754200AbcHaWpD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 31 Aug 2016 18:45:03 -0400
-In-Reply-To: <20160831164009.GF10153@twins.programming.kicks-ass.net>
+Received: from comal.ext.ti.com ([198.47.26.152]:36959 "EHLO comal.ext.ti.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754765AbcIACqk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 31 Aug 2016 22:46:40 -0400
+In-Reply-To: <5768206A.5050501@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>
+Cc: Tony Lindgren <tony@atomide.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Yegor Yefremov <yegorslists@googlemail.com>
 
-On Wednesday, August 31, 2016 06:40:09 PM Peter Zijlstra wrote:
-> On Wed, Aug 31, 2016 at 06:28:10PM +0200, Thomas Gleixner wrote:
-> > > That is the way it's been with cpufreq and many systems (including all
-> > > mobile devices) rely on that to not destroy power. RT + variable cpufreq
-> > > is not deterministic.
-> > > 
-> > > Given we don't have good constraints on RT tasks I don't think we should
-> > > try to strengthen the semantics there. Folks should either move to DL if
-> > > they want determinism *and* not-sucky power, or continue disabling
-> > > cpufreq if they are able to do so.
-> > 
-> > RT deterministic behaviour is all about meeting the deadlines. If your
-> > deadline is relaxed enough that you can meet it even with the lowest cpu
-> > frequency then it's perfectly fine to enable cpufreq. The same logic applies
-> > to C-States.
-> > 
-> > There are a lot of RT systems out there which enable both. If cpufreq or
-> > c-states cause a deadline violation because the constraints of the system are
-> > tight, then people will disable it and we need a knob for both.
-> > 
-> > Realtime is not as fast as possible. It's as fast as specified.
+Hi,
+On 06/20/2016 11:57 AM, Dave Gerlach wrote:
+> On 06/10/2016 09:44 PM, Viresh Kumar wrote:
+>> On 10-06-16, 09:50, Nishanth Menon wrote:
+>>> On 06/10/2016 06:04 AM, Tony Lindgren wrote:
+>>>> * Viresh Kumar <viresh.kumar@linaro.org> [160518 21:49]:
+>>>>> On 18-05-16, 18:36, Dave Gerlach wrote:
+>>>>>> Hi,
+>>>>>> This series adds operating-points-v2 tables for am335x, am437x, dra7xx,
+>>>>>> and am57xx based platforms along with some support patches so that we
+>>>>>> can enable more OPPs for the CPU on these platforms.
+>>>>>>
+>>>>>> These patches rely on the ti-cpufreq series sent here [1] and provide
+>>>>>> opp-supported-hw data for each OPP so that only the appropriate OPPs
+>>>>>> for a specific piece of silicon get enabled.
+>>>>>
+>>>>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>>
+>>>> Applying all the dts changes into omap-for-v4.8/dt thanks.
+>>>>
+>>>> Tony
+>>>>
+>>> Viresh, are we ready with the cpufreq series?
+>>>
+>>> https://patchwork.kernel.org/patch/9122961/
+>>> https://patchwork.kernel.org/patch/9122921/
+>>>
+>>> Also current series: https://patchwork.kernel.org/patch/9123071/
+>>> Seems to have comments pending.
+>>>
+>>> Dave is on vacation for another week or so, doubt he can respond in
+>>> time -> Should we wait on this series till we get the cpufreq support in?
+>>
+>> Rafael handles all the merges, etc. It would be better if you can
+>> reply to that thread instead.
+>>
 > 
-> Sure, problem is of course that RR/FIFO doesn't specify anything so the
-> users are left to prod knobs.
+> Sorry for the delay responding here, the only issue with this series would be
+> that we haven't received an ACK on the DT binding doc from cpufreq series [1]
+> from a DT maintainer, so if comments are received there these patches could
+> potentially change. I had pinged but still no response either way.
 > 
-> Another problem is that we have many semi related knobs; we have the
-> global RT runtime limit knob, but that doesn't affect cpufreq (maybe it
-> should) and cpufreq has knobs to set f_min and f_max, which again are
-> unaware of RT anything.
+> Regards,
+> Dave
 > 
-> So before we go do anything, I'd like input on what is needed and how
-> things should tie together to make most sense.
+> [1] https://patchwork.kernel.org/patch/9122921/
 
-I totally agree.
+Seems this got merged and is already part of master, even though the binding it
+uses is not yet finalized or accepted. I am about to send v2 of the ti-cpufreq
+series that makes use of these bindings, and I will be sending a series to fix
+these nodes that has already been merged, however it should *NOT* be merged.
+until the binding and driver have been merged, as it could still potentially change.
 
-We need to know where we want to get to before deciding on which way to go.
+Also, this series replaced the OPP v1 tables for am33xx and dra7, so cpufreq is
+no longer enabled at the moment for these platforms. To fix this we could revert
+patches:
 
-Thanks,
-Rafael
+f80bc97fd0a9 ("ARM: dts: dra7: Move to operating-points-v2 table")
+c36e6ec90487 ("ARM: dts: am335x-boneblack: Enable 1GHz OPP for cpu")
+4317be116210 ("ARM: dts: am33xx: Move to operating-points-v2 table and
+ti-cpufreq driver")
 
+until the ti-cpufreq driver series is merged, at which point we can add them
+back in to re-enable cpufreq with the new driver.
+
+Regards,
+Dave
