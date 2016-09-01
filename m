@@ -1,78 +1,53 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v9 3/4] doc: bindings: mfd: act8945a: Update the example
-Date: Thu, 1 Sep 2016 14:47:46 +0200
-Message-ID: <20160901124746.vbhrz4f53vb63d7t@earth>
+From: <Wenyou.Yang-UWL1GkI3JZL3oGB3hsPCZA@public.gmane.org>
+Subject: RE: [PATCH v9 3/4] doc: bindings: mfd: act8945a: Update the example
+Date: Thu, 1 Sep 2016 12:52:51 +0000
+Message-ID: <F9F4555C4E01D7469D37975B62D0EFBB3B600E@CHN-SV-EXMX07.mchp-main.com>
 References: <1472722201-31872-1-git-send-email-wenyou.yang@atmel.com>
  <1472722201-31872-4-git-send-email-wenyou.yang@atmel.com>
- <20160901112251.GK4921@dell>
+ <20160901112251.GK4921@dell> <20160901124746.vbhrz4f53vb63d7t@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="udxo73iwlyu6mjuc"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:48832 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932383AbcIAMrv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 1 Sep 2016 08:47:51 -0400
-Content-Disposition: inline
-In-Reply-To: <20160901112251.GK4921@dell>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160901124746.vbhrz4f53vb63d7t@earth>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org, alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Wenyou Yang <wenyou.yang@atmel.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-kernel@vger.kernel.org, Wenyou Yang <wenyou.yang@microchip.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-
---udxo73iwlyu6mjuc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Lee,
-
-On Thu, Sep 01, 2016 at 12:22:51PM +0100, Lee Jones wrote:
-> On Thu, 01 Sep 2016, Wenyou Yang wrote:
->=20
-> > Since the act8945a-charger is regarded as a sub-device and it using
-> > "interrupts" property, update the examples section.
-> >=20
-> > Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
-> > ---
-> >=20
-> > Changes in v9: None
-> > Changes in v8: None
-> > Changes in v7: None
-> > Changes in v6: None
-> > Changes in v4: None
-> >=20
-> >  Documentation/devicetree/bindings/mfd/act8945a.txt | 22 ++++++++++++++=
-+-------
-> >  1 file changed, 15 insertions(+), 7 deletions(-)
->=20
-> This is a functional change.  I'll require a DT Ack.
-
-Wenyou Yang forgot to take over Rob's Acked-By from the previous
-version: https://patchwork.kernel.org/patch/9298871/
-
--- Sebastian
-
---udxo73iwlyu6mjuc
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJXyCNyAAoJENju1/PIO/qarMIP/25o6GOaCV4sS7BJuNU7JYGg
-D2FnQBZ+1HKxLGrnndRHTx9BD0kYHpsIlQFPCTk5VBjkdXgL+l89TCp0W3Qy1aIQ
-xMedxS6vhgYB5+KRpT0EqsWdHmuUbMDDt7YdL09ntR0XUqjhe8VxVejufwNO42zA
-mhPWLL0sTytG76PHdmiDbvy/cS7N98NefyXY4CH1IQ19BTo8Qw7qg7u5CuJZeRkT
-UI66vFC6d4RuqO7AGHqSndg/z5PMG20Z16O03dHN4U49LSxVyjklg6yh5ZRQ0MMt
-vNzVb7c6ajvXUwIulfLcsCFk43BSGVvsWL/MrUA7vAY0eR6l7+ilgpyLlh5cTg0u
-YzQJNGWX5MIALhHIlCT/GEwTBnqW7x3UErYtpHqZL6g0I4oyDxdwXzZktXt20uBj
-vw7+BfFhYwAO0yfur709vB/oHBvIrXzxqO+7dKLWB3rmKBC/86JNLk0y6GLgq/Bo
-2T45rE3rJ/ME0xegMZbgfsah3fKa/ZuRXadFSPK2Pti0T1UeJC6PKeXa2YJlTSWN
-i8CDNGR37dcfmo83WptmOKOuq2PPWZ8uh6thnF/U3nQWdR5+ueKJJtD5uUzH1zOw
-tEkRjHZ1SYd5/lu8RBA5AHwyjgv3hNU9hOGFjsbROt9U0cmB9Balb4WgfJe3dqgR
-me0Ts/v75lmxt1ZaQnsd
-=t9F4
------END PGP SIGNATURE-----
-
---udxo73iwlyu6mjuc--
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogU2ViYXN0aWFuIFJlaWNo
+ZWwgW21haWx0bzpzcmVAa2VybmVsLm9yZ10NCj4gU2VudDogMjAxNsTqOdTCMcjVIDIwOjQ4DQo+
+IFRvOiBMZWUgSm9uZXMgPGxlZS5qb25lc0BsaW5hcm8ub3JnPg0KPiBDYzogV2VueW91IFlhbmcg
+LSBBNDE1MzUgPFdlbnlvdS5ZYW5nQG1pY3JvY2hpcC5jb20+OyBEbWl0cnkgRXJlbWluLQ0KPiBT
+b2xlbmlrb3YgPGRiYXJ5c2hrb3ZAZ21haWwuY29tPjsgRGF2aWQgV29vZGhvdXNlDQo+IDxkd213
+MkBpbmZyYWRlYWQub3JnPjsgUm9iIEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9yZz47IFBhd2Vs
+IE1vbGwNCj4gPHBhd2VsLm1vbGxAYXJtLmNvbT47IE1hcmsgUnV0bGFuZCA8bWFyay5ydXRsYW5k
+QGFybS5jb20+OyBJYW4gQ2FtcGJlbGwNCj4gPGlqYytkZXZpY2V0cmVlQGhlbGxpb24ub3JnLnVr
+PjsgS3VtYXIgR2FsYSA8Z2FsYWtAY29kZWF1cm9yYS5vcmc+OyBOaWNvbGFzDQo+IEZlcnJlIDxu
+aWNvbGFzLmZlcnJlQGF0bWVsLmNvbT47IEFsZXhhbmRyZSBCZWxsb25pIDxhbGV4YW5kcmUuYmVs
+bG9uaUBmcmVlLQ0KPiBlbGVjdHJvbnMuY29tPjsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
+ZzsgV2VueW91IFlhbmcgLSBBNDE1MzUNCj4gPFdlbnlvdS5ZYW5nQG1pY3JvY2hpcC5jb20+OyBk
+ZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXgtYXJtLQ0KPiBrZXJuZWxAbGlzdHMuaW5m
+cmFkZWFkLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFU
+Q0ggdjkgMy80XSBkb2M6IGJpbmRpbmdzOiBtZmQ6IGFjdDg5NDVhOiBVcGRhdGUgdGhlIGV4YW1w
+bGUNCj4gDQo+IEhpIExlZSwNCj4gDQo+IE9uIFRodSwgU2VwIDAxLCAyMDE2IGF0IDEyOjIyOjUx
+UE0gKzAxMDAsIExlZSBKb25lcyB3cm90ZToNCj4gPiBPbiBUaHUsIDAxIFNlcCAyMDE2LCBXZW55
+b3UgWWFuZyB3cm90ZToNCj4gPg0KPiA+ID4gU2luY2UgdGhlIGFjdDg5NDVhLWNoYXJnZXIgaXMg
+cmVnYXJkZWQgYXMgYSBzdWItZGV2aWNlIGFuZCBpdCB1c2luZw0KPiA+ID4gImludGVycnVwdHMi
+IHByb3BlcnR5LCB1cGRhdGUgdGhlIGV4YW1wbGVzIHNlY3Rpb24uDQo+ID4gPg0KPiA+ID4gU2ln
+bmVkLW9mZi1ieTogV2VueW91IFlhbmcgPHdlbnlvdS55YW5nQGF0bWVsLmNvbT4NCj4gPiA+IC0t
+LQ0KPiA+ID4NCj4gPiA+IENoYW5nZXMgaW4gdjk6IE5vbmUNCj4gPiA+IENoYW5nZXMgaW4gdjg6
+IE5vbmUNCj4gPiA+IENoYW5nZXMgaW4gdjc6IE5vbmUNCj4gPiA+IENoYW5nZXMgaW4gdjY6IE5v
+bmUNCj4gPiA+IENoYW5nZXMgaW4gdjQ6IE5vbmUNCj4gPiA+DQo+ID4gPiAgRG9jdW1lbnRhdGlv
+bi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9hY3Q4OTQ1YS50eHQgfCAyMg0KPiA+ID4gKysrKysr
+KysrKysrKysrLS0tLS0tLQ0KPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxNSBpbnNlcnRpb25zKCsp
+LCA3IGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gVGhpcyBpcyBhIGZ1bmN0aW9uYWwgY2hhbmdlLiAg
+SSdsbCByZXF1aXJlIGEgRFQgQWNrLg0KPiANCj4gV2VueW91IFlhbmcgZm9yZ290IHRvIHRha2Ug
+b3ZlciBSb2IncyBBY2tlZC1CeSBmcm9tIHRoZSBwcmV2aW91cw0KPiB2ZXJzaW9uOiBodHRwczov
+L3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzkyOTg4NzEvDQoNClllcywgc29ycnkuIEkgZm9y
+Z290Lg0KDQoNCkJlc3QgUmVnYXJkcywNCldlbnlvdSBZYW5nDQo=
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
