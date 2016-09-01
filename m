@@ -1,71 +1,99 @@
-From: qiaozhou <qiaozhou@asrmicro.com>
-Subject: [Question] about patch: don't use [delayed_]work_pending()
-Date: Thu, 1 Sep 2016 17:09:36 +0800
-Message-ID: <d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 2/4] cpu: expose pm_qos_resume_latency for each cpu
+Date: Thu, 1 Sep 2016 11:26:15 +0200
+Message-ID: <CAPDyKFra5YRUPB7a2th6K1hnK=PUz9k27d6DNNoVaJ76QSWe3w@mail.gmail.com>
+References: <1472114562-2736-1-git-send-email-alex.shi@linaro.org>
+ <1472114562-2736-2-git-send-email-alex.shi@linaro.org> <57C7A597.4050001@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [140.206.112.110] ([140.206.112.110]:7021 "EHLO
-        mail2012.asrmicro.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1751080AbcIAJZy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Sep 2016 05:25:54 -0400
+Received: from mail-wm0-f49.google.com ([74.125.82.49]:38240 "EHLO
+        mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752739AbcIAJ0R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Sep 2016 05:26:17 -0400
+Received: by mail-wm0-f49.google.com with SMTP id 1so83716036wmz.1
+        for <linux-pm@vger.kernel.org>; Thu, 01 Sep 2016 02:26:17 -0700 (PDT)
+In-Reply-To: <57C7A597.4050001@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tj@kernel.org, linux-pm@vger.kernel.org, Wang Wilbur <wilburwang@asrmicro.com>, Wu Gang <gangwu@asrmicro.com>, linux-kernel@vger.kernel.org
+To: Alex Shi <alex.shi@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Hi Tejun,
+On 1 September 2016 at 05:50, Alex Shi <alex.shi@linaro.org> wrote:
+>
+> Few commits and patch changed according to Greg's comments.
+>
+> Regards
+> Alex
+>
+> ====
+>
+> From 186c534b0b8b9649fbfce05b0b4f90f764c571a4 Mon Sep 17 00:00:00 2001
+> From: Alex Shi <alex.shi@linaro.org>
+> Date: Tue, 16 Aug 2016 15:29:01 +0800
+> Subject: [PATCH 2/4] cpu: expose pm_qos_resume_latency for each cpu
+>
+> Adding /sys/devices/system/cpu/cpux/power/pm_qos_resume_latency_us for
+> each of cpus. The pm_qos_resume_latency usage defined in
+> Documentation/ABI/testing/sysfs-devices-power
+>
+> The cpu-dma PM QoS constraint impacts all the cpus in the system. There
+> is no way to let the user to choose a PM QoS constraint per cpu.
+>
+> The following patch exposes to the userspace a per cpu based sysfs file
+> in order to let the userspace to change the value of the PM QoS latency
+> constraint.
+>
+> This change is inoperative in its form and the cpuidle governors have to
+> take into account the per cpu latency constraint in addition to the
+> global cpu-dma latency constraint in order to operate properly.
 
-I have a question related with below patch, and need your suggestion.
+In general I think the change makes sense, although it's this last
+piece here that I wonder about.
 
-In our system, we do cpu clock init in of_clk_init path, and use pm qos 
-to maintain cpu/cci clock. Firstly we init a CCI_CLK_QOS and set a 
-default value, then update CCI_CLK_QOS to limit CCI min frequency 
-according to current cpu frequency. Before calling 
-pm_qos_update_request, irq is disabled, but after the calling, irq is 
-enabled in cancel_delayed_work_sync, which causes some inconvenience 
-before Before this patch is applied, it checks pending work and won't do 
-cancel_delayed_work_sync in this boot up phase.
+Is it okay that we expose sysfs attributes to userspace that don't
+have any effect if they change the values? Perhaps it should be the
+responsibility of the menu governor somehow to expose the sysfs nodes
+instead? Unless there are some difficulties that prevents us from that
+of course.
 
-The simple calling sequence is like this:
 
-start_kernel -> of_clk_init -> cpu_clk_init -> pm_qos_add_request(xx, 
-default_value),
+Kind regards
+Uffe
 
-then pm_qos_update_request.
-
-I don't know whether it's meaningful to still check pending work here, 
-or it's not suggested to use pm_qos_update_request in this early boot up 
-phase. Could you help to share some opinions? (I can fix this issue by 
-adding the current qos value directly instead of default value, though.)
-
-Thanks a lot.
-
-commit ed1ac6e91a3ff7c561008ba57747cd6cbc49385e
-Author: Tejun Heo <tj@kernel.org>
-Date:   Fri Jan 11 13:37:33 2013 +0100
-
-     PM: don't use [delayed_]work_pending()
-
-     There's no need to test whether a (delayed) work item is pending
-     before queueing, flushing or cancelling it, so remove work_pending()
-     tests used in those cases.
-
-     Signed-off-by: Tejun Heo <tj@kernel.org>
-     Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-...
-
-@@ -359,8 +359,7 @@ void pm_qos_update_request(struct pm_qos_request *req,
-                 return;
-         }
-
--       if (delayed_work_pending(&req->work))
--               cancel_delayed_work_sync(&req->work);
-+       cancel_delayed_work_sync(&req->work);
-...
-
-Best Regards
-
-Qiao
-
+>
+> Signed-off-by: Alex Shi <alex.shi@linaro.org>
+> To: linux-kernel@vger.kernel.org
+> To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/base/cpu.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+> index 4c28e1a..2c3b359 100644
+> --- a/drivers/base/cpu.c
+> +++ b/drivers/base/cpu.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/of.h>
+>  #include <linux/cpufeature.h>
+>  #include <linux/tick.h>
+> +#include <linux/pm_qos.h>
+>
+>  #include "base.h"
+>
+> @@ -376,6 +377,7 @@ int register_cpu(struct cpu *cpu, int num)
+>
+>         per_cpu(cpu_sys_devices, num) = &cpu->dev;
+>         register_cpu_under_node(num, cpu_to_node(num));
+> +       dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
+>
+>         return 0;
+>  }
+> --
+> 2.8.1.101.g72d917a
+>
+>
+>
