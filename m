@@ -1,125 +1,95 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH 1/4] exynos4-is: Clear isp-i2c adapter
- power.ignore_children flag
-Date: Thu, 1 Sep 2016 13:47:11 +0200
-Message-ID: <20160901114711.GF2893@katana>
-References: <1472729956-17475-1-git-send-email-s.nawrocki@samsung.com>
+From: Tero Kristo <t-kristo@ti.com>
+Subject: Re: [PATCH 3/3] clk: keystone: Add sci-clk driver support
+Date: Thu, 1 Sep 2016 15:27:33 +0300
+Message-ID: <7b74dc9f-54f3-3081-72b7-116d4c44e98a@ti.com>
+References: <20160820003342.13599-1-nm@ti.com>
+ <20160820003342.13599-4-nm@ti.com> <20160824083415.GA6502@codeaurora.org>
+ <c1a66f45-fa81-8137-4d9b-73e84141f67f@ti.com>
+ <20160831223101.GI12510@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="O98KdSgI27dgYlM5"
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1472729956-17475-1-git-send-email-s.nawrocki@samsung.com>
-Sender: stable-owner@vger.kernel.org
-To: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Cc: linux-media@vger.kernel.org, m.szyprowski@samsung.com, b.zolnierkie@samsung.com, linux-samsung-soc@vger.kernel.org, stable@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20160831223101.GI12510@codeaurora.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Michael Turquette <mturquette@baylibre.com>, Santosh Shilimkar <ssantosh@kernel.org>, linux-kernel@vger.kernel.org, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+On 01/09/16 01:31, Stephen Boyd wrote:
+> On 08/31, Tero Kristo wrote:
+>> On 24/08/16 11:34, Stephen Boyd wrote:
+>>> On 08/19, Nishanth Menon wrote:
+>>>> diff --git a/drivers/clk/keystone/sci-clk.c b/drivers/clk/keystone/sci-clk.c
+>>>> new file mode 100644
+>>>> index 000000000000..6c43e097e6d6
+>>>> --- /dev/null
+>>>> +++ b/drivers/clk/keystone/sci-clk.c
+>>>> @@ -0,0 +1,539 @@
+>>>> +	return (int)new_rate;
+>>>
+>>> determine rate should return a negative number on failure and 0
+>>> on success. The actual rate that was found should go into
+>>> req->rate. This looks broken.
+>>
+>> Yea it seems broken, I wonder how we haven't seen any issues with
+>> this in testing.... Apparently positive return values from this are
+>> interpreted as success. Having a quick look at clk.c seems to
+>> confirm this.
+>>
+>> Anyway, will fix.
+>
+> True, perhaps we should fix that so we don't use a long to hold
+> the int return value either.
+>
+>>>> + *
+>>>> + * Gets a handle to an existing TI SCI clock, or builds a new clock
+>>>> + * entry and registers it with the common clock framework. Called from
+>>>> + * the common clock framework, when a corresponding of_clk_get call is
+>>>> + * executed, or recursively from itself when parsing parent clocks.
+>>>> + * Returns a pointer to the clock struct, or ERR_PTR value in failure.
+>>>> + */
+>>>
+>>> Please move this driver to clk_hw_register() and friends. This on
+>>> the fly clk generation is scary considering how we hold locks
+>>> while the provider is asked to give us the pointer, so allocating
+>>> and registering clks (basically reentering the CCF again) could
+>>> lead to a locking nightmare. Best to avoid that.
+>>
+>> Ok, so just converting the driver to use provider->get_hw should be
+>> enough? This seems to be a relatively new API in the CCF. Will look
+>> at that.
+>
+> Hopefully it will simplify things greatly.
 
---O98KdSgI27dgYlM5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Well, it didn't simplify things greatly, but somewhat. I still need to 
+use of_parse_phandle_with_args with one of the helpers for example. Will 
+send out v2 in a bit.
 
-On Thu, Sep 01, 2016 at 01:39:16PM +0200, Sylwester Nawrocki wrote:
-> Since commit 04f59143b571161d25315dd52d7a2ecc022cb71a
-> ("i2c: let I2C masters ignore their children for PM")
-> the power.ignore_children flag is set when registering an I2C
-> adapter. Since I2C transfers are not managed by the fimc-isp-i2c
-> driver its clients use pm_runtime_* calls directly to communicate
-> required power state of the bus controller.
-> However when the power.ignore_children flag is set that doesn't
-> work, so clear that flag back after registering the adapter.
-> While at it drop pm_runtime_enable() call on the i2c_adapter
-> as it is already done by the I2C subsystem when registering
-> I2C adapter.
->=20
-> Cc: <stable@vger.kernel.org> # 4.7+
-> Reported-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+>
+>>
+>>>> +	}
+>>>> +
+>>>> +	snprintf(name, 20, "%s:%d:%d", dev_name(provider->dev), sci_clk->dev_id,
+>>>> +		 sci_clk->clk_id);
+>>>
+>>> I hope we don't make dev_name() longer than 20 characters
+>>
+>> Shall I just increase the size of the buffer and add a length check?
+>> Using kmalloc or something here seems overkill, as the name gets
+>> copied by CCF anyway.
+>
+> There's kasprintf() which would always make it long enough. I
+> don't know if it really matters though.
 
-CCing the authors of the "offending" commit as well as linux-pm for more
-PM expertise.
+Ok, I will use this one.
 
-> ---
->  drivers/media/platform/exynos4-is/fimc-is-i2c.c | 25 ++++++++++++++++++-=
-------
->  1 file changed, 18 insertions(+), 7 deletions(-)
->=20
-> diff --git a/drivers/media/platform/exynos4-is/fimc-is-i2c.c b/drivers/me=
-dia/platform/exynos4-is/fimc-is-i2c.c
-> index 7521aa5..03b4246 100644
-> --- a/drivers/media/platform/exynos4-is/fimc-is-i2c.c
-> +++ b/drivers/media/platform/exynos4-is/fimc-is-i2c.c
-> @@ -55,26 +55,37 @@ static int fimc_is_i2c_probe(struct platform_device *=
-pdev)
->  	i2c_adap->algo =3D &fimc_is_i2c_algorithm;
->  	i2c_adap->class =3D I2C_CLASS_SPD;
-> =20
-> +	platform_set_drvdata(pdev, isp_i2c);
-> +	pm_runtime_enable(&pdev->dev);
-> +
->  	ret =3D i2c_add_adapter(i2c_adap);
->  	if (ret < 0) {
->  		dev_err(&pdev->dev, "failed to add I2C bus %s\n",
->  						node->full_name);
-> -		return ret;
-> +		goto err_pm_dis;
->  	}
-> =20
-> -	platform_set_drvdata(pdev, isp_i2c);
-> -
-> -	pm_runtime_enable(&pdev->dev);
-> -	pm_runtime_enable(&i2c_adap->dev);
-> -
-> +	/*
-> +	 * Client drivers of this adapter don't do any I2C transfers as that
-> +	 * is handled by the ISP firmware.  But we rely on the runtime PM
-> +	 * state propagation from the clients up to the adapter driver so
-> +	 * clear the ignore_children flags here.  PM rutnime calls are not
-> +	 * used in probe() handler of clients of this adapter so there is
-> +	 * no issues with clearing the flag right after registering the I2C
-> +	 * adapter.
-> +	 */
-> +	pm_suspend_ignore_children(&i2c_adap->dev, false);
->  	return 0;
-> +
-> +err_pm_dis:
-> +	pm_runtime_disable(&pdev->dev);
-> +	return ret;
->  }
-> =20
->  static int fimc_is_i2c_remove(struct platform_device *pdev)
->  {
->  	struct fimc_is_i2c *isp_i2c =3D platform_get_drvdata(pdev);
-> =20
-> -	pm_runtime_disable(&isp_i2c->adapter.dev);
->  	pm_runtime_disable(&pdev->dev);
->  	i2c_del_adapter(&isp_i2c->adapter);
-> =20
-> --=20
-> 1.9.1
->=20
-
---O98KdSgI27dgYlM5
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXyBU/AAoJEBQN5MwUoCm2jhIQAJAehQPpIzpfNX35v9iSxhy4
-zTwVNuON+RTVj8njtJhTPSNZ9znu2jtIDxVegH9AJupJUEbJlz2mNcRn8YsxXeo6
-cweoT6AyAppSNdLuMiimyb2x2j39gPccCWF9p5bY3E4Wi9b7TRlhdHIFYGIJ+apC
-xKRqgtrOs4p3zwD3NtyCYMkDpWKEaGbJafNElBOlgUjL2k456EQwmf7ULqi5B+FH
-AWz8WkieLPCoG0vicR3c/wCCgZkJX4cdLFhdLjgWVY8I24jClVHPoFcMqHZJ05F3
-q3LcGIxR1KGSbPOO8jr9o6ZL0izlQlw6YI339wMx6RklSB8+bRaVbqyi7Gh05OxR
-4v3KOgesfEWAbnwLlqju9UMviVfK/6A9pDetpPJLsOa21TgfD5duEUyOpkXIeewE
-Hg/T8j3lLLWg/H9BgrP5NfaB6ETu9E7gB8NEpEyHh1+YeffC+c54S8TYlzim99IU
-PMR7VjTmKkBRsUUUBLMSUkGCSoyjxemxUvKn7tGW4JAQOYqi9+yWti0Mg4Vj7qxO
-ad0F+X9KH9PuMh5L9Id7VSoNskw2bVq63ZCQ3z7Se82Au5pjbT7B1BGlCsCPsXZz
-aNnW09gbJ5fyNgIXfV0kDjRXk0HNqH9ZnHtdyPuLlf9etrj574lLCIlCkCFSou5B
-R3pMeSVNbV8AHS1zG+kS
-=5fHW
------END PGP SIGNATURE-----
-
---O98KdSgI27dgYlM5--
+-Tero
