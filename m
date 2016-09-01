@@ -1,186 +1,50 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 2/8] sched: Extend scheduler's asym packing
-Date: Thu,  1 Sep 2016 13:33:38 -0700
-Message-ID: <1472762024-88771-3-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:33986 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750713AbcIAVGu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 1 Sep 2016 17:06:50 -0400
-In-Reply-To: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [Question] about patch: don't use [delayed_]work_pending()
+Date: Thu, 1 Sep 2016 14:45:03 -0400
+Message-ID: <20160901184503.GD12660@htj.duckdns.org>
+References: <d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: qiaozhou <qiaozhou@asrmicro.com>
+Cc: linux-pm@vger.kernel.org, Wang Wilbur <wilburwang@asrmicro.com>, Wu Gang <gangwu@asrmicro.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, peterz@infradead.org
-Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-From: Tim Chen <tim.c.chen@linux.intel.com>
+Hello,
 
-We generalize the scheduler's asym packing to provide an ordering
-of the cpu beyond just the cpu number.  This allows the use of the
-ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
-sched domain. The preference is defined with the cpu priority
-given by arch_asym_cpu_priority(cpu).
+On Thu, Sep 01, 2016 at 05:09:36PM +0800, qiaozhou wrote:
+> In our system, we do cpu clock init in of_clk_init path, and use pm qos to
+> maintain cpu/cci clock. Firstly we init a CCI_CLK_QOS and set a default
+> value, then update CCI_CLK_QOS to limit CCI min frequency according to
+> current cpu frequency. Before calling pm_qos_update_request, irq is
+> disabled, but after the calling, irq is enabled in cancel_delayed_work_sync,
+> which causes some inconvenience before Before this patch is applied, it
+> checks pending work and won't do cancel_delayed_work_sync in this boot up
+> phase.
 
-We also record the most preferred cpu in a sched group when
-we build the cpu's capacity for fast lookup of preferred cpu
-during load balancing.
+So, cancel_delayed_work_sync() usually shouldn't be called with irq
+disabled as it's a possibly blocking call.
 
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- include/linux/sched.h |  2 ++
- kernel/sched/core.c   | 18 ++++++++++++++++++
- kernel/sched/fair.c   | 35 ++++++++++++++++++++++++-----------
- kernel/sched/sched.h  | 12 ++++++++++++
- 4 files changed, 56 insertions(+), 11 deletions(-)
+> The simple calling sequence is like this:
+> 
+> start_kernel -> of_clk_init -> cpu_clk_init -> pm_qos_add_request(xx,
+> default_value),
+> 
+> then pm_qos_update_request.
+> 
+> I don't know whether it's meaningful to still check pending work here, or
+> it's not suggested to use pm_qos_update_request in this early boot up phase.
+> Could you help to share some opinions? (I can fix this issue by adding the
+> current qos value directly instead of default value, though.)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b0fa726..15d3f29 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1052,6 +1052,8 @@ static inline int cpu_numa_flags(void)
- }
- #endif
- 
-+int arch_asym_cpu_priority(int cpu);
-+
- struct sched_domain_attr {
- 	int relax_domain_level;
- };
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index e86c4a5..08135ca 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6237,7 +6237,25 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
- 	WARN_ON(!sg);
- 
- 	do {
-+		int cpu, max_cpu = -1, prev_cpu = -1;
-+
- 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
-+
-+		if (!(sd->flags & SD_ASYM_PACKING))
-+			goto next;
-+
-+		for_each_cpu(cpu, sched_group_cpus(sg)) {
-+			if (prev_cpu < 0) {
-+				prev_cpu = cpu;
-+				max_cpu = cpu;
-+			} else {
-+				if (sched_asym_prefer(cpu, max_cpu))
-+					max_cpu = cpu;
-+			}
-+		}
-+		sg->asym_prefer_cpu = max_cpu;
-+
-+next:
- 		sg = sg->next;
- 	} while (sg != sd->groups);
- 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 5d558cc..d8f51d9 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -100,6 +100,16 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
-  */
- unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
- 
-+#ifdef CONFIG_SMP
-+/*
-+ * For asym packing, by default the lower numbered cpu has higher priority.
-+ */
-+int __weak arch_asym_cpu_priority(int cpu)
-+{
-+	return -cpu;
-+}
-+#endif
-+
- #ifdef CONFIG_CFS_BANDWIDTH
- /*
-  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
-@@ -6853,16 +6863,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
- 	if (env->idle == CPU_NOT_IDLE)
- 		return true;
- 	/*
--	 * ASYM_PACKING needs to move all the work to the lowest
--	 * numbered CPUs in the group, therefore mark all groups
--	 * higher than ourself as busy.
-+	 * ASYM_PACKING needs to move all the work to the highest
-+	 * prority CPUs in the group, therefore mark all groups
-+	 * of lower priority than ourself as busy.
- 	 */
--	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
-+	if (sgs->sum_nr_running &&
-+	    sched_asym_prefer(env->dst_cpu, group_priority_cpu(sg))) {
- 		if (!sds->busiest)
- 			return true;
- 
--		/* Prefer to move from highest possible cpu's work */
--		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
-+		/* Prefer to move from lowest priority cpu's work */
-+		if (sched_asym_prefer(group_priority_cpu(sds->busiest),
-+				      group_priority_cpu(sg)))
- 			return true;
- 	}
- 
-@@ -7014,8 +7026,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
- 	if (!sds->busiest)
- 		return 0;
- 
--	busiest_cpu = group_first_cpu(sds->busiest);
--	if (env->dst_cpu > busiest_cpu)
-+	busiest_cpu = group_priority_cpu(sds->busiest);
-+	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
- 		return 0;
- 
- 	env->imbalance = DIV_ROUND_CLOSEST(
-@@ -7356,10 +7368,11 @@ static int need_active_balance(struct lb_env *env)
- 
- 		/*
- 		 * ASYM_PACKING needs to force migrate tasks from busy but
--		 * higher numbered CPUs in order to pack all tasks in the
--		 * lowest numbered CPUs.
-+		 * lower priority CPUs in order to pack all tasks in the
-+		 * highest priority CPUs.
- 		 */
--		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
-+		if ((sd->flags & SD_ASYM_PACKING) &&
-+		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
- 			return 1;
- 	}
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index b7fc1ce..f338934 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -532,6 +532,17 @@ struct dl_rq {
- 
- #ifdef CONFIG_SMP
- 
-+static inline bool sched_asym_prefer(int a, int b)
-+{
-+	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
-+}
-+
-+/*
-+ * Return lowest numbered cpu in the group as the most preferred cpu
-+ * for ASYM_PACKING for default case.
-+ */
-+#define group_priority_cpu(group) group->asym_prefer_cpu
-+
- /*
-  * We add the notion of a root-domain which will be used to define per-domain
-  * variables. Each exclusive cpuset essentially defines an island domain by
-@@ -884,6 +895,7 @@ struct sched_group {
- 
- 	unsigned int group_weight;
- 	struct sched_group_capacity *sgc;
-+	int asym_prefer_cpu;		/* cpu of highest priority in group */
- 
- 	/*
- 	 * The CPUs this group covers.
+Hmmm... but I suppose this is super-early in the boot.  Would it make
+sense to have a static variable (e.g. bool clk_fully_initailized) to
+gate the cancel_delayed_sync() call?
+
+Thanks.
+
 -- 
-2.7.4
-
+tejun
