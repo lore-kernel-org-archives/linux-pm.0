@@ -1,58 +1,186 @@
-From: qiaozhou <qiaozhou@asrmicro.com>
-Subject: Re: [Question] about patch: don't use [delayed_]work_pending()
-Date: Fri, 2 Sep 2016 09:17:04 +0800
-Message-ID: <6b2fc72b-f99f-f7f1-3221-093943de0950@asrmicro.com>
-References: <d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com>
- <20160901184503.GD12660@htj.duckdns.org>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v6 0/8] power: add power sequence library
+Date: Fri, 2 Sep 2016 09:10:46 +0800
+Message-ID: <20160902011046.GB11262@shlinux2>
+References: <1471252398-957-1-git-send-email-peter.chen@nxp.com>
+ <b1848eb2-9298-9089-ee4d-5356998c6c08@linaro.org>
+ <20160824085335.GB27233@shlinux2>
+ <20160829111045.GB3736@b29397-desktop>
+ <3a45793f-18d9-0688-d2ab-ef79432c473c@linaro.org>
+ <20160831095220.GA11938@b29397-desktop>
+ <fd94340b-1c1d-2307-7e57-5b05f1655d2c@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [140.206.112.110] ([140.206.112.110]:63423 "EHLO
-        mail2012.asrmicro.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1750737AbcIBBRi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Sep 2016 21:17:38 -0400
-In-Reply-To: <20160901184503.GD12660@htj.duckdns.org>
+Received: from mail-pa0-f67.google.com ([209.85.220.67]:34415 "EHLO
+        mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751335AbcIBBVY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Sep 2016 21:21:24 -0400
+Content-Disposition: inline
+In-Reply-To: <fd94340b-1c1d-2307-7e57-5b05f1655d2c@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-pm@vger.kernel.org, Wang Wilbur <wilburwang@asrmicro.com>, Wu Gang <gangwu@asrmicro.com>, linux-kernel@vger.kernel.org
+To: Vaibhav Hiremath <vaibhav.hiremath@linaro.org>
+Cc: robh+dt@kernel.org, Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, linux-usb@vger.kernel.org, oscar@naiandei.net, pawel.moll@arm.com, arnd@arndb.de, linux-pm@vger.kernel.org, festevam@gmail.com, s.hauer@pengutronix.de, stephen.boyd@linaro.org, linux-kernel@vger.kernel.org, troy.kisky@boundarydevices.com, stillcompiling@gmail.com, p.zabel@pengutronix.de, mail@maciej.szmigiero.name, mka@chromium.org, linux-arm-kernel@lists.infradead.org
 
+On Wed, Aug 31, 2016 at 10:28:20PM +0530, Vaibhav Hiremath wrote:
+> 
+> 
+> On Wednesday 31 August 2016 03:22 PM, Peter Chen wrote:
+> >On Wed, Aug 31, 2016 at 01:46:30PM +0530, Vaibhav Hiremath wrote:
+> >>
+> >>On Monday 29 August 2016 04:40 PM, Peter Chen wrote:
+> >>>On Wed, Aug 24, 2016 at 04:53:35PM +0800, Peter Chen wrote:
+> >>>>On Tue, Aug 23, 2016 at 04:02:48PM +0530, Vaibhav Hiremath wrote:
+> >>>>>On Monday 15 August 2016 02:43 PM, Peter Chen wrote:
+> >>>>>>Hi all,
+> >>>>>>
+> >>>>>>This is a follow-up for my last power sequence framework patch set [1].
+> >>>>>>According to Rob Herring and Ulf Hansson's comments[2], I use a generic
+> >>>>>>power sequence library for parsing the power sequence elements on DT,
+> >>>>>>and implement generic power sequence on library. The host driver
+> >>>>>>can allocate power sequence instance, and calls pwrseq APIs accordingly.
+> >>>>>>
+> >>>>>>In future, if there are special power sequence requirements, the special
+> >>>>>>power sequence library can be created.
+> >>>>>>
+> >>>>>>This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+> >>>>>>two hot-plug devices to simulate this use case, the related binding
+> >>>>>>change is updated at patch [1/6], The udoo board changes were tested
+> >>>>>>using my last power sequence patch set.[3]
+> >>>>>>
+> >>>>>>Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+> >>>>>>need to power on itself before it can be found by ULPI bus.
+> >>>>>>
+> >>>>>>[1]http://www.spinics.net/lists/linux-usb/msg142755.html
+> >>>>>>[2]http://www.spinics.net/lists/linux-usb/msg143106.html
+> >>>>>>[3]http://www.spinics.net/lists/linux-usb/msg142815.html
+> >>>>>(Please ignore my response on V2)
+> >>>>>
+> >>>>>Sorry being so late in the discussion...
+> >>>>>
+> >>>>>If I am not missing anything, then I am afraid to say that the
+> >>>>>generic library
+> >>>>>implementation in this patch series is not going to solve many of
+> >>>>>the custom
+> >>>>>requirement of power on, off, etc...
+> >>>>>I know you mentioned about adding another library when we come
+> >>>>>across such platforms, but should we not keep provision (or easy
+> >>>>>hooks/path)
+> >>>>>to enable that ?
+> >>>>>
+> >>>>>Let me bring in the use case I am dealing with,
+> >>>>>
+> >>>>>
+> >>>>>                               Host
+> >>>>>                                |
+> >>>>>                                V
+> >>>>>                            USB port
+> >>>>>------------------------------------------------------------
+> >>>>>                                |
+> >>>>>                                V
+> >>>>>                       USB HUB device (May need custom on/off seq)
+> >>>>>                                |
+> >>>>>                                V
+> >>>>>               =============================
+> >>>>>              |                             |
+> >>>>>              V                             V
+> >>>>>          Device-1                       Device-2
+> >>>>>(Needs special power               (Needs special power
+> >>>>>  on/off sequence.                   on/off sequence.
+> >>>>>  Also may need custom               Also, may need custom
+> >>>>>  sequence for                       sequence for
+> >>>>>  suspend/resume)                    suspend/resume)
+> >>>>>
+> >>>>>
+> >>>>>Note: Both Devices are connected to HUB via HSIC and may differ
+> >>>>>           in terms of functionality, features they support.
+> >>>>>
+> >>>>>In the above case, both Device-1 and Device-2, need separate
+> >>>>>power on/off sequence. So generic library currently we have in this
+> >>>>>patch series is not going to satisfy the need here.
+> >>>>>
+> >>>>>I looked at all 6 revisions of this patch-series, went through the
+> >>>>>review comments, and looked at MMC power sequence code;
+> >>>>>what I can say here is, we need something similar to
+> >>>>>MMC power sequence here, where every device can have its own
+> >>>>>power sequence (if needed).
+> >>>>>
+> >>>>>I know Rob is not in favor of creating platform device for
+> >>>>>this, and I understand his comment.
+> >>>>>If not platform device, but atleast we need mechanism to
+> >>>>>connect each device back to its of_node and its respective
+> >>>>>driver/library fns. For example, the Devices may support different
+> >>>>>boot modes, and platform driver needs to make sure that
+> >>>>>the right sequence is followed for booting.
+> >>>>>
+> >>>>>Peter, My apologies for taking you back again on this series.
+> >>>>>I am OK, if you wish to address this in incremental addition,
+> >>>>>but my point is, we know that the current generic way is not
+> >>>>>enough for us, so I think we should try to fix it in initial phase only.
+> >>>>>
+> >>>>Rob, it seems generic power sequence can't cover all cases.
+> >>>>Without information from DT, we can't know which power sequence
+> >>>>for which device.
+> >>>>
+> >>>Vaibhav, do you agree that I create pwrseq library list using postcore_initcall
+> >>>for each library, and choose pwrseq library according to compatible
+> >>>string first, if there is no compatible string for this library, just
+> >>>use generic pwrseq library.
+> >>>
+> >>Lets hear from MMC folks. Ulf, do you agree on approach
+> >>for pwr seq ??
+> >>
+> >>
+> >>With above approach, I kind of agree on it, but I have couple
+> >>of comments,
+> >>
+> >>  - How DTS looks like now ?? Can you put example here ?
+> >The dts is the same with current version.
+> 
+> How would consumer driver get the power sequence ?
+> You must point to right power sequence driver.
+> For example, in the above example, Device-1, should
+> get handle to pwrseq-1, and Device-2 to pwrseq-2.
 
+According to compatible string at device's of_node, we will have a list
+for power sequence libraries which has index (or name), and matches
+compatible string.
 
-On 2016年09月02日 02:45, Tejun Heo wrote:
-> Hello,
->
-> On Thu, Sep 01, 2016 at 05:09:36PM +0800, qiaozhou wrote:
->> In our system, we do cpu clock init in of_clk_init path, and use pm qos to
->> maintain cpu/cci clock. Firstly we init a CCI_CLK_QOS and set a default
->> value, then update CCI_CLK_QOS to limit CCI min frequency according to
->> current cpu frequency. Before calling pm_qos_update_request, irq is
->> disabled, but after the calling, irq is enabled in cancel_delayed_work_sync,
->> which causes some inconvenience before Before this patch is applied, it
->> checks pending work and won't do cancel_delayed_work_sync in this boot up
->> phase.
-> So, cancel_delayed_work_sync() usually shouldn't be called with irq
-> disabled as it's a possibly blocking call.
-Agree.
->
->> The simple calling sequence is like this:
->>
->> start_kernel -> of_clk_init -> cpu_clk_init -> pm_qos_add_request(xx,
->> default_value),
->>
->> then pm_qos_update_request.
->>
->> I don't know whether it's meaningful to still check pending work here, or
->> it's not suggested to use pm_qos_update_request in this early boot up phase.
->> Could you help to share some opinions? (I can fix this issue by adding the
->> current qos value directly instead of default value, though.)
-> Hmmm... but I suppose this is super-early in the boot.  Would it make
-> sense to have a static variable (e.g. bool clk_fully_initailized) to
-> gate the cancel_delayed_sync() call?
-You're right that it's indeed super-early stage. But currently we can't 
-control the gate of can_delayed_work_sync, since it's inside 
-pm_qos_update_request. Out of our control. We can choose to not call 
-pm_qos_update_request to avoid this issue, and use pm_qos_add_request 
-alternatively. Good to have it.
-Thanks a lot.
+> 
+> >>  - Should we merge MMC power sequence in next series ?
+> >>    We also can take this as an incremental change, to avoid further
+> >>    delay :)
+> >We had an agreement that keep mmc's pwrseq framework unchanging.
+> >Unless Ulf and rob both agree to change.
+> 
+> Why 2 separate approach for same problem ?
+> And I see this as possible duplication of code/functionality :)
+
+How the new kernel compatibles old dts? If we do not need to
+consider this problem, the mmc can try to use power sequence library
+too in future.
+
+> 
+> >>  - Lets also add suspend/resume callback to struct pwrseq
+> >>
+> >Why suspend/resume can't do at related driver's suspend/resume API?
+> 
+> Nope...
+> The pwrseq library would have taken ownership of resources, so
+> related driver cannot suspend the device. Again it is architecture
+> specific, but we should have provision to handle this.
+> 
+> The system I am dealing with today, does need suspend/resume
+> callback. To be precise, suspend is close to off state for some devices or
+> they could enter standby or different low power state, but to do that,
+> we need same resource as used for ON/OFF functionality.
+> 
+
+Ok, I will have API for suspend/resume. You can implement it at your own
+library or generic one.
+
+-- 
+
+Best Regards,
+Peter Chen
