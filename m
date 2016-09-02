@@ -1,129 +1,70 @@
-From: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle
- states
-Date: Fri, 2 Sep 2016 15:21:52 +0100
-Message-ID: <0b233802-f459-c6bb-ff42-70745a225cfb@arm.com>
-References: <1472242678-33700-1-git-send-email-lina.iyer@linaro.org>
- <1472242678-33700-3-git-send-email-lina.iyer@linaro.org>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/3] Documentation: dt: Add TI-SCI PM Domains
+Date: Fri, 2 Sep 2016 09:31:50 -0500
+Message-ID: <20160902143150.GA32012@rob-hp-laptop>
+References: <20160819235653.26355-1-nm@ti.com>
+ <20160819235653.26355-2-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1472242678-33700-3-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20160819235653.26355-2-nm-l0cyMroinI0@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, brendan.jackman-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, Juri.Lelli-5wv7dgnIgG8@public.gmane.org, Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+To: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Cc: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Peter Ujfalusi <peter.ujfalusi-l0cyMroinI0@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 26/08/16 21:17, Lina Iyer wrote:
-> From: Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
->
-> Update DT bindings to describe idle states of PM domains.
->
-> Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-> Signed-off-by: Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-> Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> [Lina: Added state properties, removed state names, wakeup-latency,
-> added of_pm_genpd_init() API, pruned commit text]
-> Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> [Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
+On Fri, Aug 19, 2016 at 06:56:51PM -0500, Nishanth Menon wrote:
+> From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+> 
+> Add a generic power domain implementation, TI SCI PM Domains, that
+> will hook into the genpd framework and allow each PD, which will be
+> created one per device, to be managed over the TI-SCI protocol.
+> 
+> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+> Signed-off-by: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
 > ---
->  .../devicetree/bindings/power/power_domain.txt     | 57 ++++++++++++++++++++++
->  1 file changed, 57 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> index 025b5e7..4960486 100644
-> --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -29,6 +29,10 @@ Optional properties:
->     specified by this binding. More details about power domain specifier are
->     available in the next section.
->
-> +- domain-idle-states : A phandle of an idle-state that shall be soaked into a
-> +                generic domain power state. The idle state definitions are
-> +                compatible with arm,idle-state specified in [1].
+>  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   | 58 ++++++++++++++++++++++
+>  MAINTAINERS                                        |  1 +
+>  2 files changed, 59 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+> new file mode 100644
+> index 000000000000..059a5d71d692
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+> @@ -0,0 +1,58 @@
+> +Texas Instruments TI-SCI Generic Power Domain
+> +---------------------------------------------
 > +
->  Example:
->
->  	power: power-controller@12340000 {
-> @@ -59,6 +63,57 @@ The nodes above define two power controllers: 'parent' and 'child'.
->  Domains created by the 'child' power controller are subdomains of '0' power
->  domain provided by the 'parent' power controller.
->
-> +Example 3: ARM v7 style CPU PM domains (Linux domain controller)
+> +Some TI SoCs contain a system controller (like the PMMC, etc...) that are
+> +responsible for control the state of the IPs that are present. Communication
+> +between the host processor running an OS and the system controller happens
+> +through a protocol known as TI-SCI[1]. This pm domain implementation plugs into
+> +the generic pm domain framework and makes use of the TI SCI protocol power on
+> +and off each device when needed.
 > +
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
+> +[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
 > +
-> +		CPU0: cpu@0 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a7", "arm,armv7";
-> +			reg = <0x0>;
-> +			power-domains = <&a7_pd>;
-> +		};
+> +PM Domains Nodes
+> +================
+> +The PM domains node represents the global PM domain managed by the PMMC,
+> +which in this case is one cell implementation as documented by the generic
+> +PM domain bindings in
+> +Documentation/devicetree/bindings/power/power_domain.txt.
 > +
-> +		CPU1: cpu@1 {
-> +			device_type = "cpu";
-> +			compatible = "arm,cortex-a15", "arm,armv7";
-> +			reg = <0x0>;
-> +			power-domains = <&a15_pd>;
-> +		};
-> +	};
-> +
-> +	pm-domains {
-> +		a15_pd: a15_pd {
-> +			/* will have A15 platform ARM_PD_METHOD_OF_DECLARE*/
-> +			compatible = "arm,cortex-a15";
-> +			#power-domain-cells = <0>;
-> +			domain-idle-states = <&CLUSTER_SLEEP_0>;
-> +		};
-> +
-> +		a7_pd: a7_pd {
-> +			/* will have a A7 platform ARM_PD_METHOD_OF_DECLARE*/
-> +			compatible = "arm,cortex-a7";
-> +			#power-domain-cells = <0>;
-> +			domain-idle-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
-> +		};
-> +
-> +		CLUSTER_SLEEP_0: state0 {
-> +			compatible = "arm,idle-state";
-> +			entry-latency-us = <1000>;
-> +			exit-latency-us = <2000>;
-> +			min-residency-us = <10000>;
-> +		};
-> +
-> +		CLUSTER_SLEEP_1: state1 {
-> +			compatible = "arm,idle-state";
-> +			entry-latency-us = <5000>;
-> +			exit-latency-us = <5000>;
-> +			min-residency-us = <100000>;
-> +		};
-> +	};
-> +
+> +Required Properties:
+> +--------------------
+> +- compatible: should be "ti,sci-pm-domains"
+> +- #power-domain-cells: Must be 1 so that an offset can be provided in each
+> +		       device node.
+> +- ti,sci: Phandle to the TI SCI device to use for managing the devices
 
-This version is *not very descriptive*. Also the discussion we had on v3
-version has not yet concluded IMO. So can I take that we agreed on what
-was proposed there or not ?
+How about just making this a child node of the SCI device?
 
-We could have better example above *really* based on the discussions we
-had so far. This example always makes me think it's well crafted to
-avoid any sort of discussions. We need to consider different use-cases
-e.g. what about CPU level states ?
+Rob
 
-IMO, we need to discuss this DT binding in detail and arrive at some
-conclusion before you take all the troubles to respin the series.
-Also it's better to keep the DT binding separate until we have some
-conclusion instead of posting the implementation for each version.
-That's just my opinion(I would be least bothered about implementation
-until I know it will be accepted before I can peek into the code, others
-may differ.
-
--- 
-Regards,
-Sudeep
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
