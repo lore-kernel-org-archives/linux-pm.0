@@ -1,109 +1,241 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 4/5] PM / devfreq: rockchip: add devfreq driver for rk3399
- dmc
-Date: Fri, 02 Sep 2016 10:46:09 +0900
-Message-ID: <57C8D9E1.4070700@samsung.com>
-References: <1472769085-20715-1-git-send-email-hl@rock-chips.com>
- <1472769085-20715-5-git-send-email-hl@rock-chips.com>
- <CGME20160901231806epcas1p4c0184a2d47af524a99d162b3a5a5bf59@epcas1p4.samsung.com>
- <8339852.vAWNvCSMju@diego>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:49091 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750697AbcIBBqN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Sep 2016 21:46:13 -0400
-In-reply-to: <8339852.vAWNvCSMju@diego>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][v9] PM / hibernate: Verify the consistent of e820 memory map by md5 value
+Date: Fri,  2 Sep 2016 14:59:42 +0800
+Message-ID: <1472799582-21115-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Lee Chun-Yi <jlee@suse.com>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>, Lin Huang <hl@rock-chips.com>
-Cc: myungjoo.ham@samsung.com, mark.yao@rock-chips.com, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, linux-arm-kernel@lists.infradead.org, tixy@linaro.org, typ@rock-chips.com, sudeep.holla@arm.com, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi Heiko,
+On some platforms, there is occasional panic triggered when trying to
+resume from hibernation, a typical panic looks like:
 
-On 2016년 09월 02일 08:17, Heiko Stübner wrote:
-> Am Freitag, 2. September 2016, 06:31:24 schrieb Lin Huang:
->> base on dfi result, we do ddr frequency scaling, register
->> dmc driver to devfreq framework, and use simple-ondemand
->> policy.
->>
->> Signed-off-by: Lin Huang <hl@rock-chips.com>
->> Signed-off-by: MyngJoo Ham <myngjoo.ham@samsung.com>
->> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
-> 
-> [...]
-> 
->> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
->> new file mode 100644
->> index 0000000..54d65f2
->> --- /dev/null
->> +++ b/drivers/devfreq/rk3399_dmc.c
->> @@ -0,0 +1,480 @@
->> +/*
->> + * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd.
->> + * Author: Lin Huang <hl@rock-chips.com>
->> + *
->> + * This program is free software; you can redistribute it and/or modify it
->> + * under the terms and conditions of the GNU General Public License,
->> + * version 2, as published by the Free Software Foundation.
->> + *
->> + * This program is distributed in the hope it will be useful, but WITHOUT
->> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
->> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
->> for + * more details.
->> + */
->> +
->> +#include <linux/arm-smccc.h>
->> +#include <linux/clk.h>
->> +#include <linux/delay.h>
->> +#include <linux/devfreq.h>
->> +#include <linux/devfreq-event.h>
->> +#include <linux/interrupt.h>
->> +#include <linux/module.h>
->> +#include <linux/of.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/pm_opp.h>
->> +#include <linux/regulator/consumer.h>
->> +#include <linux/rwsem.h>
->> +#include <linux/suspend.h>
->> +
->> +#include <soc/rockchip/rockchip_sip.h>
-> 
-> (Repeated from previous version)
-> For the shared sip-interface header I've prepared a signed, stable tag
-> which can be pulled from
-> 
-> The following changes since commit 29b4817d4018df78086157ea3a55c1d9424a7cfc:
-> 
->   Linux 4.8-rc1 (2016-08-07 18:18:00 -0700)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/mmind/linux-rockchip.git tags/rockchip-ddr-sip
-> 
-> for you to fetch changes up to 97dd82682f1a6174698fbea149a04b4cabc58c4f:
-> 
->   soc: rockchip: add header for ddr rate SIP interface (2016-08-31 18:53:24 +0200)
-> 
-> ----------------------------------------------------------------
-> Header file defining the SIP-interface to the ATF for DDR frequency changes
-> 
-> ----------------------------------------------------------------
-> Lin Huang (1):
->       soc: rockchip: add header for ddr rate SIP interface
-> 
->  include/soc/rockchip/rockchip_sip.h | 27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
->  create mode 100644 include/soc/rockchip/rockchip_sip.h
-> 
-> 
-> 
+"BUG: unable to handle kernel paging request at ffff880085894000
+IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
 
-Thanks for creating the immutable branch.
+This is because e820 map has been changed by BIOS across
+hibernation, and one of the page frames from suspend kernel
+is right located in restore kernel's unmapped region, so panic
+comes out when accessing unmapped kernel address.
 
+In order to expose this issue earlier, the md5 hash of e820 map
+is passed from suspend kernel to restore kernel, and the restore
+kernel will terminate the resume process once it finds the md5
+hash are not the same.
+
+As the format of image header has been modified, the magic number
+should also be adjusted as kernels with the same RESTORE_MAGIC have
+to use the same header format and interpret all of the fields in
+it in the same way.
+
+Note:
+1. Without this patch applied, it is possible that BIOS has
+   provided an inconsistent memory map, but the resume kernel is still
+   able to restore the image anyway(e.g, E820_RAM region is the superset
+   of the previous one), although the system might be unstable. So this
+   patch tries to treat any inconsistent e820 as illegal.
+
+2. Another case is, this patch replies on comparing the e820_saved, but
+   currently the e820_save might not be strictly the same across
+   hibernation, even if BIOS has provided consistent e820 map - In
+   theory mptable might modify the BIOS-provided e820_saved dynamically
+   in early_reserve_e820_mpc_new, which would allocate a buffer from
+   E820_RAM, and marks it from E820_RAM to E820_RESERVED).
+   This is a potential and rare case we need to deal with in OS in
+   the future.
+
+Suggested-by: Pavel Machek <pavel@ucw.cz>
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Lee Chun-Yi <jlee@suse.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+v9:
+ - Only do the md5 check when CONFIG_CRYPTO_MD5 is built in.
+   Change the image head magic number.
+   Remove CONFIG_HIBERNATION_CHECK_E820 and make the md5 check
+   mandatory.
+   Introduce e820_digest_available to indicate whether we should
+   check the md5 hash.
+   And some other modifications.
+v8:
+ - Panic the system once the e820 is found to be inconsistent
+   during resume.
+   Fix the md5 hash len from 128 bytes to 16 bytes.
+v7:
+ - Use md5 hash to compare the e820 map.
+v6:
+ - Fix some compiling errors reported by 0day/LKP, adjust
+   Kconfig/variable namings.
+v5:
+ - Rewrite this patch to just warn user of the broken BIOS
+   when panic.
+v4:
+ - Add __attribute__ ((unused)) for swsusp_page_is_valid,
+   to eliminate the warnning of:
+   'swsusp_page_is_valid' defined but not used
+   on non-x86 platforms.
+
+v3:
+ - Adjust the logic to exclude the end_pfn boundary in pfn_mapped
+   when invoking mark_valid_pages, because the end_pfn is not
+   a mapped page frame, we should not regard it as a valid page.
+
+   Move the sanity check of valid pages to a early stage in resuming
+   process(moved to mark_unsafe_pages), in this way, we can avoid
+   unnecessarily accessing these invalid pages in later stage(yes,
+   move to the original position Joey once introduced in:
+   Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820
+   reserved regions")
+
+   With v3 patch applied, I did 30 cycles on my problematic platform,
+   no panic triggered anymore(50% reproducible before patched, by
+   plugging/unplugging memory peripheral during hibernation), and it
+   just warns of invalid pages.
+
+v2:
+ - According to Ingo's suggestion, rewrite this patch.
+
+   New version just checks each page frame according to pfn_mapped array.
+   So that we do not need to touch existing code related to
+   E820_RESERVED_KERN. And this method can naturely guarantee
+   that the system before/after hibernation do not need to be of
+   the same memory size on x86_64.
+---
+ arch/x86/power/hibernate_64.c | 88 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 86 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+index 9634557..252cc19 100644
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -11,6 +11,10 @@
+ #include <linux/gfp.h>
+ #include <linux/smp.h>
+ #include <linux/suspend.h>
++#include <linux/scatterlist.h>
++#include <linux/kdebug.h>
++
++#include <crypto/hash.h>
+ 
+ #include <asm/init.h>
+ #include <asm/proto.h>
+@@ -177,14 +181,84 @@ int pfn_is_nosave(unsigned long pfn)
+ 	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
+ }
+ 
++#define MD5_DIGEST_SIZE 16
++
+ struct restore_data_record {
+ 	unsigned long jump_address;
+ 	unsigned long jump_address_phys;
+ 	unsigned long cr3;
+ 	unsigned long magic;
++	u8 e820_digest[MD5_DIGEST_SIZE];
++	bool e820_digest_available;
+ };
+ 
+-#define RESTORE_MAGIC	0x123456789ABCDEF0UL
++#define RESTORE_MAGIC	0x23456789ABCDEF01UL
++
++#if IS_BUILTIN(CONFIG_CRYPTO_MD5)
++/**
++ * get_e820_md5 - calculate md5 according to e820 map
++ *
++ * @map: the e820 map to be calculated
++ * @buf: the md5 result to be stored to
++ */
++static int get_e820_md5(struct e820map *map, void *buf)
++{
++	struct scatterlist sg;
++	struct crypto_ahash *tfm;
++	struct ahash_request *req;
++	int ret = 0;
++
++	tfm = crypto_alloc_ahash("md5", 0, CRYPTO_ALG_ASYNC);
++	if (IS_ERR(tfm))
++		return -ENOMEM;
++
++	req = ahash_request_alloc(tfm, GFP_KERNEL);
++	if (!req) {
++		ret = -ENOMEM;
++		goto free_ahash;
++	}
++
++	sg_init_one(&sg, (u8 *)map, sizeof(struct e820map));
++	ahash_request_set_callback(req, 0, NULL, NULL);
++	ahash_request_set_crypt(req, &sg, buf, sizeof(struct e820map));
++
++	if (crypto_ahash_digest(req))
++		ret = -EINVAL;
++
++	ahash_request_free(req);
++ free_ahash:
++	crypto_free_ahash(tfm);
++
++	return ret;
++}
++
++static bool hibernation_e820_save(void *buf)
++{
++	return get_e820_md5(&e820_saved, buf) ? false : true;
++}
++
++static bool hibernation_e820_mismatch(void *buf)
++{
++	int ret;
++	u8 result[MD5_DIGEST_SIZE] = {0};
++
++	ret = get_e820_md5(&e820_saved, result);
++	if (ret)
++		return true;
++
++	return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
++}
++#else
++static bool hibernation_e820_save(void *buf)
++{
++	return false;
++}
++
++static bool hibernation_e820_mismatch(void *buf)
++{
++	return false;
++}
++#endif
+ 
+ /**
+  *	arch_hibernation_header_save - populate the architecture specific part
+@@ -201,6 +275,10 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+ 	rdr->jump_address_phys = __pa_symbol(&restore_registers);
+ 	rdr->cr3 = restore_cr3;
+ 	rdr->magic = RESTORE_MAGIC;
++
++	if (hibernation_e820_save(rdr->e820_digest))
++		rdr->e820_digest_available = true;
++
+ 	return 0;
+ }
+ 
+@@ -211,10 +289,16 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+  */
+ int arch_hibernation_header_restore(void *addr)
+ {
++	bool e820_mismatch = false;
+ 	struct restore_data_record *rdr = addr;
+ 
+ 	restore_jump_address = rdr->jump_address;
+ 	jump_address_phys = rdr->jump_address_phys;
+ 	restore_cr3 = rdr->cr3;
+-	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
++
++	if (rdr->e820_digest_available)
++		e820_mismatch = hibernation_e820_mismatch(rdr->e820_digest);
++
++	return (rdr->magic == RESTORE_MAGIC) ?
++		(e820_mismatch ? -ENODEV : 0) : -EINVAL;
+ }
 -- 
-Best Regards,
-Chanwoo Choi
+2.7.4
