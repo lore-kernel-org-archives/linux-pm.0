@@ -1,66 +1,43 @@
-From: Santosh Shilimkar <santosh.shilimkar@oracle.com>
-Subject: Re: [GIT PULL] firmware: add support for TI System Control Interface
- (TI-SCI) protocol driver
-Date: Fri, 2 Sep 2016 10:05:53 -0700
-Message-ID: <4586973c-603b-b37a-d32f-c2bc5310e589@oracle.com>
-References: <375758c3-f5f2-b267-31c2-c28812ed3359@ti.com>
- <CAGo_u6rXd9=664xhVkvrtEymD=4LF1KbCj+go_Vnyv6t5j963w@mail.gmail.com>
+From: Nishanth Menon <nm@ti.com>
+Subject: Re: [PATCH V2 1/5] Documentation: Add support for TI System Control
+ Interface (TI-SCI) protocol
+Date: Fri, 2 Sep 2016 12:07:37 -0500
+Message-ID: <CAGo_u6q0xxnUj5ary82OU1uP=kTHfA_3N7_d7OiSEwS1_5dXuw@mail.gmail.com>
+References: <20160830130647.6828-1-nm@ti.com> <20160830130647.6828-2-nm@ti.com>
+ <20160902150628.GA19493@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGo_u6rXd9=664xhVkvrtEymD=4LF1KbCj+go_Vnyv6t5j963w@mail.gmail.com>
+In-Reply-To: <20160902150628.GA19493@rob-hp-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>, Tero Kristo <t-kristo@ti.com>
-Cc: Santosh Shilimkar <ssantosh@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: Tero Kristo <t-kristo@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, lkml <linux-kernel@vger.kernel.org>, "Andrew F . Davis" <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Santosh Shilimkar <ssantosh@kernel.org>, dt list <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 9/2/2016 10:03 AM, Nishanth Menon wrote:
-> On Thu, Sep 1, 2016 at 2:24 AM, Tero Kristo <t-kristo@ti.com> wrote:
->> Hi Santosh,
->>
->> The following changes since commit 29b4817d4018df78086157ea3a55c1d9424a7cfc:
->>
->>   Linux 4.8-rc1 (2016-08-07 18:18:00 -0700)
->>
->> are available in the git repository at:
->>
->>   https://github.com/t-kristo/linux-pm.git 4.8-rc1-ti-sci-fw
->>
->> for you to fetch changes up to 7a2c510cdfa6a4b2f4200c122a377c4d5f4af552:
->>
->>   firmware: ti_sci: Add support for reboot core service (2016-08-31 14:50:20
->> +0300)
->>
->> ----------------------------------------------------------------
->> Nishanth Menon (5):
->>       Documentation: Add support for TI System Control Interface (TI-SCI)
->> protocol
->>       firmware: Add basic support for TI System Control Interface (TI-SCI)
->> protocol
->>       firmware: ti_sci: Add support for Device control
->>       firmware: ti_sci: Add support for Clock control
->>       firmware: ti_sci: Add support for reboot core service
->>
->>  .../devicetree/bindings/arm/keystone/ti,sci.txt    |   66 +
->>  MAINTAINERS                                        |   10 +
->>  drivers/firmware/Kconfig                           |   15 +
->>  drivers/firmware/Makefile                          |    1 +
->>  drivers/firmware/ti_sci.c                          | 1997
->> ++++++++++++++++++++
->>  drivers/firmware/ti_sci.h                          |  492 +++++
->>  include/linux/soc/ti/ti_sci_protocol.h             |  249 +++
->>  7 files changed, 2830 insertions(+)
->>  create mode 100644
->> Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
->>  create mode 100644 drivers/firmware/ti_sci.c
->>  create mode 100644 drivers/firmware/ti_sci.h
->>  create mode 100644 include/linux/soc/ti/ti_sci_protocol.h
->>
+Rob,
+
+On Fri, Sep 2, 2016 at 10:06 AM, Rob Herring <robh@kernel.org> wrote:
+> On Tue, Aug 30, 2016 at 08:06:43AM -0500, Nishanth Menon wrote:
+[...]
+>> +
+>> +TI-SCI Client Device Node:
+>> +========================
+>> +
+>> +Client nodes refer to the required TI-SCI device using the "ti,sci" property.
 >
-> Folks, could you hold back on this pull request.. Rob did have a
-> comment on https://patchwork.kernel.org/patch/9305413/ which I think
-> should be discussed as well -> has implications to the driver arch
-> ofcourse.
+> As I mentioned for power domains, for clients that are self contained
+> (i.e. a single function) I think the should be child nodes.
 >
-Sure !!
+
+Thanks for the feedback. I think we should be able to do that and also
+assume you have no further improvements you'd like to see here.
+
+Looking at current Documentation/devicetree/bindings/arm/arm,scpi.txt
+-> it makes sense to stick along the same lines as you mentioned.
+
+Dave, Tero: do you guys have any objections?
+
+
+---
+Regards,
+Nishanth Menon
