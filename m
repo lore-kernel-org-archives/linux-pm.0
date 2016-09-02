@@ -1,87 +1,130 @@
-From: Tejun Heo <tj@kernel.org>
-Subject: Re: [Question] about patch: don't use [delayed_]work_pending()
-Date: Fri, 2 Sep 2016 10:21:02 -0400
-Message-ID: <20160902142102.GG12660@htj.duckdns.org>
-References: <d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com>
- <20160901184503.GD12660@htj.duckdns.org>
- <6b2fc72b-f99f-f7f1-3221-093943de0950@asrmicro.com>
- <20160902135007.GF12660@htj.duckdns.org>
+From: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle
+ states
+Date: Fri, 2 Sep 2016 15:21:52 +0100
+Message-ID: <0b233802-f459-c6bb-ff42-70745a225cfb@arm.com>
+References: <1472242678-33700-1-git-send-email-lina.iyer@linaro.org>
+ <1472242678-33700-3-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f194.google.com ([209.85.161.194]:35149 "EHLO
-        mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932129AbcIBOVF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Sep 2016 10:21:05 -0400
-Content-Disposition: inline
-In-Reply-To: <20160902135007.GF12660@htj.duckdns.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1472242678-33700-3-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, brendan.jackman-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, Juri.Lelli-5wv7dgnIgG8@public.gmane.org, Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: qiaozhou <qiaozhou@asrmicro.com>
-Cc: linux-pm@vger.kernel.org, Wang Wilbur <wilburwang@asrmicro.com>, Wu Gang <gangwu@asrmicro.com>, linux-kernel@vger.kernel.org
 
-On Fri, Sep 02, 2016 at 09:50:07AM -0400, Tejun Heo wrote:
-> Hello,
-> 
-> On Fri, Sep 02, 2016 at 09:17:04AM +0800, qiaozhou wrote:
-> > > > I don't know whether it's meaningful to still check pending work here, or
-> > > > it's not suggested to use pm_qos_update_request in this early boot up phase.
-> > > > Could you help to share some opinions? (I can fix this issue by adding the
-> > > > current qos value directly instead of default value, though.)
-> > > Hmmm... but I suppose this is super-early in the boot.  Would it make
-> > > sense to have a static variable (e.g. bool clk_fully_initailized) to
-> > > gate the cancel_delayed_sync() call?
-> >
-> > You're right that it's indeed super-early stage. But currently we can't
-> > control the gate of can_delayed_work_sync, since it's inside
-> > pm_qos_update_request. Out of our control. We can choose to not call
-> > pm_qos_update_request to avoid this issue, and use pm_qos_add_request
-> > alternatively. Good to have it.
-> 
-> Ah sorry, didn't understand that the offending cancel_sync call is in
-> the generic part.  Hmm... but yeah, we should still be able to take
-> the same approach.  I'll see what's the right thing to gate the
-> operation there.
 
-Does the following patch work?
 
-Subject: power: avoid calling cancel_delayed_work_sync() during early boot
+On 26/08/16 21:17, Lina Iyer wrote:
+> From: Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+>
+> Update DT bindings to describe idle states of PM domains.
+>
+> Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+> Signed-off-by: Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+> Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> [Lina: Added state properties, removed state names, wakeup-latency,
+> added of_pm_genpd_init() API, pruned commit text]
+> Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> [Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
+> ---
+>  .../devicetree/bindings/power/power_domain.txt     | 57 ++++++++++++++++++++++
+>  1 file changed, 57 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> index 025b5e7..4960486 100644
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -29,6 +29,10 @@ Optional properties:
+>     specified by this binding. More details about power domain specifier are
+>     available in the next section.
+>
+> +- domain-idle-states : A phandle of an idle-state that shall be soaked into a
+> +                generic domain power state. The idle state definitions are
+> +                compatible with arm,idle-state specified in [1].
+> +
+>  Example:
+>
+>  	power: power-controller@12340000 {
+> @@ -59,6 +63,57 @@ The nodes above define two power controllers: 'parent' and 'child'.
+>  Domains created by the 'child' power controller are subdomains of '0' power
+>  domain provided by the 'parent' power controller.
+>
+> +Example 3: ARM v7 style CPU PM domains (Linux domain controller)
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		CPU0: cpu@0 {
+> +			device_type = "cpu";
+> +			compatible = "arm,cortex-a7", "arm,armv7";
+> +			reg = <0x0>;
+> +			power-domains = <&a7_pd>;
+> +		};
+> +
+> +		CPU1: cpu@1 {
+> +			device_type = "cpu";
+> +			compatible = "arm,cortex-a15", "arm,armv7";
+> +			reg = <0x0>;
+> +			power-domains = <&a15_pd>;
+> +		};
+> +	};
+> +
+> +	pm-domains {
+> +		a15_pd: a15_pd {
+> +			/* will have A15 platform ARM_PD_METHOD_OF_DECLARE*/
+> +			compatible = "arm,cortex-a15";
+> +			#power-domain-cells = <0>;
+> +			domain-idle-states = <&CLUSTER_SLEEP_0>;
+> +		};
+> +
+> +		a7_pd: a7_pd {
+> +			/* will have a A7 platform ARM_PD_METHOD_OF_DECLARE*/
+> +			compatible = "arm,cortex-a7";
+> +			#power-domain-cells = <0>;
+> +			domain-idle-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
+> +		};
+> +
+> +		CLUSTER_SLEEP_0: state0 {
+> +			compatible = "arm,idle-state";
+> +			entry-latency-us = <1000>;
+> +			exit-latency-us = <2000>;
+> +			min-residency-us = <10000>;
+> +		};
+> +
+> +		CLUSTER_SLEEP_1: state1 {
+> +			compatible = "arm,idle-state";
+> +			entry-latency-us = <5000>;
+> +			exit-latency-us = <5000>;
+> +			min-residency-us = <100000>;
+> +		};
+> +	};
+> +
 
-of_clk_init() ends up calling into pm_qos_update_request() very early
-during boot where irq is expected to stay disabled.
-pm_qos_update_request() uses cancel_delayed_work_sync() which
-correctly assumes that irq is enabled on invocation and
-unconditionally disables and re-enables it.
+This version is *not very descriptive*. Also the discussion we had on v3
+version has not yet concluded IMO. So can I take that we agreed on what
+was proposed there or not ?
 
-Gate cancel_delayed_work_sync() invocation with kevented_up() to avoid
-enabling irq unexpectedly during early boot.
+We could have better example above *really* based on the discussions we
+had so far. This example always makes me think it's well crafted to
+avoid any sort of discussions. We need to consider different use-cases
+e.g. what about CPU level states ?
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Qiao Zhou <qiaozhou@asrmicro.com>
-Link: http://lkml.kernel.org/r/d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com
----
- kernel/power/qos.c |   11 ++++++++++-
-  1 file changed, 10 insertions(+), 1 deletion(-)
+IMO, we need to discuss this DT binding in detail and arrive at some
+conclusion before you take all the troubles to respin the series.
+Also it's better to keep the DT binding separate until we have some
+conclusion instead of posting the implementation for each version.
+That's just my opinion(I would be least bothered about implementation
+until I know it will be accepted before I can peek into the code, others
+may differ.
 
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 97b0df7..168ff44 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -482,7 +482,16 @@ void pm_qos_update_request(struct pm_qos_request *req,
- 		return;
- 	}
- 
--	cancel_delayed_work_sync(&req->work);
-+	/*
-+	 * This function may be called very early during boot, for example,
-+	 * from of_clk_init(), where irq needs to stay disabled.
-+	 * cancel_delayed_work_sync() assumes that irq is enabled on
-+	 * invocation and re-enables it on return.  Avoid calling it until
-+	 * workqueue is initialized.
-+	 */
-+	if (keventd_up())
-+		cancel_delayed_work_sync(&req->work);
-+
- 	__pm_qos_update_request(req, new_value);
- }
- EXPORT_SYMBOL_GPL(pm_qos_update_request);
+-- 
+Regards,
+Sudeep
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
