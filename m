@@ -1,147 +1,200 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V2 1/5] Documentation: Add support for TI System Control
- Interface (TI-SCI) protocol
-Date: Fri, 2 Sep 2016 10:06:28 -0500
-Message-ID: <20160902150628.GA19493@rob-hp-laptop>
-References: <20160830130647.6828-1-nm@ti.com>
- <20160830130647.6828-2-nm@ti.com>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3] power: bq24735-charger: Request status GPIO with
+ initial input setup
+Date: Fri, 2 Sep 2016 17:27:55 +0200
+Message-ID: <20160902152755.7jk2dr2rtbkog6w2@earth>
+References: <20160901212700.29747-1-contact@paulk.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="x3irnncsmlanjamg"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20160830130647.6828-2-nm-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
-Cc: Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russ Dill <Russ.Dill-l0cyMroinI0@public.gmane.org>, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, Lokesh Vutla <lokeshvutla-l0cyMroinI0@public.gmane.org>, Peter Ujfalusi <peter.ujfalusi-l0cyMroinI0@public.gmane.org>, "Andrew F . Davis" <afd-l0cyMroinI0@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <20160901212700.29747-1-contact-W9ppeneeCTY@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 30, 2016 at 08:06:43AM -0500, Nishanth Menon wrote:
-> Texas Instrument's System Control Interface (TI-SCI) Message Protocol
-> is used in Texas Instrument's System on Chip (SoC) such as those in
-> newer SoCs in the keystone processor family starting with K2G.
-> 
-> This message protocol is used to communicate between various compute
-> or processing entities (such as ARM, DSP etc.) with a central system
-> controller entity.
-> 
-> TI-SCI message protocol provides support for management of various
-> hardware entities within the SoC.
-> 
-> The message protocol can be found here:
-> http://processors.wiki.ti.com/index.php/TISCI
-> 
-> Signed-off-by: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+
+--x3irnncsmlanjamg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Paul,
+
+This looks mostly fine now. I have a few more comments, that I
+missed last time:
+
+On Thu, Sep 01, 2016 at 11:27:00PM +0200, Paul Kocialkowski wrote:
+> This requests the status GPIO with initial input setup. it is required
+> to read the GPIO status at probe time and thus correctly avoid sending
+> i2c messages when AC is not plugged.
+>=20
+> When requesting the GPIO without initial input setup, it always reads 0
+> which causes probe to fail as it assumes the charger is connected, sends
+> i2c messages and fails.
+>=20
+> While at it, this switches the driver over to gpio consumer.
+>=20
+> Signed-off-by: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
 > ---
-> Changes since v1:
-> 	- squashed the bindings changes for reset on review comments from
-> 		https://patchwork.kernel.org/patch/9291351/
-> 
-> V1: https://patchwork.kernel.org/patch/9291343/
-> 
->  .../devicetree/bindings/arm/keystone/ti,sci.txt    | 66 ++++++++++++++++++++++
->  MAINTAINERS                                        |  8 +++
->  2 files changed, 74 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt b/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-> new file mode 100644
-> index 000000000000..ed5b8fc185f1
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-> @@ -0,0 +1,66 @@
-> +Texas Instruments System Control Interface (TI-SCI) Message Protocol
-> +-------------------------------------------------------------------
-> +
-> +Texas Instrument's processors including those belonging to Keystone generation
-> +of processors have separate hardware entity which is now responsible for the
-> +management of the System on Chip (SoC) system. These include various system
-> +level functions as well.
-> +
-> +An example of such an SoC is K2G, which contains the system control hardware
-> +block called Power Management Micro Controller (PMMC). This hardware block is
-> +initialized early into boot process and provides services to Operating Systems
-> +on multiple processors including ones running Linux.
-> +
-> +See http://processors.wiki.ti.com/index.php/TISCI for protocol definition.
-> +
-> +TI-SCI controller Device Node:
-> +=============================
-> +
-> +Required properties:
-> +--------------------
-> +- compatible: should be "ti,k2g-sci"
-> +- mbox-names:
-> +	"rx" - Mailbox corresponding to receive path
-> +	"tx" - Mailbox corresponding to transmit path
-> +
-> +- mboxes: Mailboxes corresponding to the mbox-names. Each value of the mboxes
-> +	  property should contain a phandle to the mailbox controller device
-> +	  node and an args specifier that will be the phandle to the intended
-> +	  sub-mailbox child node to be used for communication.
-> +
-> +See Documentation/devicetree/bindings/mailbox/mailbox.txt for more details
-> +about the generic mailbox controller and client driver bindings. Also see
-> +Documentation/devicetree/bindings/mailbox/ti,message-manager.txt for typical
-> +controller that is used to communicate with this System controllers.
-> +
-> +Optional Properties:
-> +--------------------
-> +- reg-names:
-> +	debug_messages - Map the Debug message region
-> +- reg:  register space corresponding to the debug_messages
-> +- ti,system-reboot-controller: If system reboot can be triggered by SoC reboot
-> +
-> +Example (K2G):
-> +--------
-> +	pmmc: pmmc {
-> +		compatible = "ti,k2g-sci";
-> +		mbox-names = "rx", "tx";
-> +		mboxes= <&msgmgr &msgmgr_proxy_pmmc_rx>,
-> +			<&msgmgr &msgmgr_proxy_pmmc_tx>;
-> +		reg-names = "debug_messages";
-> +		reg = <0x02921800 0x800>;
-> +	};
-> +
-> +
-> +TI-SCI Client Device Node:
-> +========================
-> +
-> +Client nodes refer to the required TI-SCI device using the "ti,sci" property.
+>  drivers/power/bq24735-charger.c       | 42 +++++++++++++----------------=
+------
+>  include/linux/power/bq24735-charger.h |  4 +---
+>  2 files changed, 17 insertions(+), 29 deletions(-)
 
-As I mentioned for power domains, for clients that are self contained 
-(i.e. a single function) I think the should be child nodes.
+Please rebase next version to power-supply's for-next branch:
 
-> +
-> +Example (K2G):
-> +-------------
-> +	my_dev_node: dev_node {
-> +		...
-> +		ti,sci = <&pmmc>;
-> +		...
+https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/log=
+/?h=3Dfor-next
+
+> diff --git a/drivers/power/bq24735-charger.c b/drivers/power/bq24735-char=
+ger.c
+> index dc460bb..7f9b305 100644
+> --- a/drivers/power/bq24735-charger.c
+> +++ b/drivers/power/bq24735-charger.c
+> @@ -25,7 +25,8 @@
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+> -#include <linux/of_gpio.h>
+> +#include <linux/gpio.h>
+
+No need for <linux/gpio.h>, all gpiod bits used by you are in
+<linux/gpio/consumer.h>
+
+> +#include <linux/gpio/consumer.h>
+>  #include <linux/power_supply.h>
+>  #include <linux/slab.h>
+> =20
+> @@ -178,11 +179,9 @@ static int bq24735_config_charger(struct bq24735 *ch=
+arger)
+>  static bool bq24735_charger_is_present(struct bq24735 *charger)
+>  {
+>  	struct bq24735_platform *pdata =3D charger->pdata;
+> -	int ret;
+> =20
+> -	if (pdata->status_gpio_valid) {
+> -		ret =3D gpio_get_value_cansleep(pdata->status_gpio);
+> -		return ret ^=3D pdata->status_gpio_active_low =3D=3D 0;
+> +	if (pdata->status_gpio) {
+> +		return !gpiod_get_value_cansleep(pdata->status_gpio);
+>  	} else {
+>  		int ac =3D 0;
+> =20
+> @@ -308,7 +307,6 @@ static struct bq24735_platform *bq24735_parse_dt_data=
+(struct i2c_client *client)
+>  	struct device_node *np =3D client->dev.of_node;
+>  	u32 val;
+>  	int ret;
+> -	enum of_gpio_flags flags;
+> =20
+>  	pdata =3D devm_kzalloc(&client->dev, sizeof(*pdata), GFP_KERNEL);
+>  	if (!pdata) {
+> @@ -317,11 +315,13 @@ static struct bq24735_platform *bq24735_parse_dt_da=
+ta(struct i2c_client *client)
+>  		return NULL;
+>  	}
+> =20
+> -	pdata->status_gpio =3D of_get_named_gpio_flags(np, "ti,ac-detect-gpios",
+> -						     0, &flags);
+> -
+> -	if (flags & OF_GPIO_ACTIVE_LOW)
+> -		pdata->status_gpio_active_low =3D 1;
+> +	pdata->status_gpio =3D devm_gpiod_get_optional(&client->dev,
+> +				"ti,ac-detect", GPIOD_IN);
+> +	if (IS_ERR(pdata->status_gpio)) {
+> +		ret =3D PTR_ERR(pdata->status_gpio);
+> +		dev_err(&client->dev, "Getting gpio failed: %d\n", ret);
+> +		return (struct bq24735_platform *) pdata->status_gpio;
 > +	}
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 20bb1d00098c..ce7306897ae0 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -11564,6 +11564,14 @@ S:	Maintained
->  F:	arch/xtensa/
->  F:	drivers/irqchip/irq-xtensa-*
->  
-> +Texas Instruments' System Control Interface (TISCI) Protocol Driver
-> +M:	Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
-> +M:	Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>
-> +M:	Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> +L:	linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-> +S:	Maintained
-> +F:	Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-> +
->  THANKO'S RAREMONO AM/FM/SW RADIO RECEIVER USB DRIVER
->  M:	Hans Verkuil <hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org>
->  L:	linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> -- 
-> 2.9.1.200.gb1ec08f
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> =20
+>  	ret =3D of_property_read_u32(np, "ti,charge-current", &val);
+>  	if (!ret)
+> @@ -357,8 +357,11 @@ static int bq24735_charger_probe(struct i2c_client *=
+client,
+>  	charger->charging =3D true;
+>  	charger->pdata =3D client->dev.platform_data;
+> =20
+> -	if (IS_ENABLED(CONFIG_OF) && !charger->pdata && client->dev.of_node)
+> +	if (IS_ENABLED(CONFIG_OF) && !charger->pdata && client->dev.of_node) {
+>  		charger->pdata =3D bq24735_parse_dt_data(client);
+> +		if (IS_ERR(charger->pdata))
+> +			return PTR_ERR(charger->pdata);
+> +	}
+> =20
+>  	if (!charger->pdata) {
+>  		dev_err(&client->dev, "no platform data provided\n");
+> @@ -396,20 +399,7 @@ static int bq24735_charger_probe(struct i2c_client *=
+client,
+> =20
+>  	i2c_set_clientdata(client, charger);
+> =20
+> -	if (gpio_is_valid(charger->pdata->status_gpio)) {
+> -		ret =3D devm_gpio_request(&client->dev,
+> -					charger->pdata->status_gpio,
+> -					name);
+> -		if (ret) {
+> -			dev_err(&client->dev,
+> -				"Failed GPIO request for GPIO %d: %d\n",
+> -				charger->pdata->status_gpio, ret);
+> -		}
+> -
+> -		charger->pdata->status_gpio_valid =3D !ret;
+> -	}
+
+Do the devm_gpiod_get_optional() call here and store the result in
+"struct bq24735" instead of in pdata. It's not DT specific. The
+gpiod interface can also get it's data from boardcode (or acpi, if
+that becomes important at some point).
+
+(Check Documentation/gpio/board.txt for details)
+
+> -
+> -	if (!charger->pdata->status_gpio_valid
+> +	if (!charger->pdata->status_gpio
+>  	    || bq24735_charger_is_present(charger)) {
+>  		ret =3D bq24735_read_word(client, BQ24735_MANUFACTURER_ID);
+>  		if (ret < 0) {
+> diff --git a/include/linux/power/bq24735-charger.h b/include/linux/power/=
+bq24735-charger.h
+> index 6b750c1a..afdb3704 100644
+> --- a/include/linux/power/bq24735-charger.h
+> +++ b/include/linux/power/bq24735-charger.h
+> @@ -28,9 +28,7 @@ struct bq24735_platform {
+> =20
+>  	const char *name;
+> =20
+> -	int status_gpio;
+> -	int status_gpio_active_low;
+> -	bool status_gpio_valid;
+> +	struct gpio_desc *status_gpio;
+
+Move the gpio_desc into the private "struct bq24735" (but keep
+dropping all gpio bits from the bq24735_platform).
+
+-- Sebastian
+
+--x3irnncsmlanjamg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJXyZp4AAoJENju1/PIO/qa/7UP/AsA6u8X2YQTBaWwYB33H0Uj
+F82o0GYkeGqVdfAK4q9nqAm2ENd7I1qW/MI+JtwTT4WAKRDXH3qjiXnGEXU+G7Vx
+wy360UMsezopCvryk0IVdGPdezCuYQsTtEzkOOBQQM4bmoabYXjeUPzulXT8ssSL
+Cyc22gX2zND3xAdzqAIi5Z87644s5LFNEcyWMEz8aSMzxU7LY/GATdYzIqs62hGe
+SxH7k3iHlUIvEu/7jW5xPHR/NayRkR3tO5IcZXR57EP+LUzty9CaSWdfyqOJq5ke
+bRWpnqFe7PiJPmtyPaMMGna5IV2C5R4BouAxyA7eQKGIWVRMjk+P9qvC0GS+dNa4
+oUU/H9evf1sGmYhlJviJgbaqSnZKUd5NrDCM2+jNI4ofZKjRXbBBTUFTrFW90M1C
+MudCgiKWAn14HKkB2pyg4/g7Yg8M6DmXhpOrBfKuADDy58aJSlFh1puYTu11ExY8
+ccQQhSeW1sI1C1hHkhbEk09VIaZpKqXkeTpB4xmgODCrDxwLqKZIgevrHtv0kSyj
+uGbJK1ZTV2o0KTrr35GSdggTpHMls1iAcWQg1T8HDZ+7IYQCl+FUkBTMizXVbXEh
+CwgiK3yoVB15nDaV+pndpEk8rZYxI1Fe5OoFOt0WOYOz63e4tsr4cMxQkCw2apYE
+6lbwQaL2r23wVJI1JFoc
+=XJER
+-----END PGP SIGNATURE-----
+
+--x3irnncsmlanjamg--
