@@ -1,67 +1,89 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 2/2] sched: cpufreq: use rt_avg as estimate of required
- RT CPU capacity
-Date: Fri, 2 Sep 2016 10:12:30 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1609020923590.5647@nanos>
-References: <1472236848-17038-1-git-send-email-smuckle@linaro.org> <1472236848-17038-3-git-send-email-smuckle@linaro.org> <20160831143907.GX10121@twins.programming.kicks-ass.net> <20160831150846.GN5599@graphite.smuckle.net> <alpine.DEB.2.20.1608311812040.5647@nanos>
- <20160831164009.GF10153@twins.programming.kicks-ass.net>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH 1/5] Documentation: bindings: add dt documentation for dfi
+ controller
+Date: Fri, 02 Sep 2016 17:50:54 +0900
+Message-ID: <57C93D6E.8090600@samsung.com>
+References: <1472769085-20715-1-git-send-email-hl@rock-chips.com>
+ <CGME20160901223311epcas1p35e5c0ad56cd8604a8e48bd4edef8b13a@epcas1p3.samsung.com>
+ <1472769085-20715-2-git-send-email-hl@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160831164009.GF10153@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1472769085-20715-2-git-send-email-hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org
+Cc: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 31 Aug 2016, Peter Zijlstra wrote:
-> On Wed, Aug 31, 2016 at 06:28:10PM +0200, Thomas Gleixner wrote:
-> > > That is the way it's been with cpufreq and many systems (including all
-> > > mobile devices) rely on that to not destroy power. RT + variable cpufreq
-> > > is not deterministic.
-> > > 
-> > > Given we don't have good constraints on RT tasks I don't think we should
-> > > try to strengthen the semantics there. Folks should either move to DL if
-> > > they want determinism *and* not-sucky power, or continue disabling
-> > > cpufreq if they are able to do so.
-> > 
-> > RT deterministic behaviour is all about meeting the deadlines. If your
-> > deadline is relaxed enough that you can meet it even with the lowest cpu
-> > frequency then it's perfectly fine to enable cpufreq. The same logic applies
-> > to C-States.
-> > 
-> > There are a lot of RT systems out there which enable both. If cpufreq or
-> > c-states cause a deadline violation because the constraints of the system are
-> > tight, then people will disable it and we need a knob for both.
-> > 
-> > Realtime is not as fast as possible. It's as fast as specified.
+On 2016년 09월 02일 07:31, Lin Huang wrote:
+> This patch adds the documentation for rockchip dfi devfreq-event driver.
 > 
-> Sure, problem is of course that RR/FIFO doesn't specify anything so the
-> users are left to prod knobs.
-
-I know :(
- 
-> Another problem is that we have many semi related knobs; we have the
-> global RT runtime limit knob, but that doesn't affect cpufreq (maybe it
-> should) and cpufreq has knobs to set f_min and f_max, which again are
-> unaware of RT anything.
+> Signed-off-by: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+> ---
+> Changes in v8:
+> - delete a unuse blank line
 > 
-> So before we go do anything, I'd like input on what is needed and how
-> things should tie together to make most sense.
+> Changes in v7:
+> - None
+> 
+> Changes in v6:
+> - None
+> 
+> Changes in v5:
+> - None
+> 
+> Changes in v4:
+> - None
+> 
+> Changes in v3:
+> - None
+> 
+> Changes in v2:
+> - None 
+> 
+> Changes in v1:
+> - None
+> 
+>  .../bindings/devfreq/event/rockchip-dfi.txt           | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt b/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+> new file mode 100644
+> index 0000000..d66aca6
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+> @@ -0,0 +1,19 @@
+> +
+> +* Rockchip rk3399 DFI device
+> +
+> +Required properties:
+> +- compatible: Must be "rockchip,rk3399-dfi".
+> +- reg: physical base address of each DFI and length of memory mapped region
+> +- rockchip,pmu: phandle to the syscon managing the "pmu general register files"
+> +- clocks: phandles for clock specified in "clock-names" property
+> +- clock-names : the name of clock used by the DFI, must be "pclk_ddr_mon";
+> +
+> +Example:
+> +	dfi: dfi@0xff630000 {
+> +		reg = <0x00 0xff630000 0x00 0x4000>;
+> +		compatible = "rockchip,rk3399-dfi";
 
-RT systems and especially RR/FIFO driven ones need a lot of specific tuning
-and configuration. I doubt that we can do anything except lousy heuristics
-which will end up being wrong for most use cases.
+As I already commented, you need to reorder between compatible and reg property.
 
-In the DL case we certainly can do informed decisions, but for the RR/FIFO
-case the global RT runtime limit is just a too big hammer which shouldn't be
-abused for calculating cpufreq limits.
+> +		rockchip,pmu = <&pmugrf>;
+> +		clocks = <&cru PCLK_DDR_MON>;
+> +		clock-names = "pclk_ddr_mon";
+> +		status = "disabled";
+> +	};
+> 
 
-I think that we should concentrate on DL and make it work very well and just
-leave the rest of the RT folks with rather simplistic knobs (i.e. on/off/hard
-limits). That will force people who have RT _and_ power constraints to think
-harder about their system design and eventually make them move over to DL.
 
-Thanks,
-
-	tglx
+-- 
+Best Regards,
+Chanwoo Choi
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
