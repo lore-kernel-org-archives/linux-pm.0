@@ -1,91 +1,70 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH v4] thermal: tango: add resume support
-Date: Fri, 02 Sep 2016 13:54:56 -0700
-Message-ID: <7hpoom10pr.fsf@baylibre.com>
-References: <57726196.5060909@free.fr> <57C97BDD.4030101@sigmadesigns.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:35378 "EHLO
-        mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752142AbcIBUy7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Sep 2016 16:54:59 -0400
-Received: by mail-pa0-f48.google.com with SMTP id hb8so43476118pac.2
-        for <linux-pm@vger.kernel.org>; Fri, 02 Sep 2016 13:54:58 -0700 (PDT)
-In-Reply-To: <57C97BDD.4030101@sigmadesigns.com> (Marc Gonzalez's message of
-        "Fri, 2 Sep 2016 15:17:17 +0200")
-Sender: linux-pm-owner@vger.kernel.org
+From: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH 0/5] rk3399 support ddr frequency scaling
+Date: Sat,  3 Sep 2016 05:08:18 +0800
+Message-ID: <1472850503-25232-1-git-send-email-hl@rock-chips.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org
+Cc: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm <linux-pm@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Sebastian Frias <sf84@laposte.net>, Thierry Reding <thierry.reding@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Mason <slash.tmp@free.fr>
 
-Marc Gonzalez <marc_gonzalez@sigmadesigns.com> writes:
+rk3399 platform have dfi controller can monitor ddr load,
+and dcf controller to handle ddr register so we can get the
+right ddr frequency and make ddr controller happy work(which
+will implement in bl31). So we do ddr frequency scaling with
+following flow:
 
-> When this platform is suspended, firmware powers the entire SoC down,
-> except a few hardware blocks waiting for wakeup events. There is no
-> context to save for this particular block.
->
-> Therefore, there is nothing useful for the driver to do on suspend;
-> so we define a NULL suspend hook. On resume, the driver initializes
-> the block exactly as is done in the probe callback.
->
-> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
+             kernel                                bl31
 
-Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+        monitor ddr load
+                |
+                |
+        get_target_rate
+                |
+                |           pass rate to bl31
+        clk_set_rate(ddr) --------------------->run dcf flow
+                |                                   |
+                |                                   |
+        wait dcf interrupt<-------------------trigger dcf interrupt
+                |
+                |
+              return
 
-> ---
-> Earlier versions of this patch were reviewed by Kevin and Thierry.
-> The current form is preferred by Arnd.
-> ---
->  drivers/thermal/tango_thermal.c | 19 +++++++++++++++++--
->  1 file changed, 17 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/thermal/tango_thermal.c b/drivers/thermal/tango_thermal.c
-> index 70e0d9f406e9..201304aeafeb 100644
-> --- a/drivers/thermal/tango_thermal.c
-> +++ b/drivers/thermal/tango_thermal.c
-> @@ -64,6 +64,12 @@ static const struct thermal_zone_of_device_ops ops = {
->  	.get_temp	= tango_get_temp,
->  };
->  
-> +static void tango_thermal_init(struct tango_thermal_priv *priv)
-> +{
-> +	writel(0, priv->base + TEMPSI_CFG);
-> +	writel(CMD_ON, priv->base + TEMPSI_CMD);
-> +}
-> +
->  static int tango_thermal_probe(struct platform_device *pdev)
->  {
->  	struct resource *res;
-> @@ -79,14 +85,22 @@ static int tango_thermal_probe(struct platform_device *pdev)
->  	if (IS_ERR(priv->base))
->  		return PTR_ERR(priv->base);
->  
-> +	platform_set_drvdata(pdev, priv);
->  	priv->thresh_idx = IDX_MIN;
-> -	writel(0, priv->base + TEMPSI_CFG);
-> -	writel(CMD_ON, priv->base + TEMPSI_CMD);
-> +	tango_thermal_init(priv);
->  
->  	tzdev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, priv, &ops);
->  	return PTR_ERR_OR_ZERO(tzdev);
->  }
->  
-> +static int __maybe_unused tango_thermal_resume(struct device *dev)
-> +{
-> +	tango_thermal_init(dev_get_drvdata(dev));
-> +	return 0;
-> +}
-> +
-> +static SIMPLE_DEV_PM_OPS(tango_thermal_pm, NULL, tango_thermal_resume);
-> +
->  static const struct of_device_id tango_sensor_ids[] = {
->  	{
->  		.compatible = "sigma,smp8758-thermal",
-> @@ -99,6 +113,7 @@ static struct platform_driver tango_thermal_driver = {
->  	.driver	= {
->  		.name		= "tango-thermal",
->  		.of_match_table	= tango_sensor_ids,
-> +		.pm		= &tango_thermal_pm,
->  	},
->  };
+
+Lin Huang (5):
+  Documentation: bindings: add dt documentation for dfi controller
+  PM / devfreq: event: support rockchip dfi controller
+  Documentation: bindings: add dt documentation for rk3399 dmc
+  PM / devfreq: rockchip: add devfreq driver for rk3399 dmc
+  drm/rockchip: Add dmc notifier in vop driver
+
+Following patch:
+clk: rockchip: add new clock-type for the ddrclk
+clk: rockchip: rk3399: add SCLK_DDRCLK ID for ddrc
+clk: rockchip: rk3399: add ddrc clock support
+have applied to:
+http://git.kernel.org/pub/scm/linux/kernel/git/mmind/linux-rockchip.git/v4.9-clk/next
+
+
+ .../bindings/devfreq/event/rockchip-dfi.txt        |  19 +
+ .../devicetree/bindings/devfreq/rk3399_dmc.txt     | 173 ++++++++
+ drivers/devfreq/Kconfig                            |  11 +
+ drivers/devfreq/Makefile                           |   1 +
+ drivers/devfreq/event/Kconfig                      |   7 +
+ drivers/devfreq/event/Makefile                     |   1 +
+ drivers/devfreq/event/rockchip-dfi.c               | 256 +++++++++++
+ drivers/devfreq/rk3399_dmc.c                       | 480 +++++++++++++++++++++
+ drivers/gpu/drm/rockchip/rockchip_drm_vop.c        | 116 +++++
+ 9 files changed, 1064 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+ create mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
+ create mode 100644 drivers/devfreq/event/rockchip-dfi.c
+ create mode 100644 drivers/devfreq/rk3399_dmc.c
+
+-- 
+2.6.6
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
