@@ -1,192 +1,109 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v6 4/8] usb: core: add power sequence handling for USB
- devices
-Date: Fri, 2 Sep 2016 09:30:55 +0800
-Message-ID: <20160902013055.GD11262@shlinux2>
-References: <1471252398-957-1-git-send-email-peter.chen@nxp.com>
- <1471252398-957-5-git-send-email-peter.chen@nxp.com>
- <811390f7-a227-2a1f-986e-68d4668ee0cb@linaro.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 4/5] PM / devfreq: rockchip: add devfreq driver for rk3399
+ dmc
+Date: Fri, 02 Sep 2016 10:46:09 +0900
+Message-ID: <57C8D9E1.4070700@samsung.com>
+References: <1472769085-20715-1-git-send-email-hl@rock-chips.com>
+ <1472769085-20715-5-git-send-email-hl@rock-chips.com>
+ <CGME20160901231806epcas1p4c0184a2d47af524a99d162b3a5a5bf59@epcas1p4.samsung.com>
+ <8339852.vAWNvCSMju@diego>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <811390f7-a227-2a1f-986e-68d4668ee0cb@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vaibhav Hiremath <vaibhav.hiremath@linaro.org>
-Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, stephen.boyd@linaro.org, oscar@naiandei.net, arnd@arndb.de, pawel.moll@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, s.hauer@pengutronix.de, linux-usb@vger.kernel.org, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, stillcompiling@gmail.com, p.zabel@pengutronix.de, festevam@gmail.com, mka@chromium.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:49091 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750697AbcIBBqN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Sep 2016 21:46:13 -0400
+In-reply-to: <8339852.vAWNvCSMju@diego>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?B?SGVpa28gU3TDvGJuZXI=?= <heiko@sntech.de>, Lin Huang <hl@rock-chips.com>
+Cc: myungjoo.ham@samsung.com, mark.yao@rock-chips.com, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, linux-arm-kernel@lists.infradead.org, tixy@linaro.org, typ@rock-chips.com, sudeep.holla@arm.com, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Thu, Sep 01, 2016 at 01:32:49PM +0530, Vaibhav Hiremath wrote:
+Hi Heiko,
+
+On 2016년 09월 02일 08:17, Heiko Stübner wrote:
+> Am Freitag, 2. September 2016, 06:31:24 schrieb Lin Huang:
+>> base on dfi result, we do ddr frequency scaling, register
+>> dmc driver to devfreq framework, and use simple-ondemand
+>> policy.
+>>
+>> Signed-off-by: Lin Huang <hl@rock-chips.com>
+>> Signed-off-by: MyngJoo Ham <myngjoo.ham@samsung.com>
+>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+> 
+> [...]
+> 
+>> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+>> new file mode 100644
+>> index 0000000..54d65f2
+>> --- /dev/null
+>> +++ b/drivers/devfreq/rk3399_dmc.c
+>> @@ -0,0 +1,480 @@
+>> +/*
+>> + * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd.
+>> + * Author: Lin Huang <hl@rock-chips.com>
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify it
+>> + * under the terms and conditions of the GNU General Public License,
+>> + * version 2, as published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope it will be useful, but WITHOUT
+>> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+>> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+>> for + * more details.
+>> + */
+>> +
+>> +#include <linux/arm-smccc.h>
+>> +#include <linux/clk.h>
+>> +#include <linux/delay.h>
+>> +#include <linux/devfreq.h>
+>> +#include <linux/devfreq-event.h>
+>> +#include <linux/interrupt.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/pm_opp.h>
+>> +#include <linux/regulator/consumer.h>
+>> +#include <linux/rwsem.h>
+>> +#include <linux/suspend.h>
+>> +
+>> +#include <soc/rockchip/rockchip_sip.h>
+> 
+> (Repeated from previous version)
+> For the shared sip-interface header I've prepared a signed, stable tag
+> which can be pulled from
+> 
+> The following changes since commit 29b4817d4018df78086157ea3a55c1d9424a7cfc:
+> 
+>   Linux 4.8-rc1 (2016-08-07 18:18:00 -0700)
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/mmind/linux-rockchip.git tags/rockchip-ddr-sip
+> 
+> for you to fetch changes up to 97dd82682f1a6174698fbea149a04b4cabc58c4f:
+> 
+>   soc: rockchip: add header for ddr rate SIP interface (2016-08-31 18:53:24 +0200)
+> 
+> ----------------------------------------------------------------
+> Header file defining the SIP-interface to the ATF for DDR frequency changes
+> 
+> ----------------------------------------------------------------
+> Lin Huang (1):
+>       soc: rockchip: add header for ddr rate SIP interface
+> 
+>  include/soc/rockchip/rockchip_sip.h | 27 +++++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
+>  create mode 100644 include/soc/rockchip/rockchip_sip.h
 > 
 > 
-> On Monday 15 August 2016 02:43 PM, Peter Chen wrote:
-> >Some hard-wired USB devices need to do power sequence to let the
-> >device work normally, the typical power sequence like: enable USB
-> >PHY clock, toggle reset pin, etc. But current Linux USB driver
-> >lacks of such code to do it, it may cause some hard-wired USB devices
-> >works abnormal or can't be recognized by controller at all.
-> >
-> >In this patch, it calls power sequence library APIs to finish
-> >the power sequence events. At first, it calls pwrseq_alloc_generic
-> >to create a generic power sequence instance, then it will do power
-> >on sequence at hub's probe for all devices under this hub
-> >(includes root hub).
-> >
-> >At hub_disconnect, it will do power off sequence which is at powered
-> >on list.
-> >
-> >Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> >Tested-by Joshua Clayton <stillcompiling@gmail.com>
-> >---
-> >  drivers/usb/core/Makefile |   1 +
-> >  drivers/usb/core/hub.c    |  12 ++++--
-> >  drivers/usb/core/hub.h    |  12 ++++++
-> >  drivers/usb/core/pwrseq.c | 100 ++++++++++++++++++++++++++++++++++++++++++++++
-> >  4 files changed, 122 insertions(+), 3 deletions(-)
-> >  create mode 100644 drivers/usb/core/pwrseq.c
-> >
-> >diff --git a/drivers/usb/core/Makefile b/drivers/usb/core/Makefile
-> >index 9780877..39f2149 100644
-> >--- a/drivers/usb/core/Makefile
-> >+++ b/drivers/usb/core/Makefile
-> >@@ -9,5 +9,6 @@ usbcore-y += port.o of.o
-> >  usbcore-$(CONFIG_PCI)		+= hcd-pci.o
-> >  usbcore-$(CONFIG_ACPI)		+= usb-acpi.o
-> >+usbcore-$(CONFIG_PWRSEQ_GENERIC) += pwrseq.o
-> >  obj-$(CONFIG_USB)		+= usbcore.o
-> >diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-> >index bee1351..a346a8b 100644
-> >--- a/drivers/usb/core/hub.c
-> >+++ b/drivers/usb/core/hub.c
-> >@@ -1700,6 +1700,7 @@ static void hub_disconnect(struct usb_interface *intf)
-> >  	hub->error = 0;
-> >  	hub_quiesce(hub, HUB_DISCONNECT);
-> >+	hub_pwrseq_off(hub);
-> >  	mutex_lock(&usb_port_peer_mutex);
-> >  	/* Avoid races with recursively_mark_NOTATTACHED() */
-> >@@ -1733,6 +1734,7 @@ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
-> >  	struct usb_endpoint_descriptor *endpoint;
-> >  	struct usb_device *hdev;
-> >  	struct usb_hub *hub;
-> >+	int ret = -ENODEV;
-> >  	desc = intf->cur_altsetting;
-> >  	hdev = interface_to_usbdev(intf);
-> >@@ -1839,6 +1841,7 @@ descriptor_error:
-> >  	INIT_DELAYED_WORK(&hub->leds, led_work);
-> >  	INIT_DELAYED_WORK(&hub->init_work, NULL);
-> >  	INIT_WORK(&hub->events, hub_event);
-> >+	INIT_LIST_HEAD(&hub->pwrseq_on_list);
-> >  	usb_get_intf(intf);
-> >  	usb_get_dev(hdev);
-> >@@ -1852,11 +1855,14 @@ descriptor_error:
-> >  	if (id->driver_info & HUB_QUIRK_CHECK_PORT_AUTOSUSPEND)
-> >  		hub->quirk_check_port_auto_suspend = 1;
-> >-	if (hub_configure(hub, endpoint) >= 0)
-> >-		return 0;
-> >+	if (hub_configure(hub, endpoint) >= 0) {
-> >+		ret = hub_pwrseq_on(hub);
-> >+		if (!ret)
-> >+			return 0;
-> >+	}
-> >  	hub_disconnect(intf);
-> >-	return -ENODEV;
-> >+	return ret;
-> >  }
-> >  static int
-> >diff --git a/drivers/usb/core/hub.h b/drivers/usb/core/hub.h
-> >index 34c1a7e..9473f6f 100644
-> >--- a/drivers/usb/core/hub.h
-> >+++ b/drivers/usb/core/hub.h
-> >@@ -78,6 +78,7 @@ struct usb_hub {
-> >  	struct delayed_work	init_work;
-> >  	struct work_struct      events;
-> >  	struct usb_port		**ports;
-> >+	struct list_head	pwrseq_on_list; /* powered pwrseq node list */
-> >  };
-> >  /**
-> >@@ -166,3 +167,14 @@ static inline int hub_port_debounce_be_stable(struct usb_hub *hub,
-> >  {
-> >  	return hub_port_debounce(hub, port1, false);
-> >  }
-> >+
-> >+#if IS_ENABLED(CONFIG_PWRSEQ_GENERIC)
-> >+int hub_pwrseq_on(struct usb_hub *hub);
-> >+void hub_pwrseq_off(struct usb_hub *hub);
-> >+#else
-> >+static inline int hub_pwrseq_on(struct usb_hub *hub)
-> >+{
-> >+	return 0;
-> >+}
-> >+static inline void hub_pwrseq_off(struct usb_hub *hub) {}
-> >+#endif /* CONFIG_PWRSEQ_GENERIC */
-> >diff --git a/drivers/usb/core/pwrseq.c b/drivers/usb/core/pwrseq.c
-> >new file mode 100644
-> >index 0000000..837fe66
-> >--- /dev/null
-> >+++ b/drivers/usb/core/pwrseq.c
-> >@@ -0,0 +1,100 @@
-> >+/*
-> >+ * pwrseq.c	USB device power sequence management
-> >+ *
-> >+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-> >+ * Author: Peter Chen <peter.chen@nxp.com>
-> >+ *
-> >+ * This program is free software: you can redistribute it and/or modify
-> >+ * it under the terms of the GNU General Public License version 2  of
-> >+ * the License as published by the Free Software Foundation.
-> >+ *
-> >+ * This program is distributed in the hope that it will be useful,
-> >+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> >+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> >+ * GNU General Public License for more details.
-> >+ *
-> >+ * You should have received a copy of the GNU General Public License
-> >+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-> >+ */
-> >+
-> >+#include <linux/list.h>
-> >+#include <linux/of.h>
-> >+#include <linux/power/pwrseq.h>
-> >+#include <linux/slab.h>
-> >+#include <linux/usb.h>
-> >+#include <linux/usb/hcd.h>
-> >+
-> >+#include "hub.h"
-> >+
-> >+struct usb_pwrseq_node {
-> >+	struct pwrseq *pwrseq;
-> >+	struct list_head list;
-> >+};
-> >+
-> >+static int hub_of_pwrseq_on(struct device_node *np, struct usb_hub *hub)
-> >+{
-> >+	struct pwrseq *pwrseq;
-> >+	struct usb_pwrseq_node *pwrseq_node;
-> >+	int ret;
-> >+
-> >+	pwrseq = pwrseq_alloc_generic();
-> >+	if (IS_ERR(pwrseq))
-> >+		return PTR_ERR(pwrseq);
-> >+
-> >+	ret = pwrseq_get(np, pwrseq);
-> >+	if (ret)
-> >+		goto pwr_free;
-> >+
-> >+	ret = pwrseq_on(np, pwrseq);
-> >+	if (ret)
-> >+		goto pwr_put;
-> >+
-> >+	pwrseq_node = kzalloc(sizeof(*pwrseq_node), GFP_KERNEL);
-> 
-> You probably want to check the return value here.
-> 
-> I think someone already commented on this, but still for the record
-> providing it.
 > 
 
-Thanks, I will.
+Thanks for creating the immutable branch.
 
 -- 
-
 Best Regards,
-Peter Chen
+Chanwoo Choi
