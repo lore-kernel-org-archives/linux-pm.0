@@ -1,135 +1,53 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle
- states
-Date: Fri, 2 Sep 2016 13:16:05 -0700
-Message-ID: <20160902201605.GA1705@linaro.org>
-References: <1472242678-33700-1-git-send-email-lina.iyer@linaro.org>
- <1472242678-33700-3-git-send-email-lina.iyer@linaro.org>
- <0b233802-f459-c6bb-ff42-70745a225cfb@arm.com>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: Re: [PATCH V2 1/5] Documentation: Add support for TI System Control
+ Interface (TI-SCI) protocol
+Date: Fri, 2 Sep 2016 15:27:20 -0500
+Message-ID: <57C9E0A8.4010701@ti.com>
+References: <20160830130647.6828-1-nm@ti.com>
+ <20160830130647.6828-2-nm@ti.com> <20160902150628.GA19493@rob-hp-laptop>
+ <CAGo_u6q0xxnUj5ary82OU1uP=kTHfA_3N7_d7OiSEwS1_5dXuw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <0b233802-f459-c6bb-ff42-70745a225cfb@arm.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, ulf.hansson@linaro.org, khilman@kernel.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAGo_u6q0xxnUj5ary82OU1uP=kTHfA_3N7_d7OiSEwS1_5dXuw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>, Rob Herring <robh@kernel.org>
+Cc: Tero Kristo <t-kristo@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, lkml <linux-kernel@vger.kernel.org>, "Andrew F . Davis" <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Santosh Shilimkar <ssantosh@kernel.org>, dt list <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 02 2016 at 07:21 -0700, Sudeep Holla wrote:
+On 09/02/2016 12:07 PM, Nishanth Menon wrote:
+> Rob,
 >
+> On Fri, Sep 2, 2016 at 10:06 AM, Rob Herring <robh@kernel.org> wrote:
+>> On Tue, Aug 30, 2016 at 08:06:43AM -0500, Nishanth Menon wrote:
+> [...]
+>>> +
+>>> +TI-SCI Client Device Node:
+>>> +========================
+>>> +
+>>> +Client nodes refer to the required TI-SCI device using the "ti,sci" property.
+>>
+>> As I mentioned for power domains, for clients that are self contained
+>> (i.e. a single function) I think the should be child nodes.
+>>
 >
->On 26/08/16 21:17, Lina Iyer wrote:
->>From: Axel Haslam <ahaslam+renesas@baylibre.com>
->>
->>Update DT bindings to describe idle states of PM domains.
->>
->>Cc: <devicetree@vger.kernel.org>
->>Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
->>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->>[Lina: Added state properties, removed state names, wakeup-latency,
->>added of_pm_genpd_init() API, pruned commit text]
->>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>[Ulf: Moved around code to make it compile properly, rebased on top of multiple state support]
->>---
->> .../devicetree/bindings/power/power_domain.txt     | 57 ++++++++++++++++++++++
->> 1 file changed, 57 insertions(+)
->>
->>diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->>index 025b5e7..4960486 100644
->>--- a/Documentation/devicetree/bindings/power/power_domain.txt
->>+++ b/Documentation/devicetree/bindings/power/power_domain.txt
->>@@ -29,6 +29,10 @@ Optional properties:
->>    specified by this binding. More details about power domain specifier are
->>    available in the next section.
->>
->>+- domain-idle-states : A phandle of an idle-state that shall be soaked into a
->>+                generic domain power state. The idle state definitions are
->>+                compatible with arm,idle-state specified in [1].
->>+
->> Example:
->>
->> 	power: power-controller@12340000 {
->>@@ -59,6 +63,57 @@ The nodes above define two power controllers: 'parent' and 'child'.
->> Domains created by the 'child' power controller are subdomains of '0' power
->> domain provided by the 'parent' power controller.
->>
->>+Example 3: ARM v7 style CPU PM domains (Linux domain controller)
->>+
->>+	cpus {
->>+		#address-cells = <1>;
->>+		#size-cells = <0>;
->>+
->>+		CPU0: cpu@0 {
->>+			device_type = "cpu";
->>+			compatible = "arm,cortex-a7", "arm,armv7";
->>+			reg = <0x0>;
->>+			power-domains = <&a7_pd>;
->>+		};
->>+
->>+		CPU1: cpu@1 {
->>+			device_type = "cpu";
->>+			compatible = "arm,cortex-a15", "arm,armv7";
->>+			reg = <0x0>;
->>+			power-domains = <&a15_pd>;
->>+		};
->>+	};
->>+
->>+	pm-domains {
->>+		a15_pd: a15_pd {
->>+			/* will have A15 platform ARM_PD_METHOD_OF_DECLARE*/
->>+			compatible = "arm,cortex-a15";
->>+			#power-domain-cells = <0>;
->>+			domain-idle-states = <&CLUSTER_SLEEP_0>;
->>+		};
->>+
->>+		a7_pd: a7_pd {
->>+			/* will have a A7 platform ARM_PD_METHOD_OF_DECLARE*/
->>+			compatible = "arm,cortex-a7";
->>+			#power-domain-cells = <0>;
->>+			domain-idle-states = <&CLUSTER_SLEEP_0>, <&CLUSTER_SLEEP_1>;
->>+		};
->>+
->>+		CLUSTER_SLEEP_0: state0 {
->>+			compatible = "arm,idle-state";
->>+			entry-latency-us = <1000>;
->>+			exit-latency-us = <2000>;
->>+			min-residency-us = <10000>;
->>+		};
->>+
->>+		CLUSTER_SLEEP_1: state1 {
->>+			compatible = "arm,idle-state";
->>+			entry-latency-us = <5000>;
->>+			exit-latency-us = <5000>;
->>+			min-residency-us = <100000>;
->>+		};
->>+	};
->>+
+> Thanks for the feedback. I think we should be able to do that and also
+> assume you have no further improvements you'd like to see here.
 >
->This version is *not very descriptive*. Also the discussion we had on v3
->version has not yet concluded IMO. So can I take that we agreed on what
->was proposed there or not ?
+> Looking at current Documentation/devicetree/bindings/arm/arm,scpi.txt
+> -> it makes sense to stick along the same lines as you mentioned.
 >
-Sorry, this example is not very descriptive. Pls. check the 8916 dtsi
-for the new changes in the following patches. Let me know if that makes
-sense.
+> Dave, Tero: do you guys have any objections?
 
-Thanks,
-Lina
+No objections, I think this is a logical move.
 
->We could have better example above *really* based on the discussions we
->had so far. This example always makes me think it's well crafted to
->avoid any sort of discussions. We need to consider different use-cases
->e.g. what about CPU level states ?
+Regards,
+Dave
+
 >
->IMO, we need to discuss this DT binding in detail and arrive at some
->conclusion before you take all the troubles to respin the series.
->Also it's better to keep the DT binding separate until we have some
->conclusion instead of posting the implementation for each version.
->That's just my opinion(I would be least bothered about implementation
->until I know it will be accepted before I can peek into the code, others
->may differ.
 >
->-- 
->Regards,
->Sudeep
+> ---
+> Regards,
+> Nishanth Menon
+>
