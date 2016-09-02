@@ -1,64 +1,143 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.8-rc5
-Date: Fri, 2 Sep 2016 23:42:45 +0200
-Message-ID: <CAJZ5v0gtjuSeQeqZyju6_37VVWvMqR2rgnK4_58PQL=TrH2=dw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:34034 "EHLO
-        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753736AbcIBVmr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Sep 2016 17:42:47 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
+Subject: [PATCH v4] power: bq24735-charger: Request status GPIO with initial input setup
+Date: Sat,  3 Sep 2016 00:09:53 +0200
+Message-ID: <20160902220953.28995-1-contact@paulk.fr>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Linus,
+This requests the status GPIO with initial input setup. it is required
+to read the GPIO status at probe time and thus correctly avoid sending
+i2c messages when AC is not plugged.
 
-Please pull from the tag
+When requesting the GPIO without initial input setup, it always reads 0
+which causes probe to fail as it assumes the charger is connected, sends
+i2c messages and fails.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.8-rc5
+While at it, this switches the driver over to gpio consumer.
 
-to receive power management fixes for v4.8-rc5.
+Signed-off-by: Paul Kocialkowski <contact-W9ppeneeCTY@public.gmane.org>
+---
+ drivers/power/supply/bq24735-charger.c | 44 +++++++++++++---------------------
+ include/linux/power/bq24735-charger.h  |  4 ----
+ 2 files changed, 16 insertions(+), 32 deletions(-)
 
-The top-most commit is b654c62e7734cdcd507a5751cd940077be2ad373
-
- Merge branches 'pm-cpufreq-fixes' and 'pm-core-fixes'
-
-and the base is commit 3eab887a55424fc2c27553b7bfe32330df83f7b8
-
- Linux 4.8-rc4
-
-This includes a stable-candidate cpufreq-dt driver problem fix and
-annotations of tracepoints in the runtime PM framework.
-
-Specifics:
-
- - Fix the definition of the cpufreq-dt driver's machines table
-   introduced during the 4.7 cycle that should be NULL-terminated,
-   but the termination entry is missing from it (Wei Yongjun).
-
- - Annotate tracepoints in the runtime PM framework's core so as to
-   allow the functions containing them to be called from the idle
-   code path without causing RCU to complain about illegal usage
-   (Paul McKenney).
-
-Thanks!
-
----------------
-
-Paul E. McKenney (2):
-      PM / runtime: Add _rcuidle suffix to allow rpm_resume() to be
-called from idle
-      PM / runtime: Add _rcuidle suffix to allow rpm_idle() use from idle
-
-Wei Yongjun (1):
-      cpufreq: dt: Add terminate entry for of_device_id tables
-
----------------
-
- drivers/base/power/runtime.c         | 10 +++++-----
- drivers/cpufreq/cpufreq-dt-platdev.c |  2 ++
- 2 files changed, 7 insertions(+), 5 deletions(-)
+diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/supply/bq24735-charger.c
+index dc460bb..44e3659 100644
+--- a/drivers/power/supply/bq24735-charger.c
++++ b/drivers/power/supply/bq24735-charger.c
+@@ -25,7 +25,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+-#include <linux/of_gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/power_supply.h>
+ #include <linux/slab.h>
+ 
+@@ -49,6 +49,7 @@ struct bq24735 {
+ 	struct i2c_client		*client;
+ 	struct bq24735_platform		*pdata;
+ 	struct mutex			lock;
++	struct gpio_desc		*status_gpio;
+ 	bool				charging;
+ };
+ 
+@@ -177,12 +178,8 @@ static int bq24735_config_charger(struct bq24735 *charger)
+ 
+ static bool bq24735_charger_is_present(struct bq24735 *charger)
+ {
+-	struct bq24735_platform *pdata = charger->pdata;
+-	int ret;
+-
+-	if (pdata->status_gpio_valid) {
+-		ret = gpio_get_value_cansleep(pdata->status_gpio);
+-		return ret ^= pdata->status_gpio_active_low == 0;
++	if (charger->status_gpio) {
++		return !gpiod_get_value_cansleep(charger->status_gpio);
+ 	} else {
+ 		int ac = 0;
+ 
+@@ -308,7 +305,6 @@ static struct bq24735_platform *bq24735_parse_dt_data(struct i2c_client *client)
+ 	struct device_node *np = client->dev.of_node;
+ 	u32 val;
+ 	int ret;
+-	enum of_gpio_flags flags;
+ 
+ 	pdata = devm_kzalloc(&client->dev, sizeof(*pdata), GFP_KERNEL);
+ 	if (!pdata) {
+@@ -317,12 +313,6 @@ static struct bq24735_platform *bq24735_parse_dt_data(struct i2c_client *client)
+ 		return NULL;
+ 	}
+ 
+-	pdata->status_gpio = of_get_named_gpio_flags(np, "ti,ac-detect-gpios",
+-						     0, &flags);
+-
+-	if (flags & OF_GPIO_ACTIVE_LOW)
+-		pdata->status_gpio_active_low = 1;
+-
+ 	ret = of_property_read_u32(np, "ti,charge-current", &val);
+ 	if (!ret)
+ 		pdata->charge_current = val;
+@@ -357,8 +347,11 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 	charger->charging = true;
+ 	charger->pdata = client->dev.platform_data;
+ 
+-	if (IS_ENABLED(CONFIG_OF) && !charger->pdata && client->dev.of_node)
++	if (IS_ENABLED(CONFIG_OF) && !charger->pdata && client->dev.of_node) {
+ 		charger->pdata = bq24735_parse_dt_data(client);
++		if (IS_ERR(charger->pdata))
++			return PTR_ERR(charger->pdata);
++	}
+ 
+ 	if (!charger->pdata) {
+ 		dev_err(&client->dev, "no platform data provided\n");
+@@ -396,21 +389,16 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 
+ 	i2c_set_clientdata(client, charger);
+ 
+-	if (gpio_is_valid(charger->pdata->status_gpio)) {
+-		ret = devm_gpio_request(&client->dev,
+-					charger->pdata->status_gpio,
+-					name);
+-		if (ret) {
+-			dev_err(&client->dev,
+-				"Failed GPIO request for GPIO %d: %d\n",
+-				charger->pdata->status_gpio, ret);
+-		}
+-
+-		charger->pdata->status_gpio_valid = !ret;
++	charger->status_gpio = devm_gpiod_get_optional(&client->dev,
++						       "ti,ac-detect",
++						       GPIOD_IN);
++	if (IS_ERR(charger->status_gpio)) {
++		ret = PTR_ERR(charger->status_gpio);
++		dev_err(&client->dev, "Getting gpio failed: %d\n", ret);
++		return ret;
+ 	}
+ 
+-	if (!charger->pdata->status_gpio_valid
+-	    || bq24735_charger_is_present(charger)) {
++	if (!charger->status_gpio || bq24735_charger_is_present(charger)) {
+ 		ret = bq24735_read_word(client, BQ24735_MANUFACTURER_ID);
+ 		if (ret < 0) {
+ 			dev_err(&client->dev, "Failed to read manufacturer id : %d\n",
+diff --git a/include/linux/power/bq24735-charger.h b/include/linux/power/bq24735-charger.h
+index 6b750c1a..b04be59 100644
+--- a/include/linux/power/bq24735-charger.h
++++ b/include/linux/power/bq24735-charger.h
+@@ -28,10 +28,6 @@ struct bq24735_platform {
+ 
+ 	const char *name;
+ 
+-	int status_gpio;
+-	int status_gpio_active_low;
+-	bool status_gpio_valid;
+-
+ 	bool ext_control;
+ 
+ 	char **supplied_to;
+-- 
+2.9.3
