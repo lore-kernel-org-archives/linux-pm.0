@@ -1,241 +1,67 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][v9] PM / hibernate: Verify the consistent of e820 memory map by md5 value
-Date: Fri,  2 Sep 2016 14:59:42 +0800
-Message-ID: <1472799582-21115-1-git-send-email-yu.c.chen@intel.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/2] sched: cpufreq: use rt_avg as estimate of required
+ RT CPU capacity
+Date: Fri, 2 Sep 2016 10:12:30 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1609020923590.5647@nanos>
+References: <1472236848-17038-1-git-send-email-smuckle@linaro.org> <1472236848-17038-3-git-send-email-smuckle@linaro.org> <20160831143907.GX10121@twins.programming.kicks-ass.net> <20160831150846.GN5599@graphite.smuckle.net> <alpine.DEB.2.20.1608311812040.5647@nanos>
+ <20160831164009.GF10153@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160831164009.GF10153@twins.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Lee Chun-Yi <jlee@suse.com>, Borislav Petkov <bp@alien8.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On some platforms, there is occasional panic triggered when trying to
-resume from hibernation, a typical panic looks like:
+On Wed, 31 Aug 2016, Peter Zijlstra wrote:
+> On Wed, Aug 31, 2016 at 06:28:10PM +0200, Thomas Gleixner wrote:
+> > > That is the way it's been with cpufreq and many systems (including all
+> > > mobile devices) rely on that to not destroy power. RT + variable cpufreq
+> > > is not deterministic.
+> > > 
+> > > Given we don't have good constraints on RT tasks I don't think we should
+> > > try to strengthen the semantics there. Folks should either move to DL if
+> > > they want determinism *and* not-sucky power, or continue disabling
+> > > cpufreq if they are able to do so.
+> > 
+> > RT deterministic behaviour is all about meeting the deadlines. If your
+> > deadline is relaxed enough that you can meet it even with the lowest cpu
+> > frequency then it's perfectly fine to enable cpufreq. The same logic applies
+> > to C-States.
+> > 
+> > There are a lot of RT systems out there which enable both. If cpufreq or
+> > c-states cause a deadline violation because the constraints of the system are
+> > tight, then people will disable it and we need a knob for both.
+> > 
+> > Realtime is not as fast as possible. It's as fast as specified.
+> 
+> Sure, problem is of course that RR/FIFO doesn't specify anything so the
+> users are left to prod knobs.
 
-"BUG: unable to handle kernel paging request at ffff880085894000
-IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
-
-This is because e820 map has been changed by BIOS across
-hibernation, and one of the page frames from suspend kernel
-is right located in restore kernel's unmapped region, so panic
-comes out when accessing unmapped kernel address.
-
-In order to expose this issue earlier, the md5 hash of e820 map
-is passed from suspend kernel to restore kernel, and the restore
-kernel will terminate the resume process once it finds the md5
-hash are not the same.
-
-As the format of image header has been modified, the magic number
-should also be adjusted as kernels with the same RESTORE_MAGIC have
-to use the same header format and interpret all of the fields in
-it in the same way.
-
-Note:
-1. Without this patch applied, it is possible that BIOS has
-   provided an inconsistent memory map, but the resume kernel is still
-   able to restore the image anyway(e.g, E820_RAM region is the superset
-   of the previous one), although the system might be unstable. So this
-   patch tries to treat any inconsistent e820 as illegal.
-
-2. Another case is, this patch replies on comparing the e820_saved, but
-   currently the e820_save might not be strictly the same across
-   hibernation, even if BIOS has provided consistent e820 map - In
-   theory mptable might modify the BIOS-provided e820_saved dynamically
-   in early_reserve_e820_mpc_new, which would allocate a buffer from
-   E820_RAM, and marks it from E820_RAM to E820_RESERVED).
-   This is a potential and rare case we need to deal with in OS in
-   the future.
-
-Suggested-by: Pavel Machek <pavel@ucw.cz>
-Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Lee Chun-Yi <jlee@suse.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
-v9:
- - Only do the md5 check when CONFIG_CRYPTO_MD5 is built in.
-   Change the image head magic number.
-   Remove CONFIG_HIBERNATION_CHECK_E820 and make the md5 check
-   mandatory.
-   Introduce e820_digest_available to indicate whether we should
-   check the md5 hash.
-   And some other modifications.
-v8:
- - Panic the system once the e820 is found to be inconsistent
-   during resume.
-   Fix the md5 hash len from 128 bytes to 16 bytes.
-v7:
- - Use md5 hash to compare the e820 map.
-v6:
- - Fix some compiling errors reported by 0day/LKP, adjust
-   Kconfig/variable namings.
-v5:
- - Rewrite this patch to just warn user of the broken BIOS
-   when panic.
-v4:
- - Add __attribute__ ((unused)) for swsusp_page_is_valid,
-   to eliminate the warnning of:
-   'swsusp_page_is_valid' defined but not used
-   on non-x86 platforms.
-
-v3:
- - Adjust the logic to exclude the end_pfn boundary in pfn_mapped
-   when invoking mark_valid_pages, because the end_pfn is not
-   a mapped page frame, we should not regard it as a valid page.
-
-   Move the sanity check of valid pages to a early stage in resuming
-   process(moved to mark_unsafe_pages), in this way, we can avoid
-   unnecessarily accessing these invalid pages in later stage(yes,
-   move to the original position Joey once introduced in:
-   Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820
-   reserved regions")
-
-   With v3 patch applied, I did 30 cycles on my problematic platform,
-   no panic triggered anymore(50% reproducible before patched, by
-   plugging/unplugging memory peripheral during hibernation), and it
-   just warns of invalid pages.
-
-v2:
- - According to Ingo's suggestion, rewrite this patch.
-
-   New version just checks each page frame according to pfn_mapped array.
-   So that we do not need to touch existing code related to
-   E820_RESERVED_KERN. And this method can naturely guarantee
-   that the system before/after hibernation do not need to be of
-   the same memory size on x86_64.
----
- arch/x86/power/hibernate_64.c | 88 ++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 86 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-index 9634557..252cc19 100644
---- a/arch/x86/power/hibernate_64.c
-+++ b/arch/x86/power/hibernate_64.c
-@@ -11,6 +11,10 @@
- #include <linux/gfp.h>
- #include <linux/smp.h>
- #include <linux/suspend.h>
-+#include <linux/scatterlist.h>
-+#include <linux/kdebug.h>
-+
-+#include <crypto/hash.h>
+I know :(
  
- #include <asm/init.h>
- #include <asm/proto.h>
-@@ -177,14 +181,84 @@ int pfn_is_nosave(unsigned long pfn)
- 	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
- }
- 
-+#define MD5_DIGEST_SIZE 16
-+
- struct restore_data_record {
- 	unsigned long jump_address;
- 	unsigned long jump_address_phys;
- 	unsigned long cr3;
- 	unsigned long magic;
-+	u8 e820_digest[MD5_DIGEST_SIZE];
-+	bool e820_digest_available;
- };
- 
--#define RESTORE_MAGIC	0x123456789ABCDEF0UL
-+#define RESTORE_MAGIC	0x23456789ABCDEF01UL
-+
-+#if IS_BUILTIN(CONFIG_CRYPTO_MD5)
-+/**
-+ * get_e820_md5 - calculate md5 according to e820 map
-+ *
-+ * @map: the e820 map to be calculated
-+ * @buf: the md5 result to be stored to
-+ */
-+static int get_e820_md5(struct e820map *map, void *buf)
-+{
-+	struct scatterlist sg;
-+	struct crypto_ahash *tfm;
-+	struct ahash_request *req;
-+	int ret = 0;
-+
-+	tfm = crypto_alloc_ahash("md5", 0, CRYPTO_ALG_ASYNC);
-+	if (IS_ERR(tfm))
-+		return -ENOMEM;
-+
-+	req = ahash_request_alloc(tfm, GFP_KERNEL);
-+	if (!req) {
-+		ret = -ENOMEM;
-+		goto free_ahash;
-+	}
-+
-+	sg_init_one(&sg, (u8 *)map, sizeof(struct e820map));
-+	ahash_request_set_callback(req, 0, NULL, NULL);
-+	ahash_request_set_crypt(req, &sg, buf, sizeof(struct e820map));
-+
-+	if (crypto_ahash_digest(req))
-+		ret = -EINVAL;
-+
-+	ahash_request_free(req);
-+ free_ahash:
-+	crypto_free_ahash(tfm);
-+
-+	return ret;
-+}
-+
-+static bool hibernation_e820_save(void *buf)
-+{
-+	return get_e820_md5(&e820_saved, buf) ? false : true;
-+}
-+
-+static bool hibernation_e820_mismatch(void *buf)
-+{
-+	int ret;
-+	u8 result[MD5_DIGEST_SIZE] = {0};
-+
-+	ret = get_e820_md5(&e820_saved, result);
-+	if (ret)
-+		return true;
-+
-+	return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
-+}
-+#else
-+static bool hibernation_e820_save(void *buf)
-+{
-+	return false;
-+}
-+
-+static bool hibernation_e820_mismatch(void *buf)
-+{
-+	return false;
-+}
-+#endif
- 
- /**
-  *	arch_hibernation_header_save - populate the architecture specific part
-@@ -201,6 +275,10 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
- 	rdr->jump_address_phys = __pa_symbol(&restore_registers);
- 	rdr->cr3 = restore_cr3;
- 	rdr->magic = RESTORE_MAGIC;
-+
-+	if (hibernation_e820_save(rdr->e820_digest))
-+		rdr->e820_digest_available = true;
-+
- 	return 0;
- }
- 
-@@ -211,10 +289,16 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
-  */
- int arch_hibernation_header_restore(void *addr)
- {
-+	bool e820_mismatch = false;
- 	struct restore_data_record *rdr = addr;
- 
- 	restore_jump_address = rdr->jump_address;
- 	jump_address_phys = rdr->jump_address_phys;
- 	restore_cr3 = rdr->cr3;
--	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
-+
-+	if (rdr->e820_digest_available)
-+		e820_mismatch = hibernation_e820_mismatch(rdr->e820_digest);
-+
-+	return (rdr->magic == RESTORE_MAGIC) ?
-+		(e820_mismatch ? -ENODEV : 0) : -EINVAL;
- }
--- 
-2.7.4
+> Another problem is that we have many semi related knobs; we have the
+> global RT runtime limit knob, but that doesn't affect cpufreq (maybe it
+> should) and cpufreq has knobs to set f_min and f_max, which again are
+> unaware of RT anything.
+> 
+> So before we go do anything, I'd like input on what is needed and how
+> things should tie together to make most sense.
+
+RT systems and especially RR/FIFO driven ones need a lot of specific tuning
+and configuration. I doubt that we can do anything except lousy heuristics
+which will end up being wrong for most use cases.
+
+In the DL case we certainly can do informed decisions, but for the RR/FIFO
+case the global RT runtime limit is just a too big hammer which shouldn't be
+abused for calculating cpufreq limits.
+
+I think that we should concentrate on DL and make it work very well and just
+leave the rest of the RT folks with rather simplistic knobs (i.e. on/off/hard
+limits). That will force people who have RT _and_ power constraints to think
+harder about their system design and eventually make them move over to DL.
+
+Thanks,
+
+	tglx
