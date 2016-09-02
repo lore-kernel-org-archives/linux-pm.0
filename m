@@ -1,40 +1,69 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [RESEND PATCH v4 0/3] mfd: tps65217: Add power-button and IRQ
- support
-Date: Fri, 2 Sep 2016 08:30:32 -0700
-Message-ID: <20160902153032.lhkqvnomx5vineoc@atomide.com>
-References: <20160902103526.5050-1-m.niestroj@grinn-global.com>
+From: Paul Burton <paul.burton@imgtec.com>
+Subject: [PATCH 00/12] Partial MIPS Malta DT conversion
+Date: Fri, 2 Sep 2016 16:48:46 +0100
+Message-ID: <20160902154859.24269-1-paul.burton@imgtec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:41276 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932172AbcIBPbL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 2 Sep 2016 11:31:11 -0400
-Content-Disposition: inline
-In-Reply-To: <20160902103526.5050-1-m.niestroj@grinn-global.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>
+Cc: Paul Burton <paul.burton@imgtec.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jacek Anaszewski <j.anaszewski@samsung.com>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Alexander Sverdlin <alexander.sverdlin@nokia.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Andy Yan <andy.yan@rock-chips.com>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Reichel <sre@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, John Stultz <john.stultz@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Chris Brand <chris.brand@broadcom.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Marc Zyngier <marc.zyngier@arm.com>, Stephan Linz <linz@li-pro.net>, Masahiro Yamada <yamada.masahiro@socionext.com>
 List-Id: linux-pm@vger.kernel.org
-To: Marcin Niestroj <m.niestroj@grinn-global.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Bin Liu <b-liu@ti.com>
 
-* Marcin Niestroj <m.niestroj@grinn-global.com> [160902 03:36]:
-> Hi,
-> 
-> This is a resend of v4, rebased on v4.8-rc4, with dropped two patches:
->  * "power_supply: tps65217-charger: Fix NULL deref during property export"
->    (already in mainline)
->  * "power_supply: tps65217-charger: Add support for IRQs" (queued into
->    power-supply's -next branch)
-> 
-> The following patches add tps65217 power button support and make it usable
-> with am335x boards.
+This series begins converting the MIPS Malta board to use device tree to
+probe its various devices & peripherals, with the eventual goal of
+including Malta support in generic kernels.
 
-Cool this series should also allow using the USB cable detect
-interrupt on am335x for one of the USB ports. Will give it a try
-using the drivers/phy driver I have in works here for am335x
-USB PHY.
+In terms of use the only change should be that kernels will
+automatically make use of more than 256MB DDR when built for 64 bit, or
+32 bit with highmem enabled.
 
-Regards,
+The series leaves Malta with a significant amount less platform code and
+thus closer to being ready for inclusion in a generic MIPS kernel.
 
-Tony
+Applies atop v4.8-rc4.
+
+Paul Burton (12):
+  irqchip: i8259: Add domain before mapping parent irq
+  irqchip: i8259: Allow platforms to override poll function
+  irqchip: i8259: Remove unused i8259A_irq_pending
+  MIPS: Malta: Allow PCI devices DMA to lower 2GB physical
+  MIPS: Malta: Use all available DDR by default
+  MIPS: Malta: Probe interrupt controllers via DT
+  MIPS: Malta: Probe RTC via DT
+  MIPS: Malta: Probe pflash via DT
+  MIPS: Malta: Use syscon-reboot driver to reboot
+  MIPS: Malta: Remove custom halt implementation
+  power: reset: Add Intel PIIX4 poweroff driver
+  MIPS: Malta: Use PIIX4 poweroff driver to power down
+
+ arch/mips/Kconfig                           |   7 +-
+ arch/mips/boot/dts/mti/malta.dts            |  93 ++++++++++++++
+ arch/mips/configs/malta_defconfig           |   5 +-
+ arch/mips/configs/malta_kvm_defconfig       |   5 +-
+ arch/mips/configs/malta_kvm_guest_defconfig |   5 +-
+ arch/mips/configs/malta_qemu_32r6_defconfig |   3 +
+ arch/mips/configs/maltaaprp_defconfig       |   3 +
+ arch/mips/configs/maltasmvp_defconfig       |   3 +
+ arch/mips/configs/maltasmvp_eva_defconfig   |   3 +
+ arch/mips/configs/maltaup_defconfig         |   3 +
+ arch/mips/configs/maltaup_xpa_defconfig     |   5 +-
+ arch/mips/include/asm/i8259.h               |  12 +-
+ arch/mips/mti-malta/Makefile                |   3 -
+ arch/mips/mti-malta/malta-dtshim.c          | 187 +++++++++++++++++++++++++++-
+ arch/mips/mti-malta/malta-init.c            |  17 ++-
+ arch/mips/mti-malta/malta-int.c             |  96 +-------------
+ arch/mips/mti-malta/malta-platform.c        |  65 ----------
+ arch/mips/mti-malta/malta-pm.c              |  96 --------------
+ arch/mips/mti-malta/malta-reset.c           |  47 -------
+ drivers/irqchip/irq-i8259.c                 |  30 ++---
+ drivers/power/reset/Kconfig                 |   9 ++
+ drivers/power/reset/Makefile                |   1 +
+ drivers/power/reset/piix4-poweroff.c        | 103 +++++++++++++++
+ 23 files changed, 452 insertions(+), 349 deletions(-)
+ delete mode 100644 arch/mips/mti-malta/malta-pm.c
+ delete mode 100644 arch/mips/mti-malta/malta-reset.c
+ create mode 100644 drivers/power/reset/piix4-poweroff.c
+
+-- 
+2.9.3
