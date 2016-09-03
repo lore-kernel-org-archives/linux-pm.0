@@ -1,90 +1,254 @@
-From: qiaozhou <qiaozhou@asrmicro.com>
-Subject: Re: [Question] about patch: don't use [delayed_]work_pending()
-Date: Sat, 3 Sep 2016 23:27:38 +0800
-Message-ID: <64e6c4db-5692-6e25-6532-b58806103617@asrmicro.com>
-References: <d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com>
- <20160901184503.GD12660@htj.duckdns.org>
- <6b2fc72b-f99f-f7f1-3221-093943de0950@asrmicro.com>
- <20160902135007.GF12660@htj.duckdns.org>
- <20160902142102.GG12660@htj.duckdns.org>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [RESEND PATCH v4 3/3] Input: Add tps65217 power button driver
+Date: Sat, 3 Sep 2016 10:53:21 -0700
+Message-ID: <20160903175321.GC32345@dtor-ws>
+References: <20160902103526.5050-1-m.niestroj@grinn-global.com>
+ <20160902103526.5050-4-m.niestroj@grinn-global.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [140.206.112.110] ([140.206.112.110]:54453 "EHLO
-        mail2012.asrmicro.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1753453AbcICP2G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Sep 2016 11:28:06 -0400
-In-Reply-To: <20160902142102.GG12660@htj.duckdns.org>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:33532 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754204AbcICRxl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Sep 2016 13:53:41 -0400
+Content-Disposition: inline
+In-Reply-To: <20160902103526.5050-4-m.niestroj@grinn-global.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-pm@vger.kernel.org, Wang Wilbur <wilburwang@asrmicro.com>, Wu Gang <gangwu@asrmicro.com>, linux-kernel@vger.kernel.org
+To: Marcin Niestroj <m.niestroj@grinn-global.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>
 
+On Fri, Sep 02, 2016 at 12:35:26PM +0200, Marcin Niestroj wrote:
+> This driver enables us to use tps65217's power button as KEY_POWER on
+> am335x boards (directly connected button in chiliboard, accessible pin
+> via expansion header in beaglebone). This patch has been tested with
+> chiliboard.
+> 
+> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+> Acked-by: Rob Herring <robh@kernel.org>
 
+Was it produces by soing s/65218/65217 over
+drivers/input/misc/tps65217-pwrbutton.c? I honestly can't see much
+difference between the 2. Can they be probably be combined?
 
-On 2016年09月02日 22:21, Tejun Heo wrote:
-> On Fri, Sep 02, 2016 at 09:50:07AM -0400, Tejun Heo wrote:
->> Hello,
->>
->> On Fri, Sep 02, 2016 at 09:17:04AM +0800, qiaozhou wrote:
->>>>> I don't know whether it's meaningful to still check pending work here, or
->>>>> it's not suggested to use pm_qos_update_request in this early boot up phase.
->>>>> Could you help to share some opinions? (I can fix this issue by adding the
->>>>> current qos value directly instead of default value, though.)
->>>> Hmmm... but I suppose this is super-early in the boot.  Would it make
->>>> sense to have a static variable (e.g. bool clk_fully_initailized) to
->>>> gate the cancel_delayed_sync() call?
->>> You're right that it's indeed super-early stage. But currently we can't
->>> control the gate of can_delayed_work_sync, since it's inside
->>> pm_qos_update_request. Out of our control. We can choose to not call
->>> pm_qos_update_request to avoid this issue, and use pm_qos_add_request
->>> alternatively. Good to have it.
->> Ah sorry, didn't understand that the offending cancel_sync call is in
->> the generic part.  Hmm... but yeah, we should still be able to take
->> the same approach.  I'll see what's the right thing to gate the
->> operation there.
-> Does the following patch work?
-I'll have a try next Monday and let you know ASAP. Thanks for the patch.
->
-> Subject: power: avoid calling cancel_delayed_work_sync() during early boot
->
-> of_clk_init() ends up calling into pm_qos_update_request() very early
-> during boot where irq is expected to stay disabled.
-> pm_qos_update_request() uses cancel_delayed_work_sync() which
-> correctly assumes that irq is enabled on invocation and
-> unconditionally disables and re-enables it.
->
-> Gate cancel_delayed_work_sync() invocation with kevented_up() to avoid
-> enabling irq unexpectedly during early boot.
->
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Reported-by: Qiao Zhou <qiaozhou@asrmicro.com>
-> Link: http://lkml.kernel.org/r/d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com
+Thanks.
+
 > ---
->   kernel/power/qos.c |   11 ++++++++++-
->    1 file changed, 10 insertions(+), 1 deletion(-)
->
-> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-> index 97b0df7..168ff44 100644
-> --- a/kernel/power/qos.c
-> +++ b/kernel/power/qos.c
-> @@ -482,7 +482,16 @@ void pm_qos_update_request(struct pm_qos_request *req,
->   		return;
->   	}
->   
-> -	cancel_delayed_work_sync(&req->work);
-> +	/*
-> +	 * This function may be called very early during boot, for example,
-> +	 * from of_clk_init(), where irq needs to stay disabled.
-> +	 * cancel_delayed_work_sync() assumes that irq is enabled on
-> +	 * invocation and re-enables it on return.  Avoid calling it until
-> +	 * workqueue is initialized.
-> +	 */
-> +	if (keventd_up())
-> +		cancel_delayed_work_sync(&req->work);
+> Depends on patches 1-2 in series and commit
+> 47d7d5ed68d877269003a392b7008905d65650bb
+> ("power_supply: tps65217-charger: Add support for IRQs")
+> in power-supply's -next branch.
+> 
+> Changes v2 -> v4: none
+> 
+> Changes v1 -> v2:
+>  * Added information about parent device in tps65217 power button
+>    device-tree binding documentation (suggested by Rob)
+> 
+>  .../bindings/input/tps65217-pwrbutton.txt          |  17 +++
+>  drivers/input/misc/Kconfig                         |  10 ++
+>  drivers/input/misc/Makefile                        |   1 +
+>  drivers/input/misc/tps65217-pwrbutton.c            | 131 +++++++++++++++++++++
+>  4 files changed, 159 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/input/tps65217-pwrbutton.txt
+>  create mode 100644 drivers/input/misc/tps65217-pwrbutton.c
+> 
+> diff --git a/Documentation/devicetree/bindings/input/tps65217-pwrbutton.txt b/Documentation/devicetree/bindings/input/tps65217-pwrbutton.txt
+> new file mode 100644
+> index 0000000..d5f5cce
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/input/tps65217-pwrbutton.txt
+> @@ -0,0 +1,17 @@
+> +Texas Instruments TPS65217 power button
 > +
->   	__pm_qos_update_request(req, new_value);
->   }
->   EXPORT_SYMBOL_GPL(pm_qos_update_request);
+> +This module is part of the TPS65217. For more details about the whole
+> +chip see Documentation/devicetree/bindings/regulator/tps65217.txt.
+> +
+> +This module provides a simple power button event via an Interrupt.
+> +
+> +Required properties:
+> +- compatible: should be "ti,tps65217-pwrbutton"
+> +
+> +Example:
+> +
+> +&tps {
+> +	tps65217-pwrbutton {
+> +		compatible = "ti,tps65217-pwrbutton";
+> +	};
+> +};
+> diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+> index efb0ca8..826f62b6 100644
+> --- a/drivers/input/misc/Kconfig
+> +++ b/drivers/input/misc/Kconfig
+> @@ -452,6 +452,16 @@ config INPUT_RETU_PWRBUTTON
+>  	  To compile this driver as a module, choose M here. The module will
+>  	  be called retu-pwrbutton.
+>  
+> +config INPUT_TPS65217_PWRBUTTON
+> +	tristate "TPS65217 Power button driver"
+> +	depends on MFD_TPS65217
+> +	help
+> +	  Say Y here if you want to enable power button reporting for
+> +	  the TPS65217 Power Management IC device.
+> +
+> +	  To compile this driver as a module, choose M here. The module will
+> +	  be called tps65217-pwrbutton.
+> +
+>  config INPUT_TPS65218_PWRBUTTON
+>  	tristate "TPS65218 Power button driver"
+>  	depends on MFD_TPS65218
+> diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
+> index 6a1e5e2..bb5ac44 100644
+> --- a/drivers/input/misc/Makefile
+> +++ b/drivers/input/misc/Makefile
+> @@ -67,6 +67,7 @@ obj-$(CONFIG_INPUT_SGI_BTNS)		+= sgi_btns.o
+>  obj-$(CONFIG_INPUT_SIRFSOC_ONKEY)	+= sirfsoc-onkey.o
+>  obj-$(CONFIG_INPUT_SOC_BUTTON_ARRAY)	+= soc_button_array.o
+>  obj-$(CONFIG_INPUT_SPARCSPKR)		+= sparcspkr.o
+> +obj-$(CONFIG_INPUT_TPS65217_PWRBUTTON)	+= tps65217-pwrbutton.o
+>  obj-$(CONFIG_INPUT_TPS65218_PWRBUTTON)	+= tps65218-pwrbutton.o
+>  obj-$(CONFIG_INPUT_TWL4030_PWRBUTTON)	+= twl4030-pwrbutton.o
+>  obj-$(CONFIG_INPUT_TWL4030_VIBRA)	+= twl4030-vibra.o
+> diff --git a/drivers/input/misc/tps65217-pwrbutton.c b/drivers/input/misc/tps65217-pwrbutton.c
+> new file mode 100644
+> index 0000000..50372bf
+> --- /dev/null
+> +++ b/drivers/input/misc/tps65217-pwrbutton.c
+> @@ -0,0 +1,131 @@
+> +/*
+> + * Texas Instruments' TPS65217 Power Button Input Driver
+> + *
+> + * Copyright (C) 2016 Grinn - http://www.grinn-global.com/
+> + * Author: Marcin Niestroj <m.niestroj@grinn-global.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+> + * kind, whether express or implied; without even the implied warranty
+> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + */
+> +
+> +#include <linux/init.h>
+> +#include <linux/input.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/kernel.h>
+> +#include <linux/mfd/tps65217.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/slab.h>
+> +
+> +struct tps65217_pwrbutton {
+> +	struct device *dev;
+> +	struct tps65217 *tps;
+> +	struct input_dev *idev;
+> +};
+> +
+> +static irqreturn_t tps65217_pb_irq(int irq, void *data)
+> +{
+> +	struct tps65217_pwrbutton *pwr = data;
+> +	unsigned int reg;
+> +	int error;
+> +
+> +	error = tps65217_reg_read(pwr->tps, TPS65217_REG_STATUS, &reg);
+> +	if (error) {
+> +		dev_err(pwr->dev, "can't read register: %d\n", error);
+> +		goto out;
+> +	}
+> +
+> +	if (reg & TPS65217_STATUS_PB) {
+> +		input_report_key(pwr->idev, KEY_POWER, 1);
+> +		pm_wakeup_event(pwr->dev, 0);
+> +	} else {
+> +		input_report_key(pwr->idev, KEY_POWER, 0);
+> +	}
+> +
+> +	input_sync(pwr->idev);
+> +
+> +out:
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static int tps65217_pb_probe(struct platform_device *pdev)
+> +{
+> +	struct tps65217 *tps = dev_get_drvdata(pdev->dev.parent);
+> +	struct device *dev = &pdev->dev;
+> +	struct tps65217_pwrbutton *pwr;
+> +	struct input_dev *idev;
+> +	int error;
+> +	int irq;
+> +
+> +	pwr = devm_kzalloc(dev, sizeof(*pwr), GFP_KERNEL);
+> +	if (!pwr)
+> +		return -ENOMEM;
+> +
+> +	idev = devm_input_allocate_device(dev);
+> +	if (!idev)
+> +		return -ENOMEM;
+> +
+> +	idev->name = "tps65217_pwrbutton";
+> +	idev->phys = "tps65217_pwrbutton/input0";
+> +	idev->dev.parent = dev;
+> +	idev->id.bustype = BUS_I2C;
+> +
+> +	input_set_capability(idev, EV_KEY, KEY_POWER);
+> +
+> +	pwr->tps = tps;
+> +	pwr->dev = dev;
+> +	pwr->idev = idev;
+> +	platform_set_drvdata(pdev, pwr);
+> +	device_init_wakeup(dev, true);
+> +
+> +	irq = platform_get_irq_byname(pdev, "PB");
+> +	if (irq < 0) {
+> +		dev_err(dev, "No IRQ resource!\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	error = devm_request_threaded_irq(dev, irq, NULL, tps65217_pb_irq,
+> +					IRQF_TRIGGER_RISING |
+> +					IRQF_TRIGGER_FALLING |
+> +					IRQF_ONESHOT,
+> +					"tps65217-pwrbutton", pwr);
+> +	if (error) {
+> +		dev_err(dev, "failed to request IRQ #%d: %d\n",
+> +			irq, error);
+> +		return error;
+> +	}
+> +
+> +	error = input_register_device(idev);
+> +	if (error) {
+> +		dev_err(dev, "Can't register power button: %d\n", error);
+> +		return error;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct of_device_id tps65217_pb_match[] = {
+> +	{ .compatible = "ti,tps65217-pwrbutton" },
+> +	{ },
+> +};
+> +MODULE_DEVICE_TABLE(of, tps65217_pb_match);
+> +
+> +static struct platform_driver tps65217_pb_driver = {
+> +	.probe	= tps65217_pb_probe,
+> +	.driver	= {
+> +		.name	= "tps65217-pwrbutton",
+> +		.of_match_table = tps65217_pb_match,
+> +	},
+> +};
+> +module_platform_driver(tps65217_pb_driver);
+> +
+> +MODULE_DESCRIPTION("TPS65217 Power Button");
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_AUTHOR("Marcin Niestroj <m.niestroj@grinn-global.com>");
+> -- 
+> 2.9.3
+> 
 
+-- 
+Dmitry
