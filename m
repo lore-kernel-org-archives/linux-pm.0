@@ -1,65 +1,30 @@
-From: Khiem Nguyen <khiem.nguyen.xt@renesas.com>
-Subject: [PATCH 4/5 v2] arm64: dts: r8a7796: Add R-Car Gen3 thermal support
-Date: Sat, 3 Sep 2016 05:28:20 +0000
-Message-ID: <SIXPR06MB0906F7490313A37C3E4B5F54A8E40@SIXPR06MB0906.apcprd06.prod.outlook.com>
+From: Khiem Nguyen <khiem.nguyen.xt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH 5/5 v2] arm64: defconfig: Enable R-Car Gen3 thermal support
+Date: Sat, 3 Sep 2016 05:29:40 +0000
+Message-ID: <SIXPR06MB09060712101910387714B500A8E40@SIXPR06MB0906.apcprd06.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relmlor1.renesas.com ([210.160.252.171]:24089 "EHLO
-        relmlie4.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1751690AbcICF2Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Sep 2016 01:28:25 -0400
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Magnus Damm <damm+renesas-yzvPICuk2ACczHhG9Qg4qA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Thao Phuong Le. Nguyen" <thao.nguyen.yb-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>, Hien Dang <hien.dang.eb-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Toru Oishi <toru.oishi.zj-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Khiem Nguyen <khiem.nguyen.xt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <damm+renesas@opensource.se>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Thao Phuong Le. Nguyen" <thao.nguyen.yb@rvc.renesas.com>, Hien Dang <hien.dang.eb@renesas.com>, Toru Oishi <toru.oishi.zj@renesas.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>
 
-DQpTaWduZWQtb2ZmLWJ5OiBLaGllbSBOZ3V5ZW4gPGtoaWVtLm5ndXllbi54dEBydmMucmVuZXNh
-cy5jb20+DQotLS0NCg0KdjI6DQogKiBBZGQgbmV3bHkuDQogDQogYXJjaC9hcm02NC9ib290L2R0
-cy9yZW5lc2FzL3I4YTc3OTYuZHRzaSB8IDgzICsrKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrDQogMSBmaWxlIGNoYW5nZWQsIDgzIGluc2VydGlvbnMoKykNCg0KZGlmZiAtLWdpdCBhL2Fy
-Y2gvYXJtNjQvYm9vdC9kdHMvcmVuZXNhcy9yOGE3Nzk2LmR0c2kgYi9hcmNoL2FybTY0L2Jvb3Qv
-ZHRzL3JlbmVzYXMvcjhhNzc5Ni5kdHNpDQppbmRleCAzYWFlMjlmLi5jNzQ5MWIwIDEwMDY0NA0K
-LS0tIGEvYXJjaC9hcm02NC9ib290L2R0cy9yZW5lc2FzL3I4YTc3OTYuZHRzaQ0KKysrIGIvYXJj
-aC9hcm02NC9ib290L2R0cy9yZW5lc2FzL3I4YTc3OTYuZHRzaQ0KQEAgLTI5Myw1ICsyOTMsODgg
-QEANCiAJCQljYXAtbW1jLWhpZ2hzcGVlZDsNCiAJCQlzdGF0dXMgPSAiZGlzYWJsZWQiOw0KIAkJ
-fTsNCisNCisJCXRzYzE6IHRoZXJtYWxAZTYxOTgwMDAgew0KKwkJCWNvbXBhdGlibGUgPSAicmVu
-ZXNhcyxyOGE3Nzk2LXRoZXJtYWwiOw0KKwkJCXJlZyA9IDwwIDB4ZTYxOTgwMDAgMCAweDVjPjsN
-CisJCQlpbnRlcnJ1cHRzID0gPEdJQ19TUEkgNjcgSVJRX1RZUEVfTEVWRUxfSElHSD4sDQorCQkJ
-CSAgICAgPEdJQ19TUEkgNjggSVJRX1RZUEVfTEVWRUxfSElHSD47DQorCQkJY2xvY2tzID0gPCZj
-cGcgQ1BHX01PRCA1MjI+Ow0KKwkJCXBvd2VyLWRvbWFpbnMgPSA8JnN5c2MgUjhBNzc5Nl9QRF9B
-TFdBWVNfT04+Ow0KKwkJCSN0aGVybWFsLXNlbnNvci1jZWxscyA9IDwwPjsNCisJCQlzdGF0dXMg
-PSAib2theSI7DQorCQl9Ow0KKw0KKwkJdHNjMjogdGhlcm1hbEBlNjFhMDAwMCB7DQorCQkJY29t
-cGF0aWJsZSA9ICJyZW5lc2FzLHI4YTc3OTYtdGhlcm1hbCI7DQorCQkJcmVnID0gPDAgMHhlNjFh
-MDAwMCAwIDB4NWM+Ow0KKwkJCWludGVycnVwdHMgPSA8R0lDX1NQSSA2NyBJUlFfVFlQRV9MRVZF
-TF9ISUdIPiwNCisJCQkJICAgICA8R0lDX1NQSSA2OCBJUlFfVFlQRV9MRVZFTF9ISUdIPjsNCisJ
-CQljbG9ja3MgPSA8JmNwZyBDUEdfTU9EIDUyMj47DQorCQkJcG93ZXItZG9tYWlucyA9IDwmc3lz
-YyBSOEE3Nzk2X1BEX0FMV0FZU19PTj47DQorCQkJI3RoZXJtYWwtc2Vuc29yLWNlbGxzID0gPDA+
-Ow0KKwkJCXN0YXR1cyA9ICJva2F5IjsNCisJCX07DQorDQorCQl0c2MzOiB0aGVybWFsQGU2MWE4
-MDAwIHsNCisJCQljb21wYXRpYmxlID0gInJlbmVzYXMscjhhNzc5Ni10aGVybWFsIjsNCisJCQly
-ZWcgPSA8MCAweGU2MWE4MDAwIDAgMHg1Yz47DQorCQkJaW50ZXJydXB0cyA9IDxHSUNfU1BJIDY3
-IElSUV9UWVBFX0xFVkVMX0hJR0g+LA0KKwkJCQkgICAgIDxHSUNfU1BJIDY4IElSUV9UWVBFX0xF
-VkVMX0hJR0g+Ow0KKwkJCWNsb2NrcyA9IDwmY3BnIENQR19NT0QgNTIyPjsNCisJCQlwb3dlci1k
-b21haW5zID0gPCZzeXNjIFI4QTc3OTZfUERfQUxXQVlTX09OPjsNCisJCQkjdGhlcm1hbC1zZW5z
-b3ItY2VsbHMgPSA8MD47DQorCQkJc3RhdHVzID0gIm9rYXkiOw0KKwkJfTsNCisNCisJCXRoZXJt
-YWwtem9uZXMgew0KKwkJCXNlbnNvcl90aGVybWFsMTogc2Vuc29yLXRoZXJtYWwxIHsNCisJCQkJ
-cG9sbGluZy1kZWxheS1wYXNzaXZlID0gPDI1MD47DQorCQkJCXBvbGxpbmctZGVsYXkgPSA8MTAw
-MD47DQorDQorCQkJCS8qIHNlbnNvciBJRCAqLw0KKwkJCQl0aGVybWFsLXNlbnNvcnMgPSA8JnRz
-YzE+Ow0KKw0KKwkJCQl0cmlwcyB7DQorCQkJCQlzZW5zb3IxX2NyaXQ6IHNlbnNvcjEtY3JpdCB7
-DQorCQkJCQkJdGVtcGVyYXR1cmUgPSA8OTAwMDA+Ow0KKwkJCQkJCWh5c3RlcmVzaXMgPSA8MjAw
-MD47DQorCQkJCQkJdHlwZSA9ICJjcml0aWNhbCI7DQorCQkJCQl9Ow0KKwkJCQl9Ow0KKwkJCX07
-DQorDQorCQkJc2Vuc29yX3RoZXJtYWwyOiBzZW5zb3ItdGhlcm1hbDIgew0KKwkJCQlwb2xsaW5n
-LWRlbGF5LXBhc3NpdmUgPSA8MjUwPjsNCisJCQkJcG9sbGluZy1kZWxheSA9IDwxMDAwPjsNCisN
-CisJCQkJLyogc2Vuc29yIElEICovDQorCQkJCXRoZXJtYWwtc2Vuc29ycyA9IDwmdHNjMj47DQor
-DQorCQkJCXRyaXBzIHsNCisJCQkJCXNlbnNvcjJfY3JpdDogc2Vuc29yMi1jcml0IHsNCisJCQkJ
-CQl0ZW1wZXJhdHVyZSA9IDw5MDAwMD47DQorCQkJCQkJaHlzdGVyZXNpcyA9IDwyMDAwPjsNCisJ
-CQkJCQl0eXBlID0gImNyaXRpY2FsIjsNCisJCQkJCX07DQorCQkJCX07DQorCQkJfTsNCisNCisJ
-CQlzZW5zb3JfdGhlcm1hbDM6IHNlbnNvci10aGVybWFsMyB7DQorCQkJCXBvbGxpbmctZGVsYXkt
-cGFzc2l2ZSA9IDwyNTA+Ow0KKwkJCQlwb2xsaW5nLWRlbGF5ID0gPDEwMDA+Ow0KKw0KKwkJCQkv
-KiBzZW5zb3IgSUQgKi8NCisJCQkJdGhlcm1hbC1zZW5zb3JzID0gPCZ0c2MzPjsNCisNCisJCQkJ
-dHJpcHMgew0KKwkJCQkJc2Vuc29yM19jcml0OiBzZW5zb3IzLWNyaXQgew0KKwkJCQkJCXRlbXBl
-cmF0dXJlID0gPDkwMDAwPjsNCisJCQkJCQloeXN0ZXJlc2lzID0gPDIwMDA+Ow0KKwkJCQkJCXR5
-cGUgPSAiY3JpdGljYWwiOw0KKwkJCQkJfTsNCisJCQkJfTsNCisJCQl9Ow0KKwkJfTsNCiAJfTsN
-CiB9Ow0KLS0gDQoxLjkuMQ0KDQo=
+DQpTaWduZWQtb2ZmLWJ5OiBLaGllbSBOZ3V5ZW4gPGtoaWVtLm5ndXllbi54dEByZW5lc2FzLmNv
+bT4NCi0tLQ0KDQp2MjoNCiAqIE5vIGNoYW5nZQ0KIA0KIGFyY2gvYXJtNjQvY29uZmlncy9kZWZj
+b25maWcgfCAyICsrDQogMSBmaWxlIGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKQ0KDQpkaWZmIC0t
+Z2l0IGEvYXJjaC9hcm02NC9jb25maWdzL2RlZmNvbmZpZyBiL2FyY2gvYXJtNjQvY29uZmlncy9k
+ZWZjb25maWcNCmluZGV4IDA3Y2Q2MTUuLmNkYjdiNDAgMTAwNjQ0DQotLS0gYS9hcmNoL2FybTY0
+L2NvbmZpZ3MvZGVmY29uZmlnDQorKysgYi9hcmNoL2FybTY0L2NvbmZpZ3MvZGVmY29uZmlnDQpA
+QCAtMjUxLDggKzI1MSwxMCBAQCBDT05GSUdfU0VOU09SU19MTTkwPW0NCiBDT05GSUdfU0VOU09S
+U19JTkEyWFg9bQ0KIENPTkZJR19TRU5TT1JTX0FSTV9TQ1BJPXkNCiBDT05GSUdfVEhFUk1BTD15
+DQorQ09ORklHX1RIRVJNQUxfT0Y9eQ0KIENPTkZJR19USEVSTUFMX0VNVUxBVElPTj15DQogQ09O
+RklHX0VYWU5PU19USEVSTUFMPXkNCitDT05GSUdfUkNBUl9HRU4zX1RIRVJNQUw9eQ0KIENPTkZJ
+R19XQVRDSERPRz15DQogQ09ORklHX1JFTkVTQVNfV0RUPXkNCiBDT05GSUdfUzNDMjQxMF9XQVRD
+SERPRz15DQotLSANCjEuOS4xDQoNCg==
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
