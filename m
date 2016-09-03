@@ -1,258 +1,122 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH 2/4]  cpufreq: intel_pstate: Change P-state selection algorithm for Core
-Date: Sat, 03 Sep 2016 03:02:08 +0200
-Message-ID: <3156326.nF8LsxcLZH@vostro.rjw.lan>
-References: <2730042.XLMy9dAKI1@vostro.rjw.lan>
+From: Khiem Nguyen <khiem.nguyen.xt@renesas.com>
+Subject: RE: [PATCH 2/4] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal
+ driver support
+Date: Sat, 3 Sep 2016 02:10:43 +0000
+Message-ID: <SIXPR06MB09062091B864265A73F5D6FDA8E40@SIXPR06MB0906.apcprd06.prod.outlook.com>
+References: <57661211.7010900@rvc.renesas.com>
+        <576612DE.3070204@rvc.renesas.com>
+ <8760t4skro.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2730042.XLMy9dAKI1@vostro.rjw.lan>
+In-Reply-To: <8760t4skro.wl%kuninori.morimoto.gx@renesas.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>, Doug Smythies <doug.smythies@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Steve Muckle <smuckle@linaro.org>
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <damm+renesas@opensource.se>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Thao Phuong Le. Nguyen" <thao.nguyen.yb@rvc.renesas.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Toru Oishi <toru.oishi.zj@renesas.com>, Hien Dang <hien.dang.eb@renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-The PID-base P-state selection algorithm used by intel_pstate for
-Core processors is based on very weak foundations.  Namely, its
-decisions are mostly based on the values of the APERF and MPERF
-feedback registers and it only estimates the actual utilization to
-check if it is not extremely low (in order to avoid getting stuck
-in the highest P-state in that case).
-
-Since it generally causes the CPU P-state to ramp up quickly, it
-leads to satisfactory performance, but the metric used by it is only
-really valid when the CPU changes P-states by itself (ie. in the turbo
-range) and if the P-state value set by the driver is treated by the
-CPU as the upper limit on turbo P-states selected by it.
-
-As a result, the only case when P-states are reduced by that
-algorithm is when the CPU has just come out of idle, but in that
-particular case it would have been better to bump up the P-state
-instead.  That causes some benchmarks to behave erratically and
-attempts to improve the situation lead to excessive energy
-consumption, because they make the CPU stay in very high P-states
-almost all the time.
-
-Consequently, the only viable way to fix that is to replace the
-erroneous algorithm entirely with a new one.
-
-To that end, notice that setting the P-state proportional to the
-actual CPU utilization (measured with the help of MPERF and TSC)
-generally leads to reasonable behavior, but it does not reflect
-the "performance boosting" nature of the current P-state
-selection algorithm.  It may be made more similar to that
-algorithm, though, by adding iowait boosting to it.
-
-Specifically, if the P-state is bumped up to the maximum after
-receiving the SCHED_CPUFREQ_IOWAIT flag via cpufreq_update_util(),
-it will allow tasks that were previously waiting on I/O to get the
-full capacity of the CPU when they are ready to process data again
-and that should lead to the desired performance increase overall
-without sacrificing too much energy.
-
-However, the utilization-based method of target P-state selection
-may cause the resultant target P-state to oscillate which generally
-leads to excessive consumption of energy, so apply an Infinite
-Impulse Response filter on top of it to dampen those osciallations
-and make it more energy-efficient (thanks to Doug Smythies for this
-idea).
-
-Use the approach as described in intel_pstate for Core processors.
-
-Original-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Suggested-by: Doug Smythies <dsmythies@telus.net>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-This includes an IIR filter on top of the load-based P-state selection,
-but the filter is applied to the non-boosted case only (otherwise it
-defeats the point of the boost) and I used a slightly different raw gain
-value.
-
-Thanks,
-Rafael
-
----
- drivers/cpufreq/intel_pstate.c |   81 +++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 79 insertions(+), 2 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -98,6 +98,7 @@ static inline u64 div_ext_fp(u64 x, u64
-  * @tsc:		Difference of time stamp counter between last and
-  *			current sample
-  * @time:		Current time from scheduler
-+ * @target:		Target P-state
-  *
-  * This structure is used in the cpudata structure to store performance sample
-  * data for choosing next P State.
-@@ -109,6 +110,7 @@ struct sample {
- 	u64 mperf;
- 	u64 tsc;
- 	u64 time;
-+	int target;
- };
- 
- /**
-@@ -181,6 +183,8 @@ struct _pid {
-  * @cpu:		CPU number for this instance data
-  * @update_util:	CPUFreq utility callback information
-  * @update_util_set:	CPUFreq utility callback is set
-+ * @iowait_boost:	iowait-related boost fraction
-+ * @last_update:	Time of the last update.
-  * @pstate:		Stores P state limits for this CPU
-  * @vid:		Stores VID limits for this CPU
-  * @pid:		Stores PID parameters for this CPU
-@@ -206,6 +210,7 @@ struct cpudata {
- 	struct vid_data vid;
- 	struct _pid pid;
- 
-+	u64	last_update;
- 	u64	last_sample_time;
- 	u64	prev_aperf;
- 	u64	prev_mperf;
-@@ -216,6 +221,7 @@ struct cpudata {
- 	struct acpi_processor_performance acpi_perf_data;
- 	bool valid_pss_table;
- #endif
-+	unsigned int iowait_boost;
- };
- 
- static struct cpudata **all_cpu_data;
-@@ -229,6 +235,7 @@ static struct cpudata **all_cpu_data;
-  * @p_gain_pct:		PID proportional gain
-  * @i_gain_pct:		PID integral gain
-  * @d_gain_pct:		PID derivative gain
-+ * @boost_iowait:	Whether or not to use iowait boosting.
-  *
-  * Stores per CPU model static PID configuration data.
-  */
-@@ -240,6 +247,7 @@ struct pstate_adjust_policy {
- 	int p_gain_pct;
- 	int d_gain_pct;
- 	int i_gain_pct;
-+	bool boost_iowait;
- };
- 
- /**
-@@ -277,6 +285,7 @@ struct cpu_defaults {
- 	struct pstate_funcs funcs;
- };
- 
-+static inline int32_t get_target_pstate_default(struct cpudata *cpu);
- static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu);
- static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu);
- 
-@@ -1017,6 +1026,7 @@ static struct cpu_defaults core_params =
- 		.p_gain_pct = 20,
- 		.d_gain_pct = 0,
- 		.i_gain_pct = 0,
-+		.boost_iowait = true,
- 	},
- 	.funcs = {
- 		.get_max = core_get_max_pstate,
-@@ -1025,7 +1035,7 @@ static struct cpu_defaults core_params =
- 		.get_turbo = core_get_turbo_pstate,
- 		.get_scaling = core_get_scaling,
- 		.get_val = core_get_val,
--		.get_target_pstate = get_target_pstate_use_performance,
-+		.get_target_pstate = get_target_pstate_default,
- 	},
- };
- 
-@@ -1139,6 +1149,7 @@ static void intel_pstate_set_min_pstate(
- 
- 	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
- 	cpu->pstate.current_pstate = pstate;
-+	cpu->sample.target = pstate;
- 	/*
- 	 * Generally, there is no guarantee that this code will always run on
- 	 * the CPU being updated, so force the register update to run on the
-@@ -1290,6 +1301,59 @@ static inline int32_t get_target_pstate_
- 	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, perf_scaled);
- }
- 
-+static inline int32_t get_target_pstate_default(struct cpudata *cpu)
-+{
-+	struct sample *sample = &cpu->sample;
-+	int32_t busy_frac, boost;
-+	int pstate, max_perf, min_perf;
-+	int64_t target;
-+
-+	pstate = limits->no_turbo || limits->turbo_disabled ?
-+			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
-+	pstate += pstate >> 2;
-+
-+	busy_frac = div_fp(sample->mperf, sample->tsc);
-+	sample->busy_scaled = busy_frac * 100;
-+
-+	boost = cpu->iowait_boost;
-+	cpu->iowait_boost >>= 1;
-+
-+	if (busy_frac < boost) {
-+		target = pstate * boost;
-+	} else {
-+		int32_t iir_gain;
-+
-+		target = pstate * busy_frac;
-+		/*
-+		 * Use an Infinite Impulse Response (IIR) filter:
-+		 *
-+		 *	new_output = old_output * (1 - gain) + input * gain
-+		 *
-+		 * where pstate * busy_frac is the input.
-+		 *
-+		 * The purpose of this is to dampen output oscillations that are
-+		 * otherwise possible and lead to increased energy consumption.
-+		 *
-+		 * Compute the filter gain as a function of the time since the
-+		 * last pass (delta_t) so as to reduce, or even eliminate, the
-+		 * influence of what might be a very stale old_output value.
-+		 *
-+		 * Take the raw gain as 1/8 and compute the effective gain as
-+		 *
-+		 *	iir_gain = 1/8 * delta_t / sampling_interval
-+		 */
-+		iir_gain = div_fp(sample->time - cpu->last_sample_time,
-+				  pid_params.sample_rate_ns << 3);
-+		if (iir_gain < int_tofp(1))
-+			target = sample->target * (int_tofp(1) - iir_gain) +
-+					mul_fp(target, iir_gain);
-+	}
-+	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
-+	target = clamp_val(target, int_tofp(min_perf), int_tofp(max_perf));
-+	sample->target = fp_toint(target + (1 << (FRAC_BITS-1)));
-+	return sample->target;
-+}
-+
- static inline void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
- {
- 	int max_perf, min_perf;
-@@ -1332,8 +1396,21 @@ static void intel_pstate_update_util(str
- 				     unsigned int flags)
- {
- 	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
--	u64 delta_ns = time - cpu->sample.time;
-+	u64 delta_ns;
-+
-+	if (pid_params.boost_iowait) {
-+		if (flags & SCHED_CPUFREQ_IOWAIT) {
-+			cpu->iowait_boost = int_tofp(1);
-+		} else if (cpu->iowait_boost) {
-+			/* Clear iowait_boost if the CPU may have been idle. */
-+			delta_ns = time - cpu->last_update;
-+			if (delta_ns > TICK_NSEC)
-+				cpu->iowait_boost = 0;
-+		}
-+		cpu->last_update = time;
-+	}
- 
-+	delta_ns = time - cpu->sample.time;
- 	if ((s64)delta_ns >= pid_params.sample_rate_ns) {
- 		bool sample_taken = intel_pstate_sample(cpu, time);
- 
+SGkgTW9yaW1vdG8tc2FuLA0KwqANClRoYW5rcyBmb3IgeW91ciBjb21tZW50cy4NCg0KPiA+ICtp
+bnQgX2xpbmVhcl90ZW1wX2NvbnZlcnRlcihzdHJ1Y3QgZXF1YXRpb25fY29lZnMgY29lZiwNCj4g
+PiArCQkJCQlpbnQgdGVtcF9jb2RlKQ0KPiA+ICt7DQo+ID4gKwlpbnQgdGVtcCwgdGVtcDEsIHRl
+bXAyOw0KPiA+ICsNCj4gPiArCXRlbXAxID0gTUNFTFNJVVMoKENPREVUU0QodGVtcF9jb2RlKSAt
+IGNvZWYuYjEpKSAvIGNvZWYuYTE7DQo+ID4gKwl0ZW1wMiA9IE1DRUxTSVVTKChDT0RFVFNEKHRl
+bXBfY29kZSkgLSBjb2VmLmIyKSkgLyBjb2VmLmEyOw0KPiA+ICsJdGVtcCA9ICh0ZW1wMSArIHRl
+bXAyKSAvIDI7DQo+ID4gKw0KPiA+ICsJcmV0dXJuIF9yb3VuZF90ZW1wKHRlbXApOw0KPiA+ICt9
+DQo+IA0KPiBZb3Ugd2FudCB0byBoYXZlICJzdGF0aWMiIGZ1bmN0aW9uIGhlcmUgPw0KDQpTb3Vu
+ZCBnb29kLiBXaWxsIHVwZGF0ZSBpbiB2Mi4NCg0KPiA+ICtzdGF0aWMgaW50IHJjYXJfZ2VuM190
+aGVybWFsX2dldF90ZW1wKHZvaWQgKmRldmRhdGEsIGludCAqdGVtcCkgew0KPiA+ICsJc3RydWN0
+IHJjYXJfZ2VuM190aGVybWFsX3ByaXYgKnByaXYgPSBkZXZkYXRhOw0KPiA+ICsJaW50IGN0ZW1w
+Ow0KPiA+ICsJdW5zaWduZWQgbG9uZyBmbGFnczsNCj4gPiArDQo+ID4gKwlyY2FyX2dlbjNfdGhl
+cm1hbF91cGRhdGVfdGVtcChwcml2KTsNCj4gPiArDQo+ID4gKwlzcGluX2xvY2tfaXJxc2F2ZSgm
+cHJpdi0+bG9jaywgZmxhZ3MpOw0KPiA+ICsJY3RlbXAgPSBfbGluZWFyX3RlbXBfY29udmVydGVy
+KHByaXYtPmNvZWYsIHByaXYtPmN0ZW1wKTsNCj4gPiArCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUo
+JnByaXYtPmxvY2ssIGZsYWdzKTsNCj4gDQo+IHVzaW5nIHBvaW50ZXIgb24gX2xpbmVhcl90ZW1w
+X2NvbnZlcnRlcigpIGlzIHJlYXNvbmFibGUgPw0KPiBlc3BlY2lhbGx5IGZvciBzdHJ1Y3QgZXF1
+YXRpb25fY29lZnMgY29lZg0KIA0KSSBmYWlsZWQgdG8gc2VlIHRoZSBiZW5lZml0IG9mIHRoZSBj
+aGFuZ2UuDQpDb3VsZCB5b3UgZWxhYm9yYXRlIHRoZSBwb2ludHMgPw0KZS5nIGJldHRlciBtZW1v
+cnkgcHJvdGVjdGlvbiwgZmFzdGVyIGJ5dGUtY29kZSBleGVjdXRpb24sIHJlYWRhYmlsaXR5LCBl
+dGMNCg0KDQo+ID4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgcmNhcl9nZW4zX3RoZXJtYWxfZGF0YSBy
+OGE3Nzk1X2RhdGEgPSB7DQo+ID4gKwkudGhlcm1hbF9pbml0ID0gcjhhNzc5NV90aGVybWFsX2lu
+aXQsIH07DQo+ID4gKw0KPiA+ICtzdGF0aWMgY29uc3Qgc3RydWN0IHJjYXJfZ2VuM190aGVybWFs
+X2RhdGEgcjhhNzc5Nl9kYXRhID0gew0KPiA+ICsJLnRoZXJtYWxfaW5pdCA9IHI4YTc3OTZfdGhl
+cm1hbF9pbml0LCB9Ow0KPiA+ICsNCj4gPiArc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2Vf
+aWQgcmNhcl9nZW4zX3RoZXJtYWxfZHRfaWRzW10gPSB7DQo+ID4gKwl7IC5jb21wYXRpYmxlID0g
+InJlbmVzYXMsdGhlcm1hbC1yOGE3Nzk1IiwgLmRhdGEgPSAmcjhhNzc5NV9kYXRhfSwNCj4gPiAr
+CXsgLmNvbXBhdGlibGUgPSAicmVuZXNhcyx0aGVybWFsLXI4YTc3OTYiLCAuZGF0YSA9ICZyOGE3
+Nzk2X2RhdGF9LA0KPiA+ICsJeyAuY29tcGF0aWJsZSA9ICJyZW5lc2FzLHJjYXItZ2VuMy10aGVy
+bWFsIiwgLmRhdGEgPSAmcjhhNzc5Nl9kYXRhfSwNCj4gPiArCXt9LA0KPiA+ICt9Ow0KPiA+ICtN
+T0RVTEVfREVWSUNFX1RBQkxFKG9mLCByY2FyX2dlbjNfdGhlcm1hbF9kdF9pZHMpOw0KPiANCj4g
+V2UgY2FuJ3QgaGF2ZSBnZW5lcmFsIGNhc2UgaW4gdGhpcyBjYXNlID8NCj4gInJlbmVzYXMscmNh
+ci1nZW4zLXRoZXJtYWwiIGlzIG5vdCBuZWVkZWQgSU1PLg0KPiBFc3BlY2lhbGx5IHRoaXMgZHJp
+dmVyIGRvZXNuJ3QgbmVlZCB0byBjYXJlIGFib3V0IGJhY2sgY29tcGF0aWJpbGl0eSB5ZXQuDQoN
+Ck9LLiBJIHNlZSB5b3VyIHBvaW50LiBXaWxsIHVwZGF0ZSBpbiBWMi4NCg0KPiA+ICtzdGF0aWMg
+aW50IHJjYXJfZ2VuM190aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYp
+IHsNCj4gPiArCXN0cnVjdCByY2FyX2dlbjNfdGhlcm1hbF9wcml2ICpwcml2Ow0KPiA+ICsJc3Ry
+dWN0IGRldmljZSAqZGV2ID0gJnBkZXYtPmRldjsNCj4gPiArCXN0cnVjdCByZXNvdXJjZSAqcmVz
+LCAqaXJxOw0KPiA+ICsJaW50IHJldCA9IC1FTk9ERVY7DQo+ID4gKwlpbnQgaWRsZTsNCj4gPiAr
+CXN0cnVjdCBkZXZpY2Vfbm9kZSAqdHpfbmQsICp0bXBfbmQ7DQo+ID4gKw0KPiA+ICsJcHJpdiA9
+IGRldm1fa3phbGxvYyhkZXYsIHNpemVvZigqcHJpdiksIEdGUF9LRVJORUwpOw0KPiA+ICsJaWYg
+KCFwcml2KQ0KPiA+ICsJCXJldHVybiAtRU5PTUVNOw0KPiA+ICsNCj4gPiArCXBsYXRmb3JtX3Nl
+dF9kcnZkYXRhKHBkZXYsIHByaXYpOw0KPiA+ICsNCj4gPiArCXByaXYtPmRldiA9IGRldjsNCj4g
+PiArDQo+ID4gKwlwbV9ydW50aW1lX2VuYWJsZShkZXYpOw0KPiA+ICsJcG1fcnVudGltZV9nZXRf
+c3luYyhkZXYpOw0KPiA+ICsNCj4gPiArCXByaXYtPmRhdGEgPSBvZl9kZXZpY2VfZ2V0X21hdGNo
+X2RhdGEoZGV2KTsNCj4gPiArCWlmICghcHJpdi0+ZGF0YSkNCj4gPiArCQlnb3RvIGVycm9yX3Vu
+cmVnaXN0ZXI7DQo+ID4gKw0KPiA+ICsJaXJxID0gcGxhdGZvcm1fZ2V0X3Jlc291cmNlKHBkZXYs
+IElPUkVTT1VSQ0VfSVJRLCAwKTsNCj4gPiArCXByaXYtPmlycSA9IDA7DQo+ID4gKwlpZiAoaXJx
+KSB7DQo+ID4gKwkJcHJpdi0+aXJxID0gMTsNCj4gPiArCQlmb3JfZWFjaF9ub2RlX3dpdGhfcHJv
+cGVydHkodHpfbmQsICJwb2xsaW5nLWRlbGF5Iikgew0KPiA+ICsJCQl0bXBfbmQgPSBvZl9wYXJz
+ZV9waGFuZGxlKHR6X25kLA0KPiA+ICsJCQkJCSJ0aGVybWFsLXNlbnNvcnMiLCAwKTsNCj4gPiAr
+CQkJaWYgKHRtcF9uZCAmJiAhc3RyY21wKHRtcF9uZC0+ZnVsbF9uYW1lLA0KPiA+ICsJCQkJCWRl
+di0+b2Zfbm9kZS0+ZnVsbF9uYW1lKSkgew0KPiA+ICsJCQkJb2ZfcHJvcGVydHlfcmVhZF91MzIo
+dHpfbmQsICJwb2xsaW5nLWRlbGF5IiwNCj4gPiArCQkJCQkmaWRsZSk7DQo+ID4gKwkJCQkoaWRs
+ZSA+IDApID8gKHByaXYtPmlycSA9IDApIDoNCj4gPiArCQkJCQkJKHByaXYtPmlycSA9IDEpOw0K
+PiA+ICsJCQkJYnJlYWs7DQo+ID4gKwkJCX0NCj4gDQo+IGl0IGlzIG5vdCByZWFkYWJsZSBmb3Ig
+bWUuDQo+IA0KPiAJaWYgKGlkbGUgPiAwKQ0KPiAJCXByaXYtPmlycSA9IDA7DQo+IAlicmVhazsN
+Cj4gDQo+IGlzIGVub3VnaCA/DQoNClVuZm9ydHVuYXRlbHksIGl0J3Mgbm90Lg0KVGhlIGNvZGUg
+dHJpZXMgdG8gY2hlY2sgInBvbGxpbmctZGVsYXkiIGluIG9yZGVyIHRvIHNlbGVjdCBwb2xsaW5n
+IG1vZGUgYW5kIGdldCBwb2xsaW5nIGR1cmF0aW9uIGZyb20gRFQuDQpTbywgeW91ciBwcm9wb3Nh
+bCBqdXN0IGRvIDFzdCBwYXJ0Lg0KDQo+IA0KPiA+ICsJcmVzID0gcGxhdGZvcm1fZ2V0X3Jlc291
+cmNlKHBkZXYsIElPUkVTT1VSQ0VfTUVNLCAwKTsNCj4gPiArCWlmICghcmVzKQ0KPiA+ICsJCWdv
+dG8gZXJyb3JfdW5yZWdpc3RlcjsNCj4gPiArDQo+ID4gKwlwcml2LT5iYXNlID0gZGV2bV9pb3Jl
+bWFwX3Jlc291cmNlKGRldiwgcmVzKTsNCj4gPiArCWlmIChJU19FUlIocHJpdi0+YmFzZSkpIHsN
+Cj4gPiArCQlyZXQgPSBQVFJfRVJSKHByaXYtPmJhc2UpOw0KPiA+ICsJCWdvdG8gZXJyb3JfdW5y
+ZWdpc3RlcjsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwlzcGluX2xvY2tfaW5pdCgmcHJpdi0+bG9j
+ayk7DQo+ID4gKwlJTklUX0RFTEFZRURfV09SSygmcHJpdi0+d29yaywgcmNhcl9nZW4zX3RoZXJt
+YWxfd29yayk7DQo+ID4gKw0KPiA+ICsJcHJpdi0+aWQgPSBvZl9hbGlhc19nZXRfaWQoZGV2LT5v
+Zl9ub2RlLCAidHNjIik7DQo+IA0KPiBEbyB3ZSByZWFsbHkgbmVlZCBhbGlhcyA/DQo+IGlzICJ0
+c2MiIGdvb2QgbmFtaW5nID8NCg0KSXQncyB0aGUgYWJicmV2aWF0aW9uIG9mIFRoZXJtYWwgc2Vu
+c29yIGNvbnRyb2xsZXIuDQpUaGUgdGVybSBoYXMgYmVlbiBkZXNjcmliZWQgaW4gSFcgbWFudWFs
+LiBUaGVyZWZvcmUsIEkgdGhpbmsgaXQncyAncmVhc29uYWJsZScgbmFtZS4NCg0KPiBIYXZpbmcg
+dGhpcyBleHBsYW5hdGlvbiBvbiBbMS80XSBwYXRjaCBkb2N1bWVudCBpcyB1c2VmdWwuDQo+IG9m
+X2FsaWFzX2dldF9pZCgpIGNhbiByZXR1cm4gLUVOT0RFViwgYnV0IG5vIGVycm9yIGNoZWNrID8N
+Cg0KR29vZCBwb2ludC4gV2lsbCBmaXggaW4gdjIuDQoNCj4gPiArCXByaXYtPnpvbmUgPSBkZXZt
+X3RoZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXIoZGV2LCAwLCBwcml2LA0KPiA+ICsJCQkJ
+JnJjYXJfZ2VuM190el9vZl9vcHMpOw0KPiA+ICsNCj4gPiArCWlmIChJU19FUlIocHJpdi0+em9u
+ZSkpIHsNCj4gPiArCQlkZXZfZXJyKGRldiwgIkNhbid0IHJlZ2lzdGVyIHRoZXJtYWwgem9uZVxu
+Iik7DQo+ID4gKwkJcmV0ID0gUFRSX0VSUihwcml2LT56b25lKTsNCj4gPiArCQlwcml2LT56b25l
+ID0gTlVMTDsNCj4gPiArCQlnb3RvIGVycm9yX3VucmVnaXN0ZXI7DQo+ID4gKwl9DQo+IA0KPiBJ
+dCBpcyBub3QgYmFkIG9wZXJhdGlvbiwgYnV0IG5vdCByZWFkYWJsZS4NCj4gSG93IGFib3V0IHRv
+IGhhdmUgbG9jYWwgc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKnpvbmUsIGxpa2UgdGhpcyA/
+DQoNCkl0J3MgZ29vZCBwb2ludC4NCkkgc2F3IHRoYXQgb3RoZXIgdGhlcm1hbCBkcml2ZXJzIGFs
+c28gZGlkIHRoYXQgd2F5Lg0KDQpUaGUgb3JpZ2luYWwgc291cmNlIGNvZGUgZm9sbG93cyBzYW1l
+IGNvZGUgZmxvdyBhcyByY2FyLXRoZXJtYWwgZHJpdmVyLg0KUGVyaGFwcywgd2UgY2FuIGNoYW5n
+ZSB0aGUgY29kZSBmbG93IGZvciBib3RoIGRyaXZlcnMsIGFzIHlvdXIgaWRlYS4NCg0KPiAJem9u
+ZSA9IGRldm1fdGhlcm1hbF96b25lX29mX3NlbnNvcl9yZWdpc3Rlcih4eHh4KTsNCj4gCWlmIChJ
+U19FUlIoem9uZSkpIHsNCj4gCQkuLi4NCj4gCQlyZXQgPSBQVFJfRVJSKHpvbmUpOw0KPiAJCWdv
+dG8gZXJyb3JfdW5yZWdpc3RlcjsNCj4gCX0NCj4gCXByaXYtPnpvbmUgPSB6b25lOw0KPiANCj4g
+PiArCXByaXYtPmRhdGEtPnRoZXJtYWxfaW5pdChwcml2KTsNCj4gDQo+IHRoZXJtYWxfaW5pdCgp
+IGhhcyByZXR1cm4gdmFsdWU7DQoNCk9LLiBXaWxsIGZpeCBpbiB2Mi4NCg0KPiANCj4gPiArCXJl
+dCA9IF9yZWFkX2Z1c2VfZmFjdG9yKHByaXYpOw0KPiA+ICsJaWYgKHJldCkNCj4gPiArCQlnb3Rv
+IGVycm9yX3VucmVnaXN0ZXI7DQo+ID4gKwlfbGluZWFyX2NvZWZmaWNpZW50X2NhbGN1bGF0aW9u
+KHByaXYpOw0KPiA+ICsJcmV0ID0gcmNhcl9nZW4zX3RoZXJtYWxfdXBkYXRlX3RlbXAocHJpdik7
+DQo+ID4gKw0KPiA+ICsJaWYgKHJldCA8IDApDQo+ID4gKwkJZ290byBlcnJvcl91bnJlZ2lzdGVy
+Ow0KPiANCj4gVGhpcyBpcyB2ZXJ5IHBpY2t5IGNvbW1lbnQgYWJvdXQgZW1wdHkgbGluZSwgYnV0
+IHRoaXMgaXMgcmVhZGFibGUgZm9yIG1lDQo+IA0KPiAJcmV0ID0gX3JlYWRfZnVzZV9mYWN0b3Io
+cHJpdik7DQo+IAlpZiAocmV0KQ0KPiAJCWdvdG8gZXJyb3JfdW5yZWdpc3RlcjsNCj4gDQo+IAlf
+bGluZWFyX2NvZWZmaWNpZW50X2NhbGN1bGF0aW9uKHByaXYpOw0KPiANCj4gCXJldCA9IHJjYXJf
+Z2VuM190aGVybWFsX3VwZGF0ZV90ZW1wKHByaXYpOw0KPiAJaWYgKHJldCA8IDApDQo+IAkJZ290
+byBlcnJvcl91bnJlZ2lzdGVyOw0KDQpPSy4gTmV3bGluZSBkb2VzIG5vdCBoYXJtIGFueXRoaW5n
+Lg0KV2lsbCBhZGQgaW4gdjIuDQoNClRoYW5rcy4NCg0KQmVzdCByZWdhcmRzLA0KS0hJRU0gTmd1
+eWVuDQo=
