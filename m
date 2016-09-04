@@ -1,49 +1,60 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: Re: [PATCH][RFC v5] timekeeping: Ignore the bogus sleep time if
- pm_trace is enabled
-Date: Sun, 4 Sep 2016 23:37:39 +0800
-Message-ID: <20160904153739.GA5400@sharon>
-References: <1472402439-1146-1-git-send-email-yu.c.chen@intel.com>
- <4130556.MNmyvLDyHH@vostro.rjw.lan>
- <alpine.DEB.2.20.1609022119160.5647@nanos>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC/RFT][PATCH 0/4] cpufreq / sched: iowait boost in intel_pstate and schedutil
+Date: Sun, 4 Sep 2016 08:54:49 -0700
+Message-ID: <000401d206c4$ad0db8c0$07292a40$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:18073 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751539AbcIDP3n (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 4 Sep 2016 11:29:43 -0400
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.20.1609022119160.5647@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+References: fzIkbye3fIF3xfzInbIYuf
+In-Reply-To: fzIkbye3fIF3xfzInbIYuf
+Content-Language: en-ca
+Sender: linux-kernel-owner@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM list' <linux-pm@vger.kernel.org>
+Cc: 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Ingo Molnar' <mingo@redhat.com>, 'Vincent Guittot' <vincent.guittot@linaro.org>, 'Morten Rasmussen' <morten.rasmussen@arm.com>, 'Juri Lelli' <Juri.Lelli@arm.com>, 'Dietmar Eggemann' <dietmar.eggemann@arm.com>, 'Steve Muckle' <smuckle@linaro.org>, 'Doug Smythies' <doug.smythies@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, x86@kernel.org, John Stultz <john.stultz@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, Xunlei Pang <xlpang@redhat.com>, "3.17+" <stable@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-Hi Thomas, Rafael,
-On Fri, Sep 02, 2016 at 09:26:51PM +0200, Thomas Gleixner wrote:
-> On Wed, 31 Aug 2016, Rafael J. Wysocki wrote:
-> > On Monday, August 29, 2016 12:40:39 AM Chen Yu wrote:
-> > > +
-> > > +	/*
-> > > +	 * Make rtc-based persistent clock unusable
-> > > +	 * if pm_trace is enabled, only take effect
-> > > +	 * for timekeeping_suspend/resume.
-> > > +	 */
-> > > +	if (pm_trace_is_enabled() &&
-> > > +	    x86_platform.get_wallclock == mach_get_cmos_time) {
-> > > +		ts->tv_sec = 0;
-> > > +		ts->tv_nsec = 0;
-> > > +	}
-> > 
-> > I'm not sure about this.  Looks hackish.
-> 
-> Indeed. Can't you just keep track that pm_trace fiddled with the cmos clock
-> and then discard the value either in the core or in mach_get_cmos_time()
-The previous version is more straightforward, since
-it ignored the bogus rtc in core. Would you please take
-a glance at it too, thanks:
-https://patchwork.kernel.org/patch/9287347/
+Hi Rafael,
 
-Thanks,
-Yu
+On 2016.09.02 17:57 Rafael J. Wysocki wrote:
+
+> This is a new version of the "iowait boost" series I posted a few weeks
+> ago.  Since the first two patches from that series have been reworked and
+> are in linux-next now, I've rebased this series on top of my linux-next
+> branch.
+>
+> In addition to that I took the Doug's feedback into account in the
+> intel_pstate patches [2-3/4].
+
+You got ahead of me a little.
+Recall the suggestion for the addition of some filtering was based
+on energy savings. And further that it might make sense to use
+average pstate as input to the filter (your new patch 3 of 4).
+In my testing (of the old patch set) I have been finding that some
+of those energy savings are being given back by the average pstate
+method, putting its value added into question.
+
+Switching to the new patch set, I made two kernels (based on 4.8-rc4
++ your pre-requisite 2 patches):
+rfc4: has all 4 patches.
+rfc2: has patches 1, 2, 4. (does not have the average pstate change)
+
+Using my SpecPower simulator test at 20% load I get:
+
+Unpatched (reference): ~5905 Joules
+rfc4: ~ 6232 Joules (+5.5%)
+rfc2: ~ 6075 Joules (+2.9%)
+Old rfc, no filter (restated): ~7197 Joules (+21.9%)
+Old rfc + old iir filter V2: ~5967 Joules (+1%)
+Old rfc + old ave pstate method: ~6275 Joules (+6.3%)
+
+Srinivas was getting considerably different, but still
+encouraging, numbers on the real SpecPower test beds.
+
+I would like to suggest/ask that those real SpecPower tests be done
+first so as to decide a preferred way forward. I'll also re-do my
+simulator tests over a longer time period and at some other loads
+(currently 20% is hard coded).
+
+... Doug
