@@ -1,43 +1,63 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] power: avoid calling cancel_delayed_work_sync() during
- early boot
-Date: Mon, 5 Sep 2016 14:58:29 +0200
-Message-ID: <CAJZ5v0jyZ2=T-F13dFuzX8bZrnnhVBkkvKuZTkfVpsTf83U=dg@mail.gmail.com>
-References: <d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com>
- <20160901184503.GD12660@htj.duckdns.org> <6b2fc72b-f99f-f7f1-3221-093943de0950@asrmicro.com>
- <20160902135007.GF12660@htj.duckdns.org> <20160902142102.GG12660@htj.duckdns.org>
- <c8aca802-e681-8bc3-4ebc-e86cd9b7e2f4@asrmicro.com> <20160905123813.GB20784@mtj.duckdns.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [Thermal] Need confirmation for the pending thermal soc patches
+Date: Mon, 5 Sep 2016 06:16:01 -0700
+Message-ID: <20160905131600.GA24253@localhost.localdomain>
+References: <1471788540.2188.19.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:34647 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932119AbcIEM6b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Sep 2016 08:58:31 -0400
-In-Reply-To: <20160905123813.GB20784@mtj.duckdns.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1471788540.2188.19.camel@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Wang Wilbur <wilburwang@asrmicro.com>, Wu Gang <gangwu@asrmicro.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, qiaozhou <qiaozhou@asrmicro.com>
 
-On Mon, Sep 5, 2016 at 2:38 PM, Tejun Heo <tj@kernel.org> wrote:
-> of_clk_init() ends up calling into pm_qos_update_request() very early
-> during boot where irq is expected to stay disabled.
-> pm_qos_update_request() uses cancel_delayed_work_sync() which
-> correctly assumes that irq is enabled on invocation and
-> unconditionally disables and re-enables it.
->
-> Gate cancel_delayed_work_sync() invocation with kevented_up() to avoid
-> enabling irq unexpectedly during early boot.
->
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Reported-and-tested-by: Qiao Zhou <qiaozhou@asrmicro.com>
-> Link: http://lkml.kernel.org/r/d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com
-> ---
->
-> Rafael, can you please route this patch?
+Hello Rui,
 
-I will.
+On Sun, Aug 21, 2016 at 10:09:00PM +0800, Zhang Rui wrote:
+> Hi,
+> 
+> As Eduardo is quite busy recently, I will take all the thermal soc
+> driver changes this time.
 
-Thanks,
-Rafael
+Thanks for helping me out. I am slowing coming back to upstream
+activities. I have refreshed my branches, removing the rework and
+locking patches works out of the integration branches so we do not have
+merge conflicts or further delays on outstanding patches.
+
+> Currently, I have cherry picked all the patches that Eduardo has
+> already applied in thermal-soc tree and reviewed all the pending
+
+Great! This makes things easier for me.
+
+> patches in patchwork. Now, there are four patches queued for next -rc (
+> https://git.kernel.org/cgit/linux/kernel/git/rzhang/linux.git/log/?h=fo
+> r-rc),
+
+I checked this branch. Can you please cherry-pick the following patch
+for rc:
+https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git/commit/?h=linus&id=4ba16f1256bd13efa2f3179ff1f4ab16a4ad3c7f
+
+?
+
+
+> and 23 thermal soc patches queued for next merge window (https:/
+> /git.kernel.org/cgit/linux/kernel/git/rzhang/linux.git/log/?h=release).
+> 
+> If you think some soc fixes that are urgent and should be in 4.8
+> instead of 4.9, please let me know.
+> If there are some patches that are neither in thermal -next tree(https:
+> //git.kernel.org/cgit/linux/kernel/git/rzhang/linux.git/log/?h=next),
+> nor have my response, please let me know, in case I missed some. :)
+
+
+The above -next branch has all my outstanding material.
+
+Given that you have taken care of all thermal-soc patches for the coming
+merging window, I will work on the sysfs rework and locking patches
+again. I will be sending them in smaller chunks this time.
+
+> 
+> thanks,
+> rui
