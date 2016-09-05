@@ -1,97 +1,140 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v7 3/8] arm, dts: add TC2 cpu capacity-dmips-mhz information
-Date: Mon,  5 Sep 2016 15:22:47 +0100
-Message-ID: <1473085372-2840-4-git-send-email-juri.lelli@arm.com>
+Subject: [PATCH v7 8/8] arm64: add sysfs cpu_capacity attribute
+Date: Mon,  5 Sep 2016 15:22:52 +0100
+Message-ID: <1473085372-2840-9-git-send-email-juri.lelli@arm.com>
 References: <1473085372-2840-1-git-send-email-juri.lelli@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1473085372-2840-1-git-send-email-juri.lelli@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, juri.lelli@arm.com, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, broonie@kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, will.deacon@arm.com, dietmar.eggemann@arm.com, robh+dt@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, Liviu Dudau <liviu.dudau@arm.com>, Kumar Gala <galak@codeaurora.org>, morten.rasmussen@arm.com, linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add TC2 cpu capacity information.
+Add a sysfs cpu_capacity attribute with which it is possible to read and
+write (thus over-writing default values) CPUs capacity. This might be
+useful in situations where values needs changing after boot.
 
-Cc: Liviu Dudau <liviu.dudau@arm.com>
+The new attribute shows up as:
+
+ /sys/devices/system/cpu/cpu*/cpu_capacity
+
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Mark Brown <broonie@kernel.org>
 Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Kumar Gala <galak@codeaurora.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: devicetree@vger.kernel.org
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
 
-Changes from v1:
-  - capacity-scale removed
-
-Changes from v4:
-  - binding changed to capacity-dmips-mhz
-
-Changes from v6:
-  - s/binding// in changelog
+Changes from v5:
+  - add mutex to protect cpu_scale (as pointed out by Morten off-line)
 ---
- arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm64/kernel/topology.c | 73 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 73 insertions(+)
 
-diff --git a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-index 0205c97efdef..45d08cc37b01 100644
---- a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-+++ b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
-@@ -39,6 +39,7 @@
- 			reg = <0>;
- 			cci-control-port = <&cci_control1>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
-+			capacity-dmips-mhz = <1024>;
- 		};
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index b75b0ba2e113..cff34cc858b7 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -26,6 +26,7 @@
+ #include <asm/topology.h>
  
- 		cpu1: cpu@1 {
-@@ -47,6 +48,7 @@
- 			reg = <1>;
- 			cci-control-port = <&cci_control1>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
-+			capacity-dmips-mhz = <1024>;
- 		};
+ static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
++static DEFINE_MUTEX(cpu_scale_mutex);
  
- 		cpu2: cpu@2 {
-@@ -55,6 +57,7 @@
- 			reg = <0x100>;
- 			cci-control-port = <&cci_control2>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
-+			capacity-dmips-mhz = <516>;
- 		};
+ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+ {
+@@ -37,6 +38,76 @@ static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
+ 	per_cpu(cpu_scale, cpu) = capacity;
+ }
  
- 		cpu3: cpu@3 {
-@@ -63,6 +66,7 @@
- 			reg = <0x101>;
- 			cci-control-port = <&cci_control2>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
-+			capacity-dmips-mhz = <516>;
- 		};
++#ifdef CONFIG_PROC_SYSCTL
++#include <asm/cpu.h>
++#include <linux/string.h>
++static ssize_t show_cpu_capacity(struct device *dev,
++				 struct device_attribute *attr,
++				 char *buf)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, dev);
++	ssize_t rc;
++	int cpunum = cpu->dev.id;
++	unsigned long capacity = arch_scale_cpu_capacity(NULL, cpunum);
++
++	rc = sprintf(buf, "%lu\n", capacity);
++
++	return rc;
++}
++
++static ssize_t store_cpu_capacity(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf,
++				  size_t count)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, dev);
++	int this_cpu = cpu->dev.id, i;
++	unsigned long new_capacity;
++	ssize_t ret;
++
++	if (count) {
++		char *p = (char *) buf;
++
++		ret = kstrtoul(p, 0, &new_capacity);
++		if (ret)
++			return ret;
++		if (new_capacity > SCHED_CAPACITY_SCALE)
++			return -EINVAL;
++
++		mutex_lock(&cpu_scale_mutex);
++		for_each_cpu(i, &cpu_topology[this_cpu].core_sibling)
++			set_capacity_scale(i, new_capacity);
++		mutex_unlock(&cpu_scale_mutex);
++	}
++
++	return count;
++}
++
++static DEVICE_ATTR(cpu_capacity,
++		   0644,
++		   show_cpu_capacity,
++		   store_cpu_capacity);
++
++static int register_cpu_capacity_sysctl(void)
++{
++	int i;
++	struct device *cpu;
++
++	for_each_possible_cpu(i) {
++		cpu = get_cpu_device(i);
++		if (!cpu) {
++			pr_err("%s: too early to get CPU%d device!\n",
++			       __func__, i);
++			continue;
++		}
++		device_create_file(cpu, &dev_attr_cpu_capacity);
++	}
++
++	return 0;
++}
++late_initcall(register_cpu_capacity_sysctl);
++#endif
++
+ static u32 capacity_scale;
+ static u32 *raw_capacity;
+ static bool cap_parsing_failed;
+@@ -87,6 +158,7 @@ static void normalize_cpu_capacity(void)
+ 		return;
  
- 		cpu4: cpu@4 {
-@@ -71,6 +75,7 @@
- 			reg = <0x102>;
- 			cci-control-port = <&cci_control2>;
- 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
-+			capacity-dmips-mhz = <516>;
- 		};
+ 	pr_debug("cpu_capacity: capacity_scale=%u\n", capacity_scale);
++	mutex_lock(&cpu_scale_mutex);
+ 	for_each_possible_cpu(cpu) {
+ 		pr_debug("cpu_capacity: cpu=%d raw_capacity=%u\n",
+ 			 cpu, raw_capacity[cpu]);
+@@ -96,6 +168,7 @@ static void normalize_cpu_capacity(void)
+ 		pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
+ 			cpu, arch_scale_cpu_capacity(NULL, cpu));
+ 	}
++	mutex_unlock(&cpu_scale_mutex);
+ }
  
- 		idle-states {
+ #ifdef CONFIG_CPU_FREQ
 -- 
 2.7.0
