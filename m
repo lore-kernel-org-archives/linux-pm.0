@@ -1,70 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH 0/4] cpufreq / sched: iowait boost in intel_pstate and schedutil
-Date: Mon, 05 Sep 2016 01:54:40 +0200
-Message-ID: <21373989.WOAuNhKX1x@vostro.rjw.lan>
-References: <000401d206c4$ad0db8c0$07292a40$@net>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v9 1/5] Documentation: bindings: add dt documentation for
+ dfi controller
+Date: Mon, 05 Sep 2016 09:31:12 +0900
+Message-ID: <57CCBCD0.9030607@samsung.com>
+References: <1472850525-25273-1-git-send-email-hl@rock-chips.com>
+ <CGME20160902210852epcas1p412fe3480676c179ce68081fd6cea7996@epcas1p4.samsung.com>
+ <1472850525-25273-2-git-send-email-hl@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57427 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1754156AbcIDXsq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 4 Sep 2016 19:48:46 -0400
-In-Reply-To: <000401d206c4$ad0db8c0$07292a40$@net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1472850525-25273-2-git-send-email-hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org
+Cc: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Linux PM list' <linux-pm@vger.kernel.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Ingo Molnar' <mingo@redhat.com>, 'Vincent Guittot' <vincent.guittot@linaro.org>, 'Morten Rasmussen' <morten.rasmussen@arm.com>, 'Juri Lelli' <Juri.Lelli@arm.com>, 'Dietmar Eggemann' <dietmar.eggemann@arm.com>, 'Steve Muckle' <smuckle@linaro.org>, 'Doug Smythies' <doug.smythies@gmail.com>
 
-On Sunday, September 04, 2016 08:54:49 AM Doug Smythies wrote:
-> Hi Rafael,
-> 
-> On 2016.09.02 17:57 Rafael J. Wysocki wrote:
-> 
-> > This is a new version of the "iowait boost" series I posted a few weeks
-> > ago.  Since the first two patches from that series have been reworked and
-> > are in linux-next now, I've rebased this series on top of my linux-next
-> > branch.
-> >
-> > In addition to that I took the Doug's feedback into account in the
-> > intel_pstate patches [2-3/4].
-> 
-> You got ahead of me a little.
-> Recall the suggestion for the addition of some filtering was based
-> on energy savings. And further that it might make sense to use
-> average pstate as input to the filter (your new patch 3 of 4).
-> In my testing (of the old patch set) I have been finding that some
-> of those energy savings are being given back by the average pstate
-> method, putting its value added into question.
-> 
-> Switching to the new patch set, I made two kernels (based on 4.8-rc4
-> + your pre-requisite 2 patches):
-> rfc4: has all 4 patches.
-> rfc2: has patches 1, 2, 4. (does not have the average pstate change)
-> 
-> Using my SpecPower simulator test at 20% load I get:
-> 
-> Unpatched (reference): ~5905 Joules
-> rfc4: ~ 6232 Joules (+5.5%)
-> rfc2: ~ 6075 Joules (+2.9%)
-> Old rfc, no filter (restated): ~7197 Joules (+21.9%)
-> Old rfc + old iir filter V2: ~5967 Joules (+1%)
-> Old rfc + old ave pstate method: ~6275 Joules (+6.3%)
-> 
-> Srinivas was getting considerably different, but still
-> encouraging, numbers on the real SpecPower test beds.
-> 
-> I would like to suggest/ask that those real SpecPower tests be done
-> first so as to decide a preferred way forward. I'll also re-do my
-> simulator tests over a longer time period and at some other loads
-> (currently 20% is hard coded).
+Hi Lin,
 
-The reason I made patch [3/4] separate was to make it easier to test without
-that change.  That is, apply [1-2/4] and see what difference it makes.
+Looks good to me.
 
-I'd like to see the results from that if poss.
+Acked-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 
-Thanks,
-Rafael
+Best Regards,
+Chanwoo Choi
 
+On 2016년 09월 03일 06:08, Lin Huang wrote:
+> This patch adds the documentation for rockchip dfi devfreq-event driver.
+> 
+> Signed-off-by: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+> ---
+> Changes in v9:
+> - reorder compatible and reg
+> 
+> Changes in v8:
+> - delete a unuse blank line
+> 
+> Changes in v7:
+> - None
+> 
+> Changes in v6:
+> - None
+> 
+> Changes in v5:
+> - None
+> 
+> Changes in v4:
+> - None
+> 
+> Changes in v3:
+> - None
+> 
+> Changes in v2:
+> - None 
+> 
+> Changes in v1:
+> - None
+> 
+>  .../bindings/devfreq/event/rockchip-dfi.txt           | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt b/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+> new file mode 100644
+> index 0000000..f223313
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/devfreq/event/rockchip-dfi.txt
+> @@ -0,0 +1,19 @@
+> +
+> +* Rockchip rk3399 DFI device
+> +
+> +Required properties:
+> +- compatible: Must be "rockchip,rk3399-dfi".
+> +- reg: physical base address of each DFI and length of memory mapped region
+> +- rockchip,pmu: phandle to the syscon managing the "pmu general register files"
+> +- clocks: phandles for clock specified in "clock-names" property
+> +- clock-names : the name of clock used by the DFI, must be "pclk_ddr_mon";
+> +
+> +Example:
+> +	dfi: dfi@0xff630000 {
+> +		compatible = "rockchip,rk3399-dfi";
+> +		reg = <0x00 0xff630000 0x00 0x4000>;
+> +		rockchip,pmu = <&pmugrf>;
+> +		clocks = <&cru PCLK_DDR_MON>;
+> +		clock-names = "pclk_ddr_mon";
+> +		status = "disabled";
+> +	};
+> 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
