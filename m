@@ -1,109 +1,160 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v7 5/8] arm64, dts: add Juno cpu capacity-dmips-mhz information
-Date: Mon,  5 Sep 2016 15:22:49 +0100
-Message-ID: <1473085372-2840-6-git-send-email-juri.lelli@arm.com>
-References: <1473085372-2840-1-git-send-email-juri.lelli@arm.com>
+From: Jonathan Cameron <jic23@kernel.org>
+Subject: Re: [PATCH v4 3/3] iio: adc: add support for Allwinner SoCs ADC
+Date: Mon, 5 Sep 2016 20:51:17 +0100
+Message-ID: <f7d115a6-29e3-6157-60a1-0dd47cef79e3@kernel.org>
+References: <1472738705-20145-1-git-send-email-quentin.schulz@free-electrons.com>
+ <1472738705-20145-4-git-send-email-quentin.schulz@free-electrons.com>
+ <272fb672-602c-1757-be9f-eadf928b330c@kernel.org>
+ <f085ee35-889f-58e3-15d6-e6f3c0d15a92@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1473085372-2840-1-git-send-email-juri.lelli@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-kernel@vger.kernel.org
-Cc: mark.rutland@arm.com, Jon Medhurst <tixy@linaro.org>, peterz@infradead.org, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, juri.lelli@arm.com, Ian Campbell <ijc+devicetree@hellion.org.uk>, devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Liviu Dudau <Liviu.Dudau@arm.com>, Kumar Gala <galak@codeaurora.org>, broonie@kernel.org, linux@arm.linux.org.uk, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, robh+dt@kernel.org, Arnd Bergmann <arnd@arndb.de>, sudeep.holla@arm.com, Olof Johansson <olof@lixom.net>, Robin Murphy <robin.murphy@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from saturn.retrosnub.co.uk ([178.18.118.26]:57926 "EHLO
+        saturn.retrosnub.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933623AbcIETvX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Sep 2016 15:51:23 -0400
+In-Reply-To: <f085ee35-889f-58e3-15d6-e6f3c0d15a92@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>, jdelvare@suse.com, Guenter Roeck <linux@roeck-us.net>, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, wens@csie.org, lee.jones@linaro.org
+Cc: thomas.petazzoni@free-electrons.com, antoine.tenart@free-electrons.com, linux-kernel@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-iio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm <linux-pm@vger.kernel.org>
 
-Add Juno cpu capacity-dmips-mhz information.
+On 05/09/16 07:29, Quentin Schulz wrote:
+> On 04/09/2016 16:35, Jonathan Cameron wrote:
+>> On 01/09/16 15:05, Quentin Schulz wrote:
+>>> The Allwinner SoCs all have an ADC that can also act as a touchscreen
+>>> controller and a thermal sensor. This patch adds the ADC driver which is
+>>> based on the MFD for the same SoCs ADC.
+>>>
+>>> This also registers the thermal adc channel in the iio map array so
+>>> iio_hwmon could use it without modifying the Device Tree. This registers
+>>> the driver in the thermal framework.
+>>>
+>>> This driver probes on three different platform_device_id to take into
+>>> account slight differences (registers bit and temperature computation)
+>>> between Allwinner SoCs ADCs.
+>>>
+>>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+>> One utterly trivial point about unrolling code ordering inline.
+>>
+>> Other than the bit about patch 1 I'm basically happy with this..
+> 
+> ACK. Will revert this patch in v5. Thanks.
+> 
+>> However I would like some input (i.e. an Ack) from thermal given this
+>> sets up a thermal zone.
+>>
+>> Zhang or Eduardo, could you take a quick look at this and confirm you
+>> are happy with it?
+>>
+>> Thanks,
+>>
+>> Jonathan
+> [...]
+>>> +
+>>> +err_map:
+>>> +	iio_map_array_unregister(indio_dev);
+>>> +
+>>> +err_fifo_irq:
+>>> +	/* Disable FIFO_DATA_PENDING interrupt on hardware side. */
+>>> +	regmap_update_bits(info->regmap, SUN4I_GPADC_INT_FIFOC,
+>>> +			   SUN4I_GPADC_INT_FIFOC_TP_DATA_IRQ_EN,
+>>> +			   0);
+>>> +
+>>> +err_temp_irq:
+>>> +	/* Disable TEMP_DATA_PENDING interrupt on hardware side. */
+>>> +	regmap_update_bits(info->regmap, SUN4I_GPADC_INT_FIFOC,
+>>> +			   SUN4I_GPADC_INT_FIFOC_TEMP_IRQ_EN,
+>>> +			   0);
+>>> +
+>>> +err:
+>>> +	pm_runtime_put(&pdev->dev);
+>>> +	pm_runtime_disable(&pdev->dev);
+>>> +
+>>> +	return ret;
+>>> +}
+>>> +
+>>> +static int sun4i_gpadc_remove(struct platform_device *pdev)
+>>> +{
+>>> +	struct sun4i_gpadc_dev *info;
+>>> +	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
+>>> +
+>>> +	info = iio_priv(indio_dev);
+>>> +	iio_device_unregister(indio_dev);
+>>> +	iio_map_array_unregister(indio_dev);
+>>> +	pm_runtime_put(&pdev->dev);
+>>> +	pm_runtime_disable(&pdev->dev);
+>> Its really minor but in the interests of 'obviously correct' making
+>> review easy I'd rather everything in the remove was in the reverse order
+>> of probe (and hence the same as the error path in probe for most of it).
+>>
+>> That would put the pm_runtime stuff last I think..
+>>
+>> If you weren't rerolling anyway over patch 1 I'd probably have just let
+>> this go, but might as well make this trivial change as well.
+>>
+> 
+> I'm going with the following order:
+> pm_runtime_put
+> pm_runtime_disable
+> regmap_update_bits
+> iio_map_array_unregister
+> iio_device_unregister
+> 
+> Is that okay? (I don't really know which one of iio_map_array_unregister
+> or iio_device_unregister to put first, if it matters in any way).
+Unless we have a really complex race condition involving a client driver
+coming up just as the provider is unregistered I doubt it matters.
 
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Kumar Gala <galak@codeaurora.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Liviu Dudau <Liviu.Dudau@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Jon Medhurst <tixy@linaro.org>
-Cc: Olof Johansson <olof@lixom.net>
-Cc: Robin Murphy <robin.murphy@arm.com>
-Cc: devicetree@vger.kernel.org
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-Signed-off-by: Juri Lelli <juri.lelli@arm.com>
----
+At some point we should probably chase down any paths through that
+with some carefully crafted tests but it's in the seriously unlikely
+category!
 
-Changes from v1:
-  - capacity-scale removed
+Jonathan
+> 
+> Thanks!
+> Quentin
+>>
+>>> +	/*
+>>> +	 * Disable TEMP_DATA_PENDING and FIFO_DATA_PENDING interrupts on
+>>> +	 * hardware side.
+>>> +	 */
+>>> +	regmap_update_bits(info->regmap, SUN4I_GPADC_INT_FIFOC,
+>>> +			   SUN4I_GPADC_INT_FIFOC_TEMP_IRQ_EN |
+>>> +				SUN4I_GPADC_INT_FIFOC_TP_DATA_IRQ_EN,
+>>> +			   0);
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +
+>>> +static const struct platform_device_id sun4i_gpadc_id[] = {
+>>> +	{ "sun4i-a10-gpadc-iio", (kernel_ulong_t)&sun4i_gpadc_soc_specific },
+>>> +	{ "sun5i-a13-gpadc-iio", (kernel_ulong_t)&sun5i_gpadc_soc_specific },
+>>> +	{ "sun6i-a31-gpadc-iio", (kernel_ulong_t)&sun6i_gpadc_soc_specific },
+>>> +	{ /* sentinel */ },
+>>> +};
+>>> +
+>>> +static struct platform_driver sun4i_gpadc_driver = {
+>>> +	.driver = {
+>>> +		.name = "sun4i-gpadc-iio",
+>>> +		.pm = &sun4i_gpadc_pm_ops,
+>>> +	},
+>>> +	.id_table = sun4i_gpadc_id,
+>>> +	.probe = sun4i_gpadc_probe,
+>>> +	.remove = sun4i_gpadc_remove,
+>>> +};
+>>> +
+>>> +module_platform_driver(sun4i_gpadc_driver);
+>>> +
+>>> +MODULE_DESCRIPTION("ADC driver for sunxi platforms");
+>>> +MODULE_AUTHOR("Quentin Schulz <quentin.schulz@free-electrons.com>");
+>>> +MODULE_LICENSE("GPL v2");
+>>>
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-iio" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Changes from v4:
-  - binding changed to capacity-dmips-mhz
-
-Changes from v6:
-  - s/bindings// in changelog
----
- arch/arm64/boot/dts/arm/juno.dts | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
-index a7270eff6939..6b4135e9cfe5 100644
---- a/arch/arm64/boot/dts/arm/juno.dts
-+++ b/arch/arm64/boot/dts/arm/juno.dts
-@@ -90,6 +90,7 @@
- 			next-level-cache = <&A57_L2>;
- 			clocks = <&scpi_dvfs 0>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <1024>;
- 		};
- 
- 		A57_1: cpu@1 {
-@@ -100,6 +101,7 @@
- 			next-level-cache = <&A57_L2>;
- 			clocks = <&scpi_dvfs 0>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <1024>;
- 		};
- 
- 		A53_0: cpu@100 {
-@@ -110,6 +112,7 @@
- 			next-level-cache = <&A53_L2>;
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <578>;
- 		};
- 
- 		A53_1: cpu@101 {
-@@ -120,6 +123,7 @@
- 			next-level-cache = <&A53_L2>;
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <578>;
- 		};
- 
- 		A53_2: cpu@102 {
-@@ -130,6 +134,7 @@
- 			next-level-cache = <&A53_L2>;
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <578>;
- 		};
- 
- 		A53_3: cpu@103 {
-@@ -140,6 +145,7 @@
- 			next-level-cache = <&A53_L2>;
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <578>;
- 		};
- 
- 		A57_L2: l2-cache0 {
--- 
-2.7.0
