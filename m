@@ -1,281 +1,67 @@
 From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v9 3/5] Documentation: bindings: add dt documentation for
- rk3399 dmc
-Date: Mon, 05 Sep 2016 09:38:24 +0900
-Message-ID: <57CCBE80.8060906@samsung.com>
-References: <1472850525-25273-1-git-send-email-hl@rock-chips.com>
- <CGME20160902210855epcas1p3b0a0db9c3e5d962024d6d10bce5262be@epcas1p3.samsung.com>
- <1472850525-25273-4-git-send-email-hl@rock-chips.com>
+Subject: Re: [PATCH 4/5] PM / devfreq: rockchip: add devfreq driver for rk3399
+ dmc
+Date: Mon, 05 Sep 2016 09:49:19 +0900
+Message-ID: <57CCC10F.30704@samsung.com>
+References: <CGME20160902012350epcas1p2045d076c7645d3880e95633d66aba0ae@epcas1p2.samsung.com>
+ <201609020953.NltUDqVg%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1472850525-25273-4-git-send-email-hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org
-Cc: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-reply-to: <201609020953.NltUDqVg%fengguang.wu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: kbuild test robot <lkp-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kbuild-all-JC7UmRfGjtg@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lin,
-
-Looks good to me. I add one comment on below.
-
-If you modify it according to my comment, feel free to add my tag.
-Reviewed-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-
-On 2016년 09월 03일 06:08, Lin Huang wrote:
-> This patch adds the documentation for rockchip rk3399 dmc driver.
-> 
-> Signed-off-by: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-> ---
-> Changes in v9:
-> - add ddr timing property to node
-> 
-> Changes in v8:
-> - add ddr timing properties
-> 
-> Changes in v7:
-> - None
-> 
-> Changes in v6:
-> -Add more detail in Documentation
-> 
-> Changes in v5:
-> -None
-> 
-> Changes in v4:
-> -None
-> 
-> Changes in v3:
-> -None
-> 
-> Changes in v2:
-> -None 
-> 
-> Changes in v1:
-> -None
->  .../devicetree/bindings/devfreq/rk3399_dmc.txt     | 202 +++++++++++++++++++++
->  1 file changed, 202 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-> new file mode 100644
-> index 0000000..f187c8fa
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-> @@ -0,0 +1,202 @@
-> +* Rockchip rk3399 DMC(Dynamic Memory Controller) device
-> +
-> +Required properties:
-> +- compatible:		 Must be "rockchip,rk3399-dmc".
-> +- devfreq-events:	 Node to get DDR loading, Refer to
-> +			 Documentation/devicetree/bindings/devfreq/
-> +			 rockchip-dfi.txt
-> +- interrupts:		 The interrupt number to the CPU. The interrupt
-> +			 specifier format depends on the interrupt controller.
-> +			 It should be DCF interrupts, when DDR dvfs finish,
-> +			 it will happen.
-> +- clocks:		 Phandles for clock specified in "clock-names" property
-> +- clock-names :		 The name of clock used by the DFI, must be
-> +			 "pclk_ddr_mon";
-> +- operating-points-v2:	 Refer to Documentation/devicetree/bindings/power/opp.txt
-> +			 for details.
-> +- center-supply:	 DMC supply node.
-> +- status:		 Marks the node enabled/disabled.
-> +
-> +Following properties are ddr timing:
-> +
-> +- dram_speed_bin :	 Value is defined at include/dt-bindings/clock/ddr.h,
-> +			 it select ddr3 cl-trp-trcd type, default value
-> +			 "DDR3_DEFAULT".it must selected according to
-> +			 "Speed Bin" in ddr3 datasheet, DO NOT use smaller
-> +			 "Speed Bin" than ddr3 exactly is.
-> +
-> +- pd_idle :		 Config the PD_IDLE value, defined the power-down idle
-> +			 period, memories are places into power-down mode if
-> +			 bus is idle for PD_IDLE DFI clocks.
-> +
-> +- sr_idle :		 Configure the SR_IDLE value, defined the selfrefresh
-> +			 idle period, memories are places into self-refresh
-> +			 mode if bus is idle for SR_IDLE*1024 DFI clocks
-> +			 (DFI clocks freq is half of dram's clocks), defaule
-> +			 value is "0".
-> +
-> +- sr_mc_gate_idle :	 Defined the self-refresh with memory and controller
-> +			 clock gating idle period, memories are places into
-> +			 self-refresh mode and memory controller clock arg
-> +			 gating if bus is idle for sr_mc_gate_idle*1024 DFI
-> +			 clocks.
-> +
-> +- srpd_lite_idle :	 Defined the self-refresh power down idle period,
-> +			 memories are places into self-refresh power down
-> +			 mode if bus is idle for srpd_lite_idle*1024 DFI
-> +			 clocks. This parameter is for LPDDR4 only.
-> +
-> +- standby_idle :	 Defined the standby idle period, memories are places
-> +			 into self-refresh than controller, pi, phy and dram
-> +			 clock will gating if bus is idle for
-> +			 standby_idle * DFI clocks.
-> +
-> +- dram_dll_disb_freq :	 It's defined the DDR3 dll bypass frequency in MHz
-> +			 when ddr freq less than DRAM_DLL_DISB_FREQ, ddr3
-> +			 dll will bypssed note: if dll was bypassed, the
-> +			 odt also stop working.
-> +
-> +- phy_dll_disb_freq :	 Defined the PHY dll bypass frequency in MHz (Mega Hz),
-> +			 when ddr freq less than DRAM_DLL_DISB_FREQ, phy dll
-> +			 will bypssed. note: phy dll and phy odt are
-> +			 independent
-> +
-> +- ddr3_odt_disb_freq :	 When dram type is DDR3, this parameter defined the
-> +			 odt disable frequency in MHz (Mega Hz), when ddr
-> +			 frequency less then ddr3_odt_disb_freq, the odt
-> +			 on dram side and controller side are both disabled.
-> +
-> +- ddr3_drv :		 When dram type is DDR3, this parameter define the
-> +			 dram side driver stength in ohm, default value is
-> +			 DDR3_DS_40ohm.
-> +
-> +- ddr3_odt :		 When dram type is DDR3, this parameter define the
-> +			 dram side ODT stength in ohm, default value is
-> +			 DDR3_ODT_120ohm.
-> +
-> +- phy_ddr3_ca_drv :	 When dram type is DDR3, this parameter define the phy
-> +			 side CA line(incluing command line, address line and
-> +			 clock line) driver strength. default value is
-> +			 PHY_DRV_ODT_40.
-> +
-> +- phy_ddr3_dq_drv :	 When dram type is DDR3, this parameter define the phy
-> +			 side DQ line(incluing DQS/DQ/DM line) driver strength.
-> +			 default value is PHY_DRV_ODT_40.
-> +
-> +- phy_ddr3_odt : 	 When dram type is DDR3, this parameter define the
-> +			 phy side odt strength, default value is
-> +			 PHY_DRV_ODT_240.
-> +
-> +- lpddr3_odt_disb_freq : When dram type is LPDDR3, this parameter defined then
-> +			 odt disable frequency in MHz (Mega Hz), when ddr
-> +			 frequency less then ddr3_odt_disb_freq, the odt on
-> +			 dram side and controller side are both disabled.
-> +
-> +- lpddr3_drv :		 When dram type is LPDDR3, this parameter define the
-> +			 dram side driver stength in ohm, default value is
-> +			 LP3_DS_34ohm.
-> +
-> +- lpddr3_odt :		 When dram type is LPDDR3, this parameter define the
-> +			 dram side ODT stength in ohm, default value is
-> +			 LP3_ODT_240ohm.
-> +
-> +- phy_lpddr3_ca_drv :	 When dram type is LPDDR3, this parameter define the
-> +			 phy side CA line(incluing command line, address line
-> +			 and clock line) driver strength. default value is
-> +			 PHY_DRV_ODT_40.
-> +
-> +- phy_lpddr3_dq_drv :	 When dram type is LPDDR3, this parameter define the
-> +			 phy side DQ line(incluing DQS/DQ/DM line) driver
-> +			 strength. default value is PHY_DRV_ODT_40.
-> +
-> +- phy_lpddr3_odt : 	 When dram type is LPDDR3, this parameter define the phy
-> +			 side odt strength, default value is PHY_DRV_ODT_240.
-> +
-> +- lpddr4_odt_disb_freq : When dram type is LPDDR4, this parameter defined the
-> +			 odt disable frequency in MHz (Mega Hz), when ddr
-> +			 frequency less then ddr3_odt_disb_freq, the odt on
-> +			 dram side and controller side are both disabled.
-> +
-> +- lpddr4_drv :		 When dram type is LPDDR4, this parameter define the
-> +			 dram side driver stength in ohm, default value is
-> +			 LP4_PDDS_60ohm.
-> +
-> +- lpddr4_dq_odt : 	 When dram type is LPDDR4, this parameter define the
-> +			 dram side ODT on dqs/dq line stength in ohm, default
-> +			 value is LP4_DQ_ODT_40ohm.
-> +
-> +- lpddr4_ca_odt :	 When dram type is LPDDR4, this parameter define the
-> +			 dram side ODT on ca line stength in ohm, default value
-> +			 is LP4_CA_ODT_40ohm.
-> +
-> +- phy_lpddr4_ca_drv :	 When dram type is LPDDR4, this parameter define the
-> +			 phy side  CA line(incluing command address line)
-> +			 driver strength. default value is PHY_DRV_ODT_40.
-> +
-> +- phy_lpddr4_ck_cs_drv : When dram type is LPDDR4, this parameter define the
-> +			 phy side clock line and cs line driver strength.
-> +			 default value is PHY_DRV_ODT_80.
-> +
-> +- phy_lpddr4_dq_drv :	 When dram type is LPDDR4, this parameter define the
-> +			 phy side DQ line(incluing DQS/DQ/DM line) driver
-> +			 strength. default value is PHY_DRV_ODT_80.
-> +
-> +- phy_lpddr4_odt :	 When dram type is LPDDR4, this parameter define the
-> +			 phy side odt strength, default value is PHY_DRV_ODT_60.
-
-You better to add the 'rockchip,' prefix to property for ddr timing
-because below example include the 'rockchip,'.
-
-> +
-> +Example:
-> +	dmc_opp_table: dmc_opp_table {
-> +		compatible = "operating-points-v2";
-> +
-> +		opp00 {
-> +			opp-hz = /bits/ 64 <300000000>;
-> +			opp-microvolt = <900000>;
-> +		};
-> +		opp01 {
-> +			opp-hz = /bits/ 64 <666000000>;
-> +			opp-microvolt = <900000>;
-> +		};
-> +	};
-> +
-> +	dmc: dmc {
-> +		compatible = "rockchip,rk3399-dmc";
-> +		devfreq-events = <&dfi>;
-> +		interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
-> +		clocks = <&cru SCLK_DDRCLK>;
-> +		clock-names = "dmc_clk";
-> +		operating-points-v2 = <&dmc_opp_table>;
-> +		center-supply = <&ppvar_centerlogic>;
-> +		upthreshold = <15>;
-> +		downdifferential = <10>;
-> +		rockchip,ddr3_speed_bin = <21>;
-> +		rockchip,pd_idle = <0x40>;
-> +		rockchip,sr_idle = <0x2>;
-> +		rockchip,sr_mc_gate_idle = <0x3>;
-> +		rockchip,srpd_lite_idle	= <0x4>;
-> +		rockchip,standby_idle = <0x2000>;
-> +		rockchip,dram_dll_dis_freq = <300>;
-> +		rockchip,phy_dll_dis_freq = <125>;
-> +		rockchip,auto_pd_dis_freq = <666>;
-> +		rockchip,ddr3_odt_dis_freq = <333>;
-> +		rockchip,ddr3_drv = <DDR3_DS_40ohm>;
-> +		rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
-> +		rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
-> +		rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
-> +		rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
-> +		rockchip,lpddr3_odt_dis_freq = <333>;
-> +		rockchip,lpddr3_drv = <LP3_DS_34ohm>;
-> +		rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
-> +		rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
-> +		rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
-> +		rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
-> +		rockchip,lpddr4_odt_dis_freq = <333>;
-> +		rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
-> +		rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
-> +		rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
-> +		rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
-> +		rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
-> +		rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
-> +		rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
-> +		status = "disabled";
-> +	};
-> +
-> 
-
--- 
-Best Regards,
-Chanwoo Choi
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+RGVhciBhbGwsCgpUaGlzIHBhdGNoIHJlbHkgb24gYm90aCByb2NrY2hpcC5naXQgYW5kIGRldmZy
+ZXEuZ2l0LgpBbHJlYWR5LCBSb2NrY2hpcCBTb0MgTWFpbnRhaW5lciAoSGVpa28gU3R1ZWJuZXIp
+IGNyZWF0ZWQKdGhlIGltbXV0YWJsZSBicmFuY2hbMV0uIFdoZW4gYXBwbHlpbmcgdGhlc2UgcGF0
+Y2hlcwpvbiBkZXZmcmVxLmdpdCB3aXRoIHB1bGxpbmcgdGhlIGltbXV0YWJsZSBicmFuY2hbMV0s
+Ckl0IGxvb2tzIGxpa2UgdGhhdCBzaG91bGQgbm90IGJlIGEgcHJvYmxlbS4KClsxXSBodHRwOi8v
+d3d3LnNwaW5pY3MubmV0L2xpc3RzL2FybS1rZXJuZWwvbXNnNTI4Mjk4Lmh0bWwKCkJlc3QgUmVn
+YXJkcywKQ2hhbndvbyBDaG9pCgpPbiAyMDE264WEIDA57JuUIDAy7J28IDEwOjIzLCBrYnVpbGQg
+dGVzdCByb2JvdCB3cm90ZToKPiBIaSBMaW4sCj4gCj4gW2F1dG8gYnVpbGQgdGVzdCBFUlJPUiBv
+biBuZXh0LTIwMTYwODI1XQo+IFthbHNvIGJ1aWxkIHRlc3QgRVJST1Igb24gdjQuOC1yYzRdCj4g
+W2Nhbm5vdCBhcHBseSB0byByb2NrY2hpcC9mb3ItbmV4dCBkZXZmcmVxL2Zvci1yYWZhZWwgbGlu
+dXMvbWFzdGVyIHY0LjgtcmM0IHY0LjgtcmMzIHY0LjgtcmMyXQo+IFtpZiB5b3VyIHBhdGNoIGlz
+IGFwcGxpZWQgdG8gdGhlIHdyb25nIGdpdCB0cmVlLCBwbGVhc2UgZHJvcCB1cyBhIG5vdGUgdG8g
+aGVscCBpbXByb3ZlIHRoZSBzeXN0ZW1dCj4gW1N1Z2dlc3QgdG8gdXNlIGdpdCg+PTIuOS4wKSBm
+b3JtYXQtcGF0Y2ggLS1iYXNlPTxjb21taXQ+IChvciAtLWJhc2U9YXV0byBmb3IgY29udmVuaWVu
+Y2UpIHRvIHJlY29yZCB3aGF0IChwdWJsaWMsIHdlbGwta25vd24pIGNvbW1pdCB5b3VyIHBhdGNo
+IHNlcmllcyB3YXMgYnVpbHQgb25dCj4gW0NoZWNrIGh0dHBzOi8vZ2l0LXNjbS5jb20vZG9jcy9n
+aXQtZm9ybWF0LXBhdGNoIGZvciBtb3JlIGluZm9ybWF0aW9uXQo+IAo+IHVybDogICAgaHR0cHM6
+Ly9naXRodWIuY29tLzBkYXktY2kvbGludXgvY29tbWl0cy9MaW4tSHVhbmcvcmszMzk5LXN1cHBv
+cnQtZGRyLWZyZXF1ZW5jeS1zY2FsaW5nLzIwMTYwOTAyLTA2MzcwMQo+IGNvbmZpZzogYXJtLWFs
+bG1vZGNvbmZpZyAoYXR0YWNoZWQgYXMgLmNvbmZpZykKPiBjb21waWxlcjogYXJtLWxpbnV4LWdu
+dWVhYmktZ2NjIChEZWJpYW4gNS40LjAtNikgNS40LjAgMjAxNjA2MDkKPiByZXByb2R1Y2U6Cj4g
+ICAgICAgICB3Z2V0IGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9saW51eC9rZXJuZWwvZ2l0
+L3dmZy9sa3AtdGVzdHMuZ2l0L3BsYWluL3NiaW4vbWFrZS5jcm9zcyAtTyB+L2Jpbi9tYWtlLmNy
+b3NzCj4gICAgICAgICBjaG1vZCAreCB+L2Jpbi9tYWtlLmNyb3NzCj4gICAgICAgICAjIHNhdmUg
+dGhlIGF0dGFjaGVkIC5jb25maWcgdG8gbGludXggYnVpbGQgdHJlZQo+ICAgICAgICAgbWFrZS5j
+cm9zcyBBUkNIPWFybSAKPiAKPiBBbGwgZXJyb3JzIChuZXcgb25lcyBwcmVmaXhlZCBieSA+Pik6
+Cj4gCj4+PiBkcml2ZXJzL2RldmZyZXEvcmszMzk5X2RtYy5jOjI5OjM5OiBmYXRhbCBlcnJvcjog
+c29jL3JvY2tjaGlwL3JvY2tjaGlwX3NpcC5oOiBObyBzdWNoIGZpbGUgb3IgZGlyZWN0b3J5Cj4g
+ICAgY29tcGlsYXRpb24gdGVybWluYXRlZC4KPiAKPiB2aW0gKzI5IGRyaXZlcnMvZGV2ZnJlcS9y
+azMzOTlfZG1jLmMKPiAKPiAgICAgMjMJI2luY2x1ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5o
+Pgo+ICAgICAyNAkjaW5jbHVkZSA8bGludXgvcG1fb3BwLmg+Cj4gICAgIDI1CSNpbmNsdWRlIDxs
+aW51eC9yZWd1bGF0b3IvY29uc3VtZXIuaD4KPiAgICAgMjYJI2luY2x1ZGUgPGxpbnV4L3J3c2Vt
+Lmg+Cj4gICAgIDI3CSNpbmNsdWRlIDxsaW51eC9zdXNwZW5kLmg+Cj4gICAgIDI4CQo+ICAgPiAy
+OQkjaW5jbHVkZSA8c29jL3JvY2tjaGlwL3JvY2tjaGlwX3NpcC5oPgo+ICAgICAzMAkKPiAgICAg
+MzEJc3RydWN0IGRyYW1fdGltaW5nIHsKPiAgICAgMzIJCXVuc2lnbmVkIGludCBkZHIzX3NwZWVk
+X2JpbjsKPiAKPiAtLS0KPiAwLURBWSBrZXJuZWwgdGVzdCBpbmZyYXN0cnVjdHVyZSAgICAgICAg
+ICAgICAgICBPcGVuIFNvdXJjZSBUZWNobm9sb2d5IENlbnRlcgo+IGh0dHBzOi8vbGlzdHMuMDEu
+b3JnL3BpcGVybWFpbC9rYnVpbGQtYWxsICAgICAgICAgICAgICAgICAgIEludGVsIENvcnBvcmF0
+aW9uCj4gCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+TGludXgtcm9ja2NoaXAgbWFpbGluZyBsaXN0CkxpbnV4LXJvY2tjaGlwQGxpc3RzLmluZnJhZGVh
+ZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1y
+b2NrY2hpcAo=
