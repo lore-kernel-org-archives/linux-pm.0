@@ -1,268 +1,89 @@
-From: Lin Huang <hl@rock-chips.com>
-Subject: [PATCH v10 3/5] Documentation: bindings: add dt documentation for rk3399 dmc
-Date: Mon,  5 Sep 2016 13:06:09 +0800
-Message-ID: <1473051971-5500-4-git-send-email-hl@rock-chips.com>
-References: <1473051971-5500-1-git-send-email-hl@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1473051971-5500-1-git-send-email-hl@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: heiko@sntech.de
-Cc: myungjoo.ham@samsung.com, mark.yao@rock-chips.com, cw00.choi@samsung.com, airlied@linux.ie, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, kyungmin.park@samsung.com, linux-arm-kernel@lists.infradead.org, tixy@linaro.org, typ@rock-chips.com, sudeep.holla@arm.com, mark.rutland@arm.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Lin Huang <hl@rock-chips.com>
+From: qiaozhou <qiaozhou@asrmicro.com>
+Subject: Re: [Question] about patch: don't use [delayed_]work_pending()
+Date: Mon, 5 Sep 2016 13:34:46 +0800
+Message-ID: <c8aca802-e681-8bc3-4ebc-e86cd9b7e2f4@asrmicro.com>
+References: <d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com>
+ <20160901184503.GD12660@htj.duckdns.org>
+ <6b2fc72b-f99f-f7f1-3221-093943de0950@asrmicro.com>
+ <20160902135007.GF12660@htj.duckdns.org>
+ <20160902142102.GG12660@htj.duckdns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from [140.206.112.110] ([140.206.112.110]:31249 "EHLO
+        mail2012.asrmicro.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1750720AbcIEFfO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Sep 2016 01:35:14 -0400
+In-Reply-To: <20160902142102.GG12660@htj.duckdns.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-pm@vger.kernel.org, Wang Wilbur <wilburwang@asrmicro.com>, Wu Gang <gangwu@asrmicro.com>, linux-kernel@vger.kernel.org
 
-This patch adds the documentation for rockchip rk3399 dmc driver.
 
-Signed-off-by: Lin Huang <hl@rock-chips.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
----
-Changes in v10:
-- add rockchip prefix in property describe
+On 2016年09月02日 22:21, Tejun Heo wrote:
+> On Fri, Sep 02, 2016 at 09:50:07AM -0400, Tejun Heo wrote:
+>> Hello,
+>>
+>> On Fri, Sep 02, 2016 at 09:17:04AM +0800, qiaozhou wrote:
+>>>>> I don't know whether it's meaningful to still check pending work here, or
+>>>>> it's not suggested to use pm_qos_update_request in this early boot up phase.
+>>>>> Could you help to share some opinions? (I can fix this issue by adding the
+>>>>> current qos value directly instead of default value, though.)
+>>>> Hmmm... but I suppose this is super-early in the boot.  Would it make
+>>>> sense to have a static variable (e.g. bool clk_fully_initailized) to
+>>>> gate the cancel_delayed_sync() call?
+>>> You're right that it's indeed super-early stage. But currently we can't
+>>> control the gate of can_delayed_work_sync, since it's inside
+>>> pm_qos_update_request. Out of our control. We can choose to not call
+>>> pm_qos_update_request to avoid this issue, and use pm_qos_add_request
+>>> alternatively. Good to have it.
+>> Ah sorry, didn't understand that the offending cancel_sync call is in
+>> the generic part.  Hmm... but yeah, we should still be able to take
+>> the same approach.  I'll see what's the right thing to gate the
+>> operation there.
+> Does the following patch work?
+The patch can fix this issue. Thanks a lot.
+>
+> Subject: power: avoid calling cancel_delayed_work_sync() during early boot
+>
+> of_clk_init() ends up calling into pm_qos_update_request() very early
+> during boot where irq is expected to stay disabled.
+> pm_qos_update_request() uses cancel_delayed_work_sync() which
+> correctly assumes that irq is enabled on invocation and
+> unconditionally disables and re-enables it.
+>
+> Gate cancel_delayed_work_sync() invocation with kevented_up() to avoid
+> enabling irq unexpectedly during early boot.
+>
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Reported-by: Qiao Zhou <qiaozhou@asrmicro.com>
+> Link: http://lkml.kernel.org/r/d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com
+> ---
+>   kernel/power/qos.c |   11 ++++++++++-
+>    1 file changed, 10 insertions(+), 1 deletion(-)
+>
+> diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+> index 97b0df7..168ff44 100644
+> --- a/kernel/power/qos.c
+> +++ b/kernel/power/qos.c
+> @@ -482,7 +482,16 @@ void pm_qos_update_request(struct pm_qos_request *req,
+>   		return;
+>   	}
+>   
+> -	cancel_delayed_work_sync(&req->work);
+> +	/*
+> +	 * This function may be called very early during boot, for example,
+> +	 * from of_clk_init(), where irq needs to stay disabled.
+> +	 * cancel_delayed_work_sync() assumes that irq is enabled on
+> +	 * invocation and re-enables it on return.  Avoid calling it until
+> +	 * workqueue is initialized.
+> +	 */
+> +	if (keventd_up())
+> +		cancel_delayed_work_sync(&req->work);
+> +
+>   	__pm_qos_update_request(req, new_value);
+>   }
+>   EXPORT_SYMBOL_GPL(pm_qos_update_request);
 
-Changes in v9:
-- add ddr timing property to node
-
-Changes in v8:
-- add ddr timing properties
-
-Changes in v7:
-- None
-
-Changes in v6:
--Add more detail in Documentation
-
-Changes in v5:
--None
-
-Changes in v4:
--None
-
-Changes in v3:
--None
-
-Changes in v2:
--None 
-
-Changes in v1:
--None
- .../devicetree/bindings/devfreq/rk3399_dmc.txt     | 202 +++++++++++++++++++++
- 1 file changed, 202 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-
-diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-new file mode 100644
-index 0000000..84660a3
---- /dev/null
-+++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
-@@ -0,0 +1,210 @@
-+* Rockchip rk3399 DMC(Dynamic Memory Controller) device
-+
-+Required properties:
-+- compatible:		 Must be "rockchip,rk3399-dmc".
-+- devfreq-events:	 Node to get DDR loading, Refer to
-+			 Documentation/devicetree/bindings/devfreq/
-+			 rockchip-dfi.txt
-+- interrupts:		 The interrupt number to the CPU. The interrupt
-+			 specifier format depends on the interrupt controller.
-+			 It should be DCF interrupts, when DDR dvfs finish,
-+			 it will happen.
-+- clocks:		 Phandles for clock specified in "clock-names" property
-+- clock-names :		 The name of clock used by the DFI, must be
-+			 "pclk_ddr_mon";
-+- operating-points-v2:	 Refer to Documentation/devicetree/bindings/power/opp.txt
-+			 for details.
-+- center-supply:	 DMC supply node.
-+- status:		 Marks the node enabled/disabled.
-+
-+Following properties are ddr timing:
-+
-+- rockchip,dram_speed_bin :	  Value reference include/dt-bindings/clock/ddr.h,
-+				  it select ddr3 cl-trp-trcd type, default value
-+				  "DDR3_DEFAULT".it must selected according to
-+				  "Speed Bin" in ddr3 datasheet, DO NOT use
-+				  smaller "Speed Bin" than ddr3 exactly is.
-+
-+- rockchip,pd_idle :		  Config the PD_IDLE value, defined the power-down
-+				  idle period, memories are places into power-down
-+				  mode if bus is idle for PD_IDLE DFI clocks.
-+
-+- rockchip,sr_idle :		  Configure the SR_IDLE value, defined the
-+				  selfrefresh idle period, memories are places
-+				  into self-refresh mode if bus is idle for
-+				  SR_IDLE*1024 DFI clocks (DFI clocks freq is
-+				  half of dram's clocks), defaule value is "0".
-+
-+- rockchip,sr_mc_gate_idle :	  Defined the self-refresh with memory and
-+				  controller clock gating idle period, memories
-+				  are places into self-refresh mode and memory
-+				  controller clock arg gating if bus is idle for
-+				  sr_mc_gate_idle*1024 DFI clocks.
-+
-+- rockchip,srpd_lite_idle :	  Defined the self-refresh power down idle
-+				  period, memories are places into self-refresh
-+				  power down mode if bus is idle for
-+				  srpd_lite_idle*1024 DFI clocks. This parameter
-+				  is for LPDDR4 only.
-+
-+- rockchip,standby_idle :	  Defined the standby idle period, memories are
-+				  places into self-refresh than controller, pi,
-+				  phy and dram clock will gating if bus is idle
-+				  for standby_idle * DFI clocks.
-+
-+- rockchip,dram_dll_disb_freq :  It's defined the DDR3 dll bypass frequency in
-+				  MHz, when ddr freq less than DRAM_DLL_DISB_FREQ,
-+				  ddr3 dll will bypssed note: if dll was bypassed,
-+				  the odt also stop working.
-+
-+- rockchip,phy_dll_disb_freq :	  Defined the PHY dll bypass frequency in
-+				  MHz (Mega Hz), when ddr freq less than
-+				  DRAM_DLL_DISB_FREQ, phy dll will bypssed.
-+				  note: phy dll and phy odt are independent.
-+
-+- rockchip,ddr3_odt_disb_freq :  When dram type is DDR3, this parameter defined
-+				  the odt disable frequency in MHz (Mega Hz),
-+				  when ddr frequency less then ddr3_odt_disb_freq,
-+				  the odt on dram side and controller side are
-+				  both disabled.
-+
-+- rockchip,ddr3_drv :		  When dram type is DDR3, this parameter define
-+				  the dram side driver stength in ohm, default
-+				  value is DDR3_DS_40ohm.
-+
-+- rockchip,ddr3_odt :		  When dram type is DDR3, this parameter define
-+				  the dram side ODT stength in ohm, default value
-+				  is DDR3_ODT_120ohm.
-+
-+- rockchip,phy_ddr3_ca_drv :	  When dram type is DDR3, this parameter define
-+				  the phy side CA line(incluing command line,
-+				  address line and clock line) driver strength.
-+				  Default value is PHY_DRV_ODT_40.
-+
-+- rockchip,phy_ddr3_dq_drv :	  When dram type is DDR3, this parameter define
-+				  the phy side DQ line(incluing DQS/DQ/DM line)
-+				  driver strength. default value is PHY_DRV_ODT_40.
-+
-+- rockchip,phy_ddr3_odt : 	  When dram type is DDR3, this parameter define the
-+				  phy side odt strength, default value is
-+				  PHY_DRV_ODT_240.
-+
-+- rockchip,lpddr3_odt_disb_freq : When dram type is LPDDR3, this parameter defined
-+				  then odt disable frequency in MHz (Mega Hz),
-+				  when ddr frequency less then ddr3_odt_disb_freq,
-+				  the odt on dram side and controller side are
-+				  both disabled.
-+
-+- rockchip,lpddr3_drv :	  When dram type is LPDDR3, this parameter define
-+				  the dram side driver stength in ohm, default
-+				  value is LP3_DS_34ohm.
-+
-+- rockchip,lpddr3_odt :	  When dram type is LPDDR3, this parameter define
-+				  the dram side ODT stength in ohm, default value
-+				  is LP3_ODT_240ohm.
-+
-+- rockchip,phy_lpddr3_ca_drv :	  When dram type is LPDDR3, this parameter define
-+				  the phy side CA line(incluing command line,
-+				  address line and clock line) driver strength.
-+				  default value is PHY_DRV_ODT_40.
-+
-+- rockchip,phy_lpddr3_dq_drv :	  When dram type is LPDDR3, this parameter define
-+				  the phy side DQ line(incluing DQS/DQ/DM line)
-+				  driver strength. default value is
-+				  PHY_DRV_ODT_40.
-+
-+- rockchip,phy_lpddr3_odt : 	  When dram type is LPDDR3, this parameter define
-+				  the phy side odt strength, default value is
-+				  PHY_DRV_ODT_240.
-+
-+- rockchip,lpddr4_odt_disb_freq : When dram type is LPDDR4, this parameter
-+				  defined the odt disable frequency in
-+				  MHz (Mega Hz), when ddr frequency less then
-+				  ddr3_odt_disb_freq, the odt on dram side and
-+				  controller side are both disabled.
-+
-+- rockchip,lpddr4_drv :	  When dram type is LPDDR4, this parameter define
-+				  the dram side driver stength in ohm, default
-+				  value is LP4_PDDS_60ohm.
-+
-+- rockchip,lpddr4_dq_odt : 	  When dram type is LPDDR4, this parameter define
-+				  the dram side ODT on dqs/dq line stength in ohm,
-+				  default value is LP4_DQ_ODT_40ohm.
-+
-+- rockchip,lpddr4_ca_odt :	  When dram type is LPDDR4, this parameter define
-+				  the dram side ODT on ca line stength in ohm,
-+				  default value is LP4_CA_ODT_40ohm.
-+
-+- rockchip,phy_lpddr4_ca_drv :	  When dram type is LPDDR4, this parameter define
-+				  the phy side  CA line(incluing command address
-+				  line) driver strength. default value is
-+				  PHY_DRV_ODT_40.
-+
-+- rockchip,phy_lpddr4_ck_cs_drv : When dram type is LPDDR4, this parameter define
-+				  the phy side clock line and cs line driver
-+				  strength. default value is PHY_DRV_ODT_80.
-+
-+- rockchip,phy_lpddr4_dq_drv :	  When dram type is LPDDR4, this parameter define
-+				  the phy side DQ line(incluing DQS/DQ/DM line)
-+				  driver strength. default value is PHY_DRV_ODT_80.
-+
-+- rockchip,phy_lpddr4_odt :	  When dram type is LPDDR4, this parameter define
-+				  the phy side odt strength, default value is
-+				  PHY_DRV_ODT_60.
-+
-+Example:
-+	dmc_opp_table: dmc_opp_table {
-+		compatible = "operating-points-v2";
-+
-+		opp00 {
-+			opp-hz = /bits/ 64 <300000000>;
-+			opp-microvolt = <900000>;
-+		};
-+		opp01 {
-+			opp-hz = /bits/ 64 <666000000>;
-+			opp-microvolt = <900000>;
-+		};
-+	};
-+
-+	dmc: dmc {
-+		compatible = "rockchip,rk3399-dmc";
-+		devfreq-events = <&dfi>;
-+		interrupts = <GIC_SPI 1 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&cru SCLK_DDRCLK>;
-+		clock-names = "dmc_clk";
-+		operating-points-v2 = <&dmc_opp_table>;
-+		center-supply = <&ppvar_centerlogic>;
-+		upthreshold = <15>;
-+		downdifferential = <10>;
-+		rockchip,ddr3_speed_bin = <21>;
-+		rockchip,pd_idle = <0x40>;
-+		rockchip,sr_idle = <0x2>;
-+		rockchip,sr_mc_gate_idle = <0x3>;
-+		rockchip,srpd_lite_idle	= <0x4>;
-+		rockchip,standby_idle = <0x2000>;
-+		rockchip,dram_dll_dis_freq = <300>;
-+		rockchip,phy_dll_dis_freq = <125>;
-+		rockchip,auto_pd_dis_freq = <666>;
-+		rockchip,ddr3_odt_dis_freq = <333>;
-+		rockchip,ddr3_drv = <DDR3_DS_40ohm>;
-+		rockchip,ddr3_odt = <DDR3_ODT_120ohm>;
-+		rockchip,phy_ddr3_ca_drv = <PHY_DRV_ODT_40>;
-+		rockchip,phy_ddr3_dq_drv = <PHY_DRV_ODT_40>;
-+		rockchip,phy_ddr3_odt = <PHY_DRV_ODT_240>;
-+		rockchip,lpddr3_odt_dis_freq = <333>;
-+		rockchip,lpddr3_drv = <LP3_DS_34ohm>;
-+		rockchip,lpddr3_odt = <LP3_ODT_240ohm>;
-+		rockchip,phy_lpddr3_ca_drv = <PHY_DRV_ODT_40>;
-+		rockchip,phy_lpddr3_dq_drv = <PHY_DRV_ODT_40>;
-+		rockchip,phy_lpddr3_odt = <PHY_DRV_ODT_240>;
-+		rockchip,lpddr4_odt_dis_freq = <333>;
-+		rockchip,lpddr4_drv = <LP4_PDDS_60ohm>;
-+		rockchip,lpddr4_dq_odt = <LP4_DQ_ODT_40ohm>;
-+		rockchip,lpddr4_ca_odt = <LP4_CA_ODT_40ohm>;
-+		rockchip,phy_lpddr4_ca_drv = <PHY_DRV_ODT_40>;
-+		rockchip,phy_lpddr4_ck_cs_drv = <PHY_DRV_ODT_80>;
-+		rockchip,phy_lpddr4_dq_drv = <PHY_DRV_ODT_80>;
-+		rockchip,phy_lpddr4_odt = <PHY_DRV_ODT_60>;
-+		status = "disabled";
-+	};
-+
--- 
-2.6.6
