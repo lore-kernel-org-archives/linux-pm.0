@@ -1,140 +1,56 @@
-From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v4 3/3] iio: adc: add support for Allwinner SoCs ADC
-Date: Mon, 5 Sep 2016 08:29:20 +0200
-Message-ID: <f085ee35-889f-58e3-15d6-e6f3c0d15a92@free-electrons.com>
-References: <1472738705-20145-1-git-send-email-quentin.schulz@free-electrons.com>
- <1472738705-20145-4-git-send-email-quentin.schulz@free-electrons.com>
- <272fb672-602c-1757-be9f-eadf928b330c@kernel.org>
+From: Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH V2 1/5] Documentation: Add support for TI System Control
+ Interface (TI-SCI) protocol
+Date: Mon, 5 Sep 2016 10:09:10 +0300
+Message-ID: <6c63b044-3db9-9202-b790-350a88b9eab0@ti.com>
+References: <20160830130647.6828-1-nm@ti.com>
+ <20160830130647.6828-2-nm@ti.com> <20160902150628.GA19493@rob-hp-laptop>
+ <CAGo_u6q0xxnUj5ary82OU1uP=kTHfA_3N7_d7OiSEwS1_5dXuw@mail.gmail.com>
+ <57C9E0A8.4010701@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <272fb672-602c-1757-be9f-eadf928b330c-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, jdelvare-IBi9RG/b67k@public.gmane.org, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hwmon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <57C9E0A8.4010701-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Lokesh Vutla <lokeshvutla-l0cyMroinI0@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Andrew F . Davis" <afd-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Russ Dill <Russ.Dill-l0cyMroinI0@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, dt list <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 04/09/2016 16:35, Jonathan Cameron wrote:
-> On 01/09/16 15:05, Quentin Schulz wrote:
->> The Allwinner SoCs all have an ADC that can also act as a touchscreen
->> controller and a thermal sensor. This patch adds the ADC driver which is
->> based on the MFD for the same SoCs ADC.
+On 02/09/16 23:27, Dave Gerlach wrote:
+> On 09/02/2016 12:07 PM, Nishanth Menon wrote:
+>> Rob,
 >>
->> This also registers the thermal adc channel in the iio map array so
->> iio_hwmon could use it without modifying the Device Tree. This registers
->> the driver in the thermal framework.
+>> On Fri, Sep 2, 2016 at 10:06 AM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>>> On Tue, Aug 30, 2016 at 08:06:43AM -0500, Nishanth Menon wrote:
+>> [...]
+>>>> +
+>>>> +TI-SCI Client Device Node:
+>>>> +========================
+>>>> +
+>>>> +Client nodes refer to the required TI-SCI device using the "ti,sci"
+>>>> property.
+>>>
+>>> As I mentioned for power domains, for clients that are self contained
+>>> (i.e. a single function) I think the should be child nodes.
+>>>
 >>
->> This driver probes on three different platform_device_id to take into
->> account slight differences (registers bit and temperature computation)
->> between Allwinner SoCs ADCs.
+>> Thanks for the feedback. I think we should be able to do that and also
+>> assume you have no further improvements you'd like to see here.
 >>
->> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> One utterly trivial point about unrolling code ordering inline.
-> 
-> Other than the bit about patch 1 I'm basically happy with this..
-
-ACK. Will revert this patch in v5. Thanks.
-
-> However I would like some input (i.e. an Ack) from thermal given this
-> sets up a thermal zone.
-> 
-> Zhang or Eduardo, could you take a quick look at this and confirm you
-> are happy with it?
-> 
-> Thanks,
-> 
-> Jonathan
-[...]
->> +
->> +err_map:
->> +	iio_map_array_unregister(indio_dev);
->> +
->> +err_fifo_irq:
->> +	/* Disable FIFO_DATA_PENDING interrupt on hardware side. */
->> +	regmap_update_bits(info->regmap, SUN4I_GPADC_INT_FIFOC,
->> +			   SUN4I_GPADC_INT_FIFOC_TP_DATA_IRQ_EN,
->> +			   0);
->> +
->> +err_temp_irq:
->> +	/* Disable TEMP_DATA_PENDING interrupt on hardware side. */
->> +	regmap_update_bits(info->regmap, SUN4I_GPADC_INT_FIFOC,
->> +			   SUN4I_GPADC_INT_FIFOC_TEMP_IRQ_EN,
->> +			   0);
->> +
->> +err:
->> +	pm_runtime_put(&pdev->dev);
->> +	pm_runtime_disable(&pdev->dev);
->> +
->> +	return ret;
->> +}
->> +
->> +static int sun4i_gpadc_remove(struct platform_device *pdev)
->> +{
->> +	struct sun4i_gpadc_dev *info;
->> +	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
->> +
->> +	info = iio_priv(indio_dev);
->> +	iio_device_unregister(indio_dev);
->> +	iio_map_array_unregister(indio_dev);
->> +	pm_runtime_put(&pdev->dev);
->> +	pm_runtime_disable(&pdev->dev);
-> Its really minor but in the interests of 'obviously correct' making
-> review easy I'd rather everything in the remove was in the reverse order
-> of probe (and hence the same as the error path in probe for most of it).
-> 
-> That would put the pm_runtime stuff last I think..
-> 
-> If you weren't rerolling anyway over patch 1 I'd probably have just let
-> this go, but might as well make this trivial change as well.
-> 
-
-I'm going with the following order:
-pm_runtime_put
-pm_runtime_disable
-regmap_update_bits
-iio_map_array_unregister
-iio_device_unregister
-
-Is that okay? (I don't really know which one of iio_map_array_unregister
-or iio_device_unregister to put first, if it matters in any way).
-
-Thanks!
-Quentin
-> 
->> +	/*
->> +	 * Disable TEMP_DATA_PENDING and FIFO_DATA_PENDING interrupts on
->> +	 * hardware side.
->> +	 */
->> +	regmap_update_bits(info->regmap, SUN4I_GPADC_INT_FIFOC,
->> +			   SUN4I_GPADC_INT_FIFOC_TEMP_IRQ_EN |
->> +				SUN4I_GPADC_INT_FIFOC_TP_DATA_IRQ_EN,
->> +			   0);
->> +
->> +	return 0;
->> +}
->> +
->> +static const struct platform_device_id sun4i_gpadc_id[] = {
->> +	{ "sun4i-a10-gpadc-iio", (kernel_ulong_t)&sun4i_gpadc_soc_specific },
->> +	{ "sun5i-a13-gpadc-iio", (kernel_ulong_t)&sun5i_gpadc_soc_specific },
->> +	{ "sun6i-a31-gpadc-iio", (kernel_ulong_t)&sun6i_gpadc_soc_specific },
->> +	{ /* sentinel */ },
->> +};
->> +
->> +static struct platform_driver sun4i_gpadc_driver = {
->> +	.driver = {
->> +		.name = "sun4i-gpadc-iio",
->> +		.pm = &sun4i_gpadc_pm_ops,
->> +	},
->> +	.id_table = sun4i_gpadc_id,
->> +	.probe = sun4i_gpadc_probe,
->> +	.remove = sun4i_gpadc_remove,
->> +};
->> +
->> +module_platform_driver(sun4i_gpadc_driver);
->> +
->> +MODULE_DESCRIPTION("ADC driver for sunxi platforms");
->> +MODULE_AUTHOR("Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>");
->> +MODULE_LICENSE("GPL v2");
+>> Looking at current Documentation/devicetree/bindings/arm/arm,scpi.txt
+>> -> it makes sense to stick along the same lines as you mentioned.
 >>
-> 
+>> Dave, Tero: do you guys have any objections?
+>
+> No objections, I think this is a logical move.
+
+Yea, sounds like a valid change. I believe you are going to post a new 
+version so I can modify the clock driver also accordingly?
+
+-Tero
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
