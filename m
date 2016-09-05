@@ -1,29 +1,68 @@
-From: Khiem Nguyen <khiem.nguyen.xt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Subject: RE: [PATCH 3/5 v2] arm64: dts: r8a7795: Add R-Car Gen3 thermal
- support
-Date: Mon, 5 Sep 2016 12:28:46 +0000
-Message-ID: <SIXPR06MB09063877E4AEC9C967B95473A8E60@SIXPR06MB0906.apcprd06.prod.outlook.com>
-References: <SIXPR06MB090693A361F296F1038319D0A8E40@SIXPR06MB0906.apcprd06.prod.outlook.com>
- <CAMuHMdU62emt_ujyMx_NgA_KpUD7ekqQQLqVEdE5UVppGgQ51A@mail.gmail.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: [PATCH] power: avoid calling cancel_delayed_work_sync() during early
+ boot
+Date: Mon, 5 Sep 2016 08:38:13 -0400
+Message-ID: <20160905123813.GB20784@mtj.duckdns.org>
+References: <d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com>
+ <20160901184503.GD12660@htj.duckdns.org>
+ <6b2fc72b-f99f-f7f1-3221-093943de0950@asrmicro.com>
+ <20160902135007.GF12660@htj.duckdns.org>
+ <20160902142102.GG12660@htj.duckdns.org>
+ <c8aca802-e681-8bc3-4ebc-e86cd9b7e2f4@asrmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAMuHMdU62emt_ujyMx_NgA_KpUD7ekqQQLqVEdE5UVppGgQ51A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Cc: Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Magnus Damm <damm+renesas-yzvPICuk2ACczHhG9Qg4qA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Thao Phuong Le. Nguyen" <thao.nguyen.yb-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>, Hien Dang <hien.dang.eb-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Toru Oishi <toru.oishi.zj-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Khiem Nguyen <khiem.nguyen.xt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f193.google.com ([209.85.220.193]:34077 "EHLO
+        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755432AbcIEMiV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Sep 2016 08:38:21 -0400
+Content-Disposition: inline
+In-Reply-To: <c8aca802-e681-8bc3-4ebc-e86cd9b7e2f4@asrmicro.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, Wang Wilbur <wilburwang@asrmicro.com>, Wu Gang <gangwu@asrmicro.com>, linux-kernel@vger.kernel.org, qiaozhou <qiaozhou@asrmicro.com>
 
-SGkgR2VlcnQsDQoNClRoYW5rcyBmb3IgeW91ciBjb21tZW50Lg0KDQo+ID4gKyAgICAgICAgICAg
-ICAgIHRzYzE6IHRoZXJtYWxAZTYxOTgwMDAgew0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAg
-IGNvbXBhdGlibGUgPSAicmVuZXNhcyxyOGE3Nzk1LXRoZXJtYWwiOw0KPiA+ICsgICAgICAgICAg
-ICAgICAgICAgICAgIHJlZyA9IDwwIDB4ZTYxOTgwMDAgMCAweDVjPjsNCj4gDQo+IEFjY29yZGlu
-ZyB0byB0aGUgZGF0YXNoZWV0LCBUU0MxIGhhcyAzIG1vcmUgcmVnaXN0ZXJzIGJleW9uZCB0aGlz
-IHJhbmdlLg0KDQpPSy4gDQpXaWxsIHVwZGF0ZSBpbiB2My4NCg0KVGhhbmtzLg0KDQpCZXN0IHJl
-Z2FyZHMsDQpLSElFTSBOZ3V5ZW4NCg==
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+of_clk_init() ends up calling into pm_qos_update_request() very early
+during boot where irq is expected to stay disabled.
+pm_qos_update_request() uses cancel_delayed_work_sync() which
+correctly assumes that irq is enabled on invocation and
+unconditionally disables and re-enables it.
+
+Gate cancel_delayed_work_sync() invocation with kevented_up() to avoid
+enabling irq unexpectedly during early boot.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-and-tested-by: Qiao Zhou <qiaozhou@asrmicro.com>
+Link: http://lkml.kernel.org/r/d2501c4c-8e7b-bea3-1b01-000b36b5dfe9@asrmicro.com
+---
+
+Rafael, can you please route this patch?
+
+Thanks.
+
+ kernel/power/qos.c |   11 ++++++++++-
+  1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 97b0df7..168ff44 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -482,7 +482,16 @@ void pm_qos_update_request(struct pm_qos_request *req,
+ 		return;
+ 	}
+ 
+-	cancel_delayed_work_sync(&req->work);
++	/*
++	 * This function may be called very early during boot, for example,
++	 * from of_clk_init(), where irq needs to stay disabled.
++	 * cancel_delayed_work_sync() assumes that irq is enabled on
++	 * invocation and re-enables it on return.  Avoid calling it until
++	 * workqueue is initialized.
++	 */
++	if (keventd_up())
++		cancel_delayed_work_sync(&req->work);
++
+ 	__pm_qos_update_request(req, new_value);
+ }
+ EXPORT_SYMBOL_GPL(pm_qos_update_request);
