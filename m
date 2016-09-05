@@ -1,56 +1,61 @@
-From: Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH V2 1/5] Documentation: Add support for TI System Control
- Interface (TI-SCI) protocol
-Date: Mon, 5 Sep 2016 10:09:10 +0300
-Message-ID: <6c63b044-3db9-9202-b790-350a88b9eab0@ti.com>
-References: <20160830130647.6828-1-nm@ti.com>
- <20160830130647.6828-2-nm@ti.com> <20160902150628.GA19493@rob-hp-laptop>
- <CAGo_u6q0xxnUj5ary82OU1uP=kTHfA_3N7_d7OiSEwS1_5dXuw@mail.gmail.com>
- <57C9E0A8.4010701@ti.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH][RFC v5] timekeeping: Ignore the bogus sleep time if
+ pm_trace is enabled
+Date: Mon, 5 Sep 2016 09:54:20 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1609050941180.5647@nanos>
+References: <1472402439-1146-1-git-send-email-yu.c.chen@intel.com> <4130556.MNmyvLDyHH@vostro.rjw.lan> <alpine.DEB.2.20.1609022119160.5647@nanos> <20160904153739.GA5400@sharon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <57C9E0A8.4010701-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Lokesh Vutla <lokeshvutla-l0cyMroinI0@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Andrew F . Davis" <afd-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Russ Dill <Russ.Dill-l0cyMroinI0@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, dt list <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160904153739.GA5400@sharon>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, x86@kernel.org, John Stultz <john.stultz@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, Xunlei Pang <xlpang@redhat.com>, "3.17+" <stable@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02/09/16 23:27, Dave Gerlach wrote:
-> On 09/02/2016 12:07 PM, Nishanth Menon wrote:
->> Rob,
->>
->> On Fri, Sep 2, 2016 at 10:06 AM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
->>> On Tue, Aug 30, 2016 at 08:06:43AM -0500, Nishanth Menon wrote:
->> [...]
->>>> +
->>>> +TI-SCI Client Device Node:
->>>> +========================
->>>> +
->>>> +Client nodes refer to the required TI-SCI device using the "ti,sci"
->>>> property.
->>>
->>> As I mentioned for power domains, for clients that are self contained
->>> (i.e. a single function) I think the should be child nodes.
->>>
->>
->> Thanks for the feedback. I think we should be able to do that and also
->> assume you have no further improvements you'd like to see here.
->>
->> Looking at current Documentation/devicetree/bindings/arm/arm,scpi.txt
->> -> it makes sense to stick along the same lines as you mentioned.
->>
->> Dave, Tero: do you guys have any objections?
->
-> No objections, I think this is a logical move.
+On Sun, 4 Sep 2016, Chen Yu wrote:
+> Hi Thomas, Rafael,
+> On Fri, Sep 02, 2016 at 09:26:51PM +0200, Thomas Gleixner wrote:
+> > On Wed, 31 Aug 2016, Rafael J. Wysocki wrote:
+> > > On Monday, August 29, 2016 12:40:39 AM Chen Yu wrote:
+> > > > +
+> > > > +	/*
+> > > > +	 * Make rtc-based persistent clock unusable
+> > > > +	 * if pm_trace is enabled, only take effect
+> > > > +	 * for timekeeping_suspend/resume.
+> > > > +	 */
+> > > > +	if (pm_trace_is_enabled() &&
+> > > > +	    x86_platform.get_wallclock == mach_get_cmos_time) {
+> > > > +		ts->tv_sec = 0;
+> > > > +		ts->tv_nsec = 0;
+> > > > +	}
+> > > 
+> > > I'm not sure about this.  Looks hackish.
+> > 
+> > Indeed. Can't you just keep track that pm_trace fiddled with the cmos clock
+> > and then discard the value either in the core or in mach_get_cmos_time()
+> The previous version is more straightforward, since
+> it ignored the bogus rtc in core. Would you please take
+> a glance at it too, thanks:
+> https://patchwork.kernel.org/patch/9287347/
 
-Yea, sounds like a valid change. I believe you are going to post a new 
-version so I can modify the clock driver also accordingly?
+This is the same hackery just different:
 
--Tero
+> +bool persistent_clock_is_usable(void)
+> +{
+> +	/* Unusable if pm_trace is enabled. */
+> +	return !((x86_platform.get_wallclock == mach_get_cmos_time) &&
+> +	        pm_trace_is_enabled());
+> +}
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I really have no idea why this is burried in x86 land. The pm_trace hackery
+issues mc146818_set_time() to fiddle with the RTC. So any implementation of
+this is affected.
+
+So that very piece of pmtrace code should keep track of the wreckage it did
+to the RTC and provide the fact to the core timekeeping code which can then
+skip the update.
+
+Thanks,
+
+	tglx
