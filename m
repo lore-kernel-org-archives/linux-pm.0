@@ -1,40 +1,112 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PULL REQ] PM / Devfreq for Linux-pm (Fixes)
-Date: Tue, 6 Sep 2016 23:12:50 +0200
-Message-ID: <CAJZ5v0g7ZvQ47RS268Cc7w0Njx+naHzq+zPnOFviqJRCNJ5d7A@mail.gmail.com>
-References: <CGME20160906064335epcms1p75b85321b10ff6d8d045240a785375b23@epcms1p7>
- <1278751964.451375.1473145738891.JavaMail.weblogic@ep1ml102b>
+Subject: Re: [PATCH 12/21] cpufreq: Convert to hotplug state machine
+Date: Tue, 6 Sep 2016 23:27:46 +0200
+Message-ID: <CAJZ5v0i8o4Bnmvpmn+=8snEzfmBPxqcV9iGVSh62Wf0X86j8BA@mail.gmail.com>
+References: <20160906170457.32393-1-bigeasy@linutronix.de> <20160906170457.32393-13-bigeasy@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f44.google.com ([74.125.82.44]:38715 "EHLO
-        mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933533AbcIFVMw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2016 17:12:52 -0400
-Received: by mail-wm0-f44.google.com with SMTP id 1so212610200wmz.1
-        for <linux-pm@vger.kernel.org>; Tue, 06 Sep 2016 14:12:52 -0700 (PDT)
-In-Reply-To: <1278751964.451375.1473145738891.JavaMail.weblogic@ep1ml102b>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160906170457.32393-13-bigeasy@linutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Myungjoo Ham <myungjoo.ham@samsung.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "hl@rock-chips.com" <hl@rock-chips.com>, "jszhang@marvell.com" <jszhang@marvell.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "yongjun_wei@trendmicro.com.cn" <yongjun_wei@trendmicro.com.cn>, Chanwoo Choi <cw00.choi@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>
 
-On Tue, Sep 6, 2016 at 9:08 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->> Dear Rafael,
->>
->>
->> Here goes pull request from PM / devfreq for linux-pm.
->>
->> (The first two patches are previously pull-requested, but not found in v4.8-rc5.
->> If you've already pulled them, you may skip the first two)
+On Tue, Sep 6, 2016 at 7:04 PM, Sebastian Andrzej Siewior
+<bigeasy@linutronix.de> wrote:
+> Install the callbacks via the state machine.
+>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> ---
+>  drivers/cpufreq/cpufreq.c | 38 ++++++++++++--------------------------
+>  1 file changed, 12 insertions(+), 26 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 3dd4884c6f9e..e0bc632a259e 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1358,7 +1358,7 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+>         return add_cpu_dev_symlink(policy, cpu);
+>  }
+>
+> -static void cpufreq_offline(unsigned int cpu)
+> +static int cpufreq_offline(unsigned int cpu)
+>  {
+>         struct cpufreq_policy *policy;
+>         int ret;
+> @@ -1368,7 +1368,7 @@ static void cpufreq_offline(unsigned int cpu)
+>         policy = cpufreq_cpu_get_raw(cpu);
+>         if (!policy) {
+>                 pr_debug("%s: No cpu_data found\n", __func__);
+> -               return;
+> +               return 0;
+>         }
+>
+>         down_write(&policy->rwsem);
+> @@ -1417,6 +1417,7 @@ static void cpufreq_offline(unsigned int cpu)
+>
+>  unlock:
+>         up_write(&policy->rwsem);
+> +       return 0;
+>  }
+>
+>  /**
+> @@ -2332,28 +2333,6 @@ int cpufreq_update_policy(unsigned int cpu)
+>  }
+>  EXPORT_SYMBOL(cpufreq_update_policy);
+>
+> -static int cpufreq_cpu_callback(struct notifier_block *nfb,
+> -                                       unsigned long action, void *hcpu)
+> -{
+> -       unsigned int cpu = (unsigned long)hcpu;
+> -
+> -       switch (action & ~CPU_TASKS_FROZEN) {
+> -       case CPU_ONLINE:
+> -       case CPU_DOWN_FAILED:
+> -               cpufreq_online(cpu);
+> -               break;
+> -
+> -       case CPU_DOWN_PREPARE:
+> -               cpufreq_offline(cpu);
+> -               break;
+> -       }
+> -       return NOTIFY_OK;
+> -}
+> -
+> -static struct notifier_block __refdata cpufreq_cpu_notifier = {
+> -       .notifier_call = cpufreq_cpu_callback,
+> -};
+> -
+>  /*********************************************************************
+>   *               BOOST                                              *
+>   *********************************************************************/
+> @@ -2455,6 +2434,7 @@ EXPORT_SYMBOL_GPL(cpufreq_boost_enabled);
+>  /*********************************************************************
+>   *               REGISTER / UNREGISTER CPUFREQ DRIVER                *
+>   *********************************************************************/
+> +static enum cpuhp_state hp_online;
+>
+>  /**
+>   * cpufreq_register_driver - register a CPU Frequency driver
+> @@ -2517,7 +2497,13 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
+>                 goto err_if_unreg;
+>         }
+>
+> -       register_hotcpu_notifier(&cpufreq_cpu_notifier);
+> +       ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "cpufreq:online",
+> +                                       cpufreq_online,
+> +                                       cpufreq_offline);
+> +       if (ret < 0)
+> +               goto err_if_unreg;
+> +       hp_online = ret;
 
-I haven't pulled them and I'd rather not at this point.  They are not
--rc6 time frame fixes.
-
-I may pull the other two if you think they are urgent enough and send
-a separate request to me for that.
-
-Otherwise, I'll merge the whole thing as 4.9 material.
+hp_online is enum cpuhp_state (and we pass it to
+cpuhp_remove_state_nocalls(() later on), but
+cpuhp_setup_state_nocalls() returns an int (and that should be 0 if it
+is not an error code AFAICS), so is this actually correct?
 
 Thanks,
 Rafael
