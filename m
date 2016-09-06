@@ -1,77 +1,73 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 08/10] PM core: Fix restoring devices with links during system PM transition
-Date: Wed, 07 Sep 2016 01:24:40 +0200
-Message-ID: <1509709.za4jzbeXig@vostro.rjw.lan>
-References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com> <1466144820-6286-9-git-send-email-m.szyprowski@samsung.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH v2 02/10] driver core: Functional dependencies tracking
+	support
+Date: Wed, 07 Sep 2016 01:57:11 +0200
+Message-ID: <1546158.G8Vnv1pldV@vostro.rjw.lan>
+References: <1466144820-6286-1-git-send-email-m.szyprowski@samsung.com>
+	<2841548.NIYVpJFBcH@vostro.rjw.lan>
+	<20160728152831.GA1929@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1466144820-6286-9-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-Reply-To: <20160728152831.GA1929-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "open list:AMD IOMMU (AMD-VI)" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andreas Noever <andreas.noever-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, June 17, 2016 08:26:58 AM Marek Szyprowski wrote:
-> When devices are being runtime resumed during the system PM transition to
-> suspend state, the link suppliers might be already resumed and
-> have runtime pm disabled. This is normal case. This patch adds special
-> support for such case. Simple call to pm_runtime_get_sync returns error
-> when device has runtime PM disabled, what results in incorrect runtime PM
-> state during system wide PM transition.
-
-The problem is real, but the proposed solution is questionable.
-
+On Thursday, July 28, 2016 05:28:31 PM Lukas Wunner wrote:
+> On Thu, Jul 28, 2016 at 02:30:31AM +0200, Rafael J. Wysocki wrote:
+> > On Monday, July 25, 2016 12:48:32 AM Lukas Wunner wrote:
+> > > On Thu, Jul 21, 2016 at 02:25:15AM +0200, Rafael J. Wysocki wrote:
+> > > > On Thursday, July 21, 2016 01:25:53 AM Lukas Wunner wrote:
+> > > > > I guess I could amend portdrv to return -EPROBE_DEFER on Macs if
+> > > > > no driver is bound to the NHI. Doesn't feel pretty to me though.
+> > > > > 
+> > > > > Ultimately this seems to be the same issue as with calling
+> > > > > dev_pm_domain_set() for a bound device. Perhaps device_link_add()
+> > > > > can likewise be allowed if a runtime PM ref is held for the devices
+> > > > > and the call happens under lock_system_sleep()?
+> > > > 
+> > > > No, the whole synchronization scheme in the links code would have had to be
+> > > > changed for that to really work.
+> > > > 
+> > > > And it really is about what is needed (at least in principle) to run your
+> > > > device.  If you think you need device X with a driver to handle device Y
+> > > > correctly, then either you need it all the time, from probe to remove, or
+> > > > you just don't really need it at all.
+> > > 
+> > > Real life isn't as simple as that.
+> > > 
+> > > In this case, we have consumers (hotplug ports) which are doing fine
+> > > if the driver for the supplier (NHI) is not loaded. But once it loads,
+> > > the links must be in place.
+> > 
+> > Hmm.
+> > 
+> > What if it is not loaded and the system suspends.  Will everything work
+> > as expected after the subsequent resume?
 > 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> ---
->  drivers/base/power/runtime.c | 22 +++++++++++++++++++++-
->  1 file changed, 21 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 0ea00d442e0f..d00b079fad88 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -261,6 +261,26 @@ static int rpm_check_suspend_allowed(struct device *dev)
->  }
->  
->  /**
-> + * __pm_runtime_force_resume - force resume of the device
-> + * @dev: Device to resume
-> + *
-> + * This function works like __pm_runtime_resume(dev, RPM_GET_PUT), but
-> + * also handles devices with runtime PM disabled. This allows to properly
-> + * control all devices during preparation for system PM transition.
-> + */
-> +static int __pm_runtime_force_resume(struct device *dev)
-> +{
-> +	if (!dev->power.disable_depth)
-> +		return pm_runtime_get_sync(dev);
-> +
-> +	if (dev->power.runtime_status != RPM_ACTIVE ||
-> +	    atomic_inc_not_zero(&dev->power.usage_count) == 0)
-> +		return -EINVAL;
-> +
-> +	return 0;
-> +}
-> +
-> +/**
->   * __rpm_callback - Run a given runtime PM callback for a given device.
->   * @cb: Runtime PM callback to run.
->   * @dev: Device to run the callback for.
-> @@ -291,7 +311,7 @@ static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
->  				if ((link->flags & DEVICE_LINK_PM_RUNTIME)
->  				    && link->status != DEVICE_LINK_SUPPLIER_UNBIND
->  				    && !link->rpm_active) {
-> -					retval = pm_runtime_get_sync(link->supplier);
-> +					retval = __pm_runtime_force_resume(link->supplier);
->  					if (retval < 0) {
->  						pm_runtime_put_noidle(link->supplier);
->  						goto fail;
+> The short answer is yes.
 
-The reason why power.disable_depth is different from 0 may not be system suspend,
-in which case it should fail even if the status happens to be RPM_ACTIVE.
+OK
+
+I think it's possible to add a link flag to address this case.
+
+Namely, if that flag is passed to device_link_add(), the link will be
+added in the DEVICE_LINK_ACTIVE state right away, but that will need to
+be synchronized against all possible transitions of the consumer device
+(at least).
+
+It's better to do that in a separate patch for this reason IMO.
 
 Thanks,
 Rafael
