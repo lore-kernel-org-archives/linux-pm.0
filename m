@@ -1,107 +1,90 @@
-From: Vaibhav Hiremath <vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v6 1/8] binding-doc: power: pwrseq-generic: add binding
- doc for generic power sequence library
-Date: Tue, 6 Sep 2016 11:34:08 +0530
-Message-ID: <3b904eb8-8f32-845e-8b9d-78b7d79ef024@linaro.org>
-References: <1471252398-957-1-git-send-email-peter.chen@nxp.com>
- <1471252398-957-2-git-send-email-peter.chen@nxp.com>
- <6832cc55-831a-1188-4878-bbbf0b3c3be8@linaro.org>
- <20160902010030.GA11262@shlinux2>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?W1BVTEwgUkVRXSBQTSAvIERldmZyZXEgZm9yIExpbnV4LXBt?=
+Date: Tue, 06 Sep 2016 06:43:35 +0000
+Message-ID: <2132538643.445536.1473144215980.JavaMail.weblogic@ep1ml102b>
+References: <CGME20160906064335epcms1p75b85321b10ff6d8d045240a785375b23@epcms1p7>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160902010030.GA11262@shlinux2>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+Content-Type: multipart/related;
+ boundary="----=_Part_445535_1400265267.1473144215980"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:49951 "EHLO
+        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751556AbcIFGnu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Sep 2016 02:43:50 -0400
+Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
+ by mailout2.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OD201VLKLD0K860@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 06 Sep 2016 15:43:48 +0900 (KST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?B?cmp3QHJqd3lzb2NraS5uZXQ=?= <rjw@rjwysocki.net>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>
+Cc: =?UTF-8?B?aGxAcm9jay1jaGlwcy5jb20=?= <hl@rock-chips.com>, =?UTF-8?B?anN6aGFuZ0BtYXJ2ZWxsLmNvbQ==?= <jszhang@marvell.com>, =?UTF-8?B?S3J6eXN6dG9mIEtvemxvd3NraQ==?= <k.kozlowski@samsung.com>, =?UTF-8?B?eW9uZ2p1bl93ZWlAdHJlbmRtaWNyby5jb20uY24=?= <yongjun_wei@trendmicro.com.cn>, =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20=?= <rafael.j.wysocki@intel.com>
 
+------=_Part_445535_1400265267.1473144215980
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-
-On Friday 02 September 2016 06:30 AM, Peter Chen wrote:
-> On Thu, Sep 01, 2016 at 01:33:22PM +0530, Vaibhav Hiremath wrote:
->>
->> On Monday 15 August 2016 02:43 PM, Peter Chen wrote:
->>> Add binding doc for generic power sequence library.
->>>
->>> Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
->>> Acked-by: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
->>> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->>> ---
->>>   .../bindings/power/pwrseq/pwrseq-generic.txt       | 48 ++++++++++++++++++++++
->>>   1 file changed, 48 insertions(+)
->>>   create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
->>>
->>> diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
->>> new file mode 100644
->>> index 0000000..ebf0d47
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
->>> @@ -0,0 +1,48 @@
->>> +The generic power sequence library
->>> +
->>> +Some hard-wired devices (eg USB/MMC) need to do power sequence before
->>> +the device can be enumerated on the bus, the typical power sequence
->>> +like: enable USB PHY clock, toggle reset pin, etc. But current
->>> +Linux device driver lacks of such code to do it, it may cause some
->>> +hard-wired devices works abnormal or can't be recognized by
->>> +controller at all. The power sequence will be done before this device
->>> +can be found at the bus.
->>> +
->>> +The power sequence properties is under the device node.
->>> +
->>> +Optional properties:
->>> +- clocks: the input clocks for device.
->>> +- reset-gpios: Should specify the GPIO for reset.
->>> +- reset-duration-us: the duration in microsecond for assert reset signal.
->>> +
->>> +Below is the example of USB power sequence properties on USB device
->>> +nodes which have two level USB hubs.
->>> +
->>> +&usbotg1 {
->>> +	vbus-supply = <&reg_usb_otg1_vbus>;
->>> +	pinctrl-names = "default";
->>> +	pinctrl-0 = <&pinctrl_usb_otg1_id>;
->>> +	status = "okay";
->>> +
->>> +	#address-cells = <1>;
->>> +	#size-cells = <0>;
->>> +	genesys: hub@1 {
->>> +		compatible = "usb5e3,608";
->>> +		reg = <1>;
->>> +
->>> +		clocks = <&clks IMX6SX_CLK_CKO>;
->>> +		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
->>> +		reset-duration-us = <10>;
->>> +
->>> +		#address-cells = <1>;
->>> +		#size-cells = <0>;
->>> +		asix: ethernet@1 {
->>> +			compatible = "usbb95,1708";
->> So I assume, with our recent discussion and the change
->> we are proposing, the library would have some knowledge
->> about this compatible string, right?
-> Yes
->
->> what I was asking on other email was, how are you connecting
->> multiple power sequence libraries to their respective consumers ?
->>
-> The consumers has its of_node, then it can find related power sequence
-> library according to compatible string.
->
-
-Exactly. Thats what I was referring and wanted to confirm.
-
-Thanks,
-Vaibhav
-
-
--- 
-Thanks,
-Vaibhav
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+RGVhciBSYWZhZWwsDQoNCg0KSGVyZSBnb2VzIHB1bGwgcmVxdWVzdCBmcm9tIFBNIC8gZGV2ZnJl
+cSBmb3IgbGludXgtcG0uDQoNCihUaGUgZmlyc3QgdHdvIHBhdGNoZXMgYXJlIHByZXZpb3VzbHkg
+cHVsbC1yZXF1ZXN0ZWQsIGJ1dCBub3QgZm91bmQgaW4gdjQuOC1yYzUuDQpJZiB5b3UndmUgYWxy
+ZWFkeSBwdWxsZWQgdGhlbSwgeW91IG1heSBza2lwIHRoZSBmaXJzdCB0d28pDQoNCklmIHlvdSdk
+IGxpa2UgdG8gcHVsbCBmaXhlcyBvbmx5IChubyBkcml2ZXIgYWRkKSwgcGxlYXNlIHVzZSAidGFn
+cy9wdWxsX3JlcV8yMDE2MDkwNl9maXhlcyIgdGFnLg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoN
+Ci0tLS0tQkVHSU4gUEdQIFNJR05FRCBNRVNTQUdFLS0tLS0NCkhhc2g6IFNIQTENCg0KVGhlIGZv
+bGxvd2luZyBjaGFuZ2VzIHNpbmNlIGNvbW1pdCBjNjkzNTkzMWMxODk0ZmY4NTc2MTZmZjg1NDli
+NjEyMzZhMTkxNDhmOg0KDQogIExpbnV4IDQuOC1yYzUgKDIwMTYtMDktMDQgMTQ6MzE6NDYgLTA3
+MDApDQoNCmFyZSBhdmFpbGFibGUgaW4gdGhlIGdpdCByZXBvc2l0b3J5IGF0Og0KDQogIGh0dHBz
+Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L216eC9kZXZmcmVxLmdp
+dCB0YWdzL3B1bGxfcmVxXzIwMTYwOTA2DQoNCmZvciB5b3UgdG8gZmV0Y2ggY2hhbmdlcyB1cCB0
+byA1YTg5M2UzMWE2MzZjY2EzNzk4YWYyZGI1YWVlOGQzZDE0NGIxZTFlOg0KDQogIFBNIC8gZGV2
+ZnJlcTogcm9ja2NoaXA6IGFkZCBkZXZmcmVxIGRyaXZlciBmb3IgcmszMzk5IGRtYyAoMjAxNi0w
+OS0wNiAxMzoyNjozNCArMDkwMCkNCg0KLSAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQpQdWxsIFJlcXVlc3QgZm9yIFJhZmFl
+bCBmcm9tIFBNIC8gRGV2ZnJlcQ0KDQoxLiBGaXhlcw0KMi4gTmV3IERyaXZlciAoUm9ja2NoaXAg
+RE1DKQ0KDQotIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0NCkppc2hlbmcgWmhhbmcgKDEpOg0KICAgICAgUE0gLyBkZXZmcmVx
+OiBmaXggS2NvbmZpZyBpbmRlbnQgc3R5bGUNCg0KS3J6eXN6dG9mIEtvemxvd3NraSAoMSk6DQog
+ICAgICBQTSAvIGRldmZyZXE6IEFkZCBDT01QSUxFX1RFU1QgZm9yIGJ1aWxkIGNvdmVyYWdlDQoN
+CkxpbiBIdWFuZyAoNSk6DQogICAgICBQTSAvIGRldmZyZXE6IGV2ZW50OiByZW1vdmUgZHVwbGlj
+YXRlIGRldmZyZXFfZXZlbnRfZ2V0X2RydmRhdGEoKQ0KICAgICAgRG9jdW1lbnRhdGlvbjogYmlu
+ZGluZ3M6IGFkZCBkdCBkb2N1bWVudGF0aW9uIGZvciBkZmkgY29udHJvbGxlcg0KICAgICAgUE0g
+LyBkZXZmcmVxOiBldmVudDogc3VwcG9ydCByb2NrY2hpcCBkZmkgY29udHJvbGxlcg0KICAgICAg
+RG9jdW1lbnRhdGlvbjogYmluZGluZ3M6IGFkZCBkdCBkb2N1bWVudGF0aW9uIGZvciByazMzOTkg
+ZG1jDQogICAgICBQTSAvIGRldmZyZXE6IHJvY2tjaGlwOiBhZGQgZGV2ZnJlcSBkcml2ZXIgZm9y
+IHJrMzM5OSBkbWMNCg0KV2VpIFlvbmdqdW4gKDEpOg0KICAgICAgUE0gLyBkZXZmcmVxOiBleHlu
+b3MtcHBtdTogcmVtb3ZlIHVubmVlZGVkIG9mX25vZGVfcHV0KCkNCg0KIC4uLi9iaW5kaW5ncy9k
+ZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRmaS50eHQgICAgICAgIHwgIDE5ICsNCiAuLi4vZGV2aWNl
+dHJlZS9iaW5kaW5ncy9kZXZmcmVxL3JrMzM5OV9kbWMudHh0ICAgICB8IDIwOSArKysrKysrKysN
+CiBkcml2ZXJzL2RldmZyZXEvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAy
+OSArLQ0KIGRyaXZlcnMvZGV2ZnJlcS9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAgICAgICAg
+IHwgICAxICsNCiBkcml2ZXJzL2RldmZyZXEvZXZlbnQvS2NvbmZpZyAgICAgICAgICAgICAgICAg
+ICAgICB8ICAxMSArLQ0KIGRyaXZlcnMvZGV2ZnJlcS9ldmVudC9NYWtlZmlsZSAgICAgICAgICAg
+ICAgICAgICAgIHwgICAxICsNCiBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUuYyAg
+ICAgICAgICAgICAgICB8ICAgMiAtDQogZHJpdmVycy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRm
+aS5jICAgICAgICAgICAgICAgfCAyNTYgKysrKysrKysrKysNCiBkcml2ZXJzL2RldmZyZXEvcmsz
+Mzk5X2RtYy5jICAgICAgICAgICAgICAgICAgICAgICB8IDQ4MCArKysrKysrKysrKysrKysrKysr
+KysNCiBpbmNsdWRlL2xpbnV4L2RldmZyZXEtZXZlbnQuaCAgICAgICAgICAgICAgICAgICAgICB8
+ICAgNSAtDQogMTAgZmlsZXMgY2hhbmdlZCwgOTk1IGluc2VydGlvbnMoKyksIDE4IGRlbGV0aW9u
+cygtKQ0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGlu
+Z3MvZGV2ZnJlcS9ldmVudC9yb2NrY2hpcC1kZmkudHh0DQogY3JlYXRlIG1vZGUgMTAwNjQ0IERv
+Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kZXZmcmVxL3JrMzM5OV9kbWMudHh0DQog
+Y3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvZGV2ZnJlcS9ldmVudC9yb2NrY2hpcC1kZmkuYw0K
+IGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL2RldmZyZXEvcmszMzk5X2RtYy5jDQotLS0tLUJF
+R0lOIFBHUCBTSUdOQVRVUkUtLS0tLQ0KVmVyc2lvbjogR251UEcgdjENCg0KaVFJY0JBRUJBZ0FH
+QlFKWHptUWRBQW9KRUJPaHVydldCb0NLQ2hFUUFLT2lmeHlTbWtYODFtbG1vV3VCblBTVw0KekNI
+QWNHR0dZQnorTXNJYmtQL2lvRG9kdDVtK2VJS3VDMTd4M0kvakxjWDBsTnhwZnRjRUJzbFNYWWNS
+bDhoRA0KOGJ2UnlUeERUTkNXS2MxdmY4d3lqOEt5ajJrTWdXbmZNeXUzT0JaZXQxRGtEMGlBckNr
+NnlrVnc5ZTY1dzJpTg0KOTZlWlk3cUlXcXViUTFFVEN6Z2ZvV1VJV04yTmlxUDQ1aUV6QjlTVVR6
+MjQ5M3dyVUFwUjdFV00wak5sTGV4Rw0KQUpaVjV5VE5KU2FMUUlmWnNNV1ZPNk1QalFkdXBRWnBJ
+cmRLZzRvQVdUWHlvVDZQM1RVMHBJNzN5VzU4cHJ4Yw0KY3VwYjFWVE96Z1hOMTg1bGxOcFJNdndn
+YTl2TTIzdWI5NHYvZVc3WFR2aDd4azJ3Vnp4YWdMdU90WFl5Sk91Mw0KSWxHMDJUaWQ4S1NmaHpR
+WGVVRFVVUEJKY1lCLzlNZzY4TmVkTTFOZm13NnVGNTYyMWhlWGJaejhwSTlBS2NxRQ0KbFFPbDRE
+WmJkSVI5VXhHc1g3T081Rk1STkhGMmpucENkZThVWUZkVlBMMmZmY25OZTZPV3A3aktwZTJCYjQx
+bg0KRExWSjJENHptS09YR3lqRnVHSThlUUtvL3pyRDlJQWR0VjY0bU1oaXJhVmV2SUJBVDA1Q2t2
+cllodXp6TmNRdQ0KZWk3d2c1TVBMeXlPUzVFQkZaNTYvN2V4VHVpMGVJVmsvUll6NkxOR0NrYkcv
+SGwwbGtaS1oxQnRzQ0RreU5rcA0KQ0xrK25ZbUZJMjhwZ0RuZVZRazV6ZTJzd3JlTGtJaWE2aXZI
+VXBnL2pYRnZqYnc4eFU3MUUrZ3F2MGUzWDROZw0KVGxrMjVHN3FLeGRDMHYrMmxqamkNCj0zNDIv
+DQotLS0tLUVORCBQR1AgU0lHTkFUVVJFLS0tLS0NCg==
+------=_Part_445535_1400265267.1473144215980--
