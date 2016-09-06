@@ -1,88 +1,716 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH V3 0/5] firmware: Add support for TI System Control Interface (TI-SCI) protocol driver
-Date: Tue, 6 Sep 2016 14:01:22 -0500
-Message-ID: <20160906190127.23522-1-nm@ti.com>
+Subject: [PATCH V3 3/5] firmware: ti_sci: Add support for Device control
+Date: Tue, 6 Sep 2016 14:01:25 -0500
+Message-ID: <20160906190127.23522-4-nm@ti.com>
+References: <20160906190127.23522-1-nm@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160906190127.23522-1-nm@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Rob Herring <robh@kernel.org>, Tero Kristo <t-kristo@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>
 Cc: Russ Dill <Russ.Dill@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, "Andrew F . Davis" <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Texas Instrument's System Control Interface (TI-SCI) Message Protocol
+is used in Texas Instrument's System on Chip (SoC) such as those
+in keystone family K2G SoC to communicate between various compute
+processors with a central system controller entity.
 
-Version 3 of the series with change in the way we describe the children
-nodes (no change to drivers required - only the dts description changes).
+TI-SCI message protocol provides support for management of various
+hardware entitites within the SoC. Add support driver to allow
+communication with system controller entity within the SoC using the
+mailbox client.
 
-Texas Instruments' Keystone generation System on Chips (SoC)
-starting with 66AK2G02[1], now include a dedicated SoC System Control
-entity called PMMC(Power Management Micro Controller) in line with
-ARM architecture recommendations. The function of this module is
-to integrate all system operations in a centralized location.
-Communication with the SoC System Control entity from various
-processing units like ARM/DSP occurs over Message Manager hardware
-block.
+We introduce the fundamental device management capability support to
+the driver protocol as part of this change.
 
-This series adds the base support for TI System Control Interface
-(TI-SCI) protocol[2]. The protocol is built on top of Texas
-Instrument's Message Manager communication mechanism[3].
+[d-gerlach@ti.com: Contributed device reset handling]
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+Signed-off-by: Nishanth Menon <nm@ti.com>
+---
+Changes in V3: Just rebase
 
-Overall architecture is very similar to SCPI[4] as follows:
-+-------------+   +---------+     +------^-----+
-| TI SCI GENPD|   |TISCI Clk|     |TISCI reset |
-+------+------+   +----+----+     +------+-----+
-       |               |                 |
-       |          +----v--------------+  |
-       +----------> TISCI Protocol(*) <--+
-                  +----+--------------+
-                       |
-                   +---v-----------+
-                   | MAILBOX  FWK  |
-                   +---+-----------+
-                       |
-                   +---v-----------+
-                   |  TI MSGMGR    |-> TISCI hardware block
-                   +---------------+
-(*) This series.
+V2: https://patchwork.kernel.org/patch/9305427/
+V1: https://patchwork.kernel.org/patch/9291345/
 
+ drivers/firmware/ti_sci.c              | 433 +++++++++++++++++++++++++++++++++
+ drivers/firmware/ti_sci.h              |  98 ++++++++
+ include/linux/soc/ti/ti_sci_protocol.h |  91 +++++++
+ 3 files changed, 622 insertions(+)
 
-V3 of the series is based off v4.8-rc1 and is also available here:
-https://github.com/nmenon/linux-2.6-playground/commits/upstream/v4.9/tisci-base-v3
-integration of v3 along with https://lkml.org/lkml/2016/8/19/790 and
-https://lkml.org/lkml/2016/8/19/811 is available here:
-https://github.com/nmenon/linux-2.6-playground/commits/upstream/v4.9/tisci-integ-v3
-
-Test of complete integrated solution: http://pastebin.ubuntu.com/23142652/
-
-Changes since v2:
-	- Child nodes are now children of the TISCI node
-	- related driver updates
-
-V2: https://lkml.org/lkml/2016/8/30/273
-V1: https://lkml.org/lkml/2016/8/19/768
-
-Nishanth Menon (5):
-  Documentation: Add support for TI System Control Interface (TI-SCI)
-    protocol
-  firmware: Add basic support for TI System Control Interface (TI-SCI)
-    protocol
-  firmware: ti_sci: Add support for Device control
-  firmware: ti_sci: Add support for Clock control
-  firmware: ti_sci: Add support for reboot core service
-
- .../devicetree/bindings/arm/keystone/ti,sci.txt    |   81 +
- MAINTAINERS                                        |   10 +
- drivers/firmware/Kconfig                           |   15 +
- drivers/firmware/Makefile                          |    1 +
- drivers/firmware/ti_sci.c                          | 1993 ++++++++++++++++++++
- drivers/firmware/ti_sci.h                          |  492 +++++
- include/linux/soc/ti/ti_sci_protocol.h             |  249 +++
- 7 files changed, 2841 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
- create mode 100644 drivers/firmware/ti_sci.c
- create mode 100644 drivers/firmware/ti_sci.h
- create mode 100644 include/linux/soc/ti/ti_sci_protocol.h
-
+diff --git a/drivers/firmware/ti_sci.c b/drivers/firmware/ti_sci.c
+index 93dd394d72b3..3c6364fcd764 100644
+--- a/drivers/firmware/ti_sci.c
++++ b/drivers/firmware/ti_sci.c
+@@ -495,6 +495,437 @@ fail:
+ }
+ 
+ /**
++ * ti_sci_is_response_ack() - Generic ACK/NACK message checkup
++ * @r:	pointer to response buffer
++ *
++ * Return: true if the response was an ACK, else returns false.
++ */
++static inline bool ti_sci_is_response_ack(void *r)
++{
++	struct ti_sci_msg_hdr *hdr = r;
++
++	return hdr->flags & TI_SCI_FLAG_RESP_GENERIC_ACK ? true : false;
++}
++
++/**
++ * ti_sci_set_device_state() - Set device state helper
++ * @handle:	pointer to TI SCI handle
++ * @id:		Device identifier
++ * @flags:	flags to setup for the device
++ * @state:	State to move the device to
++ *
++ * Return: 0 if all went well, else returns appropriate error value.
++ */
++static int ti_sci_set_device_state(const struct ti_sci_handle *handle,
++				   u32 id, u32 flags, u8 state)
++{
++	struct ti_sci_info *info;
++	struct ti_sci_msg_req_set_device_state *req;
++	struct ti_sci_msg_hdr *resp;
++	struct ti_sci_xfer *xfer;
++	struct device *dev;
++	int ret = 0;
++
++	if (IS_ERR(handle))
++		return PTR_ERR(handle);
++	if (!handle)
++		return -EINVAL;
++
++	info = handle_to_ti_sci_info(handle);
++	dev = info->dev;
++
++	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_SET_DEVICE_STATE,
++				   flags | TI_SCI_FLAG_REQ_ACK_ON_PROCESSED,
++				   sizeof(*req), sizeof(*resp));
++	if (IS_ERR(xfer)) {
++		ret = PTR_ERR(xfer);
++		dev_err(dev, "Message alloc failed(%d)\n", ret);
++		return ret;
++	}
++	req = (struct ti_sci_msg_req_set_device_state *)xfer->xfer_buf;
++	req->id = id;
++	req->state = state;
++
++	ret = ti_sci_do_xfer(info, xfer);
++	if (ret) {
++		dev_err(dev, "Mbox send fail %d\n", ret);
++		goto fail;
++	}
++
++	resp = (struct ti_sci_msg_hdr *)xfer->xfer_buf;
++
++	ret = ti_sci_is_response_ack(resp) ? 0 : -ENODEV;
++
++fail:
++	ti_sci_put_one_xfer(&info->minfo, xfer);
++
++	return ret;
++}
++
++/**
++ * ti_sci_get_device_state() - Get device state helper
++ * @handle:	Handle to the device
++ * @id:		Device Identifier
++ * @clcnt:	Pointer to Context Loss Count
++ * @resets:	pointer to resets
++ * @p_state:	pointer to p_state
++ * @c_state:	pointer to c_state
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_get_device_state(const struct ti_sci_handle *handle,
++				   u32 id,  u32 *clcnt,  u32 *resets,
++				    u8 *p_state,  u8 *c_state)
++{
++	struct ti_sci_info *info;
++	struct ti_sci_msg_req_get_device_state *req;
++	struct ti_sci_msg_resp_get_device_state *resp;
++	struct ti_sci_xfer *xfer;
++	struct device *dev;
++	int ret = 0;
++
++	if (IS_ERR(handle))
++		return PTR_ERR(handle);
++	if (!handle)
++		return -EINVAL;
++
++	if (!clcnt && !resets && !p_state && !c_state)
++		return -EINVAL;
++
++	info = handle_to_ti_sci_info(handle);
++	dev = info->dev;
++
++	/* Response is expected, so need of any flags */
++	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_GET_DEVICE_STATE,
++				   0, sizeof(*req), sizeof(*resp));
++	if (IS_ERR(xfer)) {
++		ret = PTR_ERR(xfer);
++		dev_err(dev, "Message alloc failed(%d)\n", ret);
++		return ret;
++	}
++	req = (struct ti_sci_msg_req_get_device_state *)xfer->xfer_buf;
++	req->id = id;
++
++	ret = ti_sci_do_xfer(info, xfer);
++	if (ret) {
++		dev_err(dev, "Mbox send fail %d\n", ret);
++		goto fail;
++	}
++
++	resp = (struct ti_sci_msg_resp_get_device_state *)xfer->xfer_buf;
++	if (!ti_sci_is_response_ack(resp)) {
++		ret = -ENODEV;
++		goto fail;
++	}
++
++	if (clcnt)
++		*clcnt = resp->context_loss_count;
++	if (resets)
++		*resets = resp->resets;
++	if (p_state)
++		*p_state = resp->programmed_state;
++	if (c_state)
++		*c_state = resp->current_state;
++fail:
++	ti_sci_put_one_xfer(&info->minfo, xfer);
++
++	return ret;
++}
++
++/**
++ * ti_sci_cmd_get_device() - command to request for device managed by TISCI
++ * @handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * @id:		Device Identifier
++ *
++ * Request for the device - NOTE: the client MUST maintain integrity of
++ * usage count by balancing get_device with put_device. No refcounting is
++ * managed by driver for that purpose.
++ *
++ * NOTE: The request is for exclusive access for the processor.
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_get_device(const struct ti_sci_handle *handle, u32 id)
++{
++	return ti_sci_set_device_state(handle, id,
++				       MSG_FLAG_DEVICE_EXCLUSIVE,
++				       MSG_DEVICE_SW_STATE_ON);
++}
++
++/**
++ * ti_sci_cmd_idle_device() - Command to idle a device managed by TISCI
++ * @handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * @id:		Device Identifier
++ *
++ * Request for the device - NOTE: the client MUST maintain integrity of
++ * usage count by balancing get_device with put_device. No refcounting is
++ * managed by driver for that purpose.
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_idle_device(const struct ti_sci_handle *handle, u32 id)
++{
++	return ti_sci_set_device_state(handle, id,
++				       MSG_FLAG_DEVICE_EXCLUSIVE,
++				       MSG_DEVICE_SW_STATE_RETENTION);
++}
++
++/**
++ * ti_sci_cmd_put_device() - command to release a device managed by TISCI
++ * @handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * @id:		Device Identifier
++ *
++ * Request for the device - NOTE: the client MUST maintain integrity of
++ * usage count by balancing get_device with put_device. No refcounting is
++ * managed by driver for that purpose.
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_put_device(const struct ti_sci_handle *handle, u32 id)
++{
++	return ti_sci_set_device_state(handle, id,
++				       0, MSG_DEVICE_SW_STATE_AUTO_OFF);
++}
++
++/**
++ * ti_sci_cmd_dev_is_valid() - Is the device valid
++ * @handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * @id:		Device Identifier
++ *
++ * Return: 0 if all went fine and the device ID is valid, else return
++ * appropriate error.
++ */
++static int ti_sci_cmd_dev_is_valid(const struct ti_sci_handle *handle, u32 id)
++{
++	u8 unused;
++
++	/* check the device state which will also tell us if the ID is valid */
++	return ti_sci_get_device_state(handle, id, NULL, NULL, NULL, &unused);
++}
++
++/**
++ * ti_sci_cmd_dev_get_clcnt() - Get context loss counter
++ * @handle:	Pointer to TISCI handle
++ * @id:		Device Identifier
++ * @count:	Pointer to Context Loss counter to populate
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_dev_get_clcnt(const struct ti_sci_handle *handle, u32 id,
++				    u32 *count)
++{
++	return ti_sci_get_device_state(handle, id, count, NULL, NULL, NULL);
++}
++
++/**
++ * ti_sci_cmd_dev_is_idle() - Check if the device is requested to be idle
++ * @handle:	Pointer to TISCI handle
++ * @id:		Device Identifier
++ * @r_state:	true if requested to be idle
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_dev_is_idle(const struct ti_sci_handle *handle, u32 id,
++				  bool *r_state)
++{
++	int ret;
++	u8 state;
++
++	if (!r_state)
++		return -EINVAL;
++
++	ret = ti_sci_get_device_state(handle, id, NULL, NULL, &state, NULL);
++	if (ret)
++		return ret;
++
++	*r_state = (state == MSG_DEVICE_SW_STATE_RETENTION);
++
++	return 0;
++}
++
++/**
++ * ti_sci_cmd_dev_is_stop() - Check if the device is requested to be stopped
++ * @handle:	Pointer to TISCI handle
++ * @id:		Device Identifier
++ * @r_state:	true if requested to be stopped
++ * @curr_state:	true if currently stopped.
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_dev_is_stop(const struct ti_sci_handle *handle, u32 id,
++				  bool *r_state,  bool *curr_state)
++{
++	int ret;
++	u8 p_state, c_state;
++
++	if (!r_state && !curr_state)
++		return -EINVAL;
++
++	ret =
++	    ti_sci_get_device_state(handle, id, NULL, NULL, &p_state, &c_state);
++	if (ret)
++		return ret;
++
++	if (r_state)
++		*r_state = (p_state == MSG_DEVICE_SW_STATE_AUTO_OFF);
++	if (curr_state)
++		*curr_state = (c_state == MSG_DEVICE_HW_STATE_OFF);
++
++	return 0;
++}
++
++/**
++ * ti_sci_cmd_dev_is_on() - Check if the device is requested to be ON
++ * @handle:	Pointer to TISCI handle
++ * @id:		Device Identifier
++ * @r_state:	true if requested to be ON
++ * @curr_state:	true if currently ON and active
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_dev_is_on(const struct ti_sci_handle *handle, u32 id,
++				bool *r_state,  bool *curr_state)
++{
++	int ret;
++	u8 p_state, c_state;
++
++	if (!r_state && !curr_state)
++		return -EINVAL;
++
++	ret =
++	    ti_sci_get_device_state(handle, id, NULL, NULL, &p_state, &c_state);
++	if (ret)
++		return ret;
++
++	if (r_state)
++		*r_state = (p_state == MSG_DEVICE_SW_STATE_ON);
++	if (curr_state)
++		*curr_state = (c_state == MSG_DEVICE_HW_STATE_ON);
++
++	return 0;
++}
++
++/**
++ * ti_sci_cmd_dev_is_trans() - Check if the device is currently transitioning
++ * @handle:	Pointer to TISCI handle
++ * @id:		Device Identifier
++ * @curr_state:	true if currently transitioning.
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_dev_is_trans(const struct ti_sci_handle *handle, u32 id,
++				   bool *curr_state)
++{
++	int ret;
++	u8 state;
++
++	if (!curr_state)
++		return -EINVAL;
++
++	ret = ti_sci_get_device_state(handle, id, NULL, NULL, NULL, &state);
++	if (ret)
++		return ret;
++
++	*curr_state = (state == MSG_DEVICE_HW_STATE_TRANS);
++
++	return 0;
++}
++
++/**
++ * ti_sci_cmd_set_device_resets() - command to set resets for device managed
++ *				    by TISCI
++ * @handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * @id:		Device Identifier
++ * @reset_state: Device specific reset bit field
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_set_device_resets(const struct ti_sci_handle *handle,
++					u32 id, u32 reset_state)
++{
++	struct ti_sci_info *info;
++	struct ti_sci_msg_req_set_device_resets *req;
++	struct ti_sci_msg_hdr *resp;
++	struct ti_sci_xfer *xfer;
++	struct device *dev;
++	int ret = 0;
++
++	if (IS_ERR(handle))
++		return PTR_ERR(handle);
++	if (!handle)
++		return -EINVAL;
++
++	info = handle_to_ti_sci_info(handle);
++	dev = info->dev;
++
++	xfer = ti_sci_get_one_xfer(info, TI_SCI_MSG_SET_DEVICE_RESETS,
++				   TI_SCI_FLAG_REQ_ACK_ON_PROCESSED,
++				   sizeof(*req), sizeof(*resp));
++	if (IS_ERR(xfer)) {
++		ret = PTR_ERR(xfer);
++		dev_err(dev, "Message alloc failed(%d)\n", ret);
++		return ret;
++	}
++	req = (struct ti_sci_msg_req_set_device_resets *)xfer->xfer_buf;
++	req->id = id;
++	req->resets = reset_state;
++
++	ret = ti_sci_do_xfer(info, xfer);
++	if (ret) {
++		dev_err(dev, "Mbox send fail %d\n", ret);
++		goto fail;
++	}
++
++	resp = (struct ti_sci_msg_hdr *)xfer->xfer_buf;
++
++	ret = ti_sci_is_response_ack(resp) ? 0 : -ENODEV;
++
++fail:
++	ti_sci_put_one_xfer(&info->minfo, xfer);
++
++	return ret;
++}
++
++/**
++ * ti_sci_cmd_get_device_resets() - Get reset state for device managed
++ *				    by TISCI
++ * @handle:		Pointer to TISCI handle
++ * @id:			Device Identifier
++ * @reset_state:	Pointer to reset state to populate
++ *
++ * Return: 0 if all went fine, else return appropriate error.
++ */
++static int ti_sci_cmd_get_device_resets(const struct ti_sci_handle *handle,
++					u32 id, u32 *reset_state)
++{
++	return ti_sci_get_device_state(handle, id, NULL, reset_state, NULL,
++				       NULL);
++}
++
++/*
++ * ti_sci_setup_ops() - Setup the operations structures
++ * @info:	pointer to TISCI pointer
++ */
++static void ti_sci_setup_ops(struct ti_sci_info *info)
++{
++	struct ti_sci_ops *ops = &info->handle.ops;
++	struct ti_sci_dev_ops *dops = &ops->dev_ops;
++
++	dops->get_device = ti_sci_cmd_get_device;
++	dops->idle_device = ti_sci_cmd_idle_device;
++	dops->put_device = ti_sci_cmd_put_device;
++
++	dops->is_valid = ti_sci_cmd_dev_is_valid;
++	dops->get_context_loss_count = ti_sci_cmd_dev_get_clcnt;
++	dops->is_idle = ti_sci_cmd_dev_is_idle;
++	dops->is_stop = ti_sci_cmd_dev_is_stop;
++	dops->is_on = ti_sci_cmd_dev_is_on;
++	dops->is_transitioning = ti_sci_cmd_dev_is_trans;
++	dops->set_device_resets = ti_sci_cmd_set_device_resets;
++	dops->get_device_resets = ti_sci_cmd_get_device_resets;
++}
++
++/**
+  * ti_sci_get_handle() - Get the TI SCI handle for a device
+  * @dev:	Pointer to device for which we want SCI handle
+  *
+@@ -727,6 +1158,8 @@ static int ti_sci_probe(struct platform_device *pdev)
+ 		goto out;
+ 	}
+ 
++	ti_sci_setup_ops(info);
++
+ 	dev_info(dev, "ABI: %d.%d (firmware rev 0x%04x '%s')\n",
+ 		 info->handle.version.abi_major, info->handle.version.abi_minor,
+ 		 info->handle.version.firmware_revision,
+diff --git a/drivers/firmware/ti_sci.h b/drivers/firmware/ti_sci.h
+index e9dc53f26e0e..29ce0532a7ca 100644
+--- a/drivers/firmware/ti_sci.h
++++ b/drivers/firmware/ti_sci.h
+@@ -47,6 +47,11 @@
+ #define TI_SCI_MSG_WAKE_REASON	0x0003
+ #define TI_SCI_MSG_GOODBYE	0x0004
+ 
++/* Device requests */
++#define TI_SCI_MSG_SET_DEVICE_STATE	0x0200
++#define TI_SCI_MSG_GET_DEVICE_STATE	0x0201
++#define TI_SCI_MSG_SET_DEVICE_RESETS	0x0202
++
+ /**
+  * struct ti_sci_msg_hdr - Generic Message Header for All messages and responses
+  * @type:	Type of messages: One of TI_SCI_MSG* values
+@@ -90,4 +95,97 @@ struct ti_sci_msg_resp_version {
+ 	u8 abi_minor;
+ } __packed;
+ 
++/**
++ * struct ti_sci_msg_req_set_device_state - Set the desired state of the device
++ * @hdr:		Generic header
++ * @id:	Indicates which device to modify
++ * @reserved: Reserved space in message, must be 0 for backward compatibility
++ * @state: The desired state of the device.
++ *
++ * Certain flags can also be set to alter the device state:
++ * + MSG_FLAG_DEVICE_WAKE_ENABLED - Configure the device to be a wake source.
++ * The meaning of this flag will vary slightly from device to device and from
++ * SoC to SoC but it generally allows the device to wake the SoC out of deep
++ * suspend states.
++ * + MSG_FLAG_DEVICE_RESET_ISO - Enable reset isolation for this device.
++ * + MSG_FLAG_DEVICE_EXCLUSIVE - Claim this device exclusively. When passed
++ * with STATE_RETENTION or STATE_ON, it will claim the device exclusively.
++ * If another host already has this device set to STATE_RETENTION or STATE_ON,
++ * the message will fail. Once successful, other hosts attempting to set
++ * STATE_RETENTION or STATE_ON will fail.
++ *
++ * Request type is TI_SCI_MSG_SET_DEVICE_STATE, responded with a generic
++ * ACK/NACK message.
++ */
++struct ti_sci_msg_req_set_device_state {
++	/* Additional hdr->flags options */
++#define MSG_FLAG_DEVICE_WAKE_ENABLED	TI_SCI_MSG_FLAG(8)
++#define MSG_FLAG_DEVICE_RESET_ISO	TI_SCI_MSG_FLAG(9)
++#define MSG_FLAG_DEVICE_EXCLUSIVE	TI_SCI_MSG_FLAG(10)
++	struct ti_sci_msg_hdr hdr;
++	u32 id;
++	u32 reserved;
++
++#define MSG_DEVICE_SW_STATE_AUTO_OFF	0
++#define MSG_DEVICE_SW_STATE_RETENTION	1
++#define MSG_DEVICE_SW_STATE_ON		2
++	u8 state;
++} __packed;
++
++/**
++ * struct ti_sci_msg_req_get_device_state - Request to get device.
++ * @hdr:		Generic header
++ * @id:		Device Identifier
++ *
++ * Request type is TI_SCI_MSG_GET_DEVICE_STATE, responded device state
++ * information
++ */
++struct ti_sci_msg_req_get_device_state {
++	struct ti_sci_msg_hdr hdr;
++	u32 id;
++} __packed;
++
++/**
++ * struct ti_sci_msg_resp_get_device_state - Response to get device request.
++ * @hdr:		Generic header
++ * @context_loss_count: Indicates how many times the device has lost context. A
++ *	driver can use this monotonic counter to determine if the device has
++ *	lost context since the last time this message was exchanged.
++ * @resets: Programmed state of the reset lines.
++ * @programmed_state:	The state as programmed by set_device.
++ *			- Uses the MSG_DEVICE_SW_* macros
++ * @current_state:	The actual state of the hardware.
++ *
++ * Response to request TI_SCI_MSG_GET_DEVICE_STATE.
++ */
++struct ti_sci_msg_resp_get_device_state {
++	struct ti_sci_msg_hdr hdr;
++	u32 context_loss_count;
++	u32 resets;
++	u8 programmed_state;
++#define MSG_DEVICE_HW_STATE_OFF		0
++#define MSG_DEVICE_HW_STATE_ON		1
++#define MSG_DEVICE_HW_STATE_TRANS	2
++	u8 current_state;
++} __packed;
++
++/**
++ * struct ti_sci_msg_req_set_device_resets - Set the desired resets
++ *				configuration of the device
++ * @hdr:		Generic header
++ * @id:	Indicates which device to modify
++ * @resets: A bit field of resets for the device. The meaning, behavior,
++ *	and usage of the reset flags are device specific. 0 for a bit
++ *	indicates releasing the reset represented by that bit while 1
++ *	indicates keeping it held.
++ *
++ * Request type is TI_SCI_MSG_SET_DEVICE_RESETS, responded with a generic
++ * ACK/NACK message.
++ */
++struct ti_sci_msg_req_set_device_resets {
++	struct ti_sci_msg_hdr hdr;
++	u32 id;
++	u32 resets;
++} __packed;
++
+ #endif /* __TI_SCI_H */
+diff --git a/include/linux/soc/ti/ti_sci_protocol.h b/include/linux/soc/ti/ti_sci_protocol.h
+index e73483fd5327..87fa73851471 100644
+--- a/include/linux/soc/ti/ti_sci_protocol.h
++++ b/include/linux/soc/ti/ti_sci_protocol.h
+@@ -33,12 +33,103 @@ struct ti_sci_version_info {
+ 	char firmware_description[32];
+ };
+ 
++struct ti_sci_handle;
++
++/**
++ * struct ti_sci_dev_ops - Device control operations
++ * @get_device: Command to request for device managed by TISCI
++ *		Returns 0 for successful exclusive request, else returns
++ *		corresponding error message.
++ * @idle_device: Command to idle a device managed by TISCI
++ *		Returns 0 for successful exclusive request, else returns
++ *		corresponding error message.
++ * @put_device:	Command to release a device managed by TISCI
++ *		Returns 0 for successful release, else returns corresponding
++ *		error message.
++ * @is_valid:	Check if the device ID is a valid ID.
++ *		Returns 0 if the ID is valid, else returns corresponding error.
++ * @get_context_loss_count: Command to retrieve context loss counter - this
++ *		increments every time the device looses context. Overflow
++ *		is possible.
++ *		- count: pointer to u32 which will retrieve counter
++ *		Returns 0 for successful information request and count has
++ *		proper data, else returns corresponding error message.
++ * @is_idle:	Reports back about device idle state
++ *		- req_state: Returns requested idle state
++ *		Returns 0 for successful information request and req_state and
++ *		current_state has proper data, else returns corresponding error
++ *		message.
++ * @is_stop:	Reports back about device stop state
++ *		- req_state: Returns requested stop state
++ *		- current_state: Returns current stop state
++ *		Returns 0 for successful information request and req_state and
++ *		current_state has proper data, else returns corresponding error
++ *		message.
++ * @is_on:	Reports back about device ON(or active) state
++ *		- req_state: Returns requested ON state
++ *		- current_state: Returns current ON state
++ *		Returns 0 for successful information request and req_state and
++ *		current_state has proper data, else returns corresponding error
++ *		message.
++ * @is_transitioning: Reports back if the device is in the middle of transition
++ *		of state.
++ *		-current_state: Returns 'true' if currently transitioning.
++ * @set_device_resets: Command to configure resets for device managed by TISCI.
++ *		-reset_state: Device specific reset bit field
++ *		Returns 0 for successful request, else returns
++ *		corresponding error message.
++ * @get_device_resets: Command to read state of resets for device managed
++ *		by TISCI.
++ *		-reset_state: pointer to u32 which will retrieve resets
++ *		Returns 0 for successful request, else returns
++ *		corresponding error message.
++ *
++ * NOTE: for all these functions, the following parameters are generic in
++ * nature:
++ * -handle:	Pointer to TISCI handle as retrieved by *ti_sci_get_handle
++ * -id:		Device Identifier
++ *
++ * Request for the device - NOTE: the client MUST maintain integrity of
++ * usage count by balancing get_device with put_device. No refcounting is
++ * managed by driver for that purpose.
++ */
++struct ti_sci_dev_ops {
++	int (*get_device)(const struct ti_sci_handle *handle, u32 id);
++	int (*idle_device)(const struct ti_sci_handle *handle, u32 id);
++	int (*put_device)(const struct ti_sci_handle *handle, u32 id);
++	int (*is_valid)(const struct ti_sci_handle *handle, u32 id);
++	int (*get_context_loss_count)(const struct ti_sci_handle *handle,
++				      u32 id, u32 *count);
++	int (*is_idle)(const struct ti_sci_handle *handle, u32 id,
++		       bool *requested_state);
++	int (*is_stop)(const struct ti_sci_handle *handle, u32 id,
++		       bool *req_state, bool *current_state);
++	int (*is_on)(const struct ti_sci_handle *handle, u32 id,
++		     bool *req_state, bool *current_state);
++	int (*is_transitioning)(const struct ti_sci_handle *handle, u32 id,
++				bool *current_state);
++	int (*set_device_resets)(const struct ti_sci_handle *handle, u32 id,
++				 u32 reset_state);
++	int (*get_device_resets)(const struct ti_sci_handle *handle, u32 id,
++				 u32 *reset_state);
++};
++
++/**
++ * struct ti_sci_ops - Function support for TI SCI
++ * @dev_ops:	Device specific operations
++ */
++struct ti_sci_ops {
++	struct ti_sci_dev_ops dev_ops;
++};
++
+ /**
+  * struct ti_sci_handle - Handle returned to TI SCI clients for usage.
+  * @version:	structure containing version information
++ * @ops:	operations that are made available to TI SCI clients
+  */
+ struct ti_sci_handle {
+ 	struct ti_sci_version_info version;
++	struct ti_sci_ops ops;
+ };
+ 
+ #if IS_ENABLED(CONFIG_TI_SCI_PROTOCOL)
 -- 
 2.10.0
