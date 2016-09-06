@@ -1,93 +1,663 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: armada: add support for suspend/resume
-Date: Tue, 06 Sep 2016 08:36:51 +0800
-Message-ID: <1473122211.2201.28.camel@intel.com>
-References: <1469097807-17748-1-git-send-email-jaz@semihalf.com>
-         <1471611994.2691.72.camel@intel.com>
+From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 2/5 v2] thermal: rcar_gen3_thermal: Add R-Car Gen3
+ thermal driver
+Date: Tue, 06 Sep 2016 08:51:16 +0800
+Message-ID: <1473123076.2201.37.camel@intel.com>
+References: <SIXPR06MB09069C18D1F37BE5DB1284B3A8E40@SIXPR06MB0906.apcprd06.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:39683 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754823AbcIFAg4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 5 Sep 2016 20:36:56 -0400
-In-Reply-To: <1471611994.2691.72.camel@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <SIXPR06MB09069C18D1F37BE5DB1284B3A8E40-ptTgG45MbElcr699GEGyj20DtJ1/0DrXvxpqHgZTriW3zl9H0oFU5g@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Khiem Nguyen <khiem.nguyen.xt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Magnus Damm <damm+renesas-yzvPICuk2ACczHhG9Qg4qA@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Thao Phuong Le. Nguyen" <thao.nguyen.yb-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>, Hien Dang <hien.dang.eb-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Toru Oishi <toru.oishi.zj-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Grzegorz Jaszczyk <jaz@semihalf.com>, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, thomas.petazzoni@free-electrons.com, gregory.clement@free-electrons.com, ezequiel.garcia@free-electrons.com
-Cc: mw@semihalf.com, alior@marvell.com
 
-On 五, 2016-08-19 at 21:06 +0800, Zhang Rui wrote:
-> On 四, 2016-07-21 at 12:43 +0200, Grzegorz Jaszczyk wrote:
-> > 
-> > There is no need to implement subroutine for suspend since there is
-> > no
-> > data to store before suspending.
-> > 
-> > Signed-off-by: Grzegorz Jaszczyk <jaz@semihalf.com>
-> Ezequiel,
-> 
-> what do you think of this patch?
-> 
-Ezequiel,
-As the author of the armada_thermal driver, it would be great if you
-can be the goalkeeper for all armada_thermal changes, and I'd prefer to
-get your ACK/NAK before applying/dropping any armada thermal patches.
-Can you please take a look at this patch?
+On 六, 2016-09-03 at 05:25 +0000, Khiem Nguyen wrote:
+> Signed-off-by: Hien Dang <hien.dang.eb-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+> Signed-off-by: Thao Nguyen <thao.nguyen.yb-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>
+> Signed-off-by: Khiem Nguyen <khiem.nguyen.xt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 
-BTW, Grzegorz, for the PM callbacks, you'd better to either use
-__maybe_unused so that gcc can drop it if it's not used, or use #ifdef
-to compile them out when CONFIG_PM_SLEEP is not set.
-You can also refer to this patch https://patchwork.kernel.org/patch/931
-1025/	
-
+Well, I can only see patch 4/5, 5/5 in patchwork but I can not see this
+one....
 
 thanks,
-rui 
-> thanks,
-> rui
-> > 
-> > ---
-> >  drivers/thermal/armada_thermal.c | 14 ++++++++++++++
-> >  1 file changed, 14 insertions(+)
-> > 
-> > diff --git a/drivers/thermal/armada_thermal.c
-> > b/drivers/thermal/armada_thermal.c
-> > index ae75328..65f9838 100644
-> > --- a/drivers/thermal/armada_thermal.c
-> > +++ b/drivers/thermal/armada_thermal.c
-> > @@ -304,12 +304,26 @@ static int armada_thermal_exit(struct
-> > platform_device *pdev)
-> >  	return 0;
-> >  }
-> >  
-> > +static int armada_thermal_resume(struct device *dev)
-> > +{
-> > +	struct thermal_zone_device *thermal =
-> > +		dev_get_drvdata(dev);
-> > +	struct armada_thermal_priv *priv = thermal->devdata;
-> > +
-> > +	priv->data->init_sensor(to_platform_device(dev), priv);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static SIMPLE_DEV_PM_OPS(armada_thermal_pm_ops, NULL,
-> > armada_thermal_resume);
-> > +
-> >  static struct platform_driver armada_thermal_driver = {
-> >  	.probe = armada_thermal_probe,
-> >  	.remove = armada_thermal_exit,
-> >  	.driver = {
-> >  		.name = "armada_thermal",
-> >  		.of_match_table = armada_thermal_id_table,
-> > +		.pm = &armada_thermal_pm_ops,
-> >  	},
-> >  };
-> >  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+rui
+> ---
+> 
+> v2:
+>  * Set static function for _linear_temp_converter().
+>  * Update the compatible string following new format.
+>  * Add newline to improve readability.
+>  * Change thermal_init callbacks to void functions.
+>  * Improve the processing to register thermal_zones.
+>  
+>  drivers/thermal/Kconfig             |   9 +
+>  drivers/thermal/Makefile            |   1 +
+>  drivers/thermal/rcar_gen3_thermal.c | 539
+> ++++++++++++++++++++++++++++++++++++
+>  3 files changed, 549 insertions(+)
+>  create mode 100644 drivers/thermal/rcar_gen3_thermal.c
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 900d505..8500a0a 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -233,6 +233,15 @@ config RCAR_THERMAL
+>  	  Enable this to plug the R-Car thermal sensor driver into
+> the Linux
+>  	  thermal framework.
+>  
+> +config RCAR_GEN3_THERMAL
+> +	tristate "Renesas R-Car Gen3 thermal driver"
+> +	depends on ARCH_RENESAS || COMPILE_TEST
+> +	depends on HAS_IOMEM
+> +	depends on OF
+> +	help
+> +	  Enable this to plug the R-Car Gen3 thermal sensor driver
+> into the Linux
+> +	  thermal framework.
+> +
+>  config KIRKWOOD_THERMAL
+>  	tristate "Temperature sensor on Marvell Kirkwood SoCs"
+>  	depends on MACH_KIRKWOOD || COMPILE_TEST
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index d091134..b7e7082 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -31,6 +31,7 @@ obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-
+> spmi-temp-alarm.o
+>  obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+>  obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
+>  obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
+> +obj-$(CONFIG_RCAR_GEN3_THERMAL)	+= rcar_gen3_thermal.o
+>  obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
+>  obj-y				+= samsung/
+>  obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
+> diff --git a/drivers/thermal/rcar_gen3_thermal.c
+> b/drivers/thermal/rcar_gen3_thermal.c
+> new file mode 100644
+> index 0000000..cdaaa75
+> --- /dev/null
+> +++ b/drivers/thermal/rcar_gen3_thermal.c
+> @@ -0,0 +1,539 @@
+> +/*
+> + *  R-Car Gen3 THS thermal sensor driver
+> + *  Based on drivers/thermal/rcar_thermal.c
+> + *
+> + * Copyright (C) 2016 Renesas Electronics Corporation.
+> + *
+> + *  This program is free software; you can redistribute it and/or
+> modify
+> + *  it under the terms of the GNU General Public License as
+> published by
+> + *  the Free Software Foundation; version 2 of the License.
+> + *
+> + *  This program is distributed in the hope that it will be useful,
+> but
+> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> GNU
+> + *  General Public License for more details.
+> + *
+> + */
+> +#include <linux/delay.h>
+> +#include <linux/err.h>
+> +#include <linux/irq.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/io.h>
+> +#include <linux/module.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/thermal.h>
+> +
+> +/* Register offset */
+> +#define REG_GEN3_CTSR		0x20
+> +#define REG_GEN3_THCTR		0x20
+> +#define REG_GEN3_IRQSTR		0x04
+> +#define REG_GEN3_IRQMSK		0x08
+> +#define REG_GEN3_IRQCTL		0x0C
+> +#define REG_GEN3_IRQEN		0x10
+> +#define REG_GEN3_IRQTEMP1	0x14
+> +#define REG_GEN3_IRQTEMP2	0x18
+> +#define REG_GEN3_IRQTEMP3	0x1C
+> +#define REG_GEN3_TEMP		0x28
+> +#define REG_GEN3_THCODE1	0x50
+> +#define REG_GEN3_THCODE2	0x54
+> +#define REG_GEN3_THCODE3	0x58
+> +
+> +#define PTAT_BASE		0xE6198000
+> +#define REG_GEN3_PTAT1		0x5C
+> +#define REG_GEN3_PTAT2		0x60
+> +#define REG_GEN3_PTAT3		0x64
+> +#define PTAT_SIZE		REG_GEN3_PTAT3
+> +
+> +/* CTSR bit */
+> +#define PONM            (0x1 << 8)
+> +#define AOUT            (0x1 << 7)
+> +#define THBGR           (0x1 << 5)
+> +#define VMEN            (0x1 << 4)
+> +#define VMST            (0x1 << 1)
+> +#define THSST           (0x1 << 0)
+> +
+> +/* THCTR bit */
+> +#define CTCTL		(0x1 << 24)
+> +#define THCNTSEN(x)	(x << 16)
+> +
+> +#define BIT_LEN_12	0x1
+> +
+> +#define CTEMP_MASK	0xFFF
+> +
+> +#define MCELSIUS(temp)			((temp) * 1000)
+> +#define TEMP_IRQ_SHIFT(tsc_id)	(0x1 << tsc_id)
+> +#define TEMPD_IRQ_SHIFT(tsc_id)	(0x1 << (tsc_id + 3))
+> +#define GEN3_FUSE_MASK	0xFFF
+> +
+> +/* Structure for thermal temperature calculation */
+> +struct equation_coefs {
+> +	long a1;
+> +	long b1;
+> +	long a2;
+> +	long b2;
+> +};
+> +
+> +struct fuse_factors {
+> +	int thcode_1;
+> +	int thcode_2;
+> +	int thcode_3;
+> +	int ptat_1;
+> +	int ptat_2;
+> +	int ptat_3;
+> +};
+> +
+> +struct rcar_gen3_thermal_priv {
+> +	void __iomem *base;
+> +	struct device *dev;
+> +	struct thermal_zone_device *zone;
+> +	struct delayed_work work;
+> +	struct fuse_factors factor;
+> +	struct equation_coefs coef;
+> +	spinlock_t lock;
+> +	int id;
+> +	int irq;
+> +	u32 ctemp;
+> +	const struct rcar_gen3_thermal_data *data;
+> +};
+> +
+> +struct rcar_gen3_thermal_data {
+> +	void (*thermal_init)(struct rcar_gen3_thermal_priv *priv);
+> +};
+> +
+> +#define rcar_priv_to_dev(priv)		((priv)->dev)
+> +#define rcar_has_irq_support(priv)	((priv)->irq)
+> +
+> +/* Temperature calculation  */
+> +#define CODETSD(x)		((x) * 1000)
+> +#define TJ_1 96000L
+> +#define TJ_3 (-41000L)
+> +#define PW2(x) ((x)*(x))
+> +
+> +static u32 thermal_reg_read(struct rcar_gen3_thermal_priv *priv, u32
+> reg)
+> +{
+> +	return ioread32(priv->base + reg);
+> +}
+> +
+> +static void thermal_reg_write(struct rcar_gen3_thermal_priv *priv,
+> +				u32 reg, u32 data)
+> +{
+> +	iowrite32(data, priv->base + reg);
+> +}
+> +
+> +static int _round_temp(int temp)
+> +{
+> +	int tmp1, tmp2;
+> +	int result = 0;
+> +
+> +	tmp1 = abs(temp) % 1000;
+> +	tmp2 = abs(temp) / 1000;
+> +
+> +	if (tmp1 < 250)
+> +		result = CODETSD(tmp2);
+> +	else if (tmp1 < 750 && tmp1 >= 250)
+> +		result = CODETSD(tmp2) + 500;
+> +	else
+> +		result = CODETSD(tmp2) + 1000;
+> +
+> +	return ((temp < 0) ? (result * (-1)) : result);
+> +}
+> +
+> +static int _read_fuse_factor(struct rcar_gen3_thermal_priv *priv)
+> +{
+> +	/*
+> +	 * FIXME: The value should be read from some FUSE registers.
+> +	 * For available SoC, these registers have not been
+> supported yet.
+> +	 * The pre-defined value will be applied for now.
+> +	 */
+> +	priv->factor.ptat_1 = 2351;
+> +	priv->factor.ptat_2 = 1509;
+> +	priv->factor.ptat_3 = 435;
+> +	switch (priv->id) {
+> +	case 0:
+> +		priv->factor.thcode_1 = 3248;
+> +		priv->factor.thcode_2 = 2800;
+> +		priv->factor.thcode_3 = 2221;
+> +		break;
+> +	case 1:
+> +		priv->factor.thcode_1 = 3245;
+> +		priv->factor.thcode_2 = 2795;
+> +		priv->factor.thcode_3 = 2216;
+> +		break;
+> +	case 2:
+> +		priv->factor.thcode_1 = 3250;
+> +		priv->factor.thcode_2 = 2805;
+> +		priv->factor.thcode_3 = 2237;
+> +		break;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static void _linear_coefficient_calculation(struct
+> rcar_gen3_thermal_priv *priv)
+> +{
+> +	int tj_2 = 0;
+> +	long a1, b1;
+> +	long a2, b2;
+> +	long a1_num, a1_den;
+> +	long a2_num, a2_den;
+> +
+> +	tj_2 = (CODETSD((priv->factor.ptat_2 - priv->factor.ptat_3)
+> * 137)
+> +		/ (priv->factor.ptat_1 - priv->factor.ptat_3)) -
+> CODETSD(41);
+> +
+> +	/*
+> +	 * The following code is to calculate coefficients for
+> linear equation.
+> +	 */
+> +	/* Coefficient a1 and b1 */
+> +	a1_num = CODETSD(priv->factor.thcode_2 - priv-
+> >factor.thcode_3);
+> +	a1_den = tj_2 - TJ_3;
+> +	a1 = (10000 * a1_num) / a1_den;
+> +	b1 = (10000 * priv->factor.thcode_3) - ((a1 * TJ_3) / 1000);
+> +
+> +	/* Coefficient a2 and b2 */
+> +	a2_num = CODETSD(priv->factor.thcode_2 - priv-
+> >factor.thcode_1);
+> +	a2_den = tj_2 - TJ_1;
+> +	a2 = (10000 * a2_num) / a2_den;
+> +	b2 = (10000 * priv->factor.thcode_1) - ((a2 * TJ_1) / 1000);
+> +
+> +	priv->coef.a1 = DIV_ROUND_CLOSEST(a1, 10);
+> +	priv->coef.b1 = DIV_ROUND_CLOSEST(b1, 10);
+> +	priv->coef.a2 = DIV_ROUND_CLOSEST(a2, 10);
+> +	priv->coef.b2 = DIV_ROUND_CLOSEST(b2, 10);
+> +}
+> +
+> +static int _linear_temp_converter(struct equation_coefs coef,
+> +					int temp_code)
+> +{
+> +	int temp, temp1, temp2;
+> +
+> +	temp1 = MCELSIUS((CODETSD(temp_code) - coef.b1)) / coef.a1;
+> +	temp2 = MCELSIUS((CODETSD(temp_code) - coef.b2)) / coef.a2;
+> +	temp = (temp1 + temp2) / 2;
+> +
+> +	return _round_temp(temp);
+> +}
+> +
+> +/*
+> + *		Zone device functions
+> + */
+> +static int rcar_gen3_thermal_update_temp(struct
+> rcar_gen3_thermal_priv *priv)
+> +{
+> +	u32 ctemp;
+> +	int i;
+> +	unsigned long flags;
+> +	u32 reg = REG_GEN3_IRQTEMP1 + (priv->id * 4);
+> +
+> +	spin_lock_irqsave(&priv->lock, flags);
+> +
+> +	for (i = 0; i < 256; i++) {
+> +		ctemp = thermal_reg_read(priv, REG_GEN3_TEMP) &
+> CTEMP_MASK;
+> +
+> +		if (rcar_has_irq_support(priv)) {
+> +			thermal_reg_write(priv, reg, ctemp);
+> +
+> +			if (thermal_reg_read(priv, REG_GEN3_IRQSTR)
+> != 0)
+> +				break;
+> +		} else
+> +			break;
+> +
+> +		udelay(150);
+> +	}
+> +
+> +	priv->ctemp = ctemp;
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+> +
+> +	return 0;
+> +}
+> +
+> +static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
+> +{
+> +	struct rcar_gen3_thermal_priv *priv = devdata;
+> +	int ctemp;
+> +	unsigned long flags;
+> +
+> +	rcar_gen3_thermal_update_temp(priv);
+> +
+> +	spin_lock_irqsave(&priv->lock, flags);
+> +	ctemp = _linear_temp_converter(priv->coef, priv->ctemp);
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+> +
+> +	if ((ctemp < MCELSIUS(-40)) || (ctemp > MCELSIUS(125))) {
+> +		struct device *dev = rcar_priv_to_dev(priv);
+> +
+> +		dev_dbg(dev, "Temperature is not measured
+> correctly!\n");
+> +		return -EIO;
+> +	}
+> +
+> +	*temp = ctemp;
+> +
+> +	return 0;
+> +}
+> +
+> +static void r8a7795_thermal_init(struct rcar_gen3_thermal_priv
+> *priv)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&priv->lock, flags);
+> +
+> +	thermal_reg_write(priv, REG_GEN3_CTSR,  THBGR);
+> +	thermal_reg_write(priv, REG_GEN3_CTSR,  0x0);
+> +
+> +	udelay(1000);
+> +
+> +	thermal_reg_write(priv, REG_GEN3_CTSR, PONM);
+> +	thermal_reg_write(priv, REG_GEN3_IRQCTL, 0x3F);
+> +	thermal_reg_write(priv, REG_GEN3_IRQEN, TEMP_IRQ_SHIFT(priv-
+> >id) |
+> +						TEMPD_IRQ_SHIFT(priv
+> ->id));
+> +	thermal_reg_write(priv, REG_GEN3_CTSR,
+> +			PONM | AOUT | THBGR | VMEN);
+> +
+> +	udelay(100);
+> +
+> +	thermal_reg_write(priv, REG_GEN3_CTSR,
+> +			PONM | AOUT | THBGR | VMEN | VMST | THSST);
+> +
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+> +}
+> +
+> +static void r8a7796_thermal_init(struct rcar_gen3_thermal_priv
+> *priv)
+> +{
+> +	unsigned long flags;
+> +	unsigned long reg_val;
+> +
+> +	spin_lock_irqsave(&priv->lock, flags);
+> +
+> +	thermal_reg_write(priv, REG_GEN3_THCTR,  0x0);
+> +
+> +	udelay(1000);
+> +
+> +	thermal_reg_write(priv, REG_GEN3_IRQCTL, 0x3F);
+> +	thermal_reg_write(priv, REG_GEN3_IRQEN, TEMP_IRQ_SHIFT(priv-
+> >id) |
+> +						TEMPD_IRQ_SHIFT(priv
+> ->id));
+> +	thermal_reg_write(priv, REG_GEN3_THCTR,
+> +						CTCTL |
+> THCNTSEN(BIT_LEN_12));
+> +	reg_val = thermal_reg_read(priv, REG_GEN3_THCTR);
+> +	reg_val &= ~CTCTL;
+> +	reg_val |= THSST;
+> +	thermal_reg_write(priv, REG_GEN3_THCTR, reg_val);
+> +
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+> +}
+> +
+> +/*
+> + *		Interrupt
+> + */
+> +#define rcar_gen3_thermal_irq_enable(p)		_thermal_irq_
+> ctrl(p, 1)
+> +#define rcar_gen3_thermal_irq_disable(p)	_thermal_irq_ctrl(p,
+> 0)
+> +static void _thermal_irq_ctrl(struct rcar_gen3_thermal_priv *priv,
+> int enable)
+> +{
+> +	unsigned long flags;
+> +
+> +	if (!rcar_has_irq_support(priv))
+> +		return;
+> +
+> +	spin_lock_irqsave(&priv->lock, flags);
+> +
+> +	thermal_reg_write(priv, REG_GEN3_IRQMSK,
+> +		enable ? (TEMP_IRQ_SHIFT(priv->id) |
+> +			TEMPD_IRQ_SHIFT(priv->id)) : 0);
+> +
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+> +}
+> +
+> +static void rcar_gen3_thermal_work(struct work_struct *work)
+> +{
+> +	struct rcar_gen3_thermal_priv *priv;
+> +
+> +	priv = container_of(work, struct rcar_gen3_thermal_priv,
+> work.work);
+> +
+> +	thermal_zone_device_update(priv->zone);
+> +
+> +	rcar_gen3_thermal_irq_enable(priv);
+> +}
+> +
+> +static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
+> +{
+> +	struct rcar_gen3_thermal_priv *priv = data;
+> +	unsigned long flags;
+> +	int status;
+> +
+> +	spin_lock_irqsave(&priv->lock, flags);
+> +
+> +	status = thermal_reg_read(priv, REG_GEN3_IRQSTR);
+> +	thermal_reg_write(priv, REG_GEN3_IRQSTR, 0);
+> +
+> +	spin_unlock_irqrestore(&priv->lock, flags);
+> +
+> +	if ((status & TEMP_IRQ_SHIFT(priv->id)) ||
+> +		(status & TEMPD_IRQ_SHIFT(priv->id))) {
+> +		rcar_gen3_thermal_irq_disable(priv);
+> +		schedule_delayed_work(&priv->work,
+> +				      msecs_to_jiffies(300));
+> +	}
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops = {
+> +	.get_temp	= rcar_gen3_thermal_get_temp,
+> +};
+> +
+> +/*
+> + *		Platform functions
+> + */
+> +static int rcar_gen3_thermal_remove(struct platform_device *pdev)
+> +{
+> +	struct rcar_gen3_thermal_priv *priv =
+> platform_get_drvdata(pdev);
+> +	struct device *dev = &pdev->dev;
+> +
+> +	rcar_gen3_thermal_irq_disable(priv);
+> +	thermal_zone_of_sensor_unregister(dev, priv->zone);
+> +
+> +	pm_runtime_put(dev);
+> +	pm_runtime_disable(dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static const struct rcar_gen3_thermal_data r8a7795_data = {
+> +	.thermal_init = r8a7795_thermal_init,
+> +};
+> +
+> +static const struct rcar_gen3_thermal_data r8a7796_data = {
+> +	.thermal_init = r8a7796_thermal_init,
+> +};
+> +
+> +static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
+> +	{ .compatible = "renesas,r8a7795-thermal", .data =
+> &r8a7795_data},
+> +	{ .compatible = "renesas,r8a7796-thermal", .data =
+> &r8a7796_data},
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
+> +
+> +static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+> +{
+> +	struct rcar_gen3_thermal_priv *priv;
+> +	struct device *dev = &pdev->dev;
+> +	struct resource *res, *irq;
+> +	int ret = -ENODEV;
+> +	int idle;
+> +	struct device_node *tz_nd, *tmp_nd;
+> +	struct thermal_zone_device *zone;
+> +
+> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv)
+> +		return -ENOMEM;
+> +
+> +	platform_set_drvdata(pdev, priv);
+> +
+> +	priv->dev = dev;
+> +
+> +	pm_runtime_enable(dev);
+> +	pm_runtime_get_sync(dev);
+> +
+> +	priv->data = of_device_get_match_data(dev);
+> +	if (!priv->data)
+> +		goto error_unregister;
+> +
+> +	priv->irq = 0;
+> +
+> +	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+> +	if (irq) {
+> +		priv->irq = 1;
+> +		for_each_node_with_property(tz_nd, "polling-delay")
+> {
+> +			tmp_nd = of_parse_phandle(tz_nd,
+> +					"thermal-sensors", 0);
+> +			if (tmp_nd && !strcmp(tmp_nd->full_name,
+> +					dev->of_node->full_name)) {
+> +				of_property_read_u32(tz_nd,
+> "polling-delay",
+> +					&idle);
+> +				if (idle > 0)
+> +					priv->irq = 0;
+> +				break;
+> +			}
+> +		}
+> +	}
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	if (!res)
+> +		goto error_unregister;
+> +
+> +	priv->base = devm_ioremap_resource(dev, res);
+> +	if (IS_ERR(priv->base)) {
+> +		ret = PTR_ERR(priv->base);
+> +		goto error_unregister;
+> +	}
+> +
+> +	spin_lock_init(&priv->lock);
+> +	INIT_DELAYED_WORK(&priv->work, rcar_gen3_thermal_work);
+> +
+> +	priv->id = of_alias_get_id(dev->of_node, "tsc");
+> +	if (priv->id < 0) {
+> +		dev_err(dev, "Failed to get alias id (%d)\n", priv-
+> >id);
+> +		ret = priv->id;
+> +		goto error_unregister;
+> +	}
+> +
+> +	zone = devm_thermal_zone_of_sensor_register(dev, 0, priv,
+> +				&rcar_gen3_tz_of_ops);
+> +
+> +	if (IS_ERR(zone)) {
+> +		dev_err(dev, "Can't register thermal zone\n");
+> +		ret = PTR_ERR(zone);
+> +		goto error_unregister;
+> +	}
+> +	priv->zone = zone;
+> +
+> +	priv->data->thermal_init(priv);
+> +
+> +	ret = _read_fuse_factor(priv);
+> +	if (ret)
+> +		goto error_unregister;
+> +
+> +	_linear_coefficient_calculation(priv);
+> +
+> +	ret = rcar_gen3_thermal_update_temp(priv);
+> +
+> +	if (ret < 0)
+> +		goto error_unregister;
+> +
+> +
+> +	rcar_gen3_thermal_irq_enable(priv);
+> +
+> +	/* Interrupt */
+> +	if (irq) {
+> +		ret = devm_request_irq(dev, irq->start,
+> +					rcar_gen3_thermal_irq, 0,
+> +				       dev_name(dev), priv);
+> +		if (ret) {
+> +			dev_err(dev, "IRQ request failed\n ");
+> +			goto error_unregister;
+> +		}
+> +	}
+> +
+> +	dev_info(dev, "probed\n");
+> +
+> +	return 0;
+> +
+> +error_unregister:
+> +	rcar_gen3_thermal_remove(pdev);
+> +
+> +	return ret;
+> +}
+> +
+> +static struct platform_driver rcar_gen3_thermal_driver = {
+> +	.driver	= {
+> +		.name	= "rcar_gen3_thermal",
+> +		.of_match_table = rcar_gen3_thermal_dt_ids,
+> +	},
+> +	.probe		= rcar_gen3_thermal_probe,
+> +	.remove		= rcar_gen3_thermal_remove,
+> +};
+> +module_platform_driver(rcar_gen3_thermal_driver);
+> +
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_DESCRIPTION("R-Car Gen3 THS thermal sensor driver");
+> +MODULE_AUTHOR("Khiem Nguyen <khiem.nguyen.xt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>");
+> -- 
+> 1.9.1
+> 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
