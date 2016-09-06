@@ -1,34 +1,37 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] cpufreq: dt: Add support for r8a7792
-Date: Tue,  6 Sep 2016 14:18:20 +0200
-Message-ID: <1473164300-22017-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Khiem Nguyen <khiem.nguyen.xt@renesas.com>
+Subject: RE: [PATCH 2/5 v2] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal
+ driver
+Date: Tue, 6 Sep 2016 12:19:36 +0000
+Message-ID: <SIXPR06MB09064A12322A3E45026399B1A8F90@SIXPR06MB0906.apcprd06.prod.outlook.com>
+References: <SIXPR06MB09069C18D1F37BE5DB1284B3A8E40@SIXPR06MB0906.apcprd06.prod.outlook.com>
+ <CAMuHMdXjywuuQG8LLMddOTjCpC5Ady3hVWvm_SM_AcpFScwWDw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdXjywuuQG8LLMddOTjCpC5Ady3hVWvm_SM_AcpFScwWDw@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Wolfram Sang <wsa@the-dreams.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <damm+renesas@opensource.se>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Thao Phuong Le. Nguyen" <thao.nguyen.yb@rvc.renesas.com>, Hien Dang <hien.dang.eb@renesas.com>, Toru Oishi <toru.oishi.zj@renesas.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add the compatible string for supporting the generic cpufreq driver on
-the Renesas R-Car V2H (r8a7792) SoC.
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-Untested due to lack of hardware.
----
- drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 285ed3e6494e9d22..276378a43321a4e0 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -52,6 +52,7 @@ static const struct of_device_id machines[] __initconst = {
- 	{ .compatible = "renesas,r8a7779", },
- 	{ .compatible = "renesas,r8a7790", },
- 	{ .compatible = "renesas,r8a7791", },
-+	{ .compatible = "renesas,r8a7792", },
- 	{ .compatible = "renesas,r8a7793", },
- 	{ .compatible = "renesas,r8a7794", },
- 	{ .compatible = "renesas,sh73a0", },
--- 
-1.9.1
+SGkgR2VlcnQsDQoNClRoYW5rcyBmb3IgeW91ciBjb21tZW50Lg0KDQo+ID4gK3N0YXRpYyBpbnQg
+cmNhcl9nZW4zX3RoZXJtYWxfcHJvYmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikgew0K
+PiANCj4gPiArICAgICAgIHByaXYtPmlkID0gb2ZfYWxpYXNfZ2V0X2lkKGRldi0+b2Zfbm9kZSwg
+InRzYyIpOw0KPiA+ICsgICAgICAgaWYgKHByaXYtPmlkIDwgMCkgew0KPiA+ICsgICAgICAgICAg
+ICAgICBkZXZfZXJyKGRldiwgIkZhaWxlZCB0byBnZXQgYWxpYXMgaWQgKCVkKVxuIiwgcHJpdi0+
+aWQpOw0KPiA+ICsgICAgICAgICAgICAgICByZXQgPSBwcml2LT5pZDsNCj4gPiArICAgICAgICAg
+ICAgICAgZ290byBlcnJvcl91bnJlZ2lzdGVyOw0KPiA+ICsgICAgICAgfQ0KPiANCj4gSW4gdjEs
+IE1vcmltb3RvLXNhbiB3b25kZXJlZCB3aGV0aGVyIHRoZSBhbGlhcyBpcyByZWFsbHkgbmVlZGVk
+LCBidXQgeW91IGhhdmVuJ3QNCj4gYWRkcmVzc2VkIGhpcyBxdWVzdGlvbi4NCj4gDQo+IFdoaWxl
+IGFsaWFzZXMgY2FuIGJlIHVzZWZ1bCBpbiBEVCBzb3VyY2UgZmlsZXMsIHVzaW5nIGFsaWFzZXMg
+bGlrZSB0aGlzIGltcG9zZXMNCj4gaGFyZGNvZGVkIGluc3RhbmNlIG51bWJlcnMsIHdoaWNoIGlz
+IHNvbWV0aGluZyB3ZSB0cnkgdG8gYXZvaWQgdGhlc2UgZGF5cy4NCj4gQWxzbywgdGhpcyBwdXRz
+IGEgaGFyZCByZXF1aXJlbWVudCBvbiB0aGUgcHJlc2VuY2Ugb2YgdGhlIGFsaWFzIGluIERULCB3
+aGljaCBzaG91bGQNCj4gYmUgZG9jdW1lbnRlZCBpbiB0aGUgRFQgYmluZGluZ3MuDQoNCk9LLg0K
+SSBwcmVmZXIgdXBkYXRpbmcgRFQgYmluZGluZyB0byBkZXNjcmliZSBhbGlhcy4NCg0KVGhlcmUg
+aXMgcmVxdWlyZW1lbnQgYWJvdXQgY29lZmZpY2llbnQgdG8gY2FsY3VsYXRlIHRlbXBlcmF0dXJl
+LA0KYW5kIHRoZSBjb2VmZmljaWVudCB2YWx1ZSAoZml4ZWQgdmFsdWUpIGlzIGRpZmZlcmVudCBh
+bW9uZyB0aGVybWFsIHNlbnNvcnMuDQoNClRoYW5rcy4NCg0KQmVzdCByZWdhcmRzLA0KS0hJRU0g
+Tmd1eWVuDQo=
