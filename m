@@ -1,211 +1,49 @@
 From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH 3/3] soc: ti: Add ti_sci_pm_domains driver
-Date: Wed, 07 Sep 2016 11:38:52 -0700
-Message-ID: <7h4m5rv9kz.fsf@baylibre.com>
-References: <20160819235653.26355-1-nm@ti.com>
-        <20160819235653.26355-4-nm@ti.com>
-        <CAPDyKFooDUOPT9dP8HaW3YBO9PsX-1+96PPE7CRMyjEkra7cBQ@mail.gmail.com>
-        <57C0D2C9.1030801@ti.com> <57C5E1DA.2040405@ti.com>
-        <CAPDyKFqszM48nXnnA9D8iCp34k-ZmNvOkHPCc=Fya4nJA7PvBQ@mail.gmail.com>
-        <57CF26DB.4020807@ti.com>
+Subject: Re: [PATCH V3 0/5] firmware: Add support for TI System Control Interface (TI-SCI) protocol driver
+Date: Wed, 07 Sep 2016 11:55:38 -0700
+Message-ID: <7hshtbtu8l.fsf@baylibre.com>
+References: <20160906190127.23522-1-nm@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:34329 "EHLO
-        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757985AbcIGSiy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 14:38:54 -0400
-Received: by mail-pf0-f181.google.com with SMTP id p64so9255369pfb.1
-        for <linux-pm@vger.kernel.org>; Wed, 07 Sep 2016 11:38:54 -0700 (PDT)
-In-Reply-To: <57CF26DB.4020807@ti.com> (Dave Gerlach's message of "Tue, 6 Sep
-        2016 15:28:11 -0500")
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:33602 "EHLO
+        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755991AbcIGSzl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 14:55:41 -0400
+Received: by mail-pf0-f176.google.com with SMTP id g202so9392997pfb.0
+        for <linux-pm@vger.kernel.org>; Wed, 07 Sep 2016 11:55:40 -0700 (PDT)
+In-Reply-To: <20160906190127.23522-1-nm@ti.com> (Nishanth Menon's message of
+        "Tue, 6 Sep 2016 14:01:22 -0500")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Keerthy <j-keerthy@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>
+To: Nishanth Menon <nm@ti.com>
+Cc: Rob Herring <robh@kernel.org>, Tero Kristo <t-kristo@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>, devicetree@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, narmstrong@baylibre.com
 
-Dave Gerlach <d-gerlach@ti.com> writes:
+Nishanth Menon <nm@ti.com> writes:
 
-> On 08/30/2016 03:26 PM, Ulf Hansson wrote:
->> On 30 August 2016 at 21:43, Dave Gerlach <d-gerlach@ti.com> wrote:
->>> Jon, Ulf,
->>>
->>> On 08/26/2016 06:37 PM, Dave Gerlach wrote:
->>>>
->>>> Hi,
->>>> On 08/25/2016 02:27 AM, Ulf Hansson wrote:
->>>>>
->>>>> + Jon
->>>>>
->>>>> [...]
->>>>>
->>>>>> +
->>>>>> +static int ti_sci_pm_domains_probe(struct platform_device *pdev)
->>>>>> +{
->>>>>> +       struct device *dev = &pdev->dev;
->>>>>> +       struct device_node *np = dev->of_node;
->>>>>> +       struct ti_sci_genpd_data *ti_sci_genpd;
->>>>>> +
->>>>>> +       ti_sci_genpd = devm_kzalloc(dev, sizeof(*ti_sci_genpd),
->>>>>> GFP_KERNEL);
->>>>>> +       if (!ti_sci_genpd)
->>>>>> +               return -ENOMEM;
->>>>>> +
->>>>>> +       ti_sci_genpd->ti_sci = devm_ti_sci_get_handle(dev);
->>>>>> +       if (IS_ERR(ti_sci_genpd->ti_sci))
->>>>>> +               return PTR_ERR(ti_sci_genpd->ti_sci);
->>>>>> +
->>>>>> +       ti_sci_genpd->dev = dev;
->>>>>> +
->>>>>> +       INIT_LIST_HEAD(&ti_sci_genpd->pd_list);
->>>>>> +       mutex_init(&ti_sci_genpd->pd_list_mutex);
->>>>>> +
->>>>>> +       return __of_genpd_add_provider(np,
->>>>>> of_ti_sci_genpd_xlate_onecell,
->>>>>> +                                      ti_sci_genpd);
->>>>>
->>>>>
->>>>> Jon Hunter are working on adding robust method to be able to remove
->>>>> initialized genpds [1].
->>>>>
->>>>> In that series we intend to remove the __of_genpd_add_provider() API,
->>>>> and instead only have of_genpd_add_provider_onecell() and
->>>>> of_genpd_add_provider_simple(). Could you please convert to use any of
->>>>> these APIs instead?
->>>>
->>>>
->>>> Thanks for pointing this out. I took at look at the series you've linked
->>>> and the
->>>> short answer is that I see no good way to directly convert what we've done
->>>> to
->>>> use those APIs.
->>>>
->>>> On this platform each device has it's power state controlled through the
->>>> SCI
->>>> protocol described in the cover letter. The system makes a request for
->>>> powering
->>>> on or off the device using a unique ID number for each device, as provided
->>>> in
->>>> patches 1 and 2. These operations map to those of a genpd, so we decided
->>>> to do a
->>>> 1:1 device to genpd mapping, where each device has it's own genpd.
->>>>
->>>> The split that we took from the provided simple and onecell xlate
->>>> functions
->>>> arises from this mapping. The IDs are not necessarily linear and also they
->>>> are
->>>> not necessarily defined in a fixed way for all SoCs, they are entirely
->>>> data
->>>> driven based on the provided device ID. To make use of these IDs, I
->>>> created a
->>>> new xlate function that takes a onecell value but instead dynamically
->>>> allocates
->>>> a new genpd, at probe time, to give us a genpd that contains the necessary
->>>> SoC
->>>> specific data for that device that probed and is mapped directly to the
->>>> device.
->>>> This lets us only create the genpds we need without having to redefine a
->>>> static
->>>> list of all possible genpds and duplicate the data.
->>>>
->>>> So my question back would be, how critical is it to be able to drop the
->>>> ability
->>>> to provide custom xlate functions?
->>>
->>>
->>> After thinking about this a bit more, I believe I see a way we can use the
->>> of_genpd_add_provider_onecell, although not optimally. The device IDs, and
->>> therefore the genpd IDs (in the last email I mentioned we are doing a 1:1
->>> device to genpd mapping) are fixed and defined by the hardware, and are not
->>> linear, there can be gaps and we won't necessarily always start at 0 even
->>> though we do on this SoC. However, we could build an array of genpds that
->>> map to our IDs similar to how several have done it, like in
->>> drivers/soc/bcm/raspberrypi-power.c, but because our IDs can have gaps,
->>> there will be unused struct generic_pm_domains that get allocated and are
->>> never touched because the index of the element doesn't correspond to a genpd
->>> ID.
->>
->> There are a couple of ways to solve your problem without having to
->> create one genpd instance for each of the platform devices. As a
->> matter of fact, I think that approach should be avoided if possible.
->> Genpd isn't designed for these kind purposes, even if it can be done
->> like that.
->>
+> Hi,
 >
-> Yes, ok. For K2G and future devices, the kernel will just request the
-> device over the TI_SCI protocol and the firmware will guarantee
-> everything that it needs it on. So we thought the 1:1 device to genpd
-> mapping made sense in that regard, but maybe it is a stretch of the
-> framework in the wrong way.
+> Version 3 of the series with change in the way we describe the children
+> nodes (no change to drivers required - only the dts description changes).
 >
->> Here are some ideas which could be used to solve the problem differently.
->>
->> *)
->> Assuming each platform device has a driver for it!?
->> Then why don't you implement the ->runtime_suspend|resume() callbacks
->> on the driver level and call the SCI interface to power on/off the
->> device from there? This ought to be the most straight forward
->> solution.
+> Texas Instruments' Keystone generation System on Chips (SoC)
+> starting with 66AK2G02[1], now include a dedicated SoC System Control
+> entity called PMMC(Power Management Micro Controller) in line with
+> ARM architecture recommendations. The function of this module is
+> to integrate all system operations in a centralized location.
+> Communication with the SoC System Control entity from various
+> processing units like ARM/DSP occurs over Message Manager hardware
+> block.
 >
-> Straightforward yes but not a realistic option as we are using shared
-> drivers from other platforms so sticking in platform specific code
-> won't work.
+> This series adds the base support for TI System Control Interface
+> (TI-SCI) protocol[2]. The protocol is built on top of Texas
+> Instrument's Message Manager communication mechanism[3].
 >
->>
->>
->> **)
->> You may also use genpd's (struct generic_pm_domain)
->> ->attach|detach_dev() callbacks to create the device specific data
->> (the SCI device ID). The ->attach_dev() callback are invoked when a
->> device gets attached to its PM domain (genpd) at probe time.
->>
->> Currently these callbacks are already being used by SoCs that uses the
->> PM clk API from a genpd client. That is needed to create the device
->> specific PM clock list. We would have to do something similar here for
->> the SCI device IDs.
->>
->> Then, you must also assign/implement the ->start() and ->stop()
->> callbacks of the struct gpd_dev_ops, which is a part of the genpd
->> struct. These callbacks can then easily invoke SoC specific code/APIs
->> and perhaps that is the issue with my first suggested approach!?
->
-> I've taken a look at what you have suggested here and I think it could
-> work for us, thanks for the suggestion, I will give it a shot, I think
-> that this will work just as well from a functional perspective.
->
->>
->>>
->>> Based on the ID set provided in patch 2 of this series I see 12 gaps, so
->>> we'd be wasting space the size of 12 genpds. The ID mapping will change on
->>> future SoCs, so this number could be larger. Do you think this is an
->>> acceptable solution? It allows us to play nice with the new genpd framework
->>> changes at the cost of wasting some space allocated to filler genpds.
->>
->> There are other issues as well, which mostly has do to with a
->> unnecessary long execution path, involving taking mutexes etc in
->> genpd.
->>
->> All you actually need, is to be able to power on/off a device from a
->> driver's ->runtime_suspend|resume() callback. Don't you think?
->
-> Yes, but I thought the point of these frameworks was that they let us
-> avoid doing it manually with platform specific code inside the
-> drivers. I'll look at the callbacks in the genpd framework instead,
-> that seems like a good place to do it.
+> Overall architecture is very similar to SCPI[4] as follows:
 
-One more idea...
+Dumb Q: I'm curious about the limitations in SCPI that were found that
+made TI decided to implement its own version.
 
-Since you don't really have a domain (a group of devices), what you
-really have is each device having an independent power switch, so as Ulf
-suggested, what you really need is for all the devices to share the same
-set of runtime PM callbacks that call SCI.  The only difference is the
-unique ID.
-
-Rather than using all of genpd, you could also just use a pm_domain
-which is what genpd is built on top of (and also omap_device, which
-you're probably familiar with also.)
-
-That would allow you to keep the drivers completely generic, yet share
-all the SCI specific "domain" code inside a pm_domain.
+Thanks,
 
 Kevin
