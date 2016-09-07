@@ -1,72 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/2] cpufreq: ti: Add cpufreq driver to determine
- available OPPs at runtime
-Date: Wed, 7 Sep 2016 10:50:53 +0530
-Message-ID: <20160907052053.GO27345@vireshk-i7>
-References: <20160901025328.376-1-d-gerlach@ti.com>
- <20160901025328.376-3-d-gerlach@ti.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] power: supply: sbs-battery: simplify DT parsing
+Date: Wed, 07 Sep 2016 09:58:10 +0200
+Message-ID: <4977026.Nm6AJ7K8UK@wuerfel>
+References: <20160906131643.1930011-1-arnd@arndb.de> <20160906235523.ff4opq56gg4ln6xv@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:34943 "EHLO
-        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751790AbcIGFU4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 01:20:56 -0400
-Received: by mail-pf0-f178.google.com with SMTP id w87so2606739pfk.2
-        for <linux-pm@vger.kernel.org>; Tue, 06 Sep 2016 22:20:56 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160901025328.376-3-d-gerlach@ti.com>
+Received: from mout.kundenserver.de ([212.227.126.187]:60496 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751174AbcIGH55 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 03:57:57 -0400
+In-Reply-To: <20160906235523.ff4opq56gg4ln6xv@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Phil Reid <preid@electromag.com.au>, YH Huang <yh.huang@mediatek.com>, Joshua Clayton <stillcompiling@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 31-08-16, 21:53, Dave Gerlach wrote:
-> Some TI SoCs, like those in the AM335x, AM437x, DRA7x, and AM57x families,
-> have different OPPs available for the MPU depending on which specific
-> variant of the SoC is in use. This can be determined through use of the
-> revision and an eFuse register present in the silicon. Introduce a
-> ti-cpufreq driver that can read the aformentioned values and provide
-> them as version matching data to the opp framework. Through this the
-> opp-supported-hw dt binding that is part of the operating-points-v2
-> table can be used to indicate availability of OPPs for each device.
+On Wednesday, September 7, 2016 1:55:23 AM CEST Sebastian Reichel wrote:
 > 
-> This driver also creates the "cpufreq-dt" platform_device after passing
-> the version matching data to the OPP framework so that the cpufreq-dt
-> handles the actual cpufreq implementation. Even without the necessary
-> data to pass the version matching data the driver will still create this
-> device to maintain backwards compatibility with operating-points v1
-> tables.
+> Patch looks fine to me. Actually I already asked Phil to
+> implement your change [0]. I just queued it to power-supply's
+> for-next branch.
 > 
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
-> ---
-> v1->v2:
-> 	- Convert to module_platform_driver to match against new compatibles
-> 	  in patch 1
-> 	- Cleaned up some bit shifts
-> 	- of_property_read_u32_array used rather than reading values individually
-> 
->  drivers/cpufreq/Kconfig.arm  |  11 ++
->  drivers/cpufreq/Makefile     |   1 +
->  drivers/cpufreq/ti-cpufreq.c | 308 +++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 320 insertions(+)
->  create mode 100644 drivers/cpufreq/ti-cpufreq.c
+> [0] https://marc.info/?l=linux-pm&m=147273382018953&w=2
 
-I am wondering if we should start writing OPP drivers instead. As this
-patch doesn't have anything to do with cpufreq really :)
+Glad to see we had the same thought. ;-)
 
-But its fine for now..
+I see that we went for different defaults for chip->poll_retry_count:
+I concluded that '0' would be the correct default, while you suggested '1'
+in your reply.
 
-> +static const struct of_device_id ti_cpufreq_of_match[] = {
-> +	{ .compatible = "operating-points-v2-ti-am3352-cpu",
-> +	  .data = &am3x_soc_data, },
-> +	{ .compatible = "operating-points-v2-ti-am4372-cpu",
-> +	  .data = &am4x_soc_data, },
-> +	{ .compatible = "operating-points-v2-ti-dra7-cpu",
-> +	  .data = &dra7_soc_data },
+Can you double-check the code and see which one is right?
 
-You should be using your SoC compatible strings here. OPP compatible
-property isn't supposed to be (mis)used for this purpose.
-
--- 
-viresh
+	Arnd
