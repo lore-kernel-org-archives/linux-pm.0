@@ -1,319 +1,63 @@
-From: Sean Paul <seanpaul@google.com>
-Subject: Re: [PATCH v10 5/5] drm/rockchip: Add dmc notifier in vop driver
-Date: Wed, 7 Sep 2016 16:31:13 -0400
-Message-ID: <CAOw6vb+xfDhFR12OwZRVsFEHYxL0ASbs+CO8E9NHgTZowgg2bw@mail.gmail.com>
-References: <1473051971-5500-1-git-send-email-hl@rock-chips.com>
- <1473051971-5500-6-git-send-email-hl@rock-chips.com> <CAOw6vb+N4ASTAu49VBPyOAUH=S4rrUBOgZOEP-RTvijEgeN7HA@mail.gmail.com>
- <CAGAzgsqQWchUMUSGtk1JG0WhyD63vuo_dLKrPCUkyNR1tz+xNQ@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 1/4] exynos4-is: Clear isp-i2c adapter power.ignore_children
+ flag
+Date: Wed, 7 Sep 2016 22:38:34 +0200
+Message-ID: <CACRpkdaFj58kMqniVHxC87K0XmHoPy3x-GHs=JrK-t2osKCZ1w@mail.gmail.com>
+References: <1472729956-17475-1-git-send-email-s.nawrocki@samsung.com> <20160901114711.GF2893@katana>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f181.google.com ([209.85.161.181]:36117 "EHLO
-        mail-yw0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755066AbcIGUbf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 16:31:35 -0400
-Received: by mail-yw0-f181.google.com with SMTP id u124so3237946ywg.3
-        for <linux-pm@vger.kernel.org>; Wed, 07 Sep 2016 13:31:35 -0700 (PDT)
-In-Reply-To: <CAGAzgsqQWchUMUSGtk1JG0WhyD63vuo_dLKrPCUkyNR1tz+xNQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20160901114711.GF2893@katana>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>, Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, stable <stable@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "dbasehore ." <dbasehore@chromium.org>
-Cc: Lin Huang <hl@rock-chips.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, ??? <myungjoo.ham@samsung.com>, =?UTF-8?B?5aea5pm65oOF?= <mark.yao@rock-chips.com>, cw00.choi@samsung.com, Dave Airlie <airlied@linux.ie>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Douglas Anderson <dianders@chromium.org>, linux-rockchip@lists.infradead.org, Kyungmin Park <kyungmin.park@samsung.com>, Linux ARM Kernel <linux-arm-kernel@lists.infradead.org>, Jon Medhurst <tixy@linaro.org>, =?UTF-8?B?5bmz5Y+w57uELeaxpOS6keW5sw==?= <typ@rock-chips.com>, sudeep.holla@arm.com, Mark Rutland <mark.rutland@arm.com>Linux-pm mailing list <linux->
 
-On Wed, Sep 7, 2016 at 2:13 PM, dbasehore . <dbasehore@chromium.org> wrote:
-> On Tue, Sep 6, 2016 at 10:18 AM, Sean Paul <seanpaul@google.com> wrote:
->> On Mon, Sep 5, 2016 at 1:06 AM, Lin Huang <hl@rock-chips.com> wrote:
->>> when in ddr frequency scaling process, vop can not do enable or
->>> disable operation, since in dcf we check vop clock to see whether
->>> vop work. If vop work, dcf do ddr frequency scaling when vop
->>> in vblank status, and we need to read vop register to check whether
->>> vop go into vblank status. If vop not work, dcf can do ddr frequency
->>> any time. So when do ddr frequency scaling, you disabled or enable
->>> vop, there may two bad thing happen: 1, the panel flicker(when vop from
->>> disable status change to enable). 2, kernel hang (when vop from enable
->>> status change to disable, dcf need to read vblank status, but if you disable
->>> vop clock, it can not get the status, it will lead soc dead) So we need
->>> register to devfreq notifier, and we can get the dmc status. Also, when
->>> there have two vop enabled, we need to disable dmc, since dcf only base
->>> on one vop vblank time, so the other panel will flicker when do ddr
->>> frequency scaling.
->>>
->>> Signed-off-by: Lin Huang <hl@rock-chips.com>
->>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->>> ---
->>> Changes in v10:
->>> - None
->>>
->>> Changes in v9:
->>> - None
->>>
->>> Changes in v8:
->>> - None
->>>
->>> Changes in v7:
->>> - None
->>>
->>> Changes in v6:
->>> - fix a build error
->>>
->>> Changes in v5:
->>> - improve some nits
->>>
->>> Changes in v4:
->>> - register notifier to devfreq_register_notifier
->>> - use DEVFREQ_PRECHANGE and DEVFREQ_POSTCHANGE to get dmc status
->>> - when two vop enable, disable dmc
->>> - when two vop back to one vop, enable dmc
->>>
->>> Changes in v3:
->>> - when do vop eanble/disable, dmc will wait until it finish
->>>
->>> Changes in v2:
->>> - None
->>>
->>> Changes in v1:
->>> - use wait_event instead usleep
->>>
->>>  drivers/gpu/drm/rockchip/rockchip_drm_vop.c | 116 ++++++++++++++++++++++++++++
->>>  1 file changed, 116 insertions(+)
->>>
->>> diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
->>> index efbc41a..a73f3aa 100644
->>> --- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
->>> +++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
->>> @@ -19,6 +19,8 @@
->>>  #include <drm/drm_crtc_helper.h>
->>>  #include <drm/drm_plane_helper.h>
->>>
->>> +#include <linux/devfreq.h>
->>> +#include <linux/devfreq-event.h>
->>>  #include <linux/kernel.h>
->>>  #include <linux/module.h>
->>>  #include <linux/platform_device.h>
->>> @@ -118,6 +120,13 @@ struct vop {
->>>
->>>         const struct vop_data *data;
->>>
->>> +       struct devfreq *devfreq;
->>> +       struct devfreq_event_dev *devfreq_event_dev;
->>> +       struct notifier_block dmc_nb;
->>> +       int dmc_in_process;
->>> +       int vop_switch_status;
->>> +       wait_queue_head_t wait_dmc_queue;
->>> +       wait_queue_head_t wait_vop_switch_queue;
->>>         uint32_t *regsbak;
->>>         void __iomem *regs;
->>>
->>> @@ -428,11 +437,47 @@ static void vop_dsp_hold_valid_irq_disable(struct vop *vop)
->>>         spin_unlock_irqrestore(&vop->irq_lock, flags);
->>>  }
->>>
->>> +static int dmc_notify(struct notifier_block *nb, unsigned long event,
->>> +                     void *data)
->>> +{
->>> +       struct vop *vop = container_of(nb, struct vop, dmc_nb);
->>> +
->>> +       if (event == DEVFREQ_PRECHANGE) {
->>> +               /*
->>> +                * check if vop in enable or disable process,
->>> +                * if yes, wait until it finishes, use 200ms as
->>> +                * timeout.
->>> +                */
->>> +               if (!wait_event_timeout(vop->wait_vop_switch_queue,
->>> +                                       !vop->vop_switch_status, HZ / 5))
->>> +                       dev_warn(vop->dev,
->>> +                                "Timeout waiting for vop swtich status\n");
->>> +               vop->dmc_in_process = 1;
->>> +       } else if (event == DEVFREQ_POSTCHANGE) {
->>> +               vop->dmc_in_process = 0;
->>> +               wake_up(&vop->wait_dmc_queue);
->>> +       }
->>> +
->>> +       return NOTIFY_OK;
->>> +}
->>> +
->>>  static int vop_enable(struct drm_crtc *crtc)
->>>  {
->>>         struct vop *vop = to_vop(crtc);
->>> +       int num_enabled_crtc = 0;
->>>         int ret;
->>>
->>> +       /*
->>> +        * if in dmc scaling frequency process, wait until it finishes
->>> +        * use 200ms as timeout time.
->>> +        */
->>> +       if (!wait_event_timeout(vop->wait_dmc_queue,
->>> +                               !vop->dmc_in_process, HZ / 5))
->>> +               dev_warn(vop->dev,
->>> +                        "Timeout waiting for dmc when vop enable\n");
->>> +
->>
->>
->> This wait_event_timeout code is terribly racey (same goes above and below).
->>
->>
->>> +       vop->vop_switch_status = 1;
->>> +
->>>         ret = pm_runtime_get_sync(vop->dev);
->>>         if (ret < 0) {
->>>                 dev_err(vop->dev, "failed to get pm runtime: %d\n", ret);
->>> @@ -479,6 +524,21 @@ static int vop_enable(struct drm_crtc *crtc)
->>>
->>>         drm_crtc_vblank_on(crtc);
->>>
->>> +       vop->vop_switch_status = 0;
->>> +       wake_up(&vop->wait_vop_switch_queue);
->>> +
->>> +       /* check how many VOPs in use now */
->>> +       drm_for_each_crtc(crtc, vop->drm_dev) {
->>> +               if (crtc->state->enable)
->>
->> I think you really want to check active, instead of enable.
->>
->>> +                       num_enabled_crtc++;
->>> +       }
->>> +
->>> +       /* if enable two vop, need to disable dmc */
->>> +       if ((num_enabled_crtc > 1) && vop->devfreq) {
->>> +               if (vop->devfreq_event_dev)
->>> +                       devfreq_event_disable_edev(vop->devfreq_event_dev);
->>> +               devfreq_suspend_device(vop->devfreq);
->>> +       }
->>
->> This really feels like something that should be handled somewhere
->> else. I don't fully understand how this works, but it seems like this
->> dependency should be handled where it actually matters, rather than
->> building in a seemingly arbitrary restriction in the vop driver.
->>
->> Even if this is the best place for it, this needs to be refactored to
->> eliminate the races that exist now.
->>
->> Sean
->
-> DMC transitions can't happen when there is more than one display. You
-> would have to synchronize with more than one vblank on the DCF (which
-> actually changes the DDR frequency), and that's probably not going to
-> happen.
->
-> If this code should be done somewhere else, it needs to still be able
-> to check the number of displays and avoid race conditions with
-> displays getting enabled or disabled. I don't know enough about DRM to
-> know if that's possible outside of this code.
->
+On Thu, Sep 1, 2016 at 1:47 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
+> On Thu, Sep 01, 2016 at 01:39:16PM +0200, Sylwester Nawrocki wrote:
 
-Yeah, so I suppose that's another race, since we aren't necessarily
-guaranteed to be enabling/disabling the crtcs in the order this patch
-assumes.
-
-I think we can probably handle this better by doing this up a level
-where we have a more global view of which vops are enabled/disabled
-and the order in which they will be processed.
-
-I'm working on this now, stay tuned.
-
-Sean
-
-
-
+>> Since commit 04f59143b571161d25315dd52d7a2ecc022cb71a
+>> ("i2c: let I2C masters ignore their children for PM")
+>> the power.ignore_children flag is set when registering an I2C
+>> adapter. Since I2C transfers are not managed by the fimc-isp-i2c
+>> driver its clients use pm_runtime_* calls directly to communicate
+>> required power state of the bus controller.
+>> However when the power.ignore_children flag is set that doesn't
+>> work, so clear that flag back after registering the adapter.
+>> While at it drop pm_runtime_enable() call on the i2c_adapter
+>> as it is already done by the I2C subsystem when registering
+>> I2C adapter.
 >>
->>>         return 0;
->>>
->>>  err_disable_aclk:
->>> @@ -489,17 +549,31 @@ err_disable_hclk:
->>>         clk_disable(vop->hclk);
->>>  err_put_pm_runtime:
->>>         pm_runtime_put_sync(vop->dev);
->>> +       vop->vop_switch_status = 0;
->>> +       wake_up(&vop->wait_vop_switch_queue);
->>>         return ret;
->>>  }
->>>
->>>  static void vop_crtc_disable(struct drm_crtc *crtc)
->>>  {
->>>         struct vop *vop = to_vop(crtc);
->>> +       int num_enabled_crtc = 0;
->>>         int i;
->>>
->>>         WARN_ON(vop->event);
->>>
->>>         /*
->>> +        * if in dmc scaling frequency process, wait until it finish
->>> +        * use 200ms as timeout time.
->>> +        */
->>> +       if (!wait_event_timeout(vop->wait_dmc_queue,
->>> +                               !vop->dmc_in_process, HZ / 5))
->>> +               dev_warn(vop->dev,
->>> +                        "Timeout waiting for dmc when vop disable\n");
->>> +
->>> +       vop->vop_switch_status = 1;
->>> +
->>> +       /*
->>>          * We need to make sure that all windows are disabled before we
->>>          * disable that crtc. Otherwise we might try to scan from a destroyed
->>>          * buffer later.
->>> @@ -555,6 +629,24 @@ static void vop_crtc_disable(struct drm_crtc *crtc)
->>>                 spin_unlock_irq(&crtc->dev->event_lock);
->>>
->>>                 crtc->state->event = NULL;
->>> +
->>> +       vop->vop_switch_status = 0;
->>> +       wake_up(&vop->wait_vop_switch_queue);
->>> +
->>> +       /* check how many VOPs in use now */
->>> +       drm_for_each_crtc(crtc, vop->drm_dev) {
->>> +               if (crtc->state->enable)
->>> +                       num_enabled_crtc++;
->>> +       }
->>> +
->>> +       /*
->>> +        * if num_enabled_crtc = 1 now, it means 2 vop enabled
->>> +        * change to 1 vop enabled  need to enable dmc again.
->>> +        */
->>> +       if ((num_enabled_crtc == 1) && vop->devfreq) {
->>> +               if (vop->devfreq_event_dev)
->>> +                       devfreq_event_enable_edev(vop->devfreq_event_dev);
->>> +               devfreq_resume_device(vop->devfreq);
->>>         }
->>>  }
->>>
->>> @@ -1413,6 +1505,8 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
->>>         struct drm_device *drm_dev = data;
->>>         struct vop *vop;
->>>         struct resource *res;
->>> +       struct devfreq *devfreq;
->>> +       struct devfreq_event_dev *event_dev;
->>>         size_t alloc_size;
->>>         int ret, irq;
->>>
->>> @@ -1474,6 +1568,28 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
->>>                 return ret;
->>>
->>>         pm_runtime_enable(&pdev->dev);
->>> +
->>> +       init_waitqueue_head(&vop->wait_vop_switch_queue);
->>> +       vop->vop_switch_status = 0;
->>> +       init_waitqueue_head(&vop->wait_dmc_queue);
->>> +       vop->dmc_in_process = 0;
->>> +
->>> +       devfreq = devfreq_get_devfreq_by_phandle(dev, 0);
->>> +       if (IS_ERR(devfreq))
->>> +               goto out;
->>> +
->>> +       vop->devfreq = devfreq;
->>> +       vop->dmc_nb.notifier_call = dmc_notify;
->>> +       devfreq_register_notifier(vop->devfreq, &vop->dmc_nb,
->>> +                                 DEVFREQ_TRANSITION_NOTIFIER);
->>> +
->>> +       event_dev = devfreq_event_get_edev_by_phandle(vop->devfreq->dev.parent,
->>> +                                                     0);
->>> +       if (IS_ERR(event_dev))
->>> +               goto out;
->>> +
->>> +       vop->devfreq_event_dev = event_dev;
->>> +out:
->>>         return 0;
->>>  }
->>>
->>> --
->>> 2.6.6
->>>
+>> Cc: <stable@vger.kernel.org> # 4.7+
+>> Reported-by: Marek Szyprowski <m.szyprowski@samsung.com>
+>> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+
+I understand what the patch is doing but not this commit message.
+
+What does it mean when you say "Since I2C transfers are not
+managed by the fimc-isp-i2c driver its clients use pm_runtime_*
+calls directly to communicate required power state of the bus
+controller."?
+
+I find it very hard to understand.
+
+The intent of the commit is to decouple I2C slave devices'
+runtime PM state from their parents, so say a gyroscope on an
+I2C bus does not have to bring up it's host controller to be
+active, for example it usually has an IRQ line to wake up
+the driver and that will talk using I2C and the I2C traffic will
+wake up the I2C master.
+
+When I look at the driver it appears it is not even used for
+I2C traffic, just to take the clocks up and down and make it
+possible to manage a clock using runtime PM and interface
+with the DT logic... so I guess since it's likely and odd one-off
+and the driver is sufficiently weird anyways, it's fine to merge
+this patch making it even weirder.
+
+Maybe a sort of mock adapter type should actually be
+created in the I2C core for these things so it can be handled
+there but who am I to say.
+
+Yours,
+Linus Walleij
