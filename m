@@ -1,43 +1,42 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH 12/21] cpufreq: Convert to hotplug state machine
-Date: Wed, 7 Sep 2016 16:18:29 +0200
-Message-ID: <20160907141829.wpsugjvo3mgy5b5y@linutronix.de>
-References: <20160906170457.32393-1-bigeasy@linutronix.de>
- <20160906170457.32393-13-bigeasy@linutronix.de>
- <CAJZ5v0i8o4Bnmvpmn+=8snEzfmBPxqcV9iGVSh62Wf0X86j8BA@mail.gmail.com>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: Re: [PATCH v2 1/2] Documentation: dt: add bindings for ti-cpufreq
+Date: Wed, 7 Sep 2016 09:36:24 -0500
+Message-ID: <57D025E8.6030202@ti.com>
+References: <20160901025328.376-1-d-gerlach@ti.com>
+ <20160901025328.376-2-d-gerlach@ti.com> <20160907051215.GN27345@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0i8o4Bnmvpmn+=8snEzfmBPxqcV9iGVSh62Wf0X86j8BA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:33030 "EHLO
+        devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932224AbcIGOg6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 10:36:58 -0400
+In-Reply-To: <20160907051215.GN27345@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>
 
-On 2016-09-06 23:27:46 [+0200], Rafael J. Wysocki wrote:
-> > +       ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "cpufreq:online",
-> > +                                       cpufreq_online,
-> > +                                       cpufreq_offline);
-> > +       if (ret < 0)
-> > +               goto err_if_unreg;
-> > +       hp_online = ret;
-> 
-> hp_online is enum cpuhp_state (and we pass it to
-> cpuhp_remove_state_nocalls(() later on), but
-> cpuhp_setup_state_nocalls() returns an int (and that should be 0 if it
-> is not an error code AFAICS), so is this actually correct?
+On 09/07/2016 12:12 AM, Viresh Kumar wrote:
+> On 31-08-16, 21:53, Dave Gerlach wrote:
+>> +In 'operating-points-v2' table:
+>> +- compatible: Should be
+>> +	- 'operating-points-v2-ti-am3352-cpu' for am335x SoCs
+>> +	- 'operating-points-v2-ti-am4372-cpu' for am43xx SoCs
+>> +	- 'operating-points-v2-ti-dra7-cpu' for dra7xx/am57xx SoCs
+>
+> Why do you need SoC specific compatible here? Are you defining new
+> fields in OPP tables for your SoC ? How are the tables for your case
+> going to differ from the ones using "operating-points-v2" compatible
+> string?
+>
 
-Not sure what you are pointing out here. Let me try to cover it.
-cpuhp_setup_state_nocalls() return <0 for errors. Those are are not
-assigned to hp_online. It returns 0 for success on ID was !=
-CPUHP_AP_ONLINE_DYN and >= 0 for success if ID was CPUHP_AP_ONLINE_DYN.
-In the latter case the dynamic assigned ID is returned which should be
-used if you plan to remove the callbacks.
-Assigning an unsigned int to enum is okay because enumeration constants
-itself should be an int.
+I thought you had suggested that I do this in your comments from v1, but 
+I guess that was dependent on whether or not I put the properties I have 
+inserted into the cpu node into the operating-points table instead. I 
+still have gotten no comments from any DT maintainers so I left it as 
+is. I am still not sure if that is acceptable.
 
-> Thanks,
-> Rafael
-
-Sebastian
+Regards,
+Dave
