@@ -1,36 +1,67 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] power: supply: sbs-battery: simplify DT parsing
-Date: Wed, 07 Sep 2016 09:58:10 +0200
-Message-ID: <4977026.Nm6AJ7K8UK@wuerfel>
-References: <20160906131643.1930011-1-arnd@arndb.de> <20160906235523.ff4opq56gg4ln6xv@earth>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: [PATCH] thermal: armada: add support for suspend/resume
+Date: Wed, 7 Sep 2016 10:05:22 +0200
+Message-ID: <57CFCA42.8000807@free.fr>
+References: <1469097807-17748-1-git-send-email-jaz@semihalf.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.187]:60496 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751174AbcIGH55 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 03:57:57 -0400
-In-Reply-To: <20160906235523.ff4opq56gg4ln6xv@earth>
+Received: from smtp4-g21.free.fr ([212.27.42.4]:60996 "EHLO smtp4-g21.free.fr"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1756507AbcIGIFr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Sep 2016 04:05:47 -0400
+In-Reply-To: <1469097807-17748-1-git-send-email-jaz@semihalf.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Phil Reid <preid@electromag.com.au>, YH Huang <yh.huang@mediatek.com>, Joshua Clayton <stillcompiling@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Grzegorz Jaszczyk <jaz@semihalf.com>, rui.zhang@intel.com, linux-pm@vger.kernel.org
+Cc: edubezval@gmail.com, thomas.petazzoni@free-electrons.com, gregory.clement@free-electrons.com, mw@semihalf.com, alior@marvell.com, Arnd Bergmann <arnd@arndb.de>
 
-On Wednesday, September 7, 2016 1:55:23 AM CEST Sebastian Reichel wrote:
+On 21/07/2016 12:43, Grzegorz Jaszczyk wrote:
+
+> There is no need to implement subroutine for suspend since there is no
+> data to store before suspending.
 > 
-> Patch looks fine to me. Actually I already asked Phil to
-> implement your change [0]. I just queued it to power-supply's
-> for-next branch.
+> Signed-off-by: Grzegorz Jaszczyk <jaz@semihalf.com>
+> ---
+>  drivers/thermal/armada_thermal.c | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
 > 
-> [0] https://marc.info/?l=linux-pm&m=147273382018953&w=2
+> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+> index ae75328..65f9838 100644
+> --- a/drivers/thermal/armada_thermal.c
+> +++ b/drivers/thermal/armada_thermal.c
+> @@ -304,12 +304,26 @@ static int armada_thermal_exit(struct platform_device *pdev)
+>  	return 0;
+>  }
+>  
+> +static int armada_thermal_resume(struct device *dev)
+> +{
+> +	struct thermal_zone_device *thermal =
+> +		dev_get_drvdata(dev);
+> +	struct armada_thermal_priv *priv = thermal->devdata;
+> +
+> +	priv->data->init_sensor(to_platform_device(dev), priv);
+> +
+> +	return 0;
+> +}
+> +
+> +static SIMPLE_DEV_PM_OPS(armada_thermal_pm_ops, NULL, armada_thermal_resume);
+> +
+>  static struct platform_driver armada_thermal_driver = {
+>  	.probe = armada_thermal_probe,
+>  	.remove = armada_thermal_exit,
+>  	.driver = {
+>  		.name = "armada_thermal",
+>  		.of_match_table = armada_thermal_id_table,
+> +		.pm = &armada_thermal_pm_ops,
+>  	},
+>  };
 
-Glad to see we had the same thought. ;-)
+gcc might warn about 'armada_thermal_resume' defined but not used
+when CONFIG_PM_SLEEP is not defined, I think?
 
-I see that we went for different defaults for chip->poll_retry_count:
-I concluded that '0' would be the correct default, while you suggested '1'
-in your reply.
+(I have a similar patch, Arnd suggested using __maybe_unused tag.)
 
-Can you double-check the code and see which one is right?
+Regards.
 
-	Arnd
