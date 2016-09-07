@@ -1,80 +1,54 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH 2/4]  cpufreq: intel_pstate: Change P-state selection algorithm for Core
-Date: Wed, 7 Sep 2016 08:26:05 -0700
-Message-ID: <005401d2091c$2885fe50$7991faf0$@net>
-References: <2730042.XLMy9dAKI1@vostro.rjw.lan> fzJYbhOgVcv8ifzJabBXDd
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 12/21] cpufreq: Convert to hotplug state machine
+Date: Wed, 07 Sep 2016 17:58:46 +0200
+Message-ID: <9891841.xb8KPMjjUJ@vostro.rjw.lan>
+References: <20160906170457.32393-1-bigeasy@linutronix.de> <CAJZ5v0i8o4Bnmvpmn+=8snEzfmBPxqcV9iGVSh62Wf0X86j8BA@mail.gmail.com> <20160907141829.wpsugjvo3mgy5b5y@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta20.telus.net ([209.171.16.93]:39268 "EHLO cmta20.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1757869AbcIGP0M (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 7 Sep 2016 11:26:12 -0400
-In-Reply-To: fzJYbhOgVcv8ifzJabBXDd
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160907141829.wpsugjvo3mgy5b5y@linutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, rt@linutronix.de, Thomas Gleixner <tglx@linutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM list' <linux-pm@vger.kernel.org>
-Cc: 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Peter Zijlstra' <peterz@infradead.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Ingo Molnar' <mingo@redhat.com>, 'Vincent Guittot' <vincent.guittot@linaro.org>, 'Morten Rasmussen' <morten.rasmussen@arm.com>, 'Juri Lelli' <Juri.Lelli@arm.com>, 'Dietmar Eggemann' <dietmar.eggemann@arm.com>, 'Steve Muckle' <smuckle@linaro.org>
 
-On 2016.09.02 18:02 Rafael J. Wysocki wrote:
+On Wednesday, September 07, 2016 04:18:29 PM Sebastian Andrzej Siewior wrote:
+> On 2016-09-06 23:27:46 [+0200], Rafael J. Wysocki wrote:
+> > > +       ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN, "cpufreq:online",
+> > > +                                       cpufreq_online,
+> > > +                                       cpufreq_offline);
+> > > +       if (ret < 0)
+> > > +               goto err_if_unreg;
+> > > +       hp_online = ret;
+> > 
+> > hp_online is enum cpuhp_state (and we pass it to
+> > cpuhp_remove_state_nocalls(() later on), but
+> > cpuhp_setup_state_nocalls() returns an int (and that should be 0 if it
+> > is not an error code AFAICS), so is this actually correct?
+> 
+> Not sure what you are pointing out here. Let me try to cover it.
+> cpuhp_setup_state_nocalls() return <0 for errors. Those are are not
+> assigned to hp_online. It returns 0 for success on ID was !=
+> CPUHP_AP_ONLINE_DYN and >= 0 for success if ID was CPUHP_AP_ONLINE_DYN.
+> In the latter case the dynamic assigned ID is returned which should be
+> used if you plan to remove the callbacks.
 
-...[cut]...
+OK, that last part wasn't clear to me.  The kerneldoc comment for
+__cpuhp_setup_state() doesn't mention the possible non-zero return values
+on success, which is a bit confusing IMHO.
 
-> This includes an IIR filter on top of the load-based P-state selection,
-> but the filter is applied to the non-boosted case only (otherwise it
-> defeats the point of the boost) and I used a slightly different raw gain
-> value.
+> Assigning an unsigned int to enum is okay because enumeration constants
+> itself should be an int.
 
-The different gain value, 12.5% instead 10%, does come at a cost of some
-energy. Although we are finding inconsistencies in the test results.
-(I estimated about 2.2% energy cost, for my 20% SpecPower simulator test,
-and scaling off of a simple graph I did of energy vs gain with the previous
-version).
+But the unsigned int still may be out of range for the given enum, so I
+wouldn't call it particularly clean. :-)
 
-...[cut]...
-> +	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
-> +	target = clamp_val(target, int_tofp(min_perf), int_tofp(max_perf));
-> +	sample->target = fp_toint(target + (1 << (FRAC_BITS-1)));
-> +	return sample->target;
-> +}
-> +
+Anyway, please feel free to add
 
-In my earlier proposed versions, it was very much on purpose that it
-was keeping the pseudo floating point filtered target. Excerpt:
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-+	cpu->sample.target = div_u64((int_tofp(100) - scaled_gain) *
-+			cpu->sample.target + scaled_gain *
-+			unfiltered_target, int_tofp(100));
-+	/*
-+	 * Clamp the filtered value.
-+	 */
-+	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
-+	if (cpu->sample.target < int_tofp(min_perf))
-+		cpu->sample.target = int_tofp(min_perf);
-+	if (cpu->sample.target > int_tofp(max_perf))
-+		cpu->sample.target = int_tofp(max_perf);
-+
-+	return fp_toint(cpu->sample.target + (1 << (FRAC_BITS-1)));
+to the patch.
 
-Why? To prevent a lock up scenario where, depending on the processor
-and the gain settings, the target pstate would never kick over to the
-next value. i.e. if it only increased 1/3 of a pstate per iteration
-as the filter approached its steady state value. While this condition
-did occur in my older proposed implementations, with my processor it
-doesn't seem to with this implementation. I didn't theoretically check
-other processors.
-
-Another side effect of this change is effectively a further increase
-in the gain setting, and thus more energy being given back. This was
-determined by looking at step function load response times, as opposed
-to math analysis. (I can make pretty graphs if you want.)
-
-The purpose of this e-mail just to make us aware of the tradeoffs,
-not to imply it should change.
-
-... Doug
-
-
+Thanks,
+Rafael
