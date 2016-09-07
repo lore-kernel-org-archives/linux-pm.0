@@ -1,40 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] thermal: cpu_cooling: Fix wrong comment call function
- name
-Date: Wed, 7 Sep 2016 10:34:30 +0530
-Message-ID: <20160907050430.GM27345@vireshk-i7>
-References: <1473208539-17685-1-git-send-email-hugh.kang@lge.com>
+Subject: Re: [PATCH v2 1/2] Documentation: dt: add bindings for ti-cpufreq
+Date: Wed, 7 Sep 2016 10:42:15 +0530
+Message-ID: <20160907051215.GN27345@vireshk-i7>
+References: <20160901025328.376-1-d-gerlach@ti.com>
+ <20160901025328.376-2-d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:32809 "EHLO
+        mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751754AbcIGFMT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 01:12:19 -0400
+Received: by mail-pa0-f41.google.com with SMTP id cm16so2427289pac.0
+        for <linux-pm@vger.kernel.org>; Tue, 06 Sep 2016 22:12:18 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1473208539-17685-1-git-send-email-hugh.kang@lge.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Inhyuk Kang <hugh.kang@lge.com>
-Cc: Javi Merino <javi.merino@arm.com>, amit.kachhap@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20160901025328.376-2-d-gerlach@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>
 
-On 07-09-16, 09:35, Inhyuk Kang wrote:
-> The last_load is updated not cpufreq_get_actual_power() function call
-> but cpufreq_get_requested_power() function call.
-> 
-> Signed-off-by: Inhyuk Kang <hugh.kang@lge.com>
-> 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index a32b417..9ce0e9e 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -74,7 +74,7 @@ struct power_table {
->   *	cpufreq frequencies.
->   * @allowed_cpus: all the cpus involved for this cpufreq_cooling_device.
->   * @node: list_head to link all cpufreq_cooling_device together.
-> - * @last_load: load measured by the latest call to cpufreq_get_actual_power()
-> + * @last_load: load measured by the latest call to cpufreq_get_requested_power()
->   * @time_in_idle: previous reading of the absolute time that this cpu was idle
->   * @time_in_idle_timestamp: wall time of the last invocation of
->   *	get_cpu_idle_time_us()
+On 31-08-16, 21:53, Dave Gerlach wrote:
+> +In 'operating-points-v2' table:
+> +- compatible: Should be
+> +	- 'operating-points-v2-ti-am3352-cpu' for am335x SoCs
+> +	- 'operating-points-v2-ti-am4372-cpu' for am43xx SoCs
+> +	- 'operating-points-v2-ti-dra7-cpu' for dra7xx/am57xx SoCs
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Why do you need SoC specific compatible here? Are you defining new
+fields in OPP tables for your SoC ? How are the tables for your case
+going to differ from the ones using "operating-points-v2" compatible
+string?
 
 -- 
 viresh
