@@ -1,300 +1,257 @@
-From: "dbasehore ." <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+From: Sean Paul <seanpaul@chromium.org>
 Subject: Re: [PATCH v10 5/5] drm/rockchip: Add dmc notifier in vop driver
-Date: Wed, 7 Sep 2016 11:13:55 -0700
-Message-ID: <CAGAzgsqQWchUMUSGtk1JG0WhyD63vuo_dLKrPCUkyNR1tz+xNQ@mail.gmail.com>
+Date: Wed, 7 Sep 2016 14:27:27 -0400
+Message-ID: <CAOw6vb+HUef6aC9iipg_h-EMJD+_mRY_ce=7=yoWcGqcHBwC-Q@mail.gmail.com>
 References: <1473051971-5500-1-git-send-email-hl@rock-chips.com>
- <1473051971-5500-6-git-send-email-hl@rock-chips.com> <CAOw6vb+N4ASTAu49VBPyOAUH=S4rrUBOgZOEP-RTvijEgeN7HA@mail.gmail.com>
+ <1473051971-5500-6-git-send-email-hl@rock-chips.com>
+ <CAOw6vb+N4ASTAu49VBPyOAUH=S4rrUBOgZOEP-RTvijEgeN7HA@mail.gmail.com>
+ <57CF07C4.30508@rock-chips.com>
+ <CAOw6vbL6AxWRm7kovjwstW+qCd_9Wta3H_gvZswjeqqq9g-P8w@mail.gmail.com>
+ <57CF1282.3000607@rock-chips.com>
+ <CAOw6vbLjmLi1a=VPAh0xmvWf8wZt=BBgc5LvSTFknpGMykR5qQ@mail.gmail.com>
+ <CAGAzgsoqRBLk60cVLtX4vvy6_+xe8Yd31dye3ki8OhQ+jEms5g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAOw6vb+N4ASTAu49VBPyOAUH=S4rrUBOgZOEP-RTvijEgeN7HA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sean Paul <seanpaul-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
-Cc: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, ??? <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, =?UTF-8?B?5aea5pm65oOF?= <mark.yao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Dave Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Douglas Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux ARM Kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Jon Medhurst <tixy-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, =?UTF-8?B?5bmz5Y+w57uELeaxpOS6keW5sw==?= <typ-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, sudeep.holla-5wv7dgnIgG8@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>Linux-pm mailing list <linux->
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAGAzgsoqRBLk60cVLtX4vvy6_+xe8Yd31dye3ki8OhQ+jEms5g@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: "dbasehore ." <dbasehore@chromium.org>
+Cc: Jon Medhurst <tixy@linaro.org>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, hl <hl@rock-chips.com>, linux-rockchip@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, =?UTF-8?B?5bmz5Y+w57uELeaxpOS6keW5sw==?= <typ@rock-chips.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Douglas Anderson <dianders@chromium.org>, cw00.choi@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, ??? <myungjoo.ham@samsung.com>, sudeep.holla@arm.com, Linux-pm mailing list <linux-pm@vger.kernel.org>, Linux ARM Kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Sep 6, 2016 at 10:18 AM, Sean Paul <seanpaul-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org> wrote:
-> On Mon, Sep 5, 2016 at 1:06 AM, Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org> wrote:
->> when in ddr frequency scaling process, vop can not do enable or
->> disable operation, since in dcf we check vop clock to see whether
->> vop work. If vop work, dcf do ddr frequency scaling when vop
->> in vblank status, and we need to read vop register to check whether
->> vop go into vblank status. If vop not work, dcf can do ddr frequency
->> any time. So when do ddr frequency scaling, you disabled or enable
->> vop, there may two bad thing happen: 1, the panel flicker(when vop from
->> disable status change to enable). 2, kernel hang (when vop from enable
->> status change to disable, dcf need to read vblank status, but if you disable
->> vop clock, it can not get the status, it will lead soc dead) So we need
->> register to devfreq notifier, and we can get the dmc status. Also, when
->> there have two vop enabled, we need to disable dmc, since dcf only base
->> on one vop vblank time, so the other panel will flicker when do ddr
->> frequency scaling.
->>
->> Signed-off-by: Lin Huang <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
->> Reviewed-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> ---
->> Changes in v10:
->> - None
->>
->> Changes in v9:
->> - None
->>
->> Changes in v8:
->> - None
->>
->> Changes in v7:
->> - None
->>
->> Changes in v6:
->> - fix a build error
->>
->> Changes in v5:
->> - improve some nits
->>
->> Changes in v4:
->> - register notifier to devfreq_register_notifier
->> - use DEVFREQ_PRECHANGE and DEVFREQ_POSTCHANGE to get dmc status
->> - when two vop enable, disable dmc
->> - when two vop back to one vop, enable dmc
->>
->> Changes in v3:
->> - when do vop eanble/disable, dmc will wait until it finish
->>
->> Changes in v2:
->> - None
->>
->> Changes in v1:
->> - use wait_event instead usleep
->>
->>  drivers/gpu/drm/rockchip/rockchip_drm_vop.c | 116 ++++++++++++++++++++++++++++
->>  1 file changed, 116 insertions(+)
->>
->> diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
->> index efbc41a..a73f3aa 100644
->> --- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
->> +++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
->> @@ -19,6 +19,8 @@
->>  #include <drm/drm_crtc_helper.h>
->>  #include <drm/drm_plane_helper.h>
->>
->> +#include <linux/devfreq.h>
->> +#include <linux/devfreq-event.h>
->>  #include <linux/kernel.h>
->>  #include <linux/module.h>
->>  #include <linux/platform_device.h>
->> @@ -118,6 +120,13 @@ struct vop {
->>
->>         const struct vop_data *data;
->>
->> +       struct devfreq *devfreq;
->> +       struct devfreq_event_dev *devfreq_event_dev;
->> +       struct notifier_block dmc_nb;
->> +       int dmc_in_process;
->> +       int vop_switch_status;
->> +       wait_queue_head_t wait_dmc_queue;
->> +       wait_queue_head_t wait_vop_switch_queue;
->>         uint32_t *regsbak;
->>         void __iomem *regs;
->>
->> @@ -428,11 +437,47 @@ static void vop_dsp_hold_valid_irq_disable(struct vop *vop)
->>         spin_unlock_irqrestore(&vop->irq_lock, flags);
->>  }
->>
->> +static int dmc_notify(struct notifier_block *nb, unsigned long event,
->> +                     void *data)
->> +{
->> +       struct vop *vop = container_of(nb, struct vop, dmc_nb);
->> +
->> +       if (event == DEVFREQ_PRECHANGE) {
->> +               /*
->> +                * check if vop in enable or disable process,
->> +                * if yes, wait until it finishes, use 200ms as
->> +                * timeout.
->> +                */
->> +               if (!wait_event_timeout(vop->wait_vop_switch_queue,
->> +                                       !vop->vop_switch_status, HZ / 5))
->> +                       dev_warn(vop->dev,
->> +                                "Timeout waiting for vop swtich status\n");
->> +               vop->dmc_in_process = 1;
->> +       } else if (event == DEVFREQ_POSTCHANGE) {
->> +               vop->dmc_in_process = 0;
->> +               wake_up(&vop->wait_dmc_queue);
->> +       }
->> +
->> +       return NOTIFY_OK;
->> +}
->> +
->>  static int vop_enable(struct drm_crtc *crtc)
->>  {
->>         struct vop *vop = to_vop(crtc);
->> +       int num_enabled_crtc = 0;
->>         int ret;
->>
->> +       /*
->> +        * if in dmc scaling frequency process, wait until it finishes
->> +        * use 200ms as timeout time.
->> +        */
->> +       if (!wait_event_timeout(vop->wait_dmc_queue,
->> +                               !vop->dmc_in_process, HZ / 5))
->> +               dev_warn(vop->dev,
->> +                        "Timeout waiting for dmc when vop enable\n");
->> +
->
->
-> This wait_event_timeout code is terribly racey (same goes above and below).
->
->
->> +       vop->vop_switch_status = 1;
->> +
->>         ret = pm_runtime_get_sync(vop->dev);
->>         if (ret < 0) {
->>                 dev_err(vop->dev, "failed to get pm runtime: %d\n", ret);
->> @@ -479,6 +524,21 @@ static int vop_enable(struct drm_crtc *crtc)
->>
->>         drm_crtc_vblank_on(crtc);
->>
->> +       vop->vop_switch_status = 0;
->> +       wake_up(&vop->wait_vop_switch_queue);
->> +
->> +       /* check how many VOPs in use now */
->> +       drm_for_each_crtc(crtc, vop->drm_dev) {
->> +               if (crtc->state->enable)
->
-> I think you really want to check active, instead of enable.
->
->> +                       num_enabled_crtc++;
->> +       }
->> +
->> +       /* if enable two vop, need to disable dmc */
->> +       if ((num_enabled_crtc > 1) && vop->devfreq) {
->> +               if (vop->devfreq_event_dev)
->> +                       devfreq_event_disable_edev(vop->devfreq_event_dev);
->> +               devfreq_suspend_device(vop->devfreq);
->> +       }
->
-> This really feels like something that should be handled somewhere
-> else. I don't fully understand how this works, but it seems like this
-> dependency should be handled where it actually matters, rather than
-> building in a seemingly arbitrary restriction in the vop driver.
->
-> Even if this is the best place for it, this needs to be refactored to
-> eliminate the races that exist now.
->
-> Sean
-
-DMC transitions can't happen when there is more than one display. You
-would have to synchronize with more than one vblank on the DCF (which
-actually changes the DDR frequency), and that's probably not going to
-happen.
-
-If this code should be done somewhere else, it needs to still be able
-to check the number of displays and avoid race conditions with
-displays getting enabled or disabled. I don't know enough about DRM to
-know if that's possible outside of this code.
-
->
->>         return 0;
->>
->>  err_disable_aclk:
->> @@ -489,17 +549,31 @@ err_disable_hclk:
->>         clk_disable(vop->hclk);
->>  err_put_pm_runtime:
->>         pm_runtime_put_sync(vop->dev);
->> +       vop->vop_switch_status = 0;
->> +       wake_up(&vop->wait_vop_switch_queue);
->>         return ret;
->>  }
->>
->>  static void vop_crtc_disable(struct drm_crtc *crtc)
->>  {
->>         struct vop *vop = to_vop(crtc);
->> +       int num_enabled_crtc = 0;
->>         int i;
->>
->>         WARN_ON(vop->event);
->>
->>         /*
->> +        * if in dmc scaling frequency process, wait until it finish
->> +        * use 200ms as timeout time.
->> +        */
->> +       if (!wait_event_timeout(vop->wait_dmc_queue,
->> +                               !vop->dmc_in_process, HZ / 5))
->> +               dev_warn(vop->dev,
->> +                        "Timeout waiting for dmc when vop disable\n");
->> +
->> +       vop->vop_switch_status = 1;
->> +
->> +       /*
->>          * We need to make sure that all windows are disabled before we
->>          * disable that crtc. Otherwise we might try to scan from a destroyed
->>          * buffer later.
->> @@ -555,6 +629,24 @@ static void vop_crtc_disable(struct drm_crtc *crtc)
->>                 spin_unlock_irq(&crtc->dev->event_lock);
->>
->>                 crtc->state->event = NULL;
->> +
->> +       vop->vop_switch_status = 0;
->> +       wake_up(&vop->wait_vop_switch_queue);
->> +
->> +       /* check how many VOPs in use now */
->> +       drm_for_each_crtc(crtc, vop->drm_dev) {
->> +               if (crtc->state->enable)
->> +                       num_enabled_crtc++;
->> +       }
->> +
->> +       /*
->> +        * if num_enabled_crtc = 1 now, it means 2 vop enabled
->> +        * change to 1 vop enabled  need to enable dmc again.
->> +        */
->> +       if ((num_enabled_crtc == 1) && vop->devfreq) {
->> +               if (vop->devfreq_event_dev)
->> +                       devfreq_event_enable_edev(vop->devfreq_event_dev);
->> +               devfreq_resume_device(vop->devfreq);
->>         }
->>  }
->>
->> @@ -1413,6 +1505,8 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
->>         struct drm_device *drm_dev = data;
->>         struct vop *vop;
->>         struct resource *res;
->> +       struct devfreq *devfreq;
->> +       struct devfreq_event_dev *event_dev;
->>         size_t alloc_size;
->>         int ret, irq;
->>
->> @@ -1474,6 +1568,28 @@ static int vop_bind(struct device *dev, struct device *master, void *data)
->>                 return ret;
->>
->>         pm_runtime_enable(&pdev->dev);
->> +
->> +       init_waitqueue_head(&vop->wait_vop_switch_queue);
->> +       vop->vop_switch_status = 0;
->> +       init_waitqueue_head(&vop->wait_dmc_queue);
->> +       vop->dmc_in_process = 0;
->> +
->> +       devfreq = devfreq_get_devfreq_by_phandle(dev, 0);
->> +       if (IS_ERR(devfreq))
->> +               goto out;
->> +
->> +       vop->devfreq = devfreq;
->> +       vop->dmc_nb.notifier_call = dmc_notify;
->> +       devfreq_register_notifier(vop->devfreq, &vop->dmc_nb,
->> +                                 DEVFREQ_TRANSITION_NOTIFIER);
->> +
->> +       event_dev = devfreq_event_get_edev_by_phandle(vop->devfreq->dev.parent,
->> +                                                     0);
->> +       if (IS_ERR(event_dev))
->> +               goto out;
->> +
->> +       vop->devfreq_event_dev = event_dev;
->> +out:
->>         return 0;
->>  }
->>
->> --
->> 2.6.6
->>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+T24gV2VkLCBTZXAgNywgMjAxNiBhdCAyOjA3IFBNLCBkYmFzZWhvcmUgLiA8ZGJhc2Vob3JlQGNo
+cm9taXVtLm9yZz4gd3JvdGU6Cj4gT24gVHVlLCBTZXAgNiwgMjAxNiBhdCAxMjowNyBQTSwgU2Vh
+biBQYXVsIDxzZWFucGF1bEBnb29nbGUuY29tPiB3cm90ZToKPj4gT24gVHVlLCBTZXAgNiwgMjAx
+NiBhdCAzOjAxIFBNLCBobCA8aGxAcm9jay1jaGlwcy5jb20+IHdyb3RlOgo+Pj4gSGkKPj4+Cj4+
+Pgo+Pj4gT24gMjAxNuW5tDA55pyIMDfml6UgMDI6NTUsIFNlYW4gUGF1bCB3cm90ZToKPj4+Pgo+
+Pj4+IE9uIFR1ZSwgU2VwIDYsIDIwMTYgYXQgMjoxNSBQTSwgaGwgPGhsQHJvY2stY2hpcHMuY29t
+PiB3cm90ZToKPj4+Pj4KPj4+Pj4gSGkgU2VhbiwKPj4+Pj4KPj4+Pj4KPj4+Pj4gT24gMjAxNuW5
+tDA55pyIMDfml6UgMDE6MTgsIFNlYW4gUGF1bCB3cm90ZToKPj4+Pj4+Cj4+Pj4+PiBPbiBNb24s
+IFNlcCA1LCAyMDE2IGF0IDE6MDYgQU0sIExpbiBIdWFuZyA8aGxAcm9jay1jaGlwcy5jb20+IHdy
+b3RlOgo+Pj4+Pj4+Cj4+Pj4+Pj4gd2hlbiBpbiBkZHIgZnJlcXVlbmN5IHNjYWxpbmcgcHJvY2Vz
+cywgdm9wIGNhbiBub3QgZG8gZW5hYmxlIG9yCj4+Pj4+Pj4gZGlzYWJsZSBvcGVyYXRpb24sIHNp
+bmNlIGluIGRjZiB3ZSBjaGVjayB2b3AgY2xvY2sgdG8gc2VlIHdoZXRoZXIKPj4+Pj4+PiB2b3Ag
+d29yay4gSWYgdm9wIHdvcmssIGRjZiBkbyBkZHIgZnJlcXVlbmN5IHNjYWxpbmcgd2hlbiB2b3AK
+Pj4+Pj4+PiBpbiB2Ymxhbmsgc3RhdHVzLCBhbmQgd2UgbmVlZCB0byByZWFkIHZvcCByZWdpc3Rl
+ciB0byBjaGVjayB3aGV0aGVyCj4+Pj4+Pj4gdm9wIGdvIGludG8gdmJsYW5rIHN0YXR1cy4gSWYg
+dm9wIG5vdCB3b3JrLCBkY2YgY2FuIGRvIGRkciBmcmVxdWVuY3kKPj4+Pj4+PiBhbnkgdGltZS4g
+U28gd2hlbiBkbyBkZHIgZnJlcXVlbmN5IHNjYWxpbmcsIHlvdSBkaXNhYmxlZCBvciBlbmFibGUK
+Pj4+Pj4+PiB2b3AsIHRoZXJlIG1heSB0d28gYmFkIHRoaW5nIGhhcHBlbjogMSwgdGhlIHBhbmVs
+IGZsaWNrZXIod2hlbiB2b3AgZnJvbQo+Pj4+Pj4+IGRpc2FibGUgc3RhdHVzIGNoYW5nZSB0byBl
+bmFibGUpLiAyLCBrZXJuZWwgaGFuZyAod2hlbiB2b3AgZnJvbSBlbmFibGUKPj4+Pj4+PiBzdGF0
+dXMgY2hhbmdlIHRvIGRpc2FibGUsIGRjZiBuZWVkIHRvIHJlYWQgdmJsYW5rIHN0YXR1cywgYnV0
+IGlmIHlvdQo+Pj4+Pj4+IGRpc2FibGUKPj4+Pj4+PiB2b3AgY2xvY2ssIGl0IGNhbiBub3QgZ2V0
+IHRoZSBzdGF0dXMsIGl0IHdpbGwgbGVhZCBzb2MgZGVhZCkgU28gd2UgbmVlZAo+Pj4+Pj4+IHJl
+Z2lzdGVyIHRvIGRldmZyZXEgbm90aWZpZXIsIGFuZCB3ZSBjYW4gZ2V0IHRoZSBkbWMgc3RhdHVz
+LiBBbHNvLCB3aGVuCj4+Pj4+Pj4gdGhlcmUgaGF2ZSB0d28gdm9wIGVuYWJsZWQsIHdlIG5lZWQg
+dG8gZGlzYWJsZSBkbWMsIHNpbmNlIGRjZiBvbmx5IGJhc2UKPj4+Pj4+PiBvbiBvbmUgdm9wIHZi
+bGFuayB0aW1lLCBzbyB0aGUgb3RoZXIgcGFuZWwgd2lsbCBmbGlja2VyIHdoZW4gZG8gZGRyCj4+
+Pj4+Pj4gZnJlcXVlbmN5IHNjYWxpbmcuCj4+Pj4+Pj4KPj4+Pj4+PiBTaWduZWQtb2ZmLWJ5OiBM
+aW4gSHVhbmcgPGhsQHJvY2stY2hpcHMuY29tPgo+Pj4+Pj4+IFJldmlld2VkLWJ5OiBDaGFud29v
+IENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4KPj4+Pj4+PiAtLS0KPj4+Pj4+PiBDaGFuZ2Vz
+IGluIHYxMDoKPj4+Pj4+PiAtIE5vbmUKPj4+Pj4+Pgo+Pj4+Pj4+IENoYW5nZXMgaW4gdjk6Cj4+
+Pj4+Pj4gLSBOb25lCj4+Pj4+Pj4KPj4+Pj4+PiBDaGFuZ2VzIGluIHY4Ogo+Pj4+Pj4+IC0gTm9u
+ZQo+Pj4+Pj4+Cj4+Pj4+Pj4gQ2hhbmdlcyBpbiB2NzoKPj4+Pj4+PiAtIE5vbmUKPj4+Pj4+Pgo+
+Pj4+Pj4+IENoYW5nZXMgaW4gdjY6Cj4+Pj4+Pj4gLSBmaXggYSBidWlsZCBlcnJvcgo+Pj4+Pj4+
+Cj4+Pj4+Pj4gQ2hhbmdlcyBpbiB2NToKPj4+Pj4+PiAtIGltcHJvdmUgc29tZSBuaXRzCj4+Pj4+
+Pj4KPj4+Pj4+PiBDaGFuZ2VzIGluIHY0Ogo+Pj4+Pj4+IC0gcmVnaXN0ZXIgbm90aWZpZXIgdG8g
+ZGV2ZnJlcV9yZWdpc3Rlcl9ub3RpZmllcgo+Pj4+Pj4+IC0gdXNlIERFVkZSRVFfUFJFQ0hBTkdF
+IGFuZCBERVZGUkVRX1BPU1RDSEFOR0UgdG8gZ2V0IGRtYyBzdGF0dXMKPj4+Pj4+PiAtIHdoZW4g
+dHdvIHZvcCBlbmFibGUsIGRpc2FibGUgZG1jCj4+Pj4+Pj4gLSB3aGVuIHR3byB2b3AgYmFjayB0
+byBvbmUgdm9wLCBlbmFibGUgZG1jCj4+Pj4+Pj4KPj4+Pj4+PiBDaGFuZ2VzIGluIHYzOgo+Pj4+
+Pj4+IC0gd2hlbiBkbyB2b3AgZWFuYmxlL2Rpc2FibGUsIGRtYyB3aWxsIHdhaXQgdW50aWwgaXQg
+ZmluaXNoCj4+Pj4+Pj4KPj4+Pj4+PiBDaGFuZ2VzIGluIHYyOgo+Pj4+Pj4+IC0gTm9uZQo+Pj4+
+Pj4+Cj4+Pj4+Pj4gQ2hhbmdlcyBpbiB2MToKPj4+Pj4+PiAtIHVzZSB3YWl0X2V2ZW50IGluc3Rl
+YWQgdXNsZWVwCj4+Pj4+Pj4KPj4+Pj4+PiAgICBkcml2ZXJzL2dwdS9kcm0vcm9ja2NoaXAvcm9j
+a2NoaXBfZHJtX3ZvcC5jIHwgMTE2Cj4+Pj4+Pj4gKysrKysrKysrKysrKysrKysrKysrKysrKysr
+Kwo+Pj4+Pj4+ICAgIDEgZmlsZSBjaGFuZ2VkLCAxMTYgaW5zZXJ0aW9ucygrKQo+Pj4+Pj4+Cj4+
+Pj4+Pj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9yb2NrY2hpcC9yb2NrY2hpcF9kcm1f
+dm9wLmMKPj4+Pj4+PiBiL2RyaXZlcnMvZ3B1L2RybS9yb2NrY2hpcC9yb2NrY2hpcF9kcm1fdm9w
+LmMKPj4+Pj4+PiBpbmRleCBlZmJjNDFhLi5hNzNmM2FhIDEwMDY0NAo+Pj4+Pj4+IC0tLSBhL2Ry
+aXZlcnMvZ3B1L2RybS9yb2NrY2hpcC9yb2NrY2hpcF9kcm1fdm9wLmMKPj4+Pj4+PiArKysgYi9k
+cml2ZXJzL2dwdS9kcm0vcm9ja2NoaXAvcm9ja2NoaXBfZHJtX3ZvcC5jCj4+Pj4+Pj4gQEAgLTE5
+LDYgKzE5LDggQEAKPj4+Pj4+PiAgICAjaW5jbHVkZSA8ZHJtL2RybV9jcnRjX2hlbHBlci5oPgo+
+Pj4+Pj4+ICAgICNpbmNsdWRlIDxkcm0vZHJtX3BsYW5lX2hlbHBlci5oPgo+Pj4+Pj4+Cj4+Pj4+
+Pj4gKyNpbmNsdWRlIDxsaW51eC9kZXZmcmVxLmg+Cj4+Pj4+Pj4gKyNpbmNsdWRlIDxsaW51eC9k
+ZXZmcmVxLWV2ZW50Lmg+Cj4+Pj4+Pj4gICAgI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgo+Pj4+
+Pj4+ICAgICNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4KPj4+Pj4+PiAgICAjaW5jbHVkZSA8bGlu
+dXgvcGxhdGZvcm1fZGV2aWNlLmg+Cj4+Pj4+Pj4gQEAgLTExOCw2ICsxMjAsMTMgQEAgc3RydWN0
+IHZvcCB7Cj4+Pj4+Pj4KPj4+Pj4+PiAgICAgICAgICAgY29uc3Qgc3RydWN0IHZvcF9kYXRhICpk
+YXRhOwo+Pj4+Pj4+Cj4+Pj4+Pj4gKyAgICAgICBzdHJ1Y3QgZGV2ZnJlcSAqZGV2ZnJlcTsKPj4+
+Pj4+PiArICAgICAgIHN0cnVjdCBkZXZmcmVxX2V2ZW50X2RldiAqZGV2ZnJlcV9ldmVudF9kZXY7
+Cj4+Pj4+Pj4gKyAgICAgICBzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgZG1jX25iOwo+Pj4+Pj4+ICsg
+ICAgICAgaW50IGRtY19pbl9wcm9jZXNzOwo+Pj4+Pj4+ICsgICAgICAgaW50IHZvcF9zd2l0Y2hf
+c3RhdHVzOwo+Pj4+Pj4+ICsgICAgICAgd2FpdF9xdWV1ZV9oZWFkX3Qgd2FpdF9kbWNfcXVldWU7
+Cj4+Pj4+Pj4gKyAgICAgICB3YWl0X3F1ZXVlX2hlYWRfdCB3YWl0X3ZvcF9zd2l0Y2hfcXVldWU7
+Cj4+Pj4+Pj4gICAgICAgICAgIHVpbnQzMl90ICpyZWdzYmFrOwo+Pj4+Pj4+ICAgICAgICAgICB2
+b2lkIF9faW9tZW0gKnJlZ3M7Cj4+Pj4+Pj4KPj4+Pj4+PiBAQCAtNDI4LDExICs0MzcsNDcgQEAg
+c3RhdGljIHZvaWQgdm9wX2RzcF9ob2xkX3ZhbGlkX2lycV9kaXNhYmxlKHN0cnVjdAo+Pj4+Pj4+
+IHZvcCAqdm9wKQo+Pj4+Pj4+ICAgICAgICAgICBzcGluX3VubG9ja19pcnFyZXN0b3JlKCZ2b3At
+PmlycV9sb2NrLCBmbGFncyk7Cj4+Pj4+Pj4gICAgfQo+Pj4+Pj4+Cj4+Pj4+Pj4gK3N0YXRpYyBp
+bnQgZG1jX25vdGlmeShzdHJ1Y3Qgbm90aWZpZXJfYmxvY2sgKm5iLCB1bnNpZ25lZCBsb25nIGV2
+ZW50LAo+Pj4+Pj4+ICsgICAgICAgICAgICAgICAgICAgICB2b2lkICpkYXRhKQo+Pj4+Pj4+ICt7
+Cj4+Pj4+Pj4gKyAgICAgICBzdHJ1Y3Qgdm9wICp2b3AgPSBjb250YWluZXJfb2YobmIsIHN0cnVj
+dCB2b3AsIGRtY19uYik7Cj4+Pj4+Pj4gKwo+Pj4+Pj4+ICsgICAgICAgaWYgKGV2ZW50ID09IERF
+VkZSRVFfUFJFQ0hBTkdFKSB7Cj4+Pj4+Pj4gKyAgICAgICAgICAgICAgIC8qCj4+Pj4+Pj4gKyAg
+ICAgICAgICAgICAgICAqIGNoZWNrIGlmIHZvcCBpbiBlbmFibGUgb3IgZGlzYWJsZSBwcm9jZXNz
+LAo+Pj4+Pj4+ICsgICAgICAgICAgICAgICAgKiBpZiB5ZXMsIHdhaXQgdW50aWwgaXQgZmluaXNo
+ZXMsIHVzZSAyMDBtcyBhcwo+Pj4+Pj4+ICsgICAgICAgICAgICAgICAgKiB0aW1lb3V0Lgo+Pj4+
+Pj4+ICsgICAgICAgICAgICAgICAgKi8KPj4+Pj4+PiArICAgICAgICAgICAgICAgaWYgKCF3YWl0
+X2V2ZW50X3RpbWVvdXQodm9wLT53YWl0X3ZvcF9zd2l0Y2hfcXVldWUsCj4+Pj4+Pj4gKyAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICF2b3AtPnZvcF9zd2l0Y2hfc3RhdHVz
+LCBIWiAvCj4+Pj4+Pj4gNSkpCj4+Pj4+Pj4gKyAgICAgICAgICAgICAgICAgICAgICAgZGV2X3dh
+cm4odm9wLT5kZXYsCj4+Pj4+Pj4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIlRp
+bWVvdXQgd2FpdGluZyBmb3Igdm9wIHN3dGljaAo+Pj4+Pj4+IHN0YXR1c1xuIik7Cj4+Pj4+Pj4g
+KyAgICAgICAgICAgICAgIHZvcC0+ZG1jX2luX3Byb2Nlc3MgPSAxOwo+Pj4+Pj4+ICsgICAgICAg
+fSBlbHNlIGlmIChldmVudCA9PSBERVZGUkVRX1BPU1RDSEFOR0UpIHsKPj4+Pj4+PiArICAgICAg
+ICAgICAgICAgdm9wLT5kbWNfaW5fcHJvY2VzcyA9IDA7Cj4+Pj4+Pj4gKyAgICAgICAgICAgICAg
+IHdha2VfdXAoJnZvcC0+d2FpdF9kbWNfcXVldWUpOwo+Pj4+Pj4+ICsgICAgICAgfQo+Pj4+Pj4+
+ICsKPj4+Pj4+PiArICAgICAgIHJldHVybiBOT1RJRllfT0s7Cj4+Pj4+Pj4gK30KPj4+Pj4+PiAr
+Cj4+Pj4+Pj4gICAgc3RhdGljIGludCB2b3BfZW5hYmxlKHN0cnVjdCBkcm1fY3J0YyAqY3J0YykK
+Pj4+Pj4+PiAgICB7Cj4+Pj4+Pj4gICAgICAgICAgIHN0cnVjdCB2b3AgKnZvcCA9IHRvX3ZvcChj
+cnRjKTsKPj4+Pj4+PiArICAgICAgIGludCBudW1fZW5hYmxlZF9jcnRjID0gMDsKPj4+Pj4+PiAg
+ICAgICAgICAgaW50IHJldDsKPj4+Pj4+Pgo+Pj4+Pj4+ICsgICAgICAgLyoKPj4+Pj4+PiArICAg
+ICAgICAqIGlmIGluIGRtYyBzY2FsaW5nIGZyZXF1ZW5jeSBwcm9jZXNzLCB3YWl0IHVudGlsIGl0
+IGZpbmlzaGVzCj4+Pj4+Pj4gKyAgICAgICAgKiB1c2UgMjAwbXMgYXMgdGltZW91dCB0aW1lLgo+
+Pj4+Pj4+ICsgICAgICAgICovCj4+Pj4+Pj4gKyAgICAgICBpZiAoIXdhaXRfZXZlbnRfdGltZW91
+dCh2b3AtPndhaXRfZG1jX3F1ZXVlLAo+Pj4+Pj4+ICsgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIXZvcC0+ZG1jX2luX3Byb2Nlc3MsIEhaIC8gNSkpCj4+Pj4+Pj4gKyAgICAgICAgICAg
+ICAgIGRldl93YXJuKHZvcC0+ZGV2LAo+Pj4+Pj4+ICsgICAgICAgICAgICAgICAgICAgICAgICAi
+VGltZW91dCB3YWl0aW5nIGZvciBkbWMgd2hlbiB2b3AgZW5hYmxlXG4iKTsKPj4+Pj4+PiArCj4+
+Pj4+Pgo+Pj4+Pj4KPj4+Pj4+IFRoaXMgd2FpdF9ldmVudF90aW1lb3V0IGNvZGUgaXMgdGVycmli
+bHkgcmFjZXkgKHNhbWUgZ29lcyBhYm92ZSBhbmQKPj4+Pj4+IGJlbG93KS4KPj4+Pj4KPj4+Pj4g
+ICAgTm8gaSB1c2UgdGhlIHZvcF9zd2l0Y2hfc3RhdHVzIGFuZCBkbWNfaW5fcHJvZ3Jlc3MgdG8g
+aGFuZGxlIHRoZSB2b3AKPj4+Pj4gYW5kCj4+Pj4+IGRtYyByYWNleSwKPj4+Pgo+Pj4+Cj4+Pj4g
+U28gd2hhdCBoYXBwZW5zIGlmIGRtY19pbl9wcm9ncmVzcyBiZWNvbWVzIDEgcmlnaHQgaGVyZSwg
+b3IgYW55d2hlcmUKPj4+PiBkdXJpbmcgdm9wX2VuYWJsZSgpPwo+Pj4KPj4+IEluIGRtY19ub3Rp
+ZnkoKSwgaSB3aWxsIGNoZWNrIHRoZSB2b3Bfc3dpdGNoX3N0YXR1cywgc28gaW4gdGhlIHZvcF9l
+bmFibGUoKQo+Pj4gYW5kIHZvcF9jcnRjX2Rpc2FibGUoKSwKPj4+IHRoZSBkbWNfaW5fcHJvZ3Jl
+c3MgY2FuIG5vdCBjaGFuZ2UgdmFsdWUuCj4+Pgo+Pgo+Pgo+PiBUSFJFQUQgMSAtIHdhaXRfZXZl
+bnRfdGltZW91dCAodm9wX3N3aXRjaF9zdGF0dXMpCj4+IFRIUkVBRCAyIC0gd2FpdF9ldmVudF90
+aW1lb3V0KHdhaXRfZG1jX3F1ZXVlKQo+PiBUSFJFQUQgMiAtIHZvcF9zd2l0Y2hfc3RhdHVzID0g
+MQo+PiBUSFJFQUQgMSAtIGRtY19pbl9wcm9ncmVzcyA9IDEKPj4KPj4gU2Vhbgo+Pgo+Cj4gSSd2
+ZSB0aG91Z2h0IGFib3V0IGhvdyB0byBoYW5kbGUgdGhlc2UgdGltZW91dCBjb25kaXRpb25zLCBh
+bmQgaXQKPiBtaWdodCBiZSBiZXN0IHRvIGdldCByaWQgb2YgdGhlbS4gVGhlc2Ugd291bGQgYWN0
+dWFsbHkgYmUgZXJyb3IKPiBjb25kaXRpb25zLCBhbmQgd2UgZG9uJ3QgcGxhbiB0byBoaXQgdGhl
+bS4KPgo+IEFsc28sIGlmIHNvbWV0aGluZyBnb2VzIHdyb25nIHdpdGggRE1DIGZyZXF1ZW5jeSB0
+cmFuc2l0aW9ucywgd2UgYXJlCj4gbGlrZWx5IG91dCBvZiBsdWNrIGFuZCBnb2luZyB0byBwYW5p
+YyBhbnl3YXlzLgoKWWVhaCwgSSdtIG5vdCBzdXJlIGlmIHRoZSB0aW1lb3V0cyBhcmUgcmVjb3Zl
+cmFibGUgKG1ha2VzIHNlbnNlIHRoYXQKdGhleSdyZSBub3QpLCBidXQgdGhpcyBjb2RlIGhhcyBz
+ZXZlcmFsIGRpZmZlcmVudCB2YXJpYXRpb25zIG9mIHRoZQpyYWNlIEkgZGVzY3JpYmVkIGFib3Zl
+LgoKSSdtIHdvcmtpbmcgb24gc29tZXRoaW5nIGEgbGl0dGxlIG1vcmUgYnV0dG9uZWQgZG93biB0
+byBob3BlZnVsbHkgc3luYwp0aGluZ3MgdXAgYmV0dGVyLgoKU2VhbgoKCj4KPj4KPj4+PiBTZWFu
+Cj4+Pj4KPj4+Pgo+Pj4+Cj4+Pj4KPj4+Pj4gICAgIEkgYXNzdW1lIHRoaXMgY2FuIGZpeCB0aGUg
+cmFjZXkgbm93LiBJIGRvIG5vdCBiZXR0ZXIgYSBpZGVhIG5vdy4KPj4+Pj4+Cj4+Pj4+Pgo+Pj4+
+Pj4KPj4+Pj4+PiArICAgICAgIHZvcC0+dm9wX3N3aXRjaF9zdGF0dXMgPSAxOwo+Pj4+Pj4+ICsK
+Pj4+Pj4+PiAgICAgICAgICAgcmV0ID0gcG1fcnVudGltZV9nZXRfc3luYyh2b3AtPmRldik7Cj4+
+Pj4+Pj4gICAgICAgICAgIGlmIChyZXQgPCAwKSB7Cj4+Pj4+Pj4gICAgICAgICAgICAgICAgICAg
+ZGV2X2Vycih2b3AtPmRldiwgImZhaWxlZCB0byBnZXQgcG0gcnVudGltZTogJWRcbiIsCj4+Pj4+
+Pj4gcmV0KTsKPj4+Pj4+PiBAQCAtNDc5LDYgKzUyNCwyMSBAQCBzdGF0aWMgaW50IHZvcF9lbmFi
+bGUoc3RydWN0IGRybV9jcnRjICpjcnRjKQo+Pj4+Pj4+Cj4+Pj4+Pj4gICAgICAgICAgIGRybV9j
+cnRjX3ZibGFua19vbihjcnRjKTsKPj4+Pj4+Pgo+Pj4+Pj4+ICsgICAgICAgdm9wLT52b3Bfc3dp
+dGNoX3N0YXR1cyA9IDA7Cj4+Pj4+Pj4gKyAgICAgICB3YWtlX3VwKCZ2b3AtPndhaXRfdm9wX3N3
+aXRjaF9xdWV1ZSk7Cj4+Pj4+Pj4gKwo+Pj4+Pj4+ICsgICAgICAgLyogY2hlY2sgaG93IG1hbnkg
+Vk9QcyBpbiB1c2Ugbm93ICovCj4+Pj4+Pj4gKyAgICAgICBkcm1fZm9yX2VhY2hfY3J0YyhjcnRj
+LCB2b3AtPmRybV9kZXYpIHsKPj4+Pj4+PiArICAgICAgICAgICAgICAgaWYgKGNydGMtPnN0YXRl
+LT5lbmFibGUpCj4+Pj4+Pgo+Pj4+Pj4gSSB0aGluayB5b3UgcmVhbGx5IHdhbnQgdG8gY2hlY2sg
+YWN0aXZlLCBpbnN0ZWFkIG9mIGVuYWJsZS4KPj4+Pj4KPj4+Pj4gT2theSwgaSB3aWxsIGNoZWNr
+IGl0LCB0aGFua3MuCj4+Pj4+Cj4+Pj4+Pj4gKyAgICAgICAgICAgICAgICAgICAgICAgbnVtX2Vu
+YWJsZWRfY3J0YysrOwo+Pj4+Pj4+ICsgICAgICAgfQo+Pj4+Pj4+ICsKPj4+Pj4+PiArICAgICAg
+IC8qIGlmIGVuYWJsZSB0d28gdm9wLCBuZWVkIHRvIGRpc2FibGUgZG1jICovCj4+Pj4+Pj4gKyAg
+ICAgICBpZiAoKG51bV9lbmFibGVkX2NydGMgPiAxKSAmJiB2b3AtPmRldmZyZXEpIHsKPj4+Pj4+
+PiArICAgICAgICAgICAgICAgaWYgKHZvcC0+ZGV2ZnJlcV9ldmVudF9kZXYpCj4+Pj4+Pj4gKwo+
+Pj4+Pj4+IGRldmZyZXFfZXZlbnRfZGlzYWJsZV9lZGV2KHZvcC0+ZGV2ZnJlcV9ldmVudF9kZXYp
+Owo+Pj4+Pj4+ICsgICAgICAgICAgICAgICBkZXZmcmVxX3N1c3BlbmRfZGV2aWNlKHZvcC0+ZGV2
+ZnJlcSk7Cj4+Pj4+Pj4gKyAgICAgICB9Cj4+Pj4+Pgo+Pj4+Pj4gVGhpcyByZWFsbHkgZmVlbHMg
+bGlrZSBzb21ldGhpbmcgdGhhdCBzaG91bGQgYmUgaGFuZGxlZCBzb21ld2hlcmUKPj4+Pj4+IGVs
+c2UuIEkgZG9uJ3QgZnVsbHkgdW5kZXJzdGFuZCBob3cgdGhpcyB3b3JrcywgYnV0IGl0IHNlZW1z
+IGxpa2UgdGhpcwo+Pj4+Pj4gZGVwZW5kZW5jeSBzaG91bGQgYmUgaGFuZGxlZCB3aGVyZSBpdCBh
+Y3R1YWxseSBtYXR0ZXJzLCByYXRoZXIgdGhhbgo+Pj4+Pj4gYnVpbGRpbmcgaW4gYSBzZWVtaW5n
+bHkgYXJiaXRyYXJ5IHJlc3RyaWN0aW9uIGluIHRoZSB2b3AgZHJpdmVyLgo+Pj4+Pj4KPj4+Pj4+
+IEV2ZW4gaWYgdGhpcyBpcyB0aGUgYmVzdCBwbGFjZSBmb3IgaXQsIHRoaXMgbmVlZHMgdG8gYmUg
+cmVmYWN0b3JlZCB0bwo+Pj4+Pj4gZWxpbWluYXRlIHRoZSByYWNlcyB0aGF0IGV4aXN0IG5vdy4K
+Pj4+Pj4+Cj4+Pj4+PiBTZWFuCj4+Pj4+Pgo+Pj4+Pj4+ICAgICAgICAgICByZXR1cm4gMDsKPj4+
+Pj4+Pgo+Pj4+Pj4+ICAgIGVycl9kaXNhYmxlX2FjbGs6Cj4+Pj4+Pj4gQEAgLTQ4OSwxNyArNTQ5
+LDMxIEBAIGVycl9kaXNhYmxlX2hjbGs6Cj4+Pj4+Pj4gICAgICAgICAgIGNsa19kaXNhYmxlKHZv
+cC0+aGNsayk7Cj4+Pj4+Pj4gICAgZXJyX3B1dF9wbV9ydW50aW1lOgo+Pj4+Pj4+ICAgICAgICAg
+ICBwbV9ydW50aW1lX3B1dF9zeW5jKHZvcC0+ZGV2KTsKPj4+Pj4+PiArICAgICAgIHZvcC0+dm9w
+X3N3aXRjaF9zdGF0dXMgPSAwOwo+Pj4+Pj4+ICsgICAgICAgd2FrZV91cCgmdm9wLT53YWl0X3Zv
+cF9zd2l0Y2hfcXVldWUpOwo+Pj4+Pj4+ICAgICAgICAgICByZXR1cm4gcmV0Owo+Pj4+Pj4+ICAg
+IH0KPj4+Pj4+Pgo+Pj4+Pj4+ICAgIHN0YXRpYyB2b2lkIHZvcF9jcnRjX2Rpc2FibGUoc3RydWN0
+IGRybV9jcnRjICpjcnRjKQo+Pj4+Pj4+ICAgIHsKPj4+Pj4+PiAgICAgICAgICAgc3RydWN0IHZv
+cCAqdm9wID0gdG9fdm9wKGNydGMpOwo+Pj4+Pj4+ICsgICAgICAgaW50IG51bV9lbmFibGVkX2Ny
+dGMgPSAwOwo+Pj4+Pj4+ICAgICAgICAgICBpbnQgaTsKPj4+Pj4+Pgo+Pj4+Pj4+ICAgICAgICAg
+ICBXQVJOX09OKHZvcC0+ZXZlbnQpOwo+Pj4+Pj4+Cj4+Pj4+Pj4gICAgICAgICAgIC8qCj4+Pj4+
+Pj4gKyAgICAgICAgKiBpZiBpbiBkbWMgc2NhbGluZyBmcmVxdWVuY3kgcHJvY2Vzcywgd2FpdCB1
+bnRpbCBpdCBmaW5pc2gKPj4+Pj4+PiArICAgICAgICAqIHVzZSAyMDBtcyBhcyB0aW1lb3V0IHRp
+bWUuCj4+Pj4+Pj4gKyAgICAgICAgKi8KPj4+Pj4+PiArICAgICAgIGlmICghd2FpdF9ldmVudF90
+aW1lb3V0KHZvcC0+d2FpdF9kbWNfcXVldWUsCj4+Pj4+Pj4gKyAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAhdm9wLT5kbWNfaW5fcHJvY2VzcywgSFogLyA1KSkKPj4+Pj4+PiArICAgICAg
+ICAgICAgICAgZGV2X3dhcm4odm9wLT5kZXYsCj4+Pj4+Pj4gKyAgICAgICAgICAgICAgICAgICAg
+ICAgICJUaW1lb3V0IHdhaXRpbmcgZm9yIGRtYyB3aGVuIHZvcCBkaXNhYmxlXG4iKTsKPj4+Pj4+
+PiArCj4+Pj4+Pj4gKyAgICAgICB2b3AtPnZvcF9zd2l0Y2hfc3RhdHVzID0gMTsKPj4+Pj4+PiAr
+Cj4+Pj4+Pj4gKyAgICAgICAvKgo+Pj4+Pj4+ICAgICAgICAgICAgKiBXZSBuZWVkIHRvIG1ha2Ug
+c3VyZSB0aGF0IGFsbCB3aW5kb3dzIGFyZSBkaXNhYmxlZCBiZWZvcmUKPj4+Pj4+PiB3ZQo+Pj4+
+Pj4+ICAgICAgICAgICAgKiBkaXNhYmxlIHRoYXQgY3J0Yy4gT3RoZXJ3aXNlIHdlIG1pZ2h0IHRy
+eSB0byBzY2FuIGZyb20gYQo+Pj4+Pj4+IGRlc3Ryb3llZAo+Pj4+Pj4+ICAgICAgICAgICAgKiBi
+dWZmZXIgbGF0ZXIuCj4+Pj4+Pj4gQEAgLTU1NSw2ICs2MjksMjQgQEAgc3RhdGljIHZvaWQgdm9w
+X2NydGNfZGlzYWJsZShzdHJ1Y3QgZHJtX2NydGMKPj4+Pj4+PiAqY3J0YykKPj4+Pj4+PiAgICAg
+ICAgICAgICAgICAgICBzcGluX3VubG9ja19pcnEoJmNydGMtPmRldi0+ZXZlbnRfbG9jayk7Cj4+
+Pj4+Pj4KPj4+Pj4+PiAgICAgICAgICAgICAgICAgICBjcnRjLT5zdGF0ZS0+ZXZlbnQgPSBOVUxM
+Owo+Pj4+Pj4+ICsKPj4+Pj4+PiArICAgICAgIHZvcC0+dm9wX3N3aXRjaF9zdGF0dXMgPSAwOwo+
+Pj4+Pj4+ICsgICAgICAgd2FrZV91cCgmdm9wLT53YWl0X3ZvcF9zd2l0Y2hfcXVldWUpOwo+Pj4+
+Pj4+ICsKPj4+Pj4+PiArICAgICAgIC8qIGNoZWNrIGhvdyBtYW55IFZPUHMgaW4gdXNlIG5vdyAq
+Lwo+Pj4+Pj4+ICsgICAgICAgZHJtX2Zvcl9lYWNoX2NydGMoY3J0Yywgdm9wLT5kcm1fZGV2KSB7
+Cj4+Pj4+Pj4gKyAgICAgICAgICAgICAgIGlmIChjcnRjLT5zdGF0ZS0+ZW5hYmxlKQo+Pj4+Pj4+
+ICsgICAgICAgICAgICAgICAgICAgICAgIG51bV9lbmFibGVkX2NydGMrKzsKPj4+Pj4+PiArICAg
+ICAgIH0KPj4+Pj4+PiArCj4+Pj4+Pj4gKyAgICAgICAvKgo+Pj4+Pj4+ICsgICAgICAgICogaWYg
+bnVtX2VuYWJsZWRfY3J0YyA9IDEgbm93LCBpdCBtZWFucyAyIHZvcCBlbmFibGVkCj4+Pj4+Pj4g
+KyAgICAgICAgKiBjaGFuZ2UgdG8gMSB2b3AgZW5hYmxlZCAgbmVlZCB0byBlbmFibGUgZG1jIGFn
+YWluLgo+Pj4+Pj4+ICsgICAgICAgICovCj4+Pj4+Pj4gKyAgICAgICBpZiAoKG51bV9lbmFibGVk
+X2NydGMgPT0gMSkgJiYgdm9wLT5kZXZmcmVxKSB7Cj4+Pj4+Pj4gKyAgICAgICAgICAgICAgIGlm
+ICh2b3AtPmRldmZyZXFfZXZlbnRfZGV2KQo+Pj4+Pj4+ICsKPj4+Pj4+PiBkZXZmcmVxX2V2ZW50
+X2VuYWJsZV9lZGV2KHZvcC0+ZGV2ZnJlcV9ldmVudF9kZXYpOwo+Pj4+Pj4+ICsgICAgICAgICAg
+ICAgICBkZXZmcmVxX3Jlc3VtZV9kZXZpY2Uodm9wLT5kZXZmcmVxKTsKPj4+Pj4+PiAgICAgICAg
+ICAgfQo+Pj4+Pj4+ICAgIH0KPj4+Pj4+Pgo+Pj4+Pj4+IEBAIC0xNDEzLDYgKzE1MDUsOCBAQCBz
+dGF0aWMgaW50IHZvcF9iaW5kKHN0cnVjdCBkZXZpY2UgKmRldiwgc3RydWN0Cj4+Pj4+Pj4gZGV2
+aWNlICptYXN0ZXIsIHZvaWQgKmRhdGEpCj4+Pj4+Pj4gICAgICAgICAgIHN0cnVjdCBkcm1fZGV2
+aWNlICpkcm1fZGV2ID0gZGF0YTsKPj4+Pj4+PiAgICAgICAgICAgc3RydWN0IHZvcCAqdm9wOwo+
+Pj4+Pj4+ICAgICAgICAgICBzdHJ1Y3QgcmVzb3VyY2UgKnJlczsKPj4+Pj4+PiArICAgICAgIHN0
+cnVjdCBkZXZmcmVxICpkZXZmcmVxOwo+Pj4+Pj4+ICsgICAgICAgc3RydWN0IGRldmZyZXFfZXZl
+bnRfZGV2ICpldmVudF9kZXY7Cj4+Pj4+Pj4gICAgICAgICAgIHNpemVfdCBhbGxvY19zaXplOwo+
+Pj4+Pj4+ICAgICAgICAgICBpbnQgcmV0LCBpcnE7Cj4+Pj4+Pj4KPj4+Pj4+PiBAQCAtMTQ3NCw2
+ICsxNTY4LDI4IEBAIHN0YXRpYyBpbnQgdm9wX2JpbmQoc3RydWN0IGRldmljZSAqZGV2LCBzdHJ1
+Y3QKPj4+Pj4+PiBkZXZpY2UgKm1hc3Rlciwgdm9pZCAqZGF0YSkKPj4+Pj4+PiAgICAgICAgICAg
+ICAgICAgICByZXR1cm4gcmV0Owo+Pj4+Pj4+Cj4+Pj4+Pj4gICAgICAgICAgIHBtX3J1bnRpbWVf
+ZW5hYmxlKCZwZGV2LT5kZXYpOwo+Pj4+Pj4+ICsKPj4+Pj4+PiArICAgICAgIGluaXRfd2FpdHF1
+ZXVlX2hlYWQoJnZvcC0+d2FpdF92b3Bfc3dpdGNoX3F1ZXVlKTsKPj4+Pj4+PiArICAgICAgIHZv
+cC0+dm9wX3N3aXRjaF9zdGF0dXMgPSAwOwo+Pj4+Pj4+ICsgICAgICAgaW5pdF93YWl0cXVldWVf
+aGVhZCgmdm9wLT53YWl0X2RtY19xdWV1ZSk7Cj4+Pj4+Pj4gKyAgICAgICB2b3AtPmRtY19pbl9w
+cm9jZXNzID0gMDsKPj4+Pj4+PiArCj4+Pj4+Pj4gKyAgICAgICBkZXZmcmVxID0gZGV2ZnJlcV9n
+ZXRfZGV2ZnJlcV9ieV9waGFuZGxlKGRldiwgMCk7Cj4+Pj4+Pj4gKyAgICAgICBpZiAoSVNfRVJS
+KGRldmZyZXEpKQo+Pj4+Pj4+ICsgICAgICAgICAgICAgICBnb3RvIG91dDsKPj4+Pj4+PiArCj4+
+Pj4+Pj4gKyAgICAgICB2b3AtPmRldmZyZXEgPSBkZXZmcmVxOwo+Pj4+Pj4+ICsgICAgICAgdm9w
+LT5kbWNfbmIubm90aWZpZXJfY2FsbCA9IGRtY19ub3RpZnk7Cj4+Pj4+Pj4gKyAgICAgICBkZXZm
+cmVxX3JlZ2lzdGVyX25vdGlmaWVyKHZvcC0+ZGV2ZnJlcSwgJnZvcC0+ZG1jX25iLAo+Pj4+Pj4+
+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBERVZGUkVRX1RSQU5TSVRJT05fTk9U
+SUZJRVIpOwo+Pj4+Pj4+ICsKPj4+Pj4+PiArICAgICAgIGV2ZW50X2RldiA9Cj4+Pj4+Pj4gZGV2
+ZnJlcV9ldmVudF9nZXRfZWRldl9ieV9waGFuZGxlKHZvcC0+ZGV2ZnJlcS0+ZGV2LnBhcmVudCwK
+Pj4+Pj4+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAwKTsKPj4+Pj4+PiArICAgICAgIGlmIChJU19FUlIoZXZlbnRfZGV2KSkKPj4+Pj4+PiAr
+ICAgICAgICAgICAgICAgZ290byBvdXQ7Cj4+Pj4+Pj4gKwo+Pj4+Pj4+ICsgICAgICAgdm9wLT5k
+ZXZmcmVxX2V2ZW50X2RldiA9IGV2ZW50X2RldjsKPj4+Pj4+PiArb3V0Ogo+Pj4+Pj4+ICAgICAg
+ICAgICByZXR1cm4gMDsKPj4+Pj4+PiAgICB9Cj4+Pj4+Pj4KPj4+Pj4+PiAtLQo+Pj4+Pj4+IDIu
+Ni42Cj4+Pj4+Pj4KPj4+Pj4+Cj4+Pj4+IC0tCj4+Pj4+IExpbiBIdWFuZwo+Pj4+Pgo+Pj4+Pgo+
+Pj4+Cj4+Pj4KPj4+Cj4+PiAtLQo+Pj4gTGluIEh1YW5nCj4+Pgo+Pj4KX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApk
+cmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Au
+b3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
