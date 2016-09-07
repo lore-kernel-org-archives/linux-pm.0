@@ -1,48 +1,64 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?UkU6IFJlOiBbUFVMTCBSRVFdIFBNIC8gRGV2ZnJlcSBmb3Ig?=
- =?UTF-8?B?TGludXgtcG0gKEZpeGVzKQ==?=
-Date: Wed, 07 Sep 2016 09:31:18 +0000
-Message-ID: <1416949447.616813.1473240678090.JavaMail.weblogic@ep1ml102b>
-References: <CGME20160906064335epcms1p75b85321b10ff6d8d045240a785375b23@epcms1p7>
- <1278751964.451375.1473145738891.JavaMail.weblogic@ep1ml102b>
-Reply-To: myungjoo.ham@samsung.com
+From: Matt Redfearn <matt.redfearn@imgtec.com>
+Subject: [PATCH v2 00/12] MIPS CPC fixup and CPU Idle for MIPSr6 CPUs
+Date: Wed, 7 Sep 2016 10:45:08 +0100
+Message-ID: <1473241520-14917-1-git-send-email-matt.redfearn@imgtec.com>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_616812_86331196.1473240678090"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:34355 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751566AbcIGJbV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 05:31:21 -0400
-Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OD400GRGNS6XLC0@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 07 Sep 2016 18:31:18 +0900 (KST)
+Received: from mailapp01.imgtec.com ([195.59.15.196]:59477 "EHLO
+        mailapp01.imgtec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750791AbcIGJph (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 05:45:37 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?UmFmYWVsIEouIFd5c29ja2k=?= <rafael@kernel.org>
-Cc: =?UTF-8?B?cmp3QHJqd3lzb2NraS5uZXQ=?= <rjw@rjwysocki.net>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?aGxAcm9jay1jaGlwcy5jb20=?= <hl@rock-chips.com>, =?UTF-8?B?anN6aGFuZ0BtYXJ2ZWxsLmNvbQ==?= <jszhang@marvell.com>, =?UTF-8?B?S3J6eXN6dG9mIEtvemxvd3NraQ==?= <k.kozlowski@samsung.com>, =?UTF-8?B?eW9uZ2p1bl93ZWlAdHJlbmRtaWNyby5jb20uY24=?= <yongjun_wei@trendmicro.com.cn>, =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20=?= <rafael.j.wysocki@intel.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org, Matt Redfearn <matt.redfearn@imgtec.com>, Arnd Bergmann <arnd@arndb.de>, Tony Wu <tung7970@gmail.com>, Nikolay Martynov <mar.kolya@gmail.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Kees Cook <keescook@chromium.org>, linux-pm@vger.kernel.org, Qais Yousef <qsyousef@gmail.com>, linux-kernel@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, James Hogan <james.hogan@imgtec.com>, Andrew Morton <akpm@linux-foundation.org>, Markos Chandras <markos.chandras@imgtec.com>, Adam Buchbinder <adam.buchbinder@gmail.com>, "Peter Zijlstra (Intel)" <peterz@infradead.org>, Paul Burton <paul.burton@imgtec.com>, Daniel Lezcano <daniel.lezcano@li>
 
-------=_Part_616812_86331196.1473240678090
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
 
-PiBPbiBUdWUsIFNlcCA2LCAyMDE2IGF0IDk6MDggQU0sIE15dW5nSm9vIEhhbSA8bXl1bmdqb28u
-aGFtQHNhbXN1bmcuY29tPiB3cm90ZToNCj4gPj4gRGVhciBSYWZhZWwsDQo+ID4+DQo+ID4+IEhl
-cmUgZ29lcyBwdWxsIHJlcXVlc3QgZnJvbSBQTSAvIGRldmZyZXEgZm9yIGxpbnV4LXBtLg0KPiA+
-PiAoVGhlIGZpcnN0IHR3byBwYXRjaGVzIGFyZSBwcmV2aW91c2x5IHB1bGwtcmVxdWVzdGVkLCBi
-dXQgbm90IGZvdW5kIGluIHY0LjgtcmM1Lg0KPiA+PiBJZiB5b3UndmUgYWxyZWFkeSBwdWxsZWQg
-dGhlbSwgeW91IG1heSBza2lwIHRoZSBmaXJzdCB0d28pDQo+IA0KPiBJIGhhdmVuJ3QgcHVsbGVk
-IHRoZW0gYW5kIEknZCByYXRoZXIgbm90IGF0IHRoaXMgcG9pbnQuICBUaGV5IGFyZSBub3QNCj4g
-LXJjNiB0aW1lIGZyYW1lIGZpeGVzLg0KPiANCj4gSSBtYXkgcHVsbCB0aGUgb3RoZXIgdHdvIGlm
-IHlvdSB0aGluayB0aGV5IGFyZSB1cmdlbnQgZW5vdWdoIGFuZCBzZW5kDQo+IGEgc2VwYXJhdGUg
-cmVxdWVzdCB0byBtZSBmb3IgdGhhdC4NCj4gDQo+IE90aGVyd2lzZSwgSSdsbCBtZXJnZSB0aGUg
-d2hvbGUgdGhpbmcgYXMgNC45IG1hdGVyaWFsLg0KPiANCj4gVGhhbmtzLA0KPiBSYWZhZWwNCg0K
-SXQgaXMgb2sgdG8gbWVyZ2UgdGhlIHdob2xlIHRoaW4gYXMgNC45OyBub3RoaW5nIHRoYXQgbXVj
-aCB1cmdlbnQgSSBoYXZlLg0KDQpJZiB5b3Ugd2FudCB0byBtZXJnZSB0aGUgKHByZXZpb3VzbHkp
-IDQuOC1yY1ggYW5kIDQuOSBhdCBvbmNlIGZvciA0LjkgbGF0ZXIsDQp5b3UgY2FuIHVzZSAicHVs
-bF93aG9sZV9mb3JfNC45IiB0YWcgKGZvci1uZXh0IGJyYW5jaCkNCg0KaHR0cHM6Ly9naXQua2Vy
-bmVsLm9yZy9jZ2l0L2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEuZ2l0L2xvZy8/aD1mb3It
-bmV4dA0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCg==
-------=_Part_616812_86331196.1473240678090--
+This updated series incorporates comments from Peter Zijlstra on v1
+around the barriers in pm-cps.c.
+
+This series fixes a small issue with the CPC driver when A CM3 is
+present, where a redundant lock was taken.
+
+There are then additions to the pm-cps driver to add support for R6 CPUs
+such as the I6400, and additionally the CM3 present in the I6400.
+
+Finally we enable the cpuidle-cps driver for MIPSr6 CPUs.
+
+Applies atop v4.8-rc4
+
+
+Changes in v2:
+Update comments on barriers
+Add new patch to define standard MIPS barrier types
+Use architecturally standard lightweight sync types rather than
+selecting CPU specific ones.
+
+Matt Redfearn (12):
+  MIPS: CPC: Convert bare 'unsigned' to 'unsigned int'
+  MIPS: CPC: Avoid lock when MIPS CM >= 3 is present
+  MIPS: pm-cps: Change FSB workaround to CPU blacklist
+  MIPS: pm-cps: Update comments on barrier instructions
+  MIPS: Barrier: Add definitions of SYNC stype values
+  MIPS: pm-cps: Use MIPS standard lightweight ordering barrier
+  MIPS: pm-cps: Use MIPS standard completion barrier
+  MIPS: pm-cps: Remove selection of sync types
+  MIPS: pm-cps: Add MIPSr6 CPU support
+  MIPS: pm-cps: Support CM3 changes to Coherence Enable Register
+  MIPS: SMP: Wrap call to mips_cpc_lock_other in mips_cm_lock_other
+  cpuidle: cpuidle-cps: Enable use with MIPSr6 CPUs.
+
+ arch/mips/include/asm/barrier.h |  96 +++++++++++++++++++++++++++++++++
+ arch/mips/include/asm/mips-cm.h |   1 +
+ arch/mips/include/asm/pm-cps.h  |   6 ++-
+ arch/mips/kernel/mips-cpc.c     |  17 ++++--
+ arch/mips/kernel/pm-cps.c       | 115 +++++++++++++++++++---------------------
+ arch/mips/kernel/smp.c          |   2 +
+ drivers/cpuidle/Kconfig.mips    |   2 +-
+ drivers/cpuidle/cpuidle-cps.c   |   2 +-
+ 8 files changed, 173 insertions(+), 68 deletions(-)
+
+-- 
+2.7.4
+
