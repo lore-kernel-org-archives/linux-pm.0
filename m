@@ -1,44 +1,54 @@
 From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH V3 0/5] firmware: Add support for TI System Control Interface (TI-SCI) protocol driver
-Date: Thu, 08 Sep 2016 10:31:03 -0700
-Message-ID: <m2y432nvs8.fsf@baylibre.com>
-References: <20160906190127.23522-1-nm@ti.com> <7hshtbtu8l.fsf@baylibre.com>
-        <f41d968c-46c9-997e-0fa0-edbef34a1fa5@ti.com>
+Subject: Re: [PATCH 3/3] soc: ti: Add ti_sci_pm_domains driver
+Date: Thu, 08 Sep 2016 10:38:27 -0700
+Message-ID: <m2mvjinvfw.fsf@baylibre.com>
+References: <20160819235653.26355-1-nm@ti.com>
+        <20160819235653.26355-4-nm@ti.com>
+        <CAPDyKFooDUOPT9dP8HaW3YBO9PsX-1+96PPE7CRMyjEkra7cBQ@mail.gmail.com>
+        <57C0D2C9.1030801@ti.com> <57C5E1DA.2040405@ti.com>
+        <CAPDyKFqszM48nXnnA9D8iCp34k-ZmNvOkHPCc=Fya4nJA7PvBQ@mail.gmail.com>
+        <57CF26DB.4020807@ti.com> <7h4m5rv9kz.fsf@baylibre.com>
+        <CAPDyKFo0Cb90BbY7ra6VDjb5frC5=VtmE3V6tDK=VosfPmod7Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <f41d968c-46c9-997e-0fa0-edbef34a1fa5@ti.com> (Nishanth Menon's
-        message of "Thu, 8 Sep 2016 09:00:37 -0500")
+In-Reply-To: <CAPDyKFo0Cb90BbY7ra6VDjb5frC5=VtmE3V6tDK=VosfPmod7Q@mail.gmail.com>
+        (Ulf Hansson's message of "Thu, 8 Sep 2016 11:27:52 +0200")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Rob Herring <robh@kernel.org>, Tero Kristo <t-kristo@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>, devicetree@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, narmstrong@baylibre.com, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, David Griego <david.griego@linaro.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Dave Gerlach <d-gerlach@ti.com>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Keerthy <j-keerthy@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Nishanth Menon <nm@ti.com> writes:
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-> On 09/07/2016 01:55 PM, Kevin Hilman wrote:
->> Nishanth Menon <nm@ti.com> writes:
+> [...]
 >
-> [...] full mail thread in https://lkml.org/lkml/2016/9/6/747
->
->>> Overall architecture is very similar to SCPI[4] as follows:
 >>
->> Dumb Q: I'm curious about the limitations in SCPI that were found that
->> made TI decided to implement its own version.
+>> One more idea...
+>>
+>> Since you don't really have a domain (a group of devices), what you
+>> really have is each device having an independent power switch, so as Ulf
+>> suggested, what you really need is for all the devices to share the same
+>> set of runtime PM callbacks that call SCI.  The only difference is the
+>> unique ID.
+>>
+>> Rather than using all of genpd, you could also just use a pm_domain
+>> which is what genpd is built on top of (and also omap_device, which
+>> you're probably familiar with also.)
+>
+> Even if this would work as well, the downside would be that you need
+> to re-invent the parts related to the DT parsing, the probing/removal
+> and attaching/detaching of the device to the PM domain.
+>
+> You probably don't want to go there... :-)
 
-[...]
+All you'd need to read from DT would be the device-specific ID for
+TI-SCI, and that could be done at bind time with a notifier.  The, in
+that same notifier, if a TI-SCI ID exists, it would get added to the
+pm_domain.
 
-> Long story short, investigation was done into what SCPI was providing
-> (TI internal ofcourse) and SCPI did not fit our SoC generation needs -
-
-Thanks for the detailed explanation.  Very helpful.
-
-To be clear, I'm not a proponent of always using ARM "standards"
-(especially when it's not exactly clear if it's a standard or a Juno
-thing) but I'm seeing several SoCs come out with SCPI derivatives, or
-old ARM versions etc., so was just curious about the decision making
-process.
-
-Thanks for sharing,
+Anyways, your original proposal is much preferred if it can work.  I'm
+just throwing out another option because I really don't like one genpd
+per device.
 
 Kevin
