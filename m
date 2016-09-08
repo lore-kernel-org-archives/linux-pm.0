@@ -1,40 +1,31 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v2 5/8] sched,x86: Enable Turbo Boost Max Technology
-Date: Thu, 08 Sep 2016 11:41:09 -0700
-Message-ID: <1473360069.154359.64.camel@linux.intel.com>
-References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <1472762024-88771-6-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <20160908075955.GS10153@twins.programming.kicks-ass.net>
-         <20160908180928.GB23509@linux.intel.com>
-         <20160908182215.GA10153@twins.programming.kicks-ass.net>
-         <1473359328.154359.61.camel@linux.intel.com>
-         <20160908183318.GB10153@twins.programming.kicks-ass.net>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC/RFT][PATCH 0/4] cpufreq / sched: iowait boost in
+ intel_pstate and schedutil
+Date: Thu, 8 Sep 2016 12:26:15 -0700
+Message-ID: <20160908192615.GD15431@graphite.smuckle.net>
+References: <2730042.XLMy9dAKI1@vostro.rjw.lan>
+ <20160908002226.GC15431@graphite.smuckle.net>
+ <1473294950.154359.38.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160908183318.GB10153@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Tim Chen <tim.c.chen@linux.intel.com>, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:33166 "EHLO
+        mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S964859AbcIHT0T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Sep 2016 15:26:19 -0400
+Received: by mail-pa0-f50.google.com with SMTP id cm16so20227638pac.0
+        for <linux-pm@vger.kernel.org>; Thu, 08 Sep 2016 12:26:18 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1473294950.154359.38.camel@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Steve Muckle <steve.muckle@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Doug Smythies <doug.smythies@gmail.com>
 
-On Thu, 2016-09-08 at 20:33 +0200, Peter Zijlstra wrote:
-> On Thu, Sep 08, 2016 at 11:28:48AM -0700, Srinivas Pandruvada wrote:
-> 
-> > 
-> > Do we need to send v3 to include these changes?
-> 
-> Might as well I suppose. Then we need to figure out who is going to
-> merge what where ;-)
-Preferably from Rafael's PM tree as this depends on some CPPC changes
-which are in his tree.
+On Wed, Sep 07, 2016 at 05:35:50PM -0700, Srinivas Pandruvada wrote:
+> Did you see any performance regression on Android workloads?
 
-Thanks,
-Srinivas
+I did a few AnTuTU runs and did not observe a regression.
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+thanks,
+Steve
