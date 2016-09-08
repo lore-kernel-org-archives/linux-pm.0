@@ -1,63 +1,56 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v3 4/8] sched, x86: use arch_update_cpu_topology to indicate x86 need sched domain rebuild
-Date: Thu,  8 Sep 2016 15:26:51 -0700
-Message-ID: <1473373615-51427-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v3 3/8] x86, cpu: provide a function topology_num_packages to enumerate #packages
+Date: Thu,  8 Sep 2016 15:26:50 -0700
+Message-ID: <1473373615-51427-4-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
 Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Tim Chen <tim.c.chen@linux.intel.com>
 
-Provides x86 with arch_update_cpu_topology function. This function
-allows us to indicate that a condition is detected that the sched
-domain of x86 needs a complete rebuild.  This is done by setting the
-x86_topology_update flag.
+We compute the the number of active packages during boot and
+topology update.  Provide a function to export this info for
+functions that need this topology info.
 
 Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- arch/x86/include/asm/topology.h |  2 ++
- arch/x86/kernel/smpboot.c       | 11 +++++++++++
- 2 files changed, 13 insertions(+)
+ arch/x86/include/asm/topology.h | 1 +
+ arch/x86/kernel/smpboot.c       | 5 +++++
+ 2 files changed, 6 insertions(+)
 
 diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 0bcf3b7..8d6df77 100644
+index 98b669d..0bcf3b7 100644
 --- a/arch/x86/include/asm/topology.h
 +++ b/arch/x86/include/asm/topology.h
-@@ -147,6 +147,8 @@ struct pci_bus;
- int x86_pci_root_bus_node(int bus);
- void x86_pci_root_bus_resources(int bus, struct list_head *resources);
+@@ -129,6 +129,7 @@ static inline int topology_max_smt_threads(void)
+ }
  
-+extern bool x86_topology_update;
-+
- #ifdef CONFIG_SCHED_ITMT
- extern unsigned int __read_mostly sysctl_sched_itmt_enabled;
- #endif /* CONFIG_SCHED_ITMT */
+ int topology_update_package_map(unsigned int apicid, unsigned int cpu);
++extern int topology_num_packages(void);
+ extern int topology_phys_to_logical_pkg(unsigned int pkg);
+ #else
+ #define topology_max_packages()			(1)
 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 292df31..737b9edf 100644
+index 3782bd4..292df31 100644
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -110,6 +110,17 @@ static bool logical_packages_frozen __read_mostly;
- int __max_smt_threads __read_mostly;
+@@ -297,6 +297,11 @@ found:
+ 	return 0;
+ }
  
- unsigned int __read_mostly sysctl_sched_itmt_enabled;
-+/* Flag to indicate if a complete sched domain rebuild is required */
-+bool x86_topology_update;
-+
-+int arch_update_cpu_topology(void)
++int topology_num_packages(void)
 +{
-+	if (x86_topology_update) {
-+		x86_topology_update = false;
-+		return 1;
-+	} else
-+		return 0;
++	return logical_packages;
 +}
- 
- static inline void smpboot_setup_warm_reset_vector(unsigned long start_eip)
- {
++
+ /**
+  * topology_phys_to_logical_pkg - Map a physical package id to a logical
+  *
 -- 
 2.7.4
+
