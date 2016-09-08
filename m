@@ -1,77 +1,99 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2 12/12] cpuidle: cpuidle-cps: Enable use with MIPSr6
- CPUs.
-Date: Thu, 8 Sep 2016 12:55:13 +0200
-Message-ID: <f0e9df57-a19f-a94d-6cf8-60ea7c84a732@linaro.org>
-References: <1473241520-14917-1-git-send-email-matt.redfearn@imgtec.com>
- <1473241520-14917-13-git-send-email-matt.redfearn@imgtec.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH 1/4] exynos4-is: Clear isp-i2c adapter
+ power.ignore_children flag
+Date: Thu, 08 Sep 2016 13:16:43 +0200
+Message-ID: <92b9deab-1a2d-eb76-e9dc-63ab4576b299@samsung.com>
+References: <1472729956-17475-1-git-send-email-s.nawrocki@samsung.com>
+ <20160901114711.GF2893@katana>
+ <CACRpkdaFj58kMqniVHxC87K0XmHoPy3x-GHs=JrK-t2osKCZ1w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-mips-bounce@linux-mips.org>
-In-Reply-To: <1473241520-14917-13-git-send-email-matt.redfearn@imgtec.com>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-To: Matt Redfearn <matt.redfearn@imgtec.com>, Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CACRpkdaFj58kMqniVHxC87K0XmHoPy3x-GHs=JrK-t2osKCZ1w@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>
+Cc: "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, stable <stable@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/09/2016 11:45, Matt Redfearn wrote:
-> This patch enables the MIPS CPS driver for MIPSr6 CPUs.
+On 09/07/2016 10:38 PM, Linus Walleij wrote:
+> On Thu, Sep 1, 2016 at 1:47 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
+>> On Thu, Sep 01, 2016 at 01:39:16PM +0200, Sylwester Nawrocki wrote:
 > 
-> Signed-off-by: Matt Redfearn <matt.redfearn@imgtec.com>
-> Reviewed-by: Paul Burton <paul.burton@imgtec.com>
+>>> Since commit 04f59143b571161d25315dd52d7a2ecc022cb71a
+>>> ("i2c: let I2C masters ignore their children for PM")
+>>> the power.ignore_children flag is set when registering an I2C
+>>> adapter. Since I2C transfers are not managed by the fimc-isp-i2c
+>>> driver its clients use pm_runtime_* calls directly to communicate
+>>> required power state of the bus controller.
+>>> However when the power.ignore_children flag is set that doesn't
+>>> work, so clear that flag back after registering the adapter.
+>>> While at it drop pm_runtime_enable() call on the i2c_adapter
+>>> as it is already done by the I2C subsystem when registering
+>>> I2C adapter.
+>>>
+>>> Cc: <stable@vger.kernel.org> # 4.7+
+>>> Reported-by: Marek Szyprowski <m.szyprowski@samsung.com>
+>>> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
 > 
+> I understand what the patch is doing but not this commit message.
+> 
+> What does it mean when you say "Since I2C transfers are not
+> managed by the fimc-isp-i2c driver its clients use pm_runtime_*
+> calls directly to communicate required power state of the bus
+> controller."?
+> 
+> I find it very hard to understand.
 
-Reviewed-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+When a video device node is opened the I2C client (v4l2 subdevice)
+in its s_power() handler makes pm_runtime_get/pm_runtime_put calls
+on its corresponding i2c_client.  It's true we use an imitation of
+I2C bus adapter just to make things work with standard DT bindings
+and except of device instantiation this adapter's task is just
+to control the clock.
+I admit that it's all an odd use case, it comes from the fact that
+the image sensor devices are handled in the ISP's firmware, where
+normally we have an I2C client driver for each sensor in V4L2.
 
-> ---
-> 
-> Changes in v2: None
-> 
->  drivers/cpuidle/Kconfig.mips  | 2 +-
->  drivers/cpuidle/cpuidle-cps.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/Kconfig.mips b/drivers/cpuidle/Kconfig.mips
-> index 4102be01d06a..512ee37b374b 100644
-> --- a/drivers/cpuidle/Kconfig.mips
-> +++ b/drivers/cpuidle/Kconfig.mips
-> @@ -5,7 +5,7 @@ config MIPS_CPS_CPUIDLE
->  	bool "CPU Idle driver for MIPS CPS platforms"
->  	depends on CPU_IDLE && MIPS_CPS
->  	depends on SYS_SUPPORTS_MIPS_CPS
-> -	select ARCH_NEEDS_CPU_IDLE_COUPLED if MIPS_MT
-> +	select ARCH_NEEDS_CPU_IDLE_COUPLED if MIPS_MT || CPU_MIPSR6
->  	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
->  	select MIPS_CPS_PM
->  	default y
-> diff --git a/drivers/cpuidle/cpuidle-cps.c b/drivers/cpuidle/cpuidle-cps.c
-> index 1adb6980b707..926ba9871c62 100644
-> --- a/drivers/cpuidle/cpuidle-cps.c
-> +++ b/drivers/cpuidle/cpuidle-cps.c
-> @@ -163,7 +163,7 @@ static int __init cps_cpuidle_init(void)
->  		core = cpu_data[cpu].core;
->  		device = &per_cpu(cpuidle_dev, cpu);
->  		device->cpu = cpu;
-> -#ifdef CONFIG_MIPS_MT
-> +#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
->  		cpumask_copy(&device->coupled_cpus, &cpu_sibling_map[cpu]);
->  #endif
->  
-> 
+Now, I don't like those pm_runtime_* calls in the sensor drivers
+as that's a non standard thing.  The other option to fix the
+regression which I have been considering is to remove the whole
+PM runtime dependency and make the driver of the I2C controller's
+parent device [1] handle the clocks, as it's done with clocks of
+some other IP blocks in that whole camera subsystem.  Probably
+it's the lesser of two evils.
 
+> The intent of the commit is to decouple I2C slave devices'
+> runtime PM state from their parents, so say a gyroscope on an
+> I2C bus does not have to bring up it's host controller to be
+> active, for example it usually has an IRQ line to wake up
+> the driver and that will talk using I2C and the I2C traffic will
+> wake up the I2C master.
+> 
+> When I look at the driver it appears it is not even used for
+> I2C traffic, just to take the clocks up and down and make it
+> possible to manage a clock using runtime PM and interface
+> with the DT logic... so I guess since it's likely and odd one-off
+> and the driver is sufficiently weird anyways, it's fine to merge
+> this patch making it even weirder.
+
+Yeah, it's an odd one-off, there is no other drivers in mainline
+with such a "non standard" split of hardware control responsibility
+between main CPU and the ISP's MCU.
+
+I'd merge the $subject patch as a regression fix for 4.7 and 4.8
+and then think about a little larger patch moving the clock handling
+responsibility the the ISP_I2C controller's parent driver.
+
+> Maybe a sort of mock adapter type should actually be
+> created in the I2C core for these things so it can be handled
+> there but who am I to say.
+
+Not sure if we need it right now, probably if there is more such
+use cases we could think about something like this.
+
+[1] http://lxr.linux.no/#linux+v4.7.3/arch/arm/boot/dts/exynos4x12.dtsi#L148
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thanks,
+Sylwester
