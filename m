@@ -1,176 +1,164 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v3 2/8] sched: Extend scheduler's asym packing
-Date: Thu,  8 Sep 2016 15:26:49 -0700
-Message-ID: <1473373615-51427-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v3 8/8] cpufreq: intel_pstate: Use CPPC to get max performance
+Date: Thu,  8 Sep 2016 15:26:55 -0700
+Message-ID: <1473373615-51427-9-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
 Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Tim Chen <tim.c.chen@linux.intel.com>
+This change uses acpi cppc_lib interface to get CPPC performance limits.
+Once CPPC limits of all online cores are read, first check if there is
+difference in max performance. If there is a difference, then the
+scheduler interface is called to update per cpu priority. After updating
+priority of all current cpus, the itmt feature is enabled.
 
-We generalize the scheduler's asym packing to provide an ordering
-of the cpu beyond just the cpu number.  This allows the use of the
-ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
-sched domain. The preference is defined with the cpu priority
-given by arch_asym_cpu_priority(cpu).
-
-We also record the most preferred cpu in a sched group when
-we build the cpu's capacity for fast lookup of preferred cpu
-during load balancing.
-
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- include/linux/sched.h |  2 ++
- kernel/sched/core.c   | 18 ++++++++++++++++++
- kernel/sched/fair.c   | 35 ++++++++++++++++++++++++-----------
- kernel/sched/sched.h  |  6 ++++++
- 4 files changed, 50 insertions(+), 11 deletions(-)
+ drivers/cpufreq/Kconfig.x86    |  1 +
+ drivers/cpufreq/intel_pstate.c | 75 ++++++++++++++++++++++++++++++++++++++++--
+ 2 files changed, 73 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b0fa726..15d3f29 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1052,6 +1052,8 @@ static inline int cpu_numa_flags(void)
- }
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index adbd1de..3328c6b 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -6,6 +6,7 @@ config X86_INTEL_PSTATE
+        bool "Intel P state control"
+        depends on X86
+        select ACPI_PROCESSOR if ACPI
++       select ACPI_CPPC_LIB if X86_64 && ACPI
+        help
+           This driver provides a P state for Intel core processors.
+ 	  The driver implements an internal governor and will become
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index bdbe936..a0bf244 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -44,6 +44,7 @@
+ 
+ #ifdef CONFIG_ACPI
+ #include <acpi/processor.h>
++#include <acpi/cppc_acpi.h>
  #endif
  
-+int arch_asym_cpu_priority(int cpu);
-+
- struct sched_domain_attr {
- 	int relax_domain_level;
- };
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index e86c4a5..08135ca 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6237,7 +6237,25 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
- 	WARN_ON(!sg);
- 
- 	do {
-+		int cpu, max_cpu = -1, prev_cpu = -1;
-+
- 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
-+
-+		if (!(sd->flags & SD_ASYM_PACKING))
-+			goto next;
-+
-+		for_each_cpu(cpu, sched_group_cpus(sg)) {
-+			if (prev_cpu < 0) {
-+				prev_cpu = cpu;
-+				max_cpu = cpu;
-+			} else {
-+				if (sched_asym_prefer(cpu, max_cpu))
-+					max_cpu = cpu;
-+			}
-+		}
-+		sg->asym_prefer_cpu = max_cpu;
-+
-+next:
- 		sg = sg->next;
- 	} while (sg != sd->groups);
- 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 5d558cc..a37a390 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -100,6 +100,16 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
+ #define FRAC_BITS 8
+@@ -193,6 +194,8 @@ struct _pid {
+  * @sample:		Storage for storing last Sample data
+  * @acpi_perf_data:	Stores ACPI perf information read from _PSS
+  * @valid_pss_table:	Set to true for valid ACPI _PSS entries found
++ * @cppc_data:		Stores CPPC information for HWP capable CPUs
++ * @valid_cppc_table:	Set to true for valid CPPC entries are found
+  *
+  * This structure stores per CPU instance data for all CPUs.
   */
- unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
+@@ -215,6 +218,8 @@ struct cpudata {
+ #ifdef CONFIG_ACPI
+ 	struct acpi_processor_performance acpi_perf_data;
+ 	bool valid_pss_table;
++	struct cppc_cpudata *cppc_data;
++	bool valid_cppc_table;
+ #endif
+ };
  
-+#ifdef CONFIG_SMP
-+/*
-+ * For asym packing, by default the lower numbered cpu has higher priority.
-+ */
-+int __weak arch_asym_cpu_priority(int cpu)
-+{
-+	return -cpu;
-+}
-+#endif
+@@ -361,6 +366,15 @@ static struct perf_limits *limits = &powersave_limits;
+ #endif
+ 
+ #ifdef CONFIG_ACPI
++static cpumask_t cppc_rd_cpu_mask;
 +
- #ifdef CONFIG_CFS_BANDWIDTH
- /*
-  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
-@@ -6853,16 +6863,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
- 	if (env->idle == CPU_NOT_IDLE)
- 		return true;
- 	/*
--	 * ASYM_PACKING needs to move all the work to the lowest
--	 * numbered CPUs in the group, therefore mark all groups
--	 * higher than ourself as busy.
-+	 * ASYM_PACKING needs to move all the work to the highest
-+	 * prority CPUs in the group, therefore mark all groups
-+	 * of lower priority than ourself as busy.
- 	 */
--	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
-+	if (sgs->sum_nr_running &&
-+	    sched_asym_prefer(env->dst_cpu, sg->asym_prefer_cpu)) {
- 		if (!sds->busiest)
- 			return true;
- 
--		/* Prefer to move from highest possible cpu's work */
--		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
-+		/* Prefer to move from lowest priority cpu's work */
-+		if (sched_asym_prefer(sds->busiest->asym_prefer_cpu,
-+				      sg->asym_prefer_cpu))
- 			return true;
- 	}
- 
-@@ -7014,8 +7026,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
- 	if (!sds->busiest)
- 		return 0;
- 
--	busiest_cpu = group_first_cpu(sds->busiest);
--	if (env->dst_cpu > busiest_cpu)
-+	busiest_cpu = sds->busiest->asym_prefer_cpu;
-+	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
- 		return 0;
- 
- 	env->imbalance = DIV_ROUND_CLOSEST(
-@@ -7356,10 +7368,11 @@ static int need_active_balance(struct lb_env *env)
- 
- 		/*
- 		 * ASYM_PACKING needs to force migrate tasks from busy but
--		 * higher numbered CPUs in order to pack all tasks in the
--		 * lowest numbered CPUs.
-+		 * lower priority CPUs in order to pack all tasks in the
-+		 * highest priority CPUs.
- 		 */
--		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
-+		if ((sd->flags & SD_ASYM_PACKING) &&
-+		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
- 			return 1;
- 	}
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index b7fc1ce..3f3d04a 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -532,6 +532,11 @@ struct dl_rq {
- 
- #ifdef CONFIG_SMP
- 
-+static inline bool sched_asym_prefer(int a, int b)
++/* Call set_sched_itmt from a work function to be able to use hotplug locks */
++static void intel_pstste_sched_itmt_work_fn(struct work_struct *work)
 +{
-+	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
++	set_sched_itmt(true);
 +}
 +
- /*
-  * We add the notion of a root-domain which will be used to define per-domain
-  * variables. Each exclusive cpuset essentially defines an island domain by
-@@ -884,6 +889,7 @@ struct sched_group {
++static DECLARE_WORK(sched_itmt_work, intel_pstste_sched_itmt_work_fn);
  
- 	unsigned int group_weight;
- 	struct sched_group_capacity *sgc;
-+	int asym_prefer_cpu;		/* cpu of highest priority in group */
+ static bool intel_pstate_get_ppc_enable_status(void)
+ {
+@@ -377,14 +391,63 @@ static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
+ 	int ret;
+ 	int i;
  
- 	/*
- 	 * The CPUs this group covers.
+-	if (hwp_active)
++	cpu = all_cpu_data[policy->cpu];
++
++	if (hwp_active) {
++		struct cppc_perf_caps *perf_caps;
++
++		cpu->cppc_data = kzalloc(sizeof(struct cppc_cpudata),
++					 GFP_KERNEL);
++		if (!cpu->cppc_data)
++			return;
++
++		perf_caps = &cpu->cppc_data->perf_caps;
++		ret = cppc_get_perf_caps(policy->cpu, perf_caps);
++		if (ret) {
++			kfree(cpu->cppc_data);
++			return;
++		}
++
++		cpu->valid_cppc_table = true;
++		pr_debug("cpu:%d H:0x%x N:0x%x L:0x%x\n", policy->cpu,
++			 perf_caps->highest_perf, perf_caps->nominal_perf,
++			 perf_caps->lowest_perf);
++
++		cpumask_set_cpu(policy->cpu, &cppc_rd_cpu_mask);
++		if (cpumask_subset(topology_core_cpumask(policy->cpu),
++				   &cppc_rd_cpu_mask)) {
++			int cpu_index;
++			int max_prio;
++			bool itmt_support = false;
++
++			cpu = all_cpu_data[0];
++			max_prio = cpu->cppc_data->perf_caps.highest_perf;
++			for_each_cpu(cpu_index, &cppc_rd_cpu_mask) {
++				cpu = all_cpu_data[cpu_index];
++				perf_caps = &cpu->cppc_data->perf_caps;
++				if (max_prio != perf_caps->highest_perf) {
++					itmt_support = true;
++					break;
++				}
++			}
++
++			if (!itmt_support)
++				return;
++
++			for_each_cpu(cpu_index, &cppc_rd_cpu_mask) {
++				cpu = all_cpu_data[cpu_index];
++				perf_caps = &cpu->cppc_data->perf_caps;
++				sched_set_itmt_core_prio(
++					perf_caps->highest_perf, cpu_index);
++			}
++			schedule_work(&sched_itmt_work);
++		}
+ 		return;
++	}
+ 
+ 	if (!intel_pstate_get_ppc_enable_status())
+ 		return;
+ 
+-	cpu = all_cpu_data[policy->cpu];
+-
+ 	ret = acpi_processor_register_performance(&cpu->acpi_perf_data,
+ 						  policy->cpu);
+ 	if (ret)
+@@ -444,6 +507,12 @@ static void intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
+ 	struct cpudata *cpu;
+ 
+ 	cpu = all_cpu_data[policy->cpu];
++
++	if (cpu->valid_cppc_table) {
++		cpumask_clear_cpu(policy->cpu, &cppc_rd_cpu_mask);
++		kfree(cpu->cppc_data);
++	}
++
+ 	if (!cpu->valid_pss_table)
+ 		return;
+ 
 -- 
 2.7.4
-
