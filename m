@@ -1,126 +1,295 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v1 3/3] PM / AVS: rockchip-cpu-avs: add driver handling
- Rockchip cpu avs
-Date: Thu, 8 Sep 2016 11:56:23 -0500
-Message-ID: <20160908165623.GA12830@rob-hp-laptop>
-References: <1471315139-28285-1-git-send-email-finley.xiao@rock-chips.com>
- <20160819133636.GA26913@rob-hp-laptop>
- <c853c8fd-285a-603d-b294-750cdbf7f200@rock-chips.com>
- <3008348.gWNc8j0KGA@diego>
- <4eab5b34-58f8-30bb-1a2c-0b0d6b3e2b2c@rock-chips.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v5 3/3] Input: Add support for tps65217 power button
+Date: Thu, 8 Sep 2016 10:04:37 -0700
+Message-ID: <20160908170437.GA30299@dtor-ws>
+References: <20160908095900.30975-1-m.niestroj@grinn-global.com>
+ <20160908095900.30975-4-m.niestroj@grinn-global.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-input-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <4eab5b34-58f8-30bb-1a2c-0b0d6b3e2b2c-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+In-Reply-To: <20160908095900.30975-4-m.niestroj@grinn-global.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Marcin Niestroj <m.niestroj@grinn-global.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Grygorii Strashko <grygorii.strashko@ti.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 23, 2016 at 05:29:16PM +0800, Finley Xiao wrote:
+On Thu, Sep 08, 2016 at 11:59:00AM +0200, Marcin Niestroj wrote:
+> This driver enables us to use tps65217's power button as KEY_POWER on
+> am335x boards (directly connected button in chiliboard, accessible pin
+> via expansion header in beaglebone). This patch has been tested with
+> chiliboard.
 > 
+> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
+> ---
+> Depends on patches 1-2 in series and commit
+> 47d7d5ed68d877269003a392b7008905d65650bb
+> ("power_supply: tps65217-charger: Add support for IRQs")
+> in power-supply's -next branch.
 > 
-> 在 2016/8/23 17:03, Heiko Stübner 写道:
-> >Hi Finley,
-> >
-> >Am Dienstag, 23. August 2016, 12:10:27 schrieb Finley Xiao:
-> >>在 2016/8/19 21:36, Rob Herring 写道:
-> >>>On Tue, Aug 16, 2016 at 10:38:59AM +0800, Finlye Xiao wrote:
-> >>>>From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-> >>>>
-> >>>>This patch supports adjusting opp's voltage according to leakage
-> >>>>
-> >>>>Signed-off-by: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-> >>>>---
-> >>>>
-> >>>>   .../devicetree/bindings/power/rockchip-cpu-avs.txt |  37 +++
-> >>>>   drivers/power/avs/Kconfig                          |   8 +
-> >>>>   drivers/power/avs/Makefile                         |   1 +
-> >>>>   drivers/power/avs/rockchip-cpu-avs.c               | 314
-> >>>>   +++++++++++++++++++++ 4 files changed, 360 insertions(+)
-> >>>>   create mode 100644
-> >>>>   Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt create
-> >>>>   mode 100644 drivers/power/avs/rockchip-cpu-avs.c
-> >>>>
-> >>>>diff --git a/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
-> >>>>b/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt new file
-> >>>>mode 100644
-> >>>>index 0000000..90f6b08
-> >>>>--- /dev/null
-> >>>>+++ b/Documentation/devicetree/bindings/power/rockchip-cpu-avs.txt
-> >>>>@@ -0,0 +1,37 @@
-> >>>>+Rockchip cpu avs device tree bindings
-> >>>>+-------------------------------------
-> >>>>+
-> >>>>+Under the same frequency, the operating voltage tends to decrease with
-> >>>>+increasing leakage. so it is necessary to adjust opp's voltage according
-> >>>>+to leakage for power.
-> >>>>+
-> >>>>+
-> >>>>+Required properties:
-> >>>>+- compatible: Should be one of the following.
-> >>>>+  - "rockchip,rk3399-cpu-avs" - for RK3399 SoCs.
-> >>>>+- leakage-volt-<name>: Named leakage-volt property. At runtime, the
-> >>>>+  platform can find a cpu's cluster_id according to it's cpu_id and
-> >>>>match
-> >>>>+  leakage-volt-<name> property. The property is an array of 3-tuples
-> >>>>+  items, and each item consists of leakage and voltage like
-> >>>>+  <min-leakage-mA max-leakage-mA vol-uV>.
-> >>>>+	min-leakage: minimum leakage in mA.
-> >>>>+	max-leakage: maximum leakage in mA.
-> >>>>+	vol: voltage in microvolt.
-> >>>How do you determine these values? When do they vary?
-> >>How do you determine these values?
-> >>
-> >>run antutu-benchmark
-> >>leakage     freq 	min_volt
-> >>30mA 	    1608MHz 	1025mV
-> >>40mA 	    1608MHz 	1000mV
-> >>50mA 	    1608MHz 	975mV
-> >>
-> >>  From the table, we see the min_volt decrease with increasing leakage.
-> >>So we can set the default opp-microvolt 1025mV for 1608MHz,
-> >>and add an leakage_volt_cluster0 property as follows.
-> >>leakage_volt_cluster0 = <
-> >>		/*  min(mA)   max(mA)    volt(uV)*/
-> >>		    0         40        0
-> >>		    41        50        (-25000)
-> >>		    51        254       (-50000)
-> >>
-> >>>;
-> >>If the leakage is between 41mA and 50mA，the opp-microvolt will subtract
-> >>25mV。 If the leakage is between 41mA and 50mA，the opp-microvolt will
-> >>subtract 50mV。
-> >>
-> >>When do they vary?
-> >>
-> >>  From the code,
-> >>cpufreq_online
-> >>--cpufreq_driver->init(policy);  /* add new opp table */
-> >>--blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
-> >>CPUFREQ_START, policy);
-> >>--cpufreq_init_policy
-> >>----cpufreq_set_policy
-> >>--------__cpufreq_governor(policy, CPUFREQ_GOV_START);
-> >>
-> >>The cpu's opp table is added in the init function(cpufreq_init)，and I will
-> >>register a cpufreq notifier, once the first cpu of cluster is onlined,
-> >>my notifer will be called, and if the event is CPUFREQ_START，it will modify
-> >>the opp-microvolt according to leakage_volt_cluster0.
-> >I think what Rob was asking with "when do they vary" is, are these leakage
-> >values the same for each and every rk3399 soc or are they determined
-> >separately for each board-type using the rk3399.
+> Changes v4 -> v5:
+>  * Add support for tps65217 power button in tps65218-pwrbutton driver
+>    (as suggested by Dmitry)
+>  * Device-tree documentation was combined with tps65218-pwrbutton
 > 
-> Oh, sorry, I misunderstood.
-> They are the same for every rk3399 soc.
+> Changes v2 -> v4: none
+> 
+> Changes v1 -> v2:
+>  * Added information about parent device in tps65217 power button
+>    device-tree binding documentation (suggested by Rob)
+> 
+>  .../bindings/input/tps65218-pwrbutton.txt          |  17 +++-
+>  drivers/input/misc/Kconfig                         |   4 +-
+>  drivers/input/misc/tps65218-pwrbutton.c            | 102 +++++++++++++++------
+>  3 files changed, 88 insertions(+), 35 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/input/tps65218-pwrbutton.txt b/Documentation/devicetree/bindings/input/tps65218-pwrbutton.txt
+> index e30e0b9..3e5b979 100644
+> --- a/Documentation/devicetree/bindings/input/tps65218-pwrbutton.txt
+> +++ b/Documentation/devicetree/bindings/input/tps65218-pwrbutton.txt
+> @@ -1,13 +1,24 @@
+> -Texas Instruments TPS65218 power button
+> +Texas Instruments TPS65217 and TPS65218 power button
+> +
+> +This module is part of the TPS65217/TPS65218. For more details about the whole
+> +TPS65217 chip see Documentation/devicetree/bindings/regulator/tps65217.txt.
+>  
+>  This driver provides a simple power button event via an Interrupt.
+>  
+>  Required properties:
+> -- compatible: should be "ti,tps65218-pwrbutton"
+> +- compatible: should be "ti,tps65217-pwrbutton" or "ti,tps65218-pwrbutton"
+> +
+> +Required properties for TPS65218:
+>  - interrupts: should be one of the following
+>     - <3 IRQ_TYPE_EDGE_BOTH>: For controllers compatible with tps65218
+>  
+> -Example:
+> +Examples:
+> +
+> +&tps {
+> +	tps65217-pwrbutton {
+> +		compatible = "ti,tps65217-pwrbutton";
+> +	};
+> +};
+>  
+>  &tps {
+>  	power-button {
+> diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
+> index efb0ca8..dbd5b75 100644
+> --- a/drivers/input/misc/Kconfig
+> +++ b/drivers/input/misc/Kconfig
+> @@ -454,10 +454,10 @@ config INPUT_RETU_PWRBUTTON
+>  
+>  config INPUT_TPS65218_PWRBUTTON
+>  	tristate "TPS65218 Power button driver"
+> -	depends on MFD_TPS65218
+> +	depends on (MFD_TPS65217 || MFD_TPS65218)
+>  	help
+>  	  Say Y here if you want to enable power buttong reporting for
+> -	  the TPS65218 Power Management IC device.
+> +	  TPS65217 and TPS65218 Power Management IC device.
+>  
+>  	  To compile this driver as a module, choose M here. The module will
+>  	  be called tps65218-pwrbutton.
+> diff --git a/drivers/input/misc/tps65218-pwrbutton.c b/drivers/input/misc/tps65218-pwrbutton.c
+> index a39b626..b7964d1 100644
+> --- a/drivers/input/misc/tps65218-pwrbutton.c
+> +++ b/drivers/input/misc/tps65218-pwrbutton.c
+> @@ -1,8 +1,9 @@
+>  /*
+> - * Texas Instruments' TPS65218 Power Button Input Driver
+> + * Texas Instruments' TPS65217 and TPS65218 Power Button Input Driver
+>   *
+>   * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/
+>   * Author: Felipe Balbi <balbi@ti.com>
+> + * Author: Marcin Niestroj <m.niestroj@grinn-global.com>
+>   *
+>   * This program is free software; you can redistribute it and/or modify
+>   * it under the terms of the GNU General Public License version 2 as
+> @@ -18,31 +19,64 @@
+>  #include <linux/input.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/kernel.h>
+> +#include <linux/mfd/tps65217.h>
+>  #include <linux/mfd/tps65218.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+>  #include <linux/slab.h>
+>  
+> -struct tps65218_pwrbutton {
+> +struct tps6521x_data {
+> +	size_t regmap_offset;
+> +	unsigned int reg_status;
+> +	unsigned int pb_mask;
+> +	const char *name;
+> +};
+> +
+> +static const struct tps6521x_data tps65217_data = {
+> +	.regmap_offset = offsetof(struct tps65217, regmap),
+> +	.reg_status = TPS65217_REG_STATUS,
+> +	.pb_mask = TPS65217_STATUS_PB,
+> +	.name = "tps65217_pwrbutton",
+> +};
+> +
+> +static const struct tps6521x_data tps65218_data = {
+> +	.regmap_offset = offsetof(struct tps65218, regmap),
+> +	.reg_status = TPS65218_REG_STATUS,
+> +	.pb_mask = TPS65218_STATUS_PB_STATE,
+> +	.name = "tps65218_pwrbutton",
+> +};
+> +
+> +struct tps6521x_pwrbutton {
+>  	struct device *dev;
+> -	struct tps65218 *tps;
+> +	struct regmap *regmap;
+>  	struct input_dev *idev;
+> +	const struct tps6521x_data *data;
+> +	char phys[32];
+> +};
+> +
+> +static const struct of_device_id of_tps6521x_pb_match[] = {
+> +	{ .compatible = "ti,tps65217-pwrbutton", .data = &tps65217_data },
+> +	{ .compatible = "ti,tps65218-pwrbutton", .data = &tps65218_data },
+> +	{ },
+>  };
+> +MODULE_DEVICE_TABLE(of, of_tps6521x_pb_match);
+>  
+> -static irqreturn_t tps65218_pwr_irq(int irq, void *_pwr)
+> +static irqreturn_t tps6521x_pb_irq(int irq, void *_pwr)
+>  {
+> -	struct tps65218_pwrbutton *pwr = _pwr;
+> +	struct tps6521x_pwrbutton *pwr = _pwr;
+> +	const struct tps6521x_data *tps_data = pwr->data;
+>  	unsigned int reg;
+>  	int error;
+>  
+> -	error = tps65218_reg_read(pwr->tps, TPS65218_REG_STATUS, &reg);
+> +	error = regmap_read(pwr->regmap, tps_data->reg_status, &reg);
+>  	if (error) {
+>  		dev_err(pwr->dev, "can't read register: %d\n", error);
+>  		goto out;
+>  	}
+>  
+> -	if (reg & TPS65218_STATUS_PB_STATE) {
+> +	if (reg & tps_data->pb_mask) {
+>  		input_report_key(pwr->idev, KEY_POWER, 1);
+>  		pm_wakeup_event(pwr->dev, 0);
+>  	} else {
+> @@ -55,42 +89,56 @@ out:
+>  	return IRQ_HANDLED;
+>  }
+>  
+> -static int tps65218_pwron_probe(struct platform_device *pdev)
+> +static int tps6521x_pb_probe(struct platform_device *pdev)
+>  {
+> -	struct tps65218 *tps = dev_get_drvdata(pdev->dev.parent);
+> +	void *tps = dev_get_drvdata(pdev->dev.parent);
+>  	struct device *dev = &pdev->dev;
+> -	struct tps65218_pwrbutton *pwr;
+> +	struct tps6521x_pwrbutton *pwr;
+>  	struct input_dev *idev;
+> +	const struct of_device_id *match;
+>  	int error;
+>  	int irq;
+>  
+> +	match = of_match_node(of_tps6521x_pb_match, pdev->dev.of_node);
+> +	if (!match)
+> +		return -ENXIO;
+> +
+>  	pwr = devm_kzalloc(dev, sizeof(*pwr), GFP_KERNEL);
+>  	if (!pwr)
+>  		return -ENOMEM;
+>  
+> +	pwr->data = match->data;
+> +
+>  	idev = devm_input_allocate_device(dev);
+>  	if (!idev)
+>  		return -ENOMEM;
+>  
+> -	idev->name = "tps65218_pwrbutton";
+> -	idev->phys = "tps65218_pwrbutton/input0";
+> +	idev->name = pwr->data->name;
+> +	snprintf(pwr->phys, sizeof(pwr->phys), "%s/input0",
+> +		pwr->data->name);
+> +	idev->phys = pwr->phys;
+>  	idev->dev.parent = dev;
+>  	idev->id.bustype = BUS_I2C;
+>  
+>  	input_set_capability(idev, EV_KEY, KEY_POWER);
+>  
+> -	pwr->tps = tps;
+> +	pwr->regmap = *(struct regmap **) (tps + pwr->data->regmap_offset);
 
-Then I think the values should go in the kernel at least until we define 
-a common way to handle this.
+Please never ever do this stuff, it is extremely fragile and is bound to
+break. Do this instead:
 
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	regmap = dev_get_regmap(pdev->dev.parent, NULL);
+
+
+>  	pwr->dev = dev;
+>  	pwr->idev = idev;
+>  	platform_set_drvdata(pdev, pwr);
+>  	device_init_wakeup(dev, true);
+>  
+>  	irq = platform_get_irq(pdev, 0);
+> -	error = devm_request_threaded_irq(dev, irq, NULL, tps65218_pwr_irq,
+> -					  IRQF_TRIGGER_RISING |
+> -						IRQF_TRIGGER_FALLING |
+> -						IRQF_ONESHOT,
+> -					  "tps65218-pwrbutton", pwr);
+> +	if (irq < 0) {
+> +		dev_err(dev, "No IRQ resource!\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	error = devm_request_threaded_irq(dev, irq, NULL, tps6521x_pb_irq,
+> +					IRQF_TRIGGER_RISING |
+> +					IRQF_TRIGGER_FALLING |
+> +					IRQF_ONESHOT,
+
+Prefer to keep the old formatting for flags to be able to see easily
+that they are not separate arguments, but a single expression.
+
+> +					pwr->data->name, pwr);
+>  	if (error) {
+>  		dev_err(dev, "failed to request IRQ #%d: %d\n",
+>  			irq, error);
+> @@ -106,21 +154,15 @@ static int tps65218_pwron_probe(struct platform_device *pdev)
+>  	return 0;
+>  }
+>  
+> -static const struct of_device_id of_tps65218_pwr_match[] = {
+> -	{ .compatible = "ti,tps65218-pwrbutton" },
+> -	{ },
+> -};
+> -MODULE_DEVICE_TABLE(of, of_tps65218_pwr_match);
+> -
+> -static struct platform_driver tps65218_pwron_driver = {
+> -	.probe	= tps65218_pwron_probe,
+> +static struct platform_driver tps6521x_pb_driver = {
+> +	.probe	= tps6521x_pb_probe,
+>  	.driver	= {
+> -		.name	= "tps65218_pwrbutton",
+> -		.of_match_table = of_tps65218_pwr_match,
+> +		.name	= "tps6521x_pwrbutton",
+> +		.of_match_table = of_tps6521x_pb_match,
+>  	},
+>  };
+> -module_platform_driver(tps65218_pwron_driver);
+> +module_platform_driver(tps6521x_pb_driver);
+>  
+> -MODULE_DESCRIPTION("TPS65218 Power Button");
+> +MODULE_DESCRIPTION("TPS6521X Power Button");
+>  MODULE_LICENSE("GPL v2");
+>  MODULE_AUTHOR("Felipe Balbi <balbi@ti.com>");
+> -- 
+> 2.9.3
+> 
+
+Thanks.
+
+-- 
+Dmitry
