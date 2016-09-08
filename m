@@ -1,53 +1,35 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 1/5] clk: add support for runtime pm
-Date: Wed, 7 Sep 2016 17:19:43 -0700
-Message-ID: <20160908001943.GC13062@codeaurora.org>
-References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
- <1472737551-15272-2-git-send-email-m.szyprowski@samsung.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFC/RFT][PATCH 0/4] cpufreq / sched: iowait boost in
+ intel_pstate and schedutil
+Date: Wed, 7 Sep 2016 17:22:26 -0700
+Message-ID: <20160908002226.GC15431@graphite.smuckle.net>
+References: <2730042.XLMy9dAKI1@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-clk-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:33345 "EHLO
+        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752661AbcIHAWa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 20:22:30 -0400
+Received: by mail-pf0-f170.google.com with SMTP id g202so11703854pfb.0
+        for <linux-pm@vger.kernel.org>; Wed, 07 Sep 2016 17:22:30 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1472737551-15272-2-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+In-Reply-To: <2730042.XLMy9dAKI1@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Doug Smythies <doug.smythies@gmail.com>
 
-On 09/01, Marek Szyprowski wrote:
-> Registers for some clocks might be located in the SOC area, which are under the
-> power domain. To enable access to those registers respective domain has to be
-> turned on. Additionally, registers for such clocks will usually loose its
-> contents when power domain is turned off, so additional saving and restoring of
-> them might be needed in the clock controller driver.
-> 
-> This patch adds basic infrastructure in the clocks core to allow implementing
-> driver for such clocks under power domains. Clock provider can supply a
-> struct device pointer, which is the used by clock core for tracking and managing
-> clock's controller runtime pm state. Each clk_prepare() operation
-> will first call pm_runtime_get_sync() on the supplied device, while
-> clk_unprepare() will do pm_runtime_put() at the end.
-> 
-> Additional calls to pm_runtime_get/put functions are required to ensure that any
-> register access (like calculating/chaning clock rates) will be done with clock
-> controller in active runtime state.
-> 
-> Special handling of the case when runtime pm is disabled for clock controller's
-> device is needed to let this feature work properly also during system sleep
-> suspend/resume operations (runtime pm is first disabled before entering sleep
-> state's, but controller is usually still operational until its suspend pm
-> callback is called).
-> 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+On Sat, Sep 03, 2016 at 02:56:48AM +0200, Rafael J. Wysocki wrote:
+> Please let me know what you think and if you can run some benchmarks you
+> care about and see if the changes make any difference (this way or another),
+> please do that and let me know what you've found.
 
-My "knee jerk" concern is that we're going to take a runtime PM
-lock underneath the prepare lock. That seems like a situation
-where we could hit a lock inversion if the runtime PM callbacks
-themselves acquire the prepare lock by calling clk APIs? But this
-concern is false right? We release the runtime PM lock before
-calling the PM callback, so we shouldn't hit any deadlock and
-lockdep won't complain?
+LGTM (I just reviewed the first and last patch, skipping the
+intel_pstate ones).
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+I was unable to see a conclusive power regression in Android audio, video or
+idle usecases on my hikey 96board.
+
+thanks,
+Steve
