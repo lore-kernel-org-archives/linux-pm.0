@@ -1,54 +1,33 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 4/5] ARM: dts: exynos: add support for ISP power domain
- to exynos4x12 clocks device
-Date: Wed, 7 Sep 2016 17:22:54 -0700
-Message-ID: <20160908002254.GD13062@codeaurora.org>
-References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
- <1472737551-15272-5-git-send-email-m.szyprowski@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC/RFT][PATCH 0/4] cpufreq / sched: iowait boost in intel_pstate and schedutil
+Date: Thu, 08 Sep 2016 02:37:28 +0200
+Message-ID: <1545936.F2oyWdN6Zx@vostro.rjw.lan>
+References: <2730042.XLMy9dAKI1@vostro.rjw.lan> <20160908002226.GC15431@graphite.smuckle.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1472737551-15272-5-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52408 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1751673AbcIHAba (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Sep 2016 20:31:30 -0400
+In-Reply-To: <20160908002226.GC15431@graphite.smuckle.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Doug Smythies <doug.smythies@gmail.com>
 
-On 09/01, Marek Szyprowski wrote:
-> Exynos4412 clock controller contains some additional clocks for FIMC-ISP
-> (Camera ISP) subsystem. Registers for those clocks are partially located
-> in the SOC area, which belongs to ISP power domain.
+On Wednesday, September 07, 2016 05:22:26 PM Steve Muckle wrote:
+> On Sat, Sep 03, 2016 at 02:56:48AM +0200, Rafael J. Wysocki wrote:
+> > Please let me know what you think and if you can run some benchmarks you
+> > care about and see if the changes make any difference (this way or another),
+> > please do that and let me know what you've found.
 > 
-> This patch extends clock controller node with ISP clock sub-node and link
-> (phandle) to ISP power domain.
+> LGTM (I just reviewed the first and last patch, skipping the
+> intel_pstate ones).
 > 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> ---
->  arch/arm/boot/dts/exynos4x12.dtsi | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
-> index 3394bdcf10ae..4daea67546b9 100644
-> --- a/arch/arm/boot/dts/exynos4x12.dtsi
-> +++ b/arch/arm/boot/dts/exynos4x12.dtsi
-> @@ -74,6 +74,11 @@
->  		compatible = "samsung,exynos4412-clock";
->  		reg = <0x10030000 0x20000>;
->  		#clock-cells = <1>;
-> +
-> +		isp-clock-controller {
-> +			compatible = "samsung,exynos4412-isp-clock";
-> +			power-domains = <&pd_isp>;
-> +		};
+> I was unable to see a conclusive power regression in Android audio, video or
+> idle usecases on my hikey 96board.
 
-Why can't we extend support in power domains code to have
-multiple domains for a single device node? i.e. power-domains =
-<&pd_isp>, <&pd_foo>, <&pd_bar>, and then pick the right one with
-power-domain-names or something like that? Making a subnode
-(which seems to turn into a child platform device?) seems like a
-quick solution for larger problems.
+Cool, thanks!
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
