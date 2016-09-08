@@ -1,63 +1,64 @@
-From: Troy Jia <hongtao.jia@nxp.com>
-Subject: RE: [PATCH -next] thermal: qoriq: Remove unnecessary
- platform_set_drvdata()
-Date: Thu, 8 Sep 2016 07:17:49 +0000
-Message-ID: <AM4PR0401MB18434A4165AF88CE74BD3FB1EBFB0@AM4PR0401MB1843.eurprd04.prod.outlook.com>
-References: <1471964488-28313-1-git-send-email-weiyj.lk@gmail.com>
- <1472020861.2682.2.camel@intel.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 5/8] sched,x86: Enable Turbo Boost Max Technology
+Date: Thu, 8 Sep 2016 09:59:55 +0200
+Message-ID: <20160908075955.GS10153@twins.programming.kicks-ass.net>
+References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <1472762024-88771-6-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db5eur01on0045.outbound.protection.outlook.com ([104.47.2.45]:8277
-        "EHLO EUR01-DB5-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1757374AbcIHHcu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 8 Sep 2016 03:32:50 -0400
-In-Reply-To: <1472020861.2682.2.camel@intel.com>
-Content-Language: zh-CN
+Received: from merlin.infradead.org ([205.233.59.134]:33540 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752056AbcIHIAH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Sep 2016 04:00:07 -0400
+Content-Disposition: inline
+In-Reply-To: <1472762024-88771-6-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Wei Yongjun <weiyj.lk@gmail.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Wei Yongjun <weiyongjun1@huawei.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogWmhhbmcgUnVpIFttYWls
-dG86cnVpLnpoYW5nQGludGVsLmNvbV0NCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjQsIDIw
-MTYgMjo0MSBQTQ0KPiBUbzogV2VpIFlvbmdqdW4gPHdlaXlqLmxrQGdtYWlsLmNvbT47IEVkdWFy
-ZG8gVmFsZW50aW4NCj4gPGVkdWJlenZhbEBnbWFpbC5jb20+DQo+IENjOiBXZWkgWW9uZ2p1biA8
-d2VpeW9uZ2p1bjFAaHVhd2VpLmNvbT47IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsNCj4gSG9u
-Z3RhbyBKaWEgPGhvbmd0YW8uamlhQG54cC5jb20+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggLW5l
-eHRdIHRoZXJtYWw6IHFvcmlxOiBSZW1vdmUgdW5uZWNlc3NhcnkNCj4gcGxhdGZvcm1fc2V0X2Ry
-dmRhdGEoKQ0KPiANCj4gT24g5LqMLCAyMDE2LTA4LTIzIGF0IDE1OjAxICswMDAwLCBXZWkgWW9u
-Z2p1biB3cm90ZToNCj4gPiBGcm9tOiBXZWkgWW9uZ2p1biA8d2VpeW9uZ2p1bjFAaHVhd2VpLmNv
-bT4NCj4gPg0KPiA+IFRoZSBkcml2ZXIgY29yZSBjbGVhcnMgdGhlIGRyaXZlciBkYXRhIHRvIE5V
-TEwgYWZ0ZXIgZGV2aWNlX3JlbGVhc2UNCj4gPiBvciBvbiBwcm9iZSBmYWlsdXJlLiBUaHVzLCBp
-dCBpcyBub3QgbmVlZGVkIHRvIG1hbnVhbGx5IGNsZWFyIHRoZQ0KPiA+IGRldmljZSBkcml2ZXIg
-ZGF0YSB0byBOVUxMLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogV2VpIFlvbmdqdW4gPHdlaXlv
-bmdqdW4xQGh1YXdlaS5jb20+DQo+IA0KPiBQYXRjaCBhcHBsaWVkLg0KPiANCj4gdGhhbmtzLA0K
-PiBydWkNCg0KVGhhbmtzIFlvbmdqdW4gZm9yIHRoZSBmaXguDQoNCg0KPiA+IC0tLQ0KPiA+IMKg
-ZHJpdmVycy90aGVybWFsL3FvcmlxX3RoZXJtYWwuYyB8IDEwICsrLS0tLS0tLS0NCj4gPiDCoDEg
-ZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDggZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBk
-aWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3FvcmlxX3RoZXJtYWwuYw0KPiA+IGIvZHJpdmVy
-cy90aGVybWFsL3FvcmlxX3RoZXJtYWwuYw0KPiA+IGluZGV4IDY0NGJhNTIuLmQwMWVjYTAgMTAw
-NjQ0DQo+ID4gLS0tIGEvZHJpdmVycy90aGVybWFsL3FvcmlxX3RoZXJtYWwuYw0KPiA+ICsrKyBi
-L2RyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMNCj4gPiBAQCAtMjE3LDE1ICsyMTcsMTMg
-QEAgc3RhdGljIGludCBxb3JpcV90bXVfcHJvYmUoc3RydWN0DQo+ID4gcGxhdGZvcm1fZGV2aWNl
-ICpwZGV2KQ0KPiA+IMKgCWRhdGEtPnNlbnNvcl9pZCA9IHFvcmlxX3RtdV9nZXRfc2Vuc29yX2lk
-KCk7DQo+ID4gwqAJaWYgKGRhdGEtPnNlbnNvcl9pZCA8IDApIHsNCj4gPiDCoAkJZGV2X2Vycigm
-cGRldi0+ZGV2LCAiRmFpbGVkIHRvIGdldCBzZW5zb3IgaWRcbiIpOw0KPiA+IC0JCXJldCA9IC1F
-Tk9ERVY7DQo+ID4gLQkJZ290byBlcnJfaW9tYXA7DQo+ID4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+
-ID4gwqAJfQ0KPiA+DQo+ID4gwqAJZGF0YS0+cmVncyA9IG9mX2lvbWFwKG5wLCAwKTsNCj4gPiDC
-oAlpZiAoIWRhdGEtPnJlZ3MpIHsNCj4gPiDCoAkJZGV2X2VycigmcGRldi0+ZGV2LCAiRmFpbGVk
-IHRvIGdldCBtZW1vcnkNCj4gPiByZWdpb25cbiIpOw0KPiA+IC0JCXJldCA9IC1FTk9ERVY7DQo+
-ID4gLQkJZ290byBlcnJfaW9tYXA7DQo+ID4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+ID4gwqAJfQ0K
-PiA+DQo+ID4gwqAJcW9yaXFfdG11X2luaXRfZGV2aWNlKGRhdGEpOwkvKiBUTVUgaW5pdGlhbGl6
-YXRpb24gKi8NCj4gPiBAQCAtMjU0LDkgKzI1Miw2IEBAIHN0YXRpYyBpbnQgcW9yaXFfdG11X3By
-b2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UNCj4gPiAqcGRldikNCj4gPiDCoGVycl90bXU6DQo+
-ID4gwqAJaW91bm1hcChkYXRhLT5yZWdzKTsNCj4gPg0KPiA+IC1lcnJfaW9tYXA6DQo+ID4gLQlw
-bGF0Zm9ybV9zZXRfZHJ2ZGF0YShwZGV2LCBOVUxMKTsNCj4gPiAtDQo+ID4gwqAJcmV0dXJuIHJl
-dDsNCj4gPiDCoH0NCj4gPg0KPiA+IEBAIC0yNzAsNyArMjY1LDYgQEAgc3RhdGljIGludCBxb3Jp
-cV90bXVfcmVtb3ZlKHN0cnVjdA0KPiA+IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gPiDCoAl0
-bXVfd3JpdGUoZGF0YSwgVE1SX0RJU0FCTEUsICZkYXRhLT5yZWdzLT50bXIpOw0KPiA+DQo+ID4g
-wqAJaW91bm1hcChkYXRhLT5yZWdzKTsNCj4gPiAtCXBsYXRmb3JtX3NldF9kcnZkYXRhKHBkZXYs
-IE5VTEwpOw0KPiA+DQo+ID4gwqAJcmV0dXJuIDA7DQo+ID4gwqB9DQo+ID4NCj4gPg0KPiA+DQo=
+On Thu, Sep 01, 2016 at 01:33:41PM -0700, Srinivas Pandruvada wrote:
+> +static void enable_sched_itmt(bool enable_itmt)
+> +{
+> +	mutex_lock(&itmt_update_mutex);
+> +
+> +	sysctl_sched_itmt_enabled = enable_itmt;
+> +	x86_topology_update = true;
+> +	rebuild_sched_domains();
+> +
+> +	mutex_unlock(&itmt_update_mutex);
+> +}
+> +
+> +static int sched_itmt_update_handler(struct ctl_table *table, int write,
+> +			      void __user *buffer, size_t *lenp, loff_t *ppos)
+> +{
+> +	int ret;
+> +
+> +	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
+> +
+> +	if (ret || !write)
+> +		return ret;
+> +
+> +	enable_sched_itmt(sysctl_sched_itmt_enabled);
+> +
+> +	return ret;
+> +}
+
+I think there's a race here, if two tasks were to write to the sysctl
+they'd both change the value before getting stuck on the mutex in
+enable_sched_itmt().
+
+One way around that is doing something like:
+
+
+	struct ctl_table t;
+	int val = sysctl_sched_itmt_enabled;
+
+	t = *table;
+	t.data = &val;
+
+	proc_dointvec_minmax(&t, ...);
+
+	/* and update the sysctl_sched_itmt_enabled value inside the mutex */
+	enable_sched_itmi(val);
