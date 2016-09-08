@@ -1,46 +1,64 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 3/3] soc: ti: Add ti_sci_pm_domains driver
-Date: Thu, 8 Sep 2016 11:27:52 +0200
-Message-ID: <CAPDyKFo0Cb90BbY7ra6VDjb5frC5=VtmE3V6tDK=VosfPmod7Q@mail.gmail.com>
-References: <20160819235653.26355-1-nm@ti.com> <20160819235653.26355-4-nm@ti.com>
- <CAPDyKFooDUOPT9dP8HaW3YBO9PsX-1+96PPE7CRMyjEkra7cBQ@mail.gmail.com>
- <57C0D2C9.1030801@ti.com> <57C5E1DA.2040405@ti.com> <CAPDyKFqszM48nXnnA9D8iCp34k-ZmNvOkHPCc=Fya4nJA7PvBQ@mail.gmail.com>
- <57CF26DB.4020807@ti.com> <7h4m5rv9kz.fsf@baylibre.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7h4m5rv9kz.fsf@baylibre.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Dave Gerlach <d-gerlach@ti.com>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Keerthy <j-keerthy@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>
+From: Marcin Niestroj <m.niestroj@grinn-global.com>
+Subject: [PATCH v5 0/3] mfd: tps65217: Add power-button and IRQ support
+Date: Thu,  8 Sep 2016 11:58:57 +0200
+Message-ID: <20160908095900.30975-1-m.niestroj@grinn-global.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Grygorii Strashko <grygorii.strashko@ti.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org, Marcin Niestroj <m.niestroj@grinn-global.com>
 List-Id: linux-pm@vger.kernel.org
 
-[...]
+Hi,
 
->
-> One more idea...
->
-> Since you don't really have a domain (a group of devices), what you
-> really have is each device having an independent power switch, so as Ulf
-> suggested, what you really need is for all the devices to share the same
-> set of runtime PM callbacks that call SCI.  The only difference is the
-> unique ID.
->
-> Rather than using all of genpd, you could also just use a pm_domain
-> which is what genpd is built on top of (and also omap_device, which
-> you're probably familiar with also.)
+This is a resend of v4, rebased on v4.8-rc4, with dropped two patches:
+ * "power_supply: tps65217-charger: Fix NULL deref during property export"
+   (already in mainline)
+ * "power_supply: tps65217-charger: Add support for IRQs" (queued into
+   power-supply's -next branch)
 
-Even if this would work as well, the downside would be that you need
-to re-invent the parts related to the DT parsing, the probing/removal
-and attaching/detaching of the device to the PM domain.
+The following patches add tps65217 power button support and make it usable
+with am335x boards. It was developed and rebased on v4.8-rc4.
 
-You probably don't want to go there... :-)
+Changes v4 -> v5:
+ * Dropped two patches (they were already dropped in v4 resend):
+   * "power_supply: tps65217-charger: Fix NULL deref during property export"
+     (already in mainline)
+   * "power_supply: tps65217-charger: Add support for IRQs" (queued into
+     power-supply's -next branch)
+ * Combine tps65217 and tps65218 power button drivers (as suggested by Dmitry)
+ * Combine device-tree documentation for tps65217 and tps65218 power buttons
 
->
-> That would allow you to keep the drivers completely generic, yet share
-> all the SCI specific "domain" code inside a pm_domain.
->
-> Kevin
+Changes v3 -> v4:
+ * Add irq_set_parent() during irq init (suggested by Grygorii)
+ * Remove hardcoded IRQ trigger type, rely on DT bindings instead
+   (suggested by Grygorii)
+ * Rebased and tested on top of v4.7-rc4
 
-Kind regards
-Uffe
+Changes v2 -> v3 (suggested by Lee):
+ * Alphabetical reorder of includes
+ * Rename enum tps65217_irqs -> tps65217_irq_type, so we won't confuse
+   it with structure object with the same name.
+ * Fix inconsistent order of irq_enable and irq_disable
+ * Remove redundant 'else' when returning from tps65217_irq_thread
+
+Changes v1 -> v2:
+ * Added information about parent device in tps65217 power button
+   device-tree binding documentation (suggested by Rob)
+ * Rebased and tested on top of v4.7-rc3
+
+Marcin Niestroj (3):
+  mfd: tps65217: Add support for IRQs
+  mfd: tps65217: Add power button as subdevice
+  Input: Add support for tps65217 power button
+
+ .../bindings/input/tps65218-pwrbutton.txt          |  17 +-
+ drivers/input/misc/Kconfig                         |   4 +-
+ drivers/input/misc/tps65218-pwrbutton.c            | 102 +++++++---
+ drivers/mfd/Kconfig                                |   1 +
+ drivers/mfd/tps65217.c                             | 205 ++++++++++++++++++++-
+ include/linux/mfd/tps65217.h                       |  12 ++
+ 6 files changed, 298 insertions(+), 43 deletions(-)
+
+-- 
+2.9.3
+
