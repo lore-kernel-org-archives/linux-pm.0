@@ -1,54 +1,219 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH 3/3] soc: ti: Add ti_sci_pm_domains driver
-Date: Thu, 08 Sep 2016 10:38:27 -0700
-Message-ID: <m2mvjinvfw.fsf@baylibre.com>
-References: <20160819235653.26355-1-nm@ti.com>
-        <20160819235653.26355-4-nm@ti.com>
-        <CAPDyKFooDUOPT9dP8HaW3YBO9PsX-1+96PPE7CRMyjEkra7cBQ@mail.gmail.com>
-        <57C0D2C9.1030801@ti.com> <57C5E1DA.2040405@ti.com>
-        <CAPDyKFqszM48nXnnA9D8iCp34k-ZmNvOkHPCc=Fya4nJA7PvBQ@mail.gmail.com>
-        <57CF26DB.4020807@ti.com> <7h4m5rv9kz.fsf@baylibre.com>
-        <CAPDyKFo0Cb90BbY7ra6VDjb5frC5=VtmE3V6tDK=VosfPmod7Q@mail.gmail.com>
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: Re: [PATCH v2 2/8] sched: Extend scheduler's asym packing
+Date: Thu, 8 Sep 2016 11:03:26 -0700
+Message-ID: <20160908180325.GA23509@linux.intel.com>
+References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <1472762024-88771-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20160908080111.GT10153@twins.programming.kicks-ass.net>
+Reply-To: tim.c.chen@linux.intel.com
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFo0Cb90BbY7ra6VDjb5frC5=VtmE3V6tDK=VosfPmod7Q@mail.gmail.com>
-        (Ulf Hansson's message of "Thu, 8 Sep 2016 11:27:52 +0200")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Dave Gerlach <d-gerlach@ti.com>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Keerthy <j-keerthy@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160908080111.GT10153@twins.programming.kicks-ass.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+On Thu, Sep 08, 2016 at 10:01:11AM +0200, Peter Zijlstra wrote:
+> On Thu, Sep 01, 2016 at 01:33:38PM -0700, Srinivas Pandruvada wrote:
+> > +++ b/kernel/sched/sched.h
+> > @@ -532,6 +532,17 @@ struct dl_rq {
+> >  
+> >  #ifdef CONFIG_SMP
+> >  
+> > +static inline bool sched_asym_prefer(int a, int b)
+> > +{
+> > +	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
+> > +}
+> > +
+> > +/*
+> > + * Return lowest numbered cpu in the group as the most preferred cpu
+> > + * for ASYM_PACKING for default case.
+> > + */
+> > +#define group_priority_cpu(group) group->asym_prefer_cpu
+> > +
+> 
+> Both these are no longer used outside of sched/fair.c, and should
+> probably be moved there. Also the later has no reason for being a macro.
 
-> [...]
->
->>
->> One more idea...
->>
->> Since you don't really have a domain (a group of devices), what you
->> really have is each device having an independent power switch, so as Ulf
->> suggested, what you really need is for all the devices to share the same
->> set of runtime PM callbacks that call SCI.  The only difference is the
->> unique ID.
->>
->> Rather than using all of genpd, you could also just use a pm_domain
->> which is what genpd is built on top of (and also omap_device, which
->> you're probably familiar with also.)
->
-> Even if this would work as well, the downside would be that you need
-> to re-invent the parts related to the DT parsing, the probing/removal
-> and attaching/detaching of the device to the PM domain.
->
-> You probably don't want to go there... :-)
+Peter,
 
-All you'd need to read from DT would be the device-specific ID for
-TI-SCI, and that could be done at bind time with a notifier.  The, in
-that same notifier, if a TI-SCI ID exists, it would get added to the
-pm_domain.
+The sched_asym_prefer is used in sched/core.c to set asym_prefer_cpu
+in a group. So we will still need the definition in sched.h.  I've removed
+the group_priority_cpu macro.
 
-Anyways, your original proposal is much preferred if it can work.  I'm
-just throwing out another option because I really don't like one genpd
-per device.
+Updated patch below.
 
-Kevin
+Thanks.
+
+Tim
+
+--->8---
+
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: [PATCH 2/8] sched: Extend scheduler's asym packing
+
+We generalize the scheduler's asym packing to provide an ordering
+of the cpu beyond just the cpu number.  This allows the use of the
+ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
+sched domain. The preference is defined with the cpu priority
+given by arch_asym_cpu_priority(cpu).
+
+We also record the most preferred cpu in a sched group when
+we build the cpu's capacity for fast lookup of preferred cpu
+during load balancing.
+
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ include/linux/sched.h |  2 ++
+ kernel/sched/core.c   | 18 ++++++++++++++++++
+ kernel/sched/fair.c   | 35 ++++++++++++++++++++++++-----------
+ kernel/sched/sched.h  |  6 ++++++
+ 4 files changed, 50 insertions(+), 11 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 62c68e5..aeea288 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1052,6 +1052,8 @@ static inline int cpu_numa_flags(void)
+ }
+ #endif
+ 
++int arch_asym_cpu_priority(int cpu);
++
+ struct sched_domain_attr {
+ 	int relax_domain_level;
+ };
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index e86c4a5..08135ca 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6237,7 +6237,25 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
+ 	WARN_ON(!sg);
+ 
+ 	do {
++		int cpu, max_cpu = -1, prev_cpu = -1;
++
+ 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
++
++		if (!(sd->flags & SD_ASYM_PACKING))
++			goto next;
++
++		for_each_cpu(cpu, sched_group_cpus(sg)) {
++			if (prev_cpu < 0) {
++				prev_cpu = cpu;
++				max_cpu = cpu;
++			} else {
++				if (sched_asym_prefer(cpu, max_cpu))
++					max_cpu = cpu;
++			}
++		}
++		sg->asym_prefer_cpu = max_cpu;
++
++next:
+ 		sg = sg->next;
+ 	} while (sg != sd->groups);
+ 
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 039de34..8e2a078 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -100,6 +100,16 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
+  */
+ unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
+ 
++#ifdef CONFIG_SMP
++/*
++ * For asym packing, by default the lower numbered cpu has higher priority.
++ */
++int __weak arch_asym_cpu_priority(int cpu)
++{
++	return -cpu;
++}
++#endif
++
+ #ifdef CONFIG_CFS_BANDWIDTH
+ /*
+  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
+@@ -6862,16 +6872,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
+ 	if (env->idle == CPU_NOT_IDLE)
+ 		return true;
+ 	/*
+-	 * ASYM_PACKING needs to move all the work to the lowest
+-	 * numbered CPUs in the group, therefore mark all groups
+-	 * higher than ourself as busy.
++	 * ASYM_PACKING needs to move all the work to the highest
++	 * prority CPUs in the group, therefore mark all groups
++	 * of lower priority than ourself as busy.
+ 	 */
+-	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
++	if (sgs->sum_nr_running &&
++	    sched_asym_prefer(env->dst_cpu, sg->asym_prefer_cpu)) {
+ 		if (!sds->busiest)
+ 			return true;
+ 
+-		/* Prefer to move from highest possible cpu's work */
+-		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
++		/* Prefer to move from lowest priority cpu's work */
++		if (sched_asym_prefer(sds->busiest->asym_prefer_cpu,
++				      sg->asym_prefer_cpu))
+ 			return true;
+ 	}
+ 
+@@ -7023,8 +7035,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
+ 	if (!sds->busiest)
+ 		return 0;
+ 
+-	busiest_cpu = group_first_cpu(sds->busiest);
+-	if (env->dst_cpu > busiest_cpu)
++	busiest_cpu = sds->busiest->asym_prefer_cpu;
++	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
+ 		return 0;
+ 
+ 	env->imbalance = DIV_ROUND_CLOSEST(
+@@ -7365,10 +7377,11 @@ static int need_active_balance(struct lb_env *env)
+ 
+ 		/*
+ 		 * ASYM_PACKING needs to force migrate tasks from busy but
+-		 * higher numbered CPUs in order to pack all tasks in the
+-		 * lowest numbered CPUs.
++		 * lower priority CPUs in order to pack all tasks in the
++		 * highest priority CPUs.
+ 		 */
+-		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
++		if ((sd->flags & SD_ASYM_PACKING) &&
++		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
+ 			return 1;
+ 	}
+ 
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index c64fc51..b6f449d 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -532,6 +532,11 @@ struct dl_rq {
+ 
+ #ifdef CONFIG_SMP
+ 
++static inline bool sched_asym_prefer(int a, int b)
++{
++	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
++}
++
+ /*
+  * We add the notion of a root-domain which will be used to define per-domain
+  * variables. Each exclusive cpuset essentially defines an island domain by
+@@ -884,6 +889,7 @@ struct sched_group {
+ 
+ 	unsigned int group_weight;
+ 	struct sched_group_capacity *sgc;
++	int asym_prefer_cpu;		/* cpu of highest priority in group */
+ 
+ 	/*
+ 	 * The CPUs this group covers.
+-- 
+2.5.5
+
