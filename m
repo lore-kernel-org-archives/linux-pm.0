@@ -1,228 +1,268 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v16 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Thu, 8 Sep 2016 14:55:04 +0800
-Message-ID: <CAMz4kuJJwKFqU=6JnpUQNPeQ-uy-PyZ5VBaBKofn=8Jv5y0nXA@mail.gmail.com>
-References: <cover.1470034830.git.baolin.wang@linaro.org> <CAMz4kuLotLs1ASuZaMRXf29khmQUfEQc+jFV8Fxp+fHFn90Z9g@mail.gmail.com>
- <CAMz4ku+pkRT70NcZEDepfshH7z7+Fm3yo-C2+ccWgJwDJE4C-Q@mail.gmail.com> <8760q9a8m6.fsf@notabene.neil.brown.name>
+From: Troy Jia <hongtao.jia@nxp.com>
+Subject: RE: [PATCH V2 7/7] thermal: qoriq: Add thermal management support
+Date: Thu, 8 Sep 2016 07:11:45 +0000
+Message-ID: <AM4PR0401MB18438E5760B14FC2610A0D31EBFB0@AM4PR0401MB1843.eurprd04.prod.outlook.com>
+References: <1467256118-41754-1-git-send-email-hongtao.jia@nxp.com>
+ <1471610370.2691.62.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8760q9a8m6.fsf@notabene.neil.brown.name>
-Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <nfbrown@novell.com>
-Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainli
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1471610370.2691.62.camel@intel.com>
+Content-Language: zh-CN
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Zhang Rui <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "galak@codeaurora.org" <galak@codeaurora.org>, Scott Wood <scott.wood@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Neil,
-
-On 6 September 2016 at 13:40, NeilBrown <nfbrown@novell.com> wrote:
-> On Mon, Aug 29 2016, Baolin Wang wrote:
->
->> Hi Felipe,
->>
->> On 11 August 2016 at 11:14, Baolin Wang <baolin.wang@linaro.org> wrote:
->>> Hi Felipe,
->>>
->>> On 1 August 2016 at 15:09, Baolin Wang <baolin.wang@linaro.org> wrote:
->>>> Currently the Linux kernel does not provide any standard integration of this
->>>> feature that integrates the USB subsystem with the system power regulation
->>>> provided by PMICs meaning that either vendors must add this in their kernels
->>>> or USB gadget devices based on Linux (such as mobile phones) may not behave
->>>> as they should. Thus provide a standard framework for doing this in kernel.
->>>>
->>>> Now introduce one user with wm831x_power to support and test the usb charger,
->>>> which is pending testing. Moreover there may be other potential users will use
->>>> it in future.
->>>
->>> Could you please apply this patchset into your 'next' branch if you
->>> have no comments about it? Thank you.
->>
->> Since there are no other comments about this patchset for a long time,
->> could you please apply this patchset? Thanks.
->
-
-Sorry for the late reply.
-
-> Sorry, I should have replied earlier.  Tim Bird mentioned on the
-> ksummit-discuss list that there was a frustration with this not making
-> progress so I decided to contribute what I could now.
->
-> I think this patch set is attempting to address an important problem
-> that needs solving.  However I think it gets some key aspects wrong.
-> Maybe they can get fixed up after the patchset is upstream, maybe they
-> should be fixed first - I have no strong opinion on that.
->
-> My main complaints involve the detection and handling of the different
-> charger types - DCP, CDP, ACA etc.
-> The big-picture requirement here that the PHY will detect the physical
-> properties of the cable (e.g. resistance to ground on ID) and determine
-> the type of charger expected.  This information must be communicated to
-> the PMIC "power_supply" device so it can regulate the power being drawn
-> through the cable.
->
-> The first problem is that there are two different ways that the
-> distinction between DCP, CDP, ACA etc can be represented in Linux.  They
-> are cable types in the 'extcon' subsystem, and they are power_supply
-> types in the 'power_supply' subsystem.  This duplication is confusing.
-> It is not caused by your patch set, but I believe your patchset needs to
-> work with the duplication and I think it does so poorly.
-
-Now the usb charger will not get charger type from 'extcon' subsystem,
-we get the charger type from 'power_supply' and calllback
-'get_charger_type' for users.
-
->
-> In my mind, the power_supply should *not* know about this distinction at
-> all (except possibly as an advisor attribute simiarly to the current
-> battery technology attribute).  The other types it knows of are "AC",
-> "USB", and "BATTERY".  The contrast between these is quite different
-> From the contrast between DCP, CDP, ACA, which, from the perspective of
-> the power supply, are almost irrelevant.  Your patchset effectively
-> examines the power_supply_type of one power_supply, and communicates it
-> to another.  It isn't clear to me how the first power_supply gets the
-> information, or what the relationship between the two power_supplies is
-> meant to be.
-
-We just get the charger type from the power supply which can get the
-charger type from register or something else, and the usb charger did
-nothing for this power supply. In some platform, the charger type is
-get in power supply driver, thus we should link this power supply to
-get the charger type when USB cable is plugin. If you don't get
-charger type from power supply driver, then it does not need to link
-this power supply phandle.
-
->
-> It makes much more sense, to me, to utilized the knowledge of this
-> distinction that extcon provides.  A usb PHY can register an extcon,
-> declare the sorts of cables that it can detect, and tell the extcon as
-> cables appear or disappear.  The PMIC power_supply can then register with
-> that extcon for events and can find out when a cable is attached, and
-> what sort of cable.
-> Your usb-charging framework would be well placed to help the
-> power_supply to find the correct extcon, and possibly even to handle the
-> registration for events.
->
-> Your framework does currently register with extcon, but only listens for
-> EXTCON_USB cables.  I don't think that cable type is (reliably) reported
-> when a DCP (for example) is plugged in.
-
-Here we just listen the plugin/out events from extcon, if one cable
-plugin it will report to usb charger.
-
->
-> Here there is another problem that is not of your making, but still
-> needs fixing.  Extcon declares a number of cable types like:
->
-> /* USB external connector */
-> #define EXTCON_USB              1
-> #define EXTCON_USB_HOST         2
->
-> /* Charging external connector */
-> #define EXTCON_CHG_USB_SDP      5       /* Standard Downstream Port */
-> #define EXTCON_CHG_USB_DCP      6       /* Dedicated Charging Port */
-> #define EXTCON_CHG_USB_CDP      7       /* Charging Downstream Port */
-> #define EXTCON_CHG_USB_ACA      8       /* Accessory Charger Adapter */
-> #define EXTCON_CHG_USB_FAST     9
-> #define EXTCON_CHG_USB_SLOW     10
->
-> However it doesn't define what those mean, so we are left to guess.
-> They each correspond to bits in a bitmap, so a cable can have multiple types.
-> I think the best interpretation is that:
->
->  EXTCON_USB means that the cable carries USB data from a host.
->  EXTCON_USB_HOST means that that cable carries USB data to a host.
->  EXTCON_CHG_* means that power is available as described in the
->  standards.
->  (what EXTCON_CHG_USB_FAST and EXTCON_CHG_USB_SLOW mean is not at all
->  clear).
->
-> There is some support for this in the code, but it is not universally
-> acknowledged.  For a USB charging framework to be genuinely useful, it
-> must (I think) make sure this issue gets clarified, and the various
-> cable types used properly.
-
-Here I agree with you, now the usb charger does not listen the charger
-type from extcon which need to be fixed.
-
->
-> Once the cable/charger type has been determined, the PMIC power_supply
-> needs to use this information.  Your current patches make use of this
-> information in ways that are wrong in two respects.
->
-> Firstly, you have made the current limit associated with each cable type
-> configurable (__usb_charger_set_cur_limit_by_type).   This is nonsense.
-> The standard (e.g. BC-1.2) declares what the current limits are.  There
-> is no reason for those not to be hard coded.
-
-Yes, but you must think about some special cases on some platforms.
-Users may need to change the current in some situations, thus we
-should export one API for users to change the current. (I think you
-misunderstand the current limit here, that is the current for power
-driver  to draw).
-
->
-> Secondly, you treat each charger type as having a single "cur_limit" and
-> utilize that limit by telling the PMIC to draw that much current.
-
-This "cur_limit" is set by user or USB configuration what they want,
-usb charger just tells the power driver how much current need to draw.
-
-> Again, this is inconsistent with the specification.
-> BC-1.2 defines, for each charger type, a minimum and maximum current
-> level.
-> The minimum should always be available.   Attempting to draw more than
-> that (but less that the max) might work or might cause the charger
-> to shut down, but you can be sure that the charger will respond to the
-> increased load by first reducing the voltage, and will not shut down
-> until the voltage has dropped below 2V.
-> If you try to draw more current than the maximum, then the charger might
-> shut down before the voltage drops below 2V.
->
-> Given this understanding of the current available from the charger,
-> there are two approaches the PMIC might take.
-> 1/ if the PMIC is able to exercise fine control over the current it
->   draws, and if it can monitor the voltage on the charger, then it
->   could gradually increase the power being requested until the voltage
->   drops below some threshold (e.g. 4.75V), and then (probably) back off
->   a little.  It should only increase at most up to the maximum, even if
->   the voltage remains high.  It should probably start at zero rather
->   than at the minimum.  This allows for lossage elsewhere.
->
-> 2/ If the PMIC cannot measure voltage, or doesn't have sufficiently fine
->    control of the current requested, then it should request only the
->    minimum available current.  Any more is not safe.
-
-Make sense.
-
->
-> So your USB charging framework should communicate the MIN and MAX as
-> specified in the standard, and allow the PMIC to use that information as
-> appropriate.
-> A library routine to support the incremental increase in current drain
-> would probably be appreciated by PMIC driver writers.
-
-I should say again, the current is set by user or USB configuration
-what they want, USB charger just tells the power driver how much
-current need to draw. But we can add some checking if the setting
-current is in the right range.
-
-Thanks for your comments.
-
->
->
-> A more details discussion of this problem-space can be found at
->    https://lwn.net/Articles/693027/
-> and an analysis of the functionality currently available in the kernel
-> (which adds a number of specifics to the above) can be found at
->    https://lwn.net/Articles/694062/
->
-> NeilBrown
->
->
-
-
-
--- 
-Baolin.wang
-Best Regards
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogWmhhbmcgUnVpIFttYWls
+dG86cnVpLnpoYW5nQGludGVsLmNvbV0NCj4gU2VudDogRnJpZGF5LCBBdWd1c3QgMTksIDIwMTYg
+ODo0MCBQTQ0KPiBUbzogSG9uZ3RhbyBKaWEgPGhvbmd0YW8uamlhQG54cC5jb20+OyBlZHViZXp2
+YWxAZ21haWwuY29tOw0KPiByb2JoK2R0QGtlcm5lbC5vcmc7IGdhbGFrQGNvZGVhdXJvcmEub3Jn
+OyBTY290dCBXb29kDQo+IDxzY290dC53b29kQG54cC5jb20+OyBzaGF3bmd1b0BrZXJuZWwub3Jn
+DQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwu
+b3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3Rz
+Lm96bGFicy5vcmc7IGxpbnV4LWFybS0NCj4ga2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcNCj4g
+U3ViamVjdDogUmU6IFtQQVRDSCBWMiA3LzddIHRoZXJtYWw6IHFvcmlxOiBBZGQgdGhlcm1hbCBt
+YW5hZ2VtZW50IHN1cHBvcnQNCj4gDQo+IE9uIOWbmywgMjAxNi0wNi0zMCBhdCAxMTowOCArMDgw
+MCwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4gVGhpcyBkcml2ZXIgYWRkIHRoZXJtYWwgbWFuYWdl
+bWVudCBzdXBwb3J0IGJ5IGVuYWJsaW5nIFRNVSAoVGhlcm1hbA0KPiA+IE1vbml0b3JpbmcgVW5p
+dCkgb24gUW9ySVEgcGxhdGZvcm0uDQo+ID4NCj4gPiBJdCdzIGJhc2VkIG9uIHRoZXJtYWwgb2Yg
+ZnJhbWV3b3JrOg0KPiA+IC0gVHJpcCBwb2ludHMgZGVmaW5lZCBpbiBkZXZpY2UgdHJlZS4NCj4g
+PiAtIENwdWZyZXEgYXMgY29vbGluZyBkZXZpY2UgcmVnaXN0ZXJlZCBpbiBxb3JpcSBjcHVmcmVx
+IGRyaXZlci4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEppYSBIb25ndGFvIDxob25ndGFvLmpp
+YUBueHAuY29tPg0KPiANCj4gVGhlIHBhdGNoIGxvb2tzIGdvb2QgdG8gbWUuDQo+IEkgb25seSBu
+ZWVkIHRvIHRha2UgdGhpcyBwYXRjaCwgcmlnaHQ/DQo+IA0KPiB0aGFua3MsDQo+IHJ1aQ0KDQpZ
+ZXMuIFlvdSBqdXN0IG5lZWQgdG8gdGFrZSB0aGlzIHBhdGNoLg0KU29ycnkgZm9yIHRoZSBsYXRl
+IHJlc3BvbnNlLiBJIHdhcyBvbiBteSBsb25nIHZhY2F0aW9uIGJhY2sgdGhlbi4NCg0KVGhhbmtz
+LA0KSG9uZ3Rhby4NCg0KPiA+IC0tLQ0KPiA+IENoYW5nZXMgb2YgVjI6DQo+ID4gKiBBZGQgSEFT
+X0lPTUVNIGRlcGVuZGVuY3kgdG8gZml4IGJ1aWxkIGVycm9yIG9uIFVNDQo+ID4NCj4gPiDCoGRy
+aXZlcnMvdGhlcm1hbC9LY29uZmlnwqDCoMKgwqDCoMKgwqDCoMKgfMKgwqAxMCArKw0KPiA+IMKg
+ZHJpdmVycy90aGVybWFsL01ha2VmaWxlwqDCoMKgwqDCoMKgwqDCoHzCoMKgwqAxICsNCj4gPiDC
+oGRyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMgfCAzMjgNCj4gPiArKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ID4gwqAzIGZpbGVzIGNoYW5nZWQsIDMzOSBp
+bnNlcnRpb25zKCspDQo+ID4gwqBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy90aGVybWFsL3Fv
+cmlxX3RoZXJtYWwuYw0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9LY29u
+ZmlnIGIvZHJpdmVycy90aGVybWFsL0tjb25maWcNCj4gPiBpbmRleCAyZDcwMmNhLi41NmVmMzBk
+IDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9LY29uZmlnDQo+ID4gKysrIGIvZHJp
+dmVycy90aGVybWFsL0tjb25maWcNCj4gPiBAQCAtMTk1LDYgKzE5NSwxNiBAQCBjb25maWcgSU1Y
+X1RIRVJNQUwNCj4gPiDCoAnCoMKgY3B1ZnJlcSBpcyB1c2VkIGFzIHRoZSBjb29saW5nIGRldmlj
+ZSB0byB0aHJvdHRsZSBDUFVzDQo+ID4gd2hlbiB0aGUNCj4gPiDCoAnCoMKgcGFzc2l2ZSB0cmlw
+IGlzIGNyb3NzZWQuDQo+ID4NCj4gPiArY29uZmlnIFFPUklRX1RIRVJNQUwNCj4gPiArCXRyaXN0
+YXRlICJRb3JJUSBUaGVybWFsIE1vbml0b3JpbmcgVW5pdCINCj4gPiArCWRlcGVuZHMgb24gVEhF
+Uk1BTF9PRg0KPiA+ICsJZGVwZW5kcyBvbiBIQVNfSU9NRU0NCj4gPiArCWhlbHANCj4gPiArCcKg
+wqBTdXBwb3J0IGZvciBUaGVybWFsIE1vbml0b3JpbmcgVW5pdCAoVE1VKSBmb3VuZCBvbiBRb3JJ
+UQ0KPiA+IHBsYXRmb3Jtcy4NCj4gPiArCcKgwqBJdCBzdXBwb3J0cyBvbmUgY3JpdGljYWwgdHJp
+cCBwb2ludCBhbmQgb25lIHBhc3NpdmUgdHJpcA0KPiA+IHBvaW50LiBUaGUNCj4gPiArCcKgwqBj
+cHVmcmVxIGlzIHVzZWQgYXMgdGhlIGNvb2xpbmcgZGV2aWNlIHRvIHRocm90dGxlIENQVXMNCj4g
+PiB3aGVuIHRoZQ0KPiA+ICsJwqDCoHBhc3NpdmUgdHJpcCBpcyBjcm9zc2VkLg0KPiA+ICsNCj4g
+PiDCoGNvbmZpZyBTUEVBUl9USEVSTUFMDQo+ID4gwqAJdHJpc3RhdGUgIlNQRUFyIHRoZXJtYWwg
+c2Vuc29yIGRyaXZlciINCj4gPiDCoAlkZXBlbmRzIG9uIFBMQVRfU1BFQVIgfHwgQ09NUElMRV9U
+RVNUDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9NYWtlZmlsZSBiL2RyaXZlcnMv
+dGhlcm1hbC9NYWtlZmlsZQ0KPiA+IGluZGV4IDEwYjA3YzEuLjY2NjIyMzIgMTAwNjQ0DQo+ID4g
+LS0tIGEvZHJpdmVycy90aGVybWFsL01ha2VmaWxlDQo+ID4gKysrIGIvZHJpdmVycy90aGVybWFs
+L01ha2VmaWxlDQo+ID4gQEAgLTM3LDYgKzM3LDcgQEAgb2JqLSQoQ09ORklHX0RCODUwMF9USEVS
+TUFMKQkrPQ0KPiA+IGRiODUwMF90aGVybWFsLm8NCj4gPiDCoG9iai0kKENPTkZJR19BUk1BREFf
+VEhFUk1BTCkJKz0gYXJtYWRhX3RoZXJtYWwubw0KPiA+IMKgb2JqLSQoQ09ORklHX1RBTkdPX1RI
+RVJNQUwpCSs9IHRhbmdvX3RoZXJtYWwubw0KPiA+IMKgb2JqLSQoQ09ORklHX0lNWF9USEVSTUFM
+KQkrPSBpbXhfdGhlcm1hbC5vDQo+ID4gK29iai0kKENPTkZJR19RT1JJUV9USEVSTUFMKQkrPSBx
+b3JpcV90aGVybWFsLm8NCj4gPiDCoG9iai0kKENPTkZJR19EQjg1MDBfQ1BVRlJFUV9DT09MSU5H
+KQkrPQ0KPiA+IGRiODUwMF9jcHVmcmVxX2Nvb2xpbmcubw0KPiA+IMKgb2JqLSQoQ09ORklHX0lO
+VEVMX1BPV0VSQ0xBTVApCSs9IGludGVsX3Bvd2VyY2xhbXAubw0KPiA+IMKgb2JqLSQoQ09ORklH
+X1g4Nl9QS0dfVEVNUF9USEVSTUFMKQkrPSB4ODZfcGtnX3RlbXBfdGhlcm1hbC5vDQo+ID4gZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9xb3JpcV90aGVybWFsLmMNCj4gPiBiL2RyaXZlcnMv
+dGhlcm1hbC9xb3JpcV90aGVybWFsLmMNCj4gPiBuZXcgZmlsZSBtb2RlIDEwMDY0NA0KPiA+IGlu
+ZGV4IDAwMDAwMDAuLjY0NGJhNTINCj4gPiAtLS0gL2Rldi9udWxsDQo+ID4gKysrIGIvZHJpdmVy
+cy90aGVybWFsL3FvcmlxX3RoZXJtYWwuYw0KPiA+IEBAIC0wLDAgKzEsMzI4IEBADQo+ID4gKy8q
+DQo+ID4gKyAqIENvcHlyaWdodCAyMDE2IEZyZWVzY2FsZSBTZW1pY29uZHVjdG9yLCBJbmMuDQo+
+ID4gKyAqDQo+ID4gKyAqIFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJl
+ZGlzdHJpYnV0ZSBpdCBhbmQvb3INCj4gPiBtb2RpZnkgaXQNCj4gPiArICogdW5kZXIgdGhlIHRl
+cm1zIGFuZCBjb25kaXRpb25zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSwNCj4g
+PiArICogdmVyc2lvbiAyLCBhcyBwdWJsaXNoZWQgYnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRh
+dGlvbi4NCj4gPiArICoNCj4gPiArICogVGhpcyBwcm9ncmFtIGlzIGRpc3RyaWJ1dGVkIGluIHRo
+ZSBob3BlIGl0IHdpbGwgYmUgdXNlZnVsLCBidXQNCj4gPiBXSVRIT1VUDQo+ID4gKyAqIEFOWSBX
+QVJSQU5UWTsgd2l0aG91dCBldmVuIHRoZSBpbXBsaWVkIHdhcnJhbnR5IG9mDQo+ID4gTUVSQ0hB
+TlRBQklMSVRZIG9yDQo+ID4gKyAqIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLsKg
+wqBTZWUgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYw0KPiA+IExpY2Vuc2UgZm9yDQo+ID4gKyAqIG1v
+cmUgZGV0YWlscy4NCj4gPiArICoNCj4gPiArICovDQo+ID4gKw0KPiA+ICsjaW5jbHVkZSA8bGlu
+dXgvbW9kdWxlLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9wbGF0Zm9ybV9kZXZpY2UuaD4NCj4g
+PiArI2luY2x1ZGUgPGxpbnV4L2Vyci5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvaW8uaD4NCj4g
+PiArI2luY2x1ZGUgPGxpbnV4L29mLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9vZl9hZGRyZXNz
+Lmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC90aGVybWFsLmg+DQo+ID4gKw0KPiA+ICsjaW5jbHVk
+ZSAidGhlcm1hbF9jb3JlLmgiDQo+ID4gKw0KPiA+ICsjZGVmaW5lIFNJVEVTX01BWAkxNg0KPiA+
+ICsNCj4gPiArLyoNCj4gPiArICogUW9ySVEgVE1VIFJlZ2lzdGVycw0KPiA+ICsgKi8NCj4gPiAr
+c3RydWN0IHFvcmlxX3RtdV9zaXRlX3JlZ3Mgew0KPiA+ICsJdTMyIHRyaXRzcjsJCS8qIEltbWVk
+aWF0ZSBUZW1wZXJhdHVyZSBTaXRlDQo+ID4gUmVnaXN0ZXIgKi8NCj4gPiArCXUzMiB0cmF0c3I7
+CQkvKiBBdmVyYWdlIFRlbXBlcmF0dXJlIFNpdGUNCj4gPiBSZWdpc3RlciAqLw0KPiA+ICsJdTgg
+cmVzMFsweDhdOw0KPiA+ICt9Ow0KPiA+ICsNCj4gPiArc3RydWN0IHFvcmlxX3RtdV9yZWdzIHsN
+Cj4gPiArCXUzMiB0bXI7CQkvKiBNb2RlIFJlZ2lzdGVyICovDQo+ID4gKyNkZWZpbmUgVE1SX0RJ
+U0FCTEUJMHgwDQo+ID4gKyNkZWZpbmUgVE1SX01FCQkweDgwMDAwMDAwDQo+ID4gKyNkZWZpbmUg
+VE1SX0FMUEYJMHgwYzAwMDAwMA0KPiA+ICsJdTMyIHRzcjsJCS8qIFN0YXR1cyBSZWdpc3RlciAq
+Lw0KPiA+ICsJdTMyIHRtdG1pcjsJCS8qIFRlbXBlcmF0dXJlIG1lYXN1cmVtZW50DQo+ID4gaW50
+ZXJ2YWwgUmVnaXN0ZXIgKi8NCj4gPiArI2RlZmluZSBUTVRNSVJfREVGQVVMVAkweDAwMDAwMDBm
+DQo+ID4gKwl1OCByZXMwWzB4MTRdOw0KPiA+ICsJdTMyIHRpZXI7CQkvKiBJbnRlcnJ1cHQgRW5h
+YmxlIFJlZ2lzdGVyICovDQo+ID4gKyNkZWZpbmUgVElFUl9ESVNBQkxFCTB4MA0KPiA+ICsJdTMy
+IHRpZHI7CQkvKiBJbnRlcnJ1cHQgRGV0ZWN0IFJlZ2lzdGVyICovDQo+ID4gKwl1MzIgdGlzY3I7
+CQkvKiBJbnRlcnJ1cHQgU2l0ZSBDYXB0dXJlIFJlZ2lzdGVyDQo+ID4gKi8NCj4gPiArCXUzMiB0
+aWNzY3I7CQkvKiBJbnRlcnJ1cHQgQ3JpdGljYWwgU2l0ZQ0KPiA+IENhcHR1cmUgUmVnaXN0ZXIg
+Ki8NCj4gPiArCXU4IHJlczFbMHgxMF07DQo+ID4gKwl1MzIgdG1odGNyaDsJCS8qIEhpZ2ggVGVt
+cGVyYXR1cmUgQ2FwdHVyZQ0KPiA+IFJlZ2lzdGVyICovDQo+ID4gKwl1MzIgdG1odGNybDsJCS8q
+IExvdyBUZW1wZXJhdHVyZSBDYXB0dXJlDQo+ID4gUmVnaXN0ZXIgKi8NCj4gPiArCXU4IHJlczJb
+MHg4XTsNCj4gPiArCXUzMiB0bWh0aXRyOwkJLyogSGlnaCBUZW1wZXJhdHVyZSBJbW1lZGlhdGUN
+Cj4gPiBUaHJlc2hvbGQgKi8NCj4gPiArCXUzMiB0bWh0YXRyOwkJLyogSGlnaCBUZW1wZXJhdHVy
+ZSBBdmVyYWdlDQo+ID4gVGhyZXNob2xkICovDQo+ID4gKwl1MzIgdG1odGFjdHI7CS8qIEhpZ2gg
+VGVtcGVyYXR1cmUgQXZlcmFnZSBDcml0DQo+ID4gVGhyZXNob2xkICovDQo+ID4gKwl1OCByZXMz
+WzB4MjRdOw0KPiA+ICsJdTMyIHR0Y2ZncjsJCS8qIFRlbXBlcmF0dXJlIENvbmZpZ3VyYXRpb24N
+Cj4gPiBSZWdpc3RlciAqLw0KPiA+ICsJdTMyIHRzY2ZncjsJCS8qIFNlbnNvciBDb25maWd1cmF0
+aW9uIFJlZ2lzdGVyDQo+ID4gKi8NCj4gPiArCXU4IHJlczRbMHg3OF07DQo+ID4gKwlzdHJ1Y3Qg
+cW9yaXFfdG11X3NpdGVfcmVncyBzaXRlW1NJVEVTX01BWF07DQo+ID4gKwl1OCByZXM1WzB4OWY4
+XTsNCj4gPiArCXUzMiBpcGJycjA7CQkvKiBJUCBCbG9jayBSZXZpc2lvbiBSZWdpc3RlciAwDQo+
+ID4gKi8NCj4gPiArCXUzMiBpcGJycjE7CQkvKiBJUCBCbG9jayBSZXZpc2lvbiBSZWdpc3RlciAx
+DQo+ID4gKi8NCj4gPiArCXU4IHJlczZbMHgzMTBdOw0KPiA+ICsJdTMyIHR0cjBjcjsJCS8qIFRl
+bXBlcmF0dXJlIFJhbmdlIDAgQ29udHJvbA0KPiA+IFJlZ2lzdGVyICovDQo+ID4gKwl1MzIgdHRy
+MWNyOwkJLyogVGVtcGVyYXR1cmUgUmFuZ2UgMSBDb250cm9sDQo+ID4gUmVnaXN0ZXIgKi8NCj4g
+PiArCXUzMiB0dHIyY3I7CQkvKiBUZW1wZXJhdHVyZSBSYW5nZSAyIENvbnRyb2wNCj4gPiBSZWdp
+c3RlciAqLw0KPiA+ICsJdTMyIHR0cjNjcjsJCS8qIFRlbXBlcmF0dXJlIFJhbmdlIDMgQ29udHJv
+bA0KPiA+IFJlZ2lzdGVyICovDQo+ID4gK307DQo+ID4gKw0KPiA+ICsvKg0KPiA+ICsgKiBUaGVy
+bWFsIHpvbmUgZGF0YQ0KPiA+ICsgKi8NCj4gPiArc3RydWN0IHFvcmlxX3RtdV9kYXRhIHsNCj4g
+PiArCXN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0ejsNCj4gPiArCXN0cnVjdCBxb3JpcV90
+bXVfcmVncyBfX2lvbWVtICpyZWdzOw0KPiA+ICsJaW50IHNlbnNvcl9pZDsNCj4gPiArCWJvb2wg
+bGl0dGxlX2VuZGlhbjsNCj4gPiArfTsNCj4gPiArDQo+ID4gK3N0YXRpYyB2b2lkIHRtdV93cml0
+ZShzdHJ1Y3QgcW9yaXFfdG11X2RhdGEgKnAsIHUzMiB2YWwsIHZvaWQNCj4gPiBfX2lvbWVtICph
+ZGRyKQ0KPiA+ICt7DQo+ID4gKwlpZiAocC0+bGl0dGxlX2VuZGlhbikNCj4gPiArCQlpb3dyaXRl
+MzIodmFsLCBhZGRyKTsNCj4gPiArCWVsc2UNCj4gPiArCQlpb3dyaXRlMzJiZSh2YWwsIGFkZHIp
+Ow0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgdTMyIHRtdV9yZWFkKHN0cnVjdCBxb3JpcV90
+bXVfZGF0YSAqcCwgdm9pZCBfX2lvbWVtICphZGRyKQ0KPiA+ICt7DQo+ID4gKwlpZiAocC0+bGl0
+dGxlX2VuZGlhbikNCj4gPiArCQlyZXR1cm4gaW9yZWFkMzIoYWRkcik7DQo+ID4gKwllbHNlDQo+
+ID4gKwkJcmV0dXJuIGlvcmVhZDMyYmUoYWRkcik7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRp
+YyBpbnQgdG11X2dldF90ZW1wKHZvaWQgKnAsIGludCAqdGVtcCkNCj4gPiArew0KPiA+ICsJdTMy
+IHZhbDsNCj4gPiArCXN0cnVjdCBxb3JpcV90bXVfZGF0YSAqZGF0YSA9IHA7DQo+ID4gKw0KPiA+
+ICsJdmFsID0gdG11X3JlYWQoZGF0YSwgJmRhdGEtPnJlZ3MtPnNpdGVbZGF0YS0NCj4gPiA+c2Vu
+c29yX2lkXS50cml0c3IpOw0KPiA+ICsJKnRlbXAgPSAodmFsICYgMHhmZikgKiAxMDAwOw0KPiA+
+ICsNCj4gPiArCXJldHVybiAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IHFvcmlx
+X3RtdV9nZXRfc2Vuc29yX2lkKHZvaWQpDQo+ID4gK3sNCj4gPiArCWludCByZXQsIGlkOw0KPiA+
+ICsJc3RydWN0IG9mX3BoYW5kbGVfYXJncyBzZW5zb3Jfc3BlY3M7DQo+ID4gKwlzdHJ1Y3QgZGV2
+aWNlX25vZGUgKm5wLCAqc2Vuc29yX25wOw0KPiA+ICsNCj4gPiArCW5wID0gb2ZfZmluZF9ub2Rl
+X2J5X25hbWUoTlVMTCwgInRoZXJtYWwtem9uZXMiKTsNCj4gPiArCWlmICghbnApDQo+ID4gKwkJ
+cmV0dXJuIC1FTk9ERVY7DQo+ID4gKw0KPiA+ICsJc2Vuc29yX25wID0gb2ZfZ2V0X25leHRfY2hp
+bGQobnAsIE5VTEwpOw0KPiA+ICsJcmV0ID0gb2ZfcGFyc2VfcGhhbmRsZV93aXRoX2FyZ3Moc2Vu
+c29yX25wLCAidGhlcm1hbC0NCj4gPiBzZW5zb3JzIiwNCj4gPiArCQkJIiN0aGVybWFsLXNlbnNv
+ci1jZWxscyIsDQo+ID4gKwkJCTAsICZzZW5zb3Jfc3BlY3MpOw0KPiA+ICsJaWYgKHJldCkgew0K
+PiA+ICsJCW9mX25vZGVfcHV0KG5wKTsNCj4gPiArCQlvZl9ub2RlX3B1dChzZW5zb3JfbnApOw0K
+PiA+ICsJCXJldHVybiByZXQ7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJaWYgKHNlbnNvcl9zcGVj
+cy5hcmdzX2NvdW50ID49IDEpIHsNCj4gPiArCQlpZCA9IHNlbnNvcl9zcGVjcy5hcmdzWzBdOw0K
+PiA+ICsJCVdBUk4oc2Vuc29yX3NwZWNzLmFyZ3NfY291bnQgPiAxLA0KPiA+ICsJCQkJIiVzOiB0
+b28gbWFueSBjZWxscyBpbiBzZW5zb3INCj4gPiBzcGVjaWZpZXIgJWRcbiIsDQo+ID4gKwkJCQlz
+ZW5zb3Jfc3BlY3MubnAtPm5hbWUsDQo+ID4gc2Vuc29yX3NwZWNzLmFyZ3NfY291bnQpOw0KPiA+
+ICsJfSBlbHNlIHsNCj4gPiArCQlpZCA9IDA7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJb2Zfbm9k
+ZV9wdXQobnApOw0KPiA+ICsJb2Zfbm9kZV9wdXQoc2Vuc29yX25wKTsNCj4gPiArDQo+ID4gKwly
+ZXR1cm4gaWQ7DQo+ID4gK30NCj4gPiArDQo+ID4gK3N0YXRpYyBpbnQgcW9yaXFfdG11X2NhbGli
+cmF0aW9uKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gK3sNCj4gPiArCWludCBp
+LCB2YWwsIGxlbjsNCj4gPiArCXUzMiByYW5nZVs0XTsNCj4gPiArCWNvbnN0IHUzMiAqY2FsaWJy
+YXRpb247DQo+ID4gKwlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wID0gcGRldi0+ZGV2Lm9mX25vZGU7
+DQo+ID4gKwlzdHJ1Y3QgcW9yaXFfdG11X2RhdGEgKmRhdGEgPSBwbGF0Zm9ybV9nZXRfZHJ2ZGF0
+YShwZGV2KTsNCj4gPiArDQo+ID4gKwlpZiAob2ZfcHJvcGVydHlfcmVhZF91MzJfYXJyYXkobnAs
+ICJmc2wsdG11LXJhbmdlIiwgcmFuZ2UsDQo+ID4gNCkpIHsNCj4gPiArCQlkZXZfZXJyKCZwZGV2
+LT5kZXYsICJtaXNzaW5nIGNhbGlicmF0aW9uIHJhbmdlLlxuIik7DQo+ID4gKwkJcmV0dXJuIC1F
+Tk9ERVY7DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJLyogSW5pdCB0ZW1wZXJhdHVyZSByYW5nZSBy
+ZWdpc3RlcnMgKi8NCj4gPiArCXRtdV93cml0ZShkYXRhLCByYW5nZVswXSwgJmRhdGEtPnJlZ3Mt
+PnR0cjBjcik7DQo+ID4gKwl0bXVfd3JpdGUoZGF0YSwgcmFuZ2VbMV0sICZkYXRhLT5yZWdzLT50
+dHIxY3IpOw0KPiA+ICsJdG11X3dyaXRlKGRhdGEsIHJhbmdlWzJdLCAmZGF0YS0+cmVncy0+dHRy
+MmNyKTsNCj4gPiArCXRtdV93cml0ZShkYXRhLCByYW5nZVszXSwgJmRhdGEtPnJlZ3MtPnR0cjNj
+cik7DQo+ID4gKw0KPiA+ICsJY2FsaWJyYXRpb24gPSBvZl9nZXRfcHJvcGVydHkobnAsICJmc2ws
+dG11LWNhbGlicmF0aW9uIiwNCj4gPiAmbGVuKTsNCj4gPiArCWlmIChjYWxpYnJhdGlvbiA9PSBO
+VUxMIHx8IGxlbiAlIDgpIHsNCj4gPiArCQlkZXZfZXJyKCZwZGV2LT5kZXYsICJpbnZhbGlkIGNh
+bGlicmF0aW9uIGRhdGEuXG4iKTsNCj4gPiArCQlyZXR1cm4gLUVOT0RFVjsNCj4gPiArCX0NCj4g
+PiArDQo+ID4gKwlmb3IgKGkgPSAwOyBpIDwgbGVuOyBpICs9IDgsIGNhbGlicmF0aW9uICs9IDIp
+IHsNCj4gPiArCQl2YWwgPSBvZl9yZWFkX251bWJlcihjYWxpYnJhdGlvbiwgMSk7DQo+ID4gKwkJ
+dG11X3dyaXRlKGRhdGEsIHZhbCwgJmRhdGEtPnJlZ3MtPnR0Y2Zncik7DQo+ID4gKwkJdmFsID0g
+b2ZfcmVhZF9udW1iZXIoY2FsaWJyYXRpb24gKyAxLCAxKTsNCj4gPiArCQl0bXVfd3JpdGUoZGF0
+YSwgdmFsLCAmZGF0YS0+cmVncy0+dHNjZmdyKTsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwlyZXR1
+cm4gMDsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHZvaWQgcW9yaXFfdG11X2luaXRfZGV2
+aWNlKHN0cnVjdCBxb3JpcV90bXVfZGF0YSAqZGF0YSkNCj4gPiArew0KPiA+ICsJLyogRGlzYWJs
+ZSBpbnRlcnJ1cHQsIHVzaW5nIHBvbGxpbmcgaW5zdGVhZCAqLw0KPiA+ICsJdG11X3dyaXRlKGRh
+dGEsIFRJRVJfRElTQUJMRSwgJmRhdGEtPnJlZ3MtPnRpZXIpOw0KPiA+ICsNCj4gPiArCS8qIFNl
+dCB1cGRhdGVfaW50ZXJ2YWwgKi8NCj4gPiArCXRtdV93cml0ZShkYXRhLCBUTVRNSVJfREVGQVVM
+VCwgJmRhdGEtPnJlZ3MtPnRtdG1pcik7DQo+ID4gKw0KPiA+ICsJLyogRGlzYWJsZSBtb25pdG9y
+aW5nICovDQo+ID4gKwl0bXVfd3JpdGUoZGF0YSwgVE1SX0RJU0FCTEUsICZkYXRhLT5yZWdzLT50
+bXIpOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgc3RydWN0IHRoZXJtYWxfem9uZV9vZl9k
+ZXZpY2Vfb3BzIHRtdV90el9vcHMgPSB7DQo+ID4gKwkuZ2V0X3RlbXAgPSB0bXVfZ2V0X3RlbXAs
+DQo+ID4gK307DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IHFvcmlxX3RtdV9wcm9iZShzdHJ1Y3Qg
+cGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+ICt7DQo+ID4gKwlpbnQgcmV0Ow0KPiA+ICsJY29u
+c3Qgc3RydWN0IHRoZXJtYWxfdHJpcCAqdHJpcDsNCj4gPiArCXN0cnVjdCBxb3JpcV90bXVfZGF0
+YSAqZGF0YTsNCj4gPiArCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAgPSBwZGV2LT5kZXYub2Zfbm9k
+ZTsNCj4gPiArCXUzMiBzaXRlID0gMDsNCj4gPiArDQo+ID4gKwlpZiAoIW5wKSB7DQo+ID4gKwkJ
+ZGV2X2VycigmcGRldi0+ZGV2LCAiRGV2aWNlIE9GLU5vZGUgaXMgTlVMTCIpOw0KPiA+ICsJCXJl
+dHVybiAtRU5PREVWOw0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCWRhdGEgPSBkZXZtX2t6YWxsb2Mo
+JnBkZXYtPmRldiwgc2l6ZW9mKHN0cnVjdA0KPiA+IHFvcmlxX3RtdV9kYXRhKSwNCj4gPiArCQkJ
+wqDCoMKgwqBHRlBfS0VSTkVMKTsNCj4gPiArCWlmICghZGF0YSkNCj4gPiArCQlyZXR1cm4gLUVO
+T01FTTsNCj4gPiArDQo+ID4gKwlwbGF0Zm9ybV9zZXRfZHJ2ZGF0YShwZGV2LCBkYXRhKTsNCj4g
+PiArDQo+ID4gKwlkYXRhLT5saXR0bGVfZW5kaWFuID0gb2ZfcHJvcGVydHlfcmVhZF9ib29sKG5w
+LCAibGl0dGxlLQ0KPiA+IGVuZGlhbiIpOw0KPiA+ICsNCj4gPiArCWRhdGEtPnNlbnNvcl9pZCA9
+IHFvcmlxX3RtdV9nZXRfc2Vuc29yX2lkKCk7DQo+ID4gKwlpZiAoZGF0YS0+c2Vuc29yX2lkIDwg
+MCkgew0KPiA+ICsJCWRldl9lcnIoJnBkZXYtPmRldiwgIkZhaWxlZCB0byBnZXQgc2Vuc29yIGlk
+XG4iKTsNCj4gPiArCQlyZXQgPSAtRU5PREVWOw0KPiA+ICsJCWdvdG8gZXJyX2lvbWFwOw0KPiA+
+ICsJfQ0KPiA+ICsNCj4gPiArCWRhdGEtPnJlZ3MgPSBvZl9pb21hcChucCwgMCk7DQo+ID4gKwlp
+ZiAoIWRhdGEtPnJlZ3MpIHsNCj4gPiArCQlkZXZfZXJyKCZwZGV2LT5kZXYsICJGYWlsZWQgdG8g
+Z2V0IG1lbW9yeQ0KPiA+IHJlZ2lvblxuIik7DQo+ID4gKwkJcmV0ID0gLUVOT0RFVjsNCj4gPiAr
+CQlnb3RvIGVycl9pb21hcDsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwlxb3JpcV90bXVfaW5pdF9k
+ZXZpY2UoZGF0YSk7CS8qIFRNVSBpbml0aWFsaXphdGlvbiAqLw0KPiA+ICsNCj4gPiArCXJldCA9
+IHFvcmlxX3RtdV9jYWxpYnJhdGlvbihwZGV2KTsJLyogVE1VIGNhbGlicmF0aW9uDQo+ID4gKi8N
+Cj4gPiArCWlmIChyZXQgPCAwKQ0KPiA+ICsJCWdvdG8gZXJyX3RtdTsNCj4gPiArDQo+ID4gKwlk
+YXRhLT50eiA9IHRoZXJtYWxfem9uZV9vZl9zZW5zb3JfcmVnaXN0ZXIoJnBkZXYtPmRldiwgZGF0
+YS0NCj4gPiA+c2Vuc29yX2lkLA0KPiA+ICsJCQkJZGF0YSwgJnRtdV90el9vcHMpOw0KPiA+ICsJ
+aWYgKElTX0VSUihkYXRhLT50eikpIHsNCj4gPiArCQlyZXQgPSBQVFJfRVJSKGRhdGEtPnR6KTsN
+Cj4gPiArCQlkZXZfZXJyKCZwZGV2LT5kZXYsDQo+ID4gKwkJCSJGYWlsZWQgdG8gcmVnaXN0ZXIg
+dGhlcm1hbCB6b25lIGRldmljZQ0KPiA+ICVkXG4iLCByZXQpOw0KPiA+ICsJCWdvdG8gZXJyX3Rt
+dTsNCj4gPiArCX0NCj4gPiArDQo+ID4gKwl0cmlwID0gb2ZfdGhlcm1hbF9nZXRfdHJpcF9wb2lu
+dHMoZGF0YS0+dHopOw0KPiA+ICsNCj4gPiArCS8qIEVuYWJsZSBtb25pdG9yaW5nICovDQo+ID4g
+KwlzaXRlIHw9IDB4MSA8PCAoMTUgLSBkYXRhLT5zZW5zb3JfaWQpOw0KPiA+ICsJdG11X3dyaXRl
+KGRhdGEsIHNpdGUgfCBUTVJfTUUgfCBUTVJfQUxQRiwgJmRhdGEtPnJlZ3MtPnRtcik7DQo+ID4g
+Kw0KPiA+ICsJcmV0dXJuIDA7DQo+ID4gKw0KPiA+ICtlcnJfdG11Og0KPiA+ICsJaW91bm1hcChk
+YXRhLT5yZWdzKTsNCj4gPiArDQo+ID4gK2Vycl9pb21hcDoNCj4gPiArCXBsYXRmb3JtX3NldF9k
+cnZkYXRhKHBkZXYsIE5VTEwpOw0KPiA+ICsNCj4gPiArCXJldHVybiByZXQ7DQo+ID4gK30NCj4g
+PiArDQo+ID4gK3N0YXRpYyBpbnQgcW9yaXFfdG11X3JlbW92ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2
+aWNlICpwZGV2KQ0KPiA+ICt7DQo+ID4gKwlzdHJ1Y3QgcW9yaXFfdG11X2RhdGEgKmRhdGEgPSBw
+bGF0Zm9ybV9nZXRfZHJ2ZGF0YShwZGV2KTsNCj4gPiArDQo+ID4gKwl0aGVybWFsX3pvbmVfb2Zf
+c2Vuc29yX3VucmVnaXN0ZXIoJnBkZXYtPmRldiwgZGF0YS0+dHopOw0KPiA+ICsNCj4gPiArCS8q
+IERpc2FibGUgbW9uaXRvcmluZyAqLw0KPiA+ICsJdG11X3dyaXRlKGRhdGEsIFRNUl9ESVNBQkxF
+LCAmZGF0YS0+cmVncy0+dG1yKTsNCj4gPiArDQo+ID4gKwlpb3VubWFwKGRhdGEtPnJlZ3MpOw0K
+PiA+ICsJcGxhdGZvcm1fc2V0X2RydmRhdGEocGRldiwgTlVMTCk7DQo+ID4gKw0KPiA+ICsJcmV0
+dXJuIDA7DQo+ID4gK30NCj4gPiArDQo+ID4gKyNpZmRlZiBDT05GSUdfUE1fU0xFRVANCj4gPiAr
+c3RhdGljIGludCBxb3JpcV90bXVfc3VzcGVuZChzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ID4gK3sN
+Cj4gPiArCXUzMiB0bXI7DQo+ID4gKwlzdHJ1Y3QgcW9yaXFfdG11X2RhdGEgKmRhdGEgPSBkZXZf
+Z2V0X2RydmRhdGEoZGV2KTsNCj4gPiArDQo+ID4gKwkvKiBEaXNhYmxlIG1vbml0b3JpbmcgKi8N
+Cj4gPiArCXRtciA9IHRtdV9yZWFkKGRhdGEsICZkYXRhLT5yZWdzLT50bXIpOw0KPiA+ICsJdG1y
+ICY9IH5UTVJfTUU7DQo+ID4gKwl0bXVfd3JpdGUoZGF0YSwgdG1yLCAmZGF0YS0+cmVncy0+dG1y
+KTsNCj4gPiArDQo+ID4gKwlyZXR1cm4gMDsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIGlu
+dCBxb3JpcV90bXVfcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikNCj4gPiArew0KPiA+ICsJdTMy
+IHRtcjsNCj4gPiArCXN0cnVjdCBxb3JpcV90bXVfZGF0YSAqZGF0YSA9IGRldl9nZXRfZHJ2ZGF0
+YShkZXYpOw0KPiA+ICsNCj4gPiArCS8qIEVuYWJsZSBtb25pdG9yaW5nICovDQo+ID4gKwl0bXIg
+PSB0bXVfcmVhZChkYXRhLCAmZGF0YS0+cmVncy0+dG1yKTsNCj4gPiArCXRtciB8PSBUTVJfTUU7
+DQo+ID4gKwl0bXVfd3JpdGUoZGF0YSwgdG1yLCAmZGF0YS0+cmVncy0+dG1yKTsNCj4gPiArDQo+
+ID4gKwlyZXR1cm4gMDsNCj4gPiArfQ0KPiA+ICsjZW5kaWYNCj4gPiArDQo+ID4gK3N0YXRpYyBT
+SU1QTEVfREVWX1BNX09QUyhxb3JpcV90bXVfcG1fb3BzLA0KPiA+ICsJCQnCoHFvcmlxX3RtdV9z
+dXNwZW5kLCBxb3JpcV90bXVfcmVzdW1lKTsNCj4gPiArDQo+ID4gK3N0YXRpYyBjb25zdCBzdHJ1
+Y3Qgb2ZfZGV2aWNlX2lkIHFvcmlxX3RtdV9tYXRjaFtdID0gew0KPiA+ICsJeyAuY29tcGF0aWJs
+ZSA9ICJmc2wscW9yaXEtdG11IiwgfSwNCj4gPiArCXt9LA0KPiA+ICt9Ow0KPiA+ICtNT0RVTEVf
+REVWSUNFX1RBQkxFKG9mLCBxb3JpcV90bXVfbWF0Y2gpOw0KPiA+ICsNCj4gPiArc3RhdGljIHN0
+cnVjdCBwbGF0Zm9ybV9kcml2ZXIgcW9yaXFfdG11ID0gew0KPiA+ICsJLmRyaXZlcgk9IHsNCj4g
+PiArCQkubmFtZQkJPSAicW9yaXFfdGhlcm1hbCIsDQo+ID4gKwkJLnBtCQk9ICZxb3JpcV90bXVf
+cG1fb3BzLA0KPiA+ICsJCS5vZl9tYXRjaF90YWJsZQk9IHFvcmlxX3RtdV9tYXRjaCwNCj4gPiAr
+CX0sDQo+ID4gKwkucHJvYmUJPSBxb3JpcV90bXVfcHJvYmUsDQo+ID4gKwkucmVtb3ZlCT0gcW9y
+aXFfdG11X3JlbW92ZSwNCj4gPiArfTsNCj4gPiArbW9kdWxlX3BsYXRmb3JtX2RyaXZlcihxb3Jp
+cV90bXUpOw0KPiA+ICsNCj4gPiArTU9EVUxFX0FVVEhPUigiSmlhIEhvbmd0YW8gPGhvbmd0YW8u
+amlhQG54cC5jb20+Iik7DQo+ID4gK01PRFVMRV9ERVNDUklQVElPTigiUW9ySVEgVGhlcm1hbCBN
+b25pdG9yaW5nIFVuaXQgZHJpdmVyIik7DQo+ID4gK01PRFVMRV9MSUNFTlNFKCJHUEwgdjIiKTsN
+Cj4gPiAtLQ0KPiA+IDIuMS4wLjI3Lmc5NmRiMzI0DQo+ID4NCl9fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0
+CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFk
+ZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJuZWwK
