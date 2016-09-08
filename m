@@ -1,147 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH v2 0/7] Functional dependencies between devices
-Date: Thu, 08 Sep 2016 23:35:09 +0200
-Message-ID: <1725309.5hZIR6bGbC@vostro.rjw.lan>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: =?UTF-8?q?=5BPATCH=20v3=200/8=5D=20Support=20Intel=C2=AE=20Turbo=20Boost=20Max=20Technology=203=2E0?=
+Date: Thu,  8 Sep 2016 15:26:47 -0700
+Message-ID: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64466 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1752439AbcIHV3J (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Sep 2016 17:29:09 -0400
-In-Reply-To: <27296716.H9VWo8ShOm@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On Thursday, September 08, 2016 11:25:44 PM Rafael J. Wysocki wrote:
-> Hi Everyone,
-> 
-> This is a refresh of the functional dependencies series that I posted last
-> year and which has picked up by Marek quite recently.  For reference, appended
-> is my introductory message sent previously (which may be slightly outdated now).
-> 
-> As last time, the first patch rearranges the code around __device_release_driver()
-> a bit to prepare it for the next one (it actually hasn't changed AFAICS).
-> 
-> The second patch introduces the actual device links mechanics, but without
-> system suspend/resume and runtime PM support which are added by the subsequent
-> patches.
-> 
-> Some bugs found by Marek during his work on these patches should be fixed
-> here.  In particular, the endless recursion in device_reorder_to_tail()
-> which simply was broken before.
-> 
-> There are two additional patches to address the issue with runtime PM support
-> that occured when runtime PM was disabled for some suppliers due to a PM
-> sleep transition in progress.  Those patches simply make runtime PM helpers
-> return 0 in that case which may be controversial, so please let me know if
-> there are concerns about those.
-> 
-> The way device_link_add() works is a bit different, as it takes an additional
-> status argument now.  That makes it possible to create a link in any state,
-> with extra care of course, and should address the problem pointed to by Lukas
-> during the previous discussion.
-> 
-> Also some comments from Tomeu have been addressed.
-> 
-> This hasn't been really tested yet and I'm sort of relying on Marek to test
-> it, because he has a use case ready.  Hence, the RFT tag on the series.
-> 
-> Overall, please let me know what you think.
-> 
-> Thanks,
-> Rafael
-> 
-> 
-> Introduction:
-> 
-> As discussed in the recent "On-demand device probing" thread and in a Kernel
-> Summit session earlier today, there is a problem with handling cases where
-> functional dependencies between devices are involved.
-> 
-> What I mean by a "functional dependency" is when the driver of device B needs
-> both device A and its driver to be present and functional to be able to work.
-> This implies that the driver of A needs to be working for B to be probed
-> successfully and it cannot be unbound from the device before the B's driver.
-> This also has certain consequences for power management of these devices
-> (suspend/resume and runtime PM ordering).
-> 
-> So I want to be able to represent those functional dependencies between devices
-> and I'd like the driver core to track them and act on them in certain cases
-> where they matter.  The argument for doing that in the driver core is that
-> there are quite a few distinct use cases related to that, they are relatively
-> hard to get right in a driver (if one wants to address all of them properly)
-> and it only gets worse if multiplied by the number of drivers potentially
-> needing to do it.  Morever, at least one case (asynchronous system suspend/resume)
-> cannot be handled in a single driver at all, because it requires the driver of A
-> to wait for B to suspend (during system suspend) and the driver of B to wait for
-> A to resume (during system resume).
-> 
-> My idea is to represent a supplier-consumer dependency between devices (or
-> more precisely between device+driver combos) as a "link" object containing
-> pointers to the devices in question, a list node for each of them and some
-> additional information related to the management of those objects, ie.
-> something like:
-> 
-> struct device_link {
->         struct device *supplier;
->         struct list_head supplier_node;
->         struct device *consumer;
->         struct list_head consumer_node;
->         <flags, status etc>
-> };
-> 
-> In general, there will be two lists of those things per device, one list
-> of links to consumers and one list of links to suppliers.
-> 
-> In that picture, links will be created by calling, say:
-> 
-> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
-> 
-> and they will be deleted by the driver core when not needed any more.  The
-> creation of a link should also cause dpm_list and the list used during shutdown
-> to be reordered if needed.
-> 
-> In principle, it seems usefult to consider two types of links, one created
-> at device registration time (when registering the second device from the linked
-> pair, whichever it is) and one created at probe time (of the consumer device).
-> I'll refer to them as "permanent" and "probe-time" links, respectively.
-> 
-> The permanent links (created at device registration time) will stay around
-> until one of the linked devices is unregistered (at which time the driver
-> core will drop the link along with the device going away).  The probe-time
-> ones will be dropped (automatically) at the consumer device driver unbind time.
-> 
-> There's a question about what if the supplier device is being unbound before
-> the consumer one (for example, as a result of a hotplug event).  My current
-> view on that is that the consumer needs to be force-unbound in that case too,
-> but I guess I may be persuaded otherwise given sufficiently convincing
-> arguments.  Anyway, there are reasons to do that, like for example it may
-> help with the synchronization.  Namely, if there's a rule that suppliers
-> cannot be unbound before any consumers linked to them, than the list of links
-> to suppliers for a consumer can only change at its registration/probe or
-> unbind/remove times (which simplifies things quite a bit).
-> 
-> With that, the permanent links existing at the probe time for a consumer
-> device can be used to check whether or not to defer the probing of it
-> even before executing its probe callback.  In turn, system suspend
-> synchronization should be a matter of calling device_pm_wait_for_dev()
-> for all consumers of a supplier device, in analogy with dpm_wait_for_children(),
-> and so on.
-> 
-> Of course, the new lists have to be stable during those operations and ensuring
-> that is going to be somewhat tricky (AFAICS right now at least), but apart from
-> that the whole concept looks reasonably straightforward to me.
-> --
+v3:
+- Fix race clash when more than one program are enabling/disabling ITMT
+- Remove group_priority_cpu macro to simplify code.
+- Error reported by 0-day for compile issue on ARM
 
-The Mark's address is broken in this series.  Again, sadly.
+v2
+- The patchset is split into two parts so that CPPC changes can be merged first
+ 1. Only ACPI CPPC changes (It is posted separately)
+ 2. ITMT changes (scheduler and Intel P-State)
 
-Really sorry about that and please fix it up when you reply.
+- Changes in patch: sched,x86: Enable Turbo Boost Max Technology
+ 1. Use arch_update_cpu_topology to indicate need to completely
+    rebuild sched domain when ITMT related sched domain flags change
+ 2. Enable client (single node) platform capable of ITMT with ITMT
+    scheduling by default
+ 3. Implement arch_asym_cpu_priority to provide the cpu priority
+    value to scheduler for asym packing.
+ 4. Fix a compile bug for i386 architecture.
 
-Thanks,
-Rafael
+- Changes in patch: sched: Extend scheduler's asym packing
+ 1. Use arch_asym_cpu_priority() to provide cpu priority
+    value used for asym packing to the scheduler.
+
+- Changes in acpi: bus: Enable HWP CPPC objects and
+  acpi: bus: Set _OSC for diverse core support
+  Minor code cleanup by removing #ifdef
+- Changes in Kconfig for Intel P-State
+  Avoid building CPPC lib for i386 for issue reported by 0-day
+
+- Feature is enabled by default for single socket systems
+
+With Intel® Turbo Boost Max Technology 3.0 (ITMT), single-threaded performance is
+optimized by identifying processor's fastest core and running critical workloads
+on it.
+Refere to:
+http://www.intel.com/content/www/us/en/architecture-and-technology/turbo-boost/turbo-boost-max-technology.html
+
+This patchset consist of all changes required to support ITMT feature:
+- Use CPPC information in Intel P-State driver to get performance information
+- Scheduler enhancements
+- cppc lib patches (split in to a seprate series)
+
+This featured can be enabled by writing at runtime
+# echo 1 > /proc/sys/kernel/sched_itmt_enabled
+This featured can be disabled by writing at runtime
+# echo 0 > /proc/sys/kernel/sched_itmt_enabled
+
+Srinivas Pandruvada (3):
+  acpi: bus: Enable HWP CPPC objects
+  acpi: bus: Set _OSC for diverse core support
+  cpufreq: intel_pstate: Use CPPC to get max performance
+
+Tim Chen (5):
+  sched, x86: Add SD_ASYM_PACKING flags to x86 cpu topology for ITMT
+  sched: Extend scheduler's asym packing
+  x86, cpu: provide a function topology_num_packages to enumerate
+    #packages
+  sched, x86: use arch_update_cpu_topology to indicate x86 need sched
+    domain rebuild
+  sched,x86: Enable Turbo Boost Max Technology
+
+ arch/x86/Kconfig                |   9 +++
+ arch/x86/include/asm/topology.h |  25 ++++++
+ arch/x86/kernel/Makefile        |   1 +
+ arch/x86/kernel/itmt.c          | 164 ++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/smpboot.c       |  92 +++++++++++++++++-----
+ drivers/acpi/bus.c              |  10 +++
+ drivers/cpufreq/Kconfig.x86     |   1 +
+ drivers/cpufreq/intel_pstate.c  |  75 +++++++++++++++++-
+ include/linux/acpi.h            |   1 +
+ include/linux/sched.h           |   2 +
+ kernel/sched/core.c             |  21 +++++
+ kernel/sched/fair.c             |  35 ++++++---
+ kernel/sched/sched.h            |   6 ++
+ 13 files changed, 410 insertions(+), 32 deletions(-)
+ create mode 100644 arch/x86/kernel/itmt.c
+
+-- 
+2.7.4
 
