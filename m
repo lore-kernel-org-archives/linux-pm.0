@@ -1,74 +1,55 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH][v8] PM / hibernate: Verify the consistent of e820 memory
- map by md5 value
-Date: Thu, 8 Sep 2016 23:15:52 +0200
-Message-ID: <20160908211552.GA12651@amd>
-References: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
- <20160829134123.GA28806@nazgul.tnic>
- <20160830083505.GG10967@linux-rxt1.site>
- <6348002.9YHCcajBsl@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 5/8] sched,x86: Enable Turbo Boost Max Technology
+Date: Thu, 08 Sep 2016 23:22 +0200
+Message-ID: <3062542.GzMooo3y72@vostro.rjw.lan>
+References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com> <20160908182215.GA10153@twins.programming.kicks-ass.net> <1473359328.154359.61.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57522 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753520AbcIHVP4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Sep 2016 17:15:56 -0400
-Content-Disposition: inline
-In-Reply-To: <6348002.9YHCcajBsl@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1473359328.154359.61.camel@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Tim Chen <tim.c.chen@linux.intel.com>, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: joeyli <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, Chen Yu <yu.c.chen@intel.com>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Lee@nazgul.tnic
 
-On Tue 2016-08-30 13:54:44, Rafael J. Wysocki wrote:
-> On Tuesday, August 30, 2016 04:35:05 PM joeyli wrote:
-> > On Mon, Aug 29, 2016 at 03:41:23PM +0200, Borislav Petkov wrote:
-> > > On Mon, Aug 29, 2016 at 09:15:00AM +0200, Pavel Machek wrote:
-> > > > Sounds about as easy as hot unplugging arbitrary memory address. IOW
-> > > > "not easy".
+On Thursday, September 08, 2016 11:28:48 AM Srinivas Pandruvada wrote:
+> On Thu, 2016-09-08 at 20:22 +0200, Peter Zijlstra wrote:
+> > On Thu, Sep 08, 2016 at 11:09:28AM -0700, Tim Chen wrote:
 > > > 
-> > > Regardless, forcibly panicking the system more is still the wrong
-> > > approach IMO.
+> > > On Thu, Sep 08, 2016 at 09:59:55AM +0200, Peter Zijlstra wrote:
+> > > > 
+> > > > I think there's a race here, if two tasks were to write to the
+> > > > sysctl
+> > > > they'd both change the value before getting stuck on the mutex in
+> > > > enable_sched_itmt().
+> > > > 
+> > > > One way around that is doing something like:
+> > > > 
+> > > > 
+> > > > 	struct ctl_table t;
+> > > > 	int val = sysctl_sched_itmt_enabled;
+> > > > 
+> > > > 	t = *table;
+> > > > 	t.data = &val;
+> > > > 
+> > > > 	proc_dointvec_minmax(&t, ...);
+> > > > 
+> > > > 	/* and update the sysctl_sched_itmt_enabled value inside the
+> > > > mutex */
+> > > > 	enable_sched_itmi(val);
 > > > 
-> > > Instead, I'd try to issue a big fat warning that BIOS corrupts E820 and
-> > > that the user should disable hibernation on that box and never ever
-> > > enable it again.
+> > > Peter,
 > > > 
-> > > After that, the kernel should *disable* hibernation for the current boot
-> > > so any further hibernation runs don't even happen. Maybe even taint
-> > > itself.
-> > >
+> > > Since enable_sched_itmt is only used by sched_itmt_update_handler,
+> > > I've moved the mutex locking to sched_itmt_update_handler to
+> > > eliminate
+> > > the race condition in the code path you mentioned.
 > > 
-> > I support this idea to disable hibernation when kernel detected e820 layout
-> > was changed by BIOS. If system resume luckily then kernel should warn to user
-> > and refuse to hibernate again. User must to know that's better to reboot
-> > system when he saw the warning message after lucky resume.
-> > 
-> > Not just BIOS doesn't fix e820 layout. There have some machines doesn't provide
-> > _S4_ function, so the hibernation fallbacks to "shutdown" mode because "platform"
-> > mode unavailable. In this situation, user is just lucky to run the hibernation.
-> > Kernel should warn to user and disable hibernation when detected e820 layout
-> > changed.
-> 
-> Well, please see my reply to Boris.
-> 
-> Pavel is right that running after detecting an e820 mismatch is generally risky,
-> so why don't we shut down the system (but try to do that cleanly instead of
-> causing it to panic right away) on an e820 mismatch?
+> > That is indeed simpler. Thanks!
+> Do we need to send v3 to include these changes?
 
-I don't think that's good idea.
+Yes, please.
 
-Anything involving userspace is risky at that point, and clean
-shutdown means a _lot_ of userspace.
-
-We know the filesystems are reasonably clean as we sync-ed
-them; I believe right solution is to panic -- on-disk state is pretty
-good and we don't want to do anything risky.
-
-Best regards,
-
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+Rafael
