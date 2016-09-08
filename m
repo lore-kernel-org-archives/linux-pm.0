@@ -1,275 +1,147 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH v2 5/7] PM / runtime: Flag to indicate PM sleep transitions in progress
-Date: Thu, 08 Sep 2016 23:29:48 +0200
-Message-ID: <3677187.4hCpDgWMoX@vostro.rjw.lan>
+Subject: Re: [RFC/RFT][PATCH v2 0/7] Functional dependencies between devices
+Date: Thu, 08 Sep 2016 23:35:09 +0200
+Message-ID: <1725309.5hZIR6bGbC@vostro.rjw.lan>
 References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62048 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64466 "HELO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1751529AbcIHVZv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Sep 2016 17:25:51 -0400
+        by vger.kernel.org with SMTP id S1752439AbcIHV3J (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Sep 2016 17:29:09 -0400
 In-Reply-To: <27296716.H9VWo8ShOm@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.og>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thursday, September 08, 2016 11:25:44 PM Rafael J. Wysocki wrote:
+> Hi Everyone,
+> 
+> This is a refresh of the functional dependencies series that I posted last
+> year and which has picked up by Marek quite recently.  For reference, appended
+> is my introductory message sent previously (which may be slightly outdated now).
+> 
+> As last time, the first patch rearranges the code around __device_release_driver()
+> a bit to prepare it for the next one (it actually hasn't changed AFAICS).
+> 
+> The second patch introduces the actual device links mechanics, but without
+> system suspend/resume and runtime PM support which are added by the subsequent
+> patches.
+> 
+> Some bugs found by Marek during his work on these patches should be fixed
+> here.  In particular, the endless recursion in device_reorder_to_tail()
+> which simply was broken before.
+> 
+> There are two additional patches to address the issue with runtime PM support
+> that occured when runtime PM was disabled for some suppliers due to a PM
+> sleep transition in progress.  Those patches simply make runtime PM helpers
+> return 0 in that case which may be controversial, so please let me know if
+> there are concerns about those.
+> 
+> The way device_link_add() works is a bit different, as it takes an additional
+> status argument now.  That makes it possible to create a link in any state,
+> with extra care of course, and should address the problem pointed to by Lukas
+> during the previous discussion.
+> 
+> Also some comments from Tomeu have been addressed.
+> 
+> This hasn't been really tested yet and I'm sort of relying on Marek to test
+> it, because he has a use case ready.  Hence, the RFT tag on the series.
+> 
+> Overall, please let me know what you think.
+> 
+> Thanks,
+> Rafael
+> 
+> 
+> Introduction:
+> 
+> As discussed in the recent "On-demand device probing" thread and in a Kernel
+> Summit session earlier today, there is a problem with handling cases where
+> functional dependencies between devices are involved.
+> 
+> What I mean by a "functional dependency" is when the driver of device B needs
+> both device A and its driver to be present and functional to be able to work.
+> This implies that the driver of A needs to be working for B to be probed
+> successfully and it cannot be unbound from the device before the B's driver.
+> This also has certain consequences for power management of these devices
+> (suspend/resume and runtime PM ordering).
+> 
+> So I want to be able to represent those functional dependencies between devices
+> and I'd like the driver core to track them and act on them in certain cases
+> where they matter.  The argument for doing that in the driver core is that
+> there are quite a few distinct use cases related to that, they are relatively
+> hard to get right in a driver (if one wants to address all of them properly)
+> and it only gets worse if multiplied by the number of drivers potentially
+> needing to do it.  Morever, at least one case (asynchronous system suspend/resume)
+> cannot be handled in a single driver at all, because it requires the driver of A
+> to wait for B to suspend (during system suspend) and the driver of B to wait for
+> A to resume (during system resume).
+> 
+> My idea is to represent a supplier-consumer dependency between devices (or
+> more precisely between device+driver combos) as a "link" object containing
+> pointers to the devices in question, a list node for each of them and some
+> additional information related to the management of those objects, ie.
+> something like:
+> 
+> struct device_link {
+>         struct device *supplier;
+>         struct list_head supplier_node;
+>         struct device *consumer;
+>         struct list_head consumer_node;
+>         <flags, status etc>
+> };
+> 
+> In general, there will be two lists of those things per device, one list
+> of links to consumers and one list of links to suppliers.
+> 
+> In that picture, links will be created by calling, say:
+> 
+> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
+> 
+> and they will be deleted by the driver core when not needed any more.  The
+> creation of a link should also cause dpm_list and the list used during shutdown
+> to be reordered if needed.
+> 
+> In principle, it seems usefult to consider two types of links, one created
+> at device registration time (when registering the second device from the linked
+> pair, whichever it is) and one created at probe time (of the consumer device).
+> I'll refer to them as "permanent" and "probe-time" links, respectively.
+> 
+> The permanent links (created at device registration time) will stay around
+> until one of the linked devices is unregistered (at which time the driver
+> core will drop the link along with the device going away).  The probe-time
+> ones will be dropped (automatically) at the consumer device driver unbind time.
+> 
+> There's a question about what if the supplier device is being unbound before
+> the consumer one (for example, as a result of a hotplug event).  My current
+> view on that is that the consumer needs to be force-unbound in that case too,
+> but I guess I may be persuaded otherwise given sufficiently convincing
+> arguments.  Anyway, there are reasons to do that, like for example it may
+> help with the synchronization.  Namely, if there's a rule that suppliers
+> cannot be unbound before any consumers linked to them, than the list of links
+> to suppliers for a consumer can only change at its registration/probe or
+> unbind/remove times (which simplifies things quite a bit).
+> 
+> With that, the permanent links existing at the probe time for a consumer
+> device can be used to check whether or not to defer the probing of it
+> even before executing its probe callback.  In turn, system suspend
+> synchronization should be a matter of calling device_pm_wait_for_dev()
+> for all consumers of a supplier device, in analogy with dpm_wait_for_children(),
+> and so on.
+> 
+> Of course, the new lists have to be stable during those operations and ensuring
+> that is going to be somewhat tricky (AFAICS right now at least), but apart from
+> that the whole concept looks reasonably straightforward to me.
+> --
 
-Introduce a new flag in struct dev_pm_info, pm_sleep_in_progress, to
-indicate that runtime PM has been disabled because of a PM sleep
-transition in progress.
+The Mark's address is broken in this series.  Again, sadly.
 
-Make __pm_runtime_disable() set that flag when invoked with
-RPM_DISABLE_ENABLE_PM_SLEEP set in its second argument and make
-the PM core call it that way during system sleep transitions.
+Really sorry about that and please fix it up when you reply.
 
-Introduce __pm_runtime_enable() so that it can take a second flags
-argument and make it clear power.pm_sleep_in_progress for the device
-if invoked with RPM_DISABLE_ENABLE_PM_SLEEP set.  Also make the PM
-core pass RPM_DISABLE_ENABLE_PM_SLEEP to it during transitions from
-system sleep to the working state.
-
-Modify rpm_idle(), rpm_resume, rpm_suspend() and pm_schedule_suspend()
-to neglect error codes and return 0 (without doing anything else)
-when power.pm_sleep_in_progress is set for the device.
-
-That will allow helpers like pm_runtime_get_sync() to be called
-during system sleep transitions without worrying about possible
-error codes they may return because runtime PM is disabled at
-that point.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/power/runtime_pm.txt |   15 ++++++++-------
- drivers/base/power/main.c          |   12 ++++++------
- drivers/base/power/runtime.c       |   29 +++++++++++++++++++++++------
- include/linux/pm.h                 |    1 +
- include/linux/pm_runtime.h         |   12 ++++++++++--
- 5 files changed, 48 insertions(+), 21 deletions(-)
-
-Index: linux-pm/Documentation/power/runtime_pm.txt
-===================================================================
---- linux-pm.orig/Documentation/power/runtime_pm.txt
-+++ linux-pm/Documentation/power/runtime_pm.txt
-@@ -685,14 +685,15 @@ out the following operations:
-     right before executing the subsystem-level .prepare() callback for it and
-     pm_runtime_barrier() is called for every device right before executing the
-     subsystem-level .suspend() callback for it.  In addition to that the PM core
--    calls  __pm_runtime_disable() with 0 as the second argument for every
--    device right before executing the subsystem-level .suspend_late() callback
--    for it.
-+    calls  __pm_runtime_disable() with RPM_DISABLE_ENABLE_PM_SLEEP as the second
-+    argument for every device right before executing the subsystem-level
-+    .suspend_late() callback for it.
- 
--  * During system resume pm_runtime_enable() and pm_runtime_put() are called for
--    every device right after executing the subsystem-level .resume_early()
--    callback and right after executing the subsystem-level .complete() callback
--    for it, respectively.
-+  * During system resume __pm_runtime_enable() (with RPM_DISABLE_ENABLE_PM_SLEEP
-+    as the second argument) and pm_runtime_put() are called for every device
-+    right after executing the subsystem-level .resume_early() callback and right
-+    after executing the subsystem-level .complete() callback for it,
-+    respectively.
- 
- 7. Generic subsystem callbacks
- 
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -701,7 +701,7 @@ static int device_resume_early(struct de
-  Out:
- 	TRACE_RESUME(error);
- 
--	pm_runtime_enable(dev);
-+	__pm_runtime_enable(dev, RPM_DISABLE_ENABLE_PM_SLEEP);
- 	complete_all(&dev->power.completion);
- 	return error;
- }
-@@ -801,8 +801,8 @@ static int device_resume(struct device *
- 		goto Complete;
- 
- 	if (dev->power.direct_complete) {
--		/* Match the pm_runtime_disable() in __device_suspend(). */
--		pm_runtime_enable(dev);
-+		/* Match the __pm_runtime_disable() in __device_suspend(). */
-+		__pm_runtime_enable(dev, RPM_DISABLE_ENABLE_PM_SLEEP);
- 		goto Complete;
- 	}
- 
-@@ -1228,7 +1228,7 @@ static int __device_suspend_late(struct
- 	TRACE_DEVICE(dev);
- 	TRACE_SUSPEND(0);
- 
--	__pm_runtime_disable(dev, 0);
-+	__pm_runtime_disable(dev, RPM_DISABLE_ENABLE_PM_SLEEP);
- 
- 	if (async_error)
- 		goto Complete;
-@@ -1438,11 +1438,11 @@ static int __device_suspend(struct devic
- 
- 	if (dev->power.direct_complete) {
- 		if (pm_runtime_status_suspended(dev)) {
--			pm_runtime_disable(dev);
-+			__pm_runtime_disable(dev, RPM_DISABLE_ALL);
- 			if (pm_runtime_status_suspended(dev))
- 				goto Complete;
- 
--			pm_runtime_enable(dev);
-+			__pm_runtime_enable(dev, RPM_DISABLE_ENABLE_PM_SLEEP);
- 		}
- 		dev->power.direct_complete = false;
- 	}
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -353,6 +353,9 @@ static int rpm_idle(struct device *dev,
- 
-  out:
- 	trace_rpm_return_int_rcuidle(dev, _THIS_IP_, retval);
-+	if (retval && dev->power.pm_sleep_in_progress)
-+		return 0;
-+
- 	return retval ? retval : rpm_suspend(dev, rpmflags | RPM_AUTO);
- }
- 
-@@ -550,6 +553,8 @@ static int rpm_suspend(struct device *de
- 
-  out:
- 	trace_rpm_return_int(dev, _THIS_IP_, retval);
-+	if (retval && dev->power.pm_sleep_in_progress)
-+		return 0;
- 
- 	return retval;
- 
-@@ -765,6 +770,8 @@ static int rpm_resume(struct device *dev
- 	}
- 
- 	trace_rpm_return_int_rcuidle(dev, _THIS_IP_, retval);
-+	if (retval && dev->power.pm_sleep_in_progress)
-+		return 0;
- 
- 	return retval;
- }
-@@ -867,6 +874,8 @@ int pm_schedule_suspend(struct device *d
- 
-  out:
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
-+	if (retval && dev->power.pm_sleep_in_progress)
-+		return 0;
- 
- 	return retval;
- }
-@@ -1200,28 +1209,35 @@ void __pm_runtime_disable(struct device
- 		__pm_runtime_barrier(dev);
- 
-  out:
-+	if (flags & RPM_DISABLE_ENABLE_PM_SLEEP)
-+		dev->power.pm_sleep_in_progress = true;
-+
- 	spin_unlock_irq(&dev->power.lock);
- }
- EXPORT_SYMBOL_GPL(__pm_runtime_disable);
- 
- /**
-- * pm_runtime_enable - Enable runtime PM of a device.
-+ * __pm_runtime_enable - Enable runtime PM of a device.
-  * @dev: Device to handle.
-+ * @flags: Behavior modifiers.
-  */
--void pm_runtime_enable(struct device *dev)
-+void __pm_runtime_enable(struct device *dev, unsigned int flags)
- {
--	unsigned long flags;
-+	unsigned long irqflags;
- 
--	spin_lock_irqsave(&dev->power.lock, flags);
-+	spin_lock_irqsave(&dev->power.lock, irqflags);
-+
-+	if (flags & RPM_DISABLE_ENABLE_PM_SLEEP)
-+		dev->power.pm_sleep_in_progress = false;
- 
- 	if (dev->power.disable_depth > 0)
- 		dev->power.disable_depth--;
- 	else
- 		dev_warn(dev, "Unbalanced %s!\n", __func__);
- 
--	spin_unlock_irqrestore(&dev->power.lock, flags);
-+	spin_unlock_irqrestore(&dev->power.lock, irqflags);
- }
--EXPORT_SYMBOL_GPL(pm_runtime_enable);
-+EXPORT_SYMBOL_GPL(__pm_runtime_enable);
- 
- /**
-  * pm_runtime_forbid - Block runtime PM of a device.
-@@ -1396,6 +1412,7 @@ void pm_runtime_init(struct device *dev)
- 	dev->power.idle_notification = false;
- 
- 	dev->power.disable_depth = 1;
-+	dev->power.pm_sleep_in_progress = false;
- 	atomic_set(&dev->power.usage_count, 0);
- 
- 	dev->power.runtime_error = 0;
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -585,6 +585,7 @@ struct dev_pm_info {
- 	atomic_t		usage_count;
- 	atomic_t		child_count;
- 	unsigned int		disable_depth:3;
-+	bool			pm_sleep_in_progress:1;
- 	unsigned int		idle_notification:1;
- 	unsigned int		request_pending:1;
- 	unsigned int		deferred_resume:1;
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -25,6 +25,9 @@
- 
- /* Runtime PM disable/enable flags */
- #define RPM_DISABLE_CHECK_RESUME	(1 << 0)
-+#define RPM_DISABLE_ENABLE_PM_SLEEP	(1 << 1)
-+
-+#define RPM_DISABLE_ALL	(RPM_DISABLE_CHECK_RESUME | RPM_DISABLE_ENABLE_PM_SLEEP)
- 
- #ifdef CONFIG_PM
- extern struct workqueue_struct *pm_wq;
-@@ -46,7 +49,7 @@ extern int pm_runtime_get_if_in_use(stru
- extern int pm_schedule_suspend(struct device *dev, unsigned int delay);
- extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
- extern int pm_runtime_barrier(struct device *dev);
--extern void pm_runtime_enable(struct device *dev);
-+extern void __pm_runtime_enable(struct device *dev, unsigned int flags);
- extern void __pm_runtime_disable(struct device *dev, unsigned int flags);
- extern void pm_runtime_allow(struct device *dev);
- extern void pm_runtime_forbid(struct device *dev);
-@@ -159,7 +162,7 @@ static inline int pm_runtime_get_if_in_u
- static inline int __pm_runtime_set_status(struct device *dev,
- 					    unsigned int status) { return 0; }
- static inline int pm_runtime_barrier(struct device *dev) { return 0; }
--static inline void pm_runtime_enable(struct device *dev) {}
-+static inline void __pm_runtime_enable(struct device *dev, unsigned int flags) {}
- static inline void __pm_runtime_disable(struct device *dev, unsigned int flags) {}
- static inline void pm_runtime_allow(struct device *dev) {}
- static inline void pm_runtime_forbid(struct device *dev) {}
-@@ -278,6 +281,11 @@ static inline void pm_runtime_disable(st
- 	__pm_runtime_disable(dev, RPM_DISABLE_CHECK_RESUME);
- }
- 
-+static inline void pm_runtime_enable(struct device *dev)
-+{
-+	__pm_runtime_enable(dev, 0);
-+}
-+
- static inline void pm_runtime_use_autosuspend(struct device *dev)
- {
- 	__pm_runtime_use_autosuspend(dev, true);
+Thanks,
+Rafael
 
