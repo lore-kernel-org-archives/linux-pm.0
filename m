@@ -1,61 +1,179 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 03/10] staging: board: Remove calls to of_genpd_get_from_provider()
-Date: Thu, 8 Sep 2016 13:35:29 +0200
-Message-ID: <CAPDyKFqRf4fU9E+tQ6ET+FUntORKbk1gH2QdKGwSeiFpAw-hrQ@mail.gmail.com>
-References: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com> <1471340976-5379-4-git-send-email-jonathanh@nvidia.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 04/10] PM / Domains: Don't expose generic_pm_domain
+ structure to clients
+Date: Thu, 8 Sep 2016 13:35:47 +0200
+Message-ID: <CAPDyKFr_nS_gAPan3X2N59t2pJwHnw8YoYJNnwNJztLjFfUAtw@mail.gmail.com>
+References: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com> <1471340976-5379-5-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1471340976-5379-4-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f53.google.com ([74.125.82.53]:33855 "EHLO
+        mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757862AbcIHLfu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Sep 2016 07:35:50 -0400
+Received: by mail-wm0-f53.google.com with SMTP id 72so4572631wme.1
+        for <linux-pm@vger.kernel.org>; Thu, 08 Sep 2016 04:35:49 -0700 (PDT)
+In-Reply-To: <1471340976-5379-5-git-send-email-jonathanh@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Alexander Aring <alex.aring@gmail.com>, Eric Anholt <eric@anholt.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On 16 August 2016 at 11:49, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> Update the staging/board PM domain code to use the
-> of_genpd_add_subdomain() and remove any calls to
-> of_genpd_get_from_provider().
+On 16 August 2016 at 11:49, Jon Hunter <jonathanh@nvidia.com> wrote:
+> There should be no need to expose the generic_pm_domain structure to
+> clients and this eliminates the need to implement reference counting for
+> any external reference to a PM domain. Therefore, make the functions
+> pm_genpd_lookup_dev() and of_genpd_get_from_provider() private to the
+> PM domain core. The functions are renamed in accordance with the naming
+> conventions for genpd static functions.
 >
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 
-Acked-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Kind regards
 Uffe
 
 > ---
->  drivers/staging/board/board.c | 9 +--------
->  1 file changed, 1 insertion(+), 8 deletions(-)
+>  drivers/base/power/domain.c | 19 +++++++++----------
+>  include/linux/pm_domain.h   | 14 --------------
+>  2 files changed, 9 insertions(+), 24 deletions(-)
 >
-> diff --git a/drivers/staging/board/board.c b/drivers/staging/board/board.c
-> index 45807d8287d1..86dc41101610 100644
-> --- a/drivers/staging/board/board.c
-> +++ b/drivers/staging/board/board.c
-> @@ -140,7 +140,6 @@ static int board_staging_add_dev_domain(struct platform_device *pdev,
->                                         const char *domain)
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 43c2a959a7bf..7b0aecef2e51 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -45,7 +45,7 @@ static DEFINE_MUTEX(gpd_list_lock);
+>   * and checks that the PM domain pointer is a real generic PM domain.
+>   * Any failure results in NULL being returned.
+>   */
+> -struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev)
+> +static struct generic_pm_domain *genpd_lookup_dev(struct device *dev)
 >  {
->         struct of_phandle_args pd_args;
-> -       struct generic_pm_domain *pd;
->         struct device_node *np;
+>         struct generic_pm_domain *genpd = NULL, *gpd;
 >
->         np = of_find_node_by_path(domain);
-> @@ -151,14 +150,8 @@ static int board_staging_add_dev_domain(struct platform_device *pdev,
+> @@ -1119,7 +1119,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
 >
->         pd_args.np = np;
->         pd_args.args_count = 0;
-> -       pd = of_genpd_get_from_provider(&pd_args);
-> -       if (IS_ERR(pd)) {
-> -               pr_err("Cannot find genpd %s (%ld)\n", domain, PTR_ERR(pd));
-> -               return PTR_ERR(pd);
-> -       }
-> -       pr_debug("Found genpd %s for device %s\n", pd->name, pdev->name);
+>         dev_dbg(dev, "%s()\n", __func__);
 >
-> -       return pm_genpd_add_device(pd, &pdev->dev);
-> +       return of_genpd_add_device(&pd_args, &pdev->dev);
+> -       if (!genpd || genpd != pm_genpd_lookup_dev(dev))
+> +       if (!genpd || genpd != genpd_lookup_dev(dev))
+>                 return -EINVAL;
+>
+>         /* The above validation also means we have existing domain_data. */
+> @@ -1466,7 +1466,7 @@ void of_genpd_del_provider(struct device_node *np)
+>  EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+>
+>  /**
+> - * of_genpd_get_from_provider() - Look-up PM domain
+> + * genpd_get_from_provider() - Look-up PM domain
+>   * @genpdspec: OF phandle args to use for look-up
+>   *
+>   * Looks for a PM domain provider under the node specified by @genpdspec and if
+> @@ -1476,7 +1476,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+>   * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
+>   * on failure.
+>   */
+> -struct generic_pm_domain *of_genpd_get_from_provider(
+> +static struct generic_pm_domain *genpd_get_from_provider(
+>                                         struct of_phandle_args *genpdspec)
+>  {
+>         struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
+> @@ -1499,7 +1499,6 @@ struct generic_pm_domain *of_genpd_get_from_provider(
+>
+>         return genpd;
 >  }
->  #else
->  static inline int board_staging_add_dev_domain(struct platform_device *pdev,
+> -EXPORT_SYMBOL_GPL(of_genpd_get_from_provider);
+>
+>  /**
+>   * of_genpd_add_device() - Add a device to an I/O PM domain
+> @@ -1513,7 +1512,7 @@ int of_genpd_add_device(struct of_phandle_args *genpdspec, struct device *dev)
+>  {
+>         struct generic_pm_domain *genpd;
+>
+> -       genpd = of_genpd_get_from_provider(genpdspec);
+> +       genpd = genpd_get_from_provider(genpdspec);
+>         if (IS_ERR(genpd))
+>                 return PTR_ERR(genpd);
+>
+> @@ -1535,11 +1534,11 @@ int of_genpd_add_subdomain(struct of_phandle_args *parent_spec,
+>  {
+>         struct generic_pm_domain *parent, *subdomain;
+>
+> -       parent = of_genpd_get_from_provider(parent_spec);
+> +       parent = genpd_get_from_provider(parent_spec);
+>         if (IS_ERR(parent))
+>                 return PTR_ERR(parent);
+>
+> -       subdomain = of_genpd_get_from_provider(subdomain_spec);
+> +       subdomain = genpd_get_from_provider(subdomain_spec);
+>         if (IS_ERR(subdomain))
+>                 return PTR_ERR(subdomain);
+>
+> @@ -1561,7 +1560,7 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
+>         unsigned int i;
+>         int ret = 0;
+>
+> -       pd = pm_genpd_lookup_dev(dev);
+> +       pd = genpd_lookup_dev(dev);
+>         if (!pd)
+>                 return;
+>
+> @@ -1642,7 +1641,7 @@ int genpd_dev_pm_attach(struct device *dev)
+>                         return -ENOENT;
+>         }
+>
+> -       pd = of_genpd_get_from_provider(&pd_args);
+> +       pd = genpd_get_from_provider(&pd_args);
+>         of_node_put(pd_args.np);
+>         if (IS_ERR(pd)) {
+>                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index e1964a242389..bd411e754f4a 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -116,7 +116,6 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
+>         return to_gpd_data(dev->power.subsys_data->domain_data);
+>  }
+>
+> -extern struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev);
+>  extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+>                                  struct device *dev,
+>                                  struct gpd_timing_data *td);
+> @@ -138,10 +137,6 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
+>  {
+>         return ERR_PTR(-ENOSYS);
+>  }
+> -static inline struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev)
+> -{
+> -       return NULL;
+> -}
+>  static inline int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+>                                         struct device *dev,
+>                                         struct gpd_timing_data *td)
+> @@ -199,9 +194,6 @@ typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
+>  int __of_genpd_add_provider(struct device_node *np, genpd_xlate_t xlate,
+>                         void *data);
+>  void of_genpd_del_provider(struct device_node *np);
+> -struct generic_pm_domain *of_genpd_get_from_provider(
+> -                       struct of_phandle_args *genpdspec);
+> -
+>  struct generic_pm_domain *__of_genpd_xlate_simple(
+>                                         struct of_phandle_args *genpdspec,
+>                                         void *data);
+> @@ -222,12 +214,6 @@ static inline int __of_genpd_add_provider(struct device_node *np,
+>  }
+>  static inline void of_genpd_del_provider(struct device_node *np) {}
+>
+> -static inline struct generic_pm_domain *of_genpd_get_from_provider(
+> -                       struct of_phandle_args *genpdspec)
+> -{
+> -       return NULL;
+> -}
+> -
+>  #define __of_genpd_xlate_simple                NULL
+>  #define __of_genpd_xlate_onecell       NULL
+>
 > --
 > 2.1.4
 >
