@@ -1,52 +1,48 @@
-From: Tero Kristo <t-kristo@ti.com>
-Subject: Re: [PATCH V3 0/5] firmware: Add support for TI System Control
- Interface (TI-SCI) protocol driver
-Date: Thu, 8 Sep 2016 21:19:36 +0300
-Message-ID: <9c609ea5-5ea8-f58a-ae32-f8af2c85dd72@ti.com>
-References: <20160906190127.23522-1-nm@ti.com> <7hshtbtu8l.fsf@baylibre.com>
- <f41d968c-46c9-997e-0fa0-edbef34a1fa5@ti.com> <m2y432nvs8.fsf@baylibre.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 2/8] sched: Extend scheduler's asym packing
+Date: Thu, 8 Sep 2016 20:21:43 +0200
+Message-ID: <20160908182143.GZ10153@twins.programming.kicks-ass.net>
+References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <1472762024-88771-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <20160908080111.GT10153@twins.programming.kicks-ass.net>
+ <20160908180325.GA23509@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <m2y432nvs8.fsf@baylibre.com>
+Content-Disposition: inline
+In-Reply-To: <20160908180325.GA23509@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>, Nishanth Menon <nm@ti.com>
-Cc: Rob Herring <robh@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, devicetree@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, narmstrong@baylibre.com, Charles Garcia-Tobin <Charles.Garcia-Tobin@arm.com>, David Griego <david.griego@linaro.org>
+To: Tim Chen <tim.c.chen@linux.intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 08/09/16 20:31, Kevin Hilman wrote:
-> Nishanth Menon <nm@ti.com> writes:
->
->> On 09/07/2016 01:55 PM, Kevin Hilman wrote:
->>> Nishanth Menon <nm@ti.com> writes:
->>
->> [...] full mail thread in https://lkml.org/lkml/2016/9/6/747
->>
->>>> Overall architecture is very similar to SCPI[4] as follows:
->>>
->>> Dumb Q: I'm curious about the limitations in SCPI that were found that
->>> made TI decided to implement its own version.
->
-> [...]
->
->> Long story short, investigation was done into what SCPI was providing
->> (TI internal ofcourse) and SCPI did not fit our SoC generation needs -
->
-> Thanks for the detailed explanation.  Very helpful.
->
-> To be clear, I'm not a proponent of always using ARM "standards"
-> (especially when it's not exactly clear if it's a standard or a Juno
-> thing) but I'm seeing several SoCs come out with SCPI derivatives, or
-> old ARM versions etc., so was just curious about the decision making
-> process.
->
-> Thanks for sharing,
->
-> Kevin
+On Thu, Sep 08, 2016 at 11:03:26AM -0700, Tim Chen wrote:
+> On Thu, Sep 08, 2016 at 10:01:11AM +0200, Peter Zijlstra wrote:
+> > On Thu, Sep 01, 2016 at 01:33:38PM -0700, Srinivas Pandruvada wrote:
+> > > +++ b/kernel/sched/sched.h
+> > > @@ -532,6 +532,17 @@ struct dl_rq {
+> > >  
+> > >  #ifdef CONFIG_SMP
+> > >  
+> > > +static inline bool sched_asym_prefer(int a, int b)
+> > > +{
+> > > +	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
+> > > +}
+> > > +
+> > > +/*
+> > > + * Return lowest numbered cpu in the group as the most preferred cpu
+> > > + * for ASYM_PACKING for default case.
+> > > + */
+> > > +#define group_priority_cpu(group) group->asym_prefer_cpu
+> > > +
+> > 
+> > Both these are no longer used outside of sched/fair.c, and should
+> > probably be moved there. Also the later has no reason for being a macro.
+> 
+> Peter,
+> 
+> The sched_asym_prefer is used in sched/core.c to set asym_prefer_cpu
+> in a group. So we will still need the definition in sched.h.  I've removed
+> the group_priority_cpu macro.
 
-So, any other comments for this series or shall we still try to get it 
-merged for 4.9? We are -rc5 so it might be too late already and probably 
-better to push this for 4.10.
-
--Tero
+Ah indeed. Thanks!
