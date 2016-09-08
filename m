@@ -1,99 +1,133 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH 1/4] exynos4-is: Clear isp-i2c adapter
- power.ignore_children flag
-Date: Thu, 08 Sep 2016 13:16:43 +0200
-Message-ID: <92b9deab-1a2d-eb76-e9dc-63ab4576b299@samsung.com>
-References: <1472729956-17475-1-git-send-email-s.nawrocki@samsung.com>
- <20160901114711.GF2893@katana>
- <CACRpkdaFj58kMqniVHxC87K0XmHoPy3x-GHs=JrK-t2osKCZ1w@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 01/10] PM / Domains: Add new helper functions for device-tree
+Date: Thu, 8 Sep 2016 13:34:42 +0200
+Message-ID: <CAPDyKFovdk4WzZXbXv2kygD+FTRMKOwYcEgkJDxRPyXbtNfEHA@mail.gmail.com>
+References: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com> <1471340976-5379-2-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CACRpkdaFj58kMqniVHxC87K0XmHoPy3x-GHs=JrK-t2osKCZ1w@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>, Wolfram Sang <wsa@the-dreams.de>
-Cc: "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, stable <stable@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1471340976-5379-2-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/07/2016 10:38 PM, Linus Walleij wrote:
-> On Thu, Sep 1, 2016 at 1:47 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
->> On Thu, Sep 01, 2016 at 01:39:16PM +0200, Sylwester Nawrocki wrote:
-> 
->>> Since commit 04f59143b571161d25315dd52d7a2ecc022cb71a
->>> ("i2c: let I2C masters ignore their children for PM")
->>> the power.ignore_children flag is set when registering an I2C
->>> adapter. Since I2C transfers are not managed by the fimc-isp-i2c
->>> driver its clients use pm_runtime_* calls directly to communicate
->>> required power state of the bus controller.
->>> However when the power.ignore_children flag is set that doesn't
->>> work, so clear that flag back after registering the adapter.
->>> While at it drop pm_runtime_enable() call on the i2c_adapter
->>> as it is already done by the I2C subsystem when registering
->>> I2C adapter.
->>>
->>> Cc: <stable@vger.kernel.org> # 4.7+
->>> Reported-by: Marek Szyprowski <m.szyprowski@samsung.com>
->>> Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-> 
-> I understand what the patch is doing but not this commit message.
-> 
-> What does it mean when you say "Since I2C transfers are not
-> managed by the fimc-isp-i2c driver its clients use pm_runtime_*
-> calls directly to communicate required power state of the bus
-> controller."?
-> 
-> I find it very hard to understand.
+On 16 August 2016 at 11:49, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+> Ideally, if we are returning a reference to a PM domain via a call to
+> of_genpd_get_from_provider(), then we should keep track of such
+> references via a reference count. The reference count could then be used
+> to determine if a PM domain can be safely removed. Alternatively, it is
+> possible to avoid such external references by providing APIs to access
+> the PM domain and hence, eliminate any calls to
+> of_genpd_get_from_provider().
+>
+> Add new helper functions for adding a device and a subdomain to a PM
+> domain when using device-tree, so that external calls to
+> of_genpd_get_from_provider() can be removed.
+>
+> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-When a video device node is opened the I2C client (v4l2 subdevice)
-in its s_power() handler makes pm_runtime_get/pm_runtime_put calls
-on its corresponding i2c_client.  It's true we use an imitation of
-I2C bus adapter just to make things work with standard DT bindings
-and except of device instantiation this adapter's task is just
-to control the clock.
-I admit that it's all an odd use case, it comes from the fact that
-the image sensor devices are handled in the ISP's firmware, where
-normally we have an I2C client driver for each sensor in V4L2.
+Acked-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Now, I don't like those pm_runtime_* calls in the sensor drivers
-as that's a non standard thing.  The other option to fix the
-regression which I have been considering is to remove the whole
-PM runtime dependency and make the driver of the I2C controller's
-parent device [1] handle the clocks, as it's done with clocks of
-some other IP blocks in that whole camera subsystem.  Probably
-it's the lesser of two evils.
+Kind regards
+Uffe
 
-> The intent of the commit is to decouple I2C slave devices'
-> runtime PM state from their parents, so say a gyroscope on an
-> I2C bus does not have to bring up it's host controller to be
-> active, for example it usually has an IRQ line to wake up
-> the driver and that will talk using I2C and the I2C traffic will
-> wake up the I2C master.
-> 
-> When I look at the driver it appears it is not even used for
-> I2C traffic, just to take the clocks up and down and make it
-> possible to manage a clock using runtime PM and interface
-> with the DT logic... so I guess since it's likely and odd one-off
-> and the driver is sufficiently weird anyways, it's fine to merge
-> this patch making it even weirder.
-
-Yeah, it's an odd one-off, there is no other drivers in mainline
-with such a "non standard" split of hardware control responsibility
-between main CPU and the ISP's MCU.
-
-I'd merge the $subject patch as a regression fix for 4.7 and 4.8
-and then think about a little larger patch moving the clock handling
-responsibility the the ISP_I2C controller's parent driver.
-
-> Maybe a sort of mock adapter type should actually be
-> created in the I2C core for these things so it can be handled
-> there but who am I to say.
-
-Not sure if we need it right now, probably if there is more such
-use cases we could think about something like this.
-
-[1] http://lxr.linux.no/#linux+v4.7.3/arch/arm/boot/dts/exynos4x12.dtsi#L148
-
--- 
-Thanks,
-Sylwester
+> ---
+>  drivers/base/power/domain.c | 46 +++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h   | 16 ++++++++++++++++
+>  2 files changed, 62 insertions(+)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index a1f2aff33997..43c2a959a7bf 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1502,6 +1502,52 @@ struct generic_pm_domain *of_genpd_get_from_provider(
+>  EXPORT_SYMBOL_GPL(of_genpd_get_from_provider);
+>
+>  /**
+> + * of_genpd_add_device() - Add a device to an I/O PM domain
+> + * @genpdspec: OF phandle args to use for look-up PM domain
+> + * @dev: Device to be added.
+> + *
+> + * Looks-up an I/O PM domain based upon phandle args provided and adds
+> + * the device to the PM domain. Returns a negative error code on failure.
+> + */
+> +int of_genpd_add_device(struct of_phandle_args *genpdspec, struct device *dev)
+> +{
+> +       struct generic_pm_domain *genpd;
+> +
+> +       genpd = of_genpd_get_from_provider(genpdspec);
+> +       if (IS_ERR(genpd))
+> +               return PTR_ERR(genpd);
+> +
+> +       return pm_genpd_add_device(genpd, dev);
+> +}
+> +EXPORT_SYMBOL_GPL(of_genpd_add_device);
+> +
+> +/**
+> + * of_genpd_add_subdomain - Add a subdomain to an I/O PM domain.
+> + * @parent_spec: OF phandle args to use for parent PM domain look-up
+> + * @subdomain_spec: OF phandle args to use for subdomain look-up
+> + *
+> + * Looks-up a parent PM domain and subdomain based upon phandle args
+> + * provided and adds the subdomain to the parent PM domain. Returns a
+> + * negative error code on failure.
+> + */
+> +int of_genpd_add_subdomain(struct of_phandle_args *parent_spec,
+> +                          struct of_phandle_args *subdomain_spec)
+> +{
+> +       struct generic_pm_domain *parent, *subdomain;
+> +
+> +       parent = of_genpd_get_from_provider(parent_spec);
+> +       if (IS_ERR(parent))
+> +               return PTR_ERR(parent);
+> +
+> +       subdomain = of_genpd_get_from_provider(subdomain_spec);
+> +       if (IS_ERR(subdomain))
+> +               return PTR_ERR(subdomain);
+> +
+> +       return pm_genpd_add_subdomain(parent, subdomain);
+> +}
+> +EXPORT_SYMBOL_GPL(of_genpd_add_subdomain);
+> +
+> +/**
+>   * genpd_dev_pm_detach - Detach a device from its PM domain.
+>   * @dev: Device to detach.
+>   * @power_off: Currently not used
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 31fec858088c..e1964a242389 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -208,6 +208,10 @@ struct generic_pm_domain *__of_genpd_xlate_simple(
+>  struct generic_pm_domain *__of_genpd_xlate_onecell(
+>                                         struct of_phandle_args *genpdspec,
+>                                         void *data);
+> +extern int of_genpd_add_device(struct of_phandle_args *args,
+> +                              struct device *dev);
+> +extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
+> +                                 struct of_phandle_args *new_subdomain);
+>
+>  int genpd_dev_pm_attach(struct device *dev);
+>  #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+> @@ -227,6 +231,18 @@ static inline struct generic_pm_domain *of_genpd_get_from_provider(
+>  #define __of_genpd_xlate_simple                NULL
+>  #define __of_genpd_xlate_onecell       NULL
+>
+> +static inline int of_genpd_add_device(struct of_phandle_args *args,
+> +                                     struct device *dev)
+> +{
+> +       return -ENODEV;
+> +}
+> +
+> +static inline int of_genpd_add_subdomain(struct of_phandle_args *parent,
+> +                                        struct of_phandle_args *new_subdomain)
+> +{
+> +       return -ENODEV;
+> +}
+> +
+>  static inline int genpd_dev_pm_attach(struct device *dev)
+>  {
+>         return -ENODEV;
+> --
+> 2.1.4
+>
