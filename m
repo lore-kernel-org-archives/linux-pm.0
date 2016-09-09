@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Resend][PATCH 1/3] cpufreq / sched: SCHED_CPUFREQ_IOWAIT flag to indicate iowait condition
-Date: Fri, 09 Sep 2016 23:59:33 +0200
-Message-ID: <3396916.fdtXW4Ee0Q@vostro.rjw.lan>
+Subject: [Resend][PATCH 2/3] cpufreq: schedutil: Add iowait boosting
+Date: Sat, 10 Sep 2016 00:00:31 +0200
+Message-ID: <1928525.UHD8eb6HiL@vostro.rjw.lan>
 References: <21371892.ALJNnHKoBY@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,52 +15,144 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Testing indicates that it is possible to improve performace
-significantly without increasing energy consumption too much by
-teaching cpufreq governors to bump up the CPU performance level if
-the in_iowait flag is set for the task in enqueue_task_fair().
+Modify the schedutil cpufreq governor to boost the CPU
+frequency if the SCHED_CPUFREQ_IOWAIT flag is passed to
+it via cpufreq_update_util().
 
-For this purpose, define a new cpufreq_update_util() flag
-SCHED_CPUFREQ_IOWAIT and modify enqueue_task_fair() to pass that
-flag to cpufreq_update_util() in the in_iowait case.  That generally
-requires cpufreq_update_util() to be called directly from there,
-because update_load_avg() may not be invoked in that case.
+If that happens, the frequency is set to the maximum during
+the first update after receiving the SCHED_CPUFREQ_IOWAIT flag
+and then the boost is reduced by half during each following update.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Looks-good-to: Steve Muckle <smuckle@linaro.org>
 ---
- include/linux/sched.h |    1 +
- kernel/sched/fair.c   |    8 ++++++++
- 2 files changed, 9 insertions(+)
+ kernel/sched/cpufreq_schedutil.c |   53 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 49 insertions(+), 4 deletions(-)
 
-Index: linux-pm/kernel/sched/fair.c
+Index: linux-pm/kernel/sched/cpufreq_schedutil.c
 ===================================================================
---- linux-pm.orig/kernel/sched/fair.c
-+++ linux-pm/kernel/sched/fair.c
-@@ -4500,6 +4500,14 @@ enqueue_task_fair(struct rq *rq, struct
- 	struct cfs_rq *cfs_rq;
- 	struct sched_entity *se = &p->se;
+--- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
++++ linux-pm/kernel/sched/cpufreq_schedutil.c
+@@ -47,11 +47,13 @@ struct sugov_cpu {
+ 	struct sugov_policy *sg_policy;
  
-+	/*
-+	 * If in_iowait is set, the code below may not trigger any cpufreq
-+	 * utilization updates, so do it here explicitly with the IOWAIT flag
-+	 * passed.
-+	 */
-+	if (p->in_iowait)
-+		cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_IOWAIT);
+ 	unsigned int cached_raw_freq;
++	unsigned long iowait_boost;
++	unsigned long iowait_boost_max;
++	u64 last_update;
+ 
+ 	/* The fields below are only needed when sharing a policy. */
+ 	unsigned long util;
+ 	unsigned long max;
+-	u64 last_update;
+ 	unsigned int flags;
+ };
+ 
+@@ -153,6 +155,36 @@ static void sugov_get_util(unsigned long
+ 	*max = cfs_max;
+ }
+ 
++static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time,
++				   unsigned int flags)
++{
++	if (flags & SCHED_CPUFREQ_IOWAIT) {
++		sg_cpu->iowait_boost = sg_cpu->iowait_boost_max;
++	} else if (sg_cpu->iowait_boost) {
++		s64 delta_ns = time - sg_cpu->last_update;
 +
- 	for_each_sched_entity(se) {
- 		if (se->on_rq)
- 			break;
-Index: linux-pm/include/linux/sched.h
-===================================================================
---- linux-pm.orig/include/linux/sched.h
-+++ linux-pm/include/linux/sched.h
-@@ -3471,6 +3471,7 @@ static inline unsigned long rlimit_max(u
++		/* Clear iowait_boost if the CPU apprears to have been idle. */
++		if (delta_ns > TICK_NSEC)
++			sg_cpu->iowait_boost = 0;
++	}
++}
++
++static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
++			       unsigned long *max)
++{
++	unsigned long boost_util = sg_cpu->iowait_boost;
++	unsigned long boost_max = sg_cpu->iowait_boost_max;
++
++	if (!boost_util)
++		return;
++
++	if (*util * boost_max < *max * boost_util) {
++		*util = boost_util;
++		*max = boost_max;
++	}
++	sg_cpu->iowait_boost >>= 1;
++}
++
+ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 				unsigned int flags)
+ {
+@@ -162,6 +194,9 @@ static void sugov_update_single(struct u
+ 	unsigned long util, max;
+ 	unsigned int next_f;
  
- #define SCHED_CPUFREQ_RT	(1U << 0)
- #define SCHED_CPUFREQ_DL	(1U << 1)
-+#define SCHED_CPUFREQ_IOWAIT	(1U << 2)
++	sugov_set_iowait_boost(sg_cpu, time, flags);
++	sg_cpu->last_update = time;
++
+ 	if (!sugov_should_update_freq(sg_policy, time))
+ 		return;
  
- #define SCHED_CPUFREQ_RT_DL	(SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
+@@ -169,6 +204,7 @@ static void sugov_update_single(struct u
+ 		next_f = policy->cpuinfo.max_freq;
+ 	} else {
+ 		sugov_get_util(&util, &max);
++		sugov_iowait_boost(sg_cpu, &util, &max);
+ 		next_f = get_next_freq(sg_cpu, util, max);
+ 	}
+ 	sugov_update_commit(sg_policy, time, next_f);
+@@ -187,6 +223,8 @@ static unsigned int sugov_next_freq_shar
+ 	if (flags & SCHED_CPUFREQ_RT_DL)
+ 		return max_f;
  
++	sugov_iowait_boost(sg_cpu, &util, &max);
++
+ 	for_each_cpu(j, policy->cpus) {
+ 		struct sugov_cpu *j_sg_cpu;
+ 		unsigned long j_util, j_max;
+@@ -201,12 +239,13 @@ static unsigned int sugov_next_freq_shar
+ 		 * frequency update and the time elapsed between the last update
+ 		 * of the CPU utilization and the last frequency update is long
+ 		 * enough, don't take the CPU into account as it probably is
+-		 * idle now.
++		 * idle now (and clear iowait_boost for it).
+ 		 */
+ 		delta_ns = last_freq_update_time - j_sg_cpu->last_update;
+-		if (delta_ns > TICK_NSEC)
++		if (delta_ns > TICK_NSEC) {
++			j_sg_cpu->iowait_boost = 0;
+ 			continue;
+-
++		}
+ 		if (j_sg_cpu->flags & SCHED_CPUFREQ_RT_DL)
+ 			return max_f;
+ 
+@@ -216,6 +255,8 @@ static unsigned int sugov_next_freq_shar
+ 			util = j_util;
+ 			max = j_max;
+ 		}
++
++		sugov_iowait_boost(j_sg_cpu, &util, &max);
+ 	}
+ 
+ 	return get_next_freq(sg_cpu, util, max);
+@@ -236,6 +277,8 @@ static void sugov_update_shared(struct u
+ 	sg_cpu->util = util;
+ 	sg_cpu->max = max;
+ 	sg_cpu->flags = flags;
++
++	sugov_set_iowait_boost(sg_cpu, time, flags);
+ 	sg_cpu->last_update = time;
+ 
+ 	if (sugov_should_update_freq(sg_policy, time)) {
+@@ -468,6 +511,8 @@ static int sugov_start(struct cpufreq_po
+ 			sg_cpu->flags = SCHED_CPUFREQ_RT;
+ 			sg_cpu->last_update = 0;
+ 			sg_cpu->cached_raw_freq = 0;
++			sg_cpu->iowait_boost = 0;
++			sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq;
+ 			cpufreq_add_update_util_hook(cpu, &sg_cpu->update_util,
+ 						     sugov_update_shared);
+ 		} else {
