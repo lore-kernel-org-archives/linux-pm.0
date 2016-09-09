@@ -1,49 +1,149 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH] PM / Hibernate: allow hibernation with PAGE_POISONING_ZERO
-Date: Fri, 9 Sep 2016 11:29:49 -0700
-Message-ID: <CAGXu5jLP2NmuN17HraJw2iLLB=5w=mb6-bTOpSECK_ai1ifjEg@mail.gmail.com>
-References: <1473410612-6207-1-git-send-email-anisse@astier.eu>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH V4 3/4] ARM: bcm2835: add thermal node to device-tree of
+ bcm283x
+Date: Fri, 9 Sep 2016 21:02:18 +0200 (CEST)
+Message-ID: <677965855.33392.597ccfbe-225b-403b-8ffa-3f42292996d4.open-xchange@email.1und1.de>
+References: <1473407397-29395-1-git-send-email-kernel@martin.sperl.org>
+ <1473407397-29395-4-git-send-email-kernel@martin.sperl.org>
+ <19cc8fbf-6ceb-995e-850d-9d82bdaff8d0@i2se.com>
+ <8876586A-98F8-4AAF-AD90-86EB12C22FDC@martin.sperl.org>
+ <2117811305.32861.15854341-2f8e-4e20-95f4-e76f81e6fd56.open-xchange@email.1und1.de>
+ <185DA6B2-AFC0-4199-A361-0164381AD317@martin.sperl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f42.google.com ([74.125.82.42]:37595 "EHLO
-        mail-wm0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752196AbcIIS3v (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2016 14:29:51 -0400
-Received: by mail-wm0-f42.google.com with SMTP id w12so47742541wmf.0
-        for <linux-pm@vger.kernel.org>; Fri, 09 Sep 2016 11:29:50 -0700 (PDT)
-In-Reply-To: <1473410612-6207-1-git-send-email-anisse@astier.eu>
+Received: from mout.kundenserver.de ([212.227.126.133]:55613 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752015AbcIITDH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2016 15:03:07 -0400
+In-Reply-To: <185DA6B2-AFC0-4199-A361-0164381AD317@martin.sperl.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anisse Astier <anisse@astier.eu>, Laura Abbott <labbott@fedoraproject.org>
-Cc: Linux-MM <linux-mm@kvack.org>, Linux PM list <linux-pm@vger.kernel.org>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Mel Gorman <mgorman@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>, Andrew Morton <akpm@linux-foundation.org>, Brad Spengler <spender@grsecurity.net>, Dave Hansen <dave.hansen@intel.com>, David Rientjes <rientjes@google.com>, Jianyu Zhan <nasa4836@gmail.com>, Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, Mathias Krause <minipli@googlemail.com>, Michal Hocko <mhocko@suse.com>, PaX Team <pageexec@freemail.hu>, Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <peterz@infradead.org>, Vlastimil Babka <vbabka@suse.c>
+To: Martin Sperl <kernel@martin.sperl.org>
+Cc: Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Pawel Moll <pawel.moll@arm.com>, Russell King <linux@arm.linux.org.uk>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <mark.rutland@arm.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 
-On Fri, Sep 9, 2016 at 1:43 AM, Anisse Astier <anisse@astier.eu> wrote:
-> PAGE_POISONING_ZERO disables zeroing new pages on alloc, they are
-> poisoned (zeroed) as they become available.
-> In the hibernate use case, free pages will appear in the system without
-> being cleared, left there by the loading kernel.
->
-> This patch will make sure free pages are cleared on resume when
-> PAGE_POISONING_ZERO is enabled. We free the pages just after resume
-> because we can't do it later: going through any device resume code might
-> allocate some memory and invalidate the free pages bitmap.
->
-> Thus we don't need to disable hibernation when PAGE_POISONING_ZERO is
-> enabled.
->
-> Signed-off-by: Anisse Astier <anisse@astier.eu>
-> Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> Cc: Laura Abbott <labbott@fedoraproject.org>
-> Cc: Mel Gorman <mgorman@suse.de>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Hi Martin,
 
-Cool!
+> Martin Sperl <kernel@martin.sperl.org> hat am 9. September 2016 um 20:12
+> geschrieben:
+> 
+> 
+> 
+> > On 09.09.2016, at 17:36, Stefan Wahren <stefan.wahren@i2se.com> wrote:
+> > 
+> > 
+> >> Martin Sperl <kernel@martin.sperl.org> hat am 9. September 2016 um 16:58
+> >> geschrieben:
+> >> 
+> >> 
+> >> 
+> >>>> On 09.09.2016, at 16:25, Stefan Wahren <stefan.wahren@i2se.com> wrote:
+> >>>> 
+> >>>> Am 09.09.2016 um 09:49 schrieb kernel@martin.sperl.org:
+> >>>> From: Martin Sperl <kernel@martin.sperl.org>
+> >>>> 
+> >>>> Add the node for the thermal sensor of the bcm2835-soc
+> >>>> to the device tree.
+> >>>> 
+> >>>> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+> >>>> Reviewed-by: Eric Anholt <eric@anholt.net>
+> >>>> ---
+> >>>> arch/arm/boot/dts/bcm283x.dtsi | 6 ++++++
+> >>>> 1 file changed, 6 insertions(+)
+> >>>> 
+> >>>> diff --git a/arch/arm/boot/dts/bcm283x.dtsi
+> >>>> b/arch/arm/boot/dts/bcm283x.dtsi
+> >>>> index b982522..e2e3a46 100644
+> >>>> --- a/arch/arm/boot/dts/bcm283x.dtsi
+> >>>> +++ b/arch/arm/boot/dts/bcm283x.dtsi
+> >>>> @@ -186,6 +186,12 @@
+> >>>>           interrupts = <2 14>; /* pwa1 */
+> >>>>       };
+> >>>> 
+> >>>> +        thermal: thermal@0x7e212000 {
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
+please remove 0x here.
 
--Kees
+> >>>> +            compatible = "brcm,bcm2835-thermal";
+> >>>> +            reg = <0x7e212000 0x8>;
+> >>>> +            clocks = <&clocks BCM2835_CLOCK_TSENS>;
+> >>>> +        };
+> >>>> +
+> >>> 
+> >>> Since the driver handles 3 different SoC (2835, 2836, 2837). This node
+> >>> should be defined in the SoC specific dtsi files, because the BCM2836
+> >>> includes bcm283x.dtsi too.
+> >>> 
+> >>> Be aware the patch for bcm2837 must go to ARM64.
+> >> 
+> >> I can not really follow:
+> >> * the node is defined in the dtsi included by all 3 soc,
+> >>   and it is available on all so it sits where for example
+> >>   spi0 or uart0 is located
+> >> * as for arm64: this describes the registers that are
+> >>   identical for arm and arm64 and the bcm2837.dtsi
+> >>   is also including ../../../../arm/boot/dts/bcm283x.dtsi
+> >> 
+> >> So what is the problem?
+> > 
+> > The thermal driver specifies 3 different compatibles with partially
+> > different
+> > settings.
+> > If this patch is applied, all SoC (bcm2835, bcm2836, bcm2837) would use the
+> > bcm2835 settings.
+> > I can't believe this is intended.
+> > 
+> > Why does the binding contains 3 different compatibles if only one is used?
+> 
+> Now I understand - did not think of that: good catch!
+> 
+> To minimize the patch: what about setting it to 2837 by default (in 283x.dtsi)
+> and only change compatible in 2835.dtsi and 2836.dtsi - that is 3 files
+> changed instead of 4 or 5...
 
--- 
-Kees Cook
-Nexus Security
+Please don't do this in order avoid to confusion. We have compatible strings for
+each SoC and we have dtsi files for each SoC. So i think the right way would be
+the following:
+
+bcm283x.dtsi
+
+thermal: thermal@7e212000 {
+            reg = <0x7e212000 0x8>;
+            clocks = <&clocks BCM2835_CLOCK_TSENS>;
+};
+
+
+bcm2835.dtsi
+
+&thermal {
+            compatible = "brcm,bcm2835-thermal";
+            status = "okay";
+};
+
+bcm2836.dtsi
+
+&thermal {
+            compatible = "brcm,bcm2836-thermal";
+            status = "okay";
+};
+
+bcm2837.dtsi
+
+&thermal {
+            compatible = "brcm,bcm2837-thermal";
+            status = "okay";
+};
+
+> 
+> Or any other ideas how to detect which Soc we run on during runtime?
+> I.e: query the root compatible string in the device-tree?
+> 
+> Just before I create a new patch set to fix that.
+> 
+> Martin
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
