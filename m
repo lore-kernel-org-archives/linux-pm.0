@@ -1,146 +1,85 @@
-From: Anisse Astier <anisse@astier.eu>
-Subject: [PATCH] PM / Hibernate: allow hibernation with PAGE_POISONING_ZERO
-Date: Fri,  9 Sep 2016 10:43:32 +0200
-Message-ID: <1473410612-6207-1-git-send-email-anisse@astier.eu>
-Return-path: <owner-linux-mm@kvack.org>
-Sender: owner-linux-mm@kvack.org
-To: linux-mm@kvack.org, linux-pm@vger.kernel.org
-Cc: Anisse Astier <anisse@astier.eu>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Mel Gorman <mgorman@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>, Andrew Morton <akpm@linux-foundation.org>, Brad Spengler <spender@grsecurity.net>, Dave Hansen <dave.hansen@intel.com>, David Rientjes <rientjes@google.com>, Jianyu Zhan <nasa4836@gmail.com>, Kees Cook <keescook@chromium.org>, Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, Mathias Krause <minipli@googlemail.com>, Michal Hocko <mhocko@suse.com>, PaX Team <pageexec@freemail.hu>, Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <peterz@infradead.org>, Vlastimil Babka <vbabka@suse.cz>, Yves-Alexis Perez <corsac@debian.org>, linux-kernel@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v6 0/8] power: add power sequence library
+Date: Fri, 9 Sep 2016 10:47:17 +0200
+Message-ID: <CAPDyKFp0w0mBGNgu6uk7UevUka_ha6MvaVyOzXjCg3S8kdF7tg@mail.gmail.com>
+References: <1471252398-957-1-git-send-email-peter.chen@nxp.com>
+ <b1848eb2-9298-9089-ee4d-5356998c6c08@linaro.org> <20160824085335.GB27233@shlinux2>
+ <20160829111045.GB3736@b29397-desktop> <3a45793f-18d9-0688-d2ab-ef79432c473c@linaro.org>
+ <20160831095220.GA11938@b29397-desktop> <fd94340b-1c1d-2307-7e57-5b05f1655d2c@linaro.org>
+ <20160902011046.GB11262@shlinux2> <eb032ff2-dac4-5efe-dda0-96404f290aa8@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f49.google.com ([74.125.82.49]:36842 "EHLO
+        mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752224AbcIIIrU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2016 04:47:20 -0400
+Received: by mail-wm0-f49.google.com with SMTP id b187so19059614wme.1
+        for <linux-pm@vger.kernel.org>; Fri, 09 Sep 2016 01:47:20 -0700 (PDT)
+In-Reply-To: <eb032ff2-dac4-5efe-dda0-96404f290aa8@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vaibhav Hiremath <vaibhav.hiremath@linaro.org>, Peter Chen <hzpeterchen@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Peter Chen <peter.chen@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, dwmw3@infradead.org, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Linux USB List <linux-usb@vger.kernel.org>, oscar@naiandei.net, =?UTF-8?Q?Pawe=C5=82_Moll?= <pawel.moll@arm.com>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fabio Estevam <festevam@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 
-PAGE_POISONING_ZERO disables zeroing new pages on alloc, they are
-poisoned (zeroed) as they become available.
-In the hibernate use case, free pages will appear in the system without
-being cleared, left there by the loading kernel.
+[...]
 
-This patch will make sure free pages are cleared on resume when
-PAGE_POISONING_ZERO is enabled. We free the pages just after resume
-because we can't do it later: going through any device resume code might
-allocate some memory and invalidate the free pages bitmap.
+>>>>
+>>>> We had an agreement that keep mmc's pwrseq framework unchanging.
+>>>> Unless Ulf and rob both agree to change.
+>>>
+>>> Why 2 separate approach for same problem ?
+>>> And I see this as possible duplication of code/functionality :)
+>>
+>> How the new kernel compatibles old dts? If we do not need to
+>> consider this problem, the mmc can try to use power sequence library
+>> too in future.
+>
+>
+> I think we should attempt to get both MMC and USB power seq
+> come on one agreement, so that it can be reused.
 
-Thus we don't need to disable hibernation when PAGE_POISONING_ZERO is
-enabled.
+That would be nice. Although, to do that you would have to allow some
+DT bindings to be deprecated in the new generic power seq bindings, as
+otherwise you would break existing DTBs.
 
-Signed-off-by: Anisse Astier <anisse@astier.eu>
-Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-Cc: Laura Abbott <labbott@fedoraproject.org>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
----
- kernel/power/hibernate.c | 21 +++------------------
- kernel/power/power.h     |  2 ++
- kernel/power/snapshot.c  | 22 ++++++++++++++++++++++
- mm/Kconfig.debug         |  2 --
- 4 files changed, 27 insertions(+), 20 deletions(-)
+I guess that is what Rob was objecting to!?
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 33c79b6..b26dbc4 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -306,8 +306,10 @@ static int create_image(int platform_mode)
- 	if (error)
- 		printk(KERN_ERR "PM: Error %d creating hibernation image\n",
- 			error);
--	if (!in_suspend)
-+	if (!in_suspend) {
- 		events_check_enabled = false;
-+		clear_free_pages();
-+	}
- 
- 	platform_leave(platform_mode);
- 
-@@ -1189,22 +1191,6 @@ static int __init nohibernate_setup(char *str)
- 	return 1;
- }
- 
--static int __init page_poison_nohibernate_setup(char *str)
--{
--#ifdef CONFIG_PAGE_POISONING_ZERO
--	/*
--	 * The zeroing option for page poison skips the checks on alloc.
--	 * since hibernation doesn't save free pages there's no way to
--	 * guarantee the pages will still be zeroed.
--	 */
--	if (!strcmp(str, "on")) {
--		pr_info("Disabling hibernation due to page poisoning\n");
--		return nohibernate_setup(str);
--	}
--#endif
--	return 1;
--}
--
- __setup("noresume", noresume_setup);
- __setup("resume_offset=", resume_offset_setup);
- __setup("resume=", resume_setup);
-@@ -1212,4 +1198,3 @@ __setup("hibernate=", hibernate_setup);
- __setup("resumewait", resumewait_setup);
- __setup("resumedelay=", resumedelay_setup);
- __setup("nohibernate", nohibernate_setup);
--__setup("page_poison=", page_poison_nohibernate_setup);
-diff --git a/kernel/power/power.h b/kernel/power/power.h
-index 242d8b8..56d1d0d 100644
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -110,6 +110,8 @@ extern int create_basic_memory_bitmaps(void);
- extern void free_basic_memory_bitmaps(void);
- extern int hibernate_preallocate_memory(void);
- 
-+extern void clear_free_pages(void);
-+
- /**
-  *	Auxiliary structure used for reading the snapshot image data and
-  *	metadata from and writing them to the list of page backup entries
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index b022284..4f0f060 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1132,6 +1132,28 @@ void free_basic_memory_bitmaps(void)
- 	pr_debug("PM: Basic memory bitmaps freed\n");
- }
- 
-+void clear_free_pages(void)
-+{
-+#ifdef CONFIG_PAGE_POISONING_ZERO
-+	struct memory_bitmap *bm = free_pages_map;
-+	unsigned long pfn;
-+
-+	if (WARN_ON(!(free_pages_map)))
-+		return;
-+
-+	memory_bm_position_reset(bm);
-+	pfn = memory_bm_next_pfn(bm);
-+	while (pfn != BM_END_OF_MAP) {
-+		if (pfn_valid(pfn))
-+			clear_highpage(pfn_to_page(pfn));
-+
-+		pfn = memory_bm_next_pfn(bm);
-+	}
-+	memory_bm_position_reset(bm);
-+	pr_info("PM: free pages cleared after restore\n");
-+#endif /* PAGE_POISONING_ZERO */
-+}
-+
- /**
-  * snapshot_additional_pages - Estimate the number of extra pages needed.
-  * @zone: Memory zone to carry out the computation for.
-diff --git a/mm/Kconfig.debug b/mm/Kconfig.debug
-index 22f4cd9..afcc550 100644
---- a/mm/Kconfig.debug
-+++ b/mm/Kconfig.debug
-@@ -76,8 +76,6 @@ config PAGE_POISONING_ZERO
- 	   no longer necessary to write zeros when GFP_ZERO is used on
- 	   allocation.
- 
--	   Enabling page poisoning with this option will disable hibernation
--
- 	   If unsure, say N
- 	bool
- 
--- 
-2.7.4
+>
+> MMC Power Seq :
+>  It is based on platform_device/platform_driver approach,
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+We recently converted MMC to this. It's has a clear benefit as you can
+rely on the behaviour from the driver core and PM core. So, it simply
+avoids duplication of code.
+
+>
+> USB Power seq :
+>  We are trying to propose library approach, with compatible string match.
+>
+> We should try to have one approach.
+>>
+>>
+>>>>>   - Lets also add suspend/resume callback to struct pwrseq
+>>>>>
+>>>> Why suspend/resume can't do at related driver's suspend/resume API?
+>>>
+>>> Nope...
+>>> The pwrseq library would have taken ownership of resources, so
+>>> related driver cannot suspend the device. Again it is architecture
+>>> specific, but we should have provision to handle this.
+>>>
+>>> The system I am dealing with today, does need suspend/resume
+>>> callback. To be precise, suspend is close to off state for some devices
+>>> or
+>>> they could enter standby or different low power state, but to do that,
+>>> we need same resource as used for ON/OFF functionality.
+>>>
+>> Ok, I will have API for suspend/resume. You can implement it at your own
+>> library or generic one.
+
+As stated, using a platform device + driver would simplify this, as
+you wouldn't need an API but only a driver. I guess.
+
+Kind regards
+Uffe
