@@ -1,239 +1,108 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: Re: [PATCH][RFC v5] timekeeping: Ignore the bogus sleep time if
- pm_trace is enabled
-Date: Fri, 9 Sep 2016 13:37:50 +0800
-Message-ID: <20160909053749.GA4564@sharon>
-References: <1472402439-1146-1-git-send-email-yu.c.chen@intel.com>
- <4130556.MNmyvLDyHH@vostro.rjw.lan>
- <alpine.DEB.2.20.1609022119160.5647@nanos>
- <20160904153739.GA5400@sharon>
- <alpine.DEB.2.20.1609050941180.5647@nanos>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v16 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Fri, 9 Sep 2016 14:46:33 +0800
+Message-ID: <CAMz4ku+wWcSPCA1_UYKNqJv4rRDEm5WYUc8AVT6xPJ651-rzmg@mail.gmail.com>
+References: <cover.1470034830.git.baolin.wang@linaro.org> <CAMz4kuLotLs1ASuZaMRXf29khmQUfEQc+jFV8Fxp+fHFn90Z9g@mail.gmail.com>
+ <CAMz4ku+pkRT70NcZEDepfshH7z7+Fm3yo-C2+ccWgJwDJE4C-Q@mail.gmail.com>
+ <8760q9a8m6.fsf@notabene.neil.brown.name> <CAMz4kuJJwKFqU=6JnpUQNPeQ-uy-PyZ5VBaBKofn=8Jv5y0nXA@mail.gmail.com>
+ <878tv297a0.fsf@notabene.neil.brown.name> <CAMz4kuLXyVSXjh1Sn06+wcUr+bVritCW3sN=XyEdap7h=MN7xw@mail.gmail.com>
+ <87y4326l44.fsf@notabene.neil.brown.name>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.20.1609050941180.5647@nanos>
+In-Reply-To: <87y4326l44.fsf@notabene.neil.brown.name>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, x86@kernel.org, John Stultz <john.stultz@linaro.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org, Xunlei Pang <xlpang@redhat.com>, "Zhang, Rui" <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+To: NeilBrown <neilb@suse.com>
+Cc: NeilBrown <nfbrown@novell.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.ke>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On Mon, Sep 05, 2016 at 01:54:20AM -0600, Thomas Gleixner wrote:
-> On Sun, 4 Sep 2016, Chen Yu wrote:
-> > Hi Thomas, Rafael,
-> > On Fri, Sep 02, 2016 at 09:26:51PM +0200, Thomas Gleixner wrote:
-> > > On Wed, 31 Aug 2016, Rafael J. Wysocki wrote:
-> > > > On Monday, August 29, 2016 12:40:39 AM Chen Yu wrote:
-> > > > > +
-> > > > > +	/*
-> > > > > +	 * Make rtc-based persistent clock unusable
-> > > > > +	 * if pm_trace is enabled, only take effect
-> > > > > +	 * for timekeeping_suspend/resume.
-> > > > > +	 */
-> > > > > +	if (pm_trace_is_enabled() &&
-> > > > > +	    x86_platform.get_wallclock == mach_get_cmos_time) {
-> > > > > +		ts->tv_sec = 0;
-> > > > > +		ts->tv_nsec = 0;
-> > > > > +	}
-> > > > 
-> > > > I'm not sure about this.  Looks hackish.
-> > > 
-> > > Indeed. Can't you just keep track that pm_trace fiddled with the cmos clock
-> > > and then discard the value either in the core or in mach_get_cmos_time()
-> > The previous version is more straightforward, since
-> > it ignored the bogus rtc in core. Would you please take
-> > a glance at it too, thanks:
-> > https://patchwork.kernel.org/patch/9287347/
-> 
-> This is the same hackery just different:
-> 
-> > +bool persistent_clock_is_usable(void)
-> > +{
-> > +	/* Unusable if pm_trace is enabled. */
-> > +	return !((x86_platform.get_wallclock == mach_get_cmos_time) &&
-> > +	        pm_trace_is_enabled());
-> > +}
-> 
-> I really have no idea why this is burried in x86 land. The pm_trace hackery
-> issues mc146818_set_time() to fiddle with the RTC. So any implementation of
-> this is affected.
-OK, I've changed this patch according to this suggestion.
+On 9 September 2016 at 07:13, NeilBrown <neilb@suse.com> wrote:
+> On Thu, Sep 08 2016, Baolin Wang wrote:
+>
+>> On 8 September 2016 at 15:31, NeilBrown <neilb@suse.com> wrote:
+>>> On Thu, Sep 08 2016, Baolin Wang wrote:
+>>>>
+>>>> Now the usb charger will not get charger type from 'extcon' subsystem,
+>>>> we get the charger type from 'power_supply' and calllback
+>>>> 'get_charger_type' for users.
+>>>
+>>> I understand this.  I think it is wrong because, in general, the
+>>> power_supply doesn't know what the charger_type is (it might know it is
+>>> USB, but most don't know which sort of USB).  The PHY knows that, not
+>>> the power_supply.
+>>
+>> I don't think so. Now many platforms will detect the charger type by
+>> PMIC hardware, and we can get the charger type by PMIC hardware
+>> register. Then power supply driver can access the PMIC register to get
+>> the charger type. Here USB charger just considers if the accessing the
+>> PMIC register to get charger type is implemented in power supply, it
+>> is optional depending on what your platform designed.
+>>
+>
+> In practice, the USB PHY and the Power manager will often be in the same
+> IC (the PMIC) so the driver for one could look at the registers for the
+> other.
+> But there is no guarantee that the hardware works like that.  It is
+> best to create a generally design.
 
-Previously I tried to deal with the case that x86 uses
-RTC-CMOS as its presistent clock, not kvm_clock, nor
-other get_wallclock, and this seems only be related to x86.
-So this piece of code looks hackish.
-> 
-> So that very piece of pmtrace code should keep track of the wreckage it did
-> to the RTC and provide the fact to the core timekeeping code which can then
-> skip the update.
-> 
-OK. I've moved most of the logic into the pm_trace component,
-Once the mc146818_set_time has modified the RTC by pm_trace,
-related flags will be set which indicates the unusable of RTC.
-And timekeeping system is able to query these flags to decide whether
-it should inject the sleep time. (We tried to make this patch as
-simple as possible, but it looks like we have to deal with persistent
-clock for x86, which makes this patch a little more complicated).
-Here's the trial version of it, any suggestion would be appreciated:
+Yes, we hope to create one generally design, so we need to consider
+this situation: the power supply getting the charger type by accessing
+PMIC registers. The registers which save the charger type are not
+always belong to the USB PHY, may be just some registers on PMIC.
+
+Now in mainline kernel, there are 3 methods can get the charger type
+which need to integrate with USB charger framework:
+1. power supply
+2. extcon (need to add as you suggested)
+3. others (by 'get_charger_type' callback of USB charger)
+
+> Conceptually, the PHY is separate from the power manager and a solution
+> which recognises that will be more universal.
+>
+> If the power manager can always just look at that phy registers to know
+> what sort of charger is connected, why does you framework need to work
+> with charger types at all?
+>
+>>>>
+>>>> Yes, but you must think about some special cases on some platforms.
+>>>> Users may need to change the current in some situations, thus we
+>>>> should export one API for users to change the current. (I think you
+>>>> misunderstand the current limit here, that is the current for power
+>>>> driver  to draw).
+>>>
+>>> Can you be specific about these "special cases" please?
+>>> I cannot think of any.
+>>
+>> Suppose the USB configuration requests 100mA, then we should set the
+>> USB charger current is 100mA by __usb_charger_set_cur_limit_by_type()
+>> funtion, then notify this to power driver.
+>
+> ahh.... I had missed something there.  It's a while since I looked
+> closely at these patches.
+>
+> Only.... this usage of usb_charger_set_cur_limit_by_type() is really
+> nonsensical.
+>
+> If the cable is detected as being DCP or CDP or ACA (or ACA/DOCK) then
+> the number negotiated with the USB configuration is not relevant and
+> should be ignored.  There is a guaranteed minimum which is at least the
+> maximum that *can* be negotiated.
+
+Yes. If it is not relevant, we will no't set the current from USB
+configuration. Just when your charger type is SDP and the USB
+enumeration is done, we can get the USB configuration from host to set
+current.
+
+>
+> It is only when the cable appears to be a SDP (standard downstream
+> port) that the usb-config negotiation is relevant.  That is because the
+> minimum guaranteed for SDP is only 100mA.
+>
+> NeilBrown
 
 
 
-Index: linux/drivers/base/power/trace.c
-===================================================================
---- linux.orig/drivers/base/power/trace.c
-+++ linux/drivers/base/power/trace.c
-@@ -75,6 +75,27 @@
- #define DEVSEED (7919)
- 
- static unsigned int dev_hash_value;
-+unsigned int timekeeping_tainted;
-+
-+/* Is the persistent clock effected by pm_trace? */
-+int __weak arch_pm_trace_taint_pclock(void)
-+{
-+	return 0;
-+}
-+
-+void pm_trace_untaint_timekeeping(void)
-+{
-+	timekeeping_tainted = 0;
-+}
-+
-+void pm_trace_taint_timekeeping(void)
-+{
-+	if (pm_trace_is_enabled()) {
-+		timekeeping_tainted |= TIMEKEEPING_RTC_TAINTED;
-+		if (arch_pm_trace_taint_pclock())
-+			timekeeping_tainted |= TIMEKEEPING_PERSISTENT_CLOCK_TAINTED;
-+	}
-+}
- 
- static int set_magic_time(unsigned int user, unsigned int file, unsigned int device)
- {
-@@ -104,6 +125,7 @@ static int set_magic_time(unsigned int u
- 	time.tm_min = (n % 20) * 3;
- 	n /= 20;
- 	mc146818_set_time(&time);
-+	pm_trace_taint_timekeeping();
- 	return n ? -1 : 0;
- }
- 
-Index: linux/kernel/power/main.c
-===================================================================
---- linux.orig/kernel/power/main.c
-+++ linux/kernel/power/main.c
-@@ -548,6 +548,7 @@ pm_trace_store(struct kobject *kobj, str
- 	if (sscanf(buf, "%d", &val) == 1) {
- 		pm_trace_enabled = !!val;
- 		if (pm_trace_enabled) {
-+			pm_trace_untaint_timekeeping();
- 			pr_warn("PM: Enabling pm_trace changes system date and time during resume.\n"
- 				"PM: Correct system time has to be restored manually after resume.\n");
- 		}
-Index: linux/include/linux/pm-trace.h
-===================================================================
---- linux.orig/include/linux/pm-trace.h
-+++ linux/include/linux/pm-trace.h
-@@ -1,10 +1,14 @@
- #ifndef PM_TRACE_H
- #define PM_TRACE_H
- 
-+#define TIMEKEEPING_RTC_TAINTED 0x1
-+#define TIMEKEEPING_PERSISTENT_CLOCK_TAINTED 0x2
-+
- #ifdef CONFIG_PM_TRACE
- #include <asm/pm-trace.h>
- #include <linux/types.h>
- 
-+extern unsigned int timekeeping_tainted;
- extern int pm_trace_enabled;
- 
- static inline int pm_trace_is_enabled(void)
-@@ -12,10 +16,23 @@ static inline int pm_trace_is_enabled(vo
-        return pm_trace_enabled;
- }
- 
-+static inline int pm_trace_rtc_is_tainted(void)
-+{
-+	return (timekeeping_tainted & TIMEKEEPING_RTC_TAINTED) ?
-+		1 : 0;
-+}
-+
-+static inline int pm_trace_pclock_is_tainted(void)
-+{
-+	return (timekeeping_tainted & TIMEKEEPING_PERSISTENT_CLOCK_TAINTED) ?
-+		1 : 0;
-+}
-+
- struct device;
- extern void set_trace_device(struct device *);
- extern void generate_pm_trace(const void *tracedata, unsigned int user);
- extern int show_trace_dev_match(char *buf, size_t size);
-+extern void pm_trace_untaint_timekeeping(void);
- 
- #define TRACE_DEVICE(dev) do { \
- 	if (pm_trace_enabled) \
-@@ -25,6 +42,8 @@ extern int show_trace_dev_match(char *bu
- #else
- 
- static inline int pm_trace_is_enabled(void) { return 0; }
-+static inline int pm_trace_rtc_is_tainted(void) { return 0; }
-+static inline int pm_trace_pclock_is_tainted(void) { return 0; }
- 
- #define TRACE_DEVICE(dev) do { } while (0)
- #define TRACE_RESUME(dev) do { } while (0)
-Index: linux/arch/x86/kernel/rtc.c
-===================================================================
---- linux.orig/arch/x86/kernel/rtc.c
-+++ linux/arch/x86/kernel/rtc.c
-@@ -8,6 +8,7 @@
- #include <linux/export.h>
- #include <linux/pnp.h>
- #include <linux/of.h>
-+#include <linux/pm-trace.h>
- 
- #include <asm/vsyscall.h>
- #include <asm/x86_init.h>
-@@ -146,6 +147,10 @@ void read_persistent_clock(struct timesp
- 	x86_platform.get_wallclock(ts);
- }
- 
-+int arch_pm_trace_taint_pclock(void)
-+{
-+	return (x86_platform.get_wallclock == mach_get_cmos_time);
-+}
- 
- static struct resource rtc_resources[] = {
- 	[0] = {
-Index: linux/kernel/time/timekeeping.c
-===================================================================
---- linux.orig/kernel/time/timekeeping.c
-+++ linux/kernel/time/timekeeping.c
-@@ -23,6 +23,7 @@
- #include <linux/stop_machine.h>
- #include <linux/pvclock_gtod.h>
- #include <linux/compiler.h>
-+#include <linux/pm-trace.h>
- 
- #include "tick-internal.h"
- #include "ntp_internal.h"
-@@ -1554,7 +1555,7 @@ static void __timekeeping_inject_sleepti
-  */
- bool timekeeping_rtc_skipresume(void)
- {
--	return sleeptime_injected;
-+	return sleeptime_injected || pm_trace_rtc_is_tainted();
- }
- 
- /**
-@@ -1664,7 +1665,7 @@ void timekeeping_resume(void)
- 		sleeptime_injected = true;
- 	} else if (timespec64_compare(&ts_new, &timekeeping_suspend_time) > 0) {
- 		ts_delta = timespec64_sub(ts_new, timekeeping_suspend_time);
--		sleeptime_injected = true;
-+		sleeptime_injected = pm_trace_pclock_is_tainted() ? false : true;
- 	}
- 
- 	if (sleeptime_injected)
+-- 
+Baolin.wang
+Best Regards
