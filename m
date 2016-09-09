@@ -1,108 +1,80 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v16 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Fri, 9 Sep 2016 14:46:33 +0800
-Message-ID: <CAMz4ku+wWcSPCA1_UYKNqJv4rRDEm5WYUc8AVT6xPJ651-rzmg@mail.gmail.com>
-References: <cover.1470034830.git.baolin.wang@linaro.org> <CAMz4kuLotLs1ASuZaMRXf29khmQUfEQc+jFV8Fxp+fHFn90Z9g@mail.gmail.com>
- <CAMz4ku+pkRT70NcZEDepfshH7z7+Fm3yo-C2+ccWgJwDJE4C-Q@mail.gmail.com>
- <8760q9a8m6.fsf@notabene.neil.brown.name> <CAMz4kuJJwKFqU=6JnpUQNPeQ-uy-PyZ5VBaBKofn=8Jv5y0nXA@mail.gmail.com>
- <878tv297a0.fsf@notabene.neil.brown.name> <CAMz4kuLXyVSXjh1Sn06+wcUr+bVritCW3sN=XyEdap7h=MN7xw@mail.gmail.com>
- <87y4326l44.fsf@notabene.neil.brown.name>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH][v8] PM / hibernate: Verify the consistent of e820 memory
+ map by md5 value
+Date: Fri, 9 Sep 2016 15:36:42 +0800
+Message-ID: <20160909073642.GA1558@sharon>
+References: <1472402140-959-1-git-send-email-yu.c.chen@intel.com>
+ <20160829134123.GA28806@nazgul.tnic>
+ <20160830083505.GG10967@linux-rxt1.site>
+ <6348002.9YHCcajBsl@vostro.rjw.lan>
+ <20160908211552.GA12651@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87y4326l44.fsf@notabene.neil.brown.name>
-Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <neilb@suse.com>
-Cc: NeilBrown <nfbrown@novell.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.ke>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:34201 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751657AbcIIH21 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 9 Sep 2016 03:28:27 -0400
+Content-Disposition: inline
+In-Reply-To: <20160908211552.GA12651@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, joeyli <jlee@suse.com>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Lee@nazgul.tnic
 
-On 9 September 2016 at 07:13, NeilBrown <neilb@suse.com> wrote:
-> On Thu, Sep 08 2016, Baolin Wang wrote:
+Hi Pavel,
+On Thu, Sep 08, 2016 at 11:15:52PM +0200, Pavel Machek wrote:
+> On Tue 2016-08-30 13:54:44, Rafael J. Wysocki wrote:
+> > On Tuesday, August 30, 2016 04:35:05 PM joeyli wrote:
+> > > On Mon, Aug 29, 2016 at 03:41:23PM +0200, Borislav Petkov wrote:
+> > > > On Mon, Aug 29, 2016 at 09:15:00AM +0200, Pavel Machek wrote:
+> > > > > Sounds about as easy as hot unplugging arbitrary memory address. IOW
+> > > > > "not easy".
+> > > > 
+> > > > Regardless, forcibly panicking the system more is still the wrong
+> > > > approach IMO.
+> > > > 
+> > > > Instead, I'd try to issue a big fat warning that BIOS corrupts E820 and
+> > > > that the user should disable hibernation on that box and never ever
+> > > > enable it again.
+> > > > 
+> > > > After that, the kernel should *disable* hibernation for the current boot
+> > > > so any further hibernation runs don't even happen. Maybe even taint
+> > > > itself.
+> > > >
+> > > 
+> > > I support this idea to disable hibernation when kernel detected e820 layout
+> > > was changed by BIOS. If system resume luckily then kernel should warn to user
+> > > and refuse to hibernate again. User must to know that's better to reboot
+> > > system when he saw the warning message after lucky resume.
+> > > 
+> > > Not just BIOS doesn't fix e820 layout. There have some machines doesn't provide
+> > > _S4_ function, so the hibernation fallbacks to "shutdown" mode because "platform"
+> > > mode unavailable. In this situation, user is just lucky to run the hibernation.
+> > > Kernel should warn to user and disable hibernation when detected e820 layout
+> > > changed.
+> > 
+> > Well, please see my reply to Boris.
+> > 
+> > Pavel is right that running after detecting an e820 mismatch is generally risky,
+> > so why don't we shut down the system (but try to do that cleanly instead of
+> > causing it to panic right away) on an e820 mismatch?
+> 
+> I don't think that's good idea.
+> 
+> Anything involving userspace is risky at that point, and clean
+> shutdown means a _lot_ of userspace.
+> 
+> We know the filesystems are reasonably clean as we sync-ed
+> them; I believe right solution is to panic -- on-disk state is pretty
+> good and we don't want to do anything risky.
 >
->> On 8 September 2016 at 15:31, NeilBrown <neilb@suse.com> wrote:
->>> On Thu, Sep 08 2016, Baolin Wang wrote:
->>>>
->>>> Now the usb charger will not get charger type from 'extcon' subsystem,
->>>> we get the charger type from 'power_supply' and calllback
->>>> 'get_charger_type' for users.
->>>
->>> I understand this.  I think it is wrong because, in general, the
->>> power_supply doesn't know what the charger_type is (it might know it is
->>> USB, but most don't know which sort of USB).  The PHY knows that, not
->>> the power_supply.
->>
->> I don't think so. Now many platforms will detect the charger type by
->> PMIC hardware, and we can get the charger type by PMIC hardware
->> register. Then power supply driver can access the PMIC register to get
->> the charger type. Here USB charger just considers if the accessing the
->> PMIC register to get charger type is implemented in power supply, it
->> is optional depending on what your platform designed.
->>
->
-> In practice, the USB PHY and the Power manager will often be in the same
-> IC (the PMIC) so the driver for one could look at the registers for the
-> other.
-> But there is no guarantee that the hardware works like that.  It is
-> best to create a generally design.
+OK, we tried a milder solution that doesn't shutdown the system in the
+latest version, which terminates the restore process if a mismatch is found
+(hope people would be happy with that one :)
+Here's the patch link per yours and Rafael's last comments on the old patch,
+and I'm still doing some small adjustment and will send a newer one but it
+is approximately similar to the following link:
 
-Yes, we hope to create one generally design, so we need to consider
-this situation: the power supply getting the charger type by accessing
-PMIC registers. The registers which save the charger type are not
-always belong to the USB PHY, may be just some registers on PMIC.
-
-Now in mainline kernel, there are 3 methods can get the charger type
-which need to integrate with USB charger framework:
-1. power supply
-2. extcon (need to add as you suggested)
-3. others (by 'get_charger_type' callback of USB charger)
-
-> Conceptually, the PHY is separate from the power manager and a solution
-> which recognises that will be more universal.
->
-> If the power manager can always just look at that phy registers to know
-> what sort of charger is connected, why does you framework need to work
-> with charger types at all?
->
->>>>
->>>> Yes, but you must think about some special cases on some platforms.
->>>> Users may need to change the current in some situations, thus we
->>>> should export one API for users to change the current. (I think you
->>>> misunderstand the current limit here, that is the current for power
->>>> driver  to draw).
->>>
->>> Can you be specific about these "special cases" please?
->>> I cannot think of any.
->>
->> Suppose the USB configuration requests 100mA, then we should set the
->> USB charger current is 100mA by __usb_charger_set_cur_limit_by_type()
->> funtion, then notify this to power driver.
->
-> ahh.... I had missed something there.  It's a while since I looked
-> closely at these patches.
->
-> Only.... this usage of usb_charger_set_cur_limit_by_type() is really
-> nonsensical.
->
-> If the cable is detected as being DCP or CDP or ACA (or ACA/DOCK) then
-> the number negotiated with the USB configuration is not relevant and
-> should be ignored.  There is a guaranteed minimum which is at least the
-> maximum that *can* be negotiated.
-
-Yes. If it is not relevant, we will no't set the current from USB
-configuration. Just when your charger type is SDP and the USB
-enumeration is done, we can get the USB configuration from host to set
-current.
-
->
-> It is only when the cable appears to be a SDP (standard downstream
-> port) that the usb-config negotiation is relevant.  That is because the
-> minimum guaranteed for SDP is only 100mA.
->
-> NeilBrown
-
-
-
--- 
-Baolin.wang
-Best Regards
+https://patchwork.kernel.org/patch/9310497/
+ 
