@@ -1,56 +1,55 @@
-From: Laura Abbott <labbott@redhat.com>
-Subject: [PATCH] cpupower: Correct return type of cpu_power_is_cpu_online in cpufreq
-Date: Fri,  9 Sep 2016 10:25:19 -0700
-Message-ID: <1473441919-7809-1-git-send-email-labbott@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f173.google.com ([209.85.161.173]:35457 "EHLO
-        mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752707AbcIIRZ2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2016 13:25:28 -0400
-Received: by mail-yw0-f173.google.com with SMTP id j1so51008807ywb.2
-        for <linux-pm@vger.kernel.org>; Fri, 09 Sep 2016 10:25:27 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+Subject: Re: [PATCH V4 2/4] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Fri, 09 Sep 2016 10:57:24 -0700
+Message-ID: <87a8fharcr.fsf@eliezer.anholt.net>
+References: <1473407397-29395-1-git-send-email-kernel@martin.sperl.org> <1473407397-29395-3-git-send-email-kernel@martin.sperl.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha512; protocol="application/pgp-signature"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1473407397-29395-3-git-send-email-kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.com>
-Cc: Laura Abbott <labbott@redhat.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-When converting to a shared library in ac5a181d065d ("cpupower: Add
-cpuidle parts into library"), cpu_freq_cpu_exists was converted to
-cpupower_is_cpu_online. cpu_req_cpu_exists returned 0 on success and
--ENOSYS on failure whereas cpupower_is_cpu_online returns 1 on success.
-Check for the correct return value in cpufreq-set.
+--=-=-=
+Content-Type: text/plain
 
-See https://bugzilla.redhat.com/show_bug.cgi?id=1374212
+kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org writes:
 
-Fixes: ac5a181d065d ("cpupower: Add cpuidle parts into library")
-Reported-by: Julian Seward <jseward@acm.org>
-Signed-off-by: Laura Abbott <labbott@redhat.com>
----
- tools/power/cpupower/utils/cpufreq-set.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> From: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+>
+> Add basic thermal driver for bcm2835 SOC.
+>
+> This driver currently relies on the firmware setting up the
+> tsense HW block and does not set it up itself.
+>
+> Signed-off-by: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
 
-diff --git a/tools/power/cpupower/utils/cpufreq-set.c b/tools/power/cpupower/utils/cpufreq-set.c
-index b4bf769..8971d71 100644
---- a/tools/power/cpupower/utils/cpufreq-set.c
-+++ b/tools/power/cpupower/utils/cpufreq-set.c
-@@ -296,7 +296,7 @@ int cmd_freq_set(int argc, char **argv)
- 			struct cpufreq_affected_cpus *cpus;
- 
- 			if (!bitmask_isbitset(cpus_chosen, cpu) ||
--			    cpupower_is_cpu_online(cpu))
-+			    cpupower_is_cpu_online(cpu) != 1)
- 				continue;
- 
- 			cpus = cpufreq_get_related_cpus(cpu);
-@@ -316,7 +316,7 @@ int cmd_freq_set(int argc, char **argv)
- 	     cpu <= bitmask_last(cpus_chosen); cpu++) {
- 
- 		if (!bitmask_isbitset(cpus_chosen, cpu) ||
--		    cpupower_is_cpu_online(cpu))
-+		    cpupower_is_cpu_online(cpu) != 1)
- 			continue;
- 
- 		if (cpupower_is_cpu_online(cpu) != 1)
--- 
-2.10.0
+Acked-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
 
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCgAGBQJX0vgEAAoJELXWKTbR/J7olGwP/A1wSMEPup0hv26uG+JKQclD
+G+VeC/o1DACeFo6sUwzF7Pv7e1krEUlw9i7XFfPaBcgUqibCKtmXBNR3JMeCKDTa
+Eg6ycCChyAINGr23r1LeGMsy9waD0FDtlByfc1lP+/LrEUi1clY7v/bRVTnWYsQz
+xHUR+83cD/xfc4LntAqmQsMUVSDu+BYChkD9mqVAomKUZChNAmFFNUP1b+5a7xel
+59Q+lgLy668BO5gYnZqp1TT9bdjok0mLRokbTCUEzw07ozznzs8jqYPoELpnC1vp
+Mxwjdl4m4lDZVGiPk3yuHtfJaflcvtCGQzXsheWqvZk/dcoUaoJPchRG+qWgffeE
+HbPhtx+mXFm/SR2l4m0HFpYMx/lm2hI9GZ/Gs2X+BBXzyeqUxO1efOm37UJn1Nrt
+LiwOMfK/dnWvBH2n2NUzXHRj42hw5VeV95/oaUS5RlWq/D4c6thiERR1z9/552cW
+kM1+5yM/ad1/SHdJWC8OKxXlnjVda0TCu7TivX3a3KqkbH8T/fLXqz36LedqetK4
+6h4oOWgVxoBJOCUU2rmCiSsi0S9VqBO5ZcaJSzRItK7Bsq6/AIEajbJXcNA57qk6
+L1xB5ly2wKepF/1Jgw2pB3q9ykdihe13BjJ9gFqLXPaOoryXBQEmK00tlB5LDl8z
+mwazFJfa2eHiUi6CorWT
+=C2eo
+-----END PGP SIGNATURE-----
+--=-=-=--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
