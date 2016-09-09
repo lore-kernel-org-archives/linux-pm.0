@@ -1,94 +1,55 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: create link to policy only for registered CPUs
-Date: Fri, 9 Sep 2016 17:04:59 +0530
-Message-ID: <20160909113459.GG18547@vireshk-i7>
-References: <20160819110032.GM1041@n2100.armlinux.org.uk>
- <a0469c333e08b3953bfe9e8356c6919c26578349.1473414746.git.viresh.kumar@linaro.org>
- <20160909111620.GQ1041@n2100.armlinux.org.uk>
- <20160909112204.GE18547@vireshk-i7>
- <20160909112841.GS1041@n2100.armlinux.org.uk>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFC/RFT][PATCH v2 2/7] driver core: Functional dependencies
+ tracking support
+Date: Fri, 9 Sep 2016 13:06:21 +0100
+Message-ID: <20160909120621.GP27946@sirena.org.uk>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <2169291.li0uc2Ryoq@vostro.rjw.lan>
+ <CAPDyKFpTeB8MLXihpTnyk9RerVC_PNp8ogXG6aATLT2xLkp9mA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="vkogqOf2sHV7VnPd"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="6sj9mcRtP+pTWLOo"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:35340 "EHLO
-        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751120AbcIILfF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2016 07:35:05 -0400
-Received: by mail-pf0-f178.google.com with SMTP id w87so28791300pfk.2
-        for <linux-pm@vger.kernel.org>; Fri, 09 Sep 2016 04:35:05 -0700 (PDT)
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:55444 "EHLO
+        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753688AbcIIMGi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2016 08:06:38 -0400
 Content-Disposition: inline
-In-Reply-To: <20160909112841.GS1041@n2100.armlinux.org.uk>
+In-Reply-To: <CAPDyKFpTeB8MLXihpTnyk9RerVC_PNp8ogXG6aATLT2xLkp9mA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
 
---vkogqOf2sHV7VnPd
+--6sj9mcRtP+pTWLOo
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On 09-09-16, 12:28, Russell King - ARM Linux wrote:
-> On Fri, Sep 09, 2016 at 04:52:04PM +0530, Viresh Kumar wrote:
-> > Thanks for testing it.. You need another patch from Rafael, which
-> > should be in linux-next by now..
-> > 
-> > commit 3689ad7ed6a8 ("cpufreq: Drop unnecessary check from
-> > cpufreq_policy_alloc()")
-> > 
-> > Both patches combined will fix the problem you were getting.
-> 
-> Please send me this other patch.  Seems absurd to fix a reported problem
-> without copying appropriate patches to the reporter...
+On Fri, Sep 09, 2016 at 10:25:30AM +0200, Ulf Hansson wrote:
 
-It got merged separately, and yes you should have been cc'd for that
-as well.
+> BTW, as I am mostly working on DT based platforms, I guess we would
+> later on need to discuss with the DT maintainers how to describe
+> device links.
 
-Please find it attached now..
+I think the expectation had been that since DT tends to get right down
+to the hardware details we already have the information in there in
+order to use things so the problem becomes figuring out how/when we
+parse the existing bindings to tell the driver core about links.
 
--- 
-viresh
+--6sj9mcRtP+pTWLOo
+Content-Type: application/pgp-signature; name="signature.asc"
 
---vkogqOf2sHV7VnPd
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="0001-cpufreq-Drop-unnecessary-check-from-cpufreq_policy_a.patch"
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
->From 3689ad7ed6a836c4eec5e7bdd17a11a79591bef9 Mon Sep 17 00:00:00 2001
-Message-Id: <3689ad7ed6a836c4eec5e7bdd17a11a79591bef9.1473420826.git.viresh.kumar@linaro.org>
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Date: Wed, 31 Aug 2016 03:11:31 +0200
-Subject: [PATCH] cpufreq: Drop unnecessary check from cpufreq_policy_alloc()
+iQEcBAEBCAAGBQJX0qW8AAoJECTWi3JdVIfQCB4H/205aTmMSFyYcqbYn7zryO3f
+VQ2l31JF/nP0UDxu36Uc5fCaePbR0117R4KcGCKjFXSAnA9JnjeEFf9huJGgxGnr
+aVMzF7bFHBmKNu6eeaAyHFxF4HowypRhUx2zv3G1F1BK6ajbHSN/V6xdsUGN/kRB
+icUSxibweTv/K2gyxcm5B8L5gi7QAaRZngTze3a4KXdNg9rVSaMoRCe2S7Gh6/it
+WssElDLioJjmdounj9B7pvaJC/eL3XYLMN/skSpfvVFGuVOqN7rT1kUqkgUbk+OB
+gxg1117E1D2v2YLUF8EFvdsGzpjqVk2/8HM13BMu2+CtsSEg3s/KCQD/SBs37nk=
+=vm0d
+-----END PGP SIGNATURE-----
 
-Since cpufreq_policy_alloc() doesn't use its dev variable for
-anything useful, drop that variable from there along with the
-NULL check against it.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 4 ----
- 1 file changed, 4 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 3dd4884c6f9e..13fb589b6d2c 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1073,13 +1073,9 @@ static void handle_update(struct work_struct *work)
- 
- static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- {
--	struct device *dev = get_cpu_device(cpu);
- 	struct cpufreq_policy *policy;
- 	int ret;
- 
--	if (WARN_ON(!dev))
--		return NULL;
--
- 	policy = kzalloc(sizeof(*policy), GFP_KERNEL);
- 	if (!policy)
- 		return NULL;
--- 
-2.7.1.410.g6faf27b
-
-
---vkogqOf2sHV7VnPd--
+--6sj9mcRtP+pTWLOo--
