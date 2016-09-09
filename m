@@ -1,88 +1,79 @@
-From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Subject: Re: [PATCH V4 3/4] ARM: bcm2835: add thermal node to device-tree of
- bcm283x
-Date: Fri, 9 Sep 2016 17:36:18 +0200 (CEST)
-Message-ID: <2117811305.32861.15854341-2f8e-4e20-95f4-e76f81e6fd56.open-xchange@email.1und1.de>
-References: <1473407397-29395-1-git-send-email-kernel@martin.sperl.org>
- <1473407397-29395-4-git-send-email-kernel@martin.sperl.org>
- <19cc8fbf-6ceb-995e-850d-9d82bdaff8d0@i2se.com>
- <8876586A-98F8-4AAF-AD90-86EB12C22FDC@martin.sperl.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: LPC 2016: Thermal MC
+Date: Fri, 09 Sep 2016 09:19:41 -0700
+Message-ID: <1473437981.154359.92.camel@linux.intel.com>
+References: <CAC-25o9h+dTTZVfQeOPyk7zzJokbQtPYyF=RZpNj1bLSGjkYzQ@mail.gmail.com>
+         <1473188387.5025.105.camel@linux.intel.com> <20160908083312.GB3112@e104805>
+         <1473346209.1595.2.camel@linux.intel.com>
+         <87bmzxh1yn.fsf@e105922-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <8876586A-98F8-4AAF-AD90-86EB12C22FDC-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
-Cc: Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:26079 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752707AbcIIQTm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 9 Sep 2016 12:19:42 -0400
+In-Reply-To: <87bmzxh1yn.fsf@e105922-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: Javi Merino <javi.merino@arm.com>, "edubezval@gmail.com" <edubezval@gmail.com>, Lina Iyer <lina.iyer@linaro.org>, Kapileshwar Singh <Kapileshwar.Singh@arm.com>, Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 
-
-> Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org> hat am 9. September 2016 um 16:58
-> geschrieben:
+Hi Punit,
+On Fri, 2016-09-09 at 10:11 +0100, Punit Agrawal wrote:
+> Hi Srinivas,
 > 
+> Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> writes:
 > 
-> 
-> > On 09.09.2016, at 16:25, Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org> wrote:
 > > 
-> >> Am 09.09.2016 um 09:49 schrieb kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org:
-> >> From: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
-> >> 
-> >> Add the node for the thermal sensor of the bcm2835-soc
-> >> to the device tree.
-> >> 
-> >> Signed-off-by: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
-> >> Reviewed-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
-> >> ---
-> >> arch/arm/boot/dts/bcm283x.dtsi | 6 ++++++
-> >> 1 file changed, 6 insertions(+)
-> >> 
-> >> diff --git a/arch/arm/boot/dts/bcm283x.dtsi
-> >> b/arch/arm/boot/dts/bcm283x.dtsi
-> >> index b982522..e2e3a46 100644
-> >> --- a/arch/arm/boot/dts/bcm283x.dtsi
-> >> +++ b/arch/arm/boot/dts/bcm283x.dtsi
-> >> @@ -186,6 +186,12 @@
-> >>            interrupts = <2 14>; /* pwa1 */
-> >>        };
-> >> 
-> >> +        thermal: thermal@0x7e212000 {
-> >> +            compatible = "brcm,bcm2835-thermal";
-> >> +            reg = <0x7e212000 0x8>;
-> >> +            clocks = <&clocks BCM2835_CLOCK_TSENS>;
-> >> +        };
-> >> +
+> > Hi Javi,
 > > 
-> > Since the driver handles 3 different SoC (2835, 2836, 2837). This node
-> > should be defined in the SoC specific dtsi files, because the BCM2836
-> > includes bcm283x.dtsi too.
+> > On Thu, 2016-09-08 at 09:33 +0100, Javi Merino wrote:
+> > > 
+> > > Hi Srinivas,
+> > > 
+> > > On Tue, Sep 06, 2016 at 11:59:47AM -0700, Srinivas Pandruvada
+> > > wrote:
+> > > > 
+> > > > 
+> > > > I am not sure if Eduardo is planning to organize thermal
+> > > > microconference. I think we still have time to submit proposal.
+> > > > Otherwise we can still get together to discuss some thermal
+> > > > issues/enhancements.
+> > > I don't think there will be a thermal microconference this year.
+> > > Still, I'm happy to meet and discuss during LPC :)
+> > Sure let's meet.
+> 
+> Apologies for not replying earlier. I don't have anything new to
+> report
+> but would be happy to participate in thermal discussions.
+> 
+> Once the LPC schedule is out, we could pick out a conflict free slot
+> for the
+> discussion.
+I will propose some time after schedule is out.
+
+Thanks,
+Srinivas
+
+> 
 > > 
-> > Be aware the patch for bcm2837 must go to ARM64.
-> 
-> I can not really follow:
-> * the node is defined in the dtsi included by all 3 soc,
->    and it is available on all so it sits where for example
->    spi0 or uart0 is located
-> * as for arm64: this describes the registers that are
->    identical for arm and arm64 and the bcm2837.dtsi
->    is also including ../../../../arm/boot/dts/bcm283x.dtsi
-> 
-> So what is the problem?
-
-The thermal driver specifies 3 different compatibles with partially different
-settings.
-If this patch is applied, all SoC (bcm2835, bcm2836, bcm2837) would use the
-bcm2835 settings.
-I can't believe this is intended.
-
-Why does the binding contains 3 different compatibles if only one is used?
-
-> 
-> Martin
-> 
-> P.s the patches apply cleanly against master.
->
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 
+> > Thanks,
+> > Srinivas
+> > 
+> > > 
+> > > 
+> > > Cheers,
+> > > Javi
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" 
+> > in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
