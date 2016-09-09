@@ -1,35 +1,46 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC/RFT][PATCH v2 2/7] driver core: Functional dependencies
- tracking support
-Date: Fri, 9 Sep 2016 16:13:32 +0200
-Message-ID: <CAPDyKFqnEeyj6AtyFSTu6g0os2q2i=-1mdGofa_PaUiT=p-jFA@mail.gmail.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <2169291.li0uc2Ryoq@vostro.rjw.lan>
- <CAPDyKFpTeB8MLXihpTnyk9RerVC_PNp8ogXG6aATLT2xLkp9mA@mail.gmail.com> <20160909120621.GP27946@sirena.org.uk>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 10/10] PM / Domains: Add support for removing nested PM
+ domains by provider
+Date: Fri, 9 Sep 2016 16:21:45 +0200
+Message-ID: <CAPDyKFqSLqHq7XymD2CZzzyAV3ohr5pKS1uTR6DXyBFh+VWCfg@mail.gmail.com>
+References: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
+ <1471340976-5379-11-git-send-email-jonathanh@nvidia.com> <CAPDyKFq3h1-64FtZwXa7XWO1UJj8Od-cfjwa8i4bDwN1VVdL7w@mail.gmail.com>
+ <f31e57aa-52aa-d340-ca2b-73dbdf769035@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160909120621.GP27946@sirena.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <f31e57aa-52aa-d340-ca2b-73dbdf769035-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 9 September 2016 at 14:06, Mark Brown <broonie@kernel.org> wrote:
-> On Fri, Sep 09, 2016 at 10:25:30AM +0200, Ulf Hansson wrote:
->
->> BTW, as I am mostly working on DT based platforms, I guess we would
->> later on need to discuss with the DT maintainers how to describe
->> device links.
->
-> I think the expectation had been that since DT tends to get right down
-> to the hardware details we already have the information in there in
-> order to use things so the problem becomes figuring out how/when we
-> parse the existing bindings to tell the driver core about links.
+[...]
 
-I guess what we need from a functional point of view, is to be able to
-first initialize all devices (device_initialize()) then add the
-relevant device links before we add the devices (device_add()). That
-seems like a piece of cake to fix. :-)
+>>>  /**
+>>> + * of_genpd_remove_tail - Remove the last PM domain registered for a provider
+>>> + * @provider: Pointer to device structure associated with provider
+>>
+>> The naming of this function would be okay, if we only have added
+>> genpds in the gpd_list by using list_add_tail(), although we don't.
+>> Instead we use list_add() and put them first in the list.
+>>
+>> So, unless we change to use list_add_tail() when adding genpds (I
+>> assume we can do that!), I would rather change the name of this
+>> function to of_genpd_remove_first().
+>>
+>> What option do you prefer?
+>
+> I think that I would prefer either of_genpd_remove_last() or
+> of_genpd_remove_one(). Although _first is accurate from the list
+> perspective it seems odd from the user perspective. I think that _last
+> is more meaningful as we are removing the last that was added regardless
+> or how things appear on the list. Alternatively, _one could be a good
+> compromise.
+
+I am fine with of_genpd_remove_last().
+
+[...]
 
 Kind regards
 Uffe
