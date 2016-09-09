@@ -1,125 +1,62 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFC/RFT][PATCH v2 2/7] driver core: Functional dependencies
- tracking support
-Date: Fri, 9 Sep 2016 10:25:30 +0200
-Message-ID: <CAPDyKFpTeB8MLXihpTnyk9RerVC_PNp8ogXG6aATLT2xLkp9mA@mail.gmail.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <2169291.li0uc2Ryoq@vostro.rjw.lan>
+Subject: Re: [PATCH 3/3] soc: ti: Add ti_sci_pm_domains driver
+Date: Fri, 9 Sep 2016 10:34:38 +0200
+Message-ID: <CAPDyKFqYy7UOzW5d5JKO=YWoUN8QcX086iBMoWZu4MCtJh-vgA@mail.gmail.com>
+References: <20160819235653.26355-1-nm@ti.com> <20160819235653.26355-4-nm@ti.com>
+ <CAPDyKFooDUOPT9dP8HaW3YBO9PsX-1+96PPE7CRMyjEkra7cBQ@mail.gmail.com>
+ <57C0D2C9.1030801@ti.com> <57C5E1DA.2040405@ti.com> <CAPDyKFqszM48nXnnA9D8iCp34k-ZmNvOkHPCc=Fya4nJA7PvBQ@mail.gmail.com>
+ <57CF26DB.4020807@ti.com> <7h4m5rv9kz.fsf@baylibre.com> <CAPDyKFo0Cb90BbY7ra6VDjb5frC5=VtmE3V6tDK=VosfPmod7Q@mail.gmail.com>
+ <m2mvjinvfw.fsf@baylibre.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f50.google.com ([74.125.82.50]:35960 "EHLO
-        mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750744AbcIIIZd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Sep 2016 04:25:33 -0400
-Received: by mail-wm0-f50.google.com with SMTP id b187so18122338wme.1
-        for <linux-pm@vger.kernel.org>; Fri, 09 Sep 2016 01:25:32 -0700 (PDT)
-In-Reply-To: <2169291.li0uc2Ryoq@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <m2mvjinvfw.fsf@baylibre.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kevin Hilman <khilman@baylibre.com>
+Cc: Dave Gerlach <d-gerlach@ti.com>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Keerthy <j-keerthy@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, Mark Brown <broonie@kernel.org>
 
-+ Mark
+On 8 September 2016 at 19:38, Kevin Hilman <khilman@baylibre.com> wrote:
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
+>
+>> [...]
+>>
+>>>
+>>> One more idea...
+>>>
+>>> Since you don't really have a domain (a group of devices), what you
+>>> really have is each device having an independent power switch, so as Ulf
+>>> suggested, what you really need is for all the devices to share the same
+>>> set of runtime PM callbacks that call SCI.  The only difference is the
+>>> unique ID.
+>>>
+>>> Rather than using all of genpd, you could also just use a pm_domain
+>>> which is what genpd is built on top of (and also omap_device, which
+>>> you're probably familiar with also.)
+>>
+>> Even if this would work as well, the downside would be that you need
+>> to re-invent the parts related to the DT parsing, the probing/removal
+>> and attaching/detaching of the device to the PM domain.
+>>
+>> You probably don't want to go there... :-)
+>
+> All you'd need to read from DT would be the device-specific ID for
+> TI-SCI, and that could be done at bind time with a notifier.  The, in
+> that same notifier, if a TI-SCI ID exists, it would get added to the
+> pm_domain.
+>
+> Anyways, your original proposal is much preferred if it can work.  I'm
+> just throwing out another option because I really don't like one genpd
+> per device.
 
-On 8 September 2016 at 23:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Currently, there is a problem with handling cases where functional
-> dependencies between devices are involved.
->
-> What I mean by a "functional dependency" is when the driver of device
-> B needs both device A and its driver to be present and functional to
-> be able to work.  This implies that the driver of A needs to be
-> working for B to be probed successfully and it cannot be unbound from
-> the device before the B's driver.  This also has certain consequences
-> for power management of these devices (suspend/resume and runtime PM
-> ordering).
->
-> Add support for representing those functional dependencies between
-> devices to allow the driver core to track them and act on them in
-> certain cases where they matter.
->
-> The argument for doing that in the driver core is that there are
-> quite a few distinct use cases related to that, they are relatively
-> hard to get right in a driver (if one wants to address all of them
-> properly) and it only gets worse if multiplied by the number of
-> drivers potentially needing to do it.  Morever, at least one case
-> (asynchronous system suspend/resume) cannot be handled in a single
-> driver at all, because it requires the driver of A to wait for B to
-> suspend (during system suspend) and the driver of B to wait for
-> A to resume (during system resume).
->
-> To that end, represent links between devices (or more precisely
-> between device+driver combos) as a struct device_link object
-> containing pointers to the devices in question, a list node for
-> each of them, status information, flags, a lock and an RCU head
-> for synchronization.
->
-> Also add two new list heads, links_to_consumers and links_to_suppliers,
-> to struct device to represent the lists of links to the devices that
-> depend on the given one (consumers) and to the devices depended on
-> by it (suppliers), respectively.
->
-> The entire data structure consisting of all of the lists of link
-> objects for all devices is protected by SRCU (for list walking)
-> and a by mutex (for link object addition/removal).  In addition
-> to that, each link object has an internal status field whose
-> value reflects what's happening to the devices pointed to by
-> the link.  That status field is protected by an internal spinlock.
->
-> New links are added by calling device_link_add() which may happen
-> either before the consumer device is probed or when probing it, in
-> which case the caller must ensure that the driver of the supplier
-> device is present and functional and the DEVICE_LINK_SUPPLIER_READY
-> flag must be passed to device_link_add() to reflect that.
->
-> Link objects are deleted either explicitly, by calling
-> device_link_del() on the link object in question, or automatically,
-> when the consumer device is unbound from its driver or when one
-> of the target devices is deleted, depending on the link type.
->
-> There are two types of link objects, persistent and non-persistent.
-> The persistent ones stay around until one of the target devices is
-> deleted, while the non-persistent ones are deleted when the consumer
-> driver is unbound from its device (ie. they are assumed to be valid
-> only as long as the consumer device has a driver bound to it).  The
-> DEVICE_LINK_PERSISTENT flag is passed to device_link_add() to create
-> a persistent link and it cannot be used for links created at the
-> consumer probe time (that is, persistent links must be created before
-> probing the consumer devices).
->
-> One of the actions carried out by device_link_add() is to reorder
-> the lists used for device shutdown and system suspend/resume to
-> put the consumer device along with all of its children and all of
-> its consumers (and so on, recursively) to the ends of those list
-> in order to ensure the right ordering between the all of the supplier
-> and consumer devices.
+Okay, then we are in full agreement!
 
-Rafael, thanks for working on this and re-spinning this series. It's
-indeed very interesting!
-
-I am hoping "device links" should be able to solve some of those
-device ordering issues I have observed for several SoCs, particularly
-during system PM and in combination with runtime PM.
-
-I intend to test the series as soon as I can and try to deploy it to
-see if it solves some of the issues I have seen. I will also try to
-review in more detail. No promises short term though. :-)
-
-BTW, as I am mostly working on DT based platforms, I guess we would
-later on need to discuss with the DT maintainers how to describe
-device links.
-
-A minor comment to the change-log. I would appreciate some information
-about "error" handling. Especially, what happens in the driver core
-when it's about to probe a device with a configured device link, but
-the link hasn=E2=80=99t been established yet (the other device isn't
-successfully probed). In the ideal scenario this shouldn't happen, but
-of course it will. So I assume the driver core relies on the existing
-deferred probe mechanism for this.
-
-[...]
+BTW, I have just been trying to convince other people working on
+Rockchip SoCs, to also avoid using one genpd per device. Feel free to
+join those discussions [1] as well. :-)
 
 Kind regards
 Uffe
+
+[1]
+https://lkml.org/lkml/2016/9/1/377
