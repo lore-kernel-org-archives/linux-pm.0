@@ -1,63 +1,56 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v3 3/8] x86, cpu: provide a function topology_num_packages
- to enumerate #packages
-Date: Sat, 10 Sep 2016 15:28:53 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1609101513410.2804@nanos>
-References: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1473373615-51427-4-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [RFC/RFT][PATCH v2 3/7] PM / sleep: Make async suspend/resume of
+ devices use device links
+Date: Sat, 10 Sep 2016 15:31:45 +0200
+Message-ID: <20160910133145.GA29744@wunner.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <7606779.dc8E4l7vTo@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1473373615-51427-4-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:49609 "EHLO
+        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753911AbcIJNbk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Sep 2016 09:31:40 -0400
+Content-Disposition: inline
+In-Reply-To: <7606779.dc8E4l7vTo@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-B1;2802;0cOn Thu, 8 Sep 2016, Srinivas Pandruvada wrote:
+On Thu, Sep 08, 2016 at 11:28:33PM +0200, Rafael J. Wysocki wrote:
+> Make the device suspend/resume part of the core system
+> suspend/resume code use device links to ensure that supplier
+> and consumer devices will be suspended and resumed in the right
+> order in case of async suspend/resume.
+> 
+> The idea, roughly, is to use dpm_wait() to wait for all consumers
+> before a supplier device suspend and to wait for all suppliers
+> before a consumer device resume.
 
-> From: Tim Chen <tim.c.chen@linux.intel.com>
+For devices with a parent/child relationship, if the child does not
+utilize direct_complete, the parent is not allowed to utilize it
+either and is runtime resumed upon system sleep.
 
-$subject: x86, cpu: provide a function topology_num_packages  to enumerate #packages
+Don't we need the same for supplier/consumer relationships?
 
-- we switched to the prefix scheme 'x86/subsys'. Please use this.
+The code enforcing this is in __device_suspend() and looks like this:
 
-- this is not related to x86/cpu. x86/topology is the proper prefix.
+	if (parent) {
+		spin_lock_irq(&parent->power.lock);
 
-- Sentence after ':' starts with an uppercase letter.
+		dev->parent->power.direct_complete = false;
+		if (dev->power.wakeup_path
+		    && !dev->parent->power.ignore_children)
+			dev->parent->power.wakeup_path = true;
 
-- please make the subject line short and descriptive. 
+		spin_unlock_irq(&parent->power.lock);
+	}
 
-  x86/topology: Provide topology_num_packages()
-
-  is completely sufficient, because it's entirely clear that it is a
-  function and the function name is self explaining.
-
-> We compute the the number of active packages during boot and
-> topology update.
-
-We? We do not do anything..... and how is that information useful for the
-reader?
-
-> Provide a function to export this info for functions that need this
-> topology info.
-
-Well, it's obvious that a new function is going to be used by something
-which needs it.
-
-In changelogs/comments there is only one thing worse than superflous
-informatioin: wrong information.
-
-If you have nothing to say, then omit it instead of forcing the reader to
-parse incoherent blurbs for nothing.
-
->  int topology_update_package_map(unsigned int apicid, unsigned int cpu);
-> +extern int topology_num_packages(void);
->  extern int topology_phys_to_logical_pkg(unsigned int pkg);
->  #else
->  #define topology_max_packages()			(1)
-
-stub function for the !SMP case is missing....
+I guess we need to iterate over the suppliers here and execute
+the block for each of them.
 
 Thanks,
 
-	tglx
+Lukas
