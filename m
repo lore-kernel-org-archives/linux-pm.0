@@ -1,56 +1,71 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [RFC/RFT][PATCH v2 3/7] PM / sleep: Make async suspend/resume of
- devices use device links
-Date: Sat, 10 Sep 2016 15:31:45 +0200
-Message-ID: <20160910133145.GA29744@wunner.de>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <7606779.dc8E4l7vTo@vostro.rjw.lan>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v3 4/8] sched, x86: use arch_update_cpu_topology to
+ indicate x86 need sched domain rebuild
+Date: Sat, 10 Sep 2016 18:20:53 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1609101532450.2804@nanos>
+References: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1473373615-51427-5-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:49609 "EHLO
-        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753911AbcIJNbk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Sep 2016 09:31:40 -0400
-Content-Disposition: inline
-In-Reply-To: <7606779.dc8E4l7vTo@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1473373615-51427-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On Thu, Sep 08, 2016 at 11:28:33PM +0200, Rafael J. Wysocki wrote:
-> Make the device suspend/resume part of the core system
-> suspend/resume code use device links to ensure that supplier
-> and consumer devices will be suspended and resumed in the right
-> order in case of async suspend/resume.
+On Thu, 8 Sep 2016, Srinivas Pandruvada wrote:
+
+How is this related to sched? And please stop writing lengthy sentences in
+the subject line.
+
+> From: Tim Chen <tim.c.chen@linux.intel.com>
 > 
-> The idea, roughly, is to use dpm_wait() to wait for all consumers
-> before a supplier device suspend and to wait for all suppliers
-> before a consumer device resume.
+> Provides x86 with arch_update_cpu_topology function. This function
+> allows us to indicate that a condition is detected that the sched
+> domain of x86 needs a complete rebuild.
 
-For devices with a parent/child relationship, if the child does not
-utilize direct_complete, the parent is not allowed to utilize it
-either and is runtime resumed upon system sleep.
+scheduler domains are not x86 specific .... 
 
-Don't we need the same for supplier/consumer relationships?
+> This is done by setting the x86_topology_update flag.
 
-The code enforcing this is in __device_suspend() and looks like this:
+So without reading the patch I expect that the function sets the
+x86_topology_update flag. Crap.
 
-	if (parent) {
-		spin_lock_irq(&parent->power.lock);
+What you really want to say is:
 
-		dev->parent->power.direct_complete = false;
-		if (dev->power.wakeup_path
-		    && !dev->parent->power.ignore_children)
-			dev->parent->power.wakeup_path = true;
+  The scheduler calls arch_update_cpu_topology() to check whether the
+  scheduler domains have to be rebuilt.
 
-		spin_unlock_irq(&parent->power.lock);
-	}
+  So far x86 has no requirement for this, but the upcoming IMTI support
+  makes this necessary.
 
-I guess we need to iterate over the suppliers here and execute
-the block for each of them.
+  Request the rebuild when the x86 internal update flag is set.
+
+Or something along these lines. Changelog is a important part of a patch,
+really..
+
+> +/* Flag to indicate if a complete sched domain rebuild is required */
+> +bool x86_topology_update;
+> +
+> +int arch_update_cpu_topology(void)
+> +{
+> +	if (x86_topology_update) {
+> +		x86_topology_update = false;
+> +		return 1;
+> +	} else
+> +		return 0;
+
+That lacks braces around the else path, but why aren't you just doing the
+obvious:
+
+	if (!x86_topology_update)
+		return false;
+	
+	x86_topology_update = false;
+	return true;
+
+That would be too simple to read, right?;
 
 Thanks,
 
-Lukas
+	tglx
