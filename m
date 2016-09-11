@@ -1,92 +1,92 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH 00/26] constify local structures
-Date: Sun, 11 Sep 2016 21:11:35 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1609112105250.3818@hadrien>
-References: <1473599168-30561-1-git-send-email-Julia.Lawall@lip6.fr>
- <1473616576.19464.10.camel@perches.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [RFC/RFT][PATCH v2 2/7] driver core: Functional dependencies
+ tracking support
+Date: Sun, 11 Sep 2016 22:43:36 +0200
+Message-ID: <20160911204336.GA371@wunner.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <2169291.li0uc2Ryoq@vostro.rjw.lan>
+ <20160911134058.GA189@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <1473616576.19464.10.camel@perches.com>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Joe Perches <joe@perches.com>
-Cc: alsa-devel@alsa-project.org, Mustafa Ismail <mustafa.ismail@intel.com>, Tatyana Nikolova <tatyana.e.nikolova@intel.com>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, linux-acpi@vger.kernel.org, tpmdd-devel@lists.sourceforge.net, linux-media@vger.kernel.org, linux-pm@vger.kernel.org, linux-can@vger.kernel.org, Julia Lawall <Julia.Lawall@lip6.fr>, Shiraz Saleem <shiraz.saleem@intel.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, netdev@vger.kernel.org, Chien Tin Tung <chien.tin.tung@intel.com>, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:50685 "EHLO
+        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753693AbcIKUnY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Sep 2016 16:43:24 -0400
+Content-Disposition: inline
+In-Reply-To: <20160911134058.GA189@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
+On Sun, Sep 11, 2016 at 03:40:58PM +0200, Lukas Wunner wrote:
+> On Thu, Sep 08, 2016 at 11:27:45PM +0200, Rafael J. Wysocki wrote:
+> > +/**
+> > + * device_is_dependent - Check if one device depends on another one
+> > + * @dev: Device to check dependencies for.
+> > + * @target: Device to check against.
+> > + *
+> > + * Check if @dev or any device dependent on it (its child or its consumer etc)
+> > + * depends on @target.  Return 1 if that is the case or 0 otherwise.
+> > + */
+> > +static int device_is_dependent(struct device *dev, void *target)
+> > +{
+> > +	struct device_link *link;
+> > +	int ret;
+> > +
+> > +	ret = device_for_each_child(dev, target, device_is_dependent);
+> > +	list_for_each_entry(link, &dev->links_to_consumers, s_node) {
+> > +		if (WARN_ON(link->consumer == target))
+> > +			return 1;
+> > +
+> > +		ret = ret || device_is_dependent(link->consumer, target);
+> > +	}
+> > +	return ret;
+> > +}
+> 
+> What happens if someone tries to add a device link from a parent
+> (as the consumer) to a child (as a supplier)?  You're only checking
+> if target is a consumer of dev, for full correctness you'd also have
+> to check if target is a parent of dev.  (Or grandparent, or great-
+> grandparent, ... you need to walk the tree up to the root.)
+> 
+> 
+> The function can be sped up by returning immediately if a match
+> is found instead of continuing searching and accumulating the
+> result in ret, i.e.:
+> 
+> 	if (device_for_each_child(dev, target, device_is_dependent))
+> 		return 1;
+> 
+> and in the list_for_each_entry block:
+> 
+> 	if (device_is_dependent(link->consumer, target))
+> 		return 1;
+> 
+> Then at the end of the function "return 0".
+> 
+> 
+> I'd move the WARN_ON() to the single invocation of this function in
+> device_link_add(), that way it's possible to use the function as a
+> helper elsewhere should the need arise.
 
-On Sun, 11 Sep 2016, Joe Perches wrote:
+Oh I'm grasping only now, you want to emit a WARN for *every*
+infringing child/consumer. That could lead to a WARN flood if
+a developer accidentally does something really dumb, like linking
+the PCI root to some PCI endpoint device, but fair enough.
 
-> On Sun, 2016-09-11 at 15:05 +0200, Julia Lawall wrote:
-> > Constify local structures.
->
-> Thanks Julia.
->
-> A few suggestions & questions:
->
-> Perhaps the script should go into scripts/coccinelle/
-> so that future cases could be caught by the robot
-> and commit message referenced by the patch instances.
+The point about linking a parent to a child still stands however.
+I think a simple way to check this is to just add
 
-OK.
+	if (WARN_ON(dev == target))
+		return 1;
 
-> Can you please compile the files modified using the
-> appropriate defconfig/allyesconfig and show the
+at the top of the function, because when someone tries to link
+a parent to a child, when recursing from the parent downward
+one will eventually hit that child. This will also prevent
+someone from linking a device to itself.
 
-I currently send patches for this issue only for files that compile using
-the x86 allyesconfig.
+Best regards,
 
-> movement from data to const by using
-> 	$ size <object>.new/old
-> and include that in the changelogs (maybe next time)?
-
-OK, thanks for the suggestion.
-
-> Is it possible for a rule to trace the instances where
-> an address of a struct or struct member is taken by
-> locally defined and declared function call where the
-> callee does not modify any dereferenced object?
->
-> ie:
->
-> struct foo {
-> 	int bar;
-> 	char *baz;
-> };
->
-> struct foo qux[] = {
-> 	{ 1, "description 1" },
-> 	{ 2, "dewcription 2" },
-> 	[ n, "etc" ]...,
-> };
->
-> void message(struct foo *msg)
-> {
-> 	printk("%d %s\n", msg->bar, msg->baz);
-> }
->
-> where some code uses
->
-> 	message(qux[index]);
->
-> So could a coccinelle script change:
->
-> struct foo qux[] = { to const struct foo quz[] = {
->
-> and
->
-> void message(struct foo *msg) to void message(const struct foo *msg)
-
-Yes, this could be possible too.
-
-Thanks for the feedback.
-
-julia
+Lukas
