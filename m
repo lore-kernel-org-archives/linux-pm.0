@@ -1,73 +1,139 @@
-From: Brendan Jackman <brendan.jackman-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle states
-Date: Mon, 12 Sep 2016 16:19:43 +0100
-Message-ID: <87sht59mcw.fsf@arm.com>
-References: <1472242678-33700-1-git-send-email-lina.iyer@linaro.org> <1472242678-33700-3-git-send-email-lina.iyer@linaro.org> <0b233802-f459-c6bb-ff42-70745a225cfb@arm.com> <20160902201605.GA1705@linaro.org>
+From: Anisse Astier <anisse@astier.eu>
+Subject: Re: [PATCH] PM / Hibernate: allow hibernation with PAGE_POISONING_ZERO
+Date: Mon, 12 Sep 2016 17:19:54 +0200
+Message-ID: <CALUN=qJNX6HqrwXkk--8u0PiOxV-USE4tEouqimXPiRaobtAEw@mail.gmail.com>
+References: <1473410612-6207-1-git-send-email-anisse@astier.eu> <20160912113238.GA30927@amd>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <20160902201605.GA1705-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, brendan.jackman-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, Juri.Lelli-5wv7dgnIgG8@public.gmane.org, Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+Content-Type: multipart/alternative; boundary=089e0158c14848285d053c510717
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <20160912113238.GA30927@amd>
+Sender: owner-linux-mm@kvack.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Rientjes <rientjes@google.com>, Michal Hocko <mhocko@suse.com>, linux-pm@vger.kernel.org, Mathias Krause <minipli@googlemail.com>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Laura Abbott <labbott@fedoraproject.org>, linux-mm@kvack.org, Brad Spengler <spender@grsecurity.net>, Jianyu Zhan <nasa4836@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Yves-Alexis Perez <corsac@debian.org>, Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>, Len Brown <len.brown@intel.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, PaX Team <pageexec@freemail.hu>, Dave Hansen <dave.hansen@intel.com>, Mel Gorman <mgorman@suse.de>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+--089e0158c14848285d053c510717
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Hi Lina,
-
-Sorry for the delay here, Sudeep and I were both been on holiday last week.
-
-On Fri, Sep 02 2016 at 21:16, Lina Iyer wrote:
-> On Fri, Sep 02 2016 at 07:21 -0700, Sudeep Holla wrote:
-[...]
->>This version is *not very descriptive*. Also the discussion we had on v3
->>version has not yet concluded IMO. So can I take that we agreed on what
->>was proposed there or not ?
->>
-> Sorry, this example is not very descriptive. Pls. check the 8916 dtsi
-> for the new changes in the following patches. Let me know if that makes
-> sense.
-
-The not-yet-concluded discussion Sudeep is referring to is at [1].
-
-In that thread we initially proposed the idea of, instead of splitting
-state phandles between cpu-idle-states and domain-idle-states, putting
-CPUs in their own domains and using domain-idle-states for _all_
-phandles, deprecating cpu-idle-states. I've brought this up in other
-threads [2] but discussion keeps petering out, and neither this example
-nor the 8916 dtsi in this patch series reflect the idea.
-
-It would be great if we could go back to the thread at [1] where Sudeep
-has posted examples and come to a clear consensus on the binding design
-before reviewing implementation patches. Ideally with input from Ulf,
-Rob and Kevin.
-
-[1] https://patchwork.kernel.org/patch/9264507
-[2] http://www.spinics.net/lists/devicetree/msg141024.html
+Le 12 sept. 2016 13:32, "Pavel Machek" <pavel@ucw.cz> a =C3=A9crit :
 >
-> Thanks,
-> Lina
+> On Fri 2016-09-09 10:43:32, Anisse Astier wrote:
+> > PAGE_POISONING_ZERO disables zeroing new pages on alloc, they are
+> > poisoned (zeroed) as they become available.
+> > In the hibernate use case, free pages will appear in the system without
+> > being cleared, left there by the loading kernel.
+> >
+> > This patch will make sure free pages are cleared on resume when
+> > PAGE_POISONING_ZERO is enabled. We free the pages just after resume
+> > because we can't do it later: going through any device resume code migh=
+t
+> > allocate some memory and invalidate the free pages bitmap.
+> >
+> > Thus we don't need to disable hibernation when PAGE_POISONING_ZERO is
+> > enabled.
+> >
+> > Signed-off-by: Anisse Astier <anisse@astier.eu>
+> > Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+> > Cc: Laura Abbott <labbott@fedoraproject.org>
+> > Cc: Mel Gorman <mgorman@suse.de>
+> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 >
->>We could have better example above *really* based on the discussions we
->>had so far. This example always makes me think it's well crafted to
->>avoid any sort of discussions. We need to consider different use-cases
->>e.g. what about CPU level states ?
->>
->>IMO, we need to discuss this DT binding in detail and arrive at someq
->>conclusion before you take all the troubles to respin the series.
->>Also it's better to keep the DT binding separate until we have some
->>conclusion instead of posting the implementation for each version.
->>That's just my opinion(I would be least bothered about implementation
->>until I know it will be accepted before I can peek into the code, others
->>may differ.
->>
->>--
->>Regards,
->>Sudeep
+> Looks reasonable to me.
+>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+>
+> Actually.... this takes basically zero time come. Do we want to do it
+> unconditionally?
+>
+> (Yes, it is free memory, but for sake of debugging, I guess zeros are
+> preffered to random content that changed during hibernation.)
+>
+> (But that does not change the Ack.)
+>
+> Best regards,
+>
+Pavel
+> --
 
-Cheers,
-Brendan
+I have no opposition on doing this unconditionally. I can send a v2 as soon
+as I get closer to a computer.
+
+Regards,
+
+Anisse
+
+Sorry for the brevity, I'm posting this on mobile.
+
+--089e0158c14848285d053c510717
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<p dir=3D"ltr">Le=C2=A012 sept. 2016 13:32, &quot;Pavel Machek&quot; &lt;<a=
+ href=3D"mailto:pavel@ucw.cz">pavel@ucw.cz</a>&gt; a =C3=A9crit=C2=A0:<br>
+&gt;<br>
+&gt; On Fri 2016-09-09 10:43:32, Anisse Astier wrote:<br>
+&gt; &gt; PAGE_POISONING_ZERO disables zeroing new pages on alloc, they are=
+<br>
+&gt; &gt; poisoned (zeroed) as they become available.<br>
+&gt; &gt; In the hibernate use case, free pages will appear in the system w=
+ithout<br>
+&gt; &gt; being cleared, left there by the loading kernel.<br>
+&gt; &gt;<br>
+&gt; &gt; This patch will make sure free pages are cleared on resume when<b=
+r>
+&gt; &gt; PAGE_POISONING_ZERO is enabled. We free the pages just after resu=
+me<br>
+&gt; &gt; because we can&#39;t do it later: going through any device resume=
+ code might<br>
+&gt; &gt; allocate some memory and invalidate the free pages bitmap.<br>
+&gt; &gt;<br>
+&gt; &gt; Thus we don&#39;t need to disable hibernation when PAGE_POISONING=
+_ZERO is<br>
+&gt; &gt; enabled.<br>
+&gt; &gt;<br>
+&gt; &gt; Signed-off-by: Anisse Astier &lt;<a href=3D"mailto:anisse@astier.=
+eu">anisse@astier.eu</a>&gt;<br>
+&gt; &gt; Cc: Kirill A. Shutemov &lt;<a href=3D"mailto:kirill.shutemov@linu=
+x.intel.com">kirill.shutemov@linux.intel.com</a>&gt;<br>
+&gt; &gt; Cc: Laura Abbott &lt;<a href=3D"mailto:labbott@fedoraproject.org"=
+>labbott@fedoraproject.org</a>&gt;<br>
+&gt; &gt; Cc: Mel Gorman &lt;<a href=3D"mailto:mgorman@suse.de">mgorman@sus=
+e.de</a>&gt;<br>
+&gt; &gt; Cc: Rafael J. Wysocki &lt;<a href=3D"mailto:rjw@rjwysocki.net">rj=
+w@rjwysocki.net</a>&gt;<br>
+&gt;<br>
+&gt; Looks reasonable to me.<br>
+&gt;<br>
+&gt; Acked-by: Pavel Machek &lt;<a href=3D"mailto:pavel@ucw.cz">pavel@ucw.c=
+z</a>&gt;<br>
+&gt;<br>
+&gt; Actually.... this takes basically zero time come. Do we want to do it<=
+br>
+&gt; unconditionally?<br>
+&gt;<br>
+&gt; (Yes, it is free memory, but for sake of debugging, I guess zeros are<=
+br>
+&gt; preffered to random content that changed during hibernation.)<br>
+&gt;<br>
+&gt; (But that does not change the Ack.)<br>
+&gt;<br>
+&gt; Best regards,<br>
+&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 Pavel<br>
+&gt; --</p>
+<p dir=3D"ltr">I have no opposition on doing this unconditionally. I can se=
+nd a v2 as soon as I get closer to a computer.</p>
+<p dir=3D"ltr">Regards,</p>
+<p dir=3D"ltr">Anisse</p>
+<p dir=3D"ltr">Sorry for the brevity, I&#39;m posting this on mobile.</p>
+
+--089e0158c14848285d053c510717--
+
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
