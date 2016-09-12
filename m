@@ -1,79 +1,68 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [RFC/RFT][PATCH v2 6/7] PM / runtime: Use device links
-Date: Mon, 12 Sep 2016 11:47:58 +0200
-Message-ID: <20160912094758.GA517@wunner.de>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <5200011.6uCldMmN4m@vostro.rjw.lan>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 1/5] clk: add support for runtime pm
+Date: Mon, 12 Sep 2016 12:18:56 +0200
+Message-ID: <f18fee35-cb5d-abce-0415-a98b58e3a302@samsung.com>
+References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
+ <1472737551-15272-2-git-send-email-m.szyprowski@samsung.com>
+ <20160908001943.GC13062@codeaurora.org>
+ <CGME20160912101857eucas1p29b2bbd5ac0eda92284091ad1b86decc4@eucas1p2.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.hostsharing.net ([176.9.242.54]:35343 "EHLO
-        mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757647AbcILJrp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 05:47:45 -0400
-Content-Disposition: inline
-In-Reply-To: <5200011.6uCldMmN4m@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <20160908001943.GC13062@codeaurora.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On Thu, Sep 08, 2016 at 11:30:26PM +0200, Rafael J. Wysocki wrote:
-> Modify the runtime PM framework to use device links to ensure that
-> supplier devices will not be suspended if any of their consumer
-> devices are active.
-
-I think it's inconsistent to runtime resume/suspend suppliers in
-__rpm_callback() whereas the parent is treated in rpm_suspend()
-and rpm_resume().
-
-Instead I'd suggest to amend struct dev_pm_ops with:
-	atomic_t		consumer_count;
-
-Amend rpm_check_suspend_allowed() with:
-	else if (atomic_read(&dev->power.consumer_count) > 0)
-		retval = -EBUSY;
-
-Amend rpm_suspend(), rpm_resume() and __pm_runtime_set_status()
-to decrement/increment consumer_count where we're doing the same
-for the parent's child_count, and runtime resume/idle suppliers
-as necessary.
+Hi Stephen,
 
 
-> The idea is to reference count suppliers on the consumer's resume
-> and drop references to them on its suspend.  The information on
-> whether or not the supplier has been reference counted by the
-> consumer's (runtime) resume is stored in a new field (rpm_active)
-> in the link object for each link.
+On 2016-09-08 02:19, Stephen Boyd wrote:
+> On 09/01, Marek Szyprowski wrote:
+>> Registers for some clocks might be located in the SOC area, which are under the
+>> power domain. To enable access to those registers respective domain has to be
+>> turned on. Additionally, registers for such clocks will usually loose its
+>> contents when power domain is turned off, so additional saving and restoring of
+>> them might be needed in the clock controller driver.
+>>
+>> This patch adds basic infrastructure in the clocks core to allow implementing
+>> driver for such clocks under power domains. Clock provider can supply a
+>> struct device pointer, which is the used by clock core for tracking and managing
+>> clock's controller runtime pm state. Each clk_prepare() operation
+>> will first call pm_runtime_get_sync() on the supplied device, while
+>> clk_unprepare() will do pm_runtime_put() at the end.
+>>
+>> Additional calls to pm_runtime_get/put functions are required to ensure that any
+>> register access (like calculating/chaning clock rates) will be done with clock
+>> controller in active runtime state.
+>>
+>> Special handling of the case when runtime pm is disabled for clock controller's
+>> device is needed to let this feature work properly also during system sleep
+>> suspend/resume operations (runtime pm is first disabled before entering sleep
+>> state's, but controller is usually still operational until its suspend pm
+>> callback is called).
+>>
+>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> My "knee jerk" concern is that we're going to take a runtime PM
+> lock underneath the prepare lock. That seems like a situation
+> where we could hit a lock inversion if the runtime PM callbacks
+> themselves acquire the prepare lock by calling clk APIs? But this
+> concern is false right? We release the runtime PM lock before
+> calling the PM callback, so we shouldn't hit any deadlock and
+> lockdep won't complain?
 
-So the rpm_active variable indicates if the runtime ref on the
-supplier is currently held. I don't see why this is needed.
-If DEVICE_LINK_PM_RUNTIME is not set, we never acquire a runtime
-ref in the first place. If it's set, a ref is acquired upon
-resuming the consumer and released upon suspending it. So whether
-the ref is held is discernable from the consumer's runtime PM state.
-Why do you need to track this in a separate variable?
+Runtime PM uses fine grained locking based on per-device locks, so there
+should be no problem with global clock prepare lock. The only lock 
+interaction
+is between clock controller device's rpm lock and clocks global prepare 
+lock, but
+it always done with the same access pattern. I've tested it extensively 
+(also
+with lock dep) with various use cases and found no problems.
 
-
-> @@ -718,8 +718,12 @@ enum device_link_status {
->   * Device link flags.
->   *
->   * PERSISTENT: Do not delete the link on consumer device driver unbind.
-> + * PM_RUNTIME: If set, the runtime PM framework will use this link.
-> + * RPM_ACTIVE: Run pm_runtime_get_sync() on the supplier during link creation.
->   */
->  #define DEVICE_LINK_PERSISTENT	(1 << 0)
-> +#define DEVICE_LINK_PM_RUNTIME	(1 << 1)
-> +#define DEVICE_LINK_RPM_ACTIVE	(1 << 2)
-
-I don't understand the need for DEVICE_LINK_RPM_ACTIVE: If the
-consumer is in runtime resumed state when the link is added and
-DEVICE_LINK_PM_RUNTIME is set, then of course the supplier needs
-to be in runtime resumed state as well. Conversely if the consumer
-is in runtime suspended state, the supplier need not be in runtime
-resumed state either. So the value of the flag can be derived from
-the consumer's runtime PM state. Why do we need the flag at all?
-
-Thanks,
-
-Lukas
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
