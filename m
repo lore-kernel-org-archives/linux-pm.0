@@ -1,59 +1,83 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / Hibernate: allow hibernation with
- PAGE_POISONING_ZERO
-Date: Mon, 12 Sep 2016 13:32:38 +0200
-Message-ID: <20160912113238.GA30927@amd>
-References: <1473410612-6207-1-git-send-email-anisse@astier.eu>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v16 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Mon, 12 Sep 2016 13:25:49 +0100
+Message-ID: <20160912122549.GZ27946@sirena.org.uk>
+References: <cover.1470034830.git.baolin.wang@linaro.org>
+ <CAMz4kuLotLs1ASuZaMRXf29khmQUfEQc+jFV8Fxp+fHFn90Z9g@mail.gmail.com>
+ <CAMz4ku+pkRT70NcZEDepfshH7z7+Fm3yo-C2+ccWgJwDJE4C-Q@mail.gmail.com>
+ <8760q9a8m6.fsf@notabene.neil.brown.name>
+ <CAMz4kuJJwKFqU=6JnpUQNPeQ-uy-PyZ5VBaBKofn=8Jv5y0nXA@mail.gmail.com>
+ <878tv297a0.fsf@notabene.neil.brown.name>
+ <CAMz4kuLXyVSXjh1Sn06+wcUr+bVritCW3sN=XyEdap7h=MN7xw@mail.gmail.com>
+ <87y4326l44.fsf@notabene.neil.brown.name>
+ <20160909110727.GI27946@sirena.org.uk>
+ <87pooc7n3t.fsf@notabene.neil.brown.name>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="JefYhWJ8RkX3aR0a"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:52340 "EHLO
+        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756103AbcILM0d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 08:26:33 -0400
 Content-Disposition: inline
-In-Reply-To: <1473410612-6207-1-git-send-email-anisse@astier.eu>
-Sender: owner-linux-mm@kvack.org
-To: Anisse Astier <anisse@astier.eu>
-Cc: linux-mm@kvack.org, linux-pm@vger.kernel.org, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Laura Abbott <labbott@fedoraproject.org>, Mel Gorman <mgorman@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Andi Kleen <andi@firstfloor.org>, Andrew Morton <akpm@linux-foundation.org>, Brad Spengler <spender@grsecurity.net>, Dave Hansen <dave.hansen@intel.com>, David Rientjes <rientjes@google.com>, Jianyu Zhan <nasa4836@gmail.com>, Kees Cook <keescook@chromium.org>, Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, Mathias Krause <minipli@googlemail.com>, Michal Hocko <mhocko@suse.com>, PaX Team <pageexec@freemail.hu>, Peter Zijlstra <peterz@infradead.org>, Vlastimil Babka <vbabka@suse.cz>, Yves-Alexis Perez <corsac@debian.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <87pooc7n3t.fsf@notabene.neil.brown.name>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: NeilBrown <neilb@suse.com>
+Cc: Baolin Wang <baolin.wang@linaro.org>, NeilBrown <nfbrown@novell.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vg>
 
-On Fri 2016-09-09 10:43:32, Anisse Astier wrote:
-> PAGE_POISONING_ZERO disables zeroing new pages on alloc, they are
-> poisoned (zeroed) as they become available.
-> In the hibernate use case, free pages will appear in the system without
-> being cleared, left there by the loading kernel.
-> 
-> This patch will make sure free pages are cleared on resume when
-> PAGE_POISONING_ZERO is enabled. We free the pages just after resume
-> because we can't do it later: going through any device resume code might
-> allocate some memory and invalidate the free pages bitmap.
-> 
-> Thus we don't need to disable hibernation when PAGE_POISONING_ZERO is
-> enabled.
-> 
-> Signed-off-by: Anisse Astier <anisse@astier.eu>
-> Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> Cc: Laura Abbott <labbott@fedoraproject.org>
-> Cc: Mel Gorman <mgorman@suse.de>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 
-Looks reasonable to me.
+--JefYhWJ8RkX3aR0a
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+On Sat, Sep 10, 2016 at 07:57:26AM +1000, NeilBrown wrote:
+> On Fri, Sep 09 2016, Mark Brown wrote:
 
-Actually.... this takes basically zero time come. Do we want to do it
-unconditionally?
+> > The wm831x driver in the patch series is an example of such hardware -
+> > it is purely a power manager, it has no USB PHY hardware at all.  It's a
 
-(Yes, it is free memory, but for sake of debugging, I guess zeros are
-preffered to random content that changed during hibernation.)
+> The "probe" routine calls
 
-(But that does not change the Ack.)
+>  +			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
 
-Best regards,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Presumably wm831x_pdata is initialised by a board file?
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Yes.
+
+> I strongly suspect it is initialized to  "usb-charger.0" because the
+> names given to usb chargers are "usb-charger.%d" in discovery order.
+> I don't see this being at all useful if there is ever more than one
+> usb-charger.
+> Do you?
+
+It's no worse than any other board file situation - if someone has that
+problem they get to fix it.
+
+> So how can this wm831x driver actually find out what sort of charger is
+> connected and so set the power limit?  I just don't see this working *at*
+> *all*.
+
+The whole point from the point of view of the wm831x driver is that it
+just wants something to tell it how much current it's allowed to draw, I
+appreciate that doesn't change your analysis of the bit in the middle
+but the consumer driver bit seems fine here.
+
+--JefYhWJ8RkX3aR0a
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJX1p7MAAoJECTWi3JdVIfQevUH+wb49xtgiBRTWwlMRdROLu8V
+iLV7Iyji39xD3FtNjU5M+quJ6VUh09WpZwCgVlPT25FKVJs8wbwAJQQp9KYi/5Ah
+jKGMGMyqwOIMdtYmP0x56Td1WBwnLnWZLsosuCwIoSs8QnULbvNOIFrw594Z2XvX
+9d/yV22CMmOXjzkW5qfXIYgDwv6ydVZIzr3xYHfXaKEwMlKyk3YBsULDgKQ8o669
+/dXjOo/HzouqKAlwXZy3gtUYtPI/nR9rfNHCdF19Ur1Dlh6VBKgPnAop1uuq7ZlR
+kfSKaE/ycbrZ9FH8a2kVxZGgZxr2KHWlyJAnDRPDEwcYnosqdr/PeuiA/HWxFJA=
+=Gnrr
+-----END PGP SIGNATURE-----
+
+--JefYhWJ8RkX3aR0a--
