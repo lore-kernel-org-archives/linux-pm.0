@@ -1,75 +1,259 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH 08/10] PM / Domains: Add support for removing PM domains
-Date: Mon, 12 Sep 2016 08:26:37 +0100
-Message-ID: <c6e6f1ca-55e9-6157-08ff-bb082cae2840@nvidia.com>
-References: <1471340976-5379-1-git-send-email-jonathanh@nvidia.com>
- <1471340976-5379-9-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFrVO9wb3ffmxA7HUUDt1_aYxe=aqa1v+xNpdrYiLt_m0A@mail.gmail.com>
- <c8498eca-6934-1cab-31d9-3d8ce4c74897@nvidia.com>
- <63871fe6-cda6-2a95-9c09-e4b3ebfa3419@nvidia.com>
- <CAPDyKFp+eDBLge40uv6aDuYOkaKAksgqZekqomLZijPrhDzj6A@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v7 2/8] arm: parse cpu capacity-dmips-mhz from DT
+Date: Mon, 12 Sep 2016 10:36:50 +0200
+Message-ID: <CAKfTPtDEmAwLR58hOFeAVgfKaSVCQaLrr3VyH_QMkcuty5YiKQ@mail.gmail.com>
+References: <1473085372-2840-1-git-send-email-juri.lelli@arm.com> <1473085372-2840-3-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:19828 "EHLO
-        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754119AbcILH0z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 03:26:55 -0400
-In-Reply-To: <CAPDyKFp+eDBLge40uv6aDuYOkaKAksgqZekqomLZijPrhDzj6A@mail.gmail.com>
+Received: from mail-lf0-f54.google.com ([209.85.215.54]:33601 "EHLO
+        mail-lf0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756811AbcILIhM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 04:37:12 -0400
+Received: by mail-lf0-f54.google.com with SMTP id h127so81933393lfh.0
+        for <linux-pm@vger.kernel.org>; Mon, 12 Sep 2016 01:37:11 -0700 (PDT)
+In-Reply-To: <1473085372-2840-3-git-send-email-juri.lelli@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Alexander Aring <alex.aring@gmail.com>, Eric Anholt <eric@anholt.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Mark Brown <broonie@kernel.org>
 
+Hi Juri,
 
-On 12/09/16 08:21, Ulf Hansson wrote:
-> On 9 September 2016 at 17:17, Jon Hunter <jonathanh@nvidia.com> wrote:
->>
->> On 09/09/16 14:54, Jon Hunter wrote:
->>> On 08/09/16 12:49, Ulf Hansson wrote:
->>>> On 16 August 2016 at 11:49, Jon Hunter <jonathanh@nvidia.com> wrote:
->>>>> The genpd framework allows users to add PM domains via the pm_genpd_init()
->>>>> function, however, there is no corresponding function to remove a PM
->>>>> domain. For most devices this may be fine as the PM domains are never
->>>>> removed, however, for devices that wish to populate the PM domains from
->>>>> within a driver, having the ability to remove a PM domain if the probing
->>>>> of the device fails or the driver is unloaded is necessary.
->>>>>
->>>>> Add the function pm_genpd_remove() to remove a PM domain by referencing
->>>>> it's generic_pm_domain structure.
->>>>>
->>>>> PM domains can only be removed if they are not a parent domain to
->>>>> another PM domain and have no devices associated with them.
->>>>
->>>> I think we should also check if the there's is a provider registered
->>>> for the genpd, as it should also prevent the genpd from being removed.
->>>> Right?
->>>
->>> Yes I would agree. I had thought that after patch #4 of this series that
->>> only the provider itself would be able to call this. However, we should
->>> probably still verify that the provider has correctly remove itself.
->>
->> So now I have the following. I am still not 100% happy. I cannot clear
->> the ->provider when calling of_genpd_del_provider() and so I cannot use
->> this to verify if the provider is present and so I need to check the
->> list of providers and it gets a bit messy. I have been wracking my
->> brains to find a better alternative (including a single function to
->> remove the provider and domains at once but there are issues with that
->> as well).
-> 
-> Instead of using the ->provider pointer to know whether the genpd has
-> a valid provider, why not just add an additional ->has_provider bool
-> flag in the genpd struct?
-> 
-> Simply set the flag when adding the provider and reset it when
-> removing it. Wouldn't that work?
+On 5 September 2016 at 16:22, Juri Lelli <juri.lelli@arm.com> wrote:
+> With the introduction of cpu capacity-dmips-mhz bindings, CPU capacities
+> can now be calculated from values extracted from DT and information
+> coming from cpufreq. Add parsing of DT information at boot time, and
+> complement it with cpufreq information. We keep code that can produce
+> same information, based on different DT properties and hard-coded
+> values, as fall-back for backward compatibility.
+>
+> Caveat: the information provided by this patch will start to be used in
+> the future. We need to #define arch_scale_cpu_capacity to something
+> provided in arch, so that scheduler's default implementation (which gets
+> used if arch_scale_cpu_capacity is not defined) is overwritten.
+>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 
-Yes. I was trying not to add to much clutter to the struct. However, may
-be this is the best option.
+Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
 
-Cheers
-Jon
+Vincent
 
--- 
-nvpublic
+> ---
+>
+> Changes from v1:
+>   - normalize w.r.t. highest capacity found in DT
+>   - bailout conditions (all-or-nothing)
+>
+> Changes from v4:
+>   - parsing modified to reflect change in binding (capacity-dmips-mhz)
+>
+> Changes from v5:
+>   - allocate raw_capacity array with kcalloc()
+>   - pr_err() only for partial capacity information
+>
+> Changes from v6:
+>   - use cpuinfo.max_freq instead of policy->max
+>   - add delayed work to unregister cpufreq notifier
+> ---
+>  arch/arm/kernel/topology.c | 155 ++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 154 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+> index ec279d161b32..a26e787926dc 100644
+> --- a/arch/arm/kernel/topology.c
+> +++ b/arch/arm/kernel/topology.c
+> @@ -78,6 +78,144 @@ static unsigned long *__cpu_capacity;
+>  #define cpu_capacity(cpu)      __cpu_capacity[cpu]
+>
+>  static unsigned long middle_capacity = 1;
+> +static bool cap_from_dt = true;
+> +static u32 *raw_capacity;
+> +static bool cap_parsing_failed;
+> +static u32 capacity_scale;
+> +
+> +static int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
+> +{
+> +       int ret = 1;
+> +       u32 cpu_capacity;
+> +
+> +       if (cap_parsing_failed)
+> +               return !ret;
+> +
+> +       ret = of_property_read_u32(cpu_node,
+> +                                  "capacity-dmips-mhz",
+> +                                  &cpu_capacity);
+> +       if (!ret) {
+> +               if (!raw_capacity) {
+> +                       raw_capacity = kcalloc(num_possible_cpus(),
+> +                                              sizeof(*raw_capacity),
+> +                                              GFP_KERNEL);
+> +                       if (!raw_capacity) {
+> +                               pr_err("cpu_capacity: failed to allocate memory for raw capacities\n");
+> +                               cap_parsing_failed = true;
+> +                               return !ret;
+> +                       }
+> +               }
+> +               capacity_scale = max(cpu_capacity, capacity_scale);
+> +               raw_capacity[cpu] = cpu_capacity;
+> +               pr_debug("cpu_capacity: %s cpu_capacity=%u (raw)\n",
+> +                       cpu_node->full_name, raw_capacity[cpu]);
+> +       } else {
+> +               if (raw_capacity) {
+> +                       pr_err("cpu_capacity: missing %s raw capacity\n",
+> +                               cpu_node->full_name);
+> +                       pr_err("cpu_capacity: partial information: fallback to 1024 for all CPUs\n");
+> +               }
+> +               cap_parsing_failed = true;
+> +               kfree(raw_capacity);
+> +       }
+> +
+> +       return !ret;
+> +}
+> +
+> +static void normalize_cpu_capacity(void)
+> +{
+> +       u64 capacity;
+> +       int cpu;
+> +
+> +       if (!raw_capacity || cap_parsing_failed)
+> +               return;
+> +
+> +       pr_debug("cpu_capacity: capacity_scale=%u\n", capacity_scale);
+> +       for_each_possible_cpu(cpu) {
+> +               capacity = (raw_capacity[cpu] << SCHED_CAPACITY_SHIFT)
+> +                       / capacity_scale;
+> +               set_capacity_scale(cpu, capacity);
+> +               pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
+> +                       cpu, arch_scale_cpu_capacity(NULL, cpu));
+> +       }
+> +}
+> +
+> +#ifdef CONFIG_CPU_FREQ
+> +static cpumask_var_t cpus_to_visit;
+> +static bool cap_parsing_done;
+> +static void parsing_done_workfn(struct work_struct *work);
+> +static DECLARE_WORK(parsing_done_work, parsing_done_workfn);
+> +
+> +static int
+> +init_cpu_capacity_callback(struct notifier_block *nb,
+> +                          unsigned long val,
+> +                          void *data)
+> +{
+> +       struct cpufreq_policy *policy = data;
+> +       int cpu;
+> +
+> +       if (cap_parsing_failed || cap_parsing_done)
+> +               return 0;
+> +
+> +       switch (val) {
+> +       case CPUFREQ_NOTIFY:
+> +               pr_debug("cpu_capacity: init cpu capacity for CPUs [%*pbl] (to_visit=%*pbl)\n",
+> +                               cpumask_pr_args(policy->related_cpus),
+> +                               cpumask_pr_args(cpus_to_visit));
+> +               cpumask_andnot(cpus_to_visit,
+> +                              cpus_to_visit,
+> +                              policy->related_cpus);
+> +               for_each_cpu(cpu, policy->related_cpus) {
+> +                       raw_capacity[cpu] = arch_scale_cpu_capacity(NULL, cpu) *
+> +                                           policy->cpuinfo.max_freq / 1000UL;
+> +                       capacity_scale = max(raw_capacity[cpu], capacity_scale);
+> +               }
+> +               if (cpumask_empty(cpus_to_visit)) {
+> +                       normalize_cpu_capacity();
+> +                       kfree(raw_capacity);
+> +                       pr_debug("cpu_capacity: parsing done\n");
+> +                       cap_parsing_done = true;
+> +                       schedule_work(&parsing_done_work);
+> +               }
+> +       }
+> +       return 0;
+> +}
+> +
+> +static struct notifier_block init_cpu_capacity_notifier = {
+> +       .notifier_call = init_cpu_capacity_callback,
+> +};
+> +
+> +static int __init register_cpufreq_notifier(void)
+> +{
+> +       if (cap_parsing_failed)
+> +               return -EINVAL;
+> +
+> +       if (!alloc_cpumask_var(&cpus_to_visit, GFP_KERNEL)) {
+> +               pr_err("cpu_capacity: failed to allocate memory for cpus_to_visit\n");
+> +               return -ENOMEM;
+> +       }
+> +       cpumask_copy(cpus_to_visit, cpu_possible_mask);
+> +
+> +       return cpufreq_register_notifier(&init_cpu_capacity_notifier,
+> +                                        CPUFREQ_POLICY_NOTIFIER);
+> +}
+> +core_initcall(register_cpufreq_notifier);
+> +
+> +static void parsing_done_workfn(struct work_struct *work)
+> +{
+> +       cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
+> +                                        CPUFREQ_POLICY_NOTIFIER);
+> +}
+> +
+> +#else
+> +static int __init free_raw_capacity(void)
+> +{
+> +       kfree(raw_capacity);
+> +
+> +       return 0;
+> +}
+> +core_initcall(free_raw_capacity);
+> +#endif
+>
+>  /*
+>   * Iterate all CPUs' descriptor in DT and compute the efficiency
+> @@ -99,6 +237,12 @@ static void __init parse_dt_topology(void)
+>         __cpu_capacity = kcalloc(nr_cpu_ids, sizeof(*__cpu_capacity),
+>                                  GFP_NOWAIT);
+>
+> +       cn = of_find_node_by_path("/cpus");
+> +       if (!cn) {
+> +               pr_err("No CPU information found in DT\n");
+> +               return;
+> +       }
+> +
+>         for_each_possible_cpu(cpu) {
+>                 const u32 *rate;
+>                 int len;
+> @@ -110,6 +254,13 @@ static void __init parse_dt_topology(void)
+>                         continue;
+>                 }
+>
+> +               if (parse_cpu_capacity(cn, cpu)) {
+> +                       of_node_put(cn);
+> +                       continue;
+> +               }
+> +
+> +               cap_from_dt = false;
+> +
+>                 for (cpu_eff = table_efficiency; cpu_eff->compatible; cpu_eff++)
+>                         if (of_device_is_compatible(cn, cpu_eff->compatible))
+>                                 break;
+> @@ -151,6 +302,8 @@ static void __init parse_dt_topology(void)
+>                 middle_capacity = ((max_capacity / 3)
+>                                 >> (SCHED_CAPACITY_SHIFT-1)) + 1;
+>
+> +       if (cap_from_dt && !cap_parsing_failed)
+> +               normalize_cpu_capacity();
+>  }
+>
+>  /*
+> @@ -160,7 +313,7 @@ static void __init parse_dt_topology(void)
+>   */
+>  static void update_cpu_capacity(unsigned int cpu)
+>  {
+> -       if (!cpu_capacity(cpu))
+> +       if (!cpu_capacity(cpu) || cap_from_dt)
+>                 return;
+>
+>         set_capacity_scale(cpu, cpu_capacity(cpu) / middle_capacity);
+> --
+> 2.7.0
+>
