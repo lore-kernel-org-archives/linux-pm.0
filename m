@@ -1,93 +1,65 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle
- states
-Date: Mon, 12 Sep 2016 10:16:00 -0600
-Message-ID: <20160912161600.GA21885@linaro.org>
-References: <1472242678-33700-1-git-send-email-lina.iyer@linaro.org>
- <1472242678-33700-3-git-send-email-lina.iyer@linaro.org>
- <0b233802-f459-c6bb-ff42-70745a225cfb@arm.com>
- <20160902201605.GA1705@linaro.org>
- <87sht59mcw.fsf@arm.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v10 1/5] Documentation: bindings: add dt documentation
+ for dfi controller
+Date: Mon, 12 Sep 2016 11:18:37 -0500
+Message-ID: <20160912161836.GA16533@rob-hp-laptop>
+References: <1473051971-5500-1-git-send-email-hl@rock-chips.com>
+ <1473051971-5500-2-git-send-email-hl@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
 Content-Disposition: inline
-In-Reply-To: <87sht59mcw.fsf@arm.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Brendan Jackman <brendan.jackman@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, ulf.hansson@linaro.org, khilman@kernel.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
+In-Reply-To: <1473051971-5500-2-git-send-email-hl@rock-chips.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Lin Huang <hl@rock-chips.com>
+Cc: tixy@linaro.org, mark.rutland@arm.com, devicetree@vger.kernel.org, typ@rock-chips.com, linux-rockchip@lists.infradead.org, mturquette@baylibre.com, dbasehore@chromium.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, dianders@chromium.org, cw00.choi@samsung.com, kyungmin.park@samsung.com, myungjoo.ham@samsung.com, sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 12 2016 at 09:19 -0600, Brendan Jackman wrote:
->
->Hi Lina,
->
->Sorry for the delay here, Sudeep and I were both been on holiday last week.
->
->On Fri, Sep 02 2016 at 21:16, Lina Iyer wrote:
->> On Fri, Sep 02 2016 at 07:21 -0700, Sudeep Holla wrote:
->[...]
->>>This version is *not very descriptive*. Also the discussion we had on v3
->>>version has not yet concluded IMO. So can I take that we agreed on what
->>>was proposed there or not ?
->>>
->> Sorry, this example is not very descriptive. Pls. check the 8916 dtsi
->> for the new changes in the following patches. Let me know if that makes
->> sense.
->
->The not-yet-concluded discussion Sudeep is referring to is at [1].
->
->In that thread we initially proposed the idea of, instead of splitting
->state phandles between cpu-idle-states and domain-idle-states, putting
->CPUs in their own domains and using domain-idle-states for _all_
->phandles, deprecating cpu-idle-states. I've brought this up in other
->threads [2] but discussion keeps petering out, and neither this example
->nor the 8916 dtsi in this patch series reflect the idea.
->
-Brendan, while your idea is good and will work for CPUs, I do not expect
-other domains and possibly CPU domains on some architectures to follow
-this model. There is nothing that prevents you from doing this today,
-you can specify domains around CPUs in your devicetree and CPU PM will
-handle the hierarchy. I don't think its fair to force it on all SoCs
-using CPU domains. This patchset does not restrict you from organizing
-the idle states the way you want it. This revision of the series, clubs
-CPU and domain idle states under idle-states umbrella. So part of your
-requirement is also satisfied.
-
-You can follow up the series with your new additions, I don't see a
-conflict with this change.
-
-Thanks,
-Lina
-
-
->It would be great if we could go back to the thread at [1] where Sudeep
->has posted examples and come to a clear consensus on the binding design
->before reviewing implementation patches. Ideally with input from Ulf,
->Rob and Kevin.
->
->[1] https://patchwork.kernel.org/patch/9264507
->[2] http://www.spinics.net/lists/devicetree/msg141024.html
->>
->> Thanks,
->> Lina
->>
->>>We could have better example above *really* based on the discussions we
->>>had so far. This example always makes me think it's well crafted to
->>>avoid any sort of discussions. We need to consider different use-cases
->>>e.g. what about CPU level states ?
->>>
->>>IMO, we need to discuss this DT binding in detail and arrive at someq
->>>conclusion before you take all the troubles to respin the series.
->>>Also it's better to keep the DT binding separate until we have some
->>>conclusion instead of posting the implementation for each version.
->>>That's just my opinion(I would be least bothered about implementation
->>>until I know it will be accepted before I can peek into the code, others
->>>may differ.
->>>
->>>--
->>>Regards,
->>>Sudeep
->
->Cheers,
->Brendan
+T24gTW9uLCBTZXAgMDUsIDIwMTYgYXQgMDE6MDY6MDdQTSArMDgwMCwgTGluIEh1YW5nIHdyb3Rl
+Ogo+IFRoaXMgcGF0Y2ggYWRkcyB0aGUgZG9jdW1lbnRhdGlvbiBmb3Igcm9ja2NoaXAgZGZpIGRl
+dmZyZXEtZXZlbnQgZHJpdmVyLgo+IAo+IFNpZ25lZC1vZmYtYnk6IExpbiBIdWFuZyA8aGxAcm9j
+ay1jaGlwcy5jb20+Cj4gQWNrZWQtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcu
+Y29tPgo+IC0tLQo+IENoYW5nZXMgaW4gdjEwOgo+IC0gTm9uZQo+IAo+IENoYW5nZXMgaW4gdjk6
+Cj4gLSByZW9yZGVyIGNvbXBhdGlibGUgYW5kIHJlZwo+IAo+IENoYW5nZXMgaW4gdjg6Cj4gLSBk
+ZWxldGUgYSB1bnVzZSBibGFuayBsaW5lCj4gCj4gQ2hhbmdlcyBpbiB2NzoKPiAtIE5vbmUKPiAK
+PiBDaGFuZ2VzIGluIHY2Ogo+IC0gTm9uZQo+IAo+IENoYW5nZXMgaW4gdjU6Cj4gLSBOb25lCj4g
+Cj4gQ2hhbmdlcyBpbiB2NDoKPiAtIE5vbmUKPiAKPiBDaGFuZ2VzIGluIHYzOgo+IC0gTm9uZQo+
+IAo+IENoYW5nZXMgaW4gdjI6Cj4gLSBOb25lIAo+IAo+IENoYW5nZXMgaW4gdjE6Cj4gLSBOb25l
+Cj4gCj4gIC4uLi9iaW5kaW5ncy9kZXZmcmVxL2V2ZW50L3JvY2tjaGlwLWRmaS50eHQgICAgICAg
+ICAgIHwgMTkgKysrKysrKysrKysrKysrKysrKwo+ICAxIGZpbGUgY2hhbmdlZCwgMTkgaW5zZXJ0
+aW9ucygrKQo+ICBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
+bmRpbmdzL2RldmZyZXEvZXZlbnQvcm9ja2NoaXAtZGZpLnR4dAo+IAo+IGRpZmYgLS1naXQgYS9E
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGV2ZnJlcS9ldmVudC9yb2NrY2hpcC1k
+ZmkudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvZXZlbnQv
+cm9ja2NoaXAtZGZpLnR4dAo+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0Cj4gaW5kZXggMDAwMDAwMC4u
+ZjIyMzMxMwo+IC0tLSAvZGV2L251bGwKPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUv
+YmluZGluZ3MvZGV2ZnJlcS9ldmVudC9yb2NrY2hpcC1kZmkudHh0Cj4gQEAgLTAsMCArMSwxOSBA
+QAo+ICsKPiArKiBSb2NrY2hpcCByazMzOTkgREZJIGRldmljZQo+ICsKPiArUmVxdWlyZWQgcHJv
+cGVydGllczoKPiArLSBjb21wYXRpYmxlOiBNdXN0IGJlICJyb2NrY2hpcCxyazMzOTktZGZpIi4K
+PiArLSByZWc6IHBoeXNpY2FsIGJhc2UgYWRkcmVzcyBvZiBlYWNoIERGSSBhbmQgbGVuZ3RoIG9m
+IG1lbW9yeSBtYXBwZWQgcmVnaW9uCj4gKy0gcm9ja2NoaXAscG11OiBwaGFuZGxlIHRvIHRoZSBz
+eXNjb24gbWFuYWdpbmcgdGhlICJwbXUgZ2VuZXJhbCByZWdpc3RlciBmaWxlcyIKPiArLSBjbG9j
+a3M6IHBoYW5kbGVzIGZvciBjbG9jayBzcGVjaWZpZWQgaW4gImNsb2NrLW5hbWVzIiBwcm9wZXJ0
+eQo+ICstIGNsb2NrLW5hbWVzIDogdGhlIG5hbWUgb2YgY2xvY2sgdXNlZCBieSB0aGUgREZJLCBt
+dXN0IGJlICJwY2xrX2Rkcl9tb24iOwo+ICsKPiArRXhhbXBsZToKPiArCWRmaTogZGZpQDB4ZmY2
+MzAwMDAgewoKRHJvcCB0aGUgJzB4Jy4gV2l0aCB0aGF0LAoKQWNrZWQtYnk6IFJvYiBIZXJyaW5n
+IDxyb2JoQGtlcm5lbC5vcmc+Cgo+ICsJCWNvbXBhdGlibGUgPSAicm9ja2NoaXAscmszMzk5LWRm
+aSI7Cj4gKwkJcmVnID0gPDB4MDAgMHhmZjYzMDAwMCAweDAwIDB4NDAwMD47Cj4gKwkJcm9ja2No
+aXAscG11ID0gPCZwbXVncmY+Owo+ICsJCWNsb2NrcyA9IDwmY3J1IFBDTEtfRERSX01PTj47Cj4g
+KwkJY2xvY2stbmFtZXMgPSAicGNsa19kZHJfbW9uIjsKPiArCQlzdGF0dXMgPSAiZGlzYWJsZWQi
+Owo+ICsJfTsKPiAtLSAKPiAyLjYuNgo+IAo+IC0tCj4gVG8gdW5zdWJzY3JpYmUgZnJvbSB0aGlz
+IGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGRldmljZXRyZWUiIGluCj4gdGhlIGJv
+ZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcKPiBNb3JlIG1ham9y
+ZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZvLmh0bWwK
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVs
+IG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
