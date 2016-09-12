@@ -1,74 +1,69 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v6 2/3] mfd: tps65217: Add power button as subdevice
-Date: Mon, 12 Sep 2016 14:57:56 +0100
-Message-ID: <20160912135756.GE9789@dell>
-References: <20160909084204.26226-1-m.niestroj@grinn-global.com>
- <20160909084204.26226-3-m.niestroj@grinn-global.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 00/26] constify local structures
+Date: Mon, 12 Sep 2016 15:57:40 +0200
+Message-ID: <CAMuHMdXuvrY987eTOmV+Ltaev=LrsDGuuE0+mmjJB7cAr+19ug@mail.gmail.com>
+References: <1473599168-30561-1-git-send-email-Julia.Lawall@lip6.fr>
+ <20160911172105.GB5493@intel.com> <alpine.DEB.2.10.1609121051050.3049@hadrien>
+ <20160912131625.GD957@intel.com> <877fah5j35.fsf@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f53.google.com ([74.125.82.53]:38668 "EHLO
-        mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932887AbcILN4B (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 09:56:01 -0400
-Received: by mail-wm0-f53.google.com with SMTP id 1so146312446wmz.1
-        for <linux-pm@vger.kernel.org>; Mon, 12 Sep 2016 06:56:00 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160909084204.26226-3-m.niestroj@grinn-global.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <877fah5j35.fsf@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Felipe Balbi <felipe.balbi@linux.intel.com>
+Cc: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Julia Lawall <julia.lawall@lip6.fr>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Joe Perches <joe@perches.com>, "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, Linux PM list <linux-pm@vger.kernel.org>, platform-driver-x86@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>, linux-can@vger.kernel.org, Tatyana Nikolova <tatyana.e.nikolova@intel.com>, Shiraz Saleem <shiraz.saleem@intel.com>, Mustafa Ismail <mustafa.ismail@intel.com>, Chien Tin Tung <chien.tin.tung@intel.com>, linux-rdma <linux-rdma@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, driverdevel <devel@driverdev.osuosl.org>
 List-Id: linux-pm@vger.kernel.org
-To: Marcin Niestroj <m.niestroj@grinn-global.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Grygorii Strashko <grygorii.strashko@ti.com>, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, devicetree@vger.kernel.org
 
-On Fri, 09 Sep 2016, Marcin Niestroj wrote:
+On Mon, Sep 12, 2016 at 3:43 PM, Felipe Balbi
+<felipe.balbi@linux.intel.com> wrote:
+> Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> writes:
+>> On Mon, Sep 12, 2016 at 10:54:07AM +0200, Julia Lawall wrote:
+>>> On Sun, 11 Sep 2016, Jarkko Sakkinen wrote:
+>>> > On Sun, Sep 11, 2016 at 03:05:42PM +0200, Julia Lawall wrote:
+>>> > > Constify local structures.
+>>> > >
+>>> > > The semantic patch that makes this change is as follows:
+>>> > > (http://coccinelle.lip6.fr/)
+>>> >
+>>> > Just my two cents but:
+>>> >
+>>> > 1. You *can* use a static analysis too to find bugs or other issues.
+>>> > 2. However, you should manually do the commits and proper commit
+>>> >    messages to subsystems based on your findings. And I generally think
+>>> >    that if one contributes code one should also at least smoke test changes
+>>> >    somehow.
+>>> >
+>>> > I don't know if I'm alone with my opinion. I just think that one should
+>>> > also do the analysis part and not blindly create and submit patches.
+>>>
+>>> All of the patches are compile tested.  And the individual patches are
+>>
+>> Compile-testing is not testing. If you are not able to test a commit,
+>> you should explain why.
+>
+> Dude, Julia has been doing semantic patching for years already and
+> nobody has raised any concerns so far. There's already an expectation
+> that Coccinelle *works* and Julia's sematic patches are sound.
 
-> Add tps65217 power buttor subdevice with assigned IRQ resources.
-> 
-> Signed-off-by: Marcin Niestroj <m.niestroj@grinn-global.com>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-> Acked-by: Tony Lindgren <tony@atomide.com>
-> ---
-> Depends on patch 1 in series
-> 
-> Changes v1 -> v6: none
-> 
->  drivers/mfd/tps65217.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
++1
 
-Applied, thanks.
+> Besides, adding 'const' is something that causes virtually no functional
+> changes to the point that build-testing is really all you need. Any
+> problems caused by adding 'const' to a definition will be seen by build
+> errors or warnings.
 
-> diff --git a/drivers/mfd/tps65217.c b/drivers/mfd/tps65217.c
-> index 41b5d59..57c8741 100644
-> --- a/drivers/mfd/tps65217.c
-> +++ b/drivers/mfd/tps65217.c
-> @@ -38,6 +38,10 @@ static struct resource charger_resources[] = {
->  	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_USB, "USB"),
->  };
->  
-> +static struct resource pb_resources[] = {
-> +	DEFINE_RES_IRQ_NAMED(TPS65217_IRQ_PB, "PB"),
-> +};
-> +
->  struct tps65217_irq {
->  	int mask;
->  	int interrupt;
-> @@ -122,6 +126,12 @@ static struct mfd_cell tps65217s[] = {
->  		.resources = charger_resources,
->  		.of_compatible = "ti,tps65217-charger",
->  	},
-> +	{
-> +		.name = "tps65217-pwrbutton",
-> +		.num_resources = ARRAY_SIZE(pb_resources),
-> +		.resources = pb_resources,
-> +		.of_compatible = "ti,tps65217-pwrbutton",
-> +	},
->  };
->  
->  static irqreturn_t tps65217_irq_thread(int irq, void *data)
+Unfortunately in this particular case they could lead to failures that can only
+be detected at runtime, when failing o write to a read-only piece of memory,
+due to the casting away of the constness of the pointers later.
+Fortunately this was detected during code review (doh...).
 
--- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
