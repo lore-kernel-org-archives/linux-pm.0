@@ -1,73 +1,104 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH 00/26] constify local structures
-Date: Mon, 12 Sep 2016 15:23:56 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1609121523330.29099@hadrien>
-References: <1473599168-30561-1-git-send-email-Julia.Lawall@lip6.fr>
- <20160911172105.GB5493@intel.com>
- <alpine.DEB.2.10.1609121051050.3049@hadrien> <20160912131625.GD957@intel.com>
+From: NeilBrown <neilb-IBi9RG/b67k@public.gmane.org>
+Subject: Re: [PATCH v16 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
+Date: Mon, 12 Sep 2016 15:27:18 +0200
+Message-ID: <87inu11c5l.fsf@notabene.neil.brown.name>
+References: <cover.1470034830.git.baolin.wang@linaro.org> <CAMz4kuLotLs1ASuZaMRXf29khmQUfEQc+jFV8Fxp+fHFn90Z9g@mail.gmail.com> <CAMz4ku+pkRT70NcZEDepfshH7z7+Fm3yo-C2+ccWgJwDJE4C-Q@mail.gmail.com> <8760q9a8m6.fsf@notabene.neil.brown.name> <CAMz4kuJJwKFqU=6JnpUQNPeQ-uy-PyZ5VBaBKofn=8Jv5y0nXA@mail.gmail.com> <878tv297a0.fsf@notabene.neil.brown.name> <CAMz4kuLXyVSXjh1Sn06+wcUr+bVritCW3sN=XyEdap7h=MN7xw@mail.gmail.com> <87y4326l44.fsf@notabene.neil.brown.name> <20160909110727.GI27946@sirena.org.uk> <87pooc7n3t.fsf@notabene.neil.brown.name> <20160912122549.GZ27946@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <20160912131625.GD957@intel.com>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Cc: alsa-devel@alsa-project.org, Mustafa Ismail <mustafa.ismail@intel.com>, Tatyana Nikolova <tatyana.e.nikolova@intel.com>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, linux-acpi@vger.kernel.org, tpmdd-devel@lists.sourceforge.net, linux-media@vger.kernel.org, linux-pm@vger.kernel.org, linux-can@vger.kernel.org, Shiraz Saleem <shiraz.saleem@intel.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, netdev@vger.kernel.org, Chien Tin Tung <chien.tin.tung@intel.com>, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-usb@vger.kernel.org, joe@perches.com
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha1; protocol="application/pgp-signature"
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160912122549.GZ27946-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ruslan Bilovol <ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, grygorii.strashko-l0cyMroinI0@public.gmane.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-m
 List-Id: linux-pm@vger.kernel.org
 
+--=-=-=
+Content-Type: text/plain
 
+On Mon, Sep 12 2016, Mark Brown wrote:
 
-On Mon, 12 Sep 2016, Jarkko Sakkinen wrote:
-
-> On Mon, Sep 12, 2016 at 10:54:07AM +0200, Julia Lawall wrote:
-> >
-> >
-> > On Sun, 11 Sep 2016, Jarkko Sakkinen wrote:
-> >
-> > > On Sun, Sep 11, 2016 at 03:05:42PM +0200, Julia Lawall wrote:
-> > > > Constify local structures.
-> > > >
-> > > > The semantic patch that makes this change is as follows:
-> > > > (http://coccinelle.lip6.fr/)
-> > >
-> > > Just my two cents but:
-> > >
-> > > 1. You *can* use a static analysis too to find bugs or other issues.
-> > > 2. However, you should manually do the commits and proper commit
-> > >    messages to subsystems based on your findings. And I generally think
-> > >    that if one contributes code one should also at least smoke test changes
-> > >    somehow.
-> > >
-> > > I don't know if I'm alone with my opinion. I just think that one should
-> > > also do the analysis part and not blindly create and submit patches.
-> >
-> > All of the patches are compile tested.  And the individual patches are
+> [ Unknown signature status ]
+> On Sat, Sep 10, 2016 at 07:57:26AM +1000, NeilBrown wrote:
+>> On Fri, Sep 09 2016, Mark Brown wrote:
 >
-> Compile-testing is not testing. If you are not able to test a commit,
-> you should explain why.
+>> > The wm831x driver in the patch series is an example of such hardware -
+>> > it is purely a power manager, it has no USB PHY hardware at all.  It's a
 >
-> > submitted to the relevant maintainers.  The individual commit messages
-> > give a more detailed explanation of the strategy used to decide that the
-> > structure was constifiable.  It seemed redundant to put that in the cover
-> > letter, which will not be committed anyway.
+>> The "probe" routine calls
 >
-> I don't mean to be harsh but I do not care about your thought process
-> *that much* when I review a commit (sometimes it might make sense to
-> explain that but it depends on the context).
+>>  +			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
 >
-> I mostly only care why a particular change makes sense for this
-> particular subsystem. The report given by a static analysis tool can
-> be a starting point for making a commit but it's not sufficient.
-> Based on the report you should look subsystems as individuals.
+>> Presumably wm831x_pdata is initialised by a board file?
+>
+> Yes.
+>
+>> I strongly suspect it is initialized to  "usb-charger.0" because the
+>> names given to usb chargers are "usb-charger.%d" in discovery order.
+>> I don't see this being at all useful if there is ever more than one
+>> usb-charger.
+>> Do you?
+>
+> It's no worse than any other board file situation - if someone has that
+> problem they get to fix it.
 
-OK, thanks for the feedback.
+My point is that the present design does not appear to scale beyond a
+single USB power supply (as if there were two, they would be named in
+discovery order, which is not reliably stable).
 
-julia
+Your point is, I think, that when someone actually cares about that lack
+of scaling, they can fix it.
+
+I am perfectly happy with that approach.  However if the code doesn't
+scale beyond one charger, it shouldn't pretend that it does.
+i.e.
+  Don't have "usb_charger_find_by_name()", just a global "usb_charger"
+  (or similar).
+  The first charger to register gets to be the "usb_charger".  The
+  second one gets an error.
+I could be quite happy with that sort of interface.
+
+>
+>> So how can this wm831x driver actually find out what sort of charger is
+>> connected and so set the power limit?  I just don't see this working *at*
+>> *all*.
+>
+> The whole point from the point of view of the wm831x driver is that it
+> just wants something to tell it how much current it's allowed to draw, I
+> appreciate that doesn't change your analysis of the bit in the middle
+> but the consumer driver bit seems fine here.
+
+Yes, the wm831x driver probably does the right thing.
+Other drivers might want to know not only the minimum they are allowed
+to draw, but also the maximum they should try even if they are carefully
+monitoring the voltage.
+So wm831x is doing the right thing with the wrong interface.  Maybe you
+can describe that as "fine".
+
+NeilBrown
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJX1q02AAoJEDnsnt1WYoG54roP/2wI8wrF+/mho2M7g9ipyyhA
+eWL139YRL7yTmVE+nn9rHZ0HcljsibTNZFs0P0QLb2HLF30W2Yo7RFSTtS9ljaEb
+ZWpj/mlByWfemBSjFvd96BEWVrpjsytcbRs3qhQwXKfOatMOiUIo6QvOjmVQLmvk
+qgOFf41vpYZoXvEACpCuGZeZVgQvZ3mLBjaOwwbYai4286gn2JusAe9LAVAEgghU
+66guPizqOgLszkQ4Qfh9h0fh2/qXhjvFZA8v+42TpjOoEIVhAOpT5LDlFleBrXLc
+OCyx5kmDy/EhwYMuXu22Bj1Vs9rpgHY2iO1JXB36nnA/cMW1+Hos6u+2Dkd7WssN
+BYMOnSiGpLzrn5WwYLk+sD3pUBgIjX9lXsd35EStaKhQOMqTHFk9W7yvcGjm0vkh
+xWOmuvHIbBSEfQNKaof4GyLoXz7HnGa5RYkQfxI0acBImIyugY1vAKfJYv7ZuzzS
+COmRFeWHncxZzeLZjjEa7ck5trI8GjlxhqCOowqiJFBpUtDAekJ9oaUW5YyNhNw6
+80PAL+pNiQyQP15M7Q9nzs3ugVWHKRg0muLB7HsLe5agoDuARuJjt9syZn8o8C7X
+207zxUwvmWgGxOKxDO7epi1dWcc6m8f5Ps7w4W/f/zcZA1SPfbGmnt2K9fAJmeN4
+8BKqQLiym7mnmAau1OIJ
+=0XkI
+-----END PGP SIGNATURE-----
+--=-=-=--
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
