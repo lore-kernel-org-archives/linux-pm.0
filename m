@@ -1,139 +1,101 @@
-From: Anisse Astier <anisse@astier.eu>
-Subject: Re: [PATCH] PM / Hibernate: allow hibernation with PAGE_POISONING_ZERO
-Date: Mon, 12 Sep 2016 17:19:54 +0200
-Message-ID: <CALUN=qJNX6HqrwXkk--8u0PiOxV-USE4tEouqimXPiRaobtAEw@mail.gmail.com>
-References: <1473410612-6207-1-git-send-email-anisse@astier.eu> <20160912113238.GA30927@amd>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v16 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Mon, 12 Sep 2016 16:26:27 +0100
+Message-ID: <20160912152627.GA27946@sirena.org.uk>
+References: <CAMz4ku+pkRT70NcZEDepfshH7z7+Fm3yo-C2+ccWgJwDJE4C-Q@mail.gmail.com>
+ <8760q9a8m6.fsf@notabene.neil.brown.name>
+ <CAMz4kuJJwKFqU=6JnpUQNPeQ-uy-PyZ5VBaBKofn=8Jv5y0nXA@mail.gmail.com>
+ <878tv297a0.fsf@notabene.neil.brown.name>
+ <CAMz4kuLXyVSXjh1Sn06+wcUr+bVritCW3sN=XyEdap7h=MN7xw@mail.gmail.com>
+ <87y4326l44.fsf@notabene.neil.brown.name>
+ <20160909110727.GI27946@sirena.org.uk>
+ <87pooc7n3t.fsf@notabene.neil.brown.name>
+ <20160912122549.GZ27946@sirena.org.uk>
+ <87inu11c5l.fsf@notabene.neil.brown.name>
 Mime-Version: 1.0
-Content-Type: multipart/alternative; boundary=089e0158c14848285d053c510717
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20160912113238.GA30927@amd>
-Sender: owner-linux-mm@kvack.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: David Rientjes <rientjes@google.com>, Michal Hocko <mhocko@suse.com>, linux-pm@vger.kernel.org, Mathias Krause <minipli@googlemail.com>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Laura Abbott <labbott@fedoraproject.org>, linux-mm@kvack.org, Brad Spengler <spender@grsecurity.net>, Jianyu Zhan <nasa4836@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Yves-Alexis Perez <corsac@debian.org>, Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>, Len Brown <len.brown@intel.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, PaX Team <pageexec@freemail.hu>, Dave Hansen <dave.hansen@intel.com>, Mel Gorman <mgorman@suse.de>, Peter Zijlstra <peterz@infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="Jsn5+Lu/ZvzbAGtZ"
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <87inu11c5l.fsf-wvvUuzkyo1HefUI2i7LXDhCRmIWqnp/j@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: NeilBrown <neilb-IBi9RG/b67k@public.gmane.org>
+Cc: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ruslan Bilovol <ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, grygorii.strashko-l0cyMroinI0@public.gmane.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-m
 List-Id: linux-pm@vger.kernel.org
 
---089e0158c14848285d053c510717
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
 
-Le 12 sept. 2016 13:32, "Pavel Machek" <pavel@ucw.cz> a =C3=A9crit :
->
-> On Fri 2016-09-09 10:43:32, Anisse Astier wrote:
-> > PAGE_POISONING_ZERO disables zeroing new pages on alloc, they are
-> > poisoned (zeroed) as they become available.
-> > In the hibernate use case, free pages will appear in the system without
-> > being cleared, left there by the loading kernel.
-> >
-> > This patch will make sure free pages are cleared on resume when
-> > PAGE_POISONING_ZERO is enabled. We free the pages just after resume
-> > because we can't do it later: going through any device resume code migh=
-t
-> > allocate some memory and invalidate the free pages bitmap.
-> >
-> > Thus we don't need to disable hibernation when PAGE_POISONING_ZERO is
-> > enabled.
-> >
-> > Signed-off-by: Anisse Astier <anisse@astier.eu>
-> > Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> > Cc: Laura Abbott <labbott@fedoraproject.org>
-> > Cc: Mel Gorman <mgorman@suse.de>
-> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
->
-> Looks reasonable to me.
->
-> Acked-by: Pavel Machek <pavel@ucw.cz>
->
-> Actually.... this takes basically zero time come. Do we want to do it
-> unconditionally?
->
-> (Yes, it is free memory, but for sake of debugging, I guess zeros are
-> preffered to random content that changed during hibernation.)
->
-> (But that does not change the Ack.)
->
-> Best regards,
->
-Pavel
-> --
+--Jsn5+Lu/ZvzbAGtZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I have no opposition on doing this unconditionally. I can send a v2 as soon
-as I get closer to a computer.
+On Mon, Sep 12, 2016 at 03:27:18PM +0200, NeilBrown wrote:
+> On Mon, Sep 12 2016, Mark Brown wrote:
 
-Regards,
+> > It's no worse than any other board file situation - if someone has that
+> > problem they get to fix it.
 
-Anisse
+> My point is that the present design does not appear to scale beyond a
+> single USB power supply (as if there were two, they would be named in
+> discovery order, which is not reliably stable).
 
-Sorry for the brevity, I'm posting this on mobile.
+For the practical purposes of people making systems (as opposed to
+upstream where this is likely to get most use) it pretty much is.
+Though quite how many systems have multiple chargers is itself also a
+question.
 
---089e0158c14848285d053c510717
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> Your point is, I think, that when someone actually cares about that lack
+> of scaling, they can fix it.
 
-<p dir=3D"ltr">Le=C2=A012 sept. 2016 13:32, &quot;Pavel Machek&quot; &lt;<a=
- href=3D"mailto:pavel@ucw.cz">pavel@ucw.cz</a>&gt; a =C3=A9crit=C2=A0:<br>
-&gt;<br>
-&gt; On Fri 2016-09-09 10:43:32, Anisse Astier wrote:<br>
-&gt; &gt; PAGE_POISONING_ZERO disables zeroing new pages on alloc, they are=
-<br>
-&gt; &gt; poisoned (zeroed) as they become available.<br>
-&gt; &gt; In the hibernate use case, free pages will appear in the system w=
-ithout<br>
-&gt; &gt; being cleared, left there by the loading kernel.<br>
-&gt; &gt;<br>
-&gt; &gt; This patch will make sure free pages are cleared on resume when<b=
-r>
-&gt; &gt; PAGE_POISONING_ZERO is enabled. We free the pages just after resu=
-me<br>
-&gt; &gt; because we can&#39;t do it later: going through any device resume=
- code might<br>
-&gt; &gt; allocate some memory and invalidate the free pages bitmap.<br>
-&gt; &gt;<br>
-&gt; &gt; Thus we don&#39;t need to disable hibernation when PAGE_POISONING=
-_ZERO is<br>
-&gt; &gt; enabled.<br>
-&gt; &gt;<br>
-&gt; &gt; Signed-off-by: Anisse Astier &lt;<a href=3D"mailto:anisse@astier.=
-eu">anisse@astier.eu</a>&gt;<br>
-&gt; &gt; Cc: Kirill A. Shutemov &lt;<a href=3D"mailto:kirill.shutemov@linu=
-x.intel.com">kirill.shutemov@linux.intel.com</a>&gt;<br>
-&gt; &gt; Cc: Laura Abbott &lt;<a href=3D"mailto:labbott@fedoraproject.org"=
->labbott@fedoraproject.org</a>&gt;<br>
-&gt; &gt; Cc: Mel Gorman &lt;<a href=3D"mailto:mgorman@suse.de">mgorman@sus=
-e.de</a>&gt;<br>
-&gt; &gt; Cc: Rafael J. Wysocki &lt;<a href=3D"mailto:rjw@rjwysocki.net">rj=
-w@rjwysocki.net</a>&gt;<br>
-&gt;<br>
-&gt; Looks reasonable to me.<br>
-&gt;<br>
-&gt; Acked-by: Pavel Machek &lt;<a href=3D"mailto:pavel@ucw.cz">pavel@ucw.c=
-z</a>&gt;<br>
-&gt;<br>
-&gt; Actually.... this takes basically zero time come. Do we want to do it<=
-br>
-&gt; unconditionally?<br>
-&gt;<br>
-&gt; (Yes, it is free memory, but for sake of debugging, I guess zeros are<=
-br>
-&gt; preffered to random content that changed during hibernation.)<br>
-&gt;<br>
-&gt; (But that does not change the Ack.)<br>
-&gt;<br>
-&gt; Best regards,<br>
-&gt; =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 Pavel<br>
-&gt; --</p>
-<p dir=3D"ltr">I have no opposition on doing this unconditionally. I can se=
-nd a v2 as soon as I get closer to a computer.</p>
-<p dir=3D"ltr">Regards,</p>
-<p dir=3D"ltr">Anisse</p>
-<p dir=3D"ltr">Sorry for the brevity, I&#39;m posting this on mobile.</p>
+Yes.
 
---089e0158c14848285d053c510717--
+> I am perfectly happy with that approach.  However if the code doesn't
+> scale beyond one charger, it shouldn't pretend that it does.
+> i.e.
+>   Don't have "usb_charger_find_by_name()", just a global "usb_charger"
+>   (or similar).
+>   The first charger to register gets to be the "usb_charger".  The
+>   second one gets an error.
+> I could be quite happy with that sort of interface.
 
+Well, a fairly standard way of extending would be to allow the explicit
+assignment of names to chargers so this'd avoid such churn.
+
+> > The whole point from the point of view of the wm831x driver is that it
+> > just wants something to tell it how much current it's allowed to draw, I
+> > appreciate that doesn't change your analysis of the bit in the middle
+> > but the consumer driver bit seems fine here.
+
+> Yes, the wm831x driver probably does the right thing.
+> Other drivers might want to know not only the minimum they are allowed
+> to draw, but also the maximum they should try even if they are carefully
+> monitoring the voltage.
+> So wm831x is doing the right thing with the wrong interface.  Maybe you
+> can describe that as "fine".
+
+That's not actually 100% clear to me - for what the wm831x is doing it
+probably *does* want the higher limit.  This is a system inflow limit
+(as it should be for this), at least the charger will adapt to voltage
+variations though other users in the system are much less likely to do
+so.
+
+--Jsn5+Lu/ZvzbAGtZ
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJX1skiAAoJECTWi3JdVIfQKY0H/R0FNjuK0aat01WGVS16c4n0
++8aDgG3uCfbwBjGNXl3yN8MCXFFEUu+kbCSscO5WqcLYswPFEledwj+AO96OR9OL
+wKKr+FAKwhfmGyirzKb0FjMoFXkzd+0rWeGb9UnhP4nhkVkUSN5bEgj9RwBCWSY4
+4DaHFOJatnrhe/U7jS4gVx8M5kCyvazxIrKBJVTiI+Yo/FU81Bo4bbOwNZJoIVpN
+cIzFHNWnninf9RzYS7vMRAj1IUO7CA5GT0UeotlO79RpzPbSoQhWJb+v2lguNgVN
+PBvNJ3RKZI0dUxj2OIHeMLFo3nF77dh8BjsfpVwl431SmyBbEFAXwErpnLtn0Qk=
+=uIVa
+-----END PGP SIGNATURE-----
+
+--Jsn5+Lu/ZvzbAGtZ--
 --
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
