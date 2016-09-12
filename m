@@ -1,102 +1,93 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [PATCH 4.7 27/59] timekeeping: Cap array access in timekeeping_debug
-Date: Mon, 12 Sep 2016 17:29:47 +0200
-Message-ID: <20160912152129.912408208@linuxfoundation.org>
-References: <20160912152128.765864031@linuxfoundation.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle
+ states
+Date: Mon, 12 Sep 2016 10:16:00 -0600
+Message-ID: <20160912161600.GA21885@linaro.org>
+References: <1472242678-33700-1-git-send-email-lina.iyer@linaro.org>
+ <1472242678-33700-3-git-send-email-lina.iyer@linaro.org>
+ <0b233802-f459-c6bb-ff42-70745a225cfb@arm.com>
+ <20160902201605.GA1705@linaro.org>
+ <87sht59mcw.fsf@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:40938 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933530AbcILPbM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 11:31:12 -0400
-In-Reply-To: <20160912152128.765864031@linuxfoundation.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <87sht59mcw.fsf@arm.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Brendan Jackman <brendan.jackman@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, ulf.hansson@linaro.org, khilman@kernel.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Janek Kozicki <cosurgi@gmail.com>, Chen Yu <yu.c.chen@intel.com>, John Stultz <john.stultz@linaro.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Xunlei Pang <xpang@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Thomas Gleixner <tglx@linutronix.de>
 
-4.7-stable review patch.  If anyone has any objections, please let me know.
+On Mon, Sep 12 2016 at 09:19 -0600, Brendan Jackman wrote:
+>
+>Hi Lina,
+>
+>Sorry for the delay here, Sudeep and I were both been on holiday last week.
+>
+>On Fri, Sep 02 2016 at 21:16, Lina Iyer wrote:
+>> On Fri, Sep 02 2016 at 07:21 -0700, Sudeep Holla wrote:
+>[...]
+>>>This version is *not very descriptive*. Also the discussion we had on v3
+>>>version has not yet concluded IMO. So can I take that we agreed on what
+>>>was proposed there or not ?
+>>>
+>> Sorry, this example is not very descriptive. Pls. check the 8916 dtsi
+>> for the new changes in the following patches. Let me know if that makes
+>> sense.
+>
+>The not-yet-concluded discussion Sudeep is referring to is at [1].
+>
+>In that thread we initially proposed the idea of, instead of splitting
+>state phandles between cpu-idle-states and domain-idle-states, putting
+>CPUs in their own domains and using domain-idle-states for _all_
+>phandles, deprecating cpu-idle-states. I've brought this up in other
+>threads [2] but discussion keeps petering out, and neither this example
+>nor the 8916 dtsi in this patch series reflect the idea.
+>
+Brendan, while your idea is good and will work for CPUs, I do not expect
+other domains and possibly CPU domains on some architectures to follow
+this model. There is nothing that prevents you from doing this today,
+you can specify domains around CPUs in your devicetree and CPU PM will
+handle the hierarchy. I don't think its fair to force it on all SoCs
+using CPU domains. This patchset does not restrict you from organizing
+the idle states the way you want it. This revision of the series, clubs
+CPU and domain idle states under idle-states umbrella. So part of your
+requirement is also satisfied.
 
-------------------
+You can follow up the series with your new additions, I don't see a
+conflict with this change.
 
-From: John Stultz <john.stultz@linaro.org>
-
-commit a4f8f6667f099036c88f231dcad4cf233652c824 upstream.
-
-It was reported that hibernation could fail on the 2nd attempt, where the
-system hangs at hibernate() -> syscore_resume() -> i8237A_resume() ->
-claim_dma_lock(), because the lock has already been taken.
-
-However there is actually no other process would like to grab this lock on
-that problematic platform.
-
-Further investigation showed that the problem is triggered by setting
-/sys/power/pm_trace to 1 before the 1st hibernation.
-
-Since once pm_trace is enabled, the rtc becomes unmeaningful after suspend,
-and meanwhile some BIOSes would like to adjust the 'invalid' RTC (e.g, smaller
-than 1970) to the release date of that motherboard during POST stage, thus
-after resumed, it may seem that the system had a significant long sleep time
-which is a completely meaningless value.
-
-Then in timekeeping_resume -> tk_debug_account_sleep_time, if the bit31 of the
-sleep time happened to be set to 1, fls() returns 32 and we add 1 to
-sleep_time_bin[32], which causes an out of bounds array access and therefor
-memory being overwritten.
-
-As depicted by System.map:
-0xffffffff81c9d080 b sleep_time_bin
-0xffffffff81c9d100 B dma_spin_lock
-the dma_spin_lock.val is set to 1, which caused this problem.
-
-This patch adds a sanity check in tk_debug_account_sleep_time()
-to ensure we don't index past the sleep_time_bin array.
-
-[jstultz: Problem diagnosed and original patch by Chen Yu, I've solved the
- issue slightly differently, but borrowed his excelent explanation of the
- issue here.]
-
-Fixes: 5c83545f24ab "power: Add option to log time spent in suspend"
-Reported-by: Janek Kozicki <cosurgi@gmail.com>
-Reported-by: Chen Yu <yu.c.chen@intel.com>
-Signed-off-by: John Stultz <john.stultz@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Xunlei Pang <xpang@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Link: http://lkml.kernel.org/r/1471993702-29148-3-git-send-email-john.stultz@linaro.org
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
----
- kernel/time/timekeeping_debug.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
---- a/kernel/time/timekeeping_debug.c
-+++ b/kernel/time/timekeeping_debug.c
-@@ -23,7 +23,9 @@
- 
- #include "timekeeping_internal.h"
- 
--static unsigned int sleep_time_bin[32] = {0};
-+#define NUM_BINS 32
-+
-+static unsigned int sleep_time_bin[NUM_BINS] = {0};
- 
- static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
- {
-@@ -69,6 +71,9 @@ late_initcall(tk_debug_sleep_time_init);
- 
- void tk_debug_account_sleep_time(struct timespec64 *t)
- {
--	sleep_time_bin[fls(t->tv_sec)]++;
-+	/* Cap bin index so we don't overflow the array */
-+	int bin = min(fls(t->tv_sec), NUM_BINS-1);
-+
-+	sleep_time_bin[bin]++;
- }
- 
+Thanks,
+Lina
 
 
+>It would be great if we could go back to the thread at [1] where Sudeep
+>has posted examples and come to a clear consensus on the binding design
+>before reviewing implementation patches. Ideally with input from Ulf,
+>Rob and Kevin.
+>
+>[1] https://patchwork.kernel.org/patch/9264507
+>[2] http://www.spinics.net/lists/devicetree/msg141024.html
+>>
+>> Thanks,
+>> Lina
+>>
+>>>We could have better example above *really* based on the discussions we
+>>>had so far. This example always makes me think it's well crafted to
+>>>avoid any sort of discussions. We need to consider different use-cases
+>>>e.g. what about CPU level states ?
+>>>
+>>>IMO, we need to discuss this DT binding in detail and arrive at someq
+>>>conclusion before you take all the troubles to respin the series.
+>>>Also it's better to keep the DT binding separate until we have some
+>>>conclusion instead of posting the implementation for each version.
+>>>That's just my opinion(I would be least bothered about implementation
+>>>until I know it will be accepted before I can peek into the code, others
+>>>may differ.
+>>>
+>>>--
+>>>Regards,
+>>>Sudeep
+>
+>Cheers,
+>Brendan
