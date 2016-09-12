@@ -1,101 +1,102 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v16 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Mon, 12 Sep 2016 16:26:27 +0100
-Message-ID: <20160912152627.GA27946@sirena.org.uk>
-References: <CAMz4ku+pkRT70NcZEDepfshH7z7+Fm3yo-C2+ccWgJwDJE4C-Q@mail.gmail.com>
- <8760q9a8m6.fsf@notabene.neil.brown.name>
- <CAMz4kuJJwKFqU=6JnpUQNPeQ-uy-PyZ5VBaBKofn=8Jv5y0nXA@mail.gmail.com>
- <878tv297a0.fsf@notabene.neil.brown.name>
- <CAMz4kuLXyVSXjh1Sn06+wcUr+bVritCW3sN=XyEdap7h=MN7xw@mail.gmail.com>
- <87y4326l44.fsf@notabene.neil.brown.name>
- <20160909110727.GI27946@sirena.org.uk>
- <87pooc7n3t.fsf@notabene.neil.brown.name>
- <20160912122549.GZ27946@sirena.org.uk>
- <87inu11c5l.fsf@notabene.neil.brown.name>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 4.7 27/59] timekeeping: Cap array access in timekeeping_debug
+Date: Mon, 12 Sep 2016 17:29:47 +0200
+Message-ID: <20160912152129.912408208@linuxfoundation.org>
+References: <20160912152128.765864031@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="Jsn5+Lu/ZvzbAGtZ"
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <87inu11c5l.fsf-wvvUuzkyo1HefUI2i7LXDhCRmIWqnp/j@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: NeilBrown <neilb-IBi9RG/b67k@public.gmane.org>
-Cc: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ruslan Bilovol <ruslan.bilovol-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, grygorii.strashko-l0cyMroinI0@public.gmane.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Charles Keepax <ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-m
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:40938 "EHLO
+        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933530AbcILPbM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 11:31:12 -0400
+In-Reply-To: <20160912152128.765864031@linuxfoundation.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Janek Kozicki <cosurgi@gmail.com>, Chen Yu <yu.c.chen@intel.com>, John Stultz <john.stultz@linaro.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Xunlei Pang <xpang@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Thomas Gleixner <tglx@linutronix.de>
+
+4.7-stable review patch.  If anyone has any objections, please let me know.
+
+------------------
+
+From: John Stultz <john.stultz@linaro.org>
+
+commit a4f8f6667f099036c88f231dcad4cf233652c824 upstream.
+
+It was reported that hibernation could fail on the 2nd attempt, where the
+system hangs at hibernate() -> syscore_resume() -> i8237A_resume() ->
+claim_dma_lock(), because the lock has already been taken.
+
+However there is actually no other process would like to grab this lock on
+that problematic platform.
+
+Further investigation showed that the problem is triggered by setting
+/sys/power/pm_trace to 1 before the 1st hibernation.
+
+Since once pm_trace is enabled, the rtc becomes unmeaningful after suspend,
+and meanwhile some BIOSes would like to adjust the 'invalid' RTC (e.g, smaller
+than 1970) to the release date of that motherboard during POST stage, thus
+after resumed, it may seem that the system had a significant long sleep time
+which is a completely meaningless value.
+
+Then in timekeeping_resume -> tk_debug_account_sleep_time, if the bit31 of the
+sleep time happened to be set to 1, fls() returns 32 and we add 1 to
+sleep_time_bin[32], which causes an out of bounds array access and therefor
+memory being overwritten.
+
+As depicted by System.map:
+0xffffffff81c9d080 b sleep_time_bin
+0xffffffff81c9d100 B dma_spin_lock
+the dma_spin_lock.val is set to 1, which caused this problem.
+
+This patch adds a sanity check in tk_debug_account_sleep_time()
+to ensure we don't index past the sleep_time_bin array.
+
+[jstultz: Problem diagnosed and original patch by Chen Yu, I've solved the
+ issue slightly differently, but borrowed his excelent explanation of the
+ issue here.]
+
+Fixes: 5c83545f24ab "power: Add option to log time spent in suspend"
+Reported-by: Janek Kozicki <cosurgi@gmail.com>
+Reported-by: Chen Yu <yu.c.chen@intel.com>
+Signed-off-by: John Stultz <john.stultz@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Xunlei Pang <xpang@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Link: http://lkml.kernel.org/r/1471993702-29148-3-git-send-email-john.stultz@linaro.org
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+---
+ kernel/time/timekeeping_debug.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+--- a/kernel/time/timekeeping_debug.c
++++ b/kernel/time/timekeeping_debug.c
+@@ -23,7 +23,9 @@
+ 
+ #include "timekeeping_internal.h"
+ 
+-static unsigned int sleep_time_bin[32] = {0};
++#define NUM_BINS 32
++
++static unsigned int sleep_time_bin[NUM_BINS] = {0};
+ 
+ static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
+ {
+@@ -69,6 +71,9 @@ late_initcall(tk_debug_sleep_time_init);
+ 
+ void tk_debug_account_sleep_time(struct timespec64 *t)
+ {
+-	sleep_time_bin[fls(t->tv_sec)]++;
++	/* Cap bin index so we don't overflow the array */
++	int bin = min(fls(t->tv_sec), NUM_BINS-1);
++
++	sleep_time_bin[bin]++;
+ }
+ 
 
 
---Jsn5+Lu/ZvzbAGtZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Mon, Sep 12, 2016 at 03:27:18PM +0200, NeilBrown wrote:
-> On Mon, Sep 12 2016, Mark Brown wrote:
-
-> > It's no worse than any other board file situation - if someone has that
-> > problem they get to fix it.
-
-> My point is that the present design does not appear to scale beyond a
-> single USB power supply (as if there were two, they would be named in
-> discovery order, which is not reliably stable).
-
-For the practical purposes of people making systems (as opposed to
-upstream where this is likely to get most use) it pretty much is.
-Though quite how many systems have multiple chargers is itself also a
-question.
-
-> Your point is, I think, that when someone actually cares about that lack
-> of scaling, they can fix it.
-
-Yes.
-
-> I am perfectly happy with that approach.  However if the code doesn't
-> scale beyond one charger, it shouldn't pretend that it does.
-> i.e.
->   Don't have "usb_charger_find_by_name()", just a global "usb_charger"
->   (or similar).
->   The first charger to register gets to be the "usb_charger".  The
->   second one gets an error.
-> I could be quite happy with that sort of interface.
-
-Well, a fairly standard way of extending would be to allow the explicit
-assignment of names to chargers so this'd avoid such churn.
-
-> > The whole point from the point of view of the wm831x driver is that it
-> > just wants something to tell it how much current it's allowed to draw, I
-> > appreciate that doesn't change your analysis of the bit in the middle
-> > but the consumer driver bit seems fine here.
-
-> Yes, the wm831x driver probably does the right thing.
-> Other drivers might want to know not only the minimum they are allowed
-> to draw, but also the maximum they should try even if they are carefully
-> monitoring the voltage.
-> So wm831x is doing the right thing with the wrong interface.  Maybe you
-> can describe that as "fine".
-
-That's not actually 100% clear to me - for what the wm831x is doing it
-probably *does* want the higher limit.  This is a system inflow limit
-(as it should be for this), at least the charger will adapt to voltage
-variations though other users in the system are much less likely to do
-so.
-
---Jsn5+Lu/ZvzbAGtZ
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJX1skiAAoJECTWi3JdVIfQKY0H/R0FNjuK0aat01WGVS16c4n0
-+8aDgG3uCfbwBjGNXl3yN8MCXFFEUu+kbCSscO5WqcLYswPFEledwj+AO96OR9OL
-wKKr+FAKwhfmGyirzKb0FjMoFXkzd+0rWeGb9UnhP4nhkVkUSN5bEgj9RwBCWSY4
-4DaHFOJatnrhe/U7jS4gVx8M5kCyvazxIrKBJVTiI+Yo/FU81Bo4bbOwNZJoIVpN
-cIzFHNWnninf9RzYS7vMRAj1IUO7CA5GT0UeotlO79RpzPbSoQhWJb+v2lguNgVN
-PBvNJ3RKZI0dUxj2OIHeMLFo3nF77dh8BjsfpVwl431SmyBbEFAXwErpnLtn0Qk=
-=uIVa
------END PGP SIGNATURE-----
-
---Jsn5+Lu/ZvzbAGtZ--
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
