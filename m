@@ -1,70 +1,59 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: Re: [PATCH v3 3/8] x86, cpu: provide a function
- topology_num_packages to enumerate #packages
-Date: Mon, 12 Sep 2016 13:51:51 -0700
-Message-ID: <1473713511.3916.50.camel@linux.intel.com>
-References: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <1473373615-51427-4-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <alpine.DEB.2.20.1609101513410.2804@nanos>
+From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v2 1/2] Documentation: dt: add bindings for ti-cpufreq
+Date: Mon, 12 Sep 2016 15:56:43 -0500
+Message-ID: <57D7168B.5070708@ti.com>
+References: <20160901025328.376-1-d-gerlach@ti.com>
+ <20160901025328.376-2-d-gerlach@ti.com> <20160907051215.GN27345@vireshk-i7>
+ <57D025E8.6030202@ti.com> <20160908033557.GQ27345@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1609101513410.2804@nanos>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160908033557.GQ27345@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 2016-09-10 at 15:28 +0200, Thomas Gleixner wrote:
-> B1;2802;0cOn Thu, 8 Sep 2016, Srinivas Pandruvada wrote:
-> 
-> > 
-> > From: Tim Chen <tim.c.chen@linux.intel.com>
-> $subject: x86, cpu: provide a function topology_num_packages  to enumerate #packages
-> 
-> - we switched to the prefix scheme 'x86/subsys'. Please use this.
-> 
-> - this is not related to x86/cpu. x86/topology is the proper prefix.
-> 
-> - Sentence after ':' starts with an uppercase letter.
-> 
-> - please make the subject line short and descriptive. 
-> 
->   x86/topology: Provide topology_num_packages()
-> 
->   is completely sufficient, because it's entirely clear that it is a
->   function and the function name is self explaining.
+Rob,
+On 09/07/2016 10:35 PM, Viresh Kumar wrote:
+> On 07-09-16, 09:36, Dave Gerlach wrote:
+>> On 09/07/2016 12:12 AM, Viresh Kumar wrote:
+>>> On 31-08-16, 21:53, Dave Gerlach wrote:
+>>>> +In 'operating-points-v2' table:
+>>>> +- compatible: Should be
+>>>> +	- 'operating-points-v2-ti-am3352-cpu' for am335x SoCs
+>>>> +	- 'operating-points-v2-ti-am4372-cpu' for am43xx SoCs
+>>>> +	- 'operating-points-v2-ti-dra7-cpu' for dra7xx/am57xx SoCs
+>>>
+>>> Why do you need SoC specific compatible here? Are you defining new
+>>> fields in OPP tables for your SoC ? How are the tables for your case
+>>> going to differ from the ones using "operating-points-v2" compatible
+>>> string?
+>>>
+>>
+>> I thought you had suggested that I do this in your comments from v1, but I
+>> guess that was dependent on whether or not I put the properties I have
+>> inserted into the cpu node into the operating-points table instead.
+>
+> Yes.
+>
+>> I still
+>> have gotten no comments from any DT maintainers so I left it as is. I am
+>> still not sure if that is acceptable.
+>
+> @Rob: Can you please share your views on the new properties being
+> added to the CPU node ?
+>
 
-Will do.
+I am fine moving the properties in the operating-points-v2 node or 
+leaving it as is, whichever is preferred.
 
-> 
-> > 
-> > We compute the the number of active packages during boot and
-> > topology update.
-> We? We do not do anything..... and how is that information useful for the
-> reader?
-> 
-> > 
-> > Provide a function to export this info for functions that need this
-> > topology info.
-> Well, it's obvious that a new function is going to be used by something
-> which needs it.
-> 
-> In changelogs/comments there is only one thing worse than superflous
-> informatioin: wrong information.
-> 
-> If you have nothing to say, then omit it instead of forcing the reader to
-> parse incoherent blurbs for nothing.
-> 
-> > 
-> >  int topology_update_package_map(unsigned int apicid, unsigned int cpu);
-> > +extern int topology_num_packages(void);
-> >  extern int topology_phys_to_logical_pkg(unsigned int pkg);
-> >  #else
-> >  #define topology_max_packages()			(1)
-> stub function for the !SMP case is missing....
-> 
-> Thanks,
-> 
-> 	tglx
+Viresh, thanks for your comments.
+
+Regards,
+Dave
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
