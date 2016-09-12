@@ -1,72 +1,274 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH v2 5/7] PM / runtime: Flag to indicate PM sleep transitions in progress
-Date: Mon, 12 Sep 2016 23:25:36 +0200
-Message-ID: <6063056.2MKrxSTWdb@vostro.rjw.lan>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <3677187.4hCpDgWMoX@vostro.rjw.lan> <20160912140727.GA591@wunner.de>
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: Re: [PATCH v3 5/8] sched,x86: Enable Turbo Boost Max Technology
+Date: Mon, 12 Sep 2016 14:34:13 -0700
+Message-ID: <1473716053.3916.74.camel@linux.intel.com>
+References: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <1473373615-51427-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <alpine.DEB.2.20.1609101546130.2804@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57111 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1750998AbcILVTa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 17:19:30 -0400
-In-Reply-To: <20160912140727.GA591@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.20.1609101546130.2804@nanos>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On Monday, September 12, 2016 04:07:27 PM Lukas Wunner wrote:
-> On Thu, Sep 08, 2016 at 11:29:48PM +0200, Rafael J. Wysocki wrote:
-> > Introduce a new flag in struct dev_pm_info, pm_sleep_in_progress, to
-> > indicate that runtime PM has been disabled because of a PM sleep
-> > transition in progress.
-> [...]
-> > That will allow helpers like pm_runtime_get_sync() to be called
-> > during system sleep transitions without worrying about possible
-> > error codes they may return because runtime PM is disabled at
-> > that point.
+On Sat, 2016-09-10 at 18:21 +0200, Thomas Gleixner wrote:
+> On Thu, 8 Sep 2016, Srinivas Pandruvada wrote:
+> > 
+> > +
+> > +DEFINE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
+> > +static DEFINE_MUTEX(itmt_update_mutex);
+> > +
+> > +static unsigned int zero;
+> > +static unsigned int one = 1;
+> Please stick that close to the ctl_table so it gets obvious why we need
+> this. My first reaction to this was: WTF!
+
+Will do.
+
 > 
-> I have a suspicion that this patch papers over the direct_complete bug
-> I reported Sep 10 and that the patch is unnecessary once that bug is
-> fixed.
-
-It doesn't paper over anything, but it may not be necessary anyway.
-
-> AFAICS, runtime PM is only disabled in two places during the system
-> sleep process: In __device_suspend() for devices using direct_complete,
-> and __device_suspend_late() for all devices.
+> > 
+> > +/*
+> > + * Boolean to control whether we want to move processes to cpu capable
+> > + * of higher turbo frequency for cpus supporting Intel Turbo Boost Max
+> > + * Technology 3.0.
+> > + *
+> > + * It can be set via /proc/sys/kernel/sched_itmt_enabled
+> > + */
+> > +unsigned int __read_mostly sysctl_sched_itmt_enabled;
+> Please put the sysctl into a seperate patch and document the sysctl at the
+> proper place.
 > 
-> In both of these phases (dpm_suspend() and dpm_suspend_late()), the
-> device tree is walked bottom-up. Since we've reordered consumers to
-> the back of dpm_list, they will be treated *before* their suppliers.
-> Thus, runtime PM is disabled on the consumers first, and only later
-> on the suppliers.
+
+Okay, I can move the sysctl related code to a separate patch.
+
+> > 
+> > +
+> > +/*
+> > + * The pstate_driver calls set_sched_itmt to indicate if the system
+> > + * is ITMT capable.
+> > + */
+> > +static bool __read_mostly sched_itmt_capable;
+> > +
+> > +int arch_asym_cpu_priority(int cpu)
+> > +{
+> > +	return per_cpu(sched_core_priority, cpu);
+> > +}
+> > +
+> The ordering or your functions is completely random and makes not sense
+> whatsoever.
+
+Okay, I'll put it at a more logical place.
+
 > 
-> Then how can it be that runtime PM is already disabled on the supplier?
+> > 
+> > +/* Called with itmt_update_mutex lock held */
+> > +static void enable_sched_itmt(bool enable_itmt)
+> > +{
+> > +	sysctl_sched_itmt_enabled = enable_itmt;
+> > +	x86_topology_update = true;
+> > +	rebuild_sched_domains();
+> So you rebuild that even if the state of the sysctl did not change,
 
-Actually, I think that this was a consequence of a bug in device_reorder_to_tail()
-that was present in the previous iteration of the patchset (it walked suppliers
-instead of consumers).
+Will check for change in updated patch.
 
-> The only scenario I can imagine is that the supplier chose to exercise
-> direct_complete, thus was pm_runtime_disabled() in the __device_suspend()
-> phase, and the consumer did *not* choose to exercise direct_complete and
-> later tried to runtime resume its suppliers and itself.
 > 
-> I assume this patch is a replacement for Marek's [v2 08/10].
-> @Marek, does this scenario match with what you witnessed?
+> > 
+> > +}
+> > +
+> > +static int sched_itmt_update_handler(struct ctl_table *table, int write,
+> > +			      void __user *buffer, size_t *lenp, loff_t *ppos)
+> > +{
+> > +	int ret;
+> > +
+> > +	mutex_lock(&itmt_update_mutex);
+> > +
+> > +	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
+> > +
+> > +	if (ret || !write) {
+> > +		mutex_unlock(&itmt_update_mutex);
+> > +		return ret;
+> > +	}
+> > +
+> > +	enable_sched_itmt(sysctl_sched_itmt_enabled);
+> So you hand in sysctl_sched_itmt_enabled so that enable_sched_itmt() can
+> store that value in sysctl_sched_itmt_enabled. Brilliant stuff that.
 
-It is not strictly a replacement for it.  The Marek's patch was the
-reason to post it, but I started to think about this earlier.
+Will merge enable_sched_itmt into sched_itmt_update_handler.
 
-Some people have complained to me about having to deal with error codes
-returned by the runtime PM framework during system suspend, so I thought
-it might be useful to deal with that too.
+> 
+> > 
+> > +static struct ctl_table_header *itmt_sysctl_header;
+> > +
+> > +/*
+> > + * The boot code will find out the max boost frequency
+> > + * and call this function to set a priority proportional
+> > + * to the max boost frequency. CPU with higher boost
+> > + * frequency will receive higher priority.
+> > + */
+> > +void sched_set_itmt_core_prio(int prio, int core_cpu)
+> > +{
+> > +	int cpu, i = 1;
+> > +
+> > +	for_each_cpu(cpu, topology_sibling_cpumask(core_cpu)) {
+> > +		int smt_prio;
+> > +
+> > +		/*
+> > +		 * Discount the priority of sibling so that we don't
+> > +		 * pack all loads to the same core before using other cores.
+> -EMAKESNOSENSE
+> 
+> Is this a winter or summer sale where we get a discount? 10% or 50% or what?
+> 
+> The math here is:
+> 
+>       smt_prio = prio * num_siblings / sibling_idx;
+> 
+> The purpose of this is to ensure that the siblings are moved to the end of
+> the priority chain and therefor only used when all other high priority
+> cpus are out of capacity.
 
-That said it probably is not necessary right now.
+Will update comment here.
 
-Thanks,
-Rafael
+> 
+> > 
+> > +		 */
+> > +		smt_prio = prio * smp_num_siblings / i;
+> > +		i++;
+> > +		per_cpu(sched_core_priority, cpu) = smt_prio;
+> > +	}
+> > +}
+> > +
+> > +/*
+> > + * During boot up, boot code will detect if the system
+> > + * is ITMT capable and call set_sched_itmt.
+> Groan. In the comment above the declaration of sched_itmt_capable you
+> write:
+> 
+> > 
+> > + * The pstate_driver calls set_sched_itmt to indicate if the system
+> > + * is ITMT capable.
+> So what is calling this? Boot code or pstate driver or something else?
 
+Will just say pstate driver.
+
+> 
+> > 
+> > + *
+> > + * This should be called after sched_set_itmt_core_prio
+> > + * has been called to set the cpus' priorities.
+> should? So the call order is optional and this is just a recommendation.
+> 
+> > 
+> > + *
+> > + * This function should be called without cpu hot plug lock
+> > + * as we need to acquire the lock to rebuild sched domains
+> > + * later.
+> Ditto. Must not be called with cpu hotplug lock held.
+
+Okay.
+
+> 
+> > 
+> > + */
+> > +void set_sched_itmt(bool itmt_capable)
+> This function can be called more than once and it can be called to
+> anable and disable the feature, right?
+
+> So again: instead of incoherent comments above the function describe the
+> calling conventions and what the function does proper.
+
+Will add that.
+
+> 
+> > 
+> > +{
+> > +	mutex_lock(&itmt_update_mutex);
+> > +
+> > +	if (itmt_capable != sched_itmt_capable) {
+> If you use a goto out_unlock here, then you spare one indentation level and
+> the annoying line breaks.
+
+Will do.
+
+> 
+> > 
+> > +
+> > +		if (itmt_capable) {
+> > +			itmt_sysctl_header =
+> > +				register_sysctl_table(itmt_root_table);
+> What if this fails? Error handling is overrated ...
+
+Will add code to disable itmt totally then if we can register
+sysctl table.
+
+> 
+> > 
+> > +			/*
+> > +			 * ITMT capability automatically enables ITMT
+> > +			 * scheduling for client systems (single node).
+> Why? Just because it can and just because something thinks that it's a good
+> idea? There are server systems with single node as well....
+
+Using the single node as a decision criteria is a compromise
+on guessing what the usage scenario is likely to be.  For lightly loaded
+client system, this feature will help to boost performance.  But on very busy
+server system, it is unlikely to operate in turbo mode for this feature
+to help.  So in a previous discussion thread with Ingo and Peter Z, we decided
+that we will use the number of node as a criteria to turn this feature
+on by default.
+
+> 
+> > 
+> > +			 */
+> > +			if (topology_num_packages() == 1)
+> > +				sysctl_sched_itmt_enabled = 1;
+> > +		} else {
+> > +			if (itmt_sysctl_header)
+> > +				unregister_sysctl_table(itmt_sysctl_header);
+> And what clears imt_sysctl_header ?
+> 
+> > 
+> > +			sysctl_sched_itmt_enabled = 0;
+> > +		}
+> > +
+> > +		sched_itmt_capable = itmt_capable;
+> > +		x86_topology_update = true;
+> > +		rebuild_sched_domains();
+> So another place where you call that unconditionally. If the sysctl is
+> disabled then this is completely pointless.
+
+Okay, will only rebuild sched domains here when sysctl_sched_itmt_enabled is true.
+
+> 
+> What about a single function which is called from the sysctl write and from
+> this code, which does the update and rebuild only if something has changed?
+
+Sure.
+
+> 
+> > 
+> > +	}
+> > +
+> > +	mutex_unlock(&itmt_update_mutex);
+> > +}
+> > diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> > index 737b9edf..17f3ac7 100644
+> > --- a/arch/x86/kernel/smpboot.c
+> > +++ b/arch/x86/kernel/smpboot.c
+> > @@ -109,7 +109,6 @@ static bool logical_packages_frozen __read_mostly;
+> >  /* Maximum number of SMT threads on any online core */
+> >  int __max_smt_threads __read_mostly;
+> >  
+> > -unsigned int __read_mostly sysctl_sched_itmt_enabled;
+> So if you wouldn't have added this in the first place then you would not
+> have to remove it.
+> 
+> Thanks,
+> 
+> 	tglx
+> 
+> 
