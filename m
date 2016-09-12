@@ -1,58 +1,46 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/4] PCI PM refinements
-Date: Tue, 13 Sep 2016 00:15:01 +0200
-Message-ID: <2965902.zGUbeGnQJl@vostro.rjw.lan>
-References: <cover.1472554278.git.lukas@wunner.de> <20160912220710.GH23532@localhost>
+Subject: Re: [PATCH 1/2] sched: cpufreq: ignore SMT when determining max cpu capacity
+Date: Tue, 13 Sep 2016 00:25:54 +0200
+Message-ID: <10626645.IplgtjqW4B@vostro.rjw.lan>
+References: <1472236848-17038-1-git-send-email-smuckle@linaro.org> <2411837.FJm8ec21FH@vostro.rjw.lan> <20160831143437.GW10121@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160912220710.GH23532@localhost>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Lukas Wunner <lukas@wunner.de>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58419 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1754928AbcILWTs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 18:19:48 -0400
+In-Reply-To: <20160831143437.GW10121@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
 
-On Monday, September 12, 2016 05:07:10 PM Bjorn Helgaas wrote:
-> On Wed, Aug 31, 2016 at 08:15:18AM +0200, Lukas Wunner wrote:
-> > The following patches are part of my Thunderbolt Runtime PM series.
-> > I'm posting them separately to split the series into digestible chunks.
+On Wednesday, August 31, 2016 04:34:37 PM Peter Zijlstra wrote:
+> On Wed, Aug 31, 2016 at 03:27:30AM +0200, Rafael J. Wysocki wrote:
+> > On Friday, August 26, 2016 11:40:47 AM Steve Muckle wrote:
+> > > PELT does not consider SMT when scaling its utilization values via
+> > > arch_scale_cpu_capacity(). The value in rq->cpu_capacity_orig does
+> > > take SMT into consideration though and therefore may be smaller than
+> > > the utilization reported by PELT.
+> > > 
+> > > On an Intel i7-3630QM for example rq->cpu_capacity_orig is 589 but
+> > > util_avg scales up to 1024. This means that a 50% utilized CPU will show
+> > > up in schedutil as ~86% busy.
+> > > 
+> > > Fix this by using the same CPU scaling value in schedutil as that which
+> > > is used by PELT.
+> > > 
+> > > Signed-off-by: Steve Muckle <smuckle@linaro.org>
 > > 
-> > They benefit everyone, not just Thunderbolt, and Thunderbolt works fine
-> > without them (just not with the same degree of perfection).
+> > This is fine by me.
 > > 
-> > Patch [1/4] affords direct-complete to devices which are not platform-
-> > power-manageable, yet can be suspended to D3cold with a nonstandard
-> > mechanism. It does so using a heuristic: If a device's current_state
-> > is D3cold and it is not power-manageable, it is assumed that a
-> > nonstandard PM mechanism is at work and the device is left asleep.
-> > The patch is the outcome of a discussion with Rafael and Alan on
-> > linux-pci@ and I would like to thank both for tirelessly responding
-> > to my questions.
-> > 
-> > Patch [3/4] replaces the unconditional resume after direct-complete with
-> > a conditional resume by determining if the platform firmware has put the
-> > device in reset-power-on or not.
-> > 
-> > Because the D3cold state cannot be determined from the PMCSR, patch [2/4]
-> > adds a hook to query the platform firmware for its opinion on the device's
-> > power state.
-> > 
-> > Finally, patch [4/4] changes the shutdown handling of PCI devices such
-> > that they are no longer woken without reason.
-> > 
-> > The result of these patches should be a speedup and decreased power
-> > consumption for system sleep and system shutdown (both for devices that
-> > are platform-power-manageable and those that aren't).
-> > 
-> > If you prefer point & click interfaces, the patches are browsable here:
-> > https://github.com/l1k/linux/commits/thunderbolt_runpm_v3
+> > Peter, any objections?
 > 
-> Rafael, do you have any comment on these?  I don't have any objections
-> myself, but I'd like your opinion as the PM expert :)
+> No, looks good. Thanks
 
-Please give me some more time (a day or two should be sufficient).
+OK, thanks!
 
-Thanks,
-Rafael
+Applied.
 
