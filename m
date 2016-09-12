@@ -1,95 +1,96 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle
- states
-Date: Mon, 12 Sep 2016 18:09:48 +0100
-Message-ID: <a4fc71ae-6fa5-4142-6dd4-7bc96eb20186@arm.com>
-References: <1472242678-33700-1-git-send-email-lina.iyer@linaro.org>
- <1472242678-33700-3-git-send-email-lina.iyer@linaro.org>
- <0b233802-f459-c6bb-ff42-70745a225cfb@arm.com>
- <20160902201605.GA1705@linaro.org> <87sht59mcw.fsf@arm.com>
- <20160912161600.GA21885@linaro.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [PATCH 4.4 164/192] timekeeping: Cap array access in timekeeping_debug
+Date: Mon, 12 Sep 2016 19:01:13 +0200
+Message-ID: <20160912152205.950045014@linuxfoundation.org>
+References: <20160912152158.855601725@linuxfoundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20160912161600.GA21885@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lina Iyer <lina.iyer@linaro.org>, Brendan Jackman <brendan.jackman@arm.com>
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, khilman@kernel.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, Axel Haslam <ahaslam+renesas@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>, Sudeep Holla <sudeep.holla@arm.com>, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160912152158.855601725@linuxfoundation.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Janek Kozicki <cosurgi@gmail.com>, Chen Yu <yu.c.chen@intel.com>, John Stultz <john.stultz@linaro.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Xunlei Pang <xpang@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
+4.4-stable review patch.  If anyone has any objections, please let me know.
 
+------------------
 
-On 12/09/16 17:16, Lina Iyer wrote:
-> On Mon, Sep 12 2016 at 09:19 -0600, Brendan Jackman wrote:
->>
->> Hi Lina,
->>
->> Sorry for the delay here, Sudeep and I were both been on holiday last
->> week.
->>
->> On Fri, Sep 02 2016 at 21:16, Lina Iyer wrote:
->>> On Fri, Sep 02 2016 at 07:21 -0700, Sudeep Holla wrote:
->> [...]
->>>> This version is *not very descriptive*. Also the discussion we had
->>>> on v3
->>>> version has not yet concluded IMO. So can I take that we agreed on what
->>>> was proposed there or not ?
->>>>
->>> Sorry, this example is not very descriptive. Pls. check the 8916 dtsi
->>> for the new changes in the following patches. Let me know if that makes
->>> sense.
+From: John Stultz <john.stultz@linaro.org>
 
-Please add all possible use-cases in the bindings. Though one can refer
-the usage examples, it might not cover all usage descriptions. It helps
-preventing people from defining their own when they don't see examples.
-Again DT bindings are like specifications, it should be descriptive
-especially this kind of generic ones.
+commit a4f8f6667f099036c88f231dcad4cf233652c824 upstream.
 
->>
->> The not-yet-concluded discussion Sudeep is referring to is at [1].
->>
->> In that thread we initially proposed the idea of, instead of splitting
->> state phandles between cpu-idle-states and domain-idle-states, putting
->> CPUs in their own domains and using domain-idle-states for _all_
->> phandles, deprecating cpu-idle-states. I've brought this up in other
->> threads [2] but discussion keeps petering out, and neither this example
->> nor the 8916 dtsi in this patch series reflect the idea.
->>
-> Brendan, while your idea is good and will work for CPUs, I do not expect
-> other domains and possibly CPU domains on some architectures to follow
-> this model. There is nothing that prevents you from doing this today,
-> you can specify domains around CPUs in your devicetree and CPU PM will
-> handle the hierarchy. I don't think its fair to force it on all SoCs
-> using CPU domains.
+It was reported that hibernation could fail on the 2nd attempt, where the
+system hangs at hibernate() -> syscore_resume() -> i8237A_resume() ->
+claim_dma_lock(), because the lock has already been taken.
 
-I disagree. We are defining DT bindings here and it *should* be same for
-all the SoC unless there is a compelling reason not to. I am fine if
-those reasons are stated and agreed.
+However there is actually no other process would like to grab this lock on
+that problematic platform.
 
-> This patchset does not restrict you from organizing
-> the idle states the way you want it. This revision of the series, clubs
-> CPU and domain idle states under idle-states umbrella. So part of your
-> requirement is also satisfied.
->
+Further investigation showed that the problem is triggered by setting
+/sys/power/pm_trace to 1 before the 1st hibernation.
 
-I will look at the DTS changes in the series. But we *must* have more
-description with more examples in the binding document.
+Since once pm_trace is enabled, the rtc becomes unmeaningful after suspend,
+and meanwhile some BIOSes would like to adjust the 'invalid' RTC (e.g, smaller
+than 1970) to the release date of that motherboard during POST stage, thus
+after resumed, it may seem that the system had a significant long sleep time
+which is a completely meaningless value.
 
-> You can follow up the series with your new additions, I don't see a
-> conflict with this change.
->
+Then in timekeeping_resume -> tk_debug_account_sleep_time, if the bit31 of the
+sleep time happened to be set to 1, fls() returns 32 and we add 1 to
+sleep_time_bin[32], which causes an out of bounds array access and therefor
+memory being overwritten.
 
-If we just need additions, then it should be fine.
+As depicted by System.map:
+0xffffffff81c9d080 b sleep_time_bin
+0xffffffff81c9d100 B dma_spin_lock
+the dma_spin_lock.val is set to 1, which caused this problem.
 
--- 
-Regards,
-Sudeep
+This patch adds a sanity check in tk_debug_account_sleep_time()
+to ensure we don't index past the sleep_time_bin array.
+
+[jstultz: Problem diagnosed and original patch by Chen Yu, I've solved the
+ issue slightly differently, but borrowed his excelent explanation of the
+ issue here.]
+
+Fixes: 5c83545f24ab "power: Add option to log time spent in suspend"
+Reported-by: Janek Kozicki <cosurgi@gmail.com>
+Reported-by: Chen Yu <yu.c.chen@intel.com>
+Signed-off-by: John Stultz <john.stultz@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Xunlei Pang <xpang@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Link: http://lkml.kernel.org/r/1471993702-29148-3-git-send-email-john.stultz@linaro.org
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+
+---
+ kernel/time/timekeeping_debug.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+--- a/kernel/time/timekeeping_debug.c
++++ b/kernel/time/timekeeping_debug.c
+@@ -23,7 +23,9 @@
+ 
+ #include "timekeeping_internal.h"
+ 
+-static unsigned int sleep_time_bin[32] = {0};
++#define NUM_BINS 32
++
++static unsigned int sleep_time_bin[NUM_BINS] = {0};
+ 
+ static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
+ {
+@@ -69,6 +71,9 @@ late_initcall(tk_debug_sleep_time_init);
+ 
+ void tk_debug_account_sleep_time(struct timespec64 *t)
+ {
+-	sleep_time_bin[fls(t->tv_sec)]++;
++	/* Cap bin index so we don't overflow the array */
++	int bin = min(fls(t->tv_sec), NUM_BINS-1);
++
++	sleep_time_bin[bin]++;
+ }
+ 
