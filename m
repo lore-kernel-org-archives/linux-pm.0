@@ -1,7 +1,7 @@
 From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V2 04/10] PM / Domains: Don't expose generic_pm_domain structure to clients
-Date: Mon, 12 Sep 2016 12:01:08 +0100
-Message-ID: <1473678074-15126-5-git-send-email-jonathanh@nvidia.com>
+Subject: [PATCH V2 06/10] PM / Domains: Verify the PM domain is present when adding a provider
+Date: Mon, 12 Sep 2016 12:01:10 +0100
+Message-ID: <1473678074-15126-7-git-send-email-jonathanh@nvidia.com>
 References: <1473678074-15126-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,154 +12,94 @@ To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hil
 Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-There should be no need to expose the generic_pm_domain structure to
-clients and this eliminates the need to implement reference counting for
-any external reference to a PM domain. Therefore, make the functions
-pm_genpd_lookup_dev() and of_genpd_get_from_provider() private to the
-PM domain core. The functions are renamed in accordance with the naming
-conventions for genpd static functions.
+When a PM domain provider is added, there is currently no way to tell if
+any PM domains associated with the provider are present. Naturally, the
+PM domain provider should not be registered if the PM domains have not
+been added. Nonetheless, verify that the PM domain(s) associated with a
+provider are present when registering the PM domain provider.
+
+This change adds a dependency on the function pm_genpd_present() when
+CONFIG_PM_GENERIC_DOMAINS_OF is enabled and so ensure this function is
+available when CONFIG_PM_GENERIC_DOMAINS_OF selected.
 
 Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 Acked-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- drivers/base/power/domain.c | 19 +++++++++----------
- include/linux/pm_domain.h   | 14 --------------
- 2 files changed, 9 insertions(+), 24 deletions(-)
+ drivers/base/power/domain.c | 41 ++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 38 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index e12d3a8a29a9..d8c1eabc7117 100644
+index c93aa3a64839..fc9f11c26eec 100644
 --- a/drivers/base/power/domain.c
 +++ b/drivers/base/power/domain.c
-@@ -45,7 +45,7 @@ static DEFINE_MUTEX(gpd_list_lock);
-  * and checks that the PM domain pointer is a real generic PM domain.
-  * Any failure results in NULL being returned.
-  */
--struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev)
-+static struct generic_pm_domain *genpd_lookup_dev(struct device *dev)
- {
- 	struct generic_pm_domain *genpd = NULL, *gpd;
+@@ -586,7 +586,7 @@ static int __init genpd_poweroff_unused(void)
+ }
+ late_initcall(genpd_poweroff_unused);
  
-@@ -1119,7 +1119,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
- 
- 	dev_dbg(dev, "%s()\n", __func__);
- 
--	if (!genpd || genpd != pm_genpd_lookup_dev(dev))
-+	if (!genpd || genpd != genpd_lookup_dev(dev))
- 		return -EINVAL;
- 
- 	/* The above validation also means we have existing domain_data. */
-@@ -1466,7 +1466,7 @@ void of_genpd_del_provider(struct device_node *np)
- EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+-#ifdef CONFIG_PM_SLEEP
++#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_GENERIC_DOMAINS_OF)
  
  /**
-- * of_genpd_get_from_provider() - Look-up PM domain
-+ * genpd_get_from_provider() - Look-up PM domain
-  * @genpdspec: OF phandle args to use for look-up
-  *
-  * Looks for a PM domain provider under the node specified by @genpdspec and if
-@@ -1476,7 +1476,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
-  * Returns a valid pointer to struct generic_pm_domain on success or ERR_PTR()
-  * on failure.
-  */
--struct generic_pm_domain *of_genpd_get_from_provider(
-+static struct generic_pm_domain *genpd_get_from_provider(
- 					struct of_phandle_args *genpdspec)
- {
- 	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
-@@ -1499,7 +1499,6 @@ struct generic_pm_domain *of_genpd_get_from_provider(
- 
- 	return genpd;
- }
--EXPORT_SYMBOL_GPL(of_genpd_get_from_provider);
- 
- /**
-  * of_genpd_add_device() - Add a device to an I/O PM domain
-@@ -1513,7 +1512,7 @@ int of_genpd_add_device(struct of_phandle_args *genpdspec, struct device *dev)
- {
- 	struct generic_pm_domain *genpd;
- 
--	genpd = of_genpd_get_from_provider(genpdspec);
-+	genpd = genpd_get_from_provider(genpdspec);
- 	if (IS_ERR(genpd))
- 		return PTR_ERR(genpd);
- 
-@@ -1535,11 +1534,11 @@ int of_genpd_add_subdomain(struct of_phandle_args *parent_spec,
- {
- 	struct generic_pm_domain *parent, *subdomain;
- 
--	parent = of_genpd_get_from_provider(parent_spec);
-+	parent = genpd_get_from_provider(parent_spec);
- 	if (IS_ERR(parent))
- 		return PTR_ERR(parent);
- 
--	subdomain = of_genpd_get_from_provider(subdomain_spec);
-+	subdomain = genpd_get_from_provider(subdomain_spec);
- 	if (IS_ERR(subdomain))
- 		return PTR_ERR(subdomain);
- 
-@@ -1561,7 +1560,7 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
- 	unsigned int i;
- 	int ret = 0;
- 
--	pd = pm_genpd_lookup_dev(dev);
-+	pd = genpd_lookup_dev(dev);
- 	if (!pd)
- 		return;
- 
-@@ -1642,7 +1641,7 @@ int genpd_dev_pm_attach(struct device *dev)
- 			return -ENOENT;
- 	}
- 
--	pd = of_genpd_get_from_provider(&pd_args);
-+	pd = genpd_get_from_provider(&pd_args);
- 	of_node_put(pd_args.np);
- 	if (IS_ERR(pd)) {
- 		dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index e1964a242389..bd411e754f4a 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -116,7 +116,6 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
- 	return to_gpd_data(dev->power.subsys_data->domain_data);
+  * pm_genpd_present - Check if the given PM domain has been initialized.
+@@ -606,6 +606,10 @@ static bool pm_genpd_present(const struct generic_pm_domain *genpd)
+ 	return false;
  }
  
--extern struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev);
- extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
- 				 struct device *dev,
- 				 struct gpd_timing_data *td);
-@@ -138,10 +137,6 @@ static inline struct generic_pm_domain_data *dev_gpd_data(struct device *dev)
++#endif
++
++#ifdef CONFIG_PM_SLEEP
++
+ static bool genpd_dev_active_wakeup(struct generic_pm_domain *genpd,
+ 				    struct device *dev)
  {
- 	return ERR_PTR(-ENOSYS);
+@@ -1453,7 +1457,19 @@ static int genpd_add_provider(struct device_node *np, genpd_xlate_t xlate,
+ int of_genpd_add_provider_simple(struct device_node *np,
+ 				 struct generic_pm_domain *genpd)
+ {
+-	return genpd_add_provider(np, genpd_xlate_simple, genpd);
++	int ret = -EINVAL;
++
++	if (!np || !genpd)
++		return -EINVAL;
++
++	mutex_lock(&gpd_list_lock);
++
++	if (pm_genpd_present(genpd))
++		ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
++
++	mutex_unlock(&gpd_list_lock);
++
++	return ret;
  }
--static inline struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev)
--{
--	return NULL;
--}
- static inline int __pm_genpd_add_device(struct generic_pm_domain *genpd,
- 					struct device *dev,
- 					struct gpd_timing_data *td)
-@@ -199,9 +194,6 @@ typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
- int __of_genpd_add_provider(struct device_node *np, genpd_xlate_t xlate,
- 			void *data);
- void of_genpd_del_provider(struct device_node *np);
--struct generic_pm_domain *of_genpd_get_from_provider(
--			struct of_phandle_args *genpdspec);
--
- struct generic_pm_domain *__of_genpd_xlate_simple(
- 					struct of_phandle_args *genpdspec,
- 					void *data);
-@@ -222,12 +214,6 @@ static inline int __of_genpd_add_provider(struct device_node *np,
- }
- static inline void of_genpd_del_provider(struct device_node *np) {}
+ EXPORT_SYMBOL_GPL(of_genpd_add_provider_simple);
  
--static inline struct generic_pm_domain *of_genpd_get_from_provider(
--			struct of_phandle_args *genpdspec)
--{
--	return NULL;
--}
--
- #define __of_genpd_xlate_simple		NULL
- #define __of_genpd_xlate_onecell	NULL
+@@ -1465,7 +1481,26 @@ EXPORT_SYMBOL_GPL(of_genpd_add_provider_simple);
+ int of_genpd_add_provider_onecell(struct device_node *np,
+ 				  struct genpd_onecell_data *data)
+ {
+-	return genpd_add_provider(np, genpd_xlate_onecell, data);
++	unsigned int i;
++	int ret;
++
++	if (!np || !data)
++		return -EINVAL;
++
++	mutex_lock(&gpd_list_lock);
++
++	for (i = 0; i < data->num_domains; i++) {
++		if (!pm_genpd_present(data->domains[i])) {
++			mutex_unlock(&gpd_list_lock);
++			return -EINVAL;
++		}
++	}
++
++	ret = genpd_add_provider(np, genpd_xlate_onecell, data);
++
++	mutex_unlock(&gpd_list_lock);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(of_genpd_add_provider_onecell);
  
 -- 
 2.1.4
