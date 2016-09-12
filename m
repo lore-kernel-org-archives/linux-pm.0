@@ -1,78 +1,69 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / Hibernate: allow hibernation with
- PAGE_POISONING_ZERO
-Date: Mon, 12 Sep 2016 19:47:47 +0200
-Message-ID: <20160912174747.GA8285@amd>
-References: <1473410612-6207-1-git-send-email-anisse@astier.eu>
- <20160912113238.GA30927@amd>
- <CALUN=qJNX6HqrwXkk--8u0PiOxV-USE4tEouqimXPiRaobtAEw@mail.gmail.com>
+From: Markus Mayer <markus.mayer@broadcom.com>
+Subject: Re: [PATCH 1/3] dt: cpufreq: brcm: New binding document for brcm-avs-cpufreq
+Date: Mon, 12 Sep 2016 10:05:21 -0700
+Message-ID: <CAGt4E5sT28tr4bT-vknNPBoybOHsUsLPcvxN-abFhFMUhuJ=MA@mail.gmail.com>
+References: <1471044331-2480-1-git-send-email-mmayer@broadcom.com>
+ <1471044331-2480-2-git-send-email-mmayer@broadcom.com> <20160816131639.GA938@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <CALUN=qJNX6HqrwXkk--8u0PiOxV-USE4tEouqimXPiRaobtAEw@mail.gmail.com>
-Sender: owner-linux-mm@kvack.org
-To: Anisse Astier <anisse@astier.eu>
-Cc: David Rientjes <rientjes@google.com>, Michal Hocko <mhocko@suse.com>, linux-pm@vger.kernel.org, Mathias Krause <minipli@googlemail.com>, Andrew Morton <akpm@linux-foundation.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Laura Abbott <labbott@fedoraproject.org>, linux-mm@kvack.org, Brad Spengler <spender@grsecurity.net>, Jianyu Zhan <nasa4836@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Yves-Alexis Perez <corsac@debian.org>, Kees Cook <keescook@chromium.org>, linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>, Len Brown <len.brown@intel.com>, Alan Cox <gnomes@lxorguk.ukuu.org.uk>, PaX Team <pageexec@freemail.hu>, Dave Hansen <dave.hansen@intel.com>, Mel Gorman <mgorman@suse.de>, Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160816131639.GA938@rob-hp-laptop>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Device Tree List <devicetree@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi!
+On 16 August 2016 at 06:16, Rob Herring <robh@kernel.org> wrote:
+> On Fri, Aug 12, 2016 at 04:25:29PM -0700, Markus Mayer wrote:
+>> Add the binding document for the new brcm-avs-cpufreq driver.
+>>
+>> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+>> ---
+>>  .../bindings/cpufreq/brcm-avs-cpufreq.txt          | 84 ++++++++++++++++++++++
+>>  MAINTAINERS                                        |  7 ++
+>>  2 files changed, 91 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/cpufreq/brcm-avs-cpufreq.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/brcm-avs-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/brcm-avs-cpufreq.txt
+>> new file mode 100644
+>> index 0000000..707ebe5
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/cpufreq/brcm-avs-cpufreq.txt
+>> @@ -0,0 +1,84 @@
+>> +Broadcom AVS CPUfreq driver
+>> +===========================
+>> +
+>> +This driver provides voltage and frequency scaling on Broadcom SoCs using
+>
+> Bindings describe h/w (or firmware interfaces) not drivers. CPUFreq is a
+> Linux term. Please re-word.
 
-On Mon 2016-09-12 17:19:54, Anisse Astier wrote:
-> Le 12 sept. 2016 13:32, "Pavel Machek" <pavel@ucw.cz> a écrit :
-> >
-> > On Fri 2016-09-09 10:43:32, Anisse Astier wrote:
-> > > PAGE_POISONING_ZERO disables zeroing new pages on alloc, they are
-> > > poisoned (zeroed) as they become available.
-> > > In the hibernate use case, free pages will appear in the system without
-> > > being cleared, left there by the loading kernel.
-> > >
-> > > This patch will make sure free pages are cleared on resume when
-> > > PAGE_POISONING_ZERO is enabled. We free the pages just after resume
-> > > because we can't do it later: going through any device resume code might
-> > > allocate some memory and invalidate the free pages bitmap.
-> > >
-> > > Thus we don't need to disable hibernation when PAGE_POISONING_ZERO is
-> > > enabled.
-> > >
-> > > Signed-off-by: Anisse Astier <anisse@astier.eu>
-> > > Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> > > Cc: Laura Abbott <labbott@fedoraproject.org>
-> > > Cc: Mel Gorman <mgorman@suse.de>
-> > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> >
-> > Looks reasonable to me.
-> >
-> > Acked-by: Pavel Machek <pavel@ucw.cz>
-> >
-> > Actually.... this takes basically zero time come. Do we want to do it
-> > unconditionally?
-> >
-> > (Yes, it is free memory, but for sake of debugging, I guess zeros are
-> > preffered to random content that changed during hibernation.)
-> >
-> > (But that does not change the Ack.)
-> >
-> > Best regards,
-> >
-> Pavel
-> > --
-> 
-> I have no opposition on doing this unconditionally. I can send a v2 as soon
-> as I get closer to a computer.
+Will do.
 
-Actually, I'd keep this one as is, when it works and there are no
-problems for a release or so, we can delete the ifdefs.
+>> +the AVS firmware with DVFS support. The AVS firmware is running on its own
+>> +co-processor. The driver supports both uniprocessor (UP) and symmetric
+>> +multiprocessor (SMP) systems which share clock and voltage across all CPUs.
+>> +
+>> +Actual voltage and frequency scaling is done solely by the AVS firmware.
+>> +This driver does not change frequency or voltage itself. It provides a
+>> +standard CPUfreq interface to the rest of the kernel and to userland. It
+>> +interfaces with the AVS firmware to effect the requested changes and to
+>> +report back the current system status in a way that is expected by existing
+>> +tools.
+>> +
+>> +This driver requires two DT nodes. One node (brcm,avs-cpu-data-mem)
+>> +references the mailbox register used to communicate with the AVS CPU. The
+>> +second node (brcm,avs-cpu-l2-intr) is required to trigger an interrupt on
+>> +the AVS CPU. The interrupt tells the AVS CPU that it needs to process a
+>> +command sent to it by this driver. Interrupting the AVS CPU is mandatory for
+>> +commands to be processed.
+>
+> The mailbox and interrupt to the AVS CPU are only for DVFS?
 
-Thanks!
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yes, it is. -- The AVS CPU can run in DFS and DVFS mode. But I don't
+think you are looking at that kind of distinction here. Linux wouldn't
+even notice the difference between the two. (Linux can ask the
+firmware "which mode you are in", but it doesn't have to.)
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Thanks,
+-Markus
