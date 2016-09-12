@@ -1,89 +1,89 @@
-From: Felipe Balbi <felipe.balbi@linux.intel.com>
-Subject: Re: [PATCH 00/26] constify local structures
-Date: Mon, 12 Sep 2016 16:43:58 +0300
-Message-ID: <877fah5j35.fsf@linux.intel.com>
-References: <1473599168-30561-1-git-send-email-Julia.Lawall@lip6.fr> <20160911172105.GB5493@intel.com> <alpine.DEB.2.10.1609121051050.3049@hadrien> <20160912131625.GD957@intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC/RFT][PATCH v2 6/7] PM / runtime: Use device links
+Date: Mon, 12 Sep 2016 15:57:02 +0200
+Message-ID: <3547725.ADiAblWZvU@vostro.rjw.lan>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <5200011.6uCldMmN4m@vostro.rjw.lan> <20160912094758.GA517@wunner.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-        micalg=pgp-sha256; protocol="application/pgp-signature"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160912131625.GD957@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Julia Lawall <julia.lawall@lip6.fr>
-Cc: linux-renesas-soc@vger.kernel.org, joe@perches.com, kernel-janitors@vger.kernel.org, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-media@vger.kernel.org, linux-can@vger.kernel.org, Tatyana Nikolova <tatyana.e.nikolova@intel.com>, Shiraz Saleem <shiraz.saleem@intel.com>, Mustafa Ismail <mustafa.ismail@intel.com>, Chien Tin Tung <chien.tin.tung@intel.com>, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, devel@driverdev.osuosl.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-wireless@vger.kernel.org, Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, tpmdd-devel@lists.sourceforge.net, linux-scsi@vger.kernel.org, linux-spi@vger.kernel.orgl
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50527 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1758208AbcILNu5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 09:50:57 -0400
+In-Reply-To: <20160912094758.GA517@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Monday, September 12, 2016 11:47:58 AM Lukas Wunner wrote:
+> On Thu, Sep 08, 2016 at 11:30:26PM +0200, Rafael J. Wysocki wrote:
+> > Modify the runtime PM framework to use device links to ensure that
+> > supplier devices will not be suspended if any of their consumer
+> > devices are active.
+> 
+> I think it's inconsistent to runtime resume/suspend suppliers in
+> __rpm_callback() whereas the parent is treated in rpm_suspend()
+> and rpm_resume().
 
+The reason why I did that this way is the rollback needed in case of
+errors and that led to duplicated code if done elsewhere.
 
-Hi,
+> Instead I'd suggest to amend struct dev_pm_ops with:
+> 	atomic_t		consumer_count;
+> 
+> Amend rpm_check_suspend_allowed() with:
+> 	else if (atomic_read(&dev->power.consumer_count) > 0)
+> 		retval = -EBUSY;
 
-Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> writes:
-> On Mon, Sep 12, 2016 at 10:54:07AM +0200, Julia Lawall wrote:
->>=20
->>=20
->> On Sun, 11 Sep 2016, Jarkko Sakkinen wrote:
->>=20
->> > On Sun, Sep 11, 2016 at 03:05:42PM +0200, Julia Lawall wrote:
->> > > Constify local structures.
->> > >
->> > > The semantic patch that makes this change is as follows:
->> > > (http://coccinelle.lip6.fr/)
->> >
->> > Just my two cents but:
->> >
->> > 1. You *can* use a static analysis too to find bugs or other issues.
->> > 2. However, you should manually do the commits and proper commit
->> >    messages to subsystems based on your findings. And I generally think
->> >    that if one contributes code one should also at least smoke test ch=
-anges
->> >    somehow.
->> >
->> > I don't know if I'm alone with my opinion. I just think that one should
->> > also do the analysis part and not blindly create and submit patches.
->>=20
->> All of the patches are compile tested.  And the individual patches are
->
-> Compile-testing is not testing. If you are not able to test a commit,
-> you should explain why.
+That is a good idea, though (from the first look at least).
 
-Dude, Julia has been doing semantic patching for years already and
-nobody has raised any concerns so far. There's already an expectation
-that Coccinelle *works* and Julia's sematic patches are sound.
+> Amend rpm_suspend(), rpm_resume() and __pm_runtime_set_status()
+> to decrement/increment consumer_count where we're doing the same
+> for the parent's child_count, and runtime resume/idle suppliers
+> as necessary.
+> 
+> 
+> > The idea is to reference count suppliers on the consumer's resume
+> > and drop references to them on its suspend.  The information on
+> > whether or not the supplier has been reference counted by the
+> > consumer's (runtime) resume is stored in a new field (rpm_active)
+> > in the link object for each link.
+> 
+> So the rpm_active variable indicates if the runtime ref on the
+> supplier is currently held. I don't see why this is needed.
+> If DEVICE_LINK_PM_RUNTIME is not set, we never acquire a runtime
+> ref in the first place. If it's set, a ref is acquired upon
+> resuming the consumer and released upon suspending it. So whether
+> the ref is held is discernable from the consumer's runtime PM state.
+> Why do you need to track this in a separate variable?
 
-Besides, adding 'const' is something that causes virtually no functional
-changes to the point that build-testing is really all you need. Any
-problems caused by adding 'const' to a definition will be seen by build
-errors or warnings.
+Please see pm_runtime_clean_up_links().
 
-Really, just stop with the pointless discussion and go read a bit about
-Coccinelle and what semantic patches are giving you. The work done by
-Julia and her peers are INRIA have measurable benefits.
+> > @@ -718,8 +718,12 @@ enum device_link_status {
+> >   * Device link flags.
+> >   *
+> >   * PERSISTENT: Do not delete the link on consumer device driver unbind.
+> > + * PM_RUNTIME: If set, the runtime PM framework will use this link.
+> > + * RPM_ACTIVE: Run pm_runtime_get_sync() on the supplier during link creation.
+> >   */
+> >  #define DEVICE_LINK_PERSISTENT	(1 << 0)
+> > +#define DEVICE_LINK_PM_RUNTIME	(1 << 1)
+> > +#define DEVICE_LINK_RPM_ACTIVE	(1 << 2)
+> 
+> I don't understand the need for DEVICE_LINK_RPM_ACTIVE: If the
+> consumer is in runtime resumed state when the link is added and
+> DEVICE_LINK_PM_RUNTIME is set, then of course the supplier needs
+> to be in runtime resumed state as well. Conversely if the consumer
+> is in runtime suspended state, the supplier need not be in runtime
+> resumed state either. So the value of the flag can be derived from
+> the consumer's runtime PM state. Why do we need the flag at all?
 
-You're really making a thunderstorm in a glass of water.
+That's because device_link_add() doesn't know that runtime PM states of
+the supplier/consumer and the flag tells it what to do (with the assumption
+that the caller knows the situation, of course).
 
-=2D-=20
-balbi
+Thanks,
+Rafael
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJX1rEeAAoJEMy+uJnhGpkGoEAQAJuttoDMSYPwtz/VwCtE7bUk
-aXQ+cEoH0/iubhhEjft1l3lvO/wFT9jhKieX1Q8qZQtvbIQAhlPcBsF0n5Nj0U1b
-jF3w2wGm4i9Li6Njgy6GFnIRLkvWFdTj/y9VpFi/qhcarubD1XWn1rmeCz6z8s9w
-uJ19WNX7htXt2iWA5vqAewHen7xufj7nuIZLfU8E227g5N+ePuVNjRwc6zFoD0ZV
-iGAIinF/NU+r62zSUxZEUsO1UBxPHITIEFJgO8yOXebQ1iN05oqE/I9yIfQF5Jgw
-YU0XIH1tO7hCrFmhJkU9moQeRoRPdvXAV1yAslK+PqzaafW6Z5apOKS1IVeF0peb
-Z1T6Mhf1D8n0zU2KeShU9Ycygz1C+QBMWaLPlSPYVbHBW8RwGiDJP8H9eDBLH++J
-BjuieYb0HsZYy+8P2PAZOIi0EyyT51p1WfldSYyyI/MH9uTuk/ifdwBESdlkZdBt
-3PVZRhRjxSuVC9n4pj+b+CmO02G1WE7hS+EvGMEicP7oCOYIh93VPldGE2Aaltwe
-dedqi7JY2WvfDE1kVKjHsIpyraUrN8/kc6OpGuUXsoeyVmAIbrCXLAJpKS43Aw9r
-UU7dmuGvrRr8oBxytzoFA7FB8fTzmlTPPurzhOdrSvYvRQGYvOMgz2F9C/BBkimU
-wx96Gkyu+FMi4THwN7uU
-=p41K
------END PGP SIGNATURE-----
---=-=-=--
