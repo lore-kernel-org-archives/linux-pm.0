@@ -1,136 +1,116 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V2 09/10] PM / Domains: Add support for removing PM domains
-Date: Mon, 12 Sep 2016 12:01:13 +0100
-Message-ID: <1473678074-15126-10-git-send-email-jonathanh@nvidia.com>
-References: <1473678074-15126-1-git-send-email-jonathanh@nvidia.com>
+From: Colin King <colin.king@canonical.com>
+Subject: [PATCH] PM / AVS: SmartReflex: add in missing white space in error message text
+Date: Mon, 12 Sep 2016 12:14:55 +0100
+Message-ID: <20160912111455.29881-1-colin.king@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1473678074-15126-1-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from youngberry.canonical.com ([91.189.89.112]:60447 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751955AbcILLQ0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 07:16:26 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-The genpd framework allows users to add PM domains via the pm_genpd_init()
-function, however, there is no corresponding function to remove a PM
-domain. For most devices this may be fine as the PM domains are never
-removed, however, for devices that wish to populate the PM domains from
-within a driver, having the ability to remove a PM domain if the probing
-of the device fails or the driver is unloaded is necessary.
+From: Colin Ian King <colin.king@canonical.com>
 
-Add the function pm_genpd_remove() to remove a PM domain by referencing
-it's generic_pm_domain structure. Note that the bulk of the code that
-removes the PM domain is placed in a separate local function
-genpd_remove() (which is called by pm_genpd_remove()). The code is
-structured in this way to prepare for adding another function to remove
-a PM domain by provider that will also call genpd_remove(). Note that
-users of genpd_remove() must call this function with the mutex,
-gpd_list_lock, held.
+Several line wrapped literal strings are missing white spaces, add the
+whitespace to fix this.
 
-PM domains can only be removed if the associated provider has been
-removed, they are not a parent domain to another PM domain and have no
-devices associated with them.
-
-Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/base/power/domain.c | 60 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   |  5 ++++
- 2 files changed, 65 insertions(+)
+ drivers/power/avs/smartreflex.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index d5135caa84db..7481e3e316a2 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1358,6 +1358,66 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
- }
- EXPORT_SYMBOL_GPL(pm_genpd_init);
+diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
+index db9973b..40f46a8 100644
+--- a/drivers/power/avs/smartreflex.c
++++ b/drivers/power/avs/smartreflex.c
+@@ -225,8 +224,7 @@ static int sr_late_init(struct omap_sr *sr_info)
  
-+static int genpd_remove(struct generic_pm_domain *genpd)
-+{
-+	struct gpd_link *l, *link;
-+
-+	if (IS_ERR_OR_NULL(genpd))
-+		return -EINVAL;
-+
-+	mutex_lock(&genpd->lock);
-+
-+	if (genpd->has_provider) {
-+		mutex_unlock(&genpd->lock);
-+		pr_err("Provider present, unable to remove %s\n", genpd->name);
-+		return -EBUSY;
-+	}
-+
-+	if (!list_empty(&genpd->master_links) || genpd->device_count) {
-+		mutex_unlock(&genpd->lock);
-+		pr_err("%s: unable to remove %s\n", __func__, genpd->name);
-+		return -EBUSY;
-+	}
-+
-+	list_for_each_entry_safe(link, l, &genpd->slave_links, slave_node) {
-+		list_del(&link->master_node);
-+		list_del(&link->slave_node);
-+		kfree(link);
-+	}
-+
-+	list_del(&genpd->gpd_list_node);
-+	mutex_unlock(&genpd->lock);
-+	cancel_work_sync(&genpd->power_off_work);
-+	pr_debug("%s: removed %s\n", __func__, genpd->name);
-+
-+	return 0;
-+}
-+
-+/**
-+ * pm_genpd_remove - Remove a generic I/O PM domain
-+ * @genpd: Pointer to PM domain that is to be removed.
-+ *
-+ * To remove the PM domain, this function:
-+ *  - Removes the PM domain as a subdomain to any parent domains,
-+ *    if it was added.
-+ *  - Removes the PM domain from the list of registered PM domains.
-+ *
-+ * The PM domain will only be removed, if the associated provider has
-+ * been removed, it is not a parent to any other PM domain and has no
-+ * devices associated with it.
-+ */
-+int pm_genpd_remove(struct generic_pm_domain *genpd)
-+{
-+	int ret;
-+
-+	mutex_lock(&gpd_list_lock);
-+	ret = genpd_remove(genpd);
-+	mutex_unlock(&gpd_list_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pm_genpd_remove);
-+
- #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+ error:
+ 	list_del(&sr_info->node);
+-	dev_err(&sr_info->pdev->dev, "%s: ERROR in registering"
+-		"interrupt handler. Smartreflex will"
++	dev_err(&sr_info->pdev->dev, "%s: ERROR in registering interrupt handler. Smartreflex will "
+ 		"not function as desired\n", __func__);
  
- typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 554f8915c691..85f7d53a9827 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -130,6 +130,7 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 				     struct generic_pm_domain *target);
- extern int pm_genpd_init(struct generic_pm_domain *genpd,
- 			 struct dev_power_governor *gov, bool is_off);
-+extern int pm_genpd_remove(struct generic_pm_domain *genpd);
+ 	return ret;
+@@ -387,7 +386,7 @@ int sr_configure_errgen(struct omap_sr *sr)
+ 		vpboundint_st = ERRCONFIG_VPBOUNDINTST_V2;
+ 		break;
+ 	default:
+-		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
++		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
+ 			"module without specifying the ip\n", __func__);
+ 		return -EINVAL;
+ 	}
+@@ -440,7 +439,7 @@ int sr_disable_errgen(struct omap_sr *sr)
+ 		vpboundint_st = ERRCONFIG_VPBOUNDINTST_V2;
+ 		break;
+ 	default:
+-		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
++		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
+ 			"module without specifying the ip\n", __func__);
+ 		return -EINVAL;
+ 	}
+@@ -504,7 +503,7 @@ int sr_configure_minmax(struct omap_sr *sr)
+ 		senp_shift = SRCONFIG_SENPENABLE_V2_SHIFT;
+ 		break;
+ 	default:
+-		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
++		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
+ 			"module without specifying the ip\n", __func__);
+ 		return -EINVAL;
+ 	}
+@@ -537,7 +536,7 @@ int sr_configure_minmax(struct omap_sr *sr)
+ 			IRQENABLE_MCUBOUNDSINT | IRQENABLE_MCUDISABLEACKINT);
+ 		break;
+ 	default:
+-		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
++		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
+ 			"module without specifying the ip\n", __func__);
+ 		return -EINVAL;
+ 	}
+@@ -571,7 +570,7 @@ int sr_enable(struct omap_sr *sr, unsigned long volt)
+ 	volt_data = omap_voltage_get_voltdata(sr->voltdm, volt);
  
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -165,6 +166,10 @@ static inline int pm_genpd_init(struct generic_pm_domain *genpd,
- {
- 	return -ENOSYS;
- }
-+static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
-+{
-+	return -ENOTSUPP;
-+}
- #endif
+ 	if (IS_ERR(volt_data)) {
+-		dev_warn(&sr->pdev->dev, "%s: Unable to get voltage table"
++		dev_warn(&sr->pdev->dev, "%s: Unable to get voltage table "
+ 			"for nominal voltage %ld\n", __func__, volt);
+ 		return PTR_ERR(volt_data);
+ 	}
+@@ -704,7 +703,7 @@ void omap_sr_enable(struct voltagedomain *voltdm)
+ 		return;
  
- static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+ 	if (!sr_class || !(sr_class->enable) || !(sr_class->configure)) {
+-		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not"
++		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not "
+ 			"registered\n", __func__);
+ 		return;
+ 	}
+@@ -736,7 +735,7 @@ void omap_sr_disable(struct voltagedomain *voltdm)
+ 		return;
+ 
+ 	if (!sr_class || !(sr_class->disable)) {
+-		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not"
++		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not "
+ 			"registered\n", __func__);
+ 		return;
+ 	}
+@@ -768,7 +767,7 @@ void omap_sr_disable_reset_volt(struct voltagedomain *voltdm)
+ 		return;
+ 
+ 	if (!sr_class || !(sr_class->disable)) {
+-		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not"
++		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not "
+ 			"registered\n", __func__);
+ 		return;
+ 	}
 -- 
-2.1.4
+2.9.3
+
