@@ -1,82 +1,50 @@
-From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Subject: Re: [PATCH 00/26] constify local structures
-Date: Mon, 12 Sep 2016 23:14:50 +0300
-Message-ID: <20160912201450.GA8889@intel.com>
-References: <1473599168-30561-1-git-send-email-Julia.Lawall@lip6.fr>
- <20160911172105.GB5493@intel.com>
- <alpine.DEB.2.10.1609121051050.3049@hadrien>
- <20160912131625.GD957@intel.com> <877fah5j35.fsf@linux.intel.com>
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: Re: [PATCH v3 1/8] sched, x86: Add SD_ASYM_PACKING flags to x86 cpu
+ topology for ITMT
+Date: Mon, 12 Sep 2016 13:50:15 -0700
+Message-ID: <1473713415.3916.48.camel@linux.intel.com>
+References: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <1473373615-51427-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <alpine.DEB.2.20.1609101505290.2804@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-Content-Disposition: inline
-In-Reply-To: <877fah5j35.fsf@linux.intel.com>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Felipe Balbi <felipe.balbi@linux.intel.com>
-Cc: alsa-devel@alsa-project.org, Mustafa Ismail <mustafa.ismail@intel.com>, Tatyana Nikolova <tatyana.e.nikolova@intel.com>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, platform-driver-x86@vger.kernel.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, linux-acpi@vger.kernel.org, tpmdd-devel@lists.sourceforge.net, linux-media@vger.kernel.org, linux-pm@vger.kernel.org, linux-can@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>, Shiraz Saleem <shiraz.saleem@intel.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, netdev@vger.kernel.org, Chien Tin Tung <chien.tin.tung@intel.com>, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-usb@vger.kernel.org, joe@perches.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.20.1609101505290.2804@nanos>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 12, 2016 at 04:43:58PM +0300, Felipe Balbi wrote:
-> 
-> Hi,
-> 
-> Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> writes:
-> > On Mon, Sep 12, 2016 at 10:54:07AM +0200, Julia Lawall wrote:
-> >> 
-> >> 
-> >> On Sun, 11 Sep 2016, Jarkko Sakkinen wrote:
-> >> 
-> >> > On Sun, Sep 11, 2016 at 03:05:42PM +0200, Julia Lawall wrote:
-> >> > > Constify local structures.
-> >> > >
-> >> > > The semantic patch that makes this change is as follows:
-> >> > > (http://coccinelle.lip6.fr/)
-> >> >
-> >> > Just my two cents but:
-> >> >
-> >> > 1. You *can* use a static analysis too to find bugs or other issues.
-> >> > 2. However, you should manually do the commits and proper commit
-> >> >    messages to subsystems based on your findings. And I generally think
-> >> >    that if one contributes code one should also at least smoke test changes
-> >> >    somehow.
-> >> >
-> >> > I don't know if I'm alone with my opinion. I just think that one should
-> >> > also do the analysis part and not blindly create and submit patches.
-> >> 
-> >> All of the patches are compile tested.  And the individual patches are
-> >
-> > Compile-testing is not testing. If you are not able to test a commit,
-> > you should explain why.
-> 
-> Dude, Julia has been doing semantic patching for years already and
-> nobody has raised any concerns so far. There's already an expectation
-> that Coccinelle *works* and Julia's sematic patches are sound.
-> 
-> Besides, adding 'const' is something that causes virtually no functional
-> changes to the point that build-testing is really all you need. Any
-> problems caused by adding 'const' to a definition will be seen by build
-> errors or warnings.
-> 
-> Really, just stop with the pointless discussion and go read a bit about
-> Coccinelle and what semantic patches are giving you. The work done by
-> Julia and her peers are INRIA have measurable benefits.
-> 
-> You're really making a thunderstorm in a glass of water.
+On Sat, 2016-09-10 at 15:10 +0200, Thomas Gleixner wrote:
+> On Thu, 8 Sep 2016, Srinivas Pandruvada wrote:
+> > 
+> > From: Tim Chen <tim.c.chen@linux.intel.com>
+> > 
+> > We uses ASYM_PACKING feature in the scheduler to move tasks to more
+> > capable cpus that can be boosted to higher frequency. This is enabled by
+> > Intel Turbo Boost Max Technology 3.0 (ITMT).  We mark the sched domain
+> > topology level with SD_ASYM_PACKING flag for such systems to indicate
+> > scheduler can use the ASYM_PACKING feature to move load to the
+> > more capable cpus.
+> Sigh. This changelog does not tell anything about the nature of the patch,
+> the rationale for it etc. It's just a meaningless blurb.
 
-Hmm... I've been using coccinelle in cyclic basis for some time now.
-My comment was oversized but I didn't mean it to be impolite or attack
-of any kind for that matter.
+Okay, I can add more details about ITMT.  Will also be clearer if
+the ITMT patch (patch 5) comes before this one.
 
-> -- 
-> balbi
 
-/Jarkko
+
+> > +}
+> > +#else
+> > +#define x86_core_flags cpu_core_flags
+> > +#define x86_smt_flags cpu_smt_flags
+> > +#endif
+> No. We first rework the code so that the IMT stuff can be added in a later
+> patch easily.
+
+I'll move this patch to come after current patch 5.
+
+Thanks.
+
+Tim
