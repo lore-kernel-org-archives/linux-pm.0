@@ -1,7 +1,7 @@
 From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V2 06/10] PM / Domains: Verify the PM domain is present when adding a provider
-Date: Mon, 12 Sep 2016 12:01:10 +0100
-Message-ID: <1473678074-15126-7-git-send-email-jonathanh@nvidia.com>
+Subject: [PATCH V2 02/10] ARM: EXYNOS: Remove calls to of_genpd_get_from_provider()
+Date: Mon, 12 Sep 2016 12:01:06 +0100
+Message-ID: <1473678074-15126-3-git-send-email-jonathanh@nvidia.com>
 References: <1473678074-15126-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,94 +12,57 @@ To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hil
 Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-When a PM domain provider is added, there is currently no way to tell if
-any PM domains associated with the provider are present. Naturally, the
-PM domain provider should not be registered if the PM domains have not
-been added. Nonetheless, verify that the PM domain(s) associated with a
-provider are present when registering the PM domain provider.
-
-This change adds a dependency on the function pm_genpd_present() when
-CONFIG_PM_GENERIC_DOMAINS_OF is enabled and so ensure this function is
-available when CONFIG_PM_GENERIC_DOMAINS_OF selected.
+Update the EXYNOS PM domain code to use the of_genpd_add_subdomain()
+and remove any calls to of_genpd_get_from_provider().
 
 Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 Acked-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- drivers/base/power/domain.c | 41 ++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 38 insertions(+), 3 deletions(-)
+ drivers/soc/samsung/pm_domains.c | 23 ++++++++---------------
+ 1 file changed, 8 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index c93aa3a64839..fc9f11c26eec 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -586,7 +586,7 @@ static int __init genpd_poweroff_unused(void)
- }
- late_initcall(genpd_poweroff_unused);
+diff --git a/drivers/soc/samsung/pm_domains.c b/drivers/soc/samsung/pm_domains.c
+index 4822346aadc6..7112004b8032 100644
+--- a/drivers/soc/samsung/pm_domains.c
++++ b/drivers/soc/samsung/pm_domains.c
+@@ -215,29 +215,22 @@ static __init int exynos4_pm_init_power_domain(void)
  
--#ifdef CONFIG_PM_SLEEP
-+#if defined(CONFIG_PM_SLEEP) || defined(CONFIG_PM_GENERIC_DOMAINS_OF)
+ 	/* Assign the child power domains to their parents */
+ 	for_each_matching_node(np, exynos_pm_domain_of_match) {
+-		struct generic_pm_domain *child_domain, *parent_domain;
+-		struct of_phandle_args args;
++		struct of_phandle_args child, parent;
  
- /**
-  * pm_genpd_present - Check if the given PM domain has been initialized.
-@@ -606,6 +606,10 @@ static bool pm_genpd_present(const struct generic_pm_domain *genpd)
- 	return false;
- }
+-		args.np = np;
+-		args.args_count = 0;
+-		child_domain = of_genpd_get_from_provider(&args);
+-		if (IS_ERR(child_domain))
+-			continue;
++		child.np = np;
++		child.args_count = 0;
  
-+#endif
-+
-+#ifdef CONFIG_PM_SLEEP
-+
- static bool genpd_dev_active_wakeup(struct generic_pm_domain *genpd,
- 				    struct device *dev)
- {
-@@ -1453,7 +1457,19 @@ static int genpd_add_provider(struct device_node *np, genpd_xlate_t xlate,
- int of_genpd_add_provider_simple(struct device_node *np,
- 				 struct generic_pm_domain *genpd)
- {
--	return genpd_add_provider(np, genpd_xlate_simple, genpd);
-+	int ret = -EINVAL;
-+
-+	if (!np || !genpd)
-+		return -EINVAL;
-+
-+	mutex_lock(&gpd_list_lock);
-+
-+	if (pm_genpd_present(genpd))
-+		ret = genpd_add_provider(np, genpd_xlate_simple, genpd);
-+
-+	mutex_unlock(&gpd_list_lock);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(of_genpd_add_provider_simple);
+ 		if (of_parse_phandle_with_args(np, "power-domains",
+-					 "#power-domain-cells", 0, &args) != 0)
+-			continue;
+-
+-		parent_domain = of_genpd_get_from_provider(&args);
+-		if (IS_ERR(parent_domain))
++					       "#power-domain-cells", 0,
++					       &parent) != 0)
+ 			continue;
  
-@@ -1465,7 +1481,26 @@ EXPORT_SYMBOL_GPL(of_genpd_add_provider_simple);
- int of_genpd_add_provider_onecell(struct device_node *np,
- 				  struct genpd_onecell_data *data)
- {
--	return genpd_add_provider(np, genpd_xlate_onecell, data);
-+	unsigned int i;
-+	int ret;
-+
-+	if (!np || !data)
-+		return -EINVAL;
-+
-+	mutex_lock(&gpd_list_lock);
-+
-+	for (i = 0; i < data->num_domains; i++) {
-+		if (!pm_genpd_present(data->domains[i])) {
-+			mutex_unlock(&gpd_list_lock);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	ret = genpd_add_provider(np, genpd_xlate_onecell, data);
-+
-+	mutex_unlock(&gpd_list_lock);
-+
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(of_genpd_add_provider_onecell);
+-		if (pm_genpd_add_subdomain(parent_domain, child_domain))
++		if (of_genpd_add_subdomain(&parent, &child))
+ 			pr_warn("%s failed to add subdomain: %s\n",
+-				parent_domain->name, child_domain->name);
++				parent.np->name, child.np->name);
+ 		else
+ 			pr_info("%s has as child subdomain: %s.\n",
+-				parent_domain->name, child_domain->name);
++				parent.np->name, child.np->name);
+ 	}
  
+ 	return 0;
 -- 
 2.1.4
