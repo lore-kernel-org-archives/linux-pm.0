@@ -1,274 +1,76 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: Re: [PATCH v3 5/8] sched,x86: Enable Turbo Boost Max Technology
-Date: Mon, 12 Sep 2016 14:34:13 -0700
-Message-ID: <1473716053.3916.74.camel@linux.intel.com>
-References: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <1473373615-51427-6-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <alpine.DEB.2.20.1609101546130.2804@nanos>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v2 4/4] PM / AVS: rockchip-cpu-avs: add driver handling
+ Rockchip cpu avs
+Date: Mon, 12 Sep 2016 14:55:15 -0700
+Message-ID: <20160912215515.GF7243@codeaurora.org>
+References: <1471510341-63926-1-git-send-email-finley.xiao@rock-chips.com>
+ <1471510341-63926-5-git-send-email-finley.xiao@rock-chips.com>
+ <20160829060801.GB5094@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1609101546130.2804@nanos>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:50345 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751882AbcILVzT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 17:55:19 -0400
+Content-Disposition: inline
+In-Reply-To: <20160829060801.GB5094@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Finlye Xiao <finley.xiao@rock-chips.com>, srinivas.kandagatla@linaro.org, maxime.ripard@free-electrons.com, heiko@sntech.de, robh+dt@kernel.org, frowand.list@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, mark.rutland@arm.com, khilman@kernel.org, nm@ti.com, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, jay.xu@rock-chips.com, rocky.hao@rock-chips.com, tim.chen@rock-chips.com, tony.xie@rock-chips.com, ulysses.huang@rock-chips.com, lin.huang@rock-chips.com
 
-On Sat, 2016-09-10 at 18:21 +0200, Thomas Gleixner wrote:
-> On Thu, 8 Sep 2016, Srinivas Pandruvada wrote:
-> > 
-> > +
-> > +DEFINE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
-> > +static DEFINE_MUTEX(itmt_update_mutex);
-> > +
-> > +static unsigned int zero;
-> > +static unsigned int one = 1;
-> Please stick that close to the ctl_table so it gets obvious why we need
-> this. My first reaction to this was: WTF!
-
-Will do.
-
-> 
-> > 
-> > +/*
-> > + * Boolean to control whether we want to move processes to cpu capable
-> > + * of higher turbo frequency for cpus supporting Intel Turbo Boost Max
-> > + * Technology 3.0.
-> > + *
-> > + * It can be set via /proc/sys/kernel/sched_itmt_enabled
-> > + */
-> > +unsigned int __read_mostly sysctl_sched_itmt_enabled;
-> Please put the sysctl into a seperate patch and document the sysctl at the
-> proper place.
-> 
-
-Okay, I can move the sysctl related code to a separate patch.
-
-> > 
-> > +
-> > +/*
-> > + * The pstate_driver calls set_sched_itmt to indicate if the system
-> > + * is ITMT capable.
-> > + */
-> > +static bool __read_mostly sched_itmt_capable;
-> > +
-> > +int arch_asym_cpu_priority(int cpu)
+On 08/29, Viresh Kumar wrote:
+> On 18-08-16, 16:52, Finlye Xiao wrote:
+> > +static int rockchip_adjust_opp_table(struct device *cpu_dev,
+> > +				     struct cpufreq_frequency_table *table,
+> > +				     int volt)
 > > +{
-> > +	return per_cpu(sched_core_priority, cpu);
-> > +}
+> > +	struct opp_table *opp_table;
+> > +	struct cpufreq_frequency_table *pos;
+> > +	struct dev_pm_opp *opp;
 > > +
-> The ordering or your functions is completely random and makes not sense
-> whatsoever.
-
-Okay, I'll put it at a more logical place.
-
-> 
-> > 
-> > +/* Called with itmt_update_mutex lock held */
-> > +static void enable_sched_itmt(bool enable_itmt)
-> > +{
-> > +	sysctl_sched_itmt_enabled = enable_itmt;
-> > +	x86_topology_update = true;
-> > +	rebuild_sched_domains();
-> So you rebuild that even if the state of the sysctl did not change,
-
-Will check for change in updated patch.
-
-> 
-> > 
-> > +}
+> > +	if (!volt)
+> > +		return 0;
 > > +
-> > +static int sched_itmt_update_handler(struct ctl_table *table, int write,
-> > +			      void __user *buffer, size_t *lenp, loff_t *ppos)
-> > +{
-> > +	int ret;
+> > +	rcu_read_lock();
 > > +
-> > +	mutex_lock(&itmt_update_mutex);
-> > +
-> > +	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
-> > +
-> > +	if (ret || !write) {
-> > +		mutex_unlock(&itmt_update_mutex);
-> > +		return ret;
+> > +	opp_table = _find_opp_table(cpu_dev);
+> > +	if (IS_ERR(opp_table)) {
+> > +		rcu_read_unlock();
+> > +		return PTR_ERR(opp_table);
 > > +	}
 > > +
-> > +	enable_sched_itmt(sysctl_sched_itmt_enabled);
-> So you hand in sysctl_sched_itmt_enabled so that enable_sched_itmt() can
-> store that value in sysctl_sched_itmt_enabled. Brilliant stuff that.
-
-Will merge enable_sched_itmt into sched_itmt_update_handler.
-
-> 
-> > 
-> > +static struct ctl_table_header *itmt_sysctl_header;
+> > +	cpufreq_for_each_valid_entry(pos, table) {
+> > +		opp = dev_pm_opp_find_freq_exact(cpu_dev, pos->frequency * 1000,
+> > +						 true);
+> > +		if (IS_ERR(opp))
+> > +			continue;
 > > +
-> > +/*
-> > + * The boot code will find out the max boost frequency
-> > + * and call this function to set a priority proportional
-> > + * to the max boost frequency. CPU with higher boost
-> > + * frequency will receive higher priority.
-> > + */
-> > +void sched_set_itmt_core_prio(int prio, int core_cpu)
-> > +{
-> > +	int cpu, i = 1;
-> > +
-> > +	for_each_cpu(cpu, topology_sibling_cpumask(core_cpu)) {
-> > +		int smt_prio;
-> > +
-> > +		/*
-> > +		 * Discount the priority of sibling so that we don't
-> > +		 * pack all loads to the same core before using other cores.
-> -EMAKESNOSENSE
-> 
-> Is this a winter or summer sale where we get a discount? 10% or 50% or what?
-> 
-> The math here is:
-> 
->       smt_prio = prio * num_siblings / sibling_idx;
-> 
-> The purpose of this is to ensure that the siblings are moved to the end of
-> the priority chain and therefor only used when all other high priority
-> cpus are out of capacity.
-
-Will update comment here.
-
-> 
-> > 
-> > +		 */
-> > +		smt_prio = prio * smp_num_siblings / i;
-> > +		i++;
-> > +		per_cpu(sched_core_priority, cpu) = smt_prio;
-> > +	}
-> > +}
-> > +
-> > +/*
-> > + * During boot up, boot code will detect if the system
-> > + * is ITMT capable and call set_sched_itmt.
-> Groan. In the comment above the declaration of sched_itmt_capable you
-> write:
-> 
-> > 
-> > + * The pstate_driver calls set_sched_itmt to indicate if the system
-> > + * is ITMT capable.
-> So what is calling this? Boot code or pstate driver or something else?
-
-Will just say pstate driver.
-
-> 
-> > 
-> > + *
-> > + * This should be called after sched_set_itmt_core_prio
-> > + * has been called to set the cpus' priorities.
-> should? So the call order is optional and this is just a recommendation.
-> 
-> > 
-> > + *
-> > + * This function should be called without cpu hot plug lock
-> > + * as we need to acquire the lock to rebuild sched domains
-> > + * later.
-> Ditto. Must not be called with cpu hotplug lock held.
-
-Okay.
-
-> 
-> > 
-> > + */
-> > +void set_sched_itmt(bool itmt_capable)
-> This function can be called more than once and it can be called to
-> anable and disable the feature, right?
-
-> So again: instead of incoherent comments above the function describe the
-> calling conventions and what the function does proper.
-
-Will add that.
-
-> 
-> > 
-> > +{
-> > +	mutex_lock(&itmt_update_mutex);
-> > +
-> > +	if (itmt_capable != sched_itmt_capable) {
-> If you use a goto out_unlock here, then you spare one indentation level and
-> the annoying line breaks.
-
-Will do.
-
-> 
-> > 
-> > +
-> > +		if (itmt_capable) {
-> > +			itmt_sysctl_header =
-> > +				register_sysctl_table(itmt_root_table);
-> What if this fails? Error handling is overrated ...
-
-Will add code to disable itmt totally then if we can register
-sysctl table.
-
-> 
-> > 
-> > +			/*
-> > +			 * ITMT capability automatically enables ITMT
-> > +			 * scheduling for client systems (single node).
-> Why? Just because it can and just because something thinks that it's a good
-> idea? There are server systems with single node as well....
-
-Using the single node as a decision criteria is a compromise
-on guessing what the usage scenario is likely to be.  For lightly loaded
-client system, this feature will help to boost performance.  But on very busy
-server system, it is unlikely to operate in turbo mode for this feature
-to help.  So in a previous discussion thread with Ingo and Peter Z, we decided
-that we will use the number of node as a criteria to turn this feature
-on by default.
-
-> 
-> > 
-> > +			 */
-> > +			if (topology_num_packages() == 1)
-> > +				sysctl_sched_itmt_enabled = 1;
-> > +		} else {
-> > +			if (itmt_sysctl_header)
-> > +				unregister_sysctl_table(itmt_sysctl_header);
-> And what clears imt_sysctl_header ?
-> 
-> > 
-> > +			sysctl_sched_itmt_enabled = 0;
-> > +		}
-> > +
-> > +		sched_itmt_capable = itmt_capable;
-> > +		x86_topology_update = true;
-> > +		rebuild_sched_domains();
-> So another place where you call that unconditionally. If the sysctl is
-> disabled then this is completely pointless.
-
-Okay, will only rebuild sched domains here when sysctl_sched_itmt_enabled is true.
-
-> 
-> What about a single function which is called from the sysctl write and from
-> this code, which does the update and rebuild only if something has changed?
-
-Sure.
-
-> 
-> > 
+> > +		opp->u_volt += volt;
+> > +		opp->u_volt_min += volt;
+> > +		opp->u_volt_max += volt;
 > > +	}
 > > +
-> > +	mutex_unlock(&itmt_update_mutex);
+> > +	rcu_read_unlock();
+> > +
+> > +	return 0;
 > > +}
-> > diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> > index 737b9edf..17f3ac7 100644
-> > --- a/arch/x86/kernel/smpboot.c
-> > +++ b/arch/x86/kernel/smpboot.c
-> > @@ -109,7 +109,6 @@ static bool logical_packages_frozen __read_mostly;
-> >  /* Maximum number of SMT threads on any online core */
-> >  int __max_smt_threads __read_mostly;
-> >  
-> > -unsigned int __read_mostly sysctl_sched_itmt_enabled;
-> So if you wouldn't have added this in the first place then you would not
-> have to remove it.
 > 
-> Thanks,
+> I wouldn't prefer altering the opp tables from individual drivers at all. At the
+> least, it should be done via some helpers exposed by the core.
 > 
-> 	tglx
+> But before that I would like to hear from Stephen a bit as I recall he was also
+> working on something similar.
 > 
-> 
+
+I had a patch to modify the voltage at runtime for the "current"
+OPP. Now that we have regulator and clk control inside OPP that
+became a little easier to do without having to do some notifier
+from the OPP layer to the consumers. I haven't had time to revive
+those patches though. Should we do that? Does this need to modify
+anything besides the OPP the device is currently running at?
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
