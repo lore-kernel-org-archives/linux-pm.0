@@ -1,92 +1,214 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [RFC/RFT][PATCH v2 2/7] driver core: Functional dependencies
- tracking support
-Date: Sun, 11 Sep 2016 22:43:36 +0200
-Message-ID: <20160911204336.GA371@wunner.de>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <2169291.li0uc2Ryoq@vostro.rjw.lan>
- <20160911134058.GA189@wunner.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2] cpufreq: create link to policy only for registered CPUs
+Date: Mon, 12 Sep 2016 12:07:05 +0530
+Message-ID: <59daae7da84077fbf845b1aad2962933585f8e35.1473662181.git.viresh.kumar@linaro.org>
+References: <20160819110032.GM1041@n2100.armlinux.org.uk>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:50685 "EHLO
-        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753693AbcIKUnY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 11 Sep 2016 16:43:24 -0400
-Content-Disposition: inline
-In-Reply-To: <20160911134058.GA189@wunner.de>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:35750 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756313AbcILGhM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 02:37:12 -0400
+Received: by mail-pf0-f175.google.com with SMTP id i75so9205972pfa.2
+        for <linux-pm@vger.kernel.org>; Sun, 11 Sep 2016 23:37:12 -0700 (PDT)
+In-Reply-To: <20160819110032.GM1041@n2100.armlinux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Russell King <rmk+kernel@arm.linux.org.uk>
 
-On Sun, Sep 11, 2016 at 03:40:58PM +0200, Lukas Wunner wrote:
-> On Thu, Sep 08, 2016 at 11:27:45PM +0200, Rafael J. Wysocki wrote:
-> > +/**
-> > + * device_is_dependent - Check if one device depends on another one
-> > + * @dev: Device to check dependencies for.
-> > + * @target: Device to check against.
-> > + *
-> > + * Check if @dev or any device dependent on it (its child or its consumer etc)
-> > + * depends on @target.  Return 1 if that is the case or 0 otherwise.
-> > + */
-> > +static int device_is_dependent(struct device *dev, void *target)
-> > +{
-> > +	struct device_link *link;
-> > +	int ret;
-> > +
-> > +	ret = device_for_each_child(dev, target, device_is_dependent);
-> > +	list_for_each_entry(link, &dev->links_to_consumers, s_node) {
-> > +		if (WARN_ON(link->consumer == target))
-> > +			return 1;
-> > +
-> > +		ret = ret || device_is_dependent(link->consumer, target);
-> > +	}
-> > +	return ret;
-> > +}
-> 
-> What happens if someone tries to add a device link from a parent
-> (as the consumer) to a child (as a supplier)?  You're only checking
-> if target is a consumer of dev, for full correctness you'd also have
-> to check if target is a parent of dev.  (Or grandparent, or great-
-> grandparent, ... you need to walk the tree up to the root.)
-> 
-> 
-> The function can be sped up by returning immediately if a match
-> is found instead of continuing searching and accumulating the
-> result in ret, i.e.:
-> 
-> 	if (device_for_each_child(dev, target, device_is_dependent))
-> 		return 1;
-> 
-> and in the list_for_each_entry block:
-> 
-> 	if (device_is_dependent(link->consumer, target))
-> 		return 1;
-> 
-> Then at the end of the function "return 0".
-> 
-> 
-> I'd move the WARN_ON() to the single invocation of this function in
-> device_link_add(), that way it's possible to use the function as a
-> helper elsewhere should the need arise.
+If a cpufreq driver is registered very early in the boot stage (e.g.
+registered from postcore_initcall()), then cpufreq core may generate
+kernel warnings for it.
 
-Oh I'm grasping only now, you want to emit a WARN for *every*
-infringing child/consumer. That could lead to a WARN flood if
-a developer accidentally does something really dumb, like linking
-the PCI root to some PCI endpoint device, but fair enough.
+In this case, the CPUs are brought online, then the cpufreq driver is
+registered, and then the CPU topology devices are registered. However,
+by the time cpufreq_add_dev() gets called, the cpu device isn't stored
+in the per-cpu variable (cpu_sys_devices,) which is read by
+get_cpu_device().
 
-The point about linking a parent to a child still stands however.
-I think a simple way to check this is to just add
+So the cpufreq core fails to get device for the CPU, for which
+cpufreq_add_dev() was called in the first place and we will hit a
+WARN_ON(!cpu_dev).
 
-	if (WARN_ON(dev == target))
-		return 1;
+Even if we reuse the 'dev' parameter passed to cpufreq_add_dev() to
+avoid that warning, there might be other CPUs online that share the
+policy with the cpu for which cpufreq_add_dev() is called. Eventually
+get_cpu_device() will return NULL for them as well, and we will hit the
+same WARN_ON() again.
 
-at the top of the function, because when someone tries to link
-a parent to a child, when recursing from the parent downward
-one will eventually hit that child. This will also prevent
-someone from linking a device to itself.
+In order to fix these issues, change cpufreq core to create links to the
+policy for a cpu only when cpufreq_add_dev() is called for that CPU.
 
-Best regards,
+Reuse the 'real_cpus' mask to track that as well.
 
-Lukas
+Note that cpufreq_remove_dev() already handles removal of the links for
+individual CPUs and cpufreq_add_dev() has aligned with that now.
+
+Reported-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Tested-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2:
+- Updated changelog based on suggestions from Russell
+- Tested by from Russell
+
+ drivers/cpufreq/cpufreq.c | 89 +++++++++++++++--------------------------------
+ 1 file changed, 28 insertions(+), 61 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 13fb589b6d2c..3a64136bf21b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -916,58 +916,18 @@ static struct kobj_type ktype_cpufreq = {
+ 	.release	= cpufreq_sysfs_release,
+ };
+ 
+-static int add_cpu_dev_symlink(struct cpufreq_policy *policy, int cpu)
++static int add_cpu_dev_symlink(struct cpufreq_policy *policy,
++			       struct device *dev)
+ {
+-	struct device *cpu_dev;
+-
+-	pr_debug("%s: Adding symlink for CPU: %u\n", __func__, cpu);
+-
+-	if (!policy)
+-		return 0;
+-
+-	cpu_dev = get_cpu_device(cpu);
+-	if (WARN_ON(!cpu_dev))
+-		return 0;
+-
+-	return sysfs_create_link(&cpu_dev->kobj, &policy->kobj, "cpufreq");
++	dev_dbg(dev, "%s: Adding symlink\n", __func__);
++	return sysfs_create_link(&dev->kobj, &policy->kobj, "cpufreq");
+ }
+ 
+-static void remove_cpu_dev_symlink(struct cpufreq_policy *policy, int cpu)
++static void remove_cpu_dev_symlink(struct cpufreq_policy *policy,
++				   struct device *dev)
+ {
+-	struct device *cpu_dev;
+-
+-	pr_debug("%s: Removing symlink for CPU: %u\n", __func__, cpu);
+-
+-	cpu_dev = get_cpu_device(cpu);
+-	if (WARN_ON(!cpu_dev))
+-		return;
+-
+-	sysfs_remove_link(&cpu_dev->kobj, "cpufreq");
+-}
+-
+-/* Add/remove symlinks for all related CPUs */
+-static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
+-{
+-	unsigned int j;
+-	int ret = 0;
+-
+-	/* Some related CPUs might not be present (physically hotplugged) */
+-	for_each_cpu(j, policy->real_cpus) {
+-		ret = add_cpu_dev_symlink(policy, j);
+-		if (ret)
+-			break;
+-	}
+-
+-	return ret;
+-}
+-
+-static void cpufreq_remove_dev_symlink(struct cpufreq_policy *policy)
+-{
+-	unsigned int j;
+-
+-	/* Some related CPUs might not be present (physically hotplugged) */
+-	for_each_cpu(j, policy->real_cpus)
+-		remove_cpu_dev_symlink(policy, j);
++	dev_dbg(dev, "%s: Removing symlink\n", __func__);
++	sysfs_remove_link(&dev->kobj, "cpufreq");
+ }
+ 
+ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy)
+@@ -999,7 +959,7 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy)
+ 			return ret;
+ 	}
+ 
+-	return cpufreq_add_dev_symlink(policy);
++	return 0;
+ }
+ 
+ __weak struct cpufreq_governor *cpufreq_default_governor(void)
+@@ -1129,7 +1089,6 @@ static void cpufreq_policy_put_kobj(struct cpufreq_policy *policy, bool notify)
+ 
+ 	down_write(&policy->rwsem);
+ 	cpufreq_stats_free_table(policy);
+-	cpufreq_remove_dev_symlink(policy);
+ 	kobj = &policy->kobj;
+ 	cmp = &policy->kobj_unregister;
+ 	up_write(&policy->rwsem);
+@@ -1211,8 +1170,8 @@ static int cpufreq_online(unsigned int cpu)
+ 	if (new_policy) {
+ 		/* related_cpus should at least include policy->cpus. */
+ 		cpumask_copy(policy->related_cpus, policy->cpus);
+-		/* Remember CPUs present at the policy creation time. */
+-		cpumask_and(policy->real_cpus, policy->cpus, cpu_present_mask);
++		/* Clear mask of registered CPUs */
++		cpumask_clear(policy->real_cpus);
+ 	}
+ 
+ 	/*
+@@ -1327,6 +1286,8 @@ static int cpufreq_online(unsigned int cpu)
+ 	return ret;
+ }
+ 
++static void cpufreq_offline(unsigned int cpu);
++
+ /**
+  * cpufreq_add_dev - the cpufreq interface for a CPU device.
+  * @dev: CPU device.
+@@ -1336,22 +1297,28 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
+ {
+ 	struct cpufreq_policy *policy;
+ 	unsigned cpu = dev->id;
++	int ret;
+ 
+ 	dev_dbg(dev, "%s: adding CPU%u\n", __func__, cpu);
+ 
+-	if (cpu_online(cpu))
+-		return cpufreq_online(cpu);
++	if (cpu_online(cpu)) {
++		ret = cpufreq_online(cpu);
++		if (ret)
++			return ret;
++	}
+ 
+-	/*
+-	 * A hotplug notifier will follow and we will handle it as CPU online
+-	 * then.  For now, just create the sysfs link, unless there is no policy
+-	 * or the link is already present.
+-	 */
++	/* Create sysfs link on CPU registration */
+ 	policy = per_cpu(cpufreq_cpu_data, cpu);
+ 	if (!policy || cpumask_test_and_set_cpu(cpu, policy->real_cpus))
+ 		return 0;
+ 
+-	return add_cpu_dev_symlink(policy, cpu);
++	ret = add_cpu_dev_symlink(policy, dev);
++	if (ret) {
++		cpumask_clear_cpu(cpu, policy->real_cpus);
++		cpufreq_offline(cpu);
++	}
++
++	return ret;
+ }
+ 
+ static void cpufreq_offline(unsigned int cpu)
+@@ -1432,7 +1399,7 @@ static void cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
+ 		cpufreq_offline(cpu);
+ 
+ 	cpumask_clear_cpu(cpu, policy->real_cpus);
+-	remove_cpu_dev_symlink(policy, cpu);
++	remove_cpu_dev_symlink(policy, dev);
+ 
+ 	if (cpumask_empty(policy->real_cpus))
+ 		cpufreq_policy_free(policy, true);
+-- 
+2.7.1.410.g6faf27b
+
