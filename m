@@ -1,37 +1,28 @@
 From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V2 09/10] PM / Domains: Add support for removing PM domains
-Date: Mon, 12 Sep 2016 14:56:31 +0200
-Message-ID: <CAPDyKFpJAQTUrjF+X4X-83pYevRtYv3Exm=8+mW25_1Snnmhpg@mail.gmail.com>
-References: <1473678074-15126-1-git-send-email-jonathanh@nvidia.com> <1473678074-15126-10-git-send-email-jonathanh@nvidia.com>
+Subject: Re: [PATCH V2 10/10] PM / Domains: Add support for removing nested PM
+ domains by provider
+Date: Mon, 12 Sep 2016 14:56:42 +0200
+Message-ID: <CAPDyKFomhNiC1CeeVCnYX5DOtT2tXYdAU30XTY9gnUSeos8uQw@mail.gmail.com>
+References: <1473678074-15126-1-git-send-email-jonathanh@nvidia.com> <1473678074-15126-11-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1473678074-15126-10-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+In-Reply-To: <1473678074-15126-11-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 On 12 September 2016 at 13:01, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> The genpd framework allows users to add PM domains via the pm_genpd_init()
-> function, however, there is no corresponding function to remove a PM
-> domain. For most devices this may be fine as the PM domains are never
-> removed, however, for devices that wish to populate the PM domains from
-> within a driver, having the ability to remove a PM domain if the probing
-> of the device fails or the driver is unloaded is necessary.
+> If a device supports PM domains that are subdomains of another PM
+> domain, then the PM domains should be removed in reverse order to
+> ensure that the subdomains are removed first. Furthermore, if there is
+> more than one provider, then there needs to be a way to remove the
+> domains in reverse order for a specific provider.
 >
-> Add the function pm_genpd_remove() to remove a PM domain by referencing
-> it's generic_pm_domain structure. Note that the bulk of the code that
-> removes the PM domain is placed in a separate local function
-> genpd_remove() (which is called by pm_genpd_remove()). The code is
-> structured in this way to prepare for adding another function to remove
-> a PM domain by provider that will also call genpd_remove(). Note that
-> users of genpd_remove() must call this function with the mutex,
-> gpd_list_lock, held.
->
-> PM domains can only be removed if the associated provider has been
-> removed, they are not a parent domain to another PM domain and have no
-> devices associated with them.
+> Add the function of_genpd_remove_last() to remove the last PM domain
+> added by a given PM domain provider and return the generic_pm_domain
+> structure for the PM domain that was removed.
 >
 > Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
@@ -41,104 +32,85 @@ Kind regards
 Uffe
 
 > ---
->  drivers/base/power/domain.c | 60 +++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pm_domain.h   |  5 ++++
->  2 files changed, 65 insertions(+)
+>  drivers/base/power/domain.c | 35 +++++++++++++++++++++++++++++++++++
+>  include/linux/pm_domain.h   |  7 +++++++
+>  2 files changed, 42 insertions(+)
 >
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index d5135caa84db..7481e3e316a2 100644
+> index 7481e3e316a2..b0cf46dcae73 100644
 > --- a/drivers/base/power/domain.c
 > +++ b/drivers/base/power/domain.c
-> @@ -1358,6 +1358,66 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
->  }
->  EXPORT_SYMBOL_GPL(pm_genpd_init);
+> @@ -1745,6 +1745,41 @@ int of_genpd_add_subdomain(struct of_phandle_args *parent_spec,
+>  EXPORT_SYMBOL_GPL(of_genpd_add_subdomain);
 >
-> +static int genpd_remove(struct generic_pm_domain *genpd)
-> +{
-> +       struct gpd_link *l, *link;
-> +
-> +       if (IS_ERR_OR_NULL(genpd))
-> +               return -EINVAL;
-> +
-> +       mutex_lock(&genpd->lock);
-> +
-> +       if (genpd->has_provider) {
-> +               mutex_unlock(&genpd->lock);
-> +               pr_err("Provider present, unable to remove %s\n", genpd->name);
-> +               return -EBUSY;
-> +       }
-> +
-> +       if (!list_empty(&genpd->master_links) || genpd->device_count) {
-> +               mutex_unlock(&genpd->lock);
-> +               pr_err("%s: unable to remove %s\n", __func__, genpd->name);
-> +               return -EBUSY;
-> +       }
-> +
-> +       list_for_each_entry_safe(link, l, &genpd->slave_links, slave_node) {
-> +               list_del(&link->master_node);
-> +               list_del(&link->slave_node);
-> +               kfree(link);
-> +       }
-> +
-> +       list_del(&genpd->gpd_list_node);
-> +       mutex_unlock(&genpd->lock);
-> +       cancel_work_sync(&genpd->power_off_work);
-> +       pr_debug("%s: removed %s\n", __func__, genpd->name);
-> +
-> +       return 0;
-> +}
-> +
-> +/**
-> + * pm_genpd_remove - Remove a generic I/O PM domain
-> + * @genpd: Pointer to PM domain that is to be removed.
+>  /**
+> + * of_genpd_remove_last - Remove the last PM domain registered for a provider
+> + * @provider: Pointer to device structure associated with provider
 > + *
-> + * To remove the PM domain, this function:
-> + *  - Removes the PM domain as a subdomain to any parent domains,
-> + *    if it was added.
-> + *  - Removes the PM domain from the list of registered PM domains.
+> + * Find the last PM domain that was added by a particular provider and
+> + * remove this PM domain from the list of PM domains. The provider is
+> + * identified by the 'provider' device structure that is passed. The PM
+> + * domain will only be removed, if the provider associated with domain
+> + * has been removed.
 > + *
-> + * The PM domain will only be removed, if the associated provider has
-> + * been removed, it is not a parent to any other PM domain and has no
-> + * devices associated with it.
+> + * Returns a valid pointer to struct generic_pm_domain on success or
+> + * ERR_PTR() on failure.
 > + */
-> +int pm_genpd_remove(struct generic_pm_domain *genpd)
+> +struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
 > +{
+> +       struct generic_pm_domain *gpd, *genpd = ERR_PTR(-ENOENT);
 > +       int ret;
 > +
+> +       if (IS_ERR_OR_NULL(np))
+> +               return ERR_PTR(-EINVAL);
+> +
 > +       mutex_lock(&gpd_list_lock);
-> +       ret = genpd_remove(genpd);
+> +       list_for_each_entry(gpd, &gpd_list, gpd_list_node) {
+> +               if (gpd->provider == &np->fwnode) {
+> +                       ret = genpd_remove(gpd);
+> +                       genpd = ret ? ERR_PTR(ret) : gpd;
+> +                       break;
+> +               }
+> +       }
 > +       mutex_unlock(&gpd_list_lock);
 > +
-> +       return ret;
+> +       return genpd;
 > +}
-> +EXPORT_SYMBOL_GPL(pm_genpd_remove);
+> +EXPORT_SYMBOL_GPL(of_genpd_remove_last);
 > +
->  #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
->
->  typedef struct generic_pm_domain *(*genpd_xlate_t)(struct of_phandle_args *args,
+> +/**
+>   * genpd_dev_pm_detach - Detach a device from its PM domain.
+>   * @dev: Device to detach.
+>   * @power_off: Currently not used
 > diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 554f8915c691..85f7d53a9827 100644
+> index 85f7d53a9827..a09fe5c009c8 100644
 > --- a/include/linux/pm_domain.h
 > +++ b/include/linux/pm_domain.h
-> @@ -130,6 +130,7 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
->                                      struct generic_pm_domain *target);
->  extern int pm_genpd_init(struct generic_pm_domain *genpd,
->                          struct dev_power_governor *gov, bool is_off);
-> +extern int pm_genpd_remove(struct generic_pm_domain *genpd);
+> @@ -204,6 +204,7 @@ extern int of_genpd_add_device(struct of_phandle_args *args,
+>                                struct device *dev);
+>  extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
+>                                   struct of_phandle_args *new_subdomain);
+> +extern struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
 >
->  extern struct dev_power_governor simple_qos_governor;
->  extern struct dev_power_governor pm_domain_always_on_gov;
-> @@ -165,6 +166,10 @@ static inline int pm_genpd_init(struct generic_pm_domain *genpd,
+>  int genpd_dev_pm_attach(struct device *dev);
+>  #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+> @@ -237,6 +238,12 @@ static inline int genpd_dev_pm_attach(struct device *dev)
 >  {
->         return -ENOSYS;
+>         return -ENODEV;
 >  }
-> +static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
+> +
+> +static inline
+> +struct generic_pm_domain *of_genpd_remove_last(struct device_node *np)
 > +{
-> +       return -ENOTSUPP;
+> +       return ERR_PTR(-ENOTSUPP);
 > +}
->  #endif
+>  #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
 >
->  static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+>  #ifdef CONFIG_PM
 > --
 > 2.1.4
 >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
