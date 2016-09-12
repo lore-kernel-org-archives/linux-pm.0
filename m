@@ -1,46 +1,142 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] sched: cpufreq: ignore SMT when determining max cpu capacity
-Date: Tue, 13 Sep 2016 00:25:54 +0200
-Message-ID: <10626645.IplgtjqW4B@vostro.rjw.lan>
-References: <1472236848-17038-1-git-send-email-smuckle@linaro.org> <2411837.FJm8ec21FH@vostro.rjw.lan> <20160831143437.GW10121@twins.programming.kicks-ass.net>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 4/5] ARM: dts: exynos: add support for ISP power domain
+ to exynos4x12 clocks device
+Date: Mon, 12 Sep 2016 15:28:52 -0700
+Message-ID: <20160912222852.GH7243@codeaurora.org>
+References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
+ <1472737551-15272-5-git-send-email-m.szyprowski@samsung.com>
+ <20160908002254.GD13062@codeaurora.org>
+ <CGME20160912102332eucas1p145e79669788329b44343da62dcbe50ca@eucas1p1.samsung.com>
+ <f340cca5-6cd6-6bd1-3b9a-ccd58cbc0091@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58419 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1754928AbcILWTs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 18:19:48 -0400
-In-Reply-To: <20160831143437.GW10121@twins.programming.kicks-ass.net>
+Received: from smtp.codeaurora.org ([198.145.29.96]:56322 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752793AbcILW24 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Sep 2016 18:28:56 -0400
+Content-Disposition: inline
+In-Reply-To: <f340cca5-6cd6-6bd1-3b9a-ccd58cbc0091@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Steve Muckle <smuckle@linaro.org>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>
 
-On Wednesday, August 31, 2016 04:34:37 PM Peter Zijlstra wrote:
-> On Wed, Aug 31, 2016 at 03:27:30AM +0200, Rafael J. Wysocki wrote:
-> > On Friday, August 26, 2016 11:40:47 AM Steve Muckle wrote:
-> > > PELT does not consider SMT when scaling its utilization values via
-> > > arch_scale_cpu_capacity(). The value in rq->cpu_capacity_orig does
-> > > take SMT into consideration though and therefore may be smaller than
-> > > the utilization reported by PELT.
-> > > 
-> > > On an Intel i7-3630QM for example rq->cpu_capacity_orig is 589 but
-> > > util_avg scales up to 1024. This means that a 50% utilized CPU will show
-> > > up in schedutil as ~86% busy.
-> > > 
-> > > Fix this by using the same CPU scaling value in schedutil as that which
-> > > is used by PELT.
-> > > 
-> > > Signed-off-by: Steve Muckle <smuckle@linaro.org>
-> > 
-> > This is fine by me.
-> > 
-> > Peter, any objections?
+On 09/12, Marek Szyprowski wrote:
+> Hi Stephen,
 > 
-> No, looks good. Thanks
+> 
+> On 2016-09-08 02:22, Stephen Boyd wrote:
+> >On 09/01, Marek Szyprowski wrote:
+> >>Exynos4412 clock controller contains some additional clocks for FIMC-ISP
+> >>(Camera ISP) subsystem. Registers for those clocks are partially located
+> >>in the SOC area, which belongs to ISP power domain.
+> >>
+> >>This patch extends clock controller node with ISP clock sub-node and link
+> >>(phandle) to ISP power domain.
+> >>
+> >>Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> >>---
+> >>  arch/arm/boot/dts/exynos4x12.dtsi | 5 +++++
+> >>  1 file changed, 5 insertions(+)
+> >>
+> >>diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
+> >>index 3394bdcf10ae..4daea67546b9 100644
+> >>--- a/arch/arm/boot/dts/exynos4x12.dtsi
+> >>+++ b/arch/arm/boot/dts/exynos4x12.dtsi
+> >>@@ -74,6 +74,11 @@
+> >>  		compatible = "samsung,exynos4412-clock";
+> >>  		reg = <0x10030000 0x20000>;
+> >>  		#clock-cells = <1>;
+> >>+
+> >>+		isp-clock-controller {
+> >>+			compatible = "samsung,exynos4412-isp-clock";
+> >>+			power-domains = <&pd_isp>;
+> >>+		};
+> >Why can't we extend support in power domains code to have
+> >multiple domains for a single device node? i.e. power-domains =
+> ><&pd_isp>, <&pd_foo>, <&pd_bar>, and then pick the right one with
+> >power-domain-names or something like that? Making a subnode
+> >(which seems to turn into a child platform device?) seems like a
+> >quick solution for larger problems.
+> 
+> The larger problem here is the fact that clock controller is
+> partially located
+> in different power areas of SoC. Majority of the clock controllers
+> is located
+> in the area which is typically always powered (besides system sleep case),
+> while a few Camera ISP registers are located in the ISP block, which have
+> separate power domain. Having a separate nodes for sub-parts of the
+> device is
+> rather common approach, already practices by some more complex devices.
+> 
+> I see some serious design problems with multiple entries in power domains
+> property. First how to show that some part of the device IS NOT in
+> any domain?
 
-OK, thanks!
+Is that even possible? Every device should be in some power
+domain, even if it's just an "always on" power domain that we
+don't really control from software.
 
-Applied.
+> The question is how the automated assignment to domains would be handled for
+> such case?
 
+I don't get this part. Do you mean how we indicate to the driver
+which power domain to use at the right time?
+
+> 
+> The second is related to Linux kernel internals. Right now device
+> drivers are
+> not aware of the power domains - there are no direct calls to power domains
+> code, everything is hidden behind runtime pm which does all the hard work.
+
+Right. Runtime PM will need to be improved to allow this case.
+
+> 
+> Similar situation is on Exynos 542x/5800, which will look more or less like
+> this:
+> 
+>         clock: clock-controller@10010000 {
+>              compatible = "samsung,exynos5420-clock";
+>              reg = <0x10010000 0x30000>;
+>              #clock-cells = <1>;
+> +
+> +            gsc-clock-controller {
+> +                 compatible = "samsung,exynos5420-gsc-clock";
+> +                 power-domains = <&gsc_pd>;
+> +            };
+> +
+> +            isp-clock-controller {
+> +                 compatible = "samsung,exynos5420-isp-clock";
+> +                 power-domains = <&isp_pd>;
+> +            };
+> +
+> +            mfc-clock-controller {
+> +                 compatible = "samsung,exynos5420-mfc-clock";
+> +                 power-domains = <&mfc_pd>;
+> +            };
+> +
+> +            msc-clock-controller {
+> +                 compatible = "samsung,exynos5420-msc-clock";
+> +                 power-domains = <&msc_pd>;
+> +            };
+> +
+> +            disp-clock-controller {
+> +                 compatible = "samsung,exynos5420-disp-clock";
+> +                 power-domains = <&disp_pd>;
+> +            };
+>          };
+> 
+> The patch is not yet ready, so I didn't include it in this patchset.
+
+Ok. From a DT perspective the sub-nodes seem to be a workaround
+for how the linux device model is mapped to power domains. I'm
+not sure we want to make subnodes in the clk controller just to
+make sub devices that we can target from the clk registration
+path. Those sub nodes aren't devices at all. I understand why
+it's being done this way, I just don't see how it fits into DT
+design methodologies.
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
