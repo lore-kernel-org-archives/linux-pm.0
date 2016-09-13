@@ -1,82 +1,58 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [RFC/RFT][PATCH v2 5/7] PM / runtime: Flag to indicate PM sleep
- transitions in progress
-Date: Tue, 13 Sep 2016 09:21:23 +0200
-Message-ID: <ca933135-5d87-8813-f1cc-ac3bd0443aff@samsung.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <3677187.4hCpDgWMoX@vostro.rjw.lan> <20160912140727.GA591@wunner.de>
- <CGME20160912211933eucas1p24f4353d41f7bd1ad2845fe415ef66a7c@eucas1p2.samsung.com>
- <6063056.2MKrxSTWdb@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/5] clk: add support for runtime pm
+Date: Tue, 13 Sep 2016 09:24:44 +0200
+Message-ID: <CAPDyKFrSYkke8LsQ68oxdarxg1mMeiEEwqYKVTqDLAEApEEHYA@mail.gmail.com>
+References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
+ <1472737551-15272-2-git-send-email-m.szyprowski@samsung.com> <20160908001943.GC13062@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <6063056.2MKrxSTWdb@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <20160908001943.GC13062@codeaurora.org>
+Sender: linux-clk-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Michael Turquette <mturquette@baylibre.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
-
-
-On 2016-09-12 23:25, Rafael J. Wysocki wrote:
-> On Monday, September 12, 2016 04:07:27 PM Lukas Wunner wrote:
->> On Thu, Sep 08, 2016 at 11:29:48PM +0200, Rafael J. Wysocki wrote:
->>> Introduce a new flag in struct dev_pm_info, pm_sleep_in_progress, to
->>> indicate that runtime PM has been disabled because of a PM sleep
->>> transition in progress.
->> [...]
->>> That will allow helpers like pm_runtime_get_sync() to be called
->>> during system sleep transitions without worrying about possible
->>> error codes they may return because runtime PM is disabled at
->>> that point.
->> I have a suspicion that this patch papers over the direct_complete bug
->> I reported Sep 10 and that the patch is unnecessary once that bug is
->> fixed.
-> It doesn't paper over anything, but it may not be necessary anyway.
->
->> AFAICS, runtime PM is only disabled in two places during the system
->> sleep process: In __device_suspend() for devices using direct_complete,
->> and __device_suspend_late() for all devices.
+On 8 September 2016 at 02:19, Stephen Boyd <sboyd@codeaurora.org> wrote:
+> On 09/01, Marek Szyprowski wrote:
+>> Registers for some clocks might be located in the SOC area, which are under the
+>> power domain. To enable access to those registers respective domain has to be
+>> turned on. Additionally, registers for such clocks will usually loose its
+>> contents when power domain is turned off, so additional saving and restoring of
+>> them might be needed in the clock controller driver.
 >>
->> In both of these phases (dpm_suspend() and dpm_suspend_late()), the
->> device tree is walked bottom-up. Since we've reordered consumers to
->> the back of dpm_list, they will be treated *before* their suppliers.
->> Thus, runtime PM is disabled on the consumers first, and only later
->> on the suppliers.
+>> This patch adds basic infrastructure in the clocks core to allow implementing
+>> driver for such clocks under power domains. Clock provider can supply a
+>> struct device pointer, which is the used by clock core for tracking and managing
+>> clock's controller runtime pm state. Each clk_prepare() operation
+>> will first call pm_runtime_get_sync() on the supplied device, while
+>> clk_unprepare() will do pm_runtime_put() at the end.
 >>
->> Then how can it be that runtime PM is already disabled on the supplier?
-> Actually, I think that this was a consequence of a bug in device_reorder_to_tail()
-> that was present in the previous iteration of the patchset (it walked suppliers
-> instead of consumers).
->
->> The only scenario I can imagine is that the supplier chose to exercise
->> direct_complete, thus was pm_runtime_disabled() in the __device_suspend()
->> phase, and the consumer did *not* choose to exercise direct_complete and
->> later tried to runtime resume its suppliers and itself.
+>> Additional calls to pm_runtime_get/put functions are required to ensure that any
+>> register access (like calculating/chaning clock rates) will be done with clock
+>> controller in active runtime state.
 >>
->> I assume this patch is a replacement for Marek's [v2 08/10].
->> @Marek, does this scenario match with what you witnessed?
-> It is not strictly a replacement for it.  The Marek's patch was the
-> reason to post it, but I started to think about this earlier.
+>> Special handling of the case when runtime pm is disabled for clock controller's
+>> device is needed to let this feature work properly also during system sleep
+>> suspend/resume operations (runtime pm is first disabled before entering sleep
+>> state's, but controller is usually still operational until its suspend pm
+>> callback is called).
+>>
+>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 >
-> Some people have complained to me about having to deal with error codes
-> returned by the runtime PM framework during system suspend, so I thought
-> it might be useful to deal with that too.
->
-> That said it probably is not necessary right now.
+> My "knee jerk" concern is that we're going to take a runtime PM
+> lock underneath the prepare lock. That seems like a situation
+> where we could hit a lock inversion if the runtime PM callbacks
+> themselves acquire the prepare lock by calling clk APIs? But this
+> concern is false right? We release the runtime PM lock before
+> calling the PM callback, so we shouldn't hit any deadlock and
+> lockdep won't complain?
 
-I've tested this patchset without this patch and system sleep with 
-device link
-enabled worked fine. However this might be also a consequence of 
-enabling runtime
-pm during system sleep since v4.8-rc1.
+You assumption is correct!
 
-It looks that for now this patch can be skipped until a real use case for it
-appears.
+Before the runtime PM core invokes a runtime PM callback it will
+unlock the -">dev->power.lock" spinlock. When the callback returns it
+will re-lock the spinlock.
 
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+Kind regards
+Uffe
