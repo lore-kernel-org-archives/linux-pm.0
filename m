@@ -1,91 +1,64 @@
 From: Alex Shi <alex.shi@linaro.org>
-Subject: Re: [PATCH 2/4] cpu: expose pm_qos_resume_latency for each cpu
-Date: Tue, 13 Sep 2016 21:57:28 +0800
-Message-ID: <57D805C8.2060903@linaro.org>
+Subject: Re: [PATCH 3/4] cpuidle/menu: stop seeking deeper idle if current
+ state is too deep
+Date: Tue, 13 Sep 2016 22:01:30 +0800
+Message-ID: <57D806BA.7050702@linaro.org>
 References: <1472114562-2736-1-git-send-email-alex.shi@linaro.org>
- <1472114562-2736-2-git-send-email-alex.shi@linaro.org>
- <57C7A597.4050001@linaro.org>
+ <1472114562-2736-3-git-send-email-alex.shi@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:33776 "EHLO
-        mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754858AbcIMN5g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Sep 2016 09:57:36 -0400
-Received: by mail-pa0-f50.google.com with SMTP id cm16so62038598pac.0
-        for <linux-pm@vger.kernel.org>; Tue, 13 Sep 2016 06:57:36 -0700 (PDT)
-In-Reply-To: <57C7A597.4050001@linaro.org>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:35608 "EHLO
+        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753804AbcIMOBg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Sep 2016 10:01:36 -0400
+Received: by mail-pf0-f173.google.com with SMTP id z123so9947473pfz.2
+        for <linux-pm@vger.kernel.org>; Tue, 13 Sep 2016 07:01:36 -0700 (PDT)
+In-Reply-To: <1472114562-2736-3-git-send-email-alex.shi@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
-Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: open list <linux-kernel@vger.kernel.org>
+Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arjan van de Ven <arjan@linux.intel.com>, Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Cc Rafael,
+Ping..
 
-This patchset is quit simple and straight. Is there any concern or
-hesitate on it?
-
-Thanks
-Alex
-
-On 09/01/2016 11:50 AM, Alex Shi wrote:
+On 08/25/2016 04:42 PM, Alex Shi wrote:
+> The obsolete commit 71abbbf85 want to introduce a dynamic cstates,
+> but it was removed for long time. Just left the nonsense deeper cstate
+> checking.
 > 
-> Few commits and patch changed according to Greg's comments.
-> 
-> Regards
-> Alex
-> 
-> ====
-> 
-> From 186c534b0b8b9649fbfce05b0b4f90f764c571a4 Mon Sep 17 00:00:00 2001
-> From: Alex Shi <alex.shi@linaro.org>
-> Date: Tue, 16 Aug 2016 15:29:01 +0800
-> Subject: [PATCH 2/4] cpu: expose pm_qos_resume_latency for each cpu
-> 
-> Adding /sys/devices/system/cpu/cpux/power/pm_qos_resume_latency_us for
-> each of cpus. The pm_qos_resume_latency usage defined in
-> Documentation/ABI/testing/sysfs-devices-power
-> 
-> The cpu-dma PM QoS constraint impacts all the cpus in the system. There
-> is no way to let the user to choose a PM QoS constraint per cpu.
-> 
-> The following patch exposes to the userspace a per cpu based sysfs file
-> in order to let the userspace to change the value of the PM QoS latency
-> constraint.
-> 
-> This change is inoperative in its form and the cpuidle governors have to
-> take into account the per cpu latency constraint in addition to the
-> global cpu-dma latency constraint in order to operate properly.
+> Since all target_residency and exit_latency are going longer in deeper
+> idle state, no needs to waste some cpu cycle on useless seeking.
 > 
 > Signed-off-by: Alex Shi <alex.shi@linaro.org>
 > To: linux-kernel@vger.kernel.org
-> To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 > Cc: linux-pm@vger.kernel.org
 > Cc: Ulf Hansson <ulf.hansson@linaro.org>
 > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Alex Shi <alex.shi@linaro.org>
+> Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> Cc: Arjan van de Ven <arjan@linux.intel.com>
+> Cc: Rik van Riel <riel@redhat.com>
+> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 > ---
->  drivers/base/cpu.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  drivers/cpuidle/governors/menu.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-> index 4c28e1a..2c3b359 100644
-> --- a/drivers/base/cpu.c
-> +++ b/drivers/base/cpu.c
-> @@ -17,6 +17,7 @@
->  #include <linux/of.h>
->  #include <linux/cpufeature.h>
->  #include <linux/tick.h>
-> +#include <linux/pm_qos.h>
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index 03d38c2..bb58e2a 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -358,9 +358,9 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>  		if (s->disabled || su->disable)
+>  			continue;
+>  		if (s->target_residency > data->predicted_us)
+> -			continue;
+> +			break;
+>  		if (s->exit_latency > latency_req)
+> -			continue;
+> +			break;
 >  
->  #include "base.h"
->  
-> @@ -376,6 +377,7 @@ int register_cpu(struct cpu *cpu, int num)
->  
->  	per_cpu(cpu_sys_devices, num) = &cpu->dev;
->  	register_cpu_under_node(num, cpu_to_node(num));
-> +	dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
->  
->  	return 0;
->  }
+>  		data->last_state_idx = i;
+>  	}
 > 
