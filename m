@@ -1,53 +1,82 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/4] cpu: expose pm_qos_resume_latency for each cpu
-Date: Tue, 13 Sep 2016 09:17:17 +0200
-Message-ID: <CAPDyKFovPNBv+Fx5SgzrD6Fn+1qOfXnS=Fm0cHB=0CWKMUHrSg@mail.gmail.com>
-References: <1472114562-2736-1-git-send-email-alex.shi@linaro.org>
- <1472114562-2736-2-git-send-email-alex.shi@linaro.org> <57C7A597.4050001@linaro.org>
- <CAPDyKFra5YRUPB7a2th6K1hnK=PUz9k27d6DNNoVaJ76QSWe3w@mail.gmail.com> <57D750BA.6010305@linaro.org>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [RFC/RFT][PATCH v2 5/7] PM / runtime: Flag to indicate PM sleep
+ transitions in progress
+Date: Tue, 13 Sep 2016 09:21:23 +0200
+Message-ID: <ca933135-5d87-8813-f1cc-ac3bd0443aff@samsung.com>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <3677187.4hCpDgWMoX@vostro.rjw.lan> <20160912140727.GA591@wunner.de>
+ <CGME20160912211933eucas1p24f4353d41f7bd1ad2845fe415ef66a7c@eucas1p2.samsung.com>
+ <6063056.2MKrxSTWdb@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f52.google.com ([74.125.82.52]:37522 "EHLO
-        mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754450AbcIMHRU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Sep 2016 03:17:20 -0400
-Received: by mail-wm0-f52.google.com with SMTP id c131so95837034wmh.0
-        for <linux-pm@vger.kernel.org>; Tue, 13 Sep 2016 00:17:19 -0700 (PDT)
-In-Reply-To: <57D750BA.6010305@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <6063056.2MKrxSTWdb@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lukas Wunner <lukas@wunner.de>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alex Shi <alex.shi@linaro.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 13 September 2016 at 03:04, Alex Shi <alex.shi@linaro.org> wrote:
-> Cc Rafael.
+Hi Rafael,
+
+
+On 2016-09-12 23:25, Rafael J. Wysocki wrote:
+> On Monday, September 12, 2016 04:07:27 PM Lukas Wunner wrote:
+>> On Thu, Sep 08, 2016 at 11:29:48PM +0200, Rafael J. Wysocki wrote:
+>>> Introduce a new flag in struct dev_pm_info, pm_sleep_in_progress, to
+>>> indicate that runtime PM has been disabled because of a PM sleep
+>>> transition in progress.
+>> [...]
+>>> That will allow helpers like pm_runtime_get_sync() to be called
+>>> during system sleep transitions without worrying about possible
+>>> error codes they may return because runtime PM is disabled at
+>>> that point.
+>> I have a suspicion that this patch papers over the direct_complete bug
+>> I reported Sep 10 and that the patch is unnecessary once that bug is
+>> fixed.
+> It doesn't paper over anything, but it may not be necessary anyway.
 >
-> On 09/01/2016 05:26 PM, Ulf Hansson wrote:
->> In general I think the change makes sense, although it's this last
->> piece here that I wonder about.
+>> AFAICS, runtime PM is only disabled in two places during the system
+>> sleep process: In __device_suspend() for devices using direct_complete,
+>> and __device_suspend_late() for all devices.
 >>
->> Is it okay that we expose sysfs attributes to userspace that don't
->> have any effect if they change the values? Perhaps it should be the
->> responsibility of the menu governor somehow to expose the sysfs nodes
->> instead? Unless there are some difficulties that prevents us from that
->> of course.
+>> In both of these phases (dpm_suspend() and dpm_suspend_late()), the
+>> device tree is walked bottom-up. Since we've reordered consumers to
+>> the back of dpm_list, they will be treated *before* their suppliers.
+>> Thus, runtime PM is disabled on the consumers first, and only later
+>> on the suppliers.
 >>
+>> Then how can it be that runtime PM is already disabled on the supplier?
+> Actually, I think that this was a consequence of a bug in device_reorder_to_tail()
+> that was present in the previous iteration of the patchset (it walked suppliers
+> instead of consumers).
 >
-> Hi Ulf,
+>> The only scenario I can imagine is that the supplier chose to exercise
+>> direct_complete, thus was pm_runtime_disabled() in the __device_suspend()
+>> phase, and the consumer did *not* choose to exercise direct_complete and
+>> later tried to runtime resume its suppliers and itself.
+>>
+>> I assume this patch is a replacement for Marek's [v2 08/10].
+>> @Marek, does this scenario match with what you witnessed?
+> It is not strictly a replacement for it.  The Marek's patch was the
+> reason to post it, but I started to think about this earlier.
 >
-> Sorry for response so late. The pm QoS designed to expose this interface
-> in userspace. Root user can change this value and made effect on device
-> sleeping status. That's required.
-
-Sure, I understand that. Although, my point is that it's only when the
-menu governor is enabled, that it would make sense for userspace to
-modify the PM QoS values for the cpu device.
-
+> Some people have complained to me about having to deal with error codes
+> returned by the runtime PM framework during system suspend, so I thought
+> it might be useful to deal with that too.
 >
-> Since this is per device interface, set it on menu governor isn't so good.
+> That said it probably is not necessary right now.
 
-You may be right, and it's not a big deal for me! It was just an idea.
+I've tested this patchset without this patch and system sleep with 
+device link
+enabled worked fine. However this might be also a consequence of 
+enabling runtime
+pm during system sleep since v4.8-rc1.
 
-Kind regards
-Uffe
+It looks that for now this patch can be skipped until a real use case for it
+appears.
+
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
