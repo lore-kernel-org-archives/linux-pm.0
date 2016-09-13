@@ -1,56 +1,36 @@
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v2 0/3] ARM: dts: Add operating-points-v2 tables for TI
- platforms
-Date: Tue, 13 Sep 2016 15:02:46 -0700
-Message-ID: <20160913220244.txdiak6ikujvwzjk@atomide.com>
-References: <20160901024816.32390-1-d-gerlach@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 4/4] cpuidle/menu: add per cpu pm_qos_resume_latency consideration
+Date: Wed, 14 Sep 2016 00:10:13 +0200
+Message-ID: <3288596.DV966QMpDZ@vostro.rjw.lan>
+References: <1472114562-2736-1-git-send-email-alex.shi@linaro.org> <1472114562-2736-4-git-send-email-alex.shi@linaro.org> <57D80709.4040500@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160901024816.32390-1-d-gerlach-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64185 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1755281AbcIMWEG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Sep 2016 18:04:06 -0400
+In-Reply-To: <57D80709.4040500@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alex Shi <alex.shi@linaro.org>
+Cc: open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arjan van de Ven <arjan@linux.intel.com>, Rik van Riel <riel@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Hi,
-
-* Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> [160831 19:49]:
-> Hi,
-> This is v2 of the series to add operating-points-v2 tables for am335x,
-> am437x, dra7, and am57x platforms, but really just updates the already
-> merged v1 found here [1].
+On Tuesday, September 13, 2016 10:02:49 PM Alex Shi wrote:
+> Hi Daniel & Rafael,
 > 
-> It seems v1 was merged without the binding being finalized so this series
-> just updates the nodes that are already present in order to work with the
-> new bindings coming in v2 of the ti-cpufreq driver series which will follow
-> shortly.
+> Any comments on this patch?
 
-Assuming this will have to wait based on what you mentioned about
-am335x cpufreq regression. I guess you'll instead send few patches
-to revert?
+I actually am not sure about the whole series.
 
-Regards,
+I know your motivation, but honestly the changes here may not be the best way
+to achieve what you need.
 
-Tony
+You may think that the changes are trivial, but in fact they are not.  There
+are side effects and I'm not sure about the resulting user space interface
+at all.
 
-> [1] http://lists.infradead.org/pipermail/linux-arm-kernel/2016-May/430205.html
-> 
-> Dave Gerlach (3):
->   ARM: dts: am33xx: Change operating-points-v2 table to am3352 version
->   ARM: dts: am4372: Change operating-points-v2 table to am4372 version
->   ARM: dts: dra7: Change operating-points-v2 table to dra7 version
-> 
->  arch/arm/boot/dts/am33xx.dtsi | 2 +-
->  arch/arm/boot/dts/am4372.dtsi | 2 +-
->  arch/arm/boot/dts/dra7.dtsi   | 2 +-
->  3 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> -- 
-> 2.9.0
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
+
