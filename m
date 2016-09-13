@@ -1,42 +1,94 @@
-From: Martin Sperl <kernel@martin.sperl.org>
-Subject: Re: [PATCH V4 3/4] ARM: bcm2835: add thermal node to device-tree of
- bcm283x
-Date: Tue, 13 Sep 2016 11:06:02 +0200
-Message-ID: <704dd583-5bd8-fa77-a4ab-18f0845b9c4e@martin.sperl.org>
-References: <1473407397-29395-1-git-send-email-kernel@martin.sperl.org>
- <1473407397-29395-4-git-send-email-kernel@martin.sperl.org>
- <19cc8fbf-6ceb-995e-850d-9d82bdaff8d0@i2se.com>
- <8876586A-98F8-4AAF-AD90-86EB12C22FDC@martin.sperl.org>
- <2117811305.32861.15854341-2f8e-4e20-95f4-e76f81e6fd56.open-xchange@email.1und1.de>
- <185DA6B2-AFC0-4199-A361-0164381AD317@martin.sperl.org>
- <677965855.33392.597ccfbe-225b-403b-8ffa-3f42292996d4.open-xchange@email.1und1.de>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 1/5] clk: add support for runtime pm
+Date: Tue, 13 Sep 2016 11:07:45 +0200
+Message-ID: <e3cceb9a-7a30-c662-dba4-bc453f6fddb6@samsung.com>
+References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
+ <1472737551-15272-2-git-send-email-m.szyprowski@samsung.com>
+ <20160908001943.GC13062@codeaurora.org>
+ <CGME20160912101857eucas1p29b2bbd5ac0eda92284091ad1b86decc4@eucas1p2.samsung.com>
+ <f18fee35-cb5d-abce-0415-a98b58e3a302@samsung.com>
+ <20160912223105.GI7243@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 212-186-180-163.static.upcbusiness.at ([212.186.180.163]:57284
-        "EHLO cgate.sperl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756063AbcIMJFV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Sep 2016 05:05:21 -0400
-In-Reply-To: <677965855.33392.597ccfbe-225b-403b-8ffa-3f42292996d4.open-xchange@email.1und1.de>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-reply-to: <20160912223105.GI7243@codeaurora.org>
+Sender: linux-clk-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Pawel Moll <pawel.moll@arm.com>, Russell King <linux@arm.linux.org.uk>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <mark.rutland@arm.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
+
+Hi Stephen,
 
 
+On 2016-09-13 00:31, Stephen Boyd wrote:
+> On 09/12, Marek Szyprowski wrote:
+>> Hi Stephen,
+>>
+>>
+>> On 2016-09-08 02:19, Stephen Boyd wrote:
+>>> On 09/01, Marek Szyprowski wrote:
+>>>> Registers for some clocks might be located in the SOC area, which are under the
+>>>> power domain. To enable access to those registers respective domain has to be
+>>>> turned on. Additionally, registers for such clocks will usually loose its
+>>>> contents when power domain is turned off, so additional saving and restoring of
+>>>> them might be needed in the clock controller driver.
+>>>>
+>>>> This patch adds basic infrastructure in the clocks core to allow implementing
+>>>> driver for such clocks under power domains. Clock provider can supply a
+>>>> struct device pointer, which is the used by clock core for tracking and managing
+>>>> clock's controller runtime pm state. Each clk_prepare() operation
+>>>> will first call pm_runtime_get_sync() on the supplied device, while
+>>>> clk_unprepare() will do pm_runtime_put() at the end.
+>>>>
+>>>> Additional calls to pm_runtime_get/put functions are required to ensure that any
+>>>> register access (like calculating/chaning clock rates) will be done with clock
+>>>> controller in active runtime state.
+>>>>
+>>>> Special handling of the case when runtime pm is disabled for clock controller's
+>>>> device is needed to let this feature work properly also during system sleep
+>>>> suspend/resume operations (runtime pm is first disabled before entering sleep
+>>>> state's, but controller is usually still operational until its suspend pm
+>>>> callback is called).
+>>>>
+>>>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+>>> My "knee jerk" concern is that we're going to take a runtime PM
+>>> lock underneath the prepare lock. That seems like a situation
+>>> where we could hit a lock inversion if the runtime PM callbacks
+>>> themselves acquire the prepare lock by calling clk APIs? But this
+>>> concern is false right? We release the runtime PM lock before
+>>> calling the PM callback, so we shouldn't hit any deadlock and
+>>> lockdep won't complain?
+>> Runtime PM uses fine grained locking based on per-device locks, so there
+>> should be no problem with global clock prepare lock. The only lock
+>> interaction
+>> is between clock controller device's rpm lock and clocks global
+>> prepare lock, but
+>> it always done with the same access pattern. I've tested it
+>> extensively (also
+>> with lock dep) with various use cases and found no problems.
+>>
+> Great! So you have runtime PM callbacks that are calling
+> clk_prepare/unprepare?
 
-On 09.09.2016 21:02, Stefan Wahren wrote:
-> bcm2837.dtsi
->
-> &thermal {
->             compatible = "brcm,bcm2837-thermal";
->             status = "okay";
-> };
+Well, not really. clock controller's runtime pm functions must not call
+clk_prepare/unprepare yet.
 
-Note that there is only a bcm2837.dtsi in arm64/boot/dts/broadcom/
-but not in arm/boot/dts - at least with the current upstream kernel.
+I didn't get your question. I thought that you are asking if my change
+won't introduce any deadlock related to prepare and dev->pm locks. My
+runtime pm functions doesn't do any call to clk_prepare/unprepare.
+Although global clock prepare lock is re-entrant from the same process, it
+would cause deadlock if called from runtime pm functions, because runtime
+pm functions might be called from the worker running on the different
+cpu/process.
 
-So I will just patch those dtsi that exist right now.
+I hope that the work started by Krzysztof Kozlowski on splitting prepare
+lock on per-controller basis will solve limitation and one would be able
+to call clk_prapare/unprepare on clocks from other controllers even from
+the runtime pm functions.
 
-Martin
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
