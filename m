@@ -1,165 +1,220 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [RFC/RFT][PATCH v2 0/7] Functional dependencies between devices
-Date: Tue, 13 Sep 2016 11:58:56 +0200
-Message-ID: <291f428a-da27-1c69-b0fb-c78f7a4665eb@samsung.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <CGME20160913095858eucas1p267ec2397c9e4577f94557e4a38498164@eucas1p2.samsung.com>
+From: Andreas Herrmann <aherrmann@suse.com>
+Subject: Re: [PATCH 1/1] cpufreq: pcc-cpufreq: Re-introduce deadband effect
+ to reduce number of frequency changes
+Date: Tue, 13 Sep 2016 12:53:35 +0200
+Message-ID: <20160913105335.GA25602@suselix>
+References: <20160819121814.GA17296@suselix.suse.de>
+ <20160819122101.GB17296@suselix.suse.de>
+ <20160829060153.GA5094@vireshk-i7>
+ <20160901132140.GA10183@suselix.suse.de>
+ <20160907050201.GK27345@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:37734 "EHLO
-        mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755509AbcIMJ7D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Sep 2016 05:59:03 -0400
-In-reply-to: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+Received: from smtp.nue.novell.com ([195.135.221.5]:35619 "EHLO
+        smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751433AbcIMKx7 (ORCPT
+        <rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+        Tue, 13 Sep 2016 06:53:59 -0400
+Content-Disposition: inline
+In-Reply-To: <20160907050201.GK27345@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.og>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
 
-Hi Rafael,
+On Wed, Sep 07, 2016 at 10:32:01AM +0530, Viresh Kumar wrote:
+> On 01-09-16, 15:21, Andreas Herrmann wrote:
+> > On Mon, Aug 29, 2016 at 11:31:53AM +0530, Viresh Kumar wrote:
+> 
+> > > I am _really_ worried about such hacks in drivers to negate the effect of a
+> > > patch, that was actually good.
+> > 
+> > > Did you try to increase the sampling period of ondemand governor to see if that
+> > > helps without this patch.
+> > 
+> > With an older kernel I've modified transition_latency of the driver
+> > which in turn is used to calculate the sampling rate.
+> 
+> Naah, that isn't what I was looking for, sorry :(
+> 
+> To explain it a bit more, this is what the patch did.
+> 
+> Suppose, your platform supports frequencies: F1 (lowest), F2, F3, F4,
+> F5, F6 and F7 (highest). The cpufreq governor (ondemand) based on a
+> sampling rate and system load tries to change the frequency of the
+> underlying hardware and select one of those.
+> 
+> Before the original patch came in, F2 and F3 were never getting
+> selected and the system was stuck in F1 for a long time. Which will
+> decrease the performance for that period of time as we should have
+> switched to a higher frequency really.
+> 
+> With the new patch we switch to the frequency proportional to current
+> load.
+> 
+> The requests made from cpufreq-governor wouldn't have changed at all
+> with that, but the number of freq changes at hardware level may
+> actually change as we might be returning very quickly if the target
+> freq evaluated to F1 in the earlier case.
+> 
+> That may lead to switching to frequencies F2 and F3, which wasn't
+> happening earlier.
+> 
+> I don't think the result of that should be too bad.. We should have
+> performed better almost everywhere.
+> 
+> transition_latency is used only to initialize sampling rate, but that
+> may get modified from userspace later on. Please tell us the value
+> read from sysfs file sampling_rate present in:
+> 
+> /sys/devices/system/cpu/cpufreq/policy0/ondemand/
+
+/sys/devices/system/cpu/cpufreq/ondemand contains following values:
+
+ignore_nice_load           : 0
+io_is_busy                 : 1
+min_sampling_rate          : 10000
+powersave_bias             : 0
+up_threshold               : 95
+sampling_rate              : 10000
+sampling_down_factor       : 1
+
+FYI, for each CPU direcories /sys/devices/system/cpu/cpufreq/policy* look like:
+
+scaling_cur_freq           : 1200000
+cpuinfo_max_freq           : 2800000
+cpuinfo_transition_latency : 0
+cpuinfo_min_freq           : 1200000
+cpuinfo_cur_freq           : 1204000
+affected_cpus              : 0
+scaling_governor           : ondemand
+scaling_driver             : pcc-cpufreq
+scaling_max_freq           : 2800000
+related_cpus               : 0
+scaling_setspeed           : <unsupported>
+scaling_available_governors: ondemand performance 
+scaling_min_freq           : 1200000
+
+(which is for policy0 for CPU0)
+
+> And try playing with that variable a bit to see if you can make things
+> better or not.
+
+Done that. Following the elapsed time with ondemand governor and
+different values for sampling rate (for each of 4.8-rc5
+vanilla/modified with my patch/commit 6393d6a reverted).
+
+4.8-rc5 (vanilla)
+                                                 sample_rate
+           10000            20000            30000            45000            60000            90000
+jobs  seconds  % CPU   seconds  % CPU   seconds  % CPU   seconds  % CPU   seconds  % CPU   seconds  % CPU
+2     283.47   203.00  273.79   204.00  276.08   204.00  276.99   204.00  281.80   203.60  291.00   203.00 
+4     146.92   399.20  140.98   399.80  141.55   399.80  140.91   400.00  142.91   400.00  146.49   399.80 
+8      81.66   770.00   77.44   769.20   76.81   769.20   73.74   769.20   73.17   767.20   72.75   767.00 
+16     54.31  1466.20   49.58  1458.40   48.37  1456.60   44.29  1447.80   42.89  1436.40   41.12  1416.80
+32     36.71  2720.60   30.70  2672.80   29.22  2578.80   26.34  2563.20   25.57  2506.80   24.58  2457.80
+64     13.99  3291.20   13.63  3295.40   13.55  3309.20   13.30  3354.60   13.66  3264.40   13.55  3288.60
+120    14.84  3114.20   14.10  3215.00   14.57  3115.20   14.11  3209.80   14.17  3198.60   14.09  3220.80
+------------------------------
+4.8-rc5 re-intro deadband for pcc-cpufreq only (my patch)
+                                                 sample_rate
+           10000            20000            30000            45000            60000            90000
+jobs  seconds  % CPU   seconds  % CPU   seconds  % CPU   seconds  % CPU   seconds  % CPU   seconds  % CPU
+2     270.88   192.00  270.87   192.80  270.65   192.00  274.08   192.00  277.97   192.80  289.85   193.00 
+4     140.23   379.20  138.94   379.80  138.20   378.80  138.99   379.20  140.81   379.60  145.83   380.40 
+8      76.15   738.20   73.86   733.60   71.58   734.20   70.43   730.40   70.32   730.60   71.14   728.20 
+16     47.39  1414.80   44.20  1395.60   43.02  1384.60   41.09  1368.00   40.37  1362.80   39.56  1351.20
+32     32.78  2659.80   29.05  2531.80   27.18  2482.40   25.36  2471.60   24.55  2441.00   24.18  2365.80
+64     13.34  3213.20   13.29  3204.60   13.38  3158.60   13.30  3162.40   13.57  3089.60   13.48  3125.20
+120    13.89  3103.00   14.00  3047.40   13.87  3068.40   13.83  3077.80   13.93  3054.80   14.10  3033.60
+------------------------------
+4.8-rc5 reverted commit 6393d6a
+                                                 sample_rate
+           10000            20000            30000            45000            60000            90000
+jobs  seconds  % CPU   seconds  % CPU   seconds  % CPU   seconds  % CPU   seconds  % CPU   seconds  % CPU
+2     250.94   205.00  256.26   205.00  261.29   205.00  268.92   205.00  275.60   204.80  288.64   204.00 
+4     127.20   401.20  129.63   401.80  131.80   402.00  135.41   401.20  138.88   401.20  144.96   401.00 
+8      64.24   767.60   64.18   769.60   64.49   770.20   65.69   766.00   66.38   768.60   68.64   767.40 
+16     37.02  1438.00   36.09  1432.20   36.10  1429.40   36.10  1424.60   36.61  1408.80   36.87  1405.60
+32     24.73  2618.80   23.28  2533.80   23.00  2513.40   22.45  2526.00   22.92  2463.00   23.12  2422.20
+64     12.62  3550.60   12.94  3439.60   12.95  3425.60   12.94  3421.80   13.29  3336.80   13.65  3257.80
+120    13.30  3408.80   13.43  3346.40   13.44  3347.80   13.55  3322.60   13.76  3277.20   14.19  3192.40
+
+> > I started with the value return as "nominal latency" for PCC.  This
+> > was 300000 ns on the test system and made things worse.  I've tested
+> > other values as well unitl I've found a local optimium at 45000ns but
+> > performance was lower in comparison to when I've applied my hack.
+> 
+> Can you try to use kernel tracer (ftrace) and see how the frequencies
+> are getting changed and at what frequency.
+
+I am currently looking into this ...
+
+> We need to understand the problem better, as I am not 100% sure what's
+> going on right now.
+
+... to gather related data.
+
+> > > Also, it is important to understand why is the performance going
+> > > down, while the original commit should have made it better.
+> > 
+> > My understanding is that the original commit was tested with certain
+> > combinations of hardware and cpufreq-drivers and the claim was that
+> > for those (two?) tested combinations performance increased and power
+> > consumption was lower. So I am not so sure what to expect from all
+> > other cpufreq-driver/hardware combinations.
+> 
+> It was principally the right thing to do IMO. And I don't think any
+> other hardware should get affected badly. At the max, the tuning needs
+> to be made a bit better.
+> 
+> > > Is it only about more transitions ?
+> > 
+> > I think this is the main issue.
+> 
+> Then it can be controlled with sampling rate from userspace.
+> 
+> > In an older kernel version I activated/added debug output in
+> > __cpufreq_driver_target(). Of course this creates a huge amount of
+> > messages. But with original patch reverted it was like:
+> > 
+> > [   29.489677] cpufreq: target for CPU 0: 1760000 kHz (1200000 kHz), relation 2, requested 1760000 kHz
+> > [   29.570364] cpufreq: target for CPU 0: 1216000 kHz (1760000 kHz), relation 2, requested 1216000 kHz
+> > [   29.571055] cpufreq: target for CPU 1: 1200000 kHz (1148000 kHz), relation 0, requested 1200000 kHz
+> > [   29.571483] cpufreq: target for CPU 1: 1200000 kHz (1200000 kHz), relation 2, requested 1200000 kHz
+> > [   29.572042] cpufreq: target for CPU 2: 1200000 kHz (1064000 kHz), relation 0, requested 1200000 kHz
+> > [   29.572503] cpufreq: target for CPU 2: 1200000 kHz (1200000 kHz), relation 2, requested 1200000 kHz
+> 
+> Your platform is a bit special as it uses ->target() callback and not
+> ->target_index(). And so you can pretty much switch to any frequency.
+> 
+> Can you please read value of all the sysfs files present in the
+> governor directory? That would be helpful. Maybe we can play with some
+> more files like: up_threshold to see what the results are.
+
+For sysfs values see above. I've not yet played with up_threshold but
+plan to do this as well.
+
+> > a lot of stuff, but system could still handle it and booted to the
+> > prompt.
+> > 
+> > With the original patch applied the system was really flooded and
+> > eventually became unresponsive:
+> > 
+> > ** 459 printk messages dropped ** [   29.838689] cpufreq: target for CPU 43: 1408000 kHz (2384000 kHz), relation 2, requested 1408000 kHz
+> > ** 480 printk messages dropped ** [   29.993849] cpufreq: target for CPU 54: 1200000 kHz (1248000 kHz), relation 2, requested 1200000 kHz
+> > ** 413 printk messages dropped ** [   30.113921] cpufreq: target for CPU 59: 2064000 kHz (1248000 kHz), relation 2, requested 2064000 kHz
+> > ** 437 printk messages dropped ** [   30.245846] cpufreq: target for CPU 21: 1296000 kHz (1296000 kHz), relation 2, requested 1296000 kHz
+> > ** 435 printk messages dropped ** [   30.397748] cpufreq: target for CPU 13: 1280000 kHz (2640000 kHz), relation 2, requested 1280000 kHz
+> > ** 480 printk messages dropped ** [   30.541846] cpufreq: target for CPU 58: 2112000 kHz (1632000 kHz), relation 2, requested 2112000 kHz
+> 
+> This looks even more dangerous :)
+> 
+> -- 
+> viresh
 
 
-On 2016-09-08 23:25, Rafael J. Wysocki wrote:
-> Hi Everyone,
->
-> This is a refresh of the functional dependencies series that I posted last
-> year and which has picked up by Marek quite recently.  For reference, appended
-> is my introductory message sent previously (which may be slightly outdated now).
->
-> As last time, the first patch rearranges the code around __device_release_driver()
-> a bit to prepare it for the next one (it actually hasn't changed AFAICS).
->
-> The second patch introduces the actual device links mechanics, but without
-> system suspend/resume and runtime PM support which are added by the subsequent
-> patches.
->
-> Some bugs found by Marek during his work on these patches should be fixed
-> here.  In particular, the endless recursion in device_reorder_to_tail()
-> which simply was broken before.
->
-> There are two additional patches to address the issue with runtime PM support
-> that occured when runtime PM was disabled for some suppliers due to a PM
-> sleep transition in progress.  Those patches simply make runtime PM helpers
-> return 0 in that case which may be controversial, so please let me know if
-> there are concerns about those.
->
-> The way device_link_add() works is a bit different, as it takes an additional
-> status argument now.  That makes it possible to create a link in any state,
-> with extra care of course, and should address the problem pointed to by Lukas
-> during the previous discussion.
->
-> Also some comments from Tomeu have been addressed.
->
-> This hasn't been really tested yet and I'm sort of relying on Marek to test
-> it, because he has a use case ready.  Hence, the RFT tag on the series.
+Thanks,
 
-I've checked it with my updated Exynos SYSMMU patches and it works 
-really well.
-Both runtime pm and system sleep. It took some time to do the test, because
-this patchset changed somehow the probe order of the devices, what revealed
-some issues related to incorrect driver and device registration in Samsung
-Exynos FIMC-IS driver, but those were not related to Rafael's changes.
-I will post my patches in a few minutes.
-
-Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
-
-Rafael, BTW, didn't you plan to change the name of the device_link_add()
-function to device_dependency_add() to avoid confusion with network device
-"link"?
-
-> Overall, please let me know what you think.
->
-> Thanks,
-> Rafael
->
->
-> Introduction:
->
-> As discussed in the recent "On-demand device probing" thread and in a Kernel
-> Summit session earlier today, there is a problem with handling cases where
-> functional dependencies between devices are involved.
->
-> What I mean by a "functional dependency" is when the driver of device B needs
-> both device A and its driver to be present and functional to be able to work.
-> This implies that the driver of A needs to be working for B to be probed
-> successfully and it cannot be unbound from the device before the B's driver.
-> This also has certain consequences for power management of these devices
-> (suspend/resume and runtime PM ordering).
->
-> So I want to be able to represent those functional dependencies between devices
-> and I'd like the driver core to track them and act on them in certain cases
-> where they matter.  The argument for doing that in the driver core is that
-> there are quite a few distinct use cases related to that, they are relatively
-> hard to get right in a driver (if one wants to address all of them properly)
-> and it only gets worse if multiplied by the number of drivers potentially
-> needing to do it.  Morever, at least one case (asynchronous system suspend/resume)
-> cannot be handled in a single driver at all, because it requires the driver of A
-> to wait for B to suspend (during system suspend) and the driver of B to wait for
-> A to resume (during system resume).
->
-> My idea is to represent a supplier-consumer dependency between devices (or
-> more precisely between device+driver combos) as a "link" object containing
-> pointers to the devices in question, a list node for each of them and some
-> additional information related to the management of those objects, ie.
-> something like:
->
-> struct device_link {
->          struct device *supplier;
->          struct list_head supplier_node;
->          struct device *consumer;
->          struct list_head consumer_node;
->          <flags, status etc>
-> };
->
-> In general, there will be two lists of those things per device, one list
-> of links to consumers and one list of links to suppliers.
->
-> In that picture, links will be created by calling, say:
->
-> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
->
-> and they will be deleted by the driver core when not needed any more.  The
-> creation of a link should also cause dpm_list and the list used during shutdown
-> to be reordered if needed.
->
-> In principle, it seems usefult to consider two types of links, one created
-> at device registration time (when registering the second device from the linked
-> pair, whichever it is) and one created at probe time (of the consumer device).
-> I'll refer to them as "permanent" and "probe-time" links, respectively.
->
-> The permanent links (created at device registration time) will stay around
-> until one of the linked devices is unregistered (at which time the driver
-> core will drop the link along with the device going away).  The probe-time
-> ones will be dropped (automatically) at the consumer device driver unbind time.
->
-> There's a question about what if the supplier device is being unbound before
-> the consumer one (for example, as a result of a hotplug event).  My current
-> view on that is that the consumer needs to be force-unbound in that case too,
-> but I guess I may be persuaded otherwise given sufficiently convincing
-> arguments.  Anyway, there are reasons to do that, like for example it may
-> help with the synchronization.  Namely, if there's a rule that suppliers
-> cannot be unbound before any consumers linked to them, than the list of links
-> to suppliers for a consumer can only change at its registration/probe or
-> unbind/remove times (which simplifies things quite a bit).
->
-> With that, the permanent links existing at the probe time for a consumer
-> device can be used to check whether or not to defer the probing of it
-> even before executing its probe callback.  In turn, system suspend
-> synchronization should be a matter of calling device_pm_wait_for_dev()
-> for all consumers of a supplier device, in analogy with dpm_wait_for_children(),
-> and so on.
->
-> Of course, the new lists have to be stable during those operations and ensuring
-> that is going to be somewhat tricky (AFAICS right now at least), but apart from
-> that the whole concept looks reasonably straightforward to me.
->
->
->
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
-
+Andreas
