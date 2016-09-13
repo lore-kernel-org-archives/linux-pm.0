@@ -1,29 +1,39 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 1/8] sched, x86: Add SD_ASYM_PACKING flags to x86 cpu
- topology for ITMT
-Date: Tue, 13 Sep 2016 09:26:13 +0200
-Message-ID: <20160913072613.GB5008@twins.programming.kicks-ass.net>
-References: <1473373615-51427-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1473373615-51427-2-git-send-email-srinivas.pandruvada@linux.intel.com>
- <alpine.DEB.2.20.1609101505290.2804@nanos>
- <1473713415.3916.48.camel@linux.intel.com>
+Subject: Re: [Resend][PATCH 1/3] cpufreq / sched: SCHED_CPUFREQ_IOWAIT flag
+ to indicate iowait condition
+Date: Tue, 13 Sep 2016 09:34:39 +0200
+Message-ID: <20160913073439.GD5008@twins.programming.kicks-ass.net>
+References: <21371892.ALJNnHKoBY@vostro.rjw.lan>
+ <3396916.fdtXW4Ee0Q@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from merlin.infradead.org ([205.233.59.134]:44662 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750747AbcIMHev (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Sep 2016 03:34:51 -0400
 Content-Disposition: inline
-In-Reply-To: <1473713415.3916.48.camel@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Tim Chen <tim.c.chen@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+In-Reply-To: <3396916.fdtXW4Ee0Q@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Steve Muckle <smuckle@linaro.org>, Doug Smythies <doug.smythies@gmail.com>
 
-On Mon, Sep 12, 2016 at 01:50:15PM -0700, Tim Chen wrote:
-> > No. We first rework the code so that the IMT stuff can be added in a later
-> > patch easily.
+On Fri, Sep 09, 2016 at 11:59:33PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> I'll move this patch to come after current patch 5.
+> Testing indicates that it is possible to improve performace
+> significantly without increasing energy consumption too much by
+> teaching cpufreq governors to bump up the CPU performance level if
+> the in_iowait flag is set for the task in enqueue_task_fair().
+> 
+> For this purpose, define a new cpufreq_update_util() flag
+> SCHED_CPUFREQ_IOWAIT and modify enqueue_task_fair() to pass that
+> flag to cpufreq_update_util() in the in_iowait case.  That generally
+> requires cpufreq_update_util() to be called directly from there,
+> because update_load_avg() may not be invoked in that case.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Looks-good-to: Steve Muckle <smuckle@linaro.org>
 
-Split the patch, one doing the topo cleanup, one adding the
-x86_*_flags().
-
-
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
