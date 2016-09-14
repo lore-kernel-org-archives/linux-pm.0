@@ -1,117 +1,114 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH 3/4] PCI: Avoid unnecessary resume after direct-complete
-Date: Wed, 14 Sep 2016 11:56:40 +0200
-Message-ID: <20160914095640.GB1597@wunner.de>
-References: <cover.1472554278.git.lukas@wunner.de>
- <4935437e0bfbab9079db2c8b1fbac66cef7dc569.1472554278.git.lukas@wunner.de>
- <2963851.chF2hIakqz@vostro.rjw.lan>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 1/5] clk: add support for runtime pm
+Date: Wed, 14 Sep 2016 12:11:28 +0200
+Message-ID: <9c072889-d167-16b4-cc76-fbae2149e6e6@samsung.com>
+References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
+ <1472737551-15272-2-git-send-email-m.szyprowski@samsung.com>
+ <CGME20160913084956eucas1p2433fb17456cea4620de2729efbbf78c7@eucas1p2.samsung.com>
+ <CAPDyKFo7R1f1H1R5Q78L4e_nHfngRYfo8jP_Dfi3uf_OGWvZCg@mail.gmail.com>
+ <76bb5b71-dd4e-e1ad-df0b-b84833812502@samsung.com>
+ <CAPDyKFqufBW0TmPVBx-noSnCvk26WBk9jP4PjgS5wKVuq6cJmA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2963851.chF2hIakqz@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-reply-to: <CAPDyKFqufBW0TmPVBx-noSnCvk26WBk9jP4PjgS5wKVuq6cJmA@mail.gmail.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 14, 2016 at 02:50:13AM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, August 31, 2016 08:15:18 AM Lukas Wunner wrote:
-> > Commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have been
-> > reset by firmware") added a runtime resume for devices that were runtime
-> > suspended when the system entered sleep.
-> > 
-> > The motivation was that devices might be in a reset-power-on state after
-> > waking from system sleep, so their power state as perceived by Linux
-> > (stored in pci_dev->current_state) would no longer reflect reality.
-> > By resuming such devices, we allow them to return to a low-power state
-> > via autosuspend and also bring their current_state in sync with reality.
-> > 
-> > However for devices that are *not* in a reset-power-on state, doing an
-> > unconditional resume wastes energy.  A more refined approach is called
-> > for which issues a runtime resume only if the power state after
-> > direct-complete is shallower than it was before. To achieve this, update
-> > the device's current_state by querying the platform firmware and reading
-> > its PMCSR.
-> > 
-> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > ---
-> >  drivers/pci/pci-driver.c | 15 +++++++++++++--
-> >  1 file changed, 13 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> > index e39a67c..fd4b9c4 100644
-> > --- a/drivers/pci/pci-driver.c
-> > +++ b/drivers/pci/pci-driver.c
-> > @@ -684,8 +684,19 @@ static int pci_pm_prepare(struct device *dev)
-> >  
-> >  static void pci_pm_complete(struct device *dev)
-> >  {
-> > -	pci_dev_complete_resume(to_pci_dev(dev));
-> > -	pm_complete_with_resume_check(dev);
-> > +	struct pci_dev *pci_dev = to_pci_dev(dev);
-> > +
-> > +	pci_dev_complete_resume(pci_dev);
-> > +	pm_generic_complete(dev);
-> > +
-> > +	/* Resume device if platform firmware has put it in reset-power-on */
-> > +	if (dev->power.direct_complete && pm_resume_via_firmware()) {
-> > +		pci_power_t pre_sleep_state = pci_dev->current_state;
-> > +
-> > +		pci_update_current_state(pci_dev, pci_dev->current_state);
-> 
-> I'm not sure if this can be made reliable enough for all of the systems out
-> there (including the pre-ACPI-4.0 ones and so on).  I'm a bit concerned that
-> we'll uncover firmware issues and such by doing this.
-> 
-> How much of a problem the existing code is in practice?
+Hi Ulf,
 
-Where's your ambition?  Do you want your power management to be as good
-as Apple's or are you going to waste energy for fear of uncovering
-firmware bugs?
 
-I first tried to solve this only for Thunderbolt by opting out of the
-mandatory resume after direct_complete.  It worked, but it was ugly.
+On 2016-09-13 17:03, Ulf Hansson wrote:
+> [...]
+>
+>>> This needs to be clarified. I agree we need to cover system PM as
+>>> well, but let's try be a bit more precise about it.
+>>
+>> Right, I wasn't precise here. I've developed this code on older (v4.1 and
+>> v4.6)
+>> kernels, which had a code which disables runtime pm during system sleep
+>> transition
+>> time. Maybe I need to revisit it and consider your change merged to
+>> v4.8-rc1, which
+>> keeps runtime pm enabled during system sleep transitions.
+> Right, I see.
+>
+>>>>    static bool clk_core_is_prepared(struct clk_core *core)
+>>>>    {
+>>>> +       if (clk_pm_runtime_suspended(core))
+>>>> +               return false;
+>>>> +
+>>> This isn't safe, as even if the clock controller is runtime resumed at
+>>> this point, that's *not* a guarantee that is stays runtime resumed
+>>> while invoking the ->ops->is_prepared().
+>>>
+>>> Instead you must call a pm_runtime_get_noresume() before you check the
+>>> runtime PM status, as that should avoid the device from being runtime
+>>> suspended. Then when the ->ops->is_prepared() has been invoked, we
+>>> should call pm_runtime_put().
+>>>
+>>> Although, I am not sure the above change becomes entirely correct as I
+>>> think we are mixing the runtime PM status with the clock prepare
+>>> status here. In other words, the next time the clock controller
+>>> becomes runtime resumed, it may very well restore some register
+>>> context which may prepare the clock, unless someone explicitly has
+>>> unprepared it.
+>>>
+>>> Of course, it all depends on how clk_core_is_prepared() is used by the
+>>> clock framework.
+>>
+>> clk_core_is_prepared() is mainly used by disable_unused_tree_*. You are
+>> right that it mixes a bit clock prepared state with runtime pm active
+>> state of clock controller's, but I assumed here that clock cannot be
+>> prepared if runtime pm state of controller is suspended. Other approach
+>> here would be to call pm_runtime_get(), check status and then
+>> pm_runtime_put(). If you prefer such approach, I will change it.
+> Using pm_runtime_get|put() would work for the clk_core_is_prepared()
+> case, although perhaps not for the clk_core_is_enabled() case.
+>
+> The reason is that I guess the clk_core_is_enabled() API may be called
+> from atomic context? Thus we would need to enable
+> pm_runtime_irq_safe() for the clock provider device, which I *really*
+> would like to avoid.
 
-(I have to clear the direct_complete flag in the ->complete hook, but
-the device tree is walked bottom-up during ->complete, and since the
-Thunderbolt controller exposes multiple devices, I have to clear the
-flag for all devices from the bottom-most device, which is the NHI.
-And all the rest of the s/r code lives on the top-most device, which
-is the upstream bridge.)
+I've checked clk_core_is_enabled() is only used for implementing disabling
+of unused clock trees or implementing ->is_enabled() callback, which is used
+for the same purpose, so it should be safe to use standard 
+pm_runtime_get/put
+there.
 
-You suggested in your e-mail of July 18: "maybe it's better to change
-the PCI bus type to do something different from calling the generic
-function?"
+There should be no other usecases for ->is_enabled() method, as it itself is
+not really race prone, as other caller might enable/disable given clock in
+meantime.
 
-So there, I did what you suggested and tried to fix it not just for
-Thunderbolt but for everyone.
+I will remove clk_pm_runtime_suspended() usage then.
 
-And you're still not happy.
+> [...]
+>
+>>> I believe we are also accessing the clock controller HW from the
+>>> late_initcall_sync(clk_disable_unused) function.
+>>
+>> This was indirectly handled by the runtime pm state check in is_prepared
+>> and is_enabled().
+> I see.
+>
+> Although, I was thinking that you explicitly would like to
+> disable/unprepare unused clocks in this phase, so then it isn't
+> sufficient to rely on the runtime PM status to know whether the clock
+> is prepared/enabled.
+>
+> Perhaps, this is the only case when you actually need a
+> pm_runtime_get|put() around the ->is_enabled|prepared()!?
 
-*sigh*
+Right.
 
-If on pre ACPI 4.0 systems, the device state is incorrectly reported
-as D3hot although the device is still in D3cold, the device will be
-runtime resumed to D0, just as it is now.  In other words, the benefit
-of avoiding an unnecessary runtime resume after direct_complete is
-only granted if the platform firmware reports the device state
-correctly.
+[...]
 
-Best regards,
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
-Lukas
-
-> 
-> > +		if (pci_dev->current_state < pre_sleep_state)
-> > +			pm_request_resume(dev);
-> > +	}
-> >  }
-> >  
-> >  #else /* !CONFIG_PM_SLEEP */
-> > 
-> 
-> Thanks,
-> Rafael
-> 
