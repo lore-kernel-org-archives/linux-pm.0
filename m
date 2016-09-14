@@ -1,57 +1,48 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH] cpufreq: ti: Use generic platdev driver
-Date: Wed, 14 Sep 2016 16:36:02 -0500
-Message-ID: <57D9C2C2.6070807@ti.com>
-References: <20160914204137.20346-1-d-gerlach@ti.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 1/5] clk: add support for runtime pm
+Date: Wed, 14 Sep 2016 14:39:03 -0700
+Message-ID: <20160914213903.GG7243@codeaurora.org>
+References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
+ <1472737551-15272-2-git-send-email-m.szyprowski@samsung.com>
+ <20160908001943.GC13062@codeaurora.org>
+ <CGME20160912101857eucas1p29b2bbd5ac0eda92284091ad1b86decc4@eucas1p2.samsung.com>
+ <f18fee35-cb5d-abce-0415-a98b58e3a302@samsung.com>
+ <20160912223105.GI7243@codeaurora.org>
+ <e3cceb9a-7a30-c662-dba4-bc453f6fddb6@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:47290 "EHLO comal.ext.ti.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1763235AbcINVgc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Sep 2016 17:36:32 -0400
-In-Reply-To: <20160914204137.20346-1-d-gerlach@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <e3cceb9a-7a30-c662-dba4-bc453f6fddb6@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
 
-On 09/14/2016 03:41 PM, Dave Gerlach wrote:
-> Now that the cpufreq-dt-platdev is used to create the cpufreq-dt platform
-> device for all OMAP platforms and the platform code that did it
-> before has been removed, add ti,am33xx and ti,dra7xx to the machine list
-> in cpufreq-dt-platdev which had relied on the removed platform code to do
-> this previously.
->
-> Fixes: 7694ca6e1d6f ("cpufreq: omap: Use generic platdev driver")
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
-> ---
+On 09/13, Marek Szyprowski wrote:
+> On 2016-09-13 00:31, Stephen Boyd wrote:
+> >
+> >Great! So you have runtime PM callbacks that are calling
+> >clk_prepare/unprepare?
+> 
+> Well, not really. clock controller's runtime pm functions must not call
+> clk_prepare/unprepare yet.
+> 
+> I didn't get your question. I thought that you are asking if my change
+> won't introduce any deadlock related to prepare and dev->pm locks. My
+> runtime pm functions doesn't do any call to clk_prepare/unprepare.
+> Although global clock prepare lock is re-entrant from the same process, it
+> would cause deadlock if called from runtime pm functions, because runtime
+> pm functions might be called from the worker running on the different
+> cpu/process.
 
-This got left out when OMAP was originally added to the 
-cpufreq-dt-platdev, so cpufreq disappeared on am335x and dra7 platforms. 
-This patch together with the series here [1] will fix this regression.
+I mean non-clk controller driver based runtime PM callbacks that
+call clk_prepare/unprepare in them. For example, some i2c or spi
+device driver that has clk operations in the runtime PM
+callbacks. That would allow lockdep to see any potential deadlock
+because of aliasing lock classes for the device power lock and
+the global prepare lock.
 
-Regards,
-Dave
-
-[1] http://marc.info/?l=linux-pm&m=147388667613317&w=2
-
->   drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
->   1 file changed, 2 insertions(+)
->
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 0bb44d5b5df4..d5e8ba50f8a3 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -68,6 +68,8 @@ static const struct of_device_id machines[] __initconst = {
->
->   	{ .compatible = "sigma,tango4" },
->
-> +	{ .compatible = "ti,am33xx", },
-> +	{ .compatible = "ti,dra7", },
->   	{ .compatible = "ti,omap2", },
->   	{ .compatible = "ti,omap3", },
->   	{ .compatible = "ti,omap4", },
->
-
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
