@@ -1,166 +1,171 @@
-From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle
- states
-Date: Wed, 14 Sep 2016 08:55:52 -0600
-Message-ID: <20160914145552.GC28944@linaro.org>
-References: <1472242678-33700-1-git-send-email-lina.iyer@linaro.org>
- <1472242678-33700-3-git-send-email-lina.iyer@linaro.org>
- <0b233802-f459-c6bb-ff42-70745a225cfb@arm.com>
- <20160902201605.GA1705@linaro.org>
- <87sht59mcw.fsf@arm.com>
- <20160912161600.GA21885@linaro.org>
- <a4fc71ae-6fa5-4142-6dd4-7bc96eb20186@arm.com>
- <87intz665i.fsf@arm.com>
- <20160913193844.GB28944@linaro.org>
- <87h99i6b5d.fsf@arm.com>
+From: Andreas Herrmann <aherrmann@suse.com>
+Subject: Re: [PATCH 1/1] cpufreq: pcc-cpufreq: Re-introduce deadband effect
+ to reduce number of frequency changes
+Date: Wed, 14 Sep 2016 16:56:43 +0200
+Message-ID: <20160914145643.GA19982@suselix.suse.de>
+References: <20160819121814.GA17296@suselix.suse.de>
+ <20160819122101.GB17296@suselix.suse.de>
+ <20160829060153.GA5094@vireshk-i7>
+ <20160901132140.GA10183@suselix.suse.de>
+ <20160907050201.GK27345@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.nue.novell.com ([195.135.221.5]:54861 "EHLO
+        smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756126AbcINO5U (ORCPT
+        <rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+        Wed, 14 Sep 2016 10:57:20 -0400
 Content-Disposition: inline
-In-Reply-To: <87h99i6b5d.fsf-5wv7dgnIgG8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Brendan Jackman <brendan.jackman-5wv7dgnIgG8@public.gmane.org>
-Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, Juri.Lelli-5wv7dgnIgG8@public.gmane.org, Axel Haslam <ahaslam+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+In-Reply-To: <20160907050201.GK27345@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
 
-On Wed, Sep 14 2016 at 04:18 -0600, Brendan Jackman wrote:
->
->On Tue, Sep 13 2016 at 20:38, Lina Iyer wrote:
->> On Tue, Sep 13 2016 at 11:50 -0600, Brendan Jackman wrote:
->>>
->>>On Mon, Sep 12 2016 at 18:09, Sudeep Holla wrote:
->>>> On 12/09/16 17:16, Lina Iyer wrote:
->>>>> On Mon, Sep 12 2016 at 09:19 -0600, Brendan Jackman wrote:
->>>>>>
->>>>>> Hi Lina,
->>>>>>
->>>>>> Sorry for the delay here, Sudeep and I were both been on holiday last
->>>>>> week.
->>>>>>
->>>>>> On Fri, Sep 02 2016 at 21:16, Lina Iyer wrote:
->>>>>>> On Fri, Sep 02 2016 at 07:21 -0700, Sudeep Holla wrote:
->>>>>> [...]
->>>>>>>> This version is *not very descriptive*. Also the discussion we had
->>>>>>>> on v3
->>>>>>>> version has not yet concluded IMO. So can I take that we agreed on what
->>>>>>>> was proposed there or not ?
->>>>>>>>
->>>>>>> Sorry, this example is not very descriptive. Pls. check the 8916 dtsi
->>>>>>> for the new changes in the following patches. Let me know if that makes
->>>>>>> sense.
->>>>
->>>> Please add all possible use-cases in the bindings. Though one can refer
->>>> the usage examples, it might not cover all usage descriptions. It helps
->>>> preventing people from defining their own when they don't see examples.
->>>> Again DT bindings are like specifications, it should be descriptive
->>>> especially this kind of generic ones.
->>>>
->>>>>>
->>>>>> The not-yet-concluded discussion Sudeep is referring to is at [1].
->>>>>>
->>>>>> In that thread we initially proposed the idea of, instead of splitting
->>>>>> state phandles between cpu-idle-states and domain-idle-states, putting
->>>>>> CPUs in their own domains and using domain-idle-states for _all_
->>>>>> phandles, deprecating cpu-idle-states. I've brought this up in other
->>>>>> threads [2] but discussion keeps petering out, and neither this example
->>>>>> nor the 8916 dtsi in this patch series reflect the idea.
->>>>>>
->>>>> Brendan, while your idea is good and will work for CPUs, I do not expect
->>>>> other domains and possibly CPU domains on some architectures to follow
->>>>> this model. There is nothing that prevents you from doing this today,
->>>
->>>As I understand it your opposition to this approach is this:
->>>
->>>There may be devices/CPUs which have idle states which do not constitute
->>>"power off". If we put those  devices in their own power domain for the
->>>purpose of putting their (non-power-off) idle state phandles in
->>>domain-idle-states, we are "lying" because no true power domain exists
->>>there.
->>>
->>>Am I correct that that's your opposition?
->>>
->>>If so, it seems we essentially disagree on the definition of a power
->>>domain, i.e. you define it as a set of devices that are powered on/off
->>>together while I define it as a set of devices whose power states
->>>(including idle states, not just on/off) are tied together. I said
->>>something similar on another thread [1] which died out.
->>>
->>>Do you agree that this is basically where we disagree, or am I missing
->>>something else?
->>>
->>>[2] http://www.spinics.net/lists/devicetree/msg141050.html
->>>
->> Yes, you are right, I disagree with the definition of a domain around a
->> device.
->OK, great.
->> However, as long as you don't force SoC's to define devices in
->> the CPU PM domain to have their own virtual domains, I have no problem.
->> You are welcome to define it the way you want for Juno or any other
->> platform.
->I don't think that's true; the bindings have to work the same way for
->all platforms. If for Juno we put CPU idle state phandles in a
->domain-idle-states property for per-CPU domains then, with the current
->implementation, the CPU-level idle states would be duplicated between
->cpuidle and the CPU PM domains.
+On Wed, Sep 07, 2016 at 10:32:01AM +0530, Viresh Kumar wrote:
+> On 01-09-16, 15:21, Andreas Herrmann wrote:
 
-We don't have the code today. Your patches would add the functionality
-of parsing domain idle states and attaching them to cpu-idle-states if
-the firmware support and the mode is Platform-coordinated. And that
-functionality is an easy addition. Nobody is making this change to
-platforms with PC to use the CPU PM domains yet. 
+  ---8<---
 
-What you are referring to is just a convergence PC and OSI to use
-the same domain hierarchy. This definition is not impacted by your 
-desire. I have my own doubts of defining PC domains this way, but I
-would leave that to you to submit the relevant RFC and bring forth the
-discussion. (Per DT, the definition of PC domain states is already
-immutable from how it is defined today in DT. You have to be careful in
-breaking it up.)
+> > I started with the value return as "nominal latency" for PCC.  This
+> > was 300000 ns on the test system and made things worse.  I've tested
+> > other values as well unitl I've found a local optimium at 45000ns but
+> > performance was lower in comparison to when I've applied my hack.
+> 
+> Can you try to use kernel tracer (ftrace) and see how the frequencies
+> are getting changed and at what frequency.
 
->> I don't want that to be the forced and expected out of all
->> SoCs. All I am saying here is that the current implementation would
->> handle your case as well.
->
->The current implementation certainly does cover the work I want to
->do. The suggestion of per-device power domains for devices/CPUs with
->their own idle states is simply intended to minimise the binding design,
->since we'd no longer need cpu-idle-states or device-idle-states
->(the latter was proposed elsewhere).
->
->I am fine with the bindings as they are implemented currently so long
->as:
->
->- The binding doc makes clear how idle state phandles should be split
->  between cpu-idle-states and domain-idle-states. It should make it
->  obvious that no phandle should ever appear in both properties. It
->  would even be worth briefly going over the backward-compatibility
->  implications (e.g. what happens with old-kernel/new-DT and
->  new-kernel/old-DT combos if a platform has OSI and PC support and we
->  move cluster-level idle state phandles out of cpu-idle-states and into
->  domai-idle-states).
->
-Since, I have been only defining OSI initiated PM domains, this is not a
-problem. I have clearly distinguished the explanation to be OSI
-specific, for now.
+Below is some trace data. I hope it is of some help.
 
->- We have a reason against the definition of power domains as "a set of
->  devices bound by a common power (including idle) state", since that
->  definition would simplify the bindings. In my view, "nobody thinks
->  that's what a power domain is" _is_ a compelling reason, so if others
->  on the list get involved I'm convinced. I think I speak for Sudeep
->  here too.
->
+(A) - sampling 10s period when system is idle
+(B) - sampling 10s period when system partially loaded (kernel
+      compilation using 2 jobs)
 
-Look outside the context of the CPU - a generic PM domain is collective
-of generic devices that share the same power island. A PM Domain may
-also have other domains as sub-domains as well. So it is exactly that.
-A CPU is just a specialized device.
+(1) 4.8-rc5
+(2) 4.8-rc5 with my patch (reintro of deadband effect within
+    pcc-cpufreq)
+(3) 4.8-rc5 with reversal of 6393d6a102 (cpufreq: ondemand: Eliminate
+    the deadband effect)
 
-Hope this helps.
+Let me know whether you are looking for other trace data wrt this
+issue.
+
 
 Thanks,
-Lina
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+Andreas
+
+---
+
+(A)-(1)
+
+ # Total Lost Samples: 0
+ # Samples: 41  of event 'power:cpu_frequency'
+ # Event count (approx.): 41
+ # Overhead  Command       Shared Object     Symbol                       
+ # ........  ............  ................  .............................
+     39.02%  kworker/14:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+     29.27%  kworker/0:0   [kernel.vmlinux]  [k] cpufreq_notify_transition
+     19.51%  kworker/10:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      7.32%  kworker/5:2   [kernel.vmlinux]  [k] cpufreq_notify_transition
+      2.44%  kworker/23:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      2.44%  kworker/40:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+
+(A)-(2)
+
+ # Total Lost Samples: 0
+ # Samples: 6  of event 'power:cpu_frequency'
+ # Event count (approx.): 6
+ # Overhead  Command       Shared Object     Symbol                       
+ # ........  ............  ................  .............................
+     33.33%  kworker/1:2   [kernel.vmlinux]  [k] cpufreq_notify_transition
+     16.67%  kworker/16:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+     16.67%  kworker/22:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+     16.67%  kworker/26:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+     16.67%  kworker/33:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+
+(A)-(3)
+
+ # Total Lost Samples: 0
+ # Samples: 7  of event 'power:cpu_frequency'
+ # Event count (approx.): 7
+ # Overhead  Command       Shared Object     Symbol                       
+ # ........  ............  ................  .............................
+     28.57%  kworker/58:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+     14.29%  kworker/19:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
+     14.29%  kworker/20:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
+     14.29%  kworker/22:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
+     14.29%  kworker/23:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+     14.29%  kworker/35:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+
+---
+
+(B)-(1)
+
+ # Total Lost Samples: 0
+ # Samples: 2K of event 'power:cpu_frequency'
+ # Event count (approx.): 2382
+ # Overhead  Command       Shared Object     Symbol                       
+ # ........  ............  ................  .............................
+      5.75%  kworker/0:0   [kernel.vmlinux]  [k] cpufreq_notify_transition
+      4.16%  kworker/12:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      3.11%  kworker/17:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      2.94%  kworker/2:1   [kernel.vmlinux]  [k] cpufreq_notify_transition
+      2.73%  kworker/19:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      ...
+
+(B)-(2)
+
+ # Total Lost Samples: 0
+ # Samples: 320  of event 'power:cpu_frequency'
+ # Event count (approx.): 320
+ # Overhead  Command       Shared Object     Symbol                       
+ # ........  ............  ................  .............................
+      4.69%  kworker/56:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      4.06%  kworker/12:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      4.06%  kworker/28:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      4.06%  kworker/6:2   [kernel.vmlinux]  [k] cpufreq_notify_transition
+      3.75%  kworker/32:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      ...
+
+(B)-(3)
+
+ # Total Lost Samples: 0
+ # Samples: 333  of event 'power:cpu_frequency'
+ # Event count (approx.): 333
+ # Overhead  Command       Shared Object     Symbol                       
+ # ........  ............  ................  .............................
+      4.80%  kworker/51:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      4.50%  kworker/39:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      4.20%  kworker/47:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      3.90%  kworker/59:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
+      3.90%  kworker/7:2   [kernel.vmlinux]  [k] cpufreq_notify_transition
+      ...
+
+---
+
+With (1) pcc-cpufreq tries to set pretty much every frequency even if
+the system is idle, e.g. here is the start of (perf script output)
+from (A)-(1):
+
+     kworker/5:2   904 [005]   255.778343: power:cpu_frequency: state=1216000 cpu_id=5
+     kworker/5:2   904 [005]   255.794382: power:cpu_frequency: state=1264000 cpu_id=5
+     kworker/5:2   904 [005]   256.102400: power:cpu_frequency: state=1200000 cpu_id=5
+    kworker/10:1   171 [010]   258.010362: power:cpu_frequency: state=2224000 cpu_id=10
+    kworker/10:1   171 [010]   258.026366: power:cpu_frequency: state=1264000 cpu_id=10
+    kworker/10:1   171 [010]   258.594514: power:cpu_frequency: state=1200000 cpu_id=10
+    kworker/10:1   171 [010]   258.618417: power:cpu_frequency: state=1232000 cpu_id=10
+    kworker/10:1   171 [010]   258.634409: power:cpu_frequency: state=1264000 cpu_id=10
+    kworker/10:1   171 [010]   258.674467: power:cpu_frequency: state=1200000 cpu_id=10
+    kworker/10:1   171 [010]   258.730486: power:cpu_frequency: state=1216000 cpu_id=10
+    kworker/40:1   388 [040]   258.730999: power:cpu_frequency: state=1200000 cpu_id=40
+    kworker/23:2   775 [023]   258.731504: power:cpu_frequency: state=1200000 cpu_id=23
+    kworker/14:1   178 [014]   258.732013: power:cpu_frequency: state=1216000 cpu_id=14
+    kworker/10:1   171 [010]   258.906434: power:cpu_frequency: state=1200000 cpu_id=10
+    kworker/14:1   178 [014]   258.970500: power:cpu_frequency: state=1200000 cpu_id=14
+    kworker/14:1   178 [014]   258.998440: power:cpu_frequency: state=1232000 cpu_id=14
+    kworker/14:1   178 [014]   259.034490: power:cpu_frequency: state=1200000 cpu_id=14
+    kworker/14:1   178 [014]   259.095089: power:cpu_frequency: state=1216000 cpu_id=14
+    kworker/14:1   178 [014]   259.270470: power:cpu_frequency: state=1200000 cpu_id=14
+    ...
