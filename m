@@ -1,69 +1,239 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 2/2] iommu/exynos: Add proper runtime pm support
-Date: Wed, 14 Sep 2016 13:54:50 +0200
-Message-ID: <CAPDyKFo=2+9cVN-9N1w8z_+dpopgccceA=x0cimxNG9w4xZX0g@mail.gmail.com>
-References: <CGME20160913124918eucas1p29f49efbb142d416215482c29b53daff8@eucas1p2.samsung.com>
- <1473770941-8337-1-git-send-email-m.szyprowski@samsung.com>
- <1473770941-8337-3-git-send-email-m.szyprowski@samsung.com>
- <CAPDyKFo5D3kGRt=4mBH9-XpLU6eOm4jah1xjyR3disFiJfXjoA@mail.gmail.com>
- <ca6b2547-dc67-bb3c-e5af-7f5eeddfd54d@samsung.com> <CAPDyKFqtBhA6kv-DFmeCiWbn0q0g2hFR5-+9M7CgvbzNH2iOzQ@mail.gmail.com>
- <6f5e9bd4-10f6-e9cb-3e2a-ef6ff8a38bc5@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/4] PCI: Query platform firmware for device power state
+Date: Wed, 14 Sep 2016 15:01:33 +0200
+Message-ID: <1707182.o83Q5WOaET@vostro.rjw.lan>
+References: <cover.1472554278.git.lukas@wunner.de> <5506823.86CoiunRKu@vostro.rjw.lan> <20160914105024.GC1597@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f53.google.com ([74.125.82.53]:38209 "EHLO
-        mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1760440AbcINLyx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Sep 2016 07:54:53 -0400
-Received: by mail-wm0-f53.google.com with SMTP id 1so25938924wmz.1
-        for <linux-pm@vger.kernel.org>; Wed, 14 Sep 2016 04:54:52 -0700 (PDT)
-In-Reply-To: <6f5e9bd4-10f6-e9cb-3e2a-ef6ff8a38bc5@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20160914105024.GC1597@wunner.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, iommu@lists.linux-foundation.org, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>
 
-[...]
+On Wednesday, September 14, 2016 12:50:24 PM Lukas Wunner wrote:
+> On Wed, Sep 14, 2016 at 02:21:30AM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, August 31, 2016 08:15:18 AM Lukas Wunner wrote:
+> > > Usually the most accurate way to determine a PCI device's power state is
+> > > to read its PM Control & Status Register.  There are two cases however
+> > > when this is not an option:  If the device doesn't have the PM
+> > > capability at all, or if it is in D3cold.
+> > > 
+> > > In D3cold, reading from config space typically results in a fabricated
+> > > "all ones" response.  But in D3hot, the two bits representing the power
+> > > state in the PMCSR are *also* set to 1.  Thus D3hot and D3cold are not
+> > > discernible by just reading the PMCSR.
+> > > 
+> > > A (supposedly) reliable way to detect D3cold is to query the platform
+> > > firmware for its opinion on the device's power state.  To this end,
+> > > add a ->get_power callback to struct pci_platform_pm_ops, and an
+> > > implementation to acpi_pci_platform_pm.  (The only pci_platform_pm_ops
+> > > existing so far).
+> > > 
+> > > Amend pci_update_current_state() to query the platform firmware before
+> > > reading the PMCSR.
+> > > 
+> > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> > > ---
+> > >  drivers/pci/pci-acpi.c | 23 +++++++++++++++++++++++
+> > >  drivers/pci/pci.c      | 21 ++++++++++++++++-----
+> > >  drivers/pci/pci.h      |  3 +++
+> > >  3 files changed, 42 insertions(+), 5 deletions(-)
+> > > 
+> > > diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
+> > > index 9a033e8..89f2707 100644
+> > > --- a/drivers/pci/pci-acpi.c
+> > > +++ b/drivers/pci/pci-acpi.c
+> > > @@ -452,6 +452,28 @@ static int acpi_pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+> > >  	return error;
+> > >  }
+> > >  
+> > > +static pci_power_t acpi_pci_get_power_state(struct pci_dev *dev)
+> > > +{
+> > > +	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
+> > > +	static const pci_power_t state_conv[] = {
+> > > +		[ACPI_STATE_D0]      = PCI_D0,
+> > > +		[ACPI_STATE_D1]      = PCI_D1,
+> > > +		[ACPI_STATE_D2]      = PCI_D2,
+> > > +		[ACPI_STATE_D3_HOT]  = PCI_D3hot,
+> > > +		[ACPI_STATE_D3_COLD] = PCI_D3cold,
+> > > +	};
+> > > +	int state;
+> > 
+> > ACPI_STATE_D3_HOT and ACPI_STATE_D3_COLD were introduced in ACPI 4.0.  For
+> > systems predating that, ACPI_STATE_D3_HOT is the deepest state returned by
+> > acpi_device_get_power().
+> 
+> Would it be possible to detect the ACPI spec version the platform
+> firmware conforms to, and amend acpi_device_get_power() to return
+> ACPI_STATE_D3_COLD if the device is in D3?
+> 
+> Then we could avoid the unnecessary runtime resume after direct_complete
+> also for these older machines.
 
->>>
->>>> To solve this problem, I was thinking we could convert to use the
->>>> asynchronous pm_runtime_get() API, when trying to runtime resume the
->>>> device from atomic contexts.
->>>
->>> I'm not sure if this will work for DMA engine devices. If I understand
->>> correctly some client's of DMA engine device might rely on the DMA
->>> engine being configured and operational after queuing a request and
->>> they might lock up if the DMA engine device activation if postponed
->>> because of async runtime pm activation.
->>
->> I didn't know about this. If you have an example from the top of your
->> head, could you perhaps point me to it?
->
->
-> No, I don't have any example. This is just my fear that there might be some
-> hardware which works this way. I can imagine a driver, which queue dma
-> engine
-> request and then triggers 'start' command to its hw block. HW blocks usually
-> uses some additional signal lines for DMA, so the HW block might check if
-> all
-> needed signals from DMA engine HW are ready. If not it will fail to start
-> avoid lockup of starting without DMA engine HW being ready.
+Well, please see below.
 
-Well, I think this reasoning makes lots of sense! Clearly we wouldn't
-be able to guarantee that there's isn't a glitch in an undefined HW
-behaviour.
+> Can the revision in the FADT (offset 8) be used as a proxy?
+> => E.g. the old Clevo B7130 has revision 3 in the FADT and uses
+>    a _DSM and _PS3 to put the discrete GPU in D3cold:
+>    https://github.com/Lekensteyn/acpi-stuff/tree/master/dsl/Clevo_B7130
+> => Whereas the newer Clevo P651RA has revision 5 in the FADT and uses
+>    _PR3 to put the discrete GPU in D3cold:
+>    https://github.com/Lekensteyn/acpi-stuff/tree/master/dsl/Clevo_P651RA
+> 
+> However the FADT revision was already 4 in the ACPI 3.0 spec,
+> so we can only use it to discern ACPI 2.0 vs 3.0, not 3.0 vs 4.0,
+> which is what we'd actually want.  And there's a comment in
+> acpica/tbfadt.c that "The FADT revision value is unreliable."
+> 
+> Do you know of a better way to discern ACPI 3.0 vs 4.0?
 
-I will drop my suggested approach and try out another one.
+I'm not sure if there is a reliable way to be honest.
 
->
-> However I don't have much experience with DMA engine and drivers. I only
-> helped in adding DMA engine support to Samsung UART driver and in the
-> hardware manual there is information about additional lines between DMA
-> controller and UART module, which are used in the DMA mode.
+Also even if the FADT etc tells you something, there's no guarantee that AML
+actually follows that.
 
-Thanks for sharing your experience!
+In fact, whether or not acpi_device_get_power() will ever return D3cold
+for a device depends on whether or not _PR3 is there.  If it's not there,
+the deepest state returned will be D3hot in any case.
 
-Now, I should allow you to get back to the original review! :-)
+So I'm not sure how useful that is in the context of D3cold detection?
 
-Kind regards
-Uffe
+> > 
+> > > +
+> > > +	if (!adev || !acpi_device_power_manageable(adev))
+> > > +		return PCI_UNKNOWN;
+> > > +
+> > > +	if (acpi_device_get_power(adev, &state) || state < ACPI_STATE_D0
+> > > +						|| state > ACPI_STATE_D3_COLD)
+> > 
+> > If the device is power-manageable by ACPI (you've just checked that) and
+> > acpi_device_get_power() returns success (0), the returned state is guaranteed
+> > to be within the boundaries (if it isn't, there is a bug that needs to be
+> > fixed).
+> 
+> No, acpi_device_get_power() can also return ACPI_STATE_UNKNOWN, which has
+> the value 0xff.
+
+That would be the case without power resources or _PSC, right?
+
+> I could add that to state_conv[] above but then I'd have
+> an array with 256 integers on the stack, most of them 0, which I don't want.
+> I could check for != ACPI_STATE_UNKNOWN but checking the boundaries seemed
+> safer.
+
+Well, I'm not sure in what way it is safer and you get one check instead of
+two. :-)
+
+> So I maintain that the code is correct.
+
+It simply contains an redundant check.
+
+> > 
+> > > +		return PCI_UNKNOWN;
+> > > +
+> > > +	return state_conv[state];
+> > > +}
+> > > +
+> > >  static bool acpi_pci_can_wakeup(struct pci_dev *dev)
+> > >  {
+> > >  	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
+> > > @@ -534,6 +556,7 @@ static bool acpi_pci_need_resume(struct pci_dev *dev)
+> > >  static const struct pci_platform_pm_ops acpi_pci_platform_pm = {
+> > >  	.is_manageable = acpi_pci_power_manageable,
+> > >  	.set_state = acpi_pci_set_power_state,
+> > > +	.get_state = acpi_pci_get_power_state,
+> > >  	.choose_state = acpi_pci_choose_state,
+> > >  	.sleep_wake = acpi_pci_sleep_wake,
+> > >  	.run_wake = acpi_pci_run_wake,
+> > > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > > index 72a9d3a..e52e3d4 100644
+> > > --- a/drivers/pci/pci.c
+> > > +++ b/drivers/pci/pci.c
+> > > @@ -552,8 +552,9 @@ static const struct pci_platform_pm_ops *pci_platform_pm;
+> > >  
+> > >  int pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
+> > >  {
+> > > -	if (!ops->is_manageable || !ops->set_state || !ops->choose_state ||
+> > > -	    !ops->sleep_wake || !ops->run_wake || !ops->need_resume)
+> > > +	if (!ops->is_manageable || !ops->set_state  || !ops->get_state ||
+> > > +	    !ops->choose_state  || !ops->sleep_wake || !ops->run_wake  ||
+> > > +	    !ops->need_resume)
+> > >  		return -EINVAL;
+> > >  	pci_platform_pm = ops;
+> > >  	return 0;
+> > > @@ -570,6 +571,11 @@ static inline int platform_pci_set_power_state(struct pci_dev *dev,
+> > >  	return pci_platform_pm ? pci_platform_pm->set_state(dev, t) : -ENOSYS;
+> > >  }
+> > >  
+> > > +static inline pci_power_t platform_pci_get_power_state(struct pci_dev *dev)
+> > > +{
+> > > +	return pci_platform_pm ? pci_platform_pm->get_state(dev) : PCI_UNKNOWN;
+> > > +}
+> > > +
+> > >  static inline pci_power_t platform_pci_choose_state(struct pci_dev *dev)
+> > >  {
+> > >  	return pci_platform_pm ?
+> > > @@ -701,14 +707,19 @@ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
+> > >  }
+> > >  
+> > >  /**
+> > > - * pci_update_current_state - Read PCI power state of given device from its
+> > > - *                            PCI PM registers and cache it
+> > > + * pci_update_current_state - Read power state of given device and cache it
+> > >   * @dev: PCI device to handle.
+> > >   * @state: State to cache in case the device doesn't have the PM capability
+> > > + *
+> > > + * The power state is read from the PMCSR register, which however is
+> > > + * inaccessible in D3cold. The platform firmware is therefore queried first
+> > > + * to detect accessibility of the register.
+> > >   */
+> > >  void pci_update_current_state(struct pci_dev *dev, pci_power_t state)
+> > >  {
+> > > -	if (dev->pm_cap) {
+> > > +	if (platform_pci_get_power_state(dev) == PCI_D3cold) {
+> > > +		dev->current_state = PCI_D3cold;
+> > > +	} else if (dev->pm_cap) {
+> > 
+> > Why exactly do you need to change this function?
+> 
+> It would be pointless to add the ->platform_pci_get_power_state
+> hook without using it anywhere, wouldn't it?
+
+That depends on what you want to do with it next.  Callers may be added in
+separate patches, no problem with that.
+
+> I am adding this here so that I can call pci_update_current_state()
+> in patch [3/4] to compare the device's state after system sleep with
+> the one before, and be able to discern D3hot and D3cold properly
+> (as explained in the commit message above).
+> 
+> That said, I need to amend the patch to remove this portion in
+> pci_update_current_state():
+> 
+>                 if (dev->current_state == PCI_D3cold)
+>                         return;
+> 
+> because otherwise we'd never try to read the PMCSR if the firmware
+> says the device is in <= D3hot.
+
+pci_update_current_state() is called in a few places with assumptions that need
+to be re-evaluated to see if they still hold after the changes.  They probably
+do, but then again, these call sites need to be double checked.  If you did
+that, then fine.
+
+But I would say that (a) the next patch will add detection of the real
+post-resume power state of "direct_complete" devices and it will use
+pci_update_current_state() for that (to be consistent with the rest of
+the code), so (b) pci_update_current_state() needs to ask ACPI about its
+view on the power state of the device for this purpose.
+
+And if you want to change that logic for PCI, it would be good to change it
+in the same way for acpi_general_pm_domain which has exactly the same problem.
+
+Thanks,
+Rafael
+
