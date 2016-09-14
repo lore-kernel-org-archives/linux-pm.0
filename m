@@ -1,76 +1,79 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH v2 5/7] PM / runtime: Flag to indicate PM sleep transitions in progress
-Date: Wed, 14 Sep 2016 01:59:41 +0200
-Message-ID: <3066752.zjH0tZW1Ns@vostro.rjw.lan>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <6063056.2MKrxSTWdb@vostro.rjw.lan> <ca933135-5d87-8813-f1cc-ac3bd0443aff@samsung.com>
+Subject: Re: [PATCH 1/4] PCI: Afford direct-complete to devices with nonstandard PM
+Date: Wed, 14 Sep 2016 02:05:23 +0200
+Message-ID: <7994515.8fbP5TR7en@vostro.rjw.lan>
+References: <cover.1472554278.git.lukas@wunner.de> <885bb1c3a5cebbc2c22e1f77426d54cde2a4867c.1472554278.git.lukas@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ca933135-5d87-8813-f1cc-ac3bd0443aff@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Lukas Wunner <lukas@wunner.de>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <885bb1c3a5cebbc2c22e1f77426d54cde2a4867c.1472554278.git.lukas@wunner.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, September 13, 2016 09:21:23 AM Marek Szyprowski wrote:
-> Hi Rafael,
+On Wednesday, August 31, 2016 08:15:18 AM Lukas Wunner wrote:
+> There are devices not power-manageable by the platform, but still able
+> to runtime suspend to D3cold with a nonstandard mechanism.  One example
+> is laptop hybrid graphics where the discrete GPU and its built-in HDA
+> controller are power-managed either with a _DSM (AMD PowerXpress, Nvidia
+> Optimus) or a separate gmux controller (MacBook Pro).  Another example
+> is Thunderbolt on Macs which is power-managed with custom ACPI methods.
 > 
+> When putting the system to sleep, we currently handle such devices
+> improperly by transitioning them from D3cold to D3hot (the default power
+> state defined at the top of pci_target_state()).  This wastes energy and
+> prolongs the suspend sequence (powering up the Thunderbolt controller
+> takes 2 seconds).
 > 
-> On 2016-09-12 23:25, Rafael J. Wysocki wrote:
-> > On Monday, September 12, 2016 04:07:27 PM Lukas Wunner wrote:
-> >> On Thu, Sep 08, 2016 at 11:29:48PM +0200, Rafael J. Wysocki wrote:
-> >>> Introduce a new flag in struct dev_pm_info, pm_sleep_in_progress, to
-> >>> indicate that runtime PM has been disabled because of a PM sleep
-> >>> transition in progress.
-> >> [...]
-> >>> That will allow helpers like pm_runtime_get_sync() to be called
-> >>> during system sleep transitions without worrying about possible
-> >>> error codes they may return because runtime PM is disabled at
-> >>> that point.
-> >> I have a suspicion that this patch papers over the direct_complete bug
-> >> I reported Sep 10 and that the patch is unnecessary once that bug is
-> >> fixed.
-> > It doesn't paper over anything, but it may not be necessary anyway.
-> >
-> >> AFAICS, runtime PM is only disabled in two places during the system
-> >> sleep process: In __device_suspend() for devices using direct_complete,
-> >> and __device_suspend_late() for all devices.
-> >>
-> >> In both of these phases (dpm_suspend() and dpm_suspend_late()), the
-> >> device tree is walked bottom-up. Since we've reordered consumers to
-> >> the back of dpm_list, they will be treated *before* their suppliers.
-> >> Thus, runtime PM is disabled on the consumers first, and only later
-> >> on the suppliers.
-> >>
-> >> Then how can it be that runtime PM is already disabled on the supplier?
-> > Actually, I think that this was a consequence of a bug in device_reorder_to_tail()
-> > that was present in the previous iteration of the patchset (it walked suppliers
-> > instead of consumers).
-> >
-> >> The only scenario I can imagine is that the supplier chose to exercise
-> >> direct_complete, thus was pm_runtime_disabled() in the __device_suspend()
-> >> phase, and the consumer did *not* choose to exercise direct_complete and
-> >> later tried to runtime resume its suppliers and itself.
-> >>
-> >> I assume this patch is a replacement for Marek's [v2 08/10].
-> >> @Marek, does this scenario match with what you witnessed?
-> > It is not strictly a replacement for it.  The Marek's patch was the
-> > reason to post it, but I started to think about this earlier.
-> >
-> > Some people have complained to me about having to deal with error codes
-> > returned by the runtime PM framework during system suspend, so I thought
-> > it might be useful to deal with that too.
-> >
-> > That said it probably is not necessary right now.
+> Avoid that by assuming that a nonstandard PM mechanism is at work if the
+> device is not platform-power-manageable but currently in D3cold.
 > 
-> I've tested this patchset without this patch and system sleep with 
-> device link
-> enabled worked fine. However this might be also a consequence of 
-> enabling runtime
-> pm during system sleep since v4.8-rc1.
+> If the device is wakeup enabled, we might still have to wake it up from
+> D3cold if PME cannot be signaled from that power state.
 > 
-> It looks that for now this patch can be skipped until a real use case for it
-> appears.
+> The check for devices without PM capability comes before the check for
+> D3cold since such devices could in theory also be powered down by
+> nonstandard means and should then be afforded direct-complete as well.
+> 
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
 
-OK, thanks!
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+> ---
+>  drivers/pci/pci.c | 17 +++++++++++++++--
+>  1 file changed, 15 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index aab9d51..72a9d3a 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -1959,9 +1959,22 @@ static pci_power_t pci_target_state(struct pci_dev *dev)
+>  		default:
+>  			target_state = state;
+>  		}
+> -	} else if (!dev->pm_cap) {
+> +
+> +		return target_state;
+> +	}
+> +
+> +	if (!dev->pm_cap)
+>  		target_state = PCI_D0;
+> -	} else if (device_may_wakeup(&dev->dev)) {
+> +
+> +	/*
+> +	 * If the device is in D3cold even though it's not power-manageable by
+> +	 * the platform, it may have been powered down by nonstandard means.
+> +	 * Best to let it slumber.
+> +	 */
+> +	if (dev->current_state == PCI_D3cold)
+> +		target_state = PCI_D3cold;
+> +
+> +	if (device_may_wakeup(&dev->dev)) {
+>  		/*
+>  		 * Find the deepest state from which the device can generate
+>  		 * wake-up events, make it the target state and enable device
+> 
+
