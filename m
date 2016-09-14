@@ -1,43 +1,37 @@
-From: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-Subject: Re: [RESEND PATCH v4] thermal: tango: add resume support
-Date: Wed, 14 Sep 2016 17:35:58 +0200
-Message-ID: <57D96E5E.6070102@sigmadesigns.com>
-References: <57CFD031.7020500@sigmadesigns.com> <6763387.6QdSyfOt0d@wuerfel>
+From: Leo Li <pku.leo@gmail.com>
+Subject: Re: [PATCH V2 1/7] dt-bindings: Update QorIQ TMU thermal bindings
+Date: Wed, 14 Sep 2016 11:40:46 -0500
+Message-ID: <CADRPPNQ+hikr1qNK1wPbLnhudUrU1bN_2iuYyRQnqCN4Zwh83Q@mail.gmail.com>
+References: <1465270054-31512-1-git-send-email-hongtao.jia@nxp.com> <20160608195241.GA6805@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from a.mx.sdesigns.eu ([78.31.43.6]:35166 "EHLO a.mx.sdesigns.eu"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1759988AbcINPgA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Sep 2016 11:36:00 -0400
-In-Reply-To: <6763387.6QdSyfOt0d@wuerfel>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160608195241.GA6805@rob-hp-laptop>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>, rui.zhang@intel.com
+Cc: Jia Hongtao <hongtao.jia@nxp.com>, devicetree@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>, Scott Wood <scott.wood@nxp.com>, Eduardo Valentin <edubezval@gmail.com>, Kumar Gala <galak@codeaurora.org>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm <linux-pm@vger.kernel.org>
-Cc: Linux ARM <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@kernel.org>, Arnd Bergmann <arnd@arndb.de>, Mason <slash.tmp@free.fr>
 
-On 07/09/2016 10:55, Arnd Bergmann wrote:
-
-> On Wednesday, September 7, 2016 10:30:41 AM CEST Marc Gonzalez wrote:
+On Wed, Jun 8, 2016 at 2:52 PM, Rob Herring <robh@kernel.org> wrote:
+> On Tue, Jun 07, 2016 at 11:27:34AM +0800, Jia Hongtao wrote:
+>> For different types of SoC the sensor id and endianness may vary.
+>> "#thermal-sensor-cells" is used to provide sensor id information.
+>> "little-endian" property is to tell the endianness of TMU.
+>>
+>> Signed-off-by: Jia Hongtao <hongtao.jia@nxp.com>
+>> ---
+>> Changes for V2:
+>> * Remove formatting chnages.
+>>
+>>  Documentation/devicetree/bindings/thermal/qoriq-thermal.txt | 7 +++++++
+>>  1 file changed, 7 insertions(+)
 >
->> When this platform is suspended, firmware powers the entire SoC down,
->> except a few hardware blocks waiting for wakeup events. There is no
->> context to save for this particular block.
->>
->> Therefore, there is nothing useful for the driver to do on suspend;
->> so we define a NULL suspend hook. On resume, the driver initializes
->> the block exactly as is done in the probe callback.
->>
->> Reviewed-by: Kevin Hilman <khilman@baylibre.com>
->> Signed-off-by: Marc Gonzalez <marc_gonzalez@sigmadesigns.com>
-> 
-> Reviewed-by: Arnd Bergmann <arnd@arndb.de>
+> Acked-by: Rob Herring <robh@kernel.org>
 
-Hello Rui, Eduardo,
+Hi Zhang Rui,
 
-The present patch has been reviewed by both Kevin Hilman and Arnd Bergmann,
-two arm-soc maintainers. Can you pick it up in time for inclusion in v4.9?
+Since you have applied the driver patch, can you also apply the
+binding patch?  The binding is supposed to go with the driver.
 
-Regards.
-
+Regards,
+Leo
