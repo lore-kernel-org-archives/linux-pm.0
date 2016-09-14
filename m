@@ -1,43 +1,31 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / AVS: SmartReflex: Neaten logging
-Date: Wed, 14 Sep 2016 03:05:07 +0200
-Message-ID: <9788331.PKcMJtbmQZ@vostro.rjw.lan>
-References: <20160819161550.31796-1-khilman@baylibre.com>
+Subject: Re: [PATCH][v2] PM / sleep: Increase default DPM watchdog timeout to 120
+Date: Wed, 14 Sep 2016 03:05:44 +0200
+Message-ID: <8853207.pbmSBV8iSz@vostro.rjw.lan>
+References: <1471581443-22184-1-git-send-email-yu.c.chen@intel.com> <20160819071955.GA2450@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:60945 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1758428AbcINA7A (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Sep 2016 20:59:00 -0400
-In-Reply-To: <20160819161550.31796-1-khilman@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160819071955.GA2450@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>, Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>, Joe Perches <joe@perches.com>
 
-On Friday, August 19, 2016 09:15:50 AM Kevin Hilman wrote:
-> From: Joe Perches <joe@perches.com>
+On Friday, August 19, 2016 09:19:55 AM Pavel Machek wrote:
+> On Fri 2016-08-19 12:37:23, Chen Yu wrote:
+> > Recently we have a new report that, the harddisk can not
+> > resume on time due to firmware issues, and got a kernel
+> > panic because of DPM watchdog timeout. So adjust the
+> > default timeout from 60 to 120 to survive on this platform,
+> > and make DPM_WATCHDOG depending on EXPERT.
+> > 
+> > Link: https://bugzilla.kernel.org/show_bug.cgi?id=117971
 > 
-> Use a more common logging style.
-> 
-> Miscellanea:
-> 
-> o Use pr_warn
-> o Coalesce formats adding missing spaces
-> o Argument alignment
-> o Remove unnecessary OOM messages as k.alloc does stack dumps
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> Acked-by: Nishanth Menon <nm@ti.com>
-> [khilman: update shortlog]
-> Signed-off-by: Kevin Hilman <khilman@baylibre.com>
-> ---
-> Applies on v4.8-rc1
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Applied.
+Patch applied.
 
 Thanks,
 Rafael
-
