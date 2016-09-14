@@ -1,48 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/4] PCI: Avoid unnecessary resume after direct-complete
-Date: Wed, 14 Sep 2016 02:43:29 +0200
-Message-ID: <4782205.TBQ6nj0GoB@vostro.rjw.lan>
-References: <cover.1472554278.git.lukas@wunner.de> <4935437e0bfbab9079db2c8b1fbac66cef7dc569.1472554278.git.lukas@wunner.de> <1727866.mELYGZAK8C@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1727866.mELYGZAK8C@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Add io_boost trace
+Date: Tue, 13 Sep 2016 17:41:33 -0700
+Message-ID: <1473813693-193829-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga05.intel.com ([192.55.52.43]:50697 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932484AbcINAlm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 13 Sep 2016 20:41:42 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Wednesday, September 14, 2016 02:29:12 AM Rafael J. Wysocki wrote:
-> On Wednesday, August 31, 2016 08:15:18 AM Lukas Wunner wrote:
-> > Commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have been
-> > reset by firmware") added a runtime resume for devices that were runtime
-> > suspended when the system entered sleep.
-> > 
-> > The motivation was that devices might be in a reset-power-on state after
-> > waking from system sleep, so their power state as perceived by Linux
-> > (stored in pci_dev->current_state) would no longer reflect reality.
-> > By resuming such devices, we allow them to return to a low-power state
-> > via autosuspend and also bring their current_state in sync with reality.
-> 
-> Not only that.
-> 
-> It allows those devices to respond more timely to user space requests
-> occuring right after resume.
-> 
-> Those user space requests often occur sequentially (read from device A,
-> write to device B, read from device C, write to device D, for example)
-> and without that pre-emptive resume each of them needs to wait for another
-> device to (runtime-)resume which results in quite annoying latencies
-> observable by users.
-> 
-> > However for devices that are *not* in a reset-power-on state, doing an
-> > unconditional resume wastes energy.
-> 
-> It may or may not waste it and this really is a tradeoff.
+Add io_boost percent to current pstate_sample tracepoint.
 
-That said it is a bit inconsistent with the suspend-to-idle case in which
-we don't resume those devices, so never mind. :-)
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |  3 ++-
+ include/trace/events/power.h   | 13 +++++++++----
+ 2 files changed, 11 insertions(+), 5 deletions(-)
 
-Thanks,
-Rafael
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 5bf7726..c877e70 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1316,7 +1316,8 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ 		sample->mperf,
+ 		sample->aperf,
+ 		sample->tsc,
+-		get_avg_frequency(cpu));
++		get_avg_frequency(cpu),
++		fp_toint(cpu->iowait_boost * 100));
+ }
+ 
+ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 19e5030..54e3aad 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -69,7 +69,8 @@ TRACE_EVENT(pstate_sample,
+ 		u64 mperf,
+ 		u64 aperf,
+ 		u64 tsc,
+-		u32 freq
++		u32 freq,
++		u32 io_boost
+ 		),
+ 
+ 	TP_ARGS(core_busy,
+@@ -79,7 +80,8 @@ TRACE_EVENT(pstate_sample,
+ 		mperf,
+ 		aperf,
+ 		tsc,
+-		freq
++		freq,
++		io_boost
+ 		),
+ 
+ 	TP_STRUCT__entry(
+@@ -91,6 +93,7 @@ TRACE_EVENT(pstate_sample,
+ 		__field(u64, aperf)
+ 		__field(u64, tsc)
+ 		__field(u32, freq)
++		__field(u32, io_boost)
+ 		),
+ 
+ 	TP_fast_assign(
+@@ -102,9 +105,10 @@ TRACE_EVENT(pstate_sample,
+ 		__entry->aperf = aperf;
+ 		__entry->tsc = tsc;
+ 		__entry->freq = freq;
++		__entry->io_boost = io_boost;
+ 		),
+ 
+-	TP_printk("core_busy=%lu scaled=%lu from=%lu to=%lu mperf=%llu aperf=%llu tsc=%llu freq=%lu ",
++	TP_printk("core_busy=%lu scaled=%lu from=%lu to=%lu mperf=%llu aperf=%llu tsc=%llu freq=%lu io_boost=%lu",
+ 		(unsigned long)__entry->core_busy,
+ 		(unsigned long)__entry->scaled_busy,
+ 		(unsigned long)__entry->from,
+@@ -112,7 +116,8 @@ TRACE_EVENT(pstate_sample,
+ 		(unsigned long long)__entry->mperf,
+ 		(unsigned long long)__entry->aperf,
+ 		(unsigned long long)__entry->tsc,
+-		(unsigned long)__entry->freq
++		(unsigned long)__entry->freq,
++		(unsigned long)__entry->io_boost
+ 		)
+ 
+ );
+-- 
+2.7.4
+
