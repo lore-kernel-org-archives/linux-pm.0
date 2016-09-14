@@ -1,93 +1,76 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Add io_boost trace
-Date: Tue, 13 Sep 2016 17:41:33 -0700
-Message-ID: <1473813693-193829-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:50697 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932484AbcINAlm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 13 Sep 2016 20:41:42 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 3/4] PCI: Avoid unnecessary resume after direct-complete
+Date: Wed, 14 Sep 2016 02:50:13 +0200
+Message-ID: <2963851.chF2hIakqz@vostro.rjw.lan>
+References: <cover.1472554278.git.lukas@wunner.de> <4935437e0bfbab9079db2c8b1fbac66cef7dc569.1472554278.git.lukas@wunner.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <4935437e0bfbab9079db2c8b1fbac66cef7dc569.1472554278.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Add io_boost percent to current pstate_sample tracepoint.
+On Wednesday, August 31, 2016 08:15:18 AM Lukas Wunner wrote:
+> Commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have been
+> reset by firmware") added a runtime resume for devices that were runtime
+> suspended when the system entered sleep.
+> 
+> The motivation was that devices might be in a reset-power-on state after
+> waking from system sleep, so their power state as perceived by Linux
+> (stored in pci_dev->current_state) would no longer reflect reality.
+> By resuming such devices, we allow them to return to a low-power state
+> via autosuspend and also bring their current_state in sync with reality.
+> 
+> However for devices that are *not* in a reset-power-on state, doing an
+> unconditional resume wastes energy.  A more refined approach is called
+> for which issues a runtime resume only if the power state after
+> direct-complete is shallower than it was before. To achieve this, update
+> the device's current_state by querying the platform firmware and reading
+> its PMCSR.
+> 
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> ---
+>  drivers/pci/pci-driver.c | 15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> index e39a67c..fd4b9c4 100644
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
+> @@ -684,8 +684,19 @@ static int pci_pm_prepare(struct device *dev)
+>  
+>  static void pci_pm_complete(struct device *dev)
+>  {
+> -	pci_dev_complete_resume(to_pci_dev(dev));
+> -	pm_complete_with_resume_check(dev);
+> +	struct pci_dev *pci_dev = to_pci_dev(dev);
+> +
+> +	pci_dev_complete_resume(pci_dev);
+> +	pm_generic_complete(dev);
+> +
+> +	/* Resume device if platform firmware has put it in reset-power-on */
+> +	if (dev->power.direct_complete && pm_resume_via_firmware()) {
+> +		pci_power_t pre_sleep_state = pci_dev->current_state;
+> +
+> +		pci_update_current_state(pci_dev, pci_dev->current_state);
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c |  3 ++-
- include/trace/events/power.h   | 13 +++++++++----
- 2 files changed, 11 insertions(+), 5 deletions(-)
+I'm not sure if this can be made reliable enough for all of the systems out
+there (including the pre-ACPI-4.0 ones and so on).  I'm a bit concerned that
+we'll uncover firmware issues and such by doing this.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 5bf7726..c877e70 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1316,7 +1316,8 @@ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
- 		sample->mperf,
- 		sample->aperf,
- 		sample->tsc,
--		get_avg_frequency(cpu));
-+		get_avg_frequency(cpu),
-+		fp_toint(cpu->iowait_boost * 100));
- }
- 
- static void intel_pstate_update_util(struct update_util_data *data, u64 time,
-diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-index 19e5030..54e3aad 100644
---- a/include/trace/events/power.h
-+++ b/include/trace/events/power.h
-@@ -69,7 +69,8 @@ TRACE_EVENT(pstate_sample,
- 		u64 mperf,
- 		u64 aperf,
- 		u64 tsc,
--		u32 freq
-+		u32 freq,
-+		u32 io_boost
- 		),
- 
- 	TP_ARGS(core_busy,
-@@ -79,7 +80,8 @@ TRACE_EVENT(pstate_sample,
- 		mperf,
- 		aperf,
- 		tsc,
--		freq
-+		freq,
-+		io_boost
- 		),
- 
- 	TP_STRUCT__entry(
-@@ -91,6 +93,7 @@ TRACE_EVENT(pstate_sample,
- 		__field(u64, aperf)
- 		__field(u64, tsc)
- 		__field(u32, freq)
-+		__field(u32, io_boost)
- 		),
- 
- 	TP_fast_assign(
-@@ -102,9 +105,10 @@ TRACE_EVENT(pstate_sample,
- 		__entry->aperf = aperf;
- 		__entry->tsc = tsc;
- 		__entry->freq = freq;
-+		__entry->io_boost = io_boost;
- 		),
- 
--	TP_printk("core_busy=%lu scaled=%lu from=%lu to=%lu mperf=%llu aperf=%llu tsc=%llu freq=%lu ",
-+	TP_printk("core_busy=%lu scaled=%lu from=%lu to=%lu mperf=%llu aperf=%llu tsc=%llu freq=%lu io_boost=%lu",
- 		(unsigned long)__entry->core_busy,
- 		(unsigned long)__entry->scaled_busy,
- 		(unsigned long)__entry->from,
-@@ -112,7 +116,8 @@ TRACE_EVENT(pstate_sample,
- 		(unsigned long long)__entry->mperf,
- 		(unsigned long long)__entry->aperf,
- 		(unsigned long long)__entry->tsc,
--		(unsigned long)__entry->freq
-+		(unsigned long)__entry->freq,
-+		(unsigned long)__entry->io_boost
- 		)
- 
- );
--- 
-2.7.4
+How much of a problem the existing code is in practice?
 
+> +		if (pci_dev->current_state < pre_sleep_state)
+> +			pm_request_resume(dev);
+> +	}
+>  }
+>  
+>  #else /* !CONFIG_PM_SLEEP */
+> 
+
+Thanks,
+Rafael
