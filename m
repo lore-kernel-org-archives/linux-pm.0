@@ -1,55 +1,94 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH v6 0/3] mfd: tps65217: Add power-button and IRQ support
-Date: Wed, 14 Sep 2016 10:37:37 +0200
-Message-ID: <CAMuHMdV+bVCQ0_YUp1v3yVgjp3EpNgVGnHYpnESszexGnby8Ug@mail.gmail.com>
-References: <20160909084204.26226-1-m.niestroj@grinn-global.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160909084204.26226-1-m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Marcin Niestroj <m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org>
-Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, "linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 0/2] cpufreq: Upstream Android's Interactive governor
+Date: Wed, 14 Sep 2016 14:19:39 +0530
+Message-ID: <cover.1473842301.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:35036 "EHLO
+        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753254AbcINIuP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Sep 2016 04:50:15 -0400
+Received: by mail-pf0-f173.google.com with SMTP id z123so3654828pfz.2
+        for <linux-pm@vger.kernel.org>; Wed, 14 Sep 2016 01:50:14 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org, mingo@redhat.com, peterz@infradead.org, mike@android.com, toddpoynor@google.com, kandoiruchi@google.com, juri.lelli@arm.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, john.stultz@linaro.org, amit.pundir@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Fri, Sep 9, 2016 at 10:42 AM, Marcin Niestroj
-<m.niestroj-z3quKL4iOrmQ6ZAhV5LmOA@public.gmane.org> wrote:
-> The following patches add tps65217 power button support and make it usable
-> with am335x boards. It was developed and rebased on v4.8-rc5.
->
-> Changes v5 -> v6 (suggested by Dmitry):
->  * Use dev_get_regmap() instead of fragile pointer calculations
->  * Keep old formatting for flags as single function argument
->
-> Changes v4 -> v5:
->  * Dropped two patches (they were already dropped in v4 resend):
->    * "power_supply: tps65217-charger: Fix NULL deref during property export"
->      (already in mainline)
->    * "power_supply: tps65217-charger: Add support for IRQs" (queued into
->      power-supply's -next branch)
->  * Combine tps65217 and tps65218 power button drivers (as suggested by Dmitry)
->  * Combine device-tree documentation for tps65217 and tps65218 power buttons
->
-> Changes v3 -> v4:
->  * Add irq_set_parent() during irq init (suggested by Grygorii)
+Hi Rafael et. al.,
 
-irq_set_parent() is not exported to modules
+We had some discussions [1] earlier on the PM mailing about
+upstreaming the cpufreq governor most widely used on Android Mobile
+phones and tablets: Interactive governor.
 
-ERROR: "irq_set_parent" [drivers/mfd/tps65217.ko] undefined!
+People (including Rafael) mostly agreed that we better get it upstreamed
+and here is an attempt to upstream most of it (idle notifiers aren't
+included in this series).
 
-See e.g. http://kisskb.ellerman.id.au/kisskb/buildresult/12801307/
+I picked the latest code spread over 70-80 patches from [2].  The
+unmodified code, based over mainline is pushed [4] for reference.
 
-Gr{oetje,eeting}s,
+I have updated the governor to align it with the current practices
+followed with mainline governors, like using utilization hooks from the
+scheduler and handling kobject (for governor's sysfs directory) in a
+race free manner. And of course this included general cleanup of the
+governor as well. This version is pushed here [3] for testing.
 
-                        Geert
+The Android version of interactive governor also uses idle EXIT
+notifiers, but that code isn't part of this series and will be sent
+separately later. For people interested in looking at that, those are 3
+minor patches on top of this series and are pushed here [5].
+
+I haven't changed the core logic of the governor intentionally, as that
+rather requires more in-depth knowledge of the use case for which the
+optimizations have been done. So, we should do any such thing later on
+with new patches, so that people can fix regressions easily.
+
+I also haven't tried to change the userspace interface as that may have
+broken the userspace that already exists and uses this governor.
+
+This has been lightly tested on my Exynos board (dual ARM A15), where
+the governor gets inserted/removed multiple times, the sysfs files are
+all functional. The frequency gets changed with load, etc.
+
+Amit Pundir (Linaro) has done extensive testing with Android and
+compared results of both Original Interactive governor and the modified
+one (in this series) and found them to be comparable.
+
+This series is based of pm/bleeding-edge branch.
+
+V1->V2:
+- Changes to fix compilation issues with latest mainline
+- Timer APIs got updated
+ - s/mod_timer_pinned/mod_timer
+ - s/init_timer/init_timer_pinned
+- Updated prototypes of cpufreq_frequency_table_target() and
+  update_util_handler()
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+viresh
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+[1] http://marc.info/?l=linux-pm&m=146301864519072
+[2] https://android.googlesource.com/kernel/common remotes/android/android-4.4
+[3] git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/interactive
+[4] git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/interactive-orig
+[5] git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/intearctive-idle-notifier
+
+Viresh Kumar (2):
+  cpufreq: Move gov_attr_* macros to cpufreq.h
+  cpufreq: Add android's 'interactive' governor
+
+ Documentation/cpu-freq/governors.txt       |   86 ++
+ drivers/cpufreq/Kconfig                    |   30 +
+ drivers/cpufreq/Makefile                   |    1 +
+ drivers/cpufreq/cpufreq_governor.h         |    8 -
+ drivers/cpufreq/cpufreq_interactive.c      | 1363 ++++++++++++++++++++++++++++
+ include/linux/cpufreq.h                    |   12 +
+ include/trace/events/cpufreq_interactive.h |  112 +++
+ kernel/sched/cpufreq_schedutil.c           |    8 +-
+ 8 files changed, 1608 insertions(+), 12 deletions(-)
+ create mode 100644 drivers/cpufreq/cpufreq_interactive.c
+ create mode 100644 include/trace/events/cpufreq_interactive.h
+
+-- 
+2.7.1.410.g6faf27b
+
