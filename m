@@ -1,139 +1,123 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: [PATCH 2/3] Revert "ARM: dts: am33xx: Move to operating-points-v2 table and ti-cpufreq driver"
-Date: Wed, 14 Sep 2016 15:57:16 -0500
-Message-ID: <20160914205717.21975-3-d-gerlach@ti.com>
-References: <20160914205717.21975-1-d-gerlach@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/4] PCI: Query platform firmware for device power state
+Date: Wed, 14 Sep 2016 23:36:40 +0200
+Message-ID: <9274580.osmZYI2u5K@vostro.rjw.lan>
+References: <cover.1472554278.git.lukas@wunner.de> <1707182.o83Q5WOaET@vostro.rjw.lan> <2423504.PN3SurRX7i@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:41506 "EHLO
-        devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1763802AbcINU61 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Sep 2016 16:58:27 -0400
-In-Reply-To: <20160914205717.21975-1-d-gerlach@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <2423504.PN3SurRX7i@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Dave Gerlach <d-gerlach@ti.com>
 
-This reverts commit 4317be1162108bcdf50dc53dfb48eac94dcff25c.
+On Wednesday, September 14, 2016 06:47:40 PM Rafael J. Wysocki wrote:
+> On Wednesday, September 14, 2016 03:01:33 PM Rafael J. Wysocki wrote:
+> > On Wednesday, September 14, 2016 12:50:24 PM Lukas Wunner wrote:
+> > > On Wed, Sep 14, 2016 at 02:21:30AM +0200, Rafael J. Wysocki wrote:
+> > > > On Wednesday, August 31, 2016 08:15:18 AM Lukas Wunner wrote:
+> > > > > Usually the most accurate way to determine a PCI device's power state is
+> > > > > to read its PM Control & Status Register.  There are two cases however
+> > > > > when this is not an option:  If the device doesn't have the PM
+> > > > > capability at all, or if it is in D3cold.
+> > > > > 
+> > > > > In D3cold, reading from config space typically results in a fabricated
+> > > > > "all ones" response.  But in D3hot, the two bits representing the power
+> > > > > state in the PMCSR are *also* set to 1.  Thus D3hot and D3cold are not
+> > > > > discernible by just reading the PMCSR.
+> > > > > 
+> > > > > A (supposedly) reliable way to detect D3cold is to query the platform
+> > > > > firmware for its opinion on the device's power state.  To this end,
+> > > > > add a ->get_power callback to struct pci_platform_pm_ops, and an
+> > > > > implementation to acpi_pci_platform_pm.  (The only pci_platform_pm_ops
+> > > > > existing so far).
+> > > > > 
+> > > > > Amend pci_update_current_state() to query the platform firmware before
+> > > > > reading the PMCSR.
+> > > > > 
+> > > > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > > > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> > > > > ---
+> > > > >  drivers/pci/pci-acpi.c | 23 +++++++++++++++++++++++
+> > > > >  drivers/pci/pci.c      | 21 ++++++++++++++++-----
+> > > > >  drivers/pci/pci.h      |  3 +++
+> > > > >  3 files changed, 42 insertions(+), 5 deletions(-)
+> > > > > 
+> > > > > diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
+> > > > > index 9a033e8..89f2707 100644
+> > > > > --- a/drivers/pci/pci-acpi.c
+> > > > > +++ b/drivers/pci/pci-acpi.c
+> > > > > @@ -452,6 +452,28 @@ static int acpi_pci_set_power_state(struct pci_dev *dev, pci_power_t state)
+> > > > >  	return error;
+> > > > >  }
+> > > > >  
+> > > > > +static pci_power_t acpi_pci_get_power_state(struct pci_dev *dev)
+> > > > > +{
+> > > > > +	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
+> > > > > +	static const pci_power_t state_conv[] = {
+> > > > > +		[ACPI_STATE_D0]      = PCI_D0,
+> > > > > +		[ACPI_STATE_D1]      = PCI_D1,
+> > > > > +		[ACPI_STATE_D2]      = PCI_D2,
+> > > > > +		[ACPI_STATE_D3_HOT]  = PCI_D3hot,
+> > > > > +		[ACPI_STATE_D3_COLD] = PCI_D3cold,
+> > > > > +	};
+> > > > > +	int state;
+> > > > 
+> > > > ACPI_STATE_D3_HOT and ACPI_STATE_D3_COLD were introduced in ACPI 4.0.  For
+> > > > systems predating that, ACPI_STATE_D3_HOT is the deepest state returned by
+> > > > acpi_device_get_power().
+> > > 
+> > > Would it be possible to detect the ACPI spec version the platform
+> > > firmware conforms to, and amend acpi_device_get_power() to return
+> > > ACPI_STATE_D3_COLD if the device is in D3?
+> > > 
+> > > Then we could avoid the unnecessary runtime resume after direct_complete
+> > > also for these older machines.
+> > 
+> > Well, please see below.
+> > 
+> > > Can the revision in the FADT (offset 8) be used as a proxy?
+> > > => E.g. the old Clevo B7130 has revision 3 in the FADT and uses
+> > >    a _DSM and _PS3 to put the discrete GPU in D3cold:
+> > >    https://github.com/Lekensteyn/acpi-stuff/tree/master/dsl/Clevo_B7130
+> > > => Whereas the newer Clevo P651RA has revision 5 in the FADT and uses
+> > >    _PR3 to put the discrete GPU in D3cold:
+> > >    https://github.com/Lekensteyn/acpi-stuff/tree/master/dsl/Clevo_P651RA
+> > > 
+> > > However the FADT revision was already 4 in the ACPI 3.0 spec,
+> > > so we can only use it to discern ACPI 2.0 vs 3.0, not 3.0 vs 4.0,
+> > > which is what we'd actually want.  And there's a comment in
+> > > acpica/tbfadt.c that "The FADT revision value is unreliable."
+> > > 
+> > > Do you know of a better way to discern ACPI 3.0 vs 4.0?
+> > 
+> > I'm not sure if there is a reliable way to be honest.
+> > 
+> > Also even if the FADT etc tells you something, there's no guarantee that AML
+> > actually follows that.
+> > 
+> > In fact, whether or not acpi_device_get_power() will ever return D3cold
+> > for a device depends on whether or not _PR3 is there.  If it's not there,
+> > the deepest state returned will be D3hot in any case.
+> > 
+> > So I'm not sure how useful that is in the context of D3cold detection?
+> 
+> There is more to this.
+> 
+> In fact, we can't really trust _PSC too, because in some ACPI tables it is
+> implemented to always return 0 (seriously).
+> 
+> For this reason, I think the way to go would be to use something like
+> acpi_device_update_power() to ensure that the device really is in the
+> state we think it is in.
 
-The original commit updated the cpufreq operating points tables for
-am33xx but was merged before the driver making use of the node was
-merged, which breaks the existing cpufreq implementation on the system,
-so revert the patch until the ti-cpufreq driver is merged.
+Actually, it may be sufficient to simply check if the device is in any
+state different from D0 and leave it alone if that's the case.
 
-Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
----
- arch/arm/boot/dts/am33xx.dtsi | 88 +++++++------------------------------------
- 1 file changed, 13 insertions(+), 75 deletions(-)
+For that, acpi_device_update_power() should be good enough and the PCI
+native part would be simpler too I think.
 
-diff --git a/arch/arm/boot/dts/am33xx.dtsi b/arch/arm/boot/dts/am33xx.dtsi
-index 98748c61ed99..9e214bfd32d2 100644
---- a/arch/arm/boot/dts/am33xx.dtsi
-+++ b/arch/arm/boot/dts/am33xx.dtsi
-@@ -45,9 +45,19 @@
- 			device_type = "cpu";
- 			reg = <0>;
- 
--			operating-points-v2 = <&cpu0_opp_table>;
--			ti,syscon-efuse = <&scm_conf 0x7fc 0x1fff 0>;
--			ti,syscon-rev = <&scm_conf 0x600>;
-+			/*
-+			 * To consider voltage drop between PMIC and SoC,
-+			 * tolerance value is reduced to 2% from 4% and
-+			 * voltage value is increased as a precaution.
-+			 */
-+			operating-points = <
-+				/* kHz    uV */
-+				720000  1285000
-+				600000  1225000
-+				500000  1125000
-+				275000  1125000
-+			>;
-+			voltage-tolerance = <2>; /* 2 percentage */
- 
- 			clocks = <&dpll_mpu_ck>;
- 			clock-names = "cpu";
-@@ -56,78 +66,6 @@
- 		};
- 	};
- 
--	cpu0_opp_table: opp_table0 {
--		compatible = "operating-points-v2";
--
--		/*
--		 * The three following nodes are marked with opp-suspend
--		 * because the can not be enabled simultaneously on a
--		 * single SoC.
--		 */
--		opp50@300000000 {
--			opp-hz = /bits/ 64 <300000000>;
--			opp-microvolt = <950000 931000 969000>;
--			opp-supported-hw = <0x06 0x0010>;
--			opp-suspend;
--		};
--
--		opp100@275000000 {
--			opp-hz = /bits/ 64 <275000000>;
--			opp-microvolt = <1100000 1078000 1122000>;
--			opp-supported-hw = <0x01 0x00FF>;
--			opp-suspend;
--		};
--
--		opp100@300000000 {
--			opp-hz = /bits/ 64 <300000000>;
--			opp-microvolt = <1100000 1078000 1122000>;
--			opp-supported-hw = <0x06 0x0020>;
--			opp-suspend;
--		};
--
--		opp100@500000000 {
--			opp-hz = /bits/ 64 <500000000>;
--			opp-microvolt = <1100000 1078000 1122000>;
--			opp-supported-hw = <0x01 0xFFFF>;
--		};
--
--		opp100@600000000 {
--			opp-hz = /bits/ 64 <600000000>;
--			opp-microvolt = <1100000 1078000 1122000>;
--			opp-supported-hw = <0x06 0x0040>;
--		};
--
--		opp120@600000000 {
--			opp-hz = /bits/ 64 <600000000>;
--			opp-microvolt = <1200000 1176000 1224000>;
--			opp-supported-hw = <0x01 0xFFFF>;
--		};
--
--		opp120@720000000 {
--			opp-hz = /bits/ 64 <720000000>;
--			opp-microvolt = <1200000 1176000 1224000>;
--			opp-supported-hw = <0x06 0x0080>;
--		};
--
--		oppturbo@720000000 {
--			opp-hz = /bits/ 64 <720000000>;
--			opp-microvolt = <1260000 1234800 1285200>;
--			opp-supported-hw = <0x01 0xFFFF>;
--		};
--
--		oppturbo@800000000 {
--			opp-hz = /bits/ 64 <800000000>;
--			opp-microvolt = <1260000 1234800 1285200>;
--			opp-supported-hw = <0x06 0x0100>;
--		};
--
--		oppnitro@1000000000 {
--			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt = <1325000 1298500 1351500>;
--			opp-supported-hw = <0x04 0x0200>;
--		};
--	};
--
- 	pmu {
- 		compatible = "arm,cortex-a8-pmu";
- 		interrupts = <3>;
--- 
-2.9.3
-
+Thanks,
+Rafael
