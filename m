@@ -1,125 +1,95 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/4] PCI: Avoid unnecessary resume after direct-complete
-Date: Wed, 14 Sep 2016 15:14:37 +0200
-Message-ID: <1922917.c92rJWRLH6@vostro.rjw.lan>
-References: <cover.1472554278.git.lukas@wunner.de> <2963851.chF2hIakqz@vostro.rjw.lan> <20160914095640.GB1597@wunner.de>
+Subject: Re: [RFC/RFT][PATCH v2 2/7] driver core: Functional dependencies tracking support
+Date: Wed, 14 Sep 2016 15:17:17 +0200
+Message-ID: <1864613.C7h8kekz9R@vostro.rjw.lan>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <2250917.Aes4ApWfhc@vostro.rjw.lan> <20160914082824.GA1597@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20160914095640.GB1597@wunner.de>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160914082824.GA1597@wunner.de>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, September 14, 2016 11:56:40 AM Lukas Wunner wrote:
-> On Wed, Sep 14, 2016 at 02:50:13AM +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, August 31, 2016 08:15:18 AM Lukas Wunner wrote:
-> > > Commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have been
-> > > reset by firmware") added a runtime resume for devices that were runtime
-> > > suspended when the system entered sleep.
+On Wednesday, September 14, 2016 10:28:24 AM Lukas Wunner wrote:
+> On Wed, Sep 14, 2016 at 03:21:27AM +0200, Rafael J. Wysocki wrote:
+> > On Sunday, September 11, 2016 10:43:36 PM Lukas Wunner wrote:
+> > > On Sun, Sep 11, 2016 at 03:40:58PM +0200, Lukas Wunner wrote:
+> > > > On Thu, Sep 08, 2016 at 11:27:45PM +0200, Rafael J. Wysocki wrote:
+> > > > > +/**
+> > > > > + * device_is_dependent - Check if one device depends on another one
+> > > > > + * @dev: Device to check dependencies for.
+> > > > > + * @target: Device to check against.
+> > > > > + *
+> > > > > + * Check if @dev or any device dependent on it (its child or its consumer etc)
+> > > > > + * depends on @target.  Return 1 if that is the case or 0 otherwise.
+> > > > > + */
+> > > > > +static int device_is_dependent(struct device *dev, void *target)
+> > > > > +{
+> > > > > +	struct device_link *link;
+> > > > > +	int ret;
+> > > > > +
+> > > > > +	ret = device_for_each_child(dev, target, device_is_dependent);
+> > > > > +	list_for_each_entry(link, &dev->links_to_consumers, s_node) {
+> > > > > +		if (WARN_ON(link->consumer == target))
+> > > > > +			return 1;
+> > > > > +
+> > > > > +		ret = ret || device_is_dependent(link->consumer, target);
+> > > > > +	}
+> > > > > +	return ret;
+> > > > > +}
+> > > > 
+> > > > What happens if someone tries to add a device link from a parent
+> > > > (as the consumer) to a child (as a supplier)?  You're only checking
+> > > > if target is a consumer of dev, for full correctness you'd also have
+> > > > to check if target is a parent of dev.  (Or grandparent, or great-
+> > > > grandparent, ... you need to walk the tree up to the root.)
+> > > > 
+> > > > 
+> > > > The function can be sped up by returning immediately if a match
+> > > > is found instead of continuing searching and accumulating the
+> > > > result in ret, i.e.:
+> > > > 
+> > > > 	if (device_for_each_child(dev, target, device_is_dependent))
+> > > > 		return 1;
+> > > > 
+> > > > and in the list_for_each_entry block:
+> > > > 
+> > > > 	if (device_is_dependent(link->consumer, target))
+> > > > 		return 1;
+> > > > 
+> > > > Then at the end of the function "return 0".
+> > > > 
+> > > > 
+> > > > I'd move the WARN_ON() to the single invocation of this function in
+> > > > device_link_add(), that way it's possible to use the function as a
+> > > > helper elsewhere should the need arise.
 > > > 
-> > > The motivation was that devices might be in a reset-power-on state after
-> > > waking from system sleep, so their power state as perceived by Linux
-> > > (stored in pci_dev->current_state) would no longer reflect reality.
-> > > By resuming such devices, we allow them to return to a low-power state
-> > > via autosuspend and also bring their current_state in sync with reality.
+> > > Oh I'm grasping only now, you want to emit a WARN for *every*
+> > > infringing child/consumer. That could lead to a WARN flood if
+> > > a developer accidentally does something really dumb, like linking
+> > > the PCI root to some PCI endpoint device, but fair enough.
 > > > 
-> > > However for devices that are *not* in a reset-power-on state, doing an
-> > > unconditional resume wastes energy.  A more refined approach is called
-> > > for which issues a runtime resume only if the power state after
-> > > direct-complete is shallower than it was before. To achieve this, update
-> > > the device's current_state by querying the platform firmware and reading
-> > > its PMCSR.
+> > > The point about linking a parent to a child still stands however.
+> > > I think a simple way to check this is to just add
 > > > 
-> > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > > ---
-> > >  drivers/pci/pci-driver.c | 15 +++++++++++++--
-> > >  1 file changed, 13 insertions(+), 2 deletions(-)
+> > > 	if (WARN_ON(dev == target))
+> > > 		return 1;
 > > > 
-> > > diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> > > index e39a67c..fd4b9c4 100644
-> > > --- a/drivers/pci/pci-driver.c
-> > > +++ b/drivers/pci/pci-driver.c
-> > > @@ -684,8 +684,19 @@ static int pci_pm_prepare(struct device *dev)
-> > >  
-> > >  static void pci_pm_complete(struct device *dev)
-> > >  {
-> > > -	pci_dev_complete_resume(to_pci_dev(dev));
-> > > -	pm_complete_with_resume_check(dev);
-> > > +	struct pci_dev *pci_dev = to_pci_dev(dev);
-> > > +
-> > > +	pci_dev_complete_resume(pci_dev);
-> > > +	pm_generic_complete(dev);
-> > > +
-> > > +	/* Resume device if platform firmware has put it in reset-power-on */
-> > > +	if (dev->power.direct_complete && pm_resume_via_firmware()) {
-> > > +		pci_power_t pre_sleep_state = pci_dev->current_state;
-> > > +
-> > > +		pci_update_current_state(pci_dev, pci_dev->current_state);
+> > > at the top of the function, because when someone tries to link
+> > > a parent to a child, when recursing from the parent downward
+> > > one will eventually hit that child. This will also prevent
+> > > someone from linking a device to itself.
 > > 
-> > I'm not sure if this can be made reliable enough for all of the systems out
-> > there (including the pre-ACPI-4.0 ones and so on).  I'm a bit concerned that
-> > we'll uncover firmware issues and such by doing this.
-> > 
-> > How much of a problem the existing code is in practice?
+> > I actually would prefer to make it impossible to link a parent to
+> > a child at all.
 > 
-> Where's your ambition?  Do you want your power management to be as good
-> as Apple's or are you going to waste energy for fear of uncovering
-> firmware bugs?
+> Which is precisely what the code snippet above does.
 
-That's not about my ambition or lack thereof, but about avoiding introducing
-regressions on systems that are not Apple because of the ambition to be as
-good as Apple.
-
-And I'm not even talking about this particular piece of code, but about the
-other code that calls pci_update_current_state().
-
-> I first tried to solve this only for Thunderbolt by opting out of the
-> mandatory resume after direct_complete.  It worked, but it was ugly.
-> 
-> (I have to clear the direct_complete flag in the ->complete hook, but
-> the device tree is walked bottom-up during ->complete, and since the
-> Thunderbolt controller exposes multiple devices, I have to clear the
-> flag for all devices from the bottom-most device, which is the NHI.
-> And all the rest of the s/r code lives on the top-most device, which
-> is the upstream bridge.)
-> 
-> You suggested in your e-mail of July 18: "maybe it's better to change
-> the PCI bus type to do something different from calling the generic
-> function?"
-> 
-> So there, I did what you suggested and tried to fix it not just for
-> Thunderbolt but for everyone.
-> 
-> And you're still not happy.
-> 
-> *sigh*
-
-Sorry for disappointing you.
-
-I have concerns, so I talk about them.  Is that wrong?  If so, what's wrong
-about it?
-
-My time goes into that as well, mind you.
-
-> If on pre ACPI 4.0 systems, the device state is incorrectly reported
-> as D3hot although the device is still in D3cold, the device will be
-> runtime resumed to D0, just as it is now.  In other words, the benefit
-> of avoiding an unnecessary runtime resume after direct_complete is
-> only granted if the platform firmware reports the device state
-> correctly.
-
-OK
-
-Which as I said in the other message I've just sent, if you use
-acpi_device_get_power() for that, it will only report D3cold if (a) the device
-has a _PR3 and (b) the power resources configuration in there indicates D3cold.
-
-Does that cover the Thunderbolt case even?
+All right, this means I shouldn't reply to email late in the night.  But
+at least we seem to be in agreement here.
 
 Thanks,
 Rafael
-
