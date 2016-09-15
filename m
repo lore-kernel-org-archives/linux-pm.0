@@ -1,45 +1,120 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] PM / devfreq: rockchip: add PM_DEVFREQ_EVENT dependency
-Date: Thu, 15 Sep 2016 17:44:58 +0200
-Message-ID: <20160915154513.3006199-1-arnd@arndb.de>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: Power driver patches to avoid lockdep complaints
+Date: Thu, 15 Sep 2016 12:41:31 -0700
+Message-ID: <20160915194129.tq65ieriuo6a3yrf@atomide.com>
+References: <20160615211344.GA31850@linux.vnet.ibm.com>
+ <20160823004549.b66jru7ogyfifunf@atomide.com>
+ <20160823005917.GY3482@linux.vnet.ibm.com>
+ <3368049.VBoKnTMGvK@vostro.rjw.lan>
+ <20160823101600.GA3482@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([217.72.192.73]:54160 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751125AbcIOPps (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 11:45:48 -0400
+Received: from muru.com ([72.249.23.125]:42433 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754646AbcIOTlg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Sep 2016 15:41:36 -0400
+Content-Disposition: inline
+In-Reply-To: <20160823101600.GA3482@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Lin Huang <hl@rock-chips.com>, Arnd Bergmann <arnd@arndb.de>, Chanwoo Choi <cw00.choi@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, pavel@ucw.cz, linux@roeck-us.net, rostedt@goodmis.org, linux-pm@vger.kernel.org
 
-The newly added ARM_RK3399_DMC_DEVFREQ driver requires the
-DEVFREQ_EVENT_ROCKCHIP_DFI driver and tries to turn that on through
-a 'select' statement, and that in turn has a dependency on
-PM_DEVFREQ_EVENT, which may be disabled here:
+Hi,
 
-warning: (ARM_RK3399_DMC_DEVFREQ) selects DEVFREQ_EVENT_ROCKCHIP_DFI which has unmet direct dependencies (PM_DEVFREQ && PM_DEVFREQ_EVENT && ARCH_ROCKCHIP)
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com> [160823 03:16]:
+> On Tue, Aug 23, 2016 at 03:52:12AM +0200, Rafael J. Wysocki wrote:
+> > On Monday, August 22, 2016 05:59:17 PM Paul E. McKenney wrote:
+> > > On Mon, Aug 22, 2016 at 05:45:49PM -0700, Tony Lindgren wrote:
+> > > > * Rafael J. Wysocki <rjw@rjwysocki.net> [160822 10:30]:
+> > > > > On Saturday, August 20, 2016 07:28:37 AM Tony Lindgren wrote:
+> > > > > > * Rafael J. Wysocki <rjw@rjwysocki.net> [160819 18:35]:
+> > > > > > > On Thursday, August 18, 2016 03:51:52 PM Tony Lindgren wrote:
+> > > > > > > > Hi,
+> > > > > > > > 
+> > > > > > > > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> [160615 14:16]:
+> > > > > > > > > Hello!
+> > > > > > > > > 
+> > > > > > > > > Ingo was not comfortable taking these through -tip, which is understandable,
+> > > > > > > > > given that they don't depend on each other or on anything else not already
+> > > > > > > > > in mainline, and that they don't have anything to do with -tip.
+> > > > > > > > > 
+> > > > > > > > > So what would you guys like to do with these?
+> > > > > > > > > 
+> > > > > > > > > They may be pulled from 13e698e68f75 (power: Use _rcuidle for
+> > > > > > > > > suspend/resume tracepoints) in my -rcu tree:
+> > > > > > > > > 
+> > > > > > > > > 	git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
+> > > > > > > > > 
+> > > > > > > > 
+> > > > > > > > Rafael, looks like commit 13e698e68f75 is still missing from the
+> > > > > > > > mainline tree. Care to merge it to your fixes so I don't have to
+> > > > > > > > keep looking at that splat on daily basis?
+> > > > > > > 
+> > > > > > > I could pull it if I knew where to pull it from.  The above gives me
+> > > > > > > "Already up-to-date."
+> > > > > > 
+> > > > > > Here are the ones still missing:
+> > > > > > 
+> > > > > > $ git log --pretty=oneline v4.7-rc2..13e698e68f75
+> > > > > > 13e698e68f75708c45241a2dad23cd6b65181056 power: Use _rcuidle for suspend/resume tracepoints
+> > > > > > 320e2a2d081b6c519f80fca9377b8fb90db7bb9c power: Add _rcuidle suffix to allow rpm_resume() to be called from idle
+> > > > > > b72aadb1d082d3935cbffd60e979238252045971 power: Add _rcuidle suffix to allow rpm_idle() use from idle
+> > > > > > 
+> > > > > > So maybe just git merge 13e698e68f75 if you have the linux-rcu.git
+> > > > > > fetched and the above look OK to you?
+> > > > > 
+> > > > > If I do
+> > > > > 
+> > > > > $ git fetch git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
+> > > > > 
+> > > > > and then
+> > > > > 
+> > > > > $ git show 13e698e68f75
+> > > > > 
+> > > > > then it tells me
+> > > > > 
+> > > > > fatal: ambiguous argument '13e698e68f75': unknown revision or path not in the working tree.
+> > > > > 
+> > > > > Do I need to fetch it in any special way or something?
+> > > > 
+> > > > Well I usuall add things to my .git/config like:
+> > > > 
+> > > > [remote "rcu"]
+> > > > 	url = git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/linux-rcu.git
+> > > > 	fetch = refs/heads/*:refs/remotes/rcu/*
+> > > > 
+> > > > And then do git fetch --no-tags on what I need. There's probably
+> > > > some easy way to do that temporarily too :)
+> > > > 
+> > > > But now doing git fetch --no-tags rcu here with produces this
+> > > > for me:
+> > > > ...
+> > > >  ! [rejected]        rcu/dev    -> rcu/rcu/dev  (non-fast-forward)
+> > > >  ! [rejected]        rcu/next   -> rcu/rcu/next  (non-fast-forward)
+> > > > 
+> > > > So maybe that branch got trashed and the commit is there no more.
+> > > 
+> > > The trick is that rcu/dev and rcu/next simply mark my current development
+> > > branch and the stuff I want Stephen Rothwell to pull into -next,
+> > > respectively.
+> > > 
+> > > > Paul, do you have 13e698e68f75 still somewhere or want me to push
+> > > > out a branch with that?
+> > > 
+> > > The permanent branch name for those changes is power.2016.06.15a,
+> > > so those should be pullable from anywhere.
+> > > 
+> > > Or please do feel free to push from your tree if that works better.
+> > > However they get where they need to go, I am good!  ;-)
+> > 
+> > I guess I'll just apply the patches you've sent directly then.
+> 
+> Works for me!
 
-We probably want a 'depends on' here, but other drivers use 'select'
-too, so for consistency I'm doing the same.
+Rafael, I'm still not seeing these applied, care to check?
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Fixes: 5a893e31a636 ("PM / devfreq: rockchip: add devfreq driver for rk3399 dmc")
----
- drivers/devfreq/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+Regards,
 
-diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 93b6ada06676..41254e702f1e 100644
---- a/drivers/devfreq/Kconfig
-+++ b/drivers/devfreq/Kconfig
-@@ -105,6 +105,7 @@ config ARM_RK3399_DMC_DEVFREQ
- 	depends on ARCH_ROCKCHIP
- 	select DEVFREQ_EVENT_ROCKCHIP_DFI
- 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
-+	select PM_DEVFREQ_EVENT
- 	select PM_OPP
- 	help
-           This adds the DEVFREQ driver for the RK3399 DMC(Dynamic Memory Controller).
--- 
-2.9.0
-
+Tony
