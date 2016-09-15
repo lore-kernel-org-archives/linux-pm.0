@@ -1,68 +1,74 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH 4/4] PCI: Avoid unnecessary resume on shutdown
-Date: Thu, 15 Sep 2016 15:11:25 +0200
-Message-ID: <20160915131125.GA2196@wunner.de>
-References: <cover.1472554278.git.lukas@wunner.de>
- <9f9152c11c6178bbac53fd3d0ef0d38173ad4b0b.1472554278.git.lukas@wunner.de>
- <2217882.yevB8EWaHc@vostro.rjw.lan>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH v2] PM / Domains: Allow holes in genpd_data.domains array
+Date: Thu, 15 Sep 2016 14:20:15 +0100
+Message-ID: <40e24cc3-aca9-fe03-06eb-f29a061b3150@nvidia.com>
+References: <5256c34e-5afb-2cfe-9818-8e6a6e1f0fa3@nvidia.com>
+ <1473941123-15090-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2217882.yevB8EWaHc@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:17195 "EHLO
+        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751063AbcIONU2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 09:20:28 -0400
+In-Reply-To: <1473941123-15090-1-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-kernel@vger.kernel.org
+Cc: Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 
-On Wed, Sep 14, 2016 at 02:29:52AM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, August 31, 2016 08:15:18 AM Lukas Wunner wrote:
-> > We currently perform a mandatory runtime resume of all PCI devices on
-> > ->shutdown.  However it is pointless to wake devices only to immediately
-> > power them down afterwards.  (Or have the firmware reset them, in case
-> > of a reboot.)
-> > 
-> > It seems there are only two cases when a runtime resume is actually
-> > necessary:  If the driver has declared a ->shutdown callback or if kexec
-> > is in progress.
-> > 
-> > Constrain resume of a device to these cases and let it slumber
-> > otherwise, thereby conserving energy and speeding up shutdown.
-> > 
-> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > ---
-> >  drivers/pci/pci-driver.c | 5 +++++
-> >  1 file changed, 5 insertions(+)
-> > 
-> > diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> > index fd4b9c4..09a4e56 100644
-> > --- a/drivers/pci/pci-driver.c
-> > +++ b/drivers/pci/pci-driver.c
-> > @@ -459,6 +459,11 @@ static void pci_device_shutdown(struct device *dev)
-> >  	struct pci_dev *pci_dev = to_pci_dev(dev);
-> >  	struct pci_driver *drv = pci_dev->driver;
-> >  
-> > +	/* Fast path for suspended devices */
-> > +	if (pm_runtime_suspended(dev) && (!drv || !drv->shutdown) &&
-> > +	    !kexec_in_progress)
+
+On 15/09/16 13:05, Tomeu Vizoso wrote:
+> In platforms such as Rockchip's, the array of domains isn't always
+> filled without holes, as which domains are present depend on the
+> particular SoC revision.
 > 
-> What happens if runtime suspend or resume of the device happens here?
-
-You're right, good point.  How about disabling runtime PM then, like this:
-
-	/* Fast path for suspended devices */
-	if (pm_runtime_status_suspended(dev) && (!drv || !drv->shutdown) &&
-	    !kexec_in_progress) {
-		pm_runtime_disable(dev);
-		if (pm_runtime_status_suspended(dev))
-			return;
-		pm_runtime_enable(dev);
-	}
-
-All dependents (children, and in the future, consumers) should already
-have been treated at that point, due to the ordering of devices_kset->list.
+> By allowing holes to be in the array, such SoCs can still use a single
+> set of constants to index the array of power domains.
+> 
+> Fixes: 0159ec670763 ("PM / Domains: Verify the PM domain is present when adding a provider")
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> Cc: Jon Hunter <jonathanh@nvidia.com>
+> Cc: Heiko Stuebner <heiko@sntech.de>
+> 
+> ---
+> 
+> v2: Also skip holes in the error path.
+> ---
+>  drivers/base/power/domain.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index b0cf46dcae73..83ae3d7d3fdd 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1581,6 +1581,8 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+>  	mutex_lock(&gpd_list_lock);
+>  
+>  	for (i = 0; i < data->num_domains; i++) {
+> +		if (!data->domains[i])
+> +			continue;
+>  		if (!pm_genpd_present(data->domains[i]))
+>  			goto error;
+>  
+> @@ -1598,6 +1600,8 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+>  
+>  error:
+>  	while (i--) {
+> +		if (!data->domains[i])
+> +			continue;
+>  		data->domains[i]->provider = NULL;
+>  		data->domains[i]->has_provider = false;
+>  	}
+> 
 
 Thanks!
 
-Lukas
+Acked-by: Jon Hunter <jonathanh@nvidia.com>
+
+Cheers
+Jon
+
+-- 
+nvpublic
