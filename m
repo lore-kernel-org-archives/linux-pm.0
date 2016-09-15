@@ -1,43 +1,46 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] PM / OPP: avoid maybe-uninitialized warning
-Date: Thu, 15 Sep 2016 14:45:49 -0700
-Message-ID: <1289252d-4af8-4ffb-051b-6d2f460dd69f@codeaurora.org>
-References: <20160915153917.3001855-1-arnd@arndb.de>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH v2] PM / Domains: Allow holes in genpd_data.domains array
+Date: Fri, 16 Sep 2016 00:00:06 +0200
+Message-ID: <2780473.p0Dg5RSlIV@diego>
+References: <5256c34e-5afb-2cfe-9818-8e6a6e1f0fa3@nvidia.com> <1473941123-15090-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:53497 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753951AbcIOVpv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 17:45:51 -0400
-In-Reply-To: <20160915153917.3001855-1-arnd@arndb.de>
+Received: from gloria.sntech.de ([95.129.55.99]:54279 "EHLO gloria.sntech.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754966AbcIOWAT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Sep 2016 18:00:19 -0400
+In-Reply-To: <1473941123-15090-1-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 
-On 09/15/2016 08:38 AM, Arnd Bergmann wrote:
-> When CONFIG_OPTIMIZE_INLINING is set and we are building with -Wmaybe-uninitialized
-> enabled, we can get a warning for the opp core driver:
->
-> drivers/base/power/opp/core.c: In function 'dev_pm_opp_set_rate':
-> drivers/base/power/opp/core.c:560:8: warning: 'ou_volt_min' may be used uninitialized in this function [-Wmaybe-uninitialized]
->
-> This has only now appeared as a result of commit 797da5598f3a ("PM / devfreq:
-> Add COMPILE_TEST for build coverage"), which makes the driver visible in
-> some configurations that didn't have it before.
->
-> The warning is a false positive that I got with gcc-6.1.1, but there is
-> a simple workaround in removing the local variables that we get warnings
-> for (all three are affected depending on the configuration). This also
-> makes the code easier to read.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Am Donnerstag, 15. September 2016, 14:05:23 schrieb Tomeu Vizoso:
+> In platforms such as Rockchip's, the array of domains isn't always
+> filled without holes, as which domains are present depend on the
+> particular SoC revision.
+> 
+> By allowing holes to be in the array, such SoCs can still use a single
+> set of constants to index the array of power domains.
+> 
+> Fixes: 0159ec670763 ("PM / Domains: Verify the PM domain is present when
+> adding a provider") Signed-off-by: Tomeu Vizoso
+> <tomeu.vizoso@collabora.com>
+> Cc: Jon Hunter <jonathanh@nvidia.com>
+> Cc: Heiko Stuebner <heiko@sntech.de>
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+We talked about this today and the change looks good for handling the
+holes in Rockchip power-domain lists, so
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 
+also, on a rk3288-veyron Chromebook the display comes up again
+with this patch (by not defering because of the missing domains), so
+
+Tested-by: Heiko Stuebner <heiko@sntech.de>
+
+
+Thanks
+Heiko
