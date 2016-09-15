@@ -1,46 +1,68 @@
-From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH v2 0/8] Support =?UTF-8?B?SW50ZWzCrg==?= Turbo Boost Max
- Technology 3.0
-Date: Thu, 15 Sep 2016 13:46:23 +0100
-Message-ID: <20160915134623.57596f86@lxorguk.ukuu.org.uk>
-References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-        <20160915121430.GD13132@amd>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH 4/4] PCI: Avoid unnecessary resume on shutdown
+Date: Thu, 15 Sep 2016 15:11:25 +0200
+Message-ID: <20160915131125.GA2196@wunner.de>
+References: <cover.1472554278.git.lukas@wunner.de>
+ <9f9152c11c6178bbac53fd3d0ef0d38173ad4b0b.1472554278.git.lukas@wunner.de>
+ <2217882.yevB8EWaHc@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:52416 "EHLO
-        lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933842AbcIOMsF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 08:48:05 -0400
-In-Reply-To: <20160915121430.GD13132@amd>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2217882.yevB8EWaHc@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, peterz@infradead.org, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, tim.c.chen@linux.intel.com
 
-On Thu, 15 Sep 2016 14:14:30 +0200
-Pavel Machek <pavel@ucw.cz> wrote:
-
-> Hi!
-> 
-> > - Feature is enabled by default for single socket systems
+On Wed, Sep 14, 2016 at 02:29:52AM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, August 31, 2016 08:15:18 AM Lukas Wunner wrote:
+> > We currently perform a mandatory runtime resume of all PCI devices on
+> > ->shutdown.  However it is pointless to wake devices only to immediately
+> > power them down afterwards.  (Or have the firmware reset them, in case
+> > of a reboot.)
 > > 
-> > With Intel® Turbo Boost Max Technology 3.0 (ITMT), single-threaded performance is
-> > optimized by identifying processor's fastest core and running critical workloads
-> > on it.
-> > Refere to:
-> > http://www.intel.com/content/www/us/en/architecture-and-technology/turbo-boost/turbo-boost-max-technology.html  
+> > It seems there are only two cases when a runtime resume is actually
+> > necessary:  If the driver has declared a ->shutdown callback or if kexec
+> > is in progress.
+> > 
+> > Constrain resume of a device to these cases and let it slumber
+> > otherwise, thereby conserving energy and speeding up shutdown.
+> > 
+> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> > ---
+> >  drivers/pci/pci-driver.c | 5 +++++
+> >  1 file changed, 5 insertions(+)
+> > 
+> > diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> > index fd4b9c4..09a4e56 100644
+> > --- a/drivers/pci/pci-driver.c
+> > +++ b/drivers/pci/pci-driver.c
+> > @@ -459,6 +459,11 @@ static void pci_device_shutdown(struct device *dev)
+> >  	struct pci_dev *pci_dev = to_pci_dev(dev);
+> >  	struct pci_driver *drv = pci_dev->driver;
+> >  
+> > +	/* Fast path for suspended devices */
+> > +	if (pm_runtime_suspended(dev) && (!drv || !drv->shutdown) &&
+> > +	    !kexec_in_progress)
 > 
-> That does not really explain much.
-> 
-> How does it work? Do the different cores have different max
-> frequencies due to manufacturing differences? Ot is it running the
-> workload on coldest core?
+> What happens if runtime suspend or resume of the device happens here?
 
-That's all down to the CPU, not architectural and may change.
+You're right, good point.  How about disabling runtime PM then, like this:
 
-The ACPI tables describe which cores to use, whether that relates to
-manufacturing, positioning or whatever isn't exposed.
+	/* Fast path for suspended devices */
+	if (pm_runtime_status_suspended(dev) && (!drv || !drv->shutdown) &&
+	    !kexec_in_progress) {
+		pm_runtime_disable(dev);
+		if (pm_runtime_status_suspended(dev))
+			return;
+		pm_runtime_enable(dev);
+	}
 
-Alan
+All dependents (children, and in the future, consumers) should already
+have been treated at that point, due to the ordering of devices_kset->list.
+
+Thanks!
+
+Lukas
