@@ -1,88 +1,72 @@
-From: Lukasz Luba <lukasz.luba@arm.com>
-Subject: [PATCH 2/4] devfreq_cooling: pass a pointer to devfreq in the power model callbacks
-Date: Thu, 15 Sep 2016 15:44:23 +0100
-Message-ID: <20160915144425.5443-3-lukasz.luba@arm.com>
-References: <20160915144425.5443-1-lukasz.luba@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] PM / OPP: avoid maybe-uninitialized warning
+Date: Thu, 15 Sep 2016 17:38:38 +0200
+Message-ID: <20160915153917.3001855-1-arnd@arndb.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:38404 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752717AbcIOOpM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 15 Sep 2016 10:45:12 -0400
-In-Reply-To: <20160915144425.5443-1-lukasz.luba@arm.com>
+Received: from mout.kundenserver.de ([212.227.126.134]:62200 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751036AbcIOPjo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 11:39:44 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rui.zhang@intel.com, edubezval@gmail.com, lukasz.luba@arm.com, javi.merino@arm.com, orjan.eide@arm.com
+To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Javi Merino <javi.merino@arm.com>
+When CONFIG_OPTIMIZE_INLINING is set and we are building with -Wmaybe-uninitialized
+enabled, we can get a warning for the opp core driver:
 
-When the devfreq cooling device was designed, it was an oversight not to
-pass a pointer to the struct devfreq as the first parameters of the
-callbacks.  The design patterns of the kernel suggest it for a good
-reason.
+drivers/base/power/opp/core.c: In function 'dev_pm_opp_set_rate':
+drivers/base/power/opp/core.c:560:8: warning: 'ou_volt_min' may be used uninitialized in this function [-Wmaybe-uninitialized]
 
-By passing a pointer to struct devfreq, the driver can register one
-function that works with multiple devices.  With the current
-implementation, a driver that can work with multiple devices has to
-create multiple copies of the same function with different parameters so
-that each devfreq_cooling_device can use the appropriate one.  By
-passing a pointer to struct devfreq, the driver can identify which
-device it's referring to.
+This has only now appeared as a result of commit 797da5598f3a ("PM / devfreq:
+Add COMPILE_TEST for build coverage"), which makes the driver visible in
+some configurations that didn't have it before.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Reviewed-by: Punit Agrawal <punit.agrawal@arm.com>
-Reviewed-by: Ørjan Eide <orjan.eide@arm.com>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
+The warning is a false positive that I got with gcc-6.1.1, but there is
+a simple workaround in removing the local variables that we get warnings
+for (all three are affected depending on the configuration). This also
+makes the code easier to read.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/thermal/devfreq_cooling.c | 5 +++--
- include/linux/devfreq_cooling.h   | 6 ++++--
- 2 files changed, 7 insertions(+), 4 deletions(-)
+ drivers/base/power/opp/core.c | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index 01f0015..c549d83 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -238,7 +238,7 @@ get_static_power(struct devfreq_cooling_device *dfc, unsigned long freq)
- 		return 0;
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index df0c70963d9e..4c7c6da7a989 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -584,7 +584,6 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	struct clk *clk;
+ 	unsigned long freq, old_freq;
+ 	unsigned long u_volt, u_volt_min, u_volt_max;
+-	unsigned long ou_volt, ou_volt_min, ou_volt_max;
+ 	int ret;
+ 
+ 	if (unlikely(!target_freq)) {
+@@ -620,11 +619,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
  	}
  
--	return dfc->power_ops->get_static_power(voltage);
-+	return dfc->power_ops->get_static_power(df, voltage);
+ 	old_opp = _find_freq_ceil(opp_table, &old_freq);
+-	if (!IS_ERR(old_opp)) {
+-		ou_volt = old_opp->u_volt;
+-		ou_volt_min = old_opp->u_volt_min;
+-		ou_volt_max = old_opp->u_volt_max;
+-	} else {
++	if (IS_ERR(old_opp)) {
+ 		dev_err(dev, "%s: failed to find current OPP for freq %lu (%ld)\n",
+ 			__func__, old_freq, PTR_ERR(old_opp));
+ 	}
+@@ -683,7 +678,8 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ restore_voltage:
+ 	/* This shouldn't harm even if the voltages weren't updated earlier */
+ 	if (!IS_ERR(old_opp))
+-		_set_opp_voltage(dev, reg, ou_volt, ou_volt_min, ou_volt_max);
++		_set_opp_voltage(dev, reg, old_opp->u_volt,
++				 old_opp->u_volt_min, old_opp->u_volt_max);
+ 
+ 	return ret;
  }
- 
- /**
-@@ -262,7 +262,8 @@ get_dynamic_power(struct devfreq_cooling_device *dfc, unsigned long freq,
- 	struct devfreq_cooling_power *dfc_power = dfc->power_ops;
- 
- 	if (dfc_power->get_dynamic_power)
--		return dfc_power->get_dynamic_power(freq, voltage);
-+		return dfc_power->get_dynamic_power(dfc->devfreq, freq,
-+						    voltage);
- 
- 	freq_mhz = freq / 1000000;
- 	power = (u64)dfc_power->dyn_power_coeff * freq_mhz * voltage * voltage;
-diff --git a/include/linux/devfreq_cooling.h b/include/linux/devfreq_cooling.h
-index 3049f94..c35d0c0 100644
---- a/include/linux/devfreq_cooling.h
-+++ b/include/linux/devfreq_cooling.h
-@@ -36,8 +36,10 @@
-  *			@dyn_power_coeff * frequency * voltage^2
-  */
- struct devfreq_cooling_power {
--	unsigned long (*get_static_power)(unsigned long voltage);
--	unsigned long (*get_dynamic_power)(unsigned long freq,
-+	unsigned long (*get_static_power)(struct devfreq *devfreq,
-+					  unsigned long voltage);
-+	unsigned long (*get_dynamic_power)(struct devfreq *devfreq,
-+					   unsigned long freq,
- 					   unsigned long voltage);
- 	unsigned long dyn_power_coeff;
- };
 -- 
-2.9.2
+2.9.0
 
