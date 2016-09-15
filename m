@@ -1,57 +1,55 @@
-From: Hoan Tran <hotran@apm.com>
-Subject: Re: [PATCH] cpufreq: CPPC: Avoid overflow when calculating desired_perf
-Date: Wed, 14 Sep 2016 20:06:45 -0700
-Message-ID: <CAFHUOYw+AP-LeqLTB9cbtCp+t_jUuA64Mh9DA0aU2C9-3P3MVQ@mail.gmail.com>
-References: <1473894508-22270-1-git-send-email-hotran@apm.com> <2037077.Sk8HnobN5X@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: ti: Use generic platdev driver
+Date: Thu, 15 Sep 2016 11:55:07 +0530
+Message-ID: <20160915062507.GA30169@vireshk-i7>
+References: <20160914204137.20346-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2037077.Sk8HnobN5X@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Prashanth Prakash <pprakash@codeaurora.org>, Al Stone <ahs3@redhat.com>, linux-pm@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>, Loc Ho <lho@apm.com>, Duc Dang <dhdang@apm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:36640 "EHLO
+        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933844AbcIOGZL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 02:25:11 -0400
+Received: by mail-pf0-f170.google.com with SMTP id 128so13511004pfb.3
+        for <linux-pm@vger.kernel.org>; Wed, 14 Sep 2016 23:25:11 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20160914204137.20346-1-d-gerlach@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
 
-Hi Rafael,
+On 14-09-16, 15:41, Dave Gerlach wrote:
+> Now that the cpufreq-dt-platdev is used to create the cpufreq-dt platform
+> device for all OMAP platforms and the platform code that did it
+> before has been removed, add ti,am33xx and ti,dra7xx to the machine list
+> in cpufreq-dt-platdev which had relied on the removed platform code to do
+> this previously.
+> 
+> Fixes: 7694ca6e1d6f ("cpufreq: omap: Use generic platdev driver")
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
 
-On Wed, Sep 14, 2016 at 5:50 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, September 14, 2016 04:08:28 PM Hoan Tran wrote:
->> This patch fixes overflow issue when calculating the desired_perf.
->>
->> Signed-off-by: Hoan Tran <hotran@apm.com>
->> ---
->>  drivers/cpufreq/cppc_cpufreq.c | 3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->> index 894e465..3e0961e 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -84,7 +84,8 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
->>
->>       cpu = all_cpu_data[policy->cpu];
->>
->> -     cpu->perf_ctrls.desired_perf = target_freq * policy->max / cppc_dmi_max_khz;
->> +     cpu->perf_ctrls.desired_perf =
->> +             (u64)target_freq * policy->max / cppc_dmi_max_khz;
->>       freqs.old = policy->cur;
->>       freqs.new = target_freq;
->
-> That's on top of the CPPC material in linux-next I gather?
+Any stable trees you want this to be added to ?
 
-Yes, it's on TOP of linux-next.
+> ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 0bb44d5b5df4..d5e8ba50f8a3 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -68,6 +68,8 @@ static const struct of_device_id machines[] __initconst = {
+>  
+>  	{ .compatible = "sigma,tango4" },
+>  
+> +	{ .compatible = "ti,am33xx", },
+> +	{ .compatible = "ti,dra7", },
+>  	{ .compatible = "ti,omap2", },
+>  	{ .compatible = "ti,omap3", },
+>  	{ .compatible = "ti,omap4", },
 
->
-> Which commit does it fix?
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-This is a fix for ad38677df44b67e0f5b6c4d31e9c2734abde8ed9 (cpufreq:
-CPPC: Force reporting values in KHz to fix user space interface)
-http://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/commit/drivers/cpufreq/cppc_cpufreq.c?id=ad38677df44b67e0f5b6c4d31e9c2734abde8ed9
-
-Thanks
-Hoan
-
->
-> Thanks,
-> Rafael
->
+-- 
+viresh
