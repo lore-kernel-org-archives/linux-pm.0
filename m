@@ -1,158 +1,60 @@
-From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 4/5] ARM: dts: exynos: add support for ISP power domain to
- exynos4x12 clocks device
-Date: Thu, 15 Sep 2016 14:06:18 +0200
-Message-ID: <6e52af56-8b0e-d8c4-62c2-6efeee0e912d@samsung.com>
-References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
- <1472737551-15272-5-git-send-email-m.szyprowski@samsung.com>
- <20160908002254.GD13062@codeaurora.org>
- <CGME20160912102332eucas1p145e79669788329b44343da62dcbe50ca@eucas1p1.samsung.com>
- <f340cca5-6cd6-6bd1-3b9a-ccd58cbc0091@samsung.com>
- <20160912222852.GH7243@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <20160912222852.GH7243-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH v2] PM / Domains: Allow holes in genpd_data.domains array
+Date: Thu, 15 Sep 2016 14:05:23 +0200
+Message-ID: <1473941123-15090-1-git-send-email-tomeu.vizoso@collabora.com>
+References: <5256c34e-5afb-2cfe-9818-8e6a6e1f0fa3@nvidia.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:36633 "EHLO
+        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934609AbcIOMGc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 08:06:32 -0400
+In-Reply-To: <5256c34e-5afb-2cfe-9818-8e6a6e1f0fa3@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Jon Hunter <jonathanh@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 
-Hi Stephen,
+In platforms such as Rockchip's, the array of domains isn't always
+filled without holes, as which domains are present depend on the
+particular SoC revision.
 
-On 2016-09-13 00:28, Stephen Boyd wrote:
-> On 09/12, Marek Szyprowski wrote:
->> On 2016-09-08 02:22, Stephen Boyd wrote:
->>> On 09/01, Marek Szyprowski wrote:
->>>> Exynos4412 clock controller contains some additional clocks for FIMC-ISP
->>>> (Camera ISP) subsystem. Registers for those clocks are partially located
->>>> in the SOC area, which belongs to ISP power domain.
->>>>
->>>> This patch extends clock controller node with ISP clock sub-node and link
->>>> (phandle) to ISP power domain.
->>>>
->>>> Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->>>> ---
->>>>   arch/arm/boot/dts/exynos4x12.dtsi | 5 +++++
->>>>   1 file changed, 5 insertions(+)
->>>>
->>>> diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
->>>> index 3394bdcf10ae..4daea67546b9 100644
->>>> --- a/arch/arm/boot/dts/exynos4x12.dtsi
->>>> +++ b/arch/arm/boot/dts/exynos4x12.dtsi
->>>> @@ -74,6 +74,11 @@
->>>>   		compatible = "samsung,exynos4412-clock";
->>>>   		reg = <0x10030000 0x20000>;
->>>>   		#clock-cells = <1>;
->>>> +
->>>> +		isp-clock-controller {
->>>> +			compatible = "samsung,exynos4412-isp-clock";
->>>> +			power-domains = <&pd_isp>;
->>>> +		};
->>> Why can't we extend support in power domains code to have
->>> multiple domains for a single device node? i.e. power-domains =
->>> <&pd_isp>, <&pd_foo>, <&pd_bar>, and then pick the right one with
->>> power-domain-names or something like that? Making a subnode
->>> (which seems to turn into a child platform device?) seems like a
->>> quick solution for larger problems.
->> The larger problem here is the fact that clock controller is
->> partially located
->> in different power areas of SoC. Majority of the clock controllers
->> is located
->> in the area which is typically always powered (besides system sleep case),
->> while a few Camera ISP registers are located in the ISP block, which have
->> separate power domain. Having a separate nodes for sub-parts of the
->> device is
->> rather common approach, already practices by some more complex devices.
->>
->> I see some serious design problems with multiple entries in power domains
->> property. First how to show that some part of the device IS NOT in
->> any domain?
-> Is that even possible? Every device should be in some power
-> domain, even if it's just an "always on" power domain that we
-> don't really control from software.
+By allowing holes to be in the array, such SoCs can still use a single
+set of constants to index the array of power domains.
 
-Right now none dts of which I'm aware of doesn't define the power domain for
-the parts of the SoC, which are always on and doesn't need any additional
-management.
+Fixes: 0159ec670763 ("PM / Domains: Verify the PM domain is present when adding a provider")
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Jon Hunter <jonathanh@nvidia.com>
+Cc: Heiko Stuebner <heiko@sntech.de>
 
->
->> The question is how the automated assignment to domains would be handled for
->> such case?
-> I don't get this part. Do you mean how we indicate to the driver
-> which power domain to use at the right time?
+---
 
-This was about Linux device core, which assigns device to its power domain
-and ensures that the power domain is in right state during device probe and
-then during device operation. Currently core supports only one domain per
-device, so the question was which domain to chose if there are more than
-one listed.
+v2: Also skip holes in the error path.
+---
+ drivers/base/power/domain.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
->
->> The second is related to Linux kernel internals. Right now device
->> drivers are
->> not aware of the power domains - there are no direct calls to power domains
->> code, everything is hidden behind runtime pm which does all the hard work.
-> Right. Runtime PM will need to be improved to allow this case.
->
->> Similar situation is on Exynos 542x/5800, which will look more or less like
->> this:
->>
->>          clock: clock-controller@10010000 {
->>               compatible = "samsung,exynos5420-clock";
->>               reg = <0x10010000 0x30000>;
->>               #clock-cells = <1>;
->> +
->> +            gsc-clock-controller {
->> +                 compatible = "samsung,exynos5420-gsc-clock";
->> +                 power-domains = <&gsc_pd>;
->> +            };
->> +
->> +            isp-clock-controller {
->> +                 compatible = "samsung,exynos5420-isp-clock";
->> +                 power-domains = <&isp_pd>;
->> +            };
->> +
->> +            mfc-clock-controller {
->> +                 compatible = "samsung,exynos5420-mfc-clock";
->> +                 power-domains = <&mfc_pd>;
->> +            };
->> +
->> +            msc-clock-controller {
->> +                 compatible = "samsung,exynos5420-msc-clock";
->> +                 power-domains = <&msc_pd>;
->> +            };
->> +
->> +            disp-clock-controller {
->> +                 compatible = "samsung,exynos5420-disp-clock";
->> +                 power-domains = <&disp_pd>;
->> +            };
->>           };
->>
->> The patch is not yet ready, so I didn't include it in this patchset.
-> Ok. From a DT perspective the sub-nodes seem to be a workaround
-> for how the linux device model is mapped to power domains. I'm
-> not sure we want to make subnodes in the clk controller just to
-> make sub devices that we can target from the clk registration
-> path. Those sub nodes aren't devices at all. I understand why
-> it's being done this way, I just don't see how it fits into DT
-> design methodologies.
-
-I don't think that using sub-nodes for describing details of the given
-hardware block is something uncommon in DT. Please check pin control
-or PMICs (especially regulator providers). Same for various "port"
-sub-nodes often used by various video/display devices and bridges.
-
-The above presented method describes well which sub-part of clock
-controller is placed in which power domain.
-
-Best regards
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index b0cf46dcae73..83ae3d7d3fdd 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1581,6 +1581,8 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ 	mutex_lock(&gpd_list_lock);
+ 
+ 	for (i = 0; i < data->num_domains; i++) {
++		if (!data->domains[i])
++			continue;
+ 		if (!pm_genpd_present(data->domains[i]))
+ 			goto error;
+ 
+@@ -1598,6 +1600,8 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ 
+ error:
+ 	while (i--) {
++		if (!data->domains[i])
++			continue;
+ 		data->domains[i]->provider = NULL;
+ 		data->domains[i]->has_provider = false;
+ 	}
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+2.7.4
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
