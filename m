@@ -1,55 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: ti: Use generic platdev driver
-Date: Thu, 15 Sep 2016 11:55:07 +0530
-Message-ID: <20160915062507.GA30169@vireshk-i7>
-References: <20160914204137.20346-1-d-gerlach@ti.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 1/5] clk: add support for runtime pm
+Date: Thu, 15 Sep 2016 10:32:04 +0200
+Message-ID: <648b0ce0-dcc5-d32d-5c4e-b7e0c0f10d4c@samsung.com>
+References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
+ <1472737551-15272-2-git-send-email-m.szyprowski@samsung.com>
+ <20160908001943.GC13062@codeaurora.org>
+ <CGME20160912101857eucas1p29b2bbd5ac0eda92284091ad1b86decc4@eucas1p2.samsung.com>
+ <f18fee35-cb5d-abce-0415-a98b58e3a302@samsung.com>
+ <20160912223105.GI7243@codeaurora.org>
+ <e3cceb9a-7a30-c662-dba4-bc453f6fddb6@samsung.com>
+ <20160914213903.GG7243@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:36640 "EHLO
-        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933844AbcIOGZL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 02:25:11 -0400
-Received: by mail-pf0-f170.google.com with SMTP id 128so13511004pfb.3
-        for <linux-pm@vger.kernel.org>; Wed, 14 Sep 2016 23:25:11 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20160914204137.20346-1-d-gerlach@ti.com>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:56697 "EHLO
+        mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1763275AbcIOIcL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 04:32:11 -0400
+In-reply-to: <20160914213903.GG7243@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 14-09-16, 15:41, Dave Gerlach wrote:
-> Now that the cpufreq-dt-platdev is used to create the cpufreq-dt platform
-> device for all OMAP platforms and the platform code that did it
-> before has been removed, add ti,am33xx and ti,dra7xx to the machine list
-> in cpufreq-dt-platdev which had relied on the removed platform code to do
-> this previously.
-> 
-> Fixes: 7694ca6e1d6f ("cpufreq: omap: Use generic platdev driver")
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+Hi Stephen,
 
-Any stable trees you want this to be added to ?
 
-> ---
->  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 0bb44d5b5df4..d5e8ba50f8a3 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -68,6 +68,8 @@ static const struct of_device_id machines[] __initconst = {
->  
->  	{ .compatible = "sigma,tango4" },
->  
-> +	{ .compatible = "ti,am33xx", },
-> +	{ .compatible = "ti,dra7", },
->  	{ .compatible = "ti,omap2", },
->  	{ .compatible = "ti,omap3", },
->  	{ .compatible = "ti,omap4", },
+On 2016-09-14 23:39, Stephen Boyd wrote:
+> On 09/13, Marek Szyprowski wrote:
+>> On 2016-09-13 00:31, Stephen Boyd wrote:
+>>> Great! So you have runtime PM callbacks that are calling
+>>> clk_prepare/unprepare?
+>> Well, not really. clock controller's runtime pm functions must not call
+>> clk_prepare/unprepare yet.
+>>
+>> I didn't get your question. I thought that you are asking if my change
+>> won't introduce any deadlock related to prepare and dev->pm locks. My
+>> runtime pm functions doesn't do any call to clk_prepare/unprepare.
+>> Although global clock prepare lock is re-entrant from the same process, it
+>> would cause deadlock if called from runtime pm functions, because runtime
+>> pm functions might be called from the worker running on the different
+>> cpu/process.
+> I mean non-clk controller driver based runtime PM callbacks that
+> call clk_prepare/unprepare in them. For example, some i2c or spi
+> device driver that has clk operations in the runtime PM
+> callbacks. That would allow lockdep to see any potential deadlock
+> because of aliasing lock classes for the device power lock and
+> the global prepare lock.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This works perfectly fine. Runtime pm callbacks are called with power lock
+released, so there is no deadlock possible related to dev->power.lock.
+See __rpm_callback() function in drivers/base/power/runtime.c
 
+Best regards
 -- 
-viresh
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
