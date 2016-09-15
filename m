@@ -1,55 +1,70 @@
 From: Lukasz Luba <lukasz.luba@arm.com>
-Subject: [PATCH 1/4] devfreq_cooling: make the structs devfreq_cooling_xxx visible for all
-Date: Thu, 15 Sep 2016 15:44:22 +0100
-Message-ID: <20160915144425.5443-2-lukasz.luba@arm.com>
-References: <20160915144425.5443-1-lukasz.luba@arm.com>
+Subject: [PATCH 0/4] devfreq_cooling: let the driver supply the dynamic power every time we need it
+Date: Thu, 15 Sep 2016 15:44:21 +0100
+Message-ID: <20160915144425.5443-1-lukasz.luba@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:38398 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:38384 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752395AbcIOOpD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 15 Sep 2016 10:45:03 -0400
-In-Reply-To: <20160915144425.5443-1-lukasz.luba@arm.com>
+        id S1752395AbcIOOo7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Sep 2016 10:44:59 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: rui.zhang@intel.com, edubezval@gmail.com, lukasz.luba@arm.com, javi.merino@arm.com, orjan.eide@arm.com
 
-Currently the protection #ifdef CONFIG_DEVFREQ_THERMAL cuts the needed
-structures devfreq_cooling_ops and devfreq_cooling_device.
-The functions which are supposed to provide the empty implementation complain
-about unknown structures.
-Similar solution is present in include/linux/devfreq.h.
+Hello,
 
-Reviewed-by: Ørjan Eide <orjan.eide@arm.com>
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
- include/linux/devfreq_cooling.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+This patchset introduces a new interface for devfreq cooling in thermal
+framework. I am resending it without the RFC tag.
+It supports direct call to driver's functions registered as
+'get_dynamic_power' and 'power2state'.
 
-diff --git a/include/linux/devfreq_cooling.h b/include/linux/devfreq_cooling.h
-index 7adf6cc..3049f94 100644
---- a/include/linux/devfreq_cooling.h
-+++ b/include/linux/devfreq_cooling.h
-@@ -20,7 +20,6 @@
- #include <linux/devfreq.h>
- #include <linux/thermal.h>
- 
--#ifdef CONFIG_DEVFREQ_THERMAL
- 
- /**
-  * struct devfreq_cooling_power - Devfreq cooling power ops
-@@ -43,6 +42,8 @@ struct devfreq_cooling_power {
- 	unsigned long dyn_power_coeff;
- };
- 
-+#ifdef CONFIG_DEVFREQ_THERMAL
-+
- struct thermal_cooling_device *
- of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
- 				  struct devfreq_cooling_power *dfc_power);
+
+The current implementation in the thermal devfreq cooling subsystem uses
+precalculated power table for each device to make a decision about allowed
+running state. When the driver registers itself to the thermal devfreq cooling
+subsystem, the framework creates the power table. The table is then used by the
+thermal subsystem to keep the device in the thermal envelope. The current
+implementation uses a fixed assumption of the complexity of the logic in the
+cooling_device and assumes power consumption varies directly in proportion to
+the frequency/voltage
+
+The proposed implementation provides the possibility to register a driver to
+thermal devfreq cooling subsystem and use the driver's code during the
+calculation of the power in runtime. You can still use precalculated power
+table when the GET_DIRECT_DYNAMIC_POWER flag is not set (the new extension can
+co-exist with the current implementation).
+
+This idea meets the expectations of the devices which know better the power
+they consume (and the power is not strictly related to OPP table entries
+(frequency, voltage) (i.e. some parts/features of the device can be unused)).
+
+The first patch is just for fixing some compiler warnings.  The second patch is
+the same as the one sent already to the linux-pm list which adds passing the
+devfreq pointer to the driver functions 'get_static|dynamic_power'.  The third
+one implements the main change in the devfreq cooling subsystem.  The last one
+is a simple fix for an unnecessary check.
+
+Best Regards,
+Lukasz Luba
+
+Javi Merino (1):
+  devfreq_cooling: pass a pointer to devfreq in the power model
+    callbacks
+
+Lukasz Luba (3):
+  devfreq_cooling: make the structs devfreq_cooling_xxx visible for all
+  devfreq_cooling: let the driver supply the dynamic power every time we
+    need it
+  devfreq_cooling: fix unnecessary check of unsigned long value
+
+ drivers/thermal/devfreq_cooling.c | 193 +++++++++++++++++++++++++++-----------
+ include/linux/devfreq_cooling.h   |  34 +++++--
+ 2 files changed, 165 insertions(+), 62 deletions(-)
+
 -- 
 2.9.2
 
