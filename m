@@ -1,51 +1,71 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 4/5] ARM: dts: exynos: add support for ISP power domain to
- exynos4x12 clocks device
-Date: Thu, 15 Sep 2016 16:13:31 +0200
-Message-ID: <CAPDyKFpibwe2fgviT8z3atd4RJUBx1PMNuG3txbjAa5qY8o_dg@mail.gmail.com>
-References: <1472737551-15272-1-git-send-email-m.szyprowski@samsung.com>
- <1472737551-15272-5-git-send-email-m.szyprowski@samsung.com>
- <20160908002254.GD13062@codeaurora.org> <CGME20160912102332eucas1p145e79669788329b44343da62dcbe50ca@eucas1p1.samsung.com>
- <f340cca5-6cd6-6bd1-3b9a-ccd58cbc0091@samsung.com> <20160912222852.GH7243@codeaurora.org>
- <6e52af56-8b0e-d8c4-62c2-6efeee0e912d@samsung.com>
+Subject: Re: [PATCH v2] PM / Domains: Allow holes in genpd_data.domains array
+Date: Thu, 15 Sep 2016 16:16:25 +0200
+Message-ID: <CAPDyKFqA8Fevi3LivsypeXjmF979=eFBEE9Gd82iL06FzMACvg@mail.gmail.com>
+References: <5256c34e-5afb-2cfe-9818-8e6a6e1f0fa3@nvidia.com> <1473941123-15090-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f50.google.com ([209.85.215.50]:36588 "EHLO
+Received: from mail-lf0-f50.google.com ([209.85.215.50]:33774 "EHLO
         mail-lf0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756574AbcIOONh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 10:13:37 -0400
-Received: by mail-lf0-f50.google.com with SMTP id g62so36827247lfe.3
-        for <linux-pm@vger.kernel.org>; Thu, 15 Sep 2016 07:13:36 -0700 (PDT)
-In-Reply-To: <6e52af56-8b0e-d8c4-62c2-6efeee0e912d@samsung.com>
+        with ESMTP id S1757389AbcIOOQ2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Sep 2016 10:16:28 -0400
+Received: by mail-lf0-f50.google.com with SMTP id h127so39120708lfh.0
+        for <linux-pm@vger.kernel.org>; Thu, 15 Sep 2016 07:16:27 -0700 (PDT)
+In-Reply-To: <1473941123-15090-1-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Michael Turquette <mturquette@baylibre.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-[...]
-
->>> I see some serious design problems with multiple entries in power domains
->>> property. First how to show that some part of the device IS NOT in
->>> any domain?
->>
->> Is that even possible? Every device should be in some power
->> domain, even if it's just an "always on" power domain that we
->> don't really control from software.
+On 15 September 2016 at 14:05, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+> In platforms such as Rockchip's, the array of domains isn't always
+> filled without holes, as which domains are present depend on the
+> particular SoC revision.
 >
+> By allowing holes to be in the array, such SoCs can still use a single
+> set of constants to index the array of power domains.
 >
-> Right now none dts of which I'm aware of doesn't define the power domain for
-> the parts of the SoC, which are always on and doesn't need any additional
-> management.
+> Fixes: 0159ec670763 ("PM / Domains: Verify the PM domain is present when adding a provider")
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> Cc: Jon Hunter <jonathanh@nvidia.com>
+> Cc: Heiko Stuebner <heiko@sntech.de>
 
-Actually there's is one reason for doing this, as it would allow
-devices to be monitored for device PM QoS constraints by the genpd
-governor.
-
-Although, I doubt's someone actually does it because of this benefit,
-at least yet.
-
-[...]
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Kind regards
 Uffe
+
+>
+> ---
+>
+> v2: Also skip holes in the error path.
+> ---
+>  drivers/base/power/domain.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index b0cf46dcae73..83ae3d7d3fdd 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1581,6 +1581,8 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+>         mutex_lock(&gpd_list_lock);
+>
+>         for (i = 0; i < data->num_domains; i++) {
+> +               if (!data->domains[i])
+> +                       continue;
+>                 if (!pm_genpd_present(data->domains[i]))
+>                         goto error;
+>
+> @@ -1598,6 +1600,8 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+>
+>  error:
+>         while (i--) {
+> +               if (!data->domains[i])
+> +                       continue;
+>                 data->domains[i]->provider = NULL;
+>                 data->domains[i]->has_provider = false;
+>         }
+> --
+> 2.7.4
+>
