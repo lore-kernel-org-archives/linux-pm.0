@@ -1,46 +1,41 @@
-From: Alaine Kamba <usmanbless@gmail.com>
-Subject: GET BACK TO ME IMMEDIATELY.
-Date: Fri, 16 Sep 2016 16:02:15 +0200
-Message-ID: <CALY8asxOo46hkKx8ByGXHtLv41Lfdc9D=FFJ5noOrsx9u9rCcQ@mail.gmail.com>
-Reply-To: alainekamba1@gmail.com
+From: Andy Lutomirski <luto@kernel.org>
+Subject: Should drivers like nvme let userspace control their latency via dev_pm_qos?
+Date: Fri, 16 Sep 2016 08:26:03 -0700
+Message-ID: <CALCETrUsgA2H=TuwZMuwW2XpXZ7KPrEYu6xckmTbhU8oZwr6Nw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f67.google.com ([209.85.213.67]:33187 "EHLO
-        mail-vk0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757236AbcIPOCR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2016 10:02:17 -0400
-Received: by mail-vk0-f67.google.com with SMTP id 192so1146214vkl.0
-        for <linux-pm@vger.kernel.org>; Fri, 16 Sep 2016 07:02:16 -0700 (PDT)
+Received: from mail.kernel.org ([198.145.29.136]:50436 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754118AbcIPP12 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 16 Sep 2016 11:27:28 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id 153F52060A
+        for <linux-pm@vger.kernel.org>; Fri, 16 Sep 2016 15:26:28 +0000 (UTC)
+Received: from mail-vk0-f54.google.com (mail-vk0-f54.google.com [209.85.213.54])
+        (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 5B4E1205FF
+        for <linux-pm@vger.kernel.org>; Fri, 16 Sep 2016 15:26:26 +0000 (UTC)
+Received: by mail-vk0-f54.google.com with SMTP id g9so31766747vkg.1
+        for <linux-pm@vger.kernel.org>; Fri, 16 Sep 2016 08:26:26 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>, linux-nvme@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, J Freyensee <james_p_freyensee@linux.intel.com>, Christoph Hellwig <hch@lst.de>
 
-Dear,
+I'm adding power management to the nvme driver, and I'm exposing
+exactly one knob via sysfs: the maximum permissible latency.  This
+isn't a power domain issue, and it has no dependencies -- it's
+literally just the maximum latency that the driver may impose on I/O
+for power saving purposes.
 
-My name is Mr Alif Tomar, I am the Bill and Exchange (assistant)
-Manager of Bank of Africa Ouagadougou, Burkina Faso. In my department
-I discovered an abandoned sum of eighteen million three hundred
-thousand United State of American dollars (18.3MILLION USA DOLLARS) in
-an account that belongs to one of our foreign customer who died in
-airline that crashed on 4th October 2001.
+ISTM userspace should be able to specify its own latency tolerance in
+a uniform way, and dev_pm_qos seems like the natural interface for
+this, except that I cannot find a single instance in the tree of *any*
+driver using it via the notifier mechanism.  I can find two drivers
+that do it using dev_pm_qos_expose_latency_tolerance(), and both are
+LPSS drivers?
 
-Since I got information about his death I have been expecting his next
-of kin to come over and claim his money because we can not release it
-unless somebody applies for it as the next of kin or relation to the
-deceased as indicated in our banking guidelines, but unfortunately we
-learnt that all his supposed next of kin or relation died alongside
-with him in the plane crash leaving nobody behind for the claim. It is
-therefore upon this discovery that I decided to make this business
-proposal to you and release the money to you as next of kin or
-relation to the deceased for safety and subsequent disbursement since
-nobody is coming for it and I don't want the money to go into the bank
-treasury as unclaimed bill.
-
-You will be entitled with 40% of the total sum while 60% will be for
-me after which I will visit your Country to invest my own share when
-the fund is successfully transferred into your account, Please I would
-like you to keep this transaction confidential and as a top secret as
-you may wish to know that I am a bank official.
-
-Yours sincerely,
-Mr Alif Tomar.
+So: should I be exposing .set_latency_tolerance() or should I just use
+a custom sysfs attribute?  Or both?
