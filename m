@@ -1,35 +1,60 @@
-From: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Subject: Re: Should drivers like nvme let userspace control their latency
- via dev_pm_qos?
-Date: Fri, 16 Sep 2016 16:54:31 +0100
-Message-ID: <20160916165431.1f2e6df5@lxorguk.ukuu.org.uk>
-References: <CALCETrUsgA2H=TuwZMuwW2XpXZ7KPrEYu6xckmTbhU8oZwr6Nw@mail.gmail.com>
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: Re: [PATCH v2 0/8] Support =?ISO-8859-1?Q?Intel=AE?= Turbo Boost
+ Max Technology 3.0
+Date: Fri, 16 Sep 2016 09:03:47 -0700
+Message-ID: <1474041827.3916.92.camel@linux.intel.com>
+References: <1472762024-88771-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <20160915121430.GD13132@amd> <20160915134623.57596f86@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:60292 "EHLO
-        lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932582AbcIPPz1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2016 11:55:27 -0400
-In-Reply-To: <CALCETrUsgA2H=TuwZMuwW2XpXZ7KPrEYu6xckmTbhU8oZwr6Nw@mail.gmail.com>
+Received: from mga09.intel.com ([134.134.136.24]:1380 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S965037AbcIPQDt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 16 Sep 2016 12:03:49 -0400
+In-Reply-To: <20160915134623.57596f86@lxorguk.ukuu.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Lutomirski <luto@kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>, linux-nvme@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, J Freyensee <james_p_freyensee@linux.intel.com>, Christoph Hellwig <hch@lst.de>
+To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@ucw.cz>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, peterz@infradead.org, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On Fri, 16 Sep 2016 08:26:03 -0700
-Andy Lutomirski <luto@kernel.org> wrote:
+On Thu, 2016-09-15 at 13:46 +0100, One Thousand Gnomes wrote:
+> On Thu, 15 Sep 2016 14:14:30 +0200
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > 
+> > Hi!
+> > 
+> > > 
+> > > - Feature is enabled by default for single socket systems
+> > > 
+> > > With Intel® Turbo Boost Max Technology 3.0 (ITMT), single-threaded performance is
+> > > optimized by identifying processor's fastest core and running critical workloads
+> > > on it.
+> > > Refere to:
+> > > http://www.intel.com/content/www/us/en/architecture-and-technology/turbo-boost/turbo-boost-max-technology.html  
+> > That does not really explain much.
+> > 
+> > How does it work? Do the different cores have different max
+> > frequencies due to manufacturing differences? Ot is it running the
+> > workload on coldest core?
+> That's all down to the CPU, not architectural and may change.
+> 
+> The ACPI tables describe which cores to use, whether that relates to
+> manufacturing, positioning or whatever isn't exposed.
 
-> I'm adding power management to the nvme driver, and I'm exposing
-> exactly one knob via sysfs: the maximum permissible latency.  This
-> isn't a power domain issue, and it has no dependencies -- it's
-> literally just the maximum latency that the driver may impose on I/O
-> for power saving purposes.
+Please refer to patches 
+acpi: Enable HWP CPPC objects 
+acpi: bus: Set _OSC for diverse core support
+cpufreq: intel_pstate: Use CPPC to get max performance
 
-Why is this in the driver. Surely the latency is a property of the
-request queue and the requests being made. Now it may well be that its
-implement as min(list-of-queues) but a device sysfs node seems a strange
-place to stick it.
+for how the differences in core's capabilities are exposed to OS.
 
-Alan
+The asymmetric packing feature in the scheduler defines an
+order of which core should be scheduled with a load first.
+By using this feature, we can put load first on 
+the core that can be boosted to the highest
+frequency.
+
+Tim
