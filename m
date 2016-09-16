@@ -1,48 +1,60 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fix for v4.8-rc7
-Date: Fri, 16 Sep 2016 23:06:59 +0200
-Message-ID: <CAJZ5v0gFL9uKGwN2yej_GHhuPEgdp+Or=yDhrXmNw4_Omaga3g@mail.gmail.com>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: Re: [PATCH] cpufreq: ti: Use generic platdev driver
+Date: Fri, 16 Sep 2016 16:29:04 -0500
+Message-ID: <57DC6420.20706@ti.com>
+References: <20160914204137.20346-1-d-gerlach@ti.com>
+ <20160915062507.GA30169@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:34205 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752986AbcIPVHB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2016 17:07:01 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:52740 "EHLO
+        devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756612AbcIPV3h (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2016 17:29:37 -0400
+In-Reply-To: <20160915062507.GA30169@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
 
-Hi Linus,
+Hi,
+On 09/15/2016 01:25 AM, Viresh Kumar wrote:
+> On 14-09-16, 15:41, Dave Gerlach wrote:
+>> Now that the cpufreq-dt-platdev is used to create the cpufreq-dt platform
+>> device for all OMAP platforms and the platform code that did it
+>> before has been removed, add ti,am33xx and ti,dra7xx to the machine list
+>> in cpufreq-dt-platdev which had relied on the removed platform code to do
+>> this previously.
+>>
+>> Fixes: 7694ca6e1d6f ("cpufreq: omap: Use generic platdev driver")
+>> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+>
+> Any stable trees you want this to be added to ?
 
-Please pull from the tag
+I suppose it'll go for 4.7-stable as the change happened in v4.6.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.8-rc7
+>
+>> ---
+>>   drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+>> index 0bb44d5b5df4..d5e8ba50f8a3 100644
+>> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+>> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+>> @@ -68,6 +68,8 @@ static const struct of_device_id machines[] __initconst = {
+>>
+>>   	{ .compatible = "sigma,tango4" },
+>>
+>> +	{ .compatible = "ti,am33xx", },
+>> +	{ .compatible = "ti,dra7", },
+>>   	{ .compatible = "ti,omap2", },
+>>   	{ .compatible = "ti,omap3", },
+>>   	{ .compatible = "ti,omap4", },
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
 
-to receive a power management fix for v4.8-rc7.
-
-The top-most commit is 778935778c3b88e5152a88765850009006ef2e32
-
- PM / runtime: Use _rcuidle for runtime suspend tracepoints
-
-and the base is commit 9395452b4aab7bc2475ef8935b4a4fb99d778d70
-
- Linux 4.8-rc6
-
-More annotations of tracepoints in the runtime PM framework to
-prevent RCU from complaining when that code is invoked from the
-idle path (Paul McKenney).
-
-Thanks!
-
----------------
-
-Paul E. McKenney (1):
-      PM / runtime: Use _rcuidle for runtime suspend tracepoints
-
----------------
-
- drivers/base/power/runtime.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Thanks,
+Dave
