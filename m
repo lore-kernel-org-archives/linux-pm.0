@@ -1,37 +1,46 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 4/4] power: smb347-charger: Summit SMB345 charger IC
-Date: Fri, 16 Sep 2016 08:31:38 -0500
-Message-ID: <20160916133138.GA9399@rob-hp-laptop>
-References: <1473243615-29746-1-git-send-email-simhavcs@gmail.com>
- <1473243615-29746-4-git-send-email-simhavcs@gmail.com>
+From: Alaine Kamba <usmanbless@gmail.com>
+Subject: GET BACK TO ME IMMEDIATELY.
+Date: Fri, 16 Sep 2016 16:02:15 +0200
+Message-ID: <CALY8asxOo46hkKx8ByGXHtLv41Lfdc9D=FFJ5noOrsx9u9rCcQ@mail.gmail.com>
+Reply-To: alainekamba1@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1473243615-29746-4-git-send-email-simhavcs-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Vinay Simha BN <simhavcs-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Jonghwa Lee <jonghwa3.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Myungjoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sumit Semwal <sumit.semwal-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vk0-f67.google.com ([209.85.213.67]:33187 "EHLO
+        mail-vk0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757236AbcIPOCR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2016 10:02:17 -0400
+Received: by mail-vk0-f67.google.com with SMTP id 192so1146214vkl.0
+        for <linux-pm@vger.kernel.org>; Fri, 16 Sep 2016 07:02:16 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 07, 2016 at 03:50:13PM +0530, Vinay Simha BN wrote:
-> Summit microelectronics SMB345 charger chip added.
-> 
-> Cc: Jonghwa Lee <jonghwa3.lee-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> Cc: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> Cc: Myungjoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> Cc: Sumit Semwal <sumit.semwal-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Cc: John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Signed-off-by: Vinay Simha BN <simhavcs-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> ---
->  .../bindings/power/supply/smb347_charger.txt       |  21 +++-
+Dear,
 
-The binding should be combined with the previous patch.
+My name is Mr Alif Tomar, I am the Bill and Exchange (assistant)
+Manager of Bank of Africa Ouagadougou, Burkina Faso. In my department
+I discovered an abandoned sum of eighteen million three hundred
+thousand United State of American dollars (18.3MILLION USA DOLLARS) in
+an account that belongs to one of our foreign customer who died in
+airline that crashed on 4th October 2001.
 
->  drivers/power/supply/smb347-charger.c              | 123 ++++++++++-----------
->  2 files changed, 81 insertions(+), 63 deletions(-)
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Since I got information about his death I have been expecting his next
+of kin to come over and claim his money because we can not release it
+unless somebody applies for it as the next of kin or relation to the
+deceased as indicated in our banking guidelines, but unfortunately we
+learnt that all his supposed next of kin or relation died alongside
+with him in the plane crash leaving nobody behind for the claim. It is
+therefore upon this discovery that I decided to make this business
+proposal to you and release the money to you as next of kin or
+relation to the deceased for safety and subsequent disbursement since
+nobody is coming for it and I don't want the money to go into the bank
+treasury as unclaimed bill.
+
+You will be entitled with 40% of the total sum while 60% will be for
+me after which I will visit your Country to invest my own share when
+the fund is successfully transferred into your account, Please I would
+like you to keep this transaction confidential and as a top secret as
+you may wish to know that I am a bank official.
+
+Yours sincerely,
+Mr Alif Tomar.
