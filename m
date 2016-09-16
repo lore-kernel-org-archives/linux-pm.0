@@ -1,51 +1,56 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH V3 1/5] Documentation: Add support for TI System Control
- Interface (TI-SCI) protocol
-Date: Fri, 16 Sep 2016 07:13:47 -0500
-Message-ID: <20160916121347.GA29618@rob-hp-laptop>
-References: <20160906190127.23522-1-nm@ti.com>
- <20160906190127.23522-2-nm@ti.com>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH] PM / devfreq: rockchip: add PM_DEVFREQ_EVENT dependency
+Date: Fri, 16 Sep 2016 21:26:02 +0900
+Message-ID: <CAGTfZH2UsAGMAuysRH5Cg7FTQQpSndnCmwdjott8p-GS=CXdSA@mail.gmail.com>
+References: <20160915154513.3006199-1-arnd@arndb.de>
+Reply-To: chanwoo@kernel.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f65.google.com ([209.85.218.65]:33273 "EHLO
-        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757532AbcIPMNu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2016 08:13:50 -0400
-Content-Disposition: inline
-In-Reply-To: <20160906190127.23522-2-nm@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160915154513.3006199-1-arnd@arndb.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Lin Huang <hl@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: Tero Kristo <t-kristo@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>, Russ Dill <Russ.Dill@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, "Andrew F . Davis" <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Tue, Sep 06, 2016 at 02:01:23PM -0500, Nishanth Menon wrote:
-> Texas Instrument's System Control Interface (TI-SCI) Message Protocol
-> is used in Texas Instrument's System on Chip (SoC) such as those in
-> newer SoCs in the keystone processor family starting with K2G.
-> 
-> This message protocol is used to communicate between various compute
-> or processing entities (such as ARM, DSP etc.) with a central system
-> controller entity.
-> 
-> TI-SCI message protocol provides support for management of various
-> hardware entities within the SoC.
-> 
-> The message protocol can be found here:
-> http://processors.wiki.ti.com/index.php/TISCI
-> 
-> Signed-off-by: Nishanth Menon <nm@ti.com>
+Hi Arnd,
+
+Looks good to me.
+
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+Best Regards,
+Chanwoo Choi
+
+2016-09-16 0:44 GMT+09:00 Arnd Bergmann <arnd@arndb.de>:
+> The newly added ARM_RK3399_DMC_DEVFREQ driver requires the
+> DEVFREQ_EVENT_ROCKCHIP_DFI driver and tries to turn that on through
+> a 'select' statement, and that in turn has a dependency on
+> PM_DEVFREQ_EVENT, which may be disabled here:
+>
+> warning: (ARM_RK3399_DMC_DEVFREQ) selects DEVFREQ_EVENT_ROCKCHIP_DFI which has unmet direct dependencies (PM_DEVFREQ && PM_DEVFREQ_EVENT && ARCH_ROCKCHIP)
+>
+> We probably want a 'depends on' here, but other drivers use 'select'
+> too, so for consistency I'm doing the same.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Fixes: 5a893e31a636 ("PM / devfreq: rockchip: add devfreq driver for rk3399 dmc")
 > ---
-> Changes in V3:
-> 	- All dependent nodes like PD/Clk are children of TISCI node
-> 	- minor formatting updates
-> 
-> V2: https://patchwork.kernel.org/patch/9305413/
-> V1: https://patchwork.kernel.org/patch/9291343/
-> 
->  .../devicetree/bindings/arm/keystone/ti,sci.txt    | 81 ++++++++++++++++++++++
->  MAINTAINERS                                        |  8 +++
->  2 files changed, 89 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-
-Acked-by: Rob Herring <robh@kernel.org>
+>  drivers/devfreq/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> index 93b6ada06676..41254e702f1e 100644
+> --- a/drivers/devfreq/Kconfig
+> +++ b/drivers/devfreq/Kconfig
+> @@ -105,6 +105,7 @@ config ARM_RK3399_DMC_DEVFREQ
+>         depends on ARCH_ROCKCHIP
+>         select DEVFREQ_EVENT_ROCKCHIP_DFI
+>         select DEVFREQ_GOV_SIMPLE_ONDEMAND
+> +       select PM_DEVFREQ_EVENT
+>         select PM_OPP
+>         help
+>            This adds the DEVFREQ driver for the RK3399 DMC(Dynamic Memory Controller).
+> --
+> 2.9.0
+>
