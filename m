@@ -1,35 +1,49 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH v2] PM / Domains: Allow holes in genpd_data.domains array
-Date: Fri, 16 Sep 2016 09:13:05 -0700
-Message-ID: <7hy42rj01a.fsf@baylibre.com>
-References: <5256c34e-5afb-2cfe-9818-8e6a6e1f0fa3@nvidia.com>
-        <1473941123-15090-1-git-send-email-tomeu.vizoso@collabora.com>
+From: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: Should drivers like nvme let userspace control their latency via dev_pm_qos?
+Date: Fri, 16 Sep 2016 09:20:10 -0700
+Message-ID: <CALCETrWipKV-hmTYUL4itQ6Z0rtXuJMQ49VHv9BHc_3EM63jKA@mail.gmail.com>
+References: <CALCETrUsgA2H=TuwZMuwW2XpXZ7KPrEYu6xckmTbhU8oZwr6Nw@mail.gmail.com>
+ <20160916165431.1f2e6df5@lxorguk.ukuu.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1473941123-15090-1-git-send-email-tomeu.vizoso@collabora.com>
-        (Tomeu Vizoso's message of "Thu, 15 Sep 2016 14:05:23 +0200")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vk0-f54.google.com ([209.85.213.54]:33476 "EHLO
+        mail-vk0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S936083AbcIPQUc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2016 12:20:32 -0400
+Received: by mail-vk0-f54.google.com with SMTP id 192so34411519vkl.0
+        for <linux-pm@vger.kernel.org>; Fri, 16 Sep 2016 09:20:31 -0700 (PDT)
+In-Reply-To: <20160916165431.1f2e6df5@lxorguk.ukuu.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Cc: Andy Lutomirski <luto@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>, linux-nvme@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, J Freyensee <james_p_freyensee@linux.intel.com>, Christoph Hellwig <hch@lst.de>
 
-Tomeu Vizoso <tomeu.vizoso@collabora.com> writes:
+On Fri, Sep 16, 2016 at 8:54 AM, One Thousand Gnomes
+<gnomes@lxorguk.ukuu.org.uk> wrote:
+> On Fri, 16 Sep 2016 08:26:03 -0700
+> Andy Lutomirski <luto@kernel.org> wrote:
+>
+>> I'm adding power management to the nvme driver, and I'm exposing
+>> exactly one knob via sysfs: the maximum permissible latency.  This
+>> isn't a power domain issue, and it has no dependencies -- it's
+>> literally just the maximum latency that the driver may impose on I/O
+>> for power saving purposes.
+>
+> Why is this in the driver. Surely the latency is a property of the
+> request queue and the requests being made. Now it may well be that its
+> implement as min(list-of-queues) but a device sysfs node seems a strange
+> place to stick it.
+>
 
-> In platforms such as Rockchip's, the array of domains isn't always
-> filled without holes, as which domains are present depend on the
-> particular SoC revision.
->
-> By allowing holes to be in the array, such SoCs can still use a single
-> set of constants to index the array of power domains.
->
-> Fixes: 0159ec670763 ("PM / Domains: Verify the PM domain is present when adding a provider")
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> Cc: Jon Hunter <jonathanh@nvidia.com>
-> Cc: Heiko Stuebner <heiko@sntech.de>
->
-> ---
->
-> v2: Also skip holes in the error path.
+I'm not sure what you mean.  The whole device can be programmed to
+take a nap when fully idle.  The driver can limit how deep that nap is
+and thus how long the next request can be delayed while the device
+wakes back up.
 
-Acked-by: Kevin Hilman <khilman@baylibre.com>
+Unlike the very small number of in-tree users of this type of
+mechanism that I can find, there are no busses or hard tolerances
+involved.  The only effect is a power consumption vs I/O performance
+tradeoff.
+
+--Andy
