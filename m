@@ -1,30 +1,106 @@
 From: Matt Ranostay <mranostay@gmail.com>
-Subject: [PATCH 0/2] power: bq27xxx_battery: add configurable poll_interval
-Date: Fri, 16 Sep 2016 20:42:53 -0700
-Message-ID: <1474083775-30185-1-git-send-email-matt@ranostay.consulting>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:35765 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754237AbcIQDm7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Sep 2016 23:42:59 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 2/2] power: bq27xxx_battery: allow kernel poll_interval parameter runtime update
+Date: Fri, 16 Sep 2016 20:42:55 -0700
+Message-ID: <1474083775-30185-3-git-send-email-matt@ranostay.consulting>
+References: <1474083775-30185-1-git-send-email-matt@ranostay.consulting>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1474083775-30185-1-git-send-email-matt@ranostay.consulting>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
+List-Id: linux-pm@vger.kernel.org
 
-Patchset series fixes the kernel_parameter poll_interval not scheduling
-the next event with the new interval. Also creates a sysfs entry that is
-useful for udev attribute assignment.
+Fix issue with poll_interval being not updated till the previous
+interval expired.
 
-Matt Ranostay (2):
-  power: bq27xxx_battery: add configurable poll_interval by sysfs
-  power: bq27xxx_battery: allow kernel poll_interval parameter runtime
-    update
-
- drivers/power/supply/bq27xxx_battery.c | 87 +++++++++++++++++++++++++++++++++-
+Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+---
+ drivers/power/supply/bq27xxx_battery.c | 38 +++++++++++++++++++++++++++++++++-
  include/linux/power/bq27xxx_battery.h  |  1 +
- 2 files changed, 86 insertions(+), 2 deletions(-)
+ 2 files changed, 38 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 955424e10ae2..96fd3eec98da 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -39,6 +39,7 @@
+ 
+ #include <linux/device.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
+ #include <linux/param.h>
+ #include <linux/jiffies.h>
+ #include <linux/workqueue.h>
+@@ -390,8 +391,35 @@ static struct {
+ 	BQ27XXX_PROP(BQ27421, bq27421_battery_props),
+ };
+ 
++static DEFINE_MUTEX(param_lock);
++static LIST_HEAD(bq27xxx_battery_devices);
++
++static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
++{
++	struct bq27xxx_device_info *di;
++	int ret;
++
++	ret = param_set_uint(val, kp);
++	if (ret < 0)
++		return ret;
++
++	mutex_lock(&param_lock);
++	list_for_each_entry(di, &bq27xxx_battery_devices, list) {
++		cancel_delayed_work_sync(&di->work);
++		schedule_delayed_work(&di->work, 0);
++	}
++	mutex_unlock(&param_lock);
++
++	return ret;
++}
++
++static const struct kernel_param_ops param_ops_poll_interval = {
++	.get = param_get_ushort,
++	.set = poll_interval_param_set,
++};
++
+ static unsigned int poll_interval = 360;
+-module_param(poll_interval, uint, 0644);
++module_param_cb(poll_interval, &param_ops_poll_interval, &poll_interval, 0644);
+ MODULE_PARM_DESC(poll_interval,
+ 		 "battery poll interval in seconds - 0 disables polling");
+ 
+@@ -1011,6 +1039,10 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+ 
+ 	bq27xxx_battery_update(di);
+ 
++	mutex_lock(&param_lock);
++	list_add(&di->list, &bq27xxx_battery_devices);
++	mutex_unlock(&param_lock);
++
+ 	return 0;
+ 
+ err_out:
+@@ -1036,6 +1068,10 @@ void bq27xxx_battery_teardown(struct bq27xxx_device_info *di)
+ 
+ 	power_supply_unregister(di->bat);
+ 
++	mutex_lock(&param_lock);
++	list_del(&di->list);
++	mutex_unlock(&param_lock);
++
+ 	mutex_destroy(&di->lock);
+ }
+ EXPORT_SYMBOL_GPL(bq27xxx_battery_teardown);
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index b50c0492629d..e30deb046156 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -58,6 +58,7 @@ struct bq27xxx_device_info {
+ 	unsigned long last_update;
+ 	struct delayed_work work;
+ 	struct power_supply *bat;
++	struct list_head list;
+ 	struct mutex lock;
+ 	u8 *regs;
+ };
 -- 
 2.7.4
-
