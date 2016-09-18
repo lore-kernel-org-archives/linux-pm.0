@@ -1,57 +1,39 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH 3/4] PCI: Avoid unnecessary resume after direct-complete
-Date: Sun, 18 Sep 2016 14:43:03 +0200
-Message-ID: <20160918124303.GC2169@wunner.de>
-References: <cover.1472554278.git.lukas@wunner.de>
- <2963851.chF2hIakqz@vostro.rjw.lan>
- <20160914095640.GB1597@wunner.de>
- <1922917.c92rJWRLH6@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.hostsharing.net ([176.9.242.54]:40517 "EHLO
-        mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753080AbcIRMml (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Sep 2016 08:42:41 -0400
-Content-Disposition: inline
-In-Reply-To: <1922917.c92rJWRLH6@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org
+Subject: Re: [PATCH V5 2/6] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Sun, 18 Sep 2016 18:05:59 +0200
+Message-ID: <4D9CBC7C-FB79-4B3F-8896-4E8341763248@martin.sperl.org>
+References: <1473759262-27031-1-git-send-email-kernel@martin.sperl.org> <1473759262-27031-3-git-send-email-kernel@martin.sperl.org> <1999564031.209213.6508fbdb-00c5-486b-a34e-3d60ae68fe88.open-xchange@email.1und1.de>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1999564031.209213.6508fbdb-00c5-486b-a34e-3d60ae68fe88.open-xchange-7tX72C7vayboQLBSYMtkGA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 
-On Wed, Sep 14, 2016 at 03:14:37PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, September 14, 2016 11:56:40 AM Lukas Wunner wrote:
-> > I first tried to solve this only for Thunderbolt by opting out of the
-> > mandatory resume after direct_complete.  It worked, but it was ugly.
-> > 
-> > (I have to clear the direct_complete flag in the ->complete hook, but
-> > the device tree is walked bottom-up during ->complete, and since the
-> > Thunderbolt controller exposes multiple devices, I have to clear the
-> > flag for all devices from the bottom-most device, which is the NHI.
-> > And all the rest of the s/r code lives on the top-most device, which
-> > is the upstream bridge.)
-> > 
-> > You suggested in your e-mail of July 18: "maybe it's better to change
-> > the PCI bus type to do something different from calling the generic
-> > function?"
-> > 
-> > So there, I did what you suggested and tried to fix it not just for
-> > Thunderbolt but for everyone.
-> > 
-> > And you're still not happy.
-> > 
-> > *sigh*
+Hi Stefan!
+
+> On 18.09.2016, at 13:31, Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org> wrote:
 > 
-> Sorry for disappointing you.
+>> +	rate = clk_get_rate(data->clk);
+>> +	if ((rate < 1920000) || (rate > 5000000)) {
+>> +		dev_warn(&pdev->dev,
+>> +			 "Clock %pCn is running at %pCr Hz, which is outside the recommended range
+>> of 1.9 to 5.0 MHz\n",
+>> +			 data->clk, data->clk);
 > 
-> I have concerns, so I talk about them.  Is that wrong?  If so, what's wrong
-> about it?
-> 
-> My time goes into that as well, mind you.
+> Instead of printing the clock name twice your intension would be to print the
+> actual clock rate?
+%pCn (and %pC) prints the clock name
+%pCr prints the clock rate - I guess I could use “%lu” and rate instead
 
-Sorry, never mind, just a bout of desperation that I failed to control.
+So I do not see an issue here - I will reword the text to shorten it.
 
-Kind regards,
+Everything else I will fix as mentioned.
 
-Lukas
+Martin--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
