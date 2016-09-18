@@ -1,56 +1,66 @@
-From: Axel Lin <axel.lin@ingics.com>
-Subject: [PATCH] PM / devfreq: rk3399_dmc: Remove explictly regulator_put call in .remove
-Date: Sun, 18 Sep 2016 10:41:05 +0800
-Message-ID: <1474166465-18736-1-git-send-email-axel.lin@ingics.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:33950 "EHLO
-        mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755391AbcIRClW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Sep 2016 22:41:22 -0400
-Received: by mail-pa0-f65.google.com with SMTP id vz6so5206099pab.1
-        for <linux-pm@vger.kernel.org>; Sat, 17 Sep 2016 19:41:22 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH v2 0/5] PCI PM refinements
+Date: Sun, 18 Sep 2016 05:39:20 +0200
+Message-ID: <cover.1474130360.git.lukas@wunner.de>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-pci@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Lin Huang <hl@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, Axel Lin <axel.lin@ingics.com>
 
-Current code uses devm_regulator_get() in .probe so a regulator_put() will
-be automatically called when unload the module. Remove the explictly
-regulator_put() call and then we can also remove rk3399_dmcfreq_remove().
+Here's the second installment of this series, based on feedback from
+Rafael. (Thanks!)
 
-Signed-off-by: Axel Lin <axel.lin@ingics.com>
----
- drivers/devfreq/rk3399_dmc.c | 10 ----------
- 1 file changed, 10 deletions(-)
+To reiterate, these refinements are meant to speed up and reduce power
+consumption when entering and leaving system sleep and when shutting
+down the system.  For details, please refer to the cover letter of v1:
+http://www.spinics.net/lists/linux-pci/msg53702.html
 
-diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index 54d65f2..e24b73d 100644
---- a/drivers/devfreq/rk3399_dmc.c
-+++ b/drivers/devfreq/rk3399_dmc.c
-@@ -450,15 +450,6 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int rk3399_dmcfreq_remove(struct platform_device *pdev)
--{
--	struct rk3399_dmcfreq *dmcfreq = platform_get_drvdata(pdev);
--
--	regulator_put(dmcfreq->vdd_center);
--
--	return 0;
--}
--
- static const struct of_device_id rk3399dmc_devfreq_of_match[] = {
- 	{ .compatible = "rockchip,rk3399-dmc" },
- 	{ },
-@@ -466,7 +457,6 @@ static const struct of_device_id rk3399dmc_devfreq_of_match[] = {
- 
- static struct platform_driver rk3399_dmcfreq_driver = {
- 	.probe	= rk3399_dmcfreq_probe,
--	.remove	= rk3399_dmcfreq_remove,
- 	.driver = {
- 		.name	= "rk3399-dmc-freq",
- 		.pm	= &rk3399_dmcfreq_pm,
+As usual I've pushed the patches to GitHub in case anyone prefers
+reviewing in a GUI:
+https://github.com/l1k/linux/commits/pci_pm_refinements_v2
+
+
+Changes since v1:
+
+* Patch [1/5] now sports an ack by Rafael.
+
+* Patch [2/5]:
+  * In acpi_pci_get_power_state(), only check for ACPI_STATE_UNKNOWN
+    instead of ACPI_STATE_D0 and ACPI_STATE_D3_COLD.
+  * Move the change to pci_update_current_state() to new patch [3/5].
+
+* Patch [3/5]:
+  * Instead of solely relying on the platform firmware to report D3cold,
+    also probe the vendor ID and assume D3cold if it can't be read.
+    This should ensure proper detection of D3cold on pre-ACPI 4.0
+    platforms (which will never report anything deeper than D3hot)
+    as well as for devices with nonstandard PM mechanisms.
+  * The two existing workarounds for D3cold are removed from
+    pci_update_current_state(), as explained in the commit message.
+
+* Patch [5/5]:
+  * Disable runtime PM on the device to prevent it from being runtime
+    resumed during the remainder of the shutdown process.
+
+Thanks,
+
+Lukas
+
+
+Lukas Wunner (5):
+  PCI: Afford direct-complete to devices with nonstandard PM
+  PCI: Query platform firmware for device power state
+  PCI: Recognize D3cold in pci_update_current_state()
+  PCI: Avoid unnecessary resume after direct-complete
+  PCI: Avoid unnecessary resume on shutdown
+
+ drivers/pci/pci-acpi.c   | 22 ++++++++++++++++++++
+ drivers/pci/pci-driver.c | 24 ++++++++++++++++++++--
+ drivers/pci/pci.c        | 52 ++++++++++++++++++++++++++++++++----------------
+ drivers/pci/pci.h        |  3 +++
+ 4 files changed, 82 insertions(+), 19 deletions(-)
+
 -- 
-2.7.4
+2.9.3
 
