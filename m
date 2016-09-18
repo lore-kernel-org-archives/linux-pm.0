@@ -1,397 +1,156 @@
-From: Lawrence Yu <lyu-U6IdCoVonM7QT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH 1/1] power: axp20x_ac: Add support for ac
- power-supply on axp20x and axp22x pmics
-Date: Sat, 17 Sep 2016 09:20:43 -0700
-Message-ID: <1474129243-10873-1-git-send-email-lyu@micile.com>
-Reply-To: lyu-U6IdCoVonM7QT0dZR+AlfA@public.gmane.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/4] PCI: Query platform firmware for device power state
+Date: Sun, 18 Sep 2016 03:09:57 +0200
+Message-ID: <1745826.fqSp0OtncP@vostro.rjw.lan>
+References: <cover.1472554278.git.lukas@wunner.de> <1707182.o83Q5WOaET@vostro.rjw.lan> <20160917134943.GA1453@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDOOBZPYQ4FBB7G26W7AKGQEP5NCNBA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
-Cc: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org, Lawrence Yu <lyu-U6IdCoVonM7QT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20160917134943.GA1453@wunner.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add support for monitoring of ac power supply input.  axp22x is the same
-as axp20x except it can not monitor voltage or current, only presence of
-power.
+On Saturday, September 17, 2016 03:49:43 PM Lukas Wunner wrote:
+> On Wed, Sep 14, 2016 at 03:01:33PM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, September 14, 2016 12:50:24 PM Lukas Wunner wrote:
+> > > On Wed, Sep 14, 2016 at 02:21:30AM +0200, Rafael J. Wysocki wrote:
+> > > > On Wednesday, August 31, 2016 08:15:18 AM Lukas Wunner wrote:
+> > > > > +
+> > > > > +	if (!adev || !acpi_device_power_manageable(adev))
+> > > > > +		return PCI_UNKNOWN;
+> > > > > +
+> > > > > +	if (acpi_device_get_power(adev, &state) || state < ACPI_STATE_D0
+> > > > > +						|| state > ACPI_STATE_D3_COLD)
+> > > > 
+> > > > If the device is power-manageable by ACPI (you've just checked that) and
+> > > > acpi_device_get_power() returns success (0), the returned state is
+> > > > guaranteed to be within the boundaries (if it isn't, there is a bug that
+> > > > needs to be fixed).
+> > > 
+> > > No, acpi_device_get_power() can also return ACPI_STATE_UNKNOWN, which has
+> > > the value 0xff.
+> > 
+> > That would be the case without power resources or _PSC, right?
+> 
+> There's this check in acpi_device_get_power():
+> 
+>                 else if (result == ACPI_STATE_UNKNOWN)
+>                         result = psc > ACPI_STATE_D2 ? ACPI_STATE_D3_HOT : psc;
+> 
+> where "result" has been set further up by acpi_power_get_inferred_state().
+> If acpi_power_get_inferred_state() does return this value
 
-This is mainly a copy of the existing axp20x_usb_power driver modified to
-use the ac power supply registers instead of the usb registers.
+It doesn't.
 
-axp20x tested on a generic A20 tablet.
-axp22x tested on an a33 ga10h-v1.1 tablet.
+> and _PSC is not present (i.e. device->power.flags.explicit_get is not set),
+> then acpi_device_get_power() would return ACPI_STATE_UNKNOWN.
+> 
+> Also, if the device is not power manageable,
 
-Signed-off-by: Lawrence Yu <lyu-U6IdCoVonM7QT0dZR+AlfA@public.gmane.org>
----
- .../bindings/power_supply/axp20x_ac_power.txt      |  35 ++++
- arch/arm/boot/dts/axp209.dtsi                      |   5 +
- arch/arm/boot/dts/axp22x.dtsi                      |   5 +
- drivers/mfd/axp20x.c                               |  11 ++
- drivers/power/Makefile                             |   1 +
- drivers/power/axp20x_ac_power.c                    | 219 +++++++++++++++++=
-++++
- 6 files changed, 276 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power_supply/axp20x_a=
-c_power.txt
- create mode 100644 drivers/power/axp20x_ac_power.c
+You had a check for that.
 
-diff --git a/Documentation/devicetree/bindings/power_supply/axp20x_ac_power=
-.txt b/Documentation/devicetree/bindings/power_supply/axp20x_ac_power.txt
-new file mode 100644
-index 0000000..d751cdc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power_supply/axp20x_ac_power.txt
-@@ -0,0 +1,35 @@
-+AXP20x AC power supply
-+
-+Required Properties:
-+-compatible: One of: "x-powers,axp202-ac-power-supply"
-+                     "x-powers,axp221-ac-power-supply"
-+
-+This node is a subnode of the axp20x PMIC.
-+
-+Example:
-+
-+axp209: pmic@34 {
-+	compatible =3D "x-powers,axp209";
-+	reg =3D <0x34>;
-+	interrupt-parent =3D <&nmi_intc>;
-+	interrupts =3D <0 IRQ_TYPE_LEVEL_LOW>;
-+	interrupt-controller;
-+	#interrupt-cells =3D <1>;
-+
-+	regulators {
-+		x-powers,dcdc-freq =3D <1500>;
-+
-+		vdd_cpu: dcdc2 {
-+			regulator-always-on;
-+			regulator-min-microvolt =3D <1000000>;
-+			regulator-max-microvolt =3D <1450000>;
-+			regulator-name =3D "vdd-cpu";
-+		};
-+
-+		...
-+	};
-+
-+	ac-power-supply: ac-power-supply {
-+		compatible =3D "x-powers,axp202-ac-power-supply";
-+	};
-+};
-diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
-index 675bb0f..54e23c6 100644
---- a/arch/arm/boot/dts/axp209.dtsi
-+++ b/arch/arm/boot/dts/axp209.dtsi
-@@ -97,6 +97,11 @@
- 		};
- 	};
-=20
-+	ac_power_supply: ac_power_supply {
-+		compatible =3D "x-powers,axp202-ac-power-supply";
-+		status =3D "disabled";
-+	};
-+
- 	usb_power_supply: usb_power_supply {
- 		compatible =3D "x-powers,axp202-usb-power-supply";
- 		status =3D "disabled";
-diff --git a/arch/arm/boot/dts/axp22x.dtsi b/arch/arm/boot/dts/axp22x.dtsi
-index 458b668..cdd5d4f 100644
---- a/arch/arm/boot/dts/axp22x.dtsi
-+++ b/arch/arm/boot/dts/axp22x.dtsi
-@@ -148,6 +148,11 @@
- 		};
- 	};
-=20
-+	ac_power_supply: ac_power_supply {
-+		compatible =3D "x-powers,axp221-ac-power-supply";
-+		status =3D "disabled";
-+	};
-+
- 	usb_power_supply: usb_power_supply {
- 		compatible =3D "x-powers,axp221-usb-power-supply";
- 		status =3D "disabled";
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index ba130be..450d1a0 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -162,6 +162,12 @@ static struct resource axp20x_ac_power_supply_resource=
-s[] =3D {
- 	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_OVER_V, "ACIN_OVER_V"),
- };
-=20
-+static struct resource axp22x_ac_power_supply_resources[] =3D {
-+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_PLUGIN, "ACIN_PLUGIN"),
-+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_REMOVAL, "ACIN_REMOVAL"),
-+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_ACIN_OVER_V, "ACIN_OVER_V"),
-+};
-+
- static struct resource axp20x_pek_resources[] =3D {
- 	{
- 		.name	=3D "PEK_DBR",
-@@ -595,6 +601,11 @@ static struct mfd_cell axp22x_cells[] =3D {
- 	}, {
- 		.name			=3D "axp20x-regulator",
- 	}, {
-+		.name		=3D "axp20x-ac-power-supply",
-+		.of_compatible	=3D "x-powers,axp221-ac-power-supply",
-+		.num_resources	=3D ARRAY_SIZE(axp22x_ac_power_supply_resources),
-+		.resources	=3D axp22x_ac_power_supply_resources,
-+	}, {
- 		.name		=3D "axp20x-usb-power-supply",
- 		.of_compatible	=3D "x-powers,axp221-usb-power-supply",
- 		.num_resources	=3D ARRAY_SIZE(axp22x_usb_power_supply_resources),
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index e46b75d..295ec0f 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -9,6 +9,7 @@ obj-$(CONFIG_GENERIC_ADC_BATTERY)	+=3D generic-adc-battery.=
-o
-=20
- obj-$(CONFIG_PDA_POWER)		+=3D pda_power.o
- obj-$(CONFIG_APM_POWER)		+=3D apm_power.o
-+obj-$(CONFIG_AXP20X_POWER)	+=3D axp20x_ac_power.o
- obj-$(CONFIG_AXP20X_POWER)	+=3D axp20x_usb_power.o
- obj-$(CONFIG_MAX8925_POWER)	+=3D max8925_power.o
- obj-$(CONFIG_WM831X_BACKUP)	+=3D wm831x_backup.o
-diff --git a/drivers/power/axp20x_ac_power.c b/drivers/power/axp20x_ac_powe=
-r.c
-new file mode 100644
-index 0000000..13bb093
---- /dev/null
-+++ b/drivers/power/axp20x_ac_power.c
-@@ -0,0 +1,219 @@
-+/*
-+ * AXP20x PMIC AC power supply status driver
-+ *
-+ * Copyright (C) 2015 Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-+ * Copyright (C) 2014 Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under  the terms of the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/axp20x.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+
-+#define DRVNAME "axp20x-ac-power-supply"
-+
-+#define AXP20X_PWR_STATUS_ACIN_PRESENT	BIT(7)
-+#define AXP20X_PWR_STATUS_ACIN_USED	BIT(6)
-+#define AXP20X_ADC_EN1_ACIN_CURR	BIT(4)
-+#define AXP20X_ADC_EN1_ACIN_VOLT	BIT(5)
-+
-+struct axp20x_ac_power {
-+	struct device_node *np;
-+	struct regmap *regmap;
-+	struct power_supply *supply;
-+};
-+
-+static irqreturn_t axp20x_ac_power_irq(int irq, void *devid)
-+{
-+	struct axp20x_ac_power *power =3D devid;
-+
-+	power_supply_changed(power->supply);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int axp20x_ac_power_get_property(struct power_supply *psy,
-+	enum power_supply_property psp, union power_supply_propval *val)
-+{
-+	struct axp20x_ac_power *power =3D power_supply_get_drvdata(psy);
-+	unsigned int input;
-+	int ret;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		ret =3D axp20x_read_variable_width(power->regmap,
-+					 AXP20X_ACIN_V_ADC_H, 12);
-+		if (ret < 0)
-+			return ret;
-+
-+		val->intval =3D ret * 1700; /* 1 step =3D 1.7 mV */
-+		return 0;
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		ret =3D axp20x_read_variable_width(power->regmap,
-+						 AXP20X_ACIN_I_ADC_H, 12);
-+		if (ret < 0)
-+			return ret;
-+
-+		val->intval =3D ret * 625; /* 1 step =3D 0.375 mA */
-+		return 0;
-+	default:
-+		break;
-+	}
-+
-+	/* All the properties below need the input-status reg value */
-+	ret =3D regmap_read(power->regmap, AXP20X_PWR_INPUT_STATUS, &input);
-+	if (ret)
-+		return ret;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval =3D !!(input & AXP20X_PWR_STATUS_ACIN_PRESENT);
-+		break;
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		val->intval =3D !!(input & AXP20X_PWR_STATUS_ACIN_USED);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static enum power_supply_property axp20x_ac_power_properties[] =3D {
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+};
-+
-+static enum power_supply_property axp22x_ac_power_properties[] =3D {
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_ONLINE,
-+};
-+
-+static const struct power_supply_desc axp20x_ac_power_desc =3D {
-+	.name =3D "axp20x-ac",
-+	.type =3D POWER_SUPPLY_TYPE_MAINS,
-+	.properties =3D axp20x_ac_power_properties,
-+	.num_properties =3D ARRAY_SIZE(axp20x_ac_power_properties),
-+	.get_property =3D axp20x_ac_power_get_property,
-+};
-+
-+static const struct power_supply_desc axp22x_ac_power_desc =3D {
-+	.name =3D "axp20x-ac",
-+	.type =3D POWER_SUPPLY_TYPE_MAINS,
-+	.properties =3D axp22x_ac_power_properties,
-+	.num_properties =3D ARRAY_SIZE(axp22x_ac_power_properties),
-+	.get_property =3D axp20x_ac_power_get_property,
-+};
-+
-+static int axp20x_ac_power_probe(struct platform_device *pdev)
-+{
-+	struct axp20x_dev *axp20x =3D dev_get_drvdata(pdev->dev.parent);
-+	struct power_supply_config psy_cfg =3D {};
-+	struct axp20x_ac_power *power;
-+	static const char * const axp20x_irq_names[] =3D {
-+		"ACIN_PLUGIN", "ACIN_REMOVAL", NULL };
-+	static const char * const axp22x_irq_names[] =3D {
-+		"ACIN_PLUGIN", "ACIN_REMOVAL", NULL };
-+	static const char * const *irq_names;
-+	const struct power_supply_desc *ac_power_desc;
-+	int i, irq, ret;
-+
-+	if (!of_device_is_available(pdev->dev.of_node))
-+		return -ENODEV;
-+
-+	if (!axp20x) {
-+		dev_err(&pdev->dev, "Parent drvdata not set\n");
-+		return -EINVAL;
-+	}
-+
-+	power =3D devm_kzalloc(&pdev->dev, sizeof(*power), GFP_KERNEL);
-+	if (!power)
-+		return -ENOMEM;
-+
-+	power->np =3D pdev->dev.of_node;
-+	power->regmap =3D axp20x->regmap;
-+
-+	if (of_device_is_compatible(power->np,
-+			"x-powers,axp202-ac-power-supply")) {
-+
-+		/* Enable acin voltage and current measurement */
-+		ret =3D regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
-+			AXP20X_ADC_EN1_ACIN_CURR | AXP20X_ADC_EN1_ACIN_VOLT,
-+			AXP20X_ADC_EN1_ACIN_CURR | AXP20X_ADC_EN1_ACIN_VOLT);
-+		if (ret)
-+			return ret;
-+
-+		ac_power_desc =3D &axp20x_ac_power_desc;
-+		irq_names =3D axp20x_irq_names;
-+	} else if (of_device_is_compatible(power->np,
-+			"x-powers,axp221-ac-power-supply")) {
-+		ac_power_desc =3D &axp22x_ac_power_desc;
-+		irq_names =3D axp22x_irq_names;
-+	} else {
-+		dev_err(&pdev->dev, "Unsupported AXP variant: %ld\n",
-+			axp20x->variant);
-+		return -EINVAL;
-+	}
-+
-+	psy_cfg.of_node =3D pdev->dev.of_node;
-+	psy_cfg.drv_data =3D power;
-+
-+	power->supply =3D devm_power_supply_register(&pdev->dev, ac_power_desc,
-+						   &psy_cfg);
-+	if (IS_ERR(power->supply))
-+		return PTR_ERR(power->supply);
-+
-+	/* Request irqs after registering, as irqs may trigger immediately */
-+	for (i =3D 0; irq_names[i]; i++) {
-+		irq =3D platform_get_irq_byname(pdev, irq_names[i]);
-+		if (irq < 0) {
-+			dev_warn(&pdev->dev, "No IRQ for %s: %d\n",
-+				 irq_names[i], irq);
-+			continue;
-+		}
-+		irq =3D regmap_irq_get_virq(axp20x->regmap_irqc, irq);
-+		ret =3D devm_request_any_context_irq(&pdev->dev, irq,
-+				axp20x_ac_power_irq, 0, DRVNAME, power);
-+		if (ret < 0)
-+			dev_warn(&pdev->dev, "Error requesting %s IRQ: %d\n",
-+				 irq_names[i], ret);
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id axp20x_ac_power_match[] =3D {
-+	{ .compatible =3D "x-powers,axp202-ac-power-supply" },
-+	{ .compatible =3D "x-powers,axp221-ac-power-supply" },
-+	{ }
-+};
-+
-+MODULE_DEVICE_TABLE(of, axp20x_ac_power_match);
-+
-+static struct platform_driver axp20x_ac_power_driver =3D {
-+	.probe =3D axp20x_ac_power_probe,
-+	.driver =3D {
-+		.name =3D DRVNAME,
-+		.of_match_table =3D axp20x_ac_power_match,
-+	},
-+};
-+
-+module_platform_driver(axp20x_ac_power_driver);
-+
-+MODULE_AUTHOR("Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>");
-+MODULE_DESCRIPTION("AXP20x PMIC AC power supply status driver");
-+MODULE_LICENSE("GPL");
---=20
-2.5.3
+> has neither power resources nor _PSC, and its parent has power state
+> ACPI_STATE_UNKNOWN, then this will be returned.
 
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+With the power-manageable check upfront the only case I can see is when the
+device has _PS0, it doesn't have _PR0 (ie. no power resources) and _PSC is not
+present.
+
+> > > I could add that to state_conv[] above but then I'd have an array with
+> > > 256 integers on the stack, most of them 0, which I don't want.
+> > > I could check for != ACPI_STATE_UNKNOWN but checking the boundaries seemed
+> > > safer.
+> > 
+> > Well, I'm not sure in what way it is safer and you get one check instead of
+> > two. :-)
+> > 
+> > > So I maintain that the code is correct.
+> > 
+> > It simply contains an redundant check.
+> 
+> Fair enough, I'm only checking for ACPI_STATE_UNKNOWN now.
+> 
+> 
+> > > > >  void pci_update_current_state(struct pci_dev *dev, pci_power_t state)
+> > > > >  {
+> > > > > -	if (dev->pm_cap) {
+> > > > > +	if (platform_pci_get_power_state(dev) == PCI_D3cold) {
+> > > > > +		dev->current_state = PCI_D3cold;
+> > > > > +	} else if (dev->pm_cap) {
+> > > > 
+> > > > Why exactly do you need to change this function?
+> > > 
+> > > It would be pointless to add the ->platform_pci_get_power_state
+> > > hook without using it anywhere, wouldn't it?
+> > 
+> > That depends on what you want to do with it next.  Callers may be added in
+> > separate patches, no problem with that.
+> 
+> I've moved the change of pci_update_current_state() to a separate patch now,
+> that will also make it easier to revert it, should anything blow up.
+> 
+> 
+> > pci_update_current_state() is called in a few places with assumptions that
+> > need to be re-evaluated to see if they still hold after the changes.  They
+> > probably do, but then again, these call sites need to be double checked.
+> > If you did that, then fine.
+> 
+> pci_update_current_state() is called whenever a device is resumed
+> (both runtime and after system sleep) and after changing its power
+> state using the platform in pci_platform_power_transition().
+> 
+> With the new patch, pci_update_current_state() will be more accurate
+> than it is now:  Laptop hybrid graphics which are not platform-power-
+> manageable (older Optimus/ATPX or current MacBook Pro) will power
+> down the GPU but its current_state will be D3hot.  That's because
+> nouveau/radeon call pci_set_power_state(pdev, PCI_D3cold) and the
+> PCI core will only put it in D3hot due to the lack of platform-power-
+> manageability.  When the device is resumed, pci_update_current_state()
+> will now change the current_state from D3hot to D3cold.  I'm actually
+> seeing this on my MacBook Pro.  When the system is subsequently put
+> to sleep, direct_complete will still be afforded despite the changed
+> current_state because of the first patch in this series.  Works like
+> a charm, I'm curious if this causes issues for others, but I doubt it.
+
+Well, we'll see.
+
+> > And if you want to change that logic for PCI, it would be good to change it
+> > in the same way for acpi_general_pm_domain which has exactly the same
+> > problem.
+> 
+> Hm, with PCI I can read the PMCSR and detect D3cold by reading the
+> vendor ID.  For generic ACPI devices, I don't have that so I have
+> to rely on the accuracy of acpi_device_get_power().  However as
+> you've pointed out, it might misrepresent D3cold as D3hot, and it
+> might incorrectly report D0 even though the device is in a different
+> state.  Is it safe to rely on acpi_device_get_power() then?
+
+This is all about optimizing the current suboptimal behavior and that can be
+done for the cases when the answer is known to be most likely correct.
+
+Like for example when acpi_device_get_power() reports D3cold (or D1, D2 for
+that matter).
+
+IOW, D0 and D3hot may be problematic for different reasons.
+
+> Another idea would be to use acpi_device_get_power() for PCI devices
+> without PM capability.  Then we could do away with the "state"
+> argument to pci_update_current_state().
+
+That I'm not sure about.
+
+> This too hinges on the
+> reliability of acpi_device_get_power() of course.  At least D3cold
+> can be detected by reading the vendor ID, so we're not reliant on
+> ACPI for that.  I've even got a commit on my development branch
+> to make that change, but I can't test it, my machine doesn't have
+> PCI devices without PM cap.
+
+Those are rare now. All PCIe will have it and PCI 2.0 and later as well IIRC.
+
+Thanks,
+Rafael
+
