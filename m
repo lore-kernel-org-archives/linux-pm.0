@@ -1,39 +1,54 @@
-From: kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org
-Subject: Re: [PATCH V5 2/6] thermal: bcm2835: add thermal driver for bcm2835 soc
-Date: Sun, 18 Sep 2016 18:05:59 +0200
-Message-ID: <4D9CBC7C-FB79-4B3F-8896-4E8341763248@martin.sperl.org>
-References: <1473759262-27031-1-git-send-email-kernel@martin.sperl.org> <1473759262-27031-3-git-send-email-kernel@martin.sperl.org> <1999564031.209213.6508fbdb-00c5-486b-a34e-3d60ae68fe88.open-xchange@email.1und1.de>
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1999564031.209213.6508fbdb-00c5-486b-a34e-3d60ae68fe88.open-xchange-7tX72C7vayboQLBSYMtkGA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+From: =?utf-8?B?6rCV7J247ZiBL+yxheyehOyXsOq1rOybkC9TVyBQbGF0Zm9ybSjsl7ApQU9U?=
+         =?utf-8?B?7YyAKGh1Z2gua2FuZ0BsZ2UuY29tKQ==?= <hugh.kang@lge.com>
+Subject: RE: [PATCH] thermal: cpu_cooling: Fix wrong comment call function
+ name
+Date: Mon, 19 Sep 2016 09:12:41 +0900
+Message-ID: <C80AB6F618D91B4E8F391CB202C12DFD1122F76EA5@LGEVEXMBHQSVC1.LGE.NET>
+References: <1473208539-17685-1-git-send-email-hugh.kang@lge.com>
+ <20160908082600.GA3112@e104805>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from LGEAMRELO13.lge.com ([156.147.23.53]:46700 "EHLO
+        lgeamrelo13.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755407AbcISAMq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Sep 2016 20:12:46 -0400
+In-Reply-To: <20160908082600.GA3112@e104805>
+Content-Language: ko-KR
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>, =?utf-8?B?6rCV7J247ZiBL+yxheyehOyXsOq1rOybkC9TVyBQbGF0Zm9ybSjsl7ApQU9U?= =?utf-8?B?7YyAKGh1Z2gua2FuZ0BsZ2UuY29tKQ==?= <hugh.kang@lge.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "amit.kachhap@gmail.com" <amit.kachhap@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>, =?utf-8?B?7KCV7LCs6regL+yImOyEneyXsOq1rOybkC9TVyBQbGF0Zm9ybSjsl7ApQU9U?= =?utf-8?B?7YyAKGNoYW4uamVvbmdAbGdlLmNvbSkgKGNoYW4uamVvbmdAbA==?= =?utf-8?B?Z2UuY29tKQ==?= <chan.jeong@lge.com>
 
-Hi Stefan!
-
-> On 18.09.2016, at 13:31, Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org> wrote:
-> 
->> +	rate = clk_get_rate(data->clk);
->> +	if ((rate < 1920000) || (rate > 5000000)) {
->> +		dev_warn(&pdev->dev,
->> +			 "Clock %pCn is running at %pCr Hz, which is outside the recommended range
->> of 1.9 to 5.0 MHz\n",
->> +			 data->clk, data->clk);
-> 
-> Instead of printing the clock name twice your intension would be to print the
-> actual clock rate?
-%pCn (and %pC) prints the clock name
-%pCr prints the clock rate - I guess I could use “%lu” and rate instead
-
-So I do not see an issue here - I will reword the text to shorten it.
-
-Everything else I will fix as mentioned.
-
-Martin--
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+WW91J3JlIHdlbGNvbWUuIFdpbGwgYmUgbWVyZ2VkIHRoaXMgcGF0Y2g/DQpUaGFuayB5b3UNCg0K
+SHVnaCBLYW5nDQoNCk5vIE9uZSBldmVyIGlzIGRlZmVhdGVkIHVudGlsIGRlZmVhdCBoYXMgYmVl
+biBhY2NlcHRlZCBhcyBhIHJlYWxpdHkuDQrqsJXsnbjtmIEgKEh1Z2ggS2FuZykgQ2hpZWYgRW5n
+aW5lZXINClNXIFBsYXRmb3JtKOyXsCkgQWR2YW5jZWQgT1MgVGVjaG5vbG9neSBURUFNIChBT1Qp
+DQpNb2JpbGU6ICs4Mi0xMC01NTEzLTc5NTcNCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
+CkZyb206IEphdmkgTWVyaW5vIFttYWlsdG86amF2aS5tZXJpbm9AYXJtLmNvbV0gDQpTZW50OiBU
+aHVyc2RheSwgU2VwdGVtYmVyIDA4LCAyMDE2IDU6MjYgUE0NClRvOiBJbmh5dWsgS2FuZw0KQ2M6
+IFZpcmVzaCBLdW1hcjsgYW1pdC5rYWNoaGFwQGdtYWlsLmNvbTsgbGludXgta2VybmVsQHZnZXIu
+a2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBFZHVhcmRvIFZhbGVudGluOyBS
+dWkgWmhhbmcNClN1YmplY3Q6IFJlOiBbUEFUQ0hdIHRoZXJtYWw6IGNwdV9jb29saW5nOiBGaXgg
+d3JvbmcgY29tbWVudCBjYWxsIGZ1bmN0aW9uIG5hbWUNCg0KT24gV2VkLCBTZXAgMDcsIDIwMTYg
+YXQgMDk6MzU6MzlBTSArMDkwMCwgSW5oeXVrIEthbmcgd3JvdGU6DQo+IFRoZSBsYXN0X2xvYWQg
+aXMgdXBkYXRlZCBub3QgY3B1ZnJlcV9nZXRfYWN0dWFsX3Bvd2VyKCkgZnVuY3Rpb24gY2FsbCAN
+Cj4gYnV0IGNwdWZyZXFfZ2V0X3JlcXVlc3RlZF9wb3dlcigpIGZ1bmN0aW9uIGNhbGwuDQoNClll
+cCwgbXkgYmFkLiAgVGhhbmtzIGZvciBmaXhpbmcgaXQhDQoNCj4gU2lnbmVkLW9mZi1ieTogSW5o
+eXVrIEthbmcgPGh1Z2gua2FuZ0BsZ2UuY29tPg0KDQpBY2tlZC1ieTogSmF2aSBNZXJpbm8gPGph
+dmkubWVyaW5vQGFybS5jb20+DQoNCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9jcHVf
+Y29vbGluZy5jIA0KPiBiL2RyaXZlcnMvdGhlcm1hbC9jcHVfY29vbGluZy5jIGluZGV4IGEzMmI0
+MTcuLjljZTBlOWUgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9jcHVfY29vbGluZy5j
+DQo+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9jcHVfY29vbGluZy5jDQo+IEBAIC03NCw3ICs3NCw3
+IEBAIHN0cnVjdCBwb3dlcl90YWJsZSB7DQo+ICAgKgljcHVmcmVxIGZyZXF1ZW5jaWVzLg0KPiAg
+ICogQGFsbG93ZWRfY3B1czogYWxsIHRoZSBjcHVzIGludm9sdmVkIGZvciB0aGlzIGNwdWZyZXFf
+Y29vbGluZ19kZXZpY2UuDQo+ICAgKiBAbm9kZTogbGlzdF9oZWFkIHRvIGxpbmsgYWxsIGNwdWZy
+ZXFfY29vbGluZ19kZXZpY2UgdG9nZXRoZXIuDQo+IC0gKiBAbGFzdF9sb2FkOiBsb2FkIG1lYXN1
+cmVkIGJ5IHRoZSBsYXRlc3QgY2FsbCB0byANCj4gY3B1ZnJlcV9nZXRfYWN0dWFsX3Bvd2VyKCkN
+Cj4gKyAqIEBsYXN0X2xvYWQ6IGxvYWQgbWVhc3VyZWQgYnkgdGhlIGxhdGVzdCBjYWxsIHRvIA0K
+PiArIGNwdWZyZXFfZ2V0X3JlcXVlc3RlZF9wb3dlcigpDQo+ICAgKiBAdGltZV9pbl9pZGxlOiBw
+cmV2aW91cyByZWFkaW5nIG9mIHRoZSBhYnNvbHV0ZSB0aW1lIHRoYXQgdGhpcyBjcHUgd2FzIGlk
+bGUNCj4gICAqIEB0aW1lX2luX2lkbGVfdGltZXN0YW1wOiB3YWxsIHRpbWUgb2YgdGhlIGxhc3Qg
+aW52b2NhdGlvbiBvZg0KPiAgICoJZ2V0X2NwdV9pZGxlX3RpbWVfdXMoKQ0KPiAtLQ0KPiAxLjku
+MQ0KPiANCg==
