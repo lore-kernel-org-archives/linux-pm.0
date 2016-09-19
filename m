@@ -1,68 +1,59 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] sbs-battery: make writes to ManufacturerAccess optional
-Date: Mon, 19 Sep 2016 21:02:45 +0200
-Message-ID: <20160919190242.wx2enmdqblbcvzqm@earth>
-References: <1473387000-13646-1-git-send-email-linux@roeck-us.net>
+Subject: Re: [PATCH] power: reset: add in missing white space in error
+ message text
+Date: Mon, 19 Sep 2016 21:20:14 +0200
+Message-ID: <20160919192013.sstboukoh5gxxtce@earth>
+References: <20160912130504.1878-1-colin.king@canonical.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="lvkuyfiotrgym74z"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:45806 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751414AbcISTCy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 19 Sep 2016 15:02:54 -0400
+        protocol="application/pgp-signature"; boundary="kieydorabquiuuun"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1473387000-13646-1-git-send-email-linux@roeck-us.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20160912130504.1878-1-colin.king@canonical.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Colin King <colin.king@canonical.com>
+Cc: Santosh Shilimkar <ssantosh@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>
 
 
---lvkuyfiotrgym74z
+--kieydorabquiuuun
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Colin,
 
-On Thu, Sep 08, 2016 at 07:10:00PM -0700, Guenter Roeck wrote:
-> According to the Smart Battery Data Specification, the use
-> of ManufacturerAcess (register 0x0) is implementation-defined.
-> It appears that some batteries use writes to this register
-> in order to implement certain functionality, but others may
-> simply NAK all writes to it. As a result, write failures to
-> ManufacturerAccess should not be used as an indicator of
-> battery presence, nor as a failure to enter sleep mode.
+On Mon, Sep 12, 2016 at 02:05:04PM +0100, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
 >=20
-> The failed write access was seen with SANYO AP13J3K.
+> A dev_err message spans two lines and the literal string is missing
+> a white space between words. Add the white space.
 >=20
-> Cc: Brian Norris <briannorris@chromium.org>
-> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
 Thanks, queued.
 
 -- Sebastian
 
---lvkuyfiotrgym74z
+--kieydorabquiuuun
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJX4DZSAAoJENju1/PIO/qaE5AP/Rw5y8aJJByuZLIi4x2oeATq
-ljQ311ckvq49IxlqF4wrIZRJJnCUYMnYRegWnyFNwPaFVgYQiorphQyTanP6JNzt
-EmBJSsQw9HX/KrL9XXwgvV56VO/ldRdyxNsYRH4+y/37HBrObRIyBIhgwm5Mtu44
-BG7Xndy+WY7J9IUPWT5XWbWsOu72sZLj3iX8486WCArmoNYOC/Xwqxsobz02Wb0R
-QzY8h8+xhRYjyORp5bZ3a4Q+Sj4vC4QuZHQlKJh7tDcfKJtq6pZ1K9sNXjITuJ/S
-DyLIP2B8OVFu7uVGiAnZy/YwBjKftq9E6yDqgovRwvvzi5Yo5Po5TFTmmS8fU+ja
-Wz9K4/+Yoe3a5AEruQ3w2/S+LIr7Wfc4j+VcBERHb9NhkwhYTuxUmvkW55rhQpAO
-DOeGda1UGIO2EZGKpoudG05rFfk80ZbBUWNQTPa6eO1H856oiTAxpPsLSno4FN13
-/cmvuD3F3vPaFbPfpvmMxo5h9HFS5qXc7NZtmXb1rqFr8zM54eJ7KVDCfzHxdVoX
-gGnWrZS6Id93macqAGzSk6gtZjWXuj2ZPOEVuX5zd6cO0M3qzmRwZgaik9ox/aPP
-rrAoZo02RGNiCnMyGcUiDOx4cJt3utmVWIxuwSB4jEIXZsvMs/0ivWF7WepP2sci
-v5qMqUsXmIU6tewzmgiJ
-=0ATD
+iQIcBAEBCgAGBQJX4DptAAoJENju1/PIO/qajiYP/j2VFHTQ9LOZjxMDoMTVfHBH
+9T7imVea98TIZszMyZ9E4x2+VNBuTNyoEsEy5SFAjEqW50hodlwggR71dUg1npXU
+d9PigjRDW9hGhCr1Rwcph6r+4T4KEq37a+s6cQktrHwKL9O2Q28Mumpqrhj05wbg
+X738WSJjvAYxcAvw1bTC7nALefmgDVtIhBs4A8vUFpWS+CCrqmsbglaWBZ1nRWEY
+0akiymdl/HxpC4hVjMm9I7EXFLT1DYsjsvJthS9BNejkx748tsIF3EpLJnz0FaEM
++2BpPdcRl3nTpi3BW5BGf9j350lHDuo6aCX0H3ImAzIrIRi/olbZWaVDzugF1Cbw
+xQLcP8xKLaneFXBcYfDprC1WZQEiqye3qnxi4MWfo6mrNZtLVMuTkLWFAQabUlA1
+FJgISuIK3RSyEwvVH9QqVghGM266w3KxezOn2FZ9M7ezi2C70fw9oKqGd4qMUN7Y
+yn98D87b1STpEa1YVoV8GLCfDuAWmcVdj9VnMdMCCLMLuAnyDvApUdi9KwrifkXC
+pNBoqhqVEQFvm1TzYUWbvRrf3Lr0QjoEpOqAvpzcam26ka2aVW9wF0W4BEvXBYzO
+bxnHgrGu2RZk3FpOU99YVbt4zYuIyLRrmV38D+NLbsQ52BUWrsL1F9bYXGsp06kO
+491cQmoR7dYQU46Dwyvp
+=90wS
 -----END PGP SIGNATURE-----
 
---lvkuyfiotrgym74z--
+--kieydorabquiuuun--
