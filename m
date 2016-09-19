@@ -1,47 +1,62 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / devfreq: rk3399_dmc: Remove explictly regulator_put
- call in .remove
-Date: Mon, 19 Sep 2016 13:08:59 +0200
-Message-ID: <CAJZ5v0iJ=EoVD=V1QiX5AsR=fYC14xhgG0aVNZaZeASAU4_=Vw@mail.gmail.com>
-References: <CGME20160918024124epcas1p26e45dd69c71bdcded5b336c87f1b246b@epcas1p2.samsung.com>
- <1951060944.1420539.1474271094626.JavaMail.weblogic@ep1ml103c>
+Subject: Re: [PATCH][v10] PM / hibernate: Verify the consistent of e820 memory
+ map by md5 digest
+Date: Mon, 19 Sep 2016 13:46:29 +0200
+Message-ID: <CAJZ5v0j0Vj9DSL0PH+quZAnO5Ns3CxxC2qncM4xHmjsNWehM1A@mail.gmail.com>
+References: <1473423687-4889-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:35549 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1760326AbcISLJB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Sep 2016 07:09:01 -0400
-Received: by mail-wm0-f66.google.com with SMTP id 133so14331292wmq.2
-        for <linux-pm@vger.kernel.org>; Mon, 19 Sep 2016 04:09:00 -0700 (PDT)
-In-Reply-To: <1951060944.1420539.1474271094626.JavaMail.weblogic@ep1ml103c>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1473423687-4889-1-git-send-email-yu.c.chen@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@ucw.cz>, Lee Chun-Yi <jlee@suse.com>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
-To: Myungjoo Ham <myungjoo.ham@samsung.com>
-Cc: Axel Lin <axel.lin@ingics.com>, Kyungmin Park <kyungmin.park@samsung.com>, Lin Huang <hl@rock-chips.com>, Chanwoo Choi <cw00.choi@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, Sep 19, 2016 at 9:44 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->> Current code uses devm_regulator_get() in .probe so a regulator_put() will
->> be automatically called when unload the module. Remove the explictly
->> regulator_put() call and then we can also remove rk3399_dmcfreq_remove().
->>
->> Signed-off-by: Axel Lin <axel.lin@ingics.com>
->> ---
->>  drivers/devfreq/rk3399_dmc.c | 10 ----------
->>  1 file changed, 10 deletions(-)
->
-> Thank you.
->
->
-> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+On Fri, Sep 9, 2016 at 2:21 PM, Chen Yu <yu.c.chen@intel.com> wrote:
+> On some platforms, there is occasional panic triggered when trying to
+> resume from hibernation, a typical panic looks like:
 
-Sign-off-by is for three cases:
-(1) You send a patch you created.
-(2) You send a patch from someone else (ie. you're not the author of it).
-(3) You apply a patch.
+[cut]
 
-Otherwise, please use Acked-by (and I'm going to add that to this
-patch and to the other one you responded to with an S-o-b).
+> @@ -211,10 +292,15 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+>   */
+>  int arch_hibernation_header_restore(void *addr)
+>  {
+> +       bool e820_mismatch = false;
+
+The extra local variable can be avoided if you structure the code
+slightly differently.
+
+>         struct restore_data_record *rdr = addr;
+>
+>         restore_jump_address = rdr->jump_address;
+>         jump_address_phys = rdr->jump_address_phys;
+>         restore_cr3 = rdr->cr3;
+> -       return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
+> +
+> +       e820_mismatch = hibernation_e820_mismatch(rdr->e820_digest);
+
+Also calling hibernation_e820_mismatch() before checking rdr->magic
+may not be useful at all.
+
+> +
+> +       return (rdr->magic == RESTORE_MAGIC) ?
+> +               (e820_mismatch ? -ENODEV : 0) : -EINVAL;
+
+So what about:
+
+if (rdr->magic != RESTORE_MAGIC)
+        return -EINVAL;
+
+if (hibernation_e820_mismatch(rdr->e820_digest))
+        return -ENODEV;
+
+return 0;
+
+
+>  }
+> --
 
 Thanks,
 Rafael
