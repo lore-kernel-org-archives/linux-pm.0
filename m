@@ -1,88 +1,77 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 1/2] Documentation: dt: add bindings for ti-cpufreq
-Date: Mon, 19 Sep 2016 16:14:00 -0500
-Message-ID: <20160919211400.GA4276@rob-hp-laptop>
-References: <20160901025328.376-1-d-gerlach@ti.com>
- <20160901025328.376-2-d-gerlach@ti.com>
+From: Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH v2 00/14] Partial MIPS Malta DT conversion
+Date: Mon, 19 Sep 2016 22:21:17 +0100
+Message-ID: <20160919212132.28893-1-paul.burton@imgtec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20160901025328.376-2-d-gerlach-l0cyMroinI0@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+To: linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>
+Cc: Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alexander Sverdlin <alexander.sverdlin-xNZwKgViW5gAvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Chris Brand <chris.brand-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>S
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 31, 2016 at 09:53:27PM -0500, Dave Gerlach wrote:
-> Add the device tree bindings document for the TI CPUFreq/OPP driver
-> on AM33xx, AM43xx, DRA7, and AM57 SoCs. The operating-points-v2 binding
-> allows us to provide an opp-supported-hw property for each OPP to define
-> when it is available. This driver is responsible for reading and parsing
-> registers to determine which OPPs can be selectively enabled based
-> on the specific SoC in use by matching against the opp-supported-hw
-> data.
+This series begins converting the MIPS Malta board to use device tree to
+probe its various devices & peripherals, with the eventual goal of
+including Malta support in generic kernels.
 
-Sorry, for the delay. Missed this somehow.
+In terms of use the only change should be that kernels will
+automatically make use of more than 256MB DDR when built for 64 bit, or
+32 bit with highmem enabled.
 
-> 
-> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-> ---
-> v1->v2:
-> 	- Dropped all driver/linux specific documentation
-> 	- Fixed some typos
-> 	- Add new compatibles for each SoC family to match against
-> 	- Switched to use am335x example to better demonstrate field one of
-> 	  opp-supported-hw.
-> 
->  .../devicetree/bindings/cpufreq/ti-cpufreq.txt     | 130 +++++++++++++++++++++
->  1 file changed, 130 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
-> new file mode 100644
-> index 000000000000..6276ae494121
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
-> @@ -0,0 +1,130 @@
-> +TI CPUFreq and OPP bindings
-> +================================
-> +
-> +Certain TI SoCs, like those in the am335x, am437x, am57xx, and dra7xx
-> +families support different OPPs depending on the silicon variant in use.
-> +The ti_cpufreq driver can use revision and an efuse value from the SoC to
-> +provide the OPP framework with supported hardware information. This is
-> +used to determine which OPPs from the operating-points-v2 table get enabled
-> +when it is parsed by the OPP framework.
-> +
-> +Required properties:
-> +--------------------
-> +In 'cpus' nodes:
-> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
-> +- ti,syscon-efuse: Syscon phandle, offset to efuse register, efuse register
-> +		   mask, and efuse register shift to get the relevant bits
-> +		   that describe OPP availability.
-> +- ti,syscon-rev: Syscon and offset used to look up revision value on SoC.
+The series leaves Malta with a significant amount less platform code and
+thus closer to being ready for inclusion in a generic MIPS kernel.
 
-These have nothing to do with a cpu, so they don't belong here. Maybe 
-the first is a property of an OPP table, but the second certainly is 
-not.
+Applies atop v4.8-rc7.
 
-> +
-> +In 'operating-points-v2' table:
-> +- compatible: Should be
-> +	- 'operating-points-v2-ti-am3352-cpu' for am335x SoCs
-> +	- 'operating-points-v2-ti-am4372-cpu' for am43xx SoCs
-> +	- 'operating-points-v2-ti-dra7-cpu' for dra7xx/am57xx SoCs
-> +
-> +- opp-supported-hw: Two bitfields indicating:
-> +	1. Which revision of the SoC the OPP is supported by
-> +	2. Which eFuse bits indicate this OPP is available
+Paul Burton (14):
+  irqchip: i8259: Add domain before mapping parent irq
+  irqchip: i8259: Allow platforms to override poll function
+  irqchip: i8259: Remove unused i8259A_irq_pending
+  MIPS: Malta: Allow PCI devices DMA to lower 2GB physical
+  MIPS: Malta: Use all available DDR by default
+  MIPS: Malta: Probe interrupt controllers via DT
+  of/platform: Probe "isa" busses by default
+  MIPS: Malta: Remove custom DT match table
+  MIPS: Malta: Probe RTC via DT
+  MIPS: Malta: Probe pflash via DT
+  MIPS: Malta: Use syscon-reboot driver to reboot
+  MIPS: Malta: Remove custom halt implementation
+  power: reset: Add Intel PIIX4 poweroff driver
+  MIPS: Malta: Use PIIX4 poweroff driver to power down
 
-I tend to think you should handle this with kernel code (bootloader 
-really) fixing up the OPP table as necessary rather than putting in DT.
+ arch/mips/Kconfig                           |   7 +-
+ arch/mips/boot/dts/mti/malta.dts            |  99 +++++++++++++++
+ arch/mips/configs/malta_defconfig           |   5 +-
+ arch/mips/configs/malta_kvm_defconfig       |   5 +-
+ arch/mips/configs/malta_kvm_guest_defconfig |   5 +-
+ arch/mips/configs/malta_qemu_32r6_defconfig |   3 +
+ arch/mips/configs/maltaaprp_defconfig       |   3 +
+ arch/mips/configs/maltasmvp_defconfig       |   3 +
+ arch/mips/configs/maltasmvp_eva_defconfig   |   3 +
+ arch/mips/configs/maltaup_defconfig         |   3 +
+ arch/mips/configs/maltaup_xpa_defconfig     |   5 +-
+ arch/mips/include/asm/i8259.h               |  12 +-
+ arch/mips/mti-malta/Makefile                |   2 -
+ arch/mips/mti-malta/malta-dt.c              |  15 ---
+ arch/mips/mti-malta/malta-dtshim.c          | 187 +++++++++++++++++++++++++++-
+ arch/mips/mti-malta/malta-init.c            |  17 ++-
+ arch/mips/mti-malta/malta-int.c             |  96 +-------------
+ arch/mips/mti-malta/malta-platform.c        |  65 ----------
+ arch/mips/mti-malta/malta-pm.c              |  96 --------------
+ arch/mips/mti-malta/malta-reset.c           |  47 -------
+ drivers/irqchip/irq-i8259.c                 |  30 ++---
+ drivers/of/platform.c                       |   1 +
+ drivers/power/reset/Kconfig                 |  10 ++
+ drivers/power/reset/Makefile                |   1 +
+ drivers/power/reset/piix4-poweroff.c        | 104 ++++++++++++++++
+ 25 files changed, 461 insertions(+), 363 deletions(-)
+ delete mode 100644 arch/mips/mti-malta/malta-pm.c
+ delete mode 100644 arch/mips/mti-malta/malta-reset.c
+ create mode 100644 drivers/power/reset/piix4-poweroff.c
 
-Rob
+-- 
+2.9.3
+
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
