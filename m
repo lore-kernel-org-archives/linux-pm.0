@@ -1,9 +1,9 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v2 2/5] clock: samsung: add support for runtime pm
-Date: Mon, 19 Sep 2016 12:55:22 +0200
-Message-ID: <1474282525-30441-3-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH v2 1/5] clk: add support for runtime pm
+Date: Mon, 19 Sep 2016 12:55:21 +0200
+Message-ID: <1474282525-30441-2-git-send-email-m.szyprowski@samsung.com>
 References: <1474282525-30441-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20160919105549eucas1p1a2df94dc0ff48c7623949adbc5453bca@eucas1p1.samsung.com>
+ <CGME20160919105548eucas1p24b28143fab25eb47f5629d31f817b0bc@eucas1p2.samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1474282525-30441-1-git-send-email-m.szyprowski@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
@@ -11,131 +11,316 @@ To: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds struct device pointer to samsung_clk_provider and forwarding it
-to clk_register_* functions, so drivers can register clocks, which use runtime
-pm feature. It also adds CLK_RUNTIME_PM flag to all clocks for which such
-device have been provided.
+Registers for some clocks might be located in the SOC area, which are under the
+power domain. To enable access to those registers respective domain has to be
+turned on. Additionally, registers for such clocks will usually loose its
+contents when power domain is turned off, so additional saving and restoring of
+them might be needed in the clock controller driver.
+
+This patch adds basic infrastructure in the clocks core to allow implementing
+driver for such clocks under power domains. Clock provider can supply a
+struct device pointer, which is the used by clock core for tracking and managing
+clock's controller runtime pm state. Each clk_prepare() operation
+will first call pm_runtime_get_sync() on the supplied device, while
+clk_unprepare() will do pm_runtime_put() at the end.
+
+Additional calls to pm_runtime_get/put functions are required to ensure that any
+register access (like calculating/changing clock rates and unpreparing/disabling
+unused clocks on boot) will be done with clock controller in runtime resumend
+state.
+
+When one wants to register clock controller, which make use of this feature, he
+has to:
+1. Provide a struct device to the core when registering the provider and set
+   CLK_RUNTIME_PM flags for its clocks.
+2. It needs to enable runtime PM for that device.
+3. It needs to make sure the runtime PM status of the controller device reflects
+   the HW state.
 
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- drivers/clk/samsung/clk-pll.c |  4 ++--
- drivers/clk/samsung/clk.c     | 36 ++++++++++++++++++++++++------------
- drivers/clk/samsung/clk.h     |  1 +
- 3 files changed, 27 insertions(+), 14 deletions(-)
+ drivers/clk/clk.c            | 107 +++++++++++++++++++++++++++++++++++++++----
+ include/linux/clk-provider.h |   1 +
+ 2 files changed, 98 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/clk/samsung/clk-pll.c b/drivers/clk/samsung/clk-pll.c
-index 48139bd510f1..fa929ddf3551 100644
---- a/drivers/clk/samsung/clk-pll.c
-+++ b/drivers/clk/samsung/clk-pll.c
-@@ -1174,7 +1174,7 @@ static void __init _samsung_clk_register_pll(struct samsung_clk_provider *ctx,
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index 820a939fb6bb..096a199b8e46 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -21,6 +21,7 @@
+ #include <linux/of.h>
+ #include <linux/device.h>
+ #include <linux/init.h>
++#include <linux/pm_runtime.h>
+ #include <linux/sched.h>
+ #include <linux/clkdev.h>
+ 
+@@ -46,6 +47,7 @@ struct clk_core {
+ 	const struct clk_ops	*ops;
+ 	struct clk_hw		*hw;
+ 	struct module		*owner;
++	struct device		*dev;
+ 	struct clk_core		*parent;
+ 	const char		**parent_names;
+ 	struct clk_core		**parents;
+@@ -87,6 +89,26 @@ struct clk {
+ 	struct hlist_node clks_node;
+ };
+ 
++/***           runtime pm          ***/
++static int clk_pm_runtime_get(struct clk_core *core)
++{
++	int ret = 0;
++
++	if (!core->dev)
++		return 0;
++
++	ret = pm_runtime_get_sync(core->dev);
++	return ret < 0 ? ret : 0;
++}
++
++static void clk_pm_runtime_put(struct clk_core *core)
++{
++	if (!core->dev)
++		return;
++
++	pm_runtime_put(core->dev);
++}
++
+ /***           locking             ***/
+ static void clk_prepare_lock(void)
+ {
+@@ -150,6 +172,8 @@ static void clk_enable_unlock(unsigned long flags)
+ 
+ static bool clk_core_is_prepared(struct clk_core *core)
+ {
++	bool status;
++
+ 	/*
+ 	 * .is_prepared is optional for clocks that can prepare
+ 	 * fall back to software usage counter if it is missing
+@@ -157,11 +181,17 @@ static bool clk_core_is_prepared(struct clk_core *core)
+ 	if (!core->ops->is_prepared)
+ 		return core->prepare_count;
+ 
+-	return core->ops->is_prepared(core->hw);
++	clk_pm_runtime_get(core);
++	status = core->ops->is_prepared(core->hw);
++	clk_pm_runtime_put(core);
++
++	return status;
+ }
+ 
+ static bool clk_core_is_enabled(struct clk_core *core)
+ {
++	bool status;
++
+ 	/*
+ 	 * .is_enabled is only mandatory for clocks that gate
+ 	 * fall back to software usage counter if .is_enabled is missing
+@@ -169,7 +199,29 @@ static bool clk_core_is_enabled(struct clk_core *core)
+ 	if (!core->ops->is_enabled)
+ 		return core->enable_count;
+ 
+-	return core->ops->is_enabled(core->hw);
++	/*
++	 * Check if runtime pm is enabled before calling .is_enabled callback,
++	 * if not assume that clock is disabled, because we might be called
++	 * from atomic context, from which pm_runtime_get() is not allowed.
++	 * This function is called mainly from clk_disable_unused_subtree,
++	 * which ensures proper runtime pm activation of controller before
++	 * taking enable spinlock, but the below check is needed if one tries
++	 * to call it from other place.
++	 */
++	if (core->dev) {
++		pm_runtime_get_noresume(core->dev);
++		if (pm_runtime_suspended(core->dev)) {
++			status = false;
++			goto done;
++		}
++	}
++
++	status = core->ops->is_enabled(core->hw);
++done:
++	if (core->dev)
++		pm_runtime_put(core->dev);
++
++	return status;
+ }
+ 
+ /***    helper functions   ***/
+@@ -489,6 +541,8 @@ static void clk_core_unprepare(struct clk_core *core)
+ 	if (core->ops->unprepare)
+ 		core->ops->unprepare(core->hw);
+ 
++	clk_pm_runtime_put(core);
++
+ 	trace_clk_unprepare_complete(core);
+ 	clk_core_unprepare(core->parent);
+ }
+@@ -530,10 +584,14 @@ static int clk_core_prepare(struct clk_core *core)
+ 		return 0;
+ 
+ 	if (core->prepare_count == 0) {
+-		ret = clk_core_prepare(core->parent);
++		ret = clk_pm_runtime_get(core);
+ 		if (ret)
+ 			return ret;
+ 
++		ret = clk_core_prepare(core->parent);
++		if (ret)
++			goto runtime_put;
++
+ 		trace_clk_prepare(core);
+ 
+ 		if (core->ops->prepare)
+@@ -541,15 +599,18 @@ static int clk_core_prepare(struct clk_core *core)
+ 
+ 		trace_clk_prepare_complete(core);
+ 
+-		if (ret) {
+-			clk_core_unprepare(core->parent);
+-			return ret;
+-		}
++		if (ret)
++			goto unprepare;
  	}
  
- 	init.name = pll_clk->name;
--	init.flags = pll_clk->flags;
-+	init.flags = pll_clk->flags | (ctx->dev ? CLK_RUNTIME_PM : 0);
- 	init.parent_names = &pll_clk->parent_name;
- 	init.num_parents = 1;
+ 	core->prepare_count++;
  
-@@ -1285,7 +1285,7 @@ static void __init _samsung_clk_register_pll(struct samsung_clk_provider *ctx,
- 	pll->lock_reg = base + pll_clk->lock_offset;
- 	pll->con_reg = base + pll_clk->con_offset;
+ 	return 0;
++unprepare:
++	clk_core_unprepare(core->parent);
++runtime_put:
++	clk_pm_runtime_put(core);
++	return ret;
+ }
  
--	clk = clk_register(NULL, &pll->hw);
-+	clk = clk_register(ctx->dev, &pll->hw);
- 	if (IS_ERR(clk)) {
- 		pr_err("%s: failed to register pll clock %s : %ld\n",
- 			__func__, pll_clk->name, PTR_ERR(clk));
-diff --git a/drivers/clk/samsung/clk.c b/drivers/clk/samsung/clk.c
-index b7d87d6db9dc..762019893383 100644
---- a/drivers/clk/samsung/clk.c
-+++ b/drivers/clk/samsung/clk.c
-@@ -143,8 +143,11 @@ void __init samsung_clk_register_fixed_rate(struct samsung_clk_provider *ctx,
- 	unsigned int idx, ret;
+ static int clk_core_prepare_lock(struct clk_core *core)
+@@ -745,6 +806,9 @@ static void clk_unprepare_unused_subtree(struct clk_core *core)
+ 	if (core->flags & CLK_IGNORE_UNUSED)
+ 		return;
  
- 	for (idx = 0; idx < nr_clk; idx++, list++) {
--		clk = clk_register_fixed_rate(NULL, list->name,
--			list->parent_name, list->flags, list->fixed_rate);
-+		unsigned int pm_flags = ctx->dev ? CLK_RUNTIME_PM : 0;
++	if (clk_pm_runtime_get(core) != 0)
++		return;
 +
-+		clk = clk_register_fixed_rate(ctx->dev, list->name,
-+			list->parent_name, list->flags | pm_flags,
-+			list->fixed_rate);
- 		if (IS_ERR(clk)) {
- 			pr_err("%s: failed to register clock %s\n", __func__,
- 				list->name);
-@@ -172,8 +175,11 @@ void __init samsung_clk_register_fixed_factor(struct samsung_clk_provider *ctx,
- 	unsigned int idx;
- 
- 	for (idx = 0; idx < nr_clk; idx++, list++) {
--		clk = clk_register_fixed_factor(NULL, list->name,
--			list->parent_name, list->flags, list->mult, list->div);
-+		unsigned int pm_flags = ctx->dev ? CLK_RUNTIME_PM : 0;
+ 	if (clk_core_is_prepared(core)) {
+ 		trace_clk_unprepare(core);
+ 		if (core->ops->unprepare_unused)
+@@ -753,6 +817,8 @@ static void clk_unprepare_unused_subtree(struct clk_core *core)
+ 			core->ops->unprepare(core->hw);
+ 		trace_clk_unprepare_complete(core);
+ 	}
 +
-+		clk = clk_register_fixed_factor(ctx->dev, list->name,
-+			list->parent_name, list->flags | pm_flags, list->mult,
-+			list->div);
- 		if (IS_ERR(clk)) {
- 			pr_err("%s: failed to register clock %s\n", __func__,
- 				list->name);
-@@ -193,8 +199,10 @@ void __init samsung_clk_register_mux(struct samsung_clk_provider *ctx,
- 	unsigned int idx, ret;
++	clk_pm_runtime_put(core);
+ }
  
- 	for (idx = 0; idx < nr_clk; idx++, list++) {
--		clk = clk_register_mux(NULL, list->name, list->parent_names,
--			list->num_parents, list->flags,
-+		unsigned int pm_flags = ctx->dev ? CLK_RUNTIME_PM : 0;
-+
-+		clk = clk_register_mux(ctx->dev, list->name, list->parent_names,
-+			list->num_parents, list->flags | pm_flags,
- 			ctx->reg_base + list->offset,
- 			list->shift, list->width, list->mux_flags, &ctx->lock);
- 		if (IS_ERR(clk)) {
-@@ -225,15 +233,17 @@ void __init samsung_clk_register_div(struct samsung_clk_provider *ctx,
- 	unsigned int idx, ret;
+ static void clk_disable_unused_subtree(struct clk_core *core)
+@@ -768,6 +834,9 @@ static void clk_disable_unused_subtree(struct clk_core *core)
+ 	if (core->flags & CLK_OPS_PARENT_ENABLE)
+ 		clk_core_prepare_enable(core->parent);
  
- 	for (idx = 0; idx < nr_clk; idx++, list++) {
-+		unsigned int pm_flags = ctx->dev ? CLK_RUNTIME_PM : 0;
++	if (clk_pm_runtime_get(core) != 0)
++		return;
 +
- 		if (list->table)
--			clk = clk_register_divider_table(NULL, list->name,
--				list->parent_name, list->flags,
-+			clk = clk_register_divider_table(ctx->dev, list->name,
-+				list->parent_name, list->flags | pm_flags,
- 				ctx->reg_base + list->offset,
- 				list->shift, list->width, list->div_flags,
- 				list->table, &ctx->lock);
- 		else
--			clk = clk_register_divider(NULL, list->name,
--				list->parent_name, list->flags,
-+			clk = clk_register_divider(ctx->dev, list->name,
-+				list->parent_name, list->flags | pm_flags,
- 				ctx->reg_base + list->offset, list->shift,
- 				list->width, list->div_flags, &ctx->lock);
- 		if (IS_ERR(clk)) {
-@@ -264,8 +274,10 @@ void __init samsung_clk_register_gate(struct samsung_clk_provider *ctx,
- 	unsigned int idx, ret;
+ 	flags = clk_enable_lock();
  
- 	for (idx = 0; idx < nr_clk; idx++, list++) {
--		clk = clk_register_gate(NULL, list->name, list->parent_name,
--				list->flags, ctx->reg_base + list->offset,
-+		unsigned int pm_flags = ctx->dev ? CLK_RUNTIME_PM : 0;
+ 	if (core->enable_count)
+@@ -794,6 +863,8 @@ unlock_out:
+ 	clk_enable_unlock(flags);
+ 	if (core->flags & CLK_OPS_PARENT_ENABLE)
+ 		clk_core_disable_unprepare(core->parent);
 +
-+		clk = clk_register_gate(ctx->dev, list->name, list->parent_name,
-+				list->flags | pm_flags, ctx->reg_base + list->offset,
- 				list->bit_idx, list->gate_flags, &ctx->lock);
- 		if (IS_ERR(clk)) {
- 			pr_err("%s: failed to register clock %s\n", __func__,
-diff --git a/drivers/clk/samsung/clk.h b/drivers/clk/samsung/clk.h
-index da3bdebabf1e..9263d8a27c6b 100644
---- a/drivers/clk/samsung/clk.h
-+++ b/drivers/clk/samsung/clk.h
-@@ -26,6 +26,7 @@ struct clk;
-  */
- struct samsung_clk_provider {
- 	void __iomem *reg_base;
-+	struct device *dev;
- 	struct clk_onecell_data clk_data;
- 	spinlock_t lock;
- };
++	clk_pm_runtime_put(core);
+ }
+ 
+ static bool clk_ignore_unused;
+@@ -1563,6 +1634,7 @@ static int clk_core_set_rate_nolock(struct clk_core *core,
+ {
+ 	struct clk_core *top, *fail_clk;
+ 	unsigned long rate = req_rate;
++	int ret = 0;
+ 
+ 	if (!core)
+ 		return 0;
+@@ -1579,21 +1651,28 @@ static int clk_core_set_rate_nolock(struct clk_core *core,
+ 	if (!top)
+ 		return -EINVAL;
+ 
++	ret = clk_pm_runtime_get(core);
++	if (ret)
++		return ret;
++
+ 	/* notify that we are about to change rates */
+ 	fail_clk = clk_propagate_rate_change(top, PRE_RATE_CHANGE);
+ 	if (fail_clk) {
+ 		pr_debug("%s: failed to set %s rate\n", __func__,
+ 				fail_clk->name);
+ 		clk_propagate_rate_change(top, ABORT_RATE_CHANGE);
+-		return -EBUSY;
++		ret = -EBUSY;
++		goto err;
+ 	}
+ 
+ 	/* change the rates */
+ 	clk_change_rate(top);
+ 
+ 	core->req_rate = req_rate;
++err:
++	clk_pm_runtime_put(core);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ /**
+@@ -1824,12 +1903,16 @@ static int clk_core_set_parent(struct clk_core *core, struct clk_core *parent)
+ 		p_rate = parent->rate;
+ 	}
+ 
++	ret = clk_pm_runtime_get(core);
++	if (ret)
++		goto out;
++
+ 	/* propagate PRE_RATE_CHANGE notifications */
+ 	ret = __clk_speculate_rates(core, p_rate);
+ 
+ 	/* abort if a driver objects */
+ 	if (ret & NOTIFY_STOP_MASK)
+-		goto out;
++		goto runtime_put;
+ 
+ 	/* do the re-parent */
+ 	ret = __clk_set_parent(core, parent, p_index);
+@@ -1842,6 +1925,8 @@ static int clk_core_set_parent(struct clk_core *core, struct clk_core *parent)
+ 		__clk_recalc_accuracies(core);
+ 	}
+ 
++runtime_put:
++	clk_pm_runtime_put(core);
+ out:
+ 	clk_prepare_unlock();
+ 
+@@ -2546,6 +2631,8 @@ struct clk *clk_register(struct device *dev, struct clk_hw *hw)
+ 		goto fail_name;
+ 	}
+ 	core->ops = hw->init->ops;
++	if (dev && (hw->init->flags & CLK_RUNTIME_PM))
++		core->dev = dev;
+ 	if (dev && dev->driver)
+ 		core->owner = dev->driver->owner;
+ 	core->hw = hw;
+diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
+index a39c0c530778..8a131eb71fdf 100644
+--- a/include/linux/clk-provider.h
++++ b/include/linux/clk-provider.h
+@@ -35,6 +35,7 @@
+ #define CLK_IS_CRITICAL		BIT(11) /* do not gate, ever */
+ /* parents need enable during gate/ungate, set rate and re-parent */
+ #define CLK_OPS_PARENT_ENABLE	BIT(12)
++#define CLK_RUNTIME_PM		BIT(13)
+ 
+ struct clk;
+ struct clk_hw;
 -- 
 1.9.1
