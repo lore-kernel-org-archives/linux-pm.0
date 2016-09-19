@@ -1,102 +1,68 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/1] power: bq24257: Fix use of uninitialized pointer
- bq->charger
-Date: Mon, 19 Sep 2016 20:57:55 +0200
-Message-ID: <20160919185754.sezcbv7wv4n7xajk@earth>
-References: <20160908013815.9904-1-savoundg@gmail.com>
+Subject: Re: [PATCH] sbs-battery: make writes to ManufacturerAccess optional
+Date: Mon, 19 Sep 2016 21:02:45 +0200
+Message-ID: <20160919190242.wx2enmdqblbcvzqm@earth>
+References: <1473387000-13646-1-git-send-email-linux@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="hpnv5trh2pfb4agl"
+        protocol="application/pgp-signature"; boundary="lvkuyfiotrgym74z"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:45278 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:45806 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750708AbcISS6E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 19 Sep 2016 14:58:04 -0400
+        id S1751414AbcISTCy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 19 Sep 2016 15:02:54 -0400
 Content-Disposition: inline
-In-Reply-To: <20160908013815.9904-1-savoundg@gmail.com>
+In-Reply-To: <1473387000-13646-1-git-send-email-linux@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Georges Savoundararadj <savoundg@gmail.com>
-Cc: linux-pm@vger.kernel.org, Aurelien Chanot <chanot.a@gmail.com>, Andreas Dannenberg <dannenberg@ti.com>, David Woodhouse <dwmw2@infradead.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Brian Norris <briannorris@chromium.org>
 
 
---hpnv5trh2pfb4agl
+--lvkuyfiotrgym74z
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Sep 07, 2016 at 06:38:15PM -0700, Georges Savoundararadj wrote:
-> bq->charger is initialized in bq24257_power_supply_init.
-> Therefore, bq24257_power_supply_init should be called before the
-> registration of the IRQ handler bq24257_irq_handler_thread that calls
-> power_supply_changed(bq->charger).
+On Thu, Sep 08, 2016 at 07:10:00PM -0700, Guenter Roeck wrote:
+> According to the Smart Battery Data Specification, the use
+> of ManufacturerAcess (register 0x0) is implementation-defined.
+> It appears that some batteries use writes to this register
+> in order to implement certain functionality, but others may
+> simply NAK all writes to it. As a result, write failures to
+> ManufacturerAccess should not be used as an indicator of
+> battery presence, nor as a failure to enter sleep mode.
 >=20
-> Signed-off-by: Georges Savoundararadj <savoundg@gmail.com>
-> Cc: Aurelien Chanot <chanot.a@gmail.com>
-> Cc: Andreas Dannenberg <dannenberg@ti.com>
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> ---
->  drivers/power/bq24257_charger.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+> The failed write access was seen with SANYO AP13J3K.
 >=20
-> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_char=
-ger.c
-> index 1fea2c7..6fc31bd 100644
-> --- a/drivers/power/bq24257_charger.c
-> +++ b/drivers/power/bq24257_charger.c
-> @@ -1068,6 +1068,12 @@ static int bq24257_probe(struct i2c_client *client,
->  		return ret;
->  	}
-> =20
-> +	ret =3D bq24257_power_supply_init(bq);
-> +	if (ret < 0) {
-> +		dev_err(dev, "Failed to register power supply\n");
-> +		return ret;
-> +	}
-> +
->  	ret =3D devm_request_threaded_irq(dev, client->irq, NULL,
->  					bq24257_irq_handler_thread,
->  					IRQF_TRIGGER_FALLING |
-> @@ -1078,12 +1084,6 @@ static int bq24257_probe(struct i2c_client *client,
->  		return ret;
->  	}
-> =20
-> -	ret =3D bq24257_power_supply_init(bq);
-> -	if (ret < 0) {
-> -		dev_err(dev, "Failed to register power supply\n");
-> -		return ret;
-> -	}
-> -
->  	ret =3D sysfs_create_group(&bq->charger->dev.kobj, &bq24257_attr_group);
->  	if (ret < 0) {
->  		dev_err(dev, "Can't create sysfs entries\n");
+> Cc: Brian Norris <briannorris@chromium.org>
+> Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 
 Thanks, queued.
 
 -- Sebastian
 
---hpnv5trh2pfb4agl
+--lvkuyfiotrgym74z
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJX4DUwAAoJENju1/PIO/qaqeIQAKZm2BF4FNPqbg8aOhONpzXP
-tgyG04iJ5HkIGukkxZDSCnUYRZ1laFA0mI3cRGvO7nvCW52rUJjwamNqKxcmMWdZ
-+cl/HsVk08rJIpHYai08gwo3hLySgjDUXHQ7y9jGll4XoWMF5Ug3cYxezPKpq8C5
-2VHgvPok6KLp3PEjJJ/tWeIY5qFll5RNIaZ5BmXeBOvQFC6tR7OgnCLcQxWaNlDx
-2Daah06m4+v0BcsPJf+Te0r+m7Z5TXAdR9eHnUh0aRfb8oGAc0rablU0p1KzrCRa
-swPMBLpiI1Pk/OZsQrlphZu4A4vzOMBhoc2pFo2hrj7ZMJXVDZPiKnsUEO3HqnuM
-Qe3MIFjniTCqcgAvT9CnQGCOYfBt78kygwlKwNPfsxFElcsnawyZsTI4HgJ12wHB
-888I9sVonyc0qOJO2TyviBh9tHzc7T+aUrzY2q7+MaU+EsM1z7xkOBaaAR1+SaJ+
-7g9hTffKGgm1UhzOM23MOYCsnqHgue0ZgJc2Esi+kjyCkFTOlUyfsTsWmc1yJCxz
-h7cThl5A58J7cek0l0BvDGfxI9LvrnIS3VevK+aWMjNxHMW1FQf2OAUI8fYTWxro
-mhFO6DmzzjRy2554ILX2e1bc2RCFULTr2lqMWpWHMe7tX3cmF0Au1j63gjQwkrlj
-DPktU+5y2qa9/+VL+kue
-=GSXb
+iQIcBAEBCgAGBQJX4DZSAAoJENju1/PIO/qaE5AP/Rw5y8aJJByuZLIi4x2oeATq
+ljQ311ckvq49IxlqF4wrIZRJJnCUYMnYRegWnyFNwPaFVgYQiorphQyTanP6JNzt
+EmBJSsQw9HX/KrL9XXwgvV56VO/ldRdyxNsYRH4+y/37HBrObRIyBIhgwm5Mtu44
+BG7Xndy+WY7J9IUPWT5XWbWsOu72sZLj3iX8486WCArmoNYOC/Xwqxsobz02Wb0R
+QzY8h8+xhRYjyORp5bZ3a4Q+Sj4vC4QuZHQlKJh7tDcfKJtq6pZ1K9sNXjITuJ/S
+DyLIP2B8OVFu7uVGiAnZy/YwBjKftq9E6yDqgovRwvvzi5Yo5Po5TFTmmS8fU+ja
+Wz9K4/+Yoe3a5AEruQ3w2/S+LIr7Wfc4j+VcBERHb9NhkwhYTuxUmvkW55rhQpAO
+DOeGda1UGIO2EZGKpoudG05rFfk80ZbBUWNQTPa6eO1H856oiTAxpPsLSno4FN13
+/cmvuD3F3vPaFbPfpvmMxo5h9HFS5qXc7NZtmXb1rqFr8zM54eJ7KVDCfzHxdVoX
+gGnWrZS6Id93macqAGzSk6gtZjWXuj2ZPOEVuX5zd6cO0M3qzmRwZgaik9ox/aPP
+rrAoZo02RGNiCnMyGcUiDOx4cJt3utmVWIxuwSB4jEIXZsvMs/0ivWF7WepP2sci
+v5qMqUsXmIU6tewzmgiJ
+=0ATD
 -----END PGP SIGNATURE-----
 
---hpnv5trh2pfb4agl--
+--lvkuyfiotrgym74z--
