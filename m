@@ -1,54 +1,75 @@
-From: =?utf-8?B?6rCV7J247ZiBL+yxheyehOyXsOq1rOybkC9TVyBQbGF0Zm9ybSjsl7ApQU9U?=
-         =?utf-8?B?7YyAKGh1Z2gua2FuZ0BsZ2UuY29tKQ==?= <hugh.kang@lge.com>
-Subject: RE: [PATCH] thermal: cpu_cooling: Fix wrong comment call function
- name
-Date: Mon, 19 Sep 2016 09:12:41 +0900
-Message-ID: <C80AB6F618D91B4E8F391CB202C12DFD1122F76EA5@LGEVEXMBHQSVC1.LGE.NET>
-References: <1473208539-17685-1-git-send-email-hugh.kang@lge.com>
- <20160908082600.GA3112@e104805>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: rk3399_dmc: Remove explictly regulator_put
+ call in .remove
+Date: Mon, 19 Sep 2016 09:16:03 +0900
+Message-ID: <57DF2E43.4090801@samsung.com>
+References: <CGME20160918024126epcas1p16b581f05e978e0e2014bb20a47e82aec@epcas1p1.samsung.com>
+ <1474166465-18736-1-git-send-email-axel.lin@ingics.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from LGEAMRELO13.lge.com ([156.147.23.53]:46700 "EHLO
-        lgeamrelo13.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755407AbcISAMq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Sep 2016 20:12:46 -0400
-In-Reply-To: <20160908082600.GA3112@e104805>
-Content-Language: ko-KR
+Received: from mailout4.samsung.com ([203.254.224.34]:59872 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932506AbcISAQG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Sep 2016 20:16:06 -0400
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout4.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0ODQ00TJ362RZM40@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Mon, 19 Sep 2016 09:16:03 +0900 (KST)
+In-reply-to: <1474166465-18736-1-git-send-email-axel.lin@ingics.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, =?utf-8?B?6rCV7J247ZiBL+yxheyehOyXsOq1rOybkC9TVyBQbGF0Zm9ybSjsl7ApQU9U?= =?utf-8?B?7YyAKGh1Z2gua2FuZ0BsZ2UuY29tKQ==?= <hugh.kang@lge.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "amit.kachhap@gmail.com" <amit.kachhap@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>, =?utf-8?B?7KCV7LCs6regL+yImOyEneyXsOq1rOybkC9TVyBQbGF0Zm9ybSjsl7ApQU9U?= =?utf-8?B?7YyAKGNoYW4uamVvbmdAbGdlLmNvbSkgKGNoYW4uamVvbmdAbA==?= =?utf-8?B?Z2UuY29tKQ==?= <chan.jeong@lge.com>
+To: Axel Lin <axel.lin@ingics.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Lin Huang <hl@rock-chips.com>, linux-pm@vger.kernel.org
 
-WW91J3JlIHdlbGNvbWUuIFdpbGwgYmUgbWVyZ2VkIHRoaXMgcGF0Y2g/DQpUaGFuayB5b3UNCg0K
-SHVnaCBLYW5nDQoNCk5vIE9uZSBldmVyIGlzIGRlZmVhdGVkIHVudGlsIGRlZmVhdCBoYXMgYmVl
-biBhY2NlcHRlZCBhcyBhIHJlYWxpdHkuDQrqsJXsnbjtmIEgKEh1Z2ggS2FuZykgQ2hpZWYgRW5n
-aW5lZXINClNXIFBsYXRmb3JtKOyXsCkgQWR2YW5jZWQgT1MgVGVjaG5vbG9neSBURUFNIChBT1Qp
-DQpNb2JpbGU6ICs4Mi0xMC01NTEzLTc5NTcNCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
-CkZyb206IEphdmkgTWVyaW5vIFttYWlsdG86amF2aS5tZXJpbm9AYXJtLmNvbV0gDQpTZW50OiBU
-aHVyc2RheSwgU2VwdGVtYmVyIDA4LCAyMDE2IDU6MjYgUE0NClRvOiBJbmh5dWsgS2FuZw0KQ2M6
-IFZpcmVzaCBLdW1hcjsgYW1pdC5rYWNoaGFwQGdtYWlsLmNvbTsgbGludXgta2VybmVsQHZnZXIu
-a2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBFZHVhcmRvIFZhbGVudGluOyBS
-dWkgWmhhbmcNClN1YmplY3Q6IFJlOiBbUEFUQ0hdIHRoZXJtYWw6IGNwdV9jb29saW5nOiBGaXgg
-d3JvbmcgY29tbWVudCBjYWxsIGZ1bmN0aW9uIG5hbWUNCg0KT24gV2VkLCBTZXAgMDcsIDIwMTYg
-YXQgMDk6MzU6MzlBTSArMDkwMCwgSW5oeXVrIEthbmcgd3JvdGU6DQo+IFRoZSBsYXN0X2xvYWQg
-aXMgdXBkYXRlZCBub3QgY3B1ZnJlcV9nZXRfYWN0dWFsX3Bvd2VyKCkgZnVuY3Rpb24gY2FsbCAN
-Cj4gYnV0IGNwdWZyZXFfZ2V0X3JlcXVlc3RlZF9wb3dlcigpIGZ1bmN0aW9uIGNhbGwuDQoNClll
-cCwgbXkgYmFkLiAgVGhhbmtzIGZvciBmaXhpbmcgaXQhDQoNCj4gU2lnbmVkLW9mZi1ieTogSW5o
-eXVrIEthbmcgPGh1Z2gua2FuZ0BsZ2UuY29tPg0KDQpBY2tlZC1ieTogSmF2aSBNZXJpbm8gPGph
-dmkubWVyaW5vQGFybS5jb20+DQoNCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9jcHVf
-Y29vbGluZy5jIA0KPiBiL2RyaXZlcnMvdGhlcm1hbC9jcHVfY29vbGluZy5jIGluZGV4IGEzMmI0
-MTcuLjljZTBlOWUgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9jcHVfY29vbGluZy5j
-DQo+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9jcHVfY29vbGluZy5jDQo+IEBAIC03NCw3ICs3NCw3
-IEBAIHN0cnVjdCBwb3dlcl90YWJsZSB7DQo+ICAgKgljcHVmcmVxIGZyZXF1ZW5jaWVzLg0KPiAg
-ICogQGFsbG93ZWRfY3B1czogYWxsIHRoZSBjcHVzIGludm9sdmVkIGZvciB0aGlzIGNwdWZyZXFf
-Y29vbGluZ19kZXZpY2UuDQo+ICAgKiBAbm9kZTogbGlzdF9oZWFkIHRvIGxpbmsgYWxsIGNwdWZy
-ZXFfY29vbGluZ19kZXZpY2UgdG9nZXRoZXIuDQo+IC0gKiBAbGFzdF9sb2FkOiBsb2FkIG1lYXN1
-cmVkIGJ5IHRoZSBsYXRlc3QgY2FsbCB0byANCj4gY3B1ZnJlcV9nZXRfYWN0dWFsX3Bvd2VyKCkN
-Cj4gKyAqIEBsYXN0X2xvYWQ6IGxvYWQgbWVhc3VyZWQgYnkgdGhlIGxhdGVzdCBjYWxsIHRvIA0K
-PiArIGNwdWZyZXFfZ2V0X3JlcXVlc3RlZF9wb3dlcigpDQo+ICAgKiBAdGltZV9pbl9pZGxlOiBw
-cmV2aW91cyByZWFkaW5nIG9mIHRoZSBhYnNvbHV0ZSB0aW1lIHRoYXQgdGhpcyBjcHUgd2FzIGlk
-bGUNCj4gICAqIEB0aW1lX2luX2lkbGVfdGltZXN0YW1wOiB3YWxsIHRpbWUgb2YgdGhlIGxhc3Qg
-aW52b2NhdGlvbiBvZg0KPiAgICoJZ2V0X2NwdV9pZGxlX3RpbWVfdXMoKQ0KPiAtLQ0KPiAxLjku
-MQ0KPiANCg==
+Hi,
+
+Looks good to me.
+
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+Best Regards,
+Chanwoo Choi
+
+On 2016년 09월 18일 11:41, Axel Lin wrote:
+> Current code uses devm_regulator_get() in .probe so a regulator_put() will
+> be automatically called when unload the module. Remove the explictly
+> regulator_put() call and then we can also remove rk3399_dmcfreq_remove().
+> 
+> Signed-off-by: Axel Lin <axel.lin@ingics.com>
+> ---
+>  drivers/devfreq/rk3399_dmc.c | 10 ----------
+>  1 file changed, 10 deletions(-)
+> 
+> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+> index 54d65f2..e24b73d 100644
+> --- a/drivers/devfreq/rk3399_dmc.c
+> +++ b/drivers/devfreq/rk3399_dmc.c
+> @@ -450,15 +450,6 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+>  	return 0;
+>  }
+>  
+> -static int rk3399_dmcfreq_remove(struct platform_device *pdev)
+> -{
+> -	struct rk3399_dmcfreq *dmcfreq = platform_get_drvdata(pdev);
+> -
+> -	regulator_put(dmcfreq->vdd_center);
+> -
+> -	return 0;
+> -}
+> -
+>  static const struct of_device_id rk3399dmc_devfreq_of_match[] = {
+>  	{ .compatible = "rockchip,rk3399-dmc" },
+>  	{ },
+> @@ -466,7 +457,6 @@ static const struct of_device_id rk3399dmc_devfreq_of_match[] = {
+>  
+>  static struct platform_driver rk3399_dmcfreq_driver = {
+>  	.probe	= rk3399_dmcfreq_probe,
+> -	.remove	= rk3399_dmcfreq_remove,
+>  	.driver = {
+>  		.name	= "rk3399-dmc-freq",
+>  		.pm	= &rk3399_dmcfreq_pm,
+> 
