@@ -1,83 +1,93 @@
-From: Vaibhav Hiremath <vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v6 0/8] power: add power sequence library
-Date: Mon, 19 Sep 2016 13:47:43 +0530
-Message-ID: <364c3aa6-024a-1df5-3ae0-cab0535aae73@linaro.org>
-References: <b1848eb2-9298-9089-ee4d-5356998c6c08@linaro.org>
- <20160824085335.GB27233@shlinux2> <20160829111045.GB3736@b29397-desktop>
- <3a45793f-18d9-0688-d2ab-ef79432c473c@linaro.org>
- <20160831095220.GA11938@b29397-desktop>
- <fd94340b-1c1d-2307-7e57-5b05f1655d2c@linaro.org>
- <20160902011046.GB11262@shlinux2>
- <eb032ff2-dac4-5efe-dda0-96404f290aa8@linaro.org>
- <CAPDyKFp0w0mBGNgu6uk7UevUka_ha6MvaVyOzXjCg3S8kdF7tg@mail.gmail.com>
- <ecbc3c0d-4ce7-758d-7f7d-4b3f3003c1ac@linaro.org>
- <20160919074637.GA10289@b29397-desktop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20160919074637.GA10289@b29397-desktop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, =?UTF-8?Q?Krzysztof_Koz=c5=82owski?= <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux USB List <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, =?UTF-8?Q?Pawe=c5=82_Moll?= <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Fabio Estevam <festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+From: kernel@martin.sperl.org
+Subject: [PATCH V6 0/6] thermal: bcm2835: add thermal driver
+Date: Mon, 19 Sep 2016 08:59:54 +0000
+Message-ID: <1474275600-19378-1-git-send-email-kernel@martin.sperl.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 212-186-180-163.static.upcbusiness.at ([212.186.180.163]:59718
+        "EHLO cgate.sperl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752771AbcISJAG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Sep 2016 05:00:06 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Russell King <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Stefan Wahren <stefan.wahren@i2se.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: Martin Sperl <kernel@martin.sperl.org>
 
+From: Martin Sperl <kernel@martin.sperl.org>
 
+Add a thermal driver for the TSENSE device of the bcm2835/6/7 SOC.
 
-On Monday 19 September 2016 01:16 PM, Peter Chen wrote:
-> On Mon, Sep 19, 2016 at 01:09:10PM +0530, Vaibhav Hiremath wrote:
->>
->> On Friday 09 September 2016 02:17 PM, Ulf Hansson wrote:
->>> [...]
->>>
->>>>>>> We had an agreement that keep mmc's pwrseq framework unchanging.
->>>>>>> Unless Ulf and rob both agree to change.
->>>>>> Why 2 separate approach for same problem ?
->>>>>> And I see this as possible duplication of code/functionality :)
->>>>> How the new kernel compatibles old dts? If we do not need to
->>>>> consider this problem, the mmc can try to use power sequence library
->>>>> too in future.
->>>> I think we should attempt to get both MMC and USB power seq
->>>> come on one agreement, so that it can be reused.
->>> That would be nice. Although, to do that you would have to allow some
->>> DT bindings to be deprecated in the new generic power seq bindings, as
->>> otherwise you would break existing DTBs.
->>>
->>> I guess that is what Rob was objecting to!?
->> yeah, thats right.
->>
->> So lets adopt similar implementation for USB as well instead of
->> library, but keeping MMC untouched as of now.
->>
->> What I am trying to propose here is,
->>
->> Lets have power-sequence framework (similar to V1 of this series),
->> with,
->>
->> pwrseq: Core framework for power sequence.
->> pwrseq_generic/simple: for all generic control, like reset and clock
->> pwrseq_emmc: probably duplication of existing code - the idea
->>                            here is, all future code should be using this new
->>                            binding, so that we can deprecate the
->> drivers/mmc/core/pwrseq
->> pwrseq_arche: The usecase which I am dealing with today, which is more
->>                           complex in nature.
->>
->> Then the respective drivers can add their drivers (if needed) based on
->> complexity.
->>
->> comments ??
-> The key point here is DT maintainer (Rob) doesn't agree with adding new node
-> for power sequence at dts.
->
+If the firmware enables the HW, then the configuration is not touched.
+In case the firmware has not enabled the device, then we try to set
+it up correctly (which unfortunately can not get tested).
 
-Hmmm.
-We haven't heard from Rob lately especially after introduction of complex
-usecases. I hope he would revisit on above proposal.
+It exposes temperature and a critical trip point
+(using a hardcoded default of 80C or the temperature configured
+in the control register by the firmware, which reads as
+407C currently)
 
-Thanks,
-Vaibhav
+The calibrations are (potentially) different for bcm2835, bcm2836
+and bcm2837 and can get selected by the compatible property
+in the device tree.
+
+The driver also exposes the registers via debugfs.
+
+Possible future enhancements:
+* the device has the ability to trigger interrupts on reaching
+  the programmed critical temperature.
+  I have no knowledge which interrupt could be responsible
+  for this on the ARM side, so if we get to know which irq
+  it is we can implement that.
+  Instead the driver right now implements polling in 1 second intervals
+* the device can also reset the HW after the trip point
+  has been reached (also with some delay, so that corrective
+  actions can get taken) - this is currently not enabled by the
+  firmware, but could.
+* we could define more trip points for THERMAL_TRIP_HOT
+* make the trip point limits modifiable (ops.set_trip_temp)
+
+Note:
+  No support for 32-bit arm bcm2837, as there is no
+  arch/arm/boot/dts/bcm2836.dtsi upstream as of now.
+  64-bit arm support is not tested
+
+Changelog:
+ V1 -> V2: renamed dt-binding documentation file
+       	   added specific settings depending on compatible
+	   added trip point based on register
+	   setting up ctrl-register if HW is not enabled by firmware
+	     as per recommendation of Eric (untested)
+	   check that clock frequency is in range
+	     (1.9 - 5MHz - as per comment in clk-bcm2835.c)
+ 	   added driver to multi_v7_defconfig
+ V2 -> V3: made a module in multi_v7_defconfig
+           fixed typo in dt-binding document
+ V3 -> V4: moved driver back to thermal (not using bcm sub-directory)
+       	   set polling interval to 1second (was 0ms, so interrupt driven)
+ V4 -> V5: use correct compatiblity for different soc versions in dt
+       	   support ARM64 for bcm2837 in devicetree and defconfig
+ V5 -> V6: incorporated changes recommended by Stefan Wahren
+
+Martin Sperl (6):
+  dt: bindings: add thermal device driver for bcm2835
+  thermal: bcm2835: add thermal driver for bcm2835 soc
+  ARM: bcm2835: dts: add thermal node to device-tree of bcm283x
+  ARM64: bcm2835: dts: add thermal node to device-tree of bcm2837
+  ARM: bcm2835: add thermal driver to default_config
+  ARM64: bcm2835: add thermal driver to default_config
+
+ .../bindings/thermal/brcm,bcm2835-thermal.txt      |  17 ++
+ arch/arm/boot/dts/bcm2835.dtsi                     |   6 +
+ arch/arm/boot/dts/bcm2836.dtsi                     |   6 +
+ arch/arm/boot/dts/bcm283x.dtsi                     |   7 +
+ arch/arm/configs/bcm2835_defconfig                 |   2 +
+ arch/arm64/boot/dts/broadcom/bcm2837.dtsi          |   6 +
+ arch/arm64/configs/defconfig                       |   1 +
+ drivers/thermal/Kconfig                            |   8 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/bcm2835_thermal.c                  | 340 +++++++++++++++++++++
+ 10 files changed, 394 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
+ create mode 100644 drivers/thermal/bcm2835_thermal.c
+
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.1.4
