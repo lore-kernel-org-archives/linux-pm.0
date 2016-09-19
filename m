@@ -1,45 +1,89 @@
-From: kernel@martin.sperl.org
-Subject: [PATCH V6 4/6] ARM64: bcm2835: dts: add thermal node to device-tree of bcm2837
-Date: Mon, 19 Sep 2016 08:59:58 +0000
-Message-ID: <1474275600-19378-5-git-send-email-kernel@martin.sperl.org>
+From: kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org
+Subject: [PATCH V6 3/6] ARM: bcm2835: dts: add thermal node to device-tree of bcm283x
+Date: Mon, 19 Sep 2016 08:59:57 +0000
+Message-ID: <1474275600-19378-4-git-send-email-kernel@martin.sperl.org>
 References: <1474275600-19378-1-git-send-email-kernel@martin.sperl.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 212-186-180-163.static.upcbusiness.at ([212.186.180.163]:59718
-        "EHLO cgate.sperl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753781AbcISJAO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Sep 2016 05:00:14 -0400
-In-Reply-To: <1474275600-19378-1-git-send-email-kernel@martin.sperl.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1474275600-19378-1-git-send-email-kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Russell King <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Stefan Wahren <stefan.wahren@i2se.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
-Cc: Martin Sperl <kernel@martin.sperl.org>
 
-From: Martin Sperl <kernel@martin.sperl.org>
+From: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
 
-Add the node for the thermal sensor of the bcm2837-soc
+Add the node for the thermal sensor of the bcm2835-soc
 to the device tree.
 
-Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+Signed-off-by: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+Reviewed-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+Acked-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+
+Changelog:
+V1 -> V5: generic settings is shared in bcm283x.dtsi, but disabled
+	  moved the compatible string to the SOC specific dtsi
+            for arm and arm64
+V5 -> V6: removed 0x in node name
+
 ---
- arch/arm64/boot/dts/broadcom/bcm2837.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/arm/boot/dts/bcm2835.dtsi | 6 ++++++
+ arch/arm/boot/dts/bcm2836.dtsi | 6 ++++++
+ arch/arm/boot/dts/bcm283x.dtsi | 7 +++++++
+ 3 files changed, 19 insertions(+)
 
-Note: untested as I have no 64 bit test system.
+Note: there is no arm/boot/dts/bcm2837.dtsi as of now,
+      so the 32-bit rpi3 dt is not modified.
 
-diff --git a/arch/arm64/boot/dts/broadcom/bcm2837.dtsi b/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
-index f2a31d0..2b0cfc7 100644
---- a/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
-+++ b/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
-@@ -74,3 +74,9 @@
+diff --git a/arch/arm/boot/dts/bcm2835.dtsi b/arch/arm/boot/dts/bcm2835.dtsi
+index a78759e..0890d97 100644
+--- a/arch/arm/boot/dts/bcm2835.dtsi
++++ b/arch/arm/boot/dts/bcm2835.dtsi
+@@ -23,3 +23,9 @@
+ 		};
+ 	};
+ };
++
++/* enable thermal sensor with the correct compatible property set */
++&thermal {
++	compatible = "brcm,bcm2835-thermal";
++	status = "okay";
++};
+diff --git a/arch/arm/boot/dts/bcm2836.dtsi b/arch/arm/boot/dts/bcm2836.dtsi
+index 9d0651d..519a44f 100644
+--- a/arch/arm/boot/dts/bcm2836.dtsi
++++ b/arch/arm/boot/dts/bcm2836.dtsi
+@@ -76,3 +76,9 @@
  	interrupt-parent = <&local_intc>;
  	interrupts = <8>;
  };
 +
 +/* enable thermal sensor with the correct compatible property set */
 +&thermal {
-+	compatible = "brcm,bcm2837-thermal";
++	compatible = "brcm,bcm2836-thermal";
 +	status = "okay";
 +};
+diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
+index b982522..d9acf21 100644
+--- a/arch/arm/boot/dts/bcm283x.dtsi
++++ b/arch/arm/boot/dts/bcm283x.dtsi
+@@ -186,6 +186,13 @@
+ 			interrupts = <2 14>; /* pwa1 */
+ 		};
+ 
++		thermal: thermal@7e212000 {
++			compatible = "brcm,bcm2835-thermal";
++			reg = <0x7e212000 0x8>;
++			clocks = <&clocks BCM2835_CLOCK_TSENS>;
++			status = "disabled";
++		};
++
+ 		aux: aux@0x7e215000 {
+ 			compatible = "brcm,bcm2835-aux";
+ 			#clock-cells = <1>;
 -- 
 2.1.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
