@@ -1,53 +1,51 @@
-From: Inhyuk Kang <hugh.kang@lge.com>
-Subject: [PATCH] of: thermal: Fixed governor at each thermal zone
-Date: Mon, 19 Sep 2016 10:18:52 +0900
-Message-ID: <1474247932-1026-1-git-send-email-hugh.kang@lge.com>
+From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V2 1/7] dt-bindings: Update QorIQ TMU thermal bindings
+Date: Mon, 19 Sep 2016 10:44:28 +0800
+Message-ID: <1474253068.23153.2.camel@intel.com>
+References: <1465270054-31512-1-git-send-email-hongtao.jia@nxp.com>
+         <20160608195241.GA6805@rob-hp-laptop>
+         <CADRPPNQ+hikr1qNK1wPbLnhudUrU1bN_2iuYyRQnqCN4Zwh83Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from LGEAMRELO11.lge.com ([156.147.23.51]:42138 "EHLO
-        lgeamrelo11.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932596AbcISB3U (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Sep 2016 21:29:20 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CADRPPNQ+hikr1qNK1wPbLnhudUrU1bN_2iuYyRQnqCN4Zwh83Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Leo Li <pku.leo-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Jia Hongtao <hongtao.jia-3arQi8VN3Tc@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linuxppc-dev <linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Scott Wood <scott.wood-3arQi8VN3Tc@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hugh.kang@lge.com
 
-It is necessary to be added governor at each thermal_zone.
-Because some governors should be operated in the during the kernel booting
-in order to avoid heating problem.
+On 三, 2016-09-14 at 11:40 -0500, Leo Li wrote:
+> On Wed, Jun 8, 2016 at 2:52 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> > 
+> > On Tue, Jun 07, 2016 at 11:27:34AM +0800, Jia Hongtao wrote:
+> > > 
+> > > For different types of SoC the sensor id and endianness may vary.
+> > > "#thermal-sensor-cells" is used to provide sensor id information.
+> > > "little-endian" property is to tell the endianness of TMU.
+> > > 
+> > > Signed-off-by: Jia Hongtao <hongtao.jia-3arQi8VN3Tc@public.gmane.org>
+> > > ---
+> > > Changes for V2:
+> > > * Remove formatting chnages.
+> > > 
+> > >  Documentation/devicetree/bindings/thermal/qoriq-thermal.txt | 7
+> > > +++++++
+> > >  1 file changed, 7 insertions(+)
+> > Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Hi Zhang Rui,
+> 
+> Since you have applied the driver patch, can you also apply the
+> binding patch?  The binding is supposed to go with the driver.
+> 
 
-Default governor cannot be covered all thermal zones policy because
-some thermal zones want to apply different one.
-For example, the power allocator governor operates differently with
-step wise governor.
-Hence, it is better to parse governor parameter from the device tree.
+Do you mean I should take both patch 1/7 and 7/7? I can not see the
+other patches in this patch set.
 
-Signed-off-by: Inhyuk Kang <hugh.kang@lge.com>
+thanks,
+rui
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index b8e509c..382c440 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -970,6 +970,7 @@ int __init of_parse_thermal_zones(void)
- 		struct thermal_zone_device *zone;
- 		struct thermal_zone_params *tzp;
- 		int i, mask = 0;
-+		const char *governor;
- 		u32 prop;
- 
- 		tz = thermal_of_build_thermal_zone(child);
-@@ -996,6 +997,9 @@ int __init of_parse_thermal_zones(void)
- 		if (!of_property_read_u32(child, "sustainable-power", &prop))
- 			tzp->sustainable_power = prop;
- 
-+		if (!of_property_read_string(child, "governor-name", &governor))
-+			strcpy(tzp->governor_name, governor);
-+
- 		for (i = 0; i < tz->ntrips; i++)
- 			mask |= 1 << i;
- 
--- 
-1.9.1
-
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
