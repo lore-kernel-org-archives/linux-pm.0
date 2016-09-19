@@ -1,62 +1,62 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: reset: zx-reboot: Unmap region obtained by
- of_iomap
-Date: Mon, 19 Sep 2016 21:26:04 +0200
-Message-ID: <20160919192603.gwandp2jkta6q4ei@earth>
-References: <57d92f28.8796620a.e4584.df58@mx.google.com>
+Subject: Re: [PATCH 16/19] power: reset: st-poweroff: Remove obsolete
+ platforms.
+Date: Mon, 19 Sep 2016 21:34:25 +0200
+Message-ID: <20160919193423.dhhzk33eu66fbtt6@earth>
+References: <1473859677-9231-1-git-send-email-peter.griffin@linaro.org>
+ <1473859677-9231-17-git-send-email-peter.griffin@linaro.org>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="3pgxgkwpyxy52whr"
+        protocol="application/pgp-signature"; boundary="dk4gmzmd7ndllvze"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:48824 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:49930 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752028AbcIST0L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 19 Sep 2016 15:26:11 -0400
+        id S1751685AbcISTed (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 19 Sep 2016 15:34:33 -0400
 Content-Disposition: inline
-In-Reply-To: <57d92f28.8796620a.e4584.df58@mx.google.com>
+In-Reply-To: <1473859677-9231-17-git-send-email-peter.griffin@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: arvind.yadav.cs@gmail.com
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Peter Griffin <peter.griffin@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, patrice.chotard@st.com, devicetree@vger.kernel.org, lee.jones@linaro.org, dwmw2@infradead.org, dbaryshkov@gmail.com, linux-pm@vger.kernel.org
 
 
---3pgxgkwpyxy52whr
+--dk4gmzmd7ndllvze
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Sep 14, 2016 at 04:35:31PM +0530, arvind.yadav.cs@gmail.com wrote:
-> From: Arvind Yadav <arvind.yadav.cs@gmail.com>
->=20
-> Free memory mapping, if probe is not successful.
->=20
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+On Wed, Sep 14, 2016 at 02:27:54PM +0100, Peter Griffin wrote:
+> This patch removes support for STiH415/6 SoC's from the
+> st-poweroff driver, as support for these platforms is
+> being removed from the kernel.
 
-Thanks, queued.
+I queued this to power-supply's for-next branch. Please
+cc me to full thread next time, so that I can see what
+is goin on.
 
 -- Sebastian
 
---3pgxgkwpyxy52whr
+--dk4gmzmd7ndllvze
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJX4DvLAAoJENju1/PIO/qaP6EQAJl/pK/cg/zxWTNTHu1gEm1A
-RD3gFvSlwj2vDlVMEdtIkg4p+3N2BkwUDLx+B7Suq8WpSxdaYZjh0VsDOiJQX2Gb
-nEs4XpqwBlNtWPOAe/XTkeHo7v4dx8Dtl7x7go6fhR92Xszg7m8if7ZHVsUrBqwu
-FlCY2vfPb6H/+ZZ3+odcw6fUlU+K/SfwekHkGLWqfyRMfQ51/eWArkYvWpaNTNv7
-7TNjMdO8VwrgXaOuUMA8l6ww1j1gQokrvidRwbE8ssjbpEci+fRcoQ7/GfAkp7MK
-kkw+1KqWd79gUrbcT1Ao/pLBBrONm5igX9ZV2RJ/xr8UwpDjtOfnw/ZUiuSm+iFS
-GweBBtrQWo3SXCpURHNGgHFIz0yb1nu4EDwVH9KOynG3b7gFdHo0Fs77QUb9VUPV
-AZK2qgM5rlpo1aU4NQc6WD+/gLC9oatQa29cYqkk6kBgfy0mvu8KoD7QwaOmQnm0
-bTHFzRDDvGaqegNRUNMyMK4cjkb8FF9R69TXMCBwvIj1eJPg/EYiOwPk82GjVWC7
-MKz2/R7gRNim9UrrnI52tGPvbwwzAkyzaht90zvvR3v8icSp0JkbC1rvcdZrC7nH
-DRGbir2aCmd313WSOGm7KQo9JUjQoljmOboCfXWPV1hPkPN+TM2rXAykOxYvSHwA
-9cmhlEQo18KUsLhq4Ebh
-=h6EL
+iQIcBAEBCgAGBQJX4D2/AAoJENju1/PIO/qaze0P/RpvjBG4mmyl3h/8+lOt25dz
+taZhTsl/M2/F0Q+kCJD85nUVgM5YJssRtchPixIm6I/OMg1okvkThvYWrYkY2ZFi
+cEY/ny8uI7wSTr5vs4UMxpJ1GysLqM9vDV1eJHesr2VS/1601nSIGjsv+NXIPxci
+DQ7xjspHQHN111nTcmiaXrxjn7bS4XB/MfPpIwRttgwxWfJtZMP9HVvH6TFvNt5J
+vrNnBAckFCX8QsnGi8SGcV/MJ3KlXr8NILMwD3wZzMCchnSuzexqmpLdh1SYNx2Z
+J1JhraHuyDnuP3fAVE7LgFiyO/nX36i8RHzQ9Lio6IUk1aPr+6B6X/UYSGUihT9w
+qE2cqAQsp8199ronydxy0T4SkyX8ph/OgAV22NnE0GBAmmsxcjd+i7+bNfMkXc64
+wSWhWdprxSAf4LBxbeJQ5othafZkbP6F59LLT7+FV6EVpYWtgWKCqf+OvSTUC8Tv
++vOUnOiffj+2T0aYdEFTw9eCYHcPTeeyW7Me19B37Hctgx8wwxDw/BHQlbLAO+dd
+2ilsS0arDhsaXPkKJ8poUsDWehQzTHui/Bft6vvNwojNMOhnKQGryoWboEZanKQW
+oBplP4VElmkuWgjuVrFrZZKOPOCOSmzHHoxlRouClF9TXMGdkqECsh/9vz9QYEBW
+NIijanioo10HyhWEpxpw
+=FHE/
 -----END PGP SIGNATURE-----
 
---3pgxgkwpyxy52whr--
+--dk4gmzmd7ndllvze--
