@@ -1,155 +1,110 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/1] power: supply: sbs-battery: Cleanup removal of
- chip->pdata
-Date: Mon, 19 Sep 2016 20:47:31 +0200
-Message-ID: <20160919184731.uuba5vkwv4xf3vxs@earth>
-References: <1474278372-38077-1-git-send-email-preid@electromag.com.au>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [PATCH v5] Force cppc_cpufreq to report values in KHz to fix user
+ space reporting
+Date: Mon, 19 Sep 2016 12:53:05 -0600
+Message-ID: <89bc4faf-b1e8-6998-0930-46e8385d8913@redhat.com>
+References: <1469049004-19069-1-git-send-email-ahs3@redhat.com>
+ <1638694.s4oPcnuXuT@vostro.rjw.lan>
+Reply-To: ahs3@redhat.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="daulgqnbglp5lfzi"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:44346 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751387AbcISSri (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 19 Sep 2016 14:47:38 -0400
-Content-Disposition: inline
-In-Reply-To: <1474278372-38077-1-git-send-email-preid@electromag.com.au>
+Received: from mail-it0-f49.google.com ([209.85.214.49]:35704 "EHLO
+        mail-it0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750867AbcISSxI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Sep 2016 14:53:08 -0400
+Received: by mail-it0-f49.google.com with SMTP id r192so77477576ita.0
+        for <linux-pm@vger.kernel.org>; Mon, 19 Sep 2016 11:53:08 -0700 (PDT)
+In-Reply-To: <1638694.s4oPcnuXuT@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: viresh.kumar@linaro.org, ashwin.chaugule@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Prashanth Prakash <pprakash@codeaurora.org>
 
+On 09/13/2016 07:09 PM, Rafael J. Wysocki wrote:
+> On Wednesday, July 20, 2016 03:10:04 PM Al Stone wrote:
+>> When CPPC is being used by ACPI on arm64, user space tools such as
+>> cpupower report CPU frequency values from sysfs that are incorrect.
+>>
+>> What the driver was doing was reporting the values given by ACPI tables
+>> in whatever scale was used to provide them.  However, the ACPI spec
+>> defines the CPPC values as unitless abstract numbers.  Internal kernel
+>> structures such as struct perf_cap, in contrast, expect these values
+>> to be in KHz.  When these struct values get reported via sysfs, the
+>> user space tools also assume they are in KHz, causing them to report
+>> incorrect values (for example, reporting a CPU frequency of 1MHz when
+>> it should be 1.8GHz).
+>>
+>> The downside is that this approach has some assumptions:
+>>
+>>    (1) It relies on SMBIOS3 being used, *and* that the Max Frequency
+>>    value for a processor is set to a non-zero value.
+>>
+>>    (2) It assumes that all processors run at the same speed, or that
+>>    the CPPC values have all been scaled to reflect relative speed.
+>>    This patch retrieves the largest CPU Max Frequency from a type 4 DMI
+>>    record that it can find.  This may not be an issue, however, as a
+>>    sampling of DMI data on x86 and arm64 indicates there is often only
+>>    one such record regardless.  Since CPPC is relatively new, it is
+>>    unclear if the ACPI ASL will always be written to reflect any sort
+>>    of relative performance of processors of differing speeds.
+>>
+>>    (3) It assumes that performance and frequency both scale linearly.
+>>
+>> For arm64 servers, this may be sufficient, but it does rely on
+>> firmware values being set correctly.  Hence, other approaches will
+>> be considered in the future.
+>>
+>> This has been tested on three arm64 servers, with and without DMI, with
+>> and without CPPC support.
+>>
+>> Changes for v5:
+>>     -- Move code to cpufreq/cppc_cpufreq.c from acpi/cppc_acpi.c to keep
+>>        frequency-related code together, and keep the CPPC abstract scale
+>>        in ACPI (Prashanth Prakash)
+>>     -- Fix the scaling to remove the incorrect assumption that frequency
+>>        was always a range from zero to max; as a practical matter, it is
+>>        not (Prasanth Prakash); this also allowed us to remove an over-
+>>        engineered function to do this math.
+>>
+>> Changes for v4:
+>>     -- Replaced magic constants with #defines (Rafael Wysocki)
+>>     -- Renamed cppc_unitless_to_khz() to cppc_to_khz() (Rafael Wysocki)
+>>     -- Replaced hidden initialization with a clearer form (Rafael Wysocki)
+>>     -- Instead of picking up the first Max Speed value from DMI, we will
+>>        now get the largest Max Speed; still an approximation, but slightly
+>>        less subject to error (Rafael Wysocki)
+>>     -- Kconfig for cppc_cpufreq now depends on DMI, instead of selecting
+>>        it, in order to make sure DMI is set up properly (Rafael Wysocki)
+>>
+>> Changes for v3:
+>>     -- Added clarifying commentary re short-term vs long-term fix (Alexey
+>>        Klimov)
+>>     -- Added range checking code to ensure proper arithmetic occurs,
+>>        especially no division by zero (Alexey Klimov)
+>>
+>> Changes for v2:
+>>     -- Corrected thinko: needed to have DEPENDS on DMI in Kconfig.arm,
+>>        not SELECT DMI (found by build daemon)
+>>
+>> Signed-off-by: Al Stone <ahs3@redhat.com>
+>> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+> 
+> Applied.
+> 
+> Thanks,
+> Rafael
+> 
 
---daulgqnbglp5lfzi
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I've been on vacation so just now am seeing this.  Thanks, Rafael!
 
-Hi,
-
-On Mon, Sep 19, 2016 at 05:46:12PM +0800, Phil Reid wrote:
-> There where still a few lingering references to pdata after commit
-> power: supply: sbs-battery: simplify DT parsing.
->=20
-> Remove pdata from struct=B7sbs_info and conditional checks to ser if this
-> was set from the i2c read / write functions.
-> Instead of call max in each function for incrementing poll_retry_count
-> do it once in the probe function.
-> Fixup null pointer dereference in to pdata in sbs_external_power_changed.
->=20
-> Signed-off-by: Phil Reid <preid@electromag.com.au>
-> ---
->  drivers/power/supply/sbs-battery.c | 18 +++++++-----------
->  1 file changed, 7 insertions(+), 11 deletions(-)
->=20
-> diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sb=
-s-battery.c
-> index 248a5dd..3ffa0ec 100644
-> --- a/drivers/power/supply/sbs-battery.c
-> +++ b/drivers/power/supply/sbs-battery.c
-> @@ -163,7 +163,6 @@ static enum power_supply_property sbs_properties[] =
-=3D {
->  struct sbs_info {
->  	struct i2c_client		*client;
->  	struct power_supply		*power_supply;
-> -	struct sbs_platform_data	*pdata;
->  	bool				is_present;
->  	struct gpio_desc		*gpio_detect;
->  	bool				enable_detection;
-> @@ -185,8 +184,7 @@ static int sbs_read_word_data(struct i2c_client *clie=
-nt, u8 address)
->  	s32 ret =3D 0;
->  	int retries =3D 1;
-> =20
-> -	if (chip->pdata)
-> -		retries =3D max(chip->i2c_retry_count + 1, 1);
-> +	retries =3D chip->i2c_retry_count + 1;
-
-Why + 1? This should already be done in probe().
-
->  	while (retries > 0) {
->  		ret =3D i2c_smbus_read_word_data(client, address);
-> @@ -213,10 +211,8 @@ static int sbs_read_string_data(struct i2c_client *c=
-lient, u8 address,
->  	int retries_length =3D 1, retries_block =3D 1;
->  	u8 block_buffer[I2C_SMBUS_BLOCK_MAX + 1];
-> =20
-> -	if (chip->pdata) {
-> -		retries_length =3D max(chip->i2c_retry_count + 1, 1);
-> -		retries_block =3D max(chip->i2c_retry_count + 1, 1);
-> -	}
-> +	retries_length =3D chip->i2c_retry_count;
-> +	retries_block =3D chip->i2c_retry_count;
-> =20
->  	/* Adapter needs to support these two functions */
->  	if (!i2c_check_functionality(client->adapter,
-> @@ -280,8 +276,7 @@ static int sbs_write_word_data(struct i2c_client *cli=
-ent, u8 address,
->  	s32 ret =3D 0;
->  	int retries =3D 1;
-> =20
-> -	if (chip->pdata)
-> -		retries =3D max(chip->i2c_retry_count + 1, 1);
-> +	retries =3D max(chip->i2c_retry_count + 1, 1);
-
-Here we should be able to drop max() and +1, too.
-
->  	while (retries > 0) {
->  		ret =3D i2c_smbus_write_word_data(client, address,
-> @@ -707,7 +702,7 @@ static void sbs_external_power_changed(struct power_s=
-upply *psy)
->  	cancel_delayed_work_sync(&chip->work);
-> =20
->  	schedule_delayed_work(&chip->work, HZ);
-> -	chip->poll_time =3D chip->pdata->poll_retry_count;
-> +	chip->poll_time =3D chip->poll_retry_count;
->  }
-> =20
->  static void sbs_delayed_work(struct work_struct *work)
-> @@ -791,7 +786,7 @@ static int sbs_probe(struct i2c_client *client,
->  	rc =3D of_property_read_u32(client->dev.of_node, "sbs,i2c-retry-count",
->  				  &chip->i2c_retry_count);
->  	if (rc)
-> -		chip->i2c_retry_count =3D 1;
-> +		chip->i2c_retry_count =3D 0;
-
-I think 0 was correct, since you do a + 1 later.
-
->  	rc =3D of_property_read_u32(client->dev.of_node, "sbs,poll-retry-count",
->  				  &chip->poll_retry_count);
-> @@ -802,6 +797,7 @@ static int sbs_probe(struct i2c_client *client,
->  		chip->poll_retry_count =3D pdata->poll_retry_count;
->  		chip->i2c_retry_count  =3D pdata->i2c_retry_count;
->  	}
-> +	chip->i2c_retry_count =3D max(chip->i2c_retry_count + 1, 1);
-> =20
->  	chip->gpio_detect =3D devm_gpiod_get_optional(&client->dev,
->  			"sbs,battery-detect", GPIOD_IN);
-
-I still think we should make i2c_retry_count and poll_retry_count
-unsigned and skip the max() part completely.
-
--- Sebastian
-
---daulgqnbglp5lfzi
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJX4DLAAAoJENju1/PIO/qallUP/A9VPkii05G3x+d0KCDd7Tb/
-3QpW5CudsC/ujbjb8NdO3/O8i9Vzs7d9Q5FbQ2qAn0uXG6mPWcF8DkIINF0SW3vo
-xVcTIGWBrTjKLNTQx2oak7u7xMGdkvT/Zi4LAB7zgL2wUaAiWPhnx3h03nY2rE3V
-/iPDcHyP/Y7txRbDOwbuPuZ3OeITld8StqQGe6M9IKeruoiy/ccsqhK0nhOYOIFZ
-a7agb2dpEjYSH0v/Zss8VX5qAcKfRWrBP+OWHWqDKlPfmPz2LNoPe8CjrAeQj3TH
-hJhsjYKl5drJZG6hTHbqoxKQSbn69Uf2oLdRhradG4fxLiTXMKwEUbu1mTWoNMOg
-5ldl3mo3AOzkSMf+GB1jZbqD8LTiRtjsKAUIroCo4Mnp9kQfIaqSV4frsHZlhFhN
-GUffX2KE2P3FCAsx5GuOZk6kNKS2u5ngtgiWg7ZOPPVo+XrAcXSHVv09MVLbDJlz
-y+UdCNa/UD0ZTN/oLcplfv44OFx7HN6O0FSZjbUFeJh+YZPdTChViRhLwlYpnRIs
-T5F9yVzmFUk1kWP8aTi1xegR6+/b6NmdRvVA1SZJWLABJugiEU5nx9byDAP17Ob3
-fw0trM6UfDb/Mc24Wq0ZHKF1qQ9UPnzQubkY2Vggtzyw+s/Kp2sG39+GfjBNczgN
-JAq1UAO1IAfnTbPlyBQD
-=fxgJ
------END PGP SIGNATURE-----
-
---daulgqnbglp5lfzi--
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
