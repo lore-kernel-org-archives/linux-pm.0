@@ -1,111 +1,154 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH v2 1/2] Documentation: dt: add bindings for ti-cpufreq
-Date: Tue, 20 Sep 2016 09:19:32 -0500
-Message-ID: <57E14574.9060602@ti.com>
-References: <20160901025328.376-1-d-gerlach@ti.com>
- <20160901025328.376-2-d-gerlach@ti.com> <20160919211400.GA4276@rob-hp-laptop>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle
+ states
+Date: Tue, 20 Sep 2016 10:17:48 -0600
+Message-ID: <20160920161748.GB46914@linaro.org>
+References: <20160902201605.GA1705@linaro.org>
+ <87sht59mcw.fsf@arm.com>
+ <20160912161600.GA21885@linaro.org>
+ <a4fc71ae-6fa5-4142-6dd4-7bc96eb20186@arm.com>
+ <87intz665i.fsf@arm.com>
+ <20160913193844.GB28944@linaro.org>
+ <87h99i6b5d.fsf@arm.com>
+ <7hpoo3ix80.fsf@baylibre.com>
+ <7af4c2d7-70a3-1881-2980-8ea49e594e5b@arm.com>
+ <874m5cx6y8.fsf@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:40338 "EHLO
-        devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752272AbcITOUM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Sep 2016 10:20:12 -0400
-In-Reply-To: <20160919211400.GA4276@rob-hp-laptop>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:36065 "EHLO
+        mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932320AbcITQRw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Sep 2016 12:17:52 -0400
+Received: by mail-pa0-f48.google.com with SMTP id id6so8520945pad.3
+        for <linux-pm@vger.kernel.org>; Tue, 20 Sep 2016 09:17:51 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <874m5cx6y8.fsf@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Tony Lindgren <tony@atomide.com>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>
+To: Brendan Jackman <brendan.jackman@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Kevin Hilman <khilman@baylibre.com>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, ulf.hansson@linaro.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-Rob,
-On 09/19/2016 04:14 PM, Rob Herring wrote:
-> On Wed, Aug 31, 2016 at 09:53:27PM -0500, Dave Gerlach wrote:
->> Add the device tree bindings document for the TI CPUFreq/OPP driver
->> on AM33xx, AM43xx, DRA7, and AM57 SoCs. The operating-points-v2 binding
->> allows us to provide an opp-supported-hw property for each OPP to define
->> when it is available. This driver is responsible for reading and parsing
->> registers to determine which OPPs can be selectively enabled based
->> on the specific SoC in use by matching against the opp-supported-hw
->> data.
+On Mon, Sep 19 2016 at 09:09 -0600, Brendan Jackman wrote:
 >
-> Sorry, for the delay. Missed this somehow.
->
+>On Fri, Sep 16 2016 at 18:39, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>> Hi Kevin,
 >>
->> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
->> ---
->> v1->v2:
->> 	- Dropped all driver/linux specific documentation
->> 	- Fixed some typos
->> 	- Add new compatibles for each SoC family to match against
->> 	- Switched to use am335x example to better demonstrate field one of
->> 	  opp-supported-hw.
+>> Thanks for looking at this and simplifying various discussions we had so
+>> far. I was thinking of summarizing something very similar. I couldn't
+>> due to lack of time.
 >>
->>   .../devicetree/bindings/cpufreq/ti-cpufreq.txt     | 130 +++++++++++++++++++++
->>   1 file changed, 130 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+>> On 16/09/16 18:13, Kevin Hilman wrote:
 >>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
->> new file mode 100644
->> index 000000000000..6276ae494121
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
->> @@ -0,0 +1,130 @@
->> +TI CPUFreq and OPP bindings
->> +================================
->> +
->> +Certain TI SoCs, like those in the am335x, am437x, am57xx, and dra7xx
->> +families support different OPPs depending on the silicon variant in use.
->> +The ti_cpufreq driver can use revision and an efuse value from the SoC to
->> +provide the OPP framework with supported hardware information. This is
->> +used to determine which OPPs from the operating-points-v2 table get enabled
->> +when it is parsed by the OPP framework.
->> +
->> +Required properties:
->> +--------------------
->> +In 'cpus' nodes:
->> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
->> +- ti,syscon-efuse: Syscon phandle, offset to efuse register, efuse register
->> +		   mask, and efuse register shift to get the relevant bits
->> +		   that describe OPP availability.
->> +- ti,syscon-rev: Syscon and offset used to look up revision value on SoC.
+>> [...]
+>>
+>>> I think we're having some terminology issues...
+>>>
+>>> FWIW, the kernel terminolgy is actually "PM domain", not power domain.
+>>> This was intentional because the goal of the PM domain was to group
+>>> devices that some PM features.  To be very specific to the kernel, they
+>>> us the same set of PM callbacks.  Today, this is most commonly used to
+>>> model power domains, where a group of devices share a power rail, but it
+>>> does not need to be limited to that.
+>>>
+>>
+>> Agreed/Understood.
+>>
+>>> That being said, I'm having a hard time understanding the root of the
+>>> disagreement.
+>>>
+>>
+>> Yes. I tried to convey the same earlier, but have failed. The only
+>> disagreement is about a small part of this DT bindings. We would like to
+>> make it completely hierarchical up to CPU nodes. More comments on that
+>> below.
+>>
+>>> It seems that you and Sudeep would like to use domain-idle-states to
+>>> replace/superceed cpu-idle-states with the primary goal (and benefit)
+>>> being that it simplifies the DT bindings.  Is that correct?
+>>>
+>>
+>> Correct, we want to deprecate cpu-idle-states with the introduction of
+>> this hierarchical PM bindings. Yes IMO, it simplifies things and avoids
+>> any ABI break we might trigger if we miss to consider some use-case now.
+>>
+>>> The objections have come in because that means that implies that CPUs
+>>> become their own domains, which may not be the case in hardware in the
+>>> sense that they share a power rail.
+>>>
+>>
+>> Agreed.
+>>
+>>> However, IMO, thinking of a CPU as it's own "PM domain" may make some
+>>> sense based on the terminology above.
+>>>
+>>
+>> Thanks for that, we do understand that it may not be 100% correct when
+>> we strictly considers hardware terminologies instead of above ones.
+>> As along as we see no issues with the above terminologies it should be fine.
+>>
+>>> I think the other objection may be that using a genpd to model domain
+>>> with only a single device in it may be overkill, and I agree with that.
+>>
+>> I too agree with that. Just because we represent that in DT in that way
+>> doesn't mean we need to create a genpd to model domain. We can always
+>> skip that if not required. That's pure implementation specifics and I
+>> have tried to convey the same in my previous emails. I must say you have
+>> summarized it very clearly in this email. Thanks again for that.
+>>
+>>> But, I'm not sure if making CPUs use domain-idle-states implies that
+>>> they necessarily have to use genpd is what you are proposing.  Maybe
+>>> someone could clarify that?
+>>>
+>>
+>> No, I have not proposing anything around implementation in the whole
+>> discussion so far. I have constrained myself just to DT bindings so far.
+>> That's the main reason why I was opposed to mentions of OS vs platform
+>> co-ordinated modes of CPU suspend in this discussion. IMO that's
+>> completely out of scope of this DT binding we are defining here.
+>>
+Fair. But understand the PM Domain bindings do not impose any
+requirements of hierarchy. Domain idle states are defined by the
+property domain-idle-states in the domain node. How the DT bindings are
+organized is immaterial to the PM Domain core.
+
+It is a different exercise all together to look at CPU PSCI modes and
+have a unified way of representing them in DT. The current set of
+patches does not dictate where the domain idle states be located (pardon
+my example in the patch, which was not updated to reflect that). That
+said, I do require that domains that are controlled by the PSCI f/w be
+defined under the 'psci' node in DT, which is fair. All the domain needs
+are phandles to the idle state definitions; how the nodes are arranged
+in DT is not of consequence to the driver.
+
+In my mind providing a structure to CPU PM domains that can be used for
+both OSI and PC is a separate effort. It may also club what Brendan
+mentions below as part of the effort. The hierarchy that is presented in
+[1] is inherent in the PM domain hierarchy and idle states don't have to
+duplicate that information.
+
+>> Hope that helps/clarifies the misunderstanding/disagreement.
 >
-> These have nothing to do with a cpu, so they don't belong here. Maybe
-> the first is a property of an OPP table, but the second certainly is
-> not.
-
-Yes, I have no issue with this and will move the ti properties into the 
-operating points table for v3 of the series.
-
+>Indeed. My intention was that the proposal would result in the exact
+>same kernel behaviour as Lina's current patchset, i.e. there is one
+>genpd per cluster, and CPU-level idle states are still handled by
+>cpuidle.
 >
->> +
->> +In 'operating-points-v2' table:
->> +- compatible: Should be
->> +	- 'operating-points-v2-ti-am3352-cpu' for am335x SoCs
->> +	- 'operating-points-v2-ti-am4372-cpu' for am43xx SoCs
->> +	- 'operating-points-v2-ti-dra7-cpu' for dra7xx/am57xx SoCs
->> +
->> +- opp-supported-hw: Two bitfields indicating:
->> +	1. Which revision of the SoC the OPP is supported by
->> +	2. Which eFuse bits indicate this OPP is available
+>The only change from the current patchset would be in initialisation
+>code: some coordination would need to be done to determine which idle
+>states go into cpuidle and which go into the genpds (whereas with the
+>current bindings, states from cpu-idle-states go into cpuidle and states
+>from domain-idle-states go into genpd). So you could say that this would
+>be a trade-off between binding simplicity and implementation simplicity.
 >
-> I tend to think you should handle this with kernel code (bootloader
-> really) fixing up the OPP table as necessary rather than putting in DT.
->
+I would not oppose the idea of virtual domains around CPUs (I admit I am
+not comfortable with the idea though), if that is the right thing to do.
+But the scope of that work is extensive and should not be clubbed as
+part of this proposal. It is an extensive code rework spanning cpuidle
+drivers and PSCI and there are hooks in this code to help you achieve
+that.
 
-The operating-points-v2 binding here [1] was designed with doing this in 
-mind, and others are using it and the corresponding functionality 
-offered by the OPP core to selectively enable OPPs. Why hide this in 
-u-boot when we already have kernel framework support to do it?
+Thanks,
+Lina
 
-Thanks for your comments, will send v3 moving the appropriate properties 
-into the OPP table.
-
-Regards,
-Dave
-
-[1] Documentation/devicetree/bindings/opp/opp.txt
-
-> Rob
->
-
+[1]. https://patchwork.kernel.org/patch/9264507/
