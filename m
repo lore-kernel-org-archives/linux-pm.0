@@ -1,108 +1,54 @@
-From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v7 5/8] usb: chipidea: let chipidea core device of_node
- equal's glue layer device of_node
-Date: Tue, 20 Sep 2016 11:36:44 +0800
-Message-ID: <1474342607-27512-6-git-send-email-peter.chen@nxp.com>
-References: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, stephen.boyd@linaro.org, oscar@naiandei.net, arnd@arndb.de, pawel.moll@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, s.hauer@pengutronix.de, linux-usb@vger.kernel.org, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, vaibhav.hiremath@linaro.org, stillcompiling@gmail.com, Peter Chen <peter.chen@freescale.com>, p.zabel@pengutronix.de, festevam@gmail.com, mka@chromium.org, linux-arm-kernel@lists.infradead.org
+From: Axel Lin <axel.lin@ingics.com>
+Subject: [PATCH] PM / devfreq: exynos-ppmu: Remove unused mutex from struct exynos_ppmu
+Date: Tue, 20 Sep 2016 14:48:20 +0800
+Message-ID: <1474354100-6092-1-git-send-email-axel.lin@ingics.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:36827 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751119AbcITGse (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Sep 2016 02:48:34 -0400
+Received: by mail-pf0-f193.google.com with SMTP id n24so496310pfb.3
+        for <linux-pm@vger.kernel.org>; Mon, 19 Sep 2016 23:48:33 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Axel Lin <axel.lin@ingics.com>
 
-From: Peter Chen <peter.chen@freescale.com>
+The mutex is not used at all, remove it.
 
-At device tree, we have no device node for chipidea core,
-the glue layer's node is the parent node for host and udc
-device. But in related driver, the parent device is chipidea
-core. So, in order to let the common driver get parent's node,
-we let the core's device node equals glue layer device node.
-
-Signed-off-by: Peter Chen <peter.chen@freescale.com>
-Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-Tested-by Joshua Clayton <stillcompiling@gmail.com>
+Signed-off-by: Axel Lin <axel.lin@ingics.com>
 ---
- drivers/usb/chipidea/core.c | 27 ++++++++++++++++++++++-----
- 1 file changed, 22 insertions(+), 5 deletions(-)
+ drivers/devfreq/event/exynos-ppmu.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
-index 69426e6..6839e19 100644
---- a/drivers/usb/chipidea/core.c
-+++ b/drivers/usb/chipidea/core.c
-@@ -927,6 +927,16 @@ static int ci_hdrc_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
+diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+index f55cf0e..251692b 100644
+--- a/drivers/devfreq/event/exynos-ppmu.c
++++ b/drivers/devfreq/event/exynos-ppmu.c
+@@ -15,7 +15,6 @@
+ #include <linux/io.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/mutex.h>
+ #include <linux/of_address.h>
+ #include <linux/platform_device.h>
+ #include <linux/suspend.h>
+@@ -34,7 +33,6 @@ struct exynos_ppmu {
+ 	unsigned int num_events;
  
-+	/*
-+	 * At device tree, we have no device node for chipidea core,
-+	 * the glue layer's node is the parent node for host and udc
-+	 * device. But in related driver, the parent device is chipidea
-+	 * core. So, in order to let the common driver get parent's node,
-+	 * we let the core's device node equals glue layer's node.
-+	 */
-+	if (dev->parent && dev->parent->of_node)
-+		dev->of_node = dev->parent->of_node;
-+
- 	if (ci->platdata->phy) {
- 		ci->phy = ci->platdata->phy;
- 	} else if (ci->platdata->usb_phy) {
-@@ -937,11 +947,15 @@ static int ci_hdrc_probe(struct platform_device *pdev)
+ 	struct device *dev;
+-	struct mutex lock;
  
- 		/* if both generic PHY and USB PHY layers aren't enabled */
- 		if (PTR_ERR(ci->phy) == -ENOSYS &&
--				PTR_ERR(ci->usb_phy) == -ENXIO)
--			return -ENXIO;
-+				PTR_ERR(ci->usb_phy) == -ENXIO) {
-+			ret = -ENXIO;
-+			goto clear_of_node;
-+		}
+ 	struct exynos_ppmu_data ppmu;
+ };
+@@ -463,7 +461,6 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
+ 	if (!info)
+ 		return -ENOMEM;
  
--		if (IS_ERR(ci->phy) && IS_ERR(ci->usb_phy))
--			return -EPROBE_DEFER;
-+		if (IS_ERR(ci->phy) && IS_ERR(ci->usb_phy)) {
-+			ret = -EPROBE_DEFER;
-+			goto clear_of_node;
-+		}
+-	mutex_init(&info->lock);
+ 	info->dev = &pdev->dev;
  
- 		if (IS_ERR(ci->phy))
- 			ci->phy = NULL;
-@@ -952,7 +966,7 @@ static int ci_hdrc_probe(struct platform_device *pdev)
- 	ret = ci_usb_phy_init(ci);
- 	if (ret) {
- 		dev_err(dev, "unable to init phy: %d\n", ret);
--		return ret;
-+		goto clear_of_node;
- 	}
- 
- 	ci->hw_bank.phys = res->start;
-@@ -1058,6 +1072,8 @@ stop:
- 	ci_role_destroy(ci);
- deinit_phy:
- 	ci_usb_phy_exit(ci);
-+clear_of_node:
-+	dev->of_node = NULL;
- 
- 	return ret;
- }
-@@ -1076,6 +1092,7 @@ static int ci_hdrc_remove(struct platform_device *pdev)
- 	ci_extcon_unregister(ci);
- 	ci_role_destroy(ci);
- 	ci_hdrc_enter_lpm(ci, true);
-+	ci->dev->of_node = NULL;
- 	ci_usb_phy_exit(ci);
- 
- 	return 0;
+ 	/* Parse dt data to get resource */
 -- 
 2.7.4
+
