@@ -1,135 +1,92 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v7 4/8] usb: core: add power sequence handling for USB devices
-Date: Tue, 20 Sep 2016 11:36:43 +0800
-Message-ID: <1474342607-27512-5-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH v7 7/8] ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+Date: Tue, 20 Sep 2016 11:36:46 +0800
+Message-ID: <1474342607-27512-8-git-send-email-peter.chen@nxp.com>
 References: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-co1nam03on0082.outbound.protection.outlook.com ([104.47.40.82]:64608
+        "EHLO NAM03-CO1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1753778AbcITDh5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 19 Sep 2016 23:37:57 -0400
 In-Reply-To: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org
 Cc: k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, Peter Chen <peter.chen@nxp.com>
-List-Id: linux-pm@vger.kernel.org
 
-Some hard-wired USB devices need to do power sequence to let the
-device work normally, the typical power sequence like: enable USB
-PHY clock, toggle reset pin, etc. But current Linux USB driver
-lacks of such code to do it, it may cause some hard-wired USB devices
-works abnormal or can't be recognized by controller at all.
-
-In this patch, it calls power sequence library APIs to finish
-the power sequence events. It will do power on sequence at hub's
-probe for all devices under this hub (includes root hub).
-At hub_disconnect, it will do power off sequence which is at powered
-on list.
+The current dts describes USB HUB's property at USB controller's
+entry, it is improper. The USB HUB should be the child node
+under USB controller, and power sequence properties are under
+it. Besides, using gpio pinctrl setting for USB2415's reset pin.
 
 Signed-off-by: Peter Chen <peter.chen@nxp.com>
-Tested-by Joshua Clayton <stillcompiling@gmail.com>
+Signed-off-by: Joshua Clayton <stillcompiling@gmail.com>
 ---
- drivers/usb/core/hub.c | 41 ++++++++++++++++++++++++++++++++++++++---
- drivers/usb/core/hub.h |  1 +
- 2 files changed, 39 insertions(+), 3 deletions(-)
+ arch/arm/boot/dts/imx6qdl-udoo.dtsi | 26 ++++++++++++--------------
+ 1 file changed, 12 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index b48dc76..f3de1de 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -26,6 +26,7 @@
- #include <linux/mutex.h>
- #include <linux/random.h>
- #include <linux/pm_qos.h>
-+#include <linux/power/pwrseq.h>
+diff --git a/arch/arm/boot/dts/imx6qdl-udoo.dtsi b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+index 3bee2f9..87fe31f 100644
+--- a/arch/arm/boot/dts/imx6qdl-udoo.dtsi
++++ b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+@@ -9,6 +9,8 @@
+  *
+  */
  
- #include <asm/uaccess.h>
- #include <asm/byteorder.h>
-@@ -1695,6 +1696,7 @@ static void hub_disconnect(struct usb_interface *intf)
- 	hub->error = 0;
- 	hub_quiesce(hub, HUB_DISCONNECT);
- 
-+	of_pwrseq_off_list(&hub->pwrseq_on_list);
- 	mutex_lock(&usb_port_peer_mutex);
- 
- 	/* Avoid races with recursively_mark_NOTATTACHED() */
-@@ -1722,12 +1724,41 @@ static void hub_disconnect(struct usb_interface *intf)
- 	kref_put(&hub->kref, hub_release);
- }
- 
-+#ifdef CONFIG_OF
-+static int hub_of_pwrseq_on(struct usb_hub *hub)
-+{
-+	struct device *parent;
-+	struct usb_device *hdev = hub->hdev;
-+	struct device_node *np;
-+	int ret;
++#include <dt-bindings/gpio/gpio.h>
 +
-+	if (hdev->parent)
-+		parent = &hdev->dev;
-+	else
-+		parent = bus_to_hcd(hdev->bus)->self.controller;
+ / {
+ 	aliases {
+ 		backlight = &backlight;
+@@ -58,17 +60,6 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 
+-		reg_usb_h1_vbus: regulator@0 {
+-			compatible = "regulator-fixed";
+-			reg = <0>;
+-			regulator-name = "usb_h1_vbus";
+-			regulator-min-microvolt = <5000000>;
+-			regulator-max-microvolt = <5000000>;
+-			enable-active-high;
+-			startup-delay-us = <2>; /* USB2415 requires a POR of 1 us minimum */
+-			gpio = <&gpio7 12 0>;
+-		};
+-
+ 		reg_panel: regulator@1 {
+ 			compatible = "regulator-fixed";
+ 			reg = <1>;
+@@ -188,7 +179,7 @@
+ 
+ 		pinctrl_usbh: usbhgrp {
+ 			fsl,pins = <
+-				MX6QDL_PAD_GPIO_17__GPIO7_IO12 0x80000000
++				MX6QDL_PAD_GPIO_17__GPIO7_IO12	0x1b0b0
+ 				MX6QDL_PAD_NANDF_CS2__CCM_CLKO2 0x130b0
+ 			>;
+ 		};
+@@ -259,9 +250,16 @@
+ &usbh1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_usbh>;
+-	vbus-supply = <&reg_usb_h1_vbus>;
+-	clocks = <&clks IMX6QDL_CLK_CKO>;
+ 	status = "okay";
 +
-+	for_each_child_of_node(parent->of_node, np) {
-+		ret = of_pwrseq_on_list(np, &hub->pwrseq_on_list);
-+		if (ret)
-+			return ret;
-+	}
++	usb2415: hub@1 {
++		compatible = "usb424,2514";
++		reg = <1>;
 +
-+	return 0;
-+}
-+#else
-+static int hub_of_pwrseq_on(struct usb_hub *hub)
-+{
-+	return 0;
-+}
-+#endif
-+
- static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
- {
- 	struct usb_host_interface *desc;
- 	struct usb_endpoint_descriptor *endpoint;
- 	struct usb_device *hdev;
- 	struct usb_hub *hub;
-+	int ret = -ENODEV;
- 
- 	desc = intf->cur_altsetting;
- 	hdev = interface_to_usbdev(intf);
-@@ -1832,6 +1863,7 @@ descriptor_error:
- 	INIT_DELAYED_WORK(&hub->leds, led_work);
- 	INIT_DELAYED_WORK(&hub->init_work, NULL);
- 	INIT_WORK(&hub->events, hub_event);
-+	INIT_LIST_HEAD(&hub->pwrseq_on_list);
- 	usb_get_intf(intf);
- 	usb_get_dev(hdev);
- 
-@@ -1845,11 +1877,14 @@ descriptor_error:
- 	if (id->driver_info & HUB_QUIRK_CHECK_PORT_AUTOSUSPEND)
- 		hub->quirk_check_port_auto_suspend = 1;
- 
--	if (hub_configure(hub, endpoint) >= 0)
--		return 0;
-+	if (hub_configure(hub, endpoint) >= 0) {
-+		ret = hub_of_pwrseq_on(hub);
-+		if (!ret)
-+			return 0;
-+	}
- 
- 	hub_disconnect(intf);
--	return -ENODEV;
-+	return ret;
- }
- 
- static int
-diff --git a/drivers/usb/core/hub.h b/drivers/usb/core/hub.h
-index 34c1a7e..cd86f91 100644
---- a/drivers/usb/core/hub.h
-+++ b/drivers/usb/core/hub.h
-@@ -78,6 +78,7 @@ struct usb_hub {
- 	struct delayed_work	init_work;
- 	struct work_struct      events;
- 	struct usb_port		**ports;
-+	struct list_head	pwrseq_on_list; /* powered pwrseq node list */
++		clocks = <&clks IMX6QDL_CLK_CKO>;
++		reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
++		reset-duration-us = <3000>;
++	};
  };
  
- /**
+ &usdhc3 {
 -- 
 2.7.4
+
