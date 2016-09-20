@@ -1,7 +1,8 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v7 8/8] ARM: dts: imx6q-evi: Fix onboard hub reset line
-Date: Tue, 20 Sep 2016 11:36:47 +0800
-Message-ID: <1474342607-27512-9-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH v7 5/8] usb: chipidea: let chipidea core device of_node
+ equal's glue layer device of_node
+Date: Tue, 20 Sep 2016 11:36:44 +0800
+Message-ID: <1474342607-27512-6-git-send-email-peter.chen@nxp.com>
 References: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,76 +19,90 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, stephen.boyd@linaro.org, oscar@naiandei.net, arnd@arndb.de, pawel.moll@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, s.hauer@pengutronix.de, linux-usb@vger.kernel.org, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, vaibhav.hiremath@linaro.org, stillcompiling@gmail.com, Peter Chen <peter.chen@nxp.com>, p.zabel@pengutronix.de, festevam@gmail.com, mka@chromium.org, linux-arm-kernel@lists.infradead.org
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, k.kozlowski@samsung.com, stephen.boyd@linaro.org, oscar@naiandei.net, arnd@arndb.de, pawel.moll@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, s.hauer@pengutronix.de, linux-usb@vger.kernel.org, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, vaibhav.hiremath@linaro.org, stillcompiling@gmail.com, Peter Chen <peter.chen@freescale.com>, p.zabel@pengutronix.de, festevam@gmail.com, mka@chromium.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Joshua Clayton <stillcompiling@gmail.com>
+From: Peter Chen <peter.chen@freescale.com>
 
-Previously the onboard hub was made to work by treating its
-reset gpio as a regulator enable.
-Get rid of that kludge now that pwseq has added reset gpio support
-Move pin muxing the hub reset pin into the usbh1 group
+At device tree, we have no device node for chipidea core,
+the glue layer's node is the parent node for host and udc
+device. But in related driver, the parent device is chipidea
+core. So, in order to let the common driver get parent's node,
+we let the core's device node equals glue layer device node.
 
-Signed-off-by: Joshua Clayton <stillcompiling@gmail.com>
-Signed-off-by: Peter Chen <peter.chen@nxp.com>
+Signed-off-by: Peter Chen <peter.chen@freescale.com>
+Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Tested-by Joshua Clayton <stillcompiling@gmail.com>
 ---
- arch/arm/boot/dts/imx6q-evi.dts | 25 +++++++------------------
- 1 file changed, 7 insertions(+), 18 deletions(-)
+ drivers/usb/chipidea/core.c | 27 ++++++++++++++++++++++-----
+ 1 file changed, 22 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx6q-evi.dts b/arch/arm/boot/dts/imx6q-evi.dts
-index 4fa5601..49c6f61 100644
---- a/arch/arm/boot/dts/imx6q-evi.dts
-+++ b/arch/arm/boot/dts/imx6q-evi.dts
-@@ -54,18 +54,6 @@
- 		reg = <0x10000000 0x40000000>;
- 	};
+diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
+index 69426e6..6839e19 100644
+--- a/drivers/usb/chipidea/core.c
++++ b/drivers/usb/chipidea/core.c
+@@ -927,6 +927,16 @@ static int ci_hdrc_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
  
--	reg_usbh1_vbus: regulator-usbhubreset {
--		compatible = "regulator-fixed";
--		regulator-name = "usbh1_vbus";
--		regulator-min-microvolt = <5000000>;
--		regulator-max-microvolt = <5000000>;
--		enable-active-high;
--		startup-delay-us = <2>;
--		pinctrl-names = "default";
--		pinctrl-0 = <&pinctrl_usbh1_hubreset>;
--		gpio = <&gpio7 12 GPIO_ACTIVE_HIGH>;
--	};
--
- 	reg_usb_otg_vbus: regulator-usbotgvbus {
- 		compatible = "regulator-fixed";
- 		regulator-name = "usb_otg_vbus";
-@@ -204,12 +192,18 @@
- };
- 
- &usbh1 {
--	vbus-supply = <&reg_usbh1_vbus>;
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_usbh1>;
- 	dr_mode = "host";
- 	disable-over-current;
- 	status = "okay";
++	/*
++	 * At device tree, we have no device node for chipidea core,
++	 * the glue layer's node is the parent node for host and udc
++	 * device. But in related driver, the parent device is chipidea
++	 * core. So, in order to let the common driver get parent's node,
++	 * we let the core's device node equals glue layer's node.
++	 */
++	if (dev->parent && dev->parent->of_node)
++		dev->of_node = dev->parent->of_node;
 +
-+	usb2415host: hub@1 {
-+		compatible = "usb424,2513";
-+		reg = <1>;
-+		reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
-+		reset-duration-us = <3000>;
-+	};
- };
+ 	if (ci->platdata->phy) {
+ 		ci->phy = ci->platdata->phy;
+ 	} else if (ci->platdata->usb_phy) {
+@@ -937,11 +947,15 @@ static int ci_hdrc_probe(struct platform_device *pdev)
  
- &usbotg {
-@@ -467,11 +461,6 @@
- 			MX6QDL_PAD_GPIO_3__USB_H1_OC 0x1b0b0
- 			/* usbh1_b OC */
- 			MX6QDL_PAD_GPIO_0__GPIO1_IO00 0x1b0b0
--		>;
--	};
--
--	pinctrl_usbh1_hubreset: usbh1hubresetgrp {
--		fsl,pins = <
- 			MX6QDL_PAD_GPIO_17__GPIO7_IO12 0x1b0b0
- 		>;
- 	};
+ 		/* if both generic PHY and USB PHY layers aren't enabled */
+ 		if (PTR_ERR(ci->phy) == -ENOSYS &&
+-				PTR_ERR(ci->usb_phy) == -ENXIO)
+-			return -ENXIO;
++				PTR_ERR(ci->usb_phy) == -ENXIO) {
++			ret = -ENXIO;
++			goto clear_of_node;
++		}
+ 
+-		if (IS_ERR(ci->phy) && IS_ERR(ci->usb_phy))
+-			return -EPROBE_DEFER;
++		if (IS_ERR(ci->phy) && IS_ERR(ci->usb_phy)) {
++			ret = -EPROBE_DEFER;
++			goto clear_of_node;
++		}
+ 
+ 		if (IS_ERR(ci->phy))
+ 			ci->phy = NULL;
+@@ -952,7 +966,7 @@ static int ci_hdrc_probe(struct platform_device *pdev)
+ 	ret = ci_usb_phy_init(ci);
+ 	if (ret) {
+ 		dev_err(dev, "unable to init phy: %d\n", ret);
+-		return ret;
++		goto clear_of_node;
+ 	}
+ 
+ 	ci->hw_bank.phys = res->start;
+@@ -1058,6 +1072,8 @@ stop:
+ 	ci_role_destroy(ci);
+ deinit_phy:
+ 	ci_usb_phy_exit(ci);
++clear_of_node:
++	dev->of_node = NULL;
+ 
+ 	return ret;
+ }
+@@ -1076,6 +1092,7 @@ static int ci_hdrc_remove(struct platform_device *pdev)
+ 	ci_extcon_unregister(ci);
+ 	ci_role_destroy(ci);
+ 	ci_hdrc_enter_lpm(ci, true);
++	ci->dev->of_node = NULL;
+ 	ci_usb_phy_exit(ci);
+ 
+ 	return 0;
 -- 
 2.7.4
