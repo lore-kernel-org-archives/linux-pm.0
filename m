@@ -1,154 +1,167 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle
- states
-Date: Tue, 20 Sep 2016 10:17:48 -0600
-Message-ID: <20160920161748.GB46914@linaro.org>
-References: <20160902201605.GA1705@linaro.org>
- <87sht59mcw.fsf@arm.com>
- <20160912161600.GA21885@linaro.org>
- <a4fc71ae-6fa5-4142-6dd4-7bc96eb20186@arm.com>
- <87intz665i.fsf@arm.com>
- <20160913193844.GB28944@linaro.org>
- <87h99i6b5d.fsf@arm.com>
- <7hpoo3ix80.fsf@baylibre.com>
- <7af4c2d7-70a3-1881-2980-8ea49e594e5b@arm.com>
- <874m5cx6y8.fsf@arm.com>
+From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Subject: Re: [PATCH V6 2/6] thermal: bcm2835: add thermal driver for bcm2835
+ soc
+Date: Tue, 20 Sep 2016 19:49:00 +0200 (CEST)
+Message-ID: <965620984.74888.75ab17c4-a160-4b45-ac45-90b43175f85a.open-xchange@email.1und1.de>
+References: <1474275600-19378-1-git-send-email-kernel@martin.sperl.org>
+ <1474275600-19378-3-git-send-email-kernel@martin.sperl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:36065 "EHLO
-        mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932320AbcITQRw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Sep 2016 12:17:52 -0400
-Received: by mail-pa0-f48.google.com with SMTP id id6so8520945pad.3
-        for <linux-pm@vger.kernel.org>; Tue, 20 Sep 2016 09:17:51 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <874m5cx6y8.fsf@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1474275600-19378-3-git-send-email-kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Brendan Jackman <brendan.jackman@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Kevin Hilman <khilman@baylibre.com>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, ulf.hansson@linaro.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-On Mon, Sep 19 2016 at 09:09 -0600, Brendan Jackman wrote:
->
->On Fri, Sep 16 2016 at 18:39, Sudeep Holla <sudeep.holla@arm.com> wrote:
->> Hi Kevin,
->>
->> Thanks for looking at this and simplifying various discussions we had so
->> far. I was thinking of summarizing something very similar. I couldn't
->> due to lack of time.
->>
->> On 16/09/16 18:13, Kevin Hilman wrote:
->>
->> [...]
->>
->>> I think we're having some terminology issues...
->>>
->>> FWIW, the kernel terminolgy is actually "PM domain", not power domain.
->>> This was intentional because the goal of the PM domain was to group
->>> devices that some PM features.  To be very specific to the kernel, they
->>> us the same set of PM callbacks.  Today, this is most commonly used to
->>> model power domains, where a group of devices share a power rail, but it
->>> does not need to be limited to that.
->>>
->>
->> Agreed/Understood.
->>
->>> That being said, I'm having a hard time understanding the root of the
->>> disagreement.
->>>
->>
->> Yes. I tried to convey the same earlier, but have failed. The only
->> disagreement is about a small part of this DT bindings. We would like to
->> make it completely hierarchical up to CPU nodes. More comments on that
->> below.
->>
->>> It seems that you and Sudeep would like to use domain-idle-states to
->>> replace/superceed cpu-idle-states with the primary goal (and benefit)
->>> being that it simplifies the DT bindings.  Is that correct?
->>>
->>
->> Correct, we want to deprecate cpu-idle-states with the introduction of
->> this hierarchical PM bindings. Yes IMO, it simplifies things and avoids
->> any ABI break we might trigger if we miss to consider some use-case now.
->>
->>> The objections have come in because that means that implies that CPUs
->>> become their own domains, which may not be the case in hardware in the
->>> sense that they share a power rail.
->>>
->>
->> Agreed.
->>
->>> However, IMO, thinking of a CPU as it's own "PM domain" may make some
->>> sense based on the terminology above.
->>>
->>
->> Thanks for that, we do understand that it may not be 100% correct when
->> we strictly considers hardware terminologies instead of above ones.
->> As along as we see no issues with the above terminologies it should be fine.
->>
->>> I think the other objection may be that using a genpd to model domain
->>> with only a single device in it may be overkill, and I agree with that.
->>
->> I too agree with that. Just because we represent that in DT in that way
->> doesn't mean we need to create a genpd to model domain. We can always
->> skip that if not required. That's pure implementation specifics and I
->> have tried to convey the same in my previous emails. I must say you have
->> summarized it very clearly in this email. Thanks again for that.
->>
->>> But, I'm not sure if making CPUs use domain-idle-states implies that
->>> they necessarily have to use genpd is what you are proposing.  Maybe
->>> someone could clarify that?
->>>
->>
->> No, I have not proposing anything around implementation in the whole
->> discussion so far. I have constrained myself just to DT bindings so far.
->> That's the main reason why I was opposed to mentions of OS vs platform
->> co-ordinated modes of CPU suspend in this discussion. IMO that's
->> completely out of scope of this DT binding we are defining here.
->>
-Fair. But understand the PM Domain bindings do not impose any
-requirements of hierarchy. Domain idle states are defined by the
-property domain-idle-states in the domain node. How the DT bindings are
-organized is immaterial to the PM Domain core.
+Hi Martin,
 
-It is a different exercise all together to look at CPU PSCI modes and
-have a unified way of representing them in DT. The current set of
-patches does not dictate where the domain idle states be located (pardon
-my example in the patch, which was not updated to reflect that). That
-said, I do require that domains that are controlled by the PSCI f/w be
-defined under the 'psci' node in DT, which is fair. All the domain needs
-are phandles to the idle state definitions; how the nodes are arranged
-in DT is not of consequence to the driver.
+> kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org hat am 19. September 2016 um 10:59 geschrieben:
+> 
+> 
+> From: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+> 
+> Add basic thermal driver for bcm2835 SOC.
+> 
+> This driver currently relies on the firmware setting up the
+> tsense HW block and does not set it up itself.
+> 
+> Signed-off-by: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+> Acked-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+> 
+> ChangeLog:
+>  V1 -> V2: added specific settings depending on compatiblity
+> 	   added trip point based on register
+> 	   setting up ctrl-register if HW is not enabled by firmware
+> 	     as per recommendation of Eric (untested)
+> 	   check that clock frequency is in range
+> 	     (1.9 - 5MHz - as per comment in clk-bcm2835.c)
+>  V2 -> V4: moved back to thermal (not using bcm sub-directory)
+>        	   set polling interval to 1second (was 0ms, so interrupt driven)
+>  V5 -> V6: added correct depends in KConfig
+> 	   removed defined default for RESET_DELAY
+> 	   removed obvious comments
+> 	   clarify HW setup comments if not set up by FW already
+> 	   move clk_prepare_enable to an earlier stage and add error handling
+> 	   clarify warning when TS-clock runs out of recommended range
+> 	   clk_disable_unprepare added in bcm2835_thermal_remove
+> 	   added comment on recommended temperature ranges for SOC
+> ---
+>  drivers/thermal/Kconfig           |   8 +
+>  drivers/thermal/Makefile          |   1 +
+>  drivers/thermal/bcm2835_thermal.c | 340
+> ++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 349 insertions(+)
+>  create mode 100644 drivers/thermal/bcm2835_thermal.c
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 2d702ca..6489723 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -399,4 +399,12 @@ config GENERIC_ADC_THERMAL
+>  	  to this driver. This driver reports the temperature by reading ADC
+>  	  channel and converts it to temperature based on lookup table.
+>  
+> +config BCM2835_THERMAL
+> +	tristate "Thermal sensors on bcm2835 SoC"
+> +	depends on ARCH_BCM2835 || ARCH_BCM2836 || ARCH_BCM2837 || COMPILE_TEST
 
-In my mind providing a structure to CPU PM domains that can be used for
-both OSI and PC is a separate effort. It may also club what Brendan
-mentions below as part of the effort. The hierarchy that is presented in
-[1] is inherent in the PM domain hierarchy and idle states don't have to
-duplicate that information.
+AFAIK there are no ARCH_BCM2836 or ARCH_BCM2837
 
->> Hope that helps/clarifies the misunderstanding/disagreement.
->
->Indeed. My intention was that the proposal would result in the exact
->same kernel behaviour as Lina's current patchset, i.e. there is one
->genpd per cluster, and CPU-level idle states are still handled by
->cpuidle.
->
->The only change from the current patchset would be in initialisation
->code: some coordination would need to be done to determine which idle
->states go into cpuidle and which go into the genpds (whereas with the
->current bindings, states from cpu-idle-states go into cpuidle and states
->from domain-idle-states go into genpd). So you could say that this would
->be a trade-off between binding simplicity and implementation simplicity.
->
-I would not oppose the idea of virtual domains around CPUs (I admit I am
-not comfortable with the idea though), if that is the right thing to do.
-But the scope of that work is extensive and should not be clubbed as
-part of this proposal. It is an extensive code rework spanning cpuidle
-drivers and PSCI and there are hooks in this code to help you achieve
-that.
+After fixing that, you can add my ACK.
 
-Thanks,
-Lina
+> +	depends on OF
+> +	depends on HAS_IOMEM
+> +	help
+> +	  Support for thermal sensors on Broadcom bcm2835 SoCs.
+> +
+> ...
+> +
+> +static const struct of_device_id bcm2835_thermal_of_match_table[];
+> +static int bcm2835_thermal_probe(struct platform_device *pdev)
+> +{
+> +	const struct of_device_id *match;
+> +	struct thermal_zone_device *tz;
+> +	struct bcm2835_thermal_data *data;
+> +	struct resource *res;
+> +	int err;
+> +	u32 val;
+> +	unsigned long rate;
+> +
+> +	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +
+> +	match = of_match_device(bcm2835_thermal_of_match_table,
+> +				&pdev->dev);
+> +	if (!match)
+> +		return -EINVAL;
+> +	data->info = match->data;
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	data->regs = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(data->regs)) {
+> +		err = PTR_ERR(data->regs);
+> +		dev_err(&pdev->dev, "Could not get registers: %d\n", err);
+> +		return err;
+> +	}
+> +
+> +	data->clk = devm_clk_get(&pdev->dev, NULL);
+> +	if (IS_ERR(data->clk)) {
+> +		err = PTR_ERR(data->clk);
+> +		if (err != -EPROBE_DEFER)
+> +			dev_err(&pdev->dev, "Could not get clk: %d\n", err);
+> +		return err;
+> +	}
+> +
+> +	err = clk_prepare_enable(data->clk);
+> +	if (err)
+> +		return err;
+> +
+> +	rate = clk_get_rate(data->clk);
+> +	if ((rate < 1920000) || (rate > 5000000))
+> +		dev_warn(&pdev->dev,
+> +			 "Clock %pCn running at %pCr Hz is outside of the recommended range: 1.92
+> to 5MHz\n",
+> +			 data->clk, data->clk);
+> +
+> +	/*
+> +	 * right now the FW does set up the HW-block, so we are not
+> +	 * touching the configuration registers.
+> +	 * But if the HW is not enabled, then set it up
+> +	 * using "sane" values used by the firmware right now.
+> +	 */
+> +	val = readl(data->regs + BCM2835_TS_TSENSCTL);
+> +	if (!(val & BCM2835_TS_TSENSCTL_RSTB)) {
+> +		/* the basic required flags */
+> +		val = (BCM2835_TS_TSENSCTL_CTRL_DEFAULT <<
+> +		       BCM2835_TS_TSENSCTL_CTRL_SHIFT) |
+> +		      BCM2835_TS_TSENSCTL_REGULEN;
+> +
+> +		/*
+> +		 * reset delay using the current firmware value of 14
+> +		 * - units of time are unknown.
+> +		 */
 
-[1]. https://patchwork.kernel.org/patch/9264507/
+I've have open a thread in the Raspberry Pi Forum regards to this. If i get a
+positive feedback then i will send an incremental patch.
+
+Stefan
+
+> +		val |= (14 << BCM2835_TS_TSENSCTL_RSTDELAY_SHIFT);
+> +
+> +		/*  trip_adc value from info */
+> +		val |= bcm2835_thermal_temp2adc(data->info,
+> +						data->info->trip_temp) <<
+> +			BCM2835_TS_TSENSCTL_THOLD_SHIFT;
+> +
+> +		/* write the value back to the register as 2 steps */
+> +		writel(val, data->regs + BCM2835_TS_TSENSCTL);
+> +		val |= BCM2835_TS_TSENSCTL_RSTB;
+> +		writel(val, data->regs + BCM2835_TS_TSENSCTL);
+> +	}
+> +
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
