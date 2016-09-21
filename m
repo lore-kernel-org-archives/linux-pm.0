@@ -1,67 +1,62 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 1/1] power: supply: sbs-battery: Cleanup removal of
- chip->pdata
-Date: Wed, 21 Sep 2016 02:05:56 +0200
-Message-ID: <20160921000555.kzvsbq7vsfnfbe6h@earth>
-References: <1474333272-13980-1-git-send-email-preid@electromag.com.au>
+Subject: Re: [PATCH v2] power: bq27xxx_battery: allow kernel poll_interval
+ parameter runtime update
+Date: Wed, 21 Sep 2016 02:11:14 +0200
+Message-ID: <20160921001113.mbciuuse4lafxwq6@earth>
+References: <1474342982-7242-1-git-send-email-matt@ranostay.consulting>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="flh37dsg7nsm7dmb"
+        protocol="application/pgp-signature"; boundary="s36adj5az3zfwn5i"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40606 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:40996 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752187AbcIUAGE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 20 Sep 2016 20:06:04 -0400
+        id S1752187AbcIUALX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 20 Sep 2016 20:11:23 -0400
 Content-Disposition: inline
-In-Reply-To: <1474333272-13980-1-git-send-email-preid@electromag.com.au>
+In-Reply-To: <1474342982-7242-1-git-send-email-matt@ranostay.consulting>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: arnd@arndb.de, linux-pm@vger.kernel.org
+To: Matt Ranostay <mranostay@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>, Matt Ranostay <matt@ranostay.consulting>, Tony Lindgren <tony@atomide.com>, Liam Breck <liam@networkimprov.net>
 
 
---flh37dsg7nsm7dmb
-Content-Type: text/plain; charset=iso-8859-1
+--s36adj5az3zfwn5i
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Sep 20, 2016 at 09:01:12AM +0800, Phil Reid wrote:
-> There where still a few lingering references to pdata after commit
-> power: supply: sbs-battery: simplify DT parsing.
+On Mon, Sep 19, 2016 at 08:43:02PM -0700, Matt Ranostay wrote:
+> Fix issue with poll_interval being not updated till the previous
+> interval expired.
 >=20
-> Remove pdata from struct=B7sbs_info and conditional checks to ser if this
-> was set from the i2c read / write functions.
-> Instead of call max in each function for incrementing poll_retry_count
-> do it once in the probe function.
-> Fixup null pointer dereference in to pdata in sbs_external_power_changed.
-> Change retry counts to u32 to avoid need for max.
->
-> Signed-off-by: Phil Reid <preid@electromag.com.au>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Cc: Liam Breck <liam@networkimprov.net>
+> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 
 Thanks, queued.
 
 -- Sebastian
 
---flh37dsg7nsm7dmb
+--s36adj5az3zfwn5i
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJX4c7gAAoJENju1/PIO/qaqrQP/jk/IKqAMHjVjJoJiLj7fc0d
-LJ3GE6XO5uzva0dcbcDP33yxH20TC88LSL/RsuxM8OcAVjbge19GSvcPjp8oA8aP
-vP/SRgcMrspKD7FvTguDkQyl8f27moY3UfvkFmqY+zrqdbcxJofsGasaCMM1nh3o
-Ng2NMoxXs3TAdMdDp/mMc6NzktlX2fDJ4N4U3h3ILiJfXb53sUXI5Kq3blPhWa0O
-5zpz5Xk6YGs0MyMj0SnzGWDOkcUfCxCKzSOGEayO3KlfjOR09U+uebTGvU6qQSWv
-PgEjYLQV9G61Jj/6Q8VjGz8pzrU/2n1BILdOiqY94Hb9z02qlJfFiEKUk+yGJXve
-04y0YyaFRhYhz35+ayDwd5CMaMVsw5xW+GI0u9o/3OMWRj8UpDndMHHD08P/ApBF
-aMP1v5VvCZtjxayf6ePPPhJymdhMISvKSkGaS0yARgD3Z2F1/tO22SsmTpxwDI+k
-SgWafc4CKyLl46rOsY5pT96ff1YZgva6g8aFXdn2XaLiNMXWDpBODvQmpQnUs3ar
-NkfD/4eQOgw6//xOxNVYItBiNClV3U0P2qUxLOsVQM/KFRW2PpgDhEXJvjXACXzo
-Jt8V8uzpLVlQSQViP3FVJy02rY+Xvu8QiYY1AGqEgB5ccn3G3ute53hd5crS+5lC
-7A/XlyawMlDCao9AlL5t
-=uuoy
+iQIcBAABCgAGBQJX4dAhAAoJENju1/PIO/qafCYP/0eqFkyRP8+mr4r5/GmyLSXL
+Bgl2/L2SvdAl6g9KYY0BW3F9l0Okv6eVYR5AFTs8n0BwnSyktR3tjeqNtuaEnpU/
+1nQV1F6S27ZUscICjk9S579b37X2+DxiBH5OR15myyJ/WI4FRtRRTgTj8Qow/CbX
+Qv94yJvOHyZ834B2M1UkLqIZ7fe8hT1oNHfm78vvFJIRx9VhWuT4YdY8ofxHrImG
+Cb+PNl3MsDNp+D8kXdUyRHKJqw/JWOrgJWLVkGedN7T1GjB1yF1lLFigiqioj71i
+DKZGAAEYM8d8r4x8ytnJdWJ3noiAB8EEj+F2KT5Zbqvoo5Rn+Q7sx2Y8UrwOPdbh
+V7W2A8BVacqSFxVpxDwgdBxYAxVnKdOLJ8eqw3Tqm3hh9d6EXIjQNfcqLhbxu2Ad
+dm9kQj18WIY032oVHtCpOsAzrpjsxjMOVxUiWaUx3R8414qbyiVPNonEoIfTtq8y
+hwjj3le3TlljfpxatDDB3NFeaRsSnKhOrIDIVjlkb5y9pw3Ih1kfW2WAy5R1veh5
+it5tx0jE+DsZbdbOKiUJLBoKbifvZWCKegmIMu4i1gMGZvQzWeIii05k7k+6LbnZ
+jVhf4dlSYca0XDuih16hrao+r5DosM5kZwUdm8nhjniK3NsbTfBR9PGH/3iomYy5
+IvBOM7impKk2yWz3pnu9
+=fLmT
 -----END PGP SIGNATURE-----
 
---flh37dsg7nsm7dmb--
+--s36adj5az3zfwn5i--
