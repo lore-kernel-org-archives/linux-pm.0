@@ -1,180 +1,135 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v4 02/10] sched: Extend scheduler's asym packing
-Date: Wed, 21 Sep 2016 12:19:04 -0700
-Message-ID: <1474485552-141429-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v4 01/10] x86/topology: Fix numa in package topology bug
+Date: Wed, 21 Sep 2016 12:19:03 -0700
+Message-ID: <1474485552-141429-2-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1474485552-141429-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:21846 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S935632AbcIUTTY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 21 Sep 2016 15:19:24 -0400
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1474485552-141429-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
 Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Tim Chen <tim.c.chen@linux.intel.com>
 
-We generalize the scheduler's asym packing to provide an ordering
-of the cpu beyond just the cpu number.  This allows the use of the
-ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
-sched domain. The preference is defined with the cpu priority
-given by arch_asym_cpu_priority(cpu).
+Current code can call set_cpu_sibling_map and invoke sched_set_topology
+more than once (e.g. on hot plug).  When this happens after
+sched_init_smp has been called,  we lose the numa topology extension to
+sched_domain_topology in sched_init_numa.  This results in incorrect
+topology when the sched domain is rebuilt.
 
-We also record the most preferred cpu in a sched group when
-we build the cpu's capacity for fast lookup of preferred cpu
-during load balancing.
+This patch fixes the bug and issues warning if we call sched_set_topology
+after sched_init_smp.
 
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- include/linux/sched.h |  2 ++
- kernel/sched/core.c   | 18 ++++++++++++++++++
- kernel/sched/fair.c   | 35 ++++++++++++++++++++++++-----------
- kernel/sched/sched.h  |  6 ++++++
- 4 files changed, 50 insertions(+), 11 deletions(-)
+ arch/x86/kernel/smpboot.c | 46 ++++++++++++++++++++++++++++++----------------
+ kernel/sched/core.c       |  3 +++
+ 2 files changed, 33 insertions(+), 16 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 98fe95f..82ca1e4 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1052,6 +1052,8 @@ static inline int cpu_numa_flags(void)
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 4296beb..7137ec4 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -471,7 +471,7 @@ static bool match_die(struct cpuinfo_x86 *c, struct cpuinfo_x86 *o)
+ 	return false;
  }
- #endif
  
-+int arch_asym_cpu_priority(int cpu);
-+
- struct sched_domain_attr {
- 	int relax_domain_level;
+-static struct sched_domain_topology_level numa_inside_package_topology[] = {
++static struct sched_domain_topology_level x86_numa_in_package_topology[] = {
+ #ifdef CONFIG_SCHED_SMT
+ 	{ cpu_smt_mask, cpu_smt_flags, SD_INIT_NAME(SMT) },
+ #endif
+@@ -480,22 +480,23 @@ static struct sched_domain_topology_level numa_inside_package_topology[] = {
+ #endif
+ 	{ NULL, },
  };
++
++static struct sched_domain_topology_level x86_topology[] = {
++#ifdef CONFIG_SCHED_SMT
++	{ cpu_smt_mask, cpu_smt_flags, SD_INIT_NAME(SMT) },
++#endif
++#ifdef CONFIG_SCHED_MC
++	{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
++#endif
++	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
++	{ NULL, },
++};
++
+ /*
+- * set_sched_topology() sets the topology internal to a CPU.  The
+- * NUMA topologies are layered on top of it to build the full
+- * system topology.
+- *
+- * If NUMA nodes are observed to occur within a CPU package, this
+- * function should be called.  It forces the sched domain code to
+- * only use the SMT level for the CPU portion of the topology.
+- * This essentially falls back to relying on NUMA information
+- * from the SRAT table to describe the entire system topology
+- * (except for hyperthreads).
++ * Set if a package/die has multiple NUMA nodes inside.
++ * AMD Magny-Cours and Intel Cluster-on-Die have this.
+  */
+-static void primarily_use_numa_for_topology(void)
+-{
+-	set_sched_topology(numa_inside_package_topology);
+-}
++static bool x86_has_numa_in_package;
+ 
+ void set_cpu_sibling_map(int cpu)
+ {
+@@ -558,7 +559,7 @@ void set_cpu_sibling_map(int cpu)
+ 				c->booted_cores = cpu_data(i).booted_cores;
+ 		}
+ 		if (match_die(c, o) && !topology_same_node(c, o))
+-			primarily_use_numa_for_topology();
++			x86_has_numa_in_package = true;
+ 	}
+ 
+ 	threads = cpumask_weight(topology_sibling_cpumask(cpu));
+@@ -1304,6 +1305,16 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 		zalloc_cpumask_var(&per_cpu(cpu_core_map, i), GFP_KERNEL);
+ 		zalloc_cpumask_var(&per_cpu(cpu_llc_shared_map, i), GFP_KERNEL);
+ 	}
++
++	/*
++	 * Set 'default' x86 topology, this matches default_topology() in that
++	 * it has NUMA nodes as a topology level. See also
++	 * native_smp_cpus_done().
++	 *
++	 * Must be done before set_cpus_sibling_map() is ran.
++	 */
++	set_sched_topology(x86_topology);
++
+ 	set_cpu_sibling_map(0);
+ 
+ 	switch (smp_sanity_check(max_cpus)) {
+@@ -1370,6 +1381,9 @@ void __init native_smp_cpus_done(unsigned int max_cpus)
+ {
+ 	pr_debug("Boot done\n");
+ 
++	if (x86_has_numa_in_package)
++		set_sched_topology(x86_numa_in_package_topology);
++
+ 	nmi_selftest();
+ 	impress_friends();
+ 	setup_ioapic_dest();
 diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index e86c4a5..08135ca 100644
+index 2a906f2..e86c4a5 100644
 --- a/kernel/sched/core.c
 +++ b/kernel/sched/core.c
-@@ -6237,7 +6237,25 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
- 	WARN_ON(!sg);
+@@ -6487,6 +6487,9 @@ static struct sched_domain_topology_level *sched_domain_topology =
  
- 	do {
-+		int cpu, max_cpu = -1, prev_cpu = -1;
+ void set_sched_topology(struct sched_domain_topology_level *tl)
+ {
++	if (WARN_ON_ONCE(sched_smp_initialized))
++		return;
 +
- 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
-+
-+		if (!(sd->flags & SD_ASYM_PACKING))
-+			goto next;
-+
-+		for_each_cpu(cpu, sched_group_cpus(sg)) {
-+			if (prev_cpu < 0) {
-+				prev_cpu = cpu;
-+				max_cpu = cpu;
-+			} else {
-+				if (sched_asym_prefer(cpu, max_cpu))
-+					max_cpu = cpu;
-+			}
-+		}
-+		sg->asym_prefer_cpu = max_cpu;
-+
-+next:
- 		sg = sg->next;
- 	} while (sg != sd->groups);
+ 	sched_domain_topology = tl;
+ }
  
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index a5cd07b..bb96e1a 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -100,6 +100,16 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
-  */
- unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
- 
-+#ifdef CONFIG_SMP
-+/*
-+ * For asym packing, by default the lower numbered cpu has higher priority.
-+ */
-+int __weak arch_asym_cpu_priority(int cpu)
-+{
-+	return -cpu;
-+}
-+#endif
-+
- #ifdef CONFIG_CFS_BANDWIDTH
- /*
-  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
-@@ -6861,16 +6871,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
- 	if (env->idle == CPU_NOT_IDLE)
- 		return true;
- 	/*
--	 * ASYM_PACKING needs to move all the work to the lowest
--	 * numbered CPUs in the group, therefore mark all groups
--	 * higher than ourself as busy.
-+	 * ASYM_PACKING needs to move all the work to the highest
-+	 * prority CPUs in the group, therefore mark all groups
-+	 * of lower priority than ourself as busy.
- 	 */
--	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
-+	if (sgs->sum_nr_running &&
-+	    sched_asym_prefer(env->dst_cpu, sg->asym_prefer_cpu)) {
- 		if (!sds->busiest)
- 			return true;
- 
--		/* Prefer to move from highest possible cpu's work */
--		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
-+		/* Prefer to move from lowest priority cpu's work */
-+		if (sched_asym_prefer(sds->busiest->asym_prefer_cpu,
-+				      sg->asym_prefer_cpu))
- 			return true;
- 	}
- 
-@@ -7022,8 +7034,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
- 	if (!sds->busiest)
- 		return 0;
- 
--	busiest_cpu = group_first_cpu(sds->busiest);
--	if (env->dst_cpu > busiest_cpu)
-+	busiest_cpu = sds->busiest->asym_prefer_cpu;
-+	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
- 		return 0;
- 
- 	env->imbalance = DIV_ROUND_CLOSEST(
-@@ -7364,10 +7376,11 @@ static int need_active_balance(struct lb_env *env)
- 
- 		/*
- 		 * ASYM_PACKING needs to force migrate tasks from busy but
--		 * higher numbered CPUs in order to pack all tasks in the
--		 * lowest numbered CPUs.
-+		 * lower priority CPUs in order to pack all tasks in the
-+		 * highest priority CPUs.
- 		 */
--		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
-+		if ((sd->flags & SD_ASYM_PACKING) &&
-+		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
- 			return 1;
- 	}
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index b7fc1ce..3f3d04a 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -532,6 +532,11 @@ struct dl_rq {
- 
- #ifdef CONFIG_SMP
- 
-+static inline bool sched_asym_prefer(int a, int b)
-+{
-+	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
-+}
-+
- /*
-  * We add the notion of a root-domain which will be used to define per-domain
-  * variables. Each exclusive cpuset essentially defines an island domain by
-@@ -884,6 +889,7 @@ struct sched_group {
- 
- 	unsigned int group_weight;
- 	struct sched_group_capacity *sgc;
-+	int asym_prefer_cpu;		/* cpu of highest priority in group */
- 
- 	/*
- 	 * The CPUs this group covers.
 -- 
 2.7.4
 
