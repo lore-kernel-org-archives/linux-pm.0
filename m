@@ -1,34 +1,59 @@
-From: Axel Lin <axel.lin@ingics.com>
-Subject: [PATCH] PM / devfreq: exynos-ppmu: ppmu_events array should not be NULL terminated
-Date: Wed, 21 Sep 2016 08:30:40 +0800
-Message-ID: <1474417840-7999-1-git-send-email-axel.lin@ingics.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Axel Lin <axel.lin@ingics.com>
+From: kernel@martin.sperl.org
+Subject: [PATCH V7 1/6] dt: bindings: add thermal device driver for bcm2835
+Date: Wed, 21 Sep 2016 08:23:42 +0000
+Message-ID: <1474446227-1147-2-git-send-email-kernel@martin.sperl.org>
+References: <1474446227-1147-1-git-send-email-kernel@martin.sperl.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 212-186-180-163.static.upcbusiness.at ([212.186.180.163]:60898
+        "EHLO cgate.sperl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754320AbcIUIX5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Sep 2016 04:23:57 -0400
+In-Reply-To: <1474446227-1147-1-git-send-email-kernel@martin.sperl.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Russell King <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Stefan Wahren <stefan.wahren@i2se.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: Martin Sperl <kernel@martin.sperl.org>
 
-The rest of the code uses ARRAY_SIZE to count the number of entries in
-ppmu_events array. The NULL terminated entry makes ARRAY_SIZE return
-off-by-one value.
+From: Martin Sperl <kernel@martin.sperl.org>
 
-Signed-off-by: Axel Lin <axel.lin@ingics.com>
+Add dt-binding documentation for bcm2835 SOC thermal sensor.
+
+Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+Acked-by: Eric Anholt <eric@anholt.net>
+Acked-by: Rob Herring <robh@kernel.org>
+
+Changelog:
+ V1 -> V2: renamed file to follow naming conventions
+ V2 -> V3: removed 0x in node name
+
 ---
- drivers/devfreq/event/exynos-ppmu.c | 2 --
- 1 file changed, 2 deletions(-)
+ .../bindings/thermal/brcm,bcm2835-thermal.txt           | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
 
-diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
-index f55cf0e..c9ffaf0 100644
---- a/drivers/devfreq/event/exynos-ppmu.c
-+++ b/drivers/devfreq/event/exynos-ppmu.c
-@@ -90,8 +90,6 @@ struct __exynos_ppmu_events {
- 	PPMU_EVENT(d1-cpu),
- 	PPMU_EVENT(d1-general),
- 	PPMU_EVENT(d1-rt),
--
--	{ /* sentinel */ },
- };
- 
- static int exynos_ppmu_find_ppmu_id(struct devfreq_event_dev *edev)
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt b/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
+new file mode 100644
+index 0000000..474531d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
+@@ -0,0 +1,17 @@
++Binding for Thermal Sensor driver for BCM2835 SoCs.
++
++Required parameters:
++-------------------
++
++compatible: 	should be one of: "brcm,bcm2835-thermal",
++		"brcm,bcm2836-thermal" or "brcm,bcm2837-thermal"
++reg:		Address range of the thermal registers.
++clocks: 	Phandle of the clock used by the thermal sensor.
++
++Example:
++
++thermal: thermal@7e212000 {
++	compatible = "brcm,bcm2835-thermal";
++	reg = <0x7e212000 0x8>;
++	clocks = <&clocks BCM2835_CLOCK_TSENS>;
++};
 -- 
-2.7.4
+2.1.4
+
