@@ -1,64 +1,111 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [RFC PATCH 2/3] PM / Domains: Add support for devices with
- multiple domains
-Date: Wed, 21 Sep 2016 16:57:04 +0200
-Message-ID: <CAMuHMdV9TENEt7y5Opehh1CC5+0=s4nRMvnh=0nTYOUuOOC2uw@mail.gmail.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <1474367287-10402-3-git-send-email-jonathanh@nvidia.com> <CAMuHMdVc+EjkbcpPKyzbCfDjp65gF3xP3bhkjh6SKLt6KDTtXg@mail.gmail.com>
- <658004af-e4f4-8b0c-cdc1-43661d331d70@nvidia.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: =?UTF-8?q?=5BPATCH=20v4=2000/10=5D=20Support=20Intel=C2=AE=20Turbo=20Boost=20Max=20Technology=203=2E0?=
+Date: Wed, 21 Sep 2016 12:19:02 -0700
+Message-ID: <1474485552-141429-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <658004af-e4f4-8b0c-cdc1-43661d331d70-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux-Renesas <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga05.intel.com ([192.55.52.43]:21846 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932771AbcIUTTX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 21 Sep 2016 15:19:23 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Hi Jon,
+v4:
+- Split x86 multi-node numa topology bug fix and setting
+of SD_ASYM flag for ITMT topology into 2 patches
+- Split the sysctl changes for ITMT enablement and setting of ITMT
+capability/core priorities into 2 patches.
+- Avoid unnecessary rebuild of sched domains when ITMT sysctl or
+capabilities are updated.
+- Fix missing stub function for topology_max_packages for !SMP case.
+- Rename set_sched_itmt() to sched_set_itmt_support().
+- Various updates to itmt.c to eliminate goto and make logic tighter.
+- Various change logs and comments update.
+- intel_pstate: Split function to process cppc and enable ITMT
+- intel_pstate: Just keep the cppc_perf information till we use CPPC for HWP
 
-On Wed, Sep 21, 2016 at 4:37 PM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> On 21/09/16 09:53, Geert Uytterhoeven wrote:
->> On Tue, Sep 20, 2016 at 12:28 PM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>> Some devices may require more than one PM domain to operate and this is
->>> not currently by the PM domain framework. Furthermore, the current Linux
->>> 'device' structure only allows devices to be associated with a single PM
->>> domain and so cannot easily be associated with more than one. To allow
->>> devices to be associated with more than one PM domain, if multiple
->>> domains are defined for a given device (eg. via device-tree), then:
->>> 1. Create a new PM domain for this device. The name of the new PM domain
->>>    created matches the device name for which it was created for.
->>> 2. Register the new PM domain as a sub-domain for all PM domains
->>>    required by the device.
->>> 3. Attach the device to the new PM domain.
->>
->> This looks a suboptimal to me: if you have n devices sharing the same PM
->> domains, you would add n new subdomains?
->
-> BTW, would this be the case today for some renesas devices or are you
-> just pointing this out as something that could be optimised/improved?
+v3:
+- Fix race clash when more than one program are enabling/disabling ITMT
+- Remove group_priority_cpu macro to simplify code.
+- Error reported by 0-day for compile issue on ARM
 
-This is the case for all Renesas SoCs that have power areas: devices belong
-to both the PM domain for the power area, and to the PM domain for the clock
-domain.
+v2
+- The patchset is split into two parts so that CPPC changes can be merged first
+ 1. Only ACPI CPPC changes (It is posted separately)
+ 2. ITMT changes (scheduler and Intel P-State)
 
-See setting of .attach_dev in
-    arch/arm/mach-shmobile/pm-rmobile.c (power areas + clock domain)
-    drivers/clk/renesas/clk-mstp.c (pure clock domain)
-    drivers/clk/renesas/renesas-cpg-mssr.c (pure clock domain)
-    drivers/soc/renesas/rcar-sysc.c (power areas + clock domain)
+- Changes in patch: sched,x86: Enable Turbo Boost Max Technology
+ 1. Use arch_update_cpu_topology to indicate need to completely
+    rebuild sched domain when ITMT related sched domain flags change
+ 2. Enable client (single node) platform capable of ITMT with ITMT
+    scheduling by default
+ 3. Implement arch_asym_cpu_priority to provide the cpu priority
+    value to scheduler for asym packing.
+ 4. Fix a compile bug for i386 architecture.
 
-AFAIK there are no devices that belong to multiple power areas (power areas may
-be nested though, which is handled fine by the current framework, as created by
-Rafael when he worked on Renesas SoCs).
+- Changes in patch: sched: Extend scheduler's asym packing
+ 1. Use arch_asym_cpu_priority() to provide cpu priority
+    value used for asym packing to the scheduler.
 
-Gr{oetje,eeting}s,
+- Changes in acpi: bus: Enable HWP CPPC objects and
+  acpi: bus: Set _OSC for diverse core support
+  Minor code cleanup by removing #ifdef
+- Changes in Kconfig for Intel P-State
+  Avoid building CPPC lib for i386 for issue reported by 0-day
 
-                        Geert
+- Feature is enabled by default for single socket systems
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+With Intel® Turbo Boost Max Technology 3.0 (ITMT), single-threaded performance is
+optimized by identifying processor's fastest core and running critical workloads
+on it.
+Refere to:
+http://www.intel.com/content/www/us/en/architecture-and-technology/turbo-boost/turbo-boost-max-technology.html
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+This patchset consist of all changes required to support ITMT feature:
+- Use CPPC information in Intel P-State driver to get performance information
+- Scheduler enhancements
+- cppc lib patches (split in to a seprate series)
+
+This featured can be enabled by writing at runtime
+# echo 1 > /proc/sys/kernel/sched_itmt_enabled
+This featured can be disabled by writing at runtime
+# echo 0 > /proc/sys/kernel/sched_itmt_enabled
+
+Srinivas Pandruvada (3):
+  acpi: bus: Enable HWP CPPC objects
+  acpi: bus: Set _OSC for diverse core support
+  cpufreq: intel_pstate: Use CPPC to get max performance
+
+Tim Chen (7):
+  x86/topology: Fix numa in package topology bug
+  sched: Extend scheduler's asym packing
+  x86/topology: Provide topology_num_packages()
+  x86/topology: Define x86's arch_update_cpu_topology
+  x86: Enable Intel Turbo Boost Max Technology 3.0
+  x86/sysctl: Add sysctl for ITMT scheduling feature
+  x86/sched: Add SD_ASYM_PACKING flags to x86 ITMT CPU
+
+ arch/x86/Kconfig                |   9 ++
+ arch/x86/include/asm/topology.h |  27 ++++++
+ arch/x86/kernel/Makefile        |   1 +
+ arch/x86/kernel/itmt.c          | 185 ++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/smpboot.c       |  85 ++++++++++++++----
+ drivers/acpi/bus.c              |  10 +++
+ drivers/cpufreq/Kconfig.x86     |   1 +
+ drivers/cpufreq/intel_pstate.c  | 103 +++++++++++++++++++++-
+ include/linux/acpi.h            |   1 +
+ include/linux/sched.h           |   2 +
+ kernel/sched/core.c             |  21 +++++
+ kernel/sched/fair.c             |  35 +++++---
+ kernel/sched/sched.h            |   6 ++
+ 13 files changed, 456 insertions(+), 30 deletions(-)
+ create mode 100644 arch/x86/kernel/itmt.c
+
+-- 
+2.7.4
+
