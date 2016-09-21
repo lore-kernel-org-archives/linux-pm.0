@@ -1,108 +1,67 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH 2/3] PM / Domains: Add support for devices with
- multiple domains
-Date: Tue, 20 Sep 2016 18:54:25 +0100
-Message-ID: <37940866-a740-f959-9cba-1f18824151b0@nvidia.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <1474367287-10402-3-git-send-email-jonathanh@nvidia.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/1] power: supply: sbs-battery: Cleanup removal of
+ chip->pdata
+Date: Wed, 21 Sep 2016 02:05:56 +0200
+Message-ID: <20160921000555.kzvsbq7vsfnfbe6h@earth>
+References: <1474333272-13980-1-git-send-email-preid@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="flh37dsg7nsm7dmb"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:10018 "EHLO
-        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754694AbcITRyp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Sep 2016 13:54:45 -0400
-In-Reply-To: <1474367287-10402-3-git-send-email-jonathanh@nvidia.com>
+Received: from mail.kernel.org ([198.145.29.136]:40606 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752187AbcIUAGE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 20 Sep 2016 20:06:04 -0400
+Content-Disposition: inline
+In-Reply-To: <1474333272-13980-1-git-send-email-preid@electromag.com.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
+To: Phil Reid <preid@electromag.com.au>
+Cc: arnd@arndb.de, linux-pm@vger.kernel.org
 
 
-On 20/09/16 11:28, Jon Hunter wrote:
-> Some devices may require more than one PM domain to operate and this is
-> not currently by the PM domain framework. Furthermore, the current Linux
-> 'device' structure only allows devices to be associated with a single PM
-> domain and so cannot easily be associated with more than one. To allow
-> devices to be associated with more than one PM domain, if multiple
-> domains are defined for a given device (eg. via device-tree), then:
-> 1. Create a new PM domain for this device. The name of the new PM domain
->    created matches the device name for which it was created for.
-> 2. Register the new PM domain as a sub-domain for all PM domains
->    required by the device.
-> 3. Attach the device to the new PM domain.
-> 
-> By default the newly created PM domain is assumed to be in the 'off'
-> state to ensure that any parent PM domains will be turned on if not
-> already on when the new PM domain is turned on.
-> 
-> When a device associated with more than one PM domain is detached,
-> wait for any power-off work to complete, then remove the PM domain that
-> was created for the device by calling pm_genpd_remove() (this also
-> removes it as a child to any other PM domains) and free the memory
-> for the PM domain.
-> 
-> For devices using device-tree, devices that require multiple PM domains
-> are detected by seeing if the 'power-domains' property has more than one
-> entry defined.
-> 
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-> ---
-> 
-> Here is an example output from pm_genpd_summary following this change
-> for the Tegra210 XHCI device:
-> 
-> domain                          status          slaves
->     /device                                             runtime status
-> ----------------------------------------------------------------------
-> 70090000.usb                    on
->     /devices/platform/70090000.usb                      unsupported
-> xusbc                           on              70090000.usb
-> xusbb                           off-0
-> xusba                           on              70090000.usb
-> 
-> I am not sure if this is confusing to have a device and domain with the
-> same name. So let me know if you have any thoughts!
-> 
-> 
->  drivers/base/power/domain.c | 102 ++++++++++++++++++++++++++++++++++++++------
->  1 file changed, 88 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 382735949591..ee39824c03b3 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1826,7 +1826,7 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
->  {
->  	struct generic_pm_domain *pd;
->  	unsigned int i;
-> -	int ret = 0;
-> +	int count, ret = 0;
->  
->  	pd = genpd_lookup_dev(dev);
->  	if (!pd)
-> @@ -1851,6 +1851,19 @@ static void genpd_dev_pm_detach(struct device *dev, bool power_off)
->  
->  	/* Check if PM domain can be powered off after removing this device. */
->  	genpd_queue_power_off_work(pd);
-> +
-> +	count = of_count_phandle_with_args(dev->of_node, "power-domains",
-> +					   "#power-domain-cells");
-> +	if (count > 1) {
-> +		cancel_work_sync(&pd->power_off_work);
-> +
-> +		ret = pm_genpd_remove(pd);
-> +		if (ret < 0)
-> +			dev_err(dev, "failed to remove PM domain %s: %d\n",
-> +				pd->name, ret);
-> +
-> +		kfree(pd);
+--flh37dsg7nsm7dmb
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I realise I am missing a return if pm_genpd_remove() returns a failure!
-Will correct this.
+Hi,
 
-Jon
+On Tue, Sep 20, 2016 at 09:01:12AM +0800, Phil Reid wrote:
+> There where still a few lingering references to pdata after commit
+> power: supply: sbs-battery: simplify DT parsing.
+>=20
+> Remove pdata from struct=B7sbs_info and conditional checks to ser if this
+> was set from the i2c read / write functions.
+> Instead of call max in each function for incrementing poll_retry_count
+> do it once in the probe function.
+> Fixup null pointer dereference in to pdata in sbs_external_power_changed.
+> Change retry counts to u32 to avoid need for max.
+>
+> Signed-off-by: Phil Reid <preid@electromag.com.au>
 
--- 
-nvpublic
+Thanks, queued.
+
+-- Sebastian
+
+--flh37dsg7nsm7dmb
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABCgAGBQJX4c7gAAoJENju1/PIO/qaqrQP/jk/IKqAMHjVjJoJiLj7fc0d
+LJ3GE6XO5uzva0dcbcDP33yxH20TC88LSL/RsuxM8OcAVjbge19GSvcPjp8oA8aP
+vP/SRgcMrspKD7FvTguDkQyl8f27moY3UfvkFmqY+zrqdbcxJofsGasaCMM1nh3o
+Ng2NMoxXs3TAdMdDp/mMc6NzktlX2fDJ4N4U3h3ILiJfXb53sUXI5Kq3blPhWa0O
+5zpz5Xk6YGs0MyMj0SnzGWDOkcUfCxCKzSOGEayO3KlfjOR09U+uebTGvU6qQSWv
+PgEjYLQV9G61Jj/6Q8VjGz8pzrU/2n1BILdOiqY94Hb9z02qlJfFiEKUk+yGJXve
+04y0YyaFRhYhz35+ayDwd5CMaMVsw5xW+GI0u9o/3OMWRj8UpDndMHHD08P/ApBF
+aMP1v5VvCZtjxayf6ePPPhJymdhMISvKSkGaS0yARgD3Z2F1/tO22SsmTpxwDI+k
+SgWafc4CKyLl46rOsY5pT96ff1YZgva6g8aFXdn2XaLiNMXWDpBODvQmpQnUs3ar
+NkfD/4eQOgw6//xOxNVYItBiNClV3U0P2qUxLOsVQM/KFRW2PpgDhEXJvjXACXzo
+Jt8V8uzpLVlQSQViP3FVJy02rY+Xvu8QiYY1AGqEgB5ccn3G3ute53hd5crS+5lC
+7A/XlyawMlDCao9AlL5t
+=uuoy
+-----END PGP SIGNATURE-----
+
+--flh37dsg7nsm7dmb--
