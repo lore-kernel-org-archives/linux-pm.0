@@ -1,7 +1,7 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v4 09/10] acpi: bus: Set _OSC for diverse core support
-Date: Wed, 21 Sep 2016 12:19:11 -0700
-Message-ID: <1474485552-141429-10-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v4 03/10] x86/topology: Provide topology_num_packages()
+Date: Wed, 21 Sep 2016 12:19:05 -0700
+Message-ID: <1474485552-141429-4-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1474485552-141429-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1474485552-141429-1-git-send-email-srinivas.pandruvada@linux.intel.com>
@@ -10,43 +10,56 @@ To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
 Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Set the OSC_SB_CPC_DIVERSE_HIGH_SUPPORT (bit 12) to enable diverse
-core support.
+From: Tim Chen <tim.c.chen@linux.intel.com>
 
-This is required to inform BIOS the support of Intel Turbo Boost Max
-Technology 3.0 feature.
+Returns number of cpu packages discovered.
 
+This information is needed to determine the size of the platform and
+decide if the Intel Turbo Boost Max Technology 3.0 (ITMT) feature
+should be turned on by default.  The ITMT feature is more effective on
+single socket client like system that uses small number of cores most
+of the time.
+
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/acpi/bus.c   | 3 +++
- include/linux/acpi.h | 1 +
- 2 files changed, 4 insertions(+)
+ arch/x86/include/asm/topology.h | 3 +++
+ arch/x86/kernel/smpboot.c       | 5 +++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index 61643a5..8ab6ec2 100644
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -337,6 +337,9 @@ static void acpi_bus_osc_support(void)
- 	}
- #endif
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index cf75871..3e95dfc 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -129,10 +129,13 @@ static inline int topology_max_smt_threads(void)
+ }
  
-+	if (IS_ENABLED(CONFIG_SCHED_ITMT))
-+		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPC_DIVERSE_HIGH_SUPPORT;
+ int topology_update_package_map(unsigned int apicid, unsigned int cpu);
++extern int topology_num_packages(void);
+ extern int topology_phys_to_logical_pkg(unsigned int pkg);
+ #else
+ #define topology_max_packages()			(1)
+ static inline int
++topology_num_packages(void) { return 1; }
++static inline int
+ topology_update_package_map(unsigned int apicid, unsigned int cpu) { return 0; }
+ static inline int topology_phys_to_logical_pkg(unsigned int pkg) { return 0; }
+ static inline int topology_max_smt_threads(void) { return 1; }
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 7137ec4..6a763a2 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -295,6 +295,11 @@ found:
+ 	return 0;
+ }
+ 
++int topology_num_packages(void)
++{
++	return logical_packages;
++}
 +
- 	if (!ghes_disable)
- 		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_APEI_SUPPORT;
- 	if (ACPI_FAILURE(acpi_get_handle(NULL, "\\_SB", &handle)))
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index e746552..53841a2 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -462,6 +462,7 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context);
- #define OSC_SB_CPCV2_SUPPORT			0x00000040
- #define OSC_SB_PCLPI_SUPPORT			0x00000080
- #define OSC_SB_OSLPI_SUPPORT			0x00000100
-+#define OSC_SB_CPC_DIVERSE_HIGH_SUPPORT		0x00001000
- 
- extern bool osc_sb_apei_support_acked;
- extern bool osc_pc_lpi_support_confirmed;
+ /**
+  * topology_phys_to_logical_pkg - Map a physical package id to a logical
+  *
 -- 
 2.7.4
