@@ -1,26 +1,17 @@
 From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH v5 0/6] power: supply: sbs-manager add driver.
-Date: Wed, 21 Sep 2016 16:41:08 +0800
-Message-ID: <1474447274-90821-1-git-send-email-preid@electromag.com.au>
+Subject: [PATCH v5 4/6] power: Adds support for Smart Battery System Manager
+Date: Wed, 21 Sep 2016 16:41:12 +0800
+Message-ID: <1474447274-90821-5-git-send-email-preid@electromag.com.au>
+References: <1474447274-90821-1-git-send-email-preid@electromag.com.au>
 Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1474447274-90821-1-git-send-email-preid@electromag.com.au>
 Sender: linux-i2c-owner@vger.kernel.org
 To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, andrea.merello@gmail.com, preid@electromag.com.au, karl-heinz@schneider-inet.de, arnd@arndb.de, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The sbs-manager driver was written by Karl-Heinz and I've added irq
-support to the driver to generate power_supply_change notices.
-Hope I'm not violating etticate too much with this series
+From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
 
-I've include Andrea's smb_alert driver changes here primarily to allow
-testing of the alert callback. It looks like those changes stalled.
-I'd be keen to implement necessary changes to this to get dt support
-for the smbus_alert driver into mainline. Just need some guidance on
-how.
-
-Patches are applied against linux-power-supply/for-next
-
-
-This patch series adds support for Smart Battery System Manager.
+This patch adds support for Smart Battery System Manager.
 A SBSM is a device listening at I2C/SMBus address 0x0a and is capable of
 communicating up to four I2C smart battery devices. All smart battery
 devices are listening at address 0x0b, so the SBSM muliplexes between
@@ -28,61 +19,384 @@ them. The driver makes use of the I2C-Mux framework to allow smart
 batteries to be bound via device tree, i.e. the sbs-battery driver.
 
 Via sysfs interface the online state and charge type are presented. If
-the driver is bound as ltc1760 (a Dual Smart Battery System Manager)
-the charge type can also be changed from trickle to fast.
+the driver is bound as ltc1760 (an implementation of a Dual Smart Battery
+System Manager) the charge type can also be changed from trickle to fast.
 
-Changes:
-V2:
-* Fixed sample node names and compatible strings in binding documentaton.
-* Removed optional property "sbsm,i2c-retry-count"
-* Retry count hardcoded. Removed no longer needed OF readout function
-* Rebased onto v4.7rc-5
-
-V3:
-* Changed enumeration sheme
-* Rebased onto v4.7rc-7
-
-V4:
-* removed .owner field as advised by kbuild test robot
-* removed print on ENOMEM
-* added reference to i2c-mux documentation in binding doc
-
-V5: v2 of my (Phil) Add irq support and battery detect gpios.
-* update karl's sbs-manager binding to include gpio defintions.
-* rebase onto linux-power-supply/for-next
-* Add alert callback to sbs-manager.
-* Expose battery presence via gpio to maintain compatiblity with
-  sbs-battery driver.
-* Notify attached batteries of state change via alert callback.
-  This was done to avoid the need for the driver to become an irq
-  source. This reduces the code a fair bit.
-  Hopefully the implementation meets with approval.
-
-
-Andrea Merello (1):
-  I2C: i2c-smbus: add device tree support
-
-Karl-Heinz Schneider (2):
-  Documentation: Add sbs-manager device tree node documentation
-  power: Adds support for Smart Battery System Manager
-
-Phil Reid (3):
-  i2c: i2c-smbus: Support threaded irq.
-  power: supply: sbs-battery: Add alert callback.
-  power: supply: sbs-manager: Add alert callback and battery change
-    notification.
-
- .../devicetree/bindings/i2c/i2c-smbus.txt          |  20 +
- .../bindings/power/supply/sbs,sbs-manager.txt      |  62 +++
- drivers/i2c/i2c-smbus.c                            |  41 +-
- drivers/power/supply/Kconfig                       |  13 +
- drivers/power/supply/Makefile                      |   1 +
- drivers/power/supply/sbs-battery.c                 |  16 +-
- drivers/power/supply/sbs-manager.c                 | 451 +++++++++++++++++++++
- 7 files changed, 591 insertions(+), 13 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/i2c/i2c-smbus.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
+Tested-by: Phil Reid <preid@electromag.com.au>
+Reviewed-by: Phil Reid <preid@electromag.com.au>
+Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Signed-off-by: Phil Reid <preid@electromag.com.au>
+---
+ drivers/power/supply/Kconfig       |  13 ++
+ drivers/power/supply/Makefile      |   1 +
+ drivers/power/supply/sbs-manager.c | 323 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 337 insertions(+)
  create mode 100644 drivers/power/supply/sbs-manager.c
 
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index 76806a0..2666ec8 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -157,6 +157,19 @@ config BATTERY_WM97XX
+ 	help
+ 	  Say Y to enable support for battery measured by WM97xx aux port.
+ 
++config MANAGER_SBS
++	tristate "Smart Battery System Manager"
++	depends on I2C && I2C_MUX
++	help
++	  Say Y here to include support for Smart Battery System Manager
++	  ICs. The driver reports online and charging status via sysfs.
++	  It presents itself also as I2C mux which allows to bind
++	  smart battery driver to its ports.
++	  Supported is for example LTC1760.
++
++	  This driver can also be built as a module. If so, the module will be
++	  called sbs-manager.
++
+ config BATTERY_SBS
+         tristate "SBS Compliant gas gauge"
+         depends on I2C
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index 36c599d..77f4914 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -22,6 +22,7 @@ obj-$(CONFIG_BATTERY_DS2760)	+= ds2760_battery.o
+ obj-$(CONFIG_BATTERY_DS2780)	+= ds2780_battery.o
+ obj-$(CONFIG_BATTERY_DS2781)	+= ds2781_battery.o
+ obj-$(CONFIG_BATTERY_DS2782)	+= ds2782_battery.o
++obj-$(CONFIG_MANAGER_SBS)	+= sbs-manager.o
+ obj-$(CONFIG_BATTERY_GAUGE_LTC2941)	+= ltc2941-battery-gauge.o
+ obj-$(CONFIG_BATTERY_GOLDFISH)	+= goldfish_battery.o
+ obj-$(CONFIG_BATTERY_PMU)	+= pmu_battery.o
+diff --git a/drivers/power/supply/sbs-manager.c b/drivers/power/supply/sbs-manager.c
+new file mode 100644
+index 0000000..e3debd7
+--- /dev/null
++++ b/drivers/power/supply/sbs-manager.c
+@@ -0,0 +1,323 @@
++/*
++ * Driver for SBS compliant Smart Battery System Managers
++ *
++ * The device communicates via i2c at address 0x0a and multiplexes access to up
++ * to four smart batteries at address 0x0b.
++ *
++ * Via sysfs interface the online state and charge type are presented.
++ *
++ * Datasheet SBSM:    http://sbs-forum.org/specs/sbsm100b.pdf
++ * Datasheet LTC1760: http://cds.linear.com/docs/en/datasheet/1760fb.pdf
++ *
++ * Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/i2c.h>
++#include <linux/i2c-mux.h>
++#include <linux/power_supply.h>
++
++#define SBSM_MAX_BATS  4
++#define SBSM_RETRY_CNT 3
++
++/* registers addresses */
++#define SBSM_CMD_BATSYSSTATE     0x01
++#define SBSM_CMD_BATSYSSTATECONT 0x02
++#define SBSM_CMD_BATSYSINFO      0x04
++#define SBSM_CMD_LTC             0x3c
++
++struct sbsm_data {
++	struct i2c_client *client;
++	struct i2c_mux_core *muxc;
++
++	struct power_supply *psy;
++
++	int cur_chan;         /* currently selected channel */
++	bool is_ltc1760;      /* special capabilities */
++};
++
++static enum power_supply_property sbsm_props[] = {
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_CHARGE_TYPE,
++};
++
++static int sbsm_read_word(struct i2c_client *client, u8 address)
++{
++	int reg, retries = SBSM_RETRY_CNT;
++
++	while (retries > 0) {
++		reg = i2c_smbus_read_word_data(client, address);
++		if (reg >= 0)
++			break;
++		--retries;
++	}
++
++	if (reg < 0) {
++		dev_err(&client->dev, "failed to read register %i\n",
++			(int)address);
++		return reg;
++	}
++
++	return le16_to_cpu(reg);
++}
++
++static int sbsm_write_word(struct i2c_client *client, u8 address, u16 word)
++{
++	int ret, retries = SBSM_RETRY_CNT;
++
++	word = cpu_to_le16(word);
++	while (retries > 0) {
++		ret = i2c_smbus_write_word_data(client, address, word);
++		if (ret >= 0)
++			break;
++		--retries;
++	}
++	if (ret < 0)
++		dev_err(&client->dev, "failed to write to register %i\n",
++			(int)address);
++
++	return ret;
++}
++
++static int sbsm_get_property(struct power_supply *psy,
++			     enum power_supply_property psp,
++			     union power_supply_propval *val)
++{
++	struct sbsm_data *data = power_supply_get_drvdata(psy);
++	int regval = 0;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++		regval = sbsm_read_word(data->client, SBSM_CMD_BATSYSSTATECONT);
++		if (regval < 0)
++			return regval;
++		val->intval = !!(regval & 0x1);
++		break;
++
++	case POWER_SUPPLY_PROP_CHARGE_TYPE:
++		regval = sbsm_read_word(data->client, SBSM_CMD_BATSYSSTATE);
++		if (regval < 0)
++			return regval;
++
++		if ((regval & 0x00f0) == 0) {
++			val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
++			return 0;
++		}
++		val->intval = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
++
++		if (data->is_ltc1760) {
++			/* charge mode fast if turbo is active */
++			regval = sbsm_read_word(data->client, SBSM_CMD_LTC);
++			if (regval < 0)
++				return regval;
++			else if (regval & 0x80)
++				val->intval = POWER_SUPPLY_CHARGE_TYPE_FAST;
++		}
++		break;
++
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int sbsm_prop_is_writeable(struct power_supply *psy,
++				  enum power_supply_property psp)
++{
++	struct sbsm_data *data = power_supply_get_drvdata(psy);
++
++	return (psp == POWER_SUPPLY_PROP_CHARGE_TYPE) && data->is_ltc1760;
++}
++
++static int sbsm_set_property(struct power_supply *psy,
++			     enum power_supply_property psp,
++			     const union power_supply_propval *val)
++{
++	struct sbsm_data *data = power_supply_get_drvdata(psy);
++	int ret = -EINVAL;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CHARGE_TYPE:
++		/* write 1 to TURBO if type fast is given */
++		if (data->is_ltc1760) {
++			u16 regval = val->intval ==
++			POWER_SUPPLY_CHARGE_TYPE_FAST ? (0x1 << 7) : 0;
++			ret = sbsm_write_word(data->client, SBSM_CMD_LTC,
++					      regval);
++		}
++		break;
++
++	default:
++		break;
++	}
++
++	return ret;
++}
++
++/*
++ * Switch to battery
++ * Parameter chan is directly the content of SMB_BAT* nibble
++ */
++static int sbsm_select(struct i2c_mux_core *muxc, u32 chan)
++{
++	struct sbsm_data *data = i2c_mux_priv(muxc);
++	int ret = 0;
++	u16 reg;
++
++	if (data->cur_chan == chan)
++		return ret;
++
++	/* chan goes from 1 ... 4 */
++	reg = 1 << (11 + chan);
++	ret = sbsm_write_word(data->client, SBSM_CMD_BATSYSSTATE, reg);
++	if (ret)
++		dev_err(&data->client->dev, "Failed to select channel %i\n",
++			chan);
++	else
++		data->cur_chan = chan;
++
++	return ret;
++}
++
++#if defined(CONFIG_OF)
++
++#include <linux/of_device.h>
++
++static const struct of_device_id sbsm_dt_ids[] = {
++	{ .compatible = "sbs,sbs-manager" },
++	{ .compatible = "lltc,ltc1760" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, sbsm_dt_ids);
++
++#endif
++
++static const struct power_supply_desc sbsm_default_psy_desc = {
++	.type = POWER_SUPPLY_TYPE_MAINS,
++	.properties = sbsm_props,
++	.num_properties = ARRAY_SIZE(sbsm_props),
++	.get_property = &sbsm_get_property,
++	.set_property = &sbsm_set_property,
++	.property_is_writeable = &sbsm_prop_is_writeable,
++};
++
++static int sbsm_probe(struct i2c_client *client,
++		      const struct i2c_device_id *id)
++{
++	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
++	struct sbsm_data *data;
++	struct device *dev = &client->dev;
++	struct power_supply_desc *psy_desc;
++	struct power_supply_config psy_cfg = {};
++	int ret = 0, i, supported_bats;
++
++	/* Device listens only at address 0x0a */
++	if (client->addr != 0x0a)
++		return -ENODEV;
++
++	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_WORD_DATA))
++		return -EPFNOSUPPORT;
++
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	i2c_set_clientdata(client, data);
++
++	data->client = client;
++	data->is_ltc1760 = !!strstr(id->name, "ltc1760");
++
++	ret  = sbsm_read_word(client, SBSM_CMD_BATSYSINFO);
++	if (ret < 0)
++		return ret;
++	supported_bats = le16_to_cpu(ret) & 0xf;
++
++	data->muxc = i2c_mux_alloc(adapter, dev, SBSM_MAX_BATS, 0,
++				   I2C_MUX_LOCKED, &sbsm_select, NULL);
++	if (!data->muxc) {
++		ret = -ENOMEM;
++		goto err_mux_alloc;
++	}
++	data->muxc->priv = data;
++
++	/* register muxed i2c channels. One for each supported battery */
++	for (i = 0; i < SBSM_MAX_BATS; ++i) {
++		if ((1 << i) & supported_bats) {
++			ret = i2c_mux_add_adapter(data->muxc, 0, i + 1, 0);
++			if (ret) {
++				dev_err(dev,
++					"failed to register i2c mux channel %d\n",
++					i + 1);
++				goto err_mux_register;
++			}
++		}
++	}
++
++	psy_desc = devm_kmemdup(dev, &sbsm_default_psy_desc,
++				sizeof(struct power_supply_desc),
++				GFP_KERNEL);
++	if (!psy_desc) {
++		ret = -ENOMEM;
++		goto err_psy;
++	}
++
++	psy_desc->name = devm_kasprintf(dev, GFP_KERNEL, "sbsm-%s",
++					dev_name(&client->dev));
++	if (!psy_desc->name) {
++		ret = -ENOMEM;
++		goto err_psy;
++	}
++
++	psy_cfg.drv_data = data;
++	data->psy = devm_power_supply_register(dev, psy_desc, &psy_cfg);
++	if (IS_ERR(data->psy)) {
++		ret = PTR_ERR(data->psy);
++		dev_err(dev, "failed to register power supply %s\n",
++			psy_desc->name);
++		goto err_psy;
++	}
++
++	dev_info(dev, "sbsm registered\n");
++	return 0;
++
++err_psy:
++err_mux_register:
++	i2c_mux_del_adapters(data->muxc);
++
++err_mux_alloc:
++	return ret;
++}
++
++static int sbsm_remove(struct i2c_client *client)
++{
++	struct sbsm_data *data = i2c_get_clientdata(client);
++
++	i2c_mux_del_adapters(data->muxc);
++	return 0;
++}
++
++static const struct i2c_device_id sbsm_ids[] = {
++	{ "sbs-manager", 0 },
++	{ "ltc1760",     0 },
++	{ }
++};
++MODULE_DEVICE_TABLE(i2c, sbsm_ids);
++
++static struct i2c_driver sbsm_driver = {
++	.driver = {
++		.name = "sbsm",
++	},
++	.probe		= sbsm_probe,
++	.remove		= sbsm_remove,
++	.id_table	= sbsm_ids
++};
++module_i2c_driver(sbsm_driver);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Karl-Heinz Schneider <karl-heinz@schneider-inet.de>");
++MODULE_DESCRIPTION("SBSM Smart Battery System Manager");
 -- 
 1.8.3.1
