@@ -1,59 +1,49 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [RFC PATCH 2/3] PM / Domains: Add support for devices with
- multiple domains
-Date: Wed, 21 Sep 2016 10:53:01 +0200
-Message-ID: <CAMuHMdVc+EjkbcpPKyzbCfDjp65gF3xP3bhkjh6SKLt6KDTtXg@mail.gmail.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com> <1474367287-10402-3-git-send-email-jonathanh@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1474367287-10402-3-git-send-email-jonathanh@nvidia.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 1/2] PM / OPP: compatible is an optional property
+Date: Wed, 21 Sep 2016 15:02:49 +0530
+Message-ID: <be2c4fb0bb58f5b29facbc6f5aaf3dca13cf209e.1474450324.git.viresh.kumar@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jon,
+It was never compulsory to have a compatible string in the OPP table.
+Fix the documentation to mark it optional.
 
-On Tue, Sep 20, 2016 at 12:28 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
-> Some devices may require more than one PM domain to operate and this is
-> not currently by the PM domain framework. Furthermore, the current Linux
-> 'device' structure only allows devices to be associated with a single PM
-> domain and so cannot easily be associated with more than one. To allow
-> devices to be associated with more than one PM domain, if multiple
-> domains are defined for a given device (eg. via device-tree), then:
-> 1. Create a new PM domain for this device. The name of the new PM domain
->    created matches the device name for which it was created for.
-> 2. Register the new PM domain as a sub-domain for all PM domains
->    required by the device.
-> 3. Attach the device to the new PM domain.
+Also update its description a bit.
 
-This looks a suboptimal to me: if you have n devices sharing the same PM
-domains, you would add n new subdomains?
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+---
+ Documentation/devicetree/bindings/opp/opp.txt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Having a clean way to specify multiple PM domains is very useful, though.
-
-E.g. on Renesas ARM SoCs, devices are usually part of two PM domains:
-  1. A power area (can be "always-on",
-  2. The clock domain.
-
-As power areas and clock domains are fairly orthogonal (the former use the
-.power_{off,on}() callbacks, the latter set GENPD_FLAG_PM_CLK and use the
-{at,de}tach_dev() callbacks), we currently setup both in the same driver
-(SYSC, for controlling power areas), which forwards the clock domain operations
-to the clock driver (CPG/MSTP or CPG/MSSR).
-Hence we have only single references in the power-domains properties, but
-having two would allow to drop the hardcoded links between the two drivers.
-
-(Oh no, more DT backwards compatibility issues if this is accepted ;-)
-
-Gr{oetje,eeting}s,
-
-                        Geert
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index ee91cbdd95ee..5eab6f0215d1 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -55,14 +55,14 @@ This describes the OPPs belonging to a device. This node can have following
+ properties:
+ 
+ Required properties:
+-- compatible: Allow OPPs to express their compatibility. It should be:
+-  "operating-points-v2".
+-
+ - OPP nodes: One or more OPP nodes describing voltage-current-frequency
+   combinations. Their name isn't significant but their phandle can be used to
+   reference an OPP.
+ 
+ Optional properties:
++- compatible: Allow OPPs to express their compatibility. It should be
++  "operating-points-v2" or a vendor specific string.
++
+ - opp-shared: Indicates that device nodes using this OPP Table Node's phandle
+   switch their DVFS state together, i.e. they share clock/voltage/current lines.
+   Missing property means devices have independent clock/voltage/current lines,
+-- 
+2.7.1.410.g6faf27b
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
