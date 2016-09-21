@@ -1,129 +1,168 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] PM / OPP: Multiple regulators aren't supported yet
-Date: Wed, 21 Sep 2016 15:02:50 +0530
-Message-ID: <fc02fca412ffdb749bd811c8f1dc40fa2ae3fc3f.1474450324.git.viresh.kumar@linaro.org>
-References: <be2c4fb0bb58f5b29facbc6f5aaf3dca13cf209e.1474450324.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <be2c4fb0bb58f5b29facbc6f5aaf3dca13cf209e.1474450324.git.viresh.kumar@linaro.org>
-In-Reply-To: <be2c4fb0bb58f5b29facbc6f5aaf3dca13cf209e.1474450324.git.viresh.kumar@linaro.org>
-References: <be2c4fb0bb58f5b29facbc6f5aaf3dca13cf209e.1474450324.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org
+From: Brendan Jackman <brendan.jackman@arm.com>
+Subject: Re: [PATCH v5 02/16] dt/bindings: Update binding for PM domain idle states
+Date: Wed, 21 Sep 2016 10:48:47 +0100
+Message-ID: <8737kt37nk.fsf@arm.com>
+References: <20160902201605.GA1705@linaro.org> <87sht59mcw.fsf@arm.com> <20160912161600.GA21885@linaro.org> <a4fc71ae-6fa5-4142-6dd4-7bc96eb20186@arm.com> <87intz665i.fsf@arm.com> <20160913193844.GB28944@linaro.org> <87h99i6b5d.fsf@arm.com> <7hpoo3ix80.fsf@baylibre.com> <7af4c2d7-70a3-1881-2980-8ea49e594e5b@arm.com> <874m5cx6y8.fsf@arm.com> <20160920161748.GB46914@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:43822 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755235AbcIUJs6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 21 Sep 2016 05:48:58 -0400
+In-reply-to: <20160920161748.GB46914@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Brendan Jackman <brendan.jackman@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Hilman <khilman@baylibre.com>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, ulf.hansson@linaro.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Axel Haslam <ahaslam+renesas@baylibre.com>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-Multiple regulators per device aren't supported yet by the kernel code
-and the bindings provided in documentation aren't sufficient to handle
-that case (as there is no way for kernel code to link multiple
-voltage/current values to a power supply).
 
-Remove them. These can be added later if required with appropriate
-changes.
+On Tue, Sep 20 2016 at 17:17, Lina Iyer <lina.iyer@linaro.org> wrote:
+> On Mon, Sep 19 2016 at 09:09 -0600, Brendan Jackman wrote:
+>>
+>>On Fri, Sep 16 2016 at 18:39, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>>> Hi Kevin,
+>>>
+>>> Thanks for looking at this and simplifying various discussions we had so
+>>> far. I was thinking of summarizing something very similar. I couldn't
+>>> due to lack of time.
+>>>
+>>> On 16/09/16 18:13, Kevin Hilman wrote:
+>>>
+>>> [...]
+>>>
+>>>> I think we're having some terminology issues...
+>>>>
+>>>> FWIW, the kernel terminolgy is actually "PM domain", not power domain.
+>>>> This was intentional because the goal of the PM domain was to group
+>>>> devices that some PM features.  To be very specific to the kernel, they
+>>>> us the same set of PM callbacks.  Today, this is most commonly used to
+>>>> model power domains, where a group of devices share a power rail, but it
+>>>> does not need to be limited to that.
+>>>>
+>>>
+>>> Agreed/Understood.
+>>>
+>>>> That being said, I'm having a hard time understanding the root of the
+>>>> disagreement.
+>>>>
+>>>
+>>> Yes. I tried to convey the same earlier, but have failed. The only
+>>> disagreement is about a small part of this DT bindings. We would like to
+>>> make it completely hierarchical up to CPU nodes. More comments on that
+>>> below.
+>>>
+>>>> It seems that you and Sudeep would like to use domain-idle-states to
+>>>> replace/superceed cpu-idle-states with the primary goal (and benefit)
+>>>> being that it simplifies the DT bindings.  Is that correct?
+>>>>
+>>>
+>>> Correct, we want to deprecate cpu-idle-states with the introduction of
+>>> this hierarchical PM bindings. Yes IMO, it simplifies things and avoids
+>>> any ABI break we might trigger if we miss to consider some use-case now.
+>>>
+>>>> The objections have come in because that means that implies that CPUs
+>>>> become their own domains, which may not be the case in hardware in the
+>>>> sense that they share a power rail.
+>>>>
+>>>
+>>> Agreed.
+>>>
+>>>> However, IMO, thinking of a CPU as it's own "PM domain" may make some
+>>>> sense based on the terminology above.
+>>>>
+>>>
+>>> Thanks for that, we do understand that it may not be 100% correct when
+>>> we strictly considers hardware terminologies instead of above ones.
+>>> As along as we see no issues with the above terminologies it should be fine.
+>>>
+>>>> I think the other objection may be that using a genpd to model domain
+>>>> with only a single device in it may be overkill, and I agree with that.
+>>>
+>>> I too agree with that. Just because we represent that in DT in that way
+>>> doesn't mean we need to create a genpd to model domain. We can always
+>>> skip that if not required. That's pure implementation specifics and I
+>>> have tried to convey the same in my previous emails. I must say you have
+>>> summarized it very clearly in this email. Thanks again for that.
+>>>
+>>>> But, I'm not sure if making CPUs use domain-idle-states implies that
+>>>> they necessarily have to use genpd is what you are proposing.  Maybe
+>>>> someone could clarify that?
+>>>>
+>>>
+>>> No, I have not proposing anything around implementation in the whole
+>>> discussion so far. I have constrained myself just to DT bindings so far.
+>>> That's the main reason why I was opposed to mentions of OS vs platform
+>>> co-ordinated modes of CPU suspend in this discussion. IMO that's
+>>> completely out of scope of this DT binding we are defining here.
+>>>
+> Fair. But understand the PM Domain bindings do not impose any
+> requirements of hierarchy. Domain idle states are defined by the
+> property domain-idle-states in the domain node. How the DT bindings are
+> organized is immaterial to the PM Domain core.
+>
+> It is a different exercise all together to look at CPU PSCI modes and
+> have a unified way of representing them in DT. The current set of
+> patches does not dictate where the domain idle states be located (pardon
+> my example in the patch, which was not updated to reflect that). That
+> said, I do require that domains that are controlled by the PSCI f/w be
+> defined under the 'psci' node in DT, which is fair. All the domain needs
+> are phandles to the idle state definitions; how the nodes are arranged
+> in DT is not of consequence to the driver.
+>
+> In my mind providing a structure to CPU PM domains that can be used for
+> both OSI and PC is a separate effort.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- Documentation/devicetree/bindings/opp/opp.txt | 68 ++-------------------------
- 1 file changed, 4 insertions(+), 64 deletions(-)
+Do you mean a structure in the kernel or in DT? If the former, I agree,
+if the latter I strongly disagree. I think DT bindings should be totally
+unaware of PSCI suspend modes.
 
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 5eab6f0215d1..5d0595f0a10c 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -86,8 +86,7 @@ properties.
-   Single entry is for target voltage and three entries are for <target min max>
-   voltages.
- 
--  Entries for multiple regulators must be present in the same order as
--  regulators are specified in device's DT node.
-+  Entries for multiple regulators aren't supported.
- 
- - opp-microvolt-<name>: Named opp-microvolt property. This is exactly similar to
-   the above opp-microvolt property, but allows multiple voltage ranges to be
-@@ -104,10 +103,7 @@ properties.
- 
-   Should only be set if opp-microvolt is set for the OPP.
- 
--  Entries for multiple regulators must be present in the same order as
--  regulators are specified in device's DT node. If this property isn't required
--  for few regulators, then this should be marked as zero for them. If it isn't
--  required for any regulator, then this property need not be present.
-+  Entries for multiple regulators aren't supported.
- 
- - opp-microamp-<name>: Named opp-microamp property. Similar to
-   opp-microvolt-<name> property, but for microamp instead.
-@@ -381,63 +377,7 @@ DVFS state together.
- 	};
- };
- 
--Example 4: Handling multiple regulators
--
--/ {
--	cpus {
--		cpu@0 {
--			compatible = "arm,cortex-a7";
--			...
--
--			cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
--			operating-points-v2 = <&cpu0_opp_table>;
--		};
--	};
--
--	cpu0_opp_table: opp_table0 {
--		compatible = "operating-points-v2";
--		opp-shared;
--
--		opp@1000000000 {
--			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt = <970000>, /* Supply 0 */
--					<960000>, /* Supply 1 */
--					<960000>; /* Supply 2 */
--			opp-microamp =  <70000>,  /* Supply 0 */
--					<70000>,  /* Supply 1 */
--					<70000>;  /* Supply 2 */
--			clock-latency-ns = <300000>;
--		};
--
--		/* OR */
--
--		opp@1000000000 {
--			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt = <970000 975000 985000>, /* Supply 0 */
--					<960000 965000 975000>, /* Supply 1 */
--					<960000 965000 975000>; /* Supply 2 */
--			opp-microamp =  <70000>,		/* Supply 0 */
--					<70000>,		/* Supply 1 */
--					<70000>;		/* Supply 2 */
--			clock-latency-ns = <300000>;
--		};
--
--		/* OR */
--
--		opp@1000000000 {
--			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt = <970000 975000 985000>, /* Supply 0 */
--					<960000 965000 975000>, /* Supply 1 */
--					<960000 965000 975000>; /* Supply 2 */
--			opp-microamp =  <70000>,		/* Supply 0 */
--					<0>,			/* Supply 1 doesn't need this */
--					<70000>;		/* Supply 2 */
--			clock-latency-ns = <300000>;
--		};
--	};
--};
--
--Example 5: opp-supported-hw
-+Example 4: opp-supported-hw
- (example: three level hierarchy of versions: cuts, substrate and process)
- 
- / {
-@@ -482,7 +422,7 @@ Example 5: opp-supported-hw
- 	};
- };
- 
--Example 6: opp-microvolt-<name>, opp-microamp-<name>:
-+Example 5: opp-microvolt-<name>, opp-microamp-<name>:
- (example: device with two possible microvolt ranges: slow and fast)
- 
- / {
--- 
-2.7.1.410.g6faf27b
+> It may also club what Brendan
+> mentions below as part of the effort. The hierarchy that is presented in
+> [1] is inherent in the PM domain hierarchy and idle states don't have to
+> duplicate that information.
+>
+>>> Hope that helps/clarifies the misunderstanding/disagreement.
+>>
+>>Indeed. My intention was that the proposal would result in the exact
+>>same kernel behaviour as Lina's current patchset, i.e. there is one
+>>genpd per cluster, and CPU-level idle states are still handled by
+>>cpuidle.
+>>
+>>The only change from the current patchset would be in initialisation
+>>code: some coordination would need to be done to determine which idle
+>>states go into cpuidle and which go into the genpds (whereas with the
+>>current bindings, states from cpu-idle-states go into cpuidle and states
+>>from domain-idle-states go into genpd). So you could say that this would
+>>be a trade-off between binding simplicity and implementation simplicity.
+>>
+> I would not oppose the idea of virtual domains around CPUs (I admit I am
+> not comfortable with the idea though), if that is the right thing to do.
+> But the scope of that work is extensive and should not be clubbed as
+> part of this proposal. It is an extensive code rework spanning cpuidle
+> drivers and PSCI and there are hooks in this code to help you achieve
+> that.
+
+If we want to take the per-CPU domains approach, we _have_ to do it as
+part of this proposal; it's a different set of semantics for the
+cpu-idle-states/domain-idle-states properties. It would mean
+cpu-idle-states is _superseded_ by domain idle states - implementing one
+solution (where cpu-idle-states and domain idle states are both taken
+into consideration by the implementation) then later switching to the
+alternative (where cpu-idle-states is ignored when a CPU PM domain tree
+is present) wouldn't make sense from a backward-compatibility
+perspective.
+
+You're right that implementing the alternative proposal in the Linux
+kernel would mean quite a big rework. But, idealistically speaking,
+Linux-specific implementation realities shouldn't be a factor in Device
+Tree binding designs, right?
+
+If people think that using both cpu-idle-states and domain-idle-states
+is the pragmatic choice (or object fundamentally to the idea of devices
+with idle states as being in their own PM domain) then that's fine IMO,
+but it's a one-time decision and I think we should be clear about why
+we're making it.
+
+Cheers,
+Brendan
