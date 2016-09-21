@@ -1,74 +1,86 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH 2/3] PM / Domains: Add support for devices with
- multiple domains
-Date: Wed, 21 Sep 2016 11:01:19 +0100
-Message-ID: <6723a9e3-eef7-489f-0eda-53ca76e89f6e@nvidia.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <1474367287-10402-3-git-send-email-jonathanh@nvidia.com>
- <CAMuHMdVc+EjkbcpPKyzbCfDjp65gF3xP3bhkjh6SKLt6KDTtXg@mail.gmail.com>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v5 1/6] I2C: i2c-smbus: add device tree support
+Date: Wed, 21 Sep 2016 12:34:05 +0100
+Message-ID: <20160921113405.GE18176@leverpostej>
+References: <1474447274-90821-1-git-send-email-preid@electromag.com.au>
+ <1474447274-90821-2-git-send-email-preid@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:16650 "EHLO
-        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750822AbcIUKB0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Sep 2016 06:01:26 -0400
-In-Reply-To: <CAMuHMdVc+EjkbcpPKyzbCfDjp65gF3xP3bhkjh6SKLt6KDTtXg@mail.gmail.com>
+Received: from foss.arm.com ([217.140.101.70]:46162 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754642AbcIULe0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 21 Sep 2016 07:34:26 -0400
+Content-Disposition: inline
+In-Reply-To: <1474447274-90821-2-git-send-email-preid@electromag.com.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Phil Reid <preid@electromag.com.au>
+Cc: wsa@the-dreams.de, robh+dt@kernel.org, sre@kernel.org, andrea.merello@gmail.com, karl-heinz@schneider-inet.de, arnd@arndb.de, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Geert,
-
-On 21/09/16 09:53, Geert Uytterhoeven wrote:
-> Hi Jon,
+On Wed, Sep 21, 2016 at 04:41:09PM +0800, Phil Reid wrote:
+> From: Andrea Merello <andrea.merello@gmail.com>
 > 
-> On Tue, Sep 20, 2016 at 12:28 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
->> Some devices may require more than one PM domain to operate and this is
->> not currently by the PM domain framework. Furthermore, the current Linux
->> 'device' structure only allows devices to be associated with a single PM
->> domain and so cannot easily be associated with more than one. To allow
->> devices to be associated with more than one PM domain, if multiple
->> domains are defined for a given device (eg. via device-tree), then:
->> 1. Create a new PM domain for this device. The name of the new PM domain
->>    created matches the device name for which it was created for.
->> 2. Register the new PM domain as a sub-domain for all PM domains
->>    required by the device.
->> 3. Attach the device to the new PM domain.
+> According to Documentation/i2c/smbus-protocol, a smbus controller driver
+> that wants to hook-in smbus extensions support, can call
+> i2c_setup_smbus_alert(). There are very few drivers that are currently
+> doing this.
 > 
-> This looks a suboptimal to me: if you have n devices sharing the same PM
-> domains, you would add n new subdomains?
-
-Yes you would and so in that case it would appear to be suboptimal, I
-agree. One option would be to name the new PM domain after its parents
-and then see if any PM domains exist that matches the name and verify it
-has the required parents. We could even add a prefix to the name to
-indicate that this is a PM domain added by the core. Only problem is we
-could get some long names!
-
-> Having a clean way to specify multiple PM domains is very useful, though.
+> However the i2c-smbus module can also work with any
+> smbus-extensions-unaware I2C controller, as long as we provide an extra
+> IRQ line connected to the I2C bus ALARM signal.
 > 
-> E.g. on Renesas ARM SoCs, devices are usually part of two PM domains:
->   1. A power area (can be "always-on",
->   2. The clock domain.
+> This patch makes it possible to go this way via DT. Note that the DT node
+> will indeed describe a (little) piece of HW, that is the routing of the
+> ALARM signal to an IRQ line (so it seems a fair DT use to me, but RFC).
+
+Which piece of hardware actually generates this IRQ? The I2C controller?
+A slave SMBus device? Or something else?
+
+I'm not at all familiar with I2C or SMBus, and a quick scan of
+Documentation/i2c/smbus-protocol, has left me none-the-wiser on that
+front.
+
+> Note that AFAICT, by design, i2c-smbus module pretends to be an I2C slave
+> with address 0x0C (that is the alarm response address), and IMHO this is
+> quite consistent with usage in the DT as a I2C child node.
 > 
-> As power areas and clock domains are fairly orthogonal (the former use the
-> .power_{off,on}() callbacks, the latter set GENPD_FLAG_PM_CLK and use the
-> {at,de}tach_dev() callbacks), we currently setup both in the same driver
-> (SYSC, for controlling power areas), which forwards the clock domain operations
-> to the clock driver (CPG/MSTP or CPG/MSSR).
-> Hence we have only single references in the power-domains properties, but
-> having two would allow to drop the hardcoded links between the two drivers.
+> Signed-off-by: Andrea Merello <andrea.merello@gmail.com>
+> Signed-off-by: Phil Reid <preid@electromag.com.au>
+> ---
+>  Documentation/devicetree/bindings/i2c/i2c-smbus.txt | 20 ++++++++++++++++++++
+>  drivers/i2c/i2c-smbus.c                             | 20 +++++++++++++++-----
+>  2 files changed, 35 insertions(+), 5 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/i2c/i2c-smbus.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/i2c/i2c-smbus.txt b/Documentation/devicetree/bindings/i2c/i2c-smbus.txt
+> new file mode 100644
+> index 0000000..da83127
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/i2c/i2c-smbus.txt
+> @@ -0,0 +1,20 @@
+> +* i2c-smbus extensions
+> +
+> +Required Properties:
+> +  - compatible: Must contain "smbus_alert"
 
-Glad to see others could benefit from this ...
+Nit: s/_/-/ in compatible strings please.
 
-> (Oh no, more DT backwards compatibility issues if this is accepted ;-)
+> +  - interrupts: The irq line for smbus ALERT signal
+> +  - reg: I2C slave address. Set to 0x0C (alert response address).
+> +
+> +Note: The i2c-smbus module registers itself as a slave I2C device. Whenever
+> +a smbus controller directly support smbus extensions (and its driver supports
+> +this), there is no need to add anything special to the DT. Otherwise, for using
+> +i2c-smbus with any smbus-extensions-unaware I2C controllers, you need to
+> +route the smbus ALARM signal to an extra IRQ line, thus you need to describe
+> +this in the DT.
 
-... despite DT compat issues :-(
+Bindings shouldn't mention driver details (e.g. the i2c-smbus module
+behaviour). It feels like we're creating a virtual device for the sake
+of a driver, rather than accurately capturing the hardware.
 
-Jon
+So as-is, I don't think this is the right way to describe this.
 
--- 
-nvpublic
+Thanks,
+Mark.
