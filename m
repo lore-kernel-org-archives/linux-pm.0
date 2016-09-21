@@ -1,83 +1,88 @@
-From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
-Subject: [PATCH v5 2/6] i2c: i2c-smbus: Support threaded irq.
-Date: Wed, 21 Sep 2016 16:41:10 +0800
-Message-ID: <1474447274-90821-3-git-send-email-preid@electromag.com.au>
-References: <1474447274-90821-1-git-send-email-preid@electromag.com.au>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1474447274-90821-1-git-send-email-preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, andrea.merello-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org, karl-heinz-X5L7DgJ4l23oE99TX8zNy7NAH6kLmebB@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Phil Reid <preid@electromag.com.au>
+Subject: [PATCH v5 0/6] power: supply: sbs-manager add driver.
+Date: Wed, 21 Sep 2016 16:41:08 +0800
+Message-ID: <1474447274-90821-1-git-send-email-preid@electromag.com.au>
+Return-path: <linux-i2c-owner@vger.kernel.org>
+Sender: linux-i2c-owner@vger.kernel.org
+To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, andrea.merello@gmail.com, preid@electromag.com.au, karl-heinz@schneider-inet.de, arnd@arndb.de, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-handle_nested_irq calls the threaded irq handler. So if the smbus_alert
-irq is being generated via this an null address is derefenced. Split
-IRQ up into separate functions to allow thread / non thread irq to work
-correctly.
+The sbs-manager driver was written by Karl-Heinz and I've added irq
+support to the driver to generate power_supply_change notices.
+Hope I'm not violating etticate too much with this series
 
-Signed-off-by: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
----
- drivers/i2c/i2c-smbus.c | 23 +++++++++++++++++------
- 1 file changed, 17 insertions(+), 6 deletions(-)
+I've include Andrea's smb_alert driver changes here primarily to allow
+testing of the alert callback. It looks like those changes stalled.
+I'd be keen to implement necessary changes to this to get dt support
+for the smbus_alert driver into mainline. Just need some guidance on
+how.
 
-diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
-index 5806db3..b641cc2 100644
---- a/drivers/i2c/i2c-smbus.c
-+++ b/drivers/i2c/i2c-smbus.c
-@@ -73,13 +73,12 @@ static int smbus_do_alert(struct device *dev, void *addrp)
-  * The alert IRQ handler needs to hand work off to a task which can issue
-  * SMBus calls, because those sleeping calls can't be made in IRQ context.
-  */
--static void smbus_alert(struct work_struct *work)
-+static irqreturn_t smbus_alert(int irq, void *d)
- {
--	struct i2c_smbus_alert *alert;
-+	struct i2c_smbus_alert *alert = d;
- 	struct i2c_client *ara;
- 	unsigned short prev_addr = 0;	/* Not a valid address */
- 
--	alert = container_of(work, struct i2c_smbus_alert, alert);
- 	ara = alert->ara;
- 
- 	for (;;) {
-@@ -116,6 +115,17 @@ static void smbus_alert(struct work_struct *work)
- 		prev_addr = data.addr;
- 	}
- 
-+	return IRQ_HANDLED;
-+}
-+
-+static void smbalert_work(struct work_struct *work)
-+{
-+	struct i2c_smbus_alert *alert;
-+
-+	alert = container_of(work, struct i2c_smbus_alert, alert);
-+
-+	smbus_alert(alert->irq, alert);
-+
- 	/* We handled all alerts; re-enable level-triggered IRQs */
- 	if (!alert->alert_edge_triggered)
- 		enable_irq(alert->irq);
-@@ -158,12 +168,13 @@ static int smbalert_probe(struct i2c_client *ara,
- 		alert->alert_edge_triggered = (irq_type & IRQ_TYPE_EDGE_BOTH);
- 	}
- 
--	INIT_WORK(&alert->alert, smbus_alert);
-+	INIT_WORK(&alert->alert, smbalert_work);
- 	alert->ara = ara;
- 
- 	if (alert->irq > 0) {
--		res = devm_request_irq(&ara->dev, alert->irq, smbalert_irq,
--				       0, "smbus_alert", alert);
-+		res = devm_request_threaded_irq(&ara->dev, alert->irq,
-+						smbalert_irq, smbus_alert,
-+						0, "smbus_alert", alert);
- 		if (res)
- 			return res;
- 	}
+Patches are applied against linux-power-supply/for-next
+
+
+This patch series adds support for Smart Battery System Manager.
+A SBSM is a device listening at I2C/SMBus address 0x0a and is capable of
+communicating up to four I2C smart battery devices. All smart battery
+devices are listening at address 0x0b, so the SBSM muliplexes between
+them. The driver makes use of the I2C-Mux framework to allow smart
+batteries to be bound via device tree, i.e. the sbs-battery driver.
+
+Via sysfs interface the online state and charge type are presented. If
+the driver is bound as ltc1760 (a Dual Smart Battery System Manager)
+the charge type can also be changed from trickle to fast.
+
+Changes:
+V2:
+* Fixed sample node names and compatible strings in binding documentaton.
+* Removed optional property "sbsm,i2c-retry-count"
+* Retry count hardcoded. Removed no longer needed OF readout function
+* Rebased onto v4.7rc-5
+
+V3:
+* Changed enumeration sheme
+* Rebased onto v4.7rc-7
+
+V4:
+* removed .owner field as advised by kbuild test robot
+* removed print on ENOMEM
+* added reference to i2c-mux documentation in binding doc
+
+V5: v2 of my (Phil) Add irq support and battery detect gpios.
+* update karl's sbs-manager binding to include gpio defintions.
+* rebase onto linux-power-supply/for-next
+* Add alert callback to sbs-manager.
+* Expose battery presence via gpio to maintain compatiblity with
+  sbs-battery driver.
+* Notify attached batteries of state change via alert callback.
+  This was done to avoid the need for the driver to become an irq
+  source. This reduces the code a fair bit.
+  Hopefully the implementation meets with approval.
+
+
+Andrea Merello (1):
+  I2C: i2c-smbus: add device tree support
+
+Karl-Heinz Schneider (2):
+  Documentation: Add sbs-manager device tree node documentation
+  power: Adds support for Smart Battery System Manager
+
+Phil Reid (3):
+  i2c: i2c-smbus: Support threaded irq.
+  power: supply: sbs-battery: Add alert callback.
+  power: supply: sbs-manager: Add alert callback and battery change
+    notification.
+
+ .../devicetree/bindings/i2c/i2c-smbus.txt          |  20 +
+ .../bindings/power/supply/sbs,sbs-manager.txt      |  62 +++
+ drivers/i2c/i2c-smbus.c                            |  41 +-
+ drivers/power/supply/Kconfig                       |  13 +
+ drivers/power/supply/Makefile                      |   1 +
+ drivers/power/supply/sbs-battery.c                 |  16 +-
+ drivers/power/supply/sbs-manager.c                 | 451 +++++++++++++++++++++
+ 7 files changed, 591 insertions(+), 13 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/i2c/i2c-smbus.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
+ create mode 100644 drivers/power/supply/sbs-manager.c
+
 -- 
 1.8.3.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
