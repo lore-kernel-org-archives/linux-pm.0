@@ -1,104 +1,119 @@
-From: Andreas Herrmann <aherrmann@suse.com>
-Subject: Re: [PATCH 1/1] cpufreq: pcc-cpufreq: Re-introduce deadband effect
- to reduce number of frequency changes
-Date: Thu, 22 Sep 2016 19:54:48 +0200
-Message-ID: <20160922175448.GA25183@suselix.suse.de>
-References: <20160819121814.GA17296@suselix.suse.de>
- <20160819122101.GB17296@suselix.suse.de>
- <20160829060153.GA5094@vireshk-i7>
- <20160901132140.GA10183@suselix.suse.de>
- <20160907050201.GK27345@vireshk-i7>
- <20160916094727.GA4026@suselix>
- <fecb55b0-63ed-1d11-d85b-16cc73f2010b@semaphore.gr>
- <CADmjqpNE9f7fzQjWsHKB4wEjLq-4ZvQpaC314OcLdQ-i_TAABg@mail.gmail.com>
- <20160919161611.GB17693@suselix.suse.de>
- <CADmjqpOuXnri2MdJyvGVgkJ0tsbDMb7Q1O=x65-7OHGWwViOJA@mail.gmail.com>
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: Re: [PATCH v4 10/10] cpufreq: intel_pstate: Use CPPC to get max
+ performance
+Date: Thu, 22 Sep 2016 11:50:33 -0700
+Message-ID: <1474570233.3916.197.camel@linux.intel.com>
+References: <1474485552-141429-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <1474485552-141429-11-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <CAJZ5v0h3=JLw8mH=x4jXNec9CGZWiCt+pPmrD1L4=QutT8=g0Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:34231 "EHLO
-        smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1034388AbcIVRzS (ORCPT
-        <rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
-        Thu, 22 Sep 2016 13:55:18 -0400
-Content-Disposition: inline
-In-Reply-To: <CADmjqpOuXnri2MdJyvGVgkJ0tsbDMb7Q1O=x65-7OHGWwViOJA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0h3=JLw8mH=x4jXNec9CGZWiCt+pPmrD1L4=QutT8=g0Q@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, jolsa@redhat.com
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <skarafotis@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
 
-On Mon, Sep 19, 2016 at 10:39:18PM +0300, Stratos Karafotis wrote:
-> On Mon, Sep 19, 2016 at 7:16 PM, Andreas Herrmann <aherrmann@suse.com> wrote:
-> > On Fri, Sep 16, 2016 at 09:58:42PM +0300, Stratos Karafotis wrote:
-> >> Hi,
-> >>
-> >> [ I 'm resending this message, because I think some recipients didn't receive
-> >> it. ]
-> >>
-> >> On 16/09/2016 12:47 μμ, Andreas Herrmann wrote:
-> >> > On Wed, Sep 07, 2016 at 10:32:01AM +0530, Viresh Kumar wrote:
-> >> >> On 01-09-16, 15:21, Andreas Herrmann wrote:
-> >> >>> On Mon, Aug 29, 2016 at 11:31:53AM +0530, Viresh Kumar wrote:
+On Wed, 2016-09-21 at 22:30 +0200, Rafael J. Wysocki wrote:
+> On Wed, Sep 21, 2016 at 9:19 PM, Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com> wrote:
+> > 
+> > 
+> > +
+> > +static void intel_pstate_check_and_enable_itmt(int cpu)
+> > +{
+> > +       /*
+> > +        * For checking whether there is any difference in the maximum
+> > +        * performance for each CPU, need to wait till we have CPPC
+> > +        * data from all CPUs called from the cpufreq core. If there is a
+> > +        * difference in the maximum performance, then we have ITMT support.
+> > +        * If ITMT is supported, update the scheduler core priority for each
+> > +        * CPU and call to enable the ITMT feature.
+> > +        */
+> > +       if (cpumask_subset(topology_core_cpumask(cpu), &cppc_read_cpu_mask)) {
+> > +               int cpu_index;
+> > +               int max_prio;
+> > +               struct cpudata *cpu;
+> > +               bool itmt_support = false;
+> > +
+> > +               cpu = all_cpu_data[cpumask_first(&cppc_read_cpu_mask)];
+> > +               max_prio = cpu->cppc_perf->highest_perf;
+> > +               for_each_cpu(cpu_index, &cppc_read_cpu_mask) {
+> > +                       cpu = all_cpu_data[cpu_index];
+> > +                       if (max_prio != cpu->cppc_perf->highest_perf) {
+> > +                               itmt_support = true;
+> > +                               break;
+> > +                       }
+> > +               }
+> > +
+> > +               if (!itmt_support)
+> > +                       return;
+> > +
+> > +               for_each_cpu(cpu_index, &cppc_read_cpu_mask) {
+> > +                       cpu = all_cpu_data[cpu_index];
+> > +                       sched_set_itmt_core_prio(cpu->cppc_perf->highest_perf,
+> > +                                                cpu_index);
+> > +               }
+> My current understanding is that we need to rebuild sched domains
+> after setting the priorities, 
 
-  ---8<---
+No, that's not true.  We need to rebuild the sched domains only
+when the sched domain flags are changed, not when we are changing
+the priorities.  Only the sched domain flag is a property of
+the sched domain. CPU priority values are not part of sched domain.
 
-> >> > It seems that the decision how to best map load values to target
-> >> > frequencies is kind of hardware specific.
-> >> >
-> >> > Maybe a solution to this is that the cpufreq driver should be able to
-> >> > provide a mapping function to overwrite the current default
-> >> > calculation.
+Morten had similar question about whether we need to rebuild sched domain
+when we change cpu priorities when we first post the patches. 
+Peter has explained that it wasn't necessary.
+http://lkml.iu.edu/hypermail/linux/kernel/1608.3/01753.html
 
-FYI, I've created new patches to address the issue.
 
-First one will be to introduce a map_load_to_freq function. The
-default being what commit 6393d6 introduced (no deadband).  Second
-patch will than introduce a specific function for pcc-cpufreq to fall
-back to what was used before commit 6393d6.
 
-I just want to assemble gathered performance data and I am planning to
-send those patches tomorrow.
-
-> >> I'm not familiar with ppc-cpufreq drive but maybe patch 6393d6 just
-> >> uncovered an "issue" that was already existed but only on higher loads.
-> >>
-> >> Because, with or without patch 6393d6, if the specific CPU doesn't
-> >> use a frequency table, there will many frequency transitions in
-> >> higher loads too. I believe, though, that the side effect it's smaller
-> >> in higher frequencies because CPUs tend to work on lowest and highest
-> >> frequencies.
-> >
-> > Might be. I didn't test this specifically.
-
-Hopefully I'll also find time to gather some ftrace data wrt this.
-
-> >> What about a patch in ppc-cpufreq driver that permits frequency
-> >> changes only in specific steps and not in arbitrary values?
-> >
-> > Which steps would you use? What scheme would be universal usable for
-> > all affected system using this driver?
+> so what if there are two CPU packages
+> and there are highest_perf differences in both, and we first enumerate
+> the first package entirely before getting to the second one?
 > 
-> Just an idea. I would split the frequency range (max_freq - min_freq)
-> into ~10 steps. But I'm not familiar with the affected systems and
-> of course I can't prove this is an ideal approach.
+> In that case we'll schedule the work item after enumerating the first
+> package and it may rebuild the sched domains before all priorities are
+> set for the second package, may it not?
 
-I've modified the pcc-cpufreq specific map_load_to_freq function to do
-just that (map load values to 10 discrete frequency values) instead of
-falling back to the deadband (pre-commit-6393d6-version).
+That is not a problem.  For the second package, all the cpu priorities
+are initialized to the same value.  So even if we start to do 
+asym_packing in the scheduler for the whole system, 
+on the second package, all the cpus are treated equally by the scheduler.
+We will operate as if there is no favored core till we update the
+priorities of the cpu on the second package.
 
-Unfortunately this resulted in lower performance compared to
-pre-commit-6393d6-version.
+That said, we don't enable ITMT automatically for 2 package system.
+So the explicit sysctl command to enable ITMT and cause the sched domain
+rebuild for 2 package system is most likely to come after
+we have discovered and set all the cpu priorities.
 
-> > I had played with an approach to only make use of min_freq and
-> > max_freq which eventually didn't result in better performance
-> > in comparison to code before commit 6393d6.
 > 
-> Regards,
-> Stratos
+> This seems to require some more consideration.
+> 
+> > 
+> > +               /*
+> > +                * Since this function is in the hotcpu notifier callback
+> > +                * path, submit a task to workqueue to call
+> > +                * sched_set_itmt_support().
+> > +                */
+> > +               schedule_work(&sched_itmt_work);
+> It doesn't make sense to do this more than once IMO and what if we
+> attempt to schedule the work item again when it has been scheduled
+> once already?  Don't we need any protection here?
 
+It is not a problem for sched_set_itmt_support to be called more than
+once.
 
-Regards,
+First, we will ignore the second call if sched_itmt_capable has already
+been set to the same value in the previous sched_set_itmt_support call.
+Secondly, the call to update sched_itmt_capable
+is protected by the itmt_update_mutex.
 
-Andreas
+Thanks.
+
+Tim
+
