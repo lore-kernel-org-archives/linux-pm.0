@@ -1,64 +1,68 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH 2/3] PM / Domains: Add support for devices with
- multiple domains
-Date: Fri, 23 Sep 2016 13:57:54 +0100
-Message-ID: <1c217cf4-8682-8e6d-6958-419923e995cd@nvidia.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <1474367287-10402-3-git-send-email-jonathanh@nvidia.com>
- <CAMuHMdVc+EjkbcpPKyzbCfDjp65gF3xP3bhkjh6SKLt6KDTtXg@mail.gmail.com>
- <658004af-e4f4-8b0c-cdc1-43661d331d70@nvidia.com>
- <CAMuHMdV9TENEt7y5Opehh1CC5+0=s4nRMvnh=0nTYOUuOOC2uw@mail.gmail.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [Update][RFC/RFT][PATCH v3 2/5] driver core: Functional
+ dependencies tracking support
+Date: Fri, 23 Sep 2016 15:03:15 +0200
+Message-ID: <20160923130315.GA4077@wunner.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <5257325.y9rG1UM74b@vostro.rjw.lan>
+ <2480829.3iNV7K5Pdo@vostro.rjw.lan>
+ <2141382.sMORCbDyAF@vostro.rjw.lan>
+ <20160919224630.GA2933@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdV9TENEt7y5Opehh1CC5+0=s4nRMvnh=0nTYOUuOOC2uw@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.hostsharing.net ([83.223.90.233]:55373 "EHLO
+        mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757964AbcIWNCr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2016 09:02:47 -0400
+Content-Disposition: inline
+In-Reply-To: <20160919224630.GA2933@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Hi Geert,
-
-On 21/09/16 15:57, Geert Uytterhoeven wrote:
-> Hi Jon,
+On Tue, Sep 20, 2016 at 12:46:30AM +0200, Lukas Wunner wrote:
+> On Fri, Sep 16, 2016 at 02:33:55PM +0200, Rafael J. Wysocki wrote:
+> > +void device_links_unbind_consumers(struct device *dev)
+> > +{
+> > +	struct device_link *link;
+> > +	int idx;
+> > +
+> > + start:
+> > +	idx = device_links_read_lock();
+> > +
+> > +	list_for_each_entry_rcu(link, &dev->links_to_consumers, s_node) {
+> > +		enum device_link_status status;
+> > +
+> > +		if (link->flags & DEVICE_LINK_STATELESS)
+> > +			continue;
+> > +
+> > +		spin_lock(&link->lock);
+> > +		status = link->status;
+> > +		if (status == DEVICE_LINK_CONSUMER_PROBE) {
+> > +			spin_unlock(&link->lock);
+> > +
+> > +			device_links_read_unlock(idx);
+> > +
+> > +			wait_for_device_probe();
+> > +			goto start;
+> > +		}
+> > +		link->status = DEVICE_LINK_SUPPLIER_UNBIND;
+> > +		if (status == DEVICE_LINK_ACTIVE) {
+> > +			struct device *consumer = link->consumer;
+> > +
+> > +			get_device(consumer);
 > 
-> On Wed, Sep 21, 2016 at 4:37 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
->> On 21/09/16 09:53, Geert Uytterhoeven wrote:
->>> On Tue, Sep 20, 2016 at 12:28 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
->>>> Some devices may require more than one PM domain to operate and this is
->>>> not currently by the PM domain framework. Furthermore, the current Linux
->>>> 'device' structure only allows devices to be associated with a single PM
->>>> domain and so cannot easily be associated with more than one. To allow
->>>> devices to be associated with more than one PM domain, if multiple
->>>> domains are defined for a given device (eg. via device-tree), then:
->>>> 1. Create a new PM domain for this device. The name of the new PM domain
->>>>    created matches the device name for which it was created for.
->>>> 2. Register the new PM domain as a sub-domain for all PM domains
->>>>    required by the device.
->>>> 3. Attach the device to the new PM domain.
->>>
->>> This looks a suboptimal to me: if you have n devices sharing the same PM
->>> domains, you would add n new subdomains?
->>
->> BTW, would this be the case today for some renesas devices or are you
->> just pointing this out as something that could be optimised/improved?
-> 
-> This is the case for all Renesas SoCs that have power areas: devices belong
-> to both the PM domain for the power area, and to the PM domain for the clock
-> domain.
+> As long as the struct device_link exists, a ref is held on the
+> supplier and consumer.  Why acquire another ref here?
 
-To quantify this a bit, for the Renesas case, how many of these
-duplicated domains would there be if you were to use this approach as-is?
+I'm withdrawing this particular comment as I failed to see that
+device_links_read_unlock() is called next, so nothing prevents
+the device link from being deleted, same for the consumer, thus
+the ref needs to be acquired for device_release_driver_internal()
+and this portion of Rafael's code seems perfectly correct.
 
-I would like to see some agreement about whether we would allow the
-'power-domains' property to have more than one power-domain. We could
-always improve the implementation in the future. I am quite happy to
-re-work this RFC to avoid duplicated domains for devices like Renesas if
-people are on board with the overall proposal.
+Thanks & sorry for the noise,
 
-Cheers
-Jon
-
--- 
-nvpublic
+Lukas
