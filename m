@@ -1,55 +1,69 @@
-From: Laura Abbott <labbott@redhat.com>
-Subject: [PATCHv2] cpupower: Correct return type of cpu_power_is_cpu_online in cpufreq
-Date: Fri, 23 Sep 2016 10:16:50 -0700
-Message-ID: <1474651010-30883-1-git-send-email-labbott@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Renninger <trenn@suse.com>
-Cc: Laura Abbott <labbott@redhat.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v2 0/3] Broadcom AVS CPUfreq driver
+Date: Fri, 23 Sep 2016 10:35:31 -0700
+Message-ID: <1474652134-9630-1-git-send-email-mmayer@broadcom.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+This series contains the CPUfreq driver for Broadcom SoCs that use "AVS
+Firmware" for voltage and frequency scaling. All voltage and frequency
+transitions are performed by the firmware and are therefore hidden from
+Linux.
 
-When converting to a shared library in ac5a181d065d ("cpupower: Add
-cpuidle parts into library"), cpu_freq_cpu_exists was converted to
-cpupower_is_cpu_online. cpu_req_cpu_exists returned 0 on success and
--ENOSYS on failure whereas cpupower_is_cpu_online returns 1 on success.
-Check for the correct return value in cpufreq-set.
+The driver provides a standard CPUfreq interface to other kernel
+components and to userland on the one hand and communicates with the
+AVS co-processor on the other.
 
-See https://bugzilla.redhat.com/show_bug.cgi?id=1374212
+Communication between the two processors is via shared mailbox
+registers and interrupts (ARM -> AVS to tell the firmware that there is
+a command to process and AVS -> ARM to tell the driver that a command
+finished executing).
 
-Fixes: ac5a181d065d ("cpupower: Add cpuidle parts into library")
-Reported-by: Julian Seward <jseward@acm.org>
-Signed-off-by: Laura Abbott <labbott@redhat.com>
----
-v2: Drop another redundant cpupower_is_cpu_online
----
- tools/power/cpupower/utils/cpufreq-set.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+lkml.org seems to be down for me. Here are patchwork links to the original
+series:
 
-diff --git a/tools/power/cpupower/utils/cpufreq-set.c b/tools/power/cpupower/utils/cpufreq-set.c
-index b4bf769..1eef0ae 100644
---- a/tools/power/cpupower/utils/cpufreq-set.c
-+++ b/tools/power/cpupower/utils/cpufreq-set.c
-@@ -296,7 +296,7 @@ int cmd_freq_set(int argc, char **argv)
- 			struct cpufreq_affected_cpus *cpus;
- 
- 			if (!bitmask_isbitset(cpus_chosen, cpu) ||
--			    cpupower_is_cpu_online(cpu))
-+			    cpupower_is_cpu_online(cpu) != 1)
- 				continue;
- 
- 			cpus = cpufreq_get_related_cpus(cpu);
-@@ -316,10 +316,7 @@ int cmd_freq_set(int argc, char **argv)
- 	     cpu <= bitmask_last(cpus_chosen); cpu++) {
- 
- 		if (!bitmask_isbitset(cpus_chosen, cpu) ||
--		    cpupower_is_cpu_online(cpu))
--			continue;
--
--		if (cpupower_is_cpu_online(cpu) != 1)
-+		    cpupower_is_cpu_online(cpu) != 1)
- 			continue;
- 
- 		printf(_("Setting cpu: %d\n"), cpu);
+https://patchwork.kernel.org/patch/9278119/
+https://patchwork.kernel.org/patch/9278121/
+https://patchwork.kernel.org/patch/9278127/
+
+Changes from v1:
+    - renamed binding document 
+    - rewrote the introduction of the binding document
+    - created a new driver documentation file that contains Linux specific
+      information that was previously part of the binding document
+    - renamed the driver (and related config options) to include a reference
+      to "STB", since this implementation is primarily intended for use on
+      set-top boxes
+    - improved comments
+    - updated function __map_region()
+    - updated struct private_data
+    - added code to unmap memory regions in the error and exit paths
+    - added new sysfs property to report frequency directly from the
+      co-processor register
+
+Markus Mayer (3):
+  dt: cpufreq: brcm: New binding document for brcmstb-avs-cpufreq
+  cpufreq: brcmstb-avs-cpufreq: AVS CPUfreq driver for Broadcom STB SoCs
+  cpufreq: brcmstb-avs-cpufreq: add debugfs support
+
+ Documentation/cpu-freq/brcmstb-avs-cpufreq.txt     |   27 +
+ .../bindings/cpufreq/brcm,stb-avs-cpu-freq.txt     |   77 ++
+ MAINTAINERS                                        |    9 +
+ drivers/cpufreq/Kconfig.arm                        |   10 +
+ drivers/cpufreq/Makefile                           |    1 +
+ drivers/cpufreq/brcmstb-avs-cpufreq.c              | 1026 ++++++++++++++++++++
+ 6 files changed, 1150 insertions(+)
+ create mode 100644 Documentation/cpu-freq/brcmstb-avs-cpufreq.txt
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
+ create mode 100644 drivers/cpufreq/brcmstb-avs-cpufreq.c
+
 -- 
 2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
