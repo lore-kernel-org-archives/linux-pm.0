@@ -1,47 +1,28 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 1/2] PM / OPP: compatible string is not optional
-Date: Fri, 23 Sep 2016 12:18:01 +0530
-Message-ID: <94d3439d2942831fe933f0b5e08baaf4a7ba087d.1474613134.git.viresh.kumar@linaro.org>
-References: <483bea3c-a1b4-ce5d-e720-d69fc943ab50@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <483bea3c-a1b4-ce5d-e720-d69fc943ab50@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+From: "doa379@gmail.com" <doa379@gmail.com>
+Subject: Linux PM: Suspend to Disk Stalls at 35% RAM consumption
+Date: Fri, 23 Sep 2016 10:56:36 +0000
+Message-ID: <CANc1tDDWWibn2_btDt4BcHa5p5vy4e+7zMJtRLP65WZfpsMPSA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:37586 "EHLO
+        mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753578AbcIWK4j (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2016 06:56:39 -0400
+Received: by mail-wm0-f52.google.com with SMTP id b130so23031079wmc.0
+        for <linux-pm@vger.kernel.org>; Fri, 23 Sep 2016 03:56:38 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-The OPP core code doesn't check for the compatible string today and any
-faulty binding will go unnoticed.
+Re. Kernel 4.4, 4.7.
 
-Add a check in OPP core to take care of that.
+There is a curious issue with hibernating RAM contents to disk when
+RAM consumption reaches around 35%. The system stalls and becomes
+non-responsive.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-This patch replaces: "[PATCH 1/2] PM / OPP: compatible is an optional
-property".
+This is running the vanilla kernel without any PM-utils software.
 
-FWIW, I have checked that none of the current users of
-operating-points-v2 had this problem and this patch can be merged
-safely.
-
- drivers/base/power/opp/of.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index 1dfd3dd92624..111a5cad9f8a 100644
---- a/drivers/base/power/opp/of.c
-+++ b/drivers/base/power/opp/of.c
-@@ -318,6 +318,11 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- 	struct opp_table *opp_table;
- 	int ret = 0, count = 0;
- 
-+	if (!of_device_is_compatible(opp_np, "operating-points-v2")) {
-+		dev_err(dev, "Not compatible with operating-points-v2\n");
-+		return -EINVAL;
-+	}
-+
- 	mutex_lock(&opp_table_lock);
- 
- 	opp_table = _managed_opp(opp_np);
--- 
-2.7.1.410.g6faf27b
+Has anyone seen this issue and any tips on how to further debug?
+Recompiling the kernel with additional PM verbose doesn't show
+anything peculiar in syslog.
