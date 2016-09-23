@@ -1,75 +1,47 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/2] cpufreq: ti: Add cpufreq driver to determine
- available OPPs at runtime
-Date: Fri, 23 Sep 2016 10:49:47 +0530
-Message-ID: <20160923051947.GC17336@vireshk-i7>
-References: <20160901025328.376-1-d-gerlach@ti.com>
- <20160901025328.376-3-d-gerlach@ti.com>
- <20160907052053.GO27345@vireshk-i7>
- <57D02C85.7020300@ti.com>
- <20160908033909.GR27345@vireshk-i7>
- <57E2E0BE.3070206@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:34315 "EHLO
-        mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755495AbcIWFTv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2016 01:19:51 -0400
-Received: by mail-pf0-f171.google.com with SMTP id p64so38188363pfb.1
-        for <linux-pm@vger.kernel.org>; Thu, 22 Sep 2016 22:19:51 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <57E2E0BE.3070206@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH V2 1/2] PM / OPP: compatible string is not optional
+Date: Fri, 23 Sep 2016 12:18:01 +0530
+Message-ID: <94d3439d2942831fe933f0b5e08baaf4a7ba087d.1474613134.git.viresh.kumar@linaro.org>
+References: <483bea3c-a1b4-ce5d-e720-d69fc943ab50@codeaurora.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <483bea3c-a1b4-ce5d-e720-d69fc943ab50@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Mark Rutland <mark.rutland@arm.com>, Nishanth Menon <nm@ti.com>
 
-On 21-09-16, 14:34, Dave Gerlach wrote:
-> Viresh,
-> On 09/07/2016 10:39 PM, Viresh Kumar wrote:
-> >On 07-09-16, 10:04, Dave Gerlach wrote:
-> >>>>+static const struct of_device_id ti_cpufreq_of_match[] = {
-> >>>>+	{ .compatible = "operating-points-v2-ti-am3352-cpu",
-> >>>>+	  .data = &am3x_soc_data, },
-> >>>>+	{ .compatible = "operating-points-v2-ti-am4372-cpu",
-> >>>>+	  .data = &am4x_soc_data, },
-> >>>>+	{ .compatible = "operating-points-v2-ti-dra7-cpu",
-> >>>>+	  .data = &dra7_soc_data },
-> >>>
-> >>>You should be using your SoC compatible strings here. OPP compatible
-> >>>property isn't supposed to be (mis)used for this purpose.
-> >>>
-> >>
-> >>Referring to my comments in patch 1, what if we end up changing the bindings
-> >>based on DT maintainer comments? We will have these compatible strings, and
-> >>at that point is it acceptable to match against them? Or is it still better
-> >>to match to SoC compatibles? I think it makes sense to just probe against
-> >>these.
-> >
-> >But even then I think these are not correct. You should have added a
-> >single compatible string: operating-points-v2-ti-cpu.
-> >
-> >As the properties will stay the same across machines. And then you
-> >need to use SoC strings here.
-> >
-> 
-> Are you opposed to moving _of_get_opp_desc_node from
-> drivers/base/power/opp/opp.h to include/linux/pm_opp.h and renaming it
-> appropriately?
+The OPP core code doesn't check for the compatible string today and any
+faulty binding will go unnoticed.
 
-I am not opposed to that, but ...
+Add a check in OPP core to take care of that.
 
-> If I move the ti properties out of the cpu node, as discussed in patch 1 of
-> this series, and into the operating-points-v2 table, I need a way to get the
-> operating-points-v2 device node and I think it makes sense to reuse this as
-> it is what the opp framework uses internally to parse the phandle to the opp
-> table.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+This patch replaces: "[PATCH 1/2] PM / OPP: compatible is an optional
+property".
 
-I am not sure if those registers belong to the OPP bindings. What are those
-registers really? What all can be read from them? Why shouldn't they be present
-as a separate node in DT on the respective bus? Look at how it is done for
-sti-cpufreq driver.
+FWIW, I have checked that none of the current users of
+operating-points-v2 had this problem and this patch can be merged
+safely.
 
+ drivers/base/power/opp/of.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+index 1dfd3dd92624..111a5cad9f8a 100644
+--- a/drivers/base/power/opp/of.c
++++ b/drivers/base/power/opp/of.c
+@@ -318,6 +318,11 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+ 	struct opp_table *opp_table;
+ 	int ret = 0, count = 0;
+ 
++	if (!of_device_is_compatible(opp_np, "operating-points-v2")) {
++		dev_err(dev, "Not compatible with operating-points-v2\n");
++		return -EINVAL;
++	}
++
+ 	mutex_lock(&opp_table_lock);
+ 
+ 	opp_table = _managed_opp(opp_np);
 -- 
-viresh
+2.7.1.410.g6faf27b
