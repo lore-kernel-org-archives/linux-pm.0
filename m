@@ -1,53 +1,62 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH 1/2] power/reset: at91-reset: add samx7 support
-Date: Fri, 23 Sep 2016 00:53:21 +0200
-Message-ID: <20160922225322.31677-1-alexandre.belloni@free-electrons.com>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Subject: Re: Should drivers like nvme let userspace control their latency via
+ dev_pm_qos?
+Date: Fri, 23 Sep 2016 03:26:32 +0200
+Message-ID: <e15e94c5-efa0-8ec2-11b1-bea254b38513@intel.com>
+References: <CALCETrUsgA2H=TuwZMuwW2XpXZ7KPrEYu6xckmTbhU8oZwr6Nw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, =?UTF-8?q?Szemz=C5=91=20Andr=C3=A1s?= <sza@esh.hu>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:31041 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S965686AbcIWB0j (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 22 Sep 2016 21:26:39 -0400
+In-Reply-To: <CALCETrUsgA2H=TuwZMuwW2XpXZ7KPrEYu6xckmTbhU8oZwr6Nw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Lutomirski <luto@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Keith Busch <keith.busch@intel.com>, Jens Axboe <axboe@fb.com>, linux-nvme@lists.infradead.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, J Freyensee <james_p_freyensee@linux.intel.com>, Christoph Hellwig <hch@lst.de>
 
-From: Szemző András <sza@esh.hu>
+On 9/16/2016 5:26 PM, Andy Lutomirski wrote:
+> I'm adding power management to the nvme driver, and I'm exposing
+> exactly one knob via sysfs: the maximum permissible latency.  This
+> isn't a power domain issue, and it has no dependencies -- it's
+> literally just the maximum latency that the driver may impose on I/O
+> for power saving purposes.
+>
+> ISTM userspace should be able to specify its own latency tolerance in
+> a uniform way, and dev_pm_qos seems like the natural interface for
+> this, except that I cannot find a single instance in the tree of *any*
+> driver using it via the notifier mechanism.
 
-Add samx7 support. It is lacking a few bits and needs a new reset function.
+That's because the notifier mechanism is only used for the "resume 
+latency" type of constraints.
 
-Signed-off-by: Szemző András <sza@esh.hu>
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
- drivers/power/reset/at91-reset.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+> I can find two drivers that do it using dev_pm_qos_expose_latency_tolerance(), and both are LPSS drivers?
 
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index 1b5d450586d1..563722e64d7b 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -134,6 +134,15 @@ static int sama5d3_restart(struct notifier_block *this, unsigned long mode,
- 	return NOTIFY_DONE;
- }
- 
-+static int samx7_restart(struct notifier_block *this, unsigned long mode,
-+			 void *cmd)
-+{
-+	writel(cpu_to_le32(AT91_RSTC_KEY | AT91_RSTC_PROCRST),
-+	       at91_rstc_base);
-+
-+	return NOTIFY_DONE;
-+}
-+
- static void __init at91_reset_status(struct platform_device *pdev)
- {
- 	u32 reg = readl(at91_rstc_base + AT91_RSTC_SR);
-@@ -173,6 +182,7 @@ static const struct of_device_id at91_reset_of_match[] = {
- 	{ .compatible = "atmel,at91sam9260-rstc", .data = at91sam9260_restart },
- 	{ .compatible = "atmel,at91sam9g45-rstc", .data = at91sam9g45_restart },
- 	{ .compatible = "atmel,sama5d3-rstc", .data = sama5d3_restart },
-+	{ .compatible = "atmel,samx7-rstc", .data = samx7_restart },
- 	{ /* sentinel */ }
- };
- 
--- 
-2.9.3
+That's correct.  Nobody else has used it so far. :-)
+
+> So: should I be exposing .set_latency_tolerance() or should I just use
+> a custom sysfs attribute?  Or both?
+
+dev_pm_qos_expose_latency_tolerance() adds a single latency tolerance 
+request object to the device and exposes a knob in user space by which 
+that request object can be controlled.  There may be more latency 
+tolerance request objects for the same device if kernel code adds them.  
+The effective latency tolerance is the minimum of all those requests and 
+the callback is invoked every time that effective value changes.
+
+This also is described in the last section of 
+Documentation/power/pm_qos_interface.txt (note that if the 
+.set_latency_tolerance callback is present at the device registration 
+time already, the latency tolerance sysfs attribute will be exposed 
+automatically by the driver core).
+
+If that mechanism is suitable for the use case in question, I'd just use it.
+
+Thanks,
+
+Rafael
+
+
