@@ -1,29 +1,62 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/2] PM / OPP: Multiple regulators aren't supported yet
-Date: Fri, 23 Sep 2016 14:59:13 -0500
-Message-ID: <20160923195913.GA12969@rob-hp-laptop>
-References: <be2c4fb0bb58f5b29facbc6f5aaf3dca13cf209e.1474450324.git.viresh.kumar@linaro.org>
- <fc02fca412ffdb749bd811c8f1dc40fa2ae3fc3f.1474450324.git.viresh.kumar@linaro.org>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [RFC PATCH] PM / OPP: Don't support OPP if it provides supported-hw but platform does not
+Date: Fri, 23 Sep 2016 15:07:47 -0500
+Message-ID: <20160923200747.3948-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <fc02fca412ffdb749bd811c8f1dc40fa2ae3fc3f.1474450324.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([198.47.19.12]:36070 "EHLO arroyo.ext.ti.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1758289AbcIWUHy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 23 Sep 2016 16:07:54 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>, Lee Jones <lee.jones@linaro.org>, Dave Gerlach <d-gerlach@ti.com>
 
-On Wed, Sep 21, 2016 at 03:02:50PM +0530, Viresh Kumar wrote:
-> Multiple regulators per device aren't supported yet by the kernel code
-> and the bindings provided in documentation aren't sufficient to handle
-> that case (as there is no way for kernel code to link multiple
-> voltage/current values to a power supply).
+The OPP framework allows each OPP to set a opp-supported-hw property
+which provides values that are matched against supported_hw values
+provided by the platform to limit support for certain OPPs on specific
+hardware. Currently, if the platform does not set supported_hw values,
+all OPPs are interpreted as supported, even if they have provided their
+own opp-supported-hw values.
 
-What do you mean? Because the supplies are in the cpu node?
+If an OPP has provided opp-supported-hw, it is indicating that there is
+some specific hardware configuration it is supported by. These constraints
+should be honored, and if no supported_hw has been provided by the
+platform, there is no way to determine if that OPP is actually supported,
+so it should be marked as not supported.
 
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+---
+ drivers/base/power/opp/of.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+index 1dfd3dd92624..ccccaf9f8968 100644
+--- a/drivers/base/power/opp/of.c
++++ b/drivers/base/power/opp/of.c
+@@ -71,8 +71,18 @@ static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
+ 	u32 version;
+ 	int ret;
+ 
+-	if (!opp_table->supported_hw)
+-		return true;
++	if (!opp_table->supported_hw) {
++		/*
++		 * In the case that no supported_hw has been set by the
++		 * platform but there is an opp-supported-hw value set for
++		 * an OPP then the OPP should not be enabled as there is
++		 * no way to see if the hardware supports it.
++		 */
++		if (of_find_property(np, "opp-supported-hw", NULL))
++			return false;
++		else
++			return true;
++	}
+ 
+ 	while (count--) {
+ 		ret = of_property_read_u32_index(np, "opp-supported-hw", count,
+-- 
+2.9.3
+
