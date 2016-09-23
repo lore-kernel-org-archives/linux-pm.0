@@ -1,109 +1,54 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v5 3/6] Documentation: Add sbs-manager device tree node
- documentation
-Date: Fri, 23 Sep 2016 14:44:34 -0500
-Message-ID: <20160923194434.GA5771@rob-hp-laptop>
-References: <1474447274-90821-1-git-send-email-preid@electromag.com.au>
- <1474447274-90821-4-git-send-email-preid@electromag.com.au>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/2] PM / OPP: compatible is an optional property
+Date: Fri, 23 Sep 2016 14:55:12 -0500
+Message-ID: <20160923195510.GA8699@rob-hp-laptop>
+References: <be2c4fb0bb58f5b29facbc6f5aaf3dca13cf209e.1474450324.git.viresh.kumar@linaro.org>
+ <483bea3c-a1b4-ce5d-e720-d69fc943ab50@codeaurora.org>
+ <20160923051526.GB17336@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-i2c-owner@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1474447274-90821-4-git-send-email-preid@electromag.com.au>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: wsa@the-dreams.de, mark.rutland@arm.com, sre@kernel.org, andrea.merello@gmail.com, karl-heinz@schneider-inet.de, arnd@arndb.de, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20160923051526.GB17336@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 21, 2016 at 04:41:11PM +0800, Phil Reid wrote:
-> From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-> 
-> This patch adds device tree documentation for the sbs-manager
-> 
-> Reviewed-by: Phil Reid <preid@electromag.com.au>
-> Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-> Signed-off-by: Phil Reid <preid@electromag.com.au>
-> ---
->  .../bindings/power/supply/sbs,sbs-manager.txt      | 62 ++++++++++++++++++++++
->  1 file changed, 62 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
-> new file mode 100644
-> index 0000000..2a04b30
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/sbs,sbs-manager.txt
-> @@ -0,0 +1,62 @@
-> +Binding for sbs-manager
-> +
-> +Required properties:
-> +- compatible: should be "lltc,ltc1760" or use "sbs,sbs-manager" as fallback.
-> +- reg: integer, i2c address of the device. Should be <0xa>.
-> +Optional properties:
-> +- gpio-controller: Marks the port as GPIO controller.
-> +  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
-> +- #gpio-cells: Should be <2>. The first cell is the pin number, the second cell
-> +  is used to specify optional parameters:
-> +  See "gpio-specifier" in .../devicetree/bindings/gpio/gpio.txt.
+On Fri, Sep 23, 2016 at 10:45:26AM +0530, Viresh Kumar wrote:
+> On 22-09-16, 12:24, Stephen Boyd wrote:
+> > On 09/21/2016 02:32 AM, Viresh Kumar wrote:
+> > > It was never compulsory to have a compatible string in the OPP table.
+> > > Fix the documentation to mark it optional.
+> > >
 
-Is this leftover from the last version? It doesn't look like you are 
-using any GPIOs in the example.
+NAK.
 
-> +
-> +From OS view the device is basically an i2c-mux used to communicate with up to
-> +four smart battery devices at address 0xb. The driver actually implements this
-> +behaviour. So standard i2c-mux nodes can be used to register up to four slave
-> +batteries. See Documentation/devicetree/bindings/i2c/i2c-mux.txt for more
-> +information on i2c-mux nodes. Channels will be numerated starting from 1 to 4.
-> +
-> +Example:
-> +
-> +batman@0a {
-> +    compatible = "lltc,ltc1760";
-> +    reg = <0x0a>;
-> +    #address-cells = <1>;
-> +    #size-cells = <0>;
-> +
-> +    gpio-controller;
-> +    #gpio-cells = <2>;
-> +
-> +    i2c@1 {
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +        reg = <1>;
-> +
-> +        battery@b {
-> +            compatible = "ti,bq2060", "sbs,sbs-battery";
-> +            reg = <0xb>;
-> +        };
-> +    };
-> +
-> +    i2c@2 {
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +        reg = <2>;
-> +
-> +        battery@b {
-> +            compatible = "ti,bq2060", "sbs,sbs-battery";
-> +            reg = <0xb>;
-> +        };
-> +    };
-> +
-> +    i2c@3 {
-> +        #address-cells = <1>;
-> +        #size-cells = <0>;
-> +        reg = <3>;
-> +
-> +        battery@b {
-> +            compatible = "ti,bq2060", "sbs,sbs-battery";
-> +            reg = <0xb>;
-> +        };
-> +    };
-> +};
-> -- 
-> 1.8.3.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > Also update its description a bit.
+> > >
+> > > Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > > ---
+> > 
+> > Why? I'd prefer the compatible string to be required so we know what
+> > sort of node it is.
+
+Agreed.
+
+> Okay, the code doesn't have any checks for it then and that needs to be fixed.
+
+Why? The kernel is not a DT validator.
+ 
+> Just for my clarity, for platforms with special OPP bindings and so a different
+> compatible string like: "operating-points-v2-XYZ", should the compatible string
+> contain both "operating-points-v2" and the above one? It would be easier to
+> check for "operating-points-v2" in that case from core code.
+
+That would imply operating-points-v2-XYZ has extra properties or is 
+different in some way. If an OS only understanding operating-points-v2 
+will work, then yes it should have both. If not, then no.
+
+Rob
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
