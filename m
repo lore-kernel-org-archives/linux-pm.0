@@ -1,89 +1,79 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [RFC PATCH 2/3] PM / Domains: Add support for devices with
- multiple domains
-Date: Fri, 23 Sep 2016 16:27:41 +0200
-Message-ID: <CAMuHMdWUAQd-sbj51XRPJ5b9By8Aiak6h-F=BcMCR=i8MiZvbQ@mail.gmail.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <1474367287-10402-3-git-send-email-jonathanh@nvidia.com> <CAMuHMdVc+EjkbcpPKyzbCfDjp65gF3xP3bhkjh6SKLt6KDTtXg@mail.gmail.com>
- <658004af-e4f4-8b0c-cdc1-43661d331d70@nvidia.com> <CAMuHMdV9TENEt7y5Opehh1CC5+0=s4nRMvnh=0nTYOUuOOC2uw@mail.gmail.com>
- <1c217cf4-8682-8e6d-6958-419923e995cd@nvidia.com>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpupower: Correct return type of cpu_power_is_cpu_online
+ in cpufreq
+Date: Fri, 23 Sep 2016 21:47:53 +0530
+Message-ID: <a4b38f85-f8d3-a3fd-91a9-219462641ee6@linux.vnet.ibm.com>
+References: <1473441919-7809-1-git-send-email-labbott@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1c217cf4-8682-8e6d-6958-419923e995cd-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux-Renesas <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:55215 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S965898AbcIWQSD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2016 12:18:03 -0400
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id u8NGFoTN096781
+        for <linux-pm@vger.kernel.org>; Fri, 23 Sep 2016 12:18:02 -0400
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 25mqb7s857-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Fri, 23 Sep 2016 12:18:02 -0400
+Received: from localhost
+        by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+        Sat, 24 Sep 2016 02:17:59 +1000
+In-Reply-To: <1473441919-7809-1-git-send-email-labbott@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Laura Abbott <labbott@redhat.com>, Thomas Renninger <trenn@suse.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Jon,
+Hi,
 
-On Fri, Sep 23, 2016 at 2:57 PM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> On 21/09/16 15:57, Geert Uytterhoeven wrote:
->> On Wed, Sep 21, 2016 at 4:37 PM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>> On 21/09/16 09:53, Geert Uytterhoeven wrote:
->>>> On Tue, Sep 20, 2016 at 12:28 PM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>>>> Some devices may require more than one PM domain to operate and this is
->>>>> not currently by the PM domain framework. Furthermore, the current Linux
->>>>> 'device' structure only allows devices to be associated with a single PM
->>>>> domain and so cannot easily be associated with more than one. To allow
->>>>> devices to be associated with more than one PM domain, if multiple
->>>>> domains are defined for a given device (eg. via device-tree), then:
->>>>> 1. Create a new PM domain for this device. The name of the new PM domain
->>>>>    created matches the device name for which it was created for.
->>>>> 2. Register the new PM domain as a sub-domain for all PM domains
->>>>>    required by the device.
->>>>> 3. Attach the device to the new PM domain.
->>>>
->>>> This looks a suboptimal to me: if you have n devices sharing the same PM
->>>> domains, you would add n new subdomains?
->>>
->>> BTW, would this be the case today for some renesas devices or are you
->>> just pointing this out as something that could be optimised/improved?
->>
->> This is the case for all Renesas SoCs that have power areas: devices belong
->> to both the PM domain for the power area, and to the PM domain for the clock
->> domain.
->
-> To quantify this a bit, for the Renesas case, how many of these
-> duplicated domains would there be if you were to use this approach as-is?
+On 09/09/2016 10:55 PM, Laura Abbott wrote:
+> When converting to a shared library in ac5a181d065d ("cpupower: Add
+> cpuidle parts into library"), cpu_freq_cpu_exists was converted to
+> cpupower_is_cpu_online. cpu_req_cpu_exists returned 0 on success and
+> -ENOSYS on failure whereas cpupower_is_cpu_online returns 1 on success.
+> Check for the correct return value in cpufreq-set.
+> 
+> See https://bugzilla.redhat.com/show_bug.cgi?id=1374212
+> 
+> Fixes: ac5a181d065d ("cpupower: Add cpuidle parts into library")
+> Reported-by: Julian Seward <jseward@acm.org>
+> Signed-off-by: Laura Abbott <labbott@redhat.com>
+> ---
+>  tools/power/cpupower/utils/cpufreq-set.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/tools/power/cpupower/utils/cpufreq-set.c b/tools/power/cpupower/utils/cpufreq-set.c
+> index b4bf769..8971d71 100644
+> --- a/tools/power/cpupower/utils/cpufreq-set.c
+> +++ b/tools/power/cpupower/utils/cpufreq-set.c
+> @@ -296,7 +296,7 @@ int cmd_freq_set(int argc, char **argv)
+>  			struct cpufreq_affected_cpus *cpus;
+> 
+>  			if (!bitmask_isbitset(cpus_chosen, cpu) ||
+> -			    cpupower_is_cpu_online(cpu))
+> +			    cpupower_is_cpu_online(cpu) != 1)
+>  				continue;
+> 
+>  			cpus = cpufreq_get_related_cpus(cpu);
+> @@ -316,7 +316,7 @@ int cmd_freq_set(int argc, char **argv)
+>  	     cpu <= bitmask_last(cpus_chosen); cpu++) {
+> 
+>  		if (!bitmask_isbitset(cpus_chosen, cpu) ||
+> -		    cpupower_is_cpu_online(cpu))
+> +		    cpupower_is_cpu_online(cpu) != 1)
+>  			continue;
+> 
+>  		if (cpupower_is_cpu_online(cpu) != 1)
+		^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-for i in $(git grep -l renesas, -- "*dts*") ; do echo --- $i ---; git
-grep -w power-domains $i | sort | uniq -c | sort -n;done
+Can you also remove the above check where the same condition
+'cpupower_is_cpu_online(cpu) != 1' is tested twice ?
 
-tells you how many (supported) devices are (currently) present in each
-PM domain.
-Most of these (all but devices in CPU/SCU power areas) are also part of a
-clock domain.
-The synthetic R8A779*_PD_ALWAYS_ON domains could be dropped again,
-as we could just refer to the CPG/MSSR node for the clock domain instead.
+Thanks and Regards,
+Shilpa
 
-For older SH/R-Mobile SoCs with lots of hierarchical domains, that gives us,
-after removing the above:
-
-      1 arch/arm/boot/dts/r8a7740.dtsi:         power-domains = <&pd_a4mp>;
-      1 arch/arm/boot/dts/r8a7740.dtsi:         power-domains = <&pd_d4>;
-      2 arch/arm/boot/dts/r8a7740.dtsi:         power-domains = <&pd_c5>;
-      3 arch/arm/boot/dts/r8a7740.dtsi:         power-domains = <&pd_a4r>;
-      6 arch/arm/boot/dts/r8a7740.dtsi:         power-domains = <&pd_a4s>;
-     15 arch/arm/boot/dts/r8a7740.dtsi:         power-domains = <&pd_a3sp>;
-
-R-Car Gen1/Gen2 have all devices in the "always on" PM domain, so they're
-not affected.
-
-R-Car Gen3 again has devices in power areas, mostly for graphics related
-purposes:
-
-     16 arch/arm64/boot/dts/renesas/r8a7795.dtsi:
- power-domains = <&sysc R8A7795_PD_A3VP>;
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
