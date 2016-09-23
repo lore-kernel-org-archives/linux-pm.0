@@ -1,69 +1,134 @@
-From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v2 0/3] Broadcom AVS CPUfreq driver
-Date: Fri, 23 Sep 2016 10:35:31 -0700
-Message-ID: <1474652134-9630-1-git-send-email-mmayer@broadcom.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+From: Markus Mayer <mmayer@broadcom.com>
+Subject: [PATCH v2 1/3] dt: cpufreq: brcm: New binding document for brcmstb-avs-cpufreq
+Date: Fri, 23 Sep 2016 10:35:32 -0700
+Message-ID: <1474652134-9630-2-git-send-email-mmayer@broadcom.com>
+References: <1474652134-9630-1-git-send-email-mmayer@broadcom.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:35696 "EHLO
+        mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1761833AbcIWRgO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2016 13:36:14 -0400
+Received: by mail-pa0-f51.google.com with SMTP id oz2so42162318pac.2
+        for <linux-pm@vger.kernel.org>; Fri, 23 Sep 2016 10:36:13 -0700 (PDT)
+In-Reply-To: <1474652134-9630-1-git-send-email-mmayer@broadcom.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Device Tree List <devicetree@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 
-This series contains the CPUfreq driver for Broadcom SoCs that use "AVS
-Firmware" for voltage and frequency scaling. All voltage and frequency
-transitions are performed by the firmware and are therefore hidden from
-Linux.
+Add the binding document for the new brcmstb-avs-cpufreq driver.
 
-The driver provides a standard CPUfreq interface to other kernel
-components and to userland on the one hand and communicates with the
-AVS co-processor on the other.
-
-Communication between the two processors is via shared mailbox
-registers and interrupts (ARM -> AVS to tell the firmware that there is
-a command to process and AVS -> ARM to tell the driver that a command
-finished executing).
-
-lkml.org seems to be down for me. Here are patchwork links to the original
-series:
-
-https://patchwork.kernel.org/patch/9278119/
-https://patchwork.kernel.org/patch/9278121/
-https://patchwork.kernel.org/patch/9278127/
-
-Changes from v1:
-    - renamed binding document 
-    - rewrote the introduction of the binding document
-    - created a new driver documentation file that contains Linux specific
-      information that was previously part of the binding document
-    - renamed the driver (and related config options) to include a reference
-      to "STB", since this implementation is primarily intended for use on
-      set-top boxes
-    - improved comments
-    - updated function __map_region()
-    - updated struct private_data
-    - added code to unmap memory regions in the error and exit paths
-    - added new sysfs property to report frequency directly from the
-      co-processor register
-
-Markus Mayer (3):
-  dt: cpufreq: brcm: New binding document for brcmstb-avs-cpufreq
-  cpufreq: brcmstb-avs-cpufreq: AVS CPUfreq driver for Broadcom STB SoCs
-  cpufreq: brcmstb-avs-cpufreq: add debugfs support
-
- Documentation/cpu-freq/brcmstb-avs-cpufreq.txt     |   27 +
- .../bindings/cpufreq/brcm,stb-avs-cpu-freq.txt     |   77 ++
- MAINTAINERS                                        |    9 +
- drivers/cpufreq/Kconfig.arm                        |   10 +
- drivers/cpufreq/Makefile                           |    1 +
- drivers/cpufreq/brcmstb-avs-cpufreq.c              | 1026 ++++++++++++++++++++
- 6 files changed, 1150 insertions(+)
- create mode 100644 Documentation/cpu-freq/brcmstb-avs-cpufreq.txt
+Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+---
+ .../bindings/cpufreq/brcm,stb-avs-cpu-freq.txt     | 77 ++++++++++++++++++++++
+ MAINTAINERS                                        |  7 ++
+ 2 files changed, 84 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
- create mode 100644 drivers/cpufreq/brcmstb-avs-cpufreq.c
 
+diff --git a/Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt b/Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
+new file mode 100644
+index 0000000..d9ad3d3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
+@@ -0,0 +1,77 @@
++Broadcom STB AVS CPUfreq driver bindings
++========================================
++
++A total of three DT nodes are required. One node (brcm,avs-cpu-data-mem)
++references the mailbox register used to communicate with the AVS CPU[1]. The
++second node (brcm,avs-cpu-l2-intr) is required to trigger an interrupt on
++the AVS CPU. The interrupt tells the AVS CPU that it needs to process a
++command sent to it by a driver. Interrupting the AVS CPU is mandatory for
++commands to be processed.
++
++The interface also requires a reference to the AVS host interrrupt
++controller, so a driver can react to interrupts generated by the AVS CPU
++whenever a command has been processed. See [2] for more information on the
++brcm,l2-intc node.
++
++[1] The AVS CPU is an independent co-processor that runs proprietary
++firmware. On some SoCs, this firmware supports DFS and DVFS in addition to
++Adaptive Voltage Scaling.
++
++[2] Documentation/devicetree/bindings/interrupt-controller/brcm,l2-intc.txt
++
++
++Node brcm,avs-cpu-data-mem
++--------------------------
++
++Required properties:
++- compatible: Sould be one of: brcm,avs-cpu-data-mem,
++              brcm,bcm7271-avs-cpu-data-mem or brcm,bcm7268-avs-cpu-data-mem
++- reg: Specifies base physical address and size of the registers.
++- interrupts: The interrupt that the AVS CPU will use to interrupt the host
++              when a command completed.
++- interrupt-parent: The interrupt controller the above interrupt is routed
++                    through.
++- interrupt-names: The name of the interrupt used to interrupt the host.
++
++Optional properties:
++- None
++
++Node brcm,avs-cpu-l2-intr
++-------------------------
++
++Required properties:
++- compatible: Sould be one of: brcm,avs-cpu-l2-intr,
++              brcm,bcm7271-avs-cpu-l2-intr or brcm,bcm7268-avs-cpu-l2-intr
++- reg: Specifies base physical address and size of the registers.
++
++Optional properties:
++- None
++
++
++Example
++=======
++
++	avs_host_l2_intc: interrupt-controller@f04d1200 {
++		#interrupt-cells = <1>;
++		compatible = "brcm,l2-intc";
++		interrupt-parent = <&intc>;
++		reg = <0xf04d1200 0x48>;
++		interrupt-controller;
++		interrupts = <0x0 0x19 0x0>;
++		interrupt-names = "avs";
++	};
++
++	avs-cpu-data-mem@f04c4000 {
++		compatible = "brcm,bcm7271-avs-cpu-data-mem",
++				"brcm,avs-cpu-data-mem";
++		reg = <0xf04c4000 0x60>;
++		interrupts = <0x1a>;
++		interrupt-parent = <&avs_host_l2_intc>;
++		interrupt-names = "sw_intr";
++	};
++
++	avs-cpu-l2-intr@f04d1100 {
++		compatible = "brcm,bcm7271-avs-cpu-l2-intr",
++				"brcm,avs-cpu-l2-intr";
++		reg = <0xf04d1100 0x10>;
++	};
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 20bb1d0..557f839 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2689,6 +2689,13 @@ L:	bcm-kernel-feedback-list@broadcom.com
+ S:	Maintained
+ F:	drivers/mtd/nand/brcmnand/
+ 
++BROADCOM STB AVS CPUFREQ DRIVER
++M:	Markus Mayer <mmayer@broadcom.com>
++M:	bcm-kernel-feedback-list@broadcom.com
++L:	linux-pm@vger.kernel.org
++S:	Maintained
++F:	Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
++
+ BROADCOM SPECIFIC AMBA DRIVER (BCMA)
+ M:	Rafał Miłecki <zajec5@gmail.com>
+ L:	linux-wireless@vger.kernel.org
 -- 
 2.7.4
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
