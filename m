@@ -1,37 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/4] PM / Domains: Some simplifications/clean-ups for genpd
-Date: Fri, 23 Sep 2016 14:54 +0200
-Message-ID: <2878937.BEb84IEckp@vostro.rjw.lan>
-References: <1474465133-14865-1-git-send-email-ulf.hansson@linaro.org>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [RFC PATCH 2/3] PM / Domains: Add support for devices with
+ multiple domains
+Date: Fri, 23 Sep 2016 13:57:54 +0100
+Message-ID: <1c217cf4-8682-8e6d-6958-419923e995cd@nvidia.com>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+ <1474367287-10402-3-git-send-email-jonathanh@nvidia.com>
+ <CAMuHMdVc+EjkbcpPKyzbCfDjp65gF3xP3bhkjh6SKLt6KDTtXg@mail.gmail.com>
+ <658004af-e4f4-8b0c-cdc1-43661d331d70@nvidia.com>
+ <CAMuHMdV9TENEt7y5Opehh1CC5+0=s4nRMvnh=0nTYOUuOOC2uw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:51663 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1758823AbcIWMrr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2016 08:47:47 -0400
-In-Reply-To: <1474465133-14865-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdV9TENEt7y5Opehh1CC5+0=s4nRMvnh=0nTYOUuOOC2uw@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-tegra@vger.kernel.org, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>
 
-On Wednesday, September 21, 2016 03:38:49 PM Ulf Hansson wrote:
-> Ulf Hansson (4):
->   PM / Domains: Simplify detaching a device from its genpd
->   PM / Domains: Remove redundant system PM callbacks
->   PM / Domains: Don't measure latency of ->power_on|off() during system
->     PM
->   PM / Domains: Rename pm_genpd_sync_poweron|poweroff()
+Hi Geert,
+
+On 21/09/16 15:57, Geert Uytterhoeven wrote:
+> Hi Jon,
 > 
->  drivers/base/power/domain.c | 77 +++++++++++++++++++--------------------------
->  1 file changed, 33 insertions(+), 44 deletions(-)
+> On Wed, Sep 21, 2016 at 4:37 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
+>> On 21/09/16 09:53, Geert Uytterhoeven wrote:
+>>> On Tue, Sep 20, 2016 at 12:28 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
+>>>> Some devices may require more than one PM domain to operate and this is
+>>>> not currently by the PM domain framework. Furthermore, the current Linux
+>>>> 'device' structure only allows devices to be associated with a single PM
+>>>> domain and so cannot easily be associated with more than one. To allow
+>>>> devices to be associated with more than one PM domain, if multiple
+>>>> domains are defined for a given device (eg. via device-tree), then:
+>>>> 1. Create a new PM domain for this device. The name of the new PM domain
+>>>>    created matches the device name for which it was created for.
+>>>> 2. Register the new PM domain as a sub-domain for all PM domains
+>>>>    required by the device.
+>>>> 3. Attach the device to the new PM domain.
+>>>
+>>> This looks a suboptimal to me: if you have n devices sharing the same PM
+>>> domains, you would add n new subdomains?
+>>
+>> BTW, would this be the case today for some renesas devices or are you
+>> just pointing this out as something that could be optimised/improved?
+> 
+> This is the case for all Renesas SoCs that have power areas: devices belong
+> to both the PM domain for the power area, and to the PM domain for the clock
+> domain.
 
-This series is fine by me.
+To quantify this a bit, for the Renesas case, how many of these
+duplicated domains would there be if you were to use this approach as-is?
 
-If there are no objections from Kevin or others, I'll queue it up later today.
+I would like to see some agreement about whether we would allow the
+'power-domains' property to have more than one power-domain. We could
+always improve the implementation in the future. I am quite happy to
+re-work this RFC to avoid duplicated domains for devices like Renesas if
+people are on board with the overall proposal.
 
-Thanks,
-Rafael
+Cheers
+Jon
 
+-- 
+nvpublic
