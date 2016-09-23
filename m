@@ -1,102 +1,55 @@
-From: Andreas Herrmann <aherrmann@suse.com>
-Subject: [PATCH v2 2/2] cpufreq/pcc-cpufreq: Make use of map_load_to_freq op
-Date: Fri, 23 Sep 2016 19:07:44 +0200
-Message-ID: <20160923170744.GC9786@suselix.suse.de>
-References: <20160819121814.GA17296@suselix.suse.de>
- <20160923165632.GA9786@suselix.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:35776 "EHLO
-        smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1761246AbcIWRH7 (ORCPT
-        <rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
-        Fri, 23 Sep 2016 13:07:59 -0400
-Content-Disposition: inline
-In-Reply-To: <20160923165632.GA9786@suselix.suse.de>
-Sender: linux-pm-owner@vger.kernel.org
+From: Laura Abbott <labbott@redhat.com>
+Subject: [PATCHv2] cpupower: Correct return type of cpu_power_is_cpu_online in cpufreq
+Date: Fri, 23 Sep 2016 10:16:50 -0700
+Message-ID: <1474651010-30883-1-git-send-email-labbott@redhat.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Renninger <trenn@suse.com>
+Cc: Laura Abbott <labbott@redhat.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
 
 
-Commit 6393d6a102 (cpufreq: ondemand: Eliminate the deadband effect)
-introduced a performance regression for systems using pcc-cpufreq and
-ondemand governor. This is measurable with different workloads. E.g.
-wall-clock time for kernel compilation significantly increased.
+When converting to a shared library in ac5a181d065d ("cpupower: Add
+cpuidle parts into library"), cpu_freq_cpu_exists was converted to
+cpupower_is_cpu_online. cpu_req_cpu_exists returned 0 on success and
+-ENOSYS on failure whereas cpupower_is_cpu_online returns 1 on success.
+Check for the correct return value in cpufreq-set.
 
-The elimination of the deadband effect significantly increased the
-number of frequency changes with pcc-cpufreq.
+See https://bugzilla.redhat.com/show_bug.cgi?id=1374212
 
-Provide a pcc-cpufreq specific function that reintroduces the mapping
-of load to frequency which was used before commit 6393d6a102 and hence
-re-introduces the deadband effect for this cpufreq driver.
-
-Performance results (kernel compile with different number of jobs)
-based on 4.8.0-rc7 (with and w/o my patches on top) from
-an HP ProLiant DL580 Gen8 system using pcc-cpufreq:
- - Intel(R) Xeon(R) CPU E7-4890 v2 @ 2.80GHz
- - 60 CPUs, 128GB RAM
-                                                       pcc specific
-            generic_map_load_to_freq function     map_load_to_freq function
- # of jobs    user    sys   elapsed   % CPU      user    sys   elapsed   % CPU
-    2        445.56  111.22  273.35   203.00    413.19  102.34  250.97   205.00
-    4        445.61  126.10  143.12   399.00    390.56  120.79  127.25   401.20
-    8        483.51  150.84   82.17   771.40    354.22  140.09   64.20   769.60
-   16        628.01  185.54   55.02  1477.80    384.20  148.69   37.07  1436.60
-   32        818.58  205.51   37.02  2765.40    496.70  152.77   25.15  2581.40
-   64        406.22   51.84   13.84  3308.80    399.48   49.13   12.80  3505.80
-  120        413.61   49.06   14.54  3181.00    406.52   46.89   13.60  3331.60
-
-Link: https://marc.info/?i=20160819121814.GA17296%40suselix.suse.de
-Signed-off-by: Andreas Herrmann <aherrmann@suse.com>
+Fixes: ac5a181d065d ("cpupower: Add cpuidle parts into library")
+Reported-by: Julian Seward <jseward@acm.org>
+Signed-off-by: Laura Abbott <labbott@redhat.com>
 ---
- drivers/cpufreq/pcc-cpufreq.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+v2: Drop another redundant cpupower_is_cpu_online
+---
+ tools/power/cpupower/utils/cpufreq-set.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index 3f0ce2a..1522747 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -39,6 +39,8 @@
+diff --git a/tools/power/cpupower/utils/cpufreq-set.c b/tools/power/cpupower/utils/cpufreq-set.c
+index b4bf769..1eef0ae 100644
+--- a/tools/power/cpupower/utils/cpufreq-set.c
++++ b/tools/power/cpupower/utils/cpufreq-set.c
+@@ -296,7 +296,7 @@ int cmd_freq_set(int argc, char **argv)
+ 			struct cpufreq_affected_cpus *cpus;
  
- #include <acpi/processor.h>
+ 			if (!bitmask_isbitset(cpus_chosen, cpu) ||
+-			    cpupower_is_cpu_online(cpu))
++			    cpupower_is_cpu_online(cpu) != 1)
+ 				continue;
  
-+#include "cpufreq_governor.h"
-+
- #define PCC_VERSION	"1.10.00"
- #define POLL_LOOPS 	300
+ 			cpus = cpufreq_get_related_cpus(cpu);
+@@ -316,10 +316,7 @@ int cmd_freq_set(int argc, char **argv)
+ 	     cpu <= bitmask_last(cpus_chosen); cpu++) {
  
-@@ -534,6 +536,12 @@ out_free:
- 	return ret;
- }
+ 		if (!bitmask_isbitset(cpus_chosen, cpu) ||
+-		    cpupower_is_cpu_online(cpu))
+-			continue;
+-
+-		if (cpupower_is_cpu_online(cpu) != 1)
++		    cpupower_is_cpu_online(cpu) != 1)
+ 			continue;
  
-+static unsigned int pcc_map_load_to_freq(struct cpufreq_policy *policy,
-+					unsigned int load)
-+{
-+	return (load * policy->cpuinfo.max_freq / 100);
-+}
-+
- static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	unsigned int cpu = policy->cpu;
-@@ -555,6 +563,8 @@ static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->min = policy->cpuinfo.min_freq =
- 		ioread32(&pcch_hdr->minimum_frequency) * 1000;
- 
-+	od_register_map_load_to_freq_handler(pcc_map_load_to_freq);
-+
- 	pr_debug("init: policy->max is %d, policy->min is %d\n",
- 		policy->max, policy->min);
- out:
-@@ -563,6 +573,7 @@ out:
- 
- static int pcc_cpufreq_cpu_exit(struct cpufreq_policy *policy)
- {
-+	od_unregister_map_load_to_freq_handler();
- 	return 0;
- }
- 
+ 		printf(_("Setting cpu: %d\n"), cpu);
 -- 
-1.9.1
-
+2.7.4
