@@ -1,32 +1,69 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 2/5] PCI: Query platform firmware for device power state
-Date: Sat, 24 Sep 2016 02:46:23 +0200
-Message-ID: <2060566.Y1NLRuZWTn@vostro.rjw.lan>
-References: <cover.1474130360.git.lukas@wunner.de> <492d4d62ae1b3a95570babe9608d8ea971b62585.1474130360.git.lukas@wunner.de>
+Subject: Re: [PATCH v2 3/5] PCI: Recognize D3cold in pci_update_current_state()
+Date: Sat, 24 Sep 2016 02:46:48 +0200
+Message-ID: <2978984.WVCEXupSPA@vostro.rjw.lan>
+References: <cover.1474130360.git.lukas@wunner.de> <32b08ff2dab38555db7759d627d7bcbdf4b119b9.1474130360.git.lukas@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <492d4d62ae1b3a95570babe9608d8ea971b62585.1474130360.git.lukas@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:60651 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1754170AbcIXAk3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Sep 2016 20:40:29 -0400
+In-Reply-To: <32b08ff2dab38555db7759d627d7bcbdf4b119b9.1474130360.git.lukas@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Lukas Wunner <lukas@wunner.de>
 Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
 On Sunday, September 18, 2016 05:39:20 AM Lukas Wunner wrote:
-> Usually the most accurate way to determine a PCI device's power state is
-> to read its PM Control & Status Register.  There are two cases however
-> when this is not an option:  If the device doesn't have the PM
-> capability at all, or if it is in D3cold (in which case its config space
-> is inaccessible).
+> Whenever a device is resumed or its power state is changed using the
+> platform, its new power state is read from the PM Control & Status
+> Register and cached in pci_dev->current_state by calling
+> pci_update_current_state().
 > 
-> In both cases, we can alternatively query the platform firmware for its
-> opinion on the device's power state.  To facilitate this, augment struct
-> pci_platform_pm_ops with a ->get_power callback and implement it for
-> acpi_pci_platform_pm (the only pci_platform_pm_ops existing so far).
+> If the device is in D3cold, reading from config space typically results
+> in a fabricated "all ones" response.  But if it's in D3hot, the two bits
+> representing the power state in the PMCSR are *also* set to 1.  Thus
+> D3hot and D3cold are not discernible by just reading the PMCSR.
 > 
-> It is used by a forthcoming commit to let pci_update_current_state()
-> recognize D3cold.
+> To account for this, pci_update_current_state() uses two workarounds:
+> 
+> - When transitioning to D3cold using pci_platform_power_transition(),
+>   the new power state is set blindly by pci_update_current_state(),
+>   i.e. without verifying that the device actually *is* in D3cold.
+>   This is achieved by setting the "state" argument to PCI_D3cold.
+>   The "state" argument was originally intended to convey the new state
+>   in case the device doesn't have the PM capability.  It is *also* used
+>   to convey the device state if the PM capability is present and the
+>   new state is D3cold, but this was never explained in the kerneldoc.
+> 
+> - Once the current_state is set to D3cold, further invocations of
+>   pci_update_current_state() will blindly assume that the device is
+>   still in D3cold and leave the current_state unmodified.  To get out of
+>   this impasse, the current_state has to be set directly, typically by
+>   calling pci_raw_set_power_state() or pci_enable_device().
+> 
+> It would be desirable if pci_update_current_state() could reliably
+> detect D3cold by itself.  That would allow us to do away with these
+> workarounds, and it would allow for a smarter, more energy conserving
+> runtime resume strategy after system sleep:  Currently devices which
+> utilize direct_complete are mandatorily runtime resumed in their
+> ->complete stage.  This can be avoided if their power state after system
+> sleep is the same as before, but it requires a mechanism to detect the
+> power state reliably.
+> 
+> We've just gained the ability to query the platform firmware for its
+> opinion on the device's power state.  On platforms conforming to
+> ACPI 4.0 or newer, this allows recognition of D3cold.  Pre-4.0 platforms
+> lack _PR3 and therefore the deepest power state that will ever be
+> reported is D3hot, even though the device may actually be in D3cold.
+> To detect D3cold in those cases, accessibility of the vendor ID in
+> config space is probed using pci_device_is_present().  This also works
+> for devices which are not platform-power-manageable at all, but can be
+> suspended to D3cold using a nonstandard mechanism (e.g. some hybrid
+> graphics laptops or Thunderbolt on the Mac).
 > 
 > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 > Signed-off-by: Lukas Wunner <lukas@wunner.de>
@@ -36,104 +73,60 @@ Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
 > 
 > Changes since v1:
-> * In acpi_pci_get_power_state(), only check for ACPI_STATE_UNKNOWN
->   instead of ACPI_STATE_D0 and ACPI_STATE_D3_COLD.
-> * Move the change to pci_update_current_state() to new patch [3/5].
+> * Instead of solely relying on the platform firmware to report D3cold,
+>   also probe the vendor ID and assume D3cold if it can't be read.
+>   This should ensure proper detection of D3cold on pre-ACPI 4.0
+>   platforms (which will never report anything deeper than D3hot)
+>   as well as for devices with nonstandard PM mechanisms.
+> * The two existing workarounds for D3cold are removed from
+>   pci_update_current_state(), as explained in the commit message.
 > 
->  drivers/pci/pci-acpi.c | 22 ++++++++++++++++++++++
->  drivers/pci/pci.c      | 10 ++++++++--
->  drivers/pci/pci.h      |  3 +++
->  3 files changed, 33 insertions(+), 2 deletions(-)
+>  drivers/pci/pci.c | 25 ++++++++++++-------------
+>  1 file changed, 12 insertions(+), 13 deletions(-)
 > 
-> diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
-> index 9a033e8..d966d47 100644
-> --- a/drivers/pci/pci-acpi.c
-> +++ b/drivers/pci/pci-acpi.c
-> @@ -452,6 +452,27 @@ static int acpi_pci_set_power_state(struct pci_dev *dev, pci_power_t state)
->  	return error;
->  }
->  
-> +static pci_power_t acpi_pci_get_power_state(struct pci_dev *dev)
-> +{
-> +	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
-> +	static const pci_power_t state_conv[] = {
-> +		[ACPI_STATE_D0]      = PCI_D0,
-> +		[ACPI_STATE_D1]      = PCI_D1,
-> +		[ACPI_STATE_D2]      = PCI_D2,
-> +		[ACPI_STATE_D3_HOT]  = PCI_D3hot,
-> +		[ACPI_STATE_D3_COLD] = PCI_D3cold,
-> +	};
-> +	int state;
-> +
-> +	if (!adev || !acpi_device_power_manageable(adev))
-> +		return PCI_UNKNOWN;
-> +
-> +	if (acpi_device_get_power(adev, &state) || state == ACPI_STATE_UNKNOWN)
-> +		return PCI_UNKNOWN;
-> +
-> +	return state_conv[state];
-> +}
-> +
->  static bool acpi_pci_can_wakeup(struct pci_dev *dev)
->  {
->  	struct acpi_device *adev = ACPI_COMPANION(&dev->dev);
-> @@ -534,6 +555,7 @@ static bool acpi_pci_need_resume(struct pci_dev *dev)
->  static const struct pci_platform_pm_ops acpi_pci_platform_pm = {
->  	.is_manageable = acpi_pci_power_manageable,
->  	.set_state = acpi_pci_set_power_state,
-> +	.get_state = acpi_pci_get_power_state,
->  	.choose_state = acpi_pci_choose_state,
->  	.sleep_wake = acpi_pci_sleep_wake,
->  	.run_wake = acpi_pci_run_wake,
 > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 72a9d3a..6ea0d2d 100644
+> index 6ea0d2d..7d3188b 100644
 > --- a/drivers/pci/pci.c
 > +++ b/drivers/pci/pci.c
-> @@ -552,8 +552,9 @@ static const struct pci_platform_pm_ops *pci_platform_pm;
->  
->  int pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
->  {
-> -	if (!ops->is_manageable || !ops->set_state || !ops->choose_state ||
-> -	    !ops->sleep_wake || !ops->run_wake || !ops->need_resume)
-> +	if (!ops->is_manageable || !ops->set_state  || !ops->get_state ||
-> +	    !ops->choose_state  || !ops->sleep_wake || !ops->run_wake  ||
-> +	    !ops->need_resume)
->  		return -EINVAL;
->  	pci_platform_pm = ops;
->  	return 0;
-> @@ -570,6 +571,11 @@ static inline int platform_pci_set_power_state(struct pci_dev *dev,
->  	return pci_platform_pm ? pci_platform_pm->set_state(dev, t) : -ENOSYS;
+> @@ -707,26 +707,25 @@ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
 >  }
 >  
-> +static inline pci_power_t platform_pci_get_power_state(struct pci_dev *dev)
-> +{
-> +	return pci_platform_pm ? pci_platform_pm->get_state(dev) : PCI_UNKNOWN;
-> +}
-> +
->  static inline pci_power_t platform_pci_choose_state(struct pci_dev *dev)
->  {
->  	return pci_platform_pm ?
-> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-> index 194521b..4518562 100644
-> --- a/drivers/pci/pci.h
-> +++ b/drivers/pci/pci.h
-> @@ -42,6 +42,8 @@ int pci_probe_reset_function(struct pci_dev *dev);
->   *
->   * @set_state: invokes the platform firmware to set the device's power state
->   *
-> + * @get_state: queries the platform firmware for a device's current power state
+>  /**
+> - * pci_update_current_state - Read PCI power state of given device from its
+> - *                            PCI PM registers and cache it
+> + * pci_update_current_state - Read power state of given device and cache it
+>   * @dev: PCI device to handle.
+>   * @state: State to cache in case the device doesn't have the PM capability
 > + *
->   * @choose_state: returns PCI power state of given device preferred by the
->   *                platform; to be used during system-wide transitions from a
->   *                sleeping state to the working state and vice versa
-> @@ -62,6 +64,7 @@ int pci_probe_reset_function(struct pci_dev *dev);
->  struct pci_platform_pm_ops {
->  	bool (*is_manageable)(struct pci_dev *dev);
->  	int (*set_state)(struct pci_dev *dev, pci_power_t state);
-> +	pci_power_t (*get_state)(struct pci_dev *dev);
->  	pci_power_t (*choose_state)(struct pci_dev *dev);
->  	int (*sleep_wake)(struct pci_dev *dev, bool enable);
->  	int (*run_wake)(struct pci_dev *dev, bool enable);
+> + * The power state is read from the PMCSR register, which however is
+> + * inaccessible in D3cold.  The platform firmware is therefore queried first
+> + * to detect accessibility of the register.  In case the platform firmware
+> + * reports an incorrect state or the device isn't power manageable by the
+> + * platform at all, we try to detect D3cold by testing accessibility of the
+> + * vendor ID in config space.
+>   */
+>  void pci_update_current_state(struct pci_dev *dev, pci_power_t state)
+>  {
+> -	if (dev->pm_cap) {
+> +	if (platform_pci_get_power_state(dev) == PCI_D3cold ||
+> +	    !pci_device_is_present(dev)) {
+> +		dev->current_state = PCI_D3cold;
+> +	} else if (dev->pm_cap) {
+>  		u16 pmcsr;
+>  
+> -		/*
+> -		 * Configuration space is not accessible for device in
+> -		 * D3cold, so just keep or set D3cold for safety
+> -		 */
+> -		if (dev->current_state == PCI_D3cold)
+> -			return;
+> -		if (state == PCI_D3cold) {
+> -			dev->current_state = PCI_D3cold;
+> -			return;
+> -		}
+>  		pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
+>  		dev->current_state = (pmcsr & PCI_PM_CTRL_STATE_MASK);
+>  	} else {
 > 
 
 -- 
