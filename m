@@ -1,72 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 4/5] PCI: Avoid unnecessary resume after direct-complete
-Date: Sat, 24 Sep 2016 02:47:02 +0200
-Message-ID: <1600913.zHqu065l2a@vostro.rjw.lan>
-References: <cover.1474130360.git.lukas@wunner.de> <4e8b490a18cc349318f0b71482d5dc7a7e9ca364.1474130360.git.lukas@wunner.de>
+Subject: Re: [PATCH v2 5/5] PCI: Avoid unnecessary resume on shutdown
+Date: Sat, 24 Sep 2016 02:50:05 +0200
+Message-ID: <19951801.HyPAFRyVuO@vostro.rjw.lan>
+References: <cover.1474130360.git.lukas@wunner.de> <1474276343.2044.4.camel@suse.com> <20160919101402.GA2506@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4e8b490a18cc349318f0b71482d5dc7a7e9ca364.1474130360.git.lukas@wunner.de>
-Sender: linux-acpi-owner@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20160919101402.GA2506@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
 To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
+Cc: Oliver Neukum <oneukum@suse.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sunday, September 18, 2016 05:39:20 AM Lukas Wunner wrote:
-> Commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have been
-> reset by firmware") added a runtime resume for devices that were runtime
-> suspended when the system entered sleep.
+On Monday, September 19, 2016 12:14:02 PM Lukas Wunner wrote:
+> On Mon, Sep 19, 2016 at 11:12:23AM +0200, Oliver Neukum wrote:
+> > On Sun, 2016-09-18 at 05:39 +0200, Lukas Wunner wrote:
+> > > We currently perform a mandatory runtime resume of all PCI devices on
+> > > ->shutdown.  However it is pointless to wake devices only to immediately
+> > > power them down afterwards.  (Or have the firmware reset them, in case
+> > > of a reboot.)
+> > > 
+> > > It seems there are only two cases when a runtime resume is actually
+> > > necessary:  If the driver has declared a ->shutdown callback or if kexec
+> > > is in progress.
+> > > 
+> > > Constrain resume of a device to these cases and let it slumber
+> > > otherwise, thereby conserving energy and speeding up shutdown.
+> > 
+> > What happens if you get a wakeup event while going down?
 > 
-> The motivation was that devices might be in a reset-power-on state after
-> waking from system sleep, so their power state as perceived by Linux
-> (stored in pci_dev->current_state) would no longer reflect reality.
-> By resuming such devices, we allow them to return to a low-power state
-> via autosuspend and also bring their current_state in sync with reality.
+> Hm, I should probably disable that with
 > 
-> However for devices that are *not* in a reset-power-on state, doing an
-> unconditional resume wastes energy.  A more refined approach is called
-> for which issues a runtime resume only if the power state after
-> direct-complete is shallower than it was before. To achieve this, update
-> the device's current_state and compare it to its pre-sleep value.
-> 
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-> ---
->  drivers/pci/pci-driver.c | 15 +++++++++++++--
->  1 file changed, 13 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> index e39a67c..fd4b9c4 100644
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -684,8 +684,19 @@ static int pci_pm_prepare(struct device *dev)
->  
->  static void pci_pm_complete(struct device *dev)
->  {
-> -	pci_dev_complete_resume(to_pci_dev(dev));
-> -	pm_complete_with_resume_check(dev);
-> +	struct pci_dev *pci_dev = to_pci_dev(dev);
-> +
-> +	pci_dev_complete_resume(pci_dev);
-> +	pm_generic_complete(dev);
-> +
-> +	/* Resume device if platform firmware has put it in reset-power-on */
-> +	if (dev->power.direct_complete && pm_resume_via_firmware()) {
-> +		pci_power_t pre_sleep_state = pci_dev->current_state;
-> +
-> +		pci_update_current_state(pci_dev, pci_dev->current_state);
-> +		if (pci_dev->current_state < pre_sleep_state)
-> +			pm_request_resume(dev);
-> +	}
->  }
->  
->  #else /* !CONFIG_PM_SLEEP */
+> 	__pci_enable_wake(pci_dev, pci_dev->current_state, true, false);
 > 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+What if the user wants, say, WoL to power on the system?
+
+> 
+> > Will it lead to a reboot when a shutdown has been requested?
+> 
+> That would depend on the platform, my guess is no, but only someone
+> with extensive real world experience with such corner cases can answer
+> this. (Rafael?)
+
+That wakeup will be silently dropped on the floor as a rule AFAICS.
+
+But there's another theoretical issue here.
+
+On systems with ACPI some devices may need to be reconfigured for wakeup
+from S5 even though they have been configured for signaling wakeup while
+in S0.  Those would still need to be resumed.
+
+Thanks,
+Rafael
