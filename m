@@ -1,57 +1,258 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][v10] PM / hibernate: Verify the consistent of e820
- memory map by md5 digest
-Date: Sun, 25 Sep 2016 03:44:03 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6405E6161F6@shsmsx102.ccr.corp.intel.com>
-References: <1473423687-4889-1-git-send-email-yu.c.chen@intel.com>
- <CAJZ5v0j0Vj9DSL0PH+quZAnO5Ns3CxxC2qncM4xHmjsNWehM1A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:5823 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S965305AbcIYDoI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 24 Sep 2016 23:44:08 -0400
-In-Reply-To: <CAJZ5v0j0Vj9DSL0PH+quZAnO5Ns3CxxC2qncM4xHmjsNWehM1A@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][v11] PM / hibernate: Verify the consistent of e820 memory map by md5 digest
+Date: Sun, 25 Sep 2016 12:17:57 +0800
+Message-ID: <1474777077-19535-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Lee Chun-Yi <jlee@suse.com>, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@ucw.cz>, Lee Chun-Yi <jlee@suse.com>, Borislav Petkov <bp@alien8.de>
 
-SGksDQpTb3JyeSBmb3IgbGF0ZSByZXNwb25zZSwgSSBtaXNzZWQgdGhlIHRocmVhZCBpbiBtYWls
-Ym94LA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IHJqd3lzb2NraUBn
-bWFpbC5jb20gW21haWx0bzpyand5c29ja2lAZ21haWwuY29tXSBPbiBCZWhhbGYgT2YNCj4gUmFm
-YWVsIEouIFd5c29ja2kNCj4gU2VudDogTW9uZGF5LCBTZXB0ZW1iZXIgMTksIDIwMTYgNzo0NiBQ
-TQ0KPiBUbzogQ2hlbiwgWXUgQw0KPiBDYzogTGludXggUE07IHRoZSBhcmNoL3g4NiBtYWludGFp
-bmVyczsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdDsgVGhvbWFzDQo+IEdsZWl4bmVyOyBJbmdv
-IE1vbG5hcjsgSC4gUGV0ZXIgQW52aW47IFd5c29ja2ksIFJhZmFlbCBKOyBQYXZlbCBNYWNoZWs7
-IExlZQ0KPiBDaHVuLVlpOyBCb3Jpc2xhdiBQZXRrb3YNCj4gU3ViamVjdDogUmU6IFtQQVRDSF1b
-djEwXSBQTSAvIGhpYmVybmF0ZTogVmVyaWZ5IHRoZSBjb25zaXN0ZW50IG9mIGU4MjANCj4gbWVt
-b3J5IG1hcCBieSBtZDUgZGlnZXN0DQo+IA0KPiBPbiBGcmksIFNlcCA5LCAyMDE2IGF0IDI6MjEg
-UE0sIENoZW4gWXUgPHl1LmMuY2hlbkBpbnRlbC5jb20+IHdyb3RlOg0KPiA+IE9uIHNvbWUgcGxh
-dGZvcm1zLCB0aGVyZSBpcyBvY2Nhc2lvbmFsIHBhbmljIHRyaWdnZXJlZCB3aGVuIHRyeWluZyB0
-bw0KPiA+IHJlc3VtZSBmcm9tIGhpYmVybmF0aW9uLCBhIHR5cGljYWwgcGFuaWMgbG9va3MgbGlr
-ZToNCj4gDQo+IFtjdXRdDQo+IA0KPiA+IEBAIC0yMTEsMTAgKzI5MiwxNSBAQCBpbnQgYXJjaF9o
-aWJlcm5hdGlvbl9oZWFkZXJfc2F2ZSh2b2lkICphZGRyLA0KPiB1bnNpZ25lZCBpbnQgbWF4X3Np
-emUpDQo+ID4gICAqLw0KPiA+ICBpbnQgYXJjaF9oaWJlcm5hdGlvbl9oZWFkZXJfcmVzdG9yZSh2
-b2lkICphZGRyKSAgew0KPiA+ICsgICAgICAgYm9vbCBlODIwX21pc21hdGNoID0gZmFsc2U7DQo+
-IA0KPiBUaGUgZXh0cmEgbG9jYWwgdmFyaWFibGUgY2FuIGJlIGF2b2lkZWQgaWYgeW91IHN0cnVj
-dHVyZSB0aGUgY29kZSBzbGlnaHRseQ0KPiBkaWZmZXJlbnRseS4NCj4gDQo+ID4gICAgICAgICBz
-dHJ1Y3QgcmVzdG9yZV9kYXRhX3JlY29yZCAqcmRyID0gYWRkcjsNCj4gPg0KPiA+ICAgICAgICAg
-cmVzdG9yZV9qdW1wX2FkZHJlc3MgPSByZHItPmp1bXBfYWRkcmVzczsNCj4gPiAgICAgICAgIGp1
-bXBfYWRkcmVzc19waHlzID0gcmRyLT5qdW1wX2FkZHJlc3NfcGh5czsNCj4gPiAgICAgICAgIHJl
-c3RvcmVfY3IzID0gcmRyLT5jcjM7DQo+ID4gLSAgICAgICByZXR1cm4gKHJkci0+bWFnaWMgPT0g
-UkVTVE9SRV9NQUdJQykgPyAwIDogLUVJTlZBTDsNCj4gPiArDQo+ID4gKyAgICAgICBlODIwX21p
-c21hdGNoID0gaGliZXJuYXRpb25fZTgyMF9taXNtYXRjaChyZHItPmU4MjBfZGlnZXN0KTsNCj4g
-DQo+IEFsc28gY2FsbGluZyBoaWJlcm5hdGlvbl9lODIwX21pc21hdGNoKCkgYmVmb3JlIGNoZWNr
-aW5nIHJkci0+bWFnaWMgbWF5IG5vdA0KPiBiZSB1c2VmdWwgYXQgYWxsLg0KPiANClllcy4NCj4g
-PiArDQo+ID4gKyAgICAgICByZXR1cm4gKHJkci0+bWFnaWMgPT0gUkVTVE9SRV9NQUdJQykgPw0K
-PiA+ICsgICAgICAgICAgICAgICAoZTgyMF9taXNtYXRjaCA/IC1FTk9ERVYgOiAwKSA6IC1FSU5W
-QUw7DQo+IA0KPiBTbyB3aGF0IGFib3V0Og0KPiANCj4gaWYgKHJkci0+bWFnaWMgIT0gUkVTVE9S
-RV9NQUdJQykNCj4gICAgICAgICByZXR1cm4gLUVJTlZBTDsNCj4gDQo+IGlmIChoaWJlcm5hdGlv
-bl9lODIwX21pc21hdGNoKHJkci0+ZTgyMF9kaWdlc3QpKQ0KPiAgICAgICAgIHJldHVybiAtRU5P
-REVWOw0KPiANCj4gcmV0dXJuIDA7DQo+IA0KPiANCk9rLCB3aWxsIGNoYW5nZSBpdCB0byB0aGlz
-IG9uZS4gVGhhbmtzLg0KPiA+ICB9DQo+ID4gLS0NCj4gDQo+IFRoYW5rcywNCj4gUmFmYWVsDQoN
-Cg0KVGhhbmtzLA0KWXUNCg==
+On some platforms, there is occasional panic triggered when trying to
+resume from hibernation, a typical panic looks like:
+
+"BUG: unable to handle kernel paging request at ffff880085894000
+IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
+
+Investigation carried out by Lee Chun-Yi shows that this is because
+e820 map has been changed by BIOS across hibernation, and one
+of the page frames from suspend kernel is right located in restore
+kernel's unmapped region, so panic comes out when accessing unmapped
+kernel address.
+
+In order to expose this issue earlier, the md5 hash of e820 map
+is passed from suspend kernel to restore kernel, and the restore
+kernel will terminate the resume process once it finds the md5
+hash are not the same.
+
+As the format of image header has been modified, the magic number
+should also be adjusted as kernels with the same RESTORE_MAGIC have
+to use the same header format and interpret all of the fields in
+it in the same way.
+
+If the suspend kernel is built without md5 support, and the restore
+kernel has md5 support, then the latter will bypass the check process.
+Vice versa the restore kernel will bypass the check if it does not
+support md5 operation.
+
+Note:
+1. Without this patch applied, it is possible that BIOS has
+   provided an inconsistent memory map, but the resume kernel is still
+   able to restore the image anyway(e.g, E820_RAM region is the superset
+   of the previous one), although the system might be unstable. So this
+   patch tries to treat any inconsistent e820 as illegal.
+
+2. Another case is, this patch replies on comparing the e820_saved, but
+   currently the e820_save might not be strictly the same across
+   hibernation, even if BIOS has provided consistent e820 map - In
+   theory mptable might modify the BIOS-provided e820_saved dynamically
+   in early_reserve_e820_mpc_new, which would allocate a buffer from
+   E820_RAM, and marks it from E820_RAM to E820_RESERVED).
+   This is a potential and rare case we need to deal with in OS in
+   the future.
+
+Suggested-by: Pavel Machek <pavel@ucw.cz>
+Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Lee Chun-Yi <jlee@suse.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+v11:
+ - Remove the extra local variable e820_mismatch.
+v10:
+ - Remove the newly introduced Boolean flag and check
+   the existence of md5 hash by comparing it with zero.
+   If the suspend kernel is built without md5 support,
+   and the restore kernel has md5 support, then the latter
+   will bypass the check process. Vice versa the restore
+   kernel will bypass the check if it does not support md5
+   operation even if the suspend kernel has one.
+v9:
+ - Only do the md5 check when CONFIG_CRYPTO_MD5 is built in.
+   Change the image head magic number.
+   Remove CONFIG_HIBERNATION_CHECK_E820 and make the md5 check
+   mandatory.
+   Introduce e820_digest_available to indicate whether we should
+   check the md5 hash.
+   And some other modifications.
+v8:
+ - Panic the system once the e820 is found to be inconsistent
+   during resume.
+   Fix the md5 hash len from 128 bytes to 16 bytes.
+v7:
+ - Use md5 hash to compare the e820 map.
+v6:
+ - Fix some compiling errors reported by 0day/LKP, adjust
+   Kconfig/variable namings.
+v5:
+ - Rewrite this patch to just warn user of the broken BIOS
+   when panic.
+v4:
+ - Add __attribute__ ((unused)) for swsusp_page_is_valid,
+   to eliminate the warnning of:
+   'swsusp_page_is_valid' defined but not used
+   on non-x86 platforms.
+
+v3:
+ - Adjust the logic to exclude the end_pfn boundary in pfn_mapped
+   when invoking mark_valid_pages, because the end_pfn is not
+   a mapped page frame, we should not regard it as a valid page.
+
+   Move the sanity check of valid pages to a early stage in resuming
+   process(moved to mark_unsafe_pages), in this way, we can avoid
+   unnecessarily accessing these invalid pages in later stage(yes,
+   move to the original position Joey once introduced in:
+   Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820
+   reserved regions")
+
+   With v3 patch applied, I did 30 cycles on my problematic platform,
+   no panic triggered anymore(50% reproducible before patched, by
+   plugging/unplugging memory peripheral during hibernation), and it
+   just warns of invalid pages.
+
+v2:
+ - According to Ingo's suggestion, rewrite this patch.
+
+   New version just checks each page frame according to pfn_mapped array.
+   So that we do not need to touch existing code related to
+   E820_RESERVED_KERN. And this method can naturely guarantee
+   that the system before/after hibernation do not need to be of
+   the same memory size on x86_64.
+---
+ arch/x86/power/hibernate_64.c | 92 ++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 90 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+index 9634557..d81b1af 100644
+--- a/arch/x86/power/hibernate_64.c
++++ b/arch/x86/power/hibernate_64.c
+@@ -11,6 +11,10 @@
+ #include <linux/gfp.h>
+ #include <linux/smp.h>
+ #include <linux/suspend.h>
++#include <linux/scatterlist.h>
++#include <linux/kdebug.h>
++
++#include <crypto/hash.h>
+ 
+ #include <asm/init.h>
+ #include <asm/proto.h>
+@@ -177,14 +181,88 @@ int pfn_is_nosave(unsigned long pfn)
+ 	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
+ }
+ 
++#define MD5_DIGEST_SIZE 16
++
+ struct restore_data_record {
+ 	unsigned long jump_address;
+ 	unsigned long jump_address_phys;
+ 	unsigned long cr3;
+ 	unsigned long magic;
++	u8 e820_digest[MD5_DIGEST_SIZE];
+ };
+ 
+-#define RESTORE_MAGIC	0x123456789ABCDEF0UL
++#define RESTORE_MAGIC	0x23456789ABCDEF01UL
++
++#if IS_BUILTIN(CONFIG_CRYPTO_MD5)
++/**
++ * get_e820_md5 - calculate md5 according to given e820 map
++ *
++ * @map: the e820 map to be calculated
++ * @buf: the md5 result to be stored to
++ */
++static int get_e820_md5(struct e820map *map, void *buf)
++{
++	struct scatterlist sg;
++	struct crypto_ahash *tfm;
++	struct ahash_request *req;
++	int ret = 0;
++
++	tfm = crypto_alloc_ahash("md5", 0, CRYPTO_ALG_ASYNC);
++	if (IS_ERR(tfm))
++		return -ENOMEM;
++
++	req = ahash_request_alloc(tfm, GFP_KERNEL);
++	if (!req) {
++		ret = -ENOMEM;
++		goto free_ahash;
++	}
++
++	sg_init_one(&sg, (u8 *)map, sizeof(struct e820map));
++	ahash_request_set_callback(req, 0, NULL, NULL);
++	ahash_request_set_crypt(req, &sg, buf, sizeof(struct e820map));
++
++	if (crypto_ahash_digest(req))
++		ret = -EINVAL;
++
++	ahash_request_free(req);
++ free_ahash:
++	crypto_free_ahash(tfm);
++
++	return ret;
++}
++
++static void hibernation_e820_save(void *buf)
++{
++	get_e820_md5(&e820_saved, buf);
++}
++
++static bool hibernation_e820_mismatch(void *buf)
++{
++	int ret;
++	u8 result[MD5_DIGEST_SIZE];
++
++	memset(result, 0, MD5_DIGEST_SIZE);
++	/* If there is no digest in suspend kernel, let it go. */
++	if (!memcmp(result, buf, MD5_DIGEST_SIZE))
++		return false;
++
++	ret = get_e820_md5(&e820_saved, result);
++	if (ret)
++		return true;
++
++	return memcmp(result, buf, MD5_DIGEST_SIZE) ? true : false;
++}
++#else
++static void hibernation_e820_save(void *buf)
++{
++}
++
++static bool hibernation_e820_mismatch(void *buf)
++{
++	/* If md5 is not builtin for restore kernel, let it go. */
++	return false;
++}
++#endif
+ 
+ /**
+  *	arch_hibernation_header_save - populate the architecture specific part
+@@ -201,6 +279,9 @@ int arch_hibernation_header_save(void *addr, unsigned int max_size)
+ 	rdr->jump_address_phys = __pa_symbol(&restore_registers);
+ 	rdr->cr3 = restore_cr3;
+ 	rdr->magic = RESTORE_MAGIC;
++
++	hibernation_e820_save(rdr->e820_digest);
++
+ 	return 0;
+ }
+ 
+@@ -216,5 +297,12 @@ int arch_hibernation_header_restore(void *addr)
+ 	restore_jump_address = rdr->jump_address;
+ 	jump_address_phys = rdr->jump_address_phys;
+ 	restore_cr3 = rdr->cr3;
+-	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
++
++	if (rdr->magic != RESTORE_MAGIC)
++		return -EINVAL;
++
++	if (hibernation_e820_mismatch(rdr->e820_digest))
++		return -ENODEV;
++
++	return 0;
+ }
+-- 
+2.7.4
