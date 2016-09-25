@@ -1,70 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 0/2] Exynos IOMMU: proper runtime PM support (use device dependencies)
-Date: Sat, 24 Sep 2016 03:25:17 +0200
-Message-ID: <1514800.L7P1tHiLfo@vostro.rjw.lan>
-References: <CGME20160913124917eucas1p23425d2cb1c24e73ae3c2927ec141fd30@eucas1p2.samsung.com> <6114649.EDczdxzVVo@vostro.rjw.lan> <20160923135002.GB4077@wunner.de>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][v10] PM / hibernate: Verify the consistent of e820
+ memory map by md5 digest
+Date: Sun, 25 Sep 2016 03:41:43 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6405E6161D0@shsmsx102.ccr.corp.intel.com>
+References: <1473423687-4889-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0j0Vj9DSL0PH+quZAnO5Ns3CxxC2qncM4xHmjsNWehM1A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160923135002.GB4077@wunner.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mark Brown <broonie@kernel.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:54963 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1032943AbcIYDlr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 24 Sep 2016 23:41:47 -0400
+In-Reply-To: <CAJZ5v0j0Vj9DSL0PH+quZAnO5Ns3CxxC2qncM4xHmjsNWehM1A@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@ucw.cz>, Lee Chun-Yi <jlee@suse.com>, Borislav Petkov <bp@alien8.de>
 
-On Friday, September 23, 2016 03:50:02 PM Lukas Wunner wrote:
-> On Fri, Sep 23, 2016 at 02:49:20PM +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, September 20, 2016 10:51:13 AM Marek Szyprowski wrote:
-> > > On 2016-09-19 23:45, Tobias Jakobi wrote:
-> > > > I did some tests with the new version today. Sadly the reboot/shutdown
-> > > > issues are still present.
-> > > 
-> > > Thanks for the report. I've managed to reproduce this issue and it is again
-> > > caused by modifying device on devices_kset list before it will be finally
-> > > added by device_add(). I thought that the new patchset allows creating
-> > > links to a device, which has not been yet added to system device list.
-> 
-> Hm, Marek, why isn't it possible to set up the links from the consumer's
-> ->probe hook in this case?
-> 
-> 
-> > > Should it be allowed to create a link to device, which
-> > > has not yet been added to system device list by device_add()?
-> > 
-> > While it would be easy to require both the consumer and producer devices to
-> > be registered for creating a link between them, that would just make it
-> > harder to use links in the first place.
-> > 
-> > So ideally, it should be possible to create links between devices before
-> > registering them, but since I didn't take that into account in the current
-> > patch series, some quite substantial changes are needed to cover that.
-> > 
-> > Additional link states come to mind, but then the "stateless" links are
-> > affected by this problem too.
-> 
-> device_link_add() could be changed to call device_reorder_to_tail()
-> only if device_is_registered(consumer) returns true.
-> 
-> That's an inline function defined in <linux/device.h> which returns
-> dev->kobj.state_in_sysfs, a flag which is set in kobject_add().
-
-I know what that function is, but using it alone is not sufficient,
-because dev->kobj.state_in_sysfs is set before the device is added to
-dpm_list.
-
-> Then device_add() would have to check if any links are already
-> set up and reorder the consumer behind the suppliers.
-> 
-> Doesn't seem to be *that* complex, but probably I'm missing something,
-> this is just off the cuff...
-
-There are some cases to consider and some races to avoid AFAICS.
-
-It all gets a lot simpler if device_link_add() is allowed to return NULL when
-the supplier device passed to it has not been registered yet.  That looks like
-a reasonable thing to do to me, but I wonder if someone has a use case in which
-it would be a substantial limitation.
-
-Thanks,
-Rafael
+SGksDQpTb3JyeSBmb3IgbGF0ZSByZXNwb25zZSwgSSBtaXNzZWQgdGhpcyB0aHJlYWQgaW4gbWFp
+bGJveCwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiByand5c29ja2lA
+Z21haWwuY29tIFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mDQo+IFJh
+ZmFlbCBKLiBXeXNvY2tpDQo+IFNlbnQ6IE1vbmRheSwgU2VwdGVtYmVyIDE5LCAyMDE2IDc6NDYg
+UE0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IExpbnV4IFBNOyB0aGUgYXJjaC94ODYgbWFpbnRh
+aW5lcnM7IExpbnV4IEtlcm5lbCBNYWlsaW5nIExpc3Q7IFRob21hcw0KPiBHbGVpeG5lcjsgSW5n
+byBNb2xuYXI7IEguIFBldGVyIEFudmluOyBXeXNvY2tpLCBSYWZhZWwgSjsgUGF2ZWwgTWFjaGVr
+OyBMZWUNCj4gQ2h1bi1ZaTsgQm9yaXNsYXYgUGV0a292DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hd
+W3YxMF0gUE0gLyBoaWJlcm5hdGU6IFZlcmlmeSB0aGUgY29uc2lzdGVudCBvZiBlODIwDQo+IG1l
+bW9yeSBtYXAgYnkgbWQ1IGRpZ2VzdA0KPiANCj4gT24gRnJpLCBTZXAgOSwgMjAxNiBhdCAyOjIx
+IFBNLCBDaGVuIFl1IDx5dS5jLmNoZW5AaW50ZWwuY29tPiB3cm90ZToNCj4gPiBPbiBzb21lIHBs
+YXRmb3JtcywgdGhlcmUgaXMgb2NjYXNpb25hbCBwYW5pYyB0cmlnZ2VyZWQgd2hlbiB0cnlpbmcg
+dG8NCj4gPiByZXN1bWUgZnJvbSBoaWJlcm5hdGlvbiwgYSB0eXBpY2FsIHBhbmljIGxvb2tzIGxp
+a2U6DQo+IA0KPiBbY3V0XQ0KPiANCj4gPiBAQCAtMjExLDEwICsyOTIsMTUgQEAgaW50IGFyY2hf
+aGliZXJuYXRpb25faGVhZGVyX3NhdmUodm9pZCAqYWRkciwNCj4gdW5zaWduZWQgaW50IG1heF9z
+aXplKQ0KPiA+ICAgKi8NCj4gPiAgaW50IGFyY2hfaGliZXJuYXRpb25faGVhZGVyX3Jlc3RvcmUo
+dm9pZCAqYWRkcikgIHsNCj4gPiArICAgICAgIGJvb2wgZTgyMF9taXNtYXRjaCA9IGZhbHNlOw0K
+PiANCj4gVGhlIGV4dHJhIGxvY2FsIHZhcmlhYmxlIGNhbiBiZSBhdm9pZGVkIGlmIHlvdSBzdHJ1
+Y3R1cmUgdGhlIGNvZGUgc2xpZ2h0bHkNCj4gZGlmZmVyZW50bHkuDQo+IA0KPiA+ICAgICAgICAg
+c3RydWN0IHJlc3RvcmVfZGF0YV9yZWNvcmQgKnJkciA9IGFkZHI7DQo+ID4NCj4gPiAgICAgICAg
+IHJlc3RvcmVfanVtcF9hZGRyZXNzID0gcmRyLT5qdW1wX2FkZHJlc3M7DQo+ID4gICAgICAgICBq
+dW1wX2FkZHJlc3NfcGh5cyA9IHJkci0+anVtcF9hZGRyZXNzX3BoeXM7DQo+ID4gICAgICAgICBy
+ZXN0b3JlX2NyMyA9IHJkci0+Y3IzOw0KPiA+IC0gICAgICAgcmV0dXJuIChyZHItPm1hZ2ljID09
+IFJFU1RPUkVfTUFHSUMpID8gMCA6IC1FSU5WQUw7DQo+ID4gKw0KPiA+ICsgICAgICAgZTgyMF9t
+aXNtYXRjaCA9IGhpYmVybmF0aW9uX2U4MjBfbWlzbWF0Y2gocmRyLT5lODIwX2RpZ2VzdCk7DQo+
+IA0KPiBBbHNvIGNhbGxpbmcgaGliZXJuYXRpb25fZTgyMF9taXNtYXRjaCgpIGJlZm9yZSBjaGVj
+a2luZyByZHItPm1hZ2ljIG1heSBub3QNCj4gYmUgdXNlZnVsIGF0IGFsbC4NClllcy4NCj4gDQo+
+ID4gKw0KPiA+ICsgICAgICAgcmV0dXJuIChyZHItPm1hZ2ljID09IFJFU1RPUkVfTUFHSUMpID8N
+Cj4gPiArICAgICAgICAgICAgICAgKGU4MjBfbWlzbWF0Y2ggPyAtRU5PREVWIDogMCkgOiAtRUlO
+VkFMOw0KPiANCj4gU28gd2hhdCBhYm91dDoNCj4gDQo+IGlmIChyZHItPm1hZ2ljICE9IFJFU1RP
+UkVfTUFHSUMpDQo+ICAgICAgICAgcmV0dXJuIC1FSU5WQUw7DQo+IA0KPiBpZiAoaGliZXJuYXRp
+b25fZTgyMF9taXNtYXRjaChyZHItPmU4MjBfZGlnZXN0KSkNCj4gICAgICAgICByZXR1cm4gLUVO
+T0RFVjsNCj4gDQo+IHJldHVybiAwOw0KPiANCk9LLCB3aWxsIGNoYW5nZSBpdCB0byB0aGlzIG9u
+ZS4gVGhhbmtzIQ0KPiA+ICB9DQo+ID4gLS0NCj4gDQo+IFRoYW5rcywNCj4gUmFmYWVsDQoNClRo
+YW5rcywNCll1DQo=
