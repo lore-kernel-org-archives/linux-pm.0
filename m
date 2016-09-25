@@ -1,41 +1,25 @@
-From: Axel Lin <axel.lin@ingics.com>
-Subject: [PATCH] PM / devfreq: event: Remove unnecessary NULL test for to_devfreq_event(dev)
-Date: Sun, 25 Sep 2016 20:16:28 +0800
-Message-ID: <1474805788-30702-1-git-send-email-axel.lin@ingics.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Axel Lin <axel.lin@ingics.com>
+From: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
+Subject: [PATCH 0/2] power: supply: max17042_battery: Improve properties
+Date: Sun, 25 Sep 2016 23:10:09 +0200
+Message-ID: <1474837811-9413-1-git-send-email-wolfgit@wiedmeyer.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
 List-Id: linux-pm@vger.kernel.org
 
-to_devfreq_event(dev) never returns NULL.
+These two patches fix the capacity property and add the technology
+property.
 
-Signed-off-by: Axel Lin <axel.lin@ingics.com>
----
- drivers/devfreq/devfreq-event.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Wolfgang Wiedmeyer (2):
+  power: supply: max17042_battery: use VF SOC register for capacity
+    property
+  power: supply: max17042_battery: add technology property support
 
-diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
-index 9aea2c7..d0ae087 100644
---- a/drivers/devfreq/devfreq-event.c
-+++ b/drivers/devfreq/devfreq-event.c
-@@ -442,7 +442,7 @@ static ssize_t name_show(struct device *dev, struct device_attribute *attr,
- {
- 	struct devfreq_event_dev *edev = to_devfreq_event(dev);
- 
--	if (!edev || !edev->desc)
-+	if (!edev->desc)
- 		return -EINVAL;
- 
- 	return sprintf(buf, "%s\n", edev->desc->name);
-@@ -454,7 +454,7 @@ static ssize_t enable_count_show(struct device *dev,
- {
- 	struct devfreq_event_dev *edev = to_devfreq_event(dev);
- 
--	if (!edev || !edev->desc)
-+	if (!edev->desc)
- 		return -EINVAL;
- 
- 	return sprintf(buf, "%d\n", edev->enable_count);
+ drivers/power/max17042_battery.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
 -- 
-2.7.4
+Website: https://fossencdi.org
+OpenPGP: 0F30 D1A0 2F73 F70A 6FEE  048E 5816 A24C 1075 7FC4
+Key download: https://wiedmeyer.de/keys/ww.asc
