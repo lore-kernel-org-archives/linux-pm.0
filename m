@@ -1,42 +1,45 @@
 From: Axel Lin <axel.lin@ingics.com>
-Subject: [PATCH v2 1/2] PM / devfreq: exynos-nocp: Select REGMAP_MMIO
-Date: Sun, 25 Sep 2016 20:13:57 +0800
-Message-ID: <1474805638-30407-1-git-send-email-axel.lin@ingics.com>
+Subject: [PATCH v2 2/2] PM / devfreq: exynos-nocp: Remove redundant code to reset load_count/total_count
+Date: Sun, 25 Sep 2016 20:13:58 +0800
+Message-ID: <1474805638-30407-2-git-send-email-axel.lin@ingics.com>
+References: <1474805638-30407-1-git-send-email-axel.lin@ingics.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:35151 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S966288AbcIYMON (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Sep 2016 08:14:13 -0400
-Received: by mail-pf0-f196.google.com with SMTP id 6so7672152pfl.2
-        for <linux-pm@vger.kernel.org>; Sun, 25 Sep 2016 05:14:12 -0700 (PDT)
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:33393 "EHLO
+        mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S966297AbcIYMOP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Sep 2016 08:14:15 -0400
+Received: by mail-pa0-f66.google.com with SMTP id oz2so7375304pac.0
+        for <linux-pm@vger.kernel.org>; Sun, 25 Sep 2016 05:14:14 -0700 (PDT)
+In-Reply-To: <1474805638-30407-1-git-send-email-axel.lin@ingics.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Axel Lin <axel.lin@ingics.com>
 
-This driver uses devm_regmap_init_mmio(), so select REGMAP_MMIO to avoid
-build failure.
+This is done by devfreq_event_get_event() so remove the redundant code in
+exynos_nocp_get_event().
 
 Signed-off-by: Axel Lin <axel.lin@ingics.com>
 Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
-v2: fix typo in commit log and also add Chanwoo's Ack.
-This one is a build fix, I think it should be for v4.8.
- drivers/devfreq/event/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+v2: only add Chanwoo's Ack.
+ drivers/devfreq/event/exynos-nocp.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/devfreq/event/Kconfig b/drivers/devfreq/event/Kconfig
-index 0fdae86..cd94980 100644
---- a/drivers/devfreq/event/Kconfig
-+++ b/drivers/devfreq/event/Kconfig
-@@ -17,6 +17,7 @@ config DEVFREQ_EVENT_EXYNOS_NOCP
- 	tristate "EXYNOS NoC (Network On Chip) Probe DEVFREQ event Driver"
- 	depends on ARCH_EXYNOS || COMPILE_TEST
- 	select PM_OPP
-+	select REGMAP_MMIO
- 	help
- 	  This add the devfreq-event driver for Exynos SoC. It provides NoC
- 	  (Network on Chip) Probe counters to measure the bandwidth of AXI bus.
+diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
+index a584140..49e712a 100644
+--- a/drivers/devfreq/event/exynos-nocp.c
++++ b/drivers/devfreq/event/exynos-nocp.c
+@@ -176,9 +176,6 @@ static int exynos_nocp_get_event(struct devfreq_event_dev *edev,
+ 	return 0;
+ 
+ out:
+-	edata->load_count = 0;
+-	edata->total_count = 0;
+-
+ 	dev_err(nocp->dev, "Failed to read the counter of NoC probe device\n");
+ 
+ 	return ret;
 -- 
 2.7.4
 
