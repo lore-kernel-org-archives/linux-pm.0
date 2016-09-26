@@ -1,149 +1,101 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [Update][RFC/RFT][PATCH v3 2/5] driver core: Functional
- dependencies tracking support
-Date: Mon, 26 Sep 2016 18:51:21 +0200
-Message-ID: <20160926165121.GA5353@wunner.de>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <2141382.sMORCbDyAF@vostro.rjw.lan>
- <20160919224630.GA2933@wunner.de>
- <2576815.LnbrnvuK3u@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Regression in 4.8 - CPU speed set very low
+Date: Mon, 26 Sep 2016 23:06:45 +0200
+Message-ID: <2477506.olat0BX4ex@vostro.rjw.lan>
+References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net> <3919370.SGLjGupePs@vostro.rjw.lan> <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2576815.LnbrnvuK3u@vostro.rjw.lan>
+In-Reply-To: <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Sep 23, 2016 at 03:42:31PM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, September 20, 2016 12:46:30 AM Lukas Wunner wrote:
-> > On Fri, Sep 16, 2016 at 02:33:55PM +0200, Rafael J. Wysocki wrote:
-> > > +void device_links_no_driver(struct device *dev)
-> > > +{
-> > > +	struct device_link *link, *ln;
-> > > +
-> > > +	mutex_lock(&device_links_lock);
-> > > +
-> > > +	list_for_each_entry_safe_reverse(link, ln, &dev->links_to_suppliers, c_node) {
-> > > +		if (link->flags & DEVICE_LINK_STATELESS)
-> > > +			continue;
-> > > +
-> > > +		if (link->flags & DEVICE_LINK_AUTOREMOVE) {
-> > > +			__device_link_del(link);
-> > 
-> > The link will be autoremoved not only when the consumer unbinds,
-> > but also when probing the consumer fails.
-> > 
-> > Looks like a bug.
+On Monday, September 26, 2016 11:15:45 AM Larry Finger wrote:
+> On 09/26/2016 06:37 AM, Rafael J. Wysocki wrote:
+> > On Friday, September 23, 2016 09:45:09 PM Larry Finger wrote:
+> >> On 09/18/2016 09:54 PM, Larry Finger wrote:
+> >>> On 09/14/2016 11:00 AM, Larry Finger wrote:
+> >>>> On 09/09/2016 12:39 PM, Larry Finger wrote:
+> >>>>> I have found a regression in kernel 4.8-rc2 that causes the speed of my laptop
+> >>>>> with an Intel(R) Core(TM) i7-4600M CPU @ 2.90GHz to suddenly have a maximum cpu
+> >>>>> frequency of ~400 MHz. Unfortunately, I do not know how to trigger this problem,
+> >>>>> thus a bisection is not possible. It usually happens under heavy load, such as a
+> >>>>> kernel build or the RPM build of VirtualBox, but it does not always fail with
+> >>>>> these loads. In my most recent failure, 'hwinfo --cpu' reports cpu MHz of
+> >>>>> 396.130 for #3. The bogomips value is 5787.73, and the cpu clock before the
+> >>>>> fault is 3437 MHz. Nothing is logged when this happens.
+> >>>>>
+> >>>>> If I were to get a patch that would show a backtrace when the maximum CPU
+> >>>>> frequency is changed, perhaps it would be possible to track this bug.
+> >>>>
+> >>>> I have not yet found the bad commit, but I have reduced the range of commits a
+> >>>> bit. This bug has been difficult to trigger. So far, it has not taken over 1/2
+> >>>> day to appear in bad kernels, thus I am allowing three days before deciding that
+> >>>> a given trial is good. I never saw the problem with 4.7 kernels, but I did in
+> >>>> 4.8-rc1. I also know that it appeared before commit 581e0cd. Commit 1b05cf6 did
+> >>>> not show the bug.
+> >>>>
+> >>>> Testing continues.
+> >>>
+> >>> And still does. My bisection seemed to be trending toward an improbable set of
+> >>> commits, and I needed to do some other work with the machine, thus I started
+> >>> running 4.8-rc6. It failed nearly 48 hours after the reboot, which indicated
+> >>> that using 3 days to indicate a "good" trial was likely too short. I am
+> >>> currently testing the first of the trial and will run it for at least a week. It
+> >>> is unlikely that these tests will be complete before 4,8 is released, even if
+> >>> -rc8 is needed. I will keep attempting to find the faulty commit.
+> >>
+> >> My debugging continues. After 7 days of beating on commit f7816ad, I have
+> >> concluded that it is likely good. Thus I think the bug lies between commit
+> >> 581e0cd (bad) and f7816ad (good). I will need to do a long test on commit
+> >> 1b05cf6, which did not fail with a shorter run.
+> >
+> > 581e0cd is not a valid mainline commit hash AFAICS.
 > 
-> It really was intentional, because the use case I see for AUTOREMOVE (and
-> the only one to be honest) is when the link is created by the consumer
-> probe in which case it wants to avoid worrying about the cleanup part.
+> That was a typo. The correct value is 581e0c7.
+> >
+> > What cpufreq driver do you use?
 > 
-> Which also is applicable to the cleanup when the probe fails IMO.
-
-You're right, makes sense.
-
-
-> > > +void device_links_unbind_consumers(struct device *dev)
-> > > +{
-> > > +	struct device_link *link;
-> > > +	int idx;
-> > > +
-> > > + start:
-> > > +	idx = device_links_read_lock();
-> > > +
-> > > +	list_for_each_entry_rcu(link, &dev->links_to_consumers, s_node) {
-> > > +		enum device_link_status status;
-> > > +
-> > > +		if (link->flags & DEVICE_LINK_STATELESS)
-> > > +			continue;
-> > > +
-> > > +		spin_lock(&link->lock);
-> > > +		status = link->status;
-> > > +		if (status == DEVICE_LINK_CONSUMER_PROBE) {
-> > > +			spin_unlock(&link->lock);
-> > > +
-> > > +			device_links_read_unlock(idx);
-> > > +
-> > > +			wait_for_device_probe();
-> > > +			goto start;
-> > > +		}
-> > > +		link->status = DEVICE_LINK_SUPPLIER_UNBIND;
-> > > +		if (status == DEVICE_LINK_ACTIVE) {
-> > > +			struct device *consumer = link->consumer;
-> > > +
-> > > +			get_device(consumer);
-> > > +			spin_unlock(&link->lock);
-> > 
-> > The lock is released both at the beginning of this if-block and
-> > immediately after the if-block (in case the if-condition is false).
-> > Why not simply release the lock *before* the if-block?
+> My "Default CPUFreq governor" is on demand.
 > 
-> Because the get_device() needs to be done under the lock.
-
-According to the commit message, the spinlock only protects the status
-field and the consumer device is prevented from disappearing with the RCU.
-So the spin lock could be released before the if-block AFAICS.
-(But perhaps there are style/readability reasons to have the unlock both
-in the if-block and afterwards.)
-
-
-> > > @@ -1233,6 +1680,7 @@ void device_del(struct device *dev)
-> > >  {
-> > >  	struct device *parent = dev->parent;
-> > >  	struct class_interface *class_intf;
-> > > +	struct device_link *link, *ln;
-> > >  
-> > >  	/* Notify clients of device removal.  This call must come
-> > >  	 * before dpm_sysfs_remove().
-> > > @@ -1240,6 +1688,30 @@ void device_del(struct device *dev)
-> > >  	if (dev->bus)
-> > >  		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
-> > >  					     BUS_NOTIFY_DEL_DEVICE, dev);
-> > > +
-> > > +	/*
-> > > +	 * Delete all of the remaining links from this device to any other
-> > > +	 * devices (either consumers or suppliers).
-> > > +	 *
-> > > +	 * This requires that all links be dormant, so warn if that's no the
-> > > +	 * case.
-> > > +	 */
-> > > +	mutex_lock(&device_links_lock);
-> > > +
-> > > +	list_for_each_entry_safe_reverse(link, ln, &dev->links_to_suppliers, c_node) {
-> > > +		WARN_ON(link->status != DEVICE_LINK_DORMANT &&
-> > > +			!(link->flags & DEVICE_LINK_STATELESS));
-> > > +		__device_link_del(link);
-> > > +	}
-> > 
-> > Shouldn't it also be legal for the supplier links to be in
-> > DEVICE_LINK_AVAILABLE state upon removal of a consumer device?
-> > 
-> > (And perhaps also DEVICE_LINK_SUPPLIER_UNBIND?)
-> > 
-> > Looks like a bug.
+> Running the command 'egrep -r "CPU_FREQ|CPUFREQ" .config' results in
 > 
-> But this is done after removing the supplier driver, so the state should be
-> DORMANT (unless the link is stateless), shouldn't it?
+> CONFIG_ACPI_CPU_FREQ_PSS=y
+> CONFIG_CPU_FREQ=y
+> CONFIG_CPU_FREQ_GOV_ATTR_SET=y
+> CONFIG_CPU_FREQ_GOV_COMMON=y
+> # CONFIG_CPU_FREQ_STAT is not set
+> # CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+> # CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
+> # CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+> CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+> # CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+> # CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL is not set
+> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+> CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+> CONFIG_CPU_FREQ_GOV_USERSPACE=m
+> CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+> CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
+> # CONFIG_CPU_FREQ_GOV_SCHEDUTIL is not set
+> CONFIG_X86_PCC_CPUFREQ=m
+> CONFIG_X86_ACPI_CPUFREQ=m
+> CONFIG_X86_ACPI_CPUFREQ_CPB=y
+> 
+> Commit 1b05cf6 did fail on longer testing, thus my bisection had ended up going 
+> wrong. Further tests have shown that commit 351a4ded is bad. Once again, by 
+> bisection seems to be converging to a set of commits that seem unlikely to cause 
+> this problem. Perhaps commit f7816ad is not really good even though it survived 
+> 7 days of heavy CPU usage.
+> 
+> I have been reluctant to post my entire .config on the list. It is available at 
+> http://pastebin.com/aMZaAKwL.
 
-The scenario I have in mind is that the supplier device is bound to a
-driver and the consumer device has no driver and is being removed.
-In that case the status will be DEVICE_LINK_AVAILABLE and the user
-will get a WARN splat, which seems gratuitous because it should be legal.
+If the governor is ondemand, the driver is acpi-cpufreq, most likely.
 
-And the other scenario is when the supplier is unbinding. It iterates
-over the links to consumers and puts them in DEVICE_LINK_SUPPLIER_UNBIND.
-Let's say the link to consumer A was put into that state, but there's
-a consumer B remaining which is bound.  The RCU and spinlock are unlocked
-before device_release_driver_internal() is called for that consumer.
-If at that point consumer device A is removed for whatever reason,
-the link will also be removed and the user will again get a gratuitous
-WARN splat.
-
+How do you measure the frequency?
 
 Thanks,
-
-Lukas
+Rafael
