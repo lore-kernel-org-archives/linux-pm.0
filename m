@@ -1,104 +1,103 @@
-From: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
-Subject: Re: [PATCH 1/2] power: supply: max17042_battery: use VF SOC register for capacity property
-Date: Mon, 26 Sep 2016 15:13:23 +0200
-Message-ID: <87d1jqx0r0.fsf@machinist.wiedmeyer.de>
-References: <20160926111615.GB8140@kozik-lap>
+From: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: Regression in 4.8 - CPU speed set very low
+Date: Mon, 26 Sep 2016 11:15:45 -0500
+Message-ID: <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>
+References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net>
+ <28fa8706-4251-4d07-6a6a-4ee8d9d1267b@lwfinger.net>
+ <2be25c2e-8c10-e62a-3a66-19da8143f2b0@lwfinger.net>
+ <3919370.SGLjGupePs@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-        micalg=pgp-sha512; protocol="application/pgp-signature"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20160926111615.GB8140@kozik-lap>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f52.google.com ([209.85.218.52]:35709 "EHLO
+        mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1161049AbcIZQPs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2016 12:15:48 -0400
+In-Reply-To: <3919370.SGLjGupePs@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-
-Krzysztof Kozlowski writes:
-
-> On Sun, Sep 25, 2016 at 11:10:10PM +0200, Wolfgang Wiedmeyer wrote:
->> The capacity property uses the RepSOC register to report the current sta=
-te
->> of charge. This register did not provide a reliable SOC value during my
->> testing with the max17047 variant on a Galaxy S3 (Trats2/GT-I9300). The
->> reported value did not change or even stayed zero in some cases.
->> However, the VF SOC register provided an accurate SOC value at all times.
->> It uses the voltage fuel gauge to determine the SOC.
->>=20
->> Signed-off-by: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
->> ---
->>  drivers/power/max17042_battery.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>=20
->> diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_b=
-attery.c
->> index da7a75f..20cb1fd 100644
->> --- a/drivers/power/max17042_battery.c
->> +++ b/drivers/power/max17042_battery.c
->> @@ -246,7 +246,7 @@ static int max17042_get_property(struct power_supply=
- *psy,
->>  		val->intval =3D data * 625 / 8;
->>  		break;
->>  	case POWER_SUPPLY_PROP_CAPACITY:
->> -		ret =3D regmap_read(map, MAX17042_RepSOC, &data);
->> +		ret =3D regmap_read(map, MAX17042_VFSOC, &data);
->>  		if (ret < 0)
->>  			return ret;
+On 09/26/2016 06:37 AM, Rafael J. Wysocki wrote:
+> On Friday, September 23, 2016 09:45:09 PM Larry Finger wrote:
+>> On 09/18/2016 09:54 PM, Larry Finger wrote:
+>>> On 09/14/2016 11:00 AM, Larry Finger wrote:
+>>>> On 09/09/2016 12:39 PM, Larry Finger wrote:
+>>>>> I have found a regression in kernel 4.8-rc2 that causes the speed of my laptop
+>>>>> with an Intel(R) Core(TM) i7-4600M CPU @ 2.90GHz to suddenly have a maximum cpu
+>>>>> frequency of ~400 MHz. Unfortunately, I do not know how to trigger this problem,
+>>>>> thus a bisection is not possible. It usually happens under heavy load, such as a
+>>>>> kernel build or the RPM build of VirtualBox, but it does not always fail with
+>>>>> these loads. In my most recent failure, 'hwinfo --cpu' reports cpu MHz of
+>>>>> 396.130 for #3. The bogomips value is 5787.73, and the cpu clock before the
+>>>>> fault is 3437 MHz. Nothing is logged when this happens.
+>>>>>
+>>>>> If I were to get a patch that would show a backtrace when the maximum CPU
+>>>>> frequency is changed, perhaps it would be possible to track this bug.
+>>>>
+>>>> I have not yet found the bad commit, but I have reduced the range of commits a
+>>>> bit. This bug has been difficult to trigger. So far, it has not taken over 1/2
+>>>> day to appear in bad kernels, thus I am allowing three days before deciding that
+>>>> a given trial is good. I never saw the problem with 4.7 kernels, but I did in
+>>>> 4.8-rc1. I also know that it appeared before commit 581e0cd. Commit 1b05cf6 did
+>>>> not show the bug.
+>>>>
+>>>> Testing continues.
+>>>
+>>> And still does. My bisection seemed to be trending toward an improbable set of
+>>> commits, and I needed to do some other work with the machine, thus I started
+>>> running 4.8-rc6. It failed nearly 48 hours after the reboot, which indicated
+>>> that using 3 days to indicate a "good" trial was likely too short. I am
+>>> currently testing the first of the trial and will run it for at least a week. It
+>>> is unlikely that these tests will be complete before 4,8 is released, even if
+>>> -rc8 is needed. I will keep attempting to find the faulty commit.
+>>
+>> My debugging continues. After 7 days of beating on commit f7816ad, I have
+>> concluded that it is likely good. Thus I think the bug lies between commit
+>> 581e0cd (bad) and f7816ad (good). I will need to do a long test on commit
+>> 1b05cf6, which did not fail with a shorter run.
 >
-> The RepSOC is for ModelGauge m3 which requires current sense resistor. I
-> don't remember whether the resistor is present on Trats2. If not, then
-> m1 is used. However in both cases (m1 and m3) the battery
-> characteristics (cell information) should be loaded which in case of DT
-> driver is not supported.
+> 581e0cd is not a valid mainline commit hash AFAICS.
+
+That was a typo. The correct value is 581e0c7.
 >
-> Overall, I am not sure whether your change is correct. It might fix this
-> particular scenario because:
-> 1. We are not providing the cell information,
-> 2. We mre not providing the SNS resistor value so we are in m1 mode (if
-> there is no SNS resistor).  but it might break other applications where
-> SNS is present and cell configuration is provided. Unless you tested it
-> in such?
+> What cpufreq driver do you use?
 
-I'm not able to test other applications than the Galaxy S3.
+My "Default CPUFreq governor" is on demand.
 
-> Probably this should be based on Device Tree property describing what is
-> configured (e.g. missing model data). Maybe existing maxim,rsns-microohm
-> could be used - in case of lack of it, fall back to reading VFSOC?
+Running the command 'egrep -r "CPU_FREQ|CPUFREQ" .config' results in
 
-Ok, I'll include a check if maxim,rsns-microohm exists and do the
-fallback to VFSOC if it's not there.
+CONFIG_ACPI_CPU_FREQ_PSS=y
+CONFIG_CPU_FREQ=y
+CONFIG_CPU_FREQ_GOV_ATTR_SET=y
+CONFIG_CPU_FREQ_GOV_COMMON=y
+# CONFIG_CPU_FREQ_STAT is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
+# CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL is not set
+CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+CONFIG_CPU_FREQ_GOV_USERSPACE=m
+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
+# CONFIG_CPU_FREQ_GOV_SCHEDUTIL is not set
+CONFIG_X86_PCC_CPUFREQ=m
+CONFIG_X86_ACPI_CPUFREQ=m
+CONFIG_X86_ACPI_CPUFREQ_CPB=y
 
-Thanks,
-Wolfgang
+Commit 1b05cf6 did fail on longer testing, thus my bisection had ended up going 
+wrong. Further tests have shown that commit 351a4ded is bad. Once again, by 
+bisection seems to be converging to a set of commits that seem unlikely to cause 
+this problem. Perhaps commit f7816ad is not really good even though it survived 
+7 days of heavy CPU usage.
 
-=2D-=20
-Website: https://fossencdi.org
-Jabber: wolfgang@wiedmeyer.de
-OpenPGP: 0F30 D1A0 2F73 F70A 6FEE  048E 5816 A24C 1075 7FC4
-Key download: https://wiedmeyer.de/keys/ww.asc
+I have been reluctant to post my entire .config on the list. It is available at 
+http://pastebin.com/aMZaAKwL.
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+Larry
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJX6R7zAAoJEFgWokwQdX/EY6UQAKDgZLlwRvs7dY8WDWGRkrsV
-K8mSWNWhoquGf71uwOmlSV21sqKLeQKTnqsdZohaR0qThHCYkdVqNIT/vgrYL5RC
-rrT3qvKRV4wNKaijWEz2TS2tQ7OftFbzdTKPK+B2mcM1jTFz9sk2VmHTFb9nh98j
-6IGkNW9pYG7bwX1aI/dlq7GdhAdvA2/6/YxWtGmM1oVgy2ko4RbUqRnLNmSGfoBB
-TFK5nb6Jo/zM0P6nm27KYR71/h1TehHE3gBAizbZByjKYXEoF89hf1PLVyQsUyZX
-Ow7V/SjGfFb9yUWhTKtgBd0mO/oFz3sp1amspcYNgV5rdC4zZ/LsLQI7vcUWtYK/
-PwrWwTedFU/DJ2fdnOJp67lisqIat0dhlP4jPnwZEzY3vtzUzLrgyqdmFpLOQfvN
-M6G6/HuN9bbwPePrrg+pO8Afk9v/yrEXvDKdrE6d36jnFmGa1wih0W0mMIWqyyJ9
-QQ6IHOPC2OMjCAwTt60z7XMAKhtuwSoC4dORL9UZXBTPXcy6PRL6oz23F2mh3rO2
-PpFXEygtv2wqYOn+38yh/nACrCtE/vsvGbgR7iwF7MoHWY1SceihEsFMRhUnM4Rz
-9uLq6qkbO8nub8aieyyG4pKxcg3MAi9tcSSa4hxrHyOMpyUls24LJjf49m8woy+D
-VuTdV+eaNW89TnhmgVFH
-=vX2D
------END PGP SIGNATURE-----
---=-=-=--
