@@ -1,66 +1,149 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 2/2] power: supply: max17042_battery: add technology
- property support
-Date: Mon, 26 Sep 2016 18:32:52 +0200
-Message-ID: <20160926163252.GA3196@kozik-lap>
-References: <20160926105510.GA8140@kozik-lap>
- <87eg46x1ir.fsf@machinist.wiedmeyer.de>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [Update][RFC/RFT][PATCH v3 2/5] driver core: Functional
+ dependencies tracking support
+Date: Mon, 26 Sep 2016 18:51:21 +0200
+Message-ID: <20160926165121.GA5353@wunner.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <2141382.sMORCbDyAF@vostro.rjw.lan>
+ <20160919224630.GA2933@wunner.de>
+ <2576815.LnbrnvuK3u@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:33911 "EHLO
-        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S938895AbcIZQc5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2016 12:32:57 -0400
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <87eg46x1ir.fsf@machinist.wiedmeyer.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <2576815.LnbrnvuK3u@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 List-Id: linux-pm@vger.kernel.org
-To: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Sep 26, 2016 at 02:56:44PM +0200, Wolfgang Wiedmeyer wrote:
+On Fri, Sep 23, 2016 at 03:42:31PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, September 20, 2016 12:46:30 AM Lukas Wunner wrote:
+> > On Fri, Sep 16, 2016 at 02:33:55PM +0200, Rafael J. Wysocki wrote:
+> > > +void device_links_no_driver(struct device *dev)
+> > > +{
+> > > +	struct device_link *link, *ln;
+> > > +
+> > > +	mutex_lock(&device_links_lock);
+> > > +
+> > > +	list_for_each_entry_safe_reverse(link, ln, &dev->links_to_suppliers, c_node) {
+> > > +		if (link->flags & DEVICE_LINK_STATELESS)
+> > > +			continue;
+> > > +
+> > > +		if (link->flags & DEVICE_LINK_AUTOREMOVE) {
+> > > +			__device_link_del(link);
+> > 
+> > The link will be autoremoved not only when the consumer unbinds,
+> > but also when probing the consumer fails.
+> > 
+> > Looks like a bug.
 > 
-> Krzysztof Kozlowski writes:
+> It really was intentional, because the use case I see for AUTOREMOVE (and
+> the only one to be honest) is when the link is created by the consumer
+> probe in which case it wants to avoid worrying about the cleanup part.
 > 
-> > On Sun, Sep 25, 2016 at 11:10:11PM +0200, Wolfgang Wiedmeyer wrote:
-> >> This patch reports the battery technology as Li-ion.
-> >> 
-> >> Signed-off-by: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
-> >> ---
-> >>  drivers/power/max17042_battery.c | 4 ++++
-> >>  1 file changed, 4 insertions(+)
-> >> 
-> >> diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_battery.c
-> >> index 20cb1fd..43cb5df 100644
-> >> --- a/drivers/power/max17042_battery.c
-> >> +++ b/drivers/power/max17042_battery.c
-> >> @@ -92,6 +92,7 @@ static enum power_supply_property max17042_battery_props[] = {
-> >>  	POWER_SUPPLY_PROP_TEMP_MIN,
-> >>  	POWER_SUPPLY_PROP_TEMP_MAX,
-> >>  	POWER_SUPPLY_PROP_HEALTH,
-> >> +	POWER_SUPPLY_PROP_TECHNOLOGY,
-> >>  	POWER_SUPPLY_PROP_CURRENT_NOW,
-> >>  	POWER_SUPPLY_PROP_CURRENT_AVG,
-> >>  };
-> >> @@ -296,6 +297,9 @@ static int max17042_get_property(struct power_supply *psy,
-> >>  		if (ret < 0)
-> >>  			return ret;
-> >>  		break;
-> >> +	case POWER_SUPPLY_PROP_TECHNOLOGY:
-> >> +		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
-> >
-> > How can you be sure it is always Li-Ion? For wearables and mobiles, rather yes, but
-> > the driver is also used in other devices. Technically, specs are saying
-> > it might be used also with Li-Poly applications.
-> 
-> I suppose that there is no way to detect this. Would it be ok if I add
-> an optional Device Tree property that allows to specify if it's Li-Ion
-> or Li-Poly? If the property is not supplied, then "unknown" is returned.
+> Which also is applicable to the cleanup when the probe fails IMO.
 
-I am not sure in such case what will be the benefit of exposing this to
-user-space... but it won't harm neither and sounds like a valid usage of
-DT properties. Fine with me.
+You're right, makes sense.
 
-Best regards,
-Krzysztof
+
+> > > +void device_links_unbind_consumers(struct device *dev)
+> > > +{
+> > > +	struct device_link *link;
+> > > +	int idx;
+> > > +
+> > > + start:
+> > > +	idx = device_links_read_lock();
+> > > +
+> > > +	list_for_each_entry_rcu(link, &dev->links_to_consumers, s_node) {
+> > > +		enum device_link_status status;
+> > > +
+> > > +		if (link->flags & DEVICE_LINK_STATELESS)
+> > > +			continue;
+> > > +
+> > > +		spin_lock(&link->lock);
+> > > +		status = link->status;
+> > > +		if (status == DEVICE_LINK_CONSUMER_PROBE) {
+> > > +			spin_unlock(&link->lock);
+> > > +
+> > > +			device_links_read_unlock(idx);
+> > > +
+> > > +			wait_for_device_probe();
+> > > +			goto start;
+> > > +		}
+> > > +		link->status = DEVICE_LINK_SUPPLIER_UNBIND;
+> > > +		if (status == DEVICE_LINK_ACTIVE) {
+> > > +			struct device *consumer = link->consumer;
+> > > +
+> > > +			get_device(consumer);
+> > > +			spin_unlock(&link->lock);
+> > 
+> > The lock is released both at the beginning of this if-block and
+> > immediately after the if-block (in case the if-condition is false).
+> > Why not simply release the lock *before* the if-block?
+> 
+> Because the get_device() needs to be done under the lock.
+
+According to the commit message, the spinlock only protects the status
+field and the consumer device is prevented from disappearing with the RCU.
+So the spin lock could be released before the if-block AFAICS.
+(But perhaps there are style/readability reasons to have the unlock both
+in the if-block and afterwards.)
+
+
+> > > @@ -1233,6 +1680,7 @@ void device_del(struct device *dev)
+> > >  {
+> > >  	struct device *parent = dev->parent;
+> > >  	struct class_interface *class_intf;
+> > > +	struct device_link *link, *ln;
+> > >  
+> > >  	/* Notify clients of device removal.  This call must come
+> > >  	 * before dpm_sysfs_remove().
+> > > @@ -1240,6 +1688,30 @@ void device_del(struct device *dev)
+> > >  	if (dev->bus)
+> > >  		blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> > >  					     BUS_NOTIFY_DEL_DEVICE, dev);
+> > > +
+> > > +	/*
+> > > +	 * Delete all of the remaining links from this device to any other
+> > > +	 * devices (either consumers or suppliers).
+> > > +	 *
+> > > +	 * This requires that all links be dormant, so warn if that's no the
+> > > +	 * case.
+> > > +	 */
+> > > +	mutex_lock(&device_links_lock);
+> > > +
+> > > +	list_for_each_entry_safe_reverse(link, ln, &dev->links_to_suppliers, c_node) {
+> > > +		WARN_ON(link->status != DEVICE_LINK_DORMANT &&
+> > > +			!(link->flags & DEVICE_LINK_STATELESS));
+> > > +		__device_link_del(link);
+> > > +	}
+> > 
+> > Shouldn't it also be legal for the supplier links to be in
+> > DEVICE_LINK_AVAILABLE state upon removal of a consumer device?
+> > 
+> > (And perhaps also DEVICE_LINK_SUPPLIER_UNBIND?)
+> > 
+> > Looks like a bug.
+> 
+> But this is done after removing the supplier driver, so the state should be
+> DORMANT (unless the link is stateless), shouldn't it?
+
+The scenario I have in mind is that the supplier device is bound to a
+driver and the consumer device has no driver and is being removed.
+In that case the status will be DEVICE_LINK_AVAILABLE and the user
+will get a WARN splat, which seems gratuitous because it should be legal.
+
+And the other scenario is when the supplier is unbinding. It iterates
+over the links to consumers and puts them in DEVICE_LINK_SUPPLIER_UNBIND.
+Let's say the link to consumer A was put into that state, but there's
+a consumer B remaining which is bound.  The RCU and spinlock are unlocked
+before device_release_driver_internal() is called for that consumer.
+If at that point consumer device A is removed for whatever reason,
+the link will also be removed and the user will again get a gratuitous
+WARN splat.
+
+
+Thanks,
+
+Lukas
