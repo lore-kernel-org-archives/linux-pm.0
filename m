@@ -1,121 +1,91 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 0/2] Exynos IOMMU: proper runtime PM support (use device dependencies)
-Date: Mon, 26 Sep 2016 14:34:21 +0200
-Message-ID: <1958329.ZbBNWMVSoR@vostro.rjw.lan>
-References: <CGME20160913124917eucas1p23425d2cb1c24e73ae3c2927ec141fd30@eucas1p2.samsung.com> <1514800.L7P1tHiLfo@vostro.rjw.lan> <3c1016f0-fa8d-0874-adfc-4cb9cfad3f02@samsung.com>
+From: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
+Subject: Re: [PATCH 2/2] power: supply: max17042_battery: add technology property support
+Date: Mon, 26 Sep 2016 14:56:44 +0200
+Message-ID: <87eg46x1ir.fsf@machinist.wiedmeyer.de>
+References: <20160926105510.GA8140@kozik-lap>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha512; protocol="application/pgp-signature"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3c1016f0-fa8d-0874-adfc-4cb9cfad3f02@samsung.com>
+In-reply-to: <20160926105510.GA8140@kozik-lap>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Lukas Wunner <lukas@wunner.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mark Brown <broonie@kernel.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, September 26, 2016 10:15:24 AM Marek Szyprowski wrote:
-> Hi Rafael,
-> 
-> 
-> On 2016-09-24 03:25, Rafael J. Wysocki wrote:
-> > On Friday, September 23, 2016 03:50:02 PM Lukas Wunner wrote:
-> >> On Fri, Sep 23, 2016 at 02:49:20PM +0200, Rafael J. Wysocki wrote:
-> >>> On Tuesday, September 20, 2016 10:51:13 AM Marek Szyprowski wrote:
-> >>>> On 2016-09-19 23:45, Tobias Jakobi wrote:
-> >>>>> I did some tests with the new version today. Sadly the reboot/shutdown
-> >>>>> issues are still present.
-> >>>> Thanks for the report. I've managed to reproduce this issue and it is again
-> >>>> caused by modifying device on devices_kset list before it will be finally
-> >>>> added by device_add(). I thought that the new patchset allows creating
-> >>>> links to a device, which has not been yet added to system device list.
-> >> Hm, Marek, why isn't it possible to set up the links from the consumer's
-> >> ->probe hook in this case?
-> 
-> Because consumers are unaware of the IOMMU presence, so they are also 
-> unaware
-> of the links that have to be created.
-> 
-> >>>> Should it be allowed to create a link to device, which
-> >>>> has not yet been added to system device list by device_add()?
-> >>> While it would be easy to require both the consumer and producer devices to
-> >>> be registered for creating a link between them, that would just make it
-> >>> harder to use links in the first place.
-> >>>
-> >>> So ideally, it should be possible to create links between devices before
-> >>> registering them, but since I didn't take that into account in the current
-> >>> patch series, some quite substantial changes are needed to cover that.
-> >>>
-> >>> Additional link states come to mind, but then the "stateless" links are
-> >>> affected by this problem too.
-> >> device_link_add() could be changed to call device_reorder_to_tail()
-> >> only if device_is_registered(consumer) returns true.
-> >>
-> >> That's an inline function defined in <linux/device.h> which returns
-> >> dev->kobj.state_in_sysfs, a flag which is set in kobject_add().
-> > I know what that function is, but using it alone is not sufficient,
-> > because dev->kobj.state_in_sysfs is set before the device is added to
-> > dpm_list.
-> 
-> I found that checking for dev->p was enough to check if device has been
-> added to system or not, but this seems to be some kind of ugly workaround:
-> 
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index 4542ba9f60d4..780495918b53 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -180,9 +180,11 @@ struct device_link *device_link_add(struct device 
-> *consumer,
->           * It is necessary to hold dpm_list locked throughout all that 
-> or else
->           * we may end up suspending with a wrong ordering of it.
->           */
-> -       device_pm_lock();
-> -       device_reorder_to_tail(consumer, NULL);
-> -       device_pm_unlock();
-> +       if (consumer->p) {
-> +               device_pm_lock();
-> +               device_reorder_to_tail(consumer, NULL);
-> +               device_pm_unlock();
-> +       }
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This still is somewhat racy, because the device may not be in dpm_list yet
-even if consumer->p is set.
 
-There needs to be something checked and set under device_pm_lock() to avoid
-that race.
+Krzysztof Kozlowski writes:
 
-Let me add it to the patchset and we'll see.
+> On Sun, Sep 25, 2016 at 11:10:11PM +0200, Wolfgang Wiedmeyer wrote:
+>> This patch reports the battery technology as Li-ion.
+>>=20
+>> Signed-off-by: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
+>> ---
+>>  drivers/power/max17042_battery.c | 4 ++++
+>>  1 file changed, 4 insertions(+)
+>>=20
+>> diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_b=
+attery.c
+>> index 20cb1fd..43cb5df 100644
+>> --- a/drivers/power/max17042_battery.c
+>> +++ b/drivers/power/max17042_battery.c
+>> @@ -92,6 +92,7 @@ static enum power_supply_property max17042_battery_pro=
+ps[] =3D {
+>>  	POWER_SUPPLY_PROP_TEMP_MIN,
+>>  	POWER_SUPPLY_PROP_TEMP_MAX,
+>>  	POWER_SUPPLY_PROP_HEALTH,
+>> +	POWER_SUPPLY_PROP_TECHNOLOGY,
+>>  	POWER_SUPPLY_PROP_CURRENT_NOW,
+>>  	POWER_SUPPLY_PROP_CURRENT_AVG,
+>>  };
+>> @@ -296,6 +297,9 @@ static int max17042_get_property(struct power_supply=
+ *psy,
+>>  		if (ret < 0)
+>>  			return ret;
+>>  		break;
+>> +	case POWER_SUPPLY_PROP_TECHNOLOGY:
+>> +		val->intval =3D POWER_SUPPLY_TECHNOLOGY_LION;
+>
+> How can you be sure it is always Li-Ion? For wearables and mobiles, rathe=
+r yes, but
+> the driver is also used in other devices. Technically, specs are saying
+> it might be used also with Li-Poly applications.
 
-> 
->          list_add_tail_rcu(&link->s_node, &supplier->links_to_consumers);
->          list_add_tail_rcu(&link->c_node, &consumer->links_to_suppliers);
-> 
-> 
-> >
-> >> Then device_add() would have to check if any links are already
-> >> set up and reorder the consumer behind the suppliers.
-> >>
-> >> Doesn't seem to be *that* complex, but probably I'm missing something,
-> >> this is just off the cuff...
-> > There are some cases to consider and some races to avoid AFAICS.
-> >
-> > It all gets a lot simpler if device_link_add() is allowed to return NULL when
-> > the supplier device passed to it has not been registered yet.  That looks like
-> > a reasonable thing to do to me, but I wonder if someone has a use case in which
-> > it would be a substantial limitation.
-> 
-> Hmmm, you are talking here about the supplier, but my case is that 
-> supplier is
-> already registered and probed, but the consumer is about to be created. 
-
-Right.
-
-> If you
-> think that supporting such case makes no sense,
-
-I think that it does make sense.
-
-I only was wondering if that was going to be sufficient. :-)
+I suppose that there is no way to detect this. Would it be ok if I add
+an optional Device Tree property that allows to specify if it's Li-Ion
+or Li-Poly? If the property is not supplied, then "unknown" is returned.
 
 Thanks,
-Rafael
+Wolfgang
+
+=2D-=20
+Website: https://fossencdi.org
+Jabber: wolfgang@wiedmeyer.de
+OpenPGP: 0F30 D1A0 2F73 F70A 6FEE  048E 5816 A24C 1075 7FC4
+Key download: https://wiedmeyer.de/keys/ww.asc
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJX6RsMAAoJEFgWokwQdX/EZyEP/0v1RdtgBGsyXe4TSHVMLoXd
+L2KfGErbr0J5KetZX0kwaNAC8a7bltjLA4spu0r7xGgkHsFktImPSbvlnlwqAJ1c
++7zKTprtUIVMOKDfQ8HwTOTeZ1ojVsc9bO7NhiHulfYMIkRdLEzGjLGNDYQ/QOo7
+T07B7qGaJiBWLWIoIvCnFxOt9TGtxXJnwwuHFTkLmZiGlnwPqszdt+YyQL6+XK0N
+u+U3J9hr7w1l8gVXuUOKhBbG3P+fKfut8Au2Kj8/pT3OCnT6qUSlnOps0TDICEay
+A+5oMI4kHnlMXuLH5jmWCpDXMBZMm1tpxXzPMCU+YDH6Z0oxyrFhoDBkXFW5uZGm
+QevN/MCqTLHManmoaUTHWpPE40SbFTGUHftEt+jMt9vWWLcn889337IFI2jwuxlp
+4vwgW5yZQZvmDbTolgz3C5dV5ADDwA3BHRLqsMa8z847KrH2xoeHA4AjiFNcd0UQ
+/xKQExn4HxAq0FxrJyl4mlImgUv/inwXUO+uDOWFr/55eI9Lm5YK4geWIuvrKP3U
+9EzIHnYImqk/KrO66R/PjfiJWMhvjB7JEv+VVq8S08MnMnaM1jx5yBJtBmk5vZy6
+k2Mv8uMLVl024A3GgYZyu5NQ5lGxEUGqSdMg26HQb172Xxh34ADYo80ej2lAEXT8
+PkOteN+nfZDUJ6HPdk8J
+=5apq
+-----END PGP SIGNATURE-----
+--=-=-=--
