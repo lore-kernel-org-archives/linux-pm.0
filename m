@@ -1,48 +1,71 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] PM / OPP: Multiple regulators aren't supported yet
-Date: Mon, 26 Sep 2016 10:37:56 +0530
-Message-ID: <20160926050756.GJ17336@vireshk-i7>
-References: <be2c4fb0bb58f5b29facbc6f5aaf3dca13cf209e.1474450324.git.viresh.kumar@linaro.org>
- <fc02fca412ffdb749bd811c8f1dc40fa2ae3fc3f.1474450324.git.viresh.kumar@linaro.org>
- <20160923195913.GA12969@rob-hp-laptop>
+Subject: Re: [RFC PATCH] PM / OPP: Don't support OPP if it provides
+ supported-hw but platform does not
+Date: Mon, 26 Sep 2016 10:47:59 +0530
+Message-ID: <20160926051759.GK17336@vireshk-i7>
+References: <20160923200747.3948-1-d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:33133 "EHLO
+        mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751382AbcIZFSE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2016 01:18:04 -0400
+Received: by mail-pa0-f54.google.com with SMTP id hm5so58937757pac.0
+        for <linux-pm@vger.kernel.org>; Sun, 25 Sep 2016 22:18:03 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20160923195913.GA12969@rob-hp-laptop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, devicetree@vger.kernel.org
+In-Reply-To: <20160923200747.3948-1-d-gerlach@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Nishanth Menon <nm@ti.com>, Lee Jones <lee.jones@linaro.org>
 
-On 23-09-16, 14:59, Rob Herring wrote:
-> On Wed, Sep 21, 2016 at 03:02:50PM +0530, Viresh Kumar wrote:
-> > Multiple regulators per device aren't supported yet by the kernel code
-> > and the bindings provided in documentation aren't sufficient to handle
-> > that case (as there is no way for kernel code to link multiple
-> > voltage/current values to a power supply).
+On 23-09-16, 15:07, Dave Gerlach wrote:
+> The OPP framework allows each OPP to set a opp-supported-hw property
+> which provides values that are matched against supported_hw values
+> provided by the platform to limit support for certain OPPs on specific
+> hardware. Currently, if the platform does not set supported_hw values,
+> all OPPs are interpreted as supported, even if they have provided their
+> own opp-supported-hw values.
 > 
-> What do you mean? Because the supplies are in the cpu node?
+> If an OPP has provided opp-supported-hw, it is indicating that there is
+> some specific hardware configuration it is supported by. These constraints
+> should be honored, and if no supported_hw has been provided by the
+> platform, there is no way to determine if that OPP is actually supported,
+> so it should be marked as not supported.
+> 
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+> ---
+>  drivers/base/power/opp/of.c | 14 ++++++++++++--
+>  1 file changed, 12 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+> index 1dfd3dd92624..ccccaf9f8968 100644
+> --- a/drivers/base/power/opp/of.c
+> +++ b/drivers/base/power/opp/of.c
+> @@ -71,8 +71,18 @@ static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
+>  	u32 version;
+>  	int ret;
+>  
+> -	if (!opp_table->supported_hw)
+> -		return true;
+> +	if (!opp_table->supported_hw) {
+> +		/*
+> +		 * In the case that no supported_hw has been set by the
+> +		 * platform but there is an opp-supported-hw value set for
+> +		 * an OPP then the OPP should not be enabled as there is
+> +		 * no way to see if the hardware supports it.
+> +		 */
+> +		if (of_find_property(np, "opp-supported-hw", NULL))
+> +			return false;
+> +		else
+> +			return true;
+> +	}
+>  
+>  	while (count--) {
+>  		ret = of_property_read_u32_index(np, "opp-supported-hw", count,
 
-Not just that. For example if two supplies are present in CPU node like:
-ABC-supply and XYZ-supply. And the values present in OPP node are like:
-
-               opp00 {
-                       opp-hz = /bits/ 64 <1700000000>;
-                        /*                     ABC supply                XYZ        supply */
-                       opp-microvolt = <1300000 1300000 1300000>, <1400000 1400000 1400000>;
-                       opp-microamp = <70000>;
-                       clock-latency-ns = <30>;
-                       opp-suspend;
-               };
-
-
-Then the code can get regulators with those names (ABC and XYZ), but it can't
-figure out which triplet in the "opp-microvolt" property belongs to which
-supply.
-
-I am working on some solution to that, but wanted to keep the entire series self
-sufficient and so removing the leftovers first in this patch.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
