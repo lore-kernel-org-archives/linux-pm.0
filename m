@@ -1,66 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] PM / OPP: compatible is an optional property
-Date: Mon, 26 Sep 2016 10:25:39 +0530
-Message-ID: <20160926045539.GI17336@vireshk-i7>
+Subject: Re: [PATCH 2/2] PM / OPP: Multiple regulators aren't supported yet
+Date: Mon, 26 Sep 2016 10:37:56 +0530
+Message-ID: <20160926050756.GJ17336@vireshk-i7>
 References: <be2c4fb0bb58f5b29facbc6f5aaf3dca13cf209e.1474450324.git.viresh.kumar@linaro.org>
- <483bea3c-a1b4-ce5d-e720-d69fc943ab50@codeaurora.org>
- <20160923051526.GB17336@vireshk-i7>
- <20160923195510.GA8699@rob-hp-laptop>
+ <fc02fca412ffdb749bd811c8f1dc40fa2ae3fc3f.1474450324.git.viresh.kumar@linaro.org>
+ <20160923195913.GA12969@rob-hp-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:33600 "EHLO
-        mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752087AbcIZEzo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2016 00:55:44 -0400
-Received: by mail-pa0-f53.google.com with SMTP id hm5so58742663pac.0
-        for <linux-pm@vger.kernel.org>; Sun, 25 Sep 2016 21:55:43 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20160923195510.GA8699@rob-hp-laptop>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <20160923195913.GA12969@rob-hp-laptop>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rob Herring <robh@kernel.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, devicetree@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 23-09-16, 14:55, Rob Herring wrote:
-> On Fri, Sep 23, 2016 at 10:45:26AM +0530, Viresh Kumar wrote:
-> > On 22-09-16, 12:24, Stephen Boyd wrote:
-> > > On 09/21/2016 02:32 AM, Viresh Kumar wrote:
-> > > > It was never compulsory to have a compatible string in the OPP table.
-> > > > Fix the documentation to mark it optional.
-> > > >
+On 23-09-16, 14:59, Rob Herring wrote:
+> On Wed, Sep 21, 2016 at 03:02:50PM +0530, Viresh Kumar wrote:
+> > Multiple regulators per device aren't supported yet by the kernel code
+> > and the bindings provided in documentation aren't sufficient to handle
+> > that case (as there is no way for kernel code to link multiple
+> > voltage/current values to a power supply).
 > 
-> NAK.
-> 
-> > > > Also update its description a bit.
-> > > >
-> > > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > > ---
-> > > 
-> > > Why? I'd prefer the compatible string to be required so we know what
-> > > sort of node it is.
-> 
-> Agreed.
-> 
-> > Okay, the code doesn't have any checks for it then and that needs to be fixed.
-> 
-> Why? The kernel is not a DT validator.
+> What do you mean? Because the supplies are in the cpu node?
 
-Hmm.. I thought it should be checking if it can parse those bindings or not.
-What if someone adds compatible property as "foo" for OPP node? Should the OPP
-code even try to parse it?
+Not just that. For example if two supplies are present in CPU node like:
+ABC-supply and XYZ-supply. And the values present in OPP node are like:
 
-> > Just for my clarity, for platforms with special OPP bindings and so a different
-> > compatible string like: "operating-points-v2-XYZ", should the compatible string
-> > contain both "operating-points-v2" and the above one? It would be easier to
-> > check for "operating-points-v2" in that case from core code.
-> 
-> That would imply operating-points-v2-XYZ has extra properties or is 
-> different in some way. If an OS only understanding operating-points-v2 
-> will work, then yes it should have both. If not, then no.
+               opp00 {
+                       opp-hz = /bits/ 64 <1700000000>;
+                        /*                     ABC supply                XYZ        supply */
+                       opp-microvolt = <1300000 1300000 1300000>, <1400000 1400000 1400000>;
+                       opp-microamp = <70000>;
+                       clock-latency-ns = <30>;
+                       opp-suspend;
+               };
 
-Well, in this case that can't be done fully, so we should have only the -xyz
-one. Got it, thanks.
+
+Then the code can get regulators with those names (ABC and XYZ), but it can't
+figure out which triplet in the "opp-microvolt" property belongs to which
+supply.
+
+I am working on some solution to that, but wanted to keep the entire series self
+sufficient and so removing the leftovers first in this patch.
 
 -- 
 viresh
