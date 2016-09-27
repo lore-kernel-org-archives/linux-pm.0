@@ -1,64 +1,74 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [Update][RFC/RFT][PATCH v3 2/5] driver core: Functional
- dependencies tracking support
-Date: Tue, 27 Sep 2016 10:54:13 +0200
-Message-ID: <20160927085413.GA5744@wunner.de>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <5257325.y9rG1UM74b@vostro.rjw.lan>
- <2480829.3iNV7K5Pdo@vostro.rjw.lan>
- <2141382.sMORCbDyAF@vostro.rjw.lan>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] of: thermal: Fixed governor at each thermal zone
+Date: Tue, 27 Sep 2016 12:28:27 +0100
+Message-ID: <20160927112827.GB2955@e104805>
+References: <1474247932-1026-1-git-send-email-hugh.kang@lge.com>
+ <1474940817.4284.0.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:57913 "EHLO
-        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752018AbcI0Ixh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 04:53:37 -0400
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2141382.sMORCbDyAF@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1474940817.4284.0.camel@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Inhyuk Kang <hugh.kang@lge.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On Fri, Sep 16, 2016 at 02:33:55PM +0200, Rafael J. Wysocki wrote:
-> +void device_links_unbind_consumers(struct device *dev)
-> +{
-> +	struct device_link *link;
-> +	int idx;
-> +
-> + start:
-> +	idx = device_links_read_lock();
-> +
-> +	list_for_each_entry_rcu(link, &dev->links_to_consumers, s_node) {
-> +		enum device_link_status status;
-> +
-> +		if (link->flags & DEVICE_LINK_STATELESS)
-> +			continue;
-> +
-> +		spin_lock(&link->lock);
-> +		status = link->status;
-> +		if (status == DEVICE_LINK_CONSUMER_PROBE) {
-> +			spin_unlock(&link->lock);
-> +
-> +			device_links_read_unlock(idx);
-> +
-> +			wait_for_device_probe();
-> +			goto start;
-> +		}
+On Tue, Sep 27, 2016 at 09:46:57AM +0800, Zhang Rui wrote:
+> On 一, 2016-09-19 at 10:18 +0900, Inhyuk Kang wrote:
+> > It is necessary to be added governor at each thermal_zone.
+> > Because some governors should be operated in the during the kernel
+> > booting
+> > in order to avoid heating problem.
+> > 
+> > Default governor cannot be covered all thermal zones policy because
+> > some thermal zones want to apply different one.
+> > For example, the power allocator governor operates differently with
+> > step wise governor.
+> > Hence, it is better to parse governor parameter from the device tree.
+> > 
+> > Signed-off-by: Inhyuk Kang <hugh.kang@lge.com>
+> > 
+> The patch looks okay to me.
+> Eduardo, what do you think of this patch?
 
-While revisiting this function it just occurred to me that there's
-a theoretical infinite loop here if the consumer probes, is unbound
-by the supplier, then reprobes again before the supplier had a chance
-to update the link to DEVICE_LINK_SUPPLIER_UNBIND.  Perhaps this isn't
-a problem in practice, but noting anyway.
+This has been proposed in the past[0] and Eduardo said no[1] (as did
+Krzysztof Kozlowski and Mark Rutland)
 
-The problem is that the link state is written to both by the supplier
-and consumer.  If there was a separate bit in struct device_link to
-indicate the supplier's desire to unbind, the problem would go away.
-However a mix of such a bit plus the state machine would become
-somewhat confusing...
+[0] https://marc.info/?l=linux-kernel&m=143893141227189&w=4
+[1] https://marc.info/?l=linux-pm&m=144649947022547&w=4
 
-Best regards,
+Cheers,
+Javi
 
-Lukas
+> > diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-
+> > thermal.c
+> > index b8e509c..382c440 100644
+> > --- a/drivers/thermal/of-thermal.c
+> > +++ b/drivers/thermal/of-thermal.c
+> > @@ -970,6 +970,7 @@ int __init of_parse_thermal_zones(void)
+> >  		struct thermal_zone_device *zone;
+> >  		struct thermal_zone_params *tzp;
+> >  		int i, mask = 0;
+> > +		const char *governor;
+> >  		u32 prop;
+> >  
+> >  		tz = thermal_of_build_thermal_zone(child);
+> > @@ -996,6 +997,9 @@ int __init of_parse_thermal_zones(void)
+> >  		if (!of_property_read_u32(child, "sustainable-
+> > power", &prop))
+> >  			tzp->sustainable_power = prop;
+> >  
+> > +		if (!of_property_read_string(child, "governor-name", 
+> > &governor))
+> > +			strcpy(tzp->governor_name, governor);
+> > +
+> >  		for (i = 0; i < tz->ntrips; i++)
+> >  			mask |= 1 << i;
+> >  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
