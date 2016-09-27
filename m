@@ -1,80 +1,123 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH v2] tools/power/cpupower: Add 64 bit library detection
-Date: Tue, 27 Sep 2016 07:40:35 -0400
-Message-ID: <1474976435-13633-1-git-send-email-prarit@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: Regression in 4.8 - CPU speed set very low
+Date: Tue, 27 Sep 2016 13:46:13 +0200
+Message-ID: <CAJZ5v0j3fJ7pDoR+LhY6x1T0yQEhq6omFL7-BrBcMy68eFiMMg@mail.gmail.com>
+References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net>
+ <3919370.SGLjGupePs@vostro.rjw.lan> <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>
+ <2477506.olat0BX4ex@vostro.rjw.lan> <1436996d-078b-aa51-4452-b6655d917135@lwfinger.net>
+ <CAJZ5v0iEchM2ye==020gLj2bZc3ddCFa29jQZh6c+9X+OhfcoQ@mail.gmail.com>
+ <594f5012-5157-bfdd-f715-bea8caa824c3@lwfinger.net> <CAJZ5v0g++0JaPUEaQy54_fcA5tv5TuNZw+5mbmo47OY-dD8HoQ@mail.gmail.com>
+ <e42f36f7-5bf4-fdc4-12a7-a2d6a645e82e@lwfinger.net> <CAJZ5v0hzRCqsE-Wg4aTPPF_+=o+io_P8M-D4_pu5qpDxaXAy5A@mail.gmail.com>
+ <2326a7dd-675f-752b-f100-5dce6e4c93fd@lwfinger.net> <003001d2186d$02c34820$0849d860$@net>
+ <785b1633-5f1d-7cfe-5a9f-cfbb82a4a754@lwfinger.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:37266 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S933168AbcI0Lkn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Sep 2016 07:40:43 -0400
+Received: from mail-wm0-f51.google.com ([74.125.82.51]:37246 "EHLO
+        mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933378AbcI0LqV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 07:46:21 -0400
+In-Reply-To: <785b1633-5f1d-7cfe-5a9f-cfbb82a4a754@lwfinger.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, Thomas Renninger <trenn@suse.com>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-The kernel-tools-lib rpm is installing the library to /usr/lib64, and not
-/usr/lib as the cpupower Makefile is doing in the kernel tree.  This
-resulted in a conflict between the two libraries.  After looking at how
-other tools installed libraries, and looking at the perf code in
-tools/perf it looks like installing to /usr/lib64 for 64-bit arches is the
-correct thing to do.
+On Tue, Sep 27, 2016 at 10:48 AM, Larry Finger
+<Larry.Finger@lwfinger.net> wrote:
+> On 09/26/2016 10:12 PM, Doug Smythies wrote:
+>>
+>> On 2016.09.26 18:31 Srinivas Pandruvada wrote:
+>>>
+>>> On Mon, 2016-09-26 at 19:48 -0500, Larry Finger wrote:
+>>>>
+>>>> On 09/26/2016 07:21 PM, Rafael J. Wysocki wrote:
+>>>>>
+>>>>> On Tue, Sep 27, 2016 at 1:53 AM, Larry Finger wrote:
+>>>>> But for both we need a reproducer anyway.
+>>>>
+>>>> I do not have a reliable reproducer. The condition has always
+>>>> happened when
+>>>> running a high-compute job such as a 'make -j8' on the kernel, or
+>>>> building the
+>>>> RPM for openSUSE's implementation of VirtualBox. The latter is what
+>>>> I'm using
+>>>> for most of my testing.
+>>
+>>
+>> Run some CPU stressor and get all your CPU's going at 100% load.
+>> And watch your core temperatures while you do so.
+>
+>
+> for i in 1 2 3 4; do while : ; do : ; done & done
+>
+> triggered the fault in a few minutes.
+>>
+>>
+>>>
+>>>>> It also would be good to rule out the thermal throttling (as per
+>>>>> the Srinivas' comments).
+>>
+>>
+>> It is almost certainly thermal throttling, or similar causing
+>> Clock modulation, of it seems 50%.
+>
+>
+> While the infinite loops were running, the temps were:
+>
+> finger@linux-1t8h:~/rtlwifi_new> sensors
+> coretemp-isa-0000
+> Adapter: ISA adapter
+> Physical id 0:  +83.0=C2=B0C  (high =3D +84.0=C2=B0C, crit =3D +100.0=C2=
+=B0C)
+> Core 0:         +83.0=C2=B0C  (high =3D +84.0=C2=B0C, crit =3D +100.0=C2=
+=B0C)
+> Core 1:         +74.0=C2=B0C  (high =3D +84.0=C2=B0C, crit =3D +100.0=C2=
+=B0C)
 
-Checks with 'ldd cpupower' on SLES, RHEL, Fedora, and Ubuntu result in
-the correct binary AFAICT:
+It looks like the trip point (high) temperature was exceeded causing
+thermal throttling to kick in.
 
-[root@testsystem cpupower]# ldd cpupower | grep cpupower
-        libcpupower.so.0 => /lib64/libcpupower.so.0 (0x00007f1dab447000)
+> After the fault occurs, I get
+>
+> finger@linux-1t8h:~/rtlwifi_new> sensors
+> coretemp-isa-0000
+> Adapter: ISA adapter
+> Physical id 0:  +44.0=C2=B0C  (high =3D +84.0=C2=B0C, crit =3D +100.0=C2=
+=B0C)
+> Core 0:         +43.0=C2=B0C  (high =3D +84.0=C2=B0C, crit =3D +100.0=C2=
+=B0C)
+> Core 1:         +41.0=C2=B0C  (high =3D +84.0=C2=B0C, crit =3D +100.0=C2=
+=B0C)
 
-P.
+So after that it stays at 400 MHz forever, right?
 
-----8<----
+>>>>>
+>>>>> For now, please tell me what's in
+>>>>> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq
+>>>>
+>>>> 800000
+>>>
+>>> Your effective freq is lower than 800MHz. One of the possible reason is
+>>> thermal throttling.
+>>>
+>>> What distro you are using?
+>>
+>>
+>> And what make and model of LapTop?
+>
+>
+> Toshiba Tecra A50-A with CPU Model: 6.60.3 "Intel(R) Core(TM) i7-4600M CP=
+U @
+> 2.90GHz. That is a dual-core unit with hyperthreading.
+>
+> @Rafael: As I write this, the system has been running the infinite loop t=
+est
+> for almost 5 hours with kernel 4.7. I will leave that running while I'm
+> gone, but I am certain that it is OK.
 
-Commit ac5a181d065d ("cpupower: Add cpuidle parts into library") added a
-new cpupower library version.  On Fedora, executing the cpupower binary then
-resulted in this error
+OK, and what temperatures do you see while doing this?
 
-[root@testsystem cpupower]# ./cpupower monitor
-./cpupower: symbol lookup error: ./cpupower: undefined symbol: get_cpu_topology
-
-64-bit libraries should be installed to /usr/lib64, and other libraries
-should be installed to /usr/lib.
-
-This code was taken from the perf Makefile.config which supports /usr/lib and
-/usr/lib64.
-
-[v2]: removed binary diff chunk
-
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Cc: Thomas Renninger <trenn@suse.com>
----
- tools/power/cpupower/Makefile |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-index 8358863259c5..a210f044fc85 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -30,6 +30,8 @@ OUTDIR := $(shell cd $(OUTPUT) && /bin/pwd)
- $(if $(OUTDIR),, $(error output directory "$(OUTPUT)" does not exist))
- endif
- 
-+include ../../scripts/Makefile.arch
-+
- # --- CONFIGURATION BEGIN ---
- 
- # Set the following to `true' to make a unstripped, unoptimized
-@@ -79,7 +81,11 @@ bindir ?=	/usr/bin
- sbindir ?=	/usr/sbin
- mandir ?=	/usr/man
- includedir ?=	/usr/include
-+ifeq ($(IS_64_BIT), 1)
-+libdir ?=	/usr/lib64
-+else
- libdir ?=	/usr/lib
-+endif
- localedir ?=	/usr/share/locale
- docdir ?=       /usr/share/doc/packages/cpupower
- confdir ?=      /etc/
--- 
-1.7.9.3
-
+Thanks,
+Rafael
