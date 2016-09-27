@@ -1,161 +1,147 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Update][RFC/RFT][PATCH v3 2/5] driver core: Functional
- dependencies tracking support
-Date: Tue, 27 Sep 2016 14:16:15 +0200
-Message-ID: <CAJZ5v0j59XEMhJte_-A-T6sLWru4S6eqvE29_Sn7xbpFDpDPKA@mail.gmail.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <2141382.sMORCbDyAF@vostro.rjw.lan>
- <20160919224630.GA2933@wunner.de> <2576815.LnbrnvuK3u@vostro.rjw.lan> <20160926165121.GA5353@wunner.de>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [RFC/RFT][PATCH v3 0/5] Functional dependencies between devices
+Date: Tue, 27 Sep 2016 14:34:29 +0200
+Message-ID: <20160927123429.GA5828@wunner.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <5257325.y9rG1UM74b@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:36354 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752768AbcI0MQR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 08:16:17 -0400
-In-Reply-To: <20160926165121.GA5353@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5257325.y9rG1UM74b@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, Jonathan Corbet <corbet@lwn.net>
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On Mon, Sep 26, 2016 at 6:51 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> On Fri, Sep 23, 2016 at 03:42:31PM +0200, Rafael J. Wysocki wrote:
->> On Tuesday, September 20, 2016 12:46:30 AM Lukas Wunner wrote:
->> > On Fri, Sep 16, 2016 at 02:33:55PM +0200, Rafael J. Wysocki wrote:
->> > > +void device_links_no_driver(struct device *dev)
->> > > +{
->> > > + struct device_link *link, *ln;
->> > > +
->> > > + mutex_lock(&device_links_lock);
->> > > +
->> > > + list_for_each_entry_safe_reverse(link, ln, &dev->links_to_suppliers, c_node) {
->> > > +         if (link->flags & DEVICE_LINK_STATELESS)
->> > > +                 continue;
->> > > +
->> > > +         if (link->flags & DEVICE_LINK_AUTOREMOVE) {
->> > > +                 __device_link_del(link);
->> >
->> > The link will be autoremoved not only when the consumer unbinds,
->> > but also when probing the consumer fails.
->> >
->> > Looks like a bug.
->>
->> It really was intentional, because the use case I see for AUTOREMOVE (and
->> the only one to be honest) is when the link is created by the consumer
->> probe in which case it wants to avoid worrying about the cleanup part.
->>
->> Which also is applicable to the cleanup when the probe fails IMO.
->
-> You're right, makes sense.
->
->
->> > > +void device_links_unbind_consumers(struct device *dev)
->> > > +{
->> > > + struct device_link *link;
->> > > + int idx;
->> > > +
->> > > + start:
->> > > + idx = device_links_read_lock();
->> > > +
->> > > + list_for_each_entry_rcu(link, &dev->links_to_consumers, s_node) {
->> > > +         enum device_link_status status;
->> > > +
->> > > +         if (link->flags & DEVICE_LINK_STATELESS)
->> > > +                 continue;
->> > > +
->> > > +         spin_lock(&link->lock);
->> > > +         status = link->status;
->> > > +         if (status == DEVICE_LINK_CONSUMER_PROBE) {
->> > > +                 spin_unlock(&link->lock);
->> > > +
->> > > +                 device_links_read_unlock(idx);
->> > > +
->> > > +                 wait_for_device_probe();
->> > > +                 goto start;
->> > > +         }
->> > > +         link->status = DEVICE_LINK_SUPPLIER_UNBIND;
->> > > +         if (status == DEVICE_LINK_ACTIVE) {
->> > > +                 struct device *consumer = link->consumer;
->> > > +
->> > > +                 get_device(consumer);
->> > > +                 spin_unlock(&link->lock);
->> >
->> > The lock is released both at the beginning of this if-block and
->> > immediately after the if-block (in case the if-condition is false).
->> > Why not simply release the lock *before* the if-block?
->>
->> Because the get_device() needs to be done under the lock.
->
-> According to the commit message, the spinlock only protects the status
-> field and the consumer device is prevented from disappearing with the RCU.
-> So the spin lock could be released before the if-block AFAICS.
-> (But perhaps there are style/readability reasons to have the unlock both
-> in the if-block and afterwards.)
+[+cc corbet]
 
-OK
+To whom it may concern,
 
-Apparently, I was worrying about that the link might go away after the
-device_links_read_unlock() in the if () block, so the object pointed
-to by "consumer" had to be prevented from going away as well at that
-point, but you are right that it's sufficient to call the get_device()
-before the device_links_read_unlock() for that and it doesn't have to
-go under the spinlock.
+I made some notes while reviewing the state machine in patch 2 of this
+series and thought, why not rework it into something that could eventually
+go into the Documentation/ tree?
 
->> > > @@ -1233,6 +1680,7 @@ void device_del(struct device *dev)
->> > >  {
->> > >   struct device *parent = dev->parent;
->> > >   struct class_interface *class_intf;
->> > > + struct device_link *link, *ln;
->> > >
->> > >   /* Notify clients of device removal.  This call must come
->> > >    * before dpm_sysfs_remove().
->> > > @@ -1240,6 +1688,30 @@ void device_del(struct device *dev)
->> > >   if (dev->bus)
->> > >           blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
->> > >                                        BUS_NOTIFY_DEL_DEVICE, dev);
->> > > +
->> > > + /*
->> > > +  * Delete all of the remaining links from this device to any other
->> > > +  * devices (either consumers or suppliers).
->> > > +  *
->> > > +  * This requires that all links be dormant, so warn if that's no the
->> > > +  * case.
->> > > +  */
->> > > + mutex_lock(&device_links_lock);
->> > > +
->> > > + list_for_each_entry_safe_reverse(link, ln, &dev->links_to_suppliers, c_node) {
->> > > +         WARN_ON(link->status != DEVICE_LINK_DORMANT &&
->> > > +                 !(link->flags & DEVICE_LINK_STATELESS));
->> > > +         __device_link_del(link);
->> > > + }
->> >
->> > Shouldn't it also be legal for the supplier links to be in
->> > DEVICE_LINK_AVAILABLE state upon removal of a consumer device?
->> >
->> > (And perhaps also DEVICE_LINK_SUPPLIER_UNBIND?)
->> >
->> > Looks like a bug.
->>
->> But this is done after removing the supplier driver, so the state should be
->> DORMANT (unless the link is stateless), shouldn't it?
->
-> The scenario I have in mind is that the supplier device is bound to a
-> driver and the consumer device has no driver and is being removed.
-> In that case the status will be DEVICE_LINK_AVAILABLE and the user
-> will get a WARN splat, which seems gratuitous because it should be legal.
->
-> And the other scenario is when the supplier is unbinding. It iterates
-> over the links to consumers and puts them in DEVICE_LINK_SUPPLIER_UNBIND.
-> Let's say the link to consumer A was put into that state, but there's
-> a consumer B remaining which is bound.  The RCU and spinlock are unlocked
-> before device_release_driver_internal() is called for that consumer.
-> If at that point consumer device A is removed for whatever reason,
-> the link will also be removed and the user will again get a gratuitous
-> WARN splat.
+So here's an initial draft.  There's some introductory text plus
+a description of the state machine.  Just putting this out there now
+to ease reviewers' lives, despite the obvious WIP status.  I'll try to
+amend it as the series converges.
 
-Well, it all boils down to the observation that the consumer device
-may be deleted when the supplier still has a driver or is unbinding,
-which is a good point.
+This is already rst-formatted but I haven't actually run it through
+sphinx yet.
 
-Thanks,
-Rafael
+Lukas
+
+-- >8 --
+
+Subject: [PATCH] Documentation: device links: Add initial documentation
+
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ Documentation/driver-model/device_link.rst | 95 ++++++++++++++++++++++++++++++
+ 1 file changed, 95 insertions(+)
+ create mode 100644 Documentation/driver-model/device_link.rst
+
+diff --git a/Documentation/driver-model/device_link.rst b/Documentation/driver-model/device_link.rst
+new file mode 100644
+index 0000000..ba911b4
+--- /dev/null
++++ b/Documentation/driver-model/device_link.rst
+@@ -0,0 +1,95 @@
++============
++Device links
++============
++
++By default, the driver core only enforces dependencies between devices
++that are borne out of a parent/child relationship within the device
++hierarchy: When suspending, resuming or shutting down the system, devices
++are ordered based on this relationship, i.e. children are always suspended
++before their parent, and the parent is always resumed before its children.
++
++Sometimes there is a need to represent device dependencies beyond the
++mere parent/child relationship, e.g. between siblings, and have the
++driver core automatically take care of them.
++
++Secondly, the driver core by default does not enforce any driver presence
++dependencies, i.e. that one device must be bound to a driver before
++another one can probe or function correctly.
++
++Often these two dependency types come together, so a device depends on
++another one both with regards to driver presence *and* with regards to
++suspend/resume and shutdown ordering.
++
++Device links allow representation of such dependencies in the driver core.
++
++In its standard form, a device link combines *both* dependency types:
++It guarantees correct suspend/resume and shutdown ordering between a
++"supplier" device and its "consumer" devices, and it guarantees driver
++presence on the supplier:  The consumer devices are not probed before the
++supplier is bound to a driver, and they're unbound before the supplier
++is unbound.
++
++When driver presence on the supplier is irrelevant and only correct
++suspend/resume and shutdown ordering is needed, the device link may
++simply be set up with the DEVICE_LINK_STATELESS flag.
++
++A driver presence dependency between parent and child, i.e. within the
++regular device hierarchy, could in principle also be represented in the
++driver core using a device link.
++
++If a device link is set up with the DEVICE_LINK_AUTOREMOVE flag, it is
++automatically purged when the consumer fails to probe or later unbinds.
++This is handy when adding a device link from the consumer's ->probe hook,
++as it obviates the need to delete the link in the ->remove hook or in
++the error path of the ->probe hook.
++
++
++State machine
++=============
++
++"""
++                .=============================.
++                |                             |
++                v                             |
++DORMANT <=> AVAILABLE <=> CONSUMER_PROBE => ACTIVE
++   ^                                          |
++   |                                          |
++   '============ SUPPLIER_UNBIND <============'
++"""
++
++* The initial state of a device link is passed in to device_link_add().
++  If the link is created before any devices are probed, it must be set to
++  DEVICE_LINK_DORMANT.
++
++* When a supplier device is bound to a driver, links to its consumers
++  progress to DEVICE_LINK_AVAILABLE.
++  (Call to device_links_driver_bound() from driver_bound().)
++
++* Before a consumer device is probed, presence of supplier drivers is
++  verified by checking that links to suppliers are in DEVICE_LINK_AVAILABLE
++  state.  The state of the links is updated to DEVICE_LINK_CONSUMER_PROBE.
++  (Call to device_links_check_suppliers() from driver_probe_device().)
++  This prevents the supplier from unbinding.
++  (Call to wait_for_device_probe() in device_links_unbind_consumers().)
++
++* If the probe fails, links to suppliers revert back to DEVICE_LINK_AVAILABLE.
++  (Call to device_links_no_driver() from really_probe().)
++
++* If the probe succeeds, links to suppliers progress to DEVICE_LINK_ACTIVE.
++  (Call of device_links_driver_bound() from driver_bound().)
++
++* When the consumer's driver is later on removed, links to suppliers revert
++  back to DEVICE_LINK_AVAILABLE.
++  (Call to device_links_no_driver() from __device_release_driver().)
++
++* Before a supplier's driver is removed, links to consumers that are not
++  bound to a driver are updated to DEVICE_LINK_SUPPLIER_UNBIND.
++  (Call to device_links_busy() from __device_release_driver().)
++  This prevents the consumers from binding.
++  (Call to device_links_check_suppliers() from driver_probe_device().)
++  Consumers that are bound are freed from their driver; consumers that are
++  probing are waited for until they are done.
++  (Call to device_links_unbind_consumers() from __device_release_driver().)
++  Once all links to consumers are in DEVICE_LINK_SUPPLIER_UNBIND state,
++  the supplier driver is released and the links revert to DEVICE_LINK_DORMANT.
++  (Call to device_links_driver_gone() from __device_release_driver().)
+-- 
+2.9.3
