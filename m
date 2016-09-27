@@ -1,103 +1,55 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Subject: [patch added to 3.12-stable] timekeeping: Cap array access in timekeeping_debug
-Date: Tue, 27 Sep 2016 16:54:33 +0200
-Message-ID: <20160927145449.32657-5-jslaby@suse.cz>
-References: <20160927145449.32657-1-jslaby@suse.cz>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:53194 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S933699AbcI0OzA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Sep 2016 10:55:00 -0400
-In-Reply-To: <20160927145449.32657-1-jslaby@suse.cz>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 2/3] regulator: max77693: Also manipulate the fast charge
+ current
+Date: Tue, 27 Sep 2016 09:15:02 -0700
+Message-ID: <20160927161502.ygfa26xk7sdj2uot@sirena.org.uk>
+References: <20160927080357.GA4394@kozik-lap>
+ <878tudwixy.fsf@machinist.wiedmeyer.de>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="bxfcqwt7t2m5uf2o"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <878tudwixy.fsf@machinist.wiedmeyer.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cw00.choi@samsung.com, b.zolnierkie@samsung.com, lgirdwood@gmail.com, lee.jones@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: stable@vger.kernel.org
-Cc: John Stultz <john.stultz@linaro.org>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Xunlei Pang <xpang@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jslaby@suse.cz>
 
-From: John Stultz <john.stultz@linaro.org>
 
-This patch has been added to the 3.12 stable tree. If you have any
-objections, please let us know.
+--bxfcqwt7t2m5uf2o
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-===============
+On Tue, Sep 27, 2016 at 03:50:42PM +0200, Wolfgang Wiedmeyer wrote:
 
-commit a4f8f6667f099036c88f231dcad4cf233652c824 upstream.
+> When charging is disabled (e.g. by removing the USB cable) the charge
+> current is not reset to zero. So if I expose the current by the
+> CURRENT_NOW property, it incorrectly reports the current that was set
+> when charging was enabled, although there is no charging going on
+> anymore. So I felt the need to update the charge current every time the
+> charger gets enabled or disabled.
+> Initially, the charge current is set to zero, so I think it needs to be
+> set at least at the beginning to enable charging.
 
-It was reported that hibernation could fail on the 2nd attempt, where the
-system hangs at hibernate() -> syscore_resume() -> i8237A_resume() ->
-claim_dma_lock(), because the lock has already been taken.
+Are you sure that the register value you're looking at is the actual
+charge current right now and not just the maximum that the charger will
+try to use depending on the conditions (supply available, battery
+state...)?  It seems like you're acting as though it's the latter but
+that's not what the chip is doing.
 
-However there is actually no other process would like to grab this lock on
-that problematic platform.
+--bxfcqwt7t2m5uf2o
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Further investigation showed that the problem is triggered by setting
-/sys/power/pm_trace to 1 before the 1st hibernation.
+-----BEGIN PGP SIGNATURE-----
 
-Since once pm_trace is enabled, the rtc becomes unmeaningful after suspend,
-and meanwhile some BIOSes would like to adjust the 'invalid' RTC (e.g, smaller
-than 1970) to the release date of that motherboard during POST stage, thus
-after resumed, it may seem that the system had a significant long sleep time
-which is a completely meaningless value.
+iQEcBAABCAAGBQJX6psFAAoJECTWi3JdVIfQXPoH/jZc65hrxBbelsBVh/zHwIsJ
+1diGay8AZePQnBcMYpv+dBKSv4lekQBejQcKqum3ix1ZTntBG2doVVExKopiWziM
+R5opRO/Sl0TrXb/ZZr/vBah9Td8eiA4v2khzw/zNAuwRe9fY7NfIRMTxWDBrRqxT
+ijQaB3XR6772nwrzc+riJ6SjE8T631/Gu2GBgaBu+CBt8gPsTuoegzUX6bIpfb8Y
+9sQRTuz1ETiBNzwUUfSoIUHPLiCzsApqwxQjGZ0+drUNArzMHT1RZ0AhOUogPU7k
+SIvCIMY1YVhxRWtTD/BKqU8PWhazlOEecqQB90KZrLw0m9bNLCgArsGxrZG/XtA=
+=fw8D
+-----END PGP SIGNATURE-----
 
-Then in timekeeping_resume -> tk_debug_account_sleep_time, if the bit31 of the
-sleep time happened to be set to 1, fls() returns 32 and we add 1 to
-sleep_time_bin[32], which causes an out of bounds array access and therefor
-memory being overwritten.
-
-As depicted by System.map:
-0xffffffff81c9d080 b sleep_time_bin
-0xffffffff81c9d100 B dma_spin_lock
-the dma_spin_lock.val is set to 1, which caused this problem.
-
-This patch adds a sanity check in tk_debug_account_sleep_time()
-to ensure we don't index past the sleep_time_bin array.
-
-[jstultz: Problem diagnosed and original patch by Chen Yu, I've solved the
- issue slightly differently, but borrowed his excelent explanation of the
- issue here.]
-
-Fixes: 5c83545f24ab "power: Add option to log time spent in suspend"
-Reported-by: Janek Kozicki <cosurgi@gmail.com>
-Reported-by: Chen Yu <yu.c.chen@intel.com>
-Signed-off-by: John Stultz <john.stultz@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Xunlei Pang <xpang@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Link: http://lkml.kernel.org/r/1471993702-29148-3-git-send-email-john.stultz@linaro.org
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
----
- kernel/time/timekeeping_debug.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/time/timekeeping_debug.c b/kernel/time/timekeeping_debug.c
-index 802433a4f5eb..81f575a773ea 100644
---- a/kernel/time/timekeeping_debug.c
-+++ b/kernel/time/timekeeping_debug.c
-@@ -21,7 +21,9 @@
- #include <linux/seq_file.h>
- #include <linux/time.h>
- 
--static unsigned int sleep_time_bin[32] = {0};
-+#define NUM_BINS 32
-+
-+static unsigned int sleep_time_bin[NUM_BINS] = {0};
- 
- static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
- {
-@@ -67,6 +69,9 @@ late_initcall(tk_debug_sleep_time_init);
- 
- void tk_debug_account_sleep_time(struct timespec *t)
- {
--	sleep_time_bin[fls(t->tv_sec)]++;
-+	/* Cap bin index so we don't overflow the array */
-+	int bin = min(fls(t->tv_sec), NUM_BINS-1);
-+
-+	sleep_time_bin[bin]++;
- }
- 
--- 
-2.10.0
-
+--bxfcqwt7t2m5uf2o--
