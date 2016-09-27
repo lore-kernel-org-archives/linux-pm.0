@@ -1,95 +1,48 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v2 4/4] PM / AVS: rockchip-cpu-avs: add driver handling
- Rockchip cpu avs
-Date: Tue, 27 Sep 2016 15:14:01 -0700
-Message-ID: <20160927221401.GA940@codeaurora.org>
-References: <1471510341-63926-1-git-send-email-finley.xiao@rock-chips.com>
- <20160912215515.GF7243@codeaurora.org>
- <20160926035511.GG17336@vireshk-i7>
- <20776501.pZ2NDOzLK3@phil>
+From: "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+Subject: Re: [PATCH v7 0/8] power: add power sequence library
+Date: Wed, 28 Sep 2016 01:30:17 +0200
+Message-ID: <57EB0109.4070000@maciej.szmigiero.name>
+References: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:45811 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751913AbcI0WOE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 18:14:04 -0400
-Content-Disposition: inline
-In-Reply-To: <20776501.pZ2NDOzLK3@phil>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Chen <peter.chen@nxp.com>
+Cc: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Finlye Xiao <finley.xiao@rock-chips.com>, srinivas.kandagatla@linaro.org, maxime.ripard@free-electrons.com, robh+dt@kernel.org, frowand.list@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, mark.rutland@arm.com, khilman@kernel.org, nm@ti.com, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wxt@rock-chips.com, jay.xu@rock-chips.com, rocky.hao@rock-chips.com, tim.chen@rock-chips.com, tony.xie@rock-chips.com, ulysses.huang@rock-chips.com, lin.huang@rock-chips.com
 
-On 09/26, Heiko Stuebner wrote:
-> Am Montag, 26. September 2016, 09:25:11 CEST schrieb Viresh Kumar:
-> > On 12-09-16, 14:55, Stephen Boyd wrote:
-> > > On 08/29, Viresh Kumar wrote:
-> > > > On 18-08-16, 16:52, Finlye Xiao wrote:
-> > > > > +static int rockchip_adjust_opp_table(struct device *cpu_dev,
-> > > > > +				     struct cpufreq_frequency_table *table,
-> > > > > +				     int volt)
-> > > > > +{
-> > > > > +	struct opp_table *opp_table;
-> > > > > +	struct cpufreq_frequency_table *pos;
-> > > > > +	struct dev_pm_opp *opp;
-> > > > > +
-> > > > > +	if (!volt)
-> > > > > +		return 0;
-> > > > > +
-> > > > > +	rcu_read_lock();
-> > > > > +
-> > > > > +	opp_table = _find_opp_table(cpu_dev);
-> > > > > +	if (IS_ERR(opp_table)) {
-> > > > > +		rcu_read_unlock();
-> > > > > +		return PTR_ERR(opp_table);
-> > > > > +	}
-> > > > > +
-> > > > > +	cpufreq_for_each_valid_entry(pos, table) {
-> > > > > +		opp = dev_pm_opp_find_freq_exact(cpu_dev, pos->frequency * 1000,
-> > > > > +						 true);
-> > > > > +		if (IS_ERR(opp))
-> > > > > +			continue;
-> > > > > +
-> > > > > +		opp->u_volt += volt;
-> > > > > +		opp->u_volt_min += volt;
-> > > > > +		opp->u_volt_max += volt;
-> > > > > +	}
-> > > > > +
-> > > > > +	rcu_read_unlock();
-> > > > > +
-> > > > > +	return 0;
-> > > > > +}
-> > > > 
-> > > > I wouldn't prefer altering the opp tables from individual drivers at
-> > > > all. At the least, it should be done via some helpers exposed by the
-> > > > core.
-> > > > 
-> > > > But before that I would like to hear from Stephen a bit as I recall he
-> > > > was also working on something similar.
-> > > 
-> > > I had a patch to modify the voltage at runtime for the "current"
-> > > OPP. Now that we have regulator and clk control inside OPP that
-> > > became a little easier to do without having to do some notifier
-> > > from the OPP layer to the consumers. I haven't had time to revive
-> > > those patches though. Should we do that?
-> > 
-> > Perhaps yes, we should have a common place for doing all that.
-> > 
-> > > Does this need to modify
-> > > anything besides the OPP the device is currently running at?
-> > 
-> > Finlye, can you please answer this ?
+On 20.09.2016 05:36, Peter Chen wrote:
+> Hi all,
 > 
-> If I understand it correctly, depending on the leakage value stored in an 
-> efuse, all opp voltages are reduced by a certain value. Right now the driver 
-> does it in one go for the full opp table, but of course could also do it for 
-> each new opp individually before it gets set.
+> This is a follow-up for my last power sequence framework patch set [1].
+> According to Rob Herring and Ulf Hansson's comments[2]. The kinds of
+> power sequence instances will be added at postcore_initcall, the match
+> criteria is compatible string first, if the compatible string is not
+> matched between dts and library, it will try to use generic power sequence.
+> 	 
+> The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+> if only one power sequence instance is needed, for more power sequences
+> are used, using of_pwrseq_on_list/of_pwrseq_off_list instead (eg, USB hub driver).
+> 
+> In future, if there are special power sequence requirements, the special
+> power sequence library can be created.
+> 
+> This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+> two hot-plug devices to simulate this use case, the related binding
+> change is updated at patch [1/6], The udoo board changes were tested
+> using my last power sequence patch set.[3]
+> 
+> Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+> need to power on itself before it can be found by ULPI bus.
+> 
+> [1] http://www.spinics.net/lists/linux-usb/msg142755.html
+> [2] http://www.spinics.net/lists/linux-usb/msg143106.html
+> [3] http://www.spinics.net/lists/linux-usb/msg142815.html
 
-Ok. Well either way that sounds fine. We could expose an API to
-change each voltage and an API to change the current voltage and
-update the table.
+Just tested this patch set on UDOO board again to make sure that it still
+works after all changes done since it was last tested there and can confirm
+that it does work correctly.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Maciej
