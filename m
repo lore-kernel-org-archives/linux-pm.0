@@ -1,79 +1,49 @@
-From: Lukasz Luba <lukasz.luba@arm.com>
-Subject: Re: [PATCH 0/4] devfreq_cooling: let the driver supply the dynamic
- power every time we need it
-Date: Tue, 27 Sep 2016 15:43:25 +0100
-Message-ID: <7767c8d3-6ee7-427d-b709-0e98279e313a@arm.com>
-References: <20160915144425.5443-1-lukasz.luba@arm.com>
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Subject: Re: Regression in 4.8 - CPU speed set very low
+Date: Tue, 27 Sep 2016 10:51:14 -0400
+Message-ID: <20160927145114.GM14311@csclub.uwaterloo.ca>
+References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net>
+ <3919370.SGLjGupePs@vostro.rjw.lan>
+ <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>
+ <2477506.olat0BX4ex@vostro.rjw.lan>
+ <1436996d-078b-aa51-4452-b6655d917135@lwfinger.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:49152 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S933920AbcI0On2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Sep 2016 10:43:28 -0400
-In-Reply-To: <20160915144425.5443-1-lukasz.luba@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1436996d-078b-aa51-4452-b6655d917135@lwfinger.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com
-Cc: javi.merino@arm.com, orjan.eide@arm.com
 
-Hello Eduardo, Rui,
+On Mon, Sep 26, 2016 at 04:28:29PM -0500, Larry Finger wrote:
+> Mostly I use a KDE applet named "System load" and look at the "average
+> clock", but the same info is also available in /proc/cpuinfo as "cpu MHz".
+> When the bug triggers, the system gets very slow, and the cpu fan stops even
+> though the cpu is still busy.
+> 
+> Commit f7816ad, which had run for 7 days without showing the bug, failed
+> after about 2 hours today. All my testing since Sept. 9 has been wasted. Oh
+> well, that's the way it goes!
 
-I just want to ask you about your concerns regarding this patch set.
-What do you think about it? Is there any chance to merge it?
+Is it possible there is no bug and instead you have a hardware problem?
 
-Regards,
-Lukasz
+What I am thinking:
 
-On 15/09/16 15:44, Lukasz Luba wrote:
-> Hello,
->
-> This patchset introduces a new interface for devfreq cooling in thermal
-> framework. I am resending it without the RFC tag.
-> It supports direct call to driver's functions registered as
-> 'get_dynamic_power' and 'power2state'.
->
->
-> The current implementation in the thermal devfreq cooling subsystem uses
-> precalculated power table for each device to make a decision about allowed
-> running state. When the driver registers itself to the thermal devfreq cooling
-> subsystem, the framework creates the power table. The table is then used by the
-> thermal subsystem to keep the device in the thermal envelope. The current
-> implementation uses a fixed assumption of the complexity of the logic in the
-> cooling_device and assumes power consumption varies directly in proportion to
-> the frequency/voltage
->
-> The proposed implementation provides the possibility to register a driver to
-> thermal devfreq cooling subsystem and use the driver's code during the
-> calculation of the power in runtime. You can still use precalculated power
-> table when the GET_DIRECT_DYNAMIC_POWER flag is not set (the new extension can
-> co-exist with the current implementation).
->
-> This idea meets the expectations of the devices which know better the power
-> they consume (and the power is not strictly related to OPP table entries
-> (frequency, voltage) (i.e. some parts/features of the device can be unused)).
->
-> The first patch is just for fixing some compiler warnings.  The second patch is
-> the same as the one sent already to the linux-pm list which adds passing the
-> devfreq pointer to the driver functions 'get_static|dynamic_power'.  The third
-> one implements the main change in the devfreq cooling subsystem.  The last one
-> is a simple fix for an unnecessary check.
->
-> Best Regards,
-> Lukasz Luba
->
-> Javi Merino (1):
->   devfreq_cooling: pass a pointer to devfreq in the power model
->     callbacks
->
-> Lukasz Luba (3):
->   devfreq_cooling: make the structs devfreq_cooling_xxx visible for all
->   devfreq_cooling: let the driver supply the dynamic power every time we
->     need it
->   devfreq_cooling: fix unnecessary check of unsigned long value
->
->  drivers/thermal/devfreq_cooling.c | 193 +++++++++++++++++++++++++++-----------
->  include/linux/devfreq_cooling.h   |  34 +++++--
->  2 files changed, 165 insertions(+), 62 deletions(-)
->
+CPU fan stops, then CPU gets busy, CPU overheats, thermal throtling
+kicks in to protect CPU and it gets VERY slow.
+
+So maybe you have a bad CPU fan that is getting stuck.  Perhaps even if
+you have a motherboard that varies the CPU fan depending on need and the
+fan doesn't like the lowest speed and sometimes gets stuck when asked
+to go slow.
+
+Of course if the CPU fan is the problem that could explain why it takes
+varying amounts of time to see the problem.
+
+I suggest checking what the cpu temperature sensors are showing next
+time it gets slow.
+
+-- 
+Len Sorensen
