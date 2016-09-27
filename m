@@ -1,56 +1,144 @@
-From: Matt Ranostay <matt@ranostay.consulting>
-Subject: Re: [PATCH] power: supply: bq24910_charger: reset first_time check
-Date: Mon, 26 Sep 2016 20:14:21 -0700
-Message-ID: <CAJ_EiSST=n=-7WMO9+AHHf0BG5hp7geBbiP7HLpLqYN=NW5E1Q@mail.gmail.com>
-References: <1474601549-23719-1-git-send-email-matt@ranostay.consulting>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 2/3] regulator: max77693: Also manipulate the fast charge
+ current
+Date: Tue, 27 Sep 2016 10:03:57 +0200
+Message-ID: <20160927080357.GA4394@kozik-lap>
+References: <1474932670-11953-1-git-send-email-wolfgit@wiedmeyer.de>
+ <1474932670-11953-3-git-send-email-wolfgit@wiedmeyer.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f66.google.com ([209.85.215.66]:33927 "EHLO
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:33284 "EHLO
         mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933605AbcI0DOX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2016 23:14:23 -0400
-Received: by mail-lf0-f66.google.com with SMTP id b71so194344lfg.1
-        for <linux-pm@vger.kernel.org>; Mon, 26 Sep 2016 20:14:22 -0700 (PDT)
-In-Reply-To: <1474601549-23719-1-git-send-email-matt@ranostay.consulting>
+        with ESMTP id S1751750AbcI0IEE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 04:04:04 -0400
+Content-Disposition: inline
+In-Reply-To: <1474932670-11953-3-git-send-email-wolfgit@wiedmeyer.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Matt Ranostay <mranostay@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
+To: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
+Cc: krzk@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cw00.choi@samsung.com, b.zolnierkie@samsung.com, broonie@kernel.org, lgirdwood@gmail.com, lee.jones@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hold off on this one. Currently reworking a patch series that won't
-need this change after all.
+On Tue, Sep 27, 2016 at 01:31:09AM +0200, Wolfgang Wiedmeyer wrote:
+> For MAX77693, the fast charge current also needs to be manipulated for
+> proper charging. The fast charge current is only set in the case of
+> the MAX77693 type, as the MAX77843 properly manipulates the fast
+> charge current.
 
-On Thu, Sep 22, 2016 at 8:32 PM, Matt Ranostay <mranostay@gmail.com> wrote:
-> bq24190_register_reset() function needs to reset the bdi->first_time
-> condition every time to avoid spurious interrupts in suspend/resume.
->
-> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+Are you sure it has to be manipulated? Some time I didn't dig into this.
+Now I looked at the datasheet and it says that usually there is no need
+for changing the charge current during the operation. Maxim recommends
+to setting it to a maximum safe value for the battery. The device will
+manage charge current on its own.
+
+However I agree that the charge current should be set... maybe once, to
+a maximum value appropriate for battery. Probably this should be done
+by max77693_charger in max77693_dt_init().
+
+Best regards,
+Krzysztof
+
+
+> The fast charge current is set to the next possible value below the
+> maximum input current.
+
+
+> 
+> Signed-off-by: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
 > ---
->  drivers/power/supply/bq24190_charger.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index f5746b9f4e83..cc1dbdb1737f 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -513,6 +513,8 @@ static int bq24190_register_reset(struct bq24190_dev_info *bdi)
->         int ret, limit = 100;
->         u8 v;
->
-> +       bdi->first_time = true;
+>  drivers/regulator/max77693-regulator.c | 45 +++++++++++++++++++++++++++++++---
+>  1 file changed, 42 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/regulator/max77693-regulator.c b/drivers/regulator/max77693-regulator.c
+> index cfbb951..e2f7584 100644
+> --- a/drivers/regulator/max77693-regulator.c
+> +++ b/drivers/regulator/max77693-regulator.c
+> @@ -54,14 +54,19 @@ struct chg_reg_data {
+>  	unsigned int linear_mask;
+>  	unsigned int uA_step;
+>  	unsigned int min_sel;
 > +
->         /* Reset the registers */
->         ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
->                         BQ24190_REG_POC_RESET_MASK,
-> @@ -1375,7 +1377,6 @@ static int bq24190_probe(struct i2c_client *client,
->         bdi->model = id->driver_data;
->         strncpy(bdi->model_name, id->name, I2C_NAME_SIZE);
->         mutex_init(&bdi->f_reg_lock);
-> -       bdi->first_time = true;
->         bdi->charger_health_valid = false;
->         bdi->battery_health_valid = false;
->         bdi->battery_status_valid = false;
-> --
-> 2.7.4
->
+> +	bool set_fast;
+> +	unsigned int fast_reg;
+> +	unsigned int fast_mask;
+>  };
+>  
+>  /*
+>   * MAX77693 CHARGER regulator - Min : 20mA, Max : 2580mA, step : 20mA
+>   * 0x00, 0x01, 0x2, 0x03	= 60 mA
+>   * 0x04 ~ 0x7E			= (60 + (X - 3) * 20) mA
+> - * Actually for MAX77693 the driver manipulates the maximum input current,
+> - * not the fast charge current (output). This should be fixed.
+> + * Actually for MAX77693 the driver manipulates the maximum input current
+> + * and the fast charge current (output) because the fast charge current
+> + * is not set.
+>   *
+>   * On MAX77843 the calculation formula is the same (except values).
+>   * Fortunately it properly manipulates the fast charge current.
+> @@ -100,6 +105,8 @@ static int max77693_chg_set_current_limit(struct regulator_dev *rdev,
+>  	const struct chg_reg_data *reg_data = rdev_get_drvdata(rdev);
+>  	unsigned int chg_min_uA = rdev->constraints->min_uA;
+>  	int sel = 0;
+> +	unsigned int data;
+> +	int ret;
+>  
+>  	while (chg_min_uA + reg_data->uA_step * sel < min_uA)
+>  		sel++;
+> @@ -110,7 +117,35 @@ static int max77693_chg_set_current_limit(struct regulator_dev *rdev,
+>  	/* the first four codes for charger current are all 60mA */
+>  	sel += reg_data->min_sel;
+>  
+> -	return regmap_write(rdev->regmap, reg_data->linear_reg, sel);
+> +	ret = regmap_write(rdev->regmap, reg_data->linear_reg, sel);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	if (reg_data->set_fast) {
+> +		/* disable fast charge if minimum value */
+> +		if (sel == reg_data->min_sel)
+> +			data = 0;
+> +		else {
+> +			/*
+> +			 * set the fast charge current to the closest value
+> +			 * below the input current
+> +			 */
+> +			ret = regmap_read(rdev->regmap, reg_data->fast_reg,
+> +					  &data);
+> +			if (ret < 0)
+> +				return ret;
+> +
+> +			sel *= reg_data->uA_step / 1000; /* convert to mA */
+> +			data &= ~reg_data->fast_mask;
+> +			data |= sel * 10 / 333; /* 0.1A/3 steps */
+> +		}
+> +
+> +		ret = regmap_write(rdev->regmap, reg_data->fast_reg, data);
+> +		if (ret < 0)
+> +			return ret;
+> +	}
+> +
+> +	return 0;
+>  }
+>  /* end of CHARGER regulator ops */
+>  
+> @@ -197,6 +232,9 @@ static const struct chg_reg_data max77693_chg_reg_data = {
+>  	.linear_mask	= CHG_CNFG_09_CHGIN_ILIM_MASK,
+>  	.uA_step	= 20000,
+>  	.min_sel	= 3,
+> +	.set_fast	= true,
+> +	.fast_reg	= MAX77693_CHG_REG_CHG_CNFG_02,
+> +	.fast_mask	= CHG_CNFG_02_CC_MASK,
+>  };
+>  
+>  #define	max77843_regulator_desc_esafeout(num)	{			\
+> @@ -237,6 +275,7 @@ static const struct chg_reg_data max77843_chg_reg_data = {
+>  	.linear_mask	= MAX77843_CHG_FAST_CHG_CURRENT_MASK,
+>  	.uA_step	= MAX77843_CHG_FAST_CHG_CURRENT_STEP,
+>  	.min_sel	= 2,
+> +	.set_fast	= false,
+>  };
+>  
+>  static int max77693_pmic_probe(struct platform_device *pdev)
+> -- 
+> 2.8.0.rc3
+> 
