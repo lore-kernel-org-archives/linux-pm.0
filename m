@@ -1,103 +1,70 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 3/3] power_supply: max77693: Listen for cable events and
- enable charging
-Date: Tue, 27 Sep 2016 10:13:44 +0200
-Message-ID: <20160927081344.GC4394@kozik-lap>
-References: <1474932670-11953-1-git-send-email-wolfgit@wiedmeyer.de>
- <1474932670-11953-4-git-send-email-wolfgit@wiedmeyer.de>
+From: Finley Xiao <finley.xiao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: Re: [PATCH v2 4/4] PM / AVS: rockchip-cpu-avs: add driver handling
+ Rockchip cpu avs
+Date: Tue, 27 Sep 2016 16:40:22 +0800
+Message-ID: <c58a6eb3-7db0-4327-20a3-35c892ae1b93@rock-chips.com>
+References: <1471510341-63926-1-git-send-email-finley.xiao@rock-chips.com>
+ <20160912215515.GF7243@codeaurora.org> <20160926035511.GG17336@vireshk-i7>
+ <20776501.pZ2NDOzLK3@phil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f51.google.com ([209.85.215.51]:32875 "EHLO
-        mail-lf0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753643AbcI0INu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 04:13:50 -0400
-Content-Disposition: inline
-In-Reply-To: <1474932670-11953-4-git-send-email-wolfgit@wiedmeyer.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <20776501.pZ2NDOzLK3@phil>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tony.xie-TNX95d0MmH7DzftRWevZcw@public.gmane.org, srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tim.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ulysses.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lin.huang-TNX95d0MmH7DzftRWevZcw@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
-Cc: krzk@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cw00.choi@samsung.com, b.zolnierkie@samsung.com, broonie@kernel.org, lgirdwood@gmail.com, lee.jones@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Sep 27, 2016 at 01:31:10AM +0200, Wolfgang Wiedmeyer wrote:
-> This patch adds a listener for extcon cable events and enables
-> charging if an USB cable is connected. It recognizes SDP and DCP cable
-> types and treats them the same (same input current and fast charge
-> current). The maximum input current is set before the charger is
-> enabled and before the charger gets disabled, the maximum input
-> current is set to zero. The listener is inspired by the listener
-> implementation that was used for the AXP288 Charger driver.
-> 
-> The patch also adds support for the CURRENT_NOW property. It reads the
-> fast charge current that gets set before the charger is enabled or
-> disabled.
-> 
-> Signed-off-by: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
-
-No. This power supply driver should not manage regulators. It is not a
-regulator consumer. For that specific need, there is a charger-manager driver.
-
-I agree that you might configure here the charger. You might even expose
-some writeable properties through power supply class. However the
-purpose of this driver is to expose the battery charger to user-space,
-not to replace the user-space with its work.
-
-So... NACK.
-
-If you would like to play with charger-manager, here is my old DTS for
-Trats2 (might need updates):
-
-index 595ad4ba6977..b4361b4a9de7 100644
---- a/arch/arm/boot/dts/exynos4412-trats2.dts
-+++ b/arch/arm/boot/dts/exynos4412-trats2.dts
-@@ -856,6 +856,44 @@
-                };
-        };
- 
-+       charger-manager@0 {
-+               compatible = "charger-manager";
-+               status = "okay";
-+               chg-reg-supply = <&charger_reg>;
-+
-+               cm-name = "battery";
-+               /* Polling only for external power source */
-+               cm-poll-mode = <2>;
-+               cm-poll-interval = <30000>;
-+
-+               cm-fullbatt-vchkdrop-ms = <30000>;
-+               cm-fullbatt-vchkdrop-volt = <150000>;
-+               cm-fullbatt-soc = <100>;
-+
-+               cm-battery-stat = <0>;
-+               cm-fuel-gauge = "max170xx_battery";
-+
-+               /* Allow charging for 5hr */
-+               cm-charging-max = <18000000>;
-+               /* Allow discharging for 2hr */
-+               cm-discharging-max = <7200000>;
-+
-+               cm-num-chargers = <1>;
-+               cm-chargers = "max77693-charger";
-+
-+               charger@0 {
-+                       cm-regulator-name = "chg-reg";
-+                       cable@0 {
-+                               cm-cable-name = "USB";
-+                               cm-cable-extcon = "max77693-muic";
-+                       };
-+                       cable@1 {
-+                               cm-cable-name = "TA";
-+                               cm-cable-extcon = "max77693-muic";
-+                       };
-+               };
-+       };
-+
-        exynos-usbphy@125B0000 {
-                status = "okay";
-        };
-
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-
-Best regards,
-Krzysztof
-
+CgrlnKggMjAxNi85LzI2IDE2OjA1LCBIZWlrbyBTdHVlYm5lciDlhpnpgZM6Cj4gQW0gTW9udGFn
+LCAyNi4gU2VwdGVtYmVyIDIwMTYsIDA5OjI1OjExIENFU1Qgc2NocmllYiBWaXJlc2ggS3VtYXI6
+Cj4+IE9uIDEyLTA5LTE2LCAxNDo1NSwgU3RlcGhlbiBCb3lkIHdyb3RlOgo+Pj4gT24gMDgvMjks
+IFZpcmVzaCBLdW1hciB3cm90ZToKPj4+PiBPbiAxOC0wOC0xNiwgMTY6NTIsIEZpbmx5ZSBYaWFv
+IHdyb3RlOgo+Pj4+PiArc3RhdGljIGludCByb2NrY2hpcF9hZGp1c3Rfb3BwX3RhYmxlKHN0cnVj
+dCBkZXZpY2UgKmNwdV9kZXYsCj4+Pj4+ICsJCQkJICAgICBzdHJ1Y3QgY3B1ZnJlcV9mcmVxdWVu
+Y3lfdGFibGUgKnRhYmxlLAo+Pj4+PiArCQkJCSAgICAgaW50IHZvbHQpCj4+Pj4+ICt7Cj4+Pj4+
+ICsJc3RydWN0IG9wcF90YWJsZSAqb3BwX3RhYmxlOwo+Pj4+PiArCXN0cnVjdCBjcHVmcmVxX2Zy
+ZXF1ZW5jeV90YWJsZSAqcG9zOwo+Pj4+PiArCXN0cnVjdCBkZXZfcG1fb3BwICpvcHA7Cj4+Pj4+
+ICsKPj4+Pj4gKwlpZiAoIXZvbHQpCj4+Pj4+ICsJCXJldHVybiAwOwo+Pj4+PiArCj4+Pj4+ICsJ
+cmN1X3JlYWRfbG9jaygpOwo+Pj4+PiArCj4+Pj4+ICsJb3BwX3RhYmxlID0gX2ZpbmRfb3BwX3Rh
+YmxlKGNwdV9kZXYpOwo+Pj4+PiArCWlmIChJU19FUlIob3BwX3RhYmxlKSkgewo+Pj4+PiArCQly
+Y3VfcmVhZF91bmxvY2soKTsKPj4+Pj4gKwkJcmV0dXJuIFBUUl9FUlIob3BwX3RhYmxlKTsKPj4+
+Pj4gKwl9Cj4+Pj4+ICsKPj4+Pj4gKwljcHVmcmVxX2Zvcl9lYWNoX3ZhbGlkX2VudHJ5KHBvcywg
+dGFibGUpIHsKPj4+Pj4gKwkJb3BwID0gZGV2X3BtX29wcF9maW5kX2ZyZXFfZXhhY3QoY3B1X2Rl
+diwgcG9zLT5mcmVxdWVuY3kgKiAxMDAwLAo+Pj4+PiArCQkJCQkJIHRydWUpOwo+Pj4+PiArCQlp
+ZiAoSVNfRVJSKG9wcCkpCj4+Pj4+ICsJCQljb250aW51ZTsKPj4+Pj4gKwo+Pj4+PiArCQlvcHAt
+PnVfdm9sdCArPSB2b2x0Owo+Pj4+PiArCQlvcHAtPnVfdm9sdF9taW4gKz0gdm9sdDsKPj4+Pj4g
+KwkJb3BwLT51X3ZvbHRfbWF4ICs9IHZvbHQ7Cj4+Pj4+ICsJfQo+Pj4+PiArCj4+Pj4+ICsJcmN1
+X3JlYWRfdW5sb2NrKCk7Cj4+Pj4+ICsKPj4+Pj4gKwlyZXR1cm4gMDsKPj4+Pj4gK30KPj4+PiBJ
+IHdvdWxkbid0IHByZWZlciBhbHRlcmluZyB0aGUgb3BwIHRhYmxlcyBmcm9tIGluZGl2aWR1YWwg
+ZHJpdmVycyBhdAo+Pj4+IGFsbC4gQXQgdGhlIGxlYXN0LCBpdCBzaG91bGQgYmUgZG9uZSB2aWEg
+c29tZSBoZWxwZXJzIGV4cG9zZWQgYnkgdGhlCj4+Pj4gY29yZS4KPj4+Pgo+Pj4+IEJ1dCBiZWZv
+cmUgdGhhdCBJIHdvdWxkIGxpa2UgdG8gaGVhciBmcm9tIFN0ZXBoZW4gYSBiaXQgYXMgSSByZWNh
+bGwgaGUKPj4+PiB3YXMgYWxzbyB3b3JraW5nIG9uIHNvbWV0aGluZyBzaW1pbGFyLgo+Pj4gSSBo
+YWQgYSBwYXRjaCB0byBtb2RpZnkgdGhlIHZvbHRhZ2UgYXQgcnVudGltZSBmb3IgdGhlICJjdXJy
+ZW50Igo+Pj4gT1BQLiBOb3cgdGhhdCB3ZSBoYXZlIHJlZ3VsYXRvciBhbmQgY2xrIGNvbnRyb2wg
+aW5zaWRlIE9QUCB0aGF0Cj4+PiBiZWNhbWUgYSBsaXR0bGUgZWFzaWVyIHRvIGRvIHdpdGhvdXQg
+aGF2aW5nIHRvIGRvIHNvbWUgbm90aWZpZXIKPj4+IGZyb20gdGhlIE9QUCBsYXllciB0byB0aGUg
+Y29uc3VtZXJzLiBJIGhhdmVuJ3QgaGFkIHRpbWUgdG8gcmV2aXZlCj4+PiB0aG9zZSBwYXRjaGVz
+IHRob3VnaC4gU2hvdWxkIHdlIGRvIHRoYXQ/Cj4+IFBlcmhhcHMgeWVzLCB3ZSBzaG91bGQgaGF2
+ZSBhIGNvbW1vbiBwbGFjZSBmb3IgZG9pbmcgYWxsIHRoYXQuCj4+Cj4+PiBEb2VzIHRoaXMgbmVl
+ZCB0byBtb2RpZnkKPj4+IGFueXRoaW5nIGJlc2lkZXMgdGhlIE9QUCB0aGUgZGV2aWNlIGlzIGN1
+cnJlbnRseSBydW5uaW5nIGF0Pwo+PiBGaW5seWUsIGNhbiB5b3UgcGxlYXNlIGFuc3dlciB0aGlz
+ID8KPiBJZiBJIHVuZGVyc3RhbmQgaXQgY29ycmVjdGx5LCBkZXBlbmRpbmcgb24gdGhlIGxlYWth
+Z2UgdmFsdWUgc3RvcmVkIGluIGFuCj4gZWZ1c2UsIGFsbCBvcHAgdm9sdGFnZXMgYXJlIHJlZHVj
+ZWQgYnkgYSBjZXJ0YWluIHZhbHVlLiBSaWdodCBub3cgdGhlIGRyaXZlcgo+IGRvZXMgaXQgaW4g
+b25lIGdvIGZvciB0aGUgZnVsbCBvcHAgdGFibGUsIGJ1dCBvZiBjb3Vyc2UgY291bGQgYWxzbyBk
+byBpdCBmb3IKPiBlYWNoIG5ldyBvcHAgaW5kaXZpZHVhbGx5IGJlZm9yZSBpdCBnZXRzIHNldC4K
+PgpZZXPvvIwgaXQgaXMgbmVjZXNzYXJ5IHRvIG1vZGlmeSBhbGwgb3BwIHZvbHRhZ2VzIGFuZCAg
+SSBhZ3JlZWQgd2l0aCBIZWlrby4KPgoKLS0gCkZpbmxleQoKCgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1yb2NrY2hpcCBtYWlsaW5nIGxpc3QK
+TGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFk
+Lm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJvY2tjaGlwCg==
