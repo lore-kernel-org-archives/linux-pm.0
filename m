@@ -1,57 +1,56 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: Regression in 4.8 - CPU speed set very low
-Date: Mon, 26 Sep 2016 20:12:38 -0700
-Message-ID: <003001d2186d$02c34820$0849d860$@net>
-References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net>         <3919370.SGLjGupePs@vostro.rjw.lan>         <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>         <2477506.olat0BX4ex@vostro.rjw.lan>         <1436996d-078b-aa51-4452-b6655d917135@lwfinger.net>         <CAJZ5v0iEchM2ye==020gLj2bZc3ddCFa29jQZh6c+9X+OhfcoQ@mail.gmail.com>         <594f5012-5157-bfdd-f715-bea8caa824c3@lwfinger.net>         <CAJZ5v0g++0JaPUEaQy54_fcA5tv5TuNZw+5mbmo47OY-dD8HoQ@mail.gmail.com>         <e42f36f7-5bf4-fdc4-12a7-a2d6a645e82e@lwfinger.net>         <CAJZ5v0hzRCqsE-Wg4aTPPF_+=o+io_P8M-D4_pu5qpDxaXAy5A@mail.gmail.com>         <2326a7dd-675f-752b-f100-5dce6e4c93fd@lwfinger.net> ohH4bKxaUa8e7ohH5blnhh
+From: Matt Ranostay <matt@ranostay.consulting>
+Subject: Re: [PATCH] power: supply: bq24910_charger: reset first_time check
+Date: Mon, 26 Sep 2016 20:14:21 -0700
+Message-ID: <CAJ_EiSST=n=-7WMO9+AHHf0BG5hp7geBbiP7HLpLqYN=NW5E1Q@mail.gmail.com>
+References: <1474601549-23719-1-git-send-email-matt@ranostay.consulting>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta17.telus.net ([209.171.16.90]:36951 "EHLO cmta17.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S933275AbcI0DMo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 26 Sep 2016 23:12:44 -0400
-In-Reply-To: ohH4bKxaUa8e7ohH5blnhh
-Content-Language: en-ca
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:33927 "EHLO
+        mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933605AbcI0DOX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Sep 2016 23:14:23 -0400
+Received: by mail-lf0-f66.google.com with SMTP id b71so194344lfg.1
+        for <linux-pm@vger.kernel.org>; Mon, 26 Sep 2016 20:14:22 -0700 (PDT)
+In-Reply-To: <1474601549-23719-1-git-send-email-matt@ranostay.consulting>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Larry Finger' <Larry.Finger@lwfinger.net>, "'Rafael J. Wysocki'" <rafael@kernel.org>
-Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
+To: Matt Ranostay <mranostay@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
 
-On 2016.09.26 18:31 Srinivas Pandruvada wrote:
-> On Mon, 2016-09-26 at 19:48 -0500, Larry Finger wrote:
->> On 09/26/2016 07:21 PM, Rafael J. Wysocki wrote: 
->>> On Tue, Sep 27, 2016 at 1:53 AM, Larry Finger wrote:
->>> But for both we need a reproducer anyway.
->> I do not have a reliable reproducer. The condition has always
->> happened when 
->> running a high-compute job such as a 'make -j8' on the kernel, or
->> building the 
->> RPM for openSUSE's implementation of VirtualBox. The latter is what
->> I'm using 
->> for most of my testing.
+Hold off on this one. Currently reworking a patch series that won't
+need this change after all.
 
-Run some CPU stressor and get all your CPU's going at 100% load.
-And watch your core temperatures while you do so.
-
-> 
->>> It also would be good to rule out the thermal throttling (as per
->>> the Srinivas' comments).
-
-It is almost certainly thermal throttling, or similar causing
-Clock modulation, of it seems 50%.
-
->>> 
->>> For now, please tell me what's in
->>> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq
->> 800000
-> Your effective freq is lower than 800MHz. One of the possible reason is
-> thermal throttling.
+On Thu, Sep 22, 2016 at 8:32 PM, Matt Ranostay <mranostay@gmail.com> wrote:
+> bq24190_register_reset() function needs to reset the bdi->first_time
+> condition every time to avoid spurious interrupts in suspend/resume.
 >
-> What distro you are using?
-
-And what make and model of LapTop?
-
-
-
+> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> ---
+>  drivers/power/supply/bq24190_charger.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index f5746b9f4e83..cc1dbdb1737f 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -513,6 +513,8 @@ static int bq24190_register_reset(struct bq24190_dev_info *bdi)
+>         int ret, limit = 100;
+>         u8 v;
+>
+> +       bdi->first_time = true;
+> +
+>         /* Reset the registers */
+>         ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
+>                         BQ24190_REG_POC_RESET_MASK,
+> @@ -1375,7 +1377,6 @@ static int bq24190_probe(struct i2c_client *client,
+>         bdi->model = id->driver_data;
+>         strncpy(bdi->model_name, id->name, I2C_NAME_SIZE);
+>         mutex_init(&bdi->f_reg_lock);
+> -       bdi->first_time = true;
+>         bdi->charger_health_valid = false;
+>         bdi->battery_health_valid = false;
+>         bdi->battery_status_valid = false;
+> --
+> 2.7.4
+>
