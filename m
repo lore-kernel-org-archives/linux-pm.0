@@ -1,72 +1,103 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 1/3] mfd: max77693: Add defines for charger current
- control
-Date: Tue, 27 Sep 2016 10:06:46 +0200
-Message-ID: <20160927080646.GB4394@kozik-lap>
+Subject: Re: [PATCH 3/3] power_supply: max77693: Listen for cable events and
+ enable charging
+Date: Tue, 27 Sep 2016 10:13:44 +0200
+Message-ID: <20160927081344.GC4394@kozik-lap>
 References: <1474932670-11953-1-git-send-email-wolfgit@wiedmeyer.de>
- <1474932670-11953-2-git-send-email-wolfgit@wiedmeyer.de>
+ <1474932670-11953-4-git-send-email-wolfgit@wiedmeyer.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:36646 "EHLO
-        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754022AbcI0IGv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 04:06:51 -0400
+Received: from mail-lf0-f51.google.com ([209.85.215.51]:32875 "EHLO
+        mail-lf0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753643AbcI0INu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 04:13:50 -0400
 Content-Disposition: inline
-In-Reply-To: <1474932670-11953-2-git-send-email-wolfgit@wiedmeyer.de>
+In-Reply-To: <1474932670-11953-4-git-send-email-wolfgit@wiedmeyer.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
 Cc: krzk@kernel.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cw00.choi@samsung.com, b.zolnierkie@samsung.com, broonie@kernel.org, lgirdwood@gmail.com, lee.jones@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Sep 27, 2016 at 01:31:08AM +0200, Wolfgang Wiedmeyer wrote:
-> This prepares for an updated regulator and charger driver. The defines
-> are needed to set the maximum input current and the fast charge
-> current.
+On Tue, Sep 27, 2016 at 01:31:10AM +0200, Wolfgang Wiedmeyer wrote:
+> This patch adds a listener for extcon cable events and enables
+> charging if an USB cable is connected. It recognizes SDP and DCP cable
+> types and treats them the same (same input current and fast charge
+> current). The maximum input current is set before the charger is
+> enabled and before the charger gets disabled, the maximum input
+> current is set to zero. The listener is inspired by the listener
+> implementation that was used for the AXP288 Charger driver.
+> 
+> The patch also adds support for the CURRENT_NOW property. It reads the
+> fast charge current that gets set before the charger is enabled or
+> disabled.
 > 
 > Signed-off-by: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
 
-This shouldn't be separate patch, because:
-1. You are touching later power and regulator so this patch should be
-applied to one and then pulled by other... a lot of unneeded work.
-2. It is difficult to find which new code is needed for which driver.
+No. This power supply driver should not manage regulators. It is not a
+regulator consumer. For that specific need, there is a charger-manager driver.
 
-Simpler approach might work - when changing the regulator or psy driver,
-just change the header as needed. Unless there are conflicts and both of
-them need the same?
+I agree that you might configure here the charger. You might even expose
+some writeable properties through power supply class. However the
+purpose of this driver is to expose the battery charger to user-space,
+not to replace the user-space with its work.
+
+So... NACK.
+
+If you would like to play with charger-manager, here is my old DTS for
+Trats2 (might need updates):
+
+index 595ad4ba6977..b4361b4a9de7 100644
+--- a/arch/arm/boot/dts/exynos4412-trats2.dts
++++ b/arch/arm/boot/dts/exynos4412-trats2.dts
+@@ -856,6 +856,44 @@
+                };
+        };
+ 
++       charger-manager@0 {
++               compatible = "charger-manager";
++               status = "okay";
++               chg-reg-supply = <&charger_reg>;
++
++               cm-name = "battery";
++               /* Polling only for external power source */
++               cm-poll-mode = <2>;
++               cm-poll-interval = <30000>;
++
++               cm-fullbatt-vchkdrop-ms = <30000>;
++               cm-fullbatt-vchkdrop-volt = <150000>;
++               cm-fullbatt-soc = <100>;
++
++               cm-battery-stat = <0>;
++               cm-fuel-gauge = "max170xx_battery";
++
++               /* Allow charging for 5hr */
++               cm-charging-max = <18000000>;
++               /* Allow discharging for 2hr */
++               cm-discharging-max = <7200000>;
++
++               cm-num-chargers = <1>;
++               cm-chargers = "max77693-charger";
++
++               charger@0 {
++                       cm-regulator-name = "chg-reg";
++                       cable@0 {
++                               cm-cable-name = "USB";
++                               cm-cable-extcon = "max77693-muic";
++                       };
++                       cable@1 {
++                               cm-cable-name = "TA";
++                               cm-cable-extcon = "max77693-muic";
++                       };
++               };
++       };
++
+        exynos-usbphy@125B0000 {
+                status = "okay";
+        };
+
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
 Best regards,
 Krzysztof
 
-> ---
->  include/linux/mfd/max77693-private.h | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/include/linux/mfd/max77693-private.h b/include/linux/mfd/max77693-private.h
-> index 3c7a63b..ca18344 100644
-> --- a/include/linux/mfd/max77693-private.h
-> +++ b/include/linux/mfd/max77693-private.h
-> @@ -222,6 +222,9 @@ enum max77693_charger_battery_state {
->  #define CHG_CNFG_00_CHG_MASK		0x1
->  #define CHG_CNFG_00_BUCK_MASK		0x4
->  
-> +/* MAX77693 CHG_CNFG_02 register */
-> +#define CHG_CNFG_02_CC_MASK		0x3F
-> +
->  /* MAX77693_CHG_REG_CHG_CNFG_01 register */
->  #define CHG_CNFG_01_FCHGTIME_SHIFT	0
->  #define CHG_CNFG_01_CHGRSTRT_SHIFT	4
-> @@ -258,6 +261,10 @@ enum max77693_charger_battery_state {
->  
->  /* MAX77693 CHG_CNFG_09 Register */
->  #define CHG_CNFG_09_CHGIN_ILIM_MASK	0x7F
-> +#define CHG_CNFG_09_CHGIN_ILIM_500_MAX	500000
-> +#define CHG_CNFG_09_CHGIN_ILIM_500_MIN	470000
-> +#define CHG_CNFG_09_CHGIN_ILIM_0_MAX	60000
-> +#define CHG_CNFG_09_CHGIN_ILIM_0_MIN	0
->  
->  /* MAX77693 CHG_CTRL Register */
->  #define SAFEOUT_CTRL_SAFEOUT1_MASK	0x3
-> -- 
-> 2.8.0.rc3
-> 
