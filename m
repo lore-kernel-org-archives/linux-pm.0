@@ -1,85 +1,114 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal: armada: add support for suspend/resume
-Date: Tue, 27 Sep 2016 09:51:45 +0800
-Message-ID: <1474941105.4284.2.camel@intel.com>
-References: <1469097807-17748-1-git-send-email-jaz@semihalf.com>
-         <57CFCA42.8000807@free.fr>
+From: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: Regression in 4.8 - CPU speed set very low
+Date: Mon, 26 Sep 2016 21:53:10 -0500
+Message-ID: <e2ac96fe-4d70-8552-2534-2e00d78e7797@lwfinger.net>
+References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net>
+ <3919370.SGLjGupePs@vostro.rjw.lan>
+ <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>
+ <2477506.olat0BX4ex@vostro.rjw.lan>
+ <1436996d-078b-aa51-4452-b6655d917135@lwfinger.net>
+ <CAJZ5v0iEchM2ye==020gLj2bZc3ddCFa29jQZh6c+9X+OhfcoQ@mail.gmail.com>
+ <594f5012-5157-bfdd-f715-bea8caa824c3@lwfinger.net>
+ <CAJZ5v0g++0JaPUEaQy54_fcA5tv5TuNZw+5mbmo47OY-dD8HoQ@mail.gmail.com>
+ <e42f36f7-5bf4-fdc4-12a7-a2d6a645e82e@lwfinger.net>
+ <CAJZ5v0hzRCqsE-Wg4aTPPF_+=o+io_P8M-D4_pu5qpDxaXAy5A@mail.gmail.com>
+ <2326a7dd-675f-752b-f100-5dce6e4c93fd@lwfinger.net>
+ <1474939846.4669.96.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:23581 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932504AbcI0Bvu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 26 Sep 2016 21:51:50 -0400
-In-Reply-To: <57CFCA42.8000807@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1474939846.4669.96.camel@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mason <slash.tmp@free.fr>, Grzegorz Jaszczyk <jaz@semihalf.com>, linux-pm@vger.kernel.org
-Cc: edubezval@gmail.com, thomas.petazzoni@free-electrons.com, gregory.clement@free-electrons.com, mw@semihalf.com, alior@marvell.com, Arnd Bergmann <arnd@arndb.de>
 
-On 三, 2016-09-07 at 10:05 +0200, Mason wrote:
-> On 21/07/2016 12:43, Grzegorz Jaszczyk wrote:
-> 
-> > 
-> > There is no need to implement subroutine for suspend since there is
-> > no
-> > data to store before suspending.
-> > 
-> > Signed-off-by: Grzegorz Jaszczyk <jaz@semihalf.com>
-> > ---
-> >  drivers/thermal/armada_thermal.c | 14 ++++++++++++++
-> >  1 file changed, 14 insertions(+)
-> > 
-> > diff --git a/drivers/thermal/armada_thermal.c
-> > b/drivers/thermal/armada_thermal.c
-> > index ae75328..65f9838 100644
-> > --- a/drivers/thermal/armada_thermal.c
-> > +++ b/drivers/thermal/armada_thermal.c
-> > @@ -304,12 +304,26 @@ static int armada_thermal_exit(struct
-> > platform_device *pdev)
-> >  	return 0;
-> >  }
-> >  
-> > +static int armada_thermal_resume(struct device *dev)
-> > +{
-> > +	struct thermal_zone_device *thermal =
-> > +		dev_get_drvdata(dev);
-> > +	struct armada_thermal_priv *priv = thermal->devdata;
-> > +
-> > +	priv->data->init_sensor(to_platform_device(dev), priv);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static SIMPLE_DEV_PM_OPS(armada_thermal_pm_ops, NULL,
-> > armada_thermal_resume);
-> > +
-> >  static struct platform_driver armada_thermal_driver = {
-> >  	.probe = armada_thermal_probe,
-> >  	.remove = armada_thermal_exit,
-> >  	.driver = {
-> >  		.name = "armada_thermal",
-> >  		.of_match_table = armada_thermal_id_table,
-> > +		.pm = &armada_thermal_pm_ops,
-> >  	},
-> >  };
-> gcc might warn about 'armada_thermal_resume' defined but not used
-> when CONFIG_PM_SLEEP is not defined, I think?
-> 
-> (I have a similar patch, Arnd suggested using __maybe_unused tag.)
-> 
-right.
-Grzegorz, you can use this one as a reference. https://patchwork.kernel
-.org/patch/9318621/
+On 09/26/2016 08:30 PM, Srinivas Pandruvada wrote:
+> On Mon, 2016-09-26 at 19:48 -0500, Larry Finger wrote:
+>> On 09/26/2016 07:21 PM, Rafael J. Wysocki wrote:
+>>>
+>>> On Tue, Sep 27, 2016 at 1:53 AM, Larry Finger <Larry.Finger@lwfinge
+>>> r.net> wrote:
+>>>>
+>>>> On 09/26/2016 05:16 PM, Rafael J. Wysocki wrote:
+>>>>>
+>>>>>
+>>>>> On Tue, Sep 27, 2016 at 12:09 AM, Larry Finger
+>>>> <Larry.Finger@lwfinger.net> wrote:
+>>>>>
+>>>>>
+>>>>>
+>>>>> Maybe it's better to try diagnose the problem instead of
+>>>>> spending more
+>>>>> time on bisection.
+>>>>
+>>>> In my original post, I asked for such help, but nothing until
+>>>> today. I had
+>>>> no idea what to check, but now I have a better idea.
+>>>>
+>>>>>
+>>>>> I'd like to know whether or not 4.7 was definitely good,
+>>>>> though.
+>>>>
+>>>> I never saw this problem with 4.7, but given the difficulty in
+>>>> triggering
+>>>> the problem, my tests may not have been definitive.
+>>>>>
+>>>>>
+>>>>>
+>>>>>>
+>>>>>> If it is one of them, it may be a while before I dare call
+>>>>>> this one
+>>>>>> "good".
+>>>>>> In one respect, that is good as I will be traveling tomorrow
+>>>>>> and
+>>>>>> Wednesday.
+>>>>>
+>>>>> What does "cat
+>>>>> /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver" say?
+>>>>
+>>>> intel_pstate
+>>> You probably don't need to worry about all of the cpufreq changes
+>>> in
+>>> 4.8-rc, then.  Only a few of them affect intel_pstate and I don't
+>>> see
+>>> how any of them may lead to the observed symptoms.
+>>>
+>>> First off, if you have a reproducer, please run it on 4.7 and see
+>>> if
+>>> you can trigger the issue in there.
+>> I'm running 4.8-rc7 at the moment hoping to trigger the problem and
+>> get the data
+>> requested by Srinivas. Once I get that, I will try 4.7 again.
+>>>
+>>>
+>>> Second, it would be good to have a look at the output from the
+>>> cpu_frequency and pstate_sample tracepoints around when the issue
+>>> triggers.  The pstate_sample one would be more interesting.
+>>>
+>>> But for both we need a reproducer anyway.
+>> I do not have a reliable reproducer. The condition has always
+>> happened when
+>> running a high-compute job such as a 'make -j8' on the kernel, or
+>> building the
+>> RPM for openSUSE's implementation of VirtualBox. The latter is what
+>> I'm using
+>> for most of my testing.
+>>
+>>>
+>>> It also would be good to rule out the thermal throttling (as per
+>>> the
+>>> Srinivas' comments).
+>>>
+>>> For now, please tell me what's in
+>>> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq
+>> 800000
+> Your effective freq is lower than 800MHz. One of the possible reason is
+> thermal throttling.
+>
+> What distro you are using?
 
-thanks,
-rui
+openSUSE Leap 42.1.
 
-> Regards.
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Larry
