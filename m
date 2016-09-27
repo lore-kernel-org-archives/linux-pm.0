@@ -1,63 +1,85 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] of: thermal: Fixed governor at each thermal zone
-Date: Tue, 27 Sep 2016 09:46:57 +0800
-Message-ID: <1474940817.4284.0.camel@intel.com>
-References: <1474247932-1026-1-git-send-email-hugh.kang@lge.com>
+Subject: Re: [PATCH] thermal: armada: add support for suspend/resume
+Date: Tue, 27 Sep 2016 09:51:45 +0800
+Message-ID: <1474941105.4284.2.camel@intel.com>
+References: <1469097807-17748-1-git-send-email-jaz@semihalf.com>
+         <57CFCA42.8000807@free.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:39942 "EHLO mga02.intel.com"
+Received: from mga07.intel.com ([134.134.136.100]:23581 "EHLO mga07.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932504AbcI0BrA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 26 Sep 2016 21:47:00 -0400
-In-Reply-To: <1474247932-1026-1-git-send-email-hugh.kang@lge.com>
+        id S932504AbcI0Bvu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 26 Sep 2016 21:51:50 -0400
+In-Reply-To: <57CFCA42.8000807@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Inhyuk Kang <hugh.kang@lge.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Mason <slash.tmp@free.fr>, Grzegorz Jaszczyk <jaz@semihalf.com>, linux-pm@vger.kernel.org
+Cc: edubezval@gmail.com, thomas.petazzoni@free-electrons.com, gregory.clement@free-electrons.com, mw@semihalf.com, alior@marvell.com, Arnd Bergmann <arnd@arndb.de>
 
-On 一, 2016-09-19 at 10:18 +0900, Inhyuk Kang wrote:
-> It is necessary to be added governor at each thermal_zone.
-> Because some governors should be operated in the during the kernel
-> booting
-> in order to avoid heating problem.
+On 三, 2016-09-07 at 10:05 +0200, Mason wrote:
+> On 21/07/2016 12:43, Grzegorz Jaszczyk wrote:
 > 
-> Default governor cannot be covered all thermal zones policy because
-> some thermal zones want to apply different one.
-> For example, the power allocator governor operates differently with
-> step wise governor.
-> Hence, it is better to parse governor parameter from the device tree.
+> > 
+> > There is no need to implement subroutine for suspend since there is
+> > no
+> > data to store before suspending.
+> > 
+> > Signed-off-by: Grzegorz Jaszczyk <jaz@semihalf.com>
+> > ---
+> >  drivers/thermal/armada_thermal.c | 14 ++++++++++++++
+> >  1 file changed, 14 insertions(+)
+> > 
+> > diff --git a/drivers/thermal/armada_thermal.c
+> > b/drivers/thermal/armada_thermal.c
+> > index ae75328..65f9838 100644
+> > --- a/drivers/thermal/armada_thermal.c
+> > +++ b/drivers/thermal/armada_thermal.c
+> > @@ -304,12 +304,26 @@ static int armada_thermal_exit(struct
+> > platform_device *pdev)
+> >  	return 0;
+> >  }
+> >  
+> > +static int armada_thermal_resume(struct device *dev)
+> > +{
+> > +	struct thermal_zone_device *thermal =
+> > +		dev_get_drvdata(dev);
+> > +	struct armada_thermal_priv *priv = thermal->devdata;
+> > +
+> > +	priv->data->init_sensor(to_platform_device(dev), priv);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static SIMPLE_DEV_PM_OPS(armada_thermal_pm_ops, NULL,
+> > armada_thermal_resume);
+> > +
+> >  static struct platform_driver armada_thermal_driver = {
+> >  	.probe = armada_thermal_probe,
+> >  	.remove = armada_thermal_exit,
+> >  	.driver = {
+> >  		.name = "armada_thermal",
+> >  		.of_match_table = armada_thermal_id_table,
+> > +		.pm = &armada_thermal_pm_ops,
+> >  	},
+> >  };
+> gcc might warn about 'armada_thermal_resume' defined but not used
+> when CONFIG_PM_SLEEP is not defined, I think?
 > 
-> Signed-off-by: Inhyuk Kang <hugh.kang@lge.com>
+> (I have a similar patch, Arnd suggested using __maybe_unused tag.)
 > 
-The patch looks okay to me.
-Eduardo, what do you think of this patch?
+right.
+Grzegorz, you can use this one as a reference. https://patchwork.kernel
+.org/patch/9318621/
 
 thanks,
 rui
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-
-> thermal.c
-> index b8e509c..382c440 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -970,6 +970,7 @@ int __init of_parse_thermal_zones(void)
->  		struct thermal_zone_device *zone;
->  		struct thermal_zone_params *tzp;
->  		int i, mask = 0;
-> +		const char *governor;
->  		u32 prop;
->  
->  		tz = thermal_of_build_thermal_zone(child);
-> @@ -996,6 +997,9 @@ int __init of_parse_thermal_zones(void)
->  		if (!of_property_read_u32(child, "sustainable-
-> power", &prop))
->  			tzp->sustainable_power = prop;
->  
-> +		if (!of_property_read_string(child, "governor-name", 
-> &governor))
-> +			strcpy(tzp->governor_name, governor);
-> +
->  		for (i = 0; i < tz->ntrips; i++)
->  			mask |= 1 << i;
->  
+
+> Regards.
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
