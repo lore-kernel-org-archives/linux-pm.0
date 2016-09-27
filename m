@@ -1,99 +1,64 @@
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: Regression in 4.8 - CPU speed set very low
-Date: Tue, 27 Sep 2016 03:48:51 -0500
-Message-ID: <785b1633-5f1d-7cfe-5a9f-cfbb82a4a754@lwfinger.net>
-References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net>
- <3919370.SGLjGupePs@vostro.rjw.lan>
- <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>
- <2477506.olat0BX4ex@vostro.rjw.lan>
- <1436996d-078b-aa51-4452-b6655d917135@lwfinger.net>
- <CAJZ5v0iEchM2ye==020gLj2bZc3ddCFa29jQZh6c+9X+OhfcoQ@mail.gmail.com>
- <594f5012-5157-bfdd-f715-bea8caa824c3@lwfinger.net>
- <CAJZ5v0g++0JaPUEaQy54_fcA5tv5TuNZw+5mbmo47OY-dD8HoQ@mail.gmail.com>
- <e42f36f7-5bf4-fdc4-12a7-a2d6a645e82e@lwfinger.net>
- <CAJZ5v0hzRCqsE-Wg4aTPPF_+=o+io_P8M-D4_pu5qpDxaXAy5A@mail.gmail.com>
- <2326a7dd-675f-752b-f100-5dce6e4c93fd@lwfinger.net>
- <003001d2186d$02c34820$0849d860$@net>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [Update][RFC/RFT][PATCH v3 2/5] driver core: Functional
+ dependencies tracking support
+Date: Tue, 27 Sep 2016 10:54:13 +0200
+Message-ID: <20160927085413.GA5744@wunner.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <5257325.y9rG1UM74b@vostro.rjw.lan>
+ <2480829.3iNV7K5Pdo@vostro.rjw.lan>
+ <2141382.sMORCbDyAF@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f48.google.com ([209.85.218.48]:36470 "EHLO
-        mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755281AbcI0Isy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 04:48:54 -0400
-In-Reply-To: <003001d2186d$02c34820$0849d860$@net>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:57913 "EHLO
+        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752018AbcI0Ixh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 04:53:37 -0400
+Content-Disposition: inline
+In-Reply-To: <2141382.sMORCbDyAF@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Rafael J. Wysocki'" <rafael@kernel.org>
-Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On 09/26/2016 10:12 PM, Doug Smythies wrote:
-> On 2016.09.26 18:31 Srinivas Pandruvada wrote:
->> On Mon, 2016-09-26 at 19:48 -0500, Larry Finger wrote:
->>> On 09/26/2016 07:21 PM, Rafael J. Wysocki wrote:
->>>> On Tue, Sep 27, 2016 at 1:53 AM, Larry Finger wrote:
->>>> But for both we need a reproducer anyway.
->>> I do not have a reliable reproducer. The condition has always
->>> happened when
->>> running a high-compute job such as a 'make -j8' on the kernel, or
->>> building the
->>> RPM for openSUSE's implementation of VirtualBox. The latter is what
->>> I'm using
->>> for most of my testing.
->
-> Run some CPU stressor and get all your CPU's going at 100% load.
-> And watch your core temperatures while you do so.
+On Fri, Sep 16, 2016 at 02:33:55PM +0200, Rafael J. Wysocki wrote:
+> +void device_links_unbind_consumers(struct device *dev)
+> +{
+> +	struct device_link *link;
+> +	int idx;
+> +
+> + start:
+> +	idx = device_links_read_lock();
+> +
+> +	list_for_each_entry_rcu(link, &dev->links_to_consumers, s_node) {
+> +		enum device_link_status status;
+> +
+> +		if (link->flags & DEVICE_LINK_STATELESS)
+> +			continue;
+> +
+> +		spin_lock(&link->lock);
+> +		status = link->status;
+> +		if (status == DEVICE_LINK_CONSUMER_PROBE) {
+> +			spin_unlock(&link->lock);
+> +
+> +			device_links_read_unlock(idx);
+> +
+> +			wait_for_device_probe();
+> +			goto start;
+> +		}
 
-for i in 1 2 3 4; do while : ; do : ; done & done
+While revisiting this function it just occurred to me that there's
+a theoretical infinite loop here if the consumer probes, is unbound
+by the supplier, then reprobes again before the supplier had a chance
+to update the link to DEVICE_LINK_SUPPLIER_UNBIND.  Perhaps this isn't
+a problem in practice, but noting anyway.
 
-triggered the fault in a few minutes.
->
->>
->>>> It also would be good to rule out the thermal throttling (as per
->>>> the Srinivas' comments).
->
-> It is almost certainly thermal throttling, or similar causing
-> Clock modulation, of it seems 50%.
+The problem is that the link state is written to both by the supplier
+and consumer.  If there was a separate bit in struct device_link to
+indicate the supplier's desire to unbind, the problem would go away.
+However a mix of such a bit plus the state machine would become
+somewhat confusing...
 
-While the infinite loops were running, the temps were:
+Best regards,
 
-finger@linux-1t8h:~/rtlwifi_new> sensors
-coretemp-isa-0000
-Adapter: ISA adapter
-Physical id 0:  +83.0°C  (high = +84.0°C, crit = +100.0°C)
-Core 0:         +83.0°C  (high = +84.0°C, crit = +100.0°C)
-Core 1:         +74.0°C  (high = +84.0°C, crit = +100.0°C)
-
-After the fault occurs, I get
-
-finger@linux-1t8h:~/rtlwifi_new> sensors
-coretemp-isa-0000
-Adapter: ISA adapter
-Physical id 0:  +44.0°C  (high = +84.0°C, crit = +100.0°C)
-Core 0:         +43.0°C  (high = +84.0°C, crit = +100.0°C)
-Core 1:         +41.0°C  (high = +84.0°C, crit = +100.0°C)
-
->
->>>>
->>>> For now, please tell me what's in
->>>> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq
->>> 800000
->> Your effective freq is lower than 800MHz. One of the possible reason is
->> thermal throttling.
->>
->> What distro you are using?
->
-> And what make and model of LapTop?
-
-Toshiba Tecra A50-A with CPU Model: 6.60.3 "Intel(R) Core(TM) i7-4600M CPU @ 
-2.90GHz. That is a dual-core unit with hyperthreading.
-
-@Rafael: As I write this, the system has been running the infinite loop test for 
-almost 5 hours with kernel 4.7. I will leave that running while I'm gone, but I 
-am certain that it is OK.
-
-Larry
-
-
-
+Lukas
