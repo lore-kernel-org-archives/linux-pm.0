@@ -1,162 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC/RFT][PATCH v3 0/5] Functional dependencies between devices
-Date: Wed, 28 Sep 2016 02:33:21 +0200
-Message-ID: <1618935.9CTdqGRBy5@vostro.rjw.lan>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <5257325.y9rG1UM74b@vostro.rjw.lan> <20160927123429.GA5828@wunner.de>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: imx_thermal bug reported (please register your kernel bugzilla
+ account)
+Date: Wed, 28 Sep 2016 09:08:21 +0800
+Message-ID: <1475024901.4284.8.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63951 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S932967AbcI1A07 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 20:26:59 -0400
-In-Reply-To: <20160927123429.GA5828@wunner.de>
+Received: from mga06.intel.com ([134.134.136.31]:25760 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932517AbcI1BI0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 27 Sep 2016 21:08:26 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, Jonathan Corbet <corbet@lwn.net>
+To: Shawn Guo <shawn.guo@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tuesday, September 27, 2016 02:34:29 PM Lukas Wunner wrote:
-> [+cc corbet]
-> 
-> To whom it may concern,
-> 
-> I made some notes while reviewing the state machine in patch 2 of this
-> series and thought, why not rework it into something that could eventually
-> go into the Documentation/ tree?
-> 
-> So here's an initial draft.  There's some introductory text plus
-> a description of the state machine.  Just putting this out there now
-> to ease reviewers' lives, despite the obvious WIP status.  I'll try to
-> amend it as the series converges.
-> 
-> This is already rst-formatted but I haven't actually run it through
-> sphinx yet.
+Hi, Shawn,
 
-Thanks a lot for doing this!
+We have a imx_thermal bug report filed at kernel bugzilla,
+https://bugzilla.kernel.org/show_bug.cgi?id=172951
 
-It looks good to me in general.  I think it would be good to add it to the
-series at one point (if you don't mind).
+Please register your kernel bugzilla account so that I can assign this
+bug to you.
 
-I'm only a bit reluctant about advertising the usage of links between children
-and parents, because that doesn't look like the right tool for the purpose
-(as I said before, I'd prefer to add a device flag causing the parent driver
-to be probed before the child one if needed).
+Plus, it would be nice for all the soc thermal driver
+authors/maintainers to have your own kernel bugzilla account, so that I
+can assign the soc driver bugs to you, when I read the bug reports. :)
 
-Thanks,
-Rafael
-
-
-> -- >8 --
-> 
-> Subject: [PATCH] Documentation: device links: Add initial documentation
-> 
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> ---
->  Documentation/driver-model/device_link.rst | 95 ++++++++++++++++++++++++++++++
->  1 file changed, 95 insertions(+)
->  create mode 100644 Documentation/driver-model/device_link.rst
-> 
-> diff --git a/Documentation/driver-model/device_link.rst b/Documentation/driver-model/device_link.rst
-> new file mode 100644
-> index 0000000..ba911b4
-> --- /dev/null
-> +++ b/Documentation/driver-model/device_link.rst
-> @@ -0,0 +1,95 @@
-> +============
-> +Device links
-> +============
-> +
-> +By default, the driver core only enforces dependencies between devices
-> +that are borne out of a parent/child relationship within the device
-> +hierarchy: When suspending, resuming or shutting down the system, devices
-> +are ordered based on this relationship, i.e. children are always suspended
-> +before their parent, and the parent is always resumed before its children.
-> +
-> +Sometimes there is a need to represent device dependencies beyond the
-> +mere parent/child relationship, e.g. between siblings, and have the
-> +driver core automatically take care of them.
-> +
-> +Secondly, the driver core by default does not enforce any driver presence
-> +dependencies, i.e. that one device must be bound to a driver before
-> +another one can probe or function correctly.
-> +
-> +Often these two dependency types come together, so a device depends on
-> +another one both with regards to driver presence *and* with regards to
-> +suspend/resume and shutdown ordering.
-> +
-> +Device links allow representation of such dependencies in the driver core.
-> +
-> +In its standard form, a device link combines *both* dependency types:
-> +It guarantees correct suspend/resume and shutdown ordering between a
-> +"supplier" device and its "consumer" devices, and it guarantees driver
-> +presence on the supplier:  The consumer devices are not probed before the
-> +supplier is bound to a driver, and they're unbound before the supplier
-> +is unbound.
-> +
-> +When driver presence on the supplier is irrelevant and only correct
-> +suspend/resume and shutdown ordering is needed, the device link may
-> +simply be set up with the DEVICE_LINK_STATELESS flag.
-> +
-> +A driver presence dependency between parent and child, i.e. within the
-> +regular device hierarchy, could in principle also be represented in the
-> +driver core using a device link.
-> +
-> +If a device link is set up with the DEVICE_LINK_AUTOREMOVE flag, it is
-> +automatically purged when the consumer fails to probe or later unbinds.
-> +This is handy when adding a device link from the consumer's ->probe hook,
-> +as it obviates the need to delete the link in the ->remove hook or in
-> +the error path of the ->probe hook.
-> +
-> +
-> +State machine
-> +=============
-> +
-> +"""
-> +                .=============================.
-> +                |                             |
-> +                v                             |
-> +DORMANT <=> AVAILABLE <=> CONSUMER_PROBE => ACTIVE
-> +   ^                                          |
-> +   |                                          |
-> +   '============ SUPPLIER_UNBIND <============'
-> +"""
-> +
-> +* The initial state of a device link is passed in to device_link_add().
-> +  If the link is created before any devices are probed, it must be set to
-> +  DEVICE_LINK_DORMANT.
-> +
-> +* When a supplier device is bound to a driver, links to its consumers
-> +  progress to DEVICE_LINK_AVAILABLE.
-> +  (Call to device_links_driver_bound() from driver_bound().)
-> +
-> +* Before a consumer device is probed, presence of supplier drivers is
-> +  verified by checking that links to suppliers are in DEVICE_LINK_AVAILABLE
-> +  state.  The state of the links is updated to DEVICE_LINK_CONSUMER_PROBE.
-> +  (Call to device_links_check_suppliers() from driver_probe_device().)
-> +  This prevents the supplier from unbinding.
-> +  (Call to wait_for_device_probe() in device_links_unbind_consumers().)
-> +
-> +* If the probe fails, links to suppliers revert back to DEVICE_LINK_AVAILABLE.
-> +  (Call to device_links_no_driver() from really_probe().)
-> +
-> +* If the probe succeeds, links to suppliers progress to DEVICE_LINK_ACTIVE.
-> +  (Call of device_links_driver_bound() from driver_bound().)
-> +
-> +* When the consumer's driver is later on removed, links to suppliers revert
-> +  back to DEVICE_LINK_AVAILABLE.
-> +  (Call to device_links_no_driver() from __device_release_driver().)
-> +
-> +* Before a supplier's driver is removed, links to consumers that are not
-> +  bound to a driver are updated to DEVICE_LINK_SUPPLIER_UNBIND.
-> +  (Call to device_links_busy() from __device_release_driver().)
-> +  This prevents the consumers from binding.
-> +  (Call to device_links_check_suppliers() from driver_probe_device().)
-> +  Consumers that are bound are freed from their driver; consumers that are
-> +  probing are waited for until they are done.
-> +  (Call to device_links_unbind_consumers() from __device_release_driver().)
-> +  Once all links to consumers are in DEVICE_LINK_SUPPLIER_UNBIND state,
-> +  the supplier driver is released and the links revert to DEVICE_LINK_DORMANT.
-> +  (Call to device_links_driver_gone() from __device_release_driver().)
-
+thanks,
+rui
