@@ -1,57 +1,55 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: Re: [PATCH 2/2] mfd: intel-lpss: Avoid resuming runtime-suspended
- lpss unnecessarily
-Date: Wed, 28 Sep 2016 16:09:07 +0800
-Message-ID: <20160928080907.GA4567@sharon>
-References: <cover.1475032126.git.yu.c.chen@intel.com>
- <6e14fa9659f23da041bc5e65edcd53c3e4845c74.1475032126.git.yu.c.chen@intel.com>
- <1475048574.4635.1.camel@suse.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 2/3] regulator: max77693: Also manipulate the fast charge
+ current
+Date: Wed, 28 Sep 2016 10:04:41 +0200
+Message-ID: <e9c76587-1a50-167c-0f4b-2442cbc0fa39@kernel.org>
+References: <CGME20160927175220eucas1p2885508f3fe274837693845ffc6745671@eucas1p2.samsung.com>
+ <874m51w7r7.fsf@machinist.wiedmeyer.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:32962 "EHLO mga01.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750977AbcI1IBA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 28 Sep 2016 04:01:00 -0400
-Content-Disposition: inline
-In-Reply-To: <1475048574.4635.1.camel@suse.com>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:35864 "EHLO
+        mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751006AbcI1IEu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2016 04:04:50 -0400
+In-reply-to: <874m51w7r7.fsf@machinist.wiedmeyer.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+To: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>, Mark Brown <broonie@kernel.org>
+Cc: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cw00.choi@samsung.com, b.zolnierkie@samsung.com, lgirdwood@gmail.com, lee.jones@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Oliver,
-On Wed, Sep 28, 2016 at 09:42:54AM +0200, Oliver Neukum wrote:
-> On Wed, 2016-09-28 at 11:28 +0800, Chen Yu wrote:
-> > So first try is to use pm_request_resume() instead, to make the
-> > runtime
-> > resume process asynchronously. Unfortunately the asynchronous runtime
-> > resume relies on pm_wq, which is freezed at early stage. So we choose
-> > another method, that is to avoid resuming runtime-suspended devices,
-> > if they are already runtime suspended. This is safe because for LPSS
-> > driver, the runtime suspend and system suspend are of the same
-> > hook - i.e., intel_lpss_suspend(). And moreover, this device is
-> > neither runtime wakeup source nor system wakeup source.
+On 09/27/2016 07:51 PM, Wolfgang Wiedmeyer wrote:
 > 
-> I agree with the reasoning but I don't see the specificity to LPSS.
-> Shouldn't this go into the core?
->
-Thanks for your reply. Do you mean we should add the logic to pm core?
-There is already one if the driver's
-.prepare() returns a positive number(aka, RPM_SUSPENDED), then pm core will keep
-this device in runtime-suspended during sleep.
-Documentation/power/runtime_pm.txt:
-"the PM core provides a mechanism allowing some coordination between
-different levels of device hierarchy.  Namely, if a system suspend .prepare()
-callback returns RPM_SUSPENDED for a device, that indicates to the PM core
-that the device appears to be runtime-suspended and its state is fine, so it
-may be left in runtime suspend provided that all of its descendants are also
-left in runtime suspend.  If that happens, the PM core will not execute any
-system suspend and resume callbacks for all of those devices, except for the
-complete callback, which is then entirely responsible for handling the device
-as appropriate. "
+> Mark Brown writes:
+> 
+>> On Tue, Sep 27, 2016 at 03:50:42PM +0200, Wolfgang Wiedmeyer wrote:
+>>
+>>> When charging is disabled (e.g. by removing the USB cable) the charge
+>>> current is not reset to zero. So if I expose the current by the
+>>> CURRENT_NOW property, it incorrectly reports the current that was set
+>>> when charging was enabled, although there is no charging going on
+>>> anymore. So I felt the need to update the charge current every time the
+>>> charger gets enabled or disabled.
+>>> Initially, the charge current is set to zero, so I think it needs to be
+>>> set at least at the beginning to enable charging.
+>>
+>> Are you sure that the register value you're looking at is the actual
+>> charge current right now and not just the maximum that the charger will
+>> try to use depending on the conditions (supply available, battery
+>> state...)?  It seems like you're acting as though it's the latter but
+>> that's not what the chip is doing.
+> 
+> I was looking at the vendor code that was released for the Galaxy S3 and
+> there the same register gets accessed for getting the current for
+> the CURRENT_NOW property [1] and for setting the current [2]. So is this
+> probably the wrong use of the CURRENT_NOW property because not the
+> actual charge current is read but the maximum value that was
+> set?
 
-Thanks,
-Yu
+Yes, reading from this register will give only information about
+currently set charge current. Not the real current.
 
+Best regards,
+Krzysztof
 
