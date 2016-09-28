@@ -1,62 +1,58 @@
-From: Matt Ranostay <mranostay@gmail.com>
-Subject: [PATCH v2 1/2] power: power_supply: add new property POWER_SUPPLY_PROP_POLL_INTERVAL
-Date: Wed, 28 Sep 2016 12:55:11 -0700
-Message-ID: <1475092512-30555-2-git-send-email-matt@ranostay.consulting>
-References: <1475092512-30555-1-git-send-email-matt@ranostay.consulting>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1475092512-30555-1-git-send-email-matt@ranostay.consulting>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Tony Lindgren <tony@atomide.com>
+From: Eric Anholt <eric@anholt.net>
+Subject: Re: [PATCH V7 2/6] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Wed, 28 Sep 2016 14:10:26 -0700
+Message-ID: <87twczg27x.fsf@eliezer.anholt.net>
+References: <1474446227-1147-1-git-send-email-kernel@martin.sperl.org> <1474446227-1147-3-git-send-email-kernel@martin.sperl.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha512; protocol="application/pgp-signature"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from anholt.net ([50.246.234.109]:57328 "EHLO anholt.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753162AbcI1VKb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 28 Sep 2016 17:10:31 -0400
+In-Reply-To: <1474446227-1147-3-git-send-email-kernel@martin.sperl.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Russell King <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Stefan Wahren <stefan.wahren@i2se.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: Martin Sperl <kernel@martin.sperl.org>
 
-Add new POWER_SUPPLY_PROP_POLL_INTERVAL property to display/set the
-update interval in seconds of the device.
+--=-=-=
+Content-Type: text/plain
 
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: Tony Lindgren <tony@atomide.com
-Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
----
- Documentation/power/power_supply_class.txt | 1 +
- drivers/power/supply/power_supply_sysfs.c  | 1 +
- include/linux/power_supply.h               | 1 +
- 3 files changed, 3 insertions(+)
+kernel@martin.sperl.org writes:
 
-diff --git a/Documentation/power/power_supply_class.txt b/Documentation/power/power_supply_class.txt
-index 0c72588bd967..df9b315fe55c 100644
---- a/Documentation/power/power_supply_class.txt
-+++ b/Documentation/power/power_supply_class.txt
-@@ -158,6 +158,7 @@ while battery powers a load)
- TIME_TO_FULL - seconds left for battery to be considered full (i.e.
- while battery is charging)
- 
-+POLL_INTERVAL - seconds between queries to retrieve stats from hardware
- 
- Battery <-> external power supply interaction
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index bcde8d13476a..580fd4bfe5f5 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -198,6 +198,7 @@ static struct device_attribute power_supply_attrs[] = {
- 	POWER_SUPPLY_ATTR(scope),
- 	POWER_SUPPLY_ATTR(charge_term_current),
- 	POWER_SUPPLY_ATTR(calibrate),
-+	POWER_SUPPLY_ATTR(poll_interval),
- 	/* Properties of type `const char *' */
- 	POWER_SUPPLY_ATTR(model_name),
- 	POWER_SUPPLY_ATTR(manufacturer),
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 3965503315ef..8b4cfe950d3b 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -148,6 +148,7 @@ enum power_supply_property {
- 	POWER_SUPPLY_PROP_SCOPE,
- 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
- 	POWER_SUPPLY_PROP_CALIBRATE,
-+	POWER_SUPPLY_PROP_POLL_INTERVAL, /* in seconds! */
- 	/* Properties of type `const char *' */
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
--- 
-2.7.4
+> From: Martin Sperl <kernel@martin.sperl.org>
+>
+> Add basic thermal driver for bcm2835 SOC.
+>
+> This driver currently relies on the firmware setting up the
+> tsense HW block and does not set it up itself.
+>
+> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+> Acked-by: Eric Anholt <eric@anholt.net>
+> Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+
+What's the status of merging this one?  I'd like to merge the other
+patches.
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCgAGBQJX7DHCAAoJELXWKTbR/J7otGEP/2AXpUo0FKrGMup1VqZh+ZWX
+qtGQ31Y65h26yj4e9Oi25zTWmGpuYh9VXCnEIRPnATlvQNCBU9tWSXOUDRv1AZhB
+xcnK0Iti3hLSrwatguZ80yLxwAG8vsuMZJ35RS24oOMcv1wGL2taFJqbGGMtyiZo
+5qB2IRcQW2lOyAGSOhNPI7A22wn4uhQ9ohki4cMmj+v6EvOhkEhw5T+9dNdlHwx8
+n03eKCnqMXyqg1bHdNUtjyMjk6gbIIQV1jMZLhyh4PMp58fTz6huwMGldBIokyPj
+bvpgMRinZGQtzK7UPvqcpAlUdOc6ySSTTvSs8C+DYQRNh3OxpPLHmXLdldMCLmf1
+l/sEkc0axJvzpb6ODoXJeQGjdEBHchI//69+RhaRdHXNY2YFTlvBSelZgIQiE3rf
+mTgZeVU2iANYJ/bHTHDTUTKWX29dNZXR5G8YCeFOIVNXVg8EOT2MBRo9xc2rulV/
+bjVQQOGX2h28efiEl/1cc1/2SVZR3qhtVi09bStMNlXMAZHbJoNauOHze0rnXWag
+DL39pwKtNYz13Re3ePOpixU1Zq7ZoRYH6etaHc8/wb+3/kxU8XwT5jGsKQszJM20
+YRoN+zttIpAcI8ngciNL1tmN7y8hst/2o+Ggqk2idq1Vs/3LZOqjrPQikKLuOWas
+P08F3HrJZvP9aGqemXB7
+=ZkqH
+-----END PGP SIGNATURE-----
+--=-=-=--
