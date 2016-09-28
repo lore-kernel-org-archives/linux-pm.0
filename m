@@ -1,80 +1,57 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 3/3] power_supply: max77693: Listen for cable events and
- enable charging
-Date: Wed, 28 Sep 2016 09:56:28 +0200
-Message-ID: <298d81d5-fe41-e2d1-32a7-d3dc35b0fe25@kernel.org>
-References: <CGME20160927133519eucas1p147b1e49693cde0e7e2d683901bdeb7ed@eucas1p1.samsung.com>
- <87a8etwjnr.fsf@machinist.wiedmeyer.de>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH 2/2] mfd: intel-lpss: Avoid resuming runtime-suspended
+ lpss unnecessarily
+Date: Wed, 28 Sep 2016 16:09:07 +0800
+Message-ID: <20160928080907.GA4567@sharon>
+References: <cover.1475032126.git.yu.c.chen@intel.com>
+ <6e14fa9659f23da041bc5e65edcd53c3e4845c74.1475032126.git.yu.c.chen@intel.com>
+ <1475048574.4635.1.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:35305 "EHLO
-        mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750853AbcI1H4g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2016 03:56:36 -0400
-In-reply-to: <87a8etwjnr.fsf@machinist.wiedmeyer.de>
+Received: from mga01.intel.com ([192.55.52.88]:32962 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750977AbcI1IBA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 28 Sep 2016 04:01:00 -0400
+Content-Disposition: inline
+In-Reply-To: <1475048574.4635.1.camel@suse.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
-Cc: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cw00.choi@samsung.com, b.zolnierkie@samsung.com, broonie@kernel.org, lgirdwood@gmail.com, lee.jones@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-On 09/27/2016 03:34 PM, Wolfgang Wiedmeyer wrote:
+Hi Oliver,
+On Wed, Sep 28, 2016 at 09:42:54AM +0200, Oliver Neukum wrote:
+> On Wed, 2016-09-28 at 11:28 +0800, Chen Yu wrote:
+> > So first try is to use pm_request_resume() instead, to make the
+> > runtime
+> > resume process asynchronously. Unfortunately the asynchronous runtime
+> > resume relies on pm_wq, which is freezed at early stage. So we choose
+> > another method, that is to avoid resuming runtime-suspended devices,
+> > if they are already runtime suspended. This is safe because for LPSS
+> > driver, the runtime suspend and system suspend are of the same
+> > hook - i.e., intel_lpss_suspend(). And moreover, this device is
+> > neither runtime wakeup source nor system wakeup source.
 > 
-> Krzysztof Kozlowski writes:
-> 
->> On Tue, Sep 27, 2016 at 01:31:10AM +0200, Wolfgang Wiedmeyer wrote:
->>> This patch adds a listener for extcon cable events and enables
->>> charging if an USB cable is connected. It recognizes SDP and DCP cable
->>> types and treats them the same (same input current and fast charge
->>> current). The maximum input current is set before the charger is
->>> enabled and before the charger gets disabled, the maximum input
->>> current is set to zero. The listener is inspired by the listener
->>> implementation that was used for the AXP288 Charger driver.
->>>
->>> The patch also adds support for the CURRENT_NOW property. It reads the
->>> fast charge current that gets set before the charger is enabled or
->>> disabled.
->>>
->>> Signed-off-by: Wolfgang Wiedmeyer <wolfgit@wiedmeyer.de>
->>
->> No. This power supply driver should not manage regulators. It is not a
->> regulator consumer. For that specific need, there is a charger-manager driver.
-> 
-> When I was in the middle of implementing this, I noticed that the
-> charger manager does everything that is needed. But it took me quite
-> some time to configure the DTS correctly until I realized that the
-> charger manager used a deprecated function
-> (extcon_register_interest()) and thus couldn't work. And as I didn't see
-> the charger-manager in any other device's DTS, I thought that this might
-> not be right way.
-> But Chanwoo Choi has a fix: https://patchwork.kernel.org/patch/8898541/
-> So I will try to get it working with this patch.
-> 
->> I agree that you might configure here the charger. You might even expose
->> some writeable properties through power supply class. However the
->> purpose of this driver is to expose the battery charger to user-space,
->> not to replace the user-space with its work.
->>
->> So... NACK.
-> 
-> Ok, then I will try to reduce the patch to the CURRENT_NOW property
-> support.
-> 
->> If you would like to play with charger-manager, here is my old DTS for
->> Trats2 (might need updates):
-> 
-> Is there a reason that this patch is not in the kernel? It would have
-> been very helpful for me :)
+> I agree with the reasoning but I don't see the specificity to LPSS.
+> Shouldn't this go into the core?
+>
+Thanks for your reply. Do you mean we should add the logic to pm core?
+There is already one if the driver's
+.prepare() returns a positive number(aka, RPM_SUSPENDED), then pm core will keep
+this device in runtime-suspended during sleep.
+Documentation/power/runtime_pm.txt:
+"the PM core provides a mechanism allowing some coordination between
+different levels of device hierarchy.  Namely, if a system suspend .prepare()
+callback returns RPM_SUSPENDED for a device, that indicates to the PM core
+that the device appears to be runtime-suspended and its state is fine, so it
+may be left in runtime suspend provided that all of its descendants are also
+left in runtime suspend.  If that happens, the PM core will not execute any
+system suspend and resume callbacks for all of those devices, except for the
+complete callback, which is then entirely responsible for handling the device
+as appropriate. "
 
-In general, DeviceTree should describe the hardware. Charger manager is
-an abstract device, not a real one. This DT node does not describe real
-hardware but it is a driver-specific glue needed to get things done.
+Thanks,
+Yu
 
-I am not convinced that we should add to DTS such abstract devices. What
-about people who want to control charging from user-space? They would
-have to disable charger-manager from config.
-
-Best regards,
-Krzysztof
 
