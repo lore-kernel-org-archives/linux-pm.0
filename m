@@ -1,60 +1,162 @@
-From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v7 0/8] power: add power sequence library
-Date: Wed, 28 Sep 2016 07:53:42 +0800
-Message-ID: <20160927235342.GA6165@b29397-desktop>
-References: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
- <57EB0109.4070000@maciej.szmigiero.name>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC/RFT][PATCH v3 0/5] Functional dependencies between devices
+Date: Wed, 28 Sep 2016 02:33:21 +0200
+Message-ID: <1618935.9CTdqGRBy5@vostro.rjw.lan>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <5257325.y9rG1UM74b@vostro.rjw.lan> <20160927123429.GA5828@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <57EB0109.4070000-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Maciej S. Szmigiero" <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>
-Cc: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, dwmw3-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63951 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S932967AbcI1A07 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Sep 2016 20:26:59 -0400
+In-Reply-To: <20160927123429.GA5828@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, Jonathan Corbet <corbet@lwn.net>
 
-On Wed, Sep 28, 2016 at 01:30:17AM +0200, Maciej S. Szmigiero wrote:
-> On 20.09.2016 05:36, Peter Chen wrote:
-> > Hi all,
-> > 
-> > This is a follow-up for my last power sequence framework patch set [1].
-> > According to Rob Herring and Ulf Hansson's comments[2]. The kinds of
-> > power sequence instances will be added at postcore_initcall, the match
-> > criteria is compatible string first, if the compatible string is not
-> > matched between dts and library, it will try to use generic power sequence.
-> > 	 
-> > The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> > if only one power sequence instance is needed, for more power sequences
-> > are used, using of_pwrseq_on_list/of_pwrseq_off_list instead (eg, USB hub driver).
-> > 
-> > In future, if there are special power sequence requirements, the special
-> > power sequence library can be created.
-> > 
-> > This patch set is tested on i.mx6 sabresx evk using a dts change, I use
-> > two hot-plug devices to simulate this use case, the related binding
-> > change is updated at patch [1/6], The udoo board changes were tested
-> > using my last power sequence patch set.[3]
-> > 
-> > Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
-> > need to power on itself before it can be found by ULPI bus.
-> > 
-> > [1] http://www.spinics.net/lists/linux-usb/msg142755.html
-> > [2] http://www.spinics.net/lists/linux-usb/msg143106.html
-> > [3] http://www.spinics.net/lists/linux-usb/msg142815.html
+On Tuesday, September 27, 2016 02:34:29 PM Lukas Wunner wrote:
+> [+cc corbet]
 > 
-> Just tested this patch set on UDOO board again to make sure that it still
-> works after all changes done since it was last tested there and can confirm
-> that it does work correctly.
+> To whom it may concern,
 > 
+> I made some notes while reviewing the state machine in patch 2 of this
+> series and thought, why not rework it into something that could eventually
+> go into the Documentation/ tree?
+> 
+> So here's an initial draft.  There's some introductory text plus
+> a description of the state machine.  Just putting this out there now
+> to ease reviewers' lives, despite the obvious WIP status.  I'll try to
+> amend it as the series converges.
+> 
+> This is already rst-formatted but I haven't actually run it through
+> sphinx yet.
 
-Thanks, Maciej.
+Thanks a lot for doing this!
 
--- 
+It looks good to me in general.  I think it would be good to add it to the
+series at one point (if you don't mind).
 
-Best Regards,
-Peter Chen
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I'm only a bit reluctant about advertising the usage of links between children
+and parents, because that doesn't look like the right tool for the purpose
+(as I said before, I'd prefer to add a device flag causing the parent driver
+to be probed before the child one if needed).
+
+Thanks,
+Rafael
+
+
+> -- >8 --
+> 
+> Subject: [PATCH] Documentation: device links: Add initial documentation
+> 
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> ---
+>  Documentation/driver-model/device_link.rst | 95 ++++++++++++++++++++++++++++++
+>  1 file changed, 95 insertions(+)
+>  create mode 100644 Documentation/driver-model/device_link.rst
+> 
+> diff --git a/Documentation/driver-model/device_link.rst b/Documentation/driver-model/device_link.rst
+> new file mode 100644
+> index 0000000..ba911b4
+> --- /dev/null
+> +++ b/Documentation/driver-model/device_link.rst
+> @@ -0,0 +1,95 @@
+> +============
+> +Device links
+> +============
+> +
+> +By default, the driver core only enforces dependencies between devices
+> +that are borne out of a parent/child relationship within the device
+> +hierarchy: When suspending, resuming or shutting down the system, devices
+> +are ordered based on this relationship, i.e. children are always suspended
+> +before their parent, and the parent is always resumed before its children.
+> +
+> +Sometimes there is a need to represent device dependencies beyond the
+> +mere parent/child relationship, e.g. between siblings, and have the
+> +driver core automatically take care of them.
+> +
+> +Secondly, the driver core by default does not enforce any driver presence
+> +dependencies, i.e. that one device must be bound to a driver before
+> +another one can probe or function correctly.
+> +
+> +Often these two dependency types come together, so a device depends on
+> +another one both with regards to driver presence *and* with regards to
+> +suspend/resume and shutdown ordering.
+> +
+> +Device links allow representation of such dependencies in the driver core.
+> +
+> +In its standard form, a device link combines *both* dependency types:
+> +It guarantees correct suspend/resume and shutdown ordering between a
+> +"supplier" device and its "consumer" devices, and it guarantees driver
+> +presence on the supplier:  The consumer devices are not probed before the
+> +supplier is bound to a driver, and they're unbound before the supplier
+> +is unbound.
+> +
+> +When driver presence on the supplier is irrelevant and only correct
+> +suspend/resume and shutdown ordering is needed, the device link may
+> +simply be set up with the DEVICE_LINK_STATELESS flag.
+> +
+> +A driver presence dependency between parent and child, i.e. within the
+> +regular device hierarchy, could in principle also be represented in the
+> +driver core using a device link.
+> +
+> +If a device link is set up with the DEVICE_LINK_AUTOREMOVE flag, it is
+> +automatically purged when the consumer fails to probe or later unbinds.
+> +This is handy when adding a device link from the consumer's ->probe hook,
+> +as it obviates the need to delete the link in the ->remove hook or in
+> +the error path of the ->probe hook.
+> +
+> +
+> +State machine
+> +=============
+> +
+> +"""
+> +                .=============================.
+> +                |                             |
+> +                v                             |
+> +DORMANT <=> AVAILABLE <=> CONSUMER_PROBE => ACTIVE
+> +   ^                                          |
+> +   |                                          |
+> +   '============ SUPPLIER_UNBIND <============'
+> +"""
+> +
+> +* The initial state of a device link is passed in to device_link_add().
+> +  If the link is created before any devices are probed, it must be set to
+> +  DEVICE_LINK_DORMANT.
+> +
+> +* When a supplier device is bound to a driver, links to its consumers
+> +  progress to DEVICE_LINK_AVAILABLE.
+> +  (Call to device_links_driver_bound() from driver_bound().)
+> +
+> +* Before a consumer device is probed, presence of supplier drivers is
+> +  verified by checking that links to suppliers are in DEVICE_LINK_AVAILABLE
+> +  state.  The state of the links is updated to DEVICE_LINK_CONSUMER_PROBE.
+> +  (Call to device_links_check_suppliers() from driver_probe_device().)
+> +  This prevents the supplier from unbinding.
+> +  (Call to wait_for_device_probe() in device_links_unbind_consumers().)
+> +
+> +* If the probe fails, links to suppliers revert back to DEVICE_LINK_AVAILABLE.
+> +  (Call to device_links_no_driver() from really_probe().)
+> +
+> +* If the probe succeeds, links to suppliers progress to DEVICE_LINK_ACTIVE.
+> +  (Call of device_links_driver_bound() from driver_bound().)
+> +
+> +* When the consumer's driver is later on removed, links to suppliers revert
+> +  back to DEVICE_LINK_AVAILABLE.
+> +  (Call to device_links_no_driver() from __device_release_driver().)
+> +
+> +* Before a supplier's driver is removed, links to consumers that are not
+> +  bound to a driver are updated to DEVICE_LINK_SUPPLIER_UNBIND.
+> +  (Call to device_links_busy() from __device_release_driver().)
+> +  This prevents the consumers from binding.
+> +  (Call to device_links_check_suppliers() from driver_probe_device().)
+> +  Consumers that are bound are freed from their driver; consumers that are
+> +  probing are waited for until they are done.
+> +  (Call to device_links_unbind_consumers() from __device_release_driver().)
+> +  Once all links to consumers are in DEVICE_LINK_SUPPLIER_UNBIND state,
+> +  the supplier driver is released and the links revert to DEVICE_LINK_DORMANT.
+> +  (Call to device_links_driver_gone() from __device_release_driver().)
+
