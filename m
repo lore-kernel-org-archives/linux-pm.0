@@ -1,92 +1,36 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] of: thermal: Fixed governor at each thermal zone
-Date: Wed, 28 Sep 2016 09:30:40 +0800
-Message-ID: <1475026240.4284.17.camel@intel.com>
-References: <1474247932-1026-1-git-send-email-hugh.kang@lge.com>
-         <1474940817.4284.0.camel@intel.com>
-         <10649ba4-5558-ea3b-a03b-02babd5e63f9@arm.com>
-         <20160927132202.GA27366@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH 0/2] Define positive return value to RPM_SUSPEND for runtime-suspended devices
+Date: Wed, 28 Sep 2016 11:26:30 +0800
+Message-ID: <cover.1475032126.git.yu.c.chen@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:46962 "EHLO mga03.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:62628 "EHLO mga09.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753937AbcI1Bap (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Sep 2016 21:30:45 -0400
-In-Reply-To: <20160927132202.GA27366@localhost.localdomain>
+        id S1752805AbcI1DSf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 27 Sep 2016 23:18:35 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: Inhyuk Kang <hugh.kang@lge.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 
-Hi, Javi, Lukasz and Eduardo,
+This patch set is to define the positive value returned
+by device .prepare() callbacks, which is used to indicate
+the devices are OK to remain in runtime-suspended during
+system sleep. A precise return value would make the code
+more readable.
 
-thanks for your input.
+Based on this definition, optimized the suspend process
+in intel-lpss driver.
 
-thanks,
-rui
+Chen Yu (2):
+  PM / sleep: Return RPM_SUSPENDED to keep devices in runtime-suspended
+  mfd: intel-lpss: Avoid resuming runtime-suspended lpss unnecessarily
 
-On 二, 2016-09-27 at 06:22 -0700, Eduardo Valentin wrote:
-> Hello, Lukasz, Inhyuk, Javi,
-> 
-> On Tue, Sep 27, 2016 at 12:52:04PM +0100, Lukasz Luba wrote:
-> > 
-> > 
-> > On 27/09/16 02:46, Zhang Rui wrote:
-> > > 
-> > > On 一, 2016-09-19 at 10:18 +0900, Inhyuk Kang wrote:
-> > > > 
-> > > > It is necessary to be added governor at each thermal_zone.
-> > > > Because some governors should be operated in the during the
-> > > > kernel
-> > > > booting
-> > > > in order to avoid heating problem.
-> > > > 
-> > > > Default governor cannot be covered all thermal zones policy
-> > > > because
-> > > > some thermal zones want to apply different one.
-> > > > For example, the power allocator governor operates differently
-> > > > with
-> > > > step wise governor.
-> > > > Hence, it is better to parse governor parameter from the device
-> > > > tree.
-> > > > 
-> > > > Signed-off-by: Inhyuk Kang <hugh.kang@lge.com>
-> > > > 
-> > > The patch looks okay to me.
-> > > Eduardo, what do you think of this patch?
-> > Hi Rui,
-> > 
-> > Beside the fact which Javi pointed out in his email, there is an
-> > issue in
-> > the patch itself.
-> > The idea behind the patch is good, but the patch should have some
-> > improvements, i.e:
-> > - strncpy instead of strcpy,
-> > - if the governor name is not found in the registered governor's
-> > list by
-> > __find_governor (and then null is set) we should probably switch to
-> > default
-> > governor,
-> > - add DT documentation,
-> Also, the idea of the patch is good, almost tempting to do it, but
-> unfortunately, not acceptable from DT perspective. The patch
-> infringes
-> two of the DT conceptual and design decision of:
-> (a) DT should describe hardware, not policy;
-> (b) DT should describe hardware, not OS specific implementations.
-> 
-> As already pointed by Javi, this patch has already been proposed
-> (more
-> than one time by different people), but, it still continues to be
-> unacceptable.
-> 
-> Cheers,
-> 
-> 
-> > 
-> > 
-> > Regards,
-> > Lukasz
-> > 
+ Documentation/power/devices.txt    | 8 ++++----
+ Documentation/power/runtime_pm.txt | 2 +-
+ drivers/base/power/main.c          | 8 ++++++--
+ drivers/mfd/intel-lpss.c           | 9 +++++++++
+ 4 files changed, 20 insertions(+), 7 deletions(-)
+
+-- 
+2.7.4
+
