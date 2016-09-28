@@ -1,79 +1,39 @@
-From: =?utf-8?B?6rCV7J247ZiBL+yxheyehOyXsOq1rOybkC9TVyBQbGF0Zm9ybSjsl7ApQU9U?=
-         =?utf-8?B?7YyAKGh1Z2gua2FuZ0BsZ2UuY29tKQ==?= <hugh.kang@lge.com>
-Subject: RE: [PATCH] of: thermal: Fixed governor at each thermal zone
-Date: Wed, 28 Sep 2016 16:13:36 +0900
-Message-ID: <C80AB6F618D91B4E8F391CB202C12DFD112359C6F3@LGEVEXMBHQSVC1.LGE.NET>
-References: <1474247932-1026-1-git-send-email-hugh.kang@lge.com>
-         <1474940817.4284.0.camel@intel.com>
-         <10649ba4-5558-ea3b-a03b-02babd5e63f9@arm.com>
-         <20160927132202.GA27366@localhost.localdomain>
- <1475026240.4284.17.camel@intel.com>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: [PATCH 2/2] mfd: intel-lpss: Avoid resuming runtime-suspended
+ lpss unnecessarily
+Date: Wed, 28 Sep 2016 09:42:54 +0200
+Message-ID: <1475048574.4635.1.camel@suse.com>
+References: <cover.1475032126.git.yu.c.chen@intel.com>
+         <6e14fa9659f23da041bc5e65edcd53c3e4845c74.1475032126.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from LGEAMRELO13.lge.com ([156.147.23.53]:35867 "EHLO
-        lgeamrelo13.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750838AbcI1HNk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2016 03:13:40 -0400
-In-Reply-To: <1475026240.4284.17.camel@intel.com>
-Content-Language: ko-KR
+Received: from mx2.suse.de ([195.135.220.15]:35766 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751021AbcI1Hm7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 28 Sep 2016 03:42:59 -0400
+In-Reply-To: <6e14fa9659f23da041bc5e65edcd53c3e4845c74.1475032126.git.yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>
-Cc: =?utf-8?B?6rCV7J247ZiBL+yxheyehOyXsOq1rOybkC9TVyBQbGF0Zm9ybSjsl7ApQU9U?= =?utf-8?B?7YyAKGh1Z2gua2FuZ0BsZ2UuY29tKQ==?= <hugh.kang@lge.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?utf-8?B?7KCV7LCs6regL+yImOyEneyXsOq1rOybkC9TVyBQbGF0Zm9ybSjsl7ApQU9U?= =?utf-8?B?7YyAKGNoYW4uamVvbmdAbGdlLmNvbSkgKGNoYW4uamVvbmdAbA==?= =?utf-8?B?Z2UuY29tKQ==?= <chan.jeong@lge.com>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-SGVsbG8gUnVpLCBKYXZpLCBMdWthc3ogYW5kIEVkdWFyZG8NCg0KPiAtLS0tLU9yaWdpbmFsIE1l
-c3NhZ2UtLS0tLQ0KPiBGcm9tOiBaaGFuZyBSdWkgW21haWx0bzpydWkuemhhbmdAaW50ZWwuY29t
-XQ0KPiBTZW50OiBXZWRuZXNkYXksIFNlcHRlbWJlciAyOCwgMjAxNiAxMDozMSBBTQ0KPiBUbzog
-RWR1YXJkbyBWYWxlbnRpbjsgTHVrYXN6IEx1YmENCj4gQ2M6IEluaHl1ayBLYW5nOyBsaW51eC1w
-bUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVj
-dDogUmU6IFtQQVRDSF0gb2Y6IHRoZXJtYWw6IEZpeGVkIGdvdmVybm9yIGF0IGVhY2ggdGhlcm1h
-bCB6b25lDQo+IA0KPiBIaSwgSmF2aSwgTHVrYXN6IGFuZCBFZHVhcmRvLA0KPiANCj4gdGhhbmtz
-IGZvciB5b3VyIGlucHV0Lg0KPiANCj4gdGhhbmtzLA0KPiBydWkNCj4gDQo+IE9uIOS6jCwgMjAx
-Ni0wOS0yNyBhdCAwNjoyMiAtMDcwMCwgRWR1YXJkbyBWYWxlbnRpbiB3cm90ZToNCj4gPiBIZWxs
-bywgTHVrYXN6LCBJbmh5dWssIEphdmksDQo+ID4NCj4gPiBPbiBUdWUsIFNlcCAyNywgMjAxNiBh
-dCAxMjo1MjowNFBNICswMTAwLCBMdWthc3ogTHViYSB3cm90ZToNCj4gPiA+DQo+ID4gPg0KPiA+
-ID4gT24gMjcvMDkvMTYgMDI6NDYsIFpoYW5nIFJ1aSB3cm90ZToNCj4gPiA+ID4NCj4gPiA+ID4g
-T24g5LiALCAyMDE2LTA5LTE5IGF0IDEwOjE4ICswOTAwLCBJbmh5dWsgS2FuZyB3cm90ZToNCj4g
-PiA+ID4gPg0KPiA+ID4gPiA+IEl0IGlzIG5lY2Vzc2FyeSB0byBiZSBhZGRlZCBnb3Zlcm5vciBh
-dCBlYWNoIHRoZXJtYWxfem9uZS4NCj4gPiA+ID4gPiBCZWNhdXNlIHNvbWUgZ292ZXJub3JzIHNo
-b3VsZCBiZSBvcGVyYXRlZCBpbiB0aGUgZHVyaW5nIHRoZQ0KPiA+ID4gPiA+IGtlcm5lbCBib290
-aW5nIGluIG9yZGVyIHRvIGF2b2lkIGhlYXRpbmcgcHJvYmxlbS4NCj4gPiA+ID4gPg0KPiA+ID4g
-PiA+IERlZmF1bHQgZ292ZXJub3IgY2Fubm90IGJlIGNvdmVyZWQgYWxsIHRoZXJtYWwgem9uZXMg
-cG9saWN5DQo+ID4gPiA+ID4gYmVjYXVzZSBzb21lIHRoZXJtYWwgem9uZXMgd2FudCB0byBhcHBs
-eSBkaWZmZXJlbnQgb25lLg0KPiA+ID4gPiA+IEZvciBleGFtcGxlLCB0aGUgcG93ZXIgYWxsb2Nh
-dG9yIGdvdmVybm9yIG9wZXJhdGVzIGRpZmZlcmVudGx5DQo+ID4gPiA+ID4gd2l0aCBzdGVwIHdp
-c2UgZ292ZXJub3IuDQo+ID4gPiA+ID4gSGVuY2UsIGl0IGlzIGJldHRlciB0byBwYXJzZSBnb3Zl
-cm5vciBwYXJhbWV0ZXIgZnJvbSB0aGUgZGV2aWNlDQo+ID4gPiA+ID4gdHJlZS4NCj4gPiA+ID4g
-Pg0KPiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEluaHl1ayBLYW5nIDxodWdoLmthbmdAbGdlLmNv
-bT4NCj4gPiA+ID4gPg0KPiA+ID4gPiBUaGUgcGF0Y2ggbG9va3Mgb2theSB0byBtZS4NCj4gPiA+
-ID4gRWR1YXJkbywgd2hhdCBkbyB5b3UgdGhpbmsgb2YgdGhpcyBwYXRjaD8NCj4gPiA+IEhpIFJ1
-aSwNCj4gPiA+DQo+ID4gPiBCZXNpZGUgdGhlIGZhY3Qgd2hpY2ggSmF2aSBwb2ludGVkIG91dCBp
-biBoaXMgZW1haWwsIHRoZXJlIGlzIGFuDQo+ID4gPiBpc3N1ZSBpbiB0aGUgcGF0Y2ggaXRzZWxm
-Lg0KPiA+ID4gVGhlIGlkZWEgYmVoaW5kIHRoZSBwYXRjaCBpcyBnb29kLCBidXQgdGhlIHBhdGNo
-IHNob3VsZCBoYXZlIHNvbWUNCj4gPiA+IGltcHJvdmVtZW50cywgaS5lOg0KPiA+ID4gLSBzdHJu
-Y3B5IGluc3RlYWQgb2Ygc3RyY3B5LA0KPiA+ID4gLSBpZiB0aGUgZ292ZXJub3IgbmFtZSBpcyBu
-b3QgZm91bmQgaW4gdGhlIHJlZ2lzdGVyZWQgZ292ZXJub3Incw0KPiA+ID4gbGlzdCBieSBfX2Zp
-bmRfZ292ZXJub3IgKGFuZCB0aGVuIG51bGwgaXMgc2V0KSB3ZSBzaG91bGQgcHJvYmFibHkNCj4g
-PiA+IHN3aXRjaCB0byBkZWZhdWx0IGdvdmVybm9yLA0KPiA+ID4gLSBhZGQgRFQgZG9jdW1lbnRh
-dGlvbiwNCj4gPiBBbHNvLCB0aGUgaWRlYSBvZiB0aGUgcGF0Y2ggaXMgZ29vZCwgYWxtb3N0IHRl
-bXB0aW5nIHRvIGRvIGl0LCBidXQNCj4gPiB1bmZvcnR1bmF0ZWx5LCBub3QgYWNjZXB0YWJsZSBm
-cm9tIERUIHBlcnNwZWN0aXZlLiBUaGUgcGF0Y2ggaW5mcmluZ2VzDQo+ID4gdHdvIG9mIHRoZSBE
-VCBjb25jZXB0dWFsIGFuZCBkZXNpZ24gZGVjaXNpb24gb2Y6DQo+ID4gKGEpIERUIHNob3VsZCBk
-ZXNjcmliZSBoYXJkd2FyZSwgbm90IHBvbGljeTsNCj4gPiAoYikgRFQgc2hvdWxkIGRlc2NyaWJl
-IGhhcmR3YXJlLCBub3QgT1Mgc3BlY2lmaWMgaW1wbGVtZW50YXRpb25zLg0KPiA+DQo+ID4gQXMg
-YWxyZWFkeSBwb2ludGVkIGJ5IEphdmksIHRoaXMgcGF0Y2ggaGFzIGFscmVhZHkgYmVlbiBwcm9w
-b3NlZCAobW9yZQ0KPiA+IHRoYW4gb25lIHRpbWUgYnkgZGlmZmVyZW50IHBlb3BsZSksIGJ1dCwg
-aXQgc3RpbGwgY29udGludWVzIHRvIGJlDQo+ID4gdW5hY2NlcHRhYmxlLg0KPiA+DQo+ID4gQ2hl
-ZXJzLA0KPiA+DQo+ID4NCj4gPiA+DQo+ID4gPg0KPiA+ID4gUmVnYXJkcywNCj4gPiA+IEx1a2Fz
-eg0KPiA+ID4NClRoYW5rIHlvdSBmb3IgcmV2aWV3aW5nIHRoaXMgcGF0Y2guIEkgdW5kZXJzdGFu
-ZCB5b3VyIGlkZWFzLiANCkR1cmluZyB0aGUgdGhlcm1hbCB0ZXN0aW5nIGludG8gZGV2aWNlLCB0
-aGUgdGhlcm1hbCBwb2xpY3kgc2hvdWxkIGJlIGFwcGxpZWQgaW4gdGhlIGJlZ2dpbmcgb2Yga2Vy
-bmVsIGJvb3Qgc29tZXRpbWVzLg0KSGVuY2UsIEkgaGF2ZSBzdWdnZXN0ZWQgYWJvdmUgc29sdXRp
-b24uDQoNCkFueXdheSwgdGhlIERUIHBlcnNwZWN0aXZlIGxpa2UgYWJvdmUsIHRoaXMgcGF0Y2gg
-aXMgYmV0dGVyIG5vdCB0byBiZSB1cHN0cmVhbS4NCg0KVGhhbmsgeW91IHZlcnkgbXVjaC4NCg0K
-UmVnYXJkcywNCkh1Z2ggS2FuZw0KDQpObyBPbmUgZXZlciBpcyBkZWZlYXRlZCB1bnRpbCBkZWZl
-YXQgaGFzIGJlZW4gYWNjZXB0ZWQgYXMgYSByZWFsaXR5Lg0K6rCV7J247ZiBIChIdWdoIEthbmcp
-IENoaWVmIEVuZ2luZWVyDQpTVyBQbGF0Zm9ybSjsl7ApIEFkdmFuY2VkIE9TIFRlY2hub2xvZ3kg
-VEVBTSAoQU9UKQ0KTW9iaWxlOiArODItMTAtNTUxMy03OTU3DQoNCg==
+On Wed, 2016-09-28 at 11:28 +0800, Chen Yu wrote:
+> So first try is to use pm_request_resume() instead, to make the
+> runtime
+> resume process asynchronously. Unfortunately the asynchronous runtime
+> resume relies on pm_wq, which is freezed at early stage. So we choose
+> another method, that is to avoid resuming runtime-suspended devices,
+> if they are already runtime suspended. This is safe because for LPSS
+> driver, the runtime suspend and system suspend are of the same
+> hook - i.e., intel_lpss_suspend(). And moreover, this device is
+> neither runtime wakeup source nor system wakeup source.
+
+I agree with the reasoning but I don't see the specificity to LPSS.
+Shouldn't this go into the core?
+
+	Regards
+		Oliver
+
+
