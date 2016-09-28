@@ -1,77 +1,282 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Update][RFC/RFT][PATCH v3 2/5] driver core: Functional
- dependencies tracking support
-Date: Wed, 28 Sep 2016 13:31:36 +0200
-Message-ID: <CAJZ5v0gwJq=s5pJqOx-_J5+6s8HZ3nr9aHFQF59P63BEcsR-gg@mail.gmail.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <5257325.y9rG1UM74b@vostro.rjw.lan>
- <2480829.3iNV7K5Pdo@vostro.rjw.lan> <2141382.sMORCbDyAF@vostro.rjw.lan>
- <20160927085413.GA5744@wunner.de> <CAJZ5v0h99yO8R28BkW-v3NZdc1GxupYx-4yeedduqpLfsxW01Q@mail.gmail.com>
- <20160928104318.GA6064@wunner.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: [PATCH] tools/power/cpupower: allow running without cpu0
+Date: Wed, 28 Sep 2016 07:39:07 -0400
+Message-ID: <1475062747-29049-1-git-send-email-prarit@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:35880 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752339AbcI1Lbj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2016 07:31:39 -0400
-In-Reply-To: <20160928104318.GA6064@wunner.de>
+Received: from mx1.redhat.com ([209.132.183.28]:49830 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752213AbcI1LjP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 28 Sep 2016 07:39:15 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+To: linux-pm@vger.kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>, Thomas Renninger <trenn@suse.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Wed, Sep 28, 2016 at 12:43 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> On Tue, Sep 27, 2016 at 01:52:48PM +0200, Rafael J. Wysocki wrote:
->> On Tue, Sep 27, 2016 at 10:54 AM, Lukas Wunner <lukas@wunner.de> wrote:
->> > On Fri, Sep 16, 2016 at 02:33:55PM +0200, Rafael J. Wysocki wrote:
->> >> +void device_links_unbind_consumers(struct device *dev)
->> >> +{
->> >> +     struct device_link *link;
->> >> +     int idx;
->> >> +
->> >> + start:
->> >> +     idx = device_links_read_lock();
->> >> +
->> >> +     list_for_each_entry_rcu(link, &dev->links_to_consumers, s_node) {
->> >> +             enum device_link_status status;
->> >> +
->> >> +             if (link->flags & DEVICE_LINK_STATELESS)
->> >> +                     continue;
->> >> +
->> >> +             spin_lock(&link->lock);
->> >> +             status = link->status;
->> >> +             if (status == DEVICE_LINK_CONSUMER_PROBE) {
->> >> +                     spin_unlock(&link->lock);
->> >> +
->> >> +                     device_links_read_unlock(idx);
->> >> +
->> >> +                     wait_for_device_probe();
->> >> +                     goto start;
->> >> +             }
->> >> +             link->status = DEVICE_LINK_SUPPLIER_UNBIND;
->> >
->> > While revisiting this function it just occurred to me that there's
->> > a theoretical infinite loop here if the consumer probes, is unbound
->> > by the supplier, then reprobes again before the supplier had a chance
->> > to update the link to DEVICE_LINK_SUPPLIER_UNBIND.  Perhaps this isn't
->> > a problem in practice, but noting anyway.
->>
->> But the consumer is unbound only after setting the link status to
->> DEVICE_LINK_SUPPLIER_UNBIND and then it won't probe again.
->
-> Sorry, looking at the code with a fresh pair of eyeballs I realize the
-> scenario for the infinite loop is different from what I've written above:
-> The infinite loop can occur if the consumer probes continuously but never
-> succeeds, e.g. due to some unfulfilled condition in its ->probe hook.
+Linux-3.7 added CONFIG_BOOTPARAM_HOTPLUG_CPU0,
+allowing systems to offline cpu0.
 
-I'm not sure how that can happen.
+But when cpu0 is offline, cpupower monitor will not display all
+processor and Mperf information:
 
-If it doesn't succeed, the driver's ->probe() will return an error, so
-that driver is not going to be tried again, unless the error is
--EPROBE_DEFER, but that will cause it to wait for another driver to
-probe successfully in the meantime.
+[root@intel-skylake-dh-03 cpupower]# ./cpupower monitor
+WARNING: at least one cpu is offline
+    |Idle_Stats
+CPU | POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S
+   4|  0.00|  0.00|  0.00|  0.00|  0.90|  0.00| 96.13
+   1|  0.00|  0.00|  5.49|  0.00|  0.01|  0.00| 92.26
+   5|  0.00|  0.00|  0.00|  0.00|  0.46|  0.00| 99.50
+   2| 45.42|  0.00|  0.00|  0.00| 22.94|  0.00| 28.84
+   6|  0.00| 37.54|  0.00|  0.00|  0.00|  0.00|  0.00
+   3|  0.00|  0.00|  0.00|  0.00|  0.30|  0.00| 91.99
+   7|  0.00|  0.00|  0.00|  0.00|  4.70|  0.00|  0.70
 
-Or do you have any particular example in which things work differently in mind?
+This patch replaces the hard-coded use of cpu0 in cpupower with the
+current cpu, allowing it to run without a cpu0.
 
-Thanks,
-Rafael
+After the patch is applied,
+
+[root@intel-skylake-dh-03 cpupower]# ./cpupower monitor
+WARNING: at least one cpu is offline
+    |Nehalem                    || Mperf              || Idle_Stats
+CPU | C3   | C6   | PC3  | PC6  || C0   | Cx   | Freq || POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S
+   4|  0.01|  1.27|  0.00|  0.00||  0.04| 99.96|  3957||  0.00|  0.00|  0.00|  0.00|  1.43|  0.00| 98.52
+   1|  0.00| 98.82|  0.00|  0.00||  0.05| 99.95|  3361||  0.00|  0.00|  0.01|  0.00|  0.03|  0.00| 99.88
+   5|  0.00| 98.82|  0.00|  0.00||  0.09| 99.91|  3917||  0.00|  0.00|  0.00|  0.00| 99.38|  0.00|  0.50
+   2|  0.33|  0.00|  0.00|  0.00||  0.00|100.00|  3890||  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|100.00
+   6|  0.33|  0.00|  0.00|  0.00||  0.01| 99.99|  3903||  0.00|  0.00|  0.00|  0.00|  0.00|  0.00| 99.99
+   3|  0.01|  0.71|  0.00|  0.00||  0.06| 99.94|  3678||  0.00|  0.00|  0.00|  0.00|  0.80|  0.00| 99.13
+   7|  0.01|  0.71|  0.00|  0.00||  0.03| 99.97|  3538||  0.00|  0.69| 11.70|  0.00|  0.00|  0.00| 87.57
+
+There are some minor cleanups included in this patch.
+
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Thomas Renninger <trenn@suse.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+---
+ tools/power/cpupower/utils/cpupower.c              |   15 ++++++++++++---
+ tools/power/cpupower/utils/helpers/cpuid.c         |    4 ++--
+ tools/power/cpupower/utils/helpers/helpers.h       |    5 +++--
+ tools/power/cpupower/utils/helpers/misc.c          |    2 +-
+ .../cpupower/utils/idle_monitor/hsw_ext_idle.c     |    4 ++--
+ .../cpupower/utils/idle_monitor/mperf_monitor.c    |    3 ++-
+ tools/power/cpupower/utils/idle_monitor/nhm_idle.c |    8 ++++----
+ tools/power/cpupower/utils/idle_monitor/snb_idle.c |    4 ++--
+ 8 files changed, 28 insertions(+), 17 deletions(-)
+
+diff --git a/tools/power/cpupower/utils/cpupower.c b/tools/power/cpupower/utils/cpupower.c
+index 9ea914378985..2dccf4998599 100644
+--- a/tools/power/cpupower/utils/cpupower.c
++++ b/tools/power/cpupower/utils/cpupower.c
+@@ -12,6 +12,7 @@
+ #include <string.h>
+ #include <unistd.h>
+ #include <errno.h>
++#include <sched.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <sys/utsname.h>
+@@ -31,6 +32,7 @@ static int cmd_help(int argc, const char **argv);
+  */
+ struct cpupower_cpu_info cpupower_cpu_info;
+ int run_as_root;
++int base_cpu;
+ /* Affected cpus chosen by -c/--cpu param */
+ struct bitmask *cpus_chosen;
+ 
+@@ -174,6 +176,7 @@ int main(int argc, const char *argv[])
+ 	unsigned int i, ret;
+ 	struct stat statbuf;
+ 	struct utsname uts;
++	char pathname[32];
+ 
+ 	cpus_chosen = bitmask_alloc(sysconf(_SC_NPROCESSORS_CONF));
+ 
+@@ -198,17 +201,23 @@ int main(int argc, const char *argv[])
+ 		argv[0] = cmd = "help";
+ 	}
+ 
+-	get_cpu_info(0, &cpupower_cpu_info);
++	base_cpu = sched_getcpu();
++	if (base_cpu < 0) {
++		fprintf(stderr, _("No valid cpus found.\n"));
++		return EXIT_FAILURE;
++	}
++
++	get_cpu_info(&cpupower_cpu_info);
+ 	run_as_root = !geteuid();
+ 	if (run_as_root) {
+ 		ret = uname(&uts);
++		sprintf(pathname, "/dev/cpu/%d/msr", base_cpu);
+ 		if (!ret && !strcmp(uts.machine, "x86_64") &&
+-		    stat("/dev/cpu/0/msr", &statbuf) != 0) {
++		    stat(pathname, &statbuf) != 0) {
+ 			if (system("modprobe msr") == -1)
+ 	fprintf(stderr, _("MSR access not available.\n"));
+ 		}
+ 	}
+-		
+ 
+ 	for (i = 0; i < ARRAY_SIZE(commands); i++) {
+ 		struct cmd_struct *p = commands + i;
+diff --git a/tools/power/cpupower/utils/helpers/cpuid.c b/tools/power/cpupower/utils/helpers/cpuid.c
+index 93b0aa74ca03..fa3a765d87da 100644
+--- a/tools/power/cpupower/utils/helpers/cpuid.c
++++ b/tools/power/cpupower/utils/helpers/cpuid.c
+@@ -42,7 +42,7 @@ cpuid_func(edx);
+  *
+  * TBD: Should there be a cpuid alternative for this if /proc is not mounted?
+  */
+-int get_cpu_info(unsigned int cpu, struct cpupower_cpu_info *cpu_info)
++int get_cpu_info(struct cpupower_cpu_info *cpu_info)
+ {
+ 	FILE *fp;
+ 	char value[64];
+@@ -70,7 +70,7 @@ int get_cpu_info(unsigned int cpu, struct cpupower_cpu_info *cpu_info)
+ 		if (!strncmp(value, "processor\t: ", 12))
+ 			sscanf(value, "processor\t: %u", &proc);
+ 
+-		if (proc != cpu)
++		if (proc != (unsigned int)base_cpu)
+ 			continue;
+ 
+ 		/* Get CPU vendor */
+diff --git a/tools/power/cpupower/utils/helpers/helpers.h b/tools/power/cpupower/utils/helpers/helpers.h
+index afb66f80554e..2bc62f3ca4b8 100644
+--- a/tools/power/cpupower/utils/helpers/helpers.h
++++ b/tools/power/cpupower/utils/helpers/helpers.h
+@@ -34,6 +34,7 @@
+ /* Internationalization ****************************/
+ 
+ extern int run_as_root;
++extern int base_cpu;
+ extern struct bitmask *cpus_chosen;
+ 
+ /* Global verbose (-d) stuff *********************************/
+@@ -85,11 +86,11 @@ struct cpupower_cpu_info {
+  *
+  * Extract CPU vendor, family, model, stepping info from /proc/cpuinfo
+  *
+- * Returns 0 on success or a negativ error code
++ * Returns 0 on success or a negative error code
+  * Only used on x86, below global's struct values are zero/unknown on
+  * other archs
+  */
+-extern int get_cpu_info(unsigned int cpu, struct cpupower_cpu_info *cpu_info);
++extern int get_cpu_info(struct cpupower_cpu_info *cpu_info);
+ extern struct cpupower_cpu_info cpupower_cpu_info;
+ /* cpuid and cpuinfo helpers  **************************/
+ 
+diff --git a/tools/power/cpupower/utils/helpers/misc.c b/tools/power/cpupower/utils/helpers/misc.c
+index 1609243f5c64..fa5e5a942838 100644
+--- a/tools/power/cpupower/utils/helpers/misc.c
++++ b/tools/power/cpupower/utils/helpers/misc.c
+@@ -10,7 +10,7 @@ int cpufreq_has_boost_support(unsigned int cpu, int *support, int *active,
+ 
+ 	*support = *active = *states = 0;
+ 
+-	ret = get_cpu_info(0, &cpu_info);
++	ret = get_cpu_info(&cpu_info);
+ 	if (ret)
+ 		return ret;
+ 
+diff --git a/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c b/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
+index ebeaba6571a3..f794d6bbb7e9 100644
+--- a/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
++++ b/tools/power/cpupower/utils/idle_monitor/hsw_ext_idle.c
+@@ -123,7 +123,7 @@ static int hsw_ext_start(void)
+ 			previous_count[num][cpu] = val;
+ 		}
+ 	}
+-	hsw_ext_get_count(TSC, &tsc_at_measure_start, 0);
++	hsw_ext_get_count(TSC, &tsc_at_measure_start, base_cpu);
+ 	return 0;
+ }
+ 
+@@ -132,7 +132,7 @@ static int hsw_ext_stop(void)
+ 	unsigned long long val;
+ 	int num, cpu;
+ 
+-	hsw_ext_get_count(TSC, &tsc_at_measure_end, 0);
++	hsw_ext_get_count(TSC, &tsc_at_measure_end, base_cpu);
+ 
+ 	for (num = 0; num < HSW_EXT_CSTATE_COUNT; num++) {
+ 		for (cpu = 0; cpu < cpu_count; cpu++) {
+diff --git a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+index c83f1606970b..d7c2a6d13dea 100644
+--- a/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
++++ b/tools/power/cpupower/utils/idle_monitor/mperf_monitor.c
+@@ -80,7 +80,8 @@ static int *is_valid;
+ static int mperf_get_tsc(unsigned long long *tsc)
+ {
+ 	int ret;
+-	ret = read_msr(0, MSR_TSC, tsc);
++
++	ret = read_msr(base_cpu, MSR_TSC, tsc);
+ 	if (ret)
+ 		dprint("Reading TSC MSR failed, returning %llu\n", *tsc);
+ 	return ret;
+diff --git a/tools/power/cpupower/utils/idle_monitor/nhm_idle.c b/tools/power/cpupower/utils/idle_monitor/nhm_idle.c
+index d2a91dd0d563..abf8cb5f7349 100644
+--- a/tools/power/cpupower/utils/idle_monitor/nhm_idle.c
++++ b/tools/power/cpupower/utils/idle_monitor/nhm_idle.c
+@@ -129,7 +129,7 @@ static int nhm_start(void)
+ 	int num, cpu;
+ 	unsigned long long dbg, val;
+ 
+-	nhm_get_count(TSC, &tsc_at_measure_start, 0);
++	nhm_get_count(TSC, &tsc_at_measure_start, base_cpu);
+ 
+ 	for (num = 0; num < NHM_CSTATE_COUNT; num++) {
+ 		for (cpu = 0; cpu < cpu_count; cpu++) {
+@@ -137,7 +137,7 @@ static int nhm_start(void)
+ 			previous_count[num][cpu] = val;
+ 		}
+ 	}
+-	nhm_get_count(TSC, &dbg, 0);
++	nhm_get_count(TSC, &dbg, base_cpu);
+ 	dprint("TSC diff: %llu\n", dbg - tsc_at_measure_start);
+ 	return 0;
+ }
+@@ -148,7 +148,7 @@ static int nhm_stop(void)
+ 	unsigned long long dbg;
+ 	int num, cpu;
+ 
+-	nhm_get_count(TSC, &tsc_at_measure_end, 0);
++	nhm_get_count(TSC, &tsc_at_measure_end, base_cpu);
+ 
+ 	for (num = 0; num < NHM_CSTATE_COUNT; num++) {
+ 		for (cpu = 0; cpu < cpu_count; cpu++) {
+@@ -156,7 +156,7 @@ static int nhm_stop(void)
+ 			current_count[num][cpu] = val;
+ 		}
+ 	}
+-	nhm_get_count(TSC, &dbg, 0);
++	nhm_get_count(TSC, &dbg, base_cpu);
+ 	dprint("TSC diff: %llu\n", dbg - tsc_at_measure_end);
+ 
+ 	return 0;
+diff --git a/tools/power/cpupower/utils/idle_monitor/snb_idle.c b/tools/power/cpupower/utils/idle_monitor/snb_idle.c
+index efc8a69c9aba..a2b45219648d 100644
+--- a/tools/power/cpupower/utils/idle_monitor/snb_idle.c
++++ b/tools/power/cpupower/utils/idle_monitor/snb_idle.c
+@@ -120,7 +120,7 @@ static int snb_start(void)
+ 			previous_count[num][cpu] = val;
+ 		}
+ 	}
+-	snb_get_count(TSC, &tsc_at_measure_start, 0);
++	snb_get_count(TSC, &tsc_at_measure_start, base_cpu);
+ 	return 0;
+ }
+ 
+@@ -129,7 +129,7 @@ static int snb_stop(void)
+ 	unsigned long long val;
+ 	int num, cpu;
+ 
+-	snb_get_count(TSC, &tsc_at_measure_end, 0);
++	snb_get_count(TSC, &tsc_at_measure_end, base_cpu);
+ 
+ 	for (num = 0; num < SNB_CSTATE_COUNT; num++) {
+ 		for (cpu = 0; cpu < cpu_count; cpu++) {
+-- 
+1.7.9.3
+
