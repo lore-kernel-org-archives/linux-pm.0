@@ -1,110 +1,92 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 0/4] devfreq_cooling: let the driver supply the dynamic
- power every time we need it
-Date: Wed, 28 Sep 2016 09:26:39 +0800
-Message-ID: <1475025999.4284.15.camel@intel.com>
-References: <20160915144425.5443-1-lukasz.luba@arm.com>
-         <7767c8d3-6ee7-427d-b709-0e98279e313a@arm.com>
+Subject: Re: [PATCH] of: thermal: Fixed governor at each thermal zone
+Date: Wed, 28 Sep 2016 09:30:40 +0800
+Message-ID: <1475026240.4284.17.camel@intel.com>
+References: <1474247932-1026-1-git-send-email-hugh.kang@lge.com>
+         <1474940817.4284.0.camel@intel.com>
+         <10649ba4-5558-ea3b-a03b-02babd5e63f9@arm.com>
+         <20160927132202.GA27366@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:59798 "EHLO mga09.intel.com"
+Received: from mga03.intel.com ([134.134.136.65]:46962 "EHLO mga03.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755074AbcI1B3q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Sep 2016 21:29:46 -0400
-In-Reply-To: <7767c8d3-6ee7-427d-b709-0e98279e313a@arm.com>
+        id S1753937AbcI1Bap (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 27 Sep 2016 21:30:45 -0400
+In-Reply-To: <20160927132202.GA27366@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org, edubezval@gmail.com
-Cc: javi.merino@arm.com, orjan.eide@arm.com
+To: Eduardo Valentin <edubezval@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>
+Cc: Inhyuk Kang <hugh.kang@lge.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 二, 2016-09-27 at 15:43 +0100, Lukasz Luba wrote:
-> Hello Eduardo, Rui,
-> 
-> I just want to ask you about your concerns regarding this patch set.
-> What do you think about it? Is there any chance to merge it?
-> 
-It's 4.8-rc8 now, thus it's too late for this patch set to be included
-in this merge window. Will review it after merge windows closed. :)
+Hi, Javi, Lukasz and Eduardo,
+
+thanks for your input.
 
 thanks,
 rui
 
-> Regards,
-> Lukasz
+On 二, 2016-09-27 at 06:22 -0700, Eduardo Valentin wrote:
+> Hello, Lukasz, Inhyuk, Javi,
 > 
-> On 15/09/16 15:44, Lukasz Luba wrote:
-> > 
-> > Hello,
-> > 
-> > This patchset introduces a new interface for devfreq cooling in
-> > thermal
-> > framework. I am resending it without the RFC tag.
-> > It supports direct call to driver's functions registered as
-> > 'get_dynamic_power' and 'power2state'.
+> On Tue, Sep 27, 2016 at 12:52:04PM +0100, Lukasz Luba wrote:
 > > 
 > > 
-> > The current implementation in the thermal devfreq cooling subsystem
-> > uses
-> > precalculated power table for each device to make a decision about
-> > allowed
-> > running state. When the driver registers itself to the thermal
-> > devfreq cooling
-> > subsystem, the framework creates the power table. The table is then
-> > used by the
-> > thermal subsystem to keep the device in the thermal envelope. The
-> > current
-> > implementation uses a fixed assumption of the complexity of the
-> > logic in the
-> > cooling_device and assumes power consumption varies directly in
-> > proportion to
-> > the frequency/voltage
+> > On 27/09/16 02:46, Zhang Rui wrote:
+> > > 
+> > > On 一, 2016-09-19 at 10:18 +0900, Inhyuk Kang wrote:
+> > > > 
+> > > > It is necessary to be added governor at each thermal_zone.
+> > > > Because some governors should be operated in the during the
+> > > > kernel
+> > > > booting
+> > > > in order to avoid heating problem.
+> > > > 
+> > > > Default governor cannot be covered all thermal zones policy
+> > > > because
+> > > > some thermal zones want to apply different one.
+> > > > For example, the power allocator governor operates differently
+> > > > with
+> > > > step wise governor.
+> > > > Hence, it is better to parse governor parameter from the device
+> > > > tree.
+> > > > 
+> > > > Signed-off-by: Inhyuk Kang <hugh.kang@lge.com>
+> > > > 
+> > > The patch looks okay to me.
+> > > Eduardo, what do you think of this patch?
+> > Hi Rui,
 > > 
-> > The proposed implementation provides the possibility to register a
-> > driver to
-> > thermal devfreq cooling subsystem and use the driver's code during
-> > the
-> > calculation of the power in runtime. You can still use
-> > precalculated power
-> > table when the GET_DIRECT_DYNAMIC_POWER flag is not set (the new
-> > extension can
-> > co-exist with the current implementation).
+> > Beside the fact which Javi pointed out in his email, there is an
+> > issue in
+> > the patch itself.
+> > The idea behind the patch is good, but the patch should have some
+> > improvements, i.e:
+> > - strncpy instead of strcpy,
+> > - if the governor name is not found in the registered governor's
+> > list by
+> > __find_governor (and then null is set) we should probably switch to
+> > default
+> > governor,
+> > - add DT documentation,
+> Also, the idea of the patch is good, almost tempting to do it, but
+> unfortunately, not acceptable from DT perspective. The patch
+> infringes
+> two of the DT conceptual and design decision of:
+> (a) DT should describe hardware, not policy;
+> (b) DT should describe hardware, not OS specific implementations.
+> 
+> As already pointed by Javi, this patch has already been proposed
+> (more
+> than one time by different people), but, it still continues to be
+> unacceptable.
+> 
+> Cheers,
+> 
+> 
 > > 
-> > This idea meets the expectations of the devices which know better
-> > the power
-> > they consume (and the power is not strictly related to OPP table
-> > entries
-> > (frequency, voltage) (i.e. some parts/features of the device can be
-> > unused)).
 > > 
-> > The first patch is just for fixing some compiler warnings.  The
-> > second patch is
-> > the same as the one sent already to the linux-pm list which adds
-> > passing the
-> > devfreq pointer to the driver functions
-> > 'get_static|dynamic_power'.  The third
-> > one implements the main change in the devfreq cooling
-> > subsystem.  The last one
-> > is a simple fix for an unnecessary check.
-> > 
-> > Best Regards,
-> > Lukasz Luba
-> > 
-> > Javi Merino (1):
-> >   devfreq_cooling: pass a pointer to devfreq in the power model
-> >     callbacks
-> > 
-> > Lukasz Luba (3):
-> >   devfreq_cooling: make the structs devfreq_cooling_xxx visible for
-> > all
-> >   devfreq_cooling: let the driver supply the dynamic power every
-> > time we
-> >     need it
-> >   devfreq_cooling: fix unnecessary check of unsigned long value
-> > 
-> >  drivers/thermal/devfreq_cooling.c | 193
-> > +++++++++++++++++++++++++++-----------
-> >  include/linux/devfreq_cooling.h   |  34 +++++--
-> >  2 files changed, 165 insertions(+), 62 deletions(-)
+> > Regards,
+> > Lukasz
 > > 
