@@ -1,88 +1,35 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 0/5] PCI PM refinements
-Date: Wed, 28 Sep 2016 11:54:45 -0500
-Message-ID: <20160928165445.GB5658@localhost>
-References: <cover.1474130360.git.lukas@wunner.de>
+From: Shawn Guo <shawn.guo@linaro.org>
+Subject: Re: imx_thermal bug reported (please register your kernel bugzilla account)
+Date: Wed, 28 Sep 2016 10:15:50 -0700
+Message-ID: <CAAQ0ZWS-r5PyZ=jyibd+HoCHzfD+ycNTpVoKDNWXs87AOHmVTg@mail.gmail.com>
+References: <1475024901.4284.8.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:42394 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932893AbcI1Qyv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 28 Sep 2016 12:54:51 -0400
-Content-Disposition: inline
-In-Reply-To: <cover.1474130360.git.lukas@wunner.de>
+Received: from mail-vk0-f48.google.com ([209.85.213.48]:32769 "EHLO
+        mail-vk0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932856AbcI1RPw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2016 13:15:52 -0400
+Received: by mail-vk0-f48.google.com with SMTP id z126so50566366vkd.0
+        for <linux-pm@vger.kernel.org>; Wed, 28 Sep 2016 10:15:52 -0700 (PDT)
+In-Reply-To: <1475024901.4284.8.camel@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Sun, Sep 18, 2016 at 05:39:20AM +0200, Lukas Wunner wrote:
-> Here's the second installment of this series, based on feedback from
-> Rafael. (Thanks!)
-> 
-> To reiterate, these refinements are meant to speed up and reduce power
-> consumption when entering and leaving system sleep and when shutting
-> down the system.  For details, please refer to the cover letter of v1:
-> http://www.spinics.net/lists/linux-pci/msg53702.html
-> 
-> As usual I've pushed the patches to GitHub in case anyone prefers
-> reviewing in a GUI:
-> https://github.com/l1k/linux/commits/pci_pm_refinements_v2
-> 
-> 
-> Changes since v1:
-> 
-> * Patch [1/5] now sports an ack by Rafael.
-> 
-> * Patch [2/5]:
->   * In acpi_pci_get_power_state(), only check for ACPI_STATE_UNKNOWN
->     instead of ACPI_STATE_D0 and ACPI_STATE_D3_COLD.
->   * Move the change to pci_update_current_state() to new patch [3/5].
-> 
-> * Patch [3/5]:
->   * Instead of solely relying on the platform firmware to report D3cold,
->     also probe the vendor ID and assume D3cold if it can't be read.
->     This should ensure proper detection of D3cold on pre-ACPI 4.0
->     platforms (which will never report anything deeper than D3hot)
->     as well as for devices with nonstandard PM mechanisms.
->   * The two existing workarounds for D3cold are removed from
->     pci_update_current_state(), as explained in the commit message.
-> 
-> * Patch [5/5]:
->   * Disable runtime PM on the device to prevent it from being runtime
->     resumed during the remainder of the shutdown process.
-> 
-> Thanks,
-> 
-> Lukas
-> 
-> 
-> Lukas Wunner (5):
->   PCI: Afford direct-complete to devices with nonstandard PM
->   PCI: Query platform firmware for device power state
->   PCI: Recognize D3cold in pci_update_current_state()
->   PCI: Avoid unnecessary resume after direct-complete
+Hi Rui,
 
-I applied the patches above with Rafael's acks to pci/pm for v4.9, thanks,
-Lukas!  I particularly appreciate your changelogs -- they're very readable,
-complete, and consistent in style.
+On Tue, Sep 27, 2016 at 6:08 PM, Zhang Rui <rui.zhang@intel.com> wrote:
+> Hi, Shawn,
+>
+> We have a imx_thermal bug report filed at kernel bugzilla,
+> https://bugzilla.kernel.org/show_bug.cgi?id=172951
+>
+> Please register your kernel bugzilla account so that I can assign this
+> bug to you.
 
->   PCI: Avoid unnecessary resume on shutdown
+I just registered the account with my korg email: shawnguo@kernel.org,
+and I will find some time to take a look at the bug.
 
-Sounds like there's still a little discussion on this, so I haven't applied
-this one yet.
-
->  drivers/pci/pci-acpi.c   | 22 ++++++++++++++++++++
->  drivers/pci/pci-driver.c | 24 ++++++++++++++++++++--
->  drivers/pci/pci.c        | 52 ++++++++++++++++++++++++++++++++----------------
->  drivers/pci/pci.h        |  3 +++
->  4 files changed, 82 insertions(+), 19 deletions(-)
-> 
-> -- 
-> 2.9.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Shawn
