@@ -1,58 +1,95 @@
-From: Eric Anholt <eric@anholt.net>
-Subject: Re: [PATCH V7 2/6] thermal: bcm2835: add thermal driver for bcm2835 soc
-Date: Wed, 28 Sep 2016 14:10:26 -0700
-Message-ID: <87twczg27x.fsf@eliezer.anholt.net>
-References: <1474446227-1147-1-git-send-email-kernel@martin.sperl.org> <1474446227-1147-3-git-send-email-kernel@martin.sperl.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH][v2] mfd: intel-lpss: Avoid resuming runtime-suspended
+ lpss unnecessarily
+Date: Wed, 28 Sep 2016 23:48:40 +0200
+Message-ID: <CAJZ5v0ivKoWHFugZXCNmdUoDtMVXU+9Fo3nf_D8hCsRbNyj_PA@mail.gmail.com>
+References: <1475080179-7692-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-        micalg=pgp-sha512; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anholt.net ([50.246.234.109]:57328 "EHLO anholt.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753162AbcI1VKb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 28 Sep 2016 17:10:31 -0400
-In-Reply-To: <1474446227-1147-3-git-send-email-kernel@martin.sperl.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:36788 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754131AbcI1Vsm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2016 17:48:42 -0400
+In-Reply-To: <1475080179-7692-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Russell King <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Stefan Wahren <stefan.wahren@i2se.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
-Cc: Martin Sperl <kernel@martin.sperl.org>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Lee Jones <lee.jones@linaro.org>
 
---=-=-=
-Content-Type: text/plain
-
-kernel@martin.sperl.org writes:
-
-> From: Martin Sperl <kernel@martin.sperl.org>
+On Wed, Sep 28, 2016 at 6:29 PM, Chen Yu <yu.c.chen@intel.com> wrote:
+> We have report that the intel_lpss_prepare() takes too much time during
+> suspend, and this is because we first resume the devices from runtime
+> suspend by resume_lpss_device(), to make sure they are in proper state
+> before system suspend, which takes 100ms for each LPSS devices(PCI power
+> state from D3_cold to D0). And since resume_lpss_device() resumes the
+> devices synchronously, we might get huge latency if we have many
+> LPSS devices.
 >
-> Add basic thermal driver for bcm2835 SOC.
+> So first try is to use pm_request_resume() instead, to make the runtime
+> resume process asynchronously. Unfortunately the asynchronous runtime
+> resume relies on pm_wq, which is freezed at early stage. So we choose
+> another method, that is to avoid resuming runtime-suspended devices,
+> if they are already runtime suspended. This is safe because for LPSS
+> driver, the runtime suspend and system suspend are of the same
+> hook - i.e., intel_lpss_suspend(). And moreover, this device is
+> neither runtime wakeup source nor system wakeup source.
 >
-> This driver currently relies on the firmware setting up the
-> tsense HW block and does not set it up itself.
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  drivers/mfd/intel-lpss.c | 9 +++++++++
+>  include/linux/pm.h       | 3 +++
+>  2 files changed, 12 insertions(+)
 >
-> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
-> Acked-by: Eric Anholt <eric@anholt.net>
-> Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+> diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
+> index 41b1138..2583db8 100644
+> --- a/drivers/mfd/intel-lpss.c
+> +++ b/drivers/mfd/intel-lpss.c
+> @@ -485,6 +485,15 @@ static int resume_lpss_device(struct device *dev, void *data)
+>  int intel_lpss_prepare(struct device *dev)
+>  {
+>         /*
+> +        * This is safe because:
+> +        * 1. The runtime suspend and system suspend
+> +        * are of the same hook.
+> +        * 2. This device is neither runtime wakeup source
+> +        * nor system wakeup source.
+> +        */
+> +       if (pm_runtime_status_suspended(dev))
+> +               return DPM_DIRECT_COMPLETE;
+> +       /*
+>          * Resume both child devices before entering system sleep. This
+>          * ensures that they are in proper state before they get suspended.
+>          */
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 06eb353..5606ad9 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -786,4 +786,7 @@ enum dpm_order {
+>         DPM_ORDER_DEV_LAST,
+>  };
+>
+> +/* The device is OK to remain runtime-suspended during suspend.*/
 
-What's the status of merging this one?  I'd like to merge the other
-patches.
+/*
+ * Return this from system suspend/hibernation ->prepare() callback to
+request the
+ * core to leave the device runtime-suspended during system suspend if possible.
+ */
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+> +#define DPM_DIRECT_COMPLETE 1
+> +
+>  #endif /* _LINUX_PM_H */
+> --
 
------BEGIN PGP SIGNATURE-----
+But it is fine by me overall.
 
-iQIcBAEBCgAGBQJX7DHCAAoJELXWKTbR/J7otGEP/2AXpUo0FKrGMup1VqZh+ZWX
-qtGQ31Y65h26yj4e9Oi25zTWmGpuYh9VXCnEIRPnATlvQNCBU9tWSXOUDRv1AZhB
-xcnK0Iti3hLSrwatguZ80yLxwAG8vsuMZJ35RS24oOMcv1wGL2taFJqbGGMtyiZo
-5qB2IRcQW2lOyAGSOhNPI7A22wn4uhQ9ohki4cMmj+v6EvOhkEhw5T+9dNdlHwx8
-n03eKCnqMXyqg1bHdNUtjyMjk6gbIIQV1jMZLhyh4PMp58fTz6huwMGldBIokyPj
-bvpgMRinZGQtzK7UPvqcpAlUdOc6ySSTTvSs8C+DYQRNh3OxpPLHmXLdldMCLmf1
-l/sEkc0axJvzpb6ODoXJeQGjdEBHchI//69+RhaRdHXNY2YFTlvBSelZgIQiE3rf
-mTgZeVU2iANYJ/bHTHDTUTKWX29dNZXR5G8YCeFOIVNXVg8EOT2MBRo9xc2rulV/
-bjVQQOGX2h28efiEl/1cc1/2SVZR3qhtVi09bStMNlXMAZHbJoNauOHze0rnXWag
-DL39pwKtNYz13Re3ePOpixU1Zq7ZoRYH6etaHc8/wb+3/kxU8XwT5jGsKQszJM20
-YRoN+zttIpAcI8ngciNL1tmN7y8hst/2o+Ggqk2idq1Vs/3LZOqjrPQikKLuOWas
-P08F3HrJZvP9aGqemXB7
-=ZkqH
------END PGP SIGNATURE-----
---=-=-=--
+Thanks,
+Rafael
