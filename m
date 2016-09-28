@@ -1,79 +1,88 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][v2] mfd: intel-lpss: Avoid resuming runtime-suspended lpss unnecessarily
-Date: Thu, 29 Sep 2016 00:29:39 +0800
-Message-ID: <1475080179-7692-1-git-send-email-yu.c.chen@intel.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v2 0/5] PCI PM refinements
+Date: Wed, 28 Sep 2016 11:54:45 -0500
+Message-ID: <20160928165445.GB5658@localhost>
+References: <cover.1474130360.git.lukas@wunner.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:59521 "EHLO mga02.intel.com"
+Received: from mail.kernel.org ([198.145.29.136]:42394 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932652AbcI1QV1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 28 Sep 2016 12:21:27 -0400
+        id S932893AbcI1Qyv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 28 Sep 2016 12:54:51 -0400
+Content-Disposition: inline
+In-Reply-To: <cover.1474130360.git.lukas@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Lee Jones <lee.jones@linaro.org>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
 
-We have report that the intel_lpss_prepare() takes too much time during
-suspend, and this is because we first resume the devices from runtime
-suspend by resume_lpss_device(), to make sure they are in proper state
-before system suspend, which takes 100ms for each LPSS devices(PCI power
-state from D3_cold to D0). And since resume_lpss_device() resumes the
-devices synchronously, we might get huge latency if we have many
-LPSS devices.
+On Sun, Sep 18, 2016 at 05:39:20AM +0200, Lukas Wunner wrote:
+> Here's the second installment of this series, based on feedback from
+> Rafael. (Thanks!)
+> 
+> To reiterate, these refinements are meant to speed up and reduce power
+> consumption when entering and leaving system sleep and when shutting
+> down the system.  For details, please refer to the cover letter of v1:
+> http://www.spinics.net/lists/linux-pci/msg53702.html
+> 
+> As usual I've pushed the patches to GitHub in case anyone prefers
+> reviewing in a GUI:
+> https://github.com/l1k/linux/commits/pci_pm_refinements_v2
+> 
+> 
+> Changes since v1:
+> 
+> * Patch [1/5] now sports an ack by Rafael.
+> 
+> * Patch [2/5]:
+>   * In acpi_pci_get_power_state(), only check for ACPI_STATE_UNKNOWN
+>     instead of ACPI_STATE_D0 and ACPI_STATE_D3_COLD.
+>   * Move the change to pci_update_current_state() to new patch [3/5].
+> 
+> * Patch [3/5]:
+>   * Instead of solely relying on the platform firmware to report D3cold,
+>     also probe the vendor ID and assume D3cold if it can't be read.
+>     This should ensure proper detection of D3cold on pre-ACPI 4.0
+>     platforms (which will never report anything deeper than D3hot)
+>     as well as for devices with nonstandard PM mechanisms.
+>   * The two existing workarounds for D3cold are removed from
+>     pci_update_current_state(), as explained in the commit message.
+> 
+> * Patch [5/5]:
+>   * Disable runtime PM on the device to prevent it from being runtime
+>     resumed during the remainder of the shutdown process.
+> 
+> Thanks,
+> 
+> Lukas
+> 
+> 
+> Lukas Wunner (5):
+>   PCI: Afford direct-complete to devices with nonstandard PM
+>   PCI: Query platform firmware for device power state
+>   PCI: Recognize D3cold in pci_update_current_state()
+>   PCI: Avoid unnecessary resume after direct-complete
 
-So first try is to use pm_request_resume() instead, to make the runtime
-resume process asynchronously. Unfortunately the asynchronous runtime
-resume relies on pm_wq, which is freezed at early stage. So we choose
-another method, that is to avoid resuming runtime-suspended devices,
-if they are already runtime suspended. This is safe because for LPSS
-driver, the runtime suspend and system suspend are of the same
-hook - i.e., intel_lpss_suspend(). And moreover, this device is
-neither runtime wakeup source nor system wakeup source.
+I applied the patches above with Rafael's acks to pci/pm for v4.9, thanks,
+Lukas!  I particularly appreciate your changelogs -- they're very readable,
+complete, and consistent in style.
 
-Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- drivers/mfd/intel-lpss.c | 9 +++++++++
- include/linux/pm.h       | 3 +++
- 2 files changed, 12 insertions(+)
+>   PCI: Avoid unnecessary resume on shutdown
 
-diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
-index 41b1138..2583db8 100644
---- a/drivers/mfd/intel-lpss.c
-+++ b/drivers/mfd/intel-lpss.c
-@@ -485,6 +485,15 @@ static int resume_lpss_device(struct device *dev, void *data)
- int intel_lpss_prepare(struct device *dev)
- {
- 	/*
-+	 * This is safe because:
-+	 * 1. The runtime suspend and system suspend
-+	 * are of the same hook.
-+	 * 2. This device is neither runtime wakeup source
-+	 * nor system wakeup source.
-+	 */
-+	if (pm_runtime_status_suspended(dev))
-+		return DPM_DIRECT_COMPLETE;
-+	/*
- 	 * Resume both child devices before entering system sleep. This
- 	 * ensures that they are in proper state before they get suspended.
- 	 */
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 06eb353..5606ad9 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -786,4 +786,7 @@ enum dpm_order {
- 	DPM_ORDER_DEV_LAST,
- };
- 
-+/* The device is OK to remain runtime-suspended during suspend.*/
-+#define DPM_DIRECT_COMPLETE 1
-+
- #endif /* _LINUX_PM_H */
--- 
-2.7.4
+Sounds like there's still a little discussion on this, so I haven't applied
+this one yet.
 
+>  drivers/pci/pci-acpi.c   | 22 ++++++++++++++++++++
+>  drivers/pci/pci-driver.c | 24 ++++++++++++++++++++--
+>  drivers/pci/pci.c        | 52 ++++++++++++++++++++++++++++++++----------------
+>  drivers/pci/pci.h        |  3 +++
+>  4 files changed, 82 insertions(+), 19 deletions(-)
+> 
+> -- 
+> 2.9.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
