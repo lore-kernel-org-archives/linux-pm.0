@@ -1,41 +1,138 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2 0/5] PCI PM refinements
-Date: Thu, 29 Sep 2016 14:11:17 +0200
-Message-ID: <20160929121117.GA6648@wunner.de>
-References: <cover.1474130360.git.lukas@wunner.de>
- <20160928165445.GB5658@localhost>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Regression in 4.8 - CPU speed set very low
+Date: Thu, 29 Sep 2016 14:19:55 +0200
+Message-ID: <16590757.26uEfRfeet@vostro.rjw.lan>
+References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net> <CAJZ5v0j3fJ7pDoR+LhY6x1T0yQEhq6omFL7-BrBcMy68eFiMMg@mail.gmail.com> <5271ed6f-5798-e930-d7fd-17fe6bb7ea96@lwfinger.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160928165445.GB5658@localhost>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Wu <peter@lekensteyn.nl>, Andreas Noever <andreas.noever@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55541 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1753068AbcI2MN3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Sep 2016 08:13:29 -0400
+In-Reply-To: <5271ed6f-5798-e930-d7fd-17fe6bb7ea96@lwfinger.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Larry Finger <Larry.Finger@lwfinger.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Wed, Sep 28, 2016 at 11:54:45AM -0500, Bjorn Helgaas wrote:
-> On Sun, Sep 18, 2016 at 05:39:20AM +0200, Lukas Wunner wrote:
-> >   PCI: Afford direct-complete to devices with nonstandard PM
-> >   PCI: Query platform firmware for device power state
-> >   PCI: Recognize D3cold in pci_update_current_state()
-> >   PCI: Avoid unnecessary resume after direct-complete
+On Wednesday, September 28, 2016 09:22:59 PM Larry Finger wrote:
+> On 09/27/2016 06:46 AM, Rafael J. Wysocki wrote:
+> > On Tue, Sep 27, 2016 at 10:48 AM, Larry Finger
+> > <Larry.Finger@lwfinger.net> wrote:
+> >> On 09/26/2016 10:12 PM, Doug Smythies wrote:
+> >>>
+> >>> On 2016.09.26 18:31 Srinivas Pandruvada wrote:
+> >>>>
+> >>>> On Mon, 2016-09-26 at 19:48 -0500, Larry Finger wrote:
+> >>>>>
+> >>>>> On 09/26/2016 07:21 PM, Rafael J. Wysocki wrote:
+> >>>>>>
+> >>>>>> On Tue, Sep 27, 2016 at 1:53 AM, Larry Finger wrote:
+> >>>>>> But for both we need a reproducer anyway.
+> >>>>>
+> >>>>> I do not have a reliable reproducer. The condition has always
+> >>>>> happened when
+> >>>>> running a high-compute job such as a 'make -j8' on the kernel, or
+> >>>>> building the
+> >>>>> RPM for openSUSE's implementation of VirtualBox. The latter is what
+> >>>>> I'm using
+> >>>>> for most of my testing.
+> >>>
+> >>>
+> >>> Run some CPU stressor and get all your CPU's going at 100% load.
+> >>> And watch your core temperatures while you do so.
+> >>
+> >>
+> >> for i in 1 2 3 4; do while : ; do : ; done & done
+> >>
+> >> triggered the fault in a few minutes.
+> >>>
+> >>>
+> >>>>
+> >>>>>> It also would be good to rule out the thermal throttling (as per
+> >>>>>> the Srinivas' comments).
+> >>>
+> >>>
+> >>> It is almost certainly thermal throttling, or similar causing
+> >>> Clock modulation, of it seems 50%.
+> >>
+> >>
+> >> While the infinite loops were running, the temps were:
+> >>
+> >> finger@linux-1t8h:~/rtlwifi_new> sensors
+> >> coretemp-isa-0000
+> >> Adapter: ISA adapter
+> >> Physical id 0:  +83.0°C  (high = +84.0°C, crit = +100.0°C)
+> >> Core 0:         +83.0°C  (high = +84.0°C, crit = +100.0°C)
+> >> Core 1:         +74.0°C  (high = +84.0°C, crit = +100.0°C)
+> >
+> > It looks like the trip point (high) temperature was exceeded causing
+> > thermal throttling to kick in.
+> >
+> >> After the fault occurs, I get
+> >>
+> >> finger@linux-1t8h:~/rtlwifi_new> sensors
+> >> coretemp-isa-0000
+> >> Adapter: ISA adapter
+> >> Physical id 0:  +44.0°C  (high = +84.0°C, crit = +100.0°C)
+> >> Core 0:         +43.0°C  (high = +84.0°C, crit = +100.0°C)
+> >> Core 1:         +41.0°C  (high = +84.0°C, crit = +100.0°C)
+> >
+> > So after that it stays at 400 MHz forever, right?
+> >
+> >>>>>>
+> >>>>>> For now, please tell me what's in
+> >>>>>> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq
+> >>>>>
+> >>>>> 800000
+> >>>>
+> >>>> Your effective freq is lower than 800MHz. One of the possible reason is
+> >>>> thermal throttling.
+> >>>>
+> >>>> What distro you are using?
+> >>>
+> >>>
+> >>> And what make and model of LapTop?
+> >>
+> >>
+> >> Toshiba Tecra A50-A with CPU Model: 6.60.3 "Intel(R) Core(TM) i7-4600M CPU @
+> >> 2.90GHz. That is a dual-core unit with hyperthreading.
+> >>
+> >> @Rafael: As I write this, the system has been running the infinite loop test
+> >> for almost 5 hours with kernel 4.7. I will leave that running while I'm
+> >> gone, but I am certain that it is OK.
+> >
+> > OK, and what temperatures do you see while doing this?
 > 
-> I applied the patches above with Rafael's acks to pci/pm for v4.9, thanks,
-> Lukas!  I particularly appreciate your changelogs -- they're very readable,
-> complete, and consistent in style.
-
-As a non-native English speaker I cannot imagine a bigger compliment,
-thanks so much!
-
-
-> >   PCI: Avoid unnecessary resume on shutdown
+> finger@linux-1t8h:~/linux-2.6> sensors
+> coretemp-isa-0000
+> Adapter: ISA adapter
+> Physical id 0:  +90.0°C  (high = +84.0°C, crit = +100.0°C)
+> Core 0:         +90.0°C  (high = +84.0°C, crit = +100.0°C)
+> Core 1:         +78.0°C  (high = +84.0°C, crit = +100.0°C)
 > 
-> Sounds like there's still a little discussion on this, so I haven't applied
-> this one yet.
+> Once again, the CPU temp is greater than the "high" value; however, the clock 
+> rate continues to hold near 3600 MHz.
+> 
+> My laptop was inadvertently put to sleep while I was gone. I forgot to leave a 
+> note for my wife and she quieted the noisy cpu fan. :)
 
-Yes, indeed I need more time with this one.
+It looks like in 4.8-rc we made a change that caused the "high" trip point to
+be acted on.
 
-Thanks!
+Srinivas, Rui, do you recall what that can be?
 
-Lukas
+One more question (I think I asked it previously): In the failing case
+(4.8-rc1 and later), when the frequency drops down to the 400 MHz, does it
+ever go back higher or is it stuck at that level forever?
+
+In any case, it may help to file a bug at bugzilla.kernel.org against
+CPU/thermal or similar and let me know the bug number.  We'll need to
+collect some tracepoint data to debug this and some place to put them
+into for easy reference.
+
+Thanks,
+Rafael
+
