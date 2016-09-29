@@ -1,49 +1,72 @@
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: Regression in 4.8 - CPU speed set very low
-Date: Thu, 29 Sep 2016 11:24:29 -0500
-Message-ID: <67ccf531-8b8a-701f-49a3-faed02e7dabe@lwfinger.net>
-References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net>
- <CAJZ5v0j3fJ7pDoR+LhY6x1T0yQEhq6omFL7-BrBcMy68eFiMMg@mail.gmail.com>
- <5271ed6f-5798-e930-d7fd-17fe6bb7ea96@lwfinger.net>
- <16590757.26uEfRfeet@vostro.rjw.lan>
- <1475164576.5547.10.camel@linux.intel.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 173361] Under heavy load, the CPU speed suddenly and
+ irreversibly drops from 3500 to 400 MHz
+Date: Thu, 29 Sep 2016 16:40:29 +0000
+Message-ID: <bug-173361-137361-df12pSOD59@https.bugzilla.kernel.org/>
+References: <bug-173361-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f43.google.com ([209.85.218.43]:36850 "EHLO
-        mail-oi0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755540AbcI2QYd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Sep 2016 12:24:33 -0400
-In-Reply-To: <1475164576.5547.10.camel@linux.intel.com>
+Received: from mail.kernel.org ([198.145.29.136]:37374 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753890AbcI2Qkc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Sep 2016 12:40:32 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id 33BB62038E
+        for <linux-pm@vger.kernel.org>; Thu, 29 Sep 2016 16:40:31 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+        by mail.kernel.org (Postfix) with ESMTP id 1CE0B20260
+        for <linux-pm@vger.kernel.org>; Thu, 29 Sep 2016 16:40:30 +0000 (UTC)
+In-Reply-To: <bug-173361-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-On 09/29/2016 10:56 AM, Srinivas Pandruvada wrote:
-> On Thu, 2016-09-29 at 14:19 +0200, Rafael J. Wysocki wrote:
->
-> [...]
->
->>> My laptop was inadvertently put to sleep while I was gone. I forgot
->>> to leave a
->>> note for my wife and she quieted the noisy cpu fan. :)
->> It looks like in 4.8-rc we made a change that caused the "high" trip
->> point to
->> be acted on.
-> This high trip point we don't expose in thermal subsystem (the thermal
->  zone dump didn't show this anywhere as a trip). This is exposed by
-> core-dts driver only. This is the point BIOS is supposed to act, I
-> guess that's why you are seeing 50% clock modulation.
->
->
-> Are you running thermald
->
-> What is?
-> # ps -e | grep thermald
+https://bugzilla.kernel.org/show_bug.cgi?id=173361
 
-The output is blank. I am not running thermald.
+Doug Smythies <dsmythies@telus.net> changed:
 
-Larry
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |dsmythies@telus.net
 
+--- Comment #1 from Doug Smythies <dsmythies@telus.net> ---
+For what it is worth, some data from my computer:
+
+. I get the exact same steady state temperature and package power under full
+load with both kernel 4.7 and 4.8-rc8.
+
+. I messed with the cooling so that it could exceed the high limit, and when it
+did nothing tripped (as expected):
+
+doug@s15:~/temp2$ sensors
+coretemp-isa-0000
+Adapter: ISA adapter
+Physical id 0:  +81.0°C  (high = +80.0°C, crit = +98.0°C)
+Core 0:         +77.0°C  (high = +80.0°C, crit = +98.0°C)
+Core 1:         +81.0°C  (high = +80.0°C, crit = +98.0°C)
+Core 2:         +77.0°C  (high = +80.0°C, crit = +98.0°C)
+Core 3:         +78.0°C  (high = +80.0°C, crit = +98.0°C)
+
+For this comment from the e-mail thread: "Hmm, I would not expect the CPU to
+drop from 80 to 40 degrees in a few seconds if the fan is not spinning.  I
+wouldn't even expect it if the fan was spinning.  I would think at least 30 to
+60 seconds if not more."
+
+I from a steady state, full load, temperature of 78 degrees C to 0 load I see:
+15 degrees drop in 1 second; 18 degrees drop in 2 seconds; 22 degrees drop in
+10 seconds; 25 degrees droop in 20 seconds.
+
+For the original post comment: "In that case, the bug would be that the
+frequency is never restored."
+It isn't supposed to restore. I do not know why in this case it is kicking in
+at 50%, usually it is less. Regardless, the current control algorithm in the
+intel_pstate driver is fundamentally incompatible with clock modulation, and
+will always drive the CPU down to the minimum * the modulation %, regardless of
+load. Other drivers typically drive the CPU frequency to what would normally be
+desired * modulation % (and for the most part users don't even notice).
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
