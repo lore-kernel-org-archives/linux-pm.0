@@ -1,116 +1,65 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v4 0/5] Functional dependencies between devices
-Date: Thu, 29 Sep 2016 08:58:43 +0200
-Message-ID: <fd09bfe8-74b7-9bf8-e4b5-cf8c9f922c64@samsung.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <CGME20160929003536eucas1p1aecbfc8dc35c3a782185abe475bc3daa@eucas1p1.samsung.com>
- <10860219.QqH5akBVoh@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:19607 "EHLO
-        mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754025AbcI2G6t (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Sep 2016 02:58:49 -0400
-In-reply-to: <10860219.QqH5akBVoh@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH 0/2] powernv:stop: Use psscr_val,mask provided by firmware
+Date: Thu, 29 Sep 2016 12:35:57 +0530
+Message-ID: <cover.1475130107.git.ego@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Balbir Singh <bsingharora@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Hi Rafael,
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On 2016-09-29 02:24, Rafael J. Wysocki wrote:
-> Hi Everyone,
->
-> On Thursday, September 08, 2016 11:25:44 PM Rafael J. Wysocki wrote:
->>> Hi Everyone,
->>>
->>> This is a refresh of the functional dependencies series that I posted last
->>> year and which has picked up by Marek quite recently.  For reference,
->>> appended is my introductory message sent previously (which may be
->>> slightly outdated now).
->>>
->>> As last time, the first patch rearranges the code around
->>> __device_release_driver() a bit to prepare it for the next one (it
->>> actually hasn't changed AFAICS).
->>>
->>> The second patch introduces the actual device links mechanics, but without
->>> system suspend/resume and runtime PM support which are added by the
->>> subsequent patches.
->>>
->>> Some bugs found by Marek during his work on these patches should be fixed
->>> here.  In particular, the endless recursion in device_reorder_to_tail()
->>> which simply was broken before.
->>>
->>> There are two additional patches to address the issue with runtime PM
->>> support
->>> that occured when runtime PM was disabled for some suppliers due to a PM
->>> sleep transition in progress.  Those patches simply make runtime PM
->>> helpers
->>> return 0 in that case which may be controversial, so please let me know if
->>> there are concerns about those.
->>>
->>> The way device_link_add() works is a bit different, as it takes an
->>> additional
->>> status argument now.  That makes it possible to create a link in any
->>> state,
->>> with extra care of course, and should address the problem pointed to by
->>> Lukas
->>> during the previous discussion.
->>>
->>> Also some comments from Tomeu have been addressed.
->> An update here.
->>
->> The first patch hasn't changed, so I'm resending it.
->>
->> The majority of changes in the other patches are in order to address Lukas'
->> comments.
->>
->> First off, I added a DEVICE_LINK_STATELESS flag that will prevent the driver
->> core from trying to maintain device links having it set.
->>
->> Also, the DEVICE_LINK_PERSISTENT flag was dropped (as link "persistence" is
->> the default behavior now) and there's a new one, DEVICE_LINK_AUTOREMOVE,
->> that will cause the driver core to remove the link on the consumer driver
->> unbind.
->>
->> Moreover, the code checks attempts to create a link between a parent and a
->> child device now and actively prevents that from happening.
->>
->> The changelog of the second patch has been updated as requested by Ulf.
->>
->> The third patch was updated to fix a bug related to the (previously missing)
->> clearing of power.direct_complete for supplier devices having consumers that
->> don't use direct_complete.
->>
->> The next two (runtime PM) patches turned out to be unnecessary, so I've
->> dropped them.
->>
->> The runtime PM patch [4/5] was reorganized somewhat to reduce the
->> indentation
->> level in there, but the code flow introduced by it is essentially the same
->> and the last patch was simply rebased on top of the new series.
-> Time for another update. :-)
->
-> Fewer changes this time, mostly to address issues found by Lukas and Marek.
->
-> The most significant one is to make device_link_add() cope with the case when
-> the consumer device has not been registered yet when it is called.  The
-> supplier device still is required to be registered and the function will return
-> NULL if that is not the case.
->
-> Another significant change is in patch [4/5] that now makes the core apply
-> pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the probing
-> of a consumer one (in analogy with the parent).
+Hi,
 
-Thanks for the update! Updated version fixes all the remaining issues.
+In the current implementation, the code for ISA v3.0 stop
+implementation has a couple of shortcomings.
 
-Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+a) The code hand-codes the values for ESL,EC,TR,MTL bits of PSSCR and
+   uses only the RL field from the firmware. While this is not
+   incorrect, since the hand-coded values are legitimate, it is not a
+   very flexible design since the firmware has the capability to
+   communicate these values via the "ibm,cpu-idle-state-psscr" and
+   "ibm,cpu-idle-state-psscr-mask" properties. In case where the
+   firmware provides values for these fields that is different from
+   the hand-coded values, the current code will not work as intended.
 
-Best regards
+b) Due to issue a), the current code assumes that ESL=EC=1 for all the
+   stop states and hence the wakeup from the stop instruction will
+   happen at 0x100, the system-reset vector. However, the ISA v3.0
+   allows the ESL=EC=0 behaviour where the corresponding stop-state
+   loses no state and wakes up from the subsequent instruction. The
+   current code doesn't handle this case.
+   
+This patch series addresses these issues.
+
+The first patch in the series renames the existing
+IDLE_STATE_ENTER_SEQ macro to IDLE_STATE_ENTER_SEQ_NORET. It reuses
+the name IDLE_STATE_ENTER_SEQ for entering into stop-states which wake
+up at the subsequent instruction.
+
+The second patch in the series fixes issues a) and b) by ensuring that
+the psscr-value and the psscr-mask provided by the firmware are what
+will be used to set a particular stop state. It also adds support for
+handling wake-up from stop states which were entered with ESL=EC=0.
+
+These patches depend on the following skiboot patch that exports
+the PSSCR values and the mask for all the stop states:
+https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
+
+Gautham R. Shenoy (2):
+  powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+  powernv: Pass PSSCR value and mask to power9_idle_stop
+
+ arch/powerpc/include/asm/cpuidle.h       |  5 ++-
+ arch/powerpc/include/asm/processor.h     |  3 +-
+ arch/powerpc/kernel/exceptions-64s.S     |  6 +--
+ arch/powerpc/kernel/idle_book3s.S        | 41 ++++++++++-------
+ arch/powerpc/platforms/powernv/idle.c    | 76 +++++++++++++++++++++++++++-----
+ arch/powerpc/platforms/powernv/powernv.h |  3 +-
+ arch/powerpc/platforms/powernv/smp.c     |  7 +--
+ drivers/cpuidle/cpuidle-powernv.c        | 30 ++++++++++---
+ 8 files changed, 127 insertions(+), 44 deletions(-)
+
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
-
+1.9.4
