@@ -1,56 +1,67 @@
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Subject: Re: Regression in 4.8 - CPU speed set very low
-Date: Thu, 29 Sep 2016 10:17:36 -0400
-Message-ID: <20160929141736.GA14309@csclub.uwaterloo.ca>
-References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net>
- <3919370.SGLjGupePs@vostro.rjw.lan>
- <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>
- <2477506.olat0BX4ex@vostro.rjw.lan>
- <1436996d-078b-aa51-4452-b6655d917135@lwfinger.net>
- <20160927145114.GM14311@csclub.uwaterloo.ca>
- <8a5f37bb-4870-b89e-6287-fcb43b2e708f@lwfinger.net>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 173361] New: Under heavy load, the CPU speed suddenly and
+ irreversibly drops from 3500 to 400 MHz
+Date: Thu, 29 Sep 2016 14:57:55 +0000
+Message-ID: <bug-173361-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <8a5f37bb-4870-b89e-6287-fcb43b2e708f@lwfinger.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:52566 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932221AbcI2O57 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Sep 2016 10:57:59 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id 7ACC220251
+        for <linux-pm@vger.kernel.org>; Thu, 29 Sep 2016 14:57:57 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+        by mail.kernel.org (Postfix) with ESMTP id 40F9E2024F
+        for <linux-pm@vger.kernel.org>; Thu, 29 Sep 2016 14:57:56 +0000 (UTC)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Wed, Sep 28, 2016 at 09:26:42PM -0500, Larry Finger wrote:
-> By the time it gets slow, the CPU's cool, and one cannot see the temp just
-> before that event happened.
+https://bugzilla.kernel.org/show_bug.cgi?id=173361
 
-Hmm, I would not expect the CPU to drop from 80 to 40 degrees in a few
-seconds if the fan is not spinning.  I wouldn't even expect it if the
-fan was spinning.  I would think at least 30 to 60 seconds if not more.
+            Bug ID: 173361
+           Summary: Under heavy load, the CPU speed suddenly and
+                    irreversibly drops from 3500 to 400 MHz
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 4.8-rc1
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: linux-pm@vger.kernel.org
+          Reporter: Larry.Finger@lwfinger.net
+        Regression: No
 
-The only way I would think the temperature could change quickly would
-be if the heatsink isn't even touching the CPU anymore so there is very
-little material to hold the heat in the CPU.
+My Toshiba Tecra A50-A laptop that a CPU described as 'Model: 6.60.3 "Intel(R)
+Core(TM) i7-4600M CPU @ 2.90GHz"'. Under heavy load, this dual-core unit with
+hyperthreading will suddenly drop from a frequency of 3500 to 410 MHz. The only
+way to recover is to reboot. See
+http://lkml.iu.edu/hypermail/linux/kernel/1609.3/00720.html for some details
+and other discussion.
 
-> The reason I suspect a bug is that it fails with 4.8-rcX, but not with 4.7.
-> Of course, it could be something subtle that slightly changes the heat load,
-> which causes the CPU temp to be a little higher so that the effect is
-> triggered.
-> 
-> I am reasonably confident that it is not a hardware problem, but we may have
-> to wait until 4.8 is released and gets wider usage. If no one else reports a
-> problem, then I am certainly wrong.
+This bug is being filed under power management because the 'sensors' command
+shows the following:
 
-Well hard to reproduce bugs are always really annoying.
+finger@linux-1t8h:~> sensors
+coretemp-isa-0000
+Adapter: ISA adapter
+Physical id 0:  +88.0°C  (high = +84.0°C, crit = +100.0°C)
+Core 0:         +88.0°C  (high = +84.0°C, crit = +100.0°C)
+Core 1:         +77.0°C  (high = +84.0°C, crit = +100.0°C)
 
-This old bug sounds a lot like what you are seeing:
-https://bugzilla.redhat.com/show_bug.cgi?id=924570
-and it links to this:
-https://www.phoronix.com/scan.php?page=news_item&px=Linux-4.6-Thermal-Updates
-
-Apparently turning off turbo boost seems to stop the problem for a lot
-of people in that case.  Doesn't explain why it started happening
-recently.  And of course that may have been a different problem in
-the past.
+Routinely, at least one of the CPUs has a temperature higher than the "high"
+value. As Rafael Wysocki states "It looks like in 4.8-rc we made a change that
+caused the "high" trip point to be acted on." In that case, the bug would be
+that the frequency is never restored.
 
 -- 
-Len Sorensen
+You are receiving this mail because:
+You are the assignee for the bug.
