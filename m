@@ -1,34 +1,37 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 173361] Under heavy load, the CPU speed suddenly and
- irreversibly drops from 3500 to 400 MHz
-Date: Thu, 29 Sep 2016 19:29:11 +0000
-Message-ID: <bug-173361-137361-EgLIOqrUFx@https.bugzilla.kernel.org/>
-References: <bug-173361-137361@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Regression in 4.8 - CPU speed set very low
+Date: Thu, 29 Sep 2016 22:52 +0200
+Message-ID: <3974136.cL3VK0LFyr@vostro.rjw.lan>
+References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net> <16590757.26uEfRfeet@vostro.rjw.lan> <1475164576.5547.10.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:55390 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754485AbcI2T3O (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 29 Sep 2016 15:29:14 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id 6A3742038F
-        for <linux-pm@vger.kernel.org>; Thu, 29 Sep 2016 19:29:12 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-        by mail.kernel.org (Postfix) with ESMTP id 4F73E2035D
-        for <linux-pm@vger.kernel.org>; Thu, 29 Sep 2016 19:29:11 +0000 (UTC)
-In-Reply-To: <bug-173361-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1475164576.5547.10.camel@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <dsmythies@telus.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=173361
+On Thursday, September 29, 2016 08:56:16 AM Srinivas Pandruvada wrote:
+> On Thu, 2016-09-29 at 14:19 +0200, Rafael J. Wysocki wrote:
+> 
+> [...]
+> 
+> > > My laptop was inadvertently put to sleep while I was gone. I forgot
+> > > to leave a 
+> > > note for my wife and she quieted the noisy cpu fan. :)
+> > It looks like in 4.8-rc we made a change that caused the "high" trip
+> > point to
+> > be acted on.
+> This high trip point we don't expose in thermal subsystem (the thermal
+>  zone dump didn't show this anywhere as a trip). This is exposed by
+> core-dts driver only. This is the point BIOS is supposed to act, I
+> guess that's why you are seeing 50% clock modulation. 
 
---- Comment #4 from Larry Finger <Larry.Finger@lwfinger.net> ---
-Thanks. I'm running the script with the continuing test of 4.7, which has been
-running for a little over 30 hours without triggering the event.
+Right.  That's SMM kicking in.
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+The real problem is that we get stuck at 400 MHz.
+
+Thanks,
+Rafael
