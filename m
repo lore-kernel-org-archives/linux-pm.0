@@ -1,394 +1,434 @@
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH 2/2] powernv: Pass PSSCR value and mask to power9_idle_stop
-Date: Thu, 29 Sep 2016 12:35:59 +0530
-Message-ID: <21e080ffa52f432b40750028a624aee1baebbaf7.1475130107.git.ego@linux.vnet.ibm.com>
-References: <cover.1475130107.git.ego@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:44556 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1755006AbcI2HGV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Sep 2016 03:06:21 -0400
-Received: from pps.filterd (m0098414.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id u8T74IoE099014
-        for <linux-pm@vger.kernel.org>; Thu, 29 Sep 2016 03:06:20 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 25rrts4upp-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Thu, 29 Sep 2016 03:06:20 -0400
-Received: from localhost
-        by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Thu, 29 Sep 2016 01:06:19 -0600
-In-Reply-To: <cover.1475130107.git.ego@linux.vnet.ibm.com>
-In-Reply-To: <cover.1475130107.git.ego@linux.vnet.ibm.com>
-References: <cover.1475130107.git.ego@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v4 2/2] iommu/exynos: Add proper runtime pm support
+Date: Thu, 29 Sep 2016 10:12:31 +0200
+Message-ID: <1475136751-31340-3-git-send-email-m.szyprowski@samsung.com>
+References: <1475136751-31340-1-git-send-email-m.szyprowski@samsung.com>
+	<CGME20160929081240eucas1p231c1ab5c5936886cbec6bc3f5267c940@eucas1p2.samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-reply-to: <1475136751-31340-1-git-send-email-m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Balbir Singh <bsingharora@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+This patch uses recently introduced device links to track the runtime pm
+state of the master's device. This way each SYSMMU controller is runtime
+activated when its master's device is active and can save/restore its state
+instead of being enabled all the time. This way SYSMMU controllers no
+longer prevents respective power domains to be turned off when master's
+device is not used.
 
-The power9_idle_stop method currently takes only the requested stop
-level as a parameter and picks up the rest of the PSSCR bits from a
-hand-coded macro. This is not a very flexible design, especially when
-the firmware has the capability to communicate the psscr value and the
-mask associated with a particular stop state via device tree.
-
-This patch modifies the power9_idle_stop API to take as parameters the
-PSSCR value and the PSSCR mask corresponding to the stop state that
-needs to be set. These PSSCR value and mask are respectively obtained
-by parsing the "ibm,cpu-idle-state-psscr" and
-"ibm,cpu-idle-state-psscr-mask" fields from the device tree.
-
-In addition to this, the patch adds support for handling stop states
-for which ESL and EC bits in the PSSCR are zero. As per the
-architecture, a wakeup from these stop states resumes execution from
-the subsequent instruction as opposed to waking up at the System
-Vector.
-
-This patch depends on the following skiboot patch that exports the
-PSSCR values and the mask for all the stop states:
-https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
-
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 ---
- arch/powerpc/include/asm/processor.h     |  3 +-
- arch/powerpc/kernel/idle_book3s.S        | 31 ++++++++-----
- arch/powerpc/platforms/powernv/idle.c    | 76 +++++++++++++++++++++++++++-----
- arch/powerpc/platforms/powernv/powernv.h |  3 +-
- arch/powerpc/platforms/powernv/smp.c     |  7 +--
- drivers/cpuidle/cpuidle-powernv.c        | 30 ++++++++++---
- 6 files changed, 115 insertions(+), 35 deletions(-)
+ drivers/iommu/exynos-iommu.c | 225 ++++++++++++++++++-------------------------
+ 1 file changed, 94 insertions(+), 131 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 68e3bf5..4ead497 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -460,7 +460,8 @@ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
- extern unsigned long power7_nap(int check_irq);
- extern unsigned long power7_sleep(void);
- extern unsigned long power7_winkle(void);
--extern unsigned long power9_idle_stop(unsigned long stop_level);
-+extern unsigned long power9_idle_stop(unsigned long stop_psscr_val,
-+				unsigned long stop_psscr_mask);
- 
- extern void flush_instruction_cache(void);
- extern void hard_reset_now(void);
-diff --git a/arch/powerpc/kernel/idle_book3s.S b/arch/powerpc/kernel/idle_book3s.S
-index 32d666b..9f77cd4 100644
---- a/arch/powerpc/kernel/idle_book3s.S
-+++ b/arch/powerpc/kernel/idle_book3s.S
-@@ -40,9 +40,7 @@
- #define _WORC	GPR11
- #define _PTCR	GPR12
- 
--#define PSSCR_HV_TEMPLATE	PSSCR_ESL | PSSCR_EC | \
--				PSSCR_PSLL_MASK | PSSCR_TR_MASK | \
--				PSSCR_MTL_MASK
-+#define PSSCR_EC_ESL_MASK_SHIFTED          (PSSCR_EC | PSSCR_ESL) >> 16
- 
- 	.text
- 
-@@ -247,13 +245,23 @@ enter_winkle:
- 	IDLE_STATE_ENTER_SEQ_NORET(PPC_WINKLE)
+diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
+index dfb44034b4ee..c8926e030713 100644
+--- a/drivers/iommu/exynos-iommu.c
++++ b/drivers/iommu/exynos-iommu.c
+@@ -206,6 +206,7 @@ static const struct sysmmu_fault_info sysmmu_v5_faults[] = {
+ struct exynos_iommu_owner {
+ 	struct list_head controllers;	/* list of sysmmu_drvdata.owner_node */
+ 	struct iommu_domain *domain;	/* domain this device is attached */
++	struct mutex rpm_lock;		/* for runtime pm of all sysmmus */
+ };
  
  /*
-- * r3 - requested stop state
-+ * r3 - PSSCR value corresponding to the requested stop state.
-  */
- power_enter_stop:
- /*
-+ * Check if we are executing the lite variant with ESL=EC=0
-+ */
-+	andis.   r4, r3, PSSCR_EC_ESL_MASK_SHIFTED
-+	andi.    r3, r3, PSSCR_RL_MASK   /* r3 = requested stop state */
-+	cmpdi	 r4, 0
-+	bne	 1f
-+	IDLE_STATE_ENTER_SEQ(PPC_STOP)
-+	li	r3,0  /* Since we didn't lose state, return 0 */
-+	b 	pnv_wakeup_noloss
-+/*
-  * Check if the requested state is a deep idle state.
-  */
--	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
-+1:	LOAD_REG_ADDRBASE(r5,pnv_first_deep_stop_state)
- 	ld	r4,ADDROFF(pnv_first_deep_stop_state)(r5)
- 	cmpd	r3,r4
- 	bge	2f
-@@ -330,16 +338,17 @@ ALT_FTR_SECTION_END_NESTED_IFSET(CPU_FTR_ARCH_207S, 66);		\
- 	ld	r3,ORIG_GPR3(r1);	/* Restore original r3 */	\
- 20:	nop;
+@@ -237,8 +238,8 @@ struct sysmmu_drvdata {
+ 	struct clk *aclk;		/* SYSMMU's aclk clock */
+ 	struct clk *pclk;		/* SYSMMU's pclk clock */
+ 	struct clk *clk_master;		/* master's device clock */
+-	int activations;		/* number of calls to sysmmu_enable */
+ 	spinlock_t lock;		/* lock for modyfying state */
++	int active;			/* current status */
+ 	struct exynos_iommu_domain *domain; /* domain we belong to */
+ 	struct list_head domain_node;	/* node for domain clients list */
+ 	struct list_head owner_node;	/* node for owner controllers list */
+@@ -251,25 +252,6 @@ static struct exynos_iommu_domain *to_exynos_domain(struct iommu_domain *dom)
+ 	return container_of(dom, struct exynos_iommu_domain, domain);
+ }
+ 
+-static bool set_sysmmu_active(struct sysmmu_drvdata *data)
+-{
+-	/* return true if the System MMU was not active previously
+-	   and it needs to be initialized */
+-	return ++data->activations == 1;
+-}
+-
+-static bool set_sysmmu_inactive(struct sysmmu_drvdata *data)
+-{
+-	/* return true if the System MMU is needed to be disabled */
+-	BUG_ON(data->activations < 1);
+-	return --data->activations == 0;
+-}
+-
+-static bool is_sysmmu_active(struct sysmmu_drvdata *data)
+-{
+-	return data->activations > 0;
+-}
+-
+ static void sysmmu_unblock(struct sysmmu_drvdata *data)
+ {
+ 	writel(CTRL_ENABLE, data->sfrbase + REG_MMU_CTRL);
+@@ -388,7 +370,7 @@ static irqreturn_t exynos_sysmmu_irq(int irq, void *dev_id)
+ 	unsigned short reg_status, reg_clear;
+ 	int ret = -ENOSYS;
+ 
+-	WARN_ON(!is_sysmmu_active(data));
++	WARN_ON(!data->active);
+ 
+ 	if (MMU_MAJ_VER(data->version) < 5) {
+ 		reg_status = REG_INT_STATUS;
+@@ -434,40 +416,19 @@ static irqreturn_t exynos_sysmmu_irq(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static void __sysmmu_disable_nocount(struct sysmmu_drvdata *data)
++static void __sysmmu_disable(struct sysmmu_drvdata *data)
+ {
++	unsigned long flags;
++
+ 	clk_enable(data->clk_master);
+ 
++	spin_lock_irqsave(&data->lock, flags);
+ 	writel(CTRL_DISABLE, data->sfrbase + REG_MMU_CTRL);
+ 	writel(0, data->sfrbase + REG_MMU_CFG);
+-
+-	__sysmmu_disable_clocks(data);
+-}
+-
+-static bool __sysmmu_disable(struct sysmmu_drvdata *data)
+-{
+-	bool disabled;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&data->lock, flags);
+-
+-	disabled = set_sysmmu_inactive(data);
+-
+-	if (disabled) {
+-		data->pgtable = 0;
+-		data->domain = NULL;
+-
+-		__sysmmu_disable_nocount(data);
+-
+-		dev_dbg(data->sysmmu, "Disabled\n");
+-	} else  {
+-		dev_dbg(data->sysmmu, "%d times left to disable\n",
+-					data->activations);
+-	}
+-
++	data->active = false;
+ 	spin_unlock_irqrestore(&data->lock, flags);
+ 
+-	return disabled;
++	__sysmmu_disable_clocks(data);
+ }
+ 
+ static void __sysmmu_init_config(struct sysmmu_drvdata *data)
+@@ -484,17 +445,19 @@ static void __sysmmu_init_config(struct sysmmu_drvdata *data)
+ 	writel(cfg, data->sfrbase + REG_MMU_CFG);
+ }
+ 
+-static void __sysmmu_enable_nocount(struct sysmmu_drvdata *data)
++static void __sysmmu_enable(struct sysmmu_drvdata *data)
+ {
++	unsigned long flags;
++
+ 	__sysmmu_enable_clocks(data);
+ 
++	spin_lock_irqsave(&data->lock, flags);
+ 	writel(CTRL_BLOCK, data->sfrbase + REG_MMU_CTRL);
+-
+ 	__sysmmu_init_config(data);
+-
+ 	__sysmmu_set_ptbase(data, data->pgtable);
+-
+ 	writel(CTRL_ENABLE, data->sfrbase + REG_MMU_CTRL);
++	data->active = true;
++	spin_unlock_irqrestore(&data->lock, flags);
+ 
+ 	/*
+ 	 * SYSMMU driver keeps master's clock enabled only for the short
+@@ -505,48 +468,18 @@ static void __sysmmu_enable_nocount(struct sysmmu_drvdata *data)
+ 	clk_disable(data->clk_master);
+ }
+ 
+-static int __sysmmu_enable(struct sysmmu_drvdata *data, phys_addr_t pgtable,
+-			   struct exynos_iommu_domain *domain)
+-{
+-	int ret = 0;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&data->lock, flags);
+-	if (set_sysmmu_active(data)) {
+-		data->pgtable = pgtable;
+-		data->domain = domain;
+-
+-		__sysmmu_enable_nocount(data);
+-
+-		dev_dbg(data->sysmmu, "Enabled\n");
+-	} else {
+-		ret = (pgtable == data->pgtable) ? 1 : -EBUSY;
+-
+-		dev_dbg(data->sysmmu, "already enabled\n");
+-	}
+-
+-	if (WARN_ON(ret < 0))
+-		set_sysmmu_inactive(data); /* decrement count */
+-
+-	spin_unlock_irqrestore(&data->lock, flags);
+-
+-	return ret;
+-}
+-
+ static void sysmmu_tlb_invalidate_flpdcache(struct sysmmu_drvdata *data,
+ 					    sysmmu_iova_t iova)
+ {
+ 	unsigned long flags;
  
 -
- /*
-- * r3 - requested stop state
-+ * r3 - The PSSCR value corresponding to the stop state.
-+ * r4 - The PSSCR mask corrresonding to the stop state.
-  */
- _GLOBAL(power9_idle_stop)
--	LOAD_REG_IMMEDIATE(r4, PSSCR_HV_TEMPLATE)
--	or	r4,r4,r3
--	mtspr	SPRN_PSSCR, r4
--	li	r4, 1
-+	mfspr   r5, SPRN_PSSCR
-+	andc    r5, r5, r4
-+	or      r3, r3, r5
-+	mtspr 	SPRN_PSSCR, r3
- 	LOAD_REG_ADDR(r5,power_enter_stop)
-+	li	r4, 1
- 	b	pnv_powersave_common
- 	/* No return */
- /*
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 479c256..575f2aa 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -237,15 +237,21 @@ static DEVICE_ATTR(fastsleep_workaround_applyonce, 0600,
- 			show_fastsleep_workaround_applyonce,
- 			store_fastsleep_workaround_applyonce);
- 
-+/*
-+ * The default stop state that will be used by ppc_md.power_save
-+ * function on platforms that support stop instruction.
-+ */
-+u64 pnv_default_stop_val;
-+u64 pnv_default_stop_mask;
- 
- /*
-  * Used for ppc_md.power_save which needs a function with no parameters
-  */
- static void power9_idle(void)
- {
--	/* Requesting stop state 0 */
--	power9_idle_stop(0);
-+	power9_idle_stop(pnv_default_stop_val, pnv_default_stop_mask);
- }
-+
- /*
-  * First deep stop state. Used to figure out when to save/restore
-  * hypervisor context.
-@@ -253,9 +259,11 @@ static void power9_idle(void)
- u64 pnv_first_deep_stop_state = MAX_STOP_STATE;
- 
- /*
-- * Deepest stop idle state. Used when a cpu is offlined
-+ * psscr value and mask of the deepest stop idle state.
-+ * Used when a cpu is offlined.
-  */
--u64 pnv_deepest_stop_state;
-+u64 pnv_deepest_stop_psscr_val;
-+u64 pnv_deepest_stop_psscr_mask;
- 
- /*
-  * Power ISA 3.0 idle initialization.
-@@ -302,28 +310,61 @@ static int __init pnv_arch300_idle_init(struct device_node *np, u32 *flags,
- 					int dt_idle_states)
- {
- 	u64 *psscr_val = NULL;
-+	u64 *psscr_mask = NULL;
-+	u32 *residency_ns = NULL;
-+	u64 max_residency_ns = 0;
- 	int rc = 0, i;
-+	bool default_stop_found = false;
- 
- 	psscr_val = kcalloc(dt_idle_states, sizeof(*psscr_val),
- 				GFP_KERNEL);
--	if (!psscr_val) {
-+	psscr_mask = kcalloc(dt_idle_states, sizeof(*psscr_mask),
-+				GFP_KERNEL);
-+	residency_ns = kcalloc(dt_idle_states, sizeof(*residency_ns),
-+				GFP_KERNEL);
-+
-+	if (!psscr_val || !psscr_mask || !residency_ns) {
- 		rc = -1;
- 		goto out;
+ 	spin_lock_irqsave(&data->lock, flags);
+-	if (is_sysmmu_active(data) && data->version >= MAKE_MMU_VER(3, 3)) {
++	if (data->active && data->version >= MAKE_MMU_VER(3, 3)) {
+ 		clk_enable(data->clk_master);
+ 		__sysmmu_tlb_invalidate_entry(data, iova, 1);
+ 		clk_disable(data->clk_master);
  	}
-+
- 	if (of_property_read_u64_array(np,
- 		"ibm,cpu-idle-state-psscr",
- 		psscr_val, dt_idle_states)) {
--		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-psscr in DT\n");
-+		rc = -1;
-+		goto out;
-+	}
-+
-+	if (of_property_read_u64_array(np,
-+		"ibm,cpu-idle-state-psscr-mask",
-+		psscr_mask, dt_idle_states)) {
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-psscr-mask in DT\n");
- 		rc = -1;
- 		goto out;
+ 	spin_unlock_irqrestore(&data->lock, flags);
+-
+ }
+ 
+ static void sysmmu_tlb_invalidate_entry(struct sysmmu_drvdata *data,
+@@ -555,7 +488,7 @@ static void sysmmu_tlb_invalidate_entry(struct sysmmu_drvdata *data,
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&data->lock, flags);
+-	if (is_sysmmu_active(data)) {
++	if (data->active) {
+ 		unsigned int num_inv = 1;
+ 
+ 		clk_enable(data->clk_master);
+@@ -656,40 +589,55 @@ static int __init exynos_sysmmu_probe(struct platform_device *pdev)
  	}
  
-+	if (of_property_read_u32_array(np,
-+		"ibm,cpu-idle-state-residency-ns",
-+		residency_ns, dt_idle_states)) {
-+		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-residency-ns in DT\n");
-+		rc = -1;
-+		goto out;
-+
-+	}
-+
- 	/*
--	 * Set pnv_first_deep_stop_state and pnv_deepest_stop_state.
-+	 * Set pnv_first_deep_stop_state, pnv_deepest_stop_psscr_{val,mask},
-+	 * and the pnv_default_stop_{val,mask}.
-+	 *
- 	 * pnv_first_deep_stop_state should be set to the first stop
- 	 * level to cause hypervisor state loss.
--	 * pnv_deepest_stop_state should be set to the deepest stop
--	 * stop state.
-+	 *
-+	 * pnv_deepest_stop_{val,mask} should be set to values corresponding to
-+	 * the deepest stop state.
-+	 *
-+	 * pnv_default_stop_{val,mask} should be set to values corresponding to
-+	 * the shallowest (OPAL_PM_STOP_INST_FAST) loss-less stop state.
- 	 */
- 	pnv_first_deep_stop_state = MAX_STOP_STATE;
- 	for (i = 0; i < dt_idle_states; i++) {
-@@ -333,12 +374,23 @@ static int __init pnv_arch300_idle_init(struct device_node *np, u32 *flags,
- 		     (pnv_first_deep_stop_state > psscr_rl))
- 			pnv_first_deep_stop_state = psscr_rl;
+ 	pm_runtime_enable(dev);
+-
+ 	of_iommu_set_ops(dev->of_node, &exynos_iommu_ops);
  
--		if (pnv_deepest_stop_state < psscr_rl)
--			pnv_deepest_stop_state = psscr_rl;
--	}
-+		if (max_residency_ns < residency_ns[i]) {
-+			max_residency_ns = residency_ns[i];
-+			pnv_deepest_stop_psscr_val = psscr_val[i];
-+			pnv_deepest_stop_psscr_mask = psscr_mask[i];
-+		}
- 
-+		if (!default_stop_found &&
-+			(flags[i] & OPAL_PM_STOP_INST_FAST)) {
-+			pnv_default_stop_val = psscr_val[i];
-+			pnv_default_stop_mask = psscr_mask[i];
-+			default_stop_found = true;
-+		}
-+	}
- out:
- 	kfree(psscr_val);
-+	kfree(psscr_mask);
-+	kfree(residency_ns);
- 	return rc;
+ 	return 0;
  }
  
-diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-index da7c843..6130522 100644
---- a/arch/powerpc/platforms/powernv/powernv.h
-+++ b/arch/powerpc/platforms/powernv/powernv.h
-@@ -18,7 +18,8 @@ static inline void pnv_pci_shutdown(void) { }
- #endif
- 
- extern u32 pnv_get_supported_cpuidle_states(void);
--extern u64 pnv_deepest_stop_state;
-+extern u64 pnv_deepest_stop_psscr_val;
-+extern u64 pnv_deepest_stop_psscr_mask;
- 
- extern void pnv_lpc_init(void);
- 
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index c789258..55c4aaa 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -182,9 +182,10 @@ static void pnv_smp_cpu_kill_self(void)
- 
- 		ppc64_runlatch_off();
- 
--		if (cpu_has_feature(CPU_FTR_ARCH_300))
--			srr1 = power9_idle_stop(pnv_deepest_stop_state);
--		else if (idle_states & OPAL_PM_WINKLE_ENABLED)
-+		if (cpu_has_feature(CPU_FTR_ARCH_300)) {
-+			srr1 = power9_idle_stop(pnv_deepest_stop_psscr_val,
-+						pnv_deepest_stop_psscr_mask);
-+		} else if (idle_states & OPAL_PM_WINKLE_ENABLED)
- 			srr1 = power7_winkle();
- 		else if ((idle_states & OPAL_PM_SLEEP_ENABLED) ||
- 				(idle_states & OPAL_PM_SLEEP_ENABLED_ER1))
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index f7ca891..6f2bee0 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -30,7 +30,11 @@ struct cpuidle_driver powernv_idle_driver = {
- static int max_idle_state;
- static struct cpuidle_state *cpuidle_state_table;
- 
--static u64 stop_psscr_table[CPUIDLE_STATE_MAX];
-+struct stop_psscr_table {
-+	u64 val;
-+	u64 mask;
-+};
-+static struct stop_psscr_table stop_psscr_table[CPUIDLE_STATE_MAX];
- 
- static u64 snooze_timeout;
- static bool snooze_timeout_en;
-@@ -102,7 +106,8 @@ static int stop_loop(struct cpuidle_device *dev,
- 		     int index)
+-#ifdef CONFIG_PM_SLEEP
+ static int exynos_sysmmu_suspend(struct device *dev)
  {
- 	ppc64_runlatch_off();
--	power9_idle_stop(stop_psscr_table[index]);
-+	power9_idle_stop(stop_psscr_table[index].val,
-+			stop_psscr_table[index].mask);
- 	ppc64_runlatch_on();
- 	return index;
- }
-@@ -186,6 +191,7 @@ static int powernv_add_idle_states(void)
- 	u32 residency_ns[CPUIDLE_STATE_MAX];
- 	u32 flags[CPUIDLE_STATE_MAX];
- 	u64 psscr_val[CPUIDLE_STATE_MAX];
-+	u64 psscr_mask[CPUIDLE_STATE_MAX];
- 	const char *names[CPUIDLE_STATE_MAX];
- 	int i, rc;
+ 	struct sysmmu_drvdata *data = dev_get_drvdata(dev);
++	struct exynos_iommu_owner *owner;
  
-@@ -233,14 +239,22 @@ static int powernv_add_idle_states(void)
- 
- 	/*
- 	 * If the idle states use stop instruction, probe for psscr values
--	 * which are necessary to specify required stop level.
-+	 * and psscr mask which are necessary to specify required stop level.
- 	 */
--	if (flags[0] & (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP))
-+	if (flags[0] & (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP)) {
- 		if (of_property_read_u64_array(power_mgt,
- 		    "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states)) {
--			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
-+			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-psscr in DT\n");
-+			goto out;
-+		}
+-	dev_dbg(dev, "suspend\n");
+-	if (is_sysmmu_active(data)) {
+-		__sysmmu_disable_nocount(data);
+-		pm_runtime_put(dev);
++	if (!data->master)
++		return 0;
 +
-+		if (of_property_read_u64_array(power_mgt,
-+			"ibm,cpu-idle-state-psscr-mask", psscr_mask,
-+						dt_idle_states)) {
-+			pr_warn("cpuidle-powernv:Missing ibm,cpu-idle-state-psscr-mask in DT\n");
- 			goto out;
- 		}
++	owner = data->master->archdata.iommu;
++
++	mutex_lock(&owner->rpm_lock);
++	if (data->domain) {
++		dev_dbg(data->sysmmu, "saving state\n");
++		__sysmmu_disable(data);
+ 	}
++	mutex_unlock(&owner->rpm_lock);
++
+ 	return 0;
+ }
+ 
+ static int exynos_sysmmu_resume(struct device *dev)
+ {
+ 	struct sysmmu_drvdata *data = dev_get_drvdata(dev);
++	struct exynos_iommu_owner *owner;
+ 
+-	dev_dbg(dev, "resume\n");
+-	if (is_sysmmu_active(data)) {
+-		pm_runtime_get_sync(dev);
+-		__sysmmu_enable_nocount(data);
++	if (!data->master)
++		return 0;
++
++	owner = data->master->archdata.iommu;
++
++	mutex_lock(&owner->rpm_lock);
++	if (data->domain) {
++		dev_dbg(data->sysmmu, "restoring state\n");
++		__sysmmu_enable(data);
+ 	}
++	mutex_unlock(&owner->rpm_lock);
++
+ 	return 0;
+ }
+-#endif
+ 
+ static const struct dev_pm_ops sysmmu_pm_ops = {
+-	SET_LATE_SYSTEM_SLEEP_PM_OPS(exynos_sysmmu_suspend, exynos_sysmmu_resume)
++	SET_RUNTIME_PM_OPS(exynos_sysmmu_suspend, exynos_sysmmu_resume, NULL)
++	SET_LATE_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
++				     pm_runtime_force_resume)
+ };
+ 
+ static const struct of_device_id sysmmu_of_match[] __initconst = {
+@@ -793,9 +741,12 @@ static void exynos_iommu_domain_free(struct iommu_domain *iommu_domain)
+ 	spin_lock_irqsave(&domain->lock, flags);
+ 
+ 	list_for_each_entry_safe(data, next, &domain->clients, domain_node) {
+-		if (__sysmmu_disable(data))
+-			data->master = NULL;
++		spin_lock(&data->lock);
++		__sysmmu_disable(data);
++		data->pgtable = 0;
++		data->domain = NULL;
+ 		list_del_init(&data->domain_node);
++		spin_unlock(&data->lock);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&domain->lock, flags);
+@@ -829,31 +780,32 @@ static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
+ 	phys_addr_t pagetable = virt_to_phys(domain->pgtable);
+ 	struct sysmmu_drvdata *data, *next;
+ 	unsigned long flags;
+-	bool found = false;
+ 
+ 	if (!has_sysmmu(dev) || owner->domain != iommu_domain)
+ 		return;
+ 
++	mutex_lock(&owner->rpm_lock);
++
++	list_for_each_entry(data, &owner->controllers, owner_node) {
++		if (pm_runtime_active(data->sysmmu))
++			__sysmmu_disable(data);
 +	}
++
+ 	spin_lock_irqsave(&domain->lock, flags);
+ 	list_for_each_entry_safe(data, next, &domain->clients, domain_node) {
+-		if (data->master == dev) {
+-			if (__sysmmu_disable(data)) {
+-				data->master = NULL;
+-				list_del_init(&data->domain_node);
+-			}
+-			pm_runtime_put(data->sysmmu);
+-			found = true;
+-		}
++		spin_lock(&data->lock);
++		data->pgtable = 0;
++		data->domain = NULL;
++		list_del_init(&data->domain_node);
++		spin_unlock(&data->lock);
+ 	}
++	owner->domain = NULL;
+ 	spin_unlock_irqrestore(&domain->lock, flags);
  
- 	rc = of_property_read_u32_array(power_mgt,
- 		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
-@@ -274,7 +288,8 @@ static int powernv_add_idle_states(void)
- 			powernv_states[nr_idle_states].flags = 0;
+-	owner->domain = NULL;
++	mutex_unlock(&owner->rpm_lock);
  
- 			powernv_states[nr_idle_states].enter = stop_loop;
--			stop_psscr_table[nr_idle_states] = psscr_val[i];
-+			stop_psscr_table[nr_idle_states].val = psscr_val[i];
-+			stop_psscr_table[nr_idle_states].mask = psscr_mask[i];
- 		}
+-	if (found)
+-		dev_dbg(dev, "%s: Detached IOMMU with pgtable %pa\n",
+-					__func__, &pagetable);
+-	else
+-		dev_err(dev, "%s: No IOMMU is attached\n", __func__);
++	dev_dbg(dev, "%s: Detached IOMMU with pgtable %pa\n", __func__,
++		&pagetable);
+ }
  
- 		/*
-@@ -299,7 +314,8 @@ static int powernv_add_idle_states(void)
+ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
+@@ -864,7 +816,6 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
+ 	struct sysmmu_drvdata *data;
+ 	phys_addr_t pagetable = virt_to_phys(domain->pgtable);
+ 	unsigned long flags;
+-	int ret = -ENODEV;
  
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
- 			powernv_states[nr_idle_states].enter = stop_loop;
--			stop_psscr_table[nr_idle_states] = psscr_val[i];
-+			stop_psscr_table[nr_idle_states].val = psscr_val[i];
-+			stop_psscr_table[nr_idle_states].mask = psscr_mask[i];
- 		}
- #endif
- 		powernv_states[nr_idle_states].exit_latency =
+ 	if (!has_sysmmu(dev))
+ 		return -ENODEV;
+@@ -872,29 +823,30 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
+ 	if (owner->domain)
+ 		exynos_iommu_detach_device(owner->domain, dev);
+ 
++	mutex_lock(&owner->rpm_lock);
++
++	spin_lock_irqsave(&domain->lock, flags);
+ 	list_for_each_entry(data, &owner->controllers, owner_node) {
+-		pm_runtime_get_sync(data->sysmmu);
+-		ret = __sysmmu_enable(data, pagetable, domain);
+-		if (ret >= 0) {
+-			data->master = dev;
+-
+-			spin_lock_irqsave(&domain->lock, flags);
+-			list_add_tail(&data->domain_node, &domain->clients);
+-			spin_unlock_irqrestore(&domain->lock, flags);
+-		}
++		spin_lock(&data->lock);
++		data->pgtable = pagetable;
++		data->domain = domain;
++		list_add_tail(&data->domain_node, &domain->clients);
++		spin_unlock(&data->lock);
+ 	}
++	owner->domain = iommu_domain;
++	spin_unlock_irqrestore(&domain->lock, flags);
+ 
+-	if (ret < 0) {
+-		dev_err(dev, "%s: Failed to attach IOMMU with pgtable %pa\n",
+-					__func__, &pagetable);
+-		return ret;
++	list_for_each_entry(data, &owner->controllers, owner_node) {
++		if (pm_runtime_active(data->sysmmu))
++			__sysmmu_enable(data);
+ 	}
+ 
+-	owner->domain = iommu_domain;
+-	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa %s\n",
+-		__func__, &pagetable, (ret == 0) ? "" : ", again");
++	mutex_unlock(&owner->rpm_lock);
+ 
+-	return ret;
++	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa\n", __func__,
++		&pagetable);
++
++	return 0;
+ }
+ 
+ static sysmmu_pte_t *alloc_lv2entry(struct exynos_iommu_domain *domain,
+@@ -1265,10 +1217,21 @@ static int exynos_iommu_of_xlate(struct device *dev,
+ 			return -ENOMEM;
+ 
+ 		INIT_LIST_HEAD(&owner->controllers);
++		mutex_init(&owner->rpm_lock);
+ 		dev->archdata.iommu = owner;
+ 	}
+ 
+ 	list_add_tail(&data->owner_node, &owner->controllers);
++	data->master = dev;
++
++	/*
++	 * SYSMMU will be runtime enabled via device link (dependency) to its
++	 * master device, so there are no direct calls to pm_runtime_get/put
++	 * in this driver.
++	 */
++	device_link_add(dev, data->sysmmu, DEVICE_LINK_AVAILABLE,
++			DEVICE_LINK_PM_RUNTIME);
++
+ 	return 0;
+ }
+ 
 -- 
-1.9.4
-
+1.9.1
