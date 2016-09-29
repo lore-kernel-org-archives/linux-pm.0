@@ -1,46 +1,136 @@
-From: Axel Lin <axel.lin@ingics.com>
-Subject: [PATCH v2] PM / devfreq: Add proper locking around list_del()
-Date: Thu, 29 Sep 2016 10:13:28 +0800
-Message-ID: <1475115208-6817-1-git-send-email-axel.lin@ingics.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Axel Lin <axel.lin@ingics.com>
+From: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: Regression in 4.8 - CPU speed set very low
+Date: Wed, 28 Sep 2016 21:22:59 -0500
+Message-ID: <5271ed6f-5798-e930-d7fd-17fe6bb7ea96@lwfinger.net>
+References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net>
+ <3919370.SGLjGupePs@vostro.rjw.lan>
+ <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>
+ <2477506.olat0BX4ex@vostro.rjw.lan>
+ <1436996d-078b-aa51-4452-b6655d917135@lwfinger.net>
+ <CAJZ5v0iEchM2ye==020gLj2bZc3ddCFa29jQZh6c+9X+OhfcoQ@mail.gmail.com>
+ <594f5012-5157-bfdd-f715-bea8caa824c3@lwfinger.net>
+ <CAJZ5v0g++0JaPUEaQy54_fcA5tv5TuNZw+5mbmo47OY-dD8HoQ@mail.gmail.com>
+ <e42f36f7-5bf4-fdc4-12a7-a2d6a645e82e@lwfinger.net>
+ <CAJZ5v0hzRCqsE-Wg4aTPPF_+=o+io_P8M-D4_pu5qpDxaXAy5A@mail.gmail.com>
+ <2326a7dd-675f-752b-f100-5dce6e4c93fd@lwfinger.net>
+ <003001d2186d$02c34820$0849d860$@net>
+ <785b1633-5f1d-7cfe-5a9f-cfbb82a4a754@lwfinger.net>
+ <CAJZ5v0j3fJ7pDoR+LhY6x1T0yQEhq6omFL7-BrBcMy68eFiMMg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f42.google.com ([209.85.218.42]:33550 "EHLO
+        mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750700AbcI2CXB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2016 22:23:01 -0400
+In-Reply-To: <CAJZ5v0j3fJ7pDoR+LhY6x1T0yQEhq6omFL7-BrBcMy68eFiMMg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Doug Smythies <dsmythies@telus.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Use devfreq_list_lock around list_del() to prevent list corruption.
+On 09/27/2016 06:46 AM, Rafael J. Wysocki wrote:
+> On Tue, Sep 27, 2016 at 10:48 AM, Larry Finger
+> <Larry.Finger@lwfinger.net> wrote:
+>> On 09/26/2016 10:12 PM, Doug Smythies wrote:
+>>>
+>>> On 2016.09.26 18:31 Srinivas Pandruvada wrote:
+>>>>
+>>>> On Mon, 2016-09-26 at 19:48 -0500, Larry Finger wrote:
+>>>>>
+>>>>> On 09/26/2016 07:21 PM, Rafael J. Wysocki wrote:
+>>>>>>
+>>>>>> On Tue, Sep 27, 2016 at 1:53 AM, Larry Finger wrote:
+>>>>>> But for both we need a reproducer anyway.
+>>>>>
+>>>>> I do not have a reliable reproducer. The condition has always
+>>>>> happened when
+>>>>> running a high-compute job such as a 'make -j8' on the kernel, or
+>>>>> building the
+>>>>> RPM for openSUSE's implementation of VirtualBox. The latter is what
+>>>>> I'm using
+>>>>> for most of my testing.
+>>>
+>>>
+>>> Run some CPU stressor and get all your CPU's going at 100% load.
+>>> And watch your core temperatures while you do so.
+>>
+>>
+>> for i in 1 2 3 4; do while : ; do : ; done & done
+>>
+>> triggered the fault in a few minutes.
+>>>
+>>>
+>>>>
+>>>>>> It also would be good to rule out the thermal throttling (as per
+>>>>>> the Srinivas' comments).
+>>>
+>>>
+>>> It is almost certainly thermal throttling, or similar causing
+>>> Clock modulation, of it seems 50%.
+>>
+>>
+>> While the infinite loops were running, the temps were:
+>>
+>> finger@linux-1t8h:~/rtlwifi_new> sensors
+>> coretemp-isa-0000
+>> Adapter: ISA adapter
+>> Physical id 0:  +83.0°C  (high = +84.0°C, crit = +100.0°C)
+>> Core 0:         +83.0°C  (high = +84.0°C, crit = +100.0°C)
+>> Core 1:         +74.0°C  (high = +84.0°C, crit = +100.0°C)
+>
+> It looks like the trip point (high) temperature was exceeded causing
+> thermal throttling to kick in.
+>
+>> After the fault occurs, I get
+>>
+>> finger@linux-1t8h:~/rtlwifi_new> sensors
+>> coretemp-isa-0000
+>> Adapter: ISA adapter
+>> Physical id 0:  +44.0°C  (high = +84.0°C, crit = +100.0°C)
+>> Core 0:         +43.0°C  (high = +84.0°C, crit = +100.0°C)
+>> Core 1:         +41.0°C  (high = +84.0°C, crit = +100.0°C)
+>
+> So after that it stays at 400 MHz forever, right?
+>
+>>>>>>
+>>>>>> For now, please tell me what's in
+>>>>>> /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq
+>>>>>
+>>>>> 800000
+>>>>
+>>>> Your effective freq is lower than 800MHz. One of the possible reason is
+>>>> thermal throttling.
+>>>>
+>>>> What distro you are using?
+>>>
+>>>
+>>> And what make and model of LapTop?
+>>
+>>
+>> Toshiba Tecra A50-A with CPU Model: 6.60.3 "Intel(R) Core(TM) i7-4600M CPU @
+>> 2.90GHz. That is a dual-core unit with hyperthreading.
+>>
+>> @Rafael: As I write this, the system has been running the infinite loop test
+>> for almost 5 hours with kernel 4.7. I will leave that running while I'm
+>> gone, but I am certain that it is OK.
+>
+> OK, and what temperatures do you see while doing this?
 
-Signed-off-by: Axel Lin <axel.lin@ingics.com>
----
-v2: changes base on MyungJoo's comment.
-Note, devfreq_list_lock lock region does not to include device_unregister(&devfreq->dev);
- drivers/devfreq/devfreq.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+finger@linux-1t8h:~/linux-2.6> sensors
+coretemp-isa-0000
+Adapter: ISA adapter
+Physical id 0:  +90.0°C  (high = +84.0°C, crit = +100.0°C)
+Core 0:         +90.0°C  (high = +84.0°C, crit = +100.0°C)
+Core 1:         +78.0°C  (high = +84.0°C, crit = +100.0°C)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 478006b..66d3c718 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -594,17 +594,19 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	if (devfreq->governor)
- 		err = devfreq->governor->event_handler(devfreq,
- 					DEVFREQ_GOV_START, NULL);
--	mutex_unlock(&devfreq_list_lock);
- 	if (err) {
- 		dev_err(dev, "%s: Unable to start governor for the device\n",
- 			__func__);
- 		goto err_init;
- 	}
-+	mutex_unlock(&devfreq_list_lock);
- 
- 	return devfreq;
- 
- err_init:
- 	list_del(&devfreq->node);
-+	mutex_unlock(&devfreq_list_lock);
-+
- 	device_unregister(&devfreq->dev);
- err_out:
- 	return ERR_PTR(err);
--- 
-2.7.4
+Once again, the CPU temp is greater than the "high" value; however, the clock 
+rate continues to hold near 3600 MHz.
+
+My laptop was inadvertently put to sleep while I was gone. I forgot to leave a 
+note for my wife and she quieted the noisy cpu fan. :)
+
+Larry
+
+
