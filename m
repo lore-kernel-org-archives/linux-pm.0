@@ -1,83 +1,116 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][v3] mfd: intel-lpss: Avoid resuming runtime-suspended lpss unnecessarily
-Date: Thu, 29 Sep 2016 13:01:26 +0800
-Message-ID: <1475125286-12167-1-git-send-email-yu.c.chen@intel.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v4 0/5] Functional dependencies between devices
+Date: Thu, 29 Sep 2016 08:58:43 +0200
+Message-ID: <fd09bfe8-74b7-9bf8-e4b5-cf8c9f922c64@samsung.com>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <CGME20160929003536eucas1p1aecbfc8dc35c3a782185abe475bc3daa@eucas1p1.samsung.com>
+ <10860219.QqH5akBVoh@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:24830 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752058AbcI2ExL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 29 Sep 2016 00:53:11 -0400
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:19607 "EHLO
+        mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754025AbcI2G6t (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Sep 2016 02:58:49 -0400
+In-reply-to: <10860219.QqH5akBVoh@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Lee Jones <lee.jones@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-We have report that the intel_lpss_prepare() takes too much time during
-suspend, and this is because we first resume the devices from runtime
-suspend by resume_lpss_device(), to make sure they are in proper state
-before system suspend, which takes 100ms for each LPSS devices(PCI power
-state from D3_cold to D0). And since resume_lpss_device() resumes the
-devices synchronously, we might get huge latency if we have many
-LPSS devices.
+Hi Rafael,
 
-So first try is to use pm_request_resume() instead, to make the runtime
-resume process asynchronously. Unfortunately the asynchronous runtime
-resume relies on pm_wq, which is freezed at early stage. So we choose
-another method, that is to avoid resuming runtime-suspended devices,
-if they are already runtime suspended. This is safe because for LPSS
-driver, the runtime suspend and system suspend are of the same
-hook - i.e., intel_lpss_suspend(). And moreover, this device is
-neither runtime wakeup source nor system wakeup source.
+On 2016-09-29 02:24, Rafael J. Wysocki wrote:
+> Hi Everyone,
+>
+> On Thursday, September 08, 2016 11:25:44 PM Rafael J. Wysocki wrote:
+>>> Hi Everyone,
+>>>
+>>> This is a refresh of the functional dependencies series that I posted last
+>>> year and which has picked up by Marek quite recently.  For reference,
+>>> appended is my introductory message sent previously (which may be
+>>> slightly outdated now).
+>>>
+>>> As last time, the first patch rearranges the code around
+>>> __device_release_driver() a bit to prepare it for the next one (it
+>>> actually hasn't changed AFAICS).
+>>>
+>>> The second patch introduces the actual device links mechanics, but without
+>>> system suspend/resume and runtime PM support which are added by the
+>>> subsequent patches.
+>>>
+>>> Some bugs found by Marek during his work on these patches should be fixed
+>>> here.  In particular, the endless recursion in device_reorder_to_tail()
+>>> which simply was broken before.
+>>>
+>>> There are two additional patches to address the issue with runtime PM
+>>> support
+>>> that occured when runtime PM was disabled for some suppliers due to a PM
+>>> sleep transition in progress.  Those patches simply make runtime PM
+>>> helpers
+>>> return 0 in that case which may be controversial, so please let me know if
+>>> there are concerns about those.
+>>>
+>>> The way device_link_add() works is a bit different, as it takes an
+>>> additional
+>>> status argument now.  That makes it possible to create a link in any
+>>> state,
+>>> with extra care of course, and should address the problem pointed to by
+>>> Lukas
+>>> during the previous discussion.
+>>>
+>>> Also some comments from Tomeu have been addressed.
+>> An update here.
+>>
+>> The first patch hasn't changed, so I'm resending it.
+>>
+>> The majority of changes in the other patches are in order to address Lukas'
+>> comments.
+>>
+>> First off, I added a DEVICE_LINK_STATELESS flag that will prevent the driver
+>> core from trying to maintain device links having it set.
+>>
+>> Also, the DEVICE_LINK_PERSISTENT flag was dropped (as link "persistence" is
+>> the default behavior now) and there's a new one, DEVICE_LINK_AUTOREMOVE,
+>> that will cause the driver core to remove the link on the consumer driver
+>> unbind.
+>>
+>> Moreover, the code checks attempts to create a link between a parent and a
+>> child device now and actively prevents that from happening.
+>>
+>> The changelog of the second patch has been updated as requested by Ulf.
+>>
+>> The third patch was updated to fix a bug related to the (previously missing)
+>> clearing of power.direct_complete for supplier devices having consumers that
+>> don't use direct_complete.
+>>
+>> The next two (runtime PM) patches turned out to be unnecessary, so I've
+>> dropped them.
+>>
+>> The runtime PM patch [4/5] was reorganized somewhat to reduce the
+>> indentation
+>> level in there, but the code flow introduced by it is essentially the same
+>> and the last patch was simply rebased on top of the new series.
+> Time for another update. :-)
+>
+> Fewer changes this time, mostly to address issues found by Lukas and Marek.
+>
+> The most significant one is to make device_link_add() cope with the case when
+> the consumer device has not been registered yet when it is called.  The
+> supplier device still is required to be registered and the function will return
+> NULL if that is not the case.
+>
+> Another significant change is in patch [4/5] that now makes the core apply
+> pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the probing
+> of a consumer one (in analogy with the parent).
 
-Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- drivers/mfd/intel-lpss.c | 9 +++++++++
- include/linux/pm.h       | 7 +++++++
- 2 files changed, 16 insertions(+)
+Thanks for the update! Updated version fixes all the remaining issues.
 
-diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
-index 41b1138..2583db8 100644
---- a/drivers/mfd/intel-lpss.c
-+++ b/drivers/mfd/intel-lpss.c
-@@ -485,6 +485,15 @@ static int resume_lpss_device(struct device *dev, void *data)
- int intel_lpss_prepare(struct device *dev)
- {
- 	/*
-+	 * This is safe because:
-+	 * 1. The runtime suspend and system suspend
-+	 * are of the same hook.
-+	 * 2. This device is neither runtime wakeup source
-+	 * nor system wakeup source.
-+	 */
-+	if (pm_runtime_status_suspended(dev))
-+		return DPM_DIRECT_COMPLETE;
-+	/*
- 	 * Resume both child devices before entering system sleep. This
- 	 * ensures that they are in proper state before they get suspended.
- 	 */
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 06eb353..4a788b4 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -786,4 +786,11 @@ enum dpm_order {
- 	DPM_ORDER_DEV_LAST,
- };
- 
-+/*
-+ * Return this from system suspend/hibernation ->prepare() callback to
-+ * request the core to leave the device runtime-suspended during system
-+ * suspend if possible.
-+ */
-+#define DPM_DIRECT_COMPLETE 1
-+
- #endif /* _LINUX_PM_H */
+Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+
+Best regards
 -- 
-2.7.4
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
