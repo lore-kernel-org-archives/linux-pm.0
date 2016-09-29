@@ -1,69 +1,99 @@
-From: Larry Finger <Larry.Finger@lwfinger.net>
-Subject: Re: Regression in 4.8 - CPU speed set very low
-Date: Wed, 28 Sep 2016 21:26:42 -0500
-Message-ID: <8a5f37bb-4870-b89e-6287-fcb43b2e708f@lwfinger.net>
-References: <f89dffb9-cc78-9849-9539-74ce89e773cd@lwfinger.net>
- <3919370.SGLjGupePs@vostro.rjw.lan>
- <075788ab-34e0-803c-f2b4-3f370ecc6b14@lwfinger.net>
- <2477506.olat0BX4ex@vostro.rjw.lan>
- <1436996d-078b-aa51-4452-b6655d917135@lwfinger.net>
- <20160927145114.GM14311@csclub.uwaterloo.ca>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH][v2] mfd: intel-lpss: Avoid resuming runtime-suspended
+ lpss unnecessarily
+Date: Thu, 29 Sep 2016 12:59:59 +0800
+Message-ID: <20160929045959.GA12106@sharon>
+References: <1475080179-7692-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0ivKoWHFugZXCNmdUoDtMVXU+9Fo3nf_D8hCsRbNyj_PA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f45.google.com ([209.85.218.45]:34958 "EHLO
-        mail-oi0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754751AbcI2C0o (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Sep 2016 22:26:44 -0400
-In-Reply-To: <20160927145114.GM14311@csclub.uwaterloo.ca>
+Received: from mga02.intel.com ([134.134.136.20]:12822 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751255AbcI2Evf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Sep 2016 00:51:35 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0ivKoWHFugZXCNmdUoDtMVXU+9Fo3nf_D8hCsRbNyj_PA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Lee Jones <lee.jones@linaro.org>
 
-On 09/27/2016 09:51 AM, Lennart Sorensen wrote:
-> On Mon, Sep 26, 2016 at 04:28:29PM -0500, Larry Finger wrote:
->> Mostly I use a KDE applet named "System load" and look at the "average
->> clock", but the same info is also available in /proc/cpuinfo as "cpu MHz".
->> When the bug triggers, the system gets very slow, and the cpu fan stops even
->> though the cpu is still busy.
->>
->> Commit f7816ad, which had run for 7 days without showing the bug, failed
->> after about 2 hours today. All my testing since Sept. 9 has been wasted. Oh
->> well, that's the way it goes!
+On Wed, Sep 28, 2016 at 11:48:40PM +0200, Rafael J. Wysocki wrote:
+> On Wed, Sep 28, 2016 at 6:29 PM, Chen Yu <yu.c.chen@intel.com> wrote:
+> > We have report that the intel_lpss_prepare() takes too much time during
+> > suspend, and this is because we first resume the devices from runtime
+> > suspend by resume_lpss_device(), to make sure they are in proper state
+> > before system suspend, which takes 100ms for each LPSS devices(PCI power
+> > state from D3_cold to D0). And since resume_lpss_device() resumes the
+> > devices synchronously, we might get huge latency if we have many
+> > LPSS devices.
+> >
+> > So first try is to use pm_request_resume() instead, to make the runtime
+> > resume process asynchronously. Unfortunately the asynchronous runtime
+> > resume relies on pm_wq, which is freezed at early stage. So we choose
+> > another method, that is to avoid resuming runtime-suspended devices,
+> > if they are already runtime suspended. This is safe because for LPSS
+> > driver, the runtime suspend and system suspend are of the same
+> > hook - i.e., intel_lpss_suspend(). And moreover, this device is
+> > neither runtime wakeup source nor system wakeup source.
+> >
+> > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Cc: Lee Jones <lee.jones@linaro.org>
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > ---
+> >  drivers/mfd/intel-lpss.c | 9 +++++++++
+> >  include/linux/pm.h       | 3 +++
+> >  2 files changed, 12 insertions(+)
+> >
+> > diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
+> > index 41b1138..2583db8 100644
+> > --- a/drivers/mfd/intel-lpss.c
+> > +++ b/drivers/mfd/intel-lpss.c
+> > @@ -485,6 +485,15 @@ static int resume_lpss_device(struct device *dev, void *data)
+> >  int intel_lpss_prepare(struct device *dev)
+> >  {
+> >         /*
+> > +        * This is safe because:
+> > +        * 1. The runtime suspend and system suspend
+> > +        * are of the same hook.
+> > +        * 2. This device is neither runtime wakeup source
+> > +        * nor system wakeup source.
+> > +        */
+> > +       if (pm_runtime_status_suspended(dev))
+> > +               return DPM_DIRECT_COMPLETE;
+> > +       /*
+> >          * Resume both child devices before entering system sleep. This
+> >          * ensures that they are in proper state before they get suspended.
+> >          */
+> > diff --git a/include/linux/pm.h b/include/linux/pm.h
+> > index 06eb353..5606ad9 100644
+> > --- a/include/linux/pm.h
+> > +++ b/include/linux/pm.h
+> > @@ -786,4 +786,7 @@ enum dpm_order {
+> >         DPM_ORDER_DEV_LAST,
+> >  };
+> >
+> > +/* The device is OK to remain runtime-suspended during suspend.*/
+> 
+> /*
+>  * Return this from system suspend/hibernation ->prepare() callback to
+> request the
+>  * core to leave the device runtime-suspended during system suspend if possible.
+>  */
 >
-> Is it possible there is no bug and instead you have a hardware problem?
->
-> What I am thinking:
->
-> CPU fan stops, then CPU gets busy, CPU overheats, thermal throtling
-> kicks in to protect CPU and it gets VERY slow.
->
-> So maybe you have a bad CPU fan that is getting stuck.  Perhaps even if
-> you have a motherboard that varies the CPU fan depending on need and the
-> fan doesn't like the lowest speed and sometimes gets stuck when asked
-> to go slow.
->
-> Of course if the CPU fan is the problem that could explain why it takes
-> varying amounts of time to see the problem.
->
-> I suggest checking what the cpu temperature sensors are showing next
-> time it gets slow.
-
-By the time it gets slow, the CPU's cool, and one cannot see the temp just 
-before that event happened.
-
-The reason I suspect a bug is that it fails with 4.8-rcX, but not with 4.7. Of 
-course, it could be something subtle that slightly changes the heat load, which 
-causes the CPU temp to be a little higher so that the effect is triggered.
-
-I am reasonably confident that it is not a hardware problem, but we may have to 
-wait until 4.8 is released and gets wider usage. If no one else reports a 
-problem, then I am certainly wrong.
-
-Larry
-
-
-
-
+I've taken this comment in a new version, thanks! 
+> > +#define DPM_DIRECT_COMPLETE 1
+> > +
+> >  #endif /* _LINUX_PM_H */
+> > --
+> 
+> But it is fine by me overall.
+> 
+> Thanks,
+> Rafael
