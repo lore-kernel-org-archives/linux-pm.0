@@ -1,50 +1,53 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH] MAINTAINERS: Switch to kernel.org email address for Javi Merino
-Date: Fri, 30 Sep 2016 13:14:28 +0100
-Message-ID: <1475237668-8408-1-git-send-email-javi.merino@arm.com>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH] coredump: fix unfreezable coredumping task
+Date: Fri, 30 Sep 2016 14:47:41 +0200
+Message-ID: <20160930124741.GA10356@redhat.com>
+References: <1475225434-3753-1-git-send-email-aryabinin@virtuozzo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:41698 "EHLO foss.arm.com"
+Received: from mx1.redhat.com ([209.132.183.28]:44226 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932230AbcI3MOj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 30 Sep 2016 08:14:39 -0400
+        id S932673AbcI3Mst (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 30 Sep 2016 08:48:49 -0400
+Content-Disposition: inline
+In-Reply-To: <1475225434-3753-1-git-send-email-aryabinin@virtuozzo.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, javi.merino@kernel.org, Javi Merino <javi.merino@arm.com>
+To: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
-Change my email address to my kernel.org account instead of the ARM one.
+On 09/30, Andrey Ryabinin wrote:
+>
+> @@ -423,7 +424,9 @@ static int coredump_wait(int exit_code, struct core_state *core_state)
+>  	if (core_waiters > 0) {
+>  		struct core_thread *ptr;
+>  
+> +		freezer_do_not_count();
+>  		wait_for_completion(&core_state->startup);
+> +		freezer_count();
 
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
- .mailmap    | 1 +
- MAINTAINERS | 2 +-
- 2 files changed, 2 insertions(+), 1 deletion(-)
+Agreed... we could probably even do
 
-diff --git a/.mailmap b/.mailmap
-index de22daefd9da..1dab0a156489 100644
---- a/.mailmap
-+++ b/.mailmap
-@@ -69,6 +69,7 @@ James Bottomley <jejb@mulgrave.(none)>
- James Bottomley <jejb@titanic.il.steeleye.com>
- James E Wilson <wilson@specifix.com>
- James Ketrenos <jketreno@io.(none)>
-+Javi Merino <javi.merino@kernel.org> <javi.merino@arm.com>
- <javier@osg.samsung.com> <javier.martinez@collabora.co.uk>
- Jean Tourrilhes <jt@hpl.hp.com>
- Jeff Garzik <jgarzik@pretzel.yyz.us>
-diff --git a/MAINTAINERS b/MAINTAINERS
-index b003d0ca6238..f593300e310b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -11626,7 +11626,7 @@ F:	Documentation/devicetree/bindings/thermal/
- THERMAL/CPU_COOLING
- M:	Amit Daniel Kachhap <amit.kachhap@gmail.com>
- M:	Viresh Kumar <viresh.kumar@linaro.org>
--M:	Javi Merino <javi.merino@arm.com>
-+M:	Javi Merino <javi.merino@kernel.org>
- L:	linux-pm@vger.kernel.org
- S:	Supported
- F:	Documentation/thermal/cpu-cooling-api.txt
--- 
-1.9.1
+	--- x/fs/coredump.c
+	+++ x/fs/coredump.c
+	@@ -423,7 +423,13 @@ static int coredump_wait(int exit_code, 
+		if (core_waiters > 0) {
+			struct core_thread *ptr;
+	 
+	-		wait_for_completion(&core_state->startup);
+	+		if (wait_for_completion_interruptible(&core_state->startup)) {
+	+			/* see the comment in dump_interrupted() */
+	+			down_write(&mm->mmap_sem);
+	+			coredump_finish(mm, false);
+	+			up_write(&mm->mmap_sem);
+	+			return -EINTR;
+	+		}
+			/*
+			 * Wait for all the threads to become inactive, so that
+			 * all the thread context (extended register state, like
+
+but this change looks fine to me too.
+
+Acked-by: Oleg Nesterov <oleg@redhat.com>
 
