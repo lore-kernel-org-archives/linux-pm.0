@@ -1,45 +1,68 @@
-From: Matt Ranostay <mranostay@gmail.com>
-Subject: [PATCH] power: bq27xxx_battery: don't update poll_interval param if same
-Date: Fri, 30 Sep 2016 21:45:30 -0700
-Message-ID: <1475297130-18080-1-git-send-email-matt@ranostay.consulting>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v4 2/5] driver core: Functional dependencies tracking
+ support
+Date: Sat, 1 Oct 2016 09:43:46 +0200
+Message-ID: <20161001074346.GA7215@wunner.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <10860219.QqH5akBVoh@vostro.rjw.lan>
+ <1985903.oaAlgI6mU5@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34359 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750908AbcJAEpg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Oct 2016 00:45:36 -0400
+Received: from mailout2.hostsharing.net ([83.223.90.233]:36459 "EHLO
+        mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751582AbcJAHoD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Oct 2016 03:44:03 -0400
+Content-Disposition: inline
+In-Reply-To: <1985903.oaAlgI6mU5@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Matt Ranostay <matt@ranostay.consulting>, Tony Lindgren <tony@atomide.com>, Sebastian Reichel <sre@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-To avoid canceling the delayed workqueue needlessly, and scheduling an
-immediate polling. Check if the new poll_interval value is different
-than the previous setting.
+On Thu, Sep 29, 2016 at 02:38:04AM +0200, Rafael J. Wysocki wrote:
+> +static int device_reorder_to_tail(struct device *dev, void *not_used)
+> +{
+> +	struct device_link *link;
+> +
+> +	/*
+> +	 * Devices that have not been registered yet will be put to the ends
+> +	 * of the lists during the registratio, so skip them here.
+                                              ^
+                                              n
 
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>
-Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
----
- drivers/power/supply/bq27xxx_battery.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+> +     if (device_is_registered(dev))
+> +             devices_kset_move_last(dev);
+> +
+> +     if (device_pm_initialized(dev))
+> +             device_pm_move_last(dev);
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index d18802ca3327..e01cea9a395a 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -404,10 +404,11 @@ static LIST_HEAD(bq27xxx_battery_devices);
- static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
- {
- 	struct bq27xxx_device_info *di;
-+	unsigned int prev_val = *(unsigned int *) kp->arg;
- 	int ret;
- 
- 	ret = param_set_uint(val, kp);
--	if (ret < 0)
-+	if (ret < 0 || prev_val == *(unsigned int *) kp->arg)
- 		return ret;
- 
- 	mutex_lock(&bq27xxx_list_lock);
--- 
-2.7.4
+Clever solution to this problem.  So little code!
 
+
+> +/**
+> + * device_links_check_suppliers - Check presence of supplier drivers.
+> + * @dev: Consumer device.
+> + *
+> + * Check links from this device to any suppliers.  Walk the list of the device's
+> + * consumer links and see if all of the suppliers are available.  If not, simply
+      ^^^^^^^^
+     "supplier links and see if all if them are available."
+
+
+> +/*
+> + * Device link flags.
+> + *
+> + * STATELESS: The core won't track the presence of supplier/consumer drivers.
+> + * AUTOREMOVE: Remove this link automatically on cunsumer driver unbind.
+                                                     ^
+                                                     o
+
+
+Apart from these nits patch [2/5] LGTM, so FWIW:
+
+Reviewed-by: Lukas Wunner <lukas@wunner.de>
+
+Thanks,
+
+Lukas
