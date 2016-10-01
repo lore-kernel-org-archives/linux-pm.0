@@ -1,64 +1,45 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v5 3/9] x86/topology: Define x86's arch_update_cpu_topology
-Date: Sat,  1 Oct 2016 04:45:20 -0700
-Message-ID: <1475322326-160112-4-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Nilay Vaish <nilayvaish@gmail.com>
+Subject: Re: [PATCH v5 1/9] sched: Extend scheduler's asym packing
+Date: Sat, 1 Oct 2016 11:38:04 -0500
+Message-ID: <CACbG30-L_U=iES=+VNGSbOTsT_q3_Nvu_XVqSh6SGdua6n+ejQ@mail.gmail.com>
 References: <1475322326-160112-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1475322326-160112-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
-Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+ <1475322326-160112-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:34319 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750908AbcJAQip (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Oct 2016 12:38:45 -0400
+In-Reply-To: <1475322326-160112-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, x86 <x86@kernel.org>, linux-pm@vger.kernel.org, Linux Kernel list <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, jolsa@redhat.com
 
-From: Tim Chen <tim.c.chen@linux.intel.com>
+On 1 October 2016 at 06:45, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index e86c4a5..08135ca 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -6237,7 +6237,25 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
+>         WARN_ON(!sg);
+>
+>         do {
+> +               int cpu, max_cpu = -1, prev_cpu = -1;
+> +
+>                 sg->group_weight = cpumask_weight(sched_group_cpus(sg));
+> +
+> +               if (!(sd->flags & SD_ASYM_PACKING))
+> +                       goto next;
+> +
+> +               for_each_cpu(cpu, sched_group_cpus(sg)) {
+> +                       if (prev_cpu < 0) {
+> +                               prev_cpu = cpu;
+> +                               max_cpu = cpu;
 
-The scheduler calls arch_update_cpu_topology() to check whether the
-scheduler domains have to be rebuilt.
+It seems that you can drop prev_cpu and put the check on max_cpu instead.
 
-So far x86 has no requirement for this, but the upcoming ITMT support
-makes this necessary.
-
-Request the rebuild when the x86 internal update flag is set.
-
-Suggested-by: Morten Rasmussen <morten.rasmussen@arm.com>
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- arch/x86/include/asm/topology.h |  1 +
- arch/x86/kernel/smpboot.c       | 11 +++++++++++
- 2 files changed, 12 insertions(+)
-
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 3e95dfc..323f61f 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -149,4 +149,5 @@ struct pci_bus;
- int x86_pci_root_bus_node(int bus);
- void x86_pci_root_bus_resources(int bus, struct list_head *resources);
- 
-+extern bool x86_topology_update;
- #endif /* _ASM_X86_TOPOLOGY_H */
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 6a763a2..38901b3 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -109,6 +109,17 @@ static bool logical_packages_frozen __read_mostly;
- /* Maximum number of SMT threads on any online core */
- int __max_smt_threads __read_mostly;
- 
-+/* Flag to indicate if a complete sched domain rebuild is required */
-+bool x86_topology_update;
-+
-+int arch_update_cpu_topology(void)
-+{
-+	int retval = x86_topology_update;
-+
-+	x86_topology_update = false;
-+	return retval;
-+}
-+
- static inline void smpboot_setup_warm_reset_vector(unsigned long start_eip)
- {
- 	unsigned long flags;
--- 
-2.7.4
+--
+Nilay
