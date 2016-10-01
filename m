@@ -1,107 +1,90 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Subject: [PATCH 3/3] Revert "ACPI,PCI,IRQ: remove SCI penalize function"
-Date: Sat,  1 Oct 2016 13:46:16 -0400
-Message-ID: <1475343976-20744-3-git-send-email-okaya@codeaurora.org>
-References: <1475343976-20744-1-git-send-email-okaya@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1475343976-20744-1-git-send-email-okaya@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: linux-acpi@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, ravikanth.nalla@hpe.com, linux@rainbow-software.org, timur@codeaurora.org, cov@codeaurora.org, jcm@redhat.com, alex.williamson@redhat.com
-Cc: linux-pci@vger.kernel.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, wim@djo.tudelft.nl, Sinan Kaya <okaya@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [PATCH 08/15] power: improve function-level documentation
+Date: Sat,  1 Oct 2016 21:46:25 +0200
+Message-ID: <1475351192-27079-9-git-send-email-Julia.Lawall@lip6.fr>
+References: <1475351192-27079-1-git-send-email-Julia.Lawall@lip6.fr>
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+In-Reply-To: <1475351192-27079-1-git-send-email-Julia.Lawall@lip6.fr>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: kernel-janitors@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This reverts commit 9e5ed6d1fb87 ("ACPI,PCI,IRQ: remove SCI penalize
-function"). SCI penalty API was replaced by the runtime penalty calculation
-based on the value of acpi_gbl_FADT.sci_interrupt.
+In drivers/power/supply/ab8500_fg.c, fix two typos and adjust the function
+name in two cases to correspond to the names of the defined functions.
 
-acpi_gbl_FADT.sci_interrupt type does not get updated at the right time
-for some platforms and results in incorrect penalty assignment for PCI
-IRQs as irq_get_trigger_type returns the wrong type.
+In drivers/power/supply/power_supply_core.c, change two variable names to
+the names of the corresponding parameters.
 
-Link: http://www.spinics.net/lists/linux-pci/msg54599.html
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+Issue detected using Coccinelle (http://coccinelle.lip6.fr/)
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
 ---
- arch/x86/kernel/acpi/boot.c |  1 +
- drivers/acpi/pci_link.c     | 34 ++++++++++++++--------------------
- include/linux/acpi.h        |  1 +
- 3 files changed, 16 insertions(+), 20 deletions(-)
+ drivers/power/supply/ab8500_fg.c         |    8 ++++----
+ drivers/power/supply/power_supply_core.c |    4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 90d84c3..0ffd26e 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -453,6 +453,7 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
- 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
- 
- 	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
-+	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
- 
- 	/*
- 	 * stash over-ride to indicate we've been here
-diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
-index 06c2a11..6a2af19 100644
---- a/drivers/acpi/pci_link.c
-+++ b/drivers/acpi/pci_link.c
-@@ -495,27 +495,10 @@ static int acpi_irq_pci_sharing_penalty(int irq)
- 
- static int acpi_irq_get_penalty(int irq)
- {
--	int penalty = 0;
--
--	/*
--	* Penalize IRQ used by ACPI SCI. If ACPI SCI pin attributes conflict
--	* with PCI IRQ attributes, mark ACPI SCI as ISA_ALWAYS so it won't be
--	* use for PCI IRQs.
--	*/
--	if (irq == acpi_gbl_FADT.sci_interrupt) {
--		u32 type = irq_get_trigger_type(irq) & IRQ_TYPE_SENSE_MASK;
--
--		if (type != IRQ_TYPE_LEVEL_LOW)
--			penalty += PIRQ_PENALTY_ISA_ALWAYS;
--		else
--			penalty += PIRQ_PENALTY_PCI_USING;
--	}
--
--	if (irq < ACPI_MAX_ISA_IRQS)
--		return penalty + acpi_irq_penalty[irq];
-+	if (irq < ACPI_MAX_IRQS)
-+		return acpi_irq_penalty[irq];
- 
--	penalty += acpi_irq_pci_sharing_penalty(irq);
--	return penalty;
-+	return acpi_irq_pci_sharing_penalty(irq);
+diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
+index 2199f67..c569f82 100644
+--- a/drivers/power/supply/ab8500_fg.c
++++ b/drivers/power/supply/ab8500_fg.c
+@@ -1900,7 +1900,7 @@ static void ab8500_fg_low_bat_work(struct work_struct *work)
+  * ab8500_fg_battok_calc - calculate the bit pattern corresponding
+  * to the target voltage.
+  * @di:       pointer to the ab8500_fg structure
+- * @target    target voltage
++ * @target:   target voltage
+  *
+  * Returns bit pattern closest to the target voltage
+  * valid return values are 0-14. (0-BATT_OK_MAX_NR_INCREMENTS)
+@@ -2391,7 +2391,7 @@ static void ab8500_fg_external_power_changed(struct power_supply *psy)
  }
  
- int __init acpi_irq_penalty_init(void)
-@@ -886,6 +869,17 @@ bool acpi_isa_irq_available(int irq)
- 		    acpi_irq_get_penalty(irq) < PIRQ_PENALTY_ISA_ALWAYS);
+ /**
+- * abab8500_fg_reinit_work() - work to reset the FG algorithm
++ * ab8500_fg_reinit_work() - work to reset the FG algorithm
+  * @work:	pointer to the work_struct structure
+  *
+  * Used to reset the current battery capacity to be able to
+@@ -2528,7 +2528,7 @@ static ssize_t charge_now_store(struct ab8500_fg *di, const char *buf,
+ };
+ 
+ /**
+- * ab8500_chargalg_sysfs_exit() - de-init of sysfs entry
++ * ab8500_fg_sysfs_exit() - de-init of sysfs entry
+  * @di:                pointer to the struct ab8500_chargalg
+  *
+  * This function removes the entry in sysfs.
+@@ -2539,7 +2539,7 @@ static void ab8500_fg_sysfs_exit(struct ab8500_fg *di)
  }
  
-+void acpi_penalize_sci_irq(int irq, int trigger, int polarity)
-+{
-+	if (irq >= 0 && irq < ARRAY_SIZE(acpi_irq_penalty)) {
-+		if (trigger != ACPI_MADT_TRIGGER_LEVEL ||
-+		    polarity != ACPI_MADT_POLARITY_ACTIVE_LOW)
-+			acpi_irq_penalty[irq] += PIRQ_PENALTY_ISA_ALWAYS;
-+		else
-+			acpi_irq_penalty[irq] += PIRQ_PENALTY_PCI_USING;
-+	}
-+}
-+
- /*
-  * Over-ride default table to reserve additional IRQs for use by ISA
-  * e.g. acpi_irq_isa=5
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 4d8452c..85ac7d5 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -318,6 +318,7 @@ struct pci_dev;
- int acpi_pci_irq_enable (struct pci_dev *dev);
- void acpi_penalize_isa_irq(int irq, int active);
- bool acpi_isa_irq_available(int irq);
-+void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
- void acpi_pci_irq_disable (struct pci_dev *dev);
- 
- extern int ec_read(u8 addr, u8 *val);
--- 
-1.9.1
+ /**
+- * ab8500_chargalg_sysfs_init() - init of sysfs entry
++ * ab8500_fg_sysfs_init() - init of sysfs entry
+  * @di:                pointer to the struct ab8500_chargalg
+  *
+  * This function adds an entry in sysfs.
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index a74d8ca..1e0960b 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -413,7 +413,7 @@ static int power_supply_match_device_node(struct device *dev, const void *data)
+ /**
+  * power_supply_get_by_phandle() - Search for a power supply and returns its ref
+  * @np: Pointer to device node holding phandle property
+- * @phandle_name: Name of property holding a power supply name
++ * @property: Name of property holding a power supply name
+  *
+  * If power supply was found, it increases reference count for the
+  * internal power supply's device. The user should power_supply_put()
+@@ -458,7 +458,7 @@ static void devm_power_supply_put(struct device *dev, void *res)
+  * devm_power_supply_get_by_phandle() - Resource managed version of
+  *  power_supply_get_by_phandle()
+  * @dev: Pointer to device holding phandle property
+- * @phandle_name: Name of property holding a power supply phandle
++ * @property: Name of property holding a power supply phandle
+  *
+  * Return: On success returns a reference to a power supply with
+  * matching name equals to value under @property, NULL or ERR_PTR otherwise.
+
