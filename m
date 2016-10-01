@@ -1,68 +1,180 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v4 2/5] driver core: Functional dependencies tracking
- support
-Date: Sat, 1 Oct 2016 09:43:46 +0200
-Message-ID: <20161001074346.GA7215@wunner.de>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <10860219.QqH5akBVoh@vostro.rjw.lan>
- <1985903.oaAlgI6mU5@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v5 1/9] sched: Extend scheduler's asym packing
+Date: Sat,  1 Oct 2016 04:45:18 -0700
+Message-ID: <1475322326-160112-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1475322326-160112-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:36459 "EHLO
-        mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751582AbcJAHoD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Oct 2016 03:44:03 -0400
-Content-Disposition: inline
-In-Reply-To: <1985903.oaAlgI6mU5@vostro.rjw.lan>
+Received: from mga03.intel.com ([134.134.136.65]:15462 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751136AbcJALqC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 1 Oct 2016 07:46:02 -0400
+In-Reply-To: <1475322326-160112-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Thu, Sep 29, 2016 at 02:38:04AM +0200, Rafael J. Wysocki wrote:
-> +static int device_reorder_to_tail(struct device *dev, void *not_used)
-> +{
-> +	struct device_link *link;
-> +
-> +	/*
-> +	 * Devices that have not been registered yet will be put to the ends
-> +	 * of the lists during the registratio, so skip them here.
-                                              ^
-                                              n
+From: Tim Chen <tim.c.chen@linux.intel.com>
 
-> +     if (device_is_registered(dev))
-> +             devices_kset_move_last(dev);
-> +
-> +     if (device_pm_initialized(dev))
-> +             device_pm_move_last(dev);
+We generalize the scheduler's asym packing to provide an ordering
+of the cpu beyond just the cpu number.  This allows the use of the
+ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
+sched domain. The preference is defined with the cpu priority
+given by arch_asym_cpu_priority(cpu).
 
-Clever solution to this problem.  So little code!
+We also record the most preferred cpu in a sched group when
+we build the cpu's capacity for fast lookup of preferred cpu
+during load balancing.
 
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ include/linux/sched.h |  2 ++
+ kernel/sched/core.c   | 18 ++++++++++++++++++
+ kernel/sched/fair.c   | 35 ++++++++++++++++++++++++-----------
+ kernel/sched/sched.h  |  6 ++++++
+ 4 files changed, 50 insertions(+), 11 deletions(-)
 
-> +/**
-> + * device_links_check_suppliers - Check presence of supplier drivers.
-> + * @dev: Consumer device.
-> + *
-> + * Check links from this device to any suppliers.  Walk the list of the device's
-> + * consumer links and see if all of the suppliers are available.  If not, simply
-      ^^^^^^^^
-     "supplier links and see if all if them are available."
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 98fe95f..82ca1e4 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1052,6 +1052,8 @@ static inline int cpu_numa_flags(void)
+ }
+ #endif
+ 
++int arch_asym_cpu_priority(int cpu);
++
+ struct sched_domain_attr {
+ 	int relax_domain_level;
+ };
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index e86c4a5..08135ca 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6237,7 +6237,25 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
+ 	WARN_ON(!sg);
+ 
+ 	do {
++		int cpu, max_cpu = -1, prev_cpu = -1;
++
+ 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
++
++		if (!(sd->flags & SD_ASYM_PACKING))
++			goto next;
++
++		for_each_cpu(cpu, sched_group_cpus(sg)) {
++			if (prev_cpu < 0) {
++				prev_cpu = cpu;
++				max_cpu = cpu;
++			} else {
++				if (sched_asym_prefer(cpu, max_cpu))
++					max_cpu = cpu;
++			}
++		}
++		sg->asym_prefer_cpu = max_cpu;
++
++next:
+ 		sg = sg->next;
+ 	} while (sg != sd->groups);
+ 
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index a5cd07b..bb96e1a 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -100,6 +100,16 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
+  */
+ unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
+ 
++#ifdef CONFIG_SMP
++/*
++ * For asym packing, by default the lower numbered cpu has higher priority.
++ */
++int __weak arch_asym_cpu_priority(int cpu)
++{
++	return -cpu;
++}
++#endif
++
+ #ifdef CONFIG_CFS_BANDWIDTH
+ /*
+  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
+@@ -6861,16 +6871,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
+ 	if (env->idle == CPU_NOT_IDLE)
+ 		return true;
+ 	/*
+-	 * ASYM_PACKING needs to move all the work to the lowest
+-	 * numbered CPUs in the group, therefore mark all groups
+-	 * higher than ourself as busy.
++	 * ASYM_PACKING needs to move all the work to the highest
++	 * prority CPUs in the group, therefore mark all groups
++	 * of lower priority than ourself as busy.
+ 	 */
+-	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
++	if (sgs->sum_nr_running &&
++	    sched_asym_prefer(env->dst_cpu, sg->asym_prefer_cpu)) {
+ 		if (!sds->busiest)
+ 			return true;
+ 
+-		/* Prefer to move from highest possible cpu's work */
+-		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
++		/* Prefer to move from lowest priority cpu's work */
++		if (sched_asym_prefer(sds->busiest->asym_prefer_cpu,
++				      sg->asym_prefer_cpu))
+ 			return true;
+ 	}
+ 
+@@ -7022,8 +7034,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
+ 	if (!sds->busiest)
+ 		return 0;
+ 
+-	busiest_cpu = group_first_cpu(sds->busiest);
+-	if (env->dst_cpu > busiest_cpu)
++	busiest_cpu = sds->busiest->asym_prefer_cpu;
++	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
+ 		return 0;
+ 
+ 	env->imbalance = DIV_ROUND_CLOSEST(
+@@ -7364,10 +7376,11 @@ static int need_active_balance(struct lb_env *env)
+ 
+ 		/*
+ 		 * ASYM_PACKING needs to force migrate tasks from busy but
+-		 * higher numbered CPUs in order to pack all tasks in the
+-		 * lowest numbered CPUs.
++		 * lower priority CPUs in order to pack all tasks in the
++		 * highest priority CPUs.
+ 		 */
+-		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
++		if ((sd->flags & SD_ASYM_PACKING) &&
++		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
+ 			return 1;
+ 	}
+ 
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index b7fc1ce..3f3d04a 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -532,6 +532,11 @@ struct dl_rq {
+ 
+ #ifdef CONFIG_SMP
+ 
++static inline bool sched_asym_prefer(int a, int b)
++{
++	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
++}
++
+ /*
+  * We add the notion of a root-domain which will be used to define per-domain
+  * variables. Each exclusive cpuset essentially defines an island domain by
+@@ -884,6 +889,7 @@ struct sched_group {
+ 
+ 	unsigned int group_weight;
+ 	struct sched_group_capacity *sgc;
++	int asym_prefer_cpu;		/* cpu of highest priority in group */
+ 
+ 	/*
+ 	 * The CPUs this group covers.
+-- 
+2.7.4
 
-
-> +/*
-> + * Device link flags.
-> + *
-> + * STATELESS: The core won't track the presence of supplier/consumer drivers.
-> + * AUTOREMOVE: Remove this link automatically on cunsumer driver unbind.
-                                                     ^
-                                                     o
-
-
-Apart from these nits patch [2/5] LGTM, so FWIW:
-
-Reviewed-by: Lukas Wunner <lukas@wunner.de>
-
-Thanks,
-
-Lukas
