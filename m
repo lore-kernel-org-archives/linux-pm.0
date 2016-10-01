@@ -1,45 +1,107 @@
-From: Nilay Vaish <nilayvaish@gmail.com>
-Subject: Re: [PATCH v5 1/9] sched: Extend scheduler's asym packing
-Date: Sat, 1 Oct 2016 11:38:04 -0500
-Message-ID: <CACbG30-L_U=iES=+VNGSbOTsT_q3_Nvu_XVqSh6SGdua6n+ejQ@mail.gmail.com>
-References: <1475322326-160112-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1475322326-160112-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:34319 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750908AbcJAQip (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Oct 2016 12:38:45 -0400
-In-Reply-To: <1475322326-160112-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sinan Kaya <okaya@codeaurora.org>
+Subject: [PATCH 3/3] Revert "ACPI,PCI,IRQ: remove SCI penalize function"
+Date: Sat,  1 Oct 2016 13:46:16 -0400
+Message-ID: <1475343976-20744-3-git-send-email-okaya@codeaurora.org>
+References: <1475343976-20744-1-git-send-email-okaya@codeaurora.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1475343976-20744-1-git-send-email-okaya@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: linux-acpi@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, ravikanth.nalla@hpe.com, linux@rainbow-software.org, timur@codeaurora.org, cov@codeaurora.org, jcm@redhat.com, alex.williamson@redhat.com
+Cc: linux-pci@vger.kernel.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, wim@djo.tudelft.nl, Sinan Kaya <okaya@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, x86 <x86@kernel.org>, linux-pm@vger.kernel.org, Linux Kernel list <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, jolsa@redhat.com
 
-On 1 October 2016 at 06:45, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index e86c4a5..08135ca 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -6237,7 +6237,25 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
->         WARN_ON(!sg);
->
->         do {
-> +               int cpu, max_cpu = -1, prev_cpu = -1;
-> +
->                 sg->group_weight = cpumask_weight(sched_group_cpus(sg));
-> +
-> +               if (!(sd->flags & SD_ASYM_PACKING))
-> +                       goto next;
-> +
-> +               for_each_cpu(cpu, sched_group_cpus(sg)) {
-> +                       if (prev_cpu < 0) {
-> +                               prev_cpu = cpu;
-> +                               max_cpu = cpu;
+This reverts commit 9e5ed6d1fb87 ("ACPI,PCI,IRQ: remove SCI penalize
+function"). SCI penalty API was replaced by the runtime penalty calculation
+based on the value of acpi_gbl_FADT.sci_interrupt.
 
-It seems that you can drop prev_cpu and put the check on max_cpu instead.
+acpi_gbl_FADT.sci_interrupt type does not get updated at the right time
+for some platforms and results in incorrect penalty assignment for PCI
+IRQs as irq_get_trigger_type returns the wrong type.
 
---
-Nilay
+Link: http://www.spinics.net/lists/linux-pci/msg54599.html
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+---
+ arch/x86/kernel/acpi/boot.c |  1 +
+ drivers/acpi/pci_link.c     | 34 ++++++++++++++--------------------
+ include/linux/acpi.h        |  1 +
+ 3 files changed, 16 insertions(+), 20 deletions(-)
+
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 90d84c3..0ffd26e 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -453,6 +453,7 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
+ 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
+ 
+ 	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
++	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
+ 
+ 	/*
+ 	 * stash over-ride to indicate we've been here
+diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
+index 06c2a11..6a2af19 100644
+--- a/drivers/acpi/pci_link.c
++++ b/drivers/acpi/pci_link.c
+@@ -495,27 +495,10 @@ static int acpi_irq_pci_sharing_penalty(int irq)
+ 
+ static int acpi_irq_get_penalty(int irq)
+ {
+-	int penalty = 0;
+-
+-	/*
+-	* Penalize IRQ used by ACPI SCI. If ACPI SCI pin attributes conflict
+-	* with PCI IRQ attributes, mark ACPI SCI as ISA_ALWAYS so it won't be
+-	* use for PCI IRQs.
+-	*/
+-	if (irq == acpi_gbl_FADT.sci_interrupt) {
+-		u32 type = irq_get_trigger_type(irq) & IRQ_TYPE_SENSE_MASK;
+-
+-		if (type != IRQ_TYPE_LEVEL_LOW)
+-			penalty += PIRQ_PENALTY_ISA_ALWAYS;
+-		else
+-			penalty += PIRQ_PENALTY_PCI_USING;
+-	}
+-
+-	if (irq < ACPI_MAX_ISA_IRQS)
+-		return penalty + acpi_irq_penalty[irq];
++	if (irq < ACPI_MAX_IRQS)
++		return acpi_irq_penalty[irq];
+ 
+-	penalty += acpi_irq_pci_sharing_penalty(irq);
+-	return penalty;
++	return acpi_irq_pci_sharing_penalty(irq);
+ }
+ 
+ int __init acpi_irq_penalty_init(void)
+@@ -886,6 +869,17 @@ bool acpi_isa_irq_available(int irq)
+ 		    acpi_irq_get_penalty(irq) < PIRQ_PENALTY_ISA_ALWAYS);
+ }
+ 
++void acpi_penalize_sci_irq(int irq, int trigger, int polarity)
++{
++	if (irq >= 0 && irq < ARRAY_SIZE(acpi_irq_penalty)) {
++		if (trigger != ACPI_MADT_TRIGGER_LEVEL ||
++		    polarity != ACPI_MADT_POLARITY_ACTIVE_LOW)
++			acpi_irq_penalty[irq] += PIRQ_PENALTY_ISA_ALWAYS;
++		else
++			acpi_irq_penalty[irq] += PIRQ_PENALTY_PCI_USING;
++	}
++}
++
+ /*
+  * Over-ride default table to reserve additional IRQs for use by ISA
+  * e.g. acpi_irq_isa=5
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 4d8452c..85ac7d5 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -318,6 +318,7 @@ struct pci_dev;
+ int acpi_pci_irq_enable (struct pci_dev *dev);
+ void acpi_penalize_isa_irq(int irq, int active);
+ bool acpi_isa_irq_available(int irq);
++void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
+ void acpi_pci_irq_disable (struct pci_dev *dev);
+ 
+ extern int ec_read(u8 addr, u8 *val);
+-- 
+1.9.1
