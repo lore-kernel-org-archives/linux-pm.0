@@ -1,115 +1,94 @@
-From: Jonathan Liu <net147@gmail.com>
-Subject: Re: [3/3] Revert "ACPI,PCI,IRQ: remove SCI penalize function"
-Date: Sun, 2 Oct 2016 22:40:44 +1100
-Message-ID: <CANwerB1jnx7x28F0p4zOXJq6Cchs3+SNU3EHN0mV3jJ_90xjVQ@mail.gmail.com>
-References: <1475343976-20744-3-git-send-email-okaya@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFC/RFT][PATCH] cpufreq: intel_pstate: Proportional algorithm for Atom
+Date: Sun, 02 Oct 2016 19:03:43 +0200
+Message-ID: <1565019.BFYQPSZAnN@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1475343976-20744-3-git-send-email-okaya@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Sinan Kaya <okaya@codeaurora.org>
-Cc: linux-acpi@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, ravikanth.nalla@hpe.com, linux@rainbow-software.org, timur@codeaurora.org, cov@codeaurora.org, jcm@redhat.com, alex.williamson@redhat.com, linux-pci@vger.kernel.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, wim@djo.tudelft.nl, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 2 October 2016 at 04:46, Sinan Kaya <okaya@codeaurora.org> wrote:
-> This reverts commit 9e5ed6d1fb87 ("ACPI,PCI,IRQ: remove SCI penalize
-> function"). SCI penalty API was replaced by the runtime penalty calculation
-> based on the value of acpi_gbl_FADT.sci_interrupt.
->
-> acpi_gbl_FADT.sci_interrupt type does not get updated at the right time
-> for some platforms and results in incorrect penalty assignment for PCI
-> IRQs as irq_get_trigger_type returns the wrong type.
->
-> Link: http://www.spinics.net/lists/linux-pci/msg54599.html
-> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
-> ---
->  arch/x86/kernel/acpi/boot.c |  1 +
->  drivers/acpi/pci_link.c     | 34 ++++++++++++++--------------------
->  include/linux/acpi.h        |  1 +
->  3 files changed, 16 insertions(+), 20 deletions(-)
->
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index 90d84c3..0ffd26e 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -453,6 +453,7 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
->                 polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
->
->         mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
-> +       acpi_penalize_sci_irq(bus_irq, trigger, polarity);
->
->         /*
->          * stash over-ride to indicate we've been here
-> diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
-> index 06c2a11..6a2af19 100644
-> --- a/drivers/acpi/pci_link.c
-> +++ b/drivers/acpi/pci_link.c
-> @@ -495,27 +495,10 @@ static int acpi_irq_pci_sharing_penalty(int irq)
->
->  static int acpi_irq_get_penalty(int irq)
->  {
-> -       int penalty = 0;
-> -
-> -       /*
-> -       * Penalize IRQ used by ACPI SCI. If ACPI SCI pin attributes conflict
-> -       * with PCI IRQ attributes, mark ACPI SCI as ISA_ALWAYS so it won't be
-> -       * use for PCI IRQs.
-> -       */
-> -       if (irq == acpi_gbl_FADT.sci_interrupt) {
-> -               u32 type = irq_get_trigger_type(irq) & IRQ_TYPE_SENSE_MASK;
-> -
-> -               if (type != IRQ_TYPE_LEVEL_LOW)
-> -                       penalty += PIRQ_PENALTY_ISA_ALWAYS;
-> -               else
-> -                       penalty += PIRQ_PENALTY_PCI_USING;
-> -       }
-> -
-> -       if (irq < ACPI_MAX_ISA_IRQS)
-> -               return penalty + acpi_irq_penalty[irq];
-> +       if (irq < ACPI_MAX_IRQS)
-> +               return acpi_irq_penalty[irq];
->
-> -       penalty += acpi_irq_pci_sharing_penalty(irq);
-> -       return penalty;
-> +       return acpi_irq_pci_sharing_penalty(irq);
->  }
->
->  int __init acpi_irq_penalty_init(void)
-> @@ -886,6 +869,17 @@ bool acpi_isa_irq_available(int irq)
->                     acpi_irq_get_penalty(irq) < PIRQ_PENALTY_ISA_ALWAYS);
->  }
->
-> +void acpi_penalize_sci_irq(int irq, int trigger, int polarity)
-> +{
-> +       if (irq >= 0 && irq < ARRAY_SIZE(acpi_irq_penalty)) {
-> +               if (trigger != ACPI_MADT_TRIGGER_LEVEL ||
-> +                   polarity != ACPI_MADT_POLARITY_ACTIVE_LOW)
-> +                       acpi_irq_penalty[irq] += PIRQ_PENALTY_ISA_ALWAYS;
-> +               else
-> +                       acpi_irq_penalty[irq] += PIRQ_PENALTY_PCI_USING;
-> +       }
-> +}
-> +
->  /*
->   * Over-ride default table to reserve additional IRQs for use by ISA
->   * e.g. acpi_irq_isa=5
-> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-> index 4d8452c..85ac7d5 100644
-> --- a/include/linux/acpi.h
-> +++ b/include/linux/acpi.h
-> @@ -318,6 +318,7 @@ struct pci_dev;
->  int acpi_pci_irq_enable (struct pci_dev *dev);
->  void acpi_penalize_isa_irq(int irq, int active);
->  bool acpi_isa_irq_available(int irq);
-> +void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
->  void acpi_pci_irq_disable (struct pci_dev *dev);
->
->  extern int ec_read(u8 addr, u8 *val);
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-This series fixes one or more network adapters in VirtualBox not
-working with Linux 32-bit x86 guest if I have 4 network adapters
-enabled. The following message no longer appears in the kernel log:
-ACPI: No IRQ available for PCI Interrupt Link [LNKD]. Try pci=noacpi or acpi=off
+The PID algorithm used by the intel_pstate driver tends to drive
+performance down too fast for lighter workloads, so replace it
+with a modified "proportional" algorithm on Atom.
 
-Tested-by: Jonathan Liu <net147@gmail.com>
+The new algorithm will set the new P-state to be 1.25 times the
+available maximum times the (frequency-invariant) utilization during
+the previous sampling period except when that utilization is lower
+than the average performance ratio during the previous sampling
+period.  In the latter case, it will increase the utilization by
+50% of the difference between it and the performance ratio before
+computing the target P-state to prevent performance from dropping
+down too fast in some cases.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   28 ++++++++++++++++++++++------
+ 1 file changed, 22 insertions(+), 6 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -1231,9 +1231,10 @@ static inline int32_t get_avg_pstate(str
+ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
+ {
+ 	struct sample *sample = &cpu->sample;
+-	int32_t busy_frac, boost;
++	int32_t busy_frac, boost, avg_perf;
++	int target;
+ 
+-	busy_frac = div_fp(sample->mperf, sample->tsc);
++	busy_frac = div_ext_fp(sample->mperf, sample->tsc);
+ 
+ 	boost = cpu->iowait_boost;
+ 	cpu->iowait_boost >>= 1;
+@@ -1241,8 +1242,23 @@ static inline int32_t get_target_pstate_
+ 	if (busy_frac < boost)
+ 		busy_frac = boost;
+ 
+-	sample->busy_scaled = busy_frac * 100;
+-	return get_avg_pstate(cpu) - pid_calc(&cpu->pid, sample->busy_scaled);
++	/*
++	 * If the relative average performance ratio during the previous cycle
++	 * was higher than the current utilization, add 50% of the difference to
++	 * the utilization to reduce possible performance oscillations and
++	 * offset possible performance loss related to moving the workload from
++	 * one CPU to another withing a package/module.
++	 */
++	avg_perf = cpu->sample.core_avg_perf;
++	if (avg_perf > busy_frac)
++		busy_frac += (avg_perf - busy_frac) >> 1;
++
++	sample->busy_scaled = (busy_frac * 100) >> EXT_BITS;
++
++	target = limits->no_turbo || limits->turbo_disabled ?
++			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
++	target += target >> 2;
++	return mul_ext_fp(target, busy_frac);
+ }
+ 
+ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+@@ -1317,7 +1333,7 @@ static inline void intel_pstate_adjust_b
+ 		sample->aperf,
+ 		sample->tsc,
+ 		get_avg_frequency(cpu),
+-		fp_toint(cpu->iowait_boost * 100));
++		mul_ext_fp(cpu->iowait_boost, 100));
+ }
+ 
+ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+@@ -1328,7 +1344,7 @@ static void intel_pstate_update_util(str
+ 
+ 	if (pid_params.boost_iowait) {
+ 		if (flags & SCHED_CPUFREQ_IOWAIT) {
+-			cpu->iowait_boost = int_tofp(1);
++			cpu->iowait_boost = int_tofp(1) << EXT_BITS;
+ 		} else if (cpu->iowait_boost) {
+ 			/* Clear iowait_boost if the CPU may have been idle. */
+ 			delta_ns = time - cpu->last_update;
