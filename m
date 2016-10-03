@@ -1,47 +1,59 @@
-From: Credit Suisse Bank England <werberthfurtado@detran.ma.gov.br>
-Subject: Credit Suisse Bank England
-Date: Mon, 3 Oct 2016 03:21:07 -0300 (BRT)
-Message-ID: <225830506.151248.1475475667071.JavaMail.root__5373.00060173056$1475479869$gmane$org@detran.ma.gov.br>
-Reply-To: Chris Williams <chriswilliams-creditsuisse@mail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] coredump: fix unfreezable coredumping task
+Date: Mon, 3 Oct 2016 11:41:41 +0200
+Message-ID: <20161003094141.GB9131@amd>
+References: <1475225434-3753-1-git-send-email-aryabinin@virtuozzo.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="aM3YZ0Iwxop3KEKx"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail3.seati.ma.gov.br ([201.18.153.129]:41768 "EHLO
-        mail3.seati.ma.gov.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750839AbcJCHaY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Oct 2016 03:30:24 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50986 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752772AbcJCJlp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 3 Oct 2016 05:41:45 -0400
+Content-Disposition: inline
+In-Reply-To: <1475225434-3753-1-git-send-email-aryabinin@virtuozzo.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-Guten Tag, wie geht es Ihnen heute? Ich habe Ihre E-Mail-Kontakt aus Ihrem Land Business Directory und beschlossen, mit Ihnen in Verbindung zu diesem Business-Vorschlag. Ich bin Herr Chris Williams der Investment Banking Abteilung der Credit Suisse Bank One Cabot Square, London E14 4QJ, Großbritannien. Ich bin Kontaktaufnahme mit Ihnen in Bezug auf ein Geschäft Vorschlag, die von einer immensen Vorteil für uns beide sein wird.
-
-In meiner Abteilung, entdeckte ich eine verlassene Summe von £ 17,5 Mio. GBP (Siebzehn Millionen fünfhunderttausend britische Pfund Sterling) in einem Konto, das zu einem unserer ausländischen Kunden verstorbenen Herrn Brodskij Nikolai, ein russischer Geschäftsmann, der ein Opfer war, gehört der Malaysia Airlines Flight 370 (MH370 / MAS370), die im Süden der indische Ozean auf 8. März 2014 auf dem Weg von Kuala Lumpur international Airport abgestürzt zu Beijing Capital International Airport zu töten alle an Bord.
-
-Informieren Sie sich über den untenstehenden Link für die Passagierliste:
+To: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Oleg Nesterov <oleg@redhat.com>, linux-pm@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
 
-http://online.wsj.com/news/articles/SB10001424052702303369904579427230127866184
+--aM3YZ0Iwxop3KEKx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-MR Brodskij Nikolai Nummer 7 auf der Liste, Seit seinem Tod unserer Bank hat für die nächsten Angehörigen zu kommen für die Behauptung seiner Gelder und Güter schätzten die Summe von £ 17,5 Mio. GBP, aber niemand hat so, ich persönlich getan gewartet , waren nicht erfolgreich bei der Suche nach einer seiner Verwandten. Ich suche Ihre Zustimmung an Sie an die Bank, wie die nächsten Angehörigen des Verstorbenen zu präsentieren, so dass die Erlöse aus diesem Konto bei £ 17,5 Mio. GBP an Sie gezahlt werden bewertet.
+On Fri 2016-09-30 11:50:34, Andrey Ryabinin wrote:
+> It could be not possible to freeze coredumping task when it waits
+> for 'core_state->startup' completion, because threads are frozen
+> in get_signal() before they got a chance to complete 'core_state->startup=
+'.
+>=20
+> Use freezer_do_not_count() to tell freezer to ignore coredumping
+> task while it waits for core_state->startup completion.
+>=20
+> Signed-off-by: Andrey Ryabinin <aryabinin@virtuozzo.com>
+> Cc: stable@vger.kernel.org
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
 
-Der Deal wird in diesem Verhältnis aufgeteilt: 55% für mich und 45% zu Ihnen. Ich habe in meinem Besitz alle notwendigen und wichtigen Dokumente, die in diesem Geschäft verwendet werden kann. Ich brauche Ihre ehrliche Zusammenarbeit, Verschwiegenheit und Vertrauen, damit wir sehen diese Verhandlung durch. Ich garantiere Ihnen 100% Erfolg in diesem Geschäft, wenden Sie sich bitte sicher sein, dass Sie das Angebot unter einer legitimen Anordnung, die Sie aus der Verletzung des Gesetzes sowohl hier als auch in Großbritannien und in Ihrem Land zu schützen wird ausgeführt.
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-Wenn Sie in der Lage, dem Umgang mit diesem Angebot sind, bitte zurück zu mir mit folgenden Angaben, damit wir fortfahren:
+--aM3YZ0Iwxop3KEKx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-1. Ihr vollständiger Name:
-2. Telefonnummer:
-3. Kontakt-Adresse:
-4. Alter:
-5. Geschlecht:
-6. Beruf:
-7. Ihre Nationalität:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
+iEYEARECAAYFAlfyJ9UACgkQMOfwapXb+vLyJACgid8YNv4A2Ku2M20tEfF17B0x
+b8oAoIl11GnYHnRm+XvEjWPnAYMCMlO5
+=0LK7
+-----END PGP SIGNATURE-----
 
-Nachdem durch eine methodische Suche gegangen, entschied ich mich, Sie zu kontaktieren hoffen, dass Sie diesen Vorschlag interessant, Bitte auf Ihrer Bestätigung dieser Nachricht und geben Sie Ihr Interesse, ich will dich mit mehr Informationen liefern zu finden.
-
-Ihre Zustimmung zu dieser E-Mail und Business-Vorschlag wird sehr geschätzt werden.
-
-Freundliche Grüße,
-Chris Williams
+--aM3YZ0Iwxop3KEKx--
