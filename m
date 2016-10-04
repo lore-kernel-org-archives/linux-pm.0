@@ -1,59 +1,102 @@
-From: Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH 2/2] powernv: Pass PSSCR value and mask to
- power9_idle_stop
-Date: Tue, 4 Oct 2016 22:33:27 +1100
-Message-ID: <0e7ad8ff-8c44-86bc-f560-258bc7b29a32@gmail.com>
-References: <cover.1475130107.git.ego@linux.vnet.ibm.com>
- <21e080ffa52f432b40750028a624aee1baebbaf7.1475130107.git.ego@linux.vnet.ibm.com>
- <87int84d6w.fsf@concordia.ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87int84d6w.fsf@concordia.ellerman.id.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Ellerman <mpe@ellerman.id.au>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, "skiboot@lists.ozlabs.org" <skiboot@lists.ozlabs.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/8] PM / OPP: Reword binding supporting multiple regulators per device
+Date: Tue,  4 Oct 2016 17:26:43 +0530
+Message-ID: <ea6ba87d6514dcec7bee222b401ab904a78e67e6.1475581665.git.viresh.kumar@linaro.org>
+References: <cover.1475581665.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:34523 "EHLO
+        mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751647AbcJDL5F (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 4 Oct 2016 07:57:05 -0400
+Received: by mail-pa0-f54.google.com with SMTP id rz1so17380589pab.1
+        for <linux-pm@vger.kernel.org>; Tue, 04 Oct 2016 04:57:05 -0700 (PDT)
+In-Reply-To: <cover.1475581665.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1475581665.git.viresh.kumar@linaro.org>
+References: <cover.1475581665.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <vireshk@kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org
 
+On certain platforms (like TI), DVFS for a single device (CPU) requires
+configuring multiple power supplies.
 
+The OPP bindings already contains binding and example to explain this
+case, but it isn't sufficient. For example, there is no way for the code
+parsing these bindings to know which voltage values belong to which
+power supply. Also its not possible to know the order in which the
+supplies need to be configured while switching OPPs.
 
-On 04/10/16 21:32, Michael Ellerman wrote:
-> "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
-> 
->> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->>
->> The power9_idle_stop method currently takes only the requested stop
->> level as a parameter and picks up the rest of the PSSCR bits from a
->> hand-coded macro. This is not a very flexible design, especially when
->> the firmware has the capability to communicate the psscr value and the
->> mask associated with a particular stop state via device tree.
->>
->> This patch modifies the power9_idle_stop API to take as parameters the
->> PSSCR value and the PSSCR mask corresponding to the stop state that
->> needs to be set. These PSSCR value and mask are respectively obtained
->> by parsing the "ibm,cpu-idle-state-psscr" and
->> "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
->>
->> In addition to this, the patch adds support for handling stop states
->> for which ESL and EC bits in the PSSCR are zero. As per the
->> architecture, a wakeup from these stop states resumes execution from
->> the subsequent instruction as opposed to waking up at the System
->> Vector.
-> 
-> That looks good.
-> 
->> This patch depends on the following skiboot patch that exports the
->> PSSCR values and the mask for all the stop states:
->> https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
-> 
-> But we can't depend on a skiboot patch. The kernel has to cope with
-> running on an old skiboot.
+This patch tries to clarify on those details and does some minor changes
+as well.
 
-Hi, Michael
+Note that the bindings do not specify the order in which the regulators
+need to be programmed and the order in which the entries are added for
+the supplies.
 
-I think with an older skiboot the flags don't get exported and the
-new cpuidle (stop state) does not get discovered. I don't think there
-is any breakage. Gautham am I missing something?
+The user of the bindings (like the kernel) shall know these details
+already and the DT is responsible to supply only the readings for the
+regulators.
 
-Balbir Singh.
+Cc: Mark Brown <broonie@kernel.org>
+Cc: devicetree@vger.kernel.org
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ Documentation/devicetree/bindings/opp/opp.txt | 25 +++++++++++++++++--------
+ 1 file changed, 17 insertions(+), 8 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index ee91cbdd95ee..af476df510f1 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -86,8 +86,13 @@ properties.
+   Single entry is for target voltage and three entries are for <target min max>
+   voltages.
+ 
+-  Entries for multiple regulators must be present in the same order as
+-  regulators are specified in device's DT node.
++  Entries for multiple regulators shall be provided in the same field separated
++  by angular brackets <>. The OPP binding doesn't provide any provisions to
++  relate the values to their power supplies or the order in which the supplies
++  need to be configured.
++
++  Entries for all regulators shall be of the same size, i.e. either all use a
++  single value or triplets.
+ 
+ - opp-microvolt-<name>: Named opp-microvolt property. This is exactly similar to
+   the above opp-microvolt property, but allows multiple voltage ranges to be
+@@ -104,10 +109,12 @@ properties.
+ 
+   Should only be set if opp-microvolt is set for the OPP.
+ 
+-  Entries for multiple regulators must be present in the same order as
+-  regulators are specified in device's DT node. If this property isn't required
+-  for few regulators, then this should be marked as zero for them. If it isn't
+-  required for any regulator, then this property need not be present.
++  Entries for multiple regulators shall be provided in the same field separated
++  by angular brackets <>. If current values aren't required for a regulator,
++  then it shall be filled with 0. If current values aren't required for any of
++  the regulators, then this field is not required. The OPP binding doesn't
++  provide any provisions to relate the values to their power supplies or the
++  order in which the supplies need to be configured.
+ 
+ - opp-microamp-<name>: Named opp-microamp property. Similar to
+   opp-microvolt-<name> property, but for microamp instead.
+@@ -386,10 +393,12 @@ Example 4: Handling multiple regulators
+ / {
+ 	cpus {
+ 		cpu@0 {
+-			compatible = "arm,cortex-a7";
++			compatible = "vendor,cpu-type";
+ 			...
+ 
+-			cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
++			vcc0-supply = <&cpu_supply0>;
++			vcc1-supply = <&cpu_supply1>;
++			vcc2-supply = <&cpu_supply2>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 	};
+-- 
+2.7.1.410.g6faf27b
+
