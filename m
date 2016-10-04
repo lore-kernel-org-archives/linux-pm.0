@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/8] PM / OPP: Manage supply's voltage/current in a separate structure
-Date: Tue,  4 Oct 2016 17:26:45 +0530
-Message-ID: <c225f2c1cb64e392c72bc981eafa06f1a6c9edf3.1475581665.git.viresh.kumar@linaro.org>
+Subject: [PATCH 4/8] PM / OPP: Pass struct dev_pm_opp_supply to _set_opp_voltage()
+Date: Tue,  4 Oct 2016 17:26:46 +0530
+Message-ID: <0867f43f994548962a9b39703829a4adc3dc57a3.1475581665.git.viresh.kumar@linaro.org>
 References: <cover.1475581665.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1475581665.git.viresh.kumar@linaro.org>
@@ -12,233 +12,113 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, Viresh 
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is a preparatory step for multiple regulator per device support.
-Move the voltage/current variables to a new structure.
+Pass the entire supply structure instead of all of its fields.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c    | 44 +++++++++++++++++++++-------------------
- drivers/base/power/opp/debugfs.c |  8 ++++----
- drivers/base/power/opp/of.c      | 18 ++++++++--------
- drivers/base/power/opp/opp.h     | 27 ++++++++++++++++--------
- 4 files changed, 55 insertions(+), 42 deletions(-)
+ drivers/base/power/opp/core.c | 44 +++++++++++++++++--------------------------
+ 1 file changed, 17 insertions(+), 27 deletions(-)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 056527a3fb4e..8d6006151c9a 100644
+index 8d6006151c9a..37fad2eb0f47 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -112,7 +112,7 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
- 	if (IS_ERR_OR_NULL(tmp_opp))
- 		pr_err("%s: Invalid parameters\n", __func__);
- 	else
--		v = tmp_opp->u_volt;
-+		v = tmp_opp->supply.u_volt;
- 
- 	return v;
+@@ -542,8 +542,7 @@ static struct clk *_get_opp_clk(struct device *dev)
  }
-@@ -246,10 +246,10 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
- 		if (!opp->available)
- 			continue;
  
--		if (opp->u_volt_min < min_uV)
--			min_uV = opp->u_volt_min;
--		if (opp->u_volt_max > max_uV)
--			max_uV = opp->u_volt_max;
-+		if (opp->supply.u_volt_min < min_uV)
-+			min_uV = opp->supply.u_volt_min;
-+		if (opp->supply.u_volt_max > max_uV)
-+			max_uV = opp->supply.u_volt_max;
+ static int _set_opp_voltage(struct device *dev, struct regulator *reg,
+-			    unsigned long u_volt, unsigned long u_volt_min,
+-			    unsigned long u_volt_max)
++			    struct dev_pm_opp_supply *supply)
+ {
+ 	int ret;
+ 
+@@ -554,14 +553,15 @@ static int _set_opp_voltage(struct device *dev, struct regulator *reg,
+ 		return 0;
  	}
  
- 	rcu_read_unlock();
-@@ -637,14 +637,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 	if (IS_ERR(old_opp)) {
- 		old_u_volt = 0;
- 	} else {
--		old_u_volt = old_opp->u_volt;
--		old_u_volt_min = old_opp->u_volt_min;
--		old_u_volt_max = old_opp->u_volt_max;
-+		old_u_volt = old_opp->supply.u_volt;
-+		old_u_volt_min = old_opp->supply.u_volt_min;
-+		old_u_volt_max = old_opp->supply.u_volt_max;
+-	dev_dbg(dev, "%s: voltages (mV): %lu %lu %lu\n", __func__, u_volt_min,
+-		u_volt, u_volt_max);
++	dev_dbg(dev, "%s: voltages (mV): %lu %lu %lu\n", __func__,
++		supply->u_volt_min, supply->u_volt, supply->u_volt_max);
+ 
+-	ret = regulator_set_voltage_triplet(reg, u_volt_min, u_volt,
+-					    u_volt_max);
++	ret = regulator_set_voltage_triplet(reg, supply->u_volt_min,
++					    supply->u_volt, supply->u_volt_max);
+ 	if (ret)
+ 		dev_err(dev, "%s: failed to set voltage (%lu %lu %lu mV): %d\n",
+-			__func__, u_volt_min, u_volt, u_volt_max, ret);
++			__func__, supply->u_volt_min, supply->u_volt,
++			supply->u_volt_max, ret);
+ 
+ 	return ret;
+ }
+@@ -583,8 +583,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	struct regulator *reg;
+ 	struct clk *clk;
+ 	unsigned long freq, old_freq;
+-	unsigned long u_volt, u_volt_min, u_volt_max;
+-	unsigned long old_u_volt, old_u_volt_min, old_u_volt_max;
++	struct dev_pm_opp_supply old_supply, new_supply;
+ 	int ret;
+ 
+ 	if (unlikely(!target_freq)) {
+@@ -634,17 +633,12 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 		return ret;
  	}
  
--	u_volt = opp->u_volt;
--	u_volt_min = opp->u_volt_min;
--	u_volt_max = opp->u_volt_max;
-+	u_volt = opp->supply.u_volt;
-+	u_volt_min = opp->supply.u_volt_min;
-+	u_volt_max = opp->supply.u_volt_max;
+-	if (IS_ERR(old_opp)) {
+-		old_u_volt = 0;
+-	} else {
+-		old_u_volt = old_opp->supply.u_volt;
+-		old_u_volt_min = old_opp->supply.u_volt_min;
+-		old_u_volt_max = old_opp->supply.u_volt_max;
+-	}
++	if (IS_ERR(old_opp))
++		old_supply.u_volt = 0;
++	else
++		memcpy(&old_supply, &old_opp->supply, sizeof(old_supply));
+ 
+-	u_volt = opp->supply.u_volt;
+-	u_volt_min = opp->supply.u_volt_min;
+-	u_volt_max = opp->supply.u_volt_max;
++	memcpy(&new_supply, &opp->supply, sizeof(new_supply));
  
  	reg = opp_table->regulator;
  
-@@ -957,10 +957,11 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
- 	struct regulator *reg = opp_table->regulator;
+@@ -652,8 +646,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
  
- 	if (!IS_ERR(reg) &&
--	    !regulator_is_supported_voltage(reg, opp->u_volt_min,
--					    opp->u_volt_max)) {
-+	    !regulator_is_supported_voltage(reg, opp->supply.u_volt_min,
-+					    opp->supply.u_volt_max)) {
- 		pr_warn("%s: OPP minuV: %lu maxuV: %lu, not supported by regulator\n",
--			__func__, opp->u_volt_min, opp->u_volt_max);
-+			__func__, opp->supply.u_volt_min,
-+			opp->supply.u_volt_max);
- 		return false;
+ 	/* Scaling up? Scale voltage before frequency */
+ 	if (freq > old_freq) {
+-		ret = _set_opp_voltage(dev, reg, u_volt, u_volt_min,
+-				       u_volt_max);
++		ret = _set_opp_voltage(dev, reg, &new_supply);
+ 		if (ret)
+ 			goto restore_voltage;
  	}
+@@ -672,8 +665,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
  
-@@ -993,11 +994,12 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
- 
- 		/* Duplicate OPPs */
- 		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
--			 __func__, opp->rate, opp->u_volt, opp->available,
--			 new_opp->rate, new_opp->u_volt, new_opp->available);
-+			 __func__, opp->rate, opp->supply.u_volt,
-+			 opp->available, new_opp->rate, new_opp->supply.u_volt,
-+			 new_opp->available);
- 
--		return opp->available && new_opp->u_volt == opp->u_volt ?
--			0 : -EEXIST;
-+		return opp->available &&
-+		       new_opp->supply.u_volt == opp->supply.u_volt ? 0 : -EEXIST;
+ 	/* Scaling down? Scale voltage after frequency */
+ 	if (freq < old_freq) {
+-		ret = _set_opp_voltage(dev, reg, u_volt, u_volt_min,
+-				       u_volt_max);
++		ret = _set_opp_voltage(dev, reg, &new_supply);
+ 		if (ret)
+ 			goto restore_freq;
  	}
+@@ -686,10 +678,8 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 			__func__, old_freq);
+ restore_voltage:
+ 	/* This shouldn't harm even if the voltages weren't updated earlier */
+-	if (old_u_volt) {
+-		_set_opp_voltage(dev, reg, old_u_volt, old_u_volt_min,
+-				 old_u_volt_max);
+-	}
++	if (old_supply.u_volt)
++		_set_opp_voltage(dev, reg, &old_supply);
  
- 	new_opp->opp_table = opp_table;
-@@ -1064,9 +1066,9 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- 	/* populate the opp table */
- 	new_opp->rate = freq;
- 	tol = u_volt * opp_table->voltage_tolerance_v1 / 100;
--	new_opp->u_volt = u_volt;
--	new_opp->u_volt_min = u_volt - tol;
--	new_opp->u_volt_max = u_volt + tol;
-+	new_opp->supply.u_volt = u_volt;
-+	new_opp->supply.u_volt_min = u_volt - tol;
-+	new_opp->supply.u_volt_max = u_volt + tol;
- 	new_opp->available = true;
- 	new_opp->dynamic = dynamic;
- 
-diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
-index ef1ae6b52042..c897676ca35f 100644
---- a/drivers/base/power/opp/debugfs.c
-+++ b/drivers/base/power/opp/debugfs.c
-@@ -63,16 +63,16 @@ int opp_debug_create_one(struct dev_pm_opp *opp, struct opp_table *opp_table)
- 	if (!debugfs_create_ulong("rate_hz", S_IRUGO, d, &opp->rate))
- 		return -ENOMEM;
- 
--	if (!debugfs_create_ulong("u_volt_target", S_IRUGO, d, &opp->u_volt))
-+	if (!debugfs_create_ulong("u_volt_target", S_IRUGO, d, &opp->supply.u_volt))
- 		return -ENOMEM;
- 
--	if (!debugfs_create_ulong("u_volt_min", S_IRUGO, d, &opp->u_volt_min))
-+	if (!debugfs_create_ulong("u_volt_min", S_IRUGO, d, &opp->supply.u_volt_min))
- 		return -ENOMEM;
- 
--	if (!debugfs_create_ulong("u_volt_max", S_IRUGO, d, &opp->u_volt_max))
-+	if (!debugfs_create_ulong("u_volt_max", S_IRUGO, d, &opp->supply.u_volt_max))
- 		return -ENOMEM;
- 
--	if (!debugfs_create_ulong("u_amp", S_IRUGO, d, &opp->u_amp))
-+	if (!debugfs_create_ulong("u_amp", S_IRUGO, d, &opp->supply.u_amp))
- 		return -ENOMEM;
- 
- 	if (!debugfs_create_ulong("clock_latency_ns", S_IRUGO, d,
-diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index 5552211e6fcd..b7fcd0a1b58b 100644
---- a/drivers/base/power/opp/of.c
-+++ b/drivers/base/power/opp/of.c
-@@ -148,14 +148,14 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
- 		return -EINVAL;
- 	}
- 
--	opp->u_volt = microvolt[0];
-+	opp->supply.u_volt = microvolt[0];
- 
- 	if (count == 1) {
--		opp->u_volt_min = opp->u_volt;
--		opp->u_volt_max = opp->u_volt;
-+		opp->supply.u_volt_min = opp->supply.u_volt;
-+		opp->supply.u_volt_max = opp->supply.u_volt;
- 	} else {
--		opp->u_volt_min = microvolt[1];
--		opp->u_volt_max = microvolt[2];
-+		opp->supply.u_volt_min = microvolt[1];
-+		opp->supply.u_volt_max = microvolt[2];
- 	}
- 
- 	/* Search for "opp-microamp-<name>" */
-@@ -173,7 +173,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
- 	}
- 
- 	if (prop && !of_property_read_u32(opp->np, name, &val))
--		opp->u_amp = val;
-+		opp->supply.u_amp = val;
- 
- 	return 0;
+ 	return ret;
  }
-@@ -303,9 +303,9 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	mutex_unlock(&opp_table_lock);
- 
- 	pr_debug("%s: turbo:%d rate:%lu uv:%lu uvmin:%lu uvmax:%lu latency:%lu\n",
--		 __func__, new_opp->turbo, new_opp->rate, new_opp->u_volt,
--		 new_opp->u_volt_min, new_opp->u_volt_max,
--		 new_opp->clock_latency_ns);
-+		 __func__, new_opp->turbo, new_opp->rate,
-+		 new_opp->supply.u_volt, new_opp->supply.u_volt_min,
-+		 new_opp->supply.u_volt_max, new_opp->clock_latency_ns);
- 
- 	/*
- 	 * Notify the changes in the availability of the operable
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index fabd5ca1a083..1bda0d35c486 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -47,6 +47,22 @@ extern struct list_head opp_tables;
-  */
- 
- /**
-+ * struct dev_pm_opp_supply - Power supply voltage/current values
-+ * @u_volt:	Target voltage in microvolts corresponding to this OPP
-+ * @u_volt_min:	Minimum voltage in microvolts corresponding to this OPP
-+ * @u_volt_max:	Maximum voltage in microvolts corresponding to this OPP
-+ * @u_amp:	Maximum current drawn by the device in microamperes
-+ *
-+ * This structure stores the voltage/current values for a single power supply.
-+ */
-+struct dev_pm_opp_supply {
-+	unsigned long u_volt;
-+	unsigned long u_volt_min;
-+	unsigned long u_volt_max;
-+	unsigned long u_amp;
-+};
-+
-+/**
-  * struct dev_pm_opp - Generic OPP description structure
-  * @node:	opp table node. The nodes are maintained throughout the lifetime
-  *		of boot. It is expected only an optimal set of OPPs are
-@@ -61,10 +77,7 @@ extern struct list_head opp_tables;
-  * @turbo:	true if turbo (boost) OPP
-  * @suspend:	true if suspend OPP
-  * @rate:	Frequency in hertz
-- * @u_volt:	Target voltage in microvolts corresponding to this OPP
-- * @u_volt_min:	Minimum voltage in microvolts corresponding to this OPP
-- * @u_volt_max:	Maximum voltage in microvolts corresponding to this OPP
-- * @u_amp:	Maximum current drawn by the device in microamperes
-+ * @supply:	Power supply voltage/current values
-  * @clock_latency_ns: Latency (in nanoseconds) of switching to this OPP's
-  *		frequency from any other OPP's frequency.
-  * @opp_table:	points back to the opp_table struct this opp belongs to
-@@ -83,10 +96,8 @@ struct dev_pm_opp {
- 	bool suspend;
- 	unsigned long rate;
- 
--	unsigned long u_volt;
--	unsigned long u_volt_min;
--	unsigned long u_volt_max;
--	unsigned long u_amp;
-+	struct dev_pm_opp_supply supply;
-+
- 	unsigned long clock_latency_ns;
- 
- 	struct opp_table *opp_table;
 -- 
 2.7.1.410.g6faf27b
