@@ -1,93 +1,64 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH][v3] mfd: intel-lpss: Avoid resuming runtime-suspended
- lpss unnecessarily
-Date: Tue, 4 Oct 2016 15:55:58 +0100
-Message-ID: <20161004145558.GF29257@dell>
-References: <1475125286-12167-1-git-send-email-yu.c.chen@intel.com>
+From: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH] coredump: fix unfreezable coredumping task
+Date: Tue, 4 Oct 2016 18:13:05 +0200
+Message-ID: <20161004161304.GA32428@redhat.com>
+References: <1475225434-3753-1-git-send-email-aryabinin@virtuozzo.com> <20160930124741.GA10356@redhat.com> <20161004071804.GA32234@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1475125286-12167-1-git-send-email-yu.c.chen@intel.com>
+In-Reply-To: <20161004071804.GA32234@dhcp22.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+To: Michal Hocko <mhocko@kernel.org>
+Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 29 Sep 2016, Chen Yu wrote:
+On 10/04, Michal Hocko wrote:
+>
+> On Fri 30-09-16 14:47:41, Oleg Nesterov wrote:
+> > On 09/30, Andrey Ryabinin wrote:
+> > >
+> > > @@ -423,7 +424,9 @@ static int coredump_wait(int exit_code, struct core_state *core_state)
+> > >  	if (core_waiters > 0) {
+> > >  		struct core_thread *ptr;
+> > >
+> > > +		freezer_do_not_count();
+> > >  		wait_for_completion(&core_state->startup);
+> > > +		freezer_count();
+> >
+> > Agreed... we could probably even do
+> >
+> > 	--- x/fs/coredump.c
+> > 	+++ x/fs/coredump.c
+> > 	@@ -423,7 +423,13 @@ static int coredump_wait(int exit_code, 
+> > 		if (core_waiters > 0) {
+> > 			struct core_thread *ptr;
+> > 	 
+> > 	-		wait_for_completion(&core_state->startup);
+> > 	+		if (wait_for_completion_interruptible(&core_state->startup)) {
+> > 	+			/* see the comment in dump_interrupted() */
+> > 	+			down_write(&mm->mmap_sem);
+> > 	+			coredump_finish(mm, false);
+> > 	+			up_write(&mm->mmap_sem);
+> > 	+			return -EINTR;
+> > 	+		}
+> > 			/*
+> > 			 * Wait for all the threads to become inactive, so that
+> > 			 * all the thread context (extended register state, like
+>
+> This looks like a very good idea to me. We really want to make the whole
+> coredump_wait killable.
 
-> We have report that the intel_lpss_prepare() takes too much time during
-> suspend, and this is because we first resume the devices from runtime
-> suspend by resume_lpss_device(), to make sure they are in proper state
-> before system suspend, which takes 100ms for each LPSS devices(PCI power
-> state from D3_cold to D0). And since resume_lpss_device() resumes the
-> devices synchronously, we might get huge latency if we have many
-> LPSS devices.
-> 
-> So first try is to use pm_request_resume() instead, to make the runtime
-> resume process asynchronously. Unfortunately the asynchronous runtime
-> resume relies on pm_wq, which is freezed at early stage. So we choose
-> another method, that is to avoid resuming runtime-suspended devices,
-> if they are already runtime suspended. This is safe because for LPSS
-> driver, the runtime suspend and system suspend are of the same
-> hook - i.e., intel_lpss_suspend(). And moreover, this device is
-> neither runtime wakeup source nor system wakeup source.
-> 
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->  drivers/mfd/intel-lpss.c | 9 +++++++++
->  include/linux/pm.h       | 7 +++++++
->  2 files changed, 16 insertions(+)
+Well, it is already killable. And with the change above it can sleep
+in down_write(mmap_sem) and we really need this lock to abort, so it
+won't necessarily react to SIGKILL faster.
 
-Applied for v4.10, thanks.
+> I guess this should help us to remove the
+> hackish sig->flags & SIGNAL_GROUP_COREDUMP check from
+> __task_will_free_mem.
 
-> diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
-> index 41b1138..2583db8 100644
-> --- a/drivers/mfd/intel-lpss.c
-> +++ b/drivers/mfd/intel-lpss.c
-> @@ -485,6 +485,15 @@ static int resume_lpss_device(struct device *dev, void *data)
->  int intel_lpss_prepare(struct device *dev)
->  {
->  	/*
-> +	 * This is safe because:
-> +	 * 1. The runtime suspend and system suspend
-> +	 * are of the same hook.
-> +	 * 2. This device is neither runtime wakeup source
-> +	 * nor system wakeup source.
-> +	 */
-> +	if (pm_runtime_status_suspended(dev))
-> +		return DPM_DIRECT_COMPLETE;
-> +	/*
->  	 * Resume both child devices before entering system sleep. This
->  	 * ensures that they are in proper state before they get suspended.
->  	 */
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 06eb353..4a788b4 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -786,4 +786,11 @@ enum dpm_order {
->  	DPM_ORDER_DEV_LAST,
->  };
->  
-> +/*
-> + * Return this from system suspend/hibernation ->prepare() callback to
-> + * request the core to leave the device runtime-suspended during system
-> + * suspend if possible.
-> + */
-> +#define DPM_DIRECT_COMPLETE 1
-> +
->  #endif /* _LINUX_PM_H */
+Why? This doesn't depend on "killable". __task_will_free_mem() checks
+this flag to detect the CLONE_VM processes which won't exit soon because
+they participate in the coredumping.
 
--- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Oleg.
