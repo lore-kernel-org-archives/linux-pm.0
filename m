@@ -1,35 +1,25 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
-Date: Wed, 05 Oct 2016 14:56:48 +0000
-Message-ID: <bug-176411-137361-YfgZQmuM7v@https.bugzilla.kernel.org/>
-References: <bug-176411-137361@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH 0/1] mfd: axp20x-i2c: Add i2c-ids to fix module auto-loading
+Date: Wed,  5 Oct 2016 17:51:11 +0200
+Message-ID: <20161005155112.13774-1-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:49308 "EHLO mail.kernel.org"
+Received: from mx1.redhat.com ([209.132.183.28]:57968 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753900AbcJEO4z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 5 Oct 2016 10:56:55 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id 7DF122017E
-        for <linux-pm@vger.kernel.org>; Wed,  5 Oct 2016 14:56:49 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-        by mail.kernel.org (Postfix) with ESMTP id 867C120155
-        for <linux-pm@vger.kernel.org>; Wed,  5 Oct 2016 14:56:48 +0000 (UTC)
-In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
+        id S1754077AbcJEPvT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Oct 2016 11:51:19 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>
+Cc: Dennis Gilmore <dennis@ausil.us>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=176411
+Hi all,
 
-Mike Lui <mike.d.lui@gmail.com> changed:
+Dennis Gilmore (in the Cc) reports that axp20x-i2c does not auto-load
+on e.g. the CHIP. I believe this is caused by the i2c-ids table not being
+populated.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-           Severity|high                        |normal
+I believe the patch in the next mail should fix this.
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Regards,
+
+Hans
