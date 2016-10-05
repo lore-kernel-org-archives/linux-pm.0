@@ -1,33 +1,101 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
-Date: Wed, 05 Oct 2016 23:42:01 +0000
-Message-ID: <bug-176411-137361-sKdqYxM5xO@https.bugzilla.kernel.org/>
-References: <bug-176411-137361@https.bugzilla.kernel.org/>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [RFC/RFT][PATCH v2] cpufreq: intel_pstate: Proportional algorithm for Atom
+Date: Wed, 5 Oct 2016 16:58:40 -0700
+Message-ID: <002501d21f64$67356970$35a03c50$@net>
+References: <1565019.BFYQPSZAnN@vostro.rjw.lan> rlwTbczQYEcWqrlwVb93qM
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain;
+        charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:44324 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934432AbcJEXmG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 5 Oct 2016 19:42:06 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id 8032D20221
-        for <linux-pm@vger.kernel.org>; Wed,  5 Oct 2016 23:42:04 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-        by mail.kernel.org (Postfix) with ESMTP id 1CC362017E
-        for <linux-pm@vger.kernel.org>; Wed,  5 Oct 2016 23:42:02 +0000 (UTC)
-In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: rlwTbczQYEcWqrlwVb93qM
+Content-Language: en-ca
+Sender: linux-kernel-owner@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Linux PM list' <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=176411
+Hi Rafael,
 
---- Comment #7 from Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> ---
-Also attach output of:
-# perf record -a --event=power:pstate_sample sleep 300
+It doesn't compile for me. See further down.
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+On 2016.10.05 06:15 Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> The PID algorithm used by the intel_pstate driver tends to drive
+> performance to the minimum for workloads with utilization below the
+> setpoint, which is undesirable, so replace it with a modified
+> "proportional" algorithm on Atom.
+>
+> The new algorithm will set the new P-state to be 1.25 times the
+> available maximum times the (frequency-invariant) utilization during
+> the previous sampling period except when the target P-state computed
+> this way is lower than the average P-state during the previous
+> sampling period.  In the latter case, it will increase the target by
+> 50% of the difference between it and the average P-state to prevent
+> performance from dropping down too fast in some cases.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>
+> It is better to compare the average P-state to the target (than to
+> compare the average perf ratio to the utilization), because that takes
+> turbo into account more accurately.
+>
+> Plus if the target is below the min, it is better to compare the min
+> to the average instead of comparing the target to it.
+>
+> ---
+> drivers/cpufreq/intel_pstate.c |   22 +++++++++++++++++++++-
+> 1 file changed, 21 insertions(+), 1 deletion(-)
+>
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -1232,6 +1232,7 @@ static inline int32_t get_target_pstate_
+>  {
+> 	struct sample *sample = &cpu->sample;
+> 	int32_t busy_frac, boost;
+> +	int target, avg_pstate;
+> 
+> 	busy_frac = div_fp(sample->mperf, sample->tsc);
+> 
+> @@ -1242,7 +1243,26 @@ static inline int32_t get_target_pstate_
+>  		busy_frac = boost;
+> 
+> 	sample->busy_scaled = busy_frac * 100;
+> -	return get_avg_pstate(cpu) - pid_calc(&cpu->pid, sample->busy_scaled);
+> +
+> +	target = limits->no_turbo || limits->turbo_disabled :
+	                                                    ^
+	                                                   ^^^
+For proper conditional expression syntax, shouldn't that be a "?" ?
+
+I can not get this patch to compile,
+but if I change that ":" to a "?" (as in the previous version of this patch)
+it compiles.
+
+> +			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
+> +	target += target >> 2;
+> +	target = mul_fp(target, busy_frac);
+> +	if (target < cpu->pstate.min_pstate)
+> +		target = cpu->pstate.min_pstate;
+> +
+> +	/*
+> +	 * If the average P-state during the previous cycle was higher than the
+> +	 * current target, add 50% of the difference to the target to reduce
+> +	 * possible performance oscillations and offset possible performance
+> +	 * loss related to moving the workload from one CPU to another within
+> +	 * a package/module.
+> +	 */
+> +	avg_pstate = get_avg_pstate(cpu);
+> +	if (avg_pstate > target)
+> +		target += (avg_pstate - target) >> 1;
+> +
+> +	return target;
+>  }
+> 
+>  static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+>
+> --
