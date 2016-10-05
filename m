@@ -1,57 +1,107 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v16 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Wed, 5 Oct 2016 15:26:35 +0800
-Message-ID: <CAMz4kuLHEv16yBDxW=peVyPB3_K27QUDyKHT0ecBZxAQR-2VXA@mail.gmail.com>
-References: <cover.1470034830.git.baolin.wang@linaro.org> <CAMz4kuLotLs1ASuZaMRXf29khmQUfEQc+jFV8Fxp+fHFn90Z9g@mail.gmail.com>
- <CAMz4ku+pkRT70NcZEDepfshH7z7+Fm3yo-C2+ccWgJwDJE4C-Q@mail.gmail.com>
- <8760q9a8m6.fsf@notabene.neil.brown.name> <CAMz4kuJJwKFqU=6JnpUQNPeQ-uy-PyZ5VBaBKofn=8Jv5y0nXA@mail.gmail.com>
- <878tv297a0.fsf@notabene.neil.brown.name> <CAMz4kuLXyVSXjh1Sn06+wcUr+bVritCW3sN=XyEdap7h=MN7xw@mail.gmail.com>
- <87y4326l44.fsf@notabene.neil.brown.name> <CAMz4ku+wWcSPCA1_UYKNqJv4rRDEm5WYUc8AVT6xPJ651-rzmg@mail.gmail.com>
- <87twdo7ouz.fsf@notabene.neil.brown.name> <CAMz4kuLXyLK2jFmaoxxceq01FT4fo+N-iAtCLPyQzJh5R24uOw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH 1/2] cpuidle: governors: Remove remaining old module code
+Date: Wed,  5 Oct 2016 09:33:12 +0200
+Message-ID: <1475652794-4486-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMz4kuLXyLK2jFmaoxxceq01FT4fo+N-iAtCLPyQzJh5R24uOw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <neilb@suse.com>
-Cc: NeilBrown <nfbrown@novell.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.ke>
+To: rjw@rjwysocki.net
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Felipe,
+The governor's code use try_module_get() and put_module() to refcount
+the governor's module. But the governors are not compiled as module.
 
->> But you do!
->> The mA number from the USB configuration is passed to usb_gadget_vbus_draw.
->> Your patch passes that to usb_charger_set_cur_limit_by_type()
->> which calls __usb_charger_set_cur_limit_by_type() which will set the
->> cur_limit for whichever type uchger->type currently is.
->>
->> So when it is not relevant, your code *does* set some current limit.
->
-> Suppose the charger type is DCP(it is not relevant to the mA number
-> from the USB configuration ), it will not do the USB enumeration, then
-> no USB configuration from host to set current.
+The refcount does not prevent to switch the governor or unload a module
+as they aren't compiled as modules. So the code is pointless, removing
+it.
 
->From the talking, there are some issues (thanks for Neil's comments)
-need to be fixed as below:
-1. Need to add the method getting charger type from extcon subsystem.
-2. Need to remove the method getting charger type from power supply.
-3. There are still some different views about reporting the maximum
-current or minimum current to power driver.
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/cpuidle/governor.c         | 4 ----
+ drivers/cpuidle/governors/ladder.c | 2 --
+ drivers/cpuidle/governors/menu.c   | 2 --
+ include/linux/cpuidle.h            | 2 --
+ 4 files changed, 10 deletions(-)
 
-Now the current v16 patchset can work well on my Spreadtrum platform
-and Jun's NXP platform, if you like to apply this patchset then I can
-send out new patches to fix above issues. If you don't like that, I
-can send out new version patchset to fix above issues. Could you  give
-me some suggestions what should I do next step? Thanks.
-
->
-> --
-> Baolin.wang
-> Best Regards
-
-
-
+diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
+index fb9f511..4e78263 100644
+--- a/drivers/cpuidle/governor.c
++++ b/drivers/cpuidle/governor.c
+@@ -9,7 +9,6 @@
+  */
+ 
+ #include <linux/mutex.h>
+-#include <linux/module.h>
+ #include <linux/cpuidle.h>
+ 
+ #include "cpuidle.h"
+@@ -53,14 +52,11 @@ int cpuidle_switch_governor(struct cpuidle_governor *gov)
+ 	if (cpuidle_curr_governor) {
+ 		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+ 			cpuidle_disable_device(dev);
+-		module_put(cpuidle_curr_governor->owner);
+ 	}
+ 
+ 	cpuidle_curr_governor = gov;
+ 
+ 	if (gov) {
+-		if (!try_module_get(cpuidle_curr_governor->owner))
+-			return -EINVAL;
+ 		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+ 			cpuidle_enable_device(dev);
+ 		cpuidle_install_idle_handler();
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 63bd5a4..fe8f089 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -15,7 +15,6 @@
+ #include <linux/kernel.h>
+ #include <linux/cpuidle.h>
+ #include <linux/pm_qos.h>
+-#include <linux/module.h>
+ #include <linux/jiffies.h>
+ #include <linux/tick.h>
+ 
+@@ -177,7 +176,6 @@ static struct cpuidle_governor ladder_governor = {
+ 	.enable =	ladder_enable_device,
+ 	.select =	ladder_select_state,
+ 	.reflect =	ladder_reflect,
+-	.owner =	THIS_MODULE,
+ };
+ 
+ /**
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index 03d38c2..d9b5b93 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -19,7 +19,6 @@
+ #include <linux/tick.h>
+ #include <linux/sched.h>
+ #include <linux/math64.h>
+-#include <linux/module.h>
+ 
+ /*
+  * Please note when changing the tuning values:
+@@ -484,7 +483,6 @@ static struct cpuidle_governor menu_governor = {
+ 	.enable =	menu_enable_device,
+ 	.select =	menu_select,
+ 	.reflect =	menu_reflect,
+-	.owner =	THIS_MODULE,
+ };
+ 
+ /**
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index bb31373..15deea4 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -235,8 +235,6 @@ struct cpuidle_governor {
+ 	int  (*select)		(struct cpuidle_driver *drv,
+ 					struct cpuidle_device *dev);
+ 	void (*reflect)		(struct cpuidle_device *dev, int index);
+-
+-	struct module 		*owner;
+ };
+ 
+ #ifdef CONFIG_CPU_IDLE
 -- 
-Baolin.wang
-Best Regards
+1.9.1
