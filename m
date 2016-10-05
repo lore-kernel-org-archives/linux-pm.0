@@ -1,63 +1,43 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH 0/8] PM / Domains: DT support for domain idle states &
- atomic PM domains
-Date: Wed, 5 Oct 2016 14:38:15 -0600
-Message-ID: <20161005203815.GA28930@linaro.org>
-References: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
+Date: Wed, 05 Oct 2016 20:39:44 +0000
+Message-ID: <bug-176411-137361-gaZCPn2YDB@https.bugzilla.kernel.org/>
+References: <bug-176411-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:40620 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752754AbcJEUjs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Oct 2016 16:39:48 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id F0B9920165
+        for <linux-pm@vger.kernel.org>; Wed,  5 Oct 2016 20:39:46 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+        by mail.kernel.org (Postfix) with ESMTP id 040EF20149
+        for <linux-pm@vger.kernel.org>; Wed,  5 Oct 2016 20:39:45 +0000 (UTC)
+In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Wed, Oct 05 2016 at 14:32 -0600, Lina Iyer wrote:
->Hi all,
->
->This is the first set of patches of [1], sent now seperately. The CPU PM
->domains part of the series is under discussion and was gating this set of
->patches which have already been looked at by many and has no objections. Hence,
->I split the series and sending out the PM domains changes now.
->
-This series is also available at -
-https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-v1
+https://bugzilla.kernel.org/show_bug.cgi?id=176411
 
->The patches [1 - 3] add DT support for reading domain idle states. The second
->set of patches [4 - 8] enable PM domains to be used in atomic context.
->
->The changes from [1] are -
->- Allocating memory for domain idle states dynamically
->- Conform to naming conventions for internal and exported genpd functions
->- DT binding example for domain-idle-state
->- Use fwnode instead of of_node
->- Handle atomic case for removal of PM Domain
->- Rebase on top of Rafael's pm/genpd tree
->
->Thanks,
->Lina
->
->Lina Iyer (8):
->  PM / Domains: Make genpd state allocation dynamic
->  PM / Domain: Add residency property to genpd states
->  PM / Domains: Allow domain power states to be read from DT
->  PM / Domains: Add fwnode provider to genpd states
->  dt/bindings: Update binding for PM domain idle states
->  PM / Domains: Abstract genpd locking
->  PM / Domains: Support IRQ safe PM domains
->  PM / doc: Update device documentation for devices in IRQ safe PM
->    domains
->
-> .../devicetree/bindings/power/power_domain.txt     |  36 +++
-> Documentation/power/devices.txt                    |  12 +-
-> arch/arm/mach-imx/gpc.c                            |  17 +-
-> drivers/base/power/domain.c                        | 338 +++++++++++++++++----
-> include/linux/pm_domain.h                          |  27 +-
-> 5 files changed, 360 insertions(+), 70 deletions(-)
->
->-- 
->2.7.4
->
->[1]. https://www.spinics.net/lists/arm-kernel/msg526814.html
+Rafael J. Wysocki <rjw@rjwysocki.net> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|NEW                         |NEEDINFO
+                 CC|                            |rjw@rjwysocki.net
+
+--- Comment #1 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
+What's in
+
+/sys/devices/system/cpu/cpu*/cpufreq/scaling_driver
+
+?
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
