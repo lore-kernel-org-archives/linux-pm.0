@@ -1,69 +1,80 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v5 4/9] x86: Enable Intel Turbo Boost Max Technology
- 3.0
-Date: Wed, 5 Oct 2016 16:23:49 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1610051616010.8953@nanos>
-References: <1475322326-160112-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1475322326-160112-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v5 5/9] x86/sysctl: Add sysctl for ITMT scheduling
+ feature
+Date: Wed, 5 Oct 2016 16:35:38 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1610051624590.8953@nanos>
+References: <1475322326-160112-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1475322326-160112-6-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:39259 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752512AbcJEO0V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Oct 2016 10:26:21 -0400
-In-Reply-To: <1475322326-160112-5-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1475322326-160112-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
 To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, tim.c.chen@linux.intel.com, jolsa@redhat.com
+List-Id: linux-pm@vger.kernel.org
 
 On Sat, 1 Oct 2016, Srinivas Pandruvada wrote:
-> +void sched_set_itmt_support(bool itmt_supported)
+> +static int sched_itmt_update_handler(struct ctl_table *table, int write,
+> +			      void __user *buffer, size_t *lenp, loff_t *ppos)
 > +{
+> +	int ret;
+> +	unsigned int old_sysctl;
+> +
 > +	mutex_lock(&itmt_update_mutex);
 > +
-> +	if (itmt_supported != sched_itmt_capable)
-> +		sched_itmt_capable = itmt_supported;
+> +	if (!sched_itmt_capable) {
+> +		mutex_unlock(&itmt_update_mutex);
+> +		return 0;
 
-Yikes. What is this conditional for? The only value it has is to confuse
-the reader.
+This should return a proper error code.
 
+>  void sched_set_itmt_support(bool itmt_supported)
+>  {
+>  	mutex_lock(&itmt_update_mutex);
+>  
+> -	if (itmt_supported != sched_itmt_capable)
+> -		sched_itmt_capable = itmt_supported;
+> +	if (itmt_supported == sched_itmt_capable) {
+> +		mutex_unlock(&itmt_update_mutex);
+> +		return;
+> +	}
+> +	sched_itmt_capable = itmt_supported;
 > +
-> +	mutex_unlock(&itmt_update_mutex);
-> +}
-> +
-> +DEFINE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
+> +	if (itmt_supported) {
+> +		itmt_sysctl_header =
+> +			register_sysctl_table(itmt_root_table);
+> +		if (!itmt_sysctl_header) {
+> +			mutex_unlock(&itmt_update_mutex);
+> +			return;
 
-Darn. Do not stick variable definitiions in the middle of the code and
-especially not glued to the function w/o a newline in between. Move it to
-the top of the file.
+So you now have a state of capable which cannot be enabled. Whats the
+point?
 
-> +int arch_asym_cpu_priority(int cpu)
-> +{
-> +	return per_cpu(sched_core_priority, cpu);
-> +}
-
-
-> +void sched_set_itmt_core_prio(int prio, int core_cpu)
-> +{
-> +	int cpu, i = 1;
-> +
-> +	for_each_cpu(cpu, topology_sibling_cpumask(core_cpu)) {
-> +		int smt_prio;
-> +
+> +		}
 > +		/*
-> +		 * Ensure that the siblings are moved to the end
-> +		 * of the priority chain and only used when
-> +		 * all other high priority cpus are out of capacity.
+> +		 * ITMT capability automatically enables ITMT
+> +		 * scheduling for small systems (single node).
 > +		 */
-> +		smt_prio = prio * smp_num_siblings / i;
-> +		i++;
+> +		if (topology_num_packages() == 1)
+> +			sysctl_sched_itmt_enabled = 1;
+> +	} else {
+> +		if (itmt_sysctl_header)
+> +			unregister_sysctl_table(itmt_sysctl_header);
+> +	}
+> +
+> +	if (sysctl_sched_itmt_enabled) {
+> +		/* disable sched_itmt if we are no longer ITMT capable */
+> +		if (!itmt_supported)
 
-Your code ordering is really random. What has this i++ to do with the
-store? Nothing. It just makes reading the code harder. Just move it below
-the store.
 
-> +		per_cpu(sched_core_priority, cpu) = smt_prio;
+How do you get here if itmt is not supported? 
+
+> +			sysctl_sched_itmt_enabled = 0;
+> +		x86_topology_update = true;
+> +		rebuild_sched_domains();
+> +	}
+>  
+>  	mutex_unlock(&itmt_update_mutex);
 
 Thanks,
 
