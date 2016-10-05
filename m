@@ -1,35 +1,65 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RESEND PATCH v2 1/3] dt: cpufreq: brcm: New binding document
- for brcmstb-avs-cpufreq
-Date: Wed, 5 Oct 2016 08:57:56 +0530
-Message-ID: <20161005032756.GI4664@vireshk-i7>
-References: <1475272561-8446-1-git-send-email-mmayer@broadcom.com>
- <1475272561-8446-2-git-send-email-mmayer@broadcom.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 1/2] cpufreq/ondemand: Introduce op to customize
+ mapping of load to frequency
+Date: Wed, 5 Oct 2016 09:31:18 +0530
+Message-ID: <20161005040118.GJ4664@vireshk-i7>
+References: <20160819121814.GA17296@suselix.suse.de>
+ <20160923165632.GA9786@suselix.suse.de>
+ <20160923170256.GB9786@suselix.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:34373 "EHLO
+        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750766AbcJEEBX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Oct 2016 00:01:23 -0400
+Received: by mail-pf0-f169.google.com with SMTP id e6so27057858pfk.1
+        for <linux-pm@vger.kernel.org>; Tue, 04 Oct 2016 21:01:23 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1475272561-8446-2-git-send-email-mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20160923170256.GB9786@suselix.suse.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andreas Herrmann <aherrmann@suse.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
 
-On 30-09-16, 14:55, Markus Mayer wrote:
-> Add the binding document for the new brcmstb-avs-cpufreq driver.
+On 23-09-16, 19:02, Andreas Herrmann wrote:
+> Introduce op for ondemand governor that is used to map load to
+> frequency. It allows a cpufreq driver to provide a specific mapping
+> function if the generic function is not optimal for the driver.
 > 
-> Signed-off-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+> Performance results (kernel compile with different number of jobs)
+> based on 4.8.0-rc7 (with and w/o my patches on top) from
+> an HP ProLiant DL580 Gen8 system using pcc-cpufreq:
+>  - Intel(R) Xeon(R) CPU E7-4890 v2 @ 2.80GHz
+>  - 60 CPUs, 128GB RAM
+>  
+>                     vanilla                  generic_map_load_to_freq function
+>  # of jobs  user    sys   elapsed   % CPU      user    sys   elapsed   % CPU
+>     2      445.44  110.51  272.99   203.00    445.56  111.22  273.35   203.00
+>     4      444.41  126.20  142.81   399.00    445.61  126.10  143.12   399.00
+>     8      483.04  150.58   82.19   770.40    483.51  150.84   82.17   771.40
+>    16      626.81  185.01   55.00  1475.40    628.01  185.54   55.02  1477.80
+>    32      816.72  204.39   37.26  2740.00    818.58  205.51   37.02  2765.40
+>    64      406.59   51.12   14.04  3257.80    406.22   51.84   13.84  3308.80
+>   120      413.00   48.39   14.36  3211.20    413.61   49.06   14.54  3181.00
+> 
+> Similar tests on another system using acpi_cpufreq didn't show
+> significant performance differences between these two kernel versions.
+> 
+> Link: https://marc.info/?i=20160819121814.GA17296%40suselix.suse.de
+> Signed-off-by: Andreas Herrmann <aherrmann@suse.com>
 > ---
->  .../bindings/cpufreq/brcm,stb-avs-cpu-freq.txt     | 77 ++++++++++++++++++++++
->  MAINTAINERS                                        |  7 ++
->  2 files changed, 84 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
+>  drivers/cpufreq/cpufreq_governor.h |  5 +++++
+>  drivers/cpufreq/cpufreq_ondemand.c | 35 ++++++++++++++++++++++++++++++-----
+>  2 files changed, 35 insertions(+), 5 deletions(-)
 
-Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+NAK.
+
+If we are absolutely required to hack it in some way, then I would
+prefer your first patchset as the noise was limited to only your
+driver.
+
+We aren't going to provide such operations from the governors, sorry.
 
 -- 
 viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
