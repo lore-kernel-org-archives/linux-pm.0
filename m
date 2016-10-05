@@ -1,95 +1,150 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: Re: [PATCH v5 5/9] x86/sysctl: Add sysctl for ITMT scheduling
- feature
-Date: Wed, 05 Oct 2016 09:24:33 -0700
-Message-ID: <1475684673.3916.299.camel@linux.intel.com>
-References: <1475322326-160112-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <1475322326-160112-6-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <alpine.DEB.2.20.1610051624590.8953@nanos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1610051624590.8953@nanos>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com
+From: Markus Heiser <markus.heiser@darmarit.de>
+Subject: Re: kernel-doc-rst-lint (was: Re: [PATCH 00/15] improve
+ function-level documentation)
+Date: Wed, 5 Oct 2016 19:27:12 +0200
+Message-ID: <0311F11C-D5CB-4A90-86BD-4DDAD1103685@darmarit.de>
+References: <1475351192-27079-1-git-send-email-Julia.Lawall@lip6.fr>
+ <CAKMK7uHT3FutHQuQQ3iwXmYbidB3AOs7AxnpaJD4MTqy0-QehQ@mail.gmail.com>
+ <87h98quc1w.fsf@intel.com>
+Mime-Version: 1.0 (Mac OS X Mail 6.6 \(1510\))
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <87h98quc1w.fsf@intel.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, linux-doc@vger.kernel.org, kernel-janitors@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, linux-metag@vger.kernel.org, linaro-mm-sig@lists.linaro.org, linux-mtd@lists.infradead.org, linux-tegra@vger.kernel.org, "linux-media@vger.kernel.org Mailing List" <linux-media@vger.kernel.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, drbd-dev@lists.linbit.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2016-10-05 at 16:35 +0200, Thomas Gleixner wrote:
-> On Sat, 1 Oct 2016, Srinivas Pandruvada wrote:
-> > 
-> > +static int sched_itmt_update_handler(struct ctl_table *table, int write,
-> > +			      void __user *buffer, size_t *lenp, loff_t *ppos)
-> > +{
-> > +	int ret;
-> > +	unsigned int old_sysctl;
-> > +
-> > +	mutex_lock(&itmt_update_mutex);
-> > +
-> > +	if (!sched_itmt_capable) {
-> > +		mutex_unlock(&itmt_update_mutex);
-> > +		return 0;
-> This should return a proper error code.
-
-Okay. Will return EINVAL instead.
-
-> 
-> > 
-> >  void sched_set_itmt_support(bool itmt_supported)
-> >  {
-> >  	mutex_lock(&itmt_update_mutex);
-> >  
-> > -	if (itmt_supported != sched_itmt_capable)
-> > -		sched_itmt_capable = itmt_supported;
-> > +	if (itmt_supported == sched_itmt_capable) {
-> > +		mutex_unlock(&itmt_update_mutex);
-> > +		return;
-> > +	}
-> > +	sched_itmt_capable = itmt_supported;
-> > +
-> > +	if (itmt_supported) {
-> > +		itmt_sysctl_header =
-> > +			register_sysctl_table(itmt_root_table);
-> > +		if (!itmt_sysctl_header) {
-> > +			mutex_unlock(&itmt_update_mutex);
-> > +			return;
-> So you now have a state of capable which cannot be enabled. Whats the
-> point?
-
-For multi-socket system where ITMT is not enabled by default, the operator
-can still decide to enable it via sysctl.
-
-> 
-> > 
-> > +		}
-> > +		/*
-> > +		 * ITMT capability automatically enables ITMT
-> > +		 * scheduling for small systems (single node).
-> > +		 */
-> > +		if (topology_num_packages() == 1)
-> > +			sysctl_sched_itmt_enabled = 1;
-> > +	} else {
-> > +		if (itmt_sysctl_header)
-> > +			unregister_sysctl_table(itmt_sysctl_header);
-> > +	}
-> > +
-> > +	if (sysctl_sched_itmt_enabled) {
-> > +		/* disable sched_itmt if we are no longer ITMT capable */
-> > +		if (!itmt_supported)
-> 
-> How do you get here if itmt is not supported? 
-
-If the OS decides to turn off ITMT for any reason, (i.e. invoke 
-sched_set_itmt_support(false) after it has turned on itmt_support
-before), this is the logic to do it.  We don't turn off ITMT support
-after it has been turned on today, in the future the OS may.
-
-If you prefer, I can change things to sched_set_itmt_support(void) so
-we can only turn on ITMT support. And once the support is on, we
-don't revoke it.
-
-Thanks.
-
-Tim
-
+CkFtIDA1LjEwLjIwMTYgdW0gMTY6MDQgc2NocmllYiBKYW5pIE5pa3VsYSA8amFuaS5uaWt1bGFA
+bGludXguaW50ZWwuY29tPjoKCj4gT24gV2VkLCAwNSBPY3QgMjAxNiwgRGFuaWVsIFZldHRlciA8
+ZGFuaWVsQGZmd2xsLmNoPiB3cm90ZToKPj4gSmFuaSBOaWt1bGEgaGFzIGEgcGF0Y2ggd2l0aCBh
+IHNjcmlwIHRvIG1ha2UgdGhlIG9uZSBrZXJuZWwtZG9jIHBhcnNlcgo+PiBpbnRvIGEgbGludC9j
+aGVja2VyIHBhc3Mgb3ZlciB0aGUgZW50aXJlIGtlcm5lbC4gSSB0aGluayB0aGF0J2Qgd291bGQK
+Pj4gYmUgbW9yZSByb2J1c3QgaW5zdGVhZCBvZiB0cnlpbmcgdG8gYXBwcm94aW1hdGUgdGhlIHJl
+YWwga2VybmVsZG9jCj4+IHBhcnNlci4gT3RvaCB0aGF0IHBhcnNlciBpcyBhIGhvcnJvciBzaG93
+IG9mIGEgcGVybC9yZWdleCBkcml2ZW4gc3RhdGUKPj4gbWFjaGluZSA7LSkKPj4gCj4+IEphbmks
+IGNhbiB5b3UgcGxzIGRpZ2cgb3V0IHRoZXNlIHBhdGNoZXM/IENhbid0IGZpbmQgdGhlbSByaWdo
+dCBub3cgLi4uCj4gCj4gRXhwYW5kaW5nIHRoZSBtYXNzaXZlIENjOiB3aXRoIGxpbnV4LWRvYyBs
+aXN0Li4uCj4gCj4gSGVyZSBnb2VzLiBJdCdzIGEgcXVpY2sgaGFjayBmcm9tIG1vbnRocyBhZ28s
+IGJ1dCBzdGlsbCBzZWVtcyB0bwo+IHNvbWV3aGF0IHdvcmsuIEF0IGxlYXN0IGZvciB0aGUga2Vy
+bmVsLWRvYyBwYXJ0cy4gVGhlIHJlU3RydWN0dXJlZFRleHQKPiBsaW50IHBhcnQgaXNuJ3QgYWxs
+IHRoYXQgZ3JlYXQsIGFuZCBkb2Vzbid0IGhhdmUgbWFwcGluZyB0byBsaW5lIG51bWJlcnMKPiBs
+aWtlIHRoZSBTcGhpbngga2VybmVsLWRvYyBleHRlbnNpb24gZG9lcy4gQW55d2F5IEknbSBoYXBw
+eSBob3cgdGhpcwo+IGludGVncmF0ZXMgd2l0aCBrZXJuZWwgYnVpbGQgQ0hFQ0sgYW5kIEM9MS9D
+PTIuCj4gCj4gSSBndWVzcyBKdWxpYSdzIGdvYWwgaXMgdG8gYXV0b21hdGUgdGhlICpmaXhpbmcq
+IG9mIHNvbWUgb2YgdGhlIGVycm9yCj4gY2xhc3NlcyBmcm9tIGtlcm5lbC1kb2MuIE5vdCBzdXJl
+IGhvdyB3ZWxsIHRoaXMgY291bGQgYmUgbWFkZSB0bwo+IGludGVncmF0ZSB3aXRoIGFueSBvZiB0
+aGF0Lgo+IAo+IEJSLAo+IEphbmkuCgpBbm90aGVyIGxpbnQgYWx0ZXJuYXRpdmU6IAoKIHVzZSB0
+aGUgbGludCBmcm9tIHRoZSBsaW51eGRvYyBwcm9qZWN0IAoKaW5zdGFsbCB0aGUgbGludXhkb2Mg
+cGFja2FnZToKCiogIGh0dHBzOi8vcmV0dXJuNDIuZ2l0aHViLmlvL2xpbnV4ZG9jL2luc3RhbGwu
+aHRtbAoKZS5nLjo6CgogcGlwIGluc3RhbGwgLS11c2VyIGdpdCtodHRwOi8vZ2l0aHViLmNvbS9y
+ZXR1cm40Mi9saW51eGRvYy5naXQKCmFuZCBydW4ga2VybmVsLWxpbnRkb2Mgd2l0aCB0aGUgZmls
+ZS9mb2xkZXIgdG8gbGludCBhcyBhcmd1bWVudCAvIGUuZy46OgoKIGtlcm5lbC1saW50ZG9jIGlu
+Y2x1ZGUvbWVkaWEvCgotLSBNYXJrdXMgLS0KCgo+IAo+IAo+IEZyb20gMTI0NGVmYTBmNjNhN2Ix
+Mzc5NWU4YzM3ZjgxNzMzYTNjOGJmYzU2YSBNb24gU2VwIDE3IDAwOjAwOjAwIDIwMDEKPiBGcm9t
+OiBKYW5pIE5pa3VsYSA8amFuaS5uaWt1bGFAaW50ZWwuY29tPgo+IERhdGU6IFR1ZSwgMzEgTWF5
+IDIwMTYgMTg6MTE6MzMgKzAzMDAKPiBTdWJqZWN0OiBbUEFUQ0hdIGtlcm5lbC1kb2MtcnN0LWxp
+bnQ6IGFkZCB0b29sIHRvIGNoZWNrIGtlcm5lbC1kb2MgYW5kIHJzdAo+IGNvcnJlY3RuZXNzCj4g
+T3JnYW5pemF0aW9uOiBJbnRlbCBGaW5sYW5kIE95IC0gQklDIDAzNTc2MDYtNCAtIFdlc3RlbmRp
+bmthdHUgNywgMDIxNjAgRXNwb28KPiBDYzogSmFuaSBOaWt1bGEgPGphbmkubmlrdWxhQGludGVs
+LmNvbT4KPiAKPiBTaW1wbGUga2VybmVsLWRvYyBhbmQgcmVTdHJ1Y3R1cmVkVGV4dCBsaW50IHRv
+b2wgdGhhdCBjYW4gYmUgdXNlZAo+IGluZGVwZW5kZW50bHkgYW5kIGFzIGEga2VybmVsIGJ1aWxk
+IENIRUNLIHRvb2wgdG8gdmFsaWRhdGUga2VybmVsLWRvYwo+IGNvbW1lbnRzLgo+IAo+IEluZGVw
+ZW5kZW50IHVzYWdlOgo+ICQga2VybmVsLWRvYy1yc3QtbGludCBGSUxFCj4gCj4gS2VybmVsIENI
+RUNLIHVzYWdlOgo+ICQgbWFrZSBDSEVDSz1zY3JpcHRzL2tlcm5lbC1kb2MtcnN0LWxpbnQgQz0x
+CQkjIChvciBDPTIpCj4gCj4gRGVwZW5kcyBvbiBkb2N1dGlscyBhbmQgdGhlIHJzdC1saW50IHBh
+Y2thZ2UKPiBodHRwczovL3B5cGkucHl0aG9uLm9yZy9weXBpL3Jlc3RydWN0dXJlZHRleHRfbGlu
+dAo+IAo+IFNpZ25lZC1vZmYtYnk6IEphbmkgTmlrdWxhIDxqYW5pLm5pa3VsYUBpbnRlbC5jb20+
+Cj4gLS0tCj4gc2NyaXB0cy9rZXJuZWwtZG9jLXJzdC1saW50IHwgMTA2ICsrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrCj4gMSBmaWxlIGNoYW5nZWQsIDEwNiBpbnNl
+cnRpb25zKCspCj4gY3JlYXRlIG1vZGUgMTAwNzU1IHNjcmlwdHMva2VybmVsLWRvYy1yc3QtbGlu
+dAo+IAo+IGRpZmYgLS1naXQgYS9zY3JpcHRzL2tlcm5lbC1kb2MtcnN0LWxpbnQgYi9zY3JpcHRz
+L2tlcm5lbC1kb2MtcnN0LWxpbnQKPiBuZXcgZmlsZSBtb2RlIDEwMDc1NQo+IGluZGV4IDAwMDAw
+MDAwMDAwMC4uN2UwMTU3Njc5ZjgzCj4gLS0tIC9kZXYvbnVsbAo+ICsrKyBiL3NjcmlwdHMva2Vy
+bmVsLWRvYy1yc3QtbGludAo+IEBAIC0wLDAgKzEsMTA2IEBACj4gKyMhL3Vzci9iaW4vZW52IHB5
+dGhvbgo+ICsjIGNvZGluZz11dGYtOAo+ICsjCj4gKyMgQ29weXJpZ2h0IMKpIDIwMTYgSW50ZWwg
+Q29ycG9yYXRpb24KPiArIwo+ICsjIFBlcm1pc3Npb24gaXMgaGVyZWJ5IGdyYW50ZWQsIGZyZWUg
+b2YgY2hhcmdlLCB0byBhbnkgcGVyc29uIG9idGFpbmluZyBhCj4gKyMgY29weSBvZiB0aGlzIHNv
+ZnR3YXJlIGFuZCBhc3NvY2lhdGVkIGRvY3VtZW50YXRpb24gZmlsZXMgKHRoZSAiU29mdHdhcmUi
+KSwKPiArIyB0byBkZWFsIGluIHRoZSBTb2Z0d2FyZSB3aXRob3V0IHJlc3RyaWN0aW9uLCBpbmNs
+dWRpbmcgd2l0aG91dCBsaW1pdGF0aW9uCj4gKyMgdGhlIHJpZ2h0cyB0byB1c2UsIGNvcHksIG1v
+ZGlmeSwgbWVyZ2UsIHB1Ymxpc2gsIGRpc3RyaWJ1dGUsIHN1YmxpY2Vuc2UsCj4gKyMgYW5kL29y
+IHNlbGwgY29waWVzIG9mIHRoZSBTb2Z0d2FyZSwgYW5kIHRvIHBlcm1pdCBwZXJzb25zIHRvIHdo
+b20gdGhlCj4gKyMgU29mdHdhcmUgaXMgZnVybmlzaGVkIHRvIGRvIHNvLCBzdWJqZWN0IHRvIHRo
+ZSBmb2xsb3dpbmcgY29uZGl0aW9uczoKPiArIwo+ICsjIFRoZSBhYm92ZSBjb3B5cmlnaHQgbm90
+aWNlIGFuZCB0aGlzIHBlcm1pc3Npb24gbm90aWNlIChpbmNsdWRpbmcgdGhlIG5leHQKPiArIyBw
+YXJhZ3JhcGgpIHNoYWxsIGJlIGluY2x1ZGVkIGluIGFsbCBjb3BpZXMgb3Igc3Vic3RhbnRpYWwg
+cG9ydGlvbnMgb2YgdGhlCj4gKyMgU29mdHdhcmUuCj4gKyMKPiArIyBUSEUgU09GVFdBUkUgSVMg
+UFJPVklERUQgIkFTIElTIiwgV0lUSE9VVCBXQVJSQU5UWSBPRiBBTlkgS0lORCwgRVhQUkVTUyBP
+Ugo+ICsjIElNUExJRUQsIElOQ0xVRElORyBCVVQgTk9UIExJTUlURUQgVE8gVEhFIFdBUlJBTlRJ
+RVMgT0YgTUVSQ0hBTlRBQklMSVRZLAo+ICsjIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQ
+T1NFIEFORCBOT05JTkZSSU5HRU1FTlQuICBJTiBOTyBFVkVOVCBTSEFMTAo+ICsjIFRIRSBBVVRI
+T1JTIE9SIENPUFlSSUdIVCBIT0xERVJTIEJFIExJQUJMRSBGT1IgQU5ZIENMQUlNLCBEQU1BR0VT
+IE9SIE9USEVSCj4gKyMgTElBQklMSVRZLCBXSEVUSEVSIElOIEFOIEFDVElPTiBPRiBDT05UUkFD
+VCwgVE9SVCBPUiBPVEhFUldJU0UsIEFSSVNJTkcKPiArIyBGUk9NLCBPVVQgT0YgT1IgSU4gQ09O
+TkVDVElPTiBXSVRIIFRIRSBTT0ZUV0FSRSBPUiBUSEUgVVNFIE9SIE9USEVSIERFQUxJTkdTCj4g
+KyMgSU4gVEhFIFNPRlRXQVJFLgo+ICsjCj4gKyMgQXV0aG9yczoKPiArIyAgICBKYW5pIE5pa3Vs
+YSA8amFuaS5uaWt1bGFAaW50ZWwuY29tPgo+ICsjCj4gKyMgU2ltcGxlIGtlcm5lbC1kb2MgYW5k
+IHJlU3RydWN0dXJlZFRleHQgbGludCB0b29sIHRoYXQgY2FuIGJlIHVzZWQKPiArIyBpbmRlcGVu
+ZGVudGx5IGFuZCBhcyBhIGtlcm5lbCBidWlsZCBDSEVDSyB0b29sIHRvIHZhbGlkYXRlIGtlcm5l
+bC1kb2MKPiArIyBjb21tZW50cy4KPiArIwo+ICsjIEluZGVwZW5kZW50IHVzYWdlOgo+ICsjICQg
+a2VybmVsLWRvYy1yc3QtbGludCBGSUxFCj4gKyMKPiArIyBLZXJuZWwgQ0hFQ0sgdXNhZ2U6Cj4g
+KyMgJCBtYWtlIENIRUNLPXNjcmlwdHMva2VybmVsLWRvYy1yc3QtbGludCBDPTEJCSMgKG9yIEM9
+MikKPiArIwo+ICsjIERlcGVuZHMgb24gZG9jdXRpbHMgYW5kIHRoZSByc3QtbGludCBwYWNrYWdl
+Cj4gKyMgaHR0cHM6Ly9weXBpLnB5dGhvbi5vcmcvcHlwaS9yZXN0cnVjdHVyZWR0ZXh0X2xpbnQK
+PiArIwo+ICsKPiAraW1wb3J0IG9zCj4gK2ltcG9ydCBzdWJwcm9jZXNzCj4gK2ltcG9ydCBzeXMK
+PiArCj4gK2Zyb20gZG9jdXRpbHMucGFyc2Vycy5yc3QgaW1wb3J0IGRpcmVjdGl2ZXMKPiArZnJv
+bSBkb2N1dGlscy5wYXJzZXJzLnJzdCBpbXBvcnQgRGlyZWN0aXZlCj4gK2Zyb20gZG9jdXRpbHMu
+cGFyc2Vycy5yc3QgaW1wb3J0IHJvbGVzCj4gK2Zyb20gZG9jdXRpbHMgaW1wb3J0IG5vZGVzLCBz
+dGF0ZW1hY2hpbmUKPiAraW1wb3J0IHJlc3RydWN0dXJlZHRleHRfbGludAo+ICsKPiArY2xhc3Mg
+RHVtbXlEaXJlY3RpdmUoRGlyZWN0aXZlKToKPiArICAgIHJlcXVpcmVkX2FyZ3VtZW50ID0gMQo+
+ICsgICAgb3B0aW9uYWxfYXJndW1lbnRzID0gMAo+ICsgICAgb3B0aW9uX3NwZWMgPSB7IH0KPiAr
+ICAgIGhhc19jb250ZW50ID0gVHJ1ZQo+ICsKPiArICAgIGRlZiBydW4oc2VsZik6Cj4gKyAgICAg
+ICAgcmV0dXJuIFtdCj4gKwo+ICsjIEZha2UgdGhlIFNwaGlueCBDIERvbWFpbiBkaXJlY3RpdmVz
+IGFuZCByb2xlcwo+ICtkaXJlY3RpdmVzLnJlZ2lzdGVyX2RpcmVjdGl2ZSgnYzpmdW5jdGlvbics
+IER1bW15RGlyZWN0aXZlKQo+ICtkaXJlY3RpdmVzLnJlZ2lzdGVyX2RpcmVjdGl2ZSgnYzp0eXBl
+JywgRHVtbXlEaXJlY3RpdmUpCj4gK3JvbGVzLnJlZ2lzdGVyX2dlbmVyaWNfcm9sZSgnYzpmdW5j
+Jywgbm9kZXMuZW1waGFzaXMpCj4gK3JvbGVzLnJlZ2lzdGVyX2dlbmVyaWNfcm9sZSgnYzp0eXBl
+Jywgbm9kZXMuZW1waGFzaXMpCj4gKwo+ICsjIFdlIGFjY2VwdCBidXQgaWdub3JlIHBhcmFtZXRl
+cnMgdG8gYmUgY29tcGF0aWJsZSB3aXRoIGhvdyB0aGUga2VybmVsIGJ1aWxkCj4gKyMgaW52b2tl
+cyBDSEVDSy4KPiAraWYgbGVuKHN5cy5hcmd2KSA8IDI6Cj4gKyAgICBzeXMuc3RkZXJyLndyaXRl
+KCd1c2FnZToga2VybmVsLWRvYy1yc3QtbGludCBbSUdOT1JFRCBPUFRJT05TXSBGSUxFXG4nKTsK
+PiArICAgIHN5cy5leGl0KDEpCj4gKwo+ICtpbmZpbGUgPSBzeXMuYXJndltsZW4oc3lzLmFyZ3Yp
+IC0gMV0KPiArY21kID0gWydzY3JpcHRzL2tlcm5lbC1kb2MnLCAnLXJzdCcsIGluZmlsZV0KPiAr
+Cj4gK3RyeToKPiArICAgIHAgPSBzdWJwcm9jZXNzLlBvcGVuKGNtZCwgc3Rkb3V0PXN1YnByb2Nl
+c3MuUElQRSwgc3RkZXJyPXN1YnByb2Nlc3MuUElQRSwgdW5pdmVyc2FsX25ld2xpbmVzPVRydWUp
+Cj4gKyAgICBvdXQsIGVyciA9IHAuY29tbXVuaWNhdGUoKQo+ICsKPiArICAgICMgcHl0aG9uMiBu
+ZWVkcyBjb252ZXJzaW9uIHRvIHVuaWNvZGUuCj4gKyAgICAjIHB5dGhvbjMgd2l0aCB1bml2ZXJz
+YWxfbmV3bGluZXM9VHJ1ZSByZXR1cm5zIHN0cmluZ3MuCj4gKyAgICBpZiBzeXMudmVyc2lvbl9p
+bmZvLm1ham9yIDwgMzoKPiArICAgICAgICBvdXQsIGVyciA9IHVuaWNvZGUob3V0LCAndXRmLTgn
+KSwgdW5pY29kZShlcnIsICd1dGYtOCcpCj4gKwo+ICsgICAgIyBrZXJuZWwtZG9jIGVycm9ycwo+
+ICsgICAgc3lzLnN0ZGVyci53cml0ZShlcnIpCj4gKyAgICBpZiBwLnJldHVybmNvZGUgIT0gMDoK
+PiArICAgICAgICBzeXMuZXhpdChwLnJldHVybmNvZGUpCj4gKwo+ICsgICAgIyByZXN0cnVjdHVy
+ZWQgdGV4dCBlcnJvcnMKPiArICAgIGxpbmVzID0gc3RhdGVtYWNoaW5lLnN0cmluZzJsaW5lcyhv
+dXQsIDgsIGNvbnZlcnRfd2hpdGVzcGFjZT1UcnVlKQo+ICsgICAgbGludF9lcnJvcnMgPSByZXN0
+cnVjdHVyZWR0ZXh0X2xpbnQubGludChvdXQsIGluZmlsZSkKPiArICAgIGZvciBlcnJvciBpbiBs
+aW50X2Vycm9yczoKPiArICAgICAgICAjIElnbm9yZSBJTkZPCj4gKyAgICAgICAgaWYgZXJyb3Iu
+bGV2ZWwgPD0gMToKPiArICAgICAgICAgICAgY29udGludWUKPiArCj4gKyAgICAgICAgcHJpbnQo
+ZXJyb3Iuc291cmNlICsgJzogJyArIGVycm9yLnR5cGUgKyAnOiAnICsgZXJyb3IuZnVsbF9tZXNz
+YWdlKQo+ICsgICAgICAgIGlmIGVycm9yLmxpbmUgaXMgbm90IE5vbmU6Cj4gKyAgICAgICAgICAg
+IHByaW50KCdDb250ZXh0OicpCj4gKyAgICAgICAgICAgIHByaW50KCdcdCcgKyBsaW5lc1tlcnJv
+ci5saW5lIC0gMV0pCj4gKyAgICAgICAgICAgIHByaW50KCdcdCcgKyBsaW5lc1tlcnJvci5saW5l
+XSkKPiArCj4gK2V4Y2VwdCBFeGNlcHRpb24gYXMgZToKPiArICAgIHN5cy5zdGRlcnIud3JpdGUo
+c3RyKGUpICsgJ1xuJykKPiArICAgIHN5cy5leGl0KDEpCj4gLS0gCj4gMi4xLjQKPiAKPiAKPiAt
+LSAKPiBKYW5pIE5pa3VsYSwgSW50ZWwgT3BlbiBTb3VyY2UgVGVjaG5vbG9neSBDZW50ZXIKPiAt
+LQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNj
+cmliZSBsaW51eC1tZWRpYSIgaW4KPiB0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21v
+QHZnZXIua2VybmVsLm9yZwo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtl
+cm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbAoKX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlz
+dHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4v
+bGlzdGluZm8vZHJpLWRldmVsCg==
