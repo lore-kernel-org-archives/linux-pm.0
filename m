@@ -1,40 +1,35 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RESEND PATCH v2 3/3] cpufreq: brcmstb-avs-cpufreq: add debugfs
- support
-Date: Wed, 5 Oct 2016 08:57:39 +0530
-Message-ID: <20161005032739.GH4664@vireshk-i7>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RESEND PATCH v2 1/3] dt: cpufreq: brcm: New binding document
+ for brcmstb-avs-cpufreq
+Date: Wed, 5 Oct 2016 08:57:56 +0530
+Message-ID: <20161005032756.GI4664@vireshk-i7>
 References: <1475272561-8446-1-git-send-email-mmayer@broadcom.com>
- <1475272561-8446-4-git-send-email-mmayer@broadcom.com>
+ <1475272561-8446-2-git-send-email-mmayer@broadcom.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1475272561-8446-4-git-send-email-mmayer@broadcom.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Markus Mayer <mmayer@broadcom.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Device Tree List <devicetree@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1475272561-8446-2-git-send-email-mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 30-09-16, 14:56, Markus Mayer wrote:
-> In order to aid debugging, we add a debugfs interface to the driver
-> that allows direct interaction with the AVS co-processor.
+On 30-09-16, 14:55, Markus Mayer wrote:
+> Add the binding document for the new brcmstb-avs-cpufreq driver.
 > 
-> The debugfs interface provides a means for reading all and writing some
-> of the mailbox registers directly from the shell prompt and enables a
-> user to execute the communications protocol between ARM CPU and AVS CPU
-> step-by-step.
-> 
-> This interface should be used for debugging purposes only.
-> 
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+> Signed-off-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 > ---
->  drivers/cpufreq/brcmstb-avs-cpufreq.c | 319 ++++++++++++++++++++++++++++++++++
->  1 file changed, 319 insertions(+)
+>  .../bindings/cpufreq/brcm,stb-avs-cpu-freq.txt     | 77 ++++++++++++++++++++++
+>  MAINTAINERS                                        |  7 ++
+>  2 files changed, 84 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
 
-I am not sure how much useful this is going to be, but I don't have
-any concerns against this as well.
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
 -- 
 viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
