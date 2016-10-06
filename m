@@ -1,64 +1,81 @@
 From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
 Subject: Re: [PATCH 5/8] dt/bindings: Update binding for PM domain idle states
-Date: Thu, 6 Oct 2016 10:06:48 +0200
-Message-ID: <CAMuHMdWxft8o493XN2zg1wj2By7P+qBkrvyQOt7WdBnhPAvSXQ@mail.gmail.com>
-References: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org> <1475699519-109623-6-git-send-email-lina.iyer@linaro.org>
+Date: Thu, 6 Oct 2016 10:09:10 +0200
+Message-ID: <CAMuHMdUKbJ1Mt3viEkbCDmZGHQjGi_E=bxEBSHOB1MMY+qfSYQ@mail.gmail.com>
+References: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org>
+ <1475699519-109623-6-git-send-email-lina.iyer@linaro.org> <CAMuHMdWxft8o493XN2zg1wj2By7P+qBkrvyQOt7WdBnhPAvSXQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1475699519-109623-6-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <CAMuHMdWxft8o493XN2zg1wj2By7P+qBkrvyQOt7WdBnhPAvSXQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Andy Gross <andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Brendan Jackman <brendan.jackman-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Juri.Lelli-5wv7dgnIgG8@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 5, 2016 at 10:31 PM, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> Update DT bindings to describe idle states of PM domains.
+On Thu, Oct 6, 2016 at 10:06 AM, Geert Uytterhoeven
+<geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org> wrote:
+> On Wed, Oct 5, 2016 at 10:31 PM, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>> Update DT bindings to describe idle states of PM domains.
+>>
+>> This patch is based on the original patch by Marc Titinger.
+>>
+>> Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+>> Signed-off-by: Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+>> Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>> ---
+>>  .../devicetree/bindings/power/power_domain.txt     | 36 ++++++++++++++++++++++
+>>  1 file changed, 36 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+>> index 025b5e7..a043315 100644
+>> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+>> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+>> @@ -29,6 +29,10 @@ Optional properties:
+>>     specified by this binding. More details about power domain specifier are
+>>     available in the next section.
+>>
+>> +- domain-idle-states : A phandle of an idle-state that shall be soaked into a
+>> +                generic domain power state. The idle state definitions are
+>> +                compatible with arm,idle-state specified in [1].
+>> +
+>>  Example:
+>>
+>>         power: power-controller@12340000 {
+>> @@ -59,6 +63,36 @@ The nodes above define two power controllers: 'parent' and 'child'.
+>>  Domains created by the 'child' power controller are subdomains of '0' power
+>>  domain provided by the 'parent' power controller.
+>>
+>> +Example 3:
+>> +       parent: power-controller@12340000 {
 >
-> This patch is based on the original patch by Marc Titinger.
+> With W=1, this is gonna trigger:
 >
-> Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-> Signed-off-by: Marc Titinger <mtitinger+renesas-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-> Signed-off-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> ---
->  .../devicetree/bindings/power/power_domain.txt     | 36 ++++++++++++++++++++++
->  1 file changed, 36 insertions(+)
+>     Warning (unit_address_vs_reg): Node foo has a unit name, but no reg property
 >
-> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> index 025b5e7..a043315 100644
-> --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -29,6 +29,10 @@ Optional properties:
->     specified by this binding. More details about power domain specifier are
->     available in the next section.
->
-> +- domain-idle-states : A phandle of an idle-state that shall be soaked into a
-> +                generic domain power state. The idle state definitions are
-> +                compatible with arm,idle-state specified in [1].
-> +
->  Example:
->
->         power: power-controller@12340000 {
-> @@ -59,6 +63,36 @@ The nodes above define two power controllers: 'parent' and 'child'.
->  Domains created by the 'child' power controller are subdomains of '0' power
->  domain provided by the 'parent' power controller.
->
-> +Example 3:
-> +       parent: power-controller@12340000 {
+> Yes, there are pre-existing users in this file.
 
-With W=1, this is gonna trigger:
+Scrap this... switching desktops causes loss of position...
 
-    Warning (unit_address_vs_reg): Node foo has a unit name, but no reg property
+>> +               compatible = "foo,power-controller";
+>> +               reg = <0x12340000 0x1000>;
+>> +               #power-domain-cells = <1>;
+>> +               domain-idle-states = <&DOMAIN_RET, &DOMAIN_PWR_DN>;
+>> +       };
 
-Yes, there are pre-existing users in this file.
++       DOMAIN_RET: state@0 {
++               compatible = "arm,idle-state";
++               entry-latency-us = <1000>;
++               exit-latency-us = <2000>;
++               min-residency-us = <10000>;
 
-> +               compatible = "foo,power-controller";
-> +               reg = <0x12340000 0x1000>;
-> +               #power-domain-cells = <1>;
-> +               domain-idle-states = <&DOMAIN_RET, &DOMAIN_PWR_DN>;
-> +       };
+This one is gonna trigger
+
+Warning (unit_address_vs_reg): Node foo has a unit name, but no reg property
+
++       };
 
 Gr{oetje,eeting}s,
 
