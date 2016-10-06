@@ -1,64 +1,69 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 4/8] PM / Domains: Add fwnode provider to genpd states
-Date: Thu, 6 Oct 2016 14:01:33 +0200
-Message-ID: <CAPDyKFrsLjchkbkqg4O=RfKamO+EgOhZtzw1-_3e5QphLON0XQ@mail.gmail.com>
-References: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org> <1475699519-109623-5-git-send-email-lina.iyer@linaro.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Thu, 6 Oct 2016 14:22:12 +0200
+Message-ID: <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1475699519-109623-5-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f53.google.com ([74.125.82.53]:35703 "EHLO
+        mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752097AbcJFMWP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Oct 2016 08:22:15 -0400
+Received: by mail-wm0-f53.google.com with SMTP id f193so287230443wmg.0
+        for <linux-pm@vger.kernel.org>; Thu, 06 Oct 2016 05:22:14 -0700 (PDT)
+In-Reply-To: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On 5 October 2016 at 22:31, Lina Iyer <lina.iyer@linaro.org> wrote:
-> Save the fwnode for the genpd state in the state node. PM Domain clients
-> may use the fwnode to read in the rest of the properties for the domain
-> state.
+On 20 September 2016 at 12:28, Jon Hunter <jonathanh@nvidia.com> wrote:
+> The Tegra124/210 XUSB subsystem (that consists of both host and device
+> controllers) is partitioned across 3 PM domains which are:
+> - XUSBA: Superspeed logic (for USB 3.0)
+> - XUSBB: Device controller
+> - XUSBC: Host controller
+>
+> These power domains are not nested and can be powered-up and down
+> independently of one another. In practice different scenarios require
+> different combinations of the power domains, for example:
+> - Superspeed host: XUSBA and XUSBC
+> - Superspeed device: XUSBA and XUSBB
+>
+> Although it could be possible to logically nest both the XUSBB and XUSBC
+> domains under the XUSBA, superspeed may not always be used/required and
+> so this would keep it on unnecessarily.
+>
+> Given that Tegra uses device-tree for describing the hardware, it would
+> be ideal that the device-tree 'power-domains' property for generic PM
+> domains could be extended to allow more than one PM domain to be
+> specified. For example, define the following the Tegra210 xHCI device ...
+>
+>         usb@70090000 {
+>                 compatible = "nvidia,tegra210-xusb";
+>                 ...
+>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+>         };
+>
+> This RFC extends the generic PM domain framework to allow a device to
+> define more than one PM domain in the device-tree 'power-domains'
+> property.
 
-What is the "rest"? I assume you mean the non PM domain generic parts,
-but perhaps you could elaborate a bit on that?
+First, I don't really like extending the internal logic of genpd to
+deal with multiple PM domains per device. *If* this really is needed,
+I think we should try to extend the struct device to cover this, then
+make genpd to use it somehow.
 
->
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
->  drivers/base/power/domain.c | 1 +
->  include/linux/pm_domain.h   | 1 +
->  2 files changed, 2 insertions(+)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 368a5b8..52fcdb2 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1937,6 +1937,7 @@ static int read_genpd_state(struct genpd_power_state *genpd_state,
->         latency = entry_latency + exit_latency;
->         genpd_state->power_on_latency_ns = 1000 * latency;
->         genpd_state->power_off_latency_ns = 1000 * entry_latency;
-> +       genpd_state->provider = &state_node->fwnode;
->
->         return 0;
->  }
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 4c9152d..eacfa71 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -39,6 +39,7 @@ struct genpd_power_state {
->         s64 power_off_latency_ns;
->         s64 power_on_latency_ns;
->         s64 residency_ns;
-> +       struct fwnode_handle *provider;
+Second, another way of seeing this is: Depending on the current
+runtime selected configuration you need to re-configure the PM domain
+topology - but the device would still remain in the same PM domain.
 
-I don't think this is a provider, but just a fwnode_handle to a
-domain-idle-state. Therefore, I would suggest you to rename it to
-"fwnode" instead.
+In other words, you would need to remove/add subdomain(s) depending on
+the selected configuration. Would that better reflect the HW?
 
->  };
->
->  struct generic_pm_domain {
-> --
-> 2.7.4
->
+[...]
 
 Kind regards
 Uffe
