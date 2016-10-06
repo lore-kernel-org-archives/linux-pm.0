@@ -1,20 +1,20 @@
 From: Lina Iyer <lina.iyer@linaro.org>
 Subject: Re: [PATCH 3/8] PM / Domains: Allow domain power states to be read
  from DT
-Date: Thu, 6 Oct 2016 09:53:36 -0600
-Message-ID: <20161006155336.GD28930@linaro.org>
+Date: Thu, 6 Oct 2016 09:54:39 -0600
+Message-ID: <20161006155439.GE28930@linaro.org>
 References: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org>
  <1475699519-109623-4-git-send-email-lina.iyer@linaro.org>
  <CAPDyKFqWE=-tMLN-6zKWpb6K2a2bBxkA7q+mSivJFpzNntcupw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:35370 "EHLO
-        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S942177AbcJFPxj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Oct 2016 11:53:39 -0400
-Received: by mail-pf0-f180.google.com with SMTP id s13so11114345pfd.2
-        for <linux-pm@vger.kernel.org>; Thu, 06 Oct 2016 08:53:39 -0700 (PDT)
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:33002 "EHLO
+        mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S942102AbcJFPym (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Oct 2016 11:54:42 -0400
+Received: by mail-pa0-f49.google.com with SMTP id cd13so10722664pac.0
+        for <linux-pm@vger.kernel.org>; Thu, 06 Oct 2016 08:54:42 -0700 (PDT)
 Content-Disposition: inline
 In-Reply-To: <CAPDyKFqWE=-tMLN-6zKWpb6K2a2bBxkA7q+mSivJFpzNntcupw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -64,12 +64,15 @@ On Thu, Oct 06 2016 at 03:47 -0600, Ulf Hansson wrote:
 >
 >/s/read_genpd_state/genpd_parse_state
 >
+Ok.
+
 >> +                                   struct device_node *state_node)
 >> +{
 >> +       int err = 0;
 >
 >No need to assign err to 0.
 >
+Will fix.
 >> +       u32 latency;
 >> +       u32 residency;
 >> +       u32 entry_latency, exit_latency;
@@ -107,6 +110,7 @@ On Thu, Oct 06 2016 at 03:47 -0600, Ulf Hansson wrote:
 >->power_on_latency_ns and the ->power_off_latency_ns, when it
 >validates which idle state you are allowed to enter.
 >
+Good catch.
 >> +       genpd_state->power_on_latency_ns = 1000 * latency;
 >> +       genpd_state->power_off_latency_ns = 1000 * entry_latency;
 >> +
@@ -139,7 +143,6 @@ On Thu, Oct 06 2016 at 03:47 -0600, Ulf Hansson wrote:
 >I think it's better to use of_count_phandle_with_args() to find out
 >the number of phandles.
 >
-
 >> +
 >> +       st = kcalloc(count, sizeof(*st), GFP_KERNEL);
 >> +       if (!st)
@@ -151,11 +154,6 @@ On Thu, Oct 06 2016 at 03:47 -0600, Ulf Hansson wrote:
 >Isn't this a case of when it would be convenient to use the
 >of_phandle_iterator*() APIs?
 >
-
-Hmm.. But if we move back to static allocation of states, we won't need
-any of this ;)
-
--- Lina
 >> +               if (!np) {
 >> +                       ret = -EFAULT;
 >> +                       break;
