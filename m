@@ -1,42 +1,49 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RESEND PATCH v2 2/3] cpufreq: brcmstb-avs-cpufreq: AVS CPUfreq
- driver for Broadcom STB SoCs
-Date: Thu, 6 Oct 2016 09:31:39 +0530
-Message-ID: <20161006040139.GA17619@vireshk-i7>
-References: <1475272561-8446-1-git-send-email-mmayer@broadcom.com>
- <1475272561-8446-3-git-send-email-mmayer@broadcom.com>
- <20161005032509.GG4664@vireshk-i7>
- <CAGt4E5s9UBam4RKsq3k1P77-81NR-8AeQi==7dBNnp37xxtr_g@mail.gmail.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that require
+ multiple domains
+Date: Thu, 06 Oct 2016 11:34:54 +0530
+Message-ID: <57F5E986.40704@codeaurora.org>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAGt4E5s9UBam4RKsq3k1P77-81NR-8AeQi==7dBNnp37xxtr_g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Markus Mayer <markus.mayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:38624 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752187AbcJFGFA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Oct 2016 02:05:00 -0400
+In-Reply-To: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 
-Thanks for accepting all the comments :)
 
-On 05-10-16, 14:04, Markus Mayer wrote:
-> Is there an easy way for me to know via the framework whether init is
-> being called for the first time vs. init is being called on a
-> different core after a previous attempt to initialize on another core
-> failed?
+On 09/20/2016 03:58 PM, Jon Hunter wrote:
+> The Tegra124/210 XUSB subsystem (that consists of both host and device
+> controllers) is partitioned across 3 PM domains which are:
+> - XUSBA: Superspeed logic (for USB 3.0)
+> - XUSBB: Device controller
+> - XUSBC: Host controller
 > 
-> I could use a driver-global variable for the driver to remember if it
-> has been initialized, but that seems a bit hacky.
+> These power domains are not nested and can be powered-up and down
+> independently of one another. In practice different scenarios require
+> different combinations of the power domains, for example:
+> - Superspeed host: XUSBA and XUSBC
+> - Superspeed device: XUSBA and XUSBB
+> 
+> Although it could be possible to logically nest both the XUSBB and XUSBC
+> domains under the XUSBA, superspeed may not always be used/required and
+> so this would keep it on unnecessarily.
 
-You don't really need to have any special code here, specially for the case that
-may never get hit. For example, if we fail to initialize something for CPU0,
-cpufreq core will try calling this routine for other CPUs as well. I don't think
-there is anything wrong in letting cpufreq core trying that. Why stop it or
-return early? It wouldn't happen normally, unless there is a bug in there.
+Hey Jon, so does this RFC provide a way to just specify multiple Powerdomains
+for a device (which then will *all* be powered on/off together) or does
+it also provide for more granular control of these powerdomains?
+The above statement seems to suggest you would need more granular control
+of these powerdomains (like keeping XUSBA off in case superspeed it not
+needed) but I can't seem to figure out how you achieve it with this series.
 
+- Rajendra
 -- 
-viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
