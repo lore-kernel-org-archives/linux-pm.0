@@ -1,66 +1,137 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Thu, 6 Oct 2016 09:25:44 +0100
-Message-ID: <8ba7aa10-0c2f-98ca-c7bd-00e1724e5972@nvidia.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <57F5E986.40704@codeaurora.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/8] PM / Domains: Make genpd state allocation dynamic
+Date: Thu, 6 Oct 2016 10:36:57 +0200
+Message-ID: <CAPDyKFpNnJxueNNk9g7KzHPAsJVQ8xeiaw8OHMevBZ3myhd-xA@mail.gmail.com>
+References: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org>
+ <1475699519-109623-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:17707 "EHLO
-        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751027AbcJFIZ4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Oct 2016 04:25:56 -0400
-In-Reply-To: <57F5E986.40704@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1475699519-109623-2-git-send-email-lina.iyer@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Axel Haslam <ahaslam+renesas@baylibre.com>, Brendan Jackman <brendan.jackman@arm.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Andy Gross <andy.gross@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 
-Hi Rajendra,
+On 5 October 2016 at 22:31, Lina Iyer <lina.iyer@linaro.org> wrote:
+> Allow PM Domain states to be defined dynamically by the drivers. This
+> removes the limitation on the maximum number of states possible for a
+> domain.
+>
+> Cc: Axel Haslam <ahaslam+renesas@baylibre.com>
+> Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>  arch/arm/mach-imx/gpc.c     | 17 ++++++++++-------
+>  drivers/base/power/domain.c | 10 ----------
+>  include/linux/pm_domain.h   |  4 +---
+>  3 files changed, 11 insertions(+), 20 deletions(-)
+>
+> diff --git a/arch/arm/mach-imx/gpc.c b/arch/arm/mach-imx/gpc.c
+> index 0df062d..b92dad5 100644
+> --- a/arch/arm/mach-imx/gpc.c
+> +++ b/arch/arm/mach-imx/gpc.c
+> @@ -380,13 +380,6 @@ static struct pu_domain imx6q_pu_domain = {
+>                 .name = "PU",
+>                 .power_off = imx6q_pm_pu_power_off,
+>                 .power_on = imx6q_pm_pu_power_on,
+> -               .states = {
+> -                       [0] = {
+> -                               .power_off_latency_ns = 25000,
+> -                               .power_on_latency_ns = 2000000,
+> -                       },
+> -               },
+> -               .state_count = 1,
+>         },
+>  };
+>
+> @@ -430,6 +423,16 @@ static int imx_gpc_genpd_init(struct device *dev, struct regulator *pu_reg)
+>         if (!IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS))
+>                 return 0;
+>
+> +       imx6q_pu_domain.base.states = devm_kzalloc(dev,
+> +                                       sizeof(*imx6q_pu_domain.base.states),
+> +                                       GFP_KERNEL);
+> +       if (!imx6q_pu_domain.base.states)
+> +               return -ENOMEM;
+> +
+> +       imx6q_pu_domain.base.states[0].power_off_latency_ns = 25000;
+> +       imx6q_pu_domain.base.states[0].power_on_latency_ns = 2000000;
+> +       mx6q_pu_domain.base.state_count = 1,
+> +
+>         pm_genpd_init(&imx6q_pu_domain.base, NULL, false);
+>         return of_genpd_add_provider_onecell(dev->of_node,
+>                                              &imx_gpc_onecell_data);
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index e023066..740afa9 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1325,16 +1325,6 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+>                 genpd->dev_ops.start = pm_clk_resume;
+>         }
+>
+> -       if (genpd->state_idx >= GENPD_MAX_NUM_STATES) {
+> -               pr_warn("Initial state index out of bounds.\n");
+> -               genpd->state_idx = GENPD_MAX_NUM_STATES - 1;
+> -       }
+> -
+> -       if (genpd->state_count > GENPD_MAX_NUM_STATES) {
+> -               pr_warn("Limiting states to  %d\n", GENPD_MAX_NUM_STATES);
+> -               genpd->state_count = GENPD_MAX_NUM_STATES;
+> -       }
+> -
+>         /* Use only one "off" state if there were no states declared */
+>         if (genpd->state_count == 0)
+>                 genpd->state_count = 1;
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index a09fe5c..bd1ffb9 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -19,8 +19,6 @@
+>  /* Defines used for the flags field in the struct generic_pm_domain */
+>  #define GENPD_FLAG_PM_CLK      (1U << 0) /* PM domain uses PM clk */
+>
+> -#define GENPD_MAX_NUM_STATES   8 /* Number of possible low power states */
+> -
+>  enum gpd_status {
+>         GPD_STATE_ACTIVE = 0,   /* PM domain is active */
+>         GPD_STATE_POWER_OFF,    /* PM domain is off */
+> @@ -70,7 +68,7 @@ struct generic_pm_domain {
+>         void (*detach_dev)(struct generic_pm_domain *domain,
+>                            struct device *dev);
+>         unsigned int flags;             /* Bit field of configs for genpd */
+> -       struct genpd_power_state states[GENPD_MAX_NUM_STATES];
+> +       struct genpd_power_state *states;
+>         unsigned int state_count; /* number of states */
+>         unsigned int state_idx; /* state that genpd will go to when off */
+>
+> --
+> 2.7.4
+>
 
-On 06/10/16 07:04, Rajendra Nayak wrote:
-> 
-> On 09/20/2016 03:58 PM, Jon Hunter wrote:
->> The Tegra124/210 XUSB subsystem (that consists of both host and device
->> controllers) is partitioned across 3 PM domains which are:
->> - XUSBA: Superspeed logic (for USB 3.0)
->> - XUSBB: Device controller
->> - XUSBC: Host controller
->>
->> These power domains are not nested and can be powered-up and down
->> independently of one another. In practice different scenarios require
->> different combinations of the power domains, for example:
->> - Superspeed host: XUSBA and XUSBC
->> - Superspeed device: XUSBA and XUSBB
->>
->> Although it could be possible to logically nest both the XUSBB and XUSBC
->> domains under the XUSBA, superspeed may not always be used/required and
->> so this would keep it on unnecessarily.
-> 
-> Hey Jon, so does this RFC provide a way to just specify multiple Powerdomains
-> for a device (which then will *all* be powered on/off together) or does
-> it also provide for more granular control of these powerdomains?
+In general I like the improvement, but..
 
-Only to specify multiple power-domains for a device and not the later.
+This change implies that ->states may very well be NULL. This isn't
+validated by genpd's internal logic when power off/on the domain
+(genpd_power_on|off(), __default_power_down_ok()). You need to fix
+this, somehow.
 
-> The above statement seems to suggest you would need more granular control
-> of these powerdomains (like keeping XUSBA off in case superspeed it not
-> needed) but I can't seem to figure out how you achieve it with this series.
+Perhaps the easiest solutions is, when pm_genpd_init() finds that
+->state is NULL, that we allocate a struct genpd_power_state with
+array size of 1 and assign it to ->states. Although, doing this also
+means you need to track that genpd was responsible for the the
+allocation, so it must also free the data from within genpd_remove().
 
-It is an interesting point but today we have always kept the superspeed
-partition on if the device is configured for superspeed regardless of
-what is actually connected. I will check to see if the h/w would allow
-us to turn it off if a non-superspeed device is in use but I did not
-think so.
+Unless you have other ideas!?
 
-Do you have any interesting use-cases that would make use of this or
-require other such enhancements?
-
-Cheers
-Jon
-
--- 
-nvpublic
+Kind regards
+Uffe
