@@ -1,93 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFC/RFT][PATCH v3] cpufreq: intel_pstate: Proportional algorithm for Atom
-Date: Thu, 06 Oct 2016 14:07:51 +0200
-Message-ID: <4670992.mQGUoxbPr3@vostro.rjw.lan>
-References: <1565019.BFYQPSZAnN@vostro.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 4/8] PM / Domains: Add fwnode provider to genpd states
+Date: Thu, 6 Oct 2016 14:01:33 +0200
+Message-ID: <CAPDyKFrsLjchkbkqg4O=RfKamO+EgOhZtzw1-_3e5QphLON0XQ@mail.gmail.com>
+References: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org> <1475699519-109623-5-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56284 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1755717AbcJFMBP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Oct 2016 08:01:15 -0400
-In-Reply-To: <1565019.BFYQPSZAnN@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1475699519-109623-5-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 5 October 2016 at 22:31, Lina Iyer <lina.iyer@linaro.org> wrote:
+> Save the fwnode for the genpd state in the state node. PM Domain clients
+> may use the fwnode to read in the rest of the properties for the domain
+> state.
 
-The PID algorithm used by the intel_pstate driver tends to drive
-performance to the minimum for workloads with utilization below the
-setpoint, which is undesirable, so replace it with a modified
-"proportional" algorithm on Atom.
+What is the "rest"? I assume you mean the non PM domain generic parts,
+but perhaps you could elaborate a bit on that?
 
-The new algorithm will set the new P-state to be 1.25 times the
-available maximum times the (frequency-invariant) utilization during
-the previous sampling period except when the target P-state computed
-this way is lower than the average P-state during the previous
-sampling period.  In the latter case, it will increase the target by
-50% of the difference between it and the average P-state to prevent
-performance from dropping down too fast in some cases.
+>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>  drivers/base/power/domain.c | 1 +
+>  include/linux/pm_domain.h   | 1 +
+>  2 files changed, 2 insertions(+)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 368a5b8..52fcdb2 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1937,6 +1937,7 @@ static int read_genpd_state(struct genpd_power_state *genpd_state,
+>         latency = entry_latency + exit_latency;
+>         genpd_state->power_on_latency_ns = 1000 * latency;
+>         genpd_state->power_off_latency_ns = 1000 * entry_latency;
+> +       genpd_state->provider = &state_node->fwnode;
+>
+>         return 0;
+>  }
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 4c9152d..eacfa71 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -39,6 +39,7 @@ struct genpd_power_state {
+>         s64 power_off_latency_ns;
+>         s64 power_on_latency_ns;
+>         s64 residency_ns;
+> +       struct fwnode_handle *provider;
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+I don't think this is a provider, but just a fwnode_handle to a
+domain-idle-state. Therefore, I would suggest you to rename it to
+"fwnode" instead.
 
-v1 -> v2:
-  It is better to compare the average P-state to the target (than to
-  compare the average perf ratio to the utilization), because that takes
-  turbo into account more accurately.
+>  };
+>
+>  struct generic_pm_domain {
+> --
+> 2.7.4
+>
 
-  Plus if the target is below the min, it is better to compare the min
-  to the average instead of comparing the target to it.
-
-v2 -> v3:
-  Fix a typo in the ternary operator reported by Doug.
-
----
- drivers/cpufreq/intel_pstate.c |   22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1232,6 +1232,7 @@ static inline int32_t get_target_pstate_
- {
- 	struct sample *sample = &cpu->sample;
- 	int32_t busy_frac, boost;
-+	int target, avg_pstate;
- 
- 	busy_frac = div_fp(sample->mperf, sample->tsc);
- 
-@@ -1242,7 +1243,26 @@ static inline int32_t get_target_pstate_
- 		busy_frac = boost;
- 
- 	sample->busy_scaled = busy_frac * 100;
--	return get_avg_pstate(cpu) - pid_calc(&cpu->pid, sample->busy_scaled);
-+
-+	target = limits->no_turbo || limits->turbo_disabled ?
-+			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
-+	target += target >> 2;
-+	target = mul_fp(target, busy_frac);
-+	if (target < cpu->pstate.min_pstate)
-+		target = cpu->pstate.min_pstate;
-+
-+	/*
-+	 * If the average P-state during the previous cycle was higher than the
-+	 * current target, add 50% of the difference to the target to reduce
-+	 * possible performance oscillations and offset possible performance
-+	 * loss related to moving the workload from one CPU to another within
-+	 * a package/module.
-+	 */
-+	avg_pstate = get_avg_pstate(cpu);
-+	if (avg_pstate > target)
-+		target += (avg_pstate - target) >> 1;
-+
-+	return target;
- }
- 
- static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
-
+Kind regards
+Uffe
