@@ -1,53 +1,80 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/8] PM / Domain: Add residency property to genpd states
-Date: Thu, 6 Oct 2016 10:38:52 +0200
-Message-ID: <CAPDyKFqw-yo8Ha-PJP3z1wc64Nq1QVr=U4V=0HEEh+BEPd6fKA@mail.gmail.com>
-References: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org> <1475699519-109623-3-git-send-email-lina.iyer@linaro.org>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: [PATCH V1 08/10] Documentation: dt: thermal: da9062/61 TJUNC
+ temperature binding
+Date: Thu, 6 Oct 2016 09:43:31 +0100
+Message-ID: <3a643792408aa4a15cbf89c4ac9e61a63e443981.1475743411.git.stwiss.opensource@diasemi.com>
+References: <cover.1475743411.git.stwiss.opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f44.google.com ([74.125.82.44]:37573 "EHLO
-        mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S941845AbcJFIiy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Oct 2016 04:38:54 -0400
-Received: by mail-wm0-f44.google.com with SMTP id b201so31253251wmb.0
-        for <linux-pm@vger.kernel.org>; Thu, 06 Oct 2016 01:38:54 -0700 (PDT)
-In-Reply-To: <1475699519-109623-3-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1475743411.git.stwiss.opensource@diasemi.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: DEVICETREE <devicetree@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
 
-On 5 October 2016 at 22:31, Lina Iyer <lina.iyer@linaro.org> wrote:
-> Residency of a domain's idle state indicates that the minimum idle time
-> for the domain's idle state to be beneficial for power. Add the
-> parameter to the state node. Future patches, will use the residency
-> value in the genpd governor to determine if it is worth while to enter
-> an idle state.
->
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+Device tree binding information for DA9062 and DA9061 thermal junction
+temperature monitor.
 
-Kind regards
-Uffe
+Binding descriptions for the DA9061 and DA9062 thermal TJUNC supervisor
+device driver, using a single THERMAL_TRIP_HOT trip-wire and allowing for a
+configurable polling period for over-temperature polling.
 
-> ---
->  include/linux/pm_domain.h | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index bd1ffb9..c113713 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -38,6 +38,7 @@ struct gpd_dev_ops {
->  struct genpd_power_state {
->         s64 power_off_latency_ns;
->         s64 power_on_latency_ns;
-> +       s64 residency_ns;
->  };
->
->  struct generic_pm_domain {
-> --
-> 2.7.4
->
+Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
+
+---
+This patch applies against linux-next and v4.8
+
+Hi,
+
+This patch depends on the acceptance of the main code for the onkey:
+  [PATCH V1 5/10] thermal: da9061: TJUNC temperature driver
+
+Regards,
+Steve Twiss, Dialog Semiconductor Ltd.
+
+
+ .../devicetree/bindings/thermal/da9062-thermal.txt | 30 ++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/da9062-thermal.txt
+
+diff --git a/Documentation/devicetree/bindings/thermal/da9062-thermal.txt b/Documentation/devicetree/bindings/thermal/da9062-thermal.txt
+new file mode 100644
+index 0000000..338de2f
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/da9062-thermal.txt
+@@ -0,0 +1,30 @@
++* Dialog DA9062/61 TJUNC Thermal Module
++
++This module is part of the DA9061/DA9062. For more details about entire
++DA9062 and DA9061 chips see Documentation/devicetree/bindings/mfd/da9062.txt
++
++Junction temperature thermal module uses an interrupt signal to identify
++high THERMAL_TRIP_HOT temperatures for the PMIC device.
++
++Required properties:
++
++- compatible: should be one of:
++        dlg,da9061-thermal
++        dlg,da9062-thermal
++
++Optional properties:
++
++- dlg,tjunc-temp-polling-period-ms : Specify the polling period, measured
++    in milliseconds, between thermal zone device update checks.
++
++Example:
++
++	pmic0: da9062@58 {
++
++		thermal {
++			compatible = "dlg,da9062-thermal";
++			dlg,tjunc-temp-polling-period-ms = <3000>;
++		};
++
++	};
++
+-- 
+end-of-patch for PATCH V1
