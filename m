@@ -1,101 +1,42 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [RFC/RFT][PATCH v2] cpufreq: intel_pstate: Proportional algorithm for Atom
-Date: Wed, 5 Oct 2016 16:58:40 -0700
-Message-ID: <002501d21f64$67356970$35a03c50$@net>
-References: <1565019.BFYQPSZAnN@vostro.rjw.lan> rlwTbczQYEcWqrlwVb93qM
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RESEND PATCH v2 2/3] cpufreq: brcmstb-avs-cpufreq: AVS CPUfreq
+ driver for Broadcom STB SoCs
+Date: Thu, 6 Oct 2016 09:31:39 +0530
+Message-ID: <20161006040139.GA17619@vireshk-i7>
+References: <1475272561-8446-1-git-send-email-mmayer@broadcom.com>
+ <1475272561-8446-3-git-send-email-mmayer@broadcom.com>
+ <20161005032509.GG4664@vireshk-i7>
+ <CAGt4E5s9UBam4RKsq3k1P77-81NR-8AeQi==7dBNnp37xxtr_g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: rlwTbczQYEcWqrlwVb93qM
-Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Linux PM list' <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAGt4E5s9UBam4RKsq3k1P77-81NR-8AeQi==7dBNnp37xxtr_g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Markus Mayer <markus.mayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+Thanks for accepting all the comments :)
 
-It doesn't compile for me. See further down.
+On 05-10-16, 14:04, Markus Mayer wrote:
+> Is there an easy way for me to know via the framework whether init is
+> being called for the first time vs. init is being called on a
+> different core after a previous attempt to initialize on another core
+> failed?
+> 
+> I could use a driver-global variable for the driver to remember if it
+> has been initialized, but that seems a bit hacky.
 
-On 2016.10.05 06:15 Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> The PID algorithm used by the intel_pstate driver tends to drive
-> performance to the minimum for workloads with utilization below the
-> setpoint, which is undesirable, so replace it with a modified
-> "proportional" algorithm on Atom.
->
-> The new algorithm will set the new P-state to be 1.25 times the
-> available maximum times the (frequency-invariant) utilization during
-> the previous sampling period except when the target P-state computed
-> this way is lower than the average P-state during the previous
-> sampling period.  In the latter case, it will increase the target by
-> 50% of the difference between it and the average P-state to prevent
-> performance from dropping down too fast in some cases.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->
-> It is better to compare the average P-state to the target (than to
-> compare the average perf ratio to the utilization), because that takes
-> turbo into account more accurately.
->
-> Plus if the target is below the min, it is better to compare the min
-> to the average instead of comparing the target to it.
->
-> ---
-> drivers/cpufreq/intel_pstate.c |   22 +++++++++++++++++++++-
-> 1 file changed, 21 insertions(+), 1 deletion(-)
->
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -1232,6 +1232,7 @@ static inline int32_t get_target_pstate_
->  {
-> 	struct sample *sample = &cpu->sample;
-> 	int32_t busy_frac, boost;
-> +	int target, avg_pstate;
-> 
-> 	busy_frac = div_fp(sample->mperf, sample->tsc);
-> 
-> @@ -1242,7 +1243,26 @@ static inline int32_t get_target_pstate_
->  		busy_frac = boost;
-> 
-> 	sample->busy_scaled = busy_frac * 100;
-> -	return get_avg_pstate(cpu) - pid_calc(&cpu->pid, sample->busy_scaled);
-> +
-> +	target = limits->no_turbo || limits->turbo_disabled :
-	                                                    ^
-	                                                   ^^^
-For proper conditional expression syntax, shouldn't that be a "?" ?
+You don't really need to have any special code here, specially for the case that
+may never get hit. For example, if we fail to initialize something for CPU0,
+cpufreq core will try calling this routine for other CPUs as well. I don't think
+there is anything wrong in letting cpufreq core trying that. Why stop it or
+return early? It wouldn't happen normally, unless there is a bug in there.
 
-I can not get this patch to compile,
-but if I change that ":" to a "?" (as in the previous version of this patch)
-it compiles.
-
-> +			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
-> +	target += target >> 2;
-> +	target = mul_fp(target, busy_frac);
-> +	if (target < cpu->pstate.min_pstate)
-> +		target = cpu->pstate.min_pstate;
-> +
-> +	/*
-> +	 * If the average P-state during the previous cycle was higher than the
-> +	 * current target, add 50% of the difference to the target to reduce
-> +	 * possible performance oscillations and offset possible performance
-> +	 * loss related to moving the workload from one CPU to another within
-> +	 * a package/module.
-> +	 */
-> +	avg_pstate = get_avg_pstate(cpu);
-> +	if (avg_pstate > target)
-> +		target += (avg_pstate - target) >> 1;
-> +
-> +	return target;
->  }
-> 
->  static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
->
-> --
+-- 
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
