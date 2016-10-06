@@ -1,73 +1,70 @@
-From: Steve Twiss <stwiss.opensource@diasemi.com>
-Subject: [PATCH V1 10/10] MAINTAINERS: da9062/61 updates to the Dialog
- Semiconductor search terms
-Date: Thu, 6 Oct 2016 09:43:31 +0100
-Message-ID: <7b6327b7626d7b7ce35db79d78a228107d6da847.1475743411.git.stwiss.opensource@diasemi.com>
-References: <cover.1475743411.git.stwiss.opensource@diasemi.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that require
+ multiple domains
+Date: Thu, 06 Oct 2016 14:13:42 +0530
+Message-ID: <57F60EBE.8010509@codeaurora.org>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com> <57F5E986.40704@codeaurora.org> <8ba7aa10-0c2f-98ca-c7bd-00e1724e5972@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1475743411.git.stwiss.opensource@diasemi.com>
+In-Reply-To: <8ba7aa10-0c2f-98ca-c7bd-00e1724e5972@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
-Cc: DEVICETREE <devicetree@vger.kernel.org>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Support Opensource <support.opensource@diasemi.com>
+To: Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Steve Twiss <stwiss.opensource@diasemi.com>
 
-Hi,
+On 10/06/2016 01:55 PM, Jon Hunter wrote:
+> Hi Rajendra,
+> 
+> On 06/10/16 07:04, Rajendra Nayak wrote:
+>>
+>> On 09/20/2016 03:58 PM, Jon Hunter wrote:
+>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
+>>> controllers) is partitioned across 3 PM domains which are:
+>>> - XUSBA: Superspeed logic (for USB 3.0)
+>>> - XUSBB: Device controller
+>>> - XUSBC: Host controller
+>>>
+>>> These power domains are not nested and can be powered-up and down
+>>> independently of one another. In practice different scenarios require
+>>> different combinations of the power domains, for example:
+>>> - Superspeed host: XUSBA and XUSBC
+>>> - Superspeed device: XUSBA and XUSBB
+>>>
+>>> Although it could be possible to logically nest both the XUSBB and XUSBC
+>>> domains under the XUSBA, superspeed may not always be used/required and
+>>> so this would keep it on unnecessarily.
+>>
+>> Hey Jon, so does this RFC provide a way to just specify multiple Powerdomains
+>> for a device (which then will *all* be powered on/off together) or does
+>> it also provide for more granular control of these powerdomains?
+> 
+> Only to specify multiple power-domains for a device and not the later.
+> 
+>> The above statement seems to suggest you would need more granular control
+>> of these powerdomains (like keeping XUSBA off in case superspeed it not
+>> needed) but I can't seem to figure out how you achieve it with this series.
+> 
+> It is an interesting point but today we have always kept the superspeed
+> partition on if the device is configured for superspeed regardless of
+> what is actually connected. I will check to see if the h/w would allow
+> us to turn it off if a non-superspeed device is in use but I did not
+> think so.
+> 
+> Do you have any interesting use-cases that would make use of this or
+> require other such enhancements?
 
-Dialog Semiconductor support would like to add to the MAINTAINERS search
-terms. This update will allow us to follow files for device tree bindings
-and source code relating to input onkey drivers, chip thermal monitoring
-and watchdog timers.
+We do have atleast a few devices which need to control multiple power domains,
+I will need to look more to see if any of them can be controlled individually.
+The downstream code we have models these (powerdomains) as regulators and
+the drivers hence have individual control on each (specifying multiple -supply's
+in DT)
+Regardless, the idea of being able to specify more than one powerdomain
+associated to a device seems quite useful, though providing a way for the
+driver to control them individually seems tricky.
 
-Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
-
----
-This patch applies against linux-next and v4.8
-
-Hi,
-
-This patch depends on acceptance of the following from this patch set:
-
-- [PATCH V1 5/10] PMIC temperature monitoring
-
-and also from the following binding file changes:
-
-- [PATCH V1 6/10] Binding for onkey
-- [PATCH V1 7/10] Binding for watchdog
-- [PATCH V1 8/10] Binding for thermal
-
-Regards,
-Steve Twiss, Dialog Semiconductor Ltd.
-
-
- MAINTAINERS | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f593300..a7fd809 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3752,7 +3752,10 @@ W:	http://www.dialog-semiconductor.com/products
- S:	Supported
- F:	Documentation/hwmon/da90??
- F:	Documentation/devicetree/bindings/mfd/da90*.txt
-+F:	Documentation/devicetree/bindings/input/da90??-onkey.txt
-+F:	Documentation/devicetree/bindings/thermal/da90??-thermal.txt
- F:	Documentation/devicetree/bindings/regulator/da92*.txt
-+F:	Documentation/devicetree/bindings/watchdog/da92??-wdt.txt
- F:	Documentation/devicetree/bindings/sound/da[79]*.txt
- F:	drivers/gpio/gpio-da90??.c
- F:	drivers/hwmon/da90??-hwmon.c
-@@ -3767,6 +3770,7 @@ F:	drivers/power/da9052-battery.c
- F:	drivers/power/da91??-*.c
- F:	drivers/regulator/da903x.c
- F:	drivers/regulator/da9???-regulator.[ch]
-+F:	drivers/thermal/da90??-thermal.c
- F:	drivers/rtc/rtc-da90??.c
- F:	drivers/video/backlight/da90??_bl.c
- F:	drivers/watchdog/da90??_wdt.c
 -- 
-end-of-patch for PATCH V1
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
