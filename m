@@ -1,51 +1,75 @@
-From: Markus Mayer <markus.mayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Subject: Re: [RESEND PATCH v2 2/3] cpufreq: brcmstb-avs-cpufreq: AVS CPUfreq
- driver for Broadcom STB SoCs
-Date: Thu, 6 Oct 2016 07:51:59 -0700
-Message-ID: <CAGt4E5sWLbGO7b7mX5CHKRDbtp5iqaapbV=YUJbRVHyCeJL8nQ@mail.gmail.com>
-References: <1475272561-8446-1-git-send-email-mmayer@broadcom.com>
- <1475272561-8446-3-git-send-email-mmayer@broadcom.com> <20161005032509.GG4664@vireshk-i7>
- <CAGt4E5s9UBam4RKsq3k1P77-81NR-8AeQi==7dBNnp37xxtr_g@mail.gmail.com> <20161006040139.GA17619@vireshk-i7>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH 1/8] PM / Domains: Make genpd state allocation dynamic
+Date: Thu, 6 Oct 2016 09:40:52 -0600
+Message-ID: <20161006154052.GB28930@linaro.org>
+References: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org>
+ <1475699519-109623-2-git-send-email-lina.iyer@linaro.org>
+ <CAPDyKFpNnJxueNNk9g7KzHPAsJVQ8xeiaw8OHMevBZ3myhd-xA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20161006040139.GA17619@vireshk-i7>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:34538 "EHLO
+        mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754408AbcJFPkz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Oct 2016 11:40:55 -0400
+Received: by mail-pa0-f46.google.com with SMTP id rz1so10533787pab.1
+        for <linux-pm@vger.kernel.org>; Thu, 06 Oct 2016 08:40:55 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFpNnJxueNNk9g7KzHPAsJVQ8xeiaw8OHMevBZ3myhd-xA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-On 5 October 2016 at 21:01, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> Thanks for accepting all the comments :)
->
-> On 05-10-16, 14:04, Markus Mayer wrote:
->> Is there an easy way for me to know via the framework whether init is
->> being called for the first time vs. init is being called on a
->> different core after a previous attempt to initialize on another core
->> failed?
+On Thu, Oct 06 2016 at 02:37 -0600, Ulf Hansson wrote:
+>On 5 October 2016 at 22:31, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> Allow PM Domain states to be defined dynamically by the drivers. This
+>> removes the limitation on the maximum number of states possible for a
+>> domain.
 >>
->> I could use a driver-global variable for the driver to remember if it
->> has been initialized, but that seems a bit hacky.
+>> Cc: Axel Haslam <ahaslam+renesas@baylibre.com>
+>> Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+<...>
+>> -#define GENPD_MAX_NUM_STATES   8 /* Number of possible low power states */
+>> -
+>>  enum gpd_status {
+>>         GPD_STATE_ACTIVE = 0,   /* PM domain is active */
+>>         GPD_STATE_POWER_OFF,    /* PM domain is off */
+>> @@ -70,7 +68,7 @@ struct generic_pm_domain {
+>>         void (*detach_dev)(struct generic_pm_domain *domain,
+>>                            struct device *dev);
+>>         unsigned int flags;             /* Bit field of configs for genpd */
+>> -       struct genpd_power_state states[GENPD_MAX_NUM_STATES];
+>> +       struct genpd_power_state *states;
+>>         unsigned int state_count; /* number of states */
+>>         unsigned int state_idx; /* state that genpd will go to when off */
+>>
+>> --
+>> 2.7.4
+>>
 >
-> You don't really need to have any special code here, specially for the case that
-> may never get hit. For example, if we fail to initialize something for CPU0,
-> cpufreq core will try calling this routine for other CPUs as well. I don't think
-> there is anything wrong in letting cpufreq core trying that. Why stop it or
-> return early? It wouldn't happen normally, unless there is a bug in there.
+>In general I like the improvement, but..
+>
+>This change implies that ->states may very well be NULL. This isn't
+>validated by genpd's internal logic when power off/on the domain
+>(genpd_power_on|off(), __default_power_down_ok()). You need to fix
+>this, somehow.
+>
+Good point.
 
-During early development, when the driver couldn't fully register, I
-would see the init() function called four times, i.e. once for each
-core. If the first call succeeded, that was it. It would only get
-called once. But if it failed, all cores would try to register. And I
-wanted to avoid spilling the same error message four times.
-
-I'll look at that again. It may have had something to do with how the
-driver worked back then. If it doesn't happen anymore, I'll just get
-rid of this code.
+>Perhaps the easiest solutions is, when pm_genpd_init() finds that
+>->state is NULL, that we allocate a struct genpd_power_state with
+>array size of 1 and assign it to ->states. Although, doing this also
+>means you need to track that genpd was responsible for the the
+>allocation, so it must also free the data from within genpd_remove().
+>
+>Unless you have other ideas!?
+>
+I can think of some hacks, but they are uglier than the problem we are
+trying to solve. We could drop this patch. Real world situations would
+not have more than 8 states and if there is one, we can think about it
+then.
 
 Thanks,
--Markus
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Lina
