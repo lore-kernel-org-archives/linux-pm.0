@@ -1,80 +1,61 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: Re: [PATCH v5 5/9] x86/sysctl: Add sysctl for ITMT scheduling
- feature
-Date: Thu, 06 Oct 2016 10:37:46 -0700
-Message-ID: <1475775466.3916.319.camel@linux.intel.com>
-References: <1475322326-160112-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-          <1475322326-160112-6-git-send-email-srinivas.pandruvada@linux.intel.com>
-          <alpine.DEB.2.20.1610051624590.8953@nanos>
-         <1475684673.3916.299.camel@linux.intel.com>
-         <alpine.DEB.2.20.1610061307030.22338@nanos>
+From: "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 2/2] iommu/exynos: Add proper runtime pm support
+Date: Thu, 6 Oct 2016 19:37:56 +0200
+Message-ID: <20161006173756.GK3296@wotan.suse.de>
+References: <1475136751-31340-1-git-send-email-m.szyprowski@samsung.com>
+	<CGME20160929081240eucas1p231c1ab5c5936886cbec6bc3f5267c940@eucas1p2.samsung.com>
+	<1475136751-31340-3-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1610061307030.22338@nanos>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1475136751-31340-3-git-send-email-m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2016-10-06 at 13:13 +0200, Thomas Gleixner wrote:
-> On Wed, 5 Oct 2016, Tim Chen wrote:
-> > 
-> > On Wed, 2016-10-05 at 16:35 +0200, Thomas Gleixner wrote:
-> > > 
-> > > > 
-> > > > +	if (itmt_supported) {
-> > > > +		itmt_sysctl_header =
-> > > > +			register_sysctl_table(itmt_root_table);
-> > > > +		if (!itmt_sysctl_header) {
-> > > > +			mutex_unlock(&itmt_update_mutex);
-> > > > +			return;
-> > > So you now have a state of capable which cannot be enabled. Whats the
-> > > point?
-> > For multi-socket system where ITMT is not enabled by default, the operator
-> > can still decide to enable it via sysctl.
-> With a sysctl which failed to be installed. Good luck with that.
+On Thu, Sep 29, 2016 at 10:12:31AM +0200, Marek Szyprowski wrote:
+> This patch uses recently introduced device links to track the runtime pm
+> state of the master's device. This way each SYSMMU controller is runtime
+> activated when its master's device is active 
 
-I misunderstood your earlier comment.
-You are talking about the case where we fail to register the sysctl?
+instead of?
 
-In this case, the system is in a state that indicates it is 
-ITMT capable but cannot be enabled.  So we return and do not turn on ITMT
-scheduling.  The system operator should always have the capability
-to enable/disable ITMT via sysctl.  So we do not turn on ITMT if operator has
-no control over it, even if the system is capable of ITMT.
+BTW what is the master device of a SYSMMU? I have no clue about these
+IOMMU devices here.
 
+> and can save/restore its state instead of being enabled all the time.
 
->  
-> > 
-> > > 
-> > > > 
-> > > > +		}
-> > > > +		/*
-> > > > +		 * ITMT capability automatically enables ITMT
-> > > > +		 * scheduling for small systems (single node).
-> > > > +		 */
-> > > > +		if (topology_num_packages() == 1)
-> > > > +			sysctl_sched_itmt_enabled = 1;
-> > > > +	} else {
-> > > > +		if (itmt_sysctl_header)
-> > > > +			unregister_sysctl_table(itmt_sysctl_header);
-> > > > +	}
-> > > > +
-> > > > +	if (sysctl_sched_itmt_enabled) {
-> > > > +		/* disable sched_itmt if we are no longer ITMT capable */
-> > > > +		if (!itmt_supported)
-> > > How do you get here if itmt is not supported? 
-> > If the OS decides to turn off ITMT for any reason, (i.e. invoke 
-> > sched_set_itmt_support(false) after it has turned on itmt_support
-> > before), this is the logic to do it.  We don't turn off ITMT support
-> > after it has been turned on today, in the future the OS may.
-> Then please make this two functions (set/clear) so one can actually follow
-> the logic. The above is just too convoluted.
+I take it this means currently even if the master device is disabled
+(whatever that is) all SYSMMU controllers are kept enabled, is that right?
+The issue here is this wastes power? Or what is the issue?
 
-Sure, I will add a clear function and move the clearing logic there.
+> This way SYSMMU controllers no
+> longer prevents respective power domains to be turned off when master's
+> device is not used.
 
-Thanks.
+So when the master device is idle we want to also remove power from the
+controllers ? How much power does this save on a typical device in the
+market BTW ?
 
-Tim
+> Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> ---
+>  drivers/iommu/exynos-iommu.c | 225 ++++++++++++++++++-------------------------
+>  1 file changed, 94 insertions(+), 131 deletions(-)
+
+I'm reviewing the device link patches now but since this is a demo of
+use of that I'll note the changes here are pretty large and it makes
+it terribly difficult for review. Is there any way this patch can be split
+up in to logical atomic pieces that only do one task upon change ?
+
+  Luis
