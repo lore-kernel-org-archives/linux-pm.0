@@ -1,278 +1,164 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 2/2] power: surface3_power: MSHW0011 rev-eng implementation
-Date: Fri, 7 Oct 2016 21:44:08 +0300
-Message-ID: <CAHp75VdXowsT=KRsRcCExdFkCzXMsvT2Yyxd5WVzxvyutxJMBw@mail.gmail.com>
-References: <1469807366-24642-1-git-send-email-benjamin.tissoires@redhat.com> <1469807366-24642-3-git-send-email-benjamin.tissoires@redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/2] power: bq27xxx_battery: add configurable
+ poll_interval by sysfs
+Date: Fri, 7 Oct 2016 20:49:10 +0200
+Message-ID: <20161007184910.GF19976@amd>
+References: <1474083775-30185-1-git-send-email-matt@ranostay.consulting>
+ <1474083775-30185-2-git-send-email-matt@ranostay.consulting>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1469807366-24642-3-git-send-email-benjamin.tissoires@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Cc: Stephen Just <stephenjust@gmail.com>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <lenb@kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, devel@acpica.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="Pgaa2uWPnPrfixyx"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56591 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932132AbcJGStN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Oct 2016 14:49:13 -0400
+Content-Disposition: inline
+In-Reply-To: <1474083775-30185-2-git-send-email-matt@ranostay.consulting>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-On Fri, Jul 29, 2016 at 6:49 PM, Benjamin Tissoires
-<benjamin.tissoires@redhat.com> wrote:
-> MSHW0011 replaces the battery firmware by using ACPI operation regions.
-> The values have been obtained by reverse engineering, and are subject to
-> errors. Looks like it works on overall pretty well.
->
-> I couldn't manage to get the IRQ correctly triggered, so I am using a
-> good old polling thread to check for changes.
->
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=106231
+To: Matt Ranostay <mranostay@gmail.com>
+Cc: "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
 
 
-> +/*
-> + * This driver has been reverse-engineered by parsing the DSDT of the Surface 3
-> + * and looking at the registers of the chips.
-> + *
-> + * The DSDT allowed to find out that:
-> + * - the driver is required for the ACPI BAT0 device to communicate to the chip
-> + *   through an operation region.
-> + * - the various defines for the operation region functions to communicate with
-> + *   this driver
-> + * - the DSM 3f99e367-6220-4955-8b0f-06ef2ae79412 allows to trigger ACPI
-> + *   events to BAT0 (the code is all available in the DSDT).
-> + *
-> + * Further findings regarding the 2 chips declared in the MSHW0011 are:
-> + * - there are 2 chips declared:
-> + *   . 0x22 seems to control the ADP1 line status (and probably the charger)
-> + *   . 0x55 controls the battery directly
-> + * - the battery chip uses a SMBus protocol (using plain SMBus allows non
-> + *   destructive commands):
-> + *   . the commands/registers used are in the range 0x00..0x7F
-> + *   . if bit 8 (0x80) is set in the SMBus command, the returned value is the
-> + *     same as when it is not set. There is a high chance this bit is the
-> + *     read/write
-> + *   . the various registers semantic as been deduced by observing the register
-> + *     dumps.
-> + */
+--Pgaa2uWPnPrfixyx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri 2016-09-16 20:42:54, Matt Ranostay wrote:
+> Allow the poll_interval to be runtime configurable via an sysfs entry.
+> This is needed for udev control of the poll interval.
+>=20
+> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+
+working mail address would be nice here.
+
+sysfs files should be documented.
+
+Also... what is it good for?
+
+Do you have a device that needs non-standard interval?
+									Pavel
+
+> ---
+>  drivers/power/supply/bq27xxx_battery.c | 48 ++++++++++++++++++++++++++++=
++++++-
+>  1 file changed, 47 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/suppl=
+y/bq27xxx_battery.c
+> index 3f57dd54803a..955424e10ae2 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -395,6 +395,36 @@ module_param(poll_interval, uint, 0644);
+>  MODULE_PARM_DESC(poll_interval,
+>  		 "battery poll interval in seconds - 0 disables polling");
+> =20
 > +
-> +#include <linux/kernel.h>
-> +#include <linux/i2c.h>
-> +#include <linux/slab.h>
-> +#include <linux/acpi.h>
-> +#include <linux/kthread.h>
-> +#include <linux/freezer.h>
-
-Alphabetical order?
-
-> +
-> +#include <asm/unaligned.h>
-> +
-> +#define POLL_INTERVAL          (HZ * 2)
-
-(2 * HZ)
-
-> +static int
-> +mshw0011_notify(struct mshw0011_data *cdata, u8 arg1, u8 arg2,
-> +               unsigned int *ret_value)
+> +static ssize_t show_poll_interval(struct device *dev,
+> +				  struct device_attribute *attr, char *buf)
 > +{
-> +       static const u8 mshw0011_guid[] = {
-> +               0x67, 0xE3, 0x99, 0x3F, 0x20, 0x62, 0x55, 0x49,
-> +               0x8b, 0x0f, 0x06, 0xef, 0x2a, 0xe7, 0x94, 0x12,
-> +       };
-
-What about uuid_le?
-
-> +       union acpi_object *obj;
-> +       struct acpi_device *adev;
-> +       acpi_handle handle;
-> +       unsigned int i;
-> +
-> +       handle = ACPI_HANDLE(&cdata->adp1->dev);
-> +       if (!handle || acpi_bus_get_device(handle, &adev))
-> +               return -ENODEV;
-> +
-> +       obj = acpi_evaluate_dsm_typed(handle, mshw0011_guid, arg1, arg2, NULL,
-> +                                     ACPI_TYPE_BUFFER);
-> +       if (!obj) {
-> +               dev_err(&cdata->adp1->dev, "device _DSM execution failed\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +       *ret_value = 0;
-> +       for (i = 0; i < obj->buffer.length; i++)
-> +               *ret_value |= obj->buffer.pointer[i] << (i * 8);
-> +
-> +       ACPI_FREE(obj);
-> +       return 0;
+> +	return sprintf(buf, "%d\n", poll_interval);
 > +}
 > +
-
-> +static const struct bix default_bix = {
-> +       .revision = 0x00,
-> +       .power_unit = 0x01,
-> +       .design_capacity = 0x1dca,
-> +       .last_full_charg_capacity = 0x1dca,
-> +       .battery_technology = 0x01,
-> +       .design_voltage = 0x10df,
-> +       .design_capacity_of_warning = 0x8f,
-> +       .design_capacity_of_low = 0x47,
-> +       .cycle_count = 0xffffffff,
-
-> +       .measurement_accuracy = 0x00015F90,
-> +       .max_sampling_time = 0x03E8,
-> +       .min_sampling_time = 0x03E8,
-> +       .max_average_interval = 0x03E8,
-> +       .min_average_interval = 0x03E8,
-
-Capital vs. small letters for hex?
-
-> +       .battery_capacity_granularity_1 = 0x45,
-> +       .battery_capacity_granularity_2 = 0x11,
-> +       .model = "P11G8M",
-> +       .serial = "",
-> +       .type = "LION",
-> +       .OEM = "",
-> +};
-
-> +static int mshw0011_bix(struct mshw0011_data *cdata, struct bix *bix)
+> +static ssize_t store_poll_interval(struct device *dev,
+> +				   struct device_attribute *attr,
+> +				   const char *buf, size_t size)
 > +{
-> +       struct i2c_client *client = cdata->bat0;
-
-> +       int ret;
-> +       char buf[10];
-
-Exchange order?
-
-> +static int mshw0011_poll_task(void *data)
-> +{
-> +       struct mshw0011_data *cdata = data;
-> +       int ret = 0;
+> +	struct bq27xxx_device_info *di =3D dev_get_drvdata(dev);
+> +	int tmp =3D poll_interval;
 > +
-> +       cdata->kthread_running = true;
+> +	if (sscanf(buf, "%d\n", &poll_interval) !=3D 1)
+> +		return -EINVAL;
 > +
-> +       set_freezable();
+> +	if (poll_interval < 0)
+> +		return -EINVAL;
 > +
-> +       while (!kthread_should_stop()) {
-> +               schedule_timeout_interruptible(POLL_INTERVAL);
-> +               try_to_freeze();
-> +               ret = mshw0011_isr(data);
-> +               if (ret)
-> +                       goto out;
-
-break; ?
-
-> +       }
+> +	if (tmp !=3D poll_interval) {
+> +		cancel_delayed_work_sync(&di->work);
+> +		schedule_delayed_work(&di->work, 0);
+> +	}
 > +
-> +out:
-> +       cdata->kthread_running = false;
-> +       return ret;
+> +	return size;
 > +}
 > +
-
-> +static acpi_status
-> +mshw0011_space_handler(u32 function, acpi_physical_address command,
-> +                       u32 bits, u64 *value64,
-> +                       void *handler_context, void *region_context)
-> +{
-> +       int status = 1;
-
-
-> +       switch (gsb->cmd.arg1) {
-> +       case MSHW0011_CMD_BAT0_STA:
-
-> +               status = 1;
-
-Already 1?
-
-> +               ret = 0;
-> +               break;
-> +       case MSHW0011_CMD_BAT0_BIX:
-> +               status = 1;
-
-Ditto.
-
-> +               ret = mshw0011_bix(cdata, &gsb->bix);
-> +               break;
-> +       case MSHW0011_CMD_BAT0_BTP:
-> +               status = 1;
-
-Ditto.
-
-> +               ret = 0;
-> +               cdata->trip_point = gsb->cmd.arg2;
-> +               break;
-> +       case MSHW0011_CMD_BAT0_BST:
-> +               status = 1;
-
-Ditto.
-
-> +               ret = mshw0011_bst(cdata, &gsb->bst);
-> +               break;
-> +       default:
-> +               pr_info("command(0x%02x) is not supported.\n", gsb->cmd.arg1);
-> +               ret = AE_BAD_PARAMETER;
-> +               goto err;
-> +       }
+> +static DEVICE_ATTR(poll_interval, 0644, show_poll_interval, store_poll_i=
+nterval);
 > +
-> + out:
-> +       gsb->ret = status;
-> +       gsb->status = 0;
+>  /*
+>   * Common code for BQ27xxx devices
+>   */
+> @@ -946,6 +976,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info =
+*di)
+>  {
+>  	struct power_supply_desc *psy_desc;
+>  	struct power_supply_config psy_cfg =3D { .drv_data =3D di, };
+> +	int ret;
+> =20
+>  	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>  	mutex_init(&di->lock);
+> @@ -961,11 +992,19 @@ int bq27xxx_battery_setup(struct bq27xxx_device_inf=
+o *di)
+>  	psy_desc->num_properties =3D bq27xxx_battery_props[di->chip].size;
+>  	psy_desc->get_property =3D bq27xxx_battery_get_property;
+>  	psy_desc->external_power_changed =3D bq27xxx_external_power_changed;
+> +	dev_set_drvdata(di->dev, di);
 > +
-> + err:
-> +       ACPI_FREE(ares);
-> +       return ret;
-> +}
-
-> +static void mshw0011_remove_space_handler(struct i2c_client *client)
-> +{
-> +       acpi_handle handle;
-> +       struct mshw0011_handler_data *data;
-> +       acpi_status status;
+> +	ret =3D sysfs_create_file(&di->dev->kobj, &dev_attr_poll_interval.attr);
+> +	if (ret) {
+> +		dev_err(di->dev, "failed to register poll_interval sysfs entry");
+> +		return ret;
+> +	}
+> =20
+>  	di->bat =3D power_supply_register_no_ws(di->dev, psy_desc, &psy_cfg);
+>  	if (IS_ERR(di->bat)) {
+>  		dev_err(di->dev, "failed to register battery\n");
+> -		return PTR_ERR(di->bat);
+> +		ret =3D PTR_ERR(di->bat);
+> +		goto err_out;
+>  	}
+> =20
+>  	dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+> @@ -973,6 +1012,11 @@ int bq27xxx_battery_setup(struct bq27xxx_device_inf=
+o *di)
+>  	bq27xxx_battery_update(di);
+> =20
+>  	return 0;
 > +
-> +       handle = ACPI_HANDLE(&client->dev);
-
+> +err_out:
+> +	sysfs_remove_file(&di->dev->kobj, &dev_attr_poll_interval.attr);
 > +
-
-Redundant.
-
-> +       if (!handle)
-> +               return;
-
-> +static void mshw0011_dump_registers(struct i2c_client *client,
-> +                                   struct i2c_client *bat0, u8 max)
-> +{
-> +       char rd_buf[60];
-> +       int error, i, c;
-> +       char buff[17 * 3 * 2] = {0};
+> +	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(bq27xxx_battery_setup);
+> =20
+> @@ -988,6 +1032,8 @@ void bq27xxx_battery_teardown(struct bq27xxx_device_=
+info *di)
+> =20
+>  	cancel_delayed_work_sync(&di->work);
+> =20
+> +	sysfs_remove_file(&di->dev->kobj, &dev_attr_poll_interval.attr);
 > +
-> +       dev_info(&client->dev, "dumping registers 0x00 to 0x%02x:\n",
-> +                (max - 1) / 0x20 * 0x20 + 0x1f);
+>  	power_supply_unregister(di->bat);
+> =20
+>  	mutex_destroy(&di->lock);
 
-DIV_ROUND_UP()?
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-> +
-> +       for (i = 0; i < max; i += 0x20) {
-> +               memset(rd_buf, 0, sizeof(rd_buf));
-> +               error = mshw0011_i2c_read_block(bat0, i, rd_buf, 0x20);
+--Pgaa2uWPnPrfixyx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> +               dev_info(&client->dev, " read 0x%02x: %*ph|%*ph\n",
-> +                        i,
-> +                        0x10, rd_buf,
-> +                        0x10, rd_buf + 0x10);
-> +               for (c = 0; c < 0x20; c++) {
-> +                       if (rd_buf[c] >= 0x20 && rd_buf[c] <= 0x7e) {
-> +                               buff[c * 3 + 0] = ' ';
-> +                               buff[c * 3 + 1] = rd_buf[c];
-> +                       } else {
-> +                               buff[c * 3 + 0] = '-';
-> +                               buff[c * 3 + 1] = '-';
-> +                       }
-> +                       buff[c * 3 + 2] = (c + 1) % 0x10 ? ' ' : '|';
-> +               }
-> +               buff[0x1f * 3 + 2] = '\0';
-> +               dev_info(&client->dev, "ascii 0x%02x: %s\n", i, buff);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-hex_dump_to_buffer() / print_hex_dump() ?
+iEYEARECAAYFAlf37iYACgkQMOfwapXb+vLvJgCfe4NSLBPrx6x4Nb7S4SShiE8q
+3GEAn0LWMIsCW4XyzN+PNSzc+0y8F+mu
+=q2Gc
+-----END PGP SIGNATURE-----
 
-> +       }
-> +}
-
-
--- 
-With Best Regards,
-Andy Shevchenko
+--Pgaa2uWPnPrfixyx--
