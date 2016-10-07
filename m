@@ -1,161 +1,156 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v2 3/8] PM / Domains: Allow domain power states to be read from DT
-Date: Fri,  7 Oct 2016 15:36:56 -0700
-Message-ID: <1475879821-8035-4-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v2 1/8] PM / Domains: Make genpd state allocation dynamic
+Date: Fri,  7 Oct 2016 15:36:54 -0700
+Message-ID: <1475879821-8035-2-git-send-email-lina.iyer@linaro.org>
 References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Marc Titinger <mtitinger+renesas@baylibre.com>
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam+renesas@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch allows domains to define idle states in the DT. SoC's can
-define domain idle states in DT using the "domain-idle-states" property
-of the domain provider. Add API to read the idle states from DT that can
-be set in the genpd object.
+Allow PM Domain states to be defined dynamically by the drivers. This
+removes the limitation on the maximum number of states possible for a
+domain.
 
-This patch is based on the original patch by Marc Titinger.
-
-Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Axel Haslam <ahaslam+renesas@baylibre.com>
+Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/base/power/domain.c | 95 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   |  8 ++++
- 2 files changed, 103 insertions(+)
+ arch/arm/mach-imx/gpc.c     | 17 ++++++++++-------
+ drivers/base/power/domain.c | 36 ++++++++++++++++++++++++------------
+ include/linux/pm_domain.h   |  5 ++---
+ 3 files changed, 36 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 4e87170..4208b67 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1917,6 +1917,101 @@ out:
- 	return ret ? -EPROBE_DEFER : 0;
- }
- EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
-+
-+static const struct of_device_id idle_state_match[] = {
-+	{ .compatible = "arm,idle-state", },
-+	{ }
-+};
-+
-+static int genpd_parse_state(struct genpd_power_state *genpd_state,
-+				    struct device_node *state_node)
-+{
-+	int err;
-+	u32 residency;
-+	u32 entry_latency, exit_latency;
-+	const struct of_device_id *match_id;
-+
-+	match_id = of_match_node(idle_state_match, state_node);
-+	if (!match_id)
-+		return -EINVAL;
-+
-+	err = of_property_read_u32(state_node, "entry-latency-us",
-+						&entry_latency);
-+	if (err) {
-+		pr_debug(" * %s missing entry-latency-us property\n",
-+						state_node->full_name);
-+		return -EINVAL;
-+	}
-+
-+	err = of_property_read_u32(state_node, "exit-latency-us",
-+						&exit_latency);
-+	if (err) {
-+		pr_debug(" * %s missing exit-latency-us property\n",
-+						state_node->full_name);
-+		return -EINVAL;
-+	}
-+
-+	err = of_property_read_u32(state_node, "min-residency-us", &residency);
-+	if (!err)
-+		genpd_state->residency_ns = 1000 * residency;
-+
-+	genpd_state->power_on_latency_ns = 1000 * exit_latency;
-+	genpd_state->power_off_latency_ns = 1000 * entry_latency;
-+
-+	return 0;
-+}
-+
-+/**
-+ * of_genpd_parse_idle_states: Return array of idle states for the genpd.
-+ *
-+ * @dn: The genpd device node
-+ * @states: The pointer to which the state array will be saved.
-+ * @n: The count of elements in the array returned from this function.
-+ *
-+ * Returns the device states parsed from the OF node. The memory for the states
-+ * is allocated by this function and is the responsibility of the caller to
-+ * free the memory after use.
-+ */
-+int of_genpd_parse_idle_states(struct device_node *dn,
-+			struct genpd_power_state **states, int *n)
-+{
-+	struct genpd_power_state *st;
-+	struct device_node *np;
-+	int i = 0;
-+	int err, ret;
-+	int count;
-+	struct of_phandle_iterator it;
-+
-+	count = of_count_phandle_with_args(dn, "domain-idle-states", NULL);
-+
-+	st = kcalloc(count, sizeof(*st), GFP_KERNEL);
-+	if (!st)
+diff --git a/arch/arm/mach-imx/gpc.c b/arch/arm/mach-imx/gpc.c
+index 0df062d..57a410b 100644
+--- a/arch/arm/mach-imx/gpc.c
++++ b/arch/arm/mach-imx/gpc.c
+@@ -380,13 +380,6 @@ static struct pu_domain imx6q_pu_domain = {
+ 		.name = "PU",
+ 		.power_off = imx6q_pm_pu_power_off,
+ 		.power_on = imx6q_pm_pu_power_on,
+-		.states = {
+-			[0] = {
+-				.power_off_latency_ns = 25000,
+-				.power_on_latency_ns = 2000000,
+-			},
+-		},
+-		.state_count = 1,
+ 	},
+ };
+ 
+@@ -430,6 +423,16 @@ static int imx_gpc_genpd_init(struct device *dev, struct regulator *pu_reg)
+ 	if (!IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS))
+ 		return 0;
+ 
++	imx6q_pu_domain.base.states = devm_kzalloc(dev,
++					sizeof(*imx6q_pu_domain.base.states),
++					GFP_KERNEL);
++	if (!imx6q_pu_domain.base.states)
 +		return -ENOMEM;
 +
-+	/* Loop over the phandles until all the requested entry is found */
-+	of_for_each_phandle(&it, err, dn, "domain-idle-states", NULL, 0) {
-+		np = of_node_get(it.node);
-+		ret = genpd_parse_state(&st[i++], np);
-+		if (ret) {
-+			pr_err
-+			("Parsing idle state node %s failed with err %d\n",
-+							np->full_name, ret);
-+			of_node_put(np);
-+			goto fail;
-+		}
-+		of_node_put(np);
-+	}
++	imx6q_pu_domain.base.states[0].power_off_latency_ns = 25000;
++	imx6q_pu_domain.base.states[0].power_on_latency_ns = 2000000;
++	imx6q_pu_domain.base.state_count = 1;
 +
-+	*n = count;
-+	*states = st;
+ 	pm_genpd_init(&imx6q_pu_domain.base, NULL, false);
+ 	return of_genpd_add_provider_onecell(dev->of_node,
+ 					     &imx_gpc_onecell_data);
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index e023066..4e87170 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1282,6 +1282,21 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
+ 
++static int genpd_set_default_power_state(struct generic_pm_domain *genpd)
++{
++	struct genpd_power_state *state;
++
++	state = kzalloc(sizeof(*state), GFP_KERNEL);
++	if (!state)
++		return -ENOMEM;
++
++	genpd->states = state;
++	genpd->state_count = 1;
++	genpd->free = state;
 +
 +	return 0;
-+fail:
-+	kfree(st);
-+	return ret;
 +}
-+EXPORT_SYMBOL(of_genpd_parse_idle_states);
 +
- #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+ /**
+  * pm_genpd_init - Initialize a generic I/O PM domain object.
+  * @genpd: PM domain object to initialize.
+@@ -1293,6 +1308,8 @@ EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
+ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 		  struct dev_power_governor *gov, bool is_off)
+ {
++	int ret;
++
+ 	if (IS_ERR_OR_NULL(genpd))
+ 		return -EINVAL;
  
+@@ -1325,19 +1342,12 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 		genpd->dev_ops.start = pm_clk_resume;
+ 	}
  
+-	if (genpd->state_idx >= GENPD_MAX_NUM_STATES) {
+-		pr_warn("Initial state index out of bounds.\n");
+-		genpd->state_idx = GENPD_MAX_NUM_STATES - 1;
+-	}
+-
+-	if (genpd->state_count > GENPD_MAX_NUM_STATES) {
+-		pr_warn("Limiting states to  %d\n", GENPD_MAX_NUM_STATES);
+-		genpd->state_count = GENPD_MAX_NUM_STATES;
+-	}
+-
+ 	/* Use only one "off" state if there were no states declared */
+-	if (genpd->state_count == 0)
+-		genpd->state_count = 1;
++	if (genpd->state_count == 0) {
++		ret = genpd_set_default_power_state(genpd);
++		if (ret)
++			return ret;
++	}
+ 
+ 	mutex_lock(&gpd_list_lock);
+ 	list_add(&genpd->gpd_list_node, &gpd_list);
+@@ -1374,6 +1384,8 @@ static int genpd_remove(struct generic_pm_domain *genpd)
+ 		kfree(link);
+ 	}
+ 
++	kfree(genpd->free);
++
+ 	list_del(&genpd->gpd_list_node);
+ 	mutex_unlock(&genpd->lock);
+ 	cancel_work_sync(&genpd->power_off_work);
 diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index f4492eb..b489496 100644
+index a09fe5c..de1d8f3 100644
 --- a/include/linux/pm_domain.h
 +++ b/include/linux/pm_domain.h
-@@ -205,6 +205,8 @@ extern int of_genpd_add_device(struct of_phandle_args *args,
- extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
- 				  struct of_phandle_args *new_subdomain);
- extern struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
-+extern int of_genpd_parse_idle_states(struct device_node *dn,
-+			struct genpd_power_state **states, int *n);
+@@ -19,8 +19,6 @@
+ /* Defines used for the flags field in the struct generic_pm_domain */
+ #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
  
- int genpd_dev_pm_attach(struct device *dev);
- #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
-@@ -234,6 +236,12 @@ static inline int of_genpd_add_subdomain(struct of_phandle_args *parent,
- 	return -ENODEV;
- }
+-#define GENPD_MAX_NUM_STATES	8 /* Number of possible low power states */
+-
+ enum gpd_status {
+ 	GPD_STATE_ACTIVE = 0,	/* PM domain is active */
+ 	GPD_STATE_POWER_OFF,	/* PM domain is off */
+@@ -70,9 +68,10 @@ struct generic_pm_domain {
+ 	void (*detach_dev)(struct generic_pm_domain *domain,
+ 			   struct device *dev);
+ 	unsigned int flags;		/* Bit field of configs for genpd */
+-	struct genpd_power_state states[GENPD_MAX_NUM_STATES];
++	struct genpd_power_state *states;
+ 	unsigned int state_count; /* number of states */
+ 	unsigned int state_idx; /* state that genpd will go to when off */
++	void *free; /* Free the state that was allocated for default */
  
-+static inline int of_genpd_parse_idle_states(struct device_node *dn,
-+			struct genpd_power_state **states, int *n)
-+{
-+	return -ENODEV;
-+}
-+
- static inline int genpd_dev_pm_attach(struct device *dev)
- {
- 	return -ENODEV;
+ };
+ 
 -- 
 2.7.4
