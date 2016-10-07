@@ -1,116 +1,49 @@
-From: joeyli <jlee@suse.com>
-Subject: Re: [PATCH][v11] PM / hibernate: Verify the consistent of e820
- memory map by md5 digest
-Date: Sat, 8 Oct 2016 00:31:08 +0800
-Message-ID: <20161007163108.GP27959@linux-rxt1.site>
-References: <1474777077-19535-1-git-send-email-yu.c.chen@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: [PATCH 1/2] ARM: at91: define LPDDR types
+Date: Fri,  7 Oct 2016 18:34:26 +0200
+Message-ID: <20161007163427.11454-2-alexandre.belloni@free-electrons.com>
+References: <20161007163427.11454-1-alexandre.belloni@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:34531 "EHLO
-        smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753234AbcJGQbz (ORCPT
-        <rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
-        Fri, 7 Oct 2016 12:31:55 -0400
-Content-Disposition: inline
-In-Reply-To: <1474777077-19535-1-git-send-email-yu.c.chen@intel.com>
+Received: from down.free-electrons.com ([37.187.137.238]:37455 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1757210AbcJGQel (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Oct 2016 12:34:41 -0400
+In-Reply-To: <20161007163427.11454-1-alexandre.belloni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Borislav Petkov <bp@alien8.de>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>
 
-Hi Chen Yu,
+The Atmel MPDDR controller support LPDDR2 and LPDDR3 memories, add their
+types.
 
-On Sun, Sep 25, 2016 at 12:17:57PM +0800, Chen Yu wrote:
-> On some platforms, there is occasional panic triggered when trying to
-> resume from hibernation, a typical panic looks like:
-> 
-> "BUG: unable to handle kernel paging request at ffff880085894000
-> IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
-> 
-> Investigation carried out by Lee Chun-Yi shows that this is because
-> e820 map has been changed by BIOS across hibernation, and one
-> of the page frames from suspend kernel is right located in restore
-> kernel's unmapped region, so panic comes out when accessing unmapped
-> kernel address.
->
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ include/soc/at91/at91sam9_ddrsdr.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Sorry for finally I can not find the issue machine back now. So I add
-a patch to fool kernel as the e820 changed when S4 resume for testing.
- 
-> In order to expose this issue earlier, the md5 hash of e820 map
-> is passed from suspend kernel to restore kernel, and the restore
-> kernel will terminate the resume process once it finds the md5
-> hash are not the same.
->
-[...snip] 
-> ---
->  arch/x86/power/hibernate_64.c | 92 ++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 90 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
-> index 9634557..d81b1af 100644
-> --- a/arch/x86/power/hibernate_64.c
-> +++ b/arch/x86/power/hibernate_64.c
-> @@ -11,6 +11,10 @@
->  #include <linux/gfp.h>
->  #include <linux/smp.h>
->  #include <linux/suspend.h>
-> +#include <linux/scatterlist.h>
-> +#include <linux/kdebug.h>
+diff --git a/include/soc/at91/at91sam9_ddrsdr.h b/include/soc/at91/at91sam9_ddrsdr.h
+index dc10c52e0e91..393362bdb860 100644
+--- a/include/soc/at91/at91sam9_ddrsdr.h
++++ b/include/soc/at91/at91sam9_ddrsdr.h
+@@ -81,6 +81,7 @@
+ #define			AT91_DDRSDRC_LPCB_POWER_DOWN		2
+ #define			AT91_DDRSDRC_LPCB_DEEP_POWER_DOWN	3
+ #define		AT91_DDRSDRC_CLKFR	(1 << 2)	/* Clock Frozen */
++#define		AT91_DDRSDRC_LPDDR2_PWOFF	(1 << 3)	/* LPDDR Power Off */
+ #define		AT91_DDRSDRC_PASR	(7 << 4)	/* Partial Array Self Refresh */
+ #define		AT91_DDRSDRC_TCSR	(3 << 8)	/* Temperature Compensated Self Refresh */
+ #define		AT91_DDRSDRC_DS		(3 << 10)	/* Drive Strength */
+@@ -96,7 +97,9 @@
+ #define			AT91_DDRSDRC_MD_SDR		0
+ #define			AT91_DDRSDRC_MD_LOW_POWER_SDR	1
+ #define			AT91_DDRSDRC_MD_LOW_POWER_DDR	3
++#define			AT91_DDRSDRC_MD_LPDDR3		5
+ #define			AT91_DDRSDRC_MD_DDR2		6	/* [SAM9 Only] */
++#define			AT91_DDRSDRC_MD_LPDDR2		7
+ #define		AT91_DDRSDRC_DBW	(1 << 4)		/* Data Bus Width */
+ #define			AT91_DDRSDRC_DBW_32BITS		(0 <<  4)
+ #define			AT91_DDRSDRC_DBW_16BITS		(1 <<  4)
+-- 
+2.9.3
 
-[...snip]
-
-> @@ -216,5 +297,12 @@ int arch_hibernation_header_restore(void *addr)
->  	restore_jump_address = rdr->jump_address;
->  	jump_address_phys = rdr->jump_address_phys;
->  	restore_cr3 = rdr->cr3;
-> -	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
-> +
-> +	if (rdr->magic != RESTORE_MAGIC)
-> +		return -EINVAL;
-> +
-> +	if (hibernation_e820_mismatch(rdr->e820_digest))
-> +		return -ENODEV;
-> +
-> +	return 0;
->  }
-> --
-
-Because the check_image_kernel() function doesn't check the return error,
-kernel only shows "PM: Image mismatch: architecture specific data". The
-message covered two different fail reason.
- 
-I suggest that it prints out a log like the restore function in ARM64
-architecture. Something like this, please feel free to modify the
-wording:
-
-Index: linux/arch/x86/power/hibernate_64.c
-===================================================================
---- linux.orig/arch/x86/power/hibernate_64.c
-+++ linux/arch/x86/power/hibernate_64.c
-@@ -298,11 +298,16 @@ int arch_hibernation_header_restore(void
-        jump_address_phys = rdr->jump_address_phys;
-        restore_cr3 = rdr->cr3;
- 
--       if (rdr->magic != RESTORE_MAGIC)
-+
-+       if (rdr->magic != RESTORE_MAGIC) {
-+               pr_crit("Hibernate image not generated by this kernel!\n");
-                return -EINVAL;
-+       }
- 
--       if (hibernation_e820_mismatch(rdr->e820_digest))
-+       if (hibernation_e820_mismatch(rdr->e820_digest)) {
-+               pr_crit("The e820 saved regions changed!\n");
-                return -ENODEV;
-+       }
- 
-        return 0;
- }
-
-Other parts in your patch are good to me.
-
-
-Thanks a lot!
-Joey Lee
