@@ -1,154 +1,139 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] powernv: Pass PSSCR value and mask to
- power9_idle_stop
-Date: Fri, 7 Oct 2016 12:50:58 +0530
-Message-ID: <20161007072058.GC13873@in.ibm.com>
-References: <cover.1475130107.git.ego@linux.vnet.ibm.com>
- <21e080ffa52f432b40750028a624aee1baebbaf7.1475130107.git.ego@linux.vnet.ibm.com>
- <87int84d6w.fsf@concordia.ellerman.id.au>
- <0e7ad8ff-8c44-86bc-f560-258bc7b29a32@gmail.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/8] PM / Domains: Make genpd state allocation dynamic
+Date: Fri, 7 Oct 2016 10:39:05 +0200
+Message-ID: <CAPDyKFpE9sm5Ky+2UopJXoiHwxp11H7wOFFX8OzU+7=TbBeNvQ@mail.gmail.com>
+References: <1475699519-109623-1-git-send-email-lina.iyer@linaro.org>
+ <1475699519-109623-2-git-send-email-lina.iyer@linaro.org> <CAPDyKFpNnJxueNNk9g7KzHPAsJVQ8xeiaw8OHMevBZ3myhd-xA@mail.gmail.com>
+ <20161006154052.GB28930@linaro.org> <CAPDyKFps5kZLcVW1UJsZtgOQEysRxc9tj41uDDTeJav8YBQG4A@mail.gmail.com>
+ <20161006205724.GA41480@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:43545 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1753718AbcJGHVK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Oct 2016 03:21:10 -0400
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id u977IueE010833
-        for <linux-pm@vger.kernel.org>; Fri, 7 Oct 2016 03:21:09 -0400
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 25x5neky5n-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Fri, 07 Oct 2016 03:21:09 -0400
-Received: from localhost
-        by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Fri, 7 Oct 2016 01:21:08 -0600
-Content-Disposition: inline
-In-Reply-To: <0e7ad8ff-8c44-86bc-f560-258bc7b29a32@gmail.com>
+Received: from mail-wm0-f47.google.com ([74.125.82.47]:36568 "EHLO
+        mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756278AbcJGIjJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Oct 2016 04:39:09 -0400
+Received: by mail-wm0-f47.google.com with SMTP id k125so18679247wma.1
+        for <linux-pm@vger.kernel.org>; Fri, 07 Oct 2016 01:39:08 -0700 (PDT)
+In-Reply-To: <20161006205724.GA41480@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, "skiboot@lists.ozlabs.org" <skiboot@lists.ozlabs.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-
-Hi Balbir, Michael,
-
-On Tue, Oct 04, 2016 at 10:33:27PM +1100, Balbir Singh wrote:
-> 
-> 
-> On 04/10/16 21:32, Michael Ellerman wrote:
-> > "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
-> > 
-> >> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> >>
-> >> The power9_idle_stop method currently takes only the requested stop
-> >> level as a parameter and picks up the rest of the PSSCR bits from a
-> >> hand-coded macro. This is not a very flexible design, especially when
-> >> the firmware has the capability to communicate the psscr value and the
-> >> mask associated with a particular stop state via device tree.
-> >>
-> >> This patch modifies the power9_idle_stop API to take as parameters the
-> >> PSSCR value and the PSSCR mask corresponding to the stop state that
-> >> needs to be set. These PSSCR value and mask are respectively obtained
-> >> by parsing the "ibm,cpu-idle-state-psscr" and
-> >> "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
-> >>
-> >> In addition to this, the patch adds support for handling stop states
-> >> for which ESL and EC bits in the PSSCR are zero. As per the
-> >> architecture, a wakeup from these stop states resumes execution from
-> >> the subsequent instruction as opposed to waking up at the System
-> >> Vector.
-> > 
-> > That looks good.
-> > 
-> >> This patch depends on the following skiboot patch that exports the
-> >> PSSCR values and the mask for all the stop states:
-> >> https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
-> > 
-> > But we can't depend on a skiboot patch. The kernel has to cope with
-> > running on an old skiboot.
+On 6 October 2016 at 22:57, Lina Iyer <lina.iyer@linaro.org> wrote:
+> On Thu, Oct 06 2016 at 13:45 -0600, Ulf Hansson wrote:
+>>
+>> On 6 October 2016 at 17:40, Lina Iyer <lina.iyer@linaro.org> wrote:
+>>>
+>>> On Thu, Oct 06 2016 at 02:37 -0600, Ulf Hansson wrote:
+>>>>
+>>>>
+>>>> On 5 October 2016 at 22:31, Lina Iyer <lina.iyer@linaro.org> wrote:
+>>>>>
+>>>>>
+>>>>> Allow PM Domain states to be defined dynamically by the drivers. This
+>>>>> removes the limitation on the maximum number of states possible for a
+>>>>> domain.
+>>>>>
+>>>>> Cc: Axel Haslam <ahaslam+renesas@baylibre.com>
+>>>>> Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>>>
+>>>
+>>> <...>
+>>>>>
+>>>>>
+>>>>> -#define GENPD_MAX_NUM_STATES   8 /* Number of possible low power
+>>>>> states
+>>>>> */
+>>>>> -
+>>>>>  enum gpd_status {
+>>>>>         GPD_STATE_ACTIVE = 0,   /* PM domain is active */
+>>>>>         GPD_STATE_POWER_OFF,    /* PM domain is off */
+>>>>> @@ -70,7 +68,7 @@ struct generic_pm_domain {
+>>>>>         void (*detach_dev)(struct generic_pm_domain *domain,
+>>>>>                            struct device *dev);
+>>>>>         unsigned int flags;             /* Bit field of configs for
+>>>>> genpd
+>>>>> */
+>>>>> -       struct genpd_power_state states[GENPD_MAX_NUM_STATES];
+>>>>> +       struct genpd_power_state *states;
+>>>>>         unsigned int state_count; /* number of states */
+>>>>>         unsigned int state_idx; /* state that genpd will go to when off
+>>>>> */
+>>>>>
+>>>>> --
+>>>>> 2.7.4
+>>>>>
+>>>>
+>>>> In general I like the improvement, but..
+>>>>
+>>>> This change implies that ->states may very well be NULL. This isn't
+>>>> validated by genpd's internal logic when power off/on the domain
+>>>> (genpd_power_on|off(), __default_power_down_ok()). You need to fix
+>>>> this, somehow.
+>>>>
+>>> Good point.
+>>>
+>>>> Perhaps the easiest solutions is, when pm_genpd_init() finds that
+>>>> ->state is NULL, that we allocate a struct genpd_power_state with
+>>>> array size of 1 and assign it to ->states. Although, doing this also
+>>>> means you need to track that genpd was responsible for the the
+>>>> allocation, so it must also free the data from within genpd_remove().
+>>>>
+>>>> Unless you have other ideas!?
+>>>>
+>>> I can think of some hacks, but they are uglier than the problem we are
+>>> trying to solve. We could drop this patch. Real world situations would
+>>> not have more than 8 states and if there is one, we can think about it
+>>> then.
+>>
+>>
+>> The problem with the current approach is that we waste some memory as
+>> we always have an array of 8 states per genpd. In the worst case,
+>> which currently is the most common case, only 1 out of 8 states is
+>> being used.
+>>
+>> So, let's not be lazy here and instead take the opportunity to fix
+>> this, and especially I think this makes sense, before we go on and add
+>> the DT parsing of the domain-idle-states.
+>>
+> Hmm.. We are not wasting much memory in comparison, but if you insist,
+> sure.
 >
+>> The more sophisticated method would probably be to use kobject/kref,
+>> but let's not go there for now. Instead let's try an easy method of
+>> just tracking whether the allocations had been made internally by
+>> genpd, via adding a "bool state_allocated to the struct
+>> generic_pm_domain. Would that work?
+>>
+> It would work.
+>
+> i.
+> How about an additional static state by default in the domain structure,
+> if the platform does not provide a state then the default structure is
+> used. That way we dont have to track it. But it does waste memory
+> eqivalent to a state, when there are states provided by the platform.
 
-Hmm.. We can still do that. The older skiboot only provides the RL
-field of the PSSCR value for each stop state and the corresponding
-PSSCR mask is set to 0xF in the older skiboot for all the stop states.
+I thought about this, but I think it could be a bit messy as well.
+Better to do an allocation when needed.
 
-We can insist that the future skiboot sets the ESL, EC, PSLL, TR, MTL
-and the the RL fields of the PSSCR for any exported stop state. This
-should be reflected in the psscr_mask of that stop state.  Thus, the
-psscr_mask of any stop state proposed in the future will have:
-(PSSCR_ESL_MASK | PSCCR_EC_MASK | PSCCR_PSLL_MASK | PSSCR_TR_MASK |
-PSSCR_MTL_MASK | PSSCR_RL_MASK) bits set in the skiboot.
+>
+> ii.
+> I could add a void *free to the domain structure and save the memory
+> allocated by default in the *free. At domain remove, we just do a kfree
+> on free.
+>
+> iii.
+> Use a boolean flag.
 
-To handle the older firmware, we can do something like the following
-during the discovery of the stop states to mimic the behaviour present
-in the 4.8 kernel running on older firmware.
+Both ii) and iii) works for me!
 
-=============== drivers/cpuidle/cpuidle-powernv.c =======================
-/*
- * By default we set the ESL and EC bits in the PSSCR.
- * The MTL and PSLL are set to the maximum value possible as per the
- * ISA, i.e 15.
- * The Transition Rate is set to the Maximum value 3.
- */
-#define DEFAULT_PSSCR_VAL      PSSCR_ESL_MASK |			\
-			       PSCCR_EC_MASK | PSCCR_PSLL_MASK |\
-			       PSSCR_TR_MASK | PSSCR_MTL_MASK
+Kind regards
+Uffe
 
-#define DEFAULT_PSSCR_MASK     PSSCR_ESL_MASK |			\
-			       PSCCR_EC_MASK | PSCCR_PSLL_MASK |\
-			       PSSCR_TR_MASK | PSSCR_MTL_MASK | \
-			       PSSCR_RL_MASK
-
-
-static int powernv_add_idle_states(void)
-{
-	.
-	.
-	.
-	for (i = 0; i < dt_idle_states; i++) {
-	    u64 val, mask;
-	    	.	    
-		.
-		.
-		val = (DEFAULT_PSSCR_VAL & ~psscr_mask[i]) | psscr_val[i];
-		mask = DEFAULT_PSSCR_MASK | psscr_mask[i];
-		stop_psscr_table[nr_idle_states].val = val;
-        	stop_psscr_table[nr_idle_states].mask = mask;
-	}
-}		
-============================================================================
-
-
-Is this approach ok ?
-
-
-> Hi, Michael
-> 
-> I think with an older skiboot the flags don't get exported and the
-> new cpuidle (stop state) does not get discovered. I don't think there
-> is any breakage. Gautham am I missing something?
-
-In the second verison of the patch, I am not adding any new flags in
-the skiboot, but explicitly providing the psscr_value and psscr_mask
-for each stop state.  Thus if you see the v2 of the skiboot patch, the
-lite versions of stop0,stop1 and stop2 are defined with no additional
-flags.
-
-The second version of the kernel patch wouldn't then work with the
-older skiboot since the older skiboot exports only the RL field of the
-psscr_val while the new kernel patch expects all the relavant bits of
-the psscr_val be set. This would result in a breakage.
-
-
-> 
-> Balbir Singh.
-> 
-
---
-Thanks and Regards
-gautham.
-
+>
+> Thanks,
+> Lina
+>
