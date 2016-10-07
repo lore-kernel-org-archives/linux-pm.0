@@ -1,49 +1,86 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v2 8/8] PM / doc: Update device documentation for devices in IRQ safe PM domains
-Date: Fri,  7 Oct 2016 15:37:01 -0700
-Message-ID: <1475879821-8035-9-git-send-email-lina.iyer@linaro.org>
-References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:34085 "EHLO
-        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755079AbcJGWh1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Oct 2016 18:37:27 -0400
-Received: by mail-pf0-f170.google.com with SMTP id e6so29281941pfk.1
-        for <linux-pm@vger.kernel.org>; Fri, 07 Oct 2016 15:37:27 -0700 (PDT)
-In-Reply-To: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: v4.8 cpufreq regression?
+Date: Sat, 8 Oct 2016 01:59:25 +0300
+Message-ID: <20161007225925.GI15204@raspberrypi.musicnaut.iki.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
 
-Update documentation to reflect the changes made to support IRQ safe PM
-domains.
+Hi,
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- Documentation/power/devices.txt | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+I'm upgrading from v4.7 to v4.8 on MIPS/loongson2_cpufreq with
+cpufreq/ondemand and I noticed that /proc/cpuinfo is always reporting
+(regardless of system load):
 
-diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
-index 8ba6625..0401b53 100644
---- a/Documentation/power/devices.txt
-+++ b/Documentation/power/devices.txt
-@@ -607,7 +607,14 @@ individually.  Instead, a set of devices sharing a power resource can be put
- into a low-power state together at the same time by turning off the shared
- power resource.  Of course, they also need to be put into the full-power state
- together, by turning the shared power resource on.  A set of devices with this
--property is often referred to as a power domain.
-+property is often referred to as a power domain. A power domain may also be
-+nested inside another power domain.
-+
-+Devices and PM domains may be defined as IRQ-safe, if they can be powered
-+on/off even when the IRQs are disabled. An IRQ-safe device in a domain will
-+disallow power management on the domain, unless the domain is also defined as
-+IRQ-safe. The restriction this framework imposes on the parent domain of an
-+IRQ-safe domain is that it must also be defined as IRQ-safe.
- 
- Support for power domains is provided through the pm_domain field of struct
- device.  This field is a pointer to an object of type struct dev_pm_domain,
--- 
-2.7.4
+BogoMIPS                : 697150.20
 
+	and sysfs:
+
+/sys/devices/system/cpu/cpufreq/policy0/affected_cpus:0
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_cur_freq:797800
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq:797800
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq:199450
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_transition_latency:0
+/sys/devices/system/cpu/cpufreq/policy0/related_cpus:0
+/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies:199450 299175 398900 498625 598350 698075 797800 
+/sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors:ondemand performance 
+/sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq:797800
+/sys/devices/system/cpu/cpufreq/policy0/scaling_driver:loongson2
+/sys/devices/system/cpu/cpufreq/policy0/scaling_governor:ondemand
+/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq:797800
+/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq:199450
+/sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed:<unsupported>
+
+although previously they reported (when idle):
+
+BogoMIPS                : 132.09
+
+/sys/devices/system/cpu/cpufreq/policy0/affected_cpus:0
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_cur_freq:199445
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq:797780
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq:199445
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_transition_latency:0
+/sys/devices/system/cpu/cpufreq/policy0/related_cpus:0
+/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies:199445 299167 398890 498612 598335 698057 797780 
+/sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors:ondemand performance 
+/sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq:199445
+/sys/devices/system/cpu/cpufreq/policy0/scaling_driver:loongson2
+/sys/devices/system/cpu/cpufreq/policy0/scaling_governor:ondemand
+/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq:797780
+/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq:199445
+/sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed:<unsupported>
+
+and under full load:
+
+BogoMIPS                : 528.38
+
+/sys/devices/system/cpu/cpufreq/policy0/affected_cpus:0
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_cur_freq:797780
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq:797780
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq:199445
+/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_transition_latency:0
+/sys/devices/system/cpu/cpufreq/policy0/related_cpus:0
+/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies:199445 299167 398890 498612 598335 698057 797780 
+/sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors:ondemand performance 
+/sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq:797780
+/sys/devices/system/cpu/cpufreq/policy0/scaling_driver:loongson2
+/sys/devices/system/cpu/cpufreq/policy0/scaling_governor:ondemand
+/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq:797780
+/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq:199445
+/sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed:<unsupported>
+
+The offeding commit (bisected) seems to be:
+
+commit da0c6dc00c69d0adaae99c3b3d2ea0c869a3fb35
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Mon Jun 27 16:04:07 2016 +0530
+
+    cpufreq: Handle sorted frequency tables more efficiently
+
+Any ideas?
+
+A.
