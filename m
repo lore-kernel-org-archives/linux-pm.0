@@ -1,428 +1,154 @@
-From: Keerthy <a0393675-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH V1 05/10] thermal: da9062/61: Thermal junction temperature
- monitoring driver
-Date: Fri, 7 Oct 2016 10:58:59 +0530
-Message-ID: <3bc9fd76-2885-b07a-9df8-7802b7535da2@ti.com>
-References: <cover.1475743411.git.stwiss.opensource@diasemi.com>
- <b5ce58ca00f7ab30a025d24083549241f135b0e9.1475743411.git.stwiss.opensource@diasemi.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/2] powernv: Pass PSSCR value and mask to
+ power9_idle_stop
+Date: Fri, 7 Oct 2016 12:50:58 +0530
+Message-ID: <20161007072058.GC13873@in.ibm.com>
+References: <cover.1475130107.git.ego@linux.vnet.ibm.com>
+ <21e080ffa52f432b40750028a624aee1baebbaf7.1475130107.git.ego@linux.vnet.ibm.com>
+ <87int84d6w.fsf@concordia.ellerman.id.au>
+ <0e7ad8ff-8c44-86bc-f560-258bc7b29a32@gmail.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <b5ce58ca00f7ab30a025d24083549241f135b0e9.1475743411.git.stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:43545 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1753718AbcJGHVK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Oct 2016 03:21:10 -0400
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id u977IueE010833
+        for <linux-pm@vger.kernel.org>; Fri, 7 Oct 2016 03:21:09 -0400
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 25x5neky5n-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Fri, 07 Oct 2016 03:21:09 -0400
+Received: from localhost
+        by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+        Fri, 7 Oct 2016 01:21:08 -0600
+Content-Disposition: inline
+In-Reply-To: <0e7ad8ff-8c44-86bc-f560-258bc7b29a32@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, "skiboot@lists.ozlabs.org" <skiboot@lists.ozlabs.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Steve,
 
-On Thursday 06 October 2016 02:13 PM, Steve Twiss wrote:
-> From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Hi Balbir, Michael,
+
+On Tue, Oct 04, 2016 at 10:33:27PM +1100, Balbir Singh wrote:
+> 
+> 
+> On 04/10/16 21:32, Michael Ellerman wrote:
+> > "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
+> > 
+> >> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> >>
+> >> The power9_idle_stop method currently takes only the requested stop
+> >> level as a parameter and picks up the rest of the PSSCR bits from a
+> >> hand-coded macro. This is not a very flexible design, especially when
+> >> the firmware has the capability to communicate the psscr value and the
+> >> mask associated with a particular stop state via device tree.
+> >>
+> >> This patch modifies the power9_idle_stop API to take as parameters the
+> >> PSSCR value and the PSSCR mask corresponding to the stop state that
+> >> needs to be set. These PSSCR value and mask are respectively obtained
+> >> by parsing the "ibm,cpu-idle-state-psscr" and
+> >> "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
+> >>
+> >> In addition to this, the patch adds support for handling stop states
+> >> for which ESL and EC bits in the PSSCR are zero. As per the
+> >> architecture, a wakeup from these stop states resumes execution from
+> >> the subsequent instruction as opposed to waking up at the System
+> >> Vector.
+> > 
+> > That looks good.
+> > 
+> >> This patch depends on the following skiboot patch that exports the
+> >> PSSCR values and the mask for all the stop states:
+> >> https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
+> > 
+> > But we can't depend on a skiboot patch. The kernel has to cope with
+> > running on an old skiboot.
 >
-> Add junction temperature monitoring supervisor device driver, compatible
-> with the DA9062 and DA9061 PMICs.
->
-> If the PMIC's internal junction temperature rises above TEMP_WARN (125
-> degC) an interrupt is issued. This TEMP_WARN level is defined as the
-> THERMAL_TRIP_HOT trip-wire inside the device driver. A kernel work queue
-> is configured to repeatedly poll this temperature trip-wire, between 1 and
-> 10 second intervals (defaulting at 3 seconds).
->
-> This first level of temperature supervision is intended for non-invasive
-> temperature control, where the necessary measures for cooling the system
-> down are left to the host software. In this case, inside the thermal
-> notification function da9062_thermal_notify().
->
-> Signed-off-by: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
->
-> ---
-> This patch applies against linux-next and v4.8
->
-> Regards,
-> Steve Twiss, Dialog Semiconductor Ltd.
->
->
->  drivers/thermal/Kconfig          |  10 ++
->  drivers/thermal/Makefile         |   1 +
->  drivers/thermal/da9062-thermal.c | 313 +++++++++++++++++++++++++++++++++++++++
->  3 files changed, 324 insertions(+)
->  create mode 100644 drivers/thermal/da9062-thermal.c
->
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 2d702ca..da58e54 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -272,6 +272,16 @@ config DB8500_CPUFREQ_COOLING
->  	  bound cpufreq cooling device turns active to set CPU frequency low to
->  	  cool down the CPU.
->
-> +config DA9062_THERMAL
-> +	tristate "DA9062/DA9061 Dialog Semiconductor thermal driver"
-> +	depends on MFD_DA9062
-> +	depends on OF
-> +	help
-> +	  Enable this for the Dialog Semiconductor thermal sensor driver.
-> +	  This will report PMIC junction over-temperature for one thermal trip
-> +	  zone.
-> +	  Compatible with the DA9062 and DA9061 PMICs.
-> +
->  config INTEL_POWERCLAMP
->  	tristate "Intel PowerClamp idle injection driver"
->  	depends on THERMAL
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 10b07c1..0a2b3f2 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -38,6 +38,7 @@ obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
->  obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
->  obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
->  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
-> +obj-$(CONFIG_DA9062_THERMAL)	+= da9062-thermal.o
->  obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
->  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
->  obj-$(CONFIG_INTEL_SOC_DTS_IOSF_CORE)	+= intel_soc_dts_iosf.o
-> diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-thermal.c
-> new file mode 100644
-> index 0000000..feeabf6
-> --- /dev/null
-> +++ b/drivers/thermal/da9062-thermal.c
-> @@ -0,0 +1,313 @@
-> +/*
-> + * Thermal device driver for DA9062 and DA9061
-> + * Copyright (C) 2016  Dialog Semiconductor Ltd.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version 2
-> + * of the License, or (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/errno.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/workqueue.h>
-> +#include <linux/regmap.h>
-> +#include <linux/thermal.h>
-> +#include <linux/of.h>
-> +
-> +#include <linux/mfd/da9062/core.h>
-> +#include <linux/mfd/da9062/registers.h>
-> +
-> +#define DA9062_DEFAULT_POLLING_MS_PERIOD	3000
-> +#define DA9062_MAX_POLLING_MS_PERIOD		10000
-> +#define DA9062_MIN_POLLING_MS_PERIOD		1000
-> +
-> +#define DA9062_MILLI_CELSIUS(t)			((t)*1000)
-> +
-> +struct da9062_thermal_config {
-> +	const char *name;
-> +};
-> +
-> +struct da9062_thermal {
-> +	struct da9062 *hw;
-> +	struct delayed_work work;
-> +	struct thermal_zone_device *zone;
-> +	enum thermal_device_mode mode;
-> +	unsigned int polling_period;
-> +	struct mutex lock;
-> +	int temperature;
-> +	int irq;
-> +	const struct da9062_thermal_config *config;
-> +	struct device *dev;
-> +};
-> +
-> +static void da9062_thermal_poll_on(struct work_struct *work)
-> +{
-> +	struct da9062_thermal *thermal = container_of(work,
-> +						struct da9062_thermal,
-> +						work.work);
-> +	unsigned int val;
-> +	int ret;
-> +
-> +	/* clear E_TEMP */
-> +	ret = regmap_write(thermal->hw->regmap,
-> +				DA9062AA_EVENT_B,
-> +				DA9062AA_E_TEMP_MASK);
-> +	if (ret < 0) {
-> +		dev_err(thermal->dev,
-> +			"Cannot clear the TJUNC temperature status\n");
-> +		goto err_enable_irq;
-> +	}
-> +
-> +	/* Now read E_TEMP again: it is acting like a status bit.
-> +	 * If over-temperature, then this status will be true.
-> +	 * If not over-temperature, this staus will be false.
-> +	 */
-> +	ret = regmap_read(thermal->hw->regmap,
-> +			  DA9062AA_EVENT_B,
-> +			  &val);
-> +	if (ret < 0) {
-> +		dev_err(thermal->dev,
-> +			"Cannot check the TJUNC temperature status\n");
-> +		goto err_enable_irq;
-> +	} else {
-> +		if (val & DA9062AA_E_TEMP_MASK) {
-> +			mutex_lock(&thermal->lock);
-> +			thermal->temperature = DA9062_MILLI_CELSIUS(125);
-> +			mutex_unlock(&thermal->lock);
-> +			thermal_zone_device_update(thermal->zone);
-> +
-> +			schedule_delayed_work(&thermal->work,
-> +				msecs_to_jiffies(thermal->polling_period));
-> +			return;
-> +		} else {
-> +			mutex_lock(&thermal->lock);
-> +			thermal->temperature = DA9062_MILLI_CELSIUS(0);
-> +			mutex_unlock(&thermal->lock);
-> +			thermal_zone_device_update(thermal->zone);
-> +		}
-> +	}
-> +
-> +err_enable_irq:
-> +	enable_irq(thermal->irq);
-> +}
-> +
-> +static irqreturn_t da9062_thermal_irq_handler(int irq, void *data)
-> +{
-> +	struct da9062_thermal *thermal = data;
-> +
-> +	disable_irq_nosync(thermal->irq);
-> +	schedule_delayed_work(&thermal->work, 0);
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +static int da9062_thermal_get_mode(struct thermal_zone_device *z,
-> +				   enum thermal_device_mode *mode)
-> +{
-> +	struct da9062_thermal *thermal = z->devdata;
-> +	*mode = thermal->mode;
-> +	return 0;
-> +}
-> +
-> +static int da9062_thermal_get_trip_type(struct thermal_zone_device *z,
-> +				int trip,
-> +				enum thermal_trip_type *type)
-> +{
-> +	struct da9062_thermal *thermal = z->devdata;
-> +
-> +	switch (trip) {
-> +	case 0:
-> +		*type = THERMAL_TRIP_HOT;
 
-125C is pretty hot. Just a suggestion, do look at THERMAL_TRIP_CRITICAL.
+Hmm.. We can still do that. The older skiboot only provides the RL
+field of the PSSCR value for each stop state and the corresponding
+PSSCR mask is set to 0xF in the older skiboot for all the stop states.
 
-> +		break;
-> +	default:
-> +		dev_err(thermal->dev,
-> +			"Driver does not support more than 1 trip-wire\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int da9062_thermal_get_trip_temp(struct thermal_zone_device *z,
-> +					int trip,
-> +					int *temp)
-> +{
-> +	struct da9062_thermal *thermal = z->devdata;
-> +
-> +	switch (trip) {
-> +	case 0:
-> +		*temp = DA9062_MILLI_CELSIUS(125);
-> +		break;
-> +	default:
-> +		dev_err(thermal->dev,
-> +			"Driver does not support more than 1 trip-wire\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int da9062_thermal_notify(struct thermal_zone_device *z,
-> +				 int trip,
-> +				 enum thermal_trip_type type)
-> +{
-> +	struct da9062_thermal *thermal = z->devdata;
-> +
-> +	switch (type) {
-> +	case THERMAL_TRIP_HOT:
-> +		dev_warn(thermal->dev, "Reached HOT (125degC) temperature\n");
+We can insist that the future skiboot sets the ESL, EC, PSLL, TR, MTL
+and the the RL fields of the PSSCR for any exported stop state. This
+should be reflected in the psscr_mask of that stop state.  Thus, the
+psscr_mask of any stop state proposed in the future will have:
+(PSSCR_ESL_MASK | PSCCR_EC_MASK | PSCCR_PSLL_MASK | PSSCR_TR_MASK |
+PSSCR_MTL_MASK | PSSCR_RL_MASK) bits set in the skiboot.
 
-Any cooling action? What is done once you reach this high temperature?
+To handle the older firmware, we can do something like the following
+during the discovery of the stop states to mimic the behaviour present
+in the 4.8 kernel running on older firmware.
 
-> +		break;
-> +	default:
-> +		break;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int da9062_thermal_get_temp(struct thermal_zone_device *z,
-> +				   int *temp)
-> +{
-> +	struct da9062_thermal *thermal = z->devdata;
-> +
-> +	mutex_lock(&thermal->lock);
-> +	*temp = thermal->temperature;
-> +	mutex_unlock(&thermal->lock);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct thermal_zone_device_ops da9062_thermal_ops = {
-> +	.get_temp	= da9062_thermal_get_temp,
-> +	.get_mode	= da9062_thermal_get_mode,
-> +	.get_trip_type	= da9062_thermal_get_trip_type,
-> +	.get_trip_temp	= da9062_thermal_get_trip_temp,
-> +	.notify		= da9062_thermal_notify,
-> +};
-> +
-> +static const struct da9062_thermal_config da9062_config = {
-> +	.name = "da9062-thermal",
-> +};
-> +
-> +static const struct da9062_thermal_config da9061_config = {
-> +	.name = "da9061-thermal",
-> +};
-> +
-> +static const struct of_device_id da9062_compatible_reg_id_table[] = {
-> +	{ .compatible = "dlg,da9062-thermal", .data = &da9062_config },
-> +	{ .compatible = "dlg,da9061-thermal", .data = &da9061_config },
+=============== drivers/cpuidle/cpuidle-powernv.c =======================
+/*
+ * By default we set the ESL and EC bits in the PSSCR.
+ * The MTL and PSLL are set to the maximum value possible as per the
+ * ISA, i.e 15.
+ * The Transition Rate is set to the Maximum value 3.
+ */
+#define DEFAULT_PSSCR_VAL      PSSCR_ESL_MASK |			\
+			       PSCCR_EC_MASK | PSCCR_PSLL_MASK |\
+			       PSSCR_TR_MASK | PSSCR_MTL_MASK
 
-Two separate compatible values. Do you have anything different apart 
-from the name? Why use 2 compatibles when there is absolutely no difference?
+#define DEFAULT_PSSCR_MASK     PSSCR_ESL_MASK |			\
+			       PSCCR_EC_MASK | PSCCR_PSLL_MASK |\
+			       PSSCR_TR_MASK | PSSCR_MTL_MASK | \
+			       PSSCR_RL_MASK
 
-> +	{ },
-> +};
-> +
-> +static int da9062_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct da9062 *chip = dev_get_drvdata(pdev->dev.parent);
-> +	struct da9062_thermal *thermal;
-> +	unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
-> +	const struct of_device_id *match;
-> +	int ret = 0;
-> +
-> +	match = of_match_node(da9062_compatible_reg_id_table,
-> +			      pdev->dev.of_node);
-> +	if (!match)
-> +		return -ENXIO;
-> +
-> +	if (pdev->dev.of_node) {
-> +		if (!of_property_read_u32(pdev->dev.of_node,
-> +					"dlg,tjunc-temp-polling-period-ms",
-> +					&pp_tmp)) {
-> +			if (pp_tmp < DA9062_MIN_POLLING_MS_PERIOD ||
-> +				pp_tmp > DA9062_MAX_POLLING_MS_PERIOD)
-> +				pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
-> +		}
-> +
-> +		dev_dbg(&pdev->dev,
-> +			 "TJUNC temp polling period set at %d ms\n",
-> +			 pp_tmp);
-> +	}
-> +
-> +	thermal = devm_kzalloc(&pdev->dev, sizeof(struct da9062_thermal),
-> +			     GFP_KERNEL);
-> +	if (!thermal) {
-> +		ret = -ENOMEM;
-> +		goto err;
-> +	}
-> +
-> +	thermal->config = match->data;
-> +
-> +	INIT_DELAYED_WORK(&thermal->work, da9062_thermal_poll_on);
-> +	mutex_init(&thermal->lock);
 
-thermal_zone_device_register itself does
-INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
+static int powernv_add_idle_states(void)
+{
+	.
+	.
+	.
+	for (i = 0; i < dt_idle_states; i++) {
+	    u64 val, mask;
+	    	.	    
+		.
+		.
+		val = (DEFAULT_PSSCR_VAL & ~psscr_mask[i]) | psscr_val[i];
+		mask = DEFAULT_PSSCR_MASK | psscr_mask[i];
+		stop_psscr_table[nr_idle_states].val = val;
+        	stop_psscr_table[nr_idle_states].mask = mask;
+	}
+}		
+============================================================================
 
-refer: drivers/thermal/thermal_core.c
 
-It does a periodic monitoring of the temperature as well. Do you really 
-want to have an additional work for monitoring temperature in your 
-driver also?
+Is this approach ok ?
 
-> +
-> +	thermal->zone = thermal_zone_device_register(thermal->config->name,
-> +					1, 0, thermal,
-> +					&da9062_thermal_ops, NULL, 0,
-> +					0);
-> +	if (IS_ERR(thermal->zone)) {
-> +		dev_err(&pdev->dev, "Cannot register thermal zone device\n");
-> +		ret = PTR_ERR(thermal->zone);
-> +		goto err;
-> +	}
-> +
-> +	ret = platform_get_irq_byname(pdev, "THERMAL");
-> +	if (ret < 0) {
-> +		dev_err(&pdev->dev, "Failed to get platform IRQ.\n");
-> +		goto err_zone;
-> +	}
-> +	thermal->irq = ret;
-> +
-> +	ret = request_threaded_irq(thermal->irq, NULL,
-> +				   da9062_thermal_irq_handler,
-> +				   IRQF_TRIGGER_LOW | IRQF_ONESHOT,
-> +				   "THERMAL", thermal);
-> +	if (ret) {
-> +		dev_err(&pdev->dev,
-> +			"Failed to request thermal device IRQ.\n");
-> +		goto err_zone;
-> +	}
-> +
-> +	thermal->hw = chip;
-> +	thermal->polling_period = pp_tmp;
-> +	thermal->mode = THERMAL_DEVICE_ENABLED;
-> +	thermal->dev = &pdev->dev;
-> +
-> +	platform_set_drvdata(pdev, thermal);
-> +	return 0;
-> +
-> +err_zone:
-> +	thermal_zone_device_unregister(thermal->zone);
-> +err:
-> +	return ret;
-> +}
-> +
-> +static int da9062_thermal_remove(struct platform_device *pdev)
-> +{
-> +	struct	da9062_thermal *thermal = platform_get_drvdata(pdev);
-> +
-> +	free_irq(thermal->irq, thermal);
-> +	thermal_zone_device_unregister(thermal->zone);
-> +	cancel_delayed_work_sync(&thermal->work);
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver da9062_thermal_driver = {
-> +	.probe	= da9062_thermal_probe,
-> +	.remove	= da9062_thermal_remove,
-> +	.driver	= {
-> +		.name	= "da9062-thermal",
-> +		.of_match_table = da9062_compatible_reg_id_table,
-> +	},
-> +};
-> +
-> +module_platform_driver(da9062_thermal_driver);
-> +
-> +MODULE_AUTHOR("Steve Twiss, Dialog Semiconductor");
-> +MODULE_DESCRIPTION("Thermal TJUNC device driver for Dialog DA9062 and DA9061");
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_ALIAS("platform:da9062-thermal");
->
+
+> Hi, Michael
+> 
+> I think with an older skiboot the flags don't get exported and the
+> new cpuidle (stop state) does not get discovered. I don't think there
+> is any breakage. Gautham am I missing something?
+
+In the second verison of the patch, I am not adding any new flags in
+the skiboot, but explicitly providing the psscr_value and psscr_mask
+for each stop state.  Thus if you see the v2 of the skiboot patch, the
+lite versions of stop0,stop1 and stop2 are defined with no additional
+flags.
+
+The second version of the kernel patch wouldn't then work with the
+older skiboot since the older skiboot exports only the RL field of the
+psscr_val while the new kernel patch expects all the relavant bits of
+the psscr_val be set. This would result in a breakage.
+
+
+> 
+> Balbir Singh.
+> 
+
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks and Regards
+gautham.
+
