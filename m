@@ -1,69 +1,61 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
-Date: Fri, 07 Oct 2016 21:21:34 +0000
-Message-ID: <bug-176411-137361-KUupSxSdng@https.bugzilla.kernel.org/>
-References: <bug-176411-137361@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH v2 0/8] PM / Domains: DT support for domain idle states & atomic PM domains
+Date: Fri,  7 Oct 2016 15:36:53 -0700
+Message-ID: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:37726 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753988AbcJGVVj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 7 Oct 2016 17:21:39 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id E165E200F3
-        for <linux-pm@vger.kernel.org>; Fri,  7 Oct 2016 21:21:37 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-        by mail.kernel.org (Postfix) with ESMTP id 209FC201D3
-        for <linux-pm@vger.kernel.org>; Fri,  7 Oct 2016 21:21:35 +0000 (UTC)
-In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:33376 "EHLO
+        mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751798AbcJGWhJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 7 Oct 2016 18:37:09 -0400
+Received: by mail-pa0-f53.google.com with SMTP id cd13so28111098pac.0
+        for <linux-pm@vger.kernel.org>; Fri, 07 Oct 2016 15:37:09 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=176411
+Hi all,
 
---- Comment #12 from Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> ---
-Same as Doug.
+Changes since v1 [2] - 
+- Addressed review comments from v1.
+	- Fixes around dynamic allocation of genpd states
+	- Used OF method for iterating phandles
+	- Updated documentation, examples
+	- Rename state variable (provider -> fwnode)
+- The series is available at [3].
 
-./perf report --header
-Error:
-The perf.data file has no samples!
-# ========
-# captured on: Fri Oct  7 14:08:08 2016
-# hostname : stravinsky
-# os release : 4.8.0-1-ARCH
-# perf version : 4.7.g523d93
-# arch : x86_64
-# nrcpus online : 12
-# nrcpus avail : 12
-# cpudesc : Intel(R) Core(TM) i7-5820K CPU @ 3.30GHz
-# cpuid : GenuineIntel,6,63,2
-# total memory : 32844308 kB
-# cmdline : /usr/bin/perf record -a --event=power:pstate_sample sleep 300 
-# event : name = power:pstate_sample, , type = 2, size = 112, config = 0x184, {
-sample_period, sa
-# HEADER_CPU_TOPOLOGY info available, use -I to display
-# HEADER_NUMA_TOPOLOGY info available, use -I to display
-# pmu mappings: cpu = 4, intel_bts = 6, uncore_imc_4 = 17, uncore_sbox_1 = 26,
-uncore_cbox_5 = 24
-# HEADER_CACHE info available, use -I to display
-# ========
-#
+The changes from [1] are -
+- Allocating memory for domain idle states dynamically
+- Conform to naming conventions for internal and exported genpd functions
+- DT binding example for domain-idle-state
+- Use fwnode instead of of_node
+- Handle atomic case for removal of PM Domain
+- Rebase on top of Rafael's pm/genpd tree
 
+Thanks,
+Lina
 
-No samples collected. I guess intel_pstate sched_util not called.
+Lina Iyer (8):
+  PM / Domains: Make genpd state allocation dynamic
+  PM / Domain: Add residency property to genpd states
+  PM / Domains: Allow domain power states to be read from DT
+  PM / Domains: Save the fwnode in genpd_power_state
+  dt/bindings: Update binding for PM domain idle states
+  PM / Domains: Abstract genpd locking
+  PM / Domains: Support IRQ safe PM domains
+  PM / doc: Update device documentation for devices in IRQ safe PM
+    domains
 
--Please also attach your .config
-
-In addition do this step:
-# echo -n 'file intel_pstate.c +p' > /sys/kernel/debug/dynamic_debug/control 
-# cd /sys/device/system/cpu/cpu1
-# echo 0 > online
-# echo 1 > online
-Take dmesg and send output
+ .../devicetree/bindings/power/power_domain.txt     |  38 +++
+ Documentation/power/devices.txt                    |   9 +-
+ arch/arm/mach-imx/gpc.c                            |  17 +-
+ drivers/base/power/domain.c                        | 360 +++++++++++++++++----
+ include/linux/pm_domain.h                          |  28 +-
+ 5 files changed, 380 insertions(+), 72 deletions(-)
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+2.7.4
+
+[1]. https://www.spinics.net/lists/arm-kernel/msg526814.html
+[2]. http://www.spinics.net/lists/arm-kernel/msg535106.html
+[3]. https://git.linaro.org/people/lina.iyer/linux-next.git/shortlog/refs/heads/genpd-v2
