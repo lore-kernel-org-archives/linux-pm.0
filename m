@@ -1,163 +1,117 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v7 0/8] power: add power sequence library
-Date: Sat, 8 Oct 2016 16:56:49 +0800
-Message-ID: <20161008085649.GA19253@b29397-desktop>
-References: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
- <20160926062649.GB25395@b29397-desktop>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 4/4] x86, hotplug: Use hlt instead of mwait when resuming
+ from hibernation
+Date: Sat, 8 Oct 2016 12:31:44 +0200
+Message-ID: <CAJZ5v0hrzfoFujSbuys+ESoj8W=JEh3uxyqgixpSLdSzpAP9Qg@mail.gmail.com>
+References: <cover.1466844557.git.yu.c.chen@intel.com> <519377051f98268f41c382d2897ae578b2a743f6.1466844557.git.yu.c.chen@intel.com>
+ <e2d3e4ce-05df-b416-6f1a-e90a3bf8d63b@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20160926062649.GB25395@b29397-desktop>
-Sender: linux-kernel-owner@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:33358 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756068AbcJHKbr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 8 Oct 2016 06:31:47 -0400
+In-Reply-To: <e2d3e4ce-05df-b416-6f1a-e90a3bf8d63b@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Chen Yu <yu.c.chen@intel.com>, Linux PM <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, Pavel Machek <pavel@ucw.cz>, Brian Gerst <brgerst@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Varun Koyyalagunta <cpudebug@centtech.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@alien8.de>
 
-On Mon, Sep 26, 2016 at 02:26:49PM +0800, Peter Chen wrote:
-> On Tue, Sep 20, 2016 at 11:36:39AM +0800, Peter Chen wrote:
-> > Hi all,
-> > 
-> > This is a follow-up for my last power sequence framework patch set [1].
-> > According to Rob Herring and Ulf Hansson's comments[2]. The kinds of
-> > power sequence instances will be added at postcore_initcall, the match
-> > criteria is compatible string first, if the compatible string is not
-> > matched between dts and library, it will try to use generic power sequence.
-> > 	 
-> > The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> > if only one power sequence instance is needed, for more power sequences
-> > are used, using of_pwrseq_on_list/of_pwrseq_off_list instead (eg, USB hub driver).
-> > 
-> > In future, if there are special power sequence requirements, the special
-> > power sequence library can be created.
-> > 
-> > This patch set is tested on i.mx6 sabresx evk using a dts change, I use
-> > two hot-plug devices to simulate this use case, the related binding
-> > change is updated at patch [1/6], The udoo board changes were tested
-> > using my last power sequence patch set.[3]
-> > 
-> > Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
-> > need to power on itself before it can be found by ULPI bus.
-> > 
-> > [1] http://www.spinics.net/lists/linux-usb/msg142755.html
-> > [2] http://www.spinics.net/lists/linux-usb/msg143106.html
-> > [3] http://www.spinics.net/lists/linux-usb/msg142815.html
-> > 
-> > Changes for v7:
-> > - Create kinds of power sequence instance at postcore_initcall, and match
-> >   the instance with node using compatible string, the beneit of this is
-> >   the host driver doesn't need to consider which pwrseq instance needs
-> >   to be used, and pwrseq core will match it, however, it eats some memories
-> >   if less power sequence instances are used. [Patch 2/8]
-> > - Add pwrseq_compatible_sample.c to test match pwrseq using device_id. [Patch 2/8]
-> > - Fix the comments Vaibhav Hiremath adds for error path for clock and do not
-> >   use device_node for parameters at pwrseq_on. [Patch 2/8]
-> > - Simplify the caller to use power sequence, follows Alan's commnets [Patch 4/8]
-> > - Tested three pwrseq instances together using both specific compatible string and
-> >   generic libraries.
-> > 
-> 
-> Hi Vaibhav, would you please test if this series can support your case,
-> you can add one instance like pwrseq_compatible_sample? If you are busy
-> now, but think this series can satisfy your requirement, please ack it.
-> I will delete pwrseq_compatible_sample, and only submit the generic one
-> at next revision, you can add it later, thanks.
-> 
+On Fri, Oct 7, 2016 at 9:47 PM, Andy Lutomirski <luto@kernel.org> wrote:
+> On 06/25/2016 09:19 AM, Chen Yu wrote:
+>>
+>> Here's the story of what the problem is, why this
+>> happened, and why this patch looks like this:
+>>
+>> Stress test from Varun Koyyalagunta reports that, the
+>> nonboot CPU would hang occasionally, when resuming from
+>> hibernation. Further investigation shows that, the precise
+>> stage when nonboot CPU hangs, is the time when the nonboot
+>> CPU been woken up incorrectly, and tries to monitor the
+>> mwait_ptr for the second time, then an exception is
+>> triggered due to illegal vaddr access, say, something like,
+>> 'Unable to handler kernel address of 0xffff8800ba800010...'
+>>
+>> Further investigation shows that, the exception is caused
+>> by accessing a page without PRESENT flag, because the pte entry
+>> for this vaddr is zero. Here's the scenario how this problem
+>> happens: Page table for direct mapping is allocated dynamically
+>> by kernel_physical_mapping_init, it is possible that in the
+>> resume process, when the boot CPU is trying to write back pages
+>> to their original address, and just right to writes to the monitor
+>> mwait_ptr then wakes up one of the nonboot CPUs, since the page
+>> table currently used by the nonboot CPU might not the same as it
+>> is before the hibernation, an exception might occur due to
+>> inconsistent page table.
+>>
+>> First try is to get rid of this problem by changing the monitor
+>> address from task.flag to zero page, because one one would write
+>> to zero page. But this still have problem because of ping-pong
+>> wake up situation in mwait_play_dead:
+>>
+>> One possible implementation of a clflush is a read-invalidate snoop,
+>> which is what a store might look like, so cflush might break the mwait.
+>>
+>> 1. CPU1 wait at zero page
+>> 2. CPU2 cflush zero page, wake CPU1 up, then CPU2 waits at zero page
+>> 3. CPU1 is woken up, and invoke cflush zero page, thus wake up CPU2 again.
+>> then the nonboot CPUs never sleep for long.
+>>
+>> So it's better to monitor different address for each
+>> nonboot CPUs, however since there is only one zero page, at most:
+>> PAGE_SIZE/L1_CACHE_LINE CPUs are satisfied, which is usually 64
+>> on a x86_64, apparently it's not enough for servers, maybe more
+>> zero pages are required.
+>>
+>> So choose the solution as Brian suggested, to put the nonboot CPUs
+>> into hlt before resuming. But Rafael has mentioned that, if some of
+>> the CPUs have already been offline before hibernation, then the problem
+>> is still there. So this patch tries to kick the already offline CPUs woken
+>> up and fall into hlt, and then put the rest online CPUs into hlt.
+>> In this way, all the nonboot CPUs will wait at a safe state,
+>> without touching any memory during s/r. (It's not safe to modify
+>> mwait_play_dead, because once previous offline CPUs are woken up,
+>> it will either access text code, whose page table is not safe anymore
+>> across hibernation, due to:
+>> Commit ab76f7b4ab23 ("x86/mm: Set NX on gap between __ex_table and
+>> rodata").
+>>
+>
+> I realize I'm extremely late to the party, but I must admit that I don't get
+> it.  Sure, hibernation resume can spuriously wake the non-boot CPU, but at
+> some point it has to wake up for real.
 
-ping...
+You mean during resume?  We reinit from scratch then.
 
-Vaibhav, if you have no more comments, I will delete the
-pwrseq_compatible_sample, and send v8.
+> What ensures that the text it was
+> running (native_play_dead or whatever) is still there when it wakes up?
+>
+> Or does the hibernation resume code actually send the remote CPU an
+> INIT-SIPI sequence a la wakeup_secondary_cpu_via_init()?
 
-Peter
-> Peter
-> 
-> > Changes for v6:
-> > - Add Matthias Kaehlcke's Reviewed-by and Tested-by. (patch [2/6])
-> > - Change chipidea core of_node assignment for coming user. (patch [5/6])
-> > - Applies Joshua Clayton's three dts changes for two boards,
-> >   the USB device's reg has only #address-cells, but without #size-cells.
-> > 
-> > Changes for v5:
-> > - Delete pwrseq_register/pwrseq_unregister, which is useless currently
-> > - Fix the linker error when the pwrseq user is compiled as module
-> > 
-> > Changes for v4:
-> > - Create the patch on next-20160722 
-> > - Fix the of_node is not NULL after chipidea driver is unbinded [Patch 5/6]
-> > - Using more friendly wait method for reset gpio [Patch 2/6]
-> > - Support multiple input clocks [Patch 2/6]
-> > - Add Rob Herring's ack for DT changes
-> > - Add Joshua Clayton's Tested-by
-> > 
-> > Changes for v3:
-> > - Delete "power-sequence" property at binding-doc, and change related code
-> >   at both library and user code.
-> > - Change binding-doc example node name with Rob's comments
-> > - of_get_named_gpio_flags only gets the gpio, but without setting gpio flags,
-> >   add additional code request gpio with proper gpio flags
-> > - Add Philipp Zabel's Ack and MAINTAINER's entry
-> > 
-> > Changes for v2:
-> > - Delete "pwrseq" prefix and clock-names for properties at dt binding
-> > - Should use structure not but its pointer for kzalloc
-> > - Since chipidea core has no of_node, let core's of_node equals glue
-> >   layer's at core's probe
-> > 
-> > Joshua Clayton (2):
-> >   ARM: dts: imx6qdl: Enable usb node children with <reg>
-> >   ARM: dts: imx6q-evi: Fix onboard hub reset line
-> > 
-> > Peter Chen (6):
-> >   binding-doc: power: pwrseq-generic: add binding doc for generic power
-> >     sequence library
-> >   power: add power sequence library
-> >   binding-doc: usb: usb-device: add optional properties for power
-> >     sequence
-> >   usb: core: add power sequence handling for USB devices
-> >   usb: chipidea: let chipidea core device of_node equal's glue layer
-> >     device of_node
-> >   ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
-> > 
-> >  .../bindings/power/pwrseq/pwrseq-generic.txt       |  48 ++++++
-> >  .../devicetree/bindings/usb/usb-device.txt         |  10 +-
-> >  MAINTAINERS                                        |   9 +
-> >  arch/arm/boot/dts/imx6q-evi.dts                    |  25 +--
-> >  arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  26 ++-
-> >  arch/arm/boot/dts/imx6qdl.dtsi                     |   6 +
-> >  drivers/power/Kconfig                              |   1 +
-> >  drivers/power/Makefile                             |   1 +
-> >  drivers/power/pwrseq/Kconfig                       |  45 +++++
-> >  drivers/power/pwrseq/Makefile                      |   3 +
-> >  drivers/power/pwrseq/core.c                        | 190 +++++++++++++++++++++
-> >  drivers/power/pwrseq/pwrseq_compatible_sample.c    | 178 +++++++++++++++++++
-> >  drivers/power/pwrseq/pwrseq_generic.c              | 177 +++++++++++++++++++
-> >  drivers/usb/chipidea/core.c                        |  27 ++-
-> >  drivers/usb/core/hub.c                             |  41 ++++-
-> >  drivers/usb/core/hub.h                             |   1 +
-> >  include/linux/power/pwrseq.h                       |  73 ++++++++
-> >  17 files changed, 820 insertions(+), 41 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
-> >  create mode 100644 drivers/power/pwrseq/Kconfig
-> >  create mode 100644 drivers/power/pwrseq/Makefile
-> >  create mode 100644 drivers/power/pwrseq/core.c
-> >  create mode 100644 drivers/power/pwrseq/pwrseq_compatible_sample.c
-> >  create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
-> >  create mode 100644 include/linux/power/pwrseq.h
-> > 
-> > -- 
-> > 2.7.4
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> -- 
-> 
-> Best Regards,
-> Peter Chen
+That's what happens AFAICS.
 
--- 
+> If so, this seems
+> a bit odd to me.  Shouldn't we kick the CPU all the way to the wait-for-SIPI
+> state rather than getting it to play dead via hlt or mwait?
 
-Best Regards,
-Peter Chen
+We could do that.  It would be a bit cleaner than using the "hlt play
+dead" thing, but the practical difference would be very small (if
+observable at all).
+
+> Or perhaps
+> there should be a real hibernation trampoline: allocate a safe page, have
+> all CPUs jump there and spin (via hlt or mwait), do the resume, and then
+> kick the other CPUs awake and have them jump back to real code.
+
+That would require extra synchronization between the image and restore
+kernels (the trampoline would have to be the same virtual address and
+the same code in both), so I'd rather not do that if not absolutely
+necessary.
+
+The wait-for-SIPI idea seems viable to me though.  Do we have code to
+do that already?
+
+Thanks,
+Rafael
