@@ -1,74 +1,36 @@
-From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Subject: RE: [PATCH V1 04/10] watchdog: da9061: watchdog driver (RFC)
-Date: Sat, 8 Oct 2016 06:33:57 +0000
-Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CCE291E@SW-EX-MBX02.diasemi.com>
-References: <6ED8E3B22081A4459DAC7699F3695FB7018CCE242C@SW-EX-MBX02.diasemi.com>
- <20161006184927.GB11915@roeck-us.net>
- <6ED8E3B22081A4459DAC7699F3695FB7018CCE2732@SW-EX-MBX02.diasemi.com>
- <20161007170214.GA21349@roeck-us.net>
- <6ED8E3B22081A4459DAC7699F3695FB7018CCE282C@SW-EX-MBX02.diasemi.com>
- <20161007233554.GA21386@dtor-ws>
- <84f51754-cbd4-7a85-6ab6-83e1f47fd936@roeck-us.net>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
+Date: Sat, 08 Oct 2016 07:06:34 +0000
+Message-ID: <bug-176411-137361-NJJEMksZ59@https.bugzilla.kernel.org/>
+References: <bug-176411-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <84f51754-cbd4-7a85-6ab6-83e1f47fd936-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:52774 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934695AbcJHHGi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 8 Oct 2016 03:06:38 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id 1E06520443
+        for <linux-pm@vger.kernel.org>; Sat,  8 Oct 2016 07:06:37 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+        by mail.kernel.org (Postfix) with ESMTP id 88144201B9
+        for <linux-pm@vger.kernel.org>; Sat,  8 Oct 2016 07:06:34 +0000 (UTC)
+In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 08 October 2016 01:22, Guenter Roeck wrote:
-> On 10/07/2016 04:35 PM, Dmitry Torokhov wrote:
-> > On Fri, Oct 07, 2016 at 06:01:23PM +0000, Steve Twiss wrote:
-> >> On 07 October 2016 18:02, Guenter Roeck wrote:
-> >>
-> >>>> On 06 October 2016 19:49, Guenter Roeck wrote:
-> >>>>> On Thu, Oct 06, 2016 at 04:28:14PM +0000, Steve Twiss wrote:
-> >>>>>> I am using the compatible string to pick a different configuration .data block:
-> >>>>>> { .compatible = "dlg,da9062-watchdog", .data = &da9062_watchdog_info },
-> >>>>>> { .compatible = "dlg,da9061-watchdog", .data = &da9061_watchdog_info },
-> >>>>>>
-> >>>>>> But, it is just my opinion to keep the "name" different.
-> >>>>>> This will not be my decision if accepted into the Linux kernel, but I would like to
-> >>>>>> at least be consistent for DA9061 and DA9062 so ... is this an issue?
-> >>>>>
-> >>>>> FWIW the driver doesn't really need to be updated in the first place.
-> >>>>> A compatible statement listing both da9061 and da9062 would do it.
-> >>>>
-> >>>> I will make the changes you requested: deprecate the existing compatibility
-> >>>> for da9062-watchdog and make a new compatibility string which combines both
-> >>>> da9061 and da9062.
-> >>>>
-> >>> That is not what I asked for.
-> >>
-> >> Ok. Did you mean separate compatible statements with data sections pointing at
-> >> the same structure?
-> >>
-> >> Like this:
-> >> { .compatible = "dlg,da9062-watchdog", .data = &da9062_watchdog_info },
-> >> { .compatible = "dlg,da9061-watchdog", .data = &da9062_watchdog_info },
-> >>
-> >> So this would be the only change needed in the device driver.
-> >
-> > If there is no change in IP block then I do not see why we need to
-> > introduce new names at all. The dts can specify fallback compatible
-> > stting. Note, it is called *compatible* not "model" or "device id" or
-> > whatever. So you can just say in DTS:
-> >
-> > 	compatible = "dlg,da9061-watchdog", "dlg,da9062-watchdog";
-> >
-> > and leave the driver alone. That goes for input part as well. You only
-> > need to add new compatible to the driver when it in fact is
-> > *incompatible* with the existing blocks.
-> >
-> Yes, exactly.
+https://bugzilla.kernel.org/show_bug.cgi?id=176411
 
-Dmitry, Guenter,
-Thanks for putting things straight on this.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Zhang Rui <rui.zhang@intel.com> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |rui.zhang@intel.com
+           Hardware|x86-64                      |Intel
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
