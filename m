@@ -1,70 +1,118 @@
 From: Chen Yu <yu.c.chen@intel.com>
-Subject: Re: [PATCH 2/4][RFC v2] PM / sleep: Introduce arch-specific hook for
- disable/enable nonboot cpus
-Date: Sun, 9 Oct 2016 00:58:43 +0800
-Message-ID: <20161008165843.GB24225@sharon>
-References: <cover.1466844557.git.yu.c.chen@intel.com>
- <fb78859e5c1ea061ce4e35e200821ed170e6658d.1466844557.git.yu.c.chen@intel.com>
- <8f0aeb0a-5e72-8327-2406-a78ad783f6f2@kernel.org>
+Subject: Re: [PATCH][v11] PM / hibernate: Verify the consistent of e820
+ memory map by md5 digest
+Date: Sun, 9 Oct 2016 01:03:12 +0800
+Message-ID: <20161008170312.GC24225@sharon>
+References: <1474777077-19535-1-git-send-email-yu.c.chen@intel.com>
+ <20161007163108.GP27959@linux-rxt1.site>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga04.intel.com ([192.55.52.120]:18372 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752845AbcJHQyx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 8 Oct 2016 12:54:53 -0400
 Content-Disposition: inline
-In-Reply-To: <8f0aeb0a-5e72-8327-2406-a78ad783f6f2@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Lutomirski <luto@kernel.org>
-Cc: linux-pm@vger.kernel.org, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, Pavel Machek <pavel@ucw.cz>, Brian Gerst <brgerst@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Varun Koyyalagunta <cpudebug@centtech.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20161007163108.GP27959@linux-rxt1.site>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: joeyli <jlee@suse.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Borislav Petkov <bp@alien8.de>
 
-Hi Andy,
-On Fri, Oct 07, 2016 at 12:31:41PM -0700, Andy Lutomirski wrote:
-> On 06/25/2016 09:18 AM, Chen Yu wrote:
-> >There is requirement that we need to do some arch-specific
-> >operations before putting the nonboot CPUs offline/online.
-> >One of the requirements comes from the hibernation resume
-> >process on x86_64, we need to kick all the offlin-CPUs
-> >online and offline again, in order to put them in a safe
-> >state, thus to avoid possible unwilling wake up during
-> >hibernation resume.
+Hi Joey,
+On Sat, Oct 08, 2016 at 12:31:08AM +0800, joeyli wrote:
+> Hi Chen Yu,
+> 
+> On Sun, Sep 25, 2016 at 12:17:57PM +0800, Chen Yu wrote:
+> > On some platforms, there is occasional panic triggered when trying to
+> > resume from hibernation, a typical panic looks like:
+> > 
+> > "BUG: unable to handle kernel paging request at ffff880085894000
+> > IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
+> > 
+> > Investigation carried out by Lee Chun-Yi shows that this is because
+> > e820 map has been changed by BIOS across hibernation, and one
+> > of the page frames from suspend kernel is right located in restore
+> > kernel's unmapped region, so panic comes out when accessing unmapped
+> > kernel address.
 > >
-> >Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> >---
-> > kernel/cpu.c | 12 ++++++++++++
-> > 1 file changed, 12 insertions(+)
+> 
+> Sorry for finally I can not find the issue machine back now. So I add
+> a patch to fool kernel as the e820 changed when S4 resume for testing.
+>  
+> > In order to expose this issue earlier, the md5 hash of e820 map
+> > is passed from suspend kernel to restore kernel, and the restore
+> > kernel will terminate the resume process once it finds the md5
+> > hash are not the same.
 > >
-> >diff --git a/kernel/cpu.c b/kernel/cpu.c
-> >index d25266e..ce6e5e4 100644
-> >--- a/kernel/cpu.c
-> >+++ b/kernel/cpu.c
-> >@@ -1017,6 +1017,16 @@ EXPORT_SYMBOL_GPL(cpu_up);
-> > #ifdef CONFIG_PM_SLEEP_SMP
-> > static cpumask_var_t frozen_cpus;
-> >
-> >+void __weak arch_disable_nonboot_cpus_pre(void)
+> [...snip] 
+> > ---
+> >  arch/x86/power/hibernate_64.c | 92 ++++++++++++++++++++++++++++++++++++++++++-
+> >  1 file changed, 90 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/x86/power/hibernate_64.c b/arch/x86/power/hibernate_64.c
+> > index 9634557..d81b1af 100644
+> > --- a/arch/x86/power/hibernate_64.c
+> > +++ b/arch/x86/power/hibernate_64.c
+> > @@ -11,6 +11,10 @@
+> >  #include <linux/gfp.h>
+> >  #include <linux/smp.h>
+> >  #include <linux/suspend.h>
+> > +#include <linux/scatterlist.h>
+> > +#include <linux/kdebug.h>
 > 
-> I don't like using __weak.  It penalizes code size on architectures that
-> don't hook these functions.  My preferred pattern is:
+> [...snip]
 > 
-> include/linux/something.h:
+> > @@ -216,5 +297,12 @@ int arch_hibernation_header_restore(void *addr)
+> >  	restore_jump_address = rdr->jump_address;
+> >  	jump_address_phys = rdr->jump_address_phys;
+> >  	restore_cr3 = rdr->cr3;
+> > -	return (rdr->magic == RESTORE_MAGIC) ? 0 : -EINVAL;
+> > +
+> > +	if (rdr->magic != RESTORE_MAGIC)
+> > +		return -EINVAL;
+> > +
+> > +	if (hibernation_e820_mismatch(rdr->e820_digest))
+> > +		return -ENODEV;
+> > +
+> > +	return 0;
+> >  }
+> > --
 > 
-> #include <asm/something.h>
+> Because the check_image_kernel() function doesn't check the return error,
+> kernel only shows "PM: Image mismatch: architecture specific data". The
+> message covered two different fail reason.
+>  
+> I suggest that it prints out a log like the restore function in ARM64
+> architecture. Something like this, please feel free to modify the
+> wording:
 > 
-> #ifndef arch_do_xyz
-> static inline void arch_do_xyz() {}
-> #endif
+> Index: linux/arch/x86/power/hibernate_64.c
+> ===================================================================
+> --- linux.orig/arch/x86/power/hibernate_64.c
+> +++ linux/arch/x86/power/hibernate_64.c
+> @@ -298,11 +298,16 @@ int arch_hibernation_header_restore(void
+>         jump_address_phys = rdr->jump_address_phys;
+>         restore_cr3 = rdr->cr3;
+>  
+> -       if (rdr->magic != RESTORE_MAGIC)
+> +
+> +       if (rdr->magic != RESTORE_MAGIC) {
+> +               pr_crit("Hibernate image not generated by this kernel!\n");
+>                 return -EINVAL;
+> +       }
+>  
+> -       if (hibernation_e820_mismatch(rdr->e820_digest))
+> +       if (hibernation_e820_mismatch(rdr->e820_digest)) {
+> +               pr_crit("The e820 saved regions changed!\n");
+>                 return -ENODEV;
+> +       }
+>  
+>         return 0;
+>  }
 > 
-> arch/whatever/asm/something.h:
-> 
-> extern void arch_do_xyz();  /* or static inline... */
-> #define arch_do_xyz
-> 
-> 
-> This is totally free for architectures that don't have the hooks and it can
-> potentially be inlined on architectures that do have the hooks. Everyone
-> wins except that it's about five additional lines of code.
-> 
-Thanks for your guidance, this patch was deprecated previously, but I'll
-take your advice the next time when writing similar patch.  
-> --Andy
+OK, will refresh it after 4.9-rc1 released due to a e820 modification
+recently.
+
 Thanks,
 Yu
