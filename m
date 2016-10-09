@@ -1,50 +1,66 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/8] PM / OPP: Reword binding supporting multiple
- regulators per device
-Date: Sat, 8 Oct 2016 20:29:17 -0500
-Message-ID: <20161009012917.GS18158@rob-hp-laptop>
-References: <cover.1475581665.git.viresh.kumar@linaro.org>
- <ea6ba87d6514dcec7bee222b401ab904a78e67e6.1475581665.git.viresh.kumar@linaro.org>
+From: Icenowy Zheng <icenowy@aosc.xyz>
+Subject: [PATCH v2 3/4] ARM: dts: add battery node for axp20x/axp22x dtsi
+Date: Sun,  9 Oct 2016 14:27:13 +0800
+Message-ID: <20161009062714.5085-3-icenowy@aosc.xyz>
+References: <20161009062714.5085-1-icenowy@aosc.xyz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <ea6ba87d6514dcec7bee222b401ab904a78e67e6.1475581665.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, nm-l0cyMroinI0@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, d-gerlach-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20161009062714.5085-1-icenowy@aosc.xyz>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robh+dt@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, =?UTF-8?q?Bruno=20Pr=C3=A9mont?= <bonbons@linux-vserser.org>, Michael Haas <haas@computerlinguist.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Icenowy Zheng <icenowy@aosc.xyz>, Sebastian Reichel <sre@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 04, 2016 at 05:26:43PM +0530, Viresh Kumar wrote:
-> On certain platforms (like TI), DVFS for a single device (CPU) requires
-> configuring multiple power supplies.
-> 
-> The OPP bindings already contains binding and example to explain this
-> case, but it isn't sufficient. For example, there is no way for the code
-> parsing these bindings to know which voltage values belong to which
-> power supply. Also its not possible to know the order in which the
-> supplies need to be configured while switching OPPs.
-> 
-> This patch tries to clarify on those details and does some minor changes
-> as well.
-> 
-> Note that the bindings do not specify the order in which the regulators
-> need to be programmed and the order in which the entries are added for
-> the supplies.
-> 
-> The user of the bindings (like the kernel) shall know these details
-> already and the DT is responsible to supply only the readings for the
-> regulators.
-> 
-> Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
->  Documentation/devicetree/bindings/opp/opp.txt | 25 +++++++++++++++++--------
->  1 file changed, 17 insertions(+), 8 deletions(-)
+Signed-off-by: Icenowy Zheng <icenowy@aosc.xyz>
+---
+Changes since v1:
+- Add support for AXP20x.
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ arch/arm/boot/dts/axp209.dtsi | 5 +++++
+ arch/arm/boot/dts/axp22x.dtsi | 5 +++++
+ 2 files changed, 10 insertions(+)
+
+diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
+index afbe89c..1602987 100644
+--- a/arch/arm/boot/dts/axp209.dtsi
++++ b/arch/arm/boot/dts/axp209.dtsi
+@@ -91,6 +91,11 @@
+ 		};
+ 	};
+ 
++	battery: battery {
++		compatible = "x-powers,axp202-battery";
++		status = "disabled";
++	};
++
+ 	usb_power_supply: usb_power_supply {
+ 		compatible = "x-powers,axp202-usb-power-supply";
+ 		status = "disabled";
+diff --git a/arch/arm/boot/dts/axp22x.dtsi b/arch/arm/boot/dts/axp22x.dtsi
+index 458b668..a09ba3f 100644
+--- a/arch/arm/boot/dts/axp22x.dtsi
++++ b/arch/arm/boot/dts/axp22x.dtsi
+@@ -148,6 +148,11 @@
+ 		};
+ 	};
+ 
++	battery: battery {
++		compatible = "x-powers,axp221-battery";
++		status = "disabled";
++	};
++
+ 	usb_power_supply: usb_power_supply {
+ 		compatible = "x-powers,axp221-usb-power-supply";
+ 		status = "disabled";
+-- 
+2.10.0
