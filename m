@@ -1,11 +1,13 @@
 From: Icenowy Zheng <icenowy@aosc.xyz>
-Subject: [PATCH v2 1/4] mfd: axp20x: add adc volatile ranges for axp22x
-Date: Sun,  9 Oct 2016 14:27:11 +0800
-Message-ID: <20161009062714.5085-1-icenowy@aosc.xyz>
+Subject: [PATCH v2 4/4] ARM: sunxi: enable battery on reference design tablets
+Date: Sun,  9 Oct 2016 14:27:14 +0800
+Message-ID: <20161009062714.5085-4-icenowy@aosc.xyz>
+References: <20161009062714.5085-1-icenowy@aosc.xyz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20161009062714.5085-1-icenowy@aosc.xyz>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,44 +21,48 @@ To: Rob Herring <robh+dt@kernel.org>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripar
 Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Icenowy Zheng <icenowy@aosc.xyz>, Sebastian Reichel <sre@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-AXP22x has also some different register map than axp20x, they're also
-added here.
+Since battery is one part of the reference design of Allwinner tablets,
+enable the battery node of reference design tablets.
 
 Signed-off-by: Icenowy Zheng <icenowy@aosc.xyz>
 ---
 Changes since v1:
-- Nothing.
+- Applied to reference design tablet, not Q8 only now.
+- Add support for sun5i reference design tablet.
 
- drivers/mfd/axp20x.c       | 1 +
- include/linux/mfd/axp20x.h | 4 ++++
- 2 files changed, 5 insertions(+)
+ arch/arm/boot/dts/sun5i-reference-design-tablet.dtsi | 4 ++++
+ arch/arm/boot/dts/sun8i-reference-design-tablet.dtsi | 4 ++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index fd80b09..17877b2 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -97,6 +97,7 @@ static const struct regmap_range axp22x_volatile_ranges[] = {
- 	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
- 	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
- 	regmap_reg_range(AXP22X_GPIO_STATE, AXP22X_GPIO_STATE),
-+	regmap_reg_range(AXP22X_PMIC_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
- 	regmap_reg_range(AXP20X_FG_RES, AXP20X_FG_RES),
+diff --git a/arch/arm/boot/dts/sun5i-reference-design-tablet.dtsi b/arch/arm/boot/dts/sun5i-reference-design-tablet.dtsi
+index 20cc940..9e17b46 100644
+--- a/arch/arm/boot/dts/sun5i-reference-design-tablet.dtsi
++++ b/arch/arm/boot/dts/sun5i-reference-design-tablet.dtsi
+@@ -92,6 +92,10 @@
+ 
+ #include "axp209.dtsi"
+ 
++&battery {
++	status = "okay";
++};
++
+ &lradc {
+ 	vref-supply = <&reg_ldo2>;
  };
+diff --git a/arch/arm/boot/dts/sun8i-reference-design-tablet.dtsi b/arch/arm/boot/dts/sun8i-reference-design-tablet.dtsi
+index 9d90361..74517ab 100644
+--- a/arch/arm/boot/dts/sun8i-reference-design-tablet.dtsi
++++ b/arch/arm/boot/dts/sun8i-reference-design-tablet.dtsi
+@@ -112,6 +112,10 @@
  
-diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index 0be4982..ad3d9c7 100644
---- a/include/linux/mfd/axp20x.h
-+++ b/include/linux/mfd/axp20x.h
-@@ -201,6 +201,10 @@ enum {
- #define AXP20X_OCV_MAX			0xf
+ #include "axp22x.dtsi"
  
- /* AXP22X specific registers */
-+#define AXP22X_PMIC_ADC_H		0x56
-+#define AXP22X_PMIC_ADC_L		0x57
-+#define AXP22X_TS_ADC_H			0x58
-+#define AXP22X_TS_ADC_L			0x59
- #define AXP22X_BATLOW_THRES1		0xe6
- 
- /* AXP288 specific registers */
++&battery {
++	status = "okay";
++};
++
+ &reg_aldo1 {
+ 	regulator-always-on;
+ 	regulator-min-microvolt = <3000000>;
 -- 
 2.10.0
