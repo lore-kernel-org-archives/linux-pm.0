@@ -1,66 +1,66 @@
-From: Troy Jia <hongtao.jia@nxp.com>
-Subject: RE: [PATCH V2 1/7] dt-bindings: Update QorIQ TMU thermal bindings
-Date: Sun, 9 Oct 2016 07:12:46 +0000
-Message-ID: <AM4PR0401MB18433BD56D0441C832B06123EBD80@AM4PR0401MB1843.eurprd04.prod.outlook.com>
-References: <1465270054-31512-1-git-send-email-hongtao.jia@nxp.com>
- <20160608195241.GA6805@rob-hp-laptop>
- <CADRPPNQ+hikr1qNK1wPbLnhudUrU1bN_2iuYyRQnqCN4Zwh83Q@mail.gmail.com>
- <1474253068.23153.2.camel@intel.com>
+From: Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH] thermal: rockchip: improve the warning log
+Date: Sun,  9 Oct 2016 20:49:18 +0800
+Message-ID: <1476017358-26143-1-git-send-email-shawn.lin@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1474253068.23153.2.camel@intel.com>
-Content-Language: zh-CN
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Zhang Rui <rui.zhang@intel.com>, Leo Li <pku.leo@gmail.com>, Rob Herring <robh@kernel.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>, lkml <linux-kernel@vger.kernel.org>, Scott Wood <scott.wood@nxp.com>, Eduardo Valentin <edubezval@gmail.com>, Kumar Gala <galak@codeaurora.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBaaGFuZyBSdWkgW21haWx0bzpy
-dWkuemhhbmdAaW50ZWwuY29tXQ0KPiBTZW50OiBNb25kYXksIFNlcHRlbWJlciAxOSwgMjAxNiAx
-MDo0NCBBTQ0KPiBUbzogTGVvIExpIDxwa3UubGVvQGdtYWlsLmNvbT47IFJvYiBIZXJyaW5nIDxy
-b2JoQGtlcm5lbC5vcmc+DQo+IENjOiBUcm95IEppYSA8aG9uZ3Rhby5qaWFAbnhwLmNvbT47IGRl
-dmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4gcG1Admdlci5rZXJuZWwub3JnOyBs
-aW51eHBwYy1kZXYgPGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnPjsgbGttbCA8bGludXgt
-DQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBTY290dCBXb29kIDxzY290dC53b29kQG54cC5j
-b20+OyBFZHVhcmRvIFZhbGVudGluDQo+IDxlZHViZXp2YWxAZ21haWwuY29tPjsgS3VtYXIgR2Fs
-YSA8Z2FsYWtAY29kZWF1cm9yYS5vcmc+OyBTaGF3biBHdW8NCj4gPHNoYXduZ3VvQGtlcm5lbC5v
-cmc+OyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcNCj4gU3ViamVjdDogUmU6
-IFtQQVRDSCBWMiAxLzddIGR0LWJpbmRpbmdzOiBVcGRhdGUgUW9ySVEgVE1VIHRoZXJtYWwgYmlu
-ZGluZ3MNCj4gDQo+IE9uIOS4iSwgMjAxNi0wOS0xNCBhdCAxMTo0MCAtMDUwMCwgTGVvIExpIHdy
-b3RlOg0KPiA+IE9uIFdlZCwgSnVuIDgsIDIwMTYgYXQgMjo1MiBQTSwgUm9iIEhlcnJpbmcgPHJv
-YmhAa2VybmVsLm9yZz4gd3JvdGU6DQo+ID4gPg0KPiA+ID4gT24gVHVlLCBKdW4gMDcsIDIwMTYg
-YXQgMTE6Mjc6MzRBTSArMDgwMCwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4gPiA+DQo+ID4gPiA+
-IEZvciBkaWZmZXJlbnQgdHlwZXMgb2YgU29DIHRoZSBzZW5zb3IgaWQgYW5kIGVuZGlhbm5lc3Mg
-bWF5IHZhcnkuDQo+ID4gPiA+ICIjdGhlcm1hbC1zZW5zb3ItY2VsbHMiIGlzIHVzZWQgdG8gcHJv
-dmlkZSBzZW5zb3IgaWQgaW5mb3JtYXRpb24uDQo+ID4gPiA+ICJsaXR0bGUtZW5kaWFuIiBwcm9w
-ZXJ0eSBpcyB0byB0ZWxsIHRoZSBlbmRpYW5uZXNzIG9mIFRNVS4NCj4gPiA+ID4NCj4gPiA+ID4g
-U2lnbmVkLW9mZi1ieTogSmlhIEhvbmd0YW8gPGhvbmd0YW8uamlhQG54cC5jb20+DQo+ID4gPiA+
-IC0tLQ0KPiA+ID4gPiBDaGFuZ2VzIGZvciBWMjoNCj4gPiA+ID4gKiBSZW1vdmUgZm9ybWF0dGlu
-ZyBjaG5hZ2VzLg0KPiA+ID4gPg0KPiA+ID4gPiDCoERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
-aW5kaW5ncy90aGVybWFsL3FvcmlxLXRoZXJtYWwudHh0IHwgNw0KPiA+ID4gPiArKysrKysrDQo+
-ID4gPiA+IMKgMSBmaWxlIGNoYW5nZWQsIDcgaW5zZXJ0aW9ucygrKQ0KPiA+ID4gQWNrZWQtYnk6
-IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5vcmc+DQo+ID4gSGkgWmhhbmcgUnVpLA0KPiA+DQo+
-ID4gU2luY2UgeW91IGhhdmUgYXBwbGllZCB0aGUgZHJpdmVyIHBhdGNoLCBjYW4geW91IGFsc28g
-YXBwbHkgdGhlDQo+ID4gYmluZGluZyBwYXRjaD/CoMKgVGhlIGJpbmRpbmcgaXMgc3VwcG9zZWQg
-dG8gZ28gd2l0aCB0aGUgZHJpdmVyLg0KPiA+DQo+IA0KPiBEbyB5b3UgbWVhbiBJIHNob3VsZCB0
-YWtlIGJvdGggcGF0Y2ggMS83IGFuZCA3Lzc/IEkgY2FuIG5vdCBzZWUgdGhlIG90aGVyIHBhdGNo
-ZXMNCj4gaW4gdGhpcyBwYXRjaCBzZXQuDQoNClllcywgcGxlYXNlIHRha2UgNy83IGFzIHdlbGwu
-DQpJIGFsc28gcmV3b3JrZWQgdGhlIGRldmljZSB0cmVlIHBhdGNoZXMgYW5kIHlvdSBjYW4gZmlu
-ZCB0aGVtIGhlcmU6DQpodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzkzNjgzNzcv
-DQpodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzkzNjgzODEvDQpodHRwczovL3Bh
-dGNod29yay5rZXJuZWwub3JnL3BhdGNoLzkzNjgzODMvDQpodHRwczovL3BhdGNod29yay5rZXJu
-ZWwub3JnL3BhdGNoLzkzNjgzNzkvDQpodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNo
-LzkzNjgzODUvDQoNCi1Ib25ndGFvLg0KDQo+IA0KPiB0aGFua3MsDQo+IHJ1aQ0KDQpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVs
-IG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDov
-L2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+There is no necessary to print warning agian and
+again if we don't add rockchip,grf for dt, otherwise
+I saw the following log when doning suspend-2-resume.
+We only need to print it once when parsing dt. It looks
+quite trivial but the log is apparently verbose.
+
+[   26.615415] PM: early resume of devices complete after 1.539 msecs
+[   26.622002] rk_tsadcv2_initialize: Missing rockchip,grf property
+[   26.629359] rk_gmac-dwmac ff290000.ethernet: init for RGMII
+[   26.639794] PM: resume of devices complete after 18.109 msecs
+[   26.646925] Restarting tasks ... done.
+
+Signed-off-by: Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+---
+
+ drivers/thermal/rockchip_thermal.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index e227a9f..b811b0f 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -524,11 +524,6 @@ static void rk_tsadcv2_initialize(struct regmap *grf, void __iomem *regs,
+ 		       regs + TSADCV2_AUTO_PERIOD_HT);
+ 	writel_relaxed(TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT,
+ 		       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
+-
+-	if (IS_ERR(grf)) {
+-		pr_warn("%s: Missing rockchip,grf property\n", __func__);
+-		return;
+-	}
+ }
+ 
+ /**
+@@ -971,6 +966,8 @@ static int rockchip_configure_from_dt(struct device *dev,
+ 	 * need this property.
+ 	 */
+ 	thermal->grf = syscon_regmap_lookup_by_phandle(np, "rockchip,grf");
++	if (IS_ERR(thermal->grf))
++		dev_warn(dev, "Missing rockchip,grf property\n");
+ 
+ 	return 0;
+ }
+-- 
+2.3.7
