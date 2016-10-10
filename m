@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v5 3/5] PM / sleep: Make async suspend/resume of devices use device links
-Date: Mon, 10 Oct 2016 14:54:32 +0200
-Message-ID: <2538022.qMGl8lB1tE@vostro.rjw.lan>
+Subject: [Resend][PATCH v5 1/5]  driver core: Add a wrapper around __device_release_driver()
+Date: Mon, 10 Oct 2016 14:37:56 +0200
+Message-ID: <5843333.AFPGQ4M57c@vostro.rjw.lan>
 References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <13957403.ZrB4mMbICz@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -15,177 +15,68 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Make the device suspend/resume part of the core system
-suspend/resume code use device links to ensure that supplier
-and consumer devices will be suspended and resumed in the right
-order in case of async suspend/resume.
+Add an internal wrapper around __device_release_driver() that will
+acquire device locks and do the necessary checks before calling it.
 
-The idea, roughly, is to use dpm_wait() to wait for all consumers
-before a supplier device suspend and to wait for all suppliers
-before a consumer device resume.
+The next patch will make use of it.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ drivers/base/dd.c | 30 ++++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
 
-v4 -> v5:
-
-- Rebase, change the symbol names in accordance with patch [2/5] etc.
-
-- Use READ_ONCE() to annotate "unprotected" accesses to link status data.
-
----
- drivers/base/power/main.c |   85 ++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 79 insertions(+), 6 deletions(-)
-
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -246,6 +246,62 @@ static void dpm_wait_for_children(struct
-        device_for_each_child(dev, &async, dpm_wait_fn);
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 16688f50729c..d9e76e9205c7 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -796,6 +796,22 @@ static void __device_release_driver(struct device *dev)
+ 	}
  }
  
-+static void dpm_wait_for_suppliers(struct device *dev, bool async)
++static void device_release_driver_internal(struct device *dev,
++					   struct device_driver *drv,
++					   struct device *parent)
 +{
-+	struct device_link *link;
-+	int idx;
++	if (parent)
++		device_lock(parent);
 +
-+	idx = device_links_read_lock();
++	device_lock(dev);
++	if (!drv || drv == dev->driver)
++		__device_release_driver(dev);
 +
-+	/*
-+	 * If the supplier goes away right after we've checked the link to it,
-+	 * we'll wait for its completion to change the state, but that's fine,
-+	 * because the only things that will block as a result are the SRCU
-+	 * callbacks freeing the link objects for the links in the list we're
-+	 * walking.
-+	 */
-+	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
-+		if (READ_ONCE(link->status) != DL_STATE_DORMANT)
-+			dpm_wait(link->supplier, async);
-+
-+	device_links_read_unlock(idx);
-+}
-+
-+static void dpm_wait_for_superior(struct device *dev, bool async)
-+{
-+	dpm_wait(dev->parent, async);
-+	dpm_wait_for_suppliers(dev, async);
-+}
-+
-+static void dpm_wait_for_consumers(struct device *dev, bool async)
-+{
-+	struct device_link *link;
-+	int idx;
-+
-+	idx = device_links_read_lock();
-+
-+	/*
-+	 * The status of a device link can only be changed from "dormant" by a
-+	 * probe, but that cannot happen during system suspend/resume.  In
-+	 * theory it can change to "dormant" at that time, but then it is
-+	 * reasonable to wait for the target device anyway (eg. if it goes
-+	 * away, it's better to wait for it to go away completely and then
-+	 * continue instead of trying to continue in parallel with its
-+	 * unregistration).
-+	 */
-+	list_for_each_entry_rcu(link, &dev->links.consumers, s_node)
-+		if (READ_ONCE(link->status) != DL_STATE_DORMANT)
-+			dpm_wait(link->consumer, async);
-+
-+	device_links_read_unlock(idx);
-+}
-+
-+static void dpm_wait_for_subordinate(struct device *dev, bool async)
-+{
-+	dpm_wait_for_children(dev, async);
-+	dpm_wait_for_consumers(dev, async);
++	device_unlock(dev);
++	if (parent)
++		device_unlock(parent);
 +}
 +
  /**
-  * pm_op - Return the PM operation appropriate for given PM event.
-  * @ops: PM operations to choose from.
-@@ -490,7 +546,7 @@ static int device_resume_noirq(struct de
- 	if (!dev->power.is_noirq_suspended)
- 		goto Out;
- 
--	dpm_wait(dev->parent, async);
-+	dpm_wait_for_superior(dev, async);
- 
- 	if (dev->pm_domain) {
- 		info = "noirq power domain ";
-@@ -620,7 +676,7 @@ static int device_resume_early(struct de
- 	if (!dev->power.is_late_suspended)
- 		goto Out;
- 
--	dpm_wait(dev->parent, async);
-+	dpm_wait_for_superior(dev, async);
- 
- 	if (dev->pm_domain) {
- 		info = "early power domain ";
-@@ -752,7 +808,7 @@ static int device_resume(struct device *
- 		goto Complete;
- 	}
- 
--	dpm_wait(dev->parent, async);
-+	dpm_wait_for_superior(dev, async);
- 	dpm_watchdog_set(&wd, dev);
- 	device_lock(dev);
- 
-@@ -1040,7 +1096,7 @@ static int __device_suspend_noirq(struct
- 	if (dev->power.syscore || dev->power.direct_complete)
- 		goto Complete;
- 
--	dpm_wait_for_children(dev, async);
-+	dpm_wait_for_subordinate(dev, async);
- 
- 	if (dev->pm_domain) {
- 		info = "noirq power domain ";
-@@ -1187,7 +1243,7 @@ static int __device_suspend_late(struct
- 	if (dev->power.syscore || dev->power.direct_complete)
- 		goto Complete;
- 
--	dpm_wait_for_children(dev, async);
-+	dpm_wait_for_subordinate(dev, async);
- 
- 	if (dev->pm_domain) {
- 		info = "late power domain ";
-@@ -1344,6 +1400,22 @@ static int legacy_suspend(struct device
- 	return error;
+  * device_release_driver - manually detach device from driver.
+  * @dev: device.
+@@ -810,9 +826,7 @@ void device_release_driver(struct device *dev)
+ 	 * within their ->remove callback for the same device, they
+ 	 * will deadlock right here.
+ 	 */
+-	device_lock(dev);
+-	__device_release_driver(dev);
+-	device_unlock(dev);
++	device_release_driver_internal(dev, NULL, NULL);
  }
+ EXPORT_SYMBOL_GPL(device_release_driver);
  
-+static void dpm_clear_suppliers_direct_complete(struct device *dev)
-+{
-+	struct device_link *link;
-+	int idx;
-+
-+	idx = device_links_read_lock();
-+
-+	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node) {
-+		spin_lock_irq(&link->supplier->power.lock);
-+		link->supplier->power.direct_complete = false;
-+		spin_unlock_irq(&link->supplier->power.lock);
-+	}
-+
-+	device_links_read_unlock(idx);
-+}
-+
- /**
-  * device_suspend - Execute "suspend" callbacks for given device.
-  * @dev: Device to handle.
-@@ -1360,7 +1432,7 @@ static int __device_suspend(struct devic
- 	TRACE_DEVICE(dev);
- 	TRACE_SUSPEND(0);
- 
--	dpm_wait_for_children(dev, async);
-+	dpm_wait_for_subordinate(dev, async);
- 
- 	if (async_error)
- 		goto Complete;
-@@ -1456,6 +1528,7 @@ static int __device_suspend(struct devic
- 
- 			spin_unlock_irq(&parent->power.lock);
- 		}
-+		dpm_clear_suppliers_direct_complete(dev);
+@@ -837,15 +851,7 @@ void driver_detach(struct device_driver *drv)
+ 		dev = dev_prv->device;
+ 		get_device(dev);
+ 		spin_unlock(&drv->p->klist_devices.k_lock);
+-
+-		if (dev->parent)	/* Needed for USB */
+-			device_lock(dev->parent);
+-		device_lock(dev);
+-		if (dev->driver == drv)
+-			__device_release_driver(dev);
+-		device_unlock(dev);
+-		if (dev->parent)
+-			device_unlock(dev->parent);
++		device_release_driver_internal(dev, drv, dev->parent);
+ 		put_device(dev);
  	}
- 
- 	device_unlock(dev);
+ }
